@@ -10,6 +10,7 @@ import socket
 from chromite.lib import cros_build_lib
 
 SVN_MIRROR_URL = 'svn://svn-mirror.golo.chromium.org'
+STATUS_URL = 'https://chromium-status.appspot.com/current?format=json'
 
 
 def _UseGoloMirror():

@@ -15,7 +15,6 @@ import os
 import pickle
 import sys
 import time
-import urllib
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
@@ -26,7 +25,6 @@ from chromite.buildbot import validation_pool
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gerrit
-from chromite.lib import git
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
 
@@ -73,7 +71,7 @@ class base(cros_test_lib.MoxTestCase):
   def setUp(self):
     self.mox.StubOutWithMock(validation_pool, '_RunCommand')
     self.mox.StubOutWithMock(time, 'sleep')
-    self.mox.StubOutWithMock(validation_pool.ValidationPool, '_IsTreeOpen')
+    self.mox.StubOutWithMock(cros_build_lib, 'TreeOpen')
     # Supress all gerrit access; having this occur is generally a sign
     # the code is either misbehaving, or the tests are bad.
     self.mox.StubOutWithMock(gerrit.GerritHelper, 'Query')
@@ -665,7 +663,9 @@ class TestCoreLogic(base):
         cros_build_lib.RunCommandError('blah', None))
     pool._HandleCouldNotSubmit(patch3).InAnyOrder().AndReturn(None)
 
-    pool._IsTreeOpen().AndReturn(True)
+    cros_build_lib.TreeOpen(
+        validation_pool.ValidationPool.STATUS_URL,
+        validation_pool.ValidationPool.SLEEP_TIMEOUT).AndReturn(True)
 
     self.mox.ReplayAll()
     self.assertRaises(validation_pool.FailedToSubmitAllChangesException,
@@ -692,7 +692,9 @@ class TestCoreLogic(base):
 
     pool._HandleApplyFailure(failed)
 
-    pool._IsTreeOpen().AndReturn(True)
+    cros_build_lib.TreeOpen(
+        validation_pool.ValidationPool.STATUS_URL,
+        validation_pool.ValidationPool.SLEEP_TIMEOUT).AndReturn(True)
 
     self.mox.ReplayAll()
     pool.SubmitPool()
@@ -717,7 +719,9 @@ class TestCoreLogic(base):
     gerrit.GerritHelper.IsChangeCommitted(
         str(patch2.gerrit_number), False).AndReturn(True)
 
-    pool._IsTreeOpen().AndReturn(True)
+    cros_build_lib.TreeOpen(
+        validation_pool.ValidationPool.STATUS_URL,
+        validation_pool.ValidationPool.SLEEP_TIMEOUT).AndReturn(True)
 
     self.mox.ReplayAll()
     pool.SubmitNonManifestChanges()
@@ -819,89 +823,6 @@ class TestCoreLogic(base):
 
     compare(results[0], allowed_patches)
     compare(results[1], filtered_patches)
-
-
-# pylint: disable=W0212,R0904
-class TestTreeStatus(cros_test_lib.MoxTestCase):
-  """Tests methods in validation_pool.ValidationPool."""
-
-  def setUp(self):
-    self.mox.StubOutWithMock(validation_pool, '_RunCommand')
-    self.mox.StubOutWithMock(time, 'sleep')
-
-  def _TreeStatusFile(self, message, general_state):
-    """Returns a file-like object with the status message writtin in it."""
-    my_response = self.mox.CreateMockAnything()
-    my_response.json = '{"message": "%s", "general_state": "%s"}' % (
-        message, general_state)
-    return my_response
-
-  @cros_build_lib.TimeoutDecorator(3)
-  def _TreeStatusTestHelper(self, tree_status, general_state, expected_return,
-                            retries_500=0, max_timeout=0):
-    """Tests whether we return the correct value based on tree_status."""
-    return_status = self._TreeStatusFile(tree_status, general_state)
-    self.mox.StubOutWithMock(urllib, 'urlopen')
-    status_url = 'https://chromiumos-status.appspot.com/current?format=json'
-    backoff = 1
-    for _attempt in range(retries_500):
-      urllib.urlopen(status_url).AndReturn(return_status)
-      return_status.getcode().AndReturn(500)
-      time.sleep(backoff)
-      backoff *= 2
-
-    urllib.urlopen(status_url).MultipleTimes().AndReturn(return_status)
-    if expected_return == False:
-      self.mox.StubOutWithMock(time, 'time')
-      time.time().AndReturn(1)
-      time.time().AndReturn(1)
-      sleep_timeout = min(max(max_timeout / 5, 1), 30)
-      x = 0
-      while x < max_timeout:
-        time.time().AndReturn(x + 1)
-        x += sleep_timeout
-      time.time().AndReturn(max_timeout + 1)
-      time.sleep(mox.IgnoreArg()).MultipleTimes()
-
-    return_status.getcode().MultipleTimes().AndReturn(200)
-    return_status.read().MultipleTimes().AndReturn(return_status.json)
-    self.mox.ReplayAll()
-    self.assertEqual(validation_pool.ValidationPool._IsTreeOpen(max_timeout),
-                     expected_return)
-    self.mox.VerifyAll()
-
-  def testTreeIsOpen(self):
-    """Tests that we return True is the tree is open."""
-    self._TreeStatusTestHelper('Tree is open (flaky bug on flaky builder)',
-                               'open', True)
-
-  def testTreeIsOpenAlwaysOnBranches(self):
-    """Tests that we return True is the tree is open."""
-    self.mox.StubOutWithMock(git, 'GetChromiteTrackingBranch')
-    git.GetChromiteTrackingBranch().AndReturn('release-ooga-booga')
-    self.mox.ReplayAll()
-    self.assertTrue(validation_pool.ValidationPool._IsTreeOpen(max_timeout=10))
-
-  def testTreeIsClosed(self):
-    """Tests that we return false is the tree is closed."""
-    self._TreeStatusTestHelper('Tree is closed (working on a patch)', 'closed',
-                               False, max_timeout=5)
-
-  def testTreeIsOpenWithTimeout(self):
-    """Tests that we return True even if we get some failures."""
-    self._TreeStatusTestHelper('Tree is open (flaky test)', 'open',
-                               True, retries_500=2)
-
-  def testTreeIsThrottled(self):
-    """Tests that we return false is the tree is throttled."""
-    self._TreeStatusTestHelper('Tree is throttled (waiting to cycle)',
-                               'throttled', True)
-
-  def testTreeStatusWithNetworkFailures(self):
-    """Checks for non-500 errors.."""
-    self._TreeStatusTestHelper('Tree is open (flaky bug on flaky builder)',
-                               'open', True, retries_500=2)
-
 
 
 class TestPickling(cros_test_lib.TempDirTestCase):

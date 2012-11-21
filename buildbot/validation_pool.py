@@ -9,7 +9,6 @@ ready for the commit queue to try.
 """
 
 import contextlib
-import json
 import logging
 import sys
 import time
@@ -808,6 +807,7 @@ class ValidationPool(object):
   GLOBAL_DRYRUN = False
   MAX_TIMEOUT = 60 * 60 * 4
   SLEEP_TIMEOUT = 30
+  STATUS_URL = 'https://chromiumos-status.appspot.com/current?format=json'
 
   # The grace period (in seconds) before we reject a patch due to dependency
   # errors.
@@ -930,68 +930,6 @@ class ValidationPool(object):
             self.changes_that_failed_to_apply_earlier))
 
   @classmethod
-  def _IsTreeOpen(cls, max_timeout=600):
-    """Returns True if the tree is open or throttled.
-
-    At the highest level this function checks to see if the Tree is Open.
-    However, it also does a robustified wait as the server hosting the tree
-    status page is known to be somewhat flaky and these errors can be handled
-    with multiple retries.  In addition, it waits around for the Tree to Open
-    based on |max_timeout| to give a greater chance of returning True as it
-    expects callees to want to do some operation based on a True value.
-    If a caller is not interested in this feature they should set |max_timeout|
-    to 0.
-    """
-    if git.GetChromiteTrackingBranch() != 'master':
-      cros_build_lib.Info('Not checking tree status as not tracking master.')
-      return True
-
-    # Limit sleep interval to the set of 1-30
-    sleep_timeout = min(max(max_timeout / 5, 1), cls.SLEEP_TIMEOUT)
-
-    def _SleepWithExponentialBackOff(current_sleep):
-      """Helper function to sleep with exponential backoff."""
-      time.sleep(current_sleep)
-      return current_sleep * 2
-
-    def _CanSubmit(status_url):
-      """Returns the JSON dictionary response from the status url."""
-      max_attempts = 5
-      current_sleep = 1
-      for _ in range(max_attempts):
-        try:
-          # Check for successful response code.
-          response = urllib.urlopen(status_url)
-          if response.getcode() == 200:
-            data = json.load(response)
-            return data['general_state'] in ('open', 'throttled')
-
-        # We remain robust against IOError's and retry.
-        except IOError:
-          pass
-
-        current_sleep = _SleepWithExponentialBackOff(current_sleep)
-      else:
-        # We go ahead and say the tree is open if we can't get the status.
-        logging.warn('Could not get a status from %s', status_url)
-        return True
-
-    # Check before looping with timeout.
-    status_url = 'https://chromiumos-status.appspot.com/current?format=json'
-    start_time = time.time()
-
-    if _CanSubmit(status_url):
-      return True
-    # Loop until either we run out of time or the tree is open.
-    logging.info('Waiting for the tree to open...')
-    while time.time() - start_time < max_timeout:
-      if _CanSubmit(status_url):
-        return True
-      time.sleep(sleep_timeout)
-
-    return False
-
-  @classmethod
   def AcquirePool(cls, overlays, build_root, build_number, builder_name,
                   dryrun=False, changes_query=None):
     """Acquires the current pool from Gerrit.
@@ -1021,7 +959,8 @@ class ValidationPool(object):
     end_time = time.time() + cls.MAX_TIMEOUT
     while True:
       time_left = end_time - time.time()
-      if not dryrun and not cls._IsTreeOpen(max_timeout=time_left):
+      if not dryrun and not cros_build_lib.TreeOpen(
+          cls.STATUS_URL, cls.SLEEP_TIMEOUT, max_timeout=time_left):
         raise TreeIsClosedException()
 
       # Only master configurations should call this method.
@@ -1246,7 +1185,8 @@ class ValidationPool(object):
     # We use the default timeout here as while we want some robustness against
     # the tree status being red i.e. flakiness, we don't want to wait too long
     # as validation can become stale.
-    if not self.dryrun and not self._IsTreeOpen():
+    if not self.dryrun and not cros_build_lib.TreeOpen(
+        self.STATUS_URL, self.SLEEP_TIMEOUT):
       raise TreeIsClosedException()
 
     for change in changes:

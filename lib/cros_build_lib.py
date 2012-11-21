@@ -4,8 +4,11 @@
 
 """Common python commands used by various build scripts."""
 
+import contextlib
 from datetime import datetime
 import errno
+import functools
+import json
 import logging
 import os
 import re
@@ -15,8 +18,7 @@ import subprocess
 import sys
 import tempfile
 import time
-import functools
-import contextlib
+import urllib
 
 # TODO(build): Fix this.
 # This should be absolute import, but that requires fixing all
@@ -24,8 +26,8 @@ import contextlib
 _path = os.path.realpath(__file__)
 _path = os.path.normpath(os.path.join(os.path.dirname(_path), '..', '..'))
 sys.path.insert(0, _path)
-from chromite.lib import signals
 from chromite.buildbot import constants
+from chromite.lib import signals
 # Now restore it so that relative scripts don't get cranky.
 sys.path.pop(0)
 del _path
@@ -1291,3 +1293,68 @@ def PredicateSplit(func, iterable):
   for x in iterable:
     (trues if func(x) else falses).append(x)
   return trues, falses
+
+
+def TreeOpen(status_url, sleep_timeout, max_timeout=600):
+  """Returns True if the tree is open or throttled.
+
+  At the highest level this function checks to see if the Tree is Open.
+  However, it also does a robustified wait as the server hosting the tree
+  status page is known to be somewhat flaky and these errors can be handled
+  with multiple retries.  In addition, it waits around for the Tree to Open
+  based on |max_timeout| to give a greater chance of returning True as it
+  expects callees to want to do some operation based on a True value.
+  If a caller is not interested in this feature they should set |max_timeout|
+  to 0.
+
+  Args:
+    status_url: The status url to check i.e.
+      'https://status.appspot.com/current?format=json'
+    sleep_timeout: How long to sleep when periodically polling for tree open
+      status.
+    max_timeout: The max length to wait for the tree to open.
+  """
+  # Limit sleep interval to max_timeout if set.
+  if max_timeout > 0:
+    sleep_timeout = min(max_timeout, sleep_timeout)
+
+  def _SleepWithExponentialBackOff(current_sleep):
+    """Helper function to sleep with exponential backoff."""
+    time.sleep(current_sleep)
+    return current_sleep * 2
+
+  def _CanSubmit(status_url):
+    """Returns the JSON dictionary response from the status url."""
+    max_attempts = 5
+    current_sleep = 1
+    for _ in range(max_attempts):
+      try:
+        # Check for successful response code.
+        response = urllib.urlopen(status_url)
+        if response.getcode() == 200:
+          data = json.load(response)
+          return data['general_state'] in ('open', 'throttled')
+
+      # We remain robust against IOError's and retry.
+      except IOError as e:
+        logging.error('Could not reach %s: %r', status_url, e)
+
+      current_sleep = _SleepWithExponentialBackOff(current_sleep)
+    else:
+      # We go ahead and say the tree is open if we can't get the status.
+      Warning('Could not get a status from %s', status_url)
+      return True
+
+  # Check before looping with timeout.
+  start_time = time.time()
+
+  if _CanSubmit(status_url):
+    return True
+  # Loop until either we run out of time or the tree is open.
+  Info('Waiting for the tree to open...')
+  while time.time() - start_time < max_timeout:
+    if _CanSubmit(status_url):
+      return True
+    time.sleep(sleep_timeout)
+
+  return False

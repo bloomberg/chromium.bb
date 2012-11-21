@@ -16,6 +16,7 @@ import logging
 import mox
 import signal
 import time
+import urllib
 import __builtin__
 
 from chromite.buildbot import constants
@@ -757,7 +758,7 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
     # Initialize a repo intance here.
     # TODO(vapier, ferringb):  mangle this so it inits from a local
     # checkout if one is available, same for the git-repo fetch.
-    cmd = ['repo', 'init', '-u', constants.MANIFEST_URL,]
+    cmd = ['repo', 'init', '-u', constants.MANIFEST_URL]
     cros_build_lib.RunCommandCaptureOutput(cmd, cwd=self.tempdir, input='')
     self.active_manifest = os.path.realpath(
         os.path.join(self.tempdir, '.repo', 'manifest.xml'))
@@ -865,6 +866,80 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
 
     branches = git.MatchBranchName(git_repo, 'r23')
     self.assertEqual(branches, ['refs/remotes/origin/release-R23-2913.B'])
+
+
+# pylint: disable=W0212,R0904
+class TestTreeStatus(cros_test_lib.MoxTestCase):
+  """Tests TreeStatus method in cros_build_lib."""
+
+  def setUp(self):
+    self.mox.StubOutWithMock(time, 'sleep')
+
+  def _TreeStatusFile(self, message, general_state):
+    """Returns a file-like object with the status message writtin in it."""
+    my_response = self.mox.CreateMockAnything()
+    my_response.json = '{"message": "%s", "general_state": "%s"}' % (
+        message, general_state)
+    return my_response
+
+  @cros_build_lib.TimeoutDecorator(3)
+  def _TreeStatusTestHelper(self, tree_status, general_state, expected_return,
+                            retries_500=0, max_timeout=0):
+    """Tests whether we return the correct value based on tree_status."""
+    return_status = self._TreeStatusFile(tree_status, general_state)
+    self.mox.StubOutWithMock(urllib, 'urlopen')
+    status_url = 'https://chromiumos-status.appspot.com/current?format=json'
+    backoff = 1
+    sleep_timeout = 1
+    for _attempt in range(retries_500):
+      urllib.urlopen(status_url).AndReturn(return_status)
+      return_status.getcode().AndReturn(500)
+      time.sleep(backoff)
+      backoff *= 2
+
+    urllib.urlopen(status_url).MultipleTimes().AndReturn(return_status)
+    if expected_return == False:
+      self.mox.StubOutWithMock(time, 'time')
+      start_time = 1
+      # Time is checked twice to bootstrap.
+      time.time().AndReturn(start_time)
+      time.time().AndReturn(start_time)
+      for time_plus in range(1, max_timeout + 1):
+        time.time().AndReturn(start_time + time_plus)
+
+      time.sleep(sleep_timeout).MultipleTimes()
+
+    return_status.getcode().MultipleTimes().AndReturn(200)
+    return_status.read().MultipleTimes().AndReturn(return_status.json)
+    self.mox.ReplayAll()
+    self.assertEqual(cros_build_lib.TreeOpen(status_url, sleep_timeout,
+                                             max_timeout), expected_return)
+    self.mox.VerifyAll()
+
+  def testTreeIsOpen(self):
+    """Tests that we return True is the tree is open."""
+    self._TreeStatusTestHelper('Tree is open (flaky bug on flaky builder)',
+                               'open', True)
+
+  def testTreeIsClosed(self):
+    """Tests that we return false is the tree is closed."""
+    self._TreeStatusTestHelper('Tree is closed (working on a patch)', 'closed',
+                               False, max_timeout=5)
+
+  def testTreeIsOpenWithTimeout(self):
+    """Tests that we return True even if we get some failures."""
+    self._TreeStatusTestHelper('Tree is open (flaky test)', 'open',
+                               True, retries_500=2)
+
+  def testTreeIsThrottled(self):
+    """Tests that we return false is the tree is throttled."""
+    self._TreeStatusTestHelper('Tree is throttled (waiting to cycle)',
+                               'throttled', True)
+
+  def testTreeStatusWithNetworkFailures(self):
+    """Checks for non-500 errors.."""
+    self._TreeStatusTestHelper('Tree is open (flaky bug on flaky builder)',
+                               'open', True, retries_500=2)
 
 
 class Test_iflatten_instance(cros_test_lib.TestCase):
