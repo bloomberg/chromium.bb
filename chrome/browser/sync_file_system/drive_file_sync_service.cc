@@ -550,4 +550,21 @@ void DriveFileSyncService::AppendNewRemoteChange(
       inserted_to_queue.first);
 }
 
+void DriveFileSyncService::CancelRemoteChange(
+    const fileapi::FileSystemURL& url) {
+  URLToChange::iterator found_origin = url_to_change_.find(url.origin());
+  if (found_origin == url_to_change_.end())
+    return;
+
+  PathToChange* path_to_change = &found_origin->second;
+  PathToChange::iterator found_change = path_to_change->find(url.path());
+  if (found_change == path_to_change->end())
+    return;
+
+  pending_changes_.erase(found_change->second.position_in_queue);
+  path_to_change->erase(found_change);
+  if (path_to_change->empty())
+    url_to_change_.erase(found_origin);
+}
+
 }  // namespace sync_file_system

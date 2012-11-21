@@ -181,6 +181,7 @@ class DriveFileSyncService
   void AppendNewRemoteChange(const GURL& origin,
                              google_apis::DocumentEntry* entry,
                              int64 changestamp);
+  void CancelRemoteChange(const fileapi::FileSystemURL& url);
 
   scoped_ptr<DriveMetadataStore> metadata_store_;
   scoped_ptr<DriveFileSyncClient> sync_client_;
