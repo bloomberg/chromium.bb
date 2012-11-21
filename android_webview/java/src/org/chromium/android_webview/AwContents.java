@@ -639,14 +639,10 @@ public class AwContents {
      * @return False if saving state failed.
      */
     public boolean saveState(Bundle outState) {
-        if (outState == null) {
-            return false;
-        }
+        if (outState == null) return false;
 
         byte[] state = nativeGetOpaqueState(mNativeAwContents);
-        if (state == null) {
-            return false;
-        }
+        if (state == null) return false;
 
         outState.putByteArray(SAVE_RESTORE_STATE_KEY, state);
         return true;
@@ -658,14 +654,10 @@ public class AwContents {
      * @return False if restoring state failed.
      */
     public boolean restoreState(Bundle inState) {
-        if (inState == null) {
-            return false;
-        }
+        if (inState == null) return false;
 
         byte[] state = inState.getByteArray(SAVE_RESTORE_STATE_KEY);
-        if (state == null) {
-            return false;
-        }
+        if (state == null) return false;
 
         return nativeRestoreFromOpaqueState(mNativeAwContents, state);
     }

@@ -461,6 +461,11 @@ void AwContents::OnDetachedFromWindow(JNIEnv* env, jobject obj) {
 
 base::android::ScopedJavaLocalRef<jbyteArray>
 AwContents::GetOpaqueState(JNIEnv* env, jobject obj) {
+  // Required optimization in WebViewClassic to not save any state if
+  // there has been no navigations.
+  if (!web_contents_->GetController().GetEntryCount())
+    return ScopedJavaLocalRef<jbyteArray>();
+
   Pickle pickle;
   if (!WriteToPickle(*web_contents_, &pickle)) {
     return ScopedJavaLocalRef<jbyteArray>();

@@ -157,10 +157,28 @@ public class SaveRestoreStateTest extends AndroidWebViewTestBase {
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testRestoreFromInvalidStateFails() throws Throwable {
-        Bundle invalidState = new Bundle();
+        final Bundle invalidState = new Bundle();
         invalidState.putByteArray(AwContents.SAVE_RESTORE_STATE_KEY,
                                   "invalid state".getBytes());
-        boolean result = mVars.awContents.restoreState(invalidState);
+        boolean result = runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return mVars.awContents.restoreState(invalidState);
+            }
+        });
+        assertFalse(result);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testSaveStateForNoNavigationFails() throws Throwable {
+        final Bundle state = new Bundle();
+        boolean result = runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return mVars.awContents.restoreState(state);
+            }
+        });
         assertFalse(result);
     }
 }
