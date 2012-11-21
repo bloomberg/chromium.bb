@@ -14907,7 +14907,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Create
     </message>
     <message name="IDS_PROFILES_CREATE_SHORTCUT_CHKBOX" desc="Create Shortcut Checkbox">
-      Create desktop shortcut for this profile
+      Create desktop shortcut for this user
     </message>
 
     <!-- Tracing about page strings -->
