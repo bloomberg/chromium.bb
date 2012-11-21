@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/google_apis/gdata_wapi_url_util.h"
+#include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 
 #include "base/logging.h"
 #include "base/stringprintf.h"
@@ -52,12 +52,12 @@ const char kGetChangesListURL[] = "/feeds/default/private/changes";
 
 }  // namespace
 
-namespace gdata_wapi_url_util {
+const char GDataWapiUrlGenerator::kBaseUrlForProduction[] =
+    "https://docs.google.com/";
+const char GDataWapiUrlGenerator::kBaseUrlForTesting[] = "http://127.0.0.1/";
 
-const char kBaseUrlForProduction[] = "https://docs.google.com/";
-const char kBaseUrlForTesting[] = "http://127.0.0.1/";
-
-GURL AddStandardUrlParams(const GURL& url) {
+// static
+GURL GDataWapiUrlGenerator::AddStandardUrlParams(const GURL& url) {
   GURL result =
       chrome_common_net::AppendOrReplaceQueryParameter(url, "v", "3");
   result =
@@ -65,17 +65,20 @@ GURL AddStandardUrlParams(const GURL& url) {
   return result;
 }
 
-GURL AddMetadataUrlParams(const GURL& url) {
+// static
+GURL GDataWapiUrlGenerator::AddMetadataUrlParams(const GURL& url) {
   GURL result = AddStandardUrlParams(url);
   result = chrome_common_net::AppendOrReplaceQueryParameter(
       result, "include-installed-apps", "true");
   return result;
 }
 
-GURL AddFeedUrlParams(const GURL& url,
-                      int num_items_to_fetch,
-                      int changestamp,
-                      const std::string& search_string) {
+// static
+GURL GDataWapiUrlGenerator::AddFeedUrlParams(
+    const GURL& url,
+    int num_items_to_fetch,
+    int changestamp,
+    const std::string& search_string) {
   GURL result = AddStandardUrlParams(url);
   result = chrome_common_net::AppendOrReplaceQueryParameter(
       result,
@@ -101,12 +104,6 @@ GURL AddFeedUrlParams(const GURL& url,
   }
   return result;
 }
-
-}  // namespace gdata_wapi_url_util
-
-
-// TODO(satorux): Move the following code to a separate file
-// gdata_wapi_url_generator.cc
 
 GDataWapiUrlGenerator::GDataWapiUrlGenerator(const GURL& base_url)
     : base_url_(GURL(base_url)) {
@@ -142,8 +139,7 @@ GURL GDataWapiUrlGenerator::GenerateDocumentListUrl(
   } else {
     url = base_url_.Resolve(kGetDocumentListURLForAllDocuments);
   }
-  return gdata_wapi_url_util::AddFeedUrlParams(
-      url, max_docs, start_changestamp, search_string);
+  return AddFeedUrlParams(url, max_docs, start_changestamp, search_string);
 }
 
 GURL GDataWapiUrlGenerator::GenerateDocumentEntryUrl(
@@ -151,17 +147,15 @@ GURL GDataWapiUrlGenerator::GenerateDocumentEntryUrl(
   GURL result = base_url_.Resolve(
       base::StringPrintf(kGetDocumentEntryURLFormat,
                          net::EscapePath(resource_id).c_str()));
-  return gdata_wapi_url_util::AddStandardUrlParams(result);
+  return AddStandardUrlParams(result);
 }
 
 GURL GDataWapiUrlGenerator::GenerateDocumentListRootUrl() const {
-  return gdata_wapi_url_util::AddStandardUrlParams(
-      base_url_.Resolve(kDocumentListRootURL));
+  return AddStandardUrlParams(base_url_.Resolve(kDocumentListRootURL));
 }
 
 GURL GDataWapiUrlGenerator::GenerateAccountMetadataUrl() const {
-  return gdata_wapi_url_util::AddMetadataUrlParams(
-      base_url_.Resolve(kAccountMetadataURL));
+  return AddMetadataUrlParams(base_url_.Resolve(kAccountMetadataURL));
 }
 
 }  // namespace google_apis

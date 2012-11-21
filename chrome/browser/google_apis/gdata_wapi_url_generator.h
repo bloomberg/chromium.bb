@@ -4,49 +4,44 @@
 //
 // URL utility functions for Google Documents List API (aka WAPI).
 
-#ifndef CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_URL_UTIL_H_
-#define CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_URL_UTIL_H_
+#ifndef CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_URL_GENERATOR_H_
+#define CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_URL_GENERATOR_H_
 
 #include <string>
 
 #include "googleurl/src/gurl.h"
 
 namespace google_apis {
-namespace gdata_wapi_url_util {
 
-// The base URL for communicating with the WAPI server for production.
-extern const char kBaseUrlForProduction[];
-
-// The base URL for communicating with the local test server for testing.
-extern const char kBaseUrlForTesting[];
-
-// Adds additional parameters for API version, output content type and to show
-// folders in the feed are added to document feed URLs.
-GURL AddStandardUrlParams(const GURL& url);
-
-// Adds additional parameters to metadata feed to include installed 3rd party
-// applications.
-GURL AddMetadataUrlParams(const GURL& url);
-
-// Adds additional parameters for API version, output content type and to show
-// folders in the feed are added to document feed URLs.
-// Optionally, adds start-index=... parameter if |changestamp| is non-zero,
-// and adds q=... parameter if |search_string| is non-empty.
-GURL AddFeedUrlParams(const GURL& url,
-                      int num_items_to_fetch,
-                      int changestamp,
-                      const std::string& search_string);
-
-}  // namespace gdata_wapi_url_util
-
-// TODO(satorux): Move the class to a separate file gdata_wapi_url_generator.h.
-//
 // The class is used to generate URLs for communicating with the WAPI server.
 // for production, and the local server for testing.
 class GDataWapiUrlGenerator {
  public:
   explicit GDataWapiUrlGenerator(const GURL& base_url);
   ~GDataWapiUrlGenerator();
+
+  // The base URL for communicating with the WAPI server for production.
+  static const char kBaseUrlForProduction[];
+
+  // The base URL for communicating with the local test server for testing.
+  static const char kBaseUrlForTesting[];
+
+  // Adds additional parameters for API version, output content type and to
+  // show folders in the feed are added to document feed URLs.
+  static GURL AddStandardUrlParams(const GURL& url);
+
+  // Adds additional parameters to metadata feed to include installed 3rd
+  // party applications.
+  static GURL AddMetadataUrlParams(const GURL& url);
+
+  // Adds additional parameters for API version, output content type and to
+  // show folders in the feed are added to document feed URLs.
+  // Optionally, adds start-index=... parameter if |changestamp| is non-zero,
+  // and adds q=... parameter if |search_string| is non-empty.
+  static GURL AddFeedUrlParams(const GURL& url,
+                               int num_items_to_fetch,
+                               int changestamp,
+                               const std::string& search_string);
 
   // Generates a URL for getting the documents list feed.
   //
@@ -95,4 +90,4 @@ class GDataWapiUrlGenerator {
 
 }  // namespace google_apis
 
-#endif  // CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_URL_UTIL_H_
+#endif  // CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_URL_GENERATOR_H_

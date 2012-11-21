@@ -13,7 +13,7 @@
 #include "chrome/browser/google_apis/auth_service_observer.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/gdata_wapi_operations.h"
-#include "chrome/browser/google_apis/gdata_wapi_url_util.h"
+#include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 
 class FilePath;
 class GURL;

@@ -8,7 +8,7 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
-#include "chrome/browser/google_apis/gdata_wapi_url_util.h"
+#include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "chrome/common/net/url_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -236,7 +236,7 @@ DeleteDocumentOperation::DeleteDocumentOperation(
 DeleteDocumentOperation::~DeleteDocumentOperation() {}
 
 GURL DeleteDocumentOperation::GetURL() const {
-  return gdata_wapi_url_util::AddStandardUrlParams(document_url());
+  return GDataWapiUrlGenerator::AddStandardUrlParams(document_url());
 }
 
 URLFetcher::RequestType DeleteDocumentOperation::GetRequestType() const {
@@ -268,7 +268,7 @@ CreateDirectoryOperation::~CreateDirectoryOperation() {}
 
 GURL CreateDirectoryOperation::GetURL() const {
   if (!parent_content_url_.is_empty())
-    return gdata_wapi_url_util::AddStandardUrlParams(parent_content_url_);
+    return GDataWapiUrlGenerator::AddStandardUrlParams(parent_content_url_);
 
   return url_generator_.GenerateDocumentListRootUrl();
 }
@@ -371,7 +371,7 @@ RenameResourceOperation::GetExtraRequestHeaders() const {
 }
 
 GURL RenameResourceOperation::GetURL() const {
-  return gdata_wapi_url_util::AddStandardUrlParams(document_url());
+  return GDataWapiUrlGenerator::AddStandardUrlParams(document_url());
 }
 
 bool RenameResourceOperation::GetContentData(std::string* upload_content_type,
@@ -498,7 +498,7 @@ AddResourceToDirectoryOperation::~AddResourceToDirectoryOperation() {}
 
 GURL AddResourceToDirectoryOperation::GetURL() const {
   if (!parent_content_url_.is_empty())
-    return gdata_wapi_url_util::AddStandardUrlParams(parent_content_url_);
+    return GDataWapiUrlGenerator::AddStandardUrlParams(parent_content_url_);
 
   return url_generator_.GenerateDocumentListRootUrl();
 }
@@ -547,7 +547,7 @@ GURL RemoveResourceFromDirectoryOperation::GetURL() const {
   GURL edit_url(base::StringPrintf("%s/%s",
                                    parent_content_url_.spec().c_str(),
                                    escaped_resource_id.c_str()));
-  return gdata_wapi_url_util::AddStandardUrlParams(edit_url);
+  return GDataWapiUrlGenerator::AddStandardUrlParams(edit_url);
 }
 
 URLFetcher::RequestType

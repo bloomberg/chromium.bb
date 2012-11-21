@@ -10,7 +10,7 @@
 
 #include "chrome/browser/google_apis/base_operations.h"
 #include "chrome/browser/google_apis/drive_upload_mode.h"
-#include "chrome/browser/google_apis/gdata_wapi_url_util.h"
+#include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "net/base/io_buffer.h"
 
 namespace google_apis {

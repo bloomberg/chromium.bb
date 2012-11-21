@@ -11,7 +11,7 @@
 #include "base/message_loop_proxy.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_operations.h"
-#include "chrome/browser/google_apis/gdata_wapi_url_util.h"
+#include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/google_apis/operation_runner.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "chrome/common/net/url_util.h"
@@ -69,7 +69,7 @@ const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
 GDataWapiService::GDataWapiService()
     : runner_(NULL),
       // TODO(satorux): The base URL should be injected.
-      url_generator_(GURL(gdata_wapi_url_util::kBaseUrlForProduction)) {
+      url_generator_(GURL(GDataWapiUrlGenerator::kBaseUrlForProduction)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
