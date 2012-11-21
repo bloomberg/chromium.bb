@@ -11,6 +11,7 @@
 
 namespace gfx {
 class Canvas;
+class Path;
 class Size;
 }
 
@@ -24,6 +25,9 @@ class VIEWS_EXPORT RoundRectPainter : public Painter {
 
   // Painter overrides:
   virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE;
+
+  // Creates |path| for the same rectangle Paint() will draw.
+  static void CreateRoundRectPath(const gfx::Rect& bounds, gfx::Path* path);
 
  private:
   const SkColor border_color_;

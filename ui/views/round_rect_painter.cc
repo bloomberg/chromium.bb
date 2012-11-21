@@ -5,6 +5,7 @@
 #include "ui/views/round_rect_painter.h"
 
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 
 namespace views {
@@ -30,6 +31,17 @@ void RoundRectPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
   skia_rect.offset(.5, .5);
   canvas->sk_canvas()->drawRoundRect(skia_rect, SkIntToScalar(kRadius),
       SkIntToScalar(kRadius), paint);
+}
+
+// static
+void RoundRectPainter::CreateRoundRectPath(const gfx::Rect& bounds,
+                                           gfx::Path* path) {
+  SkRect rect = SkRect::MakeWH(SkIntToScalar(bounds.width()),
+                               SkIntToScalar(bounds.height()));
+  SkScalar radius = SkIntToScalar(kRadius);
+  SkScalar radii[8] = {radius, radius, radius, radius,
+                       radius, radius, radius, radius};
+  path->addRoundRect(rect, radii);
 }
 
 }  // namespace views

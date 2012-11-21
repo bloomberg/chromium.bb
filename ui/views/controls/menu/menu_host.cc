@@ -4,10 +4,13 @@
 
 #include "ui/views/controls/menu/menu_host.h"
 
+#include "ui/gfx/path.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_host_root_view.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
+#include "ui/views/round_rect_painter.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
 
@@ -34,6 +37,14 @@ void MenuHost::InitMenuHost(Widget* parent,
   params.parent_widget = parent;
   params.bounds = bounds;
   Init(params);
+
+  if (ui::NativeTheme::IsNewMenuStyleEnabled()) {
+    // TODO(yefim): Investigate it more on aura.
+    gfx::Path path;
+    RoundRectPainter::CreateRoundRectPath(bounds, &path);
+    SetShape(path.CreateNativeRegion());
+  }
+
   SetContentsView(contents_view);
   ShowMenuHost(do_capture);
 }
