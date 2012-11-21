@@ -23,6 +23,7 @@
 #include "chrome/browser/google_apis/drive_api_util.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_wapi_service.h"
+#include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
@@ -365,10 +366,12 @@ ProfileKeyedService* DriveSystemServiceFactory::BuildServiceInstanceFor(
   google_apis::DriveServiceInterface* drive_service = g_test_drive_service;
   g_test_drive_service = NULL;
   if (!drive_service) {
-    if (google_apis::util::IsDriveV2ApiEnabled())
+    if (google_apis::util::IsDriveV2ApiEnabled()) {
       drive_service = new DriveAPIService();
-    else
-      drive_service = new google_apis::GDataWapiService();
+    } else {
+      drive_service = new google_apis::GDataWapiService(
+          GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction));
+    }
   }
 
   FilePath cache_root =

@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_wapi_service.h"
+#include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
 
@@ -63,7 +64,8 @@ google_apis::DocumentEntry* GetDocumentByTitleAndParent(
 }  // namespace
 
 DriveFileSyncClient::DriveFileSyncClient(Profile* profile) {
-  drive_service_.reset(new google_apis::GDataWapiService);
+  drive_service_.reset(new google_apis::GDataWapiService(
+      GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction)));
   drive_service_->Initialize(profile);
 
   drive_uploader_.reset(new google_apis::DriveUploader(drive_service_.get()));

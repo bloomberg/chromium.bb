@@ -66,10 +66,9 @@ const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
 
 }  // namespace
 
-GDataWapiService::GDataWapiService()
+GDataWapiService::GDataWapiService(const GURL& base_url)
     : runner_(NULL),
-      // TODO(satorux): The base URL should be injected.
-      url_generator_(GURL(GDataWapiUrlGenerator::kBaseUrlForProduction)) {
+      url_generator_(base_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 

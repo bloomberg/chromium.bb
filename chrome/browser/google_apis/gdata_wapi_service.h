@@ -33,7 +33,10 @@ class GDataWapiService : public DriveServiceInterface,
  public:
   // Instance is usually created by DriveSystemServiceFactory and owned by
   // DriveFileSystem.
-  GDataWapiService();
+  //
+  // |base_url| is used to generate URLs for communicating with the WAPI
+  // |server. See gdata_wapi_url_generator.h for details.
+  explicit GDataWapiService(const GURL& base_url);
   virtual ~GDataWapiService();
 
   AuthService* auth_service_for_testing();
