@@ -171,21 +171,9 @@ SyncerError ProcessCommitResponseCommand::ProcessCommitResponse(
     // to resolve the conflict.  That's not what this client does.
     //
     // We don't currently have any code to support that exceptional control
-    // flow.  We don't intend to add any because this response code will be
-    // deprecated soon.  Instead, we handle this in the same way that we handle
-    // transient errors.  We abort the current sync cycle, wait a little while,
-    // then try again.  The retry sync cycle will attempt to download updates
-    // which should be sufficient to trigger client-side conflict resolution.
-    //
-    // Not treating this as an error would be dangerous.  There's a risk that
-    // the commit loop would loop indefinitely.  The loop won't exit until the
-    // number of unsynced items hits zero or an error is detected.  If we're
-    // constantly receiving conflict responses and we don't treat them as
-    // errors, there would be no reason to leave that loop.
-    //
-    // TODO: Remove this option when the CONFLICT return value is fully
-    // deprecated.
-    return SERVER_RETURN_TRANSIENT_ERROR;
+    // flow.  Instead, we abort the current sync cycle and start a new one.  The
+    // end result is the same.
+    return SERVER_RETURN_CONFLICT;
   } else {
     LOG(FATAL) << "Inconsistent counts when processing commit response";
     return SYNCER_OK;

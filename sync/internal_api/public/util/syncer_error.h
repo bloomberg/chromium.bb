@@ -18,7 +18,6 @@ namespace syncer {
 // it makes refactoring easier.
 enum SyncerError {
   UNSET = 0,       // Default value.
-  DIRECTORY_LOOKUP_FAILED,  // Local directory lookup failure.
   CANNOT_DO_WORK,  // A model worker could not process a work item.
 
   NETWORK_CONNECTION_UNAVAILABLE,  // Connectivity failure.
@@ -36,6 +35,7 @@ enum SyncerError {
   SERVER_RETURN_MIGRATION_DONE,
   SERVER_RETURN_CLEAR_PENDING,
   SERVER_RETURN_NOT_MY_BIRTHDAY,
+  SERVER_RETURN_CONFLICT,
   SERVER_RESPONSE_VALIDATION_FAILED,
 
   SYNCER_OK

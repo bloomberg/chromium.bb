@@ -72,6 +72,10 @@ TEST_F(BackoffDelayProviderTest, GetInitialDelay) {
   state.commit_result = NETWORK_CONNECTION_UNAVAILABLE;
   EXPECT_EQ(kInitialBackoffImmediateRetrySeconds,
             delay->GetInitialDelay(state).InSeconds());
+
+  state.commit_result = SERVER_RETURN_CONFLICT;
+  EXPECT_EQ(kInitialBackoffImmediateRetrySeconds,
+            delay->GetInitialDelay(state).InSeconds());
 }
 
 TEST_F(BackoffDelayProviderTest, GetInitialDelayWithOverride) {
@@ -104,6 +108,10 @@ TEST_F(BackoffDelayProviderTest, GetInitialDelayWithOverride) {
             delay->GetInitialDelay(state).InSeconds());
 
   state.commit_result = SERVER_RETURN_MIGRATION_DONE;
+  EXPECT_EQ(kInitialBackoffImmediateRetrySeconds,
+            delay->GetInitialDelay(state).InSeconds());
+
+  state.commit_result = SERVER_RETURN_CONFLICT;
   EXPECT_EQ(kInitialBackoffImmediateRetrySeconds,
             delay->GetInitialDelay(state).InSeconds());
 }
