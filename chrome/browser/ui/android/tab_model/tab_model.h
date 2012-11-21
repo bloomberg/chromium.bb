@@ -39,6 +39,7 @@ class TabModel {
 
   virtual void OpenClearBrowsingData() const = 0;
   virtual Profile* GetProfile() const = 0;
+  virtual bool IsOffTheRecord() const = 0;
 
   virtual browser_sync::SyncedWindowDelegate* GetSyncedWindowDelegate() = 0;
 

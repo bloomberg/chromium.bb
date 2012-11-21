@@ -34,9 +34,12 @@ void TabModelList::RemoveTabModel(TabModel* tab_model) {
 
 TabModel* TabModelList::GetTabModelWithProfile(
     Profile* profile) {
+  if (!profile)
+    return NULL;
+
   for (TabModelList::const_iterator i = TabModelList::begin();
       i != TabModelList::end(); ++i) {
-    if ((*i)->GetProfile()->IsSameProfile(profile))
+    if (profile->IsSameProfile((*i)->GetProfile()))
       return *i;
   }
 
@@ -57,7 +60,7 @@ TabModel* TabModelList::FindTabModelWithId(
 bool TabModelList::IsOffTheRecordSessionActive() {
   for (TabModelList::const_iterator i = TabModelList::begin();
       i != TabModelList::end(); i++) {
-    if ((*i)->GetProfile()->IsOffTheRecord() && (*i)->GetTabCount() > 0)
+    if ((*i)->IsOffTheRecord() && (*i)->GetTabCount() > 0)
       return true;
   }
 

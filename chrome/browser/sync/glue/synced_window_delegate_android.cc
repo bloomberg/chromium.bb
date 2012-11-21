@@ -44,7 +44,7 @@ SyncedWindowDelegateAndroid::SyncedWindowDelegateAndroid(
 SyncedWindowDelegateAndroid::~SyncedWindowDelegateAndroid() {}
 
 bool SyncedWindowDelegateAndroid::HasWindow() const {
-  return !tab_model_->GetProfile()->IsOffTheRecord();
+  return !tab_model_->IsOffTheRecord();
 }
 
 SessionID::id_type SyncedWindowDelegateAndroid::GetSessionId() const {

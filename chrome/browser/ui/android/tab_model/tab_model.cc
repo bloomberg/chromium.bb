@@ -23,9 +23,12 @@ TabModel::~TabModel() {
 }
 
 void TabModel::BroadcastSessionRestoreComplete() {
-  DCHECK(GetProfile());
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_SESSION_RESTORE_COMPLETE,
-      content::Source<Profile>(GetProfile()),
-      NotificationService::NoDetails());
+  if (GetProfile()) {
+    NotificationService::current()->Notify(
+        chrome::NOTIFICATION_SESSION_RESTORE_COMPLETE,
+        content::Source<Profile>(GetProfile()),
+        NotificationService::NoDetails());
+  } else {
+    NOTREACHED();
+  }
 }
