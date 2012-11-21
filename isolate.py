@@ -1532,7 +1532,8 @@ def CMDhashtable(args):
         isolateserver_archive.upload_sha1_tree(
             base_url=options.outdir,
             indir=complete_state.root_dir,
-            infiles=infiles)
+            infiles=infiles,
+            namespace='default-gzip')
       else:
         recreate_tree(
             outdir=options.outdir,

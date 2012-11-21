@@ -10,9 +10,11 @@ import hashlib
 import logging
 import optparse
 import os
+import cStringIO
 import sys
 import time
 import urllib2
+import zlib
 
 import run_isolated
 
@@ -22,6 +24,13 @@ MAX_UPLOAD_ATTEMPTS = 5
 
 # The minimum size of files to upload directly to the blobstore.
 MIN_SIZE_FOR_DIRECT_BLOBSTORE = 20 * 8
+
+# A list of already compressed extension types that should not receive any
+# compression before being uploaded.
+ALREADY_COMPRESSED_TYPES = [
+    '7z', 'avi', 'cur', 'gif', 'h264', 'jar', 'jpeg', 'jpg', 'pdf', 'png',
+    'wav', 'zip'
+]
 
 
 def encode_multipart_formdata(fields, files,
@@ -132,18 +141,21 @@ def upload_hash_content_to_blobstore(generate_upload_url, content):
 
 
 class UploadRemote(run_isolated.Remote):
-  @staticmethod
-  def get_file_handler(base_url):
+  def __init__(self, namespace, *args, **kwargs):
+    super(UploadRemote, self).__init__(*args, **kwargs)
+    self.namespace = namespace
+
+  def get_file_handler(self, base_url):
     def upload_file(content, hash_key):
       content_url = base_url.rstrip('/') + '/content/'
-      namespace = 'default'
       if len(content) > MIN_SIZE_FOR_DIRECT_BLOBSTORE:
         upload_hash_content_to_blobstore(
-            content_url + 'generate_blobstore_url/' + namespace + '/' +
+            content_url + 'generate_blobstore_url/' + self.namespace + '/' +
               hash_key,
             content)
       else:
-        url_open(content_url + 'store/' + namespace + '/' + hash_key, content)
+        url_open(content_url + 'store/' + self.namespace + '/' + hash_key,
+                 content)
     return upload_file
 
 
@@ -174,15 +186,43 @@ def update_files_to_upload(query_url, queries, files_to_upload):
   logging.info('Queried %d files, %d cache hit', len(queries), hit)
 
 
-def upload_sha1_tree(base_url, indir, infiles):
+def compression_level(filename):
+  """Given a filename calculates the ideal compression level to use."""
+  file_ext = os.path.splitext(filename)[1].lower()
+  # TODO(csharp): Profile to find what compression level works best.
+  return 0 if file_ext in ALREADY_COMPRESSED_TYPES else 7
+
+
+def zip_and_trigger_upload(infile, metadata, upload_function):
+  compressor = zlib.compressobj(compression_level(infile))
+  hash_data = cStringIO.StringIO()
+  with open(infile, 'rb') as f:
+     # TODO(csharp): Fix crbug.com/150823 and enable the touched logic again.
+    while True:   # and not metadata['T']:
+      chunk = f.read(run_isolated.ZIPPED_FILE_CHUNK)
+      if not chunk:
+        break
+      hash_data.write(compressor.compress(chunk))
+
+    hash_data.write(compressor.flush(zlib.Z_FINISH))
+    priority = (
+        run_isolated.Remote.HIGH if metadata.get('priority', '1') == '0'
+        else run_isolated.Remote.MED)
+    upload_function(priority, hash_data.getvalue(), metadata['h'],
+                    None)
+  hash_data.close()
+
+
+def upload_sha1_tree(base_url, indir, infiles, namespace):
   """Uploads the given tree to the given url.
 
   Arguments:
-    base_url: The base url, it is assume that |base_url|/has/ can be used to
-              query if an element was already uploaded, and |base_url|/store/
-              can be used to upload a new element.
-    indir:    Root directory the infiles are based in.
-    infiles:  dict of files to map from |indir| to |outdir|.
+    base_url:  The base url, it is assume that |base_url|/has/ can be used to
+               query if an element was already uploaded, and |base_url|/store/
+               can be used to upload a new element.
+    indir:     Root directory the infiles are based in.
+    infiles:   dict of files to map from |indir| to |outdir|.
+    namespace: The namespace to use on the server.
   """
   logging.info('upload tree(base_url=%s, indir=%s, files=%d)' %
                (base_url, indir, len(infiles)))
@@ -190,7 +230,7 @@ def upload_sha1_tree(base_url, indir, infiles):
   # Generate the list of files that need to be uploaded (since some may already
   # be on the server.
   base_url = base_url.rstrip('/')
-  contains_hash_url = base_url + '/content/contains/default'
+  contains_hash_url = base_url + '/content/contains/' + namespace
   to_upload = []
   next_queries = []
   for relfile, metadata in infiles.iteritems():
@@ -206,20 +246,21 @@ def upload_sha1_tree(base_url, indir, infiles):
   if next_queries:
     update_files_to_upload(contains_hash_url, next_queries, to_upload)
 
-
-  # Upload the required files.
-  remote_uploader = UploadRemote(base_url)
+  # Zip the required files and then upload them.
+  # TODO(csharp): use num_processors().
+  zipping_pool = run_isolated.ThreadPool(num_threads=4)
+  remote_uploader = UploadRemote(namespace, base_url)
   for relfile, metadata in to_upload:
-    # TODO(csharp): Fix crbug.com/150823 and enable the touched logic again.
-    # if metadata.get('T') == True:
-    #   hash_data = ''
     infile = os.path.join(indir, relfile)
-    with open(infile, 'rb') as f:
-      hash_data = f.read()
-    priority = (run_isolated.Remote.HIGH if metadata.get('priority', '1') == '0'
-                else run_isolated.Remote.MED)
-    remote_uploader.add_item(priority, hash_data, metadata['h'], None)
+    zipping_pool.add_task(zip_and_trigger_upload, infile, metadata,
+                          remote_uploader.add_item)
+  logging.info('Waiting for all files to finish zipping')
+  zipping_pool.join()
+  logging.info('All files zipped.')
+
+  logging.info('Waiting for all files to finish uploading')
   remote_uploader.join()
+  logging.info('All files are uploaded')
 
   exception = remote_uploader.next_exception()
   if exception:
@@ -237,7 +278,7 @@ def upload_sha1_tree(base_url, indir, infiles):
       len(cache_hit),
       cache_hit_size / 1024.,
       len(cache_hit) * 100. / total,
-      cache_hit_size * 100. / total_size)
+      cache_hit_size * 100. / total_size if total_size else 0)
   cache_miss = to_upload
   cache_miss_size = sum(infiles[i[0]].get('s', 0) for i in cache_miss)
   logging.info(
@@ -245,7 +286,7 @@ def upload_sha1_tree(base_url, indir, infiles):
       len(cache_miss),
       cache_miss_size / 1024.,
       len(cache_miss) * 100. / total,
-      cache_miss_size * 100. / total_size)
+      cache_miss_size * 100. / total_size if total_size else 0)
 
 
 def main():
@@ -256,8 +297,10 @@ def main():
   parser.add_option('-o', '--outdir', help='Remote server to archive to')
   parser.add_option(
         '-v', '--verbose',
-        action='count',
+        action='count', default=0,
         help='Use multiple times to increase verbosity')
+  parser.add_option('--namespace', default='default-gzip',
+                    help='The namespace to use on the server.')
 
   options, files = parser.parse_args()
 
@@ -289,7 +332,8 @@ def main():
     upload_sha1_tree(
         base_url=options.outdir,
         indir=os.getcwd(),
-        infiles=infiles)
+        infiles=infiles,
+        namespace=options.namespace)
   return 0
 
 

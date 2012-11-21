@@ -17,8 +17,7 @@ import run_isolated
 
 
 class RemoteTest(run_isolated.Remote):
-  @staticmethod
-  def get_file_handler(_):
+  def get_file_handler(self, _):  # pylint: disable=R0201
     def upload_file(item, _dest):
       if type(item) == type(Exception) and issubclass(item, Exception):
         raise item()

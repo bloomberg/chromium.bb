@@ -530,8 +530,7 @@ class Remote(object):
       else:
         self._step_done((priority, index, obj))
 
-  @staticmethod
-  def get_file_handler(file_or_url):
+  def get_file_handler(self, file_or_url):  # pylint: disable=R0201
     """Returns a object to retrieve objects from a remote."""
     if re.match(r'^https?://.+$', file_or_url):
       def download_file(item, dest):
