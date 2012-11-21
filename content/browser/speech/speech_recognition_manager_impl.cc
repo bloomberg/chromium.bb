@@ -44,82 +44,6 @@ SpeechRecognitionManager* SpeechRecognitionManager::GetInstance() {
   return SpeechRecognitionManagerImpl::GetInstance();
 }
 
-#if !defined(OS_IOS)
-class SpeechRecognitionManagerImpl::PermissionRequest
-    : public MediaStreamRequester {
- public:
-  PermissionRequest(int session_id,
-                    const base::Callback<void(bool is_allowed)>& callback)
-      : session_id_(session_id),
-        callback_(callback),
-        started_(false) {
-  }
-
-  virtual ~PermissionRequest() {
-    if (started_)
-      Abort();
-  }
-
-  void Start(int render_process_id, int render_view_id, const GURL& origin) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    started_ = true;
-    BrowserMainLoop::GetMediaStreamManager()->GenerateStream(
-        this,
-        render_process_id,
-        render_view_id,
-        StreamOptions(MEDIA_DEVICE_AUDIO_CAPTURE, MEDIA_DEVICE_VIDEO_CAPTURE),
-        origin,
-        &label_);
-  }
-
-  void Abort() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    started_ = false;
-    BrowserMainLoop::GetMediaStreamManager()->CancelRequest(label_);
-  }
-
-  int Session() const { return session_id_; }
-
-  // MediaStreamRequester methods.
-  virtual void StreamGenerated(
-      const std::string& label,
-      const StreamDeviceInfoArray& audio_devices,
-      const StreamDeviceInfoArray& video_devices) OVERRIDE {
-    // TODO(hans): One day it would be nice to actually use the generated stream
-    // but right now we only use it to request permission, and then we dump it.
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    started_ = false;
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&MediaStreamManager::StopGeneratedStream,
-                   base::Unretained(BrowserMainLoop::GetMediaStreamManager()),
-                   label));
-    callback_.Run(true);
-  }
-
-  virtual void StreamGenerationFailed(const std::string& label) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    started_ = false;
-    callback_.Run(false);
-  }
-
-  // The callbacks below are ignored.
-  virtual void DevicesEnumerated(
-      const std::string& label,
-      const StreamDeviceInfoArray& devices) OVERRIDE {}
-  virtual void DeviceOpened(
-      const std::string& label,
-      const StreamDeviceInfo& device_info) OVERRIDE {}
-
- private:
-  int session_id_;
-  base::Callback<void(bool is_allowed)> callback_;
-  std::string label_;
-  bool started_;
-};
-#endif  // !defined(OS_IOS)
-
 SpeechRecognitionManagerImpl* SpeechRecognitionManagerImpl::GetInstance() {
   return g_speech_recognition_manager_impl;
 }
@@ -229,23 +153,21 @@ void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
   DCHECK(!ask_user && is_allowed);
 #else
   if (ask_user) {
-    const SpeechRecognitionSessionContext& context =
-        GetSessionContext(session_id);
-
-    permission_request_.reset(new PermissionRequest(
-        session_id,
-        base::Bind(&SpeechRecognitionManagerImpl::RecognitionAllowedCallback,
-                   weak_factory_.GetWeakPtr(),
-                   session_id,
-                   false)));
-
-    permission_request_->Start(context.render_process_id,
-                               context.render_view_id,
-                               GURL(context.context_name));
+    SessionsTable::iterator iter = sessions_.find(session_id);
+    DCHECK(iter != sessions_.end());
+    SpeechRecognitionSessionContext& context = iter->second.context;
+    BrowserMainLoop::GetMediaStreamManager()->MakeMediaAccessRequest(
+        context.render_process_id,
+        context.render_view_id,
+        StreamOptions(MEDIA_DEVICE_AUDIO_CAPTURE, MEDIA_NO_SERVICE),
+        GURL(context.context_name),
+        base::Bind(
+            &SpeechRecognitionManagerImpl::MediaRequestPermissionCallback,
+            weak_factory_.GetWeakPtr()),
+        &context.label);
 
     return;
   }
-  permission_request_.reset();
 #endif  // defined(OS_IOS)
 
   if (is_allowed) {
@@ -261,17 +183,39 @@ void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
   }
 }
 
+void SpeechRecognitionManagerImpl::MediaRequestPermissionCallback(
+    const std::string& label, const MediaStreamDevices& devices) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  for (SessionsTable::iterator iter = sessions_.begin();
+       iter != sessions_.end(); ++iter) {
+    if (iter->second.context.label == label) {
+      bool is_allowed = false;
+      if (!devices.empty()) {
+        // Copy the approved devices array to the context for UI indication.
+        iter->second.context.devices = devices;
+        is_allowed = true;
+      }
+
+      // Clear the label to indicate the request has been done.
+      iter->second.context.label.clear();
+
+      // Notify the recognition about the request result.
+      RecognitionAllowedCallback(iter->first, false, is_allowed);
+      break;
+    }
+  }
+}
+
 void SpeechRecognitionManagerImpl::AbortSession(int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!SessionExists(session_id))
     return;
 
 #if !defined(OS_IOS)
-  if (permission_request_.get() &&
-      permission_request_->Session() == session_id) {
-    DCHECK(permission_request_.get());
-    permission_request_->Abort();
-  }
+  const SpeechRecognitionSessionContext& context =
+      GetSessionContext(session_id);
+  if (!context.label.empty())
+    BrowserMainLoop::GetMediaStreamManager()->CancelRequest(context.label);
 #endif  // !defined(OS_IOS)
 
   MessageLoop::current()->PostTask(FROM_HERE,
@@ -285,11 +229,10 @@ void SpeechRecognitionManagerImpl::StopAudioCaptureForSession(int session_id) {
     return;
 
 #if !defined(OS_IOS)
-  if (permission_request_.get() &&
-      permission_request_->Session() == session_id) {
-    DCHECK(permission_request_.get());
-    permission_request_->Abort();
-  }
+  const SpeechRecognitionSessionContext& context =
+      GetSessionContext(session_id);
+  if (!context.label.empty())
+    BrowserMainLoop::GetMediaStreamManager()->CancelRequest(context.label);
 #endif  // !defined(OS_IOS)
 
   MessageLoop::current()->PostTask(FROM_HERE,
@@ -306,6 +249,16 @@ void SpeechRecognitionManagerImpl::OnRecognitionStart(int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!SessionExists(session_id))
     return;
+
+#if !defined(OS_IOS)
+  const SpeechRecognitionSessionContext& context =
+      GetSessionContext(session_id);
+  if (!context.devices.empty()) {
+    // Notify the UI the devices are being used.
+    BrowserMainLoop::GetMediaStreamManager()->NotifyUIDevicesOpened(
+        context.render_process_id, context.render_view_id, context.devices);
+  }
+#endif  // !defined(OS_IOS)
 
   DCHECK_EQ(primary_session_id_, session_id);
   if (SpeechRecognitionEventListener* delegate_listener = GetDelegateListener())
@@ -416,6 +369,15 @@ void SpeechRecognitionManagerImpl::OnRecognitionEnd(int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!SessionExists(session_id))
     return;
+#if !defined(OS_IOS)
+  const SpeechRecognitionSessionContext& context =
+        GetSessionContext(session_id);
+  if (!context.devices.empty()) {
+    // Notify the UI the devices has been closed.
+     BrowserMainLoop::GetMediaStreamManager()->NotifyUIDevicesClosed(
+         context.render_process_id, context.render_view_id, context.devices);
+  }
+#endif  // !defined(OS_IOS)
 
   if (SpeechRecognitionEventListener* delegate_listener = GetDelegateListener())
     delegate_listener->OnRecognitionEnd(session_id);

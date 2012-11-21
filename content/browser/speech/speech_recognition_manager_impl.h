@@ -130,6 +130,12 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
                                   bool ask_user,
                                   bool is_allowed);
 
+  // Callback to get back the result of a media request. |label| is the string
+  // to identify the request; |devices| is an array of devices approved to be
+  // used for the request, |devices| is empty if the users deny the request.
+  void MediaRequestPermissionCallback(const std::string& label,
+                                      const MediaStreamDevices& devices);
+
   // Entry point for pushing any external event into the session handling FSM.
   void DispatchEvent(int session_id, FSMEvent event);
 
@@ -166,11 +172,6 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
   // about this class being destroyed in the meanwhile (due to browser shutdown)
   // since tasks pending on a destroyed WeakPtr are automatically discarded.
   base::WeakPtrFactory<SpeechRecognitionManagerImpl> weak_factory_;
-
-#if !defined(OS_IOS)
-  class PermissionRequest;
-  scoped_ptr<PermissionRequest> permission_request_;
-#endif  // !defined(OS_IOS)
 };
 
 }  // namespace content

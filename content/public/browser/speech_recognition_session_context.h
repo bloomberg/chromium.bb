@@ -8,6 +8,7 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "content/public/common/media_stream_request.h"
 #include "ui/gfx/rect.h"
 
 namespace content {
@@ -38,6 +39,12 @@ struct CONTENT_EXPORT SpeechRecognitionSessionContext {
   // A texual description of the context (website, extension name) that is
   // requesting recognition, for prompting security notifications to the user.
   std::string context_name;
+
+  // The label for the permission request, it is used for request abortion.
+  std::string label;
+
+  // A list of devices being used by the recognition session.
+  MediaStreamDevices devices;
 };
 
 }  // namespace content
