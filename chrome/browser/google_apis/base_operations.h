@@ -71,8 +71,10 @@ class AuthenticatedOperationInterface {
   virtual ~AuthenticatedOperationInterface() {}
 
   // Starts the actual operation after obtaining an authentication token
-  // |auth_token|.
-  virtual void Start(const std::string& auth_token) = 0;
+  // |auth_token|. User-Agent header will be set to |custom_user_agent| if
+  // the value is not empty.
+  virtual void Start(const std::string& auth_token,
+                     const std::string& custom_user_agent) = 0;
 
   // Invoked when the authentication failed with an error code |code|.
   virtual void OnAuthFailed(GDataErrorCode code) = 0;
@@ -103,7 +105,8 @@ class UrlFetchOperationBase : public AuthenticatedOperationInterface,
                               public net::URLFetcherDelegate {
  public:
   // Overridden from AuthenticatedOperationInterface.
-  virtual void Start(const std::string& auth_token) OVERRIDE;
+  virtual void Start(const std::string& auth_token,
+                     const std::string& custom_user_agent) OVERRIDE;
 
   // Overridden from AuthenticatedOperationInterface.
   virtual void SetReAuthenticateCallback(

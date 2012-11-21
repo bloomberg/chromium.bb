@@ -26,7 +26,13 @@ class OperationRegistry;
 // retries and authentication.
 class OperationRunner {
  public:
-  OperationRunner(Profile* profile, const std::vector<std::string>& scopes);
+  // |scopes| specifies OAuth2 scopes.
+  //
+  // |custom_user_agent| will be used for the User-Agent header in HTTP
+  // requests issued through the operation runner if the value is not empty.
+  OperationRunner(Profile* profile,
+                  const std::vector<std::string>& scopes,
+                  const std::string& custom_user_agent);
   virtual ~OperationRunner();
 
   AuthService* auth_service() { return auth_service_.get(); }
@@ -69,6 +75,7 @@ class OperationRunner {
 
   scoped_ptr<AuthService> auth_service_;
   scoped_ptr<OperationRegistry> operation_registry_;
+  const std::string custom_user_agent_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

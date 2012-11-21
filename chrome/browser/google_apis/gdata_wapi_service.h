@@ -36,7 +36,10 @@ class GDataWapiService : public DriveServiceInterface,
   //
   // |base_url| is used to generate URLs for communicating with the WAPI
   // |server. See gdata_wapi_url_generator.h for details.
-  explicit GDataWapiService(const GURL& base_url);
+  //
+  // |custom_user_agent| will be used for the User-Agent header in HTTP
+  // requests issued through the service if the value is not empty.
+  GDataWapiService(const GURL& base_url, const std::string& custom_user_agent);
   virtual ~GDataWapiService();
 
   AuthService* auth_service_for_testing();
@@ -125,6 +128,7 @@ class GDataWapiService : public DriveServiceInterface,
   // Operation objects should hold a copy of this, rather than a const
   // reference, as they may outlive this object.
   GDataWapiUrlGenerator url_generator_;
+  const std::string custom_user_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataWapiService);
 };

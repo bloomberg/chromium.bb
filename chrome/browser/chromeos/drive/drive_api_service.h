@@ -32,7 +32,10 @@ class DriveAPIService : public google_apis::DriveServiceInterface,
  public:
   // Instance is usually created by DriveSystemServiceFactory and owned by
   // DriveFileSystem.
-  DriveAPIService();
+  //
+  // |custom_user_agent| will be used for the User-Agent header in HTTP
+  // requests issues through the service if the value is not empty.
+  explicit DriveAPIService(const std::string& custom_user_agent);
   virtual ~DriveAPIService();
 
   // DriveServiceInterface Overrides
@@ -146,6 +149,7 @@ class DriveAPIService : public google_apis::DriveServiceInterface,
   Profile* profile_;
   scoped_ptr<google_apis::OperationRunner> runner_;
   ObserverList<google_apis::DriveServiceObserver> observers_;
+  const std::string custom_user_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveAPIService);
 };

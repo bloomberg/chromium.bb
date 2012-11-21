@@ -62,7 +62,8 @@ class GDataWapiServiceTest : public testing::Test {
     profile_.reset(new TestingProfile);
 
     service_.reset(new GDataWapiService(
-        GURL(GDataWapiUrlGenerator::kBaseUrlForProduction)));
+        GURL(GDataWapiUrlGenerator::kBaseUrlForProduction),
+        "" /* custom_user_agent*/));
     service_->Initialize(profile_.get());
     service_->auth_service_for_testing()->set_access_token_for_testing(
         kTestGDataAuthToken);

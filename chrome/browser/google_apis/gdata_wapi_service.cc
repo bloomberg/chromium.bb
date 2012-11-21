@@ -66,9 +66,11 @@ const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
 
 }  // namespace
 
-GDataWapiService::GDataWapiService(const GURL& base_url)
+GDataWapiService::GDataWapiService(const GURL& base_url,
+                                   const std::string& custom_user_agent)
     : runner_(NULL),
-      url_generator_(base_url) {
+      url_generator_(base_url),
+      custom_user_agent_(custom_user_agent) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -93,7 +95,7 @@ void GDataWapiService::Initialize(Profile* profile) {
   scopes.push_back(kUserContentScope);
   // Drive App scope is required for even WAPI v3 apps access.
   scopes.push_back(kDriveAppsScope);
-  runner_.reset(new OperationRunner(profile, scopes));
+  runner_.reset(new OperationRunner(profile, scopes, custom_user_agent_));
   runner_->Initialize();
 
   runner_->auth_service()->AddObserver(this);

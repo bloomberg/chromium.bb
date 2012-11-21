@@ -12,7 +12,6 @@ include_rules = [
   "!chrome/browser/signin/token_service.h",
   "!chrome/common/chrome_notification_types.h",
   "!chrome/common/chrome_paths.h",
-  "!chrome/common/chrome_version_info.h",
   "!chrome/common/net/url_util.h",
   "!chrome/common/pref_names.h",
   "!content/public/browser/browser_thread.h",
@@ -22,7 +21,6 @@ include_rules = [
   "!content/public/browser/notification_registrar.h",
   "!content/public/browser/notification_source.h",
   "!content/public/browser/notification_types.h",
-  "!webkit/user_agent/user_agent_util.h",
 ]
 
 specific_include_rules = {

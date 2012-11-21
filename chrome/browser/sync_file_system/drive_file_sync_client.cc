@@ -65,7 +65,8 @@ google_apis::DocumentEntry* GetDocumentByTitleAndParent(
 
 DriveFileSyncClient::DriveFileSyncClient(Profile* profile) {
   drive_service_.reset(new google_apis::GDataWapiService(
-      GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction)));
+      GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
+      "" /* custom_user_agent */));
   drive_service_->Initialize(profile);
 
   drive_uploader_.reset(new google_apis::DriveUploader(drive_service_.get()));

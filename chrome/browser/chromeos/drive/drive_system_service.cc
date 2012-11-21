@@ -29,6 +29,7 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -36,6 +37,7 @@
 #include "google/cacheinvalidation/types.pb.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
+#include "webkit/user_agent/user_agent_util.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -48,6 +50,9 @@ static const size_t kEventLogHistorySize = 100;
 // Used in test to setup system service.
 google_apis::DriveServiceInterface* g_test_drive_service = NULL;
 const std::string* g_test_cache_root = NULL;
+
+// The sync invalidation object ID for Google Drive.
+const char kDriveInvalidationObjectId[] = "CHANGELOG";
 
 // Returns true if Drive is enabled for the given Profile.
 bool IsDriveEnabledForProfile(Profile* profile) {
@@ -65,8 +70,32 @@ bool IsDriveEnabledForProfile(Profile* profile) {
   return true;
 }
 
-// The sync invalidation object ID for Google Drive.
-const char kDriveInvalidationObjectId[] = "CHANGELOG";
+// Returns a user agent string used for communicating with the Drive backend,
+// both WAPI and Drive API.  The user agent looks like:
+//
+// chromedrive-<VERSION> chrome-cc/none (<OS_CPU_INFO>)
+// chromedrive-24.0.1274.0 chrome-cc/none (CrOS x86_64 0.4.0)
+//
+// TODO(satorux): Move this function to somewhere else: crbug.com/151605
+std::string GetDriveUserAgent() {
+  const char kDriveClientName[] = "chromedrive";
+
+  chrome::VersionInfo version_info;
+  const std::string version = (version_info.is_valid() ?
+                               version_info.Version() :
+                               std::string("unknown"));
+
+  // This part is <client_name>/<version>.
+  const char kLibraryInfo[] = "chrome-cc/none";
+
+  const std::string os_cpu_info = webkit_glue::BuildOSCpuInfo();
+
+  return base::StringPrintf("%s-%s %s (%s)",
+                            kDriveClientName,
+                            version.c_str(),
+                            kLibraryInfo,
+                            os_cpu_info.c_str());
+}
 
 }  // namespace
 
@@ -368,10 +397,11 @@ ProfileKeyedService* DriveSystemServiceFactory::BuildServiceInstanceFor(
   g_test_drive_service = NULL;
   if (!drive_service) {
     if (google_apis::util::IsDriveV2ApiEnabled()) {
-      drive_service = new DriveAPIService();
+      drive_service = new DriveAPIService(GetDriveUserAgent());
     } else {
       drive_service = new google_apis::GDataWapiService(
-          GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction));
+          GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
+          GetDriveUserAgent());
     }
   }
 

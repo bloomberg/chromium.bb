@@ -63,7 +63,8 @@ class BaseOperationsTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile);
     runner_.reset(new OperationRunner(profile_.get(),
-                                      std::vector<std::string>()));
+                                      std::vector<std::string>() /* scopes */,
+                                      "" /* custom_user_agent*/));
     runner_->Initialize();
   }
 

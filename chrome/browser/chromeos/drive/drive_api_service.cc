@@ -29,9 +29,10 @@ const char kDriveAppsReadonlyScope[] =
 
 }  // namespace
 
-DriveAPIService::DriveAPIService()
+DriveAPIService::DriveAPIService(const std::string& custom_user_agent)
     : profile_(NULL),
-      runner_(NULL) {
+      runner_(NULL),
+      custom_user_agent_(custom_user_agent) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -50,7 +51,8 @@ void DriveAPIService::Initialize(Profile* profile) {
   std::vector<std::string> scopes;
   scopes.push_back(kDriveScope);
   scopes.push_back(kDriveAppsReadonlyScope);
-  runner_.reset(new google_apis::OperationRunner(profile, scopes));
+  runner_.reset(
+      new google_apis::OperationRunner(profile, scopes, custom_user_agent_));
   runner_->Initialize();
 
   runner_->auth_service()->AddObserver(this);

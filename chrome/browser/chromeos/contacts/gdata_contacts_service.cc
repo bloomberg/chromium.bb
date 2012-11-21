@@ -853,7 +853,9 @@ GDataContactsService::GDataContactsService(Profile* profile)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::vector<std::string> scopes;
   scopes.push_back(kContactsScope);
-  runner_.reset(new google_apis::OperationRunner(profile, scopes));
+  runner_.reset(new google_apis::OperationRunner(profile,
+                                                 scopes,
+                                                 "" /* custom_user_agent */));
 }
 
 GDataContactsService::~GDataContactsService() {

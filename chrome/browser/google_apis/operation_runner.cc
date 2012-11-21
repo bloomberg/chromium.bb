@@ -15,10 +15,12 @@ using content::BrowserThread;
 namespace google_apis {
 
 OperationRunner::OperationRunner(Profile* profile,
-                                 const std::vector<std::string>& scopes)
+                                 const std::vector<std::string>& scopes,
+                                 const std::string& custom_user_agent)
     : profile_(profile),
       auth_service_(new AuthService(scopes)),
       operation_registry_(new OperationRegistry()),
+      custom_user_agent_(custom_user_agent),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -67,7 +69,7 @@ void OperationRunner::StartOperation(
     return;
   }
 
-  operation->Start(auth_service_->access_token());
+  operation->Start(auth_service_->access_token(), custom_user_agent_);
 }
 
 void OperationRunner::OnOperationAuthRefresh(
