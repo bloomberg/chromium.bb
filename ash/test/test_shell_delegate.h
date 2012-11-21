@@ -24,6 +24,7 @@ class TestShellDelegate : public ShellDelegate {
   virtual bool IsSessionStarted() OVERRIDE;
   virtual bool IsFirstRunAfterBoot() OVERRIDE;
   virtual void LockScreen() OVERRIDE;
+  virtual bool CanLockScreen() OVERRIDE;
   virtual void UnlockScreen() OVERRIDE;
   virtual bool IsScreenLocked() const OVERRIDE;
   virtual void Shutdown() OVERRIDE;
@@ -77,10 +78,15 @@ class TestShellDelegate : public ShellDelegate {
   // hasn't been started too.
   void SetUserLoggedIn(bool user_logged_in);
 
+  // Sets the internal state that indicates whether the user can lock the
+  // screen.
+  void SetCanLockScreen(bool can_lock_screen);
+
   bool locked_;
   bool session_started_;
   bool spoken_feedback_enabled_;
   bool user_logged_in_;
+  bool can_lock_screen_;
   int num_exit_requests_;
 
   scoped_ptr<content::BrowserContext> current_browser_context_;

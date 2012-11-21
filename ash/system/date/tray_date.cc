@@ -82,16 +82,16 @@ class DateDefaultView : public views::View,
           IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER,
           IDS_ASH_STATUS_TRAY_SHUTDOWN);
       view->AddButton(shutdown_);
+    }
 
-      if (login != ash::user::LOGGED_IN_GUEST) {
-        lock_ = new ash::internal::TrayPopupHeaderButton(this,
-            IDR_AURA_UBER_TRAY_LOCKSCREEN,
-            IDR_AURA_UBER_TRAY_LOCKSCREEN,
-            IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER,
-            IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER,
-            IDS_ASH_STATUS_TRAY_LOCK);
-        view->AddButton(lock_);
-      }
+    if (ash::Shell::GetInstance()->CanLockScreen()) {
+      lock_ = new ash::internal::TrayPopupHeaderButton(this,
+          IDR_AURA_UBER_TRAY_LOCKSCREEN,
+          IDR_AURA_UBER_TRAY_LOCKSCREEN,
+          IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER,
+          IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER,
+          IDS_ASH_STATUS_TRAY_LOCK);
+      view->AddButton(lock_);
     }
   }
 

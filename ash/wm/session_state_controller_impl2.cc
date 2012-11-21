@@ -62,7 +62,7 @@ void SessionStateControllerImpl2::OnAppTerminating() {
 }
 
 void SessionStateControllerImpl2::OnLockStateChanged(bool locked) {
-  if (shutting_down_ || (IsLocked()) == locked)
+  if (shutting_down_ || (system_is_locked_ == locked))
     return;
 
   system_is_locked_ = locked;
@@ -147,14 +147,6 @@ void SessionStateControllerImpl2::StartShutdownAnimation() {
   StartPreShutdownAnimationTimer();
 }
 
-bool SessionStateControllerImpl2::IsEligibleForLock() {
-  return IsLoggedInAsNonGuest() && !IsLocked() && !LockRequested();
-}
-
-bool SessionStateControllerImpl2::IsLocked() {
-  return system_is_locked_;
-}
-
 bool SessionStateControllerImpl2::LockRequested() {
   return lock_fail_timer_.IsRunning();
 }
@@ -225,12 +217,6 @@ void SessionStateControllerImpl2::OnRootWindowHostCloseRequested(
                                                 const aura::RootWindow*) {
   if(Shell::GetInstance() && Shell::GetInstance()->delegate())
     Shell::GetInstance()->delegate()->Exit();
-}
-
-bool SessionStateControllerImpl2::IsLoggedInAsNonGuest() const {
-  // TODO(mukai): think about kiosk mode.
-  return (login_status_ != user::LOGGED_IN_NONE) &&
-         (login_status_ != user::LOGGED_IN_GUEST);
 }
 
 void SessionStateControllerImpl2::StartLockTimer() {

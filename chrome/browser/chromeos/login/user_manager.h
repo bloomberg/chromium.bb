@@ -150,6 +150,10 @@ class UserManager {
   // Returns true if the current user is ephemeral.
   virtual bool IsCurrentUserEphemeral() const = 0;
 
+  // Returns true if the current user's session can be locked (i.e. the user has
+  // a password with which to unlock the session).
+  virtual bool CanCurrentUserLock() const = 0;
+
   // Returns true if user is signed in.
   virtual bool IsUserLoggedIn() const = 0;
 

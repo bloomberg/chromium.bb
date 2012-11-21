@@ -43,6 +43,9 @@ User::User(const std::string& email)
   // never meant for display.
   if (!is_demo_user())
     display_email_ = email;
+
+  // Retail mode and guest sessions cannot be locked.
+  can_lock_ = !is_demo_user() && !is_guest();
 }
 
 User::~User() {}

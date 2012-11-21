@@ -45,15 +45,18 @@ void PowerButtonController::OnPowerButtonEvent(
   if (screen_is_off_)
     return;
 
+  Shell* shell = Shell::GetInstance();
   if (has_legacy_power_button_) {
     // If power button releases won't get reported correctly because we're not
     // running on official hardware, just lock the screen or shut down
     // immediately.
     if (down) {
-      if (controller_->IsEligibleForLock())
+      if (shell->CanLockScreen() && !shell->IsScreenLocked() &&
+          !controller_->LockRequested()) {
         controller_->StartLockAnimationAndLockImmediately();
-      else
+      } else {
         controller_->RequestShutdown();
+      }
     }
   } else {  // !has_legacy_power_button_
     if (down) {
@@ -61,7 +64,7 @@ void PowerButtonController::OnPowerButtonEvent(
       if (controller_->LockRequested())
         return;
 
-      if (controller_->IsEligibleForLock())
+      if (shell->CanLockScreen() && !shell->IsScreenLocked())
         controller_->StartLockAnimation(true);
       else
         controller_->StartShutdownAnimation();
@@ -78,17 +81,16 @@ void PowerButtonController::OnLockButtonEvent(
     bool down, const base::TimeTicks& timestamp) {
   lock_button_down_ = down;
 
-  if (controller_->ShutdownRequested() || !controller_->IsEligibleForLock())
+  Shell* shell = Shell::GetInstance();
+  if (!shell->CanLockScreen() || shell->IsScreenLocked() ||
+      controller_->LockRequested() || controller_->ShutdownRequested()) {
     return;
+  }
 
-  // Bail if we're already locked or are in the process of locking.  Also give
-  // the power button precedence over the lock button (we don't expect both
+  // Give the power button precedence over the lock button (we don't expect both
   // buttons to be present, so this is just making sure that we don't do
   // something completely stupid if that assumption changes later).
   if (power_button_down_)
-    return;
-
-  if (controller_->IsLocked() || controller_->LockRequested())
     return;
 
   if (down)

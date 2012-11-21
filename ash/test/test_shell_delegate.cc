@@ -23,6 +23,7 @@ TestShellDelegate::TestShellDelegate()
       session_started_(true),
       spoken_feedback_enabled_(false),
       user_logged_in_(true),
+      can_lock_screen_(true),
       num_exit_requests_(0) {
 }
 
@@ -39,6 +40,10 @@ bool TestShellDelegate::IsSessionStarted() {
 
 bool TestShellDelegate::IsFirstRunAfterBoot() {
   return false;
+}
+
+bool TestShellDelegate::CanLockScreen() {
+  return user_logged_in_ && can_lock_screen_;
 }
 
 void TestShellDelegate::LockScreen() {
@@ -176,6 +181,10 @@ void TestShellDelegate::SetUserLoggedIn(bool user_logged_in) {
   user_logged_in_ = user_logged_in;
   if (!user_logged_in)
     session_started_ = false;
+}
+
+void TestShellDelegate::SetCanLockScreen(bool can_lock_screen) {
+  can_lock_screen_ = can_lock_screen;
 }
 
 }  // namespace test

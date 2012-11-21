@@ -97,8 +97,6 @@ class ASH_EXPORT SessionStateControllerImpl2 : public SessionStateController {
   virtual void OnLockStateChanged(bool locked) OVERRIDE;
 
   // SessionStateController overrides:
-  virtual bool IsEligibleForLock() OVERRIDE;
-  virtual bool IsLocked() OVERRIDE;
   virtual void StartLockAnimation(bool shutdown_after_lock) OVERRIDE;
 
   virtual void StartShutdownAnimation() OVERRIDE;
@@ -121,8 +119,6 @@ class ASH_EXPORT SessionStateControllerImpl2 : public SessionStateController {
 
  protected:
   friend class test::PowerButtonControllerTest;
-
-  bool IsLoggedInAsNonGuest() const;
 
  private:
   void RequestShutdownImpl();

@@ -94,5 +94,9 @@ void AshTestBase::SetUserLoggedIn(bool user_logged_in) {
   test_shell_delegate_->SetUserLoggedIn(user_logged_in);
 }
 
+void AshTestBase::SetCanLockScreen(bool can_lock_screen) {
+  test_shell_delegate_->SetCanLockScreen(can_lock_screen);
+}
+
 }  // namespace test
 }  // namespace ash

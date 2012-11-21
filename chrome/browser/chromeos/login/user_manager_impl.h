@@ -66,6 +66,7 @@ class UserManagerImpl : public UserManager,
   virtual bool IsCurrentUserOwner() const OVERRIDE;
   virtual bool IsCurrentUserNew() const OVERRIDE;
   virtual bool IsCurrentUserEphemeral() const OVERRIDE;
+  virtual bool CanCurrentUserLock() const OVERRIDE;
   virtual bool IsUserLoggedIn() const OVERRIDE;
   virtual bool IsLoggedInAsDemoUser() const OVERRIDE;
   virtual bool IsLoggedInAsPublicAccount() const OVERRIDE;

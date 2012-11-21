@@ -76,6 +76,10 @@ class ASH_EXPORT ShellDelegate {
   // restarted, typically due to logging in as a guest or logging out.
   virtual bool IsFirstRunAfterBoot() = 0;
 
+  // Returns true if a user is logged in whose session can be locked (i.e. the
+  // user has a password with which to unlock the session).
+  virtual bool CanLockScreen() = 0;
+
   // Invoked when a user locks the screen.
   virtual void LockScreen() = 0;
 

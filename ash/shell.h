@@ -210,6 +210,10 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   // Returns app list window or NULL if it is not visible.
   aura::Window* GetAppListWindow();
 
+  // Returns true if a user is logged in whose session can be locked (i.e. the
+  // user has a password with which to unlock the session).
+  bool CanLockScreen();
+
   // Returns true if the screen is locked.
   bool IsScreenLocked() const;
 

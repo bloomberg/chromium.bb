@@ -73,12 +73,6 @@ class ASH_EXPORT SessionStateController : public aura::RootWindowObserver,
 
   void SetDelegate(SessionStateControllerDelegate* delegate);
 
-  // Returns true iff when we're in state when user session can be locked.
-  virtual bool IsEligibleForLock() = 0;
-
-  // Returns true if system is locked.
-  virtual bool IsLocked() = 0;
-
   // Starts locking (with slow animation) that can be cancelled.
   // After locking and |kLockToShutdownTimeoutMs| StartShutdownAnimation()
   // will be called unless CancelShutdownAnimation() is called, if
@@ -128,8 +122,6 @@ class ASH_EXPORT SessionStateController : public aura::RootWindowObserver,
 
  protected:
   friend class test::PowerButtonControllerTest;
-
-  bool IsLoggedInAsNonGuest() const;
 
   scoped_ptr<internal::SessionStateAnimator> animator_;
 

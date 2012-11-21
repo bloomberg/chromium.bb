@@ -109,6 +109,10 @@ class User {
   bool is_demo_user() const { return email_ == kDemoUser; }
   bool is_guest() const { return email_ == kGuestUser; }
 
+  // True if the user's session can be locked (i.e. the user has a password with
+  // which to unlock the session).
+  bool can_lock() const { return can_lock_; }
+
  private:
   friend class UserManagerImpl;
   friend class UserImageManagerImpl;
@@ -153,6 +157,9 @@ class User {
   std::string display_email_;
   UserImage user_image_;
   OAuthTokenStatus oauth_token_status_;
+
+  // True if the user's session can be locked.
+  bool can_lock_;
 
   // Either index of a default image for the user, |kExternalImageIndex| or
   // |kProfileImageIndex|.

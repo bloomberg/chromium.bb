@@ -39,6 +39,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual bool IsUserLoggedIn() OVERRIDE;
   virtual bool IsSessionStarted() OVERRIDE;
   virtual bool IsFirstRunAfterBoot() OVERRIDE;
+  virtual bool CanLockScreen() OVERRIDE;
   virtual void LockScreen() OVERRIDE;
   virtual void UnlockScreen() OVERRIDE;
   virtual bool IsScreenLocked() const OVERRIDE;

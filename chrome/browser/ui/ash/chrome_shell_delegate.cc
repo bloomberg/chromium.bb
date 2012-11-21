@@ -50,7 +50,6 @@
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
-#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
@@ -133,10 +132,17 @@ bool ChromeShellDelegate::IsFirstRunAfterBoot() {
 #endif
 }
 
+bool ChromeShellDelegate::CanLockScreen() {
+#if defined(OS_CHROMEOS)
+  return chromeos::UserManager::Get()->CanCurrentUserLock();
+#else
+  return false;
+#endif
+}
+
 void ChromeShellDelegate::LockScreen() {
 #if defined(OS_CHROMEOS)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession) &&
-      !chromeos::KioskModeSettings::Get()->IsKioskModeEnabled()) {
+  if (CanLockScreen()) {
     chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
         RequestLockScreen();
   }

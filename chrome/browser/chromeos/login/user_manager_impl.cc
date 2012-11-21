@@ -472,6 +472,11 @@ bool UserManagerImpl::IsCurrentUserEphemeral() const {
   return is_current_user_ephemeral_;
 }
 
+bool UserManagerImpl::CanCurrentUserLock() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return IsUserLoggedIn() && logged_in_user_->can_lock();
+}
+
 bool UserManagerImpl::IsUserLoggedIn() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return logged_in_user_;

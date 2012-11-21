@@ -52,10 +52,11 @@ class AshTestBase : public testing::Test {
  protected:
   void RunAllPendingInMessageLoop();
 
-  // Utility methods to emulate user logged in or not and
-  // session started or not cases.
+  // Utility methods to emulate user logged in or not, session started or not
+  // and user able to lock screen or not cases.
   void SetSessionStarted(bool session_started);
   void SetUserLoggedIn(bool user_logged_in);
+  void SetCanLockScreen(bool can_lock_screen);
 
  private:
   MessageLoopForUI message_loop_;

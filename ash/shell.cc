@@ -14,8 +14,8 @@
 #include "ash/desktop_background/desktop_background_view.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/display/display_controller.h"
-#include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/display/screen_position_controller.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/focus_cycler.h"
@@ -585,6 +585,10 @@ bool Shell::GetAppListTargetVisibility() const {
 
 aura::Window* Shell::GetAppListWindow() {
   return app_list_controller_.get() ? app_list_controller_->GetWindow() : NULL;
+}
+
+bool Shell::CanLockScreen() {
+  return delegate_->CanLockScreen();
 }
 
 bool Shell::IsScreenLocked() const {
