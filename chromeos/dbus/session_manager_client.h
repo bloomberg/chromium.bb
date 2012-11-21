@@ -82,9 +82,10 @@ class CHROMEOS_EXPORT SessionManagerClient {
   // need to know the current screen lock state when they are added.
   virtual bool GetIsScreenLocked() = 0;
 
-  // Used for RetrieveDevicePolicy and RetrieveUserPolicy. Takes a serialized
-  // protocol buffer as string.  Upon success, we will pass a protobuf to the
-  // callback.  On failure, we will pass "".
+  // Used for RetrieveDevicePolicy, RetrieveUserPolicy and
+  // RetrieveDeviceLocalAccountPolicy. Takes a serialized protocol buffer as
+  // string.  Upon success, we will pass a protobuf to the callback.  On
+  // failure, we will pass "".
   typedef base::Callback<void(const std::string&)> RetrievePolicyCallback;
 
   // Fetches the device policy blob stored by the session manager.  Upon
@@ -96,8 +97,15 @@ class CHROMEOS_EXPORT SessionManagerClient {
   // call the provided callback.
   virtual void RetrieveUserPolicy(const RetrievePolicyCallback& callback) = 0;
 
-  // Used for StoreDevicePolicy and StoreUserPolicy. Takes a boolean indicating
-  // whether the operation was successful or not.
+  // Fetches the policy blob associated with the specified device-local account
+  // from session manager.  |callback| is invoked up on completion.
+  virtual void RetrieveDeviceLocalAccountPolicy(
+      const std::string& account_id,
+      const RetrievePolicyCallback& callback) = 0;
+
+  // Used for StoreDevicePolicy, StoreUserPolicy and
+  // StoreDeviceLocalAccountPolicy. Takes a boolean indicating whether the
+  // operation was successful or not.
   typedef base::Callback<void(bool)> StorePolicyCallback;
 
   // Attempts to asynchronously store |policy_blob| as device policy.  Upon
@@ -110,6 +118,13 @@ class CHROMEOS_EXPORT SessionManagerClient {
   // call callback.
   virtual void StoreUserPolicy(const std::string& policy_blob,
                                const StorePolicyCallback& callback) = 0;
+
+  // Sends a request to store a policy blob for the specified device-local
+  // account. The result of the operation is reported through |callback|.
+  virtual void StoreDeviceLocalAccountPolicy(
+      const std::string& account_id,
+      const std::string& policy_blob,
+      const StorePolicyCallback& callback) = 0;
 
   // Creates the instance.
   static SessionManagerClient* Create(DBusClientImplementationType type,
