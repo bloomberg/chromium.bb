@@ -165,3 +165,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptPermissionsApi) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("content_scripts/permissions")) << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptBypassPageCSP) {
+  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(RunExtensionTest("content_scripts/bypass_page_csp")) << message_;
+}

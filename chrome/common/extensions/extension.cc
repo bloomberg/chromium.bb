@@ -583,11 +583,10 @@ bool Extension::IsSandboxedPage(const std::string& relative_path) const {
   return ResourceMatches(sandboxed_pages_, relative_path);
 }
 
-
 std::string Extension::GetResourceContentSecurityPolicy(
     const std::string& relative_path) const {
   return IsSandboxedPage(relative_path) ?
-      sandboxed_pages_content_security_policy_ : content_security_policy_;
+      sandboxed_pages_content_security_policy_ : content_security_policy();
 }
 
 bool Extension::GenerateId(const std::string& input, std::string* output) {

@@ -54,12 +54,15 @@ int UserScriptSlave::GetIsolatedWorldIdForExtension(const Extension* extension,
 
   IsolatedWorldMap::iterator iter = isolated_world_ids_.find(extension->id());
   if (iter != isolated_world_ids_.end()) {
-    // We need to set the isolated world origin even if it's not a new world
-    // since that is stored per frame, and we might not have used this isolated
-    // world in this frame before.
+    // We need to set the isolated world origin and CSP even if it's not a new
+    // world since these are stored per frame, and we might not have used this
+    // isolated world in this frame before.
     frame->setIsolatedWorldSecurityOrigin(
         iter->second,
         WebSecurityOrigin::create(extension->url()));
+    frame->setIsolatedWorldContentSecurityPolicy(
+        iter->second,
+        WebString::fromUTF8(extension->content_security_policy()));
     return iter->second;
   }
 
@@ -73,6 +76,9 @@ int UserScriptSlave::GetIsolatedWorldIdForExtension(const Extension* extension,
   frame->setIsolatedWorldSecurityOrigin(
       new_id,
       WebSecurityOrigin::create(extension->url()));
+  frame->setIsolatedWorldContentSecurityPolicy(
+      new_id,
+      WebString::fromUTF8(extension->content_security_policy()));
   return new_id;
 }
 

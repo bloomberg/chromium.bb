@@ -789,6 +789,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     return theme_display_properties_.get();
   }
 
+  // Content Security Policy!
+  const std::string& content_security_policy() const {
+    return content_security_policy_;
+  }
+
   GURL GetBackgroundURL() const;
 
  private:
