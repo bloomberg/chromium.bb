@@ -1,11 +1,11 @@
 {
   "files": {
     "file2.txt": {
-      "sha-1": "4c5f884b8c98cd2064d36ffaf8512ff264f08316",
-      "size": 164
+      "h": "4c5f884b8c98cd2064d36ffaf8512ff264f08316",
+      "s": 164
     }
   },
   "includes": [
-    "499a77c760cbe8d51ac122f61927ac5c9a4647e3"
+    "38477388c0c5b8db5e31aca744146cf6a107d7ed"
   ]
 }

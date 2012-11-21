@@ -100,38 +100,38 @@ class FixTestCases(unittest.TestCase):
       u'command': [u'run_test_cases.py', u'gtest_fake_pass.py'],
       u'files': {
         u'gtest_fake_base.py': {
-          u'mode': 416,
-          u'sha-1': unicode(hashlib.sha1(
+          u'm': 416,
+          u'h': unicode(hashlib.sha1(
               open(gtest_fake_base_py, 'rb').read()).hexdigest()),
-          u'size': os.stat(gtest_fake_base_py).st_size,
+          u's': os.stat(gtest_fake_base_py).st_size,
         },
         u'gtest_fake_pass.py': {
-          u'mode': 488,
-          u'sha-1': unicode(hashlib.sha1(
+          u'm': 488,
+          u'h': unicode(hashlib.sha1(
               open(gtest_fake_pass_py, 'rb').read()).hexdigest()),
-          u'size': os.stat(gtest_fake_pass_py).st_size,
+          u's': os.stat(gtest_fake_pass_py).st_size,
         },
         u'run_isolated.py': {
-          u'mode': 488,
-          u'sha-1': unicode(hashlib.sha1(
+          u'm': 488,
+          u'h': unicode(hashlib.sha1(
               open(run_isolated_py, 'rb').read()).hexdigest()),
-          u'size': os.stat(run_isolated_py).st_size,
+          u's': os.stat(run_isolated_py).st_size,
         },
         u'run_test_cases.py': {
-          u'mode': 488,
-          u'sha-1': unicode(hashlib.sha1(
+          u'm': 488,
+          u'h': unicode(hashlib.sha1(
               open(run_test_cases_py, 'rb').read()).hexdigest()),
-          u'size': os.stat(run_test_cases_py).st_size,
+          u's': os.stat(run_test_cases_py).st_size,
         },
       },
       u'os': unicode(run_isolated.get_flavor()),
       u'relative_cwd': u'.',
     }
     for value in actual_isolated['files'].itervalues():
-      self.assertTrue(value.pop('timestamp'))
+      self.assertTrue(value.pop('t'))
     if sys.platform == 'win32':
       for value in expected_isolated['files'].itervalues():
-        self.assertTrue(value.pop('mode'))
+        self.assertTrue(value.pop('m'))
     self.assertEquals(expected_isolated, actual_isolated)
 
     # Now verify the .isolate file was updated! (That's the magical part where

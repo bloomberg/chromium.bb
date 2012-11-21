@@ -198,30 +198,30 @@ class IsolateModeBase(IsolateBase):
       filestats = os.lstat(filepath)
       is_link = stat.S_ISLNK(filestats.st_mode)
       if not is_link:
-        v[u'size'] = filestats.st_size
+        v[u's'] = filestats.st_size
         if isolate.get_flavor() != 'win':
-          v[u'mode'] = self._fix_file_mode(relfile, read_only)
+          v[u'm'] = self._fix_file_mode(relfile, read_only)
       else:
-        v[u'mode'] = 488
+        v[u'm'] = 488
       # Used the skip recalculating the hash. Use the most recent update
       # time.
-      v[u'timestamp'] = int(round(filestats.st_mtime))
+      v[u't'] = int(round(filestats.st_mtime))
       if is_link:
-        v['link'] = os.readlink(filepath)  # pylint: disable=E1101
+        v['l'] = os.readlink(filepath)  # pylint: disable=E1101
       else:
         # Upgrade the value to unicode so diffing the structure in case of
         # test failure is easier, since the basestring type must match,
         # str!=unicode.
-        v[u'sha-1'] = unicode(calc_sha1(filepath))
+        v[u'h'] = unicode(calc_sha1(filepath))
 
     if empty_file:
       item = files[empty_file]
-      item['sha-1'] = unicode(SHA_1_NULL)
+      item['h'] = unicode(SHA_1_NULL)
       if sys.platform != 'win32':
-        item['mode'] = 288
-      item['size'] = 0
-      item['touched_only'] = True
-      item.pop('timestamp', None)
+        item['m'] = 288
+      item['s'] = 0
+      item['T'] = True
+      item.pop('t', None)
     return files
 
   def _expected_result(self, args, read_only, empty_file):
@@ -391,7 +391,7 @@ class Isolate(unittest.TestCase):
       # Symlink stuff is unsupported there, remove them from the list.
       files = [f for f in files if not f.startswith('symlink_')]
 
-    # TODO(csharp): touched_only is disabled until crbug.com/150823 is fixed.
+    # TODO(csharp): touch_only is disabled until crbug.com/150823 is fixed.
     files.remove('touch_only')
 
     # modes read and trace are tested together.
@@ -465,7 +465,7 @@ class Isolate_check(IsolateModeBase):
 class Isolate_hashtable(IsolateModeBase):
   def _gen_expected_tree(self, empty_file):
     expected = [
-      v['sha-1'] for v in self._gen_files(False, empty_file).itervalues()
+      v['h'] for v in self._gen_files(False, empty_file).itervalues()
     ]
     expected.append(calc_sha1(self.isolated))
     return expected
@@ -521,8 +521,8 @@ class Isolate_hashtable(IsolateModeBase):
       self._execute('hashtable', 'symlink_full.isolate', [], False)
       # Construct our own tree.
       expected = [
-        str(v['sha-1'])
-        for v in self._gen_files(False, None).itervalues() if 'sha-1' in v
+        str(v['h'])
+        for v in self._gen_files(False, None).itervalues() if 'h' in v
       ]
       expected.append(calc_sha1(self.isolated))
       self.assertEquals(sorted(expected), self._result_tree())
@@ -532,8 +532,8 @@ class Isolate_hashtable(IsolateModeBase):
       self._execute('hashtable', 'symlink_partial.isolate', [], False)
       # Construct our own tree.
       expected = [
-        str(v['sha-1'])
-        for v in self._gen_files(False, None).itervalues() if 'sha-1' in v
+        str(v['h'])
+        for v in self._gen_files(False, None).itervalues() if 'h' in v
       ]
       expected.append(calc_sha1(self.isolated))
       self.assertEquals(sorted(expected), self._result_tree())

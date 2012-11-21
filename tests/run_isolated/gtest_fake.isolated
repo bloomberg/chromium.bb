@@ -5,8 +5,8 @@
   ],
   "files": {
     "gtest_fake.py": {
-      "sha-1": "de55b412b3cda61304b959f872bc21025dc20fdb",
-      "size": 2233
+      "h": "de55b412b3cda61304b959f872bc21025dc20fdb",
+      "s": 2233
     }
   }
 }

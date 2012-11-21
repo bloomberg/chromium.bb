@@ -37,13 +37,13 @@ class RunIsolatedTest(unittest.TestCase):
       u'command': [u'foo', u'bar'],
       u'files': {
         u'a': {
-          u'link': u'somewhere',
-          u'mode': 123,
-          u'timestamp': 456,
+          u'l': u'somewhere',
+          u'm': 123,
+          u't': 456,
         },
         u'b': {
-          u'mode': 123,
-          u'sha-1': u'0123456789abcdef0123456789abcdef01234567'
+          u'm': 123,
+          u'h': u'0123456789abcdef0123456789abcdef01234567'
         }
       },
       u'includes': [u'0123456789abcdef0123456789abcdef01234567'],
@@ -58,8 +58,8 @@ class RunIsolatedTest(unittest.TestCase):
     data = {
       u'files': {
         u'a': {
-          u'link': u'somewhere',
-          u'sha-1': u'0123456789abcdef0123456789abcdef01234567'
+          u'l': u'somewhere',
+          u'h': u'0123456789abcdef0123456789abcdef01234567'
         }
       },
     }

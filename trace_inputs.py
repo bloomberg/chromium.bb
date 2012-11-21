@@ -715,8 +715,8 @@ class Results(object):
     If tainted is true, it means it is not a real path anymore as a variable
     replacement occured.
 
-    If touched_only is True, this means the file was probed for existence, and
-    it is existent, but was never _opened_. If touched_only is True, the file
+    If only_touched is True, this means the file was probed for existence, and
+    it is existent, but was never _opened_. If only_touched is True, the file
     must have existed.
     """
     def __init__(self, root, path, tainted, size):

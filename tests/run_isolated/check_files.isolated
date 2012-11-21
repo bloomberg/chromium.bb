@@ -5,16 +5,16 @@
   ],
   "files": {
     "check_files.py": {
-      "sha-1": "7057184fcc8351aced8f4222fa9abbb5defc7b9e",
-      "size": 960
+      "h": "7057184fcc8351aced8f4222fa9abbb5defc7b9e",
+      "s": 960
     },
     "file2.txt": {
-      "sha-1": "7c0095bad1bcbf38e36d208e2b685c5d279146a5",
-      "size": 6
+      "h": "7c0095bad1bcbf38e36d208e2b685c5d279146a5",
+      "s": 6
     }
   },
   "includes": [
-    "d4a52446416e13a2ea61fa69a25d23f511c58730",
-    "4244065a86352149df5e4443a7f406ffcc5c8a23"
+    "82b1dd033e3f496cbbae91f1c3f65038914cd5bf",
+    "173e83e4623ba59d32f19327362fbef8770a0c15"
   ]
 }

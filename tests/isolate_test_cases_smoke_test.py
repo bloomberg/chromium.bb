@@ -108,19 +108,19 @@ class IsolateTestCases(unittest.TestCase):
       u'command': [u'../gtest_fake/gtest_fake_pass.py'],
       u'files': {
         rel_gtest_fake_pass_py: {
-          u'mode': 488,
-          u'sha-1': unicode(hashlib.sha1(
+          u'm': 488,
+          u'h': unicode(hashlib.sha1(
               open(root_dir_gtest_fake_pass_py, 'rb').read()).hexdigest()),
-          u'size': os.stat(root_dir_gtest_fake_pass_py).st_size,
+          u's': os.stat(root_dir_gtest_fake_pass_py).st_size,
         },
       },
       u'os': unicode(isolate.get_flavor()),
       u'relative_cwd': u'isolate_test_cases',
     }
     self.assertTrue(
-        actual_isolated['files'][rel_gtest_fake_pass_py].pop('timestamp'))
+        actual_isolated['files'][rel_gtest_fake_pass_py].pop('t'))
     if sys.platform == 'win32':
-      expected_isolated['files'][rel_gtest_fake_pass_py].pop('mode')
+      expected_isolated['files'][rel_gtest_fake_pass_py].pop('m')
     self.assertEquals(expected_isolated, actual_isolated)
 
     cmd = [

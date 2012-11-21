@@ -825,11 +825,11 @@ class IsolateLoad(unittest.TestCase):
     if sys.platform == 'win32':
       # 'mode' are not saved in windows.
       for values in expected_isolated['files'].itervalues():
-        del values['mode']
+        del values['m']
 
     for item in actual_isolated['files'].itervalues():
-      if 'timestamp' in item:
-        self.assertTrue(item.pop('timestamp'))
+      if 't' in item:
+        self.assertTrue(item.pop('t'))
 
   def test_load_stale_isolated(self):
     isolate_file = os.path.join(
@@ -840,16 +840,16 @@ class IsolateLoad(unittest.TestCase):
       'command': ['python'],
       'files': {
         'foo': {
-          "mode": 416,
-          "sha-1": "invalid",
-          "size": 538,
-          "timestamp": 1335146921,
+          "m": 416,
+          "h": "invalid",
+          "s": 538,
+          "t": 1335146921,
         },
         os.path.join('tests', 'isolate', 'touch_root.py'): {
-          "mode": 488,
-          "sha-1": "invalid",
-          "size": 538,
-          "timestamp": 1335146921,
+          "m": 488,
+          "h": "invalid",
+          "s": 538,
+          "t": 1335146921,
         },
       },
     }
@@ -871,14 +871,14 @@ class IsolateLoad(unittest.TestCase):
       'command': ['python', 'touch_root.py'],
       'files': {
         os.path.join(u'tests', 'isolate', 'touch_root.py'): {
-          'mode': 488,
-          'sha-1': _sha1('tests', 'isolate', 'touch_root.py'),
-          'size': _size('tests', 'isolate', 'touch_root.py'),
+          'm': 488,
+          'h': _sha1('tests', 'isolate', 'touch_root.py'),
+          's': _size('tests', 'isolate', 'touch_root.py'),
         },
         'isolate.py': {
-          'mode': 488,
-          'sha-1': _sha1('isolate.py'),
-          'size': _size('isolate.py'),
+          'm': 488,
+          'h': _sha1('isolate.py'),
+          's': _size('isolate.py'),
         },
       },
       'os': isolate.get_flavor(),
@@ -908,9 +908,9 @@ class IsolateLoad(unittest.TestCase):
       'command': ['python', 'touch_root.py'],
       'files': {
         os.path.join('tests', 'isolate', 'touch_root.py'): {
-          'mode': 488,
-          'sha-1': _sha1('tests', 'isolate', 'touch_root.py'),
-          'size': _size('tests', 'isolate', 'touch_root.py'),
+          'm': 488,
+          'h': _sha1('tests', 'isolate', 'touch_root.py'),
+          's': _size('tests', 'isolate', 'touch_root.py'),
         },
       },
       'os': isolate.get_flavor(),
@@ -940,9 +940,9 @@ class IsolateLoad(unittest.TestCase):
       'command': ['python', 'touch_root.py'],
       'files': {
         os.path.join('tests', 'isolate', 'touch_root.py'): {
-          'mode': 488,
-          'sha-1': _sha1('tests', 'isolate', 'touch_root.py'),
-          'size': _size('tests', 'isolate', 'touch_root.py'),
+          'm': 488,
+          'h': _sha1('tests', 'isolate', 'touch_root.py'),
+          's': _size('tests', 'isolate', 'touch_root.py'),
         },
       },
       'os': isolate.get_flavor(),

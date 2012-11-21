@@ -156,7 +156,7 @@ def update_files_to_upload(query_url, queries, files_to_upload):
                      this list.
   """
   body = ''.join(
-      (binascii.unhexlify(meta_data['sha-1']) for (_, meta_data) in queries))
+      (binascii.unhexlify(meta_data['h']) for (_, meta_data) in queries))
   assert (len(body) % 20) == 0, repr(body)
 
   response = url_open(query_url, body).read()
@@ -194,7 +194,7 @@ def upload_sha1_tree(base_url, indir, infiles):
   to_upload = []
   next_queries = []
   for relfile, metadata in infiles.iteritems():
-    if 'link' in metadata:
+    if 'l' in metadata:
       # Skip links when uploading.
       continue
 
@@ -211,27 +211,27 @@ def upload_sha1_tree(base_url, indir, infiles):
   remote_uploader = UploadRemote(base_url)
   for relfile, metadata in to_upload:
     # TODO(csharp): Fix crbug.com/150823 and enable the touched logic again.
-    # if metadata.get('touched_only') == True:
+    # if metadata.get('T') == True:
     #   hash_data = ''
     infile = os.path.join(indir, relfile)
     with open(infile, 'rb') as f:
       hash_data = f.read()
     priority = (run_isolated.Remote.HIGH if metadata.get('priority', '1') == '0'
                 else run_isolated.Remote.MED)
-    remote_uploader.add_item(priority, hash_data, metadata['sha-1'], None)
+    remote_uploader.add_item(priority, hash_data, metadata['h'], None)
   remote_uploader.join()
 
   exception = remote_uploader.next_exception()
   if exception:
     raise exception[0], exception[1], exception[2]
   total = len(infiles)
-  total_size = sum(metadata.get('size', 0) for metadata in infiles.itervalues())
+  total_size = sum(metadata.get('s', 0) for metadata in infiles.itervalues())
   logging.info(
       'Total:      %6d, %9.1fkb',
       total,
-      sum(m.get('size', 0) for m in infiles.itervalues()) / 1024.)
+      sum(m.get('s', 0) for m in infiles.itervalues()) / 1024.)
   cache_hit = set(infiles.iterkeys()) - set(x[0] for x in to_upload)
-  cache_hit_size = sum(infiles[i].get('size', 0) for i in cache_hit)
+  cache_hit_size = sum(infiles[i].get('s', 0) for i in cache_hit)
   logging.info(
       'cache hit:  %6d, %9.1fkb, %6.2f%% files, %6.2f%% size',
       len(cache_hit),
@@ -239,7 +239,7 @@ def upload_sha1_tree(base_url, indir, infiles):
       len(cache_hit) * 100. / total,
       cache_hit_size * 100. / total_size)
   cache_miss = to_upload
-  cache_miss_size = sum(infiles[i[0]].get('size', 0) for i in cache_miss)
+  cache_miss_size = sum(infiles[i[0]].get('s', 0) for i in cache_miss)
   logging.info(
       'cache miss: %6d, %9.1fkb, %6.2f%% files, %6.2f%% size',
       len(cache_miss),
@@ -279,8 +279,8 @@ def main():
       (
         f,
         {
-          'size': os.stat(f).st_size,
-          'sha-1': hashlib.sha1(open(f, 'r').read()).hexdigest(),
+          's': os.stat(f).st_size,
+          'h': hashlib.sha1(open(f, 'r').read()).hexdigest(),
         }
       )
       for f in files)

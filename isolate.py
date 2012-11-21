@@ -220,20 +220,20 @@ def recreate_tree(outdir, indir, infiles, action, as_sha1):
     infile = os.path.join(indir, relfile)
     if as_sha1:
       # Do the hashtable specific checks.
-      if 'link' in metadata:
+      if 'l' in metadata:
         # Skip links when storing a hashtable.
         continue
-      outfile = os.path.join(outdir, metadata['sha-1'])
+      outfile = os.path.join(outdir, metadata['h'])
       if os.path.isfile(outfile):
         # Just do a quick check that the file size matches. No need to stat()
         # again the input file, grab the value from the dict.
-        if not 'size' in metadata:
+        if not 's' in metadata:
           raise run_isolated.MappingError(
               'Misconfigured item %s: %s' % (relfile, metadata))
-        if metadata['size'] == os.stat(outfile).st_size:
+        if metadata['s'] == os.stat(outfile).st_size:
           continue
         else:
-          logging.warn('Overwritting %s' % metadata['sha-1'])
+          logging.warn('Overwritting %s' % metadata['h'])
           os.remove(outfile)
     else:
       outfile = os.path.join(outdir, relfile)
@@ -242,10 +242,10 @@ def recreate_tree(outdir, indir, infiles, action, as_sha1):
         os.makedirs(outsubdir)
 
     # TODO(csharp): Fix crbug.com/150823 and enable the touched logic again.
-    # if metadata.get('touched_only') == True:
+    # if metadata.get('T') == True:
     #   open(outfile, 'ab').close()
-    if 'link' in metadata:
-      pointed = metadata['link']
+    if 'l' in metadata:
+      pointed = metadata['l']
       logging.debug('Symlink: %s -> %s' % (outfile, pointed))
       # symlink doesn't exist on Windows.
       os.symlink(pointed, outfile)  # pylint: disable=E1101
@@ -272,13 +272,13 @@ def process_input(filepath, prevdict, read_only):
   """
   out = {}
   # TODO(csharp): Fix crbug.com/150823 and enable the touched logic again.
-  # if prevdict.get('touched_only') == True:
+  # if prevdict.get('T') == True:
   #   # The file's content is ignored. Skip the time and hard code mode.
   #   if get_flavor() != 'win':
-  #     out['mode'] = stat.S_IRUSR | stat.S_IRGRP
-  #   out['size'] = 0
-  #   out['sha-1'] = SHA_1_NULL
-  #   out['touched_only'] = True
+  #     out['m'] = stat.S_IRUSR | stat.S_IRGRP
+  #   out['s'] = 0
+  #   out['h'] = SHA_1_NULL
+  #   out['T'] = True
   #   return out
 
   # Always check the file stat and check if it is a link. The timestamp is used
@@ -304,32 +304,32 @@ def process_input(filepath, prevdict, read_only):
       filemode |= stat.S_IXGRP
     else:
       filemode &= ~stat.S_IXGRP
-    out['mode'] = filemode
+    out['m'] = filemode
 
   # Used to skip recalculating the hash or link destination. Use the most recent
   # update time.
   # TODO(maruel): Save it in the .state file instead of .isolated so the
   # .isolated file is deterministic.
-  out['timestamp'] = int(round(filestats.st_mtime))
+  out['t'] = int(round(filestats.st_mtime))
 
   if not is_link:
-    out['size'] = filestats.st_size
+    out['s'] = filestats.st_size
     # If the timestamp wasn't updated and the file size is still the same, carry
     # on the sha-1.
-    if (prevdict.get('timestamp') == out['timestamp'] and
-        prevdict.get('size') == out['size']):
+    if (prevdict.get('t') == out['t'] and
+        prevdict.get('s') == out['s']):
       # Reuse the previous hash if available.
-      out['sha-1'] = prevdict.get('sha-1')
-    if not out.get('sha-1'):
+      out['h'] = prevdict.get('h')
+    if not out.get('h'):
       with open(filepath, 'rb') as f:
-        out['sha-1'] = hashlib.sha1(f.read()).hexdigest()
+        out['h'] = hashlib.sha1(f.read()).hexdigest()
   else:
     # If the timestamp wasn't updated, carry on the link destination.
-    if prevdict.get('timestamp') == out['timestamp']:
+    if prevdict.get('t') == out['t']:
       # Reuse the previous link destination if available.
-      out['link'] = prevdict.get('link')
-    if out.get('link') is None:
-      out['link'] = os.readlink(filepath)  # pylint: disable=E1101
+      out['l'] = prevdict.get('l')
+    if out.get('l') is None:
+      out['l'] = os.readlink(filepath)  # pylint: disable=E1101
   return out
 
 
@@ -1171,7 +1171,7 @@ class IsolatedFile(Flattenable):
     for f in infiles:
       self.files.setdefault(f, {})
     for f in touched:
-      self.files.setdefault(f, {})['touched_only'] = True
+      self.files.setdefault(f, {})['T'] = True
     # Prune extraneous files that are not a dependency anymore.
     for f in set(self.files).difference(set(infiles).union(touched)):
       del self.files[f]
@@ -1332,8 +1332,7 @@ class CompleteState(object):
     logging.debug('Dumping to %s' % self.isolated_filepath)
     trace_inputs.write_json(
         self.isolated_filepath, self.isolated.flatten(), True)
-    total_bytes = sum(i
-        .get('size', 0) for i in self.isolated.files.itervalues())
+    total_bytes = sum(i.get('s', 0) for i in self.isolated.files.itervalues())
     if total_bytes:
       logging.debug('Total size: %d bytes' % total_bytes)
     saved_state_file = isolatedfile_to_state(self.isolated_filepath)
@@ -1520,10 +1519,9 @@ def CMDhashtable(args):
 
       with open(complete_state.isolated_filepath, 'rb') as f:
         content = f.read()
-        isolated_hash = hashlib.sha1(content).hexdigest()
       isolated_metadata = {
-        'sha-1': isolated_hash,
-        'size': len(content),
+        'h': hashlib.sha1(content).hexdigest(),
+        's': len(content),
         'priority': '0'
       }
 

@@ -5,16 +5,16 @@
   ],
   "files": {
     "file1.txt": {
-      "sha-1": "a64969e7ebc5e3627680a3fbbaa1b9181d03f1b4",
-      "size": 6
+      "h": "a64969e7ebc5e3627680a3fbbaa1b9181d03f1b4",
+      "s": 6
     },
     "file1_copy.txt": {
-      "sha-1": "a64969e7ebc5e3627680a3fbbaa1b9181d03f1b4",
-      "size": 6
+      "h": "a64969e7ebc5e3627680a3fbbaa1b9181d03f1b4",
+      "s": 6
     },
     "repeated_files.py": {
-      "sha-1": "100f28891f7e0ef7a902bfe46f21b2972377a9ac",
-      "size": 720
+      "h": "100f28891f7e0ef7a902bfe46f21b2972377a9ac",
+      "s": 720
     }
   }
 }

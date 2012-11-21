@@ -232,29 +232,30 @@ def load_isolated(content):
         if not isinstance(subvalue, dict):
           raise ConfigError('Expected dict, got %r' % subvalue)
         for subsubkey, subsubvalue in subvalue.iteritems():
-          if subsubkey == 'link':
+          if subsubkey == 'l':
             if not isinstance(subsubvalue, basestring):
               raise ConfigError('Expected string, got %r' % subsubvalue)
-          elif subsubkey == 'mode':
+          elif subsubkey == 'm':
             if not isinstance(subsubvalue, int):
               raise ConfigError('Expected int, got %r' % subsubvalue)
-          elif subsubkey == 'sha-1':
+          elif subsubkey == 'h':
             if not RE_IS_SHA1.match(subsubvalue):
               raise ConfigError('Expected sha-1, got %r' % subsubvalue)
-          elif subsubkey == 'size':
+          elif subsubkey == 's':
             if not isinstance(subsubvalue, int):
               raise ConfigError('Expected int, got %r' % subsubvalue)
-          elif subsubkey == 'timestamp':
+          elif subsubkey == 't':
             if not isinstance(subsubvalue, int):
               raise ConfigError('Expected int, got %r' % subsubvalue)
-          elif subsubkey == 'touched_only':
+          elif subsubkey == 'T':
             if not isinstance(subsubvalue, bool):
               raise ConfigError('Expected bool, got %r' % subsubvalue)
           else:
             raise ConfigError('Unknown subsubkey %s' % subsubkey)
-        if bool('sha-1' in subvalue) and bool('link' in subvalue):
+        if bool('h' in subvalue) and bool('l' in subvalue):
           raise ConfigError(
-              'Did not expect both \'sha-1\' and \'link\', got: %r' % subvalue)
+              'Did not expect both \'h\' (sha-1) and \'l\' (link), got: %r' %
+              subvalue)
 
     elif key == 'includes':
       if not isinstance(value, list):
@@ -859,10 +860,10 @@ class IsolatedFile(object):
       # overriden files must not be fetched.
       if filepath not in files:
         files[filepath] = properties
-        if 'sha-1' in properties:
+        if 'h' in properties:
           # Preemptively request files.
           logging.debug('fetching %s' % filepath)
-          cache.retrieve(Remote.MED, properties['sha-1'], properties['size'])
+          cache.retrieve(Remote.MED, properties['h'], properties['s'])
     self.files_fetched = True
 
 
@@ -992,19 +993,19 @@ def run_tha_test(isolated_hash, cache_dir, remote, policies):
           outfile = os.path.join(outdir, filepath)
           # symlink doesn't exist on Windows. So the 'link' property should
           # never be specified for windows .isolated file.
-          os.symlink(properties['link'], outfile)  # pylint: disable=E1101
-          if 'mode' in properties:
+          os.symlink(properties['l'], outfile)  # pylint: disable=E1101
+          if 'm' in properties:
             # It's not set on Windows.
             lchmod = getattr(os, 'lchmod', None)
             if lchmod:
-              lchmod(outfile, properties['mode'])
+              lchmod(outfile, properties['m'])
 
         # Remaining files to be processed.
         # Note that files could still be not be downloaded yet here.
         remaining = dict()
         for filepath, props in settings.files.iteritems():
-          if 'sha-1' in props:
-            remaining.setdefault(props['sha-1'], []).append((filepath, props))
+          if 'h' in props:
+            remaining.setdefault(props['h'], []).append((filepath, props))
 
         # Do bookkeeping while files are being downloaded in the background.
         cwd = os.path.join(outdir, settings.relative_cwd)
