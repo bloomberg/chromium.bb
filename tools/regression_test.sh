@@ -8,17 +8,22 @@
 # regression for each submit.
 
 # Set current directory to the project one and load the common script.
+pushd . >/dev/null
 cd "$(dirname "$(readlink -f "$0")")/.."
 . "../../scripts/common.sh" || exit 1
 
-update_chroot_libgestures() {
-  info "Check chroot libgestures version ${commit_head_hash}..."
+update_chroot_library() {
+  library=$1
+  version=$2
+  project=$3
+  info "Check chroot $library version ${version}..."
 
-  if ! grep -q ${commit_head_hash} /usr/lib/libgestures.so; then
-    info "Update the gestures library under chroot.."
-    sudo emerge -q gestures
-    if ! grep -q ${commit_head_hash} /usr/lib/libgestures.so; then
-      die_notrace "Can not install libgestures successfully"
+  if ! grep -q ${version} /usr/lib/${library} ; then
+    info "Update the library ${library} under chroot.."
+    sudo emerge -q ${project}
+    info grep ${version} /usr/lib/${library}
+    if ! grep -q ${version} /usr/lib/${library} ; then
+      die_notrace "Can not install ${library} successfully"
     fi
   fi
 }
@@ -45,18 +50,22 @@ check_test_setup() {
   if [[ ! -e  /usr/lib/libgestures.so ]]; then
     install_regression_test_suite
   else
-    update_chroot_libgestures
+    update_chroot_library libgestures.so ${libgestures_head_hash} gestures
+    update_chroot_library libevdev.so ${libevdev_head_hash} libevdev
   fi
 }
 
-commit_head_hash=`git rev-parse HEAD`
+libevdev_head_hash=`cd ../libevdev; git rev-parse HEAD`
+libgestures_head_hash=`git rev-parse HEAD`
 if [[ ${INSIDE_CHROOT} -ne 1 ]]; then
-  if [[ "${PRESUBMIT_COMMIT}" == "${commit_head_hash}" ]]; then
+  if [[ "${PRESUBMIT_COMMIT}" == "${libgestures_head_hash}" ]]; then
+    popd >/dev/null
     restart_in_chroot_if_needed "$@"
   fi
 else
-  cros_workon --host start gestures
+  cros_workon --host start gestures libevdev
   check_test_setup
   run_regression_tests
+  popd >/dev/null
 fi
 exit 0
