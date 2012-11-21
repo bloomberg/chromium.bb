@@ -122,7 +122,7 @@ void BrowserNonClientFrameViewAsh::Init() {
   // Button to enter immersive mode.
   if (CommandLine::ForCurrentProcess()->
         HasSwitch(ash::switches::kAshImmersive)) {
-    immersive_button_ = new views::ImageButton(this);
+    immersive_button_ = new views::ToggleImageButton(this);
     immersive_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_IMMERSIVE));
     AddChildView(immersive_button_);
@@ -307,7 +307,9 @@ void BrowserNonClientFrameViewAsh::ButtonPressed(views::Button* sender,
     // Toggle immersive mode.
     ImmersiveModeController* controller =
         browser_view()->immersive_mode_controller();
-    controller->SetEnabled(!controller->enabled());
+    bool enable = !controller->enabled();
+    controller->SetEnabled(enable);
+    immersive_button_->SetToggled(enable);
   }
 
   if (event.IsShiftDown())

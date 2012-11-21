@@ -233,7 +233,7 @@ void FramePainter::UpdateSoloWindowHeader(RootWindow* root_window) {
   UpdateSoloWindowInRoot(root_window, NULL /* ignorable_window */);
 }
 
-void FramePainter::AddImmersiveButton(views::ImageButton* button) {
+void FramePainter::AddImmersiveButton(views::ToggleImageButton* button) {
   DCHECK(button);
   immersive_button_ = button;
   immersive_button_->SetVisible(frame_->IsMaximized());
@@ -556,11 +556,16 @@ void FramePainter::LayoutHeader(views::NonClientFrameView* view,
   }
 
   if (immersive_button_) {
-    // TODO(jamescook): Need real art.
+    // TODO(jamescook): Need real art. crbug.com/160897
     SetButtonImages(immersive_button_,
                     IDR_AURA_UBER_TRAY_DISPLAY,
                     IDR_AURA_UBER_TRAY_DISPLAY_HOVER,
                     IDR_AURA_UBER_TRAY_DISPLAY_PRESSED);
+    // TODO(jamescook): This needs real art too. crbug.com/160897
+    SetToggledButtonImages(immersive_button_,
+                           IDR_AURA_UBER_TRAY_DISPLAY_HOVER,
+                           IDR_AURA_UBER_TRAY_DISPLAY_HOVER,
+                           IDR_AURA_UBER_TRAY_DISPLAY_PRESSED);
   }
 
   gfx::Size close_size = close_button_->GetPreferredSize();
@@ -700,6 +705,19 @@ void FramePainter::SetButtonImages(views::ImageButton* button,
                    theme_provider->GetImageSkiaNamed(hot_image_id));
   button->SetImage(views::CustomButton::STATE_PRESSED,
                    theme_provider->GetImageSkiaNamed(pushed_image_id));
+}
+
+void FramePainter::SetToggledButtonImages(views::ToggleImageButton* button,
+                                          int normal_image_id,
+                                          int hot_image_id,
+                                          int pushed_image_id) {
+  ui::ThemeProvider* theme_provider = frame_->GetThemeProvider();
+  button->SetToggledImage(views::CustomButton::STATE_NORMAL,
+                          theme_provider->GetImageSkiaNamed(normal_image_id));
+  button->SetToggledImage(views::CustomButton::STATE_HOVERED,
+                          theme_provider->GetImageSkiaNamed(hot_image_id));
+  button->SetToggledImage(views::CustomButton::STATE_PRESSED,
+                          theme_provider->GetImageSkiaNamed(pushed_image_id));
 }
 
 int FramePainter::GetTitleOffsetX() const {

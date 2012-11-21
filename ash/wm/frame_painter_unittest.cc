@@ -24,6 +24,7 @@
 
 using views::Widget;
 using views::ImageButton;
+using views::ToggleImageButton;
 
 namespace {
 
@@ -141,7 +142,7 @@ TEST_F(FramePainterTest, ImmersiveButton) {
   EXPECT_EQ(NULL, painter.immersive_button_);
 
   // Add an immersive button.
-  ImageButton immersive(NULL);
+  ToggleImageButton immersive(NULL);
   painter.AddImmersiveButton(&immersive);
 
   // Immersive button starts invisible.

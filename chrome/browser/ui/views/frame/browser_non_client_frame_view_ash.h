@@ -18,6 +18,7 @@ class FramePainter;
 }
 namespace views {
 class ImageButton;
+class ToggleImageButton;
 }
 
 class BrowserNonClientFrameViewAsh
@@ -94,8 +95,8 @@ class BrowserNonClientFrameViewAsh
   views::ImageButton* size_button_;
   views::ImageButton* close_button_;
 
-  // Optional button to trigger immersive UI. May be NULL.
-  views::ImageButton* immersive_button_;
+  // Optional button to toggle immersive UI. May be NULL.
+  views::ToggleImageButton* immersive_button_;
 
   // For popups, the window icon.
   TabIconView* window_icon_;
