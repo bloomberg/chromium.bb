@@ -340,6 +340,9 @@ bool ActivityReplay::ParseGesture(DictionaryValue* entry) {
   } else if (gesture_type == ActivityLog::kValueGestureTypeScroll) {
     if (!ParseGestureScroll(entry, &gs))
       return false;
+  } else if (gesture_type == ActivityLog::kValueGestureTypeSwipe) {
+    if (!ParseGestureSwipe(entry, &gs))
+      return false;
   } else if (gesture_type == ActivityLog::kValueGestureTypePinch) {
     if (!ParseGesturePinch(entry, &gs))
       return false;
@@ -386,6 +389,23 @@ bool ActivityReplay::ParseGestureScroll(DictionaryValue* entry,
     return false;
   }
   out_gs->details.scroll.dy = dbl;
+  return true;
+}
+
+bool ActivityReplay::ParseGestureSwipe(DictionaryValue* entry,
+                                       Gesture* out_gs) {
+  out_gs->type = kGestureTypeSwipe;
+  double dbl;
+  if (!entry->GetDouble(ActivityLog::kKeyGestureSwipeDX, &dbl)) {
+    Err("can't parse swipe dx");
+    return false;
+  }
+  out_gs->details.swipe.dx = dbl;
+  if (!entry->GetDouble(ActivityLog::kKeyGestureSwipeDY, &dbl)) {
+    Err("can't parse swipe dy");
+    return false;
+  }
+  out_gs->details.swipe.dy = dbl;
   return true;
 }
 

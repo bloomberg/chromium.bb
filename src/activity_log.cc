@@ -257,6 +257,8 @@ const char kSubSubEntryPadding[] = "      ";
                new StringValue(kValueGestureTypeSwipe));
       ret->Set(kKeyGestureSwipeDX,
                new FundamentalValue(gesture.details.swipe.dx));
+      ret->Set(kKeyGestureSwipeDY,
+               new FundamentalValue(gesture.details.swipe.dy));
       break;
   }
   if (!handled)
@@ -409,6 +411,7 @@ const char ActivityLog::kKeyGestureFlingVX[] = "vx";
 const char ActivityLog::kKeyGestureFlingVY[] = "vy";
 const char ActivityLog::kKeyGestureFlingState[] = "flingState";
 const char ActivityLog::kKeyGestureSwipeDX[] = "dx";
+const char ActivityLog::kKeyGestureSwipeDY[] = "dy";
 const char ActivityLog::kKeyPropChangeType[] = "propChangeType";
 const char ActivityLog::kKeyPropChangeName[] = "name";
 const char ActivityLog::kKeyPropChangeValue[] = "value";

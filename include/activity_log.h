@@ -134,6 +134,7 @@ class ActivityLog {
   static const char kKeyGestureFlingVY[];
   static const char kKeyGestureFlingState[];
   static const char kKeyGestureSwipeDX[];
+  static const char kKeyGestureSwipeDY[];
   // PropChange keys:
   static const char kKeyPropChangeType[];
   static const char kKeyPropChangeName[];

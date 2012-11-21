@@ -161,7 +161,7 @@ typedef struct {
 } GestureFling;
 
 typedef struct {
-  float dx;
+  float dx, dy;
 } GestureSwipe;
 
 typedef struct {
@@ -229,11 +229,12 @@ struct Gesture {
     details.fling.fling_state = state;
   }
   Gesture(const GestureSwipe&,
-          stime_t start, stime_t end, float dx)
+          stime_t start, stime_t end, float dx, float dy)
       : start_time(start),
         end_time(end),
         type(kGestureTypeSwipe) {
     details.swipe.dx = dx;
+    details.swipe.dy = dy;
   }
   Gesture(const GesturePinch&,
           stime_t start, stime_t end, float dz)

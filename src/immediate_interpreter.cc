@@ -1886,7 +1886,8 @@ void ImmediateInterpreter::FillResultGesture(
       }
       double dx = (end_sum_x - start_sum_x) / fingers.size();
       if (three_finger_swipe_enable_.val_)
-        result_ = Gesture(kGestureSwipe, changed_time_, hwstate.timestamp, dx);
+        result_ = Gesture(kGestureSwipe, changed_time_, hwstate.timestamp,
+                          dx, 0.0);
       break;
     }
 
