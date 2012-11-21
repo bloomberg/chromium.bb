@@ -344,7 +344,13 @@ class SavePageBrowserTest : public InProcessBrowserTest {
 SavePageBrowserTest::~SavePageBrowserTest() {
 }
 
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
+// Disabled on Windows due to flakiness. http://crbug.com/162323
+#if defined(OS_WIN)
+#define MAYBE_SaveHTMLOnly DISABLED_SaveHTMLOnly
+#else
+#define MAYBE_SaveHTMLOnly SaveHTMLOnly
+#endif
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnly) {
   GURL url = NavigateToMockURL("a");
 
   FilePath full_file_name, dir;
@@ -364,7 +370,13 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
       full_file_name));
 }
 
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyCancel) {
+// Disabled on Windows due to flakiness. http://crbug.com/162323
+#if defined(OS_WIN)
+#define MAYBE_SaveHTMLOnlyCancel DISABLED_SaveHTMLOnlyCancel
+#else
+#define MAYBE_SaveHTMLOnlyCancel SaveHTMLOnlyCancel
+#endif
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnlyCancel) {
   GURL url = NavigateToMockURL("a");
   DownloadManager* manager(GetDownloadManager());
   std::vector<DownloadItem*> downloads;
@@ -423,7 +435,13 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyTabDestroy) {
   EXPECT_FALSE(file_util::PathExists(dir));
 }
 
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveViewSourceHTMLOnly) {
+// Disabled on Windows due to flakiness. http://crbug.com/162323
+#if defined(OS_WIN)
+#define MAYBE_SaveViewSourceHTMLOnly DISABLED_SaveViewSourceHTMLOnly
+#else
+#define MAYBE_SaveViewSourceHTMLOnly SaveViewSourceHTMLOnly
+#endif
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveViewSourceHTMLOnly) {
   FilePath file_name(FILE_PATH_LITERAL("a.htm"));
   GURL view_source_url = URLRequestMockHTTPJob::GetMockViewSourceUrl(
       FilePath(kTestDir).Append(file_name));
@@ -450,7 +468,13 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveViewSourceHTMLOnly) {
       full_file_name));
 }
 
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
+// Disabled on Windows due to flakiness. http://crbug.com/162323
+#if defined(OS_WIN)
+#define MAYBE_SaveCompleteHTML DISABLED_SaveCompleteHTML
+#else
+#define MAYBE_SaveCompleteHTML SaveCompleteHTML
+#endif
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveCompleteHTML) {
   GURL url = NavigateToMockURL("b");
 
   FilePath full_file_name, dir;
@@ -480,8 +504,14 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
 
 // Invoke a save page during the initial navigation.
 // (Regression test for http://crbug.com/156538).
+// Disabled on Windows due to flakiness. http://crbug.com/162323
+#if defined(OS_WIN)
+#define MAYBE_SaveDuringInitialNavigationIncognito DISABLED_SaveDuringInitialNavigationIncognito
+#else
+#define MAYBE_SaveDuringInitialNavigationIncognito SaveDuringInitialNavigationIncognito
+#endif
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest,
-                       SaveDuringInitialNavigationIncognito) {
+                       MAYBE_SaveDuringInitialNavigationIncognito) {
   // Open an Incognito window.
   Browser* incognito = CreateIncognitoBrowser();  // Waits.
   ASSERT_TRUE(incognito);
@@ -519,7 +549,13 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, NoSave) {
   EXPECT_FALSE(chrome::CanSavePage(browser()));
 }
 
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
+// Disabled on Windows due to flakiness. http://crbug.com/162323
+#if defined(OS_WIN)
+#define MAYBE_FileNameFromPageTitle DISABLED_FileNameFromPageTitle
+#else
+#define MAYBE_FileNameFromPageTitle FileNameFromPageTitle
+#endif
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_FileNameFromPageTitle) {
   GURL url = NavigateToMockURL("b");
 
   FilePath full_file_name = save_dir_.path().AppendASCII(
@@ -550,7 +586,13 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
       dir.AppendASCII("1.css")));
 }
 
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, RemoveFromList) {
+// Disabled on Windows due to flakiness. http://crbug.com/162323
+#if defined(OS_WIN)
+#define MAYBE_RemoveFromList DISABLED_RemoveFromList
+#else
+#define MAYBE_RemoveFromList RemoveFromList
+#endif
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_RemoveFromList) {
   GURL url = NavigateToMockURL("a");
 
   FilePath full_file_name, dir;
@@ -654,4 +696,3 @@ IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
   EXPECT_TRUE(file_util::GetFileSize(full_file_name, &actual_file_size));
   EXPECT_LE(kFileSizeMin, actual_file_size);
 }
-
