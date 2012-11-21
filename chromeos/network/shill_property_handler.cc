@@ -5,19 +5,24 @@
 #include "chromeos/network/shill_property_handler.h"
 
 #include "base/bind.h"
+#include "base/format_macros.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/shill_service_observer.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace {
+
+const char kLogModule[] = "ShillPropertyHandler";
 
 // Limit the number of services we observe. Since they are listed in priority
 // order, it should be reasonable to ignore services past this.
@@ -168,7 +173,7 @@ bool ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
       UpdateManagedList(ManagedState::MANAGED_TYPE_DEVICE, *vlist);
   } else if (key == flimflam::kAvailableTechnologiesProperty) {
     const base::ListValue* vlist = GetListValue(key, value);
-    if (vlist ) {
+    if (vlist) {
       listener_->UpdateAvailableTechnologies(*vlist);
       notify_manager_changed = true;
     }
@@ -218,11 +223,18 @@ void ShillPropertyHandler::UpdateObservedNetworkServices(
     if (new_observed.size() >= kMaxObservedServices)
       break;
   }
+  network_event_log::AddEntry(
+      kLogModule, "ObservedListChanged",
+      StringPrintf("Entries: %"PRIuS " New: %"PRIuS,
+                   entries.GetSize(), new_observed.size()));
   VLOG(2) << "UpdateObservedNetworkServices, new observed: "
           << new_observed.size();
   // Delete network service observers still in observed_networks_.
-  STLDeleteContainerPairSecondPointers(
-      observed_networks_.begin(), observed_networks_.end());
+  for (ShillServiceObserverMap::iterator iter =  observed_networks_.begin();
+       iter != observed_networks_.end(); ++iter) {
+    network_event_log::AddEntry(kLogModule, "StopObserving", iter->first);
+    delete iter->second;
+  }
   observed_networks_.swap(new_observed);
 }
 

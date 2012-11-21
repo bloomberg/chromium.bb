@@ -50,4 +50,14 @@ class AboutUI : public content::WebUIController {
   DISALLOW_COPY_AND_ASSIGN(AboutUI);
 };
 
+namespace about_ui {
+
+// Helper functions
+void AppendHeader(std::string* output, int refresh,
+                  const std::string& unescaped_title);
+void AppendBody(std::string *output);
+void AppendFooter(std::string *output);
+
+}  // namespace about_ui
+
 #endif  // CHROME_BROWSER_UI_WEBUI_ABOUT_UI_H_

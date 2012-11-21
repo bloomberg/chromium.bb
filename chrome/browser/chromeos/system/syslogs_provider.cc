@@ -16,7 +16,9 @@
 #include "base/string_util.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/network/network_event_log.h"
 #include "content/public/browser/browser_thread.h"
+#include "dbus/dbus_statistics.h"
 
 using content::BrowserThread;
 
@@ -291,6 +293,11 @@ void SyslogsProviderImpl::ReadSyslogs(
     LoadCompressedLogs(zip_file, zip_content);
     file_util::Delete(zip_file, false);
   }
+
+  // Include recent network log events
+  const int kMaxNetworkEventsForFeedback = 50;
+  (*logs)["network_event_log"] = chromeos::network_event_log::GetAsString(
+      chromeos::network_event_log::OLDEST_FIRST, kMaxNetworkEventsForFeedback);
 
   // SyslogsMemoryHandler will clean itself up.
   // SyslogsMemoryHandler::OnDetailsAvailable() will modify |logs| and call

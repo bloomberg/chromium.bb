@@ -74,10 +74,9 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
+#include "chrome/browser/ui/webui/chromeos/about_network.h"
 #endif
 
 #if defined(USE_ASH)
@@ -232,7 +231,11 @@ class ChromeOSTermsHandler
 
 #endif
 
+}  // namespace
+
 // Individual about handlers ---------------------------------------------------
+
+namespace about_ui {
 
 void AppendHeader(std::string* output, int refresh,
                   const std::string& unescaped_title) {
@@ -258,6 +261,14 @@ void AppendFooter(std::string *output) {
   output->append("</body>\n</html>\n");
 }
 
+}  // namespace about_ui
+
+using about_ui::AppendHeader;
+using about_ui::AppendBody;
+using about_ui::AppendFooter;
+
+namespace {
+
 std::string ChromeURLs() {
   std::string html;
   AppendHeader(&html, 0, "Chrome URLs");
@@ -281,16 +292,10 @@ std::string ChromeURLs() {
 #if defined(OS_CHROMEOS)
 
 // Html output helper functions
-// TODO(stevenjb): L10N this.
 
 // Helper function to wrap HTML with a tag.
 std::string WrapWithTag(const std::string& tag, const std::string& text) {
   return "<" + tag + ">" + text + "</" + tag + ">";
-}
-
-// Helper function to wrap Html with <th> tag.
-std::string WrapWithTH(const std::string& text) {
-  return "<th>" + text + "</th>";
 }
 
 // Helper function to wrap Html with <td> tag.
@@ -303,174 +308,14 @@ std::string WrapWithTR(const std::string& text) {
   return "<tr>" + text + "</tr>";
 }
 
-void AppendRefresh(std::string *output, int refresh, const std::string& name) {
-  if (refresh > 0) {
-    output->append("(Auto-refreshing page every ");
-    output->append(base::IntToString(refresh));
-    output->append("s)");
-  } else {
-    output->append("(To auto-refresh this page: about:");
-    output->append(name);
-    output->append("/&lt;secs&gt;)");
-  }
-}
-
-// Helper function to create an Html table header for a Network.
-std::string ToHtmlTableHeader(const chromeos::Network* network) {
-  std::string str =
-      WrapWithTH("Name") +
-      WrapWithTH("Active") +
-      WrapWithTH("State");
-  if (network->type() == chromeos::TYPE_WIFI ||
-      network->type() == chromeos::TYPE_CELLULAR) {
-    str += WrapWithTH("Auto-Connect");
-    str += WrapWithTH("Strength");
-  }
-  if (network->type() == chromeos::TYPE_WIFI) {
-    str += WrapWithTH("Encryption");
-    str += WrapWithTH("Passphrase");
-    str += WrapWithTH("Identity");
-    str += WrapWithTH("Frequency");
-  }
-  if (network->type() == chromeos::TYPE_CELLULAR) {
-    str += WrapWithTH("Technology");
-    str += WrapWithTH("Connectivity");
-    str += WrapWithTH("Activation");
-    str += WrapWithTH("Roaming");
-  }
-  if (network->type() == chromeos::TYPE_VPN) {
-    str += WrapWithTH("Host");
-    str += WrapWithTH("Provider Type");
-    str += WrapWithTH("PSK Passphrase");
-    str += WrapWithTH("Username");
-    str += WrapWithTH("User Passphrase");
-  }
-  str += WrapWithTH("Error");
-  str += WrapWithTH("IP Address");
-  return WrapWithTR(str);
-}
-
-// Helper function to create an Html table row for a Network.
-std::string ToHtmlTableRow(const chromeos::Network* network) {
-  std::string str =
-      WrapWithTD(network->name()) +
-      WrapWithTD(base::IntToString(network->is_active())) +
-      WrapWithTD(network->GetStateString());
-  if (network->type() == chromeos::TYPE_WIFI ||
-      network->type() == chromeos::TYPE_CELLULAR) {
-    const chromeos::WirelessNetwork* wireless =
-        static_cast<const chromeos::WirelessNetwork*>(network);
-    str += WrapWithTD(base::IntToString(wireless->auto_connect()));
-    str += WrapWithTD(base::IntToString(wireless->strength()));
-  }
-  if (network->type() == chromeos::TYPE_WIFI) {
-    const chromeos::WifiNetwork* wifi =
-        static_cast<const chromeos::WifiNetwork*>(network);
-    str += WrapWithTD(wifi->GetEncryptionString());
-    str += WrapWithTD(std::string(wifi->passphrase().length(), '*'));
-    str += WrapWithTD(wifi->identity());
-    str += WrapWithTD(base::IntToString(wifi->frequency()));
-  }
-  if (network->type() == chromeos::TYPE_CELLULAR) {
-    const chromeos::CellularNetwork* cell =
-        static_cast<const chromeos::CellularNetwork*>(network);
-    str += WrapWithTH(cell->GetNetworkTechnologyString());
-    str += WrapWithTH(cell->GetActivationStateString());
-    str += WrapWithTH(cell->GetRoamingStateString());
-  }
-  if (network->type() == chromeos::TYPE_VPN) {
-    const chromeos::VirtualNetwork* vpn =
-        static_cast<const chromeos::VirtualNetwork*>(network);
-    str += WrapWithTH(vpn->server_hostname());
-    str += WrapWithTH(vpn->GetProviderTypeString());
-    str += WrapWithTD(std::string(vpn->psk_passphrase().length(), '*'));
-    str += WrapWithTH(vpn->username());
-    str += WrapWithTD(std::string(vpn->user_passphrase().length(), '*'));
-  }
-  str += WrapWithTD(network->failed() ? network->GetErrorString() : "");
-  str += WrapWithTD(network->ip_address());
-  return WrapWithTR(str);
-}
-
-std::string GetNetworkHtmlInfo(int refresh) {
-  chromeos::NetworkLibrary* cros =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  std::string output;
-  AppendHeader(&output, refresh, "About Network");
-  AppendBody(&output);
-  AppendRefresh(&output, refresh, "network");
-
-  if (cros->ethernet_enabled()) {
-    output.append("<h3>Ethernet:</h3><table border=1>");
-    const chromeos::EthernetNetwork* ethernet = cros->ethernet_network();
-    if (ethernet) {
-      output.append(ToHtmlTableHeader(ethernet));
-      output.append(ToHtmlTableRow(ethernet));
-    }
-  }
-
-  if (cros->wifi_enabled()) {
-    output.append("</table><h3>Wifi Networks:</h3><table border=1>");
-    const chromeos::WifiNetworkVector& wifi_networks = cros->wifi_networks();
-    for (size_t i = 0; i < wifi_networks.size(); ++i) {
-      if (i == 0)
-        output.append(ToHtmlTableHeader(wifi_networks[i]));
-      output.append(ToHtmlTableRow(wifi_networks[i]));
-    }
-  }
-
-  if (cros->cellular_enabled()) {
-    output.append("</table><h3>Cellular Networks:</h3><table border=1>");
-    const chromeos::CellularNetworkVector& cellular_networks =
-        cros->cellular_networks();
-    for (size_t i = 0; i < cellular_networks.size(); ++i) {
-      if (i == 0)
-        output.append(ToHtmlTableHeader(cellular_networks[i]));
-      output.append(ToHtmlTableRow(cellular_networks[i]));
-    }
-  }
-
-  {
-    output.append("</table><h3>Virtual Networks:</h3><table border=1>");
-    const chromeos::VirtualNetworkVector& virtual_networks =
-        cros->virtual_networks();
-    for (size_t i = 0; i < virtual_networks.size(); ++i) {
-      if (i == 0)
-        output.append(ToHtmlTableHeader(virtual_networks[i]));
-      output.append(ToHtmlTableRow(virtual_networks[i]));
-    }
-  }
-
-  {
-    output.append(
-        "</table><h3>Remembered Wi-Fi Networks:</h3><table border=1>");
-    const chromeos::WifiNetworkVector& remembered_wifi_networks =
-        cros->remembered_wifi_networks();
-    for (size_t i = 0; i < remembered_wifi_networks.size(); ++i) {
-      if (i == 0)
-        output.append(
-            ToHtmlTableHeader(remembered_wifi_networks[i]));
-      output.append(ToHtmlTableRow(remembered_wifi_networks[i]));
-    }
-  }
-
-  output.append("</table>");
-  AppendFooter(&output);
-  return output;
-}
-
-std::string AboutNetwork(const std::string& query) {
-  int refresh;
-  base::StringToInt(query, &refresh);
-  return GetNetworkHtmlInfo(refresh);
-}
-
 std::string AddStringRow(const std::string& name, const std::string& value) {
   std::string row;
   row.append(WrapWithTD(name));
   row.append(WrapWithTD(value));
   return WrapWithTR(row);
 }
+
+// TODO(stevenjb): L10N AboutDiscards.
 
 std::string AboutDiscardsRun() {
   std::string output;
@@ -1136,7 +981,7 @@ void AboutUIHTMLSource::StartDataRequest(const std::string& path,
     return;
 #if defined(OS_CHROMEOS)
   } else if (host == chrome::kChromeUINetworkHost) {
-    response = AboutNetwork(path);
+    response = chromeos::about_ui::AboutNetwork(path);
   } else if (host == chrome::kChromeUIOSCreditsHost) {
     response = ResourceBundle::GetSharedInstance().GetRawDataResource(
         IDR_OS_CREDITS_HTML).as_string();

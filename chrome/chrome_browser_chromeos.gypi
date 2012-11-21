@@ -625,6 +625,8 @@
         'browser/chromeos/system_logs/lsb_release_log_source.h',
         'browser/chromeos/system_logs/memory_details_log_source.cc',
         'browser/chromeos/system_logs/memory_details_log_source.h',
+        'browser/chromeos/system_logs/network_event_log_source.cc',
+        'browser/chromeos/system_logs/network_event_log_source.h',
         'browser/chromeos/system_logs/system_logs_fetcher.cc',
         'browser/chromeos/system_logs/system_logs_fetcher.h',
         'browser/chromeos/ui/idle_logout_dialog_view.cc',

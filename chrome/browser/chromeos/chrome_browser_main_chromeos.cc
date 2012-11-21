@@ -80,6 +80,7 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/display/output_configurator.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/power/power_state_override.h"
 #include "content/public/browser/notification_service.h"
@@ -269,6 +270,7 @@ class DBusServices {
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
             chromeos::switches::kEnableNewNetworkHandlers))
       return;
+    chromeos::network_event_log::Initialize();
     chromeos::NetworkStateHandler::Initialize();
     network_handlers_initialized_ = true;
   }
@@ -282,8 +284,10 @@ class DBusServices {
     if (cros_initialized_ && CrosLibrary::Get())
       CrosLibrary::Shutdown();
 
-    if (network_handlers_initialized_)
+    if (network_handlers_initialized_) {
       chromeos::NetworkStateHandler::Shutdown();
+      chromeos::network_event_log::Shutdown();
+    }
 
     cryptohome::AsyncMethodCaller::Shutdown();
     disks::DiskMountManager::Shutdown();
