@@ -447,8 +447,6 @@ DialogType.isModal = function(type) {
         prefs.sortField || 'modificationTime',
         prefs.sortDirection || 'desc');
 
-    this.setupCurrentDirectory_(true /* page loading */);
-
     var stateChangeHandler =
         this.onNetworkStateOrPreferencesChanged_.bind(this);
     chrome.fileBrowserPrivate.onPreferencesChanged.addListener(
@@ -461,15 +459,17 @@ DialogType.isModal = function(type) {
 
     this.initDataTransferOperations_();
 
-    this.table_.endBatchUpdates();
-    this.grid_.endBatchUpdates();
-
     this.initContextMenus_();
     this.initCommands_();
 
     this.updateFileTypeFilter_();
 
     this.selectionHandler_.onSelectionChanged();
+
+    this.setupCurrentDirectory_(true /* page loading */);
+
+    this.table_.endBatchUpdates();
+    this.grid_.endBatchUpdates();
 
     // Show the page now unless it's already delayed.
     this.delayShow_(0);
@@ -1356,14 +1356,16 @@ DialogType.isModal = function(type) {
       path, invokeHandlers) {
     if (invokeHandlers) {
       var onResolve = function(baseName, leafName, exists) {
-        var galleryUrls = null;
+        var urls = null;
+        var action = null;
 
         if (!exists || leafName == '') {
           // Non-existent file or a directory.
           if (this.params_.gallery) {
             // Reloading while the Gallery is open with empty or multiple
             // selection. Open the Gallery when the directory is scanned.
-            galleryUrls = [];
+            urls = [];
+            action = 'gallery';
           }
         } else {
           // There are 3 ways we can get here:
@@ -1374,23 +1376,31 @@ DialogType.isModal = function(type) {
           // We call the appropriate methods of FileTasks directly as we do
           // not need any of the preparations that |execute| method does.
           if (FileType.isImageOrVideo(path)) {
-            galleryUrls = [util.makeFilesystemUrl(path)];
+            urls = [util.makeFilesystemUrl(path)];
+            action = 'gallery';
           }
           if (FileType.getMediaType(path) == 'archive') {
-            new FileTasks(this, this.params_).mountArchives_(
-                [util.makeFilesystemUrl(path)]);
+            urls = [util.makeFilesystemUrl(path)];
+            action = 'archives';
           }
         }
 
-        if (galleryUrls) {
-          // Opening gallery will invoke |this.show_| at the right time.
+        if (urls) {
           var listener = function() {
             this.directoryModel_.removeEventListener(
                 'scan-completed', listener);
-            new FileTasks(this, this.params_).openGallery(galleryUrls);
+            var tasks = new FileTasks(this, this.params_);
+            if (action == 'gallery') {
+              tasks.openGallery(urls);
+            } else if (action == 'archives') {
+              tasks.mountArchives_(urls);
+            }
           }.bind(this);
           this.directoryModel_.addEventListener('scan-completed', listener);
-        } else {
+        }
+
+        if (action != 'gallery') {
+          // Opening gallery will invoke |this.show_| at the right time.
           this.show_();
         }
       }.bind(this);
