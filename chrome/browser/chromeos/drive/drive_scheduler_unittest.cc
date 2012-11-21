@@ -105,7 +105,8 @@ class DriveSchedulerTest : public testing::Test {
     mock_remove_operation_ = new StrictMock<MockRemoveOperation>();
     drive_operations_.InitForTesting(mock_copy_operation_,
                                      mock_move_operation_,
-                                     mock_remove_operation_);
+                                     mock_remove_operation_,
+                                     NULL);
     scheduler_.reset(new DriveScheduler(profile_.get(),
                                         &drive_operations_));
 

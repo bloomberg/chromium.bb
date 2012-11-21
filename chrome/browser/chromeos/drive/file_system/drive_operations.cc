@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
+#include "chrome/browser/chromeos/drive/file_system/update_operation.h"
 
 namespace drive {
 namespace file_system {
@@ -38,14 +39,21 @@ void DriveOperations::Init(
                                                            cache,
                                                            metadata,
                                                            observer));
+  update_operation_.reset(new file_system::UpdateOperation(cache,
+                                                           metadata,
+                                                           uploader,
+                                                           blocking_task_runner,
+                                                           observer));
 }
 
 void DriveOperations::InitForTesting(CopyOperation* copy_operation,
                                      MoveOperation* move_operation,
-                                     RemoveOperation* remove_operation) {
+                                     RemoveOperation* remove_operation,
+                                     UpdateOperation* update_operation) {
   copy_operation_.reset(copy_operation);
   move_operation_.reset(move_operation);
   remove_operation_.reset(remove_operation);
+  update_operation_.reset(update_operation);
 }
 
 void DriveOperations::Copy(const FilePath& src_file_path,
@@ -92,5 +100,12 @@ void DriveOperations::Remove(const FilePath& file_path,
                              const FileOperationCallback& callback) {
   remove_operation_->Remove(file_path, is_recursive, callback);
 }
+
+void DriveOperations::UpdateFileByResourceId(
+    const std::string& resource_id,
+    const FileOperationCallback& callback) {
+  update_operation_->UpdateFileByResourceId(resource_id, callback);
+}
+
 }  // namespace file_system
 }  // namespace drive

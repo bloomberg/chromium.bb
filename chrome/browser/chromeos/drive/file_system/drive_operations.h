@@ -27,6 +27,7 @@ class CopyOperation;
 class MoveOperation;
 class OperationObserver;
 class RemoveOperation;
+class UpdateOperation;
 
 // Passes notifications from Drive operations back to the file system.
 class DriveOperations {
@@ -46,7 +47,8 @@ class DriveOperations {
   // Initializes the operation pointers.  For testing only.
   void InitForTesting(CopyOperation* copy_operation,
                       MoveOperation* move_operation,
-                      RemoveOperation* remove_operation);
+                      RemoveOperation* remove_operation,
+                      UpdateOperation* update_operation);
 
   // Wrapper function for copy_operation_.
   void Copy(const FilePath& src_file_path,
@@ -78,10 +80,15 @@ class DriveOperations {
               bool is_recursive,
               const FileOperationCallback& callback);
 
+  // Wrapper function for update_operation_.
+  void UpdateFileByResourceId(const std::string& resource_id,
+                              const FileOperationCallback& callback);
+
  private:
   scoped_ptr<CopyOperation> copy_operation_;
   scoped_ptr<MoveOperation> move_operation_;
   scoped_ptr<RemoveOperation> remove_operation_;
+  scoped_ptr<UpdateOperation> update_operation_;
 };
 
 }  // namespace file_system

@@ -527,53 +527,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const google_apis::GetContentCallback& get_content_callback,
       scoped_ptr<DriveEntryProto> entry_proto);
 
-  // Part of UpdateFileByResourceId(). Called when
-  // DriveDirectory::GetEntryInfoByResourceId() is complete.
-  // |callback| must not be null.
-  void UpdateFileByEntryInfo(
-      const FileOperationCallback& callback,
-      DriveFileError error,
-      const FilePath& drive_file_path,
-      scoped_ptr<DriveEntryProto> entry_proto);
-
-  // Part of UpdateFileByResourceId().
-  // Called when DriveCache::GetFileOnUIThread() is completed for
-  // UpdateFileByResourceId().
-  // |callback| must not be null.
-  void OnGetFileCompleteForUpdateFile(const FileOperationCallback& callback,
-                                      const FilePath& drive_file_path,
-                                      scoped_ptr<DriveEntryProto> entry_proto,
-                                      DriveFileError error,
-                                      const FilePath& cache_file_path);
-
-  // Part of UpdateFileByResourceId().
-  // Callback for getting the size of the cache file in the blocking pool.
-  // |callback| must not be null.
-  void OnGetFileSizeCompleteForUpdateFile(
-      const FileOperationCallback& callback,
-      const FilePath& drive_file_path,
-      scoped_ptr<DriveEntryProto> entry_proto,
-      const FilePath& cache_file_path,
-      int64* file_size,
-      bool get_file_size_result);
-
-  // Part of UpdateFileByResourceId().
-  // Called when DriveUploader::UploadUpdatedFile() is completed for
-  // UpdateFileByResourceId().
-  // |callback| must not be null.
-  void OnUpdatedFileUploaded(
-      const FileOperationCallback& callback,
-      google_apis::DriveUploadError error,
-      const FilePath& gdata_path,
-      const FilePath& file_path,
-      scoped_ptr<google_apis::DocumentEntry> document_entry);
-
-  // Part of UpdateFileByResourceId().
-  void OnUpdatedFileRefreshed(const FileOperationCallback& callback,
-                              DriveFileError error,
-                              const FilePath& drive_file_path,
-                              scoped_ptr<DriveEntryProto> entry_proto);
-
   // The following functions are used to forward calls to asynchronous public
   // member functions to UI thread.
   void SearchAsyncOnUIThread(const std::string& search_query,
