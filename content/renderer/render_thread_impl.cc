@@ -19,6 +19,7 @@
 #include "base/metrics/stats_table.h"
 #include "base/path_service.h"
 #include "base/shared_memory.h"
+#include "base/string16.h"
 #include "base/string_number_conversions.h"  // Temporary
 #include "base/threading/thread_local.h"
 #include "base/utf_string_conversions.h"
@@ -852,6 +853,11 @@ AudioRendererMixerManager* RenderThreadImpl::GetAudioRendererMixerManager() {
 }
 
 #if defined(OS_WIN)
+void RenderThreadImpl::PreCacheFontCharacters(const LOGFONT& log_font,
+                                              const string16& str) {
+  Send(new ViewHostMsg_PreCacheFontCharacters(log_font, str));
+}
+
 void RenderThreadImpl::PreCacheFont(const LOGFONT& log_font) {
   Send(new ChildProcessHostMsg_PreCacheFont(log_font));
 }

@@ -9,12 +9,15 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string16.h"
 #include "base/win/win_util.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/injection_test_win.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 #include "sandbox/win/src/sandbox.h"
 #include "skia/ext/skia_sandbox_support_win.h"
+#include "skia/ext/vector_platform_device_emf_win.h"
 #include "unicode/timezone.h"
 
 namespace content {
@@ -25,6 +28,17 @@ void SkiaPreCacheFont(const LOGFONT& logfont) {
   RenderThread* render_thread = RenderThread::Get();
   if (render_thread) {
     render_thread->PreCacheFont(logfont);
+  }
+}
+
+void SkiaPreCacheFontCharacters(const LOGFONT& logfont,
+                                const wchar_t* text,
+                                unsigned int text_length) {
+  content::RenderThreadImpl* render_thread_impl =
+      content::RenderThreadImpl::current();
+  if (render_thread_impl) {
+    render_thread_impl->PreCacheFontCharacters(logfont,
+                                               string16(text, text_length));
   }
 }
 
@@ -78,6 +92,8 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
     // is disabled, we don't have to make this dummy call.
     scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
     SetSkiaEnsureTypefaceAccessible(SkiaPreCacheFont);
+    skia::SetSkiaEnsureTypefaceCharactersAccessible(
+        SkiaPreCacheFontCharacters);
   }
 }
 

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/observer_list.h"
+#include "base/string16.h"
 #include "base/timer.h"
 #include "build/build_config.h"
 #include "content/common/child_process.h"
@@ -238,6 +239,10 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // instances shared based on configured audio parameters.  Lazily created on
   // first call.
   AudioRendererMixerManager* GetAudioRendererMixerManager();
+
+#if defined(OS_WIN)
+  void PreCacheFontCharacters(const LOGFONT& log_font, const string16& str);
+#endif
 
   // For producing custom V8 histograms. Custom histograms are produced if all
   // RenderViews share the same host, and the host is in the pre-specified set

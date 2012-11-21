@@ -127,6 +127,12 @@ class VectorPlatformDeviceEmf : public SkDevice, public PlatformDevice {
   DISALLOW_COPY_AND_ASSIGN(VectorPlatformDeviceEmf);
 };
 
+typedef void (*SkiaEnsureTypefaceCharactersAccessible)
+    (const LOGFONT& font, const wchar_t* text, unsigned int text_length);
+
+SK_API void SetSkiaEnsureTypefaceCharactersAccessible(
+    SkiaEnsureTypefaceCharactersAccessible func);
+
 }  // namespace skia
 
 #endif  // SKIA_EXT_VECTOR_PLATFORM_DEVICE_EMF_WIN_H_

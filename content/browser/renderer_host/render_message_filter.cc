@@ -76,6 +76,7 @@
 #endif
 #if defined(OS_WIN)
 #include "content/browser/renderer_host/backing_store_win.h"
+#include "content/common/font_cache_dispatcher_win.h"
 #endif
 
 using net::CookieStore;
@@ -362,6 +363,10 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                                             bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(RenderMessageFilter, message, *message_was_ok)
+#if defined(OS_WIN)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PreCacheFontCharacters,
+                        OnPreCacheFontCharacters)
+#endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_GenerateRoutingID, OnGenerateRoutingID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWindow, OnMsgCreateWindow)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnMsgCreateWidget)
@@ -1101,5 +1106,34 @@ void RenderMessageFilter::OnDidLose3DContext(
   GpuDataManagerImpl::GetInstance()->BlockDomainFrom3DAPIs(
       top_origin_url, guilt);
 }
+
+#if defined(OS_WIN)
+void RenderMessageFilter::OnPreCacheFontCharacters(const LOGFONT& font,
+                                                   const string16& str) {
+  // First, comments from FontCacheDispatcher::OnPreCacheFont do apply here too.
+  // Except that for True Type fonts,
+  // GetTextMetrics will not load the font in memory.
+  // The only way windows seem to load properly, it is to create a similar
+  // device (like the one in which we print), then do an ExtTextOut,
+  // as we do in the printing thread, which is sandboxed.
+  HDC hdc = CreateEnhMetaFile(NULL, NULL, NULL, NULL);
+  HFONT font_handle = CreateFontIndirect(&font);
+  DCHECK(NULL != font_handle);
+
+  HGDIOBJ old_font = SelectObject(hdc, font_handle);
+  DCHECK(NULL != old_font);
+
+  ExtTextOut(hdc, 0, 0, ETO_GLYPH_INDEX, 0, str.c_str(), str.length(), NULL);
+
+  SelectObject(hdc, old_font);
+  DeleteObject(font_handle);
+
+  HENHMETAFILE metafile = CloseEnhMetaFile(hdc);
+
+  if (metafile) {
+    DeleteEnhMetaFile(metafile);
+  }
+}
+#endif
 
 }  // namespace content
