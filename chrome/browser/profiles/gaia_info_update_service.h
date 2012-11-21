@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/timer.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile_downloader.h"
@@ -19,8 +18,7 @@ class ProfileDownloader;
 
 // This service kicks off a download of the user's name and profile picture.
 // The results are saved in the profile info cache.
-class GAIAInfoUpdateService : public ProfileDownloaderDelegate,
-                              public PrefObserver {
+class GAIAInfoUpdateService : public ProfileDownloaderDelegate {
  public:
   explicit GAIAInfoUpdateService(Profile* profile);
   virtual ~GAIAInfoUpdateService();
@@ -44,11 +42,6 @@ class GAIAInfoUpdateService : public ProfileDownloaderDelegate,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(GAIAInfoUpdateServiceTest, ScheduleUpdate);
-
-  // PrefObserver:
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
-
 
   void OnUsernameChanged();
   void ScheduleNextUpdate();

@@ -37,7 +37,10 @@ CloudPolicyRefreshScheduler::CloudPolicyRefreshScheduler(
   store_->AddObserver(this);
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
 
-  refresh_delay_.Init(refresh_pref.c_str(), prefs, this);
+  refresh_delay_.Init(
+      refresh_pref.c_str(), prefs,
+      base::Bind(&CloudPolicyRefreshScheduler::ScheduleRefresh,
+                 base::Unretained(this)));
 
   UpdateLastRefreshFromPolicy();
   ScheduleRefresh();
@@ -97,14 +100,6 @@ void CloudPolicyRefreshScheduler::OnStoreError(CloudPolicyStore* store) {
   // The best guess in that situation is to assume is_managed didn't change and
   // continue using the stale information. Thus, no specific response to a store
   // error is required. NB: Changes to is_managed fire OnStoreLoaded().
-}
-
-void CloudPolicyRefreshScheduler::OnPreferenceChanged(
-    PrefServiceBase* service,
-    const std::string& pref_name) {
-  DCHECK_EQ(refresh_delay_.GetPrefName(), pref_name);
-
-  ScheduleRefresh();
 }
 
 void CloudPolicyRefreshScheduler::OnIPAddressChanged() {

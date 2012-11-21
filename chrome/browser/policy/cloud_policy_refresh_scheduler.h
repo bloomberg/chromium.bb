@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/cancelable_callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/time.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/policy/cloud_policy_client.h"
@@ -30,7 +29,6 @@ namespace policy {
 class CloudPolicyRefreshScheduler
     : public CloudPolicyClient::Observer,
       public CloudPolicyStore::Observer,
-      public PrefObserver,
       public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   // Refresh constants.
@@ -59,10 +57,6 @@ class CloudPolicyRefreshScheduler
   // CloudPolicyStore::Observer:
   virtual void OnStoreLoaded(CloudPolicyStore* store) OVERRIDE;
   virtual void OnStoreError(CloudPolicyStore* store) OVERRIDE;
-
-  // PrefObserver:
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
   // net::NetworkChangeNotifier::IPAddressObserver:
   virtual void OnIPAddressChanged() OVERRIDE;

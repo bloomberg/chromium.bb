@@ -57,7 +57,10 @@ HttpServerPropertiesManager::HttpServerPropertiesManager(
   ui_cache_update_timer_.reset(
       new base::OneShotTimer<HttpServerPropertiesManager>);
   pref_change_registrar_.Init(pref_service_);
-  pref_change_registrar_.Add(prefs::kHttpServerProperties, this);
+  pref_change_registrar_.Add(
+      prefs::kHttpServerProperties,
+      base::Bind(&HttpServerPropertiesManager::OnHttpServerPropertiesChanged,
+                 base::Unretained(this)));
 }
 
 HttpServerPropertiesManager::~HttpServerPropertiesManager() {
@@ -656,17 +659,10 @@ void HttpServerPropertiesManager::UpdatePrefsOnUI(
     completion.Run();
 }
 
-void HttpServerPropertiesManager::OnPreferenceChanged(
-    PrefServiceBase* prefs,
-    const std::string& pref_name) {
+void HttpServerPropertiesManager::OnHttpServerPropertiesChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(prefs == pref_service_);
-  if (pref_name == prefs::kHttpServerProperties) {
-    if (!setting_prefs_)
-      ScheduleUpdateCacheOnUI();
-  } else {
-    NOTREACHED();
-  }
+  if (!setting_prefs_)
+    ScheduleUpdateCacheOnUI();
 }
 
 }  // namespace chrome_browser_net

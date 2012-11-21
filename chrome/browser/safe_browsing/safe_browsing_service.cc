@@ -1375,13 +1375,6 @@ void SafeBrowsingService::Observe(int type,
   }
 }
 
-void SafeBrowsingService::OnPreferenceChanged(PrefServiceBase* service,
-                                              const std::string& pref_name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(pref_name == prefs::kSafeBrowsingEnabled);
-  RefreshState();
-}
-
 bool SafeBrowsingService::IsWhitelisted(const UnsafeResource& resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Check if the user has already ignored our warning for this render_view
@@ -1412,7 +1405,9 @@ void SafeBrowsingService::AddPrefService(PrefService* pref_service) {
   DCHECK(prefs_map_.find(pref_service) == prefs_map_.end());
   PrefChangeRegistrar* registrar = new PrefChangeRegistrar();
   registrar->Init(pref_service);
-  registrar->Add(prefs::kSafeBrowsingEnabled, this);
+  registrar->Add(prefs::kSafeBrowsingEnabled,
+                 base::Bind(&SafeBrowsingService::RefreshState,
+                            base::Unretained(this)));
   prefs_map_[pref_service] = registrar;
   RefreshState();
 }

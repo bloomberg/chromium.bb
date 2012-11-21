@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -143,8 +142,7 @@ void SSLConfigServicePref::SetNewSSLConfig(
 
 // The manager for holding and updating an SSLConfigServicePref instance.
 class SSLConfigServiceManagerPref
-    : public SSLConfigServiceManager,
-      public PrefObserver {
+    : public SSLConfigServiceManager {
  public:
   SSLConfigServiceManagerPref(PrefService* local_state,
                               PrefService* user_prefs);
@@ -158,8 +156,8 @@ class SSLConfigServiceManagerPref
  private:
   // Callback for preference changes.  This will post the changes to the IO
   // thread with SetNewSSLConfig.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
+  void OnPreferenceChanged(PrefServiceBase* prefs,
+                           const std::string& pref_name);
 
   // Store SSL config settings in |config|, directly from the preferences. Must
   // only be called from UI thread.
@@ -205,23 +203,38 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
       ssl_config_service_(new SSLConfigServicePref()) {
   DCHECK(local_state);
 
-  rev_checking_enabled_.Init(prefs::kCertRevocationCheckingEnabled,
-                             local_state, this);
-  ssl_version_min_.Init(prefs::kSSLVersionMin, local_state, this);
-  ssl_version_max_.Init(prefs::kSSLVersionMax, local_state, this);
-  channel_id_enabled_.Init(prefs::kEnableOriginBoundCerts, local_state, this);
-  ssl_record_splitting_disabled_.Init(prefs::kDisableSSLRecordSplitting,
-                                      local_state, this);
+  PrefChangeRegistrar::NamedChangeCallback local_state_callback = base::Bind(
+      &SSLConfigServiceManagerPref::OnPreferenceChanged,
+      base::Unretained(this),
+      local_state);
+
+  rev_checking_enabled_.Init(
+      prefs::kCertRevocationCheckingEnabled, local_state, local_state_callback);
+  ssl_version_min_.Init(
+      prefs::kSSLVersionMin, local_state, local_state_callback);
+  ssl_version_max_.Init(
+      prefs::kSSLVersionMax, local_state, local_state_callback);
+  channel_id_enabled_.Init(
+      prefs::kEnableOriginBoundCerts, local_state, local_state_callback);
+  ssl_record_splitting_disabled_.Init(
+      prefs::kDisableSSLRecordSplitting, local_state, local_state_callback);
+
   local_state_change_registrar_.Init(local_state);
-  local_state_change_registrar_.Add(prefs::kCipherSuiteBlacklist, this);
+  local_state_change_registrar_.Add(
+      prefs::kCipherSuiteBlacklist, local_state_callback);
 
   OnDisabledCipherSuitesChange(local_state);
 
   if (user_prefs) {
-    block_third_party_cookies_.Init(prefs::kBlockThirdPartyCookies, user_prefs,
-                                    this);
+    PrefChangeRegistrar::NamedChangeCallback user_prefs_callback = base::Bind(
+        &SSLConfigServiceManagerPref::OnPreferenceChanged,
+        base::Unretained(this),
+        user_prefs);
+    block_third_party_cookies_.Init(
+        prefs::kBlockThirdPartyCookies, user_prefs, user_prefs_callback);
     user_prefs_change_registrar_.Init(user_prefs);
-    user_prefs_change_registrar_.Add(prefs::kDefaultContentSettings, this);
+    user_prefs_change_registrar_.Add(
+        prefs::kDefaultContentSettings, user_prefs_callback);
 
     OnDefaultContentSettingsChange(user_prefs);
   }

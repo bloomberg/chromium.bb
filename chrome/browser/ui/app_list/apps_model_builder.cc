@@ -57,7 +57,9 @@ AppsModelBuilder::AppsModelBuilder(Profile* profile,
       content::Source<Profile>(profile_));
 
   pref_change_registrar_.Init(extension_prefs->pref_service());
-  pref_change_registrar_.Add(extensions::ExtensionPrefs::kExtensionsPref, this);
+  pref_change_registrar_.Add(extensions::ExtensionPrefs::kExtensionsPref,
+                             base::Bind(&AppsModelBuilder::ResortApps,
+                                        base::Unretained(this)));
 
   model_->AddObserver(this);
 }
@@ -211,11 +213,6 @@ void AppsModelBuilder::Observe(int type,
     default:
       NOTREACHED();
   }
-}
-
-void AppsModelBuilder::OnPreferenceChanged(PrefServiceBase* service,
-                                           const std::string& pref_name) {
-  ResortApps();
 }
 
 void AppsModelBuilder::ListItemsAdded(size_t start, size_t count) {

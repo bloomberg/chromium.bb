@@ -32,7 +32,9 @@ const int kMinUpdateIntervalSeconds = 5;
 GAIAInfoUpdateService::GAIAInfoUpdateService(Profile* profile)
     : profile_(profile) {
   PrefService* prefs = profile_->GetPrefs();
-  username_pref_.Init(prefs::kGoogleServicesUsername, prefs, this);
+  username_pref_.Init(prefs::kGoogleServicesUsername, prefs,
+                      base::Bind(&GAIAInfoUpdateService::OnUsernameChanged,
+                                 base::Unretained(this)));
 
   last_updated_ = base::Time::FromInternalValue(
       prefs->GetInt64(prefs::kProfileGAIAInfoUpdateTime));
@@ -162,12 +164,6 @@ void GAIAInfoUpdateService::OnProfileDownloadFailure(
   profile_->GetPrefs()->SetInt64(prefs::kProfileGAIAInfoUpdateTime,
                                  last_updated_.ToInternalValue());
   ScheduleNextUpdate();
-}
-
-void GAIAInfoUpdateService::OnPreferenceChanged(PrefServiceBase* service,
-                                                const std::string& pref_name) {
-  if (prefs::kGoogleServicesUsername == pref_name)
-    OnUsernameChanged();
 }
 
 void GAIAInfoUpdateService::OnUsernameChanged() {

@@ -38,7 +38,10 @@ SafeBrowsingTabObserver::SafeBrowsingTabObserver(
   PrefService* prefs = profile->GetPrefs();
   if (prefs) {
     pref_change_registrar_.Init(prefs);
-    pref_change_registrar_.Add(prefs::kSafeBrowsingEnabled, this);
+    pref_change_registrar_.Add(
+        prefs::kSafeBrowsingEnabled,
+        base::Bind(&SafeBrowsingTabObserver::UpdateSafebrowsingDetectionHost,
+                   base::Unretained(this)));
 
     if (prefs->GetBoolean(prefs::kSafeBrowsingEnabled) &&
         g_browser_process->safe_browsing_detection_service()) {
@@ -50,22 +53,6 @@ SafeBrowsingTabObserver::SafeBrowsingTabObserver(
 }
 
 SafeBrowsingTabObserver::~SafeBrowsingTabObserver() {
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// content::NotificationObserver overrides
-
-void SafeBrowsingTabObserver::OnPreferenceChanged(
-    PrefServiceBase* service,
-    const std::string& pref_name) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  DCHECK(service == profile->GetPrefs());
-  if (pref_name == prefs::kSafeBrowsingEnabled) {
-    UpdateSafebrowsingDetectionHost();
-  } else {
-    NOTREACHED() << "unexpected pref change notification" << pref_name;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

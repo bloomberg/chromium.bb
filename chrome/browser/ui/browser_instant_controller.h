@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/instant/instant_unload_handler.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
@@ -29,8 +28,7 @@ class Rect;
 
 namespace chrome {
 
-class BrowserInstantController : public PrefObserver,
-                                 public content::NotificationObserver,
+class BrowserInstantController : public content::NotificationObserver,
                                  public search::SearchModelObserver {
  public:
   explicit BrowserInstantController(Browser* browser);
@@ -81,9 +79,9 @@ class BrowserInstantController : public PrefObserver,
   void UpdateThemeInfoForPreview();
 
  private:
-  // Overridden from PrefObserver:
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
+  // Sets the value of |instant_| based on value from profile. Invoked
+  // on pref change.
+  void ResetInstant();
 
   // Overridden from search::SearchModelObserver:
   virtual void ModeChanged(const search::Mode& old_mode,

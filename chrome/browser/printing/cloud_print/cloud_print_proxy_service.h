@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 
@@ -28,8 +27,7 @@ struct CloudPrintProxyInfo;
 // running in the service process.
 class CloudPrintProxyService
     : public CloudPrintSetupHandlerDelegate,
-      public ProfileKeyedService,
-      public PrefObserver {
+      public ProfileKeyedService {
  public:
   explicit CloudPrintProxyService(Profile* profile);
   virtual ~CloudPrintProxyService();
@@ -62,10 +60,6 @@ class CloudPrintProxyService
 
   // CloudPrintSetupHandler::Delegate implementation.
   virtual void OnCloudPrintSetupClosed() OVERRIDE;
-
-  // PrefObserver implementation.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
  private:
   // NotificationDelegate implementation for the token expired notification.

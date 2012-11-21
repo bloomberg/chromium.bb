@@ -89,7 +89,12 @@ void CloudPrintProxyService::Initialize() {
   }
 
   pref_change_registrar_.Init(profile_->GetPrefs());
-  pref_change_registrar_.Add(prefs::kCloudPrintProxyEnabled, this);
+  pref_change_registrar_.Add(
+      prefs::kCloudPrintProxyEnabled,
+      base::Bind(
+          base::IgnoreResult(
+              &CloudPrintProxyService::ApplyCloudPrintConnectorPolicy),
+          base::Unretained(this)));
 }
 
 void CloudPrintProxyService::RefreshStatusFromService() {
@@ -205,11 +210,6 @@ bool CloudPrintProxyService::ApplyCloudPrintConnectorPolicy() {
 void CloudPrintProxyService::OnCloudPrintSetupClosed() {
   MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&browser::EndKeepAlive));
-}
-
-void CloudPrintProxyService::OnPreferenceChanged(PrefServiceBase* service,
-                                                 const std::string& pref_name) {
-  ApplyCloudPrintConnectorPolicy();
 }
 
 void CloudPrintProxyService::RefreshCloudPrintProxyStatus() {

@@ -42,8 +42,11 @@ BrowserInstantController::BrowserInstantController(Browser* browser)
       initialized_theme_info_(false),
       theme_area_height_(0) {
   profile_pref_registrar_.Init(browser_->profile()->GetPrefs());
-  profile_pref_registrar_.Add(prefs::kInstantEnabled, this);
-  instant_.SetInstantEnabled(IsInstantEnabled(browser_->profile()));
+  profile_pref_registrar_.Add(
+      prefs::kInstantEnabled,
+      base::Bind(&BrowserInstantController::ResetInstant,
+                 base::Unretained(this)));
+  ResetInstant();
   browser_->search_model()->AddObserver(this);
 
 #if defined(ENABLE_THEMES)
@@ -148,12 +151,7 @@ void BrowserInstantController::UpdateThemeInfoForPreview() {
     OnThemeChanged(NULL);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// BrowserInstantController, PrefObserver implementation:
-
-void BrowserInstantController::OnPreferenceChanged(
-    PrefServiceBase* service,
-    const std::string& pref_name) {
+void BrowserInstantController::ResetInstant() {
   instant_.SetInstantEnabled(IsInstantEnabled(browser_->profile()));
 }
 

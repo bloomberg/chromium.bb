@@ -20,7 +20,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
@@ -58,7 +57,6 @@ class SafeBrowsingService
     : public base::RefCountedThreadSafe<
           SafeBrowsingService, content::BrowserThread::DeleteOnUIThread>,
       public content::NotificationObserver,
-      public PrefObserver,
       public SafeBrowsingProtocolManagerDelegate {
  public:
   class Client;
@@ -464,10 +462,6 @@ class SafeBrowsingService
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // PrefObserver override
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
   // SafeBrowsingProtocolManageDelegate override
   virtual void ResetDatabase() OVERRIDE;

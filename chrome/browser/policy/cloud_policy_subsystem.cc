@@ -103,7 +103,10 @@ void CloudPolicySubsystem::CompleteInitialization(
     PrefService* local_state = g_browser_process->local_state();
     DCHECK(pref_change_registrar_.IsEmpty());
     pref_change_registrar_.Init(local_state);
-    pref_change_registrar_.Add(refresh_pref_name_, this);
+    pref_change_registrar_.Add(
+        refresh_pref_name_,
+        base::Bind(&CloudPolicySubsystem::OnRefreshPrefChanged,
+                   base::Unretained(this)));
     UpdatePolicyRefreshRate(local_state->GetInteger(refresh_pref_name_));
   }
 }
@@ -158,11 +161,8 @@ void CloudPolicySubsystem::UpdatePolicyRefreshRate(int64 refresh_rate) {
   }
 }
 
-void CloudPolicySubsystem::OnPreferenceChanged(PrefServiceBase* service,
-                                               const std::string& pref_name) {
-  DCHECK_EQ(pref_name, refresh_pref_name_);
+void CloudPolicySubsystem::OnRefreshPrefChanged() {
   PrefService* local_state = g_browser_process->local_state();
-  DCHECK_EQ(service, local_state);
   UpdatePolicyRefreshRate(local_state->GetInteger(refresh_pref_name_));
 }
 

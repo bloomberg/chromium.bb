@@ -9,7 +9,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/app_list/app_list_model.h"
@@ -20,7 +19,6 @@ class ExtensionAppItem;
 class Profile;
 
 class AppsModelBuilder : public content::NotificationObserver,
-                         public PrefObserver,
                          public ui::ListModelObserver {
  public:
   AppsModelBuilder(Profile* profile,
@@ -57,10 +55,6 @@ class AppsModelBuilder : public content::NotificationObserver,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // PrefObserver
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
   // ui::ListModelObserver overrides:
   virtual void ListItemsAdded(size_t start, size_t count) OVERRIDE;

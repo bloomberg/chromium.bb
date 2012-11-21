@@ -80,9 +80,11 @@ PrintViewManager::PrintViewManager(content::WebContents* web_contents)
                  content::Source<content::WebContents>(web_contents));
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  printing_enabled_.Init(prefs::kPrintingEnabled,
-                         profile->GetPrefs(),
-                         this);
+  printing_enabled_.Init(
+      prefs::kPrintingEnabled,
+      profile->GetPrefs(),
+      base::Bind(&PrintViewManager::UpdateScriptedPrintingBlocked,
+                 base::Unretained(this)));
 }
 
 PrintViewManager::~PrintViewManager() {
@@ -392,11 +394,6 @@ void PrintViewManager::Observe(int type,
       break;
     }
   }
-}
-
-void PrintViewManager::OnPreferenceChanged(PrefServiceBase* service,
-                                           const std::string& pref_name) {
-  UpdateScriptedPrintingBlocked();
 }
 
 void PrintViewManager::OnNotifyPrintJobEvent(

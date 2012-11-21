@@ -7,7 +7,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace content {
@@ -20,18 +19,13 @@ class ClientSideDetectionHost;
 
 // Per-tab class to handle safe-browsing functionality.
 class SafeBrowsingTabObserver
-    : public PrefObserver,
-      public content::WebContentsUserData<SafeBrowsingTabObserver> {
+    : public content::WebContentsUserData<SafeBrowsingTabObserver> {
  public:
   virtual ~SafeBrowsingTabObserver();
 
  private:
   explicit SafeBrowsingTabObserver(content::WebContents* web_contents);
   friend class content::WebContentsUserData<SafeBrowsingTabObserver>;
-
-  // PrefObserver overrides:
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
   // Internal helpers ----------------------------------------------------------
 

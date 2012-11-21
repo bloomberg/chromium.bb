@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_PRINTING_PRINT_VIEW_MANAGER_H_
 
 #include "base/memory/ref_counted.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/string16.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"
@@ -31,7 +30,6 @@ class PrintViewManagerObserver;
 
 // Manages the print commands for a WebContents.
 class PrintViewManager : public content::NotificationObserver,
-                         public PrefObserver,
                          public PrintedPagesSource,
                          public content::WebContentsObserver,
                          public content::WebContentsUserData<PrintViewManager> {
@@ -78,10 +76,6 @@ class PrintViewManager : public content::NotificationObserver,
   // remove the current observer. |observer| may always be NULL, but |observer_|
   // must be NULL if |observer| is non-NULL.
   void set_observer(PrintViewManagerObserver* observer);
-
-  // PrefObserver implementation.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
   // PrintedPagesSource implementation.
   virtual string16 RenderSourceName() OVERRIDE;

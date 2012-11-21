@@ -278,8 +278,10 @@ URLBlacklistManager::URLBlacklistManager(PrefService* pref_service)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   pref_change_registrar_.Init(pref_service_);
-  pref_change_registrar_.Add(prefs::kUrlBlacklist, this);
-  pref_change_registrar_.Add(prefs::kUrlWhitelist, this);
+  base::Closure callback = base::Bind(&URLBlacklistManager::ScheduleUpdate,
+                                      base::Unretained(this));
+  pref_change_registrar_.Add(prefs::kUrlBlacklist, callback);
+  pref_change_registrar_.Add(prefs::kUrlWhitelist, callback);
 
   // Start enforcing the policies without a delay when they are present at
   // startup.
@@ -295,15 +297,6 @@ void URLBlacklistManager::ShutdownOnUIThread() {
 }
 
 URLBlacklistManager::~URLBlacklistManager() {
-}
-
-void URLBlacklistManager::OnPreferenceChanged(PrefServiceBase* prefs,
-                                              const std::string& pref_name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(prefs == pref_service_);
-  DCHECK(pref_name == prefs::kUrlBlacklist ||
-         pref_name == prefs::kUrlWhitelist);
-  ScheduleUpdate();
 }
 
 void URLBlacklistManager::ScheduleUpdate() {

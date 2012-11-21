@@ -23,20 +23,17 @@ NetPrefObserver::NetPrefObserver(PrefService* prefs,
   DCHECK(prefs);
   DCHECK(predictor);
 
+  base::Closure prefs_callback = base::Bind(&NetPrefObserver::ApplySettings,
+                                            base::Unretained(this));
   network_prediction_enabled_.Init(prefs::kNetworkPredictionEnabled, prefs,
-                                   this);
-  spdy_disabled_.Init(prefs::kDisableSpdy, prefs, this);
+                                   prefs_callback);
+  spdy_disabled_.Init(prefs::kDisableSpdy, prefs, prefs_callback);
 
   ApplySettings();
 }
 
 NetPrefObserver::~NetPrefObserver() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
-void NetPrefObserver::OnPreferenceChanged(PrefServiceBase* service,
-                                          const std::string& pref_name) {
-  ApplySettings();
 }
 
 void NetPrefObserver::ApplySettings() {
