@@ -136,7 +136,7 @@ void Layer::setParent(Layer* layer)
 
 bool Layer::hasAncestor(Layer* ancestor) const
 {
-    for (Layer* layer = parent(); layer; layer = layer->parent()) {
+    for (const Layer* layer = parent(); layer; layer = layer->parent()) {
         if (layer == ancestor)
             return true;
     }
@@ -502,11 +502,6 @@ void Layer::setIsDrawable(bool isDrawable)
 
     m_isDrawable = isDrawable;
     setNeedsCommit();
-}
-
-Layer* Layer::parent() const
-{
-    return m_parent;
 }
 
 void Layer::setNeedsDisplayRect(const gfx::RectF& dirtyRect)

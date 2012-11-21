@@ -693,7 +693,12 @@ void LayerImpl::setMaxScrollOffset(gfx::Vector2d maxScrollOffset)
     m_scrollbarAnimationController->updateScrollOffset(this);
 }
 
-ScrollbarLayerImpl* LayerImpl::horizontalScrollbarLayer() const
+ScrollbarLayerImpl* LayerImpl::horizontalScrollbarLayer()
+{
+    return m_scrollbarAnimationController ? m_scrollbarAnimationController->horizontalScrollbarLayer() : 0;
+}
+
+const ScrollbarLayerImpl* LayerImpl::horizontalScrollbarLayer() const
 {
     return m_scrollbarAnimationController ? m_scrollbarAnimationController->horizontalScrollbarLayer() : 0;
 }
@@ -706,7 +711,12 @@ void LayerImpl::setHorizontalScrollbarLayer(ScrollbarLayerImpl* scrollbarLayer)
     m_scrollbarAnimationController->updateScrollOffset(this);
 }
 
-ScrollbarLayerImpl* LayerImpl::verticalScrollbarLayer() const
+ScrollbarLayerImpl* LayerImpl::verticalScrollbarLayer()
+{
+    return m_scrollbarAnimationController ? m_scrollbarAnimationController->verticalScrollbarLayer() : 0;
+}
+
+const ScrollbarLayerImpl* LayerImpl::verticalScrollbarLayer() const
 {
     return m_scrollbarAnimationController ? m_scrollbarAnimationController->verticalScrollbarLayer() : 0;
 }

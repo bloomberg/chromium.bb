@@ -431,7 +431,7 @@ gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::unoccludedContribu
 
     gfx::Rect surfaceClipRect = surface->clipRect();
     if (surfaceClipRect.IsEmpty()) {
-        LayerType* contributingSurfaceRenderTarget = layer->parent()->renderTarget();
+        const LayerType* contributingSurfaceRenderTarget = layer->parent()->renderTarget();
         surfaceClipRect = gfx::IntersectRects(contributingSurfaceRenderTarget->renderSurface()->contentRect(), gfx::ToEnclosingRect(surface->drawableContentRect()));
     }
 

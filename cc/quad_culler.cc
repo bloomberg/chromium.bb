@@ -18,7 +18,7 @@ using namespace std;
 
 namespace cc {
 
-QuadCuller::QuadCuller(QuadList& quadList, SharedQuadStateList& sharedQuadStateList, LayerImpl* layer, const OcclusionTrackerImpl* occlusionTracker, bool showCullingWithDebugBorderQuads, bool forSurface)
+QuadCuller::QuadCuller(QuadList& quadList, SharedQuadStateList& sharedQuadStateList, const LayerImpl* layer, const OcclusionTrackerImpl* occlusionTracker, bool showCullingWithDebugBorderQuads, bool forSurface)
     : m_quadList(quadList)
     , m_sharedQuadStateList(sharedQuadStateList)
     , m_currentSharedQuadState(0)
@@ -37,7 +37,7 @@ SharedQuadState* QuadCuller::useSharedQuadState(scoped_ptr<SharedQuadState> shar
     return m_currentSharedQuadState;
 }
 
-static inline bool appendQuadInternal(scoped_ptr<DrawQuad> drawQuad, const gfx::Rect& culledRect, QuadList& quadList, const OcclusionTrackerImpl& occlusionTracker, LayerImpl* layer, bool createDebugBorderQuads)
+static inline bool appendQuadInternal(scoped_ptr<DrawQuad> drawQuad, const gfx::Rect& culledRect, QuadList& quadList, const OcclusionTrackerImpl& occlusionTracker, const LayerImpl* layer, bool createDebugBorderQuads)
 {
     bool keepQuad = !culledRect.IsEmpty();
     if (keepQuad)

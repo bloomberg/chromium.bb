@@ -58,7 +58,8 @@ public:
     virtual const WebKit::WebTransformationMatrix& transform() const OVERRIDE;
 
     Layer* rootLayer();
-    Layer* parent() const;
+    Layer* parent() { return m_parent; }
+    const Layer* parent() const { return m_parent; }
     void addChild(scoped_refptr<Layer>);
     void insertChild(scoped_refptr<Layer>, size_t index);
     void replaceChild(Layer* reference, scoped_refptr<Layer> newLayer);
@@ -87,7 +88,8 @@ public:
     bool masksToBounds() const { return m_masksToBounds; }
 
     void setMaskLayer(Layer*);
-    Layer* maskLayer() const { return m_maskLayer.get(); }
+    Layer* maskLayer() { return m_maskLayer.get(); }
+    const Layer* maskLayer() const { return m_maskLayer.get(); }
 
     virtual void setNeedsDisplayRect(const gfx::RectF& dirtyRect);
     void setNeedsDisplay() { setNeedsDisplayRect(gfx::RectF(gfx::PointF(), bounds())); }
@@ -183,7 +185,8 @@ public:
     void setIsDrawable(bool);
 
     void setReplicaLayer(Layer*);
-    Layer* replicaLayer() const { return m_replicaLayer.get(); }
+    Layer* replicaLayer() { return m_replicaLayer.get(); }
+    const Layer* replicaLayer() const { return m_replicaLayer.get(); }
 
     bool hasMask() const { return m_maskLayer; }
     bool hasReplica() const { return m_replicaLayer; }
@@ -210,8 +213,9 @@ public:
     bool drawOpacityIsAnimating() const { return m_drawOpacityIsAnimating; }
     void setDrawOpacityIsAnimating(bool drawOpacityIsAnimating) { m_drawOpacityIsAnimating = drawOpacityIsAnimating; }
 
-    Layer* renderTarget() const { DCHECK(!m_renderTarget || m_renderTarget->renderSurface()); return m_renderTarget; }
     void setRenderTarget(Layer* target) { m_renderTarget = target; }
+    Layer* renderTarget() { DCHECK(!m_renderTarget || m_renderTarget->renderSurface()); return m_renderTarget; }
+    const Layer* renderTarget() const { DCHECK(!m_renderTarget || m_renderTarget->renderSurface()); return m_renderTarget; }
 
     bool drawTransformIsAnimating() const { return m_drawTransformIsAnimating; }
     void setDrawTransformIsAnimating(bool animating) { m_drawTransformIsAnimating = animating; }

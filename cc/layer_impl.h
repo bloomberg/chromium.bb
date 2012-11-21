@@ -53,17 +53,20 @@ public:
     virtual const WebKit::WebTransformationMatrix& transform() const OVERRIDE;
 
     // Tree structure.
-    LayerImpl* parent() const { return m_parent; }
+    LayerImpl* parent() { return m_parent; }
+    const LayerImpl* parent() const { return m_parent; }
     const ScopedPtrVector<LayerImpl>& children() const { return m_children; }
     void addChild(scoped_ptr<LayerImpl>);
     void removeFromParent();
     void removeAllChildren();
 
     void setMaskLayer(scoped_ptr<LayerImpl>);
-    LayerImpl* maskLayer() const { return m_maskLayer.get(); }
+    LayerImpl* maskLayer() { return m_maskLayer.get(); }
+    const LayerImpl* maskLayer() const { return m_maskLayer.get(); }
 
     void setReplicaLayer(scoped_ptr<LayerImpl>);
-    LayerImpl* replicaLayer() const { return m_replicaLayer.get(); }
+    LayerImpl* replicaLayer() { return m_replicaLayer.get(); }
+    const LayerImpl* replicaLayer() const { return m_replicaLayer.get(); }
 
     bool hasMask() const { return m_maskLayer; }
     bool hasReplica() const { return m_replicaLayer; }
@@ -161,8 +164,9 @@ public:
     bool drawOpacityIsAnimating() const { return m_drawOpacityIsAnimating; }
     void setDrawOpacityIsAnimating(bool drawOpacityIsAnimating) { m_drawOpacityIsAnimating = drawOpacityIsAnimating; }
 
-    LayerImpl* renderTarget() const { DCHECK(!m_renderTarget || m_renderTarget->renderSurface()); return m_renderTarget; }
     void setRenderTarget(LayerImpl* target) { m_renderTarget = target; }
+    LayerImpl* renderTarget() { DCHECK(!m_renderTarget || m_renderTarget->renderSurface()); return m_renderTarget; }
+    const LayerImpl* renderTarget() const { DCHECK(!m_renderTarget || m_renderTarget->renderSurface()); return m_renderTarget; }
 
     // The client should be responsible for setting bounds, contentBounds and
     // contentsScale to appropriate values. LayerImpl doesn't calculate any of
@@ -264,11 +268,13 @@ public:
 
     ScrollbarAnimationController* scrollbarAnimationController() const { return m_scrollbarAnimationController.get(); }
 
-    ScrollbarLayerImpl* horizontalScrollbarLayer() const;
     void setHorizontalScrollbarLayer(ScrollbarLayerImpl*);
+    ScrollbarLayerImpl* horizontalScrollbarLayer();
+    const ScrollbarLayerImpl* horizontalScrollbarLayer() const;
 
-    ScrollbarLayerImpl* verticalScrollbarLayer() const;
     void setVerticalScrollbarLayer(ScrollbarLayerImpl*);
+    ScrollbarLayerImpl* verticalScrollbarLayer();
+    const ScrollbarLayerImpl* verticalScrollbarLayer() const;
 
     gfx::Rect layerRectToContentRect(const gfx::RectF& layerRect) const;
 
