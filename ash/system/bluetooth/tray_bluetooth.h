@@ -19,7 +19,7 @@ class BluetoothDetailedView;
 class TrayBluetooth : public SystemTrayItem,
                       public BluetoothObserver {
  public:
-  TrayBluetooth();
+  explicit TrayBluetooth(SystemTray* system_tray);
   virtual ~TrayBluetooth();
 
  private:

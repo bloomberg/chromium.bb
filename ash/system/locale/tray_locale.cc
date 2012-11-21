@@ -73,12 +73,12 @@ class LocaleMessageView : public views::View,
 
 class LocaleNotificationView : public TrayNotificationView {
  public:
-  LocaleNotificationView(TrayLocale* tray,
+  LocaleNotificationView(TrayLocale* owner,
                          LocaleObserver::Delegate* delegate,
                          const std::string& cur_locale,
                          const std::string& from_locale,
                          const std::string& to_locale)
-      : TrayNotificationView(tray, IDR_AURA_UBER_TRAY_LOCALE),
+      : TrayNotificationView(owner, IDR_AURA_UBER_TRAY_LOCALE),
         delegate_(delegate) {
     views::View* container = new LocaleMessageView(
         delegate, cur_locale, from_locale, to_locale);
@@ -109,8 +109,9 @@ class LocaleNotificationView : public TrayNotificationView {
 
 }  // namespace tray
 
-TrayLocale::TrayLocale()
-    : notification_(NULL),
+TrayLocale::TrayLocale(SystemTray* system_tray)
+    : SystemTrayItem(system_tray),
+      notification_(NULL),
       delegate_(NULL) {
 }
 

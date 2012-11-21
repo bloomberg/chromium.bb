@@ -29,7 +29,7 @@ SystemTray* GetSystemTray() {
 // Trivial item implementation that tracks its views for testing.
 class TestItem : public SystemTrayItem {
  public:
-  TestItem() : tray_view_(NULL) {}
+  TestItem() : SystemTrayItem(GetSystemTray()), tray_view_(NULL) {}
 
   virtual views::View* CreateTrayView(user::LoginStatus status) {
     tray_view_ = new views::View;

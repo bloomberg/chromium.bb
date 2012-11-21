@@ -18,6 +18,9 @@ class Label;
 }
 
 namespace ash {
+
+class SystemTrayItem;
+
 namespace internal {
 
 // Base-class for items in the tray. It makes sure the widget is updated
@@ -26,15 +29,16 @@ namespace internal {
 class TrayItemView : public views::View,
                      public ui::AnimationDelegate {
  public:
-  TrayItemView();
+  explicit TrayItemView(SystemTrayItem* owner);
   virtual ~TrayItemView();
 
   // Convenience function for creating a child Label or ImageView.
   void CreateLabel();
   void CreateImageView();
 
-  views::Label* label() { return label_; }
-  views::ImageView* image_view() { return image_view_; }
+  SystemTrayItem* owner() const { return owner_; }
+  views::Label* label() const { return label_; }
+  views::ImageView* image_view() const { return image_view_; }
 
   // Overridden from views::View.
   virtual void SetVisible(bool visible) OVERRIDE;
@@ -63,6 +67,7 @@ class TrayItemView : public views::View,
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
   virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
 
+  SystemTrayItem* owner_;
   scoped_ptr<ui::SlideAnimation> animation_;
   views::Label* label_;
   views::ImageView* image_view_;

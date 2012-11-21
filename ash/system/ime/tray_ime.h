@@ -29,7 +29,7 @@ class TrayItemView;
 class TrayIME : public SystemTrayItem,
                 public IMEObserver {
  public:
-  TrayIME();
+  explicit TrayIME(SystemTray* system_tray);
   virtual ~TrayIME();
 
  private:

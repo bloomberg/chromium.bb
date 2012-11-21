@@ -30,7 +30,7 @@ enum IconSet {
 class TrayPower : public SystemTrayItem,
                   public PowerStatusObserver {
  public:
-  TrayPower();
+  explicit TrayPower(SystemTray* system_tray);
   virtual ~TrayPower();
 
   // Gets the icon index in the battery icon array image based on

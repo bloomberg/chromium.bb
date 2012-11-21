@@ -40,8 +40,10 @@ class VpnDefaultView : public TrayItemMore {
 
 class VpnListDetailedView : public NetworkListDetailedViewBase {
  public:
-  VpnListDetailedView(user::LoginStatus login, int header_string_id)
-      : NetworkListDetailedViewBase(login, header_string_id),
+  VpnListDetailedView(SystemTrayItem* owner,
+                      user::LoginStatus login,
+                      int header_string_id)
+      : NetworkListDetailedViewBase(owner, login, header_string_id),
         other_vpn_(NULL) {
   }
   virtual ~VpnListDetailedView() {
@@ -116,8 +118,9 @@ class VpnListDetailedView : public NetworkListDetailedViewBase {
 
 }  // namespace tray
 
-TrayVPN::TrayVPN()
-    : default_(NULL),
+TrayVPN::TrayVPN(SystemTray* system_tray)
+    : SystemTrayItem(system_tray),
+      default_(NULL),
       detailed_(NULL) {
 }
 
@@ -145,7 +148,8 @@ views::View* TrayVPN::CreateDefaultView(user::LoginStatus status) {
 
 views::View* TrayVPN::CreateDetailedView(user::LoginStatus status) {
   CHECK(detailed_ == NULL);
-  detailed_ = new tray::VpnListDetailedView(status, IDS_ASH_STATUS_TRAY_VPN);
+  detailed_ = new tray::VpnListDetailedView(
+      this, status, IDS_ASH_STATUS_TRAY_VPN);
   detailed_->Init();
   return detailed_;
 }

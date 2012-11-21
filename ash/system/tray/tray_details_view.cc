@@ -4,6 +4,7 @@
 
 #include "ash/system/tray/tray_details_view.h"
 
+#include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
 #include "ui/gfx/canvas.h"
@@ -39,8 +40,9 @@ class ScrollBorder : public views::Border {
   DISALLOW_COPY_AND_ASSIGN(ScrollBorder);
 };
 
-TrayDetailsView::TrayDetailsView()
-    : footer_(NULL),
+TrayDetailsView::TrayDetailsView(SystemTrayItem* owner)
+    : owner_(owner),
+      footer_(NULL),
       scroller_(NULL),
       scroll_content_(NULL),
       scroll_border_(NULL) {

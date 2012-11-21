@@ -12,6 +12,9 @@ class ScrollView;
 }
 
 namespace ash {
+
+class SystemTrayItem;
+
 namespace internal {
 
 class FixedSizedScrollView;
@@ -21,7 +24,7 @@ class ViewClickListener;
 
 class TrayDetailsView : public views::View {
  public:
-  TrayDetailsView();
+  explicit TrayDetailsView(SystemTrayItem* owner);
   virtual ~TrayDetailsView();
 
   // Creates a row with special highlighting etc. This is typically the
@@ -35,6 +38,7 @@ class TrayDetailsView : public views::View {
   // Removes (and destroys) all child views.
   void Reset();
 
+  SystemTrayItem* owner() const { return owner_; }
   SpecialPopupRow* footer() const { return footer_; }
   FixedSizedScrollView* scroller() const { return scroller_; }
   views::View* scroll_content() const { return scroll_content_; }
@@ -45,6 +49,7 @@ class TrayDetailsView : public views::View {
   virtual void OnPaintBorder(gfx::Canvas* canvas) OVERRIDE;
 
  private:
+  SystemTrayItem* owner_;
   SpecialPopupRow* footer_;
   FixedSizedScrollView* scroller_;
   views::View* scroll_content_;

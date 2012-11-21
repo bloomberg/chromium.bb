@@ -102,7 +102,7 @@ class UpdateNagger : public ui::LayerAnimationObserver {
   explicit UpdateNagger(SystemTrayItem* owner)
       : owner_(owner) {
     RestartTimer();
-    Shell::GetInstance()->system_tray()->GetWidget()->GetNativeView()->layer()->
+    owner_->system_tray()->GetWidget()->GetNativeView()->layer()->
         GetAnimator()->AddObserver(this);
   }
 
@@ -153,8 +153,8 @@ class UpdateNagger : public ui::LayerAnimationObserver {
 
 }  // namespace tray
 
-TrayUpdate::TrayUpdate()
-    : TrayImageItem(IDR_AURA_UBER_TRAY_UPDATE),
+TrayUpdate::TrayUpdate(SystemTray* system_tray)
+    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_UPDATE),
       severity_(UpdateObserver::UPDATE_NORMAL) {
 }
 

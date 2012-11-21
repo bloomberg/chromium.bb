@@ -5,7 +5,6 @@
 #include "ash/system/chromeos/network/tray_sms.h"
 
 #include "ash/ash_switches.h"
-#include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_details_view.h"
@@ -51,9 +50,8 @@ namespace internal {
 
 class TraySms::SmsDefaultView : public TrayItemMore {
  public:
-  explicit SmsDefaultView(TraySms* tray)
-      : TrayItemMore(tray, true),
-        tray_(tray) {
+  explicit SmsDefaultView(TraySms* owner)
+      : TrayItemMore(owner, true) {
     SetImage(ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_AURA_UBER_TRAY_SMS));
     Update();
@@ -62,7 +60,7 @@ class TraySms::SmsDefaultView : public TrayItemMore {
   virtual ~SmsDefaultView() {}
 
   void Update() {
-    int message_count = tray_->messages().GetSize();
+    int message_count = static_cast<TraySms*>(owner())->messages().GetSize();
     string16 label = l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_SMS_MESSAGES, base::IntToString16(message_count));
     SetLabel(label);
@@ -70,8 +68,6 @@ class TraySms::SmsDefaultView : public TrayItemMore {
   }
 
  private:
-  TraySms* tray_;
-
   DISALLOW_COPY_AND_ASSIGN(SmsDefaultView);
 };
 
@@ -84,12 +80,12 @@ class TraySms::SmsMessageView : public views::View,
     VIEW_NOTIFICATION
   };
 
-  SmsMessageView(TraySms* tray,
+  SmsMessageView(TraySms* owner,
                  ViewType view_type,
                  size_t index,
                  const std::string& number,
                  const std::string& message)
-      : tray_(tray),
+      : owner_(owner),
         index_(index) {
     number_label_ = new views::Label(
         l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_SMS_NUMBER,
@@ -114,8 +110,8 @@ class TraySms::SmsMessageView : public views::View,
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
-    tray_->RemoveMessage(index_);
-    tray_->Update(false);
+    owner_->RemoveMessage(index_);
+    owner_->Update(false);
   }
 
  private:
@@ -165,7 +161,7 @@ class TraySms::SmsMessageView : public views::View,
     AddChildView(message_label_);
   }
 
-  TraySms* tray_;
+  TraySms* owner_;
   size_t index_;
   views::Label* number_label_;
   views::Label* message_label_;
@@ -176,8 +172,8 @@ class TraySms::SmsMessageView : public views::View,
 class TraySms::SmsDetailedView : public TrayDetailsView,
                                  public ViewClickListener {
  public:
-  explicit SmsDetailedView(TraySms* tray)
-      : tray_(tray) {
+  explicit SmsDetailedView(TraySms* owner)
+      : TrayDetailsView(owner) {
     Init();
     Update();
   }
@@ -206,7 +202,8 @@ class TraySms::SmsDetailedView : public TrayDetailsView,
 
  private:
   void UpdateMessageList() {
-    const base::ListValue& messages = tray_->messages();
+    const base::ListValue& messages =
+        static_cast<TraySms*>(owner())->messages();
     scroll_content()->RemoveAllChildViews(true);
     for (size_t index = 0; index < messages.GetSize(); ++index) {
       const base::DictionaryValue* message = NULL;
@@ -220,7 +217,8 @@ class TraySms::SmsDetailedView : public TrayDetailsView,
         continue;
       }
       SmsMessageView* msgview = new SmsMessageView(
-          tray_, SmsMessageView::VIEW_DETAILED, index, number, text);
+          static_cast<TraySms*>(owner()), SmsMessageView::VIEW_DETAILED, index,
+          number, text);
       scroll_content()->AddChildView(msgview);
     }
     scroller()->Layout();
@@ -229,24 +227,22 @@ class TraySms::SmsDetailedView : public TrayDetailsView,
   // Overridden from ViewClickListener.
   virtual void ClickedOn(views::View* sender) OVERRIDE {
     if (sender == footer()->content())
-      Shell::GetInstance()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+      owner()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   }
-
-  TraySms* tray_;
 
   DISALLOW_COPY_AND_ASSIGN(SmsDetailedView);
 };
 
 class TraySms::SmsNotificationView : public TrayNotificationView {
  public:
-  SmsNotificationView(TraySms* tray,
+  SmsNotificationView(TraySms* owner,
                       size_t message_index,
                       const std::string& number,
                       const std::string& text)
-      : TrayNotificationView(tray, IDR_AURA_UBER_TRAY_SMS),
+      : TrayNotificationView(owner, IDR_AURA_UBER_TRAY_SMS),
         message_index_(message_index) {
     SmsMessageView* message_view = new SmsMessageView(
-        tray, SmsMessageView::VIEW_NOTIFICATION, message_index_, number, text);
+        owner, SmsMessageView::VIEW_NOTIFICATION, message_index_, number, text);
     InitView(message_view);
   }
 
@@ -265,12 +261,12 @@ class TraySms::SmsNotificationView : public TrayNotificationView {
   }
 
   virtual void OnClickAction() OVERRIDE {
-    tray()->PopupDetailedView(0, true);
+    owner()->PopupDetailedView(0, true);
   }
 
  private:
   TraySms* tray_sms() {
-    return static_cast<TraySms*>(tray());
+    return static_cast<TraySms*>(owner());
   }
 
   size_t message_index_;
@@ -278,8 +274,9 @@ class TraySms::SmsNotificationView : public TrayNotificationView {
   DISALLOW_COPY_AND_ASSIGN(SmsNotificationView);
 };
 
-TraySms::TraySms()
-    : default_(NULL),
+TraySms::TraySms(SystemTray* system_tray)
+    : SystemTrayItem(system_tray),
+      default_(NULL),
       detailed_(NULL),
       notification_(NULL) {
 }

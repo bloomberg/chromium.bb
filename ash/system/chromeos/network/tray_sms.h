@@ -17,7 +17,7 @@ namespace internal {
 class TraySms : public SystemTrayItem,
                 public SmsObserver {
  public:
-  TraySms();
+  explicit TraySms(SystemTray* system_tray);
   virtual ~TraySms();
 
   // Overridden from SystemTrayItem.

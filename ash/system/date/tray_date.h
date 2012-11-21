@@ -26,7 +26,7 @@ class TrayDate : public SystemTrayItem,
    HORIZONTAL_CLOCK,
    VERTICAL_CLOCK,
   };
-  TrayDate();
+  explicit TrayDate(SystemTray* system_tray);
   virtual ~TrayDate();
 
  private:

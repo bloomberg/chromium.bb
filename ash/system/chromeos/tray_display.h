@@ -16,7 +16,6 @@ class View;
 }
 
 namespace ash {
-
 namespace internal {
 class DisplayView;
 
@@ -24,7 +23,7 @@ class TrayDisplay : public SystemTrayItem,
                     public chromeos::OutputConfigurator::Observer,
                     public gfx::DisplayObserver {
  public:
-  TrayDisplay();
+  explicit TrayDisplay(SystemTray* system_tray);
   virtual ~TrayDisplay();
 
  private:

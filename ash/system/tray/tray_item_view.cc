@@ -4,8 +4,8 @@
 
 #include "ash/system/tray/tray_item_view.h"
 
-#include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_item.h"
 #include "ash/wm/shelf_types.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/compositor/layer.h"
@@ -23,8 +23,9 @@ const int kTrayItemAnimationDurationMS = 200;
 namespace ash {
 namespace internal {
 
-TrayItemView::TrayItemView()
-    : label_(NULL),
+TrayItemView::TrayItemView(SystemTrayItem* owner)
+    : owner_(owner),
+      label_(NULL),
       image_view_(NULL) {
   SetPaintToLayer(true);
   SetFillsBoundsOpaquely(false);
@@ -77,8 +78,7 @@ int TrayItemView::GetAnimationDurationMS() {
 
 gfx::Size TrayItemView::GetPreferredSize() {
   gfx::Size size = DesiredSize();
-  if (ash::Shell::GetInstance()->system_tray()->shelf_alignment() ==
-      SHELF_ALIGNMENT_BOTTOM)
+  if (owner()->system_tray()->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM)
     size.set_height(kTrayIconHeight);
   else
     size.set_width(kTrayIconWidth);

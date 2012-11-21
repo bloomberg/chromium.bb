@@ -27,6 +27,8 @@ class TrayItemMore : public ActionableView {
   TrayItemMore(SystemTrayItem* owner, bool show_more);
   virtual ~TrayItemMore();
 
+  SystemTrayItem* owner() const { return owner_; }
+
   void SetLabel(const string16& label);
   void SetImage(const gfx::ImageSkia* image_skia);
   void SetAccessibleName(const string16& name);

@@ -239,8 +239,9 @@ class UserView : public views::View,
 
 }  // namespace tray
 
-TrayUser::TrayUser()
-    : user_(NULL),
+TrayUser::TrayUser(SystemTray* system_tray)
+    : SystemTrayItem(system_tray),
+      user_(NULL),
       avatar_(NULL),
       label_(NULL) {
 }

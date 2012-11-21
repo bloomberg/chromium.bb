@@ -18,7 +18,7 @@ class SettingsDefaultView;
 class TraySettings : public SystemTrayItem,
                      public PowerStatusObserver {
  public:
-  TraySettings();
+  explicit TraySettings(SystemTray* system_tray);
   virtual ~TraySettings();
 
  private:

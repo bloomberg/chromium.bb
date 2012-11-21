@@ -62,8 +62,9 @@ class BluetoothDetailedView : public TrayDetailsView,
                               public ViewClickListener,
                               public views::ButtonListener {
  public:
-  explicit BluetoothDetailedView(user::LoginStatus login)
-      : login_(login),
+  BluetoothDetailedView(SystemTrayItem* owner, user::LoginStatus login)
+      : TrayDetailsView(owner),
+        login_(login),
         add_device_(NULL),
         toggle_bluetooth_(NULL),
         enable_bluetooth_(NULL) {
@@ -212,7 +213,7 @@ class BluetoothDetailedView : public TrayDetailsView,
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->tray_delegate();
     if (sender == footer()->content()) {
-      Shell::GetInstance()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+      owner()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
     } else if (sender == add_device_) {
       if (!delegate->GetBluetoothEnabled())
         delegate->ToggleBluetooth();
@@ -254,8 +255,9 @@ class BluetoothDetailedView : public TrayDetailsView,
 
 }  // namespace tray
 
-TrayBluetooth::TrayBluetooth()
-    : default_(NULL),
+TrayBluetooth::TrayBluetooth(SystemTray* system_tray)
+    : SystemTrayItem(system_tray),
+      default_(NULL),
       detailed_(NULL) {
 }
 
@@ -276,7 +278,7 @@ views::View* TrayBluetooth::CreateDetailedView(user::LoginStatus status) {
   if (!Shell::GetInstance()->tray_delegate()->GetBluetoothAvailable())
     return NULL;
   CHECK(detailed_ == NULL);
-  detailed_ = new tray::BluetoothDetailedView(status);
+  detailed_ = new tray::BluetoothDetailedView(this, status);
   return detailed_;
 }
 

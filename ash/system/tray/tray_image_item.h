@@ -18,7 +18,7 @@ class TrayItemView;
 
 class TrayImageItem : public SystemTrayItem {
  public:
-  explicit TrayImageItem(int resource_id);
+  TrayImageItem(SystemTray* system_tray, int resource_id);
   virtual ~TrayImageItem();
 
   views::View* tray_view();

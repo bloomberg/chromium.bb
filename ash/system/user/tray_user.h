@@ -24,7 +24,7 @@ class RoundedImageView;
 class TrayUser : public SystemTrayItem,
                  public UserObserver {
  public:
-  TrayUser();
+  explicit TrayUser(SystemTray* system_tray);
   virtual ~TrayUser();
 
  private:

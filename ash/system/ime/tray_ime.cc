@@ -64,7 +64,8 @@ class IMEDetailedView : public TrayDetailsView,
                         public ViewClickListener {
  public:
   IMEDetailedView(SystemTrayItem* owner, user::LoginStatus login)
-      : login_(login) {
+      : TrayDetailsView(owner),
+        login_(login) {
     SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
     IMEInfoList list;
     delegate->GetAvailableIMEList(&list);
@@ -138,7 +139,7 @@ class IMEDetailedView : public TrayDetailsView,
   virtual void ClickedOn(views::View* sender) OVERRIDE {
     SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
     if (sender == footer()->content()) {
-      Shell::GetInstance()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+      owner()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
     } else if (sender == settings_) {
       delegate->ShowIMESettings();
     } else {
@@ -171,8 +172,8 @@ class IMEDetailedView : public TrayDetailsView,
 
 class IMENotificationView : public TrayNotificationView {
  public:
-  explicit IMENotificationView(TrayIME* tray)
-      : TrayNotificationView(tray, IDR_AURA_UBER_TRAY_IME) {
+  explicit IMENotificationView(TrayIME* owner)
+      : TrayNotificationView(owner, IDR_AURA_UBER_TRAY_IME) {
     InitView(GetLabel());
   }
 
@@ -202,12 +203,12 @@ class IMENotificationView : public TrayNotificationView {
 
   // Overridden from TrayNotificationView.
   virtual void OnClickAction() OVERRIDE {
-    tray()->PopupDetailedView(0, true);
+    owner()->PopupDetailedView(0, true);
   }
 
  private:
   void Close() {
-    tray()->HideNotificationView();
+    owner()->HideNotificationView();
   }
 
   views::Label* GetLabel() {
@@ -236,8 +237,9 @@ class IMENotificationView : public TrayNotificationView {
 
 }  // namespace tray
 
-TrayIME::TrayIME()
-    : tray_label_(NULL),
+TrayIME::TrayIME(SystemTray* system_tray)
+    : SystemTrayItem(system_tray),
+      tray_label_(NULL),
       default_(NULL),
       detailed_(NULL),
       notification_(NULL),
@@ -255,15 +257,14 @@ void TrayIME::UpdateTrayLabel(const IMEInfo& current, size_t count) {
       tray_label_->label()->SetText(current.short_name);
     }
     tray_label_->SetVisible(count > 1);
-    SetTrayLabelItemBorder(tray_label_,
-        ash::Shell::GetInstance()->system_tray()->shelf_alignment());
+    SetTrayLabelItemBorder(tray_label_, system_tray()->shelf_alignment());
     tray_label_->Layout();
   }
 }
 
 views::View* TrayIME::CreateTrayView(user::LoginStatus status) {
   CHECK(tray_label_ == NULL);
-  tray_label_ = new TrayItemView;
+  tray_label_ = new TrayItemView(this);
   tray_label_->CreateLabel();
   SetupLabelForTray(tray_label_->label());
   return tray_label_;

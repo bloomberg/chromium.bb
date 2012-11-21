@@ -21,7 +21,9 @@ const int kRefreshTimeoutMs = 1000;
 namespace ash {
 namespace internal {
 
-TrayMonitor::TrayMonitor() : label_(NULL) {
+TrayMonitor::TrayMonitor(SystemTray* system_tray)
+    : SystemTrayItem(system_tray),
+      label_(NULL) {
   refresh_timer_.Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(kRefreshTimeoutMs),
       this, &TrayMonitor::OnTimer);
@@ -32,7 +34,7 @@ TrayMonitor::~TrayMonitor() {
 }
 
 views::View* TrayMonitor::CreateTrayView(user::LoginStatus status) {
-  TrayItemView* view = new TrayItemView;
+  TrayItemView* view = new TrayItemView(this);
   view->CreateLabel();
   label_ = view->label();
   label_->SetAutoColorReadabilityEnabled(false);

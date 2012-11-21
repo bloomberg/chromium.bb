@@ -32,7 +32,7 @@ class TrayNotificationView : public views::SlideOutView,
  public:
   // If icon_id is 0, no icon image will be set. SetIconImage can be called
   // to later set the icon image.
-  TrayNotificationView(SystemTrayItem* tray, int icon_id);
+  TrayNotificationView(SystemTrayItem* owner, int icon_id);
   virtual ~TrayNotificationView();
 
   // InitView must be called once with the contents to be displayed.
@@ -70,13 +70,13 @@ class TrayNotificationView : public views::SlideOutView,
   // Overridden from views::SlideOutView.
   virtual void OnSlideOut() OVERRIDE;
 
-  SystemTrayItem* tray() { return tray_; }
+  SystemTrayItem* owner() { return owner_; }
 
  private:
   void HandleClose();
   void HandleClickAction();
 
-  SystemTrayItem* tray_;
+  SystemTrayItem* owner_;
   int icon_id_;
   views::ImageView* icon_;
 

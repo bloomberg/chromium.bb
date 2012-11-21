@@ -20,7 +20,7 @@ class BrightnessView;
 class TrayBrightness : public SystemTrayItem,
                        public BrightnessObserver {
  public:
-  TrayBrightness();
+  explicit TrayBrightness(SystemTray* system_tray);
   virtual ~TrayBrightness();
 
  private:

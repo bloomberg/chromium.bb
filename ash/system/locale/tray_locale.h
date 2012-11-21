@@ -20,7 +20,7 @@ class LocaleNotificationView;
 class TrayLocale : public SystemTrayItem,
                    public LocaleObserver {
  public:
-  TrayLocale();
+  explicit TrayLocale(SystemTray* system_tray);
   virtual ~TrayLocale();
 
  private:

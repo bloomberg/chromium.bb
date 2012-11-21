@@ -18,7 +18,7 @@ class VolumeView;
 class TrayVolume : public TrayImageItem,
                    public AudioObserver {
  public:
-  TrayVolume();
+  explicit TrayVolume(SystemTray* system_tray);
   virtual ~TrayVolume();
 
  private:

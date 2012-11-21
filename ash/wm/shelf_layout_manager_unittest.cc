@@ -80,7 +80,8 @@ class ShelfLayoutObserverTest : public ShelfLayoutManager::Observer {
 class TestItem : public SystemTrayItem {
  public:
   TestItem()
-      : tray_view_(NULL),
+      : SystemTrayItem(Shell::GetInstance()->system_tray()),
+        tray_view_(NULL),
         default_view_(NULL),
         detailed_view_(NULL),
         notification_view_(NULL) {}

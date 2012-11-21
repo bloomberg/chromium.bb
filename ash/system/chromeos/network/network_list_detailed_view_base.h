@@ -26,7 +26,9 @@ class NetworkListDetailedViewBase : public NetworkDetailedView,
                                     public views::ButtonListener,
                                     public ViewClickListener {
  public:
-  NetworkListDetailedViewBase(user::LoginStatus login, int header_string_id);
+  NetworkListDetailedViewBase(SystemTrayItem* owner,
+                              user::LoginStatus login,
+                              int header_string_id);
   virtual ~NetworkListDetailedViewBase();
 
   // Overridden from NetworkDetailedView:

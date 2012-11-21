@@ -70,7 +70,7 @@ bool TrayItemMore::PerformAction(const ui::Event& event) {
   if (!show_more_)
     return false;
 
-  owner_->TransitionDetailedView();
+  owner()->TransitionDetailedView();
   return true;
 }
 

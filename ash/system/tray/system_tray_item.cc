@@ -4,16 +4,13 @@
 
 #include "ash/system/tray/system_tray_item.h"
 
-#include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_item_view.h"
-#include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 
 namespace ash {
 
-SystemTrayItem::SystemTrayItem() {
+SystemTrayItem::SystemTrayItem(SystemTray* system_tray)
+    : system_tray_(system_tray) {
 }
 
 SystemTrayItem::~SystemTrayItem() {
@@ -48,8 +45,7 @@ void SystemTrayItem::DestroyNotificationView() {
 }
 
 void SystemTrayItem::TransitionDetailedView() {
-  Shell::GetInstance()->system_tray()->ShowDetailedView(this, 0, true,
-      BUBBLE_USE_EXISTING);
+  system_tray()->ShowDetailedView(this, 0, true, BUBBLE_USE_EXISTING);
 }
 
 void SystemTrayItem::UpdateAfterLoginStatusChange(user::LoginStatus status) {
@@ -59,24 +55,24 @@ void SystemTrayItem::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
 }
 
 void SystemTrayItem::PopupDetailedView(int for_seconds, bool activate) {
-  Shell::GetInstance()->system_tray()->ShowDetailedView(
+  system_tray()->ShowDetailedView(
       this, for_seconds, activate, BUBBLE_CREATE_NEW);
 }
 
 void SystemTrayItem::SetDetailedViewCloseDelay(int for_seconds) {
-  Shell::GetInstance()->system_tray()->SetDetailedViewCloseDelay(for_seconds);
+  system_tray()->SetDetailedViewCloseDelay(for_seconds);
 }
 
 void SystemTrayItem::HideDetailedView() {
-  Shell::GetInstance()->system_tray()->HideDetailedView(this);
+  system_tray()->HideDetailedView(this);
 }
 
 void SystemTrayItem::ShowNotificationView() {
-  Shell::GetInstance()->system_tray()->ShowNotificationView(this);
+  system_tray()->ShowNotificationView(this);
 }
 
 void SystemTrayItem::HideNotificationView() {
-  Shell::GetInstance()->system_tray()->HideNotificationView(this);
+  system_tray()->HideNotificationView(this);
 }
 
 bool SystemTrayItem::ShouldShowLauncher() const {

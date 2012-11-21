@@ -12,7 +12,7 @@ namespace internal {
 
 class TrayEmpty : public SystemTrayItem {
  public:
-  TrayEmpty();
+  explicit TrayEmpty(SystemTray* system_tray);
   virtual ~TrayEmpty();
 
  private:

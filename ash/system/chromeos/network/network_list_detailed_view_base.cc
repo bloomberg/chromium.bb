@@ -8,6 +8,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_resources.h"
@@ -81,9 +82,11 @@ enum ColorTheme {
 };
 
 NetworkListDetailedViewBase::NetworkListDetailedViewBase(
+    SystemTrayItem* owner,
     user::LoginStatus login,
     int header_string_id)
-    : login_(login),
+    : NetworkDetailedView(owner),
+      login_(login),
       header_string_id_(header_string_id),
       info_icon_(NULL),
       settings_(NULL),
@@ -299,7 +302,7 @@ void NetworkListDetailedViewBase::ClickedOn(views::View* sender) {
   ResetInfoBubble();
 
   if (sender == footer()->content()) {
-    Shell::GetInstance()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+    owner()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
     return;
   }
 

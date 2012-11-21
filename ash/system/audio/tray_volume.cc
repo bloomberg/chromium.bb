@@ -213,8 +213,8 @@ class VolumeView : public views::View,
 
 }  // namespace tray
 
-TrayVolume::TrayVolume()
-    : TrayImageItem(IDR_AURA_UBER_TRAY_VOLUME_MUTE),
+TrayVolume::TrayVolume(SystemTray* system_tray)
+    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_VOLUME_MUTE),
       volume_view_(NULL),
       is_default_view_(false) {
 }

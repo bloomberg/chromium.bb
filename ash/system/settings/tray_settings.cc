@@ -114,8 +114,9 @@ class SettingsDefaultView : public ash::internal::ActionableView {
 
 }  // namespace tray
 
-TraySettings::TraySettings()
-    : default_view_(NULL) {
+TraySettings::TraySettings(SystemTray* system_tray)
+    : SystemTrayItem(system_tray),
+      default_view_(NULL) {
 }
 
 TraySettings::~TraySettings() {}

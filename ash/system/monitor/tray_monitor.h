@@ -20,7 +20,7 @@ namespace internal {
 
 class TrayMonitor : public SystemTrayItem {
  public:
-  TrayMonitor();
+  explicit TrayMonitor(SystemTray* system_tray);
   virtual ~TrayMonitor();
 
  private:

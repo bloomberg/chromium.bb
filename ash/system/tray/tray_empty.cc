@@ -27,7 +27,9 @@ class EmptyBackground : public views::Background {
 namespace ash {
 namespace internal {
 
-TrayEmpty::TrayEmpty() {}
+TrayEmpty::TrayEmpty(SystemTray* system_tray)
+    : SystemTrayItem(system_tray) {
+}
 
 TrayEmpty::~TrayEmpty() {}
 

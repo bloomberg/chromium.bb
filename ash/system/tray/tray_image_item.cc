@@ -14,8 +14,9 @@
 namespace ash {
 namespace internal {
 
-TrayImageItem::TrayImageItem(int resource_id)
-    : resource_id_(resource_id),
+TrayImageItem::TrayImageItem(SystemTray* system_tray, int resource_id)
+    : SystemTrayItem(system_tray),
+      resource_id_(resource_id),
       tray_view_(NULL) {
 }
 
@@ -35,7 +36,7 @@ void TrayImageItem::SetImageFromResourceId(int resource_id) {
 
 views::View* TrayImageItem::CreateTrayView(user::LoginStatus status) {
   CHECK(tray_view_ == NULL);
-  tray_view_ = new TrayItemView;
+  tray_view_ = new TrayItemView(this);
   tray_view_->CreateImageView();
   tray_view_->image_view()->SetImage(ui::ResourceBundle::GetSharedInstance().
       GetImageNamed(resource_id_).ToImageSkia());

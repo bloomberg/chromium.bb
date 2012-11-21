@@ -21,7 +21,7 @@ class VpnDetailedView;
 class TrayVPN : public SystemTrayItem,
                 public NetworkObserver {
  public:
-  TrayVPN();
+  explicit TrayVPN(SystemTray* system_tray);
   virtual ~TrayVPN();
 
   // Overridden from SystemTrayItem.

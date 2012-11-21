@@ -129,27 +129,28 @@ void SystemTray::InitializeTrayItems(SystemTrayDelegate* delegate) {
 }
 
 void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
-  internal::TrayVolume* tray_volume = new internal::TrayVolume();
-  internal::TrayBluetooth* tray_bluetooth = new internal::TrayBluetooth();
-  internal::TrayBrightness* tray_brightness = new internal::TrayBrightness();
-  internal::TrayDate* tray_date = new internal::TrayDate();
-  internal::TrayPower* tray_power = new internal::TrayPower();
-  internal::TrayIME* tray_ime = new internal::TrayIME();
-  internal::TrayUser* tray_user = new internal::TrayUser();
+  internal::TrayVolume* tray_volume = new internal::TrayVolume(this);
+  internal::TrayBluetooth* tray_bluetooth = new internal::TrayBluetooth(this);
+  internal::TrayBrightness* tray_brightness =
+      new internal::TrayBrightness(this);
+  internal::TrayDate* tray_date = new internal::TrayDate(this);
+  internal::TrayPower* tray_power = new internal::TrayPower(this);
+  internal::TrayIME* tray_ime = new internal::TrayIME(this);
+  internal::TrayUser* tray_user = new internal::TrayUser(this);
   internal::TrayAccessibility* tray_accessibility =
-      new internal::TrayAccessibility();
-  internal::TrayCapsLock* tray_caps_lock = new internal::TrayCapsLock();
-  internal::TrayDrive* tray_drive = new internal::TrayDrive();
-  internal::TrayLocale* tray_locale = new internal::TrayLocale();
+      new internal::TrayAccessibility(this);
+  internal::TrayCapsLock* tray_caps_lock = new internal::TrayCapsLock(this);
+  internal::TrayDrive* tray_drive = new internal::TrayDrive(this);
+  internal::TrayLocale* tray_locale = new internal::TrayLocale(this);
   internal::TrayLogoutButton* tray_logout_button =
-      new internal::TrayLogoutButton();
-  internal::TrayUpdate* tray_update = new internal::TrayUpdate();
-  internal::TraySettings* tray_settings = new internal::TraySettings();
+      new internal::TrayLogoutButton(this);
+  internal::TrayUpdate* tray_update = new internal::TrayUpdate(this);
+  internal::TraySettings* tray_settings = new internal::TraySettings(this);
 #if defined(OS_CHROMEOS)
-  internal::TrayDisplay* tray_display = new internal::TrayDisplay();
-  internal::TrayNetwork* tray_network = new internal::TrayNetwork();
-  internal::TrayVPN* tray_vpn = new internal::TrayVPN();
-  internal::TraySms* tray_sms = new internal::TraySms();
+  internal::TrayDisplay* tray_display = new internal::TrayDisplay(this);
+  internal::TrayNetwork* tray_network = new internal::TrayNetwork(this);
+  internal::TrayVPN* tray_vpn = new internal::TrayVPN(this);
+  internal::TraySms* tray_sms = new internal::TraySms(this);
 #endif
 
   SystemTrayNotifier* notifier = Shell::GetInstance()->system_tray_notifier();
@@ -200,7 +201,7 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   // Add memory monitor if enabled.
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   if (cmd->HasSwitch(ash::switches::kAshEnableMemoryMonitor))
-    AddTrayItem(new internal::TrayMonitor);
+    AddTrayItem(new internal::TrayMonitor(this));
 #endif
 
   SetVisible(ash::Shell::GetInstance()->tray_delegate()->

@@ -29,7 +29,7 @@ class CapsLockDefaultView;
 class TrayCapsLock : public TrayImageItem,
                      public CapsLockObserver {
  public:
-  TrayCapsLock();
+  explicit TrayCapsLock(SystemTray* system_tray);
   virtual ~TrayCapsLock();
 
  private:

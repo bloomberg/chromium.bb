@@ -124,8 +124,9 @@ class DateDefaultView : public views::View,
 namespace ash {
 namespace internal {
 
-TrayDate::TrayDate()
-    : time_tray_(NULL) {
+TrayDate::TrayDate(SystemTray* system_tray)
+    : SystemTrayItem(system_tray),
+      time_tray_(NULL) {
 }
 
 TrayDate::~TrayDate() {
@@ -134,11 +135,10 @@ TrayDate::~TrayDate() {
 views::View* TrayDate::CreateTrayView(user::LoginStatus status) {
   CHECK(time_tray_ == NULL);
   ClockLayout clock_layout =
-      ash::Shell::GetInstance()->system_tray()->shelf_alignment() ==
-         SHELF_ALIGNMENT_BOTTOM ?
-      HORIZONTAL_CLOCK : VERTICAL_CLOCK;
+      system_tray()->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM ?
+          HORIZONTAL_CLOCK : VERTICAL_CLOCK;
   time_tray_ = new tray::TimeView(clock_layout);
-  views::View* view = new TrayItemView;
+  views::View* view = new TrayItemView(this);
   view->AddChildView(time_tray_);
   return view;
 }

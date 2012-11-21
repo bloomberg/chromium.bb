@@ -88,8 +88,8 @@ class NetworkMessages {
 
 class NetworkTrayView : public TrayItemView {
  public:
-  NetworkTrayView(ColorTheme size, bool tray_icon)
-      : color_theme_(size), tray_icon_(tray_icon) {
+  NetworkTrayView(SystemTrayItem* owner, ColorTheme size, bool tray_icon)
+      : TrayItemView(owner), color_theme_(size), tray_icon_(tray_icon) {
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
 
@@ -145,8 +145,10 @@ class NetworkDefaultView : public TrayItemMore {
 
 class NetworkListDetailedView : public NetworkListDetailedViewBase {
  public:
-  NetworkListDetailedView(user::LoginStatus login, int header_string_id)
-      : NetworkListDetailedViewBase(login, header_string_id),
+  NetworkListDetailedView(SystemTrayItem* owner,
+                          user::LoginStatus login,
+                          int header_string_id)
+      : NetworkListDetailedViewBase(owner, login, header_string_id),
         airplane_(NULL),
         button_wifi_(NULL),
         button_mobile_(NULL),
@@ -370,7 +372,8 @@ class NetworkListDetailedView : public NetworkListDetailedViewBase {
 
 class NetworkWifiDetailedView : public NetworkDetailedView {
  public:
-  explicit NetworkWifiDetailedView(bool wifi_enabled) {
+  NetworkWifiDetailedView(SystemTrayItem* owner, bool wifi_enabled)
+      : NetworkDetailedView(owner) {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
                                           kTrayPopupPaddingHorizontal,
                                           10,
@@ -412,10 +415,10 @@ class NetworkWifiDetailedView : public NetworkDetailedView {
 class NetworkMessageView : public views::View,
                            public views::LinkListener {
  public:
-  NetworkMessageView(TrayNetwork* tray,
+  NetworkMessageView(TrayNetwork* owner,
                      TrayNetwork::MessageType message_type,
                      const NetworkMessages::Message& network_msg)
-      : tray_(tray),
+      : owner_(owner),
         message_type_(message_type),
         network_type_(network_msg.network_type_) {
     SetLayoutManager(
@@ -454,14 +457,14 @@ class NetworkMessageView : public views::View,
 
   // Overridden from views::LinkListener.
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE {
-    tray_->LinkClicked(message_type_, source->id());
+    owner_->LinkClicked(message_type_, source->id());
   }
 
   TrayNetwork::MessageType message_type() const { return message_type_; }
   TrayNetwork::NetworkType network_type() const { return network_type_; }
 
  private:
-  TrayNetwork* tray_;
+  TrayNetwork* owner_;
   TrayNetwork::MessageType message_type_;
   TrayNetwork::NetworkType network_type_;
 
@@ -470,8 +473,8 @@ class NetworkMessageView : public views::View,
 
 class NetworkNotificationView : public TrayNotificationView {
  public:
-  explicit NetworkNotificationView(TrayNetwork* tray)
-      : TrayNotificationView(tray, 0) {
+  explicit NetworkNotificationView(TrayNetwork* owner)
+      : TrayNotificationView(owner, 0) {
     CreateMessageView();
     InitView(network_message_view_);
     SetIconImage(*ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
@@ -487,7 +490,7 @@ class NetworkNotificationView : public TrayNotificationView {
   virtual void OnClickAction() OVERRIDE {
     if (network_message_view_->message_type() !=
         TrayNetwork::MESSAGE_DATA_PROMO)
-      tray()->PopupDetailedView(0, true);
+      owner()->PopupDetailedView(0, true);
   }
 
   void Update() {
@@ -500,7 +503,7 @@ class NetworkNotificationView : public TrayNotificationView {
 
  private:
   TrayNetwork* tray_network() {
-    return static_cast<TrayNetwork*>(tray());
+    return static_cast<TrayNetwork*>(owner());
   }
 
   void CreateMessageView() {
@@ -519,8 +522,9 @@ class NetworkNotificationView : public TrayNotificationView {
 
 }  // namespace tray
 
-TrayNetwork::TrayNetwork()
-    : tray_(NULL),
+TrayNetwork::TrayNetwork(SystemTray* system_tray)
+    : SystemTrayItem(system_tray),
+      tray_(NULL),
       default_(NULL),
       detailed_(NULL),
       notification_(NULL),
@@ -533,7 +537,7 @@ TrayNetwork::~TrayNetwork() {
 
 views::View* TrayNetwork::CreateTrayView(user::LoginStatus status) {
   CHECK(tray_ == NULL);
-  tray_ = new tray::NetworkTrayView(tray::LIGHT, true /*tray_icon*/);
+  tray_ = new tray::NetworkTrayView(this, tray::LIGHT, true /*tray_icon*/);
   return tray_;
 }
 
@@ -552,11 +556,12 @@ views::View* TrayNetwork::CreateDetailedView(user::LoginStatus status) {
   if (request_wifi_view_) {
     SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
     // The Wi-Fi state is not toggled yet at this point.
-    detailed_ = new tray::NetworkWifiDetailedView(!delegate->GetWifiEnabled());
+    detailed_ = new tray::NetworkWifiDetailedView(this,
+                                                  !delegate->GetWifiEnabled());
     request_wifi_view_ = false;
   } else {
     detailed_ = new tray::NetworkListDetailedView(
-        status, IDS_ASH_STATUS_TRAY_NETWORK);
+        this, status, IDS_ASH_STATUS_TRAY_NETWORK);
     detailed_->Init();
   }
   return detailed_;

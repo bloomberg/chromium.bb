@@ -23,8 +23,8 @@ const int kNotificationButtonWidth = 32;
 namespace ash {
 namespace internal {
 
-TrayNotificationView::TrayNotificationView(SystemTrayItem* tray, int icon_id)
-    : tray_(tray),
+TrayNotificationView::TrayNotificationView(SystemTrayItem* owner, int icon_id)
+    : owner_(owner),
       icon_id_(icon_id),
       icon_(NULL) {
 }
@@ -140,12 +140,12 @@ void TrayNotificationView::OnClickAction() {
 }
 
 void TrayNotificationView::OnSlideOut() {
-  tray_->HideNotificationView();
+  owner_->HideNotificationView();
 }
 
 void TrayNotificationView::HandleClose() {
   OnClose();
-  tray_->HideNotificationView();
+  owner_->HideNotificationView();
 }
 
 void TrayNotificationView::HandleClickAction() {

@@ -114,8 +114,9 @@ class DisplayView : public ash::internal::ActionableView {
   DISALLOW_COPY_AND_ASSIGN(DisplayView);
 };
 
-TrayDisplay::TrayDisplay()
-    : default_(NULL) {
+TrayDisplay::TrayDisplay(SystemTray* system_tray)
+    : SystemTrayItem(system_tray),
+      default_(NULL) {
   Shell::GetScreen()->AddObserver(this);
   Shell::GetInstance()->output_configurator()->AddObserver(this);
 }

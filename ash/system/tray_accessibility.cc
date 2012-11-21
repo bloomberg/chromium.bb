@@ -57,8 +57,8 @@ class DefaultAccessibilityView : public ActionableView {
   DISALLOW_COPY_AND_ASSIGN(DefaultAccessibilityView);
 };
 
-TrayAccessibility::TrayAccessibility()
-    : TrayImageItem(IDR_AURA_UBER_TRAY_ACCESSIBILITY),
+TrayAccessibility::TrayAccessibility(SystemTray* system_tray)
+    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_ACCESSIBILITY),
       default_(NULL),
       detailed_(NULL) {
 }

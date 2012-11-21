@@ -100,8 +100,8 @@ class PowerTrayView : public views::ImageView {
 
 class PowerNotificationView : public TrayNotificationView {
  public:
-  explicit PowerNotificationView(TrayPower* tray)
-      : TrayNotificationView(tray, 0),
+  explicit PowerNotificationView(TrayPower* owner)
+      : TrayNotificationView(owner, 0),
         battery_icon_index_(-1) {
     power_status_view_ =
         new PowerStatusView(PowerStatusView::VIEW_NOTIFICATION, true);
@@ -133,8 +133,9 @@ class PowerNotificationView : public TrayNotificationView {
 
 using tray::PowerNotificationView;
 
-TrayPower::TrayPower()
-    : power_tray_(NULL),
+TrayPower::TrayPower(SystemTray* system_tray)
+    : SystemTrayItem(system_tray),
+      power_tray_(NULL),
       notification_view_(NULL),
       notification_state_(NOTIFICATION_NONE) {
 }

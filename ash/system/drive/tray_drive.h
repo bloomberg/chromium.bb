@@ -13,7 +13,6 @@ class Label;
 }
 
 namespace ash {
-
 namespace internal {
 
 namespace tray {
@@ -25,7 +24,7 @@ class DriveDetailedView;
 class TrayDrive : public TrayImageItem,
                   public DriveObserver {
  public:
-  TrayDrive();
+  explicit TrayDrive(SystemTray* system_tray);
   virtual ~TrayDrive();
 
  private:

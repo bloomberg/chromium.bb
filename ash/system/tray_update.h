@@ -14,7 +14,6 @@ class View;
 }
 
 namespace ash {
-
 namespace internal {
 
 namespace tray {
@@ -24,7 +23,7 @@ class UpdateNagger;
 class TrayUpdate : public TrayImageItem,
                    public UpdateObserver {
  public:
-  TrayUpdate();
+  explicit TrayUpdate(SystemTray* system_tray);
   virtual ~TrayUpdate();
 
  private:

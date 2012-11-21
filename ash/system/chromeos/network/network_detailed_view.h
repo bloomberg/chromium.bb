@@ -16,6 +16,10 @@ namespace tray {
 // which includes NetworkWifiDetailedView and NetworkListDetailedViewBase.
 class NetworkDetailedView : public TrayDetailsView {
  public:
+  explicit NetworkDetailedView(SystemTrayItem* owner)
+      : TrayDetailsView(owner) {
+  }
+
   enum DetailedViewType {
     LIST_VIEW,
     WIFI_VIEW,

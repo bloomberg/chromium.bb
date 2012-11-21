@@ -102,8 +102,8 @@ class CapsLockDefaultView : public ActionableView {
   DISALLOW_COPY_AND_ASSIGN(CapsLockDefaultView);
 };
 
-TrayCapsLock::TrayCapsLock()
-    : TrayImageItem(IDR_AURA_UBER_TRAY_CAPS_LOCK),
+TrayCapsLock::TrayCapsLock(SystemTray* system_tray)
+    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_CAPS_LOCK),
       default_(NULL),
       detailed_(NULL),
       search_mapped_to_caps_lock_(false),

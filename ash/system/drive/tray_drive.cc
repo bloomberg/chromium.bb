@@ -62,7 +62,6 @@ ash::DriveOperationStatusList* GetCurrentOperationList() {
 
 namespace tray {
 
-
 class DriveDefaultView : public TrayItemMore {
  public:
   DriveDefaultView(SystemTrayItem* owner,
@@ -92,7 +91,8 @@ class DriveDetailedView : public TrayDetailsView,
  public:
   DriveDetailedView(SystemTrayItem* owner,
                     const DriveOperationStatusList* list)
-      : settings_(NULL),
+      : TrayDetailsView(owner),
+        settings_(NULL),
         in_progress_img_(NULL),
         done_img_(NULL),
         failed_img_(NULL) {
@@ -356,7 +356,7 @@ class DriveDetailedView : public TrayDetailsView,
   virtual void ClickedOn(views::View* sender) OVERRIDE {
     SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
     if (sender == footer()->content()) {
-      Shell::GetInstance()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+      owner()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
     } else if (sender == settings_) {
       delegate->ShowDriveSettings();
     }
@@ -374,8 +374,8 @@ class DriveDetailedView : public TrayDetailsView,
 
 }  // namespace tray
 
-TrayDrive::TrayDrive() :
-    TrayImageItem(IDR_AURA_UBER_TRAY_DRIVE_LIGHT),
+TrayDrive::TrayDrive(SystemTray* system_tray) :
+    TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_DRIVE_LIGHT),
     default_(NULL),
     detailed_(NULL) {
 }

@@ -124,8 +124,9 @@ class BrightnessView : public views::View,
 
 }  // namespace tray
 
-TrayBrightness::TrayBrightness()
-    : weak_ptr_factory_(this),
+TrayBrightness::TrayBrightness(SystemTray* system_tray)
+    : SystemTrayItem(system_tray),
+      weak_ptr_factory_(this),
       brightness_view_(NULL),
       is_default_view_(false),
       current_percent_(100.0),

@@ -27,7 +27,7 @@ namespace internal {
 class TrayAccessibility : public TrayImageItem,
                           public AccessibilityObserver {
  public:
-  TrayAccessibility();
+  explicit TrayAccessibility(SystemTray* system_tray);
   virtual ~TrayAccessibility();
 
  private:

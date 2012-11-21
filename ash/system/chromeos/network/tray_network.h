@@ -29,7 +29,7 @@ class TrayNetwork : public SystemTrayItem,
     WIFI_VIEW,
   };
 
-  TrayNetwork();
+  explicit TrayNetwork(SystemTray* system_tray);
   virtual ~TrayNetwork();
 
   // Overridden from SystemTrayItem.

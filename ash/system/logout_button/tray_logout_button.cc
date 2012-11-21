@@ -116,7 +116,9 @@ class LogoutButton : public views::LabelButton,
 
 }  // namespace tray
 
-TrayLogoutButton::TrayLogoutButton() : logout_button_(NULL) {
+TrayLogoutButton::TrayLogoutButton(SystemTray* system_tray)
+    : SystemTrayItem(system_tray),
+      logout_button_(NULL) {
 }
 
 views::View* TrayLogoutButton::CreateTrayView(user::LoginStatus status) {
