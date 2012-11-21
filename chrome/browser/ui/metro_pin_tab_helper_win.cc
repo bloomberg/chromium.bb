@@ -17,6 +17,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/metro.h"
+#include "chrome/browser/favicon/favicon_download_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -237,29 +238,30 @@ void PinPageTaskRunner::RunOnFileThread() {
 
 }  // namespace
 
-class MetroPinTabHelper::FaviconDownloader {
+class MetroPinTabHelper::FaviconChooser {
  public:
-  FaviconDownloader(MetroPinTabHelper* helper,
-                    const string16& title,
-                    const string16& url,
-                    const gfx::ImageSkia& history_image);
-  ~FaviconDownloader() {}
+  FaviconChooser(MetroPinTabHelper* helper,
+                 const string16& title,
+                 const string16& url,
+                 const gfx::ImageSkia& history_image);
 
-  void Start(content::RenderViewHost* host,
-             const std::vector<FaviconURL>& candidates);
+  ~FaviconChooser() {}
 
-  // Callback for when a favicon has been downloaded. The best bitmap so far
-  // will be stored in |best_candidate_|. If this is the last URL that was being
-  // downloaded, the page is pinned by calling PinPageToStartScreen on the FILE
-  // thread.
-  void OnDidDownloadFavicon(int id,
-                            const GURL& image_url,
-                            bool errored,
-                            int requested_size,
-                            const std::vector<SkBitmap>& bitmaps);
+  // Pin the page on the FILE thread using the current |best_candidate_| and
+  // delete the FaviconChooser.
+  void UseChosenCandidate();
+
+  // Update the |best_candidate_| with the newly downloaded favicons provided.
+  void UpdateCandidate(int id,
+                       const GURL& image_url,
+                       bool errored,
+                       int requested_size,
+                       const std::vector<SkBitmap>& bitmaps);
+
+  void AddPendingRequest(int request_id);
 
  private:
-  // The tab helper that this downloader is operating for.
+  // The tab helper that this chooser is operating for.
   MetroPinTabHelper* helper_;
 
   // Title and URL of the page being pinned.
@@ -272,10 +274,10 @@ class MetroPinTabHelper::FaviconDownloader {
   // Outstanding favicon download requests.
   std::set<int> in_progress_requests_;
 
-  DISALLOW_COPY_AND_ASSIGN(FaviconDownloader);
+  DISALLOW_COPY_AND_ASSIGN(FaviconChooser);
 };
 
-MetroPinTabHelper::FaviconDownloader::FaviconDownloader(
+MetroPinTabHelper::FaviconChooser::FaviconChooser(
     MetroPinTabHelper* helper,
     const string16& title,
     const string16& url,
@@ -285,31 +287,15 @@ MetroPinTabHelper::FaviconDownloader::FaviconDownloader(
           url_(url),
           best_candidate_(history_image) {}
 
-void MetroPinTabHelper::FaviconDownloader::Start(
-    content::RenderViewHost* host,
-    const std::vector<FaviconURL>& candidates) {
+void MetroPinTabHelper::FaviconChooser::UseChosenCandidate() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  // If there are no candidate URLs, progress straight to pinning.
-  if (candidates.empty()) {
-    scoped_refptr<PinPageTaskRunner> runner(
-        new PinPageTaskRunner(title_, url_, best_candidate_));
-    runner->Run();
-    helper_->FaviconDownloaderFinished();
-    return;
-  }
-
-  // Request all the candidates.
-  int image_size = 0; // Request the full sized image.
-  for (std::vector<FaviconURL>::const_iterator iter = candidates.begin();
-       iter != candidates.end();
-       ++iter) {
-    in_progress_requests_.insert(
-        FaviconUtil::DownloadFavicon(host, iter->icon_url, image_size));
-  }
+  scoped_refptr<PinPageTaskRunner> runner(
+      new PinPageTaskRunner(title_, url_, best_candidate_));
+  runner->Run();
+  helper_->FaviconDownloaderFinished();
 }
 
-void MetroPinTabHelper::FaviconDownloader::OnDidDownloadFavicon(
+void MetroPinTabHelper::FaviconChooser::UpdateCandidate(
     int id,
     const GURL& image_url,
     bool errored,
@@ -318,6 +304,7 @@ void MetroPinTabHelper::FaviconDownloader::OnDidDownloadFavicon(
   const int kMaxIconSize = 32;
 
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
   std::set<int>::iterator iter = in_progress_requests_.find(id);
   // Check that this request is one of ours.
   if (iter == in_progress_requests_.end())
@@ -350,20 +337,23 @@ void MetroPinTabHelper::FaviconDownloader::OnDidDownloadFavicon(
       // Othewise it is our new best candidate.
       best_candidate_ = *gfx::ImageSkia(*iter).DeepCopy().get();
     }
-   }
+  }
 
   // If there are no more outstanding requests, pin the page on the FILE thread.
   // Once this happens this downloader has done its job, so delete it.
-  if (in_progress_requests_.empty()) {
-    scoped_refptr<PinPageTaskRunner> runner(
-        new PinPageTaskRunner(title_, url_, best_candidate_));
-    runner->Run();
-    helper_->FaviconDownloaderFinished();
-  }
+  if (in_progress_requests_.empty())
+    UseChosenCandidate();
+}
+
+void MetroPinTabHelper::FaviconChooser::AddPendingRequest(int request_id) {
+  in_progress_requests_.insert(request_id);
 }
 
 MetroPinTabHelper::MetroPinTabHelper(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {}
+    : content::WebContentsObserver(web_contents),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          favicon_download_helper_(web_contents, this)) {
+}
 
 MetroPinTabHelper::~MetroPinTabHelper() {}
 
@@ -402,10 +392,23 @@ void MetroPinTabHelper::TogglePinnedToStartScreen() {
   if (favicon_tab_helper->FaviconIsValid())
     favicon = *favicon_tab_helper->GetFavicon().AsImageSkia().DeepCopy().get();
 
-  favicon_downloader_.reset(new FaviconDownloader(this, title, url_str,
-                                                  favicon));
-  favicon_downloader_->Start(web_contents()->GetRenderViewHost(),
-                             favicon_url_candidates_);
+  favicon_chooser_.reset(new FaviconChooser(this, title, url_str, favicon));
+
+  if (favicon_url_candidates_.empty()) {
+    favicon_chooser_->UseChosenCandidate();
+    return;
+  }
+
+  // Request all the candidates.
+  int image_size = 0; // Request the full sized image.
+  for (std::vector<FaviconURL>::const_iterator iter =
+           favicon_url_candidates_.begin();
+       iter != favicon_url_candidates_.end();
+       ++iter) {
+    favicon_chooser_->AddPendingRequest(
+        favicon_download_helper_.DownloadFavicon(iter->icon_url, image_size));
+  }
+
 }
 
 void MetroPinTabHelper::DidNavigateMainFrame(
@@ -413,20 +416,10 @@ void MetroPinTabHelper::DidNavigateMainFrame(
     const content::FrameNavigateParams& /*params*/) {
   // Cancel any outstanding pin operations once the user navigates away from
   // the page.
-  if (favicon_downloader_.get())
-    favicon_downloader_.reset();
+  if (favicon_chooser_.get())
+    favicon_chooser_.reset();
   // Any candidate favicons we have are now out of date so clear them.
   favicon_url_candidates_.clear();
-}
-
-bool MetroPinTabHelper::OnMessageReceived(const IPC::Message& message) {
-  bool message_handled = false;   // Allow other handlers to receive these.
-  IPC_BEGIN_MESSAGE_MAP(MetroPinTabHelper, message)
-    IPC_MESSAGE_HANDLER(IconHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
-    IPC_MESSAGE_HANDLER(IconHostMsg_DidDownloadFavicon, OnDidDownloadFavicon)
-    IPC_MESSAGE_UNHANDLED(message_handled = false)
-  IPC_END_MESSAGE_MAP()
-  return message_handled;
 }
 
 void MetroPinTabHelper::OnUpdateFaviconURL(
@@ -441,9 +434,10 @@ void MetroPinTabHelper::OnDidDownloadFavicon(
     bool errored,
     int requested_size,
     const std::vector<SkBitmap>& bitmaps) {
-  if (favicon_downloader_.get())
-    favicon_downloader_->OnDidDownloadFavicon(id, image_url, errored,
-                                              requested_size, bitmaps);
+  if (favicon_chooser_.get()) {
+    favicon_chooser_->UpdateCandidate(id, image_url, errored,
+                                      requested_size, bitmaps);
+  }
 }
 
 void MetroPinTabHelper::UnPinPageFromStartScreen() {
@@ -466,5 +460,5 @@ void MetroPinTabHelper::UnPinPageFromStartScreen() {
 }
 
 void MetroPinTabHelper::FaviconDownloaderFinished() {
-  favicon_downloader_.reset();
+  favicon_chooser_.reset();
 }
