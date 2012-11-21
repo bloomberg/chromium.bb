@@ -50,6 +50,8 @@ rm -f debian/changelog
 debchange --create \
   --package chrome-remote-desktop \
   --newversion "$version_full" \
+  --force-distribution \
+  --distribution unstable \
   "New Debian package $revision_text"
 
 dpkg-buildpackage -b -us -uc
