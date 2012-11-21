@@ -152,7 +152,7 @@ static void TraverseStates(uint16_t entry, bool in_anyfield) {
        iterating through them. */
   }
   if (!in_anyfield) {
-    if (st.anyfield_begin) {
+    if (st.anyfield_begin || st.anyfield_end) {
       /* We are in the state that starts anyfield. If it is a one-byte field,
          then recursive call is not anyfield.  */
       inst_bytes[inst_len++] = 0x01;
