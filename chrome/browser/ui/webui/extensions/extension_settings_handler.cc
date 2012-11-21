@@ -448,12 +448,6 @@ void ExtensionSettingsHandler::Observe(
   }
 }
 
-void ExtensionSettingsHandler::OnPreferenceChanged(
-    PrefServiceBase* service,
-    const std::string& pref_name) {
-  MaybeUpdateAfterNotification();
-}
-
 void ExtensionSettingsHandler::ExtensionUninstallAccepted() {
   DCHECK(!extension_id_prompting_.empty());
 
@@ -853,10 +847,14 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
   warning_service_observer_.Add(
       extensions::ExtensionSystem::Get(profile)->warning_service());
 
+  base::Closure callback = base::Bind(
+      &ExtensionSettingsHandler::MaybeUpdateAfterNotification,
+      base::Unretained(this));
+
   pref_registrar_.Init(profile->GetPrefs());
-  pref_registrar_.Add(prefs::kExtensionInstallDenyList, this);
+  pref_registrar_.Add(prefs::kExtensionInstallDenyList, callback);
   local_state_pref_registrar_.Init(g_browser_process->local_state());
-  local_state_pref_registrar_.Add(prefs::kInManagedMode, this);
+  local_state_pref_registrar_.Add(prefs::kInManagedMode, callback);
 }
 
 std::vector<ExtensionPage>

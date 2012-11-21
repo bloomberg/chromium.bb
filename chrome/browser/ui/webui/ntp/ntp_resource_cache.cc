@@ -175,12 +175,15 @@ NTPResourceCache::NTPResourceCache(Profile* profile)
   registrar_.Add(this, chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
                  content::NotificationService::AllSources());
 
+  base::Closure callback = base::Bind(&NTPResourceCache::OnPreferenceChanged,
+                                      base::Unretained(this));
+
   // Watch for pref changes that cause us to need to invalidate the HTML cache.
   pref_change_registrar_.Init(profile_->GetPrefs());
-  pref_change_registrar_.Add(prefs::kSyncAcknowledgedSyncTypes, this);
-  pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
-  pref_change_registrar_.Add(prefs::kNtpShownPage, this);
-  pref_change_registrar_.Add(prefs::kSyncPromoShowNTPBubble, this);
+  pref_change_registrar_.Add(prefs::kSyncAcknowledgedSyncTypes, callback);
+  pref_change_registrar_.Add(prefs::kShowBookmarkBar, callback);
+  pref_change_registrar_.Add(prefs::kNtpShownPage, callback);
+  pref_change_registrar_.Add(prefs::kSyncPromoShowNTPBubble, callback);
 }
 
 NTPResourceCache::~NTPResourceCache() {}
@@ -227,8 +230,8 @@ base::RefCountedMemory* NTPResourceCache::GetNewTabCSS(bool is_incognito) {
 }
 
 void NTPResourceCache::Observe(int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   // Invalidate the cache.
   if (chrome::NOTIFICATION_BROWSER_THEME_CHANGED == type ||
       chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED == type) {
@@ -241,8 +244,7 @@ void NTPResourceCache::Observe(int type,
   }
 }
 
-void NTPResourceCache::OnPreferenceChanged(PrefServiceBase* service,
-                                           const std::string& pref_name) {
+void NTPResourceCache::OnPreferenceChanged() {
   // A change occurred to one of the preferences we care about, so flush the
   // cache.
   new_tab_incognito_html_ = NULL;

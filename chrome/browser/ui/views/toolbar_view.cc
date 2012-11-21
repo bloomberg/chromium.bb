@@ -287,7 +287,9 @@ void ToolbarView::Init() {
 
   location_bar_->Init();
   show_home_button_.Init(prefs::kShowHomeButton,
-                         browser_->profile()->GetPrefs(), this);
+                         browser_->profile()->GetPrefs(),
+                         base::Bind(&ToolbarView::OnShowHomeButtonChanged,
+                                    base::Unretained(this)));
 
   browser_actions_->Init();
 
@@ -555,14 +557,6 @@ void ToolbarView::Observe(int type,
 #endif
     default:
       NOTREACHED();
-  }
-}
-
-void ToolbarView::OnPreferenceChanged(PrefServiceBase* service,
-                                      const std::string& pref_name) {
-  if (pref_name == prefs::kShowHomeButton) {
-    Layout();
-    SchedulePaint();
   }
 }
 
@@ -908,5 +902,10 @@ void ToolbarView::UpdateAppMenuState() {
   app_menu_->SetIcon(GetAppMenuIcon(views::CustomButton::STATE_NORMAL));
   app_menu_->SetHoverIcon(GetAppMenuIcon(views::CustomButton::STATE_HOVERED));
   app_menu_->SetPushedIcon(GetAppMenuIcon(views::CustomButton::STATE_PRESSED));
+  SchedulePaint();
+}
+
+void ToolbarView::OnShowHomeButtonChanged() {
+  Layout();
   SchedulePaint();
 }

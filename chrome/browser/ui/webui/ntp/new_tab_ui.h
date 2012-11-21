@@ -10,7 +10,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
@@ -25,8 +24,7 @@ class Profile;
 
 // The WebContents used for the New Tab page.
 class NewTabUI : public content::WebUIController,
-                 public content::NotificationObserver,
-                 public PrefObserver {
+                 public content::NotificationObserver {
  public:
   explicit NewTabUI(content::WebUI* web_ui);
   virtual ~NewTabUI();
@@ -106,9 +104,7 @@ class NewTabUI : public content::WebUIController,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // PrefObserver implementation.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
+  void OnShowBookmarkBarChanged();
 
   // Reset the CSS caches.
   void InitializeCSSCaches();

@@ -164,7 +164,9 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
   ChromeURLDataManager::AddDataSource(profile, html_source);
 
   pref_change_registrar_.Init(GetProfile()->GetPrefs());
-  pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
+  pref_change_registrar_.Add(prefs::kShowBookmarkBar,
+                             base::Bind(&NewTabUI::OnShowBookmarkBarChanged,
+                                        base::Unretained(this)));
 
 #if defined(ENABLE_THEMES)
   // Listen for theme installation.
@@ -260,8 +262,7 @@ void NewTabUI::Observe(int type,
   }
 }
 
-void NewTabUI::OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) {
+void NewTabUI::OnShowBookmarkBarChanged() {
   StringValue attached(
       GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) ?
           "true" : "false");

@@ -330,14 +330,6 @@ void AppLauncherHandler::Observe(int type,
   }
 }
 
-void AppLauncherHandler::OnPreferenceChanged(PrefServiceBase* service,
-                                             const std::string& pref_name) {
-  DictionaryValue dictionary;
-  FillAppDictionary(&dictionary);
-  web_ui()->CallJavascriptFunction("ntp.appsPrefChangeCallback",
-                                   dictionary);
-}
-
 void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   // CreateAppInfo and ClearOrdinals can change the extension prefs.
   AutoReset<bool> auto_reset(&ignore_changes_, true);
@@ -439,10 +431,13 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
   // First time we get here we set up the observer so that we can tell update
   // the apps as they change.
   if (!has_loaded_apps_) {
+    base::Closure callback = base::Bind(
+        &AppLauncherHandler::OnPreferenceChanged,
+        base::Unretained(this));
     pref_change_registrar_.Init(
         extension_service_->extension_prefs()->pref_service());
-    pref_change_registrar_.Add(ExtensionPrefs::kExtensionsPref, this);
-    pref_change_registrar_.Add(prefs::kNtpAppPageNames, this);
+    pref_change_registrar_.Add(ExtensionPrefs::kExtensionsPref, callback);
+    pref_change_registrar_.Add(prefs::kNtpAppPageNames, callback);
 
     registrar_.Add(this, chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
         content::Source<Profile>(profile));
@@ -773,6 +768,12 @@ void AppLauncherHandler::SetAppToBeHighlighted() {
   StringValue app_id(highlight_app_id_);
   web_ui()->CallJavascriptFunction("ntp.setAppToBeHighlighted", app_id);
   highlight_app_id_.clear();
+}
+
+void AppLauncherHandler::OnPreferenceChanged() {
+  DictionaryValue dictionary;
+  FillAppDictionary(&dictionary);
+  web_ui()->CallJavascriptFunction("ntp.appsPrefChangeCallback", dictionary);
 }
 
 // static

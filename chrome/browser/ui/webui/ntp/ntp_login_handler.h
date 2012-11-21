@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_NTP_NTP_LOGIN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_NTP_NTP_LOGIN_HANDLER_H_
 
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -17,8 +16,7 @@ class Profile;
 // username at the top of the NTP (and update itself when that changes).
 // In the future it may expand to allow users to login from the NTP.
 class NTPLoginHandler : public content::WebUIMessageHandler,
-                        public content::NotificationObserver,
-                        public PrefObserver {
+                        public content::NotificationObserver {
  public:
   NTPLoginHandler();
   virtual ~NTPLoginHandler();
@@ -30,10 +28,6 @@ class NTPLoginHandler : public content::WebUIMessageHandler,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // PrefObserver interface
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
   // Returns true if the login handler should be shown in a new tab page
   // for the given |profile|. |profile| must not be NULL.

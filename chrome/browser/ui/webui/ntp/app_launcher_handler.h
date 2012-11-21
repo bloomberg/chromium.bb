@@ -9,7 +9,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
@@ -33,8 +32,7 @@ class AppNotification;
 class AppLauncherHandler : public content::WebUIMessageHandler,
                            public ExtensionUninstallDialog::Delegate,
                            public ExtensionInstallPrompt::Delegate,
-                           public content::NotificationObserver,
-                           public PrefObserver {
+                           public content::NotificationObserver {
  public:
   explicit AppLauncherHandler(ExtensionService* extension_service);
   virtual ~AppLauncherHandler();
@@ -53,10 +51,6 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // PrefObserver
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
   // Populate the given dictionary with all installed app info.
   void FillAppDictionary(base::DictionaryValue* value);
@@ -165,6 +159,8 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
 
   // Sends |highlight_app_id_| to the js.
   void SetAppToBeHighlighted();
+
+  void OnPreferenceChanged();
 
   // The apps are represented in the extensions model, which
   // outlives us since it's owned by our containing profile.

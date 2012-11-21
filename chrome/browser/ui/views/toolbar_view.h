@@ -10,7 +10,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/command_observer.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
@@ -40,8 +39,7 @@ class ToolbarView : public views::AccessiblePaneView,
                     public content::NotificationObserver,
                     public CommandObserver,
                     public views::ButtonListener,
-                    public views::WidgetObserver,
-                    public PrefObserver {
+                    public views::WidgetObserver {
  public:
   // The view class name.
   static const char kViewClassName[];
@@ -127,10 +125,6 @@ class ToolbarView : public views::AccessiblePaneView,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Overridden from PrefObserver:
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
-
   // Overridden from ui::AcceleratorProvider:
   virtual bool GetAcceleratorForCommandId(
       int command_id, ui::Accelerator* accelerator) OVERRIDE;
@@ -198,9 +192,7 @@ class ToolbarView : public views::AccessiblePaneView,
   // Updates the badge and the accessible name of the app menu (Wrench).
   void UpdateAppMenuState();
 
-  // Gets a badge for the wrench icon corresponding to the number of
-  // unacknowledged background pages in the system.
-  gfx::ImageSkia GetBackgroundPageBadge();
+  void OnShowHomeButtonChanged();
 
   // The model that contains the security level, text, icon to display...
   ToolbarModel* model_;

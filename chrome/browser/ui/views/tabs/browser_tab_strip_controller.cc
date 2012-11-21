@@ -177,7 +177,10 @@ BrowserTabStripController::BrowserTabStripController(Browser* browser,
   model_->AddObserver(this);
 
   local_pref_registrar_.Init(g_browser_process->local_state());
-  local_pref_registrar_.Add(prefs::kTabStripLayoutType, this);
+  local_pref_registrar_.Add(
+      prefs::kTabStripLayoutType,
+      base::Bind(&BrowserTabStripController::UpdateLayoutType,
+                 base::Unretained(this)));
 }
 
 BrowserTabStripController::~BrowserTabStripController() {
@@ -430,17 +433,6 @@ void BrowserTabStripController::TabMiniStateChanged(WebContents* contents,
 void BrowserTabStripController::TabBlockedStateChanged(WebContents* contents,
                                                        int model_index) {
   SetTabDataAt(contents, model_index);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// BrowserTabStripController, content::NotificationObserver implementation:
-
-void BrowserTabStripController::OnPreferenceChanged(
-    PrefServiceBase* service,
-    const std::string& pref_name) {
-  if (pref_name == prefs::kTabStripLayoutType) {
-    UpdateLayoutType();
-  }
 }
 
 void BrowserTabStripController::SetTabRendererDataFromModel(

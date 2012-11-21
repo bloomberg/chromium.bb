@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/ui/tabs/hover_tab_selector.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
@@ -27,8 +26,7 @@ class WebContents;
 // An implementation of TabStripController that sources data from the
 // TabContentses in a TabStripModel.
 class BrowserTabStripController : public TabStripController,
-                                  public TabStripModelObserver,
-                                  public PrefObserver {
+                                  public TabStripModelObserver {
  public:
   BrowserTabStripController(Browser* browser, TabStripModel* model);
   virtual ~BrowserTabStripController();
@@ -95,10 +93,6 @@ class BrowserTabStripController : public TabStripController,
                                    int model_index) OVERRIDE;
   virtual void TabBlockedStateChanged(content::WebContents* contents,
                                       int model_index) OVERRIDE;
-
-  // PrefObserver implementation:
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
  protected:
   // The context in which SetTabRendererDataFromModel is being called.

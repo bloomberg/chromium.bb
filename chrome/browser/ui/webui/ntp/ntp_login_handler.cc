@@ -88,7 +88,10 @@ NTPLoginHandler::~NTPLoginHandler() {
 
 void NTPLoginHandler::RegisterMessages() {
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-  username_pref_.Init(prefs::kGoogleServicesUsername, pref_service, this);
+  username_pref_.Init(prefs::kGoogleServicesUsername,
+                      pref_service,
+                      base::Bind(&NTPLoginHandler::UpdateLogin,
+                                 base::Unretained(this)));
 
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
                  content::NotificationService::AllSources());
@@ -115,12 +118,6 @@ void NTPLoginHandler::Observe(int type,
   } else {
     NOTREACHED();
   }
-}
-
-void NTPLoginHandler::OnPreferenceChanged(PrefServiceBase* service,
-                                          const std::string& pref_name) {
-  if (prefs::kGoogleServicesUsername == pref_name)
-    UpdateLogin();
 }
 
 void NTPLoginHandler::HandleInitializeSyncLogin(const ListValue* args) {

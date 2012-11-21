@@ -11,7 +11,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
@@ -61,7 +60,6 @@ struct ExtensionPage {
 class ExtensionSettingsHandler
     : public content::WebUIMessageHandler,
       public content::NotificationObserver,
-      public PrefObserver,
       public content::WebContentsObserver,
       public ui::SelectFileDialog::Listener,
       public ExtensionUninstallDialog::Delegate,
@@ -110,10 +108,6 @@ class ExtensionSettingsHandler
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // PrefObserver implementation.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
   // ExtensionUninstallDialog::Delegate implementation, used for receiving
   // notification about uninstall confirmation dialog selections.

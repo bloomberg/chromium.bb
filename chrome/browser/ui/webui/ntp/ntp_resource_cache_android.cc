@@ -50,13 +50,12 @@ base::RefCountedMemory* NTPResourceCache::GetNewTabCSS(bool is_incognito) {
 }
 
 void NTPResourceCache::Observe(int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   // No notifications necessary in Android.
 }
 
-void NTPResourceCache::OnPreferenceChanged(PrefServiceBase* service,
-                                           const std::string& pref_name) {
+void NTPResourceCache::OnPreferenceChanged() {
   // No notifications necessary in Android.
 }
 
