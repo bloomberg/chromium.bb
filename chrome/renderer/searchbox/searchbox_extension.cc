@@ -420,12 +420,16 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetContext(
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
 
-  DVLOG(1) << "GetContext: isNewTabPage="
-           << SearchBox::Get(render_view)->active_tab_is_ntp();
+  const chrome::search::Mode& mode = SearchBox::Get(render_view)->mode();
+  DVLOG(1) << "GetContext: " << mode.origin << ":" << mode.mode;
   v8::Handle<v8::Object> context = v8::Object::New();
-  context->Set(
-      v8::String::New("isNewTabPage"),
-      v8::Boolean::New(SearchBox::Get(render_view)->active_tab_is_ntp()));
+  // TODO(jered): Remove isNewTabPage, it's deprecated.
+  context->Set(v8::String::New("isNewTabPage"),
+               v8::Boolean::New(mode.is_ntp()));
+  context->Set(v8::String::New("searchMode"),
+               v8::Uint32::New(mode.mode));
+  context->Set(v8::String::New("searchOrigin"),
+               v8::Uint32::New(mode.origin));
   return context;
 }
 

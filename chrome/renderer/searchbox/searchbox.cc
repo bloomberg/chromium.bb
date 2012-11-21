@@ -17,7 +17,6 @@ SearchBox::SearchBox(content::RenderView* render_view)
       selection_end_(0),
       results_base_(0),
       last_results_base_(0),
-      active_tab_is_ntp_(false),
       theme_area_height_(0) {
 }
 
@@ -100,8 +99,8 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
                         OnAutocompleteResults)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxUpOrDownKeyPressed,
                         OnUpOrDownKeyPressed)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxActiveTabModeChanged,
-                        OnActiveTabModeChanged)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxModeChanged,
+                        OnModeChanged)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxThemeChanged,
                         OnThemeChanged)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxThemeAreaHeightChanged,
@@ -181,8 +180,8 @@ void SearchBox::OnUpOrDownKeyPressed(int count) {
   }
 }
 
-void SearchBox::OnActiveTabModeChanged(bool active_tab_is_ntp) {
-  active_tab_is_ntp_ = active_tab_is_ntp;
+void SearchBox::OnModeChanged(const chrome::search::Mode& mode) {
+  mode_ = mode;
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     extensions_v8::SearchBoxExtension::DispatchContextChange(
         render_view()->GetWebView()->mainFrame());
@@ -213,7 +212,7 @@ void SearchBox::Reset() {
   results_base_ = 0;
   rect_ = gfx::Rect();
   autocomplete_results_.clear();
-  active_tab_is_ntp_ = false;
+  mode_ = chrome::search::Mode();
   theme_info_ = ThemeBackgroundInfo();
   theme_area_height_ = 0;
 }

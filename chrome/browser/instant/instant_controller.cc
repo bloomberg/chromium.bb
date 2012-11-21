@@ -503,9 +503,8 @@ void InstantController::SearchModeChanged(
     Hide(true);
   }
 
-  if (GetPreviewContents() && old_mode.is_ntp() != new_mode.is_ntp() &&
-      extended_enabled_)
-    loader_->OnActiveTabModeChanged(new_mode.is_ntp());
+  if (GetPreviewContents() && extended_enabled_)
+    loader_->SearchModeChanged(new_mode);
 }
 
 void InstantController::ActiveTabChanged() {
@@ -658,7 +657,7 @@ bool InstantController::ResetLoader(const TemplateURL* template_url,
     // Ensure the searchbox API has the correct theme-related info and context.
     browser_->UpdateThemeInfoForPreview();
     if (extended_enabled_)
-      loader_->OnActiveTabModeChanged(search_mode_.is_ntp());
+      loader_->SearchModeChanged(search_mode_);
 
     // Reset the loader timer.
     stale_loader_timer_.Start(

@@ -358,11 +358,10 @@ void InstantLoader::OnUpOrDownKeyPressed(int count) {
                                                           count));
 }
 
-void InstantLoader::OnActiveTabModeChanged(bool active_tab_is_ntp) {
+void InstantLoader::SearchModeChanged(const chrome::search::Mode& mode) {
   content::RenderViewHost* rvh =
       preview_contents_->web_contents()->GetRenderViewHost();
-  rvh->Send(new ChromeViewMsg_SearchBoxActiveTabModeChanged(rvh->GetRoutingID(),
-                                                            active_tab_is_ntp));
+  rvh->Send(new ChromeViewMsg_SearchBoxModeChanged(rvh->GetRoutingID(), mode));
 }
 
 void InstantLoader::DidNavigate(

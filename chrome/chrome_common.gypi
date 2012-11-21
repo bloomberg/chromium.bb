@@ -286,6 +286,7 @@
         'common/render_messages.h',
         'common/safe_browsing/safebrowsing_messages.h',
         'common/search_provider.h',
+        'common/search_types.h',
         'common/service_messages.h',
         'common/service_process_util.cc',
         'common/service_process_util.h',

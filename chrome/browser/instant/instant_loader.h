@@ -22,6 +22,12 @@ class InstantController;
 class TabContents;
 struct ThemeBackgroundInfo;
 
+namespace chrome {
+namespace search {
+struct Mode;
+}
+}
+
 namespace content {
 class WebContents;
 }
@@ -78,8 +84,8 @@ class InstantLoader : public content::NotificationObserver {
   // is a repeat count, negative for moving up, positive for moving down.
   void OnUpOrDownKeyPressed(int count);
 
-  // Tells the preview page that the active tab's "NTP status" has changed.
-  void OnActiveTabModeChanged(bool active_tab_is_ntp);
+  // Tells the preview page that the active tab's search mode has changed.
+  void SearchModeChanged(const chrome::search::Mode& mode);
 
   // Called by the history tab helper with the information that it would have
   // added to the history service had this web contents not been used for

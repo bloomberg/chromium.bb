@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "chrome/common/instant_types.h"
+#include "chrome/common/search_types.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
 #include "ui/gfx/rect.h"
@@ -37,7 +38,7 @@ class SearchBox : public content::RenderViewObserver,
   size_t selection_start() const { return selection_start_; }
   size_t selection_end() const { return selection_end_; }
   int results_base() const { return results_base_; }
-  bool active_tab_is_ntp() const { return active_tab_is_ntp_; }
+  const chrome::search::Mode& mode() const { return mode_; }
 
   gfx::Rect GetRect();
   const std::vector<InstantAutocompleteResult>& GetAutocompleteResults();
@@ -62,9 +63,7 @@ class SearchBox : public content::RenderViewObserver,
   void OnAutocompleteResults(
       const std::vector<InstantAutocompleteResult>& results);
   void OnUpOrDownKeyPressed(int count);
-  void OnFocus();
-  void OnBlur();
-  void OnActiveTabModeChanged(bool active_tab_is_ntp);
+  void OnModeChanged(const chrome::search::Mode& mode);
   void OnThemeChanged(const ThemeBackgroundInfo& theme_info);
   void OnThemeAreaHeightChanged(int height);
 
@@ -80,7 +79,7 @@ class SearchBox : public content::RenderViewObserver,
   std::vector<InstantAutocompleteResult> autocomplete_results_;
   size_t last_results_base_;
   std::vector<InstantAutocompleteResult> last_autocomplete_results_;
-  bool active_tab_is_ntp_;
+  chrome::search::Mode mode_;
   ThemeBackgroundInfo theme_info_;
   int theme_area_height_;
 

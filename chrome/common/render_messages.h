@@ -22,6 +22,7 @@
 #include "chrome/common/instant_types.h"
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/search_provider.h"
+#include "chrome/common/search_types.h"
 #include "chrome/common/translate_errors.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_channel_handle.h"
@@ -170,6 +171,13 @@ IPC_STRUCT_TRAITS_BEGIN(InstantSuggestion)
   IPC_STRUCT_TRAITS_MEMBER(type)
 IPC_STRUCT_TRAITS_END()
 
+IPC_ENUM_TRAITS(chrome::search::Mode::Type)
+IPC_ENUM_TRAITS(chrome::search::Mode::Origin)
+IPC_STRUCT_TRAITS_BEGIN(chrome::search::Mode)
+  IPC_STRUCT_TRAITS_MEMBER(mode)
+  IPC_STRUCT_TRAITS_MEMBER(origin)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(RendererContentSettingRules)
   IPC_STRUCT_TRAITS_MEMBER(image_rules)
   IPC_STRUCT_TRAITS_MEMBER(script_rules)
@@ -309,8 +317,8 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxAutocompleteResults,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxUpOrDownKeyPressed,
                     int /* count */)
 
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxActiveTabModeChanged,
-                    bool /* active_tab_is_ntp */)
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxModeChanged,
+                    chrome::search::Mode /* mode */)
 
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxThemeChanged,
                     ThemeBackgroundInfo /* value */)

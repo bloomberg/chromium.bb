@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
-#include "chrome/browser/ui/search/search_types.h"
+#include "chrome/common/search_types.h"
 
 namespace content {
 class WebContents;
