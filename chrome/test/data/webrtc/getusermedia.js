@@ -93,8 +93,8 @@ function addLocalStreamToPeerConnection(peerConnection) {
   try {
     peerConnection.addStream(gLocalStream, gAddStreamConstraints);
   } catch (exception) {
-    throw failTest('Failed to add stream with hints ' + gMediaHints + ': ' +
-                   exception);
+    throw failTest('Failed to add stream with constraints ' +
+                   gAddStreamConstraints + ': ' + exception);
   }
   debug('Added local stream.');
 }
