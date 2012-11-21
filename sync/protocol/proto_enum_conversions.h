@@ -7,6 +7,7 @@
 
 // Keep this file in sync with the .proto files in this directory.
 
+#include "sync/protocol/client_debug_info.pb.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
 
@@ -46,6 +47,9 @@ const char* GetFaviconTypeString(
 
 const char* PassphraseTypeString(
     sync_pb::NigoriSpecifics::PassphraseType type);
+
+const char* SingletonEventTypeString(
+    sync_pb::DebugEventInfo::SingletonEventType type);
 
 }  // namespace syncer
 

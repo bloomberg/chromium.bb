@@ -640,7 +640,59 @@ DictionaryValue* ClientToServerMessageToValue(
   SET(get_updates, GetUpdatesMessageToValue);
   SET_STR(store_birthday);
   SET_BOOL(sync_problem_detected);
+  SET(debug_info, DebugInfoToValue);
   SET(client_status, ClientStatusToValue);
+  return value;
+}
+
+DictionaryValue* DatatypeAssociationStatsToValue(
+    const sync_pb::DatatypeAssociationStats& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_INT32(data_type_id);
+  SET_INT32(num_local_items_before_association);
+  SET_INT32(num_sync_items_before_association);
+  SET_INT32(num_local_items_after_association);
+  SET_INT32(num_sync_items_after_association);
+  SET_INT32(num_local_items_added);
+  SET_INT32(num_local_items_deleted);
+  SET_INT32(num_local_items_modified);
+  SET_INT32(num_sync_items_added);
+  SET_INT32(num_sync_items_deleted);
+  SET_INT32(num_sync_items_modified);
+  SET_BOOL(had_error);
+  return value;
+}
+
+DictionaryValue* DebugEventInfoToValue(
+    const sync_pb::DebugEventInfo& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_ENUM(singleton_event, SingletonEventTypeString);
+  SET(sync_cycle_completed_event_info, SyncCycleCompletedEventInfoToValue);
+  SET_INT32(nudging_datatype);
+  SET_INT32_REP(datatypes_notified_from_server);
+  SET(datatype_association_stats, DatatypeAssociationStatsToValue);
+  return value;
+}
+
+DictionaryValue* DebugInfoToValue(
+    const sync_pb::DebugInfo& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_REP(events, DebugEventInfoToValue);
+  SET_BOOL(cryptographer_ready);
+  SET_BOOL(cryptographer_has_pending_keys);
+  SET_BOOL(events_dropped);
+  return value;
+}
+
+base::DictionaryValue* SyncCycleCompletedEventInfoToValue(
+    const sync_pb::SyncCycleCompletedEventInfo& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_INT32(num_encryption_conflicts);
+  SET_INT32(num_hierarchy_conflicts);
+  SET_INT32(num_server_conflicts);
+  SET_INT32(num_updates_downloaded);
+  SET_INT32(num_reflected_updates_downloaded);
+  SET(caller_info, GetUpdatesCallerInfoToValue);
   return value;
 }
 

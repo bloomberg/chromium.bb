@@ -82,11 +82,11 @@ message DebugEventInfo {
     // the absence of bugs.
     STOP_SYNCING_PERMANENTLY = 6; // Server sent stop syncing permanently.
 
-    ENCRYPTED_TYPES_CHANGED = 9; // Set of encrypted types has changed.
     ENCRYPTION_COMPLETE = 7; // Client has finished encrypting all data.
     ACTIONABLE_ERROR = 8; // Client received an actionable error.
-    BOOTSTRAP_TOKEN_UPDATED = 9;  // A new cryptographer bootstrap token was
-                                  // generated.
+    ENCRYPTED_TYPES_CHANGED = 9; // Set of encrypted types has changed.
+                                 // NOTE: until m25 bootstrap token updated also
+                                 // shared this field (erroneously).
     PASSPHRASE_TYPE_CHANGED = 10;  // The encryption passphrase state changed.
     KEYSTORE_TOKEN_UPDATED = 11;  // A new keystore encryption token was
                                   // persisted.
@@ -94,6 +94,8 @@ message DebugEventInfo {
                                   // at least partially successful
                                   // configuration and is once again syncing
                                   // with the server.
+    BOOTSTRAP_TOKEN_UPDATED = 13;  // A new cryptographer bootstrap token was
+                                   // generated.
   }
 
   // Each of the following fields correspond to different kinds of events. as
