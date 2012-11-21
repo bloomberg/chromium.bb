@@ -14,4 +14,5 @@
 //<include src="media_controls.js"/>
 //<include src="util.js"/>
 //<include src="video_player.js"/>
+//<include src="player_testapi.js"/>
 //<include src="../metadata/metadata_cache.js"/>
