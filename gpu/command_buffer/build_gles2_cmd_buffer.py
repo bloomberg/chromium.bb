@@ -1702,6 +1702,13 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoLinkProgram',
     'impl_func':  False,
   },
+  'MapBufferCHROMIUM': {
+    'gen_cmd': False,
+    'extension': True,
+    'chromium': True,
+    'client_test': False,
+    'chromium': True,
+  },
   'MapBufferSubDataCHROMIUM': {
     'gen_cmd': False,
     'extension': True,
@@ -1923,6 +1930,13 @@ _FUNCTION_INFO = {
     'data_type': 'GLfloat',
     'count': 16,
     'decoder_func': 'DoUniformMatrix4fv',
+  },
+  'UnmapBufferCHROMIUM': {
+    'gen_cmd': False,
+    'extension': True,
+    'chromium': True,
+    'client_test': False,
+    'chromium': True,
   },
   'UnmapBufferSubDataCHROMIUM': {
     'gen_cmd': False,

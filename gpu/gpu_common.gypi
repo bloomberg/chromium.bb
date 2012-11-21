@@ -19,6 +19,8 @@
     # with without support for client side arrays and once with for pepper and
     # the OpenGL ES 2.0 compliant for the conformance tests.
     'gles2_implementation_source_files': [
+      'command_buffer/client/buffer_tracker.cc',
+      'command_buffer/client/buffer_tracker.h',
       'command_buffer/client/gles2_impl_export.h',
       'command_buffer/client/gles2_implementation_autogen.h',
       'command_buffer/client/gles2_implementation.cc',

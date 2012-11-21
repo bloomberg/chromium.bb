@@ -13,16 +13,17 @@
 #include <string>
 #include <vector>
 
+#include "../client/buffer_tracker.h"
+#include "../client/gles2_cmd_helper.h"
+#include "../client/gles2_interface.h"
+#include "../client/query_tracker.h"
+#include "../client/ref_counted.h"
+#include "../client/ring_buffer.h"
+#include "../client/share_group.h"
 #include "../common/compiler_specific.h"
 #include "../common/debug_marker_manager.h"
 #include "../common/gles2_cmd_utils.h"
 #include "../common/scoped_ptr.h"
-#include "../client/ref_counted.h"
-#include "../client/gles2_cmd_helper.h"
-#include "../client/gles2_interface.h"
-#include "../client/query_tracker.h"
-#include "../client/ring_buffer.h"
-#include "../client/share_group.h"
 #include "gles2_impl_export.h"
 
 #if !defined(NDEBUG) && !defined(__native_client__) && !defined(GLES2_CONFORMANCE_TESTS)  // NOLINT
@@ -483,6 +484,9 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
   // for error checking.
   bool MustBeContextLost();
 
+  BufferTracker::Buffer* GetBoundPixelUnpackTransferBufferIfValid(
+      const char* function_name, GLuint offset, GLsizei size);
+
   const std::string& GetLogPrefix() const;
 
   GLES2Util util_;
@@ -534,6 +538,9 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
   // The currently bound element array buffer.
   GLuint bound_element_array_buffer_id_;
 
+  // The currently bound pixel transfer buffer.
+  GLuint bound_pixel_unpack_transfer_buffer_id_;
+
   // GL names for the buffers used to emulate client side buffers.
   GLuint client_side_array_id_;
   GLuint client_side_element_array_id_;
@@ -577,6 +584,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
 
   scoped_ptr<QueryTracker> query_tracker_;
   QueryTracker::Query* current_query_;
+
+  scoped_ptr<BufferTracker> buffer_tracker_;
 
   ErrorMessageCallback* error_message_callback_;
 

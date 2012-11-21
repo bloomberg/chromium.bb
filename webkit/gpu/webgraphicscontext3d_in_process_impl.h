@@ -492,6 +492,9 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
   virtual void bindTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint imageId);
   virtual void releaseTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint imageId);
 
+  virtual void* mapBufferCHROMIUM(WGC3Denum target, WGC3Denum access);
+  virtual WGC3Dboolean unmapBufferCHROMIUM(WGC3Denum target);
+
  protected:
   virtual GrGLInterface* onCreateGrGLInterface();
 

@@ -434,6 +434,10 @@ virtual void RegisterSharedIdsCHROMIUM(
 
 virtual GLboolean EnableFeatureCHROMIUM(const char* feature) OVERRIDE;
 
+virtual void* MapBufferCHROMIUM(GLuint target, GLenum access) OVERRIDE;
+
+virtual GLboolean UnmapBufferCHROMIUM(GLuint target) OVERRIDE;
+
 virtual void* MapBufferSubDataCHROMIUM(
     GLuint target, GLintptr offset, GLsizeiptr size, GLenum access) OVERRIDE;
 

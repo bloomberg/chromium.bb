@@ -497,6 +497,9 @@ class WebGraphicsContext3DInProcessCommandBufferImpl
   virtual void pushGroupMarkerEXT(const WGC3Dchar* marker);
   virtual void popGroupMarkerEXT();
 
+  virtual void* mapBufferCHROMIUM(WGC3Denum target, WGC3Denum access);
+  virtual WGC3Dboolean unmapBufferCHROMIUM(WGC3Denum target);
+
  protected:
   virtual GrGLInterface* onCreateGrGLInterface();
 

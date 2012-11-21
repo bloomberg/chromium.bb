@@ -248,6 +248,8 @@ virtual void DeleteSharedIdsCHROMIUM(
 virtual void RegisterSharedIdsCHROMIUM(
     GLuint namespace_id, GLsizei n, const GLuint* ids) = 0;
 virtual GLboolean EnableFeatureCHROMIUM(const char* feature) = 0;
+virtual void* MapBufferCHROMIUM(GLuint target, GLenum access) = 0;
+virtual GLboolean UnmapBufferCHROMIUM(GLuint target) = 0;
 virtual void* MapBufferSubDataCHROMIUM(
     GLuint target, GLintptr offset, GLsizeiptr size, GLenum access) = 0;
 virtual void UnmapBufferSubDataCHROMIUM(const void* mem) = 0;

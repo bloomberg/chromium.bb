@@ -1643,6 +1643,18 @@ DELEGATE_TO_GL_2(bindTexImage2DCHROMIUM, BindTexImage2DCHROMIUM,
 DELEGATE_TO_GL_2(releaseTexImage2DCHROMIUM, ReleaseTexImage2DCHROMIUM,
                  WGC3Denum, WGC3Dint)
 
+void* WebGraphicsContext3DInProcessCommandBufferImpl::mapBufferCHROMIUM(
+    WGC3Denum target, WGC3Denum access) {
+  ClearContext();
+  return gl_->MapBufferCHROMIUM(target, access);
+}
+
+WGC3Dboolean WebGraphicsContext3DInProcessCommandBufferImpl::
+    unmapBufferCHROMIUM(WGC3Denum target) {
+  ClearContext();
+  return gl_->UnmapBufferCHROMIUM(target);
+}
+
 GrGLInterface* WebGraphicsContext3DInProcessCommandBufferImpl::
     onCreateGrGLInterface() {
   return webkit_glue::CreateCommandBufferSkiaGLBinding();

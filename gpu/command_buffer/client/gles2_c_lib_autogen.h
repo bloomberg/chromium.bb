@@ -588,6 +588,12 @@ void GLES2RegisterSharedIdsCHROMIUM(
 GLboolean GLES2EnableFeatureCHROMIUM(const char* feature) {
   return gles2::GetGLContext()->EnableFeatureCHROMIUM(feature);
 }
+void* GLES2MapBufferCHROMIUM(GLuint target, GLenum access) {
+  return gles2::GetGLContext()->MapBufferCHROMIUM(target, access);
+}
+GLboolean GLES2UnmapBufferCHROMIUM(GLuint target) {
+  return gles2::GetGLContext()->UnmapBufferCHROMIUM(target);
+}
 void* GLES2MapBufferSubDataCHROMIUM(
     GLuint target, GLintptr offset, GLsizeiptr size, GLenum access) {
   return gles2::GetGLContext()->MapBufferSubDataCHROMIUM(
@@ -962,6 +968,10 @@ NameToFunc g_gles2_function_table[] = {
       glRegisterSharedIdsCHROMIUM), },
   { "glEnableFeatureCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
       glEnableFeatureCHROMIUM), },
+  { "glMapBufferCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
+      glMapBufferCHROMIUM), },
+  { "glUnmapBufferCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
+      glUnmapBufferCHROMIUM), },
   { "glMapBufferSubDataCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
       glMapBufferSubDataCHROMIUM), },
   { "glUnmapBufferSubDataCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(

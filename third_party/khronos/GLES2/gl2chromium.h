@@ -187,6 +187,8 @@
 #define glDeleteSharedIdsCHROMIUM GLES2_GET_FUN(DeleteSharedIdsCHROMIUM)
 #define glRegisterSharedIdsCHROMIUM GLES2_GET_FUN(RegisterSharedIdsCHROMIUM)
 #define glEnableFeatureCHROMIUM GLES2_GET_FUN(EnableFeatureCHROMIUM)
+#define glMapBufferCHROMIUM GLES2_GET_FUN(MapBufferCHROMIUM)
+#define glUnmapBufferCHROMIUM GLES2_GET_FUN(UnmapBufferCHROMIUM)
 #define glMapBufferSubDataCHROMIUM GLES2_GET_FUN(MapBufferSubDataCHROMIUM)
 #define glUnmapBufferSubDataCHROMIUM GLES2_GET_FUN(UnmapBufferSubDataCHROMIUM)
 #define glMapTexSubImage2DCHROMIUM GLES2_GET_FUN(MapTexSubImage2DCHROMIUM)

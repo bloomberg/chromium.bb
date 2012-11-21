@@ -130,6 +130,7 @@
       ],
       'sources': [
         '<@(gles2_c_lib_source_files)',
+        'command_buffer/client/buffer_tracker_unittest.cc',
         'command_buffer/client/client_test_helper.cc',
         'command_buffer/client/client_test_helper.h',
         'command_buffer/client/cmd_buffer_helper_test.cc',

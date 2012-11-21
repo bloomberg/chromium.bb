@@ -1714,6 +1714,16 @@ void WebGraphicsContext3DInProcessImpl::releaseTexImage2DCHROMIUM(
   NOTIMPLEMENTED();
 }
 
+void* WebGraphicsContext3DInProcessImpl::mapBufferCHROMIUM(
+    WGC3Denum target, WGC3Denum access) {
+  return 0;
+}
+
+WGC3Dboolean WebGraphicsContext3DInProcessImpl::unmapBufferCHROMIUM(
+    WGC3Denum target) {
+  return false;
+}
+
 GrGLInterface* WebGraphicsContext3DInProcessImpl::onCreateGrGLInterface() {
   return gfx::CreateInProcessSkiaGLBinding();
 }

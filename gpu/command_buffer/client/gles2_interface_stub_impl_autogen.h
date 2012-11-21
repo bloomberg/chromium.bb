@@ -520,6 +520,13 @@ GLboolean GLES2InterfaceStub::EnableFeatureCHROMIUM(
     const char* /* feature */) {
   return 0;
 }
+void* GLES2InterfaceStub::MapBufferCHROMIUM(
+    GLuint /* target */, GLenum /* access */) {
+  return 0;
+}
+GLboolean GLES2InterfaceStub::UnmapBufferCHROMIUM(GLuint /* target */) {
+  return 0;
+}
 void* GLES2InterfaceStub::MapBufferSubDataCHROMIUM(
     GLuint /* target */, GLintptr /* offset */, GLsizeiptr /* size */,
     GLenum /* access */) {

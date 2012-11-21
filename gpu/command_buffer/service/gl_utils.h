@@ -110,6 +110,10 @@
 // GL_OES_vertex_array_object
 #define GL_VERTEX_ARRAY_BINDING_OES            0x85B5
 
+// GL_CHROMIUM_pixel_transfer_buffer_object
+#define GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM 0x78EC
+#define GL_PIXEL_UNPACK_TRANSFER_BUFFER_BINDING_CHROMIUM 0x78EF
+
 #define GL_GLEXT_PROTOTYPES 1
 
 // GL_ARB_get_program_binary
