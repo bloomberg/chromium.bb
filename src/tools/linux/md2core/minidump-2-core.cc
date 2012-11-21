@@ -675,7 +675,7 @@ ParseDSODebugInfo(CrashedProcess* crashinfo, const MinidumpMemoryRange& range,
                                    range.length() - sizeof(MDRawDebug));
   }
   if (debug->map != kInvalidMDRVA) {
-    for (int i = 0; i < debug->dso_count; ++i) {
+    for (unsigned int i = 0; i < debug->dso_count; ++i) {
       const MDRawLinkMap* link_map =
           full_file.GetArrayElement<MDRawLinkMap>(debug->map, i);
       if (link_map) {

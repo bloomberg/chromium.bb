@@ -50,7 +50,8 @@ AM_CXXFLAGS += \
 	-Werror=vla \
 	-Werror=unused-variable \
 	-Werror=missing-braces \
-	-Werror=overloaded-virtual
+	-Werror=overloaded-virtual \
+	-Werror=sign-compare
 endif
 
 if LINUX_HOST

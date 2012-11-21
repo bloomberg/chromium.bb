@@ -492,8 +492,8 @@ TEST_F(MinidumpProcessorTest, TestThreadMissingMemory) {
             google_breakpad::PROCESS_OK);
 
   // Should have a single thread with a single frame in it.
-  ASSERT_EQ(1, state.threads()->size());
-  ASSERT_EQ(1, state.threads()->at(0)->frames()->size());
+  ASSERT_EQ(1U, state.threads()->size());
+  ASSERT_EQ(1U, state.threads()->at(0)->frames()->size());
   ASSERT_EQ(kExpectedEIP, state.threads()->at(0)->frames()->at(0)->instruction);
 }
 
@@ -543,8 +543,8 @@ TEST_F(MinidumpProcessorTest, TestThreadMissingContext) {
             google_breakpad::PROCESS_OK);
 
   // Should have a single thread with zero frames.
-  ASSERT_EQ(1, state.threads()->size());
-  ASSERT_EQ(0, state.threads()->at(0)->frames()->size());
+  ASSERT_EQ(1U, state.threads()->size());
+  ASSERT_EQ(0U, state.threads()->at(0)->frames()->size());
 }
 
 }  // namespace

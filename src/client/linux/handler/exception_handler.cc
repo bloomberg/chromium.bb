@@ -240,7 +240,7 @@ bool ExceptionHandler::InstallHandlersLocked() {
     return false;
 
   // Fail if unable to store all the old handlers.
-  for (unsigned i = 0; i < kNumHandledSignals; ++i) {
+  for (int i = 0; i < kNumHandledSignals; ++i) {
     if (sigaction(kExceptionSignals[i], NULL, &old_handlers[i]) == -1)
       return false;
   }
@@ -250,13 +250,13 @@ bool ExceptionHandler::InstallHandlersLocked() {
   sigemptyset(&sa.sa_mask);
 
   // Mask all exception signals when we're handling one of them.
-  for (unsigned i = 0; i < kNumHandledSignals; ++i)
+  for (int i = 0; i < kNumHandledSignals; ++i)
     sigaddset(&sa.sa_mask, kExceptionSignals[i]);
 
   sa.sa_sigaction = SignalHandler;
   sa.sa_flags = SA_ONSTACK | SA_SIGINFO;
 
-  for (unsigned i = 0; i < kNumHandledSignals; ++i) {
+  for (int i = 0; i < kNumHandledSignals; ++i) {
     if (sigaction(kExceptionSignals[i], &sa, NULL) == -1) {
       // At this point it is impractical to back out changes, and so failure to
       // install a signal is intentionally ignored.
@@ -273,7 +273,7 @@ void ExceptionHandler::RestoreHandlersLocked() {
   if (!handlers_installed)
     return;
 
-  for (unsigned i = 0; i < kNumHandledSignals; ++i) {
+  for (int i = 0; i < kNumHandledSignals; ++i) {
     if (sigaction(kExceptionSignals[i], &old_handlers[i], NULL) == -1) {
       signal(kExceptionSignals[i], SIG_DFL);
     }

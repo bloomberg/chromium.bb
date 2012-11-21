@@ -653,8 +653,10 @@ class MinidumpWriter {
     size_t stack_len;
     if (dumper_->GetStackInfo(&stack, &stack_len, stack_pointer)) {
       UntypedMDRVA memory(&minidump_writer_);
-      if (max_stack_len >= 0 && stack_len > max_stack_len)
+      if (max_stack_len >= 0 &&
+          stack_len > static_cast<unsigned int>(max_stack_len)) {
         stack_len = max_stack_len;
+      }
       if (!memory.Allocate(stack_len))
         return false;
       *stack_copy = reinterpret_cast<uint8_t*>(Alloc(stack_len));

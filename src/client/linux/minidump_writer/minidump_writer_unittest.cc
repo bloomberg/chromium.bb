@@ -88,7 +88,7 @@ TEST(MinidumpWriterTest, SetupWithPath) {
   ASSERT_TRUE(WriteMinidump(templ.c_str(), child, &context, sizeof(context)));
   struct stat st;
   ASSERT_EQ(0, stat(templ.c_str(), &st));
-  ASSERT_GT(st.st_size, 0u);
+  ASSERT_GT(st.st_size, 0);
 
   close(fds[1]);
 }
@@ -118,7 +118,7 @@ TEST(MinidumpWriterTest, SetupWithFD) {
   ASSERT_TRUE(WriteMinidump(fd, child, &context, sizeof(context)));
   struct stat st;
   ASSERT_EQ(0, stat(templ.c_str(), &st));
-  ASSERT_GT(st.st_size, 0u);
+  ASSERT_GT(st.st_size, 0);
 
   close(fds[1]);
 }
@@ -239,7 +239,7 @@ TEST(MinidumpWriterTest, MappingInfoContained) {
 
   // These are defined here so the parent can use them to check the
   // data from the minidump afterwards.
-  const u_int32_t memory_size = sysconf(_SC_PAGESIZE);
+  const int32_t memory_size = sysconf(_SC_PAGESIZE);
   const char* kMemoryName = "a fake module";
   const u_int8_t kModuleGUID[sizeof(MDGUID)] = {
     0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
@@ -379,7 +379,7 @@ TEST(MinidumpWriterTest, DeletedBinary) {
   ASSERT_TRUE(pfd.revents & POLLIN);
   uint8_t junk;
   const int nr = HANDLE_EINTR(read(fds[0], &junk, sizeof(junk)));
-  ASSERT_EQ(sizeof(junk), nr);
+  ASSERT_EQ(static_cast<ssize_t>(sizeof(junk)), nr);
   close(fds[0]);
 
   // Child is ready now.
@@ -398,7 +398,7 @@ TEST(MinidumpWriterTest, DeletedBinary) {
 
   struct stat st;
   ASSERT_EQ(0, stat(templ.c_str(), &st));
-  ASSERT_GT(st.st_size, 0u);
+  ASSERT_GT(st.st_size, 0);
 
   Minidump minidump(templ.c_str());
   ASSERT_TRUE(minidump.Read());
@@ -623,7 +623,8 @@ TEST(MinidumpWriterTest, MinidumpSizeLimit) {
     ASSERT_EQ(1, r);
     ASSERT_TRUE(pfd.revents & POLLIN);
     uint8_t junk;
-    ASSERT_EQ(read(fds[0], &junk, sizeof(junk)), sizeof(junk));
+    ASSERT_EQ(read(fds[0], &junk, sizeof(junk)), 
+              static_cast<ssize_t>(sizeof(junk)));
   }
   close(fds[0]);
 
@@ -648,14 +649,14 @@ TEST(MinidumpWriterTest, MinidumpSizeLimit) {
                               MappingList(), AppMemoryList()));
     struct stat st;
     ASSERT_EQ(0, stat(normal_dump.c_str(), &st));
-    ASSERT_GT(st.st_size, 0u);
+    ASSERT_GT(st.st_size, 0);
     normal_file_size = st.st_size;
 
     Minidump minidump(normal_dump.c_str());
     ASSERT_TRUE(minidump.Read());
     MinidumpThreadList* dump_thread_list = minidump.GetThreadList();
     ASSERT_TRUE(dump_thread_list);
-    for (int i = 0; i < dump_thread_list->thread_count(); i++) {
+    for (unsigned int i = 0; i < dump_thread_list->thread_count(); i++) {
       MinidumpThread* thread = dump_thread_list->GetThreadAtIndex(i);
       ASSERT_TRUE(thread->thread() != NULL);
       // When the stack size is zero bytes, GetMemory() returns NULL.
@@ -699,7 +700,7 @@ TEST(MinidumpWriterTest, MinidumpSizeLimit) {
                               MappingList(), AppMemoryList()));
     struct stat st;
     ASSERT_EQ(0, stat(limit_dump.c_str(), &st));
-    ASSERT_GT(st.st_size, 0u);
+    ASSERT_GT(st.st_size, 0);
     // Make sure the file size is at least smaller than the original.
     EXPECT_LT(st.st_size, normal_file_size);
 
@@ -708,7 +709,7 @@ TEST(MinidumpWriterTest, MinidumpSizeLimit) {
     MinidumpThreadList* dump_thread_list = minidump.GetThreadList();
     ASSERT_TRUE(dump_thread_list);
     int total_limit_stack_size = 0;
-    for (int i = 0; i < dump_thread_list->thread_count(); i++) {
+    for (unsigned int i = 0; i < dump_thread_list->thread_count(); i++) {
       MinidumpThread* thread = dump_thread_list->GetThreadAtIndex(i);
       ASSERT_TRUE(thread->thread() != NULL);
       // When the stack size is zero bytes, GetMemory() returns NULL.

@@ -88,7 +88,7 @@ static int PrintRegister(const char *name, u_int32_t value, int start_col) {
   char buffer[64];
   snprintf(buffer, sizeof(buffer), " %5s = 0x%08x", name, value);
 
-  if (start_col + strlen(buffer) > kMaxWidth) {
+  if (start_col + static_cast<ssize_t>(strlen(buffer)) > kMaxWidth) {
     start_col = 0;
     printf("\n ");
   }
@@ -102,7 +102,7 @@ static int PrintRegister64(const char *name, u_int64_t value, int start_col) {
   char buffer[64];
   snprintf(buffer, sizeof(buffer), " %5s = 0x%016" PRIx64 , name, value);
 
-  if (start_col + strlen(buffer) > kMaxWidth) {
+  if (start_col + static_cast<ssize_t>(strlen(buffer)) > kMaxWidth) {
     start_col = 0;
     printf("\n ");
   }

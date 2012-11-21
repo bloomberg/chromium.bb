@@ -160,7 +160,7 @@ TEST(LinuxPtraceDumperTest, MergedMappings) {
       // range.
       EXPECT_EQ(kMappingAddress, mapping.start_addr);
       EXPECT_EQ(kMappingSize, mapping.size);
-      EXPECT_EQ(0, mapping.offset);
+      EXPECT_EQ(0U, mapping.offset);
       mapping_count++;
     }
   }
@@ -212,7 +212,8 @@ TEST(LinuxPtraceDumperTest, VerifyStackReadWithMultipleThreads) {
     ASSERT_EQ(1, r);
     ASSERT_TRUE(pfd.revents & POLLIN);
     uint8_t junk;
-    ASSERT_EQ(read(fds[0], &junk, sizeof(junk)), sizeof(junk));
+    ASSERT_EQ(read(fds[0], &junk, sizeof(junk)), 
+              static_cast<ssize_t>(sizeof(junk)));
   }
   close(fds[0]);
 

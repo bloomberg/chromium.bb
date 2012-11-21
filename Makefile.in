@@ -80,7 +80,8 @@ host_triplet = @host@
 @GCC_TRUE@	-Werror=vla \
 @GCC_TRUE@	-Werror=unused-variable \
 @GCC_TRUE@	-Werror=missing-braces \
-@GCC_TRUE@	-Werror=overloaded-virtual
+@GCC_TRUE@	-Werror=overloaded-virtual \
+@GCC_TRUE@	-Werror=sign-compare
 
 
 # Build as PIC on Linux, for linux_client_unittest_shlib
@@ -148,7 +149,7 @@ check_PROGRAMS = $(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_6) \
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_16 = src/common/android/breakpad_getcontext.S \
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	src/common/android/breakpad_getcontext_unittest.cc
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_17 = \
-@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	-llog
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	-llog -lm
 
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_18 = \
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@        -llog

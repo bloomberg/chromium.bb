@@ -293,7 +293,7 @@ TEST_F(GetCallerFrame, ScanWithFunctionSymbols) {
   ASSERT_EQ(StackFrameARM::CONTEXT_VALID_ALL, frame0->context_validity);
   EXPECT_EQ(0, memcmp(&raw_context, &frame0->context, sizeof(raw_context)));
   EXPECT_EQ("monotreme", frame0->function_name);
-  EXPECT_EQ(0x40000100, frame0->function_base);
+  EXPECT_EQ(0x40000100U, frame0->function_base);
 
   StackFrameARM *frame1 = static_cast<StackFrameARM *>(frames->at(1));
   EXPECT_EQ(StackFrame::FRAME_TRUST_SCAN, frame1->trust);
@@ -303,7 +303,7 @@ TEST_F(GetCallerFrame, ScanWithFunctionSymbols) {
   EXPECT_EQ(return_address, frame1->context.iregs[MD_CONTEXT_ARM_REG_PC]);
   EXPECT_EQ(frame1_sp.Value(), frame1->context.iregs[MD_CONTEXT_ARM_REG_SP]);
   EXPECT_EQ("marsupial", frame1->function_name);
-  EXPECT_EQ(0x50000100, frame1->function_base);
+  EXPECT_EQ(0x50000100U, frame1->function_base);
 }
 
 struct CFIFixture: public StackwalkerARMFixture {
@@ -688,9 +688,9 @@ TEST_F(GetFramesByFramePointer, OnlyFramePointer) {
              StackFrameARM::CONTEXT_VALID_SP),
             frame2->context_validity);
   EXPECT_EQ(return_address2, frame2->context.iregs[MD_CONTEXT_ARM_REG_PC]);
-  EXPECT_EQ(0, frame2->context.iregs[MD_CONTEXT_ARM_REG_LR]);
+  EXPECT_EQ(0U, frame2->context.iregs[MD_CONTEXT_ARM_REG_LR]);
   EXPECT_EQ(frame2_sp.Value(), frame2->context.iregs[MD_CONTEXT_ARM_REG_SP]);
-  EXPECT_EQ(0, frame2->context.iregs[MD_CONTEXT_ARM_REG_IOS_FP]);
+  EXPECT_EQ(0U, frame2->context.iregs[MD_CONTEXT_ARM_REG_IOS_FP]);
 }
 
 TEST_F(GetFramesByFramePointer, FramePointerAndCFI) {
@@ -781,7 +781,7 @@ TEST_F(GetFramesByFramePointer, FramePointerAndCFI) {
              StackFrameARM::CONTEXT_VALID_SP),
             frame2->context_validity);
   EXPECT_EQ(return_address2, frame2->context.iregs[MD_CONTEXT_ARM_REG_PC]);
-  EXPECT_EQ(0, frame2->context.iregs[MD_CONTEXT_ARM_REG_LR]);
+  EXPECT_EQ(0U, frame2->context.iregs[MD_CONTEXT_ARM_REG_LR]);
   EXPECT_EQ(frame2_sp.Value(), frame2->context.iregs[MD_CONTEXT_ARM_REG_SP]);
-  EXPECT_EQ(0, frame2->context.iregs[MD_CONTEXT_ARM_REG_IOS_FP]);
+  EXPECT_EQ(0U, frame2->context.iregs[MD_CONTEXT_ARM_REG_IOS_FP]);
 }

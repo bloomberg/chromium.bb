@@ -726,7 +726,7 @@ TEST(Dump, OneExceptionX86) {
 
   u_int32_t thread_id;
   ASSERT_TRUE(md_exception->GetThreadID(&thread_id));
-  ASSERT_EQ(0x1234abcd, thread_id);
+  ASSERT_EQ(0x1234abcdU, thread_id);
 
   const MDRawExceptionStream* raw_exception = md_exception->exception();
   ASSERT_TRUE(raw_exception != NULL);
@@ -800,7 +800,7 @@ TEST(Dump, OneExceptionX86XState) {
 
   u_int32_t thread_id;
   ASSERT_TRUE(md_exception->GetThreadID(&thread_id));
-  ASSERT_EQ(0x1234abcd, thread_id);
+  ASSERT_EQ(0x1234abcdU, thread_id);
 
   const MDRawExceptionStream* raw_exception = md_exception->exception();
   ASSERT_TRUE(raw_exception != NULL);
@@ -878,7 +878,7 @@ TEST(Dump, OneExceptionARM) {
 
   u_int32_t thread_id;
   ASSERT_TRUE(md_exception->GetThreadID(&thread_id));
-  ASSERT_EQ(0x1234abcd, thread_id);
+  ASSERT_EQ(0x1234abcdU, thread_id);
 
   const MDRawExceptionStream* raw_exception = md_exception->exception();
   ASSERT_TRUE(raw_exception != NULL);
@@ -962,7 +962,7 @@ TEST(Dump, OneExceptionARMOldFlags) {
 
   u_int32_t thread_id;
   ASSERT_TRUE(md_exception->GetThreadID(&thread_id));
-  ASSERT_EQ(0x1234abcd, thread_id);
+  ASSERT_EQ(0x1234abcdU, thread_id);
 
   const MDRawExceptionStream* raw_exception = md_exception->exception();
   ASSERT_TRUE(raw_exception != NULL);
