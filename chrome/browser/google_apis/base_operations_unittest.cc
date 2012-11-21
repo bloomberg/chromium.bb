@@ -17,6 +17,8 @@ namespace google_apis {
 
 namespace {
 
+// The class is used to test that the JSON parsing is done in the blocking
+// pool, instead of UI thread.
 class JsonParseTestGetDataOperation : public GetDataOperation {
  public:
   JsonParseTestGetDataOperation(OperationRegistry* registry,
@@ -31,14 +33,6 @@ class JsonParseTestGetDataOperation : public GetDataOperation {
     NotifyStartToOperationRegistry();
   }
 
-  void NotifySuccess() {
-    NotifySuccessToOperationRegistry();
-  }
-
-  void NotifyFailure() {
-    NotifyFinish(OPERATION_FAILED);
-  }
-
  protected:
   // GetDataOperation overrides:
   virtual GURL GetURL() const OVERRIDE {
@@ -49,19 +43,20 @@ class JsonParseTestGetDataOperation : public GetDataOperation {
   }
 };
 
-void GetDataOperationParseJsonCallback(GDataErrorCode* error_out,
-                                       scoped_ptr<base::Value>* value_out,
-                                       GDataErrorCode error_in,
-                                       scoped_ptr<base::Value> value_in) {
+// Copies the results from GetDataCallback.
+void CopyResultsFromGetDataCallback(GDataErrorCode* error_out,
+                                    scoped_ptr<base::Value>* value_out,
+                                    GDataErrorCode error_in,
+                                    scoped_ptr<base::Value> value_in) {
   value_out->swap(value_in);
   *error_out = error_in;
 }
 
 }  // namespace
 
-class GDataWapiOperationsTest : public testing::Test {
+class BaseOperationsTest : public testing::Test {
  protected:
-  GDataWapiOperationsTest()
+  BaseOperationsTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_) {
   }
 
@@ -79,103 +74,50 @@ class GDataWapiOperationsTest : public testing::Test {
   scoped_ptr<OperationRunner> runner_;
 };
 
-TEST_F(GDataWapiOperationsTest, GetDataOperationParseJson) {
+TEST_F(BaseOperationsTest, GetDataOperation_ParseValidJson) {
   scoped_ptr<base::Value> value;
-  GDataErrorCode error;
-  google_apis::GetDataCallback cb =
-      base::Bind(&GetDataOperationParseJsonCallback,
-                 &error, &value);
+  GDataErrorCode error = GDATA_OTHER_ERROR;
   JsonParseTestGetDataOperation* get_data =
-      new JsonParseTestGetDataOperation(runner_->operation_registry(), cb);
+      new JsonParseTestGetDataOperation(
+          runner_->operation_registry(),
+          base::Bind(&CopyResultsFromGetDataCallback, &error, &value));
   get_data->NotifyStart();
 
-  // Parses a valid json string.
-  {
-    std::string valid_json_str =
-        "{"
-        "  \"test\": {"
-        "    \"foo\": true,"
-        "    \"bar\": 3.14,"
-        "    \"baz\": \"bat\","
-        "    \"moo\": \"cow\""
-        "  },"
-        "  \"list\": ["
-        "    \"a\","
-        "    \"b\""
-        "  ]"
-        "}";
+  const std::string valid_json_str = "{ \"test\": 123 }";
 
-    get_data->ParseResponse(HTTP_SUCCESS, valid_json_str);
-    test_util::RunBlockingPoolTask();
+  get_data->ParseResponse(HTTP_SUCCESS, valid_json_str);
+  // Should wait for a blocking pool task, as the JSON parsing is done in the
+  // blocking pool.
+  test_util::RunBlockingPoolTask();
 
-    EXPECT_EQ(HTTP_SUCCESS, error);
-    ASSERT_TRUE(value.get());
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(value.get());
 
-    DictionaryValue* root_dict = NULL;
-    ASSERT_TRUE(value->GetAsDictionary(&root_dict));
+  DictionaryValue* root_dict = NULL;
+  ASSERT_TRUE(value->GetAsDictionary(&root_dict));
 
-    DictionaryValue* dict = NULL;
-    ListValue* list = NULL;
-    ASSERT_TRUE(root_dict->GetDictionary("test", &dict));
-    ASSERT_TRUE(root_dict->GetList("list", &list));
-
-    Value* dict_literals[2] = {0};
-    Value* dict_strings[2] = {0};
-    Value* list_values[2] = {0};
-    EXPECT_TRUE(dict->Get("foo", &dict_literals[0]));
-    EXPECT_TRUE(dict->Get("bar", &dict_literals[1]));
-    EXPECT_TRUE(dict->Get("baz", &dict_strings[0]));
-    EXPECT_TRUE(dict->Get("moo", &dict_strings[1]));
-    ASSERT_EQ(2u, list->GetSize());
-    EXPECT_TRUE(list->Get(0, &list_values[0]));
-    EXPECT_TRUE(list->Get(1, &list_values[1]));
-
-    bool b = false;
-    double d = 0;
-    std::string s;
-    EXPECT_TRUE(dict_literals[0]->GetAsBoolean(&b));
-    EXPECT_TRUE(b);
-    EXPECT_TRUE(dict_literals[1]->GetAsDouble(&d));
-    EXPECT_EQ(3.14, d);
-    EXPECT_TRUE(dict_strings[0]->GetAsString(&s));
-    EXPECT_EQ("bat", s);
-    EXPECT_TRUE(dict_strings[1]->GetAsString(&s));
-    EXPECT_EQ("cow", s);
-    EXPECT_TRUE(list_values[0]->GetAsString(&s));
-    EXPECT_EQ("a", s);
-    EXPECT_TRUE(list_values[1]->GetAsString(&s));
-    EXPECT_EQ("b", s);
-  }
+  int int_value = 0;
+  ASSERT_TRUE(root_dict->GetInteger("test", &int_value));
+  EXPECT_EQ(123, int_value);
 }
 
-TEST_F(GDataWapiOperationsTest, GetDataOperationParseInvalidJson) {
+TEST_F(BaseOperationsTest, GetDataOperation_ParseInvalidJson) {
   scoped_ptr<base::Value> value;
-  GDataErrorCode error;
-  google_apis::GetDataCallback cb =
-      base::Bind(&GetDataOperationParseJsonCallback,
-                 &error, &value);
+  GDataErrorCode error = GDATA_OTHER_ERROR;
   JsonParseTestGetDataOperation* get_data =
-      new JsonParseTestGetDataOperation(runner_->operation_registry(), cb);
+      new JsonParseTestGetDataOperation(
+          runner_->operation_registry(),
+          base::Bind(&CopyResultsFromGetDataCallback, &error, &value));
   get_data->NotifyStart();
 
-  // Parses an invalid json string.
-  {
-    std::string invalid_json_str =
-        "/* hogehoge *"
-        "  \"test\": {"
-        "    \"moo\": \"cow"
-        "  "
-        "  \"list\": ["
-        "    \"foo\","
-        "    \"bar\""
-        "  ]";
+  const std::string invalid_json_str = "$$$";
 
-    get_data->ParseResponse(HTTP_SUCCESS, invalid_json_str);
-    test_util::RunBlockingPoolTask();
+  get_data->ParseResponse(HTTP_SUCCESS, invalid_json_str);
+  test_util::RunBlockingPoolTask();
 
-    EXPECT_EQ(GDATA_PARSE_ERROR, error);
-    ASSERT_TRUE(value.get() == NULL);
-  }
+  // The parsing should fail.
+  EXPECT_EQ(GDATA_PARSE_ERROR, error);
+  ASSERT_FALSE(value.get());
 }
 
 }  // namespace google_apis
