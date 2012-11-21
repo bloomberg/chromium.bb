@@ -751,7 +751,7 @@
             ['include', '^browser/extensions/api/web_request/web_request_time_tracker.cc'],
           ],
           'dependencies!': [
-            '../third_party/libusb/libusb.gyp:libusb',
+            '../third_party/libusb/libusb.gyp:libusb'
           ],
         }],
         ['OS=="linux" and use_aura==1', {

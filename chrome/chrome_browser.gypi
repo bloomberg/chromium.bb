@@ -2004,6 +2004,8 @@
         'browser/system_monitor/removable_device_notifications_mac.mm',
         'browser/system_monitor/removable_device_notifications_window_win.cc',
         'browser/system_monitor/removable_device_notifications_window_win.h',
+        'browser/system_monitor/udev_util_linux.cc',
+        'browser/system_monitor/udev_util_linux.h',
         'browser/system_monitor/volume_mount_watcher_win.cc',
         'browser/system_monitor/volume_mount_watcher_win.h',
         'browser/tab_contents/background_contents.cc',

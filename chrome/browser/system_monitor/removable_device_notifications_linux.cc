@@ -6,7 +6,6 @@
 
 #include "chrome/browser/system_monitor/removable_device_notifications_linux.h"
 
-#include <libudev.h>
 #include <mntent.h>
 #include <stdio.h>
 
@@ -15,7 +14,6 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/file_path.h"
-#include "base/memory/scoped_generic_obj.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
@@ -23,8 +21,9 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/system_monitor/media_device_notifications_utils.h"
-#include "chrome/browser/system_monitor/removable_device_constants.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
+#include "chrome/browser/system_monitor/removable_device_constants.h"
+#include "chrome/browser/system_monitor/udev_util_linux.h"
 
 namespace chrome {
 
@@ -90,36 +89,6 @@ void ReadMtab(const FilePath& mtab_path,
     (*mtab)[FilePath(entry.mnt_dir)] = FilePath(entry.mnt_fsname);
   }
   endmntent(fp);
-}
-
-// ScopedGenericObj functor for UdevObjectRelease().
-class ScopedReleaseUdevObject {
- public:
-  void operator()(struct udev* udev) const {
-    udev_unref(udev);
-  }
-};
-typedef ScopedGenericObj<struct udev*,
-                         ScopedReleaseUdevObject> ScopedUdevObject;
-
-// ScopedGenericObj functor for UdevDeviceObjectRelease().
-class ScopedReleaseUdevDeviceObject {
- public:
-  void operator()(struct udev_device* device) const {
-    udev_device_unref(device);
-  }
-};
-typedef ScopedGenericObj<struct udev_device*,
-                         ScopedReleaseUdevDeviceObject> ScopedUdevDeviceObject;
-
-// Wrapper function for udev_device_get_property_value() that also checks for
-// valid but empty values.
-std::string GetUdevDevicePropertyValue(struct udev_device* udev_device,
-                                       const char* key) {
-  const char* value = udev_device_get_property_value(udev_device, key);
-  if (!value)
-    return std::string();
-  return (strlen(value) > 0) ? value : std::string();
 }
 
 // Construct a device id using label or manufacturer (vendor and model) details.
