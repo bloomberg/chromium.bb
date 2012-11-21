@@ -32,6 +32,10 @@
 #define SYN_DROPPED  3
 #endif
 
+/* make VCSID as version number */
+#ifndef VCSID
+#define VCSID "Unknown"
+#endif
 
 static void Event_Clear_Ev_Rel_State(EvdevPtr);
 
@@ -48,6 +52,11 @@ static void Event_Abs_Update_Pressure(EvdevPtr, struct input_event*);
 static void Event_Rel(EvdevPtr, struct input_event*);
 
 static void Event_Get_Time(struct timeval*, bool);
+
+const char*
+Evdev_Get_Version() {
+    return VCSID;
+}
 
 /**
  * Input Device Event Property accessors

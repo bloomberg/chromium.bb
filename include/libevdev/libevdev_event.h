@@ -60,5 +60,6 @@ int Event_Get_Button_Right(EvdevPtr);
 void Event_Sync_State(EvdevPtr);
 const char* Event_To_String(int type, int code);
 const char* Event_Type_To_String(int type);
+const char* Evdev_Get_Version();
 
 #endif
