@@ -67,6 +67,10 @@ bool GoogleChromeSxSDistribution::GetCommandExecuteImplClsid(
   return false;
 }
 
+bool GoogleChromeSxSDistribution::AppHostIsSupported() {
+  return false;
+}
+
 string16 GoogleChromeSxSDistribution::ChannelName() {
   return kChannelName;
 }

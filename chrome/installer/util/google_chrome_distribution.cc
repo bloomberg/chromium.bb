@@ -549,6 +549,10 @@ bool GoogleChromeDistribution::GetCommandExecuteImplClsid(
   return true;
 }
 
+bool GoogleChromeDistribution::AppHostIsSupported() {
+  return true;
+}
+
 // This method checks if we need to change "ap" key in Google Update to try
 // full installer as fall back method in case incremental installer fails.
 // - If incremental installer fails we append a magic string ("-full"), if
@@ -872,4 +876,5 @@ void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
                                                      GetType()));
   base::LaunchProcess(cmd, base::LaunchOptions(), NULL);
 }
+
 #endif

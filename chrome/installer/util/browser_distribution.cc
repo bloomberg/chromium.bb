@@ -246,6 +246,10 @@ bool BrowserDistribution::GetCommandExecuteImplClsid(
   return true;
 }
 
+bool BrowserDistribution::AppHostIsSupported() {
+  return false;
+}
+
 void BrowserDistribution::UpdateInstallStatus(bool system_install,
     installer::ArchiveType archive_type,
     installer::InstallStatus install_status) {

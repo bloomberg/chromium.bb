@@ -22,6 +22,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/extensions/app_host_installer_win.h"
+#include "chrome/installer/util/browser_distribution.h"
 #endif
 
 namespace extensions {
@@ -93,11 +94,15 @@ void AppShortcutManager::Observe(int type,
           details).ptr();
       if (extension->is_platform_app()) {
 #if defined(OS_WIN)
-        scoped_refptr<Extension> extension_ref(const_cast<Extension*>(
-            extension));
-        extensions::AppHostInstaller::EnsureAppHostInstalled(
-            base::Bind(&AppShortcutManager::OnAppHostInstallationComplete,
-                       weak_factory_.GetWeakPtr(), extension_ref));
+        if (BrowserDistribution::GetDistribution()->AppHostIsSupported()) {
+          scoped_refptr<Extension> extension_ref(const_cast<Extension*>(
+              extension));
+          extensions::AppHostInstaller::EnsureAppHostInstalled(
+              base::Bind(&AppShortcutManager::OnAppHostInstallationComplete,
+                         weak_factory_.GetWeakPtr(), extension_ref));
+        } else {
+          UpdateApplicationShortcuts(extension);
+        }
 #else
         UpdateApplicationShortcuts(extension);
 #endif
