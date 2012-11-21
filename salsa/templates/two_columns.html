@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="twocol">
+
+  <div class="column">
+    {% block first_column %} {% endblock %}
+  </div>
+
+  <div class="column second">
+    {% block second_column %} {% endblock %}
+  </div>
+
+</div>
+{% endblock %}
+
+

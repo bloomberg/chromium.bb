@@ -1,0 +1,37 @@
+{% extends "one_column.html" %}
+
+{% block title %} Experiment Details {% endblock %}
+
+{% block first_column %}
+  {% if has_access %}
+    <h1> {{ experiment.name }}: Experiment Details </h1>
+    <ul>
+      <li> Name: {{ experiment.name }}
+      <li> Owner: {{ experiment.owner }}
+      <li> Created: {{ experiment.created }}
+      <li> Participant URL:
+        <a href="{{ experiment_url }}"> {{ experiment_url }} </a>
+      <li> Treatments:
+        {% for treatment in treatments %}
+          <div class="treatment">
+            <h2> {{ treatment.name }} </h2>
+            <ul>
+              {% for property in properties %}
+                {% if property.parent_key() == treatment.key() %}
+                  <li> {{ property.name }} = {{ property.value }}
+                {% endif %}
+              {% endfor %}
+            </ul>
+          </div>
+        {% endfor %}
+    </ul>
+  {% else %}
+    <h1> Permission Denied </h1>
+    <p>
+      Sorry, but you are neither the owner of this experiment nor an
+      administrator, please contact the owner
+      (<a href="mailto:{{ experiment.owner }}"> {{ experiment.owner }}</a>)
+      directly for details about this experiment.
+    </p>
+  {% endif %}
+{% endblock %}

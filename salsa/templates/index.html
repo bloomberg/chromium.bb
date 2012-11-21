@@ -1,0 +1,129 @@
+{% extends "two_columns.html" %}
+
+{% block title %} Touch Experiments {% endblock %}
+
+{% block head %}
+  {{ super() }}
+  <script language="javascript" type="text/javascript">
+    var globalPropCount = 0;
+    var globalTreatCount = 0;
+
+    function addProperty(adding_button) {
+      var treatNum = adding_button.id.replace(/[a-zA-Z_]/g, '');
+      var newProp = document.getElementById('prop_template').cloneNode(true);
+
+      newProp.id = 'treat' + treatNum + '_prop' + globalPropCount;
+      newProp.style.display = 'block';
+
+      children = newProp.childNodes;
+      for (var i = 0; i < children.length; i++) {
+        if (children[i].name == 'prop_name')
+          children[i].name = 'treat' + treatNum + '_prop' +
+                    globalPropCount + '_name';
+        if (children[i].name == 'prop_value')
+          children[i].name = 'treat' + treatNum + '_prop' +
+                    globalPropCount + '_value';
+      }
+
+      var insertLocation = document.getElementById('treat' +
+                                                   treatNum + '_props');
+      insertLocation.parentNode.insertBefore(newProp, insertLocation);
+
+      globalPropCount += 1;
+    }
+
+    function addTreatment() {
+      var new_treat = document.getElementById('treat_template').cloneNode(true);
+      new_treat.id = 'treat' + globalTreatCount;
+      new_treat.style.display = 'block';
+
+      children = new_treat.childNodes;
+      for (var i = 0; i < children.length; i++) {
+        if (children[i].id == 'treat_props')
+          children[i].id = 'treat' + globalTreatCount + '_props';
+        if (children[i].name == 'treat_name')
+          children[i].name = 'treat' + globalTreatCount + '_name';
+        if (children[i].id == 'treat_add_prop')
+          children[i].id = 'treat' + globalTreatCount + '_add_prop';
+      }
+
+      var insertLocation = document.getElementById('treatments');
+      insertLocation.parentNode.insertBefore(new_treat, insertLocation);
+
+      addProperty(document.getElementById('treat' + globalTreatCount +
+                                          '_add_prop'));
+      globalTreatCount += 1;
+    }
+
+    function deleteOption(delete_button) {
+        to_delete = delete_button.parentNode;
+        to_delete.parentNode.removeChild(to_delete);
+    }
+
+    window.onload = function() { addTreatment();};
+  </script>
+{% endblock %}
+
+{% block first_column %}
+  <h1> Salsa </h1>
+  <p>
+    Welcome to Salsa, the Touch Experiment platform.  You should see a list of
+    your previously created experiments below.  You can click on any of them to
+    review their details.  If you would like to start a new experiment, refer
+    to the form to the right.
+  </p>
+
+  <p>
+    All experiments are defined as a collection of "treatments" that the user
+    is exposed to and then ranks.  Each treatment is a customizable set of
+    xinput properties that are set to the given values to modify how the input
+    device works.  The user then tries each in turn for their experiment before
+    supplying their feedback.
+  </p>
+
+  <h1> Your experiments </h1>
+  <ul>
+  {% for exp in experiments %}
+    <li> <a href="/view?exp_key={{ exp.key() }}">
+        {{ exp.name }}
+    </a> </li>
+  {% endfor %}
+  </ul>
+{% endblock %}
+
+{% block second_column %}
+  <h1> Create a new experiment </h1>
+  <form name="create" action="create" method="post">
+    <h2> Experiment Overview </h2>
+
+    <p>Experiment Name: <input type="text" name="exp_name"> </p>
+
+    <h2> Treatments </h2>
+    <div class="treatment" id="treat_template" style="display:none">
+      <a href="javascript:void(0)" class="delete" onclick="deleteOption(this)">
+        X
+      </a>
+
+      Treament Name: <input type="text" name="treat_name"> <br /><br />
+      <ul id="treat_props">
+        <li id="prop_template" style="display:none">
+          Property Name: <input type="text" name="prop_name">
+          Value: <input type="text" name="prop_value">
+          <a href="javascript:void(0)" onclick="deleteOption(this)"> X </a>
+        </li>
+      </ul>
+      <a href="javascript:void(0)" id="treat_add_prop"
+         onclick="addProperty(this)">
+        Add another property...
+      </a>
+    </div>
+
+    <span id="treatments"> </span>
+    <a href="javascript:void(0)" onclick="addTreatment();">
+      Add another Treatment...
+    </a>
+
+    <p> <input type="submit" value="Create"> </p>
+  </form>
+
+{% endblock %}

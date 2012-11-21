@@ -1,0 +1,133 @@
+/* Basic Layout */
+body {
+    padding: 0;
+    margin: 0;
+    background-color: #fff;
+    color: #333;
+    font: 12px/18px sans-serif;
+}
+
+.wrapper {
+    min-width: 600px;
+    max-width: 1250px;
+    float: center;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 20px 0 20px;
+}
+
+.header, .footer {
+    width: 100%;
+    margin: 0 auto;
+    position: relative;
+}
+
+ul,ol {
+    margin-bottom: 20px;
+}
+
+/* Column styles */
+.onecol, .twocol {
+    width: 100%;
+    margin: 0 auto 20px auto;
+    display: inline-block;
+    position: relative;
+}
+
+.column {
+    float: left;
+    margin-left: 0;
+}
+
+/* One Column */
+.onecol .column {
+    width: 96%;
+}
+
+/* Two Column */
+.twocol .column {
+    width: 48%;
+}
+.column.second {
+    float: right;
+}
+
+/* Text settings */
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+h1, h2, p {
+    font-weight: normal;
+    font-style: normal;
+    margin-bottom: 15px;
+}
+
+h1 {
+    font-size: 24px;
+}
+
+h2 {
+    font-size: 18px;
+}
+
+
+/* Header */
+.header {
+    height: 10px;
+    margin: 0 auto 15px auto;
+}
+
+.navigation {
+    margin: 0;
+    float: right;
+}
+
+.navigation li {
+    display: inline;
+    padding: 8px;
+}
+
+.navigation li a {
+    background-color: #eee;
+    font-size: 15px;
+    padding: 5px 15px;
+}
+
+.navigation li a:hover {
+    background-color: #ddd;
+    text-decoration: none;
+    border-bottom: 5px solid #ddd;
+}
+
+/* Footer */
+.footer {
+    border-top: 1px solid #ddd;
+    font-size: 10px;
+    line-height: 26px;
+    color:#888;
+}
+
+.footer a {
+    color: #666;
+}
+
+/* High level formatting */
+.treatment {
+    border: 1px solid;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    padding: 7px;
+    margin: 7px;
+    box-shadow: 5px 5px 2px #ddd;
+    border-color: #ccc
+}
+
+.delete {
+    float: right;
+}
+

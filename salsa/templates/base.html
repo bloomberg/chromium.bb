@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+
+<html>
+
+  <head>
+    {% block head %}
+      <title> Salsa: {% block title %} {% endblock %}</title>
+      <link rel="stylesheet" type="text/css" href="css/style.css" />
+    {% endblock%}
+  </head>
+
+  <body>
+    <div class="wrapper">
+
+      <div class="header">
+        <ul class="navigation">
+          <li><a href="/">Home</a></li>
+          <li><a href="/">Create</a></li>
+          <li><a href="/logout">Logout</a></li>
+        </ul>
+      </div>
+
+        {% block content %} {% endblock %}
+
+      <div class="footer">
+        <p>
+          Bugs/Suggestions?  Contact:
+            <a href="mailto:charliemooney@google.com">
+              charliemooney@google.com
+            </a>
+        </p>
+      </div>
+
+    </div>
+  </body>
+
+</html>
