@@ -241,8 +241,15 @@ public:
     bool screenSpaceTransformIsAnimating() const { return m_screenSpaceTransformIsAnimating; }
     void setScreenSpaceTransformIsAnimating(bool animating) { m_screenSpaceTransformIsAnimating = animating; }
 
+    bool isClipped() const { return m_isClipped; }
+    void setIsClipped(bool isClipped) { m_isClipped = isClipped; }
+
+    const gfx::Rect& clipRect() const { return m_clipRect; }
+    void setClipRect(const gfx::Rect& clipRect) { m_clipRect = clipRect; }
+
     const gfx::Rect& drawableContentRect() const { return m_drawableContentRect; }
     void setDrawableContentRect(const gfx::Rect& rect) { m_drawableContentRect = rect; }
+
     const gfx::RectF& updateRect() const { return m_updateRect; }
     void setUpdateRect(const gfx::RectF& updateRect) { m_updateRect = updateRect; }
 
@@ -398,9 +405,12 @@ private:
     // will render to this surface.
     scoped_ptr<RenderSurfaceImpl> m_renderSurface;
 
-    // Hierarchical bounding rect containing the layer and its descendants.
     // Uses target surface's space.
     gfx::Rect m_drawableContentRect;
+    gfx::Rect m_clipRect;
+
+    // True if the layer is clipped by m_clipRect.
+    bool m_isClipped;
 
     // Rect indicating what was repainted/updated during update.
     // Note that plugin layers bypass this and leave it empty.

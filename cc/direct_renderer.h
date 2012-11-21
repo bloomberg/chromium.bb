@@ -42,7 +42,6 @@ public:
         WebKit::WebTransformationMatrix projectionMatrix;
         WebKit::WebTransformationMatrix windowMatrix;
         bool flippedY;
-        gfx::RectF scissorRectInRenderPassSpace;
     };
 
 protected:
@@ -75,6 +74,9 @@ protected:
     static void quadRectTransform(WebKit::WebTransformationMatrix* quadRectTransform, const WebKit::WebTransformationMatrix& quadTransform, const gfx::RectF& quadRect);
     static void initializeMatrices(DrawingFrame&, const gfx::Rect& drawRect, bool flipY);
     static gfx::Rect moveScissorToWindowSpace(const DrawingFrame&, gfx::RectF scissorRect);
+    static gfx::RectF computeScissorRectForRenderPass(const DrawingFrame& frame);
+    void setScissorStateForQuad(const DrawingFrame& frame, const DrawQuad& quad);
+    void setScissorStateForQuadWithRenderPassScissor(const DrawingFrame& frame, const DrawQuad& quad, const gfx::RectF& renderPassScissor, bool* shouldSkipQuad);
 
     bool haveCachedResources(RenderPass::Id) const;
     static gfx::Size renderPassTextureSize(const RenderPass*);
@@ -92,6 +94,8 @@ protected:
     virtual void beginDrawingFrame(DrawingFrame&) = 0;
     virtual void finishDrawingFrame(DrawingFrame&) = 0;
     virtual bool flippedFramebuffer() const = 0;
+    virtual void ensureScissorTestEnabled() = 0;
+    virtual void ensureScissorTestDisabled() = 0;
 
     ScopedPtrHashMap<RenderPass::Id, CachedResource> m_renderPassTextures;
     ResourceProvider* m_resourceProvider;

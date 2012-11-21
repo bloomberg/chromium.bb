@@ -110,6 +110,23 @@ bool SoftwareRenderer::flippedFramebuffer() const
     return false;
 }
 
+void SoftwareRenderer::ensureScissorTestEnabled()
+{
+    // Nothing to do here. Current implementation of software rendering has no
+    // notion of enabling/disabling the feature.
+}
+
+void SoftwareRenderer::ensureScissorTestDisabled()
+{
+    // There is no explicit notion of enabling/disabling scissoring in software
+    // rendering, but the underlying effect we want is to clear any existing
+    // clipRect on the current SkCanvas. This is done by setting clipRect to
+    // the viewport's dimensions.
+    SkISize canvasSize = m_skCurrentCanvas->getDeviceSize();
+    SkRect canvasRect = SkRect::MakeXYWH(0, 0, canvasSize.width(), canvasSize.height());
+    m_skCurrentCanvas->clipRect(canvasRect, SkRegion::kReplace_Op);
+}
+
 void SoftwareRenderer::finish()
 {
 }

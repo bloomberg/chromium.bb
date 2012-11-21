@@ -18,6 +18,7 @@ RenderSurface::RenderSurface(Layer* owningLayer)
     , m_drawOpacityIsAnimating(false)
     , m_targetSurfaceTransformsAreAnimating(false)
     , m_screenSpaceTransformsAreAnimating(false)
+    , m_isClipped(false)
     , m_nearestAncestorThatMovesPixels(0)
 {
 }

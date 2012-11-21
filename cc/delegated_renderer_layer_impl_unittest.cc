@@ -80,7 +80,7 @@ static SolidColorDrawQuad* addQuad(TestRenderPass* pass, gfx::Rect rect, SkColor
     MockQuadCuller quadSink(pass->quad_list, pass->shared_quad_state_list);
     AppendQuadsData data(pass->id);
     SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::Create());
-    sharedState->SetAll(WebTransformationMatrix(), rect, rect, 1);
+    sharedState->SetAll(WebTransformationMatrix(), rect, rect, rect, false, 1);
     scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
     quad->SetNew(sharedState, rect, color);
     SolidColorDrawQuad* quadPtr = quad.get();
@@ -94,7 +94,7 @@ static void addRenderPassQuad(TestRenderPass* toPass, TestRenderPass* contributi
     AppendQuadsData data(toPass->id);
     gfx::Rect outputRect = contributingPass->output_rect;
     SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::Create());
-    sharedState->SetAll(WebTransformationMatrix(), outputRect, outputRect, 1);
+    sharedState->SetAll(WebTransformationMatrix(), outputRect, outputRect, outputRect, false, 1);
     scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
     quad->SetNew(sharedState, outputRect, contributingPass->id, false, 0, outputRect, 0, 0, 0, 0);
     quadSink.append(quad.PassAs<DrawQuad>(), data);
@@ -408,7 +408,7 @@ public:
         MockQuadCuller quadSink(pass->quad_list, pass->shared_quad_state_list);
         AppendQuadsData data(pass->id);
         SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::Create());
-        sharedState->SetAll(WebTransformationMatrix(), passRect, passRect, 1);
+        sharedState->SetAll(WebTransformationMatrix(), passRect, passRect, passRect, false, 1);
         scoped_ptr<SolidColorDrawQuad> colorQuad;
 
         colorQuad = SolidColorDrawQuad::Create();

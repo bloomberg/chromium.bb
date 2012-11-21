@@ -169,29 +169,74 @@ void DirectRenderer::drawFrame(const RenderPassList& renderPassesInDrawOrder, co
     finishDrawingFrame(frame);
 }
 
+gfx::RectF DirectRenderer::computeScissorRectForRenderPass(const DrawingFrame& frame)
+{
+    gfx::RectF renderPassScissor = frame.currentRenderPass->output_rect;
+
+    if (frame.rootDamageRect == frame.rootRenderPass->output_rect)
+        return renderPassScissor;
+
+    WebTransformationMatrix inverseTransform = frame.currentRenderPass->transform_to_root_target.inverse();
+    gfx::RectF damageRectInRenderPassSpace = MathUtil::projectClippedRect(inverseTransform, frame.rootDamageRect);
+    renderPassScissor.Intersect(damageRectInRenderPassSpace);
+
+    return renderPassScissor;
+}
+
+void DirectRenderer::setScissorStateForQuad(const DrawingFrame& frame, const DrawQuad& quad)
+{
+    if (quad.isClipped()) {
+        gfx::RectF quadScissorRect = quad.clipRect();
+        setScissorTestRect(moveScissorToWindowSpace(frame, quadScissorRect));
+    }
+    else
+        ensureScissorTestDisabled();
+}
+
+void DirectRenderer::setScissorStateForQuadWithRenderPassScissor(const DrawingFrame& frame, const DrawQuad& quad, const gfx::RectF& renderPassScissor, bool* shouldSkipQuad)
+{
+    gfx::RectF quadScissorRect = renderPassScissor;
+
+    if (quad.isClipped())
+        quadScissorRect.Intersect(quad.clipRect());
+
+    if (quadScissorRect.IsEmpty()) {
+        *shouldSkipQuad = true;
+        return;
+    }
+
+    *shouldSkipQuad = false;
+    setScissorTestRect(moveScissorToWindowSpace(frame, quadScissorRect));
+}
+
 void DirectRenderer::drawRenderPass(DrawingFrame& frame, const RenderPass* renderPass)
 {
     TRACE_EVENT0("cc", "DirectRenderer::drawRenderPass");
     if (!useRenderPass(frame, renderPass))
         return;
 
-    frame.scissorRectInRenderPassSpace = frame.currentRenderPass->output_rect;
-    if (frame.rootDamageRect != frame.rootRenderPass->output_rect) {
-        WebTransformationMatrix inverseTransformToRoot = frame.currentRenderPass->transform_to_root_target.inverse();
-        gfx::RectF damageRectInRenderPassSpace = MathUtil::projectClippedRect(inverseTransformToRoot, frame.rootDamageRect);
-        frame.scissorRectInRenderPassSpace.Intersect(damageRectInRenderPassSpace);
+    bool usingScissorAsOptimization = capabilities().usingPartialSwap;
+    gfx::RectF renderPassScissor;
+
+    if (usingScissorAsOptimization) {
+        renderPassScissor = computeScissorRectForRenderPass(frame);
+        setScissorTestRect(moveScissorToWindowSpace(frame, renderPassScissor));
     }
 
-    setScissorTestRect(moveScissorToWindowSpace(frame, frame.scissorRectInRenderPassSpace));
     clearFramebuffer(frame);
 
     const QuadList& quadList = renderPass->quad_list;
     for (QuadList::constBackToFrontIterator it = quadList.backToFrontBegin(); it != quadList.backToFrontEnd(); ++it) {
-      gfx::RectF quadScissorRect = gfx::IntersectRects(frame.scissorRectInRenderPassSpace, (*it)->clippedRectInTarget());
-        if (!quadScissorRect.IsEmpty()) {
-            setScissorTestRect(moveScissorToWindowSpace(frame, quadScissorRect));
+        const DrawQuad& quad = *(*it);
+        bool shouldSkipQuad = false;
+
+        if (usingScissorAsOptimization)
+            setScissorStateForQuadWithRenderPassScissor(frame, quad, renderPassScissor, &shouldSkipQuad);
+        else
+            setScissorStateForQuad(frame, quad);
+
+        if (!shouldSkipQuad)
             drawQuad(frame, *it);
-        }
     }
 
     CachedResource* texture = m_renderPassTextures.get(renderPass->id);

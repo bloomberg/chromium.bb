@@ -1442,6 +1442,106 @@ TEST(LayerTreeHostCommonTest, verifyClipRectCullsSurfaceWithoutVisibleContent)
     EXPECT_EQ(grandChild->id(), renderSurfaceLayerList[2]->id());
 }
 
+TEST(LayerTreeHostCommonTest, verifyIsClippedIsSetCorrectly)
+{
+    // Layer's isClipped() property is set to true when:
+    //  - the layer clips its subtree, e.g. masks to bounds,
+    //  - the layer is clipped by an ancestor that contributes to the same
+    //    renderTarget,
+    //  - a surface is clipped by an ancestor that contributes to the same
+    //    renderTarget.
+    //
+    // In particular, for a layer that owns a renderSurface:
+    //  - the renderSurfarce inherits any clip from ancestors, and does NOT
+    //    pass that clipped status to the layer itself.
+    //  - but if the layer itself masks to bounds, it is considered clipped
+    //    and propagates the clip to the subtree.
+
+    const WebTransformationMatrix identityMatrix;
+    scoped_refptr<Layer> root = Layer::create();
+    scoped_refptr<Layer> parent = Layer::create();
+    scoped_refptr<Layer> child1 = Layer::create();
+    scoped_refptr<Layer> child2 = Layer::create();
+    scoped_refptr<Layer> grandChild = Layer::create();
+    scoped_refptr<LayerWithForcedDrawsContent> leafNode1 = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerWithForcedDrawsContent> leafNode2 = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    root->addChild(parent);
+    parent->addChild(child1);
+    parent->addChild(child2);
+    child1->addChild(grandChild);
+    child2->addChild(leafNode2);
+    grandChild->addChild(leafNode1);
+
+    child2->setForceRenderSurface(true);
+
+    setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
+    setLayerPropertiesForTesting(parent.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
+    setLayerPropertiesForTesting(child1.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
+    setLayerPropertiesForTesting(child2.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
+    setLayerPropertiesForTesting(grandChild.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
+    setLayerPropertiesForTesting(leafNode1.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
+    setLayerPropertiesForTesting(leafNode2.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
+
+    // Case 1: nothing is clipped except the root renderSurface.
+    std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
+    int dummyMaxTextureSize = 512;
+    LayerTreeHostCommon::calculateDrawTransforms(root.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+
+    ASSERT_TRUE(root->renderSurface());
+    ASSERT_TRUE(child2->renderSurface());
+
+    EXPECT_FALSE(root->isClipped());
+    EXPECT_TRUE(root->renderSurface()->isClipped());
+    EXPECT_FALSE(parent->isClipped());
+    EXPECT_FALSE(child1->isClipped());
+    EXPECT_FALSE(child2->isClipped());
+    EXPECT_FALSE(child2->renderSurface()->isClipped());
+    EXPECT_FALSE(grandChild->isClipped());
+    EXPECT_FALSE(leafNode1->isClipped());
+    EXPECT_FALSE(leafNode2->isClipped());
+
+    // Case 2: parent masksToBounds, so the parent, child1, and child2's
+    // surface are clipped. But layers that contribute to child2's surface are
+    // not clipped explicitly because child2's surface already accounts for
+    // that clip.
+    renderSurfaceLayerList.clear();
+    parent->setMasksToBounds(true);
+    LayerTreeHostCommon::calculateDrawTransforms(root.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+
+    ASSERT_TRUE(root->renderSurface());
+    ASSERT_TRUE(child2->renderSurface());
+
+    EXPECT_FALSE(root->isClipped());
+    EXPECT_TRUE(root->renderSurface()->isClipped());
+    EXPECT_TRUE(parent->isClipped());
+    EXPECT_TRUE(child1->isClipped());
+    EXPECT_FALSE(child2->isClipped());
+    EXPECT_TRUE(child2->renderSurface()->isClipped());
+    EXPECT_TRUE(grandChild->isClipped());
+    EXPECT_TRUE(leafNode1->isClipped());
+    EXPECT_FALSE(leafNode2->isClipped());
+
+    // Case 3: child2 masksToBounds. The layer and subtree are clipped, and
+    // child2's renderSurface is not clipped.
+    renderSurfaceLayerList.clear();
+    parent->setMasksToBounds(false);
+    child2->setMasksToBounds(true);
+    LayerTreeHostCommon::calculateDrawTransforms(root.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+
+    ASSERT_TRUE(root->renderSurface());
+    ASSERT_TRUE(child2->renderSurface());
+
+    EXPECT_FALSE(root->isClipped());
+    EXPECT_TRUE(root->renderSurface()->isClipped());
+    EXPECT_FALSE(parent->isClipped());
+    EXPECT_FALSE(child1->isClipped());
+    EXPECT_TRUE(child2->isClipped());
+    EXPECT_FALSE(child2->renderSurface()->isClipped());
+    EXPECT_FALSE(grandChild->isClipped());
+    EXPECT_FALSE(leafNode1->isClipped());
+    EXPECT_TRUE(leafNode2->isClipped());
+}
+
 TEST(LayerTreeHostCommonTest, verifyDrawableContentRectForLayers)
 {
     // Verify that layers get the appropriate drawableContentRect when their parent masksToBounds is true.

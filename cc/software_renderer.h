@@ -52,6 +52,8 @@ protected:
     virtual void beginDrawingFrame(DrawingFrame&) OVERRIDE;
     virtual void finishDrawingFrame(DrawingFrame&) OVERRIDE;
     virtual bool flippedFramebuffer() const OVERRIDE;
+    virtual void ensureScissorTestEnabled() OVERRIDE;
+    virtual void ensureScissorTestDisabled() OVERRIDE;
 
 private:
     SoftwareRenderer(RendererClient*, ResourceProvider*, WebKit::WebCompositorSoftwareOutputDevice*);

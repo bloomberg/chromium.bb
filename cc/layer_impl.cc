@@ -57,6 +57,7 @@ LayerImpl::LayerImpl(int id)
     , m_filter(0)
     , m_drawTransformIsAnimating(false)
     , m_screenSpaceTransformIsAnimating(false)
+    , m_isClipped(false)
 #ifndef NDEBUG
     , m_betweenWillDrawAndDidDraw(false)
 #endif
@@ -125,7 +126,7 @@ bool LayerImpl::descendantDrawsContent()
 scoped_ptr<SharedQuadState> LayerImpl::createSharedQuadState() const
 {
   scoped_ptr<SharedQuadState> state = SharedQuadState::Create();
-  state->SetAll(m_drawTransform, m_visibleContentRect, m_drawableContentRect, m_drawOpacity);
+  state->SetAll(m_drawTransform, m_visibleContentRect, m_drawableContentRect, m_clipRect, m_isClipped, m_drawOpacity);
   return state.Pass();
 }
 

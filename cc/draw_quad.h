@@ -38,6 +38,8 @@ class CC_EXPORT DrawQuad {
   const WebKit::WebTransformationMatrix& quadTransform() const { return shared_quad_state->content_to_target_transform; }
   gfx::Rect visibleContentRect() const { return shared_quad_state->visible_content_rect; }
   gfx::Rect clippedRectInTarget() const { return shared_quad_state->clipped_rect_in_target; }
+  gfx::Rect clipRect() const { return shared_quad_state->clip_rect; }
+  bool isClipped() const { return shared_quad_state->is_clipped; }
   float opacity() const { return shared_quad_state->opacity; }
 
   Material material;

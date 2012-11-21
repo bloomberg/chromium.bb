@@ -31,6 +31,8 @@ void TestRenderPass::AppendOneOfEveryQuadType(cc::ResourceProvider* resourceProv
   shared_state->SetAll(WebTransformationMatrix(),
                        rect,
                        rect,
+                       rect,
+                       false,
                        1);
 
   scoped_ptr<cc::CheckerboardDrawQuad> checkerboard_quad =

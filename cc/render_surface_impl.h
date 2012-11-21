@@ -63,6 +63,9 @@ public:
     bool screenSpaceTransformsAreAnimating() const { return m_screenSpaceTransformsAreAnimating; }
     void setScreenSpaceTransformsAreAnimating(bool animating) { m_screenSpaceTransformsAreAnimating = animating; }
 
+    void setIsClipped(bool isClipped) { m_isClipped = isClipped; }
+    bool isClipped() const { return m_isClipped; }
+
     void setClipRect(const gfx::Rect&);
     const gfx::Rect& clipRect() const { return m_clipRect; }
 
@@ -103,6 +106,8 @@ private:
     WebKit::WebTransformationMatrix m_replicaScreenSpaceTransform;
     bool m_targetSurfaceTransformsAreAnimating;
     bool m_screenSpaceTransformsAreAnimating;
+
+    bool m_isClipped;
 
     // Uses the space of the surface's target surface.
     gfx::Rect m_clipRect;

@@ -453,6 +453,8 @@ static void appendQuadsToFillScreen(RenderPass* targetRenderPass, LayerImpl* roo
     sharedQuadState->SetAll(rootLayer->drawTransform(),
                             rootTargetRect,
                             rootTargetRect,
+                            rootTargetRect,
+                            false,
                             opacity);
 
     AppendQuadsData appendQuadsData;

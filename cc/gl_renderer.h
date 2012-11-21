@@ -83,6 +83,8 @@ protected:
     virtual void beginDrawingFrame(DrawingFrame&) OVERRIDE;
     virtual void finishDrawingFrame(DrawingFrame&) OVERRIDE;
     virtual bool flippedFramebuffer() const OVERRIDE;
+    virtual void ensureScissorTestEnabled() OVERRIDE;
+    virtual void ensureScissorTestDisabled() OVERRIDE;
 
 private:
     static void toGLMatrix(float*, const WebKit::WebTransformationMatrix&);
@@ -210,11 +212,13 @@ private:
     WebKit::WebGraphicsContext3D* m_context;
 
     gfx::Rect m_swapBufferRect;
+    gfx::Rect m_scissorRect;
     bool m_isViewportChanged;
     bool m_isFramebufferDiscarded;
     bool m_discardFramebufferWhenNotVisible;
     bool m_isUsingBindUniform;
     bool m_visible;
+    bool m_isScissorEnabled;
 
     scoped_ptr<ResourceProvider::ScopedWriteLockGL> m_currentFramebufferLock;
 

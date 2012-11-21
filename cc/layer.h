@@ -231,6 +231,13 @@ public:
     // It converts logical, non-page-scaled pixels to physical pixels.
     const WebKit::WebTransformationMatrix& screenSpaceTransform() const { return m_screenSpaceTransform; }
     void setScreenSpaceTransform(const WebKit::WebTransformationMatrix& matrix) { m_screenSpaceTransform = matrix; }
+
+    bool isClipped() const { return m_isClipped; }
+    void setIsClipped(bool isClipped) { m_isClipped = isClipped; }
+
+    const gfx::Rect& clipRect() const { return m_clipRect; }
+    void setClipRect(const gfx::Rect& clipRect) { m_clipRect = clipRect; }
+
     const gfx::Rect& drawableContentRect() const { return m_drawableContentRect; }
     void setDrawableContentRect(const gfx::Rect& rect) { m_drawableContentRect = rect; }
 
@@ -399,6 +406,11 @@ private:
 
     // Uses target surface space.
     gfx::Rect m_drawableContentRect;
+    gfx::Rect m_clipRect;
+
+    // True if the layer is clipped by m_clipRect
+    bool m_isClipped;
+
     float m_rasterScale;
     bool m_automaticallyComputeRasterScale;
     bool m_boundsContainPageScale;

@@ -618,6 +618,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
             nearestAncestorThatMovesPixels = renderSurface;
 
         // The render surface clipRect is expressed in the space where this surface draws, i.e. the same space as clipRectFromAncestor.
+        renderSurface->setIsClipped(ancestorClipsSubtree);
         if (ancestorClipsSubtree)
             renderSurface->setClipRect(clipRectFromAncestor);
         else
@@ -704,6 +705,19 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
     if (subtreeShouldBeClipped)
         drawableContentRectOfLayer.Intersect(clipRectForSubtree);
     layer->setDrawableContentRect(drawableContentRectOfLayer);
+
+    // Tell the layer the rect that is clipped by. In theory we could use a
+    // tighter clipRect here (drawableContentRect), but that actually does not
+    // reduce how much would be drawn, and instead it would create unnecessary
+    // changes to scissor state affecting GPU performance.
+    layer->setIsClipped(subtreeShouldBeClipped);
+    if (subtreeShouldBeClipped)
+        layer->setClipRect(clipRectForSubtree);
+    else {
+        // Initialize the clipRect to a safe value that will not clip the
+        // layer, just in case clipping is still accidentally used.
+        layer->setClipRect(rectInTargetSpace);
+    }
 
     // Compute the layer's visible content rect (the rect is in content space)
     gfx::Rect visibleContentRectOfLayer = calculateVisibleContentRect(layer);

@@ -2218,16 +2218,30 @@ TEST_P(LayerTreeHostImplTest, noPartialSwap)
     MockContext* mockContext = static_cast<MockContext*>(context->context3D());
     MockContextHarness harness(mockContext);
 
-    harness.mustDrawSolidQuad();
-    harness.mustSetScissor(0, 0, 10, 10);
-
     // Run test case
     scoped_ptr<LayerTreeHostImpl> myHostImpl = createLayerTreeHost(false, context.Pass(), FakeLayerWithQuads::create(1));
 
-    LayerTreeHostImpl::FrameData frame;
-    EXPECT_TRUE(myHostImpl->prepareToDraw(frame));
-    myHostImpl->drawLayers(frame);
-    myHostImpl->didDrawAllLayers(frame);
+    // without partial swap, and no clipping, no scissor is set.
+    harness.mustDrawSolidQuad();
+    harness.mustSetNoScissor();
+    {
+        LayerTreeHostImpl::FrameData frame;
+        EXPECT_TRUE(myHostImpl->prepareToDraw(frame));
+        myHostImpl->drawLayers(frame);
+        myHostImpl->didDrawAllLayers(frame);
+    }
+    Mock::VerifyAndClearExpectations(&mockContext);
+
+    // without partial swap, but a layer does clip its subtree, one scissor is set.
+    myHostImpl->rootLayer()->setMasksToBounds(true);
+    harness.mustDrawSolidQuad();
+    harness.mustSetScissor(0, 0, 10, 10);
+    {
+        LayerTreeHostImpl::FrameData frame;
+        EXPECT_TRUE(myHostImpl->prepareToDraw(frame));
+        myHostImpl->drawLayers(frame);
+        myHostImpl->didDrawAllLayers(frame);
+    }
     Mock::VerifyAndClearExpectations(&mockContext);
 }
 
@@ -2719,7 +2733,7 @@ static inline scoped_ptr<RenderPass> createRenderPassWithResource(ResourceProvid
     scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
     pass->SetNew(RenderPass::Id(1, 1), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), WebTransformationMatrix());
     scoped_ptr<SharedQuadState> sharedState = SharedQuadState::Create();
-    sharedState->SetAll(WebTransformationMatrix(), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), 1);
+    sharedState->SetAll(WebTransformationMatrix(), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), false, 1);
     scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
     quad->SetNew(sharedState.get(), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), resourceId, false, gfx::RectF(0, 0, 1, 1), false);
 
@@ -4194,7 +4208,7 @@ static void configureRenderPassTestData(const char* testScript, RenderPassRemova
 
     // One shared state for all quads - we don't need the correct details
     testData.sharedQuadState = SharedQuadState::Create();
-    testData.sharedQuadState->SetAll(WebTransformationMatrix(), gfx::Rect(), gfx::Rect(), 1.0);
+    testData.sharedQuadState->SetAll(WebTransformationMatrix(), gfx::Rect(), gfx::Rect(), gfx::Rect(), false, 1.0);
 
     const char* currentChar = testScript;
 

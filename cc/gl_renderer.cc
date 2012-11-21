@@ -79,6 +79,7 @@ GLRenderer::GLRenderer(RendererClient* client, ResourceProvider* resourceProvide
     , m_discardFramebufferWhenNotVisible(false)
     , m_isUsingBindUniform(false)
     , m_visible(true)
+    , m_isScissorEnabled(false)
 {
     DCHECK(m_context);
 }
@@ -130,6 +131,10 @@ bool GLRenderer::initialize()
     m_capabilities.bestTextureFormat = PlatformColor::bestTextureFormat(m_context, extensions.count("GL_EXT_texture_format_BGRA8888"));
 
     m_isUsingBindUniform = extensions.count("GL_CHROMIUM_bind_uniform_location");
+
+    // Make sure scissoring starts as disabled.
+    GLC(m_context, m_context->disable(GL_SCISSOR_TEST));
+    DCHECK(!m_isScissorEnabled);
 
     if (!initializeSharedObjects())
         return false;
@@ -235,7 +240,6 @@ void GLRenderer::beginDrawingFrame(DrawingFrame& frame)
 
     GLC(m_context, m_context->disable(GL_DEPTH_TEST));
     GLC(m_context, m_context->disable(GL_CULL_FACE));
-    GLC(m_context, m_context->enable(GL_SCISSOR_TEST));
     GLC(m_context, m_context->colorMask(true, true, true, true));
     GLC(m_context, m_context->enable(GL_BLEND));
     GLC(m_context, m_context->blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
@@ -1041,6 +1045,24 @@ bool GLRenderer::flippedFramebuffer() const
     return true;
 }
 
+void GLRenderer::ensureScissorTestEnabled()
+{
+    if (m_isScissorEnabled)
+        return;
+
+    GLC(m_context, m_context->enable(GL_SCISSOR_TEST));
+    m_isScissorEnabled = true;
+}
+
+void GLRenderer::ensureScissorTestDisabled()
+{
+    if (!m_isScissorEnabled)
+        return;
+
+    GLC(m_context, m_context->disable(GL_SCISSOR_TEST));
+    m_isScissorEnabled = false;
+}
+
 void GLRenderer::toGLMatrix(float* flattened, const WebTransformationMatrix& m)
 {
     flattened[0] = m.m11();
@@ -1344,6 +1366,14 @@ bool GLRenderer::bindFramebufferToTexture(DrawingFrame& frame, const ScopedResou
 
 void GLRenderer::setScissorTestRect(const gfx::Rect& scissorRect)
 {
+    ensureScissorTestEnabled();
+
+    // Don't unnecessarily ask the context to change the scissor, because it
+    // may cause undesired GPU pipeline flushes.
+    if (scissorRect == m_scissorRect)
+        return;
+
+    m_scissorRect = scissorRect;
     GLC(m_context, m_context->scissor(scissorRect.x(), scissorRect.y(), scissorRect.width(), scissorRect.height()));
 }
 
