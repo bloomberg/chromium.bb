@@ -362,9 +362,9 @@ void BrowserWindowCocoa::UpdateReloadStopState(bool is_loading, bool force) {
   [controller_ setIsLoading:is_loading force:force];
 }
 
-void BrowserWindowCocoa::UpdateToolbar(TabContents* contents,
+void BrowserWindowCocoa::UpdateToolbar(content::WebContents* contents,
                                        bool should_restore_state) {
-  [controller_ updateToolbarWithContents:contents->web_contents()
+  [controller_ updateToolbarWithContents:contents
                       shouldRestoreState:should_restore_state ? YES : NO];
 }
 
@@ -501,12 +501,12 @@ void BrowserWindowCocoa::ShowPageInfo(WebContents* web_contents,
 
 void BrowserWindowCocoa::ShowWebsiteSettings(
     Profile* profile,
-    TabContents* tab_contents,
+    content::WebContents* web_contents,
     const GURL& url,
     const content::SSLStatus& ssl,
     bool show_history) {
   WebsiteSettingsUIBridge::Show(
-      window(), profile, tab_contents, url, ssl);
+      window(), profile, web_contents, url, ssl);
 }
 
 void BrowserWindowCocoa::ShowAppMenu() {

@@ -23,11 +23,11 @@ class GtkThemeService;
 class GURL;
 class PermissionSelector;
 class Profile;
-class TabContents;
 class WebsiteSettings;
 
 namespace content {
 struct SSLStatus;
+class WebContents;
 }
 
 // GTK implementation of the website settings UI.
@@ -41,10 +41,10 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
   // the currently active window, |profile| contains the currently active
   // profile and |ssl| contains the |SSLStatus| of the connection to the
   // website in the currently active tab that is wrapped by the
-  // |tab_contents|.
+  // |web_contents|.
   static void Show(gfx::NativeWindow parent,
                    Profile* profile,
-                   TabContents* tab_contents,
+                   content::WebContents* web_contents,
                    const GURL& url,
                    const content::SSLStatus& ssl);
 
@@ -53,7 +53,7 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
  private:
   WebsiteSettingsPopupGtk(gfx::NativeWindow parent,
                           Profile* profile,
-                          TabContents* tab_contents,
+                          content::WebContents* web_contents,
                           const GURL& url,
                           const content::SSLStatus& ssl);
 
@@ -115,7 +115,7 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
 
   Profile* profile_;
 
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
 
   // The browser object of the current window. This is needed to open the
   // settings page in a new tab.

@@ -9,14 +9,17 @@
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 
-class TabContents;
 class WebsiteSettingsUIBridge;
+
+namespace content {
+class WebContents;
+}
 
 // This NSWindowController subclass manages the InfoBubbleWindow and view that
 // are displayed when the user clicks the favicon or security lock icon.
 @interface WebsiteSettingsBubbleController : BaseBubbleController {
  @private
-  TabContents* tabContents_;
+  content::WebContents* webContents_;
 
   scoped_nsobject<NSView> contentView_;
   scoped_nsobject<NSSegmentedControl> segmentedControl_;
@@ -81,7 +84,7 @@ class WebsiteSettingsUIBridge;
 // testing purposes.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
    websiteSettingsUIBridge:(WebsiteSettingsUIBridge*)bridge
-               tabContents:(TabContents*)tabContents
+               webContents:(content::WebContents*)webContents
             isInternalPage:(BOOL)isInternalPage;
 
 - (void)permissionValueChanged:(id)sender;
@@ -99,10 +102,10 @@ class WebsiteSettingsUIBridge : public WebsiteSettingsUI {
   // contains the currently active window, |profile| contains the currently
   // active profile and |ssl| contains the |SSLStatus| of the connection to the
   // website in the currently active tab that is wrapped by the
-  // |tab_contents|.
+  // |web_contents|.
   static void Show(gfx::NativeWindow parent,
                    Profile* profile,
-                   TabContents* tab_contents,
+                   content::WebContents* web_contents,
                    const GURL& url,
                    const content::SSLStatus& ssl);
 

@@ -19,7 +19,6 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/website_settings/website_settings_utils.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/cert_store.h"
@@ -287,11 +286,11 @@ NSColor* IdentityVerifiedTextColor() {
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
    websiteSettingsUIBridge:(WebsiteSettingsUIBridge*)bridge
-               tabContents:(TabContents*)tabContents
+               webContents:(content::WebContents*)webContents
             isInternalPage:(BOOL)isInternalPage {
   DCHECK(parentWindow);
 
-  tabContents_ = tabContents;
+  webContents_ = webContents;
 
   // Use an arbitrary height; it will be changed in performLayout.
   NSRect contentRect = NSMakeRect(0, 0, kWindowWidth, 1);
@@ -492,23 +491,23 @@ NSColor* IdentityVerifiedTextColor() {
 
 // Handler for the link button below the list of cookies.
 - (void)showCookiesAndSiteData:(id)sender {
-  DCHECK(tabContents_);
+  DCHECK(webContents_);
   content::RecordAction(
       content::UserMetricsAction("WebsiteSettings_CookiesDialogOpened"));
-  chrome::ShowCollectedCookiesDialog(tabContents_->web_contents());
+  chrome::ShowCollectedCookiesDialog(webContents_);
 }
 
 // Handler for the link button to show certificate information.
 - (void)showCertificateInfo:(id)sender {
   DCHECK(certificateId_);
-  ShowCertificateViewerByID(tabContents_->web_contents(),
+  ShowCertificateViewerByID(webContents_,
                             [self parentWindow],
                             certificateId_);
 }
 
 // Handler for the link to show help information about the connection tab.
 - (void)showHelpPage:(id)sender {
-  tabContents_->web_contents()->OpenURL(content::OpenURLParams(
+  webContents_->OpenURL(content::OpenURLParams(
       GURL(chrome::kPageInfoHelpCenterURL),
       content::Referrer(),
       NEW_FOREGROUND_TAB,
@@ -1131,7 +1130,7 @@ void WebsiteSettingsUIBridge::set_bubble_controller(
 
 void WebsiteSettingsUIBridge::Show(gfx::NativeWindow parent,
                                    Profile* profile,
-                                   TabContents* tab_contents,
+                                   content::WebContents* web_contents,
                                    const GURL& url,
                                    const content::SSLStatus& ssl) {
   bool is_internal_page = InternalChromePage(url);
@@ -1141,10 +1140,11 @@ void WebsiteSettingsUIBridge::Show(gfx::NativeWindow parent,
 
   // Create the bubble controller. It will dealloc itself when it closes.
   WebsiteSettingsBubbleController* bubble_controller =
-      [[WebsiteSettingsBubbleController alloc] initWithParentWindow:parent
-          websiteSettingsUIBridge:bridge
-          tabContents:tab_contents
-          isInternalPage:is_internal_page];
+      [[WebsiteSettingsBubbleController alloc]
+          initWithParentWindow:parent
+       websiteSettingsUIBridge:bridge
+                   webContents:web_contents
+                isInternalPage:is_internal_page];
 
   if (!is_internal_page) {
     // Initialize the presenter, which holds the model and controls the UI.
@@ -1152,9 +1152,8 @@ void WebsiteSettingsUIBridge::Show(gfx::NativeWindow parent,
     WebsiteSettings* presenter = new WebsiteSettings(
         bridge,
         profile,
-        TabSpecificContentSettings::FromWebContents(
-            tab_contents->web_contents()),
-        InfoBarTabHelper::FromWebContents(tab_contents->web_contents()),
+        TabSpecificContentSettings::FromWebContents(web_contents),
+        InfoBarTabHelper::FromWebContents(web_contents),
         url,
         ssl,
         content::CertStore::GetInstance());

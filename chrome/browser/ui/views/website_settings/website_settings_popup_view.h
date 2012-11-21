@@ -21,10 +21,10 @@ class GURL;
 class PermissionSelectorView;
 class PopupHeaderView;
 class Profile;
-class TabContents;
 
 namespace content {
 struct SSLStatus;
+class WebContents;
 }
 
 namespace views {
@@ -46,7 +46,7 @@ class WebsiteSettingsPopupView
 
   static void ShowPopup(views::View* anchor_view,
                         Profile* profile,
-                        TabContents* tab_contents,
+                        content::WebContents* web_contents,
                         const GURL& url,
                         const content::SSLStatus& ssl,
                         Browser* browser);
@@ -54,7 +54,7 @@ class WebsiteSettingsPopupView
  private:
   WebsiteSettingsPopupView(views::View* anchor_view,
                            Profile* profile,
-                           TabContents* tab_contents,
+                           content::WebContents* web_contents,
                            const GURL& url,
                            const content::SSLStatus& ssl,
                            Browser* browser);
@@ -115,9 +115,9 @@ class WebsiteSettingsPopupView
                               const string16& text,
                               views::Link* link);
 
-  // The tab contents of the current tab. The popup can't live longer than a
+  // The web contents of the current tab. The popup can't live longer than a
   // tab.
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
 
   // The Browser is used to load the help center page.
   Browser* browser_;

@@ -1088,9 +1088,9 @@ void BrowserView::UpdateReloadStopState(bool is_loading, bool force) {
       is_loading ? ReloadButton::MODE_STOP : ReloadButton::MODE_RELOAD, force);
 }
 
-void BrowserView::UpdateToolbar(TabContents* contents,
+void BrowserView::UpdateToolbar(content::WebContents* contents,
                                 bool should_restore_state) {
-  toolbar_->Update(contents->web_contents(), should_restore_state);
+  toolbar_->Update(contents, should_restore_state);
 }
 
 void BrowserView::FocusToolbar() {
@@ -1371,13 +1371,13 @@ void BrowserView::ShowPageInfo(content::WebContents* web_contents,
 }
 
 void BrowserView::ShowWebsiteSettings(Profile* profile,
-                                      TabContents* tab_contents,
+                                      content::WebContents* web_contents,
                                       const GURL& url,
                                       const content::SSLStatus& ssl,
                                       bool show_history) {
   WebsiteSettingsPopupView::ShowPopup(
       GetLocationBarView()->location_icon_view(), profile,
-      tab_contents, url, ssl, browser_.get());
+      web_contents, url, ssl, browser_.get());
 }
 
 void BrowserView::ShowAppMenu() {

@@ -886,10 +886,10 @@ void BrowserWindowGtk::UpdateReloadStopState(bool is_loading, bool force) {
       force);
 }
 
-void BrowserWindowGtk::UpdateToolbar(TabContents* contents,
+void BrowserWindowGtk::UpdateToolbar(content::WebContents* contents,
                                      bool should_restore_state) {
   TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::UpdateToolbar");
-  toolbar_->UpdateWebContents(contents->web_contents(), should_restore_state);
+  toolbar_->UpdateWebContents(contents, should_restore_state);
 }
 
 void BrowserWindowGtk::FocusToolbar() {
@@ -1014,12 +1014,12 @@ void BrowserWindowGtk::ShowPageInfo(content::WebContents* web_contents,
 
 void BrowserWindowGtk::ShowWebsiteSettings(
     Profile* profile,
-    TabContents* tab_contents,
+    content::WebContents* web_contents,
     const GURL& url,
     const content::SSLStatus& ssl,
     bool show_history) {
     WebsiteSettingsPopupGtk::Show(GetNativeWindow(), profile,
-                                  tab_contents, url, ssl);
+                                  web_contents, url, ssl);
 }
 
 void BrowserWindowGtk::ShowAppMenu() {

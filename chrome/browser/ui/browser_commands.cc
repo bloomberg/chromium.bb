@@ -705,14 +705,12 @@ void ShowPageInfo(Browser* browser,
                   bool show_history) {
   Profile* profile = Profile::FromBrowserContext(
       web_contents->GetBrowserContext());
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableWebsiteSettings)) {
     browser->window()->ShowPageInfo(web_contents, url, ssl, show_history);
   } else {
     browser->window()->ShowWebsiteSettings(
-        profile, tab_contents, url, ssl, show_history);
+        profile, web_contents, url, ssl, show_history);
   }
 }
 

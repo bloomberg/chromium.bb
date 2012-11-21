@@ -10,7 +10,6 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
 #include "chrome/browser/ui/website_settings/website_settings.h"
@@ -259,26 +258,26 @@ WebsiteSettingsPopupView::~WebsiteSettingsPopupView() {
 // static
 void WebsiteSettingsPopupView::ShowPopup(views::View* anchor_view,
                                          Profile* profile,
-                                         TabContents* tab_contents,
+                                         content::WebContents* web_contents,
                                          const GURL& url,
                                          const content::SSLStatus& ssl,
                                          Browser* browser) {
   if (InternalChromePage(url))
     new InternalPageInfoPopupView(anchor_view);
   else
-    new WebsiteSettingsPopupView(anchor_view, profile, tab_contents, url, ssl,
+    new WebsiteSettingsPopupView(anchor_view, profile, web_contents, url, ssl,
                                  browser);
 }
 
 WebsiteSettingsPopupView::WebsiteSettingsPopupView(
     views::View* anchor_view,
     Profile* profile,
-    TabContents* tab_contents,
+    content::WebContents* web_contents,
     const GURL& url,
     const content::SSLStatus& ssl,
     Browser* browser)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
-      tab_contents_(tab_contents),
+      web_contents_(web_contents),
       browser_(browser),
       header_(NULL),
       tabbed_pane_(NULL),
@@ -342,9 +341,9 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
   SizeToContents();
 
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(tab_contents->web_contents());
+      TabSpecificContentSettings::FromWebContents(web_contents);
   InfoBarTabHelper* infobar_tab_helper =
-      InfoBarTabHelper::FromWebContents(tab_contents->web_contents());
+      InfoBarTabHelper::FromWebContents(web_contents);
   presenter_.reset(new WebsiteSettings(this, profile,
                                        content_settings,
                                        infobar_tab_helper,
@@ -376,11 +375,11 @@ void WebsiteSettingsPopupView::LinkClicked(views::Link* source,
     // Count how often the Collected Cookies dialog is opened.
     content::RecordAction(
         content::UserMetricsAction("WebsiteSettings_CookiesDialogOpened"));
-    new CollectedCookiesViews(tab_contents_->web_contents());
+    new CollectedCookiesViews(web_contents_);
   } else if (source == certificate_dialog_link_) {
     gfx::NativeWindow parent =
         anchor_view() ? anchor_view()->GetWidget()->GetNativeWindow() : NULL;
-    ShowCertificateViewerByID(tab_contents_->web_contents(), parent, cert_id_);
+    ShowCertificateViewerByID(web_contents_, parent, cert_id_);
   } else if (source == help_center_link_) {
     browser_->OpenURL(content::OpenURLParams(
         GURL(chrome::kPageInfoHelpCenterURL),

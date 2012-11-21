@@ -23,7 +23,6 @@ class GURL;
 class LocationBar;
 class Profile;
 class StatusBubble;
-class TabContents;
 class TemplateURL;
 #if !defined(OS_MACOSX)
 class ToolbarView;
@@ -143,7 +142,7 @@ class BrowserWindow : public BaseWindow {
   virtual void UpdateReloadStopState(bool is_loading, bool force) = 0;
 
   // Updates the toolbar with the state for the specified |contents|.
-  virtual void UpdateToolbar(TabContents* contents,
+  virtual void UpdateToolbar(content::WebContents* contents,
                              bool should_restore_state) = 0;
 
   // Focuses the toolbar (for accessibility).
@@ -269,7 +268,7 @@ class BrowserWindow : public BaseWindow {
   // that page/frame.  If |show_history| is true, a section showing how many
   // times that URL has been visited is added to the page info.
   virtual void ShowWebsiteSettings(Profile* profile,
-                                   TabContents* tab_contents,
+                                   content::WebContents* web_contents,
                                    const GURL& url,
                                    const content::SSLStatus& ssl,
                                    bool show_history) = 0;

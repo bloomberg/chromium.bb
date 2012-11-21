@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
 #include "chrome/browser/ui/gtk/website_settings/permission_selector.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/website_settings/website_settings.h"
 #include "chrome/browser/ui/website_settings/website_settings_utils.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -199,26 +198,26 @@ void InternalPageInfoPopupGtk::BubbleClosing(BubbleGtk* bubble,
 // static
 void WebsiteSettingsPopupGtk::Show(gfx::NativeWindow parent,
                                    Profile* profile,
-                                   TabContents* tab_contents,
+                                   content::WebContents* web_contents,
                                    const GURL& url,
                                    const content::SSLStatus& ssl) {
   if (InternalChromePage(url))
     new InternalPageInfoPopupGtk(parent, profile);
   else
-    new WebsiteSettingsPopupGtk(parent, profile, tab_contents, url, ssl);
+    new WebsiteSettingsPopupGtk(parent, profile, web_contents, url, ssl);
 }
 
 WebsiteSettingsPopupGtk::WebsiteSettingsPopupGtk(
     gfx::NativeWindow parent,
     Profile* profile,
-    TabContents* tab_contents,
+    content::WebContents* web_contents,
     const GURL& url,
     const content::SSLStatus& ssl)
     : parent_(parent),
       contents_(NULL),
       theme_service_(GtkThemeService::GetFrom(profile)),
       profile_(profile),
-      tab_contents_(tab_contents),
+      web_contents_(web_contents),
       browser_(NULL),
       cert_id_(0),
       header_box_(NULL),
@@ -258,9 +257,9 @@ WebsiteSettingsPopupGtk::WebsiteSettingsPopupGtk(
   }
 
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(tab_contents->web_contents());
+      TabSpecificContentSettings::FromWebContents(web_contents);
   InfoBarTabHelper* infobar_tab_helper =
-      InfoBarTabHelper::FromWebContents(tab_contents->web_contents());
+      InfoBarTabHelper::FromWebContents(web_contents);
   presenter_.reset(new WebsiteSettings(this, profile,
                                        content_settings,
                                        infobar_tab_helper,
@@ -724,15 +723,13 @@ void WebsiteSettingsPopupGtk::OnCookiesLinkClicked(GtkWidget* widget) {
   content::RecordAction(
       content::UserMetricsAction("WebsiteSettings_CookiesDialogOpened"));
 
-  new CollectedCookiesGtk(GTK_WINDOW(parent_),
-                          tab_contents_->web_contents());
+  new CollectedCookiesGtk(GTK_WINDOW(parent_), web_contents_);
   bubble_->Close();
 }
 
 void WebsiteSettingsPopupGtk::OnViewCertLinkClicked(GtkWidget* widget) {
   DCHECK_NE(cert_id_, 0);
-  ShowCertificateViewerByID(
-      tab_contents_->web_contents(), GTK_WINDOW(parent_), cert_id_);
+  ShowCertificateViewerByID(web_contents_, GTK_WINDOW(parent_), cert_id_);
   bubble_->Close();
 }
 

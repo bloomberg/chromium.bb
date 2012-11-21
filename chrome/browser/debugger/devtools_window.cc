@@ -849,7 +849,7 @@ void DevToolsWindow::UpdateBrowserToolbar() {
     return;
   BrowserWindow* inspected_window = GetInspectedBrowserWindow();
   if (inspected_window)
-    inspected_window->UpdateToolbar(inspected_tab_, false);
+    inspected_window->UpdateToolbar(inspected_tab_->web_contents(), false);
 }
 
 bool DevToolsWindow::IsDocked() {

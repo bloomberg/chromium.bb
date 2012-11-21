@@ -1974,7 +1974,7 @@ void Browser::MarkHomePageAsChanged() {
 // Browser, UI update coalescing and handling (private):
 
 void Browser::UpdateToolbar(bool should_restore_state) {
-  window_->UpdateToolbar(tab_strip_model_->GetActiveTabContents(),
+  window_->UpdateToolbar(tab_strip_model_->GetActiveWebContents(),
                          should_restore_state);
 }
 
