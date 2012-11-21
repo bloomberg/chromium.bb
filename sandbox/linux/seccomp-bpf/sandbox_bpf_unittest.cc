@@ -5,6 +5,7 @@
 #include <ostream>
 
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
+#include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -263,5 +264,163 @@ BPF_TEST(SandboxBpf, ArmPrivatePolicy, ArmPrivatePolicy) {
   }
 }
 #endif  // defined(__arm__)
+
+intptr_t CountSyscalls(const struct arch_seccomp_data& args, void *aux) {
+  // Count all invocations of our callback function.
+  ++*reinterpret_cast<int *>(aux);
+
+  // Verify that within the callback function all filtering is temporarily
+  // disabled.
+  BPF_ASSERT(syscall(__NR_getpid) > 1);
+
+  // Verify that we can now call the underlying system call without causing
+  // infinite recursion.
+  return Sandbox::ForwardSyscall(args);
+}
+
+ErrorCode GreyListedPolicy(int sysno, void *aux) {
+  // The use of UnsafeTrap() causes us to print a warning message. This is
+  // generally desirable, but it results in the unittest failing, as it doesn't
+  // expect any messages on "stderr". So, temporarily disable messages. The
+  // BPF_TEST() is guaranteed to turn messages back on, after the policy
+  // function has completed.
+  Die::SuppressInfoMessages(true);
+
+  // Some system calls must always be allowed, if our policy wants to make
+  // use of UnsafeTrap()
+  if (sysno == __NR_rt_sigprocmask ||
+      sysno == __NR_rt_sigreturn
+#if defined(__NR_sigprocmask)
+   || sysno == __NR_sigprocmask
+#endif
+#if defined(__NR_sigreturn)
+   || sysno == __NR_sigreturn
+#endif
+      ) {
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
+  } else if (sysno == __NR_getpid) {
+    // Disallow getpid()
+    return ErrorCode(EPERM);
+  } else if (Sandbox::isValidSyscallNumber(sysno)) {
+    // Allow (and count) all other system calls.
+      return Sandbox::UnsafeTrap(CountSyscalls, aux);
+  } else {
+    return ErrorCode(ENOSYS);
+  }
+}
+
+BPF_TEST(SandboxBpf, GreyListedPolicy,
+         GreyListedPolicy, int /* BPF_AUX */) {
+  BPF_ASSERT(syscall(__NR_getpid) == -1);
+  BPF_ASSERT(errno == EPERM);
+  BPF_ASSERT(BPF_AUX == 0);
+  BPF_ASSERT(syscall(__NR_geteuid) == syscall(__NR_getuid));
+  BPF_ASSERT(BPF_AUX == 2);
+}
+
+intptr_t AllowRedirectedSyscall(const struct arch_seccomp_data& args, void *) {
+  return Sandbox::ForwardSyscall(args);
+}
+
+ErrorCode RedirectAllSyscallsPolicy(int sysno, void *aux) {
+  Die::SuppressInfoMessages(true);
+
+  // Some system calls must always be allowed, if our policy wants to make
+  // use of UnsafeTrap()
+  if (sysno == __NR_rt_sigprocmask ||
+      sysno == __NR_rt_sigreturn
+#if defined(__NR_sigprocmask)
+   || sysno == __NR_sigprocmask
+#endif
+#if defined(__NR_sigreturn)
+   || sysno == __NR_sigreturn
+#endif
+      ) {
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
+  } else if (Sandbox::isValidSyscallNumber(sysno)) {
+    return Sandbox::UnsafeTrap(AllowRedirectedSyscall, aux);
+  } else {
+    return ErrorCode(ENOSYS);
+  }
+}
+
+int bus_handler_fd_ = -1;
+
+void SigBusHandler(int, siginfo_t *info, void *void_context) {
+  BPF_ASSERT(write(bus_handler_fd_, "\x55", 1) == 1);
+}
+
+BPF_TEST(SandboxBpf, SigBus, RedirectAllSyscallsPolicy) {
+  // We use the SIGBUS bit in the signal mask as a thread-local boolean
+  // value in the implementation of UnsafeTrap(). This is obviously a bit
+  // of a hack that could conceivably interfere with code that uses SIGBUS
+  // in more traditional ways. This test verifies that basic functionality
+  // of SIGBUS is not impacted, but it is certainly possibly to construe
+  // more complex uses of signals where our use of the SIGBUS mask is not
+  // 100% transparent. This is expected behavior.
+  int fds[2];
+  BPF_ASSERT(pipe(fds) == 0);
+  bus_handler_fd_ = fds[1];
+  struct sigaction sa = { };
+  sa.sa_sigaction = SigBusHandler;
+  sa.sa_flags = SA_SIGINFO;
+  BPF_ASSERT(sigaction(SIGBUS, &sa, NULL) == 0);
+  raise(SIGBUS);
+  char c = '\000';
+  BPF_ASSERT(read(fds[0], &c, 1) == 1);
+  BPF_ASSERT(close(fds[0]) == 0);
+  BPF_ASSERT(close(fds[1]) == 0);
+  BPF_ASSERT(c == 0x55);
+}
+
+BPF_TEST(SandboxBpf, SigMask, RedirectAllSyscallsPolicy) {
+  // Signal masks are potentially tricky to handle. For instance, if we
+  // ever tried to update them from inside a Trap() or UnsafeTrap() handler,
+  // the call to sigreturn() at the end of the signal handler would undo
+  // all of our efforts. So, it makes sense to test that sigprocmask()
+  // works, even if we have a policy in place that makes use of UnsafeTrap().
+  // In practice, this works because we force sigprocmask() to be handled
+  // entirely in the kernel.
+  sigset_t mask0, mask1, mask2;
+
+  // Call sigprocmask() to verify that SIGUSR1 wasn't blocked, if we didn't
+  // change the mask (it shouldn't have been, as it isn't blocked by default
+  // in POSIX).
+  sigemptyset(&mask0);
+  BPF_ASSERT(!sigprocmask(SIG_BLOCK, &mask0, &mask1));
+  BPF_ASSERT(!sigismember(&mask1, SIGUSR1));
+
+  // Try again, and this time we verify that we can block it. This
+  // requires a second call to sigprocmask().
+  sigaddset(&mask0, SIGUSR1);
+  BPF_ASSERT(!sigprocmask(SIG_BLOCK, &mask0, NULL));
+  BPF_ASSERT(!sigprocmask(SIG_BLOCK, NULL, &mask2));
+  BPF_ASSERT( sigismember(&mask2, SIGUSR1));
+}
+
+BPF_TEST(SandboxBpf, UnsafeTrapWithErrno, RedirectAllSyscallsPolicy) {
+  // An UnsafeTrap() (or for that matter, a Trap()) has to report error
+  // conditions by returning an exit code in the range -1..-4096. This
+  // should happen automatically if using ForwardSyscall(). If the TrapFnc()
+  // uses some other method to make system calls, then it is responsible
+  // for computing the correct return code.
+  // This test verifies that ForwardSyscall() does the correct thing.
+
+  // The glibc system wrapper will ultimately set errno for us. So, from normal
+  // userspace, all of this should be completely transparent.
+  errno = 0;
+  BPF_ASSERT(close(-1) == -1);
+  BPF_ASSERT(errno == EBADF);
+
+  // Explicitly avoid the glibc wrapper. This is not normally the way anybody
+  // would make system calls, but it allows us to verify that we don't
+  // accidentally mess with errno, when we shouldn't.
+  errno = 0;
+  struct arch_seccomp_data args = { 0 };
+  args.nr      = __NR_close;
+  args.args[0] = -1;
+  BPF_ASSERT(Sandbox::ForwardSyscall(args) == -EBADF);
+  BPF_ASSERT(errno == 0);
+}
 
 } // namespace

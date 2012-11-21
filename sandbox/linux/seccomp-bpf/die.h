@@ -13,6 +13,9 @@ class Die {
   // exits with a fatal error.
   #define SANDBOX_DIE(m) Die::SandboxDie(m, __FILE__, __LINE__)
 
+  // Adds an informational message to the log file or stderr as appropriate.
+  #define SANDBOX_INFO(m) Die::SandboxInfo(m, __FILE__, __LINE__)
+
   // Terminate the program, even if the current sandbox policy prevents some
   // of the more commonly used functions used for exiting.
   // Most users would want to call SANDBOX_DIE() instead, as it logs extra
@@ -25,6 +28,10 @@ class Die {
   static void SandboxDie(const char *msg, const char *file, int line)
     __attribute__((noreturn));
 
+  // This method gets called by SANDBOX_INFO(). There is normally no reason
+  // to call it directly unless you are defining your own logging macro.
+  static void SandboxInfo(const char *msg, const char *file, int line);
+
   // Writes a message to stderr. Used as a fall-back choice, if we don't have
   // any other way to report an error.
   static void LogToStderr(const char *msg, const char *file, int line);
@@ -36,8 +43,13 @@ class Die {
   // unit tests or in the supportsSeccompSandbox() method).
   static void EnableSimpleExit() { simple_exit_ = true; }
 
+  // Sometimes we need to disable all informational messages (e.g. from within
+  // unittests).
+  static void SuppressInfoMessages(bool flag) { suppress_info_ = flag; }
+
  private:
   static bool simple_exit_;
+  static bool suppress_info_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(Die);
 };
