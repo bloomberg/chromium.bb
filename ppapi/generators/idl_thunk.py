@@ -93,7 +93,9 @@ def _MakeEnterLine(filenode, interface, arg, handle_errors, callback, meta):
     api_name += '_API'
 
     enter_type = 'EnterResource<%s>' % api_name
-    meta.AddApi(api_name)
+    # The API header matches the file name, not the interface name.
+    meta.AddApi(_GetBaseFileName(filenode) + '_api')
+
     if callback is None:
       return '%s enter(%s, %s);' % (enter_type, arg[1],
                                     str(handle_errors).lower())
