@@ -449,7 +449,7 @@ void DisplayController::SetPrimaryDisplay(
   displays.push_back(display_manager->GetDisplayForId(primary_display_id));
   displays.push_back(*GetSecondaryDisplay());
   GetDisplayManager()->set_force_bounds_changed(true);
-  GetDisplayManager()->OnNativeDisplaysChanged(displays);
+  GetDisplayManager()->UpdateDisplays(displays);
   GetDisplayManager()->set_force_bounds_changed(false);
 }
 

@@ -234,6 +234,15 @@ TEST_F(DisplayManagerTest, MAYBE_OverscanInsetsTest) {
   EXPECT_EQ("12,514 378x376",
             display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
 
+  // Make sure that SetOverscanInsets() is idempotent.
+  display_manager()->SetOverscanInsets(display1.id(), gfx::Insets());
+  display_manager()->SetOverscanInsets(
+      display2.id(), gfx::Insets(13, 12, 11, 10));
+  EXPECT_EQ("0,0 500x500",
+            display_manager()->GetDisplayAt(0)->bounds_in_pixel().ToString());
+  EXPECT_EQ("12,514 378x376",
+            display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
+
   display_manager()->SetOverscanInsets(
       display2.id(), gfx::Insets(10, 11, 12, 13));
   EXPECT_EQ("0,0 500x500",
@@ -272,6 +281,14 @@ TEST_F(DisplayManagerTest, MAYBE_OverscanInsetsTest) {
   EXPECT_EQ("10,509 376x380",
             display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
   EXPECT_EQ("188x190", display_manager()->GetDisplayAt(1)->size().ToString());
+
+  // Make sure switching primary display applies the overscan offset only once.
+  ash::Shell::GetInstance()->display_controller()->SetPrimaryDisplay(
+      ScreenAsh::GetSecondaryDisplay());
+  EXPECT_EQ("0,0 500x500",
+            ScreenAsh::GetSecondaryDisplay().bounds_in_pixel().ToString());
+  EXPECT_EQ("10,509 376x380", gfx::Screen::GetNativeScreen()->
+            GetPrimaryDisplay().bounds_in_pixel().ToString());
 }
 
 TEST_F(DisplayManagerTest, MAYBE_ZeroOverscanInsets) {
