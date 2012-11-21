@@ -66,6 +66,9 @@ class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
   // Handles photo taken with WebRTC UI.
   void HandlePhotoTaken(const base::ListValue* args);
 
+  // Handles camera presence check request.
+  void HandleCheckCameraPresence(const base::ListValue* args);
+
   // Gets the list of available user images and sends it to the page.
   void HandleGetAvailableImages(const base::ListValue* args);
 

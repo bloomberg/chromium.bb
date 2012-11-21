@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_CAMERA_DETECTOR_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_CAMERA_DETECTOR_H_
+#ifndef CHROME_BROWSER_CHROMEOS_CAMERA_DETECTOR_H_
+#define CHROME_BROWSER_CHROMEOS_CAMERA_DETECTOR_H_
 
 #include "base/callback.h"
 
@@ -26,11 +26,11 @@ class CameraDetector {
 
   // Checks asynchronously for camera device presence. Only one
   // presence check can be running at a time. Calls |check_done|
-  // on UI thread when the check has been completed.
+  // on current thread when the check has been completed.
   static void StartPresenceCheck(const base::Closure& check_done);
 
  private:
-  // Checks for camera presence. Runs of the FILE thread.
+  // Checks for camera presence. Runs on a worker pool.
   static void CheckPresence();
 
   // Result of the last presence check.
@@ -43,4 +43,4 @@ class CameraDetector {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_CAMERA_DETECTOR_H_
+#endif  // CHROME_BROWSER_CHROMEOS_CAMERA_DETECTOR_H_

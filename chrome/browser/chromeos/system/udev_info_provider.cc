@@ -5,14 +5,9 @@
 #include "chrome/browser/chromeos/system/udev_info_provider.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
-#include "base/lazy_instance.h"
-#include "base/process_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/system/name_value_pairs_parser.h"
 #include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace chromeos {
 namespace system {
@@ -28,29 +23,9 @@ const char kUdevadmCommentDelim[] = "";
 
 }  // namespace
 
-class UdevInfoProviderImpl : public UdevInfoProvider {
- public:
-  UdevInfoProviderImpl() {}
-
-  // UdevInfoProvider implementation.
-  virtual bool QueryDeviceProperty(const std::string& sys_path,
-                                   const std::string& property_name,
-                                   std::string* result) const OVERRIDE;
-
-  static UdevInfoProvider* GetInstance();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(UdevInfoProviderImpl);
-};
-
-base::LazyInstance<UdevInfoProviderImpl> g_udev_info_provider =
-    LAZY_INSTANCE_INITIALIZER;
-
-bool UdevInfoProviderImpl::QueryDeviceProperty(const std::string& sys_path,
-                                               const std::string& property_name,
-                                               std::string* result) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
+bool UdevInfoProvider::QueryDeviceProperty(const std::string& sys_path,
+                                           const std::string& property_name,
+                                           std::string* result) {
   const char* kUdevadmTool[] = {
     kUdevadmToolPath,
     "info",
@@ -76,14 +51,6 @@ bool UdevInfoProviderImpl::QueryDeviceProperty(const std::string& sys_path,
 
   *result = it->second;
   return true;
-}
-
-UdevInfoProvider* UdevInfoProviderImpl::GetInstance() {
-  return &g_udev_info_provider.Get();
-}
-
-UdevInfoProvider* UdevInfoProvider::GetInstance() {
-  return UdevInfoProviderImpl::GetInstance();
 }
 
 }  // namespace system

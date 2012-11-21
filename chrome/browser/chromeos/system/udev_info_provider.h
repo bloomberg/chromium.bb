@@ -13,17 +13,12 @@ namespace system {
 // Provides access to udev database.
 class UdevInfoProvider {
  public:
-  static UdevInfoProvider* GetInstance();
-
   // Query a named device udev property (e.g., "ID_TYPE", "DEVNAME").
   // Returns |true| if property was successfully queried, |false| otherwise.
-  // Must be run on the FILE thread.
-  virtual bool QueryDeviceProperty(const std::string& sys_path,
-                                   const std::string& property_name,
-                                   std::string* result) const = 0;
-
- protected:
-  virtual ~UdevInfoProvider() {}
+  // Must be run on a thread that allows I/O.
+  static bool QueryDeviceProperty(const std::string& sys_path,
+                                  const std::string& property_name,
+                                  std::string* result);
 };
 
 }  // namespace system

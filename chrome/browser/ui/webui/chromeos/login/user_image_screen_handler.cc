@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/camera_detector.h"
+#include "chrome/browser/chromeos/camera_detector.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
@@ -117,13 +117,9 @@ void UserImageScreenHandler::SelectImage(int index) {
 }
 
 void UserImageScreenHandler::CheckCameraPresence() {
-  // For WebRTC, camera presence checked is done on JS side.
-#if 0
-  // TODO(ivankr): restore check on Chrome side.
   CameraDetector::StartPresenceCheck(
       base::Bind(&UserImageScreenHandler::OnCameraPresenceCheckDone,
                  weak_factory_.GetWeakPtr()));
-#endif
 }
 
 void UserImageScreenHandler::RegisterMessages() {
@@ -135,6 +131,9 @@ void UserImageScreenHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("selectImage",
       base::Bind(&UserImageScreenHandler::HandleSelectImage,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("checkCameraPresence",
+      base::Bind(&UserImageScreenHandler::HandleCheckCameraPresence,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("onUserImageAccepted",
       base::Bind(&UserImageScreenHandler::HandleImageAccepted,
@@ -211,6 +210,12 @@ void UserImageScreenHandler::HandlePhotoTaken(const base::ListValue* args) {
   image_decoder_ = new ImageDecoder(this, raw_data,
                                     ImageDecoder::DEFAULT_CODEC);
   image_decoder_->Start();
+}
+
+void UserImageScreenHandler::HandleCheckCameraPresence(
+    const base::ListValue* args) {
+  DCHECK(args->empty());
+  CheckCameraPresence();
 }
 
 void UserImageScreenHandler::HandleSelectImage(const base::ListValue* args) {
