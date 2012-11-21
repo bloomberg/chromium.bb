@@ -10,6 +10,7 @@ import multiprocessing
 import optparse
 import os
 import SimpleHTTPServer  # pylint: disable=W0611
+import socket
 import sys
 import time
 import urlparse
@@ -252,6 +253,11 @@ def _HTTPServerProcess(conn, dirname, port, server_kwargs):
     os.chdir(dirname)
     httpd = PluggableHTTPServer(('', port), PluggableHTTPRequestHandler,
                                 **server_kwargs)
+  except socket.error as e:
+    sys.stderr.write('Error creating HTTPServer: %s\n' % e)
+    sys.exit(1)
+
+  try:
     conn.send(httpd.server_address[1])  # the chosen port number
     httpd.timeout = 0.5  # seconds
     while httpd.running:
