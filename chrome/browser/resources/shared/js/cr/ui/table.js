@@ -154,16 +154,6 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Sets width of the column at the given index.
-     *
-     * @param {number} index The index of the column.
-     * @param {number} Column width.
-     */
-    setColumnWidth: function(index, width) {
-      this.columnWidths_[index] = width;
-    },
-
-    /**
      * Initializes the element.
      */
     decorate: function() {
@@ -316,6 +306,55 @@ cr.define('cr.ui', function() {
         }
       });
     },
+
+    /**
+     * Adjust column width to fit its content.
+     * @param {number} index Index of the column to adjust width.
+     */
+    fitColumn: function(index) {
+      var list = this.list_;
+      var listWidth = list.clientWidth;
+      var listHeight = list.clientHeight;
+      if (listWidth == 0)
+        return;  // Ensure won't be division by 0.
+
+      var cm = this.columnModel_;
+      var dm = this.dataModel;
+      var columnId = cm.getId(index);
+      var doc = this.ownerDocument;
+      var render = cm.getRenderFunction(index);
+      var table = this;
+      var MAXIMUM_ROWS_TO_MEASURE = 1000;
+
+      // Create a temporaty list item, put all cells into it and measure its
+      // width. Then remove the item. It fits "list > *" CSS rules.
+      var container = doc.createElement('li');
+      container.style.display = 'inline-block';
+      container.style.textAlign = 'start';
+      // The container will have width of the longest cell.
+      container.style.webkitBoxOrient = 'vertical';
+
+      // Ensure all needed data available.
+      dm.prepareSort(columnId, function() {
+        // Select at most MAXIMUM_ROWS_TO_MEASURE items around visible area.
+        var items = list.getItemsInViewPort(list.scrollTop, listHeight);
+        var firstIndex = Math.floor(Math.max(0,
+            (items.last + items.first - MAXIMUM_ROWS_TO_MEASURE) / 2));
+        var lastIndex = Math.min(dm.length,
+                                 firstIndex + MAXIMUM_ROWS_TO_MEASURE);
+        for (var i = firstIndex; i < lastIndex; i++) {
+          var item = dm.item(i);
+          var div = doc.createElement('div');
+          div.className = 'table-row-cell';
+          div.appendChild(render(item, columnId, table));
+          container.appendChild(div);
+        }
+        list.appendChild(container);
+        var width = parseFloat(getComputedStyle(container).width);
+        list.removeChild(container);
+        cm.setWidth(index, width * 100 / listWidth);
+      });
+    }
   };
 
   /**

@@ -116,6 +116,8 @@ cr.define('cr.ui.table', function() {
         // splitter should use CSS for background image.
         var splitter = new TableSplitter({table: this.table_});
         splitter.columnIndex = i;
+        splitter.addEventListener('dblclick',
+                              this.handleDblClick_.bind(this, i));
 
         this.headerInner_.appendChild(splitter);
         splitters.push(splitter);
@@ -207,6 +209,16 @@ cr.define('cr.ui.table', function() {
         candidate.startDrag(clientX, true);
       // Splitter itself shouldn't handle this event.
       e.stopPropagation();
+    },
+
+    /**
+     * Handles the double click on a column separator event.
+     * Ajusts column width.
+     * @param {number} index Column index.
+     * @param {Event} e The double click event.
+     */
+    handleDblClick_: function(index, e) {
+     this.table_.fitColumn(index);
     }
   };
 
