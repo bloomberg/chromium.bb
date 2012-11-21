@@ -34,7 +34,20 @@ class InterceptedRequestData;
 // don't keep a AwContentsIoThreadClient if you don't need to.
 class AwContentsIoThreadClient {
  public:
+  // Corresponds to WebSettings cache mode constants.
+  enum CacheMode {
+    LOAD_DEFAULT = -1,
+    LOAD_NORMAL = 0,
+    LOAD_CACHE_ELSE_NETWORK = 1,
+    LOAD_NO_CACHE = 2,
+    LOAD_CACHE_ONLY = 3,
+  };
+
   virtual ~AwContentsIoThreadClient() {}
+
+  // Retrieve CacheMode setting value of this AwContents.
+  // This method is called on the IO thread only.
+  virtual CacheMode GetCacheMode() const = 0;
 
   // This will attempt to fetch the AwContentsIoThreadClient for the given
   // |render_process_id|, |render_view_id| pair.

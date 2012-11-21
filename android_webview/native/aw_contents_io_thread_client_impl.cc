@@ -176,6 +176,18 @@ AwContentsIoThreadClientImpl::~AwContentsIoThreadClientImpl() {
   // explict, out-of-line destructor.
 }
 
+AwContentsIoThreadClient::CacheMode
+AwContentsIoThreadClientImpl::GetCacheMode() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (java_object_.is_null())
+    return AwContentsIoThreadClient::LOAD_DEFAULT;
+
+  JNIEnv* env = AttachCurrentThread();
+  return static_cast<AwContentsIoThreadClient::CacheMode>(
+      Java_AwContentsIoThreadClient_getCacheMode(
+          env, java_object_.obj()));
+}
+
 scoped_ptr<InterceptedRequestData>
 AwContentsIoThreadClientImpl::ShouldInterceptRequest(
     const GURL& location,

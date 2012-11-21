@@ -128,7 +128,13 @@ public class AwContents {
     }
 
     private class IoThreadClientImpl implements AwContentsIoThreadClient {
-        // Called on the IO thread.
+        // All methods are called on the IO thread.
+
+        @Override
+        public int getCacheMode() {
+            return AwContents.this.mSettings.getCacheMode();
+        }
+
         @Override
         public InterceptedRequestData shouldInterceptRequest(final String url) {
             InterceptedRequestData interceptedRequestData =
@@ -142,19 +148,16 @@ public class AwContents {
             return interceptedRequestData;
         }
 
-        // Called on the IO thread.
         @Override
         public boolean shouldBlockContentUrls() {
             return !AwContents.this.mSettings.getAllowContentAccess();
         }
 
-        // Called on the IO thread.
         @Override
         public boolean shouldBlockFileUrls() {
             return !AwContents.this.mSettings.getAllowFileAccess();
         }
 
-        // Called on the IO thread.
         @Override
         public boolean shouldBlockNetworkLoads() {
             return AwContents.this.mSettings.getBlockNetworkLoads();

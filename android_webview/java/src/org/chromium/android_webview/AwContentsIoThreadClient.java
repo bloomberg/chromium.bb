@@ -8,27 +8,25 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
 /**
- * Delegate for handling callbacks from the IO thread on the IO thread.
+ * Delegate for handling callbacks. All methods are called on the IO thread.
  *
- * The shouldInterceptRequest method will be called on the IO thread.
  * You should create a separate instance for every WebContents that requires the
  * provided functionality.
  */
 @JNINamespace("android_webview")
 public interface AwContentsIoThreadClient {
-    // Called on the IO thread.
+    @CalledByNative
+    public int getCacheMode();
+
     @CalledByNative
     public InterceptedRequestData shouldInterceptRequest(String url);
 
-    // Called on the IO thread.
     @CalledByNative
     public boolean shouldBlockContentUrls();
 
-    // Called on the IO thread.
     @CalledByNative
     public boolean shouldBlockFileUrls();
 
-    // Called on the IO thread.
     @CalledByNative
     public boolean shouldBlockNetworkLoads();
 }

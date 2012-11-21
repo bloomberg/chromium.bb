@@ -7,6 +7,7 @@ package org.chromium.android_webview;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Process;
+import android.webkit.WebSettings;
 
 /**
  * Stores Android WebView specific settings that does not need to be synced to WebKit.
@@ -23,6 +24,7 @@ public class AwSettings {
     private boolean mBlockNetworkLoads;  // Default depends on permission of embedding APK.
     private boolean mAllowContentUrlAccess = true;
     private boolean mAllowFileUrlAccess = true;
+    private int mCacheMode = WebSettings.LOAD_DEFAULT;
 
     public AwSettings(Context context) {
         mContext = context;
@@ -94,6 +96,26 @@ public class AwSettings {
     public boolean getAllowContentAccess() {
         synchronized (mAwSettingsLock) {
             return mAllowContentUrlAccess;
+        }
+    }
+
+    /**
+     * See {@link android.webkit.WebSettings#setCacheMode}.
+     */
+    public void setCacheMode(int mode) {
+        synchronized (mAwSettingsLock) {
+            if (mCacheMode != mode) {
+                mCacheMode = mode;
+            }
+        }
+    }
+
+    /**
+     * See {@link android.webkit.WebSettings#getCacheMode}.
+     */
+    public int getCacheMode() {
+        synchronized (mAwSettingsLock) {
+            return mCacheMode;
         }
     }
 }

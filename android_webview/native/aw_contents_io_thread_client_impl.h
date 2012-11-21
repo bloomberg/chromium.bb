@@ -36,6 +36,7 @@ class AwContentsIoThreadClientImpl : public AwContentsIoThreadClient {
   virtual ~AwContentsIoThreadClientImpl() OVERRIDE;
 
   // Implementation of AwContentsIoThreadClient.
+  virtual CacheMode GetCacheMode() const OVERRIDE;
   virtual scoped_ptr<InterceptedRequestData> ShouldInterceptRequest(
       const GURL& location,
       const net::URLRequest* request) OVERRIDE;

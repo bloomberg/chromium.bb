@@ -7,6 +7,7 @@ package org.chromium.android_webview.test;
 import android.content.Context;
 import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.webkit.WebSettings;
 
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
@@ -939,6 +940,59 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                     "</script></head>" +
                     "<body onload='tryOpenWindow()'></body></html>";
         }
+    }
+
+    class AwSettingsCacheModeTestHelper extends AwSettingsWithSettingsTestHelper<Integer> {
+
+        AwSettingsCacheModeTestHelper(
+                AwContents awContents,
+                TestAwContentsClient contentViewClient,
+                int index,
+                TestWebServer webServer) throws Throwable {
+            super(awContents, contentViewClient, true);
+            mIndex = index;
+            mWebServer = webServer;
+            AwSettingsTest.this.clearCacheOnUiThread(mAwContents, true);
+        }
+
+        @Override
+        protected Integer getAlteredValue() {
+            // We use the value that results in a behaviour completely opposite to default.
+            return WebSettings.LOAD_CACHE_ONLY;
+        }
+
+        @Override
+        protected Integer getInitialValue() {
+            return WebSettings.LOAD_DEFAULT;
+        }
+
+        @Override
+        protected Integer getCurrentValue() {
+            return mAwSettings.getCacheMode();
+        }
+
+        @Override
+        protected void setCurrentValue(Integer value) {
+            mAwSettings.setCacheMode(value);
+        }
+
+        @Override
+        protected void doEnsureSettingHasValue(Integer value) throws Throwable {
+            final String htmlPath = "/cache_mode_" + mIndex + ".html";
+            mIndex += 2;
+            final String url = mWebServer.setResponse(htmlPath, "response", null);
+            assertEquals(0, mWebServer.getRequestCount(htmlPath));
+            if (value == WebSettings.LOAD_DEFAULT) {
+                loadUrlSync(url);
+                assertEquals(1, mWebServer.getRequestCount(htmlPath));
+            } else {
+                loadUrlSyncAndExpectError(url);
+                assertEquals(0, mWebServer.getRequestCount(htmlPath));
+            }
+        }
+
+        private int mIndex;
+        private TestWebServer mWebServer;
     }
 
     // The test verifies that JavaScript is disabled upon WebView
@@ -1898,6 +1952,154 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         runPerViewSettingsTest(
             new AwSettingsJavaScriptPopupsTestHelper(views.getContents0(), views.getClient0(), 0),
             new AwSettingsJavaScriptPopupsTestHelper(views.getContents1(), views.getClient1(), 1));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testCacheMode() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final AwTestContainerView testContainer =
+                createAwTestContainerViewOnMainSync(false, contentClient);
+        final AwContents awContents = testContainer.getAwContents();
+        final AwSettings awSettings = getAwSettingsOnUiThread(testContainer.getAwContents());
+        clearCacheOnUiThread(awContents, true);
+
+        assertEquals(WebSettings.LOAD_DEFAULT, awSettings.getCacheMode());
+        TestWebServer webServer = null;
+        try {
+            webServer = new TestWebServer(false);
+            final String htmlPath = "/testCacheMode.html";
+            final String url = webServer.setResponse(htmlPath, "response", null);
+            awSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+            loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), url);
+            assertEquals(1, webServer.getRequestCount(htmlPath));
+            loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), url);
+            assertEquals(1, webServer.getRequestCount(htmlPath));
+
+            awSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+            loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), url);
+            assertEquals(2, webServer.getRequestCount(htmlPath));
+            loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), url);
+            assertEquals(3, webServer.getRequestCount(htmlPath));
+
+            awSettings.setCacheMode(WebSettings.LOAD_CACHE_ONLY);
+            loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), url);
+            assertEquals(3, webServer.getRequestCount(htmlPath));
+            loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), url);
+            assertEquals(3, webServer.getRequestCount(htmlPath));
+
+            final String htmlNotInCachePath = "/testCacheMode-not-in-cache.html";
+            final String urlNotInCache = webServer.setResponse(htmlNotInCachePath, "", null);
+            loadUrlSyncAndExpectError(awContents,
+                    contentClient.getOnPageFinishedHelper(),
+                    contentClient.getOnReceivedErrorHelper(),
+                    urlNotInCache);
+            assertEquals(0, webServer.getRequestCount(htmlNotInCachePath));
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    // As our implementation of network loads blocking uses the same net::URLRequest settings, make
+    // sure that setting cache mode doesn't accidentally enable network loads.  The reference
+    // behaviour is that when network loads are blocked, setting cache mode has no effect.
+    public void testCacheModeWithBlockedNetworkLoads() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final AwTestContainerView testContainer =
+                createAwTestContainerViewOnMainSync(false, contentClient);
+        final AwContents awContents = testContainer.getAwContents();
+        final AwSettings awSettings = getAwSettingsOnUiThread(testContainer.getAwContents());
+        clearCacheOnUiThread(awContents, true);
+
+        assertEquals(WebSettings.LOAD_DEFAULT, awSettings.getCacheMode());
+        awSettings.setBlockNetworkLoads(true);
+        TestWebServer webServer = null;
+        try {
+            webServer = new TestWebServer(false);
+            final String htmlPath = "/testCacheModeWithBlockedNetworkLoads.html";
+            final String url = webServer.setResponse(htmlPath, "response", null);
+            loadUrlSyncAndExpectError(awContents,
+                    contentClient.getOnPageFinishedHelper(),
+                    contentClient.getOnReceivedErrorHelper(),
+                    url);
+            assertEquals(0, webServer.getRequestCount(htmlPath));
+
+            awSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+            loadUrlSyncAndExpectError(awContents,
+                    contentClient.getOnPageFinishedHelper(),
+                    contentClient.getOnReceivedErrorHelper(),
+                    url);
+            assertEquals(0, webServer.getRequestCount(htmlPath));
+
+            awSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+            loadUrlSyncAndExpectError(awContents,
+                    contentClient.getOnPageFinishedHelper(),
+                    contentClient.getOnReceivedErrorHelper(),
+                    url);
+            assertEquals(0, webServer.getRequestCount(htmlPath));
+
+            awSettings.setCacheMode(WebSettings.LOAD_CACHE_ONLY);
+            loadUrlSyncAndExpectError(awContents,
+                    contentClient.getOnPageFinishedHelper(),
+                    contentClient.getOnReceivedErrorHelper(),
+                    url);
+            assertEquals(0, webServer.getRequestCount(htmlPath));
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testCacheModeNormal() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
+        TestWebServer webServer = null;
+        try {
+            webServer = new TestWebServer(false);
+            runPerViewSettingsTest(
+                    new AwSettingsCacheModeTestHelper(
+                            views.getContents0(), views.getClient0(), 0, webServer),
+                    new AwSettingsCacheModeTestHelper(
+                            views.getContents1(), views.getClient1(), 1, webServer));
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testCacheModeIncognito() throws Throwable {
+        ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
+        TestWebServer webServer = null;
+        try {
+            webServer = new TestWebServer(false);
+            runPerViewSettingsTest(
+                    new AwSettingsCacheModeTestHelper(
+                            views.getContents0(), views.getClient0(), 0, webServer),
+                    new AwSettingsCacheModeTestHelper(
+                            views.getContents1(), views.getClient1(), 1, webServer));
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testCacheModeBoth() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
+        TestWebServer webServer = null;
+        try {
+            webServer = new TestWebServer(false);
+            runPerViewSettingsTest(
+                    new AwSettingsCacheModeTestHelper(
+                            views.getContents0(), views.getClient0(), 0, webServer),
+                    new AwSettingsCacheModeTestHelper(
+                            views.getContents1(), views.getClient1(), 1, webServer));
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
     }
 
     class ViewPair {

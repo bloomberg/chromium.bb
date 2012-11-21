@@ -27,22 +27,26 @@ using android_webview::AwContentsIoThreadClient;
 base::LazyInstance<android_webview::AwResourceDispatcherHostDelegate>
     g_webview_resource_dispatcher_host_delegate = LAZY_INSTANCE_INITIALIZER;
 
-void SetOnlyAllowLoadFromCache(
-    net::URLRequest* request) {
+void SetCacheControlFlag(
+    net::URLRequest* request, int flag) {
+  const int all_cache_control_flags = net::LOAD_BYPASS_CACHE |
+      net::LOAD_VALIDATE_CACHE |
+      net::LOAD_PREFERRING_CACHE |
+      net::LOAD_ONLY_FROM_CACHE;
+  DCHECK((flag & all_cache_control_flags) == flag);
   int load_flags = request->load_flags();
-  load_flags &= ~(net::LOAD_BYPASS_CACHE &
-                  net::LOAD_VALIDATE_CACHE &
-                  net::LOAD_PREFERRING_CACHE);
-  load_flags |= net::LOAD_ONLY_FROM_CACHE;
+  load_flags &= ~all_cache_control_flags;
+  load_flags |= flag;
   request->set_load_flags(load_flags);
 }
 
-// May cancel this resource request based on result of Java callbacks.
-class MaybeCancelResourceThrottle : public content::ResourceThrottle {
+// Calls through the IoThreadClient to check the embedders settings to determine
+// if the request should be cancelled.
+class IoThreadClientThrottle : public content::ResourceThrottle {
  public:
-  MaybeCancelResourceThrottle(int child_id,
-                              int route_id,
-                              net::URLRequest* request)
+  IoThreadClientThrottle(int child_id,
+                         int route_id,
+                         net::URLRequest* request)
       : child_id_(child_id),
         route_id_(route_id),
         request_(request) { }
@@ -58,7 +62,7 @@ class MaybeCancelResourceThrottle : public content::ResourceThrottle {
   net::URLRequest* request_;
 };
 
-void MaybeCancelResourceThrottle::WillStartRequest(bool* defer) {
+void IoThreadClientThrottle::WillStartRequest(bool* defer) {
   // If there is no IO thread client set at this point, use a
   // restrictive policy. This can happen for blocked popup
   // windows for example.
@@ -96,7 +100,23 @@ void MaybeCancelResourceThrottle::WillStartRequest(bool* defer) {
       controller()->CancelWithError(net::ERR_ACCESS_DENIED);
       return;
     }
-    SetOnlyAllowLoadFromCache(request_);
+    SetCacheControlFlag(request_, net::LOAD_ONLY_FROM_CACHE);
+  } else {
+    AwContentsIoThreadClient::CacheMode cache_mode =
+        GetIoThreadClient()->GetCacheMode();
+    switch(cache_mode) {
+      case AwContentsIoThreadClient::LOAD_CACHE_ELSE_NETWORK:
+        SetCacheControlFlag(request_, net::LOAD_PREFERRING_CACHE);
+        break;
+      case AwContentsIoThreadClient::LOAD_NO_CACHE:
+        SetCacheControlFlag(request_, net::LOAD_BYPASS_CACHE);
+        break;
+      case AwContentsIoThreadClient::LOAD_CACHE_ONLY:
+        SetCacheControlFlag(request_, net::LOAD_ONLY_FROM_CACHE);
+        break;
+      default:
+        break;
+    }
   }
 }
 
@@ -127,7 +147,7 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
     bool is_continuation_of_transferred_request,
     ScopedVector<content::ResourceThrottle>* throttles) {
 
-  throttles->push_back(new MaybeCancelResourceThrottle(
+  throttles->push_back(new IoThreadClientThrottle(
       child_id, route_id, request));
 
   bool allow_intercepting =
