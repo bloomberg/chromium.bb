@@ -59,7 +59,6 @@ using content::BrowserThread;
 using syncer::ChangeRecord;
 using testing::_;
 using testing::Return;
-using syncer::TestIdFactory;
 
 namespace browser_sync {
 
@@ -88,7 +87,7 @@ void AddWindowSpecifics(int window_id,
 }
 
 void BuildTabSpecifics(const std::string& tag, int window_id, int tab_id,
-                     sync_pb::SessionSpecifics* tab_base) {
+                       sync_pb::SessionSpecifics* tab_base) {
   tab_base->set_session_tag(tag);
   sync_pb::SessionTab* tab = tab_base->mutable_tab();
   tab->set_tab_id(tab_id);

@@ -39,11 +39,12 @@
 #include "sync/util/test_unrecoverable_error_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+namespace syncer {
+
 namespace syncable {
   class Directory;
+  class TestTransactionObserver;
 }
-
-namespace syncer {
 
 class TestDirectorySetterUpper {
  public:
@@ -62,8 +63,13 @@ class TestDirectorySetterUpper {
 
   SyncEncryptionHandler* encryption_handler() { return &encryption_handler_; }
 
+  syncable::TestTransactionObserver* transaction_observer() {
+    return test_transaction_observer_.get();
+  }
+
  private:
   syncable::NullDirectoryChangeDelegate delegate_;
+  scoped_ptr<syncable::TestTransactionObserver> test_transaction_observer_;
   TestUnrecoverableErrorHandler handler_;
 
   void RunInvariantCheck();

@@ -43,10 +43,11 @@ namespace browser_sync {
 
 class ChangeProcessor;
 class ChromeSyncNotificationBridge;
-struct Experiments;
 class InvalidatorStorage;
 class SyncBackendRegistrar;
 class SyncPrefs;
+class SyncedDeviceTracker;
+struct Experiments;
 
 // SyncFrontend is the interface used by SyncBackendHost to communicate with
 // the entity that created it and, presumably, is interested in sync-related
@@ -284,6 +285,10 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
 
   void GetModelSafeRoutingInfo(syncer::ModelSafeRoutingInfo* out) const;
 
+  // Fetches the DeviceInfo ChangeProcessor.
+  // We'll keep this test-only until we have non-test clients.
+  virtual SyncedDeviceTracker* GetSyncedDeviceTrackerForTest();
+
  protected:
   // The types and functions below are protected so that test
   // subclasses can use them.
@@ -374,17 +379,18 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // An enum representing the steps to initializing the SyncBackendHost.
   enum InitializationState {
     NOT_ATTEMPTED,
-    CREATING_SYNC_MANAGER,  // We're waiting for the first callback from the
-                            // sync thread to inform us that the sync manager
-                            // has been created.
-    NOT_INITIALIZED,        // Initialization hasn't completed, but we've
-                            // constructed a SyncManager.
-    DOWNLOADING_NIGORI,     // The SyncManager is initialized, but
-                            // we're fetching sync encryption information.
-    ASSOCIATING_NIGORI,     // The SyncManager is initialized, and we
-                            // have the sync encryption information, but we
-                            // have to update the local encryption state.
-    INITIALIZED,            // Initialization is complete.
+    CREATING_SYNC_MANAGER,     // We're waiting for the first callback from the
+                               // sync thread to inform us that the sync
+                               // manager has been created.
+    NOT_INITIALIZED,           // Initialization hasn't completed, but we've
+                               // constructed a SyncManager.
+    DOWNLOADING_CONTROL_TYPES, // The SyncManager is initialized, but
+                               // we're fetching metadata, such as encryption
+                               // information, from the server.
+    PROCESSING_CONTROL_TYPES,  // Running init tasks that require metadata to
+                               // be available.  This includes registering our
+                               // device information and refreshing encryption.
+    INITIALIZED,               // Initialization is complete.
   };
 
   // Checks if we have received a notice to turn on experimental datatypes
@@ -488,6 +494,10 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Handles stopping the core's SyncManager, accounting for whether
   // initialization is done yet.
   void StopSyncManagerForShutdown(const base::Closure& closure);
+
+  // Must be called on |frontend_loop_|.  |done_callback| is called on
+  // |frontend_loop_|.
+  void InitialProcessControlTypes(const base::Closure& done_callback);
 
   base::WeakPtrFactory<SyncBackendHost> weak_ptr_factory_;
 

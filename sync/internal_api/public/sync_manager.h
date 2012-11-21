@@ -285,8 +285,6 @@ class SyncManager {
   // |sync_server_and_path| and |sync_server_port| represent the Chrome sync
   // server to use, and |use_ssl| specifies whether to communicate securely;
   // the default is false.
-  // |blocking_task_runner| is a TaskRunner to be used for tasks that
-  // may block on disk I/O.
   // |post_factory| will be owned internally and used to create
   // instances of an HttpPostProvider.
   // |model_safe_worker| ownership is given to the SyncManager.
@@ -307,7 +305,6 @@ class SyncManager {
       const std::string& sync_server_and_path,
       int sync_server_port,
       bool use_ssl,
-      const scoped_refptr<base::TaskRunner>& blocking_task_runner,
       scoped_ptr<HttpPostProviderFactory> post_factory,
       const std::vector<ModelSafeWorker*>& workers,
       ExtensionsActivityMonitor* extensions_activity_monitor,
@@ -408,6 +405,10 @@ class SyncManager {
 
   // May be called from any thread.
   virtual UserShare* GetUserShare() = 0;
+
+  // Returns the cache_guid of the currently open database.
+  // Requires that the SyncManager be initialized.
+  virtual const std::string cache_guid() = 0;
 
   // Reads the nigori node to determine if any experimental features should
   // be enabled.

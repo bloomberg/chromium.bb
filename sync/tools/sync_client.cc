@@ -340,7 +340,7 @@ int SyncClientMain(int argc, char* argv[]) {
   const char kSyncServerAndPath[] = "clients4.google.com/chrome-sync/dev";
   int kSyncServerPort = 443;
   bool kUseSsl = true;
-  // Used only by RefreshNigori(), so it's okay to leave this as NULL.
+  // Used only by InitialProcessMetadata(), so it's okay to leave this as NULL.
   const scoped_refptr<base::TaskRunner> blocking_task_runner = NULL;
   const char kUserAgent[] = "sync_client";
   // TODO(akalin): Replace this with just the context getter once
@@ -366,7 +366,6 @@ int SyncClientMain(int argc, char* argv[]) {
                     kSyncServerAndPath,
                     kSyncServerPort,
                     kUseSsl,
-                    blocking_task_runner,
                     post_factory.Pass(),
                     workers,
                     extensions_activity_monitor,

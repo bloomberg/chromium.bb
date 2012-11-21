@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/bind.h"
 #include "sync/protocol/sync.pb.h"
 
@@ -22,7 +23,6 @@ namespace browser_sync {
 // Two different devices may end up generating identical DeviceInfos.
 class DeviceInfo {
  public:
-  DeviceInfo();
   DeviceInfo(const std::string& client_name,
              const std::string& chrome_version,
              const std::string& sync_user_agent,
@@ -56,6 +56,8 @@ class DeviceInfo {
   const std::string chrome_version_;
   const std::string sync_user_agent_;
   const sync_pb::SyncEnums::DeviceType device_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceInfo);
 };
 
 }

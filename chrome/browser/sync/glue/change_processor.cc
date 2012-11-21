@@ -16,7 +16,7 @@ ChangeProcessor::~ChangeProcessor() {
 
 void ChangeProcessor::Start(Profile* profile,
                             syncer::UserShare* share_handle) {
-  DCHECK(error_handler_ && !share_handle_);
+  DCHECK(!share_handle_);
   share_handle_ = share_handle;
   StartImpl(profile);
 }

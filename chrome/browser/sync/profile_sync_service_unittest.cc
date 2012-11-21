@@ -363,7 +363,7 @@ TEST_F(ProfileSyncServiceTest, TestStartupWithOldSyncData) {
   ASSERT_NE(-1,
             file_util::WriteFile(sync_file3, nonsense3, strlen(nonsense3)));
 
-  harness_.StartSyncServiceAndSetInitialSyncEnded(false, false, true, false,
+  harness_.StartSyncServiceAndSetInitialSyncEnded(true, false, true, false,
                                                   syncer::STORAGE_ON_DISK);
   EXPECT_FALSE(harness_.service->HasSyncSetupCompleted());
   EXPECT_FALSE(harness_.service->sync_initialized());

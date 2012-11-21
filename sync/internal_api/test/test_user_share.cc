@@ -46,6 +46,10 @@ SyncEncryptionHandler* TestUserShare::encryption_handler() {
   return dir_maker_->encryption_handler();
 }
 
+syncable::TestTransactionObserver* TestUserShare::transaction_observer() {
+  return dir_maker_->transaction_observer();
+}
+
 /* static */
 bool TestUserShare::CreateRoot(ModelType model_type, UserShare* user_share) {
   syncer::syncable::Directory* directory = user_share->directory.get();

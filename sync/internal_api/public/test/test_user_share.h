@@ -39,6 +39,10 @@ namespace syncer {
 class SyncEncryptionHandler;
 class TestDirectorySetterUpper;
 
+namespace syncable {
+  class TestTransactionObserver;
+}
+
 class TestUserShare {
  public:
   TestUserShare();
@@ -60,6 +64,10 @@ class TestUserShare {
   // Sync's encryption handler. Used by tests to invoke the sync encryption
   // methods normally handled via the SyncBackendHost
   SyncEncryptionHandler* encryption_handler();
+
+  // Returns the directory's transaction observer.  This transaction observer
+  // has methods which can be helpful when writing test assertions.
+  syncable::TestTransactionObserver* transaction_observer();
 
   // A helper function to pretend to download this type's root node.
   static bool CreateRoot(syncer::ModelType model_type,

@@ -12,19 +12,20 @@ namespace syncer {
 
 //////////////////////////////////////////////////////////////////////////
 // BaseTransaction member definitions
-BaseTransaction::BaseTransaction(UserShare* share) {
+BaseTransaction::BaseTransaction(UserShare* share)
+    : user_share_(share) {
   DCHECK(share && share->directory.get());
-  directory_ = share->directory.get();
 }
+
 BaseTransaction::~BaseTransaction() {
 }
 
 Cryptographer* BaseTransaction::GetCryptographer() const {
-  return directory_->GetCryptographer(this->GetWrappedTrans());
+  return GetDirectory()->GetCryptographer(this->GetWrappedTrans());
 }
 
 ModelTypeSet BaseTransaction::GetEncryptedTypes() const {
-  return directory_->GetNigoriHandler()->GetEncryptedTypes(
+  return GetDirectory()->GetNigoriHandler()->GetEncryptedTypes(
       this->GetWrappedTrans());
 }
 

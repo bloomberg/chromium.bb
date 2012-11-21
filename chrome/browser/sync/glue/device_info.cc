@@ -23,12 +23,6 @@ bool IsTabletUI() {
 
 }  // namespace
 
-DeviceInfo::DeviceInfo()
-    : client_name_("Unset"),
-      sync_user_agent_("Unset"),
-      device_type_(sync_pb::SyncEnums::TYPE_OTHER) {
-}
-
 DeviceInfo::DeviceInfo(const std::string& client_name,
                        const std::string& chrome_version,
                        const std::string& sync_user_agent,

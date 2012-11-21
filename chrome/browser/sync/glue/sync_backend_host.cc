@@ -16,7 +16,6 @@
 #include "base/file_util.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer.h"
 #include "base/tracked_objects.h"
@@ -31,6 +30,7 @@
 #include "chrome/browser/sync/glue/chrome_sync_notification_bridge.h"
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
+#include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "chrome/browser/sync/invalidations/invalidator_storage.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -166,9 +166,15 @@ class SyncBackendHost::Core
   // reencrypt everything.
   void DoEnableEncryptEverything();
 
-  // Called to load sync encryption state and re-encrypt any types
-  // needing encryption as necessary.
-  void DoAssociateNigori();
+  // Called to perform tasks which require the control data to be downloaded.
+  // This includes refreshing encryption, setting up the device info change
+  // processor, etc.
+  void DoInitialProcessControlTypes();
+
+  // Some parts of DoInitialProcessControlTypes() may be executed on a different
+  // thread.  This function asynchronously continues the work started in
+  // DoInitialProcessControlTypes() once that other thread gets back to us.
+  void DoFinishInitialProcessControlTypes();
 
   // The shutdown order is a bit complicated:
   // 1) From |sync_thread_|, invoke the syncapi Shutdown call to do
@@ -202,6 +208,10 @@ class SyncBackendHost::Core
   // on the IO thread. Must be removed from IO thread.
 
   syncer::SyncManager* sync_manager() { return sync_manager_.get(); }
+
+  SyncedDeviceTracker* synced_device_tracker() {
+    return synced_device_tracker_.get();
+  }
 
   // Delete the sync data folder to cleanup backend data.  Happens the first
   // time sync is enabled for a user (to prevent accidentally reusing old
@@ -254,6 +264,9 @@ class SyncBackendHost::Core
 
   // Our encryptor, which uses Chrome's encryption functions.
   ChromeEncryptor encryptor_;
+
+  // A special ChangeProcessor that tracks the DEVICE_INFO type for us.
+  scoped_ptr<SyncedDeviceTracker> synced_device_tracker_;
 
   // The top-level syncapi entry point.  Lives on the sync thread.
   scoped_ptr<syncer::SyncManager> sync_manager_;
@@ -761,6 +774,10 @@ void SyncBackendHost::GetModelSafeRoutingInfo(
   }
 }
 
+SyncedDeviceTracker* SyncBackendHost::GetSyncedDeviceTrackerForTest() {
+  return core_->synced_device_tracker();
+}
+
 void SyncBackendHost::InitCore(const DoInitializeOptions& options) {
   sync_thread_.message_loop()->PostTask(FROM_HERE,
       base::Bind(&SyncBackendHost::Core::DoInitialize, core_.get(), options));
@@ -1079,7 +1096,6 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       options.service_url.host() + options.service_url.path(),
       options.service_url.EffectiveIntPort(),
       options.service_url.SchemeIsSecure(),
-      BrowserThread::GetBlockingPool(),
       options.make_http_bridge_factory_fn.Run().Pass(),
       options.workers,
       options.extensions_activity_monitor,
@@ -1143,20 +1159,54 @@ void SyncBackendHost::Core::DoStartSyncing(
   sync_manager_->StartSyncingNormally(routing_info);
 }
 
-void SyncBackendHost::Core::DoAssociateNigori() {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  sync_manager_->GetEncryptionHandler()->Init();
-  host_.Call(FROM_HERE,
-             &SyncBackendHost::HandleInitializationCompletedOnFrontendLoop,
-             true);
-}
-
 void SyncBackendHost::Core::DoSetEncryptionPassphrase(
     const std::string& passphrase,
     bool is_explicit) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   sync_manager_->GetEncryptionHandler()->SetEncryptionPassphrase(
       passphrase, is_explicit);
+}
+
+void SyncBackendHost::Core::DoInitialProcessControlTypes() {
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+
+  DVLOG(1) << "Initilalizing Control Types";
+
+  // Initialize encryption.
+  sync_manager_->GetEncryptionHandler()->Init();
+
+  if (sync_manager_->GetUserShare()) { // NULL in some tests.
+    DVLOG(1) << "Initializing DeviceInfo type";
+
+    // Initialize device info.
+    synced_device_tracker_.reset(
+        new SyncedDeviceTracker(
+            sync_manager_->GetUserShare(),
+            sync_manager_->cache_guid()));
+
+    // AssociateModels-equivalent.
+    synced_device_tracker_->InitLocalDeviceInfo(
+        base::Bind(&SyncBackendHost::Core::DoFinishInitialProcessControlTypes,
+                   this));
+  } else {
+    DVLOG(1) << "Skipping initialization of DeviceInfo";
+    host_.Call(
+        FROM_HERE,
+        &SyncBackendHost::HandleInitializationCompletedOnFrontendLoop,
+        true);
+  }
+}
+
+void SyncBackendHost::Core::DoFinishInitialProcessControlTypes() {
+  registrar_->ActivateDataType(syncer::DEVICE_INFO,
+                               syncer::GROUP_PASSIVE,
+                               synced_device_tracker_.get(),
+                               sync_manager_->GetUserShare());
+
+  host_.Call(
+      FROM_HERE,
+      &SyncBackendHost::HandleInitializationCompletedOnFrontendLoop,
+      true);
 }
 
 void SyncBackendHost::Core::DoSetDecryptionPassphrase(
@@ -1182,6 +1232,10 @@ void SyncBackendHost::Core::DoStopSyncManagerForShutdown(
 
 void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  // It's safe to do this even if the type was never activated.
+  registrar_->DeactivateDataType(syncer::DEVICE_INFO);
+  synced_device_tracker_.reset();
+
   DoDestroySyncManager();
 
   chrome_sync_notification_bridge_ = NULL;
@@ -1327,7 +1381,7 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
       // trigger migration.  That would be disastrous, so we must rely on the
       // sync manager to ensure that this type never has both progress markers
       // and !initial_sync_ended.
-      initialization_state_ = DOWNLOADING_NIGORI;
+      initialization_state_ = DOWNLOADING_CONTROL_TYPES;
       ConfigureDataTypes(
           syncer::CONFIGURE_REASON_NEW_CLIENT,
           syncer::ModelTypeSet(syncer::ControlTypes()),
@@ -1340,16 +1394,17 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
           base::Bind(&SyncBackendHost::OnNigoriDownloadRetry,
                      weak_ptr_factory_.GetWeakPtr()));
       break;
-    case DOWNLOADING_NIGORI:
-      initialization_state_ = ASSOCIATING_NIGORI;
-      // Triggers OnEncryptedTypesChanged() and OnEncryptionComplete()
-      // if necessary.
-      sync_thread_.message_loop()->PostTask(
-          FROM_HERE,
-          base::Bind(&SyncBackendHost::Core::DoAssociateNigori,
-                     core_.get()));
+    case DOWNLOADING_CONTROL_TYPES:
+      initialization_state_ = PROCESSING_CONTROL_TYPES;
+      // Updates encryption and other metadata.  Will call
+      // OnEncryptedTypesChanged() and OnEncryptionComplete() if necessary.
+      InitialProcessControlTypes(
+          base::Bind(
+              &SyncBackendHost::
+                  HandleInitializationCompletedOnFrontendLoop,
+              weak_ptr_factory_.GetWeakPtr(), true));
       break;
-    case ASSOCIATING_NIGORI:
+    case PROCESSING_CONTROL_TYPES:
       initialization_state_ = INITIALIZED;
       // Now that we've downloaded the nigori node, we can see if there are any
       // experimental types to enable. This should be done before we inform
@@ -1526,6 +1581,16 @@ void SyncBackendHost::HandleNigoriConfigurationCompletedOnFrontendLoop(
     const syncer::ModelTypeSet failed_configuration_types) {
   HandleInitializationCompletedOnFrontendLoop(
       failed_configuration_types.Empty());
+}
+
+void SyncBackendHost::InitialProcessControlTypes(
+    const base::Closure& done_callback) {
+  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  // Then forward the request to the sync thread.
+  sync_thread_.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&SyncBackendHost::Core::DoInitialProcessControlTypes,
+                 core_.get()));
 }
 
 #undef SDVLOG

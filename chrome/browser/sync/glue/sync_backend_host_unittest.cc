@@ -11,6 +11,8 @@
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "chrome/browser/sync/glue/device_info.h"
+#include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "chrome/browser/sync/invalidations/invalidator_storage.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/test/base/testing_profile.h"
@@ -156,6 +158,8 @@ class SyncBackendHostTest : public testing::Test {
     // NOTE: We can't include Passwords or Typed URLs due to the Sync Backend
     // Registrar removing them if it can't find their model workers.
     enabled_types_.Put(syncer::BOOKMARKS);
+    enabled_types_.Put(syncer::NIGORI);
+    enabled_types_.Put(syncer::DEVICE_INFO);
     enabled_types_.Put(syncer::PREFERENCES);
     enabled_types_.Put(syncer::SESSIONS);
     enabled_types_.Put(syncer::SEARCH_ENGINES);
@@ -631,6 +635,15 @@ TEST_F(SyncBackendHostTest, InvalidationsAfterStopSyncingForShutdown) {
 
   TearDown();
   SetUp();
+}
+
+TEST_F(SyncBackendHostTest, InitializeDeviceInfo) {
+  ASSERT_EQ(NULL, backend_->GetSyncedDeviceTrackerForTest());
+
+  InitializeBackend();
+  SyncedDeviceTracker* device_tracker =
+      backend_->GetSyncedDeviceTrackerForTest();
+  ASSERT_TRUE(device_tracker->ReadLocalDeviceInfo());
 }
 
 }  // namespace

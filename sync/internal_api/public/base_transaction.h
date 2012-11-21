@@ -32,17 +32,25 @@ class BaseTransaction {
   ModelTypeSet GetEncryptedTypes() const;
 
   syncable::Directory* GetDirectory() const {
-    return directory_;
+    if (!user_share_) {
+      return NULL;
+    } else {
+      return user_share_->directory.get();
+    }
+  }
+
+  UserShare* GetUserShare() const {
+    return user_share_;
   }
 
  protected:
   explicit BaseTransaction(UserShare* share);
   virtual ~BaseTransaction();
 
-  BaseTransaction() : directory_(NULL) { }
+  BaseTransaction() : user_share_(NULL) { }
 
  private:
-  syncable::Directory* directory_;
+  UserShare* user_share_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseTransaction);
 };

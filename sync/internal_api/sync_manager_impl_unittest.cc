@@ -830,7 +830,6 @@ class SyncManagerTest : public testing::Test,
     sync_manager_.Init(temp_dir_.path(),
                        WeakHandle<JsEventHandler>(),
                        "bogus", 0, false,
-                       base::MessageLoopProxy::current(),
                        scoped_ptr<HttpPostProviderFactory>(
                            new TestHttpPostProviderFactory()),
                        workers, &extensions_activity_monitor_, this,

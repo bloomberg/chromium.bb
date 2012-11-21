@@ -20,6 +20,7 @@
 #include "sync/notifier/invalidator.h"
 #include "sync/notifier/invalidator_state.h"
 #include "sync/notifier/object_id_invalidation_map.h"
+#include "sync/syncable/directory.h"
 #include "sync/test/fake_sync_encryption_handler.h"
 
 namespace syncer {
@@ -91,7 +92,6 @@ void FakeSyncManager::Init(
     const std::string& sync_server_and_path,
     int sync_server_port,
     bool use_ssl,
-    const scoped_refptr<base::TaskRunner>& blocking_task_runner,
     scoped_ptr<HttpPostProviderFactory> post_factory,
     const std::vector<ModelSafeWorker*>& workers,
     ExtensionsActivityMonitor* extensions_activity_monitor,
@@ -107,6 +107,14 @@ void FakeSyncManager::Init(
         report_unrecoverable_error_function) {
   sync_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   PurgePartiallySyncedTypes();
+
+  test_user_share_.SetUp();
+  UserShare* share = test_user_share_.user_share();
+  for (ModelTypeSet::Iterator it = initial_sync_ended_types_.First();
+       it.Good(); it.Inc()) {
+    TestUserShare::CreateRoot(it.Get(), share);
+  }
+
   FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                     OnInitializationComplete(
                         WeakHandle<JsBackend>(),
@@ -186,6 +194,16 @@ void FakeSyncManager::ConfigureSyncer(
            << ModelTypeSetToString(success_types) << ". Cleaning: "
            << ModelTypeSetToString(disabled_types);
 
+  // Update our fake directory by clearing and fake-downloading as necessary.
+  UserShare* share = GetUserShare();
+  share->directory->PurgeEntriesWithTypeIn(disabled_types);
+  for (ModelTypeSet::Iterator it = success_types.First(); it.Good(); it.Inc()) {
+    // We must be careful to not create the same root node twice.
+    if (!initial_sync_ended_types_.Has(it.Get())) {
+      TestUserShare::CreateRoot(it.Get(), share);
+    }
+  }
+
   // Simulate cleaning up disabled types.
   // TODO(sync): consider only cleaning those types that were recently disabled,
   // if this isn't the first cleanup, which more accurately reflects the
@@ -228,10 +246,15 @@ void FakeSyncManager::StopSyncingForShutdown(const base::Closure& callback) {
 
 void FakeSyncManager::ShutdownOnSyncThread() {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
+  test_user_share_.TearDown();
 }
 
 UserShare* FakeSyncManager::GetUserShare() {
-  return NULL;
+  return test_user_share_.user_share();
+}
+
+const std::string FakeSyncManager::cache_guid() {
+  return test_user_share_.user_share()->directory->cache_guid();
 }
 
 bool FakeSyncManager::ReceivedExperiment(Experiments* experiments) {

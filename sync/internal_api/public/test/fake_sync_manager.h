@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "sync/internal_api/public/sync_manager.h"
+#include "sync/internal_api/public/test/test_user_share.h"
 #include "sync/notifier/invalidator_registrar.h"
 
 namespace base {
@@ -72,7 +73,6 @@ class FakeSyncManager : public SyncManager {
       const std::string& sync_server_and_path,
       int sync_server_port,
       bool use_ssl,
-      const scoped_refptr<base::TaskRunner>& blocking_task_runner,
       scoped_ptr<HttpPostProviderFactory> post_factory,
       const std::vector<ModelSafeWorker*>& workers,
       ExtensionsActivityMonitor* extensions_activity_monitor,
@@ -115,6 +115,7 @@ class FakeSyncManager : public SyncManager {
   virtual void StopSyncingForShutdown(const base::Closure& callback) OVERRIDE;
   virtual void ShutdownOnSyncThread() OVERRIDE;
   virtual UserShare* GetUserShare() OVERRIDE;
+  virtual const std::string cache_guid() OVERRIDE;
   virtual bool ReceivedExperiment(Experiments* experiments) OVERRIDE;
   virtual bool HasUnsyncedItems() OVERRIDE;
   virtual SyncEncryptionHandler* GetEncryptionHandler() OVERRIDE;
@@ -148,6 +149,8 @@ class FakeSyncManager : public SyncManager {
   InvalidatorRegistrar registrar_;
 
   scoped_ptr<FakeSyncEncryptionHandler> fake_encryption_handler_;
+
+  TestUserShare test_user_share_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSyncManager);
 };

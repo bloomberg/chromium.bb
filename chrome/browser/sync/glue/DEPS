@@ -5,6 +5,7 @@ include_rules = [
 
   "+sync/internal_api/public",
   "+sync/util",
+  "+sync/test",
 
   "+jingle/notifier/base",
 

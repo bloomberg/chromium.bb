@@ -68,7 +68,6 @@ class SyncManagerImpl :
       const std::string& sync_server_and_path,
       int sync_server_port,
       bool use_ssl,
-      const scoped_refptr<base::TaskRunner>& blocking_task_runner,
       scoped_ptr<HttpPostProviderFactory> post_factory,
       const std::vector<ModelSafeWorker*>& workers,
       ExtensionsActivityMonitor* extensions_activity_monitor,
@@ -111,6 +110,7 @@ class SyncManagerImpl :
   virtual void StopSyncingForShutdown(const base::Closure& callback) OVERRIDE;
   virtual void ShutdownOnSyncThread() OVERRIDE;
   virtual UserShare* GetUserShare() OVERRIDE;
+  virtual const std::string cache_guid() OVERRIDE;
   virtual bool ReceivedExperiment(Experiments* experiments) OVERRIDE;
   virtual bool HasUnsyncedItems() OVERRIDE;
   virtual SyncEncryptionHandler* GetEncryptionHandler() OVERRIDE;
@@ -301,10 +301,6 @@ class SyncManagerImpl :
   // HandleCalculateChangesChangeEventFromSyncApi() and we'd pass it a
   // WeakHandle when we construct it.
   WeakHandle<SyncManagerImpl> weak_handle_this_;
-
-  // |blocking_task_runner| is a TaskRunner to be used for tasks that
-  // may block on disk I/O.
-  scoped_refptr<base::TaskRunner> blocking_task_runner_;
 
   // We give a handle to share_ to clients of the API for use when constructing
   // any transaction type.

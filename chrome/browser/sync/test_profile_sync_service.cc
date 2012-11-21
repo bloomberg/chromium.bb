@@ -131,6 +131,10 @@ void SyncBackendHostForProfileSyncTest
         // syncer) is a decryption attempt, which will fail the first time.
       }
 
+      if (!directory->initial_sync_ended_for_type(DEVICE_INFO)) {
+        syncer::TestUserShare::CreateRoot(DEVICE_INFO, user_share);
+      }
+
       if (!directory->initial_sync_ended_for_type(EXPERIMENTS)) {
         syncer::TestUserShare::CreateRoot(EXPERIMENTS, user_share);
       }

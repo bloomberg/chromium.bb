@@ -10,19 +10,23 @@
 #include "base/string_util.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/in_memory_directory_backing_store.h"
+#include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/read_transaction.h"
-#include "sync/test/null_transaction_observer.h"
+#include "sync/syncable/write_transaction.h"
+#include "sync/test/test_transaction_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
-
-using syncable::NullTransactionObserver;
 
 TestDirectorySetterUpper::TestDirectorySetterUpper() : name_("Test") {}
 
 TestDirectorySetterUpper::~TestDirectorySetterUpper() {}
 
 void TestDirectorySetterUpper::SetUp() {
+  test_transaction_observer_.reset(new syncable::TestTransactionObserver());
+  WeakHandle<syncable::TransactionObserver> transaction_observer =
+      MakeWeakHandle(test_transaction_observer_->AsWeakPtr());
+
   directory_.reset(new syncable::Directory(
       new syncable::InMemoryDirectoryBackingStore(name_),
       &handler_,
@@ -30,7 +34,7 @@ void TestDirectorySetterUpper::SetUp() {
       &encryption_handler_,
       encryption_handler_.cryptographer()));
   ASSERT_EQ(syncable::OPENED, directory_->Open(
-          name_, &delegate_, NullTransactionObserver()));
+          name_, &delegate_, transaction_observer));
 }
 
 void TestDirectorySetterUpper::TearDown() {
