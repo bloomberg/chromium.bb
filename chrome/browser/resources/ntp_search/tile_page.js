@@ -59,8 +59,6 @@ cr.define('ntp', function() {
      * Resets the tile DOM.
      */
     reset: function() {
-      console.error('Tile.reset() is a virtual method and is not supposed to ' +
-          'be called');
     },
 
     /**

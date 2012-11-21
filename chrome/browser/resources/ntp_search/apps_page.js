@@ -5,6 +5,10 @@
 cr.define('ntp', function() {
   'use strict';
 
+  var Tile = ntp.Tile;
+  var TilePage = ntp.TilePage;
+  var APP_LAUNCH = ntp.APP_LAUNCH;
+
   // Histogram buckets for UMA tracking of where a DnD drop came from.
   var DRAG_SOURCE = {
     SAME_APPS_PANE: 0,
@@ -172,6 +176,8 @@ cr.define('ntp', function() {
       chrome.send('setNotificationsDisabled', [app.appData.id, newSetting]);
     },
     onUninstall_: function(e) {
+      var tileCell = this.app_.tileCell;
+      tileCell.tilePage.setTileRepositioningState(tileCell.index, true);
       chrome.send('uninstallApp', [this.app_.appData.id]);
     },
     onCreateShortcut_: function(e) {
@@ -193,7 +199,7 @@ cr.define('ntp', function() {
     return el;
   }
 
-  App.prototype = {
+  App.prototype = Tile.subclass({
     __proto__: HTMLDivElement.prototype,
 
     /**
@@ -201,12 +207,14 @@ cr.define('ntp', function() {
      * @param {Object} appData The data object that describes the app.
      */
     initialize: function(appData) {
+      this.className = 'app focusable';
+
+      Tile.prototype.initialize.apply(this, arguments);
+
       this.appData = appData;
       assert(this.appData_.id, 'Got an app without an ID');
       this.id = this.appData_.id;
       this.setAttribute('role', 'menuitem');
-
-      this.className = 'app focusable';
 
       if (!this.appData_.icon_big_exists && this.appData_.icon_small_exists)
         this.useSmallIcon_ = true;
@@ -276,7 +284,7 @@ cr.define('ntp', function() {
       // Unset the ID immediately, because the app is already gone. But leave
       // the tile on the page as it animates out.
       this.id = '';
-      this.tile.doRemove(opt_animate);
+      this.tileCell.doRemove(opt_animate);
     },
 
     /**
@@ -379,39 +387,6 @@ cr.define('ntp', function() {
         this.currentBubbleShowing_.hide();
         this.currentBubbleShowing_ = null;
       }
-    },
-
-    /**
-     * Set the size and position of the app tile.
-     * @param {number} size The total size of |this|.
-     * @param {number} x The x-position.
-     * @param {number} y The y-position.
-     *     animate.
-     */
-    setBounds: function(size, x, y) {
-      var imgSize = size * APP_IMG_SIZE_FRACTION;
-      this.appImgContainer_.style.width = this.appImgContainer_.style.height =
-          toCssPx(this.useSmallIcon_ ? 16 : imgSize);
-      if (this.useSmallIcon_) {
-        // 3/4 is the ratio of 96px to 128px (the used height and full height
-        // of icons in apps).
-        var iconSize = imgSize * 3 / 4;
-        // The -2 is for the div border to improve the visual alignment for the
-        // icon div.
-        this.imgDiv_.style.width = this.imgDiv_.style.height =
-            toCssPx(iconSize - 2);
-        // Margins set to get the icon placement right and the text to line up.
-        this.imgDiv_.style.marginTop = this.imgDiv_.style.marginBottom =
-            toCssPx((imgSize - iconSize) / 2);
-      }
-
-      this.style.width = this.style.height = toCssPx(size);
-      this.style.left = toCssPx(x);
-      this.style.right = toCssPx(x);
-      this.style.top = toCssPx(y);
-
-      if (this.currentBubbleShowing_)
-        this.currentBubbleShowing_.resizeAndReposition();
     },
 
     /**
@@ -561,7 +536,7 @@ cr.define('ntp', function() {
       chrome.send('uninstallApp', [this.appData_.id, true]);
       this.tile.tilePage.removeTile(this.tile, true);
       if (this.currentBubbleShowing_)
-        currentBubbleShowing_.hide();
+        this.currentBubbleShowing_.hide();
     },
 
     /**
@@ -572,28 +547,7 @@ cr.define('ntp', function() {
       dataTransfer.setData('Text', this.appData_.title);
       dataTransfer.setData('URL', this.appData_.url);
     },
-  };
-
-  var TilePage = ntp.TilePage;
-
-  // The fraction of the app tile size that the icon uses.
-  var APP_IMG_SIZE_FRACTION = 4 / 5;
-
-  var appsPageGridValues = {
-    // The fewest tiles we will show in a row.
-    minColCount: 3,
-    // The most tiles we will show in a row.
-    maxColCount: 6,
-
-    // The smallest a tile can be.
-    minTileWidth: 64 / APP_IMG_SIZE_FRACTION,
-    // The biggest a tile can be.
-    maxTileWidth: 128 / APP_IMG_SIZE_FRACTION,
-
-    // The padding between tiles, as a fraction of the tile width.
-    tileSpacingFraction: 1 / 8,
-  };
-  TilePage.initGridValues(appsPageGridValues);
+  });
 
   /**
    * Creates a new AppsPage object.
@@ -601,7 +555,7 @@ cr.define('ntp', function() {
    * @extends {TilePage}
    */
   function AppsPage() {
-    var el = new TilePage(appsPageGridValues);
+    var el = new TilePage();
     el.__proto__ = AppsPage.prototype;
     el.initialize();
 
@@ -610,6 +564,24 @@ cr.define('ntp', function() {
 
   AppsPage.prototype = {
     __proto__: TilePage.prototype,
+
+    /**
+     * Reference to the Tile subclass that will be used to create the tiles.
+     * @constructor
+     * @extends {Tile}
+     */
+    TileClass: App,
+
+    // The config object should be defined by a TilePage subclass if it
+    // wants the non-default behavior.
+    config: {
+      // The width of a cell.
+      cellWidth: 77,
+      // The start margin of a cell (left or right according to text direction).
+      cellMarginStart: 12,
+      // The maximum number of Tiles to be displayed.
+      maxTileCount: 20
+    },
 
     initialize: function() {
       this.classList.add('apps-page');
@@ -644,16 +616,17 @@ cr.define('ntp', function() {
      * @param {boolean} animate Whether to animate the insertion.
      */
     insertApp: function(appData, animate) {
-      var index = this.tileElements_.length;
-      for (var i = 0; i < this.tileElements_.length; i++) {
+      var index = this.tiles_.length;
+      for (var i = 0; i < this.tiles_.length; i++) {
         if (appData.app_launch_ordinal <
-            this.tileElements_[i].firstChild.appData.app_launch_ordinal) {
+            this.tiles_[i].appData.app_launch_ordinal) {
           index = i;
           break;
         }
       }
 
-      this.addTileAt(new App(appData), index, animate);
+      this.addTileAt(new App(appData), index);
+      this.renderGrid_();
     },
 
     /**
@@ -676,9 +649,9 @@ cr.define('ntp', function() {
      */
     onTileAdded_: function(e) {
       assert(e.currentTarget == this);
-      assert(e.addedTile.firstChild instanceof App);
+      assert(e.addedTile instanceof App);
       if (this.classList.contains('selected-card'))
-        e.addedTile.firstChild.loadIcon();
+        e.addedTile.loadIcon();
     },
 
     /**
@@ -688,8 +661,8 @@ cr.define('ntp', function() {
      * @private
      */
     onCardChangeEnded_: function(e) {
-      for (var i = 0; i < this.tileElements_.length; i++) {
-        var app = this.tileElements_[i].firstChild;
+      for (var i = 0; i < this.tiles_.length; i++) {
+        var app = this.tiles_[i];
         assert(app instanceof App);
         if (app.currentBubbleShowing_)
           app.currentBubbleShowing_.suppressed = false;
@@ -703,8 +676,8 @@ cr.define('ntp', function() {
      * @private
      */
     onCardDeselected_: function(e) {
-      for (var i = 0; i < this.tileElements_.length; i++) {
-        var app = this.tileElements_[i].firstChild;
+      for (var i = 0; i < this.tiles_.length; i++) {
+        var app = this.tiles_[i];
         assert(app instanceof App);
         if (app.currentBubbleShowing_)
           app.currentBubbleShowing_.suppressed = true;
@@ -719,8 +692,8 @@ cr.define('ntp', function() {
     onScroll_: function(e) {
       if (!this.selected)
         return;
-      for (var i = 0; i < this.tileElements_.length; i++) {
-        var app = this.tileElements_[i].firstChild;
+      for (var i = 0; i < this.tiles_.length; i++) {
+        var app = this.tiles_[i];
         assert(app instanceof App);
         if (app.currentBubbleShowing_)
           app.currentBubbleShowing_.resizeAndReposition();
@@ -822,8 +795,7 @@ cr.define('ntp', function() {
     generateAppForLink: function(data) {
       assert(data.url != undefined);
       assert(data.title != undefined);
-      var pageIndex = ntp.getAppsPageIndex(this);
-      chrome.send('generateAppForLink', [data.url, data.title, pageIndex]);
+      chrome.send('generateAppForLink', [data.url, data.title, 0]);
     },
 
     /** @inheritDoc */
@@ -831,12 +803,11 @@ cr.define('ntp', function() {
       if (!(draggedTile.firstChild instanceof App))
         return;
 
-      var pageIndex = ntp.getAppsPageIndex(this);
-      chrome.send('setPageIndex', [draggedTile.firstChild.appId, pageIndex]);
+      chrome.send('setPageIndex', [draggedTile.firstChild.appId, 0]);
 
       var appIds = [];
-      for (var i = 0; i < this.tileElements_.length; i++) {
-        var tileContents = this.tileElements_[i].firstChild;
+      for (var i = 0; i < this.tiles_.length; i++) {
+        var tileContents = this.tiles_[i];
         if (tileContents instanceof App)
           appIds.push(tileContents.appId);
       }

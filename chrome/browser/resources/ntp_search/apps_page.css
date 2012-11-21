@@ -2,10 +2,26 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.app {
+.apps-page .tile-cell {
+  -webkit-margin-start: 12px;
+  margin-bottom: 12px;
+}
+
+.apps-page .tile-cell:first-child {
+  -webkit-margin-start: 0;
+}
+
+.apps-page .app {
+  display: block;
+  height: 77px;
   outline: none;
-  position: absolute;
   text-align: center;
+  width: 77px;
+}
+
+.apps-page .app .title {
+  color: #777;
+  font-size: 0.9166em;
 }
 
 .app-contents {

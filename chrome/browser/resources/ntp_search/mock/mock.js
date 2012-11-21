@@ -26,6 +26,7 @@ var recordMockData = false;
     'metricsHandler:logEventTime': NO_CALLBACK,
     'metricsHandler:recordInHistogram': NO_CALLBACK,
     'removeURLsFromMostVisitedBlacklist': NO_CALLBACK,
+    'uninstallApp': NO_CALLBACK,
   };
 
   // TODO(pedrosimonetti): include automatically in the recorded data
@@ -93,7 +94,10 @@ var recordMockData = false;
   function dispatchCallbackForMessage(message) {
     var callbackNamespace = callbackMap[message];
     var callback = namespace(callbackNamespace);
-    var data = filterMap[message](dataMap[message]);
+    var data = dataMap[message];
+    var filter = filterMap[message];
+    if (filter)
+      data = filter(data);
     callback.apply(window, data);
   }
 
@@ -236,6 +240,17 @@ var recordMockData = false;
       mostVisitedBlackList = {};
       dispatchCallbackForMessage('getMostVisited');
     },
+
+    uninstallApp: function(id) {
+      var data = dataMap['getApps'][0].apps;
+      for (var i = 0, length = data.length; i < length; i++) {
+        if (data[i].id == id) {
+          data.splice(i, 1);
+          break;
+        }
+      }
+      dispatchCallbackForMessage('getApps');
+    },
   };
 
   //----------------------------------------------------------------------------
@@ -260,7 +275,6 @@ var recordMockData = false;
   };
 
   var selectorDurationImportantMap = {
-    '#page-list': 200,
   };
 
   var selectorDelayMap = {

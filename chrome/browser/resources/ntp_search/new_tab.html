@@ -39,6 +39,7 @@
 <link rel="stylesheet" href="other_devices_page.css">
 <link rel="stylesheet" href="thumbnail_page.css">
 <link rel="stylesheet" href="tile_page.css">
+<link rel="stylesheet" href="apps_page.css">
 
 <link id="themecss" rel="stylesheet">
 
@@ -71,10 +72,14 @@
 <script src="most_visited_page.js"></script>
 <script src="recently_closed_page.js"></script>
 <script src="other_devices_page.js"></script>
+<script src="apps_page.js"></script>
 </head>
 
 <body id="ntp5" i18n-values=".style.fontSize:fontsize">
   <div id="bottom-panel">
+    <div id="bottom-panel-header">
+      <ul id="dot-list"></ul>
+    </div>
     <div id="card-slider-frame">
       <div id="page-list"></div>
       <div id="attribution">
@@ -83,7 +88,6 @@
       </div>
     </div>
     <div id="bottom-panel-footer">
-      <ul id="dot-list"></ul>
       <div id="bottom-panel-toolbar">
         <div id="notification-container" class="inactive" hidden>
           <div id="notification">

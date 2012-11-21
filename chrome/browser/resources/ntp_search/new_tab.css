@@ -92,10 +92,15 @@ body {
   position: static;
 }
 
+#bottom-panel-header,
 #bottom-panel-footer,
 #bottom-panel-toolbar {
   margin: 10px auto;
   text-align: center;
+}
+
+#bottom-panel-header {
+  margin-bottom: 20px;
 }
 
 #bottom-panel-toolbar {

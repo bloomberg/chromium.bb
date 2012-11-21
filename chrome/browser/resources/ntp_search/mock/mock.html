@@ -13,14 +13,14 @@
     }
 
     #chrome {
-      -webkit-flex-flow: column;
-      display: -webkit-flex;
       height: 100%;
     }
 
     #top-panel {
-      -webkit-flex: none;
       height: 298px;
+      position: absolute;
+      width: 100%;
+      z-index: 2;
     }
 
     #top-spacer {
@@ -45,8 +45,11 @@
     }
 
     #bottom-panel {
-      -webkit-flex: 1;
       border: none;
+      height: 100%;
+      position: absolute;
+      width: 100%;
+      z-index: 1;
     }
   </style>
   <script src="mock.js" type="text/javascript"></script>

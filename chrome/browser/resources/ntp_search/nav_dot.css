@@ -3,15 +3,12 @@
  * found in the LICENSE file. */
 
 #dot-list {
-  display: none;
   height: 15px;
   margin: 10px 0 8px;
   overflow: hidden;
   padding: 0;
 }
 
-/* TODO(pedrosimonetti): Confirm animated color transition, cursor, min-width,
-   and focused dot treatment with Marcin. */
 .dot {
   -webkit-transition: color 200ms;
   color: #666;
