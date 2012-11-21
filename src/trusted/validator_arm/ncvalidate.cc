@@ -52,7 +52,7 @@ static inline bool IsAligned(intptr_t value) {
   return (value & (NACL_BLOCK_SHIFT - 1)) == 0;
 }
 
-static inline bool IsAlignedPtr(void* ptr) {
+static inline bool IsAlignedPtr(void *ptr) {
   return IsAligned(reinterpret_cast<intptr_t>(ptr));
 }
 
@@ -62,11 +62,11 @@ static const uintptr_t kBytesOfDataSpace = 1U * 1024 * 1024 * 1024;
 
 // The following checks should have been checked at a higher level, any error
 // here is a break of the validator's preconditions. Don't try to recover.
-static inline void CheckAddressOverflow(uint8_t* ptr, size_t size) {
-  CHECK(ptr < std::numeric_limits<uint8_t *>::max() - size);
+static inline void CheckAddressOverflow(uint8_t *ptr, size_t size) {
+  CHECK(uintptr_t(ptr) < std::numeric_limits<uintptr_t>::max() - size);
 }
 
-static inline void CheckAddressAlignAndOverflow(uint8_t* ptr, size_t size) {
+static inline void CheckAddressAlignAndOverflow(uint8_t *ptr, size_t size) {
   CHECK(IsAlignedPtr(ptr));
   CHECK(IsAligned(size));
   CheckAddressOverflow(ptr, size);
