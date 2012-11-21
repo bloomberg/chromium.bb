@@ -232,8 +232,8 @@ void HoverHighlightView::AddIconAndLabel(const gfx::ImageSkia& image,
   SetAccessibleName(text);
 }
 
-void HoverHighlightView::AddLabel(const string16& text,
-                                  gfx::Font::FontStyle style) {
+views::Label* HoverHighlightView::AddLabel(const string16& text,
+                                           gfx::Font::FontStyle style) {
   SetLayoutManager(new views::FillLayout());
   text_label_ = new views::Label(text);
   int margin = kTrayPopupPaddingHorizontal + kPopupDetailLabelExtraLeftMargin;
@@ -253,11 +253,12 @@ void HoverHighlightView::AddLabel(const string16& text,
   AddChildView(text_label_);
 
   SetAccessibleName(text);
+  return text_label_;
 }
 
-void HoverHighlightView::AddCheckableLabel(const string16& text,
-                                           gfx::Font::FontStyle style,
-                                           bool checked) {
+views::Label* HoverHighlightView::AddCheckableLabel(const string16& text,
+                                                    gfx::Font::FontStyle style,
+                                                    bool checked) {
   if (checked) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     const gfx::ImageSkia* check =
@@ -273,13 +274,15 @@ void HoverHighlightView::AddCheckableLabel(const string16& text,
 
     text_label_ = new views::Label(text);
     text_label_->SetFont(text_label_->font().DeriveFont(0, style));
+    text_label_->SetDisabledColor(SkColorSetARGB(127, 0, 0, 0));
     if (text_default_color_)
       text_label_->SetEnabledColor(text_default_color_);
     AddChildView(text_label_);
 
     SetAccessibleName(text);
+    return text_label_;
   } else {
-    AddLabel(text, style);
+    return AddLabel(text, style);
   }
 }
 
