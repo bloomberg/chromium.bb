@@ -712,6 +712,7 @@
         ['use_ash==1', {
           'dependencies': [
             '../ash/ash.gyp:ash',
+            '../ash/ash.gyp:ash_resources',
             '../ash/ash_strings.gyp:ash_strings',
             '../ui/app_list/app_list.gyp:app_list',
             '../ui/message_center/message_center.gyp:message_center',

@@ -31,8 +31,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "grit/ash_resources.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
@@ -734,7 +734,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR));
       gfx::ImageSkia icon;
       if (is_locked) {
-        icon = *rb.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_SECURE_DARK);
+        icon = *rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_SECURE_DARK);
       }
       int flag = FLAG_TOGGLE_MOBILE;
       if (cros->mobile_busy())

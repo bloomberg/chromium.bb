@@ -6,7 +6,7 @@
 
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "grit/theme_resources.h"
+#include "grit/ash_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -84,7 +84,7 @@ class NetworkMenuIconTest : public testing::Test {
     cros_ = CrosLibrary::Get()->GetNetworkLibrary();
     // Ethernet connected = WIRED icon, no badges.
     ethernet_connected_image_ = NetworkMenuIcon::GenerateImageFromComponents(
-        *rb_.GetImageSkiaNamed(IDR_STATUSBAR_WIRED),
+        *rb_.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_WIRED),
         NULL, NULL, NULL, NULL);
     // Wifi connected, strength = 100% = ARCS4 icon, no badges.
     wifi_connected_100_image_ = NetworkMenuIcon::GenerateImageFromComponents(
@@ -98,8 +98,8 @@ class NetworkMenuIconTest : public testing::Test {
         NetworkMenuIcon::GetImage(NetworkMenuIcon::ARCS, 3,
                                   NetworkMenuIcon::COLOR_DARK),
         NULL, NULL, NULL,
-        rb_.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_SECURE_DARK));
-    // Wifi connecting = IDR_STATUSBAR_NETWORK_ARCS1 (faded).
+        rb_.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_SECURE_DARK));
+    // Wifi connecting = IDR_AURA_UBER_TRAY_NETWORK_ARCS1 (faded).
     wifi_connecting_image_ = NetworkMenuIcon::GenerateConnectingImage(
         NetworkMenuIcon::GetImage(NetworkMenuIcon::ARCS, 1,
                                   NetworkMenuIcon::COLOR_DARK));
@@ -109,7 +109,8 @@ class NetworkMenuIconTest : public testing::Test {
             NetworkMenuIcon::GetImage(
                 NetworkMenuIcon::BARS, 3,
                 NetworkMenuIcon::COLOR_DARK),
-        rb_.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_4G_DARK), NULL, NULL, NULL);
+            rb_.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_4G_DARK),
+            NULL, NULL, NULL);
     // 3G connected, strength = 100% = BARS4 icon + 3G badge.
     cellular_connected_100_image_ =
         NetworkMenuIcon::GenerateImageFromComponents(
@@ -117,14 +118,15 @@ class NetworkMenuIconTest : public testing::Test {
                 NetworkMenuIcon::BARS,
                 NetworkMenuIcon::NumImages(NetworkMenuIcon::BARS) - 1,
                 NetworkMenuIcon::COLOR_DARK),
-        rb_.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_3G_DARK), NULL, NULL, NULL);
+            rb_.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_3G_DARK),
+            NULL, NULL, NULL);
     // 3G connected, strength = 50%, roaming = BARS2 icon + roaming & 3G badges.
     cellular_roaming_50_image_ = NetworkMenuIcon::GenerateImageFromComponents(
         NetworkMenuIcon::GetImage(NetworkMenuIcon::BARS, 3,
                                   NetworkMenuIcon::COLOR_DARK),
-        rb_.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_3G_DARK), NULL, NULL,
-        rb_.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_ROAMING_DARK));
-    // 3G connecting = IDR_STATUSBAR_NETWORK_BARS1 (faded).
+        rb_.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_3G_DARK), NULL, NULL,
+        rb_.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_ROAMING_DARK));
+    // 3G connecting = IDR_AURA_UBER_TRAY_NETWORK_BARS1 (faded).
     cellular_connecting_image_ = NetworkMenuIcon::GenerateConnectingImage(
         NetworkMenuIcon::GetImage(NetworkMenuIcon::BARS, 1,
                                   NetworkMenuIcon::COLOR_DARK));

@@ -12,8 +12,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "grit/ash_resources.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -87,32 +87,32 @@ const gfx::ImageSkia* BadgeForNetworkTechnology(
     case NETWORK_TECHNOLOGY_EVDO:
       switch (cellular->data_left()) {
         case CellularNetwork::DATA_NONE:
-          id = IDR_STATUSBAR_NETWORK_3G_ERROR;
+          id = IDR_AURA_UBER_TRAY_NETWORK_3G_ERROR;
           break;
         case CellularNetwork::DATA_VERY_LOW:
         case CellularNetwork::DATA_LOW:
         case CellularNetwork::DATA_NORMAL:
           id = (color == NetworkMenuIcon::COLOR_DARK) ?
-              IDR_STATUSBAR_NETWORK_3G_DARK :
-              IDR_STATUSBAR_NETWORK_3G_LIGHT;
+              IDR_AURA_UBER_TRAY_NETWORK_3G_DARK :
+              IDR_AURA_UBER_TRAY_NETWORK_3G_LIGHT;
           break;
         case CellularNetwork::DATA_UNKNOWN:
-          id = IDR_STATUSBAR_NETWORK_3G_UNKNOWN;
+          id = IDR_AURA_UBER_TRAY_NETWORK_3G_UNKNOWN;
           break;
       }
       break;
     case NETWORK_TECHNOLOGY_1XRTT:
       switch (cellular->data_left()) {
         case CellularNetwork::DATA_NONE:
-          id = IDR_STATUSBAR_NETWORK_1X_ERROR;
+          id = IDR_AURA_UBER_TRAY_NETWORK_1X_ERROR;
           break;
         case CellularNetwork::DATA_VERY_LOW:
         case CellularNetwork::DATA_LOW:
         case CellularNetwork::DATA_NORMAL:
-          id = IDR_STATUSBAR_NETWORK_1X;
+          id = IDR_AURA_UBER_TRAY_NETWORK_1X;
           break;
         case CellularNetwork::DATA_UNKNOWN:
-          id = IDR_STATUSBAR_NETWORK_1X_UNKNOWN;
+          id = IDR_AURA_UBER_TRAY_NETWORK_1X_UNKNOWN;
           break;
       }
       break;
@@ -120,32 +120,32 @@ const gfx::ImageSkia* BadgeForNetworkTechnology(
       // so there may not be a reason to create _ERROR or _UNKNOWN versions
       // of the following icons.
     case NETWORK_TECHNOLOGY_GPRS:
-      id = IDR_STATUSBAR_NETWORK_GPRS;
+      id = IDR_AURA_UBER_TRAY_NETWORK_GPRS;
       break;
     case NETWORK_TECHNOLOGY_EDGE:
       id = (color == NetworkMenuIcon::COLOR_DARK) ?
-          IDR_STATUSBAR_NETWORK_EDGE_DARK :
-          IDR_STATUSBAR_NETWORK_EDGE_LIGHT;
+          IDR_AURA_UBER_TRAY_NETWORK_EDGE_DARK :
+          IDR_AURA_UBER_TRAY_NETWORK_EDGE_LIGHT;
       break;
     case NETWORK_TECHNOLOGY_UMTS:
       id =  (color == NetworkMenuIcon::COLOR_DARK) ?
-          IDR_STATUSBAR_NETWORK_3G_DARK :
-          IDR_STATUSBAR_NETWORK_3G_LIGHT;
+          IDR_AURA_UBER_TRAY_NETWORK_3G_DARK :
+          IDR_AURA_UBER_TRAY_NETWORK_3G_LIGHT;
       break;
     case NETWORK_TECHNOLOGY_HSPA:
-      id = IDR_STATUSBAR_NETWORK_HSPA;
+      id = IDR_AURA_UBER_TRAY_NETWORK_HSPA;
       break;
     case NETWORK_TECHNOLOGY_HSPA_PLUS:
-      id = IDR_STATUSBAR_NETWORK_HSPA_PLUS;
+      id = IDR_AURA_UBER_TRAY_NETWORK_HSPA_PLUS;
       break;
     case NETWORK_TECHNOLOGY_LTE:
-      id = IDR_STATUSBAR_NETWORK_LTE;
+      id = IDR_AURA_UBER_TRAY_NETWORK_LTE;
       break;
     case NETWORK_TECHNOLOGY_LTE_ADVANCED:
-      id = IDR_STATUSBAR_NETWORK_LTE_ADVANCED;
+      id = IDR_AURA_UBER_TRAY_NETWORK_LTE_ADVANCED;
       break;
     case NETWORK_TECHNOLOGY_GSM:
-      id = IDR_STATUSBAR_NETWORK_GPRS;
+      id = IDR_AURA_UBER_TRAY_NETWORK_GPRS;
       break;
     case NETWORK_TECHNOLOGY_UNKNOWN:
       break;
@@ -467,7 +467,7 @@ void NetworkIcon::SetIcon(const Network* network) {
 
   switch (type_) {
     case TYPE_ETHERNET: {
-      icon_ = *rb.GetImageSkiaNamed(IDR_STATUSBAR_WIRED);
+      icon_ = *rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_WIRED);
       break;
     }
     case TYPE_WIFI: {
@@ -496,12 +496,12 @@ void NetworkIcon::SetIcon(const Network* network) {
       break;
     }
     case TYPE_VPN: {
-      icon_ = *rb.GetImageSkiaNamed(IDR_STATUSBAR_VPN);
+      icon_ = *rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_VPN);
       break;
     }
     default: {
       LOG(WARNING) << "Request for icon for unsupported type: " << type_;
-      icon_ = *rb.GetImageSkiaNamed(IDR_STATUSBAR_WIRED);
+      icon_ = *rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_WIRED);
       break;
     }
   }
@@ -520,13 +520,15 @@ void NetworkIcon::SetBadges(const Network* network) {
       const WifiNetwork* wifi = static_cast<const WifiNetwork*>(network);
       if (wifi->encrypted() && use_dark_icons) {
         bottom_right_badge_ = rb.GetImageSkiaNamed(
-            IDR_STATUSBAR_NETWORK_SECURE_DARK);
+            IDR_AURA_UBER_TRAY_NETWORK_SECURE_DARK);
       }
       break;
     }
     case TYPE_WIMAX: {
-      top_left_badge_ = rb.GetImageSkiaNamed(use_dark_icons ?
-          IDR_STATUSBAR_NETWORK_4G_DARK : IDR_STATUSBAR_NETWORK_4G_LIGHT);
+      top_left_badge_ = rb.GetImageSkiaNamed(
+          use_dark_icons ?
+          IDR_AURA_UBER_TRAY_NETWORK_4G_DARK :
+          IDR_AURA_UBER_TRAY_NETWORK_4G_LIGHT);
       break;
     }
     case TYPE_CELLULAR: {
@@ -536,8 +538,8 @@ void NetworkIcon::SetBadges(const Network* network) {
           !cros->IsCellularAlwaysInRoaming()) {
         // For cellular that always in roaming don't show roaming badge.
         bottom_right_badge_ = rb.GetImageSkiaNamed(use_dark_icons ?
-            IDR_STATUSBAR_NETWORK_ROAMING_DARK :
-            IDR_STATUSBAR_NETWORK_ROAMING_LIGHT);
+            IDR_AURA_UBER_TRAY_NETWORK_ROAMING_DARK :
+            IDR_AURA_UBER_TRAY_NETWORK_ROAMING_LIGHT);
       }
       if (!cellular->connecting()) {
         top_left_badge_ = BadgeForNetworkTechnology(cellular,
@@ -548,8 +550,10 @@ void NetworkIcon::SetBadges(const Network* network) {
     default:
       break;
   }
-  if (vpn_connected_ && network->type() != TYPE_VPN)
-    bottom_left_badge_ = rb.GetImageSkiaNamed(IDR_STATUSBAR_VPN_BADGE);
+  if (vpn_connected_ && network->type() != TYPE_VPN) {
+    bottom_left_badge_ = rb.GetImageSkiaNamed(
+        IDR_AURA_UBER_TRAY_NETWORK_VPN_BADGE);
+  }
 }
 
 void NetworkIcon::UpdateIcon(const Network* network) {
@@ -809,7 +813,7 @@ void NetworkMenuIcon::SetActiveNetworkIconAndText(const Network* network) {
   if (network->type() != TYPE_VPN &&
       cros->virtual_network() && cros->virtual_network()->connecting()) {
     const gfx::ImageSkia* vpn_badge =
-        rb.GetImageSkiaNamed(IDR_STATUSBAR_VPN_BADGE);
+        rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_VPN_BADGE);
     const double animation = GetAnimation();
     animating = true;
     // Even though this is the only place we use vpn_connecting_badge_,
@@ -922,7 +926,8 @@ const gfx::ImageSkia NetworkMenuIcon::GetImage(ImageType type,
       return gfx::ImageSkia();
     images = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         color == NetworkMenuIcon::COLOR_DARK ?
-        IDR_STATUSBAR_NETWORK_ARCS_DARK : IDR_STATUSBAR_NETWORK_ARCS_LIGHT);
+        IDR_AURA_UBER_TRAY_NETWORK_ARCS_DARK :
+        IDR_AURA_UBER_TRAY_NETWORK_ARCS_LIGHT);
     width = images->width();
     height = images->height() / kNumArcsImages;
   } else {
@@ -931,7 +936,8 @@ const gfx::ImageSkia NetworkMenuIcon::GetImage(ImageType type,
 
     images = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         color == NetworkMenuIcon::COLOR_DARK ?
-        IDR_STATUSBAR_NETWORK_BARS_DARK : IDR_STATUSBAR_NETWORK_BARS_LIGHT);
+        IDR_AURA_UBER_TRAY_NETWORK_BARS_DARK :
+        IDR_AURA_UBER_TRAY_NETWORK_BARS_LIGHT);
     width = images->width();
     height = images->height() / kNumBarsImages;
   }
@@ -952,7 +958,7 @@ const gfx::ImageSkia NetworkMenuIcon::GetConnectedImage(ImageType type,
 
 gfx::ImageSkia* NetworkMenuIcon::GetVirtualNetworkImage() {
   return ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_STATUSBAR_VPN);
+      IDR_AURA_UBER_TRAY_NETWORK_VPN);
 }
 
 int NetworkMenuIcon::NumImages(ImageType type) {
