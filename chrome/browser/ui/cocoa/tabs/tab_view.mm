@@ -48,7 +48,6 @@ const CGFloat kRapidCloseDist = 2.5;
 - (NSTimeInterval)timeElapsedSinceLastGlowUpdate;
 - (void)adjustGlowValue;
 - (NSBezierPath*)bezierPathForRect:(NSRect)rect;
-- (NSBezierPath*)topHighlightBezierPathForRect:(NSRect)rect;
 
 @end  // TabView(Private)
 
@@ -653,26 +652,6 @@ const CGFloat kRapidCloseDist = 2.5;
   [path lineToPoint:NSMakePoint(bottomRight.x + lineWidth, bottomRight.y)];
   [path lineToPoint:NSMakePoint(bottomRight.x + lineWidth,
                                 bottomRight.y - (2 * lineWidth))];
-  return path;
-}
-
-- (NSBezierPath*)topHighlightBezierPathForRect:(NSRect)rect {
-  // Outset by 0.5 in order to draw on pixels rather than on borders (which
-  // would cause blurry pixels). Subtract 1px of height to compensate, otherwise
-  // clipping will occur.
-  rect = NSInsetRect(rect, -0.5, -0.5);
-  rect.size.height -= 1.0;
-
-  NSPoint topRight =
-      NSMakePoint(NSMaxX(rect) - kInsetMultiplier * NSHeight(rect),
-                  NSMaxY(rect));
-  NSPoint topLeft =
-      NSMakePoint(NSMinX(rect)  + kInsetMultiplier * NSHeight(rect),
-                  NSMaxY(rect));
-
-  NSBezierPath* path = [NSBezierPath bezierPath];
-  [path moveToPoint:topLeft];
-  [path lineToPoint:topRight];
   return path;
 }
 
