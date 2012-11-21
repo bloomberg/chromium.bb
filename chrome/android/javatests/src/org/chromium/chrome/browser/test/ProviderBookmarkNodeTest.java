@@ -161,10 +161,7 @@ public class ProviderBookmarkNodeTest extends ChromiumTestShellTestBase {
         assertTrue(internalTestNodeHierarchyParceling(node));
     }
 
-    /**
-     * crbug.com/143360
-     */
-    @FlakyTest
+    @SmallTest
     @Feature({"Android-ContentProvider"})
     public void testInvalidHierarchy() throws InterruptedException {
         BookmarkNode root = new BookmarkNode(1, Type.FOLDER, "Bookmarks", null, null);
