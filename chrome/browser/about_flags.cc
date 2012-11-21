@@ -1004,6 +1004,12 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kAshEnableTabScrubbing),
   },
+  { "ash-enable-immersive-mode",
+    IDS_FLAGS_ENABLE_IMMERSIVE_MODE_NAME,
+    IDS_FLAGS_ENABLE_IMMERSIVE_MODE_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(ash::switches::kAshImmersive),
+  },
 #if defined(OS_LINUX)
   { "ash-enable-memory-monitor",
       IDS_FLAGS_ENABLE_MEMORY_MONITOR_NAME,

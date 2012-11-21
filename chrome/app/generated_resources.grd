@@ -6580,6 +6580,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_TAB_SCRUBBING_DESCRIPTION" desc="Title for the flag to enable advanced gestures.">
         Enables tab switching via ctrl + left drag.
       </message>
+      <message name="IDS_FLAGS_ENABLE_IMMERSIVE_MODE_NAME" desc="Title for the flag to enable immersive mode.">
+        Enable immersive windows
+      </message>
+      <message name="IDS_FLAGS_ENABLE_IMMERSIVE_MODE_DESCRIPTION" desc="Description for the flag to enable immersive mode.">
+        Enables an "immersive mode" for browser windows that gives more spaces to web content. Active it by maximizing a window then clicking on the button in the top right corner.
+      </message>
       <message name="IDS_FLAGS_ENABLE_MEMORY_MONITOR_NAME" desc="Title for the flag to enable advanced gestures.">
         Enable memory monitor
       </message>
@@ -6601,21 +6607,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED" desc="Generic 'Disabled' experiment choice option name. E.G. shown in multi value options in about:flags.">
         Disabled
-      </message>
-      <message name="IDS_FLAGS_AURA_WINDOW_MODE_NAME" desc="Title for flag to choose how windows are displayed.">
-        Window mode
-      </message>
-      <message name="IDS_FLAGS_AURA_WINDOW_MODE_DESCRIPTION" desc="Description for the flag to choose how windows are displayed.">
-        Compact mode shows a single maximized window, useful for low-resolution devices such as laptops. Managed mode automatically arranges windows.
-      </message>
-      <message name="IDS_FLAGS_AURA_WINDOW_MODE_AUTOMATIC" desc="Option name for automatic selection of window display mode.">
-        Automatic
-      </message>
-      <message name="IDS_FLAGS_AURA_WINDOW_MODE_COMPACT" desc="Option name for compact/low-resolution window display mode.">
-        Compact
-      </message>
-      <message name="IDS_FLAGS_AURA_WINDOW_MODE_MANAGED" desc="Option name for automatically managed window display mode.">
-        Managed
       </message>
       <message name="IDS_FLAGS_PER_TILE_PAINTING_NAME" desc="Title for the flag to enable per-tile painting">
         Per-tile Painting
