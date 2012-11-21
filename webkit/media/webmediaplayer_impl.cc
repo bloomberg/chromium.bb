@@ -152,7 +152,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       is_local_source_(false),
       supports_save_(true),
       decryptor_(message_loop_factory_->GetMessageLoop(
-                     media::MessageLoopFactory::kDecoder),
+                     media::MessageLoopFactory::kPipeline),
                  proxy_.get(),
                  client,
                  frame),

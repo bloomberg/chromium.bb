@@ -540,7 +540,8 @@ scoped_refptr<media::VideoDecoder> MediaStreamImpl::CreateVideoDecoder(
            << stream->label();
 
   return new RTCVideoDecoder(
-      message_loop_factory->GetMessageLoop(media::MessageLoopFactory::kDecoder),
+      message_loop_factory->GetMessageLoop(
+          media::MessageLoopFactory::kPipeline),
       base::MessageLoopProxy::current(),
       stream->video_tracks()->at(0));
 }

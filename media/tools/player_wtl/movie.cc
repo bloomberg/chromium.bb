@@ -78,11 +78,11 @@ bool Movie::Open(const wchar_t* file_path, VideoRendererBase* video_renderer) {
   collection->GetAudioDecoders()->push_back(new FFmpegAudioDecoder(
       base::Bind(&MessageLoopFactory::GetMessageLoop,
                  base::Unretained(message_loop_factory_.get()),
-                 media::MessageLoopFactory::kDecoder)));
+                 media::MessageLoopFactory::kPipeline)));
   collection->GetVideoDecoders()->push_back(new FFmpegVideoDecoder(
       base::Bind(&MessageLoopFactory::GetMessageLoop,
                  base::Unretained(message_loop_factory_.get()),
-                 media::MessageLoopFactory::kDecoder),
+                 media::MessageLoopFactory::kPipeline),
       NULL));
 
   // TODO(vrk): Re-enabled audio. (crbug.com/112159)

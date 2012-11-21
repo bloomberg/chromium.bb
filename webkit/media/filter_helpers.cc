@@ -35,13 +35,13 @@ static void AddDefaultDecodersToCollection(
       new media::FFmpegAudioDecoder(
           base::Bind(&media::MessageLoopFactory::GetMessageLoop,
                      base::Unretained(message_loop_factory),
-                     media::MessageLoopFactory::kDecoder));
+                     media::MessageLoopFactory::kPipeline));
 
   scoped_refptr<media::DecryptingAudioDecoder> decrypting_audio_decoder =
       new media::DecryptingAudioDecoder(
           base::Bind(&media::MessageLoopFactory::GetMessageLoop,
                      base::Unretained(message_loop_factory),
-                     media::MessageLoopFactory::kDecoder),
+                     media::MessageLoopFactory::kPipeline),
           base::Bind(&ProxyDecryptor::RequestDecryptorNotification,
                      base::Unretained(proxy_decryptor)));
 
@@ -52,7 +52,7 @@ static void AddDefaultDecodersToCollection(
       new media::DecryptingVideoDecoder(
           base::Bind(&media::MessageLoopFactory::GetMessageLoop,
                      base::Unretained(message_loop_factory),
-                     media::MessageLoopFactory::kDecoder),
+                     media::MessageLoopFactory::kPipeline),
           base::Bind(&ProxyDecryptor::RequestDecryptorNotification,
                      base::Unretained(proxy_decryptor)));
 
@@ -60,7 +60,7 @@ static void AddDefaultDecodersToCollection(
       new media::FFmpegVideoDecoder(
           base::Bind(&media::MessageLoopFactory::GetMessageLoop,
                      base::Unretained(message_loop_factory),
-                     media::MessageLoopFactory::kDecoder),
+                     media::MessageLoopFactory::kPipeline),
           proxy_decryptor);
 
   // TODO(xhwang): Ideally we should have decrypting video decoder after
