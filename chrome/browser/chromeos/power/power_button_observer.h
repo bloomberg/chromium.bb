@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/root_power_manager_observer.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -17,7 +17,7 @@ namespace chromeos {
 // Listens for power button, login, and screen lock events and passes them to
 // the Aura shell's PowerButtonController class.
 class PowerButtonObserver : public content::NotificationObserver,
-                            public PowerManagerClient::Observer,
+                            public RootPowerManagerObserver,
                             public SessionManagerClient::Observer {
  public:
   // This class registers/unregisters itself as an observer in ctor/dtor.
@@ -30,11 +30,11 @@ class PowerButtonObserver : public content::NotificationObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // PowerManagerClient::Observer implementation.
-  virtual void PowerButtonStateChanged(
+  // RootPowerManagerObserver implementation:
+  virtual void OnPowerButtonEvent(
       bool down, const base::TimeTicks& timestamp) OVERRIDE;
 
-  // SessionManagerClient::Observer implementation.
+  // SessionManagerClient::Observer implementation:
   virtual void LockScreen() OVERRIDE;
 
   content::NotificationRegistrar registrar_;

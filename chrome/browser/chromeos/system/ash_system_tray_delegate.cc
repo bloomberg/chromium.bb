@@ -987,8 +987,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         GetUserLoginStatus());
   }
 
-  // TODO(sad): Override more from PowerManagerClient::Observer here (e.g.
-  // PowerButtonStateChanged etc.).
+  // TODO(sad): Override more from PowerManagerClient::Observer here.
 
   // Overridden from NetworkMenuIcon::Delegate.
   virtual void NetworkMenuIconChanged() OVERRIDE {

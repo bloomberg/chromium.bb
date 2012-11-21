@@ -169,6 +169,12 @@ PowerManagerClient* MockDBusThreadManagerWithoutGMock::GetPowerManagerClient() {
   return NULL;
 }
 
+RootPowerManagerClient*
+MockDBusThreadManagerWithoutGMock::GetRootPowerManagerClient() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 SessionManagerClient*
     MockDBusThreadManagerWithoutGMock::GetSessionManagerClient() {
   NOTIMPLEMENTED();

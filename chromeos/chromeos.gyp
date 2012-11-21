@@ -16,6 +16,7 @@
         '../dbus/dbus.gyp:dbus',
         '../net/net.gyp:net',
         '../third_party/libxml/libxml.gyp:libxml',
+        'power_manager_proto',
         'power_state_control_proto',
         'power_supply_properties_proto',
         'video_activity_update_proto',
@@ -110,6 +111,9 @@
         'dbus/power_manager_client.h',
         'dbus/power_supply_status.cc',
         'dbus/power_supply_status.h',
+        'dbus/root_power_manager_client.cc',
+        'dbus/root_power_manager_client.h',
+        'dbus/root_power_manager_observer.h',
         'dbus/session_manager_client.cc',
         'dbus/session_manager_client.h',
         'dbus/speech_synthesizer_client.cc',
@@ -210,6 +214,8 @@
         'dbus/mock_permission_broker_client.cc',
         'dbus/mock_power_manager_client.cc',
         'dbus/mock_power_manager_client.h',
+        'dbus/mock_root_power_manager_client.cc',
+        'dbus/mock_root_power_manager_client.h',
         'dbus/mock_session_manager_client.cc',
         'dbus/mock_session_manager_client.h',
         'dbus/mock_sms_client.cc',
@@ -308,6 +314,20 @@
           },
         ],
       ],
+    },
+    {
+      # Protobuf compiler/generator for power-manager related protocol buffers.
+      # TODO(derat): Remove other protocol buffers in favor of these.
+      'target_name': 'power_manager_proto',
+      'type': 'static_library',
+      'sources': [
+        '../third_party/cros_system_api/dbus/power_manager/input_event.proto',
+      ],
+      'variables': {
+        'proto_in_dir': '../third_party/cros_system_api/dbus/power_manager',
+        'proto_out_dir': 'chromeos/dbus/power_manager',
+      },
+      'includes': ['../build/protoc.gypi'],
     },
     {
       # Protobuf compiler / generator for the PowerSupplyProperties protocol

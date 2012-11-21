@@ -27,6 +27,7 @@
 #include "chromeos/dbus/mock_modem_messaging_client.h"
 #include "chromeos/dbus/mock_permission_broker_client.h"
 #include "chromeos/dbus/mock_power_manager_client.h"
+#include "chromeos/dbus/mock_root_power_manager_client.h"
 #include "chromeos/dbus/mock_session_manager_client.h"
 #include "chromeos/dbus/mock_sms_client.h"
 #include "chromeos/dbus/mock_speech_synthesizer_client.h"
@@ -62,6 +63,7 @@ MockDBusThreadManager::MockDBusThreadManager()
       mock_modem_messaging_client_(new MockModemMessagingClient),
       mock_permission_broker_client_(new MockPermissionBrokerClient),
       mock_power_manager_client_(new MockPowerManagerClient),
+      mock_root_power_manager_client_(new MockRootPowerManagerClient),
       mock_session_manager_client_(new MockSessionManagerClient),
       mock_sms_client_(new MockSMSClient),
       mock_speech_synthesizer_client_(new MockSpeechSynthesizerClient),
@@ -108,6 +110,8 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_modem_messaging_client()));
   EXPECT_CALL(*this, GetPowerManagerClient())
       .WillRepeatedly(Return(mock_power_manager_client_.get()));
+  EXPECT_CALL(*this, GetRootPowerManagerClient())
+      .WillRepeatedly(Return(mock_root_power_manager_client_.get()));
   EXPECT_CALL(*this, GetSessionManagerClient())
       .WillRepeatedly(Return(mock_session_manager_client_.get()));
   EXPECT_CALL(*this, GetSMSClient())
@@ -124,6 +128,10 @@ MockDBusThreadManager::MockDBusThreadManager()
   EXPECT_CALL(*mock_power_manager_client_.get(), AddObserver(_))
       .Times(AnyNumber());
   EXPECT_CALL(*mock_power_manager_client_.get(), RemoveObserver(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_root_power_manager_client_.get(), AddObserver(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_root_power_manager_client_.get(), RemoveObserver(_))
       .Times(AnyNumber());
   EXPECT_CALL(*mock_session_manager_client_.get(), AddObserver(_))
       .Times(AnyNumber());
