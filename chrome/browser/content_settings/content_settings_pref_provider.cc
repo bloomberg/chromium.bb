@@ -248,7 +248,7 @@ void PrefProvider::UpdatePref(
   // send out notifications (by |~DictionaryPrefUpdate|).
   AssertLockNotHeld();
 
-  AutoReset<bool> auto_reset(&updating_preferences_, true);
+  base::AutoReset<bool> auto_reset(&updating_preferences_, true);
   {
     DictionaryPrefUpdate update(prefs_,
                                 prefs::kContentSettingsPatternPairs);
@@ -268,7 +268,7 @@ void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
   // not held when the notifications are sent. Also, |auto_reset| must be still
   // valid when the notifications are sent, so that |Observe| skips the
   // notification.
-  AutoReset<bool> auto_reset(&updating_preferences_, true);
+  base::AutoReset<bool> auto_reset(&updating_preferences_, true);
   DictionaryPrefUpdate update(prefs_, prefs::kContentSettingsPatternPairs);
   base::AutoLock auto_lock(lock_);
 

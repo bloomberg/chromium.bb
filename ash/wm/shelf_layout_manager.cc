@@ -230,7 +230,7 @@ gfx::Rect ShelfLayoutManager::GetIdealBounds() {
 }
 
 void ShelfLayoutManager::LayoutShelf() {
-  AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
+  base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
   StopAnimating();
   TargetBounds target_bounds;
   CalculateTargetBounds(state_, &target_bounds);

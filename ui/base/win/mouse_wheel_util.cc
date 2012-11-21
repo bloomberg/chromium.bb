@@ -104,7 +104,7 @@ bool RerouteMouseWheel(HWND window, WPARAM w_param, LPARAM l_param) {
 
     // window_under_wheel is a Chrome window.  If allowed, redirect.
     if (IsCompatibleWithMouseWheelRedirection(window_under_wheel)) {
-      AutoReset<bool> auto_reset_recursion_break(&recursion_break, true);
+      base::AutoReset<bool> auto_reset_recursion_break(&recursion_break, true);
       SendMessage(window_under_wheel, WM_MOUSEWHEEL, w_param, l_param);
       return true;
     }

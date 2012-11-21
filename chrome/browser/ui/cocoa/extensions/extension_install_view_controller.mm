@@ -376,7 +376,7 @@ void DrawBulletInFrame(NSRect frame) {
   // Prevent reentrancy due to the frameOfCellAtColumn:row: call below.
   if (isComputingRowHeight_)
     return 1;
-  AutoReset<BOOL> reset(&isComputingRowHeight_, YES);
+  base::AutoReset<BOOL> reset(&isComputingRowHeight_, YES);
 
   NSCell* cell = [[[outlineView_ tableColumns] objectAtIndex:0] dataCell];
   [cell setStringValue:[item objectForKey:kTitleKey]];

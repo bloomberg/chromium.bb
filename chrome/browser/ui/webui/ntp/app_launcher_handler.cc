@@ -332,7 +332,7 @@ void AppLauncherHandler::Observe(int type,
 
 void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   // CreateAppInfo and ClearOrdinals can change the extension prefs.
-  AutoReset<bool> auto_reset(&ignore_changes_, true);
+  base::AutoReset<bool> auto_reset(&ignore_changes_, true);
 
   ListValue* list = new ListValue();
 
@@ -381,7 +381,7 @@ DictionaryValue* AppLauncherHandler::GetAppInfo(const Extension* extension) {
       extension_service_->app_notification_manager();
   DictionaryValue* app_info = new DictionaryValue();
   // CreateAppInfo can change the extension prefs.
-  AutoReset<bool> auto_reset(&ignore_changes_, true);
+  base::AutoReset<bool> auto_reset(&ignore_changes_, true);
   CreateAppInfo(extension,
                 notification_manager->GetLast(extension->id()),
                 extension_service_,
@@ -541,7 +541,7 @@ void AppLauncherHandler::HandleSetLaunchType(const ListValue* args) {
     return;
 
   // Don't update the page; it already knows about the launch type change.
-  AutoReset<bool> auto_reset(&ignore_changes_, true);
+  base::AutoReset<bool> auto_reset(&ignore_changes_, true);
 
   extension_service_->extension_prefs()->SetLaunchType(
       extension_id,
@@ -571,7 +571,7 @@ void AppLauncherHandler::HandleUninstallApp(const ListValue* args) {
 
   bool dont_confirm = false;
   if (args->GetBoolean(1, &dont_confirm) && dont_confirm) {
-    AutoReset<bool> auto_reset(&ignore_changes_, true);
+    base::AutoReset<bool> auto_reset(&ignore_changes_, true);
     ExtensionUninstallAccepted();
   } else {
     GetExtensionUninstallDialog()->ConfirmUninstall(extension);
@@ -615,7 +615,7 @@ void AppLauncherHandler::HandleReorderApps(const ListValue* args) {
   }
 
   // Don't update the page; it already knows the apps have been reordered.
-  AutoReset<bool> auto_reset(&ignore_changes_, true);
+  base::AutoReset<bool> auto_reset(&ignore_changes_, true);
   extension_service_->extension_prefs()->SetAppDraggedByUser(dragged_app_id);
   extension_service_->OnExtensionMoved(dragged_app_id,
                                        predecessor_to_moved_ext,
@@ -635,7 +635,7 @@ void AppLauncherHandler::HandleSetPageIndex(const ListValue* args) {
           static_cast<size_t>(page_index));
 
   // Don't update the page; it already knows the apps have been reordered.
-  AutoReset<bool> auto_reset(&ignore_changes_, true);
+  base::AutoReset<bool> auto_reset(&ignore_changes_, true);
   extension_sorting->SetPageOrdinal(extension_id, page_ordinal);
 }
 
@@ -646,7 +646,7 @@ void AppLauncherHandler::HandleSaveAppPageName(const ListValue* args) {
   double page_index;
   CHECK(args->GetDouble(1, &page_index));
 
-  AutoReset<bool> auto_reset(&ignore_changes_, true);
+  base::AutoReset<bool> auto_reset(&ignore_changes_, true);
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   ListPrefUpdate update(prefs, prefs::kNtpAppPageNames);
   ListValue* list = update.Get();

@@ -70,7 +70,7 @@ bool FatalMessageHandler(int severity, const char* file, int line,
   if (guarded)
     return false;
 
-  AutoReset<bool> guard(&guarded, true);
+  base::AutoReset<bool> guard(&guarded, true);
 
   // Only log last path component.  This matches logging.cc.
   if (file) {

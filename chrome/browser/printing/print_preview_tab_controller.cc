@@ -414,7 +414,7 @@ void PrintPreviewTabController::OnNavEntryCommitted(
 
 TabContents* PrintPreviewTabController::CreatePrintPreviewTab(
     TabContents* initiator_tab) {
-  AutoReset<bool> auto_reset(&is_creating_print_preview_tab_, true);
+  base::AutoReset<bool> auto_reset(&is_creating_print_preview_tab_, true);
   WebContents* web_contents = initiator_tab->web_contents();
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());

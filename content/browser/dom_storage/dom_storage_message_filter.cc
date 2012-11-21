@@ -121,7 +121,7 @@ void DOMStorageMessageFilter::OnSetItem(
     const string16& value, const GURL& page_url) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(0, connection_dispatching_message_for_);
-  AutoReset<int> auto_reset(&connection_dispatching_message_for_,
+  base::AutoReset<int> auto_reset(&connection_dispatching_message_for_,
                             connection_id);
   NullableString16 not_used;
   bool success = host_->SetAreaItem(connection_id, key, value,
@@ -134,7 +134,7 @@ void DOMStorageMessageFilter::OnRemoveItem(
     const GURL& page_url) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(0, connection_dispatching_message_for_);
-  AutoReset<int> auto_reset(&connection_dispatching_message_for_,
+  base::AutoReset<int> auto_reset(&connection_dispatching_message_for_,
                             connection_id);
   string16 not_used;
   host_->RemoveAreaItem(connection_id, key, page_url, &not_used);
@@ -145,7 +145,7 @@ void DOMStorageMessageFilter::OnClear(
     int connection_id, const GURL& page_url) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(0, connection_dispatching_message_for_);
-  AutoReset<int> auto_reset(&connection_dispatching_message_for_,
+  base::AutoReset<int> auto_reset(&connection_dispatching_message_for_,
                             connection_id);
   host_->ClearArea(connection_id, page_url);
   Send(new DOMStorageMsg_AsyncOperationComplete(true));

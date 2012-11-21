@@ -384,7 +384,7 @@ void WorkspaceManager::MoveWorkspaceToPendingOrDelete(
   if (workspace == active_workspace_)
     SelectNextWorkspace(reason);
 
-  AutoReset<bool> setter(&in_move_, true);
+  base::AutoReset<bool> setter(&in_move_, true);
 
   MoveChildrenToDesktop(workspace->window(), stack_beneath);
 
@@ -470,7 +470,7 @@ void WorkspaceManager::FadeDesktop(aura::Window* window,
       ui::LayerAnimator::disable_animations_for_test())
     return;
 
-  AutoReset<bool> reseter(&creating_fade_, true);
+  base::AutoReset<bool> reseter(&creating_fade_, true);
   DesktopBackgroundFadeController::Direction direction;
   aura::Window* parent = NULL;
   aura::Window* stack_above = NULL;
@@ -674,7 +674,7 @@ void WorkspaceManager::OnWorkspaceWindowShowStateChanged(
     if (max_count == 0) {
       if (workspace != desktop_workspace()) {
         {
-          AutoReset<bool> setter(&in_move_, true);
+          base::AutoReset<bool> setter(&in_move_, true);
           ReparentWindow(child, desktop_workspace()->window(), NULL);
         }
         DCHECK(!is_active || old_layer);

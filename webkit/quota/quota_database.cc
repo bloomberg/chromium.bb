@@ -579,7 +579,7 @@ bool QuotaDatabase::ResetSchema() {
   if (is_recreating_)
     return false;
 
-  AutoReset<bool> auto_reset(&is_recreating_, true);
+  base::AutoReset<bool> auto_reset(&is_recreating_, true);
   return LazyOpen(true);
 }
 

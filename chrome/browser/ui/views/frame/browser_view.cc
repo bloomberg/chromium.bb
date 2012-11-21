@@ -816,7 +816,7 @@ StatusBubble* BrowserView::GetStatusBubble() {
 
 namespace {
   // Only used by ToolbarSizeChanged() below, but placed here because template
-  // arguments (to AutoReset<>) must have external linkage.
+  // arguments (to base::AutoReset<>) must have external linkage.
   enum CallState { NORMAL, REENTRANT, REENTRANT_FORCE_FAST_RESIZE };
 }
 
@@ -1028,7 +1028,7 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
       ConvertPointToTarget(infobar_container_, this, &infobar_top);
       top_arrow_height = infobar_top.y() - icon_bottom.y();
     }
-    AutoReset<CallState> resetter(&call_state,
+    base::AutoReset<CallState> resetter(&call_state,
         is_animating ? REENTRANT_FORCE_FAST_RESIZE : REENTRANT);
     infobar_container_->SetMaxTopArrowHeight(top_arrow_height);
   }

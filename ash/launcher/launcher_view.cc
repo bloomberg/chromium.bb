@@ -1065,7 +1065,7 @@ void LauncherView::ShowContextMenuForView(views::View* source,
       source->GetWidget()->GetNativeView()->GetRootWindow()));
   if (!menu_model.get())
     return;
-  AutoReset<LauncherID> reseter(
+  base::AutoReset<LauncherID> reseter(
       &context_menu_id_,
       view_index == -1 ? 0 : model_->items()[view_index].id);
   views::MenuModelAdapter menu_model_adapter(menu_model.get());

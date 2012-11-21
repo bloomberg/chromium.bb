@@ -372,8 +372,8 @@ void WebContentsViewAura::PrepareOverscrollWindow() {
   // callback, and that tries to reset |overscroll_window_| again, causing a
   // double-free. So use a temporary variable here.
   if (overscroll_window_.get()) {
-    AutoReset<OverscrollMode> reset_state(&current_overscroll_gesture_,
-                                          current_overscroll_gesture_);
+    base::AutoReset<OverscrollMode> reset_state(&current_overscroll_gesture_,
+                                                current_overscroll_gesture_);
     scoped_ptr<aura::Window> reset_window(overscroll_window_.release());
   }
 

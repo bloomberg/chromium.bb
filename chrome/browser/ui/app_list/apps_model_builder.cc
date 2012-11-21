@@ -108,7 +108,7 @@ void AppsModelBuilder::ResortApps() {
 
   std::sort(apps.begin(), apps.end(), &AppPrecedes);
 
-  AutoReset<bool> auto_reset(&ignore_changes_, true);
+  base::AutoReset<bool> auto_reset(&ignore_changes_, true);
 
   // Adjusts the order of apps as needed in |model_| based on |apps|.
   for (size_t i = 0; i < apps.size(); ++i) {

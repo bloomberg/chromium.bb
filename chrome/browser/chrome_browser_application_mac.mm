@@ -518,7 +518,7 @@ void SwizzleInit() {
 }
 
 - (void)_cycleWindowsReversed:(BOOL)arg1 {
-  AutoReset<BOOL> pin(&cyclingWindows_, YES);
+  base::AutoReset<BOOL> pin(&cyclingWindows_, YES);
   [super _cycleWindowsReversed:arg1];
 }
 

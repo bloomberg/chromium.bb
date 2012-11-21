@@ -655,7 +655,7 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
 
   // Set |print_for_preview_| flag and autoreset it to back to original
   // on return.
-  AutoReset<bool> set_printing_flag(&print_for_preview_, true);
+  base::AutoReset<bool> set_printing_flag(&print_for_preview_, true);
 
   WebKit::WebFrame* pdf_frame = pdf_element.document().frame();
   if (!UpdatePrintSettings(pdf_frame, pdf_element, job_settings)) {

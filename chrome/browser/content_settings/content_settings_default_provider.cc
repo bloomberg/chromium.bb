@@ -188,7 +188,7 @@ bool DefaultProvider::SetWebsiteSetting(
   // properly if we don't pass on the ownership.
   scoped_ptr<base::Value> value(in_value);
   {
-    AutoReset<bool> auto_reset(&updating_preferences_, true);
+    base::AutoReset<bool> auto_reset(&updating_preferences_, true);
 
     // |DefaultProvider| should not send any notifications when holding
     // |lock_|. |DictionaryPrefUpdate| destructor and

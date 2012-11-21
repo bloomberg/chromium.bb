@@ -62,14 +62,14 @@ class MockDownloadsDOMHandler : public DownloadsDOMHandler {
   void WaitForDownloadsList() {
     if (downloads_list_.get())
       return;
-    AutoReset<bool> reset_waiting(&waiting_list_, true);
+    base::AutoReset<bool> reset_waiting(&waiting_list_, true);
     content::RunMessageLoop();
   }
 
   void WaitForDownloadUpdated() {
     if (download_updated_.get())
       return;
-    AutoReset<bool> reset_waiting(&waiting_updated_, true);
+    base::AutoReset<bool> reset_waiting(&waiting_updated_, true);
     content::RunMessageLoop();
   }
 

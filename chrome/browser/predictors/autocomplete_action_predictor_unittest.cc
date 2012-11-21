@@ -195,7 +195,7 @@ class AutocompleteActionPredictorTest : public testing::Test {
     // Reset the predictor's |initialized_| flag for the life of this call,
     // since outside of testing this function is only supposed to be reached
     // before initialization is completed.
-    AutoReset<bool> initialized_reset(&predictor_->initialized_, false);
+    base::AutoReset<bool> initialized_reset(&predictor_->initialized_, false);
     predictor_->DeleteOldIdsFromCaches(url_db, id_list);
   }
 

@@ -51,7 +51,7 @@ void AutocompleteClassifier::Classify(const string16& text,
                                       AutocompleteMatch* match,
                                       GURL* alternate_nav_url) {
   DCHECK(!inside_classify_);
-  AutoReset<bool> reset(&inside_classify_, true);
+  base::AutoReset<bool> reset(&inside_classify_, true);
   controller_->Start(text, desired_tld, true, prefer_keyword,
                      allow_exact_keyword_match, AutocompleteInput::BEST_MATCH);
   DCHECK(controller_->done());

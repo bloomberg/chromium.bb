@@ -248,7 +248,7 @@ void PanelLayoutManager::Relayout() {
 
   if (in_layout_)
     return;
-  AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
+  base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
 
   int launcher_top = launcher_->widget()->GetWindowBoundsInScreen().y();
   aura::Window* active_panel = NULL;

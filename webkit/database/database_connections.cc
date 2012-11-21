@@ -131,7 +131,7 @@ void DatabaseConnectionsWrapper::WaitForAllDatabasesToClose() {
   // We assume that new databases won't be open while we're waiting.
   DCHECK(main_thread_->BelongsToCurrentThread());
   if (HasOpenConnections()) {
-    AutoReset<bool> auto_reset(&waiting_for_dbs_to_close_, true);
+    base::AutoReset<bool> auto_reset(&waiting_for_dbs_to_close_, true);
     MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
     MessageLoop::current()->Run();
   }

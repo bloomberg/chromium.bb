@@ -564,7 +564,7 @@ bool SynchronousDAOperation(const char* name,
   // avoid spinning the run loop at all.
   if (!callback_data->callback_called) {
     const CFTimeInterval kOperationTimeoutSeconds = 15;
-    AutoReset<bool> running_reset(&callback_data->run_loop_running, true);
+    base::AutoReset<bool> running_reset(&callback_data->run_loop_running, true);
     CFRunLoopRunInMode(kCFRunLoopDefaultMode, kOperationTimeoutSeconds, FALSE);
   }
 

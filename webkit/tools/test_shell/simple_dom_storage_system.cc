@@ -161,7 +161,7 @@ void SimpleDomStorageSystem::AreaImpl::setItem(
   if (!Host())
     return;
 
-  AutoReset<AreaImpl*> auto_reset(&parent_->area_being_processed_, this);
+  base::AutoReset<AreaImpl*> auto_reset(&parent_->area_being_processed_, this);
   NullableString16 unused;
   if (!Host()->SetAreaItem(connection_id_, key, newValue, pageUrl,
                            &unused))
@@ -175,7 +175,7 @@ void SimpleDomStorageSystem::AreaImpl::removeItem(
   if (!Host())
     return;
 
-  AutoReset<AreaImpl*> auto_reset(&parent_->area_being_processed_, this);
+  base::AutoReset<AreaImpl*> auto_reset(&parent_->area_being_processed_, this);
   string16 notused;
   Host()->RemoveAreaItem(connection_id_, key, pageUrl, &notused);
 }
@@ -184,7 +184,7 @@ void SimpleDomStorageSystem::AreaImpl::clear(const WebURL& pageUrl) {
   if (!Host())
     return;
 
-  AutoReset<AreaImpl*> auto_reset(&parent_->area_being_processed_, this);
+  base::AutoReset<AreaImpl*> auto_reset(&parent_->area_being_processed_, this);
   Host()->ClearArea(connection_id_, pageUrl);
 }
 

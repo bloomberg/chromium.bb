@@ -371,7 +371,7 @@ void TaskManagerGtk::OnItemsChanged(int start, int length) {
 }
 
 void TaskManagerGtk::OnItemsAdded(int start, int length) {
-  AutoReset<bool> autoreset(&ignore_selection_changed_, true);
+  base::AutoReset<bool> autoreset(&ignore_selection_changed_, true);
 
   GtkTreeIter iter;
   if (start == 0) {
@@ -397,7 +397,7 @@ void TaskManagerGtk::OnItemsAdded(int start, int length) {
 
 void TaskManagerGtk::OnItemsRemoved(int start, int length) {
   {
-    AutoReset<bool> autoreset(&ignore_selection_changed_, true);
+    base::AutoReset<bool> autoreset(&ignore_selection_changed_, true);
 
     GtkTreeIter iter;
     gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(process_list_), &iter,
@@ -966,7 +966,7 @@ void TaskManagerGtk::OnTreeViewRealize(GtkTreeView* treeview) {
 void TaskManagerGtk::OnSelectionChanged(GtkTreeSelection* selection) {
   if (ignore_selection_changed_)
     return;
-  AutoReset<bool> autoreset(&ignore_selection_changed_, true);
+  base::AutoReset<bool> autoreset(&ignore_selection_changed_, true);
 
   // The set of groups that should be selected.
   std::set<TaskManagerModel::GroupRange> ranges;

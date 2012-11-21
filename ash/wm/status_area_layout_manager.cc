@@ -72,7 +72,7 @@ void StatusAreaLayoutManager::LayoutStatusArea() {
   if (shelf_->in_layout())
     return;
 
-  AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
+  base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
   shelf_->LayoutShelf();
 }
 

@@ -597,7 +597,7 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
 }
 
 - (void)createNewFolders {
-  AutoReset<BOOL> creatingNewFoldersSetter(&creatingNewFolders_, YES);
+  base::AutoReset<BOOL> creatingNewFoldersSetter(&creatingNewFolders_, YES);
   // Scan the tree looking for nodes marked 'newFolder' and create those nodes.
   NSArray* folderTreeArray = [self folderTreeArray];
   for (BookmarkFolderInfo *folderInfo in folderTreeArray) {

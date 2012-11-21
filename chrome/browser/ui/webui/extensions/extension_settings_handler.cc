@@ -697,7 +697,8 @@ void ExtensionSettingsHandler::HandleEnableIncognitoMessage(
   // notification for this case.
   //
   // Bug: http://crbug.com/41384
-  AutoReset<bool> auto_reset_ignore_notifications(&ignore_notifications_, true);
+  base::AutoReset<bool> auto_reset_ignore_notifications(
+      &ignore_notifications_, true);
   extension_service_->SetIsIncognitoEnabled(extension->id(),
                                             enable_str == "true");
 }

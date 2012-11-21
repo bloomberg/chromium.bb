@@ -316,7 +316,7 @@ syncer::SyncError PrefModelAssociator::ProcessSyncChanges(
                     PREFERENCES);
     return error;
   }
-  AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
+  base::AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
   syncer::SyncChangeList::const_iterator iter;
   for (iter = change_list.begin(); iter != change_list.end(); ++iter) {
     DCHECK_EQ(PREFERENCES, iter->sync_data().GetDataType());
@@ -424,7 +424,7 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
     return;
   }
 
-  AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
+  base::AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
 
   if (synced_preferences_.count(name) == 0) {
     // Not in synced_preferences_ means no synced data. InitPrefAndAssociate(..)

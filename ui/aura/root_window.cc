@@ -625,19 +625,19 @@ void RootWindow::HandleMouseMoved(const ui::MouseEvent& event, Window* target) {
 }
 
 bool RootWindow::ProcessMouseEvent(Window* target, ui::MouseEvent* event) {
-  AutoReset<Window*> reset(&event_dispatch_target_, target);
+  base::AutoReset<Window*> reset(&event_dispatch_target_, target);
   return ProcessEvent(target, event) != ui::ER_UNHANDLED;
 }
 
 bool RootWindow::ProcessKeyEvent(Window* target, ui::KeyEvent* event) {
   if (!target)
     target = this;
-  AutoReset<Window*> reset(&event_dispatch_target_, target);
+  base::AutoReset<Window*> reset(&event_dispatch_target_, target);
   return ProcessEvent(target, event) != ui::ER_UNHANDLED;
 }
 
 bool RootWindow::ProcessScrollEvent(Window* target, ui::ScrollEvent* event) {
-  AutoReset<Window*> reset(&event_dispatch_target_, target);
+  base::AutoReset<Window*> reset(&event_dispatch_target_, target);
   return ProcessEvent(target, event) != ui::ER_UNHANDLED;
 }
 
@@ -645,7 +645,7 @@ ui::EventResult RootWindow::ProcessTouchEvent(Window* target,
                                               ui::TouchEvent* event) {
   if (!target)
     target = this;
-  AutoReset<Window*> reset(&event_dispatch_target_, target);
+  base::AutoReset<Window*> reset(&event_dispatch_target_, target);
   return static_cast<ui::EventResult>(ProcessEvent(target, event));
 }
 
@@ -653,7 +653,7 @@ ui::EventResult RootWindow::ProcessGestureEvent(Window* target,
                                                 ui::GestureEvent* event) {
   if (!target)
     target = this;
-  AutoReset<Window*> reset(&event_dispatch_target_, target);
+  base::AutoReset<Window*> reset(&event_dispatch_target_, target);
   return static_cast<ui::EventResult>(ProcessEvent(target, event));
 }
 
@@ -971,7 +971,7 @@ bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
       ui::EF_LEFT_MOUSE_BUTTON |
       ui::EF_MIDDLE_MOUSE_BUTTON |
       ui::EF_RIGHT_MOUSE_BUTTON;
-  AutoReset<Window*> reset(&mouse_event_dispatch_target_, target);
+  base::AutoReset<Window*> reset(&mouse_event_dispatch_target_, target);
   SetLastMouseLocation(this, event->location());
   synthesize_mouse_move_ = false;
   switch (event->type()) {

@@ -747,7 +747,7 @@ bool SyncSchedulerImpl::DoSyncSessionJob(scoped_ptr<SyncSessionJob> job) {
         session_context_->routing_info(), session_context_->workers());
   }
 
-  AutoReset<bool> protector(&no_scheduling_allowed_, true);
+  base::AutoReset<bool> protector(&no_scheduling_allowed_, true);
   JobProcessDecision decision = DecideOnJob(*job);
   SDVLOG(2) << "Should run "
             << SyncSessionJob::GetPurposeString(job->purpose())
@@ -816,7 +816,7 @@ bool SyncSchedulerImpl::FinishSyncSessionJob(scoped_ptr<SyncSessionJob> job,
   // Let job know that we're through syncing (calling SyncShare) at this point.
   bool succeeded = false;
   {
-    AutoReset<bool> protector(&no_scheduling_allowed_, true);
+    base::AutoReset<bool> protector(&no_scheduling_allowed_, true);
     succeeded = job->Finish(exited_prematurely);
   }
 

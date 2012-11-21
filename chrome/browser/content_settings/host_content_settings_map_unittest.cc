@@ -724,7 +724,7 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeAndPunycode) {
 TEST_F(HostContentSettingsMapTest, ResourceIdentifier) {
   // This feature is currently behind a flag.
   CommandLine* cmd = CommandLine::ForCurrentProcess();
-  AutoReset<CommandLine> auto_reset(cmd, *cmd);
+  base::AutoReset<CommandLine> auto_reset(cmd, *cmd);
   cmd->AppendSwitch(switches::kEnableResourceContentSettings);
 
   TestingProfile profile;
@@ -769,7 +769,7 @@ TEST_F(HostContentSettingsMapTest, ResourceIdentifier) {
 TEST_F(HostContentSettingsMapTest, ResourceIdentifierPrefs) {
   // This feature is currently behind a flag.
   CommandLine* cmd = CommandLine::ForCurrentProcess();
-  AutoReset<CommandLine> auto_reset(cmd, *cmd);
+  base::AutoReset<CommandLine> auto_reset(cmd, *cmd);
   cmd->AppendSwitch(switches::kEnableResourceContentSettings);
 
   TestingProfile profile;

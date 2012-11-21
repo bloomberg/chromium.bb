@@ -227,7 +227,7 @@ void NPChannelBase::RemoveRoute(int route_id) {
   DCHECK(non_npobject_count_ >= 0);
 
   if (!non_npobject_count_) {
-    AutoReset<bool> auto_reset_in_remove_route(&in_remove_route_, true);
+    base::AutoReset<bool> auto_reset_in_remove_route(&in_remove_route_, true);
     for (ListenerMap::iterator npobj_iter = npobject_listeners_.begin();
          npobj_iter != npobject_listeners_.end(); ++npobj_iter) {
       if (npobj_iter->second) {

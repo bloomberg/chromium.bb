@@ -1969,7 +1969,8 @@ LRESULT OmniboxViewWin::OnSetText(const wchar_t* text) {
   // We wouldn't need to do this update anyway, because either we're in the
   // middle of updating the omnibox already or the caller of SetWindowText()
   // is going to update the omnibox next.
-  AutoReset<bool> auto_reset_ignore_ime_messages(&ignore_ime_messages_, true);
+  base::AutoReset<bool> auto_reset_ignore_ime_messages(
+      &ignore_ime_messages_, true);
   return DefWindowProc(WM_SETTEXT, 0, reinterpret_cast<LPARAM>(text));
 }
 
@@ -2614,7 +2615,7 @@ void OmniboxViewWin::StartDragIfNecessary(const CPoint& point) {
 
   scoped_refptr<ui::DragSource> drag_source(new ui::DragSource);
   DWORD dropped_mode;
-  AutoReset<bool> auto_reset_in_drag(&in_drag_, true);
+  base::AutoReset<bool> auto_reset_in_drag(&in_drag_, true);
   if (DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data),
                  drag_source, supported_modes, &dropped_mode) ==
           DRAGDROP_S_DROP) {

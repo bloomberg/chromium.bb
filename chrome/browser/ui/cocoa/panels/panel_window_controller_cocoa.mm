@@ -823,7 +823,7 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
 - (void)activate {
   // Activate the window. -|windowDidBecomeKey:| will be called when
   // window becomes active.
-  AutoReset<BOOL> pin(&activationRequestedByPanel_, true);
+  base::AutoReset<BOOL> pin(&activationRequestedByPanel_, true);
   [BrowserWindowUtils activateWindowForController:self];
 }
 

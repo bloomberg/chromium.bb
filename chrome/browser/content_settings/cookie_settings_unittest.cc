@@ -66,7 +66,7 @@ TEST_F(CookieSettingsTest, CookiesBlockThirdParty) {
       kBlockedSite, kFirstPartySite));
 
   CommandLine* cmd = CommandLine::ForCurrentProcess();
-  AutoReset<CommandLine> auto_reset(cmd, *cmd);
+  base::AutoReset<CommandLine> auto_reset(cmd, *cmd);
   cmd->AppendSwitch(switches::kOnlyBlockSettingThirdPartyCookies);
 
   EXPECT_TRUE(cookie_settings_->IsReadingCookieAllowed(

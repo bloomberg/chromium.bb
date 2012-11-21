@@ -299,8 +299,9 @@ bool WebPluginDelegateProxy::Initialize(
 #if defined(OS_MACOSX)
     // TODO(shess): Debugging for http://crbug.com/97285 .  See comment
     // in plugin_channel_host.cc.
-    scoped_ptr<AutoReset<bool> > track_nested_removes(new AutoReset<bool>(
-        PluginChannelHost::GetRemoveTrackingFlag(), true));
+    scoped_ptr<base::AutoReset<bool> > track_nested_removes(
+        new base::AutoReset<bool>(PluginChannelHost::GetRemoveTrackingFlag(),
+                                  true));
 #endif
 
     IPC::ChannelHandle channel_handle;

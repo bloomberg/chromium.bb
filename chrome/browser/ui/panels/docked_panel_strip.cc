@@ -472,7 +472,7 @@ void DockedPanelStrip::RestorePanel(Panel* panel) {
 void DockedPanelStrip::MinimizeAll() {
   // Set minimizing_all_ to prevent deactivation of each panel when it
   // is minimized. See comments in OnPanelExpansionStateChanged.
-  AutoReset<bool> pin(&minimizing_all_, true);
+  base::AutoReset<bool> pin(&minimizing_all_, true);
   Panel* minimized_active_panel = NULL;
   for (Panels::const_iterator iter = panels_.begin();
        iter != panels_.end(); ++iter) {

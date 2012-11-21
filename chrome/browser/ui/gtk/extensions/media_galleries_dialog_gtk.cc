@@ -111,7 +111,7 @@ void MediaGalleriesDialogGtk::UpdateGallery(
     checkbox_map_[gallery] = widget;
   }
 
-  AutoReset<bool> reset(&ignore_toggles_, true);
+  base::AutoReset<bool> reset(&ignore_toggles_, true);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), permitted);
 }
 

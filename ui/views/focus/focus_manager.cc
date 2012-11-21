@@ -254,7 +254,7 @@ void FocusManager::SetFocusedViewWithReason(
   if (focused_view_ == view)
     return;
 
-  AutoReset<bool> auto_changing_focus(&is_changing_focus_, true);
+  base::AutoReset<bool> auto_changing_focus(&is_changing_focus_, true);
   // Update the reason for the focus change (since this is checked by
   // some listeners), then notify all listeners.
   focus_change_reason_ = reason;

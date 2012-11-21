@@ -85,7 +85,7 @@ Shell* Shell::CreateShell(WebContents* web_contents) {
 }
 
 void Shell::CloseAllWindows() {
-  AutoReset<bool> auto_reset(&quit_message_loop_, false);
+  base::AutoReset<bool> auto_reset(&quit_message_loop_, false);
   std::vector<Shell*> open_windows(windows_);
   for (size_t i = 0; i < open_windows.size(); ++i)
     open_windows[i]->Close();

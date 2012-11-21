@@ -42,7 +42,7 @@ void DesktopActivationClient::ActivateWindow(aura::Window* window) {
   if (updating_activation_)
     return;
 
-  AutoReset<bool> in_activate_window(&updating_activation_, true);
+  base::AutoReset<bool> in_activate_window(&updating_activation_, true);
   // Nothing may actually have changed.
   if (current_active_ == window)
     return;

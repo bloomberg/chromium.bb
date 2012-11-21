@@ -215,7 +215,7 @@ syncer::SyncError AppNotificationManager::ProcessSyncChanges(
         "Models not yet associated.");
   }
 
-  AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
+  base::AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
 
   syncer::SyncError error;
   for (syncer::SyncChangeList::const_iterator iter = change_list.begin();
@@ -305,7 +305,7 @@ syncer::SyncMergeResult AppNotificationManager::MergeDataAndStartSyncing(
 
   // We may add, or remove notifications here, so ensure we don't step on
   // our own toes.
-  AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
+  base::AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
 
   SyncDataMap local_data_map;
   PopulateGuidToSyncDataMap(GetAllSyncData(syncer::APP_NOTIFICATIONS),

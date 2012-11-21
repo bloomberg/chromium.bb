@@ -420,7 +420,8 @@ void Channel::ChannelImpl::OnIOCompleted(MessageLoopForIO::IOContext* context,
 
     // We don't support recursion through OnMessageReceived yet!
     DCHECK(!processing_incoming_);
-    AutoReset<bool> auto_reset_processing_incoming(&processing_incoming_, true);
+    base::AutoReset<bool> auto_reset_processing_incoming(
+        &processing_incoming_, true);
 
     // Process the new data.
     if (input_state_.is_pending) {

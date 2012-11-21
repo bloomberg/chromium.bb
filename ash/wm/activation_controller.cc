@@ -296,7 +296,7 @@ void ActivationController::ActivateWindowWithEvent(aura::Window* window,
   // Prevent recursion when called from focus.
   if (updating_activation_)
     return;
-  AutoReset<bool> in_activate_window(&updating_activation_, true);
+  base::AutoReset<bool> in_activate_window(&updating_activation_, true);
 
   // We allow the delegate to change which window gets activated, or to prevent
   // activation changes.

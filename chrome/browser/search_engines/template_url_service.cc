@@ -935,7 +935,7 @@ void TemplateURLService::OnPreferenceChanged(PrefServiceBase* service,
       prefs->GetString(prefs::kSyncedDefaultSearchProviderGUID));
   if (new_default_search && !is_default_search_managed_) {
     if (new_default_search != GetDefaultSearchProvider()) {
-      AutoReset<DefaultSearchChangeOrigin> change_origin(
+      base::AutoReset<DefaultSearchChangeOrigin> change_origin(
           &dsp_change_origin_, DSP_CHANGE_SYNC_PREF);
       SetDefaultSearchProvider(new_default_search);
       pending_synced_default_search_ = false;
@@ -980,12 +980,12 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
   }
   DCHECK(loaded_);
 
-  AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
+  base::AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
 
   // We've started syncing, so set our origin member to the base Sync value.
   // As we move through Sync Code, we may set this to increasingly specific
   // origins so we can tell what exactly caused a DSP change.
-  AutoReset<DefaultSearchChangeOrigin> change_origin(&dsp_change_origin_,
+  base::AutoReset<DefaultSearchChangeOrigin> change_origin(&dsp_change_origin_,
       DSP_CHANGE_SYNC_UNINTENTIONAL);
 
   syncer::SyncChangeList new_changes;
@@ -1138,12 +1138,12 @@ syncer::SyncMergeResult TemplateURLService::MergeDataAndStartSyncing(
 
   // We do a lot of calls to Add/Remove/ResetTemplateURL here, so ensure we
   // don't step on our own toes.
-  AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
+  base::AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
 
   // We've started syncing, so set our origin member to the base Sync value.
   // As we move through Sync Code, we may set this to increasingly specific
   // origins so we can tell what exactly caused a DSP change.
-  AutoReset<DefaultSearchChangeOrigin> change_origin(&dsp_change_origin_,
+  base::AutoReset<DefaultSearchChangeOrigin> change_origin(&dsp_change_origin_,
       DSP_CHANGE_SYNC_UNINTENTIONAL);
 
   syncer::SyncChangeList new_changes;
@@ -1213,7 +1213,7 @@ syncer::SyncMergeResult TemplateURLService::MergeDataAndStartSyncing(
   // above, set it now.
   TemplateURL* pending_default = GetPendingSyncedDefaultSearchProvider();
   if (pending_default) {
-    AutoReset<DefaultSearchChangeOrigin> change_origin(
+    base::AutoReset<DefaultSearchChangeOrigin> change_origin(
         &dsp_change_origin_, DSP_CHANGE_SYNC_ADD);
     SetDefaultSearchProvider(pending_default);
   }
@@ -2113,7 +2113,7 @@ void TemplateURLService::UpdateDefaultSearch() {
     // Otherwise, it should be FindNewDefaultSearchProvider.
     TemplateURL* synced_default = GetPendingSyncedDefaultSearchProvider();
     if (synced_default) {
-      AutoReset<DefaultSearchChangeOrigin> change_origin(
+      base::AutoReset<DefaultSearchChangeOrigin> change_origin(
           &dsp_change_origin_, DSP_CHANGE_SYNC_NOT_MANAGED);
       pending_synced_default_search_ = false;
     }
@@ -2517,7 +2517,7 @@ void TemplateURLService::SetDefaultSearchProviderIfNewlySynced(
     // really just added this TemplateURL.
     TemplateURL* turl_from_sync = GetTemplateURLForGUID(guid);
     if (turl_from_sync && turl_from_sync->SupportsReplacement()) {
-      AutoReset<DefaultSearchChangeOrigin> change_origin(
+      base::AutoReset<DefaultSearchChangeOrigin> change_origin(
           &dsp_change_origin_, DSP_CHANGE_SYNC_ADD);
       SetDefaultSearchProvider(turl_from_sync);
     }

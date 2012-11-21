@@ -146,7 +146,7 @@ void Scheduler::processScheduledActions()
     if (m_insideProcessScheduledActions)
         return;
 
-    AutoReset<bool> markInside(&m_insideProcessScheduledActions, true);
+    base::AutoReset<bool> markInside(&m_insideProcessScheduledActions, true);
 
     SchedulerStateMachine::Action action = m_stateMachine.nextAction();
     while (action != SchedulerStateMachine::ACTION_NONE) {

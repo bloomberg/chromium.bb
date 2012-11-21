@@ -1168,7 +1168,7 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
     tab_strip_point.Offset(-mouse_offset_.x(), -mouse_offset_.y());
     gfx::Rect bounds = GetDraggedViewTabStripBounds(tab_strip_point);
     int index = GetInsertionIndexForDraggedBounds(bounds);
-    AutoReset<bool> setter(&is_mutating_, true);
+    base::AutoReset<bool> setter(&is_mutating_, true);
     for (size_t i = 0; i < drag_data_.size(); ++i) {
       int add_types = TabStripModel::ADD_NONE;
       if (attached_tabstrip_->touch_layout_.get()) {
@@ -1703,7 +1703,7 @@ void TabDragController::RevertDragAt(size_t drag_index) {
   DCHECK(started_drag_);
   DCHECK(source_tabstrip_);
 
-  AutoReset<bool> setter(&is_mutating_, true);
+  base::AutoReset<bool> setter(&is_mutating_, true);
   TabDragData* data = &(drag_data_[drag_index]);
   if (attached_tabstrip_) {
     int index =
@@ -1801,7 +1801,7 @@ void TabDragController::CompleteDrag() {
       // the top-right corner.
       window_bounds.set_x(window_bounds.x() - window_bounds.width());
     }
-    AutoReset<bool> setter(&is_mutating_, true);
+    base::AutoReset<bool> setter(&is_mutating_, true);
 
     std::vector<TabStripModelDelegate::NewStripContents> contentses;
     for (size_t i = 0; i < drag_data_.size(); ++i) {

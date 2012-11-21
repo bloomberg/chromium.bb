@@ -132,7 +132,7 @@ TEST_F(ContentSettingBubbleModelTest, Plugins) {
 
 TEST_F(ContentSettingBubbleModelTest, MultiplePlugins) {
   CommandLine* cmd = CommandLine::ForCurrentProcess();
-  AutoReset<CommandLine> auto_reset(cmd, *cmd);
+  base::AutoReset<CommandLine> auto_reset(cmd, *cmd);
   cmd->AppendSwitch(switches::kEnableResourceContentSettings);
 
   HostContentSettingsMap* map = profile()->GetHostContentSettingsMap();

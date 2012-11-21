@@ -113,7 +113,7 @@ Browser* ActivateBrowser(Profile* profile) {
 // to the new |Browser|.
 Browser* CreateBrowser(Profile* profile) {
   {
-    AutoReset<bool> auto_reset_in_run(&g_is_opening_new_window, true);
+    base::AutoReset<bool> auto_reset_in_run(&g_is_opening_new_window, true);
     chrome::NewEmptyWindow(profile);
   }
 
@@ -974,7 +974,7 @@ void RecordLastRunAppBundlePath() {
 
   // Otherwise open a new window.
   {
-    AutoReset<bool> auto_reset_in_run(&g_is_opening_new_window, true);
+    base::AutoReset<bool> auto_reset_in_run(&g_is_opening_new_window, true);
     int return_code;
     StartupBrowserCreator browser_creator;
     browser_creator.LaunchBrowser(
