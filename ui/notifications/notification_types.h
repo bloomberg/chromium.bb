@@ -25,6 +25,9 @@ UI_EXPORT extern const char kButtonTwoTitleKey[];
 UI_EXPORT extern const char kButtonTwoIntentKey[];
 UI_EXPORT extern const char kExpandedMessageKey[];
 UI_EXPORT extern const char kImageUrlKey[];
+UI_EXPORT extern const char kItemsKey[];
+UI_EXPORT extern const char kItemTitleKey[];
+UI_EXPORT extern const char kItemMessageKey[];
 
 enum NotificationType {
   NOTIFICATION_TYPE_SIMPLE,

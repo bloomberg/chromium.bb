@@ -33,26 +33,6 @@ MessageViewMultiple::~MessageViewMultiple() {}
 void MessageViewMultiple::SetUpView() {
   DCHECK(close_button_);
 
-  // TODO(dharcourt): Get these to come from the API call.
-  // TODO(dharcourt): Figure out if there's a simpler way to provide a string16
-  // constant than UTF8ToUTF16(const char *).
-  notification_.items = new NotificationItems();
-  notification_.items->push_back(NotificationList::NotificationItem(
-      UTF8ToUTF16("Brett Boe"),
-      UTF8ToUTF16("This is an important message!")));
-  notification_.items->push_back(NotificationList::NotificationItem(
-      UTF8ToUTF16("Carla Coe"),
-      UTF8ToUTF16("Just took a look at the proposal")));
-  notification_.items->push_back(NotificationList::NotificationItem(
-      UTF8ToUTF16("Donna Doe"),
-      UTF8ToUTF16("I see that you went to the conference")));
-  notification_.items->push_back(NotificationList::NotificationItem(
-      UTF8ToUTF16("Frank Foe"),
-      UTF8ToUTF16("I ate Harry's sandwich!")));
-  notification_.items->push_back(NotificationList::NotificationItem(
-      UTF8ToUTF16("Grace Goe"),
-      UTF8ToUTF16("I saw Frank steal a sandwich :-)")));
-
   SkColor bg_color = notification_.is_read ?
       kNotificationReadColor : kNotificationColor;
   set_background(views::Background::CreateSolidBackground(bg_color));
@@ -94,7 +74,7 @@ void MessageViewMultiple::SetUpView() {
   icon->SetImageSize(
       gfx::Size(kWebNotificationIconSize, kWebNotificationIconSize));
   icon->SetImage(notification_.image);
-  layout->AddView(icon, 1, 1 + 0);  // + notification_.items->size());
+  layout->AddView(icon, 1, 1 + notification_.items.size());
 
   views::Label* title = new views::Label(notification_.title);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -111,9 +91,8 @@ void MessageViewMultiple::SetUpView() {
   layout->AddView(close_button_);
 
   // One row for each notification item.
-  for (NotificationItems::const_iterator i = notification_.items->begin();
-       i != notification_.items->end();
-       ++i) {
+  NotificationItems::const_iterator i;
+  for (i = notification_.items.begin(); i != notification_.items.end(); ++i) {
     views::Label* item_title = new views::Label(i->title);
     item_title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->StartRow(0,0);

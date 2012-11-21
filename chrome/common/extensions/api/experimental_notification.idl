@@ -3,6 +3,14 @@
 // found in the LICENSE file.
 
 [nodoc] namespace experimental.notification {
+  dictionary NotificationItem {
+    // Title of one item of a multiple-item notification.
+    DOMString title;
+
+    // Additional details about this item.
+    DOMString message;
+  };
+
   dictionary ShowOptions {
     // Which type of notification to display.
     //
@@ -53,6 +61,9 @@
 
     // Image thumbnail for image-type notifications
     DOMString? imageUrl;
+
+    // Items for multi-item notifications.
+    NotificationItem[]? items;
 
     DOMString replaceId;
 

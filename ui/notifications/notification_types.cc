@@ -19,6 +19,9 @@ const char kButtonTwoTitleKey[] = "button_two_title";
 const char kButtonTwoIntentKey[] = "button_two_intent";
 const char kExpandedMessageKey[] = "expanded_message";
 const char kImageUrlKey[] = "image_url";
+const char kItemsKey[] = "items";
+const char kItemTitleKey[] = "title";
+const char kItemMessageKey[] = "message";
 
 const char kSimpleType[] = "simple";
 const char kBaseFormatType[] = "base";

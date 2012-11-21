@@ -5,6 +5,7 @@
 #include "ui/message_center/notification_list.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/time.h"
 #include "base/values.h"
 
@@ -65,6 +66,7 @@ void NotificationList::AddNotification(
   // Initialize primitive fields before unpacking optional fields.
   // timestamp initializes to default NULL time.
   notification.priority = 0;
+  notification.unread_count = 0;
 
   UnpackOptionalFields(optional_fields, notification);
 
@@ -112,6 +114,19 @@ void NotificationList::UnpackOptionalFields(
   if (optional_fields->HasKey(ui::notifications::kImageUrlKey))
     optional_fields->GetString(ui::notifications::kImageUrlKey,
                                &notification.image_url);
+  if (optional_fields->HasKey(ui::notifications::kItemsKey)) {
+    const ListValue* items;
+    CHECK(optional_fields->GetList(ui::notifications::kItemsKey, &items));
+    for (size_t i = 0; i < items->GetSize(); ++i) {
+      string16 title;
+      string16 message;
+      const base::DictionaryValue* item;
+      items->GetDictionary(i, &item);
+      item->GetString(ui::notifications::kItemTitleKey, &title);
+      item->GetString(ui::notifications::kItemMessageKey, &message);
+      notification.items.push_back(NotificationItem(title, message));
+    }
+  }
 }
 
 void NotificationList::UpdateNotificationMessage(const std::string& old_id,

@@ -101,6 +101,7 @@ bool NotificationShowFunction::RunImpl() {
 
   scoped_ptr<DictionaryValue> optional_fields(new DictionaryValue());
 
+  // For all notifications types.
   if (options->message_intent.get())
     optional_fields->SetString(ui::notifications::kMessageIntentKey,
                                UTF8ToUTF16(*options->message_intent));
@@ -131,9 +132,32 @@ bool NotificationShowFunction::RunImpl() {
   if (options->expanded_message.get())
     optional_fields->SetString(ui::notifications::kExpandedMessageKey,
                                UTF8ToUTF16(*options->expanded_message));
+
+  // For image notifications (type == 'image').
+  // TODO(dharcourt): Fail if (type == 'image' && !options->image_url.get())
+  // TODO(dharcourt): Fail if (type != 'image' && options->image_url.get())
   if (options->image_url.get())
     optional_fields->SetString(ui::notifications::kImageUrlKey,
                                UTF8ToUTF16(*options->image_url));
+
+  // For multiple-item notifications (type == 'multiple').
+  // TODO(dharcourt): Fail if (type == 'multiple' && !options->items.get())
+  // TODO(dharcourt): Fail if (type != 'multiple' && options->items.get())
+  if (options->items.get()) {
+    base::ListValue* items = new base::ListValue();
+    std::vector<
+        linked_ptr<
+            api::experimental_notification::NotificationItem> >::iterator i;
+    for (i = options->items->begin(); i != options->items->end(); ++i) {
+      base::DictionaryValue* item = new base::DictionaryValue();
+      item->SetString(ui::notifications::kItemTitleKey,
+                      UTF8ToUTF16(i->get()->title));
+      item->SetString(ui::notifications::kItemMessageKey,
+                      UTF8ToUTF16(i->get()->message));
+      items->Append(item);
+    }
+    optional_fields->Set(ui::notifications::kItemsKey, items);
+  }
 
   string16 replace_id(UTF8ToUTF16(options->replace_id));
 

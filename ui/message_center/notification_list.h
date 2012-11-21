@@ -55,7 +55,7 @@ class MESSAGE_CENTER_EXPORT NotificationList {
     string16 button_two_intent;
     string16 expanded_message;
     string16 image_url;
-    std::vector<NotificationItem>* items;
+    std::vector<NotificationItem> items;
     // End unpacked values
 
     gfx::ImageSkia image;
