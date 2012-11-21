@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <objbase.h>  // For CoInitialize().
+
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -80,6 +82,7 @@ class ProfileShortcutManagerTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
+    CoInitialize(NULL);
     dist_ = BrowserDistribution::GetDistribution();
     ASSERT_TRUE(dist_ != NULL);
 

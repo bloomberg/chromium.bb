@@ -44,6 +44,16 @@ const int kProfileAvatarShortcutBadgeWidth = 28;
 const int kProfileAvatarShortcutBadgeHeight = 28;
 const int kShortcutIconSize = 48;
 
+// Returns the shortcut name for a given profile without a filename extension.
+string16 GetShortcutNameForProfileNoExtension(const string16& profile_name) {
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  string16 shortcut_name(dist->GetAppShortCutName());
+  shortcut_name.append(L" (");
+  shortcut_name.append(profile_name);
+  shortcut_name.append(L")");
+  return shortcut_name;
+}
+
 // Creates a desktop shortcut icon file (.ico) on the disk for a given profile,
 // badging the browser distribution icon with the profile avatar.
 // Returns a path to the shortcut icon file on disk, which is empty if this
@@ -151,7 +161,7 @@ void CreateOrUpdateProfileDesktopShortcut(
   if (!shortcut_icon.empty())
     properties.set_icon(shortcut_icon, 0);
   properties.set_shortcut_name(
-      ProfileShortcutManager::GetShortcutNameForProfile(profile_name));
+      GetShortcutNameForProfileNoExtension(profile_name));
   ShellUtil::ShortcutOperation operation =
       create ? ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS :
                ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING;
@@ -225,12 +235,7 @@ ProfileShortcutManager* ProfileShortcutManager::Create(
 // static
 string16 ProfileShortcutManager::GetShortcutNameForProfile(
     const string16& profile_name) {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  string16 shortcut_name(dist->GetAppShortCutName());
-  shortcut_name.append(L" (");
-  shortcut_name.append(profile_name);
-  shortcut_name.append(L")");
-  return shortcut_name;
+  return GetShortcutNameForProfileNoExtension(profile_name) + L".lnk";
 }
 
 ProfileShortcutManagerWin::ProfileShortcutManagerWin(ProfileManager* manager)
@@ -274,8 +279,9 @@ void ProfileShortcutManagerWin::OnProfileWasRemoved(
   if (cache.GetNumberOfProfiles() != 0)
     profile_name_updated = profile_name;
 
-  string16 shortcut_name = GetShortcutNameForProfile(profile_name_updated);
-  FilePath icon_path = profile_path.AppendASCII(kProfileIconFileName);
+  const string16 shortcut_name =
+      GetShortcutNameForProfileNoExtension(profile_name_updated);
+  const FilePath icon_path = profile_path.AppendASCII(kProfileIconFileName);
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           base::Bind(&DeleteDesktopShortcutAndIconFile,
                                      shortcut_name, icon_path));
