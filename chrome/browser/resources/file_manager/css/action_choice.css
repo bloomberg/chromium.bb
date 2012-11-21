@@ -152,6 +152,10 @@ button:focus {
     url('../images/media/2x/watch.png') 2x);
 }
 
+.choices div[disabled] label {
+  opacity: 0.5;
+}
+
 .footer {
   -webkit-box-orient: horizontal;
   -webkit-box-pack: end;

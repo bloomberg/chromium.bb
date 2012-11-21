@@ -95,10 +95,13 @@ ActionChoice.prototype.initDom_ = function() {
 ActionChoice.prototype.checkDrive_ = function() {
   var driveLabel = this.dom_.querySelector('label[for=import-photos-to-drive]');
   var driveChoice = this.dom_.querySelector('#import-photos-to-drive');
+  var driveDiv = driveChoice.parentNode;
   driveChoice.disabled = true;
+  driveDiv.setAttribute('disabled', '');
 
   var onMounted = function() {
     driveChoice.disabled = false;
+    driveDiv.removeAttribute('disabled');
     driveLabel.textContent =
         loadTimeData.getString('ACTION_CHOICE_PHOTOS_DRIVE');
   };
