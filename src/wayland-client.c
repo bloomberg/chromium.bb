@@ -502,7 +502,7 @@ wl_display_connect_to_fd(int fd)
 	const char *debug;
 
 	debug = getenv("WAYLAND_DEBUG");
-	if (debug)
+	if (debug && (strstr(debug, "client") || strstr(debug, "1")))
 		wl_debug = 1;
 
 	display = malloc(sizeof *display);

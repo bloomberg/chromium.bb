@@ -1078,7 +1078,7 @@ wl_display_create(void)
 	const char *debug;
 
 	debug = getenv("WAYLAND_DEBUG");
-	if (debug)
+	if (debug && (strstr(debug, "server") || strstr(debug, "1")))
 		wl_debug = 1;
 
 	display = malloc(sizeof *display);
