@@ -307,6 +307,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       tap_record_(this),
       last_movement_timestamp_(0.0),
       last_swipe_timestamp_(0.0),
+      swipe_is_vertical_(false),
       current_gesture_type_(kGestureTypeNull),
       scroll_buffer_(6),
       prev_result_high_pressure_change_(false),
@@ -351,8 +352,8 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
                                           50.0),
       three_finger_swipe_distance_thresh_(prop_reg,
                                           "Three Finger Swipe Distance Thresh",
-                                          10.0),
-      three_finger_swipe_enable_(prop_reg, "Three Finger Swipe Enable", 0),
+                                          1.0),
+      three_finger_swipe_enable_(prop_reg, "Three Finger Swipe EnableX", 1),
       max_pressure_change_(prop_reg, "Max Allowed Pressure Change Per Sec",
                            800.0),
       max_pressure_change_hysteresis_(prop_reg,
@@ -1011,30 +1012,32 @@ GestureType ImmediateInterpreter::GetThreeFingerGestureType(
     return kGestureTypeNull;
   }
 
-  double min_finger_dx =
-      min_finger->position_x - start_positions_[min_finger->tracking_id].x_;
-  double center_finger_dx =
-      center_finger->position_x -
-      start_positions_[center_finger->tracking_id].x_;
-  double max_finger_dx =
-      max_finger->position_x - start_positions_[max_finger->tracking_id].x_;
+  float dx[] = {
+    min_finger->position_x - start_positions_[min_finger->tracking_id].x_,
+    center_finger->position_x - start_positions_[center_finger->tracking_id].x_,
+    max_finger->position_x - start_positions_[max_finger->tracking_id].x_
+  };
+  float dy[] = {
+    min_finger->position_y - start_positions_[min_finger->tracking_id].y_,
+    center_finger->position_y - start_positions_[center_finger->tracking_id].y_,
+    max_finger->position_y - start_positions_[max_finger->tracking_id].y_
+  };
+  // pick horizontal or vertical
+  float *deltas = fabsf(dx[0]) > fabsf(dy[0]) ? dx : dy;
+  swipe_is_vertical_ = deltas == dy;
 
   // All three fingers must move in the same direction.
-  if ((min_finger_dx > 0 && !(center_finger_dx > 0 && max_finger_dx > 0)) ||
-      (min_finger_dx < 0 && !(center_finger_dx < 0 && max_finger_dx < 0))) {
+  if ((deltas[0] > 0 && !(deltas[1] > 0 && deltas[2] > 0)) ||
+      (deltas[0] < 0 && !(deltas[1] < 0 && deltas[2] < 0))) {
     return kGestureTypeNull;
   }
 
   // All three fingers must have traveled far enough.
-  if (fabsf(min_finger_dx) < three_finger_swipe_distance_thresh_.val_ ||
-      fabsf(min_finger_dx) < three_finger_swipe_distance_thresh_.val_ ||
-      fabsf(min_finger_dx) < three_finger_swipe_distance_thresh_.val_) {
+  if (fabsf(deltas[0]) < three_finger_swipe_distance_thresh_.val_ ||
+      fabsf(deltas[1]) < three_finger_swipe_distance_thresh_.val_ ||
+      fabsf(deltas[2]) < three_finger_swipe_distance_thresh_.val_) {
     return kGestureTypeNull;
   }
-
-  // Only produce the swipe gesture once per state change.
-  if (last_swipe_timestamp_ >= changed_time_)
-    return kGestureTypeNull;
 
   return kGestureTypeSwipe;
 }
@@ -1878,16 +1881,35 @@ void ImmediateInterpreter::FillResultGesture(
       break;
     }
     case kGestureTypeSwipe: {
-      float start_sum_x = 0, end_sum_x = 0;
+      if (!three_finger_swipe_enable_.val_)
+        break;
+      float max_abs_dx = -INFINITY;
+      float max_dx = 0.0;
+      float max_abs_dy = -INFINITY;
+      float max_dy = 0.0;
       for (set<short, kMaxGesturingFingers>::const_iterator it =
                fingers.begin(), e = fingers.end(); it != e; ++it) {
-        start_sum_x += start_positions_[*it].x_;
-        end_sum_x += hwstate.GetFingerState(*it)->position_x;
+        if (!prev_state_.GetFingerState(*it)) {
+          Err("missing prev state?");
+          continue;
+        }
+        float dx = hwstate.GetFingerState(*it)->position_x -
+            prev_state_.GetFingerState(*it)->position_x;
+        float dy = hwstate.GetFingerState(*it)->position_y -
+            prev_state_.GetFingerState(*it)->position_y;
+        if (fabsf(dx) > max_abs_dx) {
+          max_abs_dx = fabsf(dx);
+          max_dx = dx;
+        }
+        if (fabsf(dy) > max_abs_dy) {
+          max_abs_dy = fabsf(dy);
+          max_dy = dy;
+        }
       }
-      double dx = (end_sum_x - start_sum_x) / fingers.size();
-      if (three_finger_swipe_enable_.val_)
-        result_ = Gesture(kGestureSwipe, changed_time_, hwstate.timestamp,
-                          dx, 0.0);
+      result_ = Gesture(kGestureSwipe, prev_state_.timestamp,
+                        hwstate.timestamp,
+                        (!swipe_is_vertical_) ? max_dx : 0.0,
+                        swipe_is_vertical_ ? max_dy : 0.0);
       break;
     }
 
