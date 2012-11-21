@@ -12,7 +12,8 @@
 namespace cc {
 
 PictureLayerImpl::PictureLayerImpl(int id) :
-    LayerImpl(id) {
+    LayerImpl(id),
+    tilings_(this) {
 }
 
 PictureLayerImpl::~PictureLayerImpl() {
@@ -25,24 +26,21 @@ const char* PictureLayerImpl::layerTypeAsString() const {
 void PictureLayerImpl::appendQuads(QuadSink& quadSink,
                                    AppendQuadsData& appendQuadsData) {
 
-  const gfx::Rect& visible_rect = visibleContentRect();
+  const gfx::Rect& rect = visibleContentRect();
   gfx::Rect content_rect(gfx::Point(), contentBounds());
-
-  if (!tilings_.size())
-    return;
 
   SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
   bool clipped = false;
   gfx::QuadF target_quad = MathUtil::mapQuad(
       drawTransform(),
-      gfx::QuadF(visible_rect),
+      gfx::QuadF(rect),
       clipped);
   bool isAxisAlignedInTarget = !clipped && target_quad.IsRectilinear();
   bool useAA = !isAxisAlignedInTarget;
 
-  // TODO(enne): Generate quads from multiple tilings.
-  PictureLayerTiling* tiling = tilings_[0];
-  for (PictureLayerTiling::Iterator iter(tiling, visible_rect); iter; ++iter) {
+  for (PictureLayerTilingSet::Iterator iter(&tilings_, contentsScaleX(), rect);
+       iter;
+       ++iter) {
     ResourceProvider::ResourceId resource;
     if (*iter)
       resource = iter->resource_id();
@@ -54,7 +52,8 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
 
     gfx::Rect geometry_rect = iter.geometry_rect();
     gfx::RectF texture_rect = iter.texture_rect();
-    gfx::Rect opaque_rect = iter.opaque_rect();
+    gfx::Rect opaque_rect = iter->opaque_rect();
+    opaque_rect.Intersect(content_rect);
 
     bool outside_left_edge = geometry_rect.x() == content_rect.x();
     bool outside_top_edge = geometry_rect.y() == content_rect.y();
@@ -95,26 +94,15 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling*,
 }
 
 void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
-  tilings_.clear();
-  for (size_t i = 0; i < other->tilings_.size(); ++i) {
-    scoped_ptr<PictureLayerTiling> clone = other->tilings_[i]->Clone();
-    clone->set_client(this);
-    tilings_.append(clone.Pass());
-  }
+  tilings_.CloneFrom(other->tilings_);
 }
 
 void PictureLayerImpl::Update() {
+  tilings_.SetLayerBounds(bounds());
   // TODO(enne): Add more tilings during pinch zoom.
-  if (!tilings_.size()) {
+  if (!tilings_.num_tilings()) {
     gfx::Size tile_size = layerTreeHostImpl()->settings().defaultTileSize;
-
-    scoped_ptr<PictureLayerTiling> tiling = PictureLayerTiling::Create(
-        tile_size);
-    tiling->set_client(this);
-    tiling->SetBounds(contentBounds());
-    tiling->create_tiles(gfx::Rect(gfx::Point(), contentBounds()));
-    tilings_.append(tiling.Pass());
-
+    tilings_.AddTiling(contentsScaleX(), tile_size);
     // TODO(enne): handle invalidations, create new tiles
   }
 }

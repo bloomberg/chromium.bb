@@ -20,7 +20,7 @@ namespace cc {
 
 class Tile;
 
-class Tile : public base::RefCounted<Tile> {
+class CC_EXPORT Tile : public base::RefCounted<Tile> {
  public:
   Tile(TileManager* tile_manager,
        PicturePile* picture_pile,

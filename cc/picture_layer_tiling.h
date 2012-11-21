@@ -28,43 +28,50 @@ class CC_EXPORT PictureLayerTiling {
  public:
   ~PictureLayerTiling();
 
-  static scoped_ptr<PictureLayerTiling> Create(gfx::Size tile_size);
+  static scoped_ptr<PictureLayerTiling> Create(float contents_scale,
+                                               gfx::Size tile_size);
   scoped_ptr<PictureLayerTiling> Clone() const;
 
   const PictureLayerTiling& operator=(const PictureLayerTiling&);
 
-  void SetBounds(gfx::Size);
-  gfx::Size bounds() const { return tiling_data_.total_size(); }
+  void SetLayerBounds(gfx::Size layer_bounds);
+  void Invalidate(const Region& layer_invalidation);
 
-  void create_tiles(gfx::Rect);
-  void set_client(PictureLayerTilingClient* client);
+  void SetClient(PictureLayerTilingClient* client);
 
-  class Iterator {
+  gfx::Rect ContentRect() const;
+  float contents_scale() const { return contents_scale_; }
+
+  // Iterate over all tiles to fill content_rect.  Even if tiles are invalid
+  // (i.e. no valid resource) this tiling should still iterate over them.
+  // The union of all geometry_rect calls for each element iterated over should
+  // exactly equal content_rect and no two geometry_rects should intersect.
+  class CC_EXPORT Iterator {
    public:
-    Iterator(PictureLayerTiling* tiling, gfx::Rect content_rect);
+    Iterator();
+    Iterator(PictureLayerTiling* tiling, float dest_scale, gfx::Rect rect);
     ~Iterator();
 
-    // Visible rect (no borders)
+    // Visible rect (no borders), always in the space of content_rect,
+    // regardless of the contents scale of the tiling.
     gfx::Rect geometry_rect() const;
-    // Full tile rect (not clipped, with borders)
-    gfx::Rect full_tile_rect() const;
     // Texture rect (in texels) for geometry_rect
-    gfx::Rect texture_rect() const;
-    gfx::Rect opaque_rect() const;
+    gfx::RectF texture_rect() const;
     gfx::Size texture_size() const;
 
     Tile* operator->() const { return current_tile_; }
     Tile* operator*() const { return current_tile_; }
 
     Iterator& operator++();
-    bool operator==(const Iterator& other) const;
-    bool operator!=(const Iterator& other) const;
     operator bool() const { return current_tile_; }
 
    private:
     PictureLayerTiling* tiling_;
+    gfx::Rect dest_rect_;
+    float dest_to_content_scale_;
+
     Tile* current_tile_;
-    gfx::Rect content_rect_;
+    gfx::Rect current_geometry_rect_;
     int tile_i_;
     int tile_j_;
     int left_;
@@ -83,10 +90,13 @@ class CC_EXPORT PictureLayerTiling {
   typedef std::pair<int, int> TileMapKey;
   typedef base::hash_map<TileMapKey, scoped_refptr<Tile> > TileMap;
 
-  PictureLayerTiling(gfx::Size tileSize);
+  PictureLayerTiling(float contents_scale, gfx::Size tileSize);
   Tile* TileAt(int, int) const;
+  void CreateTile(int i, int j);
 
   PictureLayerTilingClient* client_;
+  float contents_scale_;
+  gfx::Size layer_bounds_;
   TileMap tiles_;
   TilingData tiling_data_;
 

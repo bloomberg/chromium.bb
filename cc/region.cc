@@ -103,6 +103,9 @@ std::string Region::ToString() const {
   return result;
 }
 
+Region::Iterator::Iterator() {
+}
+
 Region::Iterator::Iterator(const Region& region)
     : it_(region.skregion_) {
 }

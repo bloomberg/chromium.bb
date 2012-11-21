@@ -120,6 +120,8 @@
       'picture_layer_impl.h',
       'picture_layer_tiling.cc',
       'picture_layer_tiling.h',
+      'picture_layer_tiling_set.cc',
+      'picture_layer_tiling_set.h',
       'picture_pile.cc',
       'picture_pile.h',
       'platform_color.h',

@@ -31,13 +31,14 @@ void PictureLayer::pushPropertiesTo(LayerImpl* base_layer) {
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
   pile_.PushPropertiesTo(layer_impl->pile_);
 
-  // TODO(enne): Need to sync tiling from active tree prior to this?
-  // TODO(nduca): Need to invalidate tiles here from pile's invalidation info.
+  // TODO(enne): Need to sync tiling from active tree prior to this.
+  layer_impl->tilings_.Invalidate(invalidation_);
+  invalidation_.Clear();
 }
 
 void PictureLayer::setNeedsDisplayRect(const gfx::RectF& layer_rect) {
   gfx::Rect rect = gfx::ToEnclosedRect(layer_rect);
-  pile_.Invalidate(rect);
+  invalidation_.Union(rect);
 }
 
 void PictureLayer::update(ResourceUpdateQueue&, const OcclusionTracker*,

@@ -36,6 +36,7 @@ protected:
 private:
   ContentLayerClient* client_;
   PicturePile pile_;
+  Region invalidation_;
 };
 
 }  // namespace cc

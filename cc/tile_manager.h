@@ -17,7 +17,7 @@ class Tile;
 class TileVersion;
 class ResourceProvider;
 
-class TileManagerClient {
+class CC_EXPORT TileManagerClient {
  public:
   virtual void ScheduleManageTiles() = 0;
 
@@ -37,7 +37,7 @@ enum TileManagerBin {
 
 // This is state that is specific to a tile that is
 // managed by the TileManager.
-class ManagedTileState {
+class CC_EXPORT ManagedTileState {
  public:
   ManagedTileState()
     : can_use_gpu_memory(false)
@@ -59,7 +59,7 @@ class ManagedTileState {
 // should no longer have any memory assigned to them. Tile objects are "owned"
 // by layers; they automatically register with the manager when they are
 // created, and unregister from the manager when they are deleted.
-class TileManager {
+class CC_EXPORT TileManager {
  public:
   TileManager(TileManagerClient* client);
   ~TileManager();

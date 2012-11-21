@@ -7,6 +7,7 @@
 
 #include "cc/layer_impl.h"
 #include "cc/picture_layer_tiling.h"
+#include "cc/picture_layer_tiling_set.h"
 #include "cc/picture_pile.h"
 #include "cc/scoped_ptr_vector.h"
 
@@ -42,7 +43,7 @@ public:
 protected:
   PictureLayerImpl(int id);
 
-  ScopedPtrVector<PictureLayerTiling> tilings_;
+  PictureLayerTilingSet tilings_;
   PicturePile pile_;
 
   friend class PictureLayer;

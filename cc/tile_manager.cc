@@ -54,7 +54,7 @@ void TileManager::WillModifyTilePriority(Tile*, WhichTree tree, const TilePriori
 void TileManager::ScheduleManageTiles() {
   if (manage_tiles_pending_)
     return;
-  ScheduleManageTiles();
+  client_->ScheduleManageTiles();
   manage_tiles_pending_ = true;
 }
 

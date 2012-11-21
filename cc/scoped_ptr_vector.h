@@ -67,6 +67,10 @@ class ScopedPtrVector {
     data_.erase(data_.begin() + index);
   }
 
+  void reserve(size_t size) {
+    data_.reserve(size);
+  }
+
   void clear() {
     STLDeleteElements(&data_);
   }

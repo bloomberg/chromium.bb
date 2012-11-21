@@ -55,6 +55,7 @@ class CC_EXPORT Region {
 
   class CC_EXPORT Iterator {
    public:
+    Iterator();
     Iterator(const Region& region);
     ~Iterator();
 
