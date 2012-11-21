@@ -598,7 +598,7 @@ TabStrip::TabStrip(TabStripController* controller)
       adjust_layout_(false),
       reset_to_shrink_on_exit_(false),
       mouse_move_count_(0),
-      immersive_mode_(false) {
+      immersive_style_(false) {
   Init();
 }
 
@@ -1155,12 +1155,12 @@ bool TabStrip::ShouldPaintTab(const Tab* tab, gfx::Rect* clip) {
   return true;
 }
 
-void TabStrip::SetImmersiveMode(bool enable) {
-  immersive_mode_ = enable;
+void TabStrip::SetImmersiveStyle(bool enable) {
+  immersive_style_ = enable;
 }
 
-bool TabStrip::IsImmersiveMode() const {
-  return immersive_mode_;
+bool TabStrip::IsImmersiveStyle() const {
+  return immersive_style_;
 }
 
 void TabStrip::MouseMovedOutOfHost() {
@@ -1303,7 +1303,7 @@ gfx::Size TabStrip::GetPreferredSize() {
     needed_width = Tab::GetMinimumSelectedSize().width();
   }
   needed_width += new_tab_button_width();
-  if (immersive_mode_)
+  if (immersive_style_)
     return gfx::Size(needed_width, Tab::GetImmersiveHeight());
   return gfx::Size(needed_width, Tab::GetMinimumUnselectedSize().height());
 }

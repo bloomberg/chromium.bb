@@ -670,7 +670,7 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
     }
   }
 
-  if (controller() && controller()->IsImmersiveMode())
+  if (controller() && controller()->IsImmersiveStyle())
     PaintTabImmersive(canvas);
   else
     PaintTab(canvas);

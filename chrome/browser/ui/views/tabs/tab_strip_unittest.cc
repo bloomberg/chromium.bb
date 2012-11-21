@@ -81,15 +81,15 @@ TEST_F(TabStripTest, RemoveTab) {
 
 TEST_F(TabStripTest, ImmersiveMode) {
   // Immersive mode defaults to off.
-  EXPECT_FALSE(tab_strip_->IsImmersiveMode());
+  EXPECT_FALSE(tab_strip_->IsImmersiveStyle());
 
   // Tab strip defaults to normal tab height.
   int normal_height = Tab::GetMinimumUnselectedSize().height();
   EXPECT_EQ(normal_height, tab_strip_->GetPreferredSize().height());
 
   // Tab strip can toggle immersive mode.
-  tab_strip_->SetImmersiveMode(true);
-  EXPECT_TRUE(tab_strip_->IsImmersiveMode());
+  tab_strip_->SetImmersiveStyle(true);
+  EXPECT_TRUE(tab_strip_->IsImmersiveStyle());
 
   // Now tabs have the immersive height.
   int immersive_height = Tab::GetImmersiveHeight();

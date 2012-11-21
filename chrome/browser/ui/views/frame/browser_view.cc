@@ -66,6 +66,7 @@
 #include "chrome/browser/ui/views/frame/contents_container.h"
 #include "chrome/browser/ui/views/frame/instant_preview_controller_views.h"
 #include "chrome/browser/ui/views/fullscreen_exit_bubble_views.h"
+#include "chrome/browser/ui/views/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
@@ -515,6 +516,8 @@ BrowserView::BrowserView(Browser* browser)
       ticker_(0),
 #endif
       force_location_bar_focus_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          immersive_mode_controller_(new ImmersiveModeController(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(color_change_listener_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(activate_modal_dialog_factory_(this)) {
   browser_->tab_strip_model()->AddObserver(this);
@@ -951,19 +954,6 @@ void BrowserView::FullScreenStateChanged() {
   }
 }
 
-void BrowserView::SetImmersiveMode(bool enable) {
-  if (enable == IsImmersiveMode())
-    return;
-  // The tab strip owns the state of immersive mode.
-  // TODO(jamescook): Add transition state for animating top-chrome in and out.
-  tabstrip_->SetImmersiveMode(enable);
-  Layout();
-}
-
-bool BrowserView::IsImmersiveMode() const {
-  return tabstrip_->IsImmersiveMode();
-}
-
 #if defined(OS_WIN)
 void BrowserView::SetMetroSnapMode(bool enable) {
   HISTOGRAM_COUNTS("Metro.SnapModeToggle", enable);
@@ -1200,7 +1190,7 @@ void BrowserView::DestroyBrowser() {
 }
 
 bool BrowserView::IsBookmarkBarVisible() const {
-  if (IsImmersiveMode())
+  if (immersive_mode_controller_->ShouldHideTopViews())
     return false;
   return browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR) &&
       active_bookmark_bar_ &&
@@ -1216,7 +1206,7 @@ bool BrowserView::IsTabStripEditable() const {
 }
 
 bool BrowserView::IsToolbarVisible() const {
-  if (IsImmersiveMode())
+  if (immersive_mode_controller_->ShouldHideTopViews())
     return false;
   return browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
          browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
@@ -1981,23 +1971,6 @@ gfx::Size BrowserView::GetMinimumSize() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserView, protected
-
-void BrowserView::GetAccessiblePanes(
-    std::vector<views::AccessiblePaneView*>* panes) {
-  // This should be in the order of pane traversal of the panes using F6.
-  // If one of these is invisible or has no focusable children, it will be
-  // automatically skipped.
-  panes->push_back(toolbar_);
-  if (bookmark_bar_view_.get())
-    panes->push_back(bookmark_bar_view_.get());
-  if (infobar_container_)
-    panes->push_back(infobar_container_);
-  if (download_shelf_.get())
-    panes->push_back(download_shelf_.get());
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // BrowserView, views::View overrides:
 
 std::string BrowserView::GetClassName() const {
@@ -2052,6 +2025,23 @@ void BrowserView::ChildPreferredSizeChanged(View* child) {
 void BrowserView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   state->role = ui::AccessibilityTypes::ROLE_CLIENT;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// BrowserView, protected
+
+void BrowserView::GetAccessiblePanes(
+    std::vector<views::AccessiblePaneView*>* panes) {
+  // This should be in the order of pane traversal of the panes using F6.
+  // If one of these is invisible or has no focusable children, it will be
+  // automatically skipped.
+  panes->push_back(toolbar_);
+  if (bookmark_bar_view_.get())
+    panes->push_back(bookmark_bar_view_.get());
+  if (infobar_container_)
+    panes->push_back(infobar_container_);
+  if (download_shelf_.get())
+    panes->push_back(download_shelf_.get());
 }
 
 SkColor BrowserView::GetInfoBarSeparatorColor() const {

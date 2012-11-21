@@ -1517,6 +1517,8 @@
         'browser/ui/views/hung_renderer_view.h',
         'browser/ui/views/hung_renderer_view_win.cc',
         'browser/ui/views/hung_renderer_view_win.h',
+        'browser/ui/views/immersive_mode_controller.h',
+        'browser/ui/views/immersive_mode_controller.cc',
         'browser/ui/views/importer/import_lock_dialog_view.cc',
         'browser/ui/views/importer/import_lock_dialog_view.h',
         'browser/ui/views/importer/import_progress_dialog_view.cc',

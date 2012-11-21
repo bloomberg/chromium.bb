@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "content/public/browser/web_contents.h"
@@ -304,7 +305,9 @@ void BrowserNonClientFrameViewAsh::ButtonPressed(views::Button* sender,
     frame()->Close();
   } else if (sender == immersive_button_) {
     // Toggle immersive mode.
-    browser_view()->SetImmersiveMode(!browser_view()->IsImmersiveMode());
+    ImmersiveModeController* controller =
+        browser_view()->immersive_mode_controller();
+    controller->SetEnabled(!controller->enabled());
   }
 
   if (event.IsShiftDown())

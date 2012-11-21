@@ -5,7 +5,9 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/views/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
@@ -34,4 +36,36 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, MAYBE_FullscreenClearsFocus) {
 
   // Focus is released from the location bar.
   EXPECT_FALSE(location_bar_view->Contains(focus_manager->GetFocusedView()));
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserViewTest, ImmersiveMode) {
+  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
+  ImmersiveModeController* controller =
+      browser_view->immersive_mode_controller();
+
+  // Immersive mode is not on by default.
+  EXPECT_FALSE(controller->enabled());
+  EXPECT_FALSE(controller->ShouldHideTopViews());
+
+  // Top-of-window views are visible.
+  EXPECT_TRUE(browser_view->IsTabStripVisible());
+  EXPECT_TRUE(browser_view->IsToolbarVisible());
+
+  // Turning immersive mode on sets the toolbar to immersive style and hides
+  // the top-of-window views while leaving the tab strip visible.
+  controller->SetEnabled(true);
+  EXPECT_TRUE(controller->enabled());
+  EXPECT_TRUE(controller->ShouldHideTopViews());
+  EXPECT_TRUE(browser_view->tabstrip()->IsImmersiveStyle());
+  EXPECT_TRUE(browser_view->IsTabStripVisible());
+  EXPECT_FALSE(browser_view->IsToolbarVisible());
+
+  // Trigger a reveal keeps us in immersive mode, but top-of-window views
+  // become visible.
+  controller->RevealTopViews();
+  EXPECT_TRUE(controller->enabled());
+  EXPECT_FALSE(controller->ShouldHideTopViews());
+  EXPECT_FALSE(browser_view->tabstrip()->IsImmersiveStyle());
+  EXPECT_TRUE(browser_view->IsTabStripVisible());
+  EXPECT_TRUE(browser_view->IsToolbarVisible());
 }

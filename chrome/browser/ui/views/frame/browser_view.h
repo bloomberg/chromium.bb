@@ -44,6 +44,7 @@ class BrowserViewLayout;
 class ContentsContainer;
 class DownloadShelfView;
 class FullscreenExitBubbleViews;
+class ImmersiveModeController;
 class InfoBarContainerView;
 class InstantPreviewControllerViews;
 class LocationBarView;
@@ -57,7 +58,7 @@ class ToolbarView;
 class JumpList;
 #endif
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
 class BrowserLauncherItemController;
 #endif
 
@@ -154,6 +155,9 @@ class BrowserView : public BrowserWindow,
   // Accessor for the Toolbar.
   ToolbarView* toolbar() { return toolbar_; }
 
+  // Returns the page contents container, see diagram below.
+  ContentsContainer* contents() { return contents_; }
+
   // Returns true if various window components are visible.
   virtual bool IsTabStripVisible() const;
 
@@ -206,10 +210,10 @@ class BrowserView : public BrowserWindow,
   // used on Linux.
   void FullScreenStateChanged();
 
-  // Enables a maximized mode similar to MacOS presentation mode, with a
-  // "light bar" at the top representing open tabs.
-  void SetImmersiveMode(bool enable);
-  bool IsImmersiveMode() const;
+  // See ImmersiveModeController for description.
+  ImmersiveModeController* immersive_mode_controller() {
+    return immersive_mode_controller_.get();
+  }
 
   // Restores the focused view. This is also used to set the initial focus
   // when a new browser window is created.
@@ -418,6 +422,16 @@ class BrowserView : public BrowserWindow,
   // which layout is being shown and whether we are full-screen.
   int GetOTRIconResourceID() const;
 
+  // Overridden from views::View:
+  virtual std::string GetClassName() const OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    views::View* parent,
+                                    views::View* child) OVERRIDE;
+  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+
  protected:
   // Appends to |toolbars| a pointer to each AccessiblePaneView that
   // can be traversed using F6, in the order they should be traversed.
@@ -428,16 +442,6 @@ class BrowserView : public BrowserWindow,
   int last_focused_view_storage_id() const {
     return last_focused_view_storage_id_;
   }
-
-  // Overridden from views::View:
-  virtual std::string GetClassName() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child) OVERRIDE;
-  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Factory Method.
   // Returns a new LayoutManager for this browser view. A subclass may
@@ -716,6 +720,8 @@ class BrowserView : public BrowserWindow,
   bool force_location_bar_focus_;
 
   PendingFullscreenRequest fullscreen_request_;
+
+  scoped_ptr<ImmersiveModeController> immersive_mode_controller_;
 
   gfx::ScopedSysColorChangeListener color_change_listener_;
 

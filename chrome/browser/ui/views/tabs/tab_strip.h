@@ -159,9 +159,8 @@ class TabStrip : public views::View,
   // Returns the new tab button. This is never NULL.
   views::View* newtab_button();
 
-  // Enables a maximized mode similar to MacOS presentation mode, with a
-  // "light bar" at the top representing open tabs.
-  void SetImmersiveMode(bool enable);
+  // Sets a painting style with a "light bar" at the top representing open tabs.
+  void SetImmersiveStyle(bool enable);
 
   // TabController overrides:
   virtual const TabStripSelectionModel& GetSelectionModel() OVERRIDE;
@@ -188,6 +187,7 @@ class TabStrip : public views::View,
   virtual void OnMouseEventInTab(views::View* source,
                                  const ui::MouseEvent& event) OVERRIDE;
   virtual bool ShouldPaintTab(const Tab* tab, gfx::Rect* clip) OVERRIDE;
+  virtual bool IsImmersiveStyle() const OVERRIDE;
 
   // MouseWatcherListener overrides:
   virtual void MouseMovedOutOfHost() OVERRIDE;
@@ -206,7 +206,6 @@ class TabStrip : public views::View,
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual views::View* GetEventHandlerForPoint(
       const gfx::Point& point) OVERRIDE;
-  virtual bool IsImmersiveMode() const OVERRIDE;
 
  protected:
   // Horizontal gap between mini and non-mini-tabs.
@@ -592,8 +591,8 @@ class TabStrip : public views::View,
   // tab close comes from a touch device.
   base::OneShotTimer<TabStrip> resize_layout_timer_;
 
-  // True if we are using immersive mode and painting tabs as light-bars.
-  bool immersive_mode_;
+  // True if tabs are painted as rectangular light-bars.
+  bool immersive_style_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };
