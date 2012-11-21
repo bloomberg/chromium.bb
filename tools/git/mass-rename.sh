@@ -13,34 +13,7 @@
 #   4) commit, then use tools/sort-headers.py to fix #include ordering:
 #   for f in $(git diff --name-only origin); do ./tools/sort-headers.py $f; done
 
-# rename:
-# update all uses of |from| (first argument) to |to| (second argument).
-rename() {
-    from="$1"
-    to="$2"
-
-    # Fix references to the files in headers/gyp files.
-    echo "Processing: $from -> $to"
-    git grep -l "$from" -- '*.cc' '*.h' '*.m' '*.mm' '*.gyp*' | \
-        xargs sed -i -e "s|$from|$to|"
-
-    # Fix header guards.
-    if [ "${from##*.}" = "h" ]; then
-        hfrom=$(echo "$from" | tr 'a-z/' 'A-Z_' | sed -e 's|\..*$||')
-        hto=$(echo "$to" | tr 'a-z/' 'A-Z_' | sed -e 's|\..*$||')
-        echo "Processing: $hfrom -> $hto"
-        git grep -l "$hfrom" -- '*.cc' '*.h' '*.m' '*.mm' | \
-            xargs sed -i -e "s|$hfrom|$hto|"
-    fi
-
-    # Try again, stripping the first directory component -- helps with
-    # gyp files that rely on paths from the directory they're in.
-    from=$(echo "$from" | sed -e 's|^[^/]*/||')
-    to=$(echo "$to" | sed -e 's|^[^/]*/||')
-    echo "Processing: $from -> $to"
-    git grep -l "$from" -- '*.cc' '*.h' '*.m' '*.mm' '*.gyp*' | \
-        xargs sed -i -e "s|$from|$to|"
-}
+DIR="$( cd "$( dirname "$0" )" && pwd )"
 
 # Make the 'read' used in the while loop split only on tabs/newlines.
 IFS=$'\t\n'
@@ -48,10 +21,8 @@ IFS=$'\t\n'
 git diff --cached --raw -M | while read attrs from to; do
     type=$(echo "$attrs" | cut -d' ' -f5)
     if echo "$type" | grep -q "^R"; then
-        # It's a rename.
-        rename "$from" "$to"
+        python $DIR/move_source_file.py --already-moved "$from" "$to"
     else
         echo "Skipping: $from -- not a rename?"
     fi
 done
-

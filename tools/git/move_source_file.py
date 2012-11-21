@@ -1,0 +1,192 @@
+#!/usr/bin/env python
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Moves a C++ file to a new location, updating any include paths that
+point to it.  Updates include guards in moved header files.  Assumes
+Chromium coding style.
+
+Does not reorder headers; instead, use this after committing all of
+your moves:
+  ./tools/git/for-all-touched-files.py -c "tools/sort-headers.py [[FILENAME]]"
+
+Updates paths used in .gyp(i) files, but does not reorder or
+restructure .gyp(i) files in any way.
+
+Must run in a git checkout, as it relies on git for a fast way to find
+files that reference the moved file.
+"""
+
+
+import os
+import re
+import subprocess
+import sys
+
+HANDLED_EXTENSIONS = ['.cc', '.mm', '.h', '.hh']
+
+
+def MakeDestinationPath(from_path, to_path):
+  """Given the from and to paths, return a correct destination path.
+
+  The initial destination path may either a full path or a directory,
+  in which case the path must end with /.  Also does basic sanity
+  checks.
+  """
+  if os.path.splitext(from_path)[1] not in HANDLED_EXTENSIONS:
+    raise Exception('Only intended to move individual source files.')
+  dest_extension = os.path.splitext(to_path)[1]
+  if dest_extension not in HANDLED_EXTENSIONS:
+    if to_path.endswith('/') or to_path.endswith('\\'):
+      to_path += os.path.basename(from_path)
+    else:
+      raise Exception('Destination must be either full path or end with /.')
+  return to_path
+
+
+def MoveFile(from_path, to_path):
+  """Performs a git mv command to move a file from |from_path| to |to_path|.
+  """
+  if not os.system('git mv %s %s' % (from_path, to_path)) == 0:
+    raise Exception('Fatal: Failed to run git mv command.')
+
+
+def MultiFileFindReplace(original,
+                         replacement,
+                         grep_pattern,
+                         file_globs,
+                         guard_formats):
+  """Implements fast multi-file find and replace with optional guards.
+
+  Given an |original| string and a |replacement| string, search for
+  them by formatting |grep_pattern| with |original| and running
+  git grep on the result, for files matching any of |file_globs|.
+
+  Once files are found, the function searches for any of
+  |guard_formats| formatted with |original| and replaces each match
+  with the same guard format as matched, formatted with |replacement|.
+
+  Args:
+    original: 'chrome/browser/ui/browser.h'
+    replacement: 'chrome/browser/ui/browser/browser.h'
+    grep_pattern: r'#(include|import)\s*["<]%s[>"]'
+    file_globs: ['*.cc', '*.h', '*.m', '*.mm']
+    guard_formats: None or ('"%s"', '<%s>')
+
+  Raises an exception on error.
+  """
+  out, err = subprocess.Popen(
+    ['git', 'grep', '-E', '--name-only',
+     grep_pattern % re.escape(original), '--'] + file_globs,
+    stdout=subprocess.PIPE).communicate()
+  referees = out.splitlines()
+
+  for referee in referees:
+    with open(referee) as f:
+      original_contents = f.read()
+      contents = original_contents
+      for guard_format in guard_formats or []:
+        contents = contents.replace(guard_format % original,
+                                    guard_format % replacement)
+      if contents == original_contents:
+        raise Exception('No change in file %s although matched in grep' %
+                        referee)
+      with open(referee, 'w') as f:
+        f.write(contents)
+
+
+def UpdatePostMove(from_path, to_path):
+  """Given a file that has moved from |from_path| to |to_path|,
+  updates the moved file's include guard to match the new path and
+  updates all references to the file in other source files. Also tries
+  to update references in .gyp(i) files using a heuristic.
+  """
+  # Include paths always use forward slashes.
+  from_path = from_path.replace('\\', '/')
+  to_path = to_path.replace('\\', '/')
+
+  if os.path.splitext(from_path)[1] in ['.h', '.hh']:
+    UpdateIncludeGuard(from_path, to_path)
+
+    # Update include/import references.
+    MultiFileFindReplace(
+      from_path,
+      to_path,
+      r'#(include|import)\s*["<]%s[>"]',
+      ['*.cc', '*.h', '*.m', '*.mm'],
+      ['"%s"', '<%s>'])
+
+  # Update references in .gyp(i) files.
+  def PathMinusFirstComponent(path):
+    """foo/bar/baz -> bar/baz"""
+    parts = re.split(r"[/\\]", path, 1)
+    if len(parts) == 2:
+      return parts[1]
+    else:
+      return parts[0]
+  MultiFileFindReplace(PathMinusFirstComponent(from_path),
+                       PathMinusFirstComponent(to_path),
+                       r'[\'"]%s[\'"]',
+                       ['*.gyp*'],
+                       ["'%s'", '"%s"'])
+
+
+def MakeIncludeGuardName(path_from_root):
+  """Returns an include guard name given a path from root."""
+  guard = path_from_root.replace('/', '_')
+  guard = guard.replace('\\', '_')
+  guard = guard.replace('.', '_')
+  guard += '_'
+  return guard.upper()
+
+
+def UpdateIncludeGuard(old_path, new_path):
+  """Updates the include guard in a file now residing at |new_path|,
+  previously residing at |old_path|, with an up-to-date include guard.
+
+  Errors out if an include guard per Chromium style guide cannot be
+  found for the old path.
+  """
+  old_guard = MakeIncludeGuardName(old_path)
+  new_guard = MakeIncludeGuardName(new_path)
+
+  with open(new_path) as f:
+    contents = f.read()
+
+  new_contents = contents.replace(old_guard, new_guard)
+  if new_contents == contents:
+    raise Exception(
+      'Error updating include guard; perhaps old guard is not per style guide?')
+
+  with open(new_path, 'w') as f:
+    f.write(new_contents)
+
+
+def main():
+  if not os.path.isdir('.git'):
+    print 'Fatal: You must run from the root of a git checkout.'
+    return 1
+  args = sys.argv[1:]
+  if not len(args) in [2, 3]:
+    print ('Usage: move_source_file.py [--already-moved] FROM_PATH TO_PATH'
+           '\n\n%s' % __doc__)
+    return 1
+
+  already_moved = False
+  if args[0] == '--already-moved':
+    args = args[1:]
+    already_moved = True
+
+  from_path = args[0]
+  to_path = args[1]
+
+  to_path = MakeDestinationPath(from_path, to_path)
+  if not already_moved:
+    MoveFile(from_path, to_path)
+  UpdatePostMove(from_path, to_path)
+  return 0
+
+
+if __name__ == '__main__':
+  sys.exit(main())
