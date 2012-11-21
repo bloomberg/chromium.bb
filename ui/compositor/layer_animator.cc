@@ -32,11 +32,8 @@ class LayerAnimator;
 
 namespace {
 
-static const base::TimeDelta kDefaultTransitionDuration =
-    base::TimeDelta::FromMilliseconds(120);
-
-static const base::TimeDelta kTimerInterval =
-    base::TimeDelta::FromMilliseconds(10);
+const int kDefaultTransitionDurationMs = 120;
+const int kTimerIntervalMs = 10;
 
 // Returns the AnimationContainer we're added to.
 ui::AnimationContainer* GetAnimationContainer() {
@@ -85,7 +82,8 @@ LayerAnimator* LayerAnimator::CreateDefaultAnimator() {
 
 // static
 LayerAnimator* LayerAnimator::CreateImplicitAnimator() {
-  return new LayerAnimator(kDefaultTransitionDuration);
+  return new LayerAnimator(
+      base::TimeDelta::FromMilliseconds(kDefaultTransitionDurationMs));
 }
 
 // This macro provides the implementation for the setter and getter (well,
@@ -380,7 +378,7 @@ void LayerAnimator::SetStartTime(base::TimeTicks start_time) {
 }
 
 base::TimeDelta LayerAnimator::GetTimerInterval() const {
-  return kTimerInterval;
+  return base::TimeDelta::FromMilliseconds(kTimerIntervalMs);
 }
 
 void LayerAnimator::UpdateAnimationState() {

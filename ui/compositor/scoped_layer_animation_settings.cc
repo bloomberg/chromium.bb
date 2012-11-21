@@ -9,8 +9,7 @@
 
 namespace {
 
-static const base::TimeDelta kDefaultTransitionDuration =
-    base::TimeDelta::FromMilliseconds(200);
+const int kDefaultTransitionDurationMs = 200;
 
 }  // namespace
 
@@ -22,7 +21,8 @@ ScopedLayerAnimationSettings::ScopedLayerAnimationSettings(
       old_transition_duration_(animator->transition_duration_),
       old_tween_type_(animator->tween_type()),
       old_preemption_strategy_(animator->preemption_strategy()) {
-  SetTransitionDuration(kDefaultTransitionDuration);
+  SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kDefaultTransitionDurationMs));
 }
 
 ScopedLayerAnimationSettings::~ScopedLayerAnimationSettings() {
