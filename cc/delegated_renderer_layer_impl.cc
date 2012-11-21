@@ -144,7 +144,7 @@ void DelegatedRendererLayerImpl::appendRenderPassQuads(QuadSink& quadSink, Appen
 
         if (quad->shared_quad_state != currentSharedQuadState) {
             currentSharedQuadState = quad->shared_quad_state;
-            copiedSharedQuadState = quadSink.useSharedQuadState(currentSharedQuadState->copy());
+            copiedSharedQuadState = quadSink.useSharedQuadState(currentSharedQuadState->Copy());
             bool targetIsFromDelegatedRendererLayer = appendQuadsData.renderPassId.layerId == id();
             if (!targetIsFromDelegatedRendererLayer) {
               // Should be the root render pass.
@@ -152,8 +152,8 @@ void DelegatedRendererLayerImpl::appendRenderPassQuads(QuadSink& quadSink, Appen
               // This layer must be drawing to a renderTarget other than itself.
               DCHECK(renderTarget() != this);
 
-              copiedSharedQuadState->clippedRectInTarget = MathUtil::mapClippedRect(drawTransform(), copiedSharedQuadState->clippedRectInTarget);
-              copiedSharedQuadState->quadTransform = copiedSharedQuadState->quadTransform * drawTransform();
+              copiedSharedQuadState->content_to_target_transform = copiedSharedQuadState->content_to_target_transform * drawTransform();
+              copiedSharedQuadState->clipped_rect_in_target = MathUtil::mapClippedRect(drawTransform(), copiedSharedQuadState->clipped_rect_in_target);
               copiedSharedQuadState->opacity *= drawOpacity();
             }
         }

@@ -31,8 +31,6 @@ QuadCuller::QuadCuller(QuadList& quadList, SharedQuadStateList& sharedQuadStateL
 
 SharedQuadState* QuadCuller::useSharedQuadState(scoped_ptr<SharedQuadState> sharedQuadState)
 {
-    sharedQuadState->id = m_sharedQuadStateList.size();
-
     // FIXME: If all quads are culled for the sharedQuadState, we can drop it from the list.
     m_currentSharedQuadState = sharedQuadState.get();
     m_sharedQuadStateList.append(sharedQuadState.Pass());

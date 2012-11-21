@@ -35,9 +35,9 @@ class CC_EXPORT DrawQuad {
       const SharedQuadState* copied_shared_quad_state) const;
 
   // TODO(danakj): Chromify or remove these SharedQuadState helpers.
-  const WebKit::WebTransformationMatrix& quadTransform() const { return shared_quad_state->quadTransform; }
-  gfx::Rect visibleContentRect() const { return shared_quad_state->visibleContentRect; }
-  gfx::Rect clippedRectInTarget() const { return shared_quad_state->clippedRectInTarget; }
+  const WebKit::WebTransformationMatrix& quadTransform() const { return shared_quad_state->content_to_target_transform; }
+  gfx::Rect visibleContentRect() const { return shared_quad_state->visible_content_rect; }
+  gfx::Rect clippedRectInTarget() const { return shared_quad_state->clipped_rect_in_target; }
   float opacity() const { return shared_quad_state->opacity; }
 
   Material material;

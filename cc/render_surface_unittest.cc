@@ -103,9 +103,9 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
     ASSERT_EQ(1u, sharedStateList.size());
     SharedQuadState* sharedQuadState = sharedStateList[0];
 
-    EXPECT_EQ(30, sharedQuadState->quadTransform.m41());
-    EXPECT_EQ(40, sharedQuadState->quadTransform.m42());
-    EXPECT_RECT_EQ(contentRect, gfx::Rect(sharedQuadState->visibleContentRect));
+    EXPECT_EQ(30, sharedQuadState->content_to_target_transform.m41());
+    EXPECT_EQ(40, sharedQuadState->content_to_target_transform.m42());
+    EXPECT_RECT_EQ(contentRect, gfx::Rect(sharedQuadState->visible_content_rect));
     EXPECT_EQ(1, sharedQuadState->opacity);
 }
 

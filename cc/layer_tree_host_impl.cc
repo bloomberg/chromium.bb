@@ -466,10 +466,8 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
 
 #ifndef NDEBUG
     for (size_t i = 0; i < frame.renderPasses.size(); ++i) {
-        for (size_t j = 0; j < frame.renderPasses[i]->quadList().size(); ++j) {
+        for (size_t j = 0; j < frame.renderPasses[i]->quadList().size(); ++j)
             DCHECK(frame.renderPasses[i]->quadList()[j]->shared_quad_state);
-            DCHECK_GE(frame.renderPasses[i]->quadList()[j]->shared_quad_state->id, 0);
-        }
         DCHECK(frame.renderPassesById.contains(frame.renderPasses[i]->id()));
     }
 #endif

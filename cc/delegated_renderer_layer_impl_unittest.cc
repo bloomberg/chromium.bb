@@ -78,7 +78,8 @@ static SolidColorDrawQuad* addQuad(TestRenderPass* pass, gfx::Rect rect, SkColor
 {
     MockQuadCuller quadSink(pass->quadList(), pass->sharedQuadStateList());
     AppendQuadsData data(pass->id());
-    SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::create(WebTransformationMatrix(), rect, rect, 1));
+    SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::Create());
+    sharedState->SetAll(WebTransformationMatrix(), rect, rect, 1);
     scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
     quad->SetNew(sharedState, rect, color);
     SolidColorDrawQuad* quadPtr = quad.get();
@@ -91,7 +92,8 @@ static void addRenderPassQuad(TestRenderPass* toPass, TestRenderPass* contributi
     MockQuadCuller quadSink(toPass->quadList(), toPass->sharedQuadStateList());
     AppendQuadsData data(toPass->id());
     gfx::Rect outputRect = contributingPass->outputRect();
-    SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::create(WebTransformationMatrix(), outputRect, outputRect, 1));
+    SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::Create());
+    sharedState->SetAll(WebTransformationMatrix(), outputRect, outputRect, 1);
     scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
     quad->SetNew(sharedState, outputRect, contributingPass->id(), false, 0, outputRect, 0, 0, 0, 0);
     quadSink.append(quad.PassAs<DrawQuad>(), data);
@@ -404,7 +406,8 @@ public:
         TestRenderPass* pass = addRenderPass(delegatedRenderPasses, RenderPass::Id(9, 6), passRect, WebTransformationMatrix());
         MockQuadCuller quadSink(pass->quadList(), pass->sharedQuadStateList());
         AppendQuadsData data(pass->id());
-        SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::create(WebTransformationMatrix(), passRect, passRect, 1));
+        SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::Create());
+        sharedState->SetAll(WebTransformationMatrix(), passRect, passRect, 1);
         scoped_ptr<SolidColorDrawQuad> colorQuad;
 
         colorQuad = SolidColorDrawQuad::Create();
@@ -462,10 +465,10 @@ TEST_F(DelegatedRendererLayerImplTestSharedData, SharedData)
     EXPECT_EQ(sharedState, quadList[3]->shared_quad_state);
 
     // The state should be transformed only once.
-    EXPECT_RECT_EQ(gfx::Rect(30, 30, 50, 50), sharedState->clippedRectInTarget);
+    EXPECT_RECT_EQ(gfx::Rect(30, 30, 50, 50), sharedState->clipped_rect_in_target);
     WebTransformationMatrix expected;
     expected.translate(30, 30);
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expected, sharedState->quadTransform);
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expected, sharedState->content_to_target_transform);
 }
 
 }  // namespace

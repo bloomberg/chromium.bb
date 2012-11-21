@@ -61,7 +61,9 @@ TEST(RenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
     pass->setFilter(filter);
 
     // Stick a quad in the pass, this should not get copied.
-    pass->sharedQuadStateList().append(SharedQuadState::create(WebTransformationMatrix(), gfx::Rect(), gfx::Rect(), 1));
+    scoped_ptr<SharedQuadState> sharedState = SharedQuadState::Create();
+    sharedState->SetAll(WebTransformationMatrix(), gfx::Rect(), gfx::Rect(), 1);
+    pass->sharedQuadStateList().append(sharedState.Pass());
 
     scoped_ptr<CheckerboardDrawQuad> checkerboardQuad = CheckerboardDrawQuad::Create();
     checkerboardQuad->SetNew(pass->sharedQuadStateList().last(), gfx::Rect(), SkColor());

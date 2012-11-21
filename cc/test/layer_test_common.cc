@@ -38,7 +38,7 @@ void verifyQuadsExactlyCoverRect(const cc::QuadList& quads,
 
     for (size_t i = 0; i < quads.size(); ++i) {
         cc::DrawQuad* quad = quads[i];
-        gfx::RectF quadRectF = cc::MathUtil::mapClippedRect(quad->shared_quad_state->quadTransform, gfx::RectF(quad->rect));
+        gfx::RectF quadRectF = cc::MathUtil::mapClippedRect(quad->quadTransform(), gfx::RectF(quad->rect));
 
         // Before testing for exact coverage in the integer world, assert that rounding
         // will not round the rect incorrectly.

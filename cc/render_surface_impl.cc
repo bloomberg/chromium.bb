@@ -198,7 +198,8 @@ void RenderSurfaceImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQ
 
     gfx::Rect clippedRectInTarget = computeClippedRectInTarget(m_owningLayer);
     const WebTransformationMatrix& drawTransform = forReplica ? m_replicaDrawTransform : m_drawTransform;
-    SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(SharedQuadState::create(drawTransform, m_contentRect, clippedRectInTarget, m_drawOpacity).Pass());
+    SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(SharedQuadState::Create());
+    sharedQuadState->SetAll(drawTransform, m_contentRect, clippedRectInTarget, m_drawOpacity);
 
     if (m_owningLayer->showDebugBorders()) {
         SkColor color = forReplica ? DebugColors::SurfaceReplicaBorderColor() : DebugColors::SurfaceBorderColor();

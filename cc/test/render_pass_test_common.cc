@@ -27,7 +27,8 @@ void TestRenderPass::appendOneOfEveryQuadType(cc::ResourceProvider* resourceProv
     gfx::Rect rect(0, 0, 100, 100);
     gfx::Rect opaqueRect(10, 10, 80, 80);
     cc::ResourceProvider::ResourceId textureResource = resourceProvider->createResourceFromExternalTexture(1);
-    scoped_ptr<cc::SharedQuadState> sharedState = cc::SharedQuadState::create(WebTransformationMatrix(), rect, rect, 1);
+    scoped_ptr<cc::SharedQuadState> sharedState = cc::SharedQuadState::Create();
+    sharedState->SetAll(WebTransformationMatrix(), rect, rect, 1);
 
     scoped_ptr<cc::CheckerboardDrawQuad> checkerboardQuad = cc::CheckerboardDrawQuad::Create();
     checkerboardQuad->SetNew(sharedState.get(), rect, SK_ColorRED);

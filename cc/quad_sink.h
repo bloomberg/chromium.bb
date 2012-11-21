@@ -11,9 +11,9 @@
 namespace cc {
 
 class DrawQuad;
+class SharedQuadState;
 
 struct AppendQuadsData;
-struct SharedQuadState;
 
 class CC_EXPORT QuadSink {
 public:

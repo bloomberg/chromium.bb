@@ -28,16 +28,14 @@ TEST(DrawQuadTest, copySharedQuadState)
     gfx::Rect visibleContentRect(10, 12, 14, 16);
     gfx::Rect clippedRectInTarget(19, 21, 23, 25);
     float opacity = 0.25;
-    int id = 3;
 
-    scoped_ptr<SharedQuadState> state(SharedQuadState::create(quadTransform, visibleContentRect, clippedRectInTarget, opacity));
-    state->id = id;
+    scoped_ptr<SharedQuadState> state(SharedQuadState::Create());
+    state->SetAll(quadTransform, visibleContentRect, clippedRectInTarget, opacity);
 
-    scoped_ptr<SharedQuadState> copy(state->copy());
-    EXPECT_EQ(id, copy->id);
-    EXPECT_EQ(quadTransform, copy->quadTransform);
-    EXPECT_RECT_EQ(visibleContentRect, copy->visibleContentRect);
-    EXPECT_RECT_EQ(clippedRectInTarget, copy->clippedRectInTarget);
+    scoped_ptr<SharedQuadState> copy(state->Copy());
+    EXPECT_EQ(quadTransform, copy->content_to_target_transform);
+    EXPECT_RECT_EQ(visibleContentRect, copy->visible_content_rect);
+    EXPECT_RECT_EQ(clippedRectInTarget, copy->clipped_rect_in_target);
     EXPECT_EQ(opacity, copy->opacity);
 }
 
@@ -47,10 +45,9 @@ scoped_ptr<SharedQuadState> createSharedQuadState()
     gfx::Rect visibleContentRect(10, 12, 14, 16);
     gfx::Rect clippedRectInTarget(19, 21, 23, 25);
     float opacity = 1;
-    int id = 3;
 
-    scoped_ptr<SharedQuadState> state(SharedQuadState::create(quadTransform, visibleContentRect, clippedRectInTarget, opacity));
-    state->id = id;
+    scoped_ptr<SharedQuadState> state(SharedQuadState::Create());
+    state->SetAll(quadTransform, visibleContentRect, clippedRectInTarget, opacity);
     return state.Pass();
 }
 
@@ -66,8 +63,7 @@ void compareDrawQuad(DrawQuad* quad, DrawQuad* copy, SharedQuadState* copyShared
 
 #define CREATE_SHARED_STATE() \
     scoped_ptr<SharedQuadState> sharedState(createSharedQuadState()); \
-    scoped_ptr<SharedQuadState> copySharedState(sharedState->copy()); \
-    copySharedState->id = 5;
+    scoped_ptr<SharedQuadState> copySharedState(sharedState->Copy()); \
 
 #define QUAD_DATA \
     gfx::Rect quadRect(30, 40, 50, 60); \

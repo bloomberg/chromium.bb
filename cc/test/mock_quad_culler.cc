@@ -33,8 +33,6 @@ bool MockQuadCuller::append(scoped_ptr<DrawQuad> drawQuad, AppendQuadsData&)
 
 SharedQuadState* MockQuadCuller::useSharedQuadState(scoped_ptr<SharedQuadState> sharedQuadState)
 {
-    sharedQuadState->id = m_activeSharedQuadStateList.size();
-
     SharedQuadState* rawPtr = sharedQuadState.get();
     m_activeSharedQuadStateList.append(sharedQuadState.Pass());
     return rawPtr;

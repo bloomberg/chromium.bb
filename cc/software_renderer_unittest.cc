@@ -66,7 +66,8 @@ TEST_F(SoftwareRendererTest, solidColorQuad)
 
     initializeRenderer();
 
-    scoped_ptr<SharedQuadState> sharedQuadState = SharedQuadState::create(WebTransformationMatrix(), outerRect, outerRect, 1.0);
+    scoped_ptr<SharedQuadState> sharedQuadState = SharedQuadState::Create();
+    sharedQuadState->SetAll(WebTransformationMatrix(), outerRect, outerRect, 1.0);
     RenderPass::Id rootRenderPassId = RenderPass::Id(1, 1);
     scoped_ptr<TestRenderPass> rootRenderPass = TestRenderPass::create(rootRenderPassId, outerRect, WebTransformationMatrix());
     scoped_ptr<SolidColorDrawQuad> outerQuad = SolidColorDrawQuad::Create();
@@ -125,7 +126,8 @@ TEST_F(SoftwareRendererTest, tileQuad)
 
     gfx::Rect rect = gfx::Rect(gfx::Point(), deviceViewportSize());
 
-    scoped_ptr<SharedQuadState> sharedQuadState = SharedQuadState::create(WebTransformationMatrix(), outerRect, outerRect, 1.0);
+    scoped_ptr<SharedQuadState> sharedQuadState = SharedQuadState::Create();
+    sharedQuadState->SetAll(WebTransformationMatrix(), outerRect, outerRect, 1.0);
     RenderPass::Id rootRenderPassId = RenderPass::Id(1, 1);
     scoped_ptr<TestRenderPass> rootRenderPass = TestRenderPass::create(rootRenderPassId, gfx::Rect(gfx::Point(), deviceViewportSize()), WebTransformationMatrix());
     scoped_ptr<TileDrawQuad> outerQuad = TileDrawQuad::Create();
