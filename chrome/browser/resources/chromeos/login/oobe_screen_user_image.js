@@ -98,6 +98,9 @@ cr.define('oobe', function() {
       this.profileImage_.type = 'profile';
       this.profileImageLoading = true;
 
+      // Add camera stream element.
+      imageGrid.cameraImage = null;
+
       $('take-photo').addEventListener(
           'click', this.handleTakePhoto_.bind(this));
       $('discard-photo').addEventListener(
@@ -199,11 +202,14 @@ cr.define('oobe', function() {
           imageGrid.selectionType != e.oldSelectionType) {
         if (imageGrid.selectionType == 'camera') {
           // Programmatic selection of camera item is done in
-          // startCamera callback where streaming is started by itself.
-          imageGrid.startCamera(
-              function() {
+          // checkCameraPresence callback where streaming is started by itself.
+          imageGrid.checkCameraPresence(
+              function() {  // When present.
                 // Start capture if camera is still the selected item.
                 return imageGrid.selectedItem == imageGrid.cameraImage;
+              },
+              function() {  // When absent.
+                return true;  // Check again after some time.
               });
         } else {
           imageGrid.stopCamera();
@@ -236,6 +242,21 @@ cr.define('oobe', function() {
       Oobe.getInstance().headerHidden = true;
       var imageGrid = $('user-image-grid');
       imageGrid.updateAndFocus();
+      if (PRESELECT_CAMERA) {
+        // Check for camera presence and select it, if present.
+        imageGrid.checkCameraPresence(
+            function() {  // When present.
+              imageGrid.selectedItem = imageGrid.cameraImage;
+              return true;  // Start capture if ready.
+            },
+            function() {  // When absent.
+              return true;  // Check again after some time.
+            });
+      } else {
+        // Check continuously for camera presence but don't select it.
+        imageGrid.checkCameraPresence(function() { return false; },
+                                      function() { return true; });
+      }
       chrome.send('onUserImageScreenShown');
     },
 
@@ -272,13 +293,6 @@ cr.define('oobe', function() {
         this.profileImage_ =
             $('user-image-grid').updateItem(this.profileImage_, imageUrl);
       }
-    },
-
-    /**
-     * @param {boolean} present Whether camera is detected.
-     */
-    setCameraPresent_: function(present) {
-      $('user-image-grid').cameraPresent = present;
     },
 
     /**

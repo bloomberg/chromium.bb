@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/camera_detector.h"
+#include "chrome/browser/chromeos/login/camera_detector.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/location.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "base/threading/worker_pool.h"
 #include "chrome/browser/chromeos/system/udev_info_provider.h"
+#include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
 
 namespace chromeos {
 
@@ -33,18 +34,22 @@ CameraDetector::CameraPresence CameraDetector::camera_presence_ =
 bool CameraDetector::presence_check_in_progress_ = false;
 
 void CameraDetector::StartPresenceCheck(const base::Closure& check_done) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   DVLOG(1) << "Starting camera presence check";
+
   if (!presence_check_in_progress_) {
     presence_check_in_progress_ = true;
-    base::WorkerPool::PostTaskAndReply(
-        FROM_HERE,
+    BrowserThread::PostTaskAndReply(
+        BrowserThread::FILE, FROM_HERE,
         base::Bind(&CameraDetector::CheckPresence),
-        check_done,
-        /* task_is_slow= */ false);
+        check_done);
   }
 }
 
 void CameraDetector::CheckPresence() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
   bool present = false;
 
   system::UdevInfoProvider* udev_info = system::UdevInfoProvider::GetInstance();

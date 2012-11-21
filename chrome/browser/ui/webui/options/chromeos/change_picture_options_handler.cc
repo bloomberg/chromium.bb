@@ -12,7 +12,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/camera_detector.h"
+#include "chrome/browser/chromeos/login/camera_detector.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_image_manager.h"
@@ -115,9 +115,6 @@ void ChangePictureOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("photoTaken",
       base::Bind(&ChangePictureOptionsHandler::HandlePhotoTaken,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("checkCameraPresence",
-      base::Bind(&ChangePictureOptionsHandler::HandleCheckCameraPresence,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("onChangePicturePageShown",
       base::Bind(&ChangePictureOptionsHandler::HandlePageShown,
                  base::Unretained(this)));
@@ -192,20 +189,33 @@ void ChangePictureOptionsHandler::HandlePhotoTaken(
   image_decoder_->Start();
 }
 
-void ChangePictureOptionsHandler::HandleCheckCameraPresence(
-    const base::ListValue* args) {
-  DCHECK(args->empty());
-  CheckCameraPresence();
-}
-
 void ChangePictureOptionsHandler::HandlePageInitialized(
     const base::ListValue* args) {
   DCHECK(args && args->empty());
+
+#if 0
+  // TODO(ivankr): restore check on Chrome side.
+  // If no camera presence check has been performed in this session,
+  // start one now.
+  if (CameraDetector::camera_presence() ==
+      CameraDetector::kCameraPresenceUnknown) {
+    CheckCameraPresence();
+  }
+
+  // While the check is in progress, use previous camera presence state and
+  // presume it is present if no check has been performed yet.
+  SetCameraPresent(CameraDetector::camera_presence() !=
+                   CameraDetector::kCameraAbsent);
+#endif
+
   SendDefaultImages();
 }
 
 void ChangePictureOptionsHandler::HandlePageShown(const base::ListValue* args) {
   DCHECK(args && args->empty());
+  // TODO(ivankr): If user opens settings and goes to Change Picture page right
+  // after the check started |HandlePageInitialized| has been completed,
+  // |CheckCameraPresence| will be called twice, should be throttled.
   CheckCameraPresence();
   SendSelectedImage();
   UpdateProfileImage();
@@ -371,9 +381,13 @@ void ChangePictureOptionsHandler::SetImageFromCamera(
 }
 
 void ChangePictureOptionsHandler::CheckCameraPresence() {
+  // For WebRTC, camera presence checked is done on JS side.
+#if 0
+  // TODO(ivankr): restore check on Chrome side.
   CameraDetector::StartPresenceCheck(
       base::Bind(&ChangePictureOptionsHandler::OnCameraPresenceCheckDone,
                  weak_factory_.GetWeakPtr()));
+#endif
 }
 
 void ChangePictureOptionsHandler::SetCameraPresent(bool present) {

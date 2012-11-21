@@ -103,9 +103,12 @@ cr.define('options', function() {
      */
     didShowPage: function() {
       var imageGrid = $('user-image-grid');
+      imageGrid.updateAndFocus();
       // Reset camera element.
       imageGrid.cameraImage = null;
-      imageGrid.updateAndFocus();
+      // Check continuously for camera presence but don't select it.
+      imageGrid.checkCameraPresence(function() { return false; },
+                                    function() { return true; });
       chrome.send('onChangePicturePageShown');
     },
 
@@ -176,10 +179,13 @@ cr.define('options', function() {
       if (!imageGrid.inProgramSelection &&
           imageGrid.selectionType != e.oldSelectionType) {
         if (imageGrid.selectionType == 'camera') {
-          imageGrid.startCamera(
-              function() {
+            imageGrid.checkCameraPresence(
+              function() {  // When present.
                 // Start capture if camera is still the selected item.
                 return imageGrid.selectedItem == imageGrid.cameraImage;
+              },
+              function() {  // When absent.
+                return true;  // Check again after some time.
               });
         } else {
           imageGrid.stopCamera();
@@ -251,13 +257,6 @@ cr.define('options', function() {
      */
     setSelectedImage_: function(url) {
       $('user-image-grid').selectedItemUrl = url;
-    },
-
-    /**
-     * @param {boolean} present Whether camera is detected.
-     */
-    setCameraPresent_: function(present) {
-      $('user-image-grid').cameraPresent = present;
     },
 
     /**
