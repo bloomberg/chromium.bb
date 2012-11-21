@@ -1197,19 +1197,23 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // touches reads preferences.
   if (is_first_run_) {
 #if defined(OS_WIN)
-    // On Windows, trigger the Active Setup command in some scenarios to finish
-    // configuring this user's install (e.g. per-user shortcuts on system-level
-    // installs).
+    // On Windows, trigger the Active Setup command for system-level Chromes to
+    // finish configuring this user's install (e.g. per-user shortcuts).
     // Delay the task slightly to give Chrome launch I/O priority while also
     // making sure shortcuts are created promptly to avoid annoying the user by
     // re-creating shortcuts he previously deleted.
     // TODO(gab): Add a first run section to ChromeBrowserMainParts and remove
     // OS specific sections below.
     static const int64 kTiggerActiveSetupDelaySeconds = 5;
-    BrowserThread::GetBlockingPool()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&InstallUtil::TriggerActiveSetupCommandIfNeeded),
-        base::TimeDelta::FromSeconds(kTiggerActiveSetupDelaySeconds));
+    FilePath chrome_exe;
+    if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+      NOTREACHED();
+    } else if (!InstallUtil::IsPerUserInstall(chrome_exe.value().c_str())) {
+      BrowserThread::GetBlockingPool()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&InstallUtil::TriggerActiveSetupCommand),
+          base::TimeDelta::FromSeconds(kTiggerActiveSetupDelaySeconds));
+    }
 #endif  // OS_WIN
     if (!first_run_ui_bypass_) {
       first_run::AutoImport(profile_,

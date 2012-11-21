@@ -23,6 +23,7 @@
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "base/win/metro.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -126,14 +127,7 @@ string16 InstallUtil::GetActiveSetupPath(BrowserDistribution* dist) {
   return kInstalledComponentsPath + dist->GetAppGuid();
 }
 
-void InstallUtil::TriggerActiveSetupCommandIfNeeded() {
-  FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    NOTREACHED();
-  } else if (InstallUtil::IsPerUserInstall(chrome_exe.value().c_str())) {
-    return;
-  }
-
+void InstallUtil::TriggerActiveSetupCommand() {
   string16 active_setup_reg(
       GetActiveSetupPath(BrowserDistribution::GetDistribution()));
   base::win::RegKey active_setup_key(
@@ -152,8 +146,10 @@ void InstallUtil::TriggerActiveSetupCommandIfNeeded() {
   // and the time setup.exe checks for it.
   cmd.AppendSwitch(installer::switches::kForceConfigureUserSettings);
 
-  base::LaunchOptions default_options;
-  if (!base::LaunchProcess(cmd.GetCommandLineString(), default_options, NULL))
+  base::LaunchOptions launch_options;
+  if (base::win::IsMetroProcess())
+    launch_options.force_breakaway_from_job_ = true;
+  if (!base::LaunchProcess(cmd.GetCommandLineString(), launch_options, NULL))
     PLOG(ERROR) << cmd.GetCommandLineString();
 }
 

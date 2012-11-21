@@ -32,9 +32,9 @@ class InstallUtil {
   // e.g. Software\Microsoft\Active Setup\Installed Components\<dist_guid>
   static string16 GetActiveSetupPath(BrowserDistribution* dist);
 
-  // Attempts to trigger the command that would be triggered for Chrome on
-  // Active Setup. This will be a no-op for user-level installs.
-  static void TriggerActiveSetupCommandIfNeeded();
+  // Attempts to trigger the command that would be run by Active Setup for a
+  // system-level Chrome. For use only when system-level Chrome is installed.
+  static void TriggerActiveSetupCommand();
 
   // Launches given exe as admin on Vista.
   static bool ExecuteExeAsAdmin(const CommandLine& cmd, DWORD* exit_code);
