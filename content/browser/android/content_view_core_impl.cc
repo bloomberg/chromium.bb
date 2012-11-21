@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/load_url_params.h"
 #include "content/browser/android/touch_point.h"
 #include "content/browser/renderer_host/java/java_bound_object.h"
@@ -1069,6 +1070,22 @@ void ContentViewCoreImpl::SetSize(JNIEnv* env,
     return;
 
   view->SetSize(gfx::Size(width, height));
+}
+
+void ContentViewCoreImpl::ShowInterstitialPage(
+    JNIEnv* env, jobject obj, jstring jurl, jint delegate_ptr) {
+  GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
+  InterstitialPageDelegateAndroid* delegate =
+      reinterpret_cast<InterstitialPageDelegateAndroid*>(delegate_ptr);
+  InterstitialPage* interstitial = InterstitialPage::Create(
+      web_contents_, false, url, delegate);
+  delegate->set_interstitial_page(interstitial);
+  interstitial->Show();
+}
+
+jboolean ContentViewCoreImpl::IsShowingInterstitialPage(JNIEnv* env,
+                                                        jobject obj) {
+  return web_contents_->ShowingInterstitialPage();
 }
 
 void ContentViewCoreImpl::ScrollFocusedEditableNodeIntoView(JNIEnv* env,

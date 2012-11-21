@@ -222,6 +222,8 @@
     'browser/android/download_controller_android_impl.cc',
     'browser/android/download_controller_android_impl.h',
     'browser/android/devtools_auth.cc',
+    'browser/android/interstitial_page_delegate_android.cc',
+    'browser/android/interstitial_page_delegate_android.h',
     'browser/android/load_url_params.cc',
     'browser/android/load_url_params.h',
     'browser/android/media_player_manager_android.cc',

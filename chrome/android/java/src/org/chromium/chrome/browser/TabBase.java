@@ -7,17 +7,13 @@ package org.chromium.chrome.browser;
 import android.content.Context;
 import android.text.TextUtils;
 
-import org.chromium.chrome.browser.ChromeWebContentsDelegateAndroid;
-import org.chromium.chrome.browser.ContentViewUtil;
 import org.chromium.content.browser.ContentView;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.common.CleanupReference;
 import org.chromium.ui.gfx.NativeWindow;
 
 import java.util.ArrayList;
 import java.util.List;
-
 
 /**
  * The basic Java representation of a tab.  Contains and manages a {@link ContentView}.
@@ -45,9 +41,9 @@ public class TabBase {
     }
 
     /**
-     * @param context           The Context the view is running in.
-     * @param nativeWebContents A native pointer to the WebContents this tab represents.
-     * @param window            The NativeWindow should represent this tab.
+     * @param context              The Context the view is running in.
+     * @param nativeWebContentsPtr A native pointer to the WebContents this tab represents.
+     * @param window               The NativeWindow should represent this tab.
      */
     public TabBase(Context context, int nativeWebContentsPtr, NativeWindow window) {
         mWindow = window;
@@ -154,7 +150,8 @@ public class TabBase {
         }
     }
 
-    private class TabBaseChromeWebContentsDelegateAndroid extends ChromeWebContentsDelegateAndroid {
+    private class TabBaseChromeWebContentsDelegateAndroid
+            extends ChromeWebContentsDelegateAndroid {
         @Override
         public void onLoadProgressChanged(int progress) {
             for (int i = 0; i < mObservers.size(); ++i) {

@@ -51,7 +51,7 @@ public class AutofillTest extends ChromiumTestShellTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        ChromiumTestShellActivity activity = launchChromiumTestShellWithUrl("about:blank");
+        ChromiumTestShellActivity activity = launchChromiumTestShellWithBlankPage();
         assertNotNull(activity);
         waitForActiveShellToBeDoneLoading();
 

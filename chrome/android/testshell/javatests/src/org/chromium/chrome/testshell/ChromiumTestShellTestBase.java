@@ -43,6 +43,13 @@ public class ChromiumTestShellTestBase extends
     }
 
     /**
+     * Starts the ChromiumTestShell activity and loads a blank page.
+     */
+    protected ChromiumTestShellActivity launchChromiumTestShellWithBlankPage() {
+        return launchChromiumTestShellWithUrl("about:blank");
+    }
+
+    /**
      * Waits for the Active shell to finish loading.  This times out after
      * WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT milliseconds and it shouldn't be used for long
      * loading pages. Instead it should be used more for test initialization. The proper way

@@ -85,9 +85,6 @@ ShellMainDelegate::ShellMainDelegate() {
 }
 
 ShellMainDelegate::~ShellMainDelegate() {
-#if defined(OS_ANDROID)
-  NOTREACHED();
-#endif
 }
 
 bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {

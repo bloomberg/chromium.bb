@@ -738,6 +738,27 @@ public class ContentViewCore implements MotionEventDelegate {
         return null;
     }
 
+    /**
+     * Shows an interstitial page driven by the passed in delegate.
+     *
+     * @param url The URL being blocked by the interstitial.
+     * @param delegate The delegate handling the interstitial.
+     * @VisibleForTesting
+     */
+    public void showInterstitialPage(
+            String url, InterstitialPageDelegateAndroid delegate) {
+        if (mNativeContentViewCore == 0) return;
+        nativeShowInterstitialPage(mNativeContentViewCore, url, delegate.getNative());
+    }
+
+    /**
+     * @return Whether the page is currently showing an interstitial, such as a bad HTTPS page.
+     */
+    public boolean isShowingInterstitialPage() {
+        return mNativeContentViewCore == 0 ?
+                false : nativeIsShowingInterstitialPage(mNativeContentViewCore);
+    }
+
     @CalledByNative
     public int getWidth() {
         return mViewportWidth;
@@ -2314,6 +2335,10 @@ public class ContentViewCore implements MotionEventDelegate {
     private native String nativeGetURL(int nativeContentViewCoreImpl);
 
     private native String nativeGetTitle(int nativeContentViewCoreImpl);
+
+    private native void nativeShowInterstitialPage(
+            int nativeContentViewCoreImpl, String url, int nativeInterstitialPageDelegateAndroid);
+    private native boolean nativeIsShowingInterstitialPage(int nativeContentViewCoreImpl);
 
     private native boolean nativeIsIncognito(int nativeContentViewCoreImpl);
 
