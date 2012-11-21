@@ -13,9 +13,6 @@
         'defines': [
           'GLES2_UTILS_IMPLEMENTATION',
         ],
-        'include_dirs': [
-          '<(DEPTH)/third_party/khronos',
-        ],
         'sources': [
           'common/gles2_cmd_format.h',
           'common/gles2_cmd_utils.cc',

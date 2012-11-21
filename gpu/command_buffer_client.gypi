@@ -5,14 +5,15 @@
 {
   'include_dirs': [
     '..',
-    '<(DEPTH)/third_party/khronos',
   ],
   'all_dependent_settings': {
     'include_dirs': [
       '..',
-      '<(DEPTH)/third_party/khronos',
     ],
   },
+  'dependencies': [
+    '../third_party/khronos/khronos.gyp:headers',
+  ],
   'sources': [
     'command_buffer/client/atomicops.cc',
     'command_buffer/client/atomicops.h',

@@ -5,10 +5,10 @@
 {
   'dependencies': [
     '../ipc/ipc.gyp:ipc',
+    '../third_party/khronos/khronos.gyp:headers',
   ],
   'include_dirs': [
     '..',
-    '<(DEPTH)/third_party/khronos',
   ],
   'sources': [
     'ipc/command_buffer_proxy.h',

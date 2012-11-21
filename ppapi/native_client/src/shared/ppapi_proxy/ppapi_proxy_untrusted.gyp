@@ -13,6 +13,7 @@
       'dependencies': [
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
         '<(DEPTH)/media/media_untrusted.gyp:shared_memory_support_untrusted',
+        '<(DEPTH)/third_party/khronos/khronos.gyp:headers',
       ],
       'variables': {
         'nlib_target': 'libppruntime.a',
@@ -21,7 +22,6 @@
         'include_dirs': [
           '<(DEPTH)/gpu',
           '<(DEPTH)/media',
-          '<(DEPTH)/third_party/khronos',
           '<(DEPTH)/ppapi/native_client/src/shared/ppapi_proxy/untrusted',
         ],
         'sources': [

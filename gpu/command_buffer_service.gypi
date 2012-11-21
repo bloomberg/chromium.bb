@@ -5,12 +5,10 @@
 {
   'include_dirs': [
     '..',
-    '<(DEPTH)/third_party/khronos',
   ],
   'all_dependent_settings': {
     'include_dirs': [
       '..',
-      '<(DEPTH)/third_party/khronos',
     ],
   },
   'dependencies': [
@@ -21,6 +19,7 @@
     '../ui/surface/surface.gyp:surface',
     '../ui/ui.gyp:ui',
     '../third_party/angle/src/build_angle.gyp:translator_glsl',
+    '../third_party/khronos/khronos.gyp:headers',
     '../third_party/smhasher/smhasher.gyp:cityhash',
   ],
   'sources': [
@@ -110,7 +109,7 @@
     }],
     ['ui_compositor_image_transport==1', {
       'include_dirs': [
-        '<(DEPTH)/third_party/angle/include',
+        '../third_party/angle/include',
       ],
     }],
   ],

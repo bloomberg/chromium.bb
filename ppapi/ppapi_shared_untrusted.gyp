@@ -32,7 +32,6 @@
           },
           'include_dirs': [
             '..',
-            '../third_party/khronos',
           ],
           'dependencies': [
             '../native_client/tools.gyp:prep_toolchain',
@@ -41,6 +40,7 @@
             '../gpu/gpu_untrusted.gyp:command_buffer_client_untrusted',
             '../gpu/gpu_untrusted.gyp:gles2_implementation_untrusted',
             '../media/media_untrusted.gyp:shared_memory_support_untrusted',
+            '../third_party/khronos/khronos.gyp:headers',
           ],
         },
       ],

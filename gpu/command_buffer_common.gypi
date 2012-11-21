@@ -3,14 +3,9 @@
 # found in the LICENSE file.
 
 {
-  'include_dirs': [
-    '<(DEPTH)/third_party/khronos',
+  'dependencies': [
+    '../third_party/khronos/khronos.gyp:headers',
   ],
-  'all_dependent_settings': {
-    'include_dirs': [
-      '<(DEPTH)/third_party/khronos',
-    ],
-  },
   'sources': [
     'command_buffer/common/bitfield_helpers.h',
     'command_buffer/common/buffer.h',

@@ -16,16 +16,11 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
+        '../third_party/khronos/khronos.gyp:headers',
         '../ui/gl/gl.gyp:gl',
         'command_buffer/command_buffer.gyp:gles2_utils',
         'gles2_cmd_helper',
       ],
-      'all_dependent_settings': {
-        'include_dirs': [
-          # For GLES2/gl2.h
-          '<(DEPTH)/third_party/khronos',
-        ],
-      },
       'defines': [
         'GLES2_IMPL_IMPLEMENTATION',
       ],
@@ -43,16 +38,11 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../third_party/khronos/khronos.gyp:headers',
         '../ui/gl/gl.gyp:gl',
         'command_buffer/command_buffer.gyp:gles2_utils',
         'gles2_cmd_helper',
       ],
-      'all_dependent_settings': {
-        'include_dirs': [
-          # For GLES2/gl2.h
-          '<(DEPTH)/third_party/khronos',
-        ],
-      },
       'sources': [
         '<@(gles2_implementation_source_files)',
       ],
@@ -68,15 +58,10 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../third_party/khronos/khronos.gyp:headers',
         'command_buffer/command_buffer.gyp:gles2_utils',
         'gles2_cmd_helper',
       ],
-      'all_dependent_settings': {
-        'include_dirs': [
-          # For GLES2/gl2.h
-          '<(DEPTH)/third_party/khronos',
-        ],
-      },
       'sources': [
         '<@(gles2_implementation_source_files)',
       ],
@@ -268,11 +253,11 @@
       'dependencies': [
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../third_party/khronos/khronos.gyp:headers',
         '../ui/gl/gl.gyp:gl',
       ],
       'include_dirs': [
         '..',
-        '<(DEPTH)/third_party/khronos',
       ],
       'sources': [
         'command_buffer/common/gl_mock.h',

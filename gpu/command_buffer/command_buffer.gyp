@@ -16,13 +16,9 @@
       'variables': {
         'gles2_utils_target': 1,
       },
-      'all_dependent_settings': {
-        'include_dirs': [
-          '<(DEPTH)/third_party/khronos',
-        ],
-      },
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../third_party/khronos/khronos.gyp:headers',
       ],
       'export_dependent_settings': [
         '../../base/base.gyp:base',
