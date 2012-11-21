@@ -19,7 +19,9 @@ message SuspendState {
   }
   optional Type type = 1;
 
-  // Monotonically-increasing time at which this event occured, as given by
-  // base::TimeTicks::ToInternalValue().
-  optional int64 timestamp = 2;
+  // Wall time at which this event occured, as given by
+  // base::Time::ToInternalValue().  (base::Time is used because the monotonic
+  // clock used by base::TimeTicks doesn't advance while the system is
+  // suspended.)
+  optional int64 wall_time = 2;
 }
