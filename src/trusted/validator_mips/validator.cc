@@ -202,14 +202,15 @@ static PatternMatch CheckLoadStore(const SfiValidator &sfi,
                                    ProblemSink *out) {
   if (second.IsLoadStore()) {
     Register base_addr_reg = second.BaseAddressRegister();
-    if (!sfi.data_address_registers().ContainsAll(base_addr_reg)) {
+    if (!sfi.data_address_registers().
+           ContainsAll(RegisterList(base_addr_reg))) {
       if (first.IsMask(base_addr_reg, kRegisterLoadStoreMask)) {
         return PATTERN_SAFE;
       }
       out->ReportProblem(second.addr(), second.safety(),
                          kProblemUnsafeLoadStore);
       return PATTERN_UNSAFE;
-      }
+    }
   }
   return NO_MATCH;
 }
@@ -355,6 +356,13 @@ bool SfiValidator::ValidateFallthrough(const CodeSegment &segment,
 
     prev = inst;
   }
+
+  // Validate the last instruction, paired with a nop.
+  const Instruction nop(nacl_mips_dec::kNop);
+  DecodedInstruction one_past_end(segment.EndAddr(), nop,
+                                  nacl_mips_dec::decode(nop, decode_state_));
+  complete_success &= ApplyPatterns(prev, one_past_end, critical, out);
+
   return complete_success;
 }
 

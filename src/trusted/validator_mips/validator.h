@@ -269,7 +269,7 @@ class DecodedInstruction {
   }
 
   bool IsDestGprReg(nacl_mips_dec::RegisterList rl) const {
-    return rl.ContainsAny(DestGprReg());
+    return rl.ContainsAny(nacl_mips_dec::RegisterList(DestGprReg()));
   }
 
   bool IsDataRegMask() const {

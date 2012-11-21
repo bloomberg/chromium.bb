@@ -18,6 +18,7 @@
 using nacl_mips_val::SfiValidator;
 using nacl_mips_val::CodeSegment;
 using nacl_mips_dec::Register;
+using nacl_mips_dec::RegisterList;
 using nacl_mips_dec::kRegisterStack;
 using nacl_mips_dec::kRegListReserved;
 using std::vector;
@@ -85,12 +86,12 @@ EXTERN_C_BEGIN
 int NCValidateSegment(uint8_t *mbase, uint32_t vbase, size_t size,
                       bool stubout_mode) {
   SfiValidator validator(
-      16,                            // 64,  // bytes per bundle
-      1U * NACL_DATA_SEGMENT_START,  // bytes of code space
-      1U * (1<<NACL_MAX_ADDR_BITS),  // bytes of data space // keep in sync w/
-                                     // SConstruct: irt_compatible_rodata_addr
-      kRegListReserved,              // read only register(s)
-      kRegisterStack);               // data addressing register(s)
+      16,                             // 64,  // bytes per bundle
+      1U * NACL_DATA_SEGMENT_START,   // bytes of code space
+      1U * (1<<NACL_MAX_ADDR_BITS),   // bytes of data space // keep in sync w/
+                                      // SConstruct: irt_compatible_rodata_addr
+      kRegListReserved,               // read only register(s)
+      RegisterList(kRegisterStack));  // data addressing register(s)
   bool success = false;
 
   vector<CodeSegment> segments;

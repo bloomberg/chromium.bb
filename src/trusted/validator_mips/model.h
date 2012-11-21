@@ -1,8 +1,7 @@
 /*
- * Copyright 2012 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- * Copyright 2012, Google Inc.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_MIPS_MODEL_H
@@ -78,7 +77,7 @@ class RegisterList {
    *  - It inlines to a single machine instruction,
    *  - The readability gain in inst_classes.cc is large.
    */
-  inline RegisterList(const Register r);
+  explicit inline RegisterList(const Register r);
 
   /*
    * Checks whether this list contains the given register.
@@ -152,6 +151,9 @@ class Instruction {
 uint32_t const kInstrSize   = 4;
 uint32_t const kInstrAlign  = 0xFFFFFFFC;
 uint32_t const kBundleAlign = 0xFFFFFFF0;
+
+// Opcode for nop instruction.
+uint32_t const kNop = 0x0;
 
 }  // namespace
 

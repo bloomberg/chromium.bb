@@ -1,7 +1,7 @@
 /*
- * Copyright 2012 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -43,6 +43,10 @@ using nacl_mips_dec::Instruction;
 using nacl_mips_val::SfiValidator;
 using nacl_mips_val::ProblemSink;
 using nacl_mips_val::CodeSegment;
+using nacl_mips_dec::kInstrSize;
+using nacl_mips_dec::kNop;
+using nacl_mips_dec::kRegisterStack;
+using nacl_mips_dec::kRegListReserved;
 
 namespace {
 
@@ -250,10 +254,6 @@ static const AnnotatedInstruction examples_of_safe_jumps[] = {
   { (10<<21|8),               "simple jump jr t2" },
 };
 
-static const AnnotatedInstruction nop_instruction[] = {
-  {  0, "nop"},
-};
-
 TEST_F(ValidatorTests, SafeMaskedJumps) {
   /*
    * Produces examples of masked jumps using the safe jump table
@@ -266,7 +266,7 @@ TEST_F(ValidatorTests, SafeMaskedJumps) {
               << ", "
               << examples_of_safe_jumps[s].about;
       mips_inst program[] = {
-        nop_instruction[0].inst,
+        kNop,
         examples_of_safe_jump_masks[m].inst,
         examples_of_safe_jumps[s].inst,
       };
@@ -357,7 +357,7 @@ TEST_F(ValidatorTests, IncorrectStackOps) {
       mips_inst bad_program[] = {
         examples_of_safe_stack_masks[m].inst,
         examples_of_safe_stack_ops[s].inst,
-        nop_instruction[0].inst
+        kNop
       };
 
       ValidationShouldFail(bad_program,
@@ -365,6 +365,34 @@ TEST_F(ValidatorTests, IncorrectStackOps) {
                            kDefaultBaseAddr,
                            bad_message.str());
     }
+  }
+}
+
+TEST_F(ValidatorTests, NopBundle) {
+  vector<mips_inst> code(_validator.bytes_per_bundle() / kInstrSize, kNop);
+  ValidationShouldPass(&code[0], code.size(), kDefaultBaseAddr,
+                       "NOP bundle");
+}
+
+TEST_F(ValidatorTests, UnmaskedSpUpdate) {
+  vector<mips_inst> code(_validator.bytes_per_bundle() / kInstrSize, kNop);
+  for (vector<mips_inst>::size_type i = 0; i < code.size(); ++i) {
+    std::fill(code.begin(), code.end(), kNop);
+    code[i] = 0x8fbd0000;  // lw $sp, 0($sp)
+    ValidationShouldFail(&code[0], code.size(), kDefaultBaseAddr,
+                         "unmasked SP update");
+  }
+}
+
+TEST_F(ValidatorTests, MaskedSpUpdate) {
+  vector<mips_inst> code((_validator.bytes_per_bundle() / kInstrSize) * 2,
+                         kNop);
+  for (vector<mips_inst>::size_type i = 0; i < code.size() - 1; ++i) {
+    std::fill(code.begin(), code.end(), kNop);
+    code[i] = examples_of_safe_stack_ops[0].inst;
+    code[i + 1] = examples_of_safe_stack_masks[0].inst;
+    ValidationShouldPass(&code[0], code.size(), kDefaultBaseAddr,
+                         "masked SP update");
   }
 }
 
@@ -376,8 +404,8 @@ ValidatorTests::ValidatorTests()
   : _validator(kBytesPerBundle,
                kCodeRegionSize,
                kDataRegionSize,
-               nacl_mips_dec::kRegListReserved,
-               nacl_mips_dec::kRegisterStack) {}
+               kRegListReserved,
+               RegisterList(kRegisterStack)) {}
 
 bool ValidatorTests::Validate(const mips_inst *pattern,
                               size_t inst_count,
