@@ -138,8 +138,14 @@ bool WillHandleBrowserAboutURL(GURL* url,
     path = chrome::kChromeUIExtensionsHost;
   // Redirect chrome://history.
   } else if (host == chrome::kChromeUIHistoryHost) {
+#if defined(OS_ANDROID)
+    // On Android, redirect directly to chrome://history-frame since
+    // uber page is unsupported.
+    host = chrome::kChromeUIHistoryFrameHost;
+#else
     host = chrome::kChromeUIUberHost;
     path = chrome::kChromeUIHistoryHost + url->path();
+#endif
   // Redirect chrome://settings
   } else if (host == chrome::kChromeUISettingsHost) {
     host = chrome::kChromeUIUberHost;
