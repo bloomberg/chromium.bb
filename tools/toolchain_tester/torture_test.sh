@@ -18,6 +18,7 @@
 ######################################################################
 
 set -o nounset
+set -o errexit
 
 readonly TEST_ROOT=${TEST_ROOT:-/tmp/nacl_compiler_test}
 readonly TEST_TARBALL_URL=${TEST_TARBALL_URL:-http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/gcc-testsuite-4.6.1.tar.bz2}
@@ -102,7 +103,7 @@ prereq() {
     # but one that is freshly built into a different directory.
     # For other PNaCl cases, we rely on nacl-gcc to build irt_core anyway.
     # If not specified, let scons use its default.
-    if [[ ${PNACL_TOOLCHAIN_LABEL} != "" ]]; then
+    if [[ -n ${PNACL_TOOLCHAIN_LABEL:-} ]]; then
       custom_tc="pnaclsdk_mode=custom:toolchain/${PNACL_TOOLCHAIN_LABEL}"
     fi
   fi

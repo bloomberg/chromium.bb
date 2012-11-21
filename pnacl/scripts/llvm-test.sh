@@ -46,9 +46,7 @@ readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-8}
 # built into a different directory,
 # Overriding the default here will Not affect the sel_ldr
 # and IRT used to run the tests (they are controlled by run.py)
-if [[ ${PNACL_TOOLCHAIN_LABEL} == "" ]]; then
-  PNACL_TOOLCHAIN_LABEL="pnacl_${BUILD_PLATFORM}_x86"
-fi
+PNACL_TOOLCHAIN_LABEL=${PNACL_TOOLCHAIN_LABEL:-"pnacl_${BUILD_PLATFORM}_x86"}
 readonly PNACL_BIN="${NACL_ROOT}/toolchain/${PNACL_TOOLCHAIN_LABEL}/newlib/bin"
 readonly PNACL_SDK_DIR=\
 "${NACL_ROOT}/toolchain/${PNACL_TOOLCHAIN_LABEL}/newlib/sdk/lib"
