@@ -72,8 +72,10 @@ void OpenAllImpl(const BookmarkNode* node,
     if (!*opened_url) {
       *opened_url = true;
       // We opened the first URL which may have opened a new window or clobbered
-      // the current page, reset the navigator just to be sure.
-      *navigator = opened_tab;
+      // the current page, reset the navigator just to be sure. |opened_tab| may
+      // be NULL in tests.
+      if (opened_tab)
+        *navigator = opened_tab;
     }
   } else {
     // For folders only open direct children.
