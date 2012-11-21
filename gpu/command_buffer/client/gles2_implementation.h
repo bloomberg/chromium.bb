@@ -18,7 +18,6 @@
 #include "../common/gles2_cmd_utils.h"
 #include "../common/scoped_ptr.h"
 #include "../client/ref_counted.h"
-#include "../client/client_context_state.h"
 #include "../client/gles2_cmd_helper.h"
 #include "../client/gles2_interface.h"
 #include "../client/query_tracker.h"
@@ -109,8 +108,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
     virtual void OnErrorMessage(const char* msg, int id) = 0;
   };
 
-  // Stores GL state that never changes.
-  struct GLStaticState {
+  // Stores client side cached GL state.
+  struct GLCachedState {
     struct GLES2_IMPL_EXPORT IntState {
       IntState();
       GLint max_combined_texture_image_units;
@@ -126,7 +125,32 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
       GLint num_compressed_texture_formats;
       GLint num_shader_binary_formats;
     };
+    struct EnableState {
+      EnableState()
+          : blend(false),
+            cull_face(false),
+            depth_test(false),
+            dither(false),
+            polygon_offset_fill(false),
+            sample_alpha_to_coverage(false),
+            sample_coverage(false),
+            scissor_test(false),
+            stencil_test(false) {
+      }
+
+      bool blend;
+      bool cull_face;
+      bool depth_test;
+      bool dither;
+      bool polygon_offset_fill;
+      bool sample_alpha_to_coverage;
+      bool sample_coverage;
+      bool scissor_test;
+      bool stencil_test;
+    };
+
     IntState int_state;
+    EnableState enable_state;
   };
 
   // The maxiumum result size from simple GL get commands.
@@ -382,11 +406,11 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
   bool IsTextureReservedId(GLuint id) { return false; }
   bool IsVertexArrayReservedId(GLuint id) { return false; }
 
-  bool BindBufferHelper(GLenum target, GLuint texture);
-  bool BindFramebufferHelper(GLenum target, GLuint texture);
-  bool BindRenderbufferHelper(GLenum target, GLuint texture);
-  bool BindTextureHelper(GLenum target, GLuint texture);
-  bool BindVertexArrayHelper(GLuint array);
+  void BindBufferHelper(GLenum target, GLuint texture);
+  void BindFramebufferHelper(GLenum target, GLuint texture);
+  void BindRenderbufferHelper(GLenum target, GLuint texture);
+  void BindTextureHelper(GLenum target, GLuint texture);
+  void BindVertexArrayHelper(GLuint array);
 
   void DeleteBuffersHelper(GLsizei n, const GLuint* buffers);
   void DeleteFramebuffersHelper(GLsizei n, const GLuint* framebuffers);
@@ -473,8 +497,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
 
   ExtensionStatus angle_pack_reverse_row_order_status;
 
-  GLStaticState static_state_;
-  ClientContextState state_;
+  GLCachedState gl_state_;
 
   // pack alignment as last set by glPixelStorei
   GLint pack_alignment_;
@@ -504,9 +527,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
 
   GLuint bound_framebuffer_;
   GLuint bound_renderbuffer_;
-
-  // The program in use by glUseProgram
-  GLuint current_program_;
 
   // The currently bound array buffer.
   GLuint bound_array_buffer_id_;

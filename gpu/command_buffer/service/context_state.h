@@ -88,13 +88,6 @@ struct GPU_EXPORT ContextState {
   void InitCapabilities() const;
   void InitState() const;
 
-  // Helper for getting cached state.
-  bool GetStateAsGLint(
-      GLenum pname, GLint* params, GLsizei* num_written) const;
-  bool GetStateAsGLfloat(
-      GLenum pname, GLfloat* params, GLsizei* num_written) const;
-  bool GetEnabled(GLenum cap) const;
-
   #include "gpu/command_buffer/service/context_state_autogen.h"
 
   EnableFlags enable_flags;

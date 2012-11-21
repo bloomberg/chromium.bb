@@ -391,7 +391,7 @@ const size_t GLES2Implementation::kMaxSizeOfSimpleResult;
 const unsigned int GLES2Implementation::kStartingOffset;
 #endif
 
-GLES2Implementation::GLStaticState::IntState::IntState()
+GLES2Implementation::GLCachedState::IntState::IntState()
     : max_combined_texture_image_units(0),
       max_cube_map_texture_size(0),
       max_fragment_uniform_vectors(0),
@@ -437,7 +437,6 @@ GLES2Implementation::GLES2Implementation(
       active_texture_unit_(0),
       bound_framebuffer_(0),
       bound_renderbuffer_(0),
-      current_program_(0),
       bound_array_buffer_id_(0),
       bound_element_array_buffer_id_(0),
       client_side_array_id_(0),
@@ -504,17 +503,16 @@ bool GLES2Implementation::Initialize(
 
   GetMultipleIntegervCHROMIUM(
       pnames, arraysize(pnames),
-      &static_state_.int_state.max_combined_texture_image_units,
-      sizeof(static_state_.int_state));
+      &gl_state_.int_state.max_combined_texture_image_units,
+      sizeof(gl_state_.int_state));
 
   util_.set_num_compressed_texture_formats(
-      static_state_.int_state.num_compressed_texture_formats);
+      gl_state_.int_state.num_compressed_texture_formats);
   util_.set_num_shader_binary_formats(
-      static_state_.int_state.num_shader_binary_formats);
+      gl_state_.int_state.num_shader_binary_formats);
 
   texture_units_.reset(
-      new TextureUnit[
-          static_state_.int_state.max_combined_texture_image_units]);
+      new TextureUnit[gl_state_.int_state.max_combined_texture_image_units]);
 
   query_tracker_.reset(new QueryTracker(mapped_memory_.get()));
 
@@ -523,7 +521,7 @@ bool GLES2Implementation::Initialize(
       this, kClientSideArrayId, arraysize(reserved_ids_), &reserved_ids_[0]);
 
   client_side_buffer_helper_.reset(new ClientSideBufferHelper(
-      static_state_.int_state.max_vertex_attribs,
+      gl_state_.int_state.max_vertex_attribs,
       reserved_ids_[0],
       reserved_ids_[1]));
 #endif
@@ -812,24 +810,54 @@ void GLES2Implementation::SetBucketAsString(
   SetBucketContents(bucket_id, str.c_str(), str.size() + 1);
 }
 
+bool GLES2Implementation::SetCapabilityState(GLenum cap, bool enabled) {
+  switch (cap) {
+    case GL_DITHER:
+      gl_state_.enable_state.dither = enabled;
+      return true;
+    case GL_BLEND:
+      gl_state_.enable_state.blend = enabled;
+      return true;
+    case GL_CULL_FACE:
+      gl_state_.enable_state.cull_face = enabled;
+      return true;
+    case GL_DEPTH_TEST:
+      gl_state_.enable_state.depth_test = enabled;
+      return true;
+    case GL_POLYGON_OFFSET_FILL:
+      gl_state_.enable_state.polygon_offset_fill = enabled;
+      return true;
+    case GL_SAMPLE_ALPHA_TO_COVERAGE:
+      gl_state_.enable_state.sample_alpha_to_coverage = enabled;
+      return true;
+    case GL_SAMPLE_COVERAGE:
+      gl_state_.enable_state.sample_coverage = enabled;
+      return true;
+    case GL_SCISSOR_TEST:
+      gl_state_.enable_state.scissor_test = enabled;
+      return true;
+    case GL_STENCIL_TEST:
+      gl_state_.enable_state.stencil_test = enabled;
+      return true;
+    default:
+      return false;
+  }
+}
+
 void GLES2Implementation::Disable(GLenum cap) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDisable("
                  << GLES2Util::GetStringCapability(cap) << ")");
-  bool changed = false;
-  if (!state_.SetCapabilityState(cap, false, &changed) || changed) {
-    helper_->Disable(cap);
-  }
+  SetCapabilityState(cap, false);
+  helper_->Disable(cap);
 }
 
 void GLES2Implementation::Enable(GLenum cap) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glEnable("
                  << GLES2Util::GetStringCapability(cap) << ")");
-  bool changed = false;
-  if (!state_.SetCapabilityState(cap, true, &changed) || changed) {
-    helper_->Enable(cap);
-  }
+  SetCapabilityState(cap, true);
+  helper_->Enable(cap);
 }
 
 GLboolean GLES2Implementation::IsEnabled(GLenum cap) {
@@ -837,18 +865,47 @@ GLboolean GLES2Implementation::IsEnabled(GLenum cap) {
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glIsEnabled("
                  << GLES2Util::GetStringCapability(cap) << ")");
   bool state = false;
-  if (!state_.GetEnabled(cap, &state)) {
-    typedef IsEnabled::Result Result;
-    Result* result = GetResultAs<Result*>();
-    if (!result) {
-      return GL_FALSE;
+  switch (cap) {
+    case GL_DITHER:
+      state = gl_state_.enable_state.dither;
+      break;
+    case GL_BLEND:
+      state = gl_state_.enable_state.blend;
+      break;
+    case GL_CULL_FACE:
+      state = gl_state_.enable_state.cull_face;
+      break;
+    case GL_DEPTH_TEST:
+      state = gl_state_.enable_state.depth_test;
+      break;
+    case GL_POLYGON_OFFSET_FILL:
+      state = gl_state_.enable_state.polygon_offset_fill;
+      break;
+    case GL_SAMPLE_ALPHA_TO_COVERAGE:
+      state = gl_state_.enable_state.sample_alpha_to_coverage;
+      break;
+    case GL_SAMPLE_COVERAGE:
+      state = gl_state_.enable_state.sample_coverage;
+      break;
+    case GL_SCISSOR_TEST:
+      state = gl_state_.enable_state.scissor_test;
+      break;
+    case GL_STENCIL_TEST:
+      state = gl_state_.enable_state.stencil_test;
+      break;
+    default: {
+      typedef IsEnabled::Result Result;
+      Result* result = GetResultAs<Result*>();
+      if (!result) {
+        return GL_FALSE;
+      }
+      *result = 0;
+      helper_->IsEnabled(cap, GetResultShmId(), GetResultShmOffset());
+      WaitForCmd();
+      state = (*result) != 0;
+      break;
     }
-    *result = 0;
-    helper_->IsEnabled(cap, GetResultShmId(), GetResultShmOffset());
-    WaitForCmd();
-    state = (*result) != 0;
   }
-
   GPU_CLIENT_LOG("returned " << state);
   return state;
 }
@@ -856,40 +913,40 @@ GLboolean GLES2Implementation::IsEnabled(GLenum cap) {
 bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
   switch (pname) {
     case GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:
-      *params = static_state_.int_state.max_combined_texture_image_units;
+      *params = gl_state_.int_state.max_combined_texture_image_units;
       return true;
     case GL_MAX_CUBE_MAP_TEXTURE_SIZE:
-      *params = static_state_.int_state.max_cube_map_texture_size;
+      *params = gl_state_.int_state.max_cube_map_texture_size;
       return true;
     case GL_MAX_FRAGMENT_UNIFORM_VECTORS:
-      *params = static_state_.int_state.max_fragment_uniform_vectors;
+      *params = gl_state_.int_state.max_fragment_uniform_vectors;
       return true;
     case GL_MAX_RENDERBUFFER_SIZE:
-      *params = static_state_.int_state.max_renderbuffer_size;
+      *params = gl_state_.int_state.max_renderbuffer_size;
       return true;
     case GL_MAX_TEXTURE_IMAGE_UNITS:
-      *params = static_state_.int_state.max_texture_image_units;
+      *params = gl_state_.int_state.max_texture_image_units;
       return true;
     case GL_MAX_TEXTURE_SIZE:
-      *params = static_state_.int_state.max_texture_size;
+      *params = gl_state_.int_state.max_texture_size;
       return true;
     case GL_MAX_VARYING_VECTORS:
-      *params = static_state_.int_state.max_varying_vectors;
+      *params = gl_state_.int_state.max_varying_vectors;
       return true;
     case GL_MAX_VERTEX_ATTRIBS:
-      *params = static_state_.int_state.max_vertex_attribs;
+      *params = gl_state_.int_state.max_vertex_attribs;
       return true;
     case GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS:
-      *params = static_state_.int_state.max_vertex_texture_image_units;
+      *params = gl_state_.int_state.max_vertex_texture_image_units;
       return true;
     case GL_MAX_VERTEX_UNIFORM_VECTORS:
-      *params = static_state_.int_state.max_vertex_uniform_vectors;
+      *params = gl_state_.int_state.max_vertex_uniform_vectors;
       return true;
     case GL_NUM_COMPRESSED_TEXTURE_FORMATS:
-      *params = static_state_.int_state.num_compressed_texture_formats;
+      *params = gl_state_.int_state.num_compressed_texture_formats;
       return true;
     case GL_NUM_SHADER_BINARY_FORMATS:
-      *params = static_state_.int_state.num_shader_binary_formats;
+      *params = gl_state_.int_state.num_shader_binary_formats;
       return true;
     case GL_ARRAY_BUFFER_BINDING:
       if (share_group_->bind_generates_resource()) {
@@ -1259,9 +1316,6 @@ bool GLES2Implementation::DeleteProgramHelper(GLuint program) {
         "glDeleteProgram", "id not created by this context.");
     return false;
   }
-  if (program == current_program_) {
-    current_program_ = 0;
-  }
   return true;
 }
 
@@ -1345,15 +1399,6 @@ GLint GLES2Implementation::GetUniformLocation(
       this, program, name);
   GPU_CLIENT_LOG("returned " << loc);
   return loc;
-}
-
-void GLES2Implementation::UseProgram(GLuint program) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glUseProgram(" << program << ")");
-  if (current_program_ != program) {
-    current_program_ = program;
-    helper_->UseProgram(program);
-  }
 }
 
 bool GLES2Implementation::GetProgramivHelper(
@@ -2345,7 +2390,7 @@ void GLES2Implementation::ActiveTexture(GLenum texture) {
       << GLES2Util::GetStringEnum(texture) << ")");
   GLuint texture_index = texture - GL_TEXTURE0;
   if (texture_index >= static_cast<GLuint>(
-      static_state_.int_state.max_combined_texture_image_units)) {
+      gl_state_.int_state.max_combined_texture_image_units)) {
     SetGLErrorInvalidEnum(
         "glActiveTexture", texture, "texture");
     return;
@@ -2362,111 +2407,77 @@ void GLES2Implementation::ActiveTexture(GLenum texture) {
 // the old model but possibly not true in the new model if another context has
 // deleted the resource.
 
-bool GLES2Implementation::BindBufferHelper(
+void GLES2Implementation::BindBufferHelper(
     GLenum target, GLuint buffer) {
   // TODO(gman): See note #1 above.
-  bool changed = false;
   switch (target) {
     case GL_ARRAY_BUFFER:
-      if (bound_array_buffer_id_ != buffer) {
-        bound_array_buffer_id_ = buffer;
-        changed = true;
-      }
+      bound_array_buffer_id_ = buffer;
       break;
     case GL_ELEMENT_ARRAY_BUFFER:
-      if (bound_element_array_buffer_id_ != buffer) {
-        bound_element_array_buffer_id_ = buffer;
-        changed = true;
-      }
+      bound_element_array_buffer_id_ = buffer;
       break;
     default:
-      changed = true;
       break;
   }
   // TODO(gman): There's a bug here. If the target is invalid the ID will not be
   // used even though it's marked it as used here.
   GetIdHandler(id_namespaces::kBuffers)->MarkAsUsedForBind(buffer);
-  return changed;
 }
 
-bool GLES2Implementation::BindFramebufferHelper(
+void GLES2Implementation::BindFramebufferHelper(
     GLenum target, GLuint framebuffer) {
   // TODO(gman): See note #1 above.
-  bool changed = false;
   switch (target) {
     case GL_FRAMEBUFFER:
-      if (bound_framebuffer_ != framebuffer) {
-        bound_framebuffer_ = framebuffer;
-        changed = true;
-      }
+      bound_framebuffer_ = framebuffer;
       break;
     default:
-      changed = true;
       break;
   }
   // TODO(gman): There's a bug here. If the target is invalid the ID will not be
   // used even though it's marked it as used here.
   GetIdHandler(id_namespaces::kFramebuffers)->MarkAsUsedForBind(framebuffer);
-  return changed;
 }
 
-bool GLES2Implementation::BindRenderbufferHelper(
+void GLES2Implementation::BindRenderbufferHelper(
     GLenum target, GLuint renderbuffer) {
   // TODO(gman): See note #1 above.
-  bool changed = false;
   switch (target) {
     case GL_RENDERBUFFER:
-      if (bound_renderbuffer_ != renderbuffer) {
-        bound_renderbuffer_ = renderbuffer;
-        changed = true;
-      }
+      bound_renderbuffer_ = renderbuffer;
       break;
     default:
-      changed = true;
       break;
   }
   // TODO(gman): There's a bug here. If the target is invalid the ID will not be
   // used even though it's marked it as used here.
   GetIdHandler(id_namespaces::kRenderbuffers)->MarkAsUsedForBind(renderbuffer);
-  return changed;
 }
 
-bool GLES2Implementation::BindTextureHelper(GLenum target, GLuint texture) {
+void GLES2Implementation::BindTextureHelper(GLenum target, GLuint texture) {
   // TODO(gman): See note #1 above.
-  bool changed = false;
   TextureUnit& unit = texture_units_[active_texture_unit_];
   switch (target) {
     case GL_TEXTURE_2D:
-      if (unit.bound_texture_2d != texture) {
-        unit.bound_texture_2d = texture;
-        changed = true;
-      }
+      unit.bound_texture_2d = texture;
       break;
     case GL_TEXTURE_CUBE_MAP:
-      if (unit.bound_texture_cube_map != texture) {
-        unit.bound_texture_cube_map = texture;
-        changed = true;
-      }
+      unit.bound_texture_cube_map = texture;
       break;
     default:
-      changed = true;
       break;
   }
   // TODO(gman): There's a bug here. If the target is invalid the ID will not be
   // used. even though it's marked it as used here.
   GetIdHandler(id_namespaces::kTextures)->MarkAsUsedForBind(texture);
-  return changed;
 }
 
-bool GLES2Implementation::BindVertexArrayHelper(GLuint array) {
+void GLES2Implementation::BindVertexArrayHelper(GLuint array) {
   // TODO(gman): See note #1 above.
-  bool changed = false;
-  if (bound_vertex_array_id_ != array) {
-    bound_vertex_array_id_ = array;
-    changed = true;
-  }
+  bound_vertex_array_id_ = array;
+
   GetIdHandler(id_namespaces::kVertexArrays)->MarkAsUsedForBind(array);
-  return changed;
 }
 
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
@@ -2562,7 +2573,7 @@ void GLES2Implementation::DeleteTexturesHelper(
   }
   for (GLsizei ii = 0; ii < n; ++ii) {
     for (GLint tt = 0;
-         tt < static_state_.int_state.max_combined_texture_image_units;
+         tt < gl_state_.int_state.max_combined_texture_image_units;
          ++tt) {
       TextureUnit& unit = texture_units_[tt];
       if (textures[ii] == unit.bound_texture_2d) {
