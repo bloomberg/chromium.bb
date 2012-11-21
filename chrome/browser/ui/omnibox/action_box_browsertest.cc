@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -84,14 +85,15 @@ IN_PROC_BROWSER_TEST_F(ActionBoxTest, BookmarkAPageTest) {
   ASSERT_FALSE(loc_bar->GetBookmarkStarVisibility());
 
   // Simulate an action box click and menu item selection.
-  loc_bar->TestActionBoxMenuItemSelected(IDC_BOOKMARK_PAGE);
+  chrome::ExecuteCommand(browser(), IDC_BOOKMARK_PAGE);
 
   // Page is now bookmarked.
   ASSERT_TRUE(loc_bar->GetBookmarkStarVisibility());
 
-   // Get the BookmarkModel to unbookmark the bookmark.
+  // Get the BookmarkModel to unbookmark the bookmark.
   BookmarkModel* model =
       BookmarkModelFactory::GetForProfile(browser()->profile());
+  ui_test_utils::WaitForBookmarkModelToLoad(model);
   bookmark_utils::RemoveAllBookmarks(model, GURL("http://www.google.com"));
 
   // Page is now unbookmarked.
