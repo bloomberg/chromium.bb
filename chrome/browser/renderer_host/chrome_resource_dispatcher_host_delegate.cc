@@ -348,8 +348,7 @@ void ChromeResourceDispatcherHostDelegate::AppendChromeSyncGaiaHeader(
 
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   OneClickSigninHelper::Offer offer =
-      OneClickSigninHelper::CanOfferOnIOThread(request->url(), request,
-                                               io_data);
+      OneClickSigninHelper::CanOfferOnIOThread(request, io_data);
   switch (offer) {
     case OneClickSigninHelper::CAN_OFFER:
       request->SetExtraRequestHeaderByName(kAllowChromeSignIn, "1", false);

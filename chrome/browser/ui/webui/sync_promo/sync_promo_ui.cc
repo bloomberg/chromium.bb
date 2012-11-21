@@ -30,10 +30,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "googleurl/src/url_util.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::WebContents;
@@ -42,7 +42,7 @@ namespace {
 
 // TODO(rogerta): get final extension Id when the extension is ready.
 const char kSyncExtensionURLPrefix[] =
-    "chrome-extension://alcdejocjpphboegpmhlfdhjhmebbchd/";
+    "chrome-extension://jdbmieefkgjgdimgbbfifkdjpflmehkd/success.html";
 
 const char kStringsJsFile[] = "strings.js";
 const char kSyncPromoJsFile[] = "sync_promo.js";
@@ -222,31 +222,15 @@ GURL SyncPromoUI::GetSyncPromoURL(const GURL& next_page,
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseWebBasedSigninFlow)) {
     url_string = GaiaUrls::GetInstance()->service_login_url();
-    url_string.append("?service=chromiumsync&continue=");
+    url_string.append("?service=chromiumsync");
 
-    std::string continue_url(kSyncExtensionURLPrefix);
-    switch (source) {
-    case SOURCE_START_PAGE:
-      continue_url.append("firstrun.html");
-      break;
-    case SOURCE_NTP_LINK:
-      continue_url.append("ntp.html");
-      break;
-    case SOURCE_MENU:
-      continue_url.append("menu.html");
-      break;
-    case SOURCE_SETTINGS:
-      continue_url.append("settings.html");
-      break;
-    default:
-      NOTREACHED() << "Invalid source: " << source;
-    }
+    std::string continue_url = base::StringPrintf("%s?%s=%d",
+        kSyncExtensionURLPrefix, kSyncPromoQueryKeySource,
+        static_cast<int>(source));
 
-    url_canon::RawCanonOutputT<char> output;
-    url_util::EncodeURIComponent(continue_url.c_str(), continue_url.length(),
-                                 &output);
-    std::string escaped_spec(output.data(), output.length());
-    url_string.append(escaped_spec);
+    base::StringAppendF(&url_string, "&continue=%s",
+                        net::EscapeQueryParamValue(
+                            continue_url, false).c_str());
   } else {
     url_string = base::StringPrintf("%s?%s=%d", chrome::kChromeUISyncPromoURL,
                                     kSyncPromoQueryKeySource,
@@ -256,12 +240,9 @@ GURL SyncPromoUI::GetSyncPromoURL(const GURL& next_page,
       base::StringAppendF(&url_string, "&%s=1", kSyncPromoQueryKeyAutoClose);
 
     if (!next_page.spec().empty()) {
-      url_canon::RawCanonOutputT<char> output;
-      url_util::EncodeURIComponent(
-          next_page.spec().c_str(), next_page.spec().length(), &output);
-      std::string escaped_spec(output.data(), output.length());
       base::StringAppendF(&url_string, "&%s=%s", kSyncPromoQueryKeyNextPage,
-                          escaped_spec.c_str());
+                          net::EscapeQueryParamValue(next_page.spec(),
+                                                     false).c_str());
     }
   }
 

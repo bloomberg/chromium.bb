@@ -7,8 +7,12 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
+#include "chrome/browser/signin/signin_tracker.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 class GURL;
 class ProfileIOData;
@@ -28,13 +32,15 @@ class URLRequest;
 // more about what this means.
 class OneClickSigninHelper
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<OneClickSigninHelper> {
+      public content::WebContentsUserData<OneClickSigninHelper>,
+      public SigninTracker::Observer {
  public:
   enum AutoAccept {
     AUTO_ACCEPT,
     NO_AUTO_ACCEPT,
-    CONFIGURE,
-    REJECTED_FOR_PROFILE
+    AUTO_ACCEPT_CONFIGURE,
+    REJECTED_FOR_PROFILE,
+    AUTO_ACCEPT_EXPLICIT
   };
 
   // Return value of CanOfferOnIOThread().
@@ -64,8 +70,7 @@ class OneClickSigninHelper
   // It can be offered if the io_data is not in an incognito window and if the
   // origin of |url| is a valid Gaia sign in origin.  This function is meant
   // to called only from the IO thread.
-  static Offer CanOfferOnIOThread(const GURL& url,
-                                  base::SupportsUserData* request,
+  static Offer CanOfferOnIOThread(net::URLRequest* request,
                                   ProfileIOData* io_data);
 
   // Initialize a finch experiment for the infobar.
@@ -81,11 +86,44 @@ class OneClickSigninHelper
  private:
   explicit OneClickSigninHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<OneClickSigninHelper>;
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest, CanOfferOnIOThread);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
+                           CanOfferOnIOThreadIncognito);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
+                           CanOfferOnIOThreadNoIOData);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
+                           CanOfferOnIOThreadBadURL);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
+                           CanOfferOnIOThreadReferrer);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
+                           CanOfferOnIOThreadDisabled);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
+                           CanOfferOnIOThreadSignedIn);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
+                           CanOfferOnIOThreadEmailNotAllowed);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
+                           CanOfferOnIOThreadEmailAlreadyUsed);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
+                           CreateTestProfileIOData);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
+                           CanOfferOnIOThreadWithRejectedEmail);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
+                           CanOfferOnIOThreadNoSigninCookies);
+
+  // Returns true if the one-click signin feature can be offered at this time.
+  // It can be offered if the io_data is not in an incognito window and if the
+  // origin of |url| is a valid Gaia sign in origin.  This function is meant
+  // to called only from the IO thread.
+  static Offer CanOfferOnIOThreadImpl(const GURL& url,
+                                      const std::string& referrer,
+                                      base::SupportsUserData* request,
+                                      ProfileIOData* io_data);
 
   // The portion of ShowInfoBarIfPossible() that needs to run on the UI thread.
   static void ShowInfoBarUIThread(const std::string& session_index,
                                   const std::string& email,
                                   AutoAccept auto_accept,
+                                  SyncPromoUI::Source source,
                                   int child_id,
                                   int route_id);
 
@@ -96,18 +134,18 @@ class OneClickSigninHelper
   virtual void DidStopLoading(
       content::RenderViewHost* render_view_host) OVERRIDE;
 
-  // Save the email address that we can display the info bar correctly.
-  void SaveSessionIndexAndEmail(const std::string& session_index,
-                                const std::string& email);
-
-  // Remember the user's password for later use.
-  void SavePassword(const std::string& password);
+  // SigninTracker::Observer override.
+  virtual void GaiaCredentialsValid() OVERRIDE;
+  virtual void SigninFailed(const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void SigninSuccess() OVERRIDE;
 
   // Information about the account that has just logged in.
   std::string session_index_;
   std::string email_;
   std::string password_;
   AutoAccept auto_accept_;
+  SyncPromoUI::Source source_;
+  scoped_ptr<SigninTracker> signin_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninHelper);
 };
