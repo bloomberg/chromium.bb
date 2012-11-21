@@ -17,6 +17,8 @@
 
 namespace aura {
 class FocusManager;
+class RootWindow;
+
 namespace client {
 class ActivationChangeObserver;
 }
@@ -32,7 +34,7 @@ class VIEWS_EXPORT DesktopActivationClient
       public aura::WindowObserver,
       public aura::FocusChangeObserver {
  public:
-  explicit DesktopActivationClient(aura::FocusManager* focus_manager);
+  explicit DesktopActivationClient(aura::RootWindow* root_window);
   virtual ~DesktopActivationClient();
 
   // ActivationClient:
@@ -53,13 +55,12 @@ class VIEWS_EXPORT DesktopActivationClient
   // Overridden from aura::FocusChangeObserver:
   virtual void OnWindowFocused(aura::Window* window) OVERRIDE;
 
- protected:
+ private:
   // Walks up the chain to find the correct parent window to activate when we
   // try to activate |window|.
   aura::Window* GetActivatableWindow(aura::Window* window);
 
-  // The focus manager that we collaborate with.
-  aura::FocusManager* focus_manager_;
+  aura::RootWindow* root_window_;
 
   // The current active window.
   aura::Window* current_active_;

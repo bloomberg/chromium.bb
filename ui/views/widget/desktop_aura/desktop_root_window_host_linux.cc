@@ -217,10 +217,7 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
   focus_manager_.reset(new aura::FocusManager);
   root_window_->set_focus_manager(focus_manager_.get());
 
-  activation_client_.reset(
-      new DesktopActivationClient(root_window_->GetFocusManager()));
-  aura::client::SetActivationClient(root_window_,
-                                    activation_client_.get());
+  activation_client_.reset(new DesktopActivationClient(root_window_));
 
   dispatcher_client_.reset(new DesktopDispatcherClient);
   aura::client::SetDispatcherClient(root_window_,

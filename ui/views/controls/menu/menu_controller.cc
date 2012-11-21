@@ -30,11 +30,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/client/activation_client.h"
-#include "ui/aura/client/dispatcher_client.h"
-#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #endif
 
@@ -305,7 +301,11 @@ MenuItemView* MenuController::Run(Widget* parent,
   state_ = State();
   UpdateInitialLocation(bounds, position, context_menu);
 
+  if (owner_)
+    owner_->RemoveObserver(this);
   owner_ = parent;
+  if (owner_)
+    owner_->AddObserver(this);
 
   // Set the selection, which opens the initial menu.
   SetSelection(root, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
@@ -330,28 +330,7 @@ MenuItemView* MenuController::Run(Widget* parent,
   // appears totally broken.
   message_loop_depth_++;
   DCHECK_LE(message_loop_depth_, 2);
-#if defined(USE_AURA)
-  // TODO(sky): deal with NULL |parent|. NULL only happens on win.
-  root_window_ = parent->GetNativeWindow()->GetRootWindow();
-
-  // Observe activation changes to close the window if another window is
-  // activated (crbug.com/131027).
-  if (!nested_menu)
-    aura::client::GetActivationClient(root_window_)->AddObserver(this);
-
-  aura::client::GetDispatcherClient(root_window_)->
-      RunWithDispatcher(this, parent->GetNativeWindow(), true);
-
-  if (!nested_menu)
-    aura::client::GetActivationClient(root_window_)->RemoveObserver(this);
-#else
-  {
-    MessageLoopForUI* loop = MessageLoopForUI::current();
-    MessageLoop::ScopedNestableTaskAllower allow(loop);
-    base::RunLoop run_loop(this);
-    run_loop.Run();
-  }
-#endif
+  RunMessageLoop(nested_menu);
   message_loop_depth_--;
 
   if (ViewsDelegate::views_delegate)
@@ -715,6 +694,12 @@ void MenuController::UpdateSubmenuSelection(SubmenuView* submenu) {
   }
 }
 
+void MenuController::OnWidgetClosing(Widget* widget) {
+  DCHECK_EQ(owner_, widget);
+  owner_->RemoveObserver(this);
+  owner_ = NULL;
+}
+
 void MenuController::SetSelection(MenuItemView* menu_item,
                                   int selection_types) {
   size_t paths_differ_at = 0;
@@ -1051,9 +1036,6 @@ MenuController::MenuController(ui::NativeTheme* theme,
       drop_target_(NULL),
       drop_position_(MenuDelegate::DROP_UNKNOWN),
       owner_(NULL),
-#if defined(USE_AURA)
-      root_window_(NULL),
-#endif
       possible_drag_(false),
       drag_in_progress_(false),
       valid_drop_coordinates_(false),
@@ -1069,6 +1051,8 @@ MenuController::MenuController(ui::NativeTheme* theme,
 
 MenuController::~MenuController() {
   DCHECK(!showing_);
+  if (owner_)
+    owner_->RemoveObserver(this);
   if (active_instance_ == this)
     active_instance_ = NULL;
   StopShowTimer();
@@ -2092,16 +2076,8 @@ void MenuController::SetExitType(ExitType type) {
   //
   // It's safe to invoke QuitNow multiple times, it only effects the current
   // loop.
-  bool quit_now = exit_type_ != EXIT_NONE && message_loop_depth_;
-
-#if defined(USE_AURA)
-  // On aura drag and drop runs a nested messgae loop too. If drag and drop is
-  // active and we quit we would prematurely cancel drag and drop, which we
-  // don't want.
-  if (aura::client::GetDragDropClient(root_window_) &&
-      aura::client::GetDragDropClient(root_window_)->IsDragDropInProgress())
-    quit_now = false;
-#endif
+  bool quit_now = ShouldQuitNow() && exit_type_ != EXIT_NONE &&
+      message_loop_depth_;
 
   if (quit_now)
     MessageLoop::current()->QuitNow();
@@ -2133,22 +2109,6 @@ void MenuController::HandleMouseLocation(SubmenuView* source,
     SetSelection(pending_state_.item->GetParentMenuItem(),
                  SELECTION_OPEN_SUBMENU);
   }
-}
-
-#if defined(USE_AURA)
-void MenuController::OnWindowActivated(aura::Window* active,
-                                       aura::Window* old_active) {
-  if (!drag_in_progress_)
-    Cancel(EXIT_ALL);
-}
-#endif
-
-gfx::Screen* MenuController::GetScreen() {
-#if defined(USE_AURA)
-  return gfx::Screen::GetScreenFor(root_window_);
-#else
-  return gfx::Screen::GetNativeScreen();
-#endif
 }
 
 }  // namespace views

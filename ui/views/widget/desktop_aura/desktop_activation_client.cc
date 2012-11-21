@@ -14,17 +14,18 @@
 
 namespace views {
 
-DesktopActivationClient::DesktopActivationClient(
-    aura::FocusManager* focus_manager)
-    : focus_manager_(focus_manager),
+DesktopActivationClient::DesktopActivationClient(aura::RootWindow* root_window)
+    : root_window_(root_window),
       current_active_(NULL),
       updating_activation_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)) {
-  focus_manager->AddObserver(this);
+  root_window->GetFocusManager()->AddObserver(this);
+  aura::client::SetActivationClient(root_window_, this);
 }
 
 DesktopActivationClient::~DesktopActivationClient() {
-  focus_manager_->RemoveObserver(this);
+  root_window_->GetFocusManager()->RemoveObserver(this);
+  aura::client::SetActivationClient(root_window_, NULL);
 }
 
 void DesktopActivationClient::AddObserver(

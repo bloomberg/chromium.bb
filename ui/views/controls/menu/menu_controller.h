@@ -18,17 +18,7 @@
 #include "ui/base/events/event_constants.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/menu/menu_item_view.h"
-
-#if defined(USE_AURA)
-#include "ui/aura/client/activation_change_observer.h"
-#endif
-
-#if defined(USE_AURA)
-namespace aura {
-class RootWindow;
-class Window;
-}
-#endif
+#include "ui/views/widget/widget_observer.h"
 
 namespace ui {
 class NativeTheme;
@@ -57,13 +47,8 @@ class MenuRunnerImpl;
 // showing, selecting and drag/drop for menus. All relevant events are
 // forwarded to the MenuController from SubmenuView and MenuHost.
 class VIEWS_EXPORT MenuController
-#if defined(USE_AURA)
     : public MessageLoop::Dispatcher,
-      public aura::client::ActivationChangeObserver {
-#else
-    : public MessageLoop::Dispatcher {
-#endif
-
+      public WidgetObserver {
  public:
   // Enumeration of how the menu should exit.
   enum ExitType {
@@ -144,6 +129,9 @@ class VIEWS_EXPORT MenuController
 
   // Update the submenu's selection based on the current mouse location
   void UpdateSubmenuSelection(SubmenuView* source);
+
+  // WidgetObserver overrides:
+  virtual void OnWidgetClosing(Widget* widget) OVERRIDE;
 
  private:
   friend class internal::MenuRunnerImpl;
@@ -257,11 +245,9 @@ class VIEWS_EXPORT MenuController
                                  const ui::LocatedEvent& event);
   void StartDrag(SubmenuView* source, const gfx::Point& location);
 
-#if defined(OS_WIN) || defined(USE_AURA)
   // Dispatcher method. This returns true if the menu was canceled, or
   // if the message is such that the menu should be closed.
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
-#endif
 
   // Key processing. The return value of this is returned from Dispatch.
   // In other words, if this returns false (which happens if escape was
@@ -275,6 +261,11 @@ class VIEWS_EXPORT MenuController
                  internal::MenuControllerDelegate* delegate);
 
   virtual ~MenuController();
+
+  // Runs the platform specific bits of the message loop. If |nested_menu| is
+  // true we're being asked to run a menu from within a menu (eg a context
+  // menu).
+  void RunMessageLoop(bool nested_menu);
 
   // AcceleratorPressed is invoked on the hot tracked view if it exists.
   SendAcceleratorResultType SendAcceleratorToHotTrackedView();
@@ -459,15 +450,12 @@ class VIEWS_EXPORT MenuController
   // Sets exit type.
   void SetExitType(ExitType type);
 
+  // Returns true if SetExitType() should quit the message loop.
+  bool ShouldQuitNow() const;
+
   // Handles the mouse location event on the submenu |source|.
   void HandleMouseLocation(SubmenuView* source,
                            const gfx::Point& mouse_location);
-
-#if defined(USE_AURA)
-  // aura::client::ActivationChangeObserver overrides:
-  virtual void OnWindowActivated(aura::Window* active,
-                                 aura::Window* old_active) OVERRIDE;
-#endif
 
   // Retrieve an appropriate Screen.
   gfx::Screen* GetScreen();
@@ -529,12 +517,6 @@ class VIEWS_EXPORT MenuController
   // Owner of child windows.
   // WARNING: this may be NULL.
   Widget* owner_;
-
-#if defined(USE_AURA)
-  // |owner_|s RootWindow. Cached as at the time we need it |owner_| may have
-  // been deleted.
-  aura::RootWindow* root_window_;
-#endif
 
   // Indicates a possible drag operation.
   bool possible_drag_;
