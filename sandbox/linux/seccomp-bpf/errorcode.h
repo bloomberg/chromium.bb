@@ -94,7 +94,7 @@ class ErrorCode {
   // If we are wrapping a callback, we must assign a unique id. This id is
   // how the kernel tells us which one of our different SECCOMP_RET_TRAP
   // cases has been triggered.
-  ErrorCode(TrapFnc fnc, const void *aux, bool safe, uint16_t id);
+  ErrorCode(TrapFnc fnc, const void *aux, uint16_t id);
 
   // Some system calls require inspection of arguments. This constructor
   // allows us to specify additional constraints.
@@ -108,7 +108,6 @@ class ErrorCode {
     struct {
       TrapFnc fnc_;              // Callback function and arg, if trap was
       void    *aux_;             //   triggered by the kernel's BPF filter.
-      bool    safe_;             // Keep sandbox active while calling fnc_()
     };
 
     // Fields needed when inspecting additional arguments.

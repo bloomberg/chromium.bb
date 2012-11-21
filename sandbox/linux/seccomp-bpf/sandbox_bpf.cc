@@ -2,27 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <endian.h>
-#if __BYTE_ORDER == __BIG_ENDIAN
-// The BPF "struct seccomp_data" layout has to deal with storing 64bit
-// values that need to be inspected by a virtual machine that only ever
-// operates on 32bit values. The kernel developers decided how values
-// should be split into two 32bit words to achieve this goal. But at this
-// time, there is no existing BPF implementation in the kernel that uses
-// 64bit big endian values. So, all we have to go by is the consensus
-// from a discussion on LKLM. Actual implementations, if and when they
-// happen, might very well differ.
-// If this code is ever going to be used with such a kernel, you should
-// disable the "#error" and carefully test the code (e.g. run the unit
-// tests). If things don't work, search for all occurrences of __BYTE_ORDER
-// and verify that the proposed implementation agrees with what the kernel
-// actually does.
-#error Big endian operation is untested and expected to be broken
-#endif
-
 #include "sandbox/linux/seccomp-bpf/codegen.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
-#include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 
@@ -35,30 +16,6 @@ void WriteFailedStderrSetupMessage(int out_fd) {
       HANDLE_EINTR(write(out_fd, error_string, strlen(error_string))) > 0 &&
       HANDLE_EINTR(write(out_fd, "\n", 1))) {
   }
-}
-
-// We need to tell whether we are performing a "normal" callback, or
-// whether we were called recursively from within a UnsafeTrap() callback.
-// This is a little tricky to do, because we need to somehow get access to
-// per-thread data from within a signal context. Normal TLS storage is not
-// safely accessible at this time. We could roll our own, but that involves
-// a lot of complexity. Instead, we co-opt one bit in the signal mask.
-// If BUS is blocked, we assume that we have been called recursively.
-// There is a possibility for collision with other code that needs to do
-// this, but in practice the risks are low.
-// If SIGBUS turns out to be a problem, we could instead co-opt one of the
-// realtime signals. There are plenty of them. Unfortunately, there is no
-// way to mark a signal as allocated. So, the potential for collision is
-// possibly even worse.
-bool GetIsInSigHandler(const ucontext_t *ctx) {
-  return sigismember(&ctx->uc_sigmask, SIGBUS);
-}
-
-void SetIsInSigHandler() {
-  sigset_t mask;
-  sigemptyset(&mask);
-  sigaddset(&mask, SIGBUS);
-  sigprocmask(SIG_BLOCK, &mask, NULL);
 }
 
 }  // namespace
@@ -362,48 +319,6 @@ void Sandbox::policySanityChecks(EvaluateSyscall syscallEvaluator,
   return;
 }
 
-void Sandbox::CheckForUnsafeErrorCodes(Instruction *insn, void *aux) {
-  if (BPF_CLASS(insn->code) == BPF_RET &&
-      insn->k >  SECCOMP_RET_TRAP &&
-      insn->k - SECCOMP_RET_TRAP <= trapArraySize_) {
-    const ErrorCode& err = trapArray_[insn->k - SECCOMP_RET_TRAP - 1];
-    if (!err.safe_) {
-      bool *is_unsafe = static_cast<bool *>(aux);
-      *is_unsafe = true;
-    }
-  }
-}
-
-void Sandbox::RedirectToUserspace(Instruction *insn, void *aux) {
-  // When inside an UnsafeTrap() callback, we want to allow all system calls.
-  // This means, we must conditionally disable the sandbox -- and that's not
-  // something that kernel-side BPF filters can do, as they cannot inspect
-  // any state other than the syscall arguments.
-  // But if we redirect all error handlers to user-space, then we can easily
-  // make this decision.
-  // The performance penalty for this extra round-trip to user-space is not
-  // actually that bad, as we only ever pay it for denied system calls; and a
-  // typical program has very few of these.
-  if (BPF_CLASS(insn->code) == BPF_RET &&
-      (insn->k & SECCOMP_RET_ACTION) == SECCOMP_RET_ERRNO) {
-    insn->k = Trap(ReturnErrno,
-                   reinterpret_cast<void *>(insn->k & SECCOMP_RET_DATA)).err();
-  }
-}
-
-ErrorCode Sandbox::RedirectToUserspaceEvalWrapper(int sysnum, void *aux) {
-  // We need to replicate the behavior of RedirectToUserspace(), so that our
-  // Verifier can still work correctly.
-  Evaluators *evaluators = reinterpret_cast<Evaluators *>(aux);
-  const std::pair<EvaluateSyscall, void *>& evaluator = *evaluators->begin();
-  ErrorCode err = evaluator.first(sysnum, evaluator.second);
-  if ((err.err() & SECCOMP_RET_ACTION) == SECCOMP_RET_ERRNO) {
-    return Trap(ReturnErrno,
-                reinterpret_cast<void *>(err.err() & SECCOMP_RET_DATA));
-  }
-  return err;
-}
-
 void Sandbox::setSandboxPolicy(EvaluateSyscall syscallEvaluator, void *aux) {
   if (status_ == STATUS_ENABLED) {
     SANDBOX_DIE("Cannot change policy after sandbox has started");
@@ -422,8 +337,8 @@ void Sandbox::installFilter(bool quiet) {
   // Set new SIGSYS handler
   struct sigaction sa;
   memset(&sa, 0, sizeof(sa));
-  sa.sa_sigaction = sigSys;
-  sa.sa_flags = SA_SIGINFO | SA_NODEFER;
+  sa.sa_sigaction = &sigSys;
+  sa.sa_flags = SA_SIGINFO;
   if (sigaction(SIGSYS, &sa, NULL) < 0) {
     goto filter_failed;
   }
@@ -454,12 +369,32 @@ void Sandbox::installFilter(bool quiet) {
   Instruction *head =
     gen->MakeInstruction(BPF_LD+BPF_W+BPF_ABS,
                          offsetof(struct arch_seccomp_data, arch),
-  tail =
     gen->MakeInstruction(BPF_JMP+BPF_JEQ+BPF_K, SECCOMP_ARCH,
-                         NULL,
+  tail =
+    // Grab the system call number, so that we can implement jump tables.
+    gen->MakeInstruction(BPF_LD+BPF_W+BPF_ABS,
+                         offsetof(struct arch_seccomp_data, nr)),
     gen->MakeInstruction(BPF_RET+BPF_K,
                          Kill(
                            "Invalid audit architecture in BPF filter").err_)));
+
+  // On Intel architectures, verify that system call numbers are in the
+  // expected number range. The older i386 and x86-64 APIs clear bit 30
+  // on all system calls. The newer x32 API always sets bit 30.
+#if defined(__i386__) || defined(__x86_64__)
+  Instruction *invalidX32 =
+    gen->MakeInstruction(BPF_RET+BPF_K,
+                         Kill("Illegal mixing of system call ABIs").err_);
+  Instruction *checkX32 =
+#if defined(__x86_64__) && defined(__ILP32__)
+    gen->MakeInstruction(BPF_JMP+BPF_JSET+BPF_K, 0x40000000, 0, invalidX32);
+#else
+    gen->MakeInstruction(BPF_JMP+BPF_JSET+BPF_K, 0x40000000, invalidX32, 0);
+#endif
+    gen->JoinInstructions(tail, checkX32);
+    tail = checkX32;
+#endif
+
 
   {
     // Evaluate all possible system calls and group their ErrorCodes into
@@ -470,109 +405,6 @@ void Sandbox::installFilter(bool quiet) {
     // Compile the system call ranges to an optimized BPF jumptable
     Instruction *jumptable =
       assembleJumpTable(gen, ranges.begin(), ranges.end());
-
-    // If there is at least one UnsafeTrap() in our program, the entire sandbox
-    // is unsafe. We need to modify the program so that all non-
-    // SECCOMP_RET_ALLOW ErrorCodes are handled in user-space. This will then
-    // allow us to temporarily disable sandboxing rules inside of callbacks to
-    // UnsafeTrap().
-    has_unsafe_traps_ = false;
-    gen->Traverse(jumptable, CheckForUnsafeErrorCodes, &has_unsafe_traps_);
-
-    // Grab the system call number, so that we can implement jump tables.
-    Instruction *load_nr =
-      gen->MakeInstruction(BPF_LD+BPF_W+BPF_ABS,
-                           offsetof(struct arch_seccomp_data, nr));
-
-    // If our BPF program has unsafe jumps, enable support for them. This
-    // test happens very early in the BPF filter program. Even before we
-    // consider looking at system call numbers.
-    // As support for unsafe jumps essentially defeats all the security
-    // measures that the sandbox provides, we print a big warning message --
-    // and of course, we make sure to only ever enable this feature if it
-    // is actually requested by the sandbox policy.
-    if (has_unsafe_traps_) {
-      if (SandboxSyscall(-1) == -1 && errno == ENOSYS) {
-        SANDBOX_DIE("Support for UnsafeTrap() has not yet been ported to this "
-                    "architecture");
-      }
-
-      EvaluateSyscall evaluateSyscall = evaluators_.begin()->first;
-      void *aux                       = evaluators_.begin()->second;
-      if (!evaluateSyscall(__NR_rt_sigprocmask, aux).
-            Equals(ErrorCode(ErrorCode::ERR_ALLOWED)) ||
-          !evaluateSyscall(__NR_rt_sigreturn, aux).
-            Equals(ErrorCode(ErrorCode::ERR_ALLOWED))
-#if defined(__NR_sigprocmask)
-       || !evaluateSyscall(__NR_sigprocmask, aux).
-            Equals(ErrorCode(ErrorCode::ERR_ALLOWED))
-#endif
-#if defined(__NR_sigreturn)
-       || !evaluateSyscall(__NR_sigreturn, aux).
-            Equals(ErrorCode(ErrorCode::ERR_ALLOWED))
-#endif
-          ) {
-        SANDBOX_DIE("Invalid seccomp policy; if using UnsafeTrap(), you must "
-                    "unconditionally allow sigreturn() and sigprocmask()");
-      }
-
-      SANDBOX_INFO("WARNING! Disabling sandbox for debugging purposes");
-      gen->Traverse(jumptable, RedirectToUserspace, NULL);
-
-      // Allow system calls, if they originate from our magic return address
-      // (which we can query by calling SandboxSyscall(-1)).
-      uintptr_t syscall_entry_point =
-        static_cast<uintptr_t>(SandboxSyscall(-1));
-      uint32_t low = static_cast<uint32_t>(syscall_entry_point);
-#if __SIZEOF_POINTER__ > 4
-      uint32_t hi  = static_cast<uint32_t>(syscall_entry_point >> 32);
-#endif
-
-      // BPF cannot do native 64bit comparisons. On 64bit architectures, we
-      // have to compare both 32bit halfs of the instruction pointer. If they
-      // match what we expect, we return ERR_ALLOWED. If either or both don't
-      // match, we continue evalutating the rest of the sandbox policy.
-      Instruction *escape_hatch =
-        gen->MakeInstruction(BPF_LD+BPF_W+BPF_ABS,
-                             offsetof(struct arch_seccomp_data,
-                                      instruction_pointer) +
-                             (__SIZEOF_POINTER__ > 4 &&
-                              __BYTE_ORDER == __BIG_ENDIAN ? 4 : 0),
-        gen->MakeInstruction(BPF_JMP+BPF_JEQ+BPF_K, low,
-#if __SIZEOF_POINTER__ > 4
-        gen->MakeInstruction(BPF_LD+BPF_W+BPF_ABS,
-                             offsetof(struct arch_seccomp_data,
-                                      instruction_pointer) +
-                             (__BYTE_ORDER == __BIG_ENDIAN ? 0 : 4),
-        gen->MakeInstruction(BPF_JMP+BPF_JEQ+BPF_K, hi,
-#endif
-        gen->MakeInstruction(BPF_RET+BPF_K, ErrorCode(ErrorCode::ERR_ALLOWED)),
-#if __SIZEOF_POINTER__ > 4
-                             load_nr)),
-#endif
-                             load_nr));
-      gen->JoinInstructions(tail, escape_hatch);
-    } else {
-      gen->JoinInstructions(tail, load_nr);
-    }
-    tail = load_nr;
-
-    // On Intel architectures, verify that system call numbers are in the
-    // expected number range. The older i386 and x86-64 APIs clear bit 30
-    // on all system calls. The newer x32 API always sets bit 30.
-#if defined(__i386__) || defined(__x86_64__)
-    Instruction *invalidX32 =
-      gen->MakeInstruction(BPF_RET+BPF_K,
-                           Kill("Illegal mixing of system call ABIs").err_);
-    Instruction *checkX32 =
-#if defined(__x86_64__) && defined(__ILP32__)
-      gen->MakeInstruction(BPF_JMP+BPF_JSET+BPF_K, 0x40000000, 0, invalidX32);
-#else
-      gen->MakeInstruction(BPF_JMP+BPF_JSET+BPF_K, 0x40000000, invalidX32, 0);
-#endif
-      gen->JoinInstructions(tail, checkX32);
-      tail = checkX32;
-#endif
 
     // Append jump table to our pre-amble
     gen->JoinInstructions(tail, jumptable);
@@ -587,22 +419,9 @@ void Sandbox::installFilter(bool quiet) {
   // correctly. Otherwise, there is an internal error in our BPF compiler.
   // There is really nothing the caller can do until the bug is fixed.
 #ifndef NDEBUG
-  {
-    // If we previously rewrote the BPF program so that it calls user-space
-    // whenever we return an "errno" value from the filter, then we have to
-    // wrap our system call evaluator to perform the same operation. Otherwise,
-    // the verifier would also report a mismatch in return codes.
-    Evaluators redirected_evaluators;
-    redirected_evaluators.push_back(
-        std::make_pair(RedirectToUserspaceEvalWrapper, &evaluators_));
-
-    const char *err = NULL;
-    if (!Verifier::VerifyBPF(
-                       *program,
-                       has_unsafe_traps_ ? redirected_evaluators : evaluators_,
-                       &err)) {
-      SANDBOX_DIE(err);
-    }
+  const char *err = NULL;
+  if (!Verifier::VerifyBPF(*program, evaluators_, &err)) {
+    SANDBOX_DIE(err);
   }
 #endif
 
@@ -625,6 +444,7 @@ void Sandbox::installFilter(bool quiet) {
 
   // Release memory that is no longer needed
   evaluators_.clear();
+  errMap_.clear();
 
 #if defined(SECCOMP_BPF_VALGRIND_HACKS)
   // Valgrind is really not happy about our sandbox. Disable it when running
@@ -741,43 +561,27 @@ void Sandbox::sigSys(int nr, siginfo_t *info, void *void_context) {
     goto sigsys_err;
   }
 
-  intptr_t rc;
-  if (has_unsafe_traps_ && GetIsInSigHandler(ctx)) {
-    errno = old_errno;
-    if (sigsys.nr == __NR_clone) {
-      SANDBOX_DIE("Cannot call clone() from an UnsafeTrap() handler");
+  // Copy the seccomp-specific data into a arch_seccomp_data structure. This
+  // is what we are showing to TrapFnc callbacks that the system call evaluator
+  // registered with the sandbox.
+  struct arch_seccomp_data data = {
+    sigsys.nr,
+    SECCOMP_ARCH,
+    reinterpret_cast<uint64_t>(sigsys.ip),
+    {
+      static_cast<uint64_t>(SECCOMP_PARM1(ctx)),
+      static_cast<uint64_t>(SECCOMP_PARM2(ctx)),
+      static_cast<uint64_t>(SECCOMP_PARM3(ctx)),
+      static_cast<uint64_t>(SECCOMP_PARM4(ctx)),
+      static_cast<uint64_t>(SECCOMP_PARM5(ctx)),
+      static_cast<uint64_t>(SECCOMP_PARM6(ctx))
     }
-    rc = SandboxSyscall(sigsys.nr,
-                        SECCOMP_PARM1(ctx), SECCOMP_PARM2(ctx),
-                        SECCOMP_PARM3(ctx), SECCOMP_PARM4(ctx),
-                        SECCOMP_PARM5(ctx), SECCOMP_PARM6(ctx));
-  } else {
-    const ErrorCode& err = trapArray_[info->si_errno - 1];
-    if (!err.safe_) {
-      SetIsInSigHandler();
-    }
+  };
 
-    // Copy the seccomp-specific data into a arch_seccomp_data structure. This
-    // is what we are showing to TrapFnc callbacks that the system call
-    // evaluator registered with the sandbox.
-    struct arch_seccomp_data data = {
-      sigsys.nr,
-      SECCOMP_ARCH,
-      reinterpret_cast<uint64_t>(sigsys.ip),
-      {
-        static_cast<uint64_t>(SECCOMP_PARM1(ctx)),
-        static_cast<uint64_t>(SECCOMP_PARM2(ctx)),
-        static_cast<uint64_t>(SECCOMP_PARM3(ctx)),
-        static_cast<uint64_t>(SECCOMP_PARM4(ctx)),
-        static_cast<uint64_t>(SECCOMP_PARM5(ctx)),
-        static_cast<uint64_t>(SECCOMP_PARM6(ctx))
-      }
-    };
-
-    // Now call the TrapFnc callback associated with this particular instance
-    // of SECCOMP_RET_TRAP.
-    rc = err.fnc_(data, err.aux_);
-  }
+  // Now call the TrapFnc callback associated with this particular instance
+  // of SECCOMP_RET_TRAP.
+  const ErrorCode& err = trapArray_[info->si_errno - 1];
+  intptr_t rc          = err.fnc_(data, err.aux_);
 
   // Update the CPU register that stores the return code of the system call
   // that we just handled, and restore "errno" to the value that it had
@@ -788,21 +592,10 @@ void Sandbox::sigSys(int nr, siginfo_t *info, void *void_context) {
   return;
 }
 
-bool Sandbox::TrapKey::operator<(const Sandbox::TrapKey& o) const {
-  if (fnc != o.fnc) {
-    return fnc < o.fnc;
-  } else if (aux != o.aux) {
-    return aux < o.aux;
-  } else {
-    return safe < o.safe;
-  }
-}
-
-ErrorCode Sandbox::MakeTrap(ErrorCode::TrapFnc fnc, const void *aux,
-                            bool safe) {
+ErrorCode Sandbox::Trap(ErrorCode::TrapFnc fnc, const void *aux) {
   // Each unique pair of TrapFnc and auxiliary data make up a distinct instance
   // of a SECCOMP_RET_TRAP.
-  TrapKey key(fnc, aux, safe);
+  std::pair<ErrorCode::TrapFnc, const void *> key(fnc, aux);
   TrapIds::const_iterator iter = trapIds_.find(key);
   uint16_t id;
   if (iter != trapIds_.end()) {
@@ -825,7 +618,7 @@ ErrorCode Sandbox::MakeTrap(ErrorCode::TrapFnc fnc, const void *aux,
     }
     id = traps_->size() + 1;
 
-    traps_->push_back(ErrorCode(fnc, aux, safe, id));
+    traps_->push_back(ErrorCode(fnc, aux, id));
     trapIds_[key] = id;
 
     // We want to access the traps_ vector from our signal handler. But
@@ -836,33 +629,10 @@ ErrorCode Sandbox::MakeTrap(ErrorCode::TrapFnc fnc, const void *aux,
     // signal handler, where we can safely do so.
     trapArray_     = &(*traps_)[0];
     trapArraySize_ = id;
-    return traps_->back();
   }
 
-  return ErrorCode(fnc, aux, safe, id);
-}
-
-ErrorCode Sandbox::Trap(ErrorCode::TrapFnc fnc, const void *aux) {
-  return MakeTrap(fnc, aux, true /* Safe Trap */);
-}
-
-ErrorCode Sandbox::UnsafeTrap(ErrorCode::TrapFnc fnc, const void *aux) {
-  return MakeTrap(fnc, aux, false /* Unsafe Trap */);
-}
-
-intptr_t Sandbox::ForwardSyscall(const struct arch_seccomp_data& args) {
-  return SandboxSyscall(args.nr,
-                        args.args[0], args.args[1], args.args[2],
-                        args.args[3], args.args[4], args.args[5]);
-}
-
-intptr_t Sandbox::ReturnErrno(const struct arch_seccomp_data&, void *aux) {
-  // TrapFnc functions report error by following the native kernel convention
-  // of returning an exit code in the range of -1..-4096. They do not try to
-  // set errno themselves. The glibc wrapper that triggered the SIGSYS will
-  // ultimately do so for us.
-  int err = reinterpret_cast<intptr_t>(aux) & SECCOMP_RET_DATA;
-  return -err;
+  ErrorCode err = ErrorCode(fnc, aux, id);
+  return errMap_[err.err()] = err;
 }
 
 intptr_t Sandbox::bpfFailure(const struct arch_seccomp_data&, void *aux) {
@@ -876,10 +646,10 @@ ErrorCode Sandbox::Kill(const char *msg) {
 Sandbox::SandboxStatus Sandbox::status_ = STATUS_UNKNOWN;
 int    Sandbox::proc_fd_                = -1;
 Sandbox::Evaluators Sandbox::evaluators_;
+Sandbox::ErrMap Sandbox::errMap_;
 Sandbox::Traps *Sandbox::traps_         = NULL;
 Sandbox::TrapIds Sandbox::trapIds_;
 ErrorCode *Sandbox::trapArray_          = NULL;
 size_t Sandbox::trapArraySize_          = 0;
-  bool Sandbox::has_unsafe_traps_       = false;
 
 }  // namespace

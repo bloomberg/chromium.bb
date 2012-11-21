@@ -22,12 +22,10 @@ ErrorCode::ErrorCode(int err) {
   }
 }
 
-ErrorCode::ErrorCode(ErrorCode::TrapFnc fnc, const void *aux, bool safe,
-                     uint16_t id)
+ErrorCode::ErrorCode(ErrorCode::TrapFnc fnc, const void *aux, uint16_t id)
     : error_type_(ET_TRAP),
       fnc_(fnc),
       aux_(const_cast<void *>(aux)),
-      safe_(safe),
       err_(SECCOMP_RET_TRAP + id) {
 }
 
