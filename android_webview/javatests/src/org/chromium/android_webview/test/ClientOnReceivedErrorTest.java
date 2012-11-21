@@ -13,6 +13,8 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Tests for the ContentViewClient.onReceivedError() method.
  */
@@ -40,7 +42,13 @@ public class ClientOnReceivedErrorTest extends AndroidWebViewTestBase {
         int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
         loadUrlAsync(mAwContents, url);
 
-        onReceivedErrorHelper.waitForCallback(onReceivedErrorCallCount);
+        // TODO(boliu): This is spuriously timing out on build bots but cannot
+        // be reproduced locally. Trying a longer timeout value to see if it is
+        // due to value too slow or some other issue. See crbug.com/152033.
+        onReceivedErrorHelper.waitForCallback(onReceivedErrorCallCount,
+                                              1 /* numberOfCallsToWaitFor */,
+                                              30 /* timeout */,
+                                              TimeUnit.SECONDS);
         assertEquals(ErrorCodeConversionHelper.ERROR_HOST_LOOKUP,
                 onReceivedErrorHelper.getErrorCode());
         assertEquals(url, onReceivedErrorHelper.getFailingUrl());
