@@ -525,8 +525,8 @@ TEST_F(SessionServiceTest, RestorePopup) {
   helper_.AssertNavigationEquals(nav2, tab->navigations[0]);
 }
 
-#if defined (USE_AURA)
-// Makes sure we track apps. Only applicable on aura.
+#if defined (OS_CHROMEOS)
+// Makes sure we track apps. Only applicable on chromeos.
 TEST_F(SessionServiceTest, RestoreApp) {
   SessionID window2_id;
   SessionID tab_id;
@@ -576,7 +576,7 @@ TEST_F(SessionServiceTest, RestoreApp) {
   helper_.AssertTabEquals(window2_id, tab2_id, 0, 0, 1, *tab);
   helper_.AssertNavigationEquals(nav2, tab->navigations[0]);
 }
-#endif  // defined (USE_AURA)
+#endif  // defined (OS_CHROMEOS)
 
 // Tests pruning from the front.
 TEST_F(SessionServiceTest, PruneFromFront) {
