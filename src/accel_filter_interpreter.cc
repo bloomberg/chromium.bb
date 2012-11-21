@@ -149,8 +149,14 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
 
   switch (gs->type) {
     case kGestureTypeMove:
-      scale_out_x = dx = &gs->details.move.dx;
-      scale_out_y = dy = &gs->details.move.dy;
+    case kGestureTypeSwipe:
+      if (gs->type == kGestureTypeMove) {
+        scale_out_x = dx = &gs->details.move.dx;
+        scale_out_y = dy = &gs->details.move.dy;
+      } else {
+        scale_out_x = dx = &gs->details.swipe.dx;
+        scale_out_y = dy = &gs->details.swipe.dy;
+      }
       if (sensitivity_.val_ >= 1 && sensitivity_.val_ <= 5) {
         segs = point_curves_[sensitivity_.val_ - 1];
       } else {
