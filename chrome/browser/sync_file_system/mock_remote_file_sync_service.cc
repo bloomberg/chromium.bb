@@ -22,8 +22,6 @@ MockRemoteFileSyncService::MockRemoteFileSyncService() {
       .WillByDefault(Invoke(this, &self::AddObserverStub));
   ON_CALL(*this, RemoveObserver(_))
       .WillByDefault(Invoke(this, &self::RemoveObserverStub));
-  ON_CALL(*this, GetLocalChangeProcessor())
-      .WillByDefault(Return(local_change_processor_.get()));
   ON_CALL(*this, RegisterOriginForTrackingChanges(_, _))
       .WillByDefault(Invoke(this, &self::RegisterOriginForTrackingChangesStub));
   ON_CALL(*this, UnregisterOriginForTrackingChanges(_, _))
@@ -32,7 +30,7 @@ MockRemoteFileSyncService::MockRemoteFileSyncService() {
   ON_CALL(*this, ProcessRemoteChange(_, _))
       .WillByDefault(Invoke(this, &self::ProcessRemoteChangeStub));
   ON_CALL(*this, GetLocalChangeProcessor())
-      .WillByDefault(Return(local_change_processor_.get()));
+      .WillByDefault(Return(&mock_local_change_processor_));
   ON_CALL(*this, GetConflictFiles(_, _))
       .WillByDefault(Invoke(this, &self::GetConflictFilesStub));
   ON_CALL(*this, GetRemoteFileMetadata(_, _))

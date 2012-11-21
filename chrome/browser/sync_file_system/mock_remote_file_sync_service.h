@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/sync_file_system/local_change_processor.h"
+#include "chrome/browser/sync_file_system/mock_local_change_processor.h"
 #include "chrome/browser/sync_file_system/remote_change_processor.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "googleurl/src/gurl.h"
@@ -53,11 +53,6 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
 
   // Sets a mock local change processor. The value is returned by
   // the default action for GetLocalChangeProcessor.
-  void set_local_change_processor(
-      scoped_ptr<LocalChangeProcessor> processor) {
-    local_change_processor_ = processor.Pass();
-  }
-
   // Sets conflict file information.  The information is returned by
   // the default action for GetConflictFiles and GetRemoteConflictFileInfo.
   void add_conflict_file(const fileapi::FileSystemURL& url,
@@ -94,10 +89,11 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
       const fileapi::FileSystemURL& url,
       const fileapi::SyncFileMetadataCallback& callback);
 
-  scoped_ptr<LocalChangeProcessor> local_change_processor_;
-
   OriginToURLSetMap conflict_file_urls_;
   FileMetadataMap conflict_file_metadata_;
+
+  // For default implementation.
+  MockLocalChangeProcessor mock_local_change_processor_;
 
   ObserverList<Observer> observers_;
 

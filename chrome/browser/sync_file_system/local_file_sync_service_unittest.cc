@@ -9,8 +9,8 @@
 #include "base/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
+#include "chrome/browser/sync_file_system/mock_local_change_processor.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,6 +20,7 @@
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/fileapi/syncable/local_file_sync_context.h"
 #include "webkit/fileapi/syncable/local_file_sync_status.h"
+#include "webkit/fileapi/syncable/mock_sync_status_observer.h"
 #include "webkit/fileapi/syncable/sync_file_metadata.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
@@ -28,6 +29,7 @@ using fileapi::FileChange;
 using fileapi::FileChangeList;
 using fileapi::FileSystemURL;
 using fileapi::LocalFileSyncStatus;
+using fileapi::MockSyncStatusObserver;
 using fileapi::SyncFileMetadata;
 using fileapi::SyncFileType;
 using fileapi::SyncStatusCallback;
@@ -83,29 +85,6 @@ void OnGetFileMetadata(const tracked_objects::Location& where,
   *metadata_out = metadata;
   oncompleted.Run();
 }
-
-class MockLocalChangeProcessor : public LocalChangeProcessor {
- public:
-  MockLocalChangeProcessor() {}
-  virtual ~MockLocalChangeProcessor() {}
-
-  // LocalChangeProcessor override.
-  MOCK_METHOD4(ApplyLocalChange,
-               void(const FileChange& change,
-                    const FilePath& local_path,
-                    const FileSystemURL& url,
-                    const SyncStatusCallback& callback));
-};
-
-class MockSyncStatusObserver : public LocalFileSyncStatus::Observer {
- public:
-  MockSyncStatusObserver() {}
-  virtual ~MockSyncStatusObserver() {}
-
-  // LocalFileSyncStatus::Observer overrides.
-  MOCK_METHOD1(OnSyncEnabled, void(const FileSystemURL& url));
-  MOCK_METHOD1(OnWriteEnabled, void(const FileSystemURL& url));
-};
 
 ACTION_P(MockStatusCallback, status) {
   base::MessageLoopProxy::current()->PostTask(

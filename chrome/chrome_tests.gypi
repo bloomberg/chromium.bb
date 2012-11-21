@@ -1025,6 +1025,8 @@
         'browser/speech/speech_recognition_bubble_browsertest.cc',
         'browser/spellchecker/spellcheck_service_browsertest.cc',
         'browser/ssl/ssl_browser_tests.cc',
+        'browser/sync_file_system/mock_local_change_processor.cc',
+        'browser/sync_file_system/mock_local_change_processor.h',
         'browser/sync_file_system/mock_remote_file_sync_service.cc',
         'browser/sync_file_system/mock_remote_file_sync_service.h',
         'browser/tab_contents/render_view_context_menu_browsertest.cc',
