@@ -117,26 +117,30 @@ private:
 #endif
 };
 
+#ifndef NDEBUG
 class DebugScopedSetMainThreadBlocked {
 public:
     explicit DebugScopedSetMainThreadBlocked(Proxy* proxy)
         : m_proxy(proxy)
     {
-#ifndef NDEBUG
         DCHECK(!m_proxy->isMainThreadBlocked());
         m_proxy->setMainThreadBlocked(true);
-#endif
     }
     ~DebugScopedSetMainThreadBlocked()
     {
-#ifndef NDEBUG
         DCHECK(m_proxy->isMainThreadBlocked());
         m_proxy->setMainThreadBlocked(false);
-#endif
     }
 private:
     Proxy* m_proxy;
 };
+#else
+class DebugScopedSetMainThreadBlocked {
+public:
+    explicit DebugScopedSetMainThreadBlocked(Proxy*) { }
+    ~DebugScopedSetMainThreadBlocked() { }
+};
+#endif
 
 }
 

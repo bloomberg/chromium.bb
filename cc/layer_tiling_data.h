@@ -36,7 +36,7 @@ public:
     gfx::Size tileSize() const;
     // Change the border texel setting. This may invalidate all existing tiles.
     void setBorderTexelOption(BorderTexelOption);
-    bool hasBorderTexels() const { return m_tilingData.border_texels(); }
+    bool hasBorderTexels() const { return !!m_tilingData.border_texels(); }
 
     bool isEmpty() const { return hasEmptyBounds() || !tiles().size(); }
 

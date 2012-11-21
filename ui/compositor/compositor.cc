@@ -10,11 +10,13 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "cc/input_handler.h"
+#include "cc/layer.h"
+#include "cc/layer_tree_host.h"
+#include "cc/thread_impl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorSupport.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorOutputSurface.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_switches.h"
@@ -25,7 +27,6 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"
-#include "webkit/glue/webthread_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 
 #if defined(OS_CHROMEOS)
@@ -42,7 +43,7 @@ enum SwapType {
   READPIXELS_SWAP,
 };
 
-webkit_glue::WebThreadImpl* g_compositor_thread = NULL;
+base::Thread* g_compositor_thread = NULL;
 
 bool test_compositor_enabled = false;
 
@@ -294,13 +295,11 @@ Compositor::Compositor(CompositorDelegate* delegate,
       last_ended_frame_(0),
       disable_schedule_composite_(false),
       compositor_lock_(NULL) {
-  WebKit::WebCompositorSupport* compositor_support =
-      WebKit::Platform::current()->compositorSupport();
-  root_web_layer_.reset(compositor_support->createLayer());
-  WebKit::WebLayerTreeView::Settings settings;
+  root_web_layer_ = cc::Layer::create();
+  root_web_layer_->setAnchorPoint(gfx::PointF(0.f, 0.f));
+
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  settings.showFPSCounter =
-      command_line->HasSwitch(switches::kUIShowFPSCounter);
+  cc::LayerTreeSettings settings;
   settings.showPlatformLayerTree =
       command_line->HasSwitch(switches::kUIShowLayerTree);
   settings.refreshRate =
@@ -312,9 +311,16 @@ Compositor::Compositor(CompositorDelegate* delegate,
   settings.perTilePaintingEnabled =
       command_line->HasSwitch(switches::kUIEnablePerTilePainting);
 
-  root_web_layer_->setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
-  host_.reset(compositor_support->createLayerTreeView(this, *root_web_layer_,
-                                                      settings));
+  scoped_ptr<cc::Thread> thread;
+  if (g_compositor_thread) {
+    thread = cc::ThreadImpl::createForDifferentThread(
+        g_compositor_thread->message_loop_proxy());
+  }
+
+  host_ = cc::LayerTreeHost::create(this, settings, thread.Pass());
+  host_->setShowFPSCounter(
+      command_line->HasSwitch(switches::kUIShowFPSCounter));
+  host_->setRootLayer(root_web_layer_);
   host_->setSurfaceReady();
 }
 
@@ -336,16 +342,15 @@ Compositor::~Compositor() {
 }
 
 void Compositor::Initialize(bool use_thread) {
-  WebKit::WebCompositorSupport* compositor_support =
-      WebKit::Platform::current()->compositorSupport();
-  if (use_thread)
-    g_compositor_thread = new webkit_glue::WebThreadImpl("Browser Compositor");
-  compositor_support->initialize(g_compositor_thread);
+  if (use_thread) {
+    g_compositor_thread = new base::Thread("Browser Compositor");
+    g_compositor_thread->Start();
+  }
 }
 
 void Compositor::Terminate() {
-  WebKit::Platform::current()->compositorSupport()->shutdown();
   if (g_compositor_thread) {
+    g_compositor_thread->Stop();
     delete g_compositor_thread;
     g_compositor_thread = NULL;
   }
@@ -368,7 +373,7 @@ void Compositor::SetRootLayer(Layer* root_layer) {
     root_layer_->SetCompositor(this);
   root_web_layer_->removeAllChildren();
   if (root_layer_)
-    root_web_layer_->addChild(root_layer_->web_layer());
+    root_web_layer_->addChild(root_layer_->cc_layer());
 }
 
 void Compositor::SetHostHasTransparentBackground(
@@ -418,7 +423,7 @@ void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {
   if (size_in_pixel.IsEmpty() || scale <= 0)
     return;
   size_ = size_in_pixel;
-  host_->setViewportSize(size_in_pixel);
+  host_->setViewportSize(size_in_pixel, size_in_pixel);
   root_web_layer_->setBounds(size_in_pixel);
 
   if (device_scale_factor_ != scale) {
@@ -470,7 +475,13 @@ void Compositor::OnSwapBuffersAborted() {
                     OnCompositingAborted(this));
 }
 
-void Compositor::updateAnimations(double frameBeginTime) {
+void Compositor::willBeginFrame() {
+}
+
+void Compositor::didBeginFrame() {
+}
+
+void Compositor::animate(double frameBeginTime) {
 }
 
 void Compositor::layout() {
@@ -482,22 +493,32 @@ void Compositor::layout() {
   disable_schedule_composite_ = false;
 }
 
-void Compositor::applyScrollAndScale(const WebKit::WebSize& scrollDelta,
-                                     float scaleFactor) {
+void Compositor::applyScrollAndScale(gfx::Vector2d scrollDelta,
+                                     float pageScale) {
 }
 
-WebKit::WebCompositorOutputSurface* Compositor::createOutputSurface() {
+scoped_ptr<WebKit::WebCompositorOutputSurface>
+Compositor::createOutputSurface() {
   if (test_compositor_enabled) {
     ui::TestWebGraphicsContext3D* test_context =
       new ui::TestWebGraphicsContext3D();
     test_context->Initialize();
-    return new WebGraphicsContextToOutputSurfaceAdapter(test_context);
+    return scoped_ptr<WebKit::WebCompositorOutputSurface>(
+        new WebGraphicsContextToOutputSurfaceAdapter(test_context));
   } else {
-    return ContextFactory::GetInstance()->CreateOutputSurface(this);
+    return scoped_ptr<WebKit::WebCompositorOutputSurface>(
+        ContextFactory::GetInstance()->CreateOutputSurface(this));
   }
 }
 
 void Compositor::didRecreateOutputSurface(bool success) {
+}
+
+scoped_ptr<cc::InputHandler> Compositor::createInputHandler() {
+  return scoped_ptr<cc::InputHandler>();
+}
+
+void Compositor::willCommit() {
 }
 
 void Compositor::didCommit() {

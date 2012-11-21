@@ -280,6 +280,12 @@
       'sources': [
         '<@(cc_source_files)',
       ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          # Needed for <public/WebTransformationMatrix.h> in layer.h
+          '<(webkit_src_dir)/Source/Platform/chromium',
+        ],
+      }
     },
   ],
 }

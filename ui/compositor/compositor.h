@@ -9,9 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeViewClient.h"
+#include "cc/layer_tree_host_client.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
@@ -20,12 +18,21 @@
 
 class SkBitmap;
 
+namespace cc {
+class Layer;
+class LayerTreeHost;
+}
+
 namespace gfx {
 class GLContext;
 class GLSurface;
 class GLShareGroup;
 class Point;
 class Rect;
+}
+
+namespace WebKit {
+class WebGraphicsContext3D;
 }
 
 namespace ui {
@@ -159,7 +166,7 @@ class COMPOSITOR_EXPORT CompositorLock
 // appropriately transformed texture for each transformed view in the widget's
 // view hierarchy.
 class COMPOSITOR_EXPORT Compositor
-    : NON_EXPORTED_BASE(public WebKit::WebLayerTreeViewClient) {
+    : NON_EXPORTED_BASE(public cc::LayerTreeHostClient) {
  public:
   Compositor(CompositorDelegate* delegate,
              gfx::AcceleratedWidget widget);
@@ -235,17 +242,23 @@ class COMPOSITOR_EXPORT Compositor
   // Signals swap has aborted (e.g. lost context).
   void OnSwapBuffersAborted();
 
-  // WebLayerTreeViewClient implementation.
-  virtual void updateAnimations(double frameBeginTime);
-  virtual void layout();
-  virtual void applyScrollAndScale(const WebKit::WebSize& scrollDelta,
-                                   float scaleFactor);
-  virtual WebKit::WebCompositorOutputSurface* createOutputSurface();
-  virtual void didRecreateOutputSurface(bool success);
-  virtual void didCommit();
-  virtual void didCommitAndDrawFrame();
-  virtual void didCompleteSwapBuffers();
-  virtual void scheduleComposite();
+  // LayerTreeHostClient implementation.
+  virtual void willBeginFrame() OVERRIDE;
+  virtual void didBeginFrame() OVERRIDE;
+  virtual void animate(double frameBeginTime) OVERRIDE;
+  virtual void layout() OVERRIDE;
+  virtual void applyScrollAndScale(gfx::Vector2d scrollDelta,
+                                   float pageScale) OVERRIDE;
+  virtual scoped_ptr<WebKit::WebCompositorOutputSurface>
+      createOutputSurface() OVERRIDE;
+  virtual void didRecreateOutputSurface(bool success) OVERRIDE;
+  virtual scoped_ptr<cc::InputHandler> createInputHandler() OVERRIDE;
+  virtual void willCommit() OVERRIDE;
+  virtual void didCommit() OVERRIDE;
+  virtual void didCommitAndDrawFrame() OVERRIDE;
+  virtual void didCompleteSwapBuffers() OVERRIDE;
+  virtual void scheduleComposite() OVERRIDE;
+
 
   int last_started_frame() { return last_started_frame_; }
   int last_ended_frame() { return last_ended_frame_; }
@@ -274,8 +287,8 @@ class COMPOSITOR_EXPORT Compositor
   ObserverList<CompositorObserver> observer_list_;
 
   gfx::AcceleratedWidget widget_;
-  scoped_ptr<WebKit::WebLayer> root_web_layer_;
-  scoped_ptr<WebKit::WebLayerTreeView> host_;
+  scoped_refptr<cc::Layer> root_web_layer_;
+  scoped_ptr<cc::LayerTreeHost> host_;
 
   // Used to verify that we have at most one draw swap in flight.
   scoped_ptr<PostedSwapQueue> posted_swaps_;

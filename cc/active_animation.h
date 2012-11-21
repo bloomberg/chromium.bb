@@ -66,7 +66,7 @@ public:
 
     double startTime() const { return m_startTime; }
     void setStartTime(double monotonicTime) { m_startTime = monotonicTime; }
-    bool hasSetStartTime() const { return m_startTime; }
+    bool hasSetStartTime() const { return !!m_startTime; }
 
     double timeOffset() const { return m_timeOffset; }
     void setTimeOffset(double monotonicTime) { m_timeOffset = monotonicTime; }

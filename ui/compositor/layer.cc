@@ -10,15 +10,11 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorSupport.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebContentLayer.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayer.h"
+#include "cc/content_layer.h"
+#include "cc/solid_color_layer.h"
+#include "cc/texture_layer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperation.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebSolidColorLayer.h"
 #include "ui/base/animation/animation.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/dip_util.h"
@@ -68,7 +64,7 @@ Layer::Layer()
       zoom_(1),
       zoom_inset_(0),
       delegate_(NULL),
-      web_layer_(NULL),
+      cc_layer_(NULL),
       scale_content_(true),
       device_scale_factor_(1.0f) {
   CreateWebLayer();
@@ -117,7 +113,7 @@ Layer::~Layer() {
     layer_mask_back_link_->SetMaskLayer(NULL);
   for (size_t i = 0; i < children_.size(); ++i)
     children_[i]->parent_ = NULL;
-  web_layer_->removeFromParent();
+  cc_layer_->removeFromParent();
 }
 
 Compositor* Layer::GetCompositor() {
@@ -141,7 +137,7 @@ void Layer::Add(Layer* child) {
     child->parent_->Remove(child);
   child->parent_ = this;
   children_.push_back(child);
-  web_layer_->addChild(child->web_layer_);
+  cc_layer_->addChild(child->cc_layer_);
   child->OnDeviceScaleFactorChanged(device_scale_factor_);
 }
 
@@ -151,7 +147,7 @@ void Layer::Remove(Layer* child) {
   DCHECK(i != children_.end());
   children_.erase(i);
   child->parent_ = NULL;
-  child->web_layer_->removeFromParent();
+  child->cc_layer_->removeFromParent();
 }
 
 void Layer::StackAtTop(Layer* child) {
@@ -219,11 +215,11 @@ gfx::Rect Layer::GetTargetBounds() const {
 }
 
 void Layer::SetMasksToBounds(bool masks_to_bounds) {
-  web_layer_->setMasksToBounds(masks_to_bounds);
+  cc_layer_->setMasksToBounds(masks_to_bounds);
 }
 
 bool Layer::GetMasksToBounds() const {
-  return web_layer_->masksToBounds();
+  return cc_layer_->masksToBounds();
 }
 
 void Layer::SetOpacity(float opacity) {
@@ -294,8 +290,8 @@ void Layer::SetMaskLayer(Layer* layer_mask) {
   if (layer_mask_)
     layer_mask_->layer_mask_back_link_ = NULL;
   layer_mask_ = layer_mask;
-  web_layer_->setMaskLayer(
-      layer_mask ? layer_mask->web_layer() : NULL);
+  cc_layer_->setMaskLayer(
+      layer_mask ? layer_mask->cc_layer() : NULL);
   // We need to reference the linked object so that it can properly break the
   // link to us when it gets deleted.
   if (layer_mask) {
@@ -336,7 +332,7 @@ void Layer::SetLayerFilters() {
         layer_brightness_));
   }
 
-  web_layer_->setFilters(filters);
+  cc_layer_->setFilters(filters);
 }
 
 void Layer::SetLayerBackgroundFilters() {
@@ -354,7 +350,7 @@ void Layer::SetLayerBackgroundFilters() {
         background_blur_radius_));
   }
 
-  web_layer_->setBackgroundFilters(filters);
+  cc_layer_->setBackgroundFilters(filters);
 }
 
 float Layer::GetTargetOpacity() const {
@@ -408,49 +404,47 @@ void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
 
   fills_bounds_opaquely_ = fills_bounds_opaquely;
 
-  web_layer_->setOpaque(fills_bounds_opaquely);
+  cc_layer_->setContentsOpaque(fills_bounds_opaquely);
 }
 
 void Layer::SetExternalTexture(Texture* texture) {
   DCHECK_EQ(type_, LAYER_TEXTURED);
   layer_updated_externally_ = !!texture;
   texture_ = texture;
-  if (web_layer_is_accelerated_ != layer_updated_externally_) {
+  if (cc_layer_is_accelerated_ != layer_updated_externally_) {
     // Switch to a different type of layer.
-    web_layer_->removeAllChildren();
-    scoped_ptr<WebKit::WebContentLayer> old_content_layer(
+    cc_layer_->removeAllChildren();
+    scoped_refptr<cc::ContentLayer> old_content_layer(
         content_layer_.release());
-    scoped_ptr<WebKit::WebSolidColorLayer> old_solid_layer(
+    scoped_refptr<cc::SolidColorLayer> old_solid_layer(
         solid_color_layer_.release());
-    scoped_ptr<WebKit::WebExternalTextureLayer> old_texture_layer(
+    scoped_refptr<cc::TextureLayer> old_texture_layer(
         texture_layer_.release());
-    WebKit::WebLayer* new_layer = NULL;
-    WebKit::WebCompositorSupport* compositor_support =
-        WebKit::Platform::current()->compositorSupport();
+    cc::Layer* new_layer = NULL;
     if (layer_updated_externally_) {
-      texture_layer_.reset(
-          compositor_support->createExternalTextureLayer(this));
+      texture_layer_ = cc::TextureLayer::create(this);
       texture_layer_->setFlipped(texture_->flipped());
-      new_layer = texture_layer_->layer();
+      new_layer = texture_layer_.get();
     } else {
       old_texture_layer->willModifyTexture();
-      content_layer_.reset(compositor_support->createContentLayer(this));
-      new_layer = content_layer_->layer();
+      content_layer_ = cc::ContentLayer::create(this);
+      new_layer = content_layer_.get();
     }
     if (parent_) {
-      DCHECK(parent_->web_layer_);
-      parent_->web_layer_->replaceChild(web_layer_, new_layer);
+      DCHECK(parent_->cc_layer_);
+      parent_->cc_layer_->replaceChild(cc_layer_, new_layer);
     }
-    web_layer_= new_layer;
-    web_layer_is_accelerated_ = layer_updated_externally_;
+    cc_layer_= new_layer;
+    cc_layer_is_accelerated_ = layer_updated_externally_;
     for (size_t i = 0; i < children_.size(); ++i) {
-      DCHECK(children_[i]->web_layer_);
-      web_layer_->addChild(children_[i]->web_layer_);
+      DCHECK(children_[i]->cc_layer_);
+      cc_layer_->addChild(children_[i]->cc_layer_);
     }
-    web_layer_->setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
-    web_layer_->setOpaque(fills_bounds_opaquely_);
-    web_layer_->setOpacity(visible_ ? opacity_ : 0.f);
-    web_layer_->setForceRenderSurface(force_render_surface_);
+    cc_layer_->setAnchorPoint(gfx::PointF());
+    cc_layer_->setContentsOpaque(fills_bounds_opaquely_);
+    cc_layer_->setOpacity(visible_ ? opacity_ : 0.f);
+    cc_layer_->setForceRenderSurface(force_render_surface_);
+    cc_layer_->setIsDrawable(true);
     RecomputeTransform();
   }
   RecomputeDrawsContentAndUVRect();
@@ -491,12 +485,7 @@ void Layer::SendDamagedRects() {
           sk_damaged.height());
 
       gfx::Rect damaged_in_pixel = ConvertRectToPixel(this, damaged);
-      WebKit::WebFloatRect web_rect(
-          damaged_in_pixel.x(),
-          damaged_in_pixel.y(),
-          damaged_in_pixel.width(),
-          damaged_in_pixel.height());
-      web_layer_->invalidateRect(web_rect);
+      cc_layer_->setNeedsDisplayRect(damaged_in_pixel);
     }
     damaged_region_.setEmpty();
   }
@@ -527,15 +516,12 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
     layer_mask_->OnDeviceScaleFactorChanged(device_scale_factor);
 }
 
-void Layer::paintContents(WebKit::WebCanvas* web_canvas,
-                          const WebKit::WebRect& clip,
-#if WEBCONTENTLAYERCLIENT_HAS_CANPAINTLCDTEXT
-                          bool can_paint_lcd_text,
-#endif  // WEBCONTENTLAYERCLIENT_HAS_CANPAINTLCDTEXT
-                          WebKit::WebFloatRect& opaque) {
+void Layer::paintContents(SkCanvas* sk_canvas,
+                          const gfx::Rect& clip,
+                          gfx::RectF& opaque) {
   TRACE_EVENT0("ui", "Layer::paintContents");
   scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvasWithoutScaling(
-      web_canvas, ui::GetScaleFactorFromScale(device_scale_factor_)));
+      sk_canvas, ui::GetScaleFactorFromScale(device_scale_factor_)));
 
   bool scale_content = scale_content_;
   if (scale_content) {
@@ -550,7 +536,7 @@ void Layer::paintContents(WebKit::WebCanvas* web_canvas,
     canvas->Restore();
 }
 
-unsigned Layer::prepareTexture(WebKit::WebTextureUpdater& /* updater */) {
+unsigned Layer::prepareTexture(cc::ResourceUpdateQueue&) {
   DCHECK(layer_updated_externally_);
   return texture_->PrepareTexture();
 }
@@ -565,7 +551,7 @@ void Layer::SetForceRenderSurface(bool force) {
     return;
 
   force_render_surface_ = force;
-  web_layer_->setForceRenderSurface(force_render_surface_);
+  cc_layer_->setForceRenderSurface(force_render_surface_);
 }
 
 void Layer::StackRelativeTo(Layer* child, Layer* other, bool above) {
@@ -587,8 +573,8 @@ void Layer::StackRelativeTo(Layer* child, Layer* other, bool above) {
   children_.erase(children_.begin() + child_i);
   children_.insert(children_.begin() + dest_i, child);
 
-  child->web_layer_->removeFromParent();
-  web_layer_->insertChild(child->web_layer_, dest_i);
+  child->cc_layer_->removeFromParent();
+  cc_layer_->insertChild(child->cc_layer_, dest_i);
 }
 
 bool Layer::ConvertPointForAncestor(const Layer* ancestor,
@@ -660,7 +646,7 @@ void Layer::SetOpacityImmediately(float opacity) {
   opacity_ = opacity;
 
   if (visible_)
-    web_layer_->setOpacity(opacity);
+    cc_layer_->setOpacity(opacity);
   if (schedule_draw)
     ScheduleDraw();
 }
@@ -671,7 +657,7 @@ void Layer::SetVisibilityImmediately(bool visible) {
 
   visible_ = visible;
   // TODO(piman): Expose a visibility flag on WebLayer.
-  web_layer_->setOpacity(visible_ ? opacity_ : 0.f);
+  cc_layer_->setOpacity(visible_ ? opacity_ : 0.f);
 }
 
 void Layer::SetBrightnessImmediately(float brightness) {
@@ -752,22 +738,21 @@ SkColor Layer::GetColorForAnimation() const {
   // The NULL check is here since this is invoked regardless of whether we have
   // been configured as LAYER_SOLID_COLOR.
   return solid_color_layer_.get() ?
-      solid_color_layer_->layer()->backgroundColor() : SK_ColorBLACK;
+      solid_color_layer_->backgroundColor() : SK_ColorBLACK;
 }
 
 void Layer::CreateWebLayer() {
-  WebKit::WebCompositorSupport* compositor_support =
-      WebKit::Platform::current()->compositorSupport();
   if (type_ == LAYER_SOLID_COLOR) {
-    solid_color_layer_.reset(compositor_support->createSolidColorLayer());
-    web_layer_ = solid_color_layer_->layer();
+    solid_color_layer_ = cc::SolidColorLayer::create();
+    cc_layer_ = solid_color_layer_.get();
   } else {
-    content_layer_.reset(compositor_support->createContentLayer(this));
-    web_layer_ = content_layer_->layer();
+    content_layer_ = cc::ContentLayer::create(this);
+    cc_layer_ = content_layer_.get();
   }
-  web_layer_is_accelerated_ = false;
-  web_layer_->setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
-  web_layer_->setOpaque(true);
+  cc_layer_is_accelerated_ = false;
+  cc_layer_->setAnchorPoint(gfx::PointF());
+  cc_layer_->setContentsOpaque(true);
+  cc_layer_->setIsDrawable(type_ != LAYER_NOT_DRAWN);
 }
 
 void Layer::RecomputeTransform() {
@@ -783,17 +768,13 @@ void Layer::RecomputeTransform() {
   transform.ConcatTransform(transform_);
   transform.ConcatTranslate(bounds_.x(), bounds_.y());
   transform.ConcatTransform(scale_translate);
-  web_layer_->setTransform(transform.matrix());
+  cc_layer_->setTransform(WebKit::WebTransformationMatrix(transform));
 }
 
 void Layer::RecomputeDrawsContentAndUVRect() {
-  DCHECK(web_layer_);
-  bool should_draw = type_ != LAYER_NOT_DRAWN;
-  if (!web_layer_is_accelerated_) {
-    if (type_ != LAYER_SOLID_COLOR) {
-      web_layer_->setDrawsContent(should_draw);
-    }
-    web_layer_->setBounds(ConvertSizeToPixel(this, bounds_.size()));
+  DCHECK(cc_layer_);
+  if (!cc_layer_is_accelerated_) {
+    cc_layer_->setBounds(ConvertSizeToPixel(this, bounds_.size()));
   } else {
     DCHECK(texture_);
 
@@ -803,15 +784,14 @@ void Layer::RecomputeDrawsContentAndUVRect() {
 
     gfx::Size size(std::min(bounds().width(), texture_size.width()),
                    std::min(bounds().height(), texture_size.height()));
-    WebKit::WebFloatRect rect(
+    gfx::RectF rect(
         0,
         0,
         static_cast<float>(size.width())/texture_size.width(),
         static_cast<float>(size.height())/texture_size.height());
     texture_layer_->setUVRect(rect);
 
-    gfx::Size size_in_pixel = ConvertSizeToPixel(this, size);
-    web_layer_->setBounds(size_in_pixel);
+    cc_layer_->setBounds(ConvertSizeToPixel(this, size));
   }
 }
 

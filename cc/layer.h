@@ -188,8 +188,8 @@ public:
     Layer* replicaLayer() { return m_replicaLayer.get(); }
     const Layer* replicaLayer() const { return m_replicaLayer.get(); }
 
-    bool hasMask() const { return m_maskLayer; }
-    bool hasReplica() const { return m_replicaLayer; }
+    bool hasMask() const { return !!m_maskLayer; }
+    bool hasReplica() const { return !!m_replicaLayer; }
     bool replicaHasMask() const { return m_replicaLayer && (m_maskLayer || m_replicaLayer->m_maskLayer); }
 
     // These methods typically need to be overwritten by derived classes.
