@@ -441,12 +441,6 @@ void MediaStreamCaptureIndicator::RemoveCaptureDeviceTab(
     int render_view_id,
     const content::MediaStreamDevices& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  WebContents* web_contents = tab_util::GetWebContentsByID(render_process_id,
-                                                           render_view_id);
-  if (!web_contents)
-    return;
-
   CaptureDeviceTabs::iterator iter = std::find_if(
       tabs_.begin(), tabs_.end(), TabEquals(render_process_id, render_view_id));
 
@@ -474,8 +468,10 @@ void MediaStreamCaptureIndicator::RemoveCaptureDeviceTab(
       tabs_.erase(iter);
   }
 
-  DCHECK(web_contents);
-  web_contents->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
+  WebContents* web_contents = tab_util::GetWebContentsByID(render_process_id,
+                                                           render_view_id);
+  if (web_contents)
+    web_contents->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
 
   if (!status_icon_)
     return;
