@@ -116,10 +116,12 @@ class TabContents : public content::WebContentsObserver {
   // If true, we're running the destructor.
   bool in_destructor_;
 
+  content::WebContents* web_contents_;
+  Profile* profile_;
   // The supporting objects need to outlive the WebContents dtor (as they may
   // be called upon during its execution). As a result, this must come last
   // in the list.
-  scoped_ptr<content::WebContents> web_contents_;
+  scoped_ptr<content::WebContents> owned_web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContents);
 };

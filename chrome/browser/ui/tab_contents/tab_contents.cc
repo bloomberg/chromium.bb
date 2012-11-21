@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 
+#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "chrome/browser/autofill/autofill_external_delegate.h"
@@ -78,8 +79,11 @@ class TabContentsUserData : public base::SupportsUserData::Data {
   virtual ~TabContentsUserData() {}
   TabContents* tab_contents() { return tab_contents_; }
 
+  void MakeContentsOwned() { owned_tab_contents_.reset(tab_contents_); }
+
  private:
   TabContents* tab_contents_;  // unowned
+  scoped_ptr<TabContents> owned_tab_contents_;
 };
 
 }  // namespace
@@ -100,7 +104,9 @@ TabContents* TabContents::Factory::CloneTabContents(TabContents* contents) {
 TabContents::TabContents(WebContents* contents)
     : content::WebContentsObserver(contents),
       in_destructor_(false),
-      web_contents_(contents) {
+      web_contents_(contents),
+      profile_(Profile::FromBrowserContext(contents->GetBrowserContext())),
+      owned_web_contents_(contents) {
   DCHECK(contents);
   DCHECK(!FromWebContents(contents));
 
@@ -223,19 +229,22 @@ const TabContents* TabContents::FromWebContents(const WebContents* contents) {
 }
 
 WebContents* TabContents::web_contents() const {
-  return web_contents_.get();
+  return web_contents_;
 }
 
 Profile* TabContents::profile() const {
-  return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  return profile_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsObserver overrides
 
 void TabContents::WebContentsDestroyed(WebContents* tab) {
-  // Destruction of the WebContents should only be done by us from our
-  // destructor. Otherwise it's very likely we (or one of the helpers we own)
-  // will attempt to access the WebContents and we'll crash.
-  DCHECK(in_destructor_);
+  if (!in_destructor_) {
+    // The owned WebContents is being destroyed independently, so delete this.
+    ignore_result(owned_web_contents_.release());
+    TabContentsUserData* user_data = static_cast<TabContentsUserData*>(
+        tab->GetUserData(&kTabContentsUserDataKey));
+    user_data->MakeContentsOwned();
+  }
 }
