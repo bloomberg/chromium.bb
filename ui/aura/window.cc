@@ -698,6 +698,9 @@ void Window::SetVisible(bool visible) {
   if (visible == layer_->GetTargetVisibility())
     return;  // No change.
 
+  FOR_EACH_OBSERVER(WindowObserver, observers_,
+                    OnWindowVisibilityChanging(this, visible));
+
   RootWindow* root_window = GetRootWindow();
   if (client::GetVisibilityClient(root_window)) {
     client::GetVisibilityClient(root_window)->UpdateLayerVisibility(

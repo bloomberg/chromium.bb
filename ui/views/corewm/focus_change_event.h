@@ -20,7 +20,7 @@ namespace corewm {
 // change are numerous and complex. The implementation of the dispatch of this
 // event is handled by the FocusController. See that class and its unit tests
 // for specifics.
-class FocusChangeEvent : public ui::Event {
+class VIEWS_EXPORT FocusChangeEvent : public ui::Event {
  public:
   // An API used by the code in FocusController that dispatches
   // FocusChangeEvents.
@@ -50,8 +50,8 @@ class FocusChangeEvent : public ui::Event {
   // -ing events are sent when focus or activation is about to be changed. This
   // gives the target and its pre- and post- handlers the ability to abort the
   // or re-target the change before the FocusController makes it.
-  int focus_changing_event_type() const { return focus_changing_event_type_; }
-  int activation_changing_event_type() const {
+  static int focus_changing_event_type() { return focus_changing_event_type_; }
+  static int activation_changing_event_type() {
     return activation_changing_event_type_;
   }
 
@@ -59,8 +59,8 @@ class FocusChangeEvent : public ui::Event {
   // FocusController. It is possible to stop propagation of this event but that
   // only affects handlers downstream from being notified of the change already
   // made in the FocusController.
-  int focus_changed_event_type() const { return focus_changing_event_type_; }
-  int activation_changed_event_type() const {
+  static int focus_changed_event_type() { return focus_changing_event_type_; }
+  static int activation_changed_event_type() {
     return activation_changed_event_type_;
   }
 

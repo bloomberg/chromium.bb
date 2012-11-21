@@ -12,6 +12,10 @@ EventHandler::EventHandler() {
 EventHandler::~EventHandler() {
 }
 
+EventResult EventHandler::OnEvent(Event* event) {
+  return ui::ER_UNHANDLED;
+}
+
 EventResult EventHandler::OnKeyEvent(KeyEvent* event) {
   return ui::ER_UNHANDLED;
 }

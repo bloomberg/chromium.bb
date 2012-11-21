@@ -12,6 +12,7 @@
 
 namespace ui {
 
+class Event;
 class GestureEvent;
 class KeyEvent;
 class MouseEvent;
@@ -26,6 +27,8 @@ class UI_EXPORT EventHandler {
  public:
   EventHandler();
   virtual ~EventHandler();
+
+  virtual EventResult OnEvent(Event* event);
 
   virtual EventResult OnKeyEvent(KeyEvent* event);
 

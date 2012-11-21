@@ -7,12 +7,15 @@
 
 #include "base/compiler_specific.h"
 #include "ui/aura/client/activation_client.h"
+#include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/events/event_dispatcher.h"
 #include "ui/views/views_export.h"
 
 namespace views {
 namespace corewm {
+
+class FocusRules;
 
 // FocusController handles focus and activation changes for an environment
 // encompassing one or more RootWindows. Within an environment there can be
@@ -31,12 +34,16 @@ namespace corewm {
 class VIEWS_EXPORT FocusController : public aura::client::ActivationClient,
                                      public ui::EventHandler,
                                      public aura::WindowObserver,
+                                     public aura::EnvObserver,
                                      public ui::EventDispatcher {
  public:
-  FocusController();
+  // |rules| cannot be NULL.
+  explicit FocusController(FocusRules* rules);
   virtual ~FocusController();
 
   // TODO(beng): FocusClient
+  // Sets the focused window, resulting in focus change events being sent.
+  // Must only be called with valid focusable windows per FocusRules.
   void SetFocusedWindow(aura::Window* window);
   aura::Window* focused_window() { return focused_window_; }
 
@@ -61,16 +68,21 @@ class VIEWS_EXPORT FocusController : public aura::client::ActivationClient,
   virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Overridden from aura::WindowObserver:
-  virtual void OnWindowVisibilityChanged(aura::Window* window,
+  virtual void OnWindowVisibilityChanging(aura::Window* window,
                                          bool visible) OVERRIDE;
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
   virtual void OnWillRemoveWindow(aura::Window* window) OVERRIDE;
+
+  // Overridden from aura::EnvObserver:
+  virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
 
   // Overridden from ui::EventDispatcher:
   virtual bool CanDispatchToTarget(ui::EventTarget* target) OVERRIDE;
 
   aura::Window* active_window_;
   aura::Window* focused_window_;
+
+  scoped_ptr<FocusRules> rules_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusController);
 };

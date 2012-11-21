@@ -4,7 +4,9 @@
 
 #include "ui/views/corewm/focus_controller.h"
 
+#include "ui/aura/env.h"
 #include "ui/views/corewm/focus_change_event.h"
+#include "ui/views/corewm/focus_rules.h"
 
 namespace views {
 namespace corewm {
@@ -12,21 +14,33 @@ namespace corewm {
 ////////////////////////////////////////////////////////////////////////////////
 // FocusController, public:
 
-FocusController::FocusController()
+FocusController::FocusController(FocusRules* rules)
     : active_window_(NULL),
-      focused_window_(NULL) {
+      focused_window_(NULL),
+      rules_(rules) {
+  DCHECK(rules);
   FocusChangeEvent::RegisterEventTypes();
+  aura::Env::GetInstance()->AddObserver(this);
 }
 
 FocusController::~FocusController() {
+  aura::Env::GetInstance()->RemoveObserver(this);
 }
 
-void FocusController::SetFocusedWindow(aura::Window* focused_window) {
-  // TODO(beng): rules.
-  focused_window_ = focused_window;
-}
+void FocusController::SetFocusedWindow(aura::Window* window) {
+  DCHECK(rules_->CanFocusWindow(window));
+  // TODO(beng): dispatch changing events.
+  FocusChangeEvent changing_event(
+      FocusChangeEvent::focus_changing_event_type());
+  int result = ProcessEvent(focused_window_, &changing_event);
+  if (result & ui::ER_CONSUMED)
+    return;
 
-// TODO(beng): CanFocusWindow(). Implement rules.
+  focused_window_ = window;
+
+  FocusChangeEvent changed_event(FocusChangeEvent::focus_changed_event_type());
+  ProcessEvent(focused_window_, &changed_event);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // FocusController, aura::client::ActivationClient implementation:
@@ -61,8 +75,7 @@ bool FocusController::OnWillFocusWindow(aura::Window* window,
 }
 
 bool FocusController::CanActivateWindow(aura::Window* window) const {
-  // TODO(beng): implement activation rules.
-  return true;
+  return rules_->CanActivateWindow(window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -73,7 +86,10 @@ ui::EventResult FocusController::OnKeyEvent(ui::KeyEvent* event) {
 
 ui::EventResult FocusController::OnMouseEvent(ui::MouseEvent* event) {
   // TODO(beng): GetFocusableWindow().
-  SetFocusedWindow(static_cast<aura::Window*>(event->target()));
+  if (event->type() == ui::ET_MOUSE_PRESSED) {
+    SetFocusedWindow(rules_->GetFocusableWindow(
+        static_cast<aura::Window*>(event->target())));
+  }
   return ui::ER_UNHANDLED;
 }
 
@@ -86,40 +102,55 @@ ui::EventResult FocusController::OnTouchEvent(ui::TouchEvent* event) {
 }
 
 ui::EventResult FocusController::OnGestureEvent(ui::GestureEvent* event) {
-  // TODO(beng): Set Focus.
+  // TODO(beng): GetFocusableWindow().
+  if (event->type() == ui::ET_GESTURE_BEGIN &&
+      event->details().touch_points() == 1) {
+    SetFocusedWindow(rules_->GetFocusableWindow(
+        static_cast<aura::Window*>(event->target())));
+  }
   return ui::ER_UNHANDLED;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // FocusController, aura::WindowObserver implementation:
 
-void FocusController::OnWindowVisibilityChanged(aura::Window* window,
-                                                bool visible) {
-  // TODO(beng): determine if we need to use Contains() here.
-  if (window == focused_window_) {
-    // TODO(beng): Reset focused window.
-  }
-  if (window == active_window_) {
+void FocusController::OnWindowVisibilityChanging(aura::Window* window,
+                                                 bool visible) {
+  // We need to process this change in VisibilityChanging while the window is
+  // still visible, since focus events cannot be dispatched to invisible
+  // windows.
+  // TODO(beng): evaluate whether or not the visibility restriction is worth
+  //             enforcing for events that aren't user-input.
+  if (window->Contains(focused_window_))
+    SetFocusedWindow(rules_->GetNextFocusableWindow(window));
+
+  if (window->Contains(active_window_)) {
     // TODO(beng): Reset active window.
   }
 }
 
 void FocusController::OnWindowDestroyed(aura::Window* window) {
-  if (window == focused_window_) {
-    // TODO(beng): Reset focused window.
-  }
-  if (window == active_window_) {
+  window->RemoveObserver(this);
+
+  if (window->Contains(focused_window_))
+    SetFocusedWindow(rules_->GetNextFocusableWindow(window));
+
+  if (window->Contains(active_window_)) {
     // TODO(beng): Reset active window.
   }
 }
 
 void FocusController::OnWillRemoveWindow(aura::Window* window) {
-  if (window->Contains(focused_window_)) {
-    // TODO(beng): Reset focused window.
-  }
+  if (window->Contains(focused_window_))
+    SetFocusedWindow(rules_->GetNextFocusableWindow(window));
+
   if (window->Contains(active_window_)) {
     // TODO(beng): Reset active window.
   }
+}
+
+void FocusController::OnWindowInitialized(aura::Window* window) {
+  window->AddObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

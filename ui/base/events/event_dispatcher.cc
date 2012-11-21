@@ -19,6 +19,11 @@ EventDispatcher::~EventDispatcher() {
 // EventDispatcher, private:
 
 EventResult EventDispatcher::DispatchEventToSingleHandler(EventHandler* handler,
+                                                          Event* event) {
+  return handler->OnEvent(event);
+}
+
+EventResult EventDispatcher::DispatchEventToSingleHandler(EventHandler* handler,
                                                           KeyEvent* event) {
   return handler->OnKeyEvent(event);
 }

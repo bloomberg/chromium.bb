@@ -104,6 +104,7 @@ class UI_EXPORT EventDispatcher {
     return result;
   }
 
+  EventResult DispatchEventToSingleHandler(EventHandler* handler, Event* event);
   EventResult DispatchEventToSingleHandler(EventHandler* handler,
                                            KeyEvent* event);
   EventResult DispatchEventToSingleHandler(EventHandler* handler,
