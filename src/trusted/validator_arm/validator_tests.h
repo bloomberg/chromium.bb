@@ -33,6 +33,7 @@
  */
 
 #include <algorithm>
+#include <climits>
 #include <limits>
 #include <string>
 #include <sstream>

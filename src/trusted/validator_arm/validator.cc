@@ -4,6 +4,8 @@
  * found in the LICENSE file.
  */
 
+#include <climits>
+
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/validator_arm/model.h"
 #include "native_client/src/trusted/validator_arm/validator.h"
@@ -599,15 +601,35 @@ bool SfiValidator::ValidateSegmentPair(const CodeSegment& old_code,
     return false;
   }
 
-  NACL_COMPILE_TIME_ASSERT(nacl_arm_dec::kArm32InstSize / 8 == 4);
+  bool complete_success = true;
+  bool current_bundle_is_literal_pool = false;
+
+  // The following loop expects the first address to be
+  // bundle-aligned. This invariant is checked in the validator's C
+  // interface and it therefore not checked again.
+  NACL_COMPILE_TIME_ASSERT((nacl_arm_dec::kArm32InstSize / CHAR_BIT) == 4);
   for (uintptr_t va = old_code.begin_addr();
        va != old_code.end_addr();
-       va += nacl_arm_dec::kArm32InstSize / 8) {
-    // First see if the instruction has changed in the new version.
-    // If not, there is nothing to check, and we can skip to the next
-    // instruction.
+       va += nacl_arm_dec::kArm32InstSize / CHAR_BIT) {
     Instruction old_insn = old_code[va];
     Instruction new_insn = new_code[va];
+
+    // Keep track of literal pools: it's valid to replace any value in them.
+    // Literal pools should still be at the same place in the old and new code.
+    if (is_bundle_head(va)) {
+      const ClassDecoder& old_decoder = decode_state_.decode(old_insn);
+      current_bundle_is_literal_pool =
+          (old_decoder.is_literal_pool_head(old_insn) &&
+           new_insn.Equals(old_insn));
+    }
+
+    // Accept any change inside a literal pool.
+    if (current_bundle_is_literal_pool)
+      continue;
+
+    // See if the instruction has changed in the new version. If not,
+    // there is nothing to check, and we can skip to the next
+    // instruction.
     if (new_insn.Equals(old_insn))
       continue;
 
@@ -625,10 +647,13 @@ bool SfiValidator::ValidateSegmentPair(const CodeSegment& old_code,
     // Report problem if the sentinels differ, and reject the replacement.
     if (!new_sentinel.Equals(old_sentinel)) {
       out->ReportProblem(va, kProblemUnsafe);
-      return false;
+      complete_success = false;
+      if (!out->should_continue())
+        return false;
     }
   }
-  return true;
+
+  return complete_success;
 }
 
 bool SfiValidator::CopyCode(const CodeSegment& source_code,

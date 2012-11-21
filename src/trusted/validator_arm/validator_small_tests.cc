@@ -26,11 +26,16 @@ using nacl_val_arm_test::kDataRegionSize;
 using nacl_val_arm_test::kAbiReadOnlyRegisters;
 using nacl_val_arm_test::kAbiDataAddrRegisters;
 using nacl_val_arm_test::arm_inst;
+using nacl_arm_dec::kArm32InstSize;
 using nacl_arm_dec::kNop;
+using nacl_arm_dec::kLiteralPoolHead;
+using nacl_arm_dec::kFailValidation;
 using nacl_arm_dec::Instruction;
 using nacl_arm_dec::ClassDecoder;
 
 namespace {
+
+const arm_inst kSvc0 = 0xEF000000;  // SVC #0
 
 // Holds instruction and message to print if there is an issue when it
 // is tested.
@@ -95,6 +100,25 @@ void test_if_dynamic_code_replacement_sentinels_unchanged(
           std::hex << sentinel.Bits() << ": " << insts[i].about;
     }
   }
+}
+
+// Test that the old code can be replaced by the new code.
+void TestDynamicCodeReplacement(
+    SfiValidator &validator,
+    bool expected_result,
+    const vector<arm_inst>& old_code,
+    const vector<arm_inst>& new_code,
+    const char *msg) {
+  EXPECT_EQ(old_code.size(), new_code.size());
+
+  size_t size = old_code.size() * kArm32InstSize / CHAR_BIT;
+  CodeSegment new_segment((uint8_t *) &new_code[0], kDefaultBaseAddr, size);
+  CodeSegment old_segment((uint8_t *) &old_code[0], kDefaultBaseAddr, size);
+  ProblemSpy spy;
+
+  EXPECT_EQ(expected_result,
+            validator.ValidateSegmentPair(old_segment, new_segment, &spy)) <<
+      "Code replacement expected different validation result for " << msg;
 }
 
 TEST_F(ValidatorTests, NopBundle) {
@@ -825,6 +849,47 @@ TEST_F(ValidatorTests, DynamicCodeReplacementSentinelOther) {
       examples_of_safe_masks, NACL_ARRAY_SIZE(examples_of_safe_masks));
 }
 
+TEST_F(ValidatorTests, DynamicCodeReplacementLiteralPool) {
+  // Start with an evil-looking value, and replace with another evil-looking
+  // value. It should work because these are all data in two consecutive
+  // literal pools, not actual instructions.
+  vector<arm_inst>::size_type bundle_size(_validator.InstructionsPerBundle());
+  vector<arm_inst>::size_type size(bundle_size * 2);
+  vector<arm_inst> old_code(size, kSvc0);
+  vector<arm_inst> new_code(size, kFailValidation);
+  old_code[0] = new_code[0] =
+      old_code[bundle_size] = new_code[bundle_size] =
+      kLiteralPoolHead;
+  TestDynamicCodeReplacement(
+      _validator, true, old_code, new_code,
+      "literal pool data change");
+
+  // Change the new code so that its first bundle is still a literal
+  // pool but its second isn't. This should now fail validation because
+  // the data is now executable code.
+  new_code[bundle_size] = kNop;
+  TestDynamicCodeReplacement(
+      _validator, false, old_code, new_code,
+      "literal pool becoming non-literal pool");
+
+  // Change the old code so that its second bundle also isn't a literal
+  // pool. This should also fail, not because the code is dangerous
+  // (which it is, but that's checked separately), but because the old
+  // instructions can't be substituted for the new.
+  old_code[bundle_size] = kNop;
+  TestDynamicCodeReplacement(
+      _validator, false, old_code, new_code,
+      "literal pool followed by non-literal pool with invalid replacement");
+
+  // Change the new code's second bundle to a literal pool, which it
+  // wasn't in the old. This should also fail because we don't allow the
+  // user to dynamically create literal pools where none existed before.
+  new_code[bundle_size] = kLiteralPoolHead;
+  TestDynamicCodeReplacement(
+      _validator, false, old_code, new_code,
+      "non-literal pool becoming literal pool");
+}
+
 struct AlwaysDominatesTestInfo {
   arm_inst inst[2];
   const char* name[2];
@@ -1045,7 +1110,7 @@ TEST_F(ValidatorTests, CheckPushPcUnpredictable) {
 TEST_F(ValidatorTests, ConditionalBreakpoints) {
   ProblemSpy spy;
   arm_inst bkpt = 0xE1200070;  // BKPT #0
-  arm_inst pool_head = nacl_arm_dec::kLiteralPoolHead;
+  arm_inst pool_head = kLiteralPoolHead;
   for (Instruction::Condition cond = Instruction::EQ;
        cond < Instruction::AL;
        cond = Instruction::Next(cond)) {
@@ -1059,8 +1124,7 @@ TEST_F(ValidatorTests, ConditionalBreakpoints) {
 }
 
 TEST_F(ValidatorTests, LiteralPoolHeadIsBreakpoint) {
-  EXPECT_EQ(nacl_arm_dec::kLiteralPoolHead & 0xFFF000F0,
-            0xE1200070)  // BKPT #0
+  EXPECT_EQ(kLiteralPoolHead & 0xFFF000F0, 0xE1200070)  // BKPT #0
       << ("the literal pool head should be a breakpoint: "
           "it needs to act as a roadblock");
 }
@@ -1087,8 +1151,7 @@ TEST_F(ValidatorTests, AbortNow) {
 }
 
 TEST_F(ValidatorTests, FailValidation) {
-  EXPECT_EQ(nacl_arm_dec::kFailValidation & 0xFFF000F0,
-            0xE7F000F0)  // UDF #0
+  EXPECT_EQ(kFailValidation & 0xFFF000F0, 0xE7F000F0)  // UDF #0
       << ("the fail validation instruction should be UDF: "
           "it needs to trap");
 }
@@ -1099,7 +1162,7 @@ TEST_F(ValidatorTests, UDFAndBKPTValidateAsExpected) {
     arm_inst bkpt_inst = 0xE1200070 | ((i & 0xFFF0) << 4) | (i & 0xF);
     arm_inst udf_inst  = 0xE7F000F0 | ((i & 0xFFF0) << 4) | (i & 0xF);
     EXPECT_EQ(validate(&bkpt_inst, 1, kDefaultBaseAddr, &spy),
-              ((bkpt_inst == nacl_arm_dec::kLiteralPoolHead) ||
+              ((bkpt_inst == kLiteralPoolHead) ||
                (bkpt_inst == nacl_arm_dec::kBreakpoint)));
     EXPECT_EQ(validate(&udf_inst, 1, kDefaultBaseAddr, &spy),
               ((udf_inst == nacl_arm_dec::kHaltFill) ||
@@ -1113,15 +1176,14 @@ TEST_F(ValidatorTests, LiteralPoolHeadInstruction) {
   // by a special breakpoint instruction at the start of the bundle, and can
   // then contain any bits that would otherwise look malicious.
   // Each literal pool bundle has to start with such a literal pool head.
-  vector<arm_inst> literal_pool(_validator.InstructionsPerBundle(),
-                                0xEF000000);  // SVC #0
+  vector<arm_inst> literal_pool(_validator.InstructionsPerBundle(), kSvc0);
   literal_pool[0] = 0xE1200070;  // BKPT #0
   // Try out all BKPT encodings, and make sure only one of them works.
   for (uint32_t imm16 = 0; imm16 <= 0xFFFF; ++imm16) {
     literal_pool[0] = (literal_pool[0] & 0xFFF000F0) |
         (imm16 & 0xF) |
         ((imm16 & 0xFFF0) << 8);
-    if (literal_pool[0] == nacl_arm_dec::kLiteralPoolHead) {
+    if (literal_pool[0] == kLiteralPoolHead) {
       validation_should_pass(literal_pool.data(),
                              literal_pool.size(),
                              kDefaultBaseAddr,
@@ -1142,10 +1204,10 @@ TEST_F(ValidatorTests, LiteralPoolHeadPosition) {
   // the head.
   vector<arm_inst> literal_pool(_validator.InstructionsPerBundle());
   for (size_t pos = 0; pos <= literal_pool.size(); ++pos) {
-    std::fill(literal_pool.begin(), literal_pool.end(), 0xEF000000);  // SVC #0
+    std::fill(literal_pool.begin(), literal_pool.end(), kSvc0);
     if (pos != literal_pool.size()) {
       // We do one iteration without a literal pool head at all.
-      literal_pool[pos] = nacl_arm_dec::kLiteralPoolHead;
+      literal_pool[pos] = kLiteralPoolHead;
     }
     if (pos == 0) {
       validation_should_pass(literal_pool.data(),
@@ -1168,9 +1230,8 @@ TEST_F(ValidatorTests, LiteralPoolBig) {
   // a pool head.
   vector<arm_inst> literal_pools(2 * _validator.InstructionsPerBundle());
   for (size_t pos = 0; pos <= literal_pools.size(); ++pos) {
-    std::fill(literal_pools.begin(), literal_pools.end(),
-              0xEF000000);  // SVC #0
-    literal_pools[pos] = nacl_arm_dec::kLiteralPoolHead;
+    std::fill(literal_pools.begin(), literal_pools.end(), kSvc0);
+    literal_pools[pos] = kLiteralPoolHead;
     validation_should_fail(literal_pools.data(),
                            literal_pools.size(),
                            kDefaultBaseAddr,
@@ -1195,7 +1256,7 @@ TEST_F(ValidatorTests, LiteralPoolBranch) {
       continue;
     }
     std::fill(code.begin(), code.end(), kNop);
-    code[bundle_pos] = nacl_arm_dec::kLiteralPoolHead;
+    code[bundle_pos] = kLiteralPoolHead;
     for (size_t b_target = 0; b_target < code.size(); ++b_target) {
       // PC reads as current instruction address plus 8 (e.g. two instructions
       // ahead of b_pos).
