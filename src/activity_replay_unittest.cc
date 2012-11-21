@@ -29,6 +29,7 @@ class ActivityReplayTest : public ::testing::Test {};
 TEST(ActivityReplayTest, DISABLED_SimpleTest) {
   CommandLine* cl = CommandLine::ForCurrentProcess();
   GestureInterpreter* c_interpreter = NewGestureInterpreter();
+  c_interpreter->Initialize();
 
   Interpreter* interpreter = c_interpreter->interpreter();
   PropRegistry* prop_reg = c_interpreter->prop_reg();
