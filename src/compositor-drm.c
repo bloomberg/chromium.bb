@@ -2121,6 +2121,14 @@ hide_sprites_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 	c->sprites_hidden ^= 1;
 }
 
+static void
+cursor_binding(struct wl_seat *seat, uint32_t time, uint32_t key, void *data)
+{
+	struct drm_compositor *c = data;
+
+	c->cursors_are_broken ^= 1;
+}
+
 static struct weston_compositor *
 drm_compositor_create(struct wl_display *display,
 		      int connector, const char *seat, int tty,
@@ -2225,6 +2233,8 @@ drm_compositor_create(struct wl_display *display,
 
 	weston_compositor_add_debug_binding(&ec->base, KEY_O,
 					    hide_sprites_binding, ec);
+	weston_compositor_add_debug_binding(&ec->base, KEY_C,
+					    cursor_binding, ec);
 
 	return &ec->base;
 
