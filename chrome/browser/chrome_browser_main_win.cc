@@ -361,18 +361,28 @@ bool ChromeBrowserMainPartsWin::CheckMachineLevelInstall() {
     std::wstring exe = exe_path.value();
     FilePath user_exe_path(installer::GetChromeInstallPath(false, dist));
     if (FilePath::CompareEqualIgnoreCase(exe, user_exe_path.value())) {
-      const string16 text =
-          l10n_util::GetStringUTF16(IDS_MACHINE_LEVEL_INSTALL_CONFLICT);
-      const string16 caption = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-      const UINT flags = MB_OK | MB_ICONERROR | MB_TOPMOST;
-      ui::MessageBox(NULL, text, caption, flags);
+      bool is_metro = base::win::IsMetroProcess();
+      if (!is_metro) {
+        // The dialog cannot be shown in Win8 Metro as doing so hangs Chrome on
+        // an invisible dialog.
+        // TODO (gab): Get rid of this dialog altogether and auto-launch
+        // system-level Chrome instead.
+        const string16 text =
+            l10n_util::GetStringUTF16(IDS_MACHINE_LEVEL_INSTALL_CONFLICT);
+        const string16 caption = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+        const UINT flags = MB_OK | MB_ICONERROR | MB_TOPMOST;
+        ui::MessageBox(NULL, text, caption, flags);
+      }
       CommandLine uninstall_cmd(
           InstallUtil::GetChromeUninstallCmd(false, dist->GetType()));
       if (!uninstall_cmd.GetProgram().empty()) {
         uninstall_cmd.AppendSwitch(installer::switches::kForceUninstall);
         uninstall_cmd.AppendSwitch(
             installer::switches::kDoNotRemoveSharedItems);
-        base::LaunchProcess(uninstall_cmd, base::LaunchOptions(), NULL);
+        base::LaunchOptions launch_options;
+        if (is_metro)
+          launch_options.force_breakaway_from_job_ = true;
+        base::LaunchProcess(uninstall_cmd, launch_options, NULL);
       }
       return true;
     }
