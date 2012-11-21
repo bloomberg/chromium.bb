@@ -3,9 +3,7 @@
 # found in the LICENSE file.
 
 import bisect
-import os
 import re
-import sys
 
 
 _ARGUMENT_TYPE_PATTERN = re.compile('\([^()]*\)(\s*const)?')
@@ -185,14 +183,16 @@ class StaticSymbolsInFile(object):
         if line in ('Key to Flags:', 'Program Headers:'):
           break
 
-  def _parse_nm_bsd_line(self, line):
+  @staticmethod
+  def _parse_nm_bsd_line(line):
     if line[8] == ' ':
       return line[0:8], line[9], line[11:]
     elif line[16] == ' ':
       return line[0:16], line[17], line[19:]
     raise ParsingException('Invalid nm output.')
 
-  def _get_short_function_name(self, function):
+  @staticmethod
+  def _get_short_function_name(function):
     while True:
       function, number = _ARGUMENT_TYPE_PATTERN.subn('', function)
       if not number:

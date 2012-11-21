@@ -27,7 +27,7 @@ def _dump_command_result(command, output_dir_path, basename, suffix):
   try:
     subprocess.check_call(
         command, stdout=handle_out, stderr=handle_err, shell=True)
-  except:
+  except (OSError, subprocess.CalledProcessError):
     error = True
   finally:
     os.close(handle_err)
@@ -112,7 +112,7 @@ def prepare_symbol_info(maps_path, output_dir_path=None, use_tempdir=False):
     LOGGER.info('Creating a new directory "%s".' % output_dir_path)
     try:
       os.mkdir(output_dir_path)
-    except OSError, e:
+    except OSError:
       LOGGER.warn('A directory "%s" cannot be created.' % output_dir_path)
       if use_tempdir:
         output_dir_path = tempfile.mkdtemp()

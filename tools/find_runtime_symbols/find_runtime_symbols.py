@@ -6,7 +6,6 @@
 import json
 import logging
 import os
-import re
 import sys
 
 from static_symbols import StaticSymbolsInFile
@@ -21,7 +20,7 @@ class _ListOutput(object):
   def __init__(self, result):
     self.result = result
 
-  def output(self, address, symbol):
+  def output(self, address, symbol):  # pylint: disable=W0613
     self.result.append(symbol)
 
 
@@ -81,6 +80,7 @@ class RuntimeSymbolsInProcess(object):
     with open(os.path.join(prepared_data_dir, _FILES_FILENAME), mode='r') as f:
       files = json.load(f)
 
+    # pylint: disable=W0212
     for vma in symbols_in_process._maps.iter(ProcMaps.executable_and_constants):
       file_entry = files.get(vma.name)
       if not file_entry:
@@ -132,38 +132,40 @@ def _find_runtime_typeinfo_symbols(symbols_in_process, addresses, outputter):
         outputter.output(address, '0x%016x' % address)
 
 
-def find_runtime_typeinfo_symbols_list(static_symbols, addresses):
+def find_runtime_typeinfo_symbols_list(symbols_in_process, addresses):
   result = []
-  _find_runtime_typeinfo_symbols(static_symbols, addresses, _ListOutput(result))
-  return result
-
-
-def find_runtime_typeinfo_symbols_dict(static_symbols, addresses):
-  result = {}
-  _find_runtime_typeinfo_symbols(static_symbols, addresses, _DictOutput(result))
-  return result
-
-
-def find_runtime_typeinfo_symbols_file(static_symbols, addresses, f):
   _find_runtime_typeinfo_symbols(
-      static_symbols, addresses, _FileOutput(f, False))
-
-
-def find_runtime_symbols_list(static_symbols, addresses):
-  result = []
-  _find_runtime_symbols(static_symbols, addresses, _ListOutput(result))
+      symbols_in_process, addresses, _ListOutput(result))
   return result
 
 
-def find_runtime_symbols_dict(static_symbols, addresses):
+def find_runtime_typeinfo_symbols_dict(symbols_in_process, addresses):
   result = {}
-  _find_runtime_symbols(static_symbols, addresses, _DictOutput(result))
+  _find_runtime_typeinfo_symbols(
+      symbols_in_process, addresses, _DictOutput(result))
   return result
 
 
-def find_runtime_symbols_file(static_symbols, addresses, f):
+def find_runtime_typeinfo_symbols_file(symbols_in_process, addresses, f):
+  _find_runtime_typeinfo_symbols(
+      symbols_in_process, addresses, _FileOutput(f, False))
+
+
+def find_runtime_symbols_list(symbols_in_process, addresses):
+  result = []
+  _find_runtime_symbols(symbols_in_process, addresses, _ListOutput(result))
+  return result
+
+
+def find_runtime_symbols_dict(symbols_in_process, addresses):
+  result = {}
+  _find_runtime_symbols(symbols_in_process, addresses, _DictOutput(result))
+  return result
+
+
+def find_runtime_symbols_file(symbols_in_process, addresses, f):
   _find_runtime_symbols(
-      static_symbols, addresses, _FileOutput(f, False))
+      symbols_in_process, addresses, _FileOutput(f, False))
 
 
 def main():
@@ -191,7 +193,7 @@ def main():
     return 1
 
   symbols_in_process = RuntimeSymbolsInProcess.load(prepared_data_dir)
-  return find_runtime_symbols_file(static_symbols, sys.stdin, sys.stdout)
+  return find_runtime_symbols_file(symbols_in_process, sys.stdin, sys.stdout)
 
 
 if __name__ == '__main__':

@@ -3,12 +3,11 @@
 # found in the LICENSE file.
 
 import re
-import sys
 
 
 _MAPS_PATTERN = re.compile(
     '^([a-f0-9]+)-([a-f0-9]+)\s+(.)(.)(.)(.)\s+([a-f0-9]+)\s+(\S+):(\S+)\s+'
-    '(\d+)\s+(\S+)$', re.IGNORECASE)
+    '(\d+)\s*(.*)$', re.IGNORECASE)
 
 
 class ProcMapsEntry(object):
@@ -29,6 +28,21 @@ class ProcMapsEntry(object):
     self.inode = inode
     self.name = name
 
+  def as_dict(self):
+    return {
+        'begin': self.begin,
+        'end': self.end,
+        'readable': self.readable,
+        'writable': self.writable,
+        'executable': self.executable,
+        'private': self.private,
+        'offset': self.offset,
+        'major': self.major,
+        'minor': self.minor,
+        'inode': self.inode,
+        'name': self.name,
+    }
+
 
 class ProcMaps(object):
   """A class representing contents in /proc/.../maps."""
@@ -37,12 +51,6 @@ class ProcMaps(object):
     self._sorted_indexes = []
     self._dictionary = {}
     self._sorted = True
-
-  def append(self, entry):
-    if self._sorted_indexes and self._sorted_indexes[-1] > entry.begin:
-      self._sorted = False
-    self._sorted_indexes.append(entry.begin)
-    self._dictionary[entry.begin] = entry
 
   def iter(self, condition):
     if not self._sorted:
@@ -65,7 +73,7 @@ class ProcMaps(object):
     for line in f:
       matched = _MAPS_PATTERN.match(line)
       if matched:
-        table.append(ProcMapsEntry(
+        table._append(ProcMapsEntry(  # pylint: disable=W0212
             int(matched.group(1), 16),  # begin
             int(matched.group(2), 16),  # end
             matched.group(3),           # readable
@@ -99,3 +107,9 @@ class ProcMaps(object):
              entry.executable == 'x') and re.match(
         '\S+(\.(so|dll|dylib|bundle)|chrome)((\.\d+)+\w*(\.\d+){0,3})?',
         entry.name))
+
+  def _append(self, entry):
+    if self._sorted_indexes and self._sorted_indexes[-1] > entry.begin:
+      self._sorted = False
+    self._sorted_indexes.append(entry.begin)
+    self._dictionary[entry.begin] = entry
