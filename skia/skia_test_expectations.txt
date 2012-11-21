@@ -73,10 +73,8 @@ crbug.com/148638  svg/zoom/page/zoom-img-preserveAspectRatio-support-1.html [ Fa
 # To be rebaselined for http://code.google.com/p/skia/source/detail?r=6451
 # (make kSrc_Mode go faster)
 crbug.com/161762  svg/W3C-SVG-1.1/filters-color-01-b.svg [ Failure ImageOnlyFailure ]
-crbug.com/161762  svg/custom/gradient-stop-corner-cases.svg [ Failure ImageOnlyFailure ]
 crbug.com/161762  svg/custom/invalid-uri-stroke.svg [ Failure ImageOnlyFailure ]
 crbug.com/161762  svg/wicd/test-scalable-background-image1.xhtml [ Failure ImageOnlyFailure ]
 crbug.com/161762  svg/zoom/page/zoom-mask-with-percentages.svg [ Failure ImageOnlyFailure ]
-crbug.com/161762  svg/carto.net/colourpicker.svg [ Failure ImageOnlyFailure ]
 
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
