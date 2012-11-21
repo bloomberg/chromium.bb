@@ -522,7 +522,7 @@ bool DriveCache::InitializeOnBlockingPool() {
     return false;
 
   metadata_ = DriveCacheMetadata::CreateDriveCacheMetadata(
-      blocking_task_runner_).Pass();
+      blocking_task_runner_);
   return metadata_->Initialize(cache_paths_);
 }
 
@@ -531,7 +531,7 @@ void DriveCache::InitializeOnBlockingPoolForTesting() {
 
   InitCachePaths(cache_paths_);
   metadata_ = DriveCacheMetadata::CreateDriveCacheMetadataForTesting(
-      blocking_task_runner_).Pass();
+      blocking_task_runner_);
   metadata_->Initialize(cache_paths_);
 }
 

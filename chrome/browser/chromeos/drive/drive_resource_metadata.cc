@@ -893,7 +893,7 @@ scoped_ptr<DriveEntry> DriveResourceMetadata::CreateDriveEntryFromProto(
   // TODO(achuith): This method never fails. Add basic sanity checks for
   // resource_id, etc.
   if (entry_proto.file_info().is_directory()) {
-    entry = CreateDriveDirectory().Pass();
+    entry = CreateDriveDirectory();
     // Call DriveEntry::FromProto instead of DriveDirectory::FromProto because
     // the proto does not include children.
     entry->FromProto(entry_proto);
@@ -901,7 +901,7 @@ scoped_ptr<DriveEntry> DriveResourceMetadata::CreateDriveEntryFromProto(
     scoped_ptr<DriveFile> file(CreateDriveFile());
     // Call DriveFile::FromProto.
     file->FromProto(entry_proto);
-    entry.reset(file.release());
+    entry = file.Pass();
   }
   return entry.Pass();
 }
@@ -912,7 +912,7 @@ scoped_ptr<DriveEntry> DriveResourceMetadata::CreateDriveEntryFromProtoString(
   if (!entry_proto.ParseFromString(serialized_proto))
     return scoped_ptr<DriveEntry>();
 
-  return CreateDriveEntryFromProto(entry_proto).Pass();
+  return CreateDriveEntryFromProto(entry_proto);
 }
 
 void DriveResourceMetadata::GetEntryInfoPairByPathsAfterGetFirst(

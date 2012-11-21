@@ -126,7 +126,7 @@ void TestGetDocumentsCallback(GDataErrorCode* result_code,
                               GDataErrorCode error,
                               scoped_ptr<base::Value> feed_data) {
   *result_code = error;
-  result_data->reset(feed_data.release());
+  *result_data = feed_data.Pass();
   MessageLoop::current()->Quit();
 }
 

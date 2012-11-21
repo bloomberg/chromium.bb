@@ -153,8 +153,7 @@ void ParseFeedOnBlockingPool(
     scoped_ptr<base::Value> data,
     scoped_ptr<google_apis::DocumentFeed>* out_current_feed) {
   DCHECK(out_current_feed);
-  out_current_feed->reset(
-      google_apis::DocumentFeed::ExtractAndParse(*data).release());
+  *out_current_feed = google_apis::DocumentFeed::ExtractAndParse(*data);
 }
 
 }  // namespace

@@ -30,7 +30,7 @@ void HttpConnection::SendResponse(scoped_ptr<HttpResponse> response) const {
 void HttpConnection::ReceiveData(const base::StringPiece& data) {
   request_parser_.ProcessChunk(data);
   if (request_parser_.ParseRequest() == HttpRequestParser::ACCEPTED) {
-    callback_.Run(this, request_parser_.GetRequest().Pass());
+    callback_.Run(this, request_parser_.GetRequest());
   }
 }
 

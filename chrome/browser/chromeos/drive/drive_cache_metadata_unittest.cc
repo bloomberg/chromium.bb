@@ -35,7 +35,7 @@ class DriveCacheMetadataTest : public testing::Test {
 
   // Sets up the DriveCacheMetadata object.
   void SetUpCacheMetadata() {
-    metadata_ = DriveCacheMetadata::CreateDriveCacheMetadata(NULL).Pass();
+    metadata_ = DriveCacheMetadata::CreateDriveCacheMetadata(NULL);
     ASSERT_TRUE(metadata_->Initialize(cache_paths_));
   }
 
@@ -417,7 +417,7 @@ TEST(DriveCacheMetadataExtraTest, CannotOpenDB) {
           FilePath::FromUTF8Unsafe("/somewhere/nonexistent"));
 
   scoped_ptr<DriveCacheMetadata> metadata =
-      DriveCacheMetadata::CreateDriveCacheMetadata(NULL).Pass();
+      DriveCacheMetadata::CreateDriveCacheMetadata(NULL);
   EXPECT_FALSE(metadata->Initialize(cache_paths));
 }
 
