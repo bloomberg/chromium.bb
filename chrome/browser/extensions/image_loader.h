@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -62,6 +63,8 @@ class ImageLoader : public ProfileKeyedService {
     ui::ScaleFactor scale_factor;
   };
 
+  struct LoadResult;
+
   // Returns the instance for the given profile, or NULL if none. This is
   // a convenience wrapper around ImageLoaderFactory::GetForProfile.
   static ImageLoader* Get(Profile* profile);
@@ -96,15 +99,15 @@ class ImageLoader : public ProfileKeyedService {
                        const base::Callback<void(const gfx::Image&)>& callback);
 
  private:
-  struct LoadResult;
+  base::WeakPtrFactory<ImageLoader> weak_ptr_factory_;
 
-  void LoadImagesOnBlockingPool(
+  static void LoadImagesOnBlockingPool(
       const std::vector<ImageRepresentation>& info_list,
       const std::vector<SkBitmap>& bitmaps,
-      const base::Callback<void(const gfx::Image&)>& callback);
+      std::vector<LoadResult>* load_result);
 
   void ReplyBack(
-      const std::vector<LoadResult>& load_result,
+      const std::vector<LoadResult>* load_result,
       const base::Callback<void(const gfx::Image&)>& callback);
 };
 

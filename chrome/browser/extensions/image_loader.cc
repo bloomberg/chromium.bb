@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/image_loader.h"
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
@@ -140,7 +141,8 @@ ImageLoader::LoadResult::~LoadResult() {
 ////////////////////////////////////////////////////////////////////////////////
 // ImageLoader
 
-ImageLoader::ImageLoader() {
+ImageLoader::ImageLoader()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 ImageLoader::~ImageLoader() {
@@ -246,21 +248,20 @@ void ImageLoader::LoadImagesAsync(
   }
 
   DCHECK(!BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-  BrowserThread::PostBlockingPoolTask(
+  std::vector<LoadResult>* load_result = new std::vector<LoadResult>;
+  BrowserThread::PostBlockingPoolTaskAndReply(
       FROM_HERE,
-      base::Bind(&ImageLoader::LoadImagesOnBlockingPool, base::Unretained(this),
-                 info_list, bitmaps, callback));
+      base::Bind(LoadImagesOnBlockingPool, info_list, bitmaps, load_result),
+      base::Bind(&ImageLoader::ReplyBack, weak_ptr_factory_.GetWeakPtr(),
+                 base::Owned(load_result), callback));
 }
 
+// static
 void ImageLoader::LoadImagesOnBlockingPool(
     const std::vector<ImageRepresentation>& info_list,
     const std::vector<SkBitmap>& bitmaps,
-    const base::Callback<void(const gfx::Image&)>& callback) {
+    std::vector<LoadResult>* load_result) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
-  gfx::ImageSkia image_skia;
-
-  std::vector<LoadResult> load_result;
 
   int i = 0;
   for (std::vector<ImageRepresentation>::const_iterator it = info_list.begin();
@@ -283,31 +284,19 @@ void ImageLoader::LoadImagesOnBlockingPool(
     gfx::Size original_size(bitmap.width(), bitmap.height());
     bitmap = ResizeIfNeeded(bitmap, *it);
 
-    load_result.push_back(LoadResult(bitmap, original_size, *it));
+    load_result->push_back(LoadResult(bitmap, original_size, *it));
   }
-
-  gfx::Image image;
-
-  if (!image_skia.isNull()) {
-    image_skia.MakeThreadSafe();
-    image = gfx::Image(image_skia);
-  }
-
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&ImageLoader::ReplyBack,
-                                     base::Unretained(this), load_result,
-                                     callback));
 }
 
 void ImageLoader::ReplyBack(
-    const std::vector<LoadResult>& load_result,
+    const std::vector<LoadResult>* load_result,
     const base::Callback<void(const gfx::Image&)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   gfx::ImageSkia image_skia;
 
-  for (std::vector<LoadResult>::const_iterator it = load_result.begin();
-       it != load_result.end(); ++it) {
+  for (std::vector<LoadResult>::const_iterator it = load_result->begin();
+       it != load_result->end(); ++it) {
     const SkBitmap& bitmap = it->bitmap;
     const ImageRepresentation& image_rep = it->image_representation;
 
