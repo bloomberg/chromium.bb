@@ -172,12 +172,23 @@ void NetworkChangeNotifierChromeos::UpdateNetworkStateCallback(
       ipconfig_name_servers.push_back(ipconfig.name_servers);
   }
 
-  // Check if active network was added, removed or changed.
-  if ((!network && has_active_network_) ||
-      (network && (!has_active_network_ ||
-                   network->service_path() != service_path_ ||
-                   ipconfig_name_servers != name_servers_ ||
-                   network->ip_address() != ip_address_))) {
+  // Did we loose the active network?
+  bool lost_active_network = !network && has_active_network_;
+
+  // Did we have a change on the current active network?
+  bool changed_active_network = network && (
+      !has_active_network_ ||
+      network->service_path() != service_path_ ||
+      ipconfig_name_servers != name_servers_ ||
+      network->ip_address() != ip_address_);
+
+  // If just the current active network's state changed, update it if necessary.
+  if (!lost_active_network && !changed_active_network &&
+      network && network->state() != connection_state_) {
+    UpdateConnectivityState(network);
+  }
+
+  if (lost_active_network || changed_active_network) {
     if (has_active_network_)
       lib->RemoveObserverForAllNetworks(this);
     if (!network) {
