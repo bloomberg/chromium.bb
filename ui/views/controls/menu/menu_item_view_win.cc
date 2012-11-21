@@ -39,8 +39,6 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   int state;
   NativeTheme::State control_state;
 
-  ui::NativeTheme* native_theme = GetNativeTheme();
-
   if (enabled()) {
     if (render_selection) {
       control_state = NativeTheme::kHovered;
@@ -57,12 +55,13 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     control_state = NativeTheme::kDisabled;
   }
 
-  // Render the background.
-  if (mode == PB_NORMAL) {
-    gfx::Rect item_bounds(0, 0, width(), height());
-    AdjustBoundsForRTLUI(&item_bounds);
-    NativeTheme::ExtraParams extra;
-    extra.menu_item.is_selected = render_selection;
+  // Render the background.  If new menu style enabled then background need
+  // to be rendered before gutter.
+  gfx::Rect item_bounds(0, 0, width(), height());
+  AdjustBoundsForRTLUI(&item_bounds);
+  NativeTheme::ExtraParams extra;
+  extra.menu_item.is_selected = render_selection;
+  if (mode == PB_NORMAL && NativeTheme::IsNewMenuStyleEnabled()) {
     config.native_theme->Paint(canvas->sk_canvas(),
         NativeTheme::kMenuItemBackground, control_state, item_bounds, extra);
   }
@@ -79,6 +78,13 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                                NativeTheme::kNormal,
                                gutter_bounds,
                                extra);
+  }
+
+  // If using native theme then background (especialy when item is selected)
+  // need to be rendered after the gutter.
+  if ((mode == PB_NORMAL) && !NativeTheme::IsNewMenuStyleEnabled()) {
+    config.native_theme->Paint(canvas->sk_canvas(),
+        NativeTheme::kMenuItemBackground, control_state, item_bounds, extra);
   }
 
   int top_margin = GetTopMargin();
