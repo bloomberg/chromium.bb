@@ -15,6 +15,11 @@ LOCAL_MODULE_TAGS := optional
 
 LOCAL_SRC_FILES := $(call all-java-files-under, java/src)
 
+# resource glue layer
+LOCAL_SRC_FILES += \
+    $(call all-java-files-under, ../content/public/android/java/resource_map) \
+    $(call all-java-files-under, ../chrome/android/java/resource_map) \
+
 # contentview and its dependencies
 LOCAL_AIDL_INCLUDES := $(LOCAL_PATH)/../content/public/android/java/src
 LOCAL_SRC_FILES += \
