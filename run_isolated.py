@@ -12,6 +12,7 @@ import ctypes
 import hashlib
 import json
 import logging
+import logging.handlers
 import optparse
 import os
 import Queue
@@ -39,6 +40,9 @@ UNKNOWN_FILE_SIZE = None
 
 # The size of each chunk to read when downloading and unzipping files.
 ZIPPED_FILE_CHUNK = 16 * 1024
+
+# The name of the log file to use.
+RUN_ISOLATED_LOG_FILE = 'run_isolated.log'
 
 
 class ConfigError(ValueError):
@@ -1091,9 +1095,22 @@ def main():
 
   options, args = parser.parse_args()
   level = [logging.ERROR, logging.INFO, logging.DEBUG][min(2, options.verbose)]
-  logging.basicConfig(
-      level=level,
-      format='%(levelname)5s %(module)15s(%(lineno)3d): %(message)s')
+
+  logging_console = logging.StreamHandler()
+  logging_console.setFormatter(logging.Formatter(
+      '%(levelname)5s %(module)15s(%(lineno)3d): %(message)s'))
+  logging_console.setLevel(level)
+  logging.getLogger().addHandler(logging_console)
+
+  logging_rotating_file = logging.handlers.RotatingFileHandler(
+      RUN_ISOLATED_LOG_FILE,
+      maxBytes=10 * 1024 * 1024, backupCount=5)
+  logging_rotating_file.setLevel(logging.DEBUG)
+  logging_rotating_file.setFormatter(logging.Formatter(
+      '%(asctime)s %(levelname)-8s %(module)15s(%(lineno)3d): %(message)s'))
+  logging.getLogger().addHandler(logging_rotating_file)
+
+  logging.getLogger().setLevel(logging.DEBUG)
 
   if bool(options.isolated) == bool(options.hash):
     parser.error('One and only one of --isolated or --hash is required.')
