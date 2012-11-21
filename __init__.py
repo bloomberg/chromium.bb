@@ -11,4 +11,12 @@ import sys
 third_party = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(
     __file__)), 'third_party'))
 sys.path.insert(0, third_party)
-del third_party
+
+# List of third_party packages that might need subpaths added to search.
+paths = [
+    'pyelftools',
+]
+for path in paths:
+  sys.path.insert(1, os.path.join(third_party, path))
+
+del path, paths, third_party
