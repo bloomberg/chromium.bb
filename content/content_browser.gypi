@@ -1014,6 +1014,7 @@
     ['OS=="android"', {
       'dependencies': [
         '../media/media.gyp:media',
+        '../webkit/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
         'content.gyp:content_jni_headers',
       ],
       'link_settings': {
