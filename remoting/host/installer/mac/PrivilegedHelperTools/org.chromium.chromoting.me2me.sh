@@ -59,7 +59,8 @@ run_host() {
         local SIGNAL=$(($EXIT_CODE - 128))
         echo "Forwarding signal $SIGNAL to host"
         kill -$SIGNAL "$HOST_PID"
-      elif [[ "$EXIT_CODE" -eq "$SIGTERM_EXIT_CODE" ||
+      elif [[ "$EXIT_CODE" -eq "0" ||
+              "$EXIT_CODE" -eq "$SIGTERM_EXIT_CODE" ||
               ("$EXIT_CODE" -ge "$MIN_PERMANENT_ERROR_EXIT_CODE" && \
               "$EXIT_CODE" -le "$MAX_PERMANENT_ERROR_EXIT_CODE") ]]; then
         echo "Host returned permanent exit code $EXIT_CODE"
