@@ -22,7 +22,10 @@ class PolicyMap;
 
 // Keeps track of the network configuration policy settings and Shill's
 // profiles. Requests the NetworkLibrary to apply the ONC of the network
-// policies when necessary.
+// policies every time one of the relevant policies or Shill's profiles changes
+// or OnUserPolicyInitialized() is called. If the user policy is available,
+// always both the device and the user policy are applied. Otherwise only the
+// device policy is applied.
 class NetworkConfigurationUpdater
     : public chromeos::NetworkLibrary::NetworkProfileObserver {
  public:
@@ -33,9 +36,16 @@ class NetworkConfigurationUpdater
   // NetworkProfileObserver overrides.
   virtual void OnProfileListChanged() OVERRIDE;
 
-  // Web trust isn't given to certificates imported from ONC by default.
-  // Setting |allow_web_trust| to true allows giving Web trust to the
-  // certificates that request it.
+  // Notifies this updater that the user policy is initialized. Before this
+  // function is called, the user policy is not applied. Afterwards, always both
+  // device and user policy are applied as described in the class comment. This
+  // function also triggers an immediate policy application of both device and
+  // user policy.
+  void OnUserPolicyInitialized();
+
+  // Web trust isn't given to certificates imported from ONC by default. Setting
+  // |allow_web_trust| to true allows giving Web trust to the certificates that
+  // request it.
   void set_allow_web_trust(bool allow) { allow_web_trust_ = allow; }
 
   // Empty network configuration blob.
@@ -63,6 +73,9 @@ class NetworkConfigurationUpdater
 
   // Network library to write network configuration to.
   chromeos::NetworkLibrary* network_library_;
+
+  // Whether the user policy is already available.
+  bool user_policy_initialized_;
 
   // Whether Web trust is allowed or not.
   bool allow_web_trust_;

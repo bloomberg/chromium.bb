@@ -23,6 +23,7 @@ NetworkConfigurationUpdater::NetworkConfigurationUpdater(
     : policy_change_registrar_(
           policy_service, POLICY_DOMAIN_CHROME, std::string()),
       network_library_(network_library),
+      user_policy_initialized_(false),
       allow_web_trust_(false),
       policy_service_(policy_service) {
   DCHECK(network_library_);
@@ -52,6 +53,12 @@ void NetworkConfigurationUpdater::OnProfileListChanged() {
   ApplyNetworkConfigurations();
 }
 
+void NetworkConfigurationUpdater::OnUserPolicyInitialized() {
+  VLOG(1) << "User policy initialized, applying policies. Ignoring.";
+  user_policy_initialized_ = true;
+  ApplyNetworkConfigurations();
+}
+
 void NetworkConfigurationUpdater::OnPolicyChanged(
     chromeos::NetworkUIData::ONCSource onc_source,
     const base::Value* previous,
@@ -63,8 +70,10 @@ void NetworkConfigurationUpdater::OnPolicyChanged(
 void NetworkConfigurationUpdater::ApplyNetworkConfigurations() {
   ApplyNetworkConfiguration(key::kDeviceOpenNetworkConfiguration,
                             chromeos::NetworkUIData::ONC_SOURCE_DEVICE_POLICY);
-  ApplyNetworkConfiguration(key::kOpenNetworkConfiguration,
-                            chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY);
+  if (user_policy_initialized_) {
+    ApplyNetworkConfiguration(key::kOpenNetworkConfiguration,
+                              chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY);
+  }
 }
 
 void NetworkConfigurationUpdater::ApplyNetworkConfiguration(

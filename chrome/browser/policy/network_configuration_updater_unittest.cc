@@ -22,6 +22,8 @@ using testing::_;
 namespace policy {
 
 static const char kFakeONC[] = "{ \"GUID\": \"1234\" }";
+static const char* kEmptyConfiguration =
+    NetworkConfigurationUpdater::kEmptyConfiguration;
 
 class NetworkConfigurationUpdaterTest
     : public testing::TestWithParam<const char*>{
@@ -54,7 +56,7 @@ class NetworkConfigurationUpdaterTest
   scoped_ptr<PolicyServiceImpl> policy_service_;
 };
 
-TEST_P(NetworkConfigurationUpdaterTest, InitialUpdate) {
+TEST_P(NetworkConfigurationUpdaterTest, InitialUpdates) {
   PolicyMap policy;
   policy.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              Value::CreateStringValue(kFakeONC));
@@ -62,18 +64,28 @@ TEST_P(NetworkConfigurationUpdaterTest, InitialUpdate) {
 
   EXPECT_CALL(network_library_, AddNetworkProfileObserver(_));
 
-  // Initially, both policies are applied.
+  // Initially, only the device policy is applied. The user policy is only
+  // applied after the user profile was initialized.
+  const char* device_onc = GetParam() == key::kDeviceOpenNetworkConfiguration ?
+      kFakeONC : kEmptyConfiguration;
   EXPECT_CALL(network_library_, LoadOncNetworks(
-      kFakeONC, "", NameToONCSource(GetParam()), _, _));
-  EXPECT_CALL(network_library_, LoadOncNetworks(
-      NetworkConfigurationUpdater::kEmptyConfiguration, "",
-      Ne(NameToONCSource(GetParam())), _, _));
-
-  EXPECT_CALL(network_library_, RemoveNetworkProfileObserver(_));
+      device_onc, "", chromeos::NetworkUIData::ONC_SOURCE_DEVICE_POLICY, _, _));
 
   {
     NetworkConfigurationUpdater updater(policy_service_.get(),
                                         &network_library_);
+    Mock::VerifyAndClearExpectations(&network_library_);
+
+    // After the user policy is initialized, we always push both policies to the
+    // NetworkLibrary.
+    EXPECT_CALL(network_library_, LoadOncNetworks(
+        kFakeONC, "", NameToONCSource(GetParam()), _, _));
+    EXPECT_CALL(network_library_, LoadOncNetworks(
+        kEmptyConfiguration, "", Ne(NameToONCSource(GetParam())), _, _));
+
+    EXPECT_CALL(network_library_, RemoveNetworkProfileObserver(_));
+
+    updater.OnUserPolicyInitialized();
   }
   Mock::VerifyAndClearExpectations(&network_library_);
 }
@@ -87,6 +99,7 @@ TEST_P(NetworkConfigurationUpdaterTest, AllowWebTrust) {
         .Times(AtLeast(0));
     NetworkConfigurationUpdater updater(policy_service_.get(),
                                         &network_library_);
+    updater.OnUserPolicyInitialized();
     Mock::VerifyAndClearExpectations(&network_library_);
 
     // Web trust should be forwarded to LoadOncNetworks.
@@ -115,6 +128,7 @@ TEST_P(NetworkConfigurationUpdaterTest, PolicyChange) {
         .Times(AtLeast(0));
     NetworkConfigurationUpdater updater(policy_service_.get(),
                                         &network_library_);
+    updater.OnUserPolicyInitialized();
     Mock::VerifyAndClearExpectations(&network_library_);
 
     // We should update if policy changes.
@@ -123,8 +137,7 @@ TEST_P(NetworkConfigurationUpdaterTest, PolicyChange) {
 
     // In the current implementation, we always apply both policies.
     EXPECT_CALL(network_library_, LoadOncNetworks(
-        NetworkConfigurationUpdater::kEmptyConfiguration, "",
-        Ne(NameToONCSource(GetParam())), _, _));
+        kEmptyConfiguration, "", Ne(NameToONCSource(GetParam())), _, _));
 
     PolicyMap policy;
     policy.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
@@ -135,11 +148,11 @@ TEST_P(NetworkConfigurationUpdaterTest, PolicyChange) {
     // Another update is expected if the policy goes away. In the current
     // implementation, we always apply both policies.
     EXPECT_CALL(network_library_, LoadOncNetworks(
-        NetworkConfigurationUpdater::kEmptyConfiguration, "",
+        kEmptyConfiguration, "",
         chromeos::NetworkUIData::ONC_SOURCE_DEVICE_POLICY, _, _));
 
     EXPECT_CALL(network_library_, LoadOncNetworks(
-        NetworkConfigurationUpdater::kEmptyConfiguration, "",
+        kEmptyConfiguration, "",
         chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY, _, _));
 
     EXPECT_CALL(network_library_, RemoveNetworkProfileObserver(_));

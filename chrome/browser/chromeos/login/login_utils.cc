@@ -52,6 +52,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud_policy_service.h"
+#include "chrome/browser/policy/network_configuration_updater.h"
 #include "chrome/browser/policy/user_cloud_policy_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -557,6 +558,11 @@ void LoginUtilsImpl::OnProfileCreated(
           user_profile->GetPrefs()->FindPreference(prefs::kUseSharedProxies);
       if (use_shared_proxies_pref->IsDefaultValue())
         user_profile->GetPrefs()->SetBoolean(prefs::kUseSharedProxies, false);
+      policy::NetworkConfigurationUpdater* network_configuration_updater =
+          g_browser_process->browser_policy_connector()->
+          GetNetworkConfigurationUpdater();
+      if (network_configuration_updater)
+        network_configuration_updater->OnUserPolicyInitialized();
       RespectLocalePreference(user_profile);
       return;
     }
