@@ -249,23 +249,26 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
                            &active_tab_onvisibilitycalls));
   EXPECT_EQ(0, active_tab_onvisibilitycalls);
 
-  // Typing "query" into the omnibox causes two onchange events.
+  // Typing "query" into the omnibox causes one or more onchange events. The
+  // page suggested "query suggestion" is inline autocompleted into the omnibox,
+  // causing another onchange event.
   SetOmniboxTextAndWaitForInstantToShow("query");
-
-  // The page suggested "query suggestion" is inline autocompleted into the
-  // omnibox, causing the third onchange event.
   EXPECT_EQ(ASCIIToUTF16("query suggestion"), omnibox()->GetText());
-  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
-  EXPECT_EQ(3, onchangecalls_);
+  int min_onchangecalls = 2;
 
-  // Change the query and confirm that two more onchange events are sent. Since
-  // the new query is not a prefix of the hardcoded "query suggestion", no
-  // inline autocompletion happens, and thus, no sixth onchange event.
+  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
+  EXPECT_LE(min_onchangecalls, onchangecalls_);
+  min_onchangecalls = onchangecalls_;
+
+  // Change the query and confirm more onchange events are sent.
   SetOmniboxText("search");
-  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
-  EXPECT_EQ(5, onchangecalls_);
-  EXPECT_EQ(1, onvisibilitycalls_);
+  ++min_onchangecalls;
 
+  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
+  EXPECT_LE(min_onchangecalls, onchangecalls_);
+
+  // The preview was shown once, and the active tab was never hidden.
+  EXPECT_EQ(1, onvisibilitycalls_);
   active_tab_onvisibilitycalls = -1;
   EXPECT_TRUE(GetIntFromJS(active_rvh, "onvisibilitycalls",
                            &active_tab_onvisibilitycalls));
@@ -551,61 +554,67 @@ IN_PROC_BROWSER_TEST_F(InstantTest, IntranetPathLooksLikeSearch) {
 }
 
 // Test that transitions between searches and non-searches work as expected.
-#if defined(OS_WIN)
-// http://crbug.com/161998
-#define MAYBE_TransitionsBetweenSearchAndURL \
-        FLAKY_TransitionsBetweenSearchAndURL
-#else
-#define MAYBE_TransitionsBetweenSearchAndURL TransitionsBetweenSearchAndURL
-#endif
-IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_TransitionsBetweenSearchAndURL) {
+IN_PROC_BROWSER_TEST_F(InstantTest, TransitionsBetweenSearchAndURL) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
   // Type a search, and immediately a URL, without waiting for Instant to show.
-  SetOmniboxText("query");
-  SetOmniboxText("http://monstrous/nightmare");
-
   // The page is told about the search. Though the page isn't told about the
   // subsequent URL, it invalidates the search, so a blank query is sent in its
   // place to indicate that the search is "out of date".
+  SetOmniboxText("query");
+  SetOmniboxText("http://monstrous/nightmare");
+  int min_onchangecalls = 2;
+
   EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
   EXPECT_FALSE(instant()->IsCurrent());
   EXPECT_TRUE(instant()->model()->mode().is_default());
-  EXPECT_EQ(3, onchangecalls_);
   EXPECT_EQ("", value_);
+  EXPECT_LE(min_onchangecalls, onchangecalls_);
+  min_onchangecalls = onchangecalls_;
 
   // Type a search. Instant should show.
   SetOmniboxTextAndWaitForInstantToShow("search");
+  ++min_onchangecalls;
+
   EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
   EXPECT_TRUE(instant()->IsCurrent());
   EXPECT_TRUE(instant()->model()->mode().is_search_suggestions());
-  EXPECT_EQ(5, onchangecalls_);
   EXPECT_EQ("search", value_);
+  EXPECT_LE(min_onchangecalls, onchangecalls_);
+  min_onchangecalls = onchangecalls_;
 
   // Type another URL. The preview should be hidden.
   SetOmniboxText("http://terrible/terror");
+  ++min_onchangecalls;
+
   EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
   EXPECT_FALSE(instant()->IsCurrent());
   EXPECT_TRUE(instant()->model()->mode().is_default());
-  EXPECT_EQ(6, onchangecalls_);
   EXPECT_EQ("", value_);
+  EXPECT_LE(min_onchangecalls, onchangecalls_);
+  min_onchangecalls = onchangecalls_;
 
   // Type the same search as before.
   SetOmniboxTextAndWaitForInstantToShow("search");
+  min_onchangecalls++;
+
   EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
   EXPECT_TRUE(instant()->IsCurrent());
   EXPECT_TRUE(instant()->model()->mode().is_search_suggestions());
-  EXPECT_EQ(8, onchangecalls_);
   EXPECT_EQ("search", value_);
+  EXPECT_LE(min_onchangecalls, onchangecalls_);
+  min_onchangecalls = onchangecalls_;
 
   // Revert the omnibox.
   omnibox()->RevertAll();
+  min_onchangecalls++;
+
   EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
   EXPECT_FALSE(instant()->IsCurrent());
   EXPECT_TRUE(instant()->model()->mode().is_default());
-  EXPECT_EQ(9, onchangecalls_);
   EXPECT_EQ("", value_);
+  EXPECT_LE(min_onchangecalls, onchangecalls_);
 }
 
 // Test that Instant can't be fooled into committing a URL.
