@@ -37,7 +37,6 @@ PasswordModelAssociator::PasswordModelAssociator(
       expected_loop_(MessageLoop::current()),
       error_handler_(error_handler) {
   DCHECK(sync_service_);
-  DCHECK(password_store_);
 #if defined(OS_MACOSX)
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
 #else

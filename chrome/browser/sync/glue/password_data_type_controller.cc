@@ -52,20 +52,7 @@ bool PasswordDataTypeController::StartModels() {
   DCHECK_EQ(state(), MODEL_STARTING);
   password_store_ = PasswordStoreFactory::GetForProfile(
       profile(), Profile::EXPLICIT_ACCESS);
-  if (!password_store_.get()) {
-    syncer::SyncError error(
-        FROM_HERE,
-        "PasswordStore not initialized, password datatype controller aborting.",
-        type());
-    syncer::SyncMergeResult local_merge_result(type());
-    local_merge_result.set_error(error);
-    StartDoneImpl(ASSOCIATION_FAILED,
-                  DISABLED,
-                  local_merge_result,
-                  syncer::SyncMergeResult(type()));
-    return false;
-  }
-  return true;
+  return password_store_.get() != NULL;
 }
 
 void PasswordDataTypeController::CreateSyncComponents() {

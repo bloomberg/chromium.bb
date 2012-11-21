@@ -177,8 +177,11 @@ void NonFrontendDataTypeController::Stop() {
       }
       break;
     case MODEL_STARTING:
+      // It is possible for a model to fail to start. For example, if the
+      // password store on a machine is unavailable, the password model will not
+      // start. In such cases, we should stop the model instead of crashing.
       state_ = STOPPING;
-      NOTREACHED();
+      StopModels();
       return;
     case DISABLED:
       state_ = NOT_RUNNING;

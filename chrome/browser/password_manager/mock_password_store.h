@@ -40,7 +40,7 @@ class MockPasswordStore : public PasswordStore {
 
   virtual void ShutdownOnUIThread();
 
- private:
+ protected:
   virtual ~MockPasswordStore();
 };
 

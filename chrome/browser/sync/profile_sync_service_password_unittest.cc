@@ -80,6 +80,18 @@ static void QuitMessageLoop() {
   MessageLoop::current()->Quit();
 }
 
+class NullPasswordStore : public MockPasswordStore {
+ public:
+  NullPasswordStore() {}
+
+  static scoped_refptr<RefcountedProfileKeyedService> Build(Profile* profile) {
+    return scoped_refptr<RefcountedProfileKeyedService>();
+  }
+
+ protected:
+  virtual ~NullPasswordStore() {}
+};
+
 class PasswordTestProfileSyncService : public TestProfileSyncService {
  public:
   PasswordTestProfileSyncService(
@@ -156,7 +168,8 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   }
 
   virtual void TearDown() {
-    password_store_->ShutdownOnUIThread();
+    if (password_store_.get())
+      password_store_->ShutdownOnUIThread();
     service_->Shutdown();
     service_.reset();
     profile_.ResetRequestContext();
@@ -195,12 +208,17 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
           new PasswordDataTypeController(factory,
                                          &profile_,
                                          service_.get());
-
-      EXPECT_CALL(*factory, CreatePasswordSyncComponents(_, _, _)).
-          Times(AtLeast(1)).  // Can be more if we hit NEEDS_CRYPTO.
-          WillRepeatedly(MakePasswordSyncComponents(service_.get(),
-                                                    password_store_.get(),
-                                                    data_type_controller));
+      if (password_store_.get()) {
+        EXPECT_CALL(*factory, CreatePasswordSyncComponents(_, _, _)).
+            Times(AtLeast(1)).  // Can be more if we hit NEEDS_CRYPTO.
+            WillRepeatedly(MakePasswordSyncComponents(service_.get(),
+                                                      password_store_.get(),
+                                                      data_type_controller));
+      } else {
+        // When the password store is unavailable, password sync components must
+        // not be created.
+        EXPECT_CALL(*factory, CreatePasswordSyncComponents(_, _, _)).Times(0);
+      }
       EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _, _)).
           WillOnce(ReturnNewDataTypeManager());
 
@@ -278,6 +296,17 @@ void AddPasswordEntriesCallback(ProfileSyncServicePasswordTest* test,
 TEST_F(ProfileSyncServicePasswordTest, FailModelAssociation) {
   StartSyncService(base::Closure(), base::Closure());
   EXPECT_TRUE(service_->HasUnrecoverableError());
+}
+
+TEST_F(ProfileSyncServicePasswordTest, FailPasswordStoreLoad) {
+  password_store_ = static_cast<NullPasswordStore*>(
+      PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
+          &profile_, NullPasswordStore::Build).get());
+  StartSyncService(base::Closure(), base::Closure());
+  EXPECT_FALSE(service_->HasUnrecoverableError());
+  syncer::ModelTypeSet failed_types =
+      service_->failed_datatypes_handler().GetFailedTypes();
+  EXPECT_TRUE(failed_types.Equals(syncer::ModelTypeSet(syncer::PASSWORDS)));
 }
 
 TEST_F(ProfileSyncServicePasswordTest, EmptyNativeEmptySync) {

@@ -447,12 +447,13 @@ void ModelAssociationManager::ModelLoadCallback(
                   << " Calling StartAssociatingNextType";
           waiting_to_associate_.push_back(dtc);
           StartAssociatingNextType();
-       } else {
-         DVLOG(1) << "ModelAssociationManager: Encountered error loading";
-         // Treat it like a regular error.
-         AppendToFailedDatatypesAndLogError(
-             DataTypeController::ASSOCIATION_FAILED,
-             error);
+        } else {
+          DVLOG(1) << "ModelAssociationManager: Encountered error loading";
+          syncer::SyncMergeResult local_merge_result(type);
+          local_merge_result.set_error(error);
+          TypeStartCallback(DataTypeController::ASSOCIATION_FAILED,
+                            local_merge_result,
+                            syncer::SyncMergeResult(type));
        }
        return;
       }
