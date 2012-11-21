@@ -201,13 +201,13 @@ void GLRenderer::viewportChanged()
 void GLRenderer::clearFramebuffer(DrawingFrame& frame)
 {
     // On DEBUG builds, opaque render passes are cleared to blue to easily see regions that were not drawn on the screen.
-    if (frame.currentRenderPass->hasTransparentBackground())
+    if (frame.currentRenderPass->has_transparent_background)
         GLC(m_context, m_context->clearColor(0, 0, 0, 0));
     else
         GLC(m_context, m_context->clearColor(0, 0, 1, 1));
 
 #ifdef NDEBUG
-    if (frame.currentRenderPass->hasTransparentBackground())
+    if (frame.currentRenderPass->has_transparent_background)
 #endif
         m_context->clear(GL_COLOR_BUFFER_BIT);
 }
@@ -455,7 +455,7 @@ scoped_ptr<ScopedResource> GLRenderer::drawBackgroundFilters(
 
     // FIXME: We only allow background filters on an opaque render surface because other surfaces may contain
     // translucent pixels, and the contents behind those translucent pixels wouldn't have the filter applied.
-    if (frame.currentRenderPass->hasTransparentBackground())
+    if (frame.currentRenderPass->has_transparent_background)
         return scoped_ptr<ScopedResource>();
     DCHECK(!frame.currentTexture);
 
@@ -466,7 +466,7 @@ scoped_ptr<ScopedResource> GLRenderer::drawBackgroundFilters(
     filters.getOutsets(top, right, bottom, left);
     deviceRect.Inset(-left, -top, -right, -bottom);
 
-    deviceRect.Intersect(frame.currentRenderPass->outputRect());
+    deviceRect.Intersect(frame.currentRenderPass->output_rect);
 
     scoped_ptr<ScopedResource> deviceBackgroundTexture = ScopedResource::create(m_resourceProvider);
     if (!getFramebufferTexture(deviceBackgroundTexture.get(), deviceRect))
@@ -523,16 +523,16 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
 
     WebTransformationMatrix contentsDeviceTransformInverse = contentsDeviceTransform.inverse();
     scoped_ptr<ScopedResource> backgroundTexture = drawBackgroundFilters(
-        frame, quad, renderPass->backgroundFilters(),
+        frame, quad, renderPass->background_filters,
         contentsDeviceTransform, contentsDeviceTransformInverse);
 
     // FIXME: Cache this value so that we don't have to do it for both the surface and its replica.
     // Apply filters to the contents texture.
     SkBitmap filterBitmap;
-    if (renderPass->filter()) {
-        filterBitmap = applyImageFilter(this, renderPass->filter(), contentsTexture, m_client->hasImplThread());
+    if (renderPass->filter) {
+        filterBitmap = applyImageFilter(this, renderPass->filter, contentsTexture, m_client->hasImplThread());
     } else {
-        filterBitmap = applyFilters(this, renderPass->filters(), contentsTexture, m_client->hasImplThread());
+        filterBitmap = applyFilters(this, renderPass->filters, contentsTexture, m_client->hasImplThread());
     }
     scoped_ptr<ResourceProvider::ScopedReadLockGL> contentsResourceLock;
     unsigned contentsTextureId = 0;

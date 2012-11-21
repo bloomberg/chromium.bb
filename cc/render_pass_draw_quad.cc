@@ -39,7 +39,7 @@ void RenderPassDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                 float mask_tex_coord_scale_y,
                                 float mask_tex_coord_offset_x,
                                 float mask_tex_coord_offset_y) {
-  DCHECK(render_pass_id.layerId > 0);
+  DCHECK(render_pass_id.layer_id > 0);
   DCHECK(render_pass_id.index >= 0);
 
   gfx::Rect opaque_rect;
@@ -70,7 +70,7 @@ void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                                 float mask_tex_coord_scale_y,
                                 float mask_tex_coord_offset_x,
                                 float mask_tex_coord_offset_y) {
-  DCHECK(render_pass_id.layerId > 0);
+  DCHECK(render_pass_id.layer_id > 0);
   DCHECK(render_pass_id.index >= 0);
 
   DrawQuad::SetAll(shared_quad_state, DrawQuad::RENDER_PASS, rect, opaque_rect,

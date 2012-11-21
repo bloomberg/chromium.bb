@@ -68,7 +68,8 @@ protected:
 
 static TestRenderPass* addRenderPass(ScopedPtrVector<RenderPass>& passList, RenderPass::Id id, gfx::Rect outputRect, WebTransformationMatrix rootTransform)
 {
-    scoped_ptr<TestRenderPass> pass(TestRenderPass::create(id, outputRect, rootTransform));
+    scoped_ptr<TestRenderPass> pass(TestRenderPass::Create());
+    pass->SetNew(id, outputRect, outputRect, rootTransform);
     TestRenderPass* saved = pass.get();
     passList.append(pass.PassAs<RenderPass>());
     return saved;
@@ -76,8 +77,8 @@ static TestRenderPass* addRenderPass(ScopedPtrVector<RenderPass>& passList, Rend
 
 static SolidColorDrawQuad* addQuad(TestRenderPass* pass, gfx::Rect rect, SkColor color)
 {
-    MockQuadCuller quadSink(pass->quadList(), pass->sharedQuadStateList());
-    AppendQuadsData data(pass->id());
+    MockQuadCuller quadSink(pass->quad_list, pass->shared_quad_state_list);
+    AppendQuadsData data(pass->id);
     SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::Create());
     sharedState->SetAll(WebTransformationMatrix(), rect, rect, 1);
     scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
@@ -89,13 +90,13 @@ static SolidColorDrawQuad* addQuad(TestRenderPass* pass, gfx::Rect rect, SkColor
 
 static void addRenderPassQuad(TestRenderPass* toPass, TestRenderPass* contributingPass)
 {
-    MockQuadCuller quadSink(toPass->quadList(), toPass->sharedQuadStateList());
-    AppendQuadsData data(toPass->id());
-    gfx::Rect outputRect = contributingPass->outputRect();
+    MockQuadCuller quadSink(toPass->quad_list, toPass->shared_quad_state_list);
+    AppendQuadsData data(toPass->id);
+    gfx::Rect outputRect = contributingPass->output_rect;
     SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::Create());
     sharedState->SetAll(WebTransformationMatrix(), outputRect, outputRect, 1);
     scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
-    quad->SetNew(sharedState, outputRect, contributingPass->id(), false, 0, outputRect, 0, 0, 0, 0);
+    quad->SetNew(sharedState, outputRect, contributingPass->id, false, 0, outputRect, 0, 0, 0, 0);
     quadSink.append(quad.PassAs<DrawQuad>(), data);
 }
 
@@ -178,21 +179,21 @@ TEST_F(DelegatedRendererLayerImplTestSimple, AddsContributingRenderPasses)
     ASSERT_EQ(5u, frame.renderPasses.size());
 
     // The DelegatedRendererLayer should have added its contributing RenderPasses to the frame.
-    EXPECT_EQ(4, frame.renderPasses[1]->id().layerId);
-    EXPECT_EQ(1, frame.renderPasses[1]->id().index);
-    EXPECT_EQ(4, frame.renderPasses[2]->id().layerId);
-    EXPECT_EQ(2, frame.renderPasses[2]->id().index);
+    EXPECT_EQ(4, frame.renderPasses[1]->id.layer_id);
+    EXPECT_EQ(1, frame.renderPasses[1]->id.index);
+    EXPECT_EQ(4, frame.renderPasses[2]->id.layer_id);
+    EXPECT_EQ(2, frame.renderPasses[2]->id.index);
     // And all other RenderPasses should be non-delegated.
-    EXPECT_NE(4, frame.renderPasses[0]->id().layerId);
-    EXPECT_EQ(0, frame.renderPasses[0]->id().index);
-    EXPECT_NE(4, frame.renderPasses[3]->id().layerId);
-    EXPECT_EQ(0, frame.renderPasses[3]->id().index);
-    EXPECT_NE(4, frame.renderPasses[4]->id().layerId);
-    EXPECT_EQ(0, frame.renderPasses[4]->id().index);
+    EXPECT_NE(4, frame.renderPasses[0]->id.layer_id);
+    EXPECT_EQ(0, frame.renderPasses[0]->id.index);
+    EXPECT_NE(4, frame.renderPasses[3]->id.layer_id);
+    EXPECT_EQ(0, frame.renderPasses[3]->id.index);
+    EXPECT_NE(4, frame.renderPasses[4]->id.layer_id);
+    EXPECT_EQ(0, frame.renderPasses[4]->id.index);
 
     // The DelegatedRendererLayer should have added its RenderPasses to the frame in order.
-    EXPECT_RECT_EQ(gfx::Rect(6, 6, 6, 6), frame.renderPasses[1]->outputRect());
-    EXPECT_RECT_EQ(gfx::Rect(7, 7, 7, 7), frame.renderPasses[2]->outputRect());
+    EXPECT_RECT_EQ(gfx::Rect(6, 6, 6, 6), frame.renderPasses[1]->output_rect);
+    EXPECT_RECT_EQ(gfx::Rect(7, 7, 7, 7), frame.renderPasses[2]->output_rect);
 }
 
 TEST_F(DelegatedRendererLayerImplTestSimple, AddsQuadsToContributingRenderPasses)
@@ -206,21 +207,21 @@ TEST_F(DelegatedRendererLayerImplTestSimple, AddsQuadsToContributingRenderPasses
     ASSERT_EQ(5u, frame.renderPasses.size());
 
     // The DelegatedRendererLayer should have added its contributing RenderPasses to the frame.
-    EXPECT_EQ(4, frame.renderPasses[1]->id().layerId);
-    EXPECT_EQ(1, frame.renderPasses[1]->id().index);
-    EXPECT_EQ(4, frame.renderPasses[2]->id().layerId);
-    EXPECT_EQ(2, frame.renderPasses[2]->id().index);
+    EXPECT_EQ(4, frame.renderPasses[1]->id.layer_id);
+    EXPECT_EQ(1, frame.renderPasses[1]->id.index);
+    EXPECT_EQ(4, frame.renderPasses[2]->id.layer_id);
+    EXPECT_EQ(2, frame.renderPasses[2]->id.index);
 
     // The DelegatedRendererLayer should have added copies of its quads to contributing RenderPasses.
-    ASSERT_EQ(1u, frame.renderPasses[1]->quadList().size());
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 6, 6), frame.renderPasses[1]->quadList()[0]->rect);
+    ASSERT_EQ(1u, frame.renderPasses[1]->quad_list.size());
+    EXPECT_RECT_EQ(gfx::Rect(0, 0, 6, 6), frame.renderPasses[1]->quad_list[0]->rect);
 
     // Verify it added the right quads.
-    ASSERT_EQ(2u, frame.renderPasses[2]->quadList().size());
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 7, 7), frame.renderPasses[2]->quadList()[0]->rect);
-    EXPECT_RECT_EQ(gfx::Rect(6, 6, 6, 6), frame.renderPasses[2]->quadList()[1]->rect);
-    ASSERT_EQ(1u, frame.renderPasses[1]->quadList().size());
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 6, 6), frame.renderPasses[1]->quadList()[0]->rect);
+    ASSERT_EQ(2u, frame.renderPasses[2]->quad_list.size());
+    EXPECT_RECT_EQ(gfx::Rect(0, 0, 7, 7), frame.renderPasses[2]->quad_list[0]->rect);
+    EXPECT_RECT_EQ(gfx::Rect(6, 6, 6, 6), frame.renderPasses[2]->quad_list[1]->rect);
+    ASSERT_EQ(1u, frame.renderPasses[1]->quad_list.size());
+    EXPECT_RECT_EQ(gfx::Rect(0, 0, 6, 6), frame.renderPasses[1]->quad_list[0]->rect);
 }
 
 TEST_F(DelegatedRendererLayerImplTestSimple, AddsQuadsToTargetRenderPass)
@@ -234,17 +235,17 @@ TEST_F(DelegatedRendererLayerImplTestSimple, AddsQuadsToTargetRenderPass)
     ASSERT_EQ(5u, frame.renderPasses.size());
 
     // The layer's target is the RenderPass from m_layerAfter.
-    EXPECT_EQ(RenderPass::Id(3, 0), frame.renderPasses[3]->id());
+    EXPECT_EQ(RenderPass::Id(3, 0), frame.renderPasses[3]->id);
 
     // The DelegatedRendererLayer should have added copies of quads in its root RenderPass to its target RenderPass.
     // The m_layerAfter also adds one quad.
-    ASSERT_EQ(2u, frame.renderPasses[3]->quadList().size());
+    ASSERT_EQ(2u, frame.renderPasses[3]->quad_list.size());
 
     // Verify it added the right quads.
-    EXPECT_RECT_EQ(gfx::Rect(7, 7, 7, 7), frame.renderPasses[3]->quadList()[0]->rect);
+    EXPECT_RECT_EQ(gfx::Rect(7, 7, 7, 7), frame.renderPasses[3]->quad_list[0]->rect);
 
     // Its target layer should have a quad as well.
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 15, 15), frame.renderPasses[3]->quadList()[1]->rect);
+    EXPECT_RECT_EQ(gfx::Rect(0, 0, 15, 15), frame.renderPasses[3]->quad_list[1]->rect);
 }
 
 TEST_F(DelegatedRendererLayerImplTestSimple, QuadsFromRootRenderPassAreModifiedForTheTarget)
@@ -261,14 +262,14 @@ TEST_F(DelegatedRendererLayerImplTestSimple, QuadsFromRootRenderPassAreModifiedF
     // So its root RenderPass' quads should all be transformed by that combined amount.
     WebTransformationMatrix transform;
     transform.translate(4, 4);
-    EXPECT_TRANSFORMATION_MATRIX_EQ(transform, frame.renderPasses[3]->quadList()[0]->quadTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(transform, frame.renderPasses[3]->quad_list[0]->quadTransform());
 
     // Quads from non-root RenderPasses should not be shifted though.
-    ASSERT_EQ(2u, frame.renderPasses[2]->quadList().size());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(WebTransformationMatrix(), frame.renderPasses[2]->quadList()[0]->quadTransform());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(WebTransformationMatrix(), frame.renderPasses[2]->quadList()[1]->quadTransform());
-    ASSERT_EQ(1u, frame.renderPasses[1]->quadList().size());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(WebTransformationMatrix(), frame.renderPasses[1]->quadList()[0]->quadTransform());
+    ASSERT_EQ(2u, frame.renderPasses[2]->quad_list.size());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(WebTransformationMatrix(), frame.renderPasses[2]->quad_list[0]->quadTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(WebTransformationMatrix(), frame.renderPasses[2]->quad_list[1]->quadTransform());
+    ASSERT_EQ(1u, frame.renderPasses[1]->quad_list.size());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(WebTransformationMatrix(), frame.renderPasses[1]->quad_list[0]->quadTransform());
 }
 
 class DelegatedRendererLayerImplTestOwnSurface : public DelegatedRendererLayerImplTestSimple {
@@ -291,24 +292,24 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface, AddsRenderPasses)
     ASSERT_EQ(6u, frame.renderPasses.size());
 
     // The DelegatedRendererLayer should have added its contributing RenderPasses to the frame.
-    EXPECT_EQ(4, frame.renderPasses[1]->id().layerId);
-    EXPECT_EQ(1, frame.renderPasses[1]->id().index);
-    EXPECT_EQ(4, frame.renderPasses[2]->id().layerId);
-    EXPECT_EQ(2, frame.renderPasses[2]->id().index);
+    EXPECT_EQ(4, frame.renderPasses[1]->id.layer_id);
+    EXPECT_EQ(1, frame.renderPasses[1]->id.index);
+    EXPECT_EQ(4, frame.renderPasses[2]->id.layer_id);
+    EXPECT_EQ(2, frame.renderPasses[2]->id.index);
     // The DelegatedRendererLayer should have added a RenderPass for its surface to the frame.
-    EXPECT_EQ(4, frame.renderPasses[1]->id().layerId);
-    EXPECT_EQ(0, frame.renderPasses[3]->id().index);
+    EXPECT_EQ(4, frame.renderPasses[1]->id.layer_id);
+    EXPECT_EQ(0, frame.renderPasses[3]->id.index);
     // And all other RenderPasses should be non-delegated.
-    EXPECT_NE(4, frame.renderPasses[0]->id().layerId);
-    EXPECT_EQ(0, frame.renderPasses[0]->id().index);
-    EXPECT_NE(4, frame.renderPasses[4]->id().layerId);
-    EXPECT_EQ(0, frame.renderPasses[4]->id().index);
-    EXPECT_NE(4, frame.renderPasses[5]->id().layerId);
-    EXPECT_EQ(0, frame.renderPasses[5]->id().index);
+    EXPECT_NE(4, frame.renderPasses[0]->id.layer_id);
+    EXPECT_EQ(0, frame.renderPasses[0]->id.index);
+    EXPECT_NE(4, frame.renderPasses[4]->id.layer_id);
+    EXPECT_EQ(0, frame.renderPasses[4]->id.index);
+    EXPECT_NE(4, frame.renderPasses[5]->id.layer_id);
+    EXPECT_EQ(0, frame.renderPasses[5]->id.index);
 
     // The DelegatedRendererLayer should have added its RenderPasses to the frame in order.
-    EXPECT_RECT_EQ(gfx::Rect(6, 6, 6, 6), frame.renderPasses[1]->outputRect());
-    EXPECT_RECT_EQ(gfx::Rect(7, 7, 7, 7), frame.renderPasses[2]->outputRect());
+    EXPECT_RECT_EQ(gfx::Rect(6, 6, 6, 6), frame.renderPasses[1]->output_rect);
+    EXPECT_RECT_EQ(gfx::Rect(7, 7, 7, 7), frame.renderPasses[2]->output_rect);
 }
 
 TEST_F(DelegatedRendererLayerImplTestOwnSurface, AddsQuadsToContributingRenderPasses)
@@ -322,21 +323,21 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface, AddsQuadsToContributingRenderPa
     ASSERT_EQ(6u, frame.renderPasses.size());
 
     // The DelegatedRendererLayer should have added its contributing RenderPasses to the frame.
-    EXPECT_EQ(4, frame.renderPasses[1]->id().layerId);
-    EXPECT_EQ(1, frame.renderPasses[1]->id().index);
-    EXPECT_EQ(4, frame.renderPasses[2]->id().layerId);
-    EXPECT_EQ(2, frame.renderPasses[2]->id().index);
+    EXPECT_EQ(4, frame.renderPasses[1]->id.layer_id);
+    EXPECT_EQ(1, frame.renderPasses[1]->id.index);
+    EXPECT_EQ(4, frame.renderPasses[2]->id.layer_id);
+    EXPECT_EQ(2, frame.renderPasses[2]->id.index);
 
     // The DelegatedRendererLayer should have added copies of its quads to contributing RenderPasses.
-    ASSERT_EQ(1u, frame.renderPasses[1]->quadList().size());
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 6, 6), frame.renderPasses[1]->quadList()[0]->rect);
+    ASSERT_EQ(1u, frame.renderPasses[1]->quad_list.size());
+    EXPECT_RECT_EQ(gfx::Rect(0, 0, 6, 6), frame.renderPasses[1]->quad_list[0]->rect);
 
     // Verify it added the right quads.
-    ASSERT_EQ(2u, frame.renderPasses[2]->quadList().size());
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 7, 7), frame.renderPasses[2]->quadList()[0]->rect);
-    EXPECT_RECT_EQ(gfx::Rect(6, 6, 6, 6), frame.renderPasses[2]->quadList()[1]->rect);
-    ASSERT_EQ(1u, frame.renderPasses[1]->quadList().size());
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 6, 6), frame.renderPasses[1]->quadList()[0]->rect);
+    ASSERT_EQ(2u, frame.renderPasses[2]->quad_list.size());
+    EXPECT_RECT_EQ(gfx::Rect(0, 0, 7, 7), frame.renderPasses[2]->quad_list[0]->rect);
+    EXPECT_RECT_EQ(gfx::Rect(6, 6, 6, 6), frame.renderPasses[2]->quad_list[1]->rect);
+    ASSERT_EQ(1u, frame.renderPasses[1]->quad_list.size());
+    EXPECT_RECT_EQ(gfx::Rect(0, 0, 6, 6), frame.renderPasses[1]->quad_list[0]->rect);
 }
 
 TEST_F(DelegatedRendererLayerImplTestOwnSurface, AddsQuadsToTargetRenderPass)
@@ -350,14 +351,14 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface, AddsQuadsToTargetRenderPass)
     ASSERT_EQ(6u, frame.renderPasses.size());
 
     // The layer's target is the RenderPass owned by itself.
-    EXPECT_EQ(RenderPass::Id(4, 0), frame.renderPasses[3]->id());
+    EXPECT_EQ(RenderPass::Id(4, 0), frame.renderPasses[3]->id);
 
     // The DelegatedRendererLayer should have added copies of quads in its root RenderPass to its target RenderPass.
     // The m_layerAfter also adds one quad.
-    ASSERT_EQ(1u, frame.renderPasses[3]->quadList().size());
+    ASSERT_EQ(1u, frame.renderPasses[3]->quad_list.size());
 
     // Verify it added the right quads.
-    EXPECT_RECT_EQ(gfx::Rect(7, 7, 7, 7), frame.renderPasses[3]->quadList()[0]->rect);
+    EXPECT_RECT_EQ(gfx::Rect(7, 7, 7, 7), frame.renderPasses[3]->quad_list[0]->rect);
 }
 
 TEST_F(DelegatedRendererLayerImplTestOwnSurface, QuadsFromRootRenderPassAreNotModifiedForTheTarget)
@@ -372,14 +373,14 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface, QuadsFromRootRenderPassAreNotMo
 
     // Because the DelegatedRendererLayer owns a RenderSurfaceImpl, its root RenderPass' quads do not need to be
     // modified at all.
-    EXPECT_TRANSFORMATION_MATRIX_EQ(WebTransformationMatrix(), frame.renderPasses[3]->quadList()[0]->quadTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(WebTransformationMatrix(), frame.renderPasses[3]->quad_list[0]->quadTransform());
 
     // Quads from non-root RenderPasses should not be shifted though.
-    ASSERT_EQ(2u, frame.renderPasses[2]->quadList().size());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(WebTransformationMatrix(), frame.renderPasses[2]->quadList()[0]->quadTransform());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(WebTransformationMatrix(), frame.renderPasses[2]->quadList()[1]->quadTransform());
-    ASSERT_EQ(1u, frame.renderPasses[1]->quadList().size());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(WebTransformationMatrix(), frame.renderPasses[1]->quadList()[0]->quadTransform());
+    ASSERT_EQ(2u, frame.renderPasses[2]->quad_list.size());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(WebTransformationMatrix(), frame.renderPasses[2]->quad_list[0]->quadTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(WebTransformationMatrix(), frame.renderPasses[2]->quad_list[1]->quadTransform());
+    ASSERT_EQ(1u, frame.renderPasses[1]->quad_list.size());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(WebTransformationMatrix(), frame.renderPasses[1]->quad_list[0]->quadTransform());
 }
 
 class DelegatedRendererLayerImplTestSharedData : public DelegatedRendererLayerImplTest {
@@ -404,8 +405,8 @@ public:
         ScopedPtrVector<RenderPass> delegatedRenderPasses;
         gfx::Rect passRect(0, 0, 50, 50);
         TestRenderPass* pass = addRenderPass(delegatedRenderPasses, RenderPass::Id(9, 6), passRect, WebTransformationMatrix());
-        MockQuadCuller quadSink(pass->quadList(), pass->sharedQuadStateList());
-        AppendQuadsData data(pass->id());
+        MockQuadCuller quadSink(pass->quad_list, pass->shared_quad_state_list);
+        AppendQuadsData data(pass->id);
         SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::Create());
         sharedState->SetAll(WebTransformationMatrix(), passRect, passRect, 1);
         scoped_ptr<SolidColorDrawQuad> colorQuad;
@@ -452,10 +453,10 @@ TEST_F(DelegatedRendererLayerImplTestSharedData, SharedData)
     m_hostImpl->didDrawAllLayers(frame);
 
     ASSERT_EQ(1u, frame.renderPasses.size());
-    EXPECT_EQ(1, frame.renderPasses[0]->id().layerId);
-    EXPECT_EQ(0, frame.renderPasses[0]->id().index);
+    EXPECT_EQ(1, frame.renderPasses[0]->id.layer_id);
+    EXPECT_EQ(0, frame.renderPasses[0]->id.index);
 
-    const QuadList& quadList = frame.renderPasses[0]->quadList();
+    const QuadList& quadList = frame.renderPasses[0]->quad_list;
     ASSERT_EQ(4u, quadList.size());
 
     // All quads should share the same state.

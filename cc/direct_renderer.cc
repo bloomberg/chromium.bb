@@ -95,7 +95,7 @@ gfx::Rect DirectRenderer::moveScissorToWindowSpace(const DrawingFrame& frame, gf
     gfx::Rect scissorRectInCanvasSpace = gfx::ToEnclosingRect(scissorRect);
     // The scissor coordinates must be supplied in viewport space so we need to offset
     // by the relative position of the top left corner of the current render pass.
-    gfx::Rect framebufferOutputRect = frame.currentRenderPass->outputRect();
+    gfx::Rect framebufferOutputRect = frame.currentRenderPass->output_rect;
     scissorRectInCanvasSpace.set_x(scissorRectInCanvasSpace.x() - framebufferOutputRect.x());
     if (frame.flippedY && !frame.currentTexture)
         scissorRectInCanvasSpace.set_y(framebufferOutputRect.height() - (scissorRectInCanvasSpace.bottom() - framebufferOutputRect.y()));
@@ -118,7 +118,7 @@ void DirectRenderer::decideRenderPassAllocationsForFrame(const RenderPassList& r
 {
     base::hash_map<RenderPass::Id, const RenderPass*> renderPassesInFrame;
     for (size_t i = 0; i < renderPassesInDrawOrder.size(); ++i)
-        renderPassesInFrame.insert(std::pair<RenderPass::Id, const RenderPass*>(renderPassesInDrawOrder[i]->id(), renderPassesInDrawOrder[i]));
+        renderPassesInFrame.insert(std::pair<RenderPass::Id, const RenderPass*>(renderPassesInDrawOrder[i]->id, renderPassesInDrawOrder[i]));
 
     std::vector<RenderPass::Id> passesToDelete;
     ScopedPtrHashMap<RenderPass::Id, CachedResource>::const_iterator passIterator;
@@ -144,9 +144,9 @@ void DirectRenderer::decideRenderPassAllocationsForFrame(const RenderPassList& r
         m_renderPassTextures.erase(passesToDelete[i]);
 
     for (size_t i = 0; i < renderPassesInDrawOrder.size(); ++i) {
-        if (!m_renderPassTextures.contains(renderPassesInDrawOrder[i]->id())) {
+        if (!m_renderPassTextures.contains(renderPassesInDrawOrder[i]->id)) {
           scoped_ptr<CachedResource> texture = CachedResource::create(m_resourceProvider);
-            m_renderPassTextures.set(renderPassesInDrawOrder[i]->id(), texture.Pass());
+            m_renderPassTextures.set(renderPassesInDrawOrder[i]->id, texture.Pass());
         }
     }
 }
@@ -160,7 +160,7 @@ void DirectRenderer::drawFrame(const RenderPassList& renderPassesInDrawOrder, co
     DrawingFrame frame;
     frame.renderPassesById = &renderPassesById;
     frame.rootRenderPass = rootRenderPass;
-    frame.rootDamageRect = capabilities().usingPartialSwap ? rootRenderPass->damageRect() : rootRenderPass->outputRect();
+    frame.rootDamageRect = capabilities().usingPartialSwap ? rootRenderPass->damage_rect : rootRenderPass->output_rect;
     frame.rootDamageRect.Intersect(gfx::Rect(gfx::Point(), viewportSize()));
 
     beginDrawingFrame(frame);
@@ -175,9 +175,9 @@ void DirectRenderer::drawRenderPass(DrawingFrame& frame, const RenderPass* rende
     if (!useRenderPass(frame, renderPass))
         return;
 
-    frame.scissorRectInRenderPassSpace = frame.currentRenderPass->outputRect();
-    if (frame.rootDamageRect != frame.rootRenderPass->outputRect()) {
-        WebTransformationMatrix inverseTransformToRoot = frame.currentRenderPass->transformToRootTarget().inverse();
+    frame.scissorRectInRenderPassSpace = frame.currentRenderPass->output_rect;
+    if (frame.rootDamageRect != frame.rootRenderPass->output_rect) {
+        WebTransformationMatrix inverseTransformToRoot = frame.currentRenderPass->transform_to_root_target.inverse();
         gfx::RectF damageRectInRenderPassSpace = MathUtil::projectClippedRect(inverseTransformToRoot, frame.rootDamageRect);
         frame.scissorRectInRenderPassSpace.Intersect(damageRectInRenderPassSpace);
     }
@@ -185,18 +185,18 @@ void DirectRenderer::drawRenderPass(DrawingFrame& frame, const RenderPass* rende
     setScissorTestRect(moveScissorToWindowSpace(frame, frame.scissorRectInRenderPassSpace));
     clearFramebuffer(frame);
 
-    const QuadList& quadList = renderPass->quadList();
+    const QuadList& quadList = renderPass->quad_list;
     for (QuadList::constBackToFrontIterator it = quadList.backToFrontBegin(); it != quadList.backToFrontEnd(); ++it) {
-        gfx::RectF quadScissorRect = gfx::IntersectRects(frame.scissorRectInRenderPassSpace, (*it)->clippedRectInTarget());
+      gfx::RectF quadScissorRect = gfx::IntersectRects(frame.scissorRectInRenderPassSpace, (*it)->clippedRectInTarget());
         if (!quadScissorRect.IsEmpty()) {
             setScissorTestRect(moveScissorToWindowSpace(frame, quadScissorRect));
             drawQuad(frame, *it);
         }
     }
 
-    CachedResource* texture = m_renderPassTextures.get(renderPass->id());
+    CachedResource* texture = m_renderPassTextures.get(renderPass->id);
     if (texture)
-        texture->setIsComplete(!renderPass->hasOcclusionFromOutsideTargetSurface());
+        texture->setIsComplete(!renderPass->has_occlusion_from_outside_target_surface);
 }
 
 bool DirectRenderer::useRenderPass(DrawingFrame& frame, const RenderPass* renderPass)
@@ -206,17 +206,17 @@ bool DirectRenderer::useRenderPass(DrawingFrame& frame, const RenderPass* render
 
     if (renderPass == frame.rootRenderPass) {
         bindFramebufferToOutputSurface(frame);
-        initializeMatrices(frame, renderPass->outputRect(), flippedFramebuffer());
-        setDrawViewportSize(renderPass->outputRect().size());
+        initializeMatrices(frame, renderPass->output_rect, flippedFramebuffer());
+        setDrawViewportSize(renderPass->output_rect.size());
         return true;
     }
 
-    CachedResource* texture = m_renderPassTextures.get(renderPass->id());
+    CachedResource* texture = m_renderPassTextures.get(renderPass->id);
     DCHECK(texture);
     if (!texture->id() && !texture->Allocate(Renderer::ImplPool, renderPassTextureSize(renderPass), renderPassTextureFormat(renderPass), ResourceProvider::TextureUsageFramebuffer))
         return false;
 
-    return bindFramebufferToTexture(frame, texture, renderPass->outputRect());
+    return bindFramebufferToTexture(frame, texture, renderPass->output_rect);
 }
 
 bool DirectRenderer::haveCachedResourcesForRenderPassId(RenderPass::Id id) const
@@ -228,7 +228,7 @@ bool DirectRenderer::haveCachedResourcesForRenderPassId(RenderPass::Id id) const
 // static
 gfx::Size DirectRenderer::renderPassTextureSize(const RenderPass* pass)
 {
-    return pass->outputRect().size();
+    return pass->output_rect.size();
 }
 
 // static

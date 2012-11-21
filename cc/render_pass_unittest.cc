@@ -40,9 +40,6 @@ TEST(RenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
     RenderPass::Id id(3, 2);
     gfx::Rect outputRect(45, 22, 120, 13);
     WebTransformationMatrix transformToRoot(1, 0.5, 0.5, -0.5, -1, 0);
-
-    scoped_ptr<TestRenderPass> pass = TestRenderPass::create(id, outputRect, transformToRoot);
-
     gfx::Rect damageRect(56, 123, 19, 43);
     bool hasTransparentBackground = true;
     bool hasOcclusionFromOutsideTargetSurface = true;
@@ -53,35 +50,39 @@ TEST(RenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
     backgroundFilters.append(WebFilterOperation::createInvertFilter(0.2f));
     SkAutoTUnref<SkBlurImageFilter> filter(new SkBlurImageFilter(SK_Scalar1, SK_Scalar1));
 
-    pass->setDamageRect(damageRect);
-    pass->setHasTransparentBackground(hasTransparentBackground);
-    pass->setHasOcclusionFromOutsideTargetSurface(hasOcclusionFromOutsideTargetSurface);
-    pass->setFilters(filters);
-    pass->setBackgroundFilters(backgroundFilters);
-    pass->setFilter(filter);
+    scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
+    pass->SetAll(id,
+                 outputRect,
+                 damageRect,
+                 transformToRoot,
+                 hasTransparentBackground,
+                 hasOcclusionFromOutsideTargetSurface,
+                 filters,
+                 filter,
+                 backgroundFilters);
 
     // Stick a quad in the pass, this should not get copied.
     scoped_ptr<SharedQuadState> sharedState = SharedQuadState::Create();
     sharedState->SetAll(WebTransformationMatrix(), gfx::Rect(), gfx::Rect(), 1);
-    pass->sharedQuadStateList().append(sharedState.Pass());
+    pass->AppendSharedQuadState(sharedState.Pass());
 
     scoped_ptr<CheckerboardDrawQuad> checkerboardQuad = CheckerboardDrawQuad::Create();
-    checkerboardQuad->SetNew(pass->sharedQuadStateList().last(), gfx::Rect(), SkColor());
-    pass->quadList().append(checkerboardQuad.PassAs<DrawQuad>());
+    checkerboardQuad->SetNew(pass->shared_quad_state_list.last(), gfx::Rect(), SkColor());
+    pass->quad_list.append(checkerboardQuad.PassAs<DrawQuad>());
 
     RenderPass::Id newId(63, 4);
 
-    scoped_ptr<RenderPass> copy = pass->copy(newId);
-    EXPECT_EQ(newId, copy->id());
-    EXPECT_RECT_EQ(pass->outputRect(), copy->outputRect());
-    EXPECT_EQ(pass->transformToRootTarget(), copy->transformToRootTarget());
-    EXPECT_RECT_EQ(pass->damageRect(), copy->damageRect());
-    EXPECT_EQ(pass->hasTransparentBackground(), copy->hasTransparentBackground());
-    EXPECT_EQ(pass->hasOcclusionFromOutsideTargetSurface(), copy->hasOcclusionFromOutsideTargetSurface());
-    EXPECT_EQ(pass->filters(), copy->filters());
-    EXPECT_EQ(pass->backgroundFilters(), copy->backgroundFilters());
-    EXPECT_EQ(pass->filter(), copy->filter());
-    EXPECT_EQ(0u, copy->quadList().size());
+    scoped_ptr<RenderPass> copy = pass->Copy(newId);
+    EXPECT_EQ(newId, copy->id);
+    EXPECT_RECT_EQ(pass->output_rect, copy->output_rect);
+    EXPECT_EQ(pass->transform_to_root_target, copy->transform_to_root_target);
+    EXPECT_RECT_EQ(pass->damage_rect, copy->damage_rect);
+    EXPECT_EQ(pass->has_transparent_background, copy->has_transparent_background);
+    EXPECT_EQ(pass->has_occlusion_from_outside_target_surface, copy->has_occlusion_from_outside_target_surface);
+    EXPECT_EQ(pass->filters, copy->filters);
+    EXPECT_EQ(pass->filter, copy->filter);
+    EXPECT_EQ(pass->background_filters, copy->background_filters);
+    EXPECT_EQ(0u, copy->quad_list.size());
 
     EXPECT_EQ(sizeof(RenderPassSize), sizeof(RenderPass));
 }

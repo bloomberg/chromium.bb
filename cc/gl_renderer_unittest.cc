@@ -59,7 +59,8 @@ public:
     {
         m_rootLayer->createRenderSurface();
         RenderPass::Id renderPassId = m_rootLayer->renderSurface()->renderPassId();
-        scoped_ptr<RenderPass> rootRenderPass = RenderPass::create(renderPassId, gfx::Rect(), WebTransformationMatrix());
+        scoped_ptr<RenderPass> rootRenderPass = RenderPass::Create();
+        rootRenderPass->SetNew(renderPassId, gfx::Rect(), gfx::Rect(), WebTransformationMatrix());
         m_renderPassesInDrawOrder.push_back(rootRenderPass.get());
         m_renderPasses.set(renderPassId, rootRenderPass.Pass());
     }
@@ -390,7 +391,7 @@ TEST(GLRendererTest2, opaqueBackground)
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
     FakeRendererGL renderer(&mockClient, resourceProvider.get());
 
-    mockClient.rootRenderPass()->setHasTransparentBackground(false);
+    mockClient.rootRenderPass()->has_transparent_background = false;
 
     EXPECT_TRUE(renderer.initialize());
 
@@ -413,7 +414,7 @@ TEST(GLRendererTest2, transparentBackground)
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
     FakeRendererGL renderer(&mockClient, resourceProvider.get());
 
-    mockClient.rootRenderPass()->setHasTransparentBackground(true);
+    mockClient.rootRenderPass()->has_transparent_background = true;
 
     EXPECT_TRUE(renderer.initialize());
 
@@ -529,8 +530,9 @@ TEST(GLRendererTest2, activeTextureState)
     EXPECT_TRUE(renderer.initialize());
 
     cc::RenderPass::Id id(1, 1);
-    scoped_ptr<TestRenderPass> pass = TestRenderPass::create(id, gfx::Rect(0, 0, 100, 100), WebTransformationMatrix());
-    pass->appendOneOfEveryQuadType(resourceProvider.get());
+    scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
+    pass->SetNew(id, gfx::Rect(0, 0, 100, 100), gfx::Rect(0, 0, 100, 100), WebTransformationMatrix());
+    pass->AppendOneOfEveryQuadType(resourceProvider.get());
 
     context->setInDraw();
 
@@ -538,8 +540,8 @@ TEST(GLRendererTest2, activeTextureState)
     renderer.beginDrawingFrame(drawingFrame);
     EXPECT_EQ(context->activeTexture(), GL_TEXTURE0);
 
-    for (cc::QuadList::backToFrontIterator it = pass->quadList().backToFrontBegin();
-         it != pass->quadList().backToFrontEnd(); ++it) {
+    for (cc::QuadList::backToFrontIterator it = pass->quad_list.backToFrontBegin();
+         it != pass->quad_list.backToFrontEnd(); ++it) {
         renderer.drawQuad(drawingFrame, *it);
     }
     EXPECT_EQ(context->activeTexture(), GL_TEXTURE0);

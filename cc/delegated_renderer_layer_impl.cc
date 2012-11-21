@@ -44,20 +44,18 @@ void DelegatedRendererLayerImpl::setRenderPasses(ScopedPtrVector<RenderPass>& re
 {
     gfx::RectF oldRootDamage;
     if (!m_renderPassesInDrawOrder.isEmpty())
-        oldRootDamage = m_renderPassesInDrawOrder.last()->damageRect();
+        oldRootDamage = m_renderPassesInDrawOrder.last()->damage_rect;
 
     clearRenderPasses();
 
     for (size_t i = 0; i < renderPassesInDrawOrder.size(); ++i) {
-        m_renderPassesIndexById.insert(std::pair<RenderPass::Id, int>(renderPassesInDrawOrder[i]->id(), i));
+        m_renderPassesIndexById.insert(std::pair<RenderPass::Id, int>(renderPassesInDrawOrder[i]->id, i));
         m_renderPassesInDrawOrder.append(renderPassesInDrawOrder.take(i));
     }
     renderPassesInDrawOrder.clear();
 
-    if (!m_renderPassesInDrawOrder.isEmpty()) {
-        gfx::RectF newRootDamage = m_renderPassesInDrawOrder.last()->damageRect();
-        m_renderPassesInDrawOrder.last()->setDamageRect(gfx::UnionRects(oldRootDamage, newRootDamage));
-    }
+    if (!m_renderPassesInDrawOrder.isEmpty())
+        m_renderPassesInDrawOrder.last()->damage_rect.Union(oldRootDamage);
 }
 
 void DelegatedRendererLayerImpl::clearRenderPasses()
@@ -82,7 +80,7 @@ RenderPass::Id DelegatedRendererLayerImpl::firstContributingRenderPassId() const
 
 RenderPass::Id DelegatedRendererLayerImpl::nextContributingRenderPassId(RenderPass::Id previous) const
 {
-    return RenderPass::Id(previous.layerId, previous.index + 1);
+    return RenderPass::Id(previous.layer_id, previous.index + 1);
 }
 
 RenderPass::Id DelegatedRendererLayerImpl::convertDelegatedRenderPassId(RenderPass::Id delegatedRenderPassId) const
@@ -98,12 +96,12 @@ void DelegatedRendererLayerImpl::appendContributingRenderPasses(RenderPassSink& 
     DCHECK(hasContributingDelegatedRenderPasses());
 
     for (size_t i = 0; i < m_renderPassesInDrawOrder.size() - 1; ++i) {
-        RenderPass::Id outputRenderPassId = convertDelegatedRenderPassId(m_renderPassesInDrawOrder[i]->id());
+        RenderPass::Id outputRenderPassId = convertDelegatedRenderPassId(m_renderPassesInDrawOrder[i]->id);
 
         // Don't clash with the RenderPass we generate if we own a RenderSurfaceImpl.
         DCHECK(outputRenderPassId.index > 0);
 
-        renderPassSink.appendRenderPass(m_renderPassesInDrawOrder[i]->copy(outputRenderPassId));
+        renderPassSink.appendRenderPass(m_renderPassesInDrawOrder[i]->Copy(outputRenderPassId));
     }
 }
 
@@ -121,31 +119,31 @@ void DelegatedRendererLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData
     bool shouldMergeRootRenderPassWithTarget = !targetRenderPassId.index;
     if (shouldMergeRootRenderPassWithTarget) {
         // Verify that the renderPass we are appending to is created our renderTarget.
-        DCHECK(targetRenderPassId.layerId == renderTarget()->id());
+        DCHECK(targetRenderPassId.layer_id == renderTarget()->id());
 
-        RenderPass* rootDelegatedRenderPass = m_renderPassesInDrawOrder.last();
+        const RenderPass* rootDelegatedRenderPass = m_renderPassesInDrawOrder.last();
         appendRenderPassQuads(quadSink, appendQuadsData, rootDelegatedRenderPass);
     } else {
         // Verify that the renderPass we are appending to was created by us.
-        DCHECK(targetRenderPassId.layerId == id());
+        DCHECK(targetRenderPassId.layer_id == id());
 
         int renderPassIndex = idToIndex(targetRenderPassId.index);
-        RenderPass* delegatedRenderPass = m_renderPassesInDrawOrder[renderPassIndex];
+        const RenderPass* delegatedRenderPass = m_renderPassesInDrawOrder[renderPassIndex];
         appendRenderPassQuads(quadSink, appendQuadsData, delegatedRenderPass);
     }
 }
 
-void DelegatedRendererLayerImpl::appendRenderPassQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData, RenderPass* delegatedRenderPass) const
+void DelegatedRendererLayerImpl::appendRenderPassQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData, const RenderPass* delegatedRenderPass) const
 {
     const SharedQuadState* currentSharedQuadState = 0;
     SharedQuadState* copiedSharedQuadState = 0;
-    for (size_t i = 0; i < delegatedRenderPass->quadList().size(); ++i) {
-        const DrawQuad* quad = delegatedRenderPass->quadList()[i];
+    for (size_t i = 0; i < delegatedRenderPass->quad_list.size(); ++i) {
+        const DrawQuad* quad = delegatedRenderPass->quad_list[i];
 
         if (quad->shared_quad_state != currentSharedQuadState) {
             currentSharedQuadState = quad->shared_quad_state;
             copiedSharedQuadState = quadSink.useSharedQuadState(currentSharedQuadState->Copy());
-            bool targetIsFromDelegatedRendererLayer = appendQuadsData.renderPassId.layerId == id();
+            bool targetIsFromDelegatedRendererLayer = appendQuadsData.renderPassId.layer_id == id();
             if (!targetIsFromDelegatedRendererLayer) {
               // Should be the root render pass.
               DCHECK(delegatedRenderPass == m_renderPassesInDrawOrder.last());

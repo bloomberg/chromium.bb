@@ -78,7 +78,7 @@ static scoped_ptr<TiledLayerImpl> makeLayer(TiledLayerImpl* parent, const WebTra
 static void appendQuads(QuadList& quadList, SharedQuadStateList& sharedStateList, TiledLayerImpl* layer, LayerIteratorType& it, OcclusionTrackerImpl& occlusionTracker)
 {
     occlusionTracker.enterLayer(it);
-    QuadCuller quadCuller(quadList, sharedStateList, layer, &occlusionTracker, false, false);
+    QuadCuller quadCuller(quadList, sharedStateList, layer, occlusionTracker, false, false);
     AppendQuadsData data;
     layer->appendQuads(quadCuller, data);
     occlusionTracker.leaveLayer(it);

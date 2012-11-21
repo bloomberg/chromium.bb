@@ -145,9 +145,9 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectRenderPass)
     ASSERT_EQ(1u, passSink.renderPasses().size());
     RenderPass* pass = passSink.renderPasses()[0];
 
-    EXPECT_EQ(RenderPass::Id(2, 0), pass->id());
-    EXPECT_RECT_EQ(contentRect, pass->outputRect());
-    EXPECT_EQ(origin, pass->transformToRootTarget());
+    EXPECT_EQ(RenderPass::Id(2, 0), pass->id);
+    EXPECT_RECT_EQ(contentRect, pass->output_rect);
+    EXPECT_EQ(origin, pass->transform_to_root_target);
 }
 
 }  // namespace

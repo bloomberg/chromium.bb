@@ -17,7 +17,7 @@ class OcclusionTrackerBase;
 
 class CC_EXPORT QuadCuller : public QuadSink {
 public:
-    QuadCuller(QuadList&, SharedQuadStateList&, const LayerImpl*, const OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>*, bool showCullingWithDebugBorderQuads, bool forSurface);
+    QuadCuller(QuadList&, SharedQuadStateList&, const LayerImpl*, const OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>&, bool showCullingWithDebugBorderQuads, bool forSurface);
     virtual ~QuadCuller() { }
 
     // QuadSink implementation.
@@ -27,9 +27,10 @@ public:
 private:
     QuadList& m_quadList;
     SharedQuadStateList& m_sharedQuadStateList;
-    SharedQuadState* m_currentSharedQuadState;
     const LayerImpl* m_layer;
-    const OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>* m_occlusionTracker;
+    const OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>& m_occlusionTracker;
+
+    SharedQuadState* m_currentSharedQuadState;
     bool m_showCullingWithDebugBorderQuads;
     bool m_forSurface;
 };

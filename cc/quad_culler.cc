@@ -18,7 +18,7 @@ using namespace std;
 
 namespace cc {
 
-QuadCuller::QuadCuller(QuadList& quadList, SharedQuadStateList& sharedQuadStateList, const LayerImpl* layer, const OcclusionTrackerImpl* occlusionTracker, bool showCullingWithDebugBorderQuads, bool forSurface)
+QuadCuller::QuadCuller(QuadList& quadList, SharedQuadStateList& sharedQuadStateList, const LayerImpl* layer, const OcclusionTrackerImpl& occlusionTracker, bool showCullingWithDebugBorderQuads, bool forSurface)
     : m_quadList(quadList)
     , m_sharedQuadStateList(sharedQuadStateList)
     , m_currentSharedQuadState(0)
@@ -73,13 +73,13 @@ bool QuadCuller::append(scoped_ptr<DrawQuad> drawQuad, AppendQuadsData& appendQu
     bool implDrawTransformIsUnknown = false;
 
     if (m_forSurface)
-        culledRect = m_occlusionTracker->unoccludedContributingSurfaceContentRect(m_layer, false, drawQuad->rect, &hasOcclusionFromOutsideTargetSurface);
+        culledRect = m_occlusionTracker.unoccludedContributingSurfaceContentRect(m_layer, false, drawQuad->rect, &hasOcclusionFromOutsideTargetSurface);
     else
-        culledRect = m_occlusionTracker->unoccludedContentRect(m_layer->renderTarget(), drawQuad->rect, drawQuad->quadTransform(), implDrawTransformIsUnknown, drawQuad->clippedRectInTarget(), &hasOcclusionFromOutsideTargetSurface);
+        culledRect = m_occlusionTracker.unoccludedContentRect(m_layer->renderTarget(), drawQuad->rect, drawQuad->quadTransform(), implDrawTransformIsUnknown, drawQuad->clippedRectInTarget(), &hasOcclusionFromOutsideTargetSurface);
 
     appendQuadsData.hadOcclusionFromOutsideTargetSurface |= hasOcclusionFromOutsideTargetSurface;
 
-    return appendQuadInternal(drawQuad.Pass(), culledRect, m_quadList, *m_occlusionTracker, m_layer, m_showCullingWithDebugBorderQuads);
+    return appendQuadInternal(drawQuad.Pass(), culledRect, m_quadList, m_occlusionTracker, m_layer, m_showCullingWithDebugBorderQuads);
 }
 
 }  // namespace cc

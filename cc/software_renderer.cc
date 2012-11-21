@@ -137,7 +137,7 @@ void SoftwareRenderer::setScissorTestRect(const gfx::Rect& scissorRect)
 
 void SoftwareRenderer::clearFramebuffer(DrawingFrame& frame)
 {
-    if (frame.currentRenderPass->hasTransparentBackground()) {
+    if (frame.currentRenderPass->has_transparent_background) {
         m_skCurrentCanvas->clear(SkColorSetARGB(0, 0, 0, 0));
     } else {
 #ifndef NDEBUG
@@ -295,7 +295,7 @@ void SoftwareRenderer::drawRenderPassQuad(const DrawingFrame& frame, const Rende
     shader->setLocalMatrix(contentMat);
     m_skCurrentPaint.setShader(shader);
 
-    SkImageFilter* filter = renderPass->filter();
+    SkImageFilter* filter = renderPass->filter;
     if (filter)
         m_skCurrentPaint.setImageFilter(filter);
 

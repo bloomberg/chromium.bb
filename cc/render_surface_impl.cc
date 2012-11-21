@@ -184,11 +184,11 @@ void RenderSurfaceImpl::appendRenderPasses(RenderPassSink& passSink)
     for (size_t i = 0; i < m_contributingDelegatedRenderPassLayerList.size(); ++i)
         m_contributingDelegatedRenderPassLayerList[i]->appendContributingRenderPasses(passSink);
 
-    scoped_ptr<RenderPass> pass = RenderPass::create(renderPassId(), m_contentRect, m_screenSpaceTransform);
-    pass->setDamageRect(m_damageTracker->currentDamageRect());
-    pass->setFilters(m_owningLayer->filters());
-    pass->setFilter(m_owningLayer->filter());
-    pass->setBackgroundFilters(m_owningLayer->backgroundFilters());
+    scoped_ptr<RenderPass> pass = RenderPass::Create();
+    pass->SetNew(renderPassId(), m_contentRect, m_damageTracker->currentDamageRect(), m_screenSpaceTransform);
+    pass->filters = m_owningLayer->filters();
+    pass->filter = m_owningLayer->filter();
+    pass->background_filters = m_owningLayer->backgroundFilters();
     passSink.appendRenderPass(pass.Pass());
 }
 
