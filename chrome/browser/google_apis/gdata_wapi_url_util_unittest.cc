@@ -50,18 +50,32 @@ TEST(GDataWapiUrlUtilTest, AddFeedUrlParams) {
                              ).spec());
 }
 
-TEST(GDataWapiUrlUtilTest, GenerateDocumentListUrl) {
+}  // namespace gdata_wapi_url_util
+
+// TODO(satorux): Move the following test code to a separate file
+// gdata_wapi_url_generator_unittest.cc.
+class GDataWapiUrlGeneratorTest : public testing::Test {
+ public:
+  GDataWapiUrlGeneratorTest()
+      : url_generator_(GURL(gdata_wapi_url_util::kBaseUrlForProduction)) {
+  }
+
+ protected:
+  GDataWapiUrlGenerator url_generator_;
+};
+
+TEST_F(GDataWapiUrlGeneratorTest, GenerateDocumentListUrl) {
   // This is the very basic URL for the GetDocuments operation.
   EXPECT_EQ(
       "https://docs.google.com/feeds/default/private/full/-/mine"
       "?v=3&alt=json&showfolders=true&max-results=500"
       "&include-installed-apps=true",
-      GenerateDocumentListUrl(GURL(),  // override_url,
-                              0,  // start_changestamp,
-                              "",  // search_string,
-                              false, // shared_with_me,
-                              ""  // directory resource ID
-                              ).spec());
+      url_generator_.GenerateDocumentListUrl(GURL(),  // override_url,
+                                             0,  // start_changestamp,
+                                             "",  // search_string,
+                                             false, // shared_with_me,
+                                             ""  // directory resource ID
+                                             ).spec());
 
   // With an override URL provided, the base URL is changed, but the default
   // parameters remain as-is.
@@ -69,12 +83,13 @@ TEST(GDataWapiUrlUtilTest, GenerateDocumentListUrl) {
       "http://localhost/"
       "?v=3&alt=json&showfolders=true&max-results=500"
       "&include-installed-apps=true",
-      GenerateDocumentListUrl(GURL("http://localhost/"),  // override_url,
-                              0,  // start_changestamp,
-                              "",  // search_string,
-                              false, // shared_with_me,
-                              ""  // directory resource ID
-                              ).spec());
+      url_generator_.GenerateDocumentListUrl(
+          GURL("http://localhost/"),  // override_url,
+          0,  // start_changestamp,
+          "",  // search_string,
+          false, // shared_with_me,
+          ""  // directory resource ID
+          ).spec());
 
   // With a non-zero start_changestamp provided, the base URL is changed from
   // "full/-/mine" to "changes", and "start-index" parameter is added.
@@ -83,12 +98,12 @@ TEST(GDataWapiUrlUtilTest, GenerateDocumentListUrl) {
       "?v=3&alt=json&showfolders=true&max-results=500"
       "&include-installed-apps=true"
       "&start-index=100",
-      GenerateDocumentListUrl(GURL(),  // override_url,
-                              100,  // start_changestamp,
-                              "",  // search_string,
-                              false, // shared_with_me,
-                              ""  // directory resource ID
-                              ).spec());
+      url_generator_.GenerateDocumentListUrl(GURL(),  // override_url,
+                                             100,  // start_changestamp,
+                                             "",  // search_string,
+                                             false, // shared_with_me,
+                                             ""  // directory resource ID
+                                             ).spec());
 
   // With a non-empty search string provided, "max-results" value is changed,
   // and "q" parameter is added.
@@ -96,12 +111,12 @@ TEST(GDataWapiUrlUtilTest, GenerateDocumentListUrl) {
       "https://docs.google.com/feeds/default/private/full/-/mine"
       "?v=3&alt=json&showfolders=true&max-results=50"
       "&include-installed-apps=true&q=foo",
-      GenerateDocumentListUrl(GURL(),  // override_url,
-                              0,  // start_changestamp,
-                              "foo",  // search_string,
-                              false, // shared_with_me,
-                              ""  // directory resource ID
-                              ).spec());
+      url_generator_.GenerateDocumentListUrl(GURL(),  // override_url,
+                                             0,  // start_changestamp,
+                                             "foo",  // search_string,
+                                             false, // shared_with_me,
+                                             ""  // directory resource ID
+                                             ).spec());
 
   // With shared_with_me parameter set to true, the base URL is changed, but
   // the default parameters remain.
@@ -109,12 +124,12 @@ TEST(GDataWapiUrlUtilTest, GenerateDocumentListUrl) {
       "https://docs.google.com/feeds/default/private/full/-/shared-with-me"
       "?v=3&alt=json&showfolders=true&max-results=500"
       "&include-installed-apps=true",
-      GenerateDocumentListUrl(GURL(),  // override_url,
-                              0,  // start_changestamp,
-                              "",  // search_string,
-                              true, // shared_with_me,
-                              ""  // directory resource ID
-                              ).spec());
+      url_generator_.GenerateDocumentListUrl(GURL(),  // override_url,
+                                             0,  // start_changestamp,
+                                             "",  // search_string,
+                                             true, // shared_with_me,
+                                             ""  // directory resource ID
+                                             ).spec());
 
   // With a non-empty directory resource ID provided, the base URL is
   // changed, but the default parameters remain.
@@ -122,33 +137,31 @@ TEST(GDataWapiUrlUtilTest, GenerateDocumentListUrl) {
       "https://docs.google.com/feeds/default/private/full/XXX/contents/-/mine"
       "?v=3&alt=json&showfolders=true&max-results=500"
       "&include-installed-apps=true",
-      GenerateDocumentListUrl(GURL(),  // override_url,
-                              0,  // start_changestamp,
-                              "",  // search_string,
-                              false, // shared_with_me,
-                              "XXX"  // directory resource ID
-                              ).spec());
+      url_generator_.GenerateDocumentListUrl(GURL(),  // override_url,
+                                             0,  // start_changestamp,
+                                             "",  // search_string,
+                                             false, // shared_with_me,
+                                             "XXX"  // directory resource ID
+                                             ).spec());
 }
 
-TEST(GDataWapiUrlUtilTest, GenerateDocumentEntryUrl) {
+TEST_F(GDataWapiUrlGeneratorTest, GenerateDocumentEntryUrl) {
   EXPECT_EQ(
       "https://docs.google.com/feeds/default/private/full/XXX?v=3&alt=json",
-      GenerateDocumentEntryUrl("XXX").spec());
+      url_generator_.GenerateDocumentEntryUrl("XXX").spec());
 }
 
-TEST(GDataWapiUrlUtilTest, GenerateDocumentListRootUrl) {
+TEST_F(GDataWapiUrlGeneratorTest, GenerateDocumentListRootUrl) {
   EXPECT_EQ(
       "https://docs.google.com/feeds/default/private/full?v=3&alt=json",
-      GenerateDocumentListRootUrl().spec());
+      url_generator_.GenerateDocumentListRootUrl().spec());
 }
 
-TEST(GDataWapiUrlUtilTest, GenerateAccountMetadataUrl) {
+TEST_F(GDataWapiUrlGeneratorTest, GenerateAccountMetadataUrl) {
   EXPECT_EQ(
       "https://docs.google.com/feeds/metadata/default"
       "?v=3&alt=json&include-installed-apps=true",
-      GenerateAccountMetadataUrl().spec());
+      url_generator_.GenerateAccountMetadataUrl().spec());
 }
 
-
-}  // namespace gdata_wapi_url_util
 }  // namespace google_apis

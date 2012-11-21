@@ -13,6 +13,7 @@
 #include "chrome/browser/google_apis/auth_service_observer.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/gdata_wapi_operations.h"
+#include "chrome/browser/google_apis/gdata_wapi_url_util.h"
 
 class FilePath;
 class GURL;
@@ -118,6 +119,9 @@ class GDataWapiService : public DriveServiceInterface,
 
   scoped_ptr<OperationRunner> runner_;
   ObserverList<DriveServiceObserver> observers_;
+  // Operation objects should hold a copy of this, rather than a const
+  // reference, as they may outlive this object.
+  GDataWapiUrlGenerator url_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataWapiService);
 };

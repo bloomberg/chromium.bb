@@ -10,11 +10,12 @@
 
 #include "chrome/browser/google_apis/base_operations.h"
 #include "chrome/browser/google_apis/drive_upload_mode.h"
+#include "chrome/browser/google_apis/gdata_wapi_url_util.h"
 #include "net/base/io_buffer.h"
 
 namespace google_apis {
 
-class GDataEntry;
+class GDataWapiUrlGenerator;
 class DocumentEntry;
 
 //============================ GetDocumentsOperation ===========================
@@ -30,6 +31,7 @@ class GetDocumentsOperation : public GetDataOperation {
   // passed, the default URL is used and returns the first page of the result.
   // When non-first page result is requested, |url| should be specified.
   GetDocumentsOperation(OperationRegistry* registry,
+                        const GDataWapiUrlGenerator& url_generator,
                         const GURL& url,
                         int start_changestamp,
                         const std::string& search_string,
@@ -43,6 +45,7 @@ class GetDocumentsOperation : public GetDataOperation {
   virtual GURL GetURL() const OVERRIDE;
 
  private:
+  GDataWapiUrlGenerator url_generator_;
   GURL override_url_;
   int start_changestamp_;
   std::string search_string_;
@@ -58,6 +61,7 @@ class GetDocumentsOperation : public GetDataOperation {
 class GetDocumentEntryOperation : public GetDataOperation {
  public:
   GetDocumentEntryOperation(OperationRegistry* registry,
+                            const GDataWapiUrlGenerator& url_generator,
                             const std::string& resource_id,
                             const GetDataCallback& callback);
   virtual ~GetDocumentEntryOperation();
@@ -67,6 +71,7 @@ class GetDocumentEntryOperation : public GetDataOperation {
   virtual GURL GetURL() const OVERRIDE;
 
  private:
+  GDataWapiUrlGenerator url_generator_;
   // Resource id of the requested entry.
   std::string resource_id_;
 
@@ -79,6 +84,7 @@ class GetDocumentEntryOperation : public GetDataOperation {
 class GetAccountMetadataOperation : public GetDataOperation {
  public:
   GetAccountMetadataOperation(OperationRegistry* registry,
+                              const GDataWapiUrlGenerator& url_generator,
                               const GetDataCallback& callback);
   virtual ~GetAccountMetadataOperation();
 
@@ -87,6 +93,7 @@ class GetAccountMetadataOperation : public GetDataOperation {
   virtual GURL GetURL() const OVERRIDE;
 
  private:
+  GDataWapiUrlGenerator url_generator_;
   DISALLOW_COPY_AND_ASSIGN(GetAccountMetadataOperation);
 };
 
@@ -161,6 +168,7 @@ class CreateDirectoryOperation : public GetDataOperation {
  public:
   // Empty |parent_content_url| will create the directory in the root folder.
   CreateDirectoryOperation(OperationRegistry* registry,
+                           const GDataWapiUrlGenerator& url_generator,
                            const GetDataCallback& callback,
                            const GURL& parent_content_url,
                            const FilePath::StringType& directory_name);
@@ -176,6 +184,7 @@ class CreateDirectoryOperation : public GetDataOperation {
                               std::string* upload_content) OVERRIDE;
 
  private:
+  GDataWapiUrlGenerator url_generator_;
   GURL parent_content_url_;
   FilePath::StringType directory_name_;
 
@@ -188,6 +197,7 @@ class CreateDirectoryOperation : public GetDataOperation {
 class CopyDocumentOperation : public GetDataOperation {
  public:
   CopyDocumentOperation(OperationRegistry* registry,
+                        const GDataWapiUrlGenerator& url_generator,
                         const GetDataCallback& callback,
                         const std::string& resource_id,
                         const FilePath::StringType& new_name);
@@ -203,6 +213,7 @@ class CopyDocumentOperation : public GetDataOperation {
                               std::string* upload_content) OVERRIDE;
 
  private:
+  GDataWapiUrlGenerator url_generator_;
   std::string resource_id_;
   FilePath::StringType new_name_;
 
@@ -279,6 +290,7 @@ class AuthorizeAppsOperation : public GetDataOperation {
 class AddResourceToDirectoryOperation : public EntryActionOperation {
  public:
   AddResourceToDirectoryOperation(OperationRegistry* registry,
+                                  const GDataWapiUrlGenerator& url_generator,
                                   const EntryActionCallback& callback,
                                   const GURL& parent_content_url,
                                   const GURL& document_url);
@@ -292,6 +304,7 @@ class AddResourceToDirectoryOperation : public EntryActionOperation {
                               std::string* upload_content) OVERRIDE;
 
  private:
+  GDataWapiUrlGenerator url_generator_;
   GURL parent_content_url_;
 
   DISALLOW_COPY_AND_ASSIGN(AddResourceToDirectoryOperation);

@@ -11,31 +11,26 @@
 #include "net/base/escape.h"
 
 namespace google_apis {
-namespace gdata_wapi_url_util {
-
 namespace {
 
 // URL requesting documents list that belong to the authenticated user only
 // (handled with '/-/mine' part).
 const char kGetDocumentListURLForAllDocuments[] =
-    "https://docs.google.com/feeds/default/private/full/-/mine";
+    "/feeds/default/private/full/-/mine";
 
 // URL requesting documents list in a particular directory specified by "%s"
 // that belong to the authenticated user only (handled with '/-/mine' part).
 const char kGetDocumentListURLForDirectoryFormat[] =
-    "https://docs.google.com/feeds/default/private/full/%s/contents/-/mine";
+    "/feeds/default/private/full/%s/contents/-/mine";
 
 // URL requesting single document entry whose resource id is specified by "%s".
-const char kGetDocumentEntryURLFormat[] =
-    "https://docs.google.com/feeds/default/private/full/%s";
+const char kGetDocumentEntryURLFormat[] = "/feeds/default/private/full/%s";
 
 // Root document list url.
-const char kDocumentListRootURL[] =
-    "https://docs.google.com/feeds/default/private/full";
+const char kDocumentListRootURL[] = "/feeds/default/private/full";
 
 // Metadata feed with things like user quota.
-const char kAccountMetadataURL[] =
-    "https://docs.google.com/feeds/metadata/default";
+const char kAccountMetadataURL[] = "/feeds/metadata/default";
 
 #ifndef NDEBUG
 // Use smaller 'page' size while debugging to ensure we hit feed reload
@@ -50,13 +45,17 @@ const int kMaxDocumentsPerSearchFeed = 50;
 
 // URL requesting documents list that shared to the authenticated user only
 const char kGetDocumentListURLForSharedWithMe[] =
-    "https://docs.google.com/feeds/default/private/full/-/shared-with-me";
+    "/feeds/default/private/full/-/shared-with-me";
 
 // URL requesting documents list of changes to documents collections.
-const char kGetChangesListURL[] =
-    "https://docs.google.com/feeds/default/private/changes";
+const char kGetChangesListURL[] = "/feeds/default/private/changes";
 
 }  // namespace
+
+namespace gdata_wapi_url_util {
+
+const char kBaseUrlForProduction[] = "https://docs.google.com/";
+const char kBaseUrlForTesting[] = "http://127.0.0.1/";
 
 GURL AddStandardUrlParams(const GURL& url) {
   GURL result =
@@ -103,12 +102,25 @@ GURL AddFeedUrlParams(const GURL& url,
   return result;
 }
 
-GURL GenerateDocumentListUrl(
+}  // namespace gdata_wapi_url_util
+
+
+// TODO(satorux): Move the following code to a separate file
+// gdata_wapi_url_generator.cc
+
+GDataWapiUrlGenerator::GDataWapiUrlGenerator(const GURL& base_url)
+    : base_url_(GURL(base_url)) {
+}
+
+GDataWapiUrlGenerator::~GDataWapiUrlGenerator() {
+}
+
+GURL GDataWapiUrlGenerator::GenerateDocumentListUrl(
     const GURL& override_url,
     int start_changestamp,
     const std::string& search_string,
     bool shared_with_me,
-    const std::string& directory_resource_id) {
+    const std::string& directory_resource_id) const {
   DCHECK_LE(0, start_changestamp);
 
   int max_docs = search_string.empty() ? kMaxDocumentsPerFeed :
@@ -117,34 +129,39 @@ GURL GenerateDocumentListUrl(
   if (!override_url.is_empty()) {
     url = override_url;
   } else if (shared_with_me) {
-    url = GURL(kGetDocumentListURLForSharedWithMe);
+    url = base_url_.Resolve(kGetDocumentListURLForSharedWithMe);
   } else if (start_changestamp > 0) {
     // The start changestamp shouldn't be used for a search.
     DCHECK(search_string.empty());
-    url = GURL(kGetChangesListURL);
+    url = base_url_.Resolve(kGetChangesListURL);
   } else if (!directory_resource_id.empty()) {
-    url = GURL(base::StringPrintf(kGetDocumentListURLForDirectoryFormat,
-                                  net::EscapePath(
-                                      directory_resource_id).c_str()));
+    url = base_url_.Resolve(
+        base::StringPrintf(kGetDocumentListURLForDirectoryFormat,
+                           net::EscapePath(
+                               directory_resource_id).c_str()));
   } else {
-    url = GURL(kGetDocumentListURLForAllDocuments);
+    url = base_url_.Resolve(kGetDocumentListURLForAllDocuments);
   }
-  return AddFeedUrlParams(url, max_docs, start_changestamp, search_string);
+  return gdata_wapi_url_util::AddFeedUrlParams(
+      url, max_docs, start_changestamp, search_string);
 }
 
-GURL GenerateDocumentEntryUrl(const std::string& resource_id) {
-  GURL result = GURL(base::StringPrintf(kGetDocumentEntryURLFormat,
-                                        net::EscapePath(resource_id).c_str()));
-  return AddStandardUrlParams(result);
+GURL GDataWapiUrlGenerator::GenerateDocumentEntryUrl(
+    const std::string& resource_id) const {
+  GURL result = base_url_.Resolve(
+      base::StringPrintf(kGetDocumentEntryURLFormat,
+                         net::EscapePath(resource_id).c_str()));
+  return gdata_wapi_url_util::AddStandardUrlParams(result);
 }
 
-GURL GenerateDocumentListRootUrl() {
-  return AddStandardUrlParams(GURL(kDocumentListRootURL));
+GURL GDataWapiUrlGenerator::GenerateDocumentListRootUrl() const {
+  return gdata_wapi_url_util::AddStandardUrlParams(
+      base_url_.Resolve(kDocumentListRootURL));
 }
 
-GURL GenerateAccountMetadataUrl() {
-  return AddMetadataUrlParams(GURL(kAccountMetadataURL));
+GURL GDataWapiUrlGenerator::GenerateAccountMetadataUrl() const {
+  return gdata_wapi_url_util::AddMetadataUrlParams(
+      base_url_.Resolve(kAccountMetadataURL));
 }
 
-}  // namespace gdata_wapi_url_util
 }  // namespace google_apis

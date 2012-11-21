@@ -97,6 +97,7 @@ ResumeUploadParams::~ResumeUploadParams() {
 
 GetDocumentsOperation::GetDocumentsOperation(
     OperationRegistry* registry,
+    const GDataWapiUrlGenerator& url_generator,
     const GURL& url,
     int start_changestamp,
     const std::string& search_string,
@@ -104,6 +105,7 @@ GetDocumentsOperation::GetDocumentsOperation(
     const std::string& directory_resource_id,
     const GetDataCallback& callback)
     : GetDataOperation(registry, callback),
+      url_generator_(url_generator),
       override_url_(url),
       start_changestamp_(start_changestamp),
       search_string_(search_string),
@@ -114,41 +116,45 @@ GetDocumentsOperation::GetDocumentsOperation(
 GetDocumentsOperation::~GetDocumentsOperation() {}
 
 GURL GetDocumentsOperation::GetURL() const {
-  return gdata_wapi_url_util::GenerateDocumentListUrl(override_url_,
-                                                      start_changestamp_,
-                                                      search_string_,
-                                                      shared_with_me_,
-                                                      directory_resource_id_);
+  return url_generator_.GenerateDocumentListUrl(override_url_,
+                                                start_changestamp_,
+                                                search_string_,
+                                                shared_with_me_,
+                                                directory_resource_id_);
 }
 
 //============================ GetDocumentEntryOperation =======================
 
 GetDocumentEntryOperation::GetDocumentEntryOperation(
     OperationRegistry* registry,
+    const GDataWapiUrlGenerator& url_generator,
     const std::string& resource_id,
     const GetDataCallback& callback)
     : GetDataOperation(registry, callback),
+      url_generator_(url_generator),
       resource_id_(resource_id) {
 }
 
 GetDocumentEntryOperation::~GetDocumentEntryOperation() {}
 
 GURL GetDocumentEntryOperation::GetURL() const {
-  return gdata_wapi_url_util::GenerateDocumentEntryUrl(resource_id_);
+  return url_generator_.GenerateDocumentEntryUrl(resource_id_);
 }
 
 //========================= GetAccountMetadataOperation ========================
 
 GetAccountMetadataOperation::GetAccountMetadataOperation(
     OperationRegistry* registry,
+    const GDataWapiUrlGenerator& url_generator,
     const GetDataCallback& callback)
-    : GetDataOperation(registry, callback) {
+    : GetDataOperation(registry, callback),
+      url_generator_(url_generator) {
 }
 
 GetAccountMetadataOperation::~GetAccountMetadataOperation() {}
 
 GURL GetAccountMetadataOperation::GetURL() const {
-  return gdata_wapi_url_util::GenerateAccountMetadataUrl();
+  return url_generator_.GenerateAccountMetadataUrl();
 }
 
 //============================ DownloadFileOperation ===========================
@@ -248,10 +254,12 @@ DeleteDocumentOperation::GetExtraRequestHeaders() const {
 
 CreateDirectoryOperation::CreateDirectoryOperation(
     OperationRegistry* registry,
+    const GDataWapiUrlGenerator& url_generator,
     const GetDataCallback& callback,
     const GURL& parent_content_url,
     const FilePath::StringType& directory_name)
     : GetDataOperation(registry, callback),
+      url_generator_(url_generator),
       parent_content_url_(parent_content_url),
       directory_name_(directory_name) {
 }
@@ -262,7 +270,7 @@ GURL CreateDirectoryOperation::GetURL() const {
   if (!parent_content_url_.is_empty())
     return gdata_wapi_url_util::AddStandardUrlParams(parent_content_url_);
 
-  return gdata_wapi_url_util::GenerateDocumentListRootUrl();
+  return url_generator_.GenerateDocumentListRootUrl();
 }
 
 URLFetcher::RequestType
@@ -299,10 +307,12 @@ bool CreateDirectoryOperation::GetContentData(std::string* upload_content_type,
 
 CopyDocumentOperation::CopyDocumentOperation(
     OperationRegistry* registry,
+    const GDataWapiUrlGenerator& url_generator,
     const GetDataCallback& callback,
     const std::string& resource_id,
     const FilePath::StringType& new_name)
     : GetDataOperation(registry, callback),
+      url_generator_(url_generator),
       resource_id_(resource_id),
       new_name_(new_name) {
 }
@@ -314,7 +324,7 @@ URLFetcher::RequestType CopyDocumentOperation::GetRequestType() const {
 }
 
 GURL CopyDocumentOperation::GetURL() const {
-  return gdata_wapi_url_util::GenerateDocumentListRootUrl();
+  return url_generator_.GenerateDocumentListRootUrl();
 }
 
 bool CopyDocumentOperation::GetContentData(std::string* upload_content_type,
@@ -475,10 +485,12 @@ GURL AuthorizeAppsOperation::GetURL() const {
 
 AddResourceToDirectoryOperation::AddResourceToDirectoryOperation(
     OperationRegistry* registry,
+    const GDataWapiUrlGenerator& url_generator,
     const EntryActionCallback& callback,
     const GURL& parent_content_url,
     const GURL& document_url)
     : EntryActionOperation(registry, callback, document_url),
+      url_generator_(url_generator),
       parent_content_url_(parent_content_url) {
 }
 
@@ -488,7 +500,7 @@ GURL AddResourceToDirectoryOperation::GetURL() const {
   if (!parent_content_url_.is_empty())
     return gdata_wapi_url_util::AddStandardUrlParams(parent_content_url_);
 
-  return gdata_wapi_url_util::GenerateDocumentListRootUrl();
+  return url_generator_.GenerateDocumentListRootUrl();
 }
 
 URLFetcher::RequestType

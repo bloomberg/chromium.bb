@@ -9,10 +9,16 @@
 
 #include <string>
 
-class GURL;
+#include "googleurl/src/gurl.h"
 
 namespace google_apis {
 namespace gdata_wapi_url_util {
+
+// The base URL for communicating with the WAPI server for production.
+extern const char kBaseUrlForProduction[];
+
+// The base URL for communicating with the local test server for testing.
+extern const char kBaseUrlForTesting[];
 
 // Adds additional parameters for API version, output content type and to show
 // folders in the feed are added to document feed URLs.
@@ -31,48 +37,62 @@ GURL AddFeedUrlParams(const GURL& url,
                       int changestamp,
                       const std::string& search_string);
 
-// Generates a URL for getting the documents list feed.
-//
-// override_url:
-//   By default, a hard-coded base URL of the WAPI server is used.
-//   The base URL can be overridden by |override_url|.
-//   This is used for handling continuation of feeds (2nd page and onward).
-//
-// start_changestamp
-//   If |start_changestamp| is 0, URL for a full feed is generated.
-//   If |start_changestamp| is non-zero, URL for a delta feed is generated.
-//
-// search_string
-//   If |search_string| is non-empty, q=... parameter is added, and
-//   max-results=... parameter is adjusted for a search.
-//
-// shared_with_me
-//   If |shared_with_me| is true, the base URL is changed to fetch the
-//   shared-with-me documents.
-//
-// directory_resource_id:
-//   If |directory_resource_id| is non-empty, a URL for fetching documents in
-//   a particular directory is generated.
-//
-GURL GenerateDocumentListUrl(
-    const GURL& override_url,
-    int start_changestamp,
-    const std::string& search_string,
-    bool shared_with_me,
-    const std::string& directory_resource_id);
-
-// Generates a URL for getting the document entry of the given resource ID.
-GURL GenerateDocumentEntryUrl(const std::string& resource_id);
-
-// Generates a URL for getting the root document list feed.
-// Used to make changes in the root directory (ex. create a directory in the
-// root directory)
-GURL GenerateDocumentListRootUrl();
-
-// Generates a URL for getting the account metadata feed.
-GURL GenerateAccountMetadataUrl();
-
 }  // namespace gdata_wapi_url_util
+
+// TODO(satorux): Move the class to a separate file gdata_wapi_url_generator.h.
+//
+// The class is used to generate URLs for communicating with the WAPI server.
+// for production, and the local server for testing.
+class GDataWapiUrlGenerator {
+ public:
+  explicit GDataWapiUrlGenerator(const GURL& base_url);
+  ~GDataWapiUrlGenerator();
+
+  // Generates a URL for getting the documents list feed.
+  //
+  // override_url:
+  //   By default, a hard-coded base URL of the WAPI server is used.
+  //   The base URL can be overridden by |override_url|.
+  //   This is used for handling continuation of feeds (2nd page and onward).
+  //
+  // start_changestamp
+  //   If |start_changestamp| is 0, URL for a full feed is generated.
+  //   If |start_changestamp| is non-zero, URL for a delta feed is generated.
+  //
+  // search_string
+  //   If |search_string| is non-empty, q=... parameter is added, and
+  //   max-results=... parameter is adjusted for a search.
+  //
+  // shared_with_me
+  //   If |shared_with_me| is true, the base URL is changed to fetch the
+  //   shared-with-me documents.
+  //
+  // directory_resource_id:
+  //   If |directory_resource_id| is non-empty, a URL for fetching documents in
+  //   a particular directory is generated.
+  //
+  GURL GenerateDocumentListUrl(
+      const GURL& override_url,
+      int start_changestamp,
+      const std::string& search_string,
+      bool shared_with_me,
+      const std::string& directory_resource_id) const;
+
+  // Generates a URL for getting the document entry of the given resource ID.
+  GURL GenerateDocumentEntryUrl(const std::string& resource_id) const;
+
+  // Generates a URL for getting the root document list feed.
+  // Used to make changes in the root directory (ex. create a directory in the
+  // root directory)
+  GURL GenerateDocumentListRootUrl() const;
+
+  // Generates a URL for getting the account metadata feed.
+  GURL GenerateAccountMetadataUrl() const;
+
+ private:
+  const GURL base_url_;
+};
+
 }  // namespace google_apis
 
 #endif  // CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_URL_UTIL_H_

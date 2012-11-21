@@ -11,6 +11,7 @@
 #include "base/message_loop_proxy.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_operations.h"
+#include "chrome/browser/google_apis/gdata_wapi_url_util.h"
 #include "chrome/browser/google_apis/operation_runner.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "chrome/common/net/url_util.h"
@@ -66,7 +67,9 @@ const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
 }  // namespace
 
 GDataWapiService::GDataWapiService()
-    : runner_(NULL) {
+    : runner_(NULL),
+      // TODO(satorux): The base URL should be injected.
+      url_generator_(GURL(gdata_wapi_url_util::kBaseUrlForProduction)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -146,6 +149,7 @@ void GDataWapiService::GetDocuments(
   GetDocumentsOperation* operation =
       new google_apis::GetDocumentsOperation(
           operation_registry(),
+          url_generator_,
           url,
           static_cast<int>(start_changestamp),
           search_query,
@@ -162,6 +166,7 @@ void GDataWapiService::GetDocumentEntry(
 
   GetDocumentEntryOperation* operation =
       new GetDocumentEntryOperation(operation_registry(),
+                                    url_generator_,
                                     resource_id,
                                     callback);
   runner_->StartOperationWithRetry(operation);
@@ -172,7 +177,7 @@ void GDataWapiService::GetAccountMetadata(const GetDataCallback& callback) {
 
   GetAccountMetadataOperation* operation =
       new GetAccountMetadataOperation(
-          operation_registry(), callback);
+          operation_registry(), url_generator_, callback);
   runner_->StartOperationWithRetry(operation);
 }
 
@@ -232,8 +237,11 @@ void GDataWapiService::AddNewDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   runner_->StartOperationWithRetry(
-      new CreateDirectoryOperation(
-          operation_registry(), callback, parent_content_url, directory_name));
+      new CreateDirectoryOperation(operation_registry(),
+                                   url_generator_,
+                                   callback,
+                                   parent_content_url,
+                                   directory_name));
 }
 
 void GDataWapiService::CopyDocument(
@@ -243,8 +251,11 @@ void GDataWapiService::CopyDocument(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   runner_->StartOperationWithRetry(
-      new CopyDocumentOperation(operation_registry(), callback,
-                                resource_id, new_name));
+      new CopyDocumentOperation(operation_registry(),
+                                url_generator_,
+                                callback,
+                                resource_id,
+                                new_name));
 }
 
 void GDataWapiService::RenameResource(
@@ -266,6 +277,7 @@ void GDataWapiService::AddResourceToDirectory(
 
   runner_->StartOperationWithRetry(
       new AddResourceToDirectoryOperation(operation_registry(),
+                                          url_generator_,
                                           callback,
                                           parent_content_url,
                                           resource_url));
