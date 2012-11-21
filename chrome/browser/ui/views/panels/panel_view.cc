@@ -31,6 +31,11 @@
 #include "ui/gfx/icon_util.h"
 #endif
 
+#if defined(OS_WIN) && defined(USE_AURA)
+#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
+#endif
+
 namespace {
 
 // Supported accelerators.
@@ -310,7 +315,7 @@ void PanelView::AnimationProgressed(const ui::Animation* animation) {
 }
 
 void PanelView::SetWidgetBounds(const gfx::Rect& new_bounds) {
-#if defined(OS_WIN) && !defined(USE_ASH) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // An overlapped window is a top-level window that has a titlebar, border,
   // and client area. The Windows system will automatically put the shadow
   // around the whole window. Also the system will enforce the minimum height
@@ -851,12 +856,18 @@ bool PanelView::IsWithinResizingArea(const gfx::Point& mouse_location) const {
          mouse_location.y() >= bounds.bottom() - kResizeInsideBoundsSize;
 }
 
-#if defined(OS_WIN) && !defined(USE_ASH) && !defined(USE_AURA)
+#if defined(OS_WIN)
 void PanelView::UpdateWindowAttribute(int attribute_index,
                                       int attribute_value_to_set,
                                       int attribute_value_to_reset,
                                       bool update_frame) {
-  gfx::NativeWindow native_window = window_->GetNativeWindow();
+  HWND native_window;
+#if defined(USE_AURA)
+  native_window =
+      window_->GetNativeWindow()->GetRootWindow()->GetAcceleratedWidget();
+#else
+  native_window = window_->GetNativeWindow();
+#endif
   int value = ::GetWindowLong(native_window, attribute_index);
   int expected_value = value;
   if (attribute_value_to_set)

@@ -145,7 +145,7 @@ class PanelView : public NativePanel,
   // window height limitation.
   void SetWidgetBounds(const gfx::Rect& new_bounds);
 
-#if defined(OS_WIN) && !defined(USE_ASH) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // Sets |attribute_value_to_set| and/or clears |attribute_value_to_reset| for
   // the attibute denoted by |attribute_index|. This is used to update the style
   // or extended style for the native window.
