@@ -313,12 +313,12 @@ void DeviceSettingsProvider::SetInPolicy() {
   // Set the cache to the updated value.
   UpdateValuesCache(data, device_settings_);
 
-  if (!device_settings_cache::Store(data, g_browser_process->local_state()))
-    LOG(ERROR) << "Couldn't store to the temp storage.";
-
   if (ownership_status_ == DeviceSettingsService::OWNERSHIP_TAKEN) {
     StoreDeviceSettings();
   } else {
+    if (!device_settings_cache::Store(data, g_browser_process->local_state()))
+      LOG(ERROR) << "Couldn't store to the temp storage.";
+
     // OnStorePolicyCompleted won't get called in this case so proceed with any
     // pending operations immediately.
     if (!pending_changes_.empty())
@@ -698,6 +698,10 @@ bool DeviceSettingsProvider::UpdateFromService() {
       const em::ChromeDeviceSettingsProto* device_settings =
           device_settings_service_->device_settings();
       if (policy_data && device_settings) {
+        if (!device_settings_cache::Store(*policy_data,
+                                          g_browser_process->local_state())) {
+          LOG(ERROR) << "Couldn't update the local state cache.";
+        }
         UpdateValuesCache(*policy_data, *device_settings);
         device_settings_ = *device_settings;
         trusted_status_ = TRUSTED;
