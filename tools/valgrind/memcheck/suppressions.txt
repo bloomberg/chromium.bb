@@ -6142,14 +6142,6 @@
    fun:_ZN3net25FtpNetworkTransactionTest18ExecuteTransactionEPNS_21FtpSocketDataProviderEPKcii
 }
 {
-   bug_161294
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN12_GLOBAL__N_120DiskMountManagerTest11AddTestDiskERKNS_12TestDiskInfoE
-   fun:_ZN12_GLOBAL__N_120DiskMountManagerTest23InitDisksAndMountPointsEv
-   fun:_ZN12_GLOBAL__N_120DiskMountManagerTest5SetUpEv
-}
-{
    bug_161657a
    Memcheck:Uninitialized
    fun:_ZN10extensions16ExtensionUpdater19MaybeInstallCRXFileEv
