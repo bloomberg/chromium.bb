@@ -488,7 +488,6 @@ void ContentSettingsHandler::InitializeHandler() {
 
   PrefService* prefs = profile->GetPrefs();
   pref_change_registrar_.Init(prefs);
-  pref_change_registrar_.Add(prefs::kGeolocationContentSettings, this);
   pref_change_registrar_.Add(prefs::kPepperFlashSettingsEnabled, this);
 
   flash_settings_manager_.reset(new PepperFlashSettingsManager(this, profile));
@@ -559,10 +558,8 @@ void ContentSettingsHandler::Observe(
 
 void ContentSettingsHandler::OnPreferenceChanged(PrefServiceBase* service,
                                                  const std::string& pref_name) {
-  if (pref_name == prefs::kGeolocationContentSettings)
-    UpdateGeolocationExceptionsView();
-  else if (pref_name == prefs::kPepperFlashSettingsEnabled)
-    RefreshFlashSettingsCache(false);
+  DCHECK_EQ(pref_name, std::string(prefs::kPepperFlashSettingsEnabled));
+  RefreshFlashSettingsCache(false);
 }
 
 void ContentSettingsHandler::OnGetPermissionSettingsCompleted(

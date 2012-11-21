@@ -73,19 +73,7 @@ class PrefProvider : public ObservableProvider {
       const ResourceIdentifier& resource_identifier,
       const base::Value* value);
 
-  // Updates the given |pattern_pairs_settings| dictionary value.
-  void UpdatePatternPairsSettings(
-      const ContentSettingsPattern& primary_pattern,
-      const ContentSettingsPattern& secondary_pattern,
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier,
-      const base::Value* value,
-      DictionaryValue* pattern_pairs_settings);
-
   void MigrateObsoleteClearOnExitPref();
-  void MigrateObsoleteContentSettingsPatternPref();
-  void MigrateObsoleteGeolocationPref();
-  void MigrateObsoleteNotificationsPrefs();
 
   static void CanonicalizeContentSettingsExceptions(
       base::DictionaryValue* all_settings_dictionary);

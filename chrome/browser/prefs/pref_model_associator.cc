@@ -184,15 +184,11 @@ scoped_ptr<Value> PrefModelAssociator::MergePreference(
     const std::string& name,
     const Value& local_value,
     const Value& server_value) {
-  if (name == prefs::kURLsToRestoreOnStartup ||
-      name == prefs::kDesktopNotificationAllowedOrigins ||
-      name == prefs::kDesktopNotificationDeniedOrigins) {
+  if (name == prefs::kURLsToRestoreOnStartup) {
     return scoped_ptr<Value>(MergeListValues(local_value, server_value)).Pass();
   }
 
-  if (name == prefs::kContentSettingsPatterns ||
-      name == prefs::kGeolocationContentSettings ||
-      name == prefs::kContentSettingsPatternPairs) {
+  if (name == prefs::kContentSettingsPatternPairs) {
     return scoped_ptr<Value>(
         MergeDictionaryValues(local_value, server_value)).Pass();
   }

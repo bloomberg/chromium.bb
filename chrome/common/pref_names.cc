@@ -960,11 +960,6 @@ const char kUseCustomChromeFrame[] = "browser.custom_chrome_frame";
 // done directly from the omnibox should be shown.
 const char kShowOmniboxSearchHint[] = "browser.show_omnibox_search_hint";
 
-const char kDesktopNotificationAllowedOrigins[] =
-    "profile.notification_allowed_sites";
-const char kDesktopNotificationDeniedOrigins[] =
-    "profile.notification_denied_sites";
-
 // The preferred position (which corner of screen) for desktop notifications.
 const char kDesktopNotificationPosition[] =
     "browser.desktop_notification_position";
@@ -980,12 +975,9 @@ const char kContentSettingsClearOnExitMigrated[] =
 // Version of the pattern format used to define content settings.
 const char kContentSettingsVersion[] = "profile.content_settings.pref_version";
 
-// Patterns for mapping hostnames to content related settings. Default settings
-// will be applied to hosts that don't match any of the patterns. Replaces
-// kPerHostContentSettings. The pattern format used is defined by
-// kContentSettingsVersion.
-const char kContentSettingsPatterns[] = "profile.content_settings.patterns";
-
+// Patterns for mapping origins to origin related settings. Default settings
+// will be applied to origins that don't match any of the patterns. The pattern
+// format used is defined by kContentSettingsVersion.
 const char kContentSettingsPatternPairs[] =
     "profile.content_settings.pattern_pairs";
 
@@ -1045,9 +1037,6 @@ const char kPinnedTabs[] = "pinned_tabs";
 // Boolean that controls the enabled-state of Geolocation.
 const char kGeolocationEnabled[] = "geolocation.enabled";
 #endif
-
-// Dictionary that maps [frame, toplevel] to their Geolocation content setting.
-const char kGeolocationContentSettings[] = "geolocation.content_settings";
 
 // The default audio capture device used by the Media content setting.
 const char kDefaultAudioCaptureDevice[] = "media.default_audio_capture_device";
