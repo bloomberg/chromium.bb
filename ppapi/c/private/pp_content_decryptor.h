@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/pp_content_decryptor.idl modified Thu Oct 25 16:40:07 2012. */
+/* From private/pp_content_decryptor.idl modified Tue Nov 20 23:53:18 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
 #define PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
@@ -94,6 +94,10 @@ struct PP_EncryptedBlockInfo {
    */
   struct PP_DecryptTrackingInfo tracking_info;
   /**
+   * Size in bytes of data to be decrypted (data_offset included).
+   */
+  uint32_t data_size;
+  /**
    * Size in bytes of data to be discarded before applying the decryption.
    */
   uint32_t data_offset;
@@ -118,8 +122,13 @@ struct PP_EncryptedBlockInfo {
    */
   struct PP_DecryptSubsampleDescription subsamples[16];
   uint32_t num_subsamples;
+  /**
+   * 4-byte padding to make the size of <code>PP_EncryptedBlockInfo</code>
+   * a multiple of 8 bytes. The value of this field should not be used.
+   */
+  uint32_t padding;
 };
-PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_EncryptedBlockInfo, 240);
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_EncryptedBlockInfo, 248);
 /**
  * @}
  */

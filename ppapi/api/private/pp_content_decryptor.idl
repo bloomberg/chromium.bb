@@ -76,12 +76,17 @@ struct PP_DecryptSubsampleDescription {
  * The <code>PP_EncryptedBlockInfo</code> struct contains all the information
  * needed to decrypt an encrypted block.
  */
-[assert_size(240)]
+[assert_size(248)]
 struct PP_EncryptedBlockInfo {
   /**
    * Information needed by the client to track the block to be decrypted.
    */
   PP_DecryptTrackingInfo tracking_info;
+
+  /**
+   * Size in bytes of data to be decrypted (data_offset included).
+   */
+  uint32_t data_size;
 
   /**
    * Size in bytes of data to be discarded before applying the decryption.
@@ -111,6 +116,12 @@ struct PP_EncryptedBlockInfo {
    */
   PP_DecryptSubsampleDescription[16] subsamples;
   uint32_t num_subsamples;
+
+  /**
+   * 4-byte padding to make the size of <code>PP_EncryptedBlockInfo</code>
+   * a multiple of 8 bytes. The value of this field should not be used.
+   */
+  uint32_t padding;
 };
 
 /**

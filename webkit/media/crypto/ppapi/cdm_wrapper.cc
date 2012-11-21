@@ -65,7 +65,9 @@ void ConfigureInputBuffer(
   PP_DCHECK(!encrypted_buffer.is_null());
 
   input_buffer->data = static_cast<uint8_t*>(encrypted_buffer.data());
-  input_buffer->data_size = encrypted_buffer.size();
+  input_buffer->data_size = encrypted_block_info.data_size;
+  PP_DCHECK(encrypted_buffer.size() >=
+            static_cast<uint32_t>(input_buffer->data_size));
   input_buffer->data_offset = encrypted_block_info.data_offset;
   input_buffer->key_id = encrypted_block_info.key_id;
   input_buffer->key_id_size = encrypted_block_info.key_id_size;

@@ -82,11 +82,11 @@ bool CopyStringToArray(const std::string& str, uint8 (&array)[array_size]) {
 // This is useful for end-of-stream blocks.
 // Returns true if |block_info| is successfully filled. Returns false
 // otherwise.
-bool MakeEncryptedBlockInfo(
-    const media::DecryptConfig* decrypt_config,
-    int64_t timestamp,
-    uint32_t request_id,
-    PP_EncryptedBlockInfo* block_info) {
+bool MakeEncryptedBlockInfo(int data_size,
+                            const media::DecryptConfig* decrypt_config,
+                            int64_t timestamp,
+                            uint32_t request_id,
+                            PP_EncryptedBlockInfo* block_info) {
   DCHECK(block_info);
 
   // TODO(xhwang): Fix initialization of PP_EncryptedBlockInfo here and
@@ -99,6 +99,8 @@ bool MakeEncryptedBlockInfo(
   if (!decrypt_config)
     return true;
 
+  DCHECK(data_size) << "DecryptConfig is set on an empty buffer";
+  block_info->data_size = data_size;
   block_info->data_offset = decrypt_config->data_offset();
 
   if (!CopyStringToArray(decrypt_config->key_id(), block_info->key_id) ||
@@ -354,7 +356,8 @@ bool ContentDecryptorDelegate::Decrypt(
 
   PP_EncryptedBlockInfo block_info;
   DCHECK(encrypted_buffer->GetDecryptConfig());
-  if (!MakeEncryptedBlockInfo(encrypted_buffer->GetDecryptConfig(),
+  if (!MakeEncryptedBlockInfo(encrypted_buffer->GetDataSize(),
+                              encrypted_buffer->GetDecryptConfig(),
                               encrypted_buffer->GetTimestamp().InMicroseconds(),
                               request_id,
                               &block_info)) {
@@ -524,6 +527,7 @@ bool ContentDecryptorDelegate::DecryptAndDecodeAudio(
 
   PP_EncryptedBlockInfo block_info;
   if (!MakeEncryptedBlockInfo(
+      encrypted_buffer->GetDataSize(),
       encrypted_buffer->GetDecryptConfig(),
       encrypted_buffer->GetTimestamp().InMicroseconds(),
       request_id,
@@ -573,6 +577,7 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
 
   PP_EncryptedBlockInfo block_info;
   if (!MakeEncryptedBlockInfo(
+      encrypted_buffer->GetDataSize(),
       encrypted_buffer->GetDecryptConfig(),
       encrypted_buffer->GetTimestamp().InMicroseconds(),
       request_id,
