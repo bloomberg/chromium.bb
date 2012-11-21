@@ -530,13 +530,33 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures);
   prefs.css_grid_layout_enabled =
       command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures);
+
+  bool touch_device_present = false;
 #if defined(USE_AURA) && defined(USE_X11)
-  prefs.device_supports_touch |=
+  touch_device_present =
       ui::TouchFactory::GetInstance()->IsTouchDevicePresent();
 #endif
 #if defined(OS_WIN)
-  prefs.device_supports_touch = ui::IsTouchDevicePresent();
+  touch_device_present = ui::IsTouchDevicePresent();
 #endif
+#if defined(OS_ANDROID)
+  touch_device_present = true;
+#endif
+  const std::string touch_enabled_switch =
+      command_line.HasSwitch(switches::kTouchEvents) ?
+      command_line.GetSwitchValueASCII(switches::kTouchEvents) :
+      switches::kTouchEventsAuto;
+
+  if (touch_enabled_switch.empty() ||
+      touch_enabled_switch == switches::kTouchEventsEnabled) {
+    prefs.touch_enabled = true;
+  } else if (touch_enabled_switch == switches::kTouchEventsAuto) {
+    prefs.touch_enabled = touch_device_present;
+  } else if (touch_enabled_switch != switches::kTouchEventsDisabled) {
+    LOG(ERROR) << "Invalid --touch-events option: " << touch_enabled_switch;
+  }
+
+  prefs.device_supports_touch = prefs.touch_enabled && touch_device_present;
 #if defined(OS_ANDROID)
   prefs.device_supports_mouse = false;
 #endif

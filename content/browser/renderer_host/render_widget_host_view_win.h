@@ -402,7 +402,7 @@ class RenderWidgetHostViewWin
   LRESULT OnQueryCharPosition(IMECHARPOSITION* position);
 
   // Sets the appropriate mode for raw-touches or gestures. Currently touch mode
-  // will only take effect when kEnableTouchEvents is in effect (on Win7+).
+  // will only take effect on Win7+.
   void UpdateDesiredTouchMode();
 
   // Configures the enable/disable state of |ime_input_| to match with the

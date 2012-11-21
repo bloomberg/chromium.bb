@@ -139,8 +139,18 @@ const Experiment::Choice kThreadedCompositingModeChoices[] = {
     switches::kEnableThreadedCompositing, ""}
 };
 
+const Experiment::Choice kTouchEventsChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_AUTOMATIC, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kTouchEvents,
+    switches::kTouchEventsEnabled },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kTouchEvents,
+    switches::kTouchEventsDisabled }
+};
+
 const Experiment::Choice kTouchOptimizedUIChoices[] = {
-  { IDS_FLAGS_TOUCH_OPTIMIZED_UI_AUTOMATIC, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_AUTOMATIC, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
     switches::kTouchOptimizedUI,
     switches::kTouchOptimizedUIEnabled },
@@ -752,6 +762,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kForceSyncSpellCheck)
   },
   {
+    "touch-events",
+    IDS_TOUCH_EVENTS_NAME,
+    IDS_TOUCH_EVENTS_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kTouchEventsChoices)
+  },
+  {
     "touch-optimized-ui",
     IDS_FLAGS_TOUCH_OPTIMIZED_UI_NAME,
     IDS_FLAGS_TOUCH_OPTIMIZED_UI_DESCRIPTION,
@@ -764,13 +781,6 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_WEBKIT_TEXT_SUBPIXEL_POSITIONING_DESCRIPTION,
     kOsCrOS,
     SINGLE_VALUE_TYPE(gfx::switches::kEnableWebkitTextSubpixelPositioning)
-  },
-  {
-    "enable-touch-events",
-    IDS_ENABLE_TOUCH_EVENTS_NAME,
-    IDS_ENABLE_TOUCH_EVENTS_DESCRIPTION,
-    kOsWin | kOsMac | kOsLinux,
-    SINGLE_VALUE_TYPE(switches::kEnableTouchEvents)
   },
   {
     "enable-tab-capture",

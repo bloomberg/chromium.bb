@@ -652,13 +652,6 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       media::IsMediaLibraryInitialized());
 #endif
 
-#if defined(OS_CHROMEOS)
-  WebRuntimeFeatures::enableTouch(true);
-#else
-  WebRuntimeFeatures::enableTouch(
-      command_line.HasSwitch(switches::kEnableTouchEvents));
-#endif
-
   WebRuntimeFeatures::enableDeviceMotion(
       command_line.HasSwitch(switches::kEnableDeviceMotion));
 

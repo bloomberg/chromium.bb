@@ -51,7 +51,6 @@ void SetContentCommandLineFlags(int max_render_process_count) {
       switches::kEnableCompositingForFixedPosition);
 
   parsed_command_line->AppendSwitch(switches::kEnableGestureTapHighlight);
-  parsed_command_line->AppendSwitch(switches::kEnableTouchEvents);
   parsed_command_line->AppendSwitch(switches::kEnablePinch);
 
   // Run the GPU service as a thread in the browser instead of as a

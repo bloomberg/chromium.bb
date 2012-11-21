@@ -135,8 +135,8 @@ class UI_EXPORT TouchFactory {
   // Indicates whether a touch device is currently available or not.
   bool touch_device_available_;
 
-  // Whether IsTouchDevicePresent() has been called yet.
-  bool touch_present_called_;
+  // Indicates whether touch events are explicitly disabled.
+  bool touch_events_disabled_;
 
   // The list of touch devices. For testing/debugging purposes, a single-pointer
   // device (mouse or touch screen without sufficient X/driver support for MT)

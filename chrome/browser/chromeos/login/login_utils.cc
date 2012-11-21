@@ -801,6 +801,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kTouchCalibration,
 #endif
       ::switches::kTouchDevices,
+      ::switches::kTouchEvents,
       ::switches::kTouchOptimizedUI,
       ::switches::kOldCheckboxStyle,
       ::switches::kUIEnablePartialSwap,

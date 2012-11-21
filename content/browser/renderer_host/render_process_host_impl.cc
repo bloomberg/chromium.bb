@@ -822,7 +822,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableStatsTable,
     switches::kEnableThreadedCompositing,
     switches::kDisableThreadedCompositing,
-    switches::kEnableTouchEvents,
     switches::kEnableViewport,
     switches::kForceDeviceScaleFactor,
     switches::kFullMemoryCrashReport,
@@ -851,6 +850,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kShowPaintRects,
     switches::kSitePerProcess,
     switches::kTestSandbox,
+    switches::kTouchEvents,
     switches::kTraceStartup,
     // This flag needs to be propagated to the renderer process for
     // --in-process-webgl.

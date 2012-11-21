@@ -9,9 +9,6 @@ namespace switches {
 // Enable support for bezel touch.
 const char kEnableBezelTouch[] = "enable-bezel-touch";
 
-// Enable support for touch events.
-const char kEnableTouchEvents[] = "enable-touch-events";
-
 // Enables the Views textfield on Windows.
 const char kEnableViewsTextfield[] = "enable-views-textfield";
 
@@ -41,6 +38,17 @@ const char kOldCheckboxStyle[] = "old-checkbox-style";
 // Disable ui::MessageBox. This is useful when running as part of scripts that
 // do not have a user interface.
 const char kNoMessageBox[] = "no-message-box";
+
+// Enable support for touch events.
+const char kTouchEvents[] = "touch-events";
+
+// The values the kTouchEvents switch may have, as in --touch-events=disabled.
+//   auto: enabled at startup when an attached touchscreen is present.
+const char kTouchEventsAuto[] = "auto";
+//   enabled: touch events always enabled.
+const char kTouchEventsEnabled[] = "enabled";
+//   disabled: touch events are disabled.
+const char kTouchEventsDisabled[] = "disabled";
 
 // Enables UI changes that make it easier to use with a touchscreen.
 // WARNING: Do not check this flag directly when deciding what UI to draw,

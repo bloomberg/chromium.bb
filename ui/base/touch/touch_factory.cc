@@ -34,7 +34,7 @@ TouchFactory::TouchFactory()
       cursor_timer_(),
       pointer_device_lookup_(),
       touch_device_available_(false),
-      touch_present_called_(false),
+      touch_events_disabled_(false),
       touch_device_list_(),
 #if defined(USE_XI2_MT)
       min_available_slot_(0),
@@ -65,6 +65,11 @@ TouchFactory::TouchFactory()
   evmask.mask_len = sizeof(mask);
   evmask.mask = mask;
   XISelectEvents(display, ui::GetX11RootWindow(), &evmask, 1);
+
+  CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  touch_events_disabled_ = cmdline->HasSwitch(switches::kTouchEvents) &&
+      cmdline->GetSwitchValueASCII(switches::kTouchEvents) ==
+          switches::kTouchEventsDisabled;
 }
 
 TouchFactory::~TouchFactory() {
@@ -117,7 +122,6 @@ void TouchFactory::SetTouchDeviceListFromCommandLine() {
 void TouchFactory::UpdateDeviceList(Display* display) {
   // Detect touch devices.
   int count = 0;
-  bool last_touch_device_available = touch_device_available_;
   touch_device_available_ = false;
   touch_device_lookup_.reset();
   touch_device_list_.clear();
@@ -181,16 +185,6 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   }
   if (devices)
     XIFreeDeviceInfo(devices);
-
-  if ((last_touch_device_available != touch_device_available_) &&
-      touch_present_called_) {
-    // Touch_device_available_ has changed after it's been queried.
-    // TODO(rbyers): Should dispatch an event to indicate that the availability
-    // of touch devices has changed.  crbug.com/124399.
-    LOG(WARNING) << "Touch screen "
-        << (touch_device_available_ ? "added" : "removed")
-        << " after startup, which is not yet fully supported.";
-  }
 }
 
 bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
@@ -202,7 +196,7 @@ bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
   if (event->evtype == XI_TouchBegin ||
       event->evtype == XI_TouchUpdate ||
       event->evtype == XI_TouchEnd) {
-    return IsTouchDevice(xiev->deviceid);
+    return !touch_events_disabled_ && IsTouchDevice(xiev->deviceid);
   }
 #endif
   if (event->evtype != XI_ButtonPress &&
@@ -213,7 +207,7 @@ bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
   if (!pointer_device_lookup_[xiev->deviceid])
     return false;
 
-  return true;
+  return IsTouchDevice(xiev->deviceid) ? !touch_events_disabled_ : true;
 }
 
 void TouchFactory::SetupXI2ForXWindow(Window window) {
@@ -404,8 +398,7 @@ void TouchFactory::SetCursorVisible(bool show, bool start_timer) {
 }
 
 bool TouchFactory::IsTouchDevicePresent() {
-  touch_present_called_ = true;
-  return touch_device_available_;
+  return !touch_events_disabled_ && touch_device_available_;
 }
 
 }  // namespace ui

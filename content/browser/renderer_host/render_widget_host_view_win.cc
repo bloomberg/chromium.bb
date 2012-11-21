@@ -835,8 +835,12 @@ void RenderWidgetHostViewWin::ProcessAckedTouchEvent(
 
 void RenderWidgetHostViewWin::UpdateDesiredTouchMode() {
   // Make sure that touch events even make sense.
+  CommandLine* cmdline = CommandLine::ForCurrentProcess();
   static bool touch_mode = base::win::GetVersion() >= base::win::VERSION_WIN7 &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableTouchEvents);
+      base::win::IsTouchEnabled() && (
+          !cmdline->HasSwitch(switches::kTouchEvents) ||
+          cmdline->GetSwitchValueASCII(switches::kTouchEvents) !=
+              switches::kTouchEventsDisabled);
 
   if (!touch_mode)
     return;
