@@ -239,6 +239,12 @@ class TabRendererGtk : public ui::AnimationDelegate,
  private:
   class FaviconCrashAnimation;
 
+  enum CaptureState {
+    NONE,
+    RECORDING,
+    PROJECTING
+  };
+
   // Model data. We store this here so that we don't need to ask the underlying
   // model, which is tricky since instances of this object can outlive the
   // corresponding objects in the underlying model.
@@ -259,6 +265,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
     bool blocked;
     bool animating_mini_change;
     bool app;
+    CaptureState capture_state;
   };
 
   // Overridden from ui::AnimationDelegate:
@@ -279,10 +286,9 @@ class TabRendererGtk : public ui::AnimationDelegate,
   void DisplayCrashedFavicon();
   void ResetCrashedFavicon();
 
-  // Checks whether a recording is in progress, and updates resources
-  // accordingly (e.g. sets up an overlay for the favicon, starts a throbbing
-  // animation).
-  void UpdateForRecordingState(content::WebContents* contents);
+  // Sets up an overlay for the favicon and starts a throbbing animation
+  // if this tab is currently capturing media.
+  void UpdateFaviconOverlay(content::WebContents* contents);
 
   // Generates the bounds for the interior items of the tab.
   void Layout();

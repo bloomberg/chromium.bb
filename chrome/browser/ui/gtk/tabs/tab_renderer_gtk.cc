@@ -96,6 +96,21 @@ const int kRecordingDurationMs = 1000;
 // The horizontal offset used to position the close button in the tab.
 const int kCloseButtonHorzFuzz = 4;
 
+// Scale to resize the current favicon by when projecting.
+const double kProjectingFaviconResizeScale = 0.8;
+
+// Scale to translate the current favicon by to center after scaling.
+const double kProjectingFaviconXShiftScale = 0.15;
+
+// Scale to translate the current favicon by to center after scaling.
+const double kProjectingFaviconYShiftScale = 0.1;
+
+// Scale to resize the projection sheet glow by.
+const double kProjectingGlowResizeScale = 2.0;
+
+// Scale to translate the current glow by in the negative X and Y directions.
+const double kProjectingGlowShiftScale = 0.5;
+
 // Gets the bounds of |widget| relative to |parent|.
 gfx::Rect GetWidgetBoundsRelativeToParent(GtkWidget* parent,
                                           GtkWidget* widget) {
@@ -104,36 +119,31 @@ gfx::Rect GetWidgetBoundsRelativeToParent(GtkWidget* parent,
   return bounds;
 }
 
-// Returns a GdkPixbuf after resizing the SkBitmap as necessary. Caller must
-// g_object_unref the returned pixbuf when no longer used.
+// Returns a GdkPixbuf after resizing the SkBitmap as necessary to the
+// specified desired width and height. Caller must g_object_unref the returned
+// pixbuf when no longer used.
 GdkPixbuf* GetResizedGdkPixbufFromSkBitmap(const SkBitmap& bitmap,
-                                           int src_w,
-                                           int src_h) {
-  float float_src_w = static_cast<float>(src_w);
-  float float_src_h = static_cast<float>(src_h);
-  float scalable_w, scalable_h;
-  if (src_w <= gfx::kFaviconSize && src_h <= gfx::kFaviconSize) {
-    scalable_w = scalable_h = gfx::kFaviconSize;
-  } else {
-    scalable_w = float_src_w;
-    scalable_h = float_src_h;
-  }
+                                           int dest_w,
+                                           int dest_h) {
+  float float_dest_w = static_cast<float>(dest_w);
+  float float_dest_h = static_cast<float>(dest_h);
+  int bitmap_w = bitmap.width();
+  int bitmap_h = bitmap.height();
 
   // Scale proportionately.
-  float float_size = gfx::kFaviconSize;
-  float scale = std::min(float_size / scalable_w,
-                         float_size / scalable_h);
-  int dest_w = static_cast<int>(float_src_w * scale);
-  int dest_h = static_cast<int>(float_src_h * scale);
+  float scale = std::min(float_dest_w / bitmap_w,
+                         float_dest_h / bitmap_h);
+  int final_dest_w = static_cast<int>(bitmap_w * scale);
+  int final_dest_h = static_cast<int>(bitmap_h * scale);
 
   GdkPixbuf* pixbuf;
-  if (dest_w == src_w && dest_h == src_h) {
+  if (final_dest_w == bitmap_w && final_dest_h == bitmap_h) {
     pixbuf = gfx::GdkPixbufFromSkBitmap(bitmap);
   } else {
     SkBitmap resized_icon = skia::ImageOperations::Resize(
         bitmap,
         skia::ImageOperations::RESIZE_BETTER,
-        dest_w, dest_h);
+        final_dest_w, final_dest_h);
     pixbuf = gfx::GdkPixbufFromSkBitmap(resized_icon);
   }
   return pixbuf;
@@ -260,7 +270,8 @@ TabRendererGtk::TabData::TabData()
       mini(false),
       blocked(false),
       animating_mini_change(false),
-      app(false) {
+      app(false),
+      capture_state(NONE) {
 }
 
 TabRendererGtk::TabData::~TabData() {}
@@ -365,6 +376,21 @@ void TabRendererGtk::UpdateData(WebContents* contents,
     data_.incognito = contents->GetBrowserContext()->IsOffTheRecord();
     data_.crashed = contents->IsCrashed();
 
+    // Set whether we are recording or capturing tab media for this tab.
+    int render_process_id = contents->GetRenderProcessHost()->GetID();
+    int render_view_id = contents->GetRenderViewHost()->GetRoutingID();
+    scoped_refptr<MediaStreamCaptureIndicator> capture_indicator =
+        MediaInternals::GetInstance()->GetMediaStreamCaptureIndicator();
+    if (capture_indicator->IsProcessCapturingTab(render_process_id,
+                                                 render_view_id)) {
+      data_.capture_state = PROJECTING;
+    } else if (capture_indicator->IsProcessCapturing(render_process_id,
+                                              render_view_id)) {
+      data_.capture_state = RECORDING;
+    } else {
+      data_.capture_state = NONE;
+    }
+
     SkBitmap* app_icon =
         extensions::TabHelper::FromWebContents(contents)->GetExtensionAppIcon();
     if (app_icon) {
@@ -383,9 +409,13 @@ void TabRendererGtk::UpdateData(WebContents* contents,
 
       // For source images smaller than the favicon square, scale them as if
       // they were padded to fit the favicon square, so we don't blow up tiny
-      // falcons into larger or nonproportional results.
+      // favicons into larger or nonproportional results.
+      int icon_size = gfx::kFaviconSize;
+      if (data_.capture_state == PROJECTING)
+        icon_size *= kProjectingFaviconResizeScale;
+
       GdkPixbuf* pixbuf = GetResizedGdkPixbufFromSkBitmap(data_.favicon,
-          data_.favicon.width(), data_.favicon.height());
+          icon_size, icon_size);
       data_.cairo_favicon.UsePixbuf(pixbuf);
       g_object_unref(pixbuf);
     } else {
@@ -402,7 +432,7 @@ void TabRendererGtk::UpdateData(WebContents* contents,
         ui::ResourceBundle::GetSharedInstance().GetImageNamed(
             IDR_DEFAULT_FAVICON).AsBitmap().pixelRef());
 
-    UpdateForRecordingState(contents);
+    UpdateFaviconOverlay(contents);
   }
 
   // Loading state also involves whether we show the favicon, since that's where
@@ -671,18 +701,20 @@ void TabRendererGtk::ResetCrashedFavicon() {
   should_display_crashed_favicon_ = false;
 }
 
-void TabRendererGtk::UpdateForRecordingState(WebContents* contents) {
-  int render_process_id = contents->GetRenderProcessHost()->GetID();
-  int render_view_id = contents->GetRenderViewHost()->GetRoutingID();
-  scoped_refptr<MediaStreamCaptureIndicator> capture_indicator =
-      MediaInternals::GetInstance()->GetMediaStreamCaptureIndicator();
-  if (capture_indicator->IsProcessCapturing(render_process_id,
-                                            render_view_id)) {
-    gfx::Image recording = theme_service_->GetImageNamed(IDR_TAB_RECORDING);
+void TabRendererGtk::UpdateFaviconOverlay(WebContents* contents) {
+  if (data_.capture_state != NONE) {
+    gfx::Image recording = theme_service_->GetImageNamed(
+        data_.capture_state == PROJECTING ?
+            IDR_TAB_CAPTURE_GLOW : IDR_TAB_RECORDING);
+
+    int icon_size = gfx::kFaviconSize;
+    if (data_.capture_state == PROJECTING)
+      icon_size *= kProjectingGlowResizeScale;
+
     GdkPixbuf* pixbuf = data_.favicon.isNull() ?
         gfx::GdkPixbufFromSkBitmap(*recording.ToSkBitmap()) :
         GetResizedGdkPixbufFromSkBitmap(*recording.ToSkBitmap(),
-            data_.favicon.width(), data_.favicon.height());
+            icon_size, icon_size);
     data_.cairo_overlay.UsePixbuf(pixbuf);
     g_object_unref(pixbuf);
 
@@ -911,17 +943,36 @@ void TabRendererGtk::PaintIcon(GtkWidget* widget, cairo_t* cr) {
   }
 
   if (to_display) {
-    to_display->SetSource(cr,
-                          widget,
-                          favicon_bounds_.x(),
-                          favicon_bounds_.y() + favicon_hiding_offset_);
+    int favicon_x = favicon_bounds_.x();
+    int favicon_y = favicon_bounds_.y() + favicon_hiding_offset_;
+    if (data_.capture_state == PROJECTING) {
+      favicon_x += favicon_bounds_.width() * kProjectingFaviconXShiftScale;
+      favicon_y += favicon_bounds_.height() * kProjectingFaviconYShiftScale;
+    }
+
+    to_display->SetSource(cr, widget, favicon_x, favicon_y);
     cairo_paint(cr);
   }
 
   if (data_.cairo_overlay.valid() && favicon_overlay_animation_.get() &&
       favicon_overlay_animation_->is_animating()) {
-    data_.cairo_overlay.SetSource(cr, widget, favicon_bounds_.x(),
-        favicon_bounds_.y() + favicon_hiding_offset_);
+    if (data_.capture_state == PROJECTING) {
+      theme_service_->GetImageNamed(IDR_TAB_CAPTURE).ToCairo()->
+          SetSource(cr,
+                    widget,
+                    favicon_bounds_.x(),
+                    favicon_bounds_.y() + favicon_hiding_offset_);
+      cairo_paint(cr);
+    }
+
+    int favicon_x = favicon_bounds_.x();
+    int favicon_y = favicon_bounds_.y() + favicon_hiding_offset_;
+    if (data_.capture_state == PROJECTING) {
+      favicon_x -= favicon_bounds_.width() * kProjectingGlowShiftScale;
+      favicon_y -= favicon_bounds_.height() * kProjectingGlowShiftScale;
+    }
+
+    data_.cairo_overlay.SetSource(cr, widget, favicon_x, favicon_y);
     cairo_paint_with_alpha(cr, favicon_overlay_animation_->GetCurrentValue());
   }
 }

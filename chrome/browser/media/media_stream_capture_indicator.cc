@@ -307,7 +307,6 @@ void MediaStreamCaptureIndicator::OnImageLoaded(
 
 void MediaStreamCaptureIndicator::Hide() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(tabs_.empty());
 
   // Make sure images that finish loading don't cause a balloon to be shown.
   should_show_balloon_ = false;
@@ -392,6 +391,12 @@ void MediaStreamCaptureIndicator::AddCaptureDeviceTab(
     int render_view_id,
     const content::MediaStreamDevices& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  WebContents* web_contents = tab_util::GetWebContentsByID(render_process_id,
+                                                           render_view_id);
+  if (!web_contents)
+    return;
+
   CaptureDeviceTabs::iterator iter = std::find_if(
       tabs_.begin(), tabs_.end(), TabEquals(render_process_id, render_view_id));
   if (iter == tabs_.end()) {
@@ -401,9 +406,14 @@ void MediaStreamCaptureIndicator::AddCaptureDeviceTab(
 
   bool audio = false;
   bool video = false;
+  bool tab_capture = false;
   content::MediaStreamDevices::const_iterator dev = devices.begin();
   for (; dev != devices.end(); ++dev) {
-    if (content::IsAudioMediaType(dev->type)) {
+    if (dev->type == content::MEDIA_TAB_AUDIO_CAPTURE ||
+        dev->type == content::MEDIA_TAB_VIDEO_CAPTURE) {
+      ++iter->tab_capture_ref_count;
+      tab_capture = true;
+    } else if (content::IsAudioMediaType(dev->type)) {
       ++iter->audio_ref_count;
       audio = true;
     } else if (content::IsVideoMediaType(dev->type)) {
@@ -414,16 +424,15 @@ void MediaStreamCaptureIndicator::AddCaptureDeviceTab(
     }
   }
 
-  WebContents* web_contents = tab_util::GetWebContentsByID(
-      render_process_id, render_view_id);
-  if (web_contents)
-    web_contents->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
+  DCHECK(web_contents);
+  web_contents->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
 
-  if (!status_icon_)
+  // Don't use desktop notifications for tab capture. We use a favicon
+  // glow notification instead.
+  if (!status_icon_ || tab_capture)
     return;
 
   UpdateStatusTrayIconContextMenu();
-
   ShowBalloon(render_process_id, render_view_id, audio, video);
 }
 
@@ -432,13 +441,22 @@ void MediaStreamCaptureIndicator::RemoveCaptureDeviceTab(
     int render_view_id,
     const content::MediaStreamDevices& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  WebContents* web_contents = tab_util::GetWebContentsByID(render_process_id,
+                                                           render_view_id);
+  if (!web_contents)
+    return;
+
   CaptureDeviceTabs::iterator iter = std::find_if(
       tabs_.begin(), tabs_.end(), TabEquals(render_process_id, render_view_id));
 
   if (iter != tabs_.end()) {
     content::MediaStreamDevices::const_iterator dev = devices.begin();
     for (; dev != devices.end(); ++dev) {
-      if (content::IsAudioMediaType(dev->type)) {
+      if (dev->type == content::MEDIA_TAB_AUDIO_CAPTURE ||
+          dev->type == content::MEDIA_TAB_VIDEO_CAPTURE) {
+        --iter->tab_capture_ref_count;
+      } else if (content::IsAudioMediaType(dev->type)) {
         --iter->audio_ref_count;
       } else if (content::IsVideoMediaType(dev->type)) {
         --iter->video_ref_count;
@@ -451,14 +469,13 @@ void MediaStreamCaptureIndicator::RemoveCaptureDeviceTab(
     }
 
     // Remove the tab if all the devices have been closed.
-    if (iter->audio_ref_count == 0 && iter->video_ref_count == 0)
+    if (iter->audio_ref_count == 0 && iter->video_ref_count == 0 &&
+        iter->tab_capture_ref_count == 0)
       tabs_.erase(iter);
   }
 
-  WebContents* web_contents = tab_util::GetWebContentsByID(
-      render_process_id, render_view_id);
-  if (web_contents)
-    web_contents->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
+  DCHECK(web_contents);
+  web_contents->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
 
   if (!status_icon_)
     return;
@@ -474,4 +491,14 @@ bool MediaStreamCaptureIndicator::IsProcessCapturing(int render_process_id,
   if (iter == tabs_.end())
     return false;
   return (iter->audio_ref_count > 0 || iter->video_ref_count > 0);
+}
+
+bool MediaStreamCaptureIndicator::IsProcessCapturingTab(
+    int render_process_id, int render_view_id) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CaptureDeviceTabs::const_iterator iter = std::find_if(
+      tabs_.begin(), tabs_.end(), TabEquals(render_process_id, render_view_id));
+  if (iter == tabs_.end())
+    return false;
+  return (iter->tab_capture_ref_count > 0);
 }

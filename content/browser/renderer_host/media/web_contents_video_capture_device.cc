@@ -50,12 +50,11 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_number_conversions.h"
-#include "base/string_piece.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
+#include "content/browser/renderer_host/media/web_contents_capture_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -1005,19 +1004,12 @@ WebContentsVideoCaptureDevice::~WebContentsVideoCaptureDevice() {
 media::VideoCaptureDevice* WebContentsVideoCaptureDevice::Create(
     const std::string& device_id) {
   // Parse device_id into render_process_id and render_view_id.
-  const size_t sep_pos = device_id.find(':');
-  if (sep_pos == std::string::npos) {
-    return NULL;
-  }
-  const base::StringPiece component1(device_id.data(), sep_pos);
-  const base::StringPiece component2(device_id.data() + sep_pos + 1,
-                                     device_id.length() - sep_pos - 1);
   int render_process_id = -1;
   int render_view_id = -1;
-  if (!base::StringToInt(component1, &render_process_id) ||
-      !base::StringToInt(component2, &render_view_id)) {
+  if (!WebContentsCaptureUtil::ExtractTabCaptureTarget(device_id,
+                                                       &render_process_id,
+                                                       &render_view_id))
     return NULL;
-  }
 
   media::VideoCaptureDevice::Name name;
   base::SStringPrintf(&name.device_name,

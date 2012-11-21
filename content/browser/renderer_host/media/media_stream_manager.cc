@@ -16,7 +16,7 @@
 #include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/browser/renderer_host/media/media_stream_ui_controller.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
-#include "content/common/media/media_stream_options.h"
+#include "content/browser/renderer_host/media/web_contents_capture_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/media_observer.h"
@@ -906,8 +906,22 @@ void MediaStreamManager::NotifyDevicesOpened(const DeviceRequest& request) {
   if (opened_devices.empty())
     return;
 
-  NotifyUIDevicesOpened(request.render_process_id,
-                        request.render_view_id,
+  int target_render_process_id = request.render_process_id;
+  int target_render_view_id = request.render_view_id;
+
+  // For tab capture requests, we should notify the UI to update the renderer
+  // that is the target of the capture instead of the requester.
+  if (request.options.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE ||
+      request.options.video_type == content::MEDIA_TAB_VIDEO_CAPTURE) {
+    if (!WebContentsCaptureUtil::ExtractTabCaptureTarget(
+            request.requested_device_id,
+            &target_render_process_id,
+            &target_render_view_id))
+      return;
+  }
+
+  NotifyUIDevicesOpened(target_render_process_id,
+                        target_render_view_id,
                         opened_devices);
 }
 
@@ -918,8 +932,22 @@ void MediaStreamManager::NotifyDevicesClosed(const DeviceRequest& request) {
   if (closed_devices.empty())
     return;
 
-  NotifyUIDevicesClosed(request.render_process_id,
-                        request.render_view_id,
+  int target_render_process_id = request.render_process_id;
+  int target_render_view_id = request.render_view_id;
+
+  // For tab capture requests, we should notify the UI to update the renderer
+  // that is the target of the capture instead of the requester.
+  if (request.options.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE ||
+      request.options.video_type == content::MEDIA_TAB_VIDEO_CAPTURE) {
+    if (!WebContentsCaptureUtil::ExtractTabCaptureTarget(
+            request.requested_device_id,
+            &target_render_process_id,
+            &target_render_view_id))
+      return;
+  }
+
+  NotifyUIDevicesClosed(target_render_process_id,
+                        target_render_view_id,
                         closed_devices);
 }
 

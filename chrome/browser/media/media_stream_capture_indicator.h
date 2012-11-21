@@ -46,6 +46,9 @@ class MediaStreamCaptureIndicator
   // Returns true if the render process is capturing media.
   bool IsProcessCapturing(int render_process_id, int render_view_id) const;
 
+  // Returns true if the render process is capturing tab media.
+  bool IsProcessCapturingTab(int render_process_id, int render_view_id) const;
+
   // ImageLoader callback.
   void OnImageLoaded(const string16& message, const gfx::Image& image);
 
@@ -59,12 +62,14 @@ class MediaStreamCaptureIndicator
         : render_process_id(render_process_id),
           render_view_id(render_view_id),
           audio_ref_count(0),
-          video_ref_count(0) {}
+          video_ref_count(0),
+          tab_capture_ref_count(0) {}
 
     int render_process_id;
     int render_view_id;
     int audio_ref_count;
     int video_ref_count;
+    int tab_capture_ref_count;
   };
 
   // A private predicate used in std::find_if to find a |CaptureDeviceTab|
