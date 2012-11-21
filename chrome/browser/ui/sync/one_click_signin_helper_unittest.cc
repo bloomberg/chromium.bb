@@ -273,7 +273,7 @@ void OneClickSigninHelperTest::AddEmailToOneClickRejectedList(
       browser_context_.get())->GetPrefs();
   ListPrefUpdate updater(pref_service,
                          prefs::kReverseAutologinRejectedEmailList);
-  updater->AppendIfNotPresent(Value::CreateStringValue(email));
+  updater->AppendIfNotPresent(new base::StringValue(email));
 }
 
 void OneClickSigninHelperTest::AllowSigninCookies(bool enable) {

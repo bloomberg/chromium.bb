@@ -133,7 +133,7 @@ void CloseDialog() {
   for (std::set<int>::const_iterator itr = disabled_messages_.begin();
        itr != disabled_messages_.end();
        ++itr) {
-    list->Append(Value::CreateIntegerValue(*itr));
+    list->Append(new base::FundamentalValue(*itr));
   }
   */
 }

@@ -350,7 +350,7 @@ void OneClickInfoBarDelegateImpl::AddEmailToOneClickRejectedList(
           profile()->GetPrefs();
   ListPrefUpdate updater(pref_service,
                          prefs::kReverseAutologinRejectedEmailList);
-  updater->AppendIfNotPresent(base::Value::CreateStringValue(email));
+  updater->AppendIfNotPresent(new base::StringValue(email));
 }
 
 void OneClickInfoBarDelegateImpl::RecordHistogramAction(int action) {
@@ -433,8 +433,8 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
       const ListValue* rejected_emails = profile->GetPrefs()->GetList(
           prefs::kReverseAutologinRejectedEmailList);
       if (!rejected_emails->empty()) {
-        const scoped_ptr<Value> email_value(Value::CreateStringValue(email));
-        ListValue::const_iterator iter = rejected_emails->Find(
+        const scoped_ptr<Value> email_value(new base::StringValue(email));
+        base::ListValue::const_iterator iter = rejected_emails->Find(
             *email_value);
         if (iter != rejected_emails->end())
           return false;

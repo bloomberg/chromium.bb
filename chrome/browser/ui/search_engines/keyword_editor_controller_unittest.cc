@@ -70,16 +70,16 @@ class KeywordEditorControllerTest : public testing::Test,
     ASSERT_FALSE(url.empty());
     TestingPrefService* service = profile_->GetTestingPrefService();
     service->SetManagedPref(prefs::kDefaultSearchProviderEnabled,
-                            Value::CreateBooleanValue(true));
+                            new base::FundamentalValue(true));
     service->SetManagedPref(prefs::kDefaultSearchProviderSearchURL,
-                            Value::CreateStringValue(url));
+                            new base::StringValue(url));
     service->SetManagedPref(prefs::kDefaultSearchProviderName,
-                            Value::CreateStringValue("managed"));
+                            new base::StringValue("managed"));
     // Clear the IDs that are not specified via policy.
     service->SetManagedPref(prefs::kDefaultSearchProviderID,
-                            new StringValue(std::string()));
+                            new base::StringValue(std::string()));
     service->SetManagedPref(prefs::kDefaultSearchProviderPrepopulateID,
-                            new StringValue(std::string()));
+                            new base::StringValue(std::string()));
     model_->Observe(chrome::NOTIFICATION_DEFAULT_SEARCH_POLICY_CHANGED,
                     content::NotificationService::AllSources(),
                     content::NotificationService::NoDetails());
