@@ -1,8 +1,7 @@
 {
-  "command": ["python", "check_files.py"],
-  "includes": [
-    "52f7a5f98add92134cbbf8fce3fcb87448d06169",
-    "7fe91ae7f2c0e9cff92b768cdce240b334cd88eb"
+  "command": [
+    "python",
+    "check_files.py"
   ],
   "files": {
     "check_files.py": {
@@ -13,5 +12,9 @@
       "sha-1": "7c0095bad1bcbf38e36d208e2b685c5d279146a5",
       "size": 6
     }
-  }
+  },
+  "includes": [
+    "d4a52446416e13a2ea61fa69a25d23f511c58730",
+    "4244065a86352149df5e4443a7f406ffcc5c8a23"
+  ]
 }

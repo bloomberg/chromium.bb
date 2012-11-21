@@ -1,9 +1,11 @@
 {
-  "includes": ["499a77c760cbe8d51ac122f61927ac5c9a4647e3"],
   "files": {
     "file2.txt": {
       "sha-1": "4c5f884b8c98cd2064d36ffaf8512ff264f08316",
       "size": 164
     }
-  }
+  },
+  "includes": [
+    "499a77c760cbe8d51ac122f61927ac5c9a4647e3"
+  ]
 }
