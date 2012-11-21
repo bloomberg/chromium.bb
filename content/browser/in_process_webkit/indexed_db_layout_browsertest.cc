@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, BasicTests) {
 
 
 // Started failing after WebKit roll: http://crbug.com/162204
-IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, FAILS_ComplexTests) {
+IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, DISABLED_ComplexTests) {
   RunLayoutTests(kComplexTests);
 }
 
