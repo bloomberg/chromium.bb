@@ -185,6 +185,8 @@ public:
         m_hostImpl->didDrawAllLayers(frame);
     }
 
+    void pinchZoomPanViewportForcesCommitRedraw(const float deviceScaleFactor);
+
 protected:
     scoped_ptr<GraphicsContext> createContext()
     {
@@ -4479,6 +4481,77 @@ TEST_P(LayerTreeHostImplTest, testRemoveRenderPasses)
         verifyRenderPassTestData(removeRenderPassesCases[testCaseIndex], testData);
         testCaseIndex++;
     }
+}
+
+// Make sure that scrolls that only pan the pinch viewport, and not the document,
+// still force redraw/commit.
+void LayerTreeHostImplTest::pinchZoomPanViewportForcesCommitRedraw(const float deviceScaleFactor)
+{
+    m_hostImpl->setDeviceScaleFactor(deviceScaleFactor);
+
+    gfx::Size layoutSurfaceSize(10, 20);
+    gfx::Size deviceSurfaceSize(layoutSurfaceSize.width() * static_cast<int>(deviceScaleFactor),
+                                layoutSurfaceSize.height() * static_cast<int>(deviceScaleFactor));
+    float pageScale = 2;
+    scoped_ptr<LayerImpl> root = createScrollableLayer(1, layoutSurfaceSize);
+    // For this test we want to force scrolls to only pan the pinchZoomViewport
+    // and not the document, we can verify commit/redraw are requested.
+    root->setMaxScrollOffset(gfx::Vector2d());
+    m_hostImpl->setRootLayer(root.Pass());
+    m_hostImpl->setViewportSize(layoutSurfaceSize, deviceSurfaceSize);
+    m_hostImpl->setPageScaleFactorAndLimits(1, 1, pageScale);
+    initializeRendererAndDrawFrame();
+
+    // Set new page scale on impl thread by pinching.
+    m_hostImpl->pinchGestureBegin();
+    m_hostImpl->pinchGestureUpdate(pageScale, gfx::Point());
+    m_hostImpl->pinchGestureEnd();
+    m_hostImpl->updateRootScrollLayerImplTransform();
+
+    WebTransformationMatrix expectedImplTransform;
+    expectedImplTransform.scale(pageScale);
+
+    // Verify the pinch zoom took place.
+    EXPECT_EQ(expectedImplTransform, m_hostImpl->rootLayer()->implTransform());
+
+    // The implTransform ignores the scroll if !pageScalePinchZoomEnabled,
+    // so no point in continuing without it.
+    if (!m_hostImpl->settings().pageScalePinchZoomEnabled)
+        return;
+
+    m_didRequestCommit = false;
+    m_didRequestRedraw = false;
+
+    // This scroll will force the viewport to pan horizontally.
+    gfx::Vector2d scrollDelta(5, 0);
+    EXPECT_EQ(InputHandlerClient::ScrollStarted, m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture));
+    m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
+    m_hostImpl->scrollEnd();
+
+    EXPECT_EQ(true, m_didRequestCommit);
+    EXPECT_EQ(true, m_didRequestRedraw);
+
+    m_didRequestCommit = false;
+    m_didRequestRedraw = false;
+
+    // This scroll will force the viewport to pan vertically.
+    scrollDelta = gfx::Vector2d(0, 5);
+    EXPECT_EQ(InputHandlerClient::ScrollStarted, m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture));
+    m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
+    m_hostImpl->scrollEnd();
+
+    EXPECT_EQ(true, m_didRequestCommit);
+    EXPECT_EQ(true, m_didRequestRedraw);
+}
+
+TEST_P(LayerTreeHostImplTest, pinchZoomPanViewportForcesCommitDeviceScaleFactor1)
+{
+    pinchZoomPanViewportForcesCommitRedraw(1);
+}
+
+TEST_P(LayerTreeHostImplTest, pinchZoomPanViewportForcesCommitDeviceScaleFactor2)
+{
+    pinchZoomPanViewportForcesCommitRedraw(2);
 }
 
 INSTANTIATE_TEST_CASE_P(LayerTreeHostImplTests,

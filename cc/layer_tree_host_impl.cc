@@ -1223,11 +1223,12 @@ static gfx::Vector2dF scrollLayerWithViewportSpaceDelta(PinchZoomViewport* viewp
     gfx::Vector2dF previousDelta = layerImpl.scrollDelta();
     gfx::Vector2dF unscrolled = layerImpl.scrollBy(localEndPoint - localStartPoint);
 
+    gfx::Vector2dF viewportAppliedPan;
     if (viewport)
-        viewport->applyScroll(unscrolled);
+        viewportAppliedPan = unscrolled - viewport->applyScroll(unscrolled);
 
     // Get the end point in the layer's content space so we can apply its screenSpaceTransform.
-    gfx::PointF actualLocalEndPoint = localStartPoint + layerImpl.scrollDelta() - previousDelta;
+    gfx::PointF actualLocalEndPoint = localStartPoint + layerImpl.scrollDelta() + viewportAppliedPan - previousDelta;
     gfx::PointF actualLocalContentEndPoint = gfx::ScalePoint(actualLocalEndPoint, 1 / widthScale, 1 / heightScale);
 
     // Calculate the applied scroll delta in viewport space coordinates.
