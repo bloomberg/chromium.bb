@@ -28,6 +28,8 @@ TEST(SandboxBpf, CallSupports) {
   std::cout << "Seccomp BPF supported: "
             << (seccomp_bpf_supported ? "true." : "false.")
             << "\n";
+  RecordProperty("PointerSize", sizeof(void*));
+  std::cout << "Pointer size: " << sizeof(void*) << "\n";
 }
 
 SANDBOX_TEST(SandboxBpf, CallSupportsTwice) {
