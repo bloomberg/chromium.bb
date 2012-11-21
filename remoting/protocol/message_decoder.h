@@ -11,7 +11,12 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/io_buffer.h"
 #include "remoting/base/compound_buffer.h"
+
+#if defined(USE_SYSTEM_PROTOBUF)
+#include <google/protobuf/message_lite.h>
+#else
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
+#endif
 
 namespace remoting {
 namespace protocol {

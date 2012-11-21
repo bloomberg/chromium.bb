@@ -43,7 +43,12 @@
 #include "net/base/ssl_config_service.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+
+#if defined(USE_SYSTEM_PROTOBUF)
+#include <google/protobuf/repeated_field.h>
+#else
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
+#endif
 
 #if defined(OS_ANDROID)
 #include "content/components/navigation_interception/intercept_navigation_delegate.h"

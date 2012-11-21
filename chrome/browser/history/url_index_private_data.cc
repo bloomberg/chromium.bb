@@ -28,7 +28,12 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "net/base/net_util.h"
+
+#if defined(USE_SYSTEM_PROTOBUF)
+#include <google/protobuf/repeated_field.h>
+#else
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
+#endif
 
 using google::protobuf::RepeatedField;
 using google::protobuf::RepeatedPtrField;
