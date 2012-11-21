@@ -251,7 +251,8 @@ weston_output_update_zoom_transform(struct weston_output *output)
 	level = output->zoom.spring_z.current;
 	ratio = 1 / level;
 
-	if (!output->zoom.active || level > output->zoom.max_level)
+	if (!output->zoom.active || level > output->zoom.max_level ||
+	    level == 0.0f)
 		return;
 
 	if (type == ZOOM_FOCUS_POINTER &&
