@@ -19,6 +19,7 @@
 #include "cc/render_pass_draw_quad.h"
 #include "cc/render_pass_sink.h"
 #include "cc/shared_quad_state.h"
+#include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/rect_conversions.h"
 #include <public/WebTransformationMatrix.h>
 
