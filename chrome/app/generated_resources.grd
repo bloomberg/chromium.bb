@@ -6549,12 +6549,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_AURA_DISABLE_HOLD_MOUSE_MOVES_DESCRIPTION" desc="Description for the flag to disable throttling the rate of window resize.">
         Disable throttling the rate of window resize. We throttle the resize for less perceived latency.
       </message>
-      <message name="IDS_FLAGS_ENABLE_POINTER_LOCK_NAME" desc="Title for the flag to enable the pointer lock feature.">
-        Pointer Lock
-      </message>
-      <message name="IDS_FLAGS_ENABLE_POINTER_LOCK_DESCRIPTION" desc="Description for the flag to enable the mouse lock feature.">
-        Web pages may capture the mouse pointer and remove it from the user's control. The mouse movement data is directed solely to the web application. Users can escape by pressing the 'Esc' key.
-      </message>
       <message name="IDS_FLAGS_ENABLE_WEBAUDIO_INPUT_NAME" desc="Title for the flag to enable the webaudio input feature.">
         Web Audio Input
       </message>
@@ -6835,9 +6829,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_DISABLE_NON_FULLSCREEN_MOUSE_LOCK_NAME" desc="Name for the flag to disable mouse lock when the browser is not full screen.">
         Disable non full screen mouse lock.
-      </message>
-      <message name="IDS_FLAGS_DISABLE_NON_FULLSCREEN_MOUSE_LOCK_DESCRIPTION" desc="Description for the flag to disable mouse lock when the browser is not full screen.">
-        Disables mouse lock (pointer lock) when an application or page is not already full screen.
       </message>
       <message name="IDS_FLAGS_DISABLE_ACCELERATED_VIDEO_DECODE_NAME" desc="Name of the flag to disable accelerated video decode where available.">
         Disable hardware-accelerated video decode.
