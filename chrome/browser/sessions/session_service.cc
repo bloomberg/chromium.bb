@@ -1577,8 +1577,8 @@ bool SessionService::ShouldTrackBrowser(Browser* browser) const {
 
 bool SessionService::should_track_changes_for_browser_type(Browser::Type type,
                                                            AppType app_type) {
-#if defined(USE_AURA)
-  // Restore app popups for aura alone.
+#if defined(OS_CHROMEOS)
+  // Restore app popups for chromeos alone.
   if (type == Browser::TYPE_POPUP && app_type == TYPE_APP)
     return true;
 #endif
