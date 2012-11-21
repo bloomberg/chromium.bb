@@ -19,6 +19,8 @@ import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.ui.gfx.ActivityNativeWindow;
 
@@ -269,5 +271,33 @@ public class AndroidWebViewTestBase
         return JSUtils.executeJavaScriptAndWaitForResult(this, awContents,
                 viewClient.getOnEvaluateJavaScriptResultHelper(),
                 code);
+    }
+
+    /**
+     * Similar to CriteriaHelper.pollForCriteria but runs the callable on the UI thread.
+     * Note that exceptions are treated as failure.
+     */
+    protected boolean pollOnUiThread(final Callable<Boolean> callable) throws Throwable {
+        return CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                  return runTestOnUiThreadAndGetResult(callable);
+                } catch (Throwable e) {
+                    return false;
+                }
+            }
+        });
+    }
+
+    protected void clearCacheOnUiThread(
+            final AwContents awContents,
+            final boolean includeDiskFiles) throws Throwable {
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+              awContents.clearCache(includeDiskFiles);
+            }
+        });
     }
 }

@@ -626,6 +626,47 @@ public class AwContents {
     }
 
 
+    /**
+     * Key for opaque state in bundle. Note this is only public for tests.
+     */
+    public static final String SAVE_RESTORE_STATE_KEY = "WEBVIEW_CHROMIUM_STATE";
+
+    /**
+     * Save the state of this AwContents into provided Bundle.
+     * @return False if saving state failed.
+     */
+    public boolean saveState(Bundle outState) {
+        if (outState == null) {
+            return false;
+        }
+
+        byte[] state = nativeGetOpaqueState(mNativeAwContents);
+        if (state == null) {
+            return false;
+        }
+
+        outState.putByteArray(SAVE_RESTORE_STATE_KEY, state);
+        return true;
+    }
+
+    /**
+     * Restore the state of this AwContents into provided Bundle.
+     * @param inState Must be a bundle returned by saveState.
+     * @return False if restoring state failed.
+     */
+    public boolean restoreState(Bundle inState) {
+        if (inState == null) {
+            return false;
+        }
+
+        byte[] state = inState.getByteArray(SAVE_RESTORE_STATE_KEY);
+        if (state == null) {
+            return false;
+        }
+
+        return nativeRestoreFromOpaqueState(mNativeAwContents, state);
+    }
+
     //--------------------------------------------------------------------------------------------
     //  Methods called from native via JNI
     //--------------------------------------------------------------------------------------------
@@ -773,4 +814,10 @@ public class AwContents {
             boolean viewVisible);
     private native void nativeOnAttachedToWindow(int nativeAwContents, int w, int h);
     private native void nativeOnDetachedFromWindow(int nativeAwContents);
+
+    // Returns null if save state fails.
+    private native byte[] nativeGetOpaqueState(int nativeAwContents);
+
+    // Returns false if restore state fails.
+    private native boolean nativeRestoreFromOpaqueState(int nativeAwContents, byte[] state);
 }

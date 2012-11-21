@@ -11,11 +11,13 @@
 #include "android_webview/native/aw_browser_dependency_factory.h"
 #include "android_webview/native/aw_contents_io_thread_client_impl.h"
 #include "android_webview/native/aw_web_contents_delegate.h"
+#include "android_webview/native/state_serializer.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/pickle.h"
 #include "base/supports_user_data.h"
 #include "content/components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/content_view_core.h"
@@ -455,6 +457,31 @@ void AwContents::OnAttachedToWindow(JNIEnv* env, jobject obj, int w, int h) {
 void AwContents::OnDetachedFromWindow(JNIEnv* env, jobject obj) {
   view_visible_ = false;
   // TODO(joth): Request a DrawGL (kModeProcess) call, to tell the compositor.
+}
+
+base::android::ScopedJavaLocalRef<jbyteArray>
+AwContents::GetOpaqueState(JNIEnv* env, jobject obj) {
+  Pickle pickle;
+  if (!WriteToPickle(*web_contents_, &pickle)) {
+    return ScopedJavaLocalRef<jbyteArray>();
+  } else {
+    return base::android::ToJavaByteArray(env,
+       reinterpret_cast<const uint8*>(pickle.data()), pickle.size());
+  }
+}
+
+jboolean AwContents::RestoreFromOpaqueState(
+    JNIEnv* env, jobject obj, jbyteArray state) {
+  // TODO(boliu): This copy can be optimized out if this is a performance
+  // problem.
+  std::vector<uint8> state_vector;
+  base::android::JavaByteArrayToByteVector(env, state, &state_vector);
+
+  Pickle pickle(reinterpret_cast<const char*>(state_vector.begin()),
+                state_vector.size());
+  PickleIterator iterator(pickle);
+
+  return RestoreFromPickle(&iterator, web_contents_.get());
 }
 
 }  // namespace android_webview

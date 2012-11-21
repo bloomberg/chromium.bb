@@ -13,8 +13,6 @@ import android.webkit.WebView.HitTestResult;
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
 import org.chromium.android_webview.test.util.CommonResources;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.Callable;
@@ -42,12 +40,7 @@ public class WebKitHitTestTest extends AndroidWebViewTestBase {
         // TODO(boliu): This is to work around disk cache corruption bug on
         // unclean shutdown (crbug.com/154805).
         try {
-          runTestOnUiThread(new Runnable() {
-              @Override
-              public void run() {
-                  mAwContents.clearCache(true);
-              }
-          });
+          clearCacheOnUiThread(mAwContents, true);
         } catch (Throwable e) {
           throw new Exception(e);
         }
@@ -79,19 +72,6 @@ public class WebKitHitTestTest extends AndroidWebViewTestBase {
                         (float)(mTestView.getRight() - mTestView.getLeft()) / 2,
                         (float)(mTestView.getBottom() - mTestView.getTop()) / 2,
                         0));
-            }
-        });
-    }
-
-    private boolean pollOnUiThread(final Callable<Boolean> callable) throws Throwable {
-        return CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                  return runTestOnUiThreadAndGetResult(callable);
-                } catch (Throwable e) {
-                    return false;
-                }
             }
         });
     }

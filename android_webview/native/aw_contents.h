@@ -85,6 +85,11 @@ class AwContents : public FindHelper::Listener,
                                bool view_visible);
   void OnAttachedToWindow(JNIEnv* env, jobject obj, int w, int h);
   void OnDetachedFromWindow(JNIEnv* env, jobject obj);
+  base::android::ScopedJavaLocalRef<jbyteArray> GetOpaqueState(
+      JNIEnv* env, jobject obj);
+  jboolean RestoreFromOpaqueState(JNIEnv* env, jobject obj, jbyteArray state);
+
+  // Find-in-page API and related methods.
   jint FindAllSync(JNIEnv* env, jobject obj, jstring search_string);
   void FindAllAsync(JNIEnv* env, jobject obj, jstring search_string);
   void FindNext(JNIEnv* env, jobject obj, jboolean forward);

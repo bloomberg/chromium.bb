@@ -92,16 +92,6 @@ public class AwContentsTest extends AndroidWebViewTestBase {
         assertEquals(1, result);
     }
 
-    private void clearCacheOnUiThread(final AwContents awContents,
-                                         final boolean includeDiskFiles) throws Throwable {
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-              awContents.clearCache(includeDiskFiles);
-            }
-        });
-    }
-
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testClearCacheMemoryAndDisk() throws Throwable {
