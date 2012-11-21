@@ -423,7 +423,6 @@
             # Copy Flash Player files to PRODUCT_DIR if applicable. Let the .gyp
             # file decide what to do on a per-OS basis; on Mac, internal plugins
             # go inside the framework, so this dependency is in chrome_dll.gypi.
-            '../third_party/adobe/flash/flash_player.gyp:flash_player',
             '../third_party/adobe/flash/flash_player.gyp:flapper_binaries',
             # Copy CDM files to PRODUCT_DIR if applicable. Let the .gyp
             # file decide what to do on a per-OS basis; on Mac, internal plugins

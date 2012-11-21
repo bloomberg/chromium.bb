@@ -358,11 +358,12 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
   }
 
   bool migrate_to_pepper_flash = false;
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   // If bundled NPAPI Flash is enabled while Peppper Flash is disabled, we
   // would like to turn Pepper Flash on. And we only want to do it once.
   // TODO(yzshen): Remove all |migrate_to_pepper_flash|-related code after it
   // has been run once by most users. (Maybe Chrome 24 or Chrome 25.)
+  // NOTE(shess): Keep in mind that Mac is on a different schedule.
   if (!prefs_->GetBoolean(prefs::kPluginsMigratedToPepperFlash)) {
     prefs_->SetBoolean(prefs::kPluginsMigratedToPepperFlash, true);
     migrate_to_pepper_flash = true;

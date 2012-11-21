@@ -83,9 +83,6 @@
     # On Mac, Flash gets put into the framework, so we need this
     # dependency here. flash_player.gyp will copy the Flash bundle
     # into PRODUCT_DIR.
-    # TODO(viettrungluu): Once enabled for Mac, Flapper binaries
-    # will also need to be put into the bundle.
-    '../third_party/adobe/flash/flash_player.gyp:flash_player',
     '../third_party/adobe/flash/flash_player.gyp:flapper_binaries',
     '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmplugin',
     'chrome_resources.gyp:packed_extra_resources',
@@ -155,11 +152,6 @@
       'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Internet Plug-Ins',
       'files': [],
       'conditions': [
-        ['branding == "Chrome"', {
-          'files': [
-            '<(PRODUCT_DIR)/Flash Player Plugin for Chrome.plugin',
-          ],
-        }],
         ['internal_pdf', {
           'files': [
             '<(PRODUCT_DIR)/PDF.plugin',
