@@ -218,6 +218,8 @@
       ],
       'sources': [
         'notifier/invalidation_handler.h',
+        'notifier/invalidation_state_tracker.cc',
+        'notifier/invalidation_state_tracker.h',
         'notifier/invalidation_util.cc',
         'notifier/invalidation_util.h',
         'notifier/invalidator_factory.cc',
@@ -242,7 +244,6 @@
             'notifier/ack_tracker.h',
             'notifier/invalidation_notifier.cc',
             'notifier/invalidation_notifier.h',
-            'notifier/invalidation_state_tracker.h',
             'notifier/non_blocking_invalidator.cc',
             'notifier/non_blocking_invalidator.h',
             'notifier/p2p_invalidator.cc',

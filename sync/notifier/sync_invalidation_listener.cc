@@ -289,6 +289,10 @@ void SyncInvalidationListener::DoRegistrationUpdate() {
   DCHECK(CalledOnValidThread());
   const ObjectIdSet& unregistered_ids =
       registration_manager_->UpdateRegisteredIds(registered_ids_);
+  for (ObjectIdSet::const_iterator it = unregistered_ids.begin();
+       it != unregistered_ids.end(); ++it) {
+    invalidation_state_map_.erase(*it);
+  }
   invalidation_state_tracker_.Call(
       FROM_HERE, &InvalidationStateTracker::Forget, unregistered_ids);
 }
@@ -296,6 +300,11 @@ void SyncInvalidationListener::DoRegistrationUpdate() {
 void SyncInvalidationListener::StopForTest() {
   DCHECK(CalledOnValidThread());
   Stop();
+}
+
+InvalidationStateMap SyncInvalidationListener::GetStateMapForTest() const {
+  DCHECK(CalledOnValidThread());
+  return invalidation_state_map_;
 }
 
 void SyncInvalidationListener::Stop() {

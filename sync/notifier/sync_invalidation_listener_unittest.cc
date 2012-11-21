@@ -640,6 +640,26 @@ TEST_F(SyncInvalidationListenerTest, RegisterTypesPreserved) {
   EXPECT_EQ(registered_ids_, GetRegisteredIds());
 }
 
+// Make sure that state is correctly purged from the local invalidation state
+// map cache when an ID is unregistered.
+TEST_F(SyncInvalidationListenerTest, UnregisterCleansUpStateMapCache) {
+  client_.Ready(fake_invalidation_client_);
+
+  InvalidationStateMap state_map;
+  state_map[kBookmarksId_].version = 1;
+  FireInvalidate(kBookmarksId_, 1, "hello");
+  EXPECT_EQ(state_map, client_.GetStateMapForTest());
+  state_map[kPreferencesId_].version = 2;
+  FireInvalidate(kPreferencesId_, 2, "world");
+  EXPECT_EQ(state_map, client_.GetStateMapForTest());
+
+  ObjectIdSet ids;
+  ids.insert(kBookmarksId_);
+  client_.UpdateRegisteredIds(ids);
+  state_map.erase(kPreferencesId_);
+  EXPECT_EQ(state_map, client_.GetStateMapForTest());
+}
+
 // Without readying the client, disable notifications, then enable
 // them.  The listener should still think notifications are disabled.
 TEST_F(SyncInvalidationListenerTest, EnableNotificationsNotReady) {

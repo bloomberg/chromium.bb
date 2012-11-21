@@ -126,9 +126,10 @@ class SyncInvalidationListener
   virtual void OnIncomingNotification(
       const notifier::Notification& notification) OVERRIDE;
 
-  void StopForTest();
-
   void DoRegistrationUpdate();
+
+  void StopForTest();
+  InvalidationStateMap GetStateMapForTest() const;
 
  private:
   void Stop();

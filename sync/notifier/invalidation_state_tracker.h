@@ -20,6 +20,9 @@ struct InvalidationState {
   int64 version;
 };
 
+// TODO(dcheng): Remove this in favor of adding an Equals() method.
+bool operator==(const InvalidationState& lhs, const InvalidationState& rhs);
+
 typedef std::map<invalidation::ObjectId, InvalidationState, ObjectIdLessThan>
     InvalidationStateMap;
 

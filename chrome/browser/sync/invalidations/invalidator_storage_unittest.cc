@@ -15,14 +15,6 @@
 
 using syncer::InvalidationStateMap;
 
-namespace syncer {
-
-bool operator==(const InvalidationState& lhs, const InvalidationState& rhs) {
-  return lhs.version == rhs.version;
-}
-
-}  // namespace syncer
-
 namespace browser_sync {
 
 namespace {
