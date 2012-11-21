@@ -233,6 +233,11 @@ GPUInfo GpuDataManagerImpl::GetGPUInfo() const {
   return gpu_info;
 }
 
+void GpuDataManagerImpl::GetGpuProcessHandles(
+    const GetGpuProcessHandlesCallback& callback) const {
+  GpuProcessHost::GetProcessHandles(callback);
+}
+
 void GpuDataManagerImpl::RequestVideoMemoryUsageStatsUpdate() const {
   GpuProcessHost::SendOnIO(
       GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,

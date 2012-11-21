@@ -9,6 +9,7 @@
 #include "base/process_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/border.h"
@@ -23,7 +24,7 @@ namespace internal {
 TrayMonitor::TrayMonitor() : label_(NULL) {
   refresh_timer_.Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(kRefreshTimeoutMs),
-      this, &TrayMonitor::RefreshStats);
+      this, &TrayMonitor::OnTimer);
 }
 
 TrayMonitor::~TrayMonitor() {
@@ -34,7 +35,13 @@ views::View* TrayMonitor::CreateTrayView(user::LoginStatus status) {
   TrayItemView* view = new TrayItemView;
   view->CreateLabel();
   label_ = view->label();
-  SetupLabelForTray(label_);
+  label_->SetAutoColorReadabilityEnabled(false);
+  label_->SetEnabledColor(SK_ColorWHITE);
+  label_->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));
+  label_->SetShadowColors(SkColorSetARGB(64, 0, 0, 0),
+                          SkColorSetARGB(64, 0, 0, 0));
+  label_->SetShadowOffset(0, 1);
+  label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   return view;
 }
 
@@ -42,20 +49,45 @@ void TrayMonitor::DestroyTrayView() {
   label_ = NULL;
 }
 
-void TrayMonitor::RefreshStats() {
+void TrayMonitor::OnTimer() {
+  content::GpuDataManager::GetGpuProcessHandlesCallback callback =
+      base::Bind(&TrayMonitor::OnGotHandles, base::Unretained(this));
+  refresh_timer_.Stop();
+  content::GpuDataManager::GetInstance()->GetGpuProcessHandles(callback);
+}
+
+void TrayMonitor::OnGotHandles(const std::list<base::ProcessHandle>& handles) {
   base::SystemMemoryInfoKB mem_info;
   base::GetSystemMemoryInfo(&mem_info);
   std::string output;
   string16 free_bytes =
       ui::FormatBytes(static_cast<int64>(mem_info.free) * 1024);
-  output = StringPrintf("%s free", UTF16ToUTF8(free_bytes).c_str());
-  if (mem_info.gem_objects != -1 && mem_info.gem_size != -1) {
+  output = StringPrintf("free: %s", UTF16ToUTF8(free_bytes).c_str());
+  if (mem_info.gem_size != -1) {
     string16 gem_size = ui::FormatBytes(mem_info.gem_size);
-    output += StringPrintf(", %d gobjects alloced (%s)",
-                           mem_info.gem_objects,
-                           UTF16ToUTF8(gem_size).c_str());
+    output += StringPrintf("  gmem: %s", UTF16ToUTF8(gem_size).c_str());
+    if (mem_info.gem_objects != -1)
+      output += StringPrintf("  gobjects: %d", mem_info.gem_objects);
   }
+  size_t total_private_bytes = 0, total_shared_bytes = 0;
+  for (std::list<base::ProcessHandle>::const_iterator i = handles.begin();
+       i != handles.end(); ++i) {
+    base::ProcessMetrics* pm = base::ProcessMetrics::CreateProcessMetrics(*i);
+    size_t private_bytes, shared_bytes;
+    pm->GetMemoryBytes(&private_bytes, &shared_bytes);
+    total_private_bytes += private_bytes;
+    total_shared_bytes += shared_bytes;
+  }
+  string16 private_size = ui::FormatBytes(total_private_bytes);
+  string16 shared_size = ui::FormatBytes(total_shared_bytes);
+
+  output += StringPrintf("\nGPU private: %s  shared: %s",
+                         UTF16ToUTF8(private_size).c_str(),
+                         UTF16ToUTF8(shared_size).c_str());
   label_->SetText(UTF8ToUTF16(output));
+  refresh_timer_.Start(FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kRefreshTimeoutMs),
+      this, &TrayMonitor::OnTimer);
 }
 
 }  // namespace internal

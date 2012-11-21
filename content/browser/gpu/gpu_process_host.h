@@ -11,12 +11,12 @@
 
 #include "base/callback.h"
 #include "base/memory/linked_ptr.h"
-#include "base/process.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/gpu_info.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
@@ -61,6 +61,10 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // loop as it can be destroyed. Instead store the associated GPU host ID.
   // This could return NULL if GPU access is not allowed (blacklisted).
   static GpuProcessHost* Get(GpuProcessKind kind, CauseForGpuLaunch cause);
+
+  // Retrieves a list of process handles for all gpu processes.
+  static void GetProcessHandles(
+      const GpuDataManager::GetGpuProcessHandlesCallback& callback);
 
   // Helper function to send the given message to the GPU process on the IO
   // thread.  Calls Get and if a host is returned, sends it.  Can be called from

@@ -5,7 +5,10 @@
 #ifndef ASH_SYSTEM_DATE_TRAY_MONITOR_H_
 #define ASH_SYSTEM_DATE_TRAY_MONITOR_H_
 
+#include <list>
+
 #include "ash/system/tray/system_tray_item.h"
+#include "base/process.h"
 #include "base/timer.h"
 
 namespace views {
@@ -25,7 +28,8 @@ class TrayMonitor : public SystemTrayItem {
   virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;
   virtual void DestroyTrayView() OVERRIDE;
 
-  void RefreshStats();
+  void OnTimer();
+  void OnGotHandles(const std::list<base::ProcessHandle>& handles);
 
   views::Label* label_;
   base::RepeatingTimer<TrayMonitor> refresh_timer_;

@@ -61,6 +61,8 @@ class CONTENT_EXPORT GpuDataManagerImpl
   virtual base::ListValue* GetBlacklistReasons() const OVERRIDE;
   virtual std::string GetBlacklistVersion() const OVERRIDE;
   virtual GPUInfo GetGPUInfo() const OVERRIDE;
+  virtual void GetGpuProcessHandles(
+      const GetGpuProcessHandlesCallback& callback) const OVERRIDE;
   virtual bool GpuAccessAllowed() const OVERRIDE;
   virtual void RequestCompleteGpuInfoIfNeeded() OVERRIDE;
   virtual bool IsCompleteGpuInfoAvailable() const OVERRIDE;
