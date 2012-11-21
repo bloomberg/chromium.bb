@@ -77,8 +77,8 @@ class AudioRendererMixerTest
     fake_callbacks_.reserve(count);
 
     // Setup FakeAudioRenderCallback step to compensate for resampling.
-    double scale_factor = input_parameters_.sample_rate()
-        / static_cast<double>(output_parameters_.sample_rate());
+    double scale_factor = input_parameters_.sample_rate() /
+        static_cast<double>(output_parameters_.sample_rate());
     double step = kSineCycles / (scale_factor *
         static_cast<double>(output_parameters_.frames_per_buffer()));
 
@@ -95,14 +95,14 @@ class AudioRendererMixerTest
     EXPECT_CALL(*this, RemoveMixer(testing::_)).Times(count);
   }
 
-  bool ValidateAudioData(int index, int frames, float scale) {
+  bool ValidateAudioData(int index, int frames, float scale, double epsilon) {
     for (int i = 0; i < audio_bus_->channels(); ++i) {
       for (int j = index; j < frames; j++) {
         double error = fabs(audio_bus_->channel(i)[j] -
             expected_audio_bus_->channel(i)[j] * scale);
-        if (error > epsilon_) {
+        if (error > epsilon) {
           EXPECT_NEAR(expected_audio_bus_->channel(i)[j] * scale,
-                      audio_bus_->channel(i)[j], epsilon_)
+                      audio_bus_->channel(i)[j], epsilon)
               << " i=" << i << ", j=" << j;
           return false;
         }
@@ -111,18 +111,15 @@ class AudioRendererMixerTest
     return true;
   }
 
-  bool RenderAndValidateAudioData(float scale) {
-    // Half fill won't be exactly half when resampling since the resampler
-    // will have enough data to fill out more of the buffer based on its
-    // internal buffer and kernel size.  So special case some of the checks.
-    bool resampling = input_parameters_.sample_rate()
-        != output_parameters_.sample_rate();
+  bool ValidateAudioData(int index, int frames, float scale) {
+    return ValidateAudioData(index, frames, scale, epsilon_);
+  }
 
+  bool RenderAndValidateAudioData(float scale) {
     if (half_fill_) {
       for (size_t i = 0; i < fake_callbacks_.size(); ++i)
         fake_callbacks_[i]->set_half_fill(true);
       expected_callback_->set_half_fill(true);
-      expected_audio_bus_->Zero();
     }
 
     // Render actual audio data.
@@ -134,13 +131,10 @@ class AudioRendererMixerTest
     expected_callback_->Render(expected_audio_bus_.get(), 0);
 
     if (half_fill_) {
-      // Verify first half of audio data for both resampling and non-resampling.
-      if (!ValidateAudioData(0, frames / 2, scale))
-        return false;
-      // Verify silence in the second half if we're not resampling.
-      if (!resampling)
-        return ValidateAudioData(frames / 2, frames, 0);
-      return true;
+      // In this case, just verify that every frame was initialized, this will
+      // only fail under tooling such as valgrind.
+      return ValidateAudioData(
+          0, frames, 0, std::numeric_limits<double>::max());
     } else {
       return ValidateAudioData(0, frames, scale);
     }
@@ -386,26 +380,6 @@ TEST_P(AudioRendererMixerTest, OnRenderError) {
   mixer_callback_->OnRenderError();
   for (size_t i = 0; i < mixer_inputs_.size(); ++i)
     mixer_inputs_[i]->Stop();
-}
-
-// Verify that audio delay information is scaled to the input parameters.
-TEST_P(AudioRendererMixerTest, DelayTest) {
-  InitializeInputs(1);
-  static const int kAudioDelayMilliseconds = 100;
-  ASSERT_EQ(mixer_inputs_.size(), 1u);
-
-  // Start the input and issue a single render callback.
-  mixer_inputs_[0]->Start();
-  mixer_inputs_[0]->Play();
-  mixer_callback_->Render(audio_bus_.get(), kAudioDelayMilliseconds);
-
-  // The input to output ratio should only include the sample rate difference.
-  double io_ratio = input_parameters_.sample_rate() /
-      static_cast<double>(output_parameters_.sample_rate());
-
-  EXPECT_EQ(static_cast<int>(kAudioDelayMilliseconds / io_ratio),
-            fake_callbacks_[0]->last_audio_delay_milliseconds());
-  mixer_inputs_[0]->Stop();
 }
 
 // Ensure constructing an AudioRendererMixerInput, but not initializing it does

@@ -7,9 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "media/audio/audio_util.h"
-#include "media/base/limits.h"
-#include "media/base/vector_math.h"
 
 namespace media {
 
@@ -17,26 +14,7 @@ AudioRendererMixer::AudioRendererMixer(
     const AudioParameters& input_params, const AudioParameters& output_params,
     const scoped_refptr<AudioRendererSink>& sink)
     : audio_sink_(sink),
-      current_audio_delay_milliseconds_(0),
-      io_ratio_(1),
-      input_ms_per_frame_(
-          static_cast<double>(base::Time::kMillisecondsPerSecond) /
-          input_params.sample_rate()) {
-  DCHECK(input_params.IsValid());
-  DCHECK(output_params.IsValid());
-
-  // Channel mixing is handled by the browser side currently.
-  DCHECK_EQ(input_params.channels(), output_params.channels());
-
-  // Only resample if necessary since it's expensive.
-  if (input_params.sample_rate() != output_params.sample_rate()) {
-    io_ratio_ = input_params.sample_rate() /
-        static_cast<double>(output_params.sample_rate());
-    resampler_.reset(new MultiChannelResampler(
-        output_params.channels(), io_ratio_,
-        base::Bind(&AudioRendererMixer::ProvideInput, base::Unretained(this))));
-  }
-
+      audio_converter_(input_params, output_params, true) {
   audio_sink_->Initialize(output_params, this);
   audio_sink_->Start();
 }
@@ -53,78 +31,29 @@ AudioRendererMixer::~AudioRendererMixer() {
 void AudioRendererMixer::AddMixerInput(
     const scoped_refptr<AudioRendererMixerInput>& input) {
   base::AutoLock auto_lock(mixer_inputs_lock_);
-  mixer_inputs_.insert(input);
+  mixer_inputs_.push_back(input);
+  audio_converter_.AddInput(input);
 }
 
 void AudioRendererMixer::RemoveMixerInput(
     const scoped_refptr<AudioRendererMixerInput>& input) {
   base::AutoLock auto_lock(mixer_inputs_lock_);
-  mixer_inputs_.erase(input);
+  audio_converter_.RemoveInput(input);
+  mixer_inputs_.remove(input);
 }
 
 int AudioRendererMixer::Render(AudioBus* audio_bus,
                                int audio_delay_milliseconds) {
-  current_audio_delay_milliseconds_ = audio_delay_milliseconds / io_ratio_;
-
-  if (resampler_.get())
-    resampler_->Resample(audio_bus, audio_bus->frames());
-  else
-    ProvideInput(audio_bus);
-
-  // Always return the full number of frames requested, ProvideInput() will pad
-  // with silence if it wasn't able to acquire enough data.
-  return audio_bus->frames();
-}
-
-void AudioRendererMixer::ProvideInput(AudioBus* audio_bus) {
   base::AutoLock auto_lock(mixer_inputs_lock_);
 
-  // Allocate staging area for each mixer input's audio data on first call.  We
-  // won't know how much to allocate until here because of resampling.  Ensure
-  // our intermediate AudioBus is sized exactly as the original.  Resize should
-  // only happen once due to the way the resampler works.
-  if (!mixer_input_audio_bus_.get() ||
-      mixer_input_audio_bus_->frames() != audio_bus->frames()) {
-    mixer_input_audio_bus_ =
-        AudioBus::Create(audio_bus->channels(), audio_bus->frames());
-  }
-
-  // Sanity check our inputs.
-  DCHECK_EQ(audio_bus->frames(), mixer_input_audio_bus_->frames());
-  DCHECK_EQ(audio_bus->channels(), mixer_input_audio_bus_->channels());
-
-  // Zero |audio_bus| so we're mixing into a clean buffer and return silence if
-  // we couldn't get enough data from our inputs.
-  audio_bus->Zero();
-
-  // Have each mixer render its data into an output buffer then mix the result.
+  // Set the delay information for each mixer input.
   for (AudioRendererMixerInputSet::iterator it = mixer_inputs_.begin();
        it != mixer_inputs_.end(); ++it) {
-    const scoped_refptr<AudioRendererMixerInput>& input = *it;
-
-    double volume;
-    input->GetVolume(&volume);
-
-    // Nothing to do if the input isn't playing.
-    if (!input->playing())
-      continue;
-
-    int frames_filled = input->callback()->Render(
-        mixer_input_audio_bus_.get(), current_audio_delay_milliseconds_);
-    if (frames_filled == 0)
-      continue;
-
-    // Volume adjust and mix each mixer input into |audio_bus| after rendering.
-    for (int i = 0; i < audio_bus->channels(); ++i) {
-      vector_math::FMAC(
-          mixer_input_audio_bus_->channel(i), volume, frames_filled,
-          audio_bus->channel(i));
-    }
+    (*it)->set_audio_delay_milliseconds(audio_delay_milliseconds);
   }
 
-  // Update the delay estimate.
-  current_audio_delay_milliseconds_ +=
-      audio_bus->frames() * input_ms_per_frame_;
+  audio_converter_.Convert(audio_bus);
+  return audio_bus->frames();
 }
 
 void AudioRendererMixer::OnRenderError() {
@@ -133,7 +62,7 @@ void AudioRendererMixer::OnRenderError() {
   // Call each mixer input and signal an error.
   for (AudioRendererMixerInputSet::iterator it = mixer_inputs_.begin();
        it != mixer_inputs_.end(); ++it) {
-    (*it)->callback()->OnRenderError();
+    (*it)->OnRenderError();
   }
 }
 

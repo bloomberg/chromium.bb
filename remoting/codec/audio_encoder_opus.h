@@ -34,7 +34,8 @@ class AudioEncoderOpus : public AudioEncoder {
   void DestroyEncoder();
   bool ResetForPacket(AudioPacket* packet);
 
-  void FetchBytesToResample(media::AudioBus* audio_bus);
+  void FetchBytesToResample(int resampler_frame_delay,
+                            media::AudioBus* audio_bus);
 
   int sampling_rate_;
   AudioPacket::Channels channels_;
