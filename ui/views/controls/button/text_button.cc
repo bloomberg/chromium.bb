@@ -115,13 +115,13 @@ TextButtonDefaultBorder::TextButtonDefaultBorder()
     : vertical_padding_(kPreferredPaddingVertical) {
   set_hot_set(BorderImages(BorderImages::kHot));
   set_pushed_set(BorderImages(BorderImages::kPushed));
-}
-
-TextButtonDefaultBorder::~TextButtonDefaultBorder() {
   SetInsets(gfx::Insets(vertical_padding_,
                         kPreferredPaddingHorizontal,
                         vertical_padding_,
                         kPreferredPaddingHorizontal));
+}
+
+TextButtonDefaultBorder::~TextButtonDefaultBorder() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
