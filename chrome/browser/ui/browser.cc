@@ -2254,9 +2254,13 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
       state = BookmarkBar::HIDDEN;
   }
 
-  // Don't allow the bookmark bar to be shown in suggestions mode.
-  if (search_model_->mode().is_search_suggestions())
+  // Don't allow the bookmark bar to be shown in suggestions mode or
+  // for instant extended api, non-NTP modes when it's detached.
+  if (search_model_->mode().is_search_suggestions() ||
+      (chrome::search::IsInstantExtendedAPIEnabled(profile_) &&
+       !search_model_->mode().is_ntp() && state == BookmarkBar::DETACHED)) {
     state = BookmarkBar::HIDDEN;
+  }
 
   if (state == bookmark_bar_state_)
     return;
