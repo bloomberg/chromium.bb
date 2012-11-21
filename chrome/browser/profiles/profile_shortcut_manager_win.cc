@@ -47,11 +47,12 @@ const int kShortcutIconSize = 48;
 // Returns the shortcut name for a given profile without a filename extension.
 string16 GetShortcutNameForProfileNoExtension(const string16& profile_name) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  string16 shortcut_name(dist->GetAppShortCutName());
-  shortcut_name.append(L" (");
-  shortcut_name.append(profile_name);
-  shortcut_name.append(L")");
-  return shortcut_name;
+  string16 shortcut_name;
+  if (!profile_name.empty()) {
+    shortcut_name.append(L" - ");
+    shortcut_name.append(profile_name);
+  }
+  return shortcut_name + dist->GetAppShortCutName();
 }
 
 // Creates a desktop shortcut icon file (.ico) on the disk for a given profile,

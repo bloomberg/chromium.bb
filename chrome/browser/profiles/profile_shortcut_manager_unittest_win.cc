@@ -173,6 +173,11 @@ class ProfileShortcutManagerTest : public testing::Test {
   string16 second_profile_name_;
 };
 
+TEST_F(ProfileShortcutManagerTest, UnbadgedShortcutName) {
+  EXPECT_EQ(dist_->GetAppShortCutName() + L".lnk",
+            ProfileShortcutManager::GetShortcutNameForProfile(string16()));
+}
+
 TEST_F(ProfileShortcutManagerTest, DesktopShortcutsCreate) {
   if (!profile_manager_->profile_manager()->profile_shortcut_manager())
     return;
