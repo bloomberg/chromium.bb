@@ -10,7 +10,6 @@
 #include <atlcrack.h>
 #include <atlctrls.h>
 #include <atlmisc.h>
-#include <peninputpanel.h>
 #include <tom.h>  // For ITextDocument, a COM interface to CRichEditCtrl.
 
 #include "base/memory/scoped_ptr.h"

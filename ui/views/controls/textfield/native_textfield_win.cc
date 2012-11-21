@@ -130,13 +130,6 @@ NativeTextfieldWin::NativeTextfieldWin(Textfield* textfield)
   if (ole_interface)
     text_object_model_.QueryFrom(ole_interface);
 
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-      !base::win::IsMetroProcess()) {
-    keyboard_.CreateInstance(__uuidof(TextInputPanel), NULL, CLSCTX_INPROC);
-    if (keyboard_ != NULL)
-      keyboard_->put_AttachedEditWindow(m_hWnd);
-  }
-
   InitializeAccessibilityInfo();
 }
 
@@ -730,15 +723,6 @@ LRESULT NativeTextfieldWin::OnImeEndComposition(UINT message,
 LRESULT NativeTextfieldWin::OnPointerDown(UINT message, WPARAM wparam,
                                           LPARAM lparam) {
   SetFocus();
-  SetMsgHandled(FALSE);
-  return 0;
-}
-
-LRESULT NativeTextfieldWin::OnPointerUp(UINT message, WPARAM wparam,
-                                        LPARAM lparam) {
-  // ITextInputPanel is not supported on all platforms.  NULL is fine.
-  if (keyboard_ != NULL)
-    keyboard_->SetInPlaceVisibility(TRUE);
   SetMsgHandled(FALSE);
   return 0;
 }

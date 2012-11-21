@@ -9,7 +9,6 @@
 #include <atlapp.h>
 #include <atlcrack.h>
 #include <atlmisc.h>
-#include <peninputpanel.h>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -402,13 +401,6 @@ class RenderWidgetHostViewWin
   LRESULT OnReconvertString(RECONVERTSTRING* reconv);
   LRESULT OnQueryCharPosition(IMECHARPOSITION* position);
 
-  // Displays the on screen keyboard for editable fields.
-  void DisplayOnScreenKeyboardIfNeeded();
-
-  // Invoked in a delayed task to reset the fact that we are in the context of
-  // a WM_POINTERDOWN message.
-  void ResetPointerDownContext();
-
   // Sets the appropriate mode for raw-touches or gestures. Currently touch mode
   // will only take effect when kEnableTouchEvents is in effect (on Win7+).
   void UpdateDesiredTouchMode();
@@ -544,14 +536,9 @@ class RenderWidgetHostViewWin
   gfx::Rect caret_rect_;
 
   // TODO(ananta)
-  // The WM_POINTERDOWN and on screen keyboard handling related members should
-  // be moved to an independent class to reduce the clutter. This includes all
-  // members starting from virtual_keyboard_ to
-  // received_focus_change_after_pointer_down_.
-
-  // ITextInputPanel to allow us to show the Windows virtual keyboard when a
-  // user touches an editable field on the page.
-  base::win::ScopedComPtr<ITextInputPanel> virtual_keyboard_;
+  // The WM_POINTERDOWN and touch related members should be moved to an
+  // independent class to reduce the clutter. This includes members
+  // pointer_down_context_ and last_touch_location_;
 
   // Set to true if we are in the context of a WM_POINTERDOWN message
   bool pointer_down_context_;
@@ -560,12 +547,6 @@ class RenderWidgetHostViewWin
   // received, used to determine if it's okay to open the on-screen
   // keyboard. Reset when the window loses focus.
   gfx::Point last_touch_location_;
-
-  // Set to true if the focus is currently on an editable field on the page.
-  bool focus_on_editable_field_;
-
-  // Set to true if we received a focus change after a WM_POINTERDOWN message.
-  bool received_focus_change_after_pointer_down_;
 
   // Region in which the view will be transparent to clicks.
   scoped_ptr<SkRegion> transparent_region_;
