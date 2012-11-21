@@ -60,13 +60,34 @@ void NinePatchLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& append
     int rightWidth = m_imageBounds.width() - m_imageAperture.right();
     int bottomHeight = m_imageBounds.height() - m_imageAperture.bottom();
 
+    // If layer can't fit the corners, clip to show the outer edges of the
+    // image.
+    int cornerTotalWidth = leftWidth + rightWidth;
+    int middleWidth = bounds().width() - cornerTotalWidth;
+    if (middleWidth < 0) {
+        float leftWidthProportion = static_cast<float>(leftWidth) / cornerTotalWidth;
+        int leftWidthCrop = middleWidth * leftWidthProportion;
+        leftWidth += leftWidthCrop;
+        rightWidth = bounds().width() - leftWidth;
+        middleWidth = 0;
+    }
+    int cornerTotalHeight = topHeight + bottomHeight;
+    int middleHeight = bounds().height() - cornerTotalHeight;
+    if (middleHeight < 0) {
+        float topHeightProportion = static_cast<float>(topHeight) / cornerTotalHeight;
+        int topHeightCrop = middleHeight * topHeightProportion;
+        topHeight += topHeightCrop;
+        bottomHeight = bounds().height() - topHeight;
+        middleHeight = 0;
+    }
+
     // Patch positions in layer space
     gfx::Rect topLeft(0, 0, leftWidth, topHeight);
     gfx::Rect topRight(bounds().width() - rightWidth, 0, rightWidth, topHeight);
     gfx::Rect bottomLeft(0, bounds().height() - bottomHeight, leftWidth, bottomHeight);
     gfx::Rect bottomRight(topRight.x(), bottomLeft.y(), rightWidth, bottomHeight);
-    gfx::Rect top(topLeft.right(), 0, bounds().width() - leftWidth - rightWidth, topHeight);
-    gfx::Rect left(0, topLeft.bottom(), leftWidth, bounds().height() - topHeight - bottomHeight);
+    gfx::Rect top(topLeft.right(), 0, middleWidth, topHeight);
+    gfx::Rect left(0, topLeft.bottom(), leftWidth, middleHeight);
     gfx::Rect right(topRight.x(), topRight.bottom(), rightWidth, left.height());
     gfx::Rect bottom(top.x(), bottomLeft.y(), top.width(), bottomHeight);
 
