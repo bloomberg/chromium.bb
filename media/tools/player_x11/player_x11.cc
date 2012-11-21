@@ -107,12 +107,6 @@ bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
                   scoped_refptr<media::Pipeline>* pipeline,
                   MessageLoop* paint_message_loop,
                   media::MessageLoopFactory* message_loop_factory) {
-  // Load media libraries.
-  if (!media::InitializeMediaLibrary(FilePath())) {
-    std::cout << "Unable to initialize the media library." << std::endl;
-    return false;
-  }
-
   // Create our filter factories.
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
@@ -227,6 +221,8 @@ void PeriodicalUpdate(
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
+  media::InitializeMediaLibraryForTesting();
+
   CommandLine::Init(argc, argv);
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   std::string filename = command_line->GetSwitchValueASCII("file");
