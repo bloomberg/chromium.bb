@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/dns_probe_service.h"
 
+#include "base/metrics/histogram.h"
 #include "chrome/browser/net/dns_probe_job.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"
@@ -105,11 +106,15 @@ void DnsProbeService::StartProbes() {
   public_job_ = CreatePublicProbeJob(job_callback);
 
   state_ = STATE_PROBE_RUNNING;
-  last_probe_time_ = base::Time::Now();
+  probe_start_time_ = base::Time::Now();
 }
 
 void DnsProbeService::OnProbesComplete() {
   DCHECK_EQ(STATE_PROBE_RUNNING, state_);
+
+  base::TimeDelta probe_elapsed = base::Time::Now() - probe_start_time_;
+  UMA_HISTOGRAM_ENUMERATION("DnsProbe.Probe.Result", result_, MAX_RESULT);
+  UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.Elapsed", probe_elapsed);
 
   state_ = STATE_RESULTS_CACHED;
   result_ = EvaluateResults();
@@ -200,7 +205,7 @@ void DnsProbeService::GetPublicDnsConfig(DnsConfig* config) {
 bool DnsProbeService::ResultsExpired() {
   const base::TimeDelta kMaxResultAge =
       base::TimeDelta::FromMilliseconds(kMaxResultAgeMs);
-  return base::Time::Now() - last_probe_time_ > kMaxResultAge;
+  return base::Time::Now() - probe_start_time_ > kMaxResultAge;
 }
 
 } // namespace chrome_browser_net

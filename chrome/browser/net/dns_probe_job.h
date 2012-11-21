@@ -27,6 +27,7 @@ class DnsProbeJob {
     // lie about NXDOMAIN?
     SERVERS_FAILING,  // Server responds with errors.
     SERVERS_UNREACHABLE,  // Server doesn't respond (or never got our packets)
+    MAX_RESULT
   };
   typedef base::Callback<void(DnsProbeJob* job, Result result)> CallbackType;
 

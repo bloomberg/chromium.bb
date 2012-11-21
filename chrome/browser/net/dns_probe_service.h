@@ -24,7 +24,8 @@ class DnsProbeService {
     PROBE_UNKNOWN,
     PROBE_NO_INTERNET,
     PROBE_BAD_CONFIG,
-    PROBE_NXDOMAIN
+    PROBE_NXDOMAIN,
+    MAX_RESULT
   };
   typedef base::Callback<void(Result result)> CallbackType;
 
@@ -71,7 +72,7 @@ class DnsProbeService {
   std::vector<CallbackType> callbacks_;
   State state_;
   Result result_;
-  base::Time last_probe_time_;
+  base::Time probe_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsProbeService);
 };
