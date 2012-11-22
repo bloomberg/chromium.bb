@@ -661,11 +661,11 @@ DBusHandlerResult ObjectProxy::HandleNameOwnerChanged(
                                                 name_owner_changed_callback_,
                                                 released_signal));
       }
+      return DBUS_HANDLER_RESULT_HANDLED;
     }
   }
 
-  // Always return unhandled to let other object proxies handle the same
-  // signal.
+  // Untrusted or uninteresting signal
   return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
