@@ -544,7 +544,8 @@ class RunAll(object):
 
 
 class Runner(object):
-  def __init__(self, cmd, cwd_dir, timeout, progress, retry_count, decider):
+  def __init__(self, cmd, cwd_dir, timeout, progress, retry_count, decider,
+               verbose):
     # Constants
     self.cmd = cmd[:]
     self.cwd_dir = cwd_dir
@@ -555,6 +556,7 @@ class Runner(object):
     # conflict with --gtest_filter.
     self.env = setup_gtest_env()
     self.decider = decider
+    self.verbose = verbose
 
   def map(self, test_case):
     """Traces a single test case and returns its output."""
@@ -596,14 +598,14 @@ class Runner(object):
       else:
         self.progress.update_item(
             '%s (%.2fs)' % (test_case, duration), True, size)
-      if logging.getLogger().isEnabledFor(logging.INFO):
+      if self.verbose:
         self.progress.update_item(output, False, False)
       if not returncode:
         break
     else:
-      # The test failed. Print its output. No need to print it with logging
-      # level at INFO since it was already printed above.
-      if not logging.getLogger().isEnabledFor(logging.INFO):
+      # The test failed. Print its output. No need to print it if verbose
+      # since it was already printed above.
+      if not self.verbose:
         self.progress.update_item(output, False, False)
     return out
 
@@ -704,7 +706,7 @@ def append_gtest_output_to_xml(final_xml, filepath):
 
 def run_test_cases(
     cmd, cwd, test_cases, jobs, timeout, retries, run_all, max_failures,
-    no_cr, gtest_output, result_file):
+    no_cr, gtest_output, result_file, verbose):
   """Traces test cases one by one."""
   if not test_cases:
     return 0
@@ -737,7 +739,7 @@ def run_test_cases(
 
     with ThreadPool(jobs, len(test_cases)) as pool:
       function = Runner(
-          cmd, cwd, timeout, pool.tasks.progress, retries, decider).map
+          cmd, cwd, timeout, pool.tasks.progress, retries, decider, verbose).map
       logging.debug('Adding tests to ThreadPool')
       pool.tasks.progress.use_cr_only = not no_cr
       for test_case in test_cases:
@@ -855,13 +857,32 @@ class OptionParserWithLogging(optparse.OptionParser):
         action='count',
         default=verbose,
         help='Use multiple times to increase verbosity')
+    self.add_option(
+        '-l', '--log_file',
+        default=os.environ.get('RUN_TEST_CASES_LOG_FILE', ''),
+        help='The name of the file to store rotating log details.')
 
   def parse_args(self, *args, **kwargs):
     options, args = optparse.OptionParser.parse_args(self, *args, **kwargs)
-    levels = [logging.ERROR, logging.INFO, logging.DEBUG]
-    logging.basicConfig(
-        level=levels[min(len(levels)-1, options.verbose)],
-        format='%(levelname)5s %(module)15s(%(lineno)3d): %(message)s')
+    level = ([logging.ERROR, logging.INFO, logging.DEBUG]
+             [min(2, options.verbose)])
+
+    logging_console = logging.StreamHandler()
+    logging_console.setFormatter(logging.Formatter(
+        '%(levelname)5s %(module)15s(%(lineno)3d): %(message)s'))
+    logging_console.setLevel(level)
+    logging.getLogger().addHandler(logging_console)
+
+    if options.log_file:
+      logging_rotating_file = logging.handlers.RotatingFileHandler(
+          options.log_file, maxBytes=10 * 1024 * 1024, backupCount=5)
+      logging_rotating_file.setLevel(logging.DEBUG)
+      logging_rotating_file.setFormatter(logging.Formatter(
+          '%(asctime)s %(levelname)-8s %(module)15s(%(lineno)3d): %(message)s'))
+      logging.getLogger().addHandler(logging_rotating_file)
+
+    logging.getLogger().setLevel(logging.DEBUG)
+
     return options, args
 
 
@@ -1060,7 +1081,8 @@ def main(argv):
       options.max_failures,
       options.no_cr,
       options.gtest_output,
-      result_file)
+      result_file,
+      options.verbose)
 
 
 if __name__ == '__main__':

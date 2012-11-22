@@ -44,6 +44,12 @@ ZIPPED_FILE_CHUNK = 16 * 1024
 # The name of the log file to use.
 RUN_ISOLATED_LOG_FILE = 'run_isolated.log'
 
+# The base directory containing this file.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# The name of the log to use for the run_test_cases.py command
+RUN_TEST_CASES_LOG = os.path.join(BASE_DIR, 'run_test_cases.log')
+
 
 class ConfigError(ValueError):
   """Generic failure to load a .isolated file."""
@@ -657,6 +663,7 @@ class Cache(object):
           # Insert as the oldest file. It will be deleted eventually if not
           # accessed.
           self._add(filename, False)
+          logging.warn('Add unknown file %s to cache', filename)
           added += 1
       if added:
         logging.warn('Added back %d unknown files', added)
@@ -1032,9 +1039,14 @@ def run_tha_test(isolated_hash, cache_dir, remote, policies):
       if settings.read_only:
         make_writable(outdir, True)
       logging.info('Running %s, cwd=%s' % (cmd, cwd))
+
+      # TODO(csharp): This should be specified somewhere else.
+      # Add a rotating log file if one doesn't already exist.
+      env = os.environ.copy()
+      env.setdefault('RUN_TEST_CASES_LOG_FILE', RUN_TEST_CASES_LOG)
       try:
         with Profiler('RunTest') as _prof:
-          return subprocess.call(cmd, cwd=cwd)
+          return subprocess.call(cmd, cwd=cwd, env=env)
       except OSError:
         print >> sys.stderr, 'Failed to run %s; cwd=%s' % (cmd, cwd)
         raise

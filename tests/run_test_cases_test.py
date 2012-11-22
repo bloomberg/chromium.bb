@@ -103,7 +103,7 @@ class RunTestCases(unittest.TestCase):
     exe = os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_pass.py')
     def expect(
         executable, cwd, test_cases, jobs, timeout, retries, run_all,
-        max_failures, no_cr, gtest_output, result_file):
+        max_failures, no_cr, gtest_output, result_file, verbose):
       self.assertEqual(run_test_cases.fix_python_path([exe]), executable)
       self.assertEqual(os.getcwd(), cwd)
       # They are in reverse order due to test shuffling.
@@ -116,6 +116,7 @@ class RunTestCases(unittest.TestCase):
       self.assertEqual('', gtest_output)
       self.assertEqual(None, max_failures)
       self.assertEqual(exe + '.run_test_cases', result_file)
+      self.assertFalse(verbose)
       return 89
 
     try:
