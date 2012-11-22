@@ -152,7 +152,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
 
   virtual ~ImeObserver() {}
 
-  virtual void OnActivate(const std::string& engine_id) {
+  virtual void OnActivate(const std::string& engine_id) OVERRIDE {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
@@ -164,7 +164,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
                                  args.Pass(), profile_, GURL());
   }
 
-  virtual void OnDeactivated(const std::string& engine_id) {
+  virtual void OnDeactivated(const std::string& engine_id) OVERRIDE {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
@@ -176,7 +176,8 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
                                  args.Pass(), profile_, GURL());
   }
 
-  virtual void OnFocus(const InputMethodEngine::InputContext& context) {
+  virtual void OnFocus(
+      const InputMethodEngine::InputContext& context) OVERRIDE {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
@@ -192,7 +193,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
                                  args.Pass(), profile_, GURL());
   }
 
-  virtual void OnBlur(int context_id) {
+  virtual void OnBlur(int context_id) OVERRIDE {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
@@ -205,7 +206,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
   }
 
   virtual void OnInputContextUpdate(
-      const InputMethodEngine::InputContext& context) {
+      const InputMethodEngine::InputContext& context) OVERRIDE {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
@@ -221,9 +222,10 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
                                  args.Pass(), profile_, GURL());
   }
 
-  virtual void OnKeyEvent(const std::string& engine_id,
-                          const InputMethodEngine::KeyboardEvent& event,
-                          chromeos::input_method::KeyEventHandle* key_data) {
+  virtual void OnKeyEvent(
+      const std::string& engine_id,
+      const InputMethodEngine::KeyboardEvent& event,
+      chromeos::input_method::KeyEventHandle* key_data) OVERRIDE {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
@@ -251,7 +253,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
   virtual void OnCandidateClicked(
       const std::string& engine_id,
       int candidate_id,
-      chromeos::InputMethodEngine::MouseButtonEvent button) {
+      chromeos::InputMethodEngine::MouseButtonEvent button) OVERRIDE {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
@@ -280,7 +282,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
   }
 
   virtual void OnMenuItemActivated(const std::string& engine_id,
-                                   const std::string& menu_id) {
+                                   const std::string& menu_id) OVERRIDE {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
