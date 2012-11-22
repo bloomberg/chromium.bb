@@ -40,17 +40,6 @@ DeviceMonitorMac::QTMonitorImpl::QTMonitorImpl(DeviceMonitorMac* monitor)
 }
 
 void DeviceMonitorMac::QTMonitorImpl::Start() {
-  NSArray* devices = [QTCaptureDevice inputDevices];
-  for (QTCaptureDevice* device in devices) {
-    if ([device hasMediaType:QTMediaTypeVideo] ||
-        [device hasMediaType:QTMediaTypeMuxed])
-      ++number_video_devices_;
-
-    if ([device hasMediaType:QTMediaTypeSound] ||
-        [device hasMediaType:QTMediaTypeMuxed])
-      ++number_audio_devices_;
-  }
-
   NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
   device_arrival_ =
     [nc addObserverForName:QTCaptureDeviceWasConnectedNotification
