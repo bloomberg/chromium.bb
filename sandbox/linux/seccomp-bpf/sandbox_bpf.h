@@ -207,6 +207,11 @@ class Sandbox {
   // Please note that TrapFnc is executed from signal context and must be
   // async-signal safe:
   // http://pubs.opengroup.org/onlinepubs/009695399/functions/xsh_chap02_04.html
+  // Also note that it follows the calling convention of native system calls.
+  // In other words, it reports an error by returning an exit code in the
+  // range -1..-4096. It should not set errno when reporting errors; on the
+  // other hand, accidentally modifying errno is harmless and the changes will
+  // be undone afterwards.
   typedef intptr_t (*TrapFnc)(const struct arch_seccomp_data& args, void *aux);
 
   enum Operation {
@@ -271,6 +276,25 @@ class Sandbox {
   // handler.
   static ErrorCode Trap(ErrorCode::TrapFnc fnc, const void *aux);
 
+  // Calls a user-space trap handler and disables all sandboxing for system
+  // calls made from this trap handler.
+  // NOTE: This feature, by definition, disables all security features of
+  //   the sandbox. It should never be used in production, but it can be
+  //   very useful to diagnose code that is incompatible with the sandbox.
+  //   If even a single system call returns "UnsafeTrap", the security of
+  //   entire sandbox should be considered compromised.
+  static ErrorCode UnsafeTrap(ErrorCode::TrapFnc fnc, const void *aux);
+
+  // From within an UnsafeTrap() it is often useful to be able to execute
+  // the system call that triggered the trap. The ForwardSyscall() method
+  // makes this easy. It is more efficient than calling glibc's syscall()
+  // function, as it avoid the extra round-trip to the signal handler. And
+  // it automatically does the correct thing to report kernel-style error
+  // conditions, rather than setting errno. See the comments for TrapFnc for
+  // details. In other words, the return value from ForwardSyscall() is
+  // directly suitable as a return value for a trap handler.
+  static intptr_t ForwardSyscall(const struct arch_seccomp_data& args);
+
   // Kill the program and print an error message.
   static ErrorCode Kill(const char *msg);
 
@@ -289,18 +313,29 @@ class Sandbox {
   typedef std::vector<struct sock_filter> Program;
 
   struct Range {
-    Range(uint32_t f, uint32_t t, const ErrorCode& e) :
-      from(f),
-      to(t),
-      err(e) {
+    Range(uint32_t f, uint32_t t, const ErrorCode& e)
+        : from(f),
+          to(t),
+          err(e) {
     }
     uint32_t  from, to;
     ErrorCode err;
   };
+  struct TrapKey {
+    TrapKey(TrapFnc f, const void *a, bool s)
+        : fnc(f),
+          aux(a),
+          safe(s) {
+    }
+    TrapFnc    fnc;
+    const void *aux;
+    bool       safe;
+    bool operator<(const TrapKey&) const;
+  };
   typedef std::vector<Range> Ranges;
   typedef std::map<uint32_t, ErrorCode> ErrMap;
   typedef std::vector<ErrorCode> Traps;
-  typedef std::map<std::pair<TrapFnc, const void *>, int> TrapIds;
+  typedef std::map<TrapKey, uint16_t> TrapIds;
 
   // Get a file descriptor pointing to "/proc", if currently available.
   static int proc_fd() { return proc_fd_; }
@@ -320,23 +355,47 @@ class Sandbox {
   static bool      disableFilesystem();
   static void      policySanityChecks(EvaluateSyscall syscallEvaluator,
                                       void *aux);
+
+  // Function that can be passed as a callback function to CodeGen::Traverse().
+  // Checks whether the "insn" returns an UnsafeTrap() ErrorCode. If so, it
+  // sets the "bool" variable pointed to by "aux".
+  static void      CheckForUnsafeErrorCodes(Instruction *insn, void *aux);
+
+  // Function that can be passed as a callback function to CodeGen::Traverse().
+  // Checks whether the "insn" returns an errno value from a BPF filter. If so,
+  // it rewrites the instruction to instead call a Trap() handler that does
+  // the same thing. "aux" is ignored.
+  static void      RedirectToUserspace(Instruction *insn, void *aux);
+
+  // Stackable wrapper around an Evaluators handler. Changes ErrorCodes
+  // returned by a system call evaluator to match the changes made by
+  // RedirectToUserspace(). "aux" should be pointer to wrapped system call
+  // evaluator.
+  static ErrorCode RedirectToUserspaceEvalWrapper(int sysnum, void *aux);
+
   static void      installFilter(bool quiet);
   static void      findRanges(Ranges *ranges);
   static Instruction *assembleJumpTable(CodeGen *gen,
                                         Ranges::const_iterator start,
                                         Ranges::const_iterator stop);
   static void      sigSys(int nr, siginfo_t *info, void *void_context);
+  static ErrorCode MakeTrap(ErrorCode::TrapFnc fn, const void *aux, bool safe);
+
+  // A Trap() handler that returns an "errno" value. The value is encoded
+  // in the "aux" parameter.
+  static intptr_t  ReturnErrno(const struct arch_seccomp_data&, void *aux);
+
   static intptr_t  bpfFailure(const struct arch_seccomp_data& data, void *aux);
   static int       getTrapId(TrapFnc fnc, const void *aux);
 
   static SandboxStatus status_;
   static int           proc_fd_;
   static Evaluators    evaluators_;
-  static ErrMap        errMap_;
   static Traps         *traps_;
   static TrapIds       trapIds_;
   static ErrorCode     *trapArray_;
   static size_t        trapArraySize_;
+  static bool          has_unsafe_traps_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(Sandbox);
 };
 
