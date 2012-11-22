@@ -195,6 +195,14 @@ void Shell::CloseContents(WebContents* source) {
   Close();
 }
 
+bool Shell::CanOverscrollContent() const {
+#if defined(USE_AURA)
+  return true;
+#else
+  return false;
+#endif
+}
+
 void Shell::WebContentsCreated(WebContents* source_contents,
                                int64 source_frame_id,
                                const GURL& target_url,

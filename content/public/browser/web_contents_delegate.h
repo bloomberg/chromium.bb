@@ -156,6 +156,10 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Request the delegate to change the zoom level of the current tab.
   virtual void ContentsZoomChange(bool zoom_in) {}
 
+  // Called to determine if the WebContents can be overscrolled with touch/wheel
+  // gestures.
+  virtual bool CanOverscrollContent() const;
+
   // Check whether this contents is permitted to load data URLs in WebUI mode.
   // This is normally disallowed for security.
   virtual bool CanLoadDataURLsInWebUI() const;

@@ -110,6 +110,7 @@ class Shell : public WebContentsDelegate,
       const content::WebContents* web_contents) const OVERRIDE;
 #endif
   virtual void CloseContents(WebContents* source) OVERRIDE;
+  virtual bool CanOverscrollContent() const OVERRIDE;
   virtual void WebContentsCreated(WebContents* source_contents,
                                   int64 source_frame_id,
                                   const GURL& target_url,

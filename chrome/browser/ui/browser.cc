@@ -1222,6 +1222,14 @@ void Browser::TabStripEmpty() {
   instant_controller_.reset();
 }
 
+bool Browser::CanOverscrollContent() const {
+#if defined(USE_AURA)
+  return true;
+#else
+  return false;
+#endif
+}
+
 bool Browser::PreHandleKeyboardEvent(content::WebContents* source,
                                      const NativeWebKeyboardEvent& event,
                                      bool* is_keyboard_shortcut) {

@@ -539,7 +539,8 @@ RenderWidgetHostView* WebContentsViewAura::CreateViewForWidget(
 
   RenderWidgetHostImpl* host_impl =
       RenderWidgetHostImpl::From(render_widget_host);
-  if (host_impl->overscroll_controller())
+  if (host_impl->overscroll_controller() && web_contents_->GetDelegate() &&
+      web_contents_->GetDelegate()->CanOverscrollContent())
     host_impl->overscroll_controller()->set_delegate(this);
 
   return view_;
