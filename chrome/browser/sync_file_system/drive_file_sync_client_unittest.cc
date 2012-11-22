@@ -144,6 +144,7 @@ class DriveFileSyncClientTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
+    EXPECT_CALL(*mock_drive_service(), CancelAll());
     sync_client_.reset();
   }
 

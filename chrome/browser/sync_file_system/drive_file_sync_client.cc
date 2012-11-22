@@ -92,6 +92,7 @@ DriveFileSyncClient::DriveFileSyncClient(
 
 DriveFileSyncClient::~DriveFileSyncClient() {
   DCHECK(CalledOnValidThread());
+  drive_service_->CancelAll();
 }
 
 void DriveFileSyncClient::GetDriveDirectoryForSyncRoot(

@@ -18,6 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
+using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::InSequence;
 using ::testing::StrictMock;
@@ -103,6 +104,8 @@ class DriveFileSyncServiceTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
+    EXPECT_CALL(*mock_drive_service(), CancelAll());
+
     if (sync_service_) {
       sync_service_.reset();
     }
@@ -213,6 +216,8 @@ TEST_F(DriveFileSyncServiceTest, GetSyncRoot) {
   EXPECT_CALL(*mock_remote_observer(),
               OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
       .Times(1);
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeAvailable(0))
+      .Times(AnyNumber());
 
   SetUpDriveSyncService();
   message_loop()->RunUntilIdle();
@@ -238,6 +243,10 @@ TEST_F(DriveFileSyncServiceTest, BatchSyncOnInitialization) {
   metadata_store()->AddBatchSyncOrigin(kOrigin1, kDirectoryResourceId1);
   metadata_store()->AddBatchSyncOrigin(kOrigin2, kDirectoryResourceId2);
   metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin2);
+
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteChangeAvailable(4))
+      .Times(AnyNumber());
 
   InSequence sequence;
 
@@ -285,6 +294,8 @@ TEST_F(DriveFileSyncServiceTest, RegisterNewOrigin) {
   EXPECT_CALL(*mock_remote_observer(),
               OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
       .Times(AtLeast(1));
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeAvailable(0))
+      .Times(AnyNumber());
 
   InSequence sequence;
 
@@ -363,6 +374,8 @@ TEST_F(DriveFileSyncServiceTest, RegisterExistingOrigin) {
   EXPECT_CALL(*mock_remote_observer(),
               OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
       .Times(AtLeast(1));
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeAvailable(4))
+      .Times(AnyNumber());
 
   InSequence sequence;
 
@@ -426,6 +439,8 @@ TEST_F(DriveFileSyncServiceTest, UnregisterOrigin) {
   EXPECT_CALL(*mock_remote_observer(),
               OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
       .Times(AtLeast(1));
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeAvailable(_))
+      .Times(AnyNumber());
 
   InSequence sequence;
 
