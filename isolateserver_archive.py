@@ -120,7 +120,7 @@ def url_open(url, data, content_type='application/octet-stream'):
         (url, last_error))
 
 
-def upload_hash_content_to_blobstore(generate_upload_url, content):
+def upload_hash_content_to_blobstore(generate_upload_url, hash_key, content):
   """Uploads the given hash contents directly to the blobsotre via a generated
   url.
 
@@ -136,7 +136,7 @@ def upload_hash_content_to_blobstore(generate_upload_url, content):
     return
 
   content_type, body = encode_multipart_formdata(
-      [], [('hash_contents', 'hash_content', content)])
+      [], [('hash_contents', hash_key, content)])
   url_open(upload_url, body, content_type)
 
 
@@ -152,6 +152,7 @@ class UploadRemote(run_isolated.Remote):
         upload_hash_content_to_blobstore(
             content_url + 'generate_blobstore_url/' + self.namespace + '/' +
               hash_key,
+            hash_key,
             content)
       else:
         url_open(content_url + 'store/' + self.namespace + '/' + hash_key,
