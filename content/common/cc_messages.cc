@@ -309,4 +309,265 @@ void ParamTraits<WebKit::WebTransformationMatrix>::Log(
   l->append(") ");
 }
 
+void ParamTraits<cc::RenderPass>::Write(
+    Message* m, const param_type& p) {
+  WriteParam(m, p.id);
+  WriteParam(m, p.output_rect);
+  WriteParam(m, p.damage_rect);
+  WriteParam(m, p.transform_to_root_target);
+  WriteParam(m, p.has_transparent_background);
+  WriteParam(m, p.has_occlusion_from_outside_target_surface);
+  WriteParam(m, p.filters);
+  // TODO(danakj): filter isn't being serialized.
+  WriteParam(m, p.background_filters);
+  WriteParam(m, p.shared_quad_state_list.size());
+  WriteParam(m, p.quad_list.size());
+
+  for (size_t i = 0; i < p.shared_quad_state_list.size(); ++i)
+    WriteParam(m, *p.shared_quad_state_list[i]);
+
+  size_t shared_quad_state_index = 0;
+  for (size_t i = 0; i < p.quad_list.size(); ++i) {
+    const cc::DrawQuad* quad = p.quad_list[i];
+
+    switch (quad->material) {
+      case cc::DrawQuad::CHECKERBOARD:
+        WriteParam(m, *cc::CheckerboardDrawQuad::MaterialCast(quad));
+        break;
+      case cc::DrawQuad::DEBUG_BORDER:
+        WriteParam(m, *cc::DebugBorderDrawQuad::MaterialCast(quad));
+        break;
+      case cc::DrawQuad::IO_SURFACE_CONTENT:
+        WriteParam(m, *cc::IOSurfaceDrawQuad::MaterialCast(quad));
+        break;
+      case cc::DrawQuad::TEXTURE_CONTENT:
+        WriteParam(m, *cc::TextureDrawQuad::MaterialCast(quad));
+        break;
+      case cc::DrawQuad::RENDER_PASS:
+        WriteParam(m, *cc::RenderPassDrawQuad::MaterialCast(quad));
+        break;
+      case cc::DrawQuad::SOLID_COLOR:
+        WriteParam(m, *cc::SolidColorDrawQuad::MaterialCast(quad));
+        break;
+      case cc::DrawQuad::TILED_CONTENT:
+        WriteParam(m, *cc::TileDrawQuad::MaterialCast(quad));
+        break;
+      case cc::DrawQuad::STREAM_VIDEO_CONTENT:
+        WriteParam(m, *cc::StreamVideoDrawQuad::MaterialCast(quad));
+        break;
+      case cc::DrawQuad::YUV_VIDEO_CONTENT:
+        WriteParam(m, *cc::YUVVideoDrawQuad::MaterialCast(quad));
+        break;
+      case cc::DrawQuad::INVALID:
+        break;
+    }
+
+    const cc::ScopedPtrVector<cc::SharedQuadState>& sqs_list =
+        p.shared_quad_state_list;
+
+    // This is an invalid index.
+    size_t bad_index = sqs_list.size();
+
+    // Null shared quad states should not occur.
+    DCHECK(quad->shared_quad_state);
+    if (!quad->shared_quad_state) {
+      WriteParam(m, bad_index);
+      continue;
+    }
+
+    // SharedQuadStates should appear in the order they are used by DrawQuads.
+    // Find the SharedQuadState for this DrawQuad.
+    while (shared_quad_state_index < sqs_list.size() &&
+           quad->shared_quad_state != sqs_list[shared_quad_state_index])
+      ++shared_quad_state_index;
+
+    DCHECK_LT(shared_quad_state_index, sqs_list.size());
+    if (shared_quad_state_index >= sqs_list.size()) {
+      WriteParam(m, bad_index);
+      continue;
+    }
+
+    DCHECK_LT(shared_quad_state_index, p.shared_quad_state_list.size());
+    WriteParam(m, shared_quad_state_index);
+  }
+}
+
+template<typename QuadType>
+static scoped_ptr<cc::DrawQuad> ReadDrawQuad(const Message* m,
+                                             PickleIterator* iter) {
+  scoped_ptr<QuadType> quad = QuadType::Create();
+  if (!ReadParam(m, iter, quad.get()))
+    return scoped_ptr<QuadType>(NULL).template PassAs<cc::DrawQuad>();
+  return quad.template PassAs<cc::DrawQuad>();
+}
+
+bool ParamTraits<cc::RenderPass>::Read(
+    const Message* m, PickleIterator* iter, param_type* p) {
+  cc::RenderPass::Id id(-1, -1);
+  gfx::Rect output_rect;
+  gfx::RectF damage_rect;
+  WebKit::WebTransformationMatrix transform_to_root_target;
+  bool has_transparent_background;
+  bool has_occlusion_from_outside_target_surface;
+  WebKit::WebFilterOperations filters;
+  WebKit::WebFilterOperations background_filters;
+  size_t shared_quad_state_list_size;
+  size_t quad_list_size;
+
+  if (!ReadParam(m, iter, &id) ||
+      !ReadParam(m, iter, &output_rect) ||
+      !ReadParam(m, iter, &damage_rect) ||
+      !ReadParam(m, iter, &transform_to_root_target) ||
+      !ReadParam(m, iter, &has_transparent_background) ||
+      !ReadParam(m, iter, &has_occlusion_from_outside_target_surface) ||
+      !ReadParam(m, iter, &filters) ||
+      !ReadParam(m, iter, &background_filters) ||
+      !ReadParam(m, iter, &shared_quad_state_list_size) ||
+      !ReadParam(m, iter, &quad_list_size))
+    return false;
+
+  p->SetAll(id,
+            output_rect,
+            damage_rect,
+            transform_to_root_target,
+            has_transparent_background,
+            has_occlusion_from_outside_target_surface,
+            filters,
+            NULL, // TODO(danakj): filter isn't being serialized.
+            background_filters);
+
+  for (size_t i = 0; i < shared_quad_state_list_size; ++i) {
+    scoped_ptr<cc::SharedQuadState> state(cc::SharedQuadState::Create());
+    if (!ReadParam(m, iter, state.get()))
+      return false;
+    p->shared_quad_state_list.append(state.Pass());
+  }
+
+  size_t last_shared_quad_state_index = 0;
+  for (size_t i = 0; i < quad_list_size; ++i) {
+    cc::DrawQuad::Material material;
+    PickleIterator temp_iter = *iter;
+    if (!ReadParam(m, &temp_iter, &material))
+      return false;
+
+    scoped_ptr<cc::DrawQuad> draw_quad;
+    switch (material) {
+      case cc::DrawQuad::CHECKERBOARD:
+        draw_quad = ReadDrawQuad<cc::CheckerboardDrawQuad>(m, iter);
+        break;
+      case cc::DrawQuad::DEBUG_BORDER:
+        draw_quad = ReadDrawQuad<cc::DebugBorderDrawQuad>(m, iter);
+        break;
+      case cc::DrawQuad::IO_SURFACE_CONTENT:
+        draw_quad = ReadDrawQuad<cc::IOSurfaceDrawQuad>(m, iter);
+        break;
+      case cc::DrawQuad::TEXTURE_CONTENT:
+        draw_quad = ReadDrawQuad<cc::TextureDrawQuad>(m, iter);
+        break;
+      case cc::DrawQuad::RENDER_PASS:
+        draw_quad = ReadDrawQuad<cc::RenderPassDrawQuad>(m, iter);
+        break;
+      case cc::DrawQuad::SOLID_COLOR:
+        draw_quad = ReadDrawQuad<cc::SolidColorDrawQuad>(m, iter);
+        break;
+      case cc::DrawQuad::TILED_CONTENT:
+        draw_quad = ReadDrawQuad<cc::TileDrawQuad>(m, iter);
+        break;
+      case cc::DrawQuad::STREAM_VIDEO_CONTENT:
+        draw_quad = ReadDrawQuad<cc::StreamVideoDrawQuad>(m, iter);
+        break;
+      case cc::DrawQuad::YUV_VIDEO_CONTENT:
+        draw_quad = ReadDrawQuad<cc::YUVVideoDrawQuad>(m, iter);
+        break;
+      case cc::DrawQuad::INVALID:
+        break;
+    }
+    if (!draw_quad)
+      return false;
+
+    size_t shared_quad_state_index;
+    if (!ReadParam(m, iter, &shared_quad_state_index) ||
+        shared_quad_state_index >= p->shared_quad_state_list.size())
+      return false;
+    // SharedQuadState indexes should be in ascending order.
+    if (shared_quad_state_index < last_shared_quad_state_index)
+      return false;
+    last_shared_quad_state_index = shared_quad_state_index;
+
+    draw_quad->shared_quad_state =
+        p->shared_quad_state_list[shared_quad_state_index];
+
+    p->quad_list.append(draw_quad.Pass());
+  }
+
+  return true;
+}
+
+void ParamTraits<cc::RenderPass>::Log(
+    const param_type& p, std::string* l) {
+  l->append("RenderPass((");
+  LogParam(p.id, l);
+  l->append("), ");
+  LogParam(p.output_rect, l);
+  l->append(", ");
+  LogParam(p.damage_rect, l);
+  l->append(", ");
+  LogParam(p.transform_to_root_target, l);
+  l->append(", ");
+  LogParam(p.has_transparent_background, l);
+  l->append(", ");
+  LogParam(p.has_occlusion_from_outside_target_surface, l);
+  l->append(", ");
+  LogParam(p.filters, l);
+  l->append(", ");
+  // TODO(danakj): filter isn't being serialized.
+  LogParam(p.background_filters, l);
+  l->append(", ");
+
+  l->append("[");
+  for (size_t i = 0; i < p.shared_quad_state_list.size(); ++i) {
+    if (i)
+      l->append(", ");
+    LogParam(*p.shared_quad_state_list[i], l);
+  }
+  l->append("], [");
+  for (size_t i = 0; i < p.quad_list.size(); ++i) {
+    if (i)
+      l->append(", ");
+    const cc::DrawQuad* quad = p.quad_list[i];
+    switch (quad->material) {
+      case cc::DrawQuad::CHECKERBOARD:
+        LogParam(*cc::CheckerboardDrawQuad::MaterialCast(quad), l);
+        break;
+      case cc::DrawQuad::DEBUG_BORDER:
+        LogParam(*cc::DebugBorderDrawQuad::MaterialCast(quad), l);
+        break;
+      case cc::DrawQuad::IO_SURFACE_CONTENT:
+        LogParam(*cc::IOSurfaceDrawQuad::MaterialCast(quad), l);
+        break;
+      case cc::DrawQuad::TEXTURE_CONTENT:
+        LogParam(*cc::TextureDrawQuad::MaterialCast(quad), l);
+        break;
+      case cc::DrawQuad::RENDER_PASS:
+        LogParam(*cc::RenderPassDrawQuad::MaterialCast(quad), l);
+        break;
+      case cc::DrawQuad::SOLID_COLOR:
+        LogParam(*cc::SolidColorDrawQuad::MaterialCast(quad), l);
+        break;
+      case cc::DrawQuad::TILED_CONTENT:
+        LogParam(*cc::TileDrawQuad::MaterialCast(quad), l);
+        break;
+      case cc::DrawQuad::STREAM_VIDEO_CONTENT:
+        LogParam(*cc::StreamVideoDrawQuad::MaterialCast(quad), l);
+        break;
+      case cc::DrawQuad::YUV_VIDEO_CONTENT:
+        LogParam(*cc::YUVVideoDrawQuad::MaterialCast(quad), l);
+        break;
+      case cc::DrawQuad::INVALID:
+        break;
+    }
+  }
+  l->append("])");
+}
+
 }  // namespace IPC

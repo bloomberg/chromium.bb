@@ -99,7 +99,8 @@
     },
     'cc': {
       'filepath': 'cc/|'\
-                  'webkit/compositor_bindings/'
+                  'webkit/compositor_bindings/|'\
+                  'content/common/cc_messages'
     },
     'chrome_frame': {
       'filepath': 'chrome_frame/',

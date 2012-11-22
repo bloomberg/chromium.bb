@@ -409,6 +409,7 @@
       ],
     }, {  # OS!="ios"
       'dependencies': [
+        '../cc/cc.gyp:cc',
         '../gpu/gpu.gyp:gles2_implementation',
         '../gpu/gpu.gyp:gpu_ipc',
         '../ipc/ipc.gyp:ipc',

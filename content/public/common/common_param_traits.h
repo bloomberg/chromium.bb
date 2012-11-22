@@ -83,6 +83,14 @@ struct CONTENT_EXPORT ParamTraits<gfx::Size> {
 };
 
 template <>
+struct CONTENT_EXPORT ParamTraits<gfx::SizeF> {
+  typedef gfx::SizeF param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
 struct CONTENT_EXPORT ParamTraits<gfx::Vector2d> {
   typedef gfx::Vector2d param_type;
   static void Write(Message* m, const param_type& p);
