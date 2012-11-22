@@ -140,6 +140,14 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavPcm) {
   PlayAudio("bear_pcm.wav", GetParam());
 }
 
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavPcm3kHz) {
+  PlayAudio("bear_3kHz.wav", GetParam());
+}
+
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavPcm192kHz) {
+  PlayAudio("bear_192kHz.wav", GetParam());
+}
+
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoTulipWebm) {
   PlayVideo("tulip2.webm", GetParam());
 }
