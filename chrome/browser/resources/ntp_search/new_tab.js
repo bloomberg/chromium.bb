@@ -37,7 +37,7 @@ cr.define('ntp', function() {
    * @type {number}
    * @const
    */
-  var HEIGHT_FOR_BOTTOM_PANEL = 550;
+  var HEIGHT_FOR_BOTTOM_PANEL = 558;
 
   /**
    * The Bottom Panel width required to show 6 cols of Tiles, which is used
@@ -158,10 +158,10 @@ cr.define('ntp', function() {
     tilePages: undefined,
 
     /**
-     * The Apps page.
-     * @type {!Element|undefined}
+     * A list of all 'apps-page' elements.
+     * @type {!NodeList|undefined}
      */
-    appsPage: undefined,
+    appsPages: undefined,
 
     /**
      * The Most Visited page.
@@ -229,7 +229,8 @@ cr.define('ntp', function() {
         // Request data on the apps so we can fill them in.
         // Note that this is kicked off asynchronously.  'getAppsCallback' will
         // be invoked at some point after this function returns.
-        chrome.send('getApps');
+        if (!ntp.ntp5)
+          chrome.send('getApps');
       } else if (this.shownPage == loadTimeData.getInteger('apps_page_id')) {
         // No apps page.
         this.setShownPage_(
@@ -237,6 +238,7 @@ cr.define('ntp', function() {
       }
 
       this.tilePages = this.pageList.getElementsByClassName('tile-page');
+      this.appsPages = this.pageList.getElementsByClassName('apps-page');
 
       // Initialize the cardSlider without any cards at the moment.
       this.sliderFrame = cardSliderFrame;
@@ -303,11 +305,6 @@ cr.define('ntp', function() {
         this.mostVisitedPage = page;
       }
 
-      if (typeof ntp.AppsPage != 'undefined' &&
-          page instanceof ntp.AppsPage) {
-        this.appsPage = page;
-      }
-
       if (typeof ntp.RecentlyClosedPage != 'undefined' &&
           page instanceof ntp.RecentlyClosedPage) {
         this.recentlyClosedPage = page;
@@ -341,7 +338,7 @@ cr.define('ntp', function() {
       assert(app, 'trying to move an app that doesn\'t exist');
       app.remove(false);
 
-      this.appsPage.insertApp(appData, false);
+      this.appsPages[appData.page_index].insertApp(appData, false);
     },
 
     /**
@@ -392,25 +389,30 @@ cr.define('ntp', function() {
     getAppsCallback: function(data) {
       assert(loadTimeData.getBoolean('showApps'));
 
-      var page = this.appsPage;
-      var state = page && page.getTileRepositioningState();
-      if (state) {
-        if (state.isRemoving)
-          page.animateTileRemoval(state.index, data);
-        else
-          page.animateTileRestoration(state.index, data);
-
-        page.resetTileRepositioningState();
-        return;
-      }
-
       var startTime = Date.now();
 
-      if (page)
-        page.removeAllTiles();
+      // Remember this to select the correct card when done rebuilding.
+      var prevCurrentCard = this.cardSlider.currentCard;
+
+      // Make removal of pages and dots as quick as possible with less DOM
+      // operations, reflows, or repaints. We set currentCard = 0 and remove
+      // from the end to not encounter any auto-magic card selections in the
+      // process and we hide the card slider throughout.
+      this.cardSlider.currentCard = 0;
+
+      // Clear any existing apps pages and dots.
+      // TODO(rbyers): It might be nice to preserve animation of dots after an
+      // uninstall. Could we re-use the existing page and dot elements?  It
+      // seems unfortunate to have Chrome send us the entire apps list after an
+      // uninstall.
+      while (this.appsPages.length > 0)
+        this.removeTilePageAndDot_(this.appsPages[this.appsPages.length - 1]);
 
       // Get the array of apps and add any special synthesized entries
       var apps = data.apps;
+
+      // Get a list of page names
+      var pageNames = data.appPageNames;
 
       // Sort by launch ordinal
       apps.sort(function(a, b) {
@@ -421,16 +423,38 @@ cr.define('ntp', function() {
       // An app to animate (in case it was just installed).
       var highlightApp;
 
+      // If there are any pages after the apps, add new pages before them.
+      var lastAppsPage = (this.appsPages.length > 0) ?
+          this.appsPages[this.appsPages.length - 1] : null;
+      var lastAppsPageIndex = (lastAppsPage != null) ?
+          Array.prototype.indexOf.call(this.tilePages, lastAppsPage) : -1;
+      var nextPageAfterApps = lastAppsPageIndex != -1 ?
+          this.tilePages[lastAppsPageIndex + 1] : null;
+
       // Add the apps, creating pages as necessary
-      this.appendTilePage(new ntp.AppsPage(),
-          loadTimeData.getString('appDefaultPageName'));
       for (var i = 0; i < apps.length; i++) {
         var app = apps[i];
+        var pageIndex = app.page_index || 0;
+        while (pageIndex >= this.appsPages.length) {
+          var pageName = loadTimeData.getString('appDefaultPageName');
+          if (this.appsPages.length < pageNames.length)
+            pageName = pageNames[this.appsPages.length];
+
+          var origPageCount = this.appsPages.length;
+          this.appendTilePage(new ntp.AppsPage(), pageName, nextPageAfterApps);
+          // Confirm that appsPages is a live object, updated when a new page is
+          // added (otherwise we'd have an infinite loop)
+          assert(this.appsPages.length == origPageCount + 1,
+                 'expected new page');
+        }
+
         if (app.id == this.highlightAppId)
           highlightApp = app;
         else
-          this.appsPage.insertApp(app, false);
+          this.appsPages[pageIndex].insertApp(app, false);
       }
+
+      this.cardSlider.currentCard = prevCurrentCard;
 
       if (highlightApp)
         this.appAdded(highlightApp, true);
@@ -439,6 +463,7 @@ cr.define('ntp', function() {
 
       // Tell the slider about the pages and mark the current page.
       this.updateSliderCards();
+      this.cardSlider.currentCardValue.navigationDot.classList.add('selected');
 
       if (!this.appsLoaded_) {
         this.appsLoaded_ = true;
@@ -464,15 +489,24 @@ cr.define('ntp', function() {
 
       var pageIndex = appData.page_index || 0;
 
+      if (pageIndex >= this.appsPages.length) {
+        while (pageIndex >= this.appsPages.length) {
+          this.appendTilePage(new ntp.AppsPage(),
+                              loadTimeData.getString('appDefaultPageName'));
+        }
+        this.updateSliderCards();
+      }
+
+      var page = this.appsPages[pageIndex];
       var app = $(appData.id);
       if (app) {
         app.replaceAppData(appData);
       } else if (opt_highlight) {
-        this.appsPage.insertAndHighlightApp(appData);
+        page.insertAndHighlightApp(appData);
         this.setShownPage_(loadTimeData.getInteger('apps_page_id'),
                            appData.page_index);
       } else {
-        this.appsPage.insertApp(appData, false);
+        page.insertApp(appData, false);
       }
     },
 
@@ -498,15 +532,21 @@ cr.define('ntp', function() {
                                         this.tilePages.length - 1));
       this.cardSlider.setCards(Array.prototype.slice.call(this.tilePages),
                                pageNo);
-      switch (this.shownPage) {
-        case loadTimeData.getInteger('apps_page_id'):
-          this.cardSlider.selectCardByValue(this.appsPage);
-          break;
-        case loadTimeData.getInteger('most_visited_page_id'):
-          if (this.mostVisitedPage)
-            this.cardSlider.selectCardByValue(this.mostVisitedPage);
-          break;
-      }
+
+      assert(this.mostVisitedPage, 'Most Visited Page not found');
+      // NTP pages are not sticky anymore, so we should always select the Most
+      // Visited page when loading the card slider.
+      this.cardSlider.selectCardByValue(this.mostVisitedPage);
+    },
+
+    /**
+     * Returns the index of the given apps page.
+     * @param {AppsPage} page The AppsPage we wish to find.
+     * @return {number} The index of |page| or -1 if it is not in the
+     *    collection.
+     */
+    getAppsPageIndex: function(page) {
+      return Array.prototype.indexOf.call(this.appsPages, page);
     },
 
     /**
@@ -521,7 +561,8 @@ cr.define('ntp', function() {
       // reflect user actions).
       if (!this.isStartingUp_()) {
         if (page.classList.contains('apps-page')) {
-          this.setShownPage_(loadTimeData.getInteger('apps_page_id'), 0);
+          this.setShownPage_(loadTimeData.getInteger('apps_page_id'),
+                             this.getAppsPageIndex(page));
         } else if (page.classList.contains('most-visited-page')) {
           this.setShownPage_(
               loadTimeData.getInteger('most_visited_page_id'), 0);
@@ -680,8 +721,8 @@ cr.define('ntp', function() {
      * card-slider-frame, it should be handled here in NewTabView. Otherwise,
      * it should be handled in TilePage.
      *
-     * @param {boolean=} opt_animate Whether the layout should be animated.
-     * @param {ntp.TilePage=} opt_page Alternative TilePage to calculate layout.
+     * @param {boolean} opt_animate Whether the layout should be animated.
+     * @param {ntp.TilePage} opt_page Alternative TilePage to calculate layout.
      */
     layout: function(opt_animate, opt_page) {
       opt_animate = typeof opt_animate == 'undefined' ? false : opt_animate;
@@ -769,16 +810,23 @@ cr.define('ntp', function() {
                               loadTimeData.getString('mostvisited'));
     chrome.send('getMostVisited');
 
+    var recentlyClosed = new ntp.RecentlyClosedPage();
+    newTabView.appendTilePage(recentlyClosed,
+                              loadTimeData.getString('recentlyclosed'));
+    chrome.send('getRecentlyClosedTabs');
+
+    var devices = new ntp.OtherDevicesPage();
+    newTabView.appendTilePage(devices, loadTimeData.getString('otherSessions'));
+    chrome.send('getForeignSessions');
+
     doWhenAllSectionsReady(function() {
       // Tell the slider about the pages.
       newTabView.updateSliderCards();
       newTabView.onReady();
-
       // Restore the visibility only after calling updateSliderCards to avoid
       // flickering, otherwise for a small fraction of a second the Page List is
       // partially rendered.
       $('bottom-panel').style.visibility = 'visible';
-
       if (loadTimeData.valueExists('serverpromo')) {
         var promo = loadTimeData.getString('serverpromo');
         var tags = ['IMG'];
@@ -952,18 +1000,18 @@ cr.define('ntp', function() {
     newTabView.recentlyClosedPage.setDataList(dataList);
   }
 
-  function setMostVisitedPages(dataList, hasBlacklistedUrls) {
+  function setMostVisitedPages(data, hasBlacklistedUrls) {
     var page = newTabView.mostVisitedPage;
     var state = page.getTileRepositioningState();
     if (state) {
       if (state.isRemoving)
-        page.animateTileRemoval(state.index, dataList);
+        page.animateTileRemoval(state.index, data);
       else
-        page.animateTileRestoration(state.index, dataList);
+        page.animateTileRestoration(state.index, data);
 
       page.resetTileRepositioningState();
     } else {
-      page.setDataList(dataList);
+      page.setDataList(data);
       cr.dispatchSimpleEvent(document, 'sectionready', true, true);
     }
   }
@@ -1021,6 +1069,10 @@ cr.define('ntp', function() {
     return newTabView.getAppsCallback.apply(newTabView, arguments);
   }
 
+  function getAppsPageIndex() {
+    return newTabView.getAppsPageIndex.apply(newTabView, arguments);
+  }
+
   function getCardSlider() {
     return newTabView.cardSlider;
   }
@@ -1045,12 +1097,17 @@ cr.define('ntp', function() {
     appRemoved: appRemoved,
     appsPrefChangeCallback: appsPrefChangeCallback,
     getAppsCallback: getAppsCallback,
+    getAppsPageIndex: getAppsPageIndex,
     getCardSlider: getCardSlider,
     getContentWidth: getContentWidth,
     getThumbnailUrl: getThumbnailUrl,
     incrementHoveredThumbnailCount: incrementHoveredThumbnailCount,
     layout: layout,
     logTimeToClickAndHoverCount: logTimeToClickAndHoverCount,
+    // This property is being used to disable NTP5 features that are not ready
+    // yet. Right now this is being used just to disable Apps page.
+    // TODO(pedrosimonetti): Remove this property after porting Apps Page.
+    ntp5: true,
     NtpFollowAction: NtpFollowAction,
     onLoad: onLoad,
     setAppToBeHighlighted: setAppToBeHighlighted,
