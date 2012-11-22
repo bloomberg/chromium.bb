@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 import android.util.Pair;
 import android.view.MotionEvent;
@@ -622,6 +623,33 @@ class ContentViewGestureHandler implements LongPressDelegate {
         } finally {
             TraceEvent.end("onTouchEvent");
         }
+    }
+
+    private MotionEvent obtainActionCancelMotionEvent() {
+        return MotionEvent.obtain(
+                SystemClock.uptimeMillis(),
+                SystemClock.uptimeMillis(),
+                MotionEvent.ACTION_CANCEL, 0.0f,  0.0f,  0);
+    }
+
+    /**
+     * Resets gesture handlers state; called on didStartLoading().
+     * Note that this does NOT clear the pending motion events queue;
+     * it gets cleared in hasTouchEventHandlers() called from WebKit
+     * FrameLoader::transitionToCommitted iff the page ever had touch handlers.
+     */
+    void resetGestureHandlers() {
+        {
+            MotionEvent me = obtainActionCancelMotionEvent();
+            mGestureDetector.onTouchEvent(me);
+            me.recycle();
+        }
+        {
+            MotionEvent me = obtainActionCancelMotionEvent();
+            mZoomManager.processTouchEvent(me);
+            me.recycle();
+        }
+        mLongPressDetector.cancelLongPress();
     }
 
     /**

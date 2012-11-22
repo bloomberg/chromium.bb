@@ -60,6 +60,8 @@ public class DOMUtils {
         } catch (IOException exception) {
             Assert.fail("Failed to evaluate JavaScript: " + jsonText + "\n" + exception);
         }
+
+        jsonReader.close();
         return new Rect(bounds[0], bounds[1], bounds[0] + bounds[2], bounds[1] + bounds[3]);
     }
 
@@ -72,9 +74,7 @@ public class DOMUtils {
         Rect bounds = getNodeBounds(activityTestCase, view, viewClient, nodeId);
         Assert.assertNotNull("Failed to get DOM element bounds of '" + nodeId + "'.'", bounds);
 
-        // TODO(leandrogracia): make this use view.getScale() once the correct value is available.
-        // WARNING: this will only work with a viewport fixed scale value of 1.0.
-        float scale = getDevicePixelRatio(activityTestCase, view, viewClient);
+        float scale = view.getScale();
         int clickX = (int)(bounds.exactCenterX() * scale + 0.5);
         int clickY = (int)(bounds.exactCenterY() * scale + 0.5);
 
@@ -116,5 +116,37 @@ public class DOMUtils {
             TestCallbackHelperContainer viewClient) throws Throwable {
         return Float.valueOf(JavaScriptUtils.executeJavaScriptAndWaitForResult(test, view,
                 viewClient, "window.devicePixelRatio"));
+    }
+
+    /**
+     * Returns the contents of the node by its id.
+     */
+    public static String getNodeContents(InstrumentationTestCase test, final ContentView view,
+            TestCallbackHelperContainer viewClient, String nodeId) throws Throwable {
+        StringBuilder sb = new StringBuilder();
+        sb.append("(function() {");
+        sb.append("  var node = document.getElementById('" + nodeId + "');");
+        sb.append("  if (!node) return null;");
+        sb.append("  return [ node.textContent ];");
+        sb.append("})();");
+
+        String jsonText = JavaScriptUtils.executeJavaScriptAndWaitForResult(test, view, viewClient,
+                sb.toString());
+        Assert.assertFalse("Failed to retrieve contents for " + nodeId,
+                jsonText.trim().equalsIgnoreCase("null"));
+
+        JsonReader jsonReader = new JsonReader(new StringReader(jsonText));
+        String contents = null;
+        try {
+            jsonReader.beginArray();
+            if (jsonReader.hasNext()) contents = jsonReader.nextString();
+            jsonReader.endArray();
+            Assert.assertNotNull("Invalid contents returned.", contents);
+        } catch (IOException exception) {
+            Assert.fail("Failed to evaluate JavaScript: " + jsonText + "\n" + exception);
+        }
+
+        jsonReader.close();
+        return contents;
     }
 }

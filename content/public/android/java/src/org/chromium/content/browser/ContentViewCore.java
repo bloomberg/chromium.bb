@@ -513,6 +513,7 @@ public class ContentViewCore implements MotionEventDelegate {
             @Override
             public void didStartLoading(String url) {
                 hidePopupDialog();
+                resetGestureDetectors();
             }
         };
     }
@@ -1113,6 +1114,10 @@ public class ContentViewCore implements MotionEventDelegate {
         if (mActionMode != null) {
             mActionMode.finish();
         }
+    }
+
+    private void resetGestureDetectors() {
+        mContentViewGestureHandler.resetGestureHandlers();
     }
 
     /**
