@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/sync_callbacks.h"
+#include "webkit/fileapi/syncable/sync_operation_type.h"
 
 class GURL;
 
@@ -99,7 +100,7 @@ class RemoteFileSyncService {
   // the control to the sync engine).
   virtual void ProcessRemoteChange(
       RemoteChangeProcessor* processor,
-      const fileapi::SyncFileCallback& callback) = 0;
+      const fileapi::SyncOperationCallback& callback) = 0;
 
   // Returns a LocalChangeProcessor that applies a local change to the remote
   // storage backed by this service.

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "webkit/fileapi/syncable/sync_status_code.h"
+#include "webkit/fileapi/syncable/sync_operation_type.h"
 
 namespace fileapi {
 class FileSystemURL;
@@ -17,19 +17,10 @@ namespace sync_file_system {
 
 class SyncEventObserver {
  public:
+  typedef fileapi::SyncOperationType SyncOperationType;
+
   SyncEventObserver() {}
   virtual ~SyncEventObserver() {}
-
-  enum SyncOperation {
-    // A file or directory was added.
-    SYNC_OPERATION_ADD,
-
-    // A file or directory was updated.
-    SYNC_OPERATION_UPDATE,
-
-    // A file or directory was deleted.
-    SYNC_OPERATION_DELETE,
-  };
 
   enum SyncServiceState {
     // The sync service is being initialized (e.g. restoring data from the
@@ -60,9 +51,8 @@ class SyncEventObserver {
 
   // Reports the file |url| was updated for |operation|
   // by the sync file system backend.
-  virtual void OnFileSynced(fileapi::SyncStatusCode status,
-                            SyncOperation operation,
-                            const fileapi::FileSystemURL& url) = 0;
+  virtual void OnFileSynced(const fileapi::FileSystemURL& url,
+                            SyncOperationType operation) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncEventObserver);

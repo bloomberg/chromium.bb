@@ -64,7 +64,7 @@ class DriveFileSyncService
       const fileapi::SyncStatusCallback& callback) OVERRIDE;
   virtual void ProcessRemoteChange(
       RemoteChangeProcessor* processor,
-      const fileapi::SyncFileCallback& callback) OVERRIDE;
+      const fileapi::SyncOperationCallback& callback) OVERRIDE;
   virtual LocalChangeProcessor* GetLocalChangeProcessor() OVERRIDE;
   virtual void GetConflictFiles(
       const GURL& origin,

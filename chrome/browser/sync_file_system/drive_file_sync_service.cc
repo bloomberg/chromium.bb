@@ -227,10 +227,11 @@ void DriveFileSyncService::UnregisterOriginForTrackingChanges(
 
 void DriveFileSyncService::ProcessRemoteChange(
     RemoteChangeProcessor* processor,
-    const fileapi::SyncFileCallback& callback) {
+    const fileapi::SyncOperationCallback& callback) {
   NOTIMPLEMENTED();
   callback.Run(fileapi::SYNC_STATUS_FAILED,
-               fileapi::FileSystemURL());
+               fileapi::FileSystemURL(),
+               fileapi::SYNC_OPERATION_NONE);
 }
 
 LocalChangeProcessor* DriveFileSyncService::GetLocalChangeProcessor() {

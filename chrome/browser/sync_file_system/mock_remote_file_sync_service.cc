@@ -9,6 +9,7 @@
 #include "base/message_loop_proxy.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_url.h"
+#include "webkit/fileapi/syncable/sync_operation_type.h"
 
 using ::testing::_;
 using ::testing::Invoke;
@@ -79,11 +80,12 @@ void MockRemoteFileSyncService::UnregisterOriginForTrackingChangesStub(
 
 void MockRemoteFileSyncService::ProcessRemoteChangeStub(
     RemoteChangeProcessor* processor,
-    const fileapi::SyncFileCallback& callback) {
+    const fileapi::SyncOperationCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC,
-                 fileapi::FileSystemURL()));
+                 fileapi::FileSystemURL(),
+                 fileapi::SYNC_OPERATION_NONE));
 }
 
 void MockRemoteFileSyncService::GetConflictFilesStub(

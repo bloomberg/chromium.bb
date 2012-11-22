@@ -58,10 +58,9 @@ class MockSyncEventObserver : public SyncEventObserver {
   MOCK_METHOD2(OnSyncStateUpdated,
                void(SyncServiceState state,
                     const std::string& description));
-  MOCK_METHOD3(OnFileSynced,
-               void(fileapi::SyncStatusCode status,
-                    SyncOperation operation,
-                    const fileapi::FileSystemURL& url));
+  MOCK_METHOD2(OnFileSynced,
+               void(const fileapi::FileSystemURL& url,
+                    fileapi::SyncOperationType operation));
 };
 
 ACTION_P3(NotifyStateAndCallback,

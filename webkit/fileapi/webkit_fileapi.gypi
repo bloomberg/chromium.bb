@@ -91,6 +91,7 @@
       '../fileapi/syncable/sync_file_metadata.cc',
       '../fileapi/syncable/sync_file_metadata.h',
       '../fileapi/syncable/sync_file_type.h',
+      '../fileapi/syncable/sync_operation_type.h',
       '../fileapi/syncable/sync_status_code.cc',
       '../fileapi/syncable/sync_status_code.h',
       '../fileapi/syncable/syncable_file_operation_runner.cc',
