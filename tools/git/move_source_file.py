@@ -4,18 +4,16 @@
 # found in the LICENSE file.
 
 """Moves a C++ file to a new location, updating any include paths that
-point to it.  Updates include guards in moved header files.  Assumes
-Chromium coding style.
+point to it, and re-ordering headers as needed.  Updates include
+guards in moved header files.  Assumes Chromium coding style.
 
-Does not reorder headers; instead, use this after committing all of
-your moves:
-  ./tools/git/for-all-touched-files.py -c "tools/sort-headers.py [[FILENAME]]"
+Attempts to update paths used in .gyp(i) files, but does not reorder
+or restructure .gyp(i) files in any way.
 
-Updates paths used in .gyp(i) files, but does not reorder or
-restructure .gyp(i) files in any way.
+Updates full-path references to files in // comments in source files.
 
-Must run in a git checkout, as it relies on git for a fast way to find
-files that reference the moved file.
+Must run in a git checkout, as it relies on git grep for a fast way to
+find files that reference the moved file.
 """
 
 
@@ -23,6 +21,13 @@ import os
 import re
 import subprocess
 import sys
+
+if __name__ == '__main__':
+  # Need to add the directory containing sort-headers.py to the Python
+  # classpath.
+  sys.path.append(os.path.abspath(os.path.join(sys.path[0], '..')))
+sort_headers = __import__('sort-headers')
+
 
 HANDLED_EXTENSIONS = ['.cc', '.mm', '.h', '.hh']
 
@@ -54,46 +59,41 @@ def MoveFile(from_path, to_path):
 
 def MultiFileFindReplace(original,
                          replacement,
-                         grep_pattern,
-                         file_globs,
-                         guard_formats):
-  """Implements fast multi-file find and replace with optional guards.
+                         file_globs):
+  """Implements fast multi-file find and replace.
 
-  Given an |original| string and a |replacement| string, search for
-  them by formatting |grep_pattern| with |original| and running
-  git grep on the result, for files matching any of |file_globs|.
+  Given an |original| string and a |replacement| string, find matching
+  files by running git grep on |original| in files matching any
+  pattern in |file_globs|.
 
-  Once files are found, the function searches for any of
-  |guard_formats| formatted with |original| and replaces each match
-  with the same guard format as matched, formatted with |replacement|.
+  Once files are found, |re.sub| is run to replace |original| with
+  |replacement|.  |replacement| may use capture group back-references.
 
   Args:
-    original: 'chrome/browser/ui/browser.h'
-    replacement: 'chrome/browser/ui/browser/browser.h'
-    grep_pattern: r'#(include|import)\s*["<]%s[>"]'
+    original: '(#(include|import)\s*["<])chrome/browser/ui/browser.h([>"])'
+    replacement: '\1chrome/browser/ui/browser/browser.h\3'
     file_globs: ['*.cc', '*.h', '*.m', '*.mm']
-    guard_formats: None or ('"%s"', '<%s>')
+
+  Returns the list of files modified.
 
   Raises an exception on error.
   """
   out, err = subprocess.Popen(
-    ['git', 'grep', '-E', '--name-only',
-     grep_pattern % re.escape(original), '--'] + file_globs,
-    stdout=subprocess.PIPE).communicate()
+      ['git', 'grep', '-E', '--name-only', original, '--'] + file_globs,
+      stdout=subprocess.PIPE).communicate()
   referees = out.splitlines()
 
   for referee in referees:
     with open(referee) as f:
       original_contents = f.read()
-      contents = original_contents
-      for guard_format in guard_formats or []:
-        contents = contents.replace(guard_format % original,
-                                    guard_format % replacement)
+      contents = re.sub(original, replacement, original_contents)
       if contents == original_contents:
         raise Exception('No change in file %s although matched in grep' %
                         referee)
       with open(referee, 'w') as f:
         f.write(contents)
+
+  return referees
 
 
 def UpdatePostMove(from_path, to_path):
@@ -110,12 +110,26 @@ def UpdatePostMove(from_path, to_path):
     UpdateIncludeGuard(from_path, to_path)
 
     # Update include/import references.
-    MultiFileFindReplace(
-      from_path,
-      to_path,
-      r'#(include|import)\s*["<]%s[>"]',
-      ['*.cc', '*.h', '*.m', '*.mm'],
-      ['"%s"', '<%s>'])
+    files_with_changed_includes = MultiFileFindReplace(
+        r'(#(include|import)\s*["<])%s([>"])' % re.escape(from_path),
+        r'\1%s\3' % to_path,
+        ['*.cc', '*.h', '*.m', '*.mm'])
+
+    # Reorder headers in files that changed.
+    for changed_file in files_with_changed_includes:
+      def AlwaysConfirm(a, b): return True
+      sort_headers.FixFileWithConfirmFunction(changed_file, AlwaysConfirm)
+
+  # Update comments; only supports // comments, which are primarily
+  # used in our code.
+  #
+  # This work takes a bit of time. If this script starts feeling too
+  # slow, one good way to speed it up is to make the comment handling
+  # optional under a flag.
+  MultiFileFindReplace(
+      r'(//.*)%s' % re.escape(from_path),
+      r'\1%s' % to_path,
+      ['*.cc', '*.h', '*.m', '*.mm'])
 
   # Update references in .gyp(i) files.
   def PathMinusFirstComponent(path):
@@ -125,11 +139,10 @@ def UpdatePostMove(from_path, to_path):
       return parts[1]
     else:
       return parts[0]
-  MultiFileFindReplace(PathMinusFirstComponent(from_path),
-                       PathMinusFirstComponent(to_path),
-                       r'[\'"]%s[\'"]',
-                       ['*.gyp*'],
-                       ["'%s'", '"%s"'])
+  MultiFileFindReplace(
+      r'([\'"])%s([\'"])' % re.escape(PathMinusFirstComponent(from_path)),
+      r'\1%s\2' % PathMinusFirstComponent(to_path),
+      ['*.gyp*'])
 
 
 def MakeIncludeGuardName(path_from_root):
