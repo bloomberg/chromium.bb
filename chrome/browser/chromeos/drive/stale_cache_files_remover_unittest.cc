@@ -23,7 +23,6 @@
 #include "chrome/browser/chromeos/drive/mock_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/stale_cache_files_remover.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
-#include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/mock_drive_service.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "chrome/test/base/testing_profile.h"
@@ -51,64 +50,6 @@ void VerifyCacheFileState(DriveFileError error,
                           const std::string& md5) {
   EXPECT_EQ(DRIVE_FILE_OK, error);
 }
-
-// Dummy implementation of DriveUploaderInterface which does nothing.
-// Used to create a DriveFileSystem object.
-class DummyDriveUploader : public google_apis::DriveUploaderInterface {
- public:
-  DummyDriveUploader() {}
-  virtual ~DummyDriveUploader() {}
-
-  // DriveUploaderInterface overrides.
-  virtual int UploadNewFile(
-      const GURL& upload_location,
-      const FilePath& drive_file_path,
-      const FilePath& local_file_path,
-      const std::string& title,
-      const std::string& content_type,
-      int64 content_length,
-      int64 file_size,
-      const google_apis::UploadCompletionCallback& completion_callback,
-      const google_apis::UploaderReadyCallback& ready_callback) OVERRIDE {
-    NOTREACHED();
-    return 0;
-  }
-
-  virtual int StreamExistingFile(
-      const GURL& upload_location,
-      const FilePath& drive_file_path,
-      const FilePath& local_file_path,
-      const std::string& content_type,
-      int64 content_length,
-      int64 file_size,
-      const google_apis::UploadCompletionCallback& completion_callback,
-      const google_apis::UploaderReadyCallback& ready_callback) OVERRIDE {
-    NOTREACHED();
-    return 0;
-  }
-
-  virtual int UploadExistingFile(
-      const GURL& upload_location,
-      const FilePath& drive_file_path,
-      const FilePath& local_file_path,
-      const std::string& content_type,
-      int64 file_size,
-      const google_apis::UploadCompletionCallback& completion_callback,
-      const google_apis::UploaderReadyCallback& ready_callback) {
-    NOTREACHED();
-    return 0;
-  }
-
-  virtual void UpdateUpload(int upload_id,
-                            content::DownloadItem* download) OVERRIDE {
-    NOTREACHED();
-  }
-
-  virtual int64 GetUploadedBytes(int upload_id) const OVERRIDE {
-    NOTREACHED();
-    return 0;
-  }
-};
 
 }  // namespace
 
@@ -147,14 +88,13 @@ class StaleCacheFilesRemoverTest : public testing::Test {
     cache_ = DriveCache::CreateDriveCache(
         DriveCache::GetCacheRootPath(profile_.get()), blocking_task_runner_);
 
-    dummy_uploader_.reset(new DummyDriveUploader);
     mock_webapps_registry_.reset(new StrictMock<MockDriveWebAppsRegistry>);
 
     ASSERT_FALSE(file_system_);
     file_system_ = new DriveFileSystem(profile_.get(),
                                        cache_,
                                        mock_drive_service_,
-                                       dummy_uploader_.get(),
+                                       NULL,  // drive_uploader
                                        mock_webapps_registry_.get(),
                                        blocking_task_runner_);
 
@@ -197,7 +137,6 @@ class StaleCacheFilesRemoverTest : public testing::Test {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;
   DriveCache* cache_;
-  scoped_ptr<DummyDriveUploader> dummy_uploader_;
   DriveFileSystem* file_system_;
   StrictMock<google_apis::MockDriveService>* mock_drive_service_;
   scoped_ptr<StrictMock<MockDriveWebAppsRegistry> > mock_webapps_registry_;
