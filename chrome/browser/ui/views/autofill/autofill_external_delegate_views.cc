@@ -27,7 +27,6 @@ AutofillExternalDelegateViews::AutofillExternalDelegateViews(
 AutofillExternalDelegateViews::~AutofillExternalDelegateViews() {
   if (popup_view_) {
     popup_view_->ClearExternalDelegate();
-    popup_view_->Hide();
   }
 }
 
