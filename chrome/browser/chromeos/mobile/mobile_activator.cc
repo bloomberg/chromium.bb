@@ -197,6 +197,7 @@ void MobileActivator::TerminateActivation() {
     lib->Unlock();
   ReEnableCertRevocationChecking();
   meid_.clear();
+  iccid_.clear();
   service_path_.clear();
   state_ = PLAN_ACTIVATION_PAGE_LOADING;
   reconnect_wait_count_ = 0;
@@ -210,7 +211,7 @@ void MobileActivator::TerminateActivation() {
 void MobileActivator::OnNetworkManagerChanged(NetworkLibrary* cros) {
   if (state_ == PLAN_ACTIVATION_PAGE_LOADING)
     return;
-  EvaluateCellularNetwork(FindCellularNetworkByMeid(meid_, true));
+  EvaluateCellularNetwork(FindMatchingCellularNetwork(true));
 }
 
 void MobileActivator::OnNetworkChanged(NetworkLibrary* cros,
@@ -252,6 +253,7 @@ void MobileActivator::InitiateActivation(const std::string& service_path) {
 
   terminated_ = false;
   meid_ = device->meid();
+  iccid_ = device->iccid();
   service_path_ = service_path;
   BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
       base::Bind(&CellularConfigDocument::LoadCellularConfigFile,
@@ -261,7 +263,7 @@ void MobileActivator::InitiateActivation(const std::string& service_path) {
 
 void MobileActivator::ContinueActivation() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CellularNetwork* network = FindCellularNetworkByMeid(meid_, false);
+  CellularNetwork* network = FindMatchingCellularNetwork(false);
   if (!network || !network->SupportsActivation())
     return;
 
@@ -278,7 +280,7 @@ void MobileActivator::OnSetTransactionStatus(bool success) {
 }
 
 void MobileActivator::OnPortalLoaded(bool success) {
-  CellularNetwork* network = FindCellularNetworkByMeid(meid_, true);
+  CellularNetwork* network = FindMatchingCellularNetwork(true);
   if (!network) {
     ChangeState(NULL, PLAN_ACTIVATION_ERROR,
                 GetErrorMessage(kErrorNoService));
@@ -306,15 +308,16 @@ void MobileActivator::OnPortalLoaded(bool success) {
   }
 }
 
-CellularNetwork* MobileActivator::FindCellularNetworkByMeid(
-    const std::string& meid, bool reattach_observer) {
+CellularNetwork* MobileActivator::FindMatchingCellularNetwork(
+    bool reattach_observer) {
   NetworkLibrary* lib = CrosLibrary::Get()->GetNetworkLibrary();
   for (CellularNetworkVector::const_iterator it =
            lib->cellular_networks().begin();
        it != lib->cellular_networks().end(); ++it) {
     const chromeos::NetworkDevice* device =
         lib->FindNetworkDeviceByPath((*it)->device_path());
-    if (device && meid == device->meid()) {
+    if (device && ((!meid_.empty() && meid_ == device->meid()) ||
+                   (!iccid_.empty() && iccid_ == device->iccid()))) {
       CellularNetwork* network = *it;
       // If service path has changed, reattach the event observer for this
       // network service.
@@ -332,9 +335,8 @@ CellularNetwork* MobileActivator::FindCellularNetworkByMeid(
 void MobileActivator::StartActivation() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UMA_HISTOGRAM_COUNTS("Cellular.MobileSetupStart", 1);
-  NetworkLibrary* lib =
-      CrosLibrary::Get()->GetNetworkLibrary();
-  CellularNetwork* network = FindCellularNetworkByMeid(meid_, true);
+  NetworkLibrary* lib = CrosLibrary::Get()->GetNetworkLibrary();
+  CellularNetwork* network = FindMatchingCellularNetwork(true);
   // Check if we can start activation process.
   if (!network) {
     std::string error;
@@ -367,7 +369,7 @@ void MobileActivator::RetryOTASP() {
 
 void MobileActivator::ContinueConnecting(int delay) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CellularNetwork* network = FindCellularNetworkByMeid(meid_, true);
+  CellularNetwork* network = FindMatchingCellularNetwork(true);
   if (network && network->connecting_or_connected()) {
     EvaluateCellularNetwork(network);
   } else {
@@ -380,8 +382,7 @@ void MobileActivator::SetTransactionStatus(bool success) {
   // The payment is received, try to reconnect and check the status all over
   // again.
   if (success && state_ == PLAN_ACTIVATION_SHOWING_PAYMENT) {
-    NetworkLibrary* lib =
-        CrosLibrary::Get()->GetNetworkLibrary();
+    NetworkLibrary* lib = CrosLibrary::Get()->GetNetworkLibrary();
     lib->SignalCellularPlanPayment();
     UMA_HISTOGRAM_COUNTS("Cellular.PaymentReceived", 1);
     StartOTASP();
@@ -392,12 +393,11 @@ void MobileActivator::SetTransactionStatus(bool success) {
 
 void MobileActivator::StartOTASP() {
   state_ = PLAN_ACTIVATION_START_OTASP;
-  CellularNetwork* network = FindCellularNetworkByMeid(meid_, true);
+  CellularNetwork* network = FindMatchingCellularNetwork(true);
   if (network &&
       network->connected() &&
       network->activation_state() == ACTIVATION_STATE_ACTIVATED) {
-    CrosLibrary::Get()->GetNetworkLibrary()->
-        DisconnectFromNetwork(network);
+    CrosLibrary::Get()->GetNetworkLibrary()->DisconnectFromNetwork(network);
   } else {
     EvaluateCellularNetwork(network);
   }
@@ -411,7 +411,7 @@ void MobileActivator::ReconnectTimerFired() {
       state_ != PLAN_ACTIVATION_RECONNECTING_PAYMENT &&
       state_ != PLAN_ACTIVATION_RECONNECTING_OTASP)
     return;
-  CellularNetwork* network = FindCellularNetworkByMeid(meid_, true);
+  CellularNetwork* network = FindMatchingCellularNetwork(true);
   if (!network) {
     // No service, try again since this is probably just transient condition.
     LOG(WARNING) << "Service not present at reconnect attempt.";
@@ -422,8 +422,7 @@ void MobileActivator::ReconnectTimerFired() {
 void MobileActivator::DisconnectFromNetwork(CellularNetwork* network) {
   DCHECK(network);
   LOG(INFO) << "Disconnecting from: " << network->service_path();
-  CrosLibrary::Get()->GetNetworkLibrary()->
-      DisconnectFromNetwork(network);
+  CrosLibrary::Get()->GetNetworkLibrary()->DisconnectFromNetwork(network);
   // Disconnect will force networks to be reevaluated, so
   // we don't want to continue processing on this path anymore.
   evaluating_ = false;
@@ -472,8 +471,7 @@ bool MobileActivator::ConnectToNetwork(CellularNetwork* network, int delay) {
     return false;
   }
   LOG(INFO) << "Connecting to: " << network->service_path();
-  CrosLibrary::Get()->GetNetworkLibrary()->
-      ConnectToCellularNetwork(network);
+  CrosLibrary::Get()->GetNetworkLibrary()->ConnectToCellularNetwork(network);
   return true;
 }
 
@@ -485,8 +483,7 @@ void MobileActivator::ForceReconnect(CellularNetwork* network, int delay) {
   connection_start_time_ = base::Time();
   // First, disconnect...
   LOG(INFO) << "Disconnecting from " << network->service_path();
-  CrosLibrary::Get()->GetNetworkLibrary()->
-      DisconnectFromNetwork(network);
+  CrosLibrary::Get()->GetNetworkLibrary()->DisconnectFromNetwork(network);
   // Check the network state 3s after we disconnect to make sure.
   BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&MobileActivator::ContinueConnecting, AsWeakPtr(), delay),
@@ -858,8 +855,7 @@ const char* MobileActivator::GetStateDescription(PlanActivationState state) {
 void MobileActivator::CompleteActivation(
     CellularNetwork* network) {
   // Remove observers, we are done with this page.
-  NetworkLibrary* lib = CrosLibrary::Get()->
-      GetNetworkLibrary();
+  NetworkLibrary* lib = CrosLibrary::Get()->GetNetworkLibrary();
   lib->RemoveNetworkManagerObserver(this);
   lib->RemoveObserverForAllNetworks(this);
   if (lib->IsLocked())
@@ -1001,8 +997,7 @@ void MobileActivator::SetupActivationProcess(CellularNetwork* network) {
     return;
 
   DisableCertRevocationChecking();
-  NetworkLibrary* lib = CrosLibrary::Get()->
-      GetNetworkLibrary();
+  NetworkLibrary* lib = CrosLibrary::Get()->GetNetworkLibrary();
   // Disable autoconnect to cellular network.
   network->SetAutoConnect(false);
 
@@ -1054,7 +1049,7 @@ bool MobileActivator::GotActivationError(
 }
 
 void MobileActivator::GetDeviceInfo(CellularNetwork* network,
-                                     DictionaryValue* value) {
+                                    DictionaryValue* value) {
   DCHECK(network);
   NetworkLibrary* cros =
       CrosLibrary::Get()->GetNetworkLibrary();

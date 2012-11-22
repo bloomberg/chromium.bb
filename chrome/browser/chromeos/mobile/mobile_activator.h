@@ -196,10 +196,9 @@ class MobileActivator
   static bool EvaluateCellularDeviceState(bool* report_status,
                                           std::string* state,
                                           std::string* error);
-  // Finds cellular network given device |meid|, reattach network change
-  // observer if |reattach_observer| flag is set.
-  CellularNetwork* FindCellularNetworkByMeid(const std::string& meid,
-                                             bool reattach_observer);
+  // Finds cellular network that matches |meid_| or |iccid_|, reattach network
+  // change observer if |reattach_observer| flag is set.
+  CellularNetwork* FindMatchingCellularNetwork(bool reattach_observer);
 
   // Returns next reconnection state based on the current activation phase.
   static PlanActivationState GetNextReconnectState(PlanActivationState state);
@@ -210,6 +209,8 @@ class MobileActivator
   PlanActivationState state_;
   // MEID of cellular device to activate.
   std::string meid_;
+  // ICCID of the SIM card on cellular device to activate.
+  std::string iccid_;
   // Service path of network begin activated. Please note that the path can
   // change during the activation process even though it is still representing
   // the same service.
