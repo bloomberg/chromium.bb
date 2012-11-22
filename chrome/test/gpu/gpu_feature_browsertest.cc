@@ -477,7 +477,14 @@ IN_PROC_BROWSER_TEST_F(ThreadedCompositorTest, MAYBE_ThreadedCompositor) {
   RunEventTest(url, kSwapBuffersEvent, true);
 }
 
-IN_PROC_BROWSER_TEST_F(GpuFeatureTest, RafNoDamage) {
+
+#if defined(OS_WIN)
+// http://crbug.com/162343: flaky on Windows
+#define MAYBE_RafNoDamage DISABLED_RafNoDamage
+#else
+#define MAYBE_RafNoDamage RafNoDamage
+#endif
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_RafNoDamage) {
   trace_categories_ = "-test_*";
   const FilePath url(FILE_PATH_LITERAL("feature_raf_no_damage.html"));
   RunEventTest(url);
