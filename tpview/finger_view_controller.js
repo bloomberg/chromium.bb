@@ -477,8 +477,9 @@ FingerViewController.prototype = {
       var entry = this.entries[i];
       if (entry.type == 'gesture') {
         if (entry.gestureType == 'scroll' || entry.gestureType == 'move' ||
-            entry.gestureType == 'fling') {
-          if (entry.gestureType == 'scroll' || entry.gestureType == 'move') {
+            entry.gestureType == 'fling' || entry.gestureType == 'swipe') {
+          if (entry.gestureType == 'scroll' || entry.gestureType == 'move' ||
+              entry.gestureType == 'swipe') {
             var dx = entry.dx;
             var dy = entry.dy;
           } else {
@@ -486,11 +487,14 @@ FingerViewController.prototype = {
             var dx = entry.vx * dt;
             var dy = entry.vy * dt;
           }
-          if (entry.gestureType == 'scroll') {
+          if (entry.gestureType == 'scroll' || entry.gestureType == 'swipe') {
             if (dy != 0 && dx == 0)
               dx = 1;
+            if (dy == 0 && dx != 0)
+              dy = 1;
           }
-          var colors = {'scroll': '#00f', 'move': '#f00', 'fling': '#ff832c'};
+          var colors = {'scroll': '#00f', 'move': '#f00', 'fling': '#ff832c',
+                        'swipe': '#0080ff'};
           var endPt = {'xPos': (xPos + dx), 'yPos': (yPos + dy)};
           segs.push({'start': {'xPos': xPos, 'yPos': yPos},
                      'end': endPt,
