@@ -51,6 +51,7 @@
 #include "chrome/browser/ui/webui/task_manager/task_manager_ui.h"
 #include "chrome/browser/ui/webui/test_chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/tracing_ui.h"
+#include "chrome/browser/ui/webui/user_actions/user_actions_ui.h"
 #include "chrome/browser/ui/webui/version_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -229,6 +230,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<SyncInternalsUI>;
   if (url.host() == chrome::kChromeUISyncResourcesHost)
     return &NewWebUI<WebDialogUI>;
+  if (url.host() == chrome::kChromeUIUserActionsHost)
+    return &NewWebUI<UserActionsUI>;
   if (url.host() == chrome::kChromeUIVersionHost)
     return &NewWebUI<VersionUI>;
 

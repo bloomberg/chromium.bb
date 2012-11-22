@@ -71,6 +71,7 @@ extern const char kChromeUIThemeURL[];
 extern const char kChromeUIThumbnailURL[];
 extern const char kChromeUIUberURL[];
 extern const char kChromeUIUberFrameURL[];
+extern const char kChromeUIUserActionsURL[];
 extern const char kChromeUIVersionURL[];
 
 #if defined(OS_ANDROID)
@@ -201,6 +202,7 @@ extern const char kChromeUITouchIconHost[];
 extern const char kChromeUITracingHost[];
 extern const char kChromeUIUberFrameHost[];
 extern const char kChromeUIUberHost[];
+extern const char kChromeUIUserActionsHost[];
 extern const char kChromeUIVersionHost[];
 extern const char kChromeUIWorkersHost[];
 

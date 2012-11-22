@@ -207,6 +207,9 @@
       <include name="IDR_UBER_FRAME_HTML" file="resources\uber\uber_frame.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_UBER_FRAME_JS" file="resources\uber\uber_frame.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_UBER_UTILS_JS" file="resources\uber\uber_utils.js" type="BINDATA" />
+      <include name="IDR_USER_ACTIONS_HTML" file="resources\user_actions\user_actions.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_USER_ACTIONS_CSS" file="resources\user_actions\user_actions.css" type="BINDATA" />
+      <include name="IDR_USER_ACTIONS_JS" file="resources\user_actions\user_actions.js" type="BINDATA" />
       <include name="IDR_WEBSTORE_MANIFEST" file="resources\webstore_app\manifest.json" type="BINDATA" />
       <include name="IDR_ENTERPRISE_WEBSTORE_MANIFEST" file="resources\enterprise_webstore_app\manifest.json" type="BINDATA" />
       <if expr="pp_ifdef('use_ash')">
