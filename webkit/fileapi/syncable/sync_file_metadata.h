@@ -24,6 +24,8 @@ class WEBKIT_STORAGE_EXPORT SyncFileMetadata {
   SyncFileType file_type;
   int64 size;
   base::Time last_modified;
+
+  bool operator==(const SyncFileMetadata& that) const;
 };
 
 class WEBKIT_STORAGE_EXPORT ConflictFileInfo {

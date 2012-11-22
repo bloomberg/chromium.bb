@@ -17,17 +17,20 @@ class MockLocalChangeProcessor : public LocalChangeProcessor {
   virtual ~MockLocalChangeProcessor();
 
   // LocalChangeProcessor override.
-  MOCK_METHOD4(ApplyLocalChange,
+  MOCK_METHOD5(ApplyLocalChange,
                void(const fileapi::FileChange& change,
-                    const FilePath& local_path,
+                    const FilePath& local_file_path,
+                    const fileapi::SyncFileMetadata& local_file_metadata,
                     const fileapi::FileSystemURL& url,
                     const fileapi::SyncStatusCallback& callback));
 
  private:
-  void ApplyLocalChangeStub(const fileapi::FileChange& change,
-                            const FilePath& local_path,
-                            const fileapi::FileSystemURL& url,
-                            const fileapi::SyncStatusCallback& callback);
+  void ApplyLocalChangeStub(
+      const fileapi::FileChange& change,
+      const FilePath& local_file_path,
+      const fileapi::SyncFileMetadata& local_file_metadata,
+      const fileapi::FileSystemURL& url,
+      const fileapi::SyncStatusCallback& callback);
 
   DISALLOW_COPY_AND_ASSIGN(MockLocalChangeProcessor);
 };

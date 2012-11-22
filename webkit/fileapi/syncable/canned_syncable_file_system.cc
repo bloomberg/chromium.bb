@@ -101,6 +101,20 @@ void OnGetMetadataAndVerifyData(
   callback.Run(result);
 }
 
+void OnGetMetadata(
+    base::PlatformFileInfo* file_info_out,
+    FilePath* platform_path_out,
+    const CannedSyncableFileSystem::StatusCallback& callback,
+    base::PlatformFileError result,
+    const base::PlatformFileInfo& file_info,
+    const FilePath& platform_path) {
+  DCHECK(file_info_out);
+  DCHECK(platform_path_out);
+  *file_info_out = file_info;
+  *platform_path_out = platform_path;
+  callback.Run(result);
+}
+
 class WriteHelper {
  public:
   WriteHelper() : bytes_written_(0) {}
@@ -347,6 +361,17 @@ PlatformFileError CannedSyncableFileSystem::VerifyFile(
                  base::Unretained(this), url, expected_data));
 }
 
+PlatformFileError CannedSyncableFileSystem::GetMetadata(
+    const FileSystemURL& url,
+    base::PlatformFileInfo* info,
+    FilePath* platform_path) {
+  return RunOnThread<PlatformFileError>(
+      io_task_runner_,
+      FROM_HERE,
+      base::Bind(&CannedSyncableFileSystem::DoGetMetadata,
+                 base::Unretained(this), url, info, platform_path));
+}
+
 int64 CannedSyncableFileSystem::Write(
     net::URLRequestContext* url_request_context,
     const FileSystemURL& url, const GURL& blob_url) {
@@ -499,6 +524,16 @@ void CannedSyncableFileSystem::DoVerifyFile(
   NewOperation()->GetMetadata(
       url, base::Bind(&OnGetMetadataAndVerifyData,
                       expected_data, callback));
+}
+
+void CannedSyncableFileSystem::DoGetMetadata(
+    const FileSystemURL& url,
+    base::PlatformFileInfo* info,
+    FilePath* platform_path,
+    const StatusCallback& callback) {
+  EXPECT_TRUE(is_filesystem_opened_);
+  NewOperation()->GetMetadata(
+      url, base::Bind(&OnGetMetadata, info, platform_path, callback));
 }
 
 void CannedSyncableFileSystem::DoWrite(

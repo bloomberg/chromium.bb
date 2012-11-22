@@ -88,12 +88,12 @@ void OnGetFileMetadata(const tracked_objects::Location& where,
 
 ACTION_P(MockStatusCallback, status) {
   base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(arg3, status));
+      FROM_HERE, base::Bind(arg4, status));
 }
 
 ACTION_P2(MockStatusCallbackAndRecordChange, status, changes) {
   base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(arg3, status));
+      FROM_HERE, base::Bind(arg4, status));
   changes->push_back(arg0);
 }
 
@@ -323,18 +323,33 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateFile) {
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   file_system_->AddSyncStatusObserver(&status_observer);
 
+  // Creates and writes into a file.
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_->CreateFile(kFile));
+  EXPECT_EQ(kTestFileDataSize,
+            file_system_->WriteString(kFile, std::string(kTestFileData)));
+
+  // Retrieve the file metadata to set up the expected values.
+  base::PlatformFileInfo info;
+  FilePath platform_path;
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_->GetMetadata(kFile, &info, &platform_path));
+
+  ASSERT_FALSE(info.is_directory);
+  ASSERT_EQ(kTestFileDataSize, info.size);
+
+  fileapi::SyncFileMetadata metadata;
+  metadata.file_type = fileapi::SYNC_FILE_TYPE_FILE;
+  metadata.size = info.size;
+  metadata.last_modified = info.last_modified;
+
   // The local_change_processor's ApplyLocalChange should be called once
   // with ADD_OR_UPDATE change for TYPE_FILE.
   StrictMock<MockLocalChangeProcessor> local_change_processor;
   const FileChange change(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                           fileapi::SYNC_FILE_TYPE_FILE);
-  EXPECT_CALL(local_change_processor, ApplyLocalChange(change, _, kFile, _))
+  EXPECT_CALL(local_change_processor,
+              ApplyLocalChange(change, platform_path, metadata, kFile, _))
       .WillOnce(MockStatusCallback(fileapi::SYNC_STATUS_OK));
-
-  // Creates and writes into a file.
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_->CreateFile(kFile));
-  EXPECT_EQ(kTestFileDataSize,
-            file_system_->WriteString(kFile, std::string(kTestFileData)));
 
   local_service_->ProcessLocalChange(
       &local_change_processor,
@@ -373,7 +388,7 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateAndRemoveFile) {
   StrictMock<MockLocalChangeProcessor> local_change_processor;
   const FileChange change(FileChange::FILE_CHANGE_DELETE,
                           fileapi::SYNC_FILE_TYPE_FILE);
-  EXPECT_CALL(local_change_processor, ApplyLocalChange(change, _, kFile, _))
+  EXPECT_CALL(local_change_processor, ApplyLocalChange(change, _, _, kFile, _))
       .WillOnce(MockStatusCallback(fileapi::SYNC_FILE_ERROR_NOT_FOUND));
 
   // The sync should succeed anyway.
@@ -448,7 +463,7 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_MultipleChanges) {
   // twice for FILE_TYPE and FILE_DIRECTORY.
   StrictMock<MockLocalChangeProcessor> local_change_processor;
   std::vector<FileChange> changes;
-  EXPECT_CALL(local_change_processor, ApplyLocalChange(_, _, kPath, _))
+  EXPECT_CALL(local_change_processor, ApplyLocalChange(_, _, _, kPath, _))
       .Times(2)
       .WillOnce(MockStatusCallbackAndRecordChange(fileapi::SYNC_STATUS_OK,
                                                   &changes))

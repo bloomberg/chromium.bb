@@ -132,8 +132,7 @@ class LocalFileSyncService
       const fileapi::LocalFileSyncInfo& sync_file_info);
   void ProcessNextChangeForURL(
       LocalChangeProcessor* processor,
-      const fileapi::FileSystemURL& url,
-      const FilePath& local_file_path,
+      const fileapi::LocalFileSyncInfo& sync_file_info,
       const fileapi::FileChange& last_change,
       const fileapi::FileChangeList& changes,
       fileapi::SyncStatusCode status);

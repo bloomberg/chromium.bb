@@ -217,19 +217,18 @@ void LocalFileSyncService::DidGetFileForLocalSync(
   processor->ApplyLocalChange(
       sync_file_info.changes.front(),
       sync_file_info.local_file_path,
+      sync_file_info.metadata,
       sync_file_info.url,
       base::Bind(&LocalFileSyncService::ProcessNextChangeForURL,
                  AsWeakPtr(), processor,
-                 sync_file_info.url,
-                 sync_file_info.local_file_path,
+                 sync_file_info,
                  sync_file_info.changes.front(),
                  sync_file_info.changes.PopAndGetNewList()));
 }
 
 void LocalFileSyncService::ProcessNextChangeForURL(
     LocalChangeProcessor* processor,
-    const FileSystemURL& url,
-    const FilePath& local_file_path,
+    const LocalFileSyncInfo& sync_file_info,
     const FileChange& last_change,
     const FileChangeList& changes,
     SyncStatusCode status) {
@@ -242,6 +241,7 @@ void LocalFileSyncService::ProcessNextChangeForURL(
   // TODO(kinuko,tzik): Handle other errors that should not be considered
   // a sync error.
 
+  const FileSystemURL& url = sync_file_info.url;
   if (status != fileapi::SYNC_STATUS_OK || changes.empty()) {
     if (status == fileapi::SYNC_STATUS_OK ||
         status == fileapi::SYNC_STATUS_HAS_CONFLICT) {
@@ -257,9 +257,12 @@ void LocalFileSyncService::ProcessNextChangeForURL(
 
   DCHECK(processor);
   processor->ApplyLocalChange(
-      changes.front(), local_file_path, url,
+      changes.front(),
+      sync_file_info.local_file_path,
+      sync_file_info.metadata,
+      url,
       base::Bind(&LocalFileSyncService::ProcessNextChangeForURL,
-                 AsWeakPtr(), processor, url, local_file_path,
+                 AsWeakPtr(), processor, sync_file_info,
                  changes.front(), changes.PopAndGetNewList()));
 }
 

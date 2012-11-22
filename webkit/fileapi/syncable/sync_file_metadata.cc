@@ -22,6 +22,12 @@ SyncFileMetadata::SyncFileMetadata(
 
 SyncFileMetadata::~SyncFileMetadata() {}
 
+bool SyncFileMetadata::operator==(const SyncFileMetadata& that) const {
+  return file_type == that.file_type &&
+         size == that.size &&
+         last_modified == that.last_modified;
+}
+
 ConflictFileInfo::ConflictFileInfo() {}
 ConflictFileInfo::~ConflictFileInfo() {}
 

@@ -256,7 +256,8 @@ void DriveFileSyncService::GetRemoteFileMetadata(
 
 void DriveFileSyncService::ApplyLocalChange(
     const fileapi::FileChange& change,
-    const FilePath& local_path,
+    const FilePath& local_file_path,
+    const fileapi::SyncFileMetadata& local_file_metadata,
     const fileapi::FileSystemURL& url,
     const fileapi::SyncStatusCallback& callback) {
   NOTIMPLEMENTED();
