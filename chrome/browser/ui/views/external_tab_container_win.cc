@@ -688,6 +688,10 @@ bool ExternalTabContainerWin::HandleContextMenu(
     NOTREACHED();
     return false;
   }
+
+  if (params.custom_context.is_pepper_menu)
+    return false;
+
   external_context_menu_.reset(RenderViewContextMenuViews::Create(
       web_contents(), params));
   static_cast<RenderViewContextMenuWin*>(
