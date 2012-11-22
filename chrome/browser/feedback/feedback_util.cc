@@ -71,12 +71,6 @@ const int kHttpPostFailServerError = 500;
 #if defined(OS_CHROMEOS)
 const char kBZip2MimeType[] = "application/x-bzip2";
 const char kLogsAttachmentName[] = "system_logs.bz2";
-// Maximum number of lines in system info log chunk to be still included
-// in product specific data.
-const size_t kMaxLineCount       = 40;
-// Maximum number of bytes in system info log chunk to be still included
-// in product specific data.
-const size_t kMaxSystemLogLength = 4 * 1024;
 #endif
 
 const int64 kInitialRetryDelay = 900000;  // 15 minutes
@@ -224,17 +218,11 @@ void FeedbackUtil::AddFeedbackData(
 
 #if defined(OS_CHROMEOS)
 bool FeedbackUtil::ValidFeedbackSize(const std::string& content) {
-  if (content.length() > kMaxSystemLogLength)
+  if (content.length() > chromeos::system::kFeedbackMaxLength)
     return false;
-  size_t line_count = 0;
-  const char* text = content.c_str();
-  for (size_t i = 0; i < content.length(); i++) {
-    if (*(text + i) == '\n') {
-      line_count++;
-      if (line_count > kMaxLineCount)
-        return false;
-    }
-  }
+  const size_t line_count = std::count(content.begin(), content.end(), '\n');
+  if (line_count > chromeos::system::kFeedbackMaxLineCount)
+    return false;
   return true;
 }
 #endif

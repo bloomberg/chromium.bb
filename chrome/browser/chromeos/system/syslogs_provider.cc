@@ -24,6 +24,10 @@ using content::BrowserThread;
 
 namespace chromeos {
 namespace system {
+
+const size_t kFeedbackMaxLength = 4 * 1024;
+const size_t kFeedbackMaxLineCount = 40;
+
 namespace {
 
 const char kSysLogsScript[] =
@@ -294,10 +298,15 @@ void SyslogsProviderImpl::ReadSyslogs(
     file_util::Delete(zip_file, false);
   }
 
+  // Include dbus statistics summary
+  (*logs)["dbus"] = dbus::statistics::GetAsString(
+      dbus::statistics::SHOW_INTERFACE,
+      dbus::statistics::FORMAT_ALL);
+
   // Include recent network log events
-  const int kMaxNetworkEventsForFeedback = 50;
   (*logs)["network_event_log"] = chromeos::network_event_log::GetAsString(
-      chromeos::network_event_log::OLDEST_FIRST, kMaxNetworkEventsForFeedback);
+      chromeos::network_event_log::OLDEST_FIRST,
+      chromeos::system::kFeedbackMaxLineCount);
 
   // SyslogsMemoryHandler will clean itself up.
   // SyslogsMemoryHandler::OnDetailsAvailable() will modify |logs| and call

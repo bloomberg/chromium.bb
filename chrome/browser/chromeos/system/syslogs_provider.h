@@ -15,6 +15,14 @@ class CancelableRequestConsumerBase;
 namespace chromeos {
 namespace system {
 
+// Maximum number of bytes in system info log chunk to be still included
+// in product specific data.
+extern const size_t kFeedbackMaxLength;
+
+// Maximum number of lines in system info log chunk to be still included
+// in product specific data.
+extern const size_t kFeedbackMaxLineCount;
+
 typedef std::map<std::string, std::string> LogDictionaryType;
 
 // This interface provides access to Chrome OS syslogs.
