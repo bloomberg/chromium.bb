@@ -926,6 +926,25 @@ wl_display_dispatch_queue(struct wl_display *display,
 	return dispatch_queue(display, queue, 1);
 }
 
+/** Dispatch pending events in an event queue
+ *
+ * \param display The display context object
+ * \param queue The event queue to dispatch
+ * \return The number of dispatched events on success or -1 on failure
+ *
+ * Dispatch all incoming events for objects assigned to the given
+ * event queue. On failure -1 is returned and errno set appropriately.
+ * If there are no events queued, this functions return immediately.
+ *
+ * \memberof wl_display
+ */
+WL_EXPORT int
+wl_display_dispatch_queue_pending(struct wl_display *display,
+				  struct wl_event_queue *queue)
+{
+	return dispatch_queue(display, queue, 0);
+}
+
 /** Process incoming events
  *
  * \param display The display context object
