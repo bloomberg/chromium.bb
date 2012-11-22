@@ -475,15 +475,6 @@ void DriveCache::RequestInitializeForTesting() {
                  base::Unretained(this)));
 }
 
-void DriveCache::ForceRescanForTesting() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  blocking_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&DriveCache::ForceRescanOnBlockingPoolForTesting,
-                 base::Unretained(this)));
-}
-
 // static
 DriveCache* DriveCache::CreateDriveCache(
     const FilePath& cache_root_path,
@@ -527,11 +518,6 @@ void DriveCache::InitializeOnBlockingPoolForTesting() {
 void DriveCache::DestroyOnBlockingPool() {
   AssertOnSequencedWorkerPool();
   delete this;
-}
-
-void DriveCache::ForceRescanOnBlockingPoolForTesting() {
-  AssertOnSequencedWorkerPool();
-  metadata_->ForceRescanForTesting(cache_paths_);
 }
 
 bool DriveCache::GetCacheEntryOnBlockingPool(const std::string& resource_id,

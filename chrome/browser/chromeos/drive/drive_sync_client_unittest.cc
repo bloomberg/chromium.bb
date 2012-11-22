@@ -103,12 +103,21 @@ class DriveSyncClientTest : public testing::Test {
     // Create a temporary directory.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    // Initialize the sync client.
+    // Initialize the cache.
     scoped_refptr<base::SequencedWorkerPool> pool =
         content::BrowserThread::GetBlockingPool();
     cache_ = DriveCache::CreateDriveCache(
         temp_dir_.path(),
         pool->GetSequencedTaskRunner(pool->GetSequenceToken()));
+    bool cache_initialization_success = false;
+    cache_->RequestInitialize(
+        base::Bind(&test_util::CopyResultFromInitializeCacheCallback,
+                   &cache_initialization_success));
+    google_apis::test_util::RunBlockingPoolTask();
+    ASSERT_TRUE(cache_initialization_success);
+    SetUpCache();
+
+    // Initialize the sync client.
     sync_client_.reset(new DriveSyncClient(profile_.get(),
                                            mock_file_system_.get(),
                                            cache_));
@@ -164,66 +173,80 @@ class DriveSyncClientTest : public testing::Test {
     ChangeConnectionType(net::NetworkChangeNotifier::CONNECTION_NONE);
   }
 
-  // Sets up test files in the temporary directory.
-  void SetUpTestFiles() {
-    // Create a directory in the temporary directory for pinned symlinks.
-    const FilePath pinned_dir =
-        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_PINNED);
-    ASSERT_TRUE(file_util::CreateDirectory(pinned_dir));
-    // Create a directory in the temporary directory for persistent files.
-    const FilePath persistent_dir =
-        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_PERSISTENT);
-    ASSERT_TRUE(file_util::CreateDirectory(persistent_dir));
-    // Create a directory in the temporary directory for outgoing symlinks.
-    const FilePath outgoing_dir =
-        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_OUTGOING);
-    ASSERT_TRUE(file_util::CreateDirectory(outgoing_dir));
-
-    // Create a symlink in the pinned directory to /dev/null.
-    // We'll collect this resource ID as a file to be fetched.
-    ASSERT_TRUE(
-        file_util::CreateSymbolicLink(
-            FilePath::FromUTF8Unsafe("/dev/null"),
-            pinned_dir.AppendASCII("resource_id_not_fetched_foo")));
-    // Create some more.
-    ASSERT_TRUE(
-        file_util::CreateSymbolicLink(
-            FilePath::FromUTF8Unsafe("/dev/null"),
-            pinned_dir.AppendASCII("resource_id_not_fetched_bar")));
-    ASSERT_TRUE(
-        file_util::CreateSymbolicLink(
-            FilePath::FromUTF8Unsafe("/dev/null"),
-            pinned_dir.AppendASCII("resource_id_not_fetched_baz")));
-
-    // Create a file in the persistent directory.
-    const FilePath persistent_file_path =
-        persistent_dir.AppendASCII("resource_id_fetched.md5");
+  // Sets up cache for tests.
+  void SetUpCache() {
+    // Prepare a temp file.
+    FilePath temp_file;
+    EXPECT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
+                                                    &temp_file));
     const std::string content = "hello";
-    ASSERT_TRUE(file_util::WriteFile(
-        persistent_file_path, content.data(), content.size()));
-    // Create a symlink in the pinned directory to the test file.
-    ASSERT_TRUE(
-        file_util::CreateSymbolicLink(
-            persistent_file_path,
-            pinned_dir.AppendASCII("resource_id_fetched")));
+    EXPECT_EQ(static_cast<int>(content.size()),
+              file_util::WriteFile(temp_file, content.data(), content.size()));
 
-    // Create a dirty file in the persistent directory.
-    const FilePath dirty_file_path =
-        persistent_dir.AppendASCII(std::string("resource_id_dirty.") +
-                                   util::kLocallyModifiedFileExtension);
-    std::string dirty_content = "dirty";
-    ASSERT_TRUE(file_util::WriteFile(
-        dirty_file_path, dirty_content.data(), dirty_content.size()));
-    // Create a symlink in the outgoing directory to the dirty file.
-    ASSERT_TRUE(
-        file_util::CreateSymbolicLink(
-            dirty_file_path,
-            outgoing_dir.AppendASCII("resource_id_dirty")));
-    // Create a symlink in the pinned directory to the dirty file.
-    ASSERT_TRUE(
-        file_util::CreateSymbolicLink(
-            dirty_file_path,
-            pinned_dir.AppendASCII("resource_id_dirty")));
+    // Prepare 3 pinned-but-not-present files.
+    DriveFileError error = DRIVE_FILE_OK;
+    std::string resource_id;
+    std::string md5;
+    cache_->Pin("resource_id_not_fetched_foo", "",
+                base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
+                           &error, &resource_id, &md5));
+    google_apis::test_util::RunBlockingPoolTask();
+    EXPECT_EQ(DRIVE_FILE_OK, error);
+
+    cache_->Pin("resource_id_not_fetched_bar", "",
+                base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
+                           &error, &resource_id, &md5));
+    google_apis::test_util::RunBlockingPoolTask();
+    EXPECT_EQ(DRIVE_FILE_OK, error);
+
+    cache_->Pin("resource_id_not_fetched_baz", "",
+                base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
+                           &error, &resource_id, &md5));
+    google_apis::test_util::RunBlockingPoolTask();
+    EXPECT_EQ(DRIVE_FILE_OK, error);
+
+    // Prepare a pinned-and-fetched file.
+    const std::string resource_id_fetched = "resource_id_fetched";
+    const std::string md5_fetched = "md5";
+    FilePath cache_file_path;
+    cache_->Store(resource_id_fetched, md5_fetched, temp_file,
+                  DriveCache::FILE_OPERATION_COPY,
+                  base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
+                             &error, &resource_id, &md5));
+    google_apis::test_util::RunBlockingPoolTask();
+    EXPECT_EQ(DRIVE_FILE_OK, error);
+    cache_->Pin(resource_id_fetched, md5_fetched,
+                base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
+                           &error, &resource_id, &md5));
+    google_apis::test_util::RunBlockingPoolTask();
+    EXPECT_EQ(DRIVE_FILE_OK, error);
+
+    // Prepare a pinned-and-fetched-and-dirty file.
+    const std::string resource_id_dirty = "resource_id_dirty";
+    const std::string md5_dirty = "";  // Don't care.
+    cache_->Store(resource_id_dirty, md5_dirty, temp_file,
+                  DriveCache::FILE_OPERATION_COPY,
+                  base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
+                             &error, &resource_id, &md5));
+    google_apis::test_util::RunBlockingPoolTask();
+    EXPECT_EQ(DRIVE_FILE_OK, error);
+    cache_->Pin(resource_id_dirty, md5_dirty,
+                base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
+                           &error, &resource_id, &md5));
+    google_apis::test_util::RunBlockingPoolTask();
+    EXPECT_EQ(DRIVE_FILE_OK, error);
+    cache_->MarkDirty(
+        resource_id_dirty, md5_dirty,
+        base::Bind(&test_util::CopyResultsFromGetFileFromCacheCallback,
+                   &error, &cache_file_path));
+    google_apis::test_util::RunBlockingPoolTask();
+    EXPECT_EQ(DRIVE_FILE_OK, error);
+    cache_->CommitDirty(
+        resource_id_dirty, md5_dirty,
+        base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
+                   &error, &resource_id, &md5));
+    google_apis::test_util::RunBlockingPoolTask();
+    EXPECT_EQ(DRIVE_FILE_OK, error);
   }
 
   // Sets the expectation for MockDriveFileSystem::GetFileByResourceId(),
@@ -323,24 +346,16 @@ class DriveSyncClientTest : public testing::Test {
 };
 
 TEST_F(DriveSyncClientTest, StartInitialScan) {
-  SetUpTestFiles();
   // Connect to no network, so the sync loop won't spin.
   ConnectToNone();
 
-  // Kick off the cache initialization. This will scan the contents in the
-  // test cache directory.
-  bool success = false;
-  cache_->RequestInitialize(
-      base::Bind(&test_util::CopyResultFromInitializeCacheCallback, &success));
   // Start processing the files in the backlog. This will collect the
   // resource IDs of these files.
   sync_client_->StartProcessingBacklog();
   google_apis::test_util::RunBlockingPoolTask();
-  ASSERT_TRUE(success);
 
   // Check the contents of the queue for fetching.
-  std::vector<std::string> resource_ids =
-      GetResourceIdsToBeFetched();
+  std::vector<std::string> resource_ids = GetResourceIdsToBeFetched();
   ASSERT_EQ(3U, resource_ids.size());
   // Since these are the list of file names read from the disk, the order is
   // not guaranteed, hence sort it.
@@ -357,7 +372,6 @@ TEST_F(DriveSyncClientTest, StartInitialScan) {
 }
 
 TEST_F(DriveSyncClientTest, StartSyncLoop) {
-  SetUpTestFiles();
   ConnectToWifi();
 
   AddResourceIdToFetch("resource_id_not_fetched_foo");
@@ -376,7 +390,6 @@ TEST_F(DriveSyncClientTest, StartSyncLoop) {
 }
 
 TEST_F(DriveSyncClientTest, StartSyncLoop_Offline) {
-  SetUpTestFiles();
   ConnectToNone();
 
   AddResourceIdToFetch("resource_id_not_fetched_foo");
@@ -395,7 +408,6 @@ TEST_F(DriveSyncClientTest, StartSyncLoop_ResumedConnection) {
   const FilePath file_path(
       FilePath::FromUTF8Unsafe("local_path_does_not_matter"));
   const std::string mime_type("mime_type_does_not_matter");
-  SetUpTestFiles();
   ConnectToWifi();
   AddResourceIdToFetch(resource_id);
 
@@ -413,7 +425,6 @@ TEST_F(DriveSyncClientTest, StartSyncLoop_ResumedConnection) {
 }
 
 TEST_F(DriveSyncClientTest, StartSyncLoop_CelluarDisabled) {
-  SetUpTestFiles();
   ConnectToWifi();  // First connect to Wifi.
 
   AddResourceIdToFetch("resource_id_not_fetched_foo");
@@ -429,7 +440,6 @@ TEST_F(DriveSyncClientTest, StartSyncLoop_CelluarDisabled) {
 }
 
 TEST_F(DriveSyncClientTest, StartSyncLoop_CelluarEnabled) {
-  SetUpTestFiles();
   ConnectToWifi();  // First connect to Wifi.
 
   // Enable fetching over cellular network.
@@ -452,7 +462,6 @@ TEST_F(DriveSyncClientTest, StartSyncLoop_CelluarEnabled) {
 }
 
 TEST_F(DriveSyncClientTest, StartSyncLoop_WimaxDisabled) {
-  SetUpTestFiles();
   ConnectToWifi();  // First connect to Wifi.
 
   AddResourceIdToFetch("resource_id_not_fetched_foo");
@@ -468,7 +477,6 @@ TEST_F(DriveSyncClientTest, StartSyncLoop_WimaxDisabled) {
 }
 
 TEST_F(DriveSyncClientTest, StartSyncLoop_CelluarEnabledWithWimax) {
-  SetUpTestFiles();
   ConnectToWifi();  // First connect to Wifi.
 
   // Enable fetching over cellular network. This includes wimax.
@@ -491,7 +499,6 @@ TEST_F(DriveSyncClientTest, StartSyncLoop_CelluarEnabledWithWimax) {
 }
 
 TEST_F(DriveSyncClientTest, StartSyncLoop_DriveDisabled) {
-  SetUpTestFiles();
   ConnectToWifi();
 
   // Disable the Drive feature.
@@ -509,7 +516,6 @@ TEST_F(DriveSyncClientTest, StartSyncLoop_DriveDisabled) {
 }
 
 TEST_F(DriveSyncClientTest, OnCachePinned) {
-  SetUpTestFiles();
   ConnectToWifi();
 
   // This file will be fetched by GetFileByResourceId() as OnCachePinned()
@@ -520,8 +526,6 @@ TEST_F(DriveSyncClientTest, OnCachePinned) {
 }
 
 TEST_F(DriveSyncClientTest, OnCacheUnpinned) {
-  SetUpTestFiles();
-
   AddResourceIdToFetch("resource_id_not_fetched_foo");
   AddResourceIdToFetch("resource_id_not_fetched_bar");
   AddResourceIdToFetch("resource_id_not_fetched_baz");
@@ -547,7 +551,6 @@ TEST_F(DriveSyncClientTest, OnCacheUnpinned) {
 }
 
 TEST_F(DriveSyncClientTest, Deduplication) {
-  SetUpTestFiles();
   ConnectToWifi();
 
   AddResourceIdToFetch("resource_id_not_fetched_foo");
@@ -562,16 +565,8 @@ TEST_F(DriveSyncClientTest, Deduplication) {
 }
 
 TEST_F(DriveSyncClientTest, ExistingPinnedFiles) {
-  SetUpTestFiles();
   // Connect to no network, so the sync loop won't spin.
   ConnectToNone();
-
-  // Kick off the cache initialization. This will scan the contents in the
-  // test cache directory.
-  bool initialization_success = false;
-  cache_->RequestInitialize(
-      base::Bind(&test_util::CopyResultFromInitializeCacheCallback,
-                 &initialization_success));
 
   // Set the expectation so that the MockDriveFileSystem returns "new_md5"
   // for "resource_id_fetched". This simulates that the file is updated on
@@ -590,7 +585,6 @@ TEST_F(DriveSyncClientTest, ExistingPinnedFiles) {
   // IDs of pinned files, with stale local cache files.
   sync_client_->StartCheckingExistingPinnedFiles();
   google_apis::test_util::RunBlockingPoolTask();
-  ASSERT_TRUE(initialization_success);
 
   // Check the contents of the queue for fetching.
   std::vector<std::string> resource_ids =
@@ -605,8 +599,6 @@ TEST_F(DriveSyncClientTest, ExistingPinnedFiles) {
 }
 
 TEST_F(DriveSyncClientTest, ObserveEmptyQueue) {
-  SetUpTestFiles();
-
   ConnectToCellular();
   EXPECT_EQ(TestObserver::STOPPED, observer_.state());
 
@@ -656,8 +648,6 @@ TEST_F(DriveSyncClientTest, ObserveEmptyQueue) {
 }
 
 TEST_F(DriveSyncClientTest, ObserveRunAllTaskQueue) {
-  SetUpTestFiles();
-
   AddResourceIdToFetch("resource_id_foo");
   AddResourceIdToFetch("resource_id_bar");
 
@@ -682,8 +672,6 @@ TEST_F(DriveSyncClientTest, ObserveRunAllTaskQueue) {
 }
 
 TEST_F(DriveSyncClientTest, ObserveDisconnection) {
-  SetUpTestFiles();
-
   // Start sync loop.
   AddResourceIdToFetch("resource_id_foo");
   SetExpectationForGetFileByResourceId("resource_id_foo");

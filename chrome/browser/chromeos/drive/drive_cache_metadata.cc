@@ -314,8 +314,6 @@ class FakeDriveCacheMetadata : public DriveCacheMetadata {
                              DriveCacheEntry* cache_entry) OVERRIDE;
   virtual void RemoveTemporaryFiles() OVERRIDE;
   virtual void Iterate(const CacheIterateCallback& callback) OVERRIDE;
-  virtual void ForceRescanForTesting(
-      const std::vector<FilePath>& cache_paths) OVERRIDE;
 
   CacheMap cache_map_;
 
@@ -408,13 +406,6 @@ void FakeDriveCacheMetadata::Iterate(const CacheIterateCallback& callback) {
   }
 }
 
-void FakeDriveCacheMetadata::ForceRescanForTesting(
-    const std::vector<FilePath>& cache_paths) {
-  AssertOnSequencedWorkerPool();
-
-  ScanCachePaths(cache_paths, &cache_map_);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // DriveCacheMetadata implementation with level::db.
 
@@ -437,8 +428,6 @@ class DriveCacheMetadataDB : public DriveCacheMetadata {
                              DriveCacheEntry* cache_entry) OVERRIDE;
   virtual void RemoveTemporaryFiles() OVERRIDE;
   virtual void Iterate(const CacheIterateCallback& callback) OVERRIDE;
-  virtual void ForceRescanForTesting(
-      const std::vector<FilePath>& cache_paths) OVERRIDE;
 
   // Helper function to insert |cache_map| entries into the database.
   void InsertMapIntoDB(const CacheMap& cache_map);
@@ -595,15 +584,6 @@ void DriveCacheMetadataDB::Iterate(const CacheIterateCallback& callback) {
     if (ok)
       callback.Run(iter->key().ToString(), cache_entry);
   }
-}
-
-void DriveCacheMetadataDB::ForceRescanForTesting(
-    const std::vector<FilePath>& cache_paths) {
-  AssertOnSequencedWorkerPool();
-
-  CacheMap cache_map;
-  ScanCachePaths(cache_paths, &cache_map);
-  InsertMapIntoDB(cache_map);
 }
 
 }  // namespace

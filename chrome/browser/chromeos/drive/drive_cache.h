@@ -230,9 +230,6 @@ class DriveCache {
   // Utility method to call InitializeForTesting on UI thread.
   void RequestInitializeForTesting();
 
-  // Force a rescan of cache files, for testing.
-  void ForceRescanForTesting();
-
   // Factory methods for DriveCache.
   // |pool| and |sequence_token| are used to assert that the functions are
   // called on the right sequenced worker pool with the right sequence token.
@@ -286,9 +283,6 @@ class DriveCache {
 
   // Deletes the cache.
   void DestroyOnBlockingPool();
-
-  // Force a rescan of cache directories.
-  void ForceRescanOnBlockingPoolForTesting();
 
   // Gets the cache entry by the given resource ID and MD5.
   // See also GetCacheEntry().

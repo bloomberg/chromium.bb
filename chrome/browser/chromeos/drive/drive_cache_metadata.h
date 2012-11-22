@@ -78,10 +78,6 @@ class DriveCacheMetadata {
   // on each cache entry.
   virtual void Iterate(const CacheIterateCallback& callback) = 0;
 
-  // Force a rescan of cache directories, for testing.
-  virtual void ForceRescanForTesting(
-      const std::vector<FilePath>& cache_paths) = 0;
-
  protected:
   explicit DriveCacheMetadata(base::SequencedTaskRunner* blocking_task_runner);
 
