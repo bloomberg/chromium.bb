@@ -446,6 +446,18 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_CENTER_NO_MESSAGES" desc="The message displayed in the message center when there are no notifications.">
         You have no notifications. Relax!
       </message>
+      <message name="IDS_MESSAGE_CENTER_QUIET_MODE" desc="The button label for quiet mode.">
+        Quiet mode
+      </message>
+      <message name="IDS_MESSAGE_CENTER_QUIET_MODE_EXIT" desc="The button label for exiting quiet mode.">
+        Exit quiet mode
+      </message>
+      <message name="IDS_MESSAGE_CENTER_QUIET_MODE_1HOUR" desc="The button label to enter quiet mode in one hour.">
+        Quiet mode for one hour
+      </message>
+      <message name="IDS_MESSAGE_CENTER_QUIET_MODE_1DAY" desc="The button label to enter quiet mode in one day.">
+        Quiet mode for one day
+      </message>
       
     </messages>
   </release>

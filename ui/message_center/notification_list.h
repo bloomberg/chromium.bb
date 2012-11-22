@@ -133,6 +133,8 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   // Marks the popups returned by GetPopupNotifications() as shown.
   void MarkPopupsAsShown();
 
+  bool quiet_mode() const { return quiet_mode_; }
+
   // Sets the current quiet mode status to |quiet_mode|. The new status is not
   // expired.
   void SetQuietMode(bool quiet_mode);

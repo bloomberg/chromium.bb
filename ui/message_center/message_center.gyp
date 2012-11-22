@@ -45,6 +45,8 @@
         'message_view_multiple.h',
         'notification_list.cc',
         'notification_list.h',
+        'quiet_mode_bubble.cc',
+        'quiet_mode_bubble.h',
       ],
     },
   ],
