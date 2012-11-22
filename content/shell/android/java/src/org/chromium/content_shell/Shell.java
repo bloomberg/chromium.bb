@@ -191,6 +191,15 @@ public class Shell extends LinearLayout {
         if (progress == 1.0) postDelayed(mClearProgressRunnable, COMPLETED_PROGRESS_TIMEOUT_MS);
     }
 
+    @CalledByNative
+    private void toggleFullscreenModeForTab(boolean enterFullscreen) {
+    }
+
+    @CalledByNative
+    private boolean isFullscreenForTabOrPending() {
+        return false;
+    }
+
     @SuppressWarnings("unused")
     @CalledByNative
     private void setIsLoading(boolean loading) {

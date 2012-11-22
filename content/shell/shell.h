@@ -104,6 +104,10 @@ class Shell : public WebContentsDelegate,
 #if defined(OS_ANDROID)
   virtual void LoadProgressChanged(WebContents* source,
                                    double progress) OVERRIDE;
+  virtual void ToggleFullscreenModeForTab(content::WebContents* web_contents,
+                                          bool enter_fullscreen) OVERRIDE;
+  virtual bool IsFullscreenForTabOrPending(
+      const content::WebContents* web_contents) const OVERRIDE;
 #endif
   virtual void CloseContents(WebContents* source) OVERRIDE;
   virtual void WebContentsCreated(WebContents* source_contents,
