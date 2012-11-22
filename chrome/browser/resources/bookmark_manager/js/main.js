@@ -9,7 +9,7 @@
 /** @const */ var LinkKind = cr.LinkKind;
 /** @const */ var ListItem = cr.ui.ListItem;
 /** @const */ var Menu = cr.ui.Menu;
-/** @const */ var MenuButton  = cr.ui.MenuButton;
+/** @const */ var MenuButton = cr.ui.MenuButton;
 /** @const */ var Promise = cr.Promise;
 /** @const */ var Splitter = cr.ui.Splitter;
 /** @const */ var TreeItem = cr.ui.TreeItem;
@@ -31,16 +31,17 @@ chrome.bookmarkManagerPrivate.getStrings(function(data) {
   recentTreeItem.label = loadTimeData.getString('recent');
   searchTreeItem.label = loadTimeData.getString('search');
   if (!isRTL())
-    searchTreeItem.icon = 'images/bookmark_manager_search.png'
+    searchTreeItem.icon = 'images/bookmark_manager_search.png';
   else
-    searchTreeItem.icon = 'images/bookmark_manager_search_rtl.png'
+    searchTreeItem.icon = 'images/bookmark_manager_search_rtl.png';
 });
 
 /**
  * The id of the bookmark root.
  * @type {number}
+ * @const
  */
-/** @const */ var ROOT_ID = '0';
+var ROOT_ID = '0';
 
 var splitter = document.querySelector('.main > .splitter');
 Splitter.decorate(splitter);
@@ -201,13 +202,11 @@ function processHash() {
         updateParentId(id);
     });
   }
-};
+}
 
 // We listen to hashchange so that we can update the currently shown folder when
 // the user goes back and forward in the history.
-window.onhashchange = function(e) {
-  processHash();
-};
+window.addEventListener('hashchange', processHash);
 
 // Activate is handled by the open-in-same-window-command.
 list.addEventListener('dblclick', function(e) {
@@ -228,7 +227,7 @@ $('term').onsearch = function(e) {
 
 /**
  * Navigates to the search results for the search text.
- * @para {string} searchText The text to search for.
+ * @param {string} searchText The text to search for.
  */
 function setSearch(searchText) {
   if (searchText) {
@@ -349,6 +348,9 @@ var dnd = {
   /**
    * Helper for canDrop that only checks one bookmark node.
    * @private
+   * @return {boolean} False if dragNode is overBookmarkNode or dragNode is
+   *     a folder and overBookmarkNode is descendant of dragNode, otherwise
+   *     true.
    */
   canDrop_: function(dragNode, overBookmarkNode, overElement) {
     var dragId = dragNode.id;
@@ -399,6 +401,8 @@ var dnd = {
   /**
    * Helper for canDropAbove that only checks one bookmark node.
    * @private
+   * @return {boolean} True if we can drop dragNode above overBookmarkNode,
+   *     otherwise false.
    */
   canDropAbove_: function(dragNode, overBookmarkNode, overElement) {
     var dragId = dragNode.id;
@@ -450,6 +454,8 @@ var dnd = {
   /**
    * Helper for canDropBelow that only checks one bookmark node.
    * @private
+   * @return {boolean} True if we can drop dragNode below overBookmarkNode,
+   *     otherwise false.
    */
   canDropBelow_: function(dragNode, overBookmarkNode, overElement) {
     var dragId = dragNode.id;
@@ -487,6 +493,7 @@ var dnd = {
   /**
    * Helper for canDropOn that only checks one bookmark node.
    * @private
+   * @return {boolean} True if dragNode can drop on overBookmarkNode.
    */
   canDropOn_: function(dragNode, overBookmarkNode, overElement) {
     var dragId = dragNode.id;
@@ -653,7 +660,7 @@ var dnd = {
         rect.width = labelRect.left + labelRect.width - rect.left;
       } else {
         rect.left = labelRect.left;
-        rect.width -= rect.left
+        rect.width -= rect.left;
       }
     }
 
