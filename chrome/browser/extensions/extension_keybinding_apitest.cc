@@ -159,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageAction) {
 // popup for script badges appear. When bug 140016 has been fixed, the popup
 // code can signal to the test that the test passed.
 // TODO(finnur): Enable this test once the bug is fixed.
-IN_PROC_BROWSER_TEST_F(ScriptBadgesCommandsApiTest, ScriptBadge_DISABLED) {
+IN_PROC_BROWSER_TEST_F(ScriptBadgesCommandsApiTest, DISABLED_ScriptBadge) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/script_badge")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
