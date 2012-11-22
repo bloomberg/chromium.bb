@@ -298,11 +298,11 @@ wl_proxy_destroy(struct wl_proxy *proxy)
  * \return 0 on success or -1 on failure
  *
  * Set proxy's listener to \c implementation and its user data to
- * \c data. Ifa listener has already been set, this functions
+ * \c data. If a listener has already been set, this function
  * fails and nothing is changed.
  *
  * \c implementation is a vector of function pointers. For an opcode
- * \c n, \c implemention[n] should point to the handler of \c n for
+ * \c n, \c implementation[n] should point to the handler of \c n for
  * the given object.
  *
  * \memberof wl_proxy

@@ -102,7 +102,7 @@
 
       When a client creates a registry object, the registry object
       will emit a global event for each global currently in the
-      regitry.  Globals come and go as a result of device hotplugs,
+      registry.  Globals come and go as a result of device hotplugs,
       reconfiguration or other events, and the registry will send out
       @global and @global_remove events to keep the client up to date
       with the changes.  To mark the end of the initial burst of
