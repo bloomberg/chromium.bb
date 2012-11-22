@@ -30,7 +30,6 @@
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/mock_drive_service.h"
-#include "chrome/browser/google_apis/mock_drive_uploader.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -91,41 +90,6 @@ ACTION_P2(MockGetDocumentEntry, status, value) {
 }
 
 // Action used to set mock expectations for
-// DriveUploaderInterface::UploadExistingFile().
-ACTION_P4(MockUploadExistingFile,
-          error, drive_path, local_file_path, document_entry) {
-  scoped_ptr<google_apis::DocumentEntry> scoped_document_entry(document_entry);
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-      base::Bind(arg5,
-                 error,
-                 drive_path,
-                 local_file_path,
-                 base::Passed(&scoped_document_entry)));
-
-  const int kUploadId = 123;
-  return kUploadId;
-}
-
-// Action used to set mock expectations for
-// DriveUploaderInterface::UploadNewFile().
-ACTION(MockUploadNewFile) {
-  scoped_ptr<base::Value> value =
-      google_apis::test_util::LoadJSONFile("gdata/uploaded_file.json");
-  scoped_ptr<google_apis::DocumentEntry> document_entry(
-      google_apis::DocumentEntry::ExtractAndParse(*value));
-
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-      base::Bind(arg7,
-                 google_apis::DRIVE_UPLOAD_OK,
-                 arg1,
-                 arg2,
-                 base::Passed(&document_entry)));
-
-  const int kUploadId = 123;
-  return kUploadId;
-}
-
-// Action used to set mock expectations for
 // DriveFileSystem::CopyDocument().
 ACTION_P2(MockCopyDocument, status, value) {
   base::MessageLoopProxy::current()->PostTask(
@@ -149,6 +113,122 @@ int CountFiles(const DriveEntryProtoVector& entries) {
   }
   return num_files;
 }
+
+// A fake implementation of DriveUploaderInterface, which provides fake
+// behaviors for file uploading.
+class FakeDriveUploader : public google_apis::DriveUploaderInterface {
+ public:
+  FakeDriveUploader() {}
+  virtual ~FakeDriveUploader() {}
+
+  // DriveUploaderInterface overrides.
+
+  // Pretends that a new file was uploaded successfully, and returns the
+  // contents of "gdata/uploaded_file.json" to the caller.
+  virtual int UploadNewFile(
+      const GURL& upload_location,
+      const FilePath& drive_file_path,
+      const FilePath& local_file_path,
+      const std::string& title,
+      const std::string& content_type,
+      int64 content_length,
+      int64 file_size,
+      const google_apis::UploadCompletionCallback& completion_callback,
+      const google_apis::UploaderReadyCallback& ready_callback) OVERRIDE {
+    scoped_ptr<base::Value> value =
+        google_apis::test_util::LoadJSONFile("gdata/uploaded_file.json");
+    scoped_ptr<google_apis::DocumentEntry> document_entry(
+        google_apis::DocumentEntry::ExtractAndParse(*value));
+
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(completion_callback,
+                   google_apis::DRIVE_UPLOAD_OK,
+                   drive_file_path,
+                   local_file_path,
+                   base::Passed(&document_entry)));
+
+    const int kUploadId = 123;
+    return kUploadId;
+  }
+
+  virtual int StreamExistingFile(
+      const GURL& upload_location,
+      const FilePath& drive_file_path,
+      const FilePath& local_file_path,
+      const std::string& content_type,
+      int64 content_length,
+      int64 file_size,
+      const google_apis::UploadCompletionCallback& completion_callback,
+      const google_apis::UploaderReadyCallback& ready_callback) OVERRIDE {
+    NOTREACHED();
+    return 0;
+  }
+
+  // Pretends that an existing file ("drive/File 1.txt") was uploaded
+  // successfully, and returns an entry for the file in
+  // "gdata/root_feed.json" to the caller.
+  virtual int UploadExistingFile(
+      const GURL& upload_location,
+      const FilePath& drive_file_path,
+      const FilePath& local_file_path,
+      const std::string& content_type,
+      int64 file_size,
+      const google_apis::UploadCompletionCallback& completion_callback,
+      const google_apis::UploaderReadyCallback& ready_callback) {
+    // This function can only handle "drive/File 1.txt" whose resource ID is
+    // "file:2_file_resource_id".
+    DCHECK_EQ("drive/File 1.txt", drive_file_path.value());
+    const std::string kResourceId = "file:2_file_resource_id";
+
+    // Create a google_apis::DocumentEntry, which is needed to return a value
+    // from this function. TODO(satorux): This should be cleaned
+    // up. crbug.com/134240.
+    scoped_ptr<google_apis::DocumentEntry> document_entry;
+    scoped_ptr<base::Value> value =
+        google_apis::test_util::LoadJSONFile("gdata/root_feed.json");
+    if (!value.get())
+      return -1;
+
+    base::DictionaryValue* as_dict = NULL;
+    base::ListValue* entry_list = NULL;
+    if (value->GetAsDictionary(&as_dict) &&
+        as_dict->GetList("feed.entry", &entry_list)) {
+      for (size_t i = 0; i < entry_list->GetSize(); ++i) {
+        base::DictionaryValue* entry = NULL;
+        std::string resource_id;
+        if (entry_list->GetDictionary(i, &entry) &&
+            entry->GetString("gd$resourceId.$t", &resource_id) &&
+            resource_id == kResourceId) {
+          document_entry = google_apis::DocumentEntry::CreateFrom(*entry);
+        }
+      }
+    }
+    if (!document_entry)
+      return -1;
+
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(completion_callback,
+                   google_apis::DRIVE_UPLOAD_OK,
+                   drive_file_path,
+                   local_file_path,
+                   base::Passed(&document_entry)));
+
+    const int kUploadId = 123;
+    return kUploadId;
+  }
+
+  virtual void UpdateUpload(int upload_id,
+                            content::DownloadItem* download) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual int64 GetUploadedBytes(int upload_id) const OVERRIDE {
+    NOTREACHED();
+    return 0;
+  }
+};
 
 }  // namespace
 
@@ -198,14 +278,14 @@ class DriveFileSystemTest : public testing::Test {
     cache_ = DriveCache::CreateDriveCache(
         DriveCache::GetCacheRootPath(profile_.get()), blocking_task_runner_);
 
-    mock_uploader_.reset(new StrictMock<google_apis::MockDriveUploader>);
+    fake_uploader_.reset(new FakeDriveUploader);
     mock_webapps_registry_.reset(new StrictMock<MockDriveWebAppsRegistry>);
 
     ASSERT_FALSE(file_system_);
     file_system_ = new DriveFileSystem(profile_.get(),
                                        cache_,
                                        mock_drive_service_,
-                                       mock_uploader_.get(),
+                                       fake_uploader_.get(),
                                        mock_webapps_registry_.get(),
                                        blocking_task_runner_);
 
@@ -811,7 +891,7 @@ class DriveFileSystemTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<CallbackHelper> callback_helper_;
   DriveCache* cache_;
-  scoped_ptr<StrictMock<google_apis::MockDriveUploader> > mock_uploader_;
+  scoped_ptr<FakeDriveUploader> fake_uploader_;
   DriveFileSystem* file_system_;
   StrictMock<google_apis::MockDriveService>* mock_drive_service_;
   scoped_ptr<StrictMock<MockDriveWebAppsRegistry> > mock_webapps_registry_;
@@ -1290,9 +1370,6 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
       google_apis::test_util::LoadJSONFile("gdata/document_to_download.json");
   scoped_ptr<google_apis::DocumentEntry> document_entry(
       google_apis::DocumentEntry::ExtractAndParse(*value));
-
-  EXPECT_CALL(*mock_uploader_, UploadNewFile(_, _, _, _, _, _, _, _, _))
-      .WillOnce(MockUploadNewFile());
 
   // Transfer the local file to Drive.
   file_system_->TransferFileFromLocalToRemote(
@@ -2402,45 +2479,6 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
       .AppendASCII(kResourceId);
   ASSERT_TRUE(file_util::PathExists(dirty_cache_file_path));
   ASSERT_TRUE(file_util::PathExists(outgoing_symlink_path));
-
-  // Create a google_apis::DocumentEntry, which is needed to mock
-  // DriveUploaderInterface::UploadExistingFile().
-  // TODO(satorux): This should be cleaned up. crbug.com/134240.
-  scoped_ptr<google_apis::DocumentEntry> document_entry;
-  scoped_ptr<base::Value> value =
-      google_apis::test_util::LoadJSONFile("gdata/root_feed.json");
-  ASSERT_TRUE(value.get());
-  base::DictionaryValue* as_dict = NULL;
-  base::ListValue* entry_list = NULL;
-  if (value->GetAsDictionary(&as_dict) &&
-      as_dict->GetList("feed.entry", &entry_list)) {
-    for (size_t i = 0; i < entry_list->GetSize(); ++i) {
-      base::DictionaryValue* entry = NULL;
-      std::string resource_id;
-      if (entry_list->GetDictionary(i, &entry) &&
-          entry->GetString("gd$resourceId.$t", &resource_id) &&
-          resource_id == kResourceId) {
-        // This will be deleted by UploadExistingFile().
-        document_entry = google_apis::DocumentEntry::CreateFrom(*entry);
-      }
-    }
-  }
-  ASSERT_TRUE(document_entry);
-
-  // The mock uploader will be used to simulate a file upload.
-  EXPECT_CALL(*mock_uploader_, UploadExistingFile(
-      GURL("https://file_link_resumable_edit_media/"),
-      kFilePath,
-      dirty_cache_file_path,
-      "audio/mpeg",
-      kDummyCacheContent.size(),  // The size after modification must be used.
-      _,   // Completion callback.
-      _))  // Ready callback.
-      .WillOnce(MockUploadExistingFile(
-          google_apis::DRIVE_UPLOAD_OK,
-          FilePath::FromUTF8Unsafe("drive/File1"),
-          dirty_cache_file_path,
-          document_entry.release()));
 
   // We'll notify the directory change to the observer upon completion.
   EXPECT_CALL(*mock_directory_observer_,
