@@ -745,15 +745,15 @@ weston_wm_window_draw_decoration(void *data)
 	cairo_destroy(cr);
 
 	if (window->surface) {
-		pixman_region32_fini(&window->surface->opaque);
-		pixman_region32_init_rect(&window->surface->opaque, 0, 0,
+		pixman_region32_fini(&window->surface->pending.opaque);
+		pixman_region32_init_rect(&window->surface->pending.opaque, 0, 0,
 					  width, height);
 
 		/* We leave an extra pixel around the X window area to
 		 * make sure we don't sample from the undefined alpha
 		 * channel when filtering. */
-		pixman_region32_intersect_rect(&window->surface->opaque,
-					       &window->surface->opaque,
+		pixman_region32_intersect_rect(&window->surface->pending.opaque,
+					       &window->surface->pending.opaque,
 					       x - 1, y - 1,
 					       window->width + 2,
 					       window->height + 2);
@@ -775,8 +775,8 @@ weston_wm_window_schedule_repaint(struct weston_wm_window *window)
 	if (window->frame_id == XCB_WINDOW_NONE) {
 		if (window->surface != NULL) {
 			weston_wm_window_get_frame_size(window, &width, &height);
-			pixman_region32_fini(&window->surface->opaque);
-			pixman_region32_init_rect(&window->surface->opaque, 0, 0,
+			pixman_region32_fini(&window->surface->pending.opaque);
+			pixman_region32_init_rect(&window->surface->pending.opaque, 0, 0,
 						  width, height);
 			window->surface->geometry.dirty = 1;
 		}
