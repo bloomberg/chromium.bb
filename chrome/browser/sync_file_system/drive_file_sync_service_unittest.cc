@@ -6,9 +6,9 @@
 
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/mock_drive_service.h"
-#include "chrome/browser/google_apis/mock_drive_uploader.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_client.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
@@ -70,8 +70,7 @@ class MockRemoteServiceObserver : public RemoteFileSyncService::Observer {
 class DriveFileSyncServiceTest : public testing::Test {
  public:
   DriveFileSyncServiceTest()
-      : mock_drive_service_(NULL),
-        mock_drive_uploader_(NULL) {
+      : mock_drive_service_(NULL) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -79,7 +78,6 @@ class DriveFileSyncServiceTest : public testing::Test {
         DriveFileSyncService::kServiceName));
 
     mock_drive_service_ = new StrictMock<google_apis::MockDriveService>;
-    mock_drive_uploader_ = new StrictMock<google_apis::MockDriveUploader>;
 
     EXPECT_CALL(*mock_drive_service(),
                 Initialize(&profile_)).Times(1);
@@ -87,7 +85,7 @@ class DriveFileSyncServiceTest : public testing::Test {
     sync_client_ = DriveFileSyncClient::CreateForTesting(
         &profile_,
         scoped_ptr<DriveServiceInterface>(mock_drive_service_),
-        scoped_ptr<DriveUploaderInterface>(mock_drive_uploader_)).Pass();
+        scoped_ptr<DriveUploaderInterface>()).Pass();
     ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
     metadata_store_.reset(new DriveMetadataStore(
         base_dir_.path(), base::MessageLoopProxy::current()));
@@ -111,7 +109,6 @@ class DriveFileSyncServiceTest : public testing::Test {
 
     metadata_store_.reset();
     sync_client_.reset();
-    mock_drive_uploader_ = NULL;
     mock_drive_service_ = NULL;
 
     EXPECT_TRUE(fileapi::RevokeSyncableFileSystem(
@@ -134,10 +131,6 @@ class DriveFileSyncServiceTest : public testing::Test {
 
   StrictMock<google_apis::MockDriveService>* mock_drive_service() {
     return mock_drive_service_;
-  }
-
-  StrictMock<google_apis::MockDriveUploader>* mock_drive_uploader() {
-    return mock_drive_uploader_;
   }
 
   StrictMock<MockRemoteServiceObserver>* mock_remote_observer() {
@@ -165,7 +158,6 @@ class DriveFileSyncServiceTest : public testing::Test {
 
   // Owned by |sync_client_|.
   StrictMock<google_apis::MockDriveService>* mock_drive_service_;
-  StrictMock<google_apis::MockDriveUploader>* mock_drive_uploader_;
   StrictMock<MockRemoteServiceObserver> mock_remote_observer_;
 
   scoped_ptr<DriveFileSyncClient> sync_client_;
