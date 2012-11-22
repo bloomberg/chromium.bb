@@ -28,6 +28,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -161,8 +162,10 @@ void ImporterHost::StartImportSettings(
 void ImporterHost::OnGoogleGAIACookieChecked(bool result) {
 #if defined(OS_WIN)
   if (!result) {
-    chrome::ShowMessageBox(NULL,
-        l10n_util::GetStringUTF16(IDS_IMPORTER_GOOGLE_LOGIN_TEXT), string16(),
+    chrome::ShowMessageBox(
+        NULL,
+        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+        l10n_util::GetStringUTF16(IDS_IMPORTER_GOOGLE_LOGIN_TEXT),
         chrome::MESSAGE_BOX_TYPE_INFORMATION);
 
     GURL url("https://accounts.google.com/ServiceLogin");
