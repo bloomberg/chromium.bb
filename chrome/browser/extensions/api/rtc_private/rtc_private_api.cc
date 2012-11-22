@@ -36,11 +36,6 @@ namespace {
 const char kOnLaunchEvent[] = "rtcPrivate.onLaunch";
 // Web intent data payload mimetype.
 const char kMimeTypeJson[] = "application/vnd.chromium.contact";
-// Web intent actions.
-const char kActivateAction[] = "activate";
-const char kChatAction[] = "chat";
-const char kVoiceAction[] = "voice";
-const char kVideoAction[] = "video";
 // Web intent data structure fields.
 const char kNameIntentField[] = "name";
 const char kPhoneIntentField[] = "phone";

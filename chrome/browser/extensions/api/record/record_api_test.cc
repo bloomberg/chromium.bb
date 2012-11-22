@@ -62,10 +62,6 @@ const FilePath::CharType kDummyDirName[] = FILE_PATH_LITERAL("ReplaceMe");
 // Use this as the filename for a mock "cache" file in the user-data-dir.
 const FilePath::CharType kMockCacheFile[] = FILE_PATH_LITERAL("MockCache");
 
-// Prefix for temporary user data directory
-const FilePath::CharType kUserDataDirPrefix[]
-    = FILE_PATH_LITERAL("PageCyclerTest");
-
 }
 
 class TestProcessStrategy : public ProcessStrategy {

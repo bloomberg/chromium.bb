@@ -32,8 +32,6 @@ namespace {
 // Error messages.
 const char* const kFileTooBigError = "The MHTML file generated is too big.";
 const char* const kMHTMLGenerationFailedError = "Failed to generate MHTML.";
-const char* const kSizeRetrievalError =
-    "Failed to retrieve size of generated MHTML.";
 const char* const kTemporaryFileError = "Failed to create a temporary file.";
 const char* const kTabClosedError = "Cannot find the tab for thie request.";
 

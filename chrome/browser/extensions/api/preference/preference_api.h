@@ -28,11 +28,6 @@ class PreferenceEventRouter {
   void OnPrefChanged(PrefServiceBase* pref_service,
                      const std::string& pref_key);
 
-  // This method dispatches events to the extension message service.
-  void DispatchEvent(const std::string& extension_id,
-                     const std::string& event_name,
-                     const std::string& json_args);
-
   PrefChangeRegistrar registrar_;
   PrefChangeRegistrar incognito_registrar_;
 

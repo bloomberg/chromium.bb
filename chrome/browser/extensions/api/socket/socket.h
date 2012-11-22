@@ -102,7 +102,6 @@ class Socket : public ApiResource {
   virtual void OnWriteComplete(int result);
 
   const std::string address_;
-  int port_;
   bool is_connected_;
 
  private:

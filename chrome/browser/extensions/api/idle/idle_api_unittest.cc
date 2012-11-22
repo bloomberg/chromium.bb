@@ -130,9 +130,6 @@ class IdleTest : public BrowserWithTestWindowTest {
   base::Value* RunFunctionWithExtension(
       UIThreadExtensionFunction* function, const std::string& args);
 
-  void AddListener(const std::string& extension_id);
-  void RemoveListener(const std::string& extension_id);
-
   IdleManager* idle_manager_;
   TestIdleProvider* idle_provider_;
   testing::StrictMock<MockEventDelegate>* event_delegate_;

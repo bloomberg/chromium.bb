@@ -37,7 +37,6 @@ const char kUnknownOrUnsupportedKeyIdentiferError[] = "Unknown or unsupported "
 const char kUnsupportedModifier[] = "Unsupported modifier.";
 const char kNoValidRecipientError[] = "No valid recipient for event.";
 const char kKeyEventUnprocessedError[] = "Event was not handled.";
-const char kInvalidHeight[] = "Invalid height.";
 
 ui::EventType GetTypeFromString(const std::string& type) {
   if (type == kKeyDown) {

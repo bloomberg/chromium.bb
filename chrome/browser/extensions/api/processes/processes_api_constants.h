@@ -22,7 +22,6 @@ extern const char kJsMemoryUsedKey[];
 extern const char kNetworkKey[];
 extern const char kOsProcessIdKey[];
 extern const char kPrivateMemoryKey[];
-extern const char kProcessesKey[];
 extern const char kProfileKey[];
 extern const char kScriptCacheKey[];
 extern const char kSqliteMemoryKey[];

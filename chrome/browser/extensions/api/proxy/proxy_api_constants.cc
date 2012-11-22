@@ -21,7 +21,6 @@ const char kProxyConfigRuleHost[] = "host";
 const char kProxyConfigRulePort[] = "port";
 const char kProxyConfigRuleScheme[] = "scheme";
 const char kProxyConfigBypassList[] = "bypassList";
-const char kProxyConfigValue[] = "value";
 
 const char kProxyEventFatal[] = "fatal";
 const char kProxyEventError[] = "error";

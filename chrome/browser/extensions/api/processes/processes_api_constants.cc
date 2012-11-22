@@ -19,7 +19,6 @@ const char kJsMemoryUsedKey[] = "jsMemoryUsed";
 const char kNetworkKey[] = "network";
 const char kOsProcessIdKey[] = "osProcessId";
 const char kPrivateMemoryKey[] = "privateMemory";
-const char kProcessesKey[] = "processes";
 const char kProfileKey[] = "profile";
 const char kScriptCacheKey[] = "scriptCache";
 const char kSqliteMemoryKey[] = "sqliteMemory";

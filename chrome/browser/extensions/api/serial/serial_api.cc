@@ -15,16 +15,11 @@ using content::BrowserThread;
 namespace extensions {
 
 const char kConnectionIdKey[] = "connectionId";
-const char kPortsKey[] = "ports";
 const char kDataKey[] = "data";
 const char kBytesReadKey[] = "bytesRead";
-const char kBytesToReadKey[] = "bytesToRead";
 const char kBytesWrittenKey[] = "bytesWritten";
 const char kBitrateKey[] = "bitrate";
-const char kOptionsKey[] = "options";
 const char kSuccessKey[] = "success";
-const char kDtrKey[] = "dtr";
-const char kRtsKey[] = "rts";
 const char kDcdKey[] = "dcd";
 const char kCtsKey[] = "cts";
 

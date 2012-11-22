@@ -27,7 +27,6 @@ class NotificationApiDelegate : public NotificationDelegate {
   NotificationApiDelegate(extensions::ApiFunction* api_function,
                           extensions::ApiResourceEventNotifier* event_notifier)
       : api_function_(api_function),
-        event_notifier_(event_notifier),
         id_(kNotificationPrefix + base::Uint64ToString(next_id_++)) {
     DCHECK(api_function_);
   }
@@ -64,7 +63,6 @@ class NotificationApiDelegate : public NotificationDelegate {
   virtual ~NotificationApiDelegate() {}
 
   scoped_refptr<extensions::ApiFunction> api_function_;
-  extensions::ApiResourceEventNotifier* event_notifier_;
   std::string id_;
 
   static uint64 next_id_;

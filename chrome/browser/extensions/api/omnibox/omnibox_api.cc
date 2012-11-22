@@ -31,11 +31,6 @@ const char kOnInputCancelled[] = "omnibox.onInputCancelled";
 namespace extensions {
 
 namespace {
-const char kDescriptionStylesOrderError[] =
-    "Suggestion descriptionStyles must be in increasing non-overlapping order.";
-const char kDescriptionStylesLengthError[] =
-    "Suggestion descriptionStyles contains an offset longer than the"
-    " description text";
 
 const char kSuggestionContent[] = "content";
 const char kSuggestionDescription[] = "description";

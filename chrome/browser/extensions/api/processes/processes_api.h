@@ -45,7 +45,6 @@ class ProcessesEventRouter : public TaskManagerModelObserver,
   void StartTaskManagerListening();
 
   bool is_task_manager_listening() { return task_manager_listening_; }
-  int num_listeners() { return listeners_; }
 
  private:
   // content::NotificationObserver implementation.

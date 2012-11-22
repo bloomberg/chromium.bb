@@ -8,9 +8,6 @@ namespace extensions {
 
 namespace idle_api_constants {
 
-const char kSecondsKey[] = "seconds";
-const char kStateKey[] = "state";
-
 const char kOnStateChanged[] = "idle.onStateChanged";
 
 const char kStateActive[] = "active";

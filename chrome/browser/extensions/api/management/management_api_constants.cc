@@ -6,21 +6,9 @@
 
 namespace extension_management_api_constants {
 
-const char kAppLaunchUrlKey[] = "appLaunchUrl";
 const char kDisabledReasonKey[] = "disabledReason";
-const char kHostPermissionsKey[] = "hostPermissions";
-const char kIconsKey[] = "icons";
-const char kInstallTypeKey[] = "installType";
-const char kIsAppKey[] = "isApp";
-const char kMayDisableKey[] = "mayDisable";
-const char kPermissionsKey[] = "permissions";
-const char kShowConfirmDialogKey[] = "showConfirmDialog";
-const char kSizeKey[] = "size";
-const char kUpdateUrlKey[] = "updateUrl";
-const char kUrlKey[] = "url";
 
 const char kDisabledReasonPermissionsIncrease[] = "permissions_increase";
-const char kDisabledReasonUnknown[] = "unknown";
 
 const char kExtensionCreateError[] =
     "Failed to create extension from manifest.";
@@ -34,11 +22,5 @@ const char kUserCantModifyError[] = "Extension * cannot be modified by user";
 const char kUninstallCanceledError[] = "Extension * uninstall canceled by user";
 const char kUserDidNotReEnableError[] =
     "The user did not accept the re-enable dialog";
-
-const char kInstallTypeAdmin[] = "admin";
-const char kInstallTypeDevelopment[] = "development";
-const char kInstallTypeNormal[] = "normal";
-const char kInstallTypeOther[] = "other";
-const char kInstallTypeSideload[] = "sideload";
 
 }  // namespace extension_management_api_constants

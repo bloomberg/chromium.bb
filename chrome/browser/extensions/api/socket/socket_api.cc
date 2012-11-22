@@ -33,7 +33,6 @@ const char kResultCodeKey[] = "resultCode";
 const char kSocketIdKey[] = "socketId";
 
 const char kSocketNotFoundError[] = "Socket not found";
-const char kSocketTypeInvalidError[] = "Socket type is not supported";
 const char kDnsLookupFailedError[] = "DNS resolution failed";
 const char kPermissionError[] = "App does not have permission";
 const char kNetworkListError[] = "Network lookup failed or unsupported";

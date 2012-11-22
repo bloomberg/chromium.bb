@@ -9,10 +9,6 @@ namespace extensions {
 
 namespace idle_api_constants {
 
-// Keys.
-extern const char kSecondsKey[];
-extern const char kStateKey[];
-
 // Events.
 extern const char kOnStateChanged[];
 
