@@ -185,6 +185,7 @@
         'browser/ui/panels/panel_resize_browsertest.cc',
         'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
         'browser/ui/views/button_dropdown_test.cc',
+        'browser/ui/views/constrained_window_views_browsertest.cc',
         'browser/ui/views/find_bar_host_interactive_uitest.cc',
         'browser/ui/views/keyboard_access_browsertest.cc',
         'browser/ui/views/menu_item_view_test.cc',
@@ -216,9 +217,10 @@
         ['toolkit_uses_gtk == 1 and toolkit_views == 0', {
           'sources!': [
             # TODO(port)
-            'browser/ui/views/crypto_module_password_dialog_view_unittest.cc',
             'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
             'browser/ui/views/button_dropdown_test.cc',
+            'browser/ui/views/constrained_window_views_browsertest.cc',
+            'browser/ui/views/crypto_module_password_dialog_view_unittest.cc',
             'browser/ui/views/find_bar_host_interactive_uitest.cc',
             'browser/ui/views/keyboard_access_browsertest.cc',
             'browser/ui/views/menu_item_view_test.cc',
@@ -238,6 +240,7 @@
             # TODO(port)
             'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
             'browser/ui/views/button_dropdown_test.cc',
+            'browser/ui/views/constrained_window_views_browsertest.cc',
             'browser/ui/views/find_bar_host_interactive_uitest.cc',
             'browser/ui/views/keyboard_access_browsertest.cc',
             'browser/ui/views/menu_item_view_test.cc',
@@ -1087,7 +1090,6 @@
         'browser/ui/tab_modal_confirm_dialog_browsertest.h',
         'browser/ui/views/autofill/autofill_external_delegate_views_browsertest.cc',
         'browser/ui/views/browser_actions_container_browsertest.cc',
-        'browser/ui/views/constrained_window_views_browsertest.cc',
         'browser/ui/views/find_bar_controller_browsertest.cc',
         'browser/ui/views/frame/app_non_client_frame_view_ash_browsertest.cc',
         'browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc',
