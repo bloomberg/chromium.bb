@@ -20,6 +20,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+class ActiveDesktopMonitor;
 class DesktopNotificationsTest;
 typedef LoggingNotificationDelegate<DesktopNotificationsTest>
     LoggingNotificationProxy;
@@ -113,9 +114,11 @@ class DesktopNotificationsTest : public testing::Test {
   // Real DesktopNotificationService
   scoped_ptr<DesktopNotificationService> service_;
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   content::RenderViewTest::RendererWebKitPlatformSupportImplNoSandbox
       webkit_platform_support_;
+
+  scoped_ptr<ActiveDesktopMonitor> active_desktop_monitor_;
 #endif
 
   // Contains the cumulative output of the unit test.

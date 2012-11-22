@@ -12,8 +12,10 @@
 #include "chrome/test/base/testing_pref_service.h"
 #include "content/public/common/show_desktop_notification_params.h"
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
 #include "ash/shell.h"
+#include "ash/test/test_shell_delegate.h"
+#include "chrome/browser/ui/aura/active_desktop_monitor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -96,7 +98,8 @@ void DesktopNotificationsTest::SetUp() {
   WebKit::initialize(webkit_platform_support_.Get());
   // MockBalloonCollection retrieves information about the screen on creation.
   // So it is necessary to make sure the desktop gets created first.
-  ash::Shell::CreateInstance(NULL);
+  ash::Shell::CreateInstance(new ash::test::TestShellDelegate);
+  active_desktop_monitor_.reset(new ActiveDesktopMonitor);
 #endif
 
   chrome::RegisterLocalState(&local_state_);
@@ -113,6 +116,7 @@ void DesktopNotificationsTest::TearDown() {
   ui_manager_.reset(NULL);
   profile_.reset(NULL);
 #if defined(USE_ASH)
+  active_desktop_monitor_.reset();
   ash::Shell::DeleteInstance();
   aura::Env::DeleteInstance();
   WebKit::shutdown();

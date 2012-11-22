@@ -1260,6 +1260,11 @@
             }],
           ],
         }],
+        ['use_ash==1', {
+          'dependencies': [
+            '../ash/ash.gyp:test_support_ash',
+          ],
+        }],
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
