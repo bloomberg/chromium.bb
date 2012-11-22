@@ -388,7 +388,13 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
           prop_reg, "Fling Buffer Suppress Zero Length Scrolls", 0),
       fling_buffer_min_avg_speed_(prop_reg,
                                   "Fling Buffer Min Avg Speed",
-                                  10.0) {
+                                  10.0),
+      right_click_start_time_diff_(prop_reg,
+                                   "Right Click Start Time Diff Thresh",
+                                   0.5),
+      right_click_second_finger_age_(prop_reg,
+                                     "Right Click Second Finger Age Thresh",
+                                     1.0) {
   InitName();
   memset(&prev_state_, 0, sizeof(prev_state_));
   if (!finger_metrics_) {
@@ -1474,11 +1480,33 @@ int ImmediateInterpreter::EvaluateButtonType(
   // If we get to here, then:
   // pointing_.size() == 2 && current_gesture_type_ != kGestureTypeScroll.
   // Find which two fingers are performing the gesture.
+
   const FingerState* finger1 = hwstate.GetFingerState(*pointing_.begin());
   const FingerState* finger2 = hwstate.GetFingerState(*(pointing_.begin() + 1));
 
-  return TwoFingersGesturing(*finger1, *finger2) ?
-      GESTURES_BUTTON_RIGHT : GESTURES_BUTTON_LEFT;
+  if (!TwoFingersGesturing(*finger1, *finger2))
+    return GESTURES_BUTTON_LEFT;
+
+  // The way to tell if it is a right click:
+  // 1. two fingers come down and immediately click -> right click
+  // 2. one finger is on the pad for a long time/idle (many seconds), second
+  //    finger comes down and immediately clicks -> left click
+  // 3. one finger is on the pad for a long time/idle (many seconds), second
+  //    finger comes down, a while passes, button clicks down -> right click
+
+  stime_t finger1_start_time = finger_origin_timestamp(finger1->tracking_id);
+  stime_t finger2_start_time = finger_origin_timestamp(finger2->tracking_id);
+  stime_t start_time_delta = finger1_start_time - finger2_start_time;
+  if (fabs(start_time_delta) < right_click_start_time_diff_.val_)
+    return GESTURES_BUTTON_RIGHT;
+
+  stime_t finger_age;
+  if (finger1_start_time > finger2_start_time)
+    finger_age = hwstate.timestamp - finger1_start_time;
+  else
+    finger_age = hwstate.timestamp - finger2_start_time;
+  return (finger_age < right_click_second_finger_age_.val_) ?
+      GESTURES_BUTTON_LEFT : GESTURES_BUTTON_RIGHT;
 }
 
 bool ImmediateInterpreter::PressureChangingSignificantly(

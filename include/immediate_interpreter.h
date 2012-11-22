@@ -542,6 +542,13 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // When computing a fling, if the fling buffer has an average speed under
   // this threshold, we do not perform a fling. Units are mm/sec.
   DoubleProperty fling_buffer_min_avg_speed_;
+
+  // Short start time diff of fingers for a two-finger click that indicates
+  // a right click
+  DoubleProperty right_click_start_time_diff_;
+  // Second finger comes down for a while then button clicks down that indicates
+  // a right click
+  DoubleProperty right_click_second_finger_age_;
 };
 
 }  // namespace gestures
