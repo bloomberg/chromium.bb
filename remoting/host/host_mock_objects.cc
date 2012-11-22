@@ -88,8 +88,4 @@ MockHostStatusObserver::MockHostStatusObserver() {}
 
 MockHostStatusObserver::~MockHostStatusObserver() {}
 
-MockUserAuthenticator::MockUserAuthenticator() {}
-
-MockUserAuthenticator::~MockUserAuthenticator() {}
-
 }  // namespace remoting

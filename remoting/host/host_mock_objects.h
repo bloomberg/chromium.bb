@@ -17,7 +17,6 @@
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/local_input_monitor.h"
-#include "remoting/host/user_authenticator.h"
 #include "remoting/proto/control.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -171,18 +170,6 @@ class MockHostStatusObserver : public HostStatusObserver {
                     const protocol::TransportRoute& route));
   MOCK_METHOD1(OnStart, void(const std::string& xmpp_login));
   MOCK_METHOD0(OnShutdown, void());
-};
-
-class MockUserAuthenticator : public UserAuthenticator {
- public:
-  MockUserAuthenticator();
-  virtual ~MockUserAuthenticator();
-
-  MOCK_METHOD2(Authenticate, bool(const std::string& username,
-                                  const std::string& password));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockUserAuthenticator);
 };
 
 }  // namespace remoting
