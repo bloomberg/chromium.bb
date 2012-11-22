@@ -128,3 +128,4 @@ FileCopyManagerWrapper.decorateAsyncMethod('paste');
 FileCopyManagerWrapper.decorateAsyncMethod('deleteEntries');
 FileCopyManagerWrapper.decorateAsyncMethod('forceDeleteTask');
 FileCopyManagerWrapper.decorateAsyncMethod('cancelDeleteTask');
+FileCopyManagerWrapper.decorateAsyncMethod('zipSelection');

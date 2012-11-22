@@ -306,3 +306,20 @@ Commands.searchCommand = {
     event.canExecute = !fileManager.isRenamingInProgress();
   }
 };
+
+/**
+ * Creates zip file for current selection.
+ */
+Commands.zipSelectionCommand = {
+  execute: function(event, fileManager) {
+    var dirEntry = fileManager.directoryModel_.getCurrentDirEntry();
+    var selectionEntries = fileManager.getSelection().entries;
+    fileManager.copyManager_.zipSelection(dirEntry, fileManager.isOnGData(),
+                                          selectionEntries);
+  },
+  canExecute: function(event, fileManager) {
+    var selection = fileManager.getSelection();
+    event.canExecute = !fileManager.isOnGData() && selection &&
+        selection.totalCount > 0;
+  }
+};

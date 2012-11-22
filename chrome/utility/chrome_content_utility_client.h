@@ -17,6 +17,7 @@ class Importer;
 namespace base {
 class DictionaryValue;
 class Thread;
+struct FileDescriptor;
 }
 
 namespace gfx {
@@ -62,6 +63,12 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   void OnRobustJPEGDecodeImage(
       const std::vector<unsigned char>& encoded_data);
   void OnParseJSON(const std::string& json);
+
+#if defined(OS_CHROMEOS)
+  void OnCreateZipFile(const FilePath& src_dir,
+                       const std::vector<FilePath>& src_relative_paths,
+                       const base::FileDescriptor& dest_fd);
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
   // Helper method for Windows.

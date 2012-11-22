@@ -664,6 +664,8 @@
             'browser/chromeos/extensions/wallpaper_manager_util.h',
             'browser/chromeos/extensions/wallpaper_private_api.cc',
             'browser/chromeos/extensions/wallpaper_private_api.h',
+            'browser/chromeos/extensions/zip_file_creator.cc',
+            'browser/chromeos/extensions/zip_file_creator.h',
             'browser/chromeos/media/media_player_extension_api.cc',
             'browser/chromeos/media/media_player_extension_api.h',
           ],
@@ -702,6 +704,8 @@
             ['exclude', 'browser/chromeos/extensions/file_handler_util.cc'],
             ['exclude', 'browser/chromeos/extensions/file_manager_util.h'],
             ['exclude', 'browser/chromeos/extensions/file_manager_util.cc'],
+            ['exclude', 'browser/chromeos/extensions/zip_file_creator.h'],
+            ['exclude', 'browser/chromeos/extensions/zip_file_creator.cc'],
           ],
         }],
         ['use_ibus==1', {

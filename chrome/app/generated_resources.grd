@@ -12482,6 +12482,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Open with...
       </message>
 
+      <message name="IDS_FILE_BROWSER_ZIP_SELECTION_BUTTON_LABEL" desc="Menu item label, showing dialog to create zip file for selected files">
+        Zip selection
+      </message>
+
       <message name="IDS_FILE_BROWSER_TRANSFER_ITEMS_REMAINING" desc="File Manager status message. 'Item' is used here as a generic term for file or directory. 'Transferring' is used in the sense 'copying or moving files'.">
         Transferring $1 items.
       </message>
@@ -12532,6 +12536,24 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_FILE_BROWSER_MOVE_UNEXPECTED_ERROR" desc="File Manager error message.">
         Move failed, unexpected error: $1
+      </message>
+      <message name="IDS_FILE_BROWSER_ZIP_FILE_NAME" desc="File Manager status message.">
+        Zipping <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>
+      </message>
+      <message name="IDS_FILE_BROWSER_ZIP_ITEMS_REMAINING" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
+        Zipping $1 items.
+      </message>
+      <message name="IDS_FILE_BROWSER_ZIP_CANCELLED" desc="File Manager status message.">
+        Zipping cancelled.
+      </message>
+      <message name="IDS_FILE_BROWSER_ZIP_TARGET_EXISTS_ERROR" desc="File Manager error message. 'Item' is used here as a generic term for file or directory.">
+        Zipping failed, item exists: "$1"
+      </message>
+      <message name="IDS_FILE_BROWSER_ZIP_FILESYSTEM_ERROR" desc="File Manager error message.">
+        Zipping failed. <ph name="ERROR_MESSAGE">$1<ex>An error occurred (code: ABORT)</ex></ph>
+      </message>
+      <message name="IDS_FILE_BROWSER_ZIP_UNEXPECTED_ERROR" desc="File Manager error message.">
+        Zipping failed, unexpected error: $1
       </message>
 
       <message name="IDS_FILE_BROWSER_DELETED_MESSAGE_PLURAL" desc="Message informing about deleting multiple items.">

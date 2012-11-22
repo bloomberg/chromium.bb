@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/platform_file.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
@@ -100,6 +101,14 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_ParseJSON,
 IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_GetPrinterCapsAndDefaults,
                      std::string /* printer name */)
 
+#if defined(OS_CHROMEOS)
+// Tell the utility process to create a zip file on the given list of files.
+IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_CreateZipFile,
+                     FilePath /* src_dir */,
+                     std::vector<FilePath> /* src_relative_paths */,
+                     base::FileDescriptor /* dest_fd */)
+#endif  // defined(OS_CHROMEOS)
+
 //------------------------------------------------------------------------------
 // Utility process host messages:
 // These are messages from the utility process to the browser.
@@ -177,3 +186,11 @@ IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Succeeded,
 // capabilities and defaults.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Failed,
                      std::string /* printer name */)
+
+#if defined(OS_CHROMEOS)
+// Reply when the utility process has succeeded in creating the zip file.
+IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_CreateZipFile_Succeeded)
+
+// Reply when an error occured in creating the zip file.
+IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_CreateZipFile_Failed)
+#endif  // defined(OS_CHROMEOS)

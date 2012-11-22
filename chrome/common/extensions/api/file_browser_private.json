@@ -1029,6 +1029,40 @@
         "parameters": []
       },
       {
+        "name": "zipSelection",
+        "description": "Create a zip file for the selected files.",
+        "parameters": [
+          {
+            "name": "dirURL",
+            "type": "string",
+            "description": "URL of the directory containing the selected files."
+          },
+          {
+            "name": "selectionURLs",
+            "type": "array",
+            "description": "URLs of the selected files. The files must be under the directory specified by dirURL.",
+            "items": { "type": "string" }
+          },
+          {
+            "name": "destName",
+            "type": "string",
+            "description": "Name of the destination zip file. The zip file will be created under the directory specified by dirURL."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": [
+              {
+                "name" : "success",
+                "type" : "boolean",
+                "optional": true
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "getNetworkConnectionState",
         "description": "Retrieves the state of the currently active network connection.",
         "parameters": [

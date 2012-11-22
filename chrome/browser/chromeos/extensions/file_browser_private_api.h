@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
+#include "chrome/browser/chromeos/extensions/zip_file_creator.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "googleurl/src/url_util.h"
@@ -786,6 +787,32 @@ class RequestDirectoryRefreshFunction : public SyncExtensionFunction {
   virtual ~RequestDirectoryRefreshFunction() {}
 
   virtual bool RunImpl() OVERRIDE;
+};
+
+// Create a zip file for the selected files.
+class ZipSelectionFunction : public FileBrowserFunction,
+                             public extensions::ZipFileCreator::Observer {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.zipSelection");
+
+  ZipSelectionFunction();
+
+ protected:
+  virtual ~ZipSelectionFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+  // extensions::ZipFileCreator::Delegate overrides.
+  virtual void OnZipDone(bool success) OVERRIDE;
+
+ private:
+  // A callback method to handle the result of
+  // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
+  void GetLocalPathsResponseOnUIThread(const std::string dest_name,
+                                       const SelectedFileInfoList& files);
+
+  scoped_refptr<extensions::ZipFileCreator> zip_file_creator_;
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_PRIVATE_API_H_

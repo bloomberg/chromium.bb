@@ -67,6 +67,7 @@ FileCopyManager.Task = function(sourceDirEntry, targetDirEntry) {
 
   this.deleteAfterCopy = false;
   this.move = false;
+  this.zip = false;
   this.sourceOnGData = false;
   this.targetOnGData = false;
 
@@ -236,6 +237,7 @@ FileCopyManager.prototype.getStatus = function() {
     percentage: NaN,
     pendingCopies: 0,
     pendingMoves: 0,
+    pendingZips: 0,
     filename: ''  // In case pendingItems == 1
   };
 
@@ -253,7 +255,9 @@ FileCopyManager.prototype.getStatus = function() {
     rv.completedDirectories += task.completedDirectories.length;
     rv.completedBytes += task.completedBytes;
 
-    if (task.move || task.deleteAfterCopy) {
+    if (task.zip) {
+      rv.pendingZips += pendingFiles + pendingDirectories;
+    } else if (task.move || task.deleteAfterCopy) {
       rv.pendingMoves += pendingFiles + pendingDirectories;
     } else {
       rv.pendingCopies += pendingFiles + pendingDirectories;
@@ -654,7 +658,10 @@ FileCopyManager.prototype.serviceNextTask_ = function(
     }, 10);
   }
 
-  this.serviceNextTaskEntry_(task, onEntryServiced, errorCallback);
+  if (!task.zip)
+    this.serviceNextTaskEntry_(task, onEntryServiced, errorCallback);
+  else
+    this.serviceZipTask_(task, onTaskComplete, errorCallback);
 };
 
 /**
@@ -984,6 +991,82 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
 };
 
 /**
+ * Service a zip file creation task.
+ *
+ * @private
+ * @param {FileManager.Task} task A task.
+ * @param {Function} completeCallback On complete.
+ * @param {Function} errorCallback On error.
+ */
+FileCopyManager.prototype.serviceZipTask_ = function(task, completeCallback,
+                                                     errorCallback) {
+  var self = this;
+  var dirURL = task.sourceDirEntry.toURL();
+  var selectionURLs = [];
+  for (var i = 0; i < task.pendingDirectories.length; i++)
+    selectionURLs.push(task.pendingDirectories[i].toURL());
+  for (var i = 0; i < task.pendingFiles.length; i++)
+    selectionURLs.push(task.pendingFiles[i].toURL());
+
+  var destName = 'Archive';
+  if (task.originalEntries.length == 1) {
+    var entryPath = task.originalEntries[0].fullPath;
+    var i = entryPath.lastIndexOf('/');
+    var basename = (i < 0) ? entryPath : entryPath.substr(i + 1);
+    i = basename.lastIndexOf('.');
+    destName = ((i < 0) ? basename : basename.substr(0, i));
+  }
+
+  var copyNumber = 0;
+  var firstExistingEntry = null;
+  var destPath = destName + '.zip';
+
+  function onError(reason, data) {
+    self.log_('serviceZipTask error: ' + reason + ':', data);
+    errorCallback(new FileCopyManager.Error(reason, data));
+  }
+
+  function onTargetExists(existingEntry) {
+    if (copyNumber < 10) {
+      if (!firstExistingEntry)
+        firstExistingEntry = existingEntry;
+      copyNumber++;
+      tryZipSelection();
+    } else {
+      onError('TARGET_EXISTS', firstExistingEntry);
+    }
+  }
+
+  function onTargetNotResolved() {
+    function onZipSelectionComplete(success) {
+      if (success) {
+        self.sendProgressEvent_('SUCCESS');
+      } else {
+        self.sendProgressEvent_('ERROR',
+            new FileCopyManager.Error('FILESYSTEM_ERROR', ''));
+      }
+      completeCallback(task);
+    }
+
+    self.sendProgressEvent_('PROGRESS');
+    chrome.fileBrowserPrivate.zipSelection(dirURL, selectionURLs, destPath,
+        onZipSelectionComplete);
+  }
+
+  function tryZipSelection() {
+    if (copyNumber > 0)
+      destPath = destName + ' (' + copyNumber + ').zip';
+
+    // Check if the target exists. This kicks off the rest of the zip file
+    // creation if the target is not found, or raises an error if it does.
+    util.resolvePath(task.targetDirEntry, destPath, onTargetExists,
+                     onTargetNotResolved);
+  }
+
+  tryZipSelection();
+};
+
+/**
  * Copy the contents of sourceEntry into targetEntry.
  *
  * @private
@@ -1068,6 +1151,36 @@ FileCopyManager.prototype.deleteEntries = function(entries, callback) {
   this.maybeScheduleCloseBackgroundPage_();
   callback(id);
   this.sendDeleteEvent_(task, 'SCHEDULED');
+};
+
+/**
+ * Creates a zip file for the selection of files.
+ * @param {Entry} dirEntry the directory containing the selection.
+ * @param {boolean} isOnGData If directory is on GDrive.
+ * @param {Array.<Entry>} selectionEntries the selected entries.
+ */
+FileCopyManager.prototype.zipSelection = function(dirEntry, isOnGData,
+                                                   selectionEntries) {
+  var self = this;
+  var zipTask = new FileCopyManager.Task(dirEntry, dirEntry);
+  zipTask.zip = true;
+  zipTask.sourceOnGData = isOnGData;
+  zipTask.targetOnGData = isOnGData;
+  zipTask.setEntries(selectionEntries, function() {
+    // TODO: per-entry zip progress update with accurate byte count.
+    // For now just set pendingBytes to zero so that the progress bar is full.
+    zipTask.pendingBytes = 0;
+    self.copyTasks_.push(zipTask);
+    if (self.copyTasks_.length == 1) {
+      // Assume self.cancelRequested_ == false.
+      // This moved us from 0 to 1 active tasks, let the servicing begin!
+      self.serviceAllTasks_();
+    } else {
+      // Force to update the progress of butter bar when there are new tasks
+      // coming while servicing current task.
+      self.sendProgressEvent_('PROGRESS');
+    }
+  });
 };
 
 /**

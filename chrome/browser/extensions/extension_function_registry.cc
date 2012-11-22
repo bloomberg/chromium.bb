@@ -391,6 +391,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<GetNetworkConnectionStateFunction>();
   RegisterFunction<RequestDirectoryRefreshFunction>();
   RegisterFunction<SetLastModifiedFunction>();
+  RegisterFunction<ZipSelectionFunction>();
 
   // FileBrowserHandler.
   RegisterFunction<FileHandlerSelectFileFunction>();

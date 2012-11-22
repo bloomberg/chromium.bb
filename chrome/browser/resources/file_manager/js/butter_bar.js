@@ -205,8 +205,13 @@ ButterBar.prototype.clearHideTimeout_ = function() {
 ButterBar.prototype.transferType_ = function() {
   var progress = this.progress_;
   if (!progress ||
-      progress.pendingMoves === 0 && progress.pendingCopies === 0)
+      progress.pendingMoves === 0 && progress.pendingCopies === 0 &&
+      progress.pendingZips === 0)
     return 'TRANSFER';
+
+  if (progress.pendingZips > 0) {
+    return 'ZIP';
+  }
 
   if (progress.pendingMoves > 0) {
     if (progress.pendingCopies > 0)

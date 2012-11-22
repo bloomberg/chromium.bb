@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
+#include "chrome/browser/chromeos/extensions/zip_file_creator.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/extensions/app_file_handler_util.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
@@ -84,6 +85,7 @@ using content::ChildProcessSecurityPolicy;
 using content::SiteInstance;
 using content::WebContents;
 using extensions::Extension;
+using extensions::ZipFileCreator;
 using file_handler_util::FileTaskExecutor;
 using google_apis::InstalledApp;
 
@@ -1993,6 +1995,7 @@ bool FileDialogStringsFunction::RunImpl() {
 
   SET_STRING(IDS_FILE_BROWSER, COPY_BUTTON_LABEL);
   SET_STRING(IDS_FILE_BROWSER, CUT_BUTTON_LABEL);
+  SET_STRING(IDS_FILE_BROWSER, ZIP_SELECTION_BUTTON_LABEL);
 
   SET_STRING(IDS_FILE_BROWSER, OPEN_WITH_BUTTON_LABEL);
 
@@ -2013,6 +2016,12 @@ bool FileDialogStringsFunction::RunImpl() {
   SET_STRING(IDS_FILE_BROWSER, MOVE_TARGET_EXISTS_ERROR);
   SET_STRING(IDS_FILE_BROWSER, MOVE_FILESYSTEM_ERROR);
   SET_STRING(IDS_FILE_BROWSER, MOVE_UNEXPECTED_ERROR);
+  SET_STRING(IDS_FILE_BROWSER, ZIP_FILE_NAME);
+  SET_STRING(IDS_FILE_BROWSER, ZIP_ITEMS_REMAINING);
+  SET_STRING(IDS_FILE_BROWSER, ZIP_CANCELLED);
+  SET_STRING(IDS_FILE_BROWSER, ZIP_TARGET_EXISTS_ERROR);
+  SET_STRING(IDS_FILE_BROWSER, ZIP_FILESYSTEM_ERROR);
+  SET_STRING(IDS_FILE_BROWSER, ZIP_UNEXPECTED_ERROR);
 
   SET_STRING(IDS_FILE_BROWSER, DELETED_MESSAGE_PLURAL);
   SET_STRING(IDS_FILE_BROWSER, DELETED_MESSAGE);
@@ -2965,4 +2974,101 @@ bool RequestDirectoryRefreshFunction::RunImpl() {
   system_service->file_system()->RequestDirectoryRefresh(directory_path);
 
   return true;
+}
+
+ZipSelectionFunction::ZipSelectionFunction() {
+}
+
+ZipSelectionFunction::~ZipSelectionFunction() {
+}
+
+bool ZipSelectionFunction::RunImpl() {
+  if (args_->GetSize() < 3) {
+    return false;
+  }
+
+  // First param is the source directory URL.
+  std::string dir_url;
+  if (!args_->GetString(0, &dir_url) || dir_url.empty())
+    return false;
+
+  // Second param is the list of selected file URLs.
+  ListValue* selection_urls = NULL;
+  args_->GetList(1, &selection_urls);
+  if (!selection_urls || !selection_urls->GetSize())
+    return false;
+
+  // Third param is the name of the output zip file.
+  std::string dest_name;
+  if (!args_->GetString(2, &dest_name) || dest_name.empty())
+    return false;
+
+  UrlList file_urls;
+  size_t len = selection_urls->GetSize();
+  file_urls.reserve(len + 1);
+  file_urls.push_back(GURL(dir_url));
+  for (size_t i = 0; i < len; ++i) {
+    std::string file_url;
+    selection_urls->GetString(i, &file_url);
+    file_urls.push_back(GURL(file_url));
+  }
+
+  GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
+      file_urls,
+      base::Bind(&ZipSelectionFunction::GetLocalPathsResponseOnUIThread,
+                 this,
+                 dest_name));
+  return true;
+}
+
+void ZipSelectionFunction::GetLocalPathsResponseOnUIThread(
+    const std::string dest_name,
+    const SelectedFileInfoList& files) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (files.size() <= 1) {
+    NOTREACHED();
+    SendResponse(false);
+    return;
+  }
+
+  SelectedFileInfoList::const_iterator iter = files.begin();
+  FilePath src_dir = iter->file_path;
+
+  // Check if the dir path is under Drive cache directory.
+  // TODO(hshi): support create zip file on Drive (crbug.com/158690).
+  drive::DriveSystemService* system_service =
+      drive::DriveSystemServiceFactory::GetForProfile(profile_);
+  drive::DriveCache* cache = system_service ? system_service->cache() : NULL;
+  if (cache && cache->IsUnderDriveCacheDirectory(src_dir)) {
+    SendResponse(false);
+    return;
+  }
+
+  FilePath dest_file = src_dir.Append(dest_name);
+  std::vector<FilePath> src_relative_paths;
+  for (++iter; iter != files.end(); ++iter) {
+    const FilePath& file_path = iter->file_path;
+
+    // Obtain the relative path of |file_path| under |src_dir|.
+    FilePath relative_path;
+    if (!src_dir.AppendRelativePath(file_path, &relative_path)) {
+      // All files must be under |src_dir| or there is a bug in extension code.
+      SendResponse(false);
+      return;
+    }
+    src_relative_paths.push_back(relative_path);
+  }
+
+  zip_file_creator_ = new ZipFileCreator(this, src_dir, src_relative_paths,
+                                         dest_file);
+  zip_file_creator_->Start();
+
+  // Keep the refcount until the zipping is complete on utility process.
+  AddRef();
+}
+
+void ZipSelectionFunction::OnZipDone(bool success) {
+  SetResult(new base::FundamentalValue(success));
+  SendResponse(true);
+  Release();
 }

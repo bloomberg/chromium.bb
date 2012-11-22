@@ -609,7 +609,10 @@ DialogType.isModal = function(type) {
         Commands.pasteFileCommand, doc, this.fileTransferController_);
 
     CommandUtil.registerCommand(doc, 'open-with',
-            Commands.openWithCommand, this);
+        Commands.openWithCommand, this);
+
+    CommandUtil.registerCommand(doc, 'zip-selection',
+        Commands.zipSelectionCommand, this);
 
     CommandUtil.registerCommand(doc, 'search', Commands.searchCommand, this,
             this.dialogDom_.querySelector('#search-box'));
@@ -759,7 +762,7 @@ DialogType.isModal = function(type) {
         this.dialogDom_.querySelector('#default-action');
 
     this.openWithCommand_ =
-            this.dialogDom_.querySelector('#open-with');
+        this.dialogDom_.querySelector('#open-with');
 
     this.defaultActionMenuItem_.addEventListener('activate',
         this.dispatchSelectionAction_.bind(this));
