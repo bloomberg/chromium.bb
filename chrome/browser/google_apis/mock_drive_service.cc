@@ -24,8 +24,6 @@ namespace google_apis {
 MockDriveService::MockDriveService() {
   ON_CALL(*this, GetProgressStatusList())
       .WillByDefault(Return(OperationProgressStatusList()));
-  ON_CALL(*this, Authenticate(_))
-      .WillByDefault(Invoke(this, &MockDriveService::AuthenticateStub));
   ON_CALL(*this, GetDocuments(_, _, _, _, _, _))
       .WillByDefault(Invoke(this, &MockDriveService::GetDocumentsStub));
   ON_CALL(*this, GetAccountMetadata(_))

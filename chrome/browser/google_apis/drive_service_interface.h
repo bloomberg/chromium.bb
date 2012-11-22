@@ -95,11 +95,6 @@ class DriveServiceInterface {
 
   // Authentication service:
 
-  // Authenticates the user by fetching the auth token as
-  // needed. |callback| will be run with the error code and the auth
-  // token, on the thread this function is run.
-  virtual void Authenticate(const AuthStatusCallback& callback) = 0;
-
   // True if OAuth2 access token is retrieved and believed to be fresh.
   virtual bool HasAccessToken() const = 0;
 

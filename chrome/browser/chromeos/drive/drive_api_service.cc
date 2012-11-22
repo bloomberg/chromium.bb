@@ -90,12 +90,6 @@ DriveAPIService::GetProgressStatusList() const {
   return operation_registry()->GetProgressStatusList();
 }
 
-void DriveAPIService::Authenticate(
-    const google_apis::AuthStatusCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  runner_->Authenticate(callback);
-}
-
 void DriveAPIService::GetDocuments(
     const GURL& url,
     int64 start_changestamp,

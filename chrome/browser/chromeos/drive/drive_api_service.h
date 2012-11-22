@@ -49,8 +49,6 @@ class DriveAPIService : public google_apis::DriveServiceInterface,
   virtual bool CancelForFilePath(const FilePath& file_path) OVERRIDE;
   virtual google_apis::OperationProgressStatusList GetProgressStatusList()
       const OVERRIDE;
-  virtual void Authenticate(
-      const google_apis::AuthStatusCallback& callback) OVERRIDE;
   virtual bool HasAccessToken() const OVERRIDE;
   virtual bool HasRefreshToken() const OVERRIDE;
   virtual void GetDocuments(

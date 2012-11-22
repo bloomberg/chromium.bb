@@ -33,8 +33,6 @@ class MockDriveService : public DriveServiceInterface {
   MOCK_METHOD1(CancelForFilePath, bool(const FilePath& file_path));
   MOCK_CONST_METHOD0(GetProgressStatusList,
                      OperationProgressStatusList());
-  MOCK_METHOD1(Authenticate,
-               void(const AuthStatusCallback& callback));
   MOCK_METHOD6(GetDocuments,
                void(const GURL& feed_url,
                     int64 start_changestamp,

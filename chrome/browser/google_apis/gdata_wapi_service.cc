@@ -131,11 +131,6 @@ OperationProgressStatusList GDataWapiService::GetProgressStatusList() const {
   return operation_registry()->GetProgressStatusList();
 }
 
-void GDataWapiService::Authenticate(const AuthStatusCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  runner_->Authenticate(callback);
-}
-
 void GDataWapiService::GetDocuments(
     const GURL& url,
     int64 start_changestamp,

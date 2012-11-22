@@ -52,7 +52,6 @@ class GDataWapiService : public DriveServiceInterface,
   virtual void CancelAll() OVERRIDE;
   virtual bool CancelForFilePath(const FilePath& file_path) OVERRIDE;
   virtual OperationProgressStatusList GetProgressStatusList() const OVERRIDE;
-  virtual void Authenticate(const AuthStatusCallback& callback) OVERRIDE;
   virtual bool HasAccessToken() const OVERRIDE;
   virtual bool HasRefreshToken() const OVERRIDE;
   virtual void GetDocuments(const GURL& feed_url,
