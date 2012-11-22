@@ -91,32 +91,6 @@ void OnIterateCompleted(bool* out_is_called) {
   *out_is_called = true;
 }
 
-// Copies results from ClearAll.
-void OnClearAll(bool* out_success, bool success) {
-  *out_success = success;
-}
-
-// Used as a CacheOperationCallback to copy results from DriveCache methods.
-void OnCacheOperation(DriveFileError* out_error,
-                      std::string* out_resource_id,
-                      std::string* out_md5,
-                      DriveFileError error,
-                      const std::string& resource_id,
-                      const std::string& md5) {
-  *out_error = error;
-  *out_resource_id = resource_id;
-  *out_md5 = md5;
-}
-
-// Used as a GetFileFromCacheCallback to copy results from DriveCache methods.
-void OnGetFile(DriveFileError* out_error,
-               FilePath* out_cache_file_path,
-               DriveFileError error,
-               const FilePath& cache_file_path) {
-  *out_error = error;
-  *out_cache_file_path = cache_file_path;
-}
-
 }  // namespace
 
 class DriveCacheTest : public testing::Test {
@@ -125,7 +99,6 @@ class DriveCacheTest : public testing::Test {
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         io_thread_(content::BrowserThread::IO),
         cache_(NULL),
-        num_callback_invocations_(0),
         expected_error_(DRIVE_FILE_OK),
         expected_cache_state_(0),
         expected_sub_dir_type_(DriveCache::CACHE_TYPE_META),
@@ -183,12 +156,13 @@ class DriveCacheTest : public testing::Test {
         DriveFileError error = DRIVE_FILE_OK;
         std::string resource_id;
         std::string md5;
-        cache_->Store(resource.resource_id,
-                      resource.md5,
-                      source_path,
-                      DriveCache::FILE_OPERATION_COPY,
-                      base::Bind(&OnCacheOperation,
-                                 &error, &resource_id, &md5));
+        cache_->Store(
+            resource.resource_id,
+            resource.md5,
+            source_path,
+            DriveCache::FILE_OPERATION_COPY,
+            base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
+                       &error, &resource_id, &md5));
         google_apis::test_util::RunBlockingPoolTask();
         EXPECT_EQ(DRIVE_FILE_OK, error);
         EXPECT_EQ(resource.resource_id, resource_id);
@@ -201,10 +175,11 @@ class DriveCacheTest : public testing::Test {
         std::string md5;
         EXPECT_CALL(*mock_cache_observer_,
                     OnCachePinned(resource.resource_id, resource.md5)).Times(1);
-        cache_->Pin(resource.resource_id,
-                    resource.md5,
-                    base::Bind(&OnCacheOperation,
-                               &error, &resource_id, &md5));
+        cache_->Pin(
+            resource.resource_id,
+            resource.md5,
+            base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
+                       &error, &resource_id, &md5));
         google_apis::test_util::RunBlockingPoolTask();
         EXPECT_EQ(DRIVE_FILE_OK, error);
         EXPECT_EQ(resource.resource_id, resource_id);
@@ -214,9 +189,11 @@ class DriveCacheTest : public testing::Test {
       if (resource.is_dirty) {
         DriveFileError error = DRIVE_FILE_OK;
         FilePath cache_file_path;
-        cache_->MarkDirty(resource.resource_id,
-                          resource.md5,
-                          base::Bind(&OnGetFile, &error, &cache_file_path));
+        cache_->MarkDirty(
+            resource.resource_id,
+            resource.md5,
+            base::Bind(&test_util::CopyResultsFromGetFileFromCacheCallback,
+                       &error, &cache_file_path));
         google_apis::test_util::RunBlockingPoolTask();
         EXPECT_EQ(DRIVE_FILE_OK, error);
 
@@ -224,10 +201,11 @@ class DriveCacheTest : public testing::Test {
         std::string md5;
         EXPECT_CALL(*mock_cache_observer_,
                     OnCacheCommitted(resource.resource_id)).Times(1);
-        cache_->CommitDirty(resource.resource_id,
-                            resource.md5,
-                            base::Bind(&OnCacheOperation,
-                                       &error, &resource_id, &md5));
+        cache_->CommitDirty(
+            resource.resource_id,
+            resource.md5,
+            base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
+                       &error, &resource_id, &md5));
         google_apis::test_util::RunBlockingPoolTask();
         EXPECT_EQ(DRIVE_FILE_OK, error);
         EXPECT_EQ(resource.resource_id, resource_id);
@@ -241,15 +219,27 @@ class DriveCacheTest : public testing::Test {
       const std::string& md5,
       DriveFileError expected_error,
       const std::string& expected_file_extension) {
-    expected_error_ = expected_error;
-    expected_file_extension_ = expected_file_extension;
-
-    cache_->GetFile(resource_id, md5,
-                    base::Bind(&DriveCacheTest::VerifyGetFromCache,
-                               base::Unretained(this),
-                               resource_id, md5));
-
+    DriveFileError error = DRIVE_FILE_OK;
+    FilePath cache_file_path;
+    cache_->GetFile(
+        resource_id, md5,
+        base::Bind(&test_util::CopyResultsFromGetFileFromCacheCallback,
+                   &error, &cache_file_path));
     google_apis::test_util::RunBlockingPoolTask();
+
+    EXPECT_EQ(expected_error, error);
+    if (error == DRIVE_FILE_OK) {
+      // Verify filename of |cache_file_path|.
+      FilePath base_name = cache_file_path.BaseName();
+      EXPECT_EQ(util::EscapeCacheFileName(resource_id) +
+                FilePath::kExtensionSeparator +
+                util::EscapeCacheFileName(
+                    expected_file_extension.empty() ?
+                    md5 : expected_file_extension),
+                base_name.value());
+    } else {
+      EXPECT_TRUE(cache_file_path.empty());
+    }
   }
 
   void TestStoreToCache(
@@ -263,52 +253,34 @@ class DriveCacheTest : public testing::Test {
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
 
+    DriveFileError error = DRIVE_FILE_OK;
+    std::string result_resource_id;
+    std::string result_md5;
     cache_->Store(resource_id, md5, source_path,
                   DriveCache::FILE_OPERATION_COPY,
-                  base::Bind(&DriveCacheTest::VerifyCacheFileState,
-                             base::Unretained(this)));
-
+                  base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
+                             &error, &result_resource_id, &result_md5));
     google_apis::test_util::RunBlockingPoolTask();
-  }
-
-  void VerifyGetFromCache(const std::string& resource_id,
-                          const std::string& md5,
-                          DriveFileError error,
-                          const FilePath& cache_file_path) {
-    ++num_callback_invocations_;
-
-    EXPECT_EQ(expected_error_, error);
-
-    if (error == DRIVE_FILE_OK) {
-      // Verify filename of |cache_file_path|.
-      FilePath base_name = cache_file_path.BaseName();
-      EXPECT_EQ(util::EscapeCacheFileName(resource_id) +
-                FilePath::kExtensionSeparator +
-                util::EscapeCacheFileName(
-                    expected_file_extension_.empty() ?
-                    md5 : expected_file_extension_),
-                base_name.value());
-    } else {
-      EXPECT_TRUE(cache_file_path.empty());
-    }
+    VerifyCacheFileState(error, result_resource_id, result_md5);
   }
 
   void TestRemoveFromCache(const std::string& resource_id,
                            DriveFileError expected_error) {
     expected_error_ = expected_error;
 
+    DriveFileError error = DRIVE_FILE_OK;
+    std::string result_resource_id;
+    std::string result_md5;
     cache_->Remove(resource_id,
-                   base::Bind(&DriveCacheTest::VerifyRemoveFromCache,
-                              base::Unretained(this)));
-
+                   base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
+                              &error, &result_resource_id, &result_md5));
     google_apis::test_util::RunBlockingPoolTask();
+    VerifyRemoveFromCache(error, result_resource_id, result_md5);
   }
 
   void VerifyRemoveFromCache(DriveFileError error,
                              const std::string& resource_id,
                              const std::string& md5) {
-    ++num_callback_invocations_;
-
     EXPECT_EQ(expected_error_, error);
 
     // Verify cache map.
@@ -409,11 +381,14 @@ class DriveCacheTest : public testing::Test {
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
 
+    DriveFileError error = DRIVE_FILE_OK;
+    std::string result_resource_id;
+    std::string result_md5;
     cache_->Pin(resource_id, md5,
-                base::Bind(&DriveCacheTest::VerifyCacheFileState,
-                           base::Unretained(this)));
-
+                base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
+                           &error, &result_resource_id, &result_md5));
     google_apis::test_util::RunBlockingPoolTask();
+    VerifyCacheFileState(error, result_resource_id, result_md5);
   }
 
   void TestUnpin(
@@ -426,11 +401,14 @@ class DriveCacheTest : public testing::Test {
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
 
+    DriveFileError error = DRIVE_FILE_OK;
+    std::string result_resource_id;
+    std::string result_md5;
     cache_->Unpin(resource_id, md5,
-                  base::Bind(&DriveCacheTest::VerifyCacheFileState,
-                             base::Unretained(this)));
-
+                  base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
+                             &error, &result_resource_id, &result_md5));
     google_apis::test_util::RunBlockingPoolTask();
+    VerifyCacheFileState(error, result_resource_id, result_md5);
   }
 
   void TestMarkDirty(
@@ -444,18 +422,14 @@ class DriveCacheTest : public testing::Test {
     expected_sub_dir_type_ = expected_sub_dir_type;
     expect_outgoing_symlink_ = false;
 
-    cache_->MarkDirty(resource_id, md5,
-                      base::Bind(&DriveCacheTest::VerifyMarkDirty,
-                                 base::Unretained(this),
-                                 resource_id, md5));
-
+    DriveFileError error = DRIVE_FILE_OK;
+    FilePath cache_file_path;
+    cache_->MarkDirty(
+        resource_id, md5,
+        base::Bind(&test_util::CopyResultsFromGetFileFromCacheCallback,
+                   &error, &cache_file_path));
     google_apis::test_util::RunBlockingPoolTask();
-  }
 
-  void VerifyMarkDirty(const std::string& resource_id,
-                       const std::string& md5,
-                       DriveFileError error,
-                       const FilePath& cache_file_path) {
     VerifyCacheFileState(error, resource_id, md5);
 
     // Verify filename of |cache_file_path|.
@@ -481,11 +455,15 @@ class DriveCacheTest : public testing::Test {
     expected_sub_dir_type_ = expected_sub_dir_type;
     expect_outgoing_symlink_ = true;
 
-    cache_->CommitDirty(resource_id, md5,
-                        base::Bind(&DriveCacheTest::VerifyCacheFileState,
-                                   base::Unretained(this)));
-
+    DriveFileError error = DRIVE_FILE_OK;
+    std::string result_resource_id;
+    std::string result_md5;
+    cache_->CommitDirty(
+        resource_id, md5,
+        base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
+                   &error, &result_resource_id, &result_md5));
     google_apis::test_util::RunBlockingPoolTask();
+    VerifyCacheFileState(error, result_resource_id, result_md5);
   }
 
   void TestClearDirty(
@@ -499,11 +477,15 @@ class DriveCacheTest : public testing::Test {
     expected_sub_dir_type_ = expected_sub_dir_type;
     expect_outgoing_symlink_ = false;
 
-    cache_->ClearDirty(resource_id, md5,
-                       base::Bind(&DriveCacheTest::VerifyCacheFileState,
-                                  base::Unretained(this)));
-
+    DriveFileError error = DRIVE_FILE_OK;
+    std::string result_resource_id;
+    std::string result_md5;
+    cache_->ClearDirty(
+        resource_id, md5,
+        base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
+                   &error, &result_resource_id, &result_md5));
     google_apis::test_util::RunBlockingPoolTask();
+    VerifyCacheFileState(error, result_resource_id, result_md5);
   }
 
   void TestSetMountedState(
@@ -519,35 +501,27 @@ class DriveCacheTest : public testing::Test {
     expected_sub_dir_type_ = expected_sub_dir_type;
     expect_outgoing_symlink_ = false;
 
-    cache_->SetMountedState(file_path, to_mount,
-                            base::Bind(&DriveCacheTest::VerifySetMountedState,
-                                       base::Unretained(this),
-                                       resource_id, md5, to_mount));
-
+    DriveFileError error = DRIVE_FILE_OK;
+    FilePath cache_file_path;
+    cache_->SetMountedState(
+        file_path, to_mount,
+        base::Bind(&test_util::CopyResultsFromGetFileFromCacheCallback,
+                   &error, &cache_file_path));
     google_apis::test_util::RunBlockingPoolTask();
-  }
 
-  void VerifySetMountedState(const std::string& resource_id,
-                             const std::string& md5,
-                             bool to_mount,
-                             DriveFileError error,
-                             const FilePath& file_path) {
-    ++num_callback_invocations_;
-    EXPECT_TRUE(file_util::PathExists(file_path));
-    EXPECT_TRUE(file_path == cache_->GetCacheFilePath(
-        resource_id,
-        md5,
-        expected_sub_dir_type_,
-        to_mount ?
-            DriveCache::CACHED_FILE_MOUNTED :
-            DriveCache::CACHED_FILE_FROM_SERVER));
+    EXPECT_TRUE(file_util::PathExists(cache_file_path));
+    EXPECT_EQ(cache_file_path,
+              cache_->GetCacheFilePath(resource_id,
+                                       md5,
+                                       expected_sub_dir_type_,
+                                       to_mount ?
+                                       DriveCache::CACHED_FILE_MOUNTED :
+                                       DriveCache::CACHED_FILE_FROM_SERVER));
   }
 
   void VerifyCacheFileState(DriveFileError error,
                             const std::string& resource_id,
                             const std::string& md5) {
-    ++num_callback_invocations_;
-
     EXPECT_EQ(expected_error_, error);
 
     // Verify cache map.
@@ -637,26 +611,12 @@ class DriveCacheTest : public testing::Test {
                                      const std::string& md5,
                                      DriveCacheEntry* cache_entry) {
     bool result = false;
-    blocking_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&DriveCacheTest::GetCacheEntryFromOriginThreadInternal,
-                   base::Unretained(this),
-                   resource_id,
-                   md5,
-                   cache_entry,
-                   &result));
+    cache_->GetCacheEntry(
+        resource_id, md5,
+        base::Bind(&test_util::CopyResultsFromGetCacheEntryCallback,
+                   &result, cache_entry));
     google_apis::test_util::RunBlockingPoolTask();
     return result;
-  }
-
-  // Used to implement GetCacheEntry.
-  void GetCacheEntryFromOriginThreadInternal(
-      const std::string& resource_id,
-      const std::string& md5,
-      DriveCacheEntry* cache_entry,
-      bool* result) {
-    *result =
-        cache_->GetCacheEntryOnBlockingPool(resource_id, md5, cache_entry);
   }
 
   // Returns true if the cache entry exists for the given resource ID and MD5.
@@ -726,7 +686,6 @@ class DriveCacheTest : public testing::Test {
   MockFreeDiskSpaceGetter* mock_free_disk_space_checker_;
   scoped_ptr<StrictMock<MockDriveCacheObserver> > mock_cache_observer_;
 
-  int num_callback_invocations_;
   DriveFileError expected_error_;
   int expected_cache_state_;
   DriveCache::CacheSubDirectoryType expected_sub_dir_type_;
@@ -742,7 +701,6 @@ TEST_F(DriveCacheTest, GetCacheFilePath) {
   std::string md5("abcdef0123456789");
   TestGetCacheFilePath(resource_id, md5,
                        resource_id + FilePath::kExtensionSeparator + md5);
-  EXPECT_EQ(0, num_callback_invocations_);
 
   // Use non-alphanumeric characters for resource id, including '.' which is an
   // extension separator, to test that the characters are escaped and unescaped
@@ -750,11 +708,9 @@ TEST_F(DriveCacheTest, GetCacheFilePath) {
   resource_id = "pdf:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?";
   std::string escaped_resource_id = util::EscapeCacheFileName(resource_id);
   std::string escaped_md5 = util::EscapeCacheFileName(md5);
-  num_callback_invocations_ = 0;
   TestGetCacheFilePath(resource_id, md5,
                        escaped_resource_id + FilePath::kExtensionSeparator +
                        escaped_md5);
-  EXPECT_EQ(0, num_callback_invocations_);
 }
 
 TEST_F(DriveCacheTest, StoreToCacheSimple) {
@@ -770,26 +726,21 @@ TEST_F(DriveCacheTest, StoreToCacheSimple) {
       google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
       DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
       DriveCache::CACHE_TYPE_TMP);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Store a non-existent file to the same |resource_id| and |md5|.
-  num_callback_invocations_ = 0;
   TestStoreToCache(resource_id, md5, FilePath("./non_existent.json"),
                    DRIVE_FILE_ERROR_FAILED,
                    test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Store a different existing file to the same |resource_id| but different
   // |md5|.
   md5 = "new_md5";
-  num_callback_invocations_ = 0;
   TestStoreToCache(
       resource_id, md5,
       google_apis::test_util::GetTestFilePath("gdata/subdir_feed.json"),
       DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
       DriveCache::CACHE_TYPE_TMP);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Verify that there's only one file with name <resource_id>, i.e. previously
   // cached file with the different md5 should be deleted.
@@ -810,25 +761,19 @@ TEST_F(DriveCacheTest, GetFromCacheSimple) {
       DriveCache::CACHE_TYPE_TMP);
 
   // Then try to get the existing file from cache.
-  num_callback_invocations_ = 0;
   TestGetFileFromCacheByResourceIdAndMd5(
       resource_id, md5, DRIVE_FILE_OK, md5);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Get file from cache with same resource id as existing file but different
   // md5.
-  num_callback_invocations_ = 0;
   TestGetFileFromCacheByResourceIdAndMd5(
       resource_id, "9999", DRIVE_FILE_ERROR_NOT_FOUND, md5);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Get file from cache with different resource id from existing file but same
   // md5.
-  num_callback_invocations_ = 0;
   resource_id = "document:1a2b";
   TestGetFileFromCacheByResourceIdAndMd5(
       resource_id, md5, DRIVE_FILE_ERROR_NOT_FOUND, md5);
-  EXPECT_EQ(1, num_callback_invocations_);
 }
 
 TEST_F(DriveCacheTest, RemoveFromCacheSimple) {
@@ -846,9 +791,7 @@ TEST_F(DriveCacheTest, RemoveFromCacheSimple) {
       DriveCache::CACHE_TYPE_TMP);
 
   // Then try to remove existing file from cache.
-  num_callback_invocations_ = 0;
   TestRemoveFromCache(resource_id, DRIVE_FILE_OK);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Repeat using non-alphanumeric characters for resource id, including '.'
   // which is an extension separator.
@@ -859,9 +802,7 @@ TEST_F(DriveCacheTest, RemoveFromCacheSimple) {
       DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
       DriveCache::CACHE_TYPE_TMP);
 
-  num_callback_invocations_ = 0;
   TestRemoveFromCache(resource_id, DRIVE_FILE_OK);
-  EXPECT_EQ(1, num_callback_invocations_);
 }
 
 TEST_F(DriveCacheTest, PinAndUnpin) {
@@ -882,29 +823,23 @@ TEST_F(DriveCacheTest, PinAndUnpin) {
       DriveCache::CACHE_TYPE_TMP);
 
   // Pin the existing file in cache.
-  num_callback_invocations_ = 0;
   TestPin(resource_id, md5, DRIVE_FILE_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED |
           test_util::TEST_CACHE_STATE_PERSISTENT,
           DriveCache::CACHE_TYPE_PERSISTENT);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Unpin the existing file in cache.
-  num_callback_invocations_ = 0;
   TestUnpin(resource_id, md5, DRIVE_FILE_OK,
             test_util::TEST_CACHE_STATE_PRESENT,
             DriveCache::CACHE_TYPE_TMP);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Pin back the same existing file in cache.
-  num_callback_invocations_ = 0;
   TestPin(resource_id, md5, DRIVE_FILE_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED |
           test_util::TEST_CACHE_STATE_PERSISTENT,
           DriveCache::CACHE_TYPE_PERSISTENT);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Pin a non-existent file in cache.
   resource_id = "document:1a2b";
@@ -912,18 +847,14 @@ TEST_F(DriveCacheTest, PinAndUnpin) {
   EXPECT_CALL(*mock_cache_observer_, OnCacheUnpinned(resource_id, md5))
       .Times(1);
 
-  num_callback_invocations_ = 0;
   TestPin(resource_id, md5, DRIVE_FILE_OK,
           test_util::TEST_CACHE_STATE_PINNED,
           DriveCache::CACHE_TYPE_TMP);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Unpin the previously pinned non-existent file in cache.
-  num_callback_invocations_ = 0;
   TestUnpin(resource_id, md5, DRIVE_FILE_OK,
             test_util::TEST_CACHE_STATE_NONE,
             DriveCache::CACHE_TYPE_TMP);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Unpin a file that doesn't exist in cache and is not pinned, i.e. cache
   // has zero knowledge of the file.
@@ -932,11 +863,9 @@ TEST_F(DriveCacheTest, PinAndUnpin) {
   EXPECT_CALL(*mock_cache_observer_, OnCacheUnpinned(resource_id, md5))
       .Times(0);
 
-  num_callback_invocations_ = 0;
   TestUnpin(resource_id, md5, DRIVE_FILE_ERROR_NOT_FOUND,
             test_util::TEST_CACHE_STATE_NONE,
             DriveCache::CACHE_TYPE_TMP /* non-applicable */);
-  EXPECT_EQ(1, num_callback_invocations_);
 }
 
 TEST_F(DriveCacheTest, StoreToCachePinned) {
@@ -953,7 +882,6 @@ TEST_F(DriveCacheTest, StoreToCachePinned) {
           DriveCache::CACHE_TYPE_TMP);
 
   // Store an existing file to a previously pinned file.
-  num_callback_invocations_ = 0;
   TestStoreToCache(
       resource_id, md5,
       google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
@@ -962,17 +890,14 @@ TEST_F(DriveCacheTest, StoreToCachePinned) {
       test_util::TEST_CACHE_STATE_PINNED |
       test_util::TEST_CACHE_STATE_PERSISTENT,
       DriveCache::CACHE_TYPE_PERSISTENT);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Store a non-existent file to a previously pinned and stored file.
-  num_callback_invocations_ = 0;
   TestStoreToCache(resource_id, md5, FilePath("./non_existent.json"),
                    DRIVE_FILE_ERROR_FAILED,
                    test_util::TEST_CACHE_STATE_PRESENT |
                    test_util::TEST_CACHE_STATE_PINNED |
                    test_util::TEST_CACHE_STATE_PERSISTENT,
                    DriveCache::CACHE_TYPE_PERSISTENT);
-  EXPECT_EQ(1, num_callback_invocations_);
 }
 
 TEST_F(DriveCacheTest, GetFromCachePinned) {
@@ -989,10 +914,8 @@ TEST_F(DriveCacheTest, GetFromCachePinned) {
           DriveCache::CACHE_TYPE_TMP);
 
   // Get the non-existent pinned file from cache.
-  num_callback_invocations_ = 0;
   TestGetFileFromCacheByResourceIdAndMd5(
       resource_id, md5, DRIVE_FILE_ERROR_NOT_FOUND, md5);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Store an existing file to the previously pinned non-existent file.
   TestStoreToCache(
@@ -1005,10 +928,8 @@ TEST_F(DriveCacheTest, GetFromCachePinned) {
       DriveCache::CACHE_TYPE_PERSISTENT);
 
   // Get the previously pinned and stored file from cache.
-  num_callback_invocations_ = 0;
   TestGetFileFromCacheByResourceIdAndMd5(
       resource_id, md5, DRIVE_FILE_OK, md5);
-  EXPECT_EQ(1, num_callback_invocations_);
 }
 
 TEST_F(DriveCacheTest, RemoveFromCachePinned) {
@@ -1033,9 +954,7 @@ TEST_F(DriveCacheTest, RemoveFromCachePinned) {
           DriveCache::CACHE_TYPE_PERSISTENT);
 
   // Remove |resource_id| from cache.
-  num_callback_invocations_ = 0;
   TestRemoveFromCache(resource_id, DRIVE_FILE_OK);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Repeat using non-alphanumeric characters for resource id, including '.'
   // which is an extension separator.
@@ -1053,9 +972,7 @@ TEST_F(DriveCacheTest, RemoveFromCachePinned) {
           test_util::TEST_CACHE_STATE_PERSISTENT,
           DriveCache::CACHE_TYPE_PERSISTENT);
 
-  num_callback_invocations_ = 0;
   TestRemoveFromCache(resource_id, DRIVE_FILE_OK);
-  EXPECT_EQ(1, num_callback_invocations_);
 }
 
 TEST_F(DriveCacheTest, DirtyCacheSimple) {
@@ -1074,29 +991,23 @@ TEST_F(DriveCacheTest, DirtyCacheSimple) {
       DriveCache::CACHE_TYPE_TMP);
 
   // Mark the file dirty.
-  num_callback_invocations_ = 0;
   TestMarkDirty(resource_id, md5, DRIVE_FILE_OK,
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
                 DriveCache::CACHE_TYPE_PERSISTENT);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Commit the file dirty.
-  num_callback_invocations_ = 0;
   TestCommitDirty(resource_id, md5, DRIVE_FILE_OK,
                   test_util::TEST_CACHE_STATE_PRESENT |
                   test_util::TEST_CACHE_STATE_DIRTY |
                   test_util::TEST_CACHE_STATE_PERSISTENT,
                   DriveCache::CACHE_TYPE_PERSISTENT);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Clear dirty state of the file.
-  num_callback_invocations_ = 0;
   TestClearDirty(resource_id, md5, DRIVE_FILE_OK,
                  test_util::TEST_CACHE_STATE_PRESENT,
                  DriveCache::CACHE_TYPE_TMP);
-  EXPECT_EQ(1, num_callback_invocations_);
 }
 
 TEST_F(DriveCacheTest, DirtyCachePinned) {
@@ -1121,33 +1032,27 @@ TEST_F(DriveCacheTest, DirtyCachePinned) {
           DriveCache::CACHE_TYPE_PERSISTENT);
 
   // Mark the file dirty.
-  num_callback_invocations_ = 0;
   TestMarkDirty(resource_id, md5, DRIVE_FILE_OK,
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PINNED |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
                 DriveCache::CACHE_TYPE_PERSISTENT);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Commit the file dirty.
-  num_callback_invocations_ = 0;
   TestCommitDirty(resource_id, md5, DRIVE_FILE_OK,
                   test_util::TEST_CACHE_STATE_PRESENT |
                   test_util::TEST_CACHE_STATE_DIRTY |
                   test_util::TEST_CACHE_STATE_PINNED |
                   test_util::TEST_CACHE_STATE_PERSISTENT,
                   DriveCache::CACHE_TYPE_PERSISTENT);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Clear dirty state of the file.
-  num_callback_invocations_ = 0;
   TestClearDirty(resource_id, md5, DRIVE_FILE_OK,
                  test_util::TEST_CACHE_STATE_PRESENT |
                  test_util::TEST_CACHE_STATE_PINNED |
                  test_util::TEST_CACHE_STATE_PERSISTENT,
                  DriveCache::CACHE_TYPE_PERSISTENT);
-  EXPECT_EQ(1, num_callback_invocations_);
 }
 
 // Test is disabled because it is flaky (http://crbug.com/134146)
@@ -1219,73 +1124,57 @@ TEST_F(DriveCacheTest, DirtyCacheRepetitive) {
       DriveCache::CACHE_TYPE_TMP);
 
   // Mark the file dirty.
-  num_callback_invocations_ = 0;
   TestMarkDirty(resource_id, md5, DRIVE_FILE_OK,
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
                 DriveCache::CACHE_TYPE_PERSISTENT);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Again, mark the file dirty.  Nothing should change.
-  num_callback_invocations_ = 0;
   TestMarkDirty(resource_id, md5, DRIVE_FILE_OK,
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
                 DriveCache::CACHE_TYPE_PERSISTENT);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Commit the file dirty.  Outgoing symlink should be created.
-  num_callback_invocations_ = 0;
   TestCommitDirty(resource_id, md5, DRIVE_FILE_OK,
                   test_util::TEST_CACHE_STATE_PRESENT |
                   test_util::TEST_CACHE_STATE_DIRTY |
                   test_util::TEST_CACHE_STATE_PERSISTENT,
                   DriveCache::CACHE_TYPE_PERSISTENT);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Again, commit the file dirty.  Nothing should change.
-  num_callback_invocations_ = 0;
   TestCommitDirty(resource_id, md5, DRIVE_FILE_OK,
                   test_util::TEST_CACHE_STATE_PRESENT |
                   test_util::TEST_CACHE_STATE_DIRTY |
                   test_util::TEST_CACHE_STATE_PERSISTENT,
                   DriveCache::CACHE_TYPE_PERSISTENT);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Mark the file dirty agian after it's being committed.  Outgoing symlink
   // should be deleted.
-  num_callback_invocations_ = 0;
   TestMarkDirty(resource_id, md5, DRIVE_FILE_OK,
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
                 DriveCache::CACHE_TYPE_PERSISTENT);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Commit the file dirty.  Outgoing symlink should be created again.
-  num_callback_invocations_ = 0;
   TestCommitDirty(resource_id, md5, DRIVE_FILE_OK,
                   test_util::TEST_CACHE_STATE_PRESENT |
                   test_util::TEST_CACHE_STATE_DIRTY |
                   test_util::TEST_CACHE_STATE_PERSISTENT,
                   DriveCache::CACHE_TYPE_PERSISTENT);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Clear dirty state of the file.
-  num_callback_invocations_ = 0;
   TestClearDirty(resource_id, md5, DRIVE_FILE_OK,
                  test_util::TEST_CACHE_STATE_PRESENT,
                  DriveCache::CACHE_TYPE_TMP);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Again, clear dirty state of the file, which is no longer dirty.
-  num_callback_invocations_ = 0;
   TestClearDirty(resource_id, md5, DRIVE_FILE_ERROR_INVALID_OPERATION,
                  test_util::TEST_CACHE_STATE_PRESENT,
                  DriveCache::CACHE_TYPE_TMP);
-  EXPECT_EQ(1, num_callback_invocations_);
 }
 
 TEST_F(DriveCacheTest, DirtyCacheInvalid) {
@@ -1296,25 +1185,19 @@ TEST_F(DriveCacheTest, DirtyCacheInvalid) {
   std::string md5("abcdef0123456789");
 
   // Mark a non-existent file dirty.
-  num_callback_invocations_ = 0;
   TestMarkDirty(resource_id, md5, DRIVE_FILE_ERROR_NOT_FOUND,
                 test_util::TEST_CACHE_STATE_NONE,
                 DriveCache::CACHE_TYPE_TMP);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Commit a non-existent file dirty.
-  num_callback_invocations_ = 0;
   TestCommitDirty(resource_id, md5, DRIVE_FILE_ERROR_NOT_FOUND,
                   test_util::TEST_CACHE_STATE_NONE,
                   DriveCache::CACHE_TYPE_TMP);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Clear dirty state of a non-existent file.
-  num_callback_invocations_ = 0;
   TestClearDirty(resource_id, md5, DRIVE_FILE_ERROR_NOT_FOUND,
                  test_util::TEST_CACHE_STATE_NONE,
                  DriveCache::CACHE_TYPE_TMP);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Store a file to cache.
   TestStoreToCache(
@@ -1324,18 +1207,14 @@ TEST_F(DriveCacheTest, DirtyCacheInvalid) {
       DriveCache::CACHE_TYPE_TMP);
 
   // Commit a non-dirty existing file dirty.
-  num_callback_invocations_ = 0;
   TestCommitDirty(resource_id, md5, DRIVE_FILE_ERROR_INVALID_OPERATION,
                  test_util::TEST_CACHE_STATE_PRESENT,
                  DriveCache::CACHE_TYPE_TMP);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Clear dirty state of a non-dirty existing file.
-  num_callback_invocations_ = 0;
   TestClearDirty(resource_id, md5, DRIVE_FILE_ERROR_INVALID_OPERATION,
                  test_util::TEST_CACHE_STATE_PRESENT,
                  DriveCache::CACHE_TYPE_TMP);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Mark an existing file dirty, then store a new file to the same resource id
   // but different md5, which should fail.
@@ -1344,7 +1223,6 @@ TEST_F(DriveCacheTest, DirtyCacheInvalid) {
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
                 DriveCache::CACHE_TYPE_PERSISTENT);
-  num_callback_invocations_ = 0;
   md5 = "new_md5";
   TestStoreToCache(
       resource_id, md5,
@@ -1354,7 +1232,6 @@ TEST_F(DriveCacheTest, DirtyCacheInvalid) {
       test_util::TEST_CACHE_STATE_DIRTY |
       test_util::TEST_CACHE_STATE_PERSISTENT,
       DriveCache::CACHE_TYPE_PERSISTENT);
-  EXPECT_EQ(1, num_callback_invocations_);
 }
 
 TEST_F(DriveCacheTest, RemoveFromDirtyCache) {
@@ -1392,9 +1269,7 @@ TEST_F(DriveCacheTest, RemoveFromDirtyCache) {
 
   // Try to remove the file.  Since file is dirty, it and the corresponding
   // pinned and outgoing symlinks should not be removed.
-  num_callback_invocations_ = 0;
   TestRemoveFromCache(resource_id, DRIVE_FILE_OK);
-  EXPECT_EQ(1, num_callback_invocations_);
 }
 
 TEST_F(DriveCacheTest, MountUnmount) {
@@ -1413,7 +1288,6 @@ TEST_F(DriveCacheTest, MountUnmount) {
       DriveCache::CACHE_TYPE_TMP);
 
   // Mark the file mounted.
-  num_callback_invocations_ = 0;
   file_path = cache_->GetCacheFilePath(resource_id, md5,
                                        DriveCache::CACHE_TYPE_TMP,
                                        DriveCache::CACHED_FILE_FROM_SERVER);
@@ -1423,11 +1297,9 @@ TEST_F(DriveCacheTest, MountUnmount) {
                       test_util::TEST_CACHE_STATE_MOUNTED |
                       test_util::TEST_CACHE_STATE_PERSISTENT,
                       DriveCache::CACHE_TYPE_PERSISTENT);
-  EXPECT_EQ(1, num_callback_invocations_);
   EXPECT_TRUE(CacheEntryExists(resource_id, md5));
 
   // Clear mounted state of the file.
-  num_callback_invocations_ = 0;
   file_path = cache_->GetCacheFilePath(resource_id,
                                        md5,
                                        DriveCache::CACHE_TYPE_PERSISTENT,
@@ -1436,13 +1308,10 @@ TEST_F(DriveCacheTest, MountUnmount) {
                       DRIVE_FILE_OK,
                       test_util::TEST_CACHE_STATE_PRESENT,
                       DriveCache::CACHE_TYPE_TMP);
-  EXPECT_EQ(1, num_callback_invocations_);
   EXPECT_TRUE(CacheEntryExists(resource_id, md5));
 
   // Try to remove the file.
-  num_callback_invocations_ = 0;
   TestRemoveFromCache(resource_id, DRIVE_FILE_OK);
-  EXPECT_EQ(1, num_callback_invocations_);
 }
 
 TEST_F(DriveCacheTest, Iterate) {
@@ -1484,18 +1353,19 @@ TEST_F(DriveCacheTest, ClearAll) {
       google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
       DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
       DriveCache::CACHE_TYPE_TMP);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Verify that there's only one cached file.
   EXPECT_EQ(1U, CountCacheFiles(resource_id, md5));
 
   // Clear cache.
   bool success = false;
-  cache_->ClearAll(base::Bind(&OnClearAll, &success));
+  cache_->ClearAll(base::Bind(&test_util::CopyResultFromInitializeCacheCallback,
+                              &success));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_TRUE(success);
 
   // Verify that all the cache is removed.
+  expected_error_ = DRIVE_FILE_OK;
   VerifyRemoveFromCache(DRIVE_FILE_OK, resource_id, md5);
   EXPECT_EQ(0U, CountCacheFiles(resource_id, md5));
 }
@@ -1514,7 +1384,6 @@ TEST_F(DriveCacheTest, StoreToCacheNoSpace) {
       DRIVE_FILE_ERROR_NO_SPACE,
       test_util::TEST_CACHE_STATE_NONE,
       DriveCache::CACHE_TYPE_TMP);
-  EXPECT_EQ(1, num_callback_invocations_);
 
   // Verify that there's no files added.
   EXPECT_EQ(0U, CountCacheFiles(resource_id, md5));

@@ -487,14 +487,6 @@ void DriveCache::ForceRescanForTesting() {
                  base::Unretained(this)));
 }
 
-bool DriveCache::GetCacheEntryOnBlockingPool(const std::string& resource_id,
-                                             const std::string& md5,
-                                             DriveCacheEntry* entry) {
-  DCHECK(entry);
-  AssertOnSequencedWorkerPool();
-  return metadata_->GetCacheEntry(resource_id, md5, entry);
-}
-
 // static
 DriveCache* DriveCache::CreateDriveCache(
     const FilePath& cache_root_path,
@@ -543,6 +535,14 @@ void DriveCache::DestroyOnBlockingPool() {
 void DriveCache::ForceRescanOnBlockingPoolForTesting() {
   AssertOnSequencedWorkerPool();
   metadata_->ForceRescanForTesting(cache_paths_);
+}
+
+bool DriveCache::GetCacheEntryOnBlockingPool(const std::string& resource_id,
+                                             const std::string& md5,
+                                             DriveCacheEntry* entry) {
+  DCHECK(entry);
+  AssertOnSequencedWorkerPool();
+  return metadata_->GetCacheEntry(resource_id, md5, entry);
 }
 
 void DriveCache::IterateOnBlockingPool(

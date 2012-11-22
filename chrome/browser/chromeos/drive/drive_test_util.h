@@ -97,6 +97,29 @@ void CopyResultsFromGetEntryInfoPairCallback(
 void CopyResultFromInitializeCacheCallback(bool* out_success,
                                            bool success);
 
+// Copies results from DriveCache methods. Used to run asynchronous functions
+// that take CacheOperationCallback from tests.
+void CopyResultsFromCacheOperationCallback(DriveFileError* out_error,
+                                           std::string* out_resource_id,
+                                           std::string* out_md5,
+                                           DriveFileError error,
+                                           const std::string& resource_id,
+                                           const std::string& md5);
+
+// Copies results from DriveCache methods. Used to run asynchronous functions
+// that take GetFileFromCacheCallback from tests.
+void CopyResultsFromGetFileFromCacheCallback(DriveFileError* out_error,
+                                             FilePath* out_cache_file_path,
+                                             DriveFileError error,
+                                             const FilePath& cache_file_path);
+
+// Copies results from DriveCache methods. Used to run asynchronous functions
+// that take GetCacheEntryCallback from tests.
+void CopyResultsFromGetCacheEntryCallback(bool* out_success,
+                                          DriveCacheEntry* out_cache_entry,
+                                          bool success,
+                                          const DriveCacheEntry& cache_entry);
+
 // Loads a test json file as root ("/drive") element from a test file stored
 // under chrome/test/data/chromeos. Returns true on success.
 bool LoadChangeFeed(const std::string& relative_path,

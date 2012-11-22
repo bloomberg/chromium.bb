@@ -232,12 +232,6 @@ class DriveCache {
   // Force a rescan of cache files, for testing.
   void ForceRescanForTesting();
 
-  // Gets the cache entry by the given resource ID and MD5.
-  // See also GetCacheEntry().
-  bool GetCacheEntryOnBlockingPool(const std::string& resource_id,
-                                   const std::string& md5,
-                                   DriveCacheEntry* entry);
-
   // Factory methods for DriveCache.
   // |pool| and |sequence_token| are used to assert that the functions are
   // called on the right sequenced worker pool with the right sequence token.
@@ -294,6 +288,12 @@ class DriveCache {
 
   // Force a rescan of cache directories.
   void ForceRescanOnBlockingPoolForTesting();
+
+  // Gets the cache entry by the given resource ID and MD5.
+  // See also GetCacheEntry().
+  bool GetCacheEntryOnBlockingPool(const std::string& resource_id,
+                                   const std::string& md5,
+                                   DriveCacheEntry* entry);
 
   // Used to implement Iterate().
   void IterateOnBlockingPool(const CacheIterateCallback& iteration_callback);

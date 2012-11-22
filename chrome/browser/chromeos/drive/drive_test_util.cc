@@ -107,6 +107,40 @@ void CopyResultFromInitializeCacheCallback(bool* out_success,
   *out_success = success;
 }
 
+void CopyResultsFromCacheOperationCallback(DriveFileError* out_error,
+                                           std::string* out_resource_id,
+                                           std::string* out_md5,
+                                           DriveFileError error,
+                                           const std::string& resource_id,
+                                           const std::string& md5) {
+  DCHECK(out_error);
+  DCHECK(out_resource_id);
+  DCHECK(out_md5);
+  *out_error = error;
+  *out_resource_id = resource_id;
+  *out_md5 = md5;
+}
+
+void CopyResultsFromGetFileFromCacheCallback(DriveFileError* out_error,
+                                             FilePath* out_cache_file_path,
+                                             DriveFileError error,
+                                             const FilePath& cache_file_path) {
+  DCHECK(out_error);
+  DCHECK(out_cache_file_path);
+  *out_error = error;
+  *out_cache_file_path = cache_file_path;
+}
+
+void CopyResultsFromGetCacheEntryCallback(bool* out_success,
+                                          DriveCacheEntry* out_cache_entry,
+                                          bool success,
+                                          const DriveCacheEntry& cache_entry) {
+  DCHECK(out_success);
+  DCHECK(out_cache_entry);
+  *out_success = success;
+  *out_cache_entry = cache_entry;
+}
+
 bool LoadChangeFeed(const std::string& relative_path,
                     DriveFileSystem* file_system,
                     bool is_delta_feed,
