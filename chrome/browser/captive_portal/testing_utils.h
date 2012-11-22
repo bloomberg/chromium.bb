@@ -7,9 +7,9 @@
 
 #include <string>
 
-#include "base/memory/ref_counted.h"
+#include "base/basictypes.h"
 #include "chrome/browser/captive_portal/captive_portal_detector.h"
-#include "net/http/http_response_headers.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 
 namespace base {
 class Time;
@@ -20,9 +20,6 @@ class URLFetcher;
 }
 
 namespace captive_portal {
-
-scoped_refptr<net::HttpResponseHeaders> CreateResponseHeaders(
-    const std::string& response_headers);
 
 class CaptivePortalDetectorTestBase {
  public:
@@ -37,15 +34,23 @@ class CaptivePortalDetectorTestBase {
 
   bool FetchingURL();
 
-  // Calls the corresponding CaptivePortalDetector function.
-  void OnURLFetchComplete(net::URLFetcher* fetcher);
+  // Sets URL fetcher state and notifies portal detector.
+  void CompleteURLFetch(int net_error,
+                        int status_code,
+                        const char* response_headers);
 
   void set_detector(CaptivePortalDetector* detector) { detector_ = detector; }
 
   CaptivePortalDetector* detector() { return detector_; }
 
+  net::TestURLFetcher* fetcher() { return factory_.GetFetcherByID(0); }
+
  protected:
   CaptivePortalDetector* detector_;
+
+  net::TestURLFetcherFactory factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(CaptivePortalDetectorTestBase);
 };
 
 }  // namespace captive_portal

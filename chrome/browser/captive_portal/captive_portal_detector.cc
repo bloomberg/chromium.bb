@@ -14,6 +14,19 @@
 
 namespace captive_portal {
 
+namespace {
+
+const char* const kCaptivePortalResultNames[] = {
+  "InternetConnected",
+  "NoResponse",
+  "BehindCaptivePortal",
+  "NumCaptivePortalResults",
+};
+COMPILE_ASSERT(arraysize(kCaptivePortalResultNames) == RESULT_COUNT + 1,
+               captive_portal_result_name_count_mismatch);
+
+}  // namespace
+
 const char CaptivePortalDetector::kDefaultURL[] =
     "http://www.gstatic.com/generate_204";
 
@@ -23,6 +36,14 @@ CaptivePortalDetector::CaptivePortalDetector(
 }
 
 CaptivePortalDetector::~CaptivePortalDetector() {
+}
+
+// static
+std::string CaptivePortalDetector::CaptivePortalResultToString(Result result) {
+  DCHECK_GE(result, 0);
+  DCHECK_LT(static_cast<unsigned int>(result),
+            arraysize(kCaptivePortalResultNames));
+  return kCaptivePortalResultNames[result];
 }
 
 void CaptivePortalDetector::DetectCaptivePortal(

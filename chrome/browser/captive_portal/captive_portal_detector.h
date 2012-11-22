@@ -59,6 +59,8 @@ class CaptivePortalDetector : public net::URLFetcherDelegate,
       const scoped_refptr<net::URLRequestContextGetter>& request_context);
   virtual ~CaptivePortalDetector();
 
+  static std::string CaptivePortalResultToString(Result result);
+
   // Triggers a check for a captive portal. After completion, runs the
   // |callback|.
   void DetectCaptivePortal(const GURL& url, const DetectionCallback& callback);

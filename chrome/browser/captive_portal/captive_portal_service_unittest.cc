@@ -21,8 +21,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "net/base/net_errors.h"
-#include "net/http/http_response_headers.h"
-#include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace captive_portal {
@@ -163,7 +161,6 @@ class CaptivePortalServiceTest : public testing::Test,
     ASSERT_EQ(base::TimeDelta(), GetTimeUntilNextRequest());
 
     CaptivePortalObserver observer(profile(), service());
-    net::TestURLFetcherFactory factory;
     service()->DetectCaptivePortal();
 
     EXPECT_EQ(CaptivePortalService::STATE_TIMER_RUNNING, service()->state());
@@ -176,23 +173,7 @@ class CaptivePortalServiceTest : public testing::Test,
     ASSERT_TRUE(FetchingURL());
     EXPECT_FALSE(TimerRunning());
 
-    net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-    if (net_error != net::OK) {
-      EXPECT_FALSE(response_headers);
-      fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                                net_error));
-    } else {
-      fetcher->set_response_code(status_code);
-      if (response_headers) {
-        scoped_refptr<net::HttpResponseHeaders> headers(
-            CreateResponseHeaders(response_headers));
-        // Sanity check.
-        EXPECT_EQ(status_code, headers->response_code());
-        fetcher->set_response_headers(headers);
-      }
-    }
-
-    OnURLFetchComplete(fetcher);
+    CompleteURLFetch(net_error, status_code, response_headers);
 
     EXPECT_FALSE(FetchingURL());
     EXPECT_FALSE(TimerRunning());
@@ -389,7 +370,6 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalPrefDisabledWhileRunning) {
   CaptivePortalObserver observer(profile(), service());
 
   // Needed to create the URLFetcher, even if it never returns any results.
-  net::TestURLFetcherFactory factory;
   service()->DetectCaptivePortal();
 
   MessageLoop::current()->RunUntilIdle();
@@ -415,9 +395,6 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalPrefDisabledWhileRunning) {
 TEST_F(CaptivePortalServiceTest, CaptivePortalPrefDisabledWhilePending) {
   Initialize(CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
   set_initial_backoff_no_portal(base::TimeDelta::FromDays(1));
-
-  // Needed to create the URLFetcher, even if it never returns any results.
-  net::TestURLFetcherFactory factory;
 
   CaptivePortalObserver observer(profile(), service());
   service()->DetectCaptivePortal();
@@ -451,8 +428,6 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalPrefEnabledWhilePending) {
   EXPECT_FALSE(FetchingURL());
   EXPECT_TRUE(TimerRunning());
 
-  net::TestURLFetcherFactory factory;
-
   EnableCaptivePortalDetectionPreference(true);
   EXPECT_FALSE(FetchingURL());
   EXPECT_TRUE(TimerRunning());
@@ -461,9 +436,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalPrefEnabledWhilePending) {
   ASSERT_TRUE(FetchingURL());
   EXPECT_FALSE(TimerRunning());
 
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  fetcher->set_response_code(200);
-  OnURLFetchComplete(fetcher);
+  CompleteURLFetch(net::OK, 200, NULL);
   EXPECT_FALSE(FetchingURL());
   EXPECT_FALSE(TimerRunning());
 

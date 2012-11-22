@@ -12,8 +12,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
-#include "net/http/http_response_headers.h"
-#include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace captive_portal {
@@ -68,7 +66,6 @@ class CaptivePortalDetectorTest : public testing::Test,
     GURL url(CaptivePortalDetector::kDefaultURL);
     CaptivePortalClient client(detector());
 
-    net::TestURLFetcherFactory factory;
     detector()->DetectCaptivePortal(url,
         base::Bind(&CaptivePortalClient::OnPortalDetectionCompleted,
                    base::Unretained(&client)));
@@ -76,22 +73,7 @@ class CaptivePortalDetectorTest : public testing::Test,
     ASSERT_TRUE(FetchingURL());
     MessageLoop::current()->RunUntilIdle();
 
-    net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-    if (net_error != net::OK) {
-      EXPECT_FALSE(response_headers);
-      fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                                net_error));
-    } else {
-      fetcher->set_response_code(status_code);
-      if (response_headers) {
-        scoped_refptr<net::HttpResponseHeaders> headers(
-            CreateResponseHeaders(response_headers));
-        EXPECT_EQ(status_code, headers->response_code());
-        fetcher->set_response_headers(headers);
-      }
-    }
-
-    OnURLFetchComplete(fetcher);
+    CompleteURLFetch(net_error, status_code, response_headers);
 
     EXPECT_FALSE(FetchingURL());
     EXPECT_EQ(1, client.num_results_received());
@@ -106,7 +88,6 @@ class CaptivePortalDetectorTest : public testing::Test,
     GURL url(CaptivePortalDetector::kDefaultURL);
     CaptivePortalClient client(detector());
 
-    net::TestURLFetcherFactory factory;
     detector()->DetectCaptivePortal(url,
         base::Bind(&CaptivePortalClient::OnPortalDetectionCompleted,
                    base::Unretained(&client)));

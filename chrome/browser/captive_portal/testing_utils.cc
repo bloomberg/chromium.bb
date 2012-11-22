@@ -4,9 +4,13 @@
 
 #include "chrome/browser/captive_portal/testing_utils.h"
 
+#include "base/logging.h"
+#include "base/memory/ref_counted.h"
+#include "net/base/net_errors.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 
-namespace captive_portal {
+namespace {
 
 scoped_refptr<net::HttpResponseHeaders> CreateResponseHeaders(
     const std::string& response_headers) {
@@ -15,6 +19,10 @@ scoped_refptr<net::HttpResponseHeaders> CreateResponseHeaders(
                                         response_headers.length());
   return new net::HttpResponseHeaders(raw_headers);
 }
+
+}  // namespace
+
+namespace captive_portal {
 
 CaptivePortalDetectorTestBase::CaptivePortalDetectorTestBase()
     : detector_(NULL) {
@@ -35,9 +43,24 @@ bool CaptivePortalDetectorTestBase::FetchingURL() {
   return detector()->FetchingURL();
 }
 
-void CaptivePortalDetectorTestBase::OnURLFetchComplete(
-    net::URLFetcher* fetcher) {
-  detector()->OnURLFetchComplete(fetcher);
+void CaptivePortalDetectorTestBase::CompleteURLFetch(
+    int net_error,
+    int status_code,
+    const char* response_headers) {
+  if (net_error != net::OK) {
+    DCHECK(!response_headers);
+    fetcher()->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                                net_error));
+  } else {
+    fetcher()->set_response_code(status_code);
+    if (response_headers) {
+      scoped_refptr<net::HttpResponseHeaders> headers(
+          CreateResponseHeaders(response_headers));
+      DCHECK_EQ(status_code, headers->response_code());
+      fetcher()->set_response_headers(headers);
+    }
+  }
+  detector()->OnURLFetchComplete(fetcher());
 }
 
 }  // namespace captive_portal
