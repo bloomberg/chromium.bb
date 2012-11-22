@@ -13,6 +13,26 @@
 // when to start/complete/discard the overscroll actions. Make these thresholds
 // easily configurable.
 
+namespace {
+
+// Some gesture events can also be triggered from the trackpad. This function
+// checks to see if |event| was generated from a touchscreen.
+bool IsGestureEventFromTouchscreen(const WebKit::WebInputEvent& event) {
+  if (!WebKit::WebInputEvent::isGestureEventType(event.type))
+    return false;
+
+  if (event.type == WebKit::WebInputEvent::GestureFlingStart) {
+    const WebKit::WebGestureEvent& gevent =
+        static_cast<const WebKit::WebGestureEvent&>(event);
+    return gevent.data.flingStart.sourceDevice ==
+           WebKit::WebGestureEvent::Touchscreen;
+  }
+
+  return true;
+}
+
+}
+
 namespace content {
 
 OverscrollController::OverscrollController(
@@ -37,10 +57,15 @@ bool OverscrollController::WillDispatchEvent(
     // touch-scrolls maintain state in the renderer side (in the compositor, for
     // example), and the event that completes this action needs to be sent to
     // the renderer so that those states can be updated/reset appropriately.
-    if (WebKit::WebInputEvent::isGestureEventType(event.type)) {
-      const WebKit::WebGestureEvent& gevent =
-          static_cast<const WebKit::WebGestureEvent&>(event);
-      return render_widget_host_->gesture_event_filter()->ShouldForward(gevent);
+    // Send the event through the gesture-event filter when appropriate.
+    if (IsGestureEventFromTouchscreen(event)) {
+      if (ShouldForwardToGestureFilter(event)) {
+        const WebKit::WebGestureEvent& gevent =
+            static_cast<const WebKit::WebGestureEvent&>(event);
+        return render_widget_host_->gesture_event_filter()->
+            ShouldForward(gevent);
+      }
+      return true;
     }
 
     return false;
@@ -50,8 +75,9 @@ bool OverscrollController::WillDispatchEvent(
     SetOverscrollMode(OVERSCROLL_NONE);
     // The overscroll gesture status is being reset. If the event is a
     // touch-screen gesture event, then make sure the gesture event filter gets
-    // the event first.
-    if (WebKit::WebInputEvent::isGestureEventType(event.type)) {
+    // the event first (if it didn't already process it).
+    if (IsGestureEventFromTouchscreen(event) &&
+        ShouldForwardToGestureFilter(event)) {
       const WebKit::WebGestureEvent& gevent =
           static_cast<const WebKit::WebGestureEvent&>(event);
       return render_widget_host_->gesture_event_filter()->ShouldForward(gevent);
@@ -245,6 +271,15 @@ void OverscrollController::SetOverscrollMode(OverscrollMode mode) {
     overscroll_delta_x_ = overscroll_delta_y_ = 0.f;
   if (delegate_)
     delegate_->OnOverscrollModeChange(old_mode, overscroll_mode_);
+}
+
+bool OverscrollController::ShouldForwardToGestureFilter(
+    const WebKit::WebInputEvent& event) const {
+  DCHECK(IsGestureEventFromTouchscreen(event));
+
+  // If the GestureEventFilter already processed this event, then the event must
+  // not be sent to the filter again.
+  return !render_widget_host_->gesture_event_filter()->HasQueuedGestureEvents();
 }
 
 }  // namespace content
