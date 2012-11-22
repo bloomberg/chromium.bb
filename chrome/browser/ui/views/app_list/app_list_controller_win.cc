@@ -235,10 +235,10 @@ void AppListController::ShowAppList() {
       current_view_->GetWidget()->GetTopLevelWidget()->GetNativeWindow();
   ui::win::SetAppIdForWindow(GetAppModelId(), hwnd);
   CommandLine relaunch = GetAppListCommandLine();
+  string16 app_name(l10n_util::GetStringUTF16(IDS_APP_LIST_SHORTCUT_NAME));
   ui::win::SetRelaunchDetailsForWindow(
-      relaunch.GetCommandLineString(),
-      l10n_util::GetStringUTF16(IDS_APP_LIST_SHORTCUT_NAME),
-      hwnd);
+      relaunch.GetCommandLineString(), app_name, hwnd);
+  ::SetWindowText(hwnd, app_name.c_str());
   string16 icon_path = GetAppListIconPath();
   ui::win::SetAppIconForWindow(icon_path, hwnd);
   current_view_->Show();
