@@ -284,11 +284,12 @@ void ParallelAuthenticator::AuthenticateToUnlock(const std::string& username,
                  scoped_refptr<ParallelAuthenticator>(this)));
 }
 
-void ParallelAuthenticator::LoginDemoUser() {
+void ParallelAuthenticator::LoginRetailMode() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Note: we use kDemoUser other places to identify if we're in demo mode.
+  // Note: |kRetailModeUserEMail| is used in other places to identify a retail
+  // mode session.
   current_state_.reset(
-      new AuthAttemptState(kDemoUser, "", "", "", "", false));
+      new AuthAttemptState(kRetailModeUserEMail, "", "", "", "", false));
   mount_guest_attempted_ = true;
   MountGuest(current_state_.get(),
              scoped_refptr<ParallelAuthenticator>(this));
@@ -302,9 +303,9 @@ void ParallelAuthenticator::LoginOffTheRecord() {
              scoped_refptr<ParallelAuthenticator>(this));
 }
 
-void ParallelAuthenticator::OnDemoUserLoginSuccess() {
+void ParallelAuthenticator::OnRetailModeLoginSuccess() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  VLOG(1) << "Demo user login success";
+  VLOG(1) << "Retail mode login success";
   // Send notification of success
   AuthenticationNotificationDetails details(true);
   content::NotificationService::current()->Notify(
@@ -312,7 +313,7 @@ void ParallelAuthenticator::OnDemoUserLoginSuccess() {
       content::NotificationService::AllSources(),
       content::Details<AuthenticationNotificationDetails>(&details));
   if (consumer_)
-    consumer_->OnDemoUserLoginSuccess();
+    consumer_->OnRetailModeLoginSuccess();
 }
 
 void ParallelAuthenticator::OnLoginSuccess(bool request_pending) {
@@ -587,11 +588,11 @@ void ParallelAuthenticator::Resolve() {
                      request_pending));
       break;
     case DEMO_LOGIN:
-      VLOG(2) << "Demo login";
+      VLOG(2) << "Retail mode login";
       using_oauth_ = false;
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&ParallelAuthenticator::OnDemoUserLoginSuccess, this));
+          base::Bind(&ParallelAuthenticator::OnRetailModeLoginSuccess, this));
       break;
     case GUEST_LOGIN:
       BrowserThread::PostTask(
@@ -741,7 +742,7 @@ ParallelAuthenticator::ResolveCryptohomeSuccessState() {
   if (remove_attempted_)
     return CREATE_NEW;
   if (mount_guest_attempted_) {
-    if (current_state_->username == kDemoUser)
+    if (current_state_->username == kRetailModeUserEMail)
       return DEMO_LOGIN;
     else
       return GUEST_LOGIN;

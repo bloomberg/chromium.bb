@@ -51,10 +51,10 @@ class LoginDisplay : public RemoveUserDelegate {
     virtual void Login(const std::string& username,
                        const std::string& password) = 0;
 
-    // Sign in as a demo user.
-    virtual void LoginAsDemoUser() = 0;
+    // Sign in as a retail mode user.
+    virtual void LoginAsRetailModeUser() = 0;
 
-    // Sign in into Guest session.
+    // Sign in into guest session.
     virtual void LoginAsGuest() = 0;
 
     // Sign out the currently signed in user.

@@ -408,17 +408,17 @@ void ExistingUserController::PerformLogin(
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN));
 }
 
-void ExistingUserController::LoginAsDemoUser() {
+void ExistingUserController::LoginAsRetailModeUser() {
   // Disable clicking on other windows.
   login_display_->SetUIEnabled(false);
-  // TODO(rkc): Add a CHECK to make sure demo logins are allowed once
-  // the enterprise policy wiring is done for kiosk mode.
+  // TODO(rkc): Add a CHECK to make sure retail mode logins are allowed once
+  // the enterprise policy wiring is done for retail mode.
 
   // Only one instance of LoginPerformer should exist at a time.
   login_performer_.reset(NULL);
   login_performer_.reset(new LoginPerformer(this));
   is_login_in_progress_ = true;
-  login_performer_->LoginDemoUser();
+  login_performer_->LoginRetailMode();
   accessibility::MaybeSpeak(
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_DEMOUSER));
 }
@@ -810,7 +810,7 @@ void ExistingUserController::InitializeStartUrls() const {
   const base::ListValue *urls;
   if (UserManager::Get()->IsLoggedInAsDemoUser()) {
     if (CrosSettings::Get()->GetList(kStartUpUrls, &urls)) {
-      // the demo user will get its start urls from the special policy if it is
+      // The retail mode user will get start URLs from a special policy if it is
       // set.
       for (base::ListValue::const_iterator it = urls->begin();
            it != urls->end(); ++it) {

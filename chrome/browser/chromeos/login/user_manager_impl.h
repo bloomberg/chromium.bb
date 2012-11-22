@@ -41,7 +41,7 @@ class UserManagerImpl : public UserManager,
   virtual const UserList& GetUsers() const OVERRIDE;
   virtual void UserLoggedIn(const std::string& email,
                             bool browser_restart) OVERRIDE;
-  virtual void DemoUserLoggedIn() OVERRIDE;
+  virtual void RetailModeUserLoggedIn() OVERRIDE;
   virtual void GuestUserLoggedIn() OVERRIDE;
   virtual void EphemeralUserLoggedIn(const std::string& email) OVERRIDE;
   virtual void SessionStarted() OVERRIDE;
@@ -124,9 +124,6 @@ class UserManagerImpl : public UserManager,
 
   // Triggers an asynchronous ownership check.
   void CheckOwnership();
-
-  // Creates a new User instance.
-  User* CreateUser(const std::string& email, bool is_ephemeral) const;
 
   // Removes the user from the persistent list only. Also removes the user's
   // picture.

@@ -250,7 +250,7 @@ void KioskModeScreensaver::OnUserActivity() {
     ExistingUserController* controller =
         ExistingUserController::current_controller();
     if (controller && !chromeos::UserManager::Get()->IsUserLoggedIn())
-      controller->LoginAsDemoUser();
+      controller->LoginAsRetailModeUser();
   } else {
     // No default host for the WebUiLoginDisplay means that we're already in the
     // process of logging in - shut down screensaver and do nothing else.

@@ -200,10 +200,10 @@ void WebUILoginDisplay::Login(const std::string& username,
     delegate_->Login(username, password);
 }
 
-void WebUILoginDisplay::LoginAsDemoUser() {
+void WebUILoginDisplay::LoginAsRetailModeUser() {
   DCHECK(delegate_);
   if (delegate_)
-    delegate_->LoginAsDemoUser();
+    delegate_->LoginAsRetailModeUser();
 }
 
 void WebUILoginDisplay::LoginAsGuest() {

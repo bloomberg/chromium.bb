@@ -111,10 +111,10 @@ class LoginStatusConsumer {
   // The current login attempt has ended in failure, with error |error|.
   virtual void OnLoginFailure(const LoginFailure& error) = 0;
 
-  // The current demo user login attempt has succeeded.
+  // The current retail mode login attempt has succeeded.
   // Unless overridden for special processing, this should always call
-  // OnLoginSuccess with the Demo User canary username.
-  virtual void OnDemoUserLoginSuccess();
+  // OnLoginSuccess with the magic |kRetailModeUserEMail| constant.
+  virtual void OnRetailModeLoginSuccess();
   // The current login attempt has succeeded for
   // |username|/|password|.  If |pending_requests| is false, we're totally done.
   // If it's true, we will still have some more results to report later.

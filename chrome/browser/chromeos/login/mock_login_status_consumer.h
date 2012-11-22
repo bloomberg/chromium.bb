@@ -16,7 +16,7 @@ class MockConsumer : public LoginStatusConsumer {
   virtual ~MockConsumer();
 
   MOCK_METHOD1(OnLoginFailure, void(const LoginFailure& error));
-  MOCK_METHOD0(OnDemoUserLoginSuccess, void(void));
+  MOCK_METHOD0(OnRetailModeLoginSuccess, void(void));
   MOCK_METHOD4(OnLoginSuccess, void(
       const std::string& username,
       const std::string& password,
@@ -27,9 +27,9 @@ class MockConsumer : public LoginStatusConsumer {
 
   // The following functions can be used in gmock Invoke() clauses.
 
-  // Compatible with LoginStatusConsumer::OnDemoUserLoginSuccess()
-  static void OnDemoUserSuccessQuit();
-  static void OnDemoUserSuccessQuitAndFail();
+  // Compatible with LoginStatusConsumer::OnRetailModeLoginSuccess()
+  static void OnRetailModeSuccessQuit();
+  static void OnRetailModeSuccessQuitAndFail();
 
   // Compatible with LoginStatusConsumer::OnOffTheRecordLoginSuccess()
   static void OnGuestSuccessQuit();

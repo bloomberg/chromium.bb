@@ -112,9 +112,9 @@ class ParallelAuthenticator : public Authenticator,
   virtual void AuthenticateToUnlock(const std::string& username,
                                     const std::string& password) OVERRIDE;
 
-  // Initiates demo user login.
+  // Initiates retail mode login.
   // Mounts tmpfs and notifies consumer on the success/failure.
-  virtual void LoginDemoUser() OVERRIDE;
+  virtual void LoginRetailMode() OVERRIDE;
 
   // Initiates incognito ("browse without signing in") login.
   // Mounts tmpfs and notifies consumer on the success/failure.
@@ -122,7 +122,7 @@ class ParallelAuthenticator : public Authenticator,
 
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.
-  virtual void OnDemoUserLoginSuccess()  OVERRIDE;
+  virtual void OnRetailModeLoginSuccess()  OVERRIDE;
   virtual void OnLoginSuccess(bool request_pending)  OVERRIDE;
   virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE;
   virtual void RecoverEncryptedData(

@@ -124,10 +124,10 @@ class ParallelAuthenticatorTest : public testing::Test {
   }
 
   // Allow test to fail and exit gracefully, even if
-  // OnDemoUserLoginSuccess() wasn't supposed to happen.
-  void FailOnDemoUserLoginSuccess() {
-    ON_CALL(consumer_, OnDemoUserLoginSuccess())
-        .WillByDefault(Invoke(MockConsumer::OnDemoUserSuccessQuitAndFail));
+  // OnRetailModeLoginSuccess() wasn't supposed to happen.
+  void FailOnRetailModeLoginSuccess() {
+    ON_CALL(consumer_, OnRetailModeLoginSuccess())
+        .WillByDefault(Invoke(MockConsumer::OnRetailModeSuccessQuitAndFail));
   }
 
   // Allow test to fail and exit gracefully, even if OnLoginSuccess()
@@ -150,9 +150,9 @@ class ParallelAuthenticatorTest : public testing::Test {
         .RetiresOnSaturation();
   }
 
-  void ExpectDemoUserLoginSuccess() {
-    EXPECT_CALL(consumer_, OnDemoUserLoginSuccess())
-        .WillOnce(Invoke(MockConsumer::OnDemoUserSuccessQuit))
+  void ExpectRetailModeLoginSuccess() {
+    EXPECT_CALL(consumer_, OnRetailModeLoginSuccess())
+        .WillOnce(Invoke(MockConsumer::OnRetailModeSuccessQuit))
         .RetiresOnSaturation();
   }
 
@@ -404,8 +404,8 @@ TEST_F(ParallelAuthenticatorTest, DriveGuestLoginButFail) {
   message_loop_.Run();
 }
 
-TEST_F(ParallelAuthenticatorTest, DriveDemoUserLogin) {
-  ExpectDemoUserLoginSuccess();
+TEST_F(ParallelAuthenticatorTest, DriveRetailModeUserLogin) {
+  ExpectRetailModeLoginSuccess();
   FailOnLoginFailure();
 
   // Set up mock cryptohome library to respond as though a tmpfs mount
@@ -415,12 +415,12 @@ TEST_F(ParallelAuthenticatorTest, DriveDemoUserLogin) {
       .Times(1)
       .RetiresOnSaturation();
 
-  auth_->LoginDemoUser();
+  auth_->LoginRetailMode();
   message_loop_.Run();
 }
 
-TEST_F(ParallelAuthenticatorTest, DriveDemoUserLoginButFail) {
-  FailOnDemoUserLoginSuccess();
+TEST_F(ParallelAuthenticatorTest, DriveRetailModeLoginButFail) {
+  FailOnRetailModeLoginSuccess();
   ExpectLoginFailure(LoginFailure(LoginFailure::COULD_NOT_MOUNT_TMPFS));
 
   // Set up mock cryptohome library to respond as though a tmpfs mount
@@ -430,7 +430,7 @@ TEST_F(ParallelAuthenticatorTest, DriveDemoUserLoginButFail) {
       .Times(1)
       .RetiresOnSaturation();
 
-  auth_->LoginDemoUser();
+  auth_->LoginRetailMode();
   message_loop_.Run();
 }
 

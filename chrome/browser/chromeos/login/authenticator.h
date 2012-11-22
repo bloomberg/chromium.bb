@@ -48,14 +48,14 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   virtual void AuthenticateToUnlock(const std::string& username,
                                     const std::string& password) = 0;
 
-  // Initiates demo user login.
-  virtual void LoginDemoUser() = 0;
+  // Initiates retail mode login.
+  virtual void LoginRetailMode() = 0;
 
   // Initiates incognito ("browse without signing in") login.
   virtual void LoginOffTheRecord() = 0;
 
-  // Initiates a demo user login.
-  virtual void OnDemoUserLoginSuccess() = 0;
+  // Initiates a retail mode login.
+  virtual void OnRetailModeLoginSuccess() = 0;
 
   // |request_pending| is true if we still plan to call consumer_ with the
   // results of more requests.

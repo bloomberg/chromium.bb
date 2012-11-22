@@ -82,7 +82,7 @@ class LoginPerformer : public LoginStatusConsumer,
 
   // LoginStatusConsumer implementation:
   virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE;
-  virtual void OnDemoUserLoginSuccess() OVERRIDE;
+  virtual void OnRetailModeLoginSuccess() OVERRIDE;
   virtual void OnLoginSuccess(
       const std::string& username,
       const std::string& password,
@@ -98,10 +98,10 @@ class LoginPerformer : public LoginStatusConsumer,
                     const std::string& password,
                     AuthorizationMode auth_mode);
 
-  // Performs login for the demo user.
-  void LoginDemoUser();
+  // Performs retail mode login.
+  void LoginRetailMode();
 
-  // Performs actions to prepare Guest mode login.
+  // Performs actions to prepare guest mode login.
   void LoginOffTheRecord();
 
   // Migrates cryptohome using |old_password| specified.

@@ -15,13 +15,13 @@ MockConsumer::MockConsumer() {}
 MockConsumer::~MockConsumer() {}
 
 // static
-void MockConsumer::OnDemoUserSuccessQuit() {
+void MockConsumer::OnRetailModeSuccessQuit() {
   MessageLoop::current()->Quit();
 }
 
 // static
-void MockConsumer::OnDemoUserSuccessQuitAndFail() {
-  ADD_FAILURE() << "Demo Login should have failed!";
+void MockConsumer::OnRetailModeSuccessQuitAndFail() {
+  ADD_FAILURE() << "Retail mode login should have failed!";
   MessageLoop::current()->Quit();
 }
 
@@ -32,7 +32,7 @@ void MockConsumer::OnGuestSuccessQuit() {
 
 // static
 void MockConsumer::OnGuestSuccessQuitAndFail() {
-  ADD_FAILURE() << "Guest Login should have failed!";
+  ADD_FAILURE() << "Guest login should have failed!";
   MessageLoop::current()->Quit();
 }
 

@@ -75,7 +75,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   virtual void Login(const std::string& username,
                      const std::string& password) OVERRIDE;
   virtual void Signout() OVERRIDE;
-  virtual void LoginAsDemoUser() OVERRIDE;
+  virtual void LoginAsRetailModeUser() OVERRIDE;
   virtual void LoginAsGuest() OVERRIDE;
   virtual void OnUserSelected(const std::string& username) OVERRIDE;
   virtual void OnStartEnterpriseEnrollment() OVERRIDE;

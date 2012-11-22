@@ -639,7 +639,7 @@ void SigninScreenHandler::HandleAuthenticateUser(const base::ListValue* args) {
 
 void SigninScreenHandler::HandleLaunchDemoUser(const base::ListValue* args) {
   if (delegate_)
-    delegate_->LoginAsDemoUser();
+    delegate_->LoginAsRetailModeUser();
 }
 
 void SigninScreenHandler::HandleLaunchIncognito(const base::ListValue* args) {

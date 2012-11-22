@@ -76,8 +76,8 @@ class UserManager {
   // from normal sign in flow.
   virtual void UserLoggedIn(const std::string& email, bool browser_restart) = 0;
 
-  // Indicates that user just logged on as the demo user.
-  virtual void DemoUserLoggedIn() = 0;
+  // Indicates that user just logged on as the retail mode user.
+  virtual void RetailModeUserLoggedIn() = 0;
 
   // Indicates that user just started incognito session.
   virtual void GuestUserLoggedIn() = 0;

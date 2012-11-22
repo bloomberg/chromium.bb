@@ -193,7 +193,7 @@ void WebUIScreenLocker::Login(const std::string& username,
       ASCIIToUTF16(password));
 }
 
-void WebUIScreenLocker::LoginAsDemoUser() {
+void WebUIScreenLocker::LoginAsRetailModeUser() {
   NOTREACHED();
 }
 

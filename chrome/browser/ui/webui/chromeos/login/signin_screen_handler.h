@@ -68,10 +68,10 @@ class SigninScreenHandlerDelegate {
   virtual void Login(const std::string& username,
                      const std::string& password) = 0;
 
-  // Sign in into a demo user session.
-  virtual void LoginAsDemoUser() = 0;
+  // Sign in into a retail mode session.
+  virtual void LoginAsRetailModeUser() = 0;
 
-  // Sign in into Guest session.
+  // Sign in into guest session.
   virtual void LoginAsGuest() = 0;
 
   // Signs out if the screen is currently locked.

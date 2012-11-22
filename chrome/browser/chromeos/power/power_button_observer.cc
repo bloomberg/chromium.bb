@@ -25,10 +25,21 @@ ash::user::LoginStatus GetCurrentLoginStatus() {
   const UserManager* user_manager = UserManager::Get();
   if (!user_manager->IsUserLoggedIn())
     return ash::user::LOGGED_IN_NONE;
+  if (user_manager->IsCurrentUserOwner())
+    return ash::user::LOGGED_IN_OWNER;
 
-  if (user_manager->GetLoggedInUser()->is_guest())
-    return ash::user::LOGGED_IN_GUEST;
+  switch (user_manager->GetLoggedInUser()->GetType()) {
+    case User::USER_TYPE_REGULAR:
+      return ash::user::LOGGED_IN_USER;
+    case User::USER_TYPE_GUEST:
+      return ash::user::LOGGED_IN_GUEST;
+    case User::USER_TYPE_RETAIL_MODE:
+      return ash::user::LOGGED_IN_KIOSK;
+    case User::USER_TYPE_PUBLIC_ACCOUNT:
+      return ash::user::LOGGED_IN_PUBLIC;
+  }
 
+  NOTREACHED();
   return ash::user::LOGGED_IN_USER;
 }
 

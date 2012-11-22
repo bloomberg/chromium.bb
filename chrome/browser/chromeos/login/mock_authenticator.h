@@ -44,10 +44,10 @@ class MockAuthenticator : public Authenticator {
   virtual void AuthenticateToUnlock(const std::string& username,
                                     const std::string& password) OVERRIDE;
 
-  virtual void LoginDemoUser() OVERRIDE;
+  virtual void LoginRetailMode() OVERRIDE;
   virtual void LoginOffTheRecord() OVERRIDE;
 
-  virtual void OnDemoUserLoginSuccess() OVERRIDE;
+  virtual void OnRetailModeLoginSuccess() OVERRIDE;
 
   virtual void OnLoginSuccess(bool request_pending) OVERRIDE;
 
