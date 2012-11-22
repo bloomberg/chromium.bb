@@ -1035,7 +1035,7 @@ scoped_ptr<DocumentFeed> DocumentFeed::CreateFromChangeList(
   return feed.Pass();
 }
 
-bool DocumentFeed::GetNextFeedURL(GURL* url) {
+bool DocumentFeed::GetNextFeedURL(GURL* url) const {
   DCHECK(url);
   for (size_t i = 0; i < links_.size(); ++i) {
     if (links_[i]->type() == Link::LINK_NEXT) {

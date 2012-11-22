@@ -14,6 +14,7 @@
 #include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/drive/document_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_feed_loader.h"
 #include "chrome/browser/chromeos/drive/drive_feed_processor.h"
@@ -1246,15 +1247,16 @@ void DriveFileSystem::RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo(
       entry_proto->resource_id(),
       base::Bind(&DriveFileSystem::OnRequestDirectoryRefresh,
                  ui_weak_ptr_,
+                 entry_proto->resource_id(),
                  directory_path));
 }
 
 void DriveFileSystem::OnRequestDirectoryRefresh(
+    const std::string& directory_resource_id,
     const FilePath& directory_path,
-    scoped_ptr<LoadFeedParams> params,
+    const ScopedVector<google_apis::DocumentFeed>& feed_list,
     DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(params.get());
 
   if (error != DRIVE_FILE_OK) {
     LOG(ERROR) << "Failed to refresh directory: " << directory_path.value()
@@ -1263,10 +1265,10 @@ void DriveFileSystem::OnRequestDirectoryRefresh(
   }
 
   DriveFeedProcessor feed_processor(resource_metadata_.get());
-  feed_processor.FeedToEntryProtoMap(params->feed_list, NULL, NULL, NULL);
+  feed_processor.FeedToEntryProtoMap(feed_list, NULL, NULL, NULL);
 
   resource_metadata_->RefreshDirectory(
-      params->directory_resource_id,
+      directory_resource_id,
       feed_processor.entry_proto_map(),
       base::Bind(&DriveFileSystem::OnDirectoryChangeFileMoveCallback,
                  ui_weak_ptr_,
@@ -1423,12 +1425,12 @@ void DriveFileSystem::ContinueCreateDirectory(
   }
 }
 
-void DriveFileSystem::OnSearch(const SearchCallback& search_callback,
-                               scoped_ptr<LoadFeedParams> params,
-                               DriveFileError error) {
+void DriveFileSystem::OnSearch(
+    const SearchCallback& search_callback,
+    const ScopedVector<google_apis::DocumentFeed>& feed_list,
+    DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!search_callback.is_null());
-  DCHECK(params.get());
 
   if (error != DRIVE_FILE_OK) {
     search_callback.Run(error,
@@ -1443,8 +1445,8 @@ void DriveFileSystem::OnSearch(const SearchCallback& search_callback,
   std::vector<SearchResultInfo>* results(new std::vector<SearchResultInfo>());
   scoped_ptr<std::vector<SearchResultInfo> > result_vec(results);
 
-  DCHECK_EQ(1u, params->feed_list.size());
-  google_apis::DocumentFeed* feed = params->feed_list[0];
+  DCHECK_EQ(1u, feed_list.size());
+  const google_apis::DocumentFeed* feed = feed_list[0];
 
   // TODO(tbarzic): Limit total number of returned results for the query.
   GURL next_feed;
@@ -1453,8 +1455,7 @@ void DriveFileSystem::OnSearch(const SearchCallback& search_callback,
   const base::Closure callback = base::Bind(
       search_callback, DRIVE_FILE_OK, next_feed, base::Passed(&result_vec));
 
-  std::vector<google_apis::DocumentEntry*> entries;
-  feed->ReleaseEntries(&entries);
+  const ScopedVector<google_apis::DocumentEntry>& entries = feed->entries();
   if (entries.empty()) {
     callback.Run();
     return;
@@ -1466,8 +1467,8 @@ void DriveFileSystem::OnSearch(const SearchCallback& search_callback,
   for (size_t i = 0; i < entries.size(); ++i) {
     // Run the callback if this is the last iteration of the loop.
     const bool should_run_callback = (i + 1 == entries.size());
-    resource_metadata_->RefreshFile(
-        scoped_ptr<google_apis::DocumentEntry>(entries[i]),
+    resource_metadata_->RefreshEntryProto(
+        ConvertDocumentEntryToDriveEntryProto(*entries[i]),
         base::Bind(&DriveFileSystem::AddToSearchResults,
                    ui_weak_ptr_,
                    results,

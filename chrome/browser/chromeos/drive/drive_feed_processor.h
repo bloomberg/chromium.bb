@@ -38,8 +38,8 @@ class DriveFeedProcessor {
 
   // Applies the documents feeds to the file system using |resource_metadata_|.
   //
-  // |start_changestamp| determines the type of feed to process. The value is
-  // set to zero for the root feeds, every other value is for the delta feeds.
+  // |is_delta_feed| determines the type of feed to process, whether it is a
+  // root feed (false) or a delta feed (true).
   //
   // In the case of processing the root feeds |root_feed_changestamp| is used
   // as its initial changestamp value. The value comes from
@@ -48,7 +48,7 @@ class DriveFeedProcessor {
   // |on_complete_callback| must not be null.
   void ApplyFeeds(
       const ScopedVector<google_apis::DocumentFeed>& feed_list,
-      int64 start_changestamp,
+      bool is_delta_feed,
       int64 root_feed_changestamp,
       const base::Closure& on_complete_callback);
 

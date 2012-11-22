@@ -52,13 +52,11 @@ DriveFeedProcessor::~DriveFeedProcessor() {
 
 void DriveFeedProcessor::ApplyFeeds(
     const ScopedVector<google_apis::DocumentFeed>& feed_list,
-    int64 start_changestamp,
+    bool is_delta_feed,
     int64 root_feed_changestamp,
     const base::Closure& on_complete_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!on_complete_callback.is_null());
-
-  const bool is_delta_feed = start_changestamp != 0;
 
   int64 delta_feed_changestamp = 0;
   FeedToEntryProtoMapUMAStats uma_stats;

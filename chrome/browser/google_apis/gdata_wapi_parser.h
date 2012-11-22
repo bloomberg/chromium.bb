@@ -557,7 +557,7 @@ class DocumentFeed : public FeedEntry {
 
   // Returns true and passes|url| of the next feed if the current entry list
   // does not completed this feed.
-  bool GetNextFeedURL(GURL* url);
+  bool GetNextFeedURL(GURL* url) const;
 
   // List of document entries.
   const ScopedVector<DocumentEntry>& entries() const { return entries_; }

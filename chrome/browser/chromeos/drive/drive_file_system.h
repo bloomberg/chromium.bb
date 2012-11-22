@@ -40,7 +40,6 @@ class DriveResourceMetadata;
 class DriveScheduler;
 class DriveWebAppsRegistryInterface;
 class DriveFeedLoader;
-struct LoadFeedParams;
 
 namespace file_system {
 class CopyOperation;
@@ -238,13 +237,12 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Called on preference change.
   void OnDisableDriveHostedFilesChanged();
 
-  // Callback passed to |LoadFeedFromServer| from |Search| method.
-  // |callback| is that should be run with data received from
-  // |LoadFeedFromServer|. |callback| must not be null.
-  // |params| params used for getting document feed for content search.
-  // |error| error code returned by |LoadFeedFromServer|.
+  // Callback passed to DriveFeedLoader from |Search| method.
+  // |callback| is that should be run with data received. It must not be null.
+  // |feed_list| is the document feed for content search.
+  // |error| is the error code returned by DriveFeedLoader.
   void OnSearch(const SearchCallback& callback,
-                scoped_ptr<LoadFeedParams> params,
+                const ScopedVector<google_apis::DocumentFeed>& feed_list,
                 DriveFileError error);
 
   // Callback for DriveResourceMetadata::RefreshFile, from OnSearch.
@@ -252,12 +250,11 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // the local file system snapshot, it is not added to |results|. Instead,
   // CheckForUpdates is called. Runs |callback| with |results|.
   // |callback| may be null.
-  void AddToSearchResults(
-      std::vector<SearchResultInfo>* results,
-      const base::Closure& callback,
-      DriveFileError error,
-      const FilePath& drive_file_path,
-      scoped_ptr<DriveEntryProto> entry_proto);
+  void AddToSearchResults(std::vector<SearchResultInfo>* results,
+                          const base::Closure& callback,
+                          DriveFileError error,
+                          const FilePath& drive_file_path,
+                          scoped_ptr<DriveEntryProto> entry_proto);
 
   // Invoked during the process of CreateFile.
   // First, FindEntryByPathAsyncOnUIThread is called and the result is returned
@@ -367,10 +364,9 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // Callback for DriveResourceMetadata::AddEntryToDirectory. Continues the
   // recursive creation of a directory path by calling CreateDirectory again.
-  void ContinueCreateDirectory(
-      const CreateDirectoryParams& params,
-      DriveFileError error,
-      const FilePath& moved_directory_path);
+  void ContinueCreateDirectory(const CreateDirectoryParams& params,
+                               DriveFileError error,
+                               const FilePath& moved_directory_path);
 
   // Callback for handling file downloading requests.
   void OnFileDownloaded(const GetFileFromCacheParams& params,
@@ -572,9 +568,11 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const FilePath& file_path,
       const ReadDirectoryWithSettingCallback& callback);
   void RequestDirectoryRefreshOnUIThread(const FilePath& file_path);
-  void OnRequestDirectoryRefresh(const FilePath& directory_path,
-                                 scoped_ptr<LoadFeedParams> params,
-                                 DriveFileError error);
+  void OnRequestDirectoryRefresh(
+      const std::string& directory_resource_id,
+      const FilePath& directory_path,
+      const ScopedVector<google_apis::DocumentFeed>& feed_list,
+      DriveFileError error);
   void GetAvailableSpaceOnUIThread(const GetAvailableSpaceCallback& callback);
 
   // Part of CreateDirectory(). Called after

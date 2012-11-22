@@ -129,7 +129,7 @@ bool LoadChangeFeed(const std::string& relative_path,
 
   file_system->feed_loader()->UpdateFromFeed(
       feed_list,
-      start_changestamp,
+      start_changestamp != 0,  // is_delta_feed
       root_feed_changestamp,
       kWAPIRootDirectoryResourceIdForTesting,
       base::Bind(&base::DoNothing));
