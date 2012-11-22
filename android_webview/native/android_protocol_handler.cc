@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// URL request job for reading from resources and assets.
-
 #include "android_webview/native/android_protocol_handler.h"
 
+#include "android_webview/browser/net/android_stream_reader_url_request_job.h"
 #include "android_webview/common/url_constants.h"
-#include "android_webview/native/android_stream_reader_url_request_job.h"
+#include "android_webview/native/input_stream_impl.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_helper.h"
 #include "base/android/jni_string.h"
@@ -23,6 +22,8 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory.h"
 
+using android_webview::InputStream;
+using android_webview::InputStreamImpl;
 using base::android::AttachCurrentThread;
 using base::android::ClearException;
 using base::android::ConvertUTF8ToJavaString;
@@ -47,18 +48,18 @@ class AndroidStreamReaderURLRequestJobDelegateImpl
  public:
   AndroidStreamReaderURLRequestJobDelegateImpl();
 
-  virtual ScopedJavaLocalRef<jobject> OpenInputStream(
+  virtual scoped_ptr<InputStream> OpenInputStream(
       JNIEnv* env,
       net::URLRequest* request) OVERRIDE;
 
   virtual bool GetMimeType(JNIEnv* env,
                            net::URLRequest* request,
-                           jobject stream,
+                           const InputStream& stream,
                            std::string* mime_type) OVERRIDE;
 
   virtual bool GetCharset(JNIEnv* env,
                           net::URLRequest* request,
-                          jobject stream,
+                          const InputStream& stream,
                           std::string* charset) OVERRIDE;
 
   virtual ~AndroidStreamReaderURLRequestJobDelegateImpl();
@@ -124,7 +125,7 @@ AndroidStreamReaderURLRequestJobDelegateImpl::
 ~AndroidStreamReaderURLRequestJobDelegateImpl() {
 }
 
-ScopedJavaLocalRef<jobject>
+scoped_ptr<InputStream>
 AndroidStreamReaderURLRequestJobDelegateImpl::OpenInputStream(
     JNIEnv* env, net::URLRequest* request) {
   DCHECK(request);
@@ -142,32 +143,31 @@ AndroidStreamReaderURLRequestJobDelegateImpl::OpenInputStream(
   // Check and clear pending exceptions.
   if (ClearException(env) || stream.is_null()) {
     DLOG(ERROR) << "Unable to open input stream for Android URL";
-    return ScopedJavaLocalRef<jobject>(env, NULL);
+    return scoped_ptr<InputStream>();
   }
-  return stream;
+  return make_scoped_ptr<InputStream>(new InputStreamImpl(stream));
 }
 
 bool AndroidStreamReaderURLRequestJobDelegateImpl::GetMimeType(
     JNIEnv* env,
     net::URLRequest* request,
-    jobject stream,
+    const android_webview::InputStream& stream,
     std::string* mime_type) {
   DCHECK(env);
   DCHECK(request);
   DCHECK(mime_type);
 
-  if (!stream)
-    return false;
-
   // Query the mime type from the Java side. It is possible for the query to
   // fail, as the mime type cannot be determined for all supported schemes.
   ScopedJavaLocalRef<jstring> url =
       ConvertUTF8ToJavaString(env, request->url().spec());
+  const InputStreamImpl* stream_impl =
+      InputStreamImpl::FromInputStream(&stream);
   ScopedJavaLocalRef<jstring> returned_type =
       android_webview::Java_AndroidProtocolHandler_getMimeType(
           env,
           GetResourceContext(env).obj(),
-          stream, url.obj());
+          stream_impl->jobj(), url.obj());
   if (ClearException(env) || returned_type.is_null())
     return false;
 
@@ -178,7 +178,7 @@ bool AndroidStreamReaderURLRequestJobDelegateImpl::GetMimeType(
 bool AndroidStreamReaderURLRequestJobDelegateImpl::GetCharset(
     JNIEnv* env,
     net::URLRequest* request,
-    jobject stream,
+    const android_webview::InputStream& stream,
     std::string* charset) {
   // TODO: We should probably be getting this from the managed side.
   return false;

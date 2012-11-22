@@ -22,8 +22,6 @@
       'sources': [
         'android_protocol_handler.cc',
         'android_protocol_handler.h',
-        'android_stream_reader_url_request_job.cc',
-        'android_stream_reader_url_request_job.h',
         'android_webview_jni_registrar.cc',
         'android_webview_jni_registrar.h',
         'aw_browser_dependency_factory.cc',
@@ -42,6 +40,8 @@
         'aw_web_contents_delegate.h',
         'cookie_manager.cc',
         'cookie_manager.h',
+        'input_stream_impl.cc',
+        'input_stream_impl.h',
         'intercepted_request_data_impl.cc',
         'intercepted_request_data_impl.h',
         'js_result_handler.cc',

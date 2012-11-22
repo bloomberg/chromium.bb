@@ -8,8 +8,11 @@
 #include "android_webview/browser/intercepted_request_data.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace android_webview {
+
+class InputStream;
 
 class InterceptedRequestDataImpl : public InterceptedRequestData {
  public:
@@ -18,8 +21,7 @@ class InterceptedRequestDataImpl : public InterceptedRequestData {
   InterceptedRequestDataImpl(const base::android::JavaRef<jobject>& obj);
   virtual ~InterceptedRequestDataImpl();
 
-  virtual base::android::ScopedJavaLocalRef<jobject>
-      GetInputStream(JNIEnv* env) const;
+  virtual scoped_ptr<InputStream> GetInputStream(JNIEnv* env) const;
   virtual bool GetMimeType(JNIEnv* env, std::string* mime_type) const;
   virtual bool GetCharset(JNIEnv* env, std::string* charset) const;
 

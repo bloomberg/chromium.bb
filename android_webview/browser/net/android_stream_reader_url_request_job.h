@@ -6,11 +6,21 @@
 #define ANDROID_WEBVIEW_NATIVE_ANDROID_STREAM_READER_URL_REQUEST_JOB_H_
 
 #include "base/android/scoped_java_ref.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
+
+namespace android_webview {
+class InputStream;
+class InputStreamReader;
+}
+
+namespace base {
+class TaskRunner;
+}
 
 namespace net {
 class URLRequest;
@@ -25,20 +35,20 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
    */
   class Delegate {
    public:
-    virtual base::android::ScopedJavaLocalRef<jobject> OpenInputStream(
+    virtual scoped_ptr<android_webview::InputStream> OpenInputStream(
         JNIEnv* env,
         net::URLRequest* request) = 0;
 
     virtual bool GetMimeType(
         JNIEnv* env,
         net::URLRequest* request,
-        jobject stream,
+        const android_webview::InputStream& stream,
         std::string* mime_type) = 0;
 
     virtual bool GetCharset(
         JNIEnv* env,
         net::URLRequest* request,
-        jobject stream,
+        const android_webview::InputStream& stream,
         std::string* charset) = 0;
 
     virtual ~Delegate() {}
@@ -51,6 +61,7 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
 
   // URLRequestJob:
   virtual void Start() OVERRIDE;
+  virtual void Kill() OVERRIDE;
   virtual bool ReadRawData(net::IOBuffer* buf,
                            int buf_size,
                            int* bytes_read) OVERRIDE;
@@ -62,24 +73,28 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
  protected:
   virtual ~AndroidStreamReaderURLRequestJob();
 
+  // Gets the TaskRunner for the worker thread.
+  // Overridden in unittests.
+  virtual base::TaskRunner* GetWorkerThreadRunner();
+
+  // Creates an InputStreamReader instance.
+  // Overridden in unittests to return a mock.
+  virtual scoped_refptr<android_webview::InputStreamReader>
+      CreateStreamReader(android_webview::InputStream* stream);
+
  private:
-  // Verify the requested range against the stream size.
-  bool VerifyRequestedRange(JNIEnv* env);
-
-  // Skip to the first byte of the requested read range.
-  bool SkipToRequestedRange(JNIEnv* env);
-
   void StartAsync();
+
+  void OnReaderSeekCompleted(int content_size);
+  void OnReaderReadCompleted(int bytes_read);
 
   net::HttpByteRange byte_range_;
   scoped_ptr<Delegate> delegate_;
-  base::android::ScopedJavaGlobalRef<jobject> stream_;
-  base::android::ScopedJavaGlobalRef<jbyteArray> buffer_;
+  scoped_refptr<android_webview::InputStreamReader> input_stream_reader_;
+  scoped_ptr<android_webview::InputStream> stream_;
   base::WeakPtrFactory<AndroidStreamReaderURLRequestJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidStreamReaderURLRequestJob);
 };
-
-bool RegisterAndroidStreamReaderUrlRequestJob(JNIEnv* env);
 
 #endif  // ANDROID_WEBVIEW_NATIVE_ANDROID_STREAM_READER_URL_REQUEST_JOB_H_

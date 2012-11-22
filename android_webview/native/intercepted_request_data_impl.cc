@@ -4,7 +4,8 @@
 
 #include "android_webview/native/intercepted_request_data_impl.h"
 
-#include "android_webview/native/android_stream_reader_url_request_job.h"
+#include "android_webview/browser/net/android_stream_reader_url_request_job.h"
+#include "android_webview/native/input_stream_impl.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "jni/InterceptedRequestData_jni.h"
@@ -26,22 +27,22 @@ class StreamReaderJobDelegateImpl :
       DCHECK(intercepted_request_data_impl_);
     }
 
-    virtual base::android::ScopedJavaLocalRef<jobject> OpenInputStream(
+    virtual scoped_ptr<InputStream> OpenInputStream(
         JNIEnv* env,
         net::URLRequest* request) OVERRIDE {
-      return intercepted_request_data_impl_->GetInputStream(env);
+      return intercepted_request_data_impl_->GetInputStream(env).Pass();
     }
 
     virtual bool GetMimeType(JNIEnv* env,
                              net::URLRequest* request,
-                             jobject stream,
+                             const android_webview::InputStream& stream,
                              std::string* mime_type) OVERRIDE {
       return intercepted_request_data_impl_->GetMimeType(env, mime_type);
     }
 
     virtual bool GetCharset(JNIEnv* env,
                             net::URLRequest* request,
-                            jobject stream,
+                            const android_webview::InputStream& stream,
                             std::string* charset) OVERRIDE {
       return intercepted_request_data_impl_->GetCharset(env, charset);
     }
@@ -60,9 +61,13 @@ InterceptedRequestDataImpl::InterceptedRequestDataImpl(
 InterceptedRequestDataImpl::~InterceptedRequestDataImpl() {
 }
 
-ScopedJavaLocalRef<jobject>
+scoped_ptr<InputStream>
 InterceptedRequestDataImpl::GetInputStream(JNIEnv* env) const {
-  return Java_InterceptedRequestData_getData(env, java_object_.obj());
+  ScopedJavaLocalRef<jobject> jstream =
+      Java_InterceptedRequestData_getData(env, java_object_.obj());
+  if (jstream.is_null())
+    return scoped_ptr<InputStream>();
+  return make_scoped_ptr<InputStream>(new InputStreamImpl(jstream));
 }
 
 bool InterceptedRequestDataImpl::GetMimeType(JNIEnv* env,
