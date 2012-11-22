@@ -138,14 +138,7 @@
       },
     },
     'conditions': [
-      ['use_openssl==1', {
-        'defines': [
-          'SSL_USE_OPENSSL',
-        ],
-        'dependencies': [
-          '../../third_party/openssl/openssl.gyp:openssl',
-        ],
-      }, {
+      ['use_openssl!=1', {
         'defines': [
           'SSL_USE_NSS_RNG',
         ],
