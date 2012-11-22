@@ -67,11 +67,14 @@ public class WebKitHitTestTest extends AndroidWebViewTestBase {
             @Override
             public void run() {
                 long eventTime = SystemClock.uptimeMillis();
+                float x = (float)(mTestView.getRight() - mTestView.getLeft()) / 2;
+                float y = (float)(mTestView.getBottom() - mTestView.getTop()) / 2;
                 mAwContents.onTouchEvent(MotionEvent.obtain(
                         eventTime, eventTime, MotionEvent.ACTION_DOWN,
-                        (float)(mTestView.getRight() - mTestView.getLeft()) / 2,
-                        (float)(mTestView.getBottom() - mTestView.getTop()) / 2,
-                        0));
+                        x, y, 0));
+                mAwContents.onTouchEvent(MotionEvent.obtain(
+                        eventTime, eventTime, MotionEvent.ACTION_UP,
+                        x, y, 0));
             }
         });
     }
@@ -226,9 +229,20 @@ public class WebKitHitTestTest extends AndroidWebViewTestBase {
         // this test to be valid.
         testSrcAnchorType();
 
-        String page = CommonResources.makeHtmlPageFrom("",
+        final String title = "UNKNOWN_TYPE title";
+
+        String page = CommonResources.makeHtmlPageFrom(
+                "<title>" + title + "</title>",
                 "<div class=\"full_view\">div text</div>");
         setServerResponseAndLoad(page);
+
+        // Wait for the new page to be loaded before trying hit test.
+        pollOnUiThread(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return mAwContents.getContentViewCore().getTitle().equals(title);
+            }
+        });
         simulateTouchCenterOfWebViewOnUiThread();
         assertTrue(pollForHitTestDataOnUiThread(HitTestResult.UNKNOWN_TYPE, null));
     }
