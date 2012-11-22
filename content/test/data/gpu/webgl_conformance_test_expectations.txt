@@ -123,6 +123,9 @@ UNFILED WIN7 INTEL : conformance_textures_tex_image_and_sub_image_2d_with_image_
 UNFILED WIN7 INTEL : conformance_textures_tex_image_and_sub_image_2d_with_image_data_rgba4444 = FAIL
 UNFILED WIN7 INTEL : conformance_textures_tex_image_and_sub_image_2d_with_image_data_rgba5551 = FAIL
 
+162344 WIN7 DEBUG NVIDIA : conformance_textures_tex_image_and_sub_image_2d_with_video_rgba4444 = TIMEOUT
+162344 WIN7 DEBUG NVIDIA : conformance_textures_tex_image_and_sub_image_2d_with_video_rgba5551 = TIMEOUT
+
 UNFILED MAC INTEL : conformance_glsl_functions_glsl_function_asin = FAIL
 UNFILED MAC INTEL : conformance_glsl_functions_glsl_function_dot = FAIL
 UNFILED MAC INTEL : conformance_glsl_functions_glsl_function_faceforward = FAIL
