@@ -1271,7 +1271,7 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
 
   if (id == IDC_CONTENT_CONTEXT_CONTROLS) {
     return (params_.media_flags &
-            WebContextMenuData::MediaControlRootElement) != 0;
+            WebContextMenuData::MediaControls) != 0;
   }
 
   // Custom items.
