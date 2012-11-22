@@ -381,8 +381,11 @@ void CrashHandlerHostLinux::WriteDumpFile(BreakpadInfo* info,
                          rand);
 
   if (!google_breakpad::WriteMinidump(minidump_filename.c_str(),
+                                      kMaxMinidumpFileSize,
                                       crashing_pid, crash_context,
-                                      kCrashContextSize)) {
+                                      kCrashContextSize,
+                                      google_breakpad::MappingList(),
+                                      google_breakpad::AppMemoryList())) {
     LOG(ERROR) << "Failed to write crash dump for pid " << crashing_pid;
   }
 #if defined(ADDRESS_SANITIZER)

@@ -528,12 +528,14 @@ void EnableCrashDumping(bool unattended) {
     strncpy(g_crash_log_path, logfile_str.c_str(), crash_log_path_len);
   }
   DCHECK(!g_breakpad);
+  MinidumpDescriptor minidump_descriptor(dumps_path.value());
+  minidump_descriptor.set_size_limit(kMaxMinidumpFileSize);
 #if defined(OS_ANDROID)
   unattended = true;  // Android never uploads directly.
 #endif
   if (unattended) {
     g_breakpad = new ExceptionHandler(
-        MinidumpDescriptor(dumps_path.value()),
+        minidump_descriptor,
         NULL,
         CrashDoneNoUpload,
         NULL,
@@ -545,7 +547,7 @@ void EnableCrashDumping(bool unattended) {
 #if !defined(OS_ANDROID)
   // Attended mode
   g_breakpad = new ExceptionHandler(
-      MinidumpDescriptor(dumps_path.value()),
+      minidump_descriptor,
       NULL,
       CrashDoneUpload,
       NULL,
