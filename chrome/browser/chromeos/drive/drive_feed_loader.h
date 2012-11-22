@@ -149,7 +149,7 @@ class DriveFeedLoader {
   // Callback for handling results of feed parse.
   void OnParseFeed(scoped_ptr<LoadFeedParams> params,
                    base::TimeTicks start_time,
-                   scoped_ptr<google_apis::DocumentFeed>* current_feed);
+                   scoped_ptr<google_apis::DocumentFeed> current_feed);
 
   // Callback for handling response from |DriveAPIService::GetDocuments|.
   // Invokes |callback| when done.

@@ -137,11 +137,9 @@ bool UseLevelDB() {
 }
 
 // Parses a google_apis::DocumentFeed from |data|.
-void ParseFeedOnBlockingPool(
-    scoped_ptr<base::Value> data,
-    scoped_ptr<google_apis::DocumentFeed>* out_current_feed) {
-  DCHECK(out_current_feed);
-  *out_current_feed = google_apis::DocumentFeed::ExtractAndParse(*data);
+scoped_ptr<google_apis::DocumentFeed> ParseFeedOnBlockingPool(
+    scoped_ptr<base::Value> data) {
+  return google_apis::DocumentFeed::ExtractAndParse(*data);
 }
 
 }  // namespace
@@ -501,28 +499,23 @@ void DriveFeedLoader::OnGetDocuments(scoped_ptr<LoadFeedParams> params,
     return;
   }
 
-  scoped_ptr<google_apis::DocumentFeed>* current_feed =
-      new scoped_ptr<google_apis::DocumentFeed>;
-  blocking_task_runner_->PostTaskAndReply(
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
       FROM_HERE,
-      base::Bind(&ParseFeedOnBlockingPool,
-                 base::Passed(&data),
-                 current_feed),
+      base::Bind(&ParseFeedOnBlockingPool, base::Passed(&data)),
       base::Bind(&DriveFeedLoader::OnParseFeed,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&params),
-                 start_time,
-                 base::Owned(current_feed)));
+                 start_time));
 }
 
 void DriveFeedLoader::OnParseFeed(
     scoped_ptr<LoadFeedParams> params,
     base::TimeTicks start_time,
-    scoped_ptr<google_apis::DocumentFeed>* current_feed) {
+    scoped_ptr<google_apis::DocumentFeed> current_feed) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(current_feed);
 
-  if (!current_feed->get()) {
+  if (!current_feed) {
     params->RunFeedLoadCallback(DRIVE_FILE_ERROR_FAILED);
     return;
   }
@@ -530,10 +523,10 @@ void DriveFeedLoader::OnParseFeed(
   GURL next_feed_url;
   const bool has_next_feed_url =
       params->load_subsequent_feeds &&
-      (*current_feed)->GetNextFeedURL(&next_feed_url);
+      current_feed->GetNextFeedURL(&next_feed_url);
 
   // Add the current feed to the list of collected feeds for this directory.
-  params->feed_list.push_back(current_feed->release());
+  params->feed_list.push_back(current_feed.release());
 
   // Compute and notify the number of entries fetched so far.
   int num_accumulated_entries = 0;
