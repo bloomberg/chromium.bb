@@ -10,8 +10,15 @@
 namespace gfx {
 
 SkRegion* Path::CreateNativeRegion() const {
+  // Create a clip region that contains |this| path.
+  const SkRect bounds = getBounds();
+  SkIRect ibounds;
+  bounds.round(&ibounds);
+  SkRegion clip_region;
+  clip_region.setRect(ibounds);
+
   SkRegion* region = new SkRegion;
-  region->setPath(*this, *region);
+  region->setPath(*this, clip_region);
   return region;
 }
 
