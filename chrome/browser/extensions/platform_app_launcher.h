@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_PLATFORM_APP_LAUNCHER_H_
 #define CHROME_BROWSER_EXTENSIONS_PLATFORM_APP_LAUNCHER_H_
 
+#include <string>
+
 class CommandLine;
 class FilePath;
 class Profile;
@@ -32,6 +34,13 @@ void LaunchPlatformApp(Profile* profile,
 void LaunchPlatformAppWithPath(Profile* profile,
                                const Extension* extension,
                                const FilePath& file_path);
+
+// Launches the platform app |extension| with the contents of |file_path|
+// available through the launch data.
+void LaunchPlatformAppWithFileHandler(Profile* profile,
+                                      const Extension* extension,
+                                      const std::string& handler_id,
+                                      const FilePath& file_path);
 
 // Launches the platform app |extension| with the supplied web intent. Creates
 // appropriate launch data for the |web_intent_data| field present. |extension|

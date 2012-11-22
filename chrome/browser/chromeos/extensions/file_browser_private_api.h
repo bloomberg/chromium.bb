@@ -172,6 +172,11 @@ class GetFileTasksFileBrowserFunction : public AsyncExtensionFunction {
   // types, appending them to the |result_list|.
   bool FindWebIntentTasks(const std::vector<GURL>& file_urls,
                           ListValue* result_list);
+
+  // Find the list of app file handlers that can be used with the given file
+  // types, appending them to the |result_list|.
+  bool FindAppTasks(const std::vector<GURL>& file_urls,
+                    ListValue* result_list);
 };
 
 // Implements the chrome.fileBrowserPrivate.executeTask method.

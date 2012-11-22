@@ -29,6 +29,7 @@ namespace file_handler_util {
 extern const char kTaskFile[];
 extern const char kTaskDrive[];
 extern const char kTaskWebIntent[];
+extern const char kTaskApp[];
 
 void UpdateFileHandlerUsageStats(Profile* profile, const std::string& task_id);
 

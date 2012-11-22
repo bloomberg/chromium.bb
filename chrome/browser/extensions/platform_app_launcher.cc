@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
+#include "chrome/browser/extensions/app_file_handler_util.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -33,6 +34,9 @@
 #include "webkit/glue/web_intent_service_data.h"
 
 using content::BrowserThread;
+using app_file_handler_util::FileHandlerForId;
+using app_file_handler_util::FileHandlerCanHandleFileWithMimeType;
+using app_file_handler_util::FirstFileHandlerForMimeType;
 
 namespace extensions {
 
@@ -91,7 +95,8 @@ class PlatformAppPathLauncher
                           const FilePath& file_path)
       : profile_(profile),
         extension_(extension),
-        file_path_(file_path) {}
+        file_path_(file_path),
+        handler_id_("") {}
 
   void Launch() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -103,6 +108,11 @@ class PlatformAppPathLauncher
     DCHECK(file_path_.IsAbsolute());
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
             &PlatformAppPathLauncher::GetMimeTypeAndLaunch, this));
+  }
+
+  void LaunchWithHandler(const std::string& handler_id) {
+    handler_id_ = handler_id;
+    Launch();
   }
 
  private:
@@ -142,26 +152,43 @@ class PlatformAppPathLauncher
   }
 
   void LaunchWithMimeType(const std::string& mime_type) {
-    // Find the intent service from the platform app for the file being opened.
-    webkit_glue::WebIntentServiceData service;
+    // Find the intent service or file handler from the platform app for the
+    // file being opened.
     bool found_service = false;
 
-    std::vector<webkit_glue::WebIntentServiceData> services =
-        extension_->intents_services();
-    for (size_t i = 0; i < services.size(); i++) {
-      std::string service_type_ascii = UTF16ToASCII(services[i].type);
-      if (services[i].action == ASCIIToUTF16(web_intents::kActionView) &&
-          net::MatchesMimeType(service_type_ascii, mime_type)) {
-        service = services[i];
-        found_service = true;
-        break;
+    const Extension::FileHandlerInfo* handler = NULL;
+    if (!handler_id_.empty())
+      handler = FileHandlerForId(*extension_, handler_id_);
+    else
+      handler = FirstFileHandlerForMimeType(*extension_, mime_type);
+    if (handler &&
+        !FileHandlerCanHandleFileWithMimeType(*handler, mime_type)) {
+      LOG(WARNING) << "Extension does not provide a valid file handler for "
+                   << file_path_.value();
+      LaunchWithNoLaunchData();
+      return;
+    }
+    found_service = !!handler;
+
+    // TODO(benwells): remove this once we no longer support the "intents"
+    // syntax in platform app manifests.
+    if (!found_service) {
+      std::vector<webkit_glue::WebIntentServiceData> services =
+          extension_->intents_services();
+      for (size_t i = 0; i < services.size(); i++) {
+        std::string service_type_ascii = UTF16ToASCII(services[i].type);
+        if (services[i].action == ASCIIToUTF16(web_intents::kActionView) &&
+            net::MatchesMimeType(service_type_ascii, mime_type)) {
+          found_service = true;
+          break;
+        }
       }
     }
 
     // If this app doesn't have an intent that supports the file, launch with
     // no launch data.
     if (!found_service) {
-      LOG(WARNING) << "Extension does not provide a valid intent for "
+      LOG(WARNING) << "Extension does not provide a valid file handler for "
                    << file_path_.value();
       LaunchWithNoLaunchData();
       return;
@@ -220,7 +247,7 @@ class PlatformAppPathLauncher
 
     extensions::AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
         profile_, extension_, ASCIIToUTF16(web_intents::kActionView),
-        filesystem_id, registered_name);
+        handler_id_, filesystem_id, registered_name);
   }
 
   // The profile the app should be run in.
@@ -229,6 +256,8 @@ class PlatformAppPathLauncher
   const Extension* extension_;
   // The path to be passed through to the app.
   const FilePath file_path_;
+  // The ID of the file handler used to launch the app.
+  std::string handler_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformAppPathLauncher);
 };
@@ -352,6 +381,7 @@ void LaunchPlatformApp(Profile* profile,
     return;
   }
 
+  // TODO(benwells): add a command-line argument to provide a handler ID.
   LaunchPlatformAppWithPath(profile, extension, path);
 }
 
@@ -364,6 +394,15 @@ void LaunchPlatformAppWithPath(Profile* profile,
   scoped_refptr<PlatformAppPathLauncher> launcher =
       new PlatformAppPathLauncher(profile, extension, file_path);
   launcher->Launch();
+}
+
+void LaunchPlatformAppWithFileHandler(Profile* profile,
+                                      const Extension* extension,
+                                      const std::string& handler_id,
+                                      const FilePath& file_path) {
+  scoped_refptr<PlatformAppPathLauncher> launcher =
+      new PlatformAppPathLauncher(profile, extension, file_path);
+  launcher->LaunchWithHandler(handler_id);
 }
 
 void LaunchPlatformAppWithWebIntent(

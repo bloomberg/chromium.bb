@@ -34,6 +34,7 @@
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/browser/extensions/app_file_handler_util.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -75,6 +76,7 @@
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/glue/web_intent_service_data.h"
 
+using app_file_handler_util::FindFileHandlersForMimeTypes;
 using chromeos::disks::DiskMountManager;
 using content::BrowserContext;
 using content::BrowserThread;
@@ -793,17 +795,8 @@ bool GetFileTasksFileBrowserFunction::FindDriveAppTasks(
   return true;
 }
 
-// Find Web Intent platform apps that support the View task, and add them to
-// the |result_list|. These will be marked as kTaskWebIntent.
-bool GetFileTasksFileBrowserFunction::FindWebIntentTasks(
-    const std::vector<GURL>& file_urls,
-    ListValue* result_list) {
-  DCHECK(!file_urls.empty());
-  ExtensionService* service = profile_->GetExtensionService();
-  if (!service)
-    return false;
-
-  std::set<std::string> mime_types;
+static void GetMimeTypesForFileURLs(const std::vector<GURL>& file_urls,
+    std::set<std::string>* mime_types) {
   for (std::vector<GURL>::const_iterator iter = file_urls.begin();
        iter != file_urls.end(); ++iter) {
     const FilePath file = FilePath(GURL(iter->spec()).ExtractFileName());
@@ -819,11 +812,80 @@ bool GetFileTasksFileBrowserFunction::FindWebIntentTasks(
       // If the file doesn't have an extension or its mime-type cannot be
       // determined, then indicate that it has the empty mime-type. This will
       // only be matched if the Web Intents accepts "*" or "*/*".
-      mime_types.insert("");
+      mime_types->insert("");
     } else {
-      mime_types.insert(mime_type);
+      mime_types->insert(mime_type);
     }
   }
+}
+
+bool GetFileTasksFileBrowserFunction::FindAppTasks(
+    const std::vector<GURL>& file_urls,
+    ListValue* result_list) {
+  DCHECK(!file_urls.empty());
+  ExtensionService* service = profile_->GetExtensionService();
+  if (!service)
+    return false;
+
+  std::set<std::string> mime_types;
+  GetMimeTypesForFileURLs(file_urls, &mime_types);
+
+  for (ExtensionSet::const_iterator iter = service->extensions()->begin();
+       iter != service->extensions()->end();
+       ++iter) {
+    const Extension* extension = *iter;
+
+    // We don't support using hosted apps to open files.
+    if (!extension->is_platform_app())
+      continue;
+
+    if (profile_->IsOffTheRecord() &&
+        !service->IsIncognitoEnabled(extension->id()))
+      continue;
+
+    typedef std::vector<const Extension::FileHandlerInfo*> FileHandlerList;
+    FileHandlerList file_handlers =
+        FindFileHandlersForMimeTypes(*extension, mime_types);
+    // TODO(benwells): also support matching by file extension.
+    if (file_handlers.empty())
+      continue;
+
+    for (FileHandlerList::iterator i = file_handlers.begin();
+         i != file_handlers.end(); ++i) {
+      DictionaryValue* task = new DictionaryValue;
+      std::string task_id = file_handler_util::MakeTaskID(extension->id(),
+          file_handler_util::kTaskApp, (*i)->id);
+      task->SetString("taskId", task_id);
+      task->SetString("title", (*i)->title);
+      task->SetBoolean("isDefault", false);
+
+      GURL best_icon = extension->GetIconURL(kPreferredIconSize,
+                                             ExtensionIconSet::MATCH_BIGGER);
+      if (!best_icon.is_empty())
+        task->SetString("iconUrl", best_icon.spec());
+      else
+        task->SetString("iconUrl", kDefaultIcon);
+
+      task->SetBoolean("driveApp", false);
+      result_list->Append(task);
+    }
+  }
+
+  return true;
+}
+
+// Find Web Intent platform apps that support the View task, and add them to
+// the |result_list|. These will be marked as kTaskWebIntent.
+bool GetFileTasksFileBrowserFunction::FindWebIntentTasks(
+    const std::vector<GURL>& file_urls,
+    ListValue* result_list) {
+  DCHECK(!file_urls.empty());
+  ExtensionService* service = profile_->GetExtensionService();
+  if (!service)
+    return false;
+
+  std::set<std::string> mime_types;
+  GetMimeTypesForFileURLs(file_urls, &mime_types);
 
   for (ExtensionSet::const_iterator iter = service->extensions()->begin();
        iter != service->extensions()->end();
@@ -958,9 +1020,15 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
     result_list->Append(task);
   }
 
-  // Take the union of Web Intents (that platform apps may accept) and all
-  // previous Drive and extension tasks. As above, we know there aren't
-  // duplicates because they're entirely different kinds of tasks.
+  // Take the union of platform app file handlers, Web Intents that platform
+  // apps may accept, and all previous Drive and extension tasks. As above, we
+  // know there aren't duplicates because they're entirely different kinds of
+  // tasks.
+  if (!FindAppTasks(file_urls, result_list))
+    return false;
+
+  // TODO(benwells): remove the web intents tasks once we no longer support
+  // them.
   if (!FindWebIntentTasks(file_urls, result_list))
     return false;
 

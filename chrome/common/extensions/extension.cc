@@ -335,6 +335,9 @@ Extension::OAuth2Info::~OAuth2Info() {}
 Extension::ActionInfo::ActionInfo() {}
 Extension::ActionInfo::~ActionInfo() {}
 
+Extension::FileHandlerInfo::FileHandlerInfo() {}
+Extension::FileHandlerInfo::~FileHandlerInfo() {}
+
 //
 // Extension
 //
@@ -2123,13 +2126,12 @@ bool Extension::LoadFileHandler(const std::string& handler_id,
                                 string16* error) {
   DCHECK(error);
   DCHECK(is_platform_app());
-  webkit_glue::WebIntentServiceData service;
+  FileHandlerInfo handler;
 
-  // TODO(jeremya): use a file-handler-specific data structure instead of web
-  // intents.
-  service.action = ASCIIToUTF16("http://webintents.org/view");
+  handler.id = handler_id;
 
   const ListValue* mime_types = NULL;
+  // TODO(benwells): handle file extensions.
   if (!handler_info.HasKey(keys::kFileHandlerTypes) ||
       !handler_info.GetList(keys::kFileHandlerTypes, &mime_types) ||
       mime_types->GetSize() == 0) {
@@ -2138,23 +2140,24 @@ bool Extension::LoadFileHandler(const std::string& handler_id,
     return false;
   }
 
-  service.service_url = GetBackgroundURL();
-
   if (handler_info.HasKey(keys::kFileHandlerTitle) &&
-      !handler_info.GetString(keys::kFileHandlerTitle, &service.title)) {
+      !handler_info.GetString(keys::kFileHandlerTitle, &handler.title)) {
     *error = ASCIIToUTF16(errors::kInvalidFileHandlerTitle);
     return false;
   }
 
+  std::string type;
   for (size_t i = 0; i < mime_types->GetSize(); ++i) {
-    if (!mime_types->GetString(i, &service.type)) {
+    if (!mime_types->GetString(i, &type)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidFileHandlerTypeElement, handler_id,
           std::string(base::IntToString(i)));
       return false;
     }
-    intents_services_.push_back(service);
+    handler.types.insert(type);
   }
+
+  file_handlers_.push_back(handler);
   return true;
 }
 
