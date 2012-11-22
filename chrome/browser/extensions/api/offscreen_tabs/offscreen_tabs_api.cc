@@ -123,8 +123,7 @@ class ParentTab : public content::NotificationObserver {
  public:
   ParentTab();
   virtual ~ParentTab();
-  void Init(WebContents* web_contents,
-            const std::string& extension_id);
+  void Init(WebContents* web_contents);
 
   TabContents* tab_contents() { return tab_contents_; }
   int GetID() { return ExtensionTabUtil::GetTabId(web_contents()); }
@@ -134,7 +133,6 @@ class ParentTab : public content::NotificationObserver {
 
   // Returns the offscreen tabs spawned by this tab.
   const OffscreenTabs& offscreen_tabs() { return offscreen_tabs_; }
-  const std::string& extension_id() const { return extension_id_; }
 
   // Tab takes ownership of OffscreenTab.
   void AddOffscreenTab(OffscreenTab *tab);
@@ -152,7 +150,6 @@ class ParentTab : public content::NotificationObserver {
 
   TabContents* tab_contents_;
   OffscreenTabs offscreen_tabs_;
-  std::string extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ParentTab);
 };
@@ -293,11 +290,9 @@ void OffscreenTab::Observe(int type,
 ParentTab::ParentTab() : tab_contents_(NULL) {}
 ParentTab::~ParentTab() {}
 
-void ParentTab::Init(WebContents* web_contents,
-                     const std::string& extension_id) {
+void ParentTab::Init(WebContents* web_contents) {
   CHECK(web_contents);
 
-  extension_id_ = extension_id;
   tab_contents_ = TabContents::FromWebContents(web_contents);
 
   CHECK(tab_contents_);
@@ -515,7 +510,7 @@ bool CreateOffscreenTabFunction::RunImpl() {
   if (!parent_tab) {
     // Ownership is passed to the OffscreenMap in CreateOffscreenTab.
     parent_tab = new ParentTab();
-    parent_tab->Init(web_contents, extension_id());
+    parent_tab->Init(web_contents);
   }
 
   const OffscreenTab& offscreen_tab = GetMap()->CreateOffscreenTab(
