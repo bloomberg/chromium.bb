@@ -1449,8 +1449,13 @@ bool SandboxSeccompBpf::SupportsSandbox() {
 #if defined(SECCOMP_BPF_SANDBOX)
   // TODO(jln): pass the saved proc_fd_ from the LinuxSandbox singleton
   // here.
-  if (Sandbox::supportsSeccompSandbox(-1) ==
-      Sandbox::STATUS_AVAILABLE) {
+  Sandbox::SandboxStatus bpf_sandbox_status =
+      Sandbox::supportsSeccompSandbox(-1);
+  // Kernel support is what we are interested in here. Other status
+  // such as STATUS_UNAVAILABLE (has threads) still indicate kernel support.
+  // We make this a negative check, since if there is a bug, we would rather
+  // "fail closed" (expect a sandbox to be available and try to start it).
+  if (bpf_sandbox_status != Sandbox::STATUS_UNSUPPORTED) {
     return true;
   }
 #endif
@@ -1462,10 +1467,13 @@ bool SandboxSeccompBpf::StartSandbox(const std::string& process_type) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   if (IsSeccompBpfDesired() &&  // Global switches policy.
-      // Process-specific policy.
-      ShouldEnableSeccompBpf(process_type) &&
+      ShouldEnableSeccompBpf(process_type) &&  // Process-specific policy.
       SupportsSandbox()) {
-    return StartBpfSandbox(command_line, process_type);
+    // If the kernel supports the sandbox, and if the command line says we
+    // should enable it, enable it or die.
+    bool started_sandbox = StartBpfSandbox(command_line, process_type);
+    CHECK(started_sandbox);
+    return true;
   }
 #endif
   return false;
