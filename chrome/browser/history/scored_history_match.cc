@@ -122,12 +122,19 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
   //  3) AND the search string does not end in whitespace (making it look to
   //     the IMUI as though there is a single search term when actually there
   //     is a second, empty term).
-  // |best_prefix| stores the inlineable prefix computed in clause (2) or
-  // NULL if no such prefix exists.  (The URL is not inlineable.)
-  const URLPrefix* best_prefix = (!url_matches.empty() && (terms.size() == 1)) ?
-      URLPrefix::BestURLPrefix(UTF8ToUTF16(gurl.spec()), terms[0]) : NULL;
-  can_inline = (best_prefix != NULL) && !IsWhitespace(*(lower_string.rbegin()));
-  match_in_scheme = can_inline && best_prefix->prefix.empty();
+  // |best_inlineable_prefix| stores the inlineable prefix computed in
+  // clause (2) or NULL if no such prefix exists.  (The URL is not inlineable.)
+  // Note that using the best prefix here means that when multiple
+  // prefixes match, we'll choose to inline following the longest one.
+  // For a URL like "http://www.washingtonmutual.com", this means
+  // typing "w" will inline "ashington..." instead of "ww.washington...".
+  const URLPrefix* best_inlineable_prefix =
+      (!url_matches.empty() && (terms.size() == 1)) ?
+      URLPrefix::BestURLPrefix(UTF8ToUTF16(gurl.spec()), terms[0]) :
+      NULL;
+  can_inline = (best_inlineable_prefix != NULL) &&
+      !IsWhitespace(*(lower_string.rbegin()));
+  match_in_scheme = can_inline && best_inlineable_prefix->prefix.empty();
 
   // Determine if the associated URLs is referenced by any bookmarks.
   float bookmark_boost =
@@ -207,6 +214,45 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
         kBaseScoreForTypedResultsInHUPLikeScoring :
         kBaseScoreForUntypedResultsInHUPLikeScoring;
 
+    // Tweak the hup_like_score based on "innermost matches".  This
+    // corresponds to the second test in
+    // HistoryURLProvider::CompareHistoryMatch().
+    //
+    // The idea here is that matches that occur in the scheme or
+    // "www." are worse than matches which don't.  For the URLs
+    // "http://www.google.com" and "http://wellsfargo.com", we want
+    // the omnibox input "w" to cause the latter URL to rank higher
+    // than the former.  Note that this is not the same as checking
+    // whether one match's inlinable prefix has more components than
+    // the other match's, since in this example, both matches would
+    // have an inlinable prefix of "http://", which is one component.
+    //
+    // Instead, we look for the overall best (i.e., most components)
+    // prefix of the current URL, and then check whether the inlinable
+    // prefix has that many components.  If it does, this is an
+    // "innermost" match, and should be boosted.  In the example
+    // above, the best prefixes for the two URLs have two and one
+    // components respectively, while the inlinable prefixes each
+    // have one component; this means the first match is not innermost
+    // and the second match is innermost, resulting in us boosting the
+    // second match.
+    //
+    // Now, the code that implements this.
+    // The deepest prefix for this URL regardless of where the match is.
+    const URLPrefix* best_prefix =
+        URLPrefix::BestURLPrefix(UTF8ToUTF16(gurl.spec()), string16());
+    DCHECK(best_prefix != NULL);
+    const int num_components_in_best_prefix = best_prefix->num_components;
+    // If the URL is inlineable, we must have a match.  Note the prefix that
+    // makes it inlineable may be empty.
+    DCHECK(best_inlineable_prefix != NULL);
+    const int num_components_in_best_inlineable_prefix =
+        best_inlineable_prefix->num_components;
+    if (num_components_in_best_inlineable_prefix ==
+        num_components_in_best_prefix) {
+      hup_like_score++;
+    }
+
     // In low-typed-count ranges, give non-host-only results (i.e.,
     // http://www.foo.com/bar.html vs. http://www.foo.com/) enough of
     // a penalty so that the host-only result outscores all the other
@@ -223,29 +269,6 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
     // safe.
     if ((row.typed_count() <= 1) && !IsHostOnly())
       hup_like_score -= 5;
-
-    // Calculate num_components_in_best_inlineable_url_prefix_match in
-    // order to tweak the hup_like_score by it.  It represents the
-    // number of components in the best URL prefix that allows us to
-    // inline the match.  For instance, suppose the user types "http".
-    // The URL http://htaccess.com is inlineable for this text, but
-    // the best prefix match is empty.  The num_components is 0.  The
-    // URL http://http.com is also inlineable for the input text
-    // "http".  In this case, the best prefix match that makes the URL
-    // inlineable has "http" matching the "http" in "http.com".  The
-    // best prefix match in this case is "http://".  The
-    // num_components is 1.  This boost roughly corresponds to the
-    // second test in HistoryURLProvider::CompareHistoryMatch() which
-    // looks for what it calls innermost matches.  (Innermost match, a
-    // boolean, is the same idea as the number of components in
-    // inlineable prefix, just a less nuanced form.)
-    // If it's inlineable, we must have a match.  Note the prefix that
-    // makes it inlineable may be empty.
-    DCHECK(best_prefix != NULL);
-    const int num_components_in_best_inlineable_url_prefix_match =
-        best_prefix->num_components;
-
-    hup_like_score += num_components_in_best_inlineable_url_prefix_match;
 
     // All the other logic to goes into hup-like-scoring happens in
     // the tie-breaker case of MatchScoreGreater().
