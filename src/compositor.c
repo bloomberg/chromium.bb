@@ -985,8 +985,6 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 	pixman_region32_init(&output_damage);
 	pixman_region32_intersect(&output_damage,
 				  &ec->primary_plane.damage, &output->region);
-	pixman_region32_subtract(&ec->primary_plane.damage,
-				 &ec->primary_plane.damage, &output->region);
 
 	if (output->dirty)
 		weston_output_update_matrix(output);

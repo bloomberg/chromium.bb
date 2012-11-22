@@ -914,6 +914,7 @@ rpi_output_repaint(struct weston_output *base, pixman_region32_t *damage)
 {
 	struct rpi_output *output = to_rpi_output(base);
 	struct rpi_compositor *compositor = output->compositor;
+	struct weston_plane *primary_plane = &compositor->base.primary_plane;
 	struct rpi_element *element;
 	DISPMANX_UPDATE_HANDLE_T update;
 	int layer = 10000;
@@ -941,6 +942,9 @@ rpi_output_repaint(struct weston_output *base, pixman_region32_t *damage)
 	 * but how, is destroying the EGLSurface a bad performance hit?
 	 */
 	compositor->base.renderer->repaint_output(&output->base, damage);
+
+	pixman_region32_subtract(&primary_plane->damage,
+				 &primary_plane->damage, damage);
 
 	/* Move the list of elements into the old_element_list. */
 	wl_list_insert_list(&output->old_element_list, &output->element_list);

@@ -66,6 +66,9 @@ headless_output_repaint(struct weston_output *output_base,
 
 	ec->renderer->repaint_output(&output->base, damage);
 
+	pixman_region32_subtract(&ec->primary_plane.damage,
+				 &ec->primary_plane.damage, damage);
+
 	wl_event_source_timer_update(output->finish_frame_timer, 16);
 
 	return;

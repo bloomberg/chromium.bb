@@ -137,6 +137,10 @@ wayland_output_repaint(struct weston_output *output_base,
 	wl_callback_add_listener(callback, &frame_listener, output);
 
 	ec->renderer->repaint_output(&output->base, damage);
+
+	pixman_region32_subtract(&ec->primary_plane.damage,
+				 &ec->primary_plane.damage, damage);
+
 }
 
 static void

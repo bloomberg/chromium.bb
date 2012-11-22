@@ -92,9 +92,13 @@ android_output_repaint(struct weston_output *base, pixman_region32_t *damage)
 {
 	struct android_output *output = to_android_output(base);
         struct android_compositor *compositor = output->compositor;
+	struct weston_plane *primary_plane = &compositor->base.primary_plane;
 	struct wl_event_loop *loop;
 
 	compositor->base.renderer->repaint_output(&output->base, damage);
+
+	pixman_region32_subtract(&primary_plane->damage,
+				 &primary_plane->damage, damage);
 
 	/* FIXME: does Android have a way to signal page flip done? */
 	loop = wl_display_get_event_loop(compositor->base.wl_display);
