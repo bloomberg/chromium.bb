@@ -247,7 +247,7 @@ class PlatformAppPathLauncher
 
     extensions::AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
         profile_, extension_, ASCIIToUTF16(web_intents::kActionView),
-        handler_id_, filesystem_id, registered_name);
+        handler_id_, mime_type, filesystem_id, registered_name);
   }
 
   // The profile the app should be run in.

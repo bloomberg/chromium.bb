@@ -55,22 +55,19 @@ void AppEventRouter::DispatchOnRestartedEvent(
 // static.
 void AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
     Profile* profile, const Extension* extension, const string16& action,
-    const std::string& handler_id,
+    const std::string& handler_id, const std::string& mime_type,
     const std::string& file_system_id, const std::string& base_name) {
   scoped_ptr<ListValue> args(new ListValue());
   DictionaryValue* launch_data = new DictionaryValue();
-  DictionaryValue* intent = new DictionaryValue();
-  intent->SetString("action", UTF16ToUTF8(action));
-  intent->SetString("type", "chrome-extension://fileentry");
-  launch_data->Set("intent", intent);
+  launch_data->SetString("id", handler_id);
+  DictionaryValue* launch_item = new DictionaryValue;
+  launch_item->SetString("fileSystemId", file_system_id);
+  launch_item->SetString("baseName", base_name);
+  launch_item->SetString("mimeType", mime_type);
+  ListValue* items = new ListValue;
+  items->Append(launch_item);
+  launch_data->Set("items", items);
   args->Append(launch_data);
-  DictionaryValue* intent_data = new DictionaryValue();
-  intent_data->SetString("format", "fileEntry");
-  intent_data->SetString("fileSystemId", file_system_id);
-  intent_data->SetString("baseName", base_name);
-  // NOTE: This second argument is dropped before being dispatched to the client
-  // code.
-  args->Append(intent_data);
   extensions::ExtensionSystem::Get(profile)->event_router()->
       DispatchEventToExtension(extension->id(), kOnLaunchedEvent, args.Pass(),
                                profile, GURL());

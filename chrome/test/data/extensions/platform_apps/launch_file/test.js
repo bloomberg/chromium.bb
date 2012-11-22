@@ -6,7 +6,8 @@ chrome.app.runtime.onLaunched.addListener(function (launchData) {
   // Test that there is a launchData.intent, it is set up proerly, and that the
   // FileEntry in launchData.intent.data can be read.
   chrome.test.runTests([
-    function testIntent() {
+    function testFileHandler() {
+      // TODO(benwells): remove once we no longer support intents.
       chrome.test.assertFalse(!launchData, "No launchData");
       chrome.test.assertFalse(!launchData.intent, "No launchData.intent");
       chrome.test.assertEq(launchData.intent.action,
@@ -16,7 +17,11 @@ chrome.app.runtime.onLaunched.addListener(function (launchData) {
       chrome.test.assertFalse(!launchData.intent.data,
           "No launchData.intent.data");
 
-      launchData.intent.data.file(function(file) {
+      chrome.test.assertEq(typeof launchData.id, 'string',
+          "launchData.id not received");
+      chrome.test.assertEq(launchData.items.length, 1);
+
+      launchData.items[0].entry.file(function(file) {
         var reader = new FileReader();
         reader.onloadend = function(e) {
           chrome.test.assertEq(

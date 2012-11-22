@@ -48,6 +48,7 @@ class AppEventRouter {
       const Extension* extension,
       const string16& action,
       const std::string& handler_id,
+      const std::string& mime_type,
       const std::string& file_system_id,
       const std::string& base_name);
 
