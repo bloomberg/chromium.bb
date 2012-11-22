@@ -1,4 +1,0 @@
-include_rules = [
-  "+ui/aura",         # Desktop code can depend on aura code.
-  "+ui/aura/shared",  # Desktop code can depend on shared platform code.
-]
