@@ -40,6 +40,7 @@
       'type': 'executable',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../breakpad/breakpad.gyp:breakpad_handler',
         '../../chrome/chrome.gyp:installer_util',
         '../../google_update/google_update.gyp:google_update',
         '../../ui/ui.gyp:ui',
@@ -52,6 +53,8 @@
         'command_execute_impl.cc',
         'command_execute_impl.h',
         'command_execute_impl.rgs',
+        'crash_server_init.cc',
+        'crash_server_init.h',
         'delegate_execute.cc',
         'delegate_execute.rc',
         'delegate_execute.rgs',

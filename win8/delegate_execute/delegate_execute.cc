@@ -11,12 +11,15 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
 #include "base/string16.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_handle.h"
+#include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "command_execute_impl.h"
+#include "win8/delegate_execute/crash_server_init.h"
 #include "win8/delegate_execute/delegate_execute_operation.h"
 #include "win8/delegate_execute/resource.h"
 
@@ -106,6 +109,9 @@ int RelaunchChrome(const DelegateExecuteOperation& operation) {
 }
 
 extern "C" int WINAPI _tWinMain(HINSTANCE , HINSTANCE, LPTSTR, int nShowCmd) {
+  scoped_ptr<google_breakpad::ExceptionHandler> breakpad =
+      delegate_execute::InitializeCrashReporting();
+
   base::AtExitManager exit_manager;
   AtlTrace("delegate_execute enter\n");
 
