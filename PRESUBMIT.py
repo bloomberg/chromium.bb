@@ -558,6 +558,9 @@ def _CheckIncludeOrderInFile(input_api, f, is_source, changed_linenums):
   """Checks the #include order for the given file f."""
 
   system_include_pattern = input_api.re.compile(r'\s*#include \<.*')
+  # Exclude #include <.../...> includes from the check; e.g., <sys/...> includes
+  # often need to appear in a specific order.
+  excluded_include_pattern = input_api.re.compile(r'\s*#include \<.*/.*')
   custom_include_pattern = input_api.re.compile(r'\s*#include "(?P<FILE>.*)"')
   if_pattern = input_api.re.compile(r'\s*#\s*(if|elif|else|endif).*')
 
@@ -596,8 +599,9 @@ def _CheckIncludeOrderInFile(input_api, f, is_source, changed_linenums):
     if if_pattern.match(line):
       scopes.append(current_scope)
       current_scope = []
-    elif (system_include_pattern.match(line) or
-          custom_include_pattern.match(line)):
+    elif ((system_include_pattern.match(line) or
+           custom_include_pattern.match(line)) and
+          not excluded_include_pattern.match(line)):
       current_scope.append((line_num, line))
   scopes.append(current_scope)
 

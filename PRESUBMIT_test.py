@@ -175,6 +175,16 @@ class IncludeOrderTest(unittest.TestCase):
         mock_input_api, mock_file, True, range(1, len(contents) + 1))
     self.assertEqual(0, len(warnings))
 
+  def testSysIncludes(self):
+    # #include <sys/...>'s can appear in any order.
+    mock_input_api = MockInputApi()
+    contents = ['#include <sys/b.h>',
+                '#include <sys/a.h>']
+    mock_file = MockFile('', contents)
+    warnings = PRESUBMIT._CheckIncludeOrderInFile(
+        mock_input_api, mock_file, True, range(1, len(contents) + 1))
+    self.assertEqual(0, len(warnings))
+
 
 class VersionControlerConflictsTest(unittest.TestCase):
   def testTypicalConflict(self):
