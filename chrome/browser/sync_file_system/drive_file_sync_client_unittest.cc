@@ -7,9 +7,9 @@
 #include "base/json/json_reader.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/mock_drive_service.h"
-#include "chrome/browser/google_apis/mock_drive_uploader.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "net/base/escape.h"
@@ -28,31 +28,119 @@ using google_apis::DriveUploaderInterface;
 using google_apis::GDataErrorCode;
 using google_apis::Link;
 using google_apis::MockDriveService;
-using google_apis::MockDriveUploader;
 
 namespace sync_file_system {
 
 namespace {
 const char kSyncRootDirectoryName[] = "Chrome Syncable FileSystem";
+
+// A fake implementation of DriveUploaderInterface, which provides fake
+// behaviors for file uploading.
+class FakeDriveUploader : public google_apis::DriveUploaderInterface {
+ public:
+  FakeDriveUploader() {}
+  virtual ~FakeDriveUploader() {}
+
+  // DriveUploaderInterface overrides.
+
+  // Pretends that a new file was uploaded successfully, and returns the
+  // contents of "gdata/file_entry.json" to the caller.
+  virtual int UploadNewFile(
+      const GURL& upload_location,
+      const FilePath& drive_file_path,
+      const FilePath& local_file_path,
+      const std::string& title,
+      const std::string& content_type,
+      int64 content_length,
+      int64 file_size,
+      const google_apis::UploadCompletionCallback& completion_callback,
+      const google_apis::UploaderReadyCallback& ready_callback) OVERRIDE {
+    scoped_ptr<base::Value> file_entry_data(
+        google_apis::test_util::LoadJSONFile(
+            "gdata/file_entry.json").Pass());
+    scoped_ptr<DocumentEntry> file_entry(
+        DocumentEntry::ExtractAndParse(*file_entry_data));
+
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(completion_callback,
+                   google_apis::DRIVE_UPLOAD_OK,
+                   drive_file_path,
+                   local_file_path,
+                   base::Passed(&file_entry)));
+    return 1;  // Return dummy upload ID.
+  }
+
+  virtual int StreamExistingFile(
+      const GURL& upload_location,
+      const FilePath& drive_file_path,
+      const FilePath& local_file_path,
+      const std::string& content_type,
+      int64 content_length,
+      int64 file_size,
+      const google_apis::UploadCompletionCallback& completion_callback,
+      const google_apis::UploaderReadyCallback& ready_callback) OVERRIDE {
+    NOTREACHED();
+    return 0;
+  }
+
+  // Pretends that an existing file ("file:resource_id") was uploaded
+  // successfully, and returns the contents of "gdata/file_entry.json" to the
+  // caller.
+  virtual int UploadExistingFile(
+      const GURL& upload_location,
+      const FilePath& drive_file_path,
+      const FilePath& local_file_path,
+      const std::string& content_type,
+      int64 file_size,
+      const google_apis::UploadCompletionCallback& completion_callback,
+      const google_apis::UploaderReadyCallback& ready_callback) {
+    scoped_ptr<base::Value> file_entry_data(
+        google_apis::test_util::LoadJSONFile(
+            "gdata/file_entry.json").Pass());
+    scoped_ptr<DocumentEntry> file_entry(
+        DocumentEntry::ExtractAndParse(*file_entry_data));
+
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(completion_callback,
+                   google_apis::DRIVE_UPLOAD_OK,
+                   drive_file_path,
+                   local_file_path,
+                   base::Passed(&file_entry)));
+    return 1;  // Return dummy upload ID.
+  }
+
+  virtual void UpdateUpload(int upload_id,
+                            content::DownloadItem* download) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual int64 GetUploadedBytes(int upload_id) const OVERRIDE {
+    NOTREACHED();
+    return 0;
+  }
+};
+
 }  // namespace
 
 class DriveFileSyncClientTest : public testing::Test {
  public:
   DriveFileSyncClientTest()
       : mock_drive_service_(NULL),
-        mock_drive_uploader_(NULL) {
+        fake_drive_uploader_(NULL) {
   }
 
   virtual void SetUp() OVERRIDE {
     mock_drive_service_ = new StrictMock<MockDriveService>;
-    mock_drive_uploader_ = new StrictMock<MockDriveUploader>;
+    fake_drive_uploader_ = new FakeDriveUploader;
 
     EXPECT_CALL(*mock_drive_service_, Initialize(&profile_)).Times(1);
 
     sync_client_ = DriveFileSyncClient::CreateForTesting(
         &profile_,
         scoped_ptr<DriveServiceInterface>(mock_drive_service_),
-        scoped_ptr<DriveUploaderInterface>(mock_drive_uploader_)).Pass();
+        scoped_ptr<DriveUploaderInterface>(fake_drive_uploader_)).Pass();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -70,10 +158,6 @@ class DriveFileSyncClientTest : public testing::Test {
     return mock_drive_service_;
   }
 
-  StrictMock<MockDriveUploader>* mock_drive_uploader() {
-    return mock_drive_uploader_;
-  }
-
   MessageLoop* message_loop() { return &message_loop_; }
 
  private:
@@ -82,7 +166,7 @@ class DriveFileSyncClientTest : public testing::Test {
   TestingProfile profile_;
   scoped_ptr<DriveFileSyncClient> sync_client_;
   StrictMock<MockDriveService>* mock_drive_service_;
-  StrictMock<MockDriveUploader>* mock_drive_uploader_;
+  FakeDriveUploader* fake_drive_uploader_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveFileSyncClientTest);
 };
@@ -125,24 +209,6 @@ ACTION_P3(InvokeDownloadActionCallback3,
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(arg3, error, content_url, downloaded_file_path));
-}
-
-// Invokes |arg5| as a UploadCompletionCallback.
-ACTION_P4(InvokeUploadCompletionCallback5,
-          error, drive_path, file_path, document_entry) {
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(arg5, error, drive_path, file_path, document_entry));
-  return 1;  // Return dummy upload ID.
-}
-
-// Invokes |arg7| as a UploadCompletionCallback.
-ACTION_P4(InvokeUploadCompletionCallback7,
-          error, drive_path, file_path, document_entry) {
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(arg7, error, drive_path, file_path, document_entry));
-  return 1;  // Return dummy upload ID.
 }
 
 // Invokes |arg1| as a EntryActionCallback.
@@ -603,12 +669,8 @@ TEST_F(DriveFileSyncClientTest, UploadNewFile) {
 
   scoped_ptr<base::Value> dir_entry_data(google_apis::test_util::LoadJSONFile(
       "gdata/directory_entry.json").Pass());
-  scoped_ptr<base::Value> file_entry_data(google_apis::test_util::LoadJSONFile(
-      "gdata/file_entry.json").Pass());
   scoped_ptr<DocumentEntry> dir_entry(
       DocumentEntry::ExtractAndParse(*dir_entry_data));
-  scoped_ptr<DocumentEntry> file_entry(
-      DocumentEntry::ExtractAndParse(*file_entry_data));
   const GURL link_url =
       dir_entry->GetLinkByType(Link::LINK_RESUMABLE_CREATE_MEDIA)->href();
 
@@ -619,23 +681,6 @@ TEST_F(DriveFileSyncClientTest, UploadNewFile) {
               GetDocumentEntry(kDirectoryResourceId, _))
       .WillOnce(InvokeGetDataCallback1(google_apis::HTTP_SUCCESS,
                                        base::Passed(&dir_entry_data)))
-      .RetiresOnSaturation();
-
-  // Expected to call DriveUploaderInterface::UploadNewFile from
-  // DidGetDocumentEntryForUploadNewFile.
-  EXPECT_CALL(*mock_drive_uploader(),
-              UploadNewFile(link_url,
-                            _,          // drive_path
-                            kLocalFilePath,
-                            kTitle,
-                            _,          // content_type
-                            kFileSize,  // content_length
-                            kFileSize,
-                            _, _))
-      .WillOnce(InvokeUploadCompletionCallback7(google_apis::DRIVE_UPLOAD_OK,
-                                                FilePath(),
-                                                kLocalFilePath,
-                                                base::Passed(&file_entry)))
       .RetiresOnSaturation();
 
   bool done = false;
@@ -674,21 +719,6 @@ TEST_F(DriveFileSyncClientTest, UploadExistingFile) {
               GetDocumentEntry(kResourceId, _))
       .WillOnce(InvokeGetDataCallback1(google_apis::HTTP_SUCCESS,
                                        base::Passed(&file_entry_data)))
-      .RetiresOnSaturation();
-
-  // Expected to call DriveUploaderInterface::UploadExistingFile from
-  // DidGetDocumentEntryForUploadExistingFile.
-  EXPECT_CALL(*mock_drive_uploader(),
-              UploadExistingFile(link_url,
-                                 _,          // drive_path
-                                 kLocalFilePath,
-                                 _,          // content_type
-                                 kFileSize,  // content_length
-                                 _, _))
-      .WillOnce(InvokeUploadCompletionCallback5(google_apis::DRIVE_UPLOAD_OK,
-                                                FilePath(),
-                                                kLocalFilePath,
-                                                base::Passed(&entry)))
       .RetiresOnSaturation();
 
   bool done = false;
