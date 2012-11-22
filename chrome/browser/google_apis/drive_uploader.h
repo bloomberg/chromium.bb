@@ -26,7 +26,6 @@ class DownloadItem;
 
 namespace google_apis {
 class DriveServiceInterface;
-class MockDriveUploader;
 struct ResumeUploadResponse;
 
 // Callback to be invoked once the upload has completed.
@@ -88,7 +87,6 @@ class DriveUploaderInterface {
 };
 
 class DriveUploader : public DriveUploaderInterface {
-  friend class MockDriveUploader;
  public:
   explicit DriveUploader(google_apis::DriveServiceInterface* drive_service);
   virtual ~DriveUploader();

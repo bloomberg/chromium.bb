@@ -778,8 +778,6 @@
         'browser/google_apis/gdata_wapi_url_generator_unittest.cc',
         'browser/google_apis/mock_drive_service.cc',
         'browser/google_apis/mock_drive_service.h',
-        'browser/google_apis/mock_drive_uploader.cc',
-        'browser/google_apis/mock_drive_uploader.h',
         'browser/google_apis/operation_registry_unittest.cc',
         'browser/google_apis/test_server/http_request_unittest.cc',
         'browser/google_apis/test_server/http_response_unittest.cc',
