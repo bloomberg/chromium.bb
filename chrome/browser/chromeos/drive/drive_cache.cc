@@ -305,22 +305,19 @@ void DriveCache::Iterate(const CacheIterateCallback& iteration_callback,
       completion_callback);
 }
 
-bool DriveCache::FreeDiskSpaceOnBlockingPoolIfNeededFor(int64 num_bytes) {
-  AssertOnSequencedWorkerPool();
+void DriveCache::FreeDiskSpaceIfNeededFor(
+    int64 num_bytes,
+    const InitializeCacheCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
-  // Do nothing and return if we have enough space.
-  if (HasEnoughSpaceFor(num_bytes, cache_root_path_))
-    return true;
-
-  // Otherwise, try to free up the disk space.
-  DVLOG(1) << "Freeing up disk space for " << num_bytes;
-  // First remove temporary files from the metadata.
-  metadata_->RemoveTemporaryFiles();
-  // Then remove all files under "tmp" directory.
-  RemoveAllFiles(GetCacheDirectoryPath(CACHE_TYPE_TMP));
-
-  // Check the disk space again.
-  return HasEnoughSpaceFor(num_bytes, cache_root_path_);
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&DriveCache::FreeDiskSpaceOnBlockingPoolIfNeededFor,
+                 base::Unretained(this),
+                 num_bytes),
+      callback);
 }
 
 void DriveCache::GetFile(const std::string& resource_id,
@@ -551,6 +548,24 @@ void DriveCache::IterateOnBlockingPool(
   DCHECK(!iteration_callback.is_null());
 
   metadata_->Iterate(iteration_callback);
+}
+
+bool DriveCache::FreeDiskSpaceOnBlockingPoolIfNeededFor(int64 num_bytes) {
+  AssertOnSequencedWorkerPool();
+
+  // Do nothing and return if we have enough space.
+  if (HasEnoughSpaceFor(num_bytes, cache_root_path_))
+    return true;
+
+  // Otherwise, try to free up the disk space.
+  DVLOG(1) << "Freeing up disk space for " << num_bytes;
+  // First remove temporary files from the metadata.
+  metadata_->RemoveTemporaryFiles();
+  // Then remove all files under "tmp" directory.
+  RemoveAllFiles(GetCacheDirectoryPath(CACHE_TYPE_TMP));
+
+  // Check the disk space again.
+  return HasEnoughSpaceFor(num_bytes, cache_root_path_);
 }
 
 scoped_ptr<DriveCache::GetFileResult> DriveCache::GetFileOnBlockingPool(

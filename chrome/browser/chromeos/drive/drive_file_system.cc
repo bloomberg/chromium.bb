@@ -1041,12 +1041,8 @@ void DriveFileSystem::CheckForSpaceBeforeDownload(
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
-      FROM_HERE,
-      base::Bind(&DriveCache::FreeDiskSpaceOnBlockingPoolIfNeededFor,
-                 base::Unretained(cache_),
-                 file_size),
+  cache_->FreeDiskSpaceIfNeededFor(
+      file_size,
       base::Bind(&DriveFileSystem::StartDownloadFileIfEnoughSpace,
                  ui_weak_ptr_,
                  params,
@@ -1595,12 +1591,8 @@ void DriveFileSystem::OnFileDownloaded(
   //
   // If we don't have enough space, we return PLATFORM_FILE_ERROR_NO_SPACE,
   // and try to free up space, even if the file was downloaded successfully.
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
-      FROM_HERE,
-      base::Bind(&DriveCache::FreeDiskSpaceOnBlockingPoolIfNeededFor,
-                 base::Unretained(cache_),
-                 0),
+  cache_->FreeDiskSpaceIfNeededFor(
+      0,
       base::Bind(&DriveFileSystem::OnFileDownloadedAndSpaceChecked,
                  ui_weak_ptr_,
                  params,

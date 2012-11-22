@@ -134,8 +134,9 @@ class DriveCache {
 
   // Frees up disk space to store the given number of bytes, while keeping
   // kMinFreeSpace bytes on the disk, if needed.
-  // Returns true when we successfully manage to have enough space.
-  bool FreeDiskSpaceOnBlockingPoolIfNeededFor(int64 num_bytes);
+  // Runs |callback| with true when we successfully manage to have enough space.
+  void FreeDiskSpaceIfNeededFor(int64 num_bytes,
+                                const InitializeCacheCallback& callback);
 
   // Checks if file corresponding to |resource_id| and |md5| exists in cache.
   // |callback| must not be null.
@@ -297,6 +298,9 @@ class DriveCache {
 
   // Used to implement Iterate().
   void IterateOnBlockingPool(const CacheIterateCallback& iteration_callback);
+
+  // Used to implement FreeDiskSpaceIfNeededFor().
+  bool FreeDiskSpaceOnBlockingPoolIfNeededFor(int64 num_bytes);
 
   // Used to implement GetFile.
   scoped_ptr<GetFileResult> GetFileOnBlockingPool(
