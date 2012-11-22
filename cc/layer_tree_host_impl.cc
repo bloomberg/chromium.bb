@@ -60,6 +60,7 @@ PinchZoomViewport::PinchZoomViewport()
     , m_sentPageScaleDelta(1)
     , m_minPageScaleFactor(0)
     , m_maxPageScaleFactor(0)
+    , m_deviceScaleFactor(1)
 {
 }
 
@@ -101,7 +102,7 @@ gfx::RectF PinchZoomViewport::bounds() const
 {
     gfx::RectF bounds(gfx::PointF(), m_layoutViewportSize);
     bounds.Scale(1 / totalPageScaleFactor());
-    bounds += m_pinchViewportScrollDelta;
+    bounds += m_zoomedViewportOffset;
     return bounds;
 }
 
@@ -129,7 +130,7 @@ gfx::Vector2dF PinchZoomViewport::applyScroll(const gfx::Vector2dF& delta)
         overflow.set_y(pinchedBounds.bottom() - m_layoutViewportSize.height());
         pinchedBounds += gfx::Vector2dF(0, m_layoutViewportSize.height() - pinchedBounds.bottom());
     }
-    m_pinchViewportScrollDelta = pinchedBounds.OffsetFromOrigin();
+    m_zoomedViewportOffset = pinchedBounds.OffsetFromOrigin();
 
     return overflow;
 }
@@ -143,8 +144,10 @@ WebTransformationMatrix PinchZoomViewport::implTransform(bool pageScalePinchZoom
     // impl transform, otherwise the scale is handled by WebCore.
     if (pageScalePinchZoomEnabled) {
         transform.scale(m_pageScaleFactor);
-        transform.translate(-m_pinchViewportScrollDelta.x(),
-                            -m_pinchViewportScrollDelta.y());
+        // The offset needs to be scaled by deviceScaleFactor as this transform
+        // needs to work with physical pixels.
+        gfx::Vector2dF zoomedDeviceViewportOffset = gfx::ScaleVector2d(m_zoomedViewportOffset, m_deviceScaleFactor);
+        transform.translate(-zoomedDeviceViewportOffset.x(), -zoomedDeviceViewportOffset.y());
     }
 
     return transform;
@@ -1043,6 +1046,7 @@ void LayerTreeHostImpl::setDeviceScaleFactor(float deviceScaleFactor)
     if (deviceScaleFactor == m_deviceScaleFactor)
         return;
     m_deviceScaleFactor = deviceScaleFactor;
+    m_pinchZoomViewport.setDeviceScaleFactor(m_deviceScaleFactor);
 
     updateMaxScrollOffset();
 }
@@ -1340,7 +1344,7 @@ void LayerTreeHostImpl::pinchGestureUpdate(float magnifyDelta, gfx::Point anchor
 
     if (m_settings.pageScalePinchZoomEnabled) {
         // Compute the application of the delta with respect to the current page zoom of the page.
-        move.Scale(1 / (m_pinchZoomViewport.pageScaleFactor() * m_deviceScaleFactor));
+        move.Scale(1 / m_pinchZoomViewport.pageScaleFactor());
     }
 
     gfx::Vector2dF scrollOverflow = m_settings.pageScalePinchZoomEnabled ? m_pinchZoomViewport.applyScroll(move) : move;

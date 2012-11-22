@@ -201,7 +201,11 @@ public:
     void startPageScaleAnimation(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration);
 
     void applyScrollAndScale(const ScrollAndScaleSet&);
-    gfx::PointF adjustEventPointForPinchZoom(const gfx::PointF&) const;
+    // This function converts event coordinates when the deviceViewport is zoomed.
+    // Coordinates are transformed from logical pixels in the zoomed viewport to
+    // logical pixels in the un-zoomed viewport, the latter being the coordinates
+    // required for hit-testing.
+    gfx::PointF adjustEventPointForPinchZoom(const gfx::PointF& zoomedViewportPoint) const;
     void setImplTransform(const WebKit::WebTransformationMatrix&);
 
     void startRateLimiter(WebKit::WebGraphicsContext3D*);

@@ -3137,10 +3137,10 @@ public:
 
         m_layerTreeHost->setImplTransform(m);
 
-        // Apply m^(-1): 138 = 400/2 - 250/4; 185 = 550/2 - 360/4.
+        // Apply m^(-1): 75 = (400 - 250) / 2; 95 = (550 - 360) / 2.
         transformedPoint = gfx::ToRoundedPoint(m_layerTreeHost->adjustEventPointForPinchZoom(point));
-        EXPECT_EQ(138, transformedPoint.x());
-        EXPECT_EQ(185, transformedPoint.y());
+        EXPECT_EQ(75, transformedPoint.x());
+        EXPECT_EQ(95, transformedPoint.y());
         endTest();
     }
 

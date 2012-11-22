@@ -76,6 +76,9 @@ public:
     void setSentPageScaleDelta(float delta) { m_sentPageScaleDelta = delta; }
     float sentPageScaleDelta() const { return m_sentPageScaleDelta; }
 
+    void setDeviceScaleFactor(float factor) { m_deviceScaleFactor = factor; }
+    float deviceScaleFactor() const { return m_deviceScaleFactor; }
+
     // Returns true if the passed parameters were different from those previously
     // cached.
     bool setPageScaleFactorAndLimits(float pageScaleFactor,
@@ -84,7 +87,7 @@ public:
 
     // Returns the bounds and offset of the scaled and translated viewport to use for pinch-zoom.
     gfx::RectF bounds() const;
-    const gfx::Vector2dF& scrollDelta() const { return m_pinchViewportScrollDelta; }
+    const gfx::Vector2dF& zoomedViewportOffset() const { return m_zoomedViewportOffset; }
 
     void setLayoutViewportSize(const gfx::SizeF& size) { m_layoutViewportSize = size; }
 
@@ -93,6 +96,10 @@ public:
     // this constraint.
     gfx::Vector2dF applyScroll(const gfx::Vector2dF&);
 
+    // The implTransform goes from the origin of the unzoomedDeviceViewport to the
+    // origin of the zoomedDeviceViewport.
+    //
+    // implTransform = S[pageScale] * Tr[-zoomedDeviceViewportOffset]
     WebKit::WebTransformationMatrix implTransform(bool pageScalePinchZoomEnabled) const;
 
 private:
@@ -101,8 +108,9 @@ private:
     float m_sentPageScaleDelta;
     float m_maxPageScaleFactor;
     float m_minPageScaleFactor;
+    float m_deviceScaleFactor;
 
-    gfx::Vector2dF m_pinchViewportScrollDelta;
+    gfx::Vector2dF m_zoomedViewportOffset;
     gfx::SizeF m_layoutViewportSize;
 };
 

@@ -731,25 +731,26 @@ void LayerTreeHost::applyScrollAndScale(const ScrollAndScaleSet& info)
         m_client->applyScrollAndScale(rootScrollDelta, info.pageScaleDelta);
 }
 
-gfx::PointF LayerTreeHost::adjustEventPointForPinchZoom(const gfx::PointF& point)
+gfx::PointF LayerTreeHost::adjustEventPointForPinchZoom(const gfx::PointF& zoomedViewportPoint)
     const
 {
-    WebKit::WebTransformationMatrix inverseImplTransform = m_implTransform;
-    // TODO(wjmaclean) Need to determine why the next two lines are
-    // necessary for this to work ... it seems like just inverting
-    // m_implTransform should be sufficient.
-    DCHECK(inverseImplTransform.m11());
-    DCHECK(inverseImplTransform.m22());
-    inverseImplTransform.setM41(inverseImplTransform.m41()
-        / inverseImplTransform.m11());
-    inverseImplTransform.setM42(inverseImplTransform.m42()
-        / inverseImplTransform.m22());
-    inverseImplTransform = inverseImplTransform.inverse();
+    if (m_implTransform.isIdentity())
+        return zoomedViewportPoint;
+
+    DCHECK(m_implTransform.isInvertible());
+
+    // Scale to screen space before applying implTransform inverse.
+    gfx::PointF zoomedScreenspacePoint = gfx::ScalePoint(zoomedViewportPoint, deviceScaleFactor());
+    WebKit::WebTransformationMatrix inverseImplTransform = m_implTransform.inverse();
+
     bool wasClipped = false;
-    gfx::PointF adjustedPoint = MathUtil::projectPoint(inverseImplTransform, point, wasClipped);
+    gfx::PointF unzoomedScreenspacePoint = MathUtil::projectPoint(inverseImplTransform, zoomedScreenspacePoint, wasClipped);
     DCHECK(!wasClipped);
 
-    return adjustedPoint;
+    // Convert back to logical pixels for hit testing.
+    gfx::PointF unzoomedViewportPoint = gfx::ScalePoint(unzoomedScreenspacePoint, 1 / deviceScaleFactor());
+
+    return unzoomedViewportPoint;
 }
 
 void LayerTreeHost::setImplTransform(const WebKit::WebTransformationMatrix& transform)
