@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_PRIVATE_API_H_
 
 #include "ash/desktop_background/desktop_background_controller.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "ui/gfx/image/image_skia.h"
@@ -80,6 +81,10 @@ class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
 
   // String representation of downloaded wallpaper.
   std::string image_data_;
+
+  // Sequence token associated with wallpaper operations. Shared with
+  // WallpaperManager.
+  base::SequencedWorkerPool::SequenceToken sequence_token_;
 };
 
 class WallpaperSetCustomWallpaperFunction : public WallpaperFunctionBase {

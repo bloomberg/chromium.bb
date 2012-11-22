@@ -20,7 +20,6 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/simple_jpeg_encoder.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -36,6 +35,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skia_util.h"
 
@@ -44,6 +44,9 @@ using content::BrowserThread;
 namespace {
 
 const int kWallpaperUpdateIntervalSec = 24 * 60 * 60;
+
+// Default quality for encoding wallpaper.
+const int kDefaultEncodingQuality = 90;
 
 // A dictionary pref that maps usernames to file paths to their wallpapers.
 // Deprecated. Will remove this const char after done migration.
@@ -86,6 +89,8 @@ int RoundPositive(double x) {
 
 namespace chromeos {
 
+const char kWallpaperSequenceTokenName[] = "wallpaper-sequence";
+
 const char kSmallWallpaperSuffix[] = "_small";
 const char kLargeWallpaperSuffix[] = "_large";
 
@@ -116,6 +121,12 @@ WallpaperManager::WallpaperManager()
   registrar_.Add(this,
                  chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
                  content::NotificationService::AllSources());
+  sequence_token_ = BrowserThread::GetBlockingPool()->
+      GetNamedSequenceToken(kWallpaperSequenceTokenName);
+  task_runner_ = BrowserThread::GetBlockingPool()->
+      GetSequencedTaskRunnerWithShutdownBehavior(
+          sequence_token_,
+          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 }
 
 // static
@@ -310,7 +321,8 @@ void WallpaperManager::ResizeAndSaveWallpaper(const UserImage& wallpaper,
                                               ash::WallpaperLayout layout,
                                               int preferred_width,
                                               int preferred_height) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::GetBlockingPool()->
+      IsRunningSequenceOnCurrentThread(sequence_token_));
   int width = wallpaper.image().width();
   int height = wallpaper.image().height();
   int resized_width;
@@ -347,15 +359,19 @@ void WallpaperManager::ResizeAndSaveWallpaper(const UserImage& wallpaper,
       skia::ImageOperations::RESIZE_LANCZOS3,
       gfx::Size(resized_width, resized_height));
 
+  SkBitmap image = *(resized_image.bitmap());
   scoped_refptr<base::RefCountedBytes> data = new base::RefCountedBytes();
-  // Uses simple JPG encoder to encode image on worker pool so we do not block
-  // chrome shutdown on image encoding.
-  SimpleJpegEncoder* jpeg_encoder = new SimpleJpegEncoder(
-      data, *(resized_image.bitmap()));
-  jpeg_encoder->Run(
-      base::Bind(&WallpaperManager::OnWallpaperEncoded,
-                 weak_factory_.GetWeakPtr(),
-                 path));
+  SkAutoLockPixels lock_input(image);
+  gfx::JPEGCodec::Encode(
+      reinterpret_cast<unsigned char*>(image.getAddr32(0, 0)),
+      gfx::JPEGCodec::FORMAT_SkBitmap,
+      image.width(),
+      image.height(),
+      image.width() * image.bytesPerPixel(),
+      kDefaultEncodingQuality, &data->data());
+  SaveWallpaperInternal(path,
+                        reinterpret_cast<const char*>(data->front()),
+                        data->size());
 }
 
 void WallpaperManager::RestartTimer() {
@@ -409,17 +425,21 @@ void WallpaperManager::SetCustomWallpaper(const std::string& username,
       // Date field is not used.
       base::Time::Now().LocalMidnight()
   };
+  // Block shutdown on this task. Otherwise, we may lost the custom wallpaper
+  // user selected.
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner =
+      BrowserThread::GetBlockingPool()->
+          GetSequencedTaskRunnerWithShutdownBehavior(sequence_token_,
+              base::SequencedWorkerPool::BLOCK_SHUTDOWN);
   // TODO(bshe): This may break if RawImage becomes RefCountedMemory.
-  BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&WallpaperManager::ProcessCustomWallpaper,
-                   base::Unretained(this),
-                   username,
-                   is_persistent,
-                   wallpaper_info,
-                   base::Passed(&deep_copy),
-                   wallpaper.raw_image()));
+  blocking_task_runner->PostTask(FROM_HERE,
+      base::Bind(&WallpaperManager::ProcessCustomWallpaper,
+                 base::Unretained(this),
+                 username,
+                 is_persistent,
+                 wallpaper_info,
+                 base::Passed(&deep_copy),
+                 wallpaper.raw_image()));
   ash::Shell::GetInstance()->desktop_background_controller()->
       SetCustomWallpaper(wallpaper.image(), layout);
 
@@ -530,8 +550,7 @@ void WallpaperManager::SetUserWallpaper(const std::string& email) {
         current_wallpaper_path_ = wallpaper_path;
         loaded_wallpapers_++;
 
-        BrowserThread::PostTask(
-            BrowserThread::FILE, FROM_HERE,
+        task_runner_->PostTask(FROM_HERE,
             base::Bind(&WallpaperManager::GetCustomWallpaperInternal,
                        base::Unretained(this), email, info, wallpaper_path,
                        true /* update wallpaper */));
@@ -605,8 +624,7 @@ void WallpaperManager::CacheUserWallpaper(const std::string& email) {
           desktop_background_controller()->GetAppropriateResolution();
       bool is_small  = (resolution == ash::WALLPAPER_RESOLUTION_SMALL);
       FilePath wallpaper_path = GetWallpaperPathForUser(email, is_small);
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
+      task_runner_->PostTask(FROM_HERE,
           base::Bind(&WallpaperManager::GetCustomWallpaperInternal,
                      base::Unretained(this), email, info, wallpaper_path,
                      false /* do not update wallpaper */));
@@ -618,7 +636,8 @@ void WallpaperManager::CacheUserWallpaper(const std::string& email) {
 
 void WallpaperManager::CacheThumbnail(const std::string& email,
                                       scoped_ptr<gfx::ImageSkia> wallpaper) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::GetBlockingPool()->
+      IsRunningSequenceOnCurrentThread(sequence_token_));
   custom_wallpaper_thumbnail_cache_[email] =
       GetWallpaperThumbnail(*wallpaper.get());
 }
@@ -756,7 +775,8 @@ void WallpaperManager::GenerateUserWallpaperThumbnail(
     const std::string& email,
     User::WallpaperType type,
     const gfx::ImageSkia& wallpaper) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::GetBlockingPool()->
+      IsRunningSequenceOnCurrentThread(sequence_token_));
   custom_wallpaper_thumbnail_cache_[email] = GetWallpaperThumbnail(wallpaper);
 }
 
@@ -765,6 +785,8 @@ void WallpaperManager::GetCustomWallpaperInternal(
     const WallpaperInfo& info,
     const FilePath& wallpaper_path,
     bool update_wallpaper) {
+  DCHECK(BrowserThread::GetBlockingPool()->
+      IsRunningSequenceOnCurrentThread(sequence_token_));
   std::string file_name = wallpaper_path.BaseName().value();
 
   if (!file_util::PathExists(wallpaper_path)) {
@@ -818,12 +840,11 @@ void WallpaperManager::OnWallpaperDecoded(const std::string& email,
   wallpaper.image().EnsureRepsForSupportedScaleFactors();
   scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper.image().DeepCopy());
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&WallpaperManager::CacheThumbnail,
-                 base::Unretained(this), email,
-                 base::Passed(&deep_copy)));
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&WallpaperManager::CacheThumbnail,
+                                    base::Unretained(this), email,
+                                    base::Passed(&deep_copy)));
+
   // Only cache user wallpaper at login screen.
   if (!UserManager::Get()->IsUserLoggedIn()) {
     wallpaper_cache_.insert(std::make_pair(email, wallpaper.image()));
@@ -840,17 +861,12 @@ void WallpaperManager::ProcessCustomWallpaper(
     const WallpaperInfo& info,
     scoped_ptr<gfx::ImageSkia> image,
     const UserImage::RawImage& raw_image) {
+  DCHECK(BrowserThread::GetBlockingPool()->
+      IsRunningSequenceOnCurrentThread(sequence_token_));
   UserImage wallpaper(*image.get(), raw_image);
   GenerateUserWallpaperThumbnail(email, info.type, wallpaper.image());
   if (persistent)
     SaveCustomWallpaper(email, FilePath(info.file), info.layout, wallpaper);
-}
-
-void WallpaperManager::OnWallpaperEncoded(const FilePath& path,
-    scoped_refptr<base::RefCountedBytes> data) {
-  SaveWallpaperInternal(path,
-                        reinterpret_cast<const char*>(data->front()),
-                        data->size());
 }
 
 void WallpaperManager::SaveCustomWallpaper(const std::string& email,

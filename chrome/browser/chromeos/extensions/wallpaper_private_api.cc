@@ -14,6 +14,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/synchronization/cancellation_flag.h"
+#include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_image.h"
@@ -281,14 +283,22 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
   wallpaper_ = wallpaper;
   // Set wallpaper_decoder_ to null since the decoding already finished.
   wallpaper_decoder_ = NULL;
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+
+  sequence_token_ = BrowserThread::GetBlockingPool()->
+      GetNamedSequenceToken(chromeos::kWallpaperSequenceTokenName);
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      BrowserThread::GetBlockingPool()->
+          GetSequencedTaskRunnerWithShutdownBehavior(sequence_token_,
+              base::SequencedWorkerPool::BLOCK_SHUTDOWN);
+
+  task_runner->PostTask(FROM_HERE,
       base::Bind(&WallpaperSetWallpaperFunction::SaveToFile,
                  this));
 }
 
 void WallpaperSetWallpaperFunction::SaveToFile() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
+      sequence_token_));
   FilePath wallpaper_dir;
   CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &wallpaper_dir));
   if (!file_util::DirectoryExists(wallpaper_dir) &&

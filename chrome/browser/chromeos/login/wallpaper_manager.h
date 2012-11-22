@@ -11,6 +11,7 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/login/user.h"
@@ -24,6 +25,10 @@
 #include "unicode/timezone.h"
 
 class PrefService;
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace chromeos {
 
@@ -41,6 +46,9 @@ struct WallpaperInfo {
 
 class WallpaperManagerBrowserTest;
 class UserImage;
+
+// Name of wallpaper sequence token.
+extern const char kWallpaperSequenceTokenName[];
 
 // File path suffices of resized small or large wallpaper.
 extern const char kSmallWallpaperSuffix[];
@@ -221,11 +229,6 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
                           bool update_wallpaper,
                           const UserImage& wallpaper);
 
-  // Saves encoded wallpaper to |path|. This callback is called after encoding
-  // to PNG completes.
-  void OnWallpaperEncoded(const FilePath& path,
-                          scoped_refptr<base::RefCountedBytes> data);
-
   // Generates thumbnail of custom wallpaper on FILE thread. If |persistent| is
   // true, saves original custom image and resized images to disk.
   void ProcessCustomWallpaper(const std::string& email,
@@ -279,6 +282,12 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
 
   // The number of loaded wallpapers.
   int loaded_wallpapers_;
+
+  // Sequence token associated with wallpaper operations.
+  base::SequencedWorkerPool::SequenceToken sequence_token_;
+
+  // Wallpaper sequenced task runner.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // The file path of current loaded/loading custom/online wallpaper.
   FilePath current_wallpaper_path_;
