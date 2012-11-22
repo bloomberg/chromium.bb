@@ -43,6 +43,16 @@ chrome.bookmarkManagerPrivate.getStrings(function(data) {
  */
 var ROOT_ID = '0';
 
+/**
+ * Delay for expanding folder when pointer hovers on folder in tree view in
+ * milliseconds.
+ * @type {number}
+ * @const
+ */
+// TODO(yosin): EXPAND_FOLDER_DELAY should follow system settings. 400ms is
+// taken from Windows default settings.
+var EXPAND_FOLDER_DELAY = 400;
+
 var splitter = document.querySelector('.main > .splitter');
 Splitter.decorate(splitter);
 
@@ -52,6 +62,14 @@ Splitter.decorate(splitter);
  * @type {Array.<BookmarkTreeNode>}
  */
 var lastDeletedNodes;
+
+/**
+ *
+ * Holds the last DOMTimeStamp when mouse pointer hovers on folder in tree
+ * view. Zero means pointer doesn't hover on folder.
+ * @type {number}
+ */
+var lastHoverOnFolderTimeStamp = 0;
 
 /**
  * Holds a function that will undo that last action, if global undo is enabled.
@@ -586,6 +604,22 @@ var dnd = {
       return;
 
     var overBookmarkNode = overElement.bookmarkNode;
+
+    // Expands a folder in tree view when pointer hovers on it longer than
+    // EXPAND_FOLDER_DELAY.
+    var hoverOnFolderTimeStamp = lastHoverOnFolderTimeStamp;
+    lastHoverOnFolderTimeStamp = 0;
+    if (hoverOnFolderTimeStamp) {
+      if (e.timeStamp - hoverOnFolderTimeStamp >= EXPAND_FOLDER_DELAY)
+        overElement.expanded = true;
+      else
+        lastHoverOnFolderTimeStamp = hoverOnFolderTimeStamp;
+    } else if (overElement instanceof TreeItem &&
+               bmm.isFolder(overBookmarkNode) &&
+               overElement.hasChildren &&
+               !overElement.expanded) {
+      lastHoverOnFolderTimeStamp = e.timeStamp;
+    }
 
     if (!this.canDrop(overBookmarkNode, overElement))
       return;
