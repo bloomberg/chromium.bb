@@ -115,4 +115,9 @@ void GpuSurfaceTracker::SetNativeWidget(
   it->second.native_widget = widget;
 }
 
+std::size_t GpuSurfaceTracker::GetSurfaceCount() {
+  base::AutoLock lock(lock_);
+  return surface_map_.size();
+}
+
 }  // namespace content

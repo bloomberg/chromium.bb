@@ -408,6 +408,9 @@ GpuProcessHost::~GpuProcessHost() {
                             status,
                             base::TERMINATION_STATUS_MAX_ENUM);
 
+  UMA_HISTOGRAM_COUNTS_100("GPU.SurfaceCountAtExit",
+                           GpuSurfaceTracker::Get()->GetSurfaceCount());
+
   if (status == base::TERMINATION_STATUS_NORMAL_TERMINATION ||
       status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
     UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessExitCode",

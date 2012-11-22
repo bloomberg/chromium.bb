@@ -72,6 +72,9 @@ class GpuSurfaceTracker : public GpuSurfaceLookup {
   // does not exist. This is an O(log N) lookup.
   gfx::PluginWindowHandle GetSurfaceWindowHandle(int surface_id);
 
+  // Returns the number of surfaces currently registered with the tracker.
+  std::size_t GetSurfaceCount();
+
   // Gets the global instance of the surface tracker. Identical to Get(), but
   // named that way for the implementation of Singleton.
   static GpuSurfaceTracker* GetInstance();
