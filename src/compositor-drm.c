@@ -2113,20 +2113,23 @@ find_primary_gpu(struct drm_compositor *ec, const char *seat)
 }
 
 static void
-hide_sprites_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
-		     void *data)
+planes_binding(struct wl_seat *seat, uint32_t time, uint32_t key, void *data)
 {
 	struct drm_compositor *c = data;
 
-	c->sprites_hidden ^= 1;
-}
-
-static void
-cursor_binding(struct wl_seat *seat, uint32_t time, uint32_t key, void *data)
-{
-	struct drm_compositor *c = data;
-
-	c->cursors_are_broken ^= 1;
+	switch (key) {
+	case KEY_C:
+		c->cursors_are_broken ^= 1;
+		break;
+	case KEY_V:
+		c->sprites_are_broken ^= 1;
+		break;
+	case KEY_O:
+		c->sprites_hidden ^= 1;
+		break;
+	default:
+		break;
+	}
 }
 
 static struct weston_compositor *
@@ -2232,9 +2235,11 @@ drm_compositor_create(struct wl_display *display,
 	udev_device_unref(drm_device);
 
 	weston_compositor_add_debug_binding(&ec->base, KEY_O,
-					    hide_sprites_binding, ec);
+					    planes_binding, ec);
 	weston_compositor_add_debug_binding(&ec->base, KEY_C,
-					    cursor_binding, ec);
+					    planes_binding, ec);
+	weston_compositor_add_debug_binding(&ec->base, KEY_V,
+					    planes_binding, ec);
 
 	return &ec->base;
 
