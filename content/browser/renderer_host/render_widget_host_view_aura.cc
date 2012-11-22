@@ -304,7 +304,7 @@ void RenderWidgetHostViewAura::InitAsChild(
 
 void RenderWidgetHostViewAura::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
-    const gfx::Rect& bounds_in_display) {
+    const gfx::Rect& bounds_in_screen) {
   popup_parent_host_view_ =
       static_cast<RenderWidgetHostViewAura*>(parent_host_view);
 
@@ -322,19 +322,17 @@ void RenderWidgetHostViewAura::InitAsPopup(
   window_->Init(ui::LAYER_TEXTURED);
   window_->SetName("RenderWidgetHostViewAura");
 
-  aura::Window* parent = NULL;
   aura::RootWindow* root = popup_parent_host_view_->window_->GetRootWindow();
+  aura::Window* parent = aura::client::GetStackingClient()->GetDefaultParent(
+      window_, window_, bounds_in_screen);
+  window_->SetParent(parent);
+
   aura::client::ScreenPositionClient* screen_position_client =
       aura::client::GetScreenPositionClient(root);
-  if (screen_position_client) {
-    gfx::Point origin_in_screen(bounds_in_display.origin());
-    screen_position_client->ConvertPointToScreen(root, &origin_in_screen);
-    parent = aura::client::GetStackingClient()->GetDefaultParent(
-        window_, window_,
-        gfx::Rect(origin_in_screen, bounds_in_display.size()));
-  }
-  window_->SetParent(parent);
-  SetBounds(bounds_in_display);
+  gfx::Point origin_in_parent(bounds_in_screen.origin());
+  if (screen_position_client)
+    screen_position_client->ConvertPointFromScreen(parent, &origin_in_parent);
+  SetBounds(gfx::Rect(origin_in_parent, bounds_in_screen.size()));
   Show();
 }
 
@@ -1041,7 +1039,7 @@ void RenderWidgetHostViewAura::GetScreenInfo(WebScreenInfo* results) {
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
-  return window_->GetToplevelWindow()->GetBoundsInRootWindow();
+  return window_->GetToplevelWindow()->GetBoundsInScreen();
 }
 
 void RenderWidgetHostViewAura::ProcessAckedTouchEvent(

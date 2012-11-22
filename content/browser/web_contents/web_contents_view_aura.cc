@@ -258,9 +258,11 @@ class WebContentsViewAura::WindowObserver
   explicit WindowObserver(WebContentsViewAura* view)
       : view_(view),
         parent_(NULL) {
+    view_->window_->AddObserver(this);
   }
 
   virtual ~WindowObserver() {
+    view_->window_->RemoveObserver(this);
     if (parent_)
       parent_->RemoveObserver(this);
   }
@@ -268,6 +270,8 @@ class WebContentsViewAura::WindowObserver
   // Overridden from aura::WindowObserver:
   virtual void OnWindowParentChanged(aura::Window* window,
                                      aura::Window* parent) OVERRIDE {
+    if (window == parent_)
+      return;
     if (parent_)
       parent_->RemoveObserver(this);
     parent_ = parent;
@@ -278,16 +282,17 @@ class WebContentsViewAura::WindowObserver
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) {
-    // This is for the Ash case.
     SendScreenRects();
   }
 
   virtual void OnWindowAddedToRootWindow(aura::Window* window) OVERRIDE {
-    window->GetRootWindow()->AddRootWindowObserver(this);
+    if (window != parent_)
+      window->GetRootWindow()->AddRootWindowObserver(this);
   }
 
   virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE {
-    window->GetRootWindow()->RemoveRootWindowObserver(this);
+    if (window != parent_)
+      window->GetRootWindow()->RemoveRootWindowObserver(this);
   }
 
   // Overridden RootWindowObserver:
@@ -338,7 +343,7 @@ WebContentsViewAura::~WebContentsViewAura() {
   if (!window_)
     return;
 
-  window_->RemoveObserver(window_observer_.get());
+  window_observer_.reset();
   // Window needs a valid delegate during its destructor, so we explicitly
   // delete it here.
   window_.reset();
@@ -504,7 +509,6 @@ void WebContentsViewAura::CreateView(const gfx::Size& initial_size) {
   window_->SetName("WebContentsViewAura");
 
   window_observer_.reset(new WindowObserver(this));
-  window_->AddObserver(window_observer_.get());
 
   // delegate_->GetDragDestDelegate() creates a new delegate on every call.
   // Hence, we save a reference to it locally. Similar model is used on other
