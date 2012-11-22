@@ -983,16 +983,27 @@ function updatePasteCommand(opt_f) {
 
 document.addEventListener('canExecute', function(e) {
   var command = e.command;
-  var commandId = command.id;
-  if (commandId == 'import-menu-command') {
-    e.canExecute = canEdit;
-  } else if (commandId == 'export-menu-command') {
-    // We can always execute the export-menu command.
-    e.canExecute = true;
-  } else if (commandId == 'undo-command') {
-    // The global undo command has no visible UI, so always enable it, and just
-    // make it a no-op if undo is not possible.
-    e.canExecute = true;
+  switch (command.id) {
+    case 'import-menu-command':
+      e.canExecute = canEdit;
+      break;
+    case 'export-menu-command':
+      // We can always execute the export-menu command.
+      e.canExecute = true;
+      break;
+
+    case 'undo-command':
+      // The global undo command has no visible UI, so always enable it, and
+      // just make it a no-op if undo is not possible.
+      e.canExecute = true;
+      break;
+
+    case 'add-new-bookmark-command':
+    case 'new-folder-command':
+      // When active element is other than list/tree view, add-new-bookmark and
+      // new-folder commands are avaiable as if list view is active.
+      canExecuteShared(e, list.isRecent() || list.isSearch());
+      break;
   }
 });
 
@@ -1198,22 +1209,33 @@ function updateEditingCommands() {
 }
 
 var organizeButton = document.querySelector('.summary > button');
-organizeButton.addEventListener('click', updateEditingCommands);
+organizeButton.addEventListener('click', function(e) {
+  updateEditingCommands();
+  $('add-new-bookmark-command').canExecuteChange();
+  $('new-folder-command').canExecuteChange();
+});
 list.addEventListener('contextmenu', updateEditingCommands);
 tree.addEventListener('contextmenu', updateEditingCommands);
 
 // Handle global commands.
 document.addEventListener('command', function(e) {
   var command = e.command;
-  var commandId = command.id;
-  console.log(command.id, 'executed', 'on', e.target);
-  if (commandId == 'import-menu-command') {
-    chrome.bookmarks.import();
-  } else if (command.id == 'export-menu-command') {
-    chrome.bookmarks.export();
-  } else if (command.id == 'undo-command') {
-    if (performGlobalUndo)
-      performGlobalUndo();
+  switch (command.id) {
+    case 'import-menu-command':
+      chrome.bookmarks.import();
+      break;
+    case 'export-menu-command':
+      chrome.bookmarks.export();
+      break;
+    case 'undo-command':
+      if (performGlobalUndo)
+        performGlobalUndo();
+      break;
+    case 'add-new-bookmark-command':
+    case 'new-folder-command':
+      if (e.target != list && e.target != tree)
+        handleCommand(e);
+      break;
   }
 });
 
