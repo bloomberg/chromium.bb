@@ -279,12 +279,7 @@ void AutocompleteController::ExpireCopiedEntries() {
   // The first true makes UpdateResult() clear out the results and
   // regenerate them, thus ensuring that no results from the previous
   // result set remain.
-  // The second true says to pretend the default match changed (even
-  // if it did not).  This may not be necessary but the code has been
-  // like this for a long time and there's probably no great benefit in
-  // changing it.  Classically we have erred on the side of notifying
-  // too often because it hasn't had any major side effects.
-  UpdateResult(true, true);
+  UpdateResult(true, false);
 }
 
 void AutocompleteController::OnProviderUpdate(bool updated_matches) {
