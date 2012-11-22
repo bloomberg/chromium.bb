@@ -1043,6 +1043,15 @@ void IndexedDBDispatcherHost::TransactionDispatcherHost::OnCommit(
   if (!idb_transaction)
     return;
 
+  // TODO(dgrogan): Tell the page the transaction aborted because of quota.
+  // http://crbug.com/113118
+  if (parent_->Context()->WouldBeOverQuota(
+      transaction_url_map_[transaction_id],
+      transaction_size_map_[transaction_id])) {
+    idb_transaction->abort();
+    return;
+  }
+
   idb_transaction->commit();
 }
 
@@ -1077,15 +1086,6 @@ void IndexedDBDispatcherHost::
       &map_, transaction_id);
   if (!idb_transaction)
     return;
-
-  // TODO(dgrogan): Tell the page the transaction aborted because of quota.
-  // http://crbug.com/113118
-  if (parent_->Context()->WouldBeOverQuota(
-      transaction_url_map_[transaction_id],
-      transaction_size_map_[transaction_id])) {
-    idb_transaction->abort();
-    return;
-  }
   idb_transaction->didCompleteTaskEvents();
 }
 
