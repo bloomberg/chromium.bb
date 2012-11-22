@@ -18,6 +18,7 @@
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/registry.h"
@@ -1099,8 +1100,37 @@ void ActivateMetroChrome() {
 }
 
 installer::InstallStatus RegisterDevChrome(
+    const InstallationState& original_state,
     const InstallerState& installer_state,
     const CommandLine& cmd_line) {
+  BrowserDistribution* chrome_dist =
+      BrowserDistribution::GetSpecificDistribution(
+          BrowserDistribution::CHROME_BROWSER);
+
+  // Only proceed with registering a dev chrome if no real Chrome installation
+  // of the same distribution are present on this system.
+  const ProductState* existing_chrome =
+    original_state.GetProductState(false, BrowserDistribution::CHROME_BROWSER);
+  if (!existing_chrome) {
+    existing_chrome =
+      original_state.GetProductState(true, BrowserDistribution::CHROME_BROWSER);
+  }
+  if (existing_chrome) {
+    static const wchar_t kPleaseUninstallYourChromeMessage[] =
+        L"You already have a full-installation (non-dev) of %1ls, please "
+        L"uninstall it first using Add/Remove Programs in the control panel.";
+    string16 name(chrome_dist->GetAppShortCutName());
+    string16 message(base::StringPrintf(kPleaseUninstallYourChromeMessage,
+                                        name.c_str()));
+
+    LOG(ERROR) << "Aborting operation: another installation of " << name
+               << " was found, as a last resort (if the product is not present "
+                  "in Add/Remove Programs), try executing: "
+               << existing_chrome->uninstall_command().GetCommandLineString();
+    MessageBox(NULL, message.c_str(), NULL, MB_ICONERROR);
+    return installer::INSTALL_FAILED;
+  }
+
   FilePath chrome_exe(
       cmd_line.GetSwitchValuePath(installer::switches::kRegisterDevChrome));
   if (chrome_exe.empty())
@@ -1110,8 +1140,7 @@ installer::InstallStatus RegisterDevChrome(
 
   installer::InstallStatus status = installer::FIRST_INSTALL_SUCCESS;
   if (file_util::PathExists(chrome_exe)) {
-    Product chrome(BrowserDistribution::GetSpecificDistribution(
-        BrowserDistribution::CHROME_BROWSER));
+    Product chrome(chrome_dist);
 
     // Create the Start menu shortcut and pin it to the taskbar.
     ShellUtil::ShortcutProperties shortcut_properties(ShellUtil::CURRENT_USER);
@@ -1119,7 +1148,7 @@ installer::InstallStatus RegisterDevChrome(
     shortcut_properties.set_dual_mode(true);
     shortcut_properties.set_pin_to_taskbar(true);
     ShellUtil::CreateOrUpdateShortcut(
-        ShellUtil::SHORTCUT_LOCATION_START_MENU, chrome.distribution(),
+        ShellUtil::SHORTCUT_LOCATION_START_MENU, chrome_dist,
         shortcut_properties, ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS);
 
     // Register Chrome at user-level and make it default.
@@ -1131,15 +1160,12 @@ installer::InstallStatus RegisterDevChrome(
     delegate_execute_list->Do();
     if (ShellUtil::CanMakeChromeDefaultUnattended()) {
       ShellUtil::MakeChromeDefault(
-          chrome.distribution(), ShellUtil::CURRENT_USER, chrome_exe.value(),
-          true);
+          chrome_dist, ShellUtil::CURRENT_USER, chrome_exe.value(), true);
     } else {
-      ShellUtil::ShowMakeChromeDefaultSystemUI(chrome.distribution(),
-                                               chrome_exe.value());
+      ShellUtil::ShowMakeChromeDefaultSystemUI(chrome_dist, chrome_exe.value());
     }
   } else {
-    LOG(ERROR) << "Path not found (make sure it is absolute): "
-               << chrome_exe.value();
+    LOG(ERROR) << "Path not found: " << chrome_exe.value();
     status = installer::INSTALL_FAILED;
   }
   return status;
@@ -1238,7 +1264,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
     *exit_code = InstallUtil::GetInstallReturnCode(status);
   } else if (cmd_line.HasSwitch(installer::switches::kRegisterDevChrome)) {
     installer::InstallStatus status = RegisterDevChrome(
-        *installer_state, cmd_line);
+        original_state, *installer_state, cmd_line);
     *exit_code = InstallUtil::GetInstallReturnCode(status);
   } else if (cmd_line.HasSwitch(installer::switches::kRegisterChromeBrowser)) {
     installer::InstallStatus status = installer::UNKNOWN_STATUS;
