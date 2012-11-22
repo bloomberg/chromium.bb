@@ -18,7 +18,7 @@ class Widget;
 namespace chromeos {
 namespace input_method {
 
-class InfolistWindowView;
+class DelayableWidget;
 
 // The implementation of CandidateWindowController.
 // CandidateWindowController controls the CandidateWindow.
@@ -36,6 +36,19 @@ class CandidateWindowControllerImpl : public CandidateWindowController,
       CandidateWindowController::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(
       CandidateWindowController::Observer* observer) OVERRIDE;
+
+ protected:
+  // Returns infolist window position. This function handles right or bottom
+  // position overflow. Usually, infolist window is clipped with right-top of
+  // candidate window, but the position should be changed based on position
+  // overflow. If right of infolist window is out of screen, infolist window is
+  // shown left-top of candidate window. If bottom of infolist window is out of
+  // screen, infolist window is shown with clipping to bottom of screen.
+  // Infolist window does not overflow top and left direction.
+  static gfx::Point GetInfolistWindowPosition(
+      const gfx::Rect& candidate_window_rect,
+      const gfx::Rect& screen_rect,
+      const gfx::Size& infolist_winodw_size);
 
  private:
   // CandidateWindowView::Observer implementation.
@@ -60,6 +73,10 @@ class CandidateWindowControllerImpl : public CandidateWindowController,
                                    unsigned int cursor, bool visible) OVERRIDE;
   virtual void OnConnectionChange(bool connected) OVERRIDE;
 
+  // Updates infolist bounds, if current bounds is up-to-date, this function
+  // does nothing.
+  void UpdateInfolistBounds();
+
   // The controller is used for communicating with the IBus daemon.
   scoped_ptr<IBusUiController> ibus_ui_controller_;
 
@@ -70,12 +87,9 @@ class CandidateWindowControllerImpl : public CandidateWindowController,
   // own |candidate_window_|.
   scoped_ptr<views::Widget> frame_;
 
-  // The infolist window view.
-  InfolistWindowView* infolist_window_;
-
   // This is the outer frame of the infolist window view. The frame will
   // own |infolist_window_|.
-  scoped_ptr<views::Widget> infolist_frame_;
+  scoped_ptr<DelayableWidget> infolist_window_;
 
   ObserverList<CandidateWindowController::Observer> observers_;
 

@@ -305,6 +305,8 @@
         'browser/chromeos/input_method/candidate_window_controller_impl.h',
         'browser/chromeos/input_method/candidate_window_view.cc',
         'browser/chromeos/input_method/candidate_window_view.h',
+        'browser/chromeos/input_method/delayable_widget.cc',
+        'browser/chromeos/input_method/delayable_widget.h',
         'browser/chromeos/input_method/hidable_area.cc',
         'browser/chromeos/input_method/hidable_area.h',
         'browser/chromeos/input_method/ibus_controller.cc',

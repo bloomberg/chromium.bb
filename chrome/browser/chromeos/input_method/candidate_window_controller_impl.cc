@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_view.h"
+#include "chrome/browser/chromeos/input_method/delayable_widget.h"
 #include "chrome/browser/chromeos/input_method/infolist_window_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -46,7 +47,7 @@ void CandidateWindowControllerImpl::CreateView() {
   frame_.reset(new views::Widget);
   // The size is initially zero.
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  // |frame_| and |infolist_frame_| are owned by controller impl so
+  // |frame_| and |infolist_window_| are owned by controller impl so
   // they should use WIDGET_OWNS_NATIVE_WIDGET ownership.
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   // Show the candidate window always on top
@@ -73,18 +74,17 @@ void CandidateWindowControllerImpl::CreateView() {
 
 
   // Create the infolist window.
-  infolist_frame_.reset(new views::Widget);
-  infolist_frame_->Init(params);
+  infolist_window_.reset(new DelayableWidget);
+  infolist_window_->Init(params);
 #if defined(USE_ASH)
   ash::SetWindowVisibilityAnimationType(
-      infolist_frame_->GetNativeView(),
+      infolist_window_->GetNativeView(),
       ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
 #endif  // USE_ASH
 
-  infolist_window_ = new InfolistWindowView(
-      infolist_frame_.get(), frame_.get());
-  infolist_window_->Init();
-  infolist_frame_->SetContentsView(infolist_window_);
+  InfolistWindowView* infolist_view = new InfolistWindowView;
+  infolist_view->Init();
+  infolist_window_->SetContentsView(infolist_view);
 }
 
 CandidateWindowControllerImpl::CandidateWindowControllerImpl()
@@ -132,7 +132,7 @@ void CandidateWindowControllerImpl::OnSetCursorLocation(
   candidate_window_->set_composition_head_location(composition_head);
   // Move the window per the cursor location.
   candidate_window_->ResizeAndMoveParentFrame();
-  infolist_window_->ResizeAndMoveParentFrame();
+  UpdateInfolistBounds();
 }
 
 void CandidateWindowControllerImpl::OnUpdateAuxiliaryText(
@@ -185,19 +185,38 @@ void CandidateWindowControllerImpl::OnUpdateLookupTable(
   if (usages.has_focused_index())
     focused_index = usages.focused_index();
 
-  infolist_window_->UpdateCandidates(infolist_entries, focused_index);
-  if (candidates.has_focused_index() && candidates.candidate_size() > 0) {
-    const int focused_row =
-        candidates.focused_index() - candidates.candidate(0).index();
-    if (candidates.candidate_size() >= focused_row &&
-        candidates.candidate(focused_row).has_information_id()) {
-      infolist_window_->DelayShow(kInfolistShowDelayMilliSeconds);
-    } else {
-      infolist_window_->DelayHide(kInfolistHideDelayMilliSeconds);
-    }
-  } else {
+  InfolistWindowView* view = static_cast<InfolistWindowView*>(
+      infolist_window_->GetContentsView());
+  if (!view)
+    return;
+
+  view->Relayout(infolist_entries, focused_index);
+  UpdateInfolistBounds();
+
+  if (static_cast<size_t>(focused_index) < infolist_entries.size())
+    infolist_window_->DelayShow(kInfolistShowDelayMilliSeconds);
+  else
     infolist_window_->DelayHide(kInfolistHideDelayMilliSeconds);
-  }
+}
+
+void CandidateWindowControllerImpl::UpdateInfolistBounds() {
+  InfolistWindowView* view = static_cast<InfolistWindowView*>(
+      infolist_window_->GetContentsView());
+  if (!view)
+    return;
+  const gfx::Rect current_bounds =
+      infolist_window_->GetClientAreaBoundsInScreen();
+
+  gfx::Rect new_bounds;
+  new_bounds.set_size(view->GetPreferredSize());
+  new_bounds.set_origin(GetInfolistWindowPosition(
+        frame_->GetClientAreaBoundsInScreen(),
+        ash::Shell::GetScreen()->GetDisplayNearestWindow(
+            infolist_window_->GetNativeView()).work_area(),
+        new_bounds.size()));
+
+  if (current_bounds != new_bounds)
+    infolist_window_->SetBounds(new_bounds);
 }
 
 void CandidateWindowControllerImpl::OnUpdatePreeditText(
@@ -242,6 +261,24 @@ void CandidateWindowControllerImpl::OnConnectionChange(bool connected) {
     candidate_window_->HideAll();
     infolist_window_->Hide();
   }
+}
+
+// static
+gfx::Point CandidateWindowControllerImpl::GetInfolistWindowPosition(
+    const gfx::Rect& candidate_window_rect,
+    const gfx::Rect& screen_rect,
+    const gfx::Size& infolist_window_size) {
+  gfx::Point result(candidate_window_rect.right(), candidate_window_rect.y());
+
+  if (candidate_window_rect.right() + infolist_window_size.width() >
+      screen_rect.right())
+    result.set_x(candidate_window_rect.x() - infolist_window_size.width());
+
+  if (candidate_window_rect.y() + infolist_window_size.height() >
+      screen_rect.bottom())
+    result.set_y(screen_rect.bottom() - infolist_window_size.height());
+
+  return result;
 }
 
 }  // namespace input_method
