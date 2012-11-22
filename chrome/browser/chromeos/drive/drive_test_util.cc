@@ -109,7 +109,7 @@ void CopyResultFromInitializeCacheCallback(bool* out_success,
 
 bool LoadChangeFeed(const std::string& relative_path,
                     DriveFileSystem* file_system,
-                    int64 start_changestamp,
+                    bool is_delta_feed,
                     int64 root_feed_changestamp) {
   std::string error;
   scoped_ptr<Value> document =
@@ -129,7 +129,7 @@ bool LoadChangeFeed(const std::string& relative_path,
 
   file_system->feed_loader()->UpdateFromFeed(
       feed_list,
-      start_changestamp != 0,  // is_delta_feed
+      is_delta_feed,
       root_feed_changestamp,
       kWAPIRootDirectoryResourceIdForTesting,
       base::Bind(&base::DoNothing));

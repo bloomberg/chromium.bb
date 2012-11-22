@@ -101,7 +101,7 @@ void CopyResultFromInitializeCacheCallback(bool* out_success,
 // under chrome/test/data/chromeos. Returns true on success.
 bool LoadChangeFeed(const std::string& relative_path,
                     DriveFileSystem* file_system,
-                    int64 start_changestamp,
+                    bool is_delta_feed,
                     int64 root_feed_changestamp);
 
 }  // namespace test_util

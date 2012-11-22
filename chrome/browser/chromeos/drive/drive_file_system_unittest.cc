@@ -249,7 +249,7 @@ class DriveFileSystemTest : public testing::Test {
         expect_outgoing_symlink_(false),
         // |root_feed_changestamp_| should be set to the largest changestamp in
         // account metadata feed. But we fake it by some non-zero positive
-        // increasing value.  See |LoadChangeFeed()|.
+        // increasing value.  See |LoadFeed()|.
         root_feed_changestamp_(1) {
   }
 
@@ -317,14 +317,17 @@ class DriveFileSystemTest : public testing::Test {
 
   // Loads test json file as root ("/drive") element.
   bool LoadRootFeedDocument(const std::string& filename) {
-    return LoadChangeFeed(filename, 0);
+    return LoadFeed(filename, false);
   }
 
-  bool LoadChangeFeed(const std::string& filename,
-                      int largest_changestamp) {
+  bool LoadChangeFeed(const std::string& filename) {
+    return LoadFeed(filename, true);
+  }
+
+  bool LoadFeed(const std::string& filename, bool is_delta_feed) {
     if (!test_util::LoadChangeFeed(filename,
                                    file_system_,
-                                   largest_changestamp,
+                                   is_delta_feed,
                                    root_feed_changestamp_)) {
       return false;
     }
@@ -1092,54 +1095,45 @@ TEST_F(DriveFileSystemTest, FilePathTests) {
 }
 
 TEST_F(DriveFileSystemTest, ChangeFeed_AddAndDeleteFileInRoot) {
-  int latest_changelog = 0;
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(2);
 
-  ASSERT_TRUE(LoadChangeFeed("gdata/delta_file_added_in_root.json",
-                             ++latest_changelog));
+  ASSERT_TRUE(LoadChangeFeed("gdata/delta_file_added_in_root.json"));
   EXPECT_TRUE(
       EntryExists(FilePath(FILE_PATH_LITERAL("drive/Added file.gdoc"))));
 
-  ASSERT_TRUE(LoadChangeFeed("gdata/delta_file_deleted_in_root.json",
-                             ++latest_changelog));
+  ASSERT_TRUE(LoadChangeFeed("gdata/delta_file_deleted_in_root.json"));
   EXPECT_FALSE(
       EntryExists(FilePath(FILE_PATH_LITERAL("drive/Added file.gdoc"))));
 }
 
 
 TEST_F(DriveFileSystemTest, ChangeFeed_AddAndDeleteFileFromExistingDirectory) {
-  int latest_changelog = 0;
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
 
-  EXPECT_TRUE(EntryExists(FilePath(
-      FILE_PATH_LITERAL("drive/Directory 1"))));
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))));
 
   // Add file to an existing directory.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
-  ASSERT_TRUE(LoadChangeFeed("gdata/delta_file_added_in_directory.json",
-                             ++latest_changelog));
+  ASSERT_TRUE(LoadChangeFeed("gdata/delta_file_added_in_directory.json"));
   EXPECT_TRUE(EntryExists(FilePath(
       FILE_PATH_LITERAL("drive/Directory 1/Added file.gdoc"))));
 
   // Remove that file from the directory.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
-  ASSERT_TRUE(LoadChangeFeed("gdata/delta_file_deleted_in_directory.json",
-                             ++latest_changelog));
-  EXPECT_TRUE(EntryExists(FilePath(
-      FILE_PATH_LITERAL("drive/Directory 1"))));
+  ASSERT_TRUE(LoadChangeFeed("gdata/delta_file_deleted_in_directory.json"));
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))));
   EXPECT_FALSE(EntryExists(FilePath(
       FILE_PATH_LITERAL("drive/Directory 1/Added file.gdoc"))));
 }
 
 TEST_F(DriveFileSystemTest, ChangeFeed_AddFileToNewDirectory) {
-  int latest_changelog = 0;
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
   // Add file to a new directory.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
@@ -1147,30 +1141,25 @@ TEST_F(DriveFileSystemTest, ChangeFeed_AddFileToNewDirectory) {
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive/New Directory"))))).Times(1);
 
-  ASSERT_TRUE(LoadChangeFeed("gdata/delta_file_added_in_new_directory.json",
-                             ++latest_changelog));
+  ASSERT_TRUE(LoadChangeFeed("gdata/delta_file_added_in_new_directory.json"));
 
-  EXPECT_TRUE(EntryExists(FilePath(
-      FILE_PATH_LITERAL("drive/New Directory"))));
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL("drive/New Directory"))));
   EXPECT_TRUE(EntryExists(FilePath(
       FILE_PATH_LITERAL("drive/New Directory/File in new dir.gdoc"))));
 }
 
 TEST_F(DriveFileSystemTest, ChangeFeed_AddFileToNewButDeletedDirectory) {
-  int latest_changelog = 0;
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
 
-  // This feed contains thw following updates:
+  // This feed contains the following updates:
   // 1) A new PDF file is added to a new directory
   // 2) but the new directory is marked "deleted" (i.e. moved to Trash)
   // Hence, the PDF file should be just ignored.
   ASSERT_TRUE(LoadChangeFeed(
-      "gdata/delta_file_added_in_new_but_deleted_directory.json",
-      ++latest_changelog));
+      "gdata/delta_file_added_in_new_but_deleted_directory.json"));
 }
 
 TEST_F(DriveFileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
-  int latest_changelog = 0;
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
 
   EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
@@ -1195,8 +1184,7 @@ TEST_F(DriveFileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
       Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 2/Directory 1")))))
       .Times(1);
   ASSERT_TRUE(LoadChangeFeed(
-      "gdata/delta_dir_moved_from_root_to_directory.json",
-      ++latest_changelog));
+      "gdata/delta_dir_moved_from_root_to_directory.json"));
 
   EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 2"))));
@@ -1214,7 +1202,6 @@ TEST_F(DriveFileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
 }
 
 TEST_F(DriveFileSystemTest, ChangeFeed_FileMovedFromDirectoryToRoot) {
-  int latest_changelog = 0;
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
 
   EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
@@ -1231,8 +1218,7 @@ TEST_F(DriveFileSystemTest, ChangeFeed_FileMovedFromDirectoryToRoot) {
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
   ASSERT_TRUE(LoadChangeFeed(
-      "gdata/delta_file_moved_from_directory_to_root.json",
-      ++latest_changelog));
+      "gdata/delta_file_moved_from_directory_to_root.json"));
 
   EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 1"))));
@@ -1247,7 +1233,6 @@ TEST_F(DriveFileSystemTest, ChangeFeed_FileMovedFromDirectoryToRoot) {
 }
 
 TEST_F(DriveFileSystemTest, ChangeFeed_FileRenamedInDirectory) {
-  int latest_changelog = 0;
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
 
   EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
@@ -1259,8 +1244,7 @@ TEST_F(DriveFileSystemTest, ChangeFeed_FileRenamedInDirectory) {
       Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
-  ASSERT_TRUE(LoadChangeFeed("gdata/delta_file_renamed_in_directory.json",
-                             ++latest_changelog));
+  ASSERT_TRUE(LoadChangeFeed("gdata/delta_file_renamed_in_directory.json"));
 
   EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 1"))));
