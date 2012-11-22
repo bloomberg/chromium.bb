@@ -53,15 +53,15 @@ void RecordSSLBlockingPageTimeStats(
     int cert_error,
     const base::TimeTicks& start_time,
     const base::TimeTicks& end_time) {
-  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl_error_type",
+  UMA_HISTOGRAM_ENUMERATION("interstial.ssl_error_type",
      SSLErrorInfo::NetErrorToErrorType(cert_error), SSLErrorInfo::END_OF_ENUM);
   base::TimeDelta delta = end_time - start_time;
   if (proceed) {
-    UMA_HISTOGRAM_CUSTOM_TIMES("interstitial.ssl_accept_time", delta,
+    UMA_HISTOGRAM_CUSTOM_TIMES("interstial.ssl_accept_time", delta,
         base::TimeDelta::FromMilliseconds(30),
         base::TimeDelta::FromMinutes(30), 50);
   } else {
-    UMA_HISTOGRAM_CUSTOM_TIMES("interstitial.ssl_reject_time", delta,
+    UMA_HISTOGRAM_CUSTOM_TIMES("interstial.ssl_reject_time", delta,
         base::TimeDelta::FromMilliseconds(30),
         base::TimeDelta::FromMinutes(30), 50);
   }
