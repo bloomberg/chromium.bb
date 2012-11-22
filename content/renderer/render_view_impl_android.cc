@@ -29,6 +29,8 @@ void RenderViewImpl::SendUpdateFrameInfo() {
       routing_id_,
       GetScrollOffset(),
       webview()->pageScaleFactor(),
+      webview()->minimumPageScaleFactor(),
+      webview()->maximumPageScaleFactor(),
       gfx::Size(webview()->mainFrame()->contentsSize())));
 }
 

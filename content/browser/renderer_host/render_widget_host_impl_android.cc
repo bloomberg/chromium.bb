@@ -10,9 +10,15 @@ namespace content {
 void RenderWidgetHostImpl::OnMsgUpdateFrameInfo(
     const gfx::Vector2d& scroll_offset,
     float page_scale_factor,
+    float min_page_scale_factor,
+    float max_page_scale_factor,
     const gfx::Size& content_size) {
   if (view_)
-    view_->UpdateFrameInfo(scroll_offset, page_scale_factor, content_size);
+    view_->UpdateFrameInfo(scroll_offset,
+                           page_scale_factor,
+                           min_page_scale_factor,
+                           max_page_scale_factor,
+                           content_size);
 }
 
 }  // namespace content

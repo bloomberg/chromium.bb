@@ -1405,9 +1405,11 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_DidChangeBodyBackgroundColor,
 
 // Information about current document scroll, scale and size. Sent on a
 // best-effort basis.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_UpdateFrameInfo,
+IPC_MESSAGE_ROUTED5(ViewHostMsg_UpdateFrameInfo,
                     gfx::Vector2d /* scroll_offset */,
                     float /* page_scale_factor */,
+                    float /* min_page_scale_factor */,
+                    float /* max_page_scale_factor */,
                     gfx::Size /* content_size */)
 
 #elif defined(OS_MACOSX)

@@ -622,6 +622,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 #if defined(OS_ANDROID)
   void OnMsgUpdateFrameInfo(const gfx::Vector2d& scroll_offset,
                             float page_scale_factor,
+                            float min_page_scale_factor,
+                            float max_page_scale_factor,
                             const gfx::Size& content_size);
 #endif
 #if defined(TOOLKIT_GTK)
