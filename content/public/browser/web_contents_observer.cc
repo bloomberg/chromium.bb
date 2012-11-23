@@ -37,14 +37,6 @@ void WebContentsObserver::Observe(WebContents* web_contents) {
   }
 }
 
-bool WebContentsObserver::RequestPpapiBrokerPermission(
-    WebContents* web_contents,
-    const GURL& url,
-    const FilePath& plugin_path,
-    const base::Callback<void(bool)>& callback) {
-  return false;
-}
-
 bool WebContentsObserver::OnMessageReceived(const IPC::Message& message) {
   return false;
 }

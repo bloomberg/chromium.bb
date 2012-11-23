@@ -67,6 +67,7 @@
 #include "chrome/browser/media/media_stream_devices_controller.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/pepper_broker_infobar_delegate.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -1764,6 +1765,15 @@ void Browser::RequestMediaAccessPermission(
     const content::MediaStreamRequest* request,
     const content::MediaResponseCallback& callback) {
   RequestMediaAccessPermissionHelper(web_contents, request, callback);
+}
+
+bool Browser::RequestPpapiBrokerPermission(
+    WebContents* web_contents,
+    const GURL& url,
+    const FilePath& plugin_path,
+    const base::Callback<void(bool)>& callback) {
+  PepperBrokerInfoBarDelegate::Show(web_contents, url, plugin_path, callback);
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

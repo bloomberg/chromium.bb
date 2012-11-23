@@ -2316,19 +2316,18 @@ void WebContentsImpl::OnRequestPpapiBrokerPermission(
     int request_id,
     const GURL& url,
     const FilePath& plugin_path) {
-  base::Callback<void(bool)> callback =
-      base::Bind(&WebContentsImpl::OnPpapiBrokerPermissionResult,
-                 base::Unretained(this), request_id);
-  ObserverListBase<WebContentsObserver>::Iterator it(observers_);
-  WebContentsObserver* observer;
-  while ((observer = it.GetNext()) != NULL) {
-    if (observer->RequestPpapiBrokerPermission(this, url, plugin_path,
-                                               callback))
-      return;
+  if (!delegate_) {
+    OnPpapiBrokerPermissionResult(request_id, false);
+    return;
   }
 
-  // Fall back to allowing the request if no observer handled it.
-  OnPpapiBrokerPermissionResult(request_id, true);
+  if (!delegate_->RequestPpapiBrokerPermission(
+      this, url, plugin_path,
+      base::Bind(&WebContentsImpl::OnPpapiBrokerPermissionResult,
+                 base::Unretained(this), request_id))) {
+    NOTIMPLEMENTED();
+    OnPpapiBrokerPermissionResult(request_id, false);
+  }
 }
 
 void WebContentsImpl::OnPpapiBrokerPermissionResult(int request_id,

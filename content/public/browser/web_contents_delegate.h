@@ -422,6 +422,15 @@ class CONTENT_EXPORT WebContentsDelegate {
       const MediaStreamRequest* request,
       const MediaResponseCallback& callback) {}
 
+  // Requests permission to access the PPAPI broker. The delegate should return
+  // true and call the passed in |callback| with the result, or return false
+  // to indicate that it does not support asking for permission.
+  virtual bool RequestPpapiBrokerPermission(
+      WebContents* web_contents,
+      const GURL& url,
+      const FilePath& plugin_path,
+      const base::Callback<void(bool)>& callback);
+
  protected:
   virtual ~WebContentsDelegate();
 

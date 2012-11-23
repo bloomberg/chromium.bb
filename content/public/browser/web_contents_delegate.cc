@@ -145,6 +145,14 @@ void WebContentsDelegate::WebIntentDispatch(
   delete intents_dispatcher;
 }
 
+bool WebContentsDelegate::RequestPpapiBrokerPermission(
+    WebContents* web_contents,
+    const GURL& url,
+    const FilePath& plugin_path,
+    const base::Callback<void(bool)>& callback) {
+  return false;
+}
+
 WebContentsDelegate::~WebContentsDelegate() {
   while (!attached_contents_.empty()) {
     WebContents* web_contents = *attached_contents_.begin();

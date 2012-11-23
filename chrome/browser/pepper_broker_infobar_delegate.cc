@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/pepper_broker_observer.h"
+#include "chrome/browser/pepper_broker_infobar_delegate.h"
 
-#include "base/memory/scoped_ptr.h"
-#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/plugins/plugin_finder.h"
@@ -23,59 +21,67 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
-
-using content::OpenURLParams;
-using content::Referrer;
-using content::WebContents;
-
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(PepperBrokerObserver)
-
-namespace {
 
 // The URL for the "learn more" article about the PPAPI broker.
 const char kPpapiBrokerLearnMoreUrl[] =
     "https://support.google.com/chrome/?p=ib_pepper_broker";
 
-class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
- public:
-  static void Show(
-      content::WebContents* web_contents,
-      const GURL& url,
-      const FilePath& plugin_path,
-      const base::Callback<void(bool)>& callback);
+using content::OpenURLParams;
+using content::Referrer;
+using content::WebContents;
 
-  PepperBrokerInfoBarDelegate(
-      InfoBarTabHelper* helper,
-      const GURL& url,
-      const FilePath& plugin_path,
-      const std::string& languages,
-      HostContentSettingsMap* content_settings,
-      const base::Callback<void(bool)>& callback);
-  virtual ~PepperBrokerInfoBarDelegate();
+// static
+void PepperBrokerInfoBarDelegate::Show(
+    WebContents* web_contents,
+    const GURL& url,
+    const FilePath& plugin_path,
+    const base::Callback<void(bool)>& callback) {
+  // TODO(wad): Add ephemeral device ID support for broker in guest mode.
+  if (Profile::IsGuestSession()) {
+    callback.Run(false);
+    return;
+  }
 
-  // ConfirmInfoBarDelegate:
-  virtual string16 GetMessageText() const OVERRIDE;
-  virtual int GetButtons() const OVERRIDE;
-  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-  virtual string16 GetLinkText() const OVERRIDE;
-  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
-  virtual gfx::Image* GetIcon() const OVERRIDE;
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  HostContentSettingsMap* content_settings =
+      profile->GetHostContentSettingsMap();
+  ContentSetting setting =
+      content_settings->GetContentSetting(url, url,
+                                          CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
+                                          std::string());
+  switch (setting) {
+    case CONTENT_SETTING_ALLOW: {
+      content::RecordAction(
+          content::UserMetricsAction("PPAPI.BrokerSettingAllow"));
+      callback.Run(true);
+      break;
+    }
+    case CONTENT_SETTING_BLOCK: {
+      content::RecordAction(
+          content::UserMetricsAction("PPAPI.BrokerSettingDeny"));
+      callback.Run(false);
+      break;
+    }
+    case CONTENT_SETTING_ASK: {
+      content::RecordAction(
+          content::UserMetricsAction("PPAPI.BrokerInfobarDisplayed"));
 
- private:
-  void DispatchCallback(bool result);
-
-  const GURL url_;
-  const FilePath plugin_path_;
-  const std::string languages_;
-  HostContentSettingsMap* content_settings_;
-  base::Callback<void(bool)> callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(PepperBrokerInfoBarDelegate);
-};
+      InfoBarTabHelper* infobar_helper =
+          InfoBarTabHelper::FromWebContents(web_contents);
+      std::string languages =
+          profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
+      infobar_helper->AddInfoBar(
+          new PepperBrokerInfoBarDelegate(
+              infobar_helper, url, plugin_path, languages, content_settings,
+              callback));
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+}
 
 PepperBrokerInfoBarDelegate::PepperBrokerInfoBarDelegate(
     InfoBarTabHelper* helper,
@@ -169,64 +175,4 @@ void PepperBrokerInfoBarDelegate::DispatchCallback(bool result) {
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
       std::string(), result ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
-}
-
-}  // namespace
-
-PepperBrokerObserver::PepperBrokerObserver(WebContents* web_contents)
-    : WebContentsObserver(web_contents) {}
-
-PepperBrokerObserver::~PepperBrokerObserver() {}
-
-bool PepperBrokerObserver::RequestPpapiBrokerPermission(
-    WebContents* web_contents,
-    const GURL& url,
-    const FilePath& plugin_path,
-    const base::Callback<void(bool)>& callback) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  // TODO(wad): Add ephemeral device ID support for broker in guest mode.
-  if (Profile::IsGuestSession()) {
-    callback.Run(false);
-    return true;
-  }
-
-  HostContentSettingsMap* content_settings =
-      profile->GetHostContentSettingsMap();
-  ContentSetting setting =
-      content_settings->GetContentSetting(url, url,
-                                          CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
-                                          std::string());
-  switch (setting) {
-    case CONTENT_SETTING_ALLOW: {
-      content::RecordAction(
-          content::UserMetricsAction("PPAPI.BrokerSettingAllow"));
-      callback.Run(true);
-      break;
-    }
-    case CONTENT_SETTING_BLOCK: {
-      content::RecordAction(
-          content::UserMetricsAction("PPAPI.BrokerSettingDeny"));
-      callback.Run(false);
-      break;
-    }
-    case CONTENT_SETTING_ASK: {
-      content::RecordAction(
-          content::UserMetricsAction("PPAPI.BrokerInfobarDisplayed"));
-
-      InfoBarTabHelper* infobar_helper =
-          InfoBarTabHelper::FromWebContents(web_contents);
-      std::string languages =
-          profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
-      infobar_helper->AddInfoBar(
-          new PepperBrokerInfoBarDelegate(
-              infobar_helper, url, plugin_path, languages, content_settings,
-              callback));
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
-
-  return true;
 }

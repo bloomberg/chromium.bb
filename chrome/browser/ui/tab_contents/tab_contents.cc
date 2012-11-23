@@ -22,7 +22,6 @@
 #include "chrome/browser/omnibox_search_hint.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate_impl.h"
-#include "chrome/browser/pepper_broker_observer.h"
 #include "chrome/browser/plugins/plugin_observer.h"
 #include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/printing/print_preview_message_handler.h"
@@ -151,7 +150,6 @@ TabContents::TabContents(WebContents* contents)
   PasswordManagerDelegateImpl::CreateForWebContents(contents);
   PasswordManager::CreateForWebContentsAndDelegate(
       contents, PasswordManagerDelegateImpl::FromWebContents(contents));
-  PepperBrokerObserver::CreateForWebContents(contents);
   PluginObserver::CreateForWebContents(contents);
   PrefsTabHelper::CreateForWebContents(contents);
   prerender::PrerenderTabHelper::CreateForWebContents(contents);

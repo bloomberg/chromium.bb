@@ -8,6 +8,7 @@
 #include "content/public/browser/web_contents_observer.h"
 
 #include "android_webview/common/aw_hit_test_data.h"
+#include "base/callback_forward.h"
 #include "base/threading/non_thread_safe.h"
 
 namespace android_webview {

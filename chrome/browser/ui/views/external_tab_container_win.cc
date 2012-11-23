@@ -25,6 +25,7 @@
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/pepper_broker_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/repost_form_warning_controller.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -824,6 +825,15 @@ void ExternalTabContainerWin::RequestMediaAccessPermission(
     const content::MediaStreamRequest* request,
     const content::MediaResponseCallback& callback) {
   Browser::RequestMediaAccessPermissionHelper(web_contents, request, callback);
+}
+
+bool ExternalTabContainerWin::RequestPpapiBrokerPermission(
+    WebContents* web_contents,
+    const GURL& url,
+    const FilePath& plugin_path,
+    const base::Callback<void(bool)>& callback) {
+  PepperBrokerInfoBarDelegate::Show(web_contents, url, plugin_path, callback);
+  return true;
 }
 
 bool ExternalTabContainerWin::OnMessageReceived(const IPC::Message& message) {
