@@ -191,8 +191,8 @@ Commands.deleteFileCommand = {
   canExecute: function(event, fileManager) {
     var selection = fileManager.getSelection();
     event.canExecute = !fileManager.isOnReadonlyDirectory() &&
-        selection &&
-        selection.totalCount > 0;
+                  selection &&
+                  selection.totalCount > 0;
   }
 };
 

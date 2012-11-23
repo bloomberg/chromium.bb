@@ -589,7 +589,7 @@ util.makeFilesystemUrl = function(path) {
     prefix = (chrome.fileBrowserPrivate.FS_TYPE == window.TEMPORARY) ?
         'temporary' : 'persistent';
   }
-  return 'filesystem:' + util.platform.getURL(prefix + path);
+  return 'filesystem:' + document.location.origin + '/' + prefix + path;
 };
 
 /**

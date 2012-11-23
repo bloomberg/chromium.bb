@@ -275,7 +275,7 @@ chrome.fileBrowserPrivate = {
     }
   ],
 
-  fsRe_: new RegExp('^filesystem:[^/]*://[^/]*/persistent(.*)'),
+  fsRe_: new RegExp('^filesystem:[^/]*://[^/]*/(?:persistent|temporary)(.*)'),
 
   fileUrlToLocalPath_: function(fileUrl) {
     var match = chrome.fileBrowserPrivate.fsRe_.exec(fileUrl);

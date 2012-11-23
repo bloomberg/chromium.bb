@@ -1101,16 +1101,8 @@ input.rename {
   -webkit-box-flex: 1;
 }
 
-.delete-button {
-  -webkit-margin-end: 8px;
-  -webkit-margin-start: 8px;
-}
-
-.delete-button[disabled] {
-  /* Copied colors from cr-button:disabled */
-  border-color: rgba(0, 0, 0, 0.2);
-  color: #999;
-  pointer-events: none;
+#delete-button[disabled] {
+  display: none;
 }
 
 .task-item {
