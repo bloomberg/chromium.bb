@@ -464,8 +464,6 @@ def chromium_fix(f, variables):
       # http://crbug.com/160539, on Windows, it's in chrome/.
       'Media Cache/',
       'chrome/Media Cache/',
-      # The fr.pak is occuring when tracing on a system with a French locale.
-      '<(PRODUCT_DIR)/locales/fr.pak',
       # 'First Run' is not created by the compile, but by the test itself.
       '<(PRODUCT_DIR)/First Run')
 
