@@ -34,29 +34,6 @@ namespace {
 
 const int kBufferSize = 256;
 
-class FileDescriptorAutoCloser {
- public:
-  explicit FileDescriptorAutoCloser(int fd) : fd_(fd) {
-    DCHECK(fd_ >= 0);
-  }
-
-  ~FileDescriptorAutoCloser() {
-    if (fd_ > -1)
-      CloseFD(fd_);
-  }
-
-  int Release() {
-    const int fd = fd_;
-    fd_ = -1;
-    return fd;
-  }
-
- private:
-  int fd_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileDescriptorAutoCloser);
-};
-
 void InitLoggingForDaemon(const std::string& log_file) {
   CHECK(
       logging::InitLogging(
@@ -177,13 +154,13 @@ class Daemon::PIDFile {
  public:
   static scoped_ptr<PIDFile> Create(const std::string& path) {
     scoped_ptr<PIDFile> pid_file;
-    const int pid_file_fd = HANDLE_EINTR(
+    int pid_file_fd = HANDLE_EINTR(
         open(path.c_str(), O_CREAT | O_WRONLY, 0600));
     if (pid_file_fd < 0) {
       PError("open()");
       return pid_file.Pass();
     }
-    FileDescriptorAutoCloser fd_closer(pid_file_fd);
+    file_util::ScopedFD fd_closer(&pid_file_fd);
     struct flock lock_info = {};
     lock_info.l_type = F_WRLCK;
     lock_info.l_whence = SEEK_CUR;
@@ -198,7 +175,7 @@ class Daemon::PIDFile {
     const std::string pid_string = base::StringPrintf("%d\n", getpid());
     CHECK(HANDLE_EINTR(write(pid_file_fd, pid_string.c_str(),
                              pid_string.length())));
-    pid_file.reset(new PIDFile(fd_closer.Release(), path));
+    pid_file.reset(new PIDFile(*fd_closer.release(), path));
     return pid_file.Pass();
   }
 
@@ -328,7 +305,7 @@ bool Daemon::Kill() {
                << safe_strerror(errno);
     return false;
   }
-  const FileDescriptorAutoCloser fd_closer(pid_file_fd);
+  const file_util::ScopedFD fd_closer(&pid_file_fd);
   pid_t lock_owner_pid;
   if (!GetFileLockOwnerPid(pid_file_fd, &lock_owner_pid))
     return false;
