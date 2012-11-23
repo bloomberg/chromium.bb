@@ -2761,6 +2761,7 @@
           'type': 'none',
           'dependencies': [
             'browser_tests',
+            'chrome',
             '../webkit/webkit.gyp:pull_in_DumpRenderTree',
           ],
           'includes': [
