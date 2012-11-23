@@ -298,8 +298,10 @@ FileListBannerController.prototype.showLowGDriveSpaceWarning_ =
     }.bind(this, sizeStats.totalSizeKB));
   }
 
-  box.hidden = !show;
-  this.requestRelayout_(100);
+  if (box.hidden != !show) {
+    box.hidden = !show;
+    this.requestRelayout_(100);
+  }
 };
 
 /**
