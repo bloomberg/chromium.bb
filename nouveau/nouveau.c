@@ -247,7 +247,10 @@ nouveau_object_new(struct nouveau_object *parent, uint64_t handle,
 			if (dev->chipset < 0xc0)
 				ret = abi16_chan_nv04(obj);
 			else
+			if (dev->chipset < 0xe0)
 				ret = abi16_chan_nvc0(obj);
+			else
+				ret = abi16_chan_nve0(obj);
 		}
 			break;
 		default:

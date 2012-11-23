@@ -24,8 +24,10 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <stddef.h>
 
 #include "private.h"
+
 
 int
 abi16_chan_nv04(struct nouveau_object *obj)
@@ -66,6 +68,32 @@ abi16_chan_nvc0(struct nouveau_object *obj)
 	nvc0->notify = req.notifier_handle;
 	nvc0->base.object->handle = req.channel;
 	nvc0->base.object->length = sizeof(*nvc0);
+	return 0;
+}
+
+int
+abi16_chan_nve0(struct nouveau_object *obj)
+{
+	struct nouveau_device *dev = (struct nouveau_device *)obj->parent;
+	struct drm_nouveau_channel_alloc req = {};
+	struct nve0_fifo *nve0 = obj->data;
+	int ret;
+
+	if (obj->length > offsetof(struct nve0_fifo, engine)) {
+		req.fb_ctxdma_handle = 0xffffffff;
+		req.tt_ctxdma_handle = nve0->engine;
+	}
+
+	ret = drmCommandWriteRead(dev->fd, DRM_NOUVEAU_CHANNEL_ALLOC,
+				  &req, sizeof(req));
+	if (ret)
+		return ret;
+
+	nve0->base.channel = req.channel;
+	nve0->base.pushbuf = req.pushbuf_domains;
+	nve0->notify = req.notifier_handle;
+	nve0->base.object->handle = req.channel;
+	nve0->base.object->length = sizeof(*nve0);
 	return 0;
 }
 

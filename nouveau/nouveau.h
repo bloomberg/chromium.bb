@@ -41,6 +41,22 @@ struct nvc0_fifo {
 	uint32_t notify;
 };
 
+#define NVE0_FIFO_ENGINE_GR  0x00000001
+#define NVE0_FIFO_ENGINE_VP  0x00000002
+#define NVE0_FIFO_ENGINE_PPP 0x00000004
+#define NVE0_FIFO_ENGINE_BSP 0x00000008
+#define NVE0_FIFO_ENGINE_CE0 0x00000010
+#define NVE0_FIFO_ENGINE_CE1 0x00000020
+#define NVE0_FIFO_ENGINE_ENC 0x00000040
+
+struct nve0_fifo {
+	struct {
+		struct nouveau_fifo base;
+		uint32_t notify;
+	};
+	uint32_t engine;
+};
+
 struct nv04_notify {
 	struct nouveau_object *object;
 	uint32_t offset;
