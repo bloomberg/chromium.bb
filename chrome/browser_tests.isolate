@@ -213,7 +213,6 @@
           '<(PRODUCT_DIR)/libppapi_tests.so',
           '<(PRODUCT_DIR)/nacl_helper<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/nacl_helper_bootstrap<(EXECUTABLE_SUFFIX)',
-          '<(PRODUCT_DIR)/nacl_ipc_irt_x86_64.nexe',
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
           'test/data/autofill/dataset_2.txt',
           'test/data/autofill/dataset_no_address.txt',
