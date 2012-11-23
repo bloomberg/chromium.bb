@@ -14,6 +14,8 @@ var nextProcessId;
 var processIds;
 var initialized = false;
 
+var debug = false;
+
 function deepCopy(obj) {
   if (obj === null)
     return null;
@@ -152,6 +154,9 @@ function captureEvent(name, details) {
     }
     details.sourceProcessId = processIds[details.sourceProcessId];
   }
+
+  if (debug)
+    console.log("Received event '" + name + "':" + JSON.stringify(details));
 
   // find |details| in expectedEventData
   var found = false;
