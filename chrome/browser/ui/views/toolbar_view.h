@@ -207,9 +207,6 @@ class ToolbarView : public views::AccessiblePaneView,
   views::MenuButton* app_menu_;
   Browser* browser_;
 
-  // Contents of the profiles menu to populate with profile names.
-  scoped_ptr<ui::SimpleMenuModel> profiles_menu_contents_;
-
   // Controls whether or not a home button should be shown on the toolbar.
   BooleanPrefMember show_home_button_;
 

@@ -170,8 +170,7 @@ ToolbarView::ToolbarView(Browser* browser)
       location_bar_(NULL),
       browser_actions_(NULL),
       app_menu_(NULL),
-      browser_(browser),
-      profiles_menu_contents_(NULL) {
+      browser_(browser) {
   set_id(VIEW_ID_TOOLBAR);
 
   chrome::AddCommandObserver(browser_, IDC_BACK, this);
