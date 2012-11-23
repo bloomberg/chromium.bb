@@ -36,8 +36,8 @@ Bool ValidateChunkIA32(const uint8_t *data, size_t size,
                        const NaClCPUFeaturesX86 *cpu_features,
                        ValidationCallbackFunc user_callback,
                        void *callback_data) {
-  bitmap_word valid_targets_small;
-  bitmap_word jump_dests_small;
+  bitmap_word valid_targets_small[2];
+  bitmap_word jump_dests_small[2];
   bitmap_word *valid_targets;
   bitmap_word *jump_dests;
   const uint8_t *current_position;
@@ -47,15 +47,23 @@ Bool ValidateChunkIA32(const uint8_t *data, size_t size,
   CHECK(sizeof valid_targets_small == sizeof jump_dests_small);
   CHECK(size % kBundleSize == 0);
 
-  /* For a very small sequence (one bundle) malloc is too expensive.  */
-  if (size <= sizeof valid_targets_small) {
-    valid_targets_small = 0;
-    valid_targets = &valid_targets_small;
-    jump_dests_small = 0;
-    jump_dests = &jump_dests_small;
+  /*
+   * For a very small sequences (one bundle) malloc is too expensive.
+   *
+   * Note1: we allocate one extra bit, because we set valid jump target bits
+   * _after_ instructions, so there will be one at the end of the chunk.
+   *
+   * Note2: we don't ever mark first bit as a valid jump target but this is
+   * not a problem because any aligned address is valid jump target.
+   */
+  if ((size + 1) <= (sizeof valid_targets_small * 8)) {
+    memset(valid_targets_small, 0, sizeof valid_targets_small);
+    valid_targets = valid_targets_small;
+    memset(jump_dests_small, 0, sizeof jump_dests_small);
+    jump_dests = jump_dests_small;
   } else {
-    valid_targets = BitmapAllocate(size);
-    jump_dests = BitmapAllocate(size);
+    valid_targets = BitmapAllocate(size + 1);
+    jump_dests = BitmapAllocate(size + 1);
     if (!valid_targets || !jump_dests) {
       free(jump_dests);
       free(valid_targets);
@@ -100,6 +108,8 @@ tr0:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -118,6 +128,8 @@ tr9:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -136,6 +148,8 @@ tr10:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -154,6 +168,8 @@ tr11:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -172,6 +188,8 @@ tr15:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -187,6 +205,8 @@ tr19:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -202,6 +222,8 @@ tr27:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -217,6 +239,8 @@ tr36:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -232,6 +256,8 @@ tr50:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -247,6 +273,8 @@ tr51:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -262,6 +290,8 @@ tr52:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -280,6 +310,8 @@ tr64:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -298,6 +330,8 @@ tr65:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -313,6 +347,8 @@ tr71:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -331,6 +367,8 @@ tr95:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -346,6 +384,8 @@ tr98:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -361,6 +401,8 @@ tr107:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -376,6 +418,8 @@ tr108:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -391,6 +435,8 @@ tr115:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -409,6 +455,8 @@ tr123:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -427,6 +475,8 @@ tr144:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -444,6 +494,8 @@ tr161:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -461,6 +513,8 @@ tr246:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -476,6 +530,8 @@ tr259:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -491,6 +547,8 @@ tr266:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -506,6 +564,8 @@ tr300:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -521,6 +581,8 @@ tr327:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -539,6 +601,8 @@ tr353:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -554,6 +618,8 @@ tr377:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -569,6 +635,8 @@ tr383:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -591,6 +659,8 @@ tr387:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -608,6 +678,8 @@ tr407:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -631,6 +703,8 @@ tr418:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -650,41 +724,8 @@ tr419:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       instruction_info_collected = 0;
-     }
-	goto st246;
-tr433:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
-                                 instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       instruction_info_collected = 0;
-     }
-	goto st246;
-tr442:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	{ SET_CPU_FEATURE(CPUFeature_x87);       }
-	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
-                                 instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -693,128 +734,128 @@ st246:
 		goto _test_eof246;
 case 246:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr428;
-		case 5u: goto tr429;
-		case 12u: goto tr428;
-		case 13u: goto tr429;
-		case 15u: goto tr430;
-		case 20u: goto tr428;
-		case 21u: goto tr429;
-		case 28u: goto tr428;
-		case 29u: goto tr429;
-		case 36u: goto tr428;
-		case 37u: goto tr429;
-		case 44u: goto tr428;
-		case 45u: goto tr429;
-		case 46u: goto tr431;
-		case 52u: goto tr428;
-		case 53u: goto tr429;
-		case 60u: goto tr428;
-		case 61u: goto tr429;
-		case 62u: goto tr432;
-		case 101u: goto tr434;
-		case 102u: goto tr435;
-		case 104u: goto tr429;
-		case 105u: goto tr436;
-		case 106u: goto tr428;
-		case 107u: goto tr437;
-		case 128u: goto tr437;
-		case 129u: goto tr436;
-		case 131u: goto tr439;
-		case 141u: goto tr440;
-		case 143u: goto tr441;
-		case 155u: goto tr442;
-		case 168u: goto tr428;
-		case 169u: goto tr429;
-		case 196u: goto tr445;
-		case 197u: goto tr446;
-		case 198u: goto tr447;
-		case 199u: goto tr448;
-		case 201u: goto tr433;
-		case 216u: goto tr450;
-		case 217u: goto tr451;
-		case 218u: goto tr452;
-		case 219u: goto tr453;
-		case 220u: goto tr454;
-		case 221u: goto tr455;
-		case 222u: goto tr456;
-		case 223u: goto tr457;
-		case 232u: goto tr458;
-		case 233u: goto tr459;
-		case 235u: goto tr438;
-		case 240u: goto tr460;
-		case 242u: goto tr461;
-		case 243u: goto tr462;
-		case 246u: goto tr463;
-		case 247u: goto tr464;
-		case 254u: goto tr465;
-		case 255u: goto tr466;
+		case 4u: goto st10;
+		case 5u: goto st11;
+		case 12u: goto st10;
+		case 13u: goto st11;
+		case 15u: goto st15;
+		case 20u: goto st10;
+		case 21u: goto st11;
+		case 28u: goto st10;
+		case 29u: goto st11;
+		case 36u: goto st10;
+		case 37u: goto st11;
+		case 44u: goto st10;
+		case 45u: goto st11;
+		case 46u: goto tr428;
+		case 52u: goto st10;
+		case 53u: goto st11;
+		case 60u: goto st10;
+		case 61u: goto st11;
+		case 62u: goto tr429;
+		case 101u: goto st57;
+		case 102u: goto tr431;
+		case 104u: goto st11;
+		case 105u: goto st110;
+		case 106u: goto st10;
+		case 107u: goto st34;
+		case 128u: goto st34;
+		case 129u: goto st110;
+		case 131u: goto st119;
+		case 141u: goto st29;
+		case 143u: goto st121;
+		case 155u: goto tr377;
+		case 168u: goto st10;
+		case 169u: goto st11;
+		case 196u: goto st149;
+		case 197u: goto st199;
+		case 198u: goto st204;
+		case 199u: goto st205;
+		case 201u: goto tr0;
+		case 216u: goto st206;
+		case 217u: goto st207;
+		case 218u: goto st208;
+		case 219u: goto st209;
+		case 220u: goto st210;
+		case 221u: goto st211;
+		case 222u: goto st212;
+		case 223u: goto st213;
+		case 232u: goto st214;
+		case 233u: goto st46;
+		case 235u: goto st56;
+		case 240u: goto tr448;
+		case 242u: goto tr449;
+		case 243u: goto tr450;
+		case 246u: goto st228;
+		case 247u: goto st229;
+		case 254u: goto st230;
+		case 255u: goto st109;
 	}
 	if ( (*( current_position)) < 132u ) {
 		if ( (*( current_position)) < 32u ) {
 			if ( (*( current_position)) < 8u ) {
 				if ( (*( current_position)) <= 3u )
-					goto tr427;
+					goto st1;
 			} else if ( (*( current_position)) > 11u ) {
 				if ( (*( current_position)) > 19u ) {
 					if ( 24u <= (*( current_position)) && (*( current_position)) <= 27u )
-						goto tr427;
+						goto st1;
 				} else if ( (*( current_position)) >= 16u )
-					goto tr427;
+					goto st1;
 			} else
-				goto tr427;
+				goto st1;
 		} else if ( (*( current_position)) > 35u ) {
 			if ( (*( current_position)) < 56u ) {
 				if ( (*( current_position)) > 43u ) {
 					if ( 48u <= (*( current_position)) && (*( current_position)) <= 51u )
-						goto tr427;
+						goto st1;
 				} else if ( (*( current_position)) >= 40u )
-					goto tr427;
+					goto st1;
 			} else if ( (*( current_position)) > 59u ) {
 				if ( (*( current_position)) > 95u ) {
 					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-						goto tr438;
+						goto st56;
 				} else if ( (*( current_position)) >= 64u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr427;
+				goto st1;
 		} else
-			goto tr427;
+			goto st1;
 	} else if ( (*( current_position)) > 139u ) {
 		if ( (*( current_position)) < 176u ) {
 			if ( (*( current_position)) < 160u ) {
 				if ( (*( current_position)) > 153u ) {
 					if ( 158u <= (*( current_position)) && (*( current_position)) <= 159u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 144u )
-					goto tr433;
+					goto tr0;
 			} else if ( (*( current_position)) > 163u ) {
 				if ( (*( current_position)) > 171u ) {
 					if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 164u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr443;
+				goto st3;
 		} else if ( (*( current_position)) > 183u ) {
 			if ( (*( current_position)) < 208u ) {
 				if ( (*( current_position)) > 191u ) {
 					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
-						goto tr444;
+						goto st96;
 				} else if ( (*( current_position)) >= 184u )
-					goto tr429;
+					goto st11;
 			} else if ( (*( current_position)) > 211u ) {
 				if ( (*( current_position)) > 249u ) {
 					if ( 252u <= (*( current_position)) && (*( current_position)) <= 253u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 244u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr449;
+				goto st98;
 		} else
-			goto tr428;
+			goto st10;
 	} else
-		goto tr427;
+		goto st1;
 	goto tr16;
 tr21:
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
@@ -947,11 +988,6 @@ tr415:
     SET_REPZ_PREFIX(FALSE);
   }
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
-	goto st1;
-tr427:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
 	goto st1;
 st1:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -1089,11 +1125,6 @@ tr302:
 	goto st3;
 tr379:
 	{ SET_CPU_FEATURE(CPUFeature_x87);       }
-	goto st3;
-tr443:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
 	goto st3;
 st3:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -1256,11 +1287,6 @@ tr404:
     SET_IMM2_PTR(current_position);
   }
 	goto st10;
-tr428:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st10;
 st10:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof10;
@@ -1280,11 +1306,6 @@ tr221:
 	goto st11;
 tr270:
 	{ SET_CPU_FEATURE(CPUFeature_LWP);       }
-	goto st11;
-tr429:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
 	goto st11;
 st11:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -1316,11 +1337,6 @@ tr16:
 st0:
 ( current_state) = 0;
 	goto _out;
-tr430:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st15;
 st15:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof15;
@@ -1727,11 +1743,6 @@ tr410:
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE4A);     }
 	goto st29;
-tr440:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st29;
 st29:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof29;
@@ -1947,11 +1958,6 @@ tr412:
     SET_REPZ_PREFIX(FALSE);
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
-	goto st34;
-tr437:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
 	goto st34;
 st34:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -2233,11 +2239,6 @@ case 45:
 	} else if ( (*( current_position)) >= 208u )
 		goto tr91;
 	goto tr16;
-tr459:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st46;
 st46:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof46;
@@ -2417,18 +2418,12 @@ case 53:
 	} else
 		goto tr118;
 	goto tr16;
-tr431:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
+tr428:
 	{
     SET_BRANCH_NOT_TAKEN(TRUE);
   }
 	goto st54;
-tr432:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
+tr429:
 	{
     SET_BRANCH_TAKEN(TRUE);
   }
@@ -2449,21 +2444,11 @@ case 55:
 	if ( 128u <= (*( current_position)) && (*( current_position)) <= 143u )
 		goto st46;
 	goto tr16;
-tr438:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st56;
 st56:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof56;
 case 56:
 	goto tr123;
-tr434:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st57;
 st57:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof57;
@@ -2518,10 +2503,7 @@ case 62:
 	if ( (*( current_position)) == 0u )
 		goto tr0;
 	goto tr16;
-tr435:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
+tr431:
 	{
     SET_DATA16_PREFIX(TRUE);
   }
@@ -3084,11 +3066,6 @@ st95:
 		goto _test_eof95;
 case 95:
 	goto st89;
-tr444:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st96;
 st96:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof96;
@@ -3169,11 +3146,6 @@ case 97:
 	} else
 		goto st93;
 	goto tr16;
-tr449:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st98;
 st98:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof98;
@@ -3515,11 +3487,6 @@ case 108:
 	} else
 		goto st7;
 	goto tr0;
-tr466:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st109;
 st109:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof109;
@@ -3564,11 +3531,6 @@ case 109:
 	goto tr16;
 tr276:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
-	goto st110;
-tr436:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
 	goto st110;
 st110:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -3703,11 +3665,6 @@ st118:
 		goto _test_eof118;
 case 118:
 	goto st112;
-tr439:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st119;
 st119:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof119;
@@ -3782,6 +3739,8 @@ tr230:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st247;
@@ -3790,134 +3749,129 @@ st247:
 		goto _test_eof247;
 case 247:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr428;
-		case 5u: goto tr429;
-		case 12u: goto tr428;
-		case 13u: goto tr429;
-		case 15u: goto tr430;
-		case 20u: goto tr428;
-		case 21u: goto tr429;
-		case 28u: goto tr428;
-		case 29u: goto tr429;
-		case 36u: goto tr428;
-		case 37u: goto tr429;
-		case 44u: goto tr428;
-		case 45u: goto tr429;
-		case 46u: goto tr431;
-		case 52u: goto tr428;
-		case 53u: goto tr429;
-		case 60u: goto tr428;
-		case 61u: goto tr429;
-		case 62u: goto tr432;
-		case 101u: goto tr434;
-		case 102u: goto tr435;
-		case 104u: goto tr429;
-		case 105u: goto tr436;
-		case 106u: goto tr428;
-		case 107u: goto tr437;
-		case 128u: goto tr437;
-		case 129u: goto tr436;
-		case 131u: goto tr439;
-		case 141u: goto tr440;
-		case 143u: goto tr441;
-		case 155u: goto tr442;
-		case 168u: goto tr428;
-		case 169u: goto tr429;
-		case 196u: goto tr445;
-		case 197u: goto tr446;
-		case 198u: goto tr447;
-		case 199u: goto tr448;
-		case 201u: goto tr433;
-		case 216u: goto tr450;
-		case 217u: goto tr451;
-		case 218u: goto tr452;
-		case 219u: goto tr453;
-		case 220u: goto tr454;
-		case 221u: goto tr455;
-		case 222u: goto tr456;
-		case 223u: goto tr457;
-		case 232u: goto tr458;
-		case 233u: goto tr459;
-		case 235u: goto tr438;
-		case 240u: goto tr460;
-		case 242u: goto tr461;
-		case 243u: goto tr462;
-		case 246u: goto tr463;
-		case 247u: goto tr464;
-		case 254u: goto tr465;
-		case 255u: goto tr467;
+		case 4u: goto st10;
+		case 5u: goto st11;
+		case 12u: goto st10;
+		case 13u: goto st11;
+		case 15u: goto st15;
+		case 20u: goto st10;
+		case 21u: goto st11;
+		case 28u: goto st10;
+		case 29u: goto st11;
+		case 36u: goto st10;
+		case 37u: goto st11;
+		case 44u: goto st10;
+		case 45u: goto st11;
+		case 46u: goto tr428;
+		case 52u: goto st10;
+		case 53u: goto st11;
+		case 60u: goto st10;
+		case 61u: goto st11;
+		case 62u: goto tr429;
+		case 101u: goto st57;
+		case 102u: goto tr431;
+		case 104u: goto st11;
+		case 105u: goto st110;
+		case 106u: goto st10;
+		case 107u: goto st34;
+		case 128u: goto st34;
+		case 129u: goto st110;
+		case 131u: goto st119;
+		case 141u: goto st29;
+		case 143u: goto st121;
+		case 155u: goto tr377;
+		case 168u: goto st10;
+		case 169u: goto st11;
+		case 196u: goto st149;
+		case 197u: goto st199;
+		case 198u: goto st204;
+		case 199u: goto st205;
+		case 201u: goto tr0;
+		case 216u: goto st206;
+		case 217u: goto st207;
+		case 218u: goto st208;
+		case 219u: goto st209;
+		case 220u: goto st210;
+		case 221u: goto st211;
+		case 222u: goto st212;
+		case 223u: goto st213;
+		case 232u: goto st214;
+		case 233u: goto st46;
+		case 235u: goto st56;
+		case 240u: goto tr448;
+		case 242u: goto tr449;
+		case 243u: goto tr450;
+		case 246u: goto st228;
+		case 247u: goto st229;
+		case 254u: goto st230;
+		case 255u: goto st231;
 	}
 	if ( (*( current_position)) < 132u ) {
 		if ( (*( current_position)) < 32u ) {
 			if ( (*( current_position)) < 8u ) {
 				if ( (*( current_position)) <= 3u )
-					goto tr427;
+					goto st1;
 			} else if ( (*( current_position)) > 11u ) {
 				if ( (*( current_position)) > 19u ) {
 					if ( 24u <= (*( current_position)) && (*( current_position)) <= 27u )
-						goto tr427;
+						goto st1;
 				} else if ( (*( current_position)) >= 16u )
-					goto tr427;
+					goto st1;
 			} else
-				goto tr427;
+				goto st1;
 		} else if ( (*( current_position)) > 35u ) {
 			if ( (*( current_position)) < 56u ) {
 				if ( (*( current_position)) > 43u ) {
 					if ( 48u <= (*( current_position)) && (*( current_position)) <= 51u )
-						goto tr427;
+						goto st1;
 				} else if ( (*( current_position)) >= 40u )
-					goto tr427;
+					goto st1;
 			} else if ( (*( current_position)) > 59u ) {
 				if ( (*( current_position)) > 95u ) {
 					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-						goto tr438;
+						goto st56;
 				} else if ( (*( current_position)) >= 64u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr427;
+				goto st1;
 		} else
-			goto tr427;
+			goto st1;
 	} else if ( (*( current_position)) > 139u ) {
 		if ( (*( current_position)) < 176u ) {
 			if ( (*( current_position)) < 160u ) {
 				if ( (*( current_position)) > 153u ) {
 					if ( 158u <= (*( current_position)) && (*( current_position)) <= 159u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 144u )
-					goto tr433;
+					goto tr0;
 			} else if ( (*( current_position)) > 163u ) {
 				if ( (*( current_position)) > 171u ) {
 					if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 164u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr443;
+				goto st3;
 		} else if ( (*( current_position)) > 183u ) {
 			if ( (*( current_position)) < 208u ) {
 				if ( (*( current_position)) > 191u ) {
 					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
-						goto tr444;
+						goto st96;
 				} else if ( (*( current_position)) >= 184u )
-					goto tr429;
+					goto st11;
 			} else if ( (*( current_position)) > 211u ) {
 				if ( (*( current_position)) > 249u ) {
 					if ( 252u <= (*( current_position)) && (*( current_position)) <= 253u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 244u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr449;
+				goto st98;
 		} else
-			goto tr428;
+			goto st10;
 	} else
-		goto tr427;
+		goto st1;
 	goto tr16;
-tr441:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st121;
 st121:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof121;
@@ -4496,11 +4450,6 @@ case 148:
 		case 18u: goto st147;
 	}
 	goto tr16;
-tr445:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st149;
 st149:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof149;
@@ -6039,11 +5988,6 @@ case 198:
 	} else
 		goto tr345;
 	goto tr16;
-tr446:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st199;
 st199:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof199;
@@ -6216,11 +6160,6 @@ case 203:
 	} else
 		goto tr297;
 	goto tr16;
-tr447:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st204;
 st204:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof204;
@@ -6243,11 +6182,6 @@ case 204:
 	} else
 		goto st40;
 	goto tr16;
-tr448:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st205;
 st205:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof205;
@@ -6270,11 +6204,6 @@ case 205:
 	} else
 		goto st116;
 	goto tr16;
-tr450:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st206;
 st206:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof206;
@@ -6319,11 +6248,6 @@ case 206:
 	} else if ( (*( current_position)) >= 64u )
 		goto tr380;
 	goto tr377;
-tr451:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st207;
 st207:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof207;
@@ -6389,11 +6313,6 @@ case 207:
 	} else
 		goto tr379;
 	goto tr377;
-tr452:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st208;
 st208:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof208;
@@ -6461,11 +6380,6 @@ case 208:
 	} else
 		goto tr377;
 	goto tr379;
-tr453:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st209;
 st209:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof209;
@@ -6532,11 +6446,6 @@ case 209:
 	} else
 		goto tr380;
 	goto tr16;
-tr454:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st210;
 st210:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof210;
@@ -6584,11 +6493,6 @@ case 210:
 	} else
 		goto tr379;
 	goto tr377;
-tr455:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st211;
 st211:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof211;
@@ -6650,11 +6554,6 @@ case 211:
 	} else
 		goto tr379;
 	goto tr377;
-tr456:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st212;
 st212:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof212;
@@ -6705,11 +6604,6 @@ case 212:
 	} else
 		goto tr379;
 	goto tr377;
-tr457:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st213;
 st213:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof213;
@@ -6763,11 +6657,6 @@ case 213:
 	} else
 		goto tr16;
 	goto tr377;
-tr458:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st214;
 st214:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof214;
@@ -6788,10 +6677,7 @@ st217:
 		goto _test_eof217;
 case 217:
 	goto tr387;
-tr460:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
+tr448:
 	{
     SET_LOCK_PREFIX(TRUE);
   }
@@ -6892,10 +6778,7 @@ case 220:
 	} else
 		goto st116;
 	goto tr16;
-tr461:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
+tr449:
 	{
     SET_REPNZ_PREFIX(TRUE);
   }
@@ -6972,10 +6855,7 @@ st225:
 		goto _test_eof225;
 case 225:
 	goto tr404;
-tr462:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
+tr450:
 	{
     SET_REPZ_PREFIX(TRUE);
   }
@@ -7039,11 +6919,6 @@ case 227:
 	} else
 		goto tr408;
 	goto tr16;
-tr463:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st228;
 st228:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof228;
@@ -7108,11 +6983,6 @@ case 228:
 	} else
 		goto st7;
 	goto tr0;
-tr464:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st229;
 st229:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof229;
@@ -7177,11 +7047,6 @@ case 229:
 	} else
 		goto st7;
 	goto tr0;
-tr465:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st230;
 st230:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof230;
@@ -7208,11 +7073,6 @@ case 230:
 	} else
 		goto st7;
 	goto tr16;
-tr467:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st231;
 st231:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof231;
@@ -7279,6 +7139,8 @@ tr420:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st248;
@@ -7287,134 +7149,129 @@ st248:
 		goto _test_eof248;
 case 248:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr428;
-		case 5u: goto tr429;
-		case 12u: goto tr428;
-		case 13u: goto tr429;
-		case 15u: goto tr430;
-		case 20u: goto tr428;
-		case 21u: goto tr429;
-		case 28u: goto tr428;
-		case 29u: goto tr429;
-		case 36u: goto tr428;
-		case 37u: goto tr429;
-		case 44u: goto tr428;
-		case 45u: goto tr429;
-		case 46u: goto tr431;
-		case 52u: goto tr428;
-		case 53u: goto tr429;
-		case 60u: goto tr428;
-		case 61u: goto tr429;
-		case 62u: goto tr432;
-		case 101u: goto tr434;
-		case 102u: goto tr435;
-		case 104u: goto tr429;
-		case 105u: goto tr436;
-		case 106u: goto tr428;
-		case 107u: goto tr437;
-		case 128u: goto tr437;
-		case 129u: goto tr436;
-		case 131u: goto tr439;
-		case 141u: goto tr440;
-		case 143u: goto tr441;
-		case 155u: goto tr442;
-		case 168u: goto tr428;
-		case 169u: goto tr429;
-		case 196u: goto tr445;
-		case 197u: goto tr446;
-		case 198u: goto tr447;
-		case 199u: goto tr448;
-		case 201u: goto tr433;
-		case 216u: goto tr450;
-		case 217u: goto tr451;
-		case 218u: goto tr452;
-		case 219u: goto tr453;
-		case 220u: goto tr454;
-		case 221u: goto tr455;
-		case 222u: goto tr456;
-		case 223u: goto tr457;
-		case 232u: goto tr458;
-		case 233u: goto tr459;
-		case 235u: goto tr438;
-		case 240u: goto tr460;
-		case 242u: goto tr461;
-		case 243u: goto tr462;
-		case 246u: goto tr463;
-		case 247u: goto tr464;
-		case 254u: goto tr465;
-		case 255u: goto tr468;
+		case 4u: goto st10;
+		case 5u: goto st11;
+		case 12u: goto st10;
+		case 13u: goto st11;
+		case 15u: goto st15;
+		case 20u: goto st10;
+		case 21u: goto st11;
+		case 28u: goto st10;
+		case 29u: goto st11;
+		case 36u: goto st10;
+		case 37u: goto st11;
+		case 44u: goto st10;
+		case 45u: goto st11;
+		case 46u: goto tr428;
+		case 52u: goto st10;
+		case 53u: goto st11;
+		case 60u: goto st10;
+		case 61u: goto st11;
+		case 62u: goto tr429;
+		case 101u: goto st57;
+		case 102u: goto tr431;
+		case 104u: goto st11;
+		case 105u: goto st110;
+		case 106u: goto st10;
+		case 107u: goto st34;
+		case 128u: goto st34;
+		case 129u: goto st110;
+		case 131u: goto st119;
+		case 141u: goto st29;
+		case 143u: goto st121;
+		case 155u: goto tr377;
+		case 168u: goto st10;
+		case 169u: goto st11;
+		case 196u: goto st149;
+		case 197u: goto st199;
+		case 198u: goto st204;
+		case 199u: goto st205;
+		case 201u: goto tr0;
+		case 216u: goto st206;
+		case 217u: goto st207;
+		case 218u: goto st208;
+		case 219u: goto st209;
+		case 220u: goto st210;
+		case 221u: goto st211;
+		case 222u: goto st212;
+		case 223u: goto st213;
+		case 232u: goto st214;
+		case 233u: goto st46;
+		case 235u: goto st56;
+		case 240u: goto tr448;
+		case 242u: goto tr449;
+		case 243u: goto tr450;
+		case 246u: goto st228;
+		case 247u: goto st229;
+		case 254u: goto st230;
+		case 255u: goto st233;
 	}
 	if ( (*( current_position)) < 132u ) {
 		if ( (*( current_position)) < 32u ) {
 			if ( (*( current_position)) < 8u ) {
 				if ( (*( current_position)) <= 3u )
-					goto tr427;
+					goto st1;
 			} else if ( (*( current_position)) > 11u ) {
 				if ( (*( current_position)) > 19u ) {
 					if ( 24u <= (*( current_position)) && (*( current_position)) <= 27u )
-						goto tr427;
+						goto st1;
 				} else if ( (*( current_position)) >= 16u )
-					goto tr427;
+					goto st1;
 			} else
-				goto tr427;
+				goto st1;
 		} else if ( (*( current_position)) > 35u ) {
 			if ( (*( current_position)) < 56u ) {
 				if ( (*( current_position)) > 43u ) {
 					if ( 48u <= (*( current_position)) && (*( current_position)) <= 51u )
-						goto tr427;
+						goto st1;
 				} else if ( (*( current_position)) >= 40u )
-					goto tr427;
+					goto st1;
 			} else if ( (*( current_position)) > 59u ) {
 				if ( (*( current_position)) > 95u ) {
 					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-						goto tr438;
+						goto st56;
 				} else if ( (*( current_position)) >= 64u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr427;
+				goto st1;
 		} else
-			goto tr427;
+			goto st1;
 	} else if ( (*( current_position)) > 139u ) {
 		if ( (*( current_position)) < 176u ) {
 			if ( (*( current_position)) < 160u ) {
 				if ( (*( current_position)) > 153u ) {
 					if ( 158u <= (*( current_position)) && (*( current_position)) <= 159u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 144u )
-					goto tr433;
+					goto tr0;
 			} else if ( (*( current_position)) > 163u ) {
 				if ( (*( current_position)) > 171u ) {
 					if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 164u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr443;
+				goto st3;
 		} else if ( (*( current_position)) > 183u ) {
 			if ( (*( current_position)) < 208u ) {
 				if ( (*( current_position)) > 191u ) {
 					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
-						goto tr444;
+						goto st96;
 				} else if ( (*( current_position)) >= 184u )
-					goto tr429;
+					goto st11;
 			} else if ( (*( current_position)) > 211u ) {
 				if ( (*( current_position)) > 249u ) {
 					if ( 252u <= (*( current_position)) && (*( current_position)) <= 253u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 244u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr449;
+				goto st98;
 		} else
-			goto tr428;
+			goto st10;
 	} else
-		goto tr427;
+		goto st1;
 	goto tr16;
-tr468:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st233;
 st233:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof233;
@@ -7481,6 +7338,8 @@ tr421:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st249;
@@ -7489,134 +7348,129 @@ st249:
 		goto _test_eof249;
 case 249:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr428;
-		case 5u: goto tr429;
-		case 12u: goto tr428;
-		case 13u: goto tr429;
-		case 15u: goto tr430;
-		case 20u: goto tr428;
-		case 21u: goto tr429;
-		case 28u: goto tr428;
-		case 29u: goto tr429;
-		case 36u: goto tr428;
-		case 37u: goto tr429;
-		case 44u: goto tr428;
-		case 45u: goto tr429;
-		case 46u: goto tr431;
-		case 52u: goto tr428;
-		case 53u: goto tr429;
-		case 60u: goto tr428;
-		case 61u: goto tr429;
-		case 62u: goto tr432;
-		case 101u: goto tr434;
-		case 102u: goto tr435;
-		case 104u: goto tr429;
-		case 105u: goto tr436;
-		case 106u: goto tr428;
-		case 107u: goto tr437;
-		case 128u: goto tr437;
-		case 129u: goto tr436;
-		case 131u: goto tr439;
-		case 141u: goto tr440;
-		case 143u: goto tr441;
-		case 155u: goto tr442;
-		case 168u: goto tr428;
-		case 169u: goto tr429;
-		case 196u: goto tr445;
-		case 197u: goto tr446;
-		case 198u: goto tr447;
-		case 199u: goto tr448;
-		case 201u: goto tr433;
-		case 216u: goto tr450;
-		case 217u: goto tr451;
-		case 218u: goto tr452;
-		case 219u: goto tr453;
-		case 220u: goto tr454;
-		case 221u: goto tr455;
-		case 222u: goto tr456;
-		case 223u: goto tr457;
-		case 232u: goto tr458;
-		case 233u: goto tr459;
-		case 235u: goto tr438;
-		case 240u: goto tr460;
-		case 242u: goto tr461;
-		case 243u: goto tr462;
-		case 246u: goto tr463;
-		case 247u: goto tr464;
-		case 254u: goto tr465;
-		case 255u: goto tr469;
+		case 4u: goto st10;
+		case 5u: goto st11;
+		case 12u: goto st10;
+		case 13u: goto st11;
+		case 15u: goto st15;
+		case 20u: goto st10;
+		case 21u: goto st11;
+		case 28u: goto st10;
+		case 29u: goto st11;
+		case 36u: goto st10;
+		case 37u: goto st11;
+		case 44u: goto st10;
+		case 45u: goto st11;
+		case 46u: goto tr428;
+		case 52u: goto st10;
+		case 53u: goto st11;
+		case 60u: goto st10;
+		case 61u: goto st11;
+		case 62u: goto tr429;
+		case 101u: goto st57;
+		case 102u: goto tr431;
+		case 104u: goto st11;
+		case 105u: goto st110;
+		case 106u: goto st10;
+		case 107u: goto st34;
+		case 128u: goto st34;
+		case 129u: goto st110;
+		case 131u: goto st119;
+		case 141u: goto st29;
+		case 143u: goto st121;
+		case 155u: goto tr377;
+		case 168u: goto st10;
+		case 169u: goto st11;
+		case 196u: goto st149;
+		case 197u: goto st199;
+		case 198u: goto st204;
+		case 199u: goto st205;
+		case 201u: goto tr0;
+		case 216u: goto st206;
+		case 217u: goto st207;
+		case 218u: goto st208;
+		case 219u: goto st209;
+		case 220u: goto st210;
+		case 221u: goto st211;
+		case 222u: goto st212;
+		case 223u: goto st213;
+		case 232u: goto st214;
+		case 233u: goto st46;
+		case 235u: goto st56;
+		case 240u: goto tr448;
+		case 242u: goto tr449;
+		case 243u: goto tr450;
+		case 246u: goto st228;
+		case 247u: goto st229;
+		case 254u: goto st230;
+		case 255u: goto st235;
 	}
 	if ( (*( current_position)) < 132u ) {
 		if ( (*( current_position)) < 32u ) {
 			if ( (*( current_position)) < 8u ) {
 				if ( (*( current_position)) <= 3u )
-					goto tr427;
+					goto st1;
 			} else if ( (*( current_position)) > 11u ) {
 				if ( (*( current_position)) > 19u ) {
 					if ( 24u <= (*( current_position)) && (*( current_position)) <= 27u )
-						goto tr427;
+						goto st1;
 				} else if ( (*( current_position)) >= 16u )
-					goto tr427;
+					goto st1;
 			} else
-				goto tr427;
+				goto st1;
 		} else if ( (*( current_position)) > 35u ) {
 			if ( (*( current_position)) < 56u ) {
 				if ( (*( current_position)) > 43u ) {
 					if ( 48u <= (*( current_position)) && (*( current_position)) <= 51u )
-						goto tr427;
+						goto st1;
 				} else if ( (*( current_position)) >= 40u )
-					goto tr427;
+					goto st1;
 			} else if ( (*( current_position)) > 59u ) {
 				if ( (*( current_position)) > 95u ) {
 					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-						goto tr438;
+						goto st56;
 				} else if ( (*( current_position)) >= 64u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr427;
+				goto st1;
 		} else
-			goto tr427;
+			goto st1;
 	} else if ( (*( current_position)) > 139u ) {
 		if ( (*( current_position)) < 176u ) {
 			if ( (*( current_position)) < 160u ) {
 				if ( (*( current_position)) > 153u ) {
 					if ( 158u <= (*( current_position)) && (*( current_position)) <= 159u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 144u )
-					goto tr433;
+					goto tr0;
 			} else if ( (*( current_position)) > 163u ) {
 				if ( (*( current_position)) > 171u ) {
 					if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 164u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr443;
+				goto st3;
 		} else if ( (*( current_position)) > 183u ) {
 			if ( (*( current_position)) < 208u ) {
 				if ( (*( current_position)) > 191u ) {
 					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
-						goto tr444;
+						goto st96;
 				} else if ( (*( current_position)) >= 184u )
-					goto tr429;
+					goto st11;
 			} else if ( (*( current_position)) > 211u ) {
 				if ( (*( current_position)) > 249u ) {
 					if ( 252u <= (*( current_position)) && (*( current_position)) <= 253u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 244u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr449;
+				goto st98;
 		} else
-			goto tr428;
+			goto st10;
 	} else
-		goto tr427;
+		goto st1;
 	goto tr16;
-tr469:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st235;
 st235:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof235;
@@ -7683,6 +7537,8 @@ tr422:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st250;
@@ -7691,134 +7547,129 @@ st250:
 		goto _test_eof250;
 case 250:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr428;
-		case 5u: goto tr429;
-		case 12u: goto tr428;
-		case 13u: goto tr429;
-		case 15u: goto tr430;
-		case 20u: goto tr428;
-		case 21u: goto tr429;
-		case 28u: goto tr428;
-		case 29u: goto tr429;
-		case 36u: goto tr428;
-		case 37u: goto tr429;
-		case 44u: goto tr428;
-		case 45u: goto tr429;
-		case 46u: goto tr431;
-		case 52u: goto tr428;
-		case 53u: goto tr429;
-		case 60u: goto tr428;
-		case 61u: goto tr429;
-		case 62u: goto tr432;
-		case 101u: goto tr434;
-		case 102u: goto tr435;
-		case 104u: goto tr429;
-		case 105u: goto tr436;
-		case 106u: goto tr428;
-		case 107u: goto tr437;
-		case 128u: goto tr437;
-		case 129u: goto tr436;
-		case 131u: goto tr439;
-		case 141u: goto tr440;
-		case 143u: goto tr441;
-		case 155u: goto tr442;
-		case 168u: goto tr428;
-		case 169u: goto tr429;
-		case 196u: goto tr445;
-		case 197u: goto tr446;
-		case 198u: goto tr447;
-		case 199u: goto tr448;
-		case 201u: goto tr433;
-		case 216u: goto tr450;
-		case 217u: goto tr451;
-		case 218u: goto tr452;
-		case 219u: goto tr453;
-		case 220u: goto tr454;
-		case 221u: goto tr455;
-		case 222u: goto tr456;
-		case 223u: goto tr457;
-		case 232u: goto tr458;
-		case 233u: goto tr459;
-		case 235u: goto tr438;
-		case 240u: goto tr460;
-		case 242u: goto tr461;
-		case 243u: goto tr462;
-		case 246u: goto tr463;
-		case 247u: goto tr464;
-		case 254u: goto tr465;
-		case 255u: goto tr470;
+		case 4u: goto st10;
+		case 5u: goto st11;
+		case 12u: goto st10;
+		case 13u: goto st11;
+		case 15u: goto st15;
+		case 20u: goto st10;
+		case 21u: goto st11;
+		case 28u: goto st10;
+		case 29u: goto st11;
+		case 36u: goto st10;
+		case 37u: goto st11;
+		case 44u: goto st10;
+		case 45u: goto st11;
+		case 46u: goto tr428;
+		case 52u: goto st10;
+		case 53u: goto st11;
+		case 60u: goto st10;
+		case 61u: goto st11;
+		case 62u: goto tr429;
+		case 101u: goto st57;
+		case 102u: goto tr431;
+		case 104u: goto st11;
+		case 105u: goto st110;
+		case 106u: goto st10;
+		case 107u: goto st34;
+		case 128u: goto st34;
+		case 129u: goto st110;
+		case 131u: goto st119;
+		case 141u: goto st29;
+		case 143u: goto st121;
+		case 155u: goto tr377;
+		case 168u: goto st10;
+		case 169u: goto st11;
+		case 196u: goto st149;
+		case 197u: goto st199;
+		case 198u: goto st204;
+		case 199u: goto st205;
+		case 201u: goto tr0;
+		case 216u: goto st206;
+		case 217u: goto st207;
+		case 218u: goto st208;
+		case 219u: goto st209;
+		case 220u: goto st210;
+		case 221u: goto st211;
+		case 222u: goto st212;
+		case 223u: goto st213;
+		case 232u: goto st214;
+		case 233u: goto st46;
+		case 235u: goto st56;
+		case 240u: goto tr448;
+		case 242u: goto tr449;
+		case 243u: goto tr450;
+		case 246u: goto st228;
+		case 247u: goto st229;
+		case 254u: goto st230;
+		case 255u: goto st237;
 	}
 	if ( (*( current_position)) < 132u ) {
 		if ( (*( current_position)) < 32u ) {
 			if ( (*( current_position)) < 8u ) {
 				if ( (*( current_position)) <= 3u )
-					goto tr427;
+					goto st1;
 			} else if ( (*( current_position)) > 11u ) {
 				if ( (*( current_position)) > 19u ) {
 					if ( 24u <= (*( current_position)) && (*( current_position)) <= 27u )
-						goto tr427;
+						goto st1;
 				} else if ( (*( current_position)) >= 16u )
-					goto tr427;
+					goto st1;
 			} else
-				goto tr427;
+				goto st1;
 		} else if ( (*( current_position)) > 35u ) {
 			if ( (*( current_position)) < 56u ) {
 				if ( (*( current_position)) > 43u ) {
 					if ( 48u <= (*( current_position)) && (*( current_position)) <= 51u )
-						goto tr427;
+						goto st1;
 				} else if ( (*( current_position)) >= 40u )
-					goto tr427;
+					goto st1;
 			} else if ( (*( current_position)) > 59u ) {
 				if ( (*( current_position)) > 95u ) {
 					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-						goto tr438;
+						goto st56;
 				} else if ( (*( current_position)) >= 64u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr427;
+				goto st1;
 		} else
-			goto tr427;
+			goto st1;
 	} else if ( (*( current_position)) > 139u ) {
 		if ( (*( current_position)) < 176u ) {
 			if ( (*( current_position)) < 160u ) {
 				if ( (*( current_position)) > 153u ) {
 					if ( 158u <= (*( current_position)) && (*( current_position)) <= 159u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 144u )
-					goto tr433;
+					goto tr0;
 			} else if ( (*( current_position)) > 163u ) {
 				if ( (*( current_position)) > 171u ) {
 					if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 164u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr443;
+				goto st3;
 		} else if ( (*( current_position)) > 183u ) {
 			if ( (*( current_position)) < 208u ) {
 				if ( (*( current_position)) > 191u ) {
 					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
-						goto tr444;
+						goto st96;
 				} else if ( (*( current_position)) >= 184u )
-					goto tr429;
+					goto st11;
 			} else if ( (*( current_position)) > 211u ) {
 				if ( (*( current_position)) > 249u ) {
 					if ( 252u <= (*( current_position)) && (*( current_position)) <= 253u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 244u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr449;
+				goto st98;
 		} else
-			goto tr428;
+			goto st10;
 	} else
-		goto tr427;
+		goto st1;
 	goto tr16;
-tr470:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st237;
 st237:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof237;
@@ -7885,6 +7736,8 @@ tr423:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st251;
@@ -7893,134 +7746,129 @@ st251:
 		goto _test_eof251;
 case 251:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr428;
-		case 5u: goto tr429;
-		case 12u: goto tr428;
-		case 13u: goto tr429;
-		case 15u: goto tr430;
-		case 20u: goto tr428;
-		case 21u: goto tr429;
-		case 28u: goto tr428;
-		case 29u: goto tr429;
-		case 36u: goto tr428;
-		case 37u: goto tr429;
-		case 44u: goto tr428;
-		case 45u: goto tr429;
-		case 46u: goto tr431;
-		case 52u: goto tr428;
-		case 53u: goto tr429;
-		case 60u: goto tr428;
-		case 61u: goto tr429;
-		case 62u: goto tr432;
-		case 101u: goto tr434;
-		case 102u: goto tr435;
-		case 104u: goto tr429;
-		case 105u: goto tr436;
-		case 106u: goto tr428;
-		case 107u: goto tr437;
-		case 128u: goto tr437;
-		case 129u: goto tr436;
-		case 131u: goto tr439;
-		case 141u: goto tr440;
-		case 143u: goto tr441;
-		case 155u: goto tr442;
-		case 168u: goto tr428;
-		case 169u: goto tr429;
-		case 196u: goto tr445;
-		case 197u: goto tr446;
-		case 198u: goto tr447;
-		case 199u: goto tr448;
-		case 201u: goto tr433;
-		case 216u: goto tr450;
-		case 217u: goto tr451;
-		case 218u: goto tr452;
-		case 219u: goto tr453;
-		case 220u: goto tr454;
-		case 221u: goto tr455;
-		case 222u: goto tr456;
-		case 223u: goto tr457;
-		case 232u: goto tr458;
-		case 233u: goto tr459;
-		case 235u: goto tr438;
-		case 240u: goto tr460;
-		case 242u: goto tr461;
-		case 243u: goto tr462;
-		case 246u: goto tr463;
-		case 247u: goto tr464;
-		case 254u: goto tr465;
-		case 255u: goto tr471;
+		case 4u: goto st10;
+		case 5u: goto st11;
+		case 12u: goto st10;
+		case 13u: goto st11;
+		case 15u: goto st15;
+		case 20u: goto st10;
+		case 21u: goto st11;
+		case 28u: goto st10;
+		case 29u: goto st11;
+		case 36u: goto st10;
+		case 37u: goto st11;
+		case 44u: goto st10;
+		case 45u: goto st11;
+		case 46u: goto tr428;
+		case 52u: goto st10;
+		case 53u: goto st11;
+		case 60u: goto st10;
+		case 61u: goto st11;
+		case 62u: goto tr429;
+		case 101u: goto st57;
+		case 102u: goto tr431;
+		case 104u: goto st11;
+		case 105u: goto st110;
+		case 106u: goto st10;
+		case 107u: goto st34;
+		case 128u: goto st34;
+		case 129u: goto st110;
+		case 131u: goto st119;
+		case 141u: goto st29;
+		case 143u: goto st121;
+		case 155u: goto tr377;
+		case 168u: goto st10;
+		case 169u: goto st11;
+		case 196u: goto st149;
+		case 197u: goto st199;
+		case 198u: goto st204;
+		case 199u: goto st205;
+		case 201u: goto tr0;
+		case 216u: goto st206;
+		case 217u: goto st207;
+		case 218u: goto st208;
+		case 219u: goto st209;
+		case 220u: goto st210;
+		case 221u: goto st211;
+		case 222u: goto st212;
+		case 223u: goto st213;
+		case 232u: goto st214;
+		case 233u: goto st46;
+		case 235u: goto st56;
+		case 240u: goto tr448;
+		case 242u: goto tr449;
+		case 243u: goto tr450;
+		case 246u: goto st228;
+		case 247u: goto st229;
+		case 254u: goto st230;
+		case 255u: goto st239;
 	}
 	if ( (*( current_position)) < 132u ) {
 		if ( (*( current_position)) < 32u ) {
 			if ( (*( current_position)) < 8u ) {
 				if ( (*( current_position)) <= 3u )
-					goto tr427;
+					goto st1;
 			} else if ( (*( current_position)) > 11u ) {
 				if ( (*( current_position)) > 19u ) {
 					if ( 24u <= (*( current_position)) && (*( current_position)) <= 27u )
-						goto tr427;
+						goto st1;
 				} else if ( (*( current_position)) >= 16u )
-					goto tr427;
+					goto st1;
 			} else
-				goto tr427;
+				goto st1;
 		} else if ( (*( current_position)) > 35u ) {
 			if ( (*( current_position)) < 56u ) {
 				if ( (*( current_position)) > 43u ) {
 					if ( 48u <= (*( current_position)) && (*( current_position)) <= 51u )
-						goto tr427;
+						goto st1;
 				} else if ( (*( current_position)) >= 40u )
-					goto tr427;
+					goto st1;
 			} else if ( (*( current_position)) > 59u ) {
 				if ( (*( current_position)) > 95u ) {
 					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-						goto tr438;
+						goto st56;
 				} else if ( (*( current_position)) >= 64u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr427;
+				goto st1;
 		} else
-			goto tr427;
+			goto st1;
 	} else if ( (*( current_position)) > 139u ) {
 		if ( (*( current_position)) < 176u ) {
 			if ( (*( current_position)) < 160u ) {
 				if ( (*( current_position)) > 153u ) {
 					if ( 158u <= (*( current_position)) && (*( current_position)) <= 159u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 144u )
-					goto tr433;
+					goto tr0;
 			} else if ( (*( current_position)) > 163u ) {
 				if ( (*( current_position)) > 171u ) {
 					if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 164u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr443;
+				goto st3;
 		} else if ( (*( current_position)) > 183u ) {
 			if ( (*( current_position)) < 208u ) {
 				if ( (*( current_position)) > 191u ) {
 					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
-						goto tr444;
+						goto st96;
 				} else if ( (*( current_position)) >= 184u )
-					goto tr429;
+					goto st11;
 			} else if ( (*( current_position)) > 211u ) {
 				if ( (*( current_position)) > 249u ) {
 					if ( 252u <= (*( current_position)) && (*( current_position)) <= 253u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 244u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr449;
+				goto st98;
 		} else
-			goto tr428;
+			goto st10;
 	} else
-		goto tr427;
+		goto st1;
 	goto tr16;
-tr471:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st239;
 st239:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof239;
@@ -8087,6 +7935,8 @@ tr424:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st252;
@@ -8095,134 +7945,129 @@ st252:
 		goto _test_eof252;
 case 252:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr428;
-		case 5u: goto tr429;
-		case 12u: goto tr428;
-		case 13u: goto tr429;
-		case 15u: goto tr430;
-		case 20u: goto tr428;
-		case 21u: goto tr429;
-		case 28u: goto tr428;
-		case 29u: goto tr429;
-		case 36u: goto tr428;
-		case 37u: goto tr429;
-		case 44u: goto tr428;
-		case 45u: goto tr429;
-		case 46u: goto tr431;
-		case 52u: goto tr428;
-		case 53u: goto tr429;
-		case 60u: goto tr428;
-		case 61u: goto tr429;
-		case 62u: goto tr432;
-		case 101u: goto tr434;
-		case 102u: goto tr435;
-		case 104u: goto tr429;
-		case 105u: goto tr436;
-		case 106u: goto tr428;
-		case 107u: goto tr437;
-		case 128u: goto tr437;
-		case 129u: goto tr436;
-		case 131u: goto tr439;
-		case 141u: goto tr440;
-		case 143u: goto tr441;
-		case 155u: goto tr442;
-		case 168u: goto tr428;
-		case 169u: goto tr429;
-		case 196u: goto tr445;
-		case 197u: goto tr446;
-		case 198u: goto tr447;
-		case 199u: goto tr448;
-		case 201u: goto tr433;
-		case 216u: goto tr450;
-		case 217u: goto tr451;
-		case 218u: goto tr452;
-		case 219u: goto tr453;
-		case 220u: goto tr454;
-		case 221u: goto tr455;
-		case 222u: goto tr456;
-		case 223u: goto tr457;
-		case 232u: goto tr458;
-		case 233u: goto tr459;
-		case 235u: goto tr438;
-		case 240u: goto tr460;
-		case 242u: goto tr461;
-		case 243u: goto tr462;
-		case 246u: goto tr463;
-		case 247u: goto tr464;
-		case 254u: goto tr465;
-		case 255u: goto tr472;
+		case 4u: goto st10;
+		case 5u: goto st11;
+		case 12u: goto st10;
+		case 13u: goto st11;
+		case 15u: goto st15;
+		case 20u: goto st10;
+		case 21u: goto st11;
+		case 28u: goto st10;
+		case 29u: goto st11;
+		case 36u: goto st10;
+		case 37u: goto st11;
+		case 44u: goto st10;
+		case 45u: goto st11;
+		case 46u: goto tr428;
+		case 52u: goto st10;
+		case 53u: goto st11;
+		case 60u: goto st10;
+		case 61u: goto st11;
+		case 62u: goto tr429;
+		case 101u: goto st57;
+		case 102u: goto tr431;
+		case 104u: goto st11;
+		case 105u: goto st110;
+		case 106u: goto st10;
+		case 107u: goto st34;
+		case 128u: goto st34;
+		case 129u: goto st110;
+		case 131u: goto st119;
+		case 141u: goto st29;
+		case 143u: goto st121;
+		case 155u: goto tr377;
+		case 168u: goto st10;
+		case 169u: goto st11;
+		case 196u: goto st149;
+		case 197u: goto st199;
+		case 198u: goto st204;
+		case 199u: goto st205;
+		case 201u: goto tr0;
+		case 216u: goto st206;
+		case 217u: goto st207;
+		case 218u: goto st208;
+		case 219u: goto st209;
+		case 220u: goto st210;
+		case 221u: goto st211;
+		case 222u: goto st212;
+		case 223u: goto st213;
+		case 232u: goto st214;
+		case 233u: goto st46;
+		case 235u: goto st56;
+		case 240u: goto tr448;
+		case 242u: goto tr449;
+		case 243u: goto tr450;
+		case 246u: goto st228;
+		case 247u: goto st229;
+		case 254u: goto st230;
+		case 255u: goto st241;
 	}
 	if ( (*( current_position)) < 132u ) {
 		if ( (*( current_position)) < 32u ) {
 			if ( (*( current_position)) < 8u ) {
 				if ( (*( current_position)) <= 3u )
-					goto tr427;
+					goto st1;
 			} else if ( (*( current_position)) > 11u ) {
 				if ( (*( current_position)) > 19u ) {
 					if ( 24u <= (*( current_position)) && (*( current_position)) <= 27u )
-						goto tr427;
+						goto st1;
 				} else if ( (*( current_position)) >= 16u )
-					goto tr427;
+					goto st1;
 			} else
-				goto tr427;
+				goto st1;
 		} else if ( (*( current_position)) > 35u ) {
 			if ( (*( current_position)) < 56u ) {
 				if ( (*( current_position)) > 43u ) {
 					if ( 48u <= (*( current_position)) && (*( current_position)) <= 51u )
-						goto tr427;
+						goto st1;
 				} else if ( (*( current_position)) >= 40u )
-					goto tr427;
+					goto st1;
 			} else if ( (*( current_position)) > 59u ) {
 				if ( (*( current_position)) > 95u ) {
 					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-						goto tr438;
+						goto st56;
 				} else if ( (*( current_position)) >= 64u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr427;
+				goto st1;
 		} else
-			goto tr427;
+			goto st1;
 	} else if ( (*( current_position)) > 139u ) {
 		if ( (*( current_position)) < 176u ) {
 			if ( (*( current_position)) < 160u ) {
 				if ( (*( current_position)) > 153u ) {
 					if ( 158u <= (*( current_position)) && (*( current_position)) <= 159u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 144u )
-					goto tr433;
+					goto tr0;
 			} else if ( (*( current_position)) > 163u ) {
 				if ( (*( current_position)) > 171u ) {
 					if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 164u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr443;
+				goto st3;
 		} else if ( (*( current_position)) > 183u ) {
 			if ( (*( current_position)) < 208u ) {
 				if ( (*( current_position)) > 191u ) {
 					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
-						goto tr444;
+						goto st96;
 				} else if ( (*( current_position)) >= 184u )
-					goto tr429;
+					goto st11;
 			} else if ( (*( current_position)) > 211u ) {
 				if ( (*( current_position)) > 249u ) {
 					if ( 252u <= (*( current_position)) && (*( current_position)) <= 253u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 244u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr449;
+				goto st98;
 		} else
-			goto tr428;
+			goto st10;
 	} else
-		goto tr427;
+		goto st1;
 	goto tr16;
-tr472:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st241;
 st241:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof241;
@@ -8289,6 +8134,8 @@ tr425:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st253;
@@ -8297,134 +8144,129 @@ st253:
 		goto _test_eof253;
 case 253:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr428;
-		case 5u: goto tr429;
-		case 12u: goto tr428;
-		case 13u: goto tr429;
-		case 15u: goto tr430;
-		case 20u: goto tr428;
-		case 21u: goto tr429;
-		case 28u: goto tr428;
-		case 29u: goto tr429;
-		case 36u: goto tr428;
-		case 37u: goto tr429;
-		case 44u: goto tr428;
-		case 45u: goto tr429;
-		case 46u: goto tr431;
-		case 52u: goto tr428;
-		case 53u: goto tr429;
-		case 60u: goto tr428;
-		case 61u: goto tr429;
-		case 62u: goto tr432;
-		case 101u: goto tr434;
-		case 102u: goto tr435;
-		case 104u: goto tr429;
-		case 105u: goto tr436;
-		case 106u: goto tr428;
-		case 107u: goto tr437;
-		case 128u: goto tr437;
-		case 129u: goto tr436;
-		case 131u: goto tr439;
-		case 141u: goto tr440;
-		case 143u: goto tr441;
-		case 155u: goto tr442;
-		case 168u: goto tr428;
-		case 169u: goto tr429;
-		case 196u: goto tr445;
-		case 197u: goto tr446;
-		case 198u: goto tr447;
-		case 199u: goto tr448;
-		case 201u: goto tr433;
-		case 216u: goto tr450;
-		case 217u: goto tr451;
-		case 218u: goto tr452;
-		case 219u: goto tr453;
-		case 220u: goto tr454;
-		case 221u: goto tr455;
-		case 222u: goto tr456;
-		case 223u: goto tr457;
-		case 232u: goto tr458;
-		case 233u: goto tr459;
-		case 235u: goto tr438;
-		case 240u: goto tr460;
-		case 242u: goto tr461;
-		case 243u: goto tr462;
-		case 246u: goto tr463;
-		case 247u: goto tr464;
-		case 254u: goto tr465;
-		case 255u: goto tr473;
+		case 4u: goto st10;
+		case 5u: goto st11;
+		case 12u: goto st10;
+		case 13u: goto st11;
+		case 15u: goto st15;
+		case 20u: goto st10;
+		case 21u: goto st11;
+		case 28u: goto st10;
+		case 29u: goto st11;
+		case 36u: goto st10;
+		case 37u: goto st11;
+		case 44u: goto st10;
+		case 45u: goto st11;
+		case 46u: goto tr428;
+		case 52u: goto st10;
+		case 53u: goto st11;
+		case 60u: goto st10;
+		case 61u: goto st11;
+		case 62u: goto tr429;
+		case 101u: goto st57;
+		case 102u: goto tr431;
+		case 104u: goto st11;
+		case 105u: goto st110;
+		case 106u: goto st10;
+		case 107u: goto st34;
+		case 128u: goto st34;
+		case 129u: goto st110;
+		case 131u: goto st119;
+		case 141u: goto st29;
+		case 143u: goto st121;
+		case 155u: goto tr377;
+		case 168u: goto st10;
+		case 169u: goto st11;
+		case 196u: goto st149;
+		case 197u: goto st199;
+		case 198u: goto st204;
+		case 199u: goto st205;
+		case 201u: goto tr0;
+		case 216u: goto st206;
+		case 217u: goto st207;
+		case 218u: goto st208;
+		case 219u: goto st209;
+		case 220u: goto st210;
+		case 221u: goto st211;
+		case 222u: goto st212;
+		case 223u: goto st213;
+		case 232u: goto st214;
+		case 233u: goto st46;
+		case 235u: goto st56;
+		case 240u: goto tr448;
+		case 242u: goto tr449;
+		case 243u: goto tr450;
+		case 246u: goto st228;
+		case 247u: goto st229;
+		case 254u: goto st230;
+		case 255u: goto st243;
 	}
 	if ( (*( current_position)) < 132u ) {
 		if ( (*( current_position)) < 32u ) {
 			if ( (*( current_position)) < 8u ) {
 				if ( (*( current_position)) <= 3u )
-					goto tr427;
+					goto st1;
 			} else if ( (*( current_position)) > 11u ) {
 				if ( (*( current_position)) > 19u ) {
 					if ( 24u <= (*( current_position)) && (*( current_position)) <= 27u )
-						goto tr427;
+						goto st1;
 				} else if ( (*( current_position)) >= 16u )
-					goto tr427;
+					goto st1;
 			} else
-				goto tr427;
+				goto st1;
 		} else if ( (*( current_position)) > 35u ) {
 			if ( (*( current_position)) < 56u ) {
 				if ( (*( current_position)) > 43u ) {
 					if ( 48u <= (*( current_position)) && (*( current_position)) <= 51u )
-						goto tr427;
+						goto st1;
 				} else if ( (*( current_position)) >= 40u )
-					goto tr427;
+					goto st1;
 			} else if ( (*( current_position)) > 59u ) {
 				if ( (*( current_position)) > 95u ) {
 					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-						goto tr438;
+						goto st56;
 				} else if ( (*( current_position)) >= 64u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr427;
+				goto st1;
 		} else
-			goto tr427;
+			goto st1;
 	} else if ( (*( current_position)) > 139u ) {
 		if ( (*( current_position)) < 176u ) {
 			if ( (*( current_position)) < 160u ) {
 				if ( (*( current_position)) > 153u ) {
 					if ( 158u <= (*( current_position)) && (*( current_position)) <= 159u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 144u )
-					goto tr433;
+					goto tr0;
 			} else if ( (*( current_position)) > 163u ) {
 				if ( (*( current_position)) > 171u ) {
 					if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 164u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr443;
+				goto st3;
 		} else if ( (*( current_position)) > 183u ) {
 			if ( (*( current_position)) < 208u ) {
 				if ( (*( current_position)) > 191u ) {
 					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
-						goto tr444;
+						goto st96;
 				} else if ( (*( current_position)) >= 184u )
-					goto tr429;
+					goto st11;
 			} else if ( (*( current_position)) > 211u ) {
 				if ( (*( current_position)) > 249u ) {
 					if ( 252u <= (*( current_position)) && (*( current_position)) <= 253u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 244u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr449;
+				goto st98;
 		} else
-			goto tr428;
+			goto st10;
 	} else
-		goto tr427;
+		goto st1;
 	goto tr16;
-tr473:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st243;
 st243:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof243;
@@ -8491,6 +8333,8 @@ tr426:
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
        instruction_info_collected = 0;
      }
 	goto st254;
@@ -8499,134 +8343,129 @@ st254:
 		goto _test_eof254;
 case 254:
 	switch( (*( current_position)) ) {
-		case 4u: goto tr428;
-		case 5u: goto tr429;
-		case 12u: goto tr428;
-		case 13u: goto tr429;
-		case 15u: goto tr430;
-		case 20u: goto tr428;
-		case 21u: goto tr429;
-		case 28u: goto tr428;
-		case 29u: goto tr429;
-		case 36u: goto tr428;
-		case 37u: goto tr429;
-		case 44u: goto tr428;
-		case 45u: goto tr429;
-		case 46u: goto tr431;
-		case 52u: goto tr428;
-		case 53u: goto tr429;
-		case 60u: goto tr428;
-		case 61u: goto tr429;
-		case 62u: goto tr432;
-		case 101u: goto tr434;
-		case 102u: goto tr435;
-		case 104u: goto tr429;
-		case 105u: goto tr436;
-		case 106u: goto tr428;
-		case 107u: goto tr437;
-		case 128u: goto tr437;
-		case 129u: goto tr436;
-		case 131u: goto tr439;
-		case 141u: goto tr440;
-		case 143u: goto tr441;
-		case 155u: goto tr442;
-		case 168u: goto tr428;
-		case 169u: goto tr429;
-		case 196u: goto tr445;
-		case 197u: goto tr446;
-		case 198u: goto tr447;
-		case 199u: goto tr448;
-		case 201u: goto tr433;
-		case 216u: goto tr450;
-		case 217u: goto tr451;
-		case 218u: goto tr452;
-		case 219u: goto tr453;
-		case 220u: goto tr454;
-		case 221u: goto tr455;
-		case 222u: goto tr456;
-		case 223u: goto tr457;
-		case 232u: goto tr458;
-		case 233u: goto tr459;
-		case 235u: goto tr438;
-		case 240u: goto tr460;
-		case 242u: goto tr461;
-		case 243u: goto tr462;
-		case 246u: goto tr463;
-		case 247u: goto tr464;
-		case 254u: goto tr465;
-		case 255u: goto tr474;
+		case 4u: goto st10;
+		case 5u: goto st11;
+		case 12u: goto st10;
+		case 13u: goto st11;
+		case 15u: goto st15;
+		case 20u: goto st10;
+		case 21u: goto st11;
+		case 28u: goto st10;
+		case 29u: goto st11;
+		case 36u: goto st10;
+		case 37u: goto st11;
+		case 44u: goto st10;
+		case 45u: goto st11;
+		case 46u: goto tr428;
+		case 52u: goto st10;
+		case 53u: goto st11;
+		case 60u: goto st10;
+		case 61u: goto st11;
+		case 62u: goto tr429;
+		case 101u: goto st57;
+		case 102u: goto tr431;
+		case 104u: goto st11;
+		case 105u: goto st110;
+		case 106u: goto st10;
+		case 107u: goto st34;
+		case 128u: goto st34;
+		case 129u: goto st110;
+		case 131u: goto st119;
+		case 141u: goto st29;
+		case 143u: goto st121;
+		case 155u: goto tr377;
+		case 168u: goto st10;
+		case 169u: goto st11;
+		case 196u: goto st149;
+		case 197u: goto st199;
+		case 198u: goto st204;
+		case 199u: goto st205;
+		case 201u: goto tr0;
+		case 216u: goto st206;
+		case 217u: goto st207;
+		case 218u: goto st208;
+		case 219u: goto st209;
+		case 220u: goto st210;
+		case 221u: goto st211;
+		case 222u: goto st212;
+		case 223u: goto st213;
+		case 232u: goto st214;
+		case 233u: goto st46;
+		case 235u: goto st56;
+		case 240u: goto tr448;
+		case 242u: goto tr449;
+		case 243u: goto tr450;
+		case 246u: goto st228;
+		case 247u: goto st229;
+		case 254u: goto st230;
+		case 255u: goto st245;
 	}
 	if ( (*( current_position)) < 132u ) {
 		if ( (*( current_position)) < 32u ) {
 			if ( (*( current_position)) < 8u ) {
 				if ( (*( current_position)) <= 3u )
-					goto tr427;
+					goto st1;
 			} else if ( (*( current_position)) > 11u ) {
 				if ( (*( current_position)) > 19u ) {
 					if ( 24u <= (*( current_position)) && (*( current_position)) <= 27u )
-						goto tr427;
+						goto st1;
 				} else if ( (*( current_position)) >= 16u )
-					goto tr427;
+					goto st1;
 			} else
-				goto tr427;
+				goto st1;
 		} else if ( (*( current_position)) > 35u ) {
 			if ( (*( current_position)) < 56u ) {
 				if ( (*( current_position)) > 43u ) {
 					if ( 48u <= (*( current_position)) && (*( current_position)) <= 51u )
-						goto tr427;
+						goto st1;
 				} else if ( (*( current_position)) >= 40u )
-					goto tr427;
+					goto st1;
 			} else if ( (*( current_position)) > 59u ) {
 				if ( (*( current_position)) > 95u ) {
 					if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
-						goto tr438;
+						goto st56;
 				} else if ( (*( current_position)) >= 64u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr427;
+				goto st1;
 		} else
-			goto tr427;
+			goto st1;
 	} else if ( (*( current_position)) > 139u ) {
 		if ( (*( current_position)) < 176u ) {
 			if ( (*( current_position)) < 160u ) {
 				if ( (*( current_position)) > 153u ) {
 					if ( 158u <= (*( current_position)) && (*( current_position)) <= 159u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 144u )
-					goto tr433;
+					goto tr0;
 			} else if ( (*( current_position)) > 163u ) {
 				if ( (*( current_position)) > 171u ) {
 					if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 164u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr443;
+				goto st3;
 		} else if ( (*( current_position)) > 183u ) {
 			if ( (*( current_position)) < 208u ) {
 				if ( (*( current_position)) > 191u ) {
 					if ( 192u <= (*( current_position)) && (*( current_position)) <= 193u )
-						goto tr444;
+						goto st96;
 				} else if ( (*( current_position)) >= 184u )
-					goto tr429;
+					goto st11;
 			} else if ( (*( current_position)) > 211u ) {
 				if ( (*( current_position)) > 249u ) {
 					if ( 252u <= (*( current_position)) && (*( current_position)) <= 253u )
-						goto tr433;
+						goto tr0;
 				} else if ( (*( current_position)) >= 244u )
-					goto tr433;
+					goto tr0;
 			} else
-				goto tr449;
+				goto st98;
 		} else
-			goto tr428;
+			goto st10;
 	} else
-		goto tr427;
+		goto st1;
 	goto tr16;
-tr474:
-	{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
-	goto st245;
 st245:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof245;
@@ -9194,10 +9033,8 @@ case 245:
                                       user_callback, callback_data);
 
   /* We only use malloc for a large code sequences  */
-  if (size > sizeof valid_targets_small) {
-    free(jump_dests);
-    free(valid_targets);
-  }
+  if (jump_dests != jump_dests_small) free(jump_dests);
+  if (valid_targets != valid_targets_small) free(valid_targets);
   if (!result) errno = EINVAL;
   return result;
 }

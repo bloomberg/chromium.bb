@@ -435,9 +435,6 @@
 
 
   main := ((call_alignment | normal_instruction | special_instruction)
-     >{
-       BitmapSetBit(valid_targets, current_position - data);
-     }
      @{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
@@ -451,6 +448,9 @@
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
+       /* Mark this position as a valid target for jump.  */
+       BitmapSetBit(valid_targets, current_position + 1 - data);
+       /* Clear variables.  */
        instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
@@ -472,8 +472,8 @@ Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
                         const NaClCPUFeaturesX86 *cpu_features,
                         ValidationCallbackFunc user_callback,
                         void *callback_data) {
-  bitmap_word valid_targets_small;
-  bitmap_word jump_dests_small;
+  bitmap_word valid_targets_small[2];
+  bitmap_word jump_dests_small[2];
   bitmap_word *valid_targets;
   bitmap_word *jump_dests;
   const uint8_t *current_position;
@@ -483,15 +483,23 @@ Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
   CHECK(sizeof valid_targets_small == sizeof jump_dests_small);
   CHECK(size % kBundleSize == 0);
 
-  /* For a very small sequence (one bundle) malloc is too expensive.  */
-  if (size <= sizeof valid_targets_small) {
-    valid_targets_small = 0;
-    valid_targets = &valid_targets_small;
-    jump_dests_small = 0;
-    jump_dests = &jump_dests_small;
+  /*
+   * For a very small sequences (one bundle) malloc is too expensive.
+   *
+   * Note1: we allocate one extra bit, because we set valid jump target bits
+   * _after_ instructions, so there will be one at the end of the chunk.
+   *
+   * Note2: we don't ever mark first bit as a valid jump target but this is
+   * not a problem because any aligned address is valid jump target.
+   */
+  if ((size + 1) <= (sizeof valid_targets_small * 8)) {
+    memset(valid_targets_small, 0, sizeof valid_targets_small);
+    valid_targets = valid_targets_small;
+    memset(jump_dests_small, 0, sizeof jump_dests_small);
+    jump_dests = jump_dests_small;
   } else {
-    valid_targets = BitmapAllocate(size);
-    jump_dests = BitmapAllocate(size);
+    valid_targets = BitmapAllocate(size + 1);
+    jump_dests = BitmapAllocate(size + 1);
     if (!valid_targets || !jump_dests) {
       free(jump_dests);
       free(valid_targets);
@@ -543,10 +551,8 @@ Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
                                       user_callback, callback_data);
 
   /* We only use malloc for a large code sequences  */
-  if (size > sizeof valid_targets_small) {
-    free(jump_dests);
-    free(valid_targets);
-  }
+  if (jump_dests != jump_dests_small) free(jump_dests);
+  if (valid_targets != valid_targets_small) free(valid_targets);
   if (!result) errno = EINVAL;
   return result;
 }
