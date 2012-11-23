@@ -642,24 +642,26 @@ scoped_ptr<PolicyService>
     BrowserPolicyConnector::CreatePolicyServiceWithProviders(
         ConfigurationPolicyProvider* user_cloud_policy_provider,
         ConfigurationPolicyProvider* managed_mode_policy_provider) {
-  // |providers| in decreasing order of priority.
   PolicyServiceImpl::Providers providers;
-  if (g_testing_provider)
+  if (g_testing_provider) {
     providers.push_back(g_testing_provider);
-  if (platform_provider_)
-    providers.push_back(platform_provider_.get());
-  if (cloud_provider_)
-    providers.push_back(cloud_provider_.get());
+  } else {
+    // |providers| in decreasing order of priority.
+    if (platform_provider_)
+      providers.push_back(platform_provider_.get());
+    if (cloud_provider_)
+      providers.push_back(cloud_provider_.get());
 
 #if defined(OS_CHROMEOS)
-  if (device_cloud_policy_manager_.get())
-    providers.push_back(device_cloud_policy_manager_.get());
+    if (device_cloud_policy_manager_.get())
+      providers.push_back(device_cloud_policy_manager_.get());
 #endif
 
-  if (user_cloud_policy_provider)
-    providers.push_back(user_cloud_policy_provider);
-  if (managed_mode_policy_provider)
-    providers.push_back(managed_mode_policy_provider);
+    if (user_cloud_policy_provider)
+      providers.push_back(user_cloud_policy_provider);
+    if (managed_mode_policy_provider)
+      providers.push_back(managed_mode_policy_provider);
+  }
 
   return scoped_ptr<PolicyService>(new PolicyServiceImpl(providers));
 }
