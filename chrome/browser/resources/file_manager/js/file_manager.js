@@ -611,6 +611,9 @@ DialogType.isModal = function(type) {
     CommandUtil.registerCommand(doc, 'open-with',
         Commands.openWithCommand, this);
 
+    CommandUtil.registerCommand(doc, 'toggle-pinned',
+        Commands.togglePinnedCommand, this);
+
     CommandUtil.registerCommand(doc, 'zip-selection',
         Commands.zipSelectionCommand, this);
 
@@ -1905,6 +1908,7 @@ DialogType.isModal = function(type) {
     checkbox.addEventListener('click',
                               this.onPinClick_.bind(this, checkbox, entry));
     checkbox.style.display = 'none';
+    checkbox.entry = entry;
     div.appendChild(checkbox);
 
     if (this.isOnGData()) {
@@ -2304,25 +2308,9 @@ DialogType.isModal = function(type) {
   };
 
   FileManager.prototype.onPinClick_ = function(checkbox, entry, event) {
-    // TODO(dgozman): revisit this method when gdata properties updated event
-    // will be available.
-    var self = this;
-    var pin = checkbox.checked;
-    function callback(props) {
-      var fileProps = props[0];
-      if (fileProps.errorCode && pin) {
-        self.metadataCache_.get(entry, 'filesystem', function(filesystem) {
-          self.alert.showHtml(str('GDATA_OUT_OF_SPACE_HEADER'),
-              strf('GDATA_OUT_OF_SPACE_MESSAGE',
-                  unescape(entry.name),
-                  util.bytesToSi(filesystem.size)));
-        });
-      }
-      // We don't have update events yet, so clear the cached data.
-      self.metadataCache_.clear(entry, 'gdata');
-      checkbox.checked = fileProps.isPinned;
-    }
-    chrome.fileBrowserPrivate.pinGDataFile([entry.toURL()], pin, callback);
+    var command = this.document_.querySelector('command#toggle-pinned');
+    command.canExecuteChange(checkbox);
+    command.execute(checkbox);
     event.preventDefault();
   };
 

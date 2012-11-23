@@ -132,6 +132,10 @@
           i18n-values="label:GDATA_RELOAD"></command>
       <command id="gdata-go-to-drive"
           i18n-values="label:GDATA_VISIT_DRIVE_GOOGLE_COM"></command>
+
+      <command id="toggle-pinned"
+          i18n-values="label:OFFLINE_COLUMN_LABEL"></command>
+
       <command id="open-with"
           i18n-values="label:OPEN_WITH_BUTTON_LABEL"></command>
       <command id="zip-selection"
@@ -144,6 +148,8 @@
       <menuitem command="#open-with"
           visibleif="full-page" hidden></menuitem>
       <hr id="default-action-separator" visibleif="full-page" hidden>
+      <menuitem command="#toggle-pinned"></menuitem>
+      <hr command="#toggle-pinned">
       <menuitem command="#cut" visibleif="full-page"></menuitem>
       <menuitem command="#copy" visibleif="full-page"></menuitem>
       <menuitem command="#paste" visibleif="full-page"></menuitem>

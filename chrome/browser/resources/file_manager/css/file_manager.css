@@ -1265,6 +1265,11 @@ menu.file-context-menu {
   z-index: 4;
 }
 
+menu.chrome-menu > hr {
+  color: transparent;
+  font-size: 0;
+}
+
 input.common.pin[type='checkbox']:checked::after {
   background-image: -webkit-image-set(
     url('../images/files/ui/pin.png') 1x,
