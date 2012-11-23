@@ -182,6 +182,7 @@ body.loaded {
 .dialog-sidebar {
   -webkit-box-flex: 0;
   background-color: #e6e6e6;
+  display: -webkit-box;
   overflow: hidden;
   position: relative;
   width: 168px;
@@ -201,7 +202,10 @@ div.sidebar-splitter {
 
 /* Roots list at the left. */
 #roots-list {
+  -webkit-box-flex: 1;
+  -webkit-box-orient: vertical;
   border-right: 1px solid rgb(170, 170, 170);
+  display: -webkit-box;
 }
 
 #roots-list > * {
@@ -546,8 +550,20 @@ button#detail-view:not([disabled]) {
 
 #list-container {
   -webkit-box-flex: 1;
+  -webkit-box-orient: vertical;
   display: -webkit-box;
   position: relative;
+}
+
+#detail-table {
+  -webkit-box-flex: 1;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+}
+
+#detail-table > list,
+.thumbnail-grid {
+  -webkit-box-flex: 1;
 }
 
 .spinner {

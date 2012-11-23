@@ -1233,11 +1233,6 @@ DialogType.isModal = function(type) {
    * Resize details and thumb views to fit the new window size.
    */
   FileManager.prototype.onResize_ = function() {
-    this.table_.style.height = this.grid_.style.height =
-      this.grid_.parentNode.clientHeight + 'px';
-    this.table_.list_.style.height = (this.table_.clientHeight - 1 -
-                                      this.table_.header_.clientHeight) + 'px';
-
     if (this.listType_ == FileManager.ListType.THUMBNAIL) {
       var g = this.grid_;
       g.startBatchUpdates();
@@ -1250,8 +1245,6 @@ DialogType.isModal = function(type) {
       this.table_.redraw();
     }
 
-    this.rootsList_.style.height =
-        this.rootsList_.parentNode.clientHeight + 'px';
     this.rootsList_.redraw();
     this.breadcrumbs_.truncate();
     this.searchBreadcrumbs_.truncate();
