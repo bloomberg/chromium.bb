@@ -2770,6 +2770,13 @@
           'sources': [
             'browser_tests.isolate',
           ],
+          'conditions': [
+            ['disable_nacl!=1 and OS=="win"', {
+              'dependencies': [
+                'chrome_nacl_win64',
+              ],
+            }],
+          ],
         },
         {
           'target_name': 'sync_integration_tests_run',
