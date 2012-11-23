@@ -118,7 +118,7 @@ REM Branch to handle copying via robocopy (fast) or xcopy (slow).
 :_copyfiles
 robocopy /? 1> nul 2> nul
 IF NOT "%ERRORLEVEL%"=="9009" (
-robocopy "%FROM%" "%TO%" %TOCOPY% /J /MT /XX
+robocopy "%FROM%" "%TO%" %TOCOPY% /MT /XX
 ) ELSE (
 IF NOT EXIST "%TO%" mkdir "%TO%"
 call :_xcopy_hack %TOCOPY%
