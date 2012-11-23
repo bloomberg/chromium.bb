@@ -244,15 +244,17 @@ int WebRtcAudioRenderer::Render(media::AudioBus* audio_bus,
                                 int audio_delay_milliseconds) {
   {
     base::AutoLock auto_lock(lock_);
-    // Return 0 frames to play out zero if it is not in PLAYING state.
-    if (state_ != PLAYING)
+    if (!source_)
       return 0;
-
     // We need to keep render data for the |source_| reglardless of |state_|,
     // otherwise the data will be buffered up inside |source_|.
     source_->RenderData(reinterpret_cast<uint8*>(buffer_.get()),
                         audio_bus->channels(), audio_bus->frames(),
                         audio_delay_milliseconds);
+
+    // Return 0 frames to play out silence if |state_| is not PLAYING.
+    if (state_ != PLAYING)
+      return 0;
   }
 
   // Deinterleave each channel and convert to 32-bit floating-point
