@@ -1477,6 +1477,14 @@
     ]
   },
 
+  "ShowLogoutButtonInTray": {
+    "os": ["chromeos"],
+    "test_policy": { "ShowLogoutButtonInTray": true },
+    "pref_mappings": [
+      { "pref": "show_logout_button_in_tray" }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

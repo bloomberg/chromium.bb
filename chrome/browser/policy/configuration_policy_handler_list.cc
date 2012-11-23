@@ -329,6 +329,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAudioCaptureAllowed,
     prefs::kAudioCaptureAllowed,
     Value::TYPE_BOOLEAN },
+  { key::kShowLogoutButtonInTray,
+    prefs::kShowLogoutButtonInTray,
+    Value::TYPE_BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
