@@ -24,13 +24,10 @@ struct Segment {
   const uint8_t *data;
   uint32_t size;
   uint32_t vaddr;
+  int bitness;  // 32 or 64
 };
 
 
-// Explicit instantiations are provided for <Elf32_Ehdr, Elf32_Phdr> and
-// <Elf64_Ehdr, Elf64_Phdr>.
-template<typename ElfEhdrType, typename ElfPhdrType>
-Segment FindTextSegment(const std::vector<uint8_t> &data);
-
+Segment GetElfTextSegment(const std::vector<uint8_t> &image);
 
 #endif

@@ -39,7 +39,8 @@ void ReadImage(const char *filename, Image *image) {
 
 template<typename ElfEhdrType, typename ElfPhdrType>
 Segment FindTextSegment(const Image &image) {
-  Segment segment = {NULL, 0, 0};  // only to suppress 'uninitialized' warning
+  // Initialization only to suppress 'uninitialized' warning.
+  Segment segment = {NULL, 0, 0, 0};
   bool found = false;
 
   const ElfEhdrType &header = *reinterpret_cast<const ElfEhdrType *>(&image[0]);
@@ -98,7 +99,48 @@ Segment FindTextSegment(const Image &image) {
 }
 
 
-template Segment FindTextSegment<Elf32_Ehdr, Elf32_Phdr>(const Image &image);
+// Given valid elf image, returns subarchitecture (32 or 64).
+static int GetElfSubarch(const std::vector<uint8_t> &image) {
+  // e_machine field is the same for Elf32_Ehdr and Elf64_Ehdr.
+  const Elf32_Ehdr &header = *reinterpret_cast<const Elf32_Ehdr *>(&image[0]);
+  switch (header.e_machine) {
+    case EM_386:
+      return 32;
+    case EM_X86_64:
+      return 64;
+    default:
+      printf("Unsupported e_machine %"NACL_PRIu16".\n", header.e_machine);
+      exit(1);
+  }
+}
 
 
-template Segment FindTextSegment<Elf64_Ehdr, Elf64_Phdr>(const Image &image);
+Segment GetElfTextSegment(const std::vector<uint8_t> &image) {
+  // We don't know in advance whether it's elf32 or elf64, but we are only
+  // looking at few first fields of the header, and they are the same for
+  // Elf32_Ehdr and Elf64_Ehdr.
+  const Elf32_Ehdr &header = *reinterpret_cast<const Elf32_Ehdr *>(&image[0]);
+  if (image.size() < sizeof(header) ||
+      memcmp(header.e_ident, ELFMAG, SELFMAG) != 0) {
+    printf("Not an ELF file.\n");
+    exit(1);
+  }
+
+  Segment segment;
+  switch (header.e_ident[EI_CLASS]) {
+    case ELFCLASS32:
+      segment = FindTextSegment<Elf32_Ehdr, Elf32_Phdr>(image);
+      break;
+    case ELFCLASS64:
+      segment = FindTextSegment<Elf64_Ehdr, Elf64_Phdr>(image);
+      break;
+    default:
+      printf("Invalid ELF class %d.\n", header.e_ident[EI_CLASS]);
+      exit(1);
+  }
+
+  // NaCl allows to have 64-bit code in elf32 file, so we have to determine
+  // bitness of code independently.
+  segment.bitness = GetElfSubarch(image);
+  return segment;
+}

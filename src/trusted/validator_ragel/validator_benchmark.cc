@@ -45,25 +45,7 @@ int main(int argc, char *argv[]) {
   Image image;
   ReadImage(input_file, &image);
 
-  const Elf32_Ehdr &header = *reinterpret_cast<const Elf32_Ehdr *>(&image[0]);
-  if (image.size() < sizeof(header) ||
-      memcmp(header.e_ident, ELFMAG, SELFMAG) != 0) {
-    printf("Not an ELF file.\n");
-    exit(1);
-  }
-
-  Segment segment;
-  switch (header.e_ident[EI_CLASS]) {
-    case ELFCLASS32:
-      segment = FindTextSegment<Elf32_Ehdr, Elf32_Phdr>(image);
-      break;
-    case ELFCLASS64:
-      segment = FindTextSegment<Elf64_Ehdr, Elf64_Phdr>(image);
-      break;
-    default:
-      printf("Invalid ELF class %d.\n", header.e_ident[EI_CLASS]);
-      exit(1);
-  }
+  Segment segment = GetElfTextSegment(image);
 
   if (segment.size % kBundleSize != 0) {
     printf("Text segment size (0x%"NACL_PRIx32") is not "
@@ -78,22 +60,21 @@ int main(int argc, char *argv[]) {
 
   clock_t start = clock();
   for (int i = 0; i < repetitions; i++) {
-    switch (header.e_machine) {
-      case EM_386:
+    switch (segment.bitness) {
+      case 32:
         result = ValidateChunkIA32(
             segment.data, segment.size,
             0, cpu_features,
             ProcessError, NULL);
         break;
-      case EM_X86_64:
+      case 64:
         result = ValidateChunkAMD64(
             segment.data, segment.size,
             0, cpu_features,
             ProcessError, NULL);
         break;
       default:
-        printf("Unsupported e_machine %"NACL_PRIu16".\n", header.e_machine);
-        exit(1);
+        CHECK(false);
     }
   }
 
