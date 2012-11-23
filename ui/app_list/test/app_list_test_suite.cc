@@ -7,6 +7,7 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/compositor_setup.h"
+#include "ui/compositor/test/compositor_test_support.h"
 
 namespace app_list {
 namespace test {
@@ -24,10 +25,12 @@ void AppListTestSuite::Initialize() {
   // output, it'll pass regardless of the system language.
   ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 
+  ui::CompositorTestSupport::Initialize();
   ui::SetupTestCompositor();
 }
 
 void AppListTestSuite::Shutdown() {
+  ui::CompositorTestSupport::Terminate();
   ui::ResourceBundle::CleanupSharedInstance();
 
   base::TestSuite::Shutdown();

@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/test/compositor_test_support.h"
 #include "ui/gfx/gfx_paths.h"
 #include "ui/gl/gl_implementation.h"
 
@@ -27,11 +28,13 @@ void CompositorTestSuite::Initialize() {
   gfx::RegisterPathProvider();
 
   message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
+  CompositorTestSupport::Initialize();
   Compositor::Initialize(false);
 }
 
 void CompositorTestSuite::Shutdown() {
   Compositor::Terminate();
+  CompositorTestSupport::Terminate();
   message_loop_.reset();
 
   base::TestSuite::Shutdown();
