@@ -220,7 +220,9 @@ bool ForeignSessionHandler::IsTabSyncEnabled() {
 
 string16 ForeignSessionHandler::FormatSessionTime(const base::Time& time) {
   // Return a time like "1 hour ago", "2 days ago", etc.
-  return TimeFormat::TimeElapsed(base::Time::Now() - time);
+  base::Time now = base::Time::Now();
+  // TimeElapsed does not support negative TimeDelta values, so then we use 0.
+  return TimeFormat::TimeElapsed(now < time ? base::TimeDelta() : now - time);
 }
 
 void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
