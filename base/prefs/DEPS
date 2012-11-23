@@ -2,9 +2,5 @@ specific_include_rules = {
   '.*_[a-z]+test\.cc': [
     "!chrome/common/chrome_paths.h",
     "!chrome/test/base/testing_pref_service.h",
-    "!content/public/browser/notification_details.h",
-    "!content/public/browser/notification_source.h",
-    "!content/public/browser/notification_types.h",
-    "!content/public/test/mock_notification_observer.h",
   ],
 }
