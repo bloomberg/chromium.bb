@@ -1234,15 +1234,11 @@ def BuildFactoryZip(buildroot, board, archive_dir, image_root):
       ['*factory_image*.bin', '*partition*'],
     os.path.join(image_root, _FACTORY_TEST, _FACTORY_HWID):
       ['*'],
-    os.path.join(buildroot, 'chroot', 'usr', 'share',
-                 'cros-factoryutils', 'factory_setup'):
-      ['*'],
   }
 
   # Special files that must not be included.
   excludes_list = [
     os.path.join(_FACTORY_TEST, _FACTORY_HWID, '*'),
-    os.path.join('factory_setup', 'static', '*')
   ]
 
   for folder, patterns in rules.items():
