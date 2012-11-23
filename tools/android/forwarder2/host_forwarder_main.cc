@@ -4,14 +4,15 @@
 
 #include <errno.h>
 #include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 
-#include <vector>
+#include <cstdio>
+#include <cstring>
 #include <string>
+#include <vector>
 
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -29,26 +30,36 @@
 #include "tools/android/forwarder2/pipe_notifier.h"
 #include "tools/android/forwarder2/socket.h"
 
-using base::StringToInt;
-
 namespace forwarder2 {
 namespace {
 
+const char kLogFilePath[] = "/tmp/host_forwarder_log";
 const char kPIDFilePath[] = "/tmp/host_forwarder_pid";
-const char kCommandSocketPath[] = "host_forwarder_command_socket";
-const char kWelcomeMessage[] = "forwarder2";
+const char kDaemonIdentifier[] = "chrome_host_forwarder_daemon";
+
+const char kKillServerCommand[] = "kill-server";
+const char kForwardCommand[] = "forward";
+
 const int kBufSize = 256;
 
-// Need to be global to be able to accessed from the signal handler.
-PipeNotifier* g_notifier;
+// Needs to be global to be able to be accessed from the signal handler.
+PipeNotifier* g_notifier = NULL;
+
+// Lets the daemon fetch the exit notifier file descriptor.
+int GetExitNotifierFD() {
+  DCHECK(g_notifier);
+  return g_notifier->receiver_fd();
+}
 
 void KillHandler(int signal_number) {
+  char buf[kBufSize];
   if (signal_number != SIGTERM && signal_number != SIGINT) {
-    char buf[kBufSize];
     snprintf(buf, sizeof(buf), "Ignoring unexpected signal %d.", signal_number);
     SIGNAL_SAFE_LOG(WARNING, buf);
     return;
   }
+  snprintf(buf, sizeof(buf), "Received signal %d.", signal_number);
+  SIGNAL_SAFE_LOG(WARNING, buf);
   static int s_kill_handler_count = 0;
   CHECK(g_notifier);
   // If for some reason the forwarder get stuck in any socket waiting forever,
@@ -57,34 +68,6 @@ void KillHandler(int signal_number) {
   ++s_kill_handler_count;
   if (!g_notifier->Notify() || s_kill_handler_count > 2)
     exit(1);
-}
-
-enum {
-  kConnectSingleTry = 1,
-  kConnectNoIdleTime = 0,
-};
-
-scoped_ptr<Socket> ConnectToDaemon(int tries_count, int idle_time_msec) {
-  for (int i = 0; i < tries_count; ++i) {
-    scoped_ptr<Socket> socket(new Socket());
-    if (!socket->ConnectUnix(kCommandSocketPath, true)) {
-      if (idle_time_msec)
-        usleep(idle_time_msec * 1000);
-      continue;
-    }
-    char buf[sizeof(kWelcomeMessage)];
-    memset(buf, 0, sizeof(buf));
-    if (socket->Read(buf, sizeof(buf)) < 0) {
-      perror("read");
-      continue;
-    }
-    if (strcmp(buf, kWelcomeMessage)) {
-      LOG(ERROR) << "Unexpected message read from daemon: " << buf;
-      break;
-    }
-    return socket.Pass();
-  }
-  return scoped_ptr<Socket>(NULL);
 }
 
 // Format of |command|:
@@ -98,12 +81,12 @@ bool ParseForwardCommand(const std::string& command,
   base::SplitString(command, ':', &command_pieces);
 
   if (command_pieces.size() < 2 ||
-      !StringToInt(command_pieces[0], adb_port) ||
-      !StringToInt(command_pieces[1], device_port))
+      !base::StringToInt(command_pieces[0], adb_port) ||
+      !base::StringToInt(command_pieces[1], device_port))
     return false;
 
   if (command_pieces.size() > 2) {
-    if (!StringToInt(command_pieces[2], forward_to_port))
+    if (!base::StringToInt(command_pieces[2], forward_to_port))
       return false;
     if (command_pieces.size() > 3)
       *forward_to_host = command_pieces[3];
@@ -121,44 +104,30 @@ bool IsForwardCommandValid(const std::string& command) {
       command, &adb_port, &device_port, &forward_to_host, &forward_to_port);
 }
 
-bool DaemonHandler() {
-  LOG(INFO) << "Starting host process daemon (pid=" << getpid() << ")";
-  DCHECK(!g_notifier);
-  g_notifier = new PipeNotifier();
+class ServerDelegate : public Daemon::ServerDelegate {
+ public:
+  ServerDelegate() : has_failed_(false) {}
 
-  const int notifier_fd = g_notifier->receiver_fd();
-  Socket command_socket;
-  if (!command_socket.BindUnix(kCommandSocketPath, true)) {
-    LOG(ERROR) << "Could not bind Unix Domain Socket";
-    return false;
+  bool has_failed() const { return has_failed_; }
+
+  // Daemon::ServerDelegate:
+  virtual void Init() OVERRIDE {
+    LOG(INFO) << "Starting host process daemon (pid=" << getpid() << ")";
+    DCHECK(!g_notifier);
+    g_notifier = new PipeNotifier();
+    signal(SIGTERM, KillHandler);
+    signal(SIGINT, KillHandler);
   }
-  command_socket.set_exit_notifier_fd(notifier_fd);
 
-  signal(SIGTERM, KillHandler);
-  signal(SIGINT, KillHandler);
-
-  ScopedVector<HostController> controllers;
-  int failed_count = 0;
-
-  for (;;) {
-    Socket client_socket;
-    if (!command_socket.Accept(&client_socket)) {
-      if (command_socket.exited())
-        return true;
-      PError("Accept()");
-      return false;
-    }
-    if (!client_socket.Write(kWelcomeMessage, sizeof(kWelcomeMessage))) {
-      PError("Write()");
-      continue;
-    }
+  virtual void OnClientConnected(scoped_ptr<Socket> client_socket) OVERRIDE {
     char buf[kBufSize];
-    const int bytes_read = client_socket.Read(buf, sizeof(buf));
+    const int bytes_read = client_socket->Read(buf, sizeof(buf));
     if (bytes_read <= 0) {
-      if (client_socket.exited())
-        break;
+      if (client_socket->exited())
+        return;
       PError("Read()");
-      ++failed_count;
+      has_failed_ = true;
+      return;
     }
     const std::string command(buf, bytes_read);
     int adb_port = 0;
@@ -168,41 +137,81 @@ bool DaemonHandler() {
     const bool succeeded = ParseForwardCommand(
         command, &adb_port, &device_port, &forward_to_host, &forward_to_port);
     if (!succeeded) {
-      ++failed_count;
-      client_socket.WriteString(
+      has_failed_ = true;
+      client_socket->WriteString(
           base::StringPrintf("ERROR: Could not parse forward command '%s'",
                              command.c_str()));
-      continue;
+      return;
     }
     scoped_ptr<HostController> host_controller(
         new HostController(device_port, forward_to_host, forward_to_port,
-                           adb_port, notifier_fd));
+                           adb_port, GetExitNotifierFD()));
     if (!host_controller->Connect()) {
-      ++failed_count;
-      client_socket.WriteString("ERROR: Connection to device failed.");
-      continue;
+      has_failed_ = true;
+      client_socket->WriteString("ERROR: Connection to device failed.");
+      return;
     }
     // Get the current allocated port.
     device_port = host_controller->device_port();
     LOG(INFO) << "Forwarding device port " << device_port << " to host "
               << forward_to_host << ":" << forward_to_port;
-    if (!client_socket.WriteString(
+    if (!client_socket->WriteString(
         base::StringPrintf("%d:%d", device_port, forward_to_port))) {
-      ++failed_count;
-      continue;
+      has_failed_ = true;
+      return;
     }
     host_controller->Start();
-    controllers.push_back(host_controller.release());
+    controllers_.push_back(host_controller.release());
   }
-  for (int i = 0; i < controllers.size(); ++i)
-    controllers[i]->Join();
 
-  if (controllers.size() == 0) {
-    LOG(ERROR) << "No forwarder servers could be started. Exiting.";
-    return false;
+  virtual void OnServerExited() OVERRIDE {
+    for (int i = 0; i < controllers_.size(); ++i)
+      controllers_[i]->Join();
+    if (controllers_.size() == 0) {
+      LOG(ERROR) << "No forwarder servers could be started. Exiting.";
+      has_failed_ = true;
+    }
   }
-  return true;
-}
+
+ private:
+  ScopedVector<HostController> controllers_;
+  bool has_failed_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServerDelegate);
+};
+
+class ClientDelegate : public Daemon::ClientDelegate {
+ public:
+  ClientDelegate(const std::string& forward_command)
+      : forward_command_(forward_command),
+        has_failed_(false) {
+  }
+
+  bool has_failed() const { return has_failed_; }
+
+  // Daemon::ClientDelegate:
+  virtual void OnDaemonReady(Socket* daemon_socket) OVERRIDE {
+    // Send the forward command to the daemon.
+    CHECK(daemon_socket->WriteString(forward_command_));
+    char buf[kBufSize];
+    const int bytes_read = daemon_socket->Read(
+        buf, sizeof(buf) - 1 /* leave space for null terminator */);
+    CHECK_GT(bytes_read, 0);
+    DCHECK(bytes_read < sizeof(buf));
+    buf[bytes_read] = 0;
+    base::StringPiece msg(buf, bytes_read);
+    if (msg.starts_with("ERROR")) {
+      LOG(ERROR) << msg;
+      has_failed_ = true;
+      return;
+    }
+    printf("%s\n", buf);
+  }
+
+ private:
+  const std::string forward_command_;
+  bool has_failed_;
+};
 
 void PrintUsage(const char* program_name) {
   LOG(ERROR) << program_name << " adb_port:from_port:to_port:to_host\n"
@@ -215,63 +224,36 @@ int RunHostForwarder(int argc, char** argv) {
     return 1;
   }
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  std::string command;
+  const char* command = NULL;
   int adb_port = 0;
   if (argc != 2) {
     PrintUsage(argv[0]);
     return 1;
   }
-  if (!strcmp(argv[1], "kill-server")) {
-    command = "kill-server";
+  if (!strcmp(argv[1], kKillServerCommand)) {
+    command = kKillServerCommand;
   } else {
-    command = "forward";
+    command = kForwardCommand;
     if (!IsForwardCommandValid(argv[1])) {
       PrintUsage(argv[0]);
       return 1;
     }
   }
 
-  Daemon daemon(kPIDFilePath);
+  ClientDelegate client_delegate(argv[1]);
+  ServerDelegate daemon_delegate;
+  Daemon daemon(
+      kLogFilePath, kPIDFilePath, kDaemonIdentifier, &client_delegate,
+      &daemon_delegate, &GetExitNotifierFD);
 
-  if (command == "kill-server")
+  if (command == kKillServerCommand)
     return !daemon.Kill();
 
-  bool is_daemon = false;
-  scoped_ptr<Socket> daemon_socket = ConnectToDaemon(
-      kConnectSingleTry, kConnectNoIdleTime);
-  if (!daemon_socket) {
-    if (!daemon.Spawn(&is_daemon))
-      return 1;
-  }
-
-  if (is_daemon)
-    return !DaemonHandler();
-
-  if (!daemon_socket) {
-    const int kTries = 10;
-    const int kIdleTimeMsec = 10;
-    daemon_socket = ConnectToDaemon(kTries, kIdleTimeMsec);
-    if (!daemon_socket) {
-      LOG(ERROR) << "Could not connect to daemon.";
-      return 1;
-    }
-  }
-
-  // Send the forward command to the daemon.
-  CHECK(daemon_socket->Write(argv[1], strlen(argv[1])));
-  char buf[kBufSize];
-  const int bytes_read = daemon_socket->Read(
-      buf, sizeof(buf) - 1 /* leave space for null terminator */);
-  CHECK_GT(bytes_read, 0);
-  DCHECK(bytes_read < sizeof(buf));
-  buf[bytes_read] = 0;
-  base::StringPiece msg(buf, bytes_read);
-  if (msg.starts_with("ERROR")) {
-    LOG(ERROR) << msg;
+  DCHECK(command == kForwardCommand);
+  if (!daemon.SpawnIfNeeded())
     return 1;
-  }
-  printf("%s\n", buf);
-  return 0;
+
+  return client_delegate.has_failed() || daemon_delegate.has_failed();
 }
 
 }  // namespace

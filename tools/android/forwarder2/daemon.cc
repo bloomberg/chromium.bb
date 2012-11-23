@@ -7,29 +7,32 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
-#include <stdio.h>
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include <cstdlib>
+#include <cstring>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/safe_strerror_posix.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "tools/android/forwarder2/common.h"
+#include "tools/android/forwarder2/socket.h"
 
 namespace forwarder2 {
 namespace {
 
-const char kLogFilePath[] = "/tmp/host_forwarder_log";
+const int kBufferSize = 256;
 
 class FileDescriptorAutoCloser {
  public:
@@ -54,71 +57,44 @@ class FileDescriptorAutoCloser {
   DISALLOW_COPY_AND_ASSIGN(FileDescriptorAutoCloser);
 };
 
-// Handles creation and destruction of the PID file.
-class PIDFile {
- public:
-  static scoped_ptr<PIDFile> Create(const std::string& path) {
-    scoped_ptr<PIDFile> pid_file;
-    const int pid_file_fd = HANDLE_EINTR(
-        open(path.c_str(), O_CREAT | O_WRONLY, 0600));
-    if (pid_file_fd < 0) {
-      PError("open()");
-      return pid_file.Pass();
-    }
-    FileDescriptorAutoCloser fd_closer(pid_file_fd);
-    struct flock lock_info = {};
-    lock_info.l_type = F_WRLCK;
-    lock_info.l_whence = SEEK_CUR;
-    if (HANDLE_EINTR(fcntl(pid_file_fd, F_SETLK, &lock_info)) < 0) {
-      if (errno == EAGAIN || errno == EACCES) {
-        LOG(ERROR) << "Daemon already running (PID file already locked)";
-        return pid_file.Pass();
-      }
-      PError("lockf()");
-      return pid_file.Pass();
-    }
-    const std::string pid_string = base::StringPrintf("%d\n", getpid());
-    CHECK(HANDLE_EINTR(write(pid_file_fd, pid_string.c_str(),
-                             pid_string.length())));
-    pid_file.reset(new PIDFile(fd_closer.Release(), path));
-    return pid_file.Pass();
-  }
-
-  ~PIDFile() {
-    CloseFD(fd_);  // This also releases the lock.
-    if (remove(path_.c_str()) < 0)
-      PError("remove");
-  }
-
- private:
-  PIDFile(int fd, const std::string& path) : fd_(fd), path_(path) {
-    DCHECK(fd_ >= 0);
-  }
-
-  const int fd_;
-  const std::string path_;
-
-  DISALLOW_COPY_AND_ASSIGN(PIDFile);
-};
-
-// Takes ownership of |data|.
-void ReleaseDaemonResourcesAtExit(void* data) {
-  DCHECK(data);
-  delete reinterpret_cast<PIDFile*>(data);
-}
-
-void InitLogging(const char* log_file) {
+void InitLoggingForDaemon(const std::string& log_file) {
   CHECK(
       logging::InitLogging(
-          log_file,
-          logging::LOG_ONLY_TO_FILE,
-          logging::DONT_LOCK_LOG_FILE,
-          logging::APPEND_TO_OLD_LOG_FILE,
+          log_file.c_str(),
+          log_file.empty() ?
+              logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG : logging::LOG_ONLY_TO_FILE,
+          logging::DONT_LOCK_LOG_FILE, logging::APPEND_TO_OLD_LOG_FILE,
           logging::ENABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS));
+}
+
+bool RunServerAcceptLoop(const std::string& welcome_message,
+                         Socket* server_socket,
+                         Daemon::ServerDelegate* server_delegate) {
+  bool failed = false;
+  for (;;) {
+    scoped_ptr<Socket> client_socket(new Socket());
+    if (!server_socket->Accept(client_socket.get())) {
+      if (server_socket->exited())
+        break;
+      PError("Accept()");
+      failed = true;
+      break;
+    }
+    if (!client_socket->Write(welcome_message.c_str(),
+                              welcome_message.length() + 1)) {
+      PError("Write()");
+      failed = true;
+      continue;
+    }
+    server_delegate->OnClientConnected(client_socket.Pass());
+  }
+  server_delegate->OnServerExited();
+  return !failed;
 }
 
 void SigChildHandler(int signal_number) {
   DCHECK_EQ(signal_number, SIGCHLD);
+  SIGNAL_SAFE_LOG(ERROR, "Caught unexpected SIGCHLD");
   // The daemon should not terminate while its parent is still running.
   int status;
   pid_t child_pid = waitpid(-1 /* any child */, &status, WNOHANG);
@@ -166,39 +142,181 @@ bool GetFileLockOwnerPid(int fd, pid_t* lock_owner_pid) {
   return true;
 }
 
-}  // namespace
-
-Daemon::Daemon(const std::string& pid_file_path)
-    : pid_file_path_(pid_file_path) {
-}
-
-bool Daemon::Spawn(bool* is_daemon) {
-  switch (fork()) {
-    case -1:
-      *is_daemon = false;
-      PError("fork()");
-      return false;
-    case 0: {  // Child.
-      *is_daemon = true;
-      scoped_ptr<PIDFile> pid_file = PIDFile::Create(pid_file_path_);
-      if (!pid_file)
-        return false;
-      base::AtExitManager::RegisterCallback(
-          &ReleaseDaemonResourcesAtExit, pid_file.release());
-      if (setsid() < 0) {  // Detach the child process from its parent.
-        PError("setsid");
-        return false;
-      }
-      CloseFD(STDOUT_FILENO);
-      CloseFD(STDERR_FILENO);
-      InitLogging(kLogFilePath);
+scoped_ptr<Socket> ConnectToUnixDomainSocket(
+    const std::string& socket_name,
+    int tries_count,
+    int idle_time_msec,
+    const std::string& expected_welcome_message) {
+  for (int i = 0; i < tries_count; ++i) {
+    scoped_ptr<Socket> socket(new Socket());
+    if (!socket->ConnectUnix(socket_name, true)) {
+      if (idle_time_msec)
+        usleep(idle_time_msec * 1000);
+      continue;
+    }
+    char buf[kBufferSize];
+    DCHECK(expected_welcome_message.length() + 1 <= sizeof(buf));
+    memset(buf, 0, sizeof(buf));
+    if (socket->Read(buf, sizeof(buf)) < 0) {
+      perror("read");
+      continue;
+    }
+    if (expected_welcome_message != buf) {
+      LOG(ERROR) << "Unexpected message read from daemon: " << buf;
       break;
     }
-    default:  // Parent.
-      *is_daemon = false;
-      signal(SIGCHLD, SigChildHandler);
+    return socket.Pass();
   }
-  return true;
+  return scoped_ptr<Socket>(NULL);
+}
+
+}  // namespace
+
+// Handles creation and destruction of the PID file.
+class Daemon::PIDFile {
+ public:
+  static scoped_ptr<PIDFile> Create(const std::string& path) {
+    scoped_ptr<PIDFile> pid_file;
+    const int pid_file_fd = HANDLE_EINTR(
+        open(path.c_str(), O_CREAT | O_WRONLY, 0600));
+    if (pid_file_fd < 0) {
+      PError("open()");
+      return pid_file.Pass();
+    }
+    FileDescriptorAutoCloser fd_closer(pid_file_fd);
+    struct flock lock_info = {};
+    lock_info.l_type = F_WRLCK;
+    lock_info.l_whence = SEEK_CUR;
+    if (HANDLE_EINTR(fcntl(pid_file_fd, F_SETLK, &lock_info)) < 0) {
+      if (errno == EAGAIN || errno == EACCES) {
+        LOG(ERROR) << "Daemon already running (PID file already locked)";
+        return pid_file.Pass();
+      }
+      PError("lockf()");
+      return pid_file.Pass();
+    }
+    const std::string pid_string = base::StringPrintf("%d\n", getpid());
+    CHECK(HANDLE_EINTR(write(pid_file_fd, pid_string.c_str(),
+                             pid_string.length())));
+    pid_file.reset(new PIDFile(fd_closer.Release(), path));
+    return pid_file.Pass();
+  }
+
+  ~PIDFile() {
+    CloseFD(fd_);  // This also releases the lock.
+    if (remove(path_.c_str()) < 0)
+      PError("remove");
+  }
+
+ private:
+  PIDFile(int fd, const std::string& path) : fd_(fd), path_(path) {
+    DCHECK(fd_ >= 0);
+  }
+
+  const int fd_;
+  const std::string path_;
+
+  DISALLOW_COPY_AND_ASSIGN(PIDFile);
+};
+
+Daemon::Daemon(const std::string& log_file_path,
+               const std::string& pid_file_path,
+               const std::string& identifier,
+               ClientDelegate* client_delegate,
+               ServerDelegate* server_delegate,
+               GetExitNotifierFDCallback get_exit_fd_callback)
+  : log_file_path_(log_file_path),
+    pid_file_path_(pid_file_path),
+    identifier_(identifier),
+    client_delegate_(client_delegate),
+    server_delegate_(server_delegate),
+    get_exit_fd_callback_(get_exit_fd_callback) {
+  DCHECK(client_delegate_);
+  DCHECK(server_delegate_);
+  DCHECK(get_exit_fd_callback_);
+}
+
+Daemon::~Daemon() {}
+
+bool Daemon::SpawnIfNeeded() {
+  const int kSingleTry = 1;
+  const int kNoIdleTime = 0;
+  scoped_ptr<Socket> client_socket = ConnectToUnixDomainSocket(
+      identifier_, kSingleTry, kNoIdleTime, identifier_);
+  if (!client_socket) {
+    switch (fork()) {
+      case -1:
+        PError("fork()");
+        return false;
+      // Child.
+      case 0: {
+        DCHECK(!pid_file_);
+        pid_file_ = PIDFile::Create(pid_file_path_);
+        if (!pid_file_)
+          exit(1);
+        if (setsid() < 0) {  // Detach the child process from its parent.
+          PError("setsid()");
+          exit(1);
+        }
+        InitLoggingForDaemon(log_file_path_);
+        CloseFD(STDIN_FILENO);
+        CloseFD(STDOUT_FILENO);
+        CloseFD(STDERR_FILENO);
+        const int null_fd = open("/dev/null", O_RDWR);
+        CHECK_EQ(null_fd, STDIN_FILENO);
+        CHECK_EQ(dup(null_fd), STDOUT_FILENO);
+        CHECK_EQ(dup(null_fd), STDERR_FILENO);
+        Socket command_socket;
+        if (!command_socket.BindUnix(identifier_, true)) {
+          PError("bind()");
+          exit(1);
+        }
+        server_delegate_->Init();
+        command_socket.set_exit_notifier_fd(get_exit_fd_callback_());
+        exit(!RunServerAcceptLoop(identifier_, &command_socket,
+                                  server_delegate_));
+      }
+      default:
+        break;
+    }
+  }
+  // Parent.
+  // Install the custom SIGCHLD handler.
+  sigset_t blocked_signals_set;
+  if (sigprocmask(0 /* first arg ignored */, NULL, &blocked_signals_set) < 0) {
+    PError("sigprocmask()");
+    return false;
+  }
+  struct sigaction old_action;
+  struct sigaction new_action;
+  memset(&new_action, 0, sizeof(new_action));
+  new_action.sa_handler = SigChildHandler;
+  new_action.sa_flags = SA_NOCLDSTOP;
+  sigemptyset(&new_action.sa_mask);
+  if (sigaction(SIGCHLD, &new_action, &old_action) < 0) {
+    PError("sigaction()");
+    return false;
+  }
+  // Connect to the daemon's Unix Domain Socket.
+  bool failed = false;
+  if (!client_socket) {
+    const int kConnectTries = 20;
+    const int kConnectIdleTimeMSec = 10;
+    client_socket = ConnectToUnixDomainSocket(
+        identifier_, kConnectTries, kConnectIdleTimeMSec, identifier_);
+    if (!client_socket) {
+      LOG(ERROR) << "Could not connect to daemon's Unix Daemon socket";
+      failed = true;
+    }
+  }
+  if (!failed)
+    client_delegate_->OnDaemonReady(client_socket.get());
+  // Restore the previous signal action for SIGCHLD.
+  if (sigaction(SIGCHLD, &old_action, NULL) < 0) {
+    PError("sigaction");
+    failed = true;
+  }
+  return !failed;
 }
 
 bool Daemon::Kill() {

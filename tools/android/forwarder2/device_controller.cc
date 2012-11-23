@@ -64,6 +64,8 @@ void DeviceController::Start() {
       if (!kickstart_adb_socket_.exited()) {
         LOG(ERROR) << "Could not Accept DeviceController socket: "
                    << safe_strerror(errno);
+      } else {
+        LOG(INFO) << "Received exit notification";
       }
       break;
     }
@@ -73,7 +75,6 @@ void DeviceController::Start() {
     command::Type command;
     if (!ReadCommand(socket.get(), &port, &command)) {
       LOG(ERROR) << "Invalid command received.";
-      socket->Close();
       continue;
     }
     DeviceListener* listener = listeners_.Lookup(port);
@@ -110,7 +111,6 @@ void DeviceController::Start() {
           // After this point it is assumed that, once we close our Adb Data
           // socket, the Adb forwarder command will propagate the closing of
           // sockets all the way to the host side.
-          socket->Close();
           continue;
         } else if (!listener->SetAdbDataSocket(socket.Pass())) {
           LOG(ERROR) << "Could not set Adb Data Socket for port: " << port;
@@ -123,12 +123,10 @@ void DeviceController::Start() {
         // TODO(felipeg): add a KillAllListeners command.
         LOG(ERROR) << "Invalid command received. Port: " << port
                    << " Command: " << command;
-        socket->Close();
     }
   }
   KillAllListeners();
   CleanUpDeadListeners();
-  kickstart_adb_socket_.Close();
 }
 
 }  // namespace forwarder

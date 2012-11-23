@@ -39,6 +39,7 @@
       'sources': [
         'command.cc',
         'common.cc',
+        'daemon.cc',
         'device_controller.cc',
         'device_forwarder_main.cc',
         'device_listener.cc',

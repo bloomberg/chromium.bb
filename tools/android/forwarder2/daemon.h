@@ -7,28 +7,73 @@
 
 #include <string>
 
-#include "base/at_exit.h"
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace forwarder2 {
 
+class Socket;
+
+// Provides a way to spawn a daemon and communicate with it.
 class Daemon {
  public:
+  // Callback used by the daemon to shutdown properly. See pipe_notifier.h for
+  // more details.
+  typedef int (*GetExitNotifierFDCallback)();
+
+  class ClientDelegate {
+   public:
+    virtual ~ClientDelegate() {}
+
+    // Called after the daemon is ready to receive commands.
+    virtual void OnDaemonReady(Socket* daemon_socket) = 0;
+  };
+
+  class ServerDelegate {
+   public:
+    virtual ~ServerDelegate() {}
+
+    // Called after the daemon bound its Unix Domain Socket. This can be used to
+    // setup signal handlers or perform global initialization.
+    virtual void Init() = 0;
+
+    virtual void OnClientConnected(scoped_ptr<Socket> client_socket) = 0;
+
+    virtual void OnServerExited() = 0;
+  };
+
   // |pid_file_path| is the file path to which the daemon's PID will be written.
-  // Note that a lock on the file is also acquired to guarantee that a single
-  // instance of daemon is running.
-  explicit Daemon(const std::string& pid_file_path);
+  // |identifier| should be a unique string identifier. It is used to
+  // bind/connect the underlying Unix Domain Socket.
+  // Note that this class does not take ownership of |client_delegate| and
+  // |server_delegate|.
+  Daemon(const std::string& log_file_path,
+         const std::string& pid_file_path,
+         const std::string& identifier,
+         ClientDelegate* client_delegate,
+         ServerDelegate* server_delegate,
+         GetExitNotifierFDCallback get_exit_fd_callback);
 
-  // Returns whether the daemon was successfully spawned. Use |is_daemon| to
-  // distinguish the parent from the child (daemon) process.
-  bool Spawn(bool* is_daemon);
+  ~Daemon();
 
-  // Kills the daemon and blocks until it exited.
+  // Returns whether the daemon was successfully spawned. Note that this does
+  // not necessarily mean that the current process was forked in case the daemon
+  // is already running.
+  bool SpawnIfNeeded();
+
+  // Kills the daemon and blocks until it exited. Returns whether it succeeded.
   bool Kill();
 
  private:
+  class PIDFile;
+
+  const std::string log_file_path_;
   const std::string pid_file_path_;
-  base::AtExitManager at_exit_manager;
+  const std::string identifier_;
+  ClientDelegate* const client_delegate_;
+  ServerDelegate* const server_delegate_;
+  const GetExitNotifierFDCallback get_exit_fd_callback_;
+  scoped_ptr<PIDFile> pid_file_;
 
   DISALLOW_COPY_AND_ASSIGN(Daemon);
 };
