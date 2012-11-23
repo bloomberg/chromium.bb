@@ -33,6 +33,7 @@ extern const char kValueUserAffiliationNone[];
 // Policy type strings for the policy_type field in PolicyFetchRequest.
 extern const char kChromeDevicePolicyType[];
 extern const char kChromeUserPolicyType[];
+extern const char kChromePublicAccountPolicyType[];
 
 // These codes are sent in the |error_code| field of PolicyFetchResponse.
 enum PolicyFetchStatus {

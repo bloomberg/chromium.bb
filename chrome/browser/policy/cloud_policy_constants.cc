@@ -31,6 +31,7 @@ const char kValueUserAffiliationNone[] = "none";
 
 const char kChromeDevicePolicyType[] = "google/chromeos/device";
 const char kChromeUserPolicyType[] = "google/chromeos/user";
+const char kChromePublicAccountPolicyType[] = "google/chromeos/publicaccount";
 
 }  // namespace dm_protocol
 

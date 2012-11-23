@@ -59,6 +59,7 @@
 #include "chrome/browser/policy/cros_user_policy_cache.h"
 #include "chrome/browser/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/policy/device_cloud_policy_store_chromeos.h"
+#include "chrome/browser/policy/device_local_account_policy_service.h"
 #include "chrome/browser/policy/device_policy_cache.h"
 #include "chrome/browser/policy/network_configuration_updater.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -127,6 +128,10 @@ void BrowserPolicyConnector::Init() {
         new DeviceCloudPolicyManagerChromeOS(
             device_cloud_policy_store.Pass(),
             install_attributes_.get()));
+    device_local_account_policy_service_.reset(
+        new DeviceLocalAccountPolicyService(
+            chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
+            chromeos::DeviceSettingsService::Get()));
   } else {
     cloud_provider_.reset(new CloudPolicyProvider(this));
   }
@@ -171,6 +176,8 @@ void BrowserPolicyConnector::Shutdown() {
 
   if (device_cloud_policy_manager_)
     device_cloud_policy_manager_->Shutdown();
+  if (device_local_account_policy_service_)
+    device_local_account_policy_service_->Shutdown();
 #endif
 
   // Shutdown user cloud policy.
@@ -603,6 +610,11 @@ void BrowserPolicyConnector::CompleteInitialization() {
     device_cloud_policy_manager_->Init();
     device_cloud_policy_manager_->Connect(
         g_browser_process->local_state(),
+        device_management_service_.get());
+  }
+
+  if (device_local_account_policy_service_.get()) {
+    device_local_account_policy_service_->Initialize(
         device_management_service_.get());
   }
 

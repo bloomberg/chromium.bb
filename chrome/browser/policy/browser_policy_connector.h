@@ -28,6 +28,7 @@ class CloudPolicyProvider;
 class CloudPolicySubsystem;
 class ConfigurationPolicyProvider;
 class DeviceCloudPolicyManagerChromeOS;
+class DeviceLocalAccountPolicyService;
 class DeviceManagementService;
 class NetworkConfigurationUpdater;
 class PolicyService;
@@ -232,6 +233,8 @@ class BrowserPolicyConnector : public content::NotificationObserver {
 #if defined(OS_CHROMEOS)
   scoped_ptr<EnterpriseInstallAttributes> install_attributes_;
   scoped_ptr<DeviceCloudPolicyManagerChromeOS> device_cloud_policy_manager_;
+  scoped_ptr<DeviceLocalAccountPolicyService>
+      device_local_account_policy_service_;
 #endif
   ProxyPolicyProvider user_cloud_policy_provider_;
 
