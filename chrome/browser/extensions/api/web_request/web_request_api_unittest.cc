@@ -608,8 +608,8 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
 
       FireURLRequestWithData(kMethodPost, kMultipart, form_1, form_2);
 
-      MessageLoop::current()->RunUntilIdle();
       // We inspect the result in the message list of |ipc_sender_| later.
+      MessageLoop::current()->RunUntilIdle();
 
       ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
           &profile_, extension_id, kEventName + "/1");
@@ -674,6 +674,62 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
     if (kExpected[test] != NULL) {
       EXPECT_TRUE(kExpected[test]->Equals(result));
     }
+  }
+
+  EXPECT_EQ(i, ipc_sender_.sent_end());
+}
+
+TEST_F(ExtensionWebRequestTest, NoAccessRequestBodyData) {
+  // We verify that URLRequest body is NOT accessible to OnBeforeRequest
+  // listeners when the type of the request is different from POST or PUT, or
+  // when the request body is empty. 3 requests are fired, without upload data,
+  // a POST, PUT and GET request. For none of them the "requestBody" object
+  // property should be present in the details passed to the onBeforeRequest
+  // event listener.
+  const char* kMethods[] = { "POST", "PUT", "GET" };
+
+  // Set up a dummy extension name.
+  const std::string kEventName(keys::kOnBeforeRequest);
+  ExtensionWebRequestEventRouter::RequestFilter filter;
+  const std::string extension_id("1");
+  int extra_info_spec = 0;
+  ASSERT_TRUE(GenerateInfoSpec("blocking,requestBody", &extra_info_spec));
+  base::WeakPtrFactory<TestIPCSender> ipc_sender_factory(&ipc_sender_);
+
+  // We need to pretend to be on CANARY or DEV for the "requestBody" to work.
+  Feature::ScopedCurrentChannel sc(VersionInfo::CHANNEL_CANARY);
+
+  // Subscribe to OnBeforeRequest with requestBody requirement.
+  ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+      &profile_, extension_id, extension_id, kEventName, kEventName + "/1",
+      filter, extra_info_spec, ipc_sender_factory.GetWeakPtr());
+
+  // The request URL can be arbitrary but must have an HTTP or HTTPS scheme.
+  const GURL request_url("http://www.example.com");
+
+  for (size_t i = 0; i < arraysize(kMethods); ++i) {
+    net::URLRequest request(request_url, &delegate_, context_.get());
+    request.set_method(kMethods[i]);
+    ipc_sender_.PushTask(base::Bind(&base::DoNothing));
+    request.Start();
+  }
+
+  // We inspect the result in the message list of |ipc_sender_| later.
+  MessageLoop::current()->RunUntilIdle();
+
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+      &profile_, extension_id, kEventName + "/1");
+
+  TestIPCSender::SentMessages::const_iterator i = ipc_sender_.sent_begin();
+  for (size_t test = 0; test < arraysize(kMethods); ++test, ++i) {
+    EXPECT_NE(i, ipc_sender_.sent_end());
+    IPC::Message* message = i->get();
+    const DictionaryValue* details = NULL;
+    ExtensionMsg_MessageInvoke::Param param;
+    GetPartOfMessageArguments(message, &details, &param);
+    ASSERT_TRUE(details != NULL);
+    EXPECT_FALSE(details->HasKey(keys::kRequestBodyKey))
+        << "Failed during iteration number " << test << ".";
   }
 
   EXPECT_EQ(i, ipc_sender_.sent_end());

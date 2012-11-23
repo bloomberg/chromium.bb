@@ -183,7 +183,9 @@ void ExtractRequestInfo(net::URLRequest* request, DictionaryValue* out) {
 // Extracts the body from |request| and writes the data into |out|.
 void ExtractRequestInfoBody(const net::URLRequest* request,
                             DictionaryValue* out) {
-  if (request->method() != "POST" && request->method() != "PUT")
+  const net::UploadData* upload_data = request->get_upload();
+  if (!upload_data ||
+      (request->method() != "POST" && request->method() != "PUT"))
     return;  // Need to exit without "out->Set(keys::kRequestBodyKey, ...);" .
 
   DictionaryValue* requestBody = new DictionaryValue();
@@ -202,8 +204,7 @@ void ExtractRequestInfoBody(const net::URLRequest* request,
     keys::kRequestBodyRawKey
   };
 
-  const ScopedVector<net::UploadElement>& elements =
-      request->get_upload()->elements();
+  const ScopedVector<net::UploadElement>& elements = upload_data->elements();
   bool some_succeeded = false;
   for (size_t i = 0; !some_succeeded && i < arraysize(presenters); ++i) {
     ScopedVector<net::UploadElement>::const_iterator element;
