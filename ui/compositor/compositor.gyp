@@ -69,30 +69,6 @@
       ],
     },
     {
-      'target_name': 'compositor_test_support',
-      'type': 'static_library',
-      'dependencies': [
-        '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support',
-        '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
-      ],
-      'sources': [
-        'test/compositor_test_support.cc',
-        'test/compositor_test_support.h',
-      ],
-      'conditions': [
-        ['os_posix == 1 and OS != "mac"', {
-          'conditions': [
-            ['linux_use_tcmalloc==1', {
-              'dependencies': [
-                '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ],
-        }],
-      ],
-    },
-    {
       'target_name': 'compositor_unittests',
       'type': 'executable',
       'dependencies': [
@@ -105,7 +81,6 @@
         '<(DEPTH)/ui/ui.gyp:ui',
         '<(DEPTH)/ui/ui.gyp:ui_resources',
         'compositor',
-        'compositor_test_support',
       ],
       'sources': [
         'layer_animation_element_unittest.cc',
