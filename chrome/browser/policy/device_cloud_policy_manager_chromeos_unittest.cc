@@ -6,24 +6,18 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
-#include "chrome/browser/chromeos/settings/mock_owner_key_util.h"
 #include "chrome/browser/policy/cloud_policy_client.h"
 #include "chrome/browser/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
 #include "chrome/browser/policy/mock_device_management_service.h"
-#include "chrome/browser/policy/policy_builder.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/test/base/testing_pref_service.h"
-#include "content/public/test/test_browser_thread.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,45 +31,27 @@ namespace em = enterprise_management;
 namespace policy {
 namespace {
 
-class DeviceCloudPolicyManagerChromeOSTest : public testing::Test {
+class DeviceCloudPolicyManagerChromeOSTest
+    : public chromeos::DeviceSettingsTestBase {
  protected:
   DeviceCloudPolicyManagerChromeOSTest()
-      : loop_(MessageLoop::TYPE_UI),
-        ui_thread_(content::BrowserThread::UI, &loop_),
-        file_thread_(content::BrowserThread::FILE, &loop_),
-        owner_key_util_(new chromeos::MockOwnerKeyUtil()),
-        cryptohome_library_(chromeos::CryptohomeLibrary::GetImpl(true)),
+      : cryptohome_library_(chromeos::CryptohomeLibrary::GetImpl(true)),
         install_attributes_(cryptohome_library_.get()),
         store_(new DeviceCloudPolicyStoreChromeOS(&device_settings_service_,
                                                   &install_attributes_)),
         manager_(make_scoped_ptr(store_), &install_attributes_) {}
 
   virtual void SetUp() OVERRIDE {
+    DeviceSettingsTestBase::SetUp();
     chrome::RegisterLocalState(&local_state_);
-
-    device_settings_service_.Initialize(&device_settings_test_helper_,
-                                        owner_key_util_);
-
-    policy_.payload().mutable_metrics_enabled()->set_metrics_enabled(true);
-    policy_.Build();
-
     manager_.Init();
   }
 
   virtual void TearDown() OVERRIDE {
     manager_.Shutdown();
-    device_settings_test_helper_.Flush();
+    DeviceSettingsTestBase::TearDown();
   }
 
-  MessageLoop loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-
-  chromeos::DeviceSettingsTestHelper device_settings_test_helper_;
-  DevicePolicyBuilder policy_;
-
-  scoped_refptr<chromeos::MockOwnerKeyUtil> owner_key_util_;
-  chromeos::DeviceSettingsService device_settings_service_;
   scoped_ptr<chromeos::CryptohomeLibrary> cryptohome_library_;
   EnterpriseInstallAttributes install_attributes_;
 
@@ -90,7 +66,8 @@ class DeviceCloudPolicyManagerChromeOSTest : public testing::Test {
 };
 
 TEST_F(DeviceCloudPolicyManagerChromeOSTest, FreshDevice) {
-  device_settings_test_helper_.Flush();
+  owner_key_util_->Clear();
+  FlushDeviceSettings();
   EXPECT_TRUE(manager_.IsInitializationComplete());
 
   manager_.Connect(&local_state_, &device_management_service_);
@@ -104,17 +81,14 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, EnrolledDevice) {
             install_attributes_.LockDevice(PolicyBuilder::kFakeUsername,
                                            DEVICE_MODE_ENTERPRISE,
                                            PolicyBuilder::kFakeDeviceId));
-  owner_key_util_->SetPublicKeyFromPrivateKey(policy_.signing_key());
-  device_settings_service_.OwnerKeySet(true);
-  device_settings_test_helper_.set_policy_blob(policy_.GetBlob());
-  device_settings_test_helper_.Flush();
+  FlushDeviceSettings();
   EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());
   EXPECT_TRUE(manager_.IsInitializationComplete());
 
   PolicyBundle bundle;
   bundle.Get(POLICY_DOMAIN_CHROME, std::string()).Set(
       key::kDeviceMetricsReportingEnabled, POLICY_LEVEL_MANDATORY,
-      POLICY_SCOPE_MACHINE, Value::CreateBooleanValue(true));
+      POLICY_SCOPE_MACHINE, Value::CreateBooleanValue(false));
   EXPECT_TRUE(manager_.policies().Equals(bundle));
 
   manager_.Connect(&local_state_, &device_management_service_);
@@ -125,10 +99,7 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, EnrolledDevice) {
 }
 
 TEST_F(DeviceCloudPolicyManagerChromeOSTest, ConsumerDevice) {
-  owner_key_util_->SetPublicKeyFromPrivateKey(policy_.signing_key());
-  device_settings_service_.OwnerKeySet(true);
-  device_settings_test_helper_.set_policy_blob(policy_.GetBlob());
-  device_settings_test_helper_.Flush();
+  FlushDeviceSettings();
   EXPECT_EQ(CloudPolicyStore::STATUS_BAD_STATE, store_->status());
   EXPECT_TRUE(manager_.IsInitializationComplete());
 
@@ -168,20 +139,21 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     DeviceCloudPolicyManagerChromeOSTest::SetUp();
 
     // Set up test data.
-    policy_.set_new_signing_key(PolicyBuilder::CreateTestNewSigningKey());
-    policy_.policy_data().set_timestamp(
+    device_policy_.set_new_signing_key(
+        PolicyBuilder::CreateTestNewSigningKey());
+    device_policy_.policy_data().set_timestamp(
         (base::Time::NowFromSystemTime() -
          base::Time::UnixEpoch()).InMilliseconds());
-    policy_.Build();
+    device_policy_.Build();
 
     register_response_.mutable_register_response()->set_device_management_token(
         PolicyBuilder::kFakeToken);
     fetch_response_.mutable_policy_response()->add_response()->CopyFrom(
-        policy_.policy());
-    loaded_blob_ = policy_.GetBlob();
+        device_policy_.policy());
+    loaded_blob_ = device_policy_.GetBlob();
 
     // Initialize the manager.
-    device_settings_test_helper_.Flush();
+    FlushDeviceSettings();
     EXPECT_EQ(CloudPolicyStore::STATUS_BAD_STATE, store_->status());
     EXPECT_TRUE(manager_.IsInitializationComplete());
 
@@ -210,7 +182,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
 
       bundle.Get(POLICY_DOMAIN_CHROME, std::string()).Set(
           key::kDeviceMetricsReportingEnabled, POLICY_LEVEL_MANDATORY,
-          POLICY_SCOPE_MACHINE, Value::CreateBooleanValue(true));
+          POLICY_SCOPE_MACHINE, Value::CreateBooleanValue(false));
       EXPECT_TRUE(manager_.policies().Equals(bundle));
     }
 
@@ -268,16 +240,17 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     // Process policy store.
     device_settings_test_helper_.set_store_result(store_result_);
     device_settings_test_helper_.FlushStore();
-    EXPECT_EQ(policy_.GetBlob(), device_settings_test_helper_.policy_blob());
+    EXPECT_EQ(device_policy_.GetBlob(),
+              device_settings_test_helper_.policy_blob());
 
     if (done_)
       return;
 
     // Key installation and policy load.
     device_settings_test_helper_.set_policy_blob(loaded_blob_);
-    owner_key_util_->SetPublicKeyFromPrivateKey(policy_.new_signing_key());
-    device_settings_service_.OwnerKeySet(true);
-    device_settings_test_helper_.Flush();
+    owner_key_util_->SetPublicKeyFromPrivateKey(
+        device_policy_.new_signing_key());
+    ReloadDeviceSettings();
   }
 
   DeviceManagementStatus register_status_;
@@ -323,10 +296,10 @@ TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, PolicyFetchFailed) {
 }
 
 TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, ValidationFailed) {
-  policy_.policy().set_policy_data_signature("bad");
+  device_policy_.policy().set_policy_data_signature("bad");
   fetch_response_.clear_policy_response();
   fetch_response_.mutable_policy_response()->add_response()->CopyFrom(
-      policy_.policy());
+      device_policy_.policy());
   expected_enrollment_status_ = EnrollmentStatus::STATUS_VALIDATION_FAILED;
   expected_validation_status_ =
       CloudPolicyValidatorBase::VALIDATION_BAD_SIGNATURE;

@@ -26,6 +26,11 @@ bool MockOwnerKeyUtil::IsPublicKeyPresent() {
   return !public_key_.empty();
 }
 
+void MockOwnerKeyUtil::Clear() {
+  public_key_.clear();
+  private_key_.reset();
+}
+
 void MockOwnerKeyUtil::SetPublicKey(const std::vector<uint8>& key) {
   public_key_ = key;
 }

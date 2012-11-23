@@ -11,8 +11,16 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
+#include "base/message_loop.h"
 #include "base/string_util.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
+#include "chrome/browser/chromeos/settings/mock_owner_key_util.h"
+#include "chrome/browser/policy/policy_builder.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "content/public/test/test_browser_thread.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 
@@ -131,6 +139,39 @@ class ScopedDeviceSettingsTestHelper : public DeviceSettingsTestHelper {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScopedDeviceSettingsTestHelper);
+};
+
+// A convenience test base class that initializes a DeviceSettingsService
+// instance for testing and allows for straightforward updating of device
+// settings. |device_settings_service_| starts out in uninitialized state, so
+// startup code gets tested as well.
+class DeviceSettingsTestBase : public testing::Test {
+ protected:
+  DeviceSettingsTestBase();
+  virtual ~DeviceSettingsTestBase();
+
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
+
+  // Flushes any pending device settings operations.
+  void FlushDeviceSettings();
+
+  // Triggers an owner key and device settings reload on
+  // |device_settings_service_| and flushes the resulting load operation.
+  void ReloadDeviceSettings();
+
+  MessageLoop loop_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
+
+  policy::DevicePolicyBuilder device_policy_;
+
+  DeviceSettingsTestHelper device_settings_test_helper_;
+  scoped_refptr<MockOwnerKeyUtil> owner_key_util_;
+  DeviceSettingsService device_settings_service_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DeviceSettingsTestBase);
 };
 
 }  // namespace chromeos

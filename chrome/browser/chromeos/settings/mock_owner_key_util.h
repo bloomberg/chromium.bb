@@ -25,6 +25,9 @@ class MockOwnerKeyUtil : public OwnerKeyUtil {
       const std::vector<uint8>& key) OVERRIDE;
   virtual bool IsPublicKeyPresent() OVERRIDE;
 
+  // Clears the public and private keys.
+  void Clear();
+
   // Configures the mock to return the given public key.
   void SetPublicKey(const std::vector<uint8>& key);
 

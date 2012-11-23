@@ -7,14 +7,10 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
-#include "chrome/browser/chromeos/settings/mock_owner_key_util.h"
 #include "chrome/browser/policy/mock_device_management_service.h"
 #include "chrome/browser/policy/policy_builder.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace em = enterprise_management;
@@ -30,21 +26,14 @@ class MockDeviceLocalAccountPolicyServiceObserver
   MOCK_METHOD0(OnDeviceLocalAccountsChanged, void(void));
 };
 
-class DeviceLocalAccountPolicyServiceTest : public testing::Test {
+class DeviceLocalAccountPolicyServiceTest
+    : public chromeos::DeviceSettingsTestBase {
  protected:
   DeviceLocalAccountPolicyServiceTest()
-      : loop_(MessageLoop::TYPE_UI),
-        ui_thread_(content::BrowserThread::UI, &loop_),
-        file_thread_(content::BrowserThread::FILE, &loop_),
-        owner_key_util_(new chromeos::MockOwnerKeyUtil()),
-        service_(&device_settings_test_helper_, &device_settings_service_) {}
+      : service_(&device_settings_test_helper_, &device_settings_service_) {}
 
   virtual void SetUp() OVERRIDE {
-    owner_key_util_->SetPublicKeyFromPrivateKey(device_policy_.signing_key());
-
-    device_settings_service_.Initialize(&device_settings_test_helper_,
-                                        owner_key_util_);
-    device_settings_service_.Load();
+    DeviceSettingsTestBase::SetUp();
 
     device_local_account_policy_.payload().mutable_disablespdy()->
         set_disablespdy(true);
@@ -61,29 +50,19 @@ class DeviceLocalAccountPolicyServiceTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     service_.RemoveObserver(&observer_);
+
+    DeviceSettingsTestBase::TearDown();
   }
 
   void InstallDevicePolicy() {
     EXPECT_CALL(observer_, OnDeviceLocalAccountsChanged());
     device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
-    device_settings_test_helper_.Flush();
+    ReloadDeviceSettings();
     Mock::VerifyAndClearExpectations(&observer_);
   }
 
-  MessageLoop loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-
-  DevicePolicyBuilder device_policy_;
   UserPolicyBuilder device_local_account_policy_;
-
-  chromeos::DeviceSettingsTestHelper device_settings_test_helper_;
-  scoped_refptr<chromeos::MockOwnerKeyUtil> owner_key_util_;
-  chromeos::DeviceSettingsService device_settings_service_;
-  MockDeviceManagementService device_management_service_;
-
   MockDeviceLocalAccountPolicyServiceObserver observer_;
-
   DeviceLocalAccountPolicyService service_;
 
  private:
@@ -91,7 +70,6 @@ class DeviceLocalAccountPolicyServiceTest : public testing::Test {
 };
 
 TEST_F(DeviceLocalAccountPolicyServiceTest, NoAccounts) {
-  device_settings_test_helper_.Flush();
   EXPECT_FALSE(service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername));
 }
 
@@ -115,7 +93,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, LoadNoPolicy) {
       service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
   ASSERT_TRUE(broker);
   broker->Load();
-  device_settings_test_helper_.Flush();
+  FlushDeviceSettings();
   Mock::VerifyAndClearExpectations(&observer_);
 
   EXPECT_EQ(CloudPolicyStore::STATUS_LOAD_ERROR, broker->status());
@@ -136,7 +114,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, LoadValidationFailure) {
       service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
   ASSERT_TRUE(broker);
   broker->Load();
-  device_settings_test_helper_.Flush();
+  FlushDeviceSettings();
   Mock::VerifyAndClearExpectations(&observer_);
 
   EXPECT_EQ(CloudPolicyStore::STATUS_VALIDATION_ERROR, broker->status());
@@ -156,7 +134,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, LoadPolicy) {
       service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
   ASSERT_TRUE(broker);
   broker->Load();
-  device_settings_test_helper_.Flush();
+  FlushDeviceSettings();
   Mock::VerifyAndClearExpectations(&observer_);
 
   EXPECT_EQ(CloudPolicyStore::STATUS_OK, broker->status());
@@ -179,7 +157,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, StoreValidationFailure) {
       service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
   ASSERT_TRUE(broker);
   broker->Store(device_local_account_policy_.policy());
-  device_settings_test_helper_.Flush();
+  FlushDeviceSettings();
   Mock::VerifyAndClearExpectations(&observer_);
 
   EXPECT_EQ(CloudPolicyStore::STATUS_VALIDATION_ERROR, broker->status());
@@ -195,7 +173,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, StorePolicy) {
       service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
   ASSERT_TRUE(broker);
   broker->Store(device_local_account_policy_.policy());
-  device_settings_test_helper_.Flush();
+  FlushDeviceSettings();
   Mock::VerifyAndClearExpectations(&observer_);
 
   EXPECT_EQ(device_local_account_policy_.GetBlob(),
@@ -213,7 +191,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, DevicePolicyChange) {
   device_policy_.Build();
   device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
   device_settings_service_.PropertyChangeComplete(true);
-  device_settings_test_helper_.Flush();
+  FlushDeviceSettings();
   EXPECT_FALSE(service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername));
   Mock::VerifyAndClearExpectations(&observer_);
 }

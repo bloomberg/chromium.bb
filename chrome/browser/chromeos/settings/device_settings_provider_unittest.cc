@@ -9,21 +9,17 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
-#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/test/scoped_path_override.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
-#include "chrome/browser/chromeos/settings/mock_owner_key_util.h"
-#include "chrome/browser/policy/policy_builder.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,28 +31,18 @@ using ::testing::AnyNumber;
 using ::testing::Mock;
 using ::testing::_;
 
-class DeviceSettingsProviderTest: public testing::Test {
+class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
  public:
   MOCK_METHOD1(SettingChanged, void(const std::string&));
   MOCK_METHOD0(GetTrustedCallback, void(void));
 
  protected:
   DeviceSettingsProviderTest()
-      : message_loop_(MessageLoop::TYPE_UI),
-        ui_thread_(content::BrowserThread::UI, &message_loop_),
-        file_thread_(content::BrowserThread::FILE, &message_loop_),
-        local_state_(static_cast<TestingBrowserProcess*>(g_browser_process)),
-        owner_key_util_(new MockOwnerKeyUtil()),
+      : local_state_(static_cast<TestingBrowserProcess*>(g_browser_process)),
         user_data_dir_override_(chrome::DIR_USER_DATA) {}
 
   virtual void SetUp() OVERRIDE {
-    policy_.payload().mutable_metrics_enabled()->set_metrics_enabled(false);
-    policy_.Build();
-
-    device_settings_test_helper_.set_policy_blob(policy_.GetBlob());
-
-    device_settings_service_.Initialize(&device_settings_test_helper_,
-                                        owner_key_util_);
+    DeviceSettingsTestBase::SetUp();
 
     EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
     provider_.reset(
@@ -68,23 +54,12 @@ class DeviceSettingsProviderTest: public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    device_settings_service_.Shutdown();
+    DeviceSettingsTestBase::TearDown();
   }
-
-  MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
 
   ScopedStubCrosEnabler stub_cros_enabler_;
 
   ScopedTestingLocalState local_state_;
-
-  DeviceSettingsTestHelper device_settings_test_helper_;
-  scoped_refptr<MockOwnerKeyUtil> owner_key_util_;
-
-  DeviceSettingsService device_settings_service_;
-
-  policy::DevicePolicyBuilder policy_;
 
   scoped_ptr<DeviceSettingsProvider> provider_;
 
@@ -95,12 +70,9 @@ class DeviceSettingsProviderTest: public testing::Test {
 };
 
 TEST_F(DeviceSettingsProviderTest, InitializationTest) {
-  owner_key_util_->SetPublicKeyFromPrivateKey(policy_.signing_key());
-
   // Have the service load a settings blob.
   EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
-  device_settings_service_.Load();
-  device_settings_test_helper_.Flush();
+  ReloadDeviceSettings();
   Mock::VerifyAndClearExpectations(this);
 
   // Verify that the policy blob has been correctly parsed and trusted.
@@ -116,8 +88,8 @@ TEST_F(DeviceSettingsProviderTest, InitializationTest) {
 
 TEST_F(DeviceSettingsProviderTest, InitializationTestUnowned) {
   // Have the service check the key.
-  device_settings_service_.Load();
-  device_settings_test_helper_.Flush();
+  owner_key_util_->Clear();
+  ReloadDeviceSettings();
 
   // The trusted flag should be set before the call to PrepareTrustedValues.
   EXPECT_EQ(CrosSettingsProvider::TRUSTED,
@@ -137,7 +109,7 @@ TEST_F(DeviceSettingsProviderTest, InitializationTestUnowned) {
 
   // This shouldn't trigger a write.
   device_settings_test_helper_.set_policy_blob(std::string());
-  device_settings_test_helper_.Flush();
+  FlushDeviceSettings();
   EXPECT_EQ(std::string(), device_settings_test_helper_.policy_blob());
 
   // Verify the change has been applied.
@@ -149,8 +121,6 @@ TEST_F(DeviceSettingsProviderTest, InitializationTestUnowned) {
 
 TEST_F(DeviceSettingsProviderTest, SetPrefFailed) {
   // If we are not the owner no sets should work.
-  owner_key_util_->SetPublicKeyFromPrivateKey(policy_.signing_key());
-
   base::FundamentalValue value(true);
   EXPECT_CALL(*this, SettingChanged(kStatsReportingPref)).Times(1);
   provider_->Set(kStatsReportingPref, value);
@@ -158,7 +128,7 @@ TEST_F(DeviceSettingsProviderTest, SetPrefFailed) {
 
   // This shouldn't trigger a write.
   device_settings_test_helper_.set_policy_blob(std::string());
-  device_settings_test_helper_.Flush();
+  FlushDeviceSettings();
   EXPECT_EQ(std::string(), device_settings_test_helper_.policy_blob());
 
   // Verify the change has not been applied.
@@ -170,9 +140,9 @@ TEST_F(DeviceSettingsProviderTest, SetPrefFailed) {
 }
 
 TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
-  owner_key_util_->SetPrivateKey(policy_.signing_key());
-  device_settings_service_.SetUsername(policy_.policy_data().username());
-  device_settings_test_helper_.Flush();
+  owner_key_util_->SetPrivateKey(device_policy_.signing_key());
+  device_settings_service_.SetUsername(device_policy_.policy_data().username());
+  FlushDeviceSettings();
 
   base::FundamentalValue value(true);
   EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
@@ -182,7 +152,7 @@ TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
 
   // Process the store.
   device_settings_test_helper_.set_policy_blob(std::string());
-  device_settings_test_helper_.Flush();
+  FlushDeviceSettings();
 
   // Verify that the device policy has been adjusted.
   ASSERT_TRUE(device_settings_service_.device_settings());
@@ -198,9 +168,9 @@ TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
 }
 
 TEST_F(DeviceSettingsProviderTest, SetPrefTwice) {
-  owner_key_util_->SetPrivateKey(policy_.signing_key());
-  device_settings_service_.SetUsername(policy_.policy_data().username());
-  device_settings_test_helper_.Flush();
+  owner_key_util_->SetPrivateKey(device_policy_.signing_key());
+  device_settings_service_.SetUsername(device_policy_.policy_data().username());
+  FlushDeviceSettings();
 
   EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
 
@@ -211,7 +181,7 @@ TEST_F(DeviceSettingsProviderTest, SetPrefTwice) {
 
   // Let the changes propagate through the system.
   device_settings_test_helper_.set_policy_blob(std::string());
-  device_settings_test_helper_.Flush();
+  FlushDeviceSettings();
 
   // Verify the second change has been applied.
   const base::Value* saved_value = provider_->Get(kReleaseChannel);
@@ -221,12 +191,10 @@ TEST_F(DeviceSettingsProviderTest, SetPrefTwice) {
 }
 
 TEST_F(DeviceSettingsProviderTest, PolicyRetrievalFailedBadSignature) {
-  owner_key_util_->SetPublicKeyFromPrivateKey(policy_.signing_key());
-  policy_.policy().set_policy_data_signature("bad signature");
-  device_settings_test_helper_.set_policy_blob(policy_.GetBlob());
-
-  device_settings_service_.Load();
-  device_settings_test_helper_.Flush();
+  owner_key_util_->SetPublicKeyFromPrivateKey(device_policy_.signing_key());
+  device_policy_.policy().set_policy_data_signature("bad signature");
+  device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+  ReloadDeviceSettings();
 
   // Verify that the cached settings blob is not "trusted".
   EXPECT_EQ(DeviceSettingsService::STORE_VALIDATION_ERROR,
@@ -236,11 +204,9 @@ TEST_F(DeviceSettingsProviderTest, PolicyRetrievalFailedBadSignature) {
 }
 
 TEST_F(DeviceSettingsProviderTest, PolicyRetrievalNoPolicy) {
-  owner_key_util_->SetPublicKeyFromPrivateKey(policy_.signing_key());
+  owner_key_util_->SetPublicKeyFromPrivateKey(device_policy_.signing_key());
   device_settings_test_helper_.set_policy_blob(std::string());
-
-  device_settings_service_.Load();
-  device_settings_test_helper_.Flush();
+  ReloadDeviceSettings();
 
   // Verify that the cached settings blob is not "trusted".
   EXPECT_EQ(DeviceSettingsService::STORE_NO_POLICY,
@@ -250,7 +216,6 @@ TEST_F(DeviceSettingsProviderTest, PolicyRetrievalNoPolicy) {
 }
 
 TEST_F(DeviceSettingsProviderTest, PolicyFailedPermanentlyNotification) {
-  owner_key_util_->SetPublicKeyFromPrivateKey(policy_.signing_key());
   device_settings_test_helper_.set_policy_blob(std::string());
 
   EXPECT_CALL(*this, GetTrustedCallback());
@@ -259,8 +224,7 @@ TEST_F(DeviceSettingsProviderTest, PolicyFailedPermanentlyNotification) {
                 base::Bind(&DeviceSettingsProviderTest::GetTrustedCallback,
                            base::Unretained(this))));
 
-  device_settings_service_.Load();
-  device_settings_test_helper_.Flush();
+  ReloadDeviceSettings();
   Mock::VerifyAndClearExpectations(this);
 
   EXPECT_EQ(CrosSettingsProvider::PERMANENTLY_UNTRUSTED,
@@ -275,8 +239,7 @@ TEST_F(DeviceSettingsProviderTest, PolicyLoadNotification) {
                 base::Bind(&DeviceSettingsProviderTest::GetTrustedCallback,
                            base::Unretained(this))));
 
-  device_settings_service_.Load();
-  device_settings_test_helper_.Flush();
+  ReloadDeviceSettings();
   Mock::VerifyAndClearExpectations(this);
 }
 
@@ -289,7 +252,7 @@ TEST_F(DeviceSettingsProviderTest, StatsReportingMigration) {
 
   // This should trigger migration because the metrics policy isn't in the blob.
   device_settings_test_helper_.set_policy_blob(std::string());
-  device_settings_test_helper_.Flush();
+  FlushDeviceSettings();
   EXPECT_EQ(std::string(), device_settings_test_helper_.policy_blob());
 
   // Verify that migration has kicked in.
