@@ -303,47 +303,11 @@ void DoGetEvents(ListValue* results,
   }
 }
 
-// Create a list of metric data for a given time range and metric. The data
-// will be aggregated according to |aggregation_method|, and times will be
-// converted to JS-style times. This data will be passed to the UI for display.
-scoped_ptr<ListValue> GetDisplayMetricsForInterval(
-    const TimeRange& interval,
-    MetricType metric_type,
-    const base::TimeDelta& resolution,
-    AggregationMethod aggregation_method,
-    double conversion_factor) {
-  Database* db = PerformanceMonitor::GetInstance()->database();
-  scoped_ptr<Database::MetricVector> metric_vector =
-      db->GetStatsForActivityAndMetric(
-          metric_type, interval.start, interval.end);
-  scoped_ptr<Database::MetricVector> aggregated_metrics =
-      AggregateMetric(metric_type,
-                      metric_vector.get(),
-                      interval.start,
-                      resolution,
-                      aggregation_method);
-
-  scoped_ptr<ListValue> metrics_list(new ListValue());
-
-  if (!aggregated_metrics)
-    return metrics_list.Pass();
-
-  for (Database::MetricVector::const_iterator iter =
-           aggregated_metrics->begin();
-       iter != aggregated_metrics->end(); ++iter) {
-    DictionaryValue* metric_value = new DictionaryValue();
-    metric_value->SetDouble("time", iter->time.ToJsTime());
-    metric_value->SetDouble("value", iter->value * conversion_factor);
-    metrics_list->Append(metric_value);
-  }
-
-  return metrics_list.Pass();
-}
-
 // Populates results with a dictionary for each metric requested. The dictionary
 // includes a metric id, the maximum value for the metric, and a list of lists
-// of metric points, with each sublist containing the data for an interval
-// for which PerformanceMonitor was active.
+// of metric points, with each sublist containing the aggregated data for an
+// interval for which PerformanceMonitor was active. This will also convert
+// time to JS-style time.
 void DoGetMetrics(ListValue* results,
                   const std::set<MetricType>& metric_types,
                   const base::Time& start,
@@ -367,19 +331,48 @@ void DoGetMetrics(ListValue* results,
         "maxValue",
         db->GetMaxStatsForActivityAndMetric(*metric_type) * conversion_factor);
 
+    // Retrieve all metrics in the database, and aggregate them into a series
+    // of points for each active interval.
+    scoped_ptr<Database::MetricVector> metric_vector =
+        db->GetStatsForActivityAndMetric(*metric_type, start, end);
+
+    scoped_ptr<VectorOfMetricVectors> aggregated_metrics =
+        AggregateMetric(*metric_type,
+                        metric_vector.get(),
+                        start,
+                        intervals,
+                        resolution,
+                        aggregation_method);
+
+    // The JS-side expects a list to be present, even if there are no metrics.
+    if (!aggregated_metrics) {
+      metric_set->Set("metrics", new ListValue());
+      results->Append(metric_set);
+      continue;
+    }
+
     ListValue* metric_points_by_interval = new ListValue();
-    for (std::vector<TimeRange>::const_iterator time_range = intervals.begin();
-         time_range != intervals.end(); ++time_range) {
-      metric_points_by_interval->Append(
-          GetDisplayMetricsForInterval(*time_range,
-                                       *metric_type,
-                                       resolution,
-                                       aggregation_method,
-                                       conversion_factor).release());
+
+    // For each metric point, record it in the expected format for the JS-side
+    // (a dictionary of time and value, with time as a JS-style time), and
+    // convert the values to be display-friendly.
+    for (VectorOfMetricVectors::const_iterator metric_series =
+             aggregated_metrics->begin();
+         metric_series != aggregated_metrics->end(); ++metric_series) {
+      ListValue* series_value = new ListValue();
+      for (Database::MetricVector::const_iterator metric_point =
+               metric_series->begin();
+           metric_point != metric_series->end(); ++metric_point) {
+        DictionaryValue* point_value = new DictionaryValue();
+        point_value->SetDouble("time", metric_point->time.ToJsTime());
+        point_value->SetDouble("value",
+                               metric_point->value * conversion_factor);
+        series_value->Append(point_value);
+      }
+      metric_points_by_interval->Append(series_value);
     }
 
     metric_set->Set("metrics", metric_points_by_interval);
-
     results->Append(metric_set);
   }
 }
