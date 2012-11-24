@@ -328,7 +328,7 @@ bool ThumbnailDatabase::InitFaviconBitmapsIndex() {
 
 void ThumbnailDatabase::LogIfFaviconDBStructureIncorrect() {
   if (!db_.IsSQLValid("SELECT id, url, icon_type, sizes FROM favicons"))
-    UMA_HISTOGRAM_BOOLEAN("ThumbnailDatabase.InvalidFaviconsDBStructure", true);
+    UMA_HISTOGRAM_BOOLEAN("History.InvalidFaviconsDBStructure", true);
 }
 
 void ThumbnailDatabase::BeginTransaction() {
