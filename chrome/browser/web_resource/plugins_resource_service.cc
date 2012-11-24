@@ -20,7 +20,8 @@ const int kStartResourceFetchDelayMs = 60 * 1000;
 const int kCacheUpdateDelayMs = 24 * 60 * 60 * 1000;
 const int kTestCacheUpdateDelayMs = 2 * 60 * 1000;
 
-const char kPluginsServerUrl[] = "https://www.gstatic.com/chrome/config/";
+const char kPluginsServerUrl[] =
+    "https://www.gstatic.com/chrome/config/plugins_2/";
 
 bool IsTest() {
   return CommandLine::ForCurrentProcess()->HasSwitch(

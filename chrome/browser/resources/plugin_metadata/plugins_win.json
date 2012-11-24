@@ -10,7 +10,7 @@
       }
     ],
     "name": "Google Talk",
-    "group_name_matcher": "Google Talk"
+    "group_name_matcher": "*Google Talk*"
   },
   "java-runtime-environment": {
     "mime_types": [
@@ -72,7 +72,51 @@
     "help_url": "https://support.google.com/chrome/?p=plugin_java",
     "url": "http://java.com/download",
     "displayurl": true,
-    "group_name_matcher": "Java"
+    "group_name_matcher": "Java*"
+  },
+  "ibm-java-runtime-environment": {
+    "mime_types": [
+      "application/x-java-applet",
+      "application/x-java-applet;jpi-version=1.7.0_05",
+      "application/x-java-applet;version=1.1",
+      "application/x-java-applet;version=1.1.1",
+      "application/x-java-applet;version=1.1.2",
+      "application/x-java-applet;version=1.1.3",
+      "application/x-java-applet;version=1.2",
+      "application/x-java-applet;version=1.2.1",
+      "application/x-java-applet;version=1.2.2",
+      "application/x-java-applet;version=1.3",
+      "application/x-java-applet;version=1.3.1",
+      "application/x-java-applet;version=1.4",
+      "application/x-java-applet;version=1.4.1",
+      "application/x-java-applet;version=1.4.2",
+      "application/x-java-applet;version=1.5",
+      "application/x-java-applet;version=1.6",
+      "application/x-java-applet;version=1.7",
+      "application/x-java-bean",
+      "application/x-java-bean;jpi-version=1.7.0_05",
+      "application/x-java-bean;version=1.1",
+      "application/x-java-bean;version=1.1.1",
+      "application/x-java-bean;version=1.1.2",
+      "application/x-java-bean;version=1.1.3",
+      "application/x-java-bean;version=1.2",
+      "application/x-java-bean;version=1.2.1",
+      "application/x-java-bean;version=1.2.2",
+      "application/x-java-bean;version=1.3",
+      "application/x-java-bean;version=1.3.1",
+      "application/x-java-bean;version=1.4",
+      "application/x-java-bean;version=1.4.1",
+      "application/x-java-bean;version=1.4.2",
+      "application/x-java-bean;version=1.5",
+      "application/x-java-bean;version=1.6",
+      "application/x-java-bean;version=1.7",
+      "application/x-java-vm",
+      "application/x-java-vm-npruntime"
+    ],
+    "versions": [
+    ],
+    "name": "IBM Java",
+    "group_name_matcher": "*IBM*Java*"
   },
   "realplayer": {
     "mime_types": [
@@ -92,7 +136,7 @@
     "name": "RealPlayer",
     "help_url": "https://support.google.com/chrome/?p=plugin_real",
     "url": "http://forms.real.com/real/realone/download.html?type=rpsp_us",
-    "group_name_matcher": "RealPlayer"
+    "group_name_matcher": "*RealPlayer*"
   },
   "adobe-flash-player": {
     "mime_types": [
@@ -111,7 +155,7 @@
     "help_url": "https://support.google.com/chrome/?p=plugin_flash",
     "url": "http://get.adobe.com/flashplayer/",
     "displayurl": true,
-    "group_name_matcher": "Shockwave Flash"
+    "group_name_matcher": "*Shockwave Flash*"
   },
   "adobe-shockwave": {
     "mime_types": [
@@ -128,7 +172,7 @@
     "name": "Adobe Shockwave Player",
     "help_url": "https://support.google.com/chrome/?p=plugin_shockwave",
     "url": "http://fpdownload.macromedia.com/get/shockwave/default/english/win95nt/latest/Shockwave_Installer_Slim.exe",
-    "group_name_matcher": "Shockwave for Director"
+    "group_name_matcher": "*Shockwave for Director*"
   },
   "adobe-reader": {
     "mime_types": [
@@ -159,7 +203,7 @@
     "name": "Adobe Reader",
     "help_url": "https://support.google.com/chrome/?p=plugin_pdf",
     "url": "http://ardownload.adobe.com/pub/adobe/reader/win/10.x/10.1.4/en_US/AdbeRdr1014_en_US.exe",
-    "group_name_matcher": "Adobe Acrobat"
+    "group_name_matcher": "*Adobe Acrobat*"
   },
   "apple-quicktime": {
     "mime_types": [
@@ -223,7 +267,7 @@
     "name": "QuickTime Player",
     "help_url": "https://support.google.com/chrome/?p=plugin_quicktime",
     "url": "http://appldnld.apple.com/QuickTime/041-3089.20111026.Sxpr4/QuickTimeInstaller.exe",
-    "group_name_matcher": "QuickTime Plug-in"
+    "group_name_matcher": "*QuickTime Plug-in*"
   },
   "windows-media-player": {
     "mime_types": [
@@ -243,7 +287,7 @@
     "help_url": "https://support.google.com/chrome/?p=plugin_wmp",
     "url": "http://www.interoperabilitybridges.com/wmp-extension-for-chrome",
     "displayurl": true,
-    "group_name_matcher": "Windows Media Player"
+    "group_name_matcher": "*Windows Media Player*"
   },
   "divx-player": {
     "mime_types": [
@@ -260,7 +304,7 @@
     "name": "DivX Web Player",
     "help_url": "https://support.google.com/chrome/?p=plugin_divx",
     "url": "http://download.divx.com/player/divxdotcom/DivXWebPlayerInstaller.exe",
-    "group_name_matcher": "DivX Web Player"
+    "group_name_matcher": "*DivX Web Player*"
   },
   "silverlight": {
     "mime_types": [
@@ -277,7 +321,7 @@
     "lang": "en-US",
     "name": "Silverlight",
     "url": "http://go.microsoft.com/fwlink/?LinkID=149156",
-    "group_name_matcher": "Silverlight"
+    "group_name_matcher": "*Silverlight*"
   },
   "microsoft-office": {
     "mime_types": [
@@ -290,7 +334,7 @@
       }
     ],
     "name": "Microsoft Office",
-    "group_name_matcher": "Microsoft Office"
+    "group_name_matcher": "*Microsoft Office*"
   },
   "nvidia-3d": {
     "mime_types": [
@@ -303,7 +347,7 @@
       }
     ],
     "name": "NVIDIA 3D",
-    "group_name_matcher": "NVIDIA 3D"
+    "group_name_matcher": "*NVIDIA 3D*"
   },
   "google-chrome-pdf": {
     "mime_types": [
@@ -316,6 +360,6 @@
       }
     ],
     "name": "Chrome PDF Viewer",
-    "group_name_matcher": "Chrome PDF Viewer"
+    "group_name_matcher": "*Chrome PDF Viewer*"
   }
 }

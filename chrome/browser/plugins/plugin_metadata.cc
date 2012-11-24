@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/webplugininfo.h"
@@ -69,7 +70,7 @@ bool PluginMetadata::MatchesPlugin(const webkit::WebPluginInfo& plugin) {
       return false;
   }
 
-  return plugin.name.find(group_name_matcher_) != string16::npos;
+  return MatchPattern(plugin.name, group_name_matcher_);
 }
 
 // static

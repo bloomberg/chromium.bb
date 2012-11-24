@@ -10,7 +10,7 @@
       }
     ],
     "name": "Google Talk",
-    "group_name_matcher": "Google Talk"
+    "group_name_matcher": "*Google Talk*"
   },
   "java-runtime-environment": {
     "mime_types": [
@@ -67,7 +67,7 @@
     "help_url": "https://support.google.com/chrome/?p=plugin_java",
     "url": "http://java.com/download",
     "displayurl": true,
-    "group_name_matcher": "Java"
+    "group_name_matcher": "Java*"
   },
   "adobe-flash-player": {
     "mime_types": [
@@ -89,7 +89,7 @@
     "help_url": "https://support.google.com/chrome/?p=plugin_flash",
     "url": "http://get.adobe.com/flashplayer/",
     "displayurl": true,
-    "group_name_matcher": "Shockwave Flash"
+    "group_name_matcher": "*Shockwave Flash*"
   },
   "lightspark": {
     "mime_types": [
@@ -108,7 +108,7 @@
     "name": "Lightspark",
     "displayurl": true,
     "url": "https://launchpad.net/lightspark",
-    "group_name_matcher": "Shockwave Flash"
+    "group_name_matcher": "*Shockwave Flash*"
   },
   "redhat-icetea-java": {
     "mime_types": [
@@ -151,7 +151,7 @@
     "name": "IcedTea",
     "url": "http://icedtea.classpath.org/",
     "displayurl": true,
-    "group_name_matcher": "IcedTea"
+    "group_name_matcher": "*IcedTea*"
   },
   "google-chrome-pdf": {
     "mime_types": [
@@ -164,6 +164,6 @@
       }
     ],
     "name": "Chrome PDF Viewer",
-    "group_name_matcher": "Chrome PDF Viewer"
+    "group_name_matcher": "*Chrome PDF Viewer*"
   }
 }

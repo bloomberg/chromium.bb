@@ -10,7 +10,7 @@
       }
     ],
     "name": "Google Talk",
-    "group_name_matcher": "Google Talk"
+    "group_name_matcher": "*Google Talk*"
   },
   "adobe-flash-player": {
     "mime_types": [
@@ -27,7 +27,7 @@
     "help_url": "https://support.google.com/chrome/?p=plugin_flash",
     "url": "http://get.adobe.com/flashplayer/",
     "displayurl": true,
-    "group_name_matcher": "Shockwave Flash"
+    "group_name_matcher": "*Shockwave Flash*"
   },
   "google-chrome-pdf": {
     "mime_types": [
@@ -40,7 +40,7 @@
       }
     ],
     "name": "Chrome PDF Viewer",
-    "group_name_matcher": "Chrome PDF Viewer"
+    "group_name_matcher": "*Chrome PDF Viewer*"
   },
   "netflix": {
     "mime_types": [
@@ -53,6 +53,6 @@
       }
     ],
     "name": "Netflix",
-    "group_name_matcher": "Netflix"
+    "group_name_matcher": "*Netflix*"
   }
 }
