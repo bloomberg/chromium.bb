@@ -78,38 +78,14 @@ class ChromeChannelListener : public IPC::Listener {
   }
 };
 
-bool LaunchChromeAndWaitForIPCConnection(const std::string& channel_name) {
-  FilePath chrome_path;
-  if (!PathService::Get(base::FILE_EXE, &chrome_path))
-    return false;
-  CommandLine cl(chrome_path);
-
-  FilePath user_data_dir = CommandLine::ForCurrentProcess()->
-      GetSwitchValuePath(switches::kUserDataDir);
-  if (!user_data_dir.empty())
-    cl.AppendSwitchPath(switches::kUserDataDir, user_data_dir);
-
-  // Prevent a Chrome window from showing up on the desktop.
-  cl.AppendSwitch(switches::kSilentLaunch);
-
-  // Tell Chrome the IPC channel name to use.
-  cl.AppendSwitchASCII(switches::kViewerConnection, channel_name);
-
-  base::LaunchOptions launch_options;
-  launch_options.force_breakaway_from_job_ = true;
-  launch_options.start_hidden = true;
-
-  if (base::LaunchProcess(cl, launch_options, NULL)) {
-    int ms_elapsed = 0;
-    while (!IPC::Channel::IsNamedServerInitialized(channel_name) &&
-           ms_elapsed < 10000) {
-      ms_elapsed += 500;
-      Sleep(500);
-    }
-    return IPC::Channel::IsNamedServerInitialized(channel_name);
+bool WaitForChromeIPCConnection(const std::string& channel_name) {
+  int ms_elapsed = 0;
+  while (!IPC::Channel::IsNamedServerInitialized(channel_name) &&
+         ms_elapsed < 10000) {
+    ms_elapsed += 500;
+    Sleep(500);
   }
-
-  return false;
+  return IPC::Channel::IsNamedServerInitialized(channel_name);
 }
 
 // This class helps decoding the pointer properties of an event.
@@ -329,10 +305,14 @@ ChromeAppViewAsh::Run() {
   io_thread.StartWithOptions(options);
 
   std::string ipc_channel_name("viewer");
-  ipc_channel_name.append(IPC::Channel::GenerateUniqueRandomChannelID());
+
+  // TODO(robertshield): Figure out how to receive and append the channel ID
+  // from the delegate_execute instance that launched the browser process.
+  // See http://crbug.com/162474
+  // ipc_channel_name.append(IPC::Channel::GenerateUniqueRandomChannelID());
 
   // Start up Chrome and wait for the desired IPC server connection to exist.
-  LaunchChromeAndWaitForIPCConnection(ipc_channel_name);
+  WaitForChromeIPCConnection(ipc_channel_name);
 
   // In Aura mode we create an IPC channel to the browser, then ask it to
   // connect to us.
