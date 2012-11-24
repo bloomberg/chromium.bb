@@ -197,6 +197,18 @@ public:
         DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockSoftware);
     };
 
+    // Acquire pixel buffer for resource. The pixel buffer can be used to
+    // set resource pixels without performing unnecessary copying.
+    void acquirePixelBuffer(ResourceId id);
+    void releasePixelBuffer(ResourceId id);
+
+    // Map/unmap the acquired pixel buffer.
+    uint8_t* mapPixelBuffer(ResourceId id);
+    void unmapPixelBuffer(ResourceId id);
+
+    // Update pixels from acquired pixel buffer.
+    void setPixelsFromBuffer(ResourceId id);
+
 private:
     struct Resource {
         Resource();
@@ -204,8 +216,11 @@ private:
         Resource(uint8_t* pixels, int pool, const gfx::Size& size, GLenum format);
 
         unsigned glId;
+        // Pixel buffer used for set pixels without unnecessary copying.
+        unsigned glPixelBufferId;
         Mailbox mailbox;
         uint8_t* pixels;
+        uint8_t* pixelBuffer;
         int pool;
         int lockForReadCount;
         bool lockedForWrite;
