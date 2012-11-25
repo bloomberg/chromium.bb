@@ -83,12 +83,12 @@ ValueDescription protected_password = {
 };
 
 void EncryptAndWrite(RegKey* key, const ValueDescription* value) {
-  string data;
+  std::string data;
   size_t data_size = (lstrlen(value->value) + 1) * sizeof(wchar_t);
   data.resize(data_size);
   memcpy(&data[0], value->value, data_size);
 
-  std::vector<uint8> encrypted_data = EncryptData(data);
+  std::vector<uint8> encrypted_data = syncer::EncryptData(data);
   EXPECT_EQ(ERROR_SUCCESS, key->WriteValue(value->value_name,
       &encrypted_data[0], encrypted_data.size(), REG_BINARY));
 }

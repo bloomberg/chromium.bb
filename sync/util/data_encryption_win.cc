@@ -1,8 +1,6 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// NOTE: this file is Winodws specific.
 
 #include "sync/util/data_encryption_win.h"
 
@@ -10,8 +8,6 @@
 #include <wincrypt.h>
 
 #include <cstddef>
-#include <string>
-#include <vector>
 
 #include "base/logging.h"
 
@@ -21,10 +17,9 @@
 // chrome/browser/password_manager/encryptor_win.cc.  Preferably, all
 // this stuff would live in crypto/.
 
-using std::string;
-using std::vector;
+namespace syncer {
 
-vector<uint8> EncryptData(const string& data) {
+std::vector<uint8> EncryptData(const std::string& data) {
   DATA_BLOB unencrypted_data = { 0 };
   unencrypted_data.pbData = (BYTE*)(data.data());
   unencrypted_data.cbData = data.size();
@@ -34,13 +29,13 @@ vector<uint8> EncryptData(const string& data) {
                         &encrypted_data))
     LOG(ERROR) << "Encryption fails: " << data;
 
-  vector<uint8> result(encrypted_data.pbData,
-                       encrypted_data.pbData + encrypted_data.cbData);
+  std::vector<uint8> result(encrypted_data.pbData,
+                            encrypted_data.pbData + encrypted_data.cbData);
   LocalFree(encrypted_data.pbData);
   return result;
 }
 
-bool DecryptData(const vector<uint8>& in_data, string* out_data) {
+bool DecryptData(const std::vector<uint8>& in_data, std::string* out_data) {
   DATA_BLOB encrypted_data, decrypted_data;
   encrypted_data.pbData =
     (in_data.empty() ? NULL : const_cast<BYTE*>(&in_data[0]));
@@ -58,3 +53,5 @@ bool DecryptData(const vector<uint8>& in_data, string* out_data) {
     return true;
   }
 }
+
+}  // namespace syncer

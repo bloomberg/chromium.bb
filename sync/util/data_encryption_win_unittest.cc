@@ -4,28 +4,24 @@
 
 #include "sync/util/data_encryption_win.h"
 
-#include <string>
-#include <vector>
-
 #include "testing/gtest/include/gtest/gtest.h"
 
-using std::string;
-using std::vector;
-
+namespace syncer {
 namespace {
 
 TEST(SyncDataEncryption, TestEncryptDecryptOfSampleString) {
-  vector<uint8> example(EncryptData("example"));
+  std::vector<uint8> example(EncryptData("example"));
   ASSERT_FALSE(example.empty());
-  string result;
+  std::string result;
   ASSERT_TRUE(DecryptData(example, &result));
   ASSERT_TRUE(result == "example");
 }
 
 TEST(SyncDataEncryption, TestDecryptFailure) {
-  vector<uint8> example(0, 0);
-  string result;
+  std::vector<uint8> example(0, 0);
+  std::string result;
   ASSERT_FALSE(DecryptData(example, &result));
 }
 
 }  // namespace
+}  // namespace syncer

@@ -10,10 +10,11 @@
 
 #include "base/basictypes.h"
 
-using std::string;
-using std::vector;
+namespace syncer {
 
-vector<uint8> EncryptData(const string& data);
-bool DecryptData(const vector<uint8>& in_data, string* out_data);
+std::vector<uint8> EncryptData(const std::string& data);
+bool DecryptData(const std::vector<uint8>& in_data, std::string* out_data);
+
+}  // namespace syncer
 
 #endif  // SYNC_UTIL_DATA_ENCRYPTION_WIN_H_
