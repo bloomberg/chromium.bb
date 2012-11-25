@@ -1159,6 +1159,7 @@ _FUNCTION_INFO = {
     'type': 'Bind',
     'decoder_func': 'DoBindBuffer',
     'gen_func': 'GenBuffersARB',
+    'impl_func': False,
   },
   'BindFramebuffer': {
     'type': 'Bind',

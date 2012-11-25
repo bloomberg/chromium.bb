@@ -1284,6 +1284,20 @@ void GLES2Implementation::BindUniformLocationCHROMIUM(
   helper_->SetBucketSize(kResultBucketId, 0);
 }
 
+void GLES2Implementation::BindBuffer(GLenum target, GLuint buffer) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBindBuffer("
+                 << GLES2Util::GetStringBufferTarget(target) << ", "
+                 << buffer << ")");
+  if (IsBufferReservedId(buffer)) {
+    SetGLError(GL_INVALID_OPERATION, "BindBuffer", "buffer reserved id");
+    return;
+  }
+  BindBufferHelper(target, buffer);
+  if (target != GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM)
+    helper_->BindBuffer(target, buffer);
+}
+
 void GLES2Implementation::GetVertexAttribPointerv(
     GLuint index, GLenum pname, void** ptr) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();

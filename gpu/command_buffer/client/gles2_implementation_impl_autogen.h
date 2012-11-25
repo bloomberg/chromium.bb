@@ -17,17 +17,6 @@ void GLES2Implementation::AttachShader(GLuint program, GLuint shader) {
   helper_->AttachShader(program, shader);
 }
 
-void GLES2Implementation::BindBuffer(GLenum target, GLuint buffer) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBindBuffer(" << GLES2Util::GetStringBufferTarget(target) << ", " << buffer << ")");  // NOLINT
-  if (IsBufferReservedId(buffer)) {
-    SetGLError(GL_INVALID_OPERATION, "BindBuffer", "buffer reserved id");
-    return;
-  }
-  BindBufferHelper(target, buffer);
-  helper_->BindBuffer(target, buffer);
-}
-
 void GLES2Implementation::BindFramebuffer(GLenum target, GLuint framebuffer) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBindFramebuffer(" << GLES2Util::GetStringFrameBufferTarget(target) << ", " << framebuffer << ")");  // NOLINT
