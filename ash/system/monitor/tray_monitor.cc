@@ -79,6 +79,7 @@ void TrayMonitor::OnGotHandles(const std::list<base::ProcessHandle>& handles) {
     pm->GetMemoryBytes(&private_bytes, &shared_bytes);
     total_private_bytes += private_bytes;
     total_shared_bytes += shared_bytes;
+    delete pm;
   }
   string16 private_size = ui::FormatBytes(total_private_bytes);
   string16 shared_size = ui::FormatBytes(total_shared_bytes);
