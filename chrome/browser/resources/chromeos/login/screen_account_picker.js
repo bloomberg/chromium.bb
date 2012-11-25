@@ -127,8 +127,12 @@ cr.define('login', function() {
       if (loginAttempts > MAX_LOGIN_ATTEMPTS_IN_POD) {
         activatedPod.showSigninUI();
       } else {
+        // We want bubble's arrow to point to the first letter of input.
+        /** @const */ var BUBBLE_OFFSET = 7;
+        /** @const */ var BUBBLE_PADDING = 4;
         $('bubble').showContentForElement(activatedPod.mainInput, error,
-                                          cr.ui.Bubble.Attachment.BOTTOM);
+                                          cr.ui.Bubble.Attachment.BOTTOM,
+                                          BUBBLE_OFFSET, BUBBLE_PADDING);
       }
     }
   };

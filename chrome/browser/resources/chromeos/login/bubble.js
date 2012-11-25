@@ -47,7 +47,7 @@ cr.define('cr.ui', function() {
      * Sets the attachment of the bubble.
      * @param {!Attachment} attachment Bubble attachment.
      */
-    setAttachment_: function (attachment) {
+    setAttachment_: function(attachment) {
       for (var k in Bubble.Attachment) {
         var v = Bubble.Attachment[k];
         this.classList[v == attachment ? 'add' : 'remove'](v);
@@ -86,23 +86,22 @@ cr.define('cr.ui', function() {
      *     left (for vertical attachment) or top (for horizontal attachment)
      *     side of the element. If not specified, the bubble is positioned to
      *     be aligned with the left/top side of the element but not farther than
-     *     half of its weight/height.
+     *     half of its width/height.
      * @param {number=} opt_padding Optional padding of the bubble.
-     * @public
      */
     showContentForElement: function(el, content, attachment,
                                     opt_offset, opt_padding) {
-      const ARROW_OFFSET = 25;
-      const DEFAULT_PADDING = 18;
+      /** @const */ var ARROW_OFFSET = 25;
+      /** @const */ var DEFAULT_PADDING = 18;
 
       if (typeof opt_padding == 'undefined')
         opt_padding = DEFAULT_PADDING;
 
       var origin = cr.ui.login.DisplayManager.getPosition(el);
       var offset = typeof opt_offset == 'undefined' ?
-          [ Math.min(ARROW_OFFSET, el.offsetWidth/2),
-            Math.min(ARROW_OFFSET, el.offsetHeight/2) ] :
-          [ opt_offset, opt_offset ];
+          [Math.min(ARROW_OFFSET, el.offsetWidth / 2),
+           Math.min(ARROW_OFFSET, el.offsetHeight / 2)] :
+          [opt_offset, opt_offset];
 
       var pos = {};
       if (isRTL()) {
@@ -161,7 +160,6 @@ cr.define('cr.ui', function() {
      *     be aligned with the left/top side of the element but not farther than
      *     half of its weight/height.
      * @param {number=} opt_padding Optional padding of the bubble.
-     * @public
      */
     showTextForElement: function(el, text, attachment,
                                  opt_offset, opt_padding) {
