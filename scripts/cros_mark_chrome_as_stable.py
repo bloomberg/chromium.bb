@@ -35,8 +35,8 @@ _CHROME_VERSION_REGEX = '\d+\.\d+\.\d+\.\d+'
 _NON_STICKY_REGEX = '%s[(_rc.*)|(_alpha.*)]+' % _CHROME_VERSION_REGEX
 
 # Dir where all the action happens.
-_CHROME_OVERLAY_DIR = ('%(srcroot)s/third_party/chromiumos-overlay'
-                       '/chromeos-base/chromeos-chrome')
+_CHROME_OVERLAY_DIR = ('%(srcroot)s/third_party/chromiumos-overlay/' +
+                       constants.CHROME_CP)
 
 _GIT_COMMIT_MESSAGE = ('Marking %(chrome_rev)s for chrome ebuild with version '
                        '%(chrome_version)s as stable.')
@@ -183,8 +183,8 @@ def _GetStickyEBuild(stable_ebuilds):
 
 class ChromeEBuild(portage_utilities.EBuild):
   """Thin sub-class of EBuild that adds a chrome_version field."""
-  chrome_version_re = re.compile('.*chromeos-chrome-(%s|9999).*' % (
-      _CHROME_VERSION_REGEX))
+  chrome_version_re = re.compile('.*%s-(%s|9999).*' % (
+      constants.CHROME_PN, _CHROME_VERSION_REGEX))
   chrome_version = ''
 
   def __init__(self, path):
@@ -358,25 +358,20 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
       return filecmp.cmp(
           new_ebuild.ebuild_path, stable_ebuild.ebuild_path, shallow=False)
 
-  base_path = os.path.join(overlay_dir, 'chromeos-chrome-%s' % chrome_version)
+  # Mark latest release and sticky branches as stable.
+  mark_stable = chrome_rev not in [constants.CHROME_REV_TOT,
+                                   constants.CHROME_REV_SPEC,
+                                   constants.CHROME_REV_LOCAL]
+
   # Case where we have the last stable candidate with same version just rev.
   if stable_candidate and stable_candidate.chrome_version == chrome_version:
     new_ebuild_path = '%s-r%d.ebuild' % (
         stable_candidate.ebuild_path_no_revision,
         stable_candidate.current_revision + 1)
   else:
-    if chrome_rev in [constants.CHROME_REV_LOCAL, constants.CHROME_REV_TOT,
-                      constants.CHROME_REV_SPEC]:
-      portage_suffix = '_alpha'
-    else:
-      portage_suffix = '_rc'
-
-    new_ebuild_path = base_path + ('%s-r1.ebuild' % portage_suffix)
-
-  # Mark latest release and sticky branches as stable.
-  mark_stable = chrome_rev not in [constants.CHROME_REV_TOT,
-                                   constants.CHROME_REV_SPEC,
-                                   constants.CHROME_REV_LOCAL]
+    suffix = 'rc' if mark_stable else 'alpha'
+    pf = '%s-%s_%s-r1' % (constants.CHROME_PN, chrome_version, suffix)
+    new_ebuild_path = os.path.join(overlay_dir, '%s.ebuild' % pf)
 
   chrome_variables = dict()
   if commit:

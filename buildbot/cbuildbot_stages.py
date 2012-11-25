@@ -1924,13 +1924,11 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
     def ArchiveStrippedChrome():
       """Generate and upload stripped Chrome package."""
-      cmd = ['strip_package', '--board', board,
-             'chromeos-chrome']
+      cmd = ['strip_package', '--board', board, constants.CHROME_PN]
       cros_build_lib.RunCommand(cmd, cwd=buildroot, enter_chroot=True)
       chrome_match = os.path.join(buildroot, 'chroot', 'build', board,
-                                  'stripped-packages', 'chromeos-base',
-                                  'chromeos-chrome-*')
-
+                                  'stripped-packages',
+                                  constants.CHROME_CP + '-*')
       files = glob.glob(chrome_match)
       files.sort()
       if not files:

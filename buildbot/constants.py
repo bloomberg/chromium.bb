@@ -79,6 +79,10 @@ CREATED_BRANCHES = [
 
 # Constants for uprevving Chrome
 
+# Portage category and package name for Chrome.
+CHROME_PN = 'chromeos-chrome'
+CHROME_CP = 'chromeos-base/%s' % CHROME_PN
+
 # Builds and validates _alpha ebuilds.  These builds sync to the latest
 # revsion of the Chromium src tree and build with that checkout.
 CHROME_REV_TOT = 'tot'

@@ -25,6 +25,7 @@ import optparse
 import time
 
 
+from chromite.buildbot import constants
 from chromite.lib import chrome_util
 from chromite.lib import cros_build_lib
 from chromite.lib import commandline
@@ -326,7 +327,7 @@ def _FetchChromePackage(tempdir, gs_path):
   cmd = [gs_bin, 'ls', gs_path]
   files = DebugRunCommandCaptureOutput(cmd).output.splitlines()
   files = [found for found in files if
-           _UrlBaseName(found).startswith('chromeos-chrome-')]
+           _UrlBaseName(found).startswith('%s-' % constants.CHROME_PN)]
   if not files:
     raise Exception('No chrome package found at %s' % gs_path)
   elif len(files) > 1:

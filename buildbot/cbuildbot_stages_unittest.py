@@ -783,7 +783,7 @@ class UprevStageTest(AbstractStageTest):
   def testChromeRevSuccess(self):
     """Case where MarkChromeAsStable returns an atom.  We shouldn't exit."""
     self.options.chrome_rev = 'tot'
-    chrome_atom = 'chromeos-base/chromeos-chrome-12.0.719.0_alpha-r1'
+    chrome_atom = '%s-12.0.719.0_alpha-r1' % constants.CHROME_CP
 
     commands.MarkChromeAsStable(
         self.build_root,
@@ -863,7 +863,6 @@ class BuildTargetStageTest(AbstractStageTest):
     self.images_root = os.path.join(self.build_root,
                                     'src/build/images/x86-generic')
     latest_image_dir = os.path.join(self.images_root, 'latest')
-    latest_built_image_dir = os.path.join(self.images_root, 'latest-cbuildbot')
     self.mox.StubOutWithMock(manifest_version.VersionInfo, 'VersionString')
     self.mox.StubOutWithMock(manifest_version.VersionInfo, '_LoadFromFile')
     self.mox.StubOutWithMock(os, 'readlink')

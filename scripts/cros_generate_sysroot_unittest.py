@@ -10,6 +10,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
+from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.scripts import cros_generate_sysroot as cros_gen
@@ -46,7 +47,6 @@ class CrosGenMock(partial_mock.PartialMock):
 
 BOARD = 'lumpy'
 TAR_NAME = 'test.tar.xz'
-CHROME_PKG = 'chromeos-base/chromeos-chrome'
 
 
 class OverallTest(cros_test_lib.TempDirTestCase):
@@ -65,7 +65,7 @@ class OverallTest(cros_test_lib.TempDirTestCase):
     cros_build_lib.IsInsideChroot.returnvalue = True
     cros_gen.main(
         ['--board', BOARD, '--out-dir', self.tempdir,
-         '--out-file', TAR_NAME, '--package', CHROME_PKG])
+         '--out-file', TAR_NAME, '--package', constants.CHROME_CP])
     self.cg_mock.VerifyTarball(os.path.join(self.tempdir, TAR_NAME))
 
 
@@ -77,7 +77,7 @@ class InterfaceTest(cros_test_lib.TempDirTestCase):
   def _Parse(self, extra_args):
     return cros_gen.ParseCommandLine(
         ['--board', BOARD, '--out-dir', self.tempdir,
-         '--package', CHROME_PKG] + extra_args)
+         '--package', constants.CHROME_CP] + extra_args)
 
   def testDefaultTargetName(self):
     """We are getting the right default target name."""
@@ -96,7 +96,7 @@ class InterfaceTest(cros_test_lib.TempDirTestCase):
     """Erroring out on non-existent output dir."""
     options = cros_gen.ParseCommandLine(
         ['--board', BOARD, '--out-dir', self.BAD_TARGET_DIR, '--package',
-         CHROME_PKG])
+         constants.CHROME_CP])
     self.assertRaises(cros_build_lib.DieSystemExit,
                       cros_gen.FinishParsing, options)
 

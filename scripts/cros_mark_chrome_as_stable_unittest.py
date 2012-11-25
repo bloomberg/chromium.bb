@@ -45,42 +45,28 @@ class CrosMarkChromeAsStable(cros_test_lib.MoxTempDirTestCase):
   def setUp(self):
     """Setup vars and create mock dir."""
     self.tmp_overlay = os.path.join(self.tempdir, 'chromiumos-overlay')
-    self.mock_chrome_dir = os.path.join(self.tmp_overlay, 'chromeos-base',
-                                        'chromeos-chrome')
+    self.mock_chrome_dir = os.path.join(self.tmp_overlay, constants.CHROME_CP)
     os.makedirs(self.mock_chrome_dir)
 
-    self.unstable = os.path.join(self.mock_chrome_dir,
-                                 'chromeos-chrome-9999.ebuild')
+    ebuild = os.path.join(self.mock_chrome_dir,
+                          constants.CHROME_PN + '-%s.ebuild')
+    self.unstable = ebuild % '9999'
     self.sticky_branch = '8.0.224'
     self.sticky_version = '%s.503' % self.sticky_branch
-    self.sticky = os.path.join(self.mock_chrome_dir,
-                               'chromeos-chrome-%s.ebuild' %
-                                   self.sticky_version)
+    self.sticky = ebuild % self.sticky_version
     self.sticky_rc_version = '%s.504' % self.sticky_branch
-    self.sticky_rc = os.path.join(self.mock_chrome_dir,
-                                  'chromeos-chrome-%s_rc-r1.ebuild' %
-                                      self.sticky_rc_version)
+    self.sticky_rc = ebuild % (self.sticky_rc_version + '_rc-r1')
     self.latest_stable_version = '8.0.300.1'
-    self.latest_stable = os.path.join(self.mock_chrome_dir,
-                                      'chromeos-chrome-%s_rc-r2.ebuild' %
-                                          self.latest_stable_version)
+    self.latest_stable = ebuild % (self.latest_stable_version + '_rc-r2')
     self.tot_stable_version = '9.0.305.0'
-    self.tot_stable = os.path.join(self.mock_chrome_dir,
-                                   'chromeos-chrome-%s_alpha-r1.ebuild' %
-                                       self.tot_stable_version)
+    self.tot_stable = ebuild % (self.tot_stable_version + '_alpha-r1')
 
     self.sticky_new_rc_version = '%s.520' % self.sticky_branch
-    self.sticky_new_rc = os.path.join(self.mock_chrome_dir,
-                                      'chromeos-chrome-%s_rc-r1.ebuild' %
-                                          self.sticky_new_rc_version)
+    self.sticky_new_rc = ebuild % (self.sticky_new_rc_version + '_rc-r1')
     self.latest_new_version = '9.0.305.1'
-    self.latest_new = os.path.join(self.mock_chrome_dir,
-                                      'chromeos-chrome-%s_rc-r1.ebuild' %
-                                          self.latest_new_version)
+    self.latest_new = ebuild % (self.latest_new_version + '_rc-r1')
     self.tot_new_version = '9.0.306.0'
-    self.tot_new = os.path.join(self.mock_chrome_dir,
-                                      'chromeos-chrome-%s_alpha-r1.ebuild' %
-                                          self.tot_new_version)
+    self.tot_new = ebuild % (self.tot_new_version + '_alpha-r1')
 
     _TouchAndWrite(self.unstable, unstable_data)
     _TouchAndWrite(self.sticky, stable_data)

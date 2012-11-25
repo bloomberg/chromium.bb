@@ -105,7 +105,7 @@ class RunBuildScriptTest(cros_test_lib.MoxTestCase):
   def testPackageBuildFailure(self):
     """Test detecting a package build failure."""
     with tempfile.NamedTemporaryFile() as tmpf:
-      tmpf.write('chromeos-base/chromeos-chrome')
+      tmpf.write(constants.CHROME_CP)
       self._assertRunBuildScript(in_chroot=True, tmpf=tmpf,
                                  raises=results_lib.PackageBuildFailure)
 
