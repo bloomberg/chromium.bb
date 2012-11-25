@@ -209,6 +209,13 @@ bool AppWindowCreateFunction::RunImpl() {
   result->Set("injectTitlebar",
       base::Value::CreateBooleanValue(inject_html_titlebar));
   result->Set("id", base::Value::CreateStringValue(shell_window->window_key()));
+  DictionaryValue* boundsValue = new DictionaryValue();
+  gfx::Rect bounds = shell_window->GetBaseWindow()->GetBounds();
+  boundsValue->SetInteger("left", bounds.x());
+  boundsValue->SetInteger("top", bounds.y());
+  boundsValue->SetInteger("width", bounds.width());
+  boundsValue->SetInteger("height", bounds.height());
+  result->Set("bounds", boundsValue);
   SetResult(result);
 
   if (ShellWindowRegistry::Get(profile())->HadDevToolsAttached(created_view)) {

@@ -5,6 +5,18 @@
 // This is used by the app window API internally to pass through messages to
 // the shell window.
 [internal, nodoc] namespace app.currentWindowInternal {
+
+  // TODO(asargent) - We need to add support for referencing types in
+  // other namespaces (crbug.com/158654). For now just duplicate this
+  // dictionary from app.window.
+  dictionary Bounds {
+    long? left;
+    long? top;
+    long? width;
+    long? height;
+  };
+
+
   interface Functions {
     static void focus();
     static void minimize();
@@ -14,5 +26,6 @@
     static void clearAttention();
     static void show();
     static void hide();
+    static void setBounds(Bounds bounds);
   };
 };

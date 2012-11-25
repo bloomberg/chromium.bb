@@ -23,7 +23,7 @@ chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
       // No route to created window. If given a callback, trigger it with an
       // undefined object.
       if (request.callback) {
-        request.callback()
+        request.callback();
         delete request.callback;
       }
       return;
@@ -69,7 +69,7 @@ chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
   };
 
   // This is an internal function, but needs to be bound with setHandleRequest
-  // because it is called from a different JS context
+  // because it is called from a different JS context.
   apiFunctions.setHandleRequest('initializeAppWindow', function(params) {
     var AppWindow = function() {};
     forEach(chromeHidden.internalAPIs.app.currentWindowInternal, function(fn) {
@@ -95,7 +95,8 @@ chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
 
     chromeHidden.appWindowData = {
       id: params.id || '',
-      bounds: { left: 0, top: 0, width: 0, height: 0 }
+      bounds: { left: params.bounds.left, top: params.bounds.top,
+                width: params.bounds.width, height: params.bounds.height }
     };
     chromeHidden.currentAppWindow = new AppWindow;
   });
