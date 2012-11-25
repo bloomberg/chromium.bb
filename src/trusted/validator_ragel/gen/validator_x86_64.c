@@ -205,18 +205,18 @@ _again:
 		case 2146: goto tr1229;
 		case 2148: goto tr1231;
 		case 2151: goto tr1234;
-		case 2218: goto tr1301;
-		case 2259: goto tr1342;
-		case 2264: goto tr1347;
-		case 2274: goto tr1357;
-		case 2275: goto tr1358;
-		case 2279: goto tr1362;
-		case 2283: goto tr1366;
-		case 2288: goto tr1371;
-		case 2297: goto tr1380;
-		case 2298: goto tr1381;
-		case 2302: goto tr1385;
-		case 2303: goto tr1386;
+		case 2216: goto tr1299;
+		case 2257: goto tr1340;
+		case 2262: goto tr1345;
+		case 2272: goto tr1355;
+		case 2273: goto tr1356;
+		case 2277: goto tr1360;
+		case 2281: goto tr1364;
+		case 2286: goto tr1369;
+		case 2295: goto tr1378;
+		case 2296: goto tr1379;
+		case 2300: goto tr1383;
+		case 2301: goto tr1384;
 		case 891: goto st891;
 		case 998: goto tr81;
 		case 1000: goto tr83;
@@ -307,17 +307,17 @@ _again:
 		case 2095: goto tr1178;
 		case 2079: goto tr1162;
 		case 2081: goto tr1164;
-		case 2200: goto tr1283;
+		case 2198: goto tr1281;
+		case 2209: goto tr1292;
 		case 2211: goto tr1294;
-		case 2213: goto tr1296;
-		case 2222: goto tr1305;
+		case 2220: goto tr1303;
+		case 2223: goto tr1306;
+		case 2224: goto tr1307;
 		case 2225: goto tr1308;
-		case 2226: goto tr1309;
-		case 2227: goto tr1310;
+		case 2229: goto tr1312;
+		case 2230: goto tr1313;
 		case 2231: goto tr1314;
 		case 2232: goto tr1315;
-		case 2233: goto tr1316;
-		case 2234: goto tr1317;
 		case 11: goto st11;
 		case 936: goto tr19;
 		case 1779: goto tr862;
@@ -477,12 +477,12 @@ _again:
 		case 2092: goto tr1175;
 		case 2093: goto tr1176;
 		case 2094: goto tr1177;
-		case 2197: goto tr1280;
-		case 2198: goto tr1281;
-		case 2205: goto tr1288;
-		case 2219: goto tr1302;
-		case 2220: goto tr1303;
-		case 2223: goto tr1306;
+		case 2195: goto tr1278;
+		case 2196: goto tr1279;
+		case 2203: goto tr1286;
+		case 2217: goto tr1300;
+		case 2218: goto tr1301;
+		case 2221: goto tr1304;
 		case 55: goto st55;
 		case 56: goto st56;
 		case 982: goto tr65;
@@ -492,17 +492,17 @@ _again:
 		case 1484: goto tr567;
 		case 1509: goto tr592;
 		case 2074: goto tr1157;
-		case 2207: goto tr1290;
-		case 2199: goto tr1282;
-		case 2221: goto tr1304;
+		case 2205: goto tr1288;
+		case 2197: goto tr1280;
+		case 2219: goto tr1302;
 		case 57: goto st57;
 		case 58: goto st58;
 		case 59: goto st59;
 		case 60: goto st60;
-		case 2189: goto tr1272;
-		case 1078: goto tr161;
 		case 2188: goto tr1271;
-		case 2191: goto tr1274;
+		case 1078: goto tr161;
+		case 2187: goto tr1270;
+		case 2190: goto tr1273;
 		case 1339: goto tr422;
 		case 1606: goto tr689;
 		case 1512: goto tr595;
@@ -522,9 +522,9 @@ _again:
 		case 2107: goto tr1190;
 		case 2112: goto tr1195;
 		case 2103: goto tr1186;
-		case 2202: goto tr1285;
-		case 2228: goto tr1311;
-		case 2224: goto tr1307;
+		case 2200: goto tr1283;
+		case 2226: goto tr1309;
+		case 2222: goto tr1305;
 		case 63: goto st63;
 		case 1099: goto tr182;
 		case 1131: goto tr214;
@@ -541,7 +541,7 @@ _again:
 		case 1539: goto tr622;
 		case 2013: goto tr1096;
 		case 2010: goto tr1093;
-		case 2209: goto tr1292;
+		case 2207: goto tr1290;
 		case 64: goto st64;
 		case 1125: goto tr208;
 		case 1279: goto tr362;
@@ -640,8 +640,6 @@ _again:
 		case 89: goto st89;
 		case 90: goto st90;
 		case 91: goto st91;
-		case 2318: goto tr1401;
-		case 2319: goto tr1402;
 		case 92: goto st92;
 		case 93: goto st93;
 		case 1145: goto tr228;
@@ -658,7 +656,7 @@ _again:
 		case 97: goto st97;
 		case 98: goto st98;
 		case 99: goto st99;
-		case 2320: goto tr1403;
+		case 2317: goto tr1400;
 		case 100: goto st100;
 		case 101: goto st101;
 		case 1162: goto tr245;
@@ -739,21 +737,21 @@ _again:
 		case 132: goto st132;
 		case 1253: goto tr336;
 		case 892: goto st892;
-		case 2321: goto tr1404;
+		case 2318: goto tr1401;
 		case 133: goto st133;
 		case 134: goto st134;
 		case 1257: goto tr340;
 		case 135: goto st135;
 		case 1258: goto tr341;
 		case 893: goto st893;
-		case 2322: goto tr1405;
+		case 2319: goto tr1402;
 		case 136: goto st136;
 		case 1168: goto tr251;
 		case 137: goto st137;
 		case 1259: goto tr342;
 		case 1429: goto tr512;
 		case 894: goto st894;
-		case 2323: goto tr1406;
+		case 2320: goto tr1403;
 		case 138: goto st138;
 		case 1171: goto tr254;
 		case 139: goto st139;
@@ -798,7 +796,7 @@ _again:
 		case 168: goto st168;
 		case 169: goto st169;
 		case 170: goto st170;
-		case 2324: goto tr1407;
+		case 2321: goto tr1404;
 		case 171: goto st171;
 		case 172: goto st172;
 		case 173: goto st173;
@@ -887,7 +885,7 @@ _again:
 		case 218: goto st218;
 		case 219: goto st219;
 		case 220: goto st220;
-		case 2342: goto tr1425;
+		case 2339: goto tr1422;
 		case 221: goto st221;
 		case 1410: goto tr493;
 		case 222: goto st222;
@@ -900,14 +898,14 @@ _again:
 		case 226: goto st226;
 		case 1419: goto tr502;
 		case 895: goto st895;
-		case 2343: goto tr1426;
+		case 2340: goto tr1423;
 		case 227: goto st227;
 		case 1420: goto tr503;
 		case 228: goto st228;
 		case 1422: goto tr505;
-		case 2282: goto tr1365;
+		case 2280: goto tr1363;
 		case 896: goto st896;
-		case 2350: goto tr1433;
+		case 2347: goto tr1430;
 		case 229: goto st229;
 		case 1423: goto tr506;
 		case 230: goto st230;
@@ -918,9 +916,9 @@ _again:
 		case 232: goto st232;
 		case 1426: goto tr509;
 		case 1500: goto tr583;
-		case 2250: goto tr1333;
+		case 2248: goto tr1331;
 		case 233: goto st233;
-		case 2352: goto tr1435;
+		case 2349: goto tr1432;
 		case 234: goto st234;
 		case 235: goto st235;
 		case 1170: goto tr253;
@@ -928,7 +926,7 @@ _again:
 		case 1260: goto tr343;
 		case 1430: goto tr513;
 		case 898: goto st898;
-		case 2366: goto tr1449;
+		case 2363: goto tr1446;
 		case 237: goto st237;
 		case 1431: goto tr514;
 		case 238: goto st238;
@@ -936,18 +934,18 @@ _again:
 		case 239: goto st239;
 		case 1433: goto tr516;
 		case 899: goto st899;
-		case 2353: goto tr1436;
+		case 2350: goto tr1433;
 		case 240: goto st240;
-		case 2354: goto tr1437;
+		case 2351: goto tr1434;
 		case 241: goto st241;
-		case 2355: goto tr1438;
+		case 2352: goto tr1435;
 		case 242: goto st242;
-		case 2367: goto tr1450;
+		case 2364: goto tr1447;
 		case 243: goto st243;
 		case 244: goto st244;
-		case 2357: goto tr1440;
+		case 2354: goto tr1437;
 		case 245: goto st245;
-		case 2358: goto tr1441;
+		case 2355: goto tr1438;
 		case 246: goto st246;
 		case 1435: goto tr518;
 		case 247: goto st247;
@@ -975,15 +973,14 @@ _again:
 		case 260: goto st260;
 		case 261: goto st261;
 		case 262: goto st262;
-		case 2359: goto tr1442;
+		case 2356: goto tr1439;
 		case 263: goto st263;
 		case 1451: goto tr534;
 		case 264: goto st264;
 		case 1452: goto tr535;
 		case 265: goto st265;
-		case 2360: goto tr1443;
+		case 2357: goto tr1440;
 		case 266: goto st266;
-		case 2368: goto tr1451;
 		case 267: goto st267;
 		case 1552: goto tr635;
 		case 1553: goto tr636;
@@ -1011,9 +1008,9 @@ _again:
 		case 282: goto st282;
 		case 1493: goto tr576;
 		case 2005: goto tr1088;
-		case 2206: goto tr1289;
 		case 2204: goto tr1287;
-		case 2229: goto tr1312;
+		case 2202: goto tr1285;
+		case 2227: goto tr1310;
 		case 283: goto st283;
 		case 284: goto st284;
 		case 285: goto st285;
@@ -1088,8 +1085,6 @@ _again:
 		case 325: goto st325;
 		case 326: goto st326;
 		case 327: goto st327;
-		case 1477: goto tr560;
-		case 2186: goto tr1269;
 		case 328: goto st328;
 		case 329: goto st329;
 		case 330: goto st330;
@@ -1099,7 +1094,6 @@ _again:
 		case 333: goto st333;
 		case 334: goto st334;
 		case 335: goto st335;
-		case 2196: goto tr1279;
 		case 336: goto st336;
 		case 337: goto st337;
 		case 338: goto st338;
@@ -1110,7 +1104,7 @@ _again:
 		case 341: goto st341;
 		case 1615: goto tr698;
 		case 900: goto st900;
-		case 2371: goto tr1454;
+		case 2368: goto tr1451;
 		case 342: goto st342;
 		case 1616: goto tr699;
 		case 343: goto st343;
@@ -1118,25 +1112,24 @@ _again:
 		case 1618: goto tr701;
 		case 1619: goto tr702;
 		case 901: goto st901;
-		case 2373: goto tr1456;
+		case 2370: goto tr1453;
 		case 344: goto st344;
 		case 345: goto st345;
-		case 2374: goto tr1457;
+		case 2371: goto tr1454;
 		case 346: goto st346;
-		case 2375: goto tr1458;
+		case 2372: goto tr1455;
 		case 347: goto st347;
-		case 2376: goto tr1459;
+		case 2373: goto tr1456;
 		case 348: goto st348;
 		case 349: goto st349;
-		case 2325: goto tr1408;
+		case 2322: goto tr1405;
 		case 350: goto st350;
-		case 2377: goto tr1460;
+		case 2374: goto tr1457;
 		case 351: goto st351;
-		case 2378: goto tr1461;
+		case 2375: goto tr1458;
 		case 352: goto st352;
-		case 2328: goto tr1411;
+		case 2325: goto tr1408;
 		case 353: goto st353;
-		case 2329: goto tr1412;
 		case 354: goto st354;
 		case 355: goto st355;
 		case 1625: goto tr708;
@@ -1145,12 +1138,12 @@ _again:
 		case 1626: goto tr709;
 		case 358: goto st358;
 		case 359: goto st359;
-		case 2331: goto tr1414;
+		case 2328: goto tr1411;
 		case 360: goto st360;
 		case 1629: goto tr712;
 		case 1641: goto tr724;
 		case 902: goto st902;
-		case 2379: goto tr1462;
+		case 2376: goto tr1459;
 		case 361: goto st361;
 		case 1631: goto tr714;
 		case 362: goto st362;
@@ -1158,14 +1151,14 @@ _again:
 		case 363: goto st363;
 		case 1633: goto tr716;
 		case 903: goto st903;
-		case 2380: goto tr1463;
+		case 2377: goto tr1460;
 		case 364: goto st364;
 		case 1634: goto tr717;
 		case 365: goto st365;
 		case 1636: goto tr719;
-		case 2258: goto tr1341;
+		case 2256: goto tr1339;
 		case 904: goto st904;
-		case 2387: goto tr1470;
+		case 2384: goto tr1467;
 		case 366: goto st366;
 		case 1637: goto tr720;
 		case 367: goto st367;
@@ -1173,16 +1166,15 @@ _again:
 		case 368: goto st368;
 		case 1639: goto tr722;
 		case 905: goto st905;
-		case 2388: goto tr1471;
+		case 2385: goto tr1468;
 		case 369: goto st369;
-		case 2389: goto tr1472;
 		case 370: goto st370;
-		case 2332: goto tr1415;
+		case 2329: goto tr1412;
 		case 371: goto st371;
 		case 1630: goto tr713;
 		case 1642: goto tr725;
 		case 906: goto st906;
-		case 2392: goto tr1475;
+		case 2389: goto tr1472;
 		case 372: goto st372;
 		case 1643: goto tr726;
 		case 373: goto st373;
@@ -1195,27 +1187,26 @@ _again:
 		case 1653: goto tr736;
 		case 2009: goto tr1092;
 		case 376: goto st376;
-		case 2394: goto tr1477;
+		case 2391: goto tr1474;
 		case 377: goto st377;
 		case 378: goto st378;
-		case 2395: goto tr1478;
+		case 2392: goto tr1475;
 		case 379: goto st379;
-		case 2396: goto tr1479;
+		case 2393: goto tr1476;
 		case 380: goto st380;
-		case 2397: goto tr1480;
+		case 2394: goto tr1477;
 		case 381: goto st381;
-		case 2398: goto tr1481;
+		case 2395: goto tr1478;
 		case 382: goto st382;
 		case 383: goto st383;
-		case 2399: goto tr1482;
+		case 2396: goto tr1479;
 		case 384: goto st384;
-		case 2400: goto tr1483;
+		case 2397: goto tr1480;
 		case 385: goto st385;
-		case 2401: goto tr1484;
+		case 2398: goto tr1481;
 		case 386: goto st386;
-		case 2402: goto tr1485;
+		case 2399: goto tr1482;
 		case 387: goto st387;
-		case 2403: goto tr1486;
 		case 388: goto st388;
 		case 389: goto st389;
 		case 1651: goto tr734;
@@ -1960,7 +1951,6 @@ _again:
 		case 752: goto st752;
 		case 2174: goto tr1257;
 		case 753: goto st753;
-		case 2336: goto tr1419;
 		case 754: goto st754;
 		case 755: goto st755;
 		case 2184: goto tr1267;
@@ -1969,274 +1959,255 @@ _again:
 		case 2185: goto tr1268;
 		case 758: goto st758;
 		case 759: goto st759;
-		case 2406: goto tr1489;
 		case 760: goto st760;
 		case 761: goto st761;
 		case 762: goto st762;
-		case 2203: goto tr1286;
+		case 2201: goto tr1284;
 		case 763: goto st763;
 		case 764: goto st764;
-		case 2193: goto tr1276;
+		case 2192: goto tr1275;
 		case 765: goto st765;
-		case 2194: goto tr1277;
+		case 2193: goto tr1276;
 		case 766: goto st766;
 		case 767: goto st767;
 		case 768: goto st768;
-		case 2195: goto tr1278;
+		case 2194: goto tr1277;
 		case 769: goto st769;
-		case 2407: goto tr1490;
 		case 770: goto st770;
 		case 771: goto st771;
-		case 2215: goto tr1298;
+		case 2213: goto tr1296;
 		case 772: goto st772;
-		case 2216: goto tr1299;
+		case 2214: goto tr1297;
 		case 773: goto st773;
 		case 774: goto st774;
-		case 2217: goto tr1300;
+		case 2215: goto tr1298;
 		case 775: goto st775;
-		case 2326: goto tr1409;
+		case 2323: goto tr1406;
 		case 776: goto st776;
-		case 2327: goto tr1410;
+		case 2324: goto tr1407;
 		case 777: goto st777;
 		case 778: goto st778;
-		case 2235: goto tr1318;
+		case 2233: goto tr1316;
 		case 779: goto st779;
-		case 2239: goto tr1322;
-		case 780: goto st780;
-		case 2236: goto tr1319;
-		case 781: goto st781;
-		case 2240: goto tr1323;
-		case 2243: goto tr1326;
-		case 782: goto st782;
 		case 2237: goto tr1320;
-		case 783: goto st783;
-		case 2241: goto tr1324;
-		case 784: goto st784;
+		case 780: goto st780;
+		case 2234: goto tr1317;
+		case 781: goto st781;
 		case 2238: goto tr1321;
+		case 2241: goto tr1324;
+		case 782: goto st782;
+		case 2235: goto tr1318;
+		case 783: goto st783;
+		case 2239: goto tr1322;
+		case 784: goto st784;
+		case 2236: goto tr1319;
 		case 785: goto st785;
+		case 2240: goto tr1323;
 		case 2242: goto tr1325;
-		case 2244: goto tr1327;
 		case 786: goto st786;
 		case 787: goto st787;
 		case 788: goto st788;
 		case 789: goto st789;
 		case 790: goto st790;
-		case 2245: goto tr1328;
+		case 2243: goto tr1326;
 		case 791: goto st791;
-		case 2249: goto tr1332;
-		case 792: goto st792;
-		case 2246: goto tr1329;
-		case 793: goto st793;
-		case 2251: goto tr1334;
-		case 2254: goto tr1337;
-		case 794: goto st794;
 		case 2247: goto tr1330;
-		case 795: goto st795;
+		case 792: goto st792;
+		case 2244: goto tr1327;
+		case 793: goto st793;
+		case 2249: goto tr1332;
 		case 2252: goto tr1335;
+		case 794: goto st794;
+		case 2245: goto tr1328;
+		case 795: goto st795;
+		case 2250: goto tr1333;
 		case 796: goto st796;
-		case 2248: goto tr1331;
+		case 2246: goto tr1329;
 		case 797: goto st797;
+		case 2251: goto tr1334;
 		case 2253: goto tr1336;
-		case 2255: goto tr1338;
 		case 798: goto st798;
 		case 799: goto st799;
-		case 2390: goto tr1473;
 		case 800: goto st800;
-		case 2256: goto tr1339;
+		case 2254: goto tr1337;
 		case 801: goto st801;
-		case 2391: goto tr1474;
 		case 802: goto st802;
-		case 2257: goto tr1340;
+		case 2255: goto tr1338;
 		case 803: goto st803;
 		case 1635: goto tr718;
 		case 804: goto st804;
-		case 2381: goto tr1464;
+		case 2378: goto tr1461;
 		case 805: goto st805;
-		case 2382: goto tr1465;
+		case 2379: goto tr1462;
 		case 806: goto st806;
-		case 2383: goto tr1466;
 		case 807: goto st807;
-		case 2384: goto tr1467;
+		case 2381: goto tr1464;
 		case 808: goto st808;
-		case 2260: goto tr1343;
-		case 2267: goto tr1350;
-		case 908: goto st908;
-		case 2408: goto tr1491;
-		case 809: goto st809;
-		case 2261: goto tr1344;
-		case 810: goto st810;
-		case 2262: goto tr1345;
-		case 811: goto st811;
-		case 2263: goto tr1346;
-		case 909: goto st909;
-		case 2409: goto tr1492;
-		case 812: goto st812;
-		case 2410: goto tr1493;
-		case 813: goto st813;
-		case 2411: goto tr1494;
-		case 814: goto st814;
+		case 2258: goto tr1341;
 		case 2265: goto tr1348;
+		case 908: goto st908;
+		case 2405: goto tr1488;
+		case 809: goto st809;
+		case 2259: goto tr1342;
+		case 810: goto st810;
+		case 2260: goto tr1343;
+		case 811: goto st811;
+		case 2261: goto tr1344;
+		case 909: goto st909;
+		case 2406: goto tr1489;
+		case 812: goto st812;
+		case 813: goto st813;
+		case 814: goto st814;
+		case 2263: goto tr1346;
 		case 815: goto st815;
-		case 2412: goto tr1495;
 		case 816: goto st816;
-		case 2266: goto tr1349;
+		case 2264: goto tr1347;
 		case 817: goto st817;
-		case 2385: goto tr1468;
+		case 2382: goto tr1465;
 		case 818: goto st818;
-		case 2386: goto tr1469;
 		case 819: goto st819;
-		case 2268: goto tr1351;
+		case 2266: goto tr1349;
 		case 820: goto st820;
-		case 2372: goto tr1455;
+		case 2369: goto tr1452;
 		case 821: goto st821;
-		case 2269: goto tr1352;
+		case 2267: goto tr1350;
 		case 822: goto st822;
+		case 2268: goto tr1351;
+		case 2269: goto tr1352;
 		case 2270: goto tr1353;
-		case 2271: goto tr1354;
-		case 2272: goto tr1355;
 		case 910: goto st910;
-		case 2413: goto tr1496;
+		case 2410: goto tr1493;
 		case 823: goto st823;
 		case 824: goto st824;
-		case 2414: goto tr1497;
+		case 2411: goto tr1494;
 		case 825: goto st825;
-		case 2415: goto tr1498;
+		case 2412: goto tr1495;
 		case 826: goto st826;
-		case 2416: goto tr1499;
+		case 2413: goto tr1496;
 		case 827: goto st827;
 		case 828: goto st828;
-		case 2417: goto tr1500;
+		case 2414: goto tr1497;
 		case 829: goto st829;
-		case 2418: goto tr1501;
+		case 2415: goto tr1498;
 		case 830: goto st830;
-		case 2369: goto tr1452;
 		case 831: goto st831;
-		case 2277: goto tr1360;
+		case 2275: goto tr1358;
 		case 832: goto st832;
-		case 2370: goto tr1453;
 		case 833: goto st833;
-		case 2278: goto tr1361;
+		case 2276: goto tr1359;
 		case 834: goto st834;
-		case 2356: goto tr1439;
+		case 2353: goto tr1436;
 		case 835: goto st835;
-		case 2361: goto tr1444;
 		case 836: goto st836;
-		case 2364: goto tr1447;
 		case 837: goto st837;
-		case 2280: goto tr1363;
+		case 2278: goto tr1361;
 		case 838: goto st838;
-		case 2365: goto tr1448;
 		case 839: goto st839;
-		case 2281: goto tr1364;
+		case 2279: goto tr1362;
 		case 840: goto st840;
 		case 1421: goto tr504;
 		case 841: goto st841;
-		case 2344: goto tr1427;
-		case 842: goto st842;
-		case 2345: goto tr1428;
-		case 843: goto st843;
-		case 2346: goto tr1429;
-		case 844: goto st844;
-		case 2347: goto tr1430;
-		case 845: goto st845;
-		case 2284: goto tr1367;
-		case 2291: goto tr1374;
-		case 911: goto st911;
-		case 2419: goto tr1502;
-		case 846: goto st846;
-		case 2285: goto tr1368;
-		case 847: goto st847;
-		case 2286: goto tr1369;
-		case 848: goto st848;
-		case 2287: goto tr1370;
-		case 912: goto st912;
-		case 2420: goto tr1503;
-		case 849: goto st849;
-		case 2421: goto tr1504;
-		case 850: goto st850;
-		case 2422: goto tr1505;
-		case 851: goto st851;
-		case 2289: goto tr1372;
-		case 852: goto st852;
-		case 2423: goto tr1506;
-		case 853: goto st853;
-		case 2290: goto tr1373;
-		case 854: goto st854;
-		case 2348: goto tr1431;
-		case 855: goto st855;
-		case 2349: goto tr1432;
-		case 856: goto st856;
-		case 2292: goto tr1375;
-		case 857: goto st857;
 		case 2341: goto tr1424;
+		case 842: goto st842;
+		case 2342: goto tr1425;
+		case 843: goto st843;
+		case 844: goto st844;
+		case 2344: goto tr1427;
+		case 845: goto st845;
+		case 2282: goto tr1365;
+		case 2289: goto tr1372;
+		case 911: goto st911;
+		case 2416: goto tr1499;
+		case 846: goto st846;
+		case 2283: goto tr1366;
+		case 847: goto st847;
+		case 2284: goto tr1367;
+		case 848: goto st848;
+		case 2285: goto tr1368;
+		case 912: goto st912;
+		case 2417: goto tr1500;
+		case 849: goto st849;
+		case 850: goto st850;
+		case 851: goto st851;
+		case 2287: goto tr1370;
+		case 852: goto st852;
+		case 853: goto st853;
+		case 2288: goto tr1371;
+		case 854: goto st854;
+		case 2345: goto tr1428;
+		case 855: goto st855;
+		case 856: goto st856;
+		case 2290: goto tr1373;
+		case 857: goto st857;
+		case 2338: goto tr1421;
 		case 858: goto st858;
-		case 2293: goto tr1376;
+		case 2291: goto tr1374;
 		case 859: goto st859;
-		case 2295: goto tr1378;
+		case 2293: goto tr1376;
 		case 913: goto st913;
-		case 2424: goto tr1507;
+		case 2421: goto tr1504;
 		case 860: goto st860;
 		case 861: goto st861;
-		case 2425: goto tr1508;
+		case 2422: goto tr1505;
 		case 862: goto st862;
 		case 863: goto st863;
-		case 2426: goto tr1509;
+		case 2423: goto tr1506;
 		case 864: goto st864;
-		case 2294: goto tr1377;
+		case 2292: goto tr1375;
 		case 865: goto st865;
-		case 2300: goto tr1383;
+		case 2298: goto tr1381;
 		case 914: goto st914;
-		case 2427: goto tr1510;
+		case 2424: goto tr1507;
 		case 866: goto st866;
 		case 867: goto st867;
-		case 2428: goto tr1511;
+		case 2425: goto tr1508;
 		case 868: goto st868;
 		case 869: goto st869;
-		case 2429: goto tr1512;
+		case 2426: goto tr1509;
 		case 870: goto st870;
-		case 2339: goto tr1422;
+		case 2336: goto tr1419;
 		case 871: goto st871;
-		case 2305: goto tr1388;
+		case 2303: goto tr1386;
 		case 872: goto st872;
+		case 2304: goto tr1387;
+		case 2305: goto tr1388;
 		case 2306: goto tr1389;
-		case 2307: goto tr1390;
-		case 2308: goto tr1391;
 		case 915: goto st915;
-		case 2430: goto tr1513;
+		case 2427: goto tr1510;
 		case 873: goto st873;
 		case 874: goto st874;
-		case 2431: goto tr1514;
+		case 2428: goto tr1511;
 		case 875: goto st875;
-		case 2432: goto tr1515;
+		case 2429: goto tr1512;
 		case 876: goto st876;
-		case 2433: goto tr1516;
+		case 2430: goto tr1513;
 		case 877: goto st877;
 		case 878: goto st878;
-		case 2434: goto tr1517;
+		case 2431: goto tr1514;
 		case 879: goto st879;
-		case 2435: goto tr1518;
+		case 2432: goto tr1515;
 		case 880: goto st880;
-		case 2340: goto tr1423;
+		case 2337: goto tr1420;
 		case 881: goto st881;
-		case 2311: goto tr1394;
+		case 2309: goto tr1392;
 		case 882: goto st882;
+		case 2310: goto tr1393;
+		case 2311: goto tr1394;
 		case 2312: goto tr1395;
-		case 2313: goto tr1396;
-		case 2314: goto tr1397;
 		case 916: goto st916;
-		case 2436: goto tr1519;
+		case 2433: goto tr1516;
 		case 883: goto st883;
 		case 884: goto st884;
-		case 2437: goto tr1520;
+		case 2434: goto tr1517;
 		case 885: goto st885;
-		case 2438: goto tr1521;
+		case 2435: goto tr1518;
 		case 886: goto st886;
-		case 2439: goto tr1522;
+		case 2436: goto tr1519;
 		case 887: goto st887;
 		case 888: goto st888;
-		case 2440: goto tr1523;
+		case 2437: goto tr1520;
 		case 889: goto st889;
-		case 2441: goto tr1524;
+		case 2438: goto tr1521;
 		case 890: goto st890;
 	default: break;
 	}
@@ -5819,7 +5790,7 @@ tr1234:
        operand_states = 0;
      }
 	goto st891;
-tr1301:
+tr1299:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -5849,7 +5820,7 @@ tr1301:
        operand_states = 0;
      }
 	goto st891;
-tr1342:
+tr1340:
 	{
        instruction_start -= 6;
        BitmapClearBit(valid_targets, (instruction_start - data) + 2);
@@ -5882,7 +5853,7 @@ tr1342:
        operand_states = 0;
      }
 	goto st891;
-tr1347:
+tr1345:
 	{
        instruction_start -= 12;
        BitmapClearBit(valid_targets, (instruction_start - data) + 2);
@@ -5917,7 +5888,7 @@ tr1347:
        operand_states = 0;
      }
 	goto st891;
-tr1357:
+tr1355:
 	{
        instruction_start -= 6;
        if (RMFromModRM(instruction_start[1]) !=
@@ -5958,7 +5929,7 @@ tr1357:
        operand_states = 0;
      }
 	goto st891;
-tr1358:
+tr1356:
 	{
        instruction_start -= 6;
        if (RMFromModRM(instruction_start[1]) !=
@@ -5995,7 +5966,7 @@ tr1358:
        operand_states = 0;
      }
 	goto st891;
-tr1362:
+tr1360:
 	{
        instruction_start -= 14;
        BitmapClearBit(valid_targets, (instruction_start - data) + 3);
@@ -6030,7 +6001,7 @@ tr1362:
        operand_states = 0;
      }
 	goto st891;
-tr1366:
+tr1364:
 	{
        instruction_start -= 7;
        BitmapClearBit(valid_targets, (instruction_start - data) + 3);
@@ -6063,7 +6034,7 @@ tr1366:
        operand_states = 0;
      }
 	goto st891;
-tr1371:
+tr1369:
 	{
        instruction_start -= 13;
        BitmapClearBit(valid_targets, (instruction_start - data) + 3);
@@ -6098,7 +6069,7 @@ tr1371:
        operand_states = 0;
      }
 	goto st891;
-tr1380:
+tr1378:
 	{
        instruction_start -= 7;
        if (RMFromModRM(instruction_start[2]) !=
@@ -6139,7 +6110,7 @@ tr1380:
        operand_states = 0;
      }
 	goto st891;
-tr1381:
+tr1379:
 	{
        instruction_start -= 7;
        if (RMFromModRM(instruction_start[2]) !=
@@ -6176,7 +6147,7 @@ tr1381:
        operand_states = 0;
      }
 	goto st891;
-tr1385:
+tr1383:
 	{
        instruction_start -= 7;
        if (RMFromModRM(instruction_start[2]) !=
@@ -6217,7 +6188,7 @@ tr1385:
        operand_states = 0;
      }
 	goto st891;
-tr1386:
+tr1384:
 	{
        instruction_start -= 7;
        if (RMFromModRM(instruction_start[2]) !=
@@ -6259,7 +6230,7 @@ st891:
 		goto _test_eof891;
 case 891:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2320, 2321, 2322, 2321, 2323, 2321, 2323, 2321, 2324, 2325, 2326, 2325, 2327, 2328, 2327, 2328, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2329, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2317, 2318, 2319, 2318, 2320, 2318, 2320, 2318, 2321, 2322, 2323, 2322, 2324, 2325, 2324, 2325, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 354, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
@@ -6781,77 +6752,77 @@ tr1164:
 	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st11;
-tr1283:
+tr1281:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st11;
-tr1294:
+tr1292:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st11;
-tr1296:
+tr1294:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE42);     }
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st11;
-tr1305:
+tr1303:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	goto st11;
+tr1306:
+	{
+    SET_REPZ_PREFIX(FALSE);
+  }
+	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	goto st11;
+tr1307:
+	{
+    SET_REPZ_PREFIX(FALSE);
+  }
+	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st11;
 tr1308:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
-	goto st11;
-tr1309:
-	{
-    SET_REPZ_PREFIX(FALSE);
-  }
-	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
-	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
-	goto st11;
-tr1310:
-	{
-    SET_REPZ_PREFIX(FALSE);
-  }
 	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st11;
-tr1314:
+tr1312:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st11;
-tr1315:
+tr1313:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
 	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st11;
-tr1316:
+tr1314:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
 	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st11;
-tr1317:
+tr1315:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -8140,37 +8111,37 @@ tr1176:
 tr1177:
 	{ SET_CPU_FEATURE(CPUFeature_F16C);      }
 	goto st55;
-tr1280:
+tr1278:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	goto st55;
-tr1281:
+tr1279:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE3);      }
 	goto st55;
-tr1288:
+tr1286:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	goto st55;
-tr1302:
+tr1300:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	goto st55;
-tr1303:
+tr1301:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE3);      }
 	goto st55;
-tr1306:
+tr1304:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -8221,19 +8192,19 @@ tr592:
 tr1157:
 	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st57;
-tr1290:
+tr1288:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE3);      }
 	goto st57;
-tr1282:
+tr1280:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE4A);     }
 	goto st57;
-tr1304:
+tr1302:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -8294,17 +8265,17 @@ case 60:
 	} else
 		goto tr160;
 	goto tr57;
-tr1272:
+tr1271:
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st61;
 tr161:
 	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st61;
-tr1271:
+tr1270:
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
 	goto st61;
-tr1274:
+tr1273:
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st61;
 tr422:
@@ -8394,19 +8365,19 @@ tr1195:
 tr1186:
 	{ SET_CPU_FEATURE(CPUFeature_CLMULAVX);  }
 	goto st63;
-tr1285:
+tr1283:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	goto st63;
-tr1311:
+tr1309:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	goto st63;
-tr1307:
+tr1305:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -8581,7 +8552,7 @@ tr1093:
                  valid_targets, &instruction_info_collected);
   }
 	goto st64;
-tr1292:
+tr1290:
 	{
     SET_IMM2_TYPE(IMM8);
     SET_IMM2_PTR(current_position);
@@ -9286,16 +9257,6 @@ st91:
 		goto _test_eof91;
 case 91:
 	goto tr226;
-tr1401:
-	{
-    SET_BRANCH_NOT_TAKEN(TRUE);
-  }
-	goto st92;
-tr1402:
-	{
-    SET_BRANCH_TAKEN(TRUE);
-  }
-	goto st92;
 st92:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof92;
@@ -9443,7 +9404,7 @@ st99:
 		goto _test_eof99;
 case 99:
 	goto tr234;
-tr1403:
+tr1400:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -10112,11 +10073,11 @@ st892:
 		goto _test_eof892;
 case 892:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2320, 2321, 2322, 2321, 2323, 2321, 2323, 2321, 2324, 2339, 2326, 2339, 2340, 2328, 2340, 2328, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2329, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2317, 2318, 2319, 2318, 2320, 2318, 2320, 2318, 2321, 2336, 2323, 2336, 2337, 2325, 2337, 2325, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 354, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1404:
+tr1401:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -10192,11 +10153,11 @@ st893:
 		goto _test_eof893;
 case 893:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2320, 2321, 2322, 2321, 2323, 2321, 2323, 2321, 2324, 2325, 2326, 2325, 2327, 2341, 2327, 2341, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2329, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2317, 2318, 2319, 2318, 2320, 2318, 2320, 2318, 2321, 2322, 2323, 2322, 2324, 2338, 2324, 2338, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 354, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1405:
+tr1402:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -10298,11 +10259,11 @@ st894:
 		goto _test_eof894;
 case 894:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2320, 2321, 2322, 2321, 2323, 2321, 2323, 2321, 2324, 2342, 2326, 2325, 2327, 2328, 2327, 2328, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2329, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2317, 2318, 2319, 2318, 2320, 2318, 2320, 2318, 2321, 2339, 2323, 2322, 2324, 2325, 2324, 2325, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 354, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1406:
+tr1403:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -10719,7 +10680,7 @@ case 170:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1407:
+tr1404:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -11424,7 +11385,7 @@ case 220:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1425:
+tr1422:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -11542,11 +11503,11 @@ st895:
 		goto _test_eof895;
 case 895:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2343, 2321, 2344, 2321, 2323, 2321, 2323, 2321, 2345, 2325, 2326, 2325, 2327, 2328, 2327, 2328, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2346, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2347, 1169, 2348, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 2283, 2283, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 788, 2349, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2340, 2318, 2341, 2318, 2320, 2318, 2320, 2318, 2342, 2322, 2323, 2322, 2324, 2325, 2324, 2325, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 844, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2344, 1169, 2345, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 2281, 2281, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 788, 856, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1426:
+tr1423:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -11609,7 +11570,7 @@ tr505:
        operand_states = 0;
      }
 	goto st896;
-tr1365:
+tr1363:
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -11648,11 +11609,11 @@ st896:
 		goto _test_eof896;
 case 896:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2320, 2321, 2322, 2321, 2323, 2321, 2323, 2321, 2324, 2350, 2326, 2325, 2327, 2328, 2327, 2328, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2329, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2317, 2318, 2319, 2318, 2320, 2318, 2320, 2318, 2321, 2347, 2323, 2322, 2324, 2325, 2324, 2325, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 354, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1433:
+tr1430:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -11737,7 +11698,7 @@ st897:
 		goto _test_eof897;
 case 897:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 232, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2352, 2353, 2354, 2353, 2355, 2353, 2355, 2353, 2356, 2357, 2358, 2357, 2359, 2360, 2359, 2360, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2361, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 2279, 2279, 2279, 2279, 64, 96, 1427, 1427, 974, 974, 1427, 1427, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 790, 799, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 2364, 2365, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 232, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2349, 2350, 2351, 2350, 2352, 2350, 2352, 2350, 2353, 2354, 2355, 2354, 2356, 2357, 2356, 2357, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 836, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 2277, 2277, 2277, 2277, 64, 96, 1427, 1427, 974, 974, 1427, 1427, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 790, 799, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 837, 839, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
@@ -11759,7 +11720,7 @@ tr583:
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	goto st233;
-tr1333:
+tr1331:
 	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st233;
 st233:
@@ -11769,7 +11730,7 @@ case 233:
 	if ( 192u <= (*( current_position)) )
 		goto tr510;
 	goto tr57;
-tr1435:
+tr1432:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -11880,11 +11841,11 @@ st898:
 		goto _test_eof898;
 case 898:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2320, 2321, 2322, 2321, 2323, 2321, 2323, 2321, 2324, 2366, 2326, 2325, 2327, 2328, 2327, 2328, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2329, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2317, 2318, 2319, 2318, 2320, 2318, 2320, 2318, 2321, 2363, 2323, 2322, 2324, 2325, 2324, 2325, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 354, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1449:
+tr1446:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -11969,11 +11930,11 @@ st899:
 		goto _test_eof899;
 case 899:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 232, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2352, 2353, 2354, 2353, 2355, 2353, 2355, 2353, 2367, 2357, 2358, 2357, 2359, 2360, 2359, 2360, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2368, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 1427, 1427, 974, 974, 1427, 1427, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 790, 799, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 2369, 2370, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 232, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2349, 2350, 2351, 2350, 2352, 2350, 2352, 2350, 2364, 2354, 2355, 2354, 2356, 2357, 2356, 2357, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 267, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 1427, 1427, 974, 974, 1427, 1427, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 790, 799, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 831, 833, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1436:
+tr1433:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -11987,7 +11948,7 @@ case 240:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1437:
+tr1434:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -12001,7 +11962,7 @@ case 241:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1438:
+tr1435:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -12015,7 +11976,7 @@ case 242:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1450:
+tr1447:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -12038,7 +11999,7 @@ case 244:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1440:
+tr1437:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -12052,7 +12013,7 @@ case 245:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1441:
+tr1438:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -12268,7 +12229,7 @@ case 262:
 	if ( (*( current_position)) == 0u )
 		goto tr500;
 	goto tr479;
-tr1442:
+tr1439:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -12306,7 +12267,7 @@ case 265:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1443:
+tr1440:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -12320,17 +12281,12 @@ case 266:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1451:
-	{
-    SET_DATA16_PREFIX(TRUE);
-  }
-	goto st267;
 st267:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof267;
 case 267:
 	{
-		static const unsigned short jump_table[] = { 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 270, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 286, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 55, 974, 55, 974, 289, 974, 974, 1459, 1459, 1459, 1459, 1459, 1459, 1459, 1459, 1460, 1460, 1460, 1460, 1460, 1460, 1460, 1460, 976, 976, 976, 976, 976, 976, 976, 976, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 974, 974, 974, 1454, 974, 974, 323, 974, 289, 1463, 974, 1464, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 302, 974, 311, 974, 55, 974, 1467, 974, 1468, 974, 1469, 974, 1470, 974, 312, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 289, 974, 1427, 974, 974, 974, 1427, 974, 974, 974, 974, 974, 974, 974, 974, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 974, 313, 974, 974, 974, 974, 974, 314, 974, 974, 974, 974, 974, 974, 974, 974, 974, 315, 974, 315, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1477, 974, 336, 974, 974, 974, 974, 316, 974, 974, 974, 974, 974, 974, 974, 317 };
+		static const unsigned short jump_table[] = { 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 270, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 286, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 55, 974, 55, 974, 289, 974, 974, 1459, 1459, 1459, 1459, 1459, 1459, 1459, 1459, 1460, 1460, 1460, 1460, 1460, 1460, 1460, 1460, 976, 976, 976, 976, 976, 976, 976, 976, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 974, 974, 974, 1454, 974, 974, 323, 974, 289, 1463, 974, 1464, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 302, 974, 311, 974, 55, 974, 1467, 974, 1468, 974, 1469, 974, 1470, 974, 312, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 289, 974, 1427, 974, 974, 974, 1427, 974, 974, 974, 974, 974, 974, 974, 974, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 974, 313, 974, 974, 974, 974, 974, 314, 974, 974, 974, 974, 974, 974, 974, 974, 974, 315, 974, 315, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 328, 974, 336, 974, 974, 974, 974, 316, 974, 974, 974, 974, 974, 974, 974, 317 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
@@ -12580,19 +12536,19 @@ tr576:
 tr1088:
 	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st283;
-tr1289:
+tr1287:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	goto st283;
-tr1287:
+tr1285:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
 	{ SET_CPU_FEATURE(CPUFeature_SSE4A);     }
 	goto st283;
-tr1312:
+tr1310:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -13255,16 +13211,6 @@ case 327:
 	if ( (*( current_position)) == 46u )
 		goto st286;
 	goto tr57;
-tr560:
-	{
-    SET_LOCK_PREFIX(TRUE);
-  }
-	goto st328;
-tr1269:
-	{
-    SET_DATA16_PREFIX(TRUE);
-  }
-	goto st328;
 st328:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof328;
@@ -13395,11 +13341,6 @@ case 335:
 	} else
 		goto tr3;
 	goto tr57;
-tr1279:
-	{
-    SET_DATA16_PREFIX(TRUE);
-  }
-	goto st336;
 st336:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof336;
@@ -13497,11 +13438,11 @@ st900:
 		goto _test_eof900;
 case 900:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2320, 2321, 2322, 2321, 2323, 2321, 2323, 2321, 2324, 2371, 2326, 2371, 2372, 2328, 2372, 2328, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2329, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2317, 2318, 2319, 2318, 2320, 2318, 2320, 2318, 2321, 2368, 2323, 2368, 2369, 2325, 2369, 2325, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 354, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1454:
+tr1451:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -13633,11 +13574,11 @@ st901:
 		goto _test_eof901;
 case 901:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2373, 2321, 2374, 2321, 2375, 2321, 2375, 2321, 2376, 2325, 2377, 2325, 2378, 2328, 2378, 2328, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2329, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 345 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2370, 2318, 2371, 2318, 2372, 2318, 2372, 2318, 2373, 2322, 2374, 2322, 2375, 2325, 2375, 2325, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 354, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 345 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1456:
+tr1453:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -13660,7 +13601,7 @@ case 345:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1457:
+tr1454:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -13674,7 +13615,7 @@ case 346:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1458:
+tr1455:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -13688,7 +13629,7 @@ case 347:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1459:
+tr1456:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -13711,7 +13652,7 @@ case 349:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1408:
+tr1405:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -13725,7 +13666,7 @@ case 350:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1460:
+tr1457:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -13739,7 +13680,7 @@ case 351:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1461:
+tr1458:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -13753,7 +13694,7 @@ case 352:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1411:
+tr1408:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -13767,17 +13708,12 @@ case 353:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1412:
-	{
-    SET_DATA16_PREFIX(TRUE);
-  }
-	goto st354;
 st354:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof354;
 case 354:
 	{
-		static const unsigned short jump_table[] = { 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 355, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 286, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 55, 974, 55, 974, 289, 974, 974, 1625, 1625, 1625, 1625, 1625, 1625, 1625, 1625, 1626, 1626, 1626, 1626, 1626, 1626, 1626, 1626, 976, 976, 976, 976, 976, 976, 976, 976, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 974, 974, 974, 1454, 974, 974, 323, 974, 289, 1463, 974, 1464, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 302, 974, 311, 974, 55, 974, 1467, 974, 1468, 974, 1469, 974, 1470, 974, 312, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 289, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 974, 313, 974, 974, 974, 974, 974, 314, 974, 974, 974, 974, 974, 974, 974, 974, 974, 315, 974, 315, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1477, 974, 336, 974, 974, 974, 974, 316, 974, 974, 974, 974, 974, 974, 974, 317 };
+		static const unsigned short jump_table[] = { 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 355, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 286, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 55, 974, 55, 974, 289, 974, 974, 1625, 1625, 1625, 1625, 1625, 1625, 1625, 1625, 1626, 1626, 1626, 1626, 1626, 1626, 1626, 1626, 976, 976, 976, 976, 976, 976, 976, 976, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 974, 974, 974, 1454, 974, 974, 323, 974, 289, 1463, 974, 1464, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 302, 974, 311, 974, 55, 974, 1467, 974, 1468, 974, 1469, 974, 1470, 974, 312, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 289, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 974, 313, 974, 974, 974, 974, 974, 314, 974, 974, 974, 974, 974, 974, 974, 974, 974, 315, 974, 315, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 328, 974, 336, 974, 974, 974, 974, 316, 974, 974, 974, 974, 974, 974, 974, 317 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
@@ -13834,7 +13770,7 @@ case 359:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1414:
+tr1411:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -13922,11 +13858,11 @@ st902:
 		goto _test_eof902;
 case 902:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2320, 2321, 2322, 2321, 2323, 2321, 2323, 2321, 2324, 2379, 2326, 2325, 2327, 2328, 2327, 2328, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2329, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2317, 2318, 2319, 2318, 2320, 2318, 2320, 2318, 2321, 2376, 2323, 2322, 2324, 2325, 2324, 2325, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 354, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1462:
+tr1459:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -14011,11 +13947,11 @@ st903:
 		goto _test_eof903;
 case 903:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2380, 2321, 2381, 2321, 2323, 2321, 2323, 2321, 2382, 2325, 2326, 2325, 2327, 2328, 2327, 2328, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2383, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2384, 1169, 2385, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 2259, 2259, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 788, 2386, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2377, 2318, 2378, 2318, 2320, 2318, 2320, 2318, 2379, 2322, 2323, 2322, 2324, 2325, 2324, 2325, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 807, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2381, 1169, 2382, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 2257, 2257, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 788, 819, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1463:
+tr1460:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -14078,7 +14014,7 @@ tr719:
        operand_states = 0;
      }
 	goto st904;
-tr1341:
+tr1339:
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -14117,11 +14053,11 @@ st904:
 		goto _test_eof904;
 case 904:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2320, 2321, 2322, 2321, 2323, 2321, 2323, 2321, 2324, 2387, 2326, 2325, 2327, 2328, 2327, 2328, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2329, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2317, 2318, 2319, 2318, 2320, 2318, 2320, 2318, 2321, 2384, 2323, 2322, 2324, 2325, 2324, 2325, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 354, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1470:
+tr1467:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -14206,11 +14142,11 @@ st905:
 		goto _test_eof905;
 case 905:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 232, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2352, 2353, 2354, 2353, 2355, 2353, 2355, 2353, 2388, 2357, 2358, 2357, 2359, 2360, 2359, 2360, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2389, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 1640, 1640, 1640, 1640, 64, 96, 1427, 1427, 974, 974, 1427, 1427, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 790, 799, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 2390, 2391, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 232, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2349, 2350, 2351, 2350, 2352, 2350, 2352, 2350, 2385, 2354, 2355, 2354, 2356, 2357, 2356, 2357, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 370, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 1640, 1640, 1640, 1640, 64, 96, 1427, 1427, 974, 974, 1427, 1427, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 790, 799, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 800, 802, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1471:
+tr1468:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -14224,21 +14160,16 @@ case 369:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1472:
-	{
-    SET_DATA16_PREFIX(TRUE);
-  }
-	goto st370;
 st370:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof370;
 case 370:
 	{
-		static const unsigned short jump_table[] = { 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 270, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 286, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 55, 974, 55, 974, 289, 974, 974, 1459, 1459, 1459, 1459, 1459, 1459, 1459, 1459, 1460, 1460, 1460, 1460, 1460, 1460, 1460, 1460, 976, 976, 976, 976, 976, 976, 976, 976, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 974, 974, 974, 1454, 974, 974, 323, 974, 289, 1463, 974, 1464, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 302, 974, 311, 974, 55, 974, 1467, 974, 1468, 974, 1469, 974, 1470, 974, 312, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1640, 974, 1640, 974, 289, 974, 1427, 974, 974, 974, 1427, 974, 974, 974, 974, 974, 974, 974, 974, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 974, 313, 974, 974, 974, 974, 974, 314, 974, 974, 974, 974, 974, 974, 974, 974, 974, 315, 974, 315, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1477, 974, 336, 974, 974, 974, 974, 316, 974, 974, 974, 974, 974, 974, 974, 317 };
+		static const unsigned short jump_table[] = { 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 270, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 286, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 55, 974, 55, 974, 289, 974, 974, 1459, 1459, 1459, 1459, 1459, 1459, 1459, 1459, 1460, 1460, 1460, 1460, 1460, 1460, 1460, 1460, 976, 976, 976, 976, 976, 976, 976, 976, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 974, 974, 974, 1454, 974, 974, 323, 974, 289, 1463, 974, 1464, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 302, 974, 311, 974, 55, 974, 1467, 974, 1468, 974, 1469, 974, 1470, 974, 312, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1640, 974, 1640, 974, 289, 974, 1427, 974, 974, 974, 1427, 974, 974, 974, 974, 974, 974, 974, 974, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 974, 313, 974, 974, 974, 974, 974, 314, 974, 974, 974, 974, 974, 974, 974, 974, 974, 315, 974, 315, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 328, 974, 336, 974, 974, 974, 974, 316, 974, 974, 974, 974, 974, 974, 974, 317 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1415:
+tr1412:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -14326,11 +14257,11 @@ st906:
 		goto _test_eof906;
 case 906:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2320, 2321, 2322, 2321, 2323, 2321, 2323, 2321, 2324, 2392, 2326, 2325, 2327, 2328, 2327, 2328, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2329, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2317, 2318, 2319, 2318, 2320, 2318, 2320, 2318, 2321, 2389, 2323, 2322, 2324, 2325, 2324, 2325, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 354, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1475:
+tr1472:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -14415,7 +14346,7 @@ st907:
 		goto _test_eof907;
 case 907:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 375, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2394, 2395, 2396, 2395, 2397, 2395, 2397, 2395, 2398, 2399, 2400, 2399, 2401, 2402, 2401, 2402, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2403, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 1647, 1647, 974, 974, 1647, 1647, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 527, 749, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 2406, 2407, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 375, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2391, 2392, 2393, 2392, 2394, 2392, 2394, 2392, 2395, 2396, 2397, 2396, 2398, 2399, 2398, 2399, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 388, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 1647, 1647, 974, 974, 1647, 1647, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 527, 749, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 760, 770, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
@@ -14447,7 +14378,7 @@ case 376:
 	if ( 192u <= (*( current_position)) )
 		goto tr730;
 	goto tr57;
-tr1477:
+tr1474:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -14470,7 +14401,7 @@ case 378:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1478:
+tr1475:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -14484,7 +14415,7 @@ case 379:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1479:
+tr1476:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -14498,7 +14429,7 @@ case 380:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1480:
+tr1477:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -14512,7 +14443,7 @@ case 381:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1481:
+tr1478:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -14535,7 +14466,7 @@ case 383:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1482:
+tr1479:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -14549,7 +14480,7 @@ case 384:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1483:
+tr1480:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -14563,7 +14494,7 @@ case 385:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1484:
+tr1481:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -14577,7 +14508,7 @@ case 386:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1485:
+tr1482:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -14591,17 +14522,12 @@ case 387:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1486:
-	{
-    SET_DATA16_PREFIX(TRUE);
-  }
-	goto st388;
 st388:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof388;
 case 388:
 	{
-		static const unsigned short jump_table[] = { 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 389, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 286, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 55, 974, 55, 974, 289, 974, 974, 1651, 1651, 1651, 1651, 1651, 1651, 1651, 1651, 1652, 1652, 1652, 1652, 1652, 1652, 1652, 1652, 976, 976, 976, 976, 976, 976, 976, 976, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 974, 974, 974, 1454, 974, 974, 323, 974, 289, 1463, 974, 1464, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 302, 974, 311, 974, 55, 974, 1467, 974, 1468, 974, 1469, 974, 1470, 974, 312, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 289, 974, 1647, 974, 974, 974, 1647, 974, 974, 974, 974, 974, 974, 974, 974, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 974, 313, 974, 974, 974, 974, 974, 314, 974, 974, 974, 974, 974, 974, 974, 974, 974, 315, 974, 315, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1477, 974, 336, 974, 974, 974, 974, 316, 974, 974, 974, 974, 974, 974, 974, 317 };
+		static const unsigned short jump_table[] = { 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 389, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 286, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 55, 974, 55, 974, 289, 974, 974, 1651, 1651, 1651, 1651, 1651, 1651, 1651, 1651, 1652, 1652, 1652, 1652, 1652, 1652, 1652, 1652, 976, 976, 976, 976, 976, 976, 976, 976, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 974, 974, 974, 1454, 974, 974, 323, 974, 289, 1463, 974, 1464, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 302, 974, 311, 974, 55, 974, 1467, 974, 1468, 974, 1469, 974, 1470, 974, 312, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 289, 974, 1647, 974, 974, 974, 1647, 974, 974, 974, 974, 974, 974, 974, 974, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 974, 313, 974, 974, 974, 974, 974, 314, 974, 974, 974, 974, 974, 974, 974, 974, 974, 315, 974, 315, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 328, 974, 336, 974, 974, 974, 974, 316, 974, 974, 974, 974, 974, 974, 974, 317 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
@@ -20738,17 +20664,12 @@ case 753:
 	} else
 		goto tr1156;
 	goto tr57;
-tr1419:
-	{
-    SET_LOCK_PREFIX(TRUE);
-  }
-	goto st754;
 st754:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof754;
 case 754:
 	{
-		static const unsigned short jump_table[] = { 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 755, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2184, 2184, 2184, 2184, 2184, 2184, 2184, 2184, 2185, 2185, 2185, 2185, 2185, 2185, 2185, 2185, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2186, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 333, 757, 974, 333, 974, 974, 2188, 2189, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 334, 334, 974, 974, 974, 974, 974, 974, 335, 335 };
+		static const unsigned short jump_table[] = { 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 755, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2184, 2184, 2184, 2184, 2184, 2184, 2184, 2184, 2185, 2185, 2185, 2185, 2185, 2185, 2185, 2185, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 328, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 333, 757, 974, 333, 974, 974, 2187, 2188, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 334, 334, 974, 974, 974, 974, 974, 974, 335, 335 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
@@ -20757,11 +20678,11 @@ st755:
 		goto _test_eof755;
 case 755:
 	switch( (*( current_position)) ) {
-		case 176u: goto tr1271;
-		case 177u: goto tr1272;
+		case 176u: goto tr1270;
+		case 177u: goto tr1271;
 		case 186u: goto st330;
-		case 192u: goto tr1271;
-		case 193u: goto tr1272;
+		case 192u: goto tr1270;
+		case 193u: goto tr1271;
 		case 199u: goto st87;
 	}
 	goto tr57;
@@ -20775,7 +20696,7 @@ st756:
 		goto _test_eof756;
 case 756:
 	{
-		static const unsigned short jump_table[] = { 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 755, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 333, 757, 974, 333, 974, 974, 2188, 2189, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 334, 334, 974, 974, 974, 974, 974, 974, 335, 335 };
+		static const unsigned short jump_table[] = { 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 755, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 333, 757, 974, 333, 974, 974, 2187, 2188, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 334, 334, 974, 974, 974, 974, 974, 974, 335, 335 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
@@ -20798,7 +20719,7 @@ st758:
 		goto _test_eof758;
 case 758:
 	{
-		static const unsigned short jump_table[] = { 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 759, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 333, 757, 974, 333, 974, 974, 2188, 2191, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 334, 334, 974, 974, 974, 974, 974, 974, 335, 335 };
+		static const unsigned short jump_table[] = { 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 759, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 57, 57, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 333, 757, 974, 333, 974, 974, 2187, 2190, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 334, 334, 974, 974, 974, 974, 974, 974, 335, 335 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
@@ -20807,43 +20728,38 @@ st759:
 		goto _test_eof759;
 case 759:
 	switch( (*( current_position)) ) {
-		case 176u: goto tr1271;
-		case 177u: goto tr1274;
+		case 176u: goto tr1270;
+		case 177u: goto tr1273;
 		case 186u: goto st330;
-		case 192u: goto tr1271;
-		case 193u: goto tr1274;
+		case 192u: goto tr1270;
+		case 193u: goto tr1273;
 		case 199u: goto st175;
 	}
 	goto tr57;
-tr1489:
-	{
-    SET_REPNZ_PREFIX(TRUE);
-  }
-	goto st760;
 st760:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof760;
 case 760:
 	switch( (*( current_position)) ) {
 		case 15u: goto st761;
-		case 72u: goto tr1277;
-		case 102u: goto tr1279;
+		case 72u: goto tr1276;
+		case 102u: goto st336;
 	}
 	if ( (*( current_position)) < 73u ) {
 		if ( 64u <= (*( current_position)) && (*( current_position)) <= 71u )
-			goto tr1276;
+			goto tr1275;
 	} else if ( (*( current_position)) > 79u ) {
 		if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
 			goto tr730;
 	} else
-		goto tr1278;
+		goto tr1277;
 	goto tr57;
 st761:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof761;
 case 761:
 	{
-		static const unsigned short jump_table[] = { 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2197, 2197, 2198, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2197, 2199, 2200, 2200, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 762, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2197, 974, 974, 974, 974, 974, 974, 2197, 2197, 2197, 974, 2197, 2197, 2197, 2197, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2202, 974, 974, 974, 974, 974, 974, 974, 2203, 2204, 974, 974, 2198, 2198, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2202, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2205, 974, 974, 974, 974, 974, 2206, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2197, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2207, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974 };
+		static const unsigned short jump_table[] = { 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2195, 2195, 2196, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2195, 2197, 2198, 2198, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 762, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2195, 974, 974, 974, 974, 974, 974, 2195, 2195, 2195, 974, 2195, 2195, 2195, 2195, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2200, 974, 974, 974, 974, 974, 974, 974, 2201, 2202, 974, 974, 2196, 2196, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2200, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2203, 974, 974, 974, 974, 974, 2204, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2195, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2205, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
@@ -20854,7 +20770,7 @@ case 762:
 	if ( 240u <= (*( current_position)) && (*( current_position)) <= 241u )
 		goto tr696;
 	goto tr57;
-tr1286:
+tr1284:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
@@ -20871,8 +20787,8 @@ st764:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof764;
 case 764:
-	goto tr1292;
-tr1276:
+	goto tr1290;
+tr1275:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -20884,7 +20800,7 @@ case 765:
 	if ( (*( current_position)) == 15u )
 		goto st761;
 	goto tr57;
-tr1277:
+tr1276:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -20903,7 +20819,7 @@ st767:
 		goto _test_eof767;
 case 767:
 	{
-		static const unsigned short jump_table[] = { 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2197, 2197, 2198, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2197, 2199, 2211, 2211, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 768, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2197, 974, 974, 974, 974, 974, 974, 2197, 2197, 2197, 974, 2197, 2197, 2197, 2197, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2202, 974, 974, 974, 974, 974, 974, 974, 2203, 2204, 974, 974, 2198, 2198, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2202, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2205, 974, 974, 974, 974, 974, 2206, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2197, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2207, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974 };
+		static const unsigned short jump_table[] = { 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2195, 2195, 2196, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2195, 2197, 2209, 2209, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 768, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2195, 974, 974, 974, 974, 974, 974, 2195, 2195, 2195, 974, 2195, 2195, 2195, 2195, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2200, 974, 974, 974, 974, 974, 974, 974, 2201, 2202, 974, 974, 2196, 2196, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2200, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2203, 974, 974, 974, 974, 974, 2204, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2195, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2205, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
@@ -20912,9 +20828,9 @@ st768:
 		goto _test_eof768;
 case 768:
 	if ( 240u <= (*( current_position)) && (*( current_position)) <= 241u )
-		goto tr1296;
+		goto tr1294;
 	goto tr57;
-tr1278:
+tr1277:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -20926,26 +20842,18 @@ case 769:
 	if ( (*( current_position)) == 15u )
 		goto st767;
 	goto tr57;
-tr1490:
-	{
-    SET_REPZ_PREFIX(TRUE);
-  }
-	{
-    SET_REPZ_PREFIX(TRUE);
-  }
-	goto st770;
 st770:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof770;
 case 770:
 	switch( (*( current_position)) ) {
 		case 15u: goto st771;
-		case 72u: goto tr1299;
-		case 144u: goto tr1301;
+		case 72u: goto tr1297;
+		case 144u: goto tr1299;
 	}
 	if ( (*( current_position)) < 73u ) {
 		if ( 64u <= (*( current_position)) && (*( current_position)) <= 71u )
-			goto tr1298;
+			goto tr1296;
 	} else if ( (*( current_position)) > 79u ) {
 		if ( (*( current_position)) > 171u ) {
 			if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
@@ -20953,18 +20861,18 @@ case 770:
 		} else if ( (*( current_position)) >= 170u )
 			goto tr730;
 	} else
-		goto tr1300;
+		goto tr1298;
 	goto tr57;
 st771:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof771;
 case 771:
 	{
-		static const unsigned short jump_table[] = { 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2219, 2219, 2220, 974, 974, 974, 2220, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2219, 2221, 2222, 2222, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2219, 2219, 2219, 974, 974, 974, 974, 2219, 2219, 2223, 2223, 2219, 2219, 2219, 2219, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2223, 2224, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2223, 2223, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2225, 974, 974, 974, 2226, 2227, 974, 974, 974, 974, 2228, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2229, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2223, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974 };
+		static const unsigned short jump_table[] = { 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2217, 2217, 2218, 974, 974, 974, 2218, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2217, 2219, 2220, 2220, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2217, 2217, 2217, 974, 974, 974, 974, 2217, 2217, 2221, 2221, 2217, 2217, 2217, 2217, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2221, 2222, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2221, 2221, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2223, 974, 974, 974, 2224, 2225, 974, 974, 974, 974, 2226, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2227, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2221, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1298:
+tr1296:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -20976,7 +20884,7 @@ case 772:
 	if ( (*( current_position)) == 15u )
 		goto st771;
 	goto tr57;
-tr1299:
+tr1297:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -20996,11 +20904,11 @@ st774:
 		goto _test_eof774;
 case 774:
 	{
-		static const unsigned short jump_table[] = { 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2219, 2219, 2220, 974, 974, 974, 2220, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2219, 2221, 2231, 2231, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2219, 2219, 2219, 974, 974, 974, 974, 2219, 2219, 2223, 2223, 2219, 2219, 2219, 2219, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2223, 2224, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2223, 2223, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2232, 974, 974, 974, 2233, 2234, 974, 974, 974, 974, 2228, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2229, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2223, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974 };
+		static const unsigned short jump_table[] = { 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2217, 2217, 2218, 974, 974, 974, 2218, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2217, 2219, 2229, 2229, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2217, 2217, 2217, 974, 974, 974, 974, 2217, 2217, 2221, 2221, 2217, 2217, 2217, 2217, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2221, 2222, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2221, 2221, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2230, 974, 974, 974, 2231, 2232, 974, 974, 974, 974, 2226, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2227, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2221, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1300:
+tr1298:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -21012,7 +20920,7 @@ case 775:
 	if ( (*( current_position)) == 15u )
 		goto st774;
 	goto tr57;
-tr1409:
+tr1406:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -21026,7 +20934,7 @@ case 776:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1410:
+tr1407:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -21045,11 +20953,11 @@ st778:
 		goto _test_eof778;
 case 778:
 	{
-		static const unsigned short jump_table[] = { 974, 1832, 1833, 1834, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1835, 1836, 1837, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2235, 1839, 1840, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2236, 1842, 1843, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1844, 1845, 1834, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1846, 1847, 1837, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2237, 1849, 1840, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2238, 1851, 1843, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974 };
+		static const unsigned short jump_table[] = { 974, 1832, 1833, 1834, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1835, 1836, 1837, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2233, 1839, 1840, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2234, 1842, 1843, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1844, 1845, 1834, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1846, 1847, 1837, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2235, 1849, 1840, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2236, 1851, 1843, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1318:
+tr1316:
 	{
     SET_VEX_PREFIX2(*current_position);
   }
@@ -21059,11 +20967,11 @@ st779:
 		goto _test_eof779;
 case 779:
 	{
-		static const unsigned short jump_table[] = { 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 2239, 1987, 1988, 1989, 1990, 1991, 1992, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 1994, 1995, 1995, 974, 1996, 974, 974 };
+		static const unsigned short jump_table[] = { 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 2237, 1987, 1988, 1989, 1990, 1991, 1992, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 1994, 1995, 1995, 974, 1996, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1322:
+tr1320:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
@@ -21077,7 +20985,7 @@ case 780:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1319:
+tr1317:
 	{
     SET_VEX_PREFIX2(*current_position);
   }
@@ -21087,16 +20995,16 @@ st781:
 		goto _test_eof781;
 case 781:
 	{
-		static const unsigned short jump_table[] = { 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2060, 2240, 2062, 2063, 2064, 2065, 2066, 2067, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 2069, 2070, 2070, 974, 2071, 974, 974 };
+		static const unsigned short jump_table[] = { 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2060, 2238, 2062, 2063, 2064, 2065, 2066, 2067, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 2069, 2070, 2070, 974, 2071, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1323:
+tr1321:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
 	goto st782;
-tr1326:
+tr1324:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2(((*current_position) & 0x80) | 0x61);
@@ -21112,7 +21020,7 @@ case 782:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1320:
+tr1318:
 	{
     SET_VEX_PREFIX2(*current_position);
   }
@@ -21122,11 +21030,11 @@ st783:
 		goto _test_eof783;
 case 783:
 	{
-		static const unsigned short jump_table[] = { 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 2135, 2241, 1987, 1988, 1989, 1990, 1991, 1992, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 1994, 1995, 1995, 974, 1996, 974, 974 };
+		static const unsigned short jump_table[] = { 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 2135, 2239, 1987, 1988, 1989, 1990, 1991, 1992, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 1994, 1995, 1995, 974, 1996, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1324:
+tr1322:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
@@ -21140,7 +21048,7 @@ case 784:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1321:
+tr1319:
 	{
     SET_VEX_PREFIX2(*current_position);
   }
@@ -21150,16 +21058,16 @@ st785:
 		goto _test_eof785;
 case 785:
 	{
-		static const unsigned short jump_table[] = { 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2153, 2242, 2062, 2063, 2155, 2065, 2066, 2067, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 2069, 2070, 2070, 974, 2071, 974, 974 };
+		static const unsigned short jump_table[] = { 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2153, 2240, 2062, 2063, 2155, 2065, 2066, 2067, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 2069, 2070, 2070, 974, 2071, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1325:
+tr1323:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
 	goto st786;
-tr1327:
+tr1325:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2(((*current_position) & 0x80) | 0x61);
@@ -21180,7 +21088,7 @@ st787:
 		goto _test_eof787;
 case 787:
 	{
-		static const unsigned char jump_table[] = { 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 8, 80, 10, 11, 12, 13, 14, 15, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 17, 81, 10, 11, 19, 13, 14, 15 };
+		static const unsigned char jump_table[] = { 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 8, 78, 10, 11, 12, 13, 14, 15, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 17, 79, 10, 11, 19, 13, 14, 15 };
 		( current_state) = jump_table[(*( current_position))] + 2163;
 		goto _again;
 	}
@@ -21190,13 +21098,13 @@ st788:
 case 788:
 	switch( (*( current_position)) ) {
 		case 15u: goto st761;
-		case 102u: goto tr1279;
+		case 102u: goto st336;
 	}
 	if ( (*( current_position)) > 71u ) {
 		if ( 72u <= (*( current_position)) && (*( current_position)) <= 79u )
-			goto tr1278;
+			goto tr1277;
 	} else if ( (*( current_position)) >= 64u )
-		goto tr1276;
+		goto tr1275;
 	goto tr57;
 st789:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -21204,24 +21112,24 @@ st789:
 case 789:
 	switch( (*( current_position)) ) {
 		case 15u: goto st771;
-		case 144u: goto tr1301;
+		case 144u: goto tr1299;
 	}
 	if ( (*( current_position)) > 71u ) {
 		if ( 72u <= (*( current_position)) && (*( current_position)) <= 79u )
-			goto tr1300;
+			goto tr1298;
 	} else if ( (*( current_position)) >= 64u )
-		goto tr1298;
+		goto tr1296;
 	goto tr57;
 st790:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof790;
 case 790:
 	{
-		static const unsigned short jump_table[] = { 974, 1832, 1833, 1834, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1835, 1836, 1837, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2245, 1839, 1840, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2246, 1842, 1843, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1844, 1845, 1834, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1846, 1847, 1837, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2247, 1849, 1840, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2248, 1851, 1843, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974 };
+		static const unsigned short jump_table[] = { 974, 1832, 1833, 1834, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1835, 1836, 1837, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2243, 1839, 1840, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2244, 1842, 1843, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1844, 1845, 1834, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1846, 1847, 1837, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2245, 1849, 1840, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2246, 1851, 1843, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1328:
+tr1326:
 	{
     SET_VEX_PREFIX2(*current_position);
   }
@@ -21231,11 +21139,11 @@ st791:
 		goto _test_eof791;
 case 791:
 	{
-		static const unsigned short jump_table[] = { 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 2249, 1987, 1988, 1989, 1990, 1991, 1992, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 1994, 1995, 1995, 974, 1996, 974, 974 };
+		static const unsigned short jump_table[] = { 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 2247, 1987, 1988, 1989, 1990, 1991, 1992, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 1994, 1995, 1995, 974, 1996, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1332:
+tr1330:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
@@ -21245,11 +21153,11 @@ st792:
 		goto _test_eof792;
 case 792:
 	{
-		static const unsigned short jump_table[] = { 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1998, 1998, 1999, 1999, 1998, 1998, 1999, 1999, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1998, 1998, 974, 1999, 974, 974, 1998, 1998, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2006, 1998, 974, 974, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 2000, 974, 974, 974, 1998, 1998, 1998, 974, 974, 974, 974, 974, 1998, 1998, 974, 1998, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2000, 974, 633, 2008, 2000, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1998, 1998, 1998, 1998, 1998, 1998, 974, 2006, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1999, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 974, 1998, 1998, 1998, 1998, 1998, 1998, 2250, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 974 };
+		static const unsigned short jump_table[] = { 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1998, 1998, 1999, 1999, 1998, 1998, 1999, 1999, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1998, 1998, 974, 1999, 974, 974, 1998, 1998, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2006, 1998, 974, 974, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 2000, 974, 974, 974, 1998, 1998, 1998, 974, 974, 974, 974, 974, 1998, 1998, 974, 1998, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2000, 974, 633, 2008, 2000, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1998, 1998, 1998, 1998, 1998, 1998, 974, 2006, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1999, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 974, 1998, 1998, 1998, 1998, 1998, 1998, 2248, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1329:
+tr1327:
 	{
     SET_VEX_PREFIX2(*current_position);
   }
@@ -21259,16 +21167,16 @@ st793:
 		goto _test_eof793;
 case 793:
 	{
-		static const unsigned short jump_table[] = { 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2060, 2251, 2062, 2063, 2064, 2065, 2066, 2067, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 2069, 2070, 2070, 974, 2071, 974, 974 };
+		static const unsigned short jump_table[] = { 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2054, 2055, 2056, 2057, 2058, 1983, 2059, 2060, 2249, 2062, 2063, 2064, 2065, 2066, 2067, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 2069, 2070, 2070, 974, 2071, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1334:
+tr1332:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
 	goto st794;
-tr1337:
+tr1335:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2(((*current_position) & 0x80) | 0x61);
@@ -21280,11 +21188,11 @@ st794:
 		goto _test_eof794;
 case 794:
 	{
-		static const unsigned short jump_table[] = { 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2073, 2073, 2074, 2074, 2073, 2073, 2074, 2074, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2073, 2073, 974, 2074, 974, 974, 2073, 2073, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2006, 2073, 974, 974, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2075, 974, 974, 974, 2073, 2073, 2073, 974, 974, 974, 974, 974, 2073, 2073, 974, 2073, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2075, 974, 679, 2008, 2075, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2073, 2073, 2073, 2073, 2073, 2073, 974, 2006, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2074, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 974, 2073, 2073, 2073, 2073, 2073, 2073, 2250, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 974 };
+		static const unsigned short jump_table[] = { 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2073, 2073, 2074, 2074, 2073, 2073, 2074, 2074, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2073, 2073, 974, 2074, 974, 974, 2073, 2073, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2006, 2073, 974, 974, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2075, 974, 974, 974, 2073, 2073, 2073, 974, 974, 974, 974, 974, 2073, 2073, 974, 2073, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2075, 974, 679, 2008, 2075, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2073, 2073, 2073, 2073, 2073, 2073, 974, 2006, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2074, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 974, 2073, 2073, 2073, 2073, 2073, 2073, 2248, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1330:
+tr1328:
 	{
     SET_VEX_PREFIX2(*current_position);
   }
@@ -21294,11 +21202,11 @@ st795:
 		goto _test_eof795;
 case 795:
 	{
-		static const unsigned short jump_table[] = { 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 2135, 2252, 1987, 1988, 1989, 1990, 1991, 1992, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 1994, 1995, 1995, 974, 1996, 974, 974 };
+		static const unsigned short jump_table[] = { 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 1977, 2134, 1979, 1980, 1981, 1982, 1983, 1984, 2135, 2250, 1987, 1988, 1989, 1990, 1991, 1992, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 974, 1993, 1993, 974, 974, 974, 974, 974, 1994, 1995, 1995, 974, 1996, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1335:
+tr1333:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
@@ -21308,11 +21216,11 @@ st796:
 		goto _test_eof796;
 case 796:
 	{
-		static const unsigned short jump_table[] = { 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1998, 1998, 1999, 1999, 1998, 1998, 1999, 1999, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1998, 1998, 974, 1999, 974, 974, 1998, 1998, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2006, 1998, 974, 974, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 2000, 728, 728, 729, 1998, 1998, 1998, 974, 974, 974, 974, 974, 1998, 1998, 974, 1998, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2000, 974, 633, 2008, 2000, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1998, 1998, 1998, 1998, 1998, 1998, 974, 2006, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1999, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 974, 1998, 1998, 1998, 1998, 1998, 1998, 2250, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 974 };
+		static const unsigned short jump_table[] = { 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1998, 1998, 1999, 1999, 1998, 1998, 1999, 1999, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1998, 1998, 974, 1999, 974, 974, 1998, 1998, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2006, 1998, 974, 974, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 2000, 728, 728, 729, 1998, 1998, 1998, 974, 974, 974, 974, 974, 1998, 1998, 974, 1998, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2000, 974, 633, 2008, 2000, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1998, 1998, 1998, 1998, 1998, 1998, 974, 2006, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1999, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 974, 1998, 1998, 1998, 1998, 1998, 1998, 2248, 1998, 1998, 1998, 1998, 1998, 1998, 1998, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1331:
+tr1329:
 	{
     SET_VEX_PREFIX2(*current_position);
   }
@@ -21322,16 +21230,16 @@ st797:
 		goto _test_eof797;
 case 797:
 	{
-		static const unsigned short jump_table[] = { 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2153, 2253, 2062, 2063, 2155, 2065, 2066, 2067, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 2069, 2070, 2070, 974, 2071, 974, 974 };
+		static const unsigned short jump_table[] = { 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2053, 2152, 2055, 2056, 2057, 2058, 1983, 2059, 2153, 2251, 2062, 2063, 2155, 2065, 2066, 2067, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 974, 2068, 2068, 974, 974, 974, 974, 974, 2069, 2070, 2070, 974, 2071, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1336:
+tr1334:
 	{
     SET_VEX_PREFIX3(*current_position);
   }
 	goto st798;
-tr1338:
+tr1336:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2(((*current_position) & 0x80) | 0x61);
@@ -21343,7 +21251,7 @@ st798:
 		goto _test_eof798;
 case 798:
 	{
-		static const unsigned short jump_table[] = { 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2073, 2073, 2074, 2074, 2073, 2073, 2074, 2074, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2073, 2073, 974, 2074, 974, 974, 2073, 2073, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2006, 2073, 974, 974, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2075, 728, 728, 729, 2073, 2073, 2073, 974, 974, 974, 974, 974, 2073, 2073, 974, 2073, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2075, 974, 679, 2008, 2075, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2073, 2073, 2073, 2073, 2073, 2073, 974, 2006, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2074, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 974, 2073, 2073, 2073, 2073, 2073, 2073, 2250, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 974 };
+		static const unsigned short jump_table[] = { 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2073, 2073, 2074, 2074, 2073, 2073, 2074, 2074, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2073, 2073, 974, 2074, 974, 974, 2073, 2073, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2006, 2073, 974, 974, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2075, 728, 728, 729, 2073, 2073, 2073, 974, 974, 974, 974, 974, 2073, 2073, 974, 2073, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2075, 974, 679, 2008, 2075, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2073, 2073, 2073, 2073, 2073, 2073, 974, 2006, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2074, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 974, 2073, 2073, 2073, 2073, 2073, 2073, 2248, 2073, 2073, 2073, 2073, 2073, 2073, 2073, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
@@ -21352,27 +21260,22 @@ st799:
 		goto _test_eof799;
 case 799:
 	{
-		static const unsigned char jump_table[] = { 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 8, 91, 10, 11, 12, 13, 14, 15, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 17, 92, 10, 11, 19, 13, 14, 15 };
+		static const unsigned char jump_table[] = { 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 8, 89, 10, 11, 12, 13, 14, 15, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 17, 90, 10, 11, 19, 13, 14, 15 };
 		( current_state) = jump_table[(*( current_position))] + 2163;
 		goto _again;
 	}
-tr1473:
-	{
-    SET_REPNZ_PREFIX(TRUE);
-  }
-	goto st800;
 st800:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof800;
 case 800:
 	switch( (*( current_position)) ) {
 		case 15u: goto st761;
-		case 72u: goto tr1339;
-		case 102u: goto tr1279;
+		case 72u: goto tr1337;
+		case 102u: goto st336;
 	}
 	if ( (*( current_position)) < 73u ) {
 		if ( 64u <= (*( current_position)) && (*( current_position)) <= 71u )
-			goto tr1276;
+			goto tr1275;
 	} else if ( (*( current_position)) > 79u ) {
 		if ( (*( current_position)) > 167u ) {
 			if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
@@ -21380,9 +21283,9 @@ case 800:
 		} else if ( (*( current_position)) >= 166u )
 			goto tr723;
 	} else
-		goto tr1278;
+		goto tr1277;
 	goto tr57;
-tr1339:
+tr1337:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -21397,29 +21300,21 @@ case 801:
 		case 175u: goto tr510;
 	}
 	goto tr57;
-tr1474:
-	{
-    SET_REPZ_PREFIX(TRUE);
-  }
-	{
-    SET_REPZ_PREFIX(TRUE);
-  }
-	goto st802;
 st802:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof802;
 case 802:
 	switch( (*( current_position)) ) {
 		case 15u: goto st771;
-		case 72u: goto tr1340;
-		case 144u: goto tr1301;
+		case 72u: goto tr1338;
+		case 144u: goto tr1299;
 	}
 	if ( (*( current_position)) < 164u ) {
 		if ( (*( current_position)) > 71u ) {
 			if ( 73u <= (*( current_position)) && (*( current_position)) <= 79u )
-				goto tr1300;
+				goto tr1298;
 		} else if ( (*( current_position)) >= 64u )
-			goto tr1298;
+			goto tr1296;
 	} else if ( (*( current_position)) > 167u ) {
 		if ( (*( current_position)) > 171u ) {
 			if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
@@ -21429,7 +21324,7 @@ case 802:
 	} else
 		goto tr723;
 	goto tr57;
-tr1340:
+tr1338:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -21457,11 +21352,11 @@ st804:
 		goto _test_eof804;
 case 804:
 	{
-		static const unsigned short jump_table[] = { 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 1429, 959, 959, 959, 959, 959, 959, 959, 959, 2258 };
+		static const unsigned short jump_table[] = { 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 1429, 959, 959, 959, 959, 959, 959, 959, 959, 2256 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1464:
+tr1461:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -21475,7 +21370,7 @@ case 805:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1465:
+tr1462:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -21485,25 +21380,20 @@ st806:
 		goto _test_eof806;
 case 806:
 	{
-		static const unsigned short jump_table[] = { 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 172, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 55, 55, 55, 55, 64, 96, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1311, 974, 974, 974, 974, 96, 1314, 64, 1315, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 194, 974, 195, 55, 55, 1003, 1318, 1167, 1319, 1169, 1320, 974, 1321, 974, 148, 976, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 2259, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 149, 216, 974, 974, 974, 974, 151, 217, 974, 974, 974, 974, 974, 974, 974, 974, 153, 218, 153, 218, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 167, 219, 976, 976, 974, 974, 976, 976, 169, 220 };
+		static const unsigned short jump_table[] = { 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 172, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 55, 55, 55, 55, 64, 96, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1311, 974, 974, 974, 974, 96, 1314, 64, 1315, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 194, 974, 195, 55, 55, 1003, 1318, 1167, 1319, 1169, 1320, 974, 1321, 974, 148, 976, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 2257, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 149, 216, 974, 974, 974, 974, 151, 217, 974, 974, 974, 974, 974, 974, 974, 974, 153, 218, 153, 218, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 167, 219, 976, 976, 974, 974, 976, 976, 169, 220 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1466:
-	{
-    SET_DATA16_PREFIX(TRUE);
-  }
-	goto st807;
 st807:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof807;
 case 807:
 	{
-		static const unsigned short jump_table[] = { 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 355, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 286, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 55, 974, 55, 974, 289, 974, 974, 1625, 1625, 1625, 1625, 1625, 1625, 1625, 1625, 1626, 1626, 1626, 1626, 1626, 1626, 1626, 1626, 976, 976, 976, 976, 976, 976, 976, 976, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 974, 974, 974, 1454, 974, 974, 323, 974, 289, 1463, 974, 1464, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 302, 974, 311, 974, 55, 974, 1467, 974, 1468, 974, 1469, 974, 1470, 974, 312, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 289, 974, 974, 974, 2259, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 974, 313, 974, 974, 974, 974, 974, 314, 974, 974, 974, 974, 974, 974, 974, 974, 974, 315, 974, 315, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1477, 974, 336, 974, 974, 974, 974, 316, 974, 974, 974, 974, 974, 974, 974, 317 };
+		static const unsigned short jump_table[] = { 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 355, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 286, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 55, 974, 55, 974, 289, 974, 974, 1625, 1625, 1625, 1625, 1625, 1625, 1625, 1625, 1626, 1626, 1626, 1626, 1626, 1626, 1626, 1626, 976, 976, 976, 976, 976, 976, 976, 976, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 974, 974, 974, 1454, 974, 974, 323, 974, 289, 1463, 974, 1464, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 302, 974, 311, 974, 55, 974, 1467, 974, 1468, 974, 1469, 974, 1470, 974, 312, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 289, 974, 974, 974, 2257, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 974, 313, 974, 974, 974, 974, 974, 314, 974, 974, 974, 974, 974, 974, 974, 974, 974, 315, 974, 315, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 328, 974, 336, 974, 974, 974, 974, 316, 974, 974, 974, 974, 974, 974, 974, 317 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1467:
+tr1464:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -21514,11 +21404,11 @@ st808:
 		goto _test_eof808;
 case 808:
 	{
-		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 1629, 934, 934, 934, 934, 934, 934, 934, 934, 2260 };
+		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 1629, 934, 934, 934, 934, 934, 934, 934, 934, 2258 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1343:
+tr1341:
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -21552,7 +21442,7 @@ tr1343:
        operand_states = 0;
      }
 	goto st908;
-tr1350:
+tr1348:
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -21591,11 +21481,11 @@ st908:
 		goto _test_eof908;
 case 908:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2320, 2321, 2322, 2321, 2323, 2321, 2323, 2321, 2324, 2408, 2326, 2325, 2327, 2328, 2327, 2328, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2329, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2317, 2318, 2319, 2318, 2320, 2318, 2320, 2318, 2321, 2405, 2323, 2322, 2324, 2325, 2324, 2325, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 354, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1491:
+tr1488:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -21605,11 +21495,11 @@ st809:
 		goto _test_eof809;
 case 809:
 	{
-		static const unsigned short jump_table[] = { 1152, 1310, 1154, 1410, 1155, 1312, 974, 974, 1152, 1310, 1154, 1411, 1155, 1312, 974, 172, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 55, 55, 55, 55, 64, 96, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1311, 974, 974, 974, 974, 96, 1314, 64, 1315, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 194, 974, 224, 55, 55, 1003, 1318, 1167, 1413, 1169, 1414, 974, 2261, 974, 148, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 149, 216, 974, 974, 974, 974, 151, 217, 974, 974, 974, 974, 974, 974, 974, 974, 153, 218, 153, 218, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 167, 219, 976, 976, 974, 974, 976, 976, 169, 220 };
+		static const unsigned short jump_table[] = { 1152, 1310, 1154, 1410, 1155, 1312, 974, 974, 1152, 1310, 1154, 1411, 1155, 1312, 974, 172, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 55, 55, 55, 55, 64, 96, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1311, 974, 974, 974, 974, 96, 1314, 64, 1315, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 194, 974, 224, 55, 55, 1003, 1318, 1167, 1413, 1169, 1414, 974, 2259, 974, 148, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 149, 216, 974, 974, 974, 974, 151, 217, 974, 974, 974, 974, 974, 974, 974, 974, 153, 218, 153, 218, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 167, 219, 976, 976, 974, 974, 976, 976, 169, 220 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1344:
+tr1342:
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st810;
 st810:
@@ -21617,11 +21507,11 @@ st810:
 		goto _test_eof810;
 case 810:
 	{
-		static const unsigned short jump_table[] = { 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 2262, 1386, 1384, 1384, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974 };
+		static const unsigned short jump_table[] = { 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 2260, 1386, 1384, 1384, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1345:
+tr1343:
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -21633,11 +21523,11 @@ st811:
 		goto _test_eof811;
 case 811:
 	{
-		static const unsigned short jump_table[] = { 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 2263, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391 };
+		static const unsigned short jump_table[] = { 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 2261, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1346:
+tr1344:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
@@ -21680,11 +21570,11 @@ st909:
 		goto _test_eof909;
 case 909:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 375, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2394, 2395, 2396, 2395, 2397, 2395, 2397, 2395, 2409, 2399, 2400, 2399, 2401, 2402, 2401, 2402, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2410, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 2264, 2264, 2264, 2264, 64, 96, 1647, 1647, 974, 974, 1647, 1647, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 527, 749, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 2411, 2412, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 375, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2391, 2392, 2393, 2392, 2394, 2392, 2394, 2392, 2406, 2396, 2397, 2396, 2398, 2399, 2398, 2399, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 813, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 2262, 2262, 2262, 2262, 64, 96, 1647, 1647, 974, 974, 1647, 1647, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 527, 749, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 814, 816, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1492:
+tr1489:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -21694,51 +21584,41 @@ st812:
 		goto _test_eof812;
 case 812:
 	{
-		static const unsigned short jump_table[] = { 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 383, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 55, 55, 55, 55, 64, 96, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1311, 974, 974, 974, 974, 96, 1314, 64, 1315, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 194, 974, 195, 55, 55, 1003, 1318, 1167, 1319, 1169, 1320, 974, 1321, 974, 148, 976, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2264, 974, 2264, 64, 96, 974, 1647, 974, 974, 974, 1647, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 149, 216, 974, 974, 974, 974, 151, 217, 974, 974, 974, 974, 974, 974, 974, 974, 153, 218, 153, 218, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 167, 219, 976, 976, 974, 974, 976, 976, 169, 220 };
+		static const unsigned short jump_table[] = { 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 383, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 55, 55, 55, 55, 64, 96, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1311, 974, 974, 974, 974, 96, 1314, 64, 1315, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 194, 974, 195, 55, 55, 1003, 1318, 1167, 1319, 1169, 1320, 974, 1321, 974, 148, 976, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2262, 974, 2262, 64, 96, 974, 1647, 974, 974, 974, 1647, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 149, 216, 974, 974, 974, 974, 151, 217, 974, 974, 974, 974, 974, 974, 974, 974, 153, 218, 153, 218, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 167, 219, 976, 976, 974, 974, 976, 976, 169, 220 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1493:
-	{
-    SET_DATA16_PREFIX(TRUE);
-  }
-	goto st813;
 st813:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof813;
 case 813:
 	{
-		static const unsigned short jump_table[] = { 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 389, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 286, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 55, 974, 55, 974, 289, 974, 974, 1651, 1651, 1651, 1651, 1651, 1651, 1651, 1651, 1652, 1652, 1652, 1652, 1652, 1652, 1652, 1652, 976, 976, 976, 976, 976, 976, 976, 976, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 974, 974, 974, 1454, 974, 974, 323, 974, 289, 1463, 974, 1464, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 302, 974, 311, 974, 55, 974, 1467, 974, 1468, 974, 1469, 974, 1470, 974, 312, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2264, 974, 2264, 974, 289, 974, 1647, 974, 974, 974, 1647, 974, 974, 974, 974, 974, 974, 974, 974, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 974, 313, 974, 974, 974, 974, 974, 314, 974, 974, 974, 974, 974, 974, 974, 974, 974, 315, 974, 315, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1477, 974, 336, 974, 974, 974, 974, 316, 974, 974, 974, 974, 974, 974, 974, 317 };
+		static const unsigned short jump_table[] = { 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 389, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 286, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 55, 974, 55, 974, 289, 974, 974, 1651, 1651, 1651, 1651, 1651, 1651, 1651, 1651, 1652, 1652, 1652, 1652, 1652, 1652, 1652, 1652, 976, 976, 976, 976, 976, 976, 976, 976, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 974, 974, 974, 1454, 974, 974, 323, 974, 289, 1463, 974, 1464, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 302, 974, 311, 974, 55, 974, 1467, 974, 1468, 974, 1469, 974, 1470, 974, 312, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2262, 974, 2262, 974, 289, 974, 1647, 974, 974, 974, 1647, 974, 974, 974, 974, 974, 974, 974, 974, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 974, 313, 974, 974, 974, 974, 974, 314, 974, 974, 974, 974, 974, 974, 974, 974, 974, 315, 974, 315, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 328, 974, 336, 974, 974, 974, 974, 316, 974, 974, 974, 974, 974, 974, 974, 317 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1494:
-	{
-    SET_REPNZ_PREFIX(TRUE);
-  }
-	goto st814;
 st814:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof814;
 case 814:
 	switch( (*( current_position)) ) {
 		case 15u: goto st761;
-		case 72u: goto tr1348;
-		case 102u: goto tr1279;
+		case 72u: goto tr1346;
+		case 102u: goto st336;
 	}
 	if ( (*( current_position)) < 73u ) {
 		if ( 64u <= (*( current_position)) && (*( current_position)) <= 71u )
-			goto tr1276;
+			goto tr1275;
 	} else if ( (*( current_position)) > 79u ) {
 		if ( (*( current_position)) > 167u ) {
 			if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
 				goto tr730;
 		} else if ( (*( current_position)) >= 166u )
-			goto tr1347;
+			goto tr1345;
 	} else
-		goto tr1278;
+		goto tr1277;
 	goto tr57;
-tr1348:
+tr1346:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -21749,33 +21629,25 @@ st815:
 case 815:
 	switch( (*( current_position)) ) {
 		case 15u: goto st767;
-		case 167u: goto tr1347;
+		case 167u: goto tr1345;
 		case 175u: goto tr730;
 	}
 	goto tr57;
-tr1495:
-	{
-    SET_REPZ_PREFIX(TRUE);
-  }
-	{
-    SET_REPZ_PREFIX(TRUE);
-  }
-	goto st816;
 st816:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof816;
 case 816:
 	switch( (*( current_position)) ) {
 		case 15u: goto st771;
-		case 72u: goto tr1349;
-		case 144u: goto tr1301;
+		case 72u: goto tr1347;
+		case 144u: goto tr1299;
 	}
 	if ( (*( current_position)) < 164u ) {
 		if ( (*( current_position)) > 71u ) {
 			if ( 73u <= (*( current_position)) && (*( current_position)) <= 79u )
-				goto tr1300;
+				goto tr1298;
 		} else if ( (*( current_position)) >= 64u )
-			goto tr1298;
+			goto tr1296;
 	} else if ( (*( current_position)) > 167u ) {
 		if ( (*( current_position)) > 171u ) {
 			if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
@@ -21783,9 +21655,9 @@ case 816:
 		} else if ( (*( current_position)) >= 170u )
 			goto tr730;
 	} else
-		goto tr1347;
+		goto tr1345;
 	goto tr57;
-tr1349:
+tr1347:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -21796,13 +21668,13 @@ st817:
 case 817:
 	switch( (*( current_position)) ) {
 		case 15u: goto st774;
-		case 165u: goto tr1347;
-		case 167u: goto tr1347;
+		case 165u: goto tr1345;
+		case 167u: goto tr1345;
 		case 171u: goto tr730;
 		case 175u: goto tr730;
 	}
 	goto tr57;
-tr1468:
+tr1465:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -21813,34 +21685,29 @@ st818:
 		goto _test_eof818;
 case 818:
 	{
-		static const unsigned short jump_table[] = { 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 1641, 959, 959, 959, 959, 959, 959, 959, 959, 2267 };
+		static const unsigned short jump_table[] = { 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 1641, 959, 959, 959, 959, 959, 959, 959, 959, 2265 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1469:
-	{
-    SET_REPZ_PREFIX(TRUE);
-  }
-	goto st819;
 st819:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof819;
 case 819:
 	switch( (*( current_position)) ) {
 		case 15u: goto st771;
-		case 72u: goto tr1351;
-		case 144u: goto tr1301;
+		case 72u: goto tr1349;
+		case 144u: goto tr1299;
 	}
 	if ( (*( current_position)) < 73u ) {
 		if ( 64u <= (*( current_position)) && (*( current_position)) <= 71u )
-			goto tr1298;
+			goto tr1296;
 	} else if ( (*( current_position)) > 79u ) {
 		if ( 172u <= (*( current_position)) && (*( current_position)) <= 173u )
-			goto tr1342;
+			goto tr1340;
 	} else
-		goto tr1300;
+		goto tr1298;
 	goto tr57;
-tr1351:
+tr1349:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -21851,10 +21718,10 @@ st820:
 case 820:
 	switch( (*( current_position)) ) {
 		case 15u: goto st774;
-		case 173u: goto tr1342;
+		case 173u: goto tr1340;
 	}
 	goto tr57;
-tr1455:
+tr1452:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -21864,11 +21731,11 @@ st821:
 		goto _test_eof821;
 case 821:
 	{
-		static const unsigned short jump_table[] = { 1152, 2269, 1154, 1311, 1155, 1312, 974, 974, 1152, 1452, 1154, 1311, 1155, 1312, 974, 172, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 55, 55, 55, 55, 64, 96, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1311, 974, 974, 974, 974, 96, 1314, 64, 1315, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 194, 974, 224, 55, 55, 1003, 1318, 1167, 1413, 1169, 1414, 974, 1321, 974, 148, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 149, 216, 974, 974, 974, 974, 151, 217, 974, 974, 974, 974, 974, 974, 974, 974, 153, 218, 153, 218, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 167, 219, 976, 976, 974, 974, 976, 976, 169, 220 };
+		static const unsigned short jump_table[] = { 1152, 2267, 1154, 1311, 1155, 1312, 974, 974, 1152, 1452, 1154, 1311, 1155, 1312, 974, 172, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 55, 55, 55, 55, 64, 96, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1311, 974, 974, 974, 974, 96, 1314, 64, 1315, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 194, 974, 224, 55, 55, 1003, 1318, 1167, 1413, 1169, 1414, 974, 1321, 974, 148, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 149, 216, 974, 974, 974, 974, 151, 217, 974, 974, 974, 974, 974, 974, 974, 974, 153, 218, 153, 218, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 167, 219, 976, 976, 974, 974, 976, 976, 169, 220 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1352:
+tr1350:
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st822;
 st822:
@@ -21876,11 +21743,11 @@ st822:
 		goto _test_eof822;
 case 822:
 	{
-		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 2270, 2270, 2270, 2270, 2271, 2272, 2270, 2270 };
+		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 2268, 2268, 2268, 2268, 2269, 2270, 2268, 2268 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1353:
+tr1351:
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -21913,7 +21780,7 @@ tr1353:
        operand_states = 0;
      }
 	goto st910;
-tr1354:
+tr1352:
 	{ if (restricted_register == REG_RSP)
          instruction_info_collected |= RESTRICTED_REGISTER_USED;
        else
@@ -21947,7 +21814,7 @@ tr1354:
        operand_states = 0;
      }
 	goto st910;
-tr1355:
+tr1353:
 	{ if (restricted_register == REG_RBP)
          instruction_info_collected |= RESTRICTED_REGISTER_USED;
        else
@@ -21986,11 +21853,11 @@ st910:
 		goto _test_eof910;
 case 910:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2413, 2321, 2414, 2321, 2415, 2321, 2415, 2321, 2416, 2325, 2417, 2325, 2418, 2328, 2418, 2328, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2329, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 824 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2410, 2318, 2411, 2318, 2412, 2318, 2412, 2318, 2413, 2322, 2414, 2322, 2415, 2325, 2415, 2325, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 354, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 824 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1496:
+tr1493:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22009,11 +21876,11 @@ st824:
 		goto _test_eof824;
 case 824:
 	{
-		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 2274, 2274, 2274, 2274, 2274, 2274, 2274, 2274, 974, 974, 974, 974, 974, 974, 974, 974, 2275, 2275, 2275, 2275, 2275, 2275, 2275, 2275, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974 };
+		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 2272, 2272, 2272, 2272, 2272, 2272, 2272, 2272, 974, 974, 974, 974, 974, 974, 974, 974, 2273, 2273, 2273, 2273, 2273, 2273, 2273, 2273, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1497:
+tr1494:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22027,7 +21894,7 @@ case 825:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1498:
+tr1495:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22041,7 +21908,7 @@ case 826:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1499:
+tr1496:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22060,11 +21927,11 @@ st828:
 		goto _test_eof828;
 case 828:
 	{
-		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 2274, 2274, 2274, 2274, 2274, 2274, 2274, 2274, 974, 974, 974, 974, 974, 974, 974, 974, 2275, 2275, 2275, 2275, 2275, 2275, 2275, 2275, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974 };
+		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 2272, 2272, 2272, 2272, 2272, 2272, 2272, 2272, 974, 974, 974, 974, 974, 974, 974, 974, 2273, 2273, 2273, 2273, 2273, 2273, 2273, 2273, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1500:
+tr1497:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22078,7 +21945,7 @@ case 829:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1501:
+tr1498:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22092,30 +21959,25 @@ case 830:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1452:
-	{
-    SET_REPNZ_PREFIX(TRUE);
-  }
-	goto st831;
 st831:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof831;
 case 831:
 	switch( (*( current_position)) ) {
 		case 15u: goto st761;
-		case 72u: goto tr1360;
-		case 102u: goto tr1279;
+		case 72u: goto tr1358;
+		case 102u: goto st336;
 	}
 	if ( (*( current_position)) < 73u ) {
 		if ( 64u <= (*( current_position)) && (*( current_position)) <= 71u )
-			goto tr1276;
+			goto tr1275;
 	} else if ( (*( current_position)) > 79u ) {
 		if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
 			goto tr510;
 	} else
-		goto tr1278;
+		goto tr1277;
 	goto tr57;
-tr1360:
+tr1358:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22129,26 +21991,18 @@ case 832:
 		case 175u: goto tr510;
 	}
 	goto tr57;
-tr1453:
-	{
-    SET_REPZ_PREFIX(TRUE);
-  }
-	{
-    SET_REPZ_PREFIX(TRUE);
-  }
-	goto st833;
 st833:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof833;
 case 833:
 	switch( (*( current_position)) ) {
 		case 15u: goto st771;
-		case 72u: goto tr1361;
-		case 144u: goto tr1301;
+		case 72u: goto tr1359;
+		case 144u: goto tr1299;
 	}
 	if ( (*( current_position)) < 73u ) {
 		if ( 64u <= (*( current_position)) && (*( current_position)) <= 71u )
-			goto tr1298;
+			goto tr1296;
 	} else if ( (*( current_position)) > 79u ) {
 		if ( (*( current_position)) > 171u ) {
 			if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
@@ -22156,9 +22010,9 @@ case 833:
 		} else if ( (*( current_position)) >= 170u )
 			goto tr510;
 	} else
-		goto tr1300;
+		goto tr1298;
 	goto tr57;
-tr1361:
+tr1359:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22173,7 +22027,7 @@ case 834:
 		case 175u: goto tr510;
 	}
 	goto tr57;
-tr1439:
+tr1436:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22183,51 +22037,41 @@ st835:
 		goto _test_eof835;
 case 835:
 	{
-		static const unsigned short jump_table[] = { 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 244, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 55, 55, 55, 55, 64, 96, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1311, 974, 974, 974, 974, 96, 1314, 64, 1315, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 194, 974, 195, 55, 55, 1003, 1318, 1167, 1319, 1169, 1320, 974, 1321, 974, 148, 976, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2279, 974, 2279, 64, 96, 974, 1427, 974, 974, 974, 1427, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 149, 216, 974, 974, 974, 974, 151, 217, 974, 974, 974, 974, 974, 974, 974, 974, 153, 218, 153, 218, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 167, 219, 976, 976, 974, 974, 976, 976, 169, 220 };
+		static const unsigned short jump_table[] = { 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 244, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 55, 55, 55, 55, 64, 96, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1311, 974, 974, 974, 974, 96, 1314, 64, 1315, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 194, 974, 195, 55, 55, 1003, 1318, 1167, 1319, 1169, 1320, 974, 1321, 974, 148, 976, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2277, 974, 2277, 64, 96, 974, 1427, 974, 974, 974, 1427, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 149, 216, 974, 974, 974, 974, 151, 217, 974, 974, 974, 974, 974, 974, 974, 974, 153, 218, 153, 218, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 167, 219, 976, 976, 974, 974, 976, 976, 169, 220 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1444:
-	{
-    SET_DATA16_PREFIX(TRUE);
-  }
-	goto st836;
 st836:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof836;
 case 836:
 	{
-		static const unsigned short jump_table[] = { 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 270, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 286, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 55, 974, 55, 974, 289, 974, 974, 1459, 1459, 1459, 1459, 1459, 1459, 1459, 1459, 1460, 1460, 1460, 1460, 1460, 1460, 1460, 1460, 976, 976, 976, 976, 976, 976, 976, 976, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 974, 974, 974, 1454, 974, 974, 323, 974, 289, 1463, 974, 1464, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 302, 974, 311, 974, 55, 974, 1467, 974, 1468, 974, 1469, 974, 1470, 974, 312, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2279, 974, 2279, 974, 289, 974, 1427, 974, 974, 974, 1427, 974, 974, 974, 974, 974, 974, 974, 974, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 974, 313, 974, 974, 974, 974, 974, 314, 974, 974, 974, 974, 974, 974, 974, 974, 974, 315, 974, 315, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1477, 974, 336, 974, 974, 974, 974, 316, 974, 974, 974, 974, 974, 974, 974, 317 };
+		static const unsigned short jump_table[] = { 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 270, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 286, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 55, 974, 55, 974, 289, 974, 974, 1459, 1459, 1459, 1459, 1459, 1459, 1459, 1459, 1460, 1460, 1460, 1460, 1460, 1460, 1460, 1460, 976, 976, 976, 976, 976, 976, 976, 976, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 974, 974, 974, 1454, 974, 974, 323, 974, 289, 1463, 974, 1464, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 302, 974, 311, 974, 55, 974, 1467, 974, 1468, 974, 1469, 974, 1470, 974, 312, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2277, 974, 2277, 974, 289, 974, 1427, 974, 974, 974, 1427, 974, 974, 974, 974, 974, 974, 974, 974, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 974, 313, 974, 974, 974, 974, 974, 314, 974, 974, 974, 974, 974, 974, 974, 974, 974, 315, 974, 315, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 328, 974, 336, 974, 974, 974, 974, 316, 974, 974, 974, 974, 974, 974, 974, 317 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1447:
-	{
-    SET_REPNZ_PREFIX(TRUE);
-  }
-	goto st837;
 st837:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof837;
 case 837:
 	switch( (*( current_position)) ) {
 		case 15u: goto st761;
-		case 72u: goto tr1363;
-		case 102u: goto tr1279;
+		case 72u: goto tr1361;
+		case 102u: goto st336;
 	}
 	if ( (*( current_position)) < 73u ) {
 		if ( 64u <= (*( current_position)) && (*( current_position)) <= 71u )
-			goto tr1276;
+			goto tr1275;
 	} else if ( (*( current_position)) > 79u ) {
 		if ( (*( current_position)) > 167u ) {
 			if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
 				goto tr510;
 		} else if ( (*( current_position)) >= 166u )
-			goto tr1362;
+			goto tr1360;
 	} else
-		goto tr1278;
+		goto tr1277;
 	goto tr57;
-tr1363:
+tr1361:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22238,33 +22082,25 @@ st838:
 case 838:
 	switch( (*( current_position)) ) {
 		case 15u: goto st767;
-		case 167u: goto tr1362;
+		case 167u: goto tr1360;
 		case 175u: goto tr510;
 	}
 	goto tr57;
-tr1448:
-	{
-    SET_REPZ_PREFIX(TRUE);
-  }
-	{
-    SET_REPZ_PREFIX(TRUE);
-  }
-	goto st839;
 st839:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof839;
 case 839:
 	switch( (*( current_position)) ) {
 		case 15u: goto st771;
-		case 72u: goto tr1364;
-		case 144u: goto tr1301;
+		case 72u: goto tr1362;
+		case 144u: goto tr1299;
 	}
 	if ( (*( current_position)) < 164u ) {
 		if ( (*( current_position)) > 71u ) {
 			if ( 73u <= (*( current_position)) && (*( current_position)) <= 79u )
-				goto tr1300;
+				goto tr1298;
 		} else if ( (*( current_position)) >= 64u )
-			goto tr1298;
+			goto tr1296;
 	} else if ( (*( current_position)) > 167u ) {
 		if ( (*( current_position)) > 171u ) {
 			if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
@@ -22272,9 +22108,9 @@ case 839:
 		} else if ( (*( current_position)) >= 170u )
 			goto tr510;
 	} else
-		goto tr1362;
+		goto tr1360;
 	goto tr57;
-tr1364:
+tr1362:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22285,8 +22121,8 @@ st840:
 case 840:
 	switch( (*( current_position)) ) {
 		case 15u: goto st774;
-		case 165u: goto tr1362;
-		case 167u: goto tr1362;
+		case 165u: goto tr1360;
+		case 167u: goto tr1360;
 		case 171u: goto tr510;
 		case 175u: goto tr510;
 	}
@@ -22302,11 +22138,11 @@ st841:
 		goto _test_eof841;
 case 841:
 	{
-		static const unsigned short jump_table[] = { 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 1429, 959, 959, 959, 959, 959, 959, 959, 959, 2282 };
+		static const unsigned short jump_table[] = { 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 1429, 959, 959, 959, 959, 959, 959, 959, 959, 2280 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1427:
+tr1424:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22320,7 +22156,7 @@ case 842:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1428:
+tr1425:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22330,25 +22166,20 @@ st843:
 		goto _test_eof843;
 case 843:
 	{
-		static const unsigned short jump_table[] = { 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 172, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 55, 55, 55, 55, 64, 96, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1311, 974, 974, 974, 974, 96, 1314, 64, 1315, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 194, 974, 195, 55, 55, 1003, 1318, 1167, 1319, 1169, 1320, 974, 1321, 974, 148, 976, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 2283, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 149, 216, 974, 974, 974, 974, 151, 217, 974, 974, 974, 974, 974, 974, 974, 974, 153, 218, 153, 218, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 167, 219, 976, 976, 974, 974, 976, 976, 169, 220 };
+		static const unsigned short jump_table[] = { 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 172, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 55, 55, 55, 55, 64, 96, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1311, 974, 974, 974, 974, 96, 1314, 64, 1315, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 194, 974, 195, 55, 55, 1003, 1318, 1167, 1319, 1169, 1320, 974, 1321, 974, 148, 976, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 2281, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 149, 216, 974, 974, 974, 974, 151, 217, 974, 974, 974, 974, 974, 974, 974, 974, 153, 218, 153, 218, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 167, 219, 976, 976, 974, 974, 976, 976, 169, 220 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1429:
-	{
-    SET_DATA16_PREFIX(TRUE);
-  }
-	goto st844;
 st844:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof844;
 case 844:
 	{
-		static const unsigned short jump_table[] = { 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 355, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 286, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 55, 974, 55, 974, 289, 974, 974, 1625, 1625, 1625, 1625, 1625, 1625, 1625, 1625, 1626, 1626, 1626, 1626, 1626, 1626, 1626, 1626, 976, 976, 976, 976, 976, 976, 976, 976, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 974, 974, 974, 1454, 974, 974, 323, 974, 289, 1463, 974, 1464, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 302, 974, 311, 974, 55, 974, 1467, 974, 1468, 974, 1469, 974, 1470, 974, 312, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 289, 974, 974, 974, 2283, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 974, 313, 974, 974, 974, 974, 974, 314, 974, 974, 974, 974, 974, 974, 974, 974, 974, 315, 974, 315, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1477, 974, 336, 974, 974, 974, 974, 316, 974, 974, 974, 974, 974, 974, 974, 317 };
+		static const unsigned short jump_table[] = { 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 355, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 286, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 55, 974, 55, 974, 289, 974, 974, 1625, 1625, 1625, 1625, 1625, 1625, 1625, 1625, 1626, 1626, 1626, 1626, 1626, 1626, 1626, 1626, 976, 976, 976, 976, 976, 976, 976, 976, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 974, 974, 974, 1454, 974, 974, 323, 974, 289, 1463, 974, 1464, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 302, 974, 311, 974, 55, 974, 1467, 974, 1468, 974, 1469, 974, 1470, 974, 312, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 289, 974, 974, 974, 2281, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 974, 313, 974, 974, 974, 974, 974, 314, 974, 974, 974, 974, 974, 974, 974, 974, 974, 315, 974, 315, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 328, 974, 336, 974, 974, 974, 974, 316, 974, 974, 974, 974, 974, 974, 974, 317 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1430:
+tr1427:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -22359,11 +22190,11 @@ st845:
 		goto _test_eof845;
 case 845:
 	{
-		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 1629, 934, 934, 934, 934, 934, 934, 934, 934, 2284 };
+		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 934, 1629, 934, 934, 934, 934, 934, 934, 934, 934, 2282 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1367:
+tr1365:
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -22397,7 +22228,7 @@ tr1367:
        operand_states = 0;
      }
 	goto st911;
-tr1374:
+tr1372:
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -22436,11 +22267,11 @@ st911:
 		goto _test_eof911;
 case 911:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2320, 2321, 2322, 2321, 2323, 2321, 2323, 2321, 2324, 2419, 2326, 2325, 2327, 2328, 2327, 2328, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2329, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2317, 2318, 2319, 2318, 2320, 2318, 2320, 2318, 2321, 2416, 2323, 2322, 2324, 2325, 2324, 2325, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 354, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1502:
+tr1499:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22450,11 +22281,11 @@ st846:
 		goto _test_eof846;
 case 846:
 	{
-		static const unsigned short jump_table[] = { 1152, 1310, 1154, 1410, 1155, 1312, 974, 974, 1152, 1310, 1154, 1411, 1155, 1312, 974, 172, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 55, 55, 55, 55, 64, 96, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1311, 974, 974, 974, 974, 96, 1314, 64, 1315, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 194, 974, 224, 55, 55, 1003, 1318, 1167, 1413, 1169, 1414, 974, 2285, 974, 148, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 149, 216, 974, 974, 974, 974, 151, 217, 974, 974, 974, 974, 974, 974, 974, 974, 153, 218, 153, 218, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 167, 219, 976, 976, 974, 974, 976, 976, 169, 220 };
+		static const unsigned short jump_table[] = { 1152, 1310, 1154, 1410, 1155, 1312, 974, 974, 1152, 1310, 1154, 1411, 1155, 1312, 974, 172, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 55, 55, 55, 55, 64, 96, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1311, 974, 974, 974, 974, 96, 1314, 64, 1315, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 194, 974, 224, 55, 55, 1003, 1318, 1167, 1413, 1169, 1414, 974, 2283, 974, 148, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 149, 216, 974, 974, 974, 974, 151, 217, 974, 974, 974, 974, 974, 974, 974, 974, 153, 218, 153, 218, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 167, 219, 976, 976, 974, 974, 976, 976, 169, 220 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1368:
+tr1366:
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st847;
 st847:
@@ -22462,11 +22293,11 @@ st847:
 		goto _test_eof847;
 case 847:
 	{
-		static const unsigned short jump_table[] = { 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 2286, 1386, 1384, 1384, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974 };
+		static const unsigned short jump_table[] = { 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 1385, 1386, 1384, 1384, 1384, 1384, 1384, 1384, 2284, 1386, 1384, 1384, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1387, 1387, 1387, 1387, 1388, 1387, 1387, 1387, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 1389, 1389, 1389, 1389, 1390, 1389, 1389, 1389, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1369:
+tr1367:
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -22478,11 +22309,11 @@ st848:
 		goto _test_eof848;
 case 848:
 	{
-		static const unsigned short jump_table[] = { 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 2287, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391 };
+		static const unsigned short jump_table[] = { 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 2285, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391, 1391, 1391, 1391, 1391, 1391, 1392, 1391, 1391 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1370:
+tr1368:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
@@ -22525,11 +22356,11 @@ st912:
 		goto _test_eof912;
 case 912:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 375, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2394, 2395, 2396, 2395, 2397, 2395, 2397, 2395, 2420, 2399, 2400, 2399, 2401, 2402, 2401, 2402, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2421, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 2288, 2288, 2288, 2288, 64, 96, 1647, 1647, 974, 974, 1647, 1647, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 527, 749, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 2422, 2423, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 375, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2391, 2392, 2393, 2392, 2394, 2392, 2394, 2392, 2417, 2396, 2397, 2396, 2398, 2399, 2398, 2399, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 850, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 2286, 2286, 2286, 2286, 64, 96, 1647, 1647, 974, 974, 1647, 1647, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 527, 749, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 851, 853, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1503:
+tr1500:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22539,51 +22370,41 @@ st849:
 		goto _test_eof849;
 case 849:
 	{
-		static const unsigned short jump_table[] = { 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 383, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 55, 55, 55, 55, 64, 96, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1311, 974, 974, 974, 974, 96, 1314, 64, 1315, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 194, 974, 195, 55, 55, 1003, 1318, 1167, 1319, 1169, 1320, 974, 1321, 974, 148, 976, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2288, 974, 2288, 64, 96, 974, 1647, 974, 974, 974, 1647, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 149, 216, 974, 974, 974, 974, 151, 217, 974, 974, 974, 974, 974, 974, 974, 974, 153, 218, 153, 218, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 167, 219, 976, 976, 974, 974, 976, 976, 169, 220 };
+		static const unsigned short jump_table[] = { 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 383, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 55, 55, 55, 55, 64, 96, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1311, 974, 974, 974, 974, 96, 1314, 64, 1315, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 194, 974, 195, 55, 55, 1003, 1318, 1167, 1319, 1169, 1320, 974, 1321, 974, 148, 976, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2286, 974, 2286, 64, 96, 974, 1647, 974, 974, 974, 1647, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 149, 216, 974, 974, 974, 974, 151, 217, 974, 974, 974, 974, 974, 974, 974, 974, 153, 218, 153, 218, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 167, 219, 976, 976, 974, 974, 976, 976, 169, 220 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1504:
-	{
-    SET_DATA16_PREFIX(TRUE);
-  }
-	goto st850;
 st850:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof850;
 case 850:
 	{
-		static const unsigned short jump_table[] = { 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 389, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 286, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 55, 974, 55, 974, 289, 974, 974, 1651, 1651, 1651, 1651, 1651, 1651, 1651, 1651, 1652, 1652, 1652, 1652, 1652, 1652, 1652, 1652, 976, 976, 976, 976, 976, 976, 976, 976, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 974, 974, 974, 1454, 974, 974, 323, 974, 289, 1463, 974, 1464, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 302, 974, 311, 974, 55, 974, 1467, 974, 1468, 974, 1469, 974, 1470, 974, 312, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2288, 974, 2288, 974, 289, 974, 1647, 974, 974, 974, 1647, 974, 974, 974, 974, 974, 974, 974, 974, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 974, 313, 974, 974, 974, 974, 974, 314, 974, 974, 974, 974, 974, 974, 974, 974, 974, 315, 974, 315, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 1477, 974, 336, 974, 974, 974, 974, 316, 974, 974, 974, 974, 974, 974, 974, 317 };
+		static const unsigned short jump_table[] = { 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 389, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 1453, 974, 1454, 974, 1455, 286, 974, 974, 1453, 974, 1454, 974, 1455, 974, 974, 974, 55, 974, 55, 974, 289, 974, 974, 1651, 1651, 1651, 1651, 1651, 1651, 1651, 1651, 1652, 1652, 1652, 1652, 1652, 1652, 1652, 1652, 976, 976, 976, 976, 976, 976, 976, 976, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 1461, 974, 974, 974, 1454, 974, 974, 323, 974, 289, 1463, 974, 1464, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 302, 974, 311, 974, 55, 974, 1467, 974, 1468, 974, 1469, 974, 1470, 974, 312, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 1472, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2286, 974, 2286, 974, 289, 974, 1647, 974, 974, 974, 1647, 974, 974, 974, 974, 974, 974, 974, 974, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 1473, 974, 313, 974, 974, 974, 974, 974, 314, 974, 974, 974, 974, 974, 974, 974, 974, 974, 315, 974, 315, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 328, 974, 336, 974, 974, 974, 974, 316, 974, 974, 974, 974, 974, 974, 974, 317 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1505:
-	{
-    SET_REPNZ_PREFIX(TRUE);
-  }
-	goto st851;
 st851:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof851;
 case 851:
 	switch( (*( current_position)) ) {
 		case 15u: goto st761;
-		case 72u: goto tr1372;
-		case 102u: goto tr1279;
+		case 72u: goto tr1370;
+		case 102u: goto st336;
 	}
 	if ( (*( current_position)) < 73u ) {
 		if ( 64u <= (*( current_position)) && (*( current_position)) <= 71u )
-			goto tr1276;
+			goto tr1275;
 	} else if ( (*( current_position)) > 79u ) {
 		if ( (*( current_position)) > 167u ) {
 			if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
 				goto tr730;
 		} else if ( (*( current_position)) >= 166u )
-			goto tr1371;
+			goto tr1369;
 	} else
-		goto tr1278;
+		goto tr1277;
 	goto tr57;
-tr1372:
+tr1370:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22594,33 +22415,25 @@ st852:
 case 852:
 	switch( (*( current_position)) ) {
 		case 15u: goto st767;
-		case 167u: goto tr1371;
+		case 167u: goto tr1369;
 		case 175u: goto tr730;
 	}
 	goto tr57;
-tr1506:
-	{
-    SET_REPZ_PREFIX(TRUE);
-  }
-	{
-    SET_REPZ_PREFIX(TRUE);
-  }
-	goto st853;
 st853:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof853;
 case 853:
 	switch( (*( current_position)) ) {
 		case 15u: goto st771;
-		case 72u: goto tr1373;
-		case 144u: goto tr1301;
+		case 72u: goto tr1371;
+		case 144u: goto tr1299;
 	}
 	if ( (*( current_position)) < 164u ) {
 		if ( (*( current_position)) > 71u ) {
 			if ( 73u <= (*( current_position)) && (*( current_position)) <= 79u )
-				goto tr1300;
+				goto tr1298;
 		} else if ( (*( current_position)) >= 64u )
-			goto tr1298;
+			goto tr1296;
 	} else if ( (*( current_position)) > 167u ) {
 		if ( (*( current_position)) > 171u ) {
 			if ( 174u <= (*( current_position)) && (*( current_position)) <= 175u )
@@ -22628,9 +22441,9 @@ case 853:
 		} else if ( (*( current_position)) >= 170u )
 			goto tr730;
 	} else
-		goto tr1371;
+		goto tr1369;
 	goto tr57;
-tr1373:
+tr1371:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22641,13 +22454,13 @@ st854:
 case 854:
 	switch( (*( current_position)) ) {
 		case 15u: goto st774;
-		case 165u: goto tr1371;
-		case 167u: goto tr1371;
+		case 165u: goto tr1369;
+		case 167u: goto tr1369;
 		case 171u: goto tr730;
 		case 175u: goto tr730;
 	}
 	goto tr57;
-tr1431:
+tr1428:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -22658,34 +22471,29 @@ st855:
 		goto _test_eof855;
 case 855:
 	{
-		static const unsigned short jump_table[] = { 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 1641, 959, 959, 959, 959, 959, 959, 959, 959, 2291 };
+		static const unsigned short jump_table[] = { 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 952, 952, 952, 952, 953, 954, 952, 952, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 955, 955, 955, 955, 956, 955, 955, 955, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 957, 957, 957, 957, 958, 957, 957, 957, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 959, 1641, 959, 959, 959, 959, 959, 959, 959, 959, 2289 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1432:
-	{
-    SET_REPZ_PREFIX(TRUE);
-  }
-	goto st856;
 st856:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof856;
 case 856:
 	switch( (*( current_position)) ) {
 		case 15u: goto st771;
-		case 72u: goto tr1375;
-		case 144u: goto tr1301;
+		case 72u: goto tr1373;
+		case 144u: goto tr1299;
 	}
 	if ( (*( current_position)) < 73u ) {
 		if ( 64u <= (*( current_position)) && (*( current_position)) <= 71u )
-			goto tr1298;
+			goto tr1296;
 	} else if ( (*( current_position)) > 79u ) {
 		if ( 172u <= (*( current_position)) && (*( current_position)) <= 173u )
-			goto tr1366;
+			goto tr1364;
 	} else
-		goto tr1300;
+		goto tr1298;
 	goto tr57;
-tr1375:
+tr1373:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22696,10 +22504,10 @@ st857:
 case 857:
 	switch( (*( current_position)) ) {
 		case 15u: goto st774;
-		case 173u: goto tr1366;
+		case 173u: goto tr1364;
 	}
 	goto tr57;
-tr1424:
+tr1421:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22709,11 +22517,11 @@ st858:
 		goto _test_eof858;
 case 858:
 	{
-		static const unsigned short jump_table[] = { 1152, 2293, 1154, 2294, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 172, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 55, 55, 55, 55, 64, 96, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1311, 974, 974, 974, 974, 96, 1314, 64, 1315, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 194, 974, 224, 55, 55, 1003, 1318, 1167, 1413, 1169, 1414, 974, 1321, 974, 148, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 149, 216, 974, 974, 974, 974, 151, 217, 974, 974, 974, 974, 974, 974, 974, 974, 153, 218, 153, 218, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 167, 219, 976, 976, 974, 974, 976, 976, 169, 220 };
+		static const unsigned short jump_table[] = { 1152, 2291, 1154, 2292, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 172, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 55, 55, 55, 55, 64, 96, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1311, 974, 974, 974, 974, 96, 1314, 64, 1315, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 194, 974, 224, 55, 55, 1003, 1318, 1167, 1413, 1169, 1414, 974, 1321, 974, 148, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 149, 216, 974, 974, 974, 974, 151, 217, 974, 974, 974, 974, 974, 974, 974, 974, 153, 218, 153, 218, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 167, 219, 976, 976, 974, 974, 976, 976, 169, 220 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1376:
+tr1374:
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st859;
 st859:
@@ -22721,11 +22529,11 @@ st859:
 		goto _test_eof859;
 case 859:
 	{
-		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 2295, 2295, 2295, 2295, 2295, 2295, 2295, 924 };
+		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 2293, 2293, 2293, 2293, 2293, 2293, 2293, 924 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1378:
+tr1376:
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -22763,11 +22571,11 @@ st913:
 		goto _test_eof913;
 case 913:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2320, 2424, 2322, 2424, 2323, 2424, 2323, 2424, 2324, 2425, 2326, 2425, 2327, 2426, 2327, 2426, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2329, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2317, 2421, 2319, 2421, 2320, 2421, 2320, 2421, 2321, 2422, 2323, 2422, 2324, 2423, 2324, 2423, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 354, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1507:
+tr1504:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22786,11 +22594,11 @@ st861:
 		goto _test_eof861;
 case 861:
 	{
-		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 2297, 2297, 2297, 2297, 2297, 2297, 2297, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2298, 2298, 2298, 2298, 2298, 2298, 2298, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974 };
+		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 2295, 2295, 2295, 2295, 2295, 2295, 2295, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2296, 2296, 2296, 2296, 2296, 2296, 2296, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1508:
+tr1505:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22809,11 +22617,11 @@ st863:
 		goto _test_eof863;
 case 863:
 	{
-		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 2297, 2297, 2297, 2297, 2297, 2297, 2297, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2298, 2298, 2298, 2298, 2298, 2298, 2298, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974 };
+		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 2295, 2295, 2295, 2295, 2295, 2295, 2295, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2296, 2296, 2296, 2296, 2296, 2296, 2296, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1509:
+tr1506:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22827,7 +22635,7 @@ case 864:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1377:
+tr1375:
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st865;
 st865:
@@ -22835,11 +22643,11 @@ st865:
 		goto _test_eof865;
 case 865:
 	{
-		static const unsigned short jump_table[] = { 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 942, 942, 942, 942, 942, 942, 942, 2300, 942, 942, 942, 942, 942, 942, 942, 2300, 942, 942, 942, 942, 942, 942, 942, 2300, 942, 942, 942, 942, 942, 942, 942, 2300, 942, 942, 942, 942, 942, 942, 942, 2300, 942, 942, 942, 942, 942, 942, 942, 2300, 942, 942, 942, 942, 942, 942, 942, 2300, 942, 942, 942, 942, 942, 942, 942, 942 };
+		static const unsigned short jump_table[] = { 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 942, 942, 942, 942, 942, 942, 942, 2298, 942, 942, 942, 942, 942, 942, 942, 2298, 942, 942, 942, 942, 942, 942, 942, 2298, 942, 942, 942, 942, 942, 942, 942, 2298, 942, 942, 942, 942, 942, 942, 942, 2298, 942, 942, 942, 942, 942, 942, 942, 2298, 942, 942, 942, 942, 942, 942, 942, 2298, 942, 942, 942, 942, 942, 942, 942, 942 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1383:
+tr1381:
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -22877,11 +22685,11 @@ st914:
 		goto _test_eof914;
 case 914:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2320, 2427, 2322, 2427, 2323, 2427, 2323, 2427, 2324, 2428, 2326, 2428, 2327, 2429, 2327, 2429, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2329, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2317, 2424, 2319, 2424, 2320, 2424, 2320, 2424, 2321, 2425, 2323, 2425, 2324, 2426, 2324, 2426, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 354, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 170 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1510:
+tr1507:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22900,11 +22708,11 @@ st867:
 		goto _test_eof867;
 case 867:
 	{
-		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 2302, 2302, 2302, 2302, 2302, 2302, 2302, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2303, 2303, 2303, 2303, 2303, 2303, 2303, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974 };
+		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 2300, 2300, 2300, 2300, 2300, 2300, 2300, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2301, 2301, 2301, 2301, 2301, 2301, 2301, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1511:
+tr1508:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22923,11 +22731,11 @@ st869:
 		goto _test_eof869;
 case 869:
 	{
-		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 2302, 2302, 2302, 2302, 2302, 2302, 2302, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2303, 2303, 2303, 2303, 2303, 2303, 2303, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974 };
+		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 2300, 2300, 2300, 2300, 2300, 2300, 2300, 974, 974, 974, 974, 974, 974, 974, 974, 974, 2301, 2301, 2301, 2301, 2301, 2301, 2301, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1512:
+tr1509:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22941,7 +22749,7 @@ case 870:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1422:
+tr1419:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -22951,11 +22759,11 @@ st871:
 		goto _test_eof871;
 case 871:
 	{
-		static const unsigned short jump_table[] = { 1152, 1310, 1154, 2305, 1155, 1312, 974, 974, 1152, 1310, 1154, 1411, 1155, 1312, 974, 172, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 55, 55, 55, 55, 64, 96, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1311, 974, 974, 974, 974, 96, 1314, 64, 1315, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 194, 974, 224, 55, 55, 1003, 1318, 1167, 1413, 1169, 1414, 974, 1321, 974, 148, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 149, 216, 974, 974, 974, 974, 151, 217, 974, 974, 974, 974, 974, 974, 974, 974, 153, 218, 153, 218, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 167, 219, 976, 976, 974, 974, 976, 976, 169, 220 };
+		static const unsigned short jump_table[] = { 1152, 1310, 1154, 2303, 1155, 1312, 974, 974, 1152, 1310, 1154, 1411, 1155, 1312, 974, 172, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 55, 55, 55, 55, 64, 96, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1311, 974, 974, 974, 974, 96, 1314, 64, 1315, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 194, 974, 224, 55, 55, 1003, 1318, 1167, 1413, 1169, 1414, 974, 1321, 974, 148, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 149, 216, 974, 974, 974, 974, 151, 217, 974, 974, 974, 974, 974, 974, 974, 974, 153, 218, 153, 218, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 167, 219, 976, 976, 974, 974, 976, 976, 169, 220 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1388:
+tr1386:
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st872;
 st872:
@@ -22963,11 +22771,11 @@ st872:
 		goto _test_eof872;
 case 872:
 	{
-		static const unsigned short jump_table[] = { 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 942, 942, 942, 942, 942, 942, 942, 2306, 942, 942, 942, 942, 942, 942, 942, 2306, 942, 942, 942, 942, 942, 942, 942, 2306, 942, 942, 942, 942, 942, 942, 942, 2306, 942, 942, 942, 942, 942, 942, 942, 2307, 942, 942, 942, 942, 942, 942, 942, 2308, 942, 942, 942, 942, 942, 942, 942, 2306, 942, 942, 942, 942, 942, 942, 942, 2306 };
+		static const unsigned short jump_table[] = { 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 935, 935, 935, 935, 936, 937, 935, 935, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 938, 938, 938, 938, 939, 938, 938, 938, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 940, 940, 940, 940, 941, 940, 940, 940, 942, 942, 942, 942, 942, 942, 942, 2304, 942, 942, 942, 942, 942, 942, 942, 2304, 942, 942, 942, 942, 942, 942, 942, 2304, 942, 942, 942, 942, 942, 942, 942, 2304, 942, 942, 942, 942, 942, 942, 942, 2305, 942, 942, 942, 942, 942, 942, 942, 2306, 942, 942, 942, 942, 942, 942, 942, 2304, 942, 942, 942, 942, 942, 942, 942, 2304 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1389:
+tr1387:
 	{
     SET_OPERAND_NAME(0, RegFromModRM(*current_position) |
                         RegisterExtentionFromREX(GET_REX_PREFIX()) |
@@ -23000,7 +22808,7 @@ tr1389:
        operand_states = 0;
      }
 	goto st915;
-tr1390:
+tr1388:
 	{ if (restricted_register == REG_RSP)
          instruction_info_collected |= RESTRICTED_REGISTER_USED;
        else
@@ -23034,7 +22842,7 @@ tr1390:
        operand_states = 0;
      }
 	goto st915;
-tr1391:
+tr1389:
 	{ if (restricted_register == REG_RBP)
          instruction_info_collected |= RESTRICTED_REGISTER_USED;
        else
@@ -23073,11 +22881,11 @@ st915:
 		goto _test_eof915;
 case 915:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2430, 2321, 2431, 2321, 2432, 2321, 2432, 2321, 2433, 2325, 2434, 2325, 2435, 2328, 2435, 2328, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2329, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 874 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2427, 2318, 2428, 2318, 2429, 2318, 2429, 2318, 2430, 2322, 2431, 2322, 2432, 2325, 2432, 2325, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 354, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 874 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1513:
+tr1510:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -23096,11 +22904,11 @@ st874:
 		goto _test_eof874;
 case 874:
 	{
-		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 2302, 2302, 2302, 2302, 2302, 2302, 2302, 2302, 974, 974, 974, 974, 974, 974, 974, 974, 2303, 2303, 2303, 2303, 2303, 2303, 2303, 2303, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974 };
+		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 2300, 2300, 2300, 2300, 2300, 2300, 2300, 2300, 974, 974, 974, 974, 974, 974, 974, 974, 2301, 2301, 2301, 2301, 2301, 2301, 2301, 2301, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1514:
+tr1511:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -23114,7 +22922,7 @@ case 875:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1515:
+tr1512:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -23128,7 +22936,7 @@ case 876:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1516:
+tr1513:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -23147,11 +22955,11 @@ st878:
 		goto _test_eof878;
 case 878:
 	{
-		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 2302, 2302, 2302, 2302, 2302, 2302, 2302, 2302, 974, 974, 974, 974, 974, 974, 974, 974, 2303, 2303, 2303, 2303, 2303, 2303, 2303, 2303, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974 };
+		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 2300, 2300, 2300, 2300, 2300, 2300, 2300, 2300, 974, 974, 974, 974, 974, 974, 974, 974, 2301, 2301, 2301, 2301, 2301, 2301, 2301, 2301, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1517:
+tr1514:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -23165,7 +22973,7 @@ case 879:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1518:
+tr1515:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -23179,7 +22987,7 @@ case 880:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1423:
+tr1420:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -23189,11 +22997,11 @@ st881:
 		goto _test_eof881;
 case 881:
 	{
-		static const unsigned short jump_table[] = { 1152, 2311, 1154, 1311, 1155, 1312, 974, 974, 1152, 1452, 1154, 1311, 1155, 1312, 974, 172, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 55, 55, 55, 55, 64, 96, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1311, 974, 974, 974, 974, 96, 1314, 64, 1315, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 194, 974, 224, 55, 55, 1003, 1318, 1167, 1413, 1169, 1414, 974, 1321, 974, 148, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 149, 216, 974, 974, 974, 974, 151, 217, 974, 974, 974, 974, 974, 974, 974, 974, 153, 218, 153, 218, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 167, 219, 976, 976, 974, 974, 976, 976, 169, 220 };
+		static const unsigned short jump_table[] = { 1152, 2309, 1154, 1311, 1155, 1312, 974, 974, 1152, 1452, 1154, 1311, 1155, 1312, 974, 172, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 1152, 1310, 1154, 1311, 1155, 1312, 974, 974, 55, 55, 55, 55, 64, 96, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1311, 974, 974, 974, 974, 96, 1314, 64, 1315, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 194, 974, 224, 55, 55, 1003, 1318, 1167, 1413, 1169, 1414, 974, 1321, 974, 148, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 1322, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 1323, 149, 216, 974, 974, 974, 974, 151, 217, 974, 974, 974, 974, 974, 974, 974, 974, 153, 218, 153, 218, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 167, 219, 976, 976, 974, 974, 976, 976, 169, 220 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1394:
+tr1392:
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st882;
 st882:
@@ -23201,11 +23009,11 @@ st882:
 		goto _test_eof882;
 case 882:
 	{
-		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 2312, 2312, 2312, 2312, 2313, 2314, 2312, 2312 };
+		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 924, 2310, 2310, 2310, 2310, 2311, 2312, 2310, 2310 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1395:
+tr1393:
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -23238,7 +23046,7 @@ tr1395:
        operand_states = 0;
      }
 	goto st916;
-tr1396:
+tr1394:
 	{ if (restricted_register == REG_RSP)
          instruction_info_collected |= RESTRICTED_REGISTER_USED;
        else
@@ -23272,7 +23080,7 @@ tr1396:
        operand_states = 0;
      }
 	goto st916;
-tr1397:
+tr1395:
 	{ if (restricted_register == REG_RBP)
          instruction_info_collected |= RESTRICTED_REGISTER_USED;
        else
@@ -23311,11 +23119,11 @@ st916:
 		goto _test_eof916;
 case 916:
 	{
-		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 2318, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 2319, 974, 2436, 2321, 2437, 2321, 2438, 2321, 2438, 2321, 2439, 2325, 2440, 2325, 2441, 2328, 2441, 2328, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 2329, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2331, 1169, 2332, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 2336, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 884 };
+		static const unsigned short jump_table[] = { 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 34, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1000, 1154, 1006, 1155, 1158, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 1152, 1153, 1154, 1002, 1155, 1156, 92, 974, 1152, 1153, 1154, 1002, 1155, 1156, 974, 974, 55, 55, 55, 55, 64, 96, 92, 974, 2433, 2318, 2434, 2318, 2435, 2318, 2435, 2318, 2436, 2322, 2437, 2322, 2438, 2325, 2438, 2325, 976, 976, 976, 976, 976, 976, 976, 976, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 1161, 974, 974, 974, 1002, 974, 974, 354, 974, 96, 1162, 64, 1163, 974, 974, 974, 974, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 121, 122, 974, 340, 55, 55, 1003, 1007, 1167, 2328, 1169, 2329, 974, 1171, 974, 394, 976, 1174, 1174, 1174, 1174, 1174, 1174, 1174, 976, 976, 974, 1175, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 64, 96, 974, 974, 974, 974, 974, 974, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1176, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 1177, 149, 150, 974, 974, 778, 787, 151, 152, 974, 974, 974, 974, 974, 974, 974, 974, 153, 154, 153, 154, 974, 974, 974, 974, 155, 156, 157, 158, 159, 160, 161, 162, 95, 95, 95, 95, 974, 974, 974, 974, 1192, 76, 974, 95, 974, 974, 974, 974, 754, 974, 788, 789, 976, 976, 167, 168, 976, 976, 974, 974, 976, 976, 169, 884 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1519:
+tr1516:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -23334,11 +23142,11 @@ st884:
 		goto _test_eof884;
 case 884:
 	{
-		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 2297, 2297, 2297, 2297, 2297, 2297, 2297, 2297, 974, 974, 974, 974, 974, 974, 974, 974, 2298, 2298, 2298, 2298, 2298, 2298, 2298, 2298, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974 };
+		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 1309, 2295, 2295, 2295, 2295, 2295, 2295, 2295, 2295, 974, 974, 974, 974, 974, 974, 974, 974, 2296, 2296, 2296, 2296, 2296, 2296, 2296, 2296, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1520:
+tr1517:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -23352,7 +23160,7 @@ case 885:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1521:
+tr1518:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -23366,7 +23174,7 @@ case 886:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1522:
+tr1519:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -23385,11 +23193,11 @@ st888:
 		goto _test_eof888;
 case 888:
 	{
-		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 2297, 2297, 2297, 2297, 2297, 2297, 2297, 2297, 974, 974, 974, 974, 974, 974, 974, 974, 2298, 2298, 2298, 2298, 2298, 2298, 2298, 2298, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974 };
+		static const unsigned short jump_table[] = { 917, 917, 917, 917, 2, 919, 917, 917, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 917, 917, 917, 917, 2, 919, 917, 917, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 920, 920, 920, 920, 8, 920, 920, 920, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 974, 922, 922, 922, 922, 9, 922, 922, 922, 974, 974, 974, 974, 974, 974, 974, 974, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 1409, 2295, 2295, 2295, 2295, 2295, 2295, 2295, 2295, 974, 974, 974, 974, 974, 974, 974, 974, 2296, 2296, 2296, 2296, 2296, 2296, 2296, 2296, 974, 974, 974, 974, 974, 974, 974, 974, 976, 976, 976, 976, 976, 976, 976, 976, 974, 974, 974, 974, 974, 974, 974, 974 };
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1523:
+tr1520:
 	{
     SET_REX_PREFIX(*current_position);
   }
@@ -23403,7 +23211,7 @@ case 889:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
-tr1524:
+tr1521:
 	{
     SET_REX_PREFIX(*current_position);
   }

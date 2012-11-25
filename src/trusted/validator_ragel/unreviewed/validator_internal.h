@@ -226,11 +226,8 @@ enum operand_kind {
 
 /* Ignore this information for now.  */
 #define SET_DATA16_PREFIX(S)
-#define SET_LOCK_PREFIX(S)
 #define SET_REPZ_PREFIX(S)
 #define SET_REPNZ_PREFIX(S)
-#define SET_BRANCH_TAKEN(S)
-#define SET_BRANCH_NOT_TAKEN(S)
 #define SET_MODRM_SCALE(S)
 #define SET_DISP_PTR(P)
 #define SET_IMM_PTR(P)

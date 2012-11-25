@@ -25,7 +25,7 @@
 
   include prefix_actions
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  include prefixes_parsing
+  include prefixes_parsing_noaction
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include rex_actions
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";

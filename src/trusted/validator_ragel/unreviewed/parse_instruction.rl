@@ -617,6 +617,18 @@
 }%%
 
 %%{
+  machine prefixes_parsing_noaction;
+
+  data16 = 0x66;
+  branch_hint = 0x2e | 0x3e;
+  condrep = 0xf2 | 0xf3;
+  lock = 0xf0;
+  rep = 0xf3;
+  repnz = 0xf2;
+  repz = 0xf3;
+}%%
+
+%%{
   machine rex_parsing;
 
   REX_NONE = 0x40 @rex_prefix;
