@@ -16,7 +16,6 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.ImagePageGenerator;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
@@ -1814,6 +1813,60 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         }
     }
 
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testBlockNetworkLoadsWithHttpResources() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final AwTestContainerView testContainer =
+                createAwTestContainerViewOnMainSync(false, contentClient);
+        final AwContents awContents = testContainer.getAwContents();
+        final ContentSettings contentSettings = getContentSettingsOnUiThread(awContents);
+        final AwSettings awSettings = getAwSettingsOnUiThread(testContainer.getAwContents());
+        contentSettings.setJavaScriptEnabled(true);
+        ImagePageGenerator generator = new ImagePageGenerator(0, false);
+
+        TestWebServer webServer = null;
+        String fileName = null;
+        try {
+            // Set up http image.
+            webServer = new TestWebServer(false);
+            final String httpPath = "/image.png";
+            final String imageUrl = webServer.setResponseBase64(
+                    httpPath, generator.getImageSourceNoAdvance(),
+                    CommonResources.getImagePngHeaders(true));
+
+            // Set up file html that loads http iframe.
+            String pageHtml ="<img src='" + imageUrl + "' " +
+                      "onload=\"document.title='img_onload_fired';\" " +
+                      "onerror=\"document.title='img_onerror_fired';\" />";
+            Context context = getInstrumentation().getTargetContext();
+            fileName = context.getCacheDir() + "/block_network_loads_test.html";
+            TestFileUtil.deleteFile(fileName);  // Remove leftover file if any.
+            TestFileUtil.createNewHtmlFile(fileName, "unset", pageHtml);
+
+            // Actual test. Blocking should trigger onerror handler.
+            awSettings.setBlockNetworkLoads(true);
+            loadUrlSync(
+                awContents,
+                contentClient.getOnPageFinishedHelper(),
+                "file:///" + fileName);
+            assertEquals(0, webServer.getRequestCount(httpPath));
+            assertEquals("img_onerror_fired", getTitleOnUiThread(awContents));
+
+            // Unblock should load normally.
+            awSettings.setBlockNetworkLoads(false);
+            loadUrlSync(
+                awContents,
+                contentClient.getOnPageFinishedHelper(),
+                "file:///" + fileName);
+            assertEquals(1, webServer.getRequestCount(httpPath));
+            assertEquals("img_onload_fired", getTitleOnUiThread(awContents));
+        } finally {
+            if (fileName != null) TestFileUtil.deleteFile(fileName);
+            if (webServer != null) webServer.shutdown();
+        }
+    }
+
     // Test an assert URL (file:///android_asset/)
     @SmallTest
     @Feature({"AndroidWebView", "Navigation"})
@@ -1933,6 +1986,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsTextZoomTestHelper(views.getContents1(), views.getClient1()));
     }
 
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testJavaScriptPopupsNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1940,6 +1995,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsJavaScriptPopupsTestHelper(views.getContents1(), views.getClient1(), 1));
     }
 
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testJavaScriptPopupsIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1947,6 +2004,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsJavaScriptPopupsTestHelper(views.getContents1(), views.getClient1(), 1));
     }
 
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testJavaScriptPopupsBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -2229,59 +2288,5 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
      */
     private void resetResourceContext() {
         AndroidProtocolHandler.setResourceContextForTesting(null);
-    }
-
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences"})
-    public void testBlockNetworkLoadsWithHttpResources() throws Throwable {
-        final TestAwContentsClient contentClient = new TestAwContentsClient();
-        final AwTestContainerView testContainer =
-                createAwTestContainerViewOnMainSync(false, contentClient);
-        final AwContents awContents = testContainer.getAwContents();
-        final ContentSettings contentSettings = getContentSettingsOnUiThread(awContents);
-        final AwSettings awSettings = getAwSettingsOnUiThread(testContainer.getAwContents());
-        contentSettings.setJavaScriptEnabled(true);
-        ImagePageGenerator generator = new ImagePageGenerator(0, false);
-
-        TestWebServer webServer = null;
-        String fileName = null;
-        try {
-            // Set up http image.
-            webServer = new TestWebServer(false);
-            final String httpPath = "/image.png";
-            final String imageUrl = webServer.setResponseBase64(
-                    httpPath, generator.getImageSourceNoAdvance(),
-                    CommonResources.getImagePngHeaders(true));
-
-            // Set up file html that loads http iframe.
-            String pageHtml ="<img src='" + imageUrl + "' " +
-                      "onload=\"document.title='img_onload_fired';\" " +
-                      "onerror=\"document.title='img_onerror_fired';\" />";
-            Context context = getInstrumentation().getTargetContext();
-            fileName = context.getCacheDir() + "/block_network_loads_test.html";
-            TestFileUtil.deleteFile(fileName);  // Remove leftover file if any.
-            TestFileUtil.createNewHtmlFile(fileName, "unset", pageHtml);
-
-            // Actual test. Blocking should trigger onerror handler.
-            awSettings.setBlockNetworkLoads(true);
-            loadUrlSync(
-                awContents,
-                contentClient.getOnPageFinishedHelper(),
-                "file:///" + fileName);
-            assertEquals(0, webServer.getRequestCount(httpPath));
-            assertEquals("img_onerror_fired", getTitleOnUiThread(awContents));
-
-            // Unblock should load normally.
-            awSettings.setBlockNetworkLoads(false);
-            loadUrlSync(
-                awContents,
-                contentClient.getOnPageFinishedHelper(),
-                "file:///" + fileName);
-            assertEquals(1, webServer.getRequestCount(httpPath));
-            assertEquals("img_onload_fired", getTitleOnUiThread(awContents));
-        } finally {
-            if (fileName != null) TestFileUtil.deleteFile(fileName);
-            if (webServer != null) webServer.shutdown();
-        }
     }
 }
