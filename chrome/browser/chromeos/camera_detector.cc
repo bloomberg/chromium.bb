@@ -10,7 +10,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/threading/worker_pool.h"
-#include "chrome/browser/chromeos/system/udev_info_provider.h"
+#include "chrome/browser/system_monitor/udev_util_linux.h"
 
 namespace chromeos {
 
@@ -56,8 +56,8 @@ void CameraDetector::CheckPresence() {
   for (FilePath path = file_enum.Next(); !path.empty();
        path = file_enum.Next()) {
     std::string v4l_capabilities;
-    if (system::UdevInfoProvider::QueryDeviceProperty(
-            path.value(), kV4LCapabilities, &v4l_capabilities)) {
+    if (chrome::GetUdevDevicePropertyValueByPath(
+            path, kV4LCapabilities, &v4l_capabilities)) {
       std::vector<std::string> caps;
       base::SplitString(v4l_capabilities, kV4LCapabilitiesDelim, &caps);
       if (find(caps.begin(), caps.end(), kV4LCaptureCapability) != caps.end()) {

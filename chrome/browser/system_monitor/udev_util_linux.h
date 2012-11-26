@@ -11,6 +11,8 @@
 
 #include "base/memory/scoped_generic_obj.h"
 
+class FilePath;
+
 namespace chrome {
 
 // ScopedGenericObj functor for UdevObjectRelease().
@@ -37,6 +39,12 @@ typedef ScopedGenericObj<struct udev_device*,
 // valid but empty values.
 std::string GetUdevDevicePropertyValue(struct udev_device* udev_device,
                                        const char* key);
+
+// Helper for udev_device_new_from_syspath()/udev_device_get_property_value()
+// pair. |device_path| is the absolute path to the device, including /sys.
+bool GetUdevDevicePropertyValueByPath(const FilePath& device_path,
+                                      const char* key,
+                                      std::string* result);
 
 }  // namespace chrome
 

@@ -612,8 +612,6 @@
         'browser/chromeos/system/syslogs_provider.h',
         'browser/chromeos/system/timezone_settings.cc',
         'browser/chromeos/system/timezone_settings.h',
-        'browser/chromeos/system/udev_info_provider.cc',
-        'browser/chromeos/system/udev_info_provider.h',
         'browser/chromeos/system_key_event_listener.cc',
         'browser/chromeos/system_key_event_listener.h',
         'browser/chromeos/system_logs/command_line_log_source.cc',
