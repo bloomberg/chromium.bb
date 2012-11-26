@@ -45,15 +45,6 @@ cr.define('oobe', function() {
     get buttons() {
       var buttons = [];
 
-      var cancelButton = this.ownerDocument.createElement('button');
-      cancelButton.id = 'reset-cancel-button';
-      cancelButton.textContent = localStrings.getString('cancelButton');
-      cancelButton.addEventListener('click', function(e) {
-        chrome.send('resetOnCancel');
-        e.stopPropagation();
-      });
-      buttons.push(cancelButton);
-
       var resetButton = this.ownerDocument.createElement('button');
       resetButton.id = 'reset-button';
       resetButton.textContent = localStrings.getString('resetButton');
@@ -62,6 +53,15 @@ cr.define('oobe', function() {
         e.stopPropagation();
       });
       buttons.push(resetButton);
+
+      var cancelButton = this.ownerDocument.createElement('button');
+      cancelButton.id = 'reset-cancel-button';
+      cancelButton.textContent = localStrings.getString('cancelButton');
+      cancelButton.addEventListener('click', function(e) {
+        chrome.send('resetOnCancel');
+        e.stopPropagation();
+      });
+      buttons.push(cancelButton);
 
       return buttons;
     },

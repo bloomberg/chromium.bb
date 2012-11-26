@@ -481,6 +481,10 @@
         <message name="IDS_PASSWORD_CHANGED_DIALOG_HEIGHT_LINES" use_name_for_id="true">
           16
         </message>
+
+	<message name="IDS_FACTORY_RESET_HELP_URL" translateable="false">
+	  http://support.google.com/chromeos/bin/answer.py?answer=183084&amp;hl=[GRITLANGCODE]
+	</message>
       </if>
     </messages>
   </release>

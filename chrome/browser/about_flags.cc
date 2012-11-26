@@ -895,13 +895,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableNewOobe),
   },
   {
-    "disable-factory-reset",
-    IDS_FLAGS_DISABLE_FACTORY_RESET,
-    IDS_FLAGS_DISABLE_FACTORY_RESET_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kDisableFactoryReset),
-  },
-  {
     "disable-boot-animation",
     IDS_FLAGS_DISABLE_BOOT_ANIMATION,
     IDS_FLAGS_DISABLE_BOOT_ANIMATION_DESCRIPTION,

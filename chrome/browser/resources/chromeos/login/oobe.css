@@ -69,7 +69,7 @@ button:not(.custom-appearance) {
 }
 
 #back-button,
-#reset-cancel-button {
+#reset-button {
   -webkit-margin-end: 8px;
 }
 

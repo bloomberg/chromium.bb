@@ -1404,9 +1404,6 @@ const char kDisableDrive[]                  = "disable-drive";
 // Disables file prefetching in Google Drive Client for Chrome OS.
 const char kDisableDrivePrefetch[]          = "disable-drive-prefetch";
 
-// Disables reset the device to its factory state in design.
-const char kDisableFactoryReset[]           = "disable-factory-reset";
-
 // Avoid doing expensive animations upon login.
 const char kDisableLoginAnimations[]        = "disable-login-animations";
 

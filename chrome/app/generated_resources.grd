@@ -6774,12 +6774,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_DISABLE_NEW_OOBE_DESCRIPTION" desc="Description for the flag to disable new design for OOBE / sign in flows.">
           Disables new design for OOBE / sign in flows.
         </message>
-        <message name="IDS_FLAGS_DISABLE_FACTORY_RESET" desc="Name of the experimental option that resets the device to its factory state.">
-          Disable factory reset.
-        </message>
-        <message name="IDS_FLAGS_DISABLE_FACTORY_RESET_DESCRIPTION" desc="Description of the experimental option that resets the device to its factory state.">
-          Disables factory reset shortcut and window on login wizard and options dialog.
-        </message>
         <message name="IDS_FLAGS_DISABLE_BOOT_ANIMATION" desc="Name for the flag to disable wallpaper boot animation (except for OOBE).">
           Disable boot animation.
         </message>
@@ -10564,16 +10558,19 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
 
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_OPTIONS_FACTORY_RESET" desc="Name of the factory reset option on the chrome settings page">
-          Factory Reset
+          Powerwash
+        </message>
+        <message name="IDS_OPTIONS_FACTORY_RESET_HEADING" desc="Name of the 'Factory reset' window">
+          Restart your device
         </message>
         <message name="IDS_OPTIONS_FACTORY_RESET_DESCRIPTION" desc="Description of the factory reset option on the chrome settings page">
-          Reset your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device to its original factory state.
+          Remove all user accounts and reset your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device to be just like new.
         </message>
         <message name="IDS_OPTIONS_FACTORY_RESET_BUTTON" desc="Name of the button to activate the factory reset option on the chrome settings page">
-          Reset
+          Powerwash
         </message>
         <message name="IDS_OPTIONS_FACTORY_RESET_WARNING" desc="Warning text in the 'Factory Reset' window">
-          A restart is required in order to reset your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device to its original factory state.
+          A restart is required before your device can be reset with Powerwash.
         </message>
       </if>
 

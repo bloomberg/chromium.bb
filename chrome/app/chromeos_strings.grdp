@@ -1424,10 +1424,13 @@ Press any key to continue exploring.
   </message>
 
   <message name="IDS_RESET_SCREEN_WARNING_MSG" desc="Warning text shown on reset screen above the exclamation icon.">
-    Factory Reset your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device
+    Powerwash your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device
   </message>
   <message name="IDS_RESET_SCREEN_WARNING_DETAILS" desc="Warning text shown on reset screen below the exclamation icon.">
-    Your device will be reset into its original factory state. All local files and media will be erased. Would you like to continue?
+    A Powerwash resets your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device to be just like new. All files and media stored locally on your computer will be erased.
+  </message>
+  <message name="IDS_RESET_SCREEN_WARNING_DETAILS_RESTART" desc="Warning text shown on reset screen below the exclamation icon if device needs extra restart before powerwash.">
+    A restart is required before your device can be reset with Powerwash. A Powerwash resets your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device to be just like new.
   </message>
   <message name="IDS_RESET_SCREEN_RESET" desc="Reset button text">
     Reset

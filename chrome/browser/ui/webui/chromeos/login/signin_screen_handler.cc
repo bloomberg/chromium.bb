@@ -707,8 +707,6 @@ void SigninScreenHandler::HandleToggleEnrollmentScreen(
 void SigninScreenHandler::HandleToggleResetScreen(
     const base::ListValue* args) {
   if (delegate_ &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableFactoryReset) &&
       !g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
     delegate_->ShowResetScreen();
   }

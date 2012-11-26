@@ -298,9 +298,12 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
       IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY },
     { "accessibilityVirtualKeyboard",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_VIRTUAL_KEYBOARD_DESCRIPTION },
+    { "factoryResetHeading", IDS_OPTIONS_FACTORY_RESET_HEADING },
     { "factoryResetTitle", IDS_OPTIONS_FACTORY_RESET },
     { "factoryResetRestart", IDS_OPTIONS_FACTORY_RESET_BUTTON },
     { "factoryResetDataRestart", IDS_RELAUNCH_BUTTON },
+    { "factoryResetWarning", IDS_OPTIONS_FACTORY_RESET_WARNING },
+    { "factoryResetHelpUrl", IDS_FACTORY_RESET_HELP_URL },
     { "changePicture", IDS_OPTIONS_CHANGE_PICTURE_CAPTION },
     { "datetimeTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME },
     { "deviceGroupDescription", IDS_OPTIONS_DEVICE_GROUP_DESCRIPTION },
@@ -349,8 +352,6 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
       IDS_PRODUCT_NAME },
     { "autoLaunchText", IDS_AUTOLAUNCH_TEXT, IDS_PRODUCT_NAME },
 #if defined(OS_CHROMEOS)
-    { "factoryResetWarning", IDS_OPTIONS_FACTORY_RESET_WARNING,
-      IDS_SHORT_PRODUCT_NAME },
     { "factoryResetDescription", IDS_OPTIONS_FACTORY_RESET_DESCRIPTION,
       IDS_SHORT_PRODUCT_NAME },
 #endif
@@ -651,9 +652,7 @@ void BrowserOptionsHandler::InitializePage() {
 #endif
 #if defined(OS_CHROMEOS)
   SetupAccessibilityFeatures();
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableFactoryReset) &&
-      !g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
+  if (!g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
     web_ui()->CallJavascriptFunction(
         "BrowserOptions.enableFactoryResetSection");
   }
