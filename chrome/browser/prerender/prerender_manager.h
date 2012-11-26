@@ -97,7 +97,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   virtual ~PrerenderManager();
 
-  // ProfileKeyedService implementation.
+  // From ProfileKeyedService:
   virtual void Shutdown() OVERRIDE;
 
   // Entry points for adding prerenders.
@@ -336,11 +336,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // might have committed an omnibox navigation. This is used to possibly
   // shorten the TTL of the prerendered page.
   void SourceNavigatedAway(PrerenderData* prerender_data);
-
-  // Utility method that is called from the virtual Shutdown method on this
-  // class but is called directly from the TestPrerenderManager in the unit
-  // tests.
-  void DoShutdown();
 
  private:
   friend class PrerenderBrowserTest;

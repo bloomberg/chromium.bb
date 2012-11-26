@@ -94,11 +94,15 @@ class UnitTestPrerenderManager : public PrerenderManager {
   }
 
   virtual ~UnitTestPrerenderManager() {
+  }
+
+  // From ProfileKeyedService, via PrererenderManager:
+  virtual void Shutdown() OVERRIDE {
     if (next_prerender_contents()) {
       next_prerender_contents_.release()->Destroy(
           FINAL_STATUS_MANAGER_SHUTDOWN);
     }
-    DoShutdown();
+    PrerenderManager::Shutdown();
   }
 
   PrerenderContents* FindEntry(const GURL& url) {
@@ -273,6 +277,8 @@ class PrerenderTest : public testing::Test {
 
   ~PrerenderTest() {
     prerender_link_manager_->OnChannelClosing(kDefaultChildId);
+    prerender_link_manager_->Shutdown();
+    prerender_manager_->Shutdown();
   }
 
   UnitTestPrerenderManager* prerender_manager() {
