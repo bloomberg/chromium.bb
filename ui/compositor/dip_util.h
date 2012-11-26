@@ -7,6 +7,7 @@
 
 #include "ui/compositor/compositor_export.h"
 #include "base/basictypes.h"
+#include "ui/gfx/point_f.h"
 
 namespace gfx {
 class Point;
@@ -24,6 +25,9 @@ COMPOSITOR_EXPORT float GetDeviceScaleFactor(const Layer* layer);
 COMPOSITOR_EXPORT gfx::Point ConvertPointToDIP(
     const Layer* layer,
     const gfx::Point& point_in_pixel);
+COMPOSITOR_EXPORT gfx::PointF ConvertPointToDIP(
+    const Layer* layer,
+    const gfx::PointF& point_in_pixel);
 COMPOSITOR_EXPORT gfx::Size ConvertSizeToDIP(
     const Layer* layer,
     const gfx::Size& size_in_pixel);

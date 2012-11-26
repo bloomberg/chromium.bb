@@ -29,6 +29,11 @@ gfx::Point ConvertPointToDIP(const Layer* layer,
       gfx::ScalePoint(point_in_pixel, 1.0f / GetDeviceScaleFactor(layer)));
 }
 
+gfx::PointF ConvertPointToDIP(const Layer* layer,
+                              const gfx::PointF& point_in_pixel) {
+  return gfx::ScalePoint(point_in_pixel, 1.0f / GetDeviceScaleFactor(layer));
+}
+
 gfx::Size ConvertSizeToDIP(const Layer* layer,
                            const gfx::Size& size_in_pixel) {
   return gfx::ToFlooredSize(
