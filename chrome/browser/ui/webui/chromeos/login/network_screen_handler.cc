@@ -26,9 +26,6 @@
 
 namespace {
 
-// Network screen id.
-const char kNetworkScreen[] = "connect";
-
 // JS API callbacks names.
 const char kJsApiNetworkOnExit[] = "networkOnExit";
 const char kJsApiNetworkOnLanguageChanged[] = "networkOnLanguageChanged";
@@ -66,7 +63,7 @@ void NetworkScreenHandler::Show() {
     return;
   }
 
-  ShowScreen(kNetworkScreen, NULL);
+  ShowScreen(OobeUI::kScreenOobeNetwork, NULL);
 }
 
 void NetworkScreenHandler::Hide() {

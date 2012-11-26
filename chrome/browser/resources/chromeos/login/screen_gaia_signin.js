@@ -51,7 +51,7 @@ cr.define('login', function() {
 
     // Whether local version of Gaia page is used.
     // @type {boolean}
-    isLocal: false,
+    isLocal_: false,
 
     // Whether offline login is allowed.
     // @type {boolean}
@@ -77,6 +77,23 @@ cr.define('login', function() {
      */
     get header() {
       return localStrings.getString('signinScreenTitle');
+    },
+
+    /**
+     * Returns true if local version of Gaia is used.
+     * @type {boolean}
+     */
+    get isLocal() {
+      return this.isLocal_;
+    },
+
+    /**
+     * Sets whether local version of Gaia is used.
+     * @param {boolean} value Whether local version of Gaia is used.
+     */
+    set isLocal(value) {
+      this.isLocal_ = value;
+      chrome.send('updateGaiaIsLocal', [value]);
     },
 
     /**
@@ -298,7 +315,7 @@ cr.define('login', function() {
         Oobe.clearErrors();
       } else if (msg.method == 'loginUILoaded') {
         this.loading = false;
-        $('error-message').update();
+        chrome.send('errorScreenUpdate');
         this.clearLoadingTimer_();
         // Show deferred error bubble.
         if (this.errorBubble_) {
@@ -447,6 +464,10 @@ cr.define('login', function() {
    */
   GaiaSigninScreen.updateAuthExtension = function(data) {
     $('gaia-signin').updateAuthExtension_(data);
+  };
+
+  GaiaSigninScreen.doReload = function() {
+    $('gaia-signin').doReload();
   };
 
   return {

@@ -45,13 +45,6 @@ cr.define('login', function() {
   // Link which triggers frame reload.
   /** @const */ var RELOAD_PAGE_ID = 'proxy-error-retry-link';
 
-  // Timeout used to delay first offline notification from network
-  // manager.
-  /** @const */ var OFFLINE_TIMEOUT_SEC = 5;
-
-  // Timeout used to prevent infinite connecting to a flaky network.
-  /** @const */ var CONNECTING_TIMEOUT_SEC = 60;
-
   /**
    * Creates a new offline message screen div.
    * @constructor
@@ -78,28 +71,6 @@ cr.define('login', function() {
       cr.ui.DropDown.decorate($('offline-networks-list'));
       this.updateLocalizedContent_();
     },
-
-    /**
-     * Timer used to delay calls to updateState_ method.
-     */
-    updateStateTimer_: undefined,
-
-    /**
-     * True if updateState_ method was not called.
-     */
-    firstUpdateStateCall_: true,
-
-    /**
-     * Last network state.
-     */
-    lastNetworkState_: NET_STATE.UNKNOWN,
-
-    /*
-     * Timer which is started when network moves to the connecting
-     * state. If it's triggered, then it's look like the network is
-     * flaky and we must show offline message.
-     */
-    connectingTimer_: undefined,
 
     /**
      * Updates localized content of the screen that is not updated via template.
@@ -165,38 +136,11 @@ cr.define('login', function() {
       cr.ui.DropDown.hide('offline-networks-list');
     },
 
-    update: function() {
-      chrome.send('loginRequestNetworkState',
-                  ['login.ErrorMessageScreen.updateState',
-                   'update']);
-    },
-
-    /**
-     * Clears |updateStateTimer_|.
-     * @private
-     */
-    clearUpdateStateTimer_: function() {
-      if (this.updateStateTimer_) {
-        window.clearTimeout(this.updateStateTimer_);
-        this.updateStateTimer_ = undefined;
-      }
-    },
-
-    /**
-     * Clears |connectingTimer_|.
-     * @private
-     */
-    clearConnectingTimer_: function() {
-      if (this.connectingTimer_) {
-        window.clearTimeout(this.connectingTimer_);
-        this.connectingTimer_ = undefined;
-      }
-    },
-
     /**
      * Prepares error screen to show proxy error.
+     * @private
      */
-    showProxyError: function() {
+    showProxyError_: function() {
       this.classList.remove('show-offline-message');
       this.classList.remove('show-captive-portal');
       this.classList.add('show-proxy-error');
@@ -205,8 +149,9 @@ cr.define('login', function() {
     /**
      * Prepares error screen to show captive portal error.
      * @param {string} network Name of the current network
+     * @private
      */
-    showCaptivePortalError: function(network) {
+    showCaptivePortalError_: function(network) {
       $(CURRENT_NETWORK_NAME_ID).textContent = network;
       this.classList.remove('show-offline-message');
       this.classList.remove('show-proxy-error');
@@ -215,8 +160,9 @@ cr.define('login', function() {
 
     /**
      * Prepares error screen to show offline error.
+     * @private
      */
-    showOfflineError: function() {
+    showOfflineError_: function() {
       this.classList.remove('show-captive-portal');
       this.classList.remove('show-proxy-error');
       this.classList.add('show-offline-message');
@@ -225,8 +171,9 @@ cr.define('login', function() {
     /**
      * Shows screen.
      * @param {object} screen Screen that should be shown.
+     * @private
      */
-    showScreen: function(screen) {
+    showScreen_: function(screen) {
       screen.classList.remove('hidden');
       screen.classList.remove('faded');
 
@@ -235,135 +182,16 @@ cr.define('login', function() {
     },
 
     /**
-     * Shows or hides offline message based on network on/offline state.
-     * @param {number} state Current state of the network (see NET_STATE).
-     * @param {string} network Name of the current network.
-     * @param {string} reason Reason the callback was called.
-     * @param {number} lastNetworkType Last active network type.
-     * @param {boolean} opt_forceUpdate Are state should be updated in any case?
+     * Shows/hides offline message.
+     * @param {boolean} visible True to show offline message.
+     * @private
      */
-    updateState_: function(state, network, reason, lastNetworkType,
-                           opt_forceUpdate) {
-      console.log('updateState_: state=' + state +
-                  ', network=' + network + ', reason=' + reason +
-                  ', lastNetworkType=' + lastNetworkType +
-                  ', opt_forceUpdate=' + opt_forceUpdate);
-      this.clearUpdateStateTimer_();
-
-      // Delay first notification about offline state.
-      if (state == NET_STATE.OFFLINE && this.firstUpdateStateCall_) {
-        this.firstUpdateStateCall_ = false;
-        this.updateStateTimer_ = window.setTimeout(
-            this.updateState_.bind(
-                this, state, network, reason, lastNetworkType, opt_forceUpdate),
-            OFFLINE_TIMEOUT_SEC * 1000);
-        return;
-      }
-      this.firstUpdateStateCall_ = false;
-
-      // Don't show or hide error screen if we're in connecting state.
-      if (state == NET_STATE.CONNECTING && !opt_forceUpdate) {
-        if (!this.connectingTimer_) {
-          // First notification about CONNECTING state.
-          this.clearConnectingTimer_();
-          this.connectingTimer_ = window.setTimeout(
-              this.updateState_.bind(
-                  this, state, network, reason, lastNetworkType, true),
-              CONNECTING_TIMEOUT_SEC * 1000);
-        }
-        return;
-      }
-      this.clearConnectingTimer_();
-
-      var currentScreen = Oobe.getInstance().currentScreen;
+    showOfflineMessage_: function(visible) {
       var offlineMessage = this;
-      var isOnline = (state == NET_STATE.ONLINE);
-      var isUnderCaptivePortal = (state == NET_STATE.PORTAL);
-      var isProxyError = reason == ERROR_REASONS.PROXY_AUTH_CANCELLED ||
-          reason == ERROR_REASONS.PROXY_CONNECTION_FAILED;
-      var shouldOverlay = MANAGED_SCREENS.indexOf(currentScreen.id) != -1 &&
-          !currentScreen.isLocal;
-      var isTimeout = false;
-      var isShown = !offlineMessage.classList.contains('hidden') &&
-          !offlineMessage.classList.contains('faded');
-      var isGaiaSignin = (currentScreen.id == SCREEN_GAIA_SIGNIN);
-      var gaiaSigninReloaded = false;
+      var currentScreen = Oobe.getInstance().currentScreen;
 
-      // Reload frame if network is changed. If current network is
-      // online, and previous network was online, frame isn't
-      // reloaded.
-      if (reason == ERROR_REASONS.NETWORK_CHANGED) {
-        if (state == NET_STATE.ONLINE &&
-            this.lastNetworkState_ != NET_STATE.ONLINE &&
-            isGaiaSignin && !gaiaSigninReloaded) {
-          currentScreen.doReload();
-          gaiaSigninReloaded = true;
-        }
-      }
-      this.lastNetworkState_ = state;
-
-      if (reason == ERROR_REASONS.PROXY_CONFIG_CHANGED && shouldOverlay &&
-          isGaiaSignin && !gaiaSigninReloaded) {
-        // Schedules a immediate retry.
-        currentScreen.doReload();
-        gaiaSigninReloaded = true;
-        console.log('Retry page load since proxy settings has been changed');
-      }
-
-      // Fake portal state for loading timeout.
-      if (reason == ERROR_REASONS.LOADING_TIMEOUT) {
-        isOnline = false;
-        isUnderCaptivePortal = true;
-        isTimeout = true;
-      }
-
-      // Portal was detected via generate_204 redirect on Chrome side.
-      // Subsequent call to show dialog if it's already shown does nothing.
-      if (reason == ERROR_REASONS.PORTAL_DETECTED) {
-        isOnline = false;
-        isUnderCaptivePortal = true;
-      }
-
-      if (!isOnline && shouldOverlay) {
-        console.log('Show offline message: state=' + state +
-                    ', network=' + network + ', reason=' + reason +
-                    ', isUnderCaptivePortal=' + isUnderCaptivePortal);
-
-        // Clear any error messages that might still be around.
-        Oobe.clearErrors();
-
-        offlineMessage.onBeforeShow(lastNetworkType);
-
-        if (isUnderCaptivePortal && !isProxyError) {
-          // Do not bother a user with obsessive captive portal showing. This
-          // check makes captive portal being shown only once: either when error
-          // screen is shown for the first time or when switching from another
-          // error screen (offline, proxy).
-          if (!isShown ||
-              !offlineMessage.classList.contains('show-captive-portal')) {
-            // In case of timeout we're suspecting that network might be
-            // a captive portal but would like to check that first.
-            // Otherwise (signal from shill / generate_204 got redirected)
-            // show dialog right away.
-            if (isTimeout)
-              chrome.send('fixCaptivePortal');
-            else
-              chrome.send('showCaptivePortal');
-          }
-        } else {
-          chrome.send('hideCaptivePortal');
-        }
-
-        if (isUnderCaptivePortal) {
-          if (isProxyError)
-            offlineMessage.showProxyError();
-          else
-            offlineMessage.showCaptivePortalError(network);
-        } else {
-          offlineMessage.showOfflineError();
-        }
-
-        offlineMessage.showScreen(offlineMessage);
+      if (visible) {
+        this.showScreen_(offlineMessage);
 
         if (!currentScreen.classList.contains('faded')) {
           currentScreen.classList.add('faded');
@@ -374,44 +202,24 @@ cr.define('login', function() {
                 currentScreen.classList.add('hidden');
             });
         }
-        chrome.send('networkErrorShown');
+
         // Report back error screen UI being painted.
         window.webkitRequestAnimationFrame(function() {
           chrome.send('loginVisible', ['network-error']);
         });
       } else {
-        chrome.send('hideCaptivePortal');
+        this.showScreen_(currentScreen);
 
-        if (!offlineMessage.classList.contains('faded')) {
-          console.log('Hide offline message. state=' + state +
-                      ', network=' + network + ', reason=' + reason);
-
-          offlineMessage.onBeforeHide();
-
-          offlineMessage.classList.add('faded');
-          if (offlineMessage.classList.contains('animated')) {
-            offlineMessage.addEventListener('webkitTransitionEnd',
-              function f(e) {
-                offlineMessage.removeEventListener('webkitTransitionEnd', f);
-                if (offlineMessage.classList.contains('faded'))
-                  offlineMessage.classList.add('hidden');
-              });
-          } else {
-            offlineMessage.classList.add('hidden');
-          }
-
-          offlineMessage.showScreen(currentScreen);
-
-          // Forces a reload for Gaia screen on hiding error message.
-          if (isGaiaSignin && !gaiaSigninReloaded) {
-            currentScreen.doReload();
-            gaiaSigninReloaded = true;
-          }
-        } else if (isGaiaSignin && currentScreen.loading) {
-          if (!gaiaSigninReloaded) {
-            currentScreen.doReload();
-            gaiaSigninReloaded = true;
-          }
+        offlineMessage.classList.add('faded');
+        if (offlineMessage.classList.contains('animated')) {
+          offlineMessage.addEventListener('webkitTransitionEnd',
+            function f(e) {
+              offlineMessage.removeEventListener('webkitTransitionEnd', f);
+              if (offlineMessage.classList.contains('faded'))
+                offlineMessage.classList.add('hidden');
+            });
+        } else {
+          offlineMessage.classList.add('hidden');
         }
       }
     },
@@ -428,15 +236,41 @@ cr.define('login', function() {
   };
 
   /**
-   * Network state changed callback.
-   * @param {number} state Current state of the network (see NET_STATE).
-   * @param {string} network Name of the current network.
-   * @param {string} reason Reason the callback was called.
-   * @param {number} lastNetworkType Last active network type.
+   * Prepares error screen to show proxy error.
    */
-  ErrorMessageScreen.updateState = function(
-      state, network, reason, lastNetworkType) {
-    $('error-message').updateState_(state, network, reason, lastNetworkType);
+  ErrorMessageScreen.showProxyError = function() {
+    $('error-message').showProxyError_();
+  };
+
+  /**
+   * Prepares error screen to show captive portal error.
+   * @param {string} network Name of the current network
+   */
+  ErrorMessageScreen.showCaptivePortalError = function(network) {
+    $('error-message').showCaptivePortalError_(network);
+  };
+
+  /**
+   * Prepares error screen to show offline error.
+   */
+  ErrorMessageScreen.showOfflineError = function() {
+    $('error-message').showOfflineError_();
+  };
+
+  /**
+   * Shows/hides offline message.
+   * @param {boolean} visible True to show offline message.
+   */
+  ErrorMessageScreen.showOfflineMessage = function(visible) {
+    $('error-message').showOfflineMessage_(visible);
+  };
+
+  ErrorMessageScreen.onBeforeShow = function(lastNetworkType) {
+    $('error-message').onBeforeShow(lastNetworkType);
+  };
+
+  ErrorMessageScreen.onBeforeHide = function() {
+    $('error-message').onBeforeHide();
   };
 
   /**
@@ -476,7 +310,8 @@ cr.define('login', function() {
     var currentScreen = Oobe.getInstance().currentScreen;
     if (MANAGED_SCREENS.indexOf(currentScreen.id) != -1 &&
         state != NET_STATE.CONNECTING) {
-      this.updateState(NET_STATE.PORTAL, network, reason, lastNetworkType);
+      chrome.send('updateState',
+                  [NET_STATE.PORTAL, network, reason, lastNetworkType]);
       // Schedules a retry.
       currentScreen.scheduleRetry();
     }

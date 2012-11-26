@@ -32,10 +32,15 @@ namespace chromeos {
 CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui)
     : oobe_ui_(oobe_ui),
       show_oobe_ui_(false),
-      version_info_updater_(this) {
+      version_info_updater_(this),
+      delegate_(NULL) {
 }
 
 CoreOobeHandler::~CoreOobeHandler() {
+}
+
+void CoreOobeHandler::SetDelegate(Delegate* delegate) {
+  delegate_ = delegate;
 }
 
 void CoreOobeHandler::GetLocalizedStrings(
@@ -67,6 +72,9 @@ void CoreOobeHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(kJsApiSkipUpdateEnrollAfterEula,
       base::Bind(&CoreOobeHandler::HandleSkipUpdateEnrollAfterEula,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("updateCurrentScreen",
+      base::Bind(&CoreOobeHandler::HandleUpdateCurrentScreen,
+                 base::Unretained(this)));
 }
 
 void CoreOobeHandler::HandleInitialized(const base::ListValue* args) {
@@ -79,6 +87,14 @@ void CoreOobeHandler::HandleSkipUpdateEnrollAfterEula(
   DCHECK(controller);
   if (controller)
     controller->SkipUpdateEnrollAfterEula();
+}
+
+void CoreOobeHandler::HandleUpdateCurrentScreen(const base::ListValue* args) {
+  DCHECK(args && args->GetSize() == 1);
+
+  std::string screen;
+  if (args->GetString(0, &screen) && delegate_)
+    delegate_->OnCurrentScreenChanged(screen);
 }
 
 void CoreOobeHandler::ShowOobeUI(bool show) {

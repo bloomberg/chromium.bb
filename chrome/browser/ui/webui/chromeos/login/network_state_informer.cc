@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
+#include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "net/proxy/proxy_config.h"
 
@@ -16,10 +17,6 @@ namespace {
 
 // Timeout to smooth temporary network state transitions for flaky networks.
 const int kNetworkStateCheckDelayMs = 5000;
-
-const char kReasonNetworkChanged[] = "network changed";
-const char kReasonProxyChanged[]   = "proxy changed";
-const char kReasonPortalDetected[] = "portal detected";
 
 }  // namespace
 
@@ -122,13 +119,13 @@ void NetworkStateInformer::Observe(
   if (type == chrome::NOTIFICATION_SESSION_STARTED)
     registrar_.RemoveAll();
   else if (type == chrome::NOTIFICATION_LOGIN_PROXY_CHANGED)
-    SendStateToObservers(kReasonProxyChanged);
+    SendStateToObservers(ErrorScreenHandler::kErrorReasonProxyConfigChanged);
   else
     NOTREACHED() << "Unknown notification: " << type;
 }
 
 void NetworkStateInformer::OnPortalDetected() {
-  SendStateToObservers(kReasonPortalDetected);
+  SendStateToObservers(ErrorScreenHandler::kErrorReasonPortalDetected);
 }
 
 bool NetworkStateInformer::UpdateState(NetworkLibrary* cros) {
@@ -161,7 +158,7 @@ void NetworkStateInformer::UpdateStateAndNotify() {
   check_state_.Cancel();
 
   if (UpdateState(CrosLibrary::Get()->GetNetworkLibrary()))
-    SendStateToObservers(kReasonNetworkChanged);
+    SendStateToObservers(ErrorScreenHandler::kErrorReasonNetworkChanged);
 }
 
 void NetworkStateInformer::SendStateToObservers(const std::string& reason) {

@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace base {
-  class ListValue;
+class ListValue;
 }
 
 namespace chromeos {
@@ -20,8 +20,16 @@ class OobeUI;
 class CoreOobeHandler : public BaseScreenHandler,
                         public VersionInfoUpdater::Delegate {
  public:
+  class Delegate {
+   public:
+    // Called when current screen is changed.
+    virtual void OnCurrentScreenChanged(const std::string& screen) = 0;
+  };
+
   explicit CoreOobeHandler(OobeUI* oobe_ui);
   virtual ~CoreOobeHandler();
+
+  void SetDelegate(Delegate* delegate);
 
   // BaseScreenHandler implementation:
   virtual void GetLocalizedStrings(
@@ -51,6 +59,7 @@ class CoreOobeHandler : public BaseScreenHandler,
   // Handlers for JS WebUI messages.
   void HandleInitialized(const base::ListValue* args);
   void HandleSkipUpdateEnrollAfterEula(const base::ListValue* args);
+  void HandleUpdateCurrentScreen(const base::ListValue* args);
 
   // Calls javascript to sync OOBE UI visibility with show_oobe_ui_.
   void UpdateOobeUIVisibility();
@@ -66,6 +75,8 @@ class CoreOobeHandler : public BaseScreenHandler,
 
   // Updates when version info is changed.
   VersionInfoUpdater version_info_updater_;
+
+  Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CoreOobeHandler);
 };

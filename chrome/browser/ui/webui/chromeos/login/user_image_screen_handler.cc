@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -22,13 +23,6 @@
 #include "net/base/data_url.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
-
-namespace {
-
-// UserImage screen ID.
-const char kUserImageScreen[] = "user-image";
-
-}  // namespace
 
 namespace chromeos {
 
@@ -94,7 +88,7 @@ void UserImageScreenHandler::Show() {
     return;
   }
   screen_show_time_ = base::Time::Now();
-  ShowScreen(kUserImageScreen, NULL);
+  ShowScreen(OobeUI::kScreenUserImagePicker, NULL);
 
   // When shown, query camera presence.
   CheckCameraPresence();

@@ -14,6 +14,7 @@
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
 #include "chrome/browser/policy/message_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -507,7 +508,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::DoShow() {
     screen_data.SetString("test_password", test_password_);
   }
 
-  ShowScreen("oauth-enrollment", &screen_data);
+  ShowScreen(OobeUI::kScreenOobeEnrollment, &screen_data);
 }
 
 }  // namespace chromeos

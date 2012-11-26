@@ -260,6 +260,8 @@ cr.define('cr.ui.login', function() {
       $('oobe').className = nextStepId;
 
       $('step-logo').hidden = newStep.classList.contains('no-logo');
+
+      chrome.send('updateCurrentScreen', [this.currentScreen.id]);
     },
 
     /**
@@ -300,7 +302,7 @@ cr.define('cr.ui.login', function() {
       var index = this.getScreenIndex_(screenId);
       if (index >= 0)
         this.toggleStep_(index, data);
-      $('error-message').update();
+      chrome.send('errorScreenUpdate');
     },
 
     /**

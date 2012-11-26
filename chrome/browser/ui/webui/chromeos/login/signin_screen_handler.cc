@@ -28,6 +28,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -55,10 +56,6 @@ namespace {
 
 const char kDefaultDomain[] = "@gmail.com";
 
-// Account picker screen id.
-const char kAccountPickerScreen[] = "account-picker";
-// Sign in screen id for GAIA extension hosted content.
-const char kGaiaSigninScreen[] = "gaia-signin";
 // Start page of GAIA authentication extension.
 const char kGaiaExtStartPage[] =
     "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/main.html";
@@ -129,13 +126,11 @@ SigninScreenHandler::SigninScreenHandler(
       webui_visible_(false),
       login_ui_active_(false) {
   DCHECK(network_state_informer_);
-  network_state_informer_->AddObserver(this);
   CrosSettings::Get()->AddSettingsObserver(kAccountsPrefAllowNewUser, this);
   CrosSettings::Get()->AddSettingsObserver(kAccountsPrefAllowGuest, this);
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
-  DCHECK(network_state_informer_);
   weak_factory_.InvalidateWeakPtrs();
   if (cookie_remover_)
     cookie_remover_->RemoveObserver(this);
@@ -145,7 +140,6 @@ SigninScreenHandler::~SigninScreenHandler() {
     key_event_listener->RemoveCapsLockObserver(this);
   if (delegate_)
     delegate_->SetWebUIHandler(NULL);
-  network_state_informer_->RemoveObserver(this);
   CrosSettings::Get()->RemoveSettingsObserver(kAccountsPrefAllowNewUser, this);
   CrosSettings::Get()->RemoveSettingsObserver(kAccountsPrefAllowGuest, this);
 }
@@ -231,7 +225,7 @@ void SigninScreenHandler::Show(bool oobe_ui) {
 
     DictionaryValue params;
     params.SetBoolean("disableAddUser", AllWhitelistedUsersPresent());
-    ShowScreen(kAccountPickerScreen, &params);
+    ShowScreen(OobeUI::kScreenAccountPicker, &params);
   }
 }
 
@@ -252,16 +246,6 @@ void SigninScreenHandler::SetNativeWindowDelegate(
 
 void SigninScreenHandler::OnNetworkReady() {
   MaybePreloadAuthExtension();
-}
-
-void SigninScreenHandler::UpdateState(NetworkStateInformer::State state,
-                                      const std::string& network_name,
-                                      const std::string& reason,
-                                      ConnectionType last_network_type) {
-  for (WebUIObservers::const_iterator it = observers_.begin();
-      it != observers_.end(); ++it) {
-    SendState(*it, state, network_name, reason, last_network_type);
-  }
 }
 
 // SigninScreenHandler, private: -----------------------------------------------
@@ -416,7 +400,7 @@ void SigninScreenHandler::OnPreferencesChanged() {
     HandleShowAddUser(NULL);
   } else {
     SendUserList(false);
-    ShowScreen(kAccountPickerScreen, NULL);
+    ShowScreen(OobeUI::kScreenAccountPicker, NULL);
   }
 }
 
@@ -513,7 +497,7 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
     delegate_->LoadWallpaper(email_);
 
   LoadAuthExtension(!gaia_silent_load_, false, false);
-  ShowScreen(kGaiaSigninScreen, NULL);
+  ShowScreen(OobeUI::kScreenGaiaSignin, NULL);
 
   if (gaia_silent_load_) {
     // The variable is assigned to false because silently loaded Gaia page was
@@ -658,7 +642,7 @@ void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
   // Load auth extension. Parameters are: force reload, do not load extension in
   // background, use offline version.
   LoadAuthExtension(true, false, true);
-  ShowScreen(kGaiaSigninScreen, NULL);
+  ShowScreen(OobeUI::kScreenGaiaSignin, NULL);
 }
 
 void SigninScreenHandler::HandleShutdownSystem(const base::ListValue* args) {
@@ -861,8 +845,6 @@ void SigninScreenHandler::HandleLoginWebuiReady(const base::ListValue* args) {
 
 void SigninScreenHandler::HandleLoginRequestNetworkState(
     const base::ListValue* args) {
-  DCHECK(network_state_informer_);
-
   std::string callback;
   std::string reason;
   if (!args->GetString(0, &callback) || !args->GetString(1, &reason)) {

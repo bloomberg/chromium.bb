@@ -5,11 +5,14 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_OOBE_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_OOBE_UI_H_
 
+#include <map>
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/oobe_display.h"
+#include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "content/public/browser/web_ui_controller.h"
 
 namespace base {
@@ -33,8 +36,31 @@ namespace chromeos {
 // - eula screen (CrOS (+ OEM) EULA content/TPM password/crash reporting).
 // - update screen.
 class OobeUI : public OobeDisplay,
-               public content::WebUIController {
+               public content::WebUIController,
+               public CoreOobeHandler::Delegate {
  public:
+  enum Screen {
+    SCREEN_OOBE_NETWORK = 0,
+    SCREEN_OOBE_EULA,
+    SCREEN_OOBE_UPDATE,
+    SCREEN_OOBE_ENROLLMENT,
+    SCREEN_GAIA_SIGNIN,
+    SCREEN_ACCOUNT_PICKER,
+    SCREEN_USER_IMAGE_PICKER,
+    SCREEN_TMP_ERROR,
+    SCREEN_UNKNOWN
+  };
+
+  // JS oobe/login screens names.
+  static const char kScreenOobeNetwork[];
+  static const char kScreenOobeEula[];
+  static const char kScreenOobeUpdate[];
+  static const char kScreenOobeEnrollment[];
+  static const char kScreenGaiaSignin[];
+  static const char kScreenAccountPicker[];
+  static const char kScreenUserImagePicker[];
+  static const char kScreenTpmError[];
+
   explicit OobeUI(content::WebUI* web_ui);
   virtual ~OobeUI();
 
@@ -72,8 +98,16 @@ class OobeUI : public OobeDisplay,
   // Resets the delegate set in ShowSigninScreen.
   void ResetSigninScreenHandlerDelegate();
 
+  Screen current_screen() { return current_screen_; }
+
  private:
+  // Initializes |screen_map_| structure.
+  void InitializeScreenMap();
+
   void AddScreenHandler(BaseScreenHandler* handler);
+
+  // CoreOobeHandler::Delegate implementation:
+  virtual void OnCurrentScreenChanged(const std::string& screen) OVERRIDE;
 
   // Reference to NetworkStateInformer that handles changes in network
   // state.
@@ -99,6 +133,12 @@ class OobeUI : public OobeDisplay,
   UserImageScreenActor* user_image_screen_actor_;
 
   std::vector<BaseScreenHandler*> handlers_;  // Non-owning pointers.
+
+  // Id of the current oobe/login screen.
+  Screen current_screen_;
+
+  // Maps JS screens names to screen id.
+  std::map<std::string, Screen> screen_map_;
 
   DISALLOW_COPY_AND_ASSIGN(OobeUI);
 };

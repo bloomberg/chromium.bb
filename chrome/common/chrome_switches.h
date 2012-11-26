@@ -379,16 +379,17 @@ extern const char kAshEnableTabScrubbing[];
 #if defined(OS_CHROMEOS)
 // Keep switches in alphabetical order.
 extern const char kAshWebUIInit[];
-extern const char kEnableCarrierSwitching[];
 extern const char kDisableBootAnimation[];
 extern const char kDisableChromeCaptivePortalDetector[];
-extern const char kDisableDrive[];
 extern const char kDisableDrivePrefetch[];
+extern const char kDisableDrive[];
 extern const char kDisableFactoryReset[];
 extern const char kDisableLoginAnimations[];
 extern const char kDisableNewOobe[];
 extern const char kDisableOobeAnimation[];
+extern const char kDisableStubEthernet[];
 extern const char kEnableBackgroundLoader[];
+extern const char kEnableCarrierSwitching[];
 extern const char kEnableChromeCaptivePortalDetector[];
 extern const char kEnableTouchpadThreeFingerClick[];
 extern const char kEnableTouchpadThreeFingerSwipe[];

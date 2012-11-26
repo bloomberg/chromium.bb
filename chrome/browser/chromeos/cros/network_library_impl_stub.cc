@@ -5,9 +5,20 @@
 #include "chrome/browser/chromeos/cros/network_library_impl_stub.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
+
+namespace {
+
+bool IsEthernetEnabled() {
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableStubEthernet);
+}
+
+}  // namespace
 
 namespace chromeos {
 
@@ -20,7 +31,10 @@ NetworkLibraryImplStub::NetworkLibraryImplStub()
       connect_delay_ms_(0),
       network_priority_order_(0) {
   // Emulate default setting of the CheckPortalList when OOBE is done.
-  check_portal_list_ = "ethernet,wifi,cellular";
+  if (IsEthernetEnabled())
+    check_portal_list_ = "ethernet,wifi,cellular";
+  else
+    check_portal_list_ = "wifi,cellular";
 }
 
 NetworkLibraryImplStub::~NetworkLibraryImplStub() {
@@ -33,9 +47,9 @@ void NetworkLibraryImplStub::Init() {
   is_locked_ = false;
 
   // Devices
-  int devices =
-      (1 << TYPE_ETHERNET) | (1 << TYPE_WIFI) | (1 << TYPE_CELLULAR) |
-      (1 << TYPE_WIMAX);
+  int devices = (1 << TYPE_WIFI) | (1 << TYPE_CELLULAR) | (1 << TYPE_WIMAX);
+  if (IsEthernetEnabled())
+    devices |= 1 << TYPE_ETHERNET;
   available_devices_ = devices;
   enabled_devices_ = devices;
   connected_devices_ = devices;
@@ -83,11 +97,13 @@ void NetworkLibraryImplStub::Init() {
   // If these change, the expectations in network_library_unittest and
   // network_menu_icon_unittest need to be changed also.
 
-  Network* ethernet = new EthernetNetwork("eth1");
-  ethernet->set_name("Fake Ethernet");
-  ethernet->set_connected();
-  AddStubNetwork(ethernet, PROFILE_SHARED);
-  ethernet->set_is_active(ethernet->connected());
+  if (IsEthernetEnabled()) {
+    Network* ethernet = new EthernetNetwork("eth1");
+    ethernet->set_name("Fake Ethernet");
+    ethernet->set_connected();
+    AddStubNetwork(ethernet, PROFILE_SHARED);
+    ethernet->set_is_active(ethernet->connected());
+  }
 
   WifiNetwork* wifi1 = new WifiNetwork("wifi1");
   wifi1->set_name("Fake WiFi1");
@@ -420,7 +436,7 @@ void NetworkLibraryImplStub::ConnectToNetwork(Network* network) {
   }
 
   // Disconnect ethernet when connecting to a new network (for UI testing).
-  if (network->type() != TYPE_VPN) {
+  if (IsEthernetEnabled() && network->type() != TYPE_VPN) {
     ethernet_->set_is_active(false);
     ethernet_->set_disconnected();
   }
@@ -588,7 +604,10 @@ void NetworkLibraryImplStub::SetCheckPortalList(const
 }
 
 void NetworkLibraryImplStub::SetDefaultCheckPortalList() {
-  SetCheckPortalList("ethernet,wifi,cellular");
+  if (IsEthernetEnabled())
+    SetCheckPortalList("ethernet,wifi,cellular");
+  else
+    SetCheckPortalList("wifi,cellular");
 }
 
 void NetworkLibraryImplStub::ChangePin(const std::string& old_pin,

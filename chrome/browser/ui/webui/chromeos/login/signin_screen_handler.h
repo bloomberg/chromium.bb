@@ -126,8 +126,7 @@ class SigninScreenHandler
       public BrowsingDataRemover::Observer,
       public SystemKeyEventListener::CapsLockObserver,
       public content::NotificationObserver,
-      public NetworkStateInformerDelegate,
-      public NetworkStateInformer::NetworkStateInformerObserver {
+      public NetworkStateInformerDelegate {
  public:
   SigninScreenHandler(
       const scoped_refptr<NetworkStateInformer>& network_state_informer);
@@ -149,12 +148,6 @@ class SigninScreenHandler
   // NetworkStateInformerDelegate implementation:
   virtual void OnNetworkReady() OVERRIDE;
 
-  // NetworkStateInformer::NetworkStateInformerObserver implementation:
-  virtual void UpdateState(NetworkStateInformer::State state,
-                           const std::string& network_name,
-                           const std::string& reason,
-                           ConnectionType last_network_type) OVERRIDE;
-
  private:
   typedef base::hash_set<std::string> WebUIObservers;
 
@@ -169,7 +162,7 @@ class SigninScreenHandler
   // WebUIMessageHandler implementation:
   virtual void RegisterMessages() OVERRIDE;
 
-  // BaseLoginUIHandler implementation.
+  // BaseLoginUIHandler implementation:
   virtual void ClearAndEnablePassword() OVERRIDE;
   virtual void OnLoginSuccess(const std::string& username) OVERRIDE;
   virtual void OnUserRemoved(const std::string& username) OVERRIDE;
@@ -191,7 +184,7 @@ class SigninScreenHandler
   // SystemKeyEventListener::CapsLockObserver overrides.
   virtual void OnCapsLockChange(bool enabled) OVERRIDE;
 
-  // content::NotificationObserver implementation.
+  // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;

@@ -1416,6 +1416,9 @@ const char kDisableNewOobe[]                = "disable-new-oobe";
 // Avoid doing animations upon oobe.
 const char kDisableOobeAnimation[]          = "disable-oobe-animation";
 
+// Disables fake ethernet network on the login screen.
+const char kDisableStubEthernet[]           = "disable-stub-ethernet";
+
 // Enables component extension that initializes background pages of
 // certain hosted applications.
 const char kEnableBackgroundLoader[]        = "enable-background-loader";

@@ -11,19 +11,13 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
-
-namespace {
-
-// Eula screen id.
-const char kEulaScreen[] = "eula";
-
-}  // namespace
 
 namespace chromeos {
 
@@ -44,7 +38,7 @@ void EulaScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
-  ShowScreen(kEulaScreen, NULL);
+  ShowScreen(OobeUI::kScreenOobeEula, NULL);
 }
 
 void EulaScreenHandler::Hide() {
