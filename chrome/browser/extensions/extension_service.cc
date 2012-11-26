@@ -909,6 +909,7 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
   if (IsExtensionEnabled(extension_id))
     return;
 
+  int disable_reasons = extension_prefs_->GetDisableReasons(extension_id);
   extension_prefs_->SetExtensionState(extension_id, Extension::ENABLED);
   extension_prefs_->ClearDisableReasons(extension_id);
 
@@ -926,8 +927,7 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
     AcknowledgeExternalExtension(extension->id());
   }
 
-  if (extension_prefs_->GetDisableReasons(extension->id()) &
-      Extension::DISABLE_SIDELOAD_WIPEOUT)
+  if (disable_reasons & Extension::DISABLE_SIDELOAD_WIPEOUT)
     UMA_HISTOGRAM_BOOLEAN("DisabledExtension.ExtensionWipedStatus", false);
 
   // Move it over to the enabled list.
