@@ -583,7 +583,8 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
 
   chrome_variations::VariationsService* variations_service =
       browser_process_->variations_service();
-  variations_service->CreateTrialsFromSeed(browser_process_->local_state());
+  if (variations_service)
+    variations_service->CreateTrialsFromSeed(browser_process_->local_state());
 
   const int64 install_date = local_state_->GetInt64(
       prefs::kUninstallMetricsInstallDate);
@@ -1484,8 +1485,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     // StartRepeatedVariationsSeedFetch.
     if (parameters().ui_task == NULL) {
       // Request new variations seed information from server.
-      browser_process_->variations_service()->
-          StartRepeatedVariationsSeedFetch();
+      chrome_variations::VariationsService* variations_service =
+          browser_process_->variations_service();
+      if (variations_service)
+        variations_service->StartRepeatedVariationsSeedFetch();
+
 #if !defined(OS_CHROMEOS)
       // TODO(mad): Move this call in a proper place on CrOS.
       // http://crosbug.com/17687
