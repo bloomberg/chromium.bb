@@ -8,8 +8,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "content/browser/geolocation/arbitrator_dependency_factory.h"
 #include "content/public/browser/access_token_store.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "googleurl/src/gurl.h"
 
 namespace content {
@@ -17,8 +18,6 @@ namespace {
 
 const char* kDefaultNetworkProviderUrl =
     "https://www.googleapis.com/geolocation/v1/geolocate";
-GeolocationArbitratorDependencyFactory* g_dependency_factory_for_test = NULL;
-
 }  // namespace
 
 // To avoid oscillations, set this to twice the expected update interval of a
@@ -27,30 +26,13 @@ const int64 GeolocationArbitrator::kFixStaleTimeoutMilliseconds =
     11 * base::Time::kMillisecondsPerSecond;
 
 GeolocationArbitrator::GeolocationArbitrator(
-    GeolocationArbitratorDependencyFactory* dependency_factory,
     GeolocationObserver* observer)
-    : dependency_factory_(dependency_factory),
-      access_token_store_(dependency_factory->NewAccessTokenStore()),
-      get_time_now_(dependency_factory->GetTimeFunction()),
-      observer_(observer),
+    : observer_(observer),
       position_provider_(NULL),
       is_permission_granted_(false) {
-
 }
 
 GeolocationArbitrator::~GeolocationArbitrator() {
-}
-
-GeolocationArbitrator* GeolocationArbitrator::Create(
-    GeolocationObserver* observer) {
-  GeolocationArbitratorDependencyFactory* dependency_factory =
-      g_dependency_factory_for_test ?
-      g_dependency_factory_for_test :
-      new DefaultGeolocationArbitratorDependencyFactory;
-  GeolocationArbitrator* arbitrator =
-      new GeolocationArbitrator(dependency_factory, observer);
-  g_dependency_factory_for_test = NULL;
-  return arbitrator;
 }
 
 GURL GeolocationArbitrator::DefaultNetworkProviderURL() {
@@ -71,7 +53,7 @@ void GeolocationArbitrator::StartProviders(
   current_provider_options_ = options;
   if (providers_.empty()) {
     DCHECK(DefaultNetworkProviderURL().is_valid());
-    access_token_store_->LoadAccessTokens(
+    GetAccessTokenStore()->LoadAccessTokens(
         base::Bind(&GeolocationArbitrator::OnAccessTokenStoresLoaded,
                    base::Unretained(this)));
   } else {
@@ -105,11 +87,11 @@ void GeolocationArbitrator::OnAccessTokenStoresLoaded(
            access_token_set.begin();
       i != access_token_set.end(); ++i) {
     RegisterProvider(
-        dependency_factory_->NewNetworkLocationProvider(
-            access_token_store_.get(), context_getter,
+        NewNetworkLocationProvider(
+            GetAccessTokenStore(), context_getter,
             i->first, i->second));
   }
-  RegisterProvider(dependency_factory_->NewSystemLocationProvider());
+  RegisterProvider(NewSystemLocationProvider());
   DoStartProviders();
 }
 
@@ -138,6 +120,38 @@ void GeolocationArbitrator::LocationUpdateAvailable(
   observer_->OnLocationUpdate(position_);
 }
 
+AccessTokenStore* GeolocationArbitrator::NewAccessTokenStore() {
+  return GetContentClient()->browser()->CreateAccessTokenStore();
+}
+
+AccessTokenStore* GeolocationArbitrator::GetAccessTokenStore() {
+  if (!access_token_store_.get())
+    access_token_store_ = NewAccessTokenStore();
+  return access_token_store_.get();
+}
+
+LocationProviderBase* GeolocationArbitrator::NewNetworkLocationProvider(
+    AccessTokenStore* access_token_store,
+    net::URLRequestContextGetter* context,
+    const GURL& url,
+    const string16& access_token) {
+#if defined(OS_ANDROID)
+  // Android uses its own SystemLocationProvider.
+  return NULL;
+#else
+  return content::NewNetworkLocationProvider(access_token_store, context, url,
+                                             access_token);
+#endif
+}
+
+LocationProviderBase* GeolocationArbitrator::NewSystemLocationProvider() {
+  return content::NewSystemLocationProvider();
+}
+
+base::Time GeolocationArbitrator::GetTimeNow() const {
+  return base::Time::Now();
+}
+
 bool GeolocationArbitrator::IsNewPositionBetter(
     const Geoposition& old_position, const Geoposition& new_position,
     bool from_same_provider) const {
@@ -155,7 +169,7 @@ bool GeolocationArbitrator::IsNewPositionBetter(
     } else if (from_same_provider) {
       // Same provider, fresher location.
       return true;
-    } else if ((get_time_now_() - old_position.timestamp).InMilliseconds() >
+    } else if ((GetTimeNow() - old_position.timestamp).InMilliseconds() >
                kFixStaleTimeoutMilliseconds) {
       // Existing fix is stale.
       return true;
@@ -166,11 +180,6 @@ bool GeolocationArbitrator::IsNewPositionBetter(
 
 bool GeolocationArbitrator::HasPermissionBeenGranted() const {
   return is_permission_granted_;
-}
-
-void GeolocationArbitrator::SetDependencyFactoryForTest(
-    GeolocationArbitratorDependencyFactory* dependency_factory) {
-  g_dependency_factory_for_test = dependency_factory;
 }
 
 }  // namespace content

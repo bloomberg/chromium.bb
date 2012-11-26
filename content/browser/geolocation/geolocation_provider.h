@@ -77,6 +77,9 @@ class CONTENT_EXPORT GeolocationProvider
   GeolocationProvider();
   virtual ~GeolocationProvider();
 
+  // Useful for injecting mock geolocation arbitrator in tests.
+  virtual GeolocationArbitrator* CreateArbitrator();
+
  private:
   typedef std::map<GeolocationObserver*, GeolocationObserverOptions>
       ObserverMap;

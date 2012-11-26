@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/geolocation/arbitrator_dependency_factory.h"
 #include "content/browser/geolocation/fake_access_token_store.h"
 #include "content/browser/geolocation/geolocation_observer.h"
 #include "content/browser/geolocation/location_arbitrator.h"
@@ -60,19 +59,24 @@ void SetReferencePosition(MockLocationProvider* provider) {
   SetPositionFix(provider, 51.0, -0.1, 400);
 }
 
-class MockDependencyFactory : public GeolocationArbitratorDependencyFactory {
+namespace {
+
+class TestingGeolocationArbitrator : public GeolocationArbitrator {
  public:
-  explicit MockDependencyFactory(AccessTokenStore* access_token_store)
-      : cell_(NULL),
+  TestingGeolocationArbitrator(
+      GeolocationObserver* observer,
+      AccessTokenStore* access_token_store)
+      : GeolocationArbitrator(observer),
+        cell_(NULL),
         gps_(NULL),
         access_token_store_(access_token_store) {
   }
 
-  virtual GeolocationArbitrator::GetTimeNow GetTimeFunction() {
-    return GetTimeNowForTest;
+  virtual base::Time GetTimeNow() const OVERRIDE {
+    return GetTimeNowForTest();
   }
 
-  virtual AccessTokenStore* NewAccessTokenStore() {
+  virtual AccessTokenStore* NewAccessTokenStore() OVERRIDE {
     return access_token_store_.get();
   }
 
@@ -80,11 +84,11 @@ class MockDependencyFactory : public GeolocationArbitratorDependencyFactory {
       AccessTokenStore* access_token_store,
       net::URLRequestContextGetter* context,
       const GURL& url,
-      const string16& access_token) {
+      const string16& access_token) OVERRIDE {
     return new MockLocationProvider(&cell_);
   }
 
-  virtual LocationProviderBase* NewSystemLocationProvider() {
+  virtual LocationProviderBase* NewSystemLocationProvider() OVERRIDE {
     return new MockLocationProvider(&gps_);
   }
 
@@ -94,12 +98,10 @@ class MockDependencyFactory : public GeolocationArbitratorDependencyFactory {
   // type).
   MockLocationProvider* cell_;
   MockLocationProvider* gps_;
-
   scoped_refptr<AccessTokenStore> access_token_store_;
-
- private:
-  virtual ~MockDependencyFactory() {}
 };
+
+}  // namespace
 
 class GeolocationLocationArbitratorTest : public testing::Test {
  protected:
@@ -107,16 +109,12 @@ class GeolocationLocationArbitratorTest : public testing::Test {
   virtual void SetUp() {
     access_token_store_ = new NiceMock<FakeAccessTokenStore>;
     observer_.reset(new MockLocationObserver);
-    dependency_factory_ = new MockDependencyFactory(access_token_store_);
-    GeolocationArbitrator::SetDependencyFactoryForTest(
-        dependency_factory_.get());
-    arbitrator_.reset(GeolocationArbitrator::Create(observer_.get()));
+    arbitrator_.reset(new TestingGeolocationArbitrator(
+        observer_.get(), access_token_store_.get()));
   }
 
   // testing::Test
   virtual void TearDown() {
-    GeolocationArbitrator::SetDependencyFactoryForTest(NULL);
-    dependency_factory_ = NULL;
   }
 
   void CheckLastPositionInfo(double latitude,
@@ -136,17 +134,16 @@ class GeolocationLocationArbitratorTest : public testing::Test {
   }
 
   MockLocationProvider* cell() {
-    return dependency_factory_->cell_;
+    return arbitrator_->cell_;
   }
 
   MockLocationProvider* gps() {
-    return dependency_factory_->gps_;
+    return arbitrator_->gps_;
   }
 
   scoped_refptr<FakeAccessTokenStore> access_token_store_;
-  scoped_refptr<MockDependencyFactory> dependency_factory_;
   scoped_ptr<MockLocationObserver> observer_;
-  scoped_ptr<GeolocationArbitrator> arbitrator_;
+  scoped_ptr<TestingGeolocationArbitrator> arbitrator_;
   MessageLoop loop_;
 };
 

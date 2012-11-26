@@ -10,7 +10,6 @@
 #include "base/string16.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
-#include "content/browser/geolocation/arbitrator_dependency_factory.h"
 #include "content/browser/geolocation/geolocation_provider.h"
 #include "content/browser/geolocation/location_arbitrator.h"
 #include "content/browser/geolocation/location_provider.h"
@@ -28,11 +27,21 @@ using testing::MatcherInterface;
 using testing::MatchResultListener;
 
 namespace content {
-class NonSingletonGeolocationProvider : public GeolocationProvider {
- public:
-  NonSingletonGeolocationProvider() {}
 
-  virtual ~NonSingletonGeolocationProvider() {}
+class LocationProviderForTestArbitrator : public GeolocationProvider {
+ public:
+  explicit LocationProviderForTestArbitrator(base::WaitableEvent* event)
+      : event_(event) {
+  }
+
+  virtual ~LocationProviderForTestArbitrator() {}
+
+ protected:
+  // GeolocationProvider implementation:
+  virtual GeolocationArbitrator* CreateArbitrator() OVERRIDE;
+
+ private:
+  base::WaitableEvent* event_;
 };
 
 class StartStopMockLocationProvider : public MockLocationProvider {
@@ -74,10 +83,13 @@ class TestingAccessTokenStore : public AccessTokenStore {
   base::WaitableEvent* event_;
 };
 
-class TestingDependencyFactory
-    : public DefaultGeolocationArbitratorDependencyFactory {
+class TestGeolocationArbitrator : public GeolocationArbitrator {
  public:
-  TestingDependencyFactory(base::WaitableEvent* event) : event_(event) {}
+  TestGeolocationArbitrator(GeolocationObserver* observer,
+                            base::WaitableEvent* event)
+      : GeolocationArbitrator(observer),
+        event_(event) {
+  }
 
   virtual AccessTokenStore* NewAccessTokenStore() OVERRIDE {
     return new TestingAccessTokenStore(event_);
@@ -95,12 +107,13 @@ class TestingDependencyFactory
     return NULL;
   }
 
- protected:
-  virtual ~TestingDependencyFactory() {}
-
  private:
   base::WaitableEvent* event_;
 };
+
+GeolocationArbitrator* LocationProviderForTestArbitrator::CreateArbitrator() {
+  return new TestGeolocationArbitrator(this, event_);
+}
 
 class NullGeolocationObserver : public GeolocationObserver {
  public:
@@ -163,14 +176,10 @@ class GeolocationProviderTest : public testing::Test {
       : message_loop_(),
         io_thread_(BrowserThread::IO, &message_loop_),
         event_(false, false),
-        dependency_factory_(new TestingDependencyFactory(&event_)),
-        provider_(new NonSingletonGeolocationProvider) {
-    GeolocationArbitrator::SetDependencyFactoryForTest(
-        dependency_factory_.get());
+        provider_(new LocationProviderForTestArbitrator(&event_)) {
   }
 
   ~GeolocationProviderTest() {
-    GeolocationArbitrator::SetDependencyFactoryForTest(NULL);
   }
 
   void WaitAndReset() {
@@ -182,8 +191,7 @@ class GeolocationProviderTest : public testing::Test {
   TestBrowserThread io_thread_;
 
   base::WaitableEvent event_;
-  scoped_refptr<TestingDependencyFactory> dependency_factory_;
-  scoped_ptr<NonSingletonGeolocationProvider> provider_;
+  scoped_ptr<LocationProviderForTestArbitrator> provider_;
 };
 
 // Regression test for http://crbug.com/59377

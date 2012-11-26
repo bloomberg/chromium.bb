@@ -21,7 +21,6 @@ class URLRequestContextGetter;
 
 namespace content {
 class AccessTokenStore;
-class GeolocationArbitratorDependencyFactory;
 class LocationProviderBase;
 
 // This class is responsible for handling updates from multiple underlying
@@ -35,12 +34,8 @@ class CONTENT_EXPORT GeolocationArbitrator
   // (regardles of relative accuracy). Public for tests.
   static const int64 kFixStaleTimeoutMilliseconds;
 
-  // Defines a function that returns the current time.
-  typedef base::Time (*GetTimeNow)();
-
+  explicit GeolocationArbitrator(GeolocationObserver* observer);
   virtual ~GeolocationArbitrator();
-
-  static GeolocationArbitrator* Create(GeolocationObserver* observer);
 
   static GURL DefaultNetworkProviderURL();
 
@@ -59,18 +54,25 @@ class CONTENT_EXPORT GeolocationArbitrator
   // OnPermissionGranted().
   bool HasPermissionBeenGranted() const;
 
-  // Call this function every time you need to create an specially parameterised
-  // arbitrator.
-  static void SetDependencyFactoryForTest(
-      GeolocationArbitratorDependencyFactory* factory);
-
   // ListenerInterface
   virtual void LocationUpdateAvailable(LocationProviderBase* provider) OVERRIDE;
 
+ protected:
+
+  AccessTokenStore* GetAccessTokenStore();
+
+  // These functions are useful for injection of dependencies in derived
+  // testing classes.
+  virtual AccessTokenStore* NewAccessTokenStore();
+  virtual LocationProviderBase* NewNetworkLocationProvider(
+      AccessTokenStore* access_token_store,
+      net::URLRequestContextGetter* context,
+      const GURL& url,
+      const string16& access_token);
+  virtual LocationProviderBase* NewSystemLocationProvider();
+  virtual base::Time GetTimeNow() const;
+
  private:
-  GeolocationArbitrator(
-      GeolocationArbitratorDependencyFactory* dependency_factory,
-      GeolocationObserver* observer);
   // Takes ownership of |provider| on entry; it will either be added to
   // |providers_| or deleted on error (e.g. it fails to start).
   void RegisterProvider(LocationProviderBase* provider);
@@ -85,9 +87,7 @@ class CONTENT_EXPORT GeolocationArbitrator
                            const Geoposition& new_position,
                            bool from_same_provider) const;
 
-  scoped_refptr<GeolocationArbitratorDependencyFactory> dependency_factory_;
   scoped_refptr<AccessTokenStore> access_token_store_;
-  GetTimeNow get_time_now_;
   GeolocationObserver* observer_;
   ScopedVector<LocationProviderBase> providers_;
   GeolocationObserverOptions current_provider_options_;

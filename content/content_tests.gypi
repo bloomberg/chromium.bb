@@ -83,8 +83,6 @@
         # by other embedders).
         'browser/download/mock_download_file.cc',
         'browser/download/mock_download_file.h',
-        'browser/geolocation/arbitrator_dependency_factories_for_test.cc',
-        'browser/geolocation/arbitrator_dependency_factories_for_test.h',
         'browser/geolocation/fake_access_token_store.cc',
         'browser/geolocation/fake_access_token_store.h',
         'browser/geolocation/mock_location_provider.cc',

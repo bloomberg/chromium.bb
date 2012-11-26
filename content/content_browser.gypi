@@ -400,8 +400,6 @@
     'browser/gamepad/gamepad_standard_mappings.h',
     'browser/gamepad/gamepad_standard_mappings_linux.cc',
     'browser/gamepad/gamepad_standard_mappings_mac.mm',
-    'browser/geolocation/arbitrator_dependency_factory.cc',
-    'browser/geolocation/arbitrator_dependency_factory.h',
     'browser/geolocation/core_location_data_provider_mac.h',
     'browser/geolocation/core_location_data_provider_mac.mm',
     'browser/geolocation/core_location_provider_mac.h',

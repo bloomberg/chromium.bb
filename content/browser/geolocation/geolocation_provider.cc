@@ -183,13 +183,17 @@ void GeolocationProvider::NotifyClients(const Geoposition& position) {
 void GeolocationProvider::Init() {
   DCHECK(OnGeolocationThread());
   DCHECK(!arbitrator_);
-  arbitrator_ = GeolocationArbitrator::Create(this);
+  arbitrator_ = CreateArbitrator();
 }
 
 void GeolocationProvider::CleanUp() {
   DCHECK(OnGeolocationThread());
   delete arbitrator_;
   arbitrator_ = NULL;
+}
+
+GeolocationArbitrator* GeolocationProvider::CreateArbitrator() {
+  return new GeolocationArbitrator(this);
 }
 
 }  // namespace content
