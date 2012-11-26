@@ -211,10 +211,9 @@ void DevToolsHttpHandlerImpl::ResetHandlerThread() {
 void DevToolsHttpHandlerImpl::Stop() {
   if (!thread_.get())
     return;
-  base::Thread* thread = thread_.release();
-  thread->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&DevToolsHttpHandlerImpl::TeardownAndRelease, this, thread));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DevToolsHttpHandlerImpl::StopHandlerThread, this));
 }
 
 void DevToolsHttpHandlerImpl::SetRenderViewHostBinding(
@@ -639,16 +638,23 @@ void DevToolsHttpHandlerImpl::Init() {
 }
 
 // Runs on the handler thread
-void DevToolsHttpHandlerImpl::TeardownAndRelease(base::Thread* thread) {
+void DevToolsHttpHandlerImpl::Teardown() {
   server_ = NULL;
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DevToolsHttpHandlerImpl::StopHandlerThread, this, thread));
 }
 
-// Runs on FILE thread to allow calling pthread_join
-void DevToolsHttpHandlerImpl::StopHandlerThread(base::Thread* thread) {
-  delete thread;
+// Runs on FILE thread to make sure that it is serialized against
+// {Start|Stop}HandlerThread and to allow calling pthread_join.
+void DevToolsHttpHandlerImpl::StopHandlerThread() {
+  if (!thread_->message_loop())
+    return;
+  thread_->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&DevToolsHttpHandlerImpl::Teardown, this));
+  // Thread::Stop joins the thread.
+  thread_->Stop();
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&DevToolsHttpHandlerImpl::ResetHandlerThread, this));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&DevToolsHttpHandlerImpl::Release, this));

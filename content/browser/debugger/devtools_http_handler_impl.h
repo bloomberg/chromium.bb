@@ -96,10 +96,10 @@ class DevToolsHttpHandlerImpl
   void ResetHandlerThread();
 
   void Init();
-  void TeardownAndRelease(base::Thread* thread);
+  void Teardown();
 
   void StartHandlerThread();
-  void StopHandlerThread(base::Thread* thread);
+  void StopHandlerThread();
 
   void Send200(int connection_id,
                const std::string& data,
