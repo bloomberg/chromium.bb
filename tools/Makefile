@@ -856,12 +856,6 @@ endif
 .PHONY: gdb
 gdb: BUILD/stamp-$(CROSSARCH)-gdb
 
-.PHONY: gdb_minimal_test
-gdb_minimal_test: BUILD/stamp-$(CROSSARCH)-gdb
-	cd .. && \
-	  ./$(SCONS) naclsdk_mode=custom:$(PREFIX_NATIVE) \
-	    --mode=nacl,dbg-linux platform=x86-32 gdb_minimal_test
-
 
 ##################################################################
 # Install headers from the NaCl tree locally for the gcc build to see.
