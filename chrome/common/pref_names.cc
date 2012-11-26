@@ -1038,12 +1038,6 @@ const char kPinnedTabs[] = "pinned_tabs";
 const char kGeolocationEnabled[] = "geolocation.enabled";
 #endif
 
-// The default audio capture device used by the Media content setting.
-const char kDefaultAudioCaptureDevice[] = "media.default_audio_capture_device";
-
-// The default video capture device used by the Media content setting.
-const char kDefaultVideoCaptureDevice[] = "media.default_video_capture_Device";
-
 // Preference to disable 3D APIs (WebGL, Pepper 3D).
 const char kDisable3DAPIs[] = "disable_3d_apis";
 

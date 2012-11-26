@@ -996,8 +996,6 @@
         'browser/managed_mode/managed_mode_site_list.h',
         'browser/managed_mode/managed_mode_url_filter.cc',
         'browser/managed_mode/managed_mode_url_filter.h',
-        'browser/media/media_capture_devices_dispatcher.cc',
-        'browser/media/media_capture_devices_dispatcher.h',
         'browser/media/media_internals.cc',
         'browser/media/media_internals.h',
         'browser/media/media_stream_capture_indicator.cc',

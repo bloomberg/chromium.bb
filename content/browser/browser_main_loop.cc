@@ -351,6 +351,7 @@ void BrowserMainLoop::MainMessageLoopStart() {
   }
 
   online_state_observer_.reset(new BrowserOnlineStateObserver);
+  media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
 
   // Prior to any processing happening on the io thread, we create the
   // plugin service as it is predominantly used from the io thread,
@@ -670,9 +671,6 @@ void BrowserMainLoop::BrowserThreadsStarted() {
 
   // RDH needs the IO thread to be created.
   resource_dispatcher_host_.reset(new ResourceDispatcherHostImpl());
-
-  // MediaStreamManager needs the IO thread to be created.
-  media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
 
   // Initialize the GpuDataManager before we set up the MessageLoops because
   // otherwise we'll trigger the assertion about doing IO on the UI thread.

@@ -132,6 +132,10 @@ void WebRTCAudioDeviceTest::SetUp() {
   ui_thread_.reset(new TestBrowserThread(BrowserThread::UI,
                                          MessageLoop::current()));
 
+  // Create our own AudioManager and MediaStreamManager.
+  audio_manager_.reset(media::AudioManager::Create());
+  media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
+
   // Construct the resource context on the UI thread.
   resource_context_.reset(new MockRTCResourceContext);
 
@@ -206,10 +210,6 @@ void WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {
       static_cast<MockRTCResourceContext*>(resource_context_.get());
   resource_context->set_request_context(test_request_context_.get());
   media_observer_.reset(new MockMediaObserver());
-
-  // Create our own AudioManager and MediaStreamManager.
-  audio_manager_.reset(media::AudioManager::Create());
-  media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
 
   has_input_devices_ = audio_manager_->HasAudioInputDevices();
   has_output_devices_ = audio_manager_->HasAudioOutputDevices();

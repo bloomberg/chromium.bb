@@ -74,17 +74,3 @@ div[role='listitem'][controlled-by] {
 .sublabel {
   -webkit-margin-start: 2em;
 }
-
-.media-device-control {
-  display: table-row;
-}
-
-.media-device-control > span {
-  display: table-cell;
-  min-width: 145px;
-}
-
-.media-device-control > select {
-  display: table-cell;
-  width: 12em;
-}

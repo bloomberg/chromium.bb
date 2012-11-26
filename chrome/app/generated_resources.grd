@@ -7897,12 +7897,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_MEDIA_STREAM_ASK_RADIO" desc="A radio button in Content Settings dialog to allow site to query the permision to access capture devices.">
         Ask me when a site requires access to my camera and microphone (recommended)
       </message>
-      <message name="IDS_MEDIA_SELECTED_MIC_LABEL" desc="The label of the 'microphone device' select menu">
-        Microphone:
-      </message>
-      <message name="IDS_MEDIA_SELECTED_CAMERA_LABEL" desc="The label of the 'camera device' select menu">
-        Camera:
-      </message>
       <message name="IDS_MEDIA_GALLERY_SECTION_LABEL" desc="The label for the section of content settings that relates to media galleries.">
         Media galleries
       </message>

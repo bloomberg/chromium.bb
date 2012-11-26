@@ -50,14 +50,6 @@ class MediaObserver {
       int render_view_id,
       const MediaStreamDevices& devices) = 0;
 
-  // Called when a audio capture device is plugged in or unplugged.
-  virtual void OnAudioCaptureDevicesChanged(
-      const MediaStreamDevices& devices) = 0;
-
-  // Called when a video capture device is plugged in or unplugged.
-  virtual void OnVideoCaptureDevicesChanged(
-      const MediaStreamDevices& devices) = 0;
-
   // Called when a media request changes state.
   virtual void OnMediaRequestStateChanged(
       int render_process_id,
