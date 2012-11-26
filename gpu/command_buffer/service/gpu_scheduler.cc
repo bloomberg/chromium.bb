@@ -106,9 +106,14 @@ void GpuScheduler::PutChanged() {
       break;
   }
 
-  if (decoder_)
+  if (decoder_) {
+    if (!error::IsError(error) && decoder_->WasContextLost()) {
+      command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
+      command_buffer_->SetParseError(error::kLostContext);
+    }
     decoder_->AddProcessingCommandsTime(
         base::TimeTicks::HighResNow() - begin_time);
+  }
 }
 
 void GpuScheduler::SetScheduled(bool scheduled) {

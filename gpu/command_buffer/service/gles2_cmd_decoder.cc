@@ -1365,7 +1365,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   size_t GetBackbufferMemoryTotal();
 
   // Returns true if the context was just lost due to e.g. GL_ARB_robustness.
-  bool WasContextLost();
+  virtual bool WasContextLost() OVERRIDE;
 
 #if defined(OS_MACOSX)
   void ReleaseIOSurfaceForTexture(GLuint texture_id);
@@ -5542,10 +5542,6 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
     if (simulated_attrib_0) {
       RestoreStateForAttrib(0);
     }
-    if (WasContextLost()) {
-      LOG(ERROR) << "  GLES2DecoderImpl: Context lost during DrawArrays.";
-      return error::kLostContext;
-    }
   }
   return error::kNoError;
 }
@@ -5660,10 +5656,6 @@ error::Error GLES2DecoderImpl::DoDrawElements(
     }
     if (simulated_attrib_0) {
       RestoreStateForAttrib(0);
-    }
-    if (WasContextLost()) {
-      LOG(ERROR) << "  GLES2DecoderImpl: Context lost during DrawElements.";
-      return error::kLostContext;
     }
   }
   return error::kNoError;

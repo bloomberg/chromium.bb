@@ -186,6 +186,8 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder {
   virtual base::TimeDelta GetTotalProcessingCommandsTime() = 0;
   virtual void AddProcessingCommandsTime(base::TimeDelta) = 0;
 
+  virtual bool WasContextLost() = 0;
+
   static bool IsAngle();
 
   // Used for testing only
