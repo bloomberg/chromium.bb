@@ -13,10 +13,10 @@
 
 #include "ui/base/events/event_utils.h"
 #include "ui/base/keycodes/keyboard_code_conversion.h"
-#include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/point3_f.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/transform.h"
+#include "ui/gfx/transform_util.h"
 
 #if defined(USE_X11)
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
@@ -340,12 +340,13 @@ void TouchEvent::CalibrateLocation(const gfx::Size& from, const gfx::Size& to) {
 
 void TouchEvent::UpdateForRootTransform(const gfx::Transform& root_transform) {
   LocatedEvent::UpdateForRootTransform(root_transform);
-  gfx::Point3F scale;
-  InterpolatedTransform::FactorTRS(root_transform, NULL, NULL, &scale);
-  if (scale.x())
-    radius_x_ /= scale.x();
-  if (scale.y())
-    radius_y_ /= scale.y();
+  gfx::DecomposedTransform decomp;
+  bool success = gfx::DecomposeTransform(&decomp, root_transform);
+  DCHECK(success);
+  if (decomp.scale[0])
+    radius_x_ /= decomp.scale[0];
+  if (decomp.scale[1])
+    radius_y_ /= decomp.scale[1];
 }
 
 ////////////////////////////////////////////////////////////////////////////////

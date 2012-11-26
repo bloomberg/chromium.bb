@@ -16,6 +16,7 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/point3_f.h"
 #include "ui/gfx/transform_util.h"
+#include "ui/gfx/vector3d_f.h"
 
 namespace gfx {
 
@@ -116,10 +117,12 @@ TEST(XFormTest, Equality) {
   lhs = Transform();
   rhs = Transform();
   for (int i = 1; i < 100; ++i) {
-    lhs.SetTranslate(i, i);
-    rhs.SetTranslate(-i, -i);
+    lhs.MakeIdentity();
+    rhs.MakeIdentity();
+    lhs.Translate(i, i);
+    rhs.Translate(-i, -i);
     EXPECT_TRUE(lhs != rhs);
-    rhs.ConcatTranslate(2*i, 2*i);
+    rhs.Translate(2*i, 2*i);
     EXPECT_TRUE(lhs == rhs);
   }
 }
@@ -145,7 +148,9 @@ TEST(XFormTest, ConcatTranslate) {
   Transform xform;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     const TestCase& value = test_cases[i];
-    xform.ConcatTranslate(value.tx, value.ty);
+    Transform translation;
+    translation.Translate(value.tx, value.ty);
+    xform = translation * xform;
     Point3F p1(value.x1, value.y1, 0);
     Point3F p2(value.x2, value.y2, 0);
     xform.TransformPoint(p1);
@@ -172,7 +177,9 @@ TEST(XFormTest, ConcatScale) {
   Transform xform;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     const TestCase& value = test_cases[i];
-    xform.ConcatScale(value.scale, value.scale);
+    Transform scale;
+    scale.Scale(value.scale, value.scale);
+    xform = scale * xform;
     Point3F p1(value.before, value.before, 0);
     Point3F p2(value.after, value.after, 0);
     xform.TransformPoint(p1);
@@ -201,7 +208,9 @@ TEST(XFormTest, ConcatRotate) {
   Transform xform;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     const TestCase& value = test_cases[i];
-    xform.ConcatRotate(value.degrees);
+    Transform rotation;
+    rotation.Rotate(value.degrees);
+    xform = rotation * xform;
     Point3F p1(value.x1, value.y1, 0);
     Point3F p2(value.x2, value.y2, 0);
     xform.TransformPoint(p1);
@@ -235,17 +244,17 @@ TEST(XFormTest, SetTranslate) {
       case 0:
         p1.SetPoint(value.x1, 0, 0);
         p2.SetPoint(value.x2, 0, 0);
-        xform.SetTranslateX(value.tx);
+        xform.Translate(value.tx, 0.0);
         break;
       case 1:
         p1.SetPoint(0, value.y1, 0);
         p2.SetPoint(0, value.y2, 0);
-        xform.SetTranslateY(value.ty);
+        xform.Translate(0.0, value.ty);
         break;
       case 2:
         p1.SetPoint(value.x1, value.y1, 0);
         p2.SetPoint(value.x2, value.y2, 0);
-        xform.SetTranslate(value.tx, value.ty);
+        xform.Translate(value.tx, value.ty);
         break;
       }
       p0 = p1;
@@ -282,17 +291,17 @@ TEST(XFormTest, SetScale) {
       case 0:
         p1.SetPoint(value.before, 0, 0);
         p2.SetPoint(value.after, 0, 0);
-        xform.SetScaleX(value.s);
+        xform.Scale(value.s, 1.0);
         break;
       case 1:
         p1.SetPoint(0, value.before, 0);
         p2.SetPoint(0, value.after, 0);
-        xform.SetScaleY(value.s);
+        xform.Scale(1.0, value.s);
         break;
       case 2:
         p1.SetPoint(value.before, value.before, 0);
         p2.SetPoint(value.after, value.after, 0);
-        xform.SetScale(value.s, value.s);
+        xform.Scale(value.s, value.s);
         break;
       }
       p0 = p1;
@@ -333,7 +342,7 @@ TEST(XFormTest, SetRotate) {
     Point3F p2(value.xprime, value.yprime, 0);
     p0 = p1;
     Transform xform;
-    xform.SetRotate(value.degree);
+    xform.Rotate(value.degree);
     // just want to make sure that we don't crash in the case of NaN.
     if (value.degree == value.degree) {
       xform.TransformPoint(p1);
@@ -366,7 +375,9 @@ TEST(XFormTest, ConcatTranslate2D) {
   Transform xform;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     const TestCase& value = test_cases[i];
-    xform.ConcatTranslate(value.tx, value.ty);
+    Transform translation;
+    translation.Translate(value.tx, value.ty);
+    xform = translation * xform;
     Point p1(value.x1, value.y1);
     Point p2(value.x2, value.y2);
     xform.TransformPoint(p1);
@@ -394,7 +405,9 @@ TEST(XFormTest, ConcatScale2D) {
   Transform xform;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     const TestCase& value = test_cases[i];
-    xform.ConcatScale(value.scale, value.scale);
+    Transform scale;
+    scale.Scale(value.scale, value.scale);
+    xform = scale * xform;
     Point p1(value.before, value.before);
     Point p2(value.after, value.after);
     xform.TransformPoint(p1);
@@ -424,7 +437,9 @@ TEST(XFormTest, ConcatRotate2D) {
   Transform xform;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     const TestCase& value = test_cases[i];
-    xform.ConcatRotate(value.degrees);
+    Transform rotation;
+    rotation.Rotate(value.degrees);
+    xform = rotation * xform;
     Point p1(value.x1, value.y1);
     Point p2(value.x2, value.y2);
     xform.TransformPoint(p1);
@@ -461,18 +476,18 @@ TEST(XFormTest, SetTranslate2D) {
         case 0:
           p1.SetPoint(value.x1, 0);
           p2.SetPoint(value.x2, 0);
-          xform.SetTranslateX(value.tx + j * epsilon);
+          xform.Translate(value.tx + j * epsilon, 0.0);
           break;
         case 1:
           p1.SetPoint(0, value.y1);
           p2.SetPoint(0, value.y2);
-          xform.SetTranslateY(value.ty + j * epsilon);
+          xform.Translate(0.0, value.ty + j * epsilon);
           break;
         case 2:
           p1.SetPoint(value.x1, value.y1);
           p2.SetPoint(value.x2, value.y2);
-          xform.SetTranslate(value.tx + j * epsilon,
-                             value.ty + j * epsilon);
+          xform.Translate(value.tx + j * epsilon,
+                          value.ty + j * epsilon);
           break;
         }
         p0 = p1;
@@ -514,20 +529,20 @@ TEST(XFormTest, SetScale2D) {
         case 0:
           p1.SetPoint(value.before, 0);
           p2.SetPoint(value.after, 0);
-          xform.SetScaleX(value.s + j * epsilon);
+          xform.Scale(value.s + j * epsilon, 1.0);
           break;
         case 1:
           p1.SetPoint(0, value.before);
           p2.SetPoint(0, value.after);
-          xform.SetScaleY(value.s + j * epsilon);
+          xform.Scale(1.0, value.s + j * epsilon);
           break;
         case 2:
           p1.SetPoint(value.before,
                       value.before);
           p2.SetPoint(value.after,
                       value.after);
-          xform.SetScale(value.s + j * epsilon,
-                         value.s + j * epsilon);
+          xform.Scale(value.s + j * epsilon,
+                      value.s + j * epsilon);
           break;
         }
         p0 = p1;
@@ -571,7 +586,7 @@ TEST(XFormTest, SetRotate2D) {
       Point pt(value.x, value.y);
       Transform xform;
       // should be invariant to small floating point errors.
-      xform.SetRotate(value.degree + j * epsilon);
+      xform.Rotate(value.degree + j * epsilon);
       // just want to make sure that we don't crash in the case of NaN.
       if (value.degree == value.degree) {
         xform.TransformPoint(pt);
@@ -589,7 +604,7 @@ TEST(XFormTest, BlendTranslate) {
   Transform from;
   for (int i = 0; i < 10; ++i) {
     Transform to;
-    to.SetTranslate3d(1, 1, 1);
+    to.Translate3d(1, 1, 1);
     double t = i / 9.0;
     EXPECT_TRUE(to.Blend(from, t));
     EXPECT_FLOAT_EQ(t, to.matrix().get(0, 3));
@@ -599,22 +614,22 @@ TEST(XFormTest, BlendTranslate) {
 }
 
 TEST(XFormTest, BlendRotate) {
-  Point3F axes[] = {
-    Point3F(1, 0, 0),
-    Point3F(0, 1, 0),
-    Point3F(0, 0, 1),
-    Point3F(1, 1, 1)
+  Vector3dF axes[] = {
+    Vector3dF(1, 0, 0),
+    Vector3dF(0, 1, 0),
+    Vector3dF(0, 0, 1),
+    Vector3dF(1, 1, 1)
   };
   Transform from;
   for (size_t index = 0; index < ARRAYSIZE_UNSAFE(axes); ++index) {
     for (int i = 0; i < 10; ++i) {
       Transform to;
-      to.SetRotateAbout(axes[index], 90);
+      to.RotateAbout(axes[index], 90);
       double t = i / 9.0;
       EXPECT_TRUE(to.Blend(from, t));
 
       Transform expected;
-      expected.SetRotateAbout(axes[index], 90 * t);
+      expected.RotateAbout(axes[index], 90 * t);
 
       EXPECT_TRUE(MatricesAreNearlyEqual(expected, to));
     }
@@ -622,16 +637,16 @@ TEST(XFormTest, BlendRotate) {
 }
 
 TEST(XFormTest, CannotBlend180DegreeRotation) {
-  Point3F axes[] = {
-    Point3F(1, 0, 0),
-    Point3F(0, 1, 0),
-    Point3F(0, 0, 1),
-    Point3F(1, 1, 1)
+  Vector3dF axes[] = {
+    Vector3dF(1, 0, 0),
+    Vector3dF(0, 1, 0),
+    Vector3dF(0, 0, 1),
+    Vector3dF(1, 1, 1)
   };
   Transform from;
   for (size_t index = 0; index < ARRAYSIZE_UNSAFE(axes); ++index) {
       Transform to;
-      to.SetRotateAbout(axes[index], 180);
+      to.RotateAbout(axes[index], 180);
       EXPECT_FALSE(to.Blend(from, 0.5));
   }
 }
@@ -640,7 +655,7 @@ TEST(XFormTest, BlendScale) {
   Transform from;
   for (int i = 0; i < 10; ++i) {
     Transform to;
-    to.SetScale3d(5, 4, 3);
+    to.Scale3d(5, 4, 3);
     double t = i / 9.0;
     EXPECT_TRUE(to.Blend(from, t));
     EXPECT_FLOAT_EQ(t * 4 + 1, to.matrix().get(0, 0));
@@ -653,12 +668,12 @@ TEST(XFormTest, BlendSkew) {
   Transform from;
   for (int i = 0; i < 2; ++i) {
     Transform to;
-    to.SetSkewX(20);
-    to.PreconcatSkewY(10);
+    to.SkewX(20);
+    to.SkewY(10);
     double t = i;
     Transform expected;
-    expected.SetSkewX(t * 20);
-    expected.PreconcatSkewY(t * 10);
+    expected.SkewX(t * 20);
+    expected.SkewY(t * 10);
     EXPECT_TRUE(to.Blend(from, t));
     EXPECT_TRUE(MatricesAreNearlyEqual(expected, to));
   }
@@ -666,13 +681,13 @@ TEST(XFormTest, BlendSkew) {
 
 TEST(XFormTest, BlendPerspective) {
   Transform from;
-  from.SetPerspectiveDepth(200);
+  from.ApplyPerspectiveDepth(200);
   for (int i = 0; i < 2; ++i) {
     Transform to;
-    to.SetPerspectiveDepth(800);
+    to.ApplyPerspectiveDepth(800);
     double t = i;
     Transform expected;
-    expected.SetPerspectiveDepth(t * 600 + 200);
+    expected.ApplyPerspectiveDepth(t * 600 + 200);
     EXPECT_TRUE(to.Blend(from, t));
     EXPECT_TRUE(MatricesAreNearlyEqual(expected, to));
   }
@@ -695,16 +710,16 @@ TEST(XFormTest, CannotBlendSingularMatrix) {
 TEST(XFormTest, VerifyBlendForTranslation)
 {
   Transform from;
-  from.PreconcatTranslate3d(100, 200, 100);
+  from.Translate3d(100, 200, 100);
 
   Transform to;
 
-  to.PreconcatTranslate3d(200, 100, 300);
+  to.Translate3d(200, 100, 300);
   to.Blend(from, 0);
   EXPECT_EQ(from, to);
 
   to = Transform();
-  to.PreconcatTranslate3d(200, 100, 300);
+  to.Translate3d(200, 100, 300);
   to.Blend(from, 0.25);
   EXPECT_ROW1_EQ(1, 0, 0, 125, to);
   EXPECT_ROW2_EQ(0, 1, 0, 175, to);
@@ -712,7 +727,7 @@ TEST(XFormTest, VerifyBlendForTranslation)
   EXPECT_ROW4_EQ(0, 0, 0,  1,  to);
 
   to = Transform();
-  to.PreconcatTranslate3d(200, 100, 300);
+  to.Translate3d(200, 100, 300);
   to.Blend(from, 0.5);
   EXPECT_ROW1_EQ(1, 0, 0, 150, to);
   EXPECT_ROW2_EQ(0, 1, 0, 150, to);
@@ -720,7 +735,7 @@ TEST(XFormTest, VerifyBlendForTranslation)
   EXPECT_ROW4_EQ(0, 0, 0,  1,  to);
 
   to = Transform();
-  to.PreconcatTranslate3d(200, 100, 300);
+  to.Translate3d(200, 100, 300);
   to.Blend(from, 1);
   EXPECT_ROW1_EQ(1, 0, 0, 200, to);
   EXPECT_ROW2_EQ(0, 1, 0, 100, to);
@@ -731,16 +746,16 @@ TEST(XFormTest, VerifyBlendForTranslation)
 TEST(XFormTest, VerifyBlendForScale)
 {
   Transform from;
-  from.PreconcatScale3d(100, 200, 100);
+  from.Scale3d(100, 200, 100);
 
   Transform to;
 
-  to.PreconcatScale3d(200, 100, 300);
+  to.Scale3d(200, 100, 300);
   to.Blend(from, 0);
   EXPECT_EQ(from, to);
 
   to = Transform();
-  to.PreconcatScale3d(200, 100, 300);
+  to.Scale3d(200, 100, 300);
   to.Blend(from, 0.25);
   EXPECT_ROW1_EQ(125, 0,  0,  0, to);
   EXPECT_ROW2_EQ(0,  175, 0,  0, to);
@@ -748,7 +763,7 @@ TEST(XFormTest, VerifyBlendForScale)
   EXPECT_ROW4_EQ(0,   0,  0,  1, to);
 
   to = Transform();
-  to.PreconcatScale3d(200, 100, 300);
+  to.Scale3d(200, 100, 300);
   to.Blend(from, 0.5);
   EXPECT_ROW1_EQ(150, 0,  0,  0, to);
   EXPECT_ROW2_EQ(0,  150, 0,  0, to);
@@ -756,7 +771,7 @@ TEST(XFormTest, VerifyBlendForScale)
   EXPECT_ROW4_EQ(0,   0,  0,  1, to);
 
   to = Transform();
-  to.PreconcatScale3d(200, 100, 300);
+  to.Scale3d(200, 100, 300);
   to.Blend(from, 1);
   EXPECT_ROW1_EQ(200, 0,  0,  0, to);
   EXPECT_ROW2_EQ(0,  100, 0,  0, to);
@@ -767,16 +782,16 @@ TEST(XFormTest, VerifyBlendForScale)
 TEST(XFormTest, VerifyBlendForSkewX)
 {
   Transform from;
-  from.PreconcatSkewX(0);
+  from.SkewX(0);
 
   Transform to;
 
-  to.PreconcatSkewX(45);
+  to.SkewX(45);
   to.Blend(from, 0);
   EXPECT_EQ(from, to);
 
   to = Transform();
-  to.PreconcatSkewX(45);
+  to.SkewX(45);
   to.Blend(from, 0.5);
   EXPECT_ROW1_EQ(1, 0.5, 0, 0, to);
   EXPECT_ROW2_EQ(0,  1,  0, 0, to);
@@ -784,7 +799,7 @@ TEST(XFormTest, VerifyBlendForSkewX)
   EXPECT_ROW4_EQ(0,  0,  0, 1, to);
 
   to = Transform();
-  to.PreconcatSkewX(45);
+  to.SkewX(45);
   to.Blend(from, 0.25);
   EXPECT_ROW1_EQ(1, 0.25, 0, 0, to);
   EXPECT_ROW2_EQ(0,   1,  0, 0, to);
@@ -792,7 +807,7 @@ TEST(XFormTest, VerifyBlendForSkewX)
   EXPECT_ROW4_EQ(0,   0,  0, 1, to);
 
   to = Transform();
-  to.PreconcatSkewX(45);
+  to.SkewX(45);
   to.Blend(from, 1);
   EXPECT_ROW1_EQ(1, 1, 0, 0, to);
   EXPECT_ROW2_EQ(0, 1, 0, 0, to);
@@ -820,16 +835,16 @@ TEST(XFormTest, VerifyBlendForSkewY)
   // error.
 
   Transform from;
-  from.PreconcatSkewY(0);
+  from.SkewY(0);
 
   Transform to;
 
-  to.PreconcatSkewY(45);
+  to.SkewY(45);
   to.Blend(from, 0);
   EXPECT_EQ(from, to);
 
   to = Transform();
-  to.PreconcatSkewY(45);
+  to.SkewY(45);
   to.Blend(from, 0.25);
   EXPECT_ROW1_NEAR(1.0823489449280947471976333,
                    0.0464370719145053845178239,
@@ -847,7 +862,7 @@ TEST(XFormTest, VerifyBlendForSkewY)
   EXPECT_ROW4_EQ(0, 0, 0, 1, to);
 
   to = Transform();
-  to.PreconcatSkewY(45);
+  to.SkewY(45);
   to.Blend(from, 0.5);
   EXPECT_ROW1_NEAR(1.1152212925809066312865525,
                    0.0676495144007326631996335,
@@ -865,7 +880,7 @@ TEST(XFormTest, VerifyBlendForSkewY)
   EXPECT_ROW4_EQ(0, 0, 0, 1, to);
 
   to = Transform();
-  to.PreconcatSkewY(45);
+  to.SkewY(45);
   to.Blend(from, 1);
   EXPECT_ROW1_NEAR(1, 0, 0, 0, to, LOOSE_ERROR_THRESHOLD);
   EXPECT_ROW2_NEAR(1, 1, 0, 0, to, LOOSE_ERROR_THRESHOLD);
@@ -881,17 +896,17 @@ TEST(XFormTest, VerifyBlendForRotationAboutX)
   // Euler angles.
 
   Transform from;
-  from.PreconcatRotateAbout(Point3F(1, 0, 0), 0);
+  from.RotateAbout(Vector3dF(1, 0, 0), 0);
 
   Transform to;
 
-  to.PreconcatRotateAbout(Point3F(1, 0, 0), 90);
+  to.RotateAbout(Vector3dF(1, 0, 0), 90);
   to.Blend(from, 0);
   EXPECT_EQ(from, to);
 
   double expectedRotationAngle = 22.5 * M_PI / 180.0;
   to = Transform();
-  to.PreconcatRotateAbout(Point3F(1, 0, 0), 90);
+  to.RotateAbout(Vector3dF(1, 0, 0), 90);
   to.Blend(from, 0.25);
   EXPECT_ROW1_NEAR(1, 0, 0, 0, to, ERROR_THRESHOLD);
   EXPECT_ROW2_NEAR(0,
@@ -910,7 +925,7 @@ TEST(XFormTest, VerifyBlendForRotationAboutX)
 
   expectedRotationAngle = 45 * M_PI / 180.0;
   to = Transform();
-  to.PreconcatRotateAbout(Point3F(1, 0, 0), 90);
+  to.RotateAbout(Vector3dF(1, 0, 0), 90);
   to.Blend(from, 0.5);
   EXPECT_ROW1_NEAR(1, 0, 0, 0, to, ERROR_THRESHOLD);
   EXPECT_ROW2_NEAR(0,
@@ -928,7 +943,7 @@ TEST(XFormTest, VerifyBlendForRotationAboutX)
   EXPECT_ROW4_EQ(0, 0, 0, 1, to);
 
   to = Transform();
-  to.PreconcatRotateAbout(Point3F(1, 0, 0), 90);
+  to.RotateAbout(Vector3dF(1, 0, 0), 90);
   to.Blend(from, 1);
   EXPECT_ROW1_NEAR(1, 0,  0, 0, to, ERROR_THRESHOLD);
   EXPECT_ROW2_NEAR(0, 0, -1, 0, to, ERROR_THRESHOLD);
@@ -939,17 +954,17 @@ TEST(XFormTest, VerifyBlendForRotationAboutX)
 TEST(XFormTest, VerifyBlendForRotationAboutY)
 {
   Transform from;
-  from.PreconcatRotateAbout(Point3F(0, 1, 0), 0);
+  from.RotateAbout(Vector3dF(0, 1, 0), 0);
 
   Transform to;
 
-  to.PreconcatRotateAbout(Point3F(0, 1, 0), 90);
+  to.RotateAbout(Vector3dF(0, 1, 0), 90);
   to.Blend(from, 0);
   EXPECT_EQ(from, to);
 
   double expectedRotationAngle = 22.5 * M_PI / 180.0;
   to = Transform();
-  to.PreconcatRotateAbout(Point3F(0, 1, 0), 90);
+  to.RotateAbout(Vector3dF(0, 1, 0), 90);
   to.Blend(from, 0.25);
   EXPECT_ROW1_NEAR(std::cos(expectedRotationAngle),
                    0,
@@ -968,7 +983,7 @@ TEST(XFormTest, VerifyBlendForRotationAboutY)
 
   expectedRotationAngle = 45 * M_PI / 180.0;
   to = Transform();
-  to.PreconcatRotateAbout(Point3F(0, 1, 0), 90);
+  to.RotateAbout(Vector3dF(0, 1, 0), 90);
   to.Blend(from, 0.5);
   EXPECT_ROW1_NEAR(std::cos(expectedRotationAngle),
                    0,
@@ -986,7 +1001,7 @@ TEST(XFormTest, VerifyBlendForRotationAboutY)
   EXPECT_ROW4_EQ(0, 0, 0, 1, to);
 
   to = Transform();
-  to.PreconcatRotateAbout(Point3F(0, 1, 0), 90);
+  to.RotateAbout(Vector3dF(0, 1, 0), 90);
   to.Blend(from, 1);
   EXPECT_ROW1_NEAR(0,  0, 1, 0, to, ERROR_THRESHOLD);
   EXPECT_ROW2_NEAR(0,  1, 0, 0, to, ERROR_THRESHOLD);
@@ -997,17 +1012,17 @@ TEST(XFormTest, VerifyBlendForRotationAboutY)
 TEST(XFormTest, VerifyBlendForRotationAboutZ)
 {
   Transform from;
-  from.PreconcatRotateAbout(Point3F(0, 0, 1), 0);
+  from.RotateAbout(Vector3dF(0, 0, 1), 0);
 
   Transform to;
 
-  to.PreconcatRotateAbout(Point3F(0, 0, 1), 90);
+  to.RotateAbout(Vector3dF(0, 0, 1), 90);
   to.Blend(from, 0);
   EXPECT_EQ(from, to);
 
   double expectedRotationAngle = 22.5 * M_PI / 180.0;
   to = Transform();
-  to.PreconcatRotateAbout(Point3F(0, 0, 1), 90);
+  to.RotateAbout(Vector3dF(0, 0, 1), 90);
   to.Blend(from, 0.25);
   EXPECT_ROW1_NEAR(std::cos(expectedRotationAngle),
                    -std::sin(expectedRotationAngle),
@@ -1026,7 +1041,7 @@ TEST(XFormTest, VerifyBlendForRotationAboutZ)
 
   expectedRotationAngle = 45 * M_PI / 180.0;
   to = Transform();
-  to.PreconcatRotateAbout(Point3F(0, 0, 1), 90);
+  to.RotateAbout(Vector3dF(0, 0, 1), 90);
   to.Blend(from, 0.5);
   EXPECT_ROW1_NEAR(std::cos(expectedRotationAngle),
                    -std::sin(expectedRotationAngle),
@@ -1044,7 +1059,7 @@ TEST(XFormTest, VerifyBlendForRotationAboutZ)
   EXPECT_ROW4_EQ(0, 0, 0, 1, to);
 
   to = Transform();
-  to.PreconcatRotateAbout(Point3F(0, 0, 1), 90);
+  to.RotateAbout(Vector3dF(0, 0, 1), 90);
   to.Blend(from, 1);
   EXPECT_ROW1_NEAR(0, -1, 0, 0, to, ERROR_THRESHOLD);
   EXPECT_ROW2_NEAR(1,  0, 0, 0, to, ERROR_THRESHOLD);
@@ -1067,11 +1082,11 @@ TEST(XFormTest, VerifyBlendForCompositeTransform)
   Transform to;
 
   Transform expectedEndOfAnimation;
-  expectedEndOfAnimation.PreconcatPerspectiveDepth(1);
-  expectedEndOfAnimation.PreconcatTranslate3d(10, 20, 30);
-  expectedEndOfAnimation.PreconcatRotateAbout(Point3F(0, 0, 1), 25);
-  expectedEndOfAnimation.PreconcatSkewY(45);
-  expectedEndOfAnimation.PreconcatScale3d(6, 7, 8);
+  expectedEndOfAnimation.ApplyPerspectiveDepth(1);
+  expectedEndOfAnimation.Translate3d(10, 20, 30);
+  expectedEndOfAnimation.RotateAbout(Vector3dF(0, 0, 1), 25);
+  expectedEndOfAnimation.SkewY(45);
+  expectedEndOfAnimation.Scale3d(6, 7, 8);
 
   to = expectedEndOfAnimation;
   to.Blend(from, 0);
@@ -1101,20 +1116,6 @@ TEST(XFormTest, VerifyBlendForCompositeTransform)
   EXPECT_TRUE(MatricesAreNearlyEqual(normalizedExpectedEndOfAnimation, to));
 }
 
-TEST(XFormTest, SetScaleZ)
-{
-  Transform scaled;
-  scaled.SetScaleZ(2);
-  EXPECT_FLOAT_EQ(2, scaled.matrix().get(2, 2));
-}
-
-TEST(XFormTest, SetTranslateZ)
-{
-  Transform translated;
-  translated.SetTranslateZ(2);
-  EXPECT_FLOAT_EQ(2, translated.matrix().get(2, 3));
-}
-
 TEST(XFormTest, DecomposedTransformCtor)
 {
   DecomposedTransform decomp;
@@ -1130,6 +1131,31 @@ TEST(XFormTest, DecomposedTransformCtor)
   Transform identity;
   Transform composed = ComposeTransform(decomp);
   EXPECT_TRUE(MatricesAreNearlyEqual(identity, composed));
+}
+
+TEST(XFormTest, FactorTRS) {
+  for (int degrees = 0; degrees < 180; ++degrees) {
+    // build a transformation matrix.
+    gfx::Transform transform;
+    transform.Translate(degrees * 2, -degrees * 3);
+    transform.Rotate(degrees);
+    transform.Scale(degrees + 1, 2 * degrees + 1);
+
+    // factor the matrix
+    DecomposedTransform decomp;
+    bool success = DecomposeTransform(&decomp, transform);
+    EXPECT_TRUE(success);
+    EXPECT_FLOAT_EQ(decomp.translate[0], degrees * 2);
+    EXPECT_FLOAT_EQ(decomp.translate[1], -degrees * 3);
+    double rotation = std::acos(decomp.quaternion[3]) * 360.0 / M_PI;
+    while (rotation < 0.0)
+      rotation += 360.0;
+    while (rotation > 360.0)
+      rotation -= 360.0;
+    EXPECT_FLOAT_EQ(rotation, degrees);
+    EXPECT_FLOAT_EQ(decomp.scale[0], degrees + 1);
+    EXPECT_FLOAT_EQ(decomp.scale[1], 2 * degrees + 1);
+  }
 }
 
 }  // namespace

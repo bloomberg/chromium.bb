@@ -45,225 +45,128 @@ bool Transform::operator!=(const Transform& rhs) const {
   return !(*this == rhs);
 }
 
-void Transform::SetRotate(double degree) {
-  matrix_.setRotateDegreesAbout(SkDoubleToMScalar(0),
-                                SkDoubleToMScalar(0),
-                                SkDoubleToMScalar(1),
-                                SkDoubleToMScalar(degree));
+void Transform::MakeIdentity() {
+  matrix_.setIdentity();
 }
 
-void Transform::SetRotateAbout(const Point3F& axis, double degree) {
-  matrix_.setRotateDegreesAbout(SkDoubleToMScalar(axis.x()),
-                                SkDoubleToMScalar(axis.y()),
-                                SkDoubleToMScalar(axis.z()),
-                                SkDoubleToMScalar(degree));
+void Transform::Rotate(double degree) {
+  if (matrix_.isIdentity()) {
+    matrix_.setRotateDegreesAbout(SkDoubleToMScalar(0),
+                                  SkDoubleToMScalar(0),
+                                  SkDoubleToMScalar(1),
+                                  SkDoubleToMScalar(degree));
+  } else {
+    SkMatrix44 rot;
+    rot.setRotateDegreesAbout(SkDoubleToMScalar(0),
+                              SkDoubleToMScalar(0),
+                              SkDoubleToMScalar(1),
+                              SkDoubleToMScalar(degree));
+    matrix_.preConcat(rot);
+  }
 }
 
-void Transform::SetScaleX(double x) {
-  matrix_.setDouble(0, 0, x);
+void Transform::RotateAbout(const Vector3dF& axis, double degree) {
+  if (matrix_.isIdentity()) {
+    matrix_.setRotateDegreesAbout(SkDoubleToMScalar(axis.x()),
+                                  SkDoubleToMScalar(axis.y()),
+                                  SkDoubleToMScalar(axis.z()),
+                                  SkDoubleToMScalar(degree));
+  } else {
+    SkMatrix44 rot;
+    rot.setRotateDegreesAbout(SkDoubleToMScalar(axis.x()),
+                              SkDoubleToMScalar(axis.y()),
+                              SkDoubleToMScalar(axis.z()),
+                              SkDoubleToMScalar(degree));
+    matrix_.preConcat(rot);
+  }
 }
 
-void Transform::SetScaleY(double y) {
-  matrix_.setDouble(1, 1, y);
-}
-
-void Transform::SetScaleZ(double z) {
-  matrix_.setDouble(2, 2, z);
-}
-
-void Transform::SetScale(double x, double y) {
-  matrix_.setScale(SkDoubleToMScalar(x),
+void Transform::Scale(double x, double y) {
+  if (matrix_.isIdentity()) {
+    matrix_.setScale(SkDoubleToMScalar(x),
+                     SkDoubleToMScalar(y),
+                     SkDoubleToMScalar(1));
+  } else {
+    SkMatrix44 scale;
+    scale.setScale(SkDoubleToMScalar(x),
                    SkDoubleToMScalar(y),
-                   matrix_.get(2, 2));
+                   SkDoubleToMScalar(1));
+    matrix_.preConcat(scale);
+  }
 }
 
-void Transform::SetScale3d(double x, double y, double z) {
-  matrix_.setScale(SkDoubleToMScalar(x),
+void Transform::Scale3d(double x, double y, double z) {
+  if (matrix_.isIdentity()) {
+    matrix_.setScale(SkDoubleToMScalar(x),
+                     SkDoubleToMScalar(y),
+                     SkDoubleToMScalar(z));
+  } else {
+    SkMatrix44 scale;
+    scale.setScale(SkDoubleToMScalar(x),
                    SkDoubleToMScalar(y),
                    SkDoubleToMScalar(z));
+    matrix_.preConcat(scale);
+  }
 }
 
-void Transform::SetTranslateX(double x) {
-  matrix_.setDouble(0, 3, x);
-}
-
-void Transform::SetTranslateY(double y) {
-  matrix_.setDouble(1, 3, y);
-}
-
-void Transform::SetTranslateZ(double z) {
-  matrix_.setDouble(2, 3, z);
-}
-
-void Transform::SetTranslate(double x, double y) {
-  matrix_.setTranslate(SkDoubleToMScalar(x),
-                       SkDoubleToMScalar(y),
-                       matrix_.get(2, 3));
-}
-
-void Transform::SetTranslate3d(double x, double y, double z) {
-  matrix_.setTranslate(SkDoubleToMScalar(x),
-                       SkDoubleToMScalar(y),
-                       SkDoubleToMScalar(z));
-}
-
-void Transform::SetSkewX(double angle) {
-  matrix_.setDouble(0, 1, TanDegrees(angle));
-}
-
-void Transform::SetSkewY(double angle) {
-  matrix_.setDouble(1, 0, TanDegrees(angle));
-}
-
-void Transform::SetPerspectiveDepth(double depth) {
-  if (depth == 0)
-      return;
-
-  SkMatrix44 m;
-  m.setDouble(3, 2, -1.0 / depth);
-  matrix_ = m;
-}
-
-void Transform::ConcatRotate(double degree) {
-  SkMatrix44 rot;
-  rot.setRotateDegreesAbout(SkDoubleToMScalar(0),
-                            SkDoubleToMScalar(0),
-                            SkDoubleToMScalar(1),
-                            SkDoubleToMScalar(degree));
-  matrix_.postConcat(rot);
-}
-
-void Transform::ConcatRotateAbout(const Point3F& axis, double degree) {
-  SkMatrix44 rot;
-  rot.setRotateDegreesAbout(SkDoubleToMScalar(axis.x()),
-                            SkDoubleToMScalar(axis.y()),
-                            SkDoubleToMScalar(axis.z()),
-                            SkDoubleToMScalar(degree));
-  matrix_.postConcat(rot);
-}
-
-void Transform::ConcatScale(double x, double y) {
-  SkMatrix44 scale;
-  scale.setScale(SkDoubleToMScalar(x),
-                 SkDoubleToMScalar(y),
-                 SkDoubleToMScalar(1));
-  matrix_.postConcat(scale);
-}
-
-void Transform::ConcatScale3d(double x, double y, double z) {
-  SkMatrix44 scale;
-  scale.setScale(SkDoubleToMScalar(x),
-                 SkDoubleToMScalar(y),
-                 SkDoubleToMScalar(z));
-  matrix_.postConcat(scale);
-}
-
-void Transform::ConcatTranslate(double x, double y) {
-  SkMatrix44 translate;
-  translate.setTranslate(SkDoubleToMScalar(x),
+void Transform::Translate(double x, double y) {
+  if (matrix_.isIdentity()) {
+    matrix_.setTranslate(SkDoubleToMScalar(x),
                          SkDoubleToMScalar(y),
                          SkDoubleToMScalar(0));
-  matrix_.postConcat(translate);
+  } else {
+    SkMatrix44 translate;
+    translate.setTranslate(SkDoubleToMScalar(x),
+                           SkDoubleToMScalar(y),
+                           SkDoubleToMScalar(0));
+    matrix_.preConcat(translate);
+  }
 }
 
-void Transform::ConcatTranslate3d(double x, double y, double z) {
-  SkMatrix44 translate;
-  translate.setTranslate(SkDoubleToMScalar(x),
+void Transform::Translate3d(double x, double y, double z) {
+  if (matrix_.isIdentity()) {
+    matrix_.setTranslate(SkDoubleToMScalar(x),
                          SkDoubleToMScalar(y),
                          SkDoubleToMScalar(z));
-  matrix_.postConcat(translate);
+  } else {
+    SkMatrix44 translate;
+    translate.setTranslate(SkDoubleToMScalar(x),
+                           SkDoubleToMScalar(y),
+                           SkDoubleToMScalar(z));
+    matrix_.preConcat(translate);
+  }
 }
 
-void Transform::ConcatSkewX(double angle_x) {
-  Transform t;
-  t.SetSkewX(angle_x);
-  matrix_.postConcat(t.matrix_);
+void Transform::SkewX(double angle_x) {
+  if (matrix_.isIdentity())
+    matrix_.setDouble(0, 1, TanDegrees(angle_x));
+  else {
+    SkMatrix44 skew;
+    skew.setDouble(0, 1, TanDegrees(angle_x));
+    matrix_.preConcat(skew);
+  }
 }
 
-void Transform::ConcatSkewY(double angle_y) {
-  Transform t;
-  t.SetSkewY(angle_y);
-  matrix_.postConcat(t.matrix_);
+void Transform::SkewY(double angle_y) {
+  if (matrix_.isIdentity())
+    matrix_.setDouble(1, 0, TanDegrees(angle_y));
+  else {
+    SkMatrix44 skew;
+    skew.setDouble(1, 0, TanDegrees(angle_y));
+    matrix_.preConcat(skew);
+  }
 }
 
-void Transform::ConcatPerspectiveDepth(double depth) {
+void Transform::ApplyPerspectiveDepth(double depth) {
   if (depth == 0)
-      return;
-
-  SkMatrix44 m;
-  m.setDouble(3, 2, -1.0 / depth);
-  matrix_.postConcat(m);
-}
-
-void Transform::PreconcatRotate(double degree) {
-  SkMatrix44 rot;
-  rot.setRotateDegreesAbout(SkDoubleToMScalar(0),
-                            SkDoubleToMScalar(0),
-                            SkDoubleToMScalar(1),
-                            SkDoubleToMScalar(degree));
-  matrix_.preConcat(rot);
-}
-
-void Transform::PreconcatRotateAbout(const Point3F& axis, double degree) {
-  SkMatrix44 rot;
-  rot.setRotateDegreesAbout(SkDoubleToMScalar(axis.x()),
-                            SkDoubleToMScalar(axis.y()),
-                            SkDoubleToMScalar(axis.z()),
-                            SkDoubleToMScalar(degree));
-  matrix_.preConcat(rot);
-}
-
-void Transform::PreconcatScale(double x, double y) {
-  SkMatrix44 scale;
-  scale.setScale(SkDoubleToMScalar(x),
-                 SkDoubleToMScalar(y),
-                 SkDoubleToMScalar(1));
-  matrix_.preConcat(scale);
-}
-
-void Transform::PreconcatScale3d(double x, double y, double z) {
-  SkMatrix44 scale;
-  scale.setScale(SkDoubleToMScalar(x),
-                 SkDoubleToMScalar(y),
-                 SkDoubleToMScalar(z));
-  matrix_.preConcat(scale);
-}
-
-void Transform::PreconcatTranslate(double x, double y) {
-  SkMatrix44 translate;
-  translate.setTranslate(SkDoubleToMScalar(x),
-                         SkDoubleToMScalar(y),
-                         SkDoubleToMScalar(0));
-  matrix_.preConcat(translate);
-}
-
-void Transform::PreconcatTranslate3d(double x, double y, double z) {
-  SkMatrix44 translate;
-  translate.setTranslate(SkDoubleToMScalar(x),
-                         SkDoubleToMScalar(y),
-                         SkDoubleToMScalar(z));
-  matrix_.preConcat(translate);
-}
-
-void Transform::PreconcatSkewX(double angle_x) {
-  Transform t;
-  t.SetSkewX(angle_x);
-  matrix_.preConcat(t.matrix_);
-}
-
-void Transform::PreconcatSkewY(double angle_y) {
-  Transform t;
-  t.SetSkewY(angle_y);
-  matrix_.preConcat(t.matrix_);
-}
-
-void Transform::PreconcatPerspectiveDepth(double depth) {
-  if (depth == 0)
-      return;
-
-  SkMatrix44 m;
-  m.setDouble(3, 2, -1.0 / depth);
-  matrix_.preConcat(m);
+    return;
+  if (matrix_.isIdentity())
+    matrix_.setDouble(3, 2, -1.0 / depth);
+  else {
+    SkMatrix44 m;
+    m.setDouble(3, 2, -1.0 / depth);
+    matrix_.preConcat(m);
+  }
 }
 
 void Transform::PreconcatTransform(const Transform& transform) {
@@ -360,6 +263,17 @@ bool Transform::Blend(const Transform& from, double progress) {
 
   matrix_ = ComposeTransform(to_decomp).matrix();
   return true;
+}
+
+Transform Transform::operator*(const Transform& other) const {
+  Transform to_return;
+  to_return.matrix_.setConcat(matrix_, other.matrix_);
+  return to_return;
+}
+
+Transform& Transform::operator*=(const Transform& other) {
+  matrix_.preConcat(other.matrix_);
+  return *this;
 }
 
 void Transform::TransformPointInternal(const SkMatrix44& xform,

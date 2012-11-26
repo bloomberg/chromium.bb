@@ -507,8 +507,8 @@ TEST_F(WindowManagerTest, MAYBE_TransformActivate) {
 
   // Rotate it clock-wise 90 degrees.
   gfx::Transform transform;
-  transform.SetRotate(90.0f);
-  transform.ConcatTranslate(size.width(), 0);
+  transform.Translate(size.width(), 0);
+  transform.Rotate(90.0f);
   root_window->SetTransform(transform);
 
   test::TestActivationDelegate d1;

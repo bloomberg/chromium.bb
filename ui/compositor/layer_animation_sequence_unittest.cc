@@ -78,8 +78,8 @@ TEST(LayerAnimationSequenceTest, MultipleElement) {
       LayerAnimationElement::CreatePauseElement(properties, delta));
 
   gfx::Transform start_transform, target_transform, middle_transform;
-  start_transform.SetRotate(-90);
-  target_transform.SetRotate(90);
+  start_transform.Rotate(-30.0);
+  target_transform.Rotate(30.0);
 
   sequence.AddElement(
       LayerAnimationElement::CreateTransformElement(target_transform, delta));

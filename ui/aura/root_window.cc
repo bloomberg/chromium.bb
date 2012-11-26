@@ -588,8 +588,9 @@ gfx::Point RootWindow::QueryMouseLocationForTest() const {
 
 void RootWindow::TransformEventForDeviceScaleFactor(ui::LocatedEvent* event) {
   float scale = ui::GetDeviceScaleFactor(layer());
-  gfx::Transform transform = layer()->transform();
-  transform.ConcatScale(scale, scale);
+  gfx::Transform transform;
+  transform.Scale(scale, scale);
+  transform *= layer()->transform();
   event->UpdateForRootTransform(transform);
 }
 
@@ -1032,9 +1033,10 @@ void RootWindow::SynthesizeMouseMoveEvent() {
 #if !defined(OS_WIN)
   // Temporarily disabled for windows. See crbug.com/112222.
   gfx::Point3F point(GetLastMouseLocationInRoot());
-  gfx::Transform transform = layer()->transform();
   float scale = ui::GetDeviceScaleFactor(layer());
-  transform.ConcatScale(scale, scale);
+  gfx::Transform transform;
+  transform.Scale(scale, scale);
+  transform *= layer()->transform();
   transform.TransformPoint(point);
   gfx::Point orig_mouse_location = gfx::ToFlooredPoint(point.AsPointF());
 

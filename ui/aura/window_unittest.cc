@@ -359,9 +359,9 @@ TEST_F(WindowTest, ContainsMouse) {
 TEST_F(WindowTest, MoveCursorToWithTransformRootWindow) {
   RootWindow* root = root_window();
   gfx::Transform transform;
-  transform.ConcatScale(2, 5);
-  transform.ConcatRotate(90.0f);
-  transform.ConcatTranslate(100, 100);
+  transform.Translate(100.0, 100.0);
+  transform.Rotate(90.0);
+  transform.Scale(2.0, 5.0);
   root->SetTransform(transform);
   root->MoveCursorTo(gfx::Point(10, 10));
 #if !defined(OS_WIN)
@@ -378,30 +378,30 @@ TEST_F(WindowTest, MoveCursorToWithTransformWindow) {
       CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 500, 500), NULL));
 
   gfx::Transform transform1;
-  transform1.ConcatScale(2, 2);
+  transform1.Scale(2, 2);
   w1->SetTransform(transform1);
   w1->MoveCursorTo(gfx::Point(10, 10));
   EXPECT_EQ("30,30",
       gfx::Screen::GetScreenFor(w1.get())->GetCursorScreenPoint().ToString());
 
   gfx::Transform transform2;
-  transform2.ConcatTranslate(-10, 20);
+  transform2.Translate(-10, 20);
   w1->SetTransform(transform2);
   w1->MoveCursorTo(gfx::Point(10, 10));
   EXPECT_EQ("10,40",
       gfx::Screen::GetScreenFor(w1.get())->GetCursorScreenPoint().ToString());
 
   gfx::Transform transform3;
-  transform3.ConcatRotate(90.0f);
+  transform3.Rotate(90.0);
   w1->SetTransform(transform3);
   w1->MoveCursorTo(gfx::Point(5, 5));
   EXPECT_EQ("5,15",
       gfx::Screen::GetScreenFor(w1.get())->GetCursorScreenPoint().ToString());
 
   gfx::Transform transform4;
-  transform4.ConcatScale(2, 5);
-  transform4.ConcatRotate(90.0f);
-  transform4.ConcatTranslate(100, 100);
+  transform4.Translate(100.0, 100.0);
+  transform4.Rotate(90.0);
+  transform4.Scale(2.0, 5.0);
   w1->SetTransform(transform4);
   w1->MoveCursorTo(gfx::Point(10, 10));
   EXPECT_EQ("60,130",
@@ -424,15 +424,15 @@ TEST_F(WindowTest, MoveCursorToWithComplexTransform) {
 
   // The root window expects transforms that produce integer rects.
   gfx::Transform root_transform;
-  root_transform.ConcatScale(2.0f, 3.0f);
-  root_transform.ConcatTranslate(-50, -50);
-  root_transform.ConcatRotate(-90.0f);
-  root_transform.ConcatTranslate(60, 70);
+  root_transform.Translate(60.0, 70.0);
+  root_transform.Rotate(-90.0);
+  root_transform.Translate(-50.0, -50.0);
+  root_transform.Scale(2.0, 3.0);
 
   gfx::Transform transform;
-  transform.ConcatScale(0.3f, 0.5f);
-  transform.ConcatRotate(10.0f);
-  transform.ConcatTranslate(10, 20);
+  transform.Translate(10.0, 20.0);
+  transform.Rotate(10.0);
+  transform.Scale(0.3, 0.5);
 
   root->SetTransform(root_transform);
   w1->SetTransform(transform);
@@ -1347,8 +1347,8 @@ TEST_F(WindowTest, Transform) {
 
   // Rotate it clock-wise 90 degrees.
   gfx::Transform transform;
-  transform.SetRotate(90.0f);
-  transform.ConcatTranslate(size.height(), 0);
+  transform.Translate(size.height(), 0);
+  transform.Rotate(90.0);
   root_window()->SetTransform(transform);
 
   // The size should be the transformed size.
@@ -1375,8 +1375,8 @@ TEST_F(WindowTest, TransformGesture) {
 
   // Rotate the root-window clock-wise 90 degrees.
   gfx::Transform transform;
-  transform.SetRotate(90.0f);
-  transform.ConcatTranslate(size.height(), 0);
+  transform.Translate(size.height(), 0.0);
+  transform.Rotate(90.0);
   root_window()->SetTransform(transform);
 
   ui::TouchEvent press(
@@ -2006,7 +2006,7 @@ TEST_F(WindowTest, MouseEventsOnWindowChange) {
 
   // Transform: move d11 by 100 100.
   gfx::Transform transform;
-  transform.ConcatTranslate(100, 100);
+  transform.Translate(100, 100);
   w11->SetTransform(transform);
   RunAllPendingInMessageLoop();
   EXPECT_EQ("1 1 0", d1.GetMouseMotionCountsAndReset());

@@ -29,15 +29,19 @@ const int kButtonHoverSize = 28;
 const int kBackgroundOffset = (48 - kButtonHoverSize) / 2;
 
 void RotateCounterclockwise(gfx::Transform* transform) {
-  transform->matrix().set3x3(0, -1, 0,
-                             1,  0, 0,
-                             0,  0, 1);
+  SkMatrix44 rotation;
+  rotation.set3x3(0, -1, 0,
+                  1,  0, 0,
+                  0,  0, 1);
+  transform->matrix().preConcat(rotation);
 }
 
 void RotateClockwise(gfx::Transform* transform) {
-  transform->matrix().set3x3( 0, 1, 0,
-                             -1, 0, 0,
-                              0, 0, 1);
+  SkMatrix44 rotation;
+  rotation.set3x3( 0, 1, 0,
+                  -1, 0, 0,
+                   0, 0, 1);
+  transform->matrix().preConcat(rotation);
 }
 
 }  // namesapce
@@ -112,15 +116,15 @@ void OverflowButton::OnPaint(gfx::Canvas* canvas) {
   switch (alignment_) {
     case SHELF_ALIGNMENT_BOTTOM:
       // Shift 1 pixel left to align with overflow bubble tip.
-      transform.ConcatTranslate(-1, kBackgroundOffset);
+      transform.Translate(-1, kBackgroundOffset);
       break;
     case SHELF_ALIGNMENT_LEFT:
+      transform.Translate(kBackgroundOffset, -1);
       RotateClockwise(&transform);
-      transform.ConcatTranslate(kBackgroundOffset, -1);
       break;
     case SHELF_ALIGNMENT_RIGHT:
+      transform.Translate(kBackgroundOffset, height());
       RotateCounterclockwise(&transform);
-      transform.ConcatTranslate(kBackgroundOffset, height());
       break;
   }
 

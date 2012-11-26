@@ -34,6 +34,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/vector3d_f.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -279,40 +280,35 @@ void AnimateHideWindowCommon(aura::Window* window,
   window->layer()->SetVisible(false);
 }
 
+static gfx::Transform GetScaleForWindow(aura::Window* window) {
+  gfx::Rect bounds = window->bounds();
+  gfx::Transform scale = gfx::GetScaleTransform(
+      gfx::Point(kWindowAnimation_TranslateFactor * bounds.width(),
+                 kWindowAnimation_TranslateFactor * bounds.height()),
+      kWindowAnimation_ScaleFactor);
+  return scale;
+}
+
 // Show/Hide windows using a shrink animation.
 void AnimateShowWindow_Drop(aura::Window* window) {
-  gfx::Transform transform;
-  transform.ConcatScale(kWindowAnimation_ScaleFactor,
-                        kWindowAnimation_ScaleFactor);
-  gfx::Rect bounds = window->bounds();
-  transform.ConcatTranslate(
-      kWindowAnimation_TranslateFactor * bounds.width(),
-      kWindowAnimation_TranslateFactor * bounds.height());
-  AnimateShowWindowCommon(window, transform, gfx::Transform());
+  AnimateShowWindowCommon(window, GetScaleForWindow(window), gfx::Transform());
 }
 
 void AnimateHideWindow_Drop(aura::Window* window) {
-  gfx::Transform transform;
-  transform.ConcatScale(kWindowAnimation_ScaleFactor,
-                        kWindowAnimation_ScaleFactor);
-  gfx::Rect bounds = window->bounds();
-  transform.ConcatTranslate(
-      kWindowAnimation_TranslateFactor * bounds.width(),
-      kWindowAnimation_TranslateFactor * bounds.height());
-  AnimateHideWindowCommon(window, transform);
+  AnimateHideWindowCommon(window, GetScaleForWindow(window));
 }
 
 // Show/Hide windows using a vertical Glenimation.
 void AnimateShowWindow_Vertical(aura::Window* window) {
   gfx::Transform transform;
-  transform.ConcatTranslate(0, window->GetProperty(
+  transform.Translate(0, window->GetProperty(
       kWindowVisibilityAnimationVerticalPositionKey));
   AnimateShowWindowCommon(window, transform, gfx::Transform());
 }
 
 void AnimateHideWindow_Vertical(aura::Window* window) {
   gfx::Transform transform;
-  transform.ConcatTranslate(0, window->GetProperty(
+  transform.Translate(0, window->GetProperty(
       kWindowVisibilityAnimationVerticalPositionKey));
   AnimateHideWindowCommon(window, transform);
 }
@@ -502,9 +498,9 @@ void AddLayerAnimationsForRotate(aura::Window* window, bool show) {
   float xcenter = window->bounds().width() * 0.5;
 
   gfx::Transform transform;
-  transform.ConcatTranslate(-xcenter, 0);
-  transform.ConcatPerspectiveDepth(kWindowAnimation_Rotate_PerspectiveDepth);
-  transform.ConcatTranslate(xcenter, 0);
+  transform.Translate(xcenter, 0);
+  transform.ApplyPerspectiveDepth(kWindowAnimation_Rotate_PerspectiveDepth);
+  transform.Translate(-xcenter, 0);
   scoped_ptr<ui::InterpolatedTransform> perspective(
       new ui::InterpolatedConstantTransform(transform));
 
@@ -521,7 +517,7 @@ void AddLayerAnimationsForRotate(aura::Window* window, bool show) {
 
   scoped_ptr<ui::InterpolatedTransform> rotation(
       new ui::InterpolatedAxisAngleRotation(
-          gfx::Point3F(1, 0, 0), 0, kWindowAnimation_Rotate_DegreesX));
+          gfx::Vector3dF(1, 0, 0), 0, kWindowAnimation_Rotate_DegreesX));
 
   scale_about_pivot->SetChild(perspective.release());
   translation->SetChild(scale_about_pivot.release());
@@ -692,9 +688,9 @@ TimeDelta CrossFadeImpl(aura::Window* window,
         static_cast<float>(old_bounds.width());
     float scale_y = static_cast<float>(new_bounds.height()) /
         static_cast<float>(old_bounds.height());
-    out_transform.ConcatScale(scale_x, scale_y);
-    out_transform.ConcatTranslate(new_bounds.x() - old_bounds.x(),
-                                  new_bounds.y() - old_bounds.y());
+    out_transform.Translate(new_bounds.x() - old_bounds.x(),
+                            new_bounds.y() - old_bounds.y());
+    out_transform.Scale(scale_x, scale_y);
     old_layer->SetTransform(out_transform);
     if (old_on_top) {
       // The old layer is on top, and should fade out.  The new layer below will
@@ -712,9 +708,9 @@ TimeDelta CrossFadeImpl(aura::Window* window,
       static_cast<float>(new_bounds.width());
   const float scale_y = static_cast<float>(old_bounds.height()) /
       static_cast<float>(new_bounds.height());
-  in_transform.ConcatScale(scale_x, scale_y);
-  in_transform.ConcatTranslate(old_bounds.x() - new_bounds.x(),
+  in_transform.Translate(old_bounds.x() - new_bounds.x(),
                                old_bounds.y() - new_bounds.y());
+  in_transform.Scale(scale_x, scale_y);
   window->layer()->SetTransform(in_transform);
   if (!old_on_top) {
     // The new layer is on top and should fade in.  The old layer below will

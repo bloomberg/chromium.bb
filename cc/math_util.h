@@ -143,10 +143,6 @@ public:
                                              double d, double e, double f);
 };
 
-// TODO(shawnsingh, vollick) this is a temporary home, should eventually
-// be phased out in favor of gfx::Transform API.
-gfx::Transform CC_EXPORT operator*(const gfx::Transform&, const gfx::Transform&);
-
 } // namespace cc
 
 #endif  // CC_MATH_UTIL_H_

@@ -107,9 +107,9 @@ void ImageGrid::SetSize(const gfx::Size& size) {
   if (top_layer_.get()) {
     if (center_width > 0) {
       gfx::Transform transform;
-      transform.SetScaleX(
-          static_cast<float>(center_width) / top_layer_->bounds().width());
-      transform.ConcatTranslate(left, 0);
+      transform.Translate(left, 0);
+      transform.Scale(
+          static_cast<float>(center_width) / top_layer_->bounds().width(), 1);
       top_layer_->SetTransform(transform);
     }
     top_layer_->SetVisible(center_width > 0);
@@ -117,10 +117,11 @@ void ImageGrid::SetSize(const gfx::Size& size) {
   if (bottom_layer_.get()) {
     if (center_width > 0) {
       gfx::Transform transform;
-      transform.SetScaleX(
-          static_cast<float>(center_width) / bottom_layer_->bounds().width());
-      transform.ConcatTranslate(
+      transform.Translate(
           left, size.height() - bottom_layer_->bounds().height());
+      transform.Scale(
+          static_cast<float>(center_width) / bottom_layer_->bounds().width(),
+          1.0);
       bottom_layer_->SetTransform(transform);
     }
     bottom_layer_->SetVisible(center_width > 0);
@@ -128,9 +129,10 @@ void ImageGrid::SetSize(const gfx::Size& size) {
   if (left_layer_.get()) {
     if (center_height > 0) {
       gfx::Transform transform;
-      transform.SetScaleY(
+      transform.Translate(0, top);
+      transform.Scale(
+          1.0,
           (static_cast<float>(center_height) / left_layer_->bounds().height()));
-      transform.ConcatTranslate(0, top);
       left_layer_->SetTransform(transform);
     }
     left_layer_->SetVisible(center_height > 0);
@@ -138,10 +140,11 @@ void ImageGrid::SetSize(const gfx::Size& size) {
   if (right_layer_.get()) {
     if (center_height > 0) {
       gfx::Transform transform;
-      transform.SetScaleY(
-          static_cast<float>(center_height) / right_layer_->bounds().height());
-      transform.ConcatTranslate(
+      transform.Translate(
           size.width() - right_layer_->bounds().width(), top);
+      transform.Scale(
+          1.0,
+          static_cast<float>(center_height) / right_layer_->bounds().height());
       right_layer_->SetTransform(transform);
     }
     right_layer_->SetVisible(center_height > 0);
@@ -157,7 +160,7 @@ void ImageGrid::SetSize(const gfx::Size& size) {
   }
   if (top_right_layer_.get()) {
     gfx::Transform transform;
-    transform.SetTranslateX(size.width() - top_right_layer_->bounds().width());
+    transform.Translate(size.width() - top_right_layer_->bounds().width(), 0.0);
     top_right_layer_->SetTransform(transform);
     top_right_painter_->SetClipRect(
         LayerExceedsSize(top_right_layer_.get(), gfx::Size(right, top)) ?
@@ -168,8 +171,8 @@ void ImageGrid::SetSize(const gfx::Size& size) {
   }
   if (bottom_left_layer_.get()) {
     gfx::Transform transform;
-    transform.SetTranslateY(
-        size.height() - bottom_left_layer_->bounds().height());
+    transform.Translate(
+        0.0, size.height() - bottom_left_layer_->bounds().height());
     bottom_left_layer_->SetTransform(transform);
     bottom_left_painter_->SetClipRect(
         LayerExceedsSize(bottom_left_layer_.get(), gfx::Size(left, bottom)) ?
@@ -180,7 +183,7 @@ void ImageGrid::SetSize(const gfx::Size& size) {
   }
   if (bottom_right_layer_.get()) {
     gfx::Transform transform;
-    transform.SetTranslate(
+    transform.Translate(
         size.width() - bottom_right_layer_->bounds().width(),
         size.height() - bottom_right_layer_->bounds().height());
     bottom_right_layer_->SetTransform(transform);
@@ -196,9 +199,9 @@ void ImageGrid::SetSize(const gfx::Size& size) {
   if (center_layer_.get()) {
     if (center_width > 0 && center_height > 0) {
       gfx::Transform transform;
-      transform.SetScale(center_width / center_layer_->bounds().width(),
-                         center_height / center_layer_->bounds().height());
-      transform.ConcatTranslate(left, top);
+      transform.Translate(left, top);
+      transform.Scale(center_width / center_layer_->bounds().width(),
+                      center_height / center_layer_->bounds().height());
       center_layer_->SetTransform(transform);
     }
     center_layer_->SetVisible(center_width > 0 && center_height > 0);

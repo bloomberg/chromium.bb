@@ -601,10 +601,12 @@ bool Layer::GetTransformRelativeTo(const Layer* ancestor,
                                    gfx::Transform* transform) const {
   const Layer* p = this;
   for (; p && p != ancestor; p = p->parent()) {
+    gfx::Transform translation;
+    translation.Translate(static_cast<float>(p->bounds().x()),
+                          static_cast<float>(p->bounds().y()));
     if (!p->transform().IsIdentity())
       transform->ConcatTransform(p->transform());
-    transform->ConcatTranslate(static_cast<float>(p->bounds().x()),
-                               static_cast<float>(p->bounds().y()));
+    transform->ConcatTransform(translation);
   }
   return p == ancestor;
 }
@@ -766,7 +768,9 @@ void Layer::RecomputeTransform() {
                             0, 1.0f / device_scale_factor_, 0,
                             0, 0, 1);
   transform.ConcatTransform(transform_);
-  transform.ConcatTranslate(bounds_.x(), bounds_.y());
+  gfx::Transform translate;
+  translate.Translate(bounds_.x(), bounds_.y());
+  transform.ConcatTransform(translate);
   transform.ConcatTransform(scale_translate);
   cc_layer_->setTransform(WebKit::WebTransformationMatrix(transform));
 }

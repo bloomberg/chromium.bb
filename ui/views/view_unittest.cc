@@ -2058,7 +2058,7 @@ TEST_F(ViewTest, TransformPaint) {
   // Rotate |v1| counter-clockwise.
   gfx::Transform transform;
   RotateCounterclockwise(&transform);
-  transform.SetTranslateY(500.0f);
+  transform.matrix().set(1, 3, 500.0);
   v1->SetTransform(transform);
 
   // |v2| now occupies (100, 200) to (200, 400) in |root|.
@@ -2092,7 +2092,7 @@ TEST_F(ViewTest, TransformEvent) {
   // Rotate |v1| counter-clockwise.
   gfx::Transform transform(v1->GetTransform());
   RotateCounterclockwise(&transform);
-  transform.SetTranslateY(500.0f);
+  transform.matrix().set(1, 3, 500.0);
   v1->SetTransform(transform);
 
   // |v2| now occupies (100, 200) to (200, 400) in |root|.
@@ -2114,7 +2114,7 @@ TEST_F(ViewTest, TransformEvent) {
   // Now rotate |v2| inside |v1| clockwise.
   transform = v2->GetTransform();
   RotateClockwise(&transform);
-  transform.SetTranslateX(100.0f);
+  transform.matrix().setDouble(0, 3, 100.0);
   v2->SetTransform(transform);
 
   // Now, |v2| occupies (100, 100) to (200, 300) in |v1|, and (100, 300) to
@@ -2144,12 +2144,13 @@ TEST_F(ViewTest, TransformEvent) {
   // Rotate |v3| clockwise with respect to |v2|.
   transform = v1->GetTransform();
   RotateClockwise(&transform);
-  transform.SetTranslateX(30.0f);
+  transform.matrix().setDouble(0, 3, 30.0);
   v3->SetTransform(transform);
 
   // Scale |v2| with respect to |v1| along both axis.
   transform = v2->GetTransform();
-  transform.SetScale(0.8f, 0.5f);
+  transform.matrix().setDouble(0, 0, 0.8);
+  transform.matrix().setDouble(1, 1, 0.5);
   v2->SetTransform(transform);
 
   // |v3| occupies (108, 105) to (132, 115) in |root|.
@@ -2180,16 +2181,19 @@ TEST_F(ViewTest, TransformEvent) {
   // Rotate |v3| clockwise with respect to |v2|, and scale it along both axis.
   transform = v3->GetTransform();
   RotateClockwise(&transform);
-  transform.SetTranslateX(30.0f);
+  transform.matrix().setDouble(0, 3, 30.0);
   // Rotation sets some scaling transformation. Using SetScale would overwrite
   // that and pollute the rotation. So combine the scaling with the existing
   // transforamtion.
-  transform.ConcatScale(0.8f, 0.5f);
+  gfx::Transform scale;
+  scale.Scale(0.8, 0.5);
+  transform.ConcatTransform(scale);
   v3->SetTransform(transform);
 
   // Translate |v2| with respect to |v1|.
   transform = v2->GetTransform();
-  transform.SetTranslate(10, 10);
+  transform.matrix().setDouble(0, 3, 10.0);
+  transform.matrix().setDouble(1, 3, 10.0);
   v2->SetTransform(transform);
 
   // |v3| now occupies (120, 120) to (144, 130) in |root|.
@@ -2233,7 +2237,7 @@ TEST_F(ViewTest, TransformVisibleBound) {
   // Rotate |child| counter-clockwise
   gfx::Transform transform;
   RotateCounterclockwise(&transform);
-  transform.SetTranslateY(50.0f);
+  transform.matrix().setDouble(1, 3, 50.0);
   child->SetTransform(transform);
   EXPECT_EQ(gfx::Rect(40, 0, 10, 50), child->GetVisibleBounds());
 
@@ -2347,20 +2351,20 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
 
   child->SetBoundsRect(gfx::Rect(7, 19, 500, 500));
   gfx::Transform transform;
-  transform.SetScale(3.0f, 4.0f);
+  transform.Scale(3.0, 4.0);
   child->SetTransform(transform);
 
   child_child->SetBoundsRect(gfx::Rect(17, 13, 100, 100));
-  transform = gfx::Transform();
-  transform.SetScale(5.0f, 7.0f);
+  transform.MakeIdentity();
+  transform.Scale(5.0, 7.0);
   child_child->SetTransform(transform);
 
   // Sanity check to make sure basic transforms act as expected.
   {
     gfx::Transform transform;
-    transform.ConcatTranslate(1, 1);
-    transform.ConcatScale(100, 55);
-    transform.ConcatTranslate(110, -110);
+    transform.Translate(110.0, -110.0);
+    transform.Scale(100.0, 55.0);
+    transform.Translate(1.0, 1.0);
 
     // convert to a 3x3 matrix.
     const SkMatrix& matrix = transform.matrix();
@@ -2375,11 +2379,11 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
 
   {
     gfx::Transform transform;
-    transform.SetTranslate(1, 1);
+    transform.Translate(1.0, 1.0);
     gfx::Transform t2;
-    t2.SetScale(100, 55);
+    t2.Scale(100.0, 55.0);
     gfx::Transform t3;
-    t3.SetTranslate(110, -110);
+    t3.Translate(110.0, -110.0);
     transform.ConcatTransform(t2);
     transform.ConcatTransform(t3);
 
@@ -2468,7 +2472,7 @@ TEST_F(ViewTest, ConvertRectWithTransform) {
   // Rotate |v2|
   gfx::Transform t2;
   RotateCounterclockwise(&t2);
-  t2.SetTranslateY(100.0f);
+  t2.matrix().setDouble(1, 3, 100.0);
   v2->SetTransform(t2);
 
   // |v2| now occupies (30, 30) to (230, 130) in |widget|
@@ -2477,7 +2481,7 @@ TEST_F(ViewTest, ConvertRectWithTransform) {
 
   // Scale down |v1|
   gfx::Transform t1;
-  t1.SetScale(0.5, 0.5);
+  t1.Scale(0.5, 0.5);
   v1->SetTransform(t1);
 
   // The rectangle should remain the same for |v1|.
@@ -2981,7 +2985,7 @@ TEST_F(ViewLayerTest, LayerToggling) {
 
   // Make v1 have a layer again and verify v2s layer is wired up correctly.
   gfx::Transform transform;
-  transform.SetScale(2.0f, 2.0f);
+  transform.Scale(2.0, 2.0);
   v1->SetTransform(transform);
   EXPECT_TRUE(v1->layer() != NULL);
   EXPECT_TRUE(v2->layer() != NULL);
@@ -3133,7 +3137,7 @@ TEST_F(ViewLayerTest, BoundInRTL) {
 TEST_F(ViewLayerTest, ToggleVisibilityWithTransform) {
   View* view = new View;
   gfx::Transform transform;
-  transform.SetScale(2.0f, 2.0f);
+  transform.Scale(2.0, 2.0);
   view->SetTransform(transform);
   widget()->SetContentsView(view);
   EXPECT_EQ(2.0f, view->GetTransform().matrix().get(0, 0));
@@ -3149,7 +3153,7 @@ TEST_F(ViewLayerTest, ToggleVisibilityWithTransform) {
 TEST_F(ViewLayerTest, ResetTransformOnLayerAfterAdd) {
   View* view = new View;
   gfx::Transform transform;
-  transform.SetScale(2.0f, 2.0f);
+  transform.Scale(2.0, 2.0);
   view->SetTransform(transform);
   widget()->SetContentsView(view);
   EXPECT_EQ(2.0f, view->GetTransform().matrix().get(0, 0));

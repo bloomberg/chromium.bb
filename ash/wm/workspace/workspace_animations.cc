@@ -34,10 +34,9 @@ void ApplyWorkspaceScale(ui::Layer* layer, WorkspaceScaleType type) {
   const float scale = type == WORKSPACE_SCALE_ABOVE ? kWorkspaceScaleAbove :
       kWorkspaceScaleBelow;
   gfx::Transform transform;
-  transform.ConcatScale(scale, scale);
-  transform.ConcatTranslate(
-      -layer->bounds().width() * (scale - 1.0f) / 2,
-      -layer->bounds().height() * (scale - 1.0f) / 2);
+  transform.Translate(-layer->bounds().width() * (scale - 1.0f) / 2,
+                      -layer->bounds().height() * (scale - 1.0f) / 2);
+  transform.Scale(scale, scale);
   layer->SetTransform(transform);
 }
 

@@ -26,16 +26,19 @@ const float kSlowCloseSizeRatio = 0.95f;
 // Maximum opacity of white layer when animating pre-shutdown state.
 const float kPartialFadeRatio = 0.3f;
 
+// Minimum size. Not zero as it causes numeric issues.
+const float kMinimumScale = 1e-4f;
+
 // Returns the transform that should be applied to containers for the slow-close
 // animation.
 gfx::Transform GetSlowCloseTransform() {
   gfx::Size root_size = Shell::GetPrimaryRootWindow()->bounds().size();
   gfx::Transform transform;
-  transform.SetScale(kSlowCloseSizeRatio, kSlowCloseSizeRatio);
-  transform.ConcatTranslate(
+  transform.Translate(
       floor(0.5 * (1.0 - kSlowCloseSizeRatio) * root_size.width() + 0.5),
       floor(0.5 * (1.0 - kSlowCloseSizeRatio) * root_size.height() + 0.5));
-  return transform;
+  transform.Scale(kSlowCloseSizeRatio, kSlowCloseSizeRatio);
+ return transform;
 }
 
 // Returns the transform that should be applied to containers for the fast-close
@@ -43,9 +46,9 @@ gfx::Transform GetSlowCloseTransform() {
 gfx::Transform GetFastCloseTransform() {
   gfx::Size root_size = Shell::GetPrimaryRootWindow()->bounds().size();
   gfx::Transform transform;
-  transform.SetScale(0.0, 0.0);
-  transform.ConcatTranslate(floor(0.5 * root_size.width() + 0.5),
-                            floor(0.5 * root_size.height() + 0.5));
+  transform.Translate(floor(0.5 * root_size.width() + 0.5),
+                      floor(0.5 * root_size.height() + 0.5));
+  transform.Scale(kMinimumScale, kMinimumScale);
   return transform;
 }
 

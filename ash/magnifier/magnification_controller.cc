@@ -230,8 +230,8 @@ bool MagnificationControllerImpl::RedrawDIP(const gfx::PointF& position_in_dip,
   gfx::Transform transform;
   // Flips the signs intentionally to convert them from the position of the
   // magnification window.
-  transform.ConcatTranslate(-origin_.x(), -origin_.y());
-  transform.ConcatScale(scale_, scale_);
+  transform.Scale(scale_, scale_);
+  transform.Translate(-origin_.x(), -origin_.y());
 
   ui::ScopedLayerAnimationSettings settings(
       root_window_->layer()->GetAnimator());

@@ -24,8 +24,8 @@ namespace {
 TEST(LayerAnimationElementTest, TransformElement) {
   TestLayerAnimationDelegate delegate;
   gfx::Transform start_transform, target_transform, middle_transform;
-  start_transform.SetRotate(-90);
-  target_transform.SetRotate(90);
+  start_transform.Rotate(-30.0);
+  target_transform.Rotate(30.0);
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
 
   scoped_ptr<LayerAnimationElement> element(

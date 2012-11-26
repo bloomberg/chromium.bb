@@ -11,7 +11,6 @@
 #endif
 
 #include "base/logging.h"
-#include "ui/gfx/interpolated_transform.h"
 
 namespace ui {
 
@@ -97,41 +96,15 @@ gfx::Rect Tween::ValueBetween(double value,
 
 // static
 gfx::Transform Tween::ValueBetween(double value,
-                              const gfx::Transform& start_transform,
-                              const gfx::Transform& end_transform) {
+                                   const gfx::Transform& start_transform,
+                                   const gfx::Transform& end_transform) {
   if (value >= 1.0)
     return end_transform;
   if (value <= 0.0)
     return start_transform;
 
-  gfx::Transform to_return;
-  gfx::Point start_translation, end_translation;
-  float start_rotation, end_rotation;
-  gfx::Point3F start_scale, end_scale;
-  if (InterpolatedTransform::FactorTRS(start_transform,
-                                       &start_translation,
-                                       &start_rotation,
-                                       &start_scale) &&
-      InterpolatedTransform::FactorTRS(end_transform,
-                                       &end_translation,
-                                       &end_rotation,
-                                       &end_scale)) {
-    to_return.SetScale(ValueBetween(value, start_scale.x(), end_scale.x()),
-                       ValueBetween(value, start_scale.y(), end_scale.y()));
-    to_return.ConcatRotate(ValueBetween(value, start_rotation, end_rotation));
-    to_return.ConcatTranslate(
-        ValueBetween(value, start_translation.x(), end_translation.x()),
-        ValueBetween(value, start_translation.y(), end_translation.y()));
-  } else {
-    for (int row = 0; row < 4; ++row) {
-      for (int col = 0; col < 4; ++col) {
-        to_return.matrix().set(row, col,
-            ValueBetween(value,
-                         start_transform.matrix().get(row, col),
-                         end_transform.matrix().get(row, col)));
-      }
-    }
-  }
+  gfx::Transform to_return = end_transform;
+  to_return.Blend(start_transform, value);
 
   return to_return;
 }

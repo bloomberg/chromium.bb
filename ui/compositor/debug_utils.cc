@@ -4,8 +4,11 @@
 
 #ifndef NDEBUG
 
+#define _USE_MATH_DEFINES // For VC++ to get M_PI. This has to be first.
+
 #include "ui/compositor/debug_utils.h"
 
+#include <cmath>
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -57,39 +60,30 @@ void PrintLayerHierarchyImp(const Layer* layer, int indent,
   if (!layer->visible())
     buf << L" !visible";
 
-  buf << L'\n' << UTF8ToWide(content_indent_str);
+  std::string property_indent_str(indent+3, ' ');
+  buf << L'\n' << UTF8ToWide(property_indent_str);
   buf << L"bounds: " << layer->bounds().x() << L',' << layer->bounds().y();
   buf << L' ' << layer->bounds().width() << L'x' << layer->bounds().height();
 
   if (layer->opacity() != 1.0f) {
-    buf << L'\n' << UTF8ToWide(content_indent_str);
+    buf << L'\n' << UTF8ToWide(property_indent_str);
     buf << L"opacity: " << std::setprecision(2) << layer->opacity();
   }
 
-  if (!layer->transform().IsIdentity()) {
-    gfx::Point translation;
-    float rotation;
-    gfx::Point3F scale;
-    if (ui::InterpolatedTransform::FactorTRS(layer->transform(),
-                                             &translation,
-                                             &rotation,
-                                             &scale)) {
-      if (!translation.IsOrigin()) {
-        buf << L'\n' << UTF8ToWide(content_indent_str);
-        buf << L"translation: " << translation.x() << L", " << translation.y();
-      }
+  gfx::DecomposedTransform decomp;
+  if (!layer->transform().IsIdentity() &&
+      gfx::DecomposeTransform(&decomp, layer->transform())) {
+    buf << L'\n' << UTF8ToWide(property_indent_str);
+    buf << L"translation: " << std::fixed << decomp.translate[0];
+    buf << L", " << decomp.translate[1];
 
-      if (fabs(rotation) > 1e-5) {
-        buf << L'\n' << UTF8ToWide(content_indent_str);
-        buf << L"rotation: " << std::setprecision(4) << rotation;
-      }
+    buf << L'\n' << UTF8ToWide(property_indent_str);
+    buf << L"rotation: ";
+    buf << std::acos(decomp.quaternion[3]) * 360.0 / M_PI;
 
-      if (!gfx::ToFlooredPoint(scale.AsPointF()).IsOrigin()) {
-        buf << L'\n' << UTF8ToWide(content_indent_str);
-        buf << std::setprecision(4);
-        buf << L"scale: " << scale.x() << L", " << scale.y();
-      }
-    }
+    buf << L'\n' << UTF8ToWide(property_indent_str);
+    buf << L"scale: " << decomp.scale[0];
+    buf << L", " << decomp.scale[1];
   }
 
   VLOG(1) << buf.str();

@@ -461,10 +461,8 @@ void MathUtil::rotateEulerAngles(gfx::Transform* transform, double eulerX, doubl
 
 void MathUtil::rotateAxisAngle(gfx::Transform* transform, double i, double j, double k, double degrees)
 {
-    // TODO (shawnsingh): fix gfx::Transform API to receive vector instead of
-    // point for the axis.
-    gfx::Point3F axis(i, j, k);
-    transform->PreconcatRotateAbout(axis, degrees);
+    gfx::Vector3dF axis(i, j, k);
+    transform->RotateAbout(axis, degrees);
 }
 
 gfx::Transform MathUtil::inverse(const gfx::Transform& transform)
@@ -542,14 +540,6 @@ gfx::Transform MathUtil::createGfxTransform(double a, double b, double c,
     matrix.setDouble(0, 3, e);
     matrix.setDouble(1, 3, f);
 
-    return result;
-}
-
-gfx::Transform operator*(const gfx::Transform& A, const gfx::Transform& B)
-{
-    // Compute A * B.
-    gfx::Transform result = A;
-    result.PreconcatTransform(B);
     return result;
 }
 

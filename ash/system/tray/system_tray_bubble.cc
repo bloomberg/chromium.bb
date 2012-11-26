@@ -165,7 +165,7 @@ void SystemTrayBubble::UpdateView(
     settings.SetTransitionDuration(swipe_duration);
     settings.SetTweenType(ui::Tween::EASE_OUT);
     gfx::Transform transform;
-    transform.SetTranslateX(layer->bounds().width());
+    transform.Translate(layer->bounds().width(), 0.0);
     layer->SetTransform(transform);
   }
 
@@ -218,7 +218,7 @@ void SystemTrayBubble::UpdateView(
     ui::Layer* new_layer = bubble_view_->layer();
     gfx::Rect bounds = new_layer->bounds();
     gfx::Transform transform;
-    transform.SetTranslateX(bounds.width());
+    transform.Translate(bounds.width(), 0.0);
     new_layer->SetTransform(transform);
     {
       ui::ScopedLayerAnimationSettings settings(new_layer->GetAnimator());

@@ -447,8 +447,8 @@ void WebContentsViewAura::CompleteOverscrollNavigation(OverscrollMode mode) {
   settings.AddObserver(this);
   gfx::Transform transform;
   int content_width = view_->GetViewBounds().width();
-  transform.SetTranslateX(mode == OVERSCROLL_WEST ? -content_width :
-                                                    content_width);
+  transform.Translate(mode == OVERSCROLL_WEST ? -content_width : content_width,
+                      0);
   target->SetTransform(transform);
 }
 
@@ -735,7 +735,7 @@ void WebContentsViewAura::OnOverscrollUpdate(float delta_x, float delta_y) {
   settings.SetPreemptionStrategy(ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
   gfx::Vector2d translate = GetTranslationForOverscroll(delta_x, delta_y);
   gfx::Transform transform;
-  transform.SetTranslate(translate.x(), translate.y());
+  transform.Translate(translate.x(), translate.y());
   target->SetTransform(transform);
 }
 

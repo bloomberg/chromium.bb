@@ -331,7 +331,7 @@ TEST(MathUtilGfxTransformTest, verifyMatrixInversion)
 {
     // Invert a translation
     gfx::Transform translation;
-    translation.PreconcatTranslate3d(2, 3, 4);
+    translation.Translate3d(2, 3, 4);
     EXPECT_TRUE(MathUtil::isInvertible(translation));
 
     gfx::Transform inverseTranslation = MathUtil::inverse(translation);
@@ -348,7 +348,7 @@ TEST(MathUtilGfxTransformTest, verifyMatrixInversion)
 
     // Invert a non-uniform scale
     gfx::Transform scale;
-    scale.PreconcatScale3d(4, 10, 100);
+    scale.Scale3d(4, 10, 100);
     EXPECT_TRUE(MathUtil::isInvertible(scale));
 
     gfx::Transform inverseScale = MathUtil::inverse(scale);
@@ -512,6 +512,28 @@ TEST(MathUtilGfxTransformTest, verifyMultiplyOperator)
     EXPECT_FALSE(A * B == B * A);
 }
 
+TEST(MathUtilGfxTransformTest, verifyMultiplyAndAssignOperator)
+{
+    gfx::Transform A;
+    initializeTestMatrix(&A);
+
+    gfx::Transform B;
+    initializeTestMatrix2(&B);
+
+    A *= B;
+    EXPECT_ROW1_EQ(2036, 2292, 2548, 2804, A);
+    EXPECT_ROW2_EQ(2162, 2434, 2706, 2978, A);
+    EXPECT_ROW3_EQ(2288, 2576, 2864, 3152, A);
+    EXPECT_ROW4_EQ(2414, 2718, 3022, 3326, A);
+
+    // Just an additional sanity check; matrix multiplication is not commutative.
+    gfx::Transform C = A;
+    C *= B;
+    gfx::Transform D = B;
+    D *= A;
+    EXPECT_FALSE(C == D);
+}
+
 TEST(MathUtilGfxTransformTest, verifyMatrixMultiplication)
 {
     gfx::Transform A;
@@ -542,16 +564,16 @@ TEST(MathUtilGfxTransformTest, verifyMakeIdentiy)
 TEST(MathUtilGfxTransformTest, verifyTranslate)
 {
     gfx::Transform A;
-    A.PreconcatTranslate(2, 3);
+    A.Translate(2, 3);
     EXPECT_ROW1_EQ(1, 0, 0, 2, A);
     EXPECT_ROW2_EQ(0, 1, 0, 3, A);
     EXPECT_ROW3_EQ(0, 0, 1, 0, A);
     EXPECT_ROW4_EQ(0, 0, 0, 1, A);
 
-    // Verify that PreconcatTranslate() post-multiplies the existing matrix.
+    // Verify that Translate() post-multiplies the existing matrix.
     MathUtil::makeIdentity(&A);
-    A.PreconcatScale(5, 5);
-    A.PreconcatTranslate(2, 3);
+    A.Scale(5, 5);
+    A.Translate(2, 3);
     EXPECT_ROW1_EQ(5, 0, 0, 10, A);
     EXPECT_ROW2_EQ(0, 5, 0, 15, A);
     EXPECT_ROW3_EQ(0, 0, 1, 0,  A);
@@ -561,16 +583,16 @@ TEST(MathUtilGfxTransformTest, verifyTranslate)
 TEST(MathUtilGfxTransformTest, verifyTranslate3d)
 {
     gfx::Transform A;
-    A.PreconcatTranslate3d(2, 3, 4);
+    A.Translate3d(2, 3, 4);
     EXPECT_ROW1_EQ(1, 0, 0, 2, A);
     EXPECT_ROW2_EQ(0, 1, 0, 3, A);
     EXPECT_ROW3_EQ(0, 0, 1, 4, A);
     EXPECT_ROW4_EQ(0, 0, 0, 1, A);
 
-    // Verify that PreconcatTranslate3d() post-multiplies the existing matrix.
+    // Verify that Translate3d() post-multiplies the existing matrix.
     MathUtil::makeIdentity(&A);
-    A.PreconcatScale3d(6, 7, 8);
-    A.PreconcatTranslate3d(2, 3, 4);
+    A.Scale3d(6, 7, 8);
+    A.Translate3d(2, 3, 4);
     EXPECT_ROW1_EQ(6, 0, 0, 12, A);
     EXPECT_ROW2_EQ(0, 7, 0, 21, A);
     EXPECT_ROW3_EQ(0, 0, 8, 32, A);
@@ -580,16 +602,16 @@ TEST(MathUtilGfxTransformTest, verifyTranslate3d)
 TEST(MathUtilGfxTransformTest, verifyScale)
 {
     gfx::Transform A;
-    A.PreconcatScale(6, 7);
+    A.Scale(6, 7);
     EXPECT_ROW1_EQ(6, 0, 0, 0, A);
     EXPECT_ROW2_EQ(0, 7, 0, 0, A);
     EXPECT_ROW3_EQ(0, 0, 1, 0, A);
     EXPECT_ROW4_EQ(0, 0, 0, 1, A);
 
-    // Verify that PreconcatScale() post-multiplies the existing matrix.
+    // Verify that Scale() post-multiplies the existing matrix.
     MathUtil::makeIdentity(&A);
-    A.PreconcatTranslate3d(2, 3, 4);
-    A.PreconcatScale(6, 7);
+    A.Translate3d(2, 3, 4);
+    A.Scale(6, 7);
     EXPECT_ROW1_EQ(6, 0, 0, 2, A);
     EXPECT_ROW2_EQ(0, 7, 0, 3, A);
     EXPECT_ROW3_EQ(0, 0, 1, 4, A);
@@ -599,7 +621,7 @@ TEST(MathUtilGfxTransformTest, verifyScale)
 TEST(MathUtilGfxTransformTest, verifyScale3d)
 {
     gfx::Transform A;
-    A.PreconcatScale3d(6, 7, 8);
+    A.Scale3d(6, 7, 8);
     EXPECT_ROW1_EQ(6, 0, 0, 0, A);
     EXPECT_ROW2_EQ(0, 7, 0, 0, A);
     EXPECT_ROW3_EQ(0, 0, 8, 0, A);
@@ -607,8 +629,8 @@ TEST(MathUtilGfxTransformTest, verifyScale3d)
 
     // Verify that scale3d() post-multiplies the existing matrix.
     MathUtil::makeIdentity(&A);
-    A.PreconcatTranslate3d(2, 3, 4);
-    A.PreconcatScale3d(6, 7, 8);
+    A.Translate3d(2, 3, 4);
+    A.Scale3d(6, 7, 8);
     EXPECT_ROW1_EQ(6, 0, 0, 2, A);
     EXPECT_ROW2_EQ(0, 7, 0, 3, A);
     EXPECT_ROW3_EQ(0, 0, 8, 4, A);
@@ -618,16 +640,16 @@ TEST(MathUtilGfxTransformTest, verifyScale3d)
 TEST(MathUtilGfxTransformTest, verifyRotate)
 {
     gfx::Transform A;
-    A.PreconcatRotate(90);
+    A.Rotate(90);
     EXPECT_ROW1_NEAR(0, -1, 0, 0, A, ERROR_THRESHOLD);
     EXPECT_ROW2_NEAR(1, 0, 0, 0, A, ERROR_THRESHOLD);
     EXPECT_ROW3_EQ(0, 0, 1, 0, A);
     EXPECT_ROW4_EQ(0, 0, 0, 1, A);
 
-    // Verify that PreconcatRotate() post-multiplies the existing matrix.
+    // Verify that Rotate() post-multiplies the existing matrix.
     MathUtil::makeIdentity(&A);
-    A.PreconcatScale3d(6, 7, 8);
-    A.PreconcatRotate(90);
+    A.Scale3d(6, 7, 8);
+    A.Rotate(90);
     EXPECT_ROW1_NEAR(0, -6, 0, 0, A, ERROR_THRESHOLD);
     EXPECT_ROW2_NEAR(7, 0,  0, 0, A, ERROR_THRESHOLD);
     EXPECT_ROW3_EQ(0, 0, 8, 0, A);
@@ -665,7 +687,7 @@ TEST(MathUtilGfxTransformTest, verifyRotateEulerAngles)
 
     // Verify that rotate3d(rx, ry, rz) post-multiplies the existing matrix.
     MathUtil::makeIdentity(&A);
-    A.PreconcatScale3d(6, 7, 8);
+    A.Scale3d(6, 7, 8);
     MathUtil::rotateEulerAngles(&A, 0, 0, 90);
     EXPECT_ROW1_NEAR(0, -6, 0, 0, A, ERROR_THRESHOLD);
     EXPECT_ROW2_NEAR(7, 0,  0, 0, A, ERROR_THRESHOLD);
@@ -738,7 +760,7 @@ TEST(MathUtilGfxTransformTest, verifyRotateAxisAngleForAlignedAxes)
 
     // Verify that rotate3d(axis, angle) post-multiplies the existing matrix.
     MathUtil::makeIdentity(&A);
-    A.PreconcatScale3d(6, 7, 8);
+    A.Scale3d(6, 7, 8);
     MathUtil::rotateAxisAngle(&A, 0, 0, 1, 90);
     EXPECT_ROW1_NEAR(0, -6, 0, 0, A, ERROR_THRESHOLD);
     EXPECT_ROW2_NEAR(7, 0,  0, 0, A, ERROR_THRESHOLD);
@@ -789,7 +811,7 @@ TEST(MathUtilGfxTransformTest, verifyRotateAxisAngleForDegenerateAxis)
 TEST(MathUtilGfxTransformTest, verifySkewX)
 {
     gfx::Transform A;
-    A.PreconcatSkewX(45);
+    A.SkewX(45);
     EXPECT_ROW1_EQ(1, 1, 0, 0, A);
     EXPECT_ROW2_EQ(0, 1, 0, 0, A);
     EXPECT_ROW3_EQ(0, 0, 1, 0, A);
@@ -798,8 +820,8 @@ TEST(MathUtilGfxTransformTest, verifySkewX)
     // Verify that skewX() post-multiplies the existing matrix.
     // Row 1, column 2, would incorrectly have value "7" if the matrix is pre-multiplied instead of post-multiplied.
     MathUtil::makeIdentity(&A);
-    A.PreconcatScale3d(6, 7, 8);
-    A.PreconcatSkewX(45);
+    A.Scale3d(6, 7, 8);
+    A.SkewX(45);
     EXPECT_ROW1_EQ(6, 6, 0, 0, A);
     EXPECT_ROW2_EQ(0, 7, 0, 0, A);
     EXPECT_ROW3_EQ(0, 0, 8, 0, A);
@@ -809,7 +831,7 @@ TEST(MathUtilGfxTransformTest, verifySkewX)
 TEST(MathUtilGfxTransformTest, verifySkewY)
 {
     gfx::Transform A;
-    A.PreconcatSkewY(45);
+    A.SkewY(45);
     EXPECT_ROW1_EQ(1, 0, 0, 0, A);
     EXPECT_ROW2_EQ(1, 1, 0, 0, A);
     EXPECT_ROW3_EQ(0, 0, 1, 0, A);
@@ -818,8 +840,8 @@ TEST(MathUtilGfxTransformTest, verifySkewY)
     // Verify that skewY() post-multiplies the existing matrix.
     // Row 2, column 1, would incorrectly have value "6" if the matrix is pre-multiplied instead of post-multiplied.
     MathUtil::makeIdentity(&A);
-    A.PreconcatScale3d(6, 7, 8);
-    A.PreconcatSkewY(45);
+    A.Scale3d(6, 7, 8);
+    A.SkewY(45);
     EXPECT_ROW1_EQ(6, 0, 0, 0, A);
     EXPECT_ROW2_EQ(7, 7, 0, 0, A);
     EXPECT_ROW3_EQ(0, 0, 8, 0, A);
@@ -829,16 +851,16 @@ TEST(MathUtilGfxTransformTest, verifySkewY)
 TEST(MathUtilGfxTransformTest, verifyPerspectiveDepth)
 {
     gfx::Transform A;
-    A.PreconcatPerspectiveDepth(1);
+    A.ApplyPerspectiveDepth(1);
     EXPECT_ROW1_EQ(1, 0,  0, 0, A);
     EXPECT_ROW2_EQ(0, 1,  0, 0, A);
     EXPECT_ROW3_EQ(0, 0,  1, 0, A);
     EXPECT_ROW4_EQ(0, 0, -1, 1, A);
 
-    // Verify that PreconcatPerspectiveDepth() post-multiplies the existing matrix.
+    // Verify that PerspectiveDepth() post-multiplies the existing matrix.
     MathUtil::makeIdentity(&A);
-    A.PreconcatTranslate3d(2, 3, 4);
-    A.PreconcatPerspectiveDepth(1);
+    A.Translate3d(2, 3, 4);
+    A.ApplyPerspectiveDepth(1);
     EXPECT_ROW1_EQ(1, 0, -2, 2, A);
     EXPECT_ROW2_EQ(0, 1, -3, 3, A);
     EXPECT_ROW3_EQ(0, 0, -3, 4, A);
@@ -848,11 +870,11 @@ TEST(MathUtilGfxTransformTest, verifyPerspectiveDepth)
 TEST(MathUtilGfxTransformTest, verifyHasPerspective)
 {
     gfx::Transform A;
-    A.PreconcatPerspectiveDepth(1);
+    A.ApplyPerspectiveDepth(1);
     EXPECT_TRUE(MathUtil::hasPerspective(A));
 
     MathUtil::makeIdentity(&A);
-    A.PreconcatPerspectiveDepth(0);
+    A.ApplyPerspectiveDepth(0);
     EXPECT_FALSE(MathUtil::hasPerspective(A));
 
     MathUtil::makeIdentity(&A);
@@ -885,11 +907,11 @@ TEST(MathUtilGfxTransformTest, verifyIsInvertible)
     EXPECT_TRUE(MathUtil::isInvertible(A));
 
     MathUtil::makeIdentity(&A);
-    A.PreconcatTranslate3d(2, 3, 4);
+    A.Translate3d(2, 3, 4);
     EXPECT_TRUE(MathUtil::isInvertible(A));
 
     MathUtil::makeIdentity(&A);
-    A.PreconcatScale3d(6, 7, 8);
+    A.Scale3d(6, 7, 8);
     EXPECT_TRUE(MathUtil::isInvertible(A));
 
     MathUtil::makeIdentity(&A);
@@ -897,30 +919,30 @@ TEST(MathUtilGfxTransformTest, verifyIsInvertible)
     EXPECT_TRUE(MathUtil::isInvertible(A));
 
     MathUtil::makeIdentity(&A);
-    A.PreconcatSkewX(45);
+    A.SkewX(45);
     EXPECT_TRUE(MathUtil::isInvertible(A));
 
     // A perspective matrix (projection plane at z=0) is invertible. The intuitive
     // explanation is that perspective is eqivalent to a skew of the w-axis; skews are
     // invertible.
     MathUtil::makeIdentity(&A);
-    A.PreconcatPerspectiveDepth(1);
+    A.ApplyPerspectiveDepth(1);
     EXPECT_TRUE(MathUtil::isInvertible(A));
 
     // A "pure" perspective matrix derived by similar triangles, with m44() set to zero
     // (i.e. camera positioned at the origin), is not invertible.
     MathUtil::makeIdentity(&A);
-    A.PreconcatPerspectiveDepth(1);
+    A.ApplyPerspectiveDepth(1);
     A.matrix().setDouble(3, 3, 0);
     EXPECT_FALSE(MathUtil::isInvertible(A));
 
     // Adding more to a non-invertible matrix will not make it invertible in the general case.
     MathUtil::makeIdentity(&A);
-    A.PreconcatPerspectiveDepth(1);
+    A.ApplyPerspectiveDepth(1);
     A.matrix().setDouble(3, 3, 0);
-    A.PreconcatScale3d(6, 7, 8);
+    A.Scale3d(6, 7, 8);
     MathUtil::rotateEulerAngles(&A, 10, 20, 30);
-    A.PreconcatTranslate3d(6, 7, 8);
+    A.Translate3d(6, 7, 8);
     EXPECT_FALSE(MathUtil::isInvertible(A));
 
     // A degenerate matrix of all zeros is not invertible.

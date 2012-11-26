@@ -622,13 +622,13 @@ void IssueAdviceView::AnimationProgressed(const ui::Animation* animation) {
   if (arrow_view_) {
     gfx::Transform rotate;
     if (animation->GetCurrentValue() != 0.0) {
-      rotate.SetTranslate(-arrow_view_->width() / 2.0,
-                          -arrow_view_->height() / 2.0);
+      rotate.Translate(arrow_view_->width() / 2.0,
+                       arrow_view_->height() / 2.0);
       // TODO(estade): for some reason there are rendering errors at 90 degrees.
       // Figure out why.
-      rotate.ConcatRotate(animation->GetCurrentValue() * 89);
-      rotate.ConcatTranslate(arrow_view_->width() / 2.0,
-                             arrow_view_->height() / 2.0);
+      rotate.Rotate(animation->GetCurrentValue() * 89);
+      rotate.Translate(-arrow_view_->width() / 2.0,
+                       -arrow_view_->height() / 2.0);
     }
     arrow_view_->SetTransform(rotate);
   }

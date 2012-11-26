@@ -99,9 +99,9 @@ bool Normalize(SkMatrix44& m) {
 
 Transform GetScaleTransform(const Point& anchor, float scale) {
   Transform transform;
-  transform.ConcatScale(scale, scale);
-  transform.ConcatTranslate(anchor.x() * (1 - scale),
-                            anchor.y() * (1 - scale));
+  transform.Translate(anchor.x() * (1 - scale),
+                      anchor.y() * (1 - scale));
+  transform.Scale(scale, scale);
   return transform;
 }
 

@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#define _USE_MATH_DEFINES // For VC++ to get M_PI. This has to be first.
+
 #include "ui/views/view.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
@@ -332,8 +335,10 @@ gfx::Rect View::GetVisibleBounds() const {
 
   while (view != NULL && !vis_bounds.IsEmpty()) {
     transform.ConcatTransform(view->GetTransform());
-    transform.ConcatTranslate(static_cast<float>(view->GetMirroredX()),
-                              static_cast<float>(view->y()));
+    gfx::Transform translation;
+    translation.Translate(static_cast<float>(view->GetMirroredX()),
+                          static_cast<float>(view->y()));
+    transform.ConcatTransform(translation);
 
     vis_bounds = view->ConvertRectToParent(vis_bounds);
     const View* ancestor = view->parent_;
@@ -1432,39 +1437,28 @@ std::string View::DoPrintViewGraph(bool first, View* view_with_children) {
                  bounds().height());
   result.append(bounds_buffer);
 
-  if (!GetTransform().IsIdentity()) {
-    gfx::Point translation;
-    float rotation;
-    gfx::Point3F scale;
-    if (ui::InterpolatedTransform::FactorTRS(GetTransform(),
-                                             &translation,
-                                             &rotation,
-                                             &scale)) {
-      if (!translation.IsOrigin()) {
-        base::snprintf(bounds_buffer,
-                       arraysize(bounds_buffer),
-                       "\\n translation: (%d, %d)",
-                       translation.x(),
-                       translation.y());
-        result.append(bounds_buffer);
-      }
+  gfx::DecomposedTransform decomp;
+  if (!GetTransform().IsIdentity() &&
+      gfx::DecomposeTransform(&decomp, GetTransform())) {
+    base::snprintf(bounds_buffer,
+                   arraysize(bounds_buffer),
+                   "\\n translation: (%f, %f)",
+                   decomp.translate[0],
+                   decomp.translate[1]);
+    result.append(bounds_buffer);
 
-      if (fabs(rotation) > 1e-5) {
-        base::snprintf(bounds_buffer,
-                       arraysize(bounds_buffer),
-                       "\\n rotation: %3.2f", rotation);
-        result.append(bounds_buffer);
-      }
+    base::snprintf(bounds_buffer,
+                   arraysize(bounds_buffer),
+                   "\\n rotation: %3.2f",
+                   std::acos(decomp.quaternion[3]) * 360.0 / M_PI);
+    result.append(bounds_buffer);
 
-      if (!gfx::ToFlooredPoint(scale.AsPointF()).IsOrigin()) {
-        base::snprintf(bounds_buffer,
-                       arraysize(bounds_buffer),
-                       "\\n scale: (%2.4f, %2.4f)",
-                       scale.x(),
-                       scale.y());
-        result.append(bounds_buffer);
-      }
-    }
+    base::snprintf(bounds_buffer,
+                   arraysize(bounds_buffer),
+                   "\\n scale: (%2.4f, %2.4f)",
+                   decomp.scale[0],
+                   decomp.scale[1]);
+    result.append(bounds_buffer);
   }
 
   result.append("\"");
@@ -1798,8 +1792,10 @@ bool View::GetTransformRelativeTo(const View* ancestor,
 
   while (p && p != ancestor) {
     transform->ConcatTransform(p->GetTransform());
-    transform->ConcatTranslate(static_cast<float>(p->GetMirroredX()),
-                               static_cast<float>(p->y()));
+    gfx::Transform translation;
+    translation.Translate(static_cast<float>(p->GetMirroredX()),
+                          static_cast<float>(p->y()));
+    transform->ConcatTransform(translation);
 
     p = p->parent_;
   }

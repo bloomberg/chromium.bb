@@ -14,6 +14,7 @@ namespace gfx {
 class RectF;
 class Point;
 class Point3F;
+class Vector3dF;
 
 // 4x4 transformation matrix. Transform is cheap and explicitly allows
 // copy/assign.
@@ -25,91 +26,35 @@ class UI_EXPORT Transform {
   bool operator==(const Transform& rhs) const;
   bool operator!=(const Transform& rhs) const;
 
-  // NOTE: The 'Set' functions overwrite the previously set transformation
-  // parameters. The 'Concat' functions apply a transformation (e.g. rotation,
-  // scale, translate) on top of the existing transforms, instead of overwriting
-  // them.
-
-  // NOTE: The order of the 'Set' function calls do not matter. However, the
-  // order of the 'Concat' function calls do matter, especially when combined
-  // with the 'Set' functions.
-
-  // Sets the rotation of the transformation.
-  void SetRotate(double degree);
-
-  // Sets the rotation of the transform (about a vector).
-  void SetRotateAbout(const Point3F& point, double degree);
-
-  // Sets the scaling parameters.
-  void SetScaleX(double x);
-  void SetScaleY(double y);
-  void SetScaleZ(double z);
-  void SetScale(double x, double y);
-  void SetScale3d(double x, double y, double z);
-
-  // Sets the translation parameters.
-  void SetTranslateX(double x);
-  void SetTranslateY(double y);
-  void SetTranslateZ(double z);
-  void SetTranslate(double x, double y);
-  void SetTranslate3d(double x, double y, double z);
-
-  // Sets the skew parameters.
-  void SetSkewX(double angle);
-  void SetSkewY(double angle);
-
-  // Creates a perspective matrix.
-  // Based on the 'perspective' operation from
-  // http://www.w3.org/TR/css3-3d-transforms/#transform-functions
-  void SetPerspectiveDepth(double depth);
-
-  // Applies a rotation on the current transformation.
-  void ConcatRotate(double degree);
-
-  // Applies an axis-angle rotation on the current transformation.
-  void ConcatRotateAbout(const Point3F& point, double degree);
-
-  // Applies scaling on current transform.
-  void ConcatScale(double x, double y);
-  void ConcatScale3d(double x, double y, double z);
-
-  // Applies translation on current transform.
-  void ConcatTranslate(double x, double y);
-  void ConcatTranslate3d(double x, double y, double z);
-
-  // Applies a perspective on current transform.
-  void ConcatPerspectiveDepth(double depth);
-
-  // Applies a skew on the current transform.
-  void ConcatSkewX(double angle_x);
-  void ConcatSkewY(double angle_y);
+  // Resets this transform to the identity transform.
+  void MakeIdentity();
 
   // Applies the current transformation on a rotation and assigns the result
   // to |this|.
-  void PreconcatRotate(double degree);
+  void Rotate(double degree);
 
   // Applies the current transformation on an axis-angle rotation and assigns
   // the result to |this|.
-  void PreconcatRotateAbout(const Point3F& point, double degree);
+  void RotateAbout(const Vector3dF& point, double degree);
 
   // Applies the current transformation on a scaling and assigns the result
   // to |this|.
-  void PreconcatScale(double x, double y);
-  void PreconcatScale3d(double x, double y, double z);
+  void Scale(double x, double y);
+  void Scale3d(double x, double y, double z);
 
   // Applies the current transformation on a translation and assigns the result
   // to |this|.
-  void PreconcatTranslate(double x, double y);
-  void PreconcatTranslate3d(double x, double y, double z);
+  void Translate(double x, double y);
+  void Translate3d(double x, double y, double z);
 
   // Applies the current transformation on a skew and assigns the result
   // to |this|.
-  void PreconcatSkewX(double angle_x);
-  void PreconcatSkewY(double angle_y);
+  void SkewX(double angle_x);
+  void SkewY(double angle_y);
 
   // Applies the current transformation on a perspective transform and assigns
   // the result to |this|.
-  void PreconcatPerspectiveDepth(double depth);
+  void ApplyPerspectiveDepth(double depth);
 
   // Applies a transformation on the current transformation
   // (i.e. 'this = this * transform;').
@@ -168,6 +113,12 @@ class UI_EXPORT Transform {
   // decompose once using gfx::DecomposeTransforms and reuse your
   // DecomposedTransform.
   bool Blend(const Transform& from, double progress);
+
+  // Returns |this| * |other|.
+  Transform operator*(const Transform& other) const;
+
+  // Sets |this| = |this| * |other|
+  Transform& operator*=(const Transform& other);
 
   // Returns the underlying matrix.
   const SkMatrix44& matrix() const { return matrix_; }

@@ -102,8 +102,8 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
   EXPECT_EQ(1.0f, old_layer->GetTargetOpacity());
   EXPECT_EQ("5,10 320x240", old_layer->bounds().ToString());
   gfx::Transform grow_transform;
-  grow_transform.ConcatScale(640.f / 320.f, 480.f / 240.f);
-  grow_transform.ConcatTranslate(-5.f, -10.f);
+  grow_transform.Translate(-5.f, -10.f);
+  grow_transform.Scale(640.f / 320.f, 480.f / 240.f);
   EXPECT_EQ(grow_transform, old_layer->GetTargetTransform());
   // New layer animates in to the identity transform.
   EXPECT_EQ(1.0f, window->layer()->GetTargetOpacity());
@@ -124,8 +124,8 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
   EXPECT_EQ(0.0f, old_layer->GetTargetOpacity());
   EXPECT_EQ("0,0 640x480", old_layer->bounds().ToString());
   gfx::Transform shrink_transform;
-  shrink_transform.ConcatScale(320.f / 640.f, 240.f / 480.f);
-  shrink_transform.ConcatTranslate(5.f, 10.f);
+  shrink_transform.Translate(5.f, 10.f);
+  shrink_transform.Scale(320.f / 640.f, 240.f / 480.f);
   EXPECT_EQ(shrink_transform, old_layer->GetTargetTransform());
   // New layer animates in to the identity transform.
   EXPECT_EQ(1.0f, window->layer()->GetTargetOpacity());

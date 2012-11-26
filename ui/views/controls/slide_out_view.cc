@@ -43,7 +43,7 @@ ui::EventResult SlideOutView::OnGestureEvent(ui::GestureEvent* event) {
     gesture_scroll_amount_ += event->details().scroll_x();
 
     gfx::Transform transform;
-    transform.SetTranslateX(gesture_scroll_amount_);
+    transform.Translate(gesture_scroll_amount_, 0.0);
     layer()->SetTransform(transform);
     layer()->SetOpacity(
         1.f - std::min(fabsf(gesture_scroll_amount_) / width(), 1.f));
@@ -79,7 +79,7 @@ void SlideOutView::SlideOutAndClose(SlideDirection direction) {
   settings.AddObserver(this);
 
   gfx::Transform transform;
-  transform.SetTranslateX(direction == SLIDE_LEFT ? -width() : width());
+  transform.Translate(direction == SLIDE_LEFT ? -width() : width(), 0.0);
   layer()->SetTransform(transform);
   layer()->SetOpacity(0.f);
 }

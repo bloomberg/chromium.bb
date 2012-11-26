@@ -201,7 +201,7 @@ class LongPressAffordanceHandler::LongPressAffordanceView
     canvas->Save();
 
     gfx::Transform scale;
-    scale.SetScale(current_scale_, current_scale_);
+    scale.Scale(current_scale_, current_scale_);
     // We want to scale from the center.
     canvas->Translate(center.OffsetFromOrigin());
     canvas->Transform(scale);
