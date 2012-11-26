@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/managed_state.h"
+#include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/shill_property_handler.h"
 
 namespace base {
@@ -66,8 +67,11 @@ class CHROMEOS_EXPORT NetworkStateHandler
   bool TechnologyEnabled(const std::string& technology) const;
 
   // Asynchronously sets the enabled state for |technology|.
-  // Note: Modifes Manager state. TODO(stevenjb): Add a completion callback.
-  void SetTechnologyEnabled(const std::string& technology, bool enabled);
+  // Note: Modifes Manager state. Calls |error_callback| on failure.
+  void SetTechnologyEnabled(
+      const std::string& technology,
+      bool enabled,
+      const network_handler::ErrorCallback& error_callback);
 
   // Finds and returns a device state by |device_path| or NULL if not found.
   const DeviceState* GetDeviceState(const std::string& device_path) const;
@@ -106,6 +110,9 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // trigger updates to the networks (which will trigger the appropriate
   // observer calls).
   void GetNetworkList(NetworkStateList* list) const;
+
+ protected:
+  NetworkStateHandler();
 
   // ShillPropertyHandler::Listener overrides.
 
@@ -150,9 +157,6 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // active network has changed sends that notification also.
   virtual void ManagedStateListChanged(
       ManagedState::ManagedType type) OVERRIDE;
-
- protected:
-  NetworkStateHandler();
 
   // Called in Initialize(). Called explicitly by tests after adding
   // test observers.

@@ -155,7 +155,8 @@ TEST_F(NetworkStateHandlerTest, NetworkStateHandlerTechnologyChanged) {
   EXPECT_EQ(1u, test_observer_->manager_changed_count());
   // Enable a technology.
   EXPECT_FALSE(network_state_handler_->TechnologyEnabled(flimflam::kTypeWimax));
-  network_state_handler_->SetTechnologyEnabled(flimflam::kTypeWimax, true);
+  network_state_handler_->SetTechnologyEnabled(
+      flimflam::kTypeWimax, true, network_handler::ErrorCallback());
   message_loop_.RunUntilIdle();
   // Ensure we get a manager changed callback when we change a property.
   EXPECT_EQ(2u, test_observer_->manager_changed_count());

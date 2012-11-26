@@ -12,28 +12,13 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/network/network_handler_callbacks.h"
 
 namespace base {
 class DictionaryValue;
 }
 
 namespace chromeos {
-
-// An error callback used by both the configuration handler and the state
-// handler to receive error results from the API.
-// TODO(gspencer): move to a common header.
-typedef base::Callback<
-    void(const std::string& error_name,
-         const scoped_ptr<base::DictionaryValue> error_data)>
-    NetworkHandlerErrorCallback;
-
-typedef base::Callback<
-    void(const std::string& service_path,
-         const base::DictionaryValue& dictionary)>
-    NetworkHandlerDictionaryResultCallback;
-
-typedef base::Callback<void(const std::string& service_path)>
-    NetworkHandlerStringResultCallback;
 
 // The NetworkConfigurationHandler class is used to create and configure
 // networks in ChromeOS. It mostly calls through to the Shill service API, and
@@ -60,18 +45,20 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler {
 
   // Gets the properties of the network with id |service_path|. See note on
   // |callback| and |error_callback|, in class description above.
-  void GetProperties(const std::string& service_path,
-                     const NetworkHandlerDictionaryResultCallback& callback,
-                     const NetworkHandlerErrorCallback& error_callback) const;
+  void GetProperties(
+      const std::string& service_path,
+      const network_handler::DictionaryResultCallback& callback,
+      const network_handler::ErrorCallback& error_callback) const;
 
   // Sets the properties of the network with id |service_path|. This means the
   // given properties will be merged with the existing settings, and it won't
   // clear any existing properties. See note on |callback| and |error_callback|,
   // in class description above.
-  void SetProperties(const std::string& service_path,
-                     const base::DictionaryValue& properties,
-                     const base::Closure& callback,
-                     const NetworkHandlerErrorCallback& error_callback) const;
+  void SetProperties(
+      const std::string& service_path,
+      const base::DictionaryValue& properties,
+      const base::Closure& callback,
+      const network_handler::ErrorCallback& error_callback) const;
 
   // Removes the properties with the given property paths. If any of them are
   // unable to be cleared, the |error_callback| will only be run once with
@@ -82,19 +69,19 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler {
   void ClearProperties(const std::string& service_path,
                        const std::vector<std::string>& property_paths,
                        const base::Closure& callback,
-                       const NetworkHandlerErrorCallback& error_callback);
+                       const network_handler::ErrorCallback& error_callback);
 
   // Initiates a connection with network that has id |service_path|. See note on
   // |callback| and |error_callback|, in class description above.
   void Connect(const std::string& service_path,
                const base::Closure& callback,
-               const NetworkHandlerErrorCallback& error_callback) const;
+               const network_handler::ErrorCallback& error_callback) const;
 
   // Initiates a disconnect with the network at |service_path|. See note on
   // |callback| and |error_callback|, in class description above.
   void Disconnect(const std::string& service_path,
                   const base::Closure& callback,
-                  const NetworkHandlerErrorCallback& error_callback) const;
+                  const network_handler::ErrorCallback& error_callback) const;
 
 
   // Creates a network with the given properties in the active Shill profile,
@@ -103,8 +90,8 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler {
   // description above.
   void CreateConfiguration(
       const base::DictionaryValue& properties,
-      const NetworkHandlerStringResultCallback& callback,
-      const NetworkHandlerErrorCallback& error_callback) const;
+      const network_handler::StringResultCallback& callback,
+      const network_handler::ErrorCallback& error_callback) const;
 
   // Removes the network |service_path| from the remembered network list in the
   // active Shill profile. The network may still show up in the visible networks
@@ -113,7 +100,7 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler {
   void RemoveConfiguration(
       const std::string& service_path,
       const base::Closure& callback,
-      const NetworkHandlerErrorCallback& error_callback) const;
+      const network_handler::ErrorCallback& error_callback) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigurationHandler);

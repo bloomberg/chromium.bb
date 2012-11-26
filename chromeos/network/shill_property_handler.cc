@@ -28,12 +28,6 @@ const char kLogModule[] = "ShillPropertyHandler";
 // order, it should be reasonable to ignore services past this.
 const size_t kMaxObservedServices = 100;
 
-void ErrorCallbackFunction(const std::string& error_name,
-                           const std::string& error_message) {
-  // TODO(stevenjb): Add error logging.
-  LOG(ERROR) << "Shill Error: " << error_name << " : " << error_message;
-}
-
 const base::ListValue* GetListValue(const std::string& key,
                                     const base::Value& value) {
   const base::ListValue* vlist = NULL;
@@ -72,22 +66,29 @@ void ShillPropertyHandler::Init() {
 
 void ShillPropertyHandler::SetTechnologyEnabled(
     const std::string& technology,
-    bool enabled) {
+    bool enabled,
+    const network_handler::ErrorCallback& error_callback) {
   if (enabled) {
-    shill_manager_->EnableTechnology(technology,
-                                     base::Bind(&base::DoNothing),
-                                     base::Bind(&ErrorCallbackFunction));
+    shill_manager_->EnableTechnology(
+        technology,
+        base::Bind(&base::DoNothing),
+        base::Bind(&network_handler::ShillErrorCallbackFunction,
+                   kLogModule, technology, error_callback));
   } else {
-    shill_manager_->DisableTechnology(technology,
-                                      base::Bind(&base::DoNothing),
-                                      base::Bind(&ErrorCallbackFunction));
+    shill_manager_->DisableTechnology(
+        technology,
+        base::Bind(&base::DoNothing),
+        base::Bind(&network_handler::ShillErrorCallbackFunction,
+                   kLogModule, technology, error_callback));
   }
 }
 
 void ShillPropertyHandler::RequestScan() const {
-  shill_manager_->RequestScan("",
-                              base::Bind(&base::DoNothing),
-                              base::Bind(&ErrorCallbackFunction));
+  shill_manager_->RequestScan(
+      "",
+      base::Bind(&base::DoNothing),
+      base::Bind(&network_handler::ShillErrorCallbackFunction,
+                 kLogModule, "", network_handler::ErrorCallback()));
 }
 
 void ShillPropertyHandler::RequestProperties(ManagedState::ManagedType type,

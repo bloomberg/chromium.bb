@@ -134,6 +134,8 @@
         'network/network_configuration_handler.h',
         'network/network_event_log.cc',
         'network/network_event_log.h',
+        'network/network_handler_callbacks.cc',
+        'network/network_handler_callbacks.h',
         'network/network_sms_handler.cc',
         'network/network_sms_handler.h',
         'network/network_state.cc',

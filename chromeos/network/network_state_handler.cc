@@ -79,9 +79,12 @@ bool NetworkStateHandler::TechnologyEnabled(
   return enabled_technologies_.find(technology) != enabled_technologies_.end();
 }
 
-void NetworkStateHandler::SetTechnologyEnabled(const std::string& technology,
-                                               bool enabled) {
-  shill_property_handler_->SetTechnologyEnabled(technology, enabled);
+void NetworkStateHandler::SetTechnologyEnabled(
+    const std::string& technology,
+    bool enabled,
+    const network_handler::ErrorCallback& error_callback) {
+  shill_property_handler_->SetTechnologyEnabled(
+      technology, enabled, error_callback);
 }
 
 const DeviceState* NetworkStateHandler::GetDeviceState(
