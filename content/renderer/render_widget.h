@@ -14,11 +14,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "cc/rendering_stats.h"
 #include "content/common/content_export.h"
 #include "content/renderer/paint_aggregator.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebRenderingStats.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
@@ -44,6 +44,7 @@ class SyncMessage;
 namespace WebKit {
 class WebGestureEvent;
 class WebMouseEvent;
+struct WebRenderingStatsImpl;
 class WebTouchEvent;
 }
 
@@ -147,11 +148,11 @@ class CONTENT_EXPORT RenderWidget
   // pending moves don't try to reference it.
   void CleanupWindowInPluginMoves(gfx::PluginWindowHandle window);
 
-  // Fills in a WebRenderingStats struct containing information about
+  // Fills in a WebRenderingStatsImpl struct containing information about
   // rendering, e.g. count of frames rendered, time spent painting.
   // This call is relatively expensive in threaded compositing mode,
   // as it blocks on the compositor thread.
-  void GetRenderingStats(WebKit::WebRenderingStats&) const;
+  void GetRenderingStats(WebKit::WebRenderingStatsImpl&) const;
 
   // Fills in a GpuRenderingStats struct containing information about
   // GPU rendering, e.g. count of texture uploads performed, time spent
@@ -589,7 +590,7 @@ class CONTENT_EXPORT RenderWidget
   bool has_disable_gpu_vsync_switch_;
   base::TimeTicks last_do_deferred_update_time_;
 
-  WebKit::WebRenderingStats software_stats_;
+  cc::RenderingStats software_stats_;
 
   // UpdateRect parameters for the current compositing pass. This is used to
   // pass state between DoDeferredUpdate and OnSwapBuffersPosted.

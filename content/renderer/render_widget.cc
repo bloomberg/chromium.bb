@@ -40,6 +40,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/surface/transport_dib.h"
+#include "webkit/compositor_bindings/web_rendering_stats_impl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -1909,15 +1910,22 @@ void RenderWidget::CleanupWindowInPluginMoves(gfx::PluginWindowHandle window) {
   }
 }
 
-void RenderWidget::GetRenderingStats(WebKit::WebRenderingStats& stats) const {
+void RenderWidget::GetRenderingStats(
+    WebKit::WebRenderingStatsImpl& stats) const {
   webwidget()->renderingStats(stats);
-  stats.numAnimationFrames += software_stats_.numAnimationFrames;
-  stats.numFramesSentToScreen += software_stats_.numFramesSentToScreen;
-  stats.totalPaintTimeInSeconds += software_stats_.totalPaintTimeInSeconds;
-  stats.totalPixelsPainted += software_stats_.totalPixelsPainted;
-  stats.totalRasterizeTimeInSeconds +=
+
+  stats.rendering_stats.numAnimationFrames +=
+      software_stats_.numAnimationFrames;
+  stats.rendering_stats.numFramesSentToScreen +=
+      software_stats_.numFramesSentToScreen;
+  stats.rendering_stats.totalPaintTimeInSeconds +=
+      software_stats_.totalPaintTimeInSeconds;
+  stats.rendering_stats.totalPixelsPainted +=
+      software_stats_.totalPixelsPainted;
+  stats.rendering_stats.totalRasterizeTimeInSeconds +=
       software_stats_.totalRasterizeTimeInSeconds;
-  stats.totalPixelsRasterized += software_stats_.totalPixelsRasterized;
+  stats.rendering_stats.totalPixelsRasterized +=
+      software_stats_.totalPixelsRasterized;
 }
 
 bool RenderWidget::GetGpuRenderingStats(GpuRenderingStats* stats) const {

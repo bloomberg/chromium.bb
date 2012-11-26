@@ -18,6 +18,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "web_layer_impl.h"
 #include "web_to_ccinput_handler_adapter.h"
+#include "webkit/compositor_bindings/web_rendering_stats_impl.h"
 
 using namespace cc;
 
@@ -172,20 +173,8 @@ void WebLayerTreeViewImpl::setDeferCommits(bool deferCommits)
 
 void WebLayerTreeViewImpl::renderingStats(WebRenderingStats& stats) const
 {
-    RenderingStats ccStats;
-    m_layerTreeHost->renderingStats(&ccStats);
-
-    stats.numAnimationFrames = ccStats.numAnimationFrames;
-    stats.numFramesSentToScreen = ccStats.numFramesSentToScreen;
-    stats.droppedFrameCount = ccStats.droppedFrameCount;
-    stats.totalPaintTimeInSeconds = ccStats.totalPaintTimeInSeconds;
-    stats.totalRasterizeTimeInSeconds = ccStats.totalRasterizeTimeInSeconds;
-    stats.totalCommitTimeInSeconds = ccStats.totalCommitTimeInSeconds;
-    stats.totalCommitCount = ccStats.totalCommitCount;
-    stats.totalPixelsPainted = ccStats.totalPixelsPainted;
-    stats.totalPixelsRasterized = ccStats.totalPixelsRasterized;
-    stats.numImplThreadScrolls = ccStats.numImplThreadScrolls;
-    stats.numMainThreadScrolls = ccStats.numMainThreadScrolls;
+    m_layerTreeHost->renderingStats(
+        &static_cast<WebRenderingStatsImpl&>(stats).rendering_stats);
 }
 
 void WebLayerTreeViewImpl::setShowFPSCounter(bool show)

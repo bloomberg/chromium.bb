@@ -18,16 +18,16 @@
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkStream.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebRenderingStats.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewBenchmarkSupport.h"
 #include "v8/include/v8.h"
+#include "webkit/compositor_bindings/web_rendering_stats_impl.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebFrame;
 using WebKit::WebPrivatePtr;
-using WebKit::WebRenderingStats;
+using WebKit::WebRenderingStatsImpl;
 using WebKit::WebSize;
 using WebKit::WebView;
 using WebKit::WebViewBenchmarkSupport;
@@ -152,34 +152,45 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     if (!render_view_impl)
       return v8::Undefined();
 
-    WebRenderingStats stats;
+    WebRenderingStatsImpl stats;
     render_view_impl->GetRenderingStats(stats);
 
     content::GpuRenderingStats gpu_stats;
     render_view_impl->GetGpuRenderingStats(&gpu_stats);
     v8::Handle<v8::Object> stats_object = v8::Object::New();
     stats_object->Set(v8::String::New("numAnimationFrames"),
-                      v8::Integer::New(stats.numAnimationFrames));
+                      v8::Number::New(
+                          stats.rendering_stats.numAnimationFrames));
     stats_object->Set(v8::String::New("numFramesSentToScreen"),
-                      v8::Integer::New(stats.numFramesSentToScreen));
+                      v8::Number::New(
+                          stats.rendering_stats.numFramesSentToScreen));
     stats_object->Set(v8::String::New("droppedFrameCount"),
-                      v8::Integer::New(stats.droppedFrameCount));
+                      v8::Number::New(
+                          stats.rendering_stats.droppedFrameCount));
     stats_object->Set(v8::String::New("totalPaintTimeInSeconds"),
-                      v8::Number::New(stats.totalPaintTimeInSeconds));
+                      v8::Number::New(
+                          stats.rendering_stats.totalPaintTimeInSeconds));
     stats_object->Set(v8::String::New("totalRasterizeTimeInSeconds"),
-                      v8::Number::New(stats.totalRasterizeTimeInSeconds));
+                      v8::Number::New(
+                          stats.rendering_stats.totalRasterizeTimeInSeconds));
     stats_object->Set(v8::String::New("totalCommitTimeInSeconds"),
-                      v8::Number::New(stats.totalCommitTimeInSeconds));
+                      v8::Number::New(
+                          stats.rendering_stats.totalCommitTimeInSeconds));
     stats_object->Set(v8::String::New("totalCommitCount"),
-                      v8::Integer::New(stats.totalCommitCount));
+                      v8::Number::New(
+                          stats.rendering_stats.totalCommitCount));
     stats_object->Set(v8::String::New("numImplThreadScrolls"),
-                      v8::Integer::New(stats.numImplThreadScrolls));
+                      v8::Number::New(
+                          stats.rendering_stats.numImplThreadScrolls));
     stats_object->Set(v8::String::New("numMainThreadScrolls"),
-                      v8::Integer::New(stats.numMainThreadScrolls));
+                      v8::Number::New(
+                          stats.rendering_stats.numMainThreadScrolls));
     stats_object->Set(v8::String::New("totalPixelsPainted"),
-                      v8::Integer::New(stats.totalPixelsPainted));
+                      v8::Number::New(
+                          stats.rendering_stats.totalPixelsPainted));
     stats_object->Set(v8::String::New("totalPixelsRasterized"),
-                      v8::Integer::New(stats.totalPixelsRasterized));
+                      v8::Number::New(
+                          stats.rendering_stats.totalPixelsRasterized));
 
     stats_object->Set(v8::String::New("globalTextureUploadCount"),
                       v8::Number::New(gpu_stats.global_texture_upload_count));
