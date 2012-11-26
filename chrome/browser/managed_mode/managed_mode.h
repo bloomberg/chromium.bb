@@ -23,6 +23,7 @@ template<typename T>
 struct DefaultSingletonTraits;
 class ManagedModeSiteList;
 class ManagedModeURLFilter;
+class PrefChangeRegistrar;
 class PrefService;
 class Profile;
 
@@ -38,6 +39,7 @@ class ManagedMode : public chrome::BrowserListObserver,
   typedef base::Callback<void(bool)> EnterCallback;
 
   static void RegisterPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefService* prefs);
 
   // Initializes the singleton, setting the managed_profile_. Must be called
   // after g_browser_process and the LocalState have been created.
@@ -127,9 +129,12 @@ class ManagedMode : public chrome::BrowserListObserver,
   // This method should only be called if managed mode is active.
   ScopedVector<ManagedModeSiteList> GetActiveSiteLists();
 
+  void OnDefaultFilteringBehaviorChanged();
+
   void UpdateWhitelist();
 
   content::NotificationRegistrar registrar_;
+  scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   scoped_ptr<URLFilterContext> io_url_filter_context_;
   scoped_ptr<URLFilterContext> ui_url_filter_context_;

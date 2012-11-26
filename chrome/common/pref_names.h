@@ -390,6 +390,8 @@ extern const char kInvertNotificationShown[];
 extern const char kPrintingEnabled[];
 extern const char kPrintPreviewDisabled[];
 
+extern const char kDefaultManagedModeFilteringBehavior[];
+
 // Local state prefs. Please add Profile prefs above instead.
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kSSLVersionMin[];

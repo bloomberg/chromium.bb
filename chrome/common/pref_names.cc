@@ -1111,6 +1111,14 @@ const char kPrintingEnabled[] = "printing.enabled";
 // Boolean controlling whether print preview is disabled.
 const char kPrintPreviewDisabled[] = "printing.print_preview_disabled";
 
+// An integer pref specifying the fallback behavior for sites outside of content
+// packs. One of:
+// 0: Allow (does nothing)
+// 1: Warn.
+// 2: Block.
+const char kDefaultManagedModeFilteringBehavior[] =
+    "profile.managed.default_filtering_behavior";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

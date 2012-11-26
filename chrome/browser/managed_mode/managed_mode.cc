@@ -5,6 +5,7 @@
 #include "chrome/browser/managed_mode/managed_mode.h"
 
 #include "base/command_line.h"
+#include "base/prefs/public/pref_change_registrar.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -83,6 +84,13 @@ ManagedMode* ManagedMode::GetInstance() {
 // static
 void ManagedMode::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kInManagedMode, false);
+}
+
+// static
+void ManagedMode::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterIntegerPref(prefs::kDefaultManagedModeFilteringBehavior,
+                             2,
+                             PrefService::UNSYNCABLE_PREF);
 }
 
 // static
@@ -351,15 +359,27 @@ void ManagedMode::SetInManagedMode(Profile* newly_managed_profile) {
     DCHECK(!managed_profile_ || managed_profile_ == newly_managed_profile);
     extensions::ExtensionSystem::Get(
         newly_managed_profile)->management_policy()->RegisterProvider(this);
+    pref_change_registrar_.reset(new PrefChangeRegistrar());
+    pref_change_registrar_->Init(newly_managed_profile->GetPrefs());
+    pref_change_registrar_->Add(
+        prefs::kDefaultManagedModeFilteringBehavior,
+        base::Bind(
+            &ManagedMode::OnDefaultFilteringBehaviorChanged,
+            base::Unretained(this)));
   } else {
     extensions::ExtensionSystem::Get(
         managed_profile_)->management_policy()->UnregisterProvider(this);
+    pref_change_registrar_.reset();
   }
 
   managed_profile_ = newly_managed_profile;
   ManagedModeURLFilter::FilteringBehavior behavior =
-      in_managed_mode ? ManagedModeURLFilter::BLOCK :
-                        ManagedModeURLFilter::ALLOW;
+      ManagedModeURLFilter::ALLOW;
+  if (in_managed_mode) {
+    int behavior_value = managed_profile_->GetPrefs()->GetInteger(
+        prefs::kDefaultManagedModeFilteringBehavior);
+    behavior = ManagedModeURLFilter::BehaviorFromInt(behavior_value);
+  }
   io_url_filter_context_->SetDefaultFilteringBehavior(behavior);
   ui_url_filter_context_->SetDefaultFilteringBehavior(behavior);
   g_browser_process->local_state()->SetBoolean(prefs::kInManagedMode,
@@ -379,6 +399,17 @@ ScopedVector<ManagedModeSiteList> ManagedMode::GetActiveSiteLists() {
   ScopedVector<ManagedModeSiteList> site_lists;
   // TODO(bauerb): Get site lists from all extensions.
   return site_lists.Pass();
+}
+
+void ManagedMode::OnDefaultFilteringBehaviorChanged() {
+  DCHECK(IsInManagedModeImpl());
+
+  int behavior_value = managed_profile_->GetPrefs()->GetInteger(
+      prefs::kDefaultManagedModeFilteringBehavior);
+  ManagedModeURLFilter::FilteringBehavior behavior =
+      ManagedModeURLFilter::BehaviorFromInt(behavior_value);
+  io_url_filter_context_->SetDefaultFilteringBehavior(behavior);
+  ui_url_filter_context_->SetDefaultFilteringBehavior(behavior);
 }
 
 void ManagedMode::UpdateWhitelist() {

@@ -990,6 +990,8 @@
         'browser/mac/security_wrappers.h',
         'browser/managed_mode/managed_mode.cc',
         'browser/managed_mode/managed_mode.h',
+        'browser/managed_mode/managed_mode_navigation_observer.cc',
+        'browser/managed_mode/managed_mode_navigation_observer.h',
         'browser/managed_mode/managed_mode_site_list.cc',
         'browser/managed_mode/managed_mode_site_list.h',
         'browser/managed_mode/managed_mode_url_filter.cc',

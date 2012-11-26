@@ -15258,6 +15258,13 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Try again
     </message>
 
+    <!-- Managed Mode -->
+    <message name="IDS_MANAGED_MODE_WARNING_MESSAGE" desc="Infobar message when browsing outside of the content pack whitelist.">
+      You're browsing on a site that is not in any installed content pack.
+    </message>
+    <message name="IDS_MANAGED_MODE_GO_BACK_ACTION" desc="Label for the button that goes back to a 'safe' page.">
+      Take me back!
+    </message>
     </messages>
 
     <structures fallback_to_english="true">
