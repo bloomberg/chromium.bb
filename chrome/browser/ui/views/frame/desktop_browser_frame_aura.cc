@@ -39,7 +39,7 @@ DesktopBrowserFrameAura::DesktopBrowserFrameAura(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// DesktopBrowserFrameAura, views::DestkopNativeWidgetAura overrides:
+// DesktopBrowserFrameAura, views::DesktopNativeWidgetAura overrides:
 
 void DesktopBrowserFrameAura::InitNativeWidget(
     const views::Widget::InitParams& params) {
@@ -62,6 +62,13 @@ void DesktopBrowserFrameAura::InitNativeWidget(
   ash::SetChildWindowVisibilityChangesAnimated(
       GetNativeView()->GetRootWindow());
 #endif
+}
+
+void DesktopBrowserFrameAura::OnWindowDestroying() {
+#if defined(USE_ASH)
+  aura::client::SetVisibilityClient(GetNativeView()->GetRootWindow(), NULL);
+#endif
+  DesktopNativeWidgetAura::OnWindowDestroying();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
