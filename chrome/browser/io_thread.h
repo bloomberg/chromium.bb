@@ -182,6 +182,8 @@ class IOThread : public content::BrowserThreadDelegate {
 
   void ChangedToOnTheRecordOnIOThread();
 
+  void UpdateDnsClientEnabled();
+
   // The NetLog is owned by the browser process, to allow logging from other
   // threads during shutdown, but is used most frequently on the IOThread.
   ChromeNetLog* net_log_;
@@ -205,6 +207,8 @@ class IOThread : public content::BrowserThreadDelegate {
   scoped_ptr<LoggingNetworkChangeObserver> network_change_observer_;
 
   BooleanPrefMember system_enable_referrers_;
+
+  BooleanPrefMember dns_client_enabled_;
 
   // Store HTTP Auth-related policies in this thread.
   std::string auth_schemes_;

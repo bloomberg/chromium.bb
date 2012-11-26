@@ -1824,6 +1824,9 @@ const char kSpdyProxyOrigin[] = "auth.spdyproxy.origin";
 // domain sub-content requests.
 const char kAllowCrossOriginAuthPrompt[] = "auth.allow_cross_origin_prompt";
 
+// Boolean that specifies whether the built-in asynchronous DNS client is used.
+const char kBuiltInDnsClientEnabled[] = "async_dns.enabled";
+
 // An int64 pref that contains the total size of all HTTP content that has been
 // received from the network.
 const char kHttpReceivedContentLength[] = "http_received_content_length";

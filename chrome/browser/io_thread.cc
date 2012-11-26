@@ -104,13 +104,10 @@ class SystemURLRequestContext : public net::URLRequestContext {
 scoped_ptr<net::HostResolver> CreateGlobalHostResolver(net::NetLog* net_log) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  bool allow_async_dns_field_trial = true;
-
   net::HostResolver::Options options;
 
   // Use the concurrency override from the command-line, if any.
   if (command_line.HasSwitch(switches::kHostResolverParallelism)) {
-    allow_async_dns_field_trial = false;
     std::string s =
         command_line.GetSwitchValueASCII(switches::kHostResolverParallelism);
 
@@ -125,7 +122,6 @@ scoped_ptr<net::HostResolver> CreateGlobalHostResolver(net::NetLog* net_log) {
 
   // Use the retry attempts override from the command-line, if any.
   if (command_line.HasSwitch(switches::kHostResolverRetryAttempts)) {
-    allow_async_dns_field_trial = false;
     std::string s =
         command_line.GetSwitchValueASCII(switches::kHostResolverRetryAttempts);
     // Parse the switch (it should be a non-negative integer).
@@ -137,21 +133,8 @@ scoped_ptr<net::HostResolver> CreateGlobalHostResolver(net::NetLog* net_log) {
     }
   }
 
-  bool enable_async = false;
-  if (command_line.HasSwitch(switches::kEnableAsyncDns)) {
-    allow_async_dns_field_trial = false;
-    enable_async = true;
-  } else if (command_line.HasSwitch(switches::kDisableAsyncDns)) {
-    allow_async_dns_field_trial = false;
-    enable_async = false;
-  }
-
-  if (allow_async_dns_field_trial)
-    enable_async = chrome_browser_net::ConfigureAsyncDnsFieldTrial();
-
   scoped_ptr<net::HostResolver> global_host_resolver(
       net::HostResolver::CreateSystemResolver(options, net_log));
-  global_host_resolver->SetDnsClientEnabled(enable_async);
 
   // Determine if we should disable IPv6 support.
   if (!command_line.HasSwitch(switches::kEnableIPv6)) {
@@ -370,6 +353,13 @@ IOThread::IOThread(
   ssl_config_service_manager_.reset(
       SSLConfigServiceManager::CreateDefaultManager(local_state, NULL));
 
+  dns_client_enabled_.Init(prefs::kBuiltInDnsClientEnabled,
+                           local_state,
+                           base::Bind(&IOThread::UpdateDnsClientEnabled,
+                                      base::Unretained(this)));
+  dns_client_enabled_.MoveToThread(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+
   BrowserThread::SetDelegate(BrowserThread::IO, this);
 }
 
@@ -447,6 +437,7 @@ void IOThread::Init() {
     network_delegate->NeverThrottleRequests();
   globals_->system_network_delegate.reset(network_delegate);
   globals_->host_resolver = CreateGlobalHostResolver(net_log_);
+  UpdateDnsClientEnabled();
   globals_->cert_verifier.reset(net::CertVerifier::CreateDefault());
   globals_->transport_security_state.reset(new net::TransportSecurityState());
   globals_->ssl_config_service = GetSSLConfigService();
@@ -610,6 +601,9 @@ void IOThread::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterBooleanPref(prefs::kEnableReferrers, true);
   local_state->RegisterInt64Pref(prefs::kHttpReceivedContentLength, 0);
   local_state->RegisterInt64Pref(prefs::kHttpOriginalContentLength, 0);
+  local_state->RegisterBooleanPref(
+      prefs::kBuiltInDnsClientEnabled,
+      chrome_browser_net::ConfigureAsyncDnsFieldTrial());
 }
 
 net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
@@ -740,4 +734,8 @@ void IOThread::InitSystemRequestContextOnIOThread() {
 
   sdch_manager_->set_sdch_fetcher(
       new SdchDictionaryFetcher(system_url_request_context_getter_.get()));
+}
+
+void IOThread::UpdateDnsClientEnabled() {
+  globals()->host_resolver->SetDnsClientEnabled(*dns_client_enabled_);
 }

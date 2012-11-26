@@ -1398,6 +1398,16 @@
     ]
   },
 
+  "BuiltInDnsClientEnabled": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "BuiltInDnsClientEnabled": true },
+    "pref_mappings": [
+      { "pref": "async_dns.enabled",
+        "local_state": true
+      }
+    ]
+  },
+
   "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {

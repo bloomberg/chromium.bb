@@ -68,6 +68,8 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
 #endif
       { switches::kLoadCloudPolicyOnSignin, prefs::kLoadCloudPolicyOnSignin,
         true },
+      { switches::kDisableAsyncDns, prefs::kBuiltInDnsClientEnabled, false },
+      { switches::kEnableAsyncDns, prefs::kBuiltInDnsClientEnabled, true },
 };
 
 const CommandLinePrefStore::IntegerSwitchToPreferenceMapEntry

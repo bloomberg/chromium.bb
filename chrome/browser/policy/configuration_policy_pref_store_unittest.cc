@@ -202,6 +202,8 @@ INSTANTIATE_TEST_CASE_P(
                       prefs::kSearchSuggestEnabled),
         PolicyAndPref(key::kDnsPrefetchingEnabled,
                       prefs::kNetworkPredictionEnabled),
+        PolicyAndPref(key::kBuiltInDnsClientEnabled,
+                      prefs::kBuiltInDnsClientEnabled),
         PolicyAndPref(key::kDisableSpdy,
                       prefs::kDisableSpdy),
         PolicyAndPref(key::kSafeBrowsingEnabled,

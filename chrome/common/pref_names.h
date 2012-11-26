@@ -721,6 +721,8 @@ extern const char kGSSAPILibraryName[];
 extern const char kSpdyProxyOrigin[];
 extern const char kAllowCrossOriginAuthPrompt[];
 
+extern const char kBuiltInDnsClientEnabled[];
+
 extern const char kHttpReceivedContentLength[];
 extern const char kHttpOriginalContentLength[];
 

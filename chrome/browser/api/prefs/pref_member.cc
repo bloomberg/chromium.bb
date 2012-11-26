@@ -52,19 +52,18 @@ void PrefMemberBase::MoveToThread(
   VerifyValuePrefName();
   // Load the value from preferences if it hasn't been loaded so far.
   if (!internal())
-    UpdateValueFromPref();
+    UpdateValueFromPref(base::Closure());
   internal()->MoveToThread(message_loop);
 }
 
 void PrefMemberBase::OnPreferenceChanged(PrefServiceBase* service,
                                          const std::string& pref_name) {
   VerifyValuePrefName();
-  UpdateValueFromPref();
-  if (!setting_value_ && !observer_.is_null())
-    observer_.Run(pref_name);
+  UpdateValueFromPref((!setting_value_ && !observer_.is_null()) ?
+      base::Bind(observer_, pref_name) : base::Closure());
 }
 
-void PrefMemberBase::UpdateValueFromPref() const {
+void PrefMemberBase::UpdateValueFromPref(const base::Closure& callback) const {
   VerifyValuePrefName();
   const PrefServiceBase::Preference* pref =
       prefs_->FindPreference(pref_name_.c_str());
@@ -73,13 +72,14 @@ void PrefMemberBase::UpdateValueFromPref() const {
     CreateInternal();
   internal()->UpdateValue(pref->GetValue()->DeepCopy(),
                           pref->IsManaged(),
-                          pref->IsUserModifiable());
+                          pref->IsUserModifiable(),
+                          callback);
 }
 
 void PrefMemberBase::VerifyPref() const {
   VerifyValuePrefName();
   if (!internal())
-    UpdateValueFromPref();
+    UpdateValueFromPref(base::Closure());
 }
 
 void PrefMemberBase::InvokeUnnamedCallback(const base::Closure& callback,
@@ -98,10 +98,13 @@ bool PrefMemberBase::Internal::IsOnCorrectThread() const {
   return thread_loop_ == NULL || thread_loop_->BelongsToCurrentThread();
 }
 
-void PrefMemberBase::Internal::UpdateValue(Value* v,
-                                           bool is_managed,
-                                           bool is_user_modifiable) const {
+void PrefMemberBase::Internal::UpdateValue(
+    Value* v,
+    bool is_managed,
+    bool is_user_modifiable,
+    const base::Closure& callback) const {
   scoped_ptr<Value> value(v);
+  base::ScopedClosureRunner closure_runner(callback);
   if (IsOnCorrectThread()) {
     bool rv = UpdateValueInternal(*value);
     DCHECK(rv);
@@ -111,7 +114,8 @@ void PrefMemberBase::Internal::UpdateValue(Value* v,
     bool may_run = thread_loop_->PostTask(
         FROM_HERE,
         base::Bind(&PrefMemberBase::Internal::UpdateValue, this,
-                   value.release(), is_managed, is_user_modifiable));
+                   value.release(), is_managed, is_user_modifiable,
+                   closure_runner.Release()));
     DCHECK(may_run);
   }
 }

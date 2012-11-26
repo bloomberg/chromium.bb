@@ -60,7 +60,8 @@ class PrefMemberBase : public PrefObserver {
     // Takes ownership of |value|.
     void UpdateValue(base::Value* value,
                      bool is_managed,
-                     bool is_user_modifiable) const;
+                     bool is_user_modifiable,
+                     const base::Closure& callback) const;
 
     void MoveToThread(
         const scoped_refptr<base::MessageLoopProxy>& message_loop);
@@ -121,7 +122,7 @@ class PrefMemberBase : public PrefObserver {
   // This method is used to do the actual sync with the preference.
   // Note: it is logically const, because it doesn't modify the state
   // seen by the outside world. It is just doing a lazy load behind the scenes.
-  void UpdateValueFromPref() const;
+  void UpdateValueFromPref(const base::Closure& callback) const;
 
   // Verifies the preference name, and lazily loads the preference value if
   // it hasn't been loaded yet.
