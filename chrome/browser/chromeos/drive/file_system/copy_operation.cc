@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
 
+#include <string>
+
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
@@ -250,7 +252,7 @@ void CopyOperation::OnCopyDocumentCompleted(
   // first add it to |root_| to mirror the state and then move it to the
   // destination directory by MoveEntryFromRootDirectory().
   metadata_->AddEntryToDirectory(
-      metadata_->root()->GetFilePath(),
+      FilePath(kDriveRootDirectory),
       scoped_ptr<DocumentEntry>(DocumentEntry::ExtractAndParse(*data)),
       base::Bind(&CopyOperation::MoveEntryFromRootDirectory,
                  weak_ptr_factory_.GetWeakPtr(),

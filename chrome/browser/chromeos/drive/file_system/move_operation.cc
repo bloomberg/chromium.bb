@@ -260,7 +260,7 @@ void MoveOperation::RemoveEntryFromNonRootDirectoryAfterEntryInfoPair(
       base::Bind(&MoveOperation::MoveEntryToDirectory,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_path,
-                 metadata_->root()->GetFilePath(),
+                 FilePath(kDriveRootDirectory),
                  base::Bind(&MoveOperation::NotifyAndRunFileMoveCallback,
                             weak_ptr_factory_.GetWeakPtr(),
                             callback)));
