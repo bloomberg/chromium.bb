@@ -237,8 +237,8 @@ class TimedMsgLoop {
     return !quit_loop_invoked_;
   }
 
-  void RunAllPending() {
-    loop_.RunAllPending();
+  void RunUntilIdle() {
+    loop_.RunUntilIdle();
   }
 
  private:

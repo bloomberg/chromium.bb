@@ -160,7 +160,7 @@ void ChromeFrameTestWithWebServer::SetUp() {
 
 void ChromeFrameTestWithWebServer::TearDown() {
   CloseBrowser();
-  loop().RunAllPending();
+  loop().RunUntilIdle();
   testing::Mock::VerifyAndClear(listener_mock_);
   testing::Mock::VerifyAndClear(server_mock_);
 }

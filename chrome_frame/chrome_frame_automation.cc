@@ -400,7 +400,7 @@ void AutomationProxyCacheEntry::RemoveDelegate(LaunchDelegate* delegate,
       *was_last_delegate = true;
 
       // Process pending notifications.
-      thread_->message_loop()->RunAllPending();
+      thread_->message_loop()->RunUntilIdle();
 
       // Take down the proxy since we no longer have any clients.
       // Make sure we only do this once all pending messages have been cleared.
