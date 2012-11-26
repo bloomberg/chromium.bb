@@ -51,6 +51,9 @@ ASH_EXPORT bool CanMaximizeWindow(const aura::Window* window);
 // Returns true if |window| can be resized.
 ASH_EXPORT bool CanResizeWindow(const aura::Window* window);
 
+// Returns true if |window| can be snapped to the left or right.
+ASH_EXPORT bool CanSnapWindow(aura::Window* window);
+
 // Returns true if |window| is normal or default.
 ASH_EXPORT bool IsWindowNormal(const aura::Window* window);
 

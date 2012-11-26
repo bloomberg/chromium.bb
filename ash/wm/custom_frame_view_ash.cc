@@ -149,6 +149,10 @@ gfx::Size CustomFrameViewAsh::GetMinimumSize() {
   return frame_painter_->GetMinimumSize(this);
 }
 
+gfx::Size CustomFrameViewAsh::GetMaximumSize() {
+  return frame_painter_->GetMaximumSize(this);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // views::ButtonListener overrides:
 void CustomFrameViewAsh::ButtonPressed(views::Button* sender,

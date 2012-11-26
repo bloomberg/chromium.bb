@@ -429,6 +429,10 @@ gfx::Size DesktopNativeWidgetAura::GetMinimumSize() const {
   return native_widget_delegate_->GetMinimumSize();
 }
 
+gfx::Size DesktopNativeWidgetAura::GetMaximumSize() const {
+  return native_widget_delegate_->GetMaximumSize();
+}
+
 void DesktopNativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
                                               const gfx::Rect& new_bounds) {
   if (old_bounds.origin() != new_bounds.origin())

@@ -1333,6 +1333,10 @@ gfx::Size RenderWidgetHostViewAura::GetMinimumSize() const {
   return gfx::Size();
 }
 
+gfx::Size RenderWidgetHostViewAura::GetMaximumSize() const {
+  return gfx::Size();
+}
+
 void RenderWidgetHostViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
                                                const gfx::Rect& new_bounds) {
   // We care about this only in fullscreen mode, where there is no

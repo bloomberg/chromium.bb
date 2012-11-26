@@ -14,6 +14,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
@@ -81,6 +82,11 @@ bool CanMaximizeWindow(const aura::Window* window) {
 
 bool CanResizeWindow(const aura::Window* window) {
   return window->GetProperty(aura::client::kCanResizeKey);
+}
+
+bool CanSnapWindow(aura::Window* window) {
+  // If a window has a maximum size defined, snapping may make it too big.
+  return window->delegate()->GetMaximumSize().IsEmpty();
 }
 
 bool IsWindowNormal(const aura::Window* window) {

@@ -797,6 +797,10 @@ gfx::Size WebContentsViewAura::GetMinimumSize() const {
   return gfx::Size();
 }
 
+gfx::Size WebContentsViewAura::GetMaximumSize() const {
+  return gfx::Size();
+}
+
 void WebContentsViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
                                           const gfx::Rect& new_bounds) {
   SizeChangedCommon(new_bounds.size());

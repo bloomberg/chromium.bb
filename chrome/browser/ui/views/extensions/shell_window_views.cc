@@ -583,7 +583,7 @@ bool ShellWindowViews::CanResize() const {
 }
 
 bool ShellWindowViews::CanMaximize() const {
-  return CanResize();
+  return maximum_size_.IsEmpty();
 }
 
 views::View* ShellWindowViews::GetContentsView() {
