@@ -1200,7 +1200,9 @@ def RietveldUpload(options, args, cl):
     upload_args.extend(['--base_url', remote_url])
 
   try:
-    issue, patchset = upload.RealMain(['upload'] + upload_args + args)
+    upload_args = ['upload'] + upload_args + args
+    logging.info('upload.RealMain(%s)', upload_args)
+    issue, patchset = upload.RealMain(upload_args)
   except KeyboardInterrupt:
     sys.exit(1)
   except:
