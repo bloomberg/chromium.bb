@@ -314,11 +314,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const FileOperationCallback& callback,
       DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
-  void CloseFileOnUIThreadAfterCommitDirtyInCache(
-      const FileOperationCallback& callback,
-      DriveFileError error,
-      const std::string& resource_id,
-      const std::string& md5);
   void CloseFileOnUIThreadFinalize(const FilePath& file_path,
                                    const FileOperationCallback& callback,
                                    DriveFileError result);
@@ -387,12 +382,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                        const GURL& content_url,
                                        const FilePath& downloaded_file_path,
                                        bool has_enough_space);
-
-  // Callback for handling internal StoreToCache() calls after downloading
-  // file content.
-  void OnDownloadStoredToCache(DriveFileError error,
-                               const std::string& resource_id,
-                               const std::string& md5);
 
   // FileMoveCallback for directory changes. Notifies of directory changes,
   // and runs |callback| with |error|. |callback| may be null.

@@ -63,10 +63,6 @@ const char kWAPIRootDirectoryResourceIdForTesting[] = "folder:testroot";
 // drive.proto.
 const int32 kProtoVersion = 2;
 
-// Used for file operations like removing files.
-typedef base::Callback<void(DriveFileError error)>
-    FileOperationCallback;
-
 // Callback similar to FileOperationCallback but with a given |file_path|.
 // Used for operations that change a file path like moving files.
 typedef base::Callback<void(DriveFileError error,

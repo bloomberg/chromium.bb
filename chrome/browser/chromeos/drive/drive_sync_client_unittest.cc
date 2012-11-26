@@ -185,23 +185,21 @@ class DriveSyncClientTest : public testing::Test {
 
     // Prepare 3 pinned-but-not-present files.
     DriveFileError error = DRIVE_FILE_OK;
-    std::string resource_id;
-    std::string md5;
     cache_->Pin("resource_id_not_fetched_foo", "",
-                base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
-                           &error, &resource_id, &md5));
+                base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
+                           &error));
     google_apis::test_util::RunBlockingPoolTask();
     EXPECT_EQ(DRIVE_FILE_OK, error);
 
     cache_->Pin("resource_id_not_fetched_bar", "",
-                base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
-                           &error, &resource_id, &md5));
+                base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
+                           &error));
     google_apis::test_util::RunBlockingPoolTask();
     EXPECT_EQ(DRIVE_FILE_OK, error);
 
     cache_->Pin("resource_id_not_fetched_baz", "",
-                base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
-                           &error, &resource_id, &md5));
+                base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
+                           &error));
     google_apis::test_util::RunBlockingPoolTask();
     EXPECT_EQ(DRIVE_FILE_OK, error);
 
@@ -211,13 +209,13 @@ class DriveSyncClientTest : public testing::Test {
     FilePath cache_file_path;
     cache_->Store(resource_id_fetched, md5_fetched, temp_file,
                   DriveCache::FILE_OPERATION_COPY,
-                  base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
-                             &error, &resource_id, &md5));
+                  base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
+                             &error));
     google_apis::test_util::RunBlockingPoolTask();
     EXPECT_EQ(DRIVE_FILE_OK, error);
     cache_->Pin(resource_id_fetched, md5_fetched,
-                base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
-                           &error, &resource_id, &md5));
+                base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
+                           &error));
     google_apis::test_util::RunBlockingPoolTask();
     EXPECT_EQ(DRIVE_FILE_OK, error);
 
@@ -226,13 +224,13 @@ class DriveSyncClientTest : public testing::Test {
     const std::string md5_dirty = "";  // Don't care.
     cache_->Store(resource_id_dirty, md5_dirty, temp_file,
                   DriveCache::FILE_OPERATION_COPY,
-                  base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
-                             &error, &resource_id, &md5));
+                  base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
+                             &error));
     google_apis::test_util::RunBlockingPoolTask();
     EXPECT_EQ(DRIVE_FILE_OK, error);
     cache_->Pin(resource_id_dirty, md5_dirty,
-                base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
-                           &error, &resource_id, &md5));
+                base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
+                           &error));
     google_apis::test_util::RunBlockingPoolTask();
     EXPECT_EQ(DRIVE_FILE_OK, error);
     cache_->MarkDirty(
@@ -243,8 +241,8 @@ class DriveSyncClientTest : public testing::Test {
     EXPECT_EQ(DRIVE_FILE_OK, error);
     cache_->CommitDirty(
         resource_id_dirty, md5_dirty,
-        base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
-                   &error, &resource_id, &md5));
+        base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
+                   &error));
     google_apis::test_util::RunBlockingPoolTask();
     EXPECT_EQ(DRIVE_FILE_OK, error);
   }

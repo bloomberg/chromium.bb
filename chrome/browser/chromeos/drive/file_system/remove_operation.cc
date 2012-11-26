@@ -16,6 +16,12 @@ using content::BrowserThread;
 namespace drive {
 namespace file_system {
 
+namespace {
+
+void EmptyFileOperationCallback(DriveFileError error) {}
+
+}  // namespace
+
 RemoveOperation::RemoveOperation(
     google_apis::DriveServiceInterface* drive_service,
     DriveCache* cache,
@@ -95,7 +101,7 @@ void RemoveOperation::RemoveResourceLocally(
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
 
-  cache_->Remove(resource_id, CacheOperationCallback());
+  cache_->Remove(resource_id, base::Bind(&EmptyFileOperationCallback));
 }
 
 void RemoveOperation::NotifyDirectoryChanged(

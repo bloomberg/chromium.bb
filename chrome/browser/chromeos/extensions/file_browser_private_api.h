@@ -567,9 +567,7 @@ class PinDriveFileFunction : public GetDriveFilePropertiesFunction {
   void OnPinStateSet(const FilePath& path,
                      base::DictionaryValue* properties,
                      scoped_ptr<drive::DriveEntryProto> entry_proto,
-                     drive::DriveFileError error,
-                     const std::string& resource_id,
-                     const std::string& md5);
+                     drive::DriveFileError error);
 
   // True for pin, false for unpin.
   bool set_pin_;

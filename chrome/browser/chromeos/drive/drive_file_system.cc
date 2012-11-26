@@ -67,17 +67,6 @@ void RunGetFileCallbackHelper(const GetFileCallback& callback,
   callback.Run(error, *file_path, mime_type, file_type);
 }
 
-// Callback for cache file operations invoked by AddUploadedFileOnUIThread.
-void OnCacheUpdatedForAddUploadedFile(
-    const FileOperationCallback& callback,
-    DriveFileError error,
-    const std::string& /* resource_id */,
-    const std::string& /* md5 */) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-  callback.Run(error);
-}
-
 // The class to wait for the initial load of root feed and runs the callback
 // after the initialization.
 class InitialLoadObserver : public DriveFileSystemObserver {
@@ -126,10 +115,8 @@ class OperationReadinessObserver : public google_apis::DriveServiceObserver {
   DISALLOW_COPY_AND_ASSIGN(OperationReadinessObserver);
 };
 
-// Called when LoadFeedIfNeeded() call from StartInitialFeedFetch() finishes.
-void OnStartInitialFeedFetchFinished(DriveFileError error) {
-  DVLOG(1) << "Loading from StartInitialFeedFetch() finished";
-}
+// Used as a FileOperationCallback.
+void EmptyFileOperationCallback(DriveFileError error) {}
 
 // Creates a temporary JSON file representing a document with |edit_url|
 // and |resource_id| under |document_dir| on blocking pool.
@@ -407,7 +394,7 @@ void DriveFileSystem::RemoveObserver(DriveFileSystemObserver* observer) {
 
 void DriveFileSystem::StartInitialFeedFetch() {
   if (drive_service_->CanStartOperation()) {
-    LoadFeedIfNeeded(base::Bind(&OnStartInitialFeedFetchFinished));
+    LoadFeedIfNeeded(base::Bind(&EmptyFileOperationCallback));
   } else {
     // Wait for the service to get ready. The observer deletes itself after
     // OnReadyToPerformOperations() gets called.
@@ -415,7 +402,7 @@ void DriveFileSystem::StartInitialFeedFetch() {
         drive_service_,
         base::Bind(&DriveFileSystem::LoadFeedIfNeeded,
                    ui_weak_ptr_,
-                   base::Bind(&OnStartInitialFeedFetchFinished)));
+                   base::Bind(&EmptyFileOperationCallback)));
   }
 }
 
@@ -1610,7 +1597,7 @@ void DriveFileSystem::UnpinIfPinned(
   // TODO(hshi): http://crbug.com/127138 notify when file properties change.
   // This allows file manager to clear the "Available offline" checkbox.
   if (success && cache_entry.is_pinned())
-    cache_->Unpin(resource_id, md5, CacheOperationCallback());
+    cache_->Unpin(resource_id, md5, base::Bind(&EmptyFileOperationCallback));
 }
 
 void DriveFileSystem::OnFileDownloadedAndSpaceChecked(
@@ -1633,8 +1620,7 @@ void DriveFileSystem::OnFileDownloadedAndSpaceChecked(
                     params.md5,
                     downloaded_file_path,
                     DriveCache::FILE_OPERATION_MOVE,
-                    base::Bind(&DriveFileSystem::OnDownloadStoredToCache,
-                               ui_weak_ptr_));
+                    base::Bind(&EmptyFileOperationCallback));
     } else {
       // If we don't have enough space, remove the downloaded file, and
       // report "no space" error.
@@ -1651,13 +1637,6 @@ void DriveFileSystem::OnFileDownloadedAndSpaceChecked(
                                downloaded_file_path,
                                params.mime_type,
                                REGULAR_FILE);
-}
-
-void DriveFileSystem::OnDownloadStoredToCache(DriveFileError error,
-                                              const std::string& resource_id,
-                                              const std::string& md5) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Nothing much to do here for now.
 }
 
 void DriveFileSystem::OnDirectoryChangeFileMoveCallback(
@@ -1842,7 +1821,7 @@ void DriveFileSystem::AddUploadedFileToCache(
                 params.md5,
                 params.file_content_path,
                 params.cache_operation,
-                base::Bind(&OnCacheUpdatedForAddUploadedFile, params.callback));
+                params.callback);
 }
 
 void DriveFileSystem::UpdateEntryData(
@@ -1884,7 +1863,7 @@ void DriveFileSystem::UpdateCacheEntry(
                 entry_proto->file_specific_info().file_md5(),
                 file_content_path,
                 DriveCache::FILE_OPERATION_MOVE,
-                base::Bind(&OnCacheUpdatedForAddUploadedFile, callback));
+                callback);
 }
 
 DriveFileSystemMetadata DriveFileSystem::GetMetadata() const {
@@ -2127,23 +2106,9 @@ void DriveFileSystem::CloseFileOnUIThreadAfterGetEntryInfo(
   // if the file has not been modified. Come up with a way to detect the
   // intactness effectively, or provide a method for user to declare it when
   // calling CloseFile().
-  cache_->CommitDirty(
-      entry_proto->resource_id(),
-      entry_proto->file_specific_info().file_md5(),
-      base::Bind(&DriveFileSystem::CloseFileOnUIThreadAfterCommitDirtyInCache,
-                 ui_weak_ptr_,
-                 callback));
-}
-
-void DriveFileSystem::CloseFileOnUIThreadAfterCommitDirtyInCache(
-    const FileOperationCallback& callback,
-    DriveFileError error,
-    const std::string& /* resource_id */,
-    const std::string& /* md5 */) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  callback.Run(error);
+  cache_->CommitDirty(entry_proto->resource_id(),
+                      entry_proto->file_specific_info().file_md5(),
+                      callback);
 }
 
 void DriveFileSystem::CloseFileOnUIThreadFinalize(

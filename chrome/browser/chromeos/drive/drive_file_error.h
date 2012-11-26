@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_ERROR_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_ERROR_H_
 
+#include "base/callback_forward.h"
 #include "base/platform_file.h"
 #include "chrome/browser/google_apis/drive_upload_error.h"
 
@@ -30,6 +31,9 @@ enum DriveFileError {
   DRIVE_FILE_ERROR_NO_CONNECTION = -16,
   DRIVE_FILE_ERROR_THROTTLED = -17,
 };
+
+// Used as callbacks for file operations.
+typedef base::Callback<void(DriveFileError error)> FileOperationCallback;
 
 // Returns a string representation of DriveFileError.
 std::string DriveFileErrorToString(DriveFileError error);

@@ -2446,7 +2446,7 @@ void PinDriveFileFunction::DoOperation(
   // file_info->whatever() crashes.
   const std::string& resource_id = entry_proto->resource_id();
   const std::string& md5 = entry_proto->file_specific_info().file_md5();
-  const drive::CacheOperationCallback callback =
+  const drive::FileOperationCallback callback =
       base::Bind(&PinDriveFileFunction::OnPinStateSet,
                  this,
                  file_path,
@@ -2463,9 +2463,7 @@ void PinDriveFileFunction::OnPinStateSet(
     const FilePath& path,
     base::DictionaryValue* properties,
     scoped_ptr<drive::DriveEntryProto> entry_proto,
-    drive::DriveFileError error,
-    const std::string& /* resource_id */,
-    const std::string& /* md5 */) {
+    drive::DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   OnOperationComplete(path, properties, error, entry_proto.Pass());

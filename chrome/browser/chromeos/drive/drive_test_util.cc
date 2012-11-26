@@ -107,20 +107,6 @@ void CopyResultFromInitializeCacheCallback(bool* out_success,
   *out_success = success;
 }
 
-void CopyResultsFromCacheOperationCallback(DriveFileError* out_error,
-                                           std::string* out_resource_id,
-                                           std::string* out_md5,
-                                           DriveFileError error,
-                                           const std::string& resource_id,
-                                           const std::string& md5) {
-  DCHECK(out_error);
-  DCHECK(out_resource_id);
-  DCHECK(out_md5);
-  *out_error = error;
-  *out_resource_id = resource_id;
-  *out_md5 = md5;
-}
-
 void CopyResultsFromGetFileFromCacheCallback(DriveFileError* out_error,
                                              FilePath* out_cache_file_path,
                                              DriveFileError error,

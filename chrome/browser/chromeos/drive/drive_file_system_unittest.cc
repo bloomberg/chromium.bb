@@ -468,42 +468,36 @@ class DriveFileSystemTest : public testing::Test {
     expected_sub_dir_type_ = expected_sub_dir_type;
 
     DriveFileError error = DRIVE_FILE_OK;
-    std::string result_resource_id;
-    std::string result_md5;
     cache_->Store(resource_id, md5, source_path,
                   DriveCache::FILE_OPERATION_COPY,
-                  base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
-                             &error, &result_resource_id, &result_md5));
+                  base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
+                             &error));
     google_apis::test_util::RunBlockingPoolTask();
-    VerifyCacheFileState(error, result_resource_id, result_md5);
+    VerifyCacheFileState(error, resource_id,md5);
   }
 
-  void TestPin(
-      const std::string& resource_id,
-      const std::string& md5,
-      DriveFileError expected_error,
-      int expected_cache_state,
-      DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
+  void TestPin(const std::string& resource_id,
+               const std::string& md5,
+               DriveFileError expected_error,
+               int expected_cache_state,
+               DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
 
     DriveFileError error = DRIVE_FILE_OK;
-    std::string result_resource_id;
-    std::string result_md5;
     cache_->Pin(resource_id, md5,
-                base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
-                           &error, &result_resource_id, &result_md5));
+                base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
+                           &error));
     google_apis::test_util::RunBlockingPoolTask();
-    VerifyCacheFileState(error, result_resource_id, result_md5);
+    VerifyCacheFileState(error, resource_id, md5);
   }
 
-  void TestMarkDirty(
-      const std::string& resource_id,
-      const std::string& md5,
-      DriveFileError expected_error,
-      int expected_cache_state,
-      DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
+  void TestMarkDirty(const std::string& resource_id,
+                     const std::string& md5,
+                     DriveFileError expected_error,
+                     int expected_cache_state,
+                     DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
@@ -549,14 +543,11 @@ class DriveFileSystemTest : public testing::Test {
     expect_outgoing_symlink_ = true;
 
     DriveFileError error = DRIVE_FILE_OK;
-    std::string result_resource_id;
-    std::string result_md5;
     cache_->CommitDirty(
         resource_id, md5,
-        base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
-                   &error, &result_resource_id, &result_md5));
+        base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
     google_apis::test_util::RunBlockingPoolTask();
-    VerifyCacheFileState(error, result_resource_id, result_md5);
+    VerifyCacheFileState(error, resource_id, md5);
   }
 
   // Verify the file identified by |resource_id| and |md5| is in the expected

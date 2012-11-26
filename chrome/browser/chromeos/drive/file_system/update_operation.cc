@@ -16,18 +16,6 @@ using content::BrowserThread;
 
 namespace drive {
 namespace file_system {
-namespace {
-// Callback for cache file operations invoked by AddUploadedFileOnUIThread.
-void OnCacheUpdatedForUpdateFile(
-    const FileOperationCallback& callback,
-    DriveFileError error,
-    const std::string& /* resource_id */,
-    const std::string& /* md5 */) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-  callback.Run(error);
-}
-}
 
 UpdateOperation::UpdateOperation(
     DriveCache* cache,
@@ -197,7 +185,7 @@ void UpdateOperation::OnUpdatedFileRefreshed(
   // Clear the dirty bit if we have updated an existing file.
   cache_->ClearDirty(entry_proto->resource_id(),
                      entry_proto->file_specific_info().file_md5(),
-                     base::Bind(&OnCacheUpdatedForUpdateFile, callback));
+                     callback);
 }
 
 }  // namespace file_system

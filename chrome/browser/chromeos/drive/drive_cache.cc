@@ -173,18 +173,6 @@ void DeleteFilesSelectively(const FilePath& path_to_delete_pattern,
 }
 
 // Runs callback with pointers dereferenced.
-// Used to implement Store, ClearDirty and Remove.
-void RunCacheOperationCallback(const CacheOperationCallback& callback,
-                               const std::string& resource_id,
-                               const std::string& md5,
-                               DriveFileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!callback.is_null())
-    callback.Run(error, resource_id, md5);
-}
-
-// Runs callback with pointers dereferenced.
 // Used to implement GetFile, SetMountedState, MarkDirty.
 void RunGetFileFromCacheCallback(
     const GetFileFromCacheCallback& callback,
@@ -338,8 +326,9 @@ void DriveCache::Store(const std::string& resource_id,
                        const std::string& md5,
                        const FilePath& source_path,
                        FileOperationType file_operation_type,
-                       const CacheOperationCallback& callback) {
+                       const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
@@ -347,13 +336,14 @@ void DriveCache::Store(const std::string& resource_id,
       base::Bind(&DriveCache::StoreOnBlockingPool,
                  base::Unretained(this),
                  resource_id, md5, source_path, file_operation_type),
-      base::Bind(&RunCacheOperationCallback, callback, resource_id, md5));
+      callback);
 }
 
 void DriveCache::Pin(const std::string& resource_id,
                      const std::string& md5,
-                     const CacheOperationCallback& callback) {
+                     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
@@ -366,8 +356,10 @@ void DriveCache::Pin(const std::string& resource_id,
 
 void DriveCache::Unpin(const std::string& resource_id,
                        const std::string& md5,
-                       const CacheOperationCallback& callback) {
+                       const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
@@ -406,8 +398,9 @@ void DriveCache::MarkDirty(const std::string& resource_id,
 
 void DriveCache::CommitDirty(const std::string& resource_id,
                              const std::string& md5,
-                             const CacheOperationCallback& callback) {
+                             const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
@@ -415,33 +408,34 @@ void DriveCache::CommitDirty(const std::string& resource_id,
       base::Bind(&DriveCache::CommitDirtyOnBlockingPool,
                  base::Unretained(this), resource_id, md5),
       base::Bind(&DriveCache::OnCommitDirty,
-                 weak_ptr_factory_.GetWeakPtr(), resource_id, md5, callback));
+                 weak_ptr_factory_.GetWeakPtr(), resource_id, callback));
 }
 
 void DriveCache::ClearDirty(const std::string& resource_id,
                             const std::string& md5,
-                            const CacheOperationCallback& callback) {
+                            const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&DriveCache::ClearDirtyOnBlockingPool,
                  base::Unretained(this), resource_id, md5),
-      base::Bind(&RunCacheOperationCallback, callback, resource_id, md5));
+      callback);
 }
 
 void DriveCache::Remove(const std::string& resource_id,
-                        const CacheOperationCallback& callback) {
+                        const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&DriveCache::RemoveOnBlockingPool,
                  base::Unretained(this), resource_id),
-      base::Bind(&RunCacheOperationCallback,
-                 callback, resource_id, ""  /* md5 */));
+      callback);
 }
 
 void DriveCache::ClearAll(const InitializeCacheCallback& callback) {
@@ -1165,12 +1159,12 @@ bool DriveCache::ClearAllOnBlockingPool() {
 
 void DriveCache::OnPinned(const std::string& resource_id,
                           const std::string& md5,
-                          const CacheOperationCallback& callback,
+                          const FileOperationCallback& callback,
                           DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
-  if (!callback.is_null())
-    callback.Run(error, resource_id, md5);
+  callback.Run(error);
 
   if (error == DRIVE_FILE_OK)
     FOR_EACH_OBSERVER(DriveCacheObserver,
@@ -1180,12 +1174,12 @@ void DriveCache::OnPinned(const std::string& resource_id,
 
 void DriveCache::OnUnpinned(const std::string& resource_id,
                             const std::string& md5,
-                            const CacheOperationCallback& callback,
+                            const FileOperationCallback& callback,
                             DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
-  if (!callback.is_null())
-    callback.Run(error, resource_id, md5);
+  callback.Run(error);
 
   if (error == DRIVE_FILE_OK)
     FOR_EACH_OBSERVER(DriveCacheObserver,
@@ -1203,13 +1197,12 @@ void DriveCache::OnUnpinned(const std::string& resource_id,
 }
 
 void DriveCache::OnCommitDirty(const std::string& resource_id,
-                               const std::string& md5,
-                               const CacheOperationCallback& callback,
+                               const FileOperationCallback& callback,
                                DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
-  if (!callback.is_null())
-    callback.Run(error, resource_id, md5);
+  callback.Run(error);
 
   if (error == DRIVE_FILE_OK)
     FOR_EACH_OBSERVER(DriveCacheObserver,

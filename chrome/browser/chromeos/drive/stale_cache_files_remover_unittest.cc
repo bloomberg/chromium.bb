@@ -43,14 +43,6 @@ namespace {
 
 const int64 kLotsOfSpace = kMinFreeSpace * 10;
 
-// Callback for DriveCache::Store used in RemoveStaleCacheFiles test.
-// Verifies that the result is not an error.
-void VerifyCacheFileState(DriveFileError error,
-                          const std::string& resource_id,
-                          const std::string& md5) {
-  EXPECT_EQ(DRIVE_FILE_OK, error);
-}
-
 }  // namespace
 
 class StaleCacheFilesRemoverTest : public testing::Test {
@@ -158,9 +150,12 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
   // Create a stale cache file.
+  DriveFileError error = DRIVE_FILE_OK;
   cache_->Store(resource_id, md5, dummy_file, DriveCache::FILE_OPERATION_COPY,
-                base::Bind(&VerifyCacheFileState));
+                base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
+                           &error));
   google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
 
   // Verify that the cache file exists.
   FilePath path = cache_->GetCacheFilePath(resource_id,
@@ -175,7 +170,6 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
       .Times(2);
   EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
 
-  DriveFileError error(DRIVE_FILE_OK);
   FilePath unused;
   scoped_ptr<DriveEntryProto> entry_proto;
   file_system_->GetEntryInfoByResourceId(

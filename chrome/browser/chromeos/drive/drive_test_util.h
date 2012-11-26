@@ -98,15 +98,6 @@ void CopyResultFromInitializeCacheCallback(bool* out_success,
                                            bool success);
 
 // Copies results from DriveCache methods. Used to run asynchronous functions
-// that take CacheOperationCallback from tests.
-void CopyResultsFromCacheOperationCallback(DriveFileError* out_error,
-                                           std::string* out_resource_id,
-                                           std::string* out_md5,
-                                           DriveFileError error,
-                                           const std::string& resource_id,
-                                           const std::string& md5);
-
-// Copies results from DriveCache methods. Used to run asynchronous functions
 // that take GetFileFromCacheCallback from tests.
 void CopyResultsFromGetFileFromCacheCallback(DriveFileError* out_error,
                                              FilePath* out_cache_file_path,

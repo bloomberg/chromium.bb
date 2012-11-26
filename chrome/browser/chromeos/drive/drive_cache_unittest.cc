@@ -154,36 +154,28 @@ class DriveCacheTest : public testing::Test {
             google_apis::test_util::GetTestFilePath(resource.source_file);
 
         DriveFileError error = DRIVE_FILE_OK;
-        std::string resource_id;
-        std::string md5;
         cache_->Store(
             resource.resource_id,
             resource.md5,
             source_path,
             DriveCache::FILE_OPERATION_COPY,
-            base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
-                       &error, &resource_id, &md5));
+            base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
+                       &error));
         google_apis::test_util::RunBlockingPoolTask();
         EXPECT_EQ(DRIVE_FILE_OK, error);
-        EXPECT_EQ(resource.resource_id, resource_id);
-        EXPECT_EQ(resource.md5, md5);
       }
       // Pin.
       if (resource.is_pinned) {
         DriveFileError error = DRIVE_FILE_OK;
-        std::string resource_id;
-        std::string md5;
         EXPECT_CALL(*mock_cache_observer_,
                     OnCachePinned(resource.resource_id, resource.md5)).Times(1);
         cache_->Pin(
             resource.resource_id,
             resource.md5,
-            base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
-                       &error, &resource_id, &md5));
+            base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
+                       &error));
         google_apis::test_util::RunBlockingPoolTask();
         EXPECT_EQ(DRIVE_FILE_OK, error);
-        EXPECT_EQ(resource.resource_id, resource_id);
-        EXPECT_EQ(resource.md5, md5);
       }
       // Mark dirty.
       if (resource.is_dirty) {
@@ -197,19 +189,15 @@ class DriveCacheTest : public testing::Test {
         google_apis::test_util::RunBlockingPoolTask();
         EXPECT_EQ(DRIVE_FILE_OK, error);
 
-        std::string resource_id;
-        std::string md5;
         EXPECT_CALL(*mock_cache_observer_,
                     OnCacheCommitted(resource.resource_id)).Times(1);
         cache_->CommitDirty(
             resource.resource_id,
             resource.md5,
-            base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
-                       &error, &resource_id, &md5));
+            base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
+                       &error));
         google_apis::test_util::RunBlockingPoolTask();
         EXPECT_EQ(DRIVE_FILE_OK, error);
-        EXPECT_EQ(resource.resource_id, resource_id);
-        EXPECT_EQ(resource.md5, md5);
       }
     }
   }
@@ -254,14 +242,12 @@ class DriveCacheTest : public testing::Test {
     expected_sub_dir_type_ = expected_sub_dir_type;
 
     DriveFileError error = DRIVE_FILE_OK;
-    std::string result_resource_id;
-    std::string result_md5;
     cache_->Store(resource_id, md5, source_path,
                   DriveCache::FILE_OPERATION_COPY,
-                  base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
-                             &error, &result_resource_id, &result_md5));
+                  base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
+                             &error));
     google_apis::test_util::RunBlockingPoolTask();
-    VerifyCacheFileState(error, result_resource_id, result_md5);
+    VerifyCacheFileState(error, resource_id, md5);
   }
 
   void TestRemoveFromCache(const std::string& resource_id,
@@ -269,13 +255,11 @@ class DriveCacheTest : public testing::Test {
     expected_error_ = expected_error;
 
     DriveFileError error = DRIVE_FILE_OK;
-    std::string result_resource_id;
-    std::string result_md5;
-    cache_->Remove(resource_id,
-                   base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
-                              &error, &result_resource_id, &result_md5));
+    cache_->Remove(
+        resource_id,
+        base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
     google_apis::test_util::RunBlockingPoolTask();
-    VerifyRemoveFromCache(error, result_resource_id, result_md5);
+    VerifyRemoveFromCache(error, resource_id, "");
   }
 
   void VerifyRemoveFromCache(DriveFileError error,
@@ -382,13 +366,11 @@ class DriveCacheTest : public testing::Test {
     expected_sub_dir_type_ = expected_sub_dir_type;
 
     DriveFileError error = DRIVE_FILE_OK;
-    std::string result_resource_id;
-    std::string result_md5;
     cache_->Pin(resource_id, md5,
-                base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
-                           &error, &result_resource_id, &result_md5));
+                base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
+                           &error));
     google_apis::test_util::RunBlockingPoolTask();
-    VerifyCacheFileState(error, result_resource_id, result_md5);
+    VerifyCacheFileState(error, resource_id, md5);
   }
 
   void TestUnpin(
@@ -402,13 +384,11 @@ class DriveCacheTest : public testing::Test {
     expected_sub_dir_type_ = expected_sub_dir_type;
 
     DriveFileError error = DRIVE_FILE_OK;
-    std::string result_resource_id;
-    std::string result_md5;
     cache_->Unpin(resource_id, md5,
-                  base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
-                             &error, &result_resource_id, &result_md5));
+                  base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
+                             &error));
     google_apis::test_util::RunBlockingPoolTask();
-    VerifyCacheFileState(error, result_resource_id, result_md5);
+    VerifyCacheFileState(error, resource_id, md5);
   }
 
   void TestMarkDirty(
@@ -456,14 +436,11 @@ class DriveCacheTest : public testing::Test {
     expect_outgoing_symlink_ = true;
 
     DriveFileError error = DRIVE_FILE_OK;
-    std::string result_resource_id;
-    std::string result_md5;
     cache_->CommitDirty(
         resource_id, md5,
-        base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
-                   &error, &result_resource_id, &result_md5));
+        base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
     google_apis::test_util::RunBlockingPoolTask();
-    VerifyCacheFileState(error, result_resource_id, result_md5);
+    VerifyCacheFileState(error, resource_id, md5);
   }
 
   void TestClearDirty(
@@ -478,14 +455,11 @@ class DriveCacheTest : public testing::Test {
     expect_outgoing_symlink_ = false;
 
     DriveFileError error = DRIVE_FILE_OK;
-    std::string result_resource_id;
-    std::string result_md5;
     cache_->ClearDirty(
         resource_id, md5,
-        base::Bind(&test_util::CopyResultsFromCacheOperationCallback,
-                   &error, &result_resource_id, &result_md5));
+        base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
     google_apis::test_util::RunBlockingPoolTask();
-    VerifyCacheFileState(error, result_resource_id, result_md5);
+    VerifyCacheFileState(error, resource_id, md5);
   }
 
   void TestSetMountedState(
