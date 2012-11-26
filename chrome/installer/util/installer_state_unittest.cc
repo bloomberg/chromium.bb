@@ -495,18 +495,6 @@ TEST_F(InstallerStateTest, IsFileInUse) {
   EXPECT_FALSE(MockInstallerState::IsFileInUse(temp_file));
 }
 
-TEST_F(InstallerStateTest, IsNonExistantFileInUse) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-
-  FilePath temp_file;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir.path(), &temp_file));
-  ASSERT_TRUE(file_util::Delete(temp_file, false));
-
-  // There's no file, so it had better not be in use.
-  EXPECT_FALSE(MockInstallerState::IsFileInUse(temp_file));
-}
-
 TEST_F(InstallerStateTest, RemoveOldVersionDirs) {
   MockInstallerState installer_state;
   installer_state.set_target_path(test_dir_.path());

@@ -206,6 +206,8 @@ class InstallerState {
                             const std::wstring* launch_cmd) const;
 
  protected:
+  // Returns true if |file| exists and cannot be opened for exclusive write
+  // access.
   static bool IsFileInUse(const FilePath& file);
 
   FilePath GetDefaultProductInstallPath(BrowserDistribution* dist) const;
