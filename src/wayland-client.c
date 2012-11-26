@@ -649,8 +649,11 @@ wl_display_roundtrip(struct wl_display *display)
 	done = 0;
 	callback = wl_display_sync(display);
 	wl_callback_add_listener(callback, &sync_listener, &done);
-	while (!done && !ret)
+	while (!done && ret >= 0)
 		ret = wl_display_dispatch(display);
+
+	if (ret == -1 && !done)
+		wl_callback_destroy(callback);
 
 	return ret;
 }
