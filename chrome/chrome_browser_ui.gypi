@@ -1991,6 +1991,8 @@
         'browser/ui/webui/options/language_options_handler_common.h',
         'browser/ui/webui/options/manage_profile_handler.cc',
         'browser/ui/webui/options/manage_profile_handler.h',
+        'browser/ui/webui/options/media_devices_selection_handler.cc',
+        'browser/ui/webui/options/media_devices_selection_handler.h',
         'browser/ui/webui/options/media_galleries_handler.cc',
         'browser/ui/webui/options/media_galleries_handler.h',
         'browser/ui/webui/options/options_sync_setup_handler.cc',

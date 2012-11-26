@@ -153,6 +153,17 @@ MediaStreamManager::MediaStreamManager(media::AudioManager* audio_manager)
   DCHECK(audio_manager_);
   memset(active_enumeration_ref_count_, 0,
          sizeof(active_enumeration_ref_count_));
+
+  // Some unit tests create the MSM in the IO thread and assumes the
+  // initialization is done synchronously.
+  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    InitializeDeviceManagersOnIOThread();
+  } else {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&MediaStreamManager::InitializeDeviceManagersOnIOThread,
+                   base::Unretained(this)));
+  }
 }
 
 MediaStreamManager::~MediaStreamManager() {
@@ -163,14 +174,12 @@ MediaStreamManager::~MediaStreamManager() {
 
 VideoCaptureManager* MediaStreamManager::video_capture_manager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  EnsureDeviceManagersStarted();
   DCHECK(video_capture_manager_);
   return video_capture_manager_;
 }
 
 AudioInputDeviceManager* MediaStreamManager::audio_input_device_manager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  EnsureDeviceManagersStarted();
   DCHECK(audio_input_device_manager_);
   return audio_input_device_manager_;
 }
@@ -392,7 +401,6 @@ void MediaStreamManager::EnumerateDevices(
                    base::Unretained(this), cache, *label));
   } else {
     StartEnumeration(&new_request, label);
-    StartMonitoring();
   }
 }
 
@@ -403,9 +411,6 @@ void MediaStreamManager::StopEnumerateDevices(const std::string& label) {
   if (it != requests_.end()) {
     DCHECK_EQ(it->second.type, DeviceRequest::ENUMERATE_DEVICES);
     requests_.erase(it);
-    if (!HasEnumerationRequest()) {
-      StopMonitoring();
-    }
   }
 }
 
@@ -476,15 +481,24 @@ void MediaStreamManager::SendCachedDeviceList(
 
 void MediaStreamManager::StartMonitoring() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!base::SystemMonitor::Get())
+    return;
+
   if (!monitoring_started_) {
     monitoring_started_ = true;
     base::SystemMonitor::Get()->AddDevicesChangedObserver(this);
+
+    // Enumerate the devices now to post the device lists to media observer.
+    ++active_enumeration_ref_count_[MEDIA_DEVICE_AUDIO_CAPTURE];
+    audio_input_device_manager_->EnumerateDevices();
+    ++active_enumeration_ref_count_[MEDIA_DEVICE_VIDEO_CAPTURE];
+    video_capture_manager_->EnumerateDevices();
   }
 }
 
 void MediaStreamManager::StopMonitoring() {
   DCHECK_EQ(MessageLoop::current(), io_loop_);
-  if (monitoring_started_ && !HasEnumerationRequest()) {
+  if (monitoring_started_) {
     base::SystemMonitor::Get()->RemoveDevicesChangedObserver(this);
     monitoring_started_ = false;
     ClearEnumerationCache(&audio_enumeration_cache_);
@@ -546,7 +560,7 @@ void MediaStreamManager::PostRequestToUI(const std::string& label) {
                                 request.security_origin);
 }
 
-void MediaStreamManager::EnsureDeviceManagersStarted() {
+void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (device_thread_.get())
     return;
@@ -568,6 +582,10 @@ void MediaStreamManager::EnsureDeviceManagersStarted() {
   // and the device managers.
   io_loop_ = MessageLoop::current();
   io_loop_->AddDestructionObserver(this);
+
+  // Start the devices monitoring since the media observer needs up-to-date
+  // device lists.
+  StartMonitoring();
 }
 
 void MediaStreamManager::Opened(MediaStreamType stream_type,
@@ -657,20 +675,21 @@ void MediaStreamManager::DevicesEnumerated(
     MediaStreamType stream_type, const StreamDeviceInfoArray& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  // Only cache the device list when there is an EnumerateDevices request, since
-  // other requests don't turn on device monitoring.
+  // Only cache the device list when the device list has been changed.
   bool need_update_clients = false;
   EnumerationCache* cache = (stream_type == MEDIA_DEVICE_AUDIO_CAPTURE ?
        &audio_enumeration_cache_ : &video_enumeration_cache_);
-  if (HasEnumerationRequest(stream_type) &&
-      (!cache->valid ||
+  if (!cache->valid ||
        devices.size() != cache->devices.size() ||
        !std::equal(devices.begin(), devices.end(), cache->devices.begin(),
-                   StreamDeviceInfo::IsEqual))) {
+                   StreamDeviceInfo::IsEqual)) {
     cache->valid = true;
     cache->devices = devices;
     need_update_clients = true;
   }
+
+  if (need_update_clients && monitoring_started_)
+    NotifyDevicesChanged(stream_type, devices);
 
   // Publish the result for all requests waiting for device list(s).
   // Find the requests waiting for this device list, store their labels and
@@ -941,6 +960,32 @@ void MediaStreamManager::DevicesFromRequest(
   }
 }
 
+void MediaStreamManager::NotifyDevicesChanged(
+    MediaStreamType stream_type,
+    const StreamDeviceInfoArray& devices) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  MediaObserver* media_observer =
+      GetContentClient()->browser()->GetMediaObserver();
+  if (media_observer == NULL)
+    return;
+
+  // Map the devices to MediaStreamDevices.
+  MediaStreamDevices new_devices;
+  for (StreamDeviceInfoArray::const_iterator it = devices.begin();
+       it != devices.end(); ++it) {
+    new_devices.push_back(MediaStreamDevice(
+        it->stream_type, it->device_id, it->name));
+  }
+
+  if (IsAudioMediaType(stream_type)) {
+    media_observer->OnAudioCaptureDevicesChanged(new_devices);
+  } else if (IsVideoMediaType(stream_type)) {
+    media_observer->OnVideoCaptureDevicesChanged(new_devices);
+  } else {
+    NOTREACHED();
+  }
+}
+
 bool MediaStreamManager::RequestDone(const DeviceRequest& request) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -996,22 +1041,12 @@ void MediaStreamManager::OnDevicesChanged(
   // changes (from the operating system).
 
   MediaStreamType stream_type;
-  EnumerationCache* cache;
   if (device_type == base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE) {
     stream_type = MEDIA_DEVICE_AUDIO_CAPTURE;
-    cache = &audio_enumeration_cache_;
   } else if (device_type == base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE) {
     stream_type = MEDIA_DEVICE_VIDEO_CAPTURE;
-    cache = &video_enumeration_cache_;
   } else {
     return;  // Uninteresting device change.
-  }
-
-  if (!HasEnumerationRequest(stream_type)) {
-    // There is no request for that type, No need to enumerate devices.
-    // Therefore, invalidate the cache of that type.
-    ClearEnumerationCache(cache);
-    return;
   }
 
   // Always do enumeration even though some enumeration is in progress,
@@ -1019,30 +1054,6 @@ void MediaStreamManager::OnDevicesChanged(
   // change.
   ++active_enumeration_ref_count_[stream_type];
   GetDeviceManager(stream_type)->EnumerateDevices();
-}
-
-bool MediaStreamManager::HasEnumerationRequest() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  for (DeviceRequests::iterator it = requests_.begin();
-       it != requests_.end(); ++it) {
-    if (it->second.type == DeviceRequest::ENUMERATE_DEVICES) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool MediaStreamManager::HasEnumerationRequest(
-    MediaStreamType stream_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  for (DeviceRequests::iterator it = requests_.begin();
-       it != requests_.end(); ++it) {
-    if (it->second.type == DeviceRequest::ENUMERATE_DEVICES &&
-        Requested(it->second.options, stream_type)) {
-      return true;
-    }
-  }
-  return false;
 }
 
 }  // namespace content

@@ -80,6 +80,11 @@ cr.define('options', function() {
 
       $('pepper-flash-cameramic-section').style.display = 'none';
       $('pepper-flash-cameramic-exceptions-div').style.display = 'none';
+
+      $('media-select-mic').addEventListener('change',
+          ContentSettings.setDefaultMicrophone_);
+      $('media-select-camera').addEventListener('change',
+          ContentSettings.setDefaultCamera_);
     },
   };
 
@@ -178,7 +183,58 @@ cr.define('options', function() {
   ContentSettings.enablePepperFlashCameraMicSettings = function() {
     $('pepper-flash-cameramic-section').style.display = '';
     $('pepper-flash-cameramic-exceptions-div').style.display = '';
-  }
+  };
+
+  /**
+   * Updates the microphone/camera devices menu with the given entries.
+   * @param {string} type The device type.
+   * @param {Array} devices List of available devices.
+   * @param {string} defaultdevice The unique id of the current default device.
+   */
+  ContentSettings.updateDevicesMenu = function(type, devices, defaultdevice) {
+    var deviceSelect = '';
+    if (type == 'mic') {
+      deviceSelect = $('media-select-mic');
+    } else if (type == 'camera') {
+      deviceSelect = $('media-select-camera');
+    } else {
+      console.error('Unknown device type for <device select> UI element: ' +
+                    type);
+      return;
+    }
+
+    deviceSelect.textContent = '';
+
+    var deviceCount = devices.length;
+    var defaultIndex = -1;
+    for (var i = 0; i < deviceCount; i++) {
+      var device = devices[i];
+      var option = new Option(device.name, device.id);
+      if (option.value == defaultdevice)
+        defaultIndex = i;
+      deviceSelect.appendChild(option);
+    }
+    if (defaultIndex >= 0)
+      deviceSelect.selectedIndex = defaultIndex;
+  };
+
+  /**
+   * Set the default microphone device based on the popup selection.
+   * @private
+   */
+  ContentSettings.setDefaultMicrophone_ = function() {
+    var deviceSelect = $('media-select-mic');
+    chrome.send('setDefaultCaptureDevice', ['mic', deviceSelect.value]);
+  };
+
+  /**
+   * Set the default camera device based on the popup selection.
+   * @private
+   */
+  ContentSettings.setDefaultCamera_ = function() {
+    var deviceSelect = $('media-select-camera');
+    chrome.send('setDefaultCaptureDevice', ['camera', deviceSelect.value]);
+  };
 
   // Export
   return {

@@ -35,6 +35,10 @@ class MockMediaObserver : public MediaObserver {
   MOCK_METHOD3(OnCaptureDevicesClosed,
                void(int render_process_id, int render_view_id,
                     const MediaStreamDevices& devices));
+  MOCK_METHOD1(OnAudioCaptureDevicesChanged,
+               void(const MediaStreamDevices& devices));
+  MOCK_METHOD1(OnVideoCaptureDevicesChanged,
+                 void(const MediaStreamDevices& devices));
   MOCK_METHOD4(OnMediaRequestStateChanged,
                void(int render_process_id, int render_view_id,
                     const MediaStreamDevice& device,

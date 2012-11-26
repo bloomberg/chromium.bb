@@ -12,6 +12,7 @@
 #include "content/public/browser/media_observer.h"
 #include "content/public/common/media_stream_request.h"
 
+class MediaCaptureDevicesDispatcher;
 class MediaInternalsObserver;
 class MediaStreamCaptureIndicator;
 
@@ -49,6 +50,10 @@ class MediaInternals : public content::MediaObserver {
       int render_process_id,
       int render_view_id,
       const content::MediaStreamDevices& devices) OVERRIDE;
+  virtual void OnAudioCaptureDevicesChanged(
+      const content::MediaStreamDevices& devices) OVERRIDE;
+  virtual void OnVideoCaptureDevicesChanged(
+      const content::MediaStreamDevices& devices) OVERRIDE;
   virtual void OnMediaRequestStateChanged(
       int render_process_id,
       int render_view_id,
@@ -63,6 +68,8 @@ class MediaInternals : public content::MediaObserver {
   void SendEverything();
 
   scoped_refptr<MediaStreamCaptureIndicator> GetMediaStreamCaptureIndicator();
+  scoped_refptr<MediaCaptureDevicesDispatcher>
+      GetMediaCaptureDevicesDispatcher();
 
  private:
   friend class MediaInternalsTest;
@@ -90,6 +97,7 @@ class MediaInternals : public content::MediaObserver {
   DictionaryValue data_;
   ObserverList<MediaInternalsObserver> observers_;
   scoped_refptr<MediaStreamCaptureIndicator> media_stream_capture_indicator_;
+  scoped_refptr<MediaCaptureDevicesDispatcher> media_devices_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaInternals);
 };
