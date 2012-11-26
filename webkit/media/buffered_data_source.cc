@@ -147,7 +147,7 @@ void BufferedDataSource::Abort() {
 void BufferedDataSource::Stop(const base::Closure& closure) {
   {
     base::AutoLock auto_lock(lock_);
-    stop_signal_received_ = true;
+    StopInternal_Locked();
   }
   if (!closure.is_null())
     closure.Run();
@@ -212,7 +212,7 @@ void BufferedDataSource::ReadTask(
   DCHECK(MessageLoop::current() == render_loop_);
   {
     base::AutoLock auto_lock(lock_);
-    if (stopped_on_render_loop_)
+    if (stop_signal_received_ || stopped_on_render_loop_)
       return;
 
     DCHECK(!read_cb_.is_null());
@@ -228,12 +228,31 @@ void BufferedDataSource::ReadTask(
   ReadInternal();
 }
 
+void BufferedDataSource::StopInternal_Locked() {
+  lock_.AssertAcquired();
+  if (stop_signal_received_)
+    return;
+
+  stop_signal_received_ = true;
+
+  // Initialize() isn't part of the DataSource interface so don't call it in
+  // response to Stop().
+  init_cb_.Reset();
+
+  // TODO(scherkus): Should use DoneRead_Locked() but today |read_size_| and
+  // |read_buffer_| are only touched on the render thread. We should combine all
+  // Read()-related variables into a struct to simplify bookkeeping.
+  if (!read_cb_.is_null())
+    base::ResetAndReturn(&read_cb_).Run(media::DataSource::kReadError);
+}
+
 void BufferedDataSource::CleanupTask() {
   DCHECK(MessageLoop::current() == render_loop_);
 
   {
     base::AutoLock auto_lock(lock_);
-    init_cb_.Reset();
+    StopInternal_Locked();
+
     if (stopped_on_render_loop_)
       return;
 
@@ -241,9 +260,6 @@ void BufferedDataSource::CleanupTask() {
     // NOTE: it's vital that this be set under lock, as that's how Read() tests
     // before registering a new |read_cb_| (which is cleared below).
     stopped_on_render_loop_ = true;
-
-    if (!read_cb_.is_null())
-      DoneRead_Locked(kReadError);
   }
 
   // We just need to stop the loader, so it stops activity.
@@ -317,8 +333,7 @@ void BufferedDataSource::DoneRead_Locked(int bytes_read) {
   DCHECK(bytes_read >= 0 || bytes_read == kReadError);
   lock_.AssertAcquired();
 
-  read_cb_.Run(bytes_read);
-  read_cb_.Reset();
+  base::ResetAndReturn(&read_cb_).Run(bytes_read);
   read_size_ = 0;
   read_buffer_ = 0;
 }

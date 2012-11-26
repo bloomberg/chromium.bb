@@ -96,6 +96,10 @@ class BufferedDataSource : public media::DataSource {
   // Task posted to perform actual reading on the render thread.
   void ReadTask(int64 position, int read_size, uint8* read_buffer);
 
+  // Cancels oustanding callbacks and sets |stop_signal_received_|. Safe to call
+  // from any thread.
+  void StopInternal_Locked();
+
   // Task posted when Stop() is called. Stops |loader_|, resets Read()
   // variables, and sets |stopped_on_render_loop_| to signal any remaining
   // tasks to stop.
@@ -190,8 +194,10 @@ class BufferedDataSource : public media::DataSource {
   // |init_cb_|.
   base::Lock lock_;
 
-  // Stop signal to suppressing activities. This variable is set on the pipeline
-  // thread and read from the render thread.
+  // Whether we've been told to stop via Abort() or Stop().
+  //
+  // TODO(scherkus): Combine this bool with |stopped_on_render_loop_| as they're
+  // redundant.
   bool stop_signal_received_;
 
   // This variable is set by CleanupTask() that indicates this object is stopped

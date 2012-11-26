@@ -18,6 +18,7 @@
 using ::testing::_;
 using ::testing::Assign;
 using ::testing::Invoke;
+using ::testing::InSequence;
 using ::testing::NiceMock;
 using ::testing::StrictMock;
 
@@ -494,6 +495,22 @@ TEST_F(BufferedDataSourceTest, StopDoesNotUseMessageLoopForCallback) {
 
   // Verify that the callback was called inside the Stop() call.
   EXPECT_TRUE(stop_done_called);
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(BufferedDataSourceTest, StopDuringRead) {
+  InitializeWith206Response();
+
+  uint8 buffer[256];
+  data_source_->Read(0, arraysize(buffer), buffer, base::Bind(
+      &BufferedDataSourceTest::ReadCallback, base::Unretained(this)));
+
+  // The outstanding read should fail before the stop callback runs.
+  {
+    InSequence s;
+    EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
+    data_source_->Stop(media::NewExpectedClosure());
+  }
   message_loop_.RunUntilIdle();
 }
 
