@@ -6,6 +6,10 @@
 
 Import('env')
 
+# TODO(mseaborn): Enable -Wstrict-prototypes here.  Currently
+# dlmalloc/malloc.c does not build with this warning.
+env.FilterOut(CFLAGS=['-Wstrict-prototypes'])
+
 # This module shouldn't be built in an environment that uses glibc.
 if env.Bit('nacl_glibc'):
   raise UserError('src/untrusted/irt/nacl.scons in the wrong environment?')

@@ -8,6 +8,9 @@ Import('env')
 
 # NACL_GC_WRAP_SYSCALL uses ({...}) syntax.
 env.FilterOut(CCFLAGS=['-pedantic'])
+# TODO(mseaborn): Enable -Wstrict-prototypes here.  Currently
+# dlmalloc/malloc.c does not build with this warning.
+env.FilterOut(CFLAGS=['-Wstrict-prototypes'])
 if env.Bit('bitcode'):
   # silence a warning when compiling malloc.c with clang
   # TODO(robertm): get rid of -allow-asm once we can distinguish

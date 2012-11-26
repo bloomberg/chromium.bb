@@ -144,9 +144,9 @@ NOINLINE void test_backtrace(void) {
   VALGRIND_PRINTF_BACKTRACE("BACKTRACE:\n");
   break_optimization();
 }
-NOINLINE void test_backtrace1() { test_backtrace(); break_optimization(); }
-NOINLINE void test_backtrace2() { test_backtrace1(); break_optimization(); }
-NOINLINE void test_backtrace3() { test_backtrace2(); break_optimization(); }
+NOINLINE void test_backtrace1(void) { test_backtrace(); break_optimization(); }
+NOINLINE void test_backtrace2(void) { test_backtrace1(); break_optimization(); }
+NOINLINE void test_backtrace3(void) { test_backtrace2(); break_optimization(); }
 
 NOINLINE void test_printf(void) {
   SHOW_ME;
@@ -165,7 +165,7 @@ NOINLINE void test_printf(void) {
 */
 
 /* Functions to wrap. */
-NOINLINE int wrap_me_0() { SHOW_ME; return 123; }
+NOINLINE int wrap_me_0(void) { SHOW_ME; return 123; }
 NOINLINE int wrap_me_1(int a) { SHOW_ME; return a; }
 NOINLINE int wrap_me_2(int a, int b) { SHOW_ME; return a+10*b; }
 NOINLINE int wrap_me_3(int a, int b, int c) { SHOW_ME; return a+10*b+100*c; }

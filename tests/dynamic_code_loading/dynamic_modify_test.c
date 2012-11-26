@@ -111,12 +111,12 @@ void test_replacing_code(void) {
   uint8_t *load_area = allocate_code_space(1);
   uint8_t buf[BUF_SIZE];
   int rc;
-  int (*func)();
+  int (*func)(void);
 
   copy_and_pad_fragment(buf, sizeof(buf), &template_func, &template_func_end);
   rc = nacl_dyncode_create(load_area, buf, sizeof(buf));
   assert(rc == 0);
-  func = (int (*)()) (uintptr_t) load_area;
+  func = (int (*)(void)) (uintptr_t) load_area;
   rc = func();
   assert(rc == MARKER_OLD);
 
@@ -125,7 +125,7 @@ void test_replacing_code(void) {
                                           &template_func_replacement_end);
   rc = nacl_dyncode_modify(load_area, buf, sizeof(buf));
   assert(rc == 0);
-  func = (int (*)()) (uintptr_t) load_area;
+  func = (int (*)(void)) (uintptr_t) load_area;
   rc = func();
   assert(rc == MARKER_NEW);
 }
@@ -137,12 +137,12 @@ void test_replacing_code_unaligned(void) {
   uint8_t buf[BUF_SIZE];
   int first_diff = 0;
   int rc;
-  int (*func)();
+  int (*func)(void);
 
   copy_and_pad_fragment(buf, sizeof(buf), &template_func, &template_func_end);
   rc = nacl_dyncode_create(load_area, buf, sizeof(buf));
   assert(rc == 0);
-  func = (int (*)()) (uintptr_t) load_area;
+  func = (int (*)(void)) (uintptr_t) load_area;
   rc = func();
   assert(rc == MARKER_OLD);
 
@@ -158,7 +158,7 @@ void test_replacing_code_unaligned(void) {
   rc = nacl_dyncode_modify(load_area+first_diff, buf+first_diff,
                            sizeof(buf)-first_diff);
   assert(rc == 0);
-  func = (int (*)()) (uintptr_t) load_area;
+  func = (int (*)(void)) (uintptr_t) load_area;
   rc = func();
   assert(rc == MARKER_NEW);
 }
@@ -208,12 +208,12 @@ void test_illegal_code_replacment(void) {
   uint8_t buf[BUF_SIZE];
   int rc;
   int i;
-  int (*func)();
+  int (*func)(void);
 
   copy_and_pad_fragment(buf, sizeof(buf), &template_func, &template_func_end);
   rc = nacl_dyncode_create(load_area, buf, sizeof(buf));
   assert(rc == 0);
-  func = (int (*)()) (uintptr_t) load_area;
+  func = (int (*)(void)) (uintptr_t) load_area;
   rc = func();
   assert(rc == MARKER_OLD);
 
@@ -227,7 +227,7 @@ void test_illegal_code_replacment(void) {
                                             illegal_code_sections[i].end);
     rc = nacl_dyncode_modify(load_area, buf, sizeof(buf));
     assert(rc != 0);
-    func = (int (*)()) (uintptr_t) load_area;
+    func = (int (*)(void)) (uintptr_t) load_area;
     rc = func();
     assert(rc == MARKER_OLD);
   }
@@ -238,7 +238,7 @@ void test_external_jump_target_replacement(void) {
   /* BUF_SIZE * 2 because this function necessarily has an extra bundle. */
   uint8_t buf[BUF_SIZE * 2];
   int rc;
-  int (*func)();
+  int (*func)(void);
   const int kNaClBundleSize = NACL_BUNDLE_SIZE;
 
   copy_and_pad_fragment(buf, sizeof(buf),
@@ -247,7 +247,7 @@ void test_external_jump_target_replacement(void) {
 
   rc = nacl_dyncode_create(load_area, buf, sizeof(buf));
   assert(rc == 0);
-  func = (int (*)()) (uintptr_t) load_area;
+  func = (int (*)(void)) (uintptr_t) load_area;
   rc = func();
   assert(rc == MARKER_OLD);
 
@@ -257,7 +257,7 @@ void test_external_jump_target_replacement(void) {
   /* Only copy one bundle so we can test an unaligned external jump target */
   rc = nacl_dyncode_modify(load_area, buf, kNaClBundleSize);
   assert(rc == 0);
-  func = (int (*)()) (uintptr_t) load_area;
+  func = (int (*)(void)) (uintptr_t) load_area;
   rc = func();
   assert(rc == MARKER_NEW);
 }

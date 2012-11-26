@@ -11,7 +11,7 @@ typedef void (*FUN_PTR) (void);
 #define ATTR_SEC(sec)\
   __attribute__ ((__used__, section(sec), aligned(sizeof(FUN_PTR))))
 
-#define MAKE_FUN(name) void name() { printf(#name "\n"); }
+#define MAKE_FUN(name) void name(void) { printf(#name "\n"); }
 
 /* NOTE: .preinit_array is not allowed in shared object */
 

@@ -17,7 +17,7 @@
  * order to test this we use REGS_SAVER_FUNC itself!
  */
 REGS_SAVER_FUNC(CheckStackAlignmentEntry, CheckStackAlignmentMiddle);
-REGS_SAVER_FUNC(CheckStackAlignmentMiddle, CheckStackAlignment);
+REGS_SAVER_FUNC_NOPROTO(CheckStackAlignmentMiddle, CheckStackAlignment);
 
 struct NaClSignalContext g_regs;
 jmp_buf g_jmp_buf;

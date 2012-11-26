@@ -12,7 +12,7 @@
 /* Test that we can't write to the dynamic code area. */
 
 int main(void) {
-  void (*func)();
+  void (*func)(void);
   uintptr_t code_ptr = (uintptr_t) DYNAMIC_CODE_SEGMENT_START;
 
   fprintf(stdout, "This should fault...\n");
@@ -29,7 +29,7 @@ int main(void) {
   fprintf(stdout, "Now try executing the code we wrote...\n");
 
   /* Double cast required to stop gcc complaining. */
-  func = (void (*)()) (uintptr_t) code_ptr;
+  func = (void (*)(void)) (uintptr_t) code_ptr;
   func();
   fprintf(stdout, "We managed to run the code. This is bad.\n");
   return 1;

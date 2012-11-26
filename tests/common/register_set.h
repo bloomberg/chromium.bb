@@ -161,10 +161,13 @@ extern const uint8_t kX86FlagBits[5];
  * callee_func in the form of a "struct NaClSignalContext *".
  */
 
+#define REGS_SAVER_FUNC(def_func, callee_func) \
+    void def_func(void); \
+    REGS_SAVER_FUNC_NOPROTO(def_func, callee_func)
+
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
 
-# define REGS_SAVER_FUNC(def_func, callee_func) \
-    void def_func(); \
+# define REGS_SAVER_FUNC_NOPROTO(def_func, callee_func) \
     void callee_func(struct NaClSignalContext *regs); \
     __asm__( \
         ".pushsection .text, \"ax\", @progbits\n" \
@@ -198,8 +201,7 @@ extern const uint8_t kX86FlagBits[5];
 
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
 
-# define REGS_SAVER_FUNC(def_func, callee_func) \
-    void def_func(); \
+# define REGS_SAVER_FUNC_NOPROTO(def_func, callee_func) \
     void callee_func(struct NaClSignalContext *regs); \
     __asm__( \
         ".pushsection .text, \"ax\", @progbits\n" \
@@ -248,8 +250,7 @@ extern const uint8_t kX86FlagBits[5];
  * sp is modified before or after being written differs between QEMU
  * and the Panda boards.)
  */
-# define REGS_SAVER_FUNC(def_func, callee_func) \
-    void def_func(); \
+# define REGS_SAVER_FUNC_NOPROTO(def_func, callee_func) \
     void callee_func(struct NaClSignalContext *regs); \
     __asm__( \
         ".pushsection .text, \"ax\", %progbits\n" \

@@ -2549,6 +2549,11 @@ nacl_env = MakeArchSpecificEnv().Clone(
     DYNCODE_LIBS = ['nacl_dyncode_private'],
     )
 
+# TODO(mseaborn): Enable this unconditionally once the C code on the
+# Chromium side compiles successfully with this warning.
+if not enable_chrome:
+  nacl_env.Append(CFLAGS=['-Wstrict-prototypes'])
+
 if nacl_env.Bit('target_arm') and not nacl_env.Bit('bitcode'):
   # arm-nacl-gcc is based on GCC>=4.7, where -Wall includes this new warning.
   # The COMPILE_ASSERT macro in base/basictypes.h and

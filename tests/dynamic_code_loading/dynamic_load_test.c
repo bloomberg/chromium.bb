@@ -109,7 +109,7 @@ void test_loading_code(void) {
   void *load_area = allocate_code_space(1);
   uint8_t buf[BUF_SIZE];
   int rc;
-  int (*func)();
+  int (*func)(void);
 
   copy_and_pad_fragment(buf, sizeof(buf), &template_func, &template_func_end);
 
@@ -121,7 +121,7 @@ void test_loading_code(void) {
    * conversion of object pointer to function pointer type
    * [-pedantic]".
    */
-  func = (int (*)()) (uintptr_t) load_area;
+  func = (int (*)(void)) (uintptr_t) load_area;
   rc = func();
   assert(rc == MARKER_OLD);
 }
@@ -143,12 +143,12 @@ void test_stress(void) {
 
   dest_max = (uint8_t *) load_area + DYNAMIC_CODE_PAGE_SIZE;
   for (dest = load_area; dest < dest_max; dest += sizeof(buf)) {
-    int (*func)();
+    int (*func)(void);
     int rc;
 
     rc = nacl_load_code(dest, buf, sizeof(buf));
     assert(rc == 0);
-    func = (int (*)()) (uintptr_t) dest;
+    func = (int (*)(void)) (uintptr_t) dest;
     rc = func();
     assert(rc == MARKER_OLD);
   }
@@ -389,12 +389,12 @@ void test_deleting_code(void) {
   uint8_t *load_area = (uint8_t *) allocate_code_space(1);
   uint8_t buf[BUF_SIZE];
   int rc;
-  int (*func)();
+  int (*func)(void);
 
   copy_and_pad_fragment(buf, sizeof(buf), &template_func, &template_func_end);
   rc = nacl_dyncode_create(load_area, buf, sizeof(buf));
   assert(rc == 0);
-  func = (int (*)()) (uintptr_t) load_area;
+  func = (int (*)(void)) (uintptr_t) load_area;
   rc = func();
   assert(rc == MARKER_OLD);
 
@@ -427,7 +427,7 @@ void test_deleting_code(void) {
                           &template_func_replacement_end);
     rc = nacl_dyncode_create(load_area, buf, sizeof(buf));
     assert(rc == 0);
-    func = (int (*)()) (uintptr_t) load_area;
+    func = (int (*)(void)) (uintptr_t) load_area;
     rc = func();
     assert(rc == MARKER_NEW);
 

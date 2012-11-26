@@ -14,9 +14,6 @@
 
 #define BOUND_SOCKET 3
 
-/* Hack: interaction with AV library.  Wait for AV startup RPC. */
-void __attribute__ ((weak))  __av_wait() { }
-
 struct WorkerData {
   int sock_fd;
   const struct NaClSrpcHandlerDesc *methods;
@@ -53,7 +50,6 @@ int NaClSrpcAcceptClientOnThread(const struct NaClSrpcHandlerDesc* methods) {
   /* On successful thread start the worker takes ownership. */
   worker_data = NULL;
   sock_fd = -1;
-  __av_wait();
   result = 1;
  done:
   free(worker_data);

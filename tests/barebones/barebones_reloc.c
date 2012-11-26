@@ -25,9 +25,9 @@
  * compiler may generate references to the symbols below, so we provide
  * some dummy functions below.
  */
-void *__aeabi_read_tp() { return 0; }
-void *__nacl_read_tp() { return 0; }
-void *__tls_get_addr() { return 0; }
+void *__aeabi_read_tp(void) { return 0; }
+void *__nacl_read_tp(void) { return 0; }
+void *__tls_get_addr(void) { return 0; }
 
 volatile __thread int var_tls = 1;
 volatile __thread double var_tls_double = 1.0;
