@@ -39,7 +39,7 @@ cr.define('options.browser_options', function() {
       return this.profileInfo_.filePath;
     },
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       DeletableItem.prototype.decorate.call(this);
 
@@ -72,24 +72,24 @@ cr.define('options.browser_options', function() {
   ProfileList.prototype = {
     __proto__: DeletableItemList.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       DeletableItemList.prototype.decorate.call(this);
       this.selectionModel = new ListSingleSelectionModel();
     },
 
-    /** @inheritDoc */
+    /** @override */
     createItem: function(pageInfo) {
       var item = new ProfileListItem(pageInfo);
       return item;
     },
 
-    /** @inheritDoc */
+    /** @override */
     deleteItemAtIndex: function(index) {
       ManageProfileOverlay.showDeleteDialog(this.dataModel.item(index));
     },
 
-    /** @inheritDoc */
+    /** @override */
     activateItemAtIndex: function(index) {
       // Don't allow the user to edit a profile that is not current.
       var profileInfo = this.dataModel.item(index);

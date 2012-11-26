@@ -64,7 +64,7 @@ cr.define('login', function() {
     // Timer id of pending load.
     loadingTimer_: undefined,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       this.frame_ = $('signin-frame');
 

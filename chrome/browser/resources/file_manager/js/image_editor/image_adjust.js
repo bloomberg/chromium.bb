@@ -17,14 +17,14 @@ ImageEditor.Mode.Adjust = function() {
 
 ImageEditor.Mode.Adjust.prototype = {__proto__: ImageEditor.Mode.prototype};
 
-/** @inheritDoc */
+/** @override */
 ImageEditor.Mode.Adjust.prototype.getCommand = function() {
   if (!this.filter_) return null;
 
   return new Command.Filter(this.name, this.filter_, this.doneMessage_);
 };
 
-/** @inheritDoc */
+/** @override */
 ImageEditor.Mode.Adjust.prototype.cleanUpUI = function() {
   ImageEditor.Mode.prototype.cleanUpUI.apply(this, arguments);
   this.hidePreview();

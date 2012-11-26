@@ -39,7 +39,7 @@ cr.define('options.browser_options', function() {
      */
     urlField_: null,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       InlineEditableItem.prototype.decorate.call(this);
 
@@ -87,12 +87,12 @@ cr.define('options.browser_options', function() {
         this.draggable = true;
     },
 
-    /** @inheritDoc */
+    /** @override */
     get currentInputIsValid() {
       return this.urlField_.validity.valid;
     },
 
-    /** @inheritDoc */
+    /** @override */
     get hasBeenEdited() {
       return this.urlField_.value != this.pageInfo_.url;
     },
@@ -127,7 +127,7 @@ cr.define('options.browser_options', function() {
      */
     dropPos: null,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       InlineEditableItemList.prototype.decorate.call(this);
 
@@ -140,14 +140,14 @@ cr.define('options.browser_options', function() {
       this.addEventListener('dragend', this.handleDragEnd_.bind(this));
     },
 
-    /** @inheritDoc */
+    /** @override */
     createItem: function(pageInfo) {
       var item = new StartupPageListItem(pageInfo);
       item.urlField_.disabled = this.disabled;
       return item;
     },
 
-    /** @inheritDoc */
+    /** @override */
     deleteItemAtIndex: function(index) {
       chrome.send('removeStartupPages', [String(index)]);
     },

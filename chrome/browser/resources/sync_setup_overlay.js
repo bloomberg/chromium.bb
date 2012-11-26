@@ -98,14 +98,14 @@ cr.define('options', function() {
       OptionsPage.closeOverlay();
     },
 
-    /** @inheritDoc */
+    /** @override */
     didShowPage: function() {
       var forceLogin = document.location.hash == '#forceLogin';
       var result = JSON.stringify({'forceLogin': forceLogin});
       chrome.send('SyncSetupAttachHandler', [result]);
     },
 
-    /** @inheritDoc */
+    /** @override */
     didClosePage: function() {
       chrome.send('SyncSetupDidClosePage');
     },

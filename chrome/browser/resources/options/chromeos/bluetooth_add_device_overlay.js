@@ -28,7 +28,7 @@ cr.define('options', function() {
      */
     deviceList_: null,
 
-    /** @inheritDoc */
+    /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
       this.createDeviceList_();

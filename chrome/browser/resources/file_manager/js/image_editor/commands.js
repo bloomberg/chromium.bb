@@ -290,7 +290,7 @@ Command.Rotate = function(rotate90) {
 
 Command.Rotate.prototype = { __proto__: Command.prototype };
 
-/** @inheritDoc */
+/** @override */
 Command.Rotate.prototype.execute = function(
     document, srcCanvas, callback, uiContext) {
   var result = this.createCanvas_(
@@ -307,7 +307,7 @@ Command.Rotate.prototype.execute = function(
   setTimeout(callback, 0, result, delay);
 };
 
-/** @inheritDoc */
+/** @override */
 Command.Rotate.prototype.revertView = function(canvas, imageView) {
   return imageView.replaceAndAnimate(canvas, null, -this.rotate90_);
 };
@@ -327,7 +327,7 @@ Command.Crop = function(imageRect) {
 
 Command.Crop.prototype = { __proto__: Command.prototype };
 
-/** @inheritDoc */
+/** @override */
 Command.Crop.prototype.execute = function(
     document, srcCanvas, callback, uiContext) {
   var result = this.createCanvas_(
@@ -340,7 +340,7 @@ Command.Crop.prototype.execute = function(
   setTimeout(callback, 0, result, delay);
 };
 
-/** @inheritDoc */
+/** @override */
 Command.Crop.prototype.revertView = function(canvas, imageView) {
   return imageView.animateAndReplace(canvas, this.imageRect_);
 };
@@ -363,7 +363,7 @@ Command.Filter = function(name, filter, message) {
 
 Command.Filter.prototype = { __proto__: Command.prototype };
 
-/** @inheritDoc */
+/** @override */
 Command.Filter.prototype.execute = function(
     document, srcCanvas, callback, uiContext) {
   var result = this.createCanvas_(document, srcCanvas);

@@ -151,7 +151,7 @@ cr.define('sync_promo', function() {
       chrome.send('SyncSetupDidClosePage');
     },
 
-    /** @inheritDoc */
+    /** @override */
     sendConfiguration_: function() {
       chrome.send('SyncPromo:UserFlowAction',
                   [actions.CONFIRMED_AFTER_SIGN_IN]);
@@ -159,7 +159,7 @@ cr.define('sync_promo', function() {
           arguments);
     },
 
-    /** @inheritDoc */
+    /** @override */
     setThrobbersVisible_: function(visible) {
       if (visible) {
         this.throbberStart_ = Date.now();

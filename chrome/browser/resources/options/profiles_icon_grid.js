@@ -32,7 +32,7 @@ cr.define('options', function() {
   ProfilesIconGridItem.prototype = {
     __proto__: ListItem.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       ListItem.prototype.decorate.call(this);
       var imageEl = cr.doc.createElement('img');
@@ -49,13 +49,13 @@ cr.define('options', function() {
   ProfilesIconGrid.prototype = {
     __proto__: Grid.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       Grid.prototype.decorate.call(this);
       this.selectionModel = new ListSingleSelectionModel();
     },
 
-    /** @inheritDoc */
+    /** @override */
     createItem: function(iconURL) {
       return new ProfilesIconGridItem(iconURL);
     },

@@ -36,7 +36,7 @@ cr.define('options', function() {
      */
     deletable_: true,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       ListItem.prototype.decorate.call(this);
 
@@ -113,7 +113,7 @@ cr.define('options', function() {
   DeletableItemList.prototype = {
     __proto__: List.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       List.prototype.decorate.call(this);
       this.addEventListener('click', this.handleClick_);

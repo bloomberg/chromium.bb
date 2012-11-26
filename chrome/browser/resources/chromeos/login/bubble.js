@@ -32,7 +32,7 @@ cr.define('cr.ui', function() {
     // Anchor element
     anchor_: undefined,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       this.ownerDocument.addEventListener('click',
                                           this.handleDocClick_.bind(this));

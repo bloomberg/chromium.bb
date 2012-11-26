@@ -17,7 +17,7 @@ cr.define('cr.ui', function() {
   DropDownContainer.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       this.classList.add('dropdown-container');
       // Selected item in the menu list.
@@ -89,7 +89,7 @@ cr.define('cr.ui', function() {
   DropDown.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       this.appendChild(this.createOverlay_());
       this.appendChild(this.title_ = this.createTitle_());

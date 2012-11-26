@@ -66,7 +66,7 @@ cr.define('login', function() {
   ErrorMessageScreen.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       cr.ui.DropDown.decorate($('offline-networks-list'));
       this.updateLocalizedContent_();

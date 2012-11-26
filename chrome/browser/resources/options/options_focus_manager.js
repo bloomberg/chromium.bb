@@ -14,7 +14,7 @@ cr.define('options', function() {
   OptionsFocusManager.prototype = {
     __proto__: FocusManager.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     getFocusParent: function() {
       var topPage = OptionsPage.getTopmostVisiblePage().pageDiv;
 

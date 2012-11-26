@@ -14,7 +14,7 @@
  */
  var CommandButton = cr.ui.define('button');
 
-/** @inheritDoc */
+/** @override */
 CommandButton.prototype.__proto__ = HTMLButtonElement.prototype;
 
 /**

@@ -54,7 +54,7 @@ cr.define('options', function() {
      */
     lastQuery_: null,
 
-    /** @inheritDoc */
+    /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
@@ -69,12 +69,12 @@ cr.define('options', function() {
       this.createPasswordExceptionsList_();
     },
 
-    /** @inheritDoc */
+    /** @override */
     canShowPage: function() {
       return !(cr.isChromeOS && UIAccountTweaks.loggedInAsGuest());
     },
 
-    /** @inheritDoc */
+    /** @override */
     didShowPage: function() {
       // Updating the password lists may cause a blocking platform dialog pop up
       // (Mac, Linux), so we delay this operation until the page is shown.

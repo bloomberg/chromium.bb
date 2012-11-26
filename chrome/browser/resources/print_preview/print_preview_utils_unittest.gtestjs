@@ -14,7 +14,7 @@ function PrintPreviewUtilsUnitTest () {
 PrintPreviewUtilsUnitTest.prototype = {
   __proto__: testing.Test.prototype,
 
-  /** @inheritDoc */
+  /** @override */
   extraLibraries: [
     'print_preview_utils.js',
   ]

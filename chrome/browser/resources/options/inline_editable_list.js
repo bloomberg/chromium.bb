@@ -67,7 +67,7 @@ cr.define('options', function() {
      */
     editClickTarget_: null,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       DeletableItem.prototype.decorate.call(this);
 
@@ -77,7 +77,7 @@ cr.define('options', function() {
       this.addEventListener('leadChange', this.handleLeadChange_);
     },
 
-    /** @inheritDoc */
+    /** @override */
     selectionChanged: function() {
       this.updateEditState();
     },
@@ -373,7 +373,7 @@ cr.define('options', function() {
      */
     focusPlaceholder: false,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       DeletableItemList.prototype.decorate.call(this);
       this.setAttribute('inlineeditable', '');

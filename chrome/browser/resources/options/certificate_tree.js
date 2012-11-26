@@ -90,20 +90,20 @@ cr.define('options', function() {
   CertificatesTree.prototype = {
     __proto__: Tree.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       Tree.prototype.decorate.call(this);
       this.treeLookup_ = {};
     },
 
-    /** @inheritDoc */
+    /** @override */
     addAt: function(child, index) {
       Tree.prototype.addAt.call(this, child, index);
       if (child.data && child.data.id)
         this.treeLookup_[child.data.id] = child;
     },
 
-    /** @inheritDoc */
+    /** @override */
     remove: function(child) {
       Tree.prototype.remove.call(this, child);
       if (child.data && child.data.id)

@@ -31,7 +31,7 @@ cr.define('options', function() {
   IgnoredHandlersListItem.prototype = {
     __proto__: DeletableItem.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       DeletableItem.prototype.decorate.call(this);
 
@@ -164,7 +164,7 @@ cr.define('options', function() {
       this.appendChild(removeElement);
     },
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       ListItem.prototype.decorate.call(this);
 
@@ -195,7 +195,7 @@ cr.define('options', function() {
   HandlersList.prototype = {
     __proto__: List.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     createItem: function(entry) {
       return new HandlerListItem(entry);
     },

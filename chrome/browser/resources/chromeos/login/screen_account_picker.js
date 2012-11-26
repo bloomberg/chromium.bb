@@ -39,7 +39,7 @@ cr.define('login', function() {
   AccountPickerScreen.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       login.PodRow.decorate($('pod-row'));
     },

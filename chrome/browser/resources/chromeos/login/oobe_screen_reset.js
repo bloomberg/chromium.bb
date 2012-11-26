@@ -26,7 +26,7 @@ cr.define('oobe', function() {
   ResetScreen.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
     },
 

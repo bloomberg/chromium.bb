@@ -29,7 +29,7 @@ cr.define('oobe', function() {
   UpdateScreen.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
     },
 

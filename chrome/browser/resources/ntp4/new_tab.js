@@ -101,7 +101,7 @@ cr.define('ntp', function() {
   NewTabView.prototype = {
     __proto__: ntp.PageListView.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     appendTilePage: function(page, title, titleIsEditable, opt_refNode) {
       ntp.PageListView.prototype.appendTilePage.apply(this, arguments);
 

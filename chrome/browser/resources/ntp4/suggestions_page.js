@@ -370,12 +370,12 @@ cr.define('ntp', function() {
       logEvent('suggestions.layout: ' + (Date.now() - startTime));
     },
 
-    /** @inheritDoc */
+    /** @override */
     shouldAcceptDrag: function(e) {
       return false;
     },
 
-    /** @inheritDoc */
+    /** @override */
     heightForWidth: heightForWidth,
   };
 

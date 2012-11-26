@@ -60,7 +60,7 @@ cr.define('oobe', function() {
      */
     selectedUserImage_: -1,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function(element) {
       var imageGrid = $('user-image-grid');
       UserImagesGrid.decorate(imageGrid);

@@ -306,7 +306,7 @@ NetworkMenuItem.prototype = {
     }
   },
 
-  /** @inheritDoc */
+  /** @override */
   activate: function() {
     // Close action area and connect if it is visible.
     if (this.isActionVisible_()) {
@@ -334,7 +334,7 @@ var NetworkMenu = cr.ui.define('div');
 NetworkMenu.prototype = {
   __proto__: Menu.prototype,
 
-  /** @inheritDoc */
+  /** @override */
   createMenuItem: function(attrs) {
     if (attrs.type == 'command') {
       return new NetworkMenuItem();
@@ -343,7 +343,7 @@ NetworkMenu.prototype = {
     }
   },
 
-  /** @inheritDoc */
+  /** @override */
   onClick_: function(event, item) {
     // If item is a NetworkMenuItem, it must have at least one of the following.
     if (item.autoConnectCheckbox || item.ssidEdit || item.passwordEdit) {

@@ -700,7 +700,7 @@ cr.define('ntp', function() {
         }
     },
 
-    /** @inheritDoc */
+    /** @override */
     doDragOver: function(e) {
       // Only animatedly re-arrange if the user is currently dragging an app.
       var tile = ntp.getCurrentlyDraggingTile();
@@ -712,7 +712,7 @@ cr.define('ntp', function() {
       }
     },
 
-    /** @inheritDoc */
+    /** @override */
     shouldAcceptDrag: function(e) {
       if (ntp.getCurrentlyDraggingTile())
         return true;
@@ -722,7 +722,7 @@ cr.define('ntp', function() {
                                           'text/uri-list') != -1;
     },
 
-    /** @inheritDoc */
+    /** @override */
     addDragData: function(dataTransfer, index) {
       var sourceId = -1;
       var currentlyDraggingTile = ntp.getCurrentlyDraggingTile();
@@ -798,7 +798,7 @@ cr.define('ntp', function() {
       chrome.send('generateAppForLink', [data.url, data.title, 0]);
     },
 
-    /** @inheritDoc */
+    /** @override */
     tileMoved: function(draggedTile) {
       if (!(draggedTile.firstChild instanceof App))
         return;
@@ -815,7 +815,7 @@ cr.define('ntp', function() {
       chrome.send('reorderApps', [draggedTile.firstChild.appId, appIds]);
     },
 
-    /** @inheritDoc */
+    /** @override */
     setDropEffect: function(dataTransfer) {
       var tile = ntp.getCurrentlyDraggingTile();
       if (tile && tile.querySelector('.app'))

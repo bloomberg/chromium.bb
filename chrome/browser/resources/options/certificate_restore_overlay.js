@@ -37,7 +37,7 @@ cr.define('options', function() {
       self.clearInputFields_();
     },
 
-    /** @inheritDoc */
+    /** @override */
     didShowPage: function() {
       $('certificateRestorePassword').focus();
     },

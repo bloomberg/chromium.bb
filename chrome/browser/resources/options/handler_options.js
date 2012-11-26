@@ -32,7 +32,7 @@ cr.define('options', function() {
      */
     handlersList_: null,
 
-    /** @inheritDoc */
+    /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 

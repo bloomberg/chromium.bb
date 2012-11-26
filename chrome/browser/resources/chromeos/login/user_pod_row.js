@@ -99,7 +99,7 @@ cr.define('login', function() {
   UserPod.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       this.tabIndex = UserPodTabOrder.POD_INPUT;
       this.removeUserButtonElement.tabIndex = UserPodTabOrder.REMOVE_USER;
@@ -436,7 +436,7 @@ cr.define('login', function() {
     // Pods whose initial images haven't been loaded yet.
     podsWithPendingImages_: [],
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       this.style.left = 0;
 

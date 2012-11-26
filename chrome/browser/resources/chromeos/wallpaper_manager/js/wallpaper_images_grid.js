@@ -28,7 +28,7 @@ cr.define('wallpapers', function() {
   WallpaperThumbnailsGridItem.prototype = {
     __proto__: GridItem.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       GridItem.prototype.decorate.call(this);
       var imageEl = cr.doc.createElement('img');
@@ -56,21 +56,21 @@ cr.define('wallpapers', function() {
   WallpaperThumbnailsGridSelectionController.prototype = {
     __proto__: GridSelectionController.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     getIndexBefore: function(index) {
       var result =
           GridSelectionController.prototype.getIndexBefore.call(this, index);
       return result == -1 ? this.getLastIndex() : result;
     },
 
-    /** @inheritDoc */
+    /** @override */
     getIndexAfter: function(index) {
       var result =
           GridSelectionController.prototype.getIndexAfter.call(this, index);
       return result == -1 ? this.getFirstIndex() : result;
     },
 
-    /** @inheritDoc */
+    /** @override */
     handleKeyDown: function(e) {
       if (e.keyIdentifier == 'Enter')
         cr.dispatchSimpleEvent(this.grid_, 'activate');
@@ -90,12 +90,12 @@ cr.define('wallpapers', function() {
   WallpaperThumbnailsGrid.prototype = {
     __proto__: Grid.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     createSelectionController: function(sm) {
       return new WallpaperThumbnailsGridSelectionController(sm, this);
     },
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       Grid.prototype.decorate.call(this);
       this.dataModel = new ArrayDataModel([]);

@@ -27,7 +27,7 @@ cr.define('login', function() {
     // Whether guest button should be shown when header bar is in normal mode.
     showGuest_: false,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       $('shutdown-header-bar-item').addEventListener('click',
           this.handleShutdownClick_);

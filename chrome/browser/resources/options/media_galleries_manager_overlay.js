@@ -43,7 +43,8 @@ cr.define('options', function() {
     },
 
     /**
-     * @inheritDoc
+     * TODO(dbeam): why is a private method being overridden?
+     * @override
      * @private
      */
     handleVisibleChange_: function() {

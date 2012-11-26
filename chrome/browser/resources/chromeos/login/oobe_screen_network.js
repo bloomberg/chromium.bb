@@ -31,7 +31,7 @@ cr.define('oobe', function() {
      */
     dropdown_: null,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       Oobe.setupSelect($('language-select'),
                        templateData.languageList,

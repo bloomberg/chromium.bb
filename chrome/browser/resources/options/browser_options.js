@@ -32,9 +32,7 @@ cr.define('options', function() {
      */
     onShowHomeButtonChangedCalled_: false,
 
-    /**
-     * @inheritDoc
-     */
+    /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
       var self = this;
@@ -415,9 +413,7 @@ cr.define('options', function() {
       }
     },
 
-    /**
-     * @inheritDoc
-     */
+    /** @override */
     didShowPage: function() {
       $('search-field').focus();
     },

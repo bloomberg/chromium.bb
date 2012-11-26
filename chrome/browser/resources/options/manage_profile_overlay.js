@@ -84,7 +84,7 @@ cr.define('options', function() {
       };
     },
 
-    /** @inheritDoc */
+    /** @override */
     didShowPage: function() {
       chrome.send('requestDefaultProfileIcons');
 

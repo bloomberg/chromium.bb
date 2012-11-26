@@ -367,12 +367,12 @@ cr.define('ntp', function() {
       logEvent('mostVisited.layout: ' + (Date.now() - startTime));
     },
 
-    /** @inheritDoc */
+    /** @override */
     shouldAcceptDrag: function(e) {
       return false;
     },
 
-    /** @inheritDoc */
+    /** @override */
     heightForWidth: heightForWidth,
   };
 

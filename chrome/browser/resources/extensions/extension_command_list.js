@@ -74,7 +74,7 @@ cr.define('options', function() {
      */
     capturingElement_: null,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       this.textContent = '';
 

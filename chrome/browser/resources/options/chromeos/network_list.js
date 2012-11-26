@@ -236,7 +236,7 @@ cr.define('options.network', function() {
       this.appendChild(new ManagedNetworkIndicator());
     },
 
-    /* @inheritDoc */
+    /** @override */
     decorate: function() {
       ListItem.prototype.decorate.call(this);
       this.className = 'network-group';
@@ -278,7 +278,7 @@ cr.define('options.network', function() {
      */
     menu_: null,
 
-    /* @inheritDoc */
+    /** @override */
     decorate: function() {
       this.subtitle = null;
       if (this.data.iconType)
@@ -378,7 +378,7 @@ cr.define('options.network', function() {
   NetworkSelectorItem.prototype = {
     __proto__: NetworkMenuItem.prototype,
 
-    /* @inheritDoc */
+    /** @override */
     decorate: function() {
       // TODO(kevers): Generalize method of setting default label.
       var policyManaged = false;
@@ -670,7 +670,7 @@ cr.define('options.network', function() {
   NetworkButtonItem.prototype = {
     __proto__: NetworkListItem.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       if (this.data.subtitle)
         this.subtitle = this.data.subtitle;
@@ -752,7 +752,7 @@ cr.define('options.network', function() {
   NetworkList.prototype = {
     __proto__: List.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       List.prototype.decorate.call(this);
       this.startBatchUpdates();
@@ -887,7 +887,7 @@ cr.define('options.network', function() {
       this.endBatchUpdates();
     },
 
-    /** @inheritDoc */
+    /** @override */
     createItem: function(entry) {
       if (entry.networkList)
         return new NetworkSelectorItem(entry);
@@ -1033,7 +1033,7 @@ cr.define('options.network', function() {
   ManagedNetworkIndicator.prototype = {
     __proto__: ControlledSettingIndicator.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       ControlledSettingIndicator.prototype.decorate.call(this);
       this.controlledBy = 'policy';
@@ -1042,7 +1042,7 @@ cr.define('options.network', function() {
       this.removeAttribute('tabindex');
     },
 
-    /** @inheritDoc */
+    /** @override */
     handleEvent: function(event) {
       // Prevent focus blurring as that would close any currently open menu.
       if (event.type == 'mousedown')
@@ -1061,7 +1061,7 @@ cr.define('options.network', function() {
       event.stopPropagation();
     },
 
-    /** @inheritDoc */
+    /** @override */
     toggleBubble_: function() {
       if (activeMenu_ && !$(activeMenu_).contains(this))
         closeMenu_();

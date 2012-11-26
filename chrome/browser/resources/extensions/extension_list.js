@@ -35,7 +35,7 @@ cr.define('options', function() {
   ExtensionsList.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       this.textContent = '';
 

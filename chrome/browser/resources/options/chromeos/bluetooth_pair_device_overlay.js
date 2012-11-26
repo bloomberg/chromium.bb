@@ -72,7 +72,7 @@ cr.define('options', function() {
      */
     dismissible_: true,
 
-     /** @inheritDoc */
+    /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
       var self = this;

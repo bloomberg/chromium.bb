@@ -45,14 +45,14 @@ cr.define('cr.ui', function() {
       return target && target.contextMenu;
     },
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       this.tabIndex = -1;
       this.addEventListener('mouseup', this);
       MenuButton.prototype.decorate.call(this);
     },
 
-    /** @inheritDoc */
+    /** @override */
     handleEvent: function(e) {
       switch (e.type) {
         case 'mousedown':

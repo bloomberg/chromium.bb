@@ -64,7 +64,7 @@ cr.define('bmm', function() {
   BookmarkList.prototype = {
     __proto__: List.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       List.prototype.decorate.call(this);
       this.addEventListener('mousedown', this.handleMouseDown_);
@@ -371,7 +371,7 @@ cr.define('bmm', function() {
   BookmarkListItem.prototype = {
     __proto__: ListItem.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       ListItem.prototype.decorate.call(this);
 

@@ -152,9 +152,7 @@ cr.define('options', function() {
                                 this.keyDownEventHandler_.bind(this));
     },
 
-    /**
-     * @inheritDoc
-     */
+    /** @override */
     get sticky() {
       return true;
     },

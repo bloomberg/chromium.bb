@@ -46,7 +46,7 @@ cr.define('options', function() {
      */
     editCanceled_: true,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       this.classList.add('editable-text-field');
 

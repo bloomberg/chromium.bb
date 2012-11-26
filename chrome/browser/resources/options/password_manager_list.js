@@ -27,7 +27,7 @@ cr.define('options.passwordManager', function() {
   PasswordListItem.prototype = {
     __proto__: DeletableItem.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function(showPasswords) {
       DeletableItem.prototype.decorate.call(this);
 
@@ -79,7 +79,7 @@ cr.define('options.passwordManager', function() {
       this.contentElement.appendChild(passwordInputDiv);
     },
 
-    /** @inheritDoc */
+    /** @override */
     selectionChanged: function() {
       var passwordInput = this.querySelector('input[type=password]');
       var textInput = this.querySelector('input[type=text]');
@@ -219,7 +219,7 @@ cr.define('options.passwordManager', function() {
      */
     showPasswords_: true,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       DeletableItemList.prototype.decorate.call(this);
       Preferences.getInstance().addEventListener(
@@ -237,12 +237,12 @@ cr.define('options.passwordManager', function() {
       this.redraw();
     },
 
-    /** @inheritDoc */
+    /** @override */
     createItem: function(entry) {
       return new PasswordListItem(entry, this.showPasswords_);
     },
 
-    /** @inheritDoc */
+    /** @override */
     deleteItemAtIndex: function(index) {
       var item = this.dataModel.item(index);
       if (item && item.length > 3) {
@@ -270,12 +270,12 @@ cr.define('options.passwordManager', function() {
   PasswordExceptionsList.prototype = {
     __proto__: DeletableItemList.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     createItem: function(entry) {
       return new PasswordExceptionsListItem(entry);
     },
 
-    /** @inheritDoc */
+    /** @override */
     deleteItemAtIndex: function(index) {
       PasswordManager.removePasswordException(index);
     },

@@ -29,9 +29,7 @@ cr.define('options', function() {
   SettingsDialog.prototype = {
     __proto__: OptionsPage.prototype,
 
-    /**
-     * @inheritDoc
-     */
+    /** @override */
     initializePage: function() {
       this.okButton.onclick = this.handleConfirm.bind(this);
       this.cancelButton.onclick = this.handleCancel.bind(this);

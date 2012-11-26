@@ -72,7 +72,7 @@ cr.define('options', function() {
       });
     },
 
-    /** @inheritDoc */
+    /** @override */
     didShowPage: function() {
       this.updateFavicon_();
     },

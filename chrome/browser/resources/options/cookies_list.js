@@ -132,7 +132,7 @@ cr.define('options', function() {
   CookieListItem.prototype = {
     __proto__: DeletableItem.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       this.siteChild = this.ownerDocument.createElement('div');
       this.siteChild.className = 'cookie-site';
@@ -683,7 +683,7 @@ cr.define('options', function() {
   CookiesList.prototype = {
     __proto__: DeletableItemList.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       DeletableItemList.prototype.decorate.call(this);
       this.classList.add('cookie-list');
@@ -799,7 +799,7 @@ cr.define('options', function() {
     expandedItem: null,
 
     // from cr.ui.List
-    /** @inheritDoc */
+    /** @override */
     createItem: function(data) {
       // We use the cached expanded item in order to allow it to maintain some
       // state (like its fixed height, and which bubble is selected).
@@ -809,7 +809,7 @@ cr.define('options', function() {
     },
 
     // from options.DeletableItemList
-    /** @inheritDoc */
+    /** @override */
     deleteItemAtIndex: function(index) {
       var item = this.dataModel.item(index);
       if (item) {

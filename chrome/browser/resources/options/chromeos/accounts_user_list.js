@@ -20,7 +20,7 @@ cr.define('options.accounts', function() {
 
     pref: 'cros.accounts.users',
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       List.prototype.decorate.call(this);
 
@@ -127,7 +127,7 @@ cr.define('options.accounts', function() {
   UserListItem.prototype = {
     __proto__: ListItem.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       ListItem.prototype.decorate.call(this);
 

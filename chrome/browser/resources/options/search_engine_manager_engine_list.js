@@ -69,7 +69,7 @@ cr.define('options.search_engines', function() {
      */
     currentlyValid_: false,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       InlineEditableItem.prototype.decorate.call(this);
 
@@ -182,12 +182,12 @@ cr.define('options.search_engines', function() {
       }
     },
 
-    /** @inheritDoc */
+    /** @override */
     get currentInputIsValid() {
       return !this.waitingForValidation_ && this.currentlyValid_;
     },
 
-    /** @inheritDoc */
+    /** @override */
     get hasBeenEdited() {
       var engine = this.searchEngine_;
       return this.nameField_.value != engine.name ||
@@ -291,12 +291,12 @@ cr.define('options.search_engines', function() {
   SearchEngineList.prototype = {
     __proto__: InlineEditableItemList.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     createItem: function(searchEngine) {
       return new SearchEngineListItem(searchEngine);
     },
 
-    /** @inheritDoc */
+    /** @override */
     deleteItemAtIndex: function(index) {
       var modelIndex = this.dataModel.item(index).modelIndex;
       chrome.send('removeSearchEngine', [String(modelIndex)]);

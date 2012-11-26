@@ -36,18 +36,18 @@ cr.define('options', function() {
   MediaGalleriesList.prototype = {
     __proto__: DeletableItemList.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       DeletableItemList.prototype.decorate.call(this);
       this.autoExpands_ = true;
     },
 
-    /** @inheritDoc */
+    /** @override */
     createItem: function(galleryInfo) {
       return new MediaGalleriesListItem(galleryInfo);
     },
 
-    /** @inheritDoc */
+    /** @override */
     deleteItemAtIndex: function(index) {
       chrome.send('forgetGallery', [this.dataModel.item(index).id]);
     },

@@ -58,10 +58,7 @@ cr.define('options', function() {
           OptionsPage.closeOverlay.bind(OptionsPage);
     },
 
-    /**
-     * Clear search filter when the dialog is displayed.
-     * @inheritDoc
-     */
+    /** @override */
     didShowPage: function() {
       this.pageDiv.querySelector('.cookies-search-box').value = '';
     },

@@ -25,7 +25,7 @@ cr.define('ntp', function() {
   DotList.prototype = {
     __proto__: HTMLUListElement.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       this.addEventListener('keydown', this.onKeyDown_.bind(this));
       navDots = this.getElementsByClassName('dot');

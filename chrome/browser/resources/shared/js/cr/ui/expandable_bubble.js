@@ -22,7 +22,7 @@ cr.define('cr.ui', function() {
   ExpandableBubble.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       this.className = 'expandable-bubble';
       this.innerHTML =

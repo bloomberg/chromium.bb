@@ -34,7 +34,7 @@ cr.define('options', function() {
      */
     languageCode_: null,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       DeletableItem.prototype.decorate.call(this);
 
@@ -107,7 +107,7 @@ cr.define('options', function() {
     // in "Accept-Language" header in HTTP requests.
     acceptLanguagesPref: 'intl.accept_languages',
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       DeletableItemList.prototype.decorate.call(this);
       this.selectionModel = new ListSingleSelectionModel;
@@ -201,7 +201,7 @@ cr.define('options', function() {
       return false;
     },
 
-    /** @inheritDoc */
+    /** @override */
     deleteItemAtIndex: function(index) {
       if (index >= 0) {
         this.dataModel.splice(index, 1);

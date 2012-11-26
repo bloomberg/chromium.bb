@@ -26,7 +26,7 @@ cr.define('login', function() {
   TPMErrorMessageScreen.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
     }
   };

@@ -67,13 +67,13 @@ cr.define('options', function() {
       startupPagesList.autocompleteList = suggestionList;
     },
 
-    /** @inheritDoc */
+    /** @override */
     handleConfirm: function() {
       SettingsDialog.prototype.handleConfirm.call(this);
       chrome.send('commitStartupPrefChanges');
     },
 
-    /** @inheritDoc */
+    /** @override */
     handleCancel: function() {
       SettingsDialog.prototype.handleCancel.call(this);
       chrome.send('cancelStartupPrefChanges');

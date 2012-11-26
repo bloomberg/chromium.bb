@@ -13,7 +13,7 @@ cr.define('extensions', function() {
   ExtensionFocusManager.prototype = {
     __proto__: FocusManager.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     getFocusParent: function() {
       var overlay = extensions.ExtensionSettings.getCurrentOverlay();
       return overlay || $('extension-settings');

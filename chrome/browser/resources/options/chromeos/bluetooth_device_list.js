@@ -54,7 +54,7 @@ cr.define('options.system.bluetooth', function() {
      */
     data: null,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       DeletableItem.prototype.decorate.call(this);
       var label = this.ownerDocument.createElement('div');
@@ -100,7 +100,7 @@ cr.define('options.system.bluetooth', function() {
      */
     itemWidth_: 400,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       DeletableItemList.prototype.decorate.call(this);
       // Force layout of all items even if not in the viewport to address
@@ -219,7 +219,7 @@ cr.define('options.system.bluetooth', function() {
       }
     },
 
-    /** @inheritDoc */
+    /** @override */
     createItem: function(entry) {
       return new BluetoothListItem(entry);
     },
@@ -298,7 +298,7 @@ cr.define('options.system.bluetooth', function() {
       }
     },
 
-    /** @inheritDoc */
+    /** @override */
     deleteItemAtIndex: function(index) {
       var selectedDevice = this.getSelectedDevice_();
       this.dataModel.splice(index, 1);

@@ -20,7 +20,7 @@ cr.define('options.proxyexceptions', function() {
 
     pref: 'cros.session.proxy.ignorelist',
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       List.prototype.decorate.call(this);
       this.autoExpands = true;
@@ -122,7 +122,7 @@ cr.define('options.proxyexceptions', function() {
   ProxyExceptionsItem.prototype = {
     __proto__: ListItem.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       ListItem.prototype.decorate.call(this);
       this.className = 'exception-list-item';

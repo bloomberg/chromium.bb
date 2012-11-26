@@ -165,7 +165,7 @@ cr.define('ntp', function() {
       this.classList.add('thumbnail-page');
     },
 
-    /** @inheritDoc */
+    /** @override */
     shouldAcceptDrag: function(e) {
       return false;
     },

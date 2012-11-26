@@ -26,7 +26,7 @@ cr.define('oobe', function() {
   EulaScreen.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       $('stats-help-link').addEventListener('click', function(event) {
         chrome.send('eulaOnLearnMore');

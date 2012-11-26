@@ -42,7 +42,7 @@ cr.define('options.autofillOptions', function() {
   AddressListItem.prototype = {
     __proto__: DeletableItem.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       DeletableItem.prototype.decorate.call(this);
 
@@ -81,7 +81,7 @@ cr.define('options.autofillOptions', function() {
   CreditCardListItem.prototype = {
     __proto__: DeletableItem.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       DeletableItem.prototype.decorate.call(this);
 
@@ -125,7 +125,7 @@ cr.define('options.autofillOptions', function() {
   ValuesListItem.prototype = {
     __proto__: InlineEditableItem.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       InlineEditableItem.prototype.decorate.call(this);
 
@@ -237,7 +237,7 @@ cr.define('options.autofillOptions', function() {
   NameListItem.prototype = {
     __proto__: ValuesListItem.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       InlineEditableItem.prototype.decorate.call(this);
 
@@ -273,19 +273,19 @@ cr.define('options.autofillOptions', function() {
       this.addEventListener('commitedit', this.onEditCommitted_);
     },
 
-    /** @inheritDoc */
+    /** @override */
     value_: function() {
       return [this.firstNameInput.value,
               this.middleNameInput.value,
               this.lastNameInput.value];
     },
 
-    /** @inheritDoc */
+    /** @override */
     valueIsNonEmpty_: function(value) {
       return value[0] || value[1] || value[2];
     },
 
-    /** @inheritDoc */
+    /** @override */
     valuesAreEqual_: function(value1, value2) {
       // First, check for null values.
       if (!value1 || !value2)
@@ -296,7 +296,7 @@ cr.define('options.autofillOptions', function() {
              value1[2] === value2[2];
     },
 
-    /** @inheritDoc */
+    /** @override */
     clearValue_: function() {
       this.firstNameInput.value = '';
       this.middleNameInput.value = '';
@@ -343,17 +343,17 @@ cr.define('options.autofillOptions', function() {
       AutofillProfileList.prototype.decorate.call(this);
     },
 
-    /** @inheritDoc */
+    /** @override */
     activateItemAtIndex: function(index) {
       AutofillOptions.loadAddressEditor(this.dataModel.item(index)[0]);
     },
 
-    /** @inheritDoc */
+    /** @override */
     createItem: function(entry) {
       return new AddressListItem(entry);
     },
 
-    /** @inheritDoc */
+    /** @override */
     deleteItemAtIndex: function(index) {
       AutofillOptions.removeData(this.dataModel.item(index)[0]);
     },
@@ -373,17 +373,17 @@ cr.define('options.autofillOptions', function() {
       AutofillProfileList.prototype.decorate.call(this);
     },
 
-    /** @inheritDoc */
+    /** @override */
     activateItemAtIndex: function(index) {
       AutofillOptions.loadCreditCardEditor(this.dataModel.item(index)[0]);
     },
 
-    /** @inheritDoc */
+    /** @override */
     createItem: function(entry) {
       return new CreditCardListItem(entry);
     },
 
-    /** @inheritDoc */
+    /** @override */
     deleteItemAtIndex: function(index) {
       AutofillOptions.removeData(this.dataModel.item(index)[0]);
     },
@@ -399,17 +399,17 @@ cr.define('options.autofillOptions', function() {
   AutofillValuesList.prototype = {
     __proto__: InlineEditableItemList.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     createItem: function(entry) {
       return new ValuesListItem(this, entry);
     },
 
-    /** @inheritDoc */
+    /** @override */
     deleteItemAtIndex: function(index) {
       this.dataModel.splice(index, 1);
     },
 
-    /** @inheritDoc */
+    /** @override */
     shouldFocusPlaceholder: function() {
       return false;
     },
@@ -464,7 +464,7 @@ cr.define('options.autofillOptions', function() {
   AutofillNameValuesList.prototype = {
     __proto__: AutofillValuesList.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     createItem: function(entry) {
       return new NameListItem(this, entry);
     },
@@ -480,7 +480,7 @@ cr.define('options.autofillOptions', function() {
   AutofillPhoneValuesList.prototype = {
     __proto__: AutofillValuesList.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     validateAndSave: function(index, remove, value) {
       var numbers = this.dataModel.slice(0, this.dataModel.length - 1);
       numbers.splice(index, remove, value);

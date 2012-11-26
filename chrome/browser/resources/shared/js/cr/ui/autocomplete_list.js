@@ -32,7 +32,7 @@ cr.define('cr.ui', function() {
   AutocompleteListItem.prototype = {
     __proto__: ListItem.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       ListItem.prototype.decorate.call(this);
 
@@ -93,7 +93,7 @@ cr.define('cr.ui', function() {
      */
     suggestionUpdateRequestCallback_: null,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       List.prototype.decorate.call(this);
       this.classList.add('autocomplete-suggestions');
@@ -120,7 +120,7 @@ cr.define('cr.ui', function() {
       this.hidden = true;
     },
 
-    /** @inheritDoc */
+    /** @override */
     createItem: function(pageInfo) {
       return new AutocompleteListItem(pageInfo);
     },

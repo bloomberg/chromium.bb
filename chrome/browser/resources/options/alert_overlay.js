@@ -44,7 +44,7 @@ cr.define('options', function() {
       };
     },
 
-    /** @inheritDoc */
+    /** @override */
     get nestingLevel() {
       // AlertOverlay is special in that it is not tied to one page or overlay.
       // Set the nesting level arbitrarily high so as to always be recognized as
@@ -83,7 +83,7 @@ cr.define('options', function() {
       canShow_ = false;
     },
 
-    /** @inheritDoc */
+    /** @override */
     canShowPage: function() {
       return this.canShow_;
     },

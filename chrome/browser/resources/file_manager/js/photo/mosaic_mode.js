@@ -511,17 +511,17 @@ Mosaic.SelectionController = function(selectionModel, layoutModel) {
 Mosaic.SelectionController.prototype.__proto__ =
     cr.ui.ListSelectionController.prototype;
 
-/** @inheritDoc */
+/** @override */
 Mosaic.SelectionController.prototype.getLastIndex = function() {
   return this.layoutModel_.getLaidOutTileCount() - 1;
 };
 
-/** @inheritDoc */
+/** @override */
 Mosaic.SelectionController.prototype.getIndexBefore = function(index) {
   return this.layoutModel_.getAdjacentIndex(index, -1);
 };
 
-/** @inheritDoc */
+/** @override */
 Mosaic.SelectionController.prototype.getIndexAfter = function(index) {
   return this.layoutModel_.getAdjacentIndex(index, 1);
 };

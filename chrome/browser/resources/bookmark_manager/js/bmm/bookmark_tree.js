@@ -101,14 +101,14 @@ cr.define('bmm', function() {
   BookmarkTreeItem.prototype = {
     __proto__: TreeItem.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     addAt: function(child, index) {
       TreeItem.prototype.addAt.call(this, child, index);
       if (child.bookmarkNode)
         treeLookup[child.bookmarkNode.id] = child;
     },
 
-    /** @inheritDoc */
+    /** @override */
     remove: function(child) {
       TreeItem.prototype.remove.call(this, child);
       if (child.bookmarkNode)
@@ -284,14 +284,14 @@ cr.define('bmm', function() {
       this.textContent = '';
     },
 
-    /** @inheritDoc */
+    /** @override */
     addAt: function(child, index) {
       Tree.prototype.addAt.call(this, child, index);
       if (child.bookmarkNode)
         treeLookup[child.bookmarkNode.id] = child;
     },
 
-    /** @inheritDoc */
+    /** @override */
     remove: function(child) {
       Tree.prototype.remove.call(this, child);
       if (child.bookmarkNode)

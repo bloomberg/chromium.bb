@@ -81,7 +81,7 @@ cr.define('oobe', function() {
      */
     confirmDialog_: null,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       $('oauth-enroll-error-retry').addEventListener('click',
                                                      this.doRetry_.bind(this));

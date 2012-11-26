@@ -78,7 +78,7 @@ cr.define('options', function() {
      */
     data: null,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       DeletableItem.prototype.decorate.call(this);
       var label = this.ownerDocument.createElement('div');
@@ -99,7 +99,7 @@ cr.define('options', function() {
   PreferredNetworkList.prototype = {
     __proto__: DeletableItemList.prototype,
 
-    /** @inheritDoc */
+    /** @override */
     decorate: function() {
       DeletableItemList.prototype.decorate.call(this);
       this.addEventListener('blur', this.onBlur_);
@@ -114,12 +114,12 @@ cr.define('options', function() {
       this.selectionModel.unselectAll();
     },
 
-    /** @inheritDoc */
+    /** @override */
     createItem: function(entry) {
       return new PreferredNetworkListItem(entry);
     },
 
-    /** @inheritDoc */
+    /** @override */
     deleteItemAtIndex: function(index) {
       var item = this.dataModel.item(index);
       if (item) {

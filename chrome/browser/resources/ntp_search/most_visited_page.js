@@ -205,7 +205,7 @@ cr.define('ntp', function() {
         chrome.send('mostVisitedSelected');
     },
 
-    /** @inheritDoc */
+    /** @override */
     setDataList: function(dataList) {
       var startTime = Date.now();
       ThumbnailPage.prototype.setDataList.apply(this, arguments);

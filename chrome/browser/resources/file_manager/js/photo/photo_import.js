@@ -409,7 +409,7 @@ function GridSelectionController(selectionModel, grid) {
 GridSelectionController.prototype.__proto__ =
     cr.ui.ListSelectionController.prototype;
 
-/** @inheritDoc */
+/** @override */
 GridSelectionController.prototype.getIndexBelow = function(index) {
   if (index == this.getLastIndex()) {
     return -1;
@@ -433,7 +433,7 @@ GridSelectionController.prototype.getIndexBelow = function(index) {
   return this.getLastIndex();
 };
 
-/** @inheritDoc */
+/** @override */
 GridSelectionController.prototype.getIndexAbove = function(index) {
   if (index == this.getFirstIndex()) {
     return -1;
@@ -448,7 +448,7 @@ GridSelectionController.prototype.getIndexAbove = function(index) {
   return index < 0 ? this.getFirstIndex() : index;
 };
 
-/** @inheritDoc */
+/** @override */
 GridSelectionController.prototype.getIndexBefore = function(index) {
   var dm = this.grid_.dataModel;
   index--;
@@ -458,7 +458,7 @@ GridSelectionController.prototype.getIndexBefore = function(index) {
   return index;
 };
 
-/** @inheritDoc */
+/** @override */
 GridSelectionController.prototype.getIndexAfter = function(index) {
   var dm = this.grid_.dataModel;
   index++;
@@ -468,7 +468,7 @@ GridSelectionController.prototype.getIndexAfter = function(index) {
   return index == dm.length ? -1 : index;
 };
 
-/** @inheritDoc */
+/** @override */
 GridSelectionController.prototype.getFirstIndex = function() {
   var dm = this.grid_.dataModel;
   for (var index = 0; index < dm.length; index++) {
@@ -478,7 +478,7 @@ GridSelectionController.prototype.getFirstIndex = function() {
   return -1;
 };
 
-/** @inheritDoc */
+/** @override */
 GridSelectionController.prototype.getLastIndex = function() {
   var dm = this.grid_.dataModel;
   for (var index = dm.length - 1; index >= 0; index--) {

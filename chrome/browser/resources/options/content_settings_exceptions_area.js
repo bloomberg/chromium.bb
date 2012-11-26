@@ -281,12 +281,12 @@ cr.define('options.contentSettings', function() {
         settingOption.selected = true;
     },
 
-    /** @inheritDoc */
+    /** @override */
     get currentInputIsValid() {
       return this.inputValidityKnown && this.inputIsValid;
     },
 
-    /** @inheritDoc */
+    /** @override */
     get hasBeenEdited() {
       var livePattern = this.input.value;
       var liveSetting = this.select.value;
@@ -386,7 +386,7 @@ cr.define('options.contentSettings', function() {
       this.input.value = '';
     },
 
-    /** @inheritDoc */
+    /** @override */
     get hasBeenEdited() {
       return this.input.value != '';
     },
@@ -524,7 +524,7 @@ cr.define('options.contentSettings', function() {
       }
     },
 
-    /** @inheritDoc */
+    /** @override */
     deleteItemAtIndex: function(index) {
       var listItem = this.getListItemByIndex(index);
       if (!listItem.deletable)

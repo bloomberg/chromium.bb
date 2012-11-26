@@ -66,9 +66,7 @@ cr.define('options', function() {
       this.confirmed_ = event.value.value;
     },
 
-    /**
-     * @inheritDoc
-     */
+    /** @override */
     initializePage: function() {
       this.okButton.onclick = this.handleConfirm.bind(this);
       this.cancelButton.onclick = this.handleCancel.bind(this);
