@@ -114,7 +114,7 @@ class InstantTest(pyauto.PyUITest):
     """Test that Instant is disabled in incognito mode."""
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
     self.SetOmniboxText('google', windex=1)
-    self.assertFalse(self.GetInstantInfo()['active'],
+    self.assertFalse(self.GetInstantInfo(windex=1)['enabled'],
                      'Instant enabled in incognito mode.')
 
   def testInstantDisabledForURLs(self):

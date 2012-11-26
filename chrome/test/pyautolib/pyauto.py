@@ -2002,8 +2002,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=None)
 
-  def GetInstantInfo(self):
+  def GetInstantInfo(self, windex=0):
     """Return info about the instant overlay tab.
+
+    Args:
+      windex: The window index, default is 0.
 
     Returns:
       A dictionary.
@@ -2019,7 +2022,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         { u'enabled': False }
     """
     cmd_dict = {'command': 'GetInstantInfo'}
-    return self._GetResultFromJSONRequest(cmd_dict)['instant']
+    return self._GetResultFromJSONRequest(cmd_dict, windex=windex)['instant']
 
   def GetSearchEngineInfo(self, windex=0):
     """Return info about search engines.

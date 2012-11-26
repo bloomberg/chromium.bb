@@ -3180,7 +3180,8 @@ void TestingAutomationProvider::GetInstantInfo(Browser* browser,
                                                DictionaryValue* args,
                                                IPC::Message* reply_message) {
   DictionaryValue* info = new DictionaryValue;
-  if (browser->instant_controller()) {
+  if (chrome::BrowserInstantController::IsInstantEnabled(browser->profile()) &&
+      browser->instant_controller()) {
     InstantController* instant = browser->instant_controller()->instant();
     info->SetBoolean("enabled", true);
     info->SetBoolean("active", (instant->GetPreviewContents() != NULL));
