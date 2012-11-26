@@ -77,7 +77,6 @@
         '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
         '../third_party/libusb/libusb.gyp:libusb',
         '../third_party/libxml/libxml.gyp:libxml',
-        '../third_party/mozc/chrome/chromeos/renderer/chromeos_renderer.gyp:mozc_candidates_proto',
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../third_party/protobuf/protobuf.gyp:protoc#host',

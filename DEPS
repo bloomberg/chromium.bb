@@ -288,12 +288,6 @@ deps = {
   "src/third_party/libyuv":
     (Var("googlecode_url") % "libyuv") + "/trunk@481",
 
-  "src/third_party/mozc/session":
-    (Var("googlecode_url") % "mozc") + "/trunk/src/session@83",
-
-  "src/third_party/mozc/chrome/chromeos/renderer":
-    (Var("googlecode_url") % "mozc") + "/trunk/src/chrome/chromeos/renderer@83",
-
   "src/third_party/smhasher/src":
     (Var("googlecode_url") % "smhasher") + "/trunk@147",
 
@@ -453,8 +447,6 @@ deps_os = {
     "src/third_party/libsrtp": None,
     "src/third_party/libvpx": None,
     "src/third_party/libyuv": None,
-    "src/third_party/mozc/session": None,
-    "src/third_party/mozc/chrome/chromeos/renderer": None,
     "src/third_party/ots": None,
     "src/third_party/pylib": None,
     "src/third_party/pymox/src": None,
