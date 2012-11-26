@@ -6,6 +6,7 @@
 import json
 import logging
 import os
+import StringIO
 import sys
 import time
 import unittest
@@ -110,6 +111,25 @@ class RunIsolatedTest(unittest.TestCase):
     self.assertNotEqual(None, remote.next_exception())
     self.assertNotEqual(None, remote.next_exception())
     self.assertEqual(None, remote.next_exception())
+
+  def test_zip_header_error(self):
+    old_urlopen = run_isolated.urllib2.urlopen
+    try:
+      run_isolated.urllib2.urlopen = lambda x : StringIO.StringIO('111')
+      remote = run_isolated.Remote('https://fake-CAD.com/')
+
+      # Both files will fail to be unzipped due to incorrect headers,
+      # ensure that we don't accept the files (even if the size is unknown)}.
+      remote.add_item(run_isolated.Remote.MED, 'zipped_A', 'A',
+                      run_isolated.UNKNOWN_FILE_SIZE)
+      remote.add_item(run_isolated.Remote.MED, 'zipped_B', 'B', 5)
+      remote.join()
+
+      self.assertNotEqual(None, remote.next_exception())
+      self.assertNotEqual(None, remote.next_exception())
+      self.assertEqual(None, remote.next_exception())
+    finally:
+      run_isolated.urllib2.urlopen = old_urlopen
 
 
 if __name__ == '__main__':

@@ -542,9 +542,6 @@ class Remote(object):
       def download_file(item, dest):
         # TODO(maruel): Reuse HTTP connections. The stdlib doesn't make this
         # easy.
-
-        # TODO(csharp): This is a temporary workaround to generate the gzipped
-        # url, remove once the files are always zipped before being uploaded.
         try:
           zipped_source = file_or_url.rstrip('/') + '-gzip/' + item
           logging.debug('download_file(%s)', zipped_source)
@@ -559,12 +556,9 @@ class Remote(object):
           # Ensure that all the data was properly decompressed.
           uncompressed_data = decompressor.flush()
           assert not uncompressed_data
-        except urllib2.URLError:
-          # Try the unzipped version
-          unzipped_source = file_or_url + item
-          logging.debug('Zipped version missing, try unzipped version')
-          logging.debug('download_file(%s, %s)', unzipped_source, dest)
-          DownloadFileOpener().retrieve(unzipped_source, dest)
+        except zlib.error as e:
+          logging.debug(e)
+          raise IOError('Problem unzipping data:\n %s' % e)
 
       return download_file
 
