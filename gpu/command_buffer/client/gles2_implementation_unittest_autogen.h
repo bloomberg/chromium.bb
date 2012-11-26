@@ -84,9 +84,9 @@ TEST_F(GLES2ImplementationTest, BlendEquation) {
     BlendEquation cmd;
   };
   Cmds expected;
-  expected.cmd.Init(GL_FUNC_ADD);
+  expected.cmd.Init(GL_FUNC_SUBTRACT);
 
-  gl_->BlendEquation(GL_FUNC_ADD);
+  gl_->BlendEquation(GL_FUNC_SUBTRACT);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
@@ -95,9 +95,9 @@ TEST_F(GLES2ImplementationTest, BlendEquationSeparate) {
     BlendEquationSeparate cmd;
   };
   Cmds expected;
-  expected.cmd.Init(GL_FUNC_ADD, GL_FUNC_ADD);
+  expected.cmd.Init(GL_FUNC_SUBTRACT, GL_FUNC_ADD);
 
-  gl_->BlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+  gl_->BlendEquationSeparate(GL_FUNC_SUBTRACT, GL_FUNC_ADD);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
@@ -366,17 +366,6 @@ TEST_F(GLES2ImplementationTest, DetachShader) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
-TEST_F(GLES2ImplementationTest, Disable) {
-  struct Cmds {
-    Disable cmd;
-  };
-  Cmds expected;
-  expected.cmd.Init(GL_BLEND);
-
-  gl_->Disable(GL_BLEND);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
 TEST_F(GLES2ImplementationTest, DisableVertexAttribArray) {
   struct Cmds {
     DisableVertexAttribArray cmd;
@@ -396,17 +385,6 @@ TEST_F(GLES2ImplementationTest, DrawArrays) {
   expected.cmd.Init(GL_POINTS, 2, 3);
 
   gl_->DrawArrays(GL_POINTS, 2, 3);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
-TEST_F(GLES2ImplementationTest, Enable) {
-  struct Cmds {
-    Enable cmd;
-  };
-  Cmds expected;
-  expected.cmd.Init(GL_BLEND);
-
-  gl_->Enable(GL_BLEND);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
@@ -1050,9 +1028,9 @@ TEST_F(GLES2ImplementationTest, StencilOp) {
     StencilOp cmd;
   };
   Cmds expected;
-  expected.cmd.Init(GL_KEEP, GL_KEEP, GL_KEEP);
+  expected.cmd.Init(GL_KEEP, GL_INCR, GL_KEEP);
 
-  gl_->StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+  gl_->StencilOp(GL_KEEP, GL_INCR, GL_KEEP);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
@@ -1061,9 +1039,9 @@ TEST_F(GLES2ImplementationTest, StencilOpSeparate) {
     StencilOpSeparate cmd;
   };
   Cmds expected;
-  expected.cmd.Init(GL_FRONT, GL_KEEP, GL_KEEP, GL_KEEP);
+  expected.cmd.Init(GL_FRONT, GL_INCR, GL_KEEP, GL_KEEP);
 
-  gl_->StencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_KEEP);
+  gl_->StencilOpSeparate(GL_FRONT, GL_INCR, GL_KEEP, GL_KEEP);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 

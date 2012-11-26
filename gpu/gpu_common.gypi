@@ -21,6 +21,10 @@
     'gles2_implementation_source_files': [
       'command_buffer/client/buffer_tracker.cc',
       'command_buffer/client/buffer_tracker.h',
+      'command_buffer/client/client_context_state.h',
+      'command_buffer/client/client_context_state.cc',
+      'command_buffer/client/client_context_state_autogen.h',
+      'command_buffer/client/client_context_state_impl_autogen.h',
       'command_buffer/client/gles2_impl_export.h',
       'command_buffer/client/gles2_implementation_autogen.h',
       'command_buffer/client/gles2_implementation.cc',

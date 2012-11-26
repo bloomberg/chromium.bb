@@ -392,7 +392,7 @@ const size_t GLES2Implementation::kMaxSizeOfSimpleResult;
 const unsigned int GLES2Implementation::kStartingOffset;
 #endif
 
-GLES2Implementation::GLCachedState::IntState::IntState()
+GLES2Implementation::GLStaticState::IntState::IntState()
     : max_combined_texture_image_units(0),
       max_cube_map_texture_size(0),
       max_fragment_uniform_vectors(0),
@@ -505,16 +505,17 @@ bool GLES2Implementation::Initialize(
 
   GetMultipleIntegervCHROMIUM(
       pnames, arraysize(pnames),
-      &gl_state_.int_state.max_combined_texture_image_units,
-      sizeof(gl_state_.int_state));
+      &static_state_.int_state.max_combined_texture_image_units,
+      sizeof(static_state_.int_state));
 
   util_.set_num_compressed_texture_formats(
-      gl_state_.int_state.num_compressed_texture_formats);
+      static_state_.int_state.num_compressed_texture_formats);
   util_.set_num_shader_binary_formats(
-      gl_state_.int_state.num_shader_binary_formats);
+      static_state_.int_state.num_shader_binary_formats);
 
   texture_units_.reset(
-      new TextureUnit[gl_state_.int_state.max_combined_texture_image_units]);
+      new TextureUnit[
+          static_state_.int_state.max_combined_texture_image_units]);
 
   query_tracker_.reset(new QueryTracker(mapped_memory_.get()));
   buffer_tracker_.reset(new BufferTracker(mapped_memory_.get()));
@@ -524,7 +525,7 @@ bool GLES2Implementation::Initialize(
       this, kClientSideArrayId, arraysize(reserved_ids_), &reserved_ids_[0]);
 
   client_side_buffer_helper_.reset(new ClientSideBufferHelper(
-      gl_state_.int_state.max_vertex_attribs,
+      static_state_.int_state.max_vertex_attribs,
       reserved_ids_[0],
       reserved_ids_[1]));
 #endif
@@ -815,54 +816,24 @@ void GLES2Implementation::SetBucketAsString(
   SetBucketContents(bucket_id, str.c_str(), str.size() + 1);
 }
 
-bool GLES2Implementation::SetCapabilityState(GLenum cap, bool enabled) {
-  switch (cap) {
-    case GL_DITHER:
-      gl_state_.enable_state.dither = enabled;
-      return true;
-    case GL_BLEND:
-      gl_state_.enable_state.blend = enabled;
-      return true;
-    case GL_CULL_FACE:
-      gl_state_.enable_state.cull_face = enabled;
-      return true;
-    case GL_DEPTH_TEST:
-      gl_state_.enable_state.depth_test = enabled;
-      return true;
-    case GL_POLYGON_OFFSET_FILL:
-      gl_state_.enable_state.polygon_offset_fill = enabled;
-      return true;
-    case GL_SAMPLE_ALPHA_TO_COVERAGE:
-      gl_state_.enable_state.sample_alpha_to_coverage = enabled;
-      return true;
-    case GL_SAMPLE_COVERAGE:
-      gl_state_.enable_state.sample_coverage = enabled;
-      return true;
-    case GL_SCISSOR_TEST:
-      gl_state_.enable_state.scissor_test = enabled;
-      return true;
-    case GL_STENCIL_TEST:
-      gl_state_.enable_state.stencil_test = enabled;
-      return true;
-    default:
-      return false;
-  }
-}
-
 void GLES2Implementation::Disable(GLenum cap) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDisable("
                  << GLES2Util::GetStringCapability(cap) << ")");
-  SetCapabilityState(cap, false);
-  helper_->Disable(cap);
+  bool changed = false;
+  if (!state_.SetCapabilityState(cap, false, &changed) || changed) {
+    helper_->Disable(cap);
+  }
 }
 
 void GLES2Implementation::Enable(GLenum cap) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glEnable("
                  << GLES2Util::GetStringCapability(cap) << ")");
-  SetCapabilityState(cap, true);
-  helper_->Enable(cap);
+  bool changed = false;
+  if (!state_.SetCapabilityState(cap, true, &changed) || changed) {
+    helper_->Enable(cap);
+  }
 }
 
 GLboolean GLES2Implementation::IsEnabled(GLenum cap) {
@@ -870,47 +841,18 @@ GLboolean GLES2Implementation::IsEnabled(GLenum cap) {
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glIsEnabled("
                  << GLES2Util::GetStringCapability(cap) << ")");
   bool state = false;
-  switch (cap) {
-    case GL_DITHER:
-      state = gl_state_.enable_state.dither;
-      break;
-    case GL_BLEND:
-      state = gl_state_.enable_state.blend;
-      break;
-    case GL_CULL_FACE:
-      state = gl_state_.enable_state.cull_face;
-      break;
-    case GL_DEPTH_TEST:
-      state = gl_state_.enable_state.depth_test;
-      break;
-    case GL_POLYGON_OFFSET_FILL:
-      state = gl_state_.enable_state.polygon_offset_fill;
-      break;
-    case GL_SAMPLE_ALPHA_TO_COVERAGE:
-      state = gl_state_.enable_state.sample_alpha_to_coverage;
-      break;
-    case GL_SAMPLE_COVERAGE:
-      state = gl_state_.enable_state.sample_coverage;
-      break;
-    case GL_SCISSOR_TEST:
-      state = gl_state_.enable_state.scissor_test;
-      break;
-    case GL_STENCIL_TEST:
-      state = gl_state_.enable_state.stencil_test;
-      break;
-    default: {
-      typedef IsEnabled::Result Result;
-      Result* result = GetResultAs<Result*>();
-      if (!result) {
-        return GL_FALSE;
-      }
-      *result = 0;
-      helper_->IsEnabled(cap, GetResultShmId(), GetResultShmOffset());
-      WaitForCmd();
-      state = (*result) != 0;
-      break;
+  if (!state_.GetEnabled(cap, &state)) {
+    typedef IsEnabled::Result Result;
+    Result* result = GetResultAs<Result*>();
+    if (!result) {
+      return GL_FALSE;
     }
+    *result = 0;
+    helper_->IsEnabled(cap, GetResultShmId(), GetResultShmOffset());
+    WaitForCmd();
+    state = (*result) != 0;
   }
+
   GPU_CLIENT_LOG("returned " << state);
   return state;
 }
@@ -918,40 +860,40 @@ GLboolean GLES2Implementation::IsEnabled(GLenum cap) {
 bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
   switch (pname) {
     case GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:
-      *params = gl_state_.int_state.max_combined_texture_image_units;
+      *params = static_state_.int_state.max_combined_texture_image_units;
       return true;
     case GL_MAX_CUBE_MAP_TEXTURE_SIZE:
-      *params = gl_state_.int_state.max_cube_map_texture_size;
+      *params = static_state_.int_state.max_cube_map_texture_size;
       return true;
     case GL_MAX_FRAGMENT_UNIFORM_VECTORS:
-      *params = gl_state_.int_state.max_fragment_uniform_vectors;
+      *params = static_state_.int_state.max_fragment_uniform_vectors;
       return true;
     case GL_MAX_RENDERBUFFER_SIZE:
-      *params = gl_state_.int_state.max_renderbuffer_size;
+      *params = static_state_.int_state.max_renderbuffer_size;
       return true;
     case GL_MAX_TEXTURE_IMAGE_UNITS:
-      *params = gl_state_.int_state.max_texture_image_units;
+      *params = static_state_.int_state.max_texture_image_units;
       return true;
     case GL_MAX_TEXTURE_SIZE:
-      *params = gl_state_.int_state.max_texture_size;
+      *params = static_state_.int_state.max_texture_size;
       return true;
     case GL_MAX_VARYING_VECTORS:
-      *params = gl_state_.int_state.max_varying_vectors;
+      *params = static_state_.int_state.max_varying_vectors;
       return true;
     case GL_MAX_VERTEX_ATTRIBS:
-      *params = gl_state_.int_state.max_vertex_attribs;
+      *params = static_state_.int_state.max_vertex_attribs;
       return true;
     case GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS:
-      *params = gl_state_.int_state.max_vertex_texture_image_units;
+      *params = static_state_.int_state.max_vertex_texture_image_units;
       return true;
     case GL_MAX_VERTEX_UNIFORM_VECTORS:
-      *params = gl_state_.int_state.max_vertex_uniform_vectors;
+      *params = static_state_.int_state.max_vertex_uniform_vectors;
       return true;
     case GL_NUM_COMPRESSED_TEXTURE_FORMATS:
-      *params = gl_state_.int_state.num_compressed_texture_formats;
+      *params = static_state_.int_state.num_compressed_texture_formats;
       return true;
     case GL_NUM_SHADER_BINARY_FORMATS:
-      *params = gl_state_.int_state.num_shader_binary_formats;
+      *params = static_state_.int_state.num_shader_binary_formats;
       return true;
     case GL_ARRAY_BUFFER_BINDING:
       if (share_group_->bind_generates_resource()) {
@@ -2525,7 +2467,7 @@ void GLES2Implementation::ActiveTexture(GLenum texture) {
       << GLES2Util::GetStringEnum(texture) << ")");
   GLuint texture_index = texture - GL_TEXTURE0;
   if (texture_index >= static_cast<GLuint>(
-      gl_state_.int_state.max_combined_texture_image_units)) {
+      static_state_.int_state.max_combined_texture_image_units)) {
     SetGLErrorInvalidEnum(
         "glActiveTexture", texture, "texture");
     return;
@@ -2722,7 +2664,7 @@ void GLES2Implementation::DeleteTexturesHelper(
   }
   for (GLsizei ii = 0; ii < n; ++ii) {
     for (GLint tt = 0;
-         tt < gl_state_.int_state.max_combined_texture_image_units;
+         tt < static_state_.int_state.max_combined_texture_image_units;
          ++tt) {
       TextureUnit& unit = texture_units_[tt];
       if (textures[ii] == unit.bound_texture_2d) {

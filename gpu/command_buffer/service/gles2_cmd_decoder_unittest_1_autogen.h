@@ -175,10 +175,10 @@ TEST_F(GLES2DecoderTest1, BlendColorValidArgs) {
 }
 
 TEST_F(GLES2DecoderTest1, BlendEquationValidArgs) {
-  EXPECT_CALL(*gl_, BlendEquation(GL_FUNC_ADD));
+  EXPECT_CALL(*gl_, BlendEquation(GL_FUNC_SUBTRACT));
   SpecializedSetup<BlendEquation, 0>(true);
   BlendEquation cmd;
-  cmd.Init(GL_FUNC_ADD);
+  cmd.Init(GL_FUNC_SUBTRACT);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -202,10 +202,10 @@ TEST_F(GLES2DecoderTest1, BlendEquationInvalidArgs0_1) {
 }
 
 TEST_F(GLES2DecoderTest1, BlendEquationSeparateValidArgs) {
-  EXPECT_CALL(*gl_, BlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD));
+  EXPECT_CALL(*gl_, BlendEquationSeparate(GL_FUNC_SUBTRACT, GL_FUNC_ADD));
   SpecializedSetup<BlendEquationSeparate, 0>(true);
   BlendEquationSeparate cmd;
-  cmd.Init(GL_FUNC_ADD, GL_FUNC_ADD);
+  cmd.Init(GL_FUNC_SUBTRACT, GL_FUNC_ADD);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -232,7 +232,7 @@ TEST_F(GLES2DecoderTest1, BlendEquationSeparateInvalidArgs1_0) {
   EXPECT_CALL(*gl_, BlendEquationSeparate(_, _)).Times(0);
   SpecializedSetup<BlendEquationSeparate, 0>(false);
   BlendEquationSeparate cmd;
-  cmd.Init(GL_FUNC_ADD, GL_MIN);
+  cmd.Init(GL_FUNC_SUBTRACT, GL_MIN);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
@@ -241,7 +241,7 @@ TEST_F(GLES2DecoderTest1, BlendEquationSeparateInvalidArgs1_1) {
   EXPECT_CALL(*gl_, BlendEquationSeparate(_, _)).Times(0);
   SpecializedSetup<BlendEquationSeparate, 0>(false);
   BlendEquationSeparate cmd;
-  cmd.Init(GL_FUNC_ADD, GL_MAX);
+  cmd.Init(GL_FUNC_SUBTRACT, GL_MAX);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
@@ -321,10 +321,10 @@ TEST_F(GLES2DecoderTest1, ClearColorValidArgs) {
 }
 
 TEST_F(GLES2DecoderTest1, ClearDepthfValidArgs) {
-  EXPECT_CALL(*gl_, ClearDepth(1));
+  EXPECT_CALL(*gl_, ClearDepth(0.5f));
   SpecializedSetup<ClearDepthf, 0>(true);
   ClearDepthf cmd;
-  cmd.Init(1);
+  cmd.Init(0.5f);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
