@@ -306,9 +306,7 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path,
     // We need to do this after getting |PPP_GetInterface()| (or presumably
     // doing something nontrivial with the library), else the sandbox
     // intercedes.
-    if (!InitializeSandbox()) {
-      LOG(WARNING) << "Failed to initialize sandbox";
-    }
+    CHECK(InitializeSandbox());
 #endif
 
     int32_t init_error = plugin_entry_points_.initialize_module(
