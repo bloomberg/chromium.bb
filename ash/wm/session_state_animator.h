@@ -110,6 +110,10 @@ class ASH_EXPORT SessionStateAnimator {
     // |container_mask| is a bitfield of a Container.
     bool ContainersAreAnimated(int container_mask, AnimationType type) const;
 
+    // Returns true if root window was last animated with |type| (probably;
+    // the analysis is fairly ad-hoc).
+    bool RootWindowIsAnimated(AnimationType type) const;
+
    private:
     SessionStateAnimator* animator_;  // not owned
 

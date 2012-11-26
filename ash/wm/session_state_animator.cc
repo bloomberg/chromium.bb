@@ -254,6 +254,72 @@ class CallbackAnimationObserver : public ui::LayerAnimationObserver {
   DISALLOW_COPY_AND_ASSIGN(CallbackAnimationObserver);
 };
 
+
+bool IsLayerAnimated(ui::Layer* layer,
+                     SessionStateAnimator::AnimationType type) {
+  switch (type) {
+    case SessionStateAnimator::ANIMATION_PARTIAL_CLOSE:
+      if (layer->GetTargetTransform() != GetSlowCloseTransform())
+        return false;
+      break;
+    case SessionStateAnimator::ANIMATION_UNDO_PARTIAL_CLOSE:
+      if (layer->GetTargetTransform() != gfx::Transform())
+        return false;
+      break;
+    case SessionStateAnimator::ANIMATION_FULL_CLOSE:
+      if (layer->GetTargetTransform() != GetFastCloseTransform() ||
+          layer->GetTargetOpacity() > 0.0001)
+        return false;
+      break;
+    case SessionStateAnimator::ANIMATION_FADE_IN:
+      if (layer->GetTargetOpacity() < 0.9999)
+        return false;
+      break;
+    case SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY:
+      if (layer->GetTargetOpacity() > 0.0001)
+        return false;
+      break;
+    case SessionStateAnimator::ANIMATION_RESTORE:
+      if (layer->opacity() < 0.9999 || layer->transform() != gfx::Transform())
+        return false;
+      break;
+    case SessionStateAnimator::ANIMATION_GRAYSCALE_BRIGHTNESS:
+      if ((layer->GetTargetBrightness() < 0.9999) ||
+          (layer->GetTargetGrayscale() < 0.9999))
+        return false;
+      break;
+    case SessionStateAnimator::ANIMATION_UNDO_GRAYSCALE_BRIGHTNESS:
+      if ((layer->GetTargetBrightness() > 0.0001) ||
+          (layer->GetTargetGrayscale() > 0.0001))
+        return false;
+      break;
+    case SessionStateAnimator::ANIMATION_DROP:
+      //ToDo(antim) : check other effects
+      if (layer->GetTargetOpacity() < 0.9999)
+        return false;
+      break;
+      //ToDo(antim) : check other effects
+    case SessionStateAnimator::ANIMATION_LIFT:
+      if (layer->GetTargetOpacity() > 0.0001)
+        return false;
+      break;
+    case SessionStateAnimator::ANIMATION_RAISE_TO_SCREEN:
+      //ToDo(antim) : check other effects
+      if (layer->GetTargetOpacity() < 0.9999)
+        return false;
+      break;
+      //ToDo(antim) : check other effects
+    case SessionStateAnimator::ANIMATION_LOWER_BELOW_SCREEN:
+      if (layer->GetTargetOpacity() > 0.0001)
+        return false;
+      break;
+    default:
+      NOTREACHED() << "Unhandled animation type " << type;
+      return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 bool SessionStateAnimator::TestApi::ContainersAreAnimated(
@@ -264,39 +330,17 @@ bool SessionStateAnimator::TestApi::ContainersAreAnimated(
        it != containers.end(); ++it) {
     aura::Window* window = *it;
     ui::Layer* layer = window->layer();
-
-    switch (type) {
-      case ANIMATION_PARTIAL_CLOSE:
-        if (layer->GetTargetTransform() != GetSlowCloseTransform())
-          return false;
-        break;
-      case ANIMATION_UNDO_PARTIAL_CLOSE:
-        if (layer->GetTargetTransform() != gfx::Transform())
-          return false;
-        break;
-      case ANIMATION_FULL_CLOSE:
-        if (layer->GetTargetTransform() != GetFastCloseTransform() ||
-            layer->GetTargetOpacity() > 0.0001)
-          return false;
-        break;
-      case ANIMATION_FADE_IN:
-        if (layer->GetTargetOpacity() < 0.9999)
-          return false;
-        break;
-      case ANIMATION_HIDE_IMMEDIATELY:
-        if (layer->GetTargetOpacity() > 0.0001)
-          return false;
-        break;
-      case ANIMATION_RESTORE:
-        if (layer->opacity() < 0.9999 || layer->transform() != gfx::Transform())
-          return false;
-        break;
-      default:
-        NOTREACHED() << "Unhandled animation type " << type;
-        return false;
-    }
+    if (!IsLayerAnimated(layer, type))
+      return false;
   }
   return true;
+}
+
+bool SessionStateAnimator::TestApi::RootWindowIsAnimated(AnimationType type)
+    const {
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  ui::Layer* layer = root_window->layer();
+  return IsLayerAnimated(layer, type);
 }
 
 const int SessionStateAnimator::kAllLockScreenContainersMask =

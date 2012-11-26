@@ -29,6 +29,7 @@ namespace ash {
 
 namespace test {
 class PowerButtonControllerTest;
+class SessionStateControllerImpl2Test;
 }
 
 // Performs system-related functions on behalf of SessionStateController.
@@ -128,6 +129,7 @@ class ASH_EXPORT SessionStateController : public aura::RootWindowObserver,
 
  protected:
   friend class test::PowerButtonControllerTest;
+  friend class test::SessionStateControllerImpl2Test;
 
   scoped_ptr<internal::SessionStateAnimator> animator_;
 
