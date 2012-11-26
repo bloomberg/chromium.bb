@@ -74,7 +74,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "4.5",
+  "version": "4.6",
   "entries": [
     {
       "id": 1,
@@ -947,6 +947,18 @@
       "blacklist": [
         "accelerated_2d_canvas"
       ]
-     }
+    },
+    {
+      "id": 63,
+      "description": "Multisampling is buggy on Mac with AMD gpu.",
+      "cr_bugs": [162466],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x1002",
+      "blacklist": [
+        "multisampling"
+      ]
+    }
   ]
 }
