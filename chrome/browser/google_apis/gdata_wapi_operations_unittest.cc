@@ -132,49 +132,6 @@ void CopyResultsFromGetDataCallbackAndQuit(
 
 }  // namespace
 
-TEST_F(GDataWapiOperationsTest, DownloadFileOperation_ValidFile) {
-  GDataErrorCode result_code = GDATA_OTHER_ERROR;
-  std::string contents;
-  DownloadFileOperation* operation = new DownloadFileOperation(
-      &operation_registry_,
-      base::Bind(&CopyResultsFromDownloadActionCallback,
-                 &result_code,
-                 &contents),
-      GetContentCallback(),
-      gdata_test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
-      FilePath::FromUTF8Unsafe("/dummy/gdata/testfile.txt"),
-      GetTestCachedFilePath(FilePath::FromUTF8Unsafe("cached_testfile.txt")));
-  operation->Start(kTestGDataAuthToken, kTestUserAgent);
-  MessageLoop::current()->Run();
-
-  EXPECT_EQ(HTTP_SUCCESS, result_code);
-  const FilePath expected_path =
-      test_util::GetTestFilePath("gdata/testfile.txt");
-  std::string expected_contents;
-  file_util::ReadFileToString(expected_path, &expected_contents);
-  EXPECT_EQ(expected_contents, contents);
-}
-
-TEST_F(GDataWapiOperationsTest, DownloadFileOperation_NonExistentFile) {
-  GDataErrorCode result_code = GDATA_OTHER_ERROR;
-  std::string contents;
-  DownloadFileOperation* operation = new DownloadFileOperation(
-      &operation_registry_,
-      base::Bind(&CopyResultsFromDownloadActionCallback,
-                 &result_code,
-                 &contents),
-      GetContentCallback(),
-      gdata_test_server_.GetURL("/files/chromeos/gdata/no-such-file.txt"),
-      FilePath::FromUTF8Unsafe("/dummy/gdata/no-such-file.txt"),
-      GetTestCachedFilePath(
-          FilePath::FromUTF8Unsafe("cache_no-such-file.txt")));
-  operation->Start(kTestGDataAuthToken, kTestUserAgent);
-  MessageLoop::current()->Run();
-
-  EXPECT_EQ(HTTP_NOT_FOUND, result_code);
-  // Do not verify the not found message.
-}
-
 TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_ValidFeed) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   scoped_ptr<base::Value> result_data;
@@ -227,5 +184,81 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_InvalidFeed) {
   EXPECT_EQ(GDATA_PARSE_ERROR, result_code);
   EXPECT_FALSE(result_data);
 }
+
+// TODO(satorux): Write tests for GetDocumentEntryOperation.
+// crbug.com/162348
+
+// TODO(satorux): Write tests for GetAccountMetadataOperation.
+// crbug.com/162348
+
+TEST_F(GDataWapiOperationsTest, DownloadFileOperation_ValidFile) {
+  GDataErrorCode result_code = GDATA_OTHER_ERROR;
+  std::string contents;
+  DownloadFileOperation* operation = new DownloadFileOperation(
+      &operation_registry_,
+      base::Bind(&CopyResultsFromDownloadActionCallback,
+                 &result_code,
+                 &contents),
+      GetContentCallback(),
+      gdata_test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
+      FilePath::FromUTF8Unsafe("/dummy/gdata/testfile.txt"),
+      GetTestCachedFilePath(FilePath::FromUTF8Unsafe("cached_testfile.txt")));
+  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, result_code);
+  const FilePath expected_path =
+      test_util::GetTestFilePath("gdata/testfile.txt");
+  std::string expected_contents;
+  file_util::ReadFileToString(expected_path, &expected_contents);
+  EXPECT_EQ(expected_contents, contents);
+}
+
+TEST_F(GDataWapiOperationsTest, DownloadFileOperation_NonExistentFile) {
+  GDataErrorCode result_code = GDATA_OTHER_ERROR;
+  std::string contents;
+  DownloadFileOperation* operation = new DownloadFileOperation(
+      &operation_registry_,
+      base::Bind(&CopyResultsFromDownloadActionCallback,
+                 &result_code,
+                 &contents),
+      GetContentCallback(),
+      gdata_test_server_.GetURL("/files/chromeos/gdata/no-such-file.txt"),
+      FilePath::FromUTF8Unsafe("/dummy/gdata/no-such-file.txt"),
+      GetTestCachedFilePath(
+          FilePath::FromUTF8Unsafe("cache_no-such-file.txt")));
+  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_NOT_FOUND, result_code);
+  // Do not verify the not found message.
+}
+
+// TODO(satorux): Write tests for DeleteDocumentOperation.
+// crbug.com/162348
+
+// TODO(satorux): Write tests for CreateDirectoryOperation.
+// crbug.com/162348
+
+// TODO(satorux): Write tests for CopyDocumentOperation.
+// crbug.com/162348
+
+// TODO(satorux): Write tests for RenameResourceOperation.
+// crbug.com/162348
+
+// TODO(satorux): Write tests for AuthorizeAppsOperation.
+// crbug.com/162348
+
+// TODO(satorux): Write tests for AddResourceToDirectoryOperation.
+// crbug.com/162348
+
+// TODO(satorux): Write tests for RemoveResourceFromDirectoryOperation.
+// crbug.com/162348
+
+// TODO(satorux): Write tests for InitiateUploadOperation.
+// crbug.com/162348
+
+// TODO(satorux): Write tests for ResumeUploadOperation.
+// crbug.com/162348
 
 }  // namespace google_apis
