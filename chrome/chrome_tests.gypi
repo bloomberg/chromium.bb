@@ -1261,6 +1261,11 @@
                 'browser/nacl_host/test/mock_nacl_gdb.gyp:mock_nacl_gdb',
               ],
             }],
+            ['OS=="win"', {
+              'dependencies': [
+                'chrome.gyp:chrome_nacl_win64',
+              ],
+            }],
           ],
         }],
         ['use_ash==1', {
@@ -2771,13 +2776,6 @@
           ],
           'sources': [
             'browser_tests.isolate',
-          ],
-          'conditions': [
-            ['disable_nacl!=1 and OS=="win"', {
-              'dependencies': [
-                'chrome_nacl_win64',
-              ],
-            }],
           ],
         },
         {
