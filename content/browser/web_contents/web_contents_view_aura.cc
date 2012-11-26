@@ -686,9 +686,10 @@ void WebContentsViewAura::StartDragging(
   // updates while in the system DoDragDrop loop.
   int result_op = 0;
   {
+    gfx::NativeView content_native_view = view_? GetContentNativeView() : NULL;
     MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
     result_op = aura::client::GetDragDropClient(root_window)->StartDragAndDrop(
-        data, root_window, GetContentNativeView(),
+        data, root_window, content_native_view,
         event_info.event_location, ConvertFromWeb(operations),
         event_info.event_source);
   }
