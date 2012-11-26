@@ -8,13 +8,10 @@
  */
 
 label Chrome {
-  M17 = 12.0,
-  M19 = 12.1,
-  M20_0 = 12.2,
-  M20_1 = 12.3,
   M21 = 12.4,
   M22 = 12.5,
-  M24 = 12.6
+  M24_0 = 12.6,
+  M24_1 = 13.0
 };
 
 [assert_size(4)]
@@ -154,18 +151,16 @@ interface PPB_Flash {
       [in] PP_Bool from_user_action);
 
   /**
-   * Runs a nested message loop. The plugin will be reentered from this call.
-   * This function is used in places where Flash would normally enter a nested
-   * message loop (e.g., when displaying context menus), but Pepper provides
-   * only an asynchronous call. After performing that asynchronous call, call
-   * |RunMessageLoop()|. In the callback, call |QuitMessageLoop()|.
+   * Deprecated. Does nothing. Use PPB_Flash_MessageLoop.
    */
+  [deprecate=13.0]
   void RunMessageLoop(
       [in] PP_Instance instance);
 
-  /* Posts a quit message for the outermost nested message loop. Use this to
-   * exit and return back to the caller after you call RunMessageLoop.
+  /**
+   * Deprecated. Does nothing. Use PPB_Flash_MessageLoop.
    */
+  [deprecate=13.0]
   void QuitMessageLoop(
       [in] PP_Instance instance);
 
@@ -199,15 +194,14 @@ interface PPB_Flash {
    * Returns whether the given rectangle (in the plugin) is topmost, i.e., above
    * all other web content.
    */
-  [version=12.1]
   PP_Bool IsRectTopmost(
       [in] PP_Instance instance,
       [in] PP_Rect rect);
 
   /**
-   * Does nothing, deprecated. See PPB_Flash_Print.
+   * Deprecated. Does nothing. Use PPB_Flash_Print.
    */
-  [version=12.1]
+  [deprecate=13.0]
   int32_t InvokePrinting(
       [in] PP_Instance instance);
 
@@ -215,21 +209,19 @@ interface PPB_Flash {
    * Indicates that there's activity and, e.g., the screensaver shouldn't kick
    * in.
    */
-  [version=12.1]
   void UpdateActivity(
       [in] PP_Instance instance);
 
   /**
-   * Returns the device ID as a string. Returns a PP_VARTYPE_UNDEFINED on error.
-   * Deprecated, use GetDeviceIDAsync.
+   * Deprecated. Does nothing.
    */
-  [version=12.2]
+  [deprecate=13.0]
   PP_Var GetDeviceID([in] PP_Instance instance);
 
   /**
-   * Deprecated. See GetSetting().
+   * Deprecated. Does nothing. See GetSetting().
    */
-  [version=12.3]
+  [deprecate=13.0]
   int32_t GetSettingInt([in] PP_Instance instance,
                         [in] PP_FlashSetting setting);
 
@@ -237,7 +229,6 @@ interface PPB_Flash {
    * Returns the value associated with the given setting. Invalid enums will
    * result in an undefined PP_Var return value.
    */
-  [version=12.4]
   PP_Var GetSetting(PP_Instance instance, PP_FlashSetting setting);
 
   /**

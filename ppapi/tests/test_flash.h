@@ -17,7 +17,6 @@ class TestFlash : public TestCase {
   explicit TestFlash(TestingInstance* instance);
 
   // TestCase implementation.
-  virtual bool Init();
   virtual void RunTests(const std::string& filter);
 
  private:
@@ -26,17 +25,11 @@ class TestFlash : public TestCase {
   // std::string TestDrawGlyphs();
   std::string TestGetProxyForURL();
   // std::string TestNavigate();
-  std::string TestMessageLoop();
   std::string TestGetLocalTimeZoneOffset();
   std::string TestGetCommandLineArgs();
-  std::string TestGetDeviceID();
-  std::string TestGetSettingInt();
   std::string TestGetSetting();
   std::string TestSetCrashData();
 
-  void QuitMessageLoopTask(int32_t);
-
-  const PPB_Flash* flash_interface_;
   pp::CompletionCallbackFactory<TestFlash> callback_factory_;
 };
 

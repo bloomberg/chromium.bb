@@ -21,9 +21,6 @@ IPC_SYNC_MESSAGE_CONTROL1_1(PepperMsg_GetLocalTimeZoneOffset,
                             base::Time /* t */,
                             double /* result */)
 
-IPC_SYNC_MESSAGE_CONTROL0_1(PepperMsg_GetDeviceID,
-                            std::string /* id */)
-
 IPC_SYNC_MESSAGE_CONTROL2_1(PepperMsg_GetLocalDataRestrictions,
                             GURL /* document_url */,
                             GURL /* plugin_url */,

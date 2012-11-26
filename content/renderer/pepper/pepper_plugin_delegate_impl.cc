@@ -1425,12 +1425,6 @@ double PepperPluginDelegateImpl::GetLocalTimeZoneOffset(base::Time t) {
   return result;
 }
 
-std::string PepperPluginDelegateImpl::GetDeviceID() {
-  std::string result;
-  render_view_->Send(new PepperMsg_GetDeviceID(&result));
-  return result;
-}
-
 PP_FlashLSORestrictions PepperPluginDelegateImpl::GetLocalDataRestrictions(
     const GURL& document_url,
     const GURL& plugin_url) {

@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "base/message_loop.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
@@ -190,15 +189,6 @@ int32_t PPB_Flash_Impl::Navigate(PP_Instance instance,
   return instance_->Navigate(data, target, PP_ToBool(from_user_action));
 }
 
-void PPB_Flash_Impl::RunMessageLoop(PP_Instance instance) {
-  MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
-  MessageLoop::current()->Run();
-}
-
-void PPB_Flash_Impl::QuitMessageLoop(PP_Instance instance) {
-  MessageLoop::current()->QuitNow();
-}
-
 double PPB_Flash_Impl::GetLocalTimeZoneOffset(PP_Instance instance,
                                               PP_Time t) {
   // Evil hack. The time code handles exact "0" values as special, and produces
@@ -223,17 +213,6 @@ PP_Bool PPB_Flash_Impl::IsRectTopmost(PP_Instance instance,
 
 void PPB_Flash_Impl::UpdateActivity(PP_Instance pp_instance) {
   // Not supported in-process.
-}
-
-PP_Var PPB_Flash_Impl::GetDeviceID(PP_Instance pp_instance) {
-  std::string id = instance_->delegate()->GetDeviceID();
-  return StringVar::StringToPPVar(id);
-}
-
-int32_t PPB_Flash_Impl::GetSettingInt(PP_Instance instance,
-                                      PP_FlashSetting setting) {
-  // No current settings are supported in-process.
-  return -1;
 }
 
 PP_Var PPB_Flash_Impl::GetSetting(PP_Instance instance,

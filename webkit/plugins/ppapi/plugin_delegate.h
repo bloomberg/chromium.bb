@@ -658,9 +658,6 @@ class PluginDelegate {
   // is the return value of EnumerateDevicesCallback.
   virtual void StopEnumerateDevices(int request_id) = 0;
 
-  // Returns a Device ID
-  virtual std::string GetDeviceID() = 0;
-
   // Returns restrictions on local data handled by the plug-in.
   virtual PP_FlashLSORestrictions GetLocalDataRestrictions(
       const GURL& document_url,

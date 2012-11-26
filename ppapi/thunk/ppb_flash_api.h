@@ -54,14 +54,9 @@ class PPAPI_THUNK_EXPORT PPB_Flash_API {
                            const char* target,
                            PP_Bool from_user_action) = 0;
 
-  virtual void RunMessageLoop(PP_Instance instance) = 0;
-  virtual void QuitMessageLoop(PP_Instance instance) = 0;
   virtual double GetLocalTimeZoneOffset(PP_Instance instance, PP_Time t) = 0;
   virtual PP_Bool IsRectTopmost(PP_Instance instance, const PP_Rect* rect) = 0;
   virtual void UpdateActivity(PP_Instance instance) = 0;
-  virtual PP_Var GetDeviceID(PP_Instance instance) = 0;
-  virtual int32_t GetSettingInt(PP_Instance instance,
-                                PP_FlashSetting setting) = 0;
   virtual PP_Var GetSetting(PP_Instance instance, PP_FlashSetting setting) = 0;
   virtual PP_Bool SetCrashData(PP_Instance instance,
                                PP_FlashCrashKey key,

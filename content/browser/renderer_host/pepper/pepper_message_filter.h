@@ -230,7 +230,6 @@ class PepperMessageFilter
                                  bool* succeeded,
                                  ppapi::PPB_X509Certificate_Fields* result);
   void OnUpdateActivity();
-  void OnGetDeviceID(std::string* id);
   void OnGetLocalDataRestrictions(const GURL& document_url,
                                   const GURL& plugin_url,
                                   PP_FlashLSORestrictions* restrictions);

@@ -461,10 +461,6 @@ int MockPluginDelegate::EnumerateDevices(
 void MockPluginDelegate::StopEnumerateDevices(int request_id) {
 }
 
-std::string MockPluginDelegate::GetDeviceID() {
-  return std::string();
-}
-
 PP_FlashLSORestrictions MockPluginDelegate::GetLocalDataRestrictions(
     const GURL& document_url,
     const GURL& plugin_url) {

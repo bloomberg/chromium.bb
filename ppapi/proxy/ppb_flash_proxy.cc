@@ -110,10 +110,6 @@ bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetProxyForURL,
                         OnHostMsgGetProxyForURL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_Navigate, OnHostMsgNavigate)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_RunMessageLoop,
-                        OnHostMsgRunMessageLoop)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_QuitMessageLoop,
-                        OnHostMsgQuitMessageLoop)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetLocalTimeZoneOffset,
                         OnHostMsgGetLocalTimeZoneOffset)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_IsRectTopmost,
@@ -126,8 +122,6 @@ bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgOpenFileRef)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_QueryFileRef,
                         OnHostMsgQueryFileRef)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetDeviceID,
-                        OnHostMsgGetDeviceID)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_InvokePrinting,
                         OnHostMsgInvokePrinting)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetSetting,
@@ -218,18 +212,6 @@ int32_t PPB_Flash_Proxy::Navigate(PP_Instance instance,
   return result;
 }
 
-void PPB_Flash_Proxy::RunMessageLoop(PP_Instance instance) {
-  IPC::SyncMessage* msg = new PpapiHostMsg_PPBFlash_RunMessageLoop(
-      API_ID_PPB_FLASH, instance);
-  msg->EnableMessagePumping();
-  dispatcher()->Send(msg);
-}
-
-void PPB_Flash_Proxy::QuitMessageLoop(PP_Instance instance) {
-  dispatcher()->Send(new PpapiHostMsg_PPBFlash_QuitMessageLoop(
-      API_ID_PPB_FLASH, instance));
-}
-
 double PPB_Flash_Proxy::GetLocalTimeZoneOffset(PP_Instance instance,
                                                PP_Time t) {
   static double s_cached_t = 0.0;
@@ -287,31 +269,6 @@ PP_Bool PPB_Flash_Proxy::IsRectTopmost(PP_Instance instance,
 void PPB_Flash_Proxy::UpdateActivity(PP_Instance instance) {
   PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
       new PpapiHostMsg_PPBFlash_UpdateActivity(API_ID_PPB_FLASH));
-}
-
-PP_Var PPB_Flash_Proxy::GetDeviceID(PP_Instance instance) {
-  ReceiveSerializedVarReturnValue result;
-  dispatcher()->Send(new PpapiHostMsg_PPBFlash_GetDeviceID(
-      API_ID_PPB_FLASH, instance, &result));
-  return result.Return(dispatcher());
-}
-
-int32_t PPB_Flash_Proxy::GetSettingInt(PP_Instance instance,
-                                       PP_FlashSetting setting) {
-  // Note: Don't add support for any more settings here. This method is
-  // deprecated.
-  switch (setting) {
-    case PP_FLASHSETTING_3DENABLED:
-      return static_cast<PluginDispatcher*>(dispatcher())->preferences().
-          is_3d_supported;
-    case PP_FLASHSETTING_INCOGNITO:
-      return static_cast<PluginDispatcher*>(dispatcher())->incognito();
-    case PP_FLASHSETTING_STAGE3DENABLED:
-      return static_cast<PluginDispatcher*>(dispatcher())->preferences().
-          is_stage3d_supported;
-    default:
-      return -1;
-  }
 }
 
 PP_Var PPB_Flash_Proxy::GetSetting(PP_Instance instance,
@@ -643,18 +600,6 @@ void PPB_Flash_Proxy::OnHostMsgNavigate(PP_Instance instance,
       instance, data, target.c_str(), from_user_action);
 }
 
-void PPB_Flash_Proxy::OnHostMsgRunMessageLoop(PP_Instance instance) {
-  EnterInstanceNoLock enter(instance);
-  if (enter.succeeded())
-    enter.functions()->GetFlashAPI()->RunMessageLoop(instance);
-}
-
-void PPB_Flash_Proxy::OnHostMsgQuitMessageLoop(PP_Instance instance) {
-  EnterInstanceNoLock enter(instance);
-  if (enter.succeeded())
-    enter.functions()->GetFlashAPI()->QuitMessageLoop(instance);
-}
-
 void PPB_Flash_Proxy::OnHostMsgGetLocalTimeZoneOffset(PP_Instance instance,
                                                   PP_Time t,
                                                   double* result) {
@@ -743,18 +688,6 @@ void PPB_Flash_Proxy::OnHostMsgGetSetting(PP_Instance instance,
     id.Return(dispatcher(),
               enter.functions()->GetFlashAPI()->GetSetting(
                   instance, setting));
-  } else {
-    id.Return(dispatcher(), PP_MakeUndefined());
-  }
-}
-
-void PPB_Flash_Proxy::OnHostMsgGetDeviceID(PP_Instance instance,
-                                           SerializedVarReturnValue id) {
-  EnterInstanceNoLock enter(instance);
-  if (enter.succeeded()) {
-    id.Return(dispatcher(),
-                  enter.functions()->GetFlashAPI()->GetDeviceID(
-                      instance));
   } else {
     id.Return(dispatcher(), PP_MakeUndefined());
   }

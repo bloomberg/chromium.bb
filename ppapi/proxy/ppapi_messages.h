@@ -1316,10 +1316,6 @@ IPC_SYNC_MESSAGE_ROUTED4_1(PpapiHostMsg_PPBFlash_Navigate,
                            std::string /* target */,
                            PP_Bool /* from_user_action */,
                            int32_t /* result */)
-IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBFlash_RunMessageLoop,
-                           PP_Instance /* instance */)
-IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBFlash_QuitMessageLoop,
-                           PP_Instance /* instance */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_GetLocalTimeZoneOffset,
                            PP_Instance /* instance */,
                            PP_Time /* t */,
@@ -1337,9 +1333,6 @@ IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBFlash_FlashGetScreenSize,
                            PP_Bool /* result */,
                            PP_Size /* size */)
 IPC_MESSAGE_ROUTED0(PpapiHostMsg_PPBFlash_UpdateActivity)
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFlash_GetDeviceID,
-                           PP_Instance /* instance */,
-                           ppapi::proxy::SerializedVar /* id */)
 IPC_SYNC_MESSAGE_ROUTED3_2(PpapiHostMsg_PPBFlash_OpenFileRef,
                            PP_Instance /* instance */,
                            ppapi::HostResource /* file_ref */,

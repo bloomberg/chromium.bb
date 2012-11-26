@@ -26,6 +26,10 @@ namespace pp {
 
 namespace {
 
+template <> const char* interface_name<PPB_Flash_13_0>() {
+  return PPB_FLASH_INTERFACE_13_0;
+}
+
 template <> const char* interface_name<PPB_Flash_12_6>() {
   return PPB_FLASH_INTERFACE_12_6;
 }
@@ -38,10 +42,6 @@ template <> const char* interface_name<PPB_Flash_12_4>() {
   return PPB_FLASH_INTERFACE_12_4;
 }
 
-template <> const char* interface_name<PPB_Flash_12_3>() {
-  return PPB_FLASH_INTERFACE_12_3;
-}
-
 template <> const char* interface_name<PPB_Flash_Print_1_0>() {
   return PPB_FLASH_PRINT_INTERFACE_1_0;
 }
@@ -51,7 +51,7 @@ template <> const char* interface_name<PPB_Flash_Print_1_0>() {
 // have this meta one at the most recent version. Function pointers will be
 // null if they're not supported on the current Chrome version.
 bool initialized_combined_interface = false;
-PPB_Flash flash_12_combined_interface;
+PPB_Flash_12_6 flash_12_combined_interface;
 
 // Makes sure that the most recent version is loaded into the combined
 // interface struct above. Any unsupported functions will be NULL. If there
@@ -68,9 +68,6 @@ void InitializeCombinedInterface() {
   } else if (has_interface<PPB_Flash_12_4>()) {
     memcpy(&flash_12_combined_interface, get_interface<PPB_Flash_12_4>(),
            sizeof(PPB_Flash_12_4));
-  } else if (has_interface<PPB_Flash_12_3>()) {
-    memcpy(&flash_12_combined_interface, get_interface<PPB_Flash_12_3>(),
-           sizeof(PPB_Flash_12_3));
   }
   initialized_combined_interface = true;
 }
@@ -81,17 +78,20 @@ namespace flash {
 
 // static
 bool Flash::IsAvailable() {
-  return has_interface<PPB_Flash_12_6>() ||
+  return has_interface<PPB_Flash_13_0>() ||
+         has_interface<PPB_Flash_12_6>() ||
          has_interface<PPB_Flash_12_5>() ||
-         has_interface<PPB_Flash_12_4>() ||
-         has_interface<PPB_Flash_12_3>();
+         has_interface<PPB_Flash_12_4>();
 }
 
 // static
 void Flash::SetInstanceAlwaysOnTop(const InstanceHandle& instance,
                                    bool on_top) {
   InitializeCombinedInterface();
-  if (flash_12_combined_interface.SetInstanceAlwaysOnTop) {
+  if (has_interface<PPB_Flash_13_0>()) {
+    get_interface<PPB_Flash_13_0>()->SetInstanceAlwaysOnTop(
+        instance.pp_instance(), PP_FromBool(on_top));
+  } else if (flash_12_combined_interface.SetInstanceAlwaysOnTop) {
     flash_12_combined_interface.SetInstanceAlwaysOnTop(
         instance.pp_instance(), PP_FromBool(on_top));
   }
@@ -110,6 +110,20 @@ bool Flash::DrawGlyphs(const InstanceHandle& instance,
                        const uint16_t glyph_indices[],
                        const PP_Point glyph_advances[]) {
   InitializeCombinedInterface();
+  if (has_interface<PPB_Flash_13_0>()) {
+    return PP_ToBool(get_interface<PPB_Flash_13_0>()->DrawGlyphs(
+        instance.pp_instance(),
+        image->pp_resource(),
+        &font_desc.pp_font_description(),
+        color,
+        &position.pp_point(),
+        &clip.pp_rect(),
+        transformation,
+        PP_FromBool(allow_subpixel_aa),
+        glyph_count,
+        glyph_indices,
+        glyph_advances));
+  }
   if (flash_12_combined_interface.DrawGlyphs) {
     return PP_ToBool(flash_12_combined_interface.DrawGlyphs(
         instance.pp_instance(),
@@ -131,6 +145,10 @@ bool Flash::DrawGlyphs(const InstanceHandle& instance,
 Var Flash::GetProxyForURL(const InstanceHandle& instance,
                           const std::string& url) {
   InitializeCombinedInterface();
+  if (has_interface<PPB_Flash_13_0>()) {
+    return Var(PASS_REF, get_interface<PPB_Flash_13_0>()->GetProxyForURL(
+        instance.pp_instance(), url.c_str()));
+  }
   if (flash_12_combined_interface.GetProxyForURL) {
     return Var(PASS_REF, flash_12_combined_interface.GetProxyForURL(
         instance.pp_instance(), url.c_str()));
@@ -143,6 +161,12 @@ int32_t Flash::Navigate(const URLRequestInfo& request_info,
                         const std::string& target,
                         bool from_user_action) {
   InitializeCombinedInterface();
+  if (has_interface<PPB_Flash_13_0>()) {
+    return get_interface<PPB_Flash_13_0>()->Navigate(
+        request_info.pp_resource(),
+        target.c_str(),
+        PP_FromBool(from_user_action));
+  }
   if (flash_12_combined_interface.Navigate) {
     return flash_12_combined_interface.Navigate(
         request_info.pp_resource(),
@@ -153,23 +177,13 @@ int32_t Flash::Navigate(const URLRequestInfo& request_info,
 }
 
 // static
-void Flash::RunMessageLoop(const InstanceHandle& instance) {
-  InitializeCombinedInterface();
-  if (flash_12_combined_interface.RunMessageLoop)
-    flash_12_combined_interface.RunMessageLoop(instance.pp_instance());
-}
-
-// static
-void Flash::QuitMessageLoop(const InstanceHandle& instance) {
-  InitializeCombinedInterface();
-  if (flash_12_combined_interface.QuitMessageLoop)
-    flash_12_combined_interface.QuitMessageLoop(instance.pp_instance());
-}
-
-// static
 double Flash::GetLocalTimeZoneOffset(const InstanceHandle& instance,
                                      PP_Time t) {
   InitializeCombinedInterface();
+  if (has_interface<PPB_Flash_13_0>()) {
+    return get_interface<PPB_Flash_13_0>()->GetLocalTimeZoneOffset(
+        instance.pp_instance(), t);
+  }
   if (flash_12_combined_interface.GetLocalTimeZoneOffset) {
     return flash_12_combined_interface.GetLocalTimeZoneOffset(
         instance.pp_instance(), t);
@@ -180,6 +194,10 @@ double Flash::GetLocalTimeZoneOffset(const InstanceHandle& instance,
 // static
 Var Flash::GetCommandLineArgs(Module* module) {
   InitializeCombinedInterface();
+  if (has_interface<PPB_Flash_13_0>()) {
+    return Var(PASS_REF, get_interface<PPB_Flash_13_0>()->GetCommandLineArgs(
+        module->pp_module()));
+  }
   if (flash_12_combined_interface.GetCommandLineArgs) {
     return Var(
         PASS_REF,
@@ -191,6 +209,8 @@ Var Flash::GetCommandLineArgs(Module* module) {
 // static
 void Flash::PreloadFontWin(const void* logfontw) {
   InitializeCombinedInterface();
+  if (has_interface<PPB_Flash_13_0>())
+    return get_interface<PPB_Flash_13_0>()->PreloadFontWin(logfontw);
   if (flash_12_combined_interface.PreloadFontWin)
     return flash_12_combined_interface.PreloadFontWin(logfontw);
 }
@@ -198,6 +218,10 @@ void Flash::PreloadFontWin(const void* logfontw) {
 // static
 bool Flash::IsRectTopmost(const InstanceHandle& instance, const Rect& rect) {
   InitializeCombinedInterface();
+  if (has_interface<PPB_Flash_13_0>()) {
+    return PP_ToBool(get_interface<PPB_Flash_13_0>()->IsRectTopmost(
+        instance.pp_instance(), &rect.pp_rect()));
+  }
   if (flash_12_combined_interface.IsRectTopmost) {
     return PP_ToBool(flash_12_combined_interface.IsRectTopmost(
         instance.pp_instance(), &rect.pp_rect()));
@@ -208,35 +232,23 @@ bool Flash::IsRectTopmost(const InstanceHandle& instance, const Rect& rect) {
 // static
 void Flash::UpdateActivity(const InstanceHandle& instance) {
   InitializeCombinedInterface();
-  if (flash_12_combined_interface.UpdateActivity)
+  if (has_interface<PPB_Flash_13_0>())
+    get_interface<PPB_Flash_13_0>()->UpdateActivity(instance.pp_instance());
+  else if (flash_12_combined_interface.UpdateActivity)
     flash_12_combined_interface.UpdateActivity(instance.pp_instance());
-}
-
-// static
-Var Flash::GetDeviceID(const InstanceHandle& instance) {
-  InitializeCombinedInterface();
-  if (flash_12_combined_interface.GetDeviceID) {
-    return Var(PASS_REF,
-               flash_12_combined_interface.GetDeviceID(instance.pp_instance()));
-  }
-  return Var();
 }
 
 // static
 Var Flash::GetSetting(const InstanceHandle& instance, PP_FlashSetting setting) {
   InitializeCombinedInterface();
+  if (has_interface<PPB_Flash_13_0>()) {
+    return Var(PASS_REF, get_interface<PPB_Flash_13_0>()->GetSetting(
+        instance.pp_instance(), setting));
+  }
   if (flash_12_combined_interface.GetSetting) {
     return Var(PASS_REF,
                flash_12_combined_interface.GetSetting(instance.pp_instance(),
                                                       setting));
-  }
-  if (flash_12_combined_interface.GetSettingInt) {
-    // All the |PP_FlashSetting|s supported by |GetSettingInt()| return
-    // "booleans" (0 for false, 1 for true, -1 for undefined/unsupported/error).
-    int32_t result = flash_12_combined_interface.GetSettingInt(
-        instance.pp_instance(), setting);
-    if (result == 0 || result == 1)
-      return Var(!!result);
   }
 
   return Var();
@@ -247,6 +259,10 @@ bool Flash::SetCrashData(const InstanceHandle& instance,
                          PP_FlashCrashKey key,
                          const pp::Var& value) {
   InitializeCombinedInterface();
+  if (has_interface<PPB_Flash_13_0>()) {
+    return PP_ToBool(get_interface<PPB_Flash_13_0>()->SetCrashData(
+        instance.pp_instance(), key, value.pp_var()));
+  }
   if (flash_12_combined_interface.SetCrashData) {
     return PP_ToBool(
         flash_12_combined_interface.SetCrashData(instance.pp_instance(),
@@ -261,6 +277,13 @@ int32_t Flash::EnumerateVideoCaptureDevices(
     const VideoCapture_Dev& video_capture,
     std::vector<DeviceRef_Dev>* devices_out) {
   InitializeCombinedInterface();
+  if (has_interface<PPB_Flash_13_0>()) {
+    ResourceArrayOutputAdapter<DeviceRef_Dev> adapter(devices_out);
+    return get_interface<PPB_Flash_13_0>()->EnumerateVideoCaptureDevices(
+        instance.pp_instance(),
+        video_capture.pp_resource(),
+        adapter.pp_array_output());
+  }
   if (flash_12_combined_interface.EnumerateVideoCaptureDevices) {
     ResourceArrayOutputAdapter<DeviceRef_Dev> adapter(devices_out);
     return flash_12_combined_interface.EnumerateVideoCaptureDevices(

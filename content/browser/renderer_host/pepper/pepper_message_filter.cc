@@ -59,15 +59,6 @@ namespace {
 const size_t kMaxSocketsAllowed = 1024;
 const uint32 kInvalidSocketID = 0;
 
-// The ID is a 256-bit hash digest hex-encoded.
-const int kDRMIdentifierSize = (256 / 8) * 2;
-// The path to the file containing the DRM ID.
-// It is mirrored from
-//   chrome/browser/chromeos/system/drm_settings.cc
-// TODO(brettw) remove this when we remove the sync Device ID getter in
-// preference for the async one.
-const char kDRMIdentifierFile[] = "Pepper DRM ID.0";
-
 void CreateNetAddressListFromAddressList(
     const net::AddressList& list,
     std::vector<PP_NetAddress_Private>* net_address_list) {
@@ -145,8 +136,6 @@ void PepperMessageFilter::OverrideThreadForMessage(
       message.type() == PpapiHostMsg_PPBUDPSocket_Bind::ID ||
       message.type() == PpapiHostMsg_PPBUDPSocket_SendTo::ID) {
     *thread = BrowserThread::UI;
-  } else if (message.type() == PepperMsg_GetDeviceID::ID) {
-    *thread = BrowserThread::FILE;
   }
 }
 
@@ -202,7 +191,6 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
 
     // Flash messages.
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_UpdateActivity, OnUpdateActivity)
-    IPC_MESSAGE_HANDLER(PepperMsg_GetDeviceID, OnGetDeviceID)
     IPC_MESSAGE_HANDLER(PepperMsg_GetLocalDataRestrictions,
                         OnGetLocalDataRestrictions)
 
@@ -736,42 +724,6 @@ void PepperMessageFilter::OnUpdateActivity() {
 #else
   // TODO(brettw) implement this for other platforms.
 #endif
-}
-
-// TODO(brettw) remove this when we remove the sync Device ID getter in
-// preference for the async one.
-void PepperMessageFilter::OnGetDeviceID(std::string* id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  id->clear();
-
-  // Grab the contents of the DRM identifier file.
-  FilePath drm_id_file = browser_path_;
-  drm_id_file = drm_id_file.AppendASCII(kDRMIdentifierFile);
-
-  // This method should not be called with high frequency and its
-  // useful to be able to validate use with a VLOG.
-  VLOG(1) << "DRM ID requested @ " << drm_id_file.value();
-
-  if (browser_path_.empty()) {
-    LOG(ERROR) << "GetDeviceID requested from outside the RENDERER context.";
-    return;
-  }
-
-  // Return an empty value when off the record.
-  if (incognito_)
-    return;
-
-  // TODO(wad,brettw) Add OffTheRecord() enforcement here.
-  // Normally this is left for the plugin to do, but in the
-  // future we should check here as an added safeguard.
-
-  char id_buf[kDRMIdentifierSize];
-  if (file_util::ReadFile(drm_id_file, id_buf, kDRMIdentifierSize) !=
-      kDRMIdentifierSize) {
-    VLOG(1) << "file not readable: " << drm_id_file.value();
-    return;
-  }
-  id->assign(id_buf, kDRMIdentifierSize);
 }
 
 void PepperMessageFilter::OnGetLocalDataRestrictions(
