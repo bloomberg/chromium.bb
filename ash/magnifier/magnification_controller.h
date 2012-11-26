@@ -28,6 +28,7 @@ class MagnificationController {
   // Enables (or disables if |enabled| is false) screen magnifier feature.
   virtual void SetEnabled(bool enabled) = 0;
 
+  // Returns if the screen magnifier is enabled or not.
   virtual bool IsEnabled() const = 0;
 
   // Sets the magnification ratio. 1.0f means no magnification.

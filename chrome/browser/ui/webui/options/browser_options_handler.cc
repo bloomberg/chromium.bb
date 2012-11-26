@@ -1265,10 +1265,9 @@ void BrowserOptionsHandler::ScreenMagnifierChangeCallback(
   std::string type_name;
   args->GetString(0, &type_name);
 
-  chromeos::accessibility::ScreenMagnifierType type =
-      chromeos::accessibility::ScreenMagnifierTypeFromName(type_name.c_str());
-
-  chromeos::accessibility::SetScreenMagnifier(type);
+  PrefService* user_pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
+  user_pref_service->SetString(prefs::kScreenMagnifierType,
+                               type_name);
 }
 
 void BrowserOptionsHandler::VirtualKeyboardChangeCallback(
@@ -1308,18 +1307,18 @@ void BrowserOptionsHandler::SetupAccessibilityFeatures() {
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.setHighContrastCheckboxState",
       high_contrast_enabled);
-
-  base::StringValue magnifier_type(
-      pref_service->GetString(prefs::kScreenMagnifierType));
-  web_ui()->CallJavascriptFunction(
-      "BrowserOptions.setScreenMagnifierTypeState",
-      magnifier_type);
-
   base::FundamentalValue virtual_keyboard_enabled(
       pref_service->GetBoolean(prefs::kVirtualKeyboardEnabled));
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.setVirtualKeyboardCheckboxState",
       virtual_keyboard_enabled);
+
+  PrefService* user_pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
+  base::StringValue magnifier_type(
+      user_pref_service->GetString(prefs::kScreenMagnifierType));
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.setScreenMagnifierTypeState",
+      magnifier_type);
 }
 #endif
 

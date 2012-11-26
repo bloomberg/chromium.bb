@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "chrome/browser/accessibility/accessibility_extension_api.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/file_reader.h"
@@ -38,15 +39,12 @@
 
 using content::RenderViewHost;
 
-namespace {
+namespace chromeos {
+namespace accessibility {
+
 const char kScreenMagnifierOff[] = "";
 const char kScreenMagnifierFull[] = "full";
 const char kScreenMagnifierPartial[] = "partial";
-}
-
-
-namespace chromeos {
-namespace accessibility {
 
 // Helper class that directly loads an extension's content scripts into
 // all of the frames corresponding to a given RenderViewHost.
@@ -194,17 +192,8 @@ void EnableHighContrast(bool enabled) {
 }
 
 void SetScreenMagnifier(ScreenMagnifierType type) {
-  PrefService* pref_service = g_browser_process->local_state();
-  pref_service->SetString(prefs::kScreenMagnifierType,
-                          ScreenMagnifierNameFromType(type));
-  pref_service->CommitPendingWrite();
-
-#if defined(USE_ASH)
-  ash::Shell::GetInstance()->magnification_controller()->SetEnabled(
-      type == MAGNIFIER_FULL);
-  ash::Shell::GetInstance()->partial_magnification_controller()->SetEnabled(
-      type == MAGNIFIER_PARTIAL);
-#endif
+  if (MagnificationManager::GetInstance())
+    MagnificationManager::GetInstance()->SetScreenMagnifier(type);
 }
 
 void EnableVirtualKeyboard(bool enabled) {
@@ -257,16 +246,9 @@ bool IsHighContrastEnabled() {
 }
 
 ScreenMagnifierType GetScreenMagnifierType() {
-  if (!g_browser_process)
+  if (!MagnificationManager::GetInstance())
     return MAGNIFIER_OFF;
-
-  PrefService* prefs = g_browser_process->local_state();
-  std::string screen_magnifier_type;
-  if (!prefs)
-    return MAGNIFIER_OFF;
-
-  return ScreenMagnifierTypeFromName(
-      prefs->GetString(prefs::kScreenMagnifierType).c_str());
+  return MagnificationManager::GetInstance()->GetScreenMagnifierType();
 }
 
 ScreenMagnifierType ScreenMagnifierTypeFromName(const char type_name[]) {

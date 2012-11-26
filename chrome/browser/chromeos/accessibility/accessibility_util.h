@@ -23,6 +23,11 @@ void EnableSpokenFeedback(bool enabled, content::WebUI* login_web_ui);
 // Enable or disable the high contrast mode for Chrome.
 void EnableHighContrast(bool enabled);
 
+// String constants of the magnifier types.
+extern const char kScreenMagnifierOff[];
+extern const char kScreenMagnifierFull[];
+extern const char kScreenMagnifierPartial[];
+
 enum ScreenMagnifierType {
   MAGNIFIER_OFF,
   MAGNIFIER_FULL,

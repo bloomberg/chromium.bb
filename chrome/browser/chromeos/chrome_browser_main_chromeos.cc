@@ -17,6 +17,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/contacts/contact_manager.h"
@@ -525,6 +526,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
     power_state_override_ = new PowerStateOverride(
         PowerStateOverride::BLOCK_DISPLAY_SLEEP);
   }
+  magnification_manager_.reset(
+      chromeos::MagnificationManager::CreateInstance());
 
   primary_display_switch_observer_.reset(
       new PrimaryDisplaySwitchObserver());
@@ -622,6 +625,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   resume_observer_.reset();
   brightness_observer_.reset();
   output_observer_.reset();
+  magnification_manager_.reset();
   power_state_override_ = NULL;
 
   // The XInput2 event listener needs to be shut down earlier than when

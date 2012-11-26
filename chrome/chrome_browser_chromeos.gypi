@@ -111,6 +111,8 @@
         # and mocks.
         'browser/chromeos/accessibility/accessibility_util.cc',
         'browser/chromeos/accessibility/accessibility_util.h',
+        'browser/chromeos/accessibility/magnification_manager.cc',
+        'browser/chromeos/accessibility/magnification_manager.h',
         'browser/chromeos/audio/audio_handler.cc',
         'browser/chromeos/audio/audio_handler.h',
         'browser/chromeos/audio/audio_mixer.h',
