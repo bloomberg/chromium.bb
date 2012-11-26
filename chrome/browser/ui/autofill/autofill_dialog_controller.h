@@ -41,6 +41,9 @@ struct DetailInput {
   // A number between 0 and 1.0 that describes how much of the horizontal space
   // in the row should be allotted to this input. 0 is equivalent to 1.
   float expand_weight;
+  // When non-empty, indicates the value that should be pre-filled into the
+  // input.
+  string16 starting_value;
 };
 
 // Sections of the dialog --- all fields that may be shown to the user fit under
@@ -58,7 +61,7 @@ enum DialogAction {
   ACTION_SUBMIT,
 };
 
-typedef std::vector<const DetailInput*> DetailInputs;
+typedef std::vector<DetailInput> DetailInputs;
 typedef std::map<const DetailInput*, string16> DetailOutputMap;
 
 // This class drives the dialog that appears when a site uses the imperative
@@ -124,6 +127,11 @@ class AutofillDialogController {
 
   // Initializes |suggested_email_| et al.
   void GenerateComboboxModels();
+
+  // Fills in all the DetailInputs structs with guessed values for
+  // starting_value. The guesses come from Autofill data, drawing from the most
+  // filled out AutofillProfile.
+  void PopulateInputsWithGuesses();
 
   // Fills in |section|-related fields in |output_| according to the state of
   // |view_|.

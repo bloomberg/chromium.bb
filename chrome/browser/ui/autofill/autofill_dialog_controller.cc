@@ -45,9 +45,53 @@ void FilterInputs(const FormStructure& form_structure,
     const DetailInput* input = &input_template[i];
     for (size_t j = 0; j < form_structure.field_count(); ++j) {
       if (DetailInputMatchesField(*input, *form_structure.field(j))) {
-        inputs->push_back(input);
+        inputs->push_back(*input);
         break;
       }
+    }
+  }
+}
+
+// Finds the instance of T which has the most data for filling in the inputs in
+// |all_inputs|. T should be a FormGroup type.
+template<class T> FormGroup* GetBestDataSource(
+    const std::vector<T*>& sources,
+    const DetailInputs* const* all_inputs,
+    size_t all_inputs_length) {
+  int best_field_fill_count = 0;
+  FormGroup* best_source = NULL;
+
+  for (size_t i = 0; i < sources.size(); ++i) {
+    int field_fill_count = 0;
+
+    for (size_t j = 0; j < all_inputs_length; ++j) {
+      const DetailInputs& inputs = *all_inputs[j];
+      for (size_t k = 0; k < inputs.size(); ++k) {
+        if (!sources[i]->GetCanonicalizedInfo(inputs[k].type).empty()) {
+          field_fill_count++;
+        }
+      }
+    }
+
+    // TODO(estade): should there be a better tiebreaker?
+    if (field_fill_count > best_field_fill_count) {
+      best_field_fill_count = field_fill_count;
+      best_source = sources[i];
+    }
+  }
+
+  return best_source;
+}
+
+// Uses |group| to fill in the |starting_value| for all inputs in |all_inputs|
+// (an out-param).
+void FillInputsFromFormGroup(FormGroup* group,
+                             DetailInputs** all_inputs,
+                             size_t all_inputs_length) {
+  for (size_t i = 0; i < all_inputs_length; ++i) {
+    DetailInputs& inputs = *all_inputs[i];
+    for (size_t j = 0; j < inputs.size(); ++j) {
+      inputs[j].starting_value = group->GetCanonicalizedInfo(inputs[j].type);
     }
   }
 }
@@ -80,20 +124,20 @@ void AutofillDialogController::Show() {
     return;
   }
 
-  static int row_id = 0;
+  int row_id = 0;
 
-  static const DetailInput kEmailInputs[] = {
+  const DetailInput kEmailInputs[] = {
     { ++row_id, EMAIL_ADDRESS, "Email address" },
   };
 
-  static const DetailInput kCCInputs[] = {
+  const DetailInput kCCInputs[] = {
     { ++row_id, CREDIT_CARD_NUMBER, "Card number" },
     { ++row_id, CREDIT_CARD_EXP_2_DIGIT_YEAR, "Expiration MM/YY" },
     {   row_id, CREDIT_CARD_VERIFICATION_CODE, "CVC" },
     { ++row_id, CREDIT_CARD_NAME, "Cardholder name" },
   };
 
-  static const DetailInput kBillingInputs[] = {
+  const DetailInput kBillingInputs[] = {
     { ++row_id, ADDRESS_HOME_LINE1, "Street address", "billing" },
     { ++row_id, ADDRESS_HOME_LINE2, "Street address (optional)", "billing" },
     { ++row_id, ADDRESS_HOME_CITY, "City", "billing" },
@@ -101,7 +145,7 @@ void AutofillDialogController::Show() {
     {   row_id, ADDRESS_HOME_ZIP, "ZIP code", "billing", 0.5 },
   };
 
-  static const DetailInput kShippingInputs[] = {
+  const DetailInput kShippingInputs[] = {
     { ++row_id, NAME_FULL, "Full name", "shipping" },
     { ++row_id, ADDRESS_HOME_LINE1, "Street address", "shipping" },
     { ++row_id, ADDRESS_HOME_LINE2, "Street address (optional)", "shipping" },
@@ -130,7 +174,12 @@ void AutofillDialogController::Show() {
                arraysize(kShippingInputs),
                &requested_shipping_fields_);
 
-  GenerateComboboxModels();
+  // TODO(estade): make this actually check if it's a first run.
+  bool first_run = true;
+  if (first_run)
+    PopulateInputsWithGuesses();
+  else
+    GenerateComboboxModels();
 
   // TODO(estade): don't show the dialog if the site didn't specify the right
   // fields. First we must figure out what the "right" fields are.
@@ -258,6 +307,32 @@ void AutofillDialogController::GenerateComboboxModels() {
   suggested_shipping_.AddItem(ASCIIToUTF16("Enter new shipping"), "");
 }
 
+void AutofillDialogController::PopulateInputsWithGuesses() {
+  PersonalDataManager* manager =
+      PersonalDataManagerFactory::GetForProfile(profile_);
+
+  DetailInputs* profile_inputs[] = { &requested_email_fields_,
+                                     &requested_billing_fields_ };
+  const std::vector<AutofillProfile*>& profiles = manager->profiles();
+  FormGroup* best_profile =
+      GetBestDataSource(profiles, profile_inputs, arraysize(profile_inputs));
+  if (best_profile) {
+    FillInputsFromFormGroup(best_profile,
+                            profile_inputs,
+                            arraysize(profile_inputs));
+  }
+
+  DetailInputs* cc_inputs[] = { &requested_cc_fields_ };
+  const std::vector<CreditCard*>& credit_cards = manager->credit_cards();
+  FormGroup* best_cc =
+      GetBestDataSource(credit_cards, cc_inputs, arraysize(cc_inputs));
+  if (best_cc) {
+    FillInputsFromFormGroup(best_cc,
+                            cc_inputs,
+                            arraysize(cc_inputs));
+  }
+}
+
 void AutofillDialogController::FillOutputForSectionWithComparator(
     DialogSection section, const InputFieldComparator& compare) {
   int suggestion_selection = view_->GetSuggestionSelection(section);
@@ -278,7 +353,7 @@ void AutofillDialogController::FillOutputForSectionWithComparator(
       // Only fill in data that is associated with this section.
       const DetailInputs& inputs = RequestedFieldsForSection(section);
       for (size_t j = 0; j < inputs.size(); ++j) {
-        if (compare.Run(*inputs[j], *field)) {
+        if (compare.Run(inputs[j], *field)) {
           form_group->FillFormField(*field, 0, field);
           break;
         }

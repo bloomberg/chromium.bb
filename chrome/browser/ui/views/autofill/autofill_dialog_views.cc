@@ -299,7 +299,7 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
 
   for (DetailInputs::const_iterator it = inputs.begin();
        it != inputs.end(); ++it) {
-    const DetailInput& input = **it;
+    const DetailInput& input = *it;
     if (!controller_->ShouldShowInput(input))
       continue;
 
@@ -329,6 +329,7 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
 
     views::Textfield* field = new views::Textfield();
     field->set_placeholder_text(ASCIIToUTF16(input.placeholder_text));
+    field->SetText(input.starting_value);
     textfields->insert(std::make_pair(&input, field));
     layout->AddView(field);
   }
