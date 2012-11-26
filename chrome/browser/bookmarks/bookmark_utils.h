@@ -20,6 +20,10 @@ class Browser;
 class PrefServiceBase;
 class Profile;
 
+namespace content {
+class BrowserContext;
+}
+
 namespace ui {
 class DropTargetEvent;
 }
@@ -34,7 +38,8 @@ namespace bookmark_utils {
 int PreferredDropOperation(int source_operations, int operations);
 
 // Returns the drag operations for the specified node.
-int BookmarkDragOperation(Profile* profile, const BookmarkNode* node);
+int BookmarkDragOperation(content::BrowserContext* browser_context,
+                          const BookmarkNode* node);
 
 // Returns the preferred drop operation on a bookmark menu/bar.
 // |parent| is the parent node the drop is to occur on and |index| the index the
