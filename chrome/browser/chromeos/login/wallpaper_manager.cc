@@ -31,7 +31,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/root_power_manager_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -140,8 +140,8 @@ void WallpaperManager::RegisterPrefs(PrefService* local_state) {
 }
 
 void WallpaperManager::AddObservers() {
-  if (!DBusThreadManager::Get()->GetPowerManagerClient()->HasObserver(this))
-    DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+  if (!DBusThreadManager::Get()->GetRootPowerManagerClient()->HasObserver(this))
+    DBusThreadManager::Get()->GetRootPowerManagerClient()->AddObserver(this);
   system::TimezoneSettings::GetInstance()->AddObserver(this);
 }
 
@@ -588,7 +588,7 @@ void WallpaperManager::UpdateWallpaper() {
 
 WallpaperManager::~WallpaperManager() {
   ClearObsoleteWallpaperPrefs();
-  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+  DBusThreadManager::Get()->GetRootPowerManagerClient()->RemoveObserver(this);
   system::TimezoneSettings::GetInstance()->RemoveObserver(this);
   weak_factory_.InvalidateWeakPtrs();
 }
@@ -931,7 +931,7 @@ void WallpaperManager::StartLoad(const std::string& email,
                                       update_wallpaper));
 }
 
-void WallpaperManager::SystemResumed() {
+void WallpaperManager::OnResume(const base::TimeDelta& sleep_duration) {
   BatchUpdateWallpaper();
 }
 

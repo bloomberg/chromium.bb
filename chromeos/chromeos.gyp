@@ -322,6 +322,7 @@
       'type': 'static_library',
       'sources': [
         '../third_party/cros_system_api/dbus/power_manager/input_event.proto',
+        '../third_party/cros_system_api/dbus/power_manager/suspend.proto',
       ],
       'variables': {
         'proto_in_dir': '../third_party/cros_system_api/dbus/power_manager',

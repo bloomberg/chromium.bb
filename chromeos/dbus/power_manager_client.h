@@ -60,13 +60,6 @@ class CHROMEOS_EXPORT PowerManagerClient {
     // structure that contains the current state of the power supply.
     virtual void PowerChanged(const PowerSupplyStatus& status) {}
 
-    // Called when the system resumes from suspend.
-    virtual void SystemResumed() {}
-
-    // Called when the power button is pressed or released.
-    virtual void PowerButtonStateChanged(bool down,
-                                         const base::TimeTicks& timestamp) {}
-
     // Called when we go idle for threshold time.
     virtual void IdleNotify(int64 threshold_secs) {}
 

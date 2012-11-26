@@ -9,6 +9,7 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "chromeos/dbus/power_manager/input_event.pb.h"
+#include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "chromeos/dbus/root_power_manager_observer.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -32,6 +33,13 @@ class RootPowerManagerClientImpl : public RootPowerManagerClient {
         power_manager::kRootPowerManagerInterface,
         power_manager::kInputEventSignal,
         base::Bind(&RootPowerManagerClientImpl::InputEventReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&RootPowerManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+    proxy_->ConnectToSignal(
+        power_manager::kRootPowerManagerInterface,
+        power_manager::kSuspendStateChangedSignal,
+        base::Bind(&RootPowerManagerClientImpl::SuspendStateChangedReceived,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&RootPowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -71,9 +79,10 @@ class RootPowerManagerClientImpl : public RootPowerManagerClient {
       return;
     }
 
-    VLOG(1) << "Got " << power_manager::kInputEventSignal << " signal";
     base::TimeTicks timestamp =
         base::TimeTicks::FromInternalValue(proto.timestamp());
+    VLOG(1) << "Got " << power_manager::kInputEventSignal << " signal:"
+            << " type=" << proto.type() << " timestamp=" << proto.timestamp();
     switch (proto.type()) {
       case power_manager::InputEvent_Type_POWER_BUTTON_DOWN:
       case power_manager::InputEvent_Type_POWER_BUTTON_UP: {
@@ -94,9 +103,38 @@ class RootPowerManagerClientImpl : public RootPowerManagerClient {
     }
   }
 
+  void SuspendStateChangedReceived(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    power_manager::SuspendState proto;
+    if (!reader.PopArrayOfBytesAsProto(&proto)) {
+      LOG(ERROR) << "Unable to decode protocol buffer from "
+                 << power_manager::kSuspendStateChangedSignal << " signal";
+      return;
+    }
+
+    VLOG(1) << "Got " << power_manager::kSuspendStateChangedSignal << " signal:"
+            << " type=" << proto.type() << " wall_time=" << proto.wall_time();
+    base::Time wall_time =
+        base::Time::FromInternalValue(proto.wall_time());
+    switch (proto.type()) {
+      case power_manager::SuspendState_Type_SUSPEND_TO_MEMORY:
+        last_suspend_wall_time_ = wall_time;
+        break;
+      case power_manager::SuspendState_Type_RESUME:
+        FOR_EACH_OBSERVER(
+            RootPowerManagerObserver, observers_,
+            OnResume(wall_time - last_suspend_wall_time_));
+        break;
+    }
+  }
+
   dbus::ObjectProxy* proxy_;
 
   ObserverList<RootPowerManagerObserver> observers_;
+
+  // Wall time from the latest signal telling us that the system was about to
+  // suspend to memory.
+  base::Time last_suspend_wall_time_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

@@ -67,6 +67,8 @@
 #include "chrome/common/url_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/root_power_manager_client.h"
+#include "chromeos/dbus/root_power_manager_observer.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
@@ -148,6 +150,7 @@ void BluetoothDeviceConnectError() {
 class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public AudioHandler::VolumeObserver,
                            public PowerManagerClient::Observer,
+                           public RootPowerManagerObserver,
                            public SessionManagerClient::Observer,
                            public NetworkMenuIcon::Delegate,
                            public NetworkMenu::Delegate,
@@ -203,6 +206,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate(
         PowerManagerClient::UPDATE_INITIAL);
+    DBusThreadManager::Get()->GetRootPowerManagerClient()->AddObserver(this);
     DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
 
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
@@ -235,6 +239,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (audiohandler)
       audiohandler->RemoveVolumeObserver(this);
     DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
+    DBusThreadManager::Get()->GetRootPowerManagerClient()->RemoveObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
     if (crosnet) {
@@ -970,7 +975,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     GetSystemTrayNotifier()->NotifyPowerStatusChanged(power_status);
   }
 
-  virtual void SystemResumed() OVERRIDE {
+  // Overridden from RootPowerManagerObserver:
+  virtual void OnResume(const base::TimeDelta& sleep_duration) OVERRIDE {
     GetSystemTrayNotifier()->NotifyRefreshClock();
   }
 

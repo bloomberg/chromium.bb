@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/root_power_manager_observer.h"
 #include "net/base/network_change_notifier.h"
 
 namespace chromeos {
@@ -20,7 +20,7 @@ class OnlineStatusReportThreadTask;
 
 class NetworkChangeNotifierChromeos
     : public net::NetworkChangeNotifier,
-      public chromeos::PowerManagerClient::Observer,
+      public chromeos::RootPowerManagerObserver,
       public chromeos::NetworkLibrary::NetworkObserver,
       public chromeos::NetworkLibrary::NetworkManagerObserver {
  public:
@@ -40,12 +40,10 @@ class NetworkChangeNotifierChromeos
 
   class DnsConfigServiceChromeos;
 
-  // PowerManagerClient::Observer overrides.
-  virtual void PowerChanged(const PowerSupplyStatus& status) OVERRIDE;
+  // RootPowerManagerObserver overrides:
+  virtual void OnResume(const base::TimeDelta& sleep_duration) OVERRIDE;
 
-  virtual void SystemResumed() OVERRIDE;
-
-  // NetworkChangeNotifier overrides.
+  // NetworkChangeNotifier overrides:
   virtual net::NetworkChangeNotifier::ConnectionType
       GetCurrentConnectionType() const OVERRIDE;
 

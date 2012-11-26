@@ -35,10 +35,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
         power_manager::kPowerManagerServiceName,
         dbus::ObjectPath(power_manager::kPowerManagerServicePath));
 
-    session_manager_proxy_ = bus->GetObjectProxy(
-        login_manager::kSessionManagerServiceName,
-        dbus::ObjectPath(login_manager::kSessionManagerServicePath));
-
     // Monitor the D-Bus signal for brightness changes. Only the power
     // manager knows the actual brightness level. We don't cache the
     // brightness level in Chrome as it'll make things less reliable.
@@ -62,22 +58,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
         power_manager::kPowerManagerInterface,
         power_manager::kPowerSupplyPollSignal,
         base::Bind(&PowerManagerClientImpl::PowerSupplyPollReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&PowerManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    power_manager_proxy_->ConnectToSignal(
-        power_manager::kPowerManagerInterface,
-        power_manager::kPowerStateChangedSignal,
-        base::Bind(&PowerManagerClientImpl::PowerStateChangedSignalReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&PowerManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    power_manager_proxy_->ConnectToSignal(
-        power_manager::kPowerManagerInterface,
-        power_manager::kButtonEventSignal,
-        base::Bind(&PowerManagerClientImpl::ButtonEventSignalReceived,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&PowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -351,40 +331,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
     }
   }
 
-  void PowerStateChangedSignalReceived(dbus::Signal* signal) {
-    VLOG(1) << "Received power state changed signal.";
-    dbus::MessageReader reader(signal);
-    std::string power_state_string;
-    if (!reader.PopString(&power_state_string)) {
-      LOG(ERROR) << "Error reading signal args: " << signal->ToString();
-      return;
-    }
-    if (power_state_string != "on")
-      return;
-    FOR_EACH_OBSERVER(Observer, observers_, SystemResumed());
-  }
-
-  void ButtonEventSignalReceived(dbus::Signal* signal) {
-    dbus::MessageReader reader(signal);
-    std::string button_name;
-    bool down = false;
-    int64 timestamp_internal = 0;
-    if (!reader.PopString(&button_name) ||
-        !reader.PopBool(&down) ||
-        !reader.PopInt64(&timestamp_internal)) {
-      LOG(ERROR) << "Button signal had incorrect parameters: "
-                 << signal->ToString();
-      return;
-    }
-    base::TimeTicks timestamp =
-        base::TimeTicks::FromInternalValue(timestamp_internal);
-
-    if (button_name == power_manager::kPowerButtonName) {
-      FOR_EACH_OBSERVER(
-          Observer, observers_, PowerButtonStateChanged(down, timestamp));
-    }
-  }
-
   void PowerSupplyPollReceived(dbus::Signal* unused_signal) {
     VLOG(1) << "Received power supply poll signal.";
     RequestStatusUpdate(UPDATE_POLL);
@@ -518,7 +464,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
   }
 
   dbus::ObjectProxy* power_manager_proxy_;
-  dbus::ObjectProxy* session_manager_proxy_;
   ObserverList<Observer> observers_;
 
   // Note: This should remain the last member so it'll be destroyed and

@@ -19,6 +19,9 @@ class CHROMEOS_EXPORT RootPowerManagerObserver {
   // Called when the device's lid is opened or closed.
   virtual void OnLidEvent(bool open, const base::TimeTicks& timestamp) {}
 
+  // Called when the system resumes from sleep.
+  virtual void OnResume(const base::TimeDelta& sleep_duration) {}
+
  protected:
   virtual ~RootPowerManagerObserver() {}
 };

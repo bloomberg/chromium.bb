@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/root_power_manager_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/dns/dns_config_service_posix.h"
 
@@ -70,7 +71,7 @@ void NetworkChangeNotifierChromeos::Init() {
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   network_library->AddNetworkManagerObserver(this);
 
-  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+  DBusThreadManager::Get()->GetRootPowerManagerClient()->AddObserver(this);
 
   dns_config_service_.reset(new DnsConfigServiceChromeos());
   dns_config_service_->WatchConfig(
@@ -92,14 +93,11 @@ void NetworkChangeNotifierChromeos::Shutdown() {
   lib->RemoveNetworkManagerObserver(this);
   lib->RemoveObserverForAllNetworks(this);
 
-  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+  DBusThreadManager::Get()->GetRootPowerManagerClient()->RemoveObserver(this);
 }
 
-void NetworkChangeNotifierChromeos::PowerChanged(
-    const PowerSupplyStatus& status) {
-}
-
-void NetworkChangeNotifierChromeos::SystemResumed() {
+void NetworkChangeNotifierChromeos::OnResume(
+    const base::TimeDelta& sleep_duration) {
   // Force invalidation of various net resources on system resume.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
