@@ -116,10 +116,6 @@ class RemoteFileSyncService {
       const fileapi::FileSystemURL& url,
       const fileapi::SyncFileMetadataCallback& callback) = 0;
 
-  // Returns the current remote service state (should equal to the value
-  // returned by the last OnRemoteServiceStateUpdated notification.
-  virtual RemoteServiceState GetCurrentState() const = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(RemoteFileSyncService);
 };

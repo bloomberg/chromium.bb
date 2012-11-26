@@ -43,8 +43,6 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   MOCK_METHOD2(GetRemoteFileMetadata,
                void(const fileapi::FileSystemURL& url,
                     const fileapi::SyncFileMetadataCallback& callback));
-  MOCK_CONST_METHOD0(GetCurrentState,
-                     RemoteServiceState());
 
   // Send notifications to the observers.
   // Can be used in the mock implementation.

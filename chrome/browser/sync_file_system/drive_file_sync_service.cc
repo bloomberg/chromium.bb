@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop_proxy.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/gdata_wapi_service.h"
@@ -255,19 +254,14 @@ void DriveFileSyncService::GetRemoteFileMetadata(
                fileapi::SyncFileMetadata());
 }
 
-RemoteServiceState DriveFileSyncService::GetCurrentState() const {
-  return state_;
-}
-
 void DriveFileSyncService::ApplyLocalChange(
     const fileapi::FileChange& change,
     const FilePath& local_file_path,
     const fileapi::SyncFileMetadata& local_file_metadata,
     const fileapi::FileSystemURL& url,
     const fileapi::SyncStatusCallback& callback) {
-  // TODO(tzik): implement this.
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(callback, fileapi::SYNC_STATUS_FAILED));
+  NOTIMPLEMENTED();
+  callback.Run(fileapi::SYNC_STATUS_FAILED);
 }
 
 // Called by CreateForTesting.

@@ -62,15 +62,6 @@ class SyncFileSystemService
   void RemoveSyncEventObserver(const GURL& app_origin,
                                SyncEventObserver* observer);
 
-  // Enables or disables automatic synchronization process.
-  // If this is enabled the service automatically runs remote/local sync
-  // process when it detects changes in remote/local filesystem for
-  // registered origins.
-  // It is enabled by default but can be disabled for testing (or maybe
-  // via an explicit API call).
-  void set_auto_sync_enabled(bool flag) { auto_sync_enabled_ = flag; }
-  bool auto_sync_enabled() const { return auto_sync_enabled_; }
-
  private:
   friend class SyncFileSystemServiceFactory;
   friend class SyncFileSystemServiceTest;
@@ -92,23 +83,6 @@ class SyncFileSystemService
                          const fileapi::SyncStatusCallback& callback,
                          fileapi::SyncStatusCode status);
 
-  // Called when following observer methods are called:
-  // - OnLocalChangeAvailable()
-  // - OnRemoteChangeAvailable()
-  // - OnRemoteServiceStateUpdated()
-  void MaybeStartSync();
-
-  // Called from MaybeStartSync().
-  void MaybeStartRemoteSync();
-  void MaybeStartLocalSync();
-
-  // Callbacks for remote/local sync.
-  void DidProcessRemoteChange(fileapi::SyncStatusCode status,
-                              const fileapi::FileSystemURL& url,
-                              fileapi::SyncOperationType type);
-  void DidProcessLocalChange(fileapi::SyncStatusCode status,
-                             const fileapi::FileSystemURL& url);
-
   // RemoteFileSyncService::Observer overrides.
   virtual void OnLocalChangeAvailable(int64 pending_changes) OVERRIDE;
 
@@ -125,10 +99,6 @@ class SyncFileSystemService
 
   scoped_ptr<LocalFileSyncService> local_file_service_;
   scoped_ptr<RemoteFileSyncService> remote_file_service_;
-
-  bool local_sync_running_;
-  bool remote_sync_running_;
-  bool auto_sync_enabled_;
 
   // TODO(kinuko): clean up this.
   std::set<GURL> initialized_app_origins_;

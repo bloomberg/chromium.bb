@@ -72,7 +72,6 @@ class DriveFileSyncService
   virtual void GetRemoteFileMetadata(
       const fileapi::FileSystemURL& url,
       const fileapi::SyncFileMetadataCallback& callback) OVERRIDE;
-  virtual RemoteServiceState GetCurrentState() const OVERRIDE;
 
   // LocalChangeProcessor overrides.
   virtual void ApplyLocalChange(

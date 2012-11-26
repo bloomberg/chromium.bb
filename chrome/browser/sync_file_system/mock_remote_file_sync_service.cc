@@ -36,8 +36,6 @@ MockRemoteFileSyncService::MockRemoteFileSyncService() {
       .WillByDefault(Invoke(this, &self::GetConflictFilesStub));
   ON_CALL(*this, GetRemoteFileMetadata(_, _))
       .WillByDefault(Invoke(this, &self::GetRemoteFileMetadataStub));
-  ON_CALL(*this, GetCurrentState())
-      .WillByDefault(Return(REMOTE_SERVICE_OK));
 }
 
 MockRemoteFileSyncService::~MockRemoteFileSyncService() {
