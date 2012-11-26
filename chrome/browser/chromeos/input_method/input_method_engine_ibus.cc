@@ -273,9 +273,9 @@ bool InputMethodEngineIBus::SetCandidates(
   for (std::vector<Candidate>::const_iterator ix = candidates.begin();
        ix != candidates.end(); ++ix) {
     ibus::IBusLookupTable::Entry entry;
-    // TODO(nona): support annotation(crbug.com/140186).
-    entry.value = ix->value + " " + ix->annotation;
+    entry.value = ix->value;
     entry.label = ix->label;
+    entry.annotation = ix->annotation;
 
     // Store a mapping from the user defined ID to the candidate index.
     candidate_indexes_[ix->id] = candidate_ids_.size();

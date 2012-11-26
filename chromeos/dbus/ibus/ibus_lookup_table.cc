@@ -43,7 +43,10 @@ void AppendIBusLookupTable(const IBusLookupTable& table,
   bool have_labels = false;
   for (size_t i = 0; i < candidates.size(); ++i) {
     // Write candidate string as IBusText.
-    AppendStringAsIBusText(candidates[i].value, &text_writer);
+    ibus::IBusText text;
+    text.set_text(candidates[i].value);
+    text.set_annotation(candidates[i].annotation);
+    AppendIBusText(text, &text_writer);
     if (!candidates[i].label.empty())
       have_labels = true;
   }
