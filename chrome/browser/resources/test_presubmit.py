@@ -169,6 +169,38 @@ class JsStyleGuideTest(SuperMoxTestBase):
     for line in lines:
       self.ShouldPassGetElementByIdCheck(line)
 
+  def ShouldFailInheritDocCheck(self, line):
+    """Checks that the '@inheritDoc' checker flags |line| as a style error."""
+    error = self.checker.InheritDocCheck(1, line)
+    self.assertNotEqual('', error,
+        'Should be flagged as style error: ' + line)
+    self.assertEqual(self.GetHighlight(line, error), '@inheritDoc')
+
+  def ShouldPassInheritDocCheck(self, line):
+    """Checks that the '@inheritDoc' checker doesn't flag |line| as a style
+       error.
+    """
+    self.assertEqual('', self.checker.InheritDocCheck(1, line),
+        'Should not be flagged as style error: ' + line)
+
+  def testInheritDocFails(self):
+    lines = [
+        "/** @inheritDoc */",
+        "* @inheritDoc",
+    ]
+    for line in lines:
+      self.ShouldFailInheritDocCheck(line)
+
+  def testInheritDocPasses(self):
+    lines = [
+        "And then I said, but I won't @inheritDoc! Hahaha!",
+        "If your dad's a doctor, do you inheritDoc?",
+        "What's up, inherit doc?",
+        "this.inheritDoc(someDoc)",
+    ]
+    for line in lines:
+      self.ShouldPassInheritDocCheck(line)
+
 
 class CssStyleGuideTest(SuperMoxTestBase):
   def setUp(self):

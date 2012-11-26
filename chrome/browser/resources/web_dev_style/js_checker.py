@@ -56,6 +56,11 @@ class JSChecker(object):
         "Use $('id'), from chrome://resources/js/util.js, instead of "
         "document.getElementById('id'))")
 
+  def InheritDocCheck(self, i, line):
+    """Checks for use of '@inheritDoc' instead of '@override'."""
+    return self.RegexCheck(i, line, r"\* (@inheritDoc)",
+        "@inheritDoc is deprecated, use @override instead.")
+
   def error_highlight(self, start, length):
     """Takes a start position and a length, and produces a row of '^'s to
        highlight the corresponding part of a string.
@@ -179,6 +184,7 @@ class JSChecker(object):
             self.ChromeSendCheck(i, line),
             self.ConstCheck(i, line),
             self.GetElementByIdCheck(i, line),
+            self.InheritDocCheck(i, line),
         ])
 
       # Use closure_linter to check for several different errors
