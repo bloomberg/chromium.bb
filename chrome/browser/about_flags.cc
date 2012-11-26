@@ -783,6 +783,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(gfx::switches::kEnableWebkitTextSubpixelPositioning)
   },
   {
+    "disable-touch-adjustment",
+    IDS_DISABLE_TOUCH_ADJUSTMENT_NAME,
+    IDS_DISABLE_TOUCH_ADJUSTMENT_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kDisableTouchAdjustment)
+  },
+  {
     "enable-tab-capture",
     IDS_ENABLE_TAB_CAPTURE_NAME,
     IDS_ENABLE_TAB_CAPTURE_DESCRIPTION,

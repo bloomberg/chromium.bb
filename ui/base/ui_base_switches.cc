@@ -9,6 +9,9 @@ namespace switches {
 // Enable support for bezel touch.
 const char kEnableBezelTouch[] = "enable-bezel-touch";
 
+// Disable touch adjustment.
+const char kDisableTouchAdjustment[] = "disable-touch-adjustment";
+
 // Enables the Views textfield on Windows.
 const char kEnableViewsTextfield[] = "enable-views-textfield";
 

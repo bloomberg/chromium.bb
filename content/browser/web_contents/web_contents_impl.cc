@@ -561,6 +561,9 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
   prefs.device_supports_mouse = false;
 #endif
 
+   prefs.touch_adjustment_enabled =
+       !command_line.HasSwitch(switches::kDisableTouchAdjustment);
+
 #if defined(OS_MACOSX)
   bool default_enable_scroll_animator = true;
 #else

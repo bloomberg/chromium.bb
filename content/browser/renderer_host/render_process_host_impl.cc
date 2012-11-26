@@ -822,6 +822,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableStatsTable,
     switches::kEnableThreadedCompositing,
     switches::kDisableThreadedCompositing,
+    switches::kDisableTouchAdjustment,
     switches::kEnableViewport,
     switches::kForceDeviceScaleFactor,
     switches::kFullMemoryCrashReport,
