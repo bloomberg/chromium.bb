@@ -224,6 +224,9 @@ void NewTabUI::StartTimingPaint(RenderViewHost* render_view_host) {
 }
 
 bool NewTabUI::CanShowBookmarkBar() const {
+  if (web_ui()->GetWebContents()->GetURL().SchemeIs(chrome::kViewSourceScheme))
+    return false;
+
   PrefService* prefs = GetProfile()->GetPrefs();
   bool disabled_by_policy =
       prefs->IsManagedPreference(prefs::kShowBookmarkBar) &&
