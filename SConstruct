@@ -2673,6 +2673,7 @@ if nacl_env.Bit('bitcode'):
 
   if nacl_env.Bit('translate_fast'):
     nacl_env.Append(LINKFLAGS=['-Xlinker', '-translate-fast'])
+    nacl_env.Append(TRANSLATEFLAGS=['-translate-fast'])
 
   # With pnacl's clang base/ code uses the "override" keyword.
   nacl_env.Append(CXXFLAGS=['-Wno-c++11-extensions'])
