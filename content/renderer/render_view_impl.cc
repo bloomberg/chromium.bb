@@ -5755,11 +5755,11 @@ void RenderViewImpl::OnWasHidden() {
 
 #if defined(OS_ANDROID)
   // Inform WebMediaPlayerManagerAndroid to release all media player resources.
-  // unless some media is playing.
+  // unless some audio is playing.
   // If something is in progress the resource will not be freed, it will
   // only be freed once the tab is destroyed or if the user navigates away
   // via WebMediaPlayerAndroid::Destroy
-  media_player_manager_->ReleaseMediaResourcesIfNotPlaying();
+  media_player_manager_->ReleaseMediaResources();
 #endif
 
   if (webview()) {
