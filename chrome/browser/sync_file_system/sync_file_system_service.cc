@@ -249,12 +249,14 @@ void SyncFileSystemService::OnLocalChangeAvailable(int64 pending_changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_GE(pending_changes, 0);
   pending_local_changes_ = pending_changes;
+  MaybeStartSync();
 }
 
 void SyncFileSystemService::OnRemoteChangeAvailable(int64 pending_changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_GE(pending_changes, 0);
   pending_remote_changes_ = pending_changes;
+  MaybeStartSync();
 }
 
 void SyncFileSystemService::OnRemoteServiceStateUpdated(
@@ -267,12 +269,18 @@ void SyncFileSystemService::OnRemoteServiceStateUpdated(
                       OnSyncStateUpdated(RemoteStateToSyncServiceState(state),
                                          description));
   }
+  if (state == REMOTE_SERVICE_OK)
+    MaybeStartSync();
 }
 
 SyncFileSystemService::SyncFileSystemService(Profile* profile)
     : profile_(profile),
       pending_local_changes_(0),
-      pending_remote_changes_(0) {}
+      pending_remote_changes_(0),
+      local_sync_running_(false),
+      remote_sync_running_(false),
+      auto_sync_enabled_(true) {
+}
 
 void SyncFileSystemService::Initialize(
     scoped_ptr<LocalFileSyncService> local_file_service,
@@ -285,6 +293,7 @@ void SyncFileSystemService::Initialize(
   local_file_service_ = local_file_service.Pass();
   remote_file_service_ = remote_file_service.Pass();
 
+  local_file_service_->AddChangeObserver(this);
   remote_file_service_->AddObserver(this);
 }
 
@@ -316,7 +325,99 @@ void SyncFileSystemService::DidRegisterOrigin(
     pending_register_origins_.insert(app_origin);
     status = fileapi::SYNC_STATUS_OK;
   }
-  callback.Run(status);
+  pending_register_origins_.erase(app_origin);
+
+  // This could be given a null callback in retry cases.
+  if (!callback.is_null())
+    callback.Run(status);
+}
+
+void SyncFileSystemService::MaybeStartSync() {
+  if (!profile_ || !auto_sync_enabled_)
+    return;
+
+  DCHECK(local_file_service_);
+  DCHECK(remote_file_service_);
+
+  MaybeStartRemoteSync();
+  MaybeStartLocalSync();
+}
+
+void SyncFileSystemService::MaybeStartRemoteSync() {
+  if (remote_file_service_->GetCurrentState() == REMOTE_SERVICE_DISABLED)
+    return;
+  if (!pending_register_origins_.empty()) {
+    // Try if we can register pending origins.
+    // (Note that we don't preserve registration order here assuming it won't
+    // have visible impact in the fairness)
+    const GURL& origin = *pending_register_origins_.begin();
+    remote_file_service_->RegisterOriginForTrackingChanges(
+        origin,
+        base::Bind(&SyncFileSystemService::DidRegisterOrigin,
+                   AsWeakPtr(), origin, SyncStatusCallback()));
+    return;
+  }
+  // See if we cannot / should not start a new remote sync.
+  if (remote_sync_running_ || pending_remote_changes_ == 0)
+    return;
+  remote_sync_running_ = true;
+  remote_file_service_->ProcessRemoteChange(
+      local_file_service_.get(),
+      base::Bind(&SyncFileSystemService::DidProcessRemoteChange,
+                 AsWeakPtr()));
+}
+
+void SyncFileSystemService::MaybeStartLocalSync() {
+  // If the remote service is not ready probably we should not start a
+  // local sync yet.
+  // (We should be still trying a remote sync so the state should become OK
+  // if the remote-side attempt succeeds.)
+  if (remote_file_service_->GetCurrentState() != REMOTE_SERVICE_OK)
+    return;
+  // See if we cannot / should not start a new local sync.
+  if (local_sync_running_ || pending_local_changes_ == 0)
+    return;
+  local_sync_running_ = true;
+  local_file_service_->ProcessLocalChange(
+      remote_file_service_->GetLocalChangeProcessor(),
+      base::Bind(&SyncFileSystemService::DidProcessLocalChange,
+                 AsWeakPtr()));
+}
+
+void SyncFileSystemService::DidProcessRemoteChange(
+    fileapi::SyncStatusCode status,
+    const FileSystemURL& url,
+    fileapi::SyncOperationType type) {
+  DCHECK(remote_sync_running_);
+  remote_sync_running_ = false;
+  if (status == fileapi::SYNC_STATUS_OK) {
+    // TODO(kinuko): Dispatch OnFileSynced notification here.
+  } else if (status == fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC) {
+    // TODO(kinuko): Handle this case separately.
+  } else if (status == fileapi::SYNC_STATUS_FILE_BUSY) {
+    // TODO(kinuko): Handle this case separately.
+  } else if (status == fileapi::SYNC_STATUS_HAS_CONFLICT) {
+    // TODO(kinuko,tzik): Handle conflict!
+  }
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(&SyncFileSystemService::MaybeStartSync,
+                            AsWeakPtr()));
+}
+
+void SyncFileSystemService::DidProcessLocalChange(
+    fileapi::SyncStatusCode status, const FileSystemURL& url) {
+  DCHECK(local_sync_running_);
+  local_sync_running_ = false;
+  if (status == fileapi::SYNC_STATUS_OK) {
+    // TODO(kinuko,tzik): We need to dispatch OnFileSynced notification.
+    // Change this callback to take change type or add OnFileSynced method
+    // to the local/remote observer class.
+  } else if (status == fileapi::SYNC_STATUS_HAS_CONFLICT) {
+    // TODO(kinuko,tzik): Handle conflict!
+  }
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(&SyncFileSystemService::MaybeStartSync,
+                            AsWeakPtr()));
 }
 
 // SyncFileSystemServiceFactory -----------------------------------------------
