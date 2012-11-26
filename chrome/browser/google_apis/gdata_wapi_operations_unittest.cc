@@ -54,8 +54,7 @@ class GDataWapiOperationsTest : public testing::Test {
   GDataWapiOperationsTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE),
-        io_thread_(content::BrowserThread::IO),
-        url_generator_(GURL(GDataWapiUrlGenerator::kBaseUrlForTesting)) {
+        io_thread_(content::BrowserThread::IO) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -69,21 +68,24 @@ class GDataWapiOperationsTest : public testing::Test {
         new ScopedRequestContextGetterForTesting(
             static_cast<TestingBrowserProcess*>(g_browser_process)));
 
-    ASSERT_TRUE(gdata_test_server_.InitializeAndWaitUntilReady());
-    gdata_test_server_.RegisterFileResponse(
+    ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
+    test_server_.RegisterFileResponse(
         "/files/chromeos/gdata/testfile.txt",
         test_util::GetTestFilePath("gdata/testfile.txt"),
         "text/plain",
         test_server::SUCCESS);
-    gdata_test_server_.RegisterFileResponse(
+    test_server_.RegisterFileResponse(
         "/files/chromeos/gdata/root_feed.json",
         test_util::GetTestFilePath("gdata/root_feed.json"),
         "text/plain",
         test_server::SUCCESS);
+
+    url_generator_.reset(new GDataWapiUrlGenerator(
+        GDataWapiUrlGenerator::GetBaseUrlForTesting(test_server_.port())));
   }
 
   virtual void TearDown() OVERRIDE {
-    gdata_test_server_.ShutdownAndWaitUntilComplete();
+    test_server_.ShutdownAndWaitUntilComplete();
     request_context_getter_.reset();
   }
 
@@ -97,10 +99,10 @@ class GDataWapiOperationsTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
-  test_server::HttpServer gdata_test_server_;
+  test_server::HttpServer test_server_;
   scoped_ptr<TestingProfile> profile_;
   OperationRegistry operation_registry_;
-  GDataWapiUrlGenerator url_generator_;
+  scoped_ptr<GDataWapiUrlGenerator> url_generator_;
   scoped_ptr<ScopedRequestContextGetterForTesting> request_context_getter_;
 };
 
@@ -138,8 +140,8 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_ValidFeed) {
 
   GetDocumentsOperation* operation = new google_apis::GetDocumentsOperation(
       &operation_registry_,
-      url_generator_,
-      gdata_test_server_.GetURL("/files/chromeos/gdata/root_feed.json"),
+      *url_generator_,
+      test_server_.GetURL("/files/chromeos/gdata/root_feed.json"),
       0,  // start changestamp,
       "",  // search string
       false,  // shared with me
@@ -169,8 +171,8 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_InvalidFeed) {
 
   GetDocumentsOperation* operation = new google_apis::GetDocumentsOperation(
       &operation_registry_,
-      url_generator_,
-      gdata_test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
+      *url_generator_,
+      test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
       0,  // start changestamp,
       "",  // search string
       false,  // shared with me
@@ -200,7 +202,7 @@ TEST_F(GDataWapiOperationsTest, DownloadFileOperation_ValidFile) {
                  &result_code,
                  &contents),
       GetContentCallback(),
-      gdata_test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
+      test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
       FilePath::FromUTF8Unsafe("/dummy/gdata/testfile.txt"),
       GetTestCachedFilePath(FilePath::FromUTF8Unsafe("cached_testfile.txt")));
   operation->Start(kTestGDataAuthToken, kTestUserAgent);
@@ -223,7 +225,7 @@ TEST_F(GDataWapiOperationsTest, DownloadFileOperation_NonExistentFile) {
                  &result_code,
                  &contents),
       GetContentCallback(),
-      gdata_test_server_.GetURL("/files/chromeos/gdata/no-such-file.txt"),
+      test_server_.GetURL("/files/chromeos/gdata/no-such-file.txt"),
       FilePath::FromUTF8Unsafe("/dummy/gdata/no-such-file.txt"),
       GetTestCachedFilePath(
           FilePath::FromUTF8Unsafe("cache_no-such-file.txt")));

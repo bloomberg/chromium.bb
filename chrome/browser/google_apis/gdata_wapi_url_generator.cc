@@ -54,7 +54,11 @@ const char kGetChangesListURL[] = "/feeds/default/private/changes";
 
 const char GDataWapiUrlGenerator::kBaseUrlForProduction[] =
     "https://docs.google.com/";
-const char GDataWapiUrlGenerator::kBaseUrlForTesting[] = "http://127.0.0.1/";
+
+// static
+GURL GDataWapiUrlGenerator::GetBaseUrlForTesting(int port) {
+  return GURL(base::StringPrintf("http://127.0.0.1:%d/", port));
+}
 
 // static
 GURL GDataWapiUrlGenerator::AddStandardUrlParams(const GURL& url) {

@@ -23,8 +23,9 @@ class GDataWapiUrlGenerator {
   // The base URL for communicating with the WAPI server for production.
   static const char kBaseUrlForProduction[];
 
-  // The base URL for communicating with the local test server for testing.
-  static const char kBaseUrlForTesting[];
+  // Gets the base URL for communicating with the local test server for
+  // testing, running at the specified port number.
+  static GURL GetBaseUrlForTesting(int port);
 
   // Adds additional parameters for API version, output content type and to
   // show folders in the feed are added to document feed URLs.
