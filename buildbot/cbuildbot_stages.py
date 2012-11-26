@@ -1260,7 +1260,7 @@ class VMTestStage(BoardSpecificBuilderStage):
                                          'test_harness'),
                             test_type=self._build_config['vm_tests'],
                             whitelist_chrome_crashes=self._chrome_rev is None,
-                            build_config=self._bot_id)
+                            archive_dir=self._archive_stage.bot_archive_root)
 
     finally:
       test_tarball = None
@@ -1492,7 +1492,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     else:
       self._archive_root = self.GetTrybotArchiveRoot(self._build_root)
 
-    self._bot_archive_root = os.path.join(self._archive_root, self._bot_id)
+    self.bot_archive_root = os.path.join(self._archive_root, self._bot_id)
 
     # Queues that are populated during the Archive stage.
     self._breakpad_symbols_queue = multiprocessing.Queue()
@@ -1643,7 +1643,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
   def _GetArchivePath(self):
     version = self.GetVersion()
     if version:
-      return os.path.join(self._bot_archive_root, version)
+      return os.path.join(self.bot_archive_root, version)
 
   def _GetAutotestTarballs(self):
     """Get the paths of the autotest tarballs."""
@@ -1769,7 +1769,8 @@ class ArchiveStage(BoardSpecificBuilderStage):
               buildroot, target_image_path, update_payloads_dir)
         else:
           commands.GenerateNPlus1Payloads(
-              buildroot, self._bot_id, target_image_path, update_payloads_dir)
+              buildroot, self.bot_archive_root, target_image_path,
+              update_payloads_dir)
 
         for payload in os.listdir(update_payloads_dir):
           full_path = os.path.join(update_payloads_dir, payload)
@@ -1989,8 +1990,8 @@ class ArchiveStage(BoardSpecificBuilderStage):
       # Update and upload LATEST file.
       version = self.GetVersion()
       if version:
-        commands.UpdateLatestFile(self._bot_archive_root, version)
-        commands.UploadArchivedFile(self._bot_archive_root,
+        commands.UpdateLatestFile(self.bot_archive_root, version)
+        commands.UploadArchivedFile(self.bot_archive_root,
                                     self._GetGSUtilArchiveDir(), 'LATEST',
                                     debug)
 
@@ -1998,7 +1999,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
       BuildAndArchiveArtifacts()
       MarkAsLatest()
     finally:
-      commands.RemoveOldArchives(self._bot_archive_root,
+      commands.RemoveOldArchives(self.bot_archive_root,
                                  self._options.max_archive_builds)
 
   def _HandleStageException(self, exception):

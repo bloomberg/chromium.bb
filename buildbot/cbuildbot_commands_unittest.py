@@ -110,6 +110,58 @@ class RunBuildScriptTest(cros_test_lib.MoxTestCase):
                                  raises=results_lib.PackageBuildFailure)
 
 
+class RunTestSuiteTest(cros_test_lib.MoxTempDirTestCase):
+  """Test RunTestSuite functionality."""
+
+  TEST_BOARD = 'x86-generic'
+  BUILD_ROOT = '/fake/root'
+
+  def setUp(self):
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+
+  def _RunTestSuite(self, test_type):
+    commands.RunTestSuite(self.tempdir, self.TEST_BOARD, self.BUILD_ROOT,
+                          '/tmp/taco', archive_dir='/fake/root',
+                          whitelist_chrome_crashes=False,
+                          test_type=test_type)
+
+  def _MockOutRunCommand(self, cmd):
+    """Function to mock out the main RunCommand invocation."""
+    cwd = self.tempdir + '/src/scripts'
+    obj = cros_test_lib.EasyAttr(returncode=0)
+
+    cros_build_lib.RunCommand(cmd, cwd=cwd,
+        error_code_ok=True).AndReturn(obj)
+
+  @staticmethod
+  def _NoItemsInList(items, list_):
+    """Helper function that returns True if all items are not in a list."""
+    return set(items).isdisjoint(set(list_))
+
+  def tearDown(self):
+    self.mox.VerifyAll()
+
+  def testFull(self):
+    """Test running FULL config."""
+    cond = mox.Func(
+        lambda x: self._NoItemsInList(['--quick', '--only_verify'], x))
+    self._MockOutRunCommand(cond)
+    self.mox.ReplayAll()
+    self._RunTestSuite(constants.FULL_AU_TEST_TYPE)
+
+  def testSimple(self):
+    """Test SIMPLE config."""
+    self._MockOutRunCommand(mox.In('--quick'))
+    self.mox.ReplayAll()
+    self._RunTestSuite(constants.SIMPLE_AU_TEST_TYPE)
+
+  def testSmoke(self):
+    """Test SMOKE config."""
+    self._MockOutRunCommand(mox.And(mox.In('--quick'), mox.In('--only_verify')))
+    self.mox.ReplayAll()
+    self._RunTestSuite(constants.SMOKE_SUITE_TEST_TYPE)
+
+
 class CBuildBotTest(cros_test_lib.MoxTempDirTestCase):
 
   def setUp(self):
@@ -137,50 +189,6 @@ class CBuildBotTest(cros_test_lib.MoxTempDirTestCase):
     ]
     self._CWD = os.path.dirname(os.path.realpath(__file__))
     os.makedirs(self.tempdir + '/chroot/tmp/taco')
-
-  def testRunTestSuite(self):
-    """Tests if we can parse the test_types so that sane commands are called."""
-    def ItemsNotInList(items, list_):
-      """Helper function that returns whether items are not in a list."""
-      return set(items).isdisjoint(set(list_))
-
-    cwd = self.tempdir + '/src/scripts'
-
-    obj = cros_test_lib.EasyAttr(returncode=0)
-
-    cros_build_lib.RunCommand(
-        mox.Func(lambda x: ItemsNotInList(['--quick', '--only_verify'], x)),
-        cwd=cwd, error_code_ok=True).AndReturn(obj)
-
-    self.mox.ReplayAll()
-    commands.RunTestSuite(self.tempdir, self._test_board, self._buildroot,
-                          '/tmp/taco', build_config='test_config',
-                          whitelist_chrome_crashes=False,
-                          test_type=constants.FULL_AU_TEST_TYPE)
-    self.mox.VerifyAll()
-    self.mox.ResetAll()
-
-    cros_build_lib.RunCommand(mox.In('--quick'), cwd=cwd,
-                              error_code_ok=True).AndReturn(obj)
-
-    self.mox.ReplayAll()
-    commands.RunTestSuite(self.tempdir, self._test_board, self._buildroot,
-                          '/tmp/taco', build_config='test_config',
-                          whitelist_chrome_crashes=False,
-                          test_type=constants.SIMPLE_AU_TEST_TYPE)
-    self.mox.VerifyAll()
-    self.mox.ResetAll()
-
-    cros_build_lib.RunCommand(
-        mox.And(mox.In('--quick'), mox.In('--only_verify')),
-        cwd=cwd, error_code_ok=True).AndReturn(obj)
-
-    self.mox.ReplayAll()
-    commands.RunTestSuite(self.tempdir, self._test_board, self._buildroot,
-                          '/tmp/taco', build_config='test_config',
-                          whitelist_chrome_crashes=False,
-                          test_type=constants.SMOKE_SUITE_TEST_TYPE)
-    self.mox.VerifyAll()
 
   def testArchiveTestResults(self):
     """Test if we can archive the latest results dir to Google Storage."""

@@ -584,64 +584,48 @@ class VMTestStageTest(AbstractStageTest):
     self.fake_chroot_results_dir = '/my/fake_chroot/tmp/fake_results_dir'
     self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
     self.archive_stage_mock = self.mox.CreateMock(stages.ArchiveStage)
+    self.bot_id = 'x86-generic-full'
+    self.build_config = config.config[self.bot_id].copy()
+    self.mox.StubOutWithMock(commands, 'RunTestSuite')
+    self.mox.StubOutWithMock(commands, 'CreateTestRoot')
+    self.mox.StubOutWithMock(tempfile, 'mkdtemp')
+    commands.CreateTestRoot(self.build_root).AndReturn(self.fake_results_dir)
+
+    self.archive_stage_mock.TestResultsReady('some tarball')
+    self.archive_stage_mock.bot_archive_root = '/fake/root'
 
   def ConstructStage(self):
     return stages.VMTestStage(self.options, self.build_config,
                               self._current_board, self.archive_stage_mock)
 
-  def testFullTests(self):
-    """Tests if full unit and cros_au_test_harness tests are run correctly."""
-    self.bot_id = 'x86-generic-full'
-    self.build_config = config.config[self.bot_id].copy()
-    self.build_config['vm_tests'] = constants.FULL_AU_TEST_TYPE
+  def tearDown(self):
+    self.mox.VerifyAll()
 
-    self.mox.StubOutWithMock(commands, 'RunTestSuite')
-    self.mox.StubOutWithMock(commands, 'CreateTestRoot')
-    self.mox.StubOutWithMock(tempfile, 'mkdtemp')
-
-    commands.CreateTestRoot(self.build_root).AndReturn(self.fake_results_dir)
+  def _MockDependencies(self, test_type):
+    self.build_config['vm_tests'] = test_type
     commands.RunTestSuite(self.build_root,
                           self._current_board,
                           mox.IgnoreArg(),
                           os.path.join(self.fake_results_dir,
                                        'test_harness'),
-                          build_config=self.bot_id,
+                          archive_dir=mox.IgnoreArg(),
                           whitelist_chrome_crashes=True,
-                          test_type=constants.FULL_AU_TEST_TYPE)
+                          test_type=test_type)
+
     commands.ArchiveTestResults(self.build_root, self.fake_results_dir,
                                 prefix='').AndReturn('some tarball')
-    self.archive_stage_mock.TestResultsReady('some tarball')
 
+  def testFullTests(self):
+    """Tests if full unit and cros_au_test_harness tests are run correctly."""
+    self._MockDependencies(constants.FULL_AU_TEST_TYPE)
     self.mox.ReplayAll()
     self.RunStage()
-    self.mox.VerifyAll()
 
   def testQuickTests(self):
     """Tests if quick unit and cros_au_test_harness tests are run correctly."""
-    self.bot_id = 'x86-generic-full'
-    self.build_config = config.config[self.bot_id].copy()
-    self.build_config['vm_tests'] = constants.SIMPLE_AU_TEST_TYPE
-
-    self.mox.StubOutWithMock(commands, 'RunTestSuite')
-    self.mox.StubOutWithMock(commands, 'CreateTestRoot')
-    self.mox.StubOutWithMock(tempfile, 'mkdtemp')
-
-    commands.CreateTestRoot(self.build_root).AndReturn(self.fake_results_dir)
-    commands.RunTestSuite(self.build_root,
-                          self._current_board,
-                          mox.IgnoreArg(),
-                          os.path.join(self.fake_results_dir,
-                                       'test_harness'),
-                          build_config=self.bot_id,
-                          whitelist_chrome_crashes=True,
-                          test_type=constants.SIMPLE_AU_TEST_TYPE)
-    commands.ArchiveTestResults(self.build_root, self.fake_results_dir,
-                                prefix='').AndReturn('some tarball')
-    self.archive_stage_mock.TestResultsReady('some tarball')
-
+    self._MockDependencies(constants.SIMPLE_AU_TEST_TYPE)
     self.mox.ReplayAll()
     self.RunStage()
-    self.mox.VerifyAll()
 
 
 class UnitTestStageTest(AbstractStageTest):

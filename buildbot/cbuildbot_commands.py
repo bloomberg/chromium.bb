@@ -386,7 +386,7 @@ def RunChromeSuite(buildroot, board, image_dir, results_dir):
 
 
 def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
-                 whitelist_chrome_crashes, build_config):
+                 whitelist_chrome_crashes, archive_dir):
   """Runs the test harness suite."""
   results_dir_in_chroot = os.path.join(buildroot, 'chroot',
                                        results_dir.lstrip('/'))
@@ -409,7 +409,7 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
     if test_type == constants.SMOKE_SUITE_TEST_TYPE:
       cmd.append('--only_verify')
   else:
-    cmd.append('--build_config=%s' % build_config)
+    cmd.append('--archive_dir=%s' % archive_dir)
 
   if whitelist_chrome_crashes:
     cmd.append('--whitelist_chrome_crashes')
@@ -1345,7 +1345,7 @@ def GenerateFullPayload(build_root, target_image_path, archive_dir):
   cros_build_lib.RunCommandCaptureOutput(cmd)
 
 
-def GenerateNPlus1Payloads(build_root, build_config, target_image_path,
+def GenerateNPlus1Payloads(build_root, previous_versions_dir, target_image_path,
                            archive_dir):
   """Generates nplus1 payloads for hw testing.
 
@@ -1354,7 +1354,8 @@ def GenerateNPlus1Payloads(build_root, build_config, target_image_path,
 
   Args:
     build_root: The root of the chromium os checkout.
-    build_config: The name of the builder.
+    previous_versions_dir: Path containing images for versions previously
+      archived.
     target_image_path: The path to the image to generate payloads to.
     archive_dir: Where to store payloads we generated.
   """
@@ -1362,7 +1363,7 @@ def GenerateNPlus1Payloads(build_root, build_config, target_image_path,
   payload_generator = 'generate_test_payloads/cros_generate_test_payloads.py'
   cmd = [os.path.join(crostestutils, payload_generator),
          '--target=%s' % target_image_path,
-         '--base_latest_from_config=%s' % build_config,
+         '--base_latest_from_dir=%s' % previous_versions_dir,
          '--nplus1',
          '--nplus1_archive_dir=%s' % archive_dir,
         ]
