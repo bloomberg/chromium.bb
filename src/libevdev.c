@@ -30,6 +30,8 @@
 
 static void Absinfo_Print(EvdevPtr device, struct input_absinfo*);
 static const char* Event_Property_To_String(int type);
+static EvdevClass EvdevProbeClass(EvdevInfoPtr info);
+static const char* EvdevClassToString(EvdevClass cls);
 
 int EvdevOpen(EvdevPtr evdev, const char* device) {
   evdev->fd = open(device, O_RDWR | O_NONBLOCK, 0);
@@ -198,6 +200,15 @@ int EvdevProbe(EvdevPtr device) {
           Absinfo_Print(device, absinfo);
       }
   }
+
+  info->evdev_class = EvdevProbeClass(info);
+  LOG_DEBUG(device, "Has evdev device class = %s\n",
+            EvdevClassToString(info->evdev_class));
+  if (info->evdev_class == EvdevClassUnknown) {
+    LOG_ERROR(device, "Couldn't determine evdev class\n");
+    return !Success;
+  }
+
   return Success;
 }
 
@@ -274,3 +285,55 @@ Absinfo_Print(EvdevPtr device, struct input_absinfo* absinfo)
         LOG_DEBUG(device, "    res = %d\n", absinfo->resolution);
 }
 
+/*
+ * Heuristics for determining evdev device class; similar to those of
+ * xf86-input-evdev.
+ */
+static EvdevClass EvdevProbeClass(EvdevInfoPtr info) {
+  int bit;
+  for (bit = 0; bit < BTN_MISC; bit++)
+    if (TestBit(bit, info->key_bitmask))
+      return EvdevClassKeyboard;
+
+  if (TestBit(REL_X, info->rel_bitmask) &&
+      TestBit(REL_Y, info->rel_bitmask))
+    return EvdevClassMouse;
+
+  if (TestBit(ABS_X, info->abs_bitmask) &&
+      TestBit(ABS_Y, info->abs_bitmask)) {
+
+    if (TestBit(BTN_TOOL_PEN, info->key_bitmask) ||
+        TestBit(BTN_STYLUS, info->key_bitmask) ||
+        TestBit(BTN_STYLUS2, info->key_bitmask))
+      return EvdevClassTablet;
+
+    if (TestBit(ABS_PRESSURE, info->abs_bitmask) ||
+        TestBit(BTN_TOUCH, info->key_bitmask)) {
+      if (TestBit(BTN_LEFT, info->key_bitmask) ||
+          TestBit(BTN_MIDDLE, info->key_bitmask) ||
+          TestBit(BTN_RIGHT, info->key_bitmask) ||
+          TestBit(BTN_TOOL_FINGER, info->key_bitmask))
+        return EvdevClassTouchpad;
+      else
+        return EvdevClassTouchscreen;
+    }
+
+    /* Some touchscreens use BTN_LEFT rather than BTN_TOUCH */
+    if (TestBit(BTN_LEFT, info->key_bitmask))
+      return EvdevClassTouchscreen;
+  }
+
+  return EvdevClassUnknown;
+}
+
+static const char* EvdevClassToString(EvdevClass cls) {
+  switch (cls) {
+    case EvdevClassUnknown:     return "EvdevClassUnknown";
+    case EvdevClassKeyboard:    return "EvdevClassKeyboard";
+    case EvdevClassMouse:       return "EvdevClassMouse";
+    case EvdevClassTablet:      return "EvdevClassTablet";
+    case EvdevClassTouchpad:    return "EvdevClassTouchpad";
+    case EvdevClassTouchscreen: return "EvdevClassTouchscreen";
+  }
+  return "Unhandled Evdev Class";
+}

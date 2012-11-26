@@ -22,9 +22,20 @@ typedef void (*syn_report_callback)(void*, EventStatePtr, struct timeval*);
 typedef void (*log_callback)(void*, int level, const char*, ...)
                 __attribute__((format(printf, 3, 4)));
 
+enum EvdevClass_ {
+  EvdevClassUnknown,
+  EvdevClassKeyboard,
+  EvdevClassMouse,
+  EvdevClassTablet,
+  EvdevClassTouchpad,
+  EvdevClassTouchscreen,
+};
+typedef enum EvdevClass_ EvdevClass, *EvdevClassPtr;
+
 struct EvdevInfo_ {
   struct input_id id;
   char name[1024];
+  EvdevClass evdev_class;
 
   unsigned long bitmask[NLONGS(EV_CNT)];
   unsigned long key_bitmask[NLONGS(KEY_CNT)];
