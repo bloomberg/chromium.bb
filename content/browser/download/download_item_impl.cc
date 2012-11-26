@@ -1358,12 +1358,13 @@ void DownloadItemImpl::SetFullPath(const FilePath& new_path) {
            << " new_path = \"" << new_path.value() << "\""
            << " " << DebugString(true);
   DCHECK(!new_path.empty());
-  current_path_ = new_path;
-  UpdateObservers();
 
   bound_net_log_.AddEvent(
       net::NetLog::TYPE_DOWNLOAD_ITEM_RENAMED,
       base::Bind(&ItemRenamedNetLogCallback, &current_path_, &new_path));
+
+  current_path_ = new_path;
+  UpdateObservers();
 }
 
 // static
