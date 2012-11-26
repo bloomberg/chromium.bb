@@ -104,21 +104,18 @@ class Builder(object):
       self.subarch = arch.split('-')[1]
       if self.outtype == 'translate':
         self.is_pnacl_toolchain = True
-        tool_subdir = toolname
       else:
         self.is_pnacl_toolchain = False
-        tool_subdir = 'x86_64-nacl'
+        self.tool_prefix = 'x86_64-nacl-'
     elif arch == 'arm':
       # For now assume that arm implies pnacl toolchain. But don't assume that
       # elsewhere in this script.
       self.mainarch = 'arm'
       self.subarch = ''
-      tool_subdir = toolname
       self.is_pnacl_toolchain = True
     elif arch == 'pnacl':
       self.mainarch = arch
       self.subarch = ''
-      tool_subdir = toolname
       self.is_pnacl_toolchain = True
     else:
       ErrOut('Toolchain architecture %s not supported.' % arch)
@@ -133,8 +130,11 @@ class Builder(object):
       ErrOut('Toolchain of type %s not supported.' % toolname)
 
     if self.is_pnacl_toolchain:
+      tool_subdir = toolname
+      self.tool_prefix = 'pnacl-'
       tooldir = '%s_x86_pnacl' % (self.osname)
     else:
+      tool_subdir = ''
       tooldir = '%s_x86_%s' % (self.osname, toolname)
 
 
@@ -173,35 +173,29 @@ class Builder(object):
 
   def GetBinName(self, name):
     """Helper which prepends executable with the toolchain bin directory."""
-    return os.path.join(self.toolbin, name)
+    return os.path.join(self.toolbin, self.tool_prefix + name)
 
   def GetCCompiler(self):
     """Helper which returns C compiler path."""
     if self.is_pnacl_toolchain:
-      return self.GetBinName('pnacl-clang')
+      return self.GetBinName('clang')
     else:
       return self.GetBinName('gcc')
 
   def GetCXXCompiler(self):
     """Helper which returns C++ compiler path."""
     if self.is_pnacl_toolchain:
-      return self.GetBinName('pnacl-clang++')
+      return self.GetBinName('clang++')
     else:
       return self.GetBinName('g++')
 
   def GetAr(self):
     """Helper which returns ar path."""
-    if self.is_pnacl_toolchain:
-      return self.GetBinName('pnacl-ar')
-    else:
-      return self.GetBinName('ar')
+    return self.GetBinName('ar')
 
   def GetStrip(self):
     """Helper which returns strip path."""
-    if self.is_pnacl_toolchain:
-      return self.GetBinName('pnacl-strip')
-    else:
-      return self.GetBinName('strip')
+    return self.GetBinName('strip')
 
   def BuildAssembleOptions(self, options):
     options = ArgToList(options)
@@ -432,7 +426,7 @@ class Builder(object):
     out = self.name
     if self.verbose:
       print '\nTranslate %s' % out
-    bin_name = self.GetBinName('pnacl-translate')
+    bin_name = self.GetBinName('translate')
     cmd_line = [bin_name, '-arch', self.arch, src, '-o', out]
 
     err = self.Run(cmd_line, out)
