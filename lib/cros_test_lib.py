@@ -76,14 +76,8 @@ def _VerifyDirectoryIterables(existing, expected):
   def FormatPaths(paths):
     return '\n'.join(sorted(paths))
 
-  def ConvertToSet(iterable):
-    newset = set(iterable)
-    if len(iterable) != len(newset):
-      raise AssertionError('Duplicate entries found!')
-    return newset
-
-  existing = ConvertToSet(existing)
-  expected = ConvertToSet(expected)
+  existing = set(existing)
+  expected = set(expected)
 
   unexpected = existing - expected
   if unexpected:
@@ -129,12 +123,14 @@ def VerifyTarball(tarball, dir_struct):
   """
   contents = cros_build_lib.RunCommandCaptureOutput(
       ['tar', '-tf', tarball]).output.splitlines()
-  normalized = []
+  normalized = set()
   for p in contents:
     norm = os.path.normpath(p)
     if p.endswith('/'):
       norm += '/'
-    normalized.append(norm)
+    if norm in normalized:
+      raise AssertionError('Duplicate entry %r found in %r!' % (norm, tarball))
+    normalized.add(norm)
 
   expected = _FlattenStructure('', dir_struct)
   _VerifyDirectoryIterables(normalized, expected)
