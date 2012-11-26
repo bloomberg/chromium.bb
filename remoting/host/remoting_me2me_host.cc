@@ -49,6 +49,7 @@
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_exit_codes.h"
+#include "remoting/host/host_status_service.h"
 #include "remoting/host/host_user_interface.h"
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/ipc_desktop_environment_factory.h"
@@ -104,6 +105,9 @@ const char kVersionSwitchName[] = "version";
 // The command line switch used to pass name of the pipe to capture audio on
 // linux.
 const char kAudioPipeSwitchName[] = "audio-pipe-name";
+
+// The command line switch used to enable host status service.
+const char kEnableStatusServiceSwitchName[] = "enable-status-service";
 
 void QuitMessageLoop(MessageLoop* message_loop) {
   message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
@@ -203,6 +207,8 @@ class HostProcess
   bool OnCurtainPolicyUpdate(bool curtain_required);
   bool OnHostTalkGadgetPrefixPolicyUpdate(const std::string& talkgadget_prefix);
 
+  void StartHostStatusService();
+
   void StartHost();
 
   void OnAuthFailed();
@@ -242,6 +248,9 @@ class HostProcess
   scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
 
   // Accessed on the network thread.
+
+  scoped_ptr<HostStatusService> status_service_;
+
   std::string host_id_;
   protocol::SharedSecretHash host_secret_hash_;
   HostKeyPair key_pair_;
@@ -536,6 +545,14 @@ void HostProcess::StartOnUiThread() {
   }
 #endif  // defined(OS_LINUX)
 
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          kEnableStatusServiceSwitchName)) {
+    context_->network_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&HostProcess::StartHostStatusService,
+                   base::Unretained(this)));
+  }
+
   // Create a desktop environment factory appropriate to the build type &
   // platform.
 #if defined(OS_WIN)
@@ -808,6 +825,11 @@ bool HostProcess::OnHostTalkGadgetPrefixPolicyUpdate(
   return false;
 }
 
+void HostProcess::StartHostStatusService() {
+  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  status_service_.reset(new HostStatusService());
+}
+
 void HostProcess::StartHost() {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
   DCHECK(!host_);
@@ -888,6 +910,9 @@ void HostProcess::StartHost() {
         host_, base::Bind(&HostProcess::OnDisconnectRequested, this));
   }
 
+  if (status_service_)
+    status_service_->SetHostIsUp(host_id_);
+
   host_->Start(xmpp_login_);
 
   CreateAuthenticatorFactory();
@@ -945,6 +970,9 @@ void HostProcess::Shutdown(int exit_code) {
   if (shutting_down_)
     return;
 
+  if (status_service_)
+    status_service_->SetHostIsDown();
+
   shutting_down_ = true;
   *exit_code_out_ = exit_code;
   if (host_) {
@@ -967,6 +995,8 @@ void HostProcess::ShutdownOnNetworkThread() {
     done_event.Wait();
     policy_watcher_.reset();
   }
+
+  status_service_.reset();
 
   // Complete the rest of shutdown on the main thread.
   context_->ui_task_runner()->PostTask(FROM_HERE,

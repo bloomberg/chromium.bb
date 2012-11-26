@@ -1575,6 +1575,8 @@
         'host/host_secret.cc',
         'host/host_secret.h',
         'host/host_status_observer.h',
+        'host/host_status_service.cc',
+        'host/host_status_service.h',
         'host/host_user_interface.cc',
         'host/host_user_interface.h',
         'host/in_memory_host_config.cc',
