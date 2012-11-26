@@ -175,8 +175,6 @@ NSSize GetSelectButtonSize() {
     titleLinkButton_.reset(
         [[HyperlinkButtonCell buttonWithString:title] retain]);
     [[titleLinkButton_ cell] setUnderlineOnHover:YES];
-    [[titleLinkButton_ cell] setTextColor:
-        gfx::SkColorToCalibratedNSColor(ConstrainedWindow::GetTextColor())];
     [[titleTextField_ cell] setLineBreakMode:NSLineBreakByTruncatingTail];
     [titleLinkButton_ sizeToFit];
     [[self view] addSubview:titleLinkButton_];

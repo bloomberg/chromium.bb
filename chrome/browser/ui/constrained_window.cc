@@ -26,11 +26,6 @@ SkColor ConstrainedWindow::GetBackgroundColor() {
 }
 
 // static
-SkColor ConstrainedWindow::GetTextColor() {
-  return SkColorSetRGB(0x33, 0x33, 0x33);
-}
-
-// static
 SkColor ConstrainedWindow::GetLinkColor() {
   return SkColorSetRGB(0x11, 0x55, 0xCC);
 }

@@ -76,7 +76,6 @@ ConstrainedWindowFrameSimple::ConstrainedWindowFrameSimple(
   title_label_->SetFont(rb.GetFont(
       ConstrainedWindowConstants::kTitleFontStyle));
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label_->SetEnabledColor(ConstrainedWindow::GetTextColor());
   title_label_->set_border(views::Border::CreateEmptyBorder(
       ConstrainedWindowConstants::kTitleTopPadding - kHeaderTopPadding,
       0, 0, 0));

@@ -20,7 +20,6 @@ class ConstrainedWindow {
  public:
   static int GetCloseButtonSize();  // Size of close button.
   static SkColor GetBackgroundColor();  // Dialog background color.
-  static SkColor GetTextColor();  // Dialog text color.
   static SkColor GetLinkColor();  // Dialog link color.
   static SkColor GetSeparatorColor();  // Dialog separator color.
 
