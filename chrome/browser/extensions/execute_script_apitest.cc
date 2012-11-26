@@ -15,19 +15,15 @@ class ExecuteScriptApiTest : public ExtensionApiTest {
   }
 };
 
-// Disable it until the regression caused by the webkit patch r135082 is fixed.
-// (See https://bugs.webkit.org/show_bug.cgi?id=102110 for details)
 // If failing, mark disabled and update http://crbug.com/92105.
-IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, DISABLED_ExecuteScriptBasic) {
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptBasic) {
   SetupDelayedHostResolver();
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/basic")) << message_;
 }
 
-// Disable it until the regression caused by the webkit patch r135082 is fixed.
-// (See https://bugs.webkit.org/show_bug.cgi?id=102110 for details)
 // If failing, mark disabled and update http://crbug.com/92105.
-IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, DISABLED_ExecuteScriptInFrame) {
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptInFrame) {
   SetupDelayedHostResolver();
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/in_frame")) << message_;

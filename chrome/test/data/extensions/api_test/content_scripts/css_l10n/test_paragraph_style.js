@@ -6,18 +6,11 @@
 // has had the __MSG_text_color__ message replaced ('text_color' must
 // not be present in any CSS code).
 
-var rules = getMatchedCSSRules(document.getElementById('pId'));
-if (rules != null) {
-  for (var i = 0; i < rules.length; ++i) {
-    if (rules.item(i).cssText.indexOf('text_color') != -1) {
-      chrome.extension.sendRequest({tag: 'paragraph_style', message:
-          'Found unreplaced test_color in: ' + rules.item(i).cssText});
-      break;
-    }
-  }
+var p = document.getElementById('pId');
+var color = getComputedStyle(p).color;
+if (getComputedStyle(p).color == "rgb(255, 0, 0)") {
   chrome.extension.sendRequest({tag: 'paragraph_style', message: 'passed'});
 } else {
   chrome.extension.sendRequest({tag: 'paragraph_style', message:
-      'No CSS rules found.'});
+      'Paragraph is not red: ' + color});
 }
-

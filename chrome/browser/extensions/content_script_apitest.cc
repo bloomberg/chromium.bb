@@ -126,10 +126,8 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(styles_injected);
 }
 
-// Disable it until the regression caused by the webkit patch r135082 is fixed.
-// (See https://bugs.webkit.org/show_bug.cgi?id=102110 for details)
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
-                       DISABLED_ContentScriptCSSLocalization) {
+                       ContentScriptCSSLocalization) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("content_scripts/css_l10n")) << message_;
 }
