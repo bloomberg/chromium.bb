@@ -243,6 +243,7 @@
         'command_buffer/tests/gl_test_utils.cc',
         'command_buffer/tests/gl_test_utils.h',
         'command_buffer/tests/gl_texture_mailbox_unittests.cc',
+        'command_buffer/tests/gl_texture_storage_unittests.cc',
         'command_buffer/tests/gl_unittests.cc',
         'command_buffer/tests/gl_virtual_contexts_unittests.cc',
         'command_buffer/tests/occlusion_query_unittests.cc',
