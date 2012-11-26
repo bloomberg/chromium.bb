@@ -250,10 +250,6 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromLinkRelPrerender(
   // TODO(jcivelli): http://crbug.com/113322 We should have an option to disable
   //                link-prerender and enable omnibox-prerender only.
   return NULL;
-#elif defined(OS_WIN) && defined(USE_AURA)
-  // TODO(scottmg): http://crbug.com/128578 WebContentsViewAura can't get a
-  // valid parent window here.
-  return NULL;
 #else
   DCHECK(!size.IsEmpty());
   Origin origin = ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN;
