@@ -13,11 +13,13 @@ class WebTestProxyBase;
 
 namespace content {
 
+class RenderView;
+
 // Enable injecting of a WebTestProxy between WebViews and RenderViews.
 // |callback| is invoked with a pointer to WebTestProxyBase for each created
 // WebTestProxy.
-void EnableWebTestProxyCreation(
-    const base::Callback<void(WebTestRunner::WebTestProxyBase*)>& callback);
+void EnableWebTestProxyCreation(const base::Callback<
+    void(RenderView*, WebTestRunner::WebTestProxyBase*)>& callback);
 
 }  // namespace content
 

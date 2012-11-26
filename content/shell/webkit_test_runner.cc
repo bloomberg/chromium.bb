@@ -144,13 +144,10 @@ void CopyCanvasToBitmap(SkCanvas* canvas,  SkBitmap* snapshot) {
 
 WebKitTestRunner::WebKitTestRunner(RenderView* render_view)
     : RenderViewObserver(render_view),
-      RenderViewObserverTracker<WebKitTestRunner>(render_view),
-      is_main_window_(false) {
+      RenderViewObserverTracker<WebKitTestRunner>(render_view) {
 }
 
 WebKitTestRunner::~WebKitTestRunner() {
-  if (is_main_window_)
-    ShellRenderProcessObserver::GetInstance()->SetMainWindow(NULL, this);
 }
 
 // WebTestDelegate  -----------------------------------------------------------
@@ -259,7 +256,6 @@ bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewMsg_CaptureImageDump, OnCaptureImageDump)
     IPC_MESSAGE_HANDLER(ShellViewMsg_SetCurrentWorkingDirectory,
                         OnSetCurrentWorkingDirectory)
-    IPC_MESSAGE_HANDLER(ShellViewMsg_SetIsMainWindow, OnSetIsMainWindow)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -335,11 +331,6 @@ void WebKitTestRunner::OnCaptureImageDump(
 void WebKitTestRunner::OnSetCurrentWorkingDirectory(
     const FilePath& current_working_directory) {
   current_working_directory_ = current_working_directory;
-}
-
-void WebKitTestRunner::OnSetIsMainWindow() {
-  is_main_window_ = true;
-  ShellRenderProcessObserver::GetInstance()->SetMainWindow(render_view(), this);
 }
 
 SkCanvas* WebKitTestRunner::GetCanvas() {

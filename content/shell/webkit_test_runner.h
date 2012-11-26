@@ -67,7 +67,6 @@ class WebKitTestRunner : public RenderViewObserver,
   // Message handlers.
   void OnCaptureTextDump(bool as_text, bool printing, bool recursive);
   void OnCaptureImageDump(const std::string& expected_pixel_hash);
-  void OnSetIsMainWindow();
   void OnSetCurrentWorkingDirectory(const FilePath& current_working_directory);
 
   SkCanvas* GetCanvas();
@@ -77,7 +76,6 @@ class WebKitTestRunner : public RenderViewObserver,
 
   scoped_ptr<SkCanvas> canvas_;
   scoped_ptr<WebKit::WebContextMenuData> last_context_menu_data_;
-  bool is_main_window_;
   FilePath current_working_directory_;
 
   WebTestRunner::WebTestProxyBase* proxy_;

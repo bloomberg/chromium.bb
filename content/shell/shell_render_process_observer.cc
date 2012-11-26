@@ -13,6 +13,7 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/support/gc_extension.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTestingSupport.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestInterfaces.h"
 
 using WebKit::WebFrame;
@@ -32,7 +33,8 @@ ShellRenderProcessObserver* ShellRenderProcessObserver::GetInstance() {
 }
 
 ShellRenderProcessObserver::ShellRenderProcessObserver()
-    : test_delegate_(NULL) {
+    : main_render_view_(NULL),
+      test_delegate_(NULL) {
   CHECK(!g_instance);
   g_instance = this;
   RenderThread::Get()->AddObserver(this);
@@ -46,17 +48,10 @@ ShellRenderProcessObserver::~ShellRenderProcessObserver() {
 void ShellRenderProcessObserver::SetMainWindow(
     RenderView* view,
     WebTestDelegate* delegate) {
-  if (view == NULL) {
-    if (delegate == test_delegate_) {
-      test_interfaces_->setDelegate(NULL);
-      test_interfaces_->setWebView(NULL);
-      test_delegate_ = NULL;
-    }
-  } else {
-    test_interfaces_->setDelegate(delegate);
-    test_interfaces_->setWebView(view->GetWebView());
-    test_delegate_ = delegate;
-  }
+  test_interfaces_->setDelegate(delegate);
+  test_interfaces_->setWebView(view->GetWebView());
+  main_render_view_ = view;
+  test_delegate_ = delegate;
 }
 
 void ShellRenderProcessObserver::BindTestRunnersToWindow(WebFrame* frame) {
@@ -92,7 +87,10 @@ bool ShellRenderProcessObserver::OnControlMessageReceived(
 
 void ShellRenderProcessObserver::OnResetAll() {
   test_interfaces_->resetAll();
-  // We don't reset the WebTestingSupport objects, as we don't reuse WebViews.
+  if (main_render_view_) {
+    WebTestingSupport::resetInternalsObject(
+        main_render_view_->GetWebView()->mainFrame());
+  }
 }
 
 }  // namespace content

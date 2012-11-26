@@ -23,14 +23,12 @@ namespace content {
 
 class RenderView;
 class ShellRenderProcessObserver;
-class WebKitTestRunner;
 
 class ShellContentRendererClient : public ContentRendererClient {
  public:
   ShellContentRendererClient();
   virtual ~ShellContentRendererClient();
   virtual void RenderThreadStarted() OVERRIDE;
-  virtual void RenderViewCreated(RenderView* render_view) OVERRIDE;
   virtual bool OverrideCreatePlugin(
       RenderView* render_view,
       WebKit::WebFrame* frame,
@@ -38,10 +36,10 @@ class ShellContentRendererClient : public ContentRendererClient {
       WebKit::WebPlugin** plugin) OVERRIDE;
 
  private:
-  void WebTestProxyCreated(WebTestRunner::WebTestProxyBase* proxy);
+  void WebTestProxyCreated(RenderView* render_view,
+                           WebTestRunner::WebTestProxyBase* proxy);
 
   scoped_ptr<ShellRenderProcessObserver> shell_observer_;
-  WebKitTestRunner* latest_test_runner_;
 };
 
 }  // namespace content

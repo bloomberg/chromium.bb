@@ -21,8 +21,7 @@ using WebTestRunner::WebTestProxyBase;
 
 namespace content {
 
-ShellContentRendererClient::ShellContentRendererClient()
-    : latest_test_runner_(NULL) {
+ShellContentRendererClient::ShellContentRendererClient() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
     EnableWebTestProxyCreation(
         base::Bind(&ShellContentRendererClient::WebTestProxyCreated,
@@ -35,14 +34,6 @@ ShellContentRendererClient::~ShellContentRendererClient() {
 
 void ShellContentRendererClient::RenderThreadStarted() {
   shell_observer_.reset(new ShellRenderProcessObserver());
-}
-
-void ShellContentRendererClient::RenderViewCreated(RenderView* render_view) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
-    return;
-
-  CHECK(!latest_test_runner_);
-  latest_test_runner_ = new WebKitTestRunner(render_view);
 }
 
 bool ShellContentRendererClient::OverrideCreatePlugin(
@@ -60,11 +51,16 @@ bool ShellContentRendererClient::OverrideCreatePlugin(
   return false;
 }
 
-void ShellContentRendererClient::WebTestProxyCreated(WebTestProxyBase* proxy) {
-  CHECK(latest_test_runner_);
-  proxy->setDelegate(latest_test_runner_);
-  latest_test_runner_->set_proxy(proxy);
-  latest_test_runner_ = NULL;
+void ShellContentRendererClient::WebTestProxyCreated(RenderView* render_view,
+                                                     WebTestProxyBase* proxy) {
+  WebKitTestRunner* test_runner = new WebKitTestRunner(render_view);
+  if (!ShellRenderProcessObserver::GetInstance()->test_delegate()) {
+    ShellRenderProcessObserver::GetInstance()->SetMainWindow(render_view,
+                                                             test_runner);
+  }
+  test_runner->set_proxy(proxy);
+  proxy->setDelegate(
+      ShellRenderProcessObserver::GetInstance()->test_delegate());
   proxy->setInterfaces(
       ShellRenderProcessObserver::GetInstance()->test_interfaces());
 }

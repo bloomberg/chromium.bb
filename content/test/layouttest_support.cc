@@ -16,7 +16,8 @@ namespace content {
 
 namespace {
 
-base::LazyInstance<base::Callback<void(WebTestProxyBase*)> >::Leaky g_callback;
+base::LazyInstance<base::Callback<void(RenderView*, WebTestProxyBase*)> >::Leaky
+    g_callback;
 
 RenderViewImpl* CreateWebTestProxy(RenderViewImplParams* params) {
   typedef WebTestProxy<RenderViewImpl, RenderViewImplParams*> ProxyType;
@@ -24,7 +25,8 @@ RenderViewImpl* CreateWebTestProxy(RenderViewImplParams* params) {
       reinterpret_cast<RenderViewImplParams*>(params));
   if (g_callback == 0)
     return render_view_proxy;
-  g_callback.Get().Run(render_view_proxy);
+  g_callback.Get().Run(
+      static_cast<RenderView*>(render_view_proxy), render_view_proxy);
   return render_view_proxy;
 }
 
@@ -32,7 +34,7 @@ RenderViewImpl* CreateWebTestProxy(RenderViewImplParams* params) {
 
 
 void EnableWebTestProxyCreation(
-    const base::Callback<void(WebTestProxyBase*)>& callback) {
+    const base::Callback<void(RenderView*, WebTestProxyBase*)>& callback) {
   g_callback.Get() = callback;
   RenderViewImpl::InstallCreateHook(CreateWebTestProxy);
 }

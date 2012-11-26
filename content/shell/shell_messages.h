@@ -27,10 +27,6 @@ IPC_MESSAGE_ROUTED3(ShellViewMsg_CaptureTextDump,
 IPC_MESSAGE_ROUTED1(ShellViewMsg_CaptureImageDump,
                     std::string /* expected pixel hash */)
 
-// Tells the render view that it should register itself as main window for the
-// layout test.
-IPC_MESSAGE_ROUTED0(ShellViewMsg_SetIsMainWindow)
-
 // Tells the renderer to reset all test runners.
 IPC_MESSAGE_CONTROL0(ShellViewMsg_ResetAll)
 
