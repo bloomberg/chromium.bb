@@ -34,6 +34,11 @@ namespace {
 
 const int kBufferSize = 256;
 
+// Timeout constant used for polling when connecting to the daemon's Unix Domain
+// Socket and also when waiting for its death when it is killed.
+const int kNumTries = 100;
+const int kIdleTimeMSec = 20;
+
 void InitLoggingForDaemon(const std::string& log_file) {
   CHECK(
       logging::InitLogging(
@@ -277,10 +282,8 @@ bool Daemon::SpawnIfNeeded() {
   // Connect to the daemon's Unix Domain Socket.
   bool failed = false;
   if (!client_socket) {
-    const int kConnectTries = 20;
-    const int kConnectIdleTimeMSec = 10;
     client_socket = ConnectToUnixDomainSocket(
-        identifier_, kConnectTries, kConnectIdleTimeMSec, identifier_);
+        identifier_, kNumTries, kIdleTimeMSec, identifier_);
     if (!client_socket) {
       LOG(ERROR) << "Could not connect to daemon's Unix Daemon socket";
       failed = true;
@@ -324,9 +327,7 @@ bool Daemon::Kill() {
   // lock on the PID file when it exits.
   // TODO(pliard): Consider using a mutex + condition in shared memory to avoid
   // polling.
-  const int kTries = 20;
-  const int kIdleTimeMS = 50;
-  for (int i = 0; i < kTries; ++i) {
+  for (int i = 0; i < kNumTries; ++i) {
     pid_t current_lock_owner_pid;
     if (!GetFileLockOwnerPid(pid_file_fd, &current_lock_owner_pid))
       return false;
@@ -341,7 +342,7 @@ bool Daemon::Kill() {
                    << current_lock_owner_pid << ") seems to be running now.";
       return true;
     }
-    usleep(kIdleTimeMS * 1000);
+    usleep(kIdleTimeMSec * 1000);
   }
   LOG(ERROR) << "Timed out while killing daemon. "
                 "It might still be tearing down.";
