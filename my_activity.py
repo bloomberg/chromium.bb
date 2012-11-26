@@ -141,7 +141,10 @@ google_code_projects = [
   },
   {
     'name': 'gyp',
-  }
+  },
+  {
+    'name': 'skia',
+  },
 ]
 
 bugzilla_instances = [
