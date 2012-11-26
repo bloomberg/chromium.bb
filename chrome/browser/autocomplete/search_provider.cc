@@ -1259,5 +1259,6 @@ void SearchProvider::UpdateDone() {
   // pending, and we're not waiting on instant.
   done_ = (!timer_.IsRunning() && (suggest_results_pending_ == 0) &&
            (instant_finalized_ ||
-            !chrome::BrowserInstantController::IsInstantEnabled(profile_)));
+            (!chrome::BrowserInstantController::IsInstantEnabled(profile_) &&
+             !chrome::search::IsInstantExtendedAPIEnabled(profile_))));
 }

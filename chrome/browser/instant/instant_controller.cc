@@ -204,32 +204,46 @@ bool InstantController::Update(const AutocompleteMatch& match,
     return false;
   }
 
+  // Legend: OPIO == |omnibox_popup_is_open|, UIIP = |user_input_in_progress|.
+  //
+  //  #  OPIO UIIP full_text  Notes
+  //  -  ---- ---- ---------  -----
+  //  1   no   no    blank    } Navigation, or user hit Escape. |full_text| is
+  //  2   no   no  non-blank  } blank if the page is NTP, non-blank otherwise.
+  //
+  //  3   no  yes    blank    User backspaced away all omnibox text.
+  //
+  //  4   no  yes  non-blank  User switched to a tab with a partial query.
+  //
+  //  5  yes   no    blank    } Impossible. DCHECK()ed above.
+  //  6  yes   no  non-blank  }
+  //
+  //  7  yes  yes    blank    User typed a "?" into the omnibox.
+  //
+  //  8  yes  yes  non-blank  User typed text into the omnibox.
+  //
+  //  In non-extended mode, #1 to #7 call Hide(). #8 calls loader_->Update().
+  //
+  //  In extended mode, #2 and #4 call Hide(). #1 doesn't Hide() as the preview
+  //  may be showing custom NTP content, but doesn't Update() either. #3 and #7
+  //  don't Hide(), but send a blank query to Update(). #8 calls Update().
+
   if (extended_enabled_) {
-    // If the user isn't typing, and the omnibox popup isn't open, the omnibox
-    // text is a regular URL (due to a navigation). No query here to see.
-    if (!user_input_in_progress && !omnibox_popup_is_open) {
-      // The preview may be showing NTP content that's still relevant, so let
-      // ModeChanged() and ActiveTabChanged() deal with hiding it if necessary.
-      return false;
+    if (!omnibox_popup_is_open) {
+      if (!full_text.empty()) {
+        Hide(true);
+        return false;
+      }
+      if (!user_input_in_progress && full_text.empty())
+        return false;
     }
   } else if (!omnibox_popup_is_open || full_text.empty()) {
-    // In non-extended mode, Instant processes the query only if the user is
-    // actively typing (hence the popup is open) and they haven't just deleted
-    // all the text (|full_text| is not empty).
-    //
-    // It's possible that Update() was called if the user clicked the preview
-    // page while IME composition was active. In that case, we still want to
-    // commit on mouse up, so don't call Hide().
+    // Update() can be called if the user clicks the preview while composing
+    // text with an IME. If so, we should commit on mouse up, so don't Hide().
     if (!GetPreviewContents() || !loader_->IsPointerDownFromActivate())
       Hide(true);
     return false;
   }
-
-  // If the match's TemplateURL is valid, it's a search query; use it. If it's
-  // not valid, it's likely a URL; in extended mode, try using the default
-  // search engine's TemplateURL instead.
-  Profile* const profile = active_tab->profile();
-  const bool match_is_search = AutocompleteMatch::IsSearchType(match.type);
 
   // Ensure we have a loader that can process this match. First, try to use the
   // TemplateURL of the |match|. If that's invalid, in non-extended mode, stop.
@@ -237,6 +251,8 @@ bool InstantController::Update(const AutocompleteMatch& match,
   // match is for a URL (i.e., not some other kind of non-Instant search).
   // A completely blank query shows up as a search, and we do want to allow
   // that, hence the "!full_text.empty()" clause.
+  Profile* const profile = active_tab->profile();
+  const bool match_is_search = AutocompleteMatch::IsSearchType(match.type);
   if (!ResetLoader(match.GetTemplateURL(profile, false), active_tab) &&
       (!extended_enabled_ || (match_is_search && !full_text.empty()) ||
        !CreateDefaultLoader())) {
@@ -300,14 +316,13 @@ bool InstantController::Update(const AutocompleteMatch& match,
 // TODO(tonyg): This method only fires when the omnibox bounds change. It also
 // needs to fire when the preview bounds change (e.g.: open/close info bar).
 void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
+  if (!extended_enabled_ && !instant_enabled_)
+    return;
+
   if (omnibox_bounds_ == bounds)
     return;
 
   omnibox_bounds_ = bounds;
-
-  if (!extended_enabled_ && !instant_enabled_)
-    return;
-
   if (omnibox_bounds_.height() > last_omnibox_bounds_.height()) {
     update_bounds_timer_.Stop();
     SendBoundsToPage();
@@ -320,7 +335,10 @@ void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
 
 void InstantController::HandleAutocompleteResults(
     const std::vector<AutocompleteProvider*>& providers) {
-  if (!extended_enabled_ || !GetPreviewContents())
+  if (!extended_enabled_)
+    return;
+
+  if (!GetPreviewContents())
     return;
 
   DVLOG(1) << "AutocompleteResults:";
@@ -346,7 +364,10 @@ void InstantController::HandleAutocompleteResults(
 }
 
 bool InstantController::OnUpOrDownKeyPressed(int count) {
-  if (!extended_enabled_ || !GetPreviewContents())
+  if (!extended_enabled_)
+    return false;
+
+  if (!GetPreviewContents())
     return false;
 
   loader_->OnUpOrDownKeyPressed(count);
@@ -362,6 +383,9 @@ bool InstantController::IsCurrent() const {
 }
 
 bool InstantController::CommitIfCurrent(InstantCommitType type) {
+  if (!extended_enabled_ && !instant_enabled_)
+    return false;
+
   if (!IsCurrent())
     return false;
 
@@ -480,20 +504,24 @@ void InstantController::OmniboxLostFocus(gfx::NativeView view_gaining_focus) {
 void InstantController::OmniboxGotFocus() {
   DVLOG(1) << "OmniboxGotFocus";
   is_omnibox_focused_ = true;
-  if ((extended_enabled_ || instant_enabled_) && !GetPreviewContents())
+
+  if (!extended_enabled_ && !instant_enabled_)
+    return;
+
+  if (!GetPreviewContents())
     CreateDefaultLoader();
 }
 
 void InstantController::SearchModeChanged(
     const chrome::search::Mode& old_mode,
     const chrome::search::Mode& new_mode) {
+  if (!extended_enabled_)
+    return;
+
   DVLOG(1) << "SearchModeChanged: [origin:mode] " << old_mode.origin << ":"
            << old_mode.mode << " to " << new_mode.origin << ":"
            << new_mode.mode;
   search_mode_ = new_mode;
-
-  if (!extended_enabled_ && !instant_enabled_)
-    return;
 
   if (new_mode.is_search_suggestions()) {
     // The preview is showing NTP content, but it's not appropriate anymore.
@@ -503,11 +531,14 @@ void InstantController::SearchModeChanged(
     Hide(true);
   }
 
-  if (GetPreviewContents() && extended_enabled_)
+  if (GetPreviewContents())
     loader_->SearchModeChanged(new_mode);
 }
 
 void InstantController::ActiveTabChanged() {
+  if (!extended_enabled_ && !instant_enabled_)
+    return;
+
   DVLOG(1) << "ActiveTabChanged";
 
   // By this time, SearchModeChanged() should've been called, so we only need to
@@ -526,11 +557,17 @@ void InstantController::SetInstantEnabled(bool instant_enabled) {
 }
 
 void InstantController::ThemeChanged(const ThemeBackgroundInfo& theme_info) {
+  if (!extended_enabled_)
+    return;
+
   if (GetPreviewContents())
     loader_->SendThemeBackgroundInfo(theme_info);
 }
 
 void InstantController::ThemeAreaHeightChanged(int height) {
+  if (!extended_enabled_)
+    return;
+
   if (GetPreviewContents())
     loader_->SendThemeAreaHeight(height);
 }
@@ -582,12 +619,23 @@ void InstantController::SetSuggestions(
       suggestion = InstantSuggestion();
     }
 
+    // If the omnibox is blank, this suggestion is for an older query. Ignore.
+    if (last_user_text_.empty())
+      suggestion = InstantSuggestion();
+
+    // Don't suggest gray text if there already was inline autocompletion.
+    // http://crbug.com/162303
+    if (suggestion.behavior == INSTANT_COMPLETE_NEVER &&
+        last_user_text_ != last_full_text_)
+      suggestion = InstantSuggestion();
+
+    // Don't allow inline autocompletion if the query was verbatim.
+    if (suggestion.behavior == INSTANT_COMPLETE_NOW && last_verbatim_)
+      suggestion = InstantSuggestion();
+
     last_suggestion_ = suggestion;
 
-    // Set the suggested text if the suggestion behavior is
-    // INSTANT_COMPLETE_NEVER irrespective of verbatim because in this case
-    // the suggested text does not get committed if the user presses Enter.
-    if (suggestion.behavior == INSTANT_COMPLETE_NEVER || !last_verbatim_) {
+    if (!suggestion.text.empty()) {
       DVLOG(1) << "SetInstantSuggestion: text='" << suggestion.text << "'"
                << " behavior=" << suggestion.behavior << " type="
                << suggestion.type;
@@ -636,7 +684,7 @@ void InstantController::InstantLoaderContentsFocused(InstantLoader* loader) {
 #if defined(USE_AURA)
   // On aura the omnibox only receives a focus lost if we initiate the focus
   // change. This does that.
-  if (!model_.mode().is_default())
+  if (loader_ == loader && !model_.mode().is_default())
     browser_->InstantPreviewFocused();
 #endif
 }
@@ -655,9 +703,10 @@ bool InstantController::ResetLoader(const TemplateURL* template_url,
     loader_->Init();
 
     // Ensure the searchbox API has the correct theme-related info and context.
-    browser_->UpdateThemeInfoForPreview();
-    if (extended_enabled_)
+    if (extended_enabled_) {
+      browser_->UpdateThemeInfoForPreview();
       loader_->SearchModeChanged(search_mode_);
+    }
 
     // Reset the loader timer.
     stale_loader_timer_.Start(
@@ -694,6 +743,7 @@ void InstantController::OnStaleLoader() {
 }
 
 void InstantController::DeleteLoader() {
+  // Clear all state, except |last_transition_type_| as it's used during commit.
   last_user_text_.clear();
   last_full_text_.clear();
   last_verbatim_ = false;
@@ -701,7 +751,9 @@ void InstantController::DeleteLoader() {
   last_match_was_search_ = false;
   if (!extended_enabled_)
     search_mode_.mode = chrome::search::Mode::MODE_DEFAULT;
+  omnibox_bounds_ = gfx::Rect();
   last_omnibox_bounds_ = gfx::Rect();
+  update_bounds_timer_.Stop();
   stale_loader_timer_.Stop();
   url_for_history_ = GURL();
   first_interaction_time_ = base::Time();
