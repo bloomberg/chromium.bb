@@ -15,7 +15,7 @@ import command
 import toolchain_main
 
 GIT_REVISIONS = {
-    'binutils': 'abfa0eda7b6317e851e7f73199f20c229d32d94b',
+    'binutils': 'cfe19a99b9ea8634672badf37c9f790a4e786b41',
     'gcc': 'b6c3ab73d6b0da02dd1958270d0591d0bbd35661',
     'newlib': '6a104f495cf91387ecec5f5f87c6e12d345b204c',
     }
@@ -53,16 +53,19 @@ if sys.platform.startswith('linux'):
   # or x86-64 hosts (with the right compatibility libraries installed).
   CONFIGURE_HOST_ARCH += [
       'CC=gcc -m32',
-      'CXX=g++ -m32',
+      'CXX=g++ -m32 -static-libstdc++',
       '--build=i686-linux',
       ]
 
-CONFIGURE_HOST_LIB = CONFIGURE_HOST_ARCH + [
-      '--disable-shared',
+CONFIGURE_HOST_COMMON = CONFIGURE_HOST_ARCH + [
       '--prefix=',
       ]
 
-CONFIGURE_HOST_TOOL = CONFIGURE_HOST_LIB + [
+CONFIGURE_HOST_LIB = CONFIGURE_HOST_COMMON + [
+      '--disable-shared',
+      ]
+
+CONFIGURE_HOST_TOOL = CONFIGURE_HOST_COMMON + [
     '--with-pkgversion=' + PACKAGE_NAME,
     '--with-bugurl=' + BUG_URL,
     '--without-zlib',
@@ -206,15 +209,15 @@ def HostTools(target):
                   CONFIGURE_CMD +
                   CONFIGURE_HOST_TOOL +
                   ConfigureTargetArgs(target) + [
-                      '--disable-shared',
                       '--enable-deterministic-archives',
                       '--enable-gold',
                       ] + ([] if sys.platform == 'win32' else [
                           '--enable-plugins',
                           ])),
               command.Command(MAKE_PARALLEL_CMD),
-              # TODO(mcgrathr): Run MAKE_CHECK_CMD here, but
-              # check-ld has known failures for ARM targets.
+              # TODO(mcgrathr): Fix for failures under --without-zlib still
+              # pending upstream.
+              #command.Command(MAKE_CHECK_CMD),
               command.Command(MAKE_DESTDIR_CMD + ['install-strip']),
               REMOVE_INFO_DIR,
               ] +
