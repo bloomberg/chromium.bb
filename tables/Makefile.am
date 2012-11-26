@@ -222,7 +222,6 @@ table_files = \
 	vi.ctb \
 	wiskunde-chardefs.cti \
 	wiskunde.ctb \
-	wiskunde_edit.cti \
 	wiskunde-translation.ctb \
 	zh-hk.ctb \
 	zh-tw.ctb 
