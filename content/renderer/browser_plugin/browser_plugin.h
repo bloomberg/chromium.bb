@@ -103,7 +103,7 @@ class CONTENT_EXPORT BrowserPlugin :
   // Inform the BrowserPlugin of the focus state of the embedder RenderView.
   void SetEmbedderFocus(bool focused);
   // Informs the guest of an updated focus state.
-  void UpdateGuestFocus();
+  void UpdateGuestFocusState();
   // Indicates whether the guest should be focused.
   bool ShouldGuestBeFocused() const;
 
@@ -214,10 +214,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // and sets them appropriately.
   void ParseAttributes(const WebKit::WebPluginParams& params);
 
-  // Returns the pending resize guest param if there is one. Returns a param
-  // with invalid transport dib otherwise.
-  BrowserPluginHostMsg_ResizeGuest_Params* GetPendingResizeParams();
-
   // Initializes the valid events.
   void InitializeEvents();
 
@@ -236,22 +232,40 @@ class CONTENT_EXPORT BrowserPlugin :
   // Creates and maps transport dib. Overridden in tests.
   virtual TransportDIB* CreateTransportDIB(const size_t size);
   // Frees up the damage buffer. Overridden in tests.
-  virtual void FreeDamageBuffer();
+  virtual void FreeDamageBuffer(TransportDIB** damage_buffer);
+  // Swaps out the |current_damage_buffer_| with the |pending_damage_buffer_|.
+  void SwapDamageBuffers();
+
   // Populates BrowserPluginHostMsg_ResizeGuest_Params with resize state and
   // returns the newly allocated TransportDIB.
   TransportDIB* PopulateResizeGuestParameters(
       BrowserPluginHostMsg_ResizeGuest_Params* params,
-      int view_width, int view_height);
+      const gfx::Size& view_size);
 
   // Populates BrowserPluginHostMsg_AutoSize_Params object with autosize state.
   void PopulateAutoSizeParameters(
       BrowserPluginHostMsg_AutoSize_Params* params);
+
+  // Populates both AutoSize and ResizeGuest parameters based on the current
+  // autosize state.
+  TransportDIB* GetDamageBufferWithSizeParams(
+      BrowserPluginHostMsg_AutoSize_Params* auto_size_params,
+      BrowserPluginHostMsg_ResizeGuest_Params* resize_guest_params);
 
   // Informs the guest of an updated autosize state.
   void UpdateGuestAutoSizeState();
 
   // Informs the BrowserPlugin that guest has changed its size in autosize mode.
   void SizeChangedDueToAutoSize(const gfx::Size& old_view_size);
+
+#if defined(OS_MACOSX)
+  bool DamageBufferMatches(const TransportDIB* damage_buffer,
+                           const TransportDIB::Id& other_damage_buffer_id);
+#else
+  bool DamageBufferMatches(
+      const TransportDIB* damage_buffer,
+      const TransportDIB::Handle& other_damage_buffer_handle);
+#endif
 
   int instance_id_;
   base::WeakPtr<RenderViewImpl> render_view_;
@@ -262,12 +276,12 @@ class CONTENT_EXPORT BrowserPlugin :
   WebKit::WebPluginContainer* container_;
   scoped_ptr<BrowserPluginBindings> bindings_;
   scoped_ptr<BrowserPluginBackingStore> backing_store_;
-  TransportDIB* damage_buffer_;
+  TransportDIB* current_damage_buffer_;
+  TransportDIB* pending_damage_buffer_;
   gfx::Rect plugin_rect_;
   // Bitmap for crashed plugin. Lazily initialized, non-owning pointer.
   SkBitmap* sad_guest_;
   bool guest_crashed_;
-  bool resize_pending_;
   scoped_ptr<BrowserPluginHostMsg_ResizeGuest_Params> pending_resize_params_;
   // True if we have ever sent a NavigateGuest message to the embedder.
   bool navigate_src_sent_;

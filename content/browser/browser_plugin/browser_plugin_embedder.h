@@ -78,8 +78,7 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   void NavigateGuest(
       RenderViewHost* render_view_host,
       int instance_id,
-      const std::string& src,
-      const BrowserPluginHostMsg_ResizeGuest_Params& resize_params);
+      const std::string& src);
 
   void ResizeGuest(RenderViewHost* render_view_host,
                    int instance_id,
@@ -101,7 +100,11 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
 
   // Message handlers (direct/indirect via BrowserPluginEmbedderHelper).
   // Routes update rect ack message to the appropriate guest.
-  void UpdateRectACK(int instance_id, int message_id, const gfx::Size& size);
+  void UpdateRectACK(
+      int instance_id,
+      int message_id,
+      const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
+      const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
   void SetFocus(int instance_id, bool focused);
   // Handles input events sent from the BrowserPlugin (embedder's renderer
   // process) by passing them to appropriate guest's input handler.

@@ -35,14 +35,6 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_AutoSize_Params)
   IPC_STRUCT_MEMBER(gfx::Size, min_size)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(BrowserPluginHostMsg_CreateGuest_Params)
-  IPC_STRUCT_MEMBER(std::string, storage_partition_id)
-  IPC_STRUCT_MEMBER(bool, persist_storage)
-  IPC_STRUCT_MEMBER(bool, focused)
-  IPC_STRUCT_MEMBER(bool, visible)
-  IPC_STRUCT_MEMBER(BrowserPluginHostMsg_AutoSize_Params, auto_size)
-IPC_STRUCT_END()
-
 IPC_STRUCT_BEGIN(BrowserPluginHostMsg_ResizeGuest_Params)
   // An identifier to the new buffer to use to transport damage to the embedder
   // renderer process.
@@ -57,15 +49,20 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_ResizeGuest_Params)
   // on Windows.
   IPC_STRUCT_MEMBER(int, damage_buffer_size)
 #endif
-  // The new width of the plugin container.
-  IPC_STRUCT_MEMBER(int, width)
-  // The new height of the plugin container.
-  IPC_STRUCT_MEMBER(int, height)
-  // Indicates whether the embedder is currently waiting on a ACK from the
-  // guest for a previous resize request.
-  IPC_STRUCT_MEMBER(bool, resize_pending)
+  // The new size of the guest view area.
+  IPC_STRUCT_MEMBER(gfx::Size, view_size)
   // Indicates the scale factor of the embedder WebView.
   IPC_STRUCT_MEMBER(float, scale_factor)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(BrowserPluginHostMsg_CreateGuest_Params)
+  IPC_STRUCT_MEMBER(std::string, storage_partition_id)
+  IPC_STRUCT_MEMBER(bool, persist_storage)
+  IPC_STRUCT_MEMBER(bool, focused)
+  IPC_STRUCT_MEMBER(bool, visible)
+  IPC_STRUCT_MEMBER(BrowserPluginHostMsg_AutoSize_Params, auto_size_params)
+  IPC_STRUCT_MEMBER(BrowserPluginHostMsg_ResizeGuest_Params,
+                    resize_guest_params)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(BrowserPluginMsg_LoadCommit_Params)
@@ -83,6 +80,14 @@ IPC_STRUCT_BEGIN(BrowserPluginMsg_LoadCommit_Params)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(BrowserPluginMsg_UpdateRect_Params)
+  // The bitmap to be painted into the view at the locations specified by
+  // update_rects.
+#if defined(OS_MACOSX)
+  IPC_STRUCT_MEMBER(TransportDIB::Id, damage_buffer_identifier)
+#else
+  IPC_STRUCT_MEMBER(TransportDIB::Handle, damage_buffer_identifier)
+#endif
+
   // The position and size of the bitmap.
   IPC_STRUCT_MEMBER(gfx::Rect, bitmap_rect)
 
@@ -123,7 +128,7 @@ IPC_STRUCT_END()
 
 // This message is sent to the browser process to enable or disable autosize
 // mode.
-IPC_SYNC_MESSAGE_ROUTED3_0(
+IPC_MESSAGE_ROUTED3(
     BrowserPluginHostMsg_SetAutoSize,
     int /* instance_id */,
     BrowserPluginHostMsg_AutoSize_Params /* auto_size_params */,
@@ -172,20 +177,20 @@ IPC_SYNC_MESSAGE_ROUTED0_1(BrowserPluginHostMsg_HandleInputEvent,
 // the previous frame and is ready for the next frame. If the guest sent the
 // embedder a bitmap that does not match the size of the BrowserPlugin's
 // container, the BrowserPlugin requests a new size as well.
-IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_UpdateRect_ACK,
-                    int /* instance_id */,
-                    int /* message_id */,
-                    gfx::Size /* repaint_view_size */)
+IPC_MESSAGE_ROUTED4(BrowserPluginHostMsg_UpdateRect_ACK,
+    int /* instance_id */,
+    int /* message_id */,
+    BrowserPluginHostMsg_AutoSize_Params /* auto_size_params */,
+    BrowserPluginHostMsg_ResizeGuest_Params /* resize_guest_params */)
 
 // A BrowserPlugin sends this to BrowserPluginEmbedder (browser process) when it
 // wants to navigate to a given src URL. If a guest WebContents already exists,
 // it will navigate that WebContents. If not, it will create the WebContents,
 // associate it with the BrowserPluginGuest, and navigate it to the requested
 // URL.
-IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_NavigateGuest,
+IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_NavigateGuest,
                     int /* instance_id*/,
-                    std::string /* src */,
-                    BrowserPluginHostMsg_ResizeGuest_Params /* resize_params */)
+                    std::string /* src */)
 
 // When a BrowserPlugin has been removed from the embedder's DOM, it informs
 // the browser process to cleanup the guest.
@@ -218,9 +223,9 @@ IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_PluginAtPositionResponse,
 // A embedder sends this message to the browser when it wants
 // to resize a guest plugin container so that the guest is relaid out
 // according to the new size.
-IPC_SYNC_MESSAGE_ROUTED2_0(BrowserPluginHostMsg_ResizeGuest,
-                           int /* instance_id*/,
-                           BrowserPluginHostMsg_ResizeGuest_Params)
+IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_ResizeGuest,
+                    int /* instance_id*/,
+                    BrowserPluginHostMsg_ResizeGuest_Params)
 
 // -----------------------------------------------------------------------------
 // These messages are from the browser process to the embedder.

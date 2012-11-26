@@ -1192,7 +1192,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AutoSizeAfterNavigation) {
     EXPECT_EQ(expected_title, actual_title);
   }
   {
-    // Turn off autoSize and verify that the guest resizes to fit the contaienr.
+    // Turn off autoSize and verify that the guest resizes to fit the container.
     ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
         "document.getElementById('plugin').autoSize = false;"));
     test_guest()->WaitForViewSize(gfx::Size(640, 480));

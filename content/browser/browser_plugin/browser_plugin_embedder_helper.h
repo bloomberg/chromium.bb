@@ -59,12 +59,14 @@ class BrowserPluginEmbedderHelper : public RenderViewHostObserver {
   // Message handlers.
   void OnCreateGuest(int instance_id,
                      const BrowserPluginHostMsg_CreateGuest_Params& params);
-  void OnNavigateGuest(int instance_id,
-                       const std::string& src,
-                       const BrowserPluginHostMsg_ResizeGuest_Params& params);
+  void OnNavigateGuest(int instance_id, const std::string& src);
   void OnResizeGuest(int instance_id,
                      const BrowserPluginHostMsg_ResizeGuest_Params& params);
-  void OnUpdateRectACK(int instance_id, int message_id, const gfx::Size& size);
+  void OnUpdateRectACK(
+      int instance_id,
+      int message_id,
+      const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
+      const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
   void OnHandleInputEvent(const IPC::SyncMessage& message, bool* handled);
   void OnSetFocus(int instance_id, bool focused);
   void OnPluginDestroyed(int instance_id);

@@ -41,11 +41,11 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragStatus.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "ui/gfx/rect.h"
+#include "ui/surface/transport_dib.h"
 
 struct BrowserPluginHostMsg_AutoSize_Params;
 struct BrowserPluginHostMsg_CreateGuest_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
-class TransportDIB;
 struct ViewHostMsg_UpdateRect_Params;
 class WebCursor;
 struct WebDropData;
@@ -137,7 +137,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 
   void UpdateRect(RenderViewHost* render_view_host,
                   const ViewHostMsg_UpdateRect_Params& params);
-  void UpdateRectACK(int message_id, const gfx::Size& size);
+  void UpdateRectACK(
+      int message_id,
+      const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
+      const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
   // Overrides default ShowWidget message so we show them on the correct
   // coordinates.
   void ShowWidget(RenderViewHost* render_view_host,
@@ -179,8 +182,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                         WebKit::WebDragOperationsMask drag_mask,
                         const gfx::Point& location);
 
-  // Updates the autosize state of the guest.
-  void SetAutoSize(
+  // Updates the size state of the guest.
+  void SetSize(
       const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
       const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
 
@@ -222,6 +225,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   virtual void SetDamageBuffer(TransportDIB* damage_buffer,
 #if defined(OS_WIN)
                                int damage_buffer_size,
+                               TransportDIB::Handle remote_handle,
 #endif
                                const gfx::Size& damage_view_size,
                                float scale_factor);
@@ -271,6 +275,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   scoped_ptr<TransportDIB> damage_buffer_;
 #if defined(OS_WIN)
   size_t damage_buffer_size_;
+  TransportDIB::Handle remote_damage_buffer_handle_;
 #endif
   gfx::Size damage_view_size_;
   float damage_buffer_scale_factor_;
@@ -281,7 +286,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   base::TimeDelta guest_hang_timeout_;
   bool focused_;
   bool visible_;
-  bool auto_size_;
+  bool auto_size_enabled_;
   gfx::Size max_auto_size_;
   gfx::Size min_auto_size_;
 

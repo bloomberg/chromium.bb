@@ -20,11 +20,11 @@ class MockBrowserPlugin : public BrowserPlugin {
   virtual ~MockBrowserPlugin();
 
   virtual TransportDIB* CreateTransportDIB(const size_t size) OVERRIDE;
-  virtual void FreeDamageBuffer() OVERRIDE;
+  virtual void FreeDamageBuffer(TransportDIB** damage_buffer) OVERRIDE;
 
   // Allow poking at a few private members.
   using BrowserPlugin::guest_crashed_;
-  using BrowserPlugin::resize_pending_;
+  using BrowserPlugin::pending_damage_buffer_;
 
  private:
   int transport_dib_next_sequence_number_;

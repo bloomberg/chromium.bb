@@ -22,10 +22,10 @@ TransportDIB* MockBrowserPlugin::CreateTransportDIB(const size_t size) {
   return TransportDIB::Create(size, transport_dib_next_sequence_number_++);
 }
 
-void MockBrowserPlugin::FreeDamageBuffer() {
-  DCHECK(damage_buffer_);
-  RenderProcess::current()->FreeTransportDIB(damage_buffer_);
-  damage_buffer_ = NULL;
+void MockBrowserPlugin::FreeDamageBuffer(TransportDIB** damage_buffer) {
+  DCHECK(*damage_buffer);
+  RenderProcess::current()->FreeTransportDIB(*damage_buffer);
+  *damage_buffer = NULL;
 }
 
 }  // namespace content

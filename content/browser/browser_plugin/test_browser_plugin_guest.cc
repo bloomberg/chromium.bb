@@ -272,6 +272,7 @@ void TestBrowserPluginGuest::SetDamageBuffer(
     TransportDIB* damage_buffer,
 #if defined(OS_WIN)
     int damage_buffer_size,
+    TransportDIB::Handle remote_handle,
 #endif
     const gfx::Size& damage_view_size,
     float scale_factor) {
@@ -289,6 +290,7 @@ void TestBrowserPluginGuest::SetDamageBuffer(
       damage_buffer,
 #if defined(OS_WIN)
       damage_buffer_size,
+      remote_handle,
 #endif
       damage_view_size,
       scale_factor);
