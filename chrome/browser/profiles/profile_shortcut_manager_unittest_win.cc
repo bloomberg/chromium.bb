@@ -10,21 +10,18 @@
 #include "base/test/scoped_path_override.h"
 #include "base/string16.h"
 #include "base/test/test_shortcut_win.h"
-#include "base/utf_string_conversions.h"
 #include "base/win/shortcut.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
+#include "chrome/browser/profiles/profile_shortcut_manager_win.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/test_browser_thread.h"
-#include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
 
@@ -56,7 +53,7 @@ class ProfileShortcutManagerTest : public testing::Test {
     dest_path_ = profile_info_cache_->GetUserDataDir();
     dest_path_ = dest_path_.Append(FILE_PATH_LITERAL("My profile"));
     file_util::CreateDirectoryW(dest_path_);
-    profile_name_ = ASCIIToUTF16("My profile");
+    profile_name_ = L"My profile";
 
     ASSERT_TRUE(ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
                                            distribution_,
@@ -67,7 +64,7 @@ class ProfileShortcutManagerTest : public testing::Test {
     second_dest_path_ =
         second_dest_path_.Append(FILE_PATH_LITERAL("My profile 2"));
     file_util::CreateDirectoryW(second_dest_path_);
-    second_profile_name_ = ASCIIToUTF16("My profile 2");
+    second_profile_name_ = L"My profile 2";
   }
 
   virtual void TearDown() OVERRIDE {
@@ -125,7 +122,8 @@ class ProfileShortcutManagerTest : public testing::Test {
   // Returns the default shortcut path for this profile.
   FilePath GetDefaultShortcutPathForProfile(const string16& profile_name) {
     return shortcuts_directory_.Append(
-        ProfileShortcutManager::GetShortcutNameForProfile(profile_name));
+        profiles::internal::GetShortcutFilenameForProfile(profile_name,
+                                                          distribution_));
   }
 
   // Returns true if the shortcut for this profile exists.
@@ -171,12 +169,14 @@ TEST_F(ProfileShortcutManagerTest, ShortcutFilename) {
   const string16 expected_name = kProfileName + L" - " +
       distribution_->GetAppShortCutName() + installer::kLnkExt;
   EXPECT_EQ(expected_name,
-            ProfileShortcutManager::GetShortcutNameForProfile(kProfileName));
+            profiles::internal::GetShortcutFilenameForProfile(kProfileName,
+                                                              distribution_));
 }
 
 TEST_F(ProfileShortcutManagerTest, UnbadgedShortcutFilename) {
   EXPECT_EQ(distribution_->GetAppShortCutName() + installer::kLnkExt,
-            ProfileShortcutManager::GetShortcutNameForProfile(string16()));
+            profiles::internal::GetShortcutFilenameForProfile(string16(),
+                                                              distribution_));
 }
 
 TEST_F(ProfileShortcutManagerTest, DesktopShortcutsCreate) {
@@ -207,7 +207,7 @@ TEST_F(ProfileShortcutManagerTest, DesktopShortcutsUpdate) {
 
   // Cause an update in ProfileShortcutManager by modifying the profile info
   // cache.
-  string16 new_profile_name = ASCIIToUTF16("New Profile Name");
+  const string16 new_profile_name = L"New Profile Name";
   profile_info_cache_->SetNameOfProfileAtIndex(
       profile_info_cache_->GetIndexOfProfileWithPath(second_dest_path_),
       new_profile_name);
@@ -322,7 +322,7 @@ TEST_F(ProfileShortcutManagerTest, RenamedDesktopShortcutsAfterProfileRename) {
   EXPECT_TRUE(file_util::PathExists(new_shortcut_path));
 
   // Now, rename the profile.
-  const string16 new_profile_name = ASCIIToUTF16("New profile");
+  const string16 new_profile_name = L"New profile";
   ASSERT_NE(second_profile_name_, new_profile_name);
   profile_info_cache_->SetNameOfProfileAtIndex(
       profile_info_cache_->GetIndexOfProfileWithPath(second_dest_path_),

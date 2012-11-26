@@ -22,7 +22,6 @@ class ProfileShortcutManager {
 
   static bool IsFeatureEnabled();
   static ProfileShortcutManager* Create(ProfileManager* manager);
-  static string16 GetShortcutNameForProfile(const string16& profile_name);
 
  protected:
   ProfileShortcutManager();

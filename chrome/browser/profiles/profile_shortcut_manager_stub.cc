@@ -14,10 +14,3 @@ ProfileShortcutManager* ProfileShortcutManager::Create(
     ProfileManager* manager) {
   return NULL;
 }
-
-// static
-string16 ProfileShortcutManager::GetShortcutNameForProfile(
-    const string16& profile_name) {
-  NOTREACHED();
-  return string16();
-}

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/profiles/profile_shortcut_manager.h"
+#include "chrome/browser/profiles/profile_shortcut_manager_win.h"
 
-#include <map>
+#include <string>
+#include <vector>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string16.h"
@@ -16,22 +16,16 @@
 #include "base/win/shortcut.h"
 #include "chrome/browser/app_icon_win.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/installer/util/auto_launch_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/shell_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "grit/generated_resources.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image.h"
@@ -218,7 +212,8 @@ void CreateOrUpdateDesktopShortcutsForProfile(const FilePath& profile_path,
   ListDesktopShortcutsWithCommandLine(chrome_exe, command_line, &shortcuts);
   if (create && shortcuts.empty()) {
     const string16 shortcut_name =
-        ProfileShortcutManager::GetShortcutNameForProfile(profile_name);
+        profiles::internal::GetShortcutFilenameForProfile(profile_name,
+                                                          distribution);
     shortcuts.push_back(FilePath(shortcut_name));
     operation = ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS;
   }
@@ -262,36 +257,22 @@ void DeleteDesktopShortcutsAndIconFile(const FilePath& profile_path,
 
 }  // namespace
 
-class ProfileShortcutManagerWin : public ProfileShortcutManager,
-                                  public ProfileInfoCacheObserver {
- public:
-  explicit ProfileShortcutManagerWin(ProfileManager* manager);
-  virtual ~ProfileShortcutManagerWin();
+namespace profiles {
+namespace internal {
 
-  virtual void CreateProfileShortcut(const FilePath& profile_path) OVERRIDE;
+string16 GetShortcutFilenameForProfile(const string16& profile_name,
+                                       BrowserDistribution* distribution) {
+  string16 shortcut_name;
+  if (!profile_name.empty()) {
+    shortcut_name.append(profile_name);
+    shortcut_name.append(L" - ");
+  }
+  shortcut_name.append(distribution->GetAppShortCutName());
+  return shortcut_name + installer::kLnkExt;
+}
 
-  // ProfileInfoCacheObserver:
-  virtual void OnProfileAdded(const FilePath& profile_path) OVERRIDE;
-  virtual void OnProfileWillBeRemoved(const FilePath& profile_path) OVERRIDE;
-  virtual void OnProfileWasRemoved(const FilePath& profile_path,
-                                   const string16& profile_name) OVERRIDE;
-  virtual void OnProfileNameChanged(const FilePath& profile_path,
-                                    const string16& old_profile_name) OVERRIDE;
-  virtual void OnProfileAvatarChanged(const FilePath& profile_path) OVERRIDE;
-
- private:
-  void StartProfileShortcutNameChange(const FilePath& profile_path,
-                                      const string16& old_profile_name);
-  // Gives the profile path of an alternate profile than |profile_path|.
-  // Must only be called when the number profiles is 2.
-  FilePath GetOtherProfilePath(const FilePath& profile_path);
-  void UpdateShortcutForProfileAtPath(const FilePath& profile_path,
-                                      bool create_always);
-
-  ProfileManager* profile_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileShortcutManagerWin);
-};
+}  // namespace internal
+}  // namespace profiles
 
 // static
 bool ProfileShortcutManager::IsFeatureEnabled() {
@@ -302,19 +283,6 @@ bool ProfileShortcutManager::IsFeatureEnabled() {
 ProfileShortcutManager* ProfileShortcutManager::Create(
     ProfileManager* manager) {
   return new ProfileShortcutManagerWin(manager);
-}
-
-// static
-string16 ProfileShortcutManager::GetShortcutNameForProfile(
-    const string16& profile_name) {
-  string16 shortcut_name;
-  if (!profile_name.empty()) {
-    shortcut_name.append(profile_name);
-    shortcut_name.append(L" - ");
-  }
-  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
-  shortcut_name.append(distribution->GetAppShortCutName());
-  return shortcut_name + installer::kLnkExt;
 }
 
 ProfileShortcutManagerWin::ProfileShortcutManagerWin(ProfileManager* manager)
@@ -328,16 +296,16 @@ ProfileShortcutManagerWin::~ProfileShortcutManagerWin() {
 
 void ProfileShortcutManagerWin::CreateProfileShortcut(
     const FilePath& profile_path) {
-  UpdateShortcutForProfileAtPath(profile_path, true);
+  UpdateShortcutsForProfileAtPath(profile_path, true);
 }
 
 void ProfileShortcutManagerWin::OnProfileAdded(const FilePath& profile_path) {
   const size_t profile_count =
       profile_manager_->GetProfileInfoCache().GetNumberOfProfiles();
   if (profile_count == 1) {
-    UpdateShortcutForProfileAtPath(profile_path, true);
+    UpdateShortcutsForProfileAtPath(profile_path, true);
   } else if (profile_count == 2) {
-    UpdateShortcutForProfileAtPath(GetOtherProfilePath(profile_path), false);
+    UpdateShortcutsForProfileAtPath(GetOtherProfilePath(profile_path), false);
   }
 }
 
@@ -352,7 +320,7 @@ void ProfileShortcutManagerWin::OnProfileWasRemoved(
   // If there is only one profile remaining, remove the badging information
   // from an existing shortcut.
   if (cache.GetNumberOfProfiles() == 1)
-    UpdateShortcutForProfileAtPath(cache.GetPathOfProfileAtIndex(0), false);
+    UpdateShortcutsForProfileAtPath(cache.GetPathOfProfileAtIndex(0), false);
 
   const FilePath icon_path = profile_path.AppendASCII(kProfileIconFileName);
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
@@ -363,12 +331,12 @@ void ProfileShortcutManagerWin::OnProfileWasRemoved(
 void ProfileShortcutManagerWin::OnProfileNameChanged(
     const FilePath& profile_path,
     const string16& old_profile_name) {
-  UpdateShortcutForProfileAtPath(profile_path, false);
+  UpdateShortcutsForProfileAtPath(profile_path, false);
 }
 
 void ProfileShortcutManagerWin::OnProfileAvatarChanged(
     const FilePath& profile_path) {
-  UpdateShortcutForProfileAtPath(profile_path, false);
+  UpdateShortcutsForProfileAtPath(profile_path, false);
 }
 
 void ProfileShortcutManagerWin::StartProfileShortcutNameChange(
@@ -383,8 +351,13 @@ void ProfileShortcutManagerWin::StartProfileShortcutNameChange(
   if (cache.GetNumberOfProfiles() != 1)
     new_profile_name = cache.GetNameOfProfileAtIndex(profile_index);
 
-  string16 old_shortcut_file(GetShortcutNameForProfile(old_profile_name));
-  string16 new_shortcut_file(GetShortcutNameForProfile(new_profile_name));
+  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
+  const string16 old_shortcut_file =
+      profiles::internal::GetShortcutFilenameForProfile(old_profile_name,
+                                                        distribution);
+  const string16 new_shortcut_file =
+      profiles::internal::GetShortcutFilenameForProfile(new_profile_name,
+                                                        distribution);
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&RenameChromeDesktopShortcutForProfile,
@@ -404,7 +377,7 @@ FilePath ProfileShortcutManagerWin::GetOtherProfilePath(
       GetPathOfProfileAtIndex(other_profile_index);
 }
 
-void ProfileShortcutManagerWin::UpdateShortcutForProfileAtPath(
+void ProfileShortcutManagerWin::UpdateShortcutsForProfileAtPath(
     const FilePath& profile_path,
     bool create_always) {
   ProfileInfoCache* cache = &profile_manager_->GetProfileInfoCache();
