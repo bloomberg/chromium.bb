@@ -500,6 +500,8 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
 
   // Returns true if the plugin has registered to accept touch events.
   bool IsAcceptingTouchEvents() const;
+  // Returns true if the plugin has registered to accept wheel events.
+  bool IsAcceptingWheelEvents() const;
 
   void ScheduleAsyncDidChangeView();
   void SendAsyncDidChangeView();
@@ -546,6 +548,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
       const std::vector<WebKit::WebCompositionUnderline>& underlines,
       int selection_start,
       int selection_end);
+
+  // Internal helper function for XXXInputEvents().
+  void RequestInputEventsHelper(uint32_t event_classes);
 
   // Checks if the security origin of the document containing this instance can
   // assess the security origin of the main frame document.
