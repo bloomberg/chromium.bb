@@ -1757,7 +1757,9 @@ def parse_variable_option(parser, options, require_isolated):
     options.isolated = os.path.abspath(
         options.isolated.replace('/', os.path.sep))
   if require_isolated and not options.isolated:
-    parser.error('--isolated is required.')
+    parser.error('--isolated is required. Visit http://chromium.org/developers/'
+                 'testing/isolated-testing#TOC-Where-can-I-find-the-.isolated-'
+                 'file- to see how to create the .isolated file.')
   if options.isolated and not options.isolated.endswith('.isolated'):
     parser.error('--isolated value must end with \'.isolated\'')
   options.variables = dict(options.variables)
