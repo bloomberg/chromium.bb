@@ -42,7 +42,7 @@ NaClValidationQuery::NaClValidationQuery(NaClValidationDB* db,
   // not be used in all cases.
   // TODO(ncbray) remove when nacl_helper becomes the only code path.
   // http://code.google.com/p/chromium/issues/detail?id=118263
-#if defined(OS_LINUX)
+#if defined(USE_NSS)
   crypto::ForceNSSNoDBInit();
 #endif
   CHECK(hasher_.Init(profile_key));
