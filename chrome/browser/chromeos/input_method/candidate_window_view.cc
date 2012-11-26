@@ -677,24 +677,20 @@ bool CandidateWindowView::ShouldUpdateCandidateViews(
     const InputMethodLookupTable& old_table,
     const InputMethodLookupTable& new_table) {
 
-  // Check only candidate category because other fields are not used in
-  // CandidateWindowView.
-  // TODO(nona): Remove mozc_candidates(crbug.com/129403).
-  if (old_table.mozc_candidates.has_category() ||
-      new_table.mozc_candidates.has_category()) {
-    if (old_table.mozc_candidates.category() !=
-        new_table.mozc_candidates.category())
-      return true;
-  }
-
   // Check if most table contents are identical.
   if (old_table.page_size == new_table.page_size &&
       old_table.orientation == new_table.orientation &&
       old_table.candidates == new_table.candidates &&
       old_table.labels == new_table.labels &&
       old_table.annotations == new_table.annotations &&
+      old_table.descriptions.size() == new_table.descriptions.size() &&
       // Check if the page indexes are identical.
       ComputePageIndex(old_table) == ComputePageIndex(new_table)) {
+    for (size_t i = 0; i < new_table.descriptions.size(); ++i) {
+      if (old_table.descriptions[i].title != new_table.descriptions[i].title ||
+          old_table.descriptions[i].body != new_table.descriptions[i].body)
+        return true;
+    }
     // If all of the conditions are met, we don't have to update candidate
     // views.
     return false;
@@ -711,14 +707,8 @@ void CandidateWindowView::UpdateCandidates(
     // Initialize candidate views if necessary.
     MaybeInitializeCandidateViews(new_lookup_table);
 
-    if (new_lookup_table.mozc_candidates.has_category() &&
-        new_lookup_table.mozc_candidates.category() ==
-            mozc::commands::SUGGESTION) {
-      should_show_at_composition_head_ = true;
-    } else {
-      should_show_at_composition_head_ = false;
-    }
-
+    should_show_at_composition_head_
+        = new_lookup_table.show_at_composition_head;
     // Compute the index of the current page.
     const int current_page_index = ComputePageIndex(new_lookup_table);
     if (current_page_index < 0) {
@@ -760,14 +750,8 @@ void CandidateWindowView::UpdateCandidates(
             UTF8ToUTF16(new_lookup_table.annotations[candidate_index]));
         candidate_view->SetRowEnabled(true);
 
-        if ((new_lookup_table.mozc_candidates.candidate_size() >
-                 static_cast<int>(i)) &&
-            (new_lookup_table.mozc_candidates.
-                 candidate(i).has_information_id())) {
-          candidate_view->SetInfolistIcon(true);
-        } else {
-          candidate_view->SetInfolistIcon(false);
-        }
+        candidate_view->SetInfolistIcon(
+            !new_lookup_table.descriptions[candidate_index].title.empty());
       } else {
         // Disable the empty row.
         candidate_view->SetCandidateText(string16());

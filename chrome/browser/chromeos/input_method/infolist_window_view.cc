@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include "chrome/browser/chromeos/input_method/infolist_window_view.h"
 
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -209,6 +210,11 @@ void InfolistWindowView::Relayout(const std::vector<Entry>& entries,
   if (focused_index < infolist_views_.size())
     infolist_views_[focused_index]->Select();
   infolist_area_->SchedulePaint();
+}
+
+// static
+const size_t InfolistWindowView::InvalidFocusIndex() {
+  return std::numeric_limits<size_t>::max();
 }
 
 }  // namespace input_method

@@ -90,7 +90,8 @@ void CandidateWindowControllerImpl::CreateView() {
 CandidateWindowControllerImpl::CandidateWindowControllerImpl()
     : ibus_ui_controller_(IBusUiController::Create()),
       candidate_window_(NULL),
-      infolist_window_(NULL) {
+      infolist_window_(NULL),
+      latest_infolist_focused_index_(InfolistWindowView::InvalidFocusIndex()) {
 }
 
 CandidateWindowControllerImpl::~CandidateWindowControllerImpl() {
@@ -147,6 +148,54 @@ void CandidateWindowControllerImpl::OnUpdateAuxiliaryText(
   candidate_window_->ShowAuxiliaryText();
 }
 
+// static
+void CandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
+    const InputMethodLookupTable& lookup_table,
+    std::vector<InfolistWindowView::Entry>* infolist_entries,
+    size_t* focused_index) {
+  DCHECK(focused_index);
+  DCHECK(infolist_entries);
+  *focused_index = InfolistWindowView::InvalidFocusIndex();
+  infolist_entries->clear();
+
+  const size_t cursor_index_in_page =
+      lookup_table.cursor_absolute_index % lookup_table.page_size;
+
+  for (size_t i = 0; i < lookup_table.descriptions.size(); ++i) {
+    if (lookup_table.descriptions[i].title.empty() &&
+        lookup_table.descriptions[i].body.empty())
+      continue;
+    InfolistWindowView::Entry entry;
+    entry.title = lookup_table.descriptions[i].title;
+    entry.body = lookup_table.descriptions[i].body;
+    infolist_entries->push_back(entry);
+    if (i == cursor_index_in_page)
+      *focused_index = infolist_entries->size() - 1;
+  }
+}
+
+// static
+bool CandidateWindowControllerImpl::ShouldUpdateInfolist(
+    const std::vector<InfolistWindowView::Entry>& old_entries,
+    size_t old_focused_index,
+    const std::vector<InfolistWindowView::Entry>& new_entries,
+    size_t new_focused_index) {
+  if (old_entries.empty() && new_entries.empty())
+    return false;
+  if (old_entries.size() != new_entries.size())
+    return true;
+  if (old_focused_index != new_focused_index)
+    return true;
+
+  for (size_t i = 0; i < old_entries.size(); ++i) {
+    if (old_entries[i].title != new_entries[i].title ||
+        old_entries[i].body != new_entries[i].body ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void CandidateWindowControllerImpl::OnUpdateLookupTable(
     const InputMethodLookupTable& lookup_table) {
   // If it's not visible, hide the lookup table and return.
@@ -159,18 +208,10 @@ void CandidateWindowControllerImpl::OnUpdateLookupTable(
   candidate_window_->UpdateCandidates(lookup_table);
   candidate_window_->ShowLookupTable();
 
-  // TODO(nona): Remove mozc::commands dependencies.
-  const mozc::commands::Candidates& candidates = lookup_table.mozc_candidates;
-
+  size_t focused_index = 0;
   std::vector<InfolistWindowView::Entry> infolist_entries;
-  const mozc::commands::InformationList& usages = candidates.usages();
-
-  for (int i = 0; i < usages.information_size(); ++i) {
-    InfolistWindowView::Entry entry;
-    entry.title = usages.information(i).title();
-    entry.body = usages.information(i).description();
-    infolist_entries.push_back(entry);
-  }
+  ConvertLookupTableToInfolistEntry(lookup_table, &infolist_entries,
+                                    &focused_index);
 
   // If there is no infolist entry, just hide.
   if (infolist_entries.empty()) {
@@ -178,22 +219,28 @@ void CandidateWindowControllerImpl::OnUpdateLookupTable(
     return;
   }
 
-  // TODO(nona): Return if there is no change in infolist entries after complete
-  // mozc dependency removal.
+  // If there is no change, just return.
+  if (!ShouldUpdateInfolist(latest_infolist_entries_,
+                            latest_infolist_focused_index_,
+                            infolist_entries,
+                            focused_index)) {
+    return;
+  }
 
-  int focused_index = infolist_entries.size();
-  if (usages.has_focused_index())
-    focused_index = usages.focused_index();
+  latest_infolist_entries_ = infolist_entries;
+  latest_infolist_focused_index_ = focused_index;
 
   InfolistWindowView* view = static_cast<InfolistWindowView*>(
       infolist_window_->GetContentsView());
-  if (!view)
+  if (!view) {
+    DLOG(ERROR) << "Contents View is not InfolistWindowView.";
     return;
+  }
 
   view->Relayout(infolist_entries, focused_index);
   UpdateInfolistBounds();
 
-  if (static_cast<size_t>(focused_index) < infolist_entries.size())
+  if (focused_index < infolist_entries.size())
     infolist_window_->DelayShow(kInfolistShowDelayMilliSeconds);
   else
     infolist_window_->DelayHide(kInfolistHideDelayMilliSeconds);

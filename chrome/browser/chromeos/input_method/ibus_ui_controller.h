@@ -37,6 +37,11 @@ struct InputMethodLookupTable {
     kHorizontal,
   };
 
+  struct Description {
+    std::string title;  // Description title string in UTF-8.
+    std::string body;  // Description body string in UTF-8.
+  };
+
   InputMethodLookupTable();
 
   ~InputMethodLookupTable();
@@ -57,6 +62,10 @@ struct InputMethodLookupTable {
   // it's about 10, depending on the backend conversion engine.
   int page_size;
 
+  // True if the candidate window should be shown under the first character of
+  // composition string.
+  bool show_at_composition_head;
+
   // Candidate strings in UTF-8.
   std::vector<std::string> candidates;
 
@@ -69,8 +78,8 @@ struct InputMethodLookupTable {
   // Annotation strings in UTF-8 (ex. "Hankaku Katakana").
   std::vector<std::string> annotations;
 
-  // Mozc candidates.
-  mozc::commands::Candidates mozc_candidates;
+  // Description entries. This text is shown in Infolist window.
+  std::vector<Description> descriptions;
 };
 
 // IBusUiController is used to interact with the IBus daemon.

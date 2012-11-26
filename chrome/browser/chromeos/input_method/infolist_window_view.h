@@ -35,8 +35,11 @@ class InfolistWindowView : public views::View {
   void Init();
 
   // Updates infolist contents with |entries| and |focused_index|. If you want
-  // to unselect all entries, pass |focused_index| as -1.
+  // to unselect all entries, pass |focused_index| as InvalidFocusIndex().
   void Relayout(const std::vector<Entry>& entries, size_t focused_index);
+
+  // Returns a index taht is invalid.
+  static const size_t InvalidFocusIndex();
 
  private:
   // The infolist area is where the meanings and the usages of the words are

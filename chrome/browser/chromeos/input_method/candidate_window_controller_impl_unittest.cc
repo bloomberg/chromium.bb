@@ -11,6 +11,23 @@ namespace input_method {
 
 namespace {
 
+const size_t kSampleCandidateSize = 3;
+const char* kSampleCandidate[] = {
+  "Sample Candidate 1",
+  "Sample Candidate 2",
+  "Sample Candidate 3",
+};
+const char* kSampleDescriptionTitle[] = {
+  "Sample Description Title 1",
+  "Sample Description Title 2",
+  "Sample Description Title 3",
+};
+const char* kSampleDescriptionBody[] = {
+  "Sample Description Body 1",
+  "Sample Description Body 2",
+  "Sample Description Body 3",
+};
+
 class TestableCandidateWindowControllerImpl :
     public CandidateWindowControllerImpl {
  public:
@@ -19,6 +36,8 @@ class TestableCandidateWindowControllerImpl :
 
   // Changes access right for testing.
   using CandidateWindowControllerImpl::GetInfolistWindowPosition;
+  using CandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry;
+  using CandidateWindowControllerImpl::ShouldUpdateInfolist;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestableCandidateWindowControllerImpl);
@@ -106,6 +125,206 @@ TEST_F(CandidateWindowControllerImplTest,
                 candidate_window_rect,
                 kScreenRect,
                 infolist_window_size));
+}
+
+TEST_F(CandidateWindowControllerImplTest,
+       ConvertLookupTableToInfolistEntryTest_DenseCase) {
+  InputMethodLookupTable table;
+  table.visible = true;
+  table.page_size = 10;
+  for (size_t i = 0; i < kSampleCandidateSize; ++i) {
+    table.candidates.push_back(kSampleCandidate[i]);
+    InputMethodLookupTable::Description description;
+    description.title = kSampleDescriptionTitle[i];
+    description.body = kSampleDescriptionBody[i];
+    table.descriptions.push_back(description);
+  }
+  table.cursor_absolute_index = 1;
+
+  std::vector<InfolistWindowView::Entry> infolist_entries;
+  size_t focused_index = 0;
+
+  TestableCandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
+      table,
+      &infolist_entries,
+      &focused_index);
+
+  EXPECT_EQ(kSampleCandidateSize, infolist_entries.size());
+  EXPECT_EQ(1UL, focused_index);
+}
+
+TEST_F(CandidateWindowControllerImplTest,
+       ConvertLookupTableToInfolistEntryTest_SparseCase) {
+  InputMethodLookupTable table;
+  table.visible = true;
+  table.page_size = 10;
+  for (size_t i = 0; i < kSampleCandidateSize; ++i) {
+    table.candidates.push_back(kSampleCandidate[i]);
+    InputMethodLookupTable::Description description;
+    table.descriptions.push_back(description);
+  }
+
+  table.descriptions[2].title = kSampleDescriptionTitle[2];
+  table.descriptions[2].body = kSampleDescriptionBody[2];
+
+  table.cursor_absolute_index = 2;
+
+  std::vector<InfolistWindowView::Entry> infolist_entries;
+  size_t focused_index = 0;
+
+  TestableCandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
+      table,
+      &infolist_entries,
+      &focused_index);
+
+  // Infolist entries skips empty descriptions, so expected entry size is 1 and
+  // expected focus index is 0.
+  EXPECT_EQ(1UL, infolist_entries.size());
+  EXPECT_EQ(0UL, focused_index);
+}
+
+TEST_F(CandidateWindowControllerImplTest,
+       ConvertLookupTableToInfolistEntryTest_SparseNoSelectionCase) {
+  InputMethodLookupTable table;
+  table.visible = true;
+  table.page_size = 10;
+  for (size_t i = 0; i < kSampleCandidateSize; ++i) {
+    table.candidates.push_back(kSampleCandidate[i]);
+    InputMethodLookupTable::Description description;
+    table.descriptions.push_back(description);
+  }
+
+  table.descriptions[2].title = kSampleDescriptionTitle[2];
+  table.descriptions[2].body = kSampleDescriptionBody[2];
+
+  table.cursor_absolute_index = 0;
+
+  std::vector<InfolistWindowView::Entry> infolist_entries;
+  size_t focused_index = 0;
+
+  TestableCandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
+      table,
+      &infolist_entries,
+      &focused_index);
+
+  // Infolist entries skips empty descriptions, so expected entry size is 1 and
+  // there is no focused index because no infolist entry candidate is selected.
+  EXPECT_EQ(1UL, infolist_entries.size());
+  EXPECT_EQ(static_cast<size_t>(-1), focused_index);
+}
+
+TEST_F(CandidateWindowControllerImplTest,
+       ConvertLookupTableToInfolistEntryTest_NoInfolistCase) {
+  InputMethodLookupTable table;
+  table.visible = true;
+  table.page_size = 10;
+  for (size_t i = 0; i < kSampleCandidateSize; ++i) {
+    table.candidates.push_back(kSampleCandidate[i]);
+    InputMethodLookupTable::Description description;
+    table.descriptions.push_back(description);
+  }
+  table.cursor_absolute_index = 1;
+
+  std::vector<InfolistWindowView::Entry> infolist_entries;
+  size_t focused_index = 0;
+
+  TestableCandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
+      table,
+      &infolist_entries,
+      &focused_index);
+
+  EXPECT_TRUE(infolist_entries.empty());
+  EXPECT_EQ(static_cast<size_t>(-1), focused_index);
+}
+
+TEST_F(CandidateWindowControllerImplTest, ShouldUpdateInfolist_EmptyUpdate) {
+  std::vector<InfolistWindowView::Entry> old_entry;
+  std::vector<InfolistWindowView::Entry> new_entry;
+  EXPECT_FALSE(TestableCandidateWindowControllerImpl::ShouldUpdateInfolist(
+      old_entry,
+      InfolistWindowView::InvalidFocusIndex(),
+      new_entry,
+      InfolistWindowView::InvalidFocusIndex()));
+}
+
+TEST_F(CandidateWindowControllerImplTest,
+       ShouldUpdateInfolist_SameEntryUpdate) {
+  std::vector<InfolistWindowView::Entry> old_entry;
+  std::vector<InfolistWindowView::Entry> new_entry;
+  InfolistWindowView::Entry entry;
+  entry.title = kSampleDescriptionTitle[0];
+  entry.body = kSampleDescriptionBody[0];
+
+  old_entry.push_back(entry);
+  new_entry.push_back(entry);
+
+  EXPECT_FALSE(TestableCandidateWindowControllerImpl::ShouldUpdateInfolist(
+      old_entry,
+      InfolistWindowView::InvalidFocusIndex(),
+      new_entry,
+      InfolistWindowView::InvalidFocusIndex()));
+}
+
+TEST_F(CandidateWindowControllerImplTest,
+       ShouldUpdateInfolist_FOcusIndexDifferentUpdate) {
+  std::vector<InfolistWindowView::Entry> old_entry;
+  std::vector<InfolistWindowView::Entry> new_entry;
+  InfolistWindowView::Entry entry;
+  entry.title = kSampleDescriptionTitle[0];
+  entry.body = kSampleDescriptionBody[0];
+
+  old_entry.push_back(entry);
+  new_entry.push_back(entry);
+
+  EXPECT_TRUE(TestableCandidateWindowControllerImpl::ShouldUpdateInfolist(
+      old_entry,
+      0UL,
+      new_entry,
+      InfolistWindowView::InvalidFocusIndex()));
+}
+
+TEST_F(CandidateWindowControllerImplTest,
+       ShouldUpdateInfolist_DifferentEntryUpdate) {
+  std::vector<InfolistWindowView::Entry> old_entry;
+  std::vector<InfolistWindowView::Entry> new_entry;
+  InfolistWindowView::Entry entry1;
+  InfolistWindowView::Entry entry2;
+  entry1.title = kSampleDescriptionTitle[0];
+  entry1.body = kSampleDescriptionBody[0];
+  old_entry.push_back(entry1);
+
+  // Both title and body are different.
+  entry2.title = kSampleDescriptionTitle[1];
+  entry2.body = kSampleDescriptionBody[1];
+  new_entry.push_back(entry2);
+  EXPECT_TRUE(TestableCandidateWindowControllerImpl::ShouldUpdateInfolist(
+      old_entry,
+      InfolistWindowView::InvalidFocusIndex(),
+      new_entry,
+      InfolistWindowView::InvalidFocusIndex()));
+  new_entry.clear();
+
+  // Only title is different.
+  entry2.title = kSampleDescriptionTitle[1];
+  entry2.body = kSampleDescriptionBody[0];
+  new_entry.push_back(entry2);
+  EXPECT_TRUE(TestableCandidateWindowControllerImpl::ShouldUpdateInfolist(
+      old_entry,
+      InfolistWindowView::InvalidFocusIndex(),
+      new_entry,
+      InfolistWindowView::InvalidFocusIndex()));
+  new_entry.clear();
+
+  // Only body is different.
+  entry2.title = kSampleDescriptionTitle[0];
+  entry2.body = kSampleDescriptionBody[1];
+  new_entry.push_back(entry2);
+  EXPECT_TRUE(TestableCandidateWindowControllerImpl::ShouldUpdateInfolist(
+      old_entry,
+      InfolistWindowView::InvalidFocusIndex(),
+      new_entry,
+      InfolistWindowView::InvalidFocusIndex()));
+  new_entry.clear();
 }
 
 }  // namespace input_method

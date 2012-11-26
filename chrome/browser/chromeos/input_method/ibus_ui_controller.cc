@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/input_method/input_method_descriptor.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "third_party/mozc/session/candidates_lite.pb.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/ime/input_method_ibus.h"
@@ -591,52 +590,59 @@ class IBusUiControllerImpl : public IBusUiController {
     // to use GVariant by the commit
     // https://github.com/ibus/ibus/commit/ac9dfac13cef34288440a2ecdf067cd827fb2f8f
     GVariant* variant = ibus_serializable_get_attachment(
-        IBUS_SERIALIZABLE(table), "mozc.candidates");
-    if (variant != NULL) {
-      gconstpointer ptr = g_variant_get_data(variant);
-      if (ptr != NULL) {
-        gsize size = g_variant_get_size(variant);
-        GByteArray* bytearray = g_byte_array_sized_new(size);
-        g_byte_array_append(
-            bytearray, reinterpret_cast<const guint8*>(ptr), size);
-        if (!lookup_table.mozc_candidates.ParseFromArray(
-                bytearray->data, bytearray->len)) {
-          lookup_table.mozc_candidates.Clear();
-        }
-        g_byte_array_unref(bytearray);
-      }
-    }
+        IBUS_SERIALIZABLE(table), "show_window_at_composition");
+    if (variant)
+      lookup_table.show_at_composition_head = !!g_variant_get_boolean(variant);
+    else
+      lookup_table.show_at_composition_head = false;
 
     // Copy candidates and annotations to |lookup_table|.
     for (int i = 0; ; i++) {
       IBusText *text = ibus_lookup_table_get_candidate(table, i);
-      if (!text) {
+      if (!text)
         break;
-      }
       lookup_table.candidates.push_back(text->text);
 
-      const mozc::commands::Candidates &candidates =
-          lookup_table.mozc_candidates;
-      if ((i < candidates.candidate_size()) &&
-          candidates.candidate(i).has_annotation() &&
-          candidates.candidate(i).annotation().has_description()) {
-        lookup_table.annotations.push_back(
-            candidates.candidate(i).annotation().description());
-      } else {
-        lookup_table.annotations.push_back("");
+      IBusText *label = ibus_lookup_table_get_label(table, i);
+      if (label)
+        lookup_table.labels.push_back(label->text);
+
+      GVariant* annotation_variant =
+          ibus_serializable_get_attachment(IBUS_SERIALIZABLE(text),
+                                           "annotation");
+      lookup_table.annotations.push_back("");
+      if (annotation_variant) {
+        const gchar* annotation =
+            g_variant_get_string(annotation_variant, NULL);
+        if (annotation)
+          lookup_table.annotations[i] = annotation;
       }
+
+      GVariant* description_title_variant =
+          ibus_serializable_get_attachment(IBUS_SERIALIZABLE(text),
+                                           "description_title");
+      InputMethodLookupTable::Description description;
+      if (description_title_variant) {
+        const gchar* description_title =
+            g_variant_get_string(description_title_variant, NULL);
+        if (description_title)
+          description.title = description_title;
+
+      }
+
+      GVariant* description_body_variant =
+          ibus_serializable_get_attachment(IBUS_SERIALIZABLE(text),
+                                           "description_body");
+      if (description_body_variant) {
+        const gchar* description_body =
+            g_variant_get_string(description_body_variant, NULL);
+        if (description_body)
+          description.body = description_body;
+      }
+      lookup_table.descriptions.push_back(description);
     }
     DCHECK_EQ(lookup_table.candidates.size(),
               lookup_table.annotations.size());
-
-    // Copy labels to |lookup_table|.
-    for (int i = 0; ; i++) {
-      IBusText *text = ibus_lookup_table_get_label(table, i);
-      if (!text) {
-        break;
-      }
-      lookup_table.labels.push_back(text->text);
-    }
 
     lookup_table.cursor_absolute_index =
         ibus_lookup_table_get_cursor_pos(table);

@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_view.h"
+#include "chrome/browser/chromeos/input_method/infolist_window_view.h"
 
 namespace views {
 class Widget;
@@ -49,6 +50,21 @@ class CandidateWindowControllerImpl : public CandidateWindowController,
       const gfx::Rect& candidate_window_rect,
       const gfx::Rect& screen_rect,
       const gfx::Size& infolist_winodw_size);
+
+  // Converts |lookup_table| to infolist entries. |focused_index| become
+  // InfolistWindowView::InvalidFocusIndex if there is no selected entries.
+  static void ConvertLookupTableToInfolistEntry(
+      const InputMethodLookupTable& lookup_table,
+      std::vector<InfolistWindowView::Entry>* infolist_entries,
+      size_t* focused_index);
+
+  // Returns true if given |new_entries| is different from |old_entries| and
+  // should update current window.
+  static bool ShouldUpdateInfolist(
+      const std::vector<InfolistWindowView::Entry>& old_entries,
+      size_t old_focused_index,
+      const std::vector<InfolistWindowView::Entry>& new_entries,
+      size_t new_focused_index);
 
  private:
   // CandidateWindowView::Observer implementation.
@@ -90,6 +106,11 @@ class CandidateWindowControllerImpl : public CandidateWindowController,
   // This is the outer frame of the infolist window view. The frame will
   // own |infolist_window_|.
   scoped_ptr<DelayableWidget> infolist_window_;
+
+  // The infolist entries and its focused index which currently shown in
+  // Infolist window.
+  std::vector<InfolistWindowView::Entry> latest_infolist_entries_;
+  size_t latest_infolist_focused_index_;
 
   ObserverList<CandidateWindowController::Observer> observers_;
 
