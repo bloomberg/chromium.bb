@@ -73,7 +73,7 @@ class CancelableTaskTracker {
 
   // Creates a tracked TaskId and an associated IsCanceledCallback. Client can
   // later call TryCancel() with the returned TaskId, and run |is_canceled_cb|
-  // to check whether the TaskId is canceled.
+  // from any thread to check whether the TaskId is canceled.
   //
   // Note. This function is used to address some special cancelation requirement
   // in existing code. You SHOULD NOT need this function in new code.

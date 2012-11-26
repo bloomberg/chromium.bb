@@ -61,6 +61,8 @@ CancelableTaskTracker::CancelableTaskTracker()
       next_id_(1) {}
 
 CancelableTaskTracker::~CancelableTaskTracker() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   TryCancelAll();
 }
 
@@ -68,6 +70,8 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::PostTask(
     TaskRunner* task_runner,
     const tracked_objects::Location& from_here,
     const Closure& task) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   return PostTaskAndReply(task_runner, from_here, task, Bind(&base::DoNothing));
 }
 
@@ -159,6 +163,8 @@ void CancelableTaskTracker::TryCancelAll() {
 }
 
 void CancelableTaskTracker::Track(TaskId id, CancellationFlag* flag) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   bool success = task_flags_.insert(std::make_pair(id, flag)).second;
   DCHECK(success);
 }
