@@ -24,7 +24,7 @@ import org.chromium.ui.gfx.ActivityNativeWindow;
  */
 public class ContentShellActivity extends Activity {
 
-    private static final String COMMAND_LINE_FILE = "/data/local/tmp/content-shell-command-line";
+    public static final String COMMAND_LINE_FILE = "/data/local/tmp/content-shell-command-line";
     private static final String TAG = ContentShellActivity.class.getName();
 
     private static final String ACTIVE_SHELL_URL_KEY = "activeUrl";
