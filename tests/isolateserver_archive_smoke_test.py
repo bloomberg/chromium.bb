@@ -24,7 +24,10 @@ BINARY_DATA = (chr(0) + chr(57) + chr(128) + chr(255)) * 2
 
 class IsolateServerArchiveSmokeTest(unittest.TestCase):
   def setUp(self):
-    self.namespace = 'temporary' + str(long(time.time())).split('.', 1)[0]
+    # The namespace must end in '-gzip' since all files are now compressed
+    # before being uploaded.
+    self.namespace = ('temporary' + str(long(time.time())).split('.', 1)[0]
+                      + '-gzip')
 
   def _archive_given_files(self, files):
     """Given a list of files, call isolateserver_archive.py with them."""

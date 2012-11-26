@@ -324,7 +324,7 @@ def main():
         f,
         {
           's': os.stat(f).st_size,
-          'h': hashlib.sha1(open(f, 'r').read()).hexdigest(),
+          'h': hashlib.sha1(open(f, 'rb').read()).hexdigest(),
         }
       )
       for f in files)
