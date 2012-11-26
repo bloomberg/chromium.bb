@@ -8,12 +8,17 @@
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -152,12 +157,56 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
     }
   }
 
- protected:
+  void PostFormWithPage(const std::string& filename, bool password_present) {
+    content::WebContents* web_contents =
+        chrome::GetActiveWebContents(browser());
+    content::TitleWatcher title_watcher(web_contents, title_pass_);
+    ui_test_utils::NavigateToURL(
+        browser(), GURL(fake_server_address_ + test_path_ + filename));
+    string16 final_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(title_pass_, final_title);
+    EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-text") !=
+                std::string::npos);
+    EXPECT_TRUE(g_last_upload_bytes.Get().find("text-entered") !=
+                std::string::npos);
+    if (password_present) {
+      EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-password") !=
+                  std::string::npos);
+      EXPECT_TRUE(g_last_upload_bytes.Get().find("password-entered") !=
+                  std::string::npos);
+    }
+  }
+
+  void CheckFormRestored(bool text_present, bool password_present) {
+    CheckReloadedPageRestored();
+    if (text_present) {
+      EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-text") !=
+                  std::string::npos);
+      EXPECT_TRUE(g_last_upload_bytes.Get().find("text-entered") !=
+                  std::string::npos);
+    } else {
+      EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-text") ==
+                  std::string::npos);
+      EXPECT_TRUE(g_last_upload_bytes.Get().find("text-entered") ==
+                  std::string::npos);
+    }
+    if (password_present) {
+      EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-password") !=
+                  std::string::npos);
+      EXPECT_TRUE(g_last_upload_bytes.Get().find("password-entered") !=
+                  std::string::npos);
+    } else {
+      EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-password") ==
+                  std::string::npos);
+      EXPECT_TRUE(g_last_upload_bytes.Get().find("password-entered") ==
+                  std::string::npos);
+    }
+  }
+
+ private:
   std::string fake_server_address_;
   std::string test_path_;
   string16 title_pass_;
-
- private:
   string16 title_storing_;
   string16 title_error_write_failed_;
   string16 title_error_empty_;
@@ -234,58 +283,102 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, CookiesClearedOnExit) {
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PRE_Post) {
   SessionStartupPref::SetStartupPref(
       browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
-  content::WebContents* web_contents =
-      chrome::GetActiveWebContents(browser());
-  content::TitleWatcher title_watcher(web_contents, title_pass_);
-  ui_test_utils::NavigateToURL(
-      browser(), GURL(fake_server_address_ + test_path_ + "post.html"));
-  string16 final_title = title_watcher.WaitAndGetTitle();
-  EXPECT_EQ(title_pass_, final_title);
-  EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-text") !=
-              std::string::npos);
-  EXPECT_TRUE(g_last_upload_bytes.Get().find("text-entered") !=
-              std::string::npos);
+  PostFormWithPage("post.html", false);
 }
 
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, Post) {
-  CheckReloadedPageRestored();
-  EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-text") !=
-              std::string::npos);
-  EXPECT_TRUE(g_last_upload_bytes.Get().find("text-entered") !=
-              std::string::npos);
+  CheckFormRestored(true, false);
 }
 
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PRE_PostWithPassword) {
   SessionStartupPref::SetStartupPref(
       browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
-  content::WebContents* web_contents =
-      chrome::GetActiveWebContents(browser());
-  content::TitleWatcher title_watcher(web_contents, title_pass_);
-  ui_test_utils::NavigateToURL(
-      browser(),
-      GURL(fake_server_address_ + test_path_ +
-           "post_with_password.html"));
-  string16 final_title = title_watcher.WaitAndGetTitle();
-  EXPECT_EQ(title_pass_, final_title);
-  EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-text") !=
-              std::string::npos);
-  EXPECT_TRUE(g_last_upload_bytes.Get().find("text-entered") !=
-              std::string::npos);
-  EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-password") !=
-              std::string::npos);
-  EXPECT_TRUE(g_last_upload_bytes.Get().find("password-entered") !=
-              std::string::npos);
+  PostFormWithPage("post_with_password.html", true);
 }
 
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PostWithPassword) {
   CheckReloadedPageRestored();
   // The form data contained passwords, so it's removed completely.
-  EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-text") ==
-              std::string::npos);
-  EXPECT_TRUE(g_last_upload_bytes.Get().find("text-entered") ==
-              std::string::npos);
-  EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-password") ==
-              std::string::npos);
-  EXPECT_TRUE(g_last_upload_bytes.Get().find("password-entered") ==
-              std::string::npos);
+  CheckFormRestored(false, false);
+}
+
+class RestartTest : public BetterSessionRestoreTest {
+ public:
+  RestartTest() { }
+  ~RestartTest() { }
+ protected:
+  void Restart() {
+    // Simluate restarting the browser, but let the test exit peacefully.
+    BrowserList::const_iterator it;
+    for (it = BrowserList::begin(); it != BrowserList::end(); ++it)
+      content::BrowserContext::SaveSessionState((*it)->profile());
+    PrefService* pref_service = g_browser_process->local_state();
+    pref_service->SetBoolean(prefs::kWasRestarted, true);
+#if defined(OS_WIN)
+    if (pref_service->HasPrefPath(prefs::kRestartSwitchMode))
+      pref_service->SetBoolean(prefs::kRestartSwitchMode, false);
+#endif
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RestartTest);
+};
+
+IN_PROC_BROWSER_TEST_F(RestartTest, PRE_SessionCookies) {
+  StoreDataWithPage("session_cookies.html");
+  Restart();
+}
+
+IN_PROC_BROWSER_TEST_F(RestartTest, SessionCookies) {
+  CheckReloadedPageRestored();
+}
+
+IN_PROC_BROWSER_TEST_F(RestartTest, PRE_SessionStorage) {
+  StoreDataWithPage("session_storage.html");
+  Restart();
+}
+
+IN_PROC_BROWSER_TEST_F(RestartTest, SessionStorage) {
+  CheckReloadedPageRestored();
+}
+
+IN_PROC_BROWSER_TEST_F(RestartTest, PRE_LocalStorageClearedOnExit) {
+  StoreDataWithPage("local_storage.html");
+  CookieSettings::Factory::GetForProfile(browser()->profile())->
+      SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
+  Restart();
+}
+
+IN_PROC_BROWSER_TEST_F(RestartTest, LocalStorageClearedOnExit) {
+  CheckReloadedPageRestored();
+}
+
+IN_PROC_BROWSER_TEST_F(RestartTest, PRE_CookiesClearedOnExit) {
+  StoreDataWithPage("cookies.html");
+  CookieSettings::Factory::GetForProfile(browser()->profile())->
+      SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
+  Restart();
+}
+
+IN_PROC_BROWSER_TEST_F(RestartTest, CookiesClearedOnExit) {
+  CheckReloadedPageRestored();
+}
+
+IN_PROC_BROWSER_TEST_F(RestartTest, PRE_Post) {
+  PostFormWithPage("post.html", false);
+  Restart();
+}
+
+IN_PROC_BROWSER_TEST_F(RestartTest, Post) {
+  CheckFormRestored(true, false);
+}
+
+IN_PROC_BROWSER_TEST_F(RestartTest, PRE_PostWithPassword) {
+  PostFormWithPage("post_with_password.html", true);
+  Restart();
+}
+
+IN_PROC_BROWSER_TEST_F(RestartTest, PostWithPassword) {
+  // The form data contained passwords, so it's removed completely.
+  CheckFormRestored(false, false);
 }
