@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/message_loop_proxy.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -158,6 +159,13 @@ void DidGetUsageAndQuota(const quota::StatusCallback& callback,
   callback.Run(status);
 }
 
+void EnsureLastTaskRuns(base::SingleThreadTaskRunner* runner) {
+  base::RunLoop run_loop;
+  runner->PostTaskAndReply(
+      FROM_HERE, base::Bind(&base::DoNothing), run_loop.QuitClosure());
+  run_loop.Run();
+}
+
 }  // namespace
 
 CannedSyncableFileSystem::CannedSyncableFileSystem(
@@ -214,9 +222,9 @@ void CannedSyncableFileSystem::TearDown() {
   quota_manager_ = NULL;
   file_system_context_ = NULL;
 
-  io_task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(&base::DoNothing), base::Bind(&Quit));
-  MessageLoop::current()->Run();
+  // Make sure we give some more time to finish tasks on other threads.
+  EnsureLastTaskRuns(io_task_runner_);
+  EnsureLastTaskRuns(file_task_runner_);
 }
 
 FileSystemURL CannedSyncableFileSystem::URL(const std::string& path) const {
