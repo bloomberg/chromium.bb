@@ -458,7 +458,7 @@ extensions::ExtensionPrefs::LaunchType ChromeLauncherController::GetLaunchType(
       extensions::ExtensionPrefs::LAUNCH_DEFAULT);
 }
 
-std::string ChromeLauncherController::GetAppID(TabContents* tab) {
+std::string ChromeLauncherController::GetAppID(content::WebContents* tab) {
   return app_tab_helper_->GetAppID(tab);
 }
 
@@ -602,11 +602,11 @@ void ChromeLauncherController::RemoveTabFromRunningApp(
 
 void ChromeLauncherController::UpdateAppState(content::WebContents* contents,
                                               AppState app_state) {
-  TabContents* tab = TabContents::FromWebContents(contents);
-  std::string app_id = GetAppID(tab);
+  std::string app_id = GetAppID(contents);
 
   // Check the old |app_id| for a tab. If the contents has changed we need to
   // remove it from the previous app.
+  TabContents* tab = TabContents::FromWebContents(contents);
   if (tab_contents_to_app_id_.find(tab) != tab_contents_to_app_id_.end()) {
     std::string last_app_id = tab_contents_to_app_id_[tab];
     if (last_app_id != app_id)

@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
 class Profile;
-class TabContents;
 
 // Default implementation of LauncherUpdater::AppTabHelper that interacts
 // with ExtensionService.
@@ -21,7 +20,7 @@ class LauncherAppTabHelper : public ChromeLauncherController::AppTabHelper {
   virtual ~LauncherAppTabHelper();
 
   // AppTabHelper:
-  virtual std::string GetAppID(TabContents* tab) OVERRIDE;
+  virtual std::string GetAppID(content::WebContents* tab) OVERRIDE;
   virtual bool IsValidID(const std::string& id) OVERRIDE;
 
  private:

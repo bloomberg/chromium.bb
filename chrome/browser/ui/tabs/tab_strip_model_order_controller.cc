@@ -21,7 +21,6 @@ TabStripModelOrderController::~TabStripModelOrderController() {
 }
 
 int TabStripModelOrderController::DetermineInsertionIndex(
-    TabContents* new_contents,
     content::PageTransition transition,
     bool foreground) {
   int tab_count = tabstrip_->count();

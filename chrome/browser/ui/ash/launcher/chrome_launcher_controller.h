@@ -83,7 +83,7 @@ class ChromeLauncherController
 
     // Returns the app id of the specified tab, or an empty string if there is
     // no app.
-    virtual std::string GetAppID(TabContents* tab) = 0;
+    virtual std::string GetAppID(content::WebContents* tab) = 0;
 
     // Returns true if |id| is valid. Used during restore to ignore no longer
     // valid extensions.
@@ -179,7 +179,7 @@ class ChromeLauncherController
   extensions::ExtensionPrefs::LaunchType GetLaunchType(ash::LauncherID id);
 
   // Returns the id of the app for the specified tab.
-  std::string GetAppID(TabContents* tab);
+  std::string GetAppID(content::WebContents* tab);
 
   ash::LauncherID GetLauncherIDForAppID(const std::string& app_id);
   std::string GetAppIDForLauncherID(ash::LauncherID id);

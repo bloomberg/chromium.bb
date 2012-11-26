@@ -1179,8 +1179,8 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
       }
       if (drag_data_[i].pinned)
         add_types |= TabStripModel::ADD_PINNED;
-      GetModel(attached_tabstrip_)->InsertTabContentsAt(
-          index + i, drag_data_[i].contents, add_types);
+      GetModel(attached_tabstrip_)->InsertWebContentsAt(
+          index + i, drag_data_[i].contents->web_contents(), add_types);
     }
 
     tabs = GetTabsMatchingDraggedContents(attached_tabstrip_);
@@ -1714,8 +1714,8 @@ void TabDragController::RevertDragAt(size_t drag_index) {
       GetModel(attached_tabstrip_)->DetachTabContentsAt(index);
       // TODO(beng): (Cleanup) seems like we should use Attach() for this
       //             somehow.
-      GetModel(source_tabstrip_)->InsertTabContentsAt(
-          data->source_model_index, data->contents,
+      GetModel(source_tabstrip_)->InsertWebContentsAt(
+          data->source_model_index, data->contents->web_contents(),
           (data->pinned ? TabStripModel::ADD_PINNED : 0));
     } else {
       // The Tab was moved within the TabStrip where the drag was initiated.
@@ -1727,8 +1727,8 @@ void TabDragController::RevertDragAt(size_t drag_index) {
     // The Tab was detached from the TabStrip where the drag began, and has not
     // been attached to any other TabStrip. We need to put it back into the
     // source TabStrip.
-    GetModel(source_tabstrip_)->InsertTabContentsAt(
-        data->source_model_index, data->contents,
+    GetModel(source_tabstrip_)->InsertWebContentsAt(
+        data->source_model_index, data->contents->web_contents(),
         (data->pinned ? TabStripModel::ADD_PINNED : 0));
   }
 }

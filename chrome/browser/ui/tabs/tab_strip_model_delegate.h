@@ -67,6 +67,11 @@ class TabStripModelDelegate {
       const DockInfo& dock_info,
       bool maximize) = 0;
 
+  // Notifies the delegate that the specified WebContents will be added to the
+  // tab strip (via insertion/appending/replacing existing) and allows it to do
+  // any preparation that it deems necessary.
+  virtual void WillAddWebContents(content::WebContents* contents) = 0;
+
   // Determines what drag actions are possible for the specified strip.
   virtual int GetDragActions() const = 0;
 

@@ -460,8 +460,8 @@ void DraggedTabControllerGtk::Attach(TabStripGtk* attached_tabstrip,
         GetDraggedViewTabStripBounds(GetDraggedViewPoint(screen_point));
     int index = GetInsertionIndexForDraggedBounds(GetEffectiveBounds(bounds));
     for (size_t i = 0; i < drag_data_->size(); ++i) {
-      attached_tabstrip_->model()->InsertTabContentsAt(
-          index + i, drag_data_->get(i)->contents_,
+      attached_tabstrip_->model()->InsertWebContentsAt(
+          index + i, drag_data_->get(i)->contents_->web_contents(),
           drag_data_->GetAddTypesForDraggedTabAt(i));
     }
     RestoreSelection(attached_tabstrip_->model());
@@ -702,9 +702,9 @@ void DraggedTabControllerGtk::RevertDrag() {
       for (size_t i = 0; i < drag_data_->size(); ++i) {
         if (!drag_data_->get(i)->contents_)
           continue;
-        attached_tabstrip_->model()->InsertTabContentsAt(
+        attached_tabstrip_->model()->InsertWebContentsAt(
             drag_data_->get(i)->source_model_index_,
-            drag_data_->get(i)->contents_,
+            drag_data_->get(i)->contents_->web_contents(),
             drag_data_->GetAddTypesForDraggedTabAt(i));
       }
     } else {
@@ -729,9 +729,9 @@ void DraggedTabControllerGtk::RevertDrag() {
     for (size_t i = 0; i < drag_data_->size(); ++i) {
       if (!drag_data_->get(i)->contents_)
         continue;
-      source_tabstrip_->model()->InsertTabContentsAt(
+      source_tabstrip_->model()->InsertWebContentsAt(
           drag_data_->get(i)->source_model_index_,
-          drag_data_->get(i)->contents_,
+          drag_data_->get(i)->contents_->web_contents(),
           drag_data_->GetAddTypesForDraggedTabAt(i));
     }
   }

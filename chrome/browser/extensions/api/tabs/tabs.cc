@@ -628,7 +628,7 @@ bool CreateWindowFunction::RunImpl() {
   }
   if (contents) {
     TabStripModel* target_tab_strip = new_window->tab_strip_model();
-    target_tab_strip->InsertTabContentsAt(urls.size(), contents,
+    target_tab_strip->InsertWebContentsAt(urls.size(), contents->web_contents(),
                                           TabStripModel::ADD_NONE);
   } else if (urls.empty()) {
     chrome::NewTab(new_window);
@@ -1484,8 +1484,8 @@ bool MoveTabsFunction::RunImpl() {
         if (new_index > target_tab_strip->count() || new_index < 0)
           new_index = target_tab_strip->count();
 
-        target_tab_strip->InsertTabContentsAt(
-            new_index, tab_contents, TabStripModel::ADD_NONE);
+        target_tab_strip->InsertWebContentsAt(
+            new_index, tab_contents->web_contents(), TabStripModel::ADD_NONE);
 
         if (has_callback()) {
           tab_values.Append(ExtensionTabUtil::CreateTabValue(

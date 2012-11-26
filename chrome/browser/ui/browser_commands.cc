@@ -583,8 +583,8 @@ TabContents* DuplicateTabAt(Browser* browser, int index) {
     int add_types = TabStripModel::ADD_ACTIVE |
         TabStripModel::ADD_INHERIT_GROUP |
         (pinned ? TabStripModel::ADD_PINNED : 0);
-    browser->tab_strip_model()->InsertTabContentsAt(
-        index + 1, contents_dupe, add_types);
+    browser->tab_strip_model()->InsertWebContentsAt(
+        index + 1, contents_dupe->web_contents(), add_types);
   } else {
     Browser* browser = NULL;
     if (browser->is_app()) {
@@ -1025,9 +1025,10 @@ void ViewSource(Browser* browser,
     int index = browser->tab_strip_model()->GetIndexOfTabContents(contents);
     int add_types = TabStripModel::ADD_ACTIVE |
         TabStripModel::ADD_INHERIT_GROUP;
-    browser->tab_strip_model()->InsertTabContentsAt(index + 1,
-                                                    view_source_contents,
-                                                    add_types);
+    browser->tab_strip_model()->InsertWebContentsAt(
+        index + 1,
+        view_source_contents->web_contents(),
+        add_types);
   } else {
     Browser* b = new Browser(
         Browser::CreateParams(Browser::TYPE_TABBED, browser->profile()));

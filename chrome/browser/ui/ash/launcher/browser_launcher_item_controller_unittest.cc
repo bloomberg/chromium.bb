@@ -11,11 +11,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -27,14 +27,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/events/event.h"
-
-// TODO(avi): Kill this when TabContents goes away.
-class BrowserLauncherItemControllerContentsCreator {
- public:
-  static TabContents* CreateTabContents(content::WebContents* contents) {
-    return TabContents::Factory::CreateTabContents(contents);
-  }
-};
 
 namespace {
 
@@ -48,17 +40,17 @@ class AppTabHelperImpl : public ChromeLauncherController::AppTabHelper {
 
   // Sets the id for the specified tab. The id is removed if Remove() is
   // invoked.
-  void SetAppID(TabContents* tab, const std::string& id) {
+  void SetAppID(content::WebContents* tab, const std::string& id) {
     tab_id_map_[tab] = id;
   }
 
   // Returns true if there is an id registered for |tab|.
-  bool HasAppID(TabContents* tab) const {
+  bool HasAppID(content::WebContents* tab) const {
     return tab_id_map_.find(tab) != tab_id_map_.end();
   }
 
   // AppTabHelper implementation:
-  virtual std::string GetAppID(TabContents* tab) OVERRIDE {
+  virtual std::string GetAppID(content::WebContents* tab) OVERRIDE {
     return tab_id_map_.find(tab) != tab_id_map_.end() ? tab_id_map_[tab] :
         std::string();
   }
@@ -73,7 +65,7 @@ class AppTabHelperImpl : public ChromeLauncherController::AppTabHelper {
   }
 
  private:
-  typedef std::map<TabContents*, std::string> TabToStringMap;
+  typedef std::map<content::WebContents*, std::string> TabToStringMap;
 
   TabToStringMap tab_id_map_;
 
@@ -227,9 +219,7 @@ class BrowserLauncherItemControllerTest
 TEST_F(BrowserLauncherItemControllerTest, TabbedSetup) {
   size_t initial_size = launcher_model_->items().size();
   {
-    scoped_ptr<TabContents> tab_contents(
-        BrowserLauncherItemControllerContentsCreator::CreateTabContents(
-            CreateTestWebContents()));
+    scoped_ptr<content::WebContents> web_contents(CreateTestWebContents());
     State state(this, std::string(),
                 BrowserLauncherItemController::TYPE_TABBED);
 
@@ -244,14 +234,12 @@ TEST_F(BrowserLauncherItemControllerTest, TabbedSetup) {
 
   // Do the same, but this time add the tab first.
   {
-    scoped_ptr<TabContents> tab_contents(
-        BrowserLauncherItemControllerContentsCreator::CreateTabContents(
-            CreateTestWebContents()));
+    scoped_ptr<content::WebContents> web_contents(CreateTestWebContents());
 
     TestTabStripModelDelegate tab_strip_delegate;
     TabStripModel tab_strip(&tab_strip_delegate, profile());
-    tab_strip.InsertTabContentsAt(0,
-                                  tab_contents.get(),
+    tab_strip.InsertWebContentsAt(0,
+                                  web_contents.get(),
                                   TabStripModel::ADD_ACTIVE);
     aura::Window window(NULL);
     window.Init(ui::LAYER_NOT_DRAWN);
@@ -278,11 +266,9 @@ TEST_F(BrowserLauncherItemControllerTest, PanelItem) {
     aura::Window window(NULL);
     TestTabStripModelDelegate tab_strip_delegate;
     TabStripModel tab_strip(&tab_strip_delegate, profile());
-    scoped_ptr<TabContents> panel_tab(
-        BrowserLauncherItemControllerContentsCreator::CreateTabContents(
-            CreateTestWebContents()));
+    scoped_ptr<content::WebContents> panel_tab(CreateTestWebContents());
     app_tab_helper_->SetAppID(panel_tab.get(), "1");  // Panels are apps.
-    tab_strip.InsertTabContentsAt(0,
+    tab_strip.InsertWebContentsAt(0,
                                   panel_tab.get(),
                                   TabStripModel::ADD_ACTIVE);
     BrowserLauncherItemController updater(
@@ -300,11 +286,9 @@ TEST_F(BrowserLauncherItemControllerTest, PanelItem) {
     aura::Window window(NULL);
     TestTabStripModelDelegate tab_strip_delegate;
     TabStripModel tab_strip(&tab_strip_delegate, profile());
-    scoped_ptr<TabContents> panel_tab(
-        BrowserLauncherItemControllerContentsCreator::CreateTabContents(
-            CreateTestWebContents()));
+    scoped_ptr<content::WebContents> panel_tab(CreateTestWebContents());
     app_tab_helper_->SetAppID(panel_tab.get(), "1");  // Panels are apps.
-    tab_strip.InsertTabContentsAt(0,
+    tab_strip.InsertWebContentsAt(0,
                                   panel_tab.get(),
                                   TabStripModel::ADD_ACTIVE);
     BrowserLauncherItemController updater(
@@ -321,9 +305,7 @@ TEST_F(BrowserLauncherItemControllerTest, PanelItem) {
 // Verifies pinned apps are persisted and restored.
 TEST_F(BrowserLauncherItemControllerTest, PersistPinned) {
   size_t initial_size = launcher_model_->items().size();
-    scoped_ptr<TabContents> tab1(
-        BrowserLauncherItemControllerContentsCreator::CreateTabContents(
-            CreateTestWebContents()));
+    scoped_ptr<content::WebContents> tab1(CreateTestWebContents());
 
   app_tab_helper_->SetAppID(tab1.get(), "1");
 

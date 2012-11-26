@@ -153,19 +153,4 @@ TabContents* TabContentsFactory(
       base_web_contents));
 }
 
-TabContents* TabContentsWithSessionStorageFactory(
-    Profile* profile,
-    content::SiteInstance* site_instance,
-    int routing_id,
-    const content::WebContents* base_web_contents,
-    const content::SessionStorageNamespaceMap& session_storage_namespace_map) {
-  return BrowserTabstripTabContentsCreator::CreateTabContents(
-      content::WebContents::CreateWithSessionStorage(
-          profile,
-          site_instance,
-          routing_id,
-          base_web_contents,
-          session_storage_namespace_map));
-}
-
 }  // namespace chrome

@@ -66,6 +66,7 @@ struct WebApplicationInfo;
 namespace chrome {
 class BrowserCommandController;
 class BrowserInstantController;
+class BrowserTabStripModelDelegate;
 class UnloadController;
 namespace search {
 struct Mode;
@@ -424,6 +425,7 @@ class Browser : public TabStripModelObserver,
   class Adoption {
    private:
     friend class Browser;
+    friend class chrome::BrowserTabStripModelDelegate;
     // Chrome Frame is a special case. Chrome Frame is defined as a complete
     // tab of Chrome inside of an IE window, so it has the unique privilege of
     // asking Browser to set up a WebContents to have the full complement of tab

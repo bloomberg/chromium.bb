@@ -81,6 +81,11 @@ Browser* BrowserTabStripModelDelegate::CreateNewStripWithContents(
   return browser;
 }
 
+void BrowserTabStripModelDelegate::WillAddWebContents(
+    content::WebContents* contents) {
+  Browser::Adoption::AdoptAsTabContents(contents);
+}
+
 int BrowserTabStripModelDelegate::GetDragActions() const {
   return TabStripModelDelegate::TAB_TEAROFF_ACTION |
       (browser_->tab_count() > 1 ? TabStripModelDelegate::TAB_MOVE_ACTION : 0);

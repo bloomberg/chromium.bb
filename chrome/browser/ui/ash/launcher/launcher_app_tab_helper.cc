@@ -6,18 +6,17 @@
 
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
 
 const extensions::Extension* GetExtensionForTab(Profile* profile,
-                                                TabContents* tab) {
+                                                content::WebContents* tab) {
   ExtensionService* extension_service = profile->GetExtensionService();
   if (!extension_service)
     return NULL;
-  return extension_service->GetInstalledApp(tab->web_contents()->GetURL());
+  return extension_service->GetInstalledApp(tab->GetURL());
 }
 
 const extensions::Extension* GetExtensionByID(Profile* profile,
@@ -37,7 +36,7 @@ LauncherAppTabHelper::LauncherAppTabHelper(Profile* profile)
 LauncherAppTabHelper::~LauncherAppTabHelper() {
 }
 
-std::string LauncherAppTabHelper::GetAppID(TabContents* tab) {
+std::string LauncherAppTabHelper::GetAppID(content::WebContents* tab) {
   const extensions::Extension* extension = GetExtensionForTab(profile_, tab);
   return extension ? extension->id() : std::string();
 }

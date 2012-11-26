@@ -23,8 +23,7 @@ class TabStripModelOrderController : public TabStripModelObserver {
 
   // Determine where to place a newly opened tab by using the supplied
   // transition and foreground flag to figure out how it was opened.
-  int DetermineInsertionIndex(TabContents* new_contents,
-                              content::PageTransition transition,
+  int DetermineInsertionIndex(content::PageTransition transition,
                               bool foreground);
 
   // Determine where to shift selection after a tab is closed.

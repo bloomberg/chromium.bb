@@ -83,18 +83,20 @@ bool TabStripModel::ContainsIndex(int index) const {
 
 void TabStripModel::AppendTabContents(TabContents* contents,
                                       bool foreground) {
-  InsertTabContentsAt(count(), contents,
+  InsertWebContentsAt(count(), contents->web_contents(),
                       foreground ? (ADD_INHERIT_GROUP | ADD_ACTIVE) :
                                    ADD_NONE);
 }
 
-void TabStripModel::InsertTabContentsAt(int index,
-                                        TabContents* contents,
+void TabStripModel::InsertWebContentsAt(int index,
+                                        WebContents* contents,
                                         int add_types) {
+  delegate_->WillAddWebContents(contents);
+
   bool active = add_types & ADD_ACTIVE;
   // Force app tabs to be pinned.
   extensions::TabHelper* extensions_tab_helper =
-      extensions::TabHelper::FromWebContents(contents->web_contents());
+      extensions::TabHelper::FromWebContents(contents);
   bool pin = extensions_tab_helper->is_app() || add_types & ADD_PINNED;
   index = ConstrainInsertionIndex(index, pin);
 
@@ -108,7 +110,7 @@ void TabStripModel::InsertTabContentsAt(int index,
   // otherwise we run into problems when we try to change the active contents
   // since the old contents and the new contents will be the same...
   WebContents* active_contents = GetActiveWebContents();
-  WebContentsData* data = new WebContentsData(contents->web_contents());
+  WebContentsData* data = new WebContentsData(contents);
   data->pinned = pin;
   if ((add_types & ADD_INHERIT_GROUP) && active_contents) {
     if (active) {
@@ -132,21 +134,13 @@ void TabStripModel::InsertTabContentsAt(int index,
   selection_model_.IncrementFrom(index);
 
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                    TabInsertedAt(contents->web_contents(), index, active));
+                    TabInsertedAt(contents, index, active));
   if (active) {
     TabStripSelectionModel new_model;
     new_model.Copy(selection_model_);
     new_model.SetSelectedIndex(index);
     SetSelection(new_model, NOTIFY_DEFAULT);
   }
-}
-
-void TabStripModel::InsertWebContentsAt(int index,
-                                        WebContents* contents,
-                                        int add_types) {
-  TabContents* tab_contents = TabContents::FromWebContents(contents);
-  DCHECK(tab_contents);
-  InsertTabContentsAt(index, tab_contents, add_types);
 }
 
 TabContents* TabStripModel::ReplaceTabContentsAt(int index,
@@ -627,8 +621,8 @@ void TabStripModel::AddTabContents(TabContents* contents,
     // drag-and-drops a link to the tab strip), callers aren't really handling
     // link clicks, they just want to score the navigation like a link click in
     // the history backend, so we don't inherit the group in this case.
-    index = order_controller_->DetermineInsertionIndex(
-        contents, transition, add_types & ADD_ACTIVE);
+    index = order_controller_->DetermineInsertionIndex(transition,
+                                                       add_types & ADD_ACTIVE);
     inherit_group = true;
   } else {
     // For all other types, respect what was passed to us, normalizing -1s and
@@ -646,15 +640,16 @@ void TabStripModel::AddTabContents(TabContents* contents,
     // is re-selected, not the next-adjacent.
     inherit_group = true;
   }
-  InsertTabContentsAt(
-      index, contents, add_types | (inherit_group ? ADD_INHERIT_GROUP : 0));
+  InsertWebContentsAt(index,
+                      contents->web_contents(),
+                      add_types | (inherit_group ? ADD_INHERIT_GROUP : 0));
   // Reset the index, just in case insert ended up moving it on us.
   index = GetIndexOfTabContents(contents);
 
   if (inherit_group && transition == content::PAGE_TRANSITION_TYPED)
     contents_data_[index]->reset_group_on_select = true;
 
-  // TODO(sky): figure out why this is here and not in InsertTabContentsAt. When
+  // TODO(sky): figure out why this is here and not in InsertWebContentsAt. When
   // here we seem to get failures in startup perf tests.
   // Ensure that the new WebContentsView begins at the same size as the
   // previous WebContentsView if it existed.  Otherwise, the initial WebKit

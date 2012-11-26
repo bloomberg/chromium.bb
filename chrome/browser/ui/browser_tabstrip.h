@@ -63,21 +63,6 @@ TabContents* TabContentsFactory(
     int routing_id,
     const content::WebContents* base_web_contents);
 
-// Same as TabContentsFactory, but allows specifying the initial
-// |session_storage_namespace_map|.  This is for supporting session restore
-// where we reconstitute the session storage namespaces for a browsing context.
-//
-// You do not want to call this. If you think you do, make sure you completely
-// understand when SessionStorageNamespace objects should be cloned, why
-// they should not be shared by multiple WebContents, and what bad things
-// can happen if you share the object.
-TabContents* TabContentsWithSessionStorageFactory(
-    Profile* profile,
-    content::SiteInstance* site_instance,
-    int routing_id,
-    const content::WebContents* base_web_contents,
-    const content::SessionStorageNamespaceMap& session_storage_namespace_map);
-
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_BROWSER_TABSTRIP_H_

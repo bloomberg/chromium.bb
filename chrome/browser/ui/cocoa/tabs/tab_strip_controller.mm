@@ -1733,8 +1733,8 @@ private:
 
   // Insert it into this tab strip. We want it in the foreground and to not
   // inherit the current tab's group.
-  tabStripModel_->InsertTabContentsAt(
-      modelIndex, contents,
+  tabStripModel_->InsertWebContentsAt(
+      modelIndex, contents->web_contents(),
       TabStripModel::ADD_ACTIVE | (pinned ? TabStripModel::ADD_PINNED : 0));
 }
 

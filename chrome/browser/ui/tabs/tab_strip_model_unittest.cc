@@ -386,12 +386,12 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
   }
   EXPECT_EQ("1", GetTabStripStateString(tabstrip));
 
-  // Test InsertTabContentsAt, foreground tab.
+  // Test InsertWebContentsAt, foreground tab.
   TabContents* tab_contents2 = CreateTabContents();
   WebContents* contents2 = tab_contents2->web_contents();
   SetID(contents2, 2);
   {
-    tabstrip.InsertTabContentsAt(1, tab_contents2, TabStripModel::ADD_ACTIVE);
+    tabstrip.InsertWebContentsAt(1, contents2, TabStripModel::ADD_ACTIVE);
 
     EXPECT_EQ(2, tabstrip.count());
     EXPECT_EQ(4, observer.GetStateCount());
@@ -411,12 +411,12 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
   }
   EXPECT_EQ("1 2", GetTabStripStateString(tabstrip));
 
-  // Test InsertTabContentsAt, background tab.
+  // Test InsertWebContentsAt, background tab.
   TabContents* tab_contents3 = CreateTabContents();
   WebContents* contents3 = tab_contents3->web_contents();
   SetID(contents3, 3);
   {
-    tabstrip.InsertTabContentsAt(2, tab_contents3, TabStripModel::ADD_NONE);
+    tabstrip.InsertWebContentsAt(2, contents3, TabStripModel::ADD_NONE);
 
     EXPECT_EQ(3, tabstrip.count());
     EXPECT_EQ(1, observer.GetStateCount());
@@ -607,17 +607,17 @@ TEST_F(TabStripModelTest, TestBasicOpenerAPI) {
   TabContents* contents4 = CreateTabContents();
   TabContents* contents5 = CreateTabContents();
 
-  // We use |InsertTabContentsAt| here instead of AppendTabContents so that
+  // We use |InsertWebContentsAt| here instead of AppendTabContents so that
   // openership relationships are preserved.
-  tabstrip.InsertTabContentsAt(tabstrip.count(), contents1,
+  tabstrip.InsertWebContentsAt(tabstrip.count(), contents1->web_contents(),
                                TabStripModel::ADD_INHERIT_GROUP);
-  tabstrip.InsertTabContentsAt(tabstrip.count(), contents2,
+  tabstrip.InsertWebContentsAt(tabstrip.count(), contents2->web_contents(),
                                TabStripModel::ADD_INHERIT_GROUP);
-  tabstrip.InsertTabContentsAt(tabstrip.count(), contents3,
+  tabstrip.InsertWebContentsAt(tabstrip.count(), contents3->web_contents(),
                                TabStripModel::ADD_INHERIT_GROUP);
-  tabstrip.InsertTabContentsAt(tabstrip.count(), contents4,
+  tabstrip.InsertWebContentsAt(tabstrip.count(), contents4->web_contents(),
                                TabStripModel::ADD_INHERIT_GROUP);
-  tabstrip.InsertTabContentsAt(tabstrip.count(), contents5,
+  tabstrip.InsertWebContentsAt(tabstrip.count(), contents5->web_contents(),
                                TabStripModel::ADD_INHERIT_GROUP);
 
   // All the tabs should have the same opener.
@@ -666,22 +666,24 @@ TEST_F(TabStripModelTest, TestBasicOpenerAPI) {
   EXPECT_TRUE(tabstrip.empty());
 }
 
-static int GetInsertionIndex(TabStripModel* tabstrip,
-                             TabContents* contents) {
+static int GetInsertionIndex(TabStripModel* tabstrip) {
   return tabstrip->order_controller()->DetermineInsertionIndex(
-      contents, content::PAGE_TRANSITION_LINK, false);
+      content::PAGE_TRANSITION_LINK, false);
 }
 
 static void InsertTabContentses(TabStripModel* tabstrip,
                                 TabContents* contents1,
                                 TabContents* contents2,
                                 TabContents* contents3) {
-  tabstrip->InsertTabContentsAt(GetInsertionIndex(tabstrip, contents1),
-                                contents1, TabStripModel::ADD_INHERIT_GROUP);
-  tabstrip->InsertTabContentsAt(GetInsertionIndex(tabstrip, contents2),
-                                contents2, TabStripModel::ADD_INHERIT_GROUP);
-  tabstrip->InsertTabContentsAt(GetInsertionIndex(tabstrip, contents3),
-                                contents3, TabStripModel::ADD_INHERIT_GROUP);
+  tabstrip->InsertWebContentsAt(GetInsertionIndex(tabstrip),
+                                contents1->web_contents(),
+                                TabStripModel::ADD_INHERIT_GROUP);
+  tabstrip->InsertWebContentsAt(GetInsertionIndex(tabstrip),
+                                contents2->web_contents(),
+                                TabStripModel::ADD_INHERIT_GROUP);
+  tabstrip->InsertWebContentsAt(GetInsertionIndex(tabstrip),
+                                contents3->web_contents(),
+                                TabStripModel::ADD_INHERIT_GROUP);
 }
 
 // Tests opening background tabs.
@@ -748,9 +750,9 @@ TEST_F(TabStripModelTest, TestInsertionIndexDetermination) {
   // opener tab.
   TabContents* fg_link_contents = CreateTabContents();
   int insert_index = tabstrip.order_controller()->DetermineInsertionIndex(
-      fg_link_contents, content::PAGE_TRANSITION_LINK, true);
+      content::PAGE_TRANSITION_LINK, true);
   EXPECT_EQ(1, insert_index);
-  tabstrip.InsertTabContentsAt(insert_index, fg_link_contents,
+  tabstrip.InsertWebContentsAt(insert_index, fg_link_contents->web_contents(),
                                TabStripModel::ADD_ACTIVE |
                                TabStripModel::ADD_INHERIT_GROUP);
   EXPECT_EQ(1, tabstrip.active_index());
@@ -763,10 +765,11 @@ TEST_F(TabStripModelTest, TestInsertionIndexDetermination) {
   // Now open a new empty tab. It should open at the end of the strip.
   TabContents* fg_nonlink_contents = CreateTabContents();
   insert_index = tabstrip.order_controller()->DetermineInsertionIndex(
-      fg_nonlink_contents, content::PAGE_TRANSITION_AUTO_BOOKMARK, true);
+      content::PAGE_TRANSITION_AUTO_BOOKMARK, true);
   EXPECT_EQ(tabstrip.count(), insert_index);
   // We break the opener relationship...
-  tabstrip.InsertTabContentsAt(insert_index, fg_nonlink_contents,
+  tabstrip.InsertWebContentsAt(insert_index,
+                               fg_nonlink_contents->web_contents(),
                                TabStripModel::ADD_NONE);
   // Now select it, so that user_gesture == true causes the opener relationship
   // to be forgotten...
@@ -854,10 +857,11 @@ TEST_F(TabStripModelTest, TestSelectOnClose) {
   // Finally test that when a tab has no "siblings" that the opener is
   // selected.
   TabContents* other_contents = CreateTabContents();
-  tabstrip.InsertTabContentsAt(1, other_contents, TabStripModel::ADD_NONE);
+  tabstrip.InsertWebContentsAt(1, other_contents->web_contents(),
+                               TabStripModel::ADD_NONE);
   EXPECT_EQ(2, tabstrip.count());
   TabContents* opened_contents = CreateTabContents();
-  tabstrip.InsertTabContentsAt(2, opened_contents,
+  tabstrip.InsertWebContentsAt(2, opened_contents->web_contents(),
                                TabStripModel::ADD_ACTIVE |
                                TabStripModel::ADD_INHERIT_GROUP);
   EXPECT_EQ(2, tabstrip.active_index());
@@ -1759,7 +1763,7 @@ TEST_F(TabStripModelTest, Apps) {
   // Attempt to insert tab1 (an app tab) at position 1. This isn't a legal
   // position and tab1 should end up at position 0.
   {
-    tabstrip.InsertTabContentsAt(1, tab_contents1, TabStripModel::ADD_NONE);
+    tabstrip.InsertWebContentsAt(1, contents1, TabStripModel::ADD_NONE);
 
     ASSERT_EQ(1, observer.GetStateCount());
     State state(contents1, 0, MockTabStripModelObserver::INSERT);
@@ -1773,7 +1777,7 @@ TEST_F(TabStripModelTest, Apps) {
 
   // Insert tab 2 at position 1.
   {
-    tabstrip.InsertTabContentsAt(1, tab_contents2, TabStripModel::ADD_NONE);
+    tabstrip.InsertWebContentsAt(1, contents2, TabStripModel::ADD_NONE);
 
     ASSERT_EQ(1, observer.GetStateCount());
     State state(contents2, 1, MockTabStripModelObserver::INSERT);
@@ -1829,7 +1833,7 @@ TEST_F(TabStripModelTest, Apps) {
     tabstrip.DetachTabContentsAt(2);
     observer.ClearStates();
 
-    tabstrip.InsertTabContentsAt(0, tab_contents3, TabStripModel::ADD_NONE);
+    tabstrip.InsertWebContentsAt(0, contents3, TabStripModel::ADD_NONE);
 
     ASSERT_EQ(1, observer.GetStateCount());
     State state(contents3, 2, MockTabStripModelObserver::INSERT);
@@ -2000,7 +2004,7 @@ TEST_F(TabStripModelTest, Pinning) {
   // Insert "4" between "1" and "3". As "1" and "4" are pinned, "4" should end
   // up after them.
   {
-    tabstrip.InsertTabContentsAt(1, tab_contents4, TabStripModel::ADD_NONE);
+    tabstrip.InsertWebContentsAt(1, contents4, TabStripModel::ADD_NONE);
 
     ASSERT_EQ(1, observer.GetStateCount());
     State state(contents4, 2, MockTabStripModelObserver::INSERT);

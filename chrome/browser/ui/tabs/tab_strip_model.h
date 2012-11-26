@@ -176,9 +176,6 @@ class TabStripModel : public content::NotificationObserver {
   // the |index| is changed is if using the index would result in breaking the
   // constraint that all mini-tabs occur before non-mini-tabs.
   // See also AddTabContents.
-  void InsertTabContentsAt(int index,
-                           TabContents* contents,
-                           int add_types);
   void InsertWebContentsAt(int index,
                            content::WebContents* contents,
                            int add_types);
@@ -386,7 +383,7 @@ class TabStripModel : public content::NotificationObserver {
   // Adds a TabContents at the best position in the TabStripModel given
   // the specified insertion index, transition, etc. |add_types| is a bitmask of
   // AddTabTypes; see it for details. This method ends up calling into
-  // InsertTabContentsAt to do the actual insertion. Pass -1 for |index| to
+  // InsertWebContentsAt to do the actual insertion. Pass -1 for |index| to
   // append the contents to the end of the tab strip.
   void AddTabContents(TabContents* contents,
                       int index,

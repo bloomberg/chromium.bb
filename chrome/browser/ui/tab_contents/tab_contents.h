@@ -13,7 +13,6 @@
 
 class Browser;
 class BrowserCommandsTabContentsCreator;
-class BrowserLauncherItemControllerContentsCreator;
 class BrowserTabstripTabContentsCreator;
 class ChromeWebContentsHandler;
 class ConstrainedWebDialogDelegateBase;
@@ -23,6 +22,7 @@ class OffscreenTabContentsCreator;
 class PanelHost;
 class Profile;
 class TabStripModel;
+class TestTabStripModelDelegate;
 
 namespace extensions {
 class WebAuthFlow;
@@ -57,7 +57,6 @@ class TabContents : public content::WebContentsObserver {
 
     friend class Browser;
     friend class BrowserCommandsTabContentsCreator;
-    friend class BrowserLauncherItemControllerContentsCreator;
     friend class BrowserTabstripTabContentsCreator;
     friend class ChromeWebContentsHandler;
     friend class ConstrainedWebDialogDelegateBase;
@@ -70,6 +69,7 @@ class TabContents : public content::WebContentsObserver {
     // See crbug.com/153587
     friend class TabAndroid;
     friend class TabStripModel;
+    friend class TestTabStripModelDelegate;
     FRIEND_TEST_ALL_PREFIXES(SessionRestoreTest, SessionStorageAfterTabReplace);
 
     static TabContents* CreateTabContents(content::WebContents* contents);
