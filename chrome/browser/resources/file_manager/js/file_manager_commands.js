@@ -357,7 +357,7 @@ Commands.togglePinnedCommand = {
     var entry = CommandUtil.getSingleEntry(event, fileManager);
     var gdata = entry && fileManager.metadataCache_.getCached(entry, 'gdata');
 
-    if (!fileManager.isOnGData() || entry.isDirectory || !gdata ||
+    if (!fileManager.isOnGData() || !entry || entry.isDirectory || !gdata ||
         gdata.hosted) {
       event.canExecute = false;
       event.command.setHidden(true);
