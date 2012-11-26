@@ -6158,3 +6158,19 @@
    fun:_ZN10extensions20ExtensionUpdaterTest25TestHandleManifestResultsEv
    fun:_ZN10extensions51ExtensionUpdaterTest_TestHandleManifestResults_Test8TestBodyEv
 }
+{
+   bug_162732
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN3gfx9RealGLApi15glLinkProgramFnEj
+   fun:_ZN6webkit3gpu33WebGraphicsContext3DInProcessImpl11linkProgramEj
+   fun:_ZN2cc18ProgramBindingBase4linkEPN6WebKit20WebGraphicsContext3DE
+   fun:_ZN2cc14ProgramBindingINS_*
+   fun:_ZN2cc10GLRenderer*
+   fun:_ZN2cc10GLRenderer*
+   fun:_ZN2cc10GLRenderer8drawQuadERNS_14DirectRenderer12DrawingFrameEPKNS_8DrawQuadE
+   fun:_ZN2cc14DirectRenderer14drawRenderPassERNS0_12DrawingFrameEPKNS_10RenderPassE
+   fun:_ZN2cc14DirectRenderer9drawFrameERKSt6vectorIPNS_10RenderPassESaIS3_EERKNS_16ScopedPtrHashMapINS2_2IdES2_EE
+   fun:_ZN2cc17LayerTreeHostImpl10drawLayersERKNS0_9FrameDataE
+}
