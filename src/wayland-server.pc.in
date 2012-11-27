@@ -1,8 +1,8 @@
 prefix=@prefix@
-exec_prefix=${prefix}
-libdir=${exec_prefix}/lib
-includedir=${prefix}/include
- 
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
 Name: Wayland Server
 Description: Server side implementation of the Wayland protocol
 Version: @WAYLAND_VERSION@

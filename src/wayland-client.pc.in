@@ -1,8 +1,8 @@
 prefix=@prefix@
-exec_prefix=${prefix}
-libdir=${exec_prefix}/lib
-includedir=${prefix}/include
- 
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
 Name: Wayland Client
 Description: Wayland client side library
 Version: @WAYLAND_VERSION@
