@@ -100,7 +100,6 @@
 #include "ppapi/c/trusted/ppb_char_set_trusted.h"
 #include "ppapi/c/trusted/ppb_file_chooser_trusted.h"
 #include "ppapi/c/trusted/ppb_file_io_trusted.h"
-#include "ppapi/c/trusted/ppb_graphics_3d_trusted.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 
@@ -163,7 +162,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_CharSet_Trusted_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooserTrusted_0_5;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooserTrusted_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIOTrusted_0_4;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ImageDataTrusted_0_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLLoaderTrusted_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_2;
@@ -1392,70 +1390,6 @@ int32_t Pnacl_M14_PPB_FileIOTrusted_WillSetLength(PP_Resource file_io, int64_t l
 }
 
 /* End wrapper methods for PPB_FileIOTrusted_0_4 */
-
-/* Begin wrapper methods for PPB_Graphics3DTrusted_1_0 */
-
-static __attribute__((pnaclcall))
-PP_Resource Pnacl_M16_PPB_Graphics3DTrusted_CreateRaw(PP_Instance instance_id, PP_Resource share_context, const int32_t attrib_list[]) {
-  const struct PPB_Graphics3DTrusted_1_0 *iface = Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0.real_iface;
-  return iface->CreateRaw(instance_id, share_context, attrib_list);
-}
-
-static __attribute__((pnaclcall))
-PP_Bool Pnacl_M16_PPB_Graphics3DTrusted_InitCommandBuffer(PP_Resource context_id) {
-  const struct PPB_Graphics3DTrusted_1_0 *iface = Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0.real_iface;
-  return iface->InitCommandBuffer(context_id);
-}
-
-static __attribute__((pnaclcall))
-PP_Bool Pnacl_M16_PPB_Graphics3DTrusted_SetGetBuffer(PP_Resource context, int32_t transfer_buffer_id) {
-  const struct PPB_Graphics3DTrusted_1_0 *iface = Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0.real_iface;
-  return iface->SetGetBuffer(context, transfer_buffer_id);
-}
-
-static __attribute__((pnaclcall))
-struct PP_Graphics3DTrustedState Pnacl_M16_PPB_Graphics3DTrusted_GetState(PP_Resource context) {
-  const struct PPB_Graphics3DTrusted_1_0 *iface = Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0.real_iface;
-  return iface->GetState(context);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M16_PPB_Graphics3DTrusted_CreateTransferBuffer(PP_Resource context, uint32_t size) {
-  const struct PPB_Graphics3DTrusted_1_0 *iface = Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0.real_iface;
-  return iface->CreateTransferBuffer(context, size);
-}
-
-static __attribute__((pnaclcall))
-PP_Bool Pnacl_M16_PPB_Graphics3DTrusted_DestroyTransferBuffer(PP_Resource context, int32_t id) {
-  const struct PPB_Graphics3DTrusted_1_0 *iface = Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0.real_iface;
-  return iface->DestroyTransferBuffer(context, id);
-}
-
-static __attribute__((pnaclcall))
-PP_Bool Pnacl_M16_PPB_Graphics3DTrusted_GetTransferBuffer(PP_Resource context, int32_t id, int* shm_handle, uint32_t* shm_size) {
-  const struct PPB_Graphics3DTrusted_1_0 *iface = Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0.real_iface;
-  return iface->GetTransferBuffer(context, id, shm_handle, shm_size);
-}
-
-static __attribute__((pnaclcall))
-PP_Bool Pnacl_M16_PPB_Graphics3DTrusted_Flush(PP_Resource context, int32_t put_offset) {
-  const struct PPB_Graphics3DTrusted_1_0 *iface = Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0.real_iface;
-  return iface->Flush(context, put_offset);
-}
-
-static __attribute__((pnaclcall))
-struct PP_Graphics3DTrustedState Pnacl_M16_PPB_Graphics3DTrusted_FlushSync(PP_Resource context, int32_t put_offset) {
-  const struct PPB_Graphics3DTrusted_1_0 *iface = Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0.real_iface;
-  return iface->FlushSync(context, put_offset);
-}
-
-static __attribute__((pnaclcall))
-struct PP_Graphics3DTrustedState Pnacl_M16_PPB_Graphics3DTrusted_FlushSyncFast(PP_Resource context, int32_t put_offset, int32_t last_known_get) {
-  const struct PPB_Graphics3DTrusted_1_0 *iface = Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0.real_iface;
-  return iface->FlushSyncFast(context, put_offset, last_known_get);
-}
-
-/* End wrapper methods for PPB_Graphics3DTrusted_1_0 */
 
 /* Not generating wrapper methods for PPB_ImageDataTrusted_0_4 */
 
@@ -3635,19 +3569,6 @@ struct PPB_FileIOTrusted_0_4 Pnacl_Wrappers_PPB_FileIOTrusted_0_4 = {
     .WillSetLength = (int32_t (*)(PP_Resource file_io, int64_t length, struct PP_CompletionCallback callback))&Pnacl_M14_PPB_FileIOTrusted_WillSetLength
 };
 
-struct PPB_Graphics3DTrusted_1_0 Pnacl_Wrappers_PPB_Graphics3DTrusted_1_0 = {
-    .CreateRaw = (PP_Resource (*)(PP_Instance instance_id, PP_Resource share_context, const int32_t attrib_list[]))&Pnacl_M16_PPB_Graphics3DTrusted_CreateRaw,
-    .InitCommandBuffer = (PP_Bool (*)(PP_Resource context_id))&Pnacl_M16_PPB_Graphics3DTrusted_InitCommandBuffer,
-    .SetGetBuffer = (PP_Bool (*)(PP_Resource context, int32_t transfer_buffer_id))&Pnacl_M16_PPB_Graphics3DTrusted_SetGetBuffer,
-    .GetState = (struct PP_Graphics3DTrustedState (*)(PP_Resource context))&Pnacl_M16_PPB_Graphics3DTrusted_GetState,
-    .CreateTransferBuffer = (int32_t (*)(PP_Resource context, uint32_t size))&Pnacl_M16_PPB_Graphics3DTrusted_CreateTransferBuffer,
-    .DestroyTransferBuffer = (PP_Bool (*)(PP_Resource context, int32_t id))&Pnacl_M16_PPB_Graphics3DTrusted_DestroyTransferBuffer,
-    .GetTransferBuffer = (PP_Bool (*)(PP_Resource context, int32_t id, int* shm_handle, uint32_t* shm_size))&Pnacl_M16_PPB_Graphics3DTrusted_GetTransferBuffer,
-    .Flush = (PP_Bool (*)(PP_Resource context, int32_t put_offset))&Pnacl_M16_PPB_Graphics3DTrusted_Flush,
-    .FlushSync = (struct PP_Graphics3DTrustedState (*)(PP_Resource context, int32_t put_offset))&Pnacl_M16_PPB_Graphics3DTrusted_FlushSync,
-    .FlushSyncFast = (struct PP_Graphics3DTrustedState (*)(PP_Resource context, int32_t put_offset, int32_t last_known_get))&Pnacl_M16_PPB_Graphics3DTrusted_FlushSyncFast
-};
-
 /* Not generating wrapper interface for PPB_ImageDataTrusted_0_4 */
 
 /* Not generating wrapper interface for PPB_URLLoaderTrusted_0_3 */
@@ -4407,12 +4328,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIOTrusted_0_4 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0 = {
-  .iface_macro = PPB_GRAPHICS_3D_TRUSTED_INTERFACE_1_0,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Graphics3DTrusted_1_0,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ImageDataTrusted_0_4 = {
   .iface_macro = PPB_IMAGEDATA_TRUSTED_INTERFACE_0_4,
   .wrapped_iface = NULL /* Still need slot for real_iface */,
@@ -4941,7 +4856,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_FileChooserTrusted_0_5,
   &Pnacl_WrapperInfo_PPB_FileChooserTrusted_0_6,
   &Pnacl_WrapperInfo_PPB_FileIOTrusted_0_4,
-  &Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0,
   &Pnacl_WrapperInfo_PPB_ImageDataTrusted_0_4,
   &Pnacl_WrapperInfo_PPB_URLLoaderTrusted_0_3,
   &Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_2,
