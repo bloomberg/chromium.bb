@@ -62,8 +62,8 @@ struct FormatType {
 
 }  // anonymous namespace
 
-// crbug.com/135228
-// Fails on Win Intel, Linux Intel; flaky on Linux ATI
+// crbug.com/135229
+// Fails on Win Intel, Linux Intel.
 #if ((defined(OS_WIN) || defined(OS_LINUX)) && defined(NDEBUG))
 #define MAYBE_RenderTo FAILS_RenderTo
 #else
