@@ -59,7 +59,6 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
       const syncer::WeakHandle<syncer::JsBackend>& js_backend,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
           debug_info_listener,
-      bool success,
       syncer::ModelTypeSet restored_types) OVERRIDE;
 
   static void SetHistoryServiceExpectations(ProfileMock* profile);

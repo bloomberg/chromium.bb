@@ -126,7 +126,6 @@ bool SyncBackendRegistrar::IsNigoriEnabled() const {
 syncer::ModelTypeSet SyncBackendRegistrar::ConfigureDataTypes(
     syncer::ModelTypeSet types_to_add,
     syncer::ModelTypeSet types_to_remove) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(Intersection(types_to_add, types_to_remove).Empty());
   syncer::ModelTypeSet filtered_types_to_add = types_to_add;
   if (workers_.count(syncer::GROUP_HISTORY) == 0) {

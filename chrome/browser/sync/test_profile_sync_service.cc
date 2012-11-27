@@ -108,44 +108,41 @@ void SyncBackendHostForProfileSyncTest
     const syncer::WeakHandle<syncer::JsBackend>& js_backend,
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
         debug_info_listener,
-    bool success,
     syncer::ModelTypeSet restored_types) {
   // Here's our opportunity to pretend to do things that the SyncManager would
   // normally do during initialization, but can't because this is a test.
-  if (success) {
-    // Set up any nodes the test wants around before model association.
-    if (!callback_.is_null()) {
-      callback_.Run();
+  // Set up any nodes the test wants around before model association.
+  if (!callback_.is_null()) {
+    callback_.Run();
+  }
+
+  // Pretend we downloaded initial updates and set initial sync ended bits
+  // if we were asked to.
+  if (set_initial_sync_ended_on_init_) {
+    UserShare* user_share = GetUserShare();
+    Directory* directory = user_share->directory.get();
+
+    if (!directory->initial_sync_ended_for_type(NIGORI)) {
+      syncer::TestUserShare::CreateRoot(NIGORI, user_share);
+
+      // A side effect of adding the NIGORI mode (normally done by the
+      // syncer) is a decryption attempt, which will fail the first time.
     }
 
-    // Pretend we downloaded initial updates and set initial sync ended bits
-    // if we were asked to.
-    if (set_initial_sync_ended_on_init_) {
-      UserShare* user_share = GetUserShare();
-      Directory* directory = user_share->directory.get();
-
-      if (!directory->initial_sync_ended_for_type(NIGORI)) {
-        syncer::TestUserShare::CreateRoot(NIGORI, user_share);
-
-        // A side effect of adding the NIGORI mode (normally done by the
-        // syncer) is a decryption attempt, which will fail the first time.
-      }
-
-      if (!directory->initial_sync_ended_for_type(DEVICE_INFO)) {
-        syncer::TestUserShare::CreateRoot(DEVICE_INFO, user_share);
-      }
-
-      if (!directory->initial_sync_ended_for_type(EXPERIMENTS)) {
-        syncer::TestUserShare::CreateRoot(EXPERIMENTS, user_share);
-      }
-
-      SetInitialSyncEndedForAllTypes();
-      restored_types = syncer::ModelTypeSet::All();
+    if (!directory->initial_sync_ended_for_type(DEVICE_INFO)) {
+      syncer::TestUserShare::CreateRoot(DEVICE_INFO, user_share);
     }
+
+    if (!directory->initial_sync_ended_for_type(EXPERIMENTS)) {
+      syncer::TestUserShare::CreateRoot(EXPERIMENTS, user_share);
+    }
+
+    SetInitialSyncEndedForAllTypes();
+    restored_types = syncer::ModelTypeSet::All();
   }
 
   SyncBackendHost::HandleSyncManagerInitializationOnFrontendLoop(
-      js_backend, debug_info_listener, success, restored_types);
+      js_backend, debug_info_listener, restored_types);
 }
 
 void SyncBackendHostForProfileSyncTest::SetInitialSyncEndedForAllTypes() {

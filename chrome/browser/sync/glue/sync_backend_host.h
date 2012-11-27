@@ -363,11 +363,12 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
       const base::Callback<void(syncer::ModelTypeSet)>& ready_task);
 
   // Called when the SyncManager has been constructed and initialized.
+  // Stores |js_backend| and |debug_info_listener| on the UI thread for
+  // consumption when initialization is complete.
   virtual void HandleSyncManagerInitializationOnFrontendLoop(
       const syncer::WeakHandle<syncer::JsBackend>& js_backend,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
           debug_info_listener,
-      bool success,
       syncer::ModelTypeSet restored_types);
 
   SyncFrontend* frontend() { return frontend_; }
@@ -384,12 +385,8 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
                                // manager has been created.
     NOT_INITIALIZED,           // Initialization hasn't completed, but we've
                                // constructed a SyncManager.
-    DOWNLOADING_CONTROL_TYPES, // The SyncManager is initialized, but
-                               // we're fetching metadata, such as encryption
-                               // information, from the server.
-    PROCESSING_CONTROL_TYPES,  // Running init tasks that require metadata to
-                               // be available.  This includes registering our
-                               // device information and refreshing encryption.
+    INITIALIZATING_CONTROL_TYPES,  // Downloading control types and
+                               // initializing their handlers.
     INITIALIZED,               // Initialization is complete.
   };
 
@@ -398,8 +395,9 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Note: it is illegal to call this before the backend is initialized.
   void AddExperimentalTypes();
 
-  // Downloading of nigori failed and will be retried.
-  void OnNigoriDownloadRetry();
+  // Downloading of control types failed and will be retried. Invokes the
+  // frontend's sync configure retry method.
+  void HandleControlTypesDownloadRetry();
 
   // InitializationComplete passes through the SyncBackendHost to forward
   // on to |frontend_|, and so that tests can intercept here if they need to
@@ -479,11 +477,6 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   void HandleConnectionStatusChangeOnFrontendLoop(
       syncer::ConnectionStatus status);
 
-  // Called when configuration of the Nigori node has completed as
-  // part of the initialization process.
-  void HandleNigoriConfigurationCompletedOnFrontendLoop(
-      syncer::ModelTypeSet failed_configuration_types);
-
   // syncer::InvalidationHandler-like functions.
   void HandleInvalidatorStateChangeOnFrontendLoop(
       syncer::InvalidatorState state);
@@ -494,10 +487,6 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Handles stopping the core's SyncManager, accounting for whether
   // initialization is done yet.
   void StopSyncManagerForShutdown(const base::Closure& closure);
-
-  // Must be called on |frontend_loop_|.  |done_callback| is called on
-  // |frontend_loop_|.
-  void InitialProcessControlTypes(const base::Closure& done_callback);
 
   base::WeakPtrFactory<SyncBackendHost> weak_ptr_factory_;
 

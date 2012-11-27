@@ -164,6 +164,7 @@ class SyncBackendHostTest : public testing::Test {
     enabled_types_.Put(syncer::SESSIONS);
     enabled_types_.Put(syncer::SEARCH_ENGINES);
     enabled_types_.Put(syncer::AUTOFILL);
+    enabled_types_.Put(syncer::EXPERIMENTS);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -637,6 +638,7 @@ TEST_F(SyncBackendHostTest, InvalidationsAfterStopSyncingForShutdown) {
   SetUp();
 }
 
+// Ensure the device info tracker is initialized properly on startup.
 TEST_F(SyncBackendHostTest, InitializeDeviceInfo) {
   ASSERT_EQ(NULL, backend_->GetSyncedDeviceTrackerForTest());
 
@@ -644,6 +646,30 @@ TEST_F(SyncBackendHostTest, InitializeDeviceInfo) {
   SyncedDeviceTracker* device_tracker =
       backend_->GetSyncedDeviceTrackerForTest();
   ASSERT_TRUE(device_tracker->ReadLocalDeviceInfo());
+}
+
+// Verify that downloading control types only downloads those types that do
+// not have initial sync ended set.
+TEST_F(SyncBackendHostTest, DownloadControlTypes) {
+  sync_prefs_->SetSyncSetupCompleted();
+  // Set sync manager behavior before passing it down. Experiments and device
+  // info are new types without progress markers or initial sync ended, while
+  // all other types have been fully downloaded and applied.
+  syncer::ModelTypeSet new_types(syncer::EXPERIMENTS, syncer::DEVICE_INFO);
+  syncer::ModelTypeSet old_types =
+      Difference(enabled_types_, new_types);
+  fake_manager_factory_.set_progress_marker_types(old_types);
+  fake_manager_factory_.set_initial_sync_ended_types(old_types);
+
+  // Bringing up the backend should download the new types without downloading
+  // any old types.
+  InitializeBackend();
+  EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(new_types));
+  EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
+                           enabled_types_).Empty());
+  EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(enabled_types_));
+  EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
+      enabled_types_).Empty());
 }
 
 }  // namespace
