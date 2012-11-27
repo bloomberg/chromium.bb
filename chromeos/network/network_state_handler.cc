@@ -421,27 +421,14 @@ bool NetworkStateHandler::ParseNetworkServiceProperty(
     const std::string& key,
     const base::Value& value) {
   DCHECK(network);
-  bool property_changed = false;
-  if (key == shill::kIPConfigProperty) {
-    // Handle IPConfig here instead of in NetworkState::PropertyChanged since
-    // we need to call into shill_property_handler_ to fetch them. This will
-    // trigger a call to UpdateNetworkServiceIPAddress(), which will notify
-    // any observers.
-    std::string ip_config_path;
-    value.GetAsString(&ip_config_path);
-    DCHECK(!ip_config_path.empty());
-    shill_property_handler_->RequestIPConfig(network->path(), ip_config_path);
-  } else {
-    if (network->PropertyChanged(key, value)) {
-      property_changed = true;
-      if (network->path() == active_network_path_ &&
-          key == flimflam::kStateProperty) {
-        FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
-                          ActiveNetworkStateChanged(network));
-      }
-    }
+  if (!network->PropertyChanged(key, value))
+    return false;
+  if (network->path() == active_network_path_ &&
+      key == flimflam::kStateProperty) {
+    FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
+                      ActiveNetworkStateChanged(network));
   }
-  return property_changed;
+  return true;
 }
 
 }  // namespace chromeos

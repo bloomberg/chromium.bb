@@ -107,10 +107,7 @@ class CHROMEOS_EXPORT ShillPropertyHandler
   void RequestProperties(ManagedState::ManagedType type,
                          const std::string& path);
 
-  // Requests the IP config specified by |ip_config_path| for |service_path|.
-  void RequestIPConfig(const std::string& service_path,
-                       const std::string& ip_config_path);
-
+  // Returns true if |service_path| is being observed.
   bool IsObservingNetwork(const std::string& service_path) {
     return observed_networks_.count(service_path) != 0;
   }

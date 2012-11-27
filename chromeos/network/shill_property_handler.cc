@@ -109,16 +109,6 @@ void ShillPropertyHandler::RequestProperties(ManagedState::ManagedType type,
   }
 }
 
-void ShillPropertyHandler::RequestIPConfig(
-    const std::string& service_path,
-    const std::string& ip_config_path) {
-  DBusThreadManager::Get()->GetShillIPConfigClient()->GetProperties(
-      dbus::ObjectPath(ip_config_path),
-      base::Bind(&ShillPropertyHandler::GetIPConfigCallback,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 service_path));
-}
-
 void ShillPropertyHandler::OnPropertyChanged(const std::string& key,
                                              const base::Value& value) {
   if (ManagerPropertyChanged(key, value))
@@ -212,7 +202,7 @@ void ShillPropertyHandler::UpdateObservedNetworkServices(
       continue;
     ShillServiceObserverMap::iterator iter2 = observed_networks_.find(path);
     if (iter2 != observed_networks_.end()) {
-      new_observed[path] = observed_networks_[path];
+      new_observed[path] = iter2->second;
     } else {
       new_observed[path] = new ShillServiceObserver(
           path, base::Bind(
@@ -261,7 +251,19 @@ void ShillPropertyHandler::NetworkServicePropertyChangedCallback(
     const std::string& path,
     const std::string& key,
     const base::Value& value) {
-  listener_->UpdateNetworkServiceProperty(path, key, value);
+  if (key == shill::kIPConfigProperty) {
+    // Handle IPConfig here and call listener_->UpdateNetworkServiceIPAddress
+    // when the request completes.
+    std::string ip_config_path;
+    value.GetAsString(&ip_config_path);
+    DCHECK(!ip_config_path.empty());
+    DBusThreadManager::Get()->GetShillIPConfigClient()->GetProperties(
+        dbus::ObjectPath(ip_config_path),
+        base::Bind(&ShillPropertyHandler::GetIPConfigCallback,
+                   weak_ptr_factory_.GetWeakPtr(), path));
+  } else {
+    listener_->UpdateNetworkServiceProperty(path, key, value);
+  }
 }
 
 void ShillPropertyHandler::GetIPConfigCallback(
