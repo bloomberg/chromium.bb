@@ -44,7 +44,7 @@ class VIEWS_EXPORT FocusController : public aura::client::ActivationClient,
   // TODO(beng): FocusClient
   // Sets the focused window, resulting in focus change events being sent.
   // Must only be called with valid focusable windows per FocusRules.
-  void SetFocusedWindow(aura::Window* window);
+  void FocusWindow(aura::Window* window);
   aura::Window* focused_window() { return focused_window_; }
 
  private:
@@ -70,6 +70,7 @@ class VIEWS_EXPORT FocusController : public aura::client::ActivationClient,
   // Overridden from aura::WindowObserver:
   virtual void OnWindowVisibilityChanging(aura::Window* window,
                                          bool visible) OVERRIDE;
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
   virtual void OnWillRemoveWindow(aura::Window* window) OVERRIDE;
 
@@ -79,8 +80,26 @@ class VIEWS_EXPORT FocusController : public aura::client::ActivationClient,
   // Overridden from ui::EventDispatcher:
   virtual bool CanDispatchToTarget(ui::EventTarget* target) OVERRIDE;
 
+  // Internal implementations that set the focused/active windows, fire events
+  // etc. These functions must be called with valid focusable/activatable
+  // windows.
+  void SetFocusedWindow(aura::Window* window);
+  void SetActiveWindow(aura::Window* window);
+
+  // Called when a window's disposition changed such that it and its hierarchy
+  // are no longer focusable/activatable. The system must determine what window
+  // to focus next based on rules.
+  void WindowLostFocusFromDispositionChange(aura::Window* window);
+
+  // Called when an attempt is made to focus or activate a window via an input
+  // event targeted at that window. Rules determine the best focusable window
+  // for the input window.
+  void WindowFocusedFromInputEvent(aura::Window* window);
+
   aura::Window* active_window_;
   aura::Window* focused_window_;
+
+  ui::EventTarget* event_dispatch_target_;
 
   scoped_ptr<FocusRules> rules_;
 

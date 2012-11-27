@@ -2,24 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Tests for:
-// Activation/Focus driven by:
-//  - user input events
-//  - api calls
-//  - window hide/destruction
-//  - focus changes
-// GetFocusableWindow
-// GetActivatableWindow
-// CanFocus
-// CanActivate
-
-// Focus/Activation behavior
-// e.g. focus on activation with child windows etc.
-
 #include "ui/views/corewm/focus_controller.h"
 
 #include <map>
 
+#include "ui/aura/client/activation_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
@@ -88,17 +75,21 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
 
   // Overridden from aura::test::AuraTestBase:
   virtual void SetUp() OVERRIDE {
-    aura::test::AuraTestBase::SetUp();
+    // FocusController registers itself as an Env observer so it can catch all
+    // window initializations, including the root_window()'s, so we create it
+    // before allowing the base setup.
     focus_controller_.reset(new FocusController(new BaseFocusRules));
+    aura::test::AuraTestBase::SetUp();
     root_window()->AddPreTargetHandler(focus_controller());
+    aura::client::SetActivationClient(root_window(), focus_controller());
 
     // Hierarchy used by all tests:
     // root_window
-    //  +-- w1
-    //       +-- w11
-    //  +-- w2
-    //       +-- w21
-    //            +-- w211
+    //       +-- w1
+    //            +-- w11
+    //       +-- w2
+    //            +-- w21
+    //                 +-- w211
     aura::Window* w1 = aura::test::CreateTestWindowWithDelegate(
         aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate(), 1,
         gfx::Rect(0, 0, 50, 50), NULL);
@@ -127,10 +118,33 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
       return focused_window() ? focused_window()->id() : -1;
   }
 
+  void ActivateWindow(aura::Window* window) {
+    aura::client::GetActivationClient(root_window())->ActivateWindow(window);
+  }
+  aura::Window* GetActiveWindow() {
+    return aura::client::GetActivationClient(root_window())->GetActiveWindow();
+  }
+  int GetActiveWindowId() {
+    aura::Window* active_window = GetActiveWindow();
+    return active_window ? active_window->id() : -1;
+  }
+
+  void ExpectActivationEvents(FocusEventsTestHandler* handler,
+                              int expected_changing_event_count,
+                              int expected_changed_event_count) {
+    EXPECT_EQ(expected_changing_event_count,
+              handler->GetCountForEventType(
+                  FocusChangeEvent::activation_changing_event_type()));
+    EXPECT_EQ(expected_changed_event_count,
+              handler->GetCountForEventType(
+                  FocusChangeEvent::activation_changed_event_type()));
+  }
+
   // Test functions.
   virtual void BasicFocus() = 0;
+  virtual void BasicActivation() = 0;
   virtual void FocusEvents() = 0;
-  virtual void ConsumesFocusEvents() = 0;
+  virtual void ActivationEvents() = 0;
 
  private:
   scoped_ptr<FocusController> focus_controller_;
@@ -145,11 +159,17 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
 
   // Different test types shift focus in different ways.
   virtual void FocusWindowDirect(aura::Window* window) = 0;
+  virtual void ActivateWindowDirect(aura::Window* window) = 0;
 
   void FocusWindowById(int id) {
     aura::Window* window = root_window()->GetChildById(id);
     DCHECK(window);
     FocusWindowDirect(window);
+  }
+  void ActivateWindowById(int id) {
+    aura::Window* window = root_window()->GetChildById(id);
+    DCHECK(window);
+    ActivateWindowDirect(window);
   }
 
   // Overridden from FocusControllerTestBase:
@@ -159,6 +179,13 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     EXPECT_EQ(1, focused_window_id());
     FocusWindowById(2);
     EXPECT_EQ(2, focused_window_id());
+  }
+  virtual void BasicActivation() OVERRIDE {
+    EXPECT_EQ(NULL, GetActiveWindow());
+    ActivateWindowById(1);
+    EXPECT_EQ(1, GetActiveWindowId());
+    ActivateWindowById(2);
+    EXPECT_EQ(2, GetActiveWindowId());
   }
   virtual void FocusEvents() OVERRIDE {
     FocusEventsTestHandler handler(root_window()->GetChildById(1));
@@ -172,15 +199,21 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     EXPECT_EQ(1, handler.GetCountForEventType(
         FocusChangeEvent::focus_changed_event_type()));
   }
-  virtual void ConsumesFocusEvents() OVERRIDE {
-    FocusWindowById(1);
-    FocusEventsTestHandler handler(root_window()->GetChildById(1));
-    handler.set_result(ui::ER_CONSUMED);
-    FocusWindowById(2);
 
-    // |handler| consumed the focus changing event, preventing the change from
-    // being committed, so 1 is still focused.
-    EXPECT_EQ(1, focused_window_id());
+  virtual void ActivationEvents() OVERRIDE {
+    ActivateWindowById(1);
+
+    FocusEventsTestHandler handler_root(root_window());
+    FocusEventsTestHandler handler_1(root_window()->GetChildById(1));
+    FocusEventsTestHandler handler_2(root_window()->GetChildById(2));
+
+    ExpectActivationEvents(&handler_root, 0, 0);
+    ExpectActivationEvents(&handler_1, 0, 0);
+    ExpectActivationEvents(&handler_2, 0, 0);
+    ActivateWindowById(2);
+    ExpectActivationEvents(&handler_root, 1, 1);
+    ExpectActivationEvents(&handler_1, 1, 0);
+    ExpectActivationEvents(&handler_2, 0, 1);
   }
 
  private:
@@ -195,7 +228,10 @@ class FocusControllerApiTest : public FocusControllerDirectTestBase {
  private:
   // Overridden from FocusControllerTestBase:
   virtual void FocusWindowDirect(aura::Window* window) OVERRIDE {
-    focus_controller()->SetFocusedWindow(window);
+    focus_controller()->FocusWindow(window);
+  }
+  virtual void ActivateWindowDirect(aura::Window* window) OVERRIDE {
+    ActivateWindow(window);
   }
 
   DISALLOW_COPY_AND_ASSIGN(FocusControllerApiTest);
@@ -212,6 +248,10 @@ class FocusControllerMouseEventTest : public FocusControllerDirectTestBase {
     aura::test::EventGenerator generator(root_window(), window);
     generator.ClickLeftButton();
   }
+  virtual void ActivateWindowDirect(aura::Window* window) OVERRIDE {
+    aura::test::EventGenerator generator(root_window(), window);
+    generator.ClickLeftButton();
+  }
 
   DISALLOW_COPY_AND_ASSIGN(FocusControllerMouseEventTest);
 };
@@ -223,6 +263,10 @@ class FocusControllerGestureEventTest : public FocusControllerDirectTestBase {
  private:
   // Overridden from FocusControllerTestBase:
   virtual void FocusWindowDirect(aura::Window* window) OVERRIDE {
+    aura::test::EventGenerator generator(root_window(), window);
+    generator.GestureTapAt(window->bounds().CenterPoint());
+  }
+  virtual void ActivateWindowDirect(aura::Window* window) OVERRIDE {
     aura::test::EventGenerator generator(root_window(), window);
     generator.GestureTapAt(window->bounds().CenterPoint());
   }
@@ -246,21 +290,31 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
 
   // Overridden from FocusControllerTestBase:
   virtual void BasicFocus() OVERRIDE {
-    aura::Window* w211 = root_window()->GetChildById(211);
-
     EXPECT_EQ(NULL, focused_window());
 
-    focus_controller()->SetFocusedWindow(w211);
+    aura::Window* w211 = root_window()->GetChildById(211);
+    focus_controller()->FocusWindow(w211);
     EXPECT_EQ(211, focused_window_id());
 
     ChangeWindowDisposition(w211);
-
     // BasicFocusRules passes focus to the parent.
     EXPECT_EQ(parent_ ? 2 : 21, focused_window_id());
   }
+  virtual void BasicActivation() OVERRIDE {
+    DCHECK(!parent_) << "Activation tests don't support parent changes.";
+
+    EXPECT_EQ(NULL, GetActiveWindow());
+
+    aura::Window* w2 = root_window()->GetChildById(2);
+    ActivateWindow(w2);
+    EXPECT_EQ(2, GetActiveWindowId());
+
+    ChangeWindowDisposition(w2);
+    EXPECT_EQ(1, GetActiveWindowId());
+  }
   virtual void FocusEvents() OVERRIDE {
     aura::Window* w211 = root_window()->GetChildById(211);
-    focus_controller()->SetFocusedWindow(w211);
+    focus_controller()->FocusWindow(w211);
 
     FocusEventsTestHandler handler(root_window()->GetChildById(211));
     EXPECT_EQ(0, handler.GetCountForEventType(
@@ -273,23 +327,29 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
     EXPECT_EQ(1, handler.GetCountForEventType(
         FocusChangeEvent::focus_changed_event_type()));
   }
-  virtual void ConsumesFocusEvents() OVERRIDE {
-    aura::Window* w211 = root_window()->GetChildById(211);
-    focus_controller()->SetFocusedWindow(w211);
+  virtual void ActivationEvents() OVERRIDE {
+    DCHECK(!parent_) << "Activation tests don't support parent changes.";
 
-    FocusEventsTestHandler handler(root_window()->GetChildById(211));
-    handler.set_result(ui::ER_CONSUMED);
+    aura::Window* w2 = root_window()->GetChildById(2);
+    ActivateWindow(w2);
 
-    ChangeWindowDisposition(w211);
+    FocusEventsTestHandler handler_root(root_window());
+    FocusEventsTestHandler handler_1(root_window()->GetChildById(1));
+    FocusEventsTestHandler handler_2(root_window()->GetChildById(2));
 
-    // |handler| consumed the focus changing event, preventing the change from
-    // being committed, so 2 is still focused.
-    EXPECT_EQ(1, focused_window_id());
+    ExpectActivationEvents(&handler_root, 0, 0);
+    ExpectActivationEvents(&handler_1, 0, 0);
+    ExpectActivationEvents(&handler_2, 0, 0);
+
+    ChangeWindowDisposition(w2);
+    ExpectActivationEvents(&handler_root, 1, 1);
+    ExpectActivationEvents(&handler_1, 0, 1);
+    ExpectActivationEvents(&handler_2, 1, 0);
   }
 
  private:
   // When true, the disposition change occurs to the parent of the window
-  // instead of to the window. This verifies that changes occuring in the
+  // instead of to the window. This verifies that changes occurring in the
   // hierarchy that contains the window affect the window's focus.
   bool parent_;
 
@@ -392,7 +452,7 @@ class FocusControllerParentRemovalTest : public FocusControllerRemovalTest {
 #define FOCUS_CONTROLLER_TEST(TESTCLASS, TESTNAME) \
     TEST_F(TESTCLASS, TESTNAME) { TESTNAME(); }
 
-#define FOCUS_CONTROLLER_TESTS(TESTNAME) \
+#define FOCUS_TESTS(TESTNAME) \
     FOCUS_CONTROLLER_TEST(FocusControllerApiTest, TESTNAME) \
     FOCUS_CONTROLLER_TEST(FocusControllerMouseEventTest, TESTNAME) \
     FOCUS_CONTROLLER_TEST(FocusControllerGestureEventTest, TESTNAME) \
@@ -403,21 +463,27 @@ class FocusControllerParentRemovalTest : public FocusControllerRemovalTest {
     FOCUS_CONTROLLER_TEST(FocusControllerRemovalTest, TESTNAME) \
     FOCUS_CONTROLLER_TEST(FocusControllerParentRemovalTest, TESTNAME)
 
+// Activation tests do not have Parent* variants as that is not a supported
+// event flow.
+#define ACTIVATION_TESTS(TESTNAME) \
+    FOCUS_CONTROLLER_TEST(FocusControllerApiTest, TESTNAME) \
+    FOCUS_CONTROLLER_TEST(FocusControllerMouseEventTest, TESTNAME) \
+    FOCUS_CONTROLLER_TEST(FocusControllerGestureEventTest, TESTNAME) \
+    FOCUS_CONTROLLER_TEST(FocusControllerHideTest, TESTNAME) \
+    FOCUS_CONTROLLER_TEST(FocusControllerDestructionTest, TESTNAME) \
+    FOCUS_CONTROLLER_TEST(FocusControllerRemovalTest, TESTNAME)
+
 // - Focuses a window, verifies that focus changed.
-FOCUS_CONTROLLER_TESTS(BasicFocus);
+FOCUS_TESTS(BasicFocus);
 
 // - Activates a window, verifies that activation changed.
-TEST_F(FocusControllerApiTest, BasicActivation) {
-
-}
+ACTIVATION_TESTS(BasicActivation);
 
 // - Focuses a window, verifies that focus events were dispatched.
-FOCUS_CONTROLLER_TESTS(FocusEvents);
+FOCUS_TESTS(FocusEvents);
 
 // - Activates a window, verifies that activation events were dispatched.
-TEST_F(FocusControllerApiTest, ActivationEvents) {
-
-}
+ACTIVATION_TESTS(ActivationEvents);
 
 // - Focuses a window, re-targets event prior to -ed event being dispatched.
 TEST_F(FocusControllerApiTest, RetargetFocusEvent) {
@@ -429,13 +495,9 @@ TEST_F(FocusControllerApiTest, RetargetActivationEvent) {
 
 }
 
-// - Focuses a window, consumes events.
-//FOCUS_CONTROLLER_TESTS(ConsumesFocusEvents);
-
-// - Activates a window, consumes events.
-TEST_F(FocusControllerApiTest, ConsumeActivationEvents) {
-
-}
+// TODO(beng):
+// . window->window focus changes within an active window
+// . focus and activation changes within a single test.
 
 }  // namespace corewm
 }  // namespace views

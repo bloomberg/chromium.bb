@@ -4,6 +4,7 @@
 
 #include "ui/views/corewm/base_focus_rules.h"
 
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 
 namespace views {
@@ -22,8 +23,8 @@ BaseFocusRules::~BaseFocusRules() {
 // BaseFocusRules, FocusRules implementation:
 
 bool BaseFocusRules::CanActivateWindow(aura::Window* window) {
-  // TODO(beng):
-  return true;
+  return !window ||
+      (window->IsVisible() && window->parent() == window->GetRootWindow());
 }
 
 bool BaseFocusRules::CanFocusWindow(aura::Window* window) {
@@ -32,8 +33,16 @@ bool BaseFocusRules::CanFocusWindow(aura::Window* window) {
 }
 
 aura::Window* BaseFocusRules::GetActivatableWindow(aura::Window* window) {
-  // TODO(beng):
-  return window;
+  // BasicFocusRules considers only direct children of the RootWindow as
+  // activatable.
+  aura::Window* parent = window->parent();
+  aura::Window* activatable = window;
+  aura::RootWindow* root_window = window->GetRootWindow();
+  while (parent != root_window) {
+    activatable = parent;
+    parent = parent->parent();
+  }
+  return activatable;
 }
 
 aura::Window* BaseFocusRules::GetFocusableWindow(aura::Window* window) {
@@ -45,7 +54,24 @@ aura::Window* BaseFocusRules::GetFocusableWindow(aura::Window* window) {
 aura::Window* BaseFocusRules::GetNextActivatableWindow(aura::Window* ignore) {
   DCHECK(ignore);
 
-  // TODO(beng):
+  // Can be called from the RootWindow's destruction, which has a NULL parent.
+  if (!ignore->parent())
+    return NULL;
+
+  // In the basic scenarios handled by BasicFocusRules, the pool of activatable
+  // windows is limited to the |ignore|'s siblings.
+  const aura::Window::Windows& siblings = ignore->parent()->children();
+  DCHECK(!siblings.empty());
+
+  for (aura::Window::Windows::const_reverse_iterator rit = siblings.rbegin();
+       rit != siblings.rend();
+       ++rit) {
+    aura::Window* cur = *rit;
+    if (cur == ignore)
+      continue;
+    if (CanActivateWindow(cur))
+      return cur;
+  }
   return NULL;
 }
 
