@@ -120,39 +120,39 @@ def skip_while(index, max_index, skipping_condition):
   return index, True
 
 
-class SymbolMapping(object):
-  """Manages all symbol information on process memory mapping.
+class SymbolDataSources(object):
+  """Manages symbol data sources in a process.
 
-  The symbol information consists of all symbols in the binary files obtained
-  by find_runtime_symbols/prepare_symbol_info.py which uses /proc/<pid>/maps,
-  nm and so on.  It is minimum requisite information to run dmprof.
+  The symbol data sources consist of maps (/proc/<pid>/maps), nm, readelf and
+  so on.  They are collected into a directory '|prefix|.symmap' from the binary
+  files by 'prepare()' with tools/find_runtime_symbols/prepare_symbol_info.py.
 
-  The information is prepared in a directory "|prefix|.symmap" by prepare().
-  The directory is more portable than Chromium binaries.  Users can save it
-  and re-analyze with the portable one.
+  Binaries are not mandatory to profile.  The prepared data sources work in
+  place of the binary even if the binary has been overwritten with another
+  binary.
 
-  Note that loading the symbol information takes a long time.  It is very big
-  in general -- it doesn't know which functions are called and which types are
-  used actually.  Used symbols can be cached in the "SymbolCache" class.
+  Note that loading the symbol data sources takes a long time.  They are often
+  very big.  So, the 'dmprof' profiler is designed to use 'SymbolMappingCache'
+  which caches actually used symbols.
   """
   def __init__(self, prefix):
     self._prefix = prefix
-    self._prepared_symbol_mapping_path = None
-    self._loaded_symbol_mapping = None
+    self._prepared_symbol_data_sources_path = None
+    self._loaded_symbol_data_sources = None
 
   def prepare(self):
-    """Extracts symbol mapping from binaries and prepares it to use.
+    """Prepares symbol data sources by extracting mapping from a binary.
 
-    The symbol mapping is stored in a directory whose name is stored in
-    |self._prepared_symbol_mapping_path|.
+    The prepared symbol data sources are stored in a directory.  The directory
+    name is stored in |self._prepared_symbol_data_sources_path|.
 
     Returns:
         True if succeeded.
     """
     LOGGER.info('Preparing symbol mapping...')
-    self._prepared_symbol_mapping_path, used_tempdir = prepare_symbol_info(
+    self._prepared_symbol_data_sources_path, used_tempdir = prepare_symbol_info(
         self._prefix + '.maps', self._prefix + '.symmap', True)
-    if self._prepared_symbol_mapping_path:
+    if self._prepared_symbol_data_sources_path:
       LOGGER.info('  Prepared symbol mapping.')
       if used_tempdir:
         LOGGER.warn('  Using a temporary directory for symbol mapping.')
@@ -164,111 +164,116 @@ class SymbolMapping(object):
       return False
 
   def get(self):
-    """Returns symbol mapping.
+    """Returns the prepared symbol data sources.
 
     Returns:
-        Loaded symbol mapping.  None if failed.
+        The prepared symbol data sources.  None if failed.
     """
-    if not self._prepared_symbol_mapping_path and not self.prepare():
+    if not self._prepared_symbol_data_sources_path and not self.prepare():
       return None
-    if not self._loaded_symbol_mapping:
+    if not self._loaded_symbol_data_sources:
       LOGGER.info('Loading symbol mapping...')
-      self._loaded_symbol_mapping = RuntimeSymbolsInProcess.load(
-          self._prepared_symbol_mapping_path)
-    return self._loaded_symbol_mapping
+      self._loaded_symbol_data_sources = RuntimeSymbolsInProcess.load(
+          self._prepared_symbol_data_sources_path)
+    return self._loaded_symbol_data_sources
 
 
-class SymbolCache(object):
-  """Manages cache of used symbol mapping.
+class SymbolFinder(object):
+  """Finds corresponding symbols from addresses.
 
-  The original symbol mapping is by "SymbolMapping" (maps, nm and readelf for
-  examples), and "SymbolCache" just caches "how dmprof interprets the address"
-  to speed-up another analysis for the same binary and profile dumps.
-  Handling all symbol mapping takes a long time in "SymbolMapping".
-  "SymbolCache" caches used symbol mapping on memory and in files.
+  This class does only 'find()' symbols from a specified |address_list|.
+  It is introduced to make a finder mockable.
   """
-  def __init__(self, prefix):
-    self._prefix = prefix
-    self._symbol_cache_paths = {
-        FUNCTION_ADDRESS: prefix + '.funcsym',
-        TYPEINFO_ADDRESS: prefix + '.typesym',
-        }
-    self._find_runtime_symbols_functions = {
-        FUNCTION_ADDRESS: find_runtime_symbols_list,
-        TYPEINFO_ADDRESS: find_runtime_typeinfo_symbols_list,
-        }
-    self._symbol_caches = {
+  _FIND_RUNTIME_SYMBOLS_FUNCTIONS = {
+      FUNCTION_ADDRESS: find_runtime_symbols_list,
+      TYPEINFO_ADDRESS: find_runtime_typeinfo_symbols_list,
+      }
+
+  def __init__(self, address_type, symbol_data_sources):
+    self._finder_function = self._FIND_RUNTIME_SYMBOLS_FUNCTIONS[address_type]
+    self._symbol_data_sources = symbol_data_sources
+
+  def find(self, address_list):
+    return self._finder_function(self._symbol_data_sources.get(), address_list)
+
+
+class SymbolMappingCache(object):
+  """Caches mapping from actually used addresses to symbols.
+
+  'update()' updates the cache from the original symbol data sources via
+  'SymbolFinder'.  Symbols can be looked up by the method 'lookup()'.
+  """
+  def __init__(self):
+    self._symbol_mapping_caches = {
         FUNCTION_ADDRESS: {},
         TYPEINFO_ADDRESS: {},
         }
 
-  def update(self, address_type, bucket_set, symbol_mapping):
-    """Updates symbol mapping on memory and in a ".*sym" cache file.
+  def update(self, address_type, bucket_set, symbol_finder, cache_f):
+    """Updates symbol mapping cache on memory and in a symbol cache file.
 
-    It reads cached symbol mapping from a ".*sym" file if it exists.  Then,
-    it looks up unresolved addresses from a given "SymbolMapping".  Finally,
-    both symbol mappings on memory and in the ".*sym" cache file are updated.
+    It reads cached symbol mapping from a symbol cache file |cache_f| if it
+    exists.  Unresolved addresses are then resolved and added to the cache
+    both on memory and in the symbol cache file with using 'SymbolFinder'.
 
-    Symbol files are formatted as follows:
+    A cache file is formatted as follows:
       <Address> <Symbol>
       <Address> <Symbol>
       <Address> <Symbol>
       ...
 
     Args:
-        address_type: A type of addresses to update.  It should be one of
-            FUNCTION_ADDRESS or TYPEINFO_ADDRESS.
+        address_type: A type of addresses to update.
+            It should be one of FUNCTION_ADDRESS or TYPEINFO_ADDRESS.
         bucket_set: A BucketSet object.
-        symbol_mapping: A SymbolMapping object.
+        symbol_finder: A SymbolFinder object to find symbols.
+        cache_f: A readable and writable IO object of the symbol cache file.
     """
-    self._load(address_type)
+    cache_f.seek(0, os.SEEK_SET)
+    self._load(cache_f, address_type)
 
     unresolved_addresses = sorted(
         address for address in bucket_set.iter_addresses(address_type)
-        if address not in self._symbol_caches[address_type])
+        if address not in self._symbol_mapping_caches[address_type])
 
     if not unresolved_addresses:
       LOGGER.info('No need to resolve any more addresses.')
       return
 
-    symbol_cache_path = self._symbol_cache_paths[address_type]
-    with open(symbol_cache_path, mode='a+') as symbol_f:
-      LOGGER.info('Loading %d unresolved addresses.' %
-                     len(unresolved_addresses))
-      symbol_list = self._find_runtime_symbols_functions[address_type](
-          symbol_mapping.get(), unresolved_addresses)
+    cache_f.seek(0, os.SEEK_END)
+    LOGGER.info('Loading %d unresolved addresses.' %
+                   len(unresolved_addresses))
+    symbol_list = symbol_finder.find(unresolved_addresses)
 
-      for address, symbol in zip(unresolved_addresses, symbol_list):
-        stripped_symbol = symbol.strip() or '??'
-        self._symbol_caches[address_type][address] = stripped_symbol
-        symbol_f.write('%x %s\n' % (address, stripped_symbol))
+    for address, symbol in zip(unresolved_addresses, symbol_list):
+      stripped_symbol = symbol.strip() or '??'
+      self._symbol_mapping_caches[address_type][address] = stripped_symbol
+      cache_f.write('%x %s\n' % (address, stripped_symbol))
 
   def lookup(self, address_type, address):
     """Looks up a symbol for a given |address|.
 
     Args:
-        address_type: A type of addresses to lookup.  It should be one of
-            FUNCTION_ADDRESS or TYPEINFO_ADDRESS.
+        address_type: A type of addresses to lookup.
+            It should be one of FUNCTION_ADDRESS or TYPEINFO_ADDRESS.
         address: An integer that represents an address.
 
     Returns:
         A string that represents a symbol.
     """
-    return self._symbol_caches[address_type].get(address)
+    return self._symbol_mapping_caches[address_type].get(address)
 
-  def _load(self, address_type):
-    symbol_cache_path = self._symbol_cache_paths[address_type]
+  def _load(self, cache_f, address_type):
     try:
-      with open(symbol_cache_path, mode='r') as symbol_f:
-        for line in symbol_f:
-          items = line.rstrip().split(None, 1)
-          if len(items) == 1:
-            items.append('??')
-          self._symbol_caches[address_type][int(items[0], 16)] = items[1]
+      for line in cache_f:
+        items = line.rstrip().split(None, 1)
+        if len(items) == 1:
+          items.append('??')
+        self._symbol_mapping_caches[address_type][int(items[0], 16)] = items[1]
       LOGGER.info('Loaded %d entries from symbol cache.' %
-                     len(self._symbol_caches[address_type]))
+                     len(self._symbol_mapping_caches[address_type]))
     except IOError as e:
-      LOGGER.info('No valid symbol cache file is found: %s' % e)
+      LOGGER.info('The symbol cache file is invalid: %s' % e)
 
 
 class Rule(object):
@@ -483,21 +488,21 @@ class Bucket(object):
 
     self.component_cache = ''
 
-  def symbolize(self, symbol_cache):
-    """Makes a symbolized stacktrace and typeinfo with |symbol_cache|.
+  def symbolize(self, symbol_mapping_cache):
+    """Makes a symbolized stacktrace and typeinfo with |symbol_mapping_cache|.
 
     Args:
-        symbol_cache: A SymbolCache object.
+        symbol_mapping_cache: A SymbolMappingCache object.
     """
     # TODO(dmikurube): Fill explicitly with numbers if symbol not found.
     self._symbolized_stacktrace = [
-        symbol_cache.lookup(FUNCTION_ADDRESS, address)
+        symbol_mapping_cache.lookup(FUNCTION_ADDRESS, address)
         for address in self._stacktrace]
     self._symbolized_joined_stacktrace = ' '.join(self._symbolized_stacktrace)
     if not self._typeinfo:
       self._symbolized_typeinfo = 'no typeinfo'
     else:
-      self._symbolized_typeinfo = symbol_cache.lookup(
+      self._symbolized_typeinfo = symbol_mapping_cache.lookup(
           TYPEINFO_ADDRESS, self._typeinfo)
       if not self._symbolized_typeinfo:
         self._symbolized_typeinfo = 'no typeinfo'
@@ -597,9 +602,9 @@ class BucketSet(object):
   def get(self, bucket_id):
     return self._buckets.get(bucket_id)
 
-  def symbolize(self, symbol_cache):
+  def symbolize(self, symbol_mapping_cache):
     for bucket_content in self._buckets.itervalues():
-      bucket_content.symbolize(symbol_cache)
+      bucket_content.symbolize(symbol_mapping_cache)
 
   def clear_component_cache(self):
     for bucket_content in self._buckets.itervalues():
@@ -815,18 +820,24 @@ class Command(object):
   @staticmethod
   def load_basic_files(dump_path, multiple):
     prefix = Command._find_prefix(dump_path)
-    symbol_mapping = SymbolMapping(prefix)
-    symbol_mapping.prepare()
+    symbol_data_sources = SymbolDataSources(prefix)
+    symbol_data_sources.prepare()
     bucket_set = BucketSet()
     bucket_set.load(prefix)
     if multiple:
       dump_list = DumpList.load(Command._find_all_dumps(dump_path))
     else:
       dump = Dump.load(dump_path)
-    symbol_cache = SymbolCache(prefix)
-    symbol_cache.update(FUNCTION_ADDRESS, bucket_set, symbol_mapping)
-    symbol_cache.update(TYPEINFO_ADDRESS, bucket_set, symbol_mapping)
-    bucket_set.symbolize(symbol_cache)
+    symbol_mapping_cache = SymbolMappingCache()
+    with open(prefix + '.funcsym', 'a+') as cache_f:
+      symbol_mapping_cache.update(
+          FUNCTION_ADDRESS, bucket_set,
+          SymbolFinder(FUNCTION_ADDRESS, symbol_data_sources), cache_f)
+    with open(prefix + '.typesym', 'a+') as cache_f:
+      symbol_mapping_cache.update(
+          TYPEINFO_ADDRESS, bucket_set,
+          SymbolFinder(TYPEINFO_ADDRESS, symbol_data_sources), cache_f)
+    bucket_set.symbolize(symbol_mapping_cache)
     if multiple:
       return (bucket_set, dump_list)
     else:
