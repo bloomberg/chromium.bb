@@ -185,8 +185,7 @@ class UrlFetchOperationBase : public AuthenticatedOperationInterface,
 //============================ EntryActionOperation ============================
 
 // Callback type for Delete/Move DocumentServiceInterface calls.
-typedef base::Callback<void(GDataErrorCode error,
-                            const GURL& document_url)> EntryActionCallback;
+typedef base::Callback<void(GDataErrorCode error)> EntryActionCallback;
 
 // This class performs a simple action over a given entry (document/file).
 // It is meant to be used for operations that return no JSON blobs.

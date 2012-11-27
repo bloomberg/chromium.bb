@@ -143,8 +143,7 @@ class CopyOperation {
   void MoveEntryToDirectory(const FilePath& file_path,
                             const FilePath& directory_path,
                             const FileMoveCallback& callback,
-                            google_apis::GDataErrorCode status,
-                            const GURL& /* document_url */);
+                            google_apis::GDataErrorCode status);
 
   // Callback when an entry is moved to another directory on the client side.
   // Notifies the directory change and runs |callback|.

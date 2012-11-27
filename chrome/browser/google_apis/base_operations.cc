@@ -334,7 +334,7 @@ EntryActionOperation::~EntryActionOperation() {}
 void EntryActionOperation::ProcessURLFetchResults(const URLFetcher* source) {
   if (!callback_.is_null()) {
     GDataErrorCode code = GetErrorCode(source);
-    callback_.Run(code, document_url_);
+    callback_.Run(code);
   }
   const bool success = true;
   OnProcessURLFetchResultsComplete(success);
@@ -342,7 +342,7 @@ void EntryActionOperation::ProcessURLFetchResults(const URLFetcher* source) {
 
 void EntryActionOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
   if (!callback_.is_null())
-    callback_.Run(code, document_url_);
+    callback_.Run(code);
 }
 
 //============================== GetDataOperation ==============================

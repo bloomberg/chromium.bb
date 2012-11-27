@@ -84,8 +84,7 @@ class MoveOperation {
   void RenameEntryLocally(const FilePath& file_path,
                           const FilePath::StringType& new_name,
                           const FileMoveCallback& callback,
-                          google_apis::GDataErrorCode status,
-                          const GURL& document_url);
+                          google_apis::GDataErrorCode status);
 
   // Removes a file or directory at |file_path| from the current directory if
   // it's not in the root directory. This essentially moves an entry to the
@@ -126,8 +125,7 @@ class MoveOperation {
   void MoveEntryToDirectory(const FilePath& file_path,
                             const FilePath& directory_path,
                             const FileMoveCallback& callback,
-                            google_apis::GDataErrorCode status,
-                            const GURL& document_url);
+                            google_apis::GDataErrorCode status);
 
   // Callback when an entry is moved to another directory on the client side.
   // Notifies the directory change and runs |callback|.

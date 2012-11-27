@@ -224,8 +224,7 @@ class DriveFileSyncClient : public base::NonThreadSafe,
                           scoped_ptr<google_apis::DocumentEntry> entry);
 
   void DidDeleteFile(const GDataErrorCallback& callback,
-                     google_apis::GDataErrorCode error,
-                     const GURL& document_url);
+                     google_apis::GDataErrorCode error);
 
   static std::string FormatTitleQuery(const std::string& title);
 

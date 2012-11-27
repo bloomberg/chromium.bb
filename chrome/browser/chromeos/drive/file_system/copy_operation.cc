@@ -327,8 +327,7 @@ void CopyOperation::MoveEntryToDirectory(
     const FilePath& file_path,
     const FilePath& directory_path,
     const FileMoveCallback& callback,
-    GDataErrorCode status,
-    const GURL& /* document_url */) {
+    GDataErrorCode status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 

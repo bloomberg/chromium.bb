@@ -213,10 +213,10 @@ ACTION_P3(InvokeDownloadActionCallback3,
 }
 
 // Invokes |arg1| as a EntryActionCallback.
-ACTION_P2(InvokeEntryActionCallback2, error, document_url) {
+ACTION_P(InvokeEntryActionCallback2, error) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(arg1, error, document_url));
+      base::Bind(arg1, error));
 }
 
 void DidGetResourceID(bool* done_out,
@@ -797,7 +797,7 @@ TEST_F(DriveFileSyncClientTest, DeleteFile) {
   // DidGetDocumentEntryForDeleteFile.
   EXPECT_CALL(*mock_drive_service(),
               DeleteDocument(entry->GetLinkByType(Link::LINK_SELF)->href(), _))
-      .WillOnce(InvokeEntryActionCallback2(google_apis::HTTP_SUCCESS, GURL()))
+      .WillOnce(InvokeEntryActionCallback2(google_apis::HTTP_SUCCESS))
       .RetiresOnSaturation();
 
   bool done = false;

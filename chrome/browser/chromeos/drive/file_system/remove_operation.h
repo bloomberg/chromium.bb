@@ -55,12 +55,11 @@ class RemoveOperation {
 
   // Callback for DriveServiceInterface::DeleteDocument. Removes the entry with
   // |resource_id| from the local snapshot of the filesystem and the cache.
-  // |document_url| is unused. |callback| must not be null.
+  // |callback| must not be null.
   void RemoveResourceLocally(
       const FileOperationCallback& callback,
       const std::string& resource_id,
-      google_apis::GDataErrorCode status,
-      const GURL& /* document_url */);
+      google_apis::GDataErrorCode status);
 
   // Sends notification for directory changes. Notifies of directory changes,
   // and runs |callback| with |error|. |callback| may be null.

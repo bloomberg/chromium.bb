@@ -102,7 +102,7 @@ void MockDriveService::DeleteDocumentStub(
     const EntryActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, HTTP_SUCCESS, document_url));
+      base::Bind(callback, HTTP_SUCCESS));
 }
 
 void MockDriveService::DownloadDocumentStub(
@@ -133,7 +133,7 @@ void MockDriveService::RenameResourceStub(
     const EntryActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, HTTP_SUCCESS, resource_url));
+      base::Bind(callback, HTTP_SUCCESS));
 }
 
 void MockDriveService::AddResourceToDirectoryStub(
@@ -142,7 +142,7 @@ void MockDriveService::AddResourceToDirectoryStub(
     const EntryActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, HTTP_SUCCESS, resource_url));
+      base::Bind(callback, HTTP_SUCCESS));
 }
 
 void MockDriveService::RemoveResourceFromDirectoryStub(
@@ -152,7 +152,7 @@ void MockDriveService::RemoveResourceFromDirectoryStub(
     const EntryActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, HTTP_SUCCESS, resource_url));
+      base::Bind(callback, HTTP_SUCCESS));
 }
 
 void MockDriveService::CreateDirectoryStub(

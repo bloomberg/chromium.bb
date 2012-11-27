@@ -590,8 +590,7 @@ void DriveFileSyncClient::DeleteFileInternal(
 
 void DriveFileSyncClient::DidDeleteFile(
     const GDataErrorCallback& callback,
-    google_apis::GDataErrorCode error,
-    const GURL& document_url) {
+    google_apis::GDataErrorCode error) {
   DCHECK(CalledOnValidThread());
   callback.Run(error);
 }
