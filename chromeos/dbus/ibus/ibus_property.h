@@ -22,11 +22,11 @@ class IBusProperty;
 typedef ScopedVector<IBusProperty> IBusPropertyList;
 
 // Pops a IBusProperty from |reader|.
-// Returns false if an error occures.
+// Returns false if an error occurs.
 bool CHROMEOS_EXPORT PopIBusProperty(dbus::MessageReader* reader,
                                      IBusProperty* property);
 // Pops a IBusPropertyList from |reader|.
-// Returns false if an error occures.
+// Returns false if an error occurs.
 bool CHROMEOS_EXPORT PopIBusPropertyList(dbus::MessageReader* reader,
                                          IBusPropertyList* property_list);
 

@@ -40,7 +40,7 @@ namespace ibus {
 //     uint32 0  // The engine rank. (not in use).
 //     string ""  // The hotkey to switch IME.(not in use)
 //     string ""  // The symbol character of this engine (not in use).
-//     string ""  // The command line to execute this engine (not inuse).
+//     string ""  // The command line to execute this engine (not in use).
 // }
 //
 // IBusComponent: (signature is "ssssssssavav")
@@ -78,7 +78,7 @@ namespace ibus {
 class IBusComponent;
 
 // Pops a IBusComponent from |reader|.
-// Returns false if an error occures.
+// Returns false if an error occurs.
 bool CHROMEOS_EXPORT PopIBusComponent(dbus::MessageReader* reader,
                                       IBusComponent* ibus_component);
 

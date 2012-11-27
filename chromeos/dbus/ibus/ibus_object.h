@@ -28,10 +28,10 @@ namespace chromeos {
 namespace ibus {
 
 // The data structure of IBusObject is represented as variant in "(sav...)"
-// signatur. The IBusObject is constructed with two sections, header and
+// signature. The IBusObject is constructed with two sections, header and
 // contents. The header section is represent as "sav" which contains type name
 // and attachment array. The contents section is corresponding to "..." in
-// above signature, which can store arbitary type values including IBusObject.
+// above signature, which can store arbitrary type values including IBusObject.
 //
 // DATA STRUCTURE OVERVIEW:
 //
@@ -78,7 +78,7 @@ namespace ibus {
 // and type name before reading contents.
 //
 // EXAPMLE USAGE:
-//   // Craetes reader for IBusText
+//   // Creates reader for IBusText
 //   IBusObjectReader object_reader("IBusText", &reader);
 //
 //   // Initialize for reading attachment field.

@@ -20,7 +20,7 @@ namespace chromeos {
 namespace ibus {
 
 // The IBusText is one of IBusObjects and it contains IBusAttrList object which
-// contains array of IBusAttribute object. The overview of each data strucutres
+// contains array of IBusAttribute object. The overview of each data structure
 // is as follows:
 //
 // DATA STRUCTURE OVERVIEW:
@@ -79,7 +79,7 @@ namespace ibus {
 class IBusText;
 
 // Pops a IBusText from |reader|.
-// Returns false if an error occures.
+// Returns false if an error occurs.
 bool CHROMEOS_EXPORT PopIBusText(dbus::MessageReader* reader,
                                  IBusText* ibus_text);
 // Pops a IBusText from |reader| and stores it's text field into text. Use

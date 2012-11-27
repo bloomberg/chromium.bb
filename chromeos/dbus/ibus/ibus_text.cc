@@ -29,7 +29,7 @@ struct IBusAttribute {
 };
 
 // Pops a IBusAttribute from |reader|.
-// Returns false if an error is occures.
+// Returns false if an error occurs.
 bool PopIBusAttribute(dbus::MessageReader* reader, IBusAttribute* attribute) {
   IBusObjectReader ibus_object_reader("IBusAttribute", reader);
   if (!ibus_object_reader.Init())

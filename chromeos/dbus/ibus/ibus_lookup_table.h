@@ -22,7 +22,7 @@ namespace ibus {
 
 // The IBusLookupTable is one of IBusObjects. IBusLookupTable contains IBusTexts
 // but all of them are used as plain string. The overview of each data
-// strucutres is as follows:
+// structure is as follows:
 //
 // DATA STRUCTURE OVERVIEW:
 //  variant  struct {
@@ -70,7 +70,7 @@ namespace ibus {
 class IBusLookupTable;
 
 // Pops a IBusLookupTable from |reader|.
-// Returns false if an error occures.
+// Returns false if an error occurs.
 bool CHROMEOS_EXPORT PopIBusLookupTable(dbus::MessageReader* reader,
                                         IBusLookupTable* table);
 // Appends a IBusLookupTable to |writer| except mozc_candidates_ in |table|.
@@ -112,7 +112,7 @@ class CHROMEOS_EXPORT IBusLookupTable {
     cursor_position_ = cursor_position;
   }
 
-  // Returns true if the cusros is visible.
+  // Returns true if the cursor is visible.
   bool is_cursor_visible() const { return is_cursor_visible_; }
   void set_is_cursor_visible(bool is_cursor_visible) {
     is_cursor_visible_ = is_cursor_visible;

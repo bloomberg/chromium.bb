@@ -64,7 +64,7 @@ class CHROMEOS_EXPORT IBusClient {
   // Requests the ibus-daemon to exit daemon process. If |option| is
   // RESTART_IBUS_DAEMON, ibus-daemon will be relaunched. If |option| is
   // SHUT_DOWN_IBUS_DAEMON, ibus-daemon will not be relaunched. The
-  // |error_callback| is called if an error occures.
+  // |error_callback| is called if an error occurs.
   virtual void Exit(ExitOption option, const ErrorCallback& error_callback) = 0;
 
   // Factory function, creates a new instance and returns ownership.

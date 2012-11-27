@@ -101,7 +101,7 @@ void AppendIBusEngineDesc(const IBusComponent::EngineDescription& engine_desc,
   ibus_object_writer.AppendUint32(0);  // The engine rank is not used.
   ibus_object_writer.AppendString("");  // The hotkey field is not used.
   ibus_object_writer.AppendString("");  // The symbol field is not used.
-  ibus_object_writer.AppendString("");  // The command line field is nto used.
+  ibus_object_writer.AppendString("");  // The command line field is not used.
   ibus_object_writer.CloseAll();
 }
 

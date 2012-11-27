@@ -65,7 +65,7 @@ class EmptyResponseExpectation {
   explicit EmptyResponseExpectation(const uint32 serial_no)
       : serial_no_(serial_no) {}
 
-  // Evaluates the given |resposne| has no argument.
+  // Evaluates the given |response| has no argument.
   void Evaluate(dbus::Response* response) {
     scoped_ptr<dbus::Response> response_deleter(response);
     EXPECT_EQ(serial_no_, response->GetReplySerial());
@@ -86,7 +86,7 @@ class BoolResponseExpectation {
       : serial_no_(serial_no),
         result_(result) {}
 
-  // Evaluates the given |resposne| has only one boolean and which is equals to
+  // Evaluates the given |response| has only one boolean and which is equals to
   // |result_| which is given in ctor.
   void Evaluate(dbus::Response* response) {
     scoped_ptr<dbus::Response> response_deleter(response);
@@ -466,7 +466,7 @@ class IBusEngineServiceTest : public testing::Test {
         .WillRepeatedly(
             Invoke(this, &IBusEngineServiceTest::OnMethodExported));
 
-    // Surpress uninteresting mock function call warning.
+    // Suppress uninteresting mock function call warning.
     EXPECT_CALL(*mock_bus_.get(),
                 AssertOnOriginThread())
         .WillRepeatedly(Return());
@@ -1008,7 +1008,7 @@ TEST_F(IBusEngineServiceTest, SetSurroundingTextTest) {
 }
 
 TEST_F(IBusEngineServiceTest, RegisterProperties) {
-  // Set expetations.
+  // Set expectations.
   ibus::IBusPropertyList property_list;
   property_list.push_back(new ibus::IBusProperty());
   property_list[0]->set_key("Sample Key");
@@ -1027,7 +1027,7 @@ TEST_F(IBusEngineServiceTest, RegisterProperties) {
 }
 
 TEST_F(IBusEngineServiceTest, UpdatePreeditTest) {
-  // Set expetations.
+  // Set expectations.
   ibus::IBusText ibus_text;
   ibus_text.set_text("Sample Text");
   const uint32 kCursorPos = 9;

@@ -14,7 +14,7 @@ namespace ibus {
 
 TEST(IBusComponentTest, WriteReadIBusComponentTest) {
   const std::string kName = "Component Name";
-  const std::string kDescription = "Component Descriptoin";
+  const std::string kDescription = "Component Description";
   const std::string kAuthor = "Component Author";
 
   const std::string kEngineId1 = "Engine Id 1";

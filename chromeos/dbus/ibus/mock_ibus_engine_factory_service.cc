@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
 #include "chromeos/dbus/ibus/mock_ibus_engine_factory_service.h"
 
 namespace chromeos {

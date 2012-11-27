@@ -61,7 +61,7 @@ class EmptyResponseVerifier {
   explicit EmptyResponseVerifier(uint32 expected_serial_number)
       : expected_serial_number_(expected_serial_number) {}
 
-  // Verifies the given |resposne| has no argument.
+  // Verifies the given |response| has no argument.
   void Verify(dbus::Response* response) {
     scoped_ptr<dbus::Response> response_deleter(response);
     EXPECT_EQ(expected_serial_number_, response->GetReplySerial());
@@ -424,7 +424,7 @@ TEST_F(IBusPanelServiceTest, UpdatePreeditTextTest) {
 }
 
 TEST_F(IBusPanelServiceTest, CursorUpTest) {
-  // Set expetations.
+  // Set expectations.
   NullArgumentVerifier evaluator(ibus::panel::kCursorUpSignal);
   EXPECT_CALL(*mock_exported_object_, SendSignal(_))
       .WillOnce(Invoke(&evaluator, &NullArgumentVerifier::Verify));
@@ -434,7 +434,7 @@ TEST_F(IBusPanelServiceTest, CursorUpTest) {
 }
 
 TEST_F(IBusPanelServiceTest, CursorDownTest) {
-  // Set expetations.
+  // Set expectations.
   NullArgumentVerifier evaluator(ibus::panel::kCursorDownSignal);
   EXPECT_CALL(*mock_exported_object_, SendSignal(_))
       .WillOnce(Invoke(&evaluator, &NullArgumentVerifier::Verify));
@@ -444,7 +444,7 @@ TEST_F(IBusPanelServiceTest, CursorDownTest) {
 }
 
 TEST_F(IBusPanelServiceTest, PageUpTest) {
-  // Set expetations.
+  // Set expectations.
   NullArgumentVerifier evaluator(ibus::panel::kPageUpSignal);
   EXPECT_CALL(*mock_exported_object_, SendSignal(_))
       .WillOnce(Invoke(&evaluator, &NullArgumentVerifier::Verify));
@@ -454,7 +454,7 @@ TEST_F(IBusPanelServiceTest, PageUpTest) {
 }
 
 TEST_F(IBusPanelServiceTest, PageDownTest) {
-  // Set expetations.
+  // Set expectations.
   NullArgumentVerifier evaluator(ibus::panel::kPageDownSignal);
   EXPECT_CALL(*mock_exported_object_, SendSignal(_))
       .WillOnce(Invoke(&evaluator, &NullArgumentVerifier::Verify));

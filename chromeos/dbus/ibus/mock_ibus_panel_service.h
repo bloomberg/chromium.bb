@@ -5,7 +5,6 @@
 #ifndef CHROMEOS_DBUS_IBUS_MOCK_IBUS_PANEL_SERVICE_H_
 #define CHROMEOS_DBUS_IBUS_MOCK_IBUS_PANEL_SERVICE_H_
 
-#include <string>
 #include "chromeos/dbus/ibus/ibus_panel_service.h"
 
 namespace chromeos {

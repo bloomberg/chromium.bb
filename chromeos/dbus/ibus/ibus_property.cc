@@ -65,7 +65,7 @@ bool CHROMEOS_EXPORT PopIBusProperty(dbus::MessageReader* reader,
   }
   property->set_tooltip(tooltip);
 
-  // The 6th bool argument represents whther the property is event sensitive or
+  // The 6th bool argument represents whether the property is event sensitive or
   // not, but not supported in Chrome OS.
   bool sensitive = true;
   if (!ibus_property_reader.PopBool(&sensitive)) {

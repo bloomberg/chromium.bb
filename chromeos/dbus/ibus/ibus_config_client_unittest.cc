@@ -49,7 +49,7 @@ class SetValueVerifierBase {
         expected_key_(expected_key),
         behavior_(behavior) {}
 
-  // Handles SetValue method call. This function checkes "section" and "key"
+  // Handles SetValue method call. This function checks "section" and "key"
   // field. For the "value" field, subclass checks it with over riding
   // VeirfyVariant member function.
   void Run(dbus::MethodCall* method_call,

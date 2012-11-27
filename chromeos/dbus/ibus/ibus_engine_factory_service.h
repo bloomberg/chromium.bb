@@ -41,7 +41,7 @@ class CHROMEOS_EXPORT IBusEngineFactoryService {
   virtual void UnsetCreateEngineHandler(const std::string& engine_id) = 0;
 
   // Factory function, creates a new instance and returns ownership.
-  // For normal usage, accesses the sigleton via DBusThreadManager::Get().
+  // For normal usage, accesses the singleton via DBusThreadManager::Get().
   static CHROMEOS_EXPORT IBusEngineFactoryService* Create(
       dbus::Bus* bus,
       DBusClientImplementationType type);

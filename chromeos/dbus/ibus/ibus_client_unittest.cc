@@ -297,7 +297,7 @@ TEST_F(IBusClientTest, SetGlobalEngineTest_InvalidResponse) {
   MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run());
 
-  // Set invlaid response.
+  // Set invalid response.
   response_ = NULL;
 
   // The error response is not used in SetGLobalEngine.
@@ -368,7 +368,7 @@ TEST_F(IBusClientTest, ExitTest_InvalidResponse) {
   MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run());
 
-  // Set invlaid response.
+  // Set invalid response.
   response_ = NULL;
 
   // The error response is not used in SetGLobalEngine.

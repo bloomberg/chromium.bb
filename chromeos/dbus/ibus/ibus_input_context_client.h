@@ -99,7 +99,7 @@ class CHROMEOS_EXPORT IBusInputContextClient {
   // Invokes SetCursorLocation method call.
   virtual void SetCursorLocation(int32 x, int32 y, int32 width,
                                  int32 height) = 0;
-  // Invokes ProcessKeyEvent method call. |callback| shold not be null-callback.
+  // Invokes ProcessKeyEvent method call. |callback| should not be null.
   virtual void ProcessKeyEvent(uint32 keyval,
                                uint32 keycode,
                                uint32 state,

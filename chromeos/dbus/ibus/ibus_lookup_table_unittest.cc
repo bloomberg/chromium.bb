@@ -17,7 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
-// TODO(nona): Remove ibus namespace after complete libibus removale.
+// TODO(nona): Remove ibus namespace after complete libibus removal.
 namespace ibus {
 
 TEST(IBusLookupTable, WriteReadTest) {

@@ -88,20 +88,20 @@ bool IBusObjectReader::Init() {
 
     std::string key;
     if (!dictionary_reader.PopString(&key)) {
-      LOG(ERROR) << "Invalid attachement structure: "
+      LOG(ERROR) << "Invalid attachment structure: "
                  << "The 1st dictionary entry should be string.";
       return false;
     }
 
     if (key.empty()) {
-      LOG(ERROR) << "Invalid attachement key: key is empty.";
+      LOG(ERROR) << "Invalid attachment key: key is empty.";
       return false;
     }
 
     dbus::MessageReader variant_reader(NULL);
     if (!dictionary_reader.PopVariant(&variant_reader)) {
       LOG(ERROR) << "Invalid attachment structure: "
-                 << "The 2nd dictionary entry shuold be variant.";
+                 << "The 2nd dictionary entry should be variant.";
       return false;
     }
 

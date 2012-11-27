@@ -100,7 +100,7 @@ bool PopIBusLookupTable(dbus::MessageReader* reader, IBusLookupTable* table) {
   bool cursor_visible = true;
   if (!ibus_object_reader.PopBool(&cursor_visible)) {
     LOG(ERROR) << "Invalid variant structure[IBusLookupTable]: "
-               << "3rd arugment should be boolean.";
+               << "3rd argument should be boolean.";
     return false;
   }
   table->set_is_cursor_visible(cursor_visible);
@@ -115,7 +115,7 @@ bool PopIBusLookupTable(dbus::MessageReader* reader, IBusLookupTable* table) {
   int32 orientation = 0;
   if (!ibus_object_reader.PopInt32(&orientation)) {
     LOG(ERROR) << "Invalid variant structure[IBusLookupTable]: "
-               << "5th arguemnt should be int32.";
+               << "5th argument should be int32.";
     return false;
   }
   table->set_orientation(
