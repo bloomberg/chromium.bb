@@ -58,3 +58,13 @@ void AppListControllerDelegateAsh::LaunchApp(Profile* profile,
   ChromeLauncherController::instance()->LaunchApp(extension_id, event_flags);
   CloseView();
 }
+
+namespace app_list_controller {
+
+#if defined(OS_CHROMEOS)
+void ShowAppList() {
+  ash::Shell::GetInstance()->ToggleAppList();
+}
+#endif
+
+}
