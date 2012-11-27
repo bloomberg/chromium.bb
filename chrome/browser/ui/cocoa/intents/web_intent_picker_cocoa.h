@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_INTENTS_WEB_INTENT_PICKER_COCOA2_H_
-#define CHROME_BROWSER_UI_COCOA_INTENTS_WEB_INTENT_PICKER_COCOA2_H_
+#ifndef CHROME_BROWSER_UI_COCOA_INTENTS_WEB_INTENT_PICKER_COCOA_H_
+#define CHROME_BROWSER_UI_COCOA_INTENTS_WEB_INTENT_PICKER_COCOA_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -15,16 +15,15 @@
 @class WebIntentPickerViewController;
 
 // An implementation of WebIntentPicker for Cocoa. Bridges between the C++ and
-// the Cocoa WebIntentPickerViewController object.  Note, this will eventually
-// replace WebIntentPickerCocoa, see http://crbug.com/152010.
-class WebIntentPickerCocoa2 : public WebIntentPicker,
-                              public WebIntentPickerModelObserver,
-                              public ConstrainedWindowMacDelegate2 {
+// the Cocoa WebIntentPickerViewController object.
+class WebIntentPickerCocoa : public WebIntentPicker,
+                             public WebIntentPickerModelObserver,
+                             public ConstrainedWindowMacDelegate2 {
  public:
-  WebIntentPickerCocoa2(content::WebContents* web_contents,
-                        WebIntentPickerDelegate* delegate,
-                        WebIntentPickerModel* model);
-  virtual ~WebIntentPickerCocoa2();
+  WebIntentPickerCocoa(content::WebContents* web_contents,
+                       WebIntentPickerDelegate* delegate,
+                       WebIntentPickerModel* model);
+  virtual ~WebIntentPickerCocoa();
 
   WebIntentPickerDelegate* delegate() const {
     DCHECK(delegate_);
@@ -81,7 +80,7 @@ class WebIntentPickerCocoa2 : public WebIntentPicker,
   scoped_nsobject<WebIntentPickerViewController> view_controller_;
   scoped_ptr<ConstrainedWindowMac2> constrained_window_;
   bool update_pending_;
-  base::WeakPtrFactory<WebIntentPickerCocoa2> weak_ptr_factory_;
+  base::WeakPtrFactory<WebIntentPickerCocoa> weak_ptr_factory_;
 };
 
-#endif  // CHROME_BROWSER_UI_COCOA_INTENTS_WEB_INTENT_PICKER_COCOA2_H_
+#endif  // CHROME_BROWSER_UI_COCOA_INTENTS_WEB_INTENT_PICKER_COCOA_H_

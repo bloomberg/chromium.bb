@@ -8,7 +8,7 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_control_utils.h"
 #import "chrome/browser/ui/cocoa/flipped_view.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
-#import "chrome/browser/ui/cocoa/intents/web_intent_picker_cocoa2.h"
+#import "chrome/browser/ui/cocoa/intents/web_intent_picker_cocoa.h"
 #include "chrome/browser/ui/constrained_window.h"
 #include "chrome/browser/ui/constrained_window_constants.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
@@ -21,7 +21,7 @@
 
 @implementation WebIntentInlineServiceViewController
 
-- (id)initWithPicker:(WebIntentPickerCocoa2*)picker {
+- (id)initWithPicker:(WebIntentPickerCocoa*)picker {
   if ((self = [super init])) {
     picker_ = picker;
 

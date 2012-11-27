@@ -7,7 +7,6 @@
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
-#include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac2.h"
 #include "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/common/chrome_switches.h"
@@ -18,103 +17,16 @@
 TabModalConfirmDialog* TabModalConfirmDialog::Create(
     TabModalConfirmDialogDelegate* delegate,
     content::WebContents* web_contents) {
-  if (chrome::UseChromeStyleDialogs()) {
-    // Deletes itself when closed.
-    return new TabModalConfirmDialogMac2(delegate, web_contents);
-  }
   // Deletes itself when closed.
   return new TabModalConfirmDialogMac(delegate, web_contents);
 }
 
-// The delegate of the NSAlert used to display the dialog. Forwards the alert's
-// completion event to the C++ class |TabModalConfirmDialogDelegate|.
 @interface TabModalConfirmDialogMacBridge : NSObject {
   TabModalConfirmDialogDelegate* delegate_;  // weak
 }
-- (id)initWithDelegate:(TabModalConfirmDialogDelegate*)delegate;
-- (void)alertDidEnd:(NSAlert*)alert
-         returnCode:(int)returnCode
-        contextInfo:(void*)contextInfo;
 @end
 
 @implementation TabModalConfirmDialogMacBridge
-- (id)initWithDelegate:(TabModalConfirmDialogDelegate*)delegate {
-  if ((self = [super init])) {
-    delegate_ = delegate;
-  }
-  return self;
-}
-
-- (void)alertDidEnd:(NSAlert*)alert
-         returnCode:(int)returnCode
-        contextInfo:(void*)contextInfo {
-  if (returnCode == NSAlertFirstButtonReturn) {
-    delegate_->Accept();
-  } else {
-    delegate_->Cancel();
-  }
-}
-@end
-
-TabModalConfirmDialogMac::TabModalConfirmDialogMac(
-    TabModalConfirmDialogDelegate* delegate,
-    content::WebContents* web_contents)
-    : ConstrainedWindowMacDelegateSystemSheet(
-        [[[TabModalConfirmDialogMacBridge alloc] initWithDelegate:delegate]
-            autorelease],
-        @selector(alertDidEnd:returnCode:contextInfo:)),
-      delegate_(delegate) {
-  scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
-  [alert setMessageText:
-      l10n_util::FixUpWindowsStyleLabel(delegate->GetTitle())];
-  [alert setInformativeText:
-      l10n_util::FixUpWindowsStyleLabel(delegate->GetMessage())];
-  [alert addButtonWithTitle:
-      l10n_util::FixUpWindowsStyleLabel(delegate->GetAcceptButtonTitle())];
-  [alert addButtonWithTitle:
-      l10n_util::FixUpWindowsStyleLabel(delegate->GetCancelButtonTitle())];
-  gfx::Image* icon = delegate->GetIcon();
-  if (icon)
-    [alert setIcon:icon->ToNSImage()];
-
-  set_sheet(alert);
-
-  delegate->set_window(new ConstrainedWindowMac(web_contents, this));
-}
-
-TabModalConfirmDialogMac::~TabModalConfirmDialogMac() {
-  CancelTabModalDialog();
-}
-
-// "DeleteDelegate" refers to this class being a ConstrainedWindow delegate
-// and deleting itself, not to deleting the member variable |delegate_|.
-void TabModalConfirmDialogMac::DeleteDelegate() {
-  delete this;
-}
-
-void TabModalConfirmDialogMac::AcceptTabModalDialog() {
-  NSWindow* window = [(NSAlert*)sheet() window];
-  if (window && is_sheet_open()) {
-    [NSApp endSheet:window
-         returnCode:NSAlertFirstButtonReturn];
-  }
-}
-
-void TabModalConfirmDialogMac::CancelTabModalDialog() {
-  NSWindow* window = [(NSAlert*)sheet() window];
-  if (window && is_sheet_open()) {
-    [NSApp endSheet:window
-      returnCode:NSAlertSecondButtonReturn];
-  }
-}
-
-
-@interface TabModalConfirmDialogMacBridge2 : NSObject {
-  TabModalConfirmDialogDelegate* delegate_;  // weak
-}
-@end
-
-@implementation TabModalConfirmDialogMacBridge2
 
 - (id)initWithDelegate:(TabModalConfirmDialogDelegate*)delegate {
   if ((self = [super init])) {
@@ -134,11 +46,11 @@ void TabModalConfirmDialogMac::CancelTabModalDialog() {
 
 @end
 
-TabModalConfirmDialogMac2::TabModalConfirmDialogMac2(
+TabModalConfirmDialogMac::TabModalConfirmDialogMac(
     TabModalConfirmDialogDelegate* delegate,
     content::WebContents* web_contents)
     : delegate_(delegate) {
-  bridge_.reset([[TabModalConfirmDialogMacBridge2 alloc]
+  bridge_.reset([[TabModalConfirmDialogMacBridge alloc]
       initWithDelegate:delegate]);
 
   alert_.reset([[ConstrainedWindowAlert alloc] init]);
@@ -164,18 +76,18 @@ TabModalConfirmDialogMac2::TabModalConfirmDialogMac2(
   delegate->set_window(window_.get());
 }
 
-TabModalConfirmDialogMac2::~TabModalConfirmDialogMac2() {
+TabModalConfirmDialogMac::~TabModalConfirmDialogMac() {
 }
 
-void TabModalConfirmDialogMac2::AcceptTabModalDialog() {
+void TabModalConfirmDialogMac::AcceptTabModalDialog() {
   delegate_->Accept();
 }
 
-void TabModalConfirmDialogMac2::CancelTabModalDialog() {
+void TabModalConfirmDialogMac::CancelTabModalDialog() {
   delegate_->Cancel();
 }
 
-void TabModalConfirmDialogMac2::OnConstrainedWindowClosed(
+void TabModalConfirmDialogMac::OnConstrainedWindowClosed(
     ConstrainedWindowMac2* window) {
   delete this;
 }

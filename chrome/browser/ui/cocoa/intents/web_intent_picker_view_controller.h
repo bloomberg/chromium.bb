@@ -10,7 +10,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "ui/gfx/size.h"
 
-class WebIntentPickerCocoa2;
+class WebIntentPickerCocoa;
 @class WebIntentChooseServiceViewController;
 @class WebIntentExtensionPromptViewController;
 @class WebIntentInlineServiceViewController;
@@ -31,7 +31,7 @@ enum WebIntentPickerState {
 // a constrained window or a bubble.
 @interface WebIntentPickerViewController : NSViewController {
  @private
-  WebIntentPickerCocoa2* picker_;  // weak
+  WebIntentPickerCocoa* picker_;  // weak
   WebIntentPickerState state_;
   scoped_nsobject<NSButton> closeButton_;
   scoped_nsobject<WebIntentChooseServiceViewController>
@@ -46,7 +46,7 @@ enum WebIntentPickerState {
       extensionPromptViewController_;
 }
 
-- (id)initWithPicker:(WebIntentPickerCocoa2*)picker;
+- (id)initWithPicker:(WebIntentPickerCocoa*)picker;
 
 // Gets the minimum size of the web view shown inside picker dialog.
 - (gfx::Size)minimumInlineWebViewSize;

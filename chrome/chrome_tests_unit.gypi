@@ -1329,7 +1329,6 @@
         'browser/ui/cocoa/view_resizer_pong.mm',
         'browser/ui/cocoa/website_settings_bubble_controller_unittest.mm',
         'browser/ui/cocoa/web_dialog_window_controller_unittest.mm',
-        'browser/ui/cocoa/web_intent_sheet_controller_unittest.mm',
         'browser/ui/cocoa/window_size_autosaver_unittest.mm',
         'browser/ui/cocoa/wrench_menu/menu_tracked_root_view_unittest.mm',
         'browser/ui/cocoa/wrench_menu/wrench_menu_button_cell_unittest.mm',

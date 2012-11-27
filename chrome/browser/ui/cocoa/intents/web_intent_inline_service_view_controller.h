@@ -16,12 +16,12 @@ namespace content {
 class WebContents;
 }
 class WebIntentInlineDispositionDelegate;
-class WebIntentPickerCocoa2;
+class WebIntentPickerCocoa;
 
 // The inline service view shows a web view for a given service.
 @interface WebIntentInlineServiceViewController : WebIntentViewController {
  @private
-  WebIntentPickerCocoa2* picker_;  // weak
+  WebIntentPickerCocoa* picker_;  // weak
   scoped_nsobject<NSImageView> serviceIconImageView_;
   scoped_nsobject<NSTextField> serviceNameTextField_;
   scoped_nsobject<NSButton> chooseServiceButton_;
@@ -34,7 +34,7 @@ class WebIntentPickerCocoa2;
   scoped_ptr<WebIntentInlineDispositionDelegate> delegate_;
 }
 
-- (id)initWithPicker:(WebIntentPickerCocoa2*)picker;
+- (id)initWithPicker:(WebIntentPickerCocoa*)picker;
 
 - (NSButton*)chooseServiceButton;
 - (content::WebContents*)webContents;

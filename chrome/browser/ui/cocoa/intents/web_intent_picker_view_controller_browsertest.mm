@@ -13,7 +13,7 @@
 #import "chrome/browser/ui/cocoa/intents/web_intent_extension_prompt_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_inline_service_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_message_view_controller.h"
-#import "chrome/browser/ui/cocoa/intents/web_intent_picker_cocoa2.h"
+#import "chrome/browser/ui/cocoa/intents/web_intent_picker_cocoa.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_progress_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_service_row_view_controller.h"
@@ -42,7 +42,7 @@ class WebIntentPickerViewControllerTest : public InProcessBrowserTest {
   virtual void SetUpOnMainThread() OVERRIDE {
     content::WebContents* tab =
         browser()->tab_strip_model()->GetWebContentsAt(0);
-    picker_ = new WebIntentPickerCocoa2(tab, &delegate_, &model_);
+    picker_ = new WebIntentPickerCocoa(tab, &delegate_, &model_);
     controller_ = picker_->view_controller();
   }
 
@@ -54,7 +54,7 @@ class WebIntentPickerViewControllerTest : public InProcessBrowserTest {
  protected:
   WebIntentPickerDelegateMock delegate_;
   WebIntentPickerModel model_;
-  WebIntentPickerCocoa2* picker_;  // weak
+  WebIntentPickerCocoa* picker_;  // weak
   WebIntentPickerViewController* controller_;  // weak
 };
 

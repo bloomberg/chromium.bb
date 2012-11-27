@@ -12,7 +12,7 @@
 #import "chrome/browser/ui/cocoa/intents/web_intent_extension_prompt_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_inline_service_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_message_view_controller.h"
-#import "chrome/browser/ui/cocoa/intents/web_intent_picker_cocoa2.h"
+#import "chrome/browser/ui/cocoa/intents/web_intent_picker_cocoa.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_progress_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_service_row_view_controller.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
@@ -58,7 +58,7 @@
 
 @implementation WebIntentPickerViewController
 
-- (id)initWithPicker:(WebIntentPickerCocoa2*)picker {
+- (id)initWithPicker:(WebIntentPickerCocoa*)picker {
   if ((self = [super init])) {
     picker_ = picker;
 

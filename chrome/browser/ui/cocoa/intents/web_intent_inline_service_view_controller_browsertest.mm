@@ -6,7 +6,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
-#import "chrome/browser/ui/cocoa/intents/web_intent_picker_cocoa2.h"
+#import "chrome/browser/ui/cocoa/intents/web_intent_picker_cocoa.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_inline_service_view_controller.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate_mock.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -29,7 +29,7 @@ class WebIntentInlineServiceViewControllerTest : public InProcessBrowserTest {
   virtual void SetUpOnMainThread() OVERRIDE {
     content::WebContents* tab =
         browser()->tab_strip_model()->GetWebContentsAt(0);
-    picker_ = new WebIntentPickerCocoa2(tab, &delegate_, &model_);
+    picker_ = new WebIntentPickerCocoa(tab, &delegate_, &model_);
     view_controller_.reset(
         [[WebIntentInlineServiceViewController alloc] initWithPicker:picker_]);
     view_.reset([[view_controller_ view] retain]);
@@ -49,7 +49,7 @@ class WebIntentInlineServiceViewControllerTest : public InProcessBrowserTest {
   scoped_nsobject<WebIntentInlineServiceViewController> view_controller_;
   WebIntentPickerDelegateMock delegate_;
   WebIntentPickerModel model_;
-  WebIntentPickerCocoa2* picker_;
+  WebIntentPickerCocoa* picker_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebIntentInlineServiceViewControllerTest, Layout) {
