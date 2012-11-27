@@ -816,6 +816,11 @@ class ExtensionService
   // to update the extension.
   bool IsExtensionIdle(const std::string& extension_id) const;
 
+  // Helper to determine if updating an extensions should proceed immediately,
+  // or if we should delay the update until further notice.
+  bool ShouldDelayExtensionUpdate(const std::string& extension_id,
+                                  bool wait_for_idle) const;
+
   // extensions::Blacklist::Observer implementation.
   virtual void OnBlacklistUpdated() OVERRIDE;
 

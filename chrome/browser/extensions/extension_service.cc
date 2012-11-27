@@ -2356,12 +2356,7 @@ void ExtensionService::OnExtensionInstalled(
   if (extension->location() == Extension::EXTERNAL_POLICY_DOWNLOAD)
     AcknowledgeExternalExtension(extension->id());
 
-  const Extension* old =
-      GetExtensionByIdInternal(id, include_mask);
-  // If this is an upgrade and the extension/app has a background page that can
-  // be idle but isn't, we delay the upgrade until the background page is idle.
-  if (install_updates_when_idle_ && wait_for_idle && old &&
-      !IsExtensionIdle(id) && !old->has_persistent_background_page()) {
+  if (ShouldDelayExtensionUpdate(id, wait_for_idle)) {
     extension_prefs_->SetIdleInstallInfo(
         extension,
         initial_enable ? Extension::ENABLED : Extension::DISABLED);
@@ -2413,7 +2408,7 @@ void ExtensionService::MaybeFinishInstallation(
   // Check if the extension already got updated.
   if (!pending_extension_updates_.Contains(extension_id))
     return;
-  // Check if the extension is still idle.
+  // Check if the extension is idle.
   if (!IsExtensionIdle(extension_id))
     return;
 
@@ -2710,18 +2705,15 @@ void ExtensionService::Observe(int type,
     case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
       extensions::ExtensionHost* host =
           content::Details<extensions::ExtensionHost>(details).ptr();
-      if (host->extension_host_type() ==
-          chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-        std::string extension_id = host->extension_id();
-        if (pending_extension_updates_.Contains(extension_id)) {
-          // We were waiting for this extension to become idle, it now did, so
-          // finish installation.
-          MessageLoop::current()->PostDelayedTask(
+      std::string extension_id = host->extension_id();
+      if (pending_extension_updates_.Contains(extension_id)) {
+        // We were waiting for this extension to become idle, it now might have,
+        // so maybe finish installation.
+        MessageLoop::current()->PostDelayedTask(
             FROM_HERE,
             base::Bind(&ExtensionService::MaybeFinishInstallation,
                        AsWeakPtr(), extension_id),
             base::TimeDelta::FromSeconds(kUpdateIdleDelay));
-        }
       }
       break;
     }
@@ -2971,7 +2963,37 @@ bool ExtensionService::IsExtensionIdle(const std::string& extension_id) const {
   DCHECK(process_manager);
   extensions::ExtensionHost* host =
       process_manager->GetBackgroundHostForExtension(extension_id);
-  return !host;
+  if (host)
+    return false;
+  return process_manager->GetRenderViewHostsForExtension(extension_id).empty();
+}
+
+bool ExtensionService::ShouldDelayExtensionUpdate(
+    const std::string& extension_id,
+    bool wait_for_idle) const {
+  const char kOnUpdateAvailableEvent[] = "runtime.onUpdateAvailable";
+
+  // If delayed updates are globally disabled, or just for this extension,
+  // don't delay.
+  if (!install_updates_when_idle_ || !wait_for_idle)
+    return false;
+
+  int include_mask = INCLUDE_ENABLED | INCLUDE_DISABLED;
+  const Extension* old =
+      GetExtensionByIdInternal(extension_id, include_mask);
+  // If there is no old extension, this is not an update, so don't delay.
+  if (!old)
+    return false;
+
+  if (old->has_persistent_background_page()) {
+    // Delay installation if the extension listens for the onUpdateAvailable
+    // event.
+    return system_->event_router()->ExtensionHasEventListener(
+        extension_id, kOnUpdateAvailableEvent);
+  } else {
+    // Delay installation if the extension is not idle.
+    return !IsExtensionIdle(extension_id);
+  }
 }
 
 void ExtensionService::OnBlacklistUpdated() {
