@@ -58,7 +58,12 @@ FocusController::~FocusController() {
 }
 
 void FocusController::FocusWindow(aura::Window* window) {
-  SetFocusedWindow(window);
+  // Focusing a window also activates its containing activatable window. Note
+  // that the rules could redirect activation activation and/or focus.
+  aura::Window* focusable = rules_->GetFocusableWindow(window);
+  SetActiveWindow(rules_->GetActivatableWindow(focusable));
+  DCHECK(GetActiveWindow()->Contains(focusable));
+  SetFocusedWindow(focusable);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -75,11 +80,11 @@ void FocusController::RemoveObserver(
 }
 
 void FocusController::ActivateWindow(aura::Window* window) {
-  SetActiveWindow(rules_->GetActivatableWindow(window));
+  FocusWindow(window);
 }
 
 void FocusController::DeactivateWindow(aura::Window* window) {
-  SetActiveWindow(rules_->GetNextActivatableWindow(window));
+  FocusWindow(rules_->GetNextActivatableWindow(window));
 }
 
 aura::Window* FocusController::GetActiveWindow() {
@@ -163,6 +168,8 @@ bool FocusController::CanDispatchToTarget(ui::EventTarget* target) {
 // FocusController, private:
 
 void FocusController::SetFocusedWindow(aura::Window* window) {
+  if (window == focused_window_)
+    return;
   DCHECK(rules_->CanFocusWindow(window));
   if (window)
     DCHECK_EQ(window, rules_->GetFocusableWindow(window));
@@ -176,6 +183,8 @@ void FocusController::SetFocusedWindow(aura::Window* window) {
 }
 
 void FocusController::SetActiveWindow(aura::Window* window) {
+  if (window == active_window_)
+    return;
   DCHECK(rules_->CanActivateWindow(window));
   if (window)
     DCHECK_EQ(window, rules_->GetActivatableWindow(window));
@@ -190,6 +199,8 @@ void FocusController::SetActiveWindow(aura::Window* window) {
 
 void FocusController::WindowLostFocusFromDispositionChange(
     aura::Window* window) {
+  // TODO(beng): See if this function can be replaced by a call to
+  //             FocusWindow().
   // Activation adjustments are handled first in the event of a disposition
   // changed. If an activation change is necessary, focus is reset as part of
   // that process so there's no point in updating focus independently.
@@ -204,12 +215,7 @@ void FocusController::WindowLostFocusFromDispositionChange(
 }
 
 void FocusController::WindowFocusedFromInputEvent(aura::Window* window) {
-  aura::Window* activatable = rules_->GetActivatableWindow(window);
-  SetActiveWindow(activatable);
-
-  // This handles switching focus via input events within the active window.
-  SetFocusedWindow(rules_->GetFocusableWindow(
-      activatable->Contains(window) ? window : activatable));
+  FocusWindow(window);
 }
 
 }  // namespace corewm
