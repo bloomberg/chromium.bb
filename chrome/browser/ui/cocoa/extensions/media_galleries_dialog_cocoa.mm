@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/cocoa/extensions/media_galleries_dialog_cocoa.h"
 
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
+#include "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -25,6 +27,14 @@ const CGFloat kCheckboxMaxWidth = 350;
 
 @synthesize dialog = dialog_;
 
+- (void)onAcceptButton:(id)sender {
+  dialog_->OnAcceptClicked();
+}
+
+- (void)onCancelButton:(id)sender {
+  dialog_->OnCancelClicked();
+}
+
 - (void)onAddFolderClicked:(id)sender {
   DCHECK(dialog_);
   dialog_->OnAddFolderClicked();
@@ -35,13 +45,6 @@ const CGFloat kCheckboxMaxWidth = 350;
   dialog_->OnCheckboxToggled(sender);
 }
 
-- (void)sheetDidEnd:(NSWindow*)parent
-         returnCode:(NSInteger)returnCode
-            context:(void*)context {
-  DCHECK(dialog_);
-  dialog_->SheetDidEnd(returnCode);
-}
-
 @end
 
 namespace chrome {
@@ -49,28 +52,31 @@ namespace chrome {
 MediaGalleriesDialogCocoa::MediaGalleriesDialogCocoa(
     MediaGalleriesDialogController* controller,
     MediaGalleriesCocoaController* cocoa_controller)
-    : ConstrainedWindowMacDelegateSystemSheet(
-          cocoa_controller, @selector(sheetDidEnd:returnCode:context:)),
-      controller_(controller),
-      window_(NULL),
+    : controller_(controller),
       accepted_(false),
       cocoa_controller_([cocoa_controller retain]) {
   [cocoa_controller_ setDialog:this];
 
-  alert_.reset([[NSAlert alloc] init]);
+  alert_.reset([[ConstrainedWindowAlert alloc] init]);
   [alert_ setMessageText:base::SysUTF16ToNSString(controller_->GetHeader())];
   [alert_ setInformativeText:SysUTF16ToNSString(controller_->GetSubtext())];
-  [alert_ addButtonWithTitle:l10n_util::GetNSString(
-      IDS_MEDIA_GALLERIES_DIALOG_CONFIRM)];
-  [alert_ addButtonWithTitle:l10n_util::GetNSString(
-      IDS_MEDIA_GALLERIES_DIALOG_CANCEL)];
-  [alert_ addButtonWithTitle:l10n_util::GetNSString(
-      IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY)];
-
-  // Override the add button click handler to prevent the alert from closing.
-  NSButton* add_button = [[alert_ buttons] objectAtIndex:2];
-  [add_button setTarget:cocoa_controller_];
-  [add_button setAction:@selector(onAddFolderClicked:)];
+  [alert_ addButtonWithTitle:
+    l10n_util::GetNSString(IDS_MEDIA_GALLERIES_DIALOG_CONFIRM)
+               keyEquivalent:kKeyEquivalentReturn
+                      target:cocoa_controller_
+                      action:@selector(onAcceptButton:)];
+  [alert_ addButtonWithTitle:
+      l10n_util::GetNSString(IDS_MEDIA_GALLERIES_DIALOG_CANCEL)
+               keyEquivalent:kKeyEquivalentEscape
+                      target:cocoa_controller_
+                      action:@selector(onCancelButton:)];
+  [alert_ addButtonWithTitle:
+      l10n_util::GetNSString(IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY)
+               keyEquivalent:kKeyEquivalentReturn
+                      target:cocoa_controller_
+                      action:@selector(onAddFolderClicked:)];
+  [[alert_ closeButton] setTarget:cocoa_controller_];
+  [[alert_ closeButton] setAction:@selector(onCancelButton:)];
 
   // Add gallery permission checkboxes inside an accessory view.
   checkbox_container_.reset([[NSView alloc] initWithFrame:NSZeroRect]);
@@ -93,13 +99,25 @@ MediaGalleriesDialogCocoa::MediaGalleriesDialogCocoa(
   [[[alert_ buttons] objectAtIndex:0] setEnabled:
       controller_->HasPermittedGalleries()];
 
-  set_sheet(alert_);
+  [alert_ layout];
+
   // May be NULL during tests.
-  if (controller->web_contents())
-    window_ = new ConstrainedWindowMac(controller->web_contents(), this);
+  if (controller->web_contents()) {
+    window_.reset(new ConstrainedWindowMac2(
+        this, controller->web_contents(), [alert_ window]));
+  }
 }
 
 MediaGalleriesDialogCocoa::~MediaGalleriesDialogCocoa() {
+}
+
+void MediaGalleriesDialogCocoa::OnAcceptClicked() {
+  accepted_ = true;
+  window_->CloseConstrainedWindow();
+}
+
+void MediaGalleriesDialogCocoa::OnCancelClicked() {
+  window_->CloseConstrainedWindow();
 }
 
 void MediaGalleriesDialogCocoa::OnAddFolderClicked() {
@@ -120,25 +138,6 @@ void MediaGalleriesDialogCocoa::OnCheckboxToggled(NSButton* checkbox) {
       controller_->DidToggleGallery(gallery, [checkbox state] == NSOnState);
       break;
     }
-  }
-}
-
-void MediaGalleriesDialogCocoa::SheetDidEnd(NSInteger result) {
-  switch (result) {
-    case NSAlertFirstButtonReturn:
-      accepted_ = true;
-      if (window_)
-        window_->CloseConstrainedWindow();
-      break;
-    case NSAlertSecondButtonReturn:
-      if (window_)
-        window_->CloseConstrainedWindow();
-      break;
-    case NSRunStoppedResponse:
-      break;
-    default:
-      NOTREACHED();
-      break;
   }
 }
 
@@ -203,12 +202,8 @@ void MediaGalleriesDialogCocoa::UpdateGallery(
   [alert_ layout];
 }
 
-void MediaGalleriesDialogCocoa::DeleteDelegate() {
-  // As required by ConstrainedWindowMacDelegate, close the sheet if
-  // it's still open.
-  if (is_sheet_open())
-    [NSApp endSheet:[alert_ window]];
-
+void MediaGalleriesDialogCocoa::OnConstrainedWindowClosed(
+    ConstrainedWindowMac2* window) {
   controller_->DialogFinished(accepted_);
 }
 

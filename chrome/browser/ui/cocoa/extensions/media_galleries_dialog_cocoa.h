@@ -9,8 +9,9 @@
 
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/media_gallery/media_galleries_dialog_controller.h"
-#import "chrome/browser/ui/cocoa/constrained_window_mac.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac2.h"
 
+@class ConstrainedWindowAlert;
 @class MediaGalleriesCocoaController;
 
 namespace chrome {
@@ -21,7 +22,7 @@ class MediaGalleriesDialogTest;
 // This class displays an alert that can be used to grant permission for
 // extensions to access a gallery (media folders).
 class MediaGalleriesDialogCocoa :
-    public ConstrainedWindowMacDelegateSystemSheet,
+    public ConstrainedWindowMacDelegate2,
     public MediaGalleriesDialog {
  public:
   MediaGalleriesDialogCocoa(
@@ -29,19 +30,22 @@ class MediaGalleriesDialogCocoa :
       MediaGalleriesCocoaController* delegate);
   virtual ~MediaGalleriesDialogCocoa();
 
+  // Called when the user clicks the accept button.
+  void OnAcceptClicked();
+  // Called when the user clicks the cancel button.
+  void OnCancelClicked();
   // Called when the user clicks the Add Gallery button.
   void OnAddFolderClicked();
   // Called when the user toggles a gallery checkbox.
   void OnCheckboxToggled(NSButton* checkbox);
-  // Called when the alert closes.
-  void SheetDidEnd(NSInteger result);
 
   // MediaGalleriesDialog implementation:
   virtual void UpdateGallery(const MediaGalleryPrefInfo* gallery,
                              bool permitted) OVERRIDE;
 
-  // ConstrainedWindowMacDelegateSystemSheet implementation.
-  virtual void DeleteDelegate() OVERRIDE;
+  // ConstrainedWindowMacDelegate2 implementation.
+  virtual void OnConstrainedWindowClosed(
+      ConstrainedWindowMac2* window) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogBrowserTest, Close);
@@ -55,7 +59,7 @@ class MediaGalleriesDialogCocoa :
   void UpdateCheckboxContainerFrame();
 
   MediaGalleriesDialogController* controller_;  // weak
-  ConstrainedWindow* window_;  // weak
+  scoped_ptr<ConstrainedWindowMac2> window_;
 
   // True if the user has pressed accept.
   bool accepted_;
@@ -67,7 +71,7 @@ class MediaGalleriesDialogCocoa :
   scoped_nsobject<NSView> checkbox_container_;
 
   // The alert that the dialog is being displayed as.
-  scoped_nsobject<NSAlert> alert_;
+  scoped_nsobject<ConstrainedWindowAlert> alert_;
 
   // An Objective-C class to route callbacks from Cocoa code.
   scoped_nsobject<MediaGalleriesCocoaController> cocoa_controller_;

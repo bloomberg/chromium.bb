@@ -48,6 +48,11 @@
 - (NSRect)frameRectForContentRect:(NSRect)windowContent {
   ConstrainedWindowSheetController* sheetController =
       [ConstrainedWindowSheetController controllerForSheet:self];
+
+  // Sheet controller may be nil if this window hasn't been shown yet.
+  if (!sheetController)
+    return windowContent;
+
   NSRect frame;
   frame.origin = [sheetController originForSheet:self
                                   withWindowSize:windowContent.size];

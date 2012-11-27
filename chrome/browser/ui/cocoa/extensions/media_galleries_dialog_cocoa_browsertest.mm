@@ -6,6 +6,7 @@
 
 #include "chrome/browser/media_gallery/media_galleries_dialog_controller_mock.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_utils.h"

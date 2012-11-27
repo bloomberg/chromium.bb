@@ -158,8 +158,9 @@ const CGFloat kButtonGap = 6;
                             windowHeight:windowHeight];
 
   // Update window frame.
-  [window_ setFrame:NSMakeRect(0, 0, windowWidth, windowHeight)
-            display:NO];
+  NSRect windowFrame = NSMakeRect(0, 0, windowWidth, windowHeight);
+  windowFrame = [window_ frameRectForContentRect:windowFrame];
+  [window_ setFrame:windowFrame display:NO];
 }
 
 - (void)layoutButtonsWithWindowWidth:(CGFloat)windowWidth {
