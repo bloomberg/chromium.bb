@@ -5,7 +5,6 @@ vars = {
   # Use this googlecode_url variable only if there is an internal mirror for it.
   # If you do not know, use the full path while defining your new deps entry.
   "googlecode_url": "http://%s.googlecode.com/svn",
-  "googlecode_git_url": "https://code.google.com/p%s",
   "sourceforge_url": "http://%(repo)s.svn.sourceforge.net/svnroot/%(repo)s",
   "webkit_trunk": "http://svn.webkit.org/repository/webkit/trunk",
   "nacl_trunk": "http://src.chromium.org/native_client/trunk",
@@ -550,12 +549,6 @@ deps_os = {
 
     "src/third_party/findbugs":
       "/trunk/deps/third_party/findbugs@163586",
-
-    "src/third_party/guava/src":
-      (Var("googlecode_git_url") % "/guava-libraries.git") + "@c523556ab7d0f05afadebd20e7768d4c16af8771",
-
-    "src/third_party/jsr-305/src":
-      (Var("googlecode_url") % "jsr-305") + "/trunk@51",
   },
 }
 
