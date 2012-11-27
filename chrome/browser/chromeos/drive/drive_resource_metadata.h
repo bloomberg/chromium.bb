@@ -129,8 +129,6 @@ class DriveResourceMetadata {
   DriveResourceMetadata();
   ~DriveResourceMetadata();
 
-  DriveDirectory* root() { return root_.get(); }
-
   // Last time when we dumped serialized file system to disk.
   const base::Time& last_serialized() const { return last_serialized_; }
   void set_last_serialized(const base::Time& time) { last_serialized_ = time; }
@@ -147,12 +145,6 @@ class DriveResourceMetadata {
   bool loaded() const { return loaded_; }
   void set_loaded(bool loaded) { loaded_ = loaded; }
 
-  // Creates a DriveFile instance.
-  scoped_ptr<DriveFile> CreateDriveFile();
-
-  // Creates a DriveDirectory instance.
-  scoped_ptr<DriveDirectory> CreateDriveDirectory();
-
   // Sets root directory resource ID and put root to ResourceMap.
   void InitializeRootEntry(const std::string& id);
 
@@ -162,6 +154,11 @@ class DriveResourceMetadata {
   void AddEntryToDirectory(const FilePath& directory_path,
                            scoped_ptr<google_apis::DocumentEntry> doc_entry,
                            const FileMoveCallback& callback);
+
+  // Add |entry_proto| to the metadata tree, based on its parent_resource_id.
+  // |callback| must not be null.
+  void AddEntryToParent(const DriveEntryProto& entry_proto,
+                        const FileMoveCallback& callback);
 
   // Moves entry specified by |file_path| to the directory specified by
   // |directory_path| and calls the callback asynchronously. Removes the entry
@@ -183,36 +180,18 @@ class DriveResourceMetadata {
   void RemoveEntryFromParent(const std::string& resource_id,
                              const FileMoveCallback& callback);
 
-  // Adds the entry to resource map. Returns false if an entry with the same
-  // resource_id exists.
-  bool AddEntryToResourceMap(DriveEntry* entry);
-
-  // Removes the entry from resource map.
-  void RemoveEntryFromResourceMap(const std::string& resource_id);
-
-  // Returns the DriveEntry* with the corresponding |resource_id|.
-  // TODO(satorux): Remove this in favor of GetEntryInfoByResourceId()
-  // but can be difficult. See crbug.com/137374
-  DriveEntry* GetEntryByResourceId(const std::string& resource_id);
-
   // Finds an entry (a file or a directory) by |resource_id|.
-  //
-  // Must be called from UI thread. |callback| is run on UI thread.
   // |callback| must not be null.
   void GetEntryInfoByResourceId(
       const std::string& resource_id,
       const GetEntryInfoWithFilePathCallback& callback);
 
   // Finds an entry (a file or a directory) by |file_path|.
-  //
-  // Must be called from UI thread. |callback| is run on UI thread.
   // |callback| must not be null.
   void GetEntryInfoByPath(const FilePath& file_path,
                           const GetEntryInfoCallback& callback);
 
   // Finds and reads a directory by |file_path|.
-  //
-  // Must be called from UI thread. |callback| is run on UI thread.
   // |callback| must not be null.
   void ReadDirectoryByPath(const FilePath& file_path,
                            const ReadDirectoryCallback& callback);
@@ -220,10 +199,7 @@ class DriveResourceMetadata {
   // Similar to GetEntryInfoByPath() but this function finds a pair of
   // entries by |first_path| and |second_path|. If the entry for
   // |first_path| is not found, this function does not try to get the
-  // entry of |second_path|.
-  //
-  // Must be called from UI thread. |callback| is run on UI thread.
-  // |callback| must not be null.
+  // entry of |second_path|. |callback| must not be null.
   void GetEntryInfoPairByPaths(
       const FilePath& first_path,
       const FilePath& second_path,
@@ -249,23 +225,13 @@ class DriveResourceMetadata {
                         const DriveEntryProtoMap& entry_proto_map,
                         const FileMoveCallback& callback);
 
-  // Add |entry_proto| to the metadata tree.
-  // |callback| must not be null.
-  void AddEntryToParent(const DriveEntryProto& entry_proto,
-                        const FileMoveCallback& callback);
-
   // Recursively get child directories of entry pointed to by |resource_id|.
   void GetChildDirectories(
       const std::string& resource_id,
       const GetChildDirectoriesCallback& changed_dirs_callback);
 
-  // Moves all child entries from the directory represented by
-  // |source_resource_id| to the directory respresented by
-  // |destination_resource_id|. |callback| must not be null.
-  // TODO(achuith): Delete this.
-  void TakeOverEntries(const std::string& source_resource_id,
-                       const std::string& destination_resource_id,
-                       const FileMoveCallback& callback);
+  // Removes all files/directories under root (not including root).
+  void RemoveAll(const base::Closure& callback);
 
   // Serializes/Parses to/from string via proto classes.
   void SerializeToString(std::string* serialized_proto) const;
@@ -278,9 +244,28 @@ class DriveResourceMetadata {
                   const FileOperationCallback& callback);
   void SaveToDB();
 
+  // TODO(achuith): Remove all DriveEntry based methods. crbug.com/127856.
   // Creates DriveEntry from proto.
   scoped_ptr<DriveEntry> CreateDriveEntryFromProto(
       const DriveEntryProto& entry_proto);
+
+  // Creates a DriveFile instance.
+  scoped_ptr<DriveFile> CreateDriveFile();
+
+  // Creates a DriveDirectory instance.
+  scoped_ptr<DriveDirectory> CreateDriveDirectory();
+
+  // Adds the entry to resource map. Returns false if an entry with the same
+  // resource_id exists.
+  bool AddEntryToResourceMap(DriveEntry* entry);
+
+  // Removes the entry from resource map.
+  void RemoveEntryFromResourceMap(const std::string& resource_id);
+
+  // Returns the DriveEntry* with the corresponding |resource_id|.
+  // TODO(satorux): Remove this in favor of GetEntryInfoByResourceId()
+  // but can be difficult. See crbug.com/137374
+  DriveEntry* GetEntryByResourceId(const std::string& resource_id);
 
  private:
   // Initializes the resource map using serialized_resources fetched from the

@@ -46,6 +46,8 @@ class DriveFeedProcessor {
   // google_apis::AccountMetadataFeed.
   // |on_complete_callback| is run after the feed is applied.
   // |on_complete_callback| must not be null.
+  // TODO(achuith): Change the type of on_complete_callback to
+  // FileOperationCallback instead.
   void ApplyFeeds(
       const ScopedVector<google_apis::DocumentFeed>& feed_list,
       bool is_delta_feed,
@@ -53,12 +55,11 @@ class DriveFeedProcessor {
       const base::Closure& on_complete_callback);
 
   // Converts list of document feeds from collected feeds into a
-  // DriveEntryProtoMap. |feed_changestamp|, |root_upload_url|, and/or
-  // |uma_stats| may be NULL.
+  // DriveEntryProtoMap. |feed_changestamp| and/or |uma_stats| may be NULL.
+  // entry_proto_map_ and root_upload_url_ are updated as side effects.
   void FeedToEntryProtoMap(
     const ScopedVector<google_apis::DocumentFeed>& feed_list,
     int64* feed_changestamp,
-    GURL* root_upload_url,
     FeedToEntryProtoMapUMAStats* uma_stats);
 
   // A map of DriveEntryProto's representing a feed.
@@ -68,8 +69,8 @@ class DriveFeedProcessor {
   const std::set<FilePath>& changed_dirs() const { return changed_dirs_; }
 
  private:
-  // Applies the pre-processed feed from |entry_proto_map| onto the filesystem.
-  void ApplyEntryProtoMap(bool is_delta_feed, int64 feed_changestamp);
+  // Applies the pre-processed feed from entry_proto_map_ onto the filesystem.
+  void ApplyEntryProtoMap(bool is_delta_feed);
 
   // Apply the next item from entry_proto_map_ to the file system. The async
   // version posts to the message loop to avoid recursive stack-overflow.
@@ -90,11 +91,6 @@ class DriveFeedProcessor {
   // Apply the DriveEntryProto pointed to by |it| to resource_metadata_.
   void ApplyNextByIterator(DriveEntryProtoMap::iterator it);
 
-  // TODO(achuith): Delete these.
-  void AddEntryToParentDeprecated(DriveEntry* entry);
-  void RemoveEntryFromParent(DriveEntry* entry);
-  DriveDirectory* ResolveParent(DriveEntry* new_entry);
-
   // Helper function to add |entry_proto| to its parent. Updates changed_dirs_
   // as a side effect.
   void AddEntryToParent(const DriveEntryProto& entry_proto);
@@ -103,7 +99,6 @@ class DriveFeedProcessor {
   void NotifyForAddEntryToParent(bool is_directory,
                                  DriveFileError error,
                                  const FilePath& file_path);
-
 
   // Removes entry pointed to by |resource_id| from its parent. Updates
   // changed_dirs_ as a side effect.
@@ -116,13 +111,13 @@ class DriveFeedProcessor {
   void OnGetChildrenForRemove(
       const DriveEntryProto& entry_proto,
       const FilePath& file_path,
-      const std::set<FilePath>& changed_directories);
+      const std::set<FilePath>& child_directories);
 
   // Callback for DriveResourceMetadata::RemoveEntryFromParent.
   void NotifyForRemoveEntryFromParent(
       bool is_directory,
       const FilePath& file_path,
-      const std::set<FilePath>& changed_directories,
+      const std::set<FilePath>& child_directories,
       DriveFileError error,
       const FilePath& parent_path);
 
@@ -138,6 +133,23 @@ class DriveFeedProcessor {
       const FilePath& file_path,
       scoped_ptr<DriveEntryProto> entry_proto);
 
+  // Updates the upload url of the root directory with root_upload_url_.
+  void UpdateRootUploadUrl();
+
+  // Callback for DriveResourceMetadata::GetEntryInfoByPath for the root proto.
+  // Updates root upload url in the root proto, and refreshes the proto.
+  void OnGetRootEntryProto(DriveFileError error,
+                           scoped_ptr<DriveEntryProto> root_proto);
+
+  // Callback for DriveResourceMetadata::RefreshEntryProto after the root upload
+  // url is set.
+  void OnUpdateRootUploadUrl(DriveFileError error,
+                             const FilePath& root_path,
+                             scoped_ptr<DriveEntryProto> root_proto);
+
+  // Runs after all entries have been processed.
+  void OnComplete();
+
   // Reset the state of this object.
   void Clear();
 
@@ -145,6 +157,8 @@ class DriveFeedProcessor {
 
   DriveEntryProtoMap entry_proto_map_;
   std::set<FilePath> changed_dirs_;
+  GURL root_upload_url_;
+  int64 largest_changestamp_;
   base::Closure on_complete_callback_;
 
   // Note: This should remain the last member so it'll be destroyed and

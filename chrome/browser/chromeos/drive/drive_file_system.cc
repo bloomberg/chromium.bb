@@ -1248,8 +1248,7 @@ void DriveFileSystem::OnRequestDirectoryRefresh(
   }
 
   DriveFeedProcessor feed_processor(resource_metadata_.get());
-  feed_processor.FeedToEntryProtoMap(feed_list, NULL, NULL, NULL);
-
+  feed_processor.FeedToEntryProtoMap(feed_list, NULL, NULL);
   resource_metadata_->RefreshDirectory(
       directory_resource_id,
       feed_processor.entry_proto_map(),

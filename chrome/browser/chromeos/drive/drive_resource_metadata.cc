@@ -660,34 +660,9 @@ void DriveResourceMetadata::GetChildDirectories(
       base::Bind(changed_dirs_callback, changed_directories));
 }
 
-void DriveResourceMetadata::TakeOverEntries(
-    const std::string& source_resource_id,
-    const std::string& destination_resource_id,
-    const FileMoveCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  DriveEntry* source_entry = GetEntryByResourceId(source_resource_id);
-  DriveEntry* destination_entry = GetEntryByResourceId(destination_resource_id);
-  if (!source_entry || !destination_entry) {
-    PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_NOT_FOUND);
-    return;
-  }
-
-  DriveDirectory* source_directory = source_entry->AsDriveDirectory();
-  DriveDirectory* destination_directory = destination_entry->AsDriveDirectory();
-  if (!source_directory || !destination_directory) {
-    PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_NOT_A_DIRECTORY);
-    return;
-  }
-
-  destination_directory->TakeOverEntries(source_directory);
-
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback,
-                 DRIVE_FILE_OK,
-                 destination_directory->GetFilePath()));
+void DriveResourceMetadata::RemoveAll(const base::Closure& callback) {
+  root_->RemoveChildren();
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE, callback);
 }
 
 void DriveResourceMetadata::InitFromDB(

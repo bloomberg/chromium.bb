@@ -909,61 +909,48 @@ TEST_F(DriveResourceMetadataTest, GetChildDirectories) {
       "drive/dir2/dir101/dir102/dir105/dir106/dir107")));
 }
 
-TEST_F(DriveResourceMetadataTest, TakeOverEntries) {
+TEST_F(DriveResourceMetadataTest, RemoveAll) {
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  scoped_ptr<DriveEntryProtoVector> entries;
+
+  // root has children.
+  resource_metadata_.ReadDirectoryByPath(
+      FilePath::FromUTF8Unsafe("drive"),
+      base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
+                 &error, &entries));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_TRUE(entries.get());
+  ASSERT_FALSE(entries->empty());
+
+  // remove all children.
+  resource_metadata_.RemoveAll(base::Bind(&base::DoNothing));
+  google_apis::test_util::RunBlockingPoolTask();
+
   FilePath drive_file_path;
   scoped_ptr<DriveEntryProto> entry_proto;
 
-  // Move files from dir1 to dir2.
-  resource_metadata_.TakeOverEntries(
-      "resource_id:dir1",
-      "resource_id:dir2",
-      base::Bind(&test_util::CopyResultsFromFileMoveCallback,
-                 &error, &drive_file_path));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir2"), drive_file_path);
-
-  // Check if the file move worked. file6 should now be in drive/dir2.
+  // root should continue to exist.
   resource_metadata_.GetEntryInfoByPath(
-      FilePath::FromUTF8Unsafe("drive/dir2/file6"),
+      FilePath::FromUTF8Unsafe("drive"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_TRUE(entry_proto.get());
-  EXPECT_EQ("file6", entry_proto->base_name());
+  EXPECT_EQ("drive", entry_proto->base_name());
+  ASSERT_TRUE(entry_proto->file_info().is_directory());
+  EXPECT_EQ(kWAPIRootDirectoryResourceIdForTesting, entry_proto->resource_id());
 
-  // file10 should now be in drive/dir2/dir3.
-  resource_metadata_.GetEntryInfoByPath(
-      FilePath::FromUTF8Unsafe("drive/dir2/dir3/file10"),
-      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
-                 &error, &entry_proto));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
-  ASSERT_TRUE(entry_proto.get());
-  EXPECT_EQ("file10", entry_proto->base_name());
-
-  // dir1 should be empty.
-  scoped_ptr<DriveEntryProtoVector> entries;
+  // root should have no children.
   resource_metadata_.ReadDirectoryByPath(
-      FilePath::FromUTF8Unsafe("drive/dir1"),
+      FilePath::FromUTF8Unsafe("drive"),
       base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
                  &error, &entries));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_TRUE(entries.get());
-  ASSERT_EQ(0U, entries->size());
-
-  // dir2 should have 6 entries.
-  resource_metadata_.ReadDirectoryByPath(
-      FilePath::FromUTF8Unsafe("drive/dir2"),
-      base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
-                 &error, &entries));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
-  ASSERT_TRUE(entries.get());
-  ASSERT_EQ(6U, entries->size());
+  EXPECT_TRUE(entries->empty());
 }
 
 }  // namespace drive
