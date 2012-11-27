@@ -62,7 +62,15 @@ struct FormatType {
 
 }  // anonymous namespace
 
-TEST_F(DepthTextureTest, RenderTo) {
+// crbug.com/135228
+// Fails on Win Intel, Linux Intel; flaky on Linux ATI
+#if ((defined(OS_WIN) || defined(OS_LINUX)) && defined(NDEBUG))
+#define MAYBE_RenderTo FAILS_RenderTo
+#else
+#define MAYBE_RenderTo RenderTo
+#endif
+
+TEST_F(DepthTextureTest, MAYBE_RenderTo) {
   if (!GLTestHelper::HasExtension("GL_CHROMIUM_depth_texture")) {
     return;
   }
