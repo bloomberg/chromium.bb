@@ -180,6 +180,26 @@ RestoreOnStartupPolicyTestInstance*
 # DrM-i#1052-c#33
 TabCaptureApiTest.*
 TopSitesExtensionTest.*
+# DrM-#i1052-c#34
+HistoryWebUITest.*
+SettingsFormatWebUITest.*
+TaskManagerNotificationBrowserTest.*
+ContinueWhereILeftOffTest.*
+RestartTest.*
+WebUIBrowserAsyncTest.*
+Mock4JSWebUITestFails.*
+Mock4JSWebUITest.*
+HelpPageWebUITest.*
+ChromeSendWebUITest.*
+ChromeSendPassthroughWebUITest.*
+EditDictionaryWebUITest.*
+GeolocationAccessTokenStoreTest.*
+NativeServicesBrowserTest.*
+ChromeRenderProcessHostTest.*
+BaseHistoryWebUITest.*
+SettingsFormatWebUITest.*
+ChromeMainTest.*
+AutofillPopupViewBrowserTest.*
 
 # Failed tests from debug build
 # DrM-i#1052-c#21
