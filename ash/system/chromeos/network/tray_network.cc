@@ -30,8 +30,7 @@ int GetMessageIcon(
   switch(message_type) {
     case TrayNetwork::ERROR_CONNECT_FAILED:
       if (TrayNetwork::NETWORK_CELLULAR == network_type)
-        // todo(harrym) replace with dedicated icon.
-        return IDR_AURA_UBER_TRAY_CELLULAR_DISABLED_HOVER;
+        return IDR_AURA_UBER_TRAY_CELLULAR_NETWORK_FAILED;
       else
         return IDR_AURA_UBER_TRAY_NETWORK_FAILED;
     case TrayNetwork::MESSAGE_DATA_LOW:
