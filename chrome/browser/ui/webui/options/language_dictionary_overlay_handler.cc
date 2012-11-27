@@ -41,12 +41,16 @@ void LanguageDictionaryOverlayHandler::GetLocalizedValues(
       "languageDictionaryOverlayAddWordLabel",
       l10n_util::GetStringUTF16(
           IDS_LANGUAGE_DICTIONARY_OVERLAY_ADD_WORD_LABEL));
+  localized_strings->SetString(
+      "languageDictionaryOverlaySearchPlaceholder",
+      l10n_util::GetStringUTF16(
+          IDS_LANGUAGE_DICTIONARY_OVERLAY_SEARCH_PLACEHOLDER));
+  localized_strings->SetString(
+      "languageDictionaryOverlayNoMatches",
+      l10n_util::GetStringUTF16(IDS_LANGUAGE_DICTIONARY_OVERLAY_NO_MATCHES));
 }
 
 void LanguageDictionaryOverlayHandler::InitializeHandler() {
-  dictionary_ = SpellcheckServiceFactory::GetForProfile(
-      Profile::FromWebUI(web_ui()))->GetCustomDictionary();
-  dictionary_->AddObserver(this);
 }
 
 void LanguageDictionaryOverlayHandler::InitializePage() {
@@ -74,8 +78,7 @@ void LanguageDictionaryOverlayHandler::Uninitialize() {
 }
 
 void LanguageDictionaryOverlayHandler::OnCustomDictionaryLoaded() {
-  ResetDataModel();
-  UpdateWordList();
+  ResetDictionaryWords();
 }
 
 void LanguageDictionaryOverlayHandler::OnCustomDictionaryWordAdded(
@@ -86,53 +89,45 @@ void LanguageDictionaryOverlayHandler::OnCustomDictionaryWordRemoved(
     const std::string& word) {
 }
 
-void LanguageDictionaryOverlayHandler::ResetDataModel() {
-  // TODO(rouslan): Paginate dictionary words.
-  data_model_ = dictionary_->GetWords();
-  sort(data_model_.begin(), data_model_.end(), StringCompare);
-}
-
-void LanguageDictionaryOverlayHandler::UpdateWordList() {
+void LanguageDictionaryOverlayHandler::ResetDictionaryWords() {
   if (!overlay_initialized_)
     return;
+
+  if (!dictionary_) {
+    dictionary_ = SpellcheckServiceFactory::GetForProfile(
+        Profile::FromWebUI(web_ui()))->GetCustomDictionary();
+    dictionary_->AddObserver(this);
+  }
+
+  std::vector<std::string> words = dictionary_->GetWords();
+  std::sort(words.begin(), words.end(), StringCompare);
   ListValue list_value;
-  list_value.AppendStrings(data_model_);
+  list_value.AppendStrings(words);
   web_ui()->CallJavascriptFunction("EditDictionaryOverlay.setWordList",
                                    list_value);
 }
 
 void LanguageDictionaryOverlayHandler::RefreshWords(const ListValue* args) {
   overlay_initialized_ = true;
-  ResetDataModel();
-  UpdateWordList();
+  ResetDictionaryWords();
 }
 
 void LanguageDictionaryOverlayHandler::AddWord(const ListValue* args) {
   std::string new_word;
-  if (!args->GetString(0, &new_word) || new_word.empty()) {
+  if (!args->GetString(0, &new_word) || new_word.empty() || !dictionary_) {
     NOTREACHED();
     return;
   }
   dictionary_->AddWord(new_word);
-  data_model_.push_back(new_word);
-  UpdateWordList();
 }
 
 void LanguageDictionaryOverlayHandler::RemoveWord(const ListValue* args) {
-  std::string index_string;
-  if (!args->GetString(0, &index_string) || index_string.empty()) {
+  std::string old_word;
+  if (!args->GetString(0, &old_word) || old_word.empty() || !dictionary_) {
     NOTREACHED();
     return;
   }
-  std::stringstream ss(index_string);
-  int i = -1;
-  if ((ss >> i).fail() || i < 0 || i >= (int) data_model_.size()) {
-    NOTREACHED();
-    return;
-  }
-  dictionary_->RemoveWord(data_model_.at(i));
-  data_model_.erase(data_model_.begin() + i);
-  UpdateWordList();
+  dictionary_->RemoveWord(old_word);
 }
 
 }  // namespace options

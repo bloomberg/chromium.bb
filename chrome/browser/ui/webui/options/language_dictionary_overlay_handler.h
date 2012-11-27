@@ -31,13 +31,10 @@ class LanguageDictionaryOverlayHandler
   virtual void OnCustomDictionaryWordRemoved(const std::string& word) OVERRIDE;
 
  private:
-  // Resets the data model with the words from the dictionary.
-  void ResetDataModel();
+  // Sends the dictionary words to WebUI.
+  void ResetDictionaryWords();
 
-  // Calls WebUI to update the dictionary words.
-  void UpdateWordList();
-
-  // Refreshes the dictionary words. Called from WebUI.
+  // Refreshes the displayed words. Called from WebUI.
   void RefreshWords(const base::ListValue* args);
 
   // Adds a new word to the dictionary. Called from WebUI.
@@ -49,8 +46,9 @@ class LanguageDictionaryOverlayHandler
   // Whether the overlay is initialized and ready to show data.
   bool overlay_initialized_;
 
+  // The custom spelling dictionary. Used for adding, removing, and reading
+  // words in custom dictionary file.
   SpellcheckCustomDictionary* dictionary_;
-  std::vector<std::string> data_model_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageDictionaryOverlayHandler);
 };

@@ -1122,7 +1122,8 @@ cr.define('cr.ui', function() {
       var itemsInViewPort = this.getItemsInViewPort(scrollTop, clientHeight);
       // Draws the hidden rows just above/below the viewport to prevent
       // flashing in scroll.
-      var firstIndex = Math.max(0, itemsInViewPort.first - 1);
+      var firstIndex = Math.max(0, Math.min(dataModel.length - 1,
+                                            itemsInViewPort.first - 1));
       var lastIndex = Math.min(itemsInViewPort.last + 1, dataModel.length);
 
       var beforeFillerHeight =

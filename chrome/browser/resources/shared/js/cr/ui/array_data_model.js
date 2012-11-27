@@ -315,7 +315,11 @@ cr.define('cr.ui', function() {
       for (var i = 0; i < this.length; i++) {
         positions[this.indexes_[i]] = i;
       }
-      this.indexes_.sort(compareFunction);
+      var sorted = this.indexes_.every(function(element, index, array) {
+        return index == 0 || compareFunction(element, array[index - 1]) >= 0;
+      });
+      if (!sorted)
+        this.indexes_.sort(compareFunction);
       this.sortStatus_ = this.createSortStatus(field, direction);
       var sortPermutation = [];
       var changed = false;

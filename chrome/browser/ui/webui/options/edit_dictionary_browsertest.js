@@ -37,17 +37,39 @@ EditDictionaryWebUITest.prototype = {
 
 TEST_F('EditDictionaryWebUITest', 'testAddRemoveWords', function() {
   var testWord = 'foo';
-  $('language-dictionary-overlay-page').querySelector('input').value = testWord;
+  $('language-dictionary-overlay-word-list').querySelector('input').value =
+      testWord;
 
   this.mockHandler.expects(once()).addDictionaryWord([testWord]).
       will(callFunction(function() {
           EditDictionaryOverlay.setWordList([testWord]);
       }));
-  EditDictionaryOverlay.getInstance().wordList_.items[0].onEditCommitted_(null);
+  var addWordItem = EditDictionaryOverlay.getWordListForTesting().items[0];
+  addWordItem.onEditCommitted_({currentTarget: addWordItem});
 
-  this.mockHandler.expects(once()).removeDictionaryWord([String(0)]).
+  this.mockHandler.expects(once()).removeDictionaryWord([testWord]).
       will(callFunction(function() {
           EditDictionaryOverlay.setWordList([]);
       }));
-  EditDictionaryOverlay.getInstance().wordList_.deleteItemAtIndex(0);
+  EditDictionaryOverlay.getWordListForTesting().deleteItemAtIndex(0);
+});
+
+TEST_F('EditDictionaryWebUITest', 'testSearch', function() {
+  EditDictionaryOverlay.setWordList(['foo', 'bar']);
+  expectEquals(3, EditDictionaryOverlay.getWordListForTesting().items.length);
+
+  /**
+   * @param {Element} el The element to dispatch an event on.
+   * @param {string} value The text of the search event.
+   */
+  var fakeSearchEvent = function(el, value) {
+    el.value = value;
+    cr.dispatchSimpleEvent(el, 'search');
+  };
+  var searchField = $('language-dictionary-overlay-search-field');
+  fakeSearchEvent(searchField, 'foo');
+  expectEquals(2, EditDictionaryOverlay.getWordListForTesting().items.length);
+
+  fakeSearchEvent(searchField, '');
+  expectEquals(3, EditDictionaryOverlay.getWordListForTesting().items.length);
 });
