@@ -1487,33 +1487,59 @@ function undoDelete() {
 }
 
 /**
+ * Computes folder for "Add Page" and "Add Folder".
+ * @return {string} The id of folder node where we'll create new page/folder.
+ */
+function computeParentFolderForNewItem() {
+  if (document.activeElement == tree)
+    return list.parentId;
+  var selectedItem = list.selectedItem;
+  return selectedItem && bmm.isFolder(selectedItem) ?
+      selectedItem.id : list.parentId;
+}
+
+/**
  * Callback for the new folder command. This creates a new folder and starts
  * a rename of it.
  */
 function newFolder() {
-  var parentId = list.parentId;
-  var isTree = document.activeElement == tree;
-  chrome.bookmarks.create({
-    title: loadTimeData.getString('new_folder_name'),
-    parentId: parentId
-  }, function(newNode) {
-    // This callback happens before the event that triggers the tree/list to
-    // get updated so delay the work so that the tree/list gets updated first.
-    setTimeout(function() {
-      var newItem;
-      if (isTree) {
-        newItem = bmm.treeLookup[newNode.id];
-        tree.selectedItem = newItem;
-        newItem.editing = true;
-      } else {
-        var index = list.dataModel.findIndexById(newNode.id);
-        var sm = list.selectionModel;
-        sm.anchorIndex = sm.leadIndex = sm.selectedIndex = index;
-        scrollIntoViewAndMakeEditable(index);
-      }
-    }, 50);
-  });
   performGlobalUndo = null;  // This can't be undone, so disable global undo.
+
+  var parentId = computeParentFolderForNewItem();
+
+  // Callback is called after tree and list data model updated.
+  function createFolder(callback) {
+    chrome.bookmarks.create({
+      title: loadTimeData.getString('new_folder_name'),
+      parentId: parentId
+    }, callback);
+  }
+
+  if (document.activeElement == tree) {
+    createFolder(function(newNode) {
+      newItem = bmm.treeLookup[newNode.id];
+      tree.selectedItem = newItem;
+      newItem.editing = true;
+    });
+    return;
+  }
+
+  function editNewFolderInList() {
+    createFolder(function() {
+      var index = list.dataModel.length - 1;
+      var sm = list.selectionModel;
+      sm.anchorIndex = sm.leadIndex = sm.selectedIndex = index;
+      scrollIntoViewAndMakeEditable(index);
+    });
+  }
+
+  if (parentId == list.parentId) {
+    editNewFolderInList();
+    return;
+  }
+
+  addOneShotEventListener(list, 'load', editNewFolderInList);
+  navigateTo(parentId, true);
 }
 
 /**
@@ -1536,20 +1562,30 @@ function scrollIntoViewAndMakeEditable(index) {
  * add-new-bookmark-command handler.
  */
 function addPage() {
-  var parentId = list.parentId;
-  var fakeNode = {
-    title: '',
-    url: '',
-    parentId: parentId,
-    id: 'new'
+  var parentId = computeParentFolderForNewItem();
+
+  function editNewBookmark() {
+    var fakeNode = {
+      title: '',
+      url: '',
+      parentId: parentId,
+      id: 'new'
+    };
+    var dataModel = list.dataModel;
+    var length = dataModel.length;
+    dataModel.splice(length, 0, fakeNode);
+    var sm = list.selectionModel;
+    sm.anchorIndex = sm.leadIndex = sm.selectedIndex = length;
+    scrollIntoViewAndMakeEditable(length);
   };
 
-  var dataModel = list.dataModel;
-  var length = dataModel.length;
-  dataModel.splice(length, 0, fakeNode);
-  var sm = list.selectionModel;
-  sm.anchorIndex = sm.leadIndex = sm.selectedIndex = length;
-  scrollIntoViewAndMakeEditable(length);
+  if (parentId == list.parentId) {
+    editNewBookmark();
+    return;
+  }
+
+  addOneShotEventListener(list, 'load', editNewBookmark);
+  navigateTo(parentId, true);
 }
 
 /**
