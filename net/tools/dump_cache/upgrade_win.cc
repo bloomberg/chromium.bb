@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/tools/dump_cache/upgrade_win.h"
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -919,4 +920,29 @@ int RunSlave(const FilePath& input_path, const std::wstring& pipe_number) {
 
   loop.Run();
   return 0;
+}
+
+// Starts a new process, to generate the files.
+int LaunchSlave(CommandLine command_line,
+                const std::wstring& pipe_number,
+                int version) {
+  bool do_upgrade = command_line.HasSwitch(kUpgrade);
+  bool do_convert_to_text = command_line.HasSwitch(kDumpToFiles);
+
+  if (do_upgrade) {
+    FilePath program(base::StringPrintf(L"%ls%d", L"dump_cache", version));
+    command_line.SetProgram(program);
+  }
+
+  if (do_upgrade || do_convert_to_text)
+    command_line.AppendSwitch(kSlave);
+
+  command_line.AppendSwitchNative(kPipe, pipe_number);
+  if (!base::LaunchProcess(command_line, base::LaunchOptions(), NULL)) {
+    printf("Unable to launch the needed version of this tool: %ls\n",
+           command_line.GetProgram().value().c_str());
+    printf(kUpgradeHelp);
+    return TOOL_NOT_FOUND;
+  }
+  return ALL_GOOD;
 }
