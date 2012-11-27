@@ -235,6 +235,7 @@ const char kLibCrosServicePath[] = "/org/chromium/LibCrosService";
 const char kLibCrosServiceInterface[] = "org.chromium.LibCrosServiceInterface";
 // Methods
 const char kResolveNetworkProxy[] = "ResolveNetworkProxy";
+const char kCheckLiveness[] = "CheckLiveness";
 }  // namespace chromeos
 
 namespace flimflam {
