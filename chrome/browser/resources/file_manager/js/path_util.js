@@ -170,7 +170,7 @@ PathUtil.getRootLabel = function(path) {
     return path.substring(RootDirectory.REMOVABLE.length + 1);
 
   if (path === RootDirectory.GDATA)
-    return str('GDATA_DIRECTORY_LABEL');
+    return str('DRIVE_DIRECTORY_LABEL');
 
   return path;
 };

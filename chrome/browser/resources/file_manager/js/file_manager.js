@@ -1093,8 +1093,8 @@ DialogType.isModal = function(type) {
         event.error.data.toGDrive &&
         event.error.data.code == FileError.QUOTA_EXCEEDED_ERR) {
       this.alert.showHtml(
-          strf('GDATA_SERVER_OUT_OF_SPACE_HEADER'),
-          strf('GDATA_SERVER_OUT_OF_SPACE_MESSAGE',
+          strf('DRIVE_SERVER_OUT_OF_SPACE_HEADER'),
+          strf('DRIVE_SERVER_OUT_OF_SPACE_MESSAGE',
               decodeURIComponent(
                   event.error.data.sourceFileUrl.split('/').pop()),
               FileManager.GOOGLE_DRIVE_BUY_STORAGE));
@@ -3296,7 +3296,7 @@ DialogType.isModal = function(type) {
           if (result) {
             var sizeInGb = util.bytesToSi(result.remainingSizeKB * 1024);
             gdataSpaceInfoLabel.textContent =
-                strf('GDATA_SPACE_AVAILABLE', sizeInGb);
+                strf('DRIVE_SPACE_AVAILABLE', sizeInGb);
 
             var usedSpace = result.totalSizeKB - result.remainingSizeKB;
             gdataSpaceInnerBar.style.width =
@@ -3305,7 +3305,7 @@ DialogType.isModal = function(type) {
             gdataSpaceOuterBar.style.display = '';
           } else {
             gdataSpaceOuterBar.style.display = 'none';
-            gdataSpaceInfoLabel.textContent = str('GDATA_FAILED_SPACE_INFO');
+            gdataSpaceInfoLabel.textContent = str('DRIVE_FAILED_SPACE_INFO');
           }
         });
   };

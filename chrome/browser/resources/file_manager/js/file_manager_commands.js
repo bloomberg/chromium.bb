@@ -333,8 +333,8 @@ Commands.togglePinnedCommand = {
     var entry = CommandUtil.getSingleEntry(event, fileManager);
 
     function showError(filesystem) {
-      fileManager.alert.showHtml(str('GDATA_OUT_OF_SPACE_HEADER'),
-          strf('GDATA_OUT_OF_SPACE_MESSAGE',
+      fileManager.alert.showHtml(str('DRIVE_OUT_OF_SPACE_HEADER'),
+          strf('DRIVE_OUT_OF_SPACE_MESSAGE',
                unescape(entry.name),
                util.bytesToSi(filesystem.size)));
     }

@@ -120,7 +120,7 @@ PhotoImport.prototype.initDom_ = function() {
  */
 PhotoImport.prototype.initDestination_ = function() {
   var onError = this.onError_.bind(
-      this, loadTimeData.getString('PHOTO_IMPORT_GDATA_ERROR'));
+      this, loadTimeData.getString('PHOTO_IMPORT_DRIVE_ERROR'));
 
   var onDirectory = function(dir) {
     this.destination_ = dir;
