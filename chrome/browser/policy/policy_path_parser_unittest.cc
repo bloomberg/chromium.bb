@@ -98,6 +98,8 @@ TEST_F(PolicyPathParserTests, WinVariables) {
                        FILE_PATH_LITERAL("${program_files}"));
   CheckForSubstitution(FILE_PATH_LITERAL("//$C/${windows}"),
                        FILE_PATH_LITERAL("${windows}"));
+  CheckForSubstitution(FILE_PATH_LITERAL("//$C/${client_name}"),
+                       FILE_PATH_LITERAL("${client_name}"));
 }
 
 #endif  // OS_WIN

@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <shlobj.h>
+#include <wtsapi32.h>
+#pragma comment(lib, "wtsapi32.lib")
 
 #include "chrome/browser/policy/policy_path_parser.h"
 
@@ -21,6 +23,7 @@ const WCHAR* kWinProfileFolderVarName = L"${profile}";
 const WCHAR* kWinProgramDataFolderVarName = L"${global_app_data}";
 const WCHAR* kWinProgramFilesFolderVarName = L"${program_files}";
 const WCHAR* kWinWindowsFolderVarName = L"${windows}";
+const WCHAR* kWinClientName = L"${client_name}";
 
 struct WinFolderNamesToCSIDLMapping {
   const WCHAR* name;
@@ -62,7 +65,7 @@ FilePath::StringType ExpandPathVariables(
       result.replace(position, wcslen(win_folder_mapping[i].name), path_string);
     }
   }
-  // Next translate two speacial variables ${user_name} and ${machine_name}
+  // Next translate other windows specific variables.
   size_t position = result.find(kUserNamePolicyVarName);
   if (position != std::wstring::npos) {
     DWORD return_length = 0;
@@ -87,6 +90,19 @@ FilePath::StringType ExpandPathVariables(
           position, wcslen(kMachineNamePolicyVarName), machinename_string);
     }
   }
+  position = result.find(kWinClientName);
+  if (position != std::wstring::npos) {
+    LPWSTR buffer = NULL;
+    DWORD buffer_length = 0;
+    if (::WTSQuerySessionInformation(WTS_CURRENT_SERVER, WTS_CURRENT_SESSION,
+                                     WTSClientName,
+                                     &buffer, &buffer_length)) {
+      std::wstring clientname_string(buffer);
+      result.replace(position, wcslen(kWinClientName), clientname_string);
+      ::WTSFreeMemory(buffer);
+    }
+  }
+
   return result;
 }
 
