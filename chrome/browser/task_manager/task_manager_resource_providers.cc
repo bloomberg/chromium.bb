@@ -1599,6 +1599,7 @@ TaskManagerBrowserProcessResource::TaskManagerBrowserProcessResource()
   // TODO(port): Port icon code.
   NOTIMPLEMENTED();
 #endif  // defined(OS_WIN)
+  default_icon_->MakeThreadSafe();
 }
 
 TaskManagerBrowserProcessResource::~TaskManagerBrowserProcessResource() {
