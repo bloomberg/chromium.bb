@@ -35,31 +35,28 @@ def _file(
   }
 
 
-class RietveldTest(unittest.TestCase):
+class BaseFixture(unittest.TestCase):
+  # Override.
+  TESTED_CLASS = Exception
+
   def setUp(self):
-    super(RietveldTest, self).setUp()
+    super(BaseFixture, self).setUp()
     # Access to a protected member XX of a client class
     # pylint: disable=W0212
-    self.rietveld = rietveld.Rietveld('url', 'email', 'password')
+    self.rietveld = self.TESTED_CLASS('url', 'email', 'password')
     self.rietveld._send = self._rietveld_send
     self.requests = []
 
   def tearDown(self):
-    self.assertEquals([], self.requests)
-    super(RietveldTest, self).tearDown()
+    self.assertEqual([], self.requests)
+    super(BaseFixture, self).tearDown()
 
   def _rietveld_send(self, url, *args, **kwargs):
     self.assertTrue(self.requests, url)
     request = self.requests.pop(0)
-    self.assertEquals(2, len(request))
-    self.assertEquals(url, request[0])
+    self.assertEqual(2, len(request))
+    self.assertEqual(url, request[0])
     return request[1]
-
-  def test_get_patch_empty(self):
-    self.requests = [('/api/123/456', '{}')]
-    patches = self.rietveld.get_patch(123, 456)
-    self.assertTrue(isinstance(patches, patch.PatchSet))
-    self.assertEquals([], patches.patches)
 
   def _check_patch(self,
       p,
@@ -73,19 +70,29 @@ class RietveldTest(unittest.TestCase):
       patchlevel=0,
       svn_properties=None):
     svn_properties = svn_properties or []
-    self.assertEquals(p.filename, filename)
-    self.assertEquals(p.source_filename, source_filename)
-    self.assertEquals(p.is_binary, is_binary)
-    self.assertEquals(p.is_delete, is_delete)
+    self.assertEqual(p.filename, filename)
+    self.assertEqual(p.source_filename, source_filename)
+    self.assertEqual(p.is_binary, is_binary)
+    self.assertEqual(p.is_delete, is_delete)
     if hasattr(p, 'is_git_diff'):
-      self.assertEquals(p.is_git_diff, is_git_diff)
-    self.assertEquals(p.is_new, is_new)
+      self.assertEqual(p.is_git_diff, is_git_diff)
+    self.assertEqual(p.is_new, is_new)
     if hasattr(p, 'patchlevel'):
-      self.assertEquals(p.patchlevel, patchlevel)
+      self.assertEqual(p.patchlevel, patchlevel)
     if diff:
-      self.assertEquals(p.get(True), diff)
+      self.assertEqual(p.get(True), diff)
     if hasattr(p, 'svn_properties'):
-      self.assertEquals(p.svn_properties, svn_properties)
+      self.assertEqual(p.svn_properties, svn_properties)
+
+
+class RietveldTest(BaseFixture):
+  TESTED_CLASS = rietveld.Rietveld
+
+  def test_get_patch_empty(self):
+    self.requests = [('/api/123/456', '{}')]
+    patches = self.rietveld.get_patch(123, 456)
+    self.assertTrue(isinstance(patches, patch.PatchSet))
+    self.assertEqual([], patches.patches)
 
   def test_get_patch_no_status(self):
     self.requests = [
@@ -99,7 +106,7 @@ class RietveldTest(unittest.TestCase):
         ('/download/issue123_456_789.diff', RAW.DELETE),
     ]
     patches = self.rietveld.get_patch(123, 456)
-    self.assertEquals(1, len(patches.patches))
+    self.assertEqual(1, len(patches.patches))
     self._check_patch(
         patches.patches[0],
         'tools/clang_check/README.chromium',
@@ -114,7 +121,7 @@ class RietveldTest(unittest.TestCase):
         ('/download/issue123_456_790.diff', RAW.NEW_NOT_NULL),
     ]
     patches = self.rietveld.get_patch(123, 456)
-    self.assertEquals(2, len(patches.patches))
+    self.assertEqual(2, len(patches.patches))
     self._check_patch(
         patches.patches[0], 'file_a', RAW.NEW_NOT_NULL, is_new=True)
     self._check_patch(patches.patches[1], 'foo', RAW.NEW, is_new=True)
@@ -125,7 +132,7 @@ class RietveldTest(unittest.TestCase):
         ('/download/issue123_456_789.diff', RAW.NEW),
     ]
     patches = self.rietveld.get_patch(123, 456)
-    self.assertEquals(1, len(patches.patches))
+    self.assertEqual(1, len(patches.patches))
     self._check_patch(patches.patches[0], 'foo', RAW.NEW, is_new=True)
 
   def test_invalid_status(self):
@@ -136,7 +143,7 @@ class RietveldTest(unittest.TestCase):
       self.rietveld.get_patch(123, 456)
       self.fail()
     except patch.UnsupportedPatchFormat, e:
-      self.assertEquals('file_a', e.filename)
+      self.assertEqual('file_a', e.filename)
 
   def test_add_plus_merge(self):
     # svn:mergeinfo is dropped.
@@ -149,7 +156,7 @@ class RietveldTest(unittest.TestCase):
         ('/download/issue123_456_789.diff', GIT.COPY),
     ]
     patches = self.rietveld.get_patch(123, 456)
-    self.assertEquals(1, len(patches.patches))
+    self.assertEqual(1, len(patches.patches))
     self._check_patch(
         patches.patches[0],
         'pp',
@@ -167,7 +174,7 @@ class RietveldTest(unittest.TestCase):
         ('/download/issue123_456_789.diff', GIT.COPY),
     ]
     patches = self.rietveld.get_patch(123, 456)
-    self.assertEquals(1, len(patches.patches))
+    self.assertEqual(1, len(patches.patches))
     self._check_patch(
         patches.patches[0],
         'pp',
@@ -184,7 +191,7 @@ class RietveldTest(unittest.TestCase):
         ('/download/issue123_456_789.diff', RAW.CRAP_ONLY),
     ]
     patches = self.rietveld.get_patch(123, 456)
-    self.assertEquals(1, len(patches.patches))
+    self.assertEqual(1, len(patches.patches))
     self._check_patch(
         patches.patches[0],
         '__init__.py',
@@ -198,7 +205,7 @@ class RietveldTest(unittest.TestCase):
         ('/download/issue123_456_789.diff', RAW.DELETE),
     ]
     patches = self.rietveld.get_patch(123, 456)
-    self.assertEquals(1, len(patches.patches))
+    self.assertEqual(1, len(patches.patches))
     self._check_patch(patches.patches[0], name, RAW.DELETE, is_delete=True)
 
   def test_delete_empty(self):
@@ -208,7 +215,7 @@ class RietveldTest(unittest.TestCase):
         ('/download/issue123_456_789.diff', GIT.DELETE_EMPTY),
     ]
     patches = self.rietveld.get_patch(123, 456)
-    self.assertEquals(1, len(patches.patches))
+    self.assertEqual(1, len(patches.patches))
     self._check_patch(
         patches.patches[0],
         name,
@@ -225,7 +232,7 @@ class RietveldTest(unittest.TestCase):
         ('/download/issue123_456_789.diff', RAW.PATCH),
     ]
     patches = self.rietveld.get_patch(123, 456)
-    self.assertEquals(1, len(patches.patches))
+    self.assertEqual(1, len(patches.patches))
     self._check_patch(
         patches.patches[0],
         'chrome/file.cc',
@@ -242,7 +249,7 @@ class RietveldTest(unittest.TestCase):
       self.rietveld.get_patch(123, 456)
       self.fail()
     except patch.UnsupportedPatchFormat, e:
-      self.assertEquals('file_a', e.filename)
+      self.assertEqual('file_a', e.filename)
 
   def test_get_patch_moved(self):
     self.requests = [
@@ -250,7 +257,7 @@ class RietveldTest(unittest.TestCase):
         ('/download/issue123_456_789.diff', RAW.MINIMAL_RENAME),
     ]
     patches = self.rietveld.get_patch(123, 456)
-    self.assertEquals(1, len(patches.patches))
+    self.assertEqual(1, len(patches.patches))
     self._check_patch(
         patches.patches[0],
         'file_b',
@@ -269,14 +276,14 @@ class RietveldTest(unittest.TestCase):
 
     # svn:mergeinfo across branches:
     # http://codereview.chromium.org/202046/diff/1/third_party/libxml/xmlcatalog_dummy.cc
-    self.assertEquals(
+    self.assertEqual(
         [('svn:eol-style', 'LF')],
         rietveld.Rietveld.parse_svn_properties(
           u'\nAdded: svn:eol-style\n   + LF\n', 'foo'))
 
     # svn:eol-style property that is lost in the diff
     # http://codereview.chromium.org/202046/diff/1/third_party/libxml/xmllint_dummy.cc
-    self.assertEquals(
+    self.assertEqual(
         [],
         rietveld.Rietveld.parse_svn_properties(
           u'\nAdded: svn:mergeinfo\n'
@@ -284,13 +291,13 @@ class RietveldTest(unittest.TestCase):
           'libxml/xmldummy_mac.cc:r69-2775\n',
           'foo'))
 
-    self.assertEquals(
+    self.assertEqual(
         [],
         rietveld.Rietveld.parse_svn_properties(u'', 'foo'))
 
 
     # http://codereview.chromium.org/api/7834045/15001
-    self.assertEquals(
+    self.assertEqual(
         [('svn:executable', '*'), ('svn:eol-style', 'LF')],
         rietveld.Rietveld.parse_svn_properties(
           '\n'
@@ -301,7 +308,7 @@ class RietveldTest(unittest.TestCase):
           'foo'))
 
     # http://codereview.chromium.org/api/9139006/7001
-    self.assertEquals(
+    self.assertEqual(
         [('svn:mime-type', 'image/png')],
         rietveld.Rietveld.parse_svn_properties(
           '\n'
@@ -314,7 +321,7 @@ class RietveldTest(unittest.TestCase):
       rietveld.Rietveld.parse_svn_properties(u'\n', 'foo')
       self.fail()
     except rietveld.patch.UnsupportedPatchFormat, e:
-      self.assertEquals('foo', e.filename)
+      self.assertEqual('foo', e.filename)
     # TODO(maruel): Change with no diff, only svn property change:
     # http://codereview.chromium.org/6462019/
 
@@ -352,7 +359,7 @@ class RietveldTest(unittest.TestCase):
       True,
       True,
       ))
-    self.assertEquals([], results)
+    self.assertEqual([], results)
 
   def test_results_cursor(self):
     # Verify cursor iteration is transparent.
@@ -379,8 +386,39 @@ class RietveldTest(unittest.TestCase):
         {'foo': 'prout'},
     ]
     for i in self.rietveld.search(base='base'):
-      self.assertEquals(expected.pop(0), i)
-    self.assertEquals([], expected)
+      self.assertEqual(expected.pop(0), i)
+    self.assertEqual([], expected)
+
+
+class CachingRietveldTest(BaseFixture):
+  # Tests only one request is done.
+  TESTED_CLASS = rietveld.CachingRietveld
+
+  def test_get_description(self):
+    self.requests = [
+      ('/1/description', 'Blah blah blah'),
+    ]
+    expected = 'Blah blah blah'
+    self.assertEqual(expected, self.rietveld.get_description(1))
+    self.assertEqual(expected, self.rietveld.get_description(1))
+
+  def test_get_issue_properties(self):
+    self.requests = [
+      ('/api/1?messages=true', rietveld.json.dumps({'messages': 'foo'})),
+    ]
+    expected = {}
+    expected_msg = {'messages': 'foo'}
+    self.assertEqual(expected, self.rietveld.get_issue_properties(1, False))
+    self.assertEqual(expected_msg, self.rietveld.get_issue_properties(1, True))
+
+  def test_get_patchset_properties(self):
+    self.requests = [
+      ('/api/1/2', '{}'),
+    ]
+    expected = {}
+    self.assertEqual(expected, self.rietveld.get_patchset_properties(1, 2))
+    self.assertEqual(expected, self.rietveld.get_patchset_properties(1, 2))
+
 
 
 if __name__ == '__main__':

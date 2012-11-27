@@ -14,6 +14,7 @@ The following hypothesis are made:
   - A patch set cannot be modified
 """
 
+import copy
 import json
 import logging
 import re
@@ -395,3 +396,53 @@ class Rietveld(object):
 
   # DEPRECATED.
   Send = get
+
+
+class CachingRietveld(Rietveld):
+  """Caches the common queries.
+
+  Not to be used in long-standing processes, like the commit queue.
+  """
+  def __init__(self, *args, **kwargs):
+    super(CachingRietveld, self).__init__(*args, **kwargs)
+    self._cache = {}
+
+  def _lookup(self, function_name, args, update):
+    """Caches the return values corresponding to the arguments.
+
+    It is important that the arguments are standardized, like None vs False.
+    """
+    function_cache = self._cache.setdefault(function_name, {})
+    if args not in function_cache:
+      function_cache[args] = update(*args)
+    return copy.deepcopy(function_cache[args])
+
+  def get_description(self, issue):
+    return self._lookup(
+        'get_description',
+        (issue,),
+        super(CachingRietveld, self).get_description)
+
+  def get_issue_properties(self, issue, messages):
+    """Returns the issue properties.
+
+    Because in practice the presubmit checks often ask without messages first
+    and then with messages, always ask with messages and strip off if not asked
+    for the messages.
+    """
+    # It's a tad slower to request with the message but it's better than
+    # requesting the properties twice.
+    data = self._lookup(
+        'get_issue_properties',
+        (issue, True),
+        super(CachingRietveld, self).get_issue_properties)
+    if not messages:
+      # Assumes self._lookup uses deepcopy.
+      del data['messages']
+    return data
+
+  def get_patchset_properties(self, issue, patchset):
+    return self._lookup(
+        'get_patchset_properties',
+        (issue, patchset),
+        super(CachingRietveld, self).get_patchset_properties)

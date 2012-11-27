@@ -742,8 +742,8 @@ or verify this branch is set up to track another (via the --track argument to
     """Returns an upload.RpcServer() to access this review's rietveld instance.
     """
     if not self._rpc_server:
-      self._rpc_server = rietveld.Rietveld(self.GetRietveldServer(),
-                                           None, None)
+      self._rpc_server = rietveld.CachingRietveld(
+          self.GetRietveldServer(), None, None)
     return self._rpc_server
 
   def _IssueSetting(self):

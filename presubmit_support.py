@@ -1237,7 +1237,7 @@ def Main(argv):
   logging.info('Found %d file(s).' % len(files))
   rietveld_obj = None
   if options.rietveld_url:
-    rietveld_obj = rietveld.Rietveld(
+    rietveld_obj = rietveld.CachingRietveld(
         options.rietveld_url,
         options.rietveld_email,
         options.rietveld_password)

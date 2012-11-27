@@ -363,7 +363,7 @@ class ChangeInfo(object):
     if not self._rpc_server:
       if not self.rietveld:
         ErrorExit(CODEREVIEW_SETTINGS_FILE_NOT_FOUND)
-      self._rpc_server = rietveld.Rietveld(self.rietveld, None, None)
+      self._rpc_server = rietveld.CachingRietveld(self.rietveld, None, None)
     return self._rpc_server
 
   def CloseIssue(self):

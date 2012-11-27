@@ -69,6 +69,7 @@ class TestGitCl(TestCase):
     self.mock(git_cl.breakpad, 'SendStack', self._mocked_call)
     self.mock(git_cl.presubmit_support, 'DoPresubmitChecks', PresubmitMock)
     self.mock(git_cl.rietveld, 'Rietveld', RietveldMock)
+    self.mock(git_cl.rietveld, 'CachingRietveld', RietveldMock)
     self.mock(git_cl.upload, 'RealMain', self.fail)
     self.mock(git_cl.watchlists, 'Watchlists', WatchlistsMock)
     # It's important to reset settings to not have inter-tests interference.
