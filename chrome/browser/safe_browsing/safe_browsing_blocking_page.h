@@ -9,13 +9,13 @@
 // page with some options (go back, continue) to give the user a chance to avoid
 // the harmful page.
 //
-// The SafeBrowsingBlockingPage is created by the SafeBrowsingService on the UI
-// thread when we've determined that a page is malicious. The operation of the
-// blocking page occurs on the UI thread, where it waits for the user to make a
-// decision about what to do: either go back or continue on.
+// The SafeBrowsingBlockingPage is created by the SafeBrowsingUIManager on the
+// UI thread when we've determined that a page is malicious. The operation of
+// the blocking page occurs on the UI thread, where it waits for the user to
+// make a decision about what to do: either go back or continue on.
 //
 // The blocking page forwards the result of the user's choice back to the
-// SafeBrowsingService so that we can cancel the request for the new page, or
+// SafeBrowsingUIManager so that we can cancel the request for the new page,
 // or allow it to continue.
 //
 // A web page may contain several resources flagged as malware/phishing.  This
@@ -34,7 +34,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/time.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "googleurl/src/gurl.h"
 
@@ -53,7 +53,8 @@ class WebContents;
 
 class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
  public:
-  typedef std::vector<SafeBrowsingService::UnsafeResource> UnsafeResourceList;
+  typedef SafeBrowsingUIManager::UnsafeResource UnsafeResource;
+  typedef std::vector<UnsafeResource> UnsafeResourceList;
   typedef std::map<content::WebContents*, UnsafeResourceList> UnsafeResourceMap;
 
   virtual ~SafeBrowsingBlockingPage();
@@ -64,11 +65,10 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   // showing, the new one will be queued and displayed if the user decides
   // to proceed on the currently showing interstitial.
   static void ShowBlockingPage(
-      SafeBrowsingService* service,
-      const SafeBrowsingService::UnsafeResource& resource);
+      SafeBrowsingUIManager* ui_manager, const UnsafeResource& resource);
 
   // Makes the passed |factory| the factory used to instanciate
-  // SafeBrowsingBlockingPage objects. Usefull for tests.
+  // SafeBrowsingBlockingPage objects. Useful for tests.
   static void RegisterFactory(SafeBrowsingBlockingPageFactory* factory) {
     factory_ = factory;
   }
@@ -91,7 +91,7 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   void SetReportingPreference(bool report);
 
   // Don't instanciate this class directly, use ShowBlockingPage instead.
-  SafeBrowsingBlockingPage(SafeBrowsingService* service,
+  SafeBrowsingBlockingPage(SafeBrowsingUIManager* ui_manager,
                            content::WebContents* web_contents,
                            const UnsafeResourceList& unsafe_resources);
 
@@ -129,23 +129,23 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   // Called when the insterstitial is going away. If there is a
   // pending malware details object, we look at the user's
   // preferences, and if the option to send malware details is
-  // enabled, the report is scheduled to be sent on the |sb_service_|.
+  // enabled, the report is scheduled to be sent on the |ui_manager_|.
   void FinishMalwareDetails(int64 delay_ms);
 
   // Returns the boolean value of the given |pref| from the PrefService of the
   // Profile associated with |web_contents_|.
   bool IsPrefEnabled(const char* pref);
 
-  // A list of SafeBrowsingService::UnsafeResource for a tab that the user
+  // A list of SafeBrowsingUIManager::UnsafeResource for a tab that the user
   // should be warned about.  They are queued when displaying more than one
   // interstitial at a time.
   static UnsafeResourceMap* GetUnsafeResourcesMap();
 
-  // Notifies the SafeBrowsingService on the IO thread whether to proceed or not
-  // for the |resources|.
-  static void NotifySafeBrowsingService(SafeBrowsingService* sb_service,
-                                        const UnsafeResourceList& resources,
-                                        bool proceed);
+  // Notifies the SafeBrowsingUIManager on the IO thread whether to proceed
+  // or not for the |resources|.
+  static void NotifySafeBrowsingUIManager(
+      SafeBrowsingUIManager* ui_manager,
+      const UnsafeResourceList& resources, bool proceed);
 
   // Returns true if the passed |unsafe_resources| is blocking the load of
   // the main page.
@@ -155,7 +155,7 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   friend class SafeBrowsingBlockingPageFactoryImpl;
 
   // For reporting back user actions.
-  SafeBrowsingService* sb_service_;
+  SafeBrowsingUIManager* ui_manager_;
   MessageLoop* report_loop_;
 
   // True if the interstitial is blocking the main page because it is on one
@@ -210,7 +210,7 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
 class SafeBrowsingBlockingPageV1 : public SafeBrowsingBlockingPage {
  public:
   // Don't instanciate this class directly, use ShowBlockingPage instead.
-  SafeBrowsingBlockingPageV1(SafeBrowsingService* service,
+  SafeBrowsingBlockingPageV1(SafeBrowsingUIManager* ui_manager,
                              content::WebContents* web_contents,
                              const UnsafeResourceList& unsafe_resources);
 
@@ -239,7 +239,7 @@ class SafeBrowsingBlockingPageV1 : public SafeBrowsingBlockingPage {
 class SafeBrowsingBlockingPageV2 : public SafeBrowsingBlockingPage {
  public:
   // Don't instanciate this class directly, use ShowBlockingPage instead.
-  SafeBrowsingBlockingPageV2(SafeBrowsingService* service,
+  SafeBrowsingBlockingPageV2(SafeBrowsingUIManager* ui_manager,
                              content::WebContents* web_contents,
                              const UnsafeResourceList& unsafe_resources);
 
@@ -271,7 +271,7 @@ class SafeBrowsingBlockingPageFactory {
   virtual ~SafeBrowsingBlockingPageFactory() { }
 
   virtual SafeBrowsingBlockingPage* CreateSafeBrowsingPage(
-      SafeBrowsingService* service,
+      SafeBrowsingUIManager* ui_manager,
       content::WebContents* web_contents,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources) = 0;
 };

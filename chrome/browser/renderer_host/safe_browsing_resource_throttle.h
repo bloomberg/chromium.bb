@@ -11,7 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/database_manager.h"
+#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "content/public/browser/resource_throttle.h"
 
 class ResourceDispatcherHost;
@@ -44,7 +45,7 @@ class URLRequest;
 // resumed.
 class SafeBrowsingResourceThrottle
     : public content::ResourceThrottle,
-      public SafeBrowsingService::Client,
+      public SafeBrowsingDatabaseManager::Client,
       public base::SupportsWeakPtr<SafeBrowsingResourceThrottle> {
  public:
   SafeBrowsingResourceThrottle(const net::URLRequest* request,
@@ -57,7 +58,7 @@ class SafeBrowsingResourceThrottle
   virtual void WillStartRequest(bool* defer) OVERRIDE;
   virtual void WillRedirectRequest(const GURL& new_url, bool* defer) OVERRIDE;
 
-  // SafeBrowsingService::Client implementation (called on IO thread):
+  // SafeBrowsingDabaseManager::Client implementation (called on IO thread):
   virtual void OnCheckBrowseUrlResult(
       const GURL& url, SBThreatType result) OVERRIDE;
 
@@ -117,7 +118,8 @@ class SafeBrowsingResourceThrottle
 
   int render_process_host_id_;
   int render_view_id_;
-  scoped_refptr<SafeBrowsingService> safe_browsing_;
+  scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
+  scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   const net::URLRequest* request_;
   bool is_subresource_;
 
