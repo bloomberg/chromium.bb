@@ -151,32 +151,6 @@ keyboard_input_handle_keymap(struct keyboard_input *keyboard_input,
 }
 
 static void
-keyboard_input_handle_key(struct keyboard_input *keyboard_input,
-			  uint32_t serial, uint32_t time,
-			  uint32_t key, uint32_t state_w)
-{
-	uint32_t code;
-	uint32_t num_syms;
-	const xkb_keysym_t *syms;
-	xkb_keysym_t sym;
-	enum wl_keyboard_key_state state = state_w;
-
-	if (!keyboard_input->state)
-		return;
-
-	code = key + 8;
-	num_syms = xkb_key_get_syms(keyboard_input->state, code, &syms);
-
-	sym = XKB_KEY_NoSymbol;
-	if (num_syms == 1)
-		sym = syms[0];
-
-	if (keyboard_input->key_handler)
-		(*keyboard_input->key_handler)(keyboard_input, serial, time, key, sym,
-					       state, keyboard_input->user_data);
-}
-
-static void
 keyboard_input_set_user_data(struct keyboard_input *keyboard_input, void *data)
 {
 	keyboard_input->user_data = data;
@@ -236,9 +210,26 @@ input_method_keyboard_key(void *data,
 			  uint32_t state_w)
 {
 	struct simple_im *keyboard = data;
+	struct keyboard_input *keyboard_input = keyboard->keyboard_input;
+	uint32_t code;
+	uint32_t num_syms;
+	const xkb_keysym_t *syms;
+	xkb_keysym_t sym;
+	enum wl_keyboard_key_state state = state_w;
 
-	keyboard_input_handle_key(keyboard->keyboard_input, serial,
-				  time, key, state_w);
+	if (!keyboard_input->state)
+		return;
+
+	code = key + 8;
+	num_syms = xkb_key_get_syms(keyboard_input->state, code, &syms);
+
+	sym = XKB_KEY_NoSymbol;
+	if (num_syms == 1)
+		sym = syms[0];
+
+	if (keyboard_input->key_handler)
+		(*keyboard_input->key_handler)(keyboard_input, serial, time, key, sym,
+					       state, keyboard_input->user_data);
 }
 
 static void
