@@ -133,8 +133,8 @@ class CONTENT_EXPORT ContentRendererClient {
   // all widgets are hidden.
   virtual bool RunIdleHandlerWhenWidgetsHidden();
 
-  // Returns true if the given url can create popup windows.
-  virtual bool AllowPopup(const GURL& creator);
+  // Returns true if a popup window should be allowed.
+  virtual bool AllowPopup();
 
   // Returns true if the navigation was handled by the embedder and should be
   // ignored by WebKit. This method is used by CEF.

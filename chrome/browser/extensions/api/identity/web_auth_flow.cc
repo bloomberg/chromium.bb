@@ -166,7 +166,6 @@ void WebAuthFlow::Observe(int type,
 
 void WebAuthFlow::ProvisionalChangeToMainFrameUrl(
     const GURL& url,
-    const GURL& opener_url,
     RenderViewHost* render_view_host) {
   BeforeUrlLoaded(url);
 }

@@ -138,7 +138,6 @@ PrerenderTabHelper::~PrerenderTabHelper() {
 
 void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(
     const GURL& url,
-    const GURL& opener_url,
     content::RenderViewHost* render_view_host) {
   url_ = url;
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();

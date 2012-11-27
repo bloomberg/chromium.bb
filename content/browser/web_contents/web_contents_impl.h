@@ -305,12 +305,10 @@ class CONTENT_EXPORT WebContentsImpl
       int64 frame_id,
       int64 parent_frame_id,
       bool main_frame,
-      const GURL& opener_url,
       const GURL& url) OVERRIDE;
   virtual void DidRedirectProvisionalLoad(
       RenderViewHost* render_view_host,
       int32 page_id,
-      const GURL& opener_url,
       const GURL& source_url,
       const GURL& target_url) OVERRIDE;
   virtual void DidFailProvisionalLoadWithError(

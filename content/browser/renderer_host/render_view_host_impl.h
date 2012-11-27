@@ -481,10 +481,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnMsgDidStartProvisionalLoadForFrame(int64 frame_id,
                                             int64 parent_frame_id,
                                             bool main_frame,
-                                            const GURL& opener_url,
                                             const GURL& url);
   void OnMsgDidRedirectProvisionalLoad(int32 page_id,
-                                       const GURL& opener_url,
                                        const GURL& source_url,
                                        const GURL& target_url);
   void OnMsgDidFailProvisionalLoadWithError(

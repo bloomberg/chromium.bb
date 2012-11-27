@@ -1087,9 +1087,6 @@ class CONTENT_EXPORT RenderViewImpl
   // Locates a sub frame with given xpath
   WebKit::WebFrame* GetChildFrame(const string16& frame_xpath) const;
 
-  // Returns the opener url if present, else an empty url.
-  GURL GetOpenerUrl() const;
-
   // Returns the URL being loaded by the given frame's request.
   GURL GetLoadingUrl(WebKit::WebFrame* frame) const;
 
@@ -1215,7 +1212,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Used for popups.
   bool opened_by_user_gesture_;
-  GURL creator_url_;
 
   // Whether this RenderView was created by a frame that was suppressing its
   // opener. If so, we may want to load pages in a separate process.  See

@@ -61,7 +61,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
       RenderViewHost* render_view_host) {}
   virtual void ProvisionalChangeToMainFrameUrl(
       const GURL& url,
-      const GURL& opener_url,
       RenderViewHost* render_view_host) {}
   virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,

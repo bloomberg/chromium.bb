@@ -87,7 +87,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       webkit_media::MediaStreamClient* media_stream_client,
       media::MediaLog* media_log) OVERRIDE;
   virtual bool RunIdleHandlerWhenWidgetsHidden() OVERRIDE;
-  virtual bool AllowPopup(const GURL& creator) OVERRIDE;
+  virtual bool AllowPopup() OVERRIDE;
   virtual bool ShouldFork(WebKit::WebFrame* frame,
                           const GURL& url,
                           bool is_initial_navigation,

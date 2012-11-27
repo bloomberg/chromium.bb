@@ -1977,15 +1977,12 @@ void WebContentsImpl::DidStartProvisionalLoadForFrame(
     int64 frame_id,
     int64 parent_frame_id,
     bool is_main_frame,
-    const GURL& opener_url,
     const GURL& url) {
   bool is_error_page = (url.spec() == kUnreachableWebDataURL);
   GURL validated_url(url);
-  GURL validated_opener_url(opener_url);
   RenderProcessHost* render_process_host =
       render_view_host->GetProcess();
   RenderViewHost::FilterURL(render_process_host, false, &validated_url);
-  RenderViewHost::FilterURL(render_process_host, true, &validated_opener_url);
 
   // Notify observers about the start of the provisional load.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
@@ -1997,7 +1994,6 @@ void WebContentsImpl::DidStartProvisionalLoadForFrame(
     // Notify observers about the provisional change in the main frame URL.
     FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                       ProvisionalChangeToMainFrameUrl(validated_url,
-                                                      validated_opener_url,
                                                       render_view_host));
   }
 }
@@ -2005,7 +2001,6 @@ void WebContentsImpl::DidStartProvisionalLoadForFrame(
 void WebContentsImpl::DidRedirectProvisionalLoad(
     RenderViewHost* render_view_host,
     int32 page_id,
-    const GURL& opener_url,
     const GURL& source_url,
     const GURL& target_url) {
   // TODO(creis): Remove this method and have the pre-rendering code listen to
@@ -2013,12 +2008,10 @@ void WebContentsImpl::DidRedirectProvisionalLoad(
   // instead.  See http://crbug.com/78512.
   GURL validated_source_url(source_url);
   GURL validated_target_url(target_url);
-  GURL validated_opener_url(opener_url);
   RenderProcessHost* render_process_host =
       render_view_host->GetProcess();
   RenderViewHost::FilterURL(render_process_host, false, &validated_source_url);
   RenderViewHost::FilterURL(render_process_host, false, &validated_target_url);
-  RenderViewHost::FilterURL(render_process_host, true, &validated_opener_url);
   NavigationEntry* entry;
   if (page_id == -1) {
     entry = controller_.GetPendingEntry();
@@ -2032,7 +2025,6 @@ void WebContentsImpl::DidRedirectProvisionalLoad(
   // Notify observers about the provisional change in the main frame URL.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     ProvisionalChangeToMainFrameUrl(validated_target_url,
-                                                    validated_opener_url,
                                                     render_view_host));
 }
 

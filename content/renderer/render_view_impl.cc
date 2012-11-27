@@ -1787,12 +1787,6 @@ WebView* RenderViewImpl::createView(
   // Record whether the creator frame is trying to suppress the opener field.
   view->opener_suppressed_ = params.opener_suppressed;
 
-  // Record the security origin of the creator.
-  GURL creator_url(creator->document().securityOrigin().toString().utf8());
-  if (!creator_url.is_valid() || !creator_url.IsStandard())
-    creator_url = GURL();
-  view->creator_url_ = creator_url;
-
   // Copy over the alternate error page URL so we can have alt error pages in
   // the new render view (we don't need the browser to send the URL back down).
   view->alternate_error_page_url_ = alternate_error_page_url_;
@@ -2374,7 +2368,7 @@ void RenderViewImpl::show(WebNavigationPolicy policy) {
 
   DCHECK(opener_id_ != MSG_ROUTING_NONE);
 
-  if (GetContentClient()->renderer()->AllowPopup(creator_url_))
+  if (GetContentClient()->renderer()->AllowPopup())
     opened_by_user_gesture_ = true;
 
   // Force new windows to a popup if they were not opened with a user gesture.
@@ -3223,7 +3217,7 @@ void RenderViewImpl::didStartProvisionalLoad(WebFrame* frame) {
   Send(new ViewHostMsg_DidStartProvisionalLoadForFrame(
        routing_id_, frame->identifier(),
        frame->parent() ? frame->parent()->identifier() : -1,
-       is_top_most, GetOpenerUrl(), ds->request().url()));
+       is_top_most, ds->request().url()));
 }
 
 void RenderViewImpl::didReceiveServerRedirectForProvisionalLoad(
@@ -3241,7 +3235,7 @@ void RenderViewImpl::didReceiveServerRedirectForProvisionalLoad(
   GetRedirectChain(data_source, &redirects);
   if (redirects.size() >= 2) {
     Send(new ViewHostMsg_DidRedirectProvisionalLoad(routing_id_, page_id_,
-        GetOpenerUrl(), redirects[redirects.size() - 2], redirects.back()));
+        redirects[redirects.size() - 2], redirects.back()));
   }
 }
 
@@ -4659,13 +4653,6 @@ GURL RenderViewImpl::GetAlternateErrorPageURL(const GURL& failed_url,
   link_doctor_params.SetQueryStr(params);
   GURL url = alternate_error_page_url_.ReplaceComponents(link_doctor_params);
   return url;
-}
-
-GURL RenderViewImpl::GetOpenerUrl() const {
-  if (opener_id_ == MSG_ROUTING_NONE || opener_suppressed_)
-    return GURL();
-  else
-    return creator_url_;
 }
 
 GURL RenderViewImpl::GetLoadingUrl(WebKit::WebFrame* frame) const {

@@ -56,7 +56,7 @@ bool ContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
   return true;
 }
 
-bool ContentRendererClient::AllowPopup(const GURL& creator) {
+bool ContentRendererClient::AllowPopup() {
   return false;
 }
 
