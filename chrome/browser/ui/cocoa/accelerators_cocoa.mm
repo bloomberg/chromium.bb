@@ -30,6 +30,7 @@ const struct AcceleratorMapping {
   { IDC_OPTIONS, @",", NSCommandKeyMask },
   { IDC_PASTE, @"v", NSCommandKeyMask },
   { IDC_PRINT, @"p", NSCommandKeyMask },
+  { IDC_RESTORE_TAB, @"t", NSCommandKeyMask | NSShiftKeyMask },
   { IDC_SAVE_PAGE, @"s", NSCommandKeyMask },
   { IDC_SHOW_BOOKMARK_BAR, @"b", NSCommandKeyMask | NSShiftKeyMask },
   { IDC_SHOW_BOOKMARK_MANAGER, @"b", NSCommandKeyMask | NSAlternateKeyMask },
