@@ -173,6 +173,11 @@ namespace playground2 {
 #endif
   );  // asm
 
+#if defined(ADDRESS_SANITIZER)
+// ASAN will complain because we look at 6 arguments on the stack no matter
+// what. This is probably ok for a debugging feature, see crbug.com/162925.
+__attribute__((no_address_safety_analysis))
+#endif
 intptr_t SandboxSyscall(int nr, ...) {
   // It is most convenient for the caller to pass a variadic list of arguments.
   // But this is difficult to handle in assembly code without making
