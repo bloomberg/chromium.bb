@@ -23,9 +23,6 @@ class LoginHandlerMac;
 - (id)initWithLoginHandler:(LoginHandlerMac*)handler;
 - (IBAction)loginPressed:(id)sender;
 - (IBAction)cancelPressed:(id)sender;
-- (void)sheetDidEnd:(NSWindow*)sheet
-         returnCode:(int)returnCode
-        contextInfo:(void*)contextInfo;
 - (void)autofillLogin:(NSString*)login password:(NSString*)password;
 - (void)setExplanation:(NSString*)explanation;
 @end

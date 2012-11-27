@@ -10,25 +10,33 @@
 #import "chrome/browser/ui/constrained_window_constants.h"
 #include "skia/ext/skia_utils_mac.h"
 
-// The content view for the custom window.
-@interface ConstrainedWindowCustomWindowContentView : NSView
-@end
-
 @implementation ConstrainedWindowCustomWindow
 
 - (id)initWithContentRect:(NSRect)contentRect {
+  if ((self = [self initWithContentRect:contentRect
+                              styleMask:NSBorderlessWindowMask
+                                backing:NSBackingStoreBuffered
+                                  defer:NO])) {
+    scoped_nsobject<NSView> contentView(
+        [[ConstrainedWindowCustomWindowContentView alloc]
+            initWithFrame:NSZeroRect]);
+    [self setContentView:contentView];
+  }
+  return self;
+}
+
+- (id)initWithContentRect:(NSRect)contentRect
+                styleMask:(NSUInteger)windowStyle
+                  backing:(NSBackingStoreType)bufferingType
+                    defer:(BOOL)deferCreation {
   if ((self = [super initWithContentRect:contentRect
-                               styleMask:NSBorderlessWindowMask
-                                 backing:NSBackingStoreBuffered
+                               styleMask:windowStyle
+                                 backing:bufferingType
                                    defer:NO])) {
     [self setHasShadow:YES];
     [self setBackgroundColor:[NSColor clearColor]];
     [self setOpaque:NO];
     [self setReleasedWhenClosed:NO];
-    scoped_nsobject<NSView> contentView(
-        [[ConstrainedWindowCustomWindowContentView alloc]
-            initWithFrame:NSZeroRect]);
-    [self setContentView:contentView];
   }
   return self;
 }

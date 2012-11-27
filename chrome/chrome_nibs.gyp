@@ -119,6 +119,8 @@
         'browser/ui/cocoa/browser/edit_search_engine_cocoa_controller.mm',
         'browser/ui/cocoa/constrained_window/constrained_window_button.h',
         'browser/ui/cocoa/constrained_window/constrained_window_button.mm',
+        'browser/ui/cocoa/constrained_window/constrained_window_custom_window.h',
+        'browser/ui/cocoa/constrained_window/constrained_window_custom_window.mm',
         'browser/ui/cocoa/extensions/browser_actions_container_view.h',
         'browser/ui/cocoa/extensions/browser_actions_container_view.mm',
         'browser/ui/cocoa/extensions/extension_install_dialog_controller.h',

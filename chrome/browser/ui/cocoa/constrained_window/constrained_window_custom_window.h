@@ -26,4 +26,8 @@
 
 @end
 
+// The content view for the custom window.
+@interface ConstrainedWindowCustomWindowContentView : NSView
+@end
+
 #endif  // CHROME_BROWSER_UI_COCOA_CONSTRAINED_WINDOW_CONSTRAINED_WINDOW_CUSTOM_WINDOW_H_

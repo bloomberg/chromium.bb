@@ -6,13 +6,14 @@
 
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
+#include "base/memory/scoped_nsobject.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/cocoa/constrained_window_mac.h"
+#include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac2.h"
 #include "chrome/browser/ui/login/login_model.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "content/public/browser/browser_thread.h"
@@ -34,16 +35,15 @@ using content::WebContents;
 // This class uses ref counting to ensure that it lives until all InvokeLaters
 // have been called.
 class LoginHandlerMac : public LoginHandler,
-                        public ConstrainedWindowMacDelegateCustomSheet {
+                        public ConstrainedWindowMacDelegate2 {
  public:
   LoginHandlerMac(net::AuthChallengeInfo* auth_info, net::URLRequest* request)
-      : LoginHandler(auth_info, request),
-        sheet_controller_(nil) {
+      : LoginHandler(auth_info, request) {
   }
 
   // LoginModelObserver implementation.
   virtual void OnAutofillDataAvailable(const string16& username,
-                                       const string16& password) {
+                                       const string16& password) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     [sheet_controller_ autofillLogin:base::SysUTF16ToNSString(username)
@@ -51,15 +51,13 @@ class LoginHandlerMac : public LoginHandler,
   }
 
   // LoginHandler:
-  virtual void BuildViewForPasswordManager(PasswordManager* manager,
-                                           const string16& explanation) {
+  virtual void BuildViewForPasswordManager(
+      PasswordManager* manager,
+      const string16& explanation) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-    // Load nib here instead of in constructor.
-    sheet_controller_ = [[[LoginHandlerSheet alloc]
-        initWithLoginHandler:this] autorelease];
-    init([sheet_controller_ window], sheet_controller_,
-          @selector(sheetDidEnd:returnCode:contextInfo:));
+    sheet_controller_.reset(
+        [[LoginHandlerSheet alloc] initWithLoginHandler:this]);
 
     SetModel(manager);
 
@@ -73,37 +71,30 @@ class LoginHandlerMac : public LoginHandler,
     WebContents* requesting_contents = GetWebContentsForLogin();
     DCHECK(requesting_contents);
 
-    SetDialog(new ConstrainedWindowMac(requesting_contents, this));
+    constrained_window_.reset(new ConstrainedWindowMac2(
+        this, requesting_contents, [sheet_controller_ window]));
+    SetDialog(constrained_window_.get());
 
     NotifyAuthNeeded();
   }
 
-  // Overridden from ConstrainedWindowMacDelegate:
-  virtual void DeleteDelegate() {
+  // Overridden from ConstrainedWindowMacDelegate2:
+  virtual void OnConstrainedWindowClosed(
+      ConstrainedWindowMac2* window) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-    // The constrained window is going to delete itself; clear our pointer.
     SetDialog(NULL);
     SetModel(NULL);
-
-    // Close sheet if it's still open, as required by
-    // ConstrainedWindowMacDelegate.
-    if (is_sheet_open())
-      [NSApp endSheet:sheet()];
-
     ReleaseSoon();
   }
 
   void OnLoginPressed(const string16& username,
                       const string16& password) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
     SetAuth(username, password);
   }
 
   void OnCancelPressed() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
     CancelAuth();
   }
 
@@ -113,7 +104,9 @@ class LoginHandlerMac : public LoginHandler,
   virtual ~LoginHandlerMac() {}
 
   // The Cocoa controller of the GUI.
-  LoginHandlerSheet* sheet_controller_;
+  scoped_nsobject<LoginHandlerSheet> sheet_controller_;
+
+  scoped_ptr<ConstrainedWindowMac2> constrained_window_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginHandlerMac);
 };
@@ -136,6 +129,8 @@ LoginHandler* LoginHandler::Create(net::AuthChallengeInfo* auth_info,
   if ((self = [super initWithWindowNibPath:nibPath
                                      owner:self])) {
     handler_ = handler;
+    // Force the nib to load so that all outlets are initialized.
+    [self window];
   }
   return self;
 }
@@ -149,22 +144,13 @@ LoginHandler* LoginHandler::Create(net::AuthChallengeInfo* auth_info,
 }
 
 - (IBAction)loginPressed:(id)sender {
-  [NSApp endSheet:[self window]];
   handler_->OnLoginPressed(
       base::SysNSStringToUTF16([nameField_ stringValue]),
       base::SysNSStringToUTF16([passwordField_ stringValue]));
 }
 
 - (IBAction)cancelPressed:(id)sender {
-  [NSApp endSheet:[self window]];
   handler_->OnCancelPressed();
-}
-
-- (void)sheetDidEnd:(NSWindow*)sheet
-         returnCode:(int)returnCode
-        contextInfo:(void *)contextInfo {
-  [sheet orderOut:self];
-  // Also called when user navigates to another page while the sheet is open.
 }
 
 - (void)autofillLogin:(NSString*)login password:(NSString*)password {
@@ -179,16 +165,13 @@ LoginHandler* LoginHandler::Create(net::AuthChallengeInfo* auth_info,
   // Put in the text.
   [explanationField_ setStringValue:explanation];
 
-  // Resize the TextField.
-  CGFloat explanationShift =
-      [GTMUILocalizerAndLayoutTweaker
+  // Resize the text field.
+  CGFloat windowDelta = [GTMUILocalizerAndLayoutTweaker
        sizeToFitFixedWidthTextField:explanationField_];
 
-  // Resize the window (no shifting needed due to window layout).
-  NSSize windowDelta = NSMakeSize(0, explanationShift);
-  [GTMUILocalizerAndLayoutTweaker
-      resizeWindowWithoutAutoResizingSubViews:[self window]
-                                        delta:windowDelta];
+  NSRect newFrame = [[self window] frame];
+  newFrame.size.height += windowDelta;
+  [[self window] setFrame:newFrame display:NO];
 }
 
 @end
