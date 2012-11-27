@@ -111,17 +111,16 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Called by the view when the user does a mousedown, mouseup, TOUCH_START
-     * and TOUCH_END on the list.
-     * @param {!Event} e The browser mouse or TouchHandler event.
+     * Called by the view when the user does a mousedown or mouseup on the
+     * list.
+     * @param {!Event} e The browser mouse event.
      * @param {number} index The index that was under the mouse pointer, -1 if
      *     none.
      */
     handlePointerDownUp: function(e, index) {
       var sm = this.selectionModel;
       var anchorIndex = sm.anchorIndex;
-      var isDown = (e.type == 'mousedown' ||
-                    e.type == cr.ui.TouchHandler.EventType.TOUCH_START);
+      var isDown = (e.type == 'mousedown');
 
       sm.beginChange();
 
