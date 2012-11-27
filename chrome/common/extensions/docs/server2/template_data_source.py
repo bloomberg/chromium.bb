@@ -5,9 +5,10 @@
 import logging
 
 from docs_server_utils import FormatKey
-from file_system import FileNotFoundError
 import compiled_file_system as compiled_fs
+from file_system import FileNotFoundError
 from third_party.handlebar import Handlebar
+import url_constants
 
 EXTENSIONS_URL = '/chrome/extensions'
 
@@ -130,6 +131,8 @@ class TemplateDataSource(object):
       'static': self._static_resources,
       'apps_title': 'Apps',
       'extensions_title': 'Extensions',
+      'apps_samples_url': url_constants.GITHUB_BASE,
+      'extensions_samples_url': url_constants.EXTENSIONS_SAMPLES,
       'true': True,
       'false': False
     })

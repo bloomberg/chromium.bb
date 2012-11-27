@@ -31,17 +31,19 @@ class _AsyncFetchFutureZip(object):
     except FileNotFoundError as e:
       logging.error('Bad github zip file: %s' % e)
       return None
-    self._blobstore.Set(_MakeKey(self._key_to_set),
-                        blob,
-                        blobstore.BLOBSTORE_GITHUB)
     if self._key_to_delete is not None:
       self._blobstore.Delete(_MakeKey(self._key_to_delete),
                              blobstore.BLOBSTORE_GITHUB)
     try:
-      return ZipFile(StringIO(blob))
+      return_zip = ZipFile(StringIO(blob))
     except BadZipfile as e:
       logging.error('Bad github zip file: %s' % e)
       return None
+
+    self._blobstore.Set(_MakeKey(self._key_to_set),
+                        blob,
+                        blobstore.BLOBSTORE_GITHUB)
+    return return_zip
 
 class GithubFileSystem(FileSystem):
   """FileSystem implementation which fetches resources from github.
@@ -71,7 +73,11 @@ class GithubFileSystem(FileSystem):
     self._version = version
 
   def _ReadFile(self, path):
-    zip_file = self._zip_file.Get()
+    try:
+      zip_file = self._zip_file.Get()
+    except Exception as e:
+      logging.error('Github ReadFile error: %s' % e)
+      return ''
     if zip_file is None:
       logging.error('Bad github zip file.')
       return ''
@@ -79,7 +85,11 @@ class GithubFileSystem(FileSystem):
     return zip_file.read(prefix + path)
 
   def _ListDir(self, path):
-    zip_file = self._zip_file.Get()
+    try:
+      zip_file = self._zip_file.Get()
+    except Exception as e:
+      logging.error('Github ListDir error: %s' % e)
+      return []
     if zip_file is None:
       logging.error('Bad github zip file.')
       return []

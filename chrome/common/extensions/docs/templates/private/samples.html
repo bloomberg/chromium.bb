@@ -1,6 +1,7 @@
 {{- sidenav: the sidenav bar for either apps or extensions -}}
 {{- filter_list: the list of APIs that show up in the filter box -}}
 {{- samples_list: the list of samples shown on the page -}}
+{{- samples_url: the source URL of the samples -}}
 {{- footer: the footer for either apps or extensions -}}
 <!DOCTYPE html>
 <html>
@@ -31,7 +32,14 @@
             </tr>
           </table>
         </div>
-        {{#samples_list}}{{+partials.sample_item}}{{/}}
+        {{?samples_list}}
+          {{#samples_list}}
+            {{+partials.sample_item}}
+          {{/samples_list}}
+        {{:samples_list}}
+          <p>There was a problem fetching the sample {{title}}, but they may be
+          available directly from the <a href="{{samples_url}}">source</a>.</p>
+        {{/samples_list}}
       </div>
     </div>
   </body>
