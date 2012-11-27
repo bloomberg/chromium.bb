@@ -32,8 +32,6 @@ class DepthTextureTest : public testing::Test {
   GLManager gl_;
 };
 
-
-
 GLuint DepthTextureTest::SetupUnitQuad(GLint position_location) {
   GLuint vbo = 0;
   glGenBuffers(1, &vbo);
@@ -65,7 +63,7 @@ struct FormatType {
 // crbug.com/135229
 // Fails on Win Intel, Linux Intel.
 #if ((defined(OS_WIN) || defined(OS_LINUX)) && defined(NDEBUG))
-#define MAYBE_RenderTo FAILS_RenderTo
+#define MAYBE_RenderTo DISABLED_RenderTo
 #else
 #define MAYBE_RenderTo RenderTo
 #endif

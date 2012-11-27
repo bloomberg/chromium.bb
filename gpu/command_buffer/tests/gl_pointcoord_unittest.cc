@@ -68,10 +68,11 @@ GLfloat s2p(GLfloat s) {
 // crbug.com/162976
 // Flaky on Linux ATI bot.
 #if (defined(OS_LINUX) && defined(NDEBUG))
-#define MAYBE_RenderTo FAILS_RenderTo
+#define MAYBE_RenderTo DISABLED_RenderTo
 #else
 #define MAYBE_RenderTo RenderTo
 #endif
+
 TEST_F(PointCoordTest, MAYBE_RenderTo) {
   static const char* v_shader_str = SHADER(
       attribute vec4 a_position;
