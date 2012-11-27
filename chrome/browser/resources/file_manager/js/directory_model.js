@@ -488,6 +488,8 @@ DirectoryModel.prototype.replaceDirectoryContents_ = function(dirContents) {
   this.fileListSelection_.beginChange();
 
   var selectedPaths = this.getSelectedPaths_();
+  var selectedIndices = this.fileListSelection_.selectedIndexes;
+
   // Restore leadIndex in case leadName no longer exists.
   var leadIndex = this.fileListSelection_.leadIndex;
   var leadPath = this.getLeadPath_();
@@ -498,7 +500,17 @@ DirectoryModel.prototype.replaceDirectoryContents_ = function(dirContents) {
   this.setSelectedPaths_(selectedPaths);
   this.fileListSelection_.leadIndex = leadIndex;
   this.setLeadPath_(leadPath);
+
+  // If nothing is selected after update, then select file next to the
+  // latest selection
+  if (this.fileListSelection_.selectedIndexes.length == 0 &&
+      selectedIndices.length != 0) {
+    var maxIdx = Math.max.apply(null, selectedIndices);
+    this.selectIndex(Math.min(maxIdx - selectedIndices.length + 2,
+                              this.getFileList().length) - 1);
+  }
   this.fileListSelection_.endChange();
+
   cr.dispatchSimpleEvent(this, 'end-update-files');
 };
 
@@ -567,9 +579,27 @@ DirectoryModel.prototype.renameEntry = function(entry, newName,
   var currentDirPath = this.getCurrentDirPath();
   var onSuccess = function(newEntry) {
     this.currentDirContents_.prefetchMetadata([newEntry], function() {
-      // Do not call the callback if current directory has changed.
-      if (currentDirPath == this.getCurrentDirPath() && opt_successCallback)
-        opt_successCallback();
+      // Do not change anything or call the callback if current
+      // directory changed.
+      if (currentDirPath != this.getCurrentDirPath())
+        return;
+
+      var index = this.findIndexByName_(entry.name);
+
+      if (index >= 0) {
+        var wasSelected = this.fileListSelection_.getIndexSelected(index);
+
+        this.getFileList().splice(index, 1, newEntry);
+
+        if (wasSelected)
+          this.fileListSelection_.setIndexSelected(
+              this.findIndexByName_(newName), true);
+      }
+
+      // If the entry doesn't exist in the list it mean that it updated from
+      // outside (probably by directory rescan).
+      if (opt_successCallback)
+         opt_successCallback();
     }.bind(this));
   }.bind(this);
 
