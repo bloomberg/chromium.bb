@@ -157,6 +157,10 @@ class VIEWS_EXPORT NativeTextfieldWrapper {
   // Get the height in pixels of the first font used in this textfield.
   virtual int GetFontHeight() = 0;
 
+  // Returns the baseline of the textfield. This should not take into account
+  // any insets.
+  virtual int GetTextfieldBaseline() const = 0;
+
   // Performs the action associated with the specified command id. Not called
   // ExecuteCommand to avoid name clash.
   virtual void ExecuteTextCommand(int command_id) = 0;

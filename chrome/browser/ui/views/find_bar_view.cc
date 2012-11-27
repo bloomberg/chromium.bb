@@ -251,6 +251,20 @@ void FindBarView::OnPaint(gfx::Canvas* canvas) {
                        back_button_origin.y(),
                        back_button_origin.x() - find_text_x,
                        text_box_background_->height());
+
+  // Draw the background of the match text. We want to make sure the red
+  // "no-match" background almost completely fills up the amount of vertical
+  // space within the text box. We therefore fix the size relative to the button
+  // heights. We use the FindPrev button, which has a 1px outer whitespace
+  // margin, 1px border and we want to appear 1px below the border line so we
+  // subtract 3 for top and 3 for bottom.
+  gfx::Rect match_count_background_bounds(match_count_text_->bounds());
+  match_count_background_bounds.set_height(
+      find_previous_button_->height() - 6);  // Subtract 3px x 2.
+  match_count_background_bounds.set_y(
+      (height() - match_count_background_bounds.height()) / 2);
+  canvas->FillRect(match_count_background_bounds,
+                   match_count_text_->background_color());
 }
 
 void FindBarView::Layout() {
@@ -288,15 +302,11 @@ void FindBarView::Layout() {
                                    sz.width(),
                                    sz.height());
 
+  sz = find_text_->GetPreferredSize();
+  const int find_text_y = (height() - sz.height()) / 2 + 1;
+
   // Then the label showing the match count number.
   sz = match_count_text_->GetPreferredSize();
-  // We want to make sure the red "no-match" background almost completely fills
-  // up the amount of vertical space within the text box. We therefore fix the
-  // size relative to the button heights. We use the FindPrev button, which has
-  // a 1px outer whitespace margin, 1px border and we want to appear 1px below
-  // the border line so we subtract 3 for top and 3 for bottom.
-  sz.set_height(find_previous_button_->height() - 6);  // Subtract 3px x 2.
-
   // We extend the label bounds a bit to give the background highlighting a bit
   // of breathing room (margins around the text).
   sz.Enlarge(kMatchCountExtraWidth, 0);
@@ -305,7 +315,8 @@ void FindBarView::Layout() {
                       kWhiteSpaceAfterMatchCountLabel -
                       sz.width();
   match_count_text_->SetBounds(match_count_x,
-                               (height() - sz.height()) / 2,
+                               find_text_y + find_text_->GetBaseline() -
+                                   match_count_text_->GetBaseline(),
                                sz.width(),
                                sz.height());
 
@@ -452,16 +463,12 @@ bool FindBarView::HandleKeyEvent(views::Textfield* sender,
 
 void FindBarView::UpdateMatchCountAppearance(bool no_match) {
   if (no_match) {
-    match_count_text_->set_background(
-        views::Background::CreateSolidBackground(kBackgroundColorNoMatch));
+    match_count_text_->SetBackgroundColor(kBackgroundColorNoMatch);
     match_count_text_->SetEnabledColor(kTextColorNoMatch);
   } else {
-    match_count_text_->set_background(
-      views::Background::CreateSolidBackground(kBackgroundColorMatch));
+    match_count_text_->SetBackgroundColor(kBackgroundColorMatch);
     match_count_text_->SetEnabledColor(kTextColorMatchCount);
   }
-  match_count_text_->SetBackgroundColor(
-      match_count_text_->background()->get_color());
 }
 
 bool FindBarView::FocusForwarderView::OnMousePressed(

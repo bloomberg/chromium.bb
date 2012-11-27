@@ -421,6 +421,10 @@ int NativeTextfieldWin::GetFontHeight() {
   return textfield_->font().GetHeight();
 }
 
+int NativeTextfieldWin::GetTextfieldBaseline() const {
+  return textfield_->font().GetBaseline();
+}
+
 void NativeTextfieldWin::ExecuteTextCommand(int command_id) {
   ExecuteCommand(command_id);
 }

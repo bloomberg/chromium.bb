@@ -373,6 +373,15 @@ void Textfield::Layout() {
   }
 }
 
+int Textfield::GetBaseline() const {
+  gfx::Insets insets;
+  if (draw_border_ && native_wrapper_)
+    insets = native_wrapper_->CalculateInsets();
+  const int baseline = native_wrapper_ ?
+      native_wrapper_->GetTextfieldBaseline() : font_.GetBaseline();
+  return insets.top() + baseline;
+}
+
 gfx::Size Textfield::GetPreferredSize() {
   gfx::Insets insets;
   if (draw_border_ && native_wrapper_)

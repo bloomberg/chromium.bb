@@ -113,13 +113,13 @@ class FindBarView : public DropdownBarView,
   // get focus. Represents the text field where the user enters a search term.
   class SearchTextfieldView : public views::Textfield {
    public:
-     SearchTextfieldView();
-     virtual ~SearchTextfieldView();
+    SearchTextfieldView();
+    virtual ~SearchTextfieldView();
 
-     virtual void RequestFocus() OVERRIDE;
+    virtual void RequestFocus() OVERRIDE;
 
    private:
-     DISALLOW_COPY_AND_ASSIGN(SearchTextfieldView);
+    DISALLOW_COPY_AND_ASSIGN(SearchTextfieldView);
   };
 
   // Returns the OS-specific view for the find bar that acts as an intermediary

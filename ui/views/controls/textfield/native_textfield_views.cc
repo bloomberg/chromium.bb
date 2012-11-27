@@ -595,6 +595,10 @@ int NativeTextfieldViews::GetFontHeight() {
   return GetRenderText()->GetFont().GetHeight();
 }
 
+int NativeTextfieldViews::GetTextfieldBaseline() const {
+  return GetRenderText()->GetFont().GetBaseline();
+}
+
 void NativeTextfieldViews::ExecuteTextCommand(int command_id) {
   ExecuteCommand(command_id);
 }
