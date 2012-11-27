@@ -197,23 +197,12 @@ PP_Resource ResourceCreationProxy::CreateAudioConfig(
       OBJECT_IS_PROXY, instance, sample_rate, sample_frame_count);
 }
 
-PP_Resource ResourceCreationProxy::CreateImageData(PP_Instance instance,
-                                                   PP_ImageDataFormat format,
-                                                   const PP_Size& size,
-                                                   PP_Bool init_to_zero) {
-  return PPB_ImageData_Proxy::CreateProxyResource(instance, format, size,
-                                                  init_to_zero);
-}
-
-PP_Resource ResourceCreationProxy::CreateImageDataNaCl(
+PP_Resource ResourceCreationProxy::CreateFileChooser(
     PP_Instance instance,
-    PP_ImageDataFormat format,
-    const PP_Size& size,
-    PP_Bool init_to_zero) {
-  // These really only are different on the host side. On the plugin side, we
-  // always request a "platform" ImageData if we're trusted, or a "NaCl" one
-  // if we're untrusted (see PPB_ImageData_Proxy::CreateProxyResource()).
-  return CreateImageData(instance, format, size, init_to_zero);
+    PP_FileChooserMode_Dev mode,
+    const char* accept_types) {
+  return (new FileChooserResource(GetConnection(), instance, mode,
+                                  accept_types))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateGraphics2D(PP_Instance instance,
@@ -243,6 +232,25 @@ PP_Resource ResourceCreationProxy::CreateGraphics3DRaw(
 PP_Resource ResourceCreationProxy::CreateHostResolverPrivate(
     PP_Instance instance) {
   return PPB_HostResolver_Private_Proxy::CreateProxyResource(instance);
+}
+
+PP_Resource ResourceCreationProxy::CreateImageData(PP_Instance instance,
+                                                   PP_ImageDataFormat format,
+                                                   const PP_Size& size,
+                                                   PP_Bool init_to_zero) {
+  return PPB_ImageData_Proxy::CreateProxyResource(instance, format, size,
+                                                  init_to_zero);
+}
+
+PP_Resource ResourceCreationProxy::CreateImageDataNaCl(
+    PP_Instance instance,
+    PP_ImageDataFormat format,
+    const PP_Size& size,
+    PP_Bool init_to_zero) {
+  // These really only are different on the host side. On the plugin side, we
+  // always request a "platform" ImageData if we're trusted, or a "NaCl" one
+  // if we're untrusted (see PPB_ImageData_Proxy::CreateProxyResource()).
+  return CreateImageData(instance, format, size, init_to_zero);
 }
 
 PP_Resource ResourceCreationProxy::CreateNetworkMonitor(
@@ -306,14 +314,6 @@ PP_Resource ResourceCreationProxy::CreateDirectoryReader(
     PP_Resource directory_ref) {
   NOTIMPLEMENTED();  // Not proxied yet.
   return 0;
-}
-
-PP_Resource ResourceCreationProxy::CreateFileChooser(
-    PP_Instance instance,
-    PP_FileChooserMode_Dev mode,
-    const char* accept_types) {
-  return (new FileChooserResource(GetConnection(), instance, mode,
-                                  accept_types))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateFlashDeviceID(PP_Instance instance) {

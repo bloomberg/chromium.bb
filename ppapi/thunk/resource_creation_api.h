@@ -109,14 +109,9 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateAudioConfig(PP_Instance instance,
                                         PP_AudioSampleRate sample_rate,
                                         uint32_t sample_frame_count) = 0;
-  virtual PP_Resource CreateImageData(PP_Instance instance,
-                                      PP_ImageDataFormat format,
-                                      const PP_Size& size,
-                                      PP_Bool init_to_zero) = 0;
-  virtual PP_Resource CreateImageDataNaCl(PP_Instance instance,
-                                          PP_ImageDataFormat format,
-                                          const PP_Size& size,
-                                          PP_Bool init_to_zero) = 0;
+  virtual PP_Resource CreateFileChooser(PP_Instance instance,
+                                        PP_FileChooserMode_Dev mode,
+                                        const char* accept_types) = 0;
   virtual PP_Resource CreateGraphics2D(PP_Instance instance,
                                        const PP_Size& size,
                                        PP_Bool is_always_opaque) = 0;
@@ -127,6 +122,14 @@ class ResourceCreationAPI {
                                           PP_Resource share_context,
                                           const int32_t* attrib_list) = 0;
   virtual PP_Resource CreateHostResolverPrivate(PP_Instance instance) = 0;
+  virtual PP_Resource CreateImageData(PP_Instance instance,
+                                      PP_ImageDataFormat format,
+                                      const PP_Size& size,
+                                      PP_Bool init_to_zero) = 0;
+  virtual PP_Resource CreateImageDataNaCl(PP_Instance instance,
+                                          PP_ImageDataFormat format,
+                                          const PP_Size& size,
+                                          PP_Bool init_to_zero) = 0;
   virtual PP_Resource CreateNetworkMonitor(
       PP_Instance instance,
       PPB_NetworkMonitor_Callback callback,
@@ -144,10 +147,6 @@ class ResourceCreationAPI {
       const PP_BrowserFont_Trusted_Description* description) = 0;
   virtual PP_Resource CreateBuffer(PP_Instance instance, uint32_t size) = 0;
   virtual PP_Resource CreateDirectoryReader(PP_Resource directory_ref) = 0;
-  virtual PP_Resource CreateFileChooser(
-      PP_Instance instance,
-      PP_FileChooserMode_Dev mode,
-      const char* accept_types) = 0;
   virtual PP_Resource CreateFlashDeviceID(PP_Instance instance) = 0;
   virtual PP_Resource CreateFlashFontFile(
       PP_Instance instance,
