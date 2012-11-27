@@ -31,6 +31,10 @@ class AppListControllerDelegate {
   virtual void UnpinApp(const std::string& extension_id);
   virtual bool CanPin() = 0;
 
+  // Be aware of the extension uninstalling flow.
+  virtual void AboutToUninstallApp() {}
+  virtual void UninstallAppCompleted() {}
+
   // Whether the controller supports showing the Create Shortcuts dialog.
   virtual bool CanShowCreateShortcutsDialog() = 0;
   virtual void ShowCreateShortcutsDialog(Profile* profile,

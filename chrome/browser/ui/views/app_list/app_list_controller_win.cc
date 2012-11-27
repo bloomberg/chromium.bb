@@ -95,6 +95,8 @@ class AppListControllerDelegateWin : public AppListControllerDelegate {
   virtual void ViewClosing() OVERRIDE;
   virtual void ViewActivationChanged(bool active) OVERRIDE;
   virtual bool CanPin() OVERRIDE;
+  virtual void AboutToUninstallApp() OVERRIDE;
+  virtual void UninstallAppCompleted() OVERRIDE;
   virtual bool CanShowCreateShortcutsDialog() OVERRIDE;
   virtual void ShowCreateShortcutsDialog(
       Profile* profile,
@@ -113,9 +115,11 @@ class AppListControllerDelegateWin : public AppListControllerDelegate {
 // list to operate, and controls when the app list is opened and closed.
 class AppListController {
  public:
-  AppListController() : current_view_(NULL) {}
+  AppListController() : current_view_(NULL), can_close_app_list_(true) {}
   ~AppListController() {}
 
+  void set_can_close(bool can_close) { can_close_app_list_ = can_close; }
+  bool can_close() { return can_close_app_list_; }
   void ShowAppList();
   void CloseAppList();
   void AppListClosing();
@@ -148,6 +152,9 @@ class AppListController {
 
   app_list::PaginationModel pagination_model_;
 
+  // True if the controller can close the app list.
+  bool can_close_app_list_;
+
   DISALLOW_COPY_AND_ASSIGN(AppListController);
 };
 
@@ -176,6 +183,14 @@ void AppListControllerDelegateWin::ViewClosing() {
 
 bool AppListControllerDelegateWin::CanPin() {
   return false;
+}
+
+void AppListControllerDelegateWin::AboutToUninstallApp() {
+  g_app_list_controller.Get().set_can_close(false);
+}
+
+void AppListControllerDelegateWin::UninstallAppCompleted() {
+  g_app_list_controller.Get().set_can_close(true);
 }
 
 bool AppListControllerDelegateWin::CanShowCreateShortcutsDialog() {
@@ -256,7 +271,7 @@ void AppListController::ShowAppList() {
 }
 
 void AppListController::CloseAppList() {
-  if (current_view_)
+  if (current_view_ && can_close_app_list_)
     current_view_->GetWidget()->Close();
 }
 

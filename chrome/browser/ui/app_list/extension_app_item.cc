@@ -56,9 +56,11 @@ enum CommandId {
 class ExtensionUninstaller : public ExtensionUninstallDialog::Delegate {
  public:
   ExtensionUninstaller(Profile* profile,
-                       const std::string& extension_id)
+                       const std::string& extension_id,
+                       AppListControllerDelegate* controller)
       : profile_(profile),
-        extension_id_(extension_id) {
+        extension_id_(extension_id),
+        controller_(controller) {
   }
 
   void Run() {
@@ -68,7 +70,7 @@ class ExtensionUninstaller : public ExtensionUninstallDialog::Delegate {
       CleanUp();
       return;
     }
-
+    controller_->AboutToUninstallApp();
     ExtensionUninstallDialog* dialog =
         ExtensionUninstallDialog::Create(NULL, this);
     dialog->ConfirmUninstall(extension);
@@ -84,11 +86,12 @@ class ExtensionUninstaller : public ExtensionUninstallDialog::Delegate {
                                   false, /* external_uninstall*/
                                   NULL);
     }
-
+    controller_->UninstallAppCompleted();
     CleanUp();
   }
 
   virtual void ExtensionUninstallCanceled() OVERRIDE {
+    controller_->UninstallAppCompleted();
     CleanUp();
   }
 
@@ -98,6 +101,7 @@ class ExtensionUninstaller : public ExtensionUninstallDialog::Delegate {
 
   Profile* profile_;
   std::string extension_id_;
+  AppListControllerDelegate* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUninstaller);
 };
@@ -236,7 +240,8 @@ void ExtensionAppItem::ShowExtensionDetails() {
 void ExtensionAppItem::StartExtensionUninstall() {
   // ExtensionUninstall deletes itself when done or aborted.
   ExtensionUninstaller* uninstaller = new ExtensionUninstaller(profile_,
-                                                               extension_id_);
+                                                               extension_id_,
+                                                               controller_);
   uninstaller->Run();
 }
 
