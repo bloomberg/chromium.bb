@@ -57,6 +57,7 @@ void WebUIScreenLocker::LockScreen(bool unlock_on_input) {
   LockWindow* lock_window = LockWindow::Create();
   lock_window->set_observer(this);
   lock_window_ = lock_window->GetWidget();
+  lock_window_->AddObserver(this);
   WebUILoginView::Init(lock_window_);
   lock_window_->SetContentsView(this);
   lock_window_->Show();
@@ -126,8 +127,11 @@ content::WebUI* WebUIScreenLocker::GetAssociatedWebUI() {
 WebUIScreenLocker::~WebUIScreenLocker() {
   if (ash::Shell::GetInstance())
     ash::Shell::GetInstance()->session_state_controller()->RemoveObserver(this);
-  DCHECK(lock_window_);
-  lock_window_->Close();
+  // In case of shutdown, lock_window_ may be deleted before WebUIScreenLocker.
+  if (lock_window_) {
+    lock_window_->RemoveObserver(this);
+    lock_window_->Close();
+  }
   // If LockScreen() was called, we need to clear the signin screen handler
   // delegate set in ShowSigninScreen so that it no longer points to us.
   if (login_display_.get()) {
@@ -235,5 +239,12 @@ void WebUIScreenLocker::OnSessionStateEvent(
     GetWebUI()->CallJavascriptFunction("cr.ui.Oobe.animateOnceFullyDisplayed");
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// WidgetObserver override.
+
+void WebUIScreenLocker::OnWidgetClosing(views::Widget* widget) {
+  lock_window_->RemoveObserver(this);
+  lock_window_ = NULL;
+}
 
 }  // namespace chromeos

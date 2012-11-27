@@ -18,6 +18,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace content {
 class WebUI;
@@ -38,7 +39,8 @@ class WebUIScreenLocker : public WebUILoginView,
                           public LoginDisplay::Delegate,
                           public ScreenLockerDelegate,
                           public LockWindow::Observer,
-                          public ash::SessionStateObserver {
+                          public ash::SessionStateObserver,
+                          public views::WidgetObserver {
  public:
   explicit WebUIScreenLocker(ScreenLocker* screen_locker);
 
@@ -81,6 +83,9 @@ class WebUIScreenLocker : public WebUILoginView,
   // SessionStateObserver override.
   virtual void OnSessionStateEvent(ash::SessionStateObserver::EventType event)
       OVERRIDE;
+
+  // WidgetObserver override.
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
  private:
   friend class test::WebUIScreenLockerTester;
