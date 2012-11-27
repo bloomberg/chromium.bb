@@ -61,6 +61,24 @@
 }
 @end
 
+@interface WebsiteSettingsBubbleControllerForTesting
+    : WebsiteSettingsBubbleController {
+ @private
+  CGFloat defaultWindowWidth_;
+}
+@end
+
+@implementation WebsiteSettingsBubbleControllerForTesting
+- (void)setDefaultWindowWidth:(CGFloat)width {
+  defaultWindowWidth_ = width;
+}
+- (CGFloat)defaultWindowWidth {
+  // If |defaultWindowWidth_| is 0, use the superclass implementation.
+  return defaultWindowWidth_ ?
+      defaultWindowWidth_ : [super defaultWindowWidth];
+}
+@end
+
 namespace {
 
 // Indices of the menu items in the permission menu.
@@ -68,6 +86,50 @@ enum PermissionMenuIndices {
   kMenuIndexContentSettingAllow = 0,
   kMenuIndexContentSettingBlock,
   kMenuIndexContentSettingDefault
+};
+
+const ContentSettingsType kTestPermissionTypes[] = {
+  // NOTE: FULLSCREEN does not support "Always block", so it must appear as
+  // one of the first three permissions.
+  CONTENT_SETTINGS_TYPE_FULLSCREEN,
+  CONTENT_SETTINGS_TYPE_IMAGES,
+  CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+  CONTENT_SETTINGS_TYPE_PLUGINS,
+  CONTENT_SETTINGS_TYPE_POPUPS,
+  CONTENT_SETTINGS_TYPE_GEOLOCATION,
+  CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+  CONTENT_SETTINGS_TYPE_MOUSELOCK,
+  CONTENT_SETTINGS_TYPE_MEDIASTREAM,
+};
+
+const ContentSetting kTestSettings[] = {
+  CONTENT_SETTING_DEFAULT,
+  CONTENT_SETTING_DEFAULT,
+  CONTENT_SETTING_DEFAULT,
+  CONTENT_SETTING_ALLOW,
+  CONTENT_SETTING_BLOCK,
+  CONTENT_SETTING_ALLOW,
+  CONTENT_SETTING_BLOCK,
+  CONTENT_SETTING_ALLOW,
+  CONTENT_SETTING_BLOCK,
+};
+
+const ContentSetting kTestDefaultSettings[] = {
+  CONTENT_SETTING_ALLOW,
+  CONTENT_SETTING_BLOCK,
+  CONTENT_SETTING_ASK
+};
+
+const content_settings::SettingSource kTestSettingSources[] = {
+  content_settings::SETTING_SOURCE_USER,
+  content_settings::SETTING_SOURCE_USER,
+  content_settings::SETTING_SOURCE_USER,
+  content_settings::SETTING_SOURCE_USER,
+  content_settings::SETTING_SOURCE_USER,
+  content_settings::SETTING_SOURCE_POLICY,
+  content_settings::SETTING_SOURCE_POLICY,
+  content_settings::SETTING_SOURCE_EXTENSION,
+  content_settings::SETTING_SOURCE_EXTENSION,
 };
 
 class WebsiteSettingsBubbleControllerTest : public CocoaTest {
@@ -89,18 +151,24 @@ class WebsiteSettingsBubbleControllerTest : public CocoaTest {
     TEXT_NOT_EQUAL
   };
 
-  void CreateBubble() {
+  // Creates a new website settings bubble, with the given default width.
+  // If |default_width| is 0, the *default* default width will be used.
+  void CreateBubbleWithWidth(CGFloat default_width) {
     bridge_ = new WebsiteSettingsUIBridge();
 
     // The controller cleans up after itself when the window closes.
-    controller_ =
-        [[WebsiteSettingsBubbleController alloc]
-            initWithParentWindow:test_window()
-         websiteSettingsUIBridge:bridge_
-                     webContents:nil
-                  isInternalPage:NO];
+    controller_ = [WebsiteSettingsBubbleControllerForTesting alloc];
+    [controller_ setDefaultWindowWidth:default_width];
+    [controller_ initWithParentWindow:test_window()
+                 websiteSettingsUIBridge:bridge_
+                 webContents:nil
+                 isInternalPage:NO];
     window_ = [controller_ window];
     [controller_ showWindow:nil];
+  }
+
+  void CreateBubble() {
+    CreateBubbleWithWidth(0.0);
   }
 
   // Return a pointer to the first NSTextField found that either matches, or
@@ -137,7 +205,26 @@ class WebsiteSettingsBubbleControllerTest : public CocoaTest {
     return views;
   }
 
-  WebsiteSettingsBubbleController* controller_;  // Weak, owns self.
+  // Sets up the dialog with some test permission settings.
+  void SetTestPermissions() {
+    // Create a list of 5 different permissions, corresponding to all the
+    // possible settings:
+    // - [allow, block, ask] by default
+    // - [block, allow] * [by user, by policy, by extension]
+    PermissionInfoList list;
+    WebsiteSettingsUI::PermissionInfo info;
+    for (size_t i = 0; i < arraysize(kTestPermissionTypes); ++i) {
+      info.type = kTestPermissionTypes[i];
+      info.setting = kTestSettings[i];
+      if (info.setting == CONTENT_SETTING_DEFAULT)
+        info.default_setting = kTestDefaultSettings[i];
+      info.source = kTestSettingSources[i];
+      list.push_back(info);
+    }
+    bridge_->SetPermissionInfo(list);
+  }
+
+  WebsiteSettingsBubbleControllerForTesting* controller_;  // Weak, owns self.
   NSWindow* window_;  // Weak, owned by controller.
 };
 
@@ -238,66 +325,7 @@ TEST_F(WebsiteSettingsBubbleControllerTest, SetFirstVisit) {
 
 TEST_F(WebsiteSettingsBubbleControllerTest, SetPermissionInfo) {
   CreateBubble();
-
-  const ContentSettingsType kTestPermissionTypes[] = {
-    // NOTE: FULLSCREEN does not support "Always block", so it must appear as
-    // one of the first three permissions.
-    CONTENT_SETTINGS_TYPE_FULLSCREEN,
-    CONTENT_SETTINGS_TYPE_IMAGES,
-    CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-    CONTENT_SETTINGS_TYPE_PLUGINS,
-    CONTENT_SETTINGS_TYPE_POPUPS,
-    CONTENT_SETTINGS_TYPE_GEOLOCATION,
-    CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-    CONTENT_SETTINGS_TYPE_MOUSELOCK,
-    CONTENT_SETTINGS_TYPE_MEDIASTREAM,
-  };
-
-  const ContentSetting kTestSettings[] = {
-    CONTENT_SETTING_DEFAULT,
-    CONTENT_SETTING_DEFAULT,
-    CONTENT_SETTING_DEFAULT,
-    CONTENT_SETTING_ALLOW,
-    CONTENT_SETTING_BLOCK,
-    CONTENT_SETTING_ALLOW,
-    CONTENT_SETTING_BLOCK,
-    CONTENT_SETTING_ALLOW,
-    CONTENT_SETTING_BLOCK,
-  };
-
-  const ContentSetting kTestDefaultSettings[] = {
-    CONTENT_SETTING_ALLOW,
-    CONTENT_SETTING_BLOCK,
-    CONTENT_SETTING_ASK
-  };
-
-  const content_settings::SettingSource kTestSettingSources[] = {
-    content_settings::SETTING_SOURCE_USER,
-    content_settings::SETTING_SOURCE_USER,
-    content_settings::SETTING_SOURCE_USER,
-    content_settings::SETTING_SOURCE_USER,
-    content_settings::SETTING_SOURCE_USER,
-    content_settings::SETTING_SOURCE_POLICY,
-    content_settings::SETTING_SOURCE_POLICY,
-    content_settings::SETTING_SOURCE_EXTENSION,
-    content_settings::SETTING_SOURCE_EXTENSION,
-  };
-
-  // Create a list of 5 different permissions, corresponding to all the
-  // possible settings:
-  // - [allow, block, ask] by default
-  // - [block, allow] * [by user, by policy, by extension]
-  PermissionInfoList list;
-  WebsiteSettingsUI::PermissionInfo info;
-  for (size_t i = 0; i < arraysize(kTestPermissionTypes); ++i) {
-    info.type = kTestPermissionTypes[i];
-    info.setting = kTestSettings[i];
-    if (info.setting == CONTENT_SETTING_DEFAULT)
-      info.default_setting = kTestDefaultSettings[i];
-    info.source = kTestSettingSources[i];
-    list.push_back(info);
-  }
-  bridge_->SetPermissionInfo(list);
+  SetTestPermissions();
 
   // There should be three subviews per permission (an icon, a label and a
   // select box), plus a text label for the Permission section.
@@ -347,6 +375,26 @@ TEST_F(WebsiteSettingsBubbleControllerTest, SetSelectedTab) {
   bridge_->SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION);
   EXPECT_EQ(1, [segmentedControl selectedSegment]);
   EXPECT_EQ(1, [tabView indexOfTabViewItem:[tabView selectedTabViewItem]]);
+}
+
+TEST_F(WebsiteSettingsBubbleControllerTest, WindowWidth) {
+  // Try creating a window that is obviously too small.
+  CreateBubbleWithWidth(30.0);
+  SetTestPermissions();
+
+  CGFloat window_width = NSWidth([[controller_ window] frame]);
+
+  // Check the window was made bigger to fit the content.
+  EXPECT_LT(30.0, window_width);
+
+  // Check that the window is wider than the right edge of all the permission
+  // popup buttons.
+  for (NSView* view in [[controller_ permissionsView] subviews]) {
+    if ([view isKindOfClass:[NSPopUpButton class]]) {
+      NSPopUpButton* button = static_cast<NSPopUpButton*>(view);
+      EXPECT_LT(NSMaxX([button frame]), window_width);
+    }
+  }
 }
 
 }  // namespace

@@ -87,7 +87,9 @@ class WebContents;
                webContents:(content::WebContents*)webContents
             isInternalPage:(BOOL)isInternalPage;
 
-- (void)permissionValueChanged:(id)sender;
+// Return the default width of the window. It may be wider to fit the content.
+// This may be overriden by a subclass for testing purposes.
+- (CGFloat)defaultWindowWidth;
 
 @end
 
