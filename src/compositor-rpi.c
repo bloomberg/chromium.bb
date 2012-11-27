@@ -752,6 +752,12 @@ rpi_assign_plane(struct weston_surface *surface, struct rpi_output *output)
 		return NULL;
 	}
 
+	if (surface->buffer_transform != WL_OUTPUT_TRANSFORM_NORMAL) {
+		DBG("surface %p rejected: unsupported buffer transform\n",
+		    surface);
+		return NULL;
+	}
+
 	/* check if this surface previously belonged to an element */
 	element = find_rpi_element_from_surface(surface);
 
