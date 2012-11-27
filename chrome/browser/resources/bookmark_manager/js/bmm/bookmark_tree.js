@@ -95,18 +95,12 @@ cr.define('bmm', function() {
       draggable: bookmarkNode.parentId != ROOT_ID
     });
     ti.__proto__ = BookmarkTreeItem.prototype;
+    treeLookup[bookmarkNode.id] = ti;
     return ti;
   }
 
   BookmarkTreeItem.prototype = {
     __proto__: TreeItem.prototype,
-
-    /** @override */
-    addAt: function(child, index) {
-      TreeItem.prototype.addAt.call(this, child, index);
-      if (child.bookmarkNode)
-        treeLookup[child.bookmarkNode.id] = child;
-    },
 
     /** @override */
     remove: function(child) {
@@ -283,13 +277,6 @@ cr.define('bmm', function() {
         delete treeLookup[id];
       }
       this.textContent = '';
-    },
-
-    /** @override */
-    addAt: function(child, index) {
-      Tree.prototype.addAt.call(this, child, index);
-      if (child.bookmarkNode)
-        treeLookup[child.bookmarkNode.id] = child;
     },
 
     /** @override */
