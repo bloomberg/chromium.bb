@@ -79,9 +79,6 @@ display_get_output(struct display *display);
 uint32_t
 display_get_serial(struct display *display);
 
-struct xkb_context *
-display_get_xkb_context(struct display *display);
-
 typedef void (*display_global_handler_t)(struct display *display,
 					 uint32_t name,
 					 const char *interface,

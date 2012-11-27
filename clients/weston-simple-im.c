@@ -46,6 +46,7 @@ struct compose_seq {
 struct simple_im {
 	struct input_method *input_method;
 	struct input_method_context *context;
+	struct xkb_context *xkb_context;
 	struct display *display;
 	struct wl_keyboard *keyboard;
 	struct keyboard_input *keyboard_input;
@@ -464,8 +465,14 @@ main(int argc, char *argv[])
 		return -1;
 	}
 
+	simple_im.xkb_context = xkb_context_new(0);
+	if (simple_im.xkb_context == NULL) {
+		fprintf(stderr, "Failed to create XKB context\n");
+		return -1;
+	}
+
 	simple_im.context = NULL;
-	simple_im.keyboard_input = keyboard_input_create(display_get_xkb_context(simple_im.display));
+	simple_im.keyboard_input = keyboard_input_create(simple_im.xkb_context);
 	keyboard_input_set_user_data(simple_im.keyboard_input, &simple_im);
 	keyboard_input_set_key_handler(simple_im.keyboard_input, simple_im_key_handler);
 
