@@ -6,6 +6,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/string_split.h"
 #include "chrome/browser/google_apis/gdata_wapi_operations.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/google_apis/operation_registry.h"
@@ -15,6 +16,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "net/base/escape.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -79,6 +81,9 @@ class GDataWapiOperationsTest : public testing::Test {
         test_util::GetTestFilePath("gdata/root_feed.json"),
         "text/plain",
         test_server::SUCCESS);
+    test_server_.RegisterRequestHandler(
+        base::Bind(&GDataWapiOperationsTest::HandleResourceFeedRequest,
+                   base::Unretained(this)));
 
     url_generator_.reset(new GDataWapiUrlGenerator(
         GDataWapiUrlGenerator::GetBaseUrlForTesting(test_server_.port())));
@@ -93,6 +98,36 @@ class GDataWapiOperationsTest : public testing::Test {
   // Returns a temporary file path suitable for storing the cache file.
   FilePath GetTestCachedFilePath(const FilePath& file_name) {
     return profile_->GetPath().Append(file_name);
+  }
+
+  // Handles a request for fetching a resource feed.
+  scoped_ptr<test_server::HttpResponse> HandleResourceFeedRequest(
+      const test_server::HttpRequest& request) {
+    if (!StartsWithASCII(request.relative_url,
+                         "/feeds/default/private/full",
+                         true /* case sensitive */)) {
+      return scoped_ptr<test_server::HttpResponse>();
+    }
+
+    const GURL absolute_url = test_server_.GetURL(request.relative_url);
+    std::vector<std::string> path_components;
+    base::SplitString(absolute_url.path(), '/', &path_components);
+
+    // For now, we only support a resource feed for a particular entry.
+    const std::string resource_id = net::UnescapeURLComponent(
+        path_components.back(), net::UnescapeRule::URL_SPECIAL_CHARS);
+    if (resource_id != "file:2_file_resource_id")
+      return scoped_ptr<test_server::HttpResponse>();
+
+    std::string content;
+    file_util::ReadFileToString(
+        test_util::GetTestFilePath("gdata/file_entry.json"), &content);
+    scoped_ptr<test_server::HttpResponse> http_response(
+        new test_server::HttpResponse);
+    http_response->set_code(test_server::SUCCESS);
+    http_response->set_content(content);
+    http_response->set_content_type("application/json");
+    return http_response.Pass();
   }
 
   MessageLoopForUI message_loop_;
@@ -132,13 +167,28 @@ void CopyResultsFromGetDataCallbackAndQuit(
   MessageLoop::current()->Quit();
 }
 
+// Returns true if |json_data| equals to JSON data in |expected_json_file_path|.
+bool VerifyJsonData(const FilePath& expected_json_file_path,
+                    const base::Value* json_data) {
+  std::string expected_contents;
+  if (!file_util::ReadFileToString(expected_json_file_path, &expected_contents))
+    return false;
+
+  scoped_ptr<base::Value> expected_data(
+      base::JSONReader::Read(expected_contents));
+  return base::Value::Equals(expected_data.get(), json_data);
+}
+
 }  // namespace
+
+// TODO(satorux): Write a test for GetDocumentsOperation, where the URL
+// parameter is empty (i.e. uses the default URL). crbug.com/162348
 
 TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_ValidFeed) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   scoped_ptr<base::Value> result_data;
 
-  GetDocumentsOperation* operation = new google_apis::GetDocumentsOperation(
+  GetDocumentsOperation* operation = new GetDocumentsOperation(
       &operation_registry_,
       *url_generator_,
       test_server_.GetURL("/files/chromeos/gdata/root_feed.json"),
@@ -154,13 +204,9 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_ValidFeed) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   ASSERT_TRUE(result_data);
-  const FilePath expected_path =
-      test_util::GetTestFilePath("gdata/root_feed.json");
-  std::string expected_contents;
-  file_util::ReadFileToString(expected_path, &expected_contents);
-  scoped_ptr<base::Value> expected_data(
-      base::JSONReader::Read(expected_contents));
-  EXPECT_TRUE(base::Value::Equals(expected_data.get(), result_data.get()));
+  EXPECT_TRUE(VerifyJsonData(
+      test_util::GetTestFilePath("gdata/root_feed.json"),
+      result_data.get()));
 }
 
 TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_InvalidFeed) {
@@ -169,7 +215,7 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_InvalidFeed) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   scoped_ptr<base::Value> result_data;
 
-  GetDocumentsOperation* operation = new google_apis::GetDocumentsOperation(
+  GetDocumentsOperation* operation = new GetDocumentsOperation(
       &operation_registry_,
       *url_generator_,
       test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
@@ -187,8 +233,44 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_InvalidFeed) {
   EXPECT_FALSE(result_data);
 }
 
-// TODO(satorux): Write tests for GetDocumentEntryOperation.
-// crbug.com/162348
+TEST_F(GDataWapiOperationsTest, GetDocumentEntryOperation_ValidResourceId) {
+  GDataErrorCode result_code = GDATA_OTHER_ERROR;
+  scoped_ptr<base::Value> result_data;
+
+  GetDocumentEntryOperation* operation = new GetDocumentEntryOperation(
+          &operation_registry_,
+          *url_generator_,
+          "file:2_file_resource_id",  // resource ID
+          base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
+                     &result_code,
+                     &result_data));
+  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, result_code);
+  ASSERT_TRUE(result_data);
+  EXPECT_TRUE(VerifyJsonData(
+      test_util::GetTestFilePath("gdata/file_entry.json"),
+      result_data.get()));
+}
+
+TEST_F(GDataWapiOperationsTest, GetDocumentEntryOperation_InvalidResourceId) {
+  GDataErrorCode result_code = GDATA_OTHER_ERROR;
+  scoped_ptr<base::Value> result_data;
+
+  GetDocumentEntryOperation* operation = new GetDocumentEntryOperation(
+          &operation_registry_,
+          *url_generator_,
+          "<invalid>",  // resource ID
+          base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
+                     &result_code,
+                     &result_data));
+  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_NOT_FOUND, result_code);
+  ASSERT_FALSE(result_data);
+}
 
 // TODO(satorux): Write tests for GetAccountMetadataOperation.
 // crbug.com/162348
