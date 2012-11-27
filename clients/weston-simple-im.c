@@ -81,9 +81,16 @@ static const struct compose_seq compose_seqs[] = {
 	{ { XKB_KEY_quotedbl, XKB_KEY_u, 0 },  "ü" },
 	{ { XKB_KEY_apostrophe, XKB_KEY_A, 0 },  "Á" },
 	{ { XKB_KEY_apostrophe, XKB_KEY_a, 0 },  "á" },
+	{ { XKB_KEY_slash, XKB_KEY_O, 0 },     "Ø" },
+	{ { XKB_KEY_slash, XKB_KEY_o, 0 },     "ø" },
+	{ { XKB_KEY_less, XKB_KEY_3, 0 },  "♥" },
+	{ { XKB_KEY_A, XKB_KEY_A, 0 },  "Å" },
+	{ { XKB_KEY_A, XKB_KEY_E, 0 },  "Æ" },
 	{ { XKB_KEY_O, XKB_KEY_C, 0 },  "©" },
 	{ { XKB_KEY_O, XKB_KEY_R, 0 },  "®" },
 	{ { XKB_KEY_s, XKB_KEY_s, 0 },  "ß" },
+	{ { XKB_KEY_a, XKB_KEY_e, 0 },  "æ" },
+	{ { XKB_KEY_a, XKB_KEY_a, 0 },  "å" },
 };
 
 static const uint32_t ignore_keys_on_compose[] = {
