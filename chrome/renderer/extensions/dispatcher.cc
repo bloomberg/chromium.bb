@@ -706,6 +706,11 @@ void Dispatcher::InstallBindings(ModuleSystem* module_system,
 void Dispatcher::DidCreateScriptContext(
     WebFrame* frame, v8::Handle<v8::Context> v8_context, int extension_group,
     int world_id) {
+// Extensions are not supported on Android, so don't register any bindings.
+#if defined(OS_ANDROID)
+  return;
+#endif
+
   // TODO(koz): If the caller didn't pass extension_group, use the last value.
   if (extension_group == -1)
     extension_group = g_hack_extension_group;
