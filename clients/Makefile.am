@@ -41,11 +41,16 @@ endif
 
 if BUILD_SIMPLE_EGL_CLIENTS
 simple_egl_clients_programs =			\
-	simple-egl
+	simple-egl				\
+	transformed
 
 simple_egl_SOURCES = simple-egl.c
 simple_egl_CPPFLAGS = $(SIMPLE_EGL_CLIENT_CFLAGS)
 simple_egl_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
+
+transformed_SOURCES = transformed.c
+transformed_CPPFLAGS = $(SIMPLE_EGL_CLIENT_CFLAGS)
+transformed_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
 endif
 
 if BUILD_CLIENTS
