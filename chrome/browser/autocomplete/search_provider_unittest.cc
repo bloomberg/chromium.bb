@@ -78,8 +78,11 @@ class SearchProviderTest : public testing::Test,
   // If we're waiting for the provider to finish, this exits the message loop.
   virtual void OnProviderUpdate(bool updated_matches) OVERRIDE;
 
+  // Waits until the provider instantiates a URLFetcher and returns it.
+  net::TestURLFetcher* WaitUntilURLFetcherIsReady(int fetcher_id);
+
   // Runs a nested message loop until provider_ is done. The message loop is
-  // exited by way of OnProviderUPdate.
+  // exited by way of OnProviderUpdate.
   void RunTillProviderDone();
 
   // Invokes Start on provider_, then runs all pending tasks.
@@ -125,7 +128,8 @@ class SearchProviderTest : public testing::Test,
 };
 
 void SearchProviderTest::SetUp() {
-  SearchProvider::set_query_suggest_immediately(true);
+  // Make sure that fetchers are automatically ungregistered upon destruction.
+  test_factory_.set_remove_fetcher_on_delete(true);
 
   // We need both the history service and template url model loaded.
   profile_.CreateHistoryService(true, false);
@@ -178,6 +182,14 @@ void SearchProviderTest::OnProviderUpdate(bool updated_matches) {
   }
 }
 
+net::TestURLFetcher* SearchProviderTest::WaitUntilURLFetcherIsReady(
+    int fetcher_id) {
+  net::TestURLFetcher* url_fetcher = test_factory_.GetFetcherByID(fetcher_id);
+  for (; !url_fetcher; url_fetcher = test_factory_.GetFetcherByID(fetcher_id))
+    message_loop_.RunUntilIdle();
+  return url_fetcher;
+}
+
 void SearchProviderTest::RunTillProviderDone() {
   if (provider_->done())
     return;
@@ -200,7 +212,7 @@ void SearchProviderTest::QueryForInput(const string16& text,
                           false, true, AutocompleteInput::ALL_MATCHES);
   provider_->Start(input, false);
 
-  // RunAllPending so that the task scheduled by SearchProvider to create the
+  // RunUntilIdle so that the task scheduled by SearchProvider to create the
   // URLFetchers runs.
   message_loop_.RunUntilIdle();
 }
@@ -271,7 +283,7 @@ bool SearchProviderTest::FindMatchWithDestination(const GURL& url,
 }
 
 void SearchProviderTest::FinishDefaultSuggestQuery() {
-  net::TestURLFetcher* default_fetcher = test_factory_.GetFetcherByID(
+  net::TestURLFetcher* default_fetcher = WaitUntilURLFetcherIsReady(
       SearchProvider::kDefaultProviderURLFetcherID);
   ASSERT_TRUE(default_fetcher);
 
@@ -897,8 +909,9 @@ TEST_F(SearchProviderTest, SuggestRelevanceExperiment) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     QueryForInput(ASCIIToUTF16("a"), string16(), false);
-    net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
+    net::TestURLFetcher* fetcher = WaitUntilURLFetcherIsReady(
         SearchProvider::kDefaultProviderURLFetcherID);
+    ASSERT_TRUE(fetcher);
     fetcher->set_response_code(200);
     fetcher->SetResponseString(cases[i].json);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
@@ -988,12 +1001,13 @@ TEST_F(SearchProviderTest, SuggestRelevanceExperimentUrlInput) {
         AutocompleteMatch::NAVSUGGEST,
         AutocompleteMatch::SEARCH_SUGGEST,
         AutocompleteMatch::NUM_TYPES } },
-};
+  };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     QueryForInput(ASCIIToUTF16(cases[i].input), string16(), false);
-    net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
+    net::TestURLFetcher* fetcher = WaitUntilURLFetcherIsReady(
         SearchProvider::kDefaultProviderURLFetcherID);
+    ASSERT_TRUE(fetcher);
     fetcher->set_response_code(200);
     fetcher->SetResponseString(cases[i].json);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
@@ -1055,7 +1069,7 @@ TEST_F(SearchProviderTest, SuggestRelevanceExperimentRequestedUrlInput) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     QueryForInput(ASCIIToUTF16(cases[i].input), ASCIIToUTF16("com"), false);
-    net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
+    net::TestURLFetcher* fetcher = WaitUntilURLFetcherIsReady(
         SearchProvider::kDefaultProviderURLFetcherID);
     fetcher->set_response_code(200);
     fetcher->SetResponseString(cases[i].json);

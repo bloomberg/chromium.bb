@@ -19,7 +19,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
-#include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
@@ -117,8 +116,6 @@ const TemplateURL* SearchProvider::Providers::GetKeywordProviderURL() const {
 const int SearchProvider::kDefaultProviderURLFetcherID = 1;
 // static
 const int SearchProvider::kKeywordProviderURLFetcherID = 2;
-// static
-bool SearchProvider::query_suggest_immediately_ = false;
 
 SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
                                Profile* profile)
@@ -126,19 +123,10 @@ SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
           AutocompleteProvider::TYPE_SEARCH),
       providers_(TemplateURLServiceFactory::GetForProfile(profile)),
       suggest_results_pending_(0),
-      suggest_field_trial_group_number_(
-          AutocompleteFieldTrial::GetSuggestNumberOfGroups()),
       has_suggested_relevance_(false),
       verbatim_relevance_(-1),
       have_suggest_results_(false),
       instant_finalized_(false) {
-  // Above, we default |suggest_field_trial_group_number_| to the number of
-  // groups to mean "not in field trial."  Field trial groups run from 0 to
-  // GetSuggestNumberOfGroups() - 1 (inclusive).
-  if (AutocompleteFieldTrial::InSuggestFieldTrial()) {
-    suggest_field_trial_group_number_ =
-        AutocompleteFieldTrial::GetSuggestGroupNameAsNumber();
-  }
 }
 
 void SearchProvider::FinalizeInstantQuery(const string16& input_text,
@@ -323,7 +311,6 @@ class SearchProvider::CompareScoredResults {
 
 void SearchProvider::Run() {
   // Start a new request with the current input.
-  DCHECK(!done_);
   suggest_results_pending_ = 0;
   time_suggest_request_sent_ = base::TimeTicks::Now();
 
@@ -458,33 +445,6 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
   }
 }
 
-base::TimeDelta SearchProvider::GetSuggestQueryDelay() {
-  if (query_suggest_immediately_)
-    return TimeDelta();
-
-  // By default, wait 200ms after the last keypress before sending the suggest
-  // request.  However, in the following field trials, we test different
-  // behavior:
-  // 17 - Wait 200ms since the last suggest request
-  // 18 - Wait 100ms since the last keypress
-  // 19 - Wait 100ms since the last suggest request
-  TimeDelta delay(TimeDelta::FromMilliseconds(200));
-
-  // Set the delay to 100ms if we are in field trial 18 or 19.
-  if (suggest_field_trial_group_number_ == 18 ||
-      suggest_field_trial_group_number_ == 19)
-    delay = TimeDelta::FromMilliseconds(100);
-
-  if (suggest_field_trial_group_number_ != 17 &&
-      suggest_field_trial_group_number_ != 19)
-    return delay;
-
-  // Use the time since last suggest request if we are in field trial 17 or 19.
-  TimeDelta time_since_last_suggest_request =
-      base::TimeTicks::Now() - time_suggest_request_sent_;
-  return std::max(TimeDelta(), delay - time_since_last_suggest_request);
-}
-
 void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
   if (!IsQuerySuitableForSuggest()) {
     StopSuggest();
@@ -511,11 +471,17 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
   if (input_.matches_requested() != AutocompleteInput::ALL_MATCHES)
     return;
 
-  // Kick off a timer that will start the URL fetch if it completes before
-  // the user types another character.  Requests may be delayed to avoid
-  // flooding the server with requests that are likely to be thrown away later
-  // anyway.
-  timer_.Start(FROM_HERE, GetSuggestQueryDelay(), this, &SearchProvider::Run);
+  // To avoid flooding the suggest server, don't send a query until at least 100
+  // ms since the last query.
+  const int kMinimumTimeBetweenSuggestQueriesMs = 100;
+  base::TimeTicks next_suggest_time(time_suggest_request_sent_ +
+      TimeDelta::FromMilliseconds(kMinimumTimeBetweenSuggestQueriesMs));
+  base::TimeTicks now(base::TimeTicks::Now());
+  if (now >= next_suggest_time) {
+    Run();
+    return;
+  }
+  timer_.Start(FROM_HERE, next_suggest_time - now, this, &SearchProvider::Run);
 }
 
 bool SearchProvider::IsQuerySuitableForSuggest() const {

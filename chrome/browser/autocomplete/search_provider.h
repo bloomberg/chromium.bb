@@ -54,12 +54,6 @@ class SearchProvider : public AutocompleteProvider,
  public:
   SearchProvider(AutocompleteProviderListener* listener, Profile* profile);
 
-#if defined(UNIT_TEST)
-  static void set_query_suggest_immediately(bool value) {
-    query_suggest_immediately_ = value;
-  }
-#endif
-
   // Marks the instant query as done. If |input_text| is non-empty this changes
   // the 'search what you typed' results text to |input_text| +
   // |suggestion.text|. |input_text| is the text the user input into the edit.
@@ -210,9 +204,6 @@ class SearchProvider : public AutocompleteProvider,
   // This does not update |done_|.
   void DoHistoryQuery(bool minimal_changes);
 
-  // Returns the time to delay before sending the Suggest request.
-  base::TimeDelta GetSuggestQueryDelay();
-
   // Determines whether an asynchronous subcomponent query should run for the
   // current input.  If so, starts it if necessary; otherwise stops it.
   // NOTE: This function does not update |done_|.  Callers must do so.
@@ -319,10 +310,6 @@ class SearchProvider : public AutocompleteProvider,
   // Updates the value of |done_| from the internal state.
   void UpdateDone();
 
-  // Should we query for suggest results immediately? This is normally false,
-  // but may be set to true during testing.
-  static bool query_suggest_immediately_;
-
   // Maintains the TemplateURLs used.
   Providers providers_;
 
@@ -343,10 +330,6 @@ class SearchProvider : public AutocompleteProvider,
   // A timer to start a query to the suggest server after the user has stopped
   // typing for long enough.
   base::OneShotTimer<SearchProvider> timer_;
-
-  // The suggest field trial group number that we are in.  This will be
-  // removed later after the suggest delay experiments are removed.
-  int suggest_field_trial_group_number_;
 
   // The time at which we sent a query to the suggest server.
   base::TimeTicks time_suggest_request_sent_;
