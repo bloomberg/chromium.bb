@@ -18,11 +18,12 @@ struct CC_EXPORT RenderingStats {
     double totalPaintTimeInSeconds;
     double totalRasterizeTimeInSeconds;
     double totalCommitTimeInSeconds;
-    size_t totalCommitCount;
+    int64 totalCommitCount;
     int64 totalPixelsPainted;
     int64 totalPixelsRasterized;
     int64 numImplThreadScrolls;
     int64 numMainThreadScrolls;
+    int64 numLayersInLayerTree;
 
     RenderingStats();
 };
