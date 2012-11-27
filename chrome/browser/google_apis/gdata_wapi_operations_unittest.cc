@@ -37,6 +37,21 @@ void CopyResultsFromGetDataCallbackAndQuit(
   MessageLoop::current()->Quit();
 }
 
+// Copies the results from DownloadActionCallback and quit the message loop.
+// The contents of the download cache file are copied to a string, and the
+// file is removed.
+void CopyResultsFromDownloadActionCallback(
+    GDataErrorCode* out_result_code,
+    std::string* contents,
+    GDataErrorCode result_code,
+    const GURL& /* content_url */,
+    const FilePath& cache_file_path) {
+  *out_result_code = result_code;
+  file_util::ReadFileToString(cache_file_path, contents);
+  file_util::Delete(cache_file_path, false);
+  MessageLoop::current()->Quit();
+}
+
 // Returns true if |json_data| equals to JSON data in |expected_json_file_path|.
 bool VerifyJsonData(const FilePath& expected_json_file_path,
                     const base::Value* json_data) {
@@ -121,6 +136,9 @@ class GDataWapiOperationsTest : public testing::Test {
     test_server_.RegisterRequestHandler(
         base::Bind(&GDataWapiOperationsTest::HandleResourceFeedRequest,
                    base::Unretained(this)));
+    test_server_.RegisterRequestHandler(
+        base::Bind(&GDataWapiOperationsTest::HandleMetadataFeedRequest,
+                   base::Unretained(this)));
 
     url_generator_.reset(new GDataWapiUrlGenerator(
         GDataWapiUrlGenerator::GetBaseUrlForTesting(test_server_.port())));
@@ -172,6 +190,17 @@ class GDataWapiOperationsTest : public testing::Test {
     return scoped_ptr<test_server::HttpResponse>();
   }
 
+  // Handles a request for fetching a metadata feed.
+  scoped_ptr<test_server::HttpResponse> HandleMetadataFeedRequest(
+      const test_server::HttpRequest& request) {
+    const GURL absolute_url = test_server_.GetURL(request.relative_url);
+    if (absolute_url.path() != "/feeds/metadata/default")
+      return scoped_ptr<test_server::HttpResponse>();
+
+    return CreateJsonResponseFromFile(
+        test_util::GetTestFilePath("gdata/account_metadata.json"));
+  }
+
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
@@ -182,21 +211,6 @@ class GDataWapiOperationsTest : public testing::Test {
   scoped_ptr<GDataWapiUrlGenerator> url_generator_;
   scoped_ptr<ScopedRequestContextGetterForTesting> request_context_getter_;
 };
-
-// Copies the results from DownloadActionCallback and quit the message loop.
-// The contents of the download cache file are copied to a string, and the
-// file is removed.
-void CopyResultsFromDownloadActionCallback(
-    GDataErrorCode* out_result_code,
-    std::string* contents,
-    GDataErrorCode result_code,
-    const GURL& /* content_url */,
-    const FilePath& cache_file_path) {
-  *out_result_code = result_code;
-  file_util::ReadFileToString(cache_file_path, contents);
-  file_util::Delete(cache_file_path, false);
-  MessageLoop::current()->Quit();
-}
 
 }  // namespace
 
@@ -313,8 +327,25 @@ TEST_F(GDataWapiOperationsTest, GetDocumentEntryOperation_InvalidResourceId) {
   ASSERT_FALSE(result_data);
 }
 
-// TODO(satorux): Write tests for GetAccountMetadataOperation.
-// crbug.com/162348
+TEST_F(GDataWapiOperationsTest, GetAccountMetadataOperation) {
+  GDataErrorCode result_code = GDATA_OTHER_ERROR;
+  scoped_ptr<base::Value> result_data;
+
+  GetAccountMetadataOperation* operation =
+      new google_apis::GetAccountMetadataOperation(
+          &operation_registry_,
+          *url_generator_,
+          base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
+                     &result_code,
+                     &result_data));
+  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, result_code);
+  EXPECT_TRUE(VerifyJsonData(
+      test_util::GetTestFilePath("gdata/account_metadata.json"),
+      result_data.get()));
+}
 
 TEST_F(GDataWapiOperationsTest, DownloadFileOperation_ValidFile) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
