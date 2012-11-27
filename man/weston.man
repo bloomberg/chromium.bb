@@ -30,7 +30,9 @@ Weston also supports X clients via
 .TP
 .I drm-backend.so
 The DRM backend uses Linux KMS for output and evdev devices for input.
-It supports multiple monitors in a unified desktop with DPMS.
+It supports multiple monitors in a unified desktop with DPMS. See
+.BR weston-drm (7),
+if installed.
 .TP
 .I wayland-backend.so
 The Wayland backend runs on another Wayland server, a different Weston
@@ -132,14 +134,8 @@ Weston will export
 with this value in the environment for all child processes to allow them to
 connect to the right server automatically.
 .SS DRM backend options:
-.TP
-\fB\-\-connector\fR=\fIconnectorid\fR
-.TP
-.B \-\-current\-mode
-.TP
-\fB\-\-seat\fR=\fIseatid\fR
-.TP
-\fB\-\-tty\fR=\fItty\fR
+See
+.BR weston-drm (7).
 .
 .SS Wayland backend options:
 .TP
@@ -203,10 +199,6 @@ This allows launching Weston as a nested server.
 .TP
 .B WAYLAND_SOCKET
 .TP
-.B WESTON_TTY_FD
-.TP
-.B WESTON_LAUNCHER_SOCK
-.TP
 .B XCURSOR_PATH
 Set the list of paths to look for cursors in. It changes both
 libwayland-cursor and libXcursor, so it affects both Wayland and X11 based
@@ -251,6 +243,7 @@ WAYLAND_DISPLAY=wayland-0 weston -Swayland-1
 weston
 .
 .\" ***************************************************************
-.\".SH "SEE ALSO"
+.SH "SEE ALSO"
+.BR weston-drm (7)
 .\".BR weston-launch (1),
 .\".BR weston.ini (5)

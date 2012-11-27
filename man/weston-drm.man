@@ -1,0 +1,130 @@
+.TH WESTON-DRM 7 "2012-11-27" "Weston __version__"
+.SH NAME
+weston-drm \- the DRM backend for Weston
+.SH SYNOPSIS
+.B weston-launch
+.LP
+.B weston --backend=drm-backend.so
+.
+.\" ***************************************************************
+.SH DESCRIPTION
+The DRM backend is the native Weston backend for systems that support
+the Linux kernel DRM, kernel mode setting (KMS), and evdev input devices.
+It is the recommended backend for desktop PCs, and aims to provide
+the full Wayland experience with the "every frame is perfect" concept.
+It also relies on the Mesa GBM interface.
+
+With the DRM backend,
+.B weston
+runs without any underlying windowing system. The backend uses the
+Linux KMS API to detect connected monitors. Monitor hot-plugging is
+supported. Input devices are found automatically by
+.BR udev (7).
+Compositing happens mainly in GL\ ES\ 2, initialized through EGL. It
+is also possible to take advantage of hardware cursors and overlays,
+when they exist and are functional. Full-screen surfaces will be
+scanned out directly without compositing, when possible.
+Hardware accelerated clients are supported via EGL.
+
+The backend chooses the DRM graphics device first based on seat id.
+If seat identifiers are not set, it looks for the graphics device
+that was used in boot. If that is not found, it finally chooses
+the first DRM device returned by
+.BR udev (7).
+Combining multiple graphics devices are not supported yet.
+
+The DRM backend relies on
+.B weston-launch
+for managing input device access and DRM master status, so that
+.B weston
+can be run without root privileges. On switching away from the
+virtual terminal (VT) hosting Weston, all input devices are closed and
+the DRM master capability is dropped, so that other servers,
+including
+.BR Xorg (1),
+can run on other VTs. On switching back to Weston's VT, input devices
+and DRM master are re-acquired through the parent process
+.BR weston-launch .
+.
+.\" ***************************************************************
+.SH CONFIGURATION
+.
+The DRM backend uses the following entries from
+.BR weston.ini .
+.SS Section output
+.TP
+\fBname\fR=\fIconnector\fR
+The KMS connector name identifying the output, for instance
+.IR LVDS1 .
+.TP
+\fBmode\fR=\fImode\fR
+Specify the video mode for the output. The argument
+.I mode
+can be one of the words
+.BR off " to turn the output off, "
+.BR preferred " to use the monitor's preferred video mode, or "
+.BR current " to use the current video mode and avoid a mode switch."
+It can also be a resolution as
+\fIwidth\fBx\fIheight\fR, or a detailed mode line as below.
+.TP
+\fBmode\fR=\fIdotclock hdisp hsyncstart hsyncend htotal \
+vdisp vsyncstart vsyncend vtotal hflag vflag\fR
+Use the given detailed mode line as the video mode for this output.
+The definition is the same as in
+.BR xorg.conf "(5), and " cvt (1)
+can generate detailed mode lines.
+.TP
+\fBtransform\fR=\fItransform\fR
+Transform for the output, which can be rotated in 90-degree steps
+and possibly flipped. Possible values are
+.BR normal ", " 90 ", " 180 ", " 270 ", "
+.BR flipped ", " flipped-90 ", " flipped-180 ", and " flipped-270 .
+.
+.\" ***************************************************************
+.SH OPTIONS
+.
+When the DRM backend is loaded,
+.B weston
+will understand the following additional command line options.
+.TP
+\fB\-\-connector\fR=\fIconnectorid\fR
+Use the connector with id number
+.I connectorid
+as the only initial output.
+.TP
+.B \-\-current\-mode
+By default, use the current video mode of all outputs, instead of
+switching to the monitor preferred mode.
+.TP
+\fB\-\-seat\fR=\fIseatid\fR
+Use graphics and input devices designated for seat
+.I seatid
+instead of the default seat
+.BR seat0 .
+.TP
+\fB\-\-tty\fR=\fIx\fR
+Launch Weston on tty
+.I x
+instead of using the current tty.
+.
+.\" ***************************************************************
+.SH ENVIRONMENT
+.
+.TP
+.B WESTON_TTY_FD
+The file descriptor (integer) of the opened tty where
+.B weston
+will run. Set by
+.BR weston-launch .
+.TP
+.B WESTON_LAUNCHER_SOCK
+The file descriptor (integer) where
+.B weston-launch
+is listening. Automatically set by
+.BR weston-launch .
+.
+.\" ***************************************************************
+.SH "SEE ALSO"
+.BR weston (1)
+.\".BR weston-launch (1),
+.\".BR weston.ini (5)
