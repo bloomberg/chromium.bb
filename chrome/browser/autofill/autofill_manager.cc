@@ -1052,9 +1052,10 @@ bool AutofillManager::GetCachedFormAndField(const FormData& form,
     }
   }
 
-  // We always update the cache, so we should be guaranteed to find the field.
-  DCHECK(*autofill_field);
-  return true;
+  // Even though we always update the cache, the field might not exist if the
+  // website disables autocomplete while the user is interacting with the form.
+  // See http://crbug.com/160476
+  return *autofill_field != NULL;
 }
 
 bool AutofillManager::UpdateCachedForm(const FormData& live_form,

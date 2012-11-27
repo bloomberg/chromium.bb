@@ -375,8 +375,8 @@ class AutofillTest : public InProcessBrowserTest {
   void SendKeyAndWait(ui::KeyboardCode key, int notification_type) {
     content::WindowedNotificationObserver observer(
         notification_type, content::Source<RenderViewHost>(render_view_host()));
-    content::SimulateKeyPress(chrome::GetActiveWebContents(
-        browser()), key, false, false, false, false);
+    content::SimulateKeyPress(chrome::GetActiveWebContents(browser()),
+                              key, false, false, false, false);
     observer.Wait();
   }
 
@@ -1523,6 +1523,54 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_FormFillLatencyAfterSubmit) {
       ASCIIToWide("document.getElementById('testform').submit();")));
   // This will ensure the test didn't hang.
   load_stop_observer.Wait();
+}
+
+// http://crbug.com/150084
+#if defined(OS_MACOSX)
+#define MAYBE_DisableAutocompleteWhileFilling DisableAutocompleteWhileFilling
+#else
+#define MAYBE_DisableAutocompleteWhileFilling \
+    DISABLED_DisableAutocompleteWhileFilling
+#endif
+// Test that Chrome doesn't crash when autocomplete is disabled while the user
+// is interacting with the form.  This is a regression test for
+// http://crbug.com/160476
+IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_DisableAutocompleteWhileFilling) {
+  CreateTestProfile();
+
+  // Load the test page.
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
+      GURL(std::string(kDataURIPrefix) + kTestFormString)));
+
+  // Invoke Autofill: Start filling the first name field with "M" and wait for
+  // the popup to be shown.
+  FocusFirstNameField();
+  SendKeyAndWait(
+      ui::VKEY_M, chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS);
+
+  // Now that the popup with suggestions is showing, disable autocomplete for
+  // the active field.
+  ASSERT_TRUE(content::ExecuteJavaScript(
+      render_view_host(), L"",
+      L"document.querySelector('input').autocomplete = 'off';"));
+
+  // Press the down arrow to select the suggestion and attempt to preview the
+  // autofilled form.
+  content::SimulateKeyPress(chrome::GetActiveWebContents(browser()),
+                            ui::VKEY_DOWN, false, false, false, false);
+
+  // Wait for any IPCs to complete by performing an action that generates an
+  // IPC that's easy to wait for.  Chrome shouldn't crash.
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
+      render_view_host(), L"",
+      L"var city = document.getElementById('city');"
+      L"city.onfocus = function() { domAutomationController.send(true); };"
+      L"city.focus()",
+      &result));
+  ASSERT_TRUE(result);
+  SendKeyAndWait(
+      ui::VKEY_A, chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS);
 }
 
 // Test that profiles merge for aggregated data with same address.
