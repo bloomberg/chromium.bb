@@ -140,11 +140,9 @@ weston_keyboard_LDADD = $(toolkit_libs)
 
 weston_simple_im_SOURCES = 			\
 	weston-simple-im.c			\
-	desktop-shell-client-protocol.h		\
-	desktop-shell-protocol.c		\
 	input-method-protocol.c			\
 	input-method-client-protocol.h
-weston_simple_im_LDADD = $(toolkit_libs)
+weston_simple_im_LDADD = $(CLIENT_LIBS)
 
 weston_info_SOURCES =				\
 	weston-info.c				\

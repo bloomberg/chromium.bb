@@ -47,7 +47,8 @@ struct simple_im {
 	struct input_method *input_method;
 	struct input_method_context *context;
 	struct xkb_context *xkb_context;
-	struct display *display;
+	struct wl_display *display;
+	struct wl_registry *registry;
 	struct wl_keyboard *keyboard;
 	struct keyboard_input *keyboard_input;
 	enum compose_state compose_state;
@@ -334,18 +335,23 @@ static const struct input_method_listener input_method_listener = {
 };
 
 static void
-global_handler(struct display *display, uint32_t name,
-	       const char *interface, uint32_t version, void *data)
+registry_handle_global(void *data, struct wl_registry *registry,
+		       uint32_t name, const char *interface, uint32_t version)
 {
 	struct simple_im *keyboard = data;
 
 	if (!strcmp(interface, "input_method")) {
 		keyboard->input_method =
-			display_bind(display, name,
-				     &input_method_interface, 1);
-		input_method_add_listener(keyboard->input_method, &input_method_listener, keyboard);
+			wl_registry_bind(registry, name,
+					 &input_method_interface, 1);
+		input_method_add_listener(keyboard->input_method,
+					  &input_method_listener, keyboard);
 	}
 }
+
+static const struct wl_registry_listener registry_listener = {
+	registry_handle_global
+};
 
 static int
 compare_compose_keys(const void *c1, const void *c2)
@@ -457,13 +463,23 @@ int
 main(int argc, char *argv[])
 {
 	struct simple_im simple_im;
+	int ret = 0;
 
 	memset(&simple_im, 0, sizeof(simple_im));
 
-	simple_im.display = display_create(argc, argv);
+	simple_im.display = wl_display_connect(NULL);
 	if (simple_im.display == NULL) {
-		fprintf(stderr, "failed to create display: %m\n");
+		fprintf(stderr, "failed to connect to server: %m\n");
 		return -1;
+	}
+
+	simple_im.registry = wl_display_get_registry(simple_im.display);
+	wl_registry_add_listener(simple_im.registry,
+				 &registry_listener, &simple_im);
+	wl_display_roundtrip(simple_im.display);
+	if (simple_im.input_method == NULL) {
+		fprintf(stderr, "No input_method global\n");
+		exit(1);
 	}
 
 	simple_im.xkb_context = xkb_context_new(0);
@@ -477,10 +493,13 @@ main(int argc, char *argv[])
 	keyboard_input_set_user_data(simple_im.keyboard_input, &simple_im);
 	keyboard_input_set_key_handler(simple_im.keyboard_input, simple_im_key_handler);
 
-	display_set_user_data(simple_im.display, &simple_im);
-	display_set_global_handler(simple_im.display, global_handler);
+	while (ret != -1)
+		ret = wl_display_dispatch(simple_im.display);
 
-	display_run(simple_im.display);
+	if (ret == -1) {
+		fprintf(stderr, "Dispatch error: %m\n");
+		exit(1);
+	}
 
 	return 0;
 }
