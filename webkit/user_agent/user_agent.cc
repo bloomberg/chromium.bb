@@ -74,15 +74,6 @@ bool IsMicrosoftSiteThatNeedsSpoofingForSilverlight(const GURL& url) {
 }
 
 bool IsYahooSiteThatNeedsSpoofingForSilverlight(const GURL& url) {
-#if defined(OS_MACOSX) || defined(OS_WIN)
-  // The following Yahoo! JAPAN pages erroneously judge that Silverlight does
-  // not support Chromium. Until the pages are fixed, spoof the UA.
-  // http://crbug.com/104426
-  if (url.host() == "headlines.yahoo.co.jp" &&
-      StartsWithASCII(url.path(), "/videonews/", true)) {
-    return true;
-  }
-#endif
 #if defined(OS_MACOSX)
   if ((url.host() == "downloads.yahoo.co.jp" &&
       StartsWithASCII(url.path(), "/docs/silverlight/", true)) ||
@@ -90,10 +81,7 @@ bool IsYahooSiteThatNeedsSpoofingForSilverlight(const GURL& url) {
     return true;
   }
 #elif defined(OS_WIN)
-  if ((url.host() == "weather.yahoo.co.jp" &&
-        StartsWithASCII(url.path(), "/weather/zoomradar/", true)) ||
-      url.host() == "promotion.shopping.yahoo.co.jp" ||
-      url.host() == "pokemon.kids.yahoo.co.jp") {
+  if (url.host() == "promotion.shopping.yahoo.co.jp") {
     return true;
   }
 #endif

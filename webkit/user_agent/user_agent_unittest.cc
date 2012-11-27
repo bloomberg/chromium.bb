@@ -35,12 +35,9 @@ TEST_F(WebkitGlueUserAgentTest, UserAgentSpoofingHack) {
   Expected expected[] = {
       { "http://wwww.google.com", NONE },
       { "http://www.microsoft.com/getsilverlight", MACOSX },
-      { "http://headlines.yahoo.co.jp/videonews/", MACOSX | WIN },
       { "http://downloads.yahoo.co.jp/docs/silverlight/", MACOSX },
       { "http://gyao.yahoo.co.jp/", MACOSX },
-      { "http://weather.yahoo.co.jp/weather/zoomradar/", WIN },
       { "http://promotion.shopping.yahoo.co.jp/", WIN },
-      { "http://pokemon.kids.yahoo.co.jp", WIN },
   };
 #if defined(OS_MACOSX)
   int os_bit = MACOSX;
