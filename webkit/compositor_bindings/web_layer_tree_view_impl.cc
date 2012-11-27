@@ -4,10 +4,12 @@
 
 #include "web_layer_tree_view_impl.h"
 
+#include "base/command_line.h"
 #include "cc/font_atlas.h"
 #include "cc/input_handler.h"
 #include "cc/layer.h"
 #include "cc/layer_tree_host.h"
+#include "cc/switches.h"
 #include "cc/thread.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebInputHandler.h"
@@ -37,6 +39,7 @@ bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSetti
 {
     LayerTreeSettings settings;
     settings.acceleratePainting = webSettings.acceleratePainting;
+    settings.implSidePainting = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnableImplSidePainting);
     settings.showDebugBorders = webSettings.showDebugBorders;
     settings.showPlatformLayerTree = webSettings.showPlatformLayerTree;
     settings.showPaintRects = webSettings.showPaintRects;

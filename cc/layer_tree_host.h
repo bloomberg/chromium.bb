@@ -55,6 +55,7 @@ struct CC_EXPORT LayerTreeSettings {
     ~LayerTreeSettings();
 
     bool acceleratePainting;
+    bool implSidePainting;
     bool showDebugBorders;
     bool showPlatformLayerTree;
     bool showPaintRects;

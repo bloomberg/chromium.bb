@@ -38,6 +38,7 @@ bool LayerTreeHost::s_needsFilterContext = false;
 
 LayerTreeSettings::LayerTreeSettings()
     : acceleratePainting(false)
+    , implSidePainting(false)
     , showDebugBorders(false)
     , showPlatformLayerTree(false)
     , showPaintRects(false)

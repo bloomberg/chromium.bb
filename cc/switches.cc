@@ -14,6 +14,9 @@ const char kBackgroundColorInsteadOfCheckerboard[] =
 
 const char kDisableThreadedAnimation[]      = "disable-threaded-animation";
 
+// Paint content on the compositor thread instead of the main thread.
+const char kEnableImplSidePainting[] = "enable-impl-side-painting";
+
 const char kEnablePartialSwap[]             = "enable-partial-swap";
 
 const char kEnablePerTilePainting[]         = "enable-per-tile-painting";
@@ -21,9 +24,6 @@ const char kEnablePerTilePainting[]         = "enable-per-tile-painting";
 // Enables an alternative pinch-zoom gesture support, via the threaded
 // compositor.
 const char kEnablePinchInCompositor[]       = "enable-pinch-in-compositor";
-
-// Paint content on the compositor thread instead of the main thread.
-const char kImplSidePainting[] = "impl-side-painting";
 
 // Show rects in the HUD around layers whose properties have changed.
 const char kShowPropertyChangedRects[] = "show-property-changed-rects";
