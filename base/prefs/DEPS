@@ -1,6 +1,5 @@
 specific_include_rules = {
   '.*_[a-z]+test\.cc': [
-    "!chrome/common/chrome_paths.h",
     "!chrome/test/base/testing_pref_service.h",
   ],
 }
