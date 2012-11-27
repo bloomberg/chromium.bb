@@ -54,7 +54,7 @@ GEN('CertificateViewerUITest::~CertificateViewerUITest() {}');
  * Tests that the dialog opened to the correct URL.
  */
 TEST_F('CertificateViewerUITest', 'testDialogURL', function() {
-  assertEquals(chrome.expectedUrl, window.location.href);
+  assertEquals(chrome.getVariableValue('expectedUrl'), window.location.href);
 });
 
 /**

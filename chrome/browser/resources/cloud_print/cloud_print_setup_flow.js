@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('cloudprint', function () {
+cr.define('cloudprint', function() {
   function hideAllPages() {
     var pages = ['cloudprintsetup', 'setupdone'];
     for (var i = 0; i < pages.length; ++i) {
@@ -18,7 +18,7 @@ cr.define('cloudprint', function () {
   }
 
   function showInitialPage() {
-    var args = JSON.parse(chrome.dialogArguments);
+    var args = JSON.parse(chrome.getVariableValue('dialogArguments'));
     showPage(args.pageToShow);
   }
 

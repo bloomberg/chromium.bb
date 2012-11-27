@@ -14,7 +14,7 @@ cr.define('cert_viewer', function() {
 
     i18nTemplate.process(document, templateData);
 
-    var args = JSON.parse(chrome.dialogArguments);
+    var args = JSON.parse(chrome.getVariableValue('dialogArguments'));
     getCertificateInfo(args);
 
     /**

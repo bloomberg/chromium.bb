@@ -346,12 +346,14 @@ this.cr = (function() {
     /**
      * Whether this uses GTK or not.
      */
-    cr.isGTK = /GTK/.test(chrome.toolkit);
+    cr.isGTK = typeof chrome.getVariableValue == 'function' &&
+        /GTK/.test(chrome.getVariableValue('toolkit'));
 
     /**
      * Whether this uses the views toolkit or not.
      */
-    cr.isViews = /views/.test(chrome.toolkit);
+    cr.isViews = typeof chrome.getVariableValue == 'function' &&
+        /views/.test(chrome.getVariableValue('toolkit'));
   }
 
   return {

@@ -84,7 +84,7 @@
 
     function load() {
       document.addEventListener('keydown', handleKeyDown);
-      $('explanation').textContent = chrome.dialogArguments;
+      $('explanation').textContent = chrome.getVariableValue('dialogArguments');
       $('form').onsubmit = handleSubmit;
       $('cancel').onclick = cancel;
 

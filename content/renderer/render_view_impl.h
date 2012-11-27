@@ -161,7 +161,6 @@ class RenderWidgetFullscreenPepper;
 class SpeechRecognitionDispatcher;
 class WebIntentsHost;
 class WebPluginDelegateProxy;
-class WebUIBindings;
 struct CustomContextMenuContext;
 struct FileChooserParams;
 struct RenderViewImplParams;
@@ -971,8 +970,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnSetNavigationStartTime(
       const base::TimeTicks& browser_navigation_start);
   void OnSetWebUIProperty(const std::string& name, const std::string& value);
-  void OnSetEditCommandsForNextKeyEvent(
-      const EditCommands& edit_commands);
+  void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
   void OnSetHistoryLengthAndPrune(int history_length, int32 minimum_page_id);
   void OnSetInitialFocus(bool reverse);
   void OnScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
@@ -1094,8 +1092,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Returns the URL being loaded by the given frame's request.
   GURL GetLoadingUrl(WebKit::WebFrame* frame) const;
-
-  WebUIBindings* GetWebUIBindings();
 
   // Should only be called if this object wraps a PluginDocument.
   WebKit::WebPlugin* GetWebPluginFromPluginDocument();
@@ -1476,10 +1472,6 @@ class CONTENT_EXPORT RenderViewImpl
   // Stores edit commands associated to the next key event.
   // Shall be cleared as soon as the next key event is processed.
   EditCommands edit_commands_;
-
-  // Allows Web UI pages (new tab page, etc.) to talk to the browser. The JS
-  // object is only exposed when Web UI bindings are enabled.
-  scoped_ptr<WebUIBindings> web_ui_bindings_;
 
   // The external popup for the currently showing select popup.
   scoped_ptr<ExternalPopupMenu> external_popup_menu_;

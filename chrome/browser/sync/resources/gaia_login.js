@@ -155,7 +155,7 @@ function load() {
     CloseDialog();
   };
 
-  var args = JSON.parse(chrome.dialogArguments);
+  var args = JSON.parse(chrome.getVariableValue("dialogArguments"));
   showGaiaLogin(args);
 }
 

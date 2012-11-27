@@ -32,13 +32,15 @@ const cr = (function() {
    * Whether this uses GTK or not.
    * @type {boolean}
    */
-  const isGTK = /GTK/.test(chrome.toolkit);
+  const isGTK = typeof chrome.getVariableValue == 'function' &&
+        /GTK/.test(chrome.getVariableValue('toolkit'));
 
   /**
    * Whether this uses the views toolkit or not.
    * @type {boolean}
    */
-  const isViews = /views/.test(chrome.toolkit);
+  const isViews = typeof chrome.getVariableValue == 'function' &&
+        /views/.test(chrome.getVariableValue('toolkit'));
 
   /**
    * Sets the os and toolkit attributes in the <html> element so that platform

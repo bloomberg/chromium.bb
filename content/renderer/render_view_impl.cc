@@ -103,7 +103,8 @@
 #include "content/renderer/text_input_client_observer.h"
 #include "content/renderer/v8_value_converter_impl.h"
 #include "content/renderer/web_intents_host.h"
-#include "content/renderer/web_ui_bindings.h"
+#include "content/renderer/web_ui_extension.h"
+#include "content/renderer/web_ui_extension_data.h"
 #include "content/renderer/webplugin_delegate_proxy.h"
 #include "content/renderer/websharedworker_proxy.h"
 #include "media/base/filter_collection.h"
@@ -938,7 +939,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(DragMsg_SourceSystemDragEnded,
                         OnDragSourceSystemDragEnded)
     IPC_MESSAGE_HANDLER(ViewMsg_AllowBindings, OnAllowBindings)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetWebUIProperty, OnSetWebUIProperty)
     IPC_MESSAGE_HANDLER(ViewMsg_SetInitialFocus, OnSetInitialFocus)
     IPC_MESSAGE_HANDLER(ViewMsg_ScrollFocusedEditableNodeIntoRect,
                         OnScrollFocusedEditableNodeIntoRect)
@@ -3435,13 +3435,6 @@ void RenderViewImpl::didClearWindowObject(WebFrame* frame) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_,
                     DidClearWindowObject(frame));
 
-  GURL frame_url = frame->document().url();
-  if ((enabled_bindings_ & BINDINGS_POLICY_WEB_UI) &&
-      (frame_url.SchemeIs(chrome::kChromeUIScheme) ||
-      frame_url.SchemeIs(chrome::kDataScheme))) {
-    GetWebUIBindings()->BindToJavascript(frame, "chrome");
-  }
-
   if (enabled_bindings_ & BINDINGS_POLICY_DOM_AUTOMATION) {
     if (!dom_automation_controller_.get())
       dom_automation_controller_.reset(new DomAutomationController());
@@ -4684,14 +4677,6 @@ GURL RenderViewImpl::GetLoadingUrl(WebKit::WebFrame* frame) const {
   return request.url();
 }
 
-WebUIBindings* RenderViewImpl::GetWebUIBindings() {
-  if (!web_ui_bindings_.get()) {
-    web_ui_bindings_.reset(new WebUIBindings(
-        static_cast<RenderView*>(this), routing_id_));
-  }
-  return web_ui_bindings_.get();
-}
-
 WebKit::WebPlugin* RenderViewImpl::GetWebPluginFromPluginDocument() {
   return webview()->mainFrame()->document().to<WebPluginDocument>().plugin();
 }
@@ -5095,18 +5080,16 @@ void RenderViewImpl::OnCSSInsertRequest(const string16& frame_xpath,
 }
 
 void RenderViewImpl::OnAllowBindings(int enabled_bindings_flags) {
+  if ((enabled_bindings_flags & BINDINGS_POLICY_WEB_UI) &&
+      !(enabled_bindings_ & BINDINGS_POLICY_WEB_UI)) {
+    RenderThread::Get()->RegisterExtension(content::WebUIExtension::Get());
+    new WebUIExtensionData(this);
+  }
+
   enabled_bindings_ |= enabled_bindings_flags;
 
   // Keep track of the total bindings accumulated in this process.
   RenderProcess::current()->AddBindings(enabled_bindings_flags);
-}
-
-void RenderViewImpl::OnSetWebUIProperty(const std::string& name,
-                                        const std::string& value) {
-  if (enabled_bindings_ & BINDINGS_POLICY_WEB_UI)
-    GetWebUIBindings()->SetProperty(name, value);
-  else
-    NOTREACHED() << "WebUI bindings not enabled.";
 }
 
 void RenderViewImpl::OnDragTargetDragEnter(const WebDropData& drop_data,

@@ -52,7 +52,8 @@
     }
 
     function load() {
-      i18nTemplate.process(document, JSON.parse(chrome.dialogArguments));
+      i18nTemplate.process(document, JSON.parse(
+          chrome.getVariableValue('dialogArguments')));
       document.addEventListener('keydown', handleKeyDown);
       $('form').onsubmit = handleSubmit;
       $('cancel').onclick = cancel;
