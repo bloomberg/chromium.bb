@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/gtk/gtk_custom_menu_item.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/accelerators/accelerator_gtk.h"
+#include "ui/base/accelerators/platform_accelerator_gtk.h"
 #include "ui/base/gtk/menu_label_accelerator_util.h"
 #include "ui/base/models/button_menu_item_model.h"
 #include "ui/base/models/menu_model.h"
@@ -515,13 +515,13 @@ void MenuGtk::BuildSubmenuFromModel(ui::MenuModel* model, GtkWidget* menu) {
       connect_to_activate = false;
     }
 
-    ui::AcceleratorGtk accelerator;
+    ui::Accelerator accelerator;
     if (model->GetAcceleratorAt(i, &accelerator)) {
       gtk_widget_add_accelerator(menu_item,
                                  "activate",
                                  dummy_accel_group_,
-                                 accelerator.GetGdkKeyCode(),
-                                 accelerator.gdk_modifier_type(),
+                                 ui::GetGdkKeyCodeForAccelerator(accelerator),
+                                 ui::GetGdkModifierForAccelerator(accelerator),
                                  GTK_ACCEL_VISIBLE);
     }
 

@@ -18,7 +18,7 @@
 #include "content/public/test/test_utils.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest_mac.h"
-#include "ui/base/accelerators/accelerator_cocoa.h"
+#include "ui/base/accelerators/platform_accelerator_cocoa.h"
 
 using content::SiteInstance;
 using content::WebContents;
@@ -26,7 +26,8 @@ using content::WebContents;
 @interface FullscreenExitBubbleController(JustForTesting)
 // Already defined.
 + (NSString*)keyCommandString;
-+ (NSString*)keyCombinationForAccelerator:(const ui::AcceleratorCocoa&)item;
++ (NSString*)keyCombinationForAccelerator:
+    (const ui::PlatformAcceleratorCocoa&)item;
 @end
 
 @interface FullscreenExitBubbleController(ExposedForTesting)
@@ -116,8 +117,9 @@ TEST_F(FullscreenExitBubbleControllerTest, LabelWasReplaced) {
 }
 
 TEST_F(FullscreenExitBubbleControllerTest, ShortcutText) {
-  ui::AcceleratorCocoa cmd_F(@"F", NSCommandKeyMask);
-  ui::AcceleratorCocoa cmd_shift_f(@"f", NSCommandKeyMask|NSShiftKeyMask);
+  ui::PlatformAcceleratorCocoa cmd_F(@"F", NSCommandKeyMask);
+  ui::PlatformAcceleratorCocoa cmd_shift_f(
+      @"f", NSCommandKeyMask | NSShiftKeyMask);
   NSString* cmd_F_text = [FullscreenExitBubbleController
       keyCombinationForAccelerator:cmd_F];
   NSString* cmd_shift_f_text = [FullscreenExitBubbleController

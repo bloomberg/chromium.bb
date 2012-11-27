@@ -11,15 +11,19 @@
 #ifndef UI_BASE_ACCELERATORS_ACCELERATOR_H_
 #define UI_BASE_ACCELERATORS_ACCELERATOR_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "ui/base/accelerators/platform_accelerator.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/ui_export.h"
 
 namespace ui {
 
-// This is a cross-platform base class for accelerator keys used in menus. It is
-// meant to be subclassed for concrete toolkit implementations.
+class PlatformAccelerator;
+
+// This is a cross-platform class for accelerator keys used in menus.
+// |platform_accelerator| should be used to store platform specific data.
 class UI_EXPORT Accelerator {
  public:
   Accelerator();
@@ -29,8 +33,8 @@ class UI_EXPORT Accelerator {
 
   Accelerator& operator=(const Accelerator& accelerator);
 
-  // We define the < operator so that the KeyboardShortcut can be used as a key
-  // in a std::map.
+  // Define the < operator so that the KeyboardShortcut can be used as a key in
+  // a std::map.
   bool operator <(const Accelerator& rhs) const;
 
   bool operator ==(const Accelerator& rhs) const;
@@ -54,6 +58,16 @@ class UI_EXPORT Accelerator {
   // Returns a string with the localized shortcut if any.
   string16 GetShortcutText() const;
 
+  void set_platform_accelerator(scoped_ptr<PlatformAccelerator> p) {
+    platform_accelerator_ = p.Pass();
+  }
+
+  // This class keeps ownership of the returned object.
+  const PlatformAccelerator* platform_accelerator() const {
+    return platform_accelerator_.get();
+  }
+
+
  protected:
   // The keycode (VK_...).
   KeyboardCode key_code_;
@@ -61,8 +75,11 @@ class UI_EXPORT Accelerator {
   // The event type (usually ui::ET_KEY_PRESSED).
   EventType type_;
 
-  // The state of the Shift/Ctrl/Alt keys (platform-dependent).
+  // The state of the Shift/Ctrl/Alt keys.
   int modifiers_;
+
+  // Stores platform specific data. May be NULL.
+  scoped_ptr<PlatformAccelerator> platform_accelerator_;
 };
 
 // An interface that classes that want to register for keyboard accelerators

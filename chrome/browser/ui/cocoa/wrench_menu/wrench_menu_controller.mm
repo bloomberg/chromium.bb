@@ -30,7 +30,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "ui/base/accelerators/accelerator_cocoa.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 
@@ -52,19 +51,14 @@ namespace WrenchMenuControllerInternal {
 class AcceleratorDelegate : public ui::AcceleratorProvider {
  public:
   virtual bool GetAcceleratorForCommandId(int command_id,
-      ui::Accelerator* accelerator_generic) {
-    // Downcast so that when the copy constructor is invoked below, the key
-    // string gets copied, too.
-    ui::AcceleratorCocoa* out_accelerator =
-        static_cast<ui::AcceleratorCocoa*>(accelerator_generic);
+      ui::Accelerator* out_accelerator) {
     AcceleratorsCocoa* keymap = AcceleratorsCocoa::GetInstance();
-    const ui::AcceleratorCocoa* accelerator =
+    const ui::Accelerator* accelerator =
         keymap->GetAcceleratorForCommand(command_id);
-    if (accelerator) {
-      *out_accelerator = *accelerator;
-      return true;
-    }
-    return false;
+    if (!accelerator)
+      return false;
+    *out_accelerator = *accelerator;
+    return true;
   }
 };
 

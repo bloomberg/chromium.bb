@@ -43,7 +43,7 @@
 #include "content/public/browser/notification_source.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
-#include "ui/base/accelerators/accelerator_gtk.h"
+#include "ui/base/accelerators/platform_accelerator_gtk.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia_paint.h"
@@ -391,11 +391,7 @@ class BrowserActionButton : public content::NotificationObserver,
         &command,
         NULL)) {
       // Found the browser action shortcut command, register it.
-      keybinding_.reset(new ui::AcceleratorGtk(
-          command.accelerator().key_code(),
-          command.accelerator().IsShiftDown(),
-          command.accelerator().IsCtrlDown(),
-          command.accelerator().IsAltDown()));
+      keybinding_ = command.accelerator();
 
       gfx::NativeWindow window =
           toolbar_->browser()->window()->GetNativeWindow();
@@ -404,8 +400,8 @@ class BrowserActionButton : public content::NotificationObserver,
 
       gtk_accel_group_connect(
           accel_group_,
-          keybinding_.get()->GetGdkKeyCode(),
-          keybinding_.get()->gdk_modifier_type(),
+          ui::GetGdkKeyCodeForAccelerator(keybinding_),
+          ui::GetGdkModifierForAccelerator(keybinding_),
           GtkAccelFlags(0),
           g_cclosure_new(G_CALLBACK(OnGtkAccelerator), this, NULL));
 
@@ -425,12 +421,12 @@ class BrowserActionButton : public content::NotificationObserver,
           toolbar_->browser()->window()->GetNativeWindow();
       gtk_accel_group_disconnect_key(
           accel_group_,
-          keybinding_.get()->GetGdkKeyCode(),
-          static_cast<GdkModifierType>(keybinding_.get()->modifiers()));
+          ui::GetGdkKeyCodeForAccelerator(keybinding_),
+          GetGdkModifierForAccelerator(keybinding_));
       gtk_window_remove_accel_group(window, accel_group_);
       g_object_unref(accel_group_);
       accel_group_ = NULL;
-      keybinding_.reset(NULL);
+      keybinding_ = ui::Accelerator();
 
       // We've removed the accelerator, so no need to listen to this anymore.
       registrar_.Remove(this,
@@ -482,7 +478,7 @@ class BrowserActionButton : public content::NotificationObserver,
   GtkAccelGroup* accel_group_;
 
   // The keybinding accelerator registered to show the browser action popup.
-  scoped_ptr<ui::AcceleratorGtk> keybinding_;
+  ui::Accelerator keybinding_;
 
   // The context menu view and model for this extension action.
   scoped_ptr<MenuGtk> context_menu_;

@@ -21,6 +21,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
+#include "ui/base/accelerators/platform_accelerator_gtk.h"
 #include "ui/base/gtk/menu_label_accelerator_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -175,14 +176,14 @@ GlobalMenuBar::GlobalMenuBar(Browser* browser)
 
     // Set the accelerator for each menu item.
     AcceleratorsGtk* accelerators = AcceleratorsGtk::GetInstance();
-    const ui::AcceleratorGtk* accelerator =
+    const ui::Accelerator* accelerator =
         accelerators->GetPrimaryAcceleratorForCommand(it->first);
     if (accelerator) {
       gtk_widget_add_accelerator(it->second,
                                  "activate",
                                  dummy_accel_group_,
-                                 accelerator->GetGdkKeyCode(),
-                                 accelerator->gdk_modifier_type(),
+                                 ui::GetGdkKeyCodeForAccelerator(*accelerator),
+                                 ui::GetGdkModifierForAccelerator(*accelerator),
                                  GTK_ACCEL_VISIBLE);
     }
 

@@ -96,6 +96,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
+#include "ui/base/accelerators/platform_accelerator_gtk.h"
 #include "ui/base/gtk/gtk_floating_container.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_screen_util.h"
@@ -662,8 +663,8 @@ void BrowserWindowGtk::Close() {
     for (AcceleratorsGtk::const_iterator iter = accelerators->begin();
          iter != accelerators->end(); ++iter) {
       gtk_accel_group_disconnect_key(accel_group_,
-          iter->second.GetGdkKeyCode(),
-          static_cast<GdkModifierType>(iter->second.modifiers()));
+          ui::GetGdkKeyCodeForAccelerator(iter->second),
+          ui::GetGdkModifierForAccelerator(iter->second));
     }
     gtk_window_remove_accel_group(window_, accel_group_);
     g_object_unref(accel_group_);
@@ -1822,8 +1823,8 @@ void BrowserWindowGtk::ConnectAccelerators() {
        iter != accelerators->end(); ++iter) {
     gtk_accel_group_connect(
         accel_group_,
-        iter->second.GetGdkKeyCode(),
-        static_cast<GdkModifierType>(iter->second.modifiers()),
+        ui::GetGdkKeyCodeForAccelerator(iter->second),
+        ui::GetGdkModifierForAccelerator(iter->second),
         GtkAccelFlags(0),
         g_cclosure_new(G_CALLBACK(OnGtkAccelerator),
                        GINT_TO_POINTER(iter->first), NULL));

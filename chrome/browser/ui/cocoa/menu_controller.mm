@@ -7,7 +7,8 @@
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/event_utils.h"
-#include "ui/base/accelerators/accelerator_cocoa.h"
+#include "ui/base/accelerators/accelerator.h"
+#include "ui/base/accelerators/platform_accelerator_cocoa.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/image/image.h"
@@ -128,10 +129,16 @@
     [item setTarget:self];
     NSValue* modelObject = [NSValue valueWithPointer:model];
     [item setRepresentedObject:modelObject];  // Retains |modelObject|.
-    ui::AcceleratorCocoa accelerator;
+    ui::Accelerator accelerator;
     if (model->GetAcceleratorAt(modelIndex, &accelerator)) {
-      [item setKeyEquivalent:accelerator.characters()];
-      [item setKeyEquivalentModifierMask:accelerator.modifiers()];
+      const ui::PlatformAcceleratorCocoa* platformAccelerator =
+          static_cast<const ui::PlatformAcceleratorCocoa*>(
+              accelerator.platform_accelerator());
+      if (platformAccelerator) {
+        [item setKeyEquivalent:platformAccelerator->characters()];
+        [item setKeyEquivalentModifierMask:
+            platformAccelerator->modifier_mask()];
+      }
     }
   }
   [menu insertItem:item atIndex:index];

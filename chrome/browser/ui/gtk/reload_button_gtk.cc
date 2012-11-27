@@ -22,7 +22,6 @@
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/base/accelerators/accelerator_gtk.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // The width of this button in GTK+ theme mode. The Stop and Refresh stock icons
@@ -199,8 +198,9 @@ bool ReloadButtonGtk::IsCommandIdVisible(int command_id) const {
   return true;
 }
 
-bool ReloadButtonGtk::GetAcceleratorForCommandId(int command_id,
-                                                 ui::Accelerator* accelerator) {
+bool ReloadButtonGtk::GetAcceleratorForCommandId(
+    int command_id,
+    ui::Accelerator* out_accelerator) {
   int command = 0;
   switch (command_id) {
     case IDS_RELOAD_MENU_NORMAL_RELOAD_ITEM:
@@ -216,17 +216,16 @@ bool ReloadButtonGtk::GetAcceleratorForCommandId(int command_id,
       LOG(ERROR) << "Unknown reload menu command";
   }
 
-  bool accelerator_set = false;
   if (command) {
-    const ui::AcceleratorGtk* accelerator_gtk =
+    const ui::Accelerator* accelerator =
         AcceleratorsGtk::GetInstance()->
             GetPrimaryAcceleratorForCommand(command);
-    if (accelerator_gtk) {
-      *accelerator = *accelerator_gtk;
-      accelerator_set = true;
+    if (accelerator) {
+      *out_accelerator = *accelerator;
+      return true;
     }
   }
-  return accelerator_set;
+  return false;
 }
 
 void ReloadButtonGtk::ExecuteCommand(int command_id) {

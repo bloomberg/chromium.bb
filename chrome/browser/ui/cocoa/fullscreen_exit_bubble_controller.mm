@@ -27,7 +27,7 @@
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
-#include "ui/base/accelerators/accelerator_cocoa.h"
+#include "ui/base/accelerators/platform_accelerator_cocoa.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -55,13 +55,14 @@ const float kHideDuration = 0.7;
 - (void)hideSoon;
 
 // Returns the Accelerator for the Toggle Fullscreen menu item.
-+ (ui::AcceleratorCocoa)acceleratorForToggleFullscreen;
++ (scoped_ptr<ui::PlatformAcceleratorCocoa>)acceleratorForToggleFullscreen;
 
 // Returns a string representation fit for display of
 // +acceleratorForToggleFullscreen.
 + (NSString*)keyCommandString;
 
-+ (NSString*)keyCombinationForAccelerator:(const ui::AcceleratorCocoa&)item;
++ (NSString*)keyCombinationForAccelerator:
+    (const ui::PlatformAcceleratorCocoa&)item;
 @end
 
 @implementation FullscreenExitBubbleController
@@ -265,34 +266,37 @@ const float kHideDuration = 0.7;
 // This looks at the Main Menu and determines what the user has set as the
 // key combination for quit. It then gets the modifiers and builds an object
 // to hold the data.
-+ (ui::AcceleratorCocoa)acceleratorForToggleFullscreen {
++ (scoped_ptr<ui::PlatformAcceleratorCocoa>)acceleratorForToggleFullscreen {
   NSMenu* mainMenu = [NSApp mainMenu];
   // Get the application menu (i.e. Chromium).
   for (NSMenuItem* menu in [mainMenu itemArray]) {
     for (NSMenuItem* item in [[menu submenu] itemArray]) {
       // Find the toggle presentation mode item.
       if ([item tag] == IDC_PRESENTATION_MODE) {
-        return ui::AcceleratorCocoa([item keyEquivalent],
-                                    [item keyEquivalentModifierMask]);
+        return scoped_ptr<ui::PlatformAcceleratorCocoa>(
+          new ui::PlatformAcceleratorCocoa([item keyEquivalent],
+                                           [item keyEquivalentModifierMask]));
       }
     }
   }
   // Default to Cmd+Shift+F.
-  return ui::AcceleratorCocoa(@"f", NSCommandKeyMask|NSShiftKeyMask);
+  return scoped_ptr<ui::PlatformAcceleratorCocoa>(
+      new ui::PlatformAcceleratorCocoa(@"f", NSCommandKeyMask|NSShiftKeyMask));
 }
 
 // This looks at the Main Menu and determines what the user has set as the
 // key combination for quit. It then gets the modifiers and builds a string
 // to display them.
 + (NSString*)keyCommandString {
-  ui::AcceleratorCocoa accelerator =
-      [[self class] acceleratorForToggleFullscreen];
-  return [[self class] keyCombinationForAccelerator:accelerator];
+  scoped_ptr<ui::PlatformAcceleratorCocoa> accelerator(
+      [[self class] acceleratorForToggleFullscreen]);
+  return [[self class] keyCombinationForAccelerator:*accelerator];
 }
 
-+ (NSString*)keyCombinationForAccelerator:(const ui::AcceleratorCocoa&)item {
++ (NSString*)keyCombinationForAccelerator:
+    (const ui::PlatformAcceleratorCocoa&)item {
   NSMutableString* string = [NSMutableString string];
-  NSUInteger modifiers = item.modifiers();
+  NSUInteger modifiers = item.modifier_mask();
 
   if (modifiers & NSCommandKeyMask)
     [string appendString:@"\u2318"];

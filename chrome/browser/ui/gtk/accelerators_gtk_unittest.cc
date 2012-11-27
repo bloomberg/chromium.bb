@@ -8,20 +8,21 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/accelerators/accelerator_gtk.h"
+#include "ui/base/accelerators/platform_accelerator_gtk.h"
 
 TEST(AcceleratorsGtkTest, GetAccelerator) {
   AcceleratorsGtk* keymap = AcceleratorsGtk::GetInstance();
-  const ui::AcceleratorGtk* accelerator =
+  const ui::Accelerator* accelerator =
       keymap->GetPrimaryAcceleratorForCommand(IDC_COPY);
   ASSERT_TRUE(accelerator);
-  EXPECT_EQ(static_cast<guint>(GDK_c), accelerator->GetGdkKeyCode());
-  EXPECT_EQ(GDK_CONTROL_MASK, accelerator->modifiers());
+  EXPECT_EQ(static_cast<guint>(GDK_c),
+            GetGdkKeyCodeForAccelerator(*accelerator));
+  EXPECT_EQ(GDK_CONTROL_MASK, GetGdkModifierForAccelerator(*accelerator));
 }
 
 TEST(AcceleratorsGtkTest, GetNullAccelerator) {
   AcceleratorsGtk* keymap = AcceleratorsGtk::GetInstance();
-  const ui::AcceleratorGtk* accelerator =
+  const ui::Accelerator* accelerator =
       keymap->GetPrimaryAcceleratorForCommand(IDC_MinimumLabelValue - 1);
   EXPECT_FALSE(accelerator);
 }

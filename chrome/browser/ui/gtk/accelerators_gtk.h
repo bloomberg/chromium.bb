@@ -6,14 +6,14 @@
 #define CHROME_BROWSER_UI_GTK_ACCELERATORS_GTK_H_
 
 #include "base/hash_tables.h"
-#include "ui/base/accelerators/accelerator_gtk.h"
+#include "ui/base/accelerators/accelerator.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
 class AcceleratorsGtk {
  public:
-  typedef std::vector<std::pair<int, ui::AcceleratorGtk> > AcceleratorGtkList;
-  typedef AcceleratorGtkList::const_iterator const_iterator;
+  typedef std::vector<std::pair<int, ui::Accelerator> > AcceleratorList;
+  typedef AcceleratorList::const_iterator const_iterator;
 
   // Returns the singleton instance.
   static AcceleratorsGtk* GetInstance();
@@ -22,7 +22,7 @@ class AcceleratorsGtk {
   const_iterator const end() { return all_accelerators_.end(); }
 
   // Returns NULL if there is no accelerator for the command.
-  const ui::AcceleratorGtk* GetPrimaryAcceleratorForCommand(int command_id);
+  const ui::Accelerator* GetPrimaryAcceleratorForCommand(int command_id);
 
  private:
   friend struct DefaultSingletonTraits<AcceleratorsGtk>;
@@ -30,10 +30,10 @@ class AcceleratorsGtk {
   AcceleratorsGtk();
   ~AcceleratorsGtk();
 
-  typedef base::hash_map<int, ui::AcceleratorGtk> AcceleratorGtkMap;
-  AcceleratorGtkMap primary_accelerators_;
+  typedef base::hash_map<int, ui::Accelerator> AcceleratorMap;
+  AcceleratorMap primary_accelerators_;
 
-  AcceleratorGtkList all_accelerators_;
+  AcceleratorList all_accelerators_;
 };
 
 #endif  // CHROME_BROWSER_UI_GTK_ACCELERATORS_GTK_H_

@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/tabs/tab_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/base/accelerators/accelerator_gtk.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/gtk/scoped_region.h"
 #include "ui/gfx/path.h"

@@ -31,7 +31,7 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
-#include "ui/base/accelerators/accelerator_gtk.h"
+#include "ui/base/accelerators/platform_accelerator_gtk.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_expanded_container.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
@@ -129,14 +129,15 @@ const struct AcceleratorMapping {
 };
 
 // Table of accelerator mappings to command ids.
-typedef std::map<ui::AcceleratorGtk, int> AcceleratorGtkMap;
+typedef std::map<ui::Accelerator, int> AcceleratorMap;
 
-const AcceleratorGtkMap& GetAcceleratorTable() {
-  CR_DEFINE_STATIC_LOCAL(AcceleratorGtkMap, accelerator_table, ());
+const AcceleratorMap& GetAcceleratorTable() {
+  CR_DEFINE_STATIC_LOCAL(AcceleratorMap, accelerator_table, ());
   if (accelerator_table.empty()) {
     for (size_t i = 0; i < arraysize(kAcceleratorMap); ++i) {
       const AcceleratorMapping& entry = kAcceleratorMap[i];
-      ui::AcceleratorGtk accelerator(entry.keyval, entry.modifier_type);
+      ui::Accelerator accelerator = ui::AcceleratorForGdkKeyCodeAndModifier(
+          entry.keyval, entry.modifier_type);
       accelerator_table[accelerator] = entry.command_id;
     }
   }
@@ -362,13 +363,13 @@ void PanelGtk::ConnectAccelerators() {
   accel_group_ = gtk_accel_group_new();
   gtk_window_add_accel_group(window_, accel_group_);
 
-  const AcceleratorGtkMap& accelerator_table = GetAcceleratorTable();
-  for (AcceleratorGtkMap::const_iterator iter = accelerator_table.begin();
+  const AcceleratorMap& accelerator_table = GetAcceleratorTable();
+  for (AcceleratorMap::const_iterator iter = accelerator_table.begin();
        iter != accelerator_table.end(); ++iter) {
     gtk_accel_group_connect(
         accel_group_,
-        iter->first.GetGdkKeyCode(),
-        static_cast<GdkModifierType>(iter->first.modifiers()),
+        ui::GetGdkKeyCodeForAccelerator(iter->first),
+        ui::GetGdkModifierForAccelerator(iter->first),
         GtkAccelFlags(0),
         g_cclosure_new(G_CALLBACK(OnGtkAccelerator),
                        GINT_TO_POINTER(iter->second), NULL));
@@ -378,12 +379,13 @@ void PanelGtk::ConnectAccelerators() {
 void PanelGtk::DisconnectAccelerators() {
   // Disconnecting the keys we connected to our accelerator group frees the
   // closures allocated in ConnectAccelerators.
-  const AcceleratorGtkMap& accelerator_table = GetAcceleratorTable();
-  for (AcceleratorGtkMap::const_iterator iter = accelerator_table.begin();
+  const AcceleratorMap& accelerator_table = GetAcceleratorTable();
+  for (AcceleratorMap::const_iterator iter = accelerator_table.begin();
        iter != accelerator_table.end(); ++iter) {
-    gtk_accel_group_disconnect_key(accel_group_,
-        iter->first.GetGdkKeyCode(),
-        static_cast<GdkModifierType>(iter->first.modifiers()));
+    gtk_accel_group_disconnect_key(
+        accel_group_,
+        ui::GetGdkKeyCodeForAccelerator(iter->first),
+        ui::GetGdkModifierForAccelerator(iter->first));
   }
   gtk_window_remove_accel_group(window_, accel_group_);
   g_object_unref(accel_group_);

@@ -969,13 +969,15 @@ void BrowserTitlebar::ExecuteCommand(int command_id) {
 }
 
 bool BrowserTitlebar::GetAcceleratorForCommandId(
-    int command_id, ui::Accelerator* accelerator) {
-  const ui::AcceleratorGtk* accelerator_gtk =
+    int command_id,
+    ui::Accelerator* out_accelerator) {
+  const ui::Accelerator* accelerator =
       AcceleratorsGtk::GetInstance()->GetPrimaryAcceleratorForCommand(
           command_id);
-  if (accelerator_gtk)
-    *accelerator = *accelerator_gtk;
-  return accelerator_gtk;
+  if (!accelerator)
+    return false;
+  *out_accelerator = *accelerator;
+  return true;
 }
 
 void BrowserTitlebar::Observe(int type,

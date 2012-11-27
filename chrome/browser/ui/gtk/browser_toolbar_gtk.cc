@@ -52,7 +52,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/base/accelerators/accelerator_gtk.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -364,12 +363,13 @@ bool BrowserToolbarGtk::AlwaysShowIconForCmd(int command_id) const {
 
 bool BrowserToolbarGtk::GetAcceleratorForCommandId(
     int id,
-    ui::Accelerator* accelerator) {
-  const ui::AcceleratorGtk* accelerator_gtk =
+    ui::Accelerator* out_accelerator) {
+  const ui::Accelerator* accelerator =
       AcceleratorsGtk::GetInstance()->GetPrimaryAcceleratorForCommand(id);
-  if (accelerator_gtk)
-    *accelerator = *accelerator_gtk;
-  return !!accelerator_gtk;
+  if (!accelerator)
+    return false;
+  *out_accelerator = *accelerator;
+  return true;
 }
 
 // content::NotificationObserver -----------------------------------------------

@@ -39,6 +39,8 @@ Accelerator::Accelerator(const Accelerator& accelerator) {
   key_code_ = accelerator.key_code_;
   type_ = accelerator.type_;
   modifiers_ = accelerator.modifiers_;
+  if (accelerator.platform_accelerator_.get())
+    platform_accelerator_ = accelerator.platform_accelerator_->CreateCopy();
 }
 
 Accelerator::~Accelerator() {
@@ -49,6 +51,10 @@ Accelerator& Accelerator::operator=(const Accelerator& accelerator) {
     key_code_ = accelerator.key_code_;
     type_ = accelerator.type_;
     modifiers_ = accelerator.modifiers_;
+    if (accelerator.platform_accelerator_.get())
+      platform_accelerator_ = accelerator.platform_accelerator_->CreateCopy();
+    else
+      platform_accelerator_.reset();
   }
   return *this;
 }
@@ -62,6 +68,12 @@ bool Accelerator::operator <(const Accelerator& rhs) const {
 }
 
 bool Accelerator::operator ==(const Accelerator& rhs) const {
+  if (platform_accelerator_.get() != rhs.platform_accelerator_.get() &&
+      ((!platform_accelerator_.get() || !rhs.platform_accelerator_.get()) ||
+       !platform_accelerator_->Equals(*rhs.platform_accelerator_))) {
+    return false;
+  }
+
   return (key_code_ == rhs.key_code_) && (type_ == rhs.type_) &&
       (modifiers_ == rhs.modifiers_);
 }

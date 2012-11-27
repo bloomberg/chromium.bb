@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_UI_GTK_EXTENSIONS_EXTENSION_KEYBINDING_REGISTRY_GTK_H_
 #define CHROME_BROWSER_UI_GTK_EXTENSIONS_EXTENSION_KEYBINDING_REGISTRY_GTK_H_
 
+#include <gdk/gdk.h>
 #include <map>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
-#include "ui/base/accelerators/accelerator_gtk.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -84,11 +85,11 @@ class ExtensionKeybindingRegistryGtk
   // The accelerator group used to handle accelerators, owned by this object.
   GtkAccelGroup* accel_group_;
 
-  // Maps a GTK accelerator to a string pair (extension id, command name) for
+  // Maps an accelerator to a string pair (extension id, command name) for
   // commands that have been registered. Unlike its Views counterpart, this map
   // contains browserAction and pageAction commands (but does not route those
   // events), so that we can query priority handlers in HasPriorityHandler(...).
-  typedef std::map< ui::AcceleratorGtk,
+  typedef std::map< ui::Accelerator,
                     std::pair<std::string, std::string> > EventTargets;
   EventTargets event_targets_;
 

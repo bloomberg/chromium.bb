@@ -80,7 +80,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
-#include "ui/base/accelerators/accelerator_gtk.h"
+#include "ui/base/accelerators/platform_accelerator_gtk.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
@@ -1940,11 +1940,8 @@ void LocationBarViewGtk::PageActionViewGtk::ConnectPageActionAccelerator() {
           &command_page_action,
           NULL)) {
     // Found the page action shortcut command, register it.
-    page_action_keybinding_.reset(new ui::AcceleratorGtk(
-        command_page_action.accelerator().key_code(),
-        command_page_action.accelerator().IsShiftDown(),
-        command_page_action.accelerator().IsCtrlDown(),
-        command_page_action.accelerator().IsAltDown()));
+    page_action_keybinding_.reset(
+        new ui::Accelerator(command_page_action.accelerator()));
   }
 
   extensions::Command command_script_badge;
@@ -1954,11 +1951,8 @@ void LocationBarViewGtk::PageActionViewGtk::ConnectPageActionAccelerator() {
           &command_script_badge,
           NULL)) {
     // Found the script badge shortcut command, register it.
-    script_badge_keybinding_.reset(new ui::AcceleratorGtk(
-        command_script_badge.accelerator().key_code(),
-        command_script_badge.accelerator().IsShiftDown(),
-        command_script_badge.accelerator().IsCtrlDown(),
-        command_script_badge.accelerator().IsAltDown()));
+    script_badge_keybinding_.reset(
+        new ui::Accelerator(command_script_badge.accelerator()));
   }
 
   if (page_action_keybinding_.get() || script_badge_keybinding_.get()) {
@@ -1968,16 +1962,16 @@ void LocationBarViewGtk::PageActionViewGtk::ConnectPageActionAccelerator() {
     if (page_action_keybinding_.get()) {
       gtk_accel_group_connect(
           accel_group_,
-          page_action_keybinding_->GetGdkKeyCode(),
-          page_action_keybinding_->gdk_modifier_type(),
+          ui::GetGdkKeyCodeForAccelerator(*page_action_keybinding_),
+          ui::GetGdkModifierForAccelerator(*page_action_keybinding_),
           GtkAccelFlags(0),
           g_cclosure_new(G_CALLBACK(OnGtkAccelerator), this, NULL));
     }
     if (script_badge_keybinding_.get()) {
       gtk_accel_group_connect(
           accel_group_,
-          script_badge_keybinding_->GetGdkKeyCode(),
-          script_badge_keybinding_->gdk_modifier_type(),
+          ui::GetGdkKeyCodeForAccelerator(*script_badge_keybinding_),
+          ui::GetGdkModifierForAccelerator(*script_badge_keybinding_),
           GtkAccelFlags(0),
           g_cclosure_new(G_CALLBACK(OnGtkAccelerator), this, NULL));
     }
@@ -1999,16 +1993,14 @@ void LocationBarViewGtk::PageActionViewGtk::DisconnectPageActionAccelerator() {
     if (page_action_keybinding_.get()) {
       gtk_accel_group_disconnect_key(
           accel_group_,
-          page_action_keybinding_->GetGdkKeyCode(),
-          static_cast<GdkModifierType>(
-              page_action_keybinding_->modifiers()));
+          ui::GetGdkKeyCodeForAccelerator(*page_action_keybinding_),
+          ui::GetGdkModifierForAccelerator(*page_action_keybinding_));
     }
     if (script_badge_keybinding_.get()) {
       gtk_accel_group_disconnect_key(
           accel_group_,
-          script_badge_keybinding_->GetGdkKeyCode(),
-          static_cast<GdkModifierType>(
-              script_badge_keybinding_->modifiers()));
+          ui::GetGdkKeyCodeForAccelerator(*script_badge_keybinding_),
+          ui::GetGdkModifierForAccelerator(*script_badge_keybinding_));
     }
     gtk_window_remove_accel_group(window_, accel_group_);
     g_object_unref(accel_group_);
