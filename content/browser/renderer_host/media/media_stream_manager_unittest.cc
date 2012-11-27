@@ -95,7 +95,7 @@ class MediaStreamManagerTest : public ::testing::Test {
     message_loop_.reset();
   }
 
-  void MakeMediaAccessRequest(std::string* label) {
+  std::string MakeMediaAccessRequest() {
     const int render_process_id = 1;
     const int render_view_id = 1;
     StreamOptions components(MEDIA_DEVICE_AUDIO_CAPTURE,
@@ -104,12 +104,11 @@ class MediaStreamManagerTest : public ::testing::Test {
     MediaRequestResponseCallback callback =
         base::Bind(&MediaStreamManagerTest::ResponseCallback,
                    base::Unretained(this));
-    media_stream_manager_->MakeMediaAccessRequest(render_process_id,
-                                                  render_view_id,
-                                                  components,
-                                                  security_origin,
-                                                  callback,
-                                                  label);
+    return media_stream_manager_->MakeMediaAccessRequest(render_process_id,
+                                                         render_view_id,
+                                                         components,
+                                                         security_origin,
+                                                         callback);
   }
 
   scoped_ptr<MessageLoop> message_loop_;
@@ -123,8 +122,7 @@ class MediaStreamManagerTest : public ::testing::Test {
 };
 
 TEST_F(MediaStreamManagerTest, MakeMediaAccessRequest) {
-  std::string label;
-  MakeMediaAccessRequest(&label);
+  std::string label = MakeMediaAccessRequest();
 
   // Expecting the callback will be triggered and quit the test.
   EXPECT_CALL(*this, Response(label));
@@ -132,19 +130,16 @@ TEST_F(MediaStreamManagerTest, MakeMediaAccessRequest) {
 }
 
 TEST_F(MediaStreamManagerTest, MakeAndCancelMediaAccessRequest) {
-  std::string label;
-  MakeMediaAccessRequest(&label);
+  std::string label = MakeMediaAccessRequest();
   // No callback is expected.
   media_stream_manager_->CancelRequest(label);
 }
 
 TEST_F(MediaStreamManagerTest, MakeMultipleRequests) {
   // First request.
-  std::string label1;
-  MakeMediaAccessRequest(&label1);
+  std::string label1 =  MakeMediaAccessRequest();
 
   // Second request.
-  std::string label2;
   int render_process_id = 2;
   int render_view_id = 2;
   StreamOptions components(MEDIA_DEVICE_AUDIO_CAPTURE,
@@ -153,12 +148,12 @@ TEST_F(MediaStreamManagerTest, MakeMultipleRequests) {
   MediaRequestResponseCallback callback =
       base::Bind(&MediaStreamManagerTest::ResponseCallback,
                  base::Unretained(this));
-  media_stream_manager_->MakeMediaAccessRequest(render_process_id,
-                                                render_view_id,
-                                                components,
-                                                security_origin,
-                                                callback,
-                                                &label2);
+  std::string label2 = media_stream_manager_->MakeMediaAccessRequest(
+      render_process_id,
+      render_view_id,
+      components,
+      security_origin,
+      callback);
 
   // Expecting the callbackS from requests will be triggered and quit the test.
   // Note, the callbacks might come in a different order depending on the
@@ -168,10 +163,8 @@ TEST_F(MediaStreamManagerTest, MakeMultipleRequests) {
 }
 
 TEST_F(MediaStreamManagerTest, MakeAndCancelMultipleRequests) {
-  std::string label1;
-  MakeMediaAccessRequest(&label1);
-  std::string label2;
-  MakeMediaAccessRequest(&label2);
+  std::string label1 = MakeMediaAccessRequest();
+  std::string label2 = MakeMediaAccessRequest();
   media_stream_manager_->CancelRequest(label1);
 
   // Expecting the callback from the second request will be triggered and

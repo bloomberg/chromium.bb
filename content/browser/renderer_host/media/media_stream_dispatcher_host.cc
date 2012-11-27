@@ -145,12 +145,13 @@ void MediaStreamDispatcherHost::OnGenerateStream(
     DCHECK(!device_id.empty());
     // TODO(justinlin): Cleanup/get rid of GenerateStreamForDevice and merge
     // with the regular GenerateStream.
-    GetManager()->GenerateStreamForDevice(
+    label = GetManager()->GenerateStreamForDevice(
         this, render_process_id_, render_view_id,
-        components, device_id, security_origin, &label);
+        components, device_id, security_origin);
   } else {
-    GetManager()->GenerateStream(this, render_process_id_, render_view_id,
-                                 components, security_origin, &label);
+    label = GetManager()->GenerateStream(this, render_process_id_,
+                                         render_view_id,
+                                         components, security_origin);
   }
   DCHECK(!label.empty());
   streams_[label] = StreamRequest(render_view_id, page_request_id);
@@ -191,9 +192,8 @@ void MediaStreamDispatcherHost::OnEnumerateDevices(
            << type << ", "
            << security_origin.spec() << ")";
 
-  std::string label;
-  GetManager()->EnumerateDevices(this, render_process_id_, render_view_id,
-                                 type, security_origin, &label);
+  const std::string& label = GetManager()->EnumerateDevices(
+      this, render_process_id_, render_view_id, type, security_origin);
   DCHECK(!label.empty());
   streams_[label] = StreamRequest(render_view_id, page_request_id);
 }
@@ -211,9 +211,9 @@ void MediaStreamDispatcherHost::OnOpenDevice(
            << type << ", "
            << security_origin.spec() << ")";
 
-  std::string label;
-  GetManager()->OpenDevice(this, render_process_id_, render_view_id,
-                           device_id, type, security_origin, &label);
+  const std::string& label = GetManager()->OpenDevice(
+      this, render_process_id_, render_view_id,
+      device_id, type, security_origin);
   DCHECK(!label.empty());
   streams_[label] = StreamRequest(render_view_id, page_request_id);
 }

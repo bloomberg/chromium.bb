@@ -71,35 +71,37 @@ class CONTENT_EXPORT MediaStreamManager
   // Used to access AudioInputDeviceManager.
   AudioInputDeviceManager* audio_input_device_manager();
 
-  // Creates a new media access request which is identified by a unique |label|
+  // Creates a new media access request which is identified by a unique string
   // that's returned to the caller. This will trigger the infobar and ask users
   // for access to the device. |render_process_id| and |render_view_id| refer
   // to the view where the infobar will appear to the user. |callback| is
   // used to send the selected device to the clients. An empty list of device
   // will be returned if the users deny the access.
-  void MakeMediaAccessRequest(
+  std::string MakeMediaAccessRequest(
       int render_process_id,
       int render_view_id,
       const StreamOptions& components,
       const GURL& security_origin,
-      const MediaRequestResponseCallback& callback,
-      std::string* label);
+      const MediaRequestResponseCallback& callback);
 
   // GenerateStream opens new media devices according to |components|.  It
-  // creates a new request which is identified by a unique |label| that's
+  // creates a new request which is identified by a unique string that's
   // returned to the caller.  |render_process_id| and |render_view_id| refer to
   // the view where the infobar will appear to the user.
-  void GenerateStream(MediaStreamRequester* requester, int render_process_id,
-                      int render_view_id, const StreamOptions& components,
-                      const GURL& security_origin, std::string* label);
+  std::string GenerateStream(MediaStreamRequester* requester,
+                             int render_process_id,
+                             int render_view_id,
+                             const StreamOptions& components,
+                             const GURL& security_origin);
 
   // Like GenerateStream above, except the user is only able to allow/deny the
   // request for the device specified by |device_id|.
-  void GenerateStreamForDevice(MediaStreamRequester* requester,
-                               int render_process_id, int render_view_id,
-                               const StreamOptions& components,
-                               const std::string& device_id,
-                               const GURL& security_origin, std::string* label);
+  std::string GenerateStreamForDevice(MediaStreamRequester* requester,
+                                      int render_process_id,
+                                      int render_view_id,
+                                      const StreamOptions& components,
+                                      const std::string& device_id,
+                                      const GURL& security_origin);
 
   void CancelRequest(const std::string& label);
 
@@ -108,29 +110,25 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Gets a list of devices of |type|, which must be MEDIA_DEVICE_AUDIO_CAPTURE
   // or MEDIA_DEVICE_VIDEO_CAPTURE.
-  // The request is identified using |label|, which is pointing to a
-  // std::string.
+  // The request is identified using the string returned to the caller.
   // The request is persistent, which means the client keeps listening to
   // device changes, such as plug/unplug, and expects new device list for
   // such a change, till the client stops the request.
-  void EnumerateDevices(MediaStreamRequester* requester,
-                        int render_process_id,
-                        int render_view_id,
-                        MediaStreamType type,
-                        const GURL& security_origin,
-                        std::string* label);
+  std::string EnumerateDevices(MediaStreamRequester* requester,
+                               int render_process_id,
+                               int render_view_id,
+                               MediaStreamType type,
+                               const GURL& security_origin);
 
   // Open a device identified by |device_id|.  |type| must be either
   // MEDIA_DEVICE_AUDIO_CAPTURE or MEDIA_DEVICE_VIDEO_CAPTURE.
-  // The request is identified using |label|, which is pointing to a
-  // std::string.
-  void OpenDevice(MediaStreamRequester* requester,
-                  int render_process_id,
-                  int render_view_id,
-                  const std::string& device_id,
-                  MediaStreamType type,
-                  const GURL& security_origin,
-                  std::string* label);
+  // The request is identified using string returned to the caller.
+  std::string OpenDevice(MediaStreamRequester* requester,
+                         int render_process_id,
+                         int render_view_id,
+                         const std::string& device_id,
+                         MediaStreamType type,
+                         const GURL& security_origin);
 
   // Signals the UI that the devices are opened.
   // Users are responsible for calling NotifyUIDevicesClosed when the devices
@@ -203,11 +201,10 @@ class CONTENT_EXPORT MediaStreamManager
                             const StreamDeviceInfoArray& devices);
 
   // Helpers.
-  bool RequestDone(const MediaStreamManager::DeviceRequest& request) const;
+  bool RequestDone(const DeviceRequest& request) const;
   MediaStreamProvider* GetDeviceManager(MediaStreamType stream_type);
-  void StartEnumeration(DeviceRequest* new_request,
-                        std::string* label);
-  void AddRequest(const DeviceRequest& new_request, std::string* label);
+  void StartEnumeration(DeviceRequest* request);
+  std::string AddRequest(DeviceRequest* request);
   void ClearEnumerationCache(EnumerationCache* cache);
   void PostRequestToUI(const std::string& label);
 
@@ -244,7 +241,7 @@ class CONTENT_EXPORT MediaStreamManager
   int active_enumeration_ref_count_[NUM_MEDIA_TYPES];
 
   // All non-closed request.
-  typedef std::map<std::string, DeviceRequest> DeviceRequests;
+  typedef std::map<std::string, DeviceRequest*> DeviceRequests;
   DeviceRequests requests_;
 
   // Hold a pointer to the IO loop to check we delete the device thread and

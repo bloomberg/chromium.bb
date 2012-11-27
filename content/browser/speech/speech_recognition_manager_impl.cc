@@ -156,15 +156,15 @@ void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
     SessionsTable::iterator iter = sessions_.find(session_id);
     DCHECK(iter != sessions_.end());
     SpeechRecognitionSessionContext& context = iter->second.context;
-    BrowserMainLoop::GetMediaStreamManager()->MakeMediaAccessRequest(
-        context.render_process_id,
-        context.render_view_id,
-        StreamOptions(MEDIA_DEVICE_AUDIO_CAPTURE, MEDIA_NO_SERVICE),
-        GURL(context.context_name),
-        base::Bind(
-            &SpeechRecognitionManagerImpl::MediaRequestPermissionCallback,
-            weak_factory_.GetWeakPtr()),
-        &context.label);
+    context.label =
+        BrowserMainLoop::GetMediaStreamManager()->MakeMediaAccessRequest(
+            context.render_process_id,
+            context.render_view_id,
+            StreamOptions(MEDIA_DEVICE_AUDIO_CAPTURE, MEDIA_NO_SERVICE),
+            GURL(context.context_name),
+            base::Bind(
+                &SpeechRecognitionManagerImpl::MediaRequestPermissionCallback,
+                weak_factory_.GetWeakPtr()));
 
     return;
   }
