@@ -7,6 +7,11 @@
 #include "remoting/base/auto_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_WIN)
+#include <objbase.h>
+#include "base/win/windows_version.h"
+#endif
+
 namespace {
 
 const char kThreadName[] = "Test thread";
@@ -21,6 +26,13 @@ void PostSetFlagTask(
     bool* success) {
   task_runner->PostTask(FROM_HERE, base::Bind(&SetFlagTask, success));
 }
+
+#if defined(OS_WIN)
+void CheckComAptTypeTask(APTTYPE* apt_type_out, HRESULT* hresult) {
+  APTTYPEQUALIFIER apt_type_qualifier;
+  *hresult = CoGetApartmentType(apt_type_out, &apt_type_qualifier);
+}
+#endif
 
 }  // namespace
 
@@ -58,7 +70,6 @@ class AutoThreadTest : public testing::Test {
     message_loop_quit_correctly_ = true;
     message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
-
 
   MessageLoop message_loop_;
   bool message_loop_quit_correctly_;
@@ -111,5 +122,57 @@ TEST_F(AutoThreadTest, ThreadDependency) {
 
   EXPECT_TRUE(success);
 }
+
+#if defined(OS_WIN)
+TEST_F(AutoThreadTest, ThreadWithComMta) {
+  // CoGetApartmentType requires Windows 7 or above.
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
+    return;
+
+  scoped_refptr<base::TaskRunner> task_runner =
+      AutoThread::CreateWithLoopAndComInitTypes(
+          kThreadName, main_task_runner_, MessageLoop::TYPE_DEFAULT,
+          AutoThread::COM_INIT_MTA);
+  EXPECT_TRUE(task_runner.get());
+
+  // Post a task to query the COM apartment type.
+  HRESULT hresult = E_FAIL;
+  APTTYPE apt_type = APTTYPE_NA;
+  task_runner->PostTask(FROM_HERE,
+                        base::Bind(&CheckComAptTypeTask, &apt_type, &hresult));
+
+  task_runner = NULL;
+  RunMessageLoop();
+
+  EXPECT_EQ(S_OK, hresult);
+  EXPECT_EQ(APTTYPE_MTA, apt_type);
+}
+
+TEST_F(AutoThreadTest, ThreadWithComSta) {
+  // CoGetApartmentType requires Windows 7 or above.
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
+    return;
+
+  scoped_refptr<base::TaskRunner> task_runner =
+      AutoThread::CreateWithLoopAndComInitTypes(
+          kThreadName, main_task_runner_, MessageLoop::TYPE_UI,
+          AutoThread::COM_INIT_STA);
+  EXPECT_TRUE(task_runner.get());
+
+  // Post a task to query the COM apartment type.
+  HRESULT hresult = E_FAIL;
+  APTTYPE apt_type = APTTYPE_NA;
+  task_runner->PostTask(FROM_HERE,
+                        base::Bind(&CheckComAptTypeTask, &apt_type, &hresult));
+
+  task_runner = NULL;
+  RunMessageLoop();
+
+  EXPECT_EQ(S_OK, hresult);
+  // Whether the thread is the "main" STA apartment depends upon previous
+  // COM activity in this test process, so allow both types here.
+  EXPECT_TRUE(apt_type == APTTYPE_MAINSTA || apt_type == APTTYPE_STA);
+}
+#endif // defined(OS_WIN)
 
 }  // namespace remoting
