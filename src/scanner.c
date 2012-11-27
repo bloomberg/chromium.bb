@@ -356,7 +356,7 @@ start_element(void *data, const char *element_name, const char **atts)
 			version = strtol(since, &end, 0);
 			if (errno == EINVAL || end == since || *end != '\0')
 				fail(ctx, "invalid integer\n");
-			if (version <= ctx->interface->since)
+			if (version < ctx->interface->since)
 				fail(ctx, "since version not increasing\n");
 			ctx->interface->since = version;
 		}
