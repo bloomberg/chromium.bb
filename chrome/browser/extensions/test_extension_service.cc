@@ -55,7 +55,8 @@ const Extension* TestExtensionService::GetPendingExtensionUpdate(
   return NULL;
 }
 
-void TestExtensionService::FinishInstallation(const std::string& extension_id) {
+void TestExtensionService::FinishDelayedInstallation(
+    const std::string& extension_id) {
   ADD_FAILURE();
 }
 

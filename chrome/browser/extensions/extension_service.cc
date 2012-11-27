@@ -752,7 +752,7 @@ void ExtensionService::ReloadExtensionWithEvents(
   }
 
   if (pending_extension_updates_.Contains(extension_id)) {
-    FinishInstallation(extension_id);
+    FinishDelayedInstallation(extension_id);
     return;
   }
 
@@ -2039,9 +2039,6 @@ void ExtensionService::OnLoadedInstalledExtensions() {
 }
 
 void ExtensionService::AddExtension(const Extension* extension) {
-  // Ensure extension is deleted unless we transfer ownership.
-  scoped_refptr<const Extension> scoped_extension(extension);
-
   // TODO(jstritar): We may be able to get rid of this branch by overriding the
   // default extension state to DISABLED when the --disable-extensions flag
   // is set (http://crbug.com/29067).
@@ -2073,7 +2070,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
   MaybeWipeout(extension);
 
   if (extension_prefs_->IsExtensionDisabled(extension->id())) {
-    disabled_extensions_.Insert(scoped_extension);
+    disabled_extensions_.Insert(extension);
     SyncExtensionChangeIfNeeded(*extension);
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
@@ -2094,7 +2091,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
         extension->id(), syncer::StringOrdinal());
   }
 
-  extensions_.Insert(scoped_extension);
+  extensions_.Insert(extension);
   SyncExtensionChangeIfNeeded(*extension);
   NotifyExtensionLoaded(extension);
   DoPostLoadTasks(extension);
@@ -2282,8 +2279,6 @@ void ExtensionService::OnExtensionInstalled(
     bool wait_for_idle) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Ensure extension is deleted unless we transfer ownership.
-  scoped_refptr<const Extension> scoped_extension(extension);
   const std::string& id = extension->id();
   bool initial_enable = ShouldEnableOnInstall(extension);
   const extensions::PendingExtensionInfo* pending_extension_info = NULL;
@@ -2362,7 +2357,7 @@ void ExtensionService::OnExtensionInstalled(
         initial_enable ? Extension::ENABLED : Extension::DISABLED);
 
     // Transfer ownership of |extension|.
-    pending_extension_updates_.Insert(scoped_extension);
+    pending_extension_updates_.Insert(extension);
 
     // Notify extension of available update.
     extensions::RuntimeEventRouter::DispatchOnUpdateAvailableEvent(
@@ -2382,6 +2377,35 @@ void ExtensionService::OnExtensionInstalled(
     extension_prefs_->SetAllowFileAccess(id, true);
   }
 
+  FinishInstallation(extension);
+}
+
+void ExtensionService::MaybeFinishDelayedInstallation(
+    const std::string& extension_id) {
+  // Check if the extension already got updated.
+  if (!pending_extension_updates_.Contains(extension_id))
+    return;
+  // Check if the extension is idle.
+  if (!IsExtensionIdle(extension_id))
+    return;
+
+  FinishDelayedInstallation(extension_id);
+}
+
+void ExtensionService::FinishDelayedInstallation(
+    const std::string& extension_id) {
+  scoped_refptr<const Extension> extension(
+      GetPendingExtensionUpdate(extension_id));
+  CHECK(extension);
+  pending_extension_updates_.Remove(extension_id);
+
+  if (!extension_prefs_->FinishIdleInstallInfo(extension_id))
+    NOTREACHED();
+
+  FinishInstallation(extension);
+}
+
+void ExtensionService::FinishInstallation(const Extension* extension) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_INSTALLED,
       content::Source<Profile>(profile_),
@@ -2389,8 +2413,7 @@ void ExtensionService::OnExtensionInstalled(
 
   bool unacknowledged_external = IsUnacknowledgedExternalExtension(extension);
 
-  // Transfer ownership of |extension| to AddExtension.
-  AddExtension(scoped_extension);
+  AddExtension(extension);
 
   // If this is a new external extension that was disabled, alert the user
   // so he can reenable it. We do this last so that it has already been
@@ -2401,43 +2424,6 @@ void ExtensionService::OnExtensionInstalled(
                               EXTERNAL_EXTENSION_INSTALLED,
                               EXTERNAL_EXTENSION_BUCKET_BOUNDARY);
   }
-}
-
-void ExtensionService::MaybeFinishInstallation(
-    const std::string& extension_id) {
-  // Check if the extension already got updated.
-  if (!pending_extension_updates_.Contains(extension_id))
-    return;
-  // Check if the extension is idle.
-  if (!IsExtensionIdle(extension_id))
-    return;
-
-  FinishInstallation(extension_id);
-}
-
-void ExtensionService::FinishInstallation(const std::string& extension_id) {
-  const Extension* extension = GetPendingExtensionUpdate(extension_id);
-  CHECK(extension);
-  // Ensure extension is deleted unless we transfer ownership.
-  scoped_refptr<const Extension> scoped_extension(extension);
-  pending_extension_updates_.Remove(extension_id);
-
-  if (!extension_prefs_->FinishIdleInstallInfo(extension_id))
-    NOTREACHED();
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_INSTALLED,
-      content::Source<Profile>(profile_),
-      content::Details<const Extension>(extension));
-
-  // Transfer ownership of |extension| to AddExtension.
-  AddExtension(scoped_extension);
-
-  // If this is a new external extension that was disabled, alert the user
-  // so he can reenable it.
-  if (Extension::IsExternalLocation(extension->location()) &&
-      extension_prefs_->IsExtensionDisabled(extension_id))
-    UpdateExternalExtensionAlert();
 }
 
 const Extension* ExtensionService::GetPendingExtensionUpdate(
@@ -2711,7 +2697,7 @@ void ExtensionService::Observe(int type,
         // so maybe finish installation.
         MessageLoop::current()->PostDelayedTask(
             FROM_HERE,
-            base::Bind(&ExtensionService::MaybeFinishInstallation,
+            base::Bind(&ExtensionService::MaybeFinishDelayedInstallation,
                        AsWeakPtr(), extension_id),
             base::TimeDelta::FromSeconds(kUpdateIdleDelay));
       }

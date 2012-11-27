@@ -476,7 +476,7 @@ void ExtensionUpdater::OnExtensionDownloadFailed(
   // current update check has |install_immediately| set the previously
   // queued update should be installed now.
   if (install_immediately && service_->GetPendingExtensionUpdate(id))
-    service_->FinishInstallation(id);
+    service_->FinishDelayedInstallation(id);
 }
 
 void ExtensionUpdater::OnExtensionDownloadFinished(

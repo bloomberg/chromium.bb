@@ -115,7 +115,7 @@ class ExtensionServiceInterface : public syncer::SyncableService {
 
   virtual const extensions::Extension* GetPendingExtensionUpdate(
       const std::string& extension_id) const = 0;
-  virtual void FinishInstallation(const std::string& extension_id) = 0;
+  virtual void FinishDelayedInstallation(const std::string& extension_id) = 0;
 
   virtual bool IsExtensionEnabled(const std::string& extension_id) const = 0;
   virtual bool IsExternalExtensionUninstalled(
@@ -430,14 +430,15 @@ class ExtensionService
       bool has_requirement_errors,
       bool wait_for_idle);
 
+  // Similar to FinishInstallation, but first checks if there still is an update
+  // pending for the extension, and makes sure the extension is still idle.
+  void MaybeFinishDelayedInstallation(const std::string& extension_id);
+
   // Finishes installation of an update for an extension with the specified id,
   // when installation of that extension was previously delayed because the
   // extension was in use.
-  virtual void FinishInstallation(const std::string& extension_id) OVERRIDE;
-
-  // Similar to FinishInstallation, but first checks if there still is an update
-  // pending for the extension, and makes sure the extension is still idle.
-  void MaybeFinishInstallation(const std::string& extension_id);
+  virtual void FinishDelayedInstallation(
+     const std::string& extension_id) OVERRIDE;
 
   // Returns an update for an extension with the specified id, if installation
   // of that update was previously delayed because the extension was in use. If
@@ -768,6 +769,9 @@ class ExtensionService
   // Handles sending notification that |extension| was unloaded.
   void NotifyExtensionUnloaded(const extensions::Extension* extension,
                                extension_misc::UnloadedExtensionReason reason);
+
+  // Common helper to finish installing the given extension.
+  void FinishInstallation(const extensions::Extension* extension);
 
   // Reloads |extension_id| and then dispatches to it the PostReloadEvents
   // indicated by |events|.
