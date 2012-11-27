@@ -616,14 +616,13 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
   set_final_status(final_status);
 
   prerendering_has_been_cancelled_ = true;
-  // This has to be done after setting the final status, as it adds the
-  // prerender to the history.
+  prerender_manager_->AddToHistory(this);
   prerender_manager_->MoveEntryToPendingDelete(this, final_status);
 
   // We may destroy the PrerenderContents before we have initialized the
   // RenderViewHost. Otherwise set the Observer's PrerenderContents to NULL to
   // avoid any more messages being sent.
-  if (render_view_host_observer_.get())
+  if (render_view_host_observer_)
     render_view_host_observer_->set_prerender_contents(NULL);
 }
 

@@ -98,11 +98,17 @@ class UnitTestPrerenderManager : public PrerenderManager {
 
   // From ProfileKeyedService, via PrererenderManager:
   virtual void Shutdown() OVERRIDE {
-    if (next_prerender_contents()) {
-      next_prerender_contents_.release()->Destroy(
-          FINAL_STATUS_MANAGER_SHUTDOWN);
-    }
+    if (next_prerender_contents())
+      next_prerender_contents_->Destroy(FINAL_STATUS_MANAGER_SHUTDOWN);
     PrerenderManager::Shutdown();
+  }
+
+  // From PrerenderManager:
+  virtual void MoveEntryToPendingDelete(PrerenderContents* entry,
+                                        FinalStatus final_status) OVERRIDE {
+    if (entry == next_prerender_contents_.get())
+      return;
+    PrerenderManager::MoveEntryToPendingDelete(entry, final_status);
   }
 
   PrerenderContents* FindEntry(const GURL& url) {

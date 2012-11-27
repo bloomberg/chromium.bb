@@ -143,8 +143,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // Moves a PrerenderContents to the pending delete list from the list of
   // active prerenders when prerendering should be cancelled.
-  void MoveEntryToPendingDelete(PrerenderContents* entry,
-                                FinalStatus final_status);
+  virtual void MoveEntryToPendingDelete(PrerenderContents* entry,
+                                        FinalStatus final_status);
 
   // Records the perceived page load time for a page - effectively the time from
   // when the user navigates to a page to when it finishes loading. The actual

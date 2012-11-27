@@ -343,42 +343,35 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
       return false;  // Do not swap in to ourself.
   }
 
-  scoped_ptr<PrerenderContents> prerender_contents(prerender_data->contents_);
-  ScopedVector<PrerenderData>::iterator to_erase =
-      FindIteratorForPrerenderContents(prerender_contents.get());
-  DCHECK(active_prerenders_.end() != to_erase);
-  DCHECK_EQ(prerender_data, *to_erase);
-  active_prerenders_.erase(to_erase);
-
   // Do not use the prerendered version if there is an opener object.
   if (web_contents->HasOpener()) {
-    prerender_contents.release()->Destroy(FINAL_STATUS_WINDOW_OPENER);
+    prerender_data->contents()->Destroy(FINAL_STATUS_WINDOW_OPENER);
     return false;
   }
 
   // If we are just in the control group (which can be detected by noticing
   // that prerendering hasn't even started yet), record that |web_contents| now
   // would be showing a prerendered contents, but otherwise, don't do anything.
-  if (!prerender_contents->prerendering_has_started()) {
+  if (!prerender_data->contents()->prerendering_has_started()) {
     MarkWebContentsAsWouldBePrerendered(web_contents,
-                                        prerender_contents->origin());
-    prerender_contents.release()->Destroy(FINAL_STATUS_WOULD_HAVE_BEEN_USED);
+                                        prerender_data->contents()->origin());
+    prerender_data->contents()->Destroy(FINAL_STATUS_WOULD_HAVE_BEEN_USED);
     return false;
   }
 
   // Don't use prerendered pages if debugger is attached to the tab.
   // See http://crbug.com/98541
   if (content::DevToolsAgentHostRegistry::IsDebuggerAttached(web_contents)) {
-    DestroyAndMarkMatchCompleteAsUsed(prerender_contents.release(),
+    DestroyAndMarkMatchCompleteAsUsed(prerender_data->contents(),
                                       FINAL_STATUS_DEVTOOLS_ATTACHED);
     return false;
   }
 
   // If the prerendered page is in the middle of a cross-site navigation,
   // don't swap it in because there isn't a good way to merge histories.
-  if (prerender_contents->IsCrossSiteNavigationPending()) {
+  if (prerender_data->contents()->IsCrossSiteNavigationPending()) {
     DestroyAndMarkMatchCompleteAsUsed(
-        prerender_contents.release(),
+        prerender_data->contents(),
         FINAL_STATUS_CROSS_SITE_NAVIGATION_PENDING);
     return false;
   }
@@ -387,14 +380,14 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   // reflect that it would have been prerendered.
   if (GetMode() == PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP) {
     MarkWebContentsAsWouldBePrerendered(web_contents,
-                                        prerender_contents->origin());
-    prerender_contents.release()->Destroy(FINAL_STATUS_WOULD_HAVE_BEEN_USED);
+                                        prerender_data->contents()->origin());
+    prerender_data->contents()->Destroy(FINAL_STATUS_WOULD_HAVE_BEEN_USED);
     return false;
   }
 
   int child_id, route_id;
-  CHECK(prerender_contents->GetChildId(&child_id));
-  CHECK(prerender_contents->GetRouteId(&route_id));
+  CHECK(prerender_data->contents()->GetChildId(&child_id));
+  CHECK(prerender_data->contents()->GetRouteId(&route_id));
 
   // Try to set the prerendered page as used, so any subsequent attempts to
   // cancel on other threads will fail.  If this fails because the prerender
@@ -403,6 +396,12 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
     return false;
 
   // At this point, we've determined that we will use the prerender.
+  scoped_ptr<PrerenderContents> prerender_contents(prerender_data->contents_);
+  ScopedVector<PrerenderData>::iterator to_erase =
+      FindIteratorForPrerenderContents(prerender_contents.get());
+  DCHECK(active_prerenders_.end() != to_erase);
+  DCHECK_EQ(prerender_data, *to_erase);
+  active_prerenders_.erase(to_erase);
 
   if (!prerender_contents->load_start_time().is_null()) {
     histograms_->RecordTimeUntilUsed(
@@ -487,46 +486,45 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry,
 
   ScopedVector<PrerenderData>::iterator it =
       FindIteratorForPrerenderContents(entry);
+  DCHECK(it != active_prerenders_.end());
 
-  // If this PrerenderContents is being deleted due to a cancellation,
-  // we need to create a dummy replacement for PPLT accounting purposes
-  // for the Match Complete group.
-  // This is the case if the cancellation is for any reason that would not
-  // occur in the control group case.
-  if (it != active_prerenders_.end()) {
-    if (entry->match_complete_status() ==
-            PrerenderContents::MATCH_COMPLETE_DEFAULT &&
-        NeedMatchCompleteDummyForFinalStatus(final_status) &&
-        ActuallyPrerendering()) {
-      // TODO(tburkard): I'd like to DCHECK that we are actually prerendering.
-      // However, what if new conditions are added and
-      // NeedMatchCompleteDummyForFinalStatus, is not being updated.  Not sure
-      // what's the best thing to do here.  For now, I will just check whether
-      // we are actually prerendering.
-      entry->set_match_complete_status(
-          PrerenderContents::MATCH_COMPLETE_REPLACED);
-      PrerenderContents* dummy_replacement_prerender_contents =
-          CreatePrerenderContents(entry->prerender_url(), entry->referrer(),
-                                  entry->origin(), entry->experiment_id());
-      DCHECK(dummy_replacement_prerender_contents);
-      dummy_replacement_prerender_contents->MakeIntoDummyReplacementOf(entry);
+  // If this PrerenderContents is being deleted due to a cancellation any time
+  // after the prerender has started then we need to create a dummy replacement
+  // for PPLT accounting purposes for the Match Complete group. This is the case
+  // if the cancellation is for any reason that would not occur in the control
+  // group case.
+  if (entry->prerendering_has_started() &&
+      entry->match_complete_status() ==
+          PrerenderContents::MATCH_COMPLETE_DEFAULT &&
+      NeedMatchCompleteDummyForFinalStatus(final_status) &&
+      ActuallyPrerendering()) {
+    // TODO(tburkard): I'd like to DCHECK that we are actually prerendering.
+    // However, what if new conditions are added and
+    // NeedMatchCompleteDummyForFinalStatus, is not being updated.  Not sure
+    // what's the best thing to do here.  For now, I will just check whether
+    // we are actually prerendering.
+    entry->set_match_complete_status(
+        PrerenderContents::MATCH_COMPLETE_REPLACED);
+    PrerenderContents* dummy_replacement_prerender_contents =
+        CreatePrerenderContents(entry->prerender_url(), entry->referrer(),
+                                entry->origin(), entry->experiment_id());
+    DCHECK(dummy_replacement_prerender_contents);
+    dummy_replacement_prerender_contents->MakeIntoDummyReplacementOf(entry);
 
-      dummy_replacement_prerender_contents->set_match_complete_status(
-          PrerenderContents::MATCH_COMPLETE_REPLACEMENT_PENDING);
-      const bool did_init = dummy_replacement_prerender_contents->Init();
-      DCHECK(did_init);
-      dummy_replacement_prerender_contents->
-          AddAliasURLsFromOtherPrerenderContents(entry);
-      dummy_replacement_prerender_contents->set_match_complete_status(
-          PrerenderContents::MATCH_COMPLETE_REPLACEMENT);
+    dummy_replacement_prerender_contents->set_match_complete_status(
+        PrerenderContents::MATCH_COMPLETE_REPLACEMENT_PENDING);
+    const bool did_init = dummy_replacement_prerender_contents->Init();
+    DCHECK(did_init);
+    dummy_replacement_prerender_contents->
+        AddAliasURLsFromOtherPrerenderContents(entry);
+    dummy_replacement_prerender_contents->set_match_complete_status(
+        PrerenderContents::MATCH_COMPLETE_REPLACEMENT);
 
-      (*it)->contents_ = dummy_replacement_prerender_contents;
-    } else {
-      active_prerenders_.erase(it);
-    }
+    (*it)->contents_ = dummy_replacement_prerender_contents;
+  } else {
+    active_prerenders_.erase(it);
   }
 
-  AddToHistory(entry);
   pending_delete_list_.push_back(entry);
 
   // Destroy the old WebContents relatively promptly to reduce resource usage,
@@ -1044,15 +1042,16 @@ PrerenderHandle* PrerenderManager::AddPrerender(
 
   PrerenderContents* prerender_contents = CreatePrerenderContents(
       url, referrer, origin, experiment);
-  if (!prerender_contents || !prerender_contents->Init())
-    return NULL;
-
-  histograms_->RecordPrerenderStarted(origin);
-
-  // TODO(cbentzel): Move invalid checks here instead of PrerenderContents?
+  DCHECK(prerender_contents);
   active_prerenders_.push_back(
       new PrerenderData(this, prerender_contents,
                         GetExpiryTimeForNewPrerender()));
+  if (!prerender_contents->Init())
+    return NULL;
+
+  histograms_->RecordPrerenderStarted(origin);
+  DCHECK(!prerender_contents->prerendering_has_started());
+
   PrerenderHandle* prerender_handle =
       new PrerenderHandle(active_prerenders_.back());
   SortActivePrerenders();
@@ -1065,6 +1064,8 @@ PrerenderHandle* PrerenderManager::AddPrerender(
   prerender_contents->StartPrerendering(process_id, contents_size,
                                         session_storage_namespace,
                                         control_group_behavior);
+  DCHECK(control_group_behavior ||
+         prerender_contents->prerendering_has_started());
 
   while (active_prerenders_.size() > config_.max_concurrency) {
     prerender_contents = active_prerenders_.front()->contents_;
