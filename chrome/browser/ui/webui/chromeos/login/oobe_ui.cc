@@ -209,13 +209,6 @@ OobeUI::OobeUI(content::WebUI* web_ui)
   options::UserImageSource* user_image_source =
       new options::UserImageSource();
   ChromeURLDataManager::AddDataSource(profile, user_image_source);
-
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableNewOobe)) {
-    // Set up the chrome://wallpaper/ source.
-    chromeos::options::WallpaperImageSource* wallpaper_image_source =
-        new chromeos::options::WallpaperImageSource();
-    ChromeURLDataManager::AddDataSource(profile, wallpaper_image_source);
-  }
 }
 
 OobeUI::~OobeUI() {

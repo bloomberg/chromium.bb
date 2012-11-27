@@ -92,8 +92,9 @@ cr.define('oobe', function() {
     messageDiv.textContent = message;
     error.appendChild(messageDiv);
 
-    $('bubble').showContentForElement($('networks-list'), error,
-                                      cr.ui.Bubble.Attachment.BOTTOM);
+    $('bubble').showContentForElement($('networks-list'),
+                                      cr.ui.Bubble.Attachment.BOTTOM,
+                                      error);
   };
 
   return {

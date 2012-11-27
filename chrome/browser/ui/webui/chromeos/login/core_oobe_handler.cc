@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
@@ -20,6 +21,9 @@
 namespace {
 
 // JS API callbacks names.
+const char kJsApiEnableHighContrast[] = "enableHighContrast";
+const char kJsApiEnableScreenMagnifier[] = "enableScreenMagnifier";
+const char kJsApiEnableSpokenFeedback[] = "enableSpokenFeedback";
 const char kJsApiScreenStateInitialize[] = "screenStateInitialize";
 const char kJsApiSkipUpdateEnrollAfterEula[] = "skipUpdateEnrollAfterEula";
 
@@ -54,6 +58,26 @@ void CoreOobeHandler::GetLocalizedStrings(
   localized_strings->SetString(
       "reportingHint",
       l10n_util::GetStringUTF16(IDS_LOGIN_MANAGED_REPORTING_HINT));
+
+  // OOBE accessibility options menu strings shown on each screen.
+  localized_strings->SetString("accessibilityLink",
+      l10n_util::GetStringUTF16(IDS_OOBE_ACCESSIBILITY_LINK));
+  localized_strings->SetString("spokenFeedbackOption",
+      l10n_util::GetStringUTF16(IDS_OOBE_SPOKEN_FEEDBACK_OPTION));
+  localized_strings->SetString("highContrastOption",
+      l10n_util::GetStringUTF16(IDS_OOBE_HIGH_CONTRAST_MODE_OPTION));
+  localized_strings->SetString("screenMagnifierOption",
+      l10n_util::GetStringUTF16(IDS_OOBE_SCREEN_MAGNIFIER_OPTION));
+
+  // TODO(nkostylev): Move OOBE/login WebUI from localStrings to loadTimeData.
+  if (chromeos::accessibility::IsHighContrastEnabled())
+    localized_strings->SetString("highContrastEnabled", "on");
+  if (chromeos::accessibility::IsSpokenFeedbackEnabled())
+    localized_strings->SetString("spokenFeedbackEnabled", "on");
+  if (chromeos::accessibility::GetScreenMagnifierType() !=
+      chromeos::accessibility::MAGNIFIER_OFF) {
+    localized_strings->SetString("screenMagnifierEnabled", "on");
+  }
 }
 
 void CoreOobeHandler::Initialize() {
@@ -75,6 +99,15 @@ void CoreOobeHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("updateCurrentScreen",
       base::Bind(&CoreOobeHandler::HandleUpdateCurrentScreen,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kJsApiEnableHighContrast,
+      base::Bind(&CoreOobeHandler::HandleEnableHighContrast,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kJsApiEnableScreenMagnifier,
+      base::Bind(&CoreOobeHandler::HandleEnableScreenMagnifier,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kJsApiEnableSpokenFeedback,
+      base::Bind(&CoreOobeHandler::HandleEnableSpokenFeedback,
+                 base::Unretained(this)));
 }
 
 void CoreOobeHandler::HandleInitialized(const base::ListValue* args) {
@@ -95,6 +128,34 @@ void CoreOobeHandler::HandleUpdateCurrentScreen(const base::ListValue* args) {
   std::string screen;
   if (args->GetString(0, &screen) && delegate_)
     delegate_->OnCurrentScreenChanged(screen);
+}
+
+void CoreOobeHandler::HandleEnableHighContrast(const base::ListValue* args) {
+  bool enabled;
+  if (!args->GetBoolean(0, &enabled)) {
+    NOTREACHED();
+    return;
+  }
+  chromeos::accessibility::EnableHighContrast(enabled);
+}
+
+void CoreOobeHandler::HandleEnableScreenMagnifier(const base::ListValue* args) {
+  bool enabled;
+  if (!args->GetBoolean(0, &enabled)) {
+    NOTREACHED();
+    return;
+  }
+  // TODO(nkostylev): Add support for partial screen magnifier.
+  chromeos::accessibility::ScreenMagnifierType type = enabled ?
+      chromeos::accessibility::MAGNIFIER_FULL :
+      chromeos::accessibility::MAGNIFIER_OFF;
+  chromeos::accessibility::SetScreenMagnifier(type);
+}
+
+void CoreOobeHandler::HandleEnableSpokenFeedback(const base::ListValue* args) {
+  // Checkbox is initialized on page init and updates when spoken feedback
+  // setting is changed so just toggle spoken feedback here.
+  chromeos::accessibility::ToggleSpokenFeedback(web_ui());
 }
 
 void CoreOobeHandler::ShowOobeUI(bool show) {
@@ -151,3 +212,4 @@ void CoreOobeHandler::UpdateLabel(const std::string& id,
 }
 
 }  // namespace chromeos
+

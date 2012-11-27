@@ -29,18 +29,53 @@ cr.define('cr.ui', function() {
   Bubble.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    // Anchor element
+    // Anchor element for this bubble.
     anchor_: undefined,
 
     /** @override */
     decorate: function() {
+      this.docKeyDownHandler_ = this.handleDocKeyDown_.bind(this);
+      this.selfClickHandler_ = this.handleSelfClick_.bind(this);
       this.ownerDocument.addEventListener('click',
                                           this.handleDocClick_.bind(this));
       this.ownerDocument.addEventListener('keydown',
-                                          this.handleDocKeyDown_.bind(this));
+                                          this.docKeyDownHandler_);
       window.addEventListener('blur', this.handleWindowBlur_.bind(this));
       this.addEventListener('webkitTransitionEnd',
                             this.handleTransitionEnd_.bind(this));
+    },
+
+    /**
+     * Whether to hide bubble when key is pressed. Default is true.
+     * @type {boolean}
+     */
+    set hideOnKeyPress(value) {
+      if (value) {
+        this.ownerDocument.addEventListener('keydown', this.docKeyDownHandler_);
+      } else {
+        this.ownerDocument.removeEventListener('keydown',
+                                               this.docKeyDownHandler_);
+      }
+    },
+
+    /**
+     * Whether to hide bubble when clicked inside bubble element.
+     * Default is true.
+     * @type {boolean}
+     */
+    set hideOnSelfClick(value) {
+      if (value)
+        this.removeEventListener('click', this.selfClickHandler_);
+      else
+        this.addEventListener('click', this.selfClickHandler_);
+    },
+
+    /**
+     * Handler for click event which prevents bubble auto hide.
+     * @private
+     */
+    handleSelfClick_: function(e) {
+      e.stopPropagation();
     },
 
     /**
@@ -57,31 +92,48 @@ cr.define('cr.ui', function() {
     /**
      * Shows the bubble for given anchor element.
      * @param {!Object} pos Bubble position (left, top, right, bottom in px).
-     * @param {HTMLElement} content Content to show in bubble.
      * @param {!Attachment} attachment Bubble attachment (on which side of the
      *     specified position it should be displayed).
+     * @param {HTMLElement} opt_content Content to show in bubble.
+     *     If not specified, bubble element content is shown.
      * @private
      */
-    showContentAt_: function(pos, content, attachment) {
+    showContentAt_: function(pos, attachment, opt_content) {
       this.style.top = this.style.left = this.style.right = this.style.bottom =
           'auto';
       for (var k in pos) {
         if (typeof pos[k] == 'number')
           this.style[k] = pos[k] + 'px';
       }
-      this.innerHTML = '';
-      this.appendChild(content);
+      if (opt_content !== undefined) {
+        this.innerHTML = '';
+        this.appendChild(opt_content);
+      }
       this.setAttachment_(attachment);
       this.hidden = false;
       this.classList.remove('faded');
     },
 
     /**
-     * Shows the bubble for given anchor element.
+     * Shows the bubble for given anchor element. Bubble content is not cleared.
      * @param {!HTMLElement} el Anchor element of the bubble.
-     * @param {HTMLElement} content Content to show in bubble.
      * @param {!Attachment} attachment Bubble attachment (on which side of the
      *     element it should be displayed).
+     * @param {number=} opt_offset Offset of the bubble.
+     * @param {number=} opt_padding Optional padding of the bubble.
+     */
+    showForElement: function(el, attachment, opt_offset, opt_padding) {
+      this.showContentForElement(
+          el, attachment, undefined, opt_offset, opt_padding);
+    },
+
+    /**
+     * Shows the bubble for given anchor element.
+     * @param {!HTMLElement} el Anchor element of the bubble.
+     * @param {!Attachment} attachment Bubble attachment (on which side of the
+     *     element it should be displayed).
+     * @param {HTMLElement} opt_content Content to show in bubble.
+     *     If not specified, bubble element content is shown.
      * @param {number=} opt_offset Offset of the bubble attachment point from
      *     left (for vertical attachment) or top (for horizontal attachment)
      *     side of the element. If not specified, the bubble is positioned to
@@ -89,12 +141,12 @@ cr.define('cr.ui', function() {
      *     half of its width/height.
      * @param {number=} opt_padding Optional padding of the bubble.
      */
-    showContentForElement: function(el, content, attachment,
+    showContentForElement: function(el, attachment, opt_content,
                                     opt_offset, opt_padding) {
       /** @const */ var ARROW_OFFSET = 25;
       /** @const */ var DEFAULT_PADDING = 18;
 
-      if (typeof opt_padding == 'undefined')
+      if (opt_padding !== undefined)
         opt_padding = DEFAULT_PADDING;
 
       var origin = cr.ui.login.DisplayManager.getPosition(el);
@@ -145,7 +197,7 @@ cr.define('cr.ui', function() {
       }
 
       this.anchor_ = el;
-      this.showContentAt_(pos, content, attachment);
+      this.showContentAt_(pos, attachment, opt_content);
     },
 
     /**
@@ -165,7 +217,7 @@ cr.define('cr.ui', function() {
                                  opt_offset, opt_padding) {
       var span = this.ownerDocument.createElement('span');
       span.textContent = text;
-      this.showContentForElement(el, span, attachment, opt_offset, opt_padding);
+      this.showContentForElement(el, attachment, span, opt_offset, opt_padding);
     },
 
     /**

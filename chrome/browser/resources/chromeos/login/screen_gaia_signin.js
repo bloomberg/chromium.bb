@@ -441,8 +441,9 @@ cr.define('login', function() {
         // error itself.
         chrome.send('offlineLogin', [this.email]);
       } else if (!this.loading) {
-        $('bubble').showContentForElement($('login-box'), error,
-                                          cr.ui.Bubble.Attachment.LEFT);
+        $('bubble').showContentForElement($('login-box'),
+                                          cr.ui.Bubble.Attachment.LEFT,
+                                          error);
       } else {
         // Defer the bubble until the frame has been loaded.
         this.errorBubble_ = [loginAttempts, error];

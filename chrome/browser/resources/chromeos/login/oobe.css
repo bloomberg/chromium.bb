@@ -140,6 +140,9 @@ html[oobe=new] #inner-container.down {
 
 #security-info a,
 #security-tpm a,
+#connect-accessibility a,
+#eula-accessibility a,
+#update-accessibility a,
 #eula a {
   color: rgb(0, 102, 104);
   text-decoration: none;
@@ -879,21 +882,39 @@ html[oobe=old] #security-tpm {
   display: none;
 }
 
-#security-tpm a {
+#security-tpm a,
+#connect-accessibility a,
+#eula-accessibility a,
+#update-accessibility a {
   color: #8c8c8c;
   font-size: 12px;
 }
 
-#security-tpm {
-  bottom: 21px;
+.step-extra-controls {
+  bottom: 26px;
+  display: -webkit-box;
   position: absolute;
 }
 
-html[dir=ltr] #security-tpm {
+#security-tpm {
+  margin-left: 25px;
+}
+
+#connect-accessibility,
+#update-accessibility {
+  bottom: 26px;
+  position: absolute;
+}
+
+html[dir=ltr] #connect-accessibility,
+html[dir=ltr] #update-accessibility,
+html[dir=ltr] .step-extra-controls {
   left: 49px;
 }
 
-html[dir=rtl] #security-tpm {
+html[dir=rtl] #connect-accessibility,
+html[dir=rtl] #update-accessibility,
+html[dir=rtl] .step-extra-controls {
   right: 49px;
 }
 

@@ -378,6 +378,18 @@ Press any key to continue exploring.
   <message name="IDS_NETWORK_SELECTION_ERROR" desc="Error shown when connection to network failed or timed out.">
     <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> was unable to connect to <ph name="NETWORK_ID">$2<ex>Public Wifi</ex></ph>. Please select another network or try again.
   </message>
+  <message name="IDS_OOBE_ACCESSIBILITY_LINK" desc="Link shown on OOBE screens that opens accessibility options menu.">
+    Accessibility
+  </message>
+  <message name="IDS_OOBE_SPOKEN_FEEDBACK_OPTION" desc="Spoken feedback option shown on OOBE screens accessibility menu.">
+    Spoken feedback
+  </message>
+  <message name="IDS_OOBE_HIGH_CONTRAST_MODE_OPTION" desc="High contrast mode option shown on OOBE screens accessibility menu.">
+    High contrast mode 
+  </message>
+  <message name="IDS_OOBE_SCREEN_MAGNIFIER_OPTION" desc="Screen magnifier option shown on OOBE screens accessibility menu.">
+    Screen magnifier 
+  </message>
   <message name="IDS_LOGIN_TITLE" desc="Title of sign in box">
     Sign in
   </message>

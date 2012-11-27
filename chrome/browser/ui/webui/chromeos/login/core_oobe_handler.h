@@ -57,6 +57,9 @@ class CoreOobeHandler : public BaseScreenHandler,
 
  private:
   // Handlers for JS WebUI messages.
+  void HandleEnableHighContrast(const base::ListValue* args);
+  void HandleEnableScreenMagnifier(const base::ListValue* args);
+  void HandleEnableSpokenFeedback(const base::ListValue* args);
   void HandleInitialized(const base::ListValue* args);
   void HandleSkipUpdateEnrollAfterEula(const base::ListValue* args);
   void HandleUpdateCurrentScreen(const base::ListValue* args);
