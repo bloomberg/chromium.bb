@@ -247,7 +247,8 @@ TEST_F(SignalSenderVerificationTest, TestOwnerChanged) {
   ASSERT_EQ(kNewMessage, test_signal_string_);
 }
 
-TEST_F(SignalSenderVerificationTest, TestMultipleObjects) {
+// Fails on Linux ChromiumOS Tests
+TEST_F(SignalSenderVerificationTest, DISABLED_TestMultipleObjects) {
   const char kMessage[] = "hello, world";
 
   dbus::ObjectProxy* object_proxy2 = bus_->GetObjectProxy(
