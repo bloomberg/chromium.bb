@@ -107,6 +107,7 @@ void MessageViewMultiple::SetUpView() {
   views::Label* message = new views::Label(notification_.message);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message->SetMultiLine(true);
+  message->SizeToFit(message_width);
   layout->StartRow(0, 0);
   layout->SkipColumns(2);
   layout->AddView(message);

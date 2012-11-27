@@ -69,6 +69,7 @@ void MessageSimpleView::SetUpView() {
                      message_width, message_width);
 
   columns->AddPaddingColumn(0, padding_width);
+  message->SizeToFit(message_width);
 
   // Close button.
   columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::LEADING,

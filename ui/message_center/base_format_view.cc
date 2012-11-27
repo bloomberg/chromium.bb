@@ -63,6 +63,9 @@ void BaseFormatView::SetUpView() {
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message->SetMultiLine(true);
   message->SetElideBehavior(views::Label::ELIDE_AT_END);
+  message->SizeToFit(
+      kBaseFormatButtonWidth * 2 + kBaseFormatPaddingBetweenItems * 3 +
+      kBaseFormatTimestampWidth);
 
   views::Label* timestamp = NULL;
   if (notification_.timestamp != base::Time()) {
@@ -92,6 +95,8 @@ void BaseFormatView::SetUpView() {
       notification_.expanded_message);
   expanded_message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   expanded_message->SetMultiLine(true);
+  expanded_message->SizeToFit(
+      kBaseFormatButtonWidth * 2 + kBaseFormatPaddingBetweenItems);
 
   // TODO(miket): Image thumbnail for image-type notifications (imageUrl)
 
