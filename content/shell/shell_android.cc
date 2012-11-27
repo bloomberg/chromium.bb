@@ -66,14 +66,15 @@ void Shell::LoadProgressChanged(WebContents* source, double progress) {
   Java_Shell_onLoadProgressChanged(env, java_object_.obj(), progress);
 }
 
-void Shell::ToggleFullscreenModeForTab(WebContents* web_contents,
-                                       bool enter_fullscreen) {
+void Shell::PlatformToggleFullscreenModeForTab(WebContents* web_contents,
+                                               bool enter_fullscreen) {
   JNIEnv* env = AttachCurrentThread();
   Java_Shell_toggleFullscreenModeForTab(
       env, java_object_.obj(), enter_fullscreen);
 }
 
-bool Shell::IsFullscreenForTabOrPending(const WebContents* web_contents) const {
+bool Shell::PlatformIsFullscreenForTabOrPending(
+    const WebContents* web_contents) const {
   JNIEnv* env = AttachCurrentThread();
   return Java_Shell_isFullscreenForTabOrPending(env, java_object_.obj());
 }

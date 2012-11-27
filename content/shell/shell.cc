@@ -41,7 +41,8 @@ base::Callback<void(Shell*)> Shell::shell_created_callback_;
 bool Shell::quit_message_loop_ = true;
 
 Shell::Shell(WebContents* web_contents)
-    : window_(NULL),
+    : is_fullscreen_(false),
+      window_(NULL),
       url_edit_view_(NULL)
 #if defined(OS_WIN) && !defined(USE_AURA)
       , default_edit_wnd_proc_(0)
@@ -189,6 +190,27 @@ WebContents* Shell::OpenURLFromTab(WebContents* source,
 void Shell::LoadingStateChanged(WebContents* source) {
   UpdateNavigationControls();
   PlatformSetIsLoading(source->IsLoading());
+}
+
+void Shell::ToggleFullscreenModeForTab(WebContents* web_contents,
+                                       bool enter_fullscreen) {
+#if defined(OS_ANDROID)
+  PlatformToggleFullscreenModeForTab(web_contents, enter_fullscreen);
+#endif
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return;
+  if (is_fullscreen_ != enter_fullscreen) {
+    is_fullscreen_ = enter_fullscreen;
+    web_contents->GetRenderViewHost()->WasResized();
+  }
+}
+
+bool Shell::IsFullscreenForTabOrPending(const WebContents* web_contents) const {
+#if defined(OS_ANDROID)
+  return PlatformIsFullscreenForTabOrPending(web_contents);
+#else
+  return is_fullscreen_;
+#endif
 }
 
 void Shell::CloseContents(WebContents* source) {
