@@ -288,7 +288,7 @@ cr.define('bmm', function() {
               dataModel.splice(index, 1);
           }
 
-          if (moveInfo.parentId == list.parentId) {
+          if (moveInfo.parentId == this.parentId) {
             // Move to this folder
             var self = this;
             chrome.bookmarks.get(id, function(bookmarkNodes) {
