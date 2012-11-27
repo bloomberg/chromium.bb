@@ -109,17 +109,17 @@ void NetworkProfileBubble::CheckNetworkProfile(const FilePath& profile_folder) {
   DWORD buffer_length = 0;
   // Checking for RDP is cheaper than checking for a network drive so do this
   // one first.
-  if (!WTSQuerySessionInformation(WTS_CURRENT_SERVER, WTS_CURRENT_SESSION,
-                                  WTSClientProtocolType,
-                                  &buffer, &buffer_length)) {
+  if (!::WTSQuerySessionInformation(WTS_CURRENT_SERVER, WTS_CURRENT_SESSION,
+                                    WTSClientProtocolType,
+                                    &buffer, &buffer_length)) {
     RecordUmaEvent(METRIC_CHECK_FAILED);
     return;
   }
 
   unsigned short* type = reinterpret_cast<unsigned short*>(buffer);
-  // Zero means local session and we should warn the users if they have
-  // their profile on a network share.
-  if (*type == 0) {
+  // We should warn the users if they have their profile on a network share only
+  // if running on a local session.
+  if (*type == WTS_PROTOCOL_TYPE_CONSOLE) {
     bool profile_on_network = false;
     if (!profile_folder.empty()) {
       FilePath temp_file;
@@ -146,7 +146,7 @@ void NetworkProfileBubble::CheckNetworkProfile(const FilePath& profile_folder) {
     RecordUmaEvent(METRIC_REMOTE_SESSION);
   }
 
-  WTSFreeMemory(buffer);
+  ::WTSFreeMemory(buffer);
 }
 
 // static
