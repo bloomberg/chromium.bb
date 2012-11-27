@@ -32,6 +32,7 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/surface/transport_dib.h"
 
 namespace content {
@@ -356,8 +357,10 @@ void BackingStoreGtk::PaintToBackingStore(
   if (bitmap_rect.IsEmpty())
     return;
 
-  const int width = bitmap_rect.width();
-  const int height = bitmap_rect.height();
+  gfx::Rect pixel_bitmap_rect = gfx::ToEnclosedRect(
+      gfx::ScaleRect(bitmap_rect, scale_factor));
+  const int width = pixel_bitmap_rect.width();
+  const int height = pixel_bitmap_rect.height();
 
   if (width <= 0 || width > kMaxVideoLayerSize ||
       height <= 0 || height > kMaxVideoLayerSize)
@@ -414,12 +417,14 @@ void BackingStoreGtk::PaintToBackingStore(
 #if defined(ARCH_CPU_ARM_FAMILY)
       for (size_t i = 0; i < copy_rects.size(); i++) {
         const gfx::Rect& copy_rect = copy_rects[i];
+        gfx::Rect pixel_copy_rect = gfx::ToEnclosedRect(
+            gfx::ScaleRect(copy_rect, scale_factor));
         XShmPutImage(display_, pixmap, gc, image,
-                     copy_rect.x() - bitmap_rect.x(), /* source x */
-                     copy_rect.y() - bitmap_rect.y(), /* source y */
-                     copy_rect.x() - bitmap_rect.x(), /* dest x */
-                     copy_rect.y() - bitmap_rect.y(), /* dest y */
-                     copy_rect.width(), copy_rect.height(),
+                     pixel_copy_rect.x() - pixel_bitmap_rect.x(), /* source x */
+                     pixel_copy_rect.y() - pixel_bitmap_rect.y(), /* source y */
+                     pixel_copy_rect.x() - pixel_bitmap_rect.x(), /* dest x */
+                     pixel_copy_rect.y() - pixel_bitmap_rect.y(), /* dest y */
+                     pixel_copy_rect.width(), pixel_copy_rect.height(),
                      False /* send_event */);
       }
 #else
@@ -460,6 +465,16 @@ void BackingStoreGtk::PaintToBackingStore(
 
   picture = ui::CreatePictureFromSkiaPixmap(display_, pixmap);
 
+  if (scale_factor != 1.0) {
+    float up_scale = 1.0 / scale_factor;
+    XTransform scaling = { {
+        { XDoubleToFixed(1), XDoubleToFixed(0), XDoubleToFixed(0) },
+        { XDoubleToFixed(0), XDoubleToFixed(1), XDoubleToFixed(0) },
+        { XDoubleToFixed(0), XDoubleToFixed(0), XDoubleToFixed(up_scale) }
+        } };
+    XRenderSetPictureTransform(display_, picture, &scaling);
+    XRenderSetPictureFilter(display_, picture, FilterGood, NULL, 0);
+  }
   for (size_t i = 0; i < copy_rects.size(); i++) {
     const gfx::Rect& copy_rect = copy_rects[i];
     XRenderComposite(display_,

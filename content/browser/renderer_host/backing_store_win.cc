@@ -10,6 +10,7 @@
 #include "content/public/common/content_switches.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/gdi_util.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/surface/transport_dib.h"
 
 namespace content {
@@ -137,22 +138,28 @@ void BackingStoreWin::PaintToBackingStore(
   if (!dib)
     return;
 
+  gfx::Rect pixel_bitmap_rect = gfx::ToEnclosedRect(
+      gfx::ScaleRect(bitmap_rect, scale_factor));
+
   BITMAPINFOHEADER hdr;
-  gfx::CreateBitmapHeader(bitmap_rect.width(), bitmap_rect.height(), &hdr);
+  gfx::CreateBitmapHeader(pixel_bitmap_rect.width(),
+                          pixel_bitmap_rect.height(), &hdr);
   // Account for a bitmap_rect that exceeds the bounds of our view
   gfx::Rect view_rect(size());
 
   for (size_t i = 0; i < copy_rects.size(); i++) {
     gfx::Rect paint_rect = gfx::IntersectRects(view_rect, copy_rects[i]);
+    gfx::Rect pixel_copy_rect = gfx::ToEnclosedRect(
+        gfx::ScaleRect(paint_rect, scale_factor));
     CallStretchDIBits(hdc_,
                       paint_rect.x(),
                       paint_rect.y(),
                       paint_rect.width(),
                       paint_rect.height(),
-                      paint_rect.x() - bitmap_rect.x(),
-                      paint_rect.y() - bitmap_rect.y(),
-                      paint_rect.width(),
-                      paint_rect.height(),
+                      pixel_copy_rect.x() - pixel_bitmap_rect.x(),
+                      pixel_copy_rect.y() - pixel_bitmap_rect.y(),
+                      pixel_copy_rect.width(),
+                      pixel_copy_rect.height(),
                       dib->memory(),
                       reinterpret_cast<BITMAPINFO*>(&hdr));
   }

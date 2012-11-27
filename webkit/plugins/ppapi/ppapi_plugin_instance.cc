@@ -949,12 +949,6 @@ bool PluginInstance::GetBitmapForOptimizedPluginPaint(
   gfx::Rect pixel_plugin_backing_store_rect(
       0, 0, image_data->width(), image_data->height());
   float scale = GetBoundGraphics2D()->GetScale();
-#if !defined(USE_AURA) && (defined(OS_WIN) || defined(OS_LINUX))
-  // Linux and Windows don't yet support scaled UpdateRects
-  // TODO(jbauman): Add support and remove this.
-  if (scale != 1.0f)
-    return false;
-#endif
   gfx::Rect plugin_backing_store_rect = gfx::ToEnclosedRect(
       gfx::ScaleRect(pixel_plugin_backing_store_rect, scale));
 
