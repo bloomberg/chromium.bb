@@ -52,7 +52,10 @@ void MediaGalleriesHandler::InitializePage() {
 
   if (pref_change_registrar_.IsEmpty()) {
     pref_change_registrar_.Init(profile->GetPrefs());
-    pref_change_registrar_.Add(prefs::kMediaGalleriesRememberedGalleries, this);
+    pref_change_registrar_.Add(
+        prefs::kMediaGalleriesRememberedGalleries,
+        base::Bind(&MediaGalleriesHandler::OnGalleriesChanged,
+                   base::Unretained(this)));
   }
 
   OnGalleriesChanged();
@@ -122,18 +125,13 @@ void MediaGalleriesHandler::HandleForgetGallery(const base::ListValue* args) {
   prefs->ForgetGalleryById(id);
 }
 
-void MediaGalleriesHandler::FileSelected(
-    const FilePath& path, int index, void* params) {
+void MediaGalleriesHandler::FileSelected(const FilePath& path,
+                                         int index,
+                                         void* params) {
   chrome::MediaGalleriesPreferences* prefs =
       chrome::MediaFileSystemRegistry::GetInstance()->GetPreferences(
           Profile::FromWebUI(web_ui()));
   prefs->AddGalleryByPath(path);
-}
-
-void MediaGalleriesHandler::OnPreferenceChanged(PrefServiceBase* service,
-                                                const std::string& pref_name) {
-  DCHECK_EQ(std::string(prefs::kMediaGalleriesRememberedGalleries), pref_name);
-  OnGalleriesChanged();
 }
 
 }  // namespace options

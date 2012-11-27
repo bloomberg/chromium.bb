@@ -51,7 +51,12 @@ NotificationUIManagerImpl::NotificationUIManagerImpl(PrefService* local_state)
       is_user_active_(true) {
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
-  position_pref_.Init(prefs::kDesktopNotificationPosition, local_state, this);
+  position_pref_.Init(
+      prefs::kDesktopNotificationPosition,
+      local_state,
+      base::Bind(
+          &NotificationUIManagerImpl::OnDesktopNotificationPositionChanged,
+          base::Unretained(this)));
 #if defined(OS_MACOSX)
   InitFullScreenMonitor();
   InitIdleMonitor();
@@ -240,12 +245,8 @@ void NotificationUIManagerImpl::Observe(
   }
 }
 
-void NotificationUIManagerImpl::OnPreferenceChanged(
-    PrefServiceBase* service,
-    const std::string& pref_name) {
-  if (pref_name == prefs::kDesktopNotificationPosition) {
-    balloon_collection_->SetPositionPreference(
-        static_cast<BalloonCollection::PositionPreference>(
-            position_pref_.GetValue()));
-  }
+void NotificationUIManagerImpl::OnDesktopNotificationPositionChanged() {
+  balloon_collection_->SetPositionPreference(
+      static_cast<BalloonCollection::PositionPreference>(
+          position_pref_.GetValue()));
 }

@@ -74,7 +74,10 @@ void PasswordManagerHandler::InitializeHandler() {
     return;
 
   show_passwords_.Init(prefs::kPasswordManagerAllowShowPasswords,
-                       Profile::FromWebUI(web_ui())->GetPrefs(), this);
+                       Profile::FromWebUI(web_ui())->GetPrefs(),
+                       base::Bind(&PasswordManagerHandler::UpdatePasswordLists,
+                                  base::Unretained(this),
+                                  static_cast<base::ListValue*>(NULL)));
   // We should not cache web_ui()->GetProfile(). See crosbug.com/6304.
   PasswordStore* store = GetPasswordStore();
   if (store)
@@ -104,15 +107,8 @@ void PasswordManagerHandler::OnLoginsChanged() {
 }
 
 PasswordStore* PasswordManagerHandler::GetPasswordStore() {
-  return PasswordStoreFactory::GetForProfile(
-      Profile::FromWebUI(web_ui()),
-      Profile::EXPLICIT_ACCESS);
-}
-
-void PasswordManagerHandler::OnPreferenceChanged(PrefServiceBase* service,
-                                                 const std::string& pref_name) {
-  DCHECK_EQ(std::string(prefs::kPasswordManagerAllowShowPasswords), pref_name);
-  UpdatePasswordLists(NULL);
+  return PasswordStoreFactory::GetForProfile(Profile::FromWebUI(web_ui()),
+                                             Profile::EXPLICIT_ACCESS);
 }
 
 void PasswordManagerHandler::UpdatePasswordLists(const ListValue* args) {

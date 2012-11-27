@@ -202,8 +202,12 @@ LocationBarView::LocationBarView(Browser* browser,
             true));
   }
 
-  edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
-                               profile_->GetPrefs(), this);
+  edit_bookmarks_enabled_.Init(
+      prefs::kEditBookmarksEnabled,
+      profile_->GetPrefs(),
+      base::Bind(&LocationBarView::Update,
+                 base::Unretained(this),
+                 static_cast<content::WebContents*>(NULL)));
 }
 
 LocationBarView::~LocationBarView() {
@@ -1509,12 +1513,6 @@ void LocationBarView::Observe(int type,
     default:
       NOTREACHED() << "Unexpected notification.";
   }
-}
-
-void LocationBarView::OnPreferenceChanged(PrefServiceBase* service,
-                                          const std::string& pref_name) {
-  if (pref_name == prefs::kEditBookmarksEnabled)
-    Update(NULL);
 }
 
 int LocationBarView::GetInternalHeight(bool use_preferred_size) {

@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_MEDIA_GALLERIES_HANDLER_H_
 
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "content/public/browser/notification_observer.h"
 #include "ui/base/dialogs/select_file_dialog.h"
@@ -15,7 +14,6 @@ namespace options {
 
 // Handles messages related to adding or removing media galleries.
 class MediaGalleriesHandler : public OptionsPageUIHandler,
-                              public PrefObserver,
                               public ui::SelectFileDialog::Listener {
  public:
   MediaGalleriesHandler();
@@ -27,12 +25,9 @@ class MediaGalleriesHandler : public OptionsPageUIHandler,
   virtual void RegisterMessages() OVERRIDE;
 
   // SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const FilePath& path, int index, void* params)
-      OVERRIDE;
-
-  // PrefObserver implementation.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
+  virtual void FileSelected(const FilePath& path,
+                            int index,
+                            void* params) OVERRIDE;
 
  private:
   // Handles the "addNewGallery" message (no arguments).

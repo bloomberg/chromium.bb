@@ -488,7 +488,11 @@ void ContentSettingsHandler::InitializeHandler() {
 
   PrefService* prefs = profile->GetPrefs();
   pref_change_registrar_.Init(prefs);
-  pref_change_registrar_.Add(prefs::kPepperFlashSettingsEnabled, this);
+  pref_change_registrar_.Add(
+      prefs::kPepperFlashSettingsEnabled,
+      base::Bind(&ContentSettingsHandler::RefreshFlashSettingsCache,
+                 base::Unretained(this),
+                 false));
 
   flash_settings_manager_.reset(new PepperFlashSettingsManager(this, profile));
 }
@@ -554,12 +558,6 @@ void ContentSettingsHandler::Observe(
     default:
       OptionsPageUIHandler::Observe(type, source, details);
   }
-}
-
-void ContentSettingsHandler::OnPreferenceChanged(PrefServiceBase* service,
-                                                 const std::string& pref_name) {
-  DCHECK_EQ(pref_name, std::string(prefs::kPepperFlashSettingsEnabled));
-  RefreshFlashSettingsCache(false);
 }
 
 void ContentSettingsHandler::OnGetPermissionSettingsCompleted(

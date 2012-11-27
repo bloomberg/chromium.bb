@@ -11,7 +11,6 @@
 
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/timer.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/notifications/balloon.h"
@@ -32,8 +31,7 @@ class NotificationUIManagerImpl
     : public NotificationUIManager,
       public NotificationPrefsManager,
       public BalloonCollection::BalloonSpaceChangeListener,
-      public content::NotificationObserver,
-      public PrefObserver {
+      public content::NotificationObserver {
  public:
   explicit NotificationUIManagerImpl(PrefService* local_state);
   virtual ~NotificationUIManagerImpl();
@@ -65,9 +63,7 @@ class NotificationUIManagerImpl
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // PrefObserver override.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
+  void OnDesktopNotificationPositionChanged();
 
   // Attempts to display notifications from the show_queue if the user
   // is active.

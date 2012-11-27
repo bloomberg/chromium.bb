@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/memory/scoped_vector.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
@@ -22,8 +21,7 @@ struct PasswordForm;
 namespace options {
 
 class PasswordManagerHandler : public OptionsPageUIHandler,
-                               public PasswordStore::Observer,
-                               public PrefObserver {
+                               public PasswordStore::Observer {
  public:
   PasswordManagerHandler();
   virtual ~PasswordManagerHandler();
@@ -35,10 +33,6 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
 
   // PasswordStore::Observer implementation.
   virtual void OnLoginsChanged() OVERRIDE;
-
-  // PrefObserver implementation.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
  private:
   // The password store associated with the currently active profile.

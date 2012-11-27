@@ -90,7 +90,10 @@ void StartupPagesHandler::InitializeHandler() {
   startup_custom_pages_table_model_->SetObserver(this);
 
   pref_change_registrar_.Init(profile->GetPrefs());
-  pref_change_registrar_.Add(prefs::kURLsToRestoreOnStartup, this);
+  pref_change_registrar_.Add(
+      prefs::kURLsToRestoreOnStartup,
+      base::Bind(&StartupPagesHandler::UpdateStartupPages,
+                 base::Unretained(this)));
 
   autocomplete_controller_.reset(new AutocompleteController(profile, this,
       AutocompleteClassifier::kDefaultOmniboxProviders));
@@ -128,15 +131,6 @@ void StartupPagesHandler::OnItemsAdded(int start, int length) {
 
 void StartupPagesHandler::OnItemsRemoved(int start, int length) {
   OnModelChanged();
-}
-
-void StartupPagesHandler::OnPreferenceChanged(PrefServiceBase* service,
-                                              const std::string& pref_name) {
-  if (pref_name == prefs::kURLsToRestoreOnStartup) {
-    UpdateStartupPages();
-  } else {
-    NOTREACHED();
-  }
 }
 
 void StartupPagesHandler::SetStartupPagesToCurrentPages(
