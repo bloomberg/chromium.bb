@@ -79,7 +79,6 @@ WL_EXPORT int
 noop_renderer_init(struct weston_compositor *ec)
 {
 	struct weston_renderer *renderer;
-	struct weston_output *output;
 
 	renderer = malloc(sizeof *renderer);
 	if (renderer == NULL)
