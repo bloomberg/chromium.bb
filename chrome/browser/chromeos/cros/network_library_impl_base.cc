@@ -1126,10 +1126,20 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
                                              NetworkUIData::ONCSource source,
                                              bool allow_web_trust_from_policy,
                                              std::string* error) {
-  NetworkProfile* profile = GetProfileForType(GetProfileTypeForSource(source));
-  if (profile == NULL) {
-    DLOG(WARNING) << "Profile for ONC source " << source << " doesn't exist.";
-    return false;
+  NetworkProfile* profile = NULL;
+  bool from_policy = (source == NetworkUIData::ONC_SOURCE_USER_POLICY ||
+                      source == NetworkUIData::ONC_SOURCE_DEVICE_POLICY);
+
+  // Policies are applied to a specific Shill profile. User ONC import however
+  // is applied to whatever profile Shill chooses. This should be the profile
+  // that is already associated with a network and if no profile is associated
+  // yet, it should be the user profile.
+  if (from_policy) {
+    profile = GetProfileForType(GetProfileTypeForSource(source));
+    if (profile == NULL) {
+      DLOG(WARNING) << "Profile for ONC source " << source << " doesn't exist.";
+      return false;
+    }
   }
 
   OncNetworkParser parser(onc_blob, passphrase, source);
@@ -1252,8 +1262,7 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
     network_ids.insert(network->unique_id());
   }
 
-  if (source == NetworkUIData::ONC_SOURCE_USER_POLICY ||
-      source == NetworkUIData::ONC_SOURCE_DEVICE_POLICY) {
+  if (from_policy) {
     // For policy-managed networks, go through the list of existing remembered
     // networks and clean out the ones that no longer have a definition in the
     // ONC blob. We first collect the networks and do the actual deletion later
