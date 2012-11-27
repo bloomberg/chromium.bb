@@ -136,9 +136,16 @@ const char kSessionManagerHandleLockScreenDismissed[] =
     "HandleLockScreenDismissed";
 const char kSessionManagerHandleLivenessConfirmed[] = "HandleLivenessConfirmed";
 // Signals
-const char kSessionManagerSessionStateChanged[] = "SessionStateChanged";
+const char kSessionStateChanged[] = "SessionStateChanged";
+// ScreenLock signals.
 const char kScreenIsLockedSignal[] = "ScreenIsLocked";
 const char kScreenIsUnlockedSignal[] = "ScreenIsUnlocked";
+// Ownership API signals.
+const char kOwnerKeySetSignal[] = "SetOwnerKeyComplete";
+const char kPropertyChangeCompleteSignal[] = "PropertyChangeComplete";
+
+// DEPRECATED.
+const char kSessionManagerSessionStateChanged[] = "SessionStateChanged";
 }  // namespace login_manager
 
 namespace speech_synthesis {
@@ -161,6 +168,8 @@ const char kUnlockScreenSignal[] = "UnlockScreen";
 // Text-to-speech service signals.
 const char kTTSReadySignal[] = "TTSReady";
 const char kTTSFailedSignal[] = "TTSFailed";
+
+// DEPRECATED in favor of constants in appropriate (login_manager) namespace.
 // Ownership API signals.
 const char kOwnerKeySetSignal[] = "SetOwnerKeyComplete";
 const char kPropertyChangeCompleteSignal[] = "PropertyChangeComplete";
