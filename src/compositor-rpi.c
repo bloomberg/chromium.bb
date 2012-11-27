@@ -193,42 +193,6 @@ to_rpi_compositor(struct weston_compositor *base)
 	return container_of(base, struct rpi_compositor, base);
 }
 
-static const char *
-egl_error_string(EGLint code)
-{
-#define MYERRCODE(x) case x: return #x;
-	switch (code) {
-	MYERRCODE(EGL_SUCCESS)
-	MYERRCODE(EGL_NOT_INITIALIZED)
-	MYERRCODE(EGL_BAD_ACCESS)
-	MYERRCODE(EGL_BAD_ALLOC)
-	MYERRCODE(EGL_BAD_ATTRIBUTE)
-	MYERRCODE(EGL_BAD_CONTEXT)
-	MYERRCODE(EGL_BAD_CONFIG)
-	MYERRCODE(EGL_BAD_CURRENT_SURFACE)
-	MYERRCODE(EGL_BAD_DISPLAY)
-	MYERRCODE(EGL_BAD_SURFACE)
-	MYERRCODE(EGL_BAD_MATCH)
-	MYERRCODE(EGL_BAD_PARAMETER)
-	MYERRCODE(EGL_BAD_NATIVE_PIXMAP)
-	MYERRCODE(EGL_BAD_NATIVE_WINDOW)
-	MYERRCODE(EGL_CONTEXT_LOST)
-	default:
-		return "unknown";
-	}
-#undef MYERRCODE
-}
-
-static void
-print_egl_error_state(void)
-{
-	EGLint code;
-
-	code = eglGetError();
-	weston_log("EGL error state: %s (0x%04lx)\n",
-		   egl_error_string(code), (long)code);
-}
-
 static inline int
 int_max(int a, int b)
 {
@@ -1095,10 +1059,10 @@ rpi_output_create(struct rpi_compositor *compositor)
 		goto out_output;
 
 	if (!eglSurfaceAttrib(gl_renderer_display(&compositor->base),
-			     gl_renderer_output_surface(&output->base),
+			      gl_renderer_output_surface(&output->base),
 			      EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED)) {
-		print_egl_error_state();
 		weston_log("Failed to set swap behaviour to preserved.\n");
+		gl_renderer_print_egl_error_state();
 		goto out_gl;
 	}
 

@@ -146,8 +146,8 @@ egl_error_string(EGLint code)
 #undef MYERRCODE
 }
 
-static void
-print_egl_error_state(void)
+WL_EXPORT void
+gl_renderer_print_egl_error_state(void)
 {
 	EGLint code;
 
@@ -683,7 +683,7 @@ use_output(struct weston_output *output)
 			return -1;
 		errored = 1;
 		weston_log("Failed to make EGL context current.\n");
-		print_egl_error_state();
+		gl_renderer_print_egl_error_state();
 		return -1;
 	}
 
@@ -985,7 +985,7 @@ gl_renderer_repaint_output(struct weston_output *output,
 	if (ret == EGL_FALSE && !errored) {
 		errored = 1;
 		weston_log("Failed in eglSwapBuffers.\n");
-		print_egl_error_state();
+		gl_renderer_print_egl_error_state();
 	}
 
 	go->current_buffer ^= 1;
@@ -1732,7 +1732,7 @@ gl_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
 	return 0;
 
 err_egl:
-	print_egl_error_state();
+	gl_renderer_print_egl_error_state();
 	free(gr);
 	return -1;
 }
@@ -1812,7 +1812,7 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 
 	if (!eglBindAPI(EGL_OPENGL_ES_API)) {
 		weston_log("failed to bind EGL_OPENGL_ES_API\n");
-		print_egl_error_state();
+		gl_renderer_print_egl_error_state();
 		return -1;
 	}
 
@@ -1822,7 +1822,7 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 					   EGL_NO_CONTEXT, context_attribs);
 	if (gr->egl_context == NULL) {
 		weston_log("failed to create context\n");
-		print_egl_error_state();
+		gl_renderer_print_egl_error_state();
 		return -1;
 	}
 
@@ -1830,7 +1830,7 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 			     egl_surface, gr->egl_context);
 	if (ret == EGL_FALSE) {
 		weston_log("Failed to make EGL context current.\n");
-		print_egl_error_state();
+		gl_renderer_print_egl_error_state();
 		return -1;
 	}
 

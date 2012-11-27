@@ -44,3 +44,6 @@ gl_renderer_set_border(struct weston_compositor *ec, int32_t width, int32_t heig
 			  int32_t *edges);
 void
 gl_renderer_destroy(struct weston_compositor *ec);
+
+void
+gl_renderer_print_egl_error_state(void);
