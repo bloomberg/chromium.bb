@@ -12,6 +12,7 @@
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_client.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
+#include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "chrome/test/base/testing_profile.h"
 #include "net/base/escape.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -43,6 +44,10 @@ void DidInitialize(bool* done, fileapi::SyncStatusCode status, bool created) {
   *done = true;
   EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
   EXPECT_TRUE(created);
+}
+
+void DidEntryOperation(fileapi::SyncStatusCode status) {
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
 }
 
 void ExpectEqStatus(bool* done,
@@ -120,6 +125,56 @@ class DriveFileSyncServiceTest : public testing::Test {
   }
 
  protected:
+  DriveFileSyncService::SyncOperationType ResolveSyncOperationType(
+      const fileapi::FileChange& local_change,
+      const fileapi::FileSystemURL& url) {
+    return sync_service_->ResolveSyncOperationType(local_change, url);
+  }
+
+  bool IsSyncOperationUploadNewFile(
+      DriveFileSyncService::SyncOperationType type) {
+    return type == DriveFileSyncService::SYNC_OPERATION_UPLOAD_NEW_FILE;
+  }
+
+  bool IsSyncOperationUploadExistingFile(
+      DriveFileSyncService::SyncOperationType type) {
+    return type == DriveFileSyncService::SYNC_OPERATION_UPLOAD_EXISTING_FILE;
+  }
+
+  bool IsSyncOperationDeleteFile(
+      DriveFileSyncService::SyncOperationType type) {
+    return type == DriveFileSyncService::SYNC_OPERATION_DELETE_FILE;
+  }
+
+  bool IsSyncOperationIgnore(
+      DriveFileSyncService::SyncOperationType type) {
+    return type == DriveFileSyncService::SYNC_OPERATION_IGNORE;
+  }
+
+  bool IsSyncOperationConflict(
+      DriveFileSyncService::SyncOperationType type) {
+    return type == DriveFileSyncService::SYNC_OPERATION_CONFLICT;
+  }
+
+  void AddRemoteChange(int64 changestamp,
+                       const std::string& resource_id,
+                       const fileapi::FileSystemURL& url,
+                       const fileapi::FileChange& file_change) {
+    sync_service_->pending_changes_.clear();
+
+    DriveFileSyncService::ChangeQueueItem item(changestamp, url);
+    std::pair<DriveFileSyncService::PendingChangeQueue::iterator, bool>
+        inserted_to_queue = sync_service_->pending_changes_.insert(
+            DriveFileSyncService::ChangeQueueItem(changestamp, url));
+    DCHECK(inserted_to_queue.second);
+
+    DriveFileSyncService::PathToChange* path_to_change =
+        &sync_service_->url_to_change_[url.origin()];
+    (*path_to_change)[url.path()] = DriveFileSyncService::RemoteChange(
+        changestamp, resource_id, url, file_change,
+        inserted_to_queue.first);
+  }
+
   DriveFileSyncClient* sync_client() {
     if (sync_client_)
       return sync_client_.get();
@@ -477,6 +532,84 @@ TEST_F(DriveFileSyncServiceTest, UnregisterOrigin) {
   EXPECT_TRUE(metadata_store()->batch_sync_origins().empty());
   EXPECT_EQ(1u, metadata_store()->incremental_sync_origins().size());
   EXPECT_TRUE(pending_changes().empty());
+}
+
+TEST_F(DriveFileSyncServiceTest, ResolveSyncOperationType) {
+  const fileapi::FileSystemURL url = fileapi::CreateSyncableFileSystemURL(
+      GURL("http://example.com/"),
+      DriveFileSyncService::kServiceName,
+      FilePath().AppendASCII("path/to/file"));
+  const std::string kResourceId("123456");
+  const int64 kChangestamp = 654321;
+
+  scoped_ptr<Value> sync_root_found(LoadJSONFile(
+      "sync_file_system/sync_root_found.json"));
+  std::string query = FormatTitleQuery(kSyncRootDirectoryName);
+  EXPECT_CALL(*mock_drive_service(),
+              GetDocuments(GURL(), 0, query, false, std::string(), _))
+      .WillOnce(InvokeGetDataCallback5(
+          google_apis::HTTP_SUCCESS,
+          base::Passed(&sync_root_found)));
+
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(1);
+
+  SetUpDriveSyncService();
+  message_loop()->RunUntilIdle();
+
+  const fileapi::FileChange local_add_or_update_change(
+      fileapi::FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+      fileapi::SYNC_FILE_TYPE_FILE);
+  const fileapi::FileChange local_delete_change(
+      fileapi::FileChange::FILE_CHANGE_DELETE,
+      fileapi::SYNC_FILE_TYPE_FILE);
+
+  // There is no pending remote change and no metadata in DriveMetadataStore.
+  EXPECT_TRUE(IsSyncOperationUploadNewFile(
+      ResolveSyncOperationType(local_add_or_update_change, url)));
+  EXPECT_TRUE(IsSyncOperationIgnore(
+      ResolveSyncOperationType(local_delete_change, url)));
+
+  // Add metadata for the file identified by |url|.
+  DriveMetadata metadata;
+  metadata.set_resource_id(kResourceId);
+  metadata.set_md5_checksum("654321");
+  metadata.set_conflicted(false);
+  metadata_store()->UpdateEntry(url, metadata,
+                                base::Bind(&DidEntryOperation));
+
+  message_loop()->RunUntilIdle();
+
+  // There is no pending remote change, but metadata in DriveMetadataStore.
+  EXPECT_TRUE(IsSyncOperationUploadExistingFile(
+      ResolveSyncOperationType(local_add_or_update_change, url)));
+  EXPECT_TRUE(IsSyncOperationDeleteFile(
+      ResolveSyncOperationType(local_delete_change, url)));
+
+  // Add an ADD_OR_UPDATE change for the file identified by |url| to the
+  // pending change queue.
+  AddRemoteChange(
+      kChangestamp, kResourceId, url,
+      fileapi::FileChange(fileapi::FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                          fileapi::SYNC_FILE_TYPE_FILE));
+
+  EXPECT_TRUE(IsSyncOperationConflict(
+      ResolveSyncOperationType(local_add_or_update_change, url)));
+  EXPECT_TRUE(IsSyncOperationIgnore(
+      ResolveSyncOperationType(local_delete_change, url)));
+
+  // Add a DELETE change for the file identified by |url| to the pending
+  // change queue.
+  AddRemoteChange(
+      kChangestamp, kResourceId, url,
+      fileapi::FileChange(fileapi::FileChange::FILE_CHANGE_DELETE,
+                          fileapi::SYNC_FILE_TYPE_FILE));
+
+  EXPECT_TRUE(IsSyncOperationUploadNewFile(
+      ResolveSyncOperationType(local_add_or_update_change, url)));
+  EXPECT_TRUE(IsSyncOperationIgnore(
+      ResolveSyncOperationType(local_delete_change, url)));
 }
 
 #endif  // !defined(OS_ANDROID)

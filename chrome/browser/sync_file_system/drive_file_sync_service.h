@@ -137,6 +137,15 @@ class DriveFileSyncService
     TASK_TYPE_DATABASE,
   };
 
+  enum SyncOperationType {
+    SYNC_OPERATION_UPLOAD_NEW_FILE,
+    SYNC_OPERATION_UPLOAD_EXISTING_FILE,
+    SYNC_OPERATION_DELETE_FILE,
+    SYNC_OPERATION_IGNORE,
+    SYNC_OPERATION_CONFLICT,
+    SYNC_OPERATION_FAILED,
+  };
+
   DriveFileSyncService(scoped_ptr<DriveFileSyncClient> sync_client,
                        scoped_ptr<DriveMetadataStore> metadata_store);
 
@@ -150,6 +159,35 @@ class DriveFileSyncService
                       scoped_ptr<TaskToken> token);
   void UpdateServiceState();
   base::WeakPtr<DriveFileSyncService> AsWeakPtr();
+
+  SyncOperationType ResolveSyncOperationType(
+      const fileapi::FileChange& local_file_change,
+      const fileapi::FileSystemURL& url);
+
+  void DidApplyLocalChange(scoped_ptr<TaskToken> token,
+                           const fileapi::FileSystemURL& url,
+                           const google_apis::GDataErrorCode error,
+                           const fileapi::SyncStatusCallback& callback,
+                           fileapi::SyncStatusCode status);
+
+  void DidUploadNewFile(scoped_ptr<TaskToken> token,
+                        const fileapi::FileSystemURL& url,
+                        const fileapi::SyncStatusCallback& callback,
+                        google_apis::GDataErrorCode error,
+                        const std::string& resource_id,
+                        const std::string& file_md5);
+
+  void DidUploadExistingFile(scoped_ptr<TaskToken> token,
+                             const fileapi::FileSystemURL& url,
+                             const fileapi::SyncStatusCallback& callback,
+                             google_apis::GDataErrorCode error,
+                             const std::string& resource_id,
+                             const std::string& file_md5);
+
+  void DidDeleteFile(scoped_ptr<TaskToken> token,
+                     const fileapi::FileSystemURL& url,
+                     const fileapi::SyncStatusCallback& callback,
+                     google_apis::GDataErrorCode error);
 
   void DidInitializeMetadataStore(scoped_ptr<TaskToken> token,
                                   fileapi::SyncStatusCode status,
