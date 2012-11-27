@@ -62,7 +62,7 @@ TEST_F(TabViewTest, Glow) {
 
 // Test that clicks outside of the visible boundaries are ignored.
 TEST_F(TabViewTest, ClickOnlyInVisibleBounds) {
-  NSPoint bottomLeftCorner = NSMakePoint(0, 0);
+  NSPoint bottomLeftCorner = NSMakePoint(5, 0);
   EXPECT_TRUE([view_ hitTest:bottomLeftCorner]);
 
   NSPoint topLeftCorner = NSMakePoint(0, kTabHeight);

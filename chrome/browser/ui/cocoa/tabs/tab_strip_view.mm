@@ -43,8 +43,7 @@
   borderRect.origin.y = lineWidth;
   borderRect.size.height = lineWidth;
 
-  CGFloat borderAlpha = 0.2 / [self cr_lineWidth];
-  [[NSColor colorWithCalibratedWhite:0.0 alpha:borderAlpha] set];
+  [[NSColor colorWithDeviceWhite:150/255.0 alpha:1.0] set];
   NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
   NSDivideRect(bounds, &borderRect, &contentRect, lineWidth, NSMinYEdge);
 

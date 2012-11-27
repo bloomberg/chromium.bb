@@ -14,6 +14,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {
@@ -239,8 +240,6 @@ const CGFloat kRapidCloseDist = 2.5;
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
-  const CGFloat lineWidth = [self cr_lineWidth];
-
   gfx::ScopedNSGraphicsContextSaveGState scopedGState;
   NSGraphicsContext* context = [NSGraphicsContext currentContext];
 
@@ -290,15 +289,6 @@ const CGFloat kRapidCloseDist = 2.5;
       CGContextEndTransparencyLayer(cgContext);
     }
   }
-
-  CGFloat borderAlpha = selected ? (active ? 0.3 : 0.2) : (active ? 0.2 : 0.15);
-  borderAlpha /= lineWidth;
-
-  NSColor* borderColor = [NSColor colorWithDeviceWhite:0.0 alpha:borderAlpha];
-  NSColor* highlightColor = themeProvider ? themeProvider->GetNSColor(
-      themeProvider->UsingDefaultTheme() ?
-          ThemeService::COLOR_TOOLBAR_BEZEL :
-          ThemeService::COLOR_TOOLBAR, true) : nil;
 
   {
     gfx::ScopedNSGraphicsContextSaveGState contextSave;
@@ -352,49 +342,28 @@ const CGFloat kRapidCloseDist = 2.5;
 
       CGContextEndTransparencyLayer(cgContext);
     }
-
-    // Draw the top inner highlight within the tab if using the default theme.
-    if (themeProvider && themeProvider->UsingDefaultTheme()) {
-      [highlightColor setStroke];
-      scoped_nsobject<NSBezierPath> highlightPath([path copy]);
-      [highlightPath setLineWidth:lineWidth];
-
-      if (!selected)
-        NSRectClip(NSOffsetRect(rect, 0, 2 * lineWidth));
-
-      NSAffineTransform* highlightTransform = [NSAffineTransform transform];
-      [highlightTransform translateXBy:lineWidth yBy:-lineWidth];
-      [highlightPath transformUsingAffineTransform:highlightTransform];
-      [highlightPath stroke];
-
-      highlightTransform = [NSAffineTransform transform];
-      [highlightTransform translateXBy:-2 * lineWidth yBy:0.0];
-      [highlightPath transformUsingAffineTransform:highlightTransform];
-      [highlightPath stroke];
-    }
   }
-
-  // Draw the top stroke.
-  {
-    gfx::ScopedNSGraphicsContextSaveGState drawBorderState;
-    [borderColor set];
-    [path setLineWidth:lineWidth];
-    [path stroke];
-  }
-
-  // Mimic the tab strip's bottom border, which consists of a dark border
-  // and light highlight.
-  if (![controller_ active]) {
-    [path addClip];
-    NSRect borderRect = rect;
-    borderRect.origin.y = lineWidth;
-    borderRect.size.height = lineWidth;
-    [borderColor set];
-    NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
-
-    borderRect.origin.y = 0;
-    [highlightColor set];
-    NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  float height =
+      [rb.GetNativeImageNamed(IDR_TAB_ACTIVE_LEFT).ToNSImage() size].height;
+  if ([controller_ active]) {
+    NSDrawThreePartImage(NSMakeRect(0, 0, NSWidth(self.bounds), height),
+        rb.GetNativeImageNamed(IDR_TAB_ACTIVE_LEFT).ToNSImage(),
+        rb.GetNativeImageNamed(IDR_TAB_ACTIVE_CENTER).ToNSImage(),
+        rb.GetNativeImageNamed(IDR_TAB_ACTIVE_RIGHT).ToNSImage(),
+        /*vertical=*/NO,
+        NSCompositeSourceOver,
+        1.0,
+        /*flipped=*/NO);
+  } else {
+    NSDrawThreePartImage(NSMakeRect(0, 0, NSWidth(self.bounds), height),
+        rb.GetNativeImageNamed(IDR_TAB_INACTIVE_LEFT).ToNSImage(),
+        rb.GetNativeImageNamed(IDR_TAB_INACTIVE_CENTER).ToNSImage(),
+        rb.GetNativeImageNamed(IDR_TAB_INACTIVE_RIGHT).ToNSImage(),
+        /*vertical=*/NO,
+        NSCompositeSourceOver,
+        1.0,
+        /*flipped=*/NO);
   }
 }
 
@@ -610,13 +579,19 @@ const CGFloat kRapidCloseDist = 2.5;
 
 // Returns the bezier path used to draw the tab given the bounds to draw it in.
 - (NSBezierPath*)bezierPathForRect:(NSRect)rect {
+  // TODO(thakis): Replace this with bitmap-based background drawing. Until
+  // then, this contains some magic numbers to make the fill shape fit the
+  // (bitmap based) tab outline. http://crbug.com/52468
+  rect.origin.x += 1;
+  rect.size.width -= 2;
+  rect.size.height -= 1;
   const CGFloat lineWidth = [self cr_lineWidth];
   const CGFloat halfLineWidth = lineWidth / 2.0;
 
   // Outset by halfLineWidth in order to draw on pixels rather than on borders
   // (which would cause blurry pixels). Subtract lineWidth of height to
   // compensate, otherwise clipping will occur.
-  rect = NSInsetRect(rect, -halfLineWidth, -halfLineWidth);
+  rect = NSInsetRect(rect, halfLineWidth, -halfLineWidth);
   rect.size.height -= lineWidth;
 
   NSPoint bottomLeft = NSMakePoint(NSMinX(rect), NSMinY(rect) + 2 * lineWidth);
@@ -634,12 +609,13 @@ const CGFloat kRapidCloseDist = 2.5;
   // Outset many of these values by lineWidth to cause the fill to bleed outside
   // the clip area.
   NSBezierPath* path = [NSBezierPath bezierPath];
-  [path moveToPoint:NSMakePoint(bottomLeft.x - lineWidth,
-                                bottomLeft.y - (2 * lineWidth))];
-  [path lineToPoint:NSMakePoint(bottomLeft.x - lineWidth, bottomLeft.y)];
+  CGFloat left = bottomLeft.x + (lineWidth == 1 ? 3 : 1) * lineWidth;
+  CGFloat right = bottomRight.x - (lineWidth == 1 ? 3 : 1) * lineWidth;
+  [path moveToPoint:NSMakePoint(left, bottomLeft.y - (2 * lineWidth))];
+  [path lineToPoint:NSMakePoint(left, bottomLeft.y)];
   [path lineToPoint:bottomLeft];
   [path curveToPoint:topLeft
-       controlPoint1:NSMakePoint(bottomLeft.x + baseControlPointOutset,
+       controlPoint1:NSMakePoint(left + baseControlPointOutset,
                                  bottomLeft.y)
        controlPoint2:NSMakePoint(topLeft.x - bottomControlPointInset,
                                  topLeft.y)];
@@ -649,9 +625,8 @@ const CGFloat kRapidCloseDist = 2.5;
                                  topRight.y)
        controlPoint2:NSMakePoint(bottomRight.x - baseControlPointOutset,
                                  bottomRight.y)];
-  [path lineToPoint:NSMakePoint(bottomRight.x + lineWidth, bottomRight.y)];
-  [path lineToPoint:NSMakePoint(bottomRight.x + lineWidth,
-                                bottomRight.y - (2 * lineWidth))];
+  [path lineToPoint:NSMakePoint(right, bottomRight.y)];
+  [path lineToPoint:NSMakePoint(right, bottomRight.y - (2 * lineWidth))];
   return path;
 }
 

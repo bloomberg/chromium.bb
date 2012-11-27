@@ -160,8 +160,8 @@ TEST_F(TabStripControllerTest, CorrectToolTipText) {
 
   // Hover over overlap between tab 1 and 2.
   NSEvent* event = [NSEvent mouseEventWithType:NSMouseMoved
-                                    location:NSMakePoint(
-                                        275, NSMinY(tab_strip_frame) + 1)
+                                    location:NSMakePoint(280,
+                                        NSMinY(tab_strip_frame) + 1)
                                modifierFlags:0
                                    timestamp:[current timestamp]
                                 windowNumber:[window windowNumber]
