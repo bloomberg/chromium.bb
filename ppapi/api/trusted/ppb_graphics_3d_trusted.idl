@@ -1,0 +1,100 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* Graphics 3D trusted interfaces. */
+
+label Chrome {
+  M16 = 1.0
+};
+
+enum PPB_Graphics3DTrustedError {
+  PPB_GRAPHICS3D_TRUSTED_ERROR_OK,
+  PPB_GRAPHICS3D_TRUSTED_ERROR_GENERICERROR,
+  PPB_GRAPHICS3D_TRUSTED_ERROR_INVALIDARGUMENTS,
+  PPB_GRAPHICS3D_TRUSTED_ERROR_INVALIDSIZE,
+  PPB_GRAPHICS3D_TRUSTED_ERROR_LOSTCONTEXT,
+  PPB_GRAPHICS3D_TRUSTED_ERROR_OUTOFBOUNDS,
+  PPB_GRAPHICS3D_TRUSTED_ERROR_UNKNOWNCOMMAND
+};
+
+[returnByValue]
+struct PP_Graphics3DTrustedState {
+  // Size of the command buffer in command buffer entries.
+  int32_t num_entries;
+
+  // The offset (in entries) from which the reader is reading.
+  int32_t get_offset;
+
+  // The offset (in entries) at which the writer is writing.
+  int32_t put_offset;
+
+  // The current token value. This is used by the writer to defer
+  // changes to shared memory objects until the reader has reached a certain
+  // point in the command buffer. The reader is responsible for updating the
+  // token value, for example in response to an asynchronous set token command
+  // embedded in the command buffer. The default token value is zero.
+  int32_t token;
+
+  // Error status.
+  PPB_Graphics3DTrustedError error;
+
+  // Generation index of this state. The generation index is incremented every
+  // time a new state is retrieved from the command processor, so that
+  // consistency can be kept even if IPC messages are processed out-of-order.
+  uint32_t generation;
+};
+
+[macro="PPB_GRAPHICS_3D_TRUSTED_INTERFACE"]
+interface PPB_Graphics3DTrusted {
+  // Creates a raw Graphics3D resource. A raw Graphics3D is intended to be used
+  // with the trusted interface, through the command buffer (for proxying).
+  PP_Resource CreateRaw([in] PP_Instance instance_id,
+                        [in] PP_Resource share_context,
+                        [in] int32_t[] attrib_list);
+
+  // Initializes the command buffer with the given size.
+  PP_Bool InitCommandBuffer([in] PP_Resource context_id);
+
+  // Sets the buffer used for commands.
+  PP_Bool SetGetBuffer([in] PP_Resource context,
+                       [in] int32_t transfer_buffer_id);
+
+  // Returns the current state.
+  PP_Graphics3DTrustedState GetState([in] PP_Resource context);
+
+  // Create a transfer buffer and return a handle that uniquely
+  // identifies it or -1 on error.
+  int32_t CreateTransferBuffer([in] PP_Resource context,
+                               [in] uint32_t size);
+
+  // Destroy a transfer buffer and recycle the handle.
+  PP_Bool DestroyTransferBuffer([in] PP_Resource context,
+                                [in] int32_t id);
+
+  // Get the transfer buffer associated with a handle.
+  PP_Bool GetTransferBuffer([in] PP_Resource context,
+                            [in] int32_t id,
+                            [out] handle_t shm_handle,
+                            [out] uint32_t shm_size);
+
+  // The writer calls this to update its put offset.
+  PP_Bool Flush([in] PP_Resource context,
+                [in] int32_t put_offset);
+
+  // The writer calls this to update its put offset. This function returns the
+  // reader's most recent get offset. Does not return until after the put offset
+  // change callback has been invoked.
+  // Note: This function remains for backwards compatibility; FlushSyncFast
+  // is now the preferred way to sync.
+  PP_Graphics3DTrustedState FlushSync([in] PP_Resource context,
+                                      [in] int32_t put_offset);
+
+  // Like FlushSync, but returns before processing commands if the get offset is
+  // different than last_known_get. Allows synchronization with the command
+  // processor without forcing immediate command execution.
+  PP_Graphics3DTrustedState FlushSyncFast([in] PP_Resource context,
+                                          [in] int32_t put_offset,
+                                          [in] int32_t last_known_get);
+};
