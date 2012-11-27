@@ -2494,10 +2494,10 @@
               ],
             }],
             ['asan==1', {
-              'cflags!': [ '-faddress-sanitizer' ],
+              'cflags!': [ '-faddress-sanitizer', '-fsanitize=address', ],
               'xcode_settings': {
                 'OTHER_CFLAGS!': [
-                  '-faddress-sanitizer',
+                  '-faddress-sanitizer', '-fsanitize=address',
                 ],
               },
             }],
