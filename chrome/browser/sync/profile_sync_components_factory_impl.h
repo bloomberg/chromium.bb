@@ -37,7 +37,8 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
   virtual browser_sync::GenericChangeProcessor* CreateGenericChangeProcessor(
       ProfileSyncService* profile_sync_service,
       browser_sync::DataTypeErrorHandler* error_handler,
-      const base::WeakPtr<syncer::SyncableService>& local_service) OVERRIDE;
+      const base::WeakPtr<syncer::SyncableService>& local_service,
+      const base::WeakPtr<syncer::SyncMergeResult>& merge_result) OVERRIDE;
 
   virtual browser_sync::SharedChangeProcessor*
       CreateSharedChangeProcessor() OVERRIDE;

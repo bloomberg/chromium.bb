@@ -14,6 +14,7 @@
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "sync/api/sync_change_processor.h"
+#include "sync/api/sync_merge_result.h"
 
 namespace syncer {
 class SyncData;
@@ -42,6 +43,7 @@ class GenericChangeProcessor : public ChangeProcessor,
   GenericChangeProcessor(
       DataTypeErrorHandler* error_handler,
       const base::WeakPtr<syncer::SyncableService>& local_service,
+      const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
       syncer::UserShare* user_share);
   virtual ~GenericChangeProcessor();
 
@@ -65,6 +67,9 @@ class GenericChangeProcessor : public ChangeProcessor,
       syncer::ModelType type,
       syncer::SyncDataList* current_sync_data);
 
+  // Returns the number of items for this type.
+  virtual int GetSyncCountForType(syncer::ModelType type);
+
   // Generic versions of AssociatorInterface methods. Called by
   // syncer::SyncableServiceAdapter or the DataTypeController.
   virtual bool SyncModelHasUserCreatedNodes(syncer::ModelType type,
@@ -79,6 +84,12 @@ class GenericChangeProcessor : public ChangeProcessor,
  private:
   // The SyncableService this change processor will forward changes on to.
   const base::WeakPtr<syncer::SyncableService> local_service_;
+
+  // A SyncMergeResult used to track the changes made during association. The
+  // owner will invalidate the weak pointer when association is complete. While
+  // the pointer is valid though, we increment it with any changes received
+  // via ProcessSyncChanges.
+  const base::WeakPtr<syncer::SyncMergeResult> merge_result_;
 
   // The current list of changes received from the syncer. We buffer because
   // we must ensure no syncapi transaction is held when we pass it on to

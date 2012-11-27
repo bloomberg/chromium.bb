@@ -32,11 +32,12 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
                    browser_sync::SyncBackendHost*,
                    const browser_sync::DataTypeController::TypeMap*,
                    browser_sync::DataTypeManagerObserver* observer));
-  MOCK_METHOD3(CreateGenericChangeProcessor,
+  MOCK_METHOD4(CreateGenericChangeProcessor,
       browser_sync::GenericChangeProcessor*(
           ProfileSyncService* profile_sync_service,
           browser_sync::DataTypeErrorHandler* error_handler,
-          const base::WeakPtr<syncer::SyncableService>& local_service));
+          const base::WeakPtr<syncer::SyncableService>& local_service,
+          const base::WeakPtr<syncer::SyncMergeResult>& merge_result));
   MOCK_METHOD0(CreateSharedChangeProcessor,
       browser_sync::SharedChangeProcessor*());
   MOCK_METHOD1(GetSyncableServiceForType,

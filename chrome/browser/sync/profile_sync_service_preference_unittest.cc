@@ -52,13 +52,25 @@ typedef std::map<const std::string, const Value*> PreferenceValues;
 
 ACTION_P(CreateAndSaveChangeProcessor, change_processor) {
   syncer::UserShare* user_share = arg0->GetUserShare();
-  *change_processor = new GenericChangeProcessor(arg1, arg2, user_share);
+  *change_processor = new GenericChangeProcessor(arg1,
+                                                 arg2,
+                                                 arg3,
+                                                 user_share);
   return *change_processor;
+}
+
+ACTION_P(ReturnNewDataTypeManagerWithDebugListener, debug_listener) {
+  return new browser_sync::DataTypeManagerImpl(
+      debug_listener,
+      arg1,
+      arg2,
+      arg3);
 }
 
 // TODO(zea): Refactor to remove the ProfileSyncService usage.
 class ProfileSyncServicePreferenceTest
-    : public AbstractProfileSyncServiceTest {
+    : public AbstractProfileSyncServiceTest,
+      public syncer::DataTypeDebugInfoListener {
  public:
   int64 SetSyncedValue(const std::string& name, const Value& value) {
     syncer::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
@@ -84,9 +96,19 @@ class ProfileSyncServicePreferenceTest
     return syncer::kInvalidId;
   }
 
+  // DataTypeDebugInfoListener implementation.
+  virtual void OnDataTypeAssociationComplete(
+      const syncer::DataTypeAssociationStats& association_stats) {
+    association_stats_ = association_stats;
+  }
+  virtual void OnConfigureComplete() {
+    // Do nothing.
+  }
+
  protected:
   ProfileSyncServicePreferenceTest()
-      : example_url0_("http://example.com/0"),
+      : debug_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+        example_url0_("http://example.com/0"),
         example_url1_("http://example.com/1"),
         example_url2_("http://example.com/2"),
         not_synced_preference_name_("nonsense_pref_name"),
@@ -109,6 +131,15 @@ class ProfileSyncServicePreferenceTest
     service_.reset();
     profile_.reset();
     AbstractProfileSyncServiceTest::TearDown();
+  }
+
+  int GetSyncPreferenceCount() {
+    syncer::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::ReadNode node(&trans);
+    if (node.InitByTagLookup(syncer::ModelTypeToRootTag(syncer::PREFERENCES)) !=
+        syncer::BaseNode::INIT_OK)
+      return 0;
+    return node.GetTotalNodeCount() - 1;
   }
 
   bool StartSyncService(const base::Closure& callback,
@@ -135,21 +166,35 @@ class ProfileSyncServicePreferenceTest
         WillOnce(Return(pref_sync_service_->AsWeakPtr()));
 
     EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _, _)).
-        WillOnce(ReturnNewDataTypeManager());
+        WillOnce(ReturnNewDataTypeManagerWithDebugListener(
+                     syncer::MakeWeakHandle(debug_ptr_factory_.GetWeakPtr())));
     dtc_ = new UIDataTypeController(syncer::PREFERENCES,
                                     factory,
                                     profile_.get(),
                                     service_.get());
     EXPECT_CALL(*factory, CreateSharedChangeProcessor()).
         WillOnce(Return(new SharedChangeProcessor()));
-    EXPECT_CALL(*factory, CreateGenericChangeProcessor(_, _, _)).
-        WillOnce(CreateAndSaveChangeProcessor(&change_processor_));
+    EXPECT_CALL(*factory, CreateGenericChangeProcessor(_, _, _, _)).
+        WillOnce(CreateAndSaveChangeProcessor(
+                     &change_processor_));
     service_->RegisterDataTypeController(dtc_);
     TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
         GaiaConstants::kSyncService, "token");
 
     service_->Initialize();
     MessageLoop::current()->Run();
+
+    // It's possible this test triggered an unrecoverable error, in which case
+    // we can't get the preference count.
+    if (service_->ShouldPushChanges()) {
+        EXPECT_EQ(GetSyncPreferenceCount(),
+                  association_stats_.num_sync_items_after_association);
+    }
+    EXPECT_EQ(association_stats_.num_sync_items_after_association,
+              association_stats_.num_sync_items_before_association +
+              association_stats_.num_sync_items_added -
+              association_stats_.num_sync_items_deleted);
+
     return true;
   }
 
@@ -205,6 +250,8 @@ class ProfileSyncServicePreferenceTest
   UIDataTypeController* dtc_;
   PrefModelAssociator* pref_sync_service_;
   GenericChangeProcessor* change_processor_;
+  syncer::DataTypeAssociationStats association_stats_;
+  base::WeakPtrFactory<DataTypeDebugInfoListener> debug_ptr_factory_;
 
   std::string example_url0_;
   std::string example_url1_;

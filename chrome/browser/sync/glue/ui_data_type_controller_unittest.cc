@@ -70,7 +70,8 @@ class SyncUIDataTypeControllerTest : public testing::Test {
         WillOnce(Return(syncable_service_.AsWeakPtr()));
     EXPECT_CALL(*profile_sync_factory_, CreateSharedChangeProcessor()).
         WillOnce(MakeSharedChangeProcessor());
-    EXPECT_CALL(*profile_sync_factory_, CreateGenericChangeProcessor(_, _, _)).
+    EXPECT_CALL(*profile_sync_factory_,
+                CreateGenericChangeProcessor(_, _, _, _)).
         WillOnce(ReturnAndRelease(&change_processor_));
   }
 

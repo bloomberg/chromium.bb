@@ -31,6 +31,7 @@ class FakeGenericChangeProcessor : public GenericChangeProcessor {
   virtual syncer::SyncError GetSyncDataForType(
       syncer::ModelType type,
       syncer::SyncDataList* current_sync_data) OVERRIDE;
+  virtual int GetSyncCountForType(syncer::ModelType type) OVERRIDE;
   virtual bool SyncModelHasUserCreatedNodes(syncer::ModelType type,
                                             bool* has_nodes) OVERRIDE;
   virtual bool CryptoReadyIfNecessary(syncer::ModelType type) OVERRIDE;

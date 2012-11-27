@@ -255,9 +255,21 @@ ACTION_P(MakeAutocompleteSyncComponents, wds) {
   return wds->GetAutocompleteSyncableService()->AsWeakPtr();
 }
 
+ACTION_P(ReturnNewDataTypeManagerWithDebugListener, debug_listener) {
+  return new browser_sync::DataTypeManagerImpl(
+      debug_listener,
+      arg1,
+      arg2,
+      arg3);
+}
+
 ACTION(MakeGenericChangeProcessor) {
   syncer::UserShare* user_share = arg0->GetUserShare();
-  return new GenericChangeProcessor(arg1, arg2, user_share);
+  return new GenericChangeProcessor(
+      arg1,
+      arg2,
+      arg3,
+      user_share);
 }
 
 ACTION(MakeSharedChangeProcessor) {
@@ -297,7 +309,7 @@ class AutofillEntryFactory : public AbstractAutofillFactory {
                               ProfileSyncService* service,
                               WebDataService* wds,
                               DataTypeController* dtc) OVERRIDE {
-    EXPECT_CALL(*factory, CreateGenericChangeProcessor(_,_,_)).
+    EXPECT_CALL(*factory, CreateGenericChangeProcessor(_,_,_,_)).
         WillOnce(MakeGenericChangeProcessor());
     EXPECT_CALL(*factory, CreateSharedChangeProcessor()).
         WillOnce(MakeSharedChangeProcessor());
@@ -319,7 +331,7 @@ class AutofillProfileFactory : public AbstractAutofillFactory {
                               ProfileSyncService* service,
                               WebDataService* wds,
                               DataTypeController* dtc) OVERRIDE {
-    EXPECT_CALL(*factory, CreateGenericChangeProcessor(_,_,_)).
+    EXPECT_CALL(*factory, CreateGenericChangeProcessor(_,_,_,_)).
         WillOnce(MakeGenericChangeProcessor());
     EXPECT_CALL(*factory, CreateSharedChangeProcessor()).
         WillOnce(MakeSharedChangeProcessor());
@@ -342,9 +354,22 @@ class PersonalDataManagerMock: public PersonalDataManager {
 };
 template <class T> class AddAutofillHelper;
 
-class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
+class ProfileSyncServiceAutofillTest
+   : public AbstractProfileSyncServiceTest,
+     public syncer::DataTypeDebugInfoListener {
+ public:
+  // DataTypeDebugInfoListener implementation.
+  virtual void OnDataTypeAssociationComplete(
+      const syncer::DataTypeAssociationStats& association_stats) OVERRIDE {
+    association_stats_ = association_stats;
+  }
+  virtual void OnConfigureComplete() {
+    // Do nothing.
+  }
+
  protected:
-  ProfileSyncServiceAutofillTest() {
+  ProfileSyncServiceAutofillTest()
+   : debug_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   }
   virtual ~ProfileSyncServiceAutofillTest() {
   }
@@ -399,6 +424,16 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     AbstractProfileSyncServiceTest::TearDown();
   }
 
+
+  int GetSyncCount(syncer::ModelType type) {
+    syncer::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::ReadNode node(&trans);
+    if (node.InitByTagLookup(syncer::ModelTypeToRootTag(type)) !=
+        syncer::BaseNode::INIT_OK)
+      return 0;
+    return node.GetTotalNodeCount() - 1;
+  }
+
   void StartSyncService(const base::Closure& callback,
                         bool will_fail_association,
                         syncer::ModelType type) {
@@ -425,7 +460,8 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
                             data_type_controller);
 
     EXPECT_CALL(*components_factory, CreateDataTypeManager(_, _, _, _)).
-        WillOnce(ReturnNewDataTypeManager());
+        WillOnce(ReturnNewDataTypeManagerWithDebugListener(
+                     syncer::MakeWeakHandle(debug_ptr_factory_.GetWeakPtr())));
 
     EXPECT_CALL(*personal_data_manager_, IsDataLoaded()).
         WillRepeatedly(Return(true));
@@ -436,6 +472,17 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     service_->RegisterDataTypeController(data_type_controller);
     service_->Initialize();
     MessageLoop::current()->Run();
+
+    // It's possible this test triggered an unrecoverable error, in which case
+    // we can't get the sync count.
+    if (service_->ShouldPushChanges()) {
+      EXPECT_EQ(GetSyncCount(type),
+                association_stats_.num_sync_items_after_association);
+    }
+    EXPECT_EQ(association_stats_.num_sync_items_after_association,
+              association_stats_.num_sync_items_before_association +
+              association_stats_.num_sync_items_added -
+              association_stats_.num_sync_items_deleted);
   }
 
   bool AddAutofillSyncNode(const AutofillEntry& entry) {
@@ -591,6 +638,8 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
   scoped_ptr<WebDatabaseFake> web_database_;
   scoped_refptr<WebDataServiceFake> web_data_service_;
   PersonalDataManagerMock* personal_data_manager_;
+  syncer::DataTypeAssociationStats association_stats_;
+  base::WeakPtrFactory<DataTypeDebugInfoListener> debug_ptr_factory_;
 };
 
 template <class T>

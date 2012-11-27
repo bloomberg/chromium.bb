@@ -279,12 +279,10 @@ void NewNonFrontendDataTypeController::
               syncer_merge_result);
     return;
   }
+
+  syncer_merge_result.set_num_items_before_association(
+      initial_sync_data.size());
   // Passes a reference to |shared_change_processor|.
-  // TODO(zea): have SyncableService return a SyncMergeResult and pass that on
-  // to the ModelAssociationManager.
-  // TODO(zea): Call shared_change_processor_->GetAllSyncData(..) before
-  // and after MergeDataAndStartSyncing and store the item counts into
-  // syncer_merge_result.
   local_merge_result =
       local_service_->MergeDataAndStartSyncing(
           type(),
@@ -300,6 +298,9 @@ void NewNonFrontendDataTypeController::
               syncer_merge_result);
     return;
   }
+
+  syncer_merge_result.set_num_items_after_association(
+      shared_change_processor->GetSyncCount());
 
   // If we've been disconnected, profile_sync_service() may return an invalid
   // pointer, but |shared_change_processor| protects us from attempting to

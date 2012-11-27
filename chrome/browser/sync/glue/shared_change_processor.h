@@ -81,6 +81,7 @@ class SharedChangeProcessor
   // Should only be called on the same thread the datatype resides.
   virtual syncer::SyncError GetSyncData(
       syncer::SyncDataList* current_sync_data);
+  virtual int GetSyncCount();
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list);

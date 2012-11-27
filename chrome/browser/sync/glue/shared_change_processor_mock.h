@@ -28,6 +28,7 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
                          const syncer::SyncChangeList&));
   MOCK_METHOD1(GetSyncData,
                syncer::SyncError(syncer::SyncDataList*));
+  MOCK_METHOD0(GetSyncCount, int());
   MOCK_METHOD1(SyncModelHasUserCreatedNodes,
                bool(bool*));
   MOCK_METHOD0(CryptoReadyIfNecessary, bool());

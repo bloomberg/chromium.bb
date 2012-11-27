@@ -169,8 +169,9 @@ void UIDataTypeController::Associate() {
     return;
   }
 
+  syncer_merge_result.set_num_items_before_association(
+      initial_sync_data.size());
   // Passes a reference to |shared_change_processor_|.
-  syncer_merge_result.set_num_items_after_association(initial_sync_data.size());
   local_merge_result = local_service_->MergeDataAndStartSyncing(
       type(),
       initial_sync_data,
@@ -179,13 +180,15 @@ void UIDataTypeController::Associate() {
       scoped_ptr<syncer::SyncErrorFactory>(
           new SharedChangeProcessorRef(shared_change_processor_)));
   RecordAssociationTime(base::TimeTicks::Now() - start_time);
-
   if (local_merge_result.error().IsSet()) {
     StartDone(ASSOCIATION_FAILED,
               local_merge_result,
               syncer_merge_result);
     return;
   }
+
+  syncer_merge_result.set_num_items_after_association(
+      shared_change_processor_->GetSyncCount());
 
   shared_change_processor_->ActivateDataType(model_safe_group());
   state_ = RUNNING;

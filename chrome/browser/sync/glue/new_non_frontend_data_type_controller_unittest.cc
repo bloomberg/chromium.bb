@@ -206,6 +206,7 @@ class SyncNewNonFrontendDataTypeControllerTest : public testing::Test {
         WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
     EXPECT_CALL(*change_processor_, GetSyncData(_)).
         WillOnce(Return(syncer::SyncError()));
+    EXPECT_CALL(*change_processor_, GetSyncCount()).WillOnce(Return(0));
     EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
   }
 

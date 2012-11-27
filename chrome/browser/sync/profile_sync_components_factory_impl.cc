@@ -238,10 +238,12 @@ browser_sync::GenericChangeProcessor*
     ProfileSyncComponentsFactoryImpl::CreateGenericChangeProcessor(
         ProfileSyncService* profile_sync_service,
         browser_sync::DataTypeErrorHandler* error_handler,
-        const base::WeakPtr<syncer::SyncableService>& local_service) {
+        const base::WeakPtr<syncer::SyncableService>& local_service,
+        const base::WeakPtr<syncer::SyncMergeResult>& merge_result) {
   syncer::UserShare* user_share = profile_sync_service->GetUserShare();
   return new GenericChangeProcessor(error_handler,
                                     local_service,
+                                    merge_result,
                                     user_share);
 }
 
