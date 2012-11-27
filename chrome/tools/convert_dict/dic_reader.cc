@@ -114,12 +114,15 @@ bool PopulateWordSet(WordSet* word_set, FILE* file, AffReader* aff_reader,
       utf8word = utf8word.substr(0, word_tab_offset);
 
     WordSet::iterator found = word_set->find(utf8word);
+    std::set<int> affix_vector;
+    affix_vector.insert(affix_index);
+
     if (found == word_set->end()) {
-      std::set<int> affix_vector;
-      affix_vector.insert(affix_index);
       word_set->insert(std::make_pair(utf8word, affix_vector));
     } else {
-      found->second.insert(affix_index);
+      // The affixes of the delta file should override those in the
+      // dictionary file.
+      found->second.swap(affix_vector);
     }
   }
 
