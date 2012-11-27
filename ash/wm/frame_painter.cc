@@ -560,16 +560,14 @@ void FramePainter::LayoutHeader(views::NonClientFrameView* view,
   }
 
   if (immersive_button_) {
-    // TODO(jamescook): Need real art. crbug.com/160897
     SetButtonImages(immersive_button_,
-                    IDR_AURA_UBER_TRAY_DISPLAY,
-                    IDR_AURA_UBER_TRAY_DISPLAY_HOVER,
-                    IDR_AURA_UBER_TRAY_DISPLAY_PRESSED);
-    // TODO(jamescook): This needs real art too. crbug.com/160897
+                    IDR_AURA_WINDOW_IMMERSIVE_ENTER,
+                    IDR_AURA_WINDOW_IMMERSIVE_ENTER_H,
+                    IDR_AURA_WINDOW_IMMERSIVE_ENTER_P);
     SetToggledButtonImages(immersive_button_,
-                           IDR_AURA_UBER_TRAY_DISPLAY_HOVER,
-                           IDR_AURA_UBER_TRAY_DISPLAY_HOVER,
-                           IDR_AURA_UBER_TRAY_DISPLAY_PRESSED);
+                           IDR_AURA_WINDOW_IMMERSIVE_EXIT,
+                           IDR_AURA_WINDOW_IMMERSIVE_EXIT_H,
+                           IDR_AURA_WINDOW_IMMERSIVE_EXIT_P);
   }
 
   gfx::Size close_size = close_button_->GetPreferredSize();

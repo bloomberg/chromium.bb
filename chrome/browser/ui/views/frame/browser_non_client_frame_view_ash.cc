@@ -125,6 +125,8 @@ void BrowserNonClientFrameViewAsh::Init() {
     immersive_button_ = new views::ToggleImageButton(this);
     immersive_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_IMMERSIVE));
+    immersive_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
+                                         views::ImageButton::ALIGN_BOTTOM);
     AddChildView(immersive_button_);
     frame_painter_->AddImmersiveButton(immersive_button_);
   }

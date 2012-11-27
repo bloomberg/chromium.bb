@@ -228,6 +228,14 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_TOP_LEFT" file="common/window_header_shade_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_TOP_RIGHT" file="common/window_header_shade_top_right.png" />
 
+      <!-- Art for experimental "immersive mode" button at top of screen. crbug.com/157612 -->
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_IMMERSIVE_ENTER" file="common/window_immersive_enter_normal.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_IMMERSIVE_ENTER_H" file="common/window_immersive_enter_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_IMMERSIVE_ENTER_P" file="common/window_immersive_enter_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_IMMERSIVE_EXIT" file="common/window_immersive_exit_normal.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_IMMERSIVE_EXIT_H" file="common/window_immersive_exit_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_IMMERSIVE_EXIT_P" file="common/window_immersive_exit_pressed.png" />
+
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE" file="common/window_close_tall_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE_H" file="common/window_close_tall_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE_P" file="common/window_close_tall_pressed.png" />
