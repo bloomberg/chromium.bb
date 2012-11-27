@@ -1029,7 +1029,10 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, HiddenBeforeNavigation) {
 
 // This test verifies that if we lose the guest, and get a new one,
 // the new guest will inherit the visibility state of the old guest.
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, VisibilityPreservation) {
+//
+// Very flaky on Linux, Linux CrOS, somewhat flaky on XP, slightly on
+// Mac; http://crbug.com/162809.
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_VisibilityPreservation) {
   const char* kEmbedderURL = "files/browser_plugin_embedder.html";
   StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, "");
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
