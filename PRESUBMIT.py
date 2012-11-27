@@ -129,6 +129,7 @@ _BANNED_CPP_FUNCTIONS = (
        'base/gtest_prod_util.h and use FRIEND_TEST_ALL_PREFIXES() instead.',
       ),
       False,
+      (),
     ),
     (
       'ScopedAllowIO',
@@ -137,6 +138,9 @@ _BANNED_CPP_FUNCTIONS = (
        'pool or the FILE thread instead.',
       ),
       True,
+      (
+        r"^content[\\\/]shell[\\\/]shell_browser_main\.cc$",
+      ),
     ),
     (
       'FilePathWatcher::Delegate',
@@ -145,6 +149,7 @@ _BANNED_CPP_FUNCTIONS = (
        'interface instead.',
       ),
       False,
+      (),
     ),
     (
       'browser::FindAnyBrowser',
@@ -154,6 +159,7 @@ _BANNED_CPP_FUNCTIONS = (
        'id. Talk to robertshield@ for more information.',
       ),
       True,
+      (),
     ),
     (
       'browser::FindOrCreateTabbedBrowser',
@@ -163,6 +169,7 @@ _BANNED_CPP_FUNCTIONS = (
        'id. Talk to robertshield@ for more information.',
       ),
       True,
+      (),
     ),
     (
       'browser::FindTabbedBrowserDeprecated',
@@ -172,6 +179,7 @@ _BANNED_CPP_FUNCTIONS = (
        'id. Talk to robertshield@ for more information.',
       ),
       True,
+      (),
     ),
     (
       'RunAllPending()',
@@ -180,6 +188,7 @@ _BANNED_CPP_FUNCTIONS = (
        'to RunUntilIdle',
       ),
       True,
+      (),
     ),
 )
 
@@ -343,7 +352,15 @@ def _CheckNoBannedFunctions(input_api, output_api):
   file_filter = lambda f: f.LocalPath().endswith(('.cc', '.mm', '.h'))
   for f in input_api.AffectedFiles(file_filter=file_filter):
     for line_num, line in f.ChangedContents():
-      for func_name, message, error in _BANNED_CPP_FUNCTIONS:
+      for func_name, message, error, excluded_paths in _BANNED_CPP_FUNCTIONS:
+        def IsBlacklisted(affected_file, blacklist):
+          local_path = affected_file.LocalPath()
+          for item in blacklist:
+            if input_api.re.match(item, local_path):
+              return True
+          return False
+        if IsBlacklisted(f, excluded_paths):
+          continue
         if func_name in line:
           problems = warnings;
           if error:
