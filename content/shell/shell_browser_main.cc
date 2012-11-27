@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
@@ -98,6 +99,9 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kCheckLayoutTestSysDeps)) {
+    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    main_runner_->Run();
+    main_runner_->Shutdown();
     return 0;
   }
 
@@ -110,6 +114,7 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
     CommandLine::StringVector args =
         CommandLine::ForCurrentProcess()->GetArgs();
     size_t command_line_position = 0;
+    bool ran_at_least_once = false;
 
 #if defined(OS_ANDROID)
     std::cout << "#READY\n";
@@ -132,10 +137,15 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
         break;
       }
 
+      ran_at_least_once = true;
       main_runner_->Run();
 
       if (!content::WebKitTestController::Get()->ResetAfterLayoutTest())
         break;
+    }
+    if (!ran_at_least_once) {
+      MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+      main_runner_->Run();
     }
     exit_code = 0;
   } else {
