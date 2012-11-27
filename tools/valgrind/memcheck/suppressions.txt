@@ -6157,3 +6157,37 @@
    fun:_ZN2cc14DirectRenderer9drawFrameERKSt6vectorIPNS_10RenderPassESaIS3_EERKNS_16ScopedPtrHashMapINS2_2IdES2_EE
    fun:_ZN2cc17LayerTreeHostImpl10drawLayersERKNS0_9FrameDataE
 }
+{
+   bug_162825
+   Memcheck:Uninitialized
+   fun:bcmp
+   fun:_ZNK3gpu5gles221ShaderTranslatorCache26ShaderTranslatorInitParamsltERKS2_
+   fun:_ZNKSt4lessIN3gpu5gles221ShaderTranslatorCache26ShaderTranslatorInitParamsEEclERKS3_S6_
+   ...
+   fun:_ZNSt3mapIN3gpu5gles221ShaderTranslatorCache26ShaderTranslatorInitParamsEPNS1_16ShaderTranslatorESt4lessIS3_ESaISt4pairIKS3_S5_EEE4findERS9_
+   fun:_ZN3gpu5gles221ShaderTranslatorCache13GetTranslatorE12ShShaderType12ShShaderSpecPK18ShBuiltInResourcesNS0_25ShaderTranslatorInterface22GlslImplementationTypeENS7_27GlslBuiltInFunctionBehaviorE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl26InitializeShaderTranslatorEv
+}
+{
+   bug_162828
+   Memcheck:Leak
+   fun:malloc
+   fun:_Z15sk_malloc_flagsmj
+   fun:_Z15sk_malloc_throwm
+   fun:_ZN6SkMask10AllocImageEm
+   fun:_ZL17drawRectsIntoMaskPK6SkRectiP6SkMask
+   fun:_ZN20SkBlurMaskFilterImpl17filterRectsToNineEPK6SkRectiRK8SkMatrixRK7SkIRectPN12SkMaskFilter9NinePatchE
+   fun:_ZN12SkMaskFilter10filterPathERK6SkPathRK8SkMatrixRK12SkRasterClipP9SkBounderP9SkBlitterN7SkPaint5StyleE
+   fun:_ZNK6SkDraw8drawPathERK6SkPathRK7SkPaintPK8SkMatrixb
+}
+{
+   bug_162829
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF6StringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
+   fun:_ZN7WebCore11V8ParameterILNS_15V8ParameterModeE0EE8toStringIN3WTF6StringEEET_v
+   fun:_ZN7WebCore11V8ParameterILNS_15V8ParameterModeE0EEcvN3WTF6StringEEv
+   fun:_ZN7WebCore*DB*Callback*
+   ...
+   fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+}
