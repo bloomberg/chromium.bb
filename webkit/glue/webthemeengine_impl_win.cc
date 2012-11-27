@@ -33,6 +33,9 @@ static ui::NativeTheme::State WebButtonStateToGfx(
   ui::NativeTheme::State gfx_state = ui::NativeTheme::kNormal;
   // Native buttons have a different focus style.
   extra->is_focused = false;
+  extra->has_border = false;
+  extra->background_color = ui::NativeTheme::instance()->GetSystemColor(
+      ui::NativeTheme::kColorId_TextButtonBackgroundColor);
 
   if (part == BP_PUSHBUTTON) {
     switch (state) {
