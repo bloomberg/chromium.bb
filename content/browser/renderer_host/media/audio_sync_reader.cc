@@ -8,14 +8,9 @@
 
 #include "base/process_util.h"
 #include "base/shared_memory.h"
-#include "base/threading/platform_thread.h"
 #include "media/audio/audio_buffers_state.h"
 #include "media/audio/audio_parameters.h"
 #include "media/audio/shared_memory_util.h"
-
-#if defined(OS_WIN)
-const int kMinIntervalBetweenReadCallsInMs = 10;
-#endif
 
 using media::AudioBus;
 
@@ -62,22 +57,6 @@ void AudioSyncReader::UpdatePendingBytes(uint32 bytes) {
 }
 
 int AudioSyncReader::Read(AudioBus* source, AudioBus* dest) {
-#if defined(OS_WIN)
-  // HACK: yield if reader is called too often.
-  // Problem is lack of synchronization between host and renderer. We cannot be
-  // sure if renderer already filled the buffer, and due to all the plugins we
-  // cannot change the API, so we yield if previous call was too recent.
-  // Optimization: if renderer is "new" one that writes length of data we can
-  // stop yielding the moment length is written -- not ideal solution,
-  // but better than nothing.
-  while (!DataReady() &&
-         ((base::Time::Now() - previous_call_time_).InMilliseconds() <
-          kMinIntervalBetweenReadCallsInMs)) {
-    base::PlatformThread::YieldCurrentThread();
-  }
-  previous_call_time_ = base::Time::Now();
-#endif
-
   // Copy optional synchronized live audio input for consumption by renderer
   // process.
   if (source && input_bus_.get()) {

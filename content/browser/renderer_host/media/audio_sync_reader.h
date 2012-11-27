@@ -47,7 +47,6 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
 
  private:
   base::SharedMemory* shared_memory_;
-  base::Time previous_call_time_;
 
   // Number of input channels for synchronized I/O.
   int input_channels_;
