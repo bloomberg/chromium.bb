@@ -258,11 +258,23 @@ PrerenderContents::PrerenderContents(
   DCHECK(prerender_manager != NULL);
 }
 
-void PrerenderContents::MakeIntoDummyReplacementOf(
-    const PrerenderContents* original_prerender_contents) {
-  load_start_time_ = original_prerender_contents->load_start_time_;
-  session_storage_namespace_id_ =
-      original_prerender_contents->session_storage_namespace_id_;
+PrerenderContents* PrerenderContents::CreateMatchCompleteReplacement() const {
+  PrerenderContents* new_contents = prerender_manager_->CreatePrerenderContents(
+      prerender_url(), referrer(), origin(), experiment_id());
+
+  new_contents->load_start_time_ = load_start_time_;
+  new_contents->session_storage_namespace_id_ = session_storage_namespace_id_;
+  new_contents->set_match_complete_status(
+      PrerenderContents::MATCH_COMPLETE_REPLACEMENT_PENDING);
+
+  const bool did_init = new_contents->Init();
+  DCHECK(did_init);
+  DCHECK_EQ(alias_urls_.front(), new_contents->alias_urls_.front());
+  DCHECK_EQ(1u, new_contents->alias_urls_.size());
+  new_contents->alias_urls_ = alias_urls_;
+  new_contents->set_match_complete_status(
+      PrerenderContents::MATCH_COMPLETE_REPLACEMENT);
+  return new_contents;
 }
 
 bool PrerenderContents::Init() {
@@ -533,15 +545,6 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
   alias_urls_.push_back(url);
   InformRenderProcessAboutPrerender(url, true, creator_child_id_);
   return true;
-}
-
-void PrerenderContents::AddAliasURLsFromOtherPrerenderContents(
-    PrerenderContents* other_pc) {
-  for (std::vector<GURL>::const_iterator it = other_pc->alias_urls_.begin();
-       it != other_pc->alias_urls_.end();
-       ++it) {
-    alias_urls_.push_back(*it);
-  }
 }
 
 bool PrerenderContents::Matches(

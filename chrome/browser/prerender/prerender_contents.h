@@ -99,8 +99,7 @@ class PrerenderContents : public content::NotificationObserver,
   // For MatchComplete correctness, create a dummy replacement prerender
   // contents to stand in for this prerender contents that (which we are about
   // to destroy).
-  void MakeIntoDummyReplacementOf(
-      const PrerenderContents* original_prerender_contents);
+  PrerenderContents* CreateMatchCompleteReplacement() const;
 
   bool Init();
 
@@ -196,9 +195,6 @@ class PrerenderContents : public content::NotificationObserver,
   // and false is returned. Otherwise, true is returned and the alias is
   // remembered.
   virtual bool AddAliasURL(const GURL& url);
-
-  // Adds all alias URLs from another prerender.
-  void AddAliasURLsFromOtherPrerenderContents(PrerenderContents* other_pc);
 
   // The preview TabContents (may be null).
   TabContents* prerender_contents() const {

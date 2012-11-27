@@ -818,6 +818,28 @@ TEST_F(PrerenderTest, RecentlyVisitedPPLTDummy) {
   ASSERT_EQ(pplt_dummy_contents, prerender_manager()->FindAndUseEntry(url));
 }
 
+TEST_F(PrerenderTest, PPLTLateCancel) {
+  GURL url("http://www.google.com");
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(
+          url, FINAL_STATUS_JAVASCRIPT_ALERT);
+  EXPECT_TRUE(AddSimplePrerender(url));
+  EXPECT_TRUE(prerender_contents->prerendering_has_started());
+  // Force the creation of a match complete dummy.
+  DummyPrerenderContents* duplicate_prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(url,
+                                                       FINAL_STATUS_CANCELLED);
+  ASSERT_EQ(prerender_contents, prerender_manager()->FindEntry(url));
+  prerender_contents->Destroy(FINAL_STATUS_JAVASCRIPT_ALERT);
+  ASSERT_EQ(duplicate_prerender_contents, prerender_manager()->FindEntry(url));
+
+  prerender_link_manager()->OnCancelPrerender(kDefaultChildId,
+                                              last_prerender_id());
+  DummyPrerenderContents* null = NULL;
+  ASSERT_EQ(null, prerender_manager()->FindEntry(url));
+}
+
+
 // Tests that the prerender manager matches include the fragment.
 TEST_F(PrerenderTest, FragmentMatchesTest) {
   GURL fragment_url("http://www.google.com/#test");

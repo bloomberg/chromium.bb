@@ -273,6 +273,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
     ~PrerenderData();
 
+    // Turn this PrerenderData into a Match Complete replacement for itself,
+    // placing the current prerender contents into |to_delete_prerenders_|.
+    void MakeIntoMatchCompleteReplacement();
+
     // A new PrerenderHandle has been created for this PrerenderData.
     void OnNewHandle();
 
@@ -289,11 +293,14 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
     PrerenderContents* contents() { return contents_; }
 
+    int handle_count() const { return handle_count_; }
+
     base::TimeTicks expiry_time() const { return expiry_time_; }
+    void set_expiry_time(base::TimeTicks expiry_time) {
+      expiry_time_ = expiry_time;
+    }
 
    private:
-    friend class PrerenderManager;
-
     PrerenderManager* manager_;
     PrerenderContents* contents_;
 
@@ -516,12 +523,12 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // All pending prerenders.
   ScopedVector<PrerenderData> pending_prerenders_;
 
+  // Prerenders awaiting deletion.
+  ScopedVector<PrerenderData> to_delete_prerenders_;
+
   // List of recent navigations in this profile, sorted by ascending
   // navigate_time_.
   std::list<NavigationRecord> navigations_;
-
-  // List of prerender elements to be deleted
-  std::list<PrerenderContents*> pending_delete_list_;
 
   // This map is from all WebContents which are currently displaying a
   // prerendered page which has already been swapped in to a
