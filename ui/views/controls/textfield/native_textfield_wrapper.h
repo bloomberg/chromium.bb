@@ -157,6 +157,10 @@ class VIEWS_EXPORT NativeTextfieldWrapper {
   // Get the height in pixels of the first font used in this textfield.
   virtual int GetFontHeight() = 0;
 
+  // Performs the action associated with the specified command id. Not called
+  // ExecuteCommand to avoid name clash.
+  virtual void ExecuteTextCommand(int command_id) = 0;
+
   // Creates an appropriate NativeTextfieldWrapper for the platform.
   static NativeTextfieldWrapper* CreateWrapper(Textfield* field);
 };

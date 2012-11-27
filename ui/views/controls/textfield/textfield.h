@@ -233,6 +233,9 @@ class VIEWS_EXPORT Textfield : public View {
   // Set the accessible name of the text field.
   void SetAccessibleName(const string16& name);
 
+  // Performs the action associated with the specified command id.
+  void ExecuteCommand(int command_id);
+
   // Provided only for testing:
   gfx::NativeView GetTestingHandle() const {
     return native_wrapper_ ? native_wrapper_->GetTestingHandle() : NULL;

@@ -103,6 +103,7 @@ class NativeTextfieldWin
   virtual void ApplyDefaultStyle() OVERRIDE;
   virtual void ClearEditHistory() OVERRIDE;
   virtual int GetFontHeight() OVERRIDE;
+  virtual void ExecuteTextCommand(int command_id) OVERRIDE;
 
   // ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;

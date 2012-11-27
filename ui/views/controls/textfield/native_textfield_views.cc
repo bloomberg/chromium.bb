@@ -595,6 +595,10 @@ int NativeTextfieldViews::GetFontHeight() {
   return GetRenderText()->GetFont().GetHeight();
 }
 
+void NativeTextfieldViews::ExecuteTextCommand(int command_id) {
+  ExecuteCommand(command_id);
+}
+
 /////////////////////////////////////////////////////////////////
 // NativeTextfieldViews, ui::SimpleMenuModel::Delegate overrides:
 

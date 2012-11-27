@@ -421,6 +421,10 @@ int NativeTextfieldWin::GetFontHeight() {
   return textfield_->font().GetHeight();
 }
 
+void NativeTextfieldWin::ExecuteTextCommand(int command_id) {
+  ExecuteCommand(command_id);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTextfieldWin, ui::SimpleMenuModel::Delegate implementation:
 

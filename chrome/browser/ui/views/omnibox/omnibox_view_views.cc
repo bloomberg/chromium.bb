@@ -417,6 +417,10 @@ bool OmniboxViewViews::IsLocationEntryFocusableInRootView() const {
   return textfield_->IsFocusable();
 }
 
+void OmniboxViewViews::ExecuteCommandOnTextField(int command_id) {
+  return textfield_->ExecuteCommand(command_id);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxViewViews, views::View implementation:
 void OmniboxViewViews::Layout() {

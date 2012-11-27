@@ -85,6 +85,9 @@ class OmniboxViewViews
   // the root view.
   bool IsLocationEntryFocusableInRootView() const;
 
+  // Executes the given command on the text field.
+  void ExecuteCommandOnTextField(int command_id);
+
   // Implements views::View
   virtual void Layout() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;

@@ -127,6 +127,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   virtual void ApplyDefaultStyle() OVERRIDE;
   virtual void ClearEditHistory() OVERRIDE;
   virtual int GetFontHeight() OVERRIDE;
+  virtual void ExecuteTextCommand(int command_id) OVERRIDE;
 
   // ui::SimpleMenuModel::Delegate overrides
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;

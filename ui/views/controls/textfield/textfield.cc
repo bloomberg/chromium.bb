@@ -359,6 +359,10 @@ void Textfield::SetAccessibleName(const string16& name) {
   accessible_name_ = name;
 }
 
+void Textfield::ExecuteCommand(int command_id) {
+  native_wrapper_->ExecuteTextCommand(command_id);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, View overrides:
 
