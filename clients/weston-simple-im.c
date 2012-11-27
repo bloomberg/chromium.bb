@@ -106,51 +106,6 @@ keyboard_input_create(struct xkb_context *xkb_context)
 }
 
 static void
-keyboard_input_handle_keymap(struct keyboard_input *keyboard_input,
-			     uint32_t format, int fd, uint32_t size)
-{
-	char *map_str;
-
-	if (format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
-		close(fd);
-		return;
-	}
-
-	map_str = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
-	if (map_str == MAP_FAILED) {
-		close(fd);
-		return;
-	}
-
-	keyboard_input->keymap = xkb_map_new_from_string(keyboard_input->xkb_context,
-							 map_str,
-							 XKB_KEYMAP_FORMAT_TEXT_V1,
-							 0);
-
-	munmap(map_str, size);
-	close(fd);
-
-	if (!keyboard_input->keymap) {
-		fprintf(stderr, "failed to compile keymap\n");
-		return;
-	}
-
-	keyboard_input->state = xkb_state_new(keyboard_input->keymap);
-	if (!keyboard_input->state) {
-		fprintf(stderr, "failed to create XKB state\n");
-		xkb_map_unref(keyboard_input->keymap);
-		return;
-	}
-
-	keyboard_input->control_mask =
-		1 << xkb_map_mod_get_index(keyboard_input->keymap, "Control");
-	keyboard_input->alt_mask =
-		1 << xkb_map_mod_get_index(keyboard_input->keymap, "Mod1");
-	keyboard_input->shift_mask =
-		1 << xkb_map_mod_get_index(keyboard_input->keymap, "Shift");
-}
-
-static void
 keyboard_input_set_user_data(struct keyboard_input *keyboard_input, void *data)
 {
 	keyboard_input->user_data = data;
@@ -197,8 +152,47 @@ input_method_keyboard_keymap(void *data,
 			     uint32_t size)
 {
 	struct simple_im *keyboard = data;
+	struct keyboard_input *keyboard_input = keyboard->keyboard_input;
+	char *map_str;
 
-	keyboard_input_handle_keymap(keyboard->keyboard_input, format, fd, size);
+	if (format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
+		close(fd);
+		return;
+	}
+
+	map_str = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
+	if (map_str == MAP_FAILED) {
+		close(fd);
+		return;
+	}
+
+	keyboard_input->keymap =
+		xkb_map_new_from_string(keyboard_input->xkb_context,
+					map_str,
+					XKB_KEYMAP_FORMAT_TEXT_V1,
+					0);
+
+	munmap(map_str, size);
+	close(fd);
+
+	if (!keyboard_input->keymap) {
+		fprintf(stderr, "failed to compile keymap\n");
+		return;
+	}
+
+	keyboard_input->state = xkb_state_new(keyboard_input->keymap);
+	if (!keyboard_input->state) {
+		fprintf(stderr, "failed to create XKB state\n");
+		xkb_map_unref(keyboard_input->keymap);
+		return;
+	}
+
+	keyboard_input->control_mask =
+		1 << xkb_map_mod_get_index(keyboard_input->keymap, "Control");
+	keyboard_input->alt_mask =
+		1 << xkb_map_mod_get_index(keyboard_input->keymap, "Mod1");
+	keyboard_input->shift_mask =
+		1 << xkb_map_mod_get_index(keyboard_input->keymap, "Shift");
 }
 
 static void
