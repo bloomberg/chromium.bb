@@ -126,6 +126,7 @@ dnl ==========================================================================
 AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_CHECK_HEADERS([fcntl.h regex.h stdlib.h string.h unistd.h sys/vfs.h sys/statfs.h sys/param.h sys/mount.h])
+AX_CREATE_STDINT_H([src/fcstdint.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
