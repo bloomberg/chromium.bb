@@ -198,12 +198,12 @@ Browser* FindBrowserWithWebContents(const WebContents* web_contents) {
 
 namespace chrome {
 
-Browser* FindLastActiveWithProfile(Profile* profile) {
+Browser* FindLastActiveWithProfile(Profile* profile, HostDesktopType type) {
+  BrowserListImpl* list = BrowserListImpl::GetInstance(type);
   // We are only interested in last active browsers, so we don't fall back to
   // all browsers like FindBrowserWith* do.
-  return FindBrowserMatching(
-      BrowserList::begin_last_active(), BrowserList::end_last_active(), profile,
-      Browser::FEATURE_NONE, kMatchAny);
+  return FindBrowserMatching(list->begin_last_active(), list->end_last_active(),
+                             profile, Browser::FEATURE_NONE, kMatchAny);
 }
 
 Browser* FindLastActiveWithHostDesktopType(HostDesktopType type) {

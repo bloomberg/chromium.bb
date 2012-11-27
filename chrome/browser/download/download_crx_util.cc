@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/download_item.h"
@@ -44,9 +45,12 @@ ExtensionInstallPrompt* CreateExtensionInstallPrompt(
   } else {
     content::WebContents* web_contents = download_item.GetWebContents();
     if (!web_contents) {
-      Browser* browser = chrome::FindLastActiveWithProfile(profile);
+      chrome::HostDesktopType active_desktop = chrome::GetActiveDesktop();
+      Browser* browser = chrome::FindLastActiveWithProfile(profile,
+          active_desktop);
       if (!browser)
-        browser = new Browser(Browser::CreateParams(profile));
+        browser = new Browser(Browser::CreateParams(Browser::TYPE_TABBED,
+                                                    profile, active_desktop));
       web_contents = browser->tab_strip_model()->GetActiveWebContents();
     }
     return new ExtensionInstallPrompt(web_contents);

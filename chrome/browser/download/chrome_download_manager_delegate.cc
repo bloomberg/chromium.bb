@@ -36,6 +36,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/user_script.h"
@@ -265,7 +266,8 @@ WebContents* ChromeDownloadManagerDelegate::
 #else
   // Start the download in the last active browser. This is not ideal but better
   // than fully hiding the download from the user.
-  Browser* last_active = chrome::FindLastActiveWithProfile(profile_);
+  Browser* last_active = chrome::FindLastActiveWithProfile(profile_,
+      chrome::GetActiveDesktop());
   return last_active ? chrome::GetActiveWebContents(last_active) : NULL;
 #endif
 }
