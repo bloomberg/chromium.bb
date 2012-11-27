@@ -113,6 +113,12 @@ void LocalFileSyncService::AddChangeObserver(Observer* observer) {
   change_observers_.AddObserver(observer);
 }
 
+void LocalFileSyncService::RegisterURLForWaitingSync(
+    const FileSystemURL& url,
+    const base::Closure& on_syncable_callback) {
+  sync_context_->RegisterURLForWaitingSync(url, on_syncable_callback);
+}
+
 void LocalFileSyncService::ProcessLocalChange(
     LocalChangeProcessor* processor,
     const SyncFileCallback& callback) {

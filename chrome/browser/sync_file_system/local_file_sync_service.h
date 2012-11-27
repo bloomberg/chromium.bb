@@ -65,6 +65,15 @@ class LocalFileSyncService
 
   void AddChangeObserver(Observer* observer);
 
+  // Registers |url| to wait until sync is enabled for |url|.
+  // |on_syncable_callback| is to be called when |url| becomes syncable
+  // (i.e. when we have no pending writes and the file is successfully locked
+  // for sync).
+  // Calling this method again while this already has another URL waiting
+  // for sync will overwrite the previously registered URL.
+  void RegisterURLForWaitingSync(const fileapi::FileSystemURL& url,
+                                 const base::Closure& on_syncable_callback);
+
   // Synchronize one (or a set of) local change(s) to the remote server
   // using |processor|.
   // |processor| must have same or longer lifetime than this service.

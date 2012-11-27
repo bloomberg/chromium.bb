@@ -6,6 +6,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
 #include "chrome/browser/sync_file_system/mock_remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_event_observer.h"
@@ -28,6 +29,7 @@ using fileapi::FileSystemURLSet;
 using fileapi::MockSyncStatusObserver;
 using fileapi::SyncFileMetadata;
 using fileapi::SyncStatusCode;
+using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::InSequence;
 using ::testing::InvokeWithoutArgs;
@@ -52,6 +54,14 @@ void AssignValueAndQuit(base::RunLoop* run_loop,
   *status_out = status;
   *value_out = value;
   run_loop->Quit();
+}
+
+// This is called on IO thread.
+void VerifyFileError(base::WaitableEvent* event,
+                     base::PlatformFileError error) {
+  DCHECK(event);
+  EXPECT_EQ(base::PLATFORM_FILE_OK, error);
+  event->Signal();
 }
 
 }  // namespace
@@ -84,6 +94,11 @@ ACTION_P(RecordState, states) {
 ACTION_P(MockStatusCallback, status) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(arg4, status));
+}
+
+ACTION_P3(MockSyncOperationCallback, status, url, operation_type) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(arg1, status, url, operation_type));
 }
 
 class SyncFileSystemServiceTest : public testing::Test {
@@ -465,6 +480,64 @@ TEST_F(SyncFileSystemServiceTest, SimpleRemoteSyncFlow) {
   mock_remote_service()->NotifyRemoteChangeAvailable(1);
 
   run_loop.Run();
+}
+
+TEST_F(SyncFileSystemServiceTest, SimpleSyncFlowWithFileBusy) {
+  InitializeApp();
+
+  StrictMock<MockLocalChangeProcessor> local_change_processor;
+
+  sync_service_->set_auto_sync_enabled(true);
+  file_system_->file_system_context()->sync_context()->
+      set_mock_notify_changes_duration_in_sec(0);
+
+  const FileSystemURL kFile(file_system_->URL("foo"));
+
+  base::RunLoop run_loop;
+
+  // We expect a set of method calls for starting a remote sync.
+  EXPECT_CALL(*mock_remote_service(), GetCurrentState())
+      .Times(AtLeast(3))
+      .WillRepeatedly(Return(REMOTE_SERVICE_OK));
+  EXPECT_CALL(*mock_remote_service(), GetLocalChangeProcessor())
+      .WillRepeatedly(Return(&local_change_processor));
+
+  {
+    InSequence sequence;
+
+    // Return with SYNC_STATUS_FILE_BUSY once.
+    EXPECT_CALL(*mock_remote_service(), ProcessRemoteChange(_, _))
+        .WillOnce(MockSyncOperationCallback(fileapi::SYNC_STATUS_FILE_BUSY,
+                                            kFile,
+                                            fileapi::SYNC_OPERATION_NONE))
+        .RetiresOnSaturation();
+
+    // ProcessRemoteChange should be called again when the becomes
+    // not busy.
+    EXPECT_CALL(*mock_remote_service(), ProcessRemoteChange(_, _))
+        .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+  }
+
+  // We might also see an activity for local sync as we're going to make
+  // a local write operation on kFile.
+  EXPECT_CALL(local_change_processor, ApplyLocalChange(_, _, _, kFile, _))
+      .Times(AnyNumber());
+
+  // This should trigger a remote sync.
+  mock_remote_service()->NotifyRemoteChangeAvailable(1);
+
+  // Start a local operation on the same file (to make it BUSY).
+  base::WaitableEvent event(false, false);
+  thread_helper_.io_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&fileapi::CannedSyncableFileSystem::DoCreateFile,
+                            base::Unretained(file_system_.get()),
+                            kFile, base::Bind(&VerifyFileError, &event)));
+
+  run_loop.Run();
+
+  mock_remote_service()->NotifyRemoteChangeAvailable(0);
+
+  event.Wait();
 }
 
 }  // namespace sync_file_system

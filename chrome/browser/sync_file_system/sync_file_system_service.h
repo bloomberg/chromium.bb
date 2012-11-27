@@ -109,6 +109,8 @@ class SyncFileSystemService
   void DidProcessLocalChange(fileapi::SyncStatusCode status,
                              const fileapi::FileSystemURL& url);
 
+  void OnSyncEnabledForRemoteSync();
+
   // RemoteFileSyncService::Observer overrides.
   virtual void OnLocalChangeAvailable(int64 pending_changes) OVERRIDE;
 
@@ -128,6 +130,13 @@ class SyncFileSystemService
 
   bool local_sync_running_;
   bool remote_sync_running_;
+
+  // If a remote sync is returned with SYNC_STATUS_FILE_BUSY we mark this
+  // true and register the busy file URL to wait for a sync enabled event
+  // for the URL. When this flag is set to true it won't be worth trying
+  // another remote sync.
+  bool is_waiting_remote_sync_enabled_;
+
   bool auto_sync_enabled_;
 
   // TODO(kinuko): clean up this.

@@ -37,6 +37,8 @@ class MultiThreadTestHelper {
   void SetUp();
   void TearDown();
 
+  MessageLoop* message_loop() { return &message_loop_; }
+
   base::SingleThreadTaskRunner* ui_task_runner() {
     return ui_task_runner_.get();
   }

@@ -141,10 +141,8 @@ class CannedSyncableFileSystem
   // operations. (http://crbug.com/161442)
   void EnableDirectoryOperations(bool flag);
 
- private:
-  typedef ObserverListThreadSafe<LocalFileSyncStatus::Observer> ObserverList;
-
   // Operation methods body.
+  // They can be also called directly if the caller is already on IO thread.
   void DoCreateDirectory(const FileSystemURL& url,
                          const StatusCallback& callback);
   void DoCreateFile(const FileSystemURL& url,
@@ -186,6 +184,9 @@ class CannedSyncableFileSystem
   void DoGetUsageAndQuota(int64* usage,
                           int64* quota,
                           const quota::StatusCallback& callback);
+
+ private:
+  typedef ObserverListThreadSafe<LocalFileSyncStatus::Observer> ObserverList;
 
   // Callbacks.
   void DidOpenFileSystem(base::PlatformFileError result,
