@@ -228,3 +228,22 @@ TEST(SpellcheckWordIteratorTest, TreatNumbersAsWordCharacters) {
       EXPECT_NE(input_word, actual_word);
   }
 }
+
+TEST(SpellcheckWordIteratorTest, Initialization) {
+  // Test initialization works when a default language is set.
+  {
+    SpellcheckCharAttribute attributes;
+    attributes.SetDefaultLanguage("en-US");
+
+    SpellcheckWordIterator iterator;
+    EXPECT_TRUE(iterator.Initialize(&attributes, true));
+  }
+
+  // Test initialization fails when no default language is set.
+  {
+    SpellcheckCharAttribute attributes;
+
+    SpellcheckWordIterator iterator;
+    EXPECT_FALSE(iterator.Initialize(&attributes, true));
+  }
+}

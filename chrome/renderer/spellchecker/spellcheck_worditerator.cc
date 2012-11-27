@@ -312,6 +312,11 @@ bool SpellcheckWordIterator::Initialize(
   UErrorCode open_status = U_ZERO_ERROR;
   UParseError parse_status;
   string16 rule(attribute->GetRuleSet(allow_contraction));
+
+  // If there is no rule set, the attributes were invalid.
+  if (rule.empty())
+    return false;
+
   iterator_ = ubrk_openRules(rule.c_str(), rule.length(), NULL, 0,
                              &parse_status, &open_status);
   if (U_FAILURE(open_status))
