@@ -687,15 +687,17 @@ Profile* ExtensionProcessManager::GetProfile() const {
 void ExtensionProcessManager::OnExtensionHostCreated(ExtensionHost* host,
                                                      bool is_background) {
   DCHECK_EQ(site_instance_->GetBrowserContext(), host->profile());
-  if (is_background)
+  if (is_background) {
     background_hosts_.insert(host);
-  if (host->extension()->has_lazy_background_page()) {
-    linked_ptr<PerfTimer> since_unloaded(
-        background_page_data_[host->extension()->id()].
-            since_unloaded.release());
-    if (since_unloaded.get()) {
-      UMA_HISTOGRAM_LONG_TIMES("Extensions.EventPageIdleTime",
-                               since_unloaded->Elapsed());
+
+    if (host->extension()->has_lazy_background_page()) {
+      linked_ptr<PerfTimer> since_unloaded(
+          background_page_data_[host->extension()->id()].
+              since_unloaded.release());
+      if (since_unloaded.get()) {
+        UMA_HISTOGRAM_LONG_TIMES("Extensions.EventPageIdleTime",
+                                 since_unloaded->Elapsed());
+      }
     }
   }
 }
