@@ -5,6 +5,7 @@
 #include "webkit/fileapi/syncable/syncable_file_system_operation.h"
 
 #include "base/logging.h"
+#include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/local_file_system_operation.h"
@@ -67,6 +68,10 @@ void SyncableFileSystemOperation::CreateFile(
     bool exclusive,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
+  if (!operation_runner_) {
+    AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    return;
+  }
   DCHECK(operation_runner_.get());
   target_paths_.push_back(url);
   completion_callback_ = callback;
@@ -85,13 +90,15 @@ void SyncableFileSystemOperation::CreateDirectory(
     bool recursive,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK(operation_runner_.get());
-  if (!is_directory_operation_enabled_) {
-    callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
-    delete file_system_operation_;
-    delete this;
+  if (!operation_runner_) {
+    AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return;
   }
+  if (!is_directory_operation_enabled_) {
+    AbortOperation(callback, base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+    return;
+  }
+  DCHECK(operation_runner_.get());
   target_paths_.push_back(url);
   completion_callback_ = callback;
   scoped_ptr<SyncableFileOperationRunner::Task> task(new QueueableTask(
@@ -108,6 +115,10 @@ void SyncableFileSystemOperation::Copy(
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
+  if (!operation_runner_) {
+    AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    return;
+  }
   DCHECK(operation_runner_.get());
   target_paths_.push_back(dest_url);
   completion_callback_ = callback;
@@ -125,6 +136,10 @@ void SyncableFileSystemOperation::Move(
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
+  if (!operation_runner_) {
+    AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    return;
+  }
   DCHECK(operation_runner_.get());
   target_paths_.push_back(src_url);
   target_paths_.push_back(dest_url);
@@ -142,10 +157,12 @@ void SyncableFileSystemOperation::DirectoryExists(
     const FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
+  if (!operation_runner_) {
+    AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    return;
+  }
   if (!is_directory_operation_enabled_) {
-    callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
-    delete file_system_operation_;
-    delete this;
+    AbortOperation(callback, base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
     return;
   }
   file_system_operation_->DirectoryExists(url, callback);
@@ -156,6 +173,10 @@ void SyncableFileSystemOperation::FileExists(
     const FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
+  if (!operation_runner_) {
+    AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    return;
+  }
   file_system_operation_->FileExists(url, callback);
   delete this;
 }
@@ -164,6 +185,13 @@ void SyncableFileSystemOperation::GetMetadata(
     const FileSystemURL& url,
     const GetMetadataCallback& callback) {
   DCHECK(CalledOnValidThread());
+  if (!operation_runner_) {
+    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                 base::PlatformFileInfo(), FilePath());
+    delete file_system_operation_;
+    delete this;
+    return;
+  }
   file_system_operation_->GetMetadata(url, callback);
   delete this;
 }
@@ -172,6 +200,12 @@ void SyncableFileSystemOperation::ReadDirectory(
     const FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   DCHECK(CalledOnValidThread());
+  if (!operation_runner_) {
+    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, FileEntryList(), false);
+    delete file_system_operation_;
+    delete this;
+    return;
+  }
   // This is a read operation and there'd be no hard to let it go even if
   // directory operation is disabled. (And we should allow this if it's made
   // on the root directory)
@@ -183,6 +217,10 @@ void SyncableFileSystemOperation::Remove(
     const FileSystemURL& url, bool recursive,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
+  if (!operation_runner_) {
+    AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    return;
+  }
   DCHECK(operation_runner_.get());
   target_paths_.push_back(url);
   completion_callback_ = callback;
@@ -202,6 +240,12 @@ void SyncableFileSystemOperation::Write(
     int64 offset,
     const WriteCallback& callback) {
   DCHECK(CalledOnValidThread());
+  if (!operation_runner_) {
+    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, 0, true);
+    delete file_system_operation_;
+    delete this;
+    return;
+  }
   DCHECK(operation_runner_.get());
   target_paths_.push_back(url);
   completion_callback_ = base::Bind(&WriteCallbackAdapter, callback);
@@ -217,6 +261,10 @@ void SyncableFileSystemOperation::Truncate(
     const FileSystemURL& url, int64 length,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
+  if (!operation_runner_) {
+    AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    return;
+  }
   DCHECK(operation_runner_.get());
   target_paths_.push_back(url);
   completion_callback_ = callback;
@@ -235,6 +283,10 @@ void SyncableFileSystemOperation::TouchFile(
     const base::Time& last_modified_time,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
+  if (!operation_runner_) {
+    AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    return;
+  }
   file_system_operation_->TouchFile(url, last_access_time,
                                     last_modified_time, callback);
   delete this;
@@ -259,7 +311,6 @@ void SyncableFileSystemOperation::Cancel(
     const StatusCallback& cancel_callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(file_system_operation_);
-  DCHECK(file_system_operation_);
   completion_callback_ = cancel_callback;
   file_system_operation_->Cancel(
       base::Bind(&self::DidFinish, base::Owned(this)));
@@ -275,6 +326,13 @@ void SyncableFileSystemOperation::CreateSnapshotFile(
     const FileSystemURL& path,
     const SnapshotFileCallback& callback) {
   DCHECK(CalledOnValidThread());
+  if (!operation_runner_) {
+    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                 base::PlatformFileInfo(), FilePath(), NULL);
+    delete file_system_operation_;
+    delete this;
+    return;
+  }
   file_system_operation_->CreateSnapshotFile(path, callback);
   delete this;
 }
@@ -284,11 +342,17 @@ SyncableFileSystemOperation::SyncableFileSystemOperation(
     FileSystemOperation* file_system_operation) {
   DCHECK(file_system_context);
   DCHECK(file_system_operation);
+  file_system_operation_ = file_system_operation->AsLocalFileSystemOperation();
+  DCHECK(file_system_operation_);
+  if (!file_system_context->sync_context()) {
+    // Syncable FileSystem is opened in a file system context which doesn't
+    // support (or is not initialized for) the API.
+    // Returning here to leave operation_runner_ as NULL.
+    return;
+  }
   operation_runner_ = file_system_context->sync_context()->operation_runner();
   is_directory_operation_enabled_ = file_system_context->sandbox_provider()->
       is_sync_directory_operation_enabled();
-  file_system_operation_ = file_system_operation->AsLocalFileSystemOperation();
-  DCHECK(file_system_operation_);
 }
 
 void SyncableFileSystemOperation::DidFinish(base::PlatformFileError status) {
@@ -318,6 +382,14 @@ void SyncableFileSystemOperation::OnCancelled() {
   DCHECK(!completion_callback_.is_null());
   completion_callback_.Run(base::PLATFORM_FILE_ERROR_ABORT);
   delete file_system_operation_;
+}
+
+void SyncableFileSystemOperation::AbortOperation(
+    const StatusCallback& callback,
+    base::PlatformFileError error) {
+  callback.Run(error);
+  delete file_system_operation_;
+  delete this;
 }
 
 }  // namespace fileapi

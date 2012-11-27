@@ -90,6 +90,9 @@ class WEBKIT_STORAGE_EXPORT SyncableFileSystemOperation
 
   void OnCancelled();
 
+  void AbortOperation(const StatusCallback& callback,
+                      base::PlatformFileError error);
+
   base::WeakPtr<SyncableFileOperationRunner> operation_runner_;
   LocalFileSystemOperation* file_system_operation_;
   std::vector<FileSystemURL> target_paths_;
