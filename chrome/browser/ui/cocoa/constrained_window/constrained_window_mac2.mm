@@ -32,7 +32,9 @@ ConstrainedWindowMac2::~ConstrainedWindowMac2() {
 
 void ConstrainedWindowMac2::ShowConstrainedWindow() {
   NSWindow* parent_window = GetParentWindow();
-  DCHECK(parent_window);
+  if (!parent_window)
+    return;
+
   NSView* parent_view = GetSheetParentViewForWebContents(web_contents_);
   DCHECK(parent_view);
 

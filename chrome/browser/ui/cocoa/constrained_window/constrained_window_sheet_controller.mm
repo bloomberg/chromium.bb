@@ -141,7 +141,10 @@ NSValue* GetKeyForParentWindow(NSWindow* parent_window) {
                         ordered:NSWindowAbove];
   [overlayWindow addChildWindow:sheet
                         ordered:NSWindowAbove];
-  if (showSheet && [parentWindow_ isKeyWindow])
+  // Set focus to the sheet if the parent window is main. The parent window
+  // may not have keyboard focus if it has a child window open, for example
+  // a bubble.
+  if (showSheet && [parentWindow_ isMainWindow])
     [sheet makeKeyAndOrderFront:nil];
 
   [parentView setPostsFrameChangedNotifications:YES];
