@@ -25,6 +25,8 @@
 #include "chrome/browser/chromeos/input_method/input_method_property.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/ibus/ibus_constants.h"
+#include "chromeos/dbus/ibus/ibus_input_context_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
@@ -83,22 +85,6 @@ bool PropertyKeyIsBlacklisted(const char* key) {
       return true;
   }
   return false;
-}
-
-// Returns IBusInputContext for |input_context_path|. NULL on errors.
-IBusInputContext* GetInputContext(const std::string& input_context_path,
-                                  IBusBus* ibus) {
-  GDBusConnection* connection = ibus_bus_get_connection(ibus);
-  if (!connection) {
-    DVLOG(1) << "IBusConnection is null";
-    return NULL;
-  }
-  // This function does not issue an IBus IPC.
-  IBusInputContext* context = ibus_input_context_get_input_context(
-      input_context_path.c_str(), connection);
-  if (!context)
-    DVLOG(1) << "IBusInputContext is null: " << input_context_path;
-  return context;
 }
 
 // Returns true if |prop| has children.
@@ -501,10 +487,6 @@ IBusControllerImpl::~IBusControllerImpl() {
     if (ibus_panel_service) {
       g_signal_handlers_disconnect_by_func(
           ibus_panel_service,
-          reinterpret_cast<gpointer>(G_CALLBACK(FocusInThunk)),
-          this);
-      g_signal_handlers_disconnect_by_func(
-          ibus_panel_service,
           reinterpret_cast<gpointer>(G_CALLBACK(RegisterPropertiesThunk)),
           this);
       g_signal_handlers_disconnect_by_func(
@@ -529,11 +511,10 @@ bool IBusControllerImpl::Start() {
 void IBusControllerImpl::Reset() {
   if (!IBusConnectionsAreAlive())
     return;
-  IBusInputContext* context =
-      GetInputContext(current_input_context_path_, ibus_);
-  if (!context)
-    return;
-  ibus_input_context_reset(context);
+  IBusInputContextClient* client
+      = DBusThreadManager::Get()->GetIBusInputContextClient();
+  if (client)
+    client->Reset();
 }
 
 bool IBusControllerImpl::Stop() {
@@ -618,10 +599,6 @@ bool IBusControllerImpl::ActivateInputMethodProperty(const std::string& key) {
     DVLOG(1) << "ActivateInputMethodProperty: IBus connection is not alive";
     return false;
   }
-  if (current_input_context_path_.empty()) {
-    DVLOG(1) << "Input context is unknown";
-    return false;
-  }
 
   // The third parameter of ibus_input_context_property_activate() has to be
   // true when the |key| points to a radio button. false otherwise.
@@ -638,21 +615,11 @@ bool IBusControllerImpl::ActivateInputMethodProperty(const std::string& key) {
     return false;
   }
 
-  IBusInputContext* context =
-      GetInputContext(current_input_context_path_, ibus_);
-  if (!context)
-    return false;
-
-  // Activate the property *asynchronously*.
-  ibus_input_context_property_activate(context, key.c_str(), is_radio);
-
-  // We don't have to call ibus_proxy_destroy(context) explicitly here,
-  // i.e. we can just call g_object_unref(context), since g_object_unref can
-  // trigger both dispose, which is overridden by src/ibusproxy.c, and
-  // finalize functions. For details, see
-  // http://library.gnome.org/devel/gobject/stable/gobject-memory.html
-  g_object_unref(context);
-
+  IBusInputContextClient* client
+      = DBusThreadManager::Get()->GetIBusInputContextClient();
+  if (client)
+    client->PropertyActivate(key,
+                             static_cast<ibus::IBusPropertyState>(is_radio));
   return true;
 }
 
@@ -863,11 +830,6 @@ void IBusControllerImpl::ConnectPanelServiceSignals() {
   }
   // We don't _ref() or _weak_ref() the panel service object, since we're not
   // interested in the life time of the object.
-
-  g_signal_connect(ibus_panel_service,
-                   "focus-in",
-                   G_CALLBACK(FocusInThunk),
-                   this);
   g_signal_connect(ibus_panel_service,
                    "register-properties",
                    G_CALLBACK(RegisterPropertiesThunk),
@@ -922,16 +884,6 @@ void IBusControllerImpl::BusNameOwnerChanged(IBusBus* bus,
   // successfully created, |OnConnectionChange| will be called to
   // notify Chrome that IBus is ready.
   MaybeRestoreConnections();
-}
-
-void IBusControllerImpl::FocusIn(IBusPanelService* panel,
-                                 const gchar* input_context_path) {
-  if (!input_context_path)
-    DVLOG(1) << "NULL context passed";
-  else
-    DVLOG(1) << "FocusIn: " << input_context_path;
-  // Remember the current ic path.
-  current_input_context_path_ = Or(input_context_path, "");
 }
 
 void IBusControllerImpl::RegisterProperties(IBusPanelService* panel,

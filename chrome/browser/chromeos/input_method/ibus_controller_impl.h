@@ -75,8 +75,6 @@ class IBusControllerImpl : public IBusControllerBase {
   CHROMEG_CALLBACK_0(IBusControllerImpl, void, BusDisconnected, IBusBus*);
   CHROMEG_CALLBACK_3(IBusControllerImpl, void, BusNameOwnerChanged,
                      IBusBus*, const gchar*, const gchar*, const gchar*);
-  CHROMEG_CALLBACK_1(IBusControllerImpl, void, FocusIn,
-                     IBusPanelService*, const gchar*);
   CHROMEG_CALLBACK_1(IBusControllerImpl, void, RegisterProperties,
                      IBusPanelService*, IBusPropList*);
   CHROMEG_CALLBACK_1(IBusControllerImpl, void, UpdateProperty,
