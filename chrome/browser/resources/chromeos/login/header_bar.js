@@ -33,11 +33,8 @@ cr.define('login', function() {
           this.handleShutdownClick_);
       $('shutdown-button').addEventListener('click',
           this.handleShutdownClick_);
-      $('add-user-button').addEventListener('click', function(e) {
-        chrome.send('loginRequestNetworkState',
-                    ['login.HeaderBar.handleAddUser',
-                     'check']);
-      });
+      $('add-user-button').addEventListener('click',
+          this.handleAddUserClick_);
       $('cancel-add-user-button').addEventListener('click',
           this.handleCancelAddUserClick_);
       $('guest-user-header-bar-item').addEventListener('click',
@@ -68,6 +65,14 @@ cr.define('login', function() {
       for (var i = 0, button; button = buttons[i]; ++i) {
         button.disabled = value;
       }
+    },
+
+    /**
+     * Add user button click handler.
+     * @private
+     */
+    handleAddUserClick_: function(e) {
+      Oobe.showSigninUI();
     },
 
     /**
@@ -175,44 +180,6 @@ cr.define('login', function() {
       this.classList.add('login-header-bar-animate-slow');
       this.classList.remove('login-header-bar-hidden');
     },
-  };
-
-  /**
-   * Continues add user button click handling after network state has
-   * been recieved.
-   * @param {number} state Current state of the network (see NET_STATE).
-   * @param {string} network Name of the network.
-   * @param {string} reason Reason the callback was called.
-   * @param {number} last Last active network type.
-   */
-  HeaderBar.handleAddUser = function(state, network, reason, last) {
-    if (state != NET_STATE.OFFLINE) {
-      Oobe.showSigninUI();
-    } else {
-      /** @const */ var BUBBLE_OFFSET = 8;
-      /** @const */ var BUBBLE_PADDING = 5;
-      $('bubble').showTextForElement(
-          $('add-user-button'),
-          localStrings.getString('addUserErrorMessage'),
-          cr.ui.Bubble.Attachment.TOP, BUBBLE_OFFSET, BUBBLE_PADDING);
-      chrome.send('loginAddNetworkStateObserver',
-                  ['login.HeaderBar.bubbleWatchdog']);
-    }
-  };
-
-  /**
-   * Observes network state, and close the bubble when network becomes online.
-   * @param {number} state Current state of the network (see NET_STATE).
-   * @param {string} network Name of the network.
-   * @param {string} reason Reason the callback was called.
-   * @param {number} last Last active network type.
-   */
-  HeaderBar.bubbleWatchdog = function(state, network, reason, last) {
-    if (state != NET_STATE.OFFLINE) {
-      $('bubble').hideForElement($('add-user-button'));
-      chrome.send('loginRemoveNetworkStateObserver',
-                  ['login.HeaderBar.bubbleWatchdog']);
-    }
   };
 
   return {

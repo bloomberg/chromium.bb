@@ -223,8 +223,6 @@ class SigninScreenHandler
   void HandleWallpaperReady(const base::ListValue* args);
   void HandleLoginWebuiReady(const base::ListValue* args);
   void HandleLoginRequestNetworkState(const base::ListValue* args);
-  void HandleLoginAddNetworkStateObserver(const base::ListValue* args);
-  void HandleLoginRemoveNetworkStateObserver(const base::ListValue* args);
   void HandleDemoWebuiReady(const base::ListValue* args);
   void HandleSignOutUser(const base::ListValue* args);
   void HandleUserImagesLoaded(const base::ListValue* args);
@@ -317,9 +315,6 @@ class SigninScreenHandler
 
   // True when signin UI is shown to user (either sign in form or user pods).
   bool login_ui_active_;
-
-  // Sign-in screen WebUI observers of network state.
-  WebUIObservers observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninScreenHandler);
 };

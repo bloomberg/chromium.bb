@@ -175,8 +175,6 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_CANCEL));
   localized_strings->SetString("signOutUser",
       l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_SIGN_OUT));
-  localized_strings->SetString("addUserErrorMessage",
-      l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_ADD_USER_OFFLINE));
   localized_strings->SetString("createAccount",
       l10n_util::GetStringUTF16(IDS_CREATE_ACCOUNT_HTML));
   localized_strings->SetString("guestSignin",
@@ -328,12 +326,6 @@ void SigninScreenHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("loginRequestNetworkState",
       base::Bind(&SigninScreenHandler::HandleLoginRequestNetworkState,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("loginAddNetworkStateObserver",
-      base::Bind(&SigninScreenHandler::HandleLoginAddNetworkStateObserver,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("loginRemoveNetworkStateObserver",
-      base::Bind(&SigninScreenHandler::HandleLoginRemoveNetworkStateObserver,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("demoWebuiReady",
       base::Bind(&SigninScreenHandler::HandleDemoWebuiReady,
@@ -854,26 +846,6 @@ void SigninScreenHandler::HandleLoginRequestNetworkState(
             network_state_informer_->network_name(),
             reason,
             network_state_informer_->last_network_type());
-}
-
-void SigninScreenHandler::HandleLoginAddNetworkStateObserver(
-    const base::ListValue* args) {
-  std::string callback;
-  if (!args->GetString(0, &callback)) {
-    NOTREACHED();
-    return;
-  }
-  observers_.insert(callback);
-}
-
-void SigninScreenHandler::HandleLoginRemoveNetworkStateObserver(
-    const base::ListValue* args) {
-  std::string callback;
-  if (!args->GetString(0, &callback)) {
-    NOTREACHED();
-    return;
-  }
-  observers_.erase(callback);
 }
 
 void SigninScreenHandler::HandleDemoWebuiReady(const base::ListValue* args) {
