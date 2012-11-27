@@ -23,8 +23,8 @@
     # Linux-Mac cross compiler distcc farm.
     'chromium_mac_pch%': 1,
 
-    # Enable building with ASAN (Clang's -faddress-sanitizer option).
-    # -faddress-sanitizer only works with clang, but asan=1 implies clang=1
+    # Enable building with ASAN (Clang's -fsanitize=address option).
+    # -fsanitize=address only works with clang, but asan=1 implies clang=1
     # See https://sites.google.com/a/chromium.org/dev/developers/testing/addresssanitizer
     'asan%': 0,
 
