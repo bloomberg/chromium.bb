@@ -5,10 +5,10 @@
 This doc shows you how packaged apps can connect to USB devices
 and read from and write to a user's serial ports.
 See also the reference docs for the
-<a href="experimental.usb.html">USB API</a>
+<a href="usb.html">USB API</a>
 and the
 <a href="serial.html">Serial API</a>.
-The <a href="experimental.bluetooth.html">Bluetooth API</a> has just landed and
+The <a href="bluetooth.html">Bluetooth API</a> has just landed and
 we'll write more on this soon.
 We've included a link to an early sample below.
 </p>
@@ -26,20 +26,17 @@ and <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/blue
 <h2 id="usb">Accessing USB devices</h2>
 
 <p>
-You can use the USB API to send messages to any connected device.
+You can use the USB API to send messages to connected devices using only JavaScript code. Some devices are not accessible through this API - see the <a href="#caveats">Caveats section</a> below for more details.
 </p>
 
 <h3 id="manifest">Manifest requirement</h3>
 
 <p>
-You must add the "usb" permission
-to the manifest file:
+The USB API requires a special permission "usb" in the manifest file:
 </p>
 
 <pre>
 "permissions": [
-  "app.window",
-  "experimental",
   "usb"
 ]
 </pre>
@@ -55,7 +52,7 @@ which has four parameters:
 </p>
 
 <pre>
-chrome.experimental.usb.findDevice(vendorId, productId, eventCallbacks, onDeviceFoundCallback)
+chrome.usb.findDevice(vendorId, productId, options, onDeviceFoundCallback)
 </pre>
 
 <br>
@@ -74,24 +71,20 @@ chrome.experimental.usb.findDevice(vendorId, productId, eventCallbacks, onDevice
     <td>The product ID for your USB device (in Linux, use lsusb to find it).</td>
   </tr>
   <tr>
-    <td>eventCallbacks(object)</td>
+    <td>options (object)</td>
     <td>An object with a single key, "onEvent",
-      to be called whenever an event occurs on the corresponding device.
+      that will be called whenever an event is received from the corresponding device.
       This will be the primary method of receiving information from the device.
       As the host-initiated USB protocol is complex, read on to learn more.
     </td>
   </tr>
   <tr>
-    <td>onDeviceFoundCallback()</td>
+    <td>onDeviceFoundCallback (function)</td>
     <td>Called when the device is found.
-      The callback's parameter is an object
+      The callback will be executed with one parameter, an object
       with three properties: <code>handle</code>,
       <code>vendorId</code>,
-      <code>productId</code>;
-      or <code>NULL</code>,
-      if no device is found.
-      Save this object
-      as it's required to send messages to the device.</td>
+      <code>productId</code>. If the device could not be found, the parameter will be <code>null</code>. Save this parameter for later use, as it's required in the other methods.</td>
   </tr>
 </table>
 
@@ -101,7 +94,7 @@ Example:
 
 <pre>
 var onDeviceFound = function(device) {
-  deviceObj=device;
+  _this.device=device;
   if (device) {
      console.log(“Device found: ”+device.handle);
   } else {
@@ -110,27 +103,26 @@ var onDeviceFound = function(device) {
 };
 
 var onUsbEvent = function(event) {
-     console.log(“USB event!”);
+     console.log(“Got some message from the USB device!”);
 };
 
-chrome.experimental.usb.findDevice(vendorId, productId, {"onEvent": onUsbEvent}, onDeviceFound);
+chrome.usb.findDevice(vendorId, productId, {"onEvent": onUsbEvent}, onDeviceFound);
 </pre>
 
 <h3 id="usb_transfers">USB transfers and receiving data from a device</h3>
 
 <p>
 USB protocol defines four types of transfers:
-control, bulk, isochronous and interrupt.
-Theoretically they can all occur in both directions:<br>
-device-to-host and host-to-device.
-Host-to-device is initiated by your code and is described in the next sections.
+<a href="#control_transfers">control</a>, <a href="#bulk_transfers">bulk</a>, <a href="#isochronous_transfers">isochronous</a> and <a href="#interrupt_transfers">interrupt</a>.
+Theoretically they can occur in both directions:<br>
+device-to-host (inbound) and host-to-device (outbound).
 </p>
 
 <p>
-Device-to-host messages are handled by Chrome and delivered
-to the <code>onEvent()</code> callback
-defined in the <code>findDevice()</code> method.
-For each message from the device,
+However, due to the nature of the USB protocol, both inbound and outbound messages must be initiated by the host (your computer). For inbound (device-to-host) messages, the host, your JavaScript code, sends a message flagged as "inbound" to the device. The exact contents of the message depends on the device, but usually will have some identification of what you are requesting from it. The device then responds with the requested data. The device's response is handled by Chrome and delivered assynchronously to the <code>onEvent</code> callback you defined in the <code>findDevice</code> method.
+An outbound (host-to-device) message is much simpler and doesn't generate an answer from the device.</p>
+
+<p>For each message from the device,
 the <code>onEvent</code> callback will receive 
 an event object with the following properties:
 </p>
@@ -151,8 +143,13 @@ an event object with the following properties:
     <td>0 is success; other values indicate failure.</td>
   </tr>
   <tr>
-    <td>data (integer array)</td>
+    <td>data (arraybuffer)</td>
     <td>Contains the data sent by the device.
+    </td>
+  </tr>
+  <tr>
+    <td>error (string)</td>
+    <td>If resultCode is not 0, this field will contain a textual description of the error that occurred during the transfer.
     </td>
   </tr>
 </table>
@@ -164,23 +161,23 @@ Example:
 <pre>
 var onUsbEvent = function(event) {
     if (event &amp;&amp; event.resultCode===0 &amp;&amp; event.data) {
-     console.log(“got ”+event.data.length+" bytes");
+     console.log(“got ”+event.data.byteLength+" bytes");
     }
 };
 
-chrome.experimental.usb.findDevice( vendorId, productId, {"onEvent": onUsbEvent}, onDeviceFound);
+chrome.usb.findDevice( vendorId, productId, {"onEvent": onUsbEvent}, onDeviceFound);
 </pre>
 
-<h3 id="control_transfers">Sending data - control transfers</h3>
+<h3 id="control_transfers">CONTROL transfers</h3>
 
 <p>
-Control transfers are generally used to send configuration
+Control transfers are generally used to send or receive configuration
 or command parameters to a USB device.
 The method is simple and receives three parameters:
 </p>
 
 <pre>
-chrome.experimental.usb.controlTransfer(deviceObj, transferInfo, transferCallback)
+chrome.usb.controlTransfer(deviceObj, transferInfo, transferCallback)
 </pre>
 
 <br>
@@ -192,13 +189,12 @@ chrome.experimental.usb.controlTransfer(deviceObj, transferInfo, transferCallbac
   </tr>
   <tr>
     <td>deviceObj</td>
-    <td>Object received from <code>findDevice()</code> callback.</td>
+    <td>Object sent in <code>findDevice()</code> callback.</td>
   </tr>
   <tr>
     <td>transferInfo</td>
     <td>Parameter object with values from the table below.
-      Check your USB device protocol specification
-      to know which values are supported.</td>
+      Check your USB device protocol specification for specifics.</td>
   </tr>
   <tr>
     <td>transferCallback()</td>
@@ -221,47 +217,44 @@ Values for <code>transferInfo</code> object:
     <th scope="col"> Description </th>
   </tr>
   <tr>
-    <td>requestType (string)</td>
+    <td>requestType&nbsp;(string)</td>
     <td>"vendor", "standard", "class" or "reserved".</td>
   </tr>
   <tr>
-    <td>recipient (string)</td>
+    <td>recipient&nbsp;(string)</td>
     <td>"device", "interface", "endpoint" or "other".</td>
   </tr>
   <tr>
-    <td>direction (string)</td>
-    <td>in" or "out".
-      IN direction is used to notify the device
+    <td>direction&nbsp;(string)</td>
+    <td>"in" or "out".
+      "in" direction is used to notify the device
       that it should send information to the host.
       All communication in a USB bus is host-initiated,
       so use an 'in' transfer to allow a device
       to send information back.</td>
   </tr>
   <tr>
-    <td>request (integer)</td>
+    <td>request&nbsp;(integer)</td>
     <td>Defined by your device's protocol.</td>
   </tr>
   <tr>
-    <td>value (integer)</td>
+    <td>value&nbsp;(integer)</td>
     <td>Defined by your device's protocol.</td>
   </tr>
   <tr>
-    <td>index (integer)</td>
+    <td>index&nbsp;(integer)</td>
     <td>Defined by your device's protocol.</td>
   </tr>
   <tr>
-    <td>length (integer)</td>
+    <td>length&nbsp;(integer)</td>
     <td>Only used when direction is "in".
       Notifies the device that this is the amount
       of data the host is expecting in response.</td>
   </tr>
   <tr>
-    <td>data (integer array)</td>
+    <td>data&nbsp;(arraybuffer)</td>
     <td>Defined by your device's protocol,
-      required when direction is "out".
-      <b>WARNING: </b>in the near future,
-      this parameter will likely change
-      to <code>ArrayBuffer</code>.</td>
+      required when direction is "out".</td>
   </tr>
 </table>
 
@@ -277,21 +270,19 @@ var transferInfo = {
    "request":  0x31,
    "value": 120,
    "index": 0,
-   "data": [4, 8, 15, 16, 23, 42]
+   "data": new Uint8Array([4, 8, 15, 16, 23, 42]).buffer
  };
-chrome.experimental.usb.controlTransfer(deviceObj, transferInfo, optionalCallback);
+chrome.usb.controlTransfer(deviceObj, transferInfo, optionalCallback);
 </pre>
 
-<h3 id="isochronous_transfers">Sending data - isochronous transfers</h3>
+<h3 id="isochronous_transfers">ISOCHRONOUS transfers</h3>
 
 <p>
-Isochronous transfers are commonly used for streams of data.
-Video and sound, for example, are good candidates for this transfer type.
-To send an isochronous transfer, use:
+Isochronous transfers is the most complex type of USB transfers. They are commonly used for streams of data, like video and sound. To initiate an isochronous transfer (either inbound or outbound), you must use:
 </p>
 
 <pre>
-chrome.experimental.usb.isochronousTransfer(deviceObj, isochronousTransferInfo, transferCallback)
+chrome.usb.isochronousTransfer(deviceObj, isochronousTransferInfo, transferCallback)
 </pre>
 
 <br>
@@ -312,8 +303,8 @@ chrome.experimental.usb.isochronousTransfer(deviceObj, isochronousTransferInfo, 
   <tr>
     <td>transferCallback()</td>
     <td>Invoked when the transfer has completed.
-      Notice that this callback doesn't represent any response from the device.
-      It's just to notify your code that the asynchronous transfer request
+      Notice that this callback doesn't contain any response from the device.
+      It's just to notify you that the asynchronous transfer request
       has been processed and you can go ahead.
       The device's response, if any, will always be sent through
       the <code>onEvent()</code> callback set on <code>findDevice()</code>.
@@ -331,23 +322,23 @@ Values for <code>isochronousTransferInfo</code> object:
     <th scope="col"> Description </th>
   </tr>
   <tr>
-    <td>transferInfo (object)</td>
-    <td>A parameter object with the following parameters:<br>
+    <td>transferInfo&nbsp;(object)</td>
+    <td>An object with the following attributes:<br>
       <b>direction (string): </b>"in" or "out".<br>
-      <b>endpoint (integer): </b>defined by your device's protocol.<br>
+      <b>endpoint (integer): </b>defined by your device. Usually can be found by looking at an USB instrospection tool, like <code>lsusb -v</code><br>
       <b>length (integer): </b>only used when direction is "in".
       Notifies the device that this is the amount
-      of data the host is expecting in response<br>
-      <b>data (integer array): </b>defined by your device's protocol;
+      of data the host is expecting in response. Should be AT LEAST <code>packets * packetLength</code><br>
+      <b>data (arraybuffer): </b>defined by your device's protocol;
       only used when direction is "out".
     </td>
   </tr>
   <tr>
-    <td>packets (integer)</td>
+    <td>packets&nbsp;(integer)</td>
     <td>Total number of packets expected in this transfer.</td>
   </tr>
   <tr>
-    <td>packetLength (integer)</td>
+    <td>packetLength&nbsp;(integer)</td>
     <td>Expected length of each packet in this transfer.</td>
   </tr>
 </table>
@@ -367,19 +358,23 @@ var isoTransferInfo = {
   "packets": 20,
   "packetLength": 128
 };
-chrome.experimental.usb.isochronousTransfer(deviceObj, isoTransferInfo, optionalCallback);
+chrome.usb.isochronousTransfer(deviceObj, isoTransferInfo, optionalCallback);
 </pre>
 
-<h3 id="bulk_transfers">Sending data - bulk transfers</h3>
+<p>
+  <b>Notes:</b> One isochronous transfer will contain <code>isoTransferInfo.packets</code> packets of <code>isoTransferInfo.packetLength</code> bytes. If it is an inbound transfer (your code requested data from the device), the <code>data</code> field in the onUsbEvent will be an ArrayBuffer of size <code>transferInfo.length</code>. It is your duty to walk through this ArrayBuffer and extract the different packets, each starting at a multiple of <code>isoTransferInfo.packetLength</code> bytes. If you are expecting a stream of data from the device, remember that you will have to send one "inbound" transfer for each transfer you expect back. USB devices don't send transfers to the bus unless the host explicitly requests them through "inbound" transfers.
+</p>
+
+<h3 id="bulk_transfers">BULK transfers</h3>
 
 <p>
-Bulk transfer is a USB transfer type commonly used
-to transfer a large amount of data reliably.
+Bulk transfer is an USB transfer type commonly used
+to transfer a large amount of data in a reliable way.
 The method has three parameters:
 </p>
 
 <pre>
-chrome.experimental.usb.bulkTransfer(deviceObj, transferInfo, transferCallback)
+chrome.usb.bulkTransfer(deviceObj, transferInfo, transferCallback)
 </pre>
 
 <br>
@@ -398,9 +393,9 @@ chrome.experimental.usb.bulkTransfer(deviceObj, transferInfo, transferCallback)
     <td>Parameter object with the values in the table below.</td>
   </tr>
   <tr>
-    <td>transferCallback()</td>
+    <td>transferCallback</td>
     <td>Invoked when the transfer has completed.
-      Notice that this callback doesn't represent any response from the device.
+      Notice that this callback doesn't contain the device's response.
       It's just to notify your code that the asynchronous transfer request
       has been processed and you can go ahead.
       The device's response, if any, will always be sent through
@@ -433,7 +428,7 @@ Values for <code>transferInfo</code> object:
       of data the host is expecting in response.</td>
   </tr>
   <tr>
-    <td>data (integer array)</td>
+    <td>data (ArrayBuffer)</td>
     <td>Defined by your device's protocol;
       only used when direction is "out".</td>
   </tr>
@@ -447,23 +442,23 @@ Example:
 var transferInfo = {
    "direction": "out",
    "endpoint": 1,
-   "data": [4, 8, 15, 16, 23, 42]
+   "data": new Uint8Array([4, 8, 15, 16, 23, 42]).buffer
  };
 </pre>
 
-<h3 id="interrupt_transfers">Sending data - interrupt transfers</h3>
+<h3 id="interrupt_transfers">INTERRUPT transfers</h3>
 
 <p>
 Interrupt transfers are used to send important notifications.
 Since all USB communication is initiated by the host,
 host code usually polls the device periodically,
 sending interrupt IN transfers that will make the device send data back
-if there is anything on the interrupt queue.
+if there is anything in the interrupt queue.
 The method has three parameters:
 </p>
 
 <pre>
-chrome.experimental.usb.interruptTransfer(deviceObj, transferInfo, transferCallback)
+chrome.usb.interruptTransfer(deviceObj, transferInfo, transferCallback)
 </pre>
 
 <br>
@@ -482,9 +477,9 @@ chrome.experimental.usb.interruptTransfer(deviceObj, transferInfo, transferCallb
     <td>Parameter object with the values in the table below.</td>
   </tr>
   <tr>
-    <td>transferCallback()</td>
+    <td>transferCallback</td>
     <td>Invoked when the transfer has completed.
-      Notice that this callback doesn't represent any response from the device.
+      Notice that this callback doesn't contain the device's response.
       It's just to notify your code that the asynchronous transfer request
       has been processed and you can go ahead.
       The device's response, if any, will always be sent through
@@ -517,7 +512,7 @@ Values for <code>transferInfo</code> object:
       of data the host is expecting in response.</td>
   </tr>
   <tr>
-    <td>data (integer array)</td>
+    <td>data (ArrayBuffer)</td>
     <td>Defined by your device's protocol;
       only used when direction is "out".</td>
   </tr>
@@ -532,27 +527,30 @@ var transferInfo = {
    "endpoint": 1,
    "length": 2
  };
-chrome.experimental.usb.interruptTransfer(deviceObj, transferInfo, optionalCallback);
+chrome.usb.interruptTransfer(deviceObj, transferInfo, optionalCallback);
 </pre>
 
 <h3 id="caveats">Caveats</h3>
 
 <p>
-On Linux,
-you must have specific permission to access USB devices.
-Create a file: <code>/etc/udev/rules.d/50-yourdevicename.rules</code>.
-Add the following content:
+On most Linux systems, USB devices are mapped with read-only permissions by default. To access it through this API, your user will need to have write access too. A simple solution is to set a udev rule. Create a file <code>/etc/udev/rules.d/50-yourdevicename.rules</code>
+with the following content:
 </p>
 
 <pre>
-SUBSYSTEM=="usb", ATTR{idVendor}=="yourdevicevendor", MODE="0664", GROUP="plugdev"
+SUBSYSTEM=="usb", ATTR{idVendor}=="[yourdevicevendor]", MODE="0664", GROUP="plugdev"
 </pre>
 
 <p>
-On MacOSX,
-devices which expose a HID profile cannot be managed
-using this low level API due to system restrictions.
-Currently there is no workaround.
+  Then, just restart the udev daemon: <code>service udev restart</code>. You can check if the permissions are correctly set by:
+  <ul>
+    <li>Find the bus and device numbers in <code>lsusb</code></li>
+    <li><code>ls -al /dev/bus/usb/[bus]/[device]</code>. This file should be owned by group "plugdev" and have group write permissions.</li>
+  </ul>
+</p>
+
+<p>
+  Not all devices can be accessed through this API. In general, devices are not accessible either because the Operating System's kernel or a native driver holds them off from user space code. Some examples are devices with HID profiles on OSX systems and USB pen drives.
 </p>
 
 <h2 id="serial">Accessing serial devices</h2>
@@ -565,19 +563,19 @@ and write from a serial device.
 <h3 id="requirement">Manifest requirement</h3>
 
 <p>
-The "serial" permission is not yet required;
-"experimental" is enough for now:
+You must add the "serial" permission to the manifest file:
 </p>
-
 <pre>
-"permissions": ["experimental"]
+"permissions": [
+  "serial"
+]
 </pre>
 
 <h3 id="listing">Listing available serial ports</h3>
 
 <p>
 To get a list of available serial ports,
-use the <code>getPorts()</code> method:
+use the <code>getPorts()</code> method. <b>Note:</b> not all serial ports are available. The API uses a heuristic based on the name of the port to only expose serial devices that are expected to be safe.
 </p>
 
 <pre>
@@ -586,46 +584,71 @@ var onGetPorts = function(ports) {
     console.log(ports[i]);
   }
 }
-chrome.experimental.serial.getPorts(onGetPorts);
+chrome.serial.getPorts(onGetPorts);
 </pre>
 
 <h3 id="opening">Opening a serial device</h3>
 
 <p>
-Here's how to open a serial device:
+If you know the serial port name, you can open it for read and write using the <code>open</code> method:
 </p>
 
 <pre>
-var onOpen = function(connectionInfo) {
-   // The serial device has been opened. Save its id to use later.
-  var conId = connectionInfo.connectionId;
-  // Do whatever you need to do with the opened device.
-}
-// Open the serial device /dev/ttyS01
-chrome.experimental.serial.open("/dev/ttyS01", onOpen);
+chrome.usb.open(portName, options, openCallback)
 </pre>
 
-<h3 id="closing">Closing a serial device</h3>
+<table border="0">
+  <tr>
+    <th scope="col"> Parameter </th>
+    <th scope="col"> Description </th>
+  </tr>
+  <tr>
+    <td>portName&nbsp;(string)</td>
+    <td>If your device's port name is unknown, you can use the <code>getPorts</code> method.</td>
+  </tr>
+  <tr>
+    <td>options&nbsp;(object)</td>
+    <td>Parameter object with one single value: <code>bitrage</code>, an integer specifying the desired bitrate used to communicate with the serial port.</td>
+  </tr>
+  <tr>
+    <td>openCallback</td>
+    <td>Invoked when the port has been successfully opened. The callback will be called with one parameter, <code>openInfo</code>, that has one attribute, <code>connectionId</code>. Save this id, because you will need it to actually communicate with the port.
+    </td>
+  </tr>
+</table>
+
+<p>A simple example:</p>
+
+<pre>
+var onOpen = function(connectionInfo) {
+   // The serial port has been opened. Save its id to use later.
+  _this.connectionId = connectionInfo.connectionId;
+  // Do whatever you need to do with the opened port.
+}
+// Open the serial port /dev/ttyS01
+chrome.serial.open("/dev/ttyS01", {bitrate: 115200}, onOpen);
+</pre>
+
+<h3 id="closing">Closing a serial port</h3>
 
 <p>
-Here's how to close a serial device:
+Closing a serial port is simple but very important. See the example below: 
 </p>
 
 <pre>
 var onClose = function(result) {
  console.log(“Serial port closed”);
 }
-chrome.experimental.serial.close(conId, onClose);
+chrome.serial.close(connectionId, onClose);
 </pre>
 
-<h3 id="reading">Reading from a serial device</h3>
+<h3 id="reading">Reading from a serial port</h3>
 
 <p>
 The serial API reads from the serial port and
 delivers the read bytes as an ArrayBuffer.
-There is no guarantee that all the available bytes will be read in one chunk
-(they are currently read one byte per time, but this might change in the future).
-The following procedure can accumulate read bytes until a new line is read,
+There is no guarantee that all the requested bytes, even if available in the port, will be read in one chunk.
+The following example can accumulate read bytes, at most 128 at a time, until a new line is read,
 and then call a listener with the <code>ArrayBuffer</code> bytes converted to a String:
 </p>
 
@@ -638,15 +661,15 @@ var onCharRead=function(readInfo) {
     }
     if (readInfo &amp;&amp; readInfo.bytesRead>0 &amp;&amp; readInfo.data) {
       var str=ab2str(readInfo.data);
-      if (str[str.length-1]==='\n') {
-        dataRead+=str.substring(0, str.length-1);
+      if (str[readInfo.bytesRead-1]==='\n') {
+        dataRead+=str.substring(0, readInfo.bytesRead-1);
         onLineRead(dataRead);
         dataRead="";
       } else {
         dataRead+=str;
       }
     }
-    chrome.experimental.serial.read(connectionInfo.connectionId, onCharRead);
+    chrome.serial.read(connectionId, 128, onCharRead);
   }
 
 /* Convert an ArrayBuffer to a String, using UTF-8 as the encoding scheme.
@@ -656,21 +679,21 @@ var onCharRead=function(readInfo) {
   };
 </pre>
 
-<h3 id="writing">Writing to a serial device</h3>
+<h3 id="writing">Writing to a serial port</h3>
 
 <p>
-The writing routine is simpler than the reading,
+The writing routine is simpler than reading,
 since the writing can occur all at once.
 The only catch is that if your data protocol is String based,
-you have to convert your output string to an <code>ArrayBuffer</code>
-to compy with write's method signature.
-See the code below:
+you have to convert your output string to an <code>ArrayBuffer</code>.
+See the code example below:
 </p>
 
 <pre>
 var writeSerial=function(str) {
-  chrome.experimental.serial.write(connectionInfo.connectionId, str2ab(str), onWrite);
+  chrome.serial.write(connectionId, str2ab(str), onWrite);
 }
+// Convert string to ArrayBuffer
 var str2ab=function(str) {
   var buf=new ArrayBuffer(str.length);
   var bufView=new Uint8Array(buf);
@@ -681,16 +704,14 @@ var str2ab=function(str) {
 }
 </pre>
 
-<h3 id="flushing">Flushing a serial device buffer</h3>
+<h3 id="flushing">Flushing a serial port buffer</h3>
 
 <p>
-You can flush your serial device buffer by issuing the flush command on the API:
+You can flush your serial port buffer by issuing the flush command:
 </p>
 
 <pre>
-var flushSerial=function(str) {
-  chrome.experimental.serial.flush(connectionInfo.connectionId, onFlush);
-}
+  chrome.serial.flush(connectionId, onFlush);
 </pre>
 
 <p class="backtotop"><a href="#top">Back to top</a></p>
