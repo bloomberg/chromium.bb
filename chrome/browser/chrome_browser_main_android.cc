@@ -5,6 +5,7 @@
 #include "chrome/browser/chrome_browser_main_android.h"
 
 #include "chrome/app/breakpad_linux.h"
+#include "content/public/browser/android/compositor.h"
 #include "content/public/common/main_function_params.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
@@ -31,6 +32,8 @@ void ChromeBrowserMainPartsAndroid::PreProfileInit() {
 void ChromeBrowserMainPartsAndroid::PreEarlyInitialization() {
   net::NetworkChangeNotifier::SetFactory(
       new net::NetworkChangeNotifierFactoryAndroid());
+
+  content::Compositor::Initialize();
 
   // Chrome on Android does not use default MessageLoop. It has its own
   // Android specific MessageLoop.

@@ -89,11 +89,8 @@ void ContentViewRenderView::ScheduleComposite() {
 }
 
 void ContentViewRenderView::InitCompositor() {
-  if (compositor_.get())
-    return;
-
-  Compositor::Initialize();
-  compositor_.reset(Compositor::Create(this));
+  if (!compositor_.get())
+    compositor_.reset(Compositor::Create(this));
 }
 
 void ContentViewRenderView::Composite() {

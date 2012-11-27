@@ -9,6 +9,7 @@
 #include "base/android/jni_registrar.h"
 #include "content/public/app/android_library_loader_hooks.h"
 #include "content/public/app/content_main.h"
+#include "content/public/browser/android/compositor.h"
 #include "content/shell/android/shell_manager.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_main_delegate.h"
@@ -22,15 +23,16 @@ static base::android::RegistrationMethod kRegistrationMethods[] = {
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   base::android::InitVM(vm);
   JNIEnv* env = base::android::AttachCurrentThread();
-  if (!content::RegisterLibraryLoaderEntryHook(env)) {
+  if (!content::RegisterLibraryLoaderEntryHook(env))
     return -1;
-  }
 
   // To be called only from the UI thread.  If loading the library is done on
   // a separate thread, this should be moved elsewhere.
   if (!base::android::RegisterNativeMethods(env, kRegistrationMethods,
                                             arraysize(kRegistrationMethods)))
     return -1;
+
+  content::Compositor::Initialize();
 
   content::SetContentMainDelegate(new content::ShellMainDelegate());
 
