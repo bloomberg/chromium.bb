@@ -227,13 +227,6 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_WindowOpenPanelDetached) {
   ASSERT_TRUE(RunExtensionTest("window_open/panel_detached")) << message_;
 }
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
-// Focus test fails if there is no window manager on Linux.
-IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, WindowOpenFocus) {
-  ASSERT_TRUE(RunExtensionTest("window_open/focus")) << message_;
-}
-#endif
-
 IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
                        CloseNonExtensionPanelsOnUninstall) {
 #if defined(USE_ASH)

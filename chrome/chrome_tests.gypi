@@ -139,6 +139,7 @@
         'chrome',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
+        'common/extensions/api/api.gyp:api',
         'debugger',
         'test_support_common',
         # NOTE: don't add test_support_ui, no more UITests. See
@@ -167,6 +168,12 @@
       ],
       'sources': [
         'browser/browser_keyevents_browsertest.cc',
+        'browser/extensions/api/tabs/tabs_interactive_test.cc',
+        'browser/extensions/extension_apitest.cc',
+        'browser/extensions/extension_browsertest.cc',
+        'browser/extensions/extension_function_test_utils.cc',
+        'browser/extensions/extension_keybinding_apitest.cc',
+        'browser/extensions/window_open_interactive_apitest.cc',
         'browser/instant/instant_browsertest.cc',
         'browser/mouseleave_browsertest.cc',
         'browser/printing/print_dialog_cloud_interative_uitest.cc',
@@ -924,7 +931,6 @@
         'browser/extensions/extension_incognito_apitest.cc',
         'browser/extensions/extension_install_ui_browsertest.cc',
         'browser/extensions/extension_javascript_url_apitest.cc',
-        'browser/extensions/extension_keybinding_apitest.cc',
         'browser/extensions/extension_messages_apitest.cc',
         'browser/extensions/extension_override_apitest.cc',
         'browser/extensions/extension_resource_request_policy_apitest.cc',
