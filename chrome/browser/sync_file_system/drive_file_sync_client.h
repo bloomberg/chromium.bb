@@ -31,8 +31,6 @@ namespace sync_file_system {
 class DriveFileSyncClient : public base::NonThreadSafe,
                             public base::SupportsWeakPtr<DriveFileSyncClient> {
  public:
-  // TODO(tzik): Implement a function to map GDataErrorcode to SyncStatusCode.
-  // crbug.com/157837
   typedef base::Callback<void(google_apis::GDataErrorCode error)>
       GDataErrorCallback;
   typedef base::Callback<void(google_apis::GDataErrorCode error,

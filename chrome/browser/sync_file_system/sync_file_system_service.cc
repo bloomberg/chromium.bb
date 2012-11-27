@@ -245,48 +245,6 @@ void SyncFileSystemService::RemoveSyncEventObserver(
   observer_map_[app_origin]->RemoveObserver(observer);
 }
 
-// TODO(kinuko): Move these On*ChangeAvailable implementation to make the
-// order match with that in .h.
-void SyncFileSystemService::OnLocalChangeAvailable(int64 pending_changes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_GE(pending_changes, 0);
-  pending_local_changes_ = pending_changes;
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(&SyncFileSystemService::MaybeStartSync,
-                            AsWeakPtr()));
-}
-
-void SyncFileSystemService::OnRemoteChangeAvailable(int64 pending_changes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_GE(pending_changes, 0);
-  pending_remote_changes_ = pending_changes;
-  if (pending_changes > 0) {
-    // The smallest change available might have changed from the previous one.
-    // Reset the is_waiting_remote_sync_enabled_ flag so that we can retry.
-    is_waiting_remote_sync_enabled_ = false;
-  }
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(&SyncFileSystemService::MaybeStartSync,
-                            AsWeakPtr()));
-}
-
-void SyncFileSystemService::OnRemoteServiceStateUpdated(
-    RemoteServiceState state,
-    const std::string& description) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  for (ObserverMap::iterator iter = observer_map_.begin();
-       iter != observer_map_.end(); ++iter) {
-    FOR_EACH_OBSERVER(SyncEventObserver, *iter->second,
-                      OnSyncStateUpdated(RemoteStateToSyncServiceState(state),
-                                         description));
-  }
-  if (state == REMOTE_SERVICE_OK) {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, base::Bind(&SyncFileSystemService::MaybeStartSync,
-                              AsWeakPtr()));
-  }
-}
-
 SyncFileSystemService::SyncFileSystemService(Profile* profile)
     : profile_(profile),
       pending_local_changes_(0),
@@ -453,6 +411,46 @@ void SyncFileSystemService::DidProcessLocalChange(
 void SyncFileSystemService::OnSyncEnabledForRemoteSync() {
   is_waiting_remote_sync_enabled_ = false;
   MaybeStartRemoteSync();
+}
+
+void SyncFileSystemService::OnLocalChangeAvailable(int64 pending_changes) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_GE(pending_changes, 0);
+  pending_local_changes_ = pending_changes;
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(&SyncFileSystemService::MaybeStartSync,
+                            AsWeakPtr()));
+}
+
+void SyncFileSystemService::OnRemoteChangeAvailable(int64 pending_changes) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_GE(pending_changes, 0);
+  pending_remote_changes_ = pending_changes;
+  if (pending_changes > 0) {
+    // The smallest change available might have changed from the previous one.
+    // Reset the is_waiting_remote_sync_enabled_ flag so that we can retry.
+    is_waiting_remote_sync_enabled_ = false;
+  }
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(&SyncFileSystemService::MaybeStartSync,
+                            AsWeakPtr()));
+}
+
+void SyncFileSystemService::OnRemoteServiceStateUpdated(
+    RemoteServiceState state,
+    const std::string& description) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  for (ObserverMap::iterator iter = observer_map_.begin();
+       iter != observer_map_.end(); ++iter) {
+    FOR_EACH_OBSERVER(SyncEventObserver, *iter->second,
+                      OnSyncStateUpdated(RemoteStateToSyncServiceState(state),
+                                         description));
+  }
+  if (state == REMOTE_SERVICE_OK) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE, base::Bind(&SyncFileSystemService::MaybeStartSync,
+                              AsWeakPtr()));
+  }
 }
 
 // SyncFileSystemServiceFactory -----------------------------------------------
