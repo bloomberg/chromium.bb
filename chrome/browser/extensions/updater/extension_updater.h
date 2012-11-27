@@ -143,7 +143,6 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
     InProgressCheck();
     ~InProgressCheck();
 
-    int id;
     bool install_immediately;
     FinishedCallback callback;
     // The ids of extensions that have in-progress update checks.
@@ -165,7 +164,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // ignoring |pending_ids| so the extension isn't fetched again.
   void AddToDownloader(const ExtensionSet* extensions,
                        const std::list<std::string>& pending_ids,
-                       InProgressCheck* request);
+                       int request_id);
 
   // BaseTimer::ReceiverMethod callback.
   void TimerFired();

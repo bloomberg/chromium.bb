@@ -113,7 +113,7 @@ ExtensionUpdater::FetchedCRXFile::FetchedCRXFile()
 ExtensionUpdater::FetchedCRXFile::~FetchedCRXFile() {}
 
 ExtensionUpdater::InProgressCheck::InProgressCheck()
-    : id(-1) {}
+    : install_immediately(false) {}
 
 ExtensionUpdater::InProgressCheck::~InProgressCheck() {}
 
@@ -299,7 +299,8 @@ void ExtensionUpdater::DoCheckSoon() {
 void ExtensionUpdater::AddToDownloader(
     const ExtensionSet* extensions,
     const std::list<std::string>& pending_ids,
-    InProgressCheck* request) {
+    int request_id) {
+  InProgressCheck& request = requests_in_progress_[request_id];
   for (ExtensionSet::const_iterator extension_iter = extensions->begin();
        extension_iter != extensions->end(); ++extension_iter) {
     const Extension& extension = **extension_iter;
@@ -313,8 +314,8 @@ void ExtensionUpdater::AddToDownloader(
     std::list<std::string>::const_iterator pending_id_iter = std::find(
         pending_ids.begin(), pending_ids.end(), extension.id());
     if (pending_id_iter == pending_ids.end()) {
-      if (downloader_->AddExtension(extension, request->id))
-        request->in_progress_ids_.push_back(extension.id());
+      if (downloader_->AddExtension(extension, request_id))
+        request.in_progress_ids_.push_back(extension.id());
     }
   }
 }
@@ -328,10 +329,9 @@ void ExtensionUpdater::CheckNow(const CheckParams& params) {
 
   DCHECK(alive_);
 
-  InProgressCheck* request = &requests_in_progress_[request_id];
-  request->id = request_id;
-  request->callback = params.callback;
-  request->install_immediately = params.install_immediately;
+  InProgressCheck& request = requests_in_progress_[request_id];
+  request.callback = params.callback;
+  request.install_immediately = params.install_immediately;
 
   if (!downloader_.get()) {
     downloader_.reset(
@@ -360,18 +360,18 @@ void ExtensionUpdater::CheckNow(const CheckParams& params) {
       }
       if (downloader_->AddPendingExtension(*iter, info->update_url(),
                                            request_id))
-        request->in_progress_ids_.push_back(*iter);
+        request.in_progress_ids_.push_back(*iter);
     }
 
-    AddToDownloader(service_->extensions(), pending_ids, request);
-    AddToDownloader(service_->disabled_extensions(), pending_ids, request);
+    AddToDownloader(service_->extensions(), pending_ids, request_id);
+    AddToDownloader(service_->disabled_extensions(), pending_ids, request_id);
   } else {
     for (std::list<std::string>::const_iterator it = params.ids.begin();
          it != params.ids.end(); ++it) {
       const Extension* extension = service_->GetExtensionById(*it, true);
       DCHECK(extension);
-      if (downloader_->AddExtension(*extension, request->id))
-        request->in_progress_ids_.push_back(extension->id());
+      if (downloader_->AddExtension(*extension, request_id))
+        request.in_progress_ids_.push_back(extension->id());
     }
   }
 
@@ -380,7 +380,7 @@ void ExtensionUpdater::CheckNow(const CheckParams& params) {
     ManifestFetchData::PingData ping_data;
     ping_data.rollcall_days =
         CalculatePingDays(extension_prefs_->BlacklistLastPingDay());
-    request->in_progress_ids_.push_back(ExtensionDownloader::kBlacklistAppID);
+    request.in_progress_ids_.push_back(ExtensionDownloader::kBlacklistAppID);
     downloader_->StartBlacklistUpdate(
         prefs_->GetString(kExtensionBlacklistUpdateVersion), ping_data,
         request_id);
@@ -391,7 +391,7 @@ void ExtensionUpdater::CheckNow(const CheckParams& params) {
   // send out a notification. So check before we call StartAllPending if any
   // extensions are going to be updated, and use that to figure out if
   // NotifyIfFinished should be called.
-  bool noChecks = request->in_progress_ids_.empty();
+  bool noChecks = request.in_progress_ids_.empty();
 
   // StartAllPending() will call OnExtensionDownloadFailed or
   // OnExtensionDownloadFinished for each extension that was checked.
@@ -465,9 +465,9 @@ void ExtensionUpdater::OnExtensionDownloadFailed(
   bool install_immediately = false;
   for (std::set<int>::const_iterator it = request_ids.begin();
        it != request_ids.end(); ++it) {
-    InProgressCheck* request = &requests_in_progress_[*it];
-    install_immediately |= request->install_immediately;
-    request->in_progress_ids_.remove(id);
+    InProgressCheck& request = requests_in_progress_[*it];
+    install_immediately |= request.install_immediately;
+    request.in_progress_ids_.remove(id);
     NotifyIfFinished(*it);
   }
 
@@ -509,8 +509,8 @@ void ExtensionUpdater::OnBlacklistDownloadFinished(
   UpdatePingData(ExtensionDownloader::kBlacklistAppID, ping);
   for (std::set<int>::const_iterator it = request_ids.begin();
        it != request_ids.end(); ++it) {
-    InProgressCheck* request = &requests_in_progress_[*it];
-    request->in_progress_ids_.remove(ExtensionDownloader::kBlacklistAppID);
+    InProgressCheck& request = requests_in_progress_[*it];
+    request.in_progress_ids_.remove(ExtensionDownloader::kBlacklistAppID);
     NotifyIfFinished(*it);
   }
 
