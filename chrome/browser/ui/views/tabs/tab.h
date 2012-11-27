@@ -100,6 +100,9 @@ class Tab : public ui::AnimationDelegate,
     background_offset_ = offset;
   }
 
+  // Recomputes the dominant color of the favicon, used in immersive mode.
+  void UpdateIconDominantColor();
+
   // Returns the minimum possible size of a single unselected Tab.
   static gfx::Size GetMinimumUnselectedSize();
   // Returns the minimum possible size of a selected Tab. Selected tabs must
@@ -120,6 +123,7 @@ class Tab : public ui::AnimationDelegate,
   static int GetImmersiveHeight();
 
  private:
+  friend class TabTest;
    // The animation object used to swap the favicon with the sad tab icon.
   class FaviconCrashAnimation;
   class TabCloseButton;
@@ -337,6 +341,10 @@ class Tab : public ui::AnimationDelegate,
 
   // The current color of the close button.
   SkColor close_button_color_;
+
+  // The dominant color of the favicon. Used in immersive mode. White until the
+  // color is known so that tab has something visible to draw during page load.
+  SkColor icon_dominant_color_;
 
   static gfx::Font* font_;
   static int font_height_;

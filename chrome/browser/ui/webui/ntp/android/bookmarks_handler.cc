@@ -76,7 +76,7 @@ SkColor GetDominantColorForFavicon(scoped_refptr<base::RefCountedMemory> png) {
   // components that is acceptable as a color choice. This can be from 0 to 765.
   // 665 here is the brightness_limit represents the maximum sum of the RGB
   // components that is acceptable as a color choice. This can be from 0 to 765.
-  return color_utils::CalculateKMeanColorOfPNG(png, 100, 665, sampler);
+  return color_utils::CalculateKMeanColorOfPNG(png, 100, 665, &sampler);
 }
 
 }  // namespace

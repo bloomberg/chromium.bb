@@ -106,7 +106,7 @@ bool CreateSiteSpecificLogo(const gfx::ImageSkia& image,
       new base::RefCountedStaticMemory(&icon_png.front(), icon_png.size()));
   color_utils::GridSampler sampler;
   SkColor mean_color = color_utils::CalculateKMeanColorOfPNG(
-      icon_mem, kColorMeanDarknessLimit, kColorMeanLightnessLimit, sampler);
+      icon_mem, kColorMeanDarknessLimit, kColorMeanLightnessLimit, &sampler);
   paint.setColor(mean_color);
   gfx::Canvas canvas(gfx::Size(kLogoWidth, kLogoHeight), ui::SCALE_FACTOR_100P,
                      true);

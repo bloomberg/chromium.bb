@@ -34,6 +34,7 @@
 #include "ui/base/theme_provider.h"
 
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_analysis.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -243,9 +244,6 @@ const int kImmersiveBarHeight = 2;
 // Distance between the favicon bar and the tab bar in immersive mode.
 const int kImmersiveBarSpacing = 2;
 
-// Opacity for the immersive mode icon bar for inactive tabs.
-const int kImmersiveInactiveIconOpacity = 200;
-
 // Draws the icon image at the center of |bounds|.
 void DrawIconCenter(gfx::Canvas* canvas,
                     const gfx::ImageSkia& image,
@@ -415,7 +413,8 @@ Tab::Tab(TabController* controller)
       ALLOW_THIS_IN_INITIALIZER_LIST(hover_controller_(this)),
       showing_icon_(false),
       showing_close_button_(false),
-      close_button_color_(0) {
+      close_button_color_(0),
+      icon_dominant_color_(SK_ColorWHITE) {
   InitTabResources();
 
   // So we get don't get enter/exit on children and don't prematurely stop the
@@ -485,6 +484,13 @@ void Tab::SetData(const TabRendererData& data) {
       StopCrashAnimation();
     ResetCrashedFavicon();
   }
+
+  // If the favicon changed, re-compute its dominant color.
+  if (controller() &&
+      controller()->IsImmersiveStyle() &&
+      !data_.favicon.isNull() &&
+      !data_.favicon.BackedBySameObjectAs(old.favicon))
+    UpdateIconDominantColor();
 
   DataChanged(old);
 
@@ -561,6 +567,11 @@ void Tab::StartMiniTabTitleAnimation() {
 void Tab::StopMiniTabTitleAnimation() {
   if (mini_title_animation_.get())
     mini_title_animation_->Stop();
+}
+
+void Tab::UpdateIconDominantColor() {
+  icon_dominant_color_ =
+      color_utils::CalculateKMeanColorOfBitmap(*data_.favicon.bitmap());
 }
 
 // static
@@ -1024,11 +1035,7 @@ void Tab::PaintTabImmersive(gfx::Canvas* canvas) {
     // Use the favicon's horizontal position.
     gfx::Rect icon_bar_rect(favicon_bounds_.x(), 0,
                             favicon_bounds_.width(), kImmersiveBarHeight);
-    // Decrease opacity if not active.
-    int opacity = is_active ? 255 : kImmersiveInactiveIconOpacity;
-    // TODO(jamescook): Use favicon color.
-    SkColor icon_bar_color = SkColorSetARGB(opacity, 0, 200, 0);
-    canvas->FillRect(icon_bar_rect, icon_bar_color);
+    canvas->FillRect(icon_bar_rect, icon_dominant_color_);
     // Start the main bar slightly offset from the icon bar.
     main_bar_left = icon_bar_rect.right() + kImmersiveBarSpacing;
   }

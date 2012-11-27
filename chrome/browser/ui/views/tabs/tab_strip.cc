@@ -1157,6 +1157,12 @@ bool TabStrip::ShouldPaintTab(const Tab* tab, gfx::Rect* clip) {
 
 void TabStrip::SetImmersiveStyle(bool enable) {
   immersive_style_ = enable;
+  if (immersive_style_) {
+    // Dominant colors are only updated automatically when the tab strip is
+    // already using immersive style. Compute the initial values.
+    for (int i = 0; i < tab_count(); ++i)
+      tab_at(i)->UpdateIconDominantColor();
+  }
 }
 
 bool TabStrip::IsImmersiveStyle() const {
