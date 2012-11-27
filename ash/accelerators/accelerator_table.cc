@@ -108,8 +108,11 @@ const AcceleratorData kAcceleratorData[] = {
     CYCLE_BACKWARD_LINEAR },
   { true, ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, RESTORE_TAB },
   { true, ui::VKEY_PRINT, ui::EF_NONE, TAKE_SCREENSHOT },
-  // On Chrome OS, Search key is mapped to LWIN.
+  // On Chrome OS, Search key is mapped to LWIN. The Search key binding should
+  // act on release instead of press when using Search as a modifier key for
+  // extended keyboard shortcuts.
   { true, ui::VKEY_LWIN, ui::EF_NONE, TOGGLE_APP_LIST },
+  { false, ui::VKEY_LWIN, ui::EF_NONE, TOGGLE_APP_LIST },
   { true, ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_NONE, TOGGLE_APP_LIST },
   { true, ui::VKEY_LWIN, ui::EF_ALT_DOWN, TOGGLE_CAPS_LOCK },
   { true, ui::VKEY_VOLUME_MUTE, ui::EF_NONE, VOLUME_MUTE },

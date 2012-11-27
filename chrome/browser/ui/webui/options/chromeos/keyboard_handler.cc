@@ -63,6 +63,9 @@ void KeyboardHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   localized_strings->SetString("remapCapsLockKeyToContent",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_CAPS_LOCK_LABEL));
+  localized_strings->SetString("searchKeyActsAsFunctionKey",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_SEARCH_AS_FUNCTION));
 
   for (size_t i = 0; i < arraysize(kDataValuesNames); ++i) {
     ListValue* list_value = new ListValue();
@@ -87,12 +90,22 @@ void KeyboardHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 }
 
 void KeyboardHandler::InitializePage() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kHasChromeOSKeyboard))
-    return;
+  bool chromeos_keyboard = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kHasChromeOSKeyboard);
+  bool chromebook_function_key = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableChromebookFunctionKey);
+
   const base::FundamentalValue show_options(true);
-  web_ui()->CallJavascriptFunction(
-      "options.KeyboardOverlay.showCapsLockOptions", show_options);
+
+  if (!chromeos_keyboard) {
+    web_ui()->CallJavascriptFunction(
+        "options.KeyboardOverlay.showCapsLockOptions", show_options);
+  }
+
+  if (chromebook_function_key) {
+    web_ui()->CallJavascriptFunction(
+        "options.KeyboardOverlay.showFunctionKeyOptions", show_options);
+  }
 }
 
 }  // namespace options

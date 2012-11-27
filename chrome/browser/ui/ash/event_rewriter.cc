@@ -121,6 +121,12 @@ bool HasChromeOSKeyboard() {
       switches::kHasChromeOSKeyboard);
 }
 
+bool EventSourceIsChromebookKeyboard(ui::KeyEvent* /* event */) {
+  // TODO(danakj): Determine if the event came from a Chromebook internal
+  // keyboard.
+  return true;
+}
+
 bool IsMod3UsedByCurrentInputMethod() {
   // Since both German Neo2 XKB layout and Caps Lock depend on Mod3Mask,
   // it's not possible to make both features work. For now, we don't remap
@@ -638,43 +644,86 @@ bool EventRewriter::RewriteNumPadKeys(ui::KeyEvent* event) {
 bool EventRewriter::RewriteBackspaceAndArrowKeys(ui::KeyEvent* event) {
   bool rewritten = false;
 #if defined(OS_CHROMEOS)
+  // On a Chromebook keyboard, modifier keys can be used to access extended
+  // keyboard shortcuts. On other keyboards, keys such as delete and page up are
+  // already available, so we do not need to rewrite anything here.
+  if (!EventSourceIsChromebookKeyboard(event))
+    return rewritten;
+
+  const PrefService* pref_service =
+      pref_service_ ? pref_service_ : GetPrefService();
+  bool chromebook_function_key = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableChromebookFunctionKey);
+
+  bool search_as_function_key = chromebook_function_key && pref_service &&
+      pref_service->GetBoolean(prefs::kLanguageSearchKeyActsAsFunctionKey);
+
   XEvent* xev = event->native_event();
   XKeyEvent* xkey = &(xev->xkey);
-
   const KeySym keysym = XLookupKeysym(xkey, 0);
-  if (keysym == XK_BackSpace && (xkey->state & Mod1Mask)) {
-    // Remap Alt+Backspace to Delete.
-    OverwriteEvent(event, delete_xkeycode_, xkey->state & ~Mod1Mask,
-                   ui::VKEY_DELETE, event->flags() & ~ui::EF_ALT_DOWN);
-    rewritten = true;
-  } else if (keysym == XK_Up &&
-             (xkey->state & ControlMask) && (xkey->state & Mod1Mask)) {
-    // Remap Ctrl+Alt+Up to Home.
-    OverwriteEvent(event,
-                   home_xkeycode_,
-                   xkey->state & ~(Mod1Mask | ControlMask),
-                   ui::VKEY_HOME,
-                   event->flags() & ~(ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN));
-    rewritten = true;
-  } else if (keysym == XK_Up && (xkey->state & Mod1Mask)) {
-    // Remap Alt+Up to Prior (aka PageUp).
-    OverwriteEvent(event, prior_xkeycode_, xkey->state & ~Mod1Mask,
-                 ui::VKEY_PRIOR, event->flags() & ~ui::EF_ALT_DOWN);
-    rewritten = true;
-  } else if (keysym == XK_Down &&
-             (xkey->state & ControlMask) && (xkey->state & Mod1Mask)) {
-    // Remap Ctrl+Alt+Down to End.
-    OverwriteEvent(event,
-                   end_xkeycode_,
-                   xkey->state & ~(Mod1Mask | ControlMask),
-                   ui::VKEY_END,
-                   event->flags() & ~(ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN));
-    rewritten = true;
-  } else if (keysym == XK_Down && (xkey->state & Mod1Mask)) {
-    // Remap Alt+Down to Next (aka PageDown).
-    OverwriteEvent(event, next_xkeycode_, xkey->state & ~Mod1Mask,
-                   ui::VKEY_NEXT, event->flags() & ~ui::EF_ALT_DOWN);
-    rewritten = true;
+
+  if (!search_as_function_key) {
+    if (keysym == XK_BackSpace && (xkey->state & Mod1Mask)) {
+      // Without Search as Function key: Remap Alt+Backspace to Delete.
+      OverwriteEvent(event, delete_xkeycode_, xkey->state & ~Mod1Mask,
+                     ui::VKEY_DELETE, event->flags() & ~ui::EF_ALT_DOWN);
+      rewritten = true;
+    } else if (keysym == XK_Up &&
+               (xkey->state & ControlMask) && (xkey->state & Mod1Mask)) {
+      // Without Search as Function key: Remap Ctrl+Alt+Up to Home.
+      OverwriteEvent(event,
+                     home_xkeycode_,
+                     xkey->state & ~(Mod1Mask | ControlMask),
+                     ui::VKEY_HOME,
+                     event->flags() & ~(ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN));
+      rewritten = true;
+    } else if (keysym == XK_Up && (xkey->state & Mod1Mask)) {
+      // Without Search as Function key: Remap Alt+Up to Prior (aka PageUp).
+      OverwriteEvent(event, prior_xkeycode_, xkey->state & ~Mod1Mask,
+                     ui::VKEY_PRIOR, event->flags() & ~ui::EF_ALT_DOWN);
+      rewritten = true;
+    } else if (keysym == XK_Down &&
+               (xkey->state & ControlMask) && (xkey->state & Mod1Mask)) {
+      // Without Search as Function key: Remap Ctrl+Alt+Down to End.
+      OverwriteEvent(event,
+                     end_xkeycode_,
+                     xkey->state & ~(Mod1Mask | ControlMask),
+                     ui::VKEY_END,
+                     event->flags() & ~(ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN));
+      rewritten = true;
+    } else if (keysym == XK_Down && (xkey->state & Mod1Mask)) {
+      // Without Search as Function key: Remap Alt+Down to Next (aka PageDown).
+      OverwriteEvent(event, next_xkeycode_, xkey->state & ~Mod1Mask,
+                     ui::VKEY_NEXT, event->flags() & ~ui::EF_ALT_DOWN);
+      rewritten = true;
+    }
+  } else {
+    if (keysym == XK_BackSpace && (xkey->state & Mod4Mask)) {
+      // With Search as Function key: Remap Search+Backspace to Delete.
+      OverwriteEvent(event, delete_xkeycode_, xkey->state & ~Mod4Mask,
+                     ui::VKEY_DELETE, event->flags());
+      rewritten = true;
+    } else if (keysym == XK_Left && (xkey->state & Mod4Mask)) {
+      // With Search as Function key: Remap Search+Left to Home.
+      OverwriteEvent(event, home_xkeycode_, xkey->state & ~Mod4Mask,
+                     ui::VKEY_HOME, event->flags());
+      rewritten = true;
+    } else if (keysym == XK_Up && (xkey->state & Mod4Mask)) {
+      // With Search as Function key: Remap Search+Up to Prior (aka PageUp).
+      OverwriteEvent(event, prior_xkeycode_, xkey->state & ~Mod4Mask,
+                     ui::VKEY_PRIOR, event->flags());
+      rewritten = true;
+    } else if (keysym == XK_Right && (xkey->state & Mod4Mask)) {
+      // With Search as Function key: Remap Search+Right to End.
+      OverwriteEvent(event, end_xkeycode_, xkey->state & ~Mod4Mask,
+                     ui::VKEY_END, event->flags());
+      rewritten = true;
+    } else if (keysym == XK_Down && (xkey->state & Mod4Mask)) {
+      // With Search as Function key: Remap Search+Down to Next (aka PageDown).
+      OverwriteEvent(event, next_xkeycode_, xkey->state & ~Mod4Mask,
+                     ui::VKEY_NEXT, event->flags());
+      rewritten = true;
+    }
   }
 #else
   // TODO(yusukes): Support Ash on other platforms if needed.

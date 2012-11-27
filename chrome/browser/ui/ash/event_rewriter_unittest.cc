@@ -110,6 +110,8 @@ class EventRewriterTest : public testing::Test {
         keycode_backspace_(XKeysymToKeycode(display_, XK_BackSpace)),
         keycode_up_(XKeysymToKeycode(display_, XK_Up)),
         keycode_down_(XKeysymToKeycode(display_, XK_Down)),
+        keycode_left_(XKeysymToKeycode(display_, XK_Left)),
+        keycode_right_(XKeysymToKeycode(display_, XK_Right)),
         keycode_prior_(XKeysymToKeycode(display_, XK_Prior)),
         keycode_next_(XKeysymToKeycode(display_, XK_Next)),
         keycode_home_(XKeysymToKeycode(display_, XK_Home)),
@@ -174,6 +176,8 @@ class EventRewriterTest : public testing::Test {
   const KeyCode keycode_backspace_;
   const KeyCode keycode_up_;
   const KeyCode keycode_down_;
+  const KeyCode keycode_left_;
+  const KeyCode keycode_right_;
   const KeyCode keycode_prior_;
   const KeyCode keycode_next_;
   const KeyCode keycode_home_;
@@ -1678,6 +1682,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockMod3InUse) {
 
 TEST_F(EventRewriterTest, TestRewriteBackspaceAndArrowKeys) {
   TestingPrefService prefs;
+  chromeos::Preferences::RegisterUserPrefs(&prefs);
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
 
@@ -1779,6 +1784,214 @@ TEST_F(EventRewriterTest, TestRewriteBackspaceAndArrowKeys) {
                                       ui::ET_KEY_PRESSED,
                                       keycode_down_,
                                       ShiftMask | Mod1Mask | ControlMask));
+
+  // Make Search key act like a Function key for accessing extended key
+  // bindings.
+  const CommandLine original_cl(*CommandLine::ForCurrentProcess());
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnableChromebookFunctionKey, "");
+  BooleanPrefMember search_key_as_function_key;
+  search_key_as_function_key.Init(prefs::kLanguageSearchKeyActsAsFunctionKey,
+                                  &prefs, NULL);
+  search_key_as_function_key.SetValue(true);
+
+  // Alt+Backspace -> Alt+Backspace
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_BACK,
+                                      ui::EF_ALT_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_backspace_,
+                                      Mod1Mask,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_BACK,
+                                      ui::EF_ALT_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_backspace_,
+                                      Mod1Mask));
+
+  // Search+Backspace -> Delete
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_DELETE,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_delete_,
+                                      0U,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_BACK,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_backspace_,
+                                      Mod4Mask));
+
+  // Ctrl+Search+Backspace -> Ctrl+Delete
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_DELETE,
+                                      ui::EF_CONTROL_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_delete_,
+                                      ControlMask,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_BACK,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_backspace_,
+                                      Mod4Mask | ControlMask));
+
+  // Alt+Search+Backspace -> Alt+Delete
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_DELETE,
+                                      ui::EF_ALT_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_delete_,
+                                      Mod1Mask,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_BACK,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_backspace_,
+                                      Mod4Mask | Mod1Mask));
+
+  // Alt+Up -> Alt+Up
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_UP,
+                                      ui::EF_ALT_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_up_,
+                                      Mod1Mask,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_UP,
+                                      ui::EF_ALT_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_up_,
+                                      Mod1Mask));
+
+  // Search+Up -> Prior
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_PRIOR,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_prior_,
+                                      0U,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_UP,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_up_,
+                                      Mod4Mask));
+
+  // Alt+Down -> Alt+Down
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_DOWN,
+                                      ui::EF_ALT_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_down_,
+                                      Mod1Mask,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_DOWN,
+                                      ui::EF_ALT_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_down_,
+                                      Mod1Mask));
+
+  // Search+Down -> Next
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NEXT,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_next_,
+                                      0U,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_DOWN,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_down_,
+                                      Mod4Mask));
+
+  // Ctrl+Alt+Up -> Ctrl+Alt+Up
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_UP,
+                                      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_up_,
+                                      Mod1Mask | ControlMask,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_UP,
+                                      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_up_,
+                                      Mod1Mask | ControlMask));
+
+  // Search+Left -> Home
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_HOME,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_home_,
+                                      0U,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_LEFT,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_left_,
+                                      Mod4Mask));
+
+  // Ctrl+Alt+Down -> Ctrl+Alt+Down
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_DOWN,
+                                      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_down_,
+                                      Mod1Mask | ControlMask,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_DOWN,
+                                      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_down_,
+                                      Mod1Mask | ControlMask));
+
+  // Search+Right -> End
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_END,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_end_,
+                                      0U,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_RIGHT,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_right_,
+                                      Mod4Mask));
+
+  // Ctrl+Search+Left -> Control+Home
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_HOME,
+                                      ui::EF_CONTROL_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_home_,
+                                      ControlMask,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_LEFT,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_left_,
+                                      Mod4Mask | ControlMask));
+
+  // Ctrl+Search+Right -> Control+End
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_END,
+                                      ui::EF_CONTROL_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_end_,
+                                      ControlMask,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_RIGHT,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_right_,
+                                      Mod4Mask | ControlMask));
+
+  *CommandLine::ForCurrentProcess() = original_cl;
 }
 
 TEST_F(EventRewriterTest, TestRewriteBackspaceAndArrowKeysWithSearchRemapped) {

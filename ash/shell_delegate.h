@@ -189,6 +189,10 @@ class ASH_EXPORT ShellDelegate {
 
   // Creates the stacking client. Shell takes ownership of the object.
   virtual aura::client::StackingClient* CreateStackingClient() = 0;
+
+  // True if the user's preferences have the Search key acting as a Function key
+  // modifier for accessing extended keyboard shortcuts.
+  virtual bool IsSearchKeyActingAsFunctionKey() const = 0;
 };
 
 }  // namespace ash

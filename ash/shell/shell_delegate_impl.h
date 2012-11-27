@@ -61,6 +61,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   virtual ui::MenuModel* CreateContextMenu(
       aura::RootWindow* root_window) OVERRIDE;
   virtual aura::client::StackingClient* CreateStackingClient() OVERRIDE;
+  virtual bool IsSearchKeyActingAsFunctionKey() const OVERRIDE;
 
  private:
   // Used to update Launcher. Owned by main.

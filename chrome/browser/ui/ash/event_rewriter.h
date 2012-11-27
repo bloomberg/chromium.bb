@@ -116,6 +116,13 @@ class EventRewriter : public ash::EventRewriterDelegate,
   //  * Alt+Down -> Next (aka PageDown)
   //  * Ctrl+Alt+Up -> Home
   //  * Ctrl+Alt+Down -> End
+  // When the Search key acts as a function key, it instead maps:
+  //  * Search+Backspace -> Delete
+  //  * Search+Up -> Prior (aka PageUp)
+  //  * Search+Down -> Next (aka PageDown)
+  //  * Search+Left -> Home
+  //  * Search+right -> End
+  // Returns true when the |event| is rewritten.
   bool RewriteBackspaceAndArrowKeys(ui::KeyEvent* event);
 
   // Rewrites the located |event|.

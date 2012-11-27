@@ -772,6 +772,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kDisableOobeAnimation,
       ::switches::kDisableSeccompFilterSandbox,
       ::switches::kDisableSeccompSandbox,
+      ::switches::kEnableChromebookFunctionKey,
       ::switches::kEnableCompositingForFixedPosition,
       ::switches::kEnableEncryptedMedia,
       ::switches::kEnableGView,

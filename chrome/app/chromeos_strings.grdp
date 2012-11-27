@@ -2084,6 +2084,10 @@ Press any key to continue exploring.
            desc="The dropdown list item for 'Customize modifier keys' overlay">
     Caps Lock
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_SEARCH_AS_FUNCTION"
+           desc="The checkbox to enable the Search key to act as a Function key">
+    Use the Search key to access extended keybindings.
+  </message>
   <message name="IDS_OPTIONS_NO_POINTING_DEVICES" desc="Text shown when there is neither a touchpad nor a mouse.">
     No mouse or touchpad was detected.
   </message>

@@ -490,6 +490,21 @@ aura::client::StackingClient* ChromeShellDelegate::CreateStackingClient() {
   return new ash::StackingController;
 }
 
+bool ChromeShellDelegate::IsSearchKeyActingAsFunctionKey() const {
+#if defined(OS_CHROMEOS)
+  bool chromebook_function_key = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableChromebookFunctionKey);
+  if (!chromebook_function_key)
+    return false;
+
+  Profile* profile = ProfileManager::GetDefaultProfile();
+  return profile->GetPrefs()->GetBoolean(
+      prefs::kLanguageSearchKeyActsAsFunctionKey);
+#else
+  return false;
+#endif
+}
+
 void ChromeShellDelegate::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
