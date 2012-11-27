@@ -233,7 +233,7 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
   _DEFAULT_TEST_LENGTH_SEC = 60 * 60 * 6  # Tests run for 6 hours.
   _GET_PERF_STATS_INTERVAL = 60 * 5  # Measure perf stats every 5 minutes.
   # TODO(dennisjeffrey): Do we still need to tolerate errors?
-  _ERROR_COUNT_THRESHOLD = 50  # Number of ChromeDriver errors to tolerate.
+  _ERROR_COUNT_THRESHOLD = 50  # Number of errors to tolerate.
 
   def setUp(self):
     # The Web Page Replay environment variables must be parsed before
@@ -435,7 +435,12 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
           window.domAutomationController.send('done');
         })();
       """
-      self.ExecuteJavascript(js, frame_xpath=frame_xpath)
+      try:
+        self.ExecuteJavascript(js, frame_xpath=frame_xpath)
+      except pyauto_errors.AutomationCommandTimeout:
+        self._num_errors += 1
+        logging.warning('Logging an automation timeout: delete chromedriver '
+                        'cache.')
 
     self._remote_inspector_client.StopTimelineEventMonitoring()
 
@@ -1113,6 +1118,7 @@ class ChromeEndureDocsTest(ChromeEndureBaseTest):
       if not self._ClickElementByXpath(
           self._driver, '//span[starts-with(text(), "Shared with me")]'):
         self._num_errors += 1
+        logging.warning('Logging an automation error: click "shared with me".')
       try:
         self.WaitForDomNode('//div[text()="Share date"]')
       except pyauto_errors.JSONInterfaceError:
@@ -1124,6 +1130,7 @@ class ChromeEndureDocsTest(ChromeEndureBaseTest):
       if not self._ClickElementByXpath(
           self._driver, '//span[starts-with(text(), "My Drive")]'):
         self._num_errors += 1
+        logging.warning('Logging an automation error: click "my drive".')
       try:
         self.WaitForDomNode('//div[text()="Quota used"]')
       except pyauto_errors.JSONInterfaceError:
@@ -1179,12 +1186,14 @@ class ChromeEndurePlusTest(ChromeEndureBaseTest):
           '//div[text()="Friends" and '
           'starts-with(@data-dest, "stream/circles")]'):
         self._num_errors += 1
+        logging.warning('Logging an automation error: click "Friends" button.')
 
       try:
         self.WaitForDomNode('//span[contains(., "in Friends")]')
       except (pyauto_errors.JSONInterfaceError,
               pyauto_errors.JavascriptRuntimeError):
         self._num_errors += 1
+        logging.warning('Logging an automation error: wait for "in Friends".')
 
       time.sleep(1)
 
@@ -1194,12 +1203,14 @@ class ChromeEndurePlusTest(ChromeEndureBaseTest):
           '//div[text()="Family" and '
           'starts-with(@data-dest, "stream/circles")]'):
         self._num_errors += 1
+        logging.warning('Logging an automation error: click "Family" button.')
 
       try:
         self.WaitForDomNode('//span[contains(., "in Family")]')
       except (pyauto_errors.JSONInterfaceError,
               pyauto_errors.JavascriptRuntimeError):
         self._num_errors += 1
+        logging.warning('Logging an automation error: wait for "in Family".')
 
       time.sleep(1)
 
@@ -1238,24 +1249,28 @@ class IndexedDBOfflineTest(ChromeEndureBaseTest):
       # Click the "Online" button and let simulated sync run for 1 second.
       if not self._ClickElementByXpath(self._driver, 'id("online")'):
         self._num_errors += 1
+        logging.warning('Logging an automation error: click "online" button.')
 
       try:
         self.WaitForDomNode('id("state")[text()="online"]')
       except (pyauto_errors.JSONInterfaceError,
               pyauto_errors.JavascriptRuntimeError):
         self._num_errors += 1
+        logging.warning('Logging an automation error: wait for "online".')
 
       time.sleep(1)
 
       # Click the "Offline" button and let user input occur for 1 second.
       if not self._ClickElementByXpath(self._driver, 'id("offline")'):
         self._num_errors += 1
+        logging.warning('Logging an automation error: click "offline" button.')
 
       try:
         self.WaitForDomNode('id("state")[text()="offline"]')
       except (pyauto_errors.JSONInterfaceError,
               pyauto_errors.JavascriptRuntimeError):
         self._num_errors += 1
+        logging.warning('Logging an automation error: wait for "offline".')
 
       time.sleep(1)
 
