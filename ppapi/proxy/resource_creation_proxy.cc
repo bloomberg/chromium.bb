@@ -261,6 +261,10 @@ PP_Resource ResourceCreationProxy::CreateNetworkMonitor(
       instance, callback, user_data);
 }
 
+PP_Resource ResourceCreationProxy::CreatePrinting(PP_Instance instance) {
+  return (new PrintingResource(GetConnection(), instance))->GetReference();
+}
+
 PP_Resource ResourceCreationProxy::CreateTCPServerSocketPrivate(
     PP_Instance instance) {
   return PPB_TCPServerSocket_Private_Proxy::CreateProxyResource(instance);
@@ -343,10 +347,6 @@ PP_Resource ResourceCreationProxy::CreateFlashMenu(
 PP_Resource ResourceCreationProxy::CreateFlashMessageLoop(
     PP_Instance instance) {
   return PPB_Flash_MessageLoop_Proxy::CreateProxyResource(instance);
-}
-
-PP_Resource ResourceCreationProxy::CreatePrinting(PP_Instance instance) {
-  return (new PrintingResource(GetConnection(), instance))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateScrollbar(PP_Instance instance,

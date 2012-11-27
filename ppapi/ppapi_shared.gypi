@@ -279,7 +279,6 @@
               'thunk/ppb_gles_chromium_texture_mapping_thunk.cc',
               'thunk/ppb_graphics_3d_trusted_thunk.cc',
               'thunk/ppb_image_data_trusted_thunk.cc',
-              'thunk/ppb_printing_thunk.cc',
               'thunk/ppb_scrollbar_thunk.cc',
               'thunk/ppb_talk_private_thunk.cc',
               'thunk/ppb_transport_thunk.cc',
