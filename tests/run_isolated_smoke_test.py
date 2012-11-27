@@ -78,8 +78,7 @@ class RunSwarmStep(unittest.TestCase):
   def _result_tree(self):
     return list_files_tree(self.tempdir)
 
-  @staticmethod
-  def _run(args):
+  def _run(self, args):
     cmd = [sys.executable, os.path.join(ROOT_DIR, 'run_isolated.py')]
     cmd.extend(args)
     if VERBOSE:
@@ -89,7 +88,11 @@ class RunSwarmStep(unittest.TestCase):
       pipe = subprocess.PIPE
     logging.debug(' '.join(cmd))
     proc = subprocess.Popen(
-        cmd, stdout=pipe, stderr=pipe, universal_newlines=True)
+        cmd,
+        stdout=pipe,
+        stderr=pipe,
+        universal_newlines=True,
+        cwd=self.tempdir)
     out, err = proc.communicate()
     return out, err, proc.returncode
 

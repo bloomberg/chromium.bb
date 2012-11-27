@@ -6,8 +6,10 @@
 import json
 import logging
 import os
+import shutil
 import StringIO
 import sys
+import tempfile
 import time
 import unittest
 
@@ -28,6 +30,15 @@ class RemoteTest(run_isolated.Remote):
 
 
 class RunIsolatedTest(unittest.TestCase):
+  def setUp(self):
+    super(RunIsolatedTest, self).setUp()
+    self.tempdir = tempfile.mkdtemp(prefix='run_isolated')
+    os.chdir(self.tempdir)
+
+  def tearDown(self):
+    shutil.rmtree(self.tempdir)
+    os.chdir(ROOT_DIR)
+
   def test_load_isolated_empty(self):
     m = run_isolated.load_isolated('{}')
     self.assertEquals({}, m)

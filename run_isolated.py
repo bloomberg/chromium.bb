@@ -521,7 +521,7 @@ class Remote(object):
           download_size = os.stat(dest).st_size
           os.remove(dest)
           raise IOError('File incorrect size after download of %s. Got %s and '
-                        'expected %s' % (dest, download_size, size))
+                        'expected %s' % (obj, download_size, size))
       except IOError:
         # Retry a few times, lowering the priority.
         if (priority & self.INTERNAL_PRIORITY_BITS) < self.RETRIES:
@@ -547,18 +547,22 @@ class Remote(object):
           logging.debug('download_file(%s)', zipped_source)
           connection = urllib2.urlopen(zipped_source)
           decompressor = zlib.decompressobj()
+          size = 0
           with open(dest, 'wb') as f:
             while True:
               chunk = connection.read(ZIPPED_FILE_CHUNK)
               if not chunk:
                 break
+              size += len(chunk)
               f.write(decompressor.decompress(chunk))
           # Ensure that all the data was properly decompressed.
           uncompressed_data = decompressor.flush()
           assert not uncompressed_data
         except zlib.error as e:
           logging.debug(e)
-          raise IOError('Problem unzipping data:\n %s' % e)
+          raise IOError(
+              'Problem unzipping data for item %s. Got %d bytes.\n%s' %
+              (item, size, e))
 
       return download_file
 
