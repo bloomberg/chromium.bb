@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Proxy;
+import android.test.FlakyTest;
 import android.test.mock.MockContext;
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -45,8 +46,12 @@ public class ContentViewMiscTest extends AndroidWebViewTestBase {
         mContentViewCore = testContainerView.getContentViewCore();
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView"})
+    /*
+     * @SmallTest
+     * @Feature({"Android-WebView"})
+     * BUG 162967
+     */
+    @FlakyTest
     public void testFlingScroll() throws Throwable {
         StringBuffer testPage = new StringBuffer().append("data:text/html;utf-8,")
                 .append("<html><head><style>body { width: 5000px; height: 5000px; }</head><body>")

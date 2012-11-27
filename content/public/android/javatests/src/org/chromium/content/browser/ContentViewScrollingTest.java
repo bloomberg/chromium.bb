@@ -4,7 +4,7 @@
 
 package org.chromium.content.browser;
 
-import android.test.suitebuilder.annotation.SmallTest;
+import android.test.FlakyTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_shell.ContentShellTestBase;
@@ -20,8 +20,12 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
         + "<body>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</body>"
         + "</html>";
 
-    @SmallTest
-    @Feature({"Android-WebView"})
+    /*
+     * @SmallTest
+     * @Feature({"Android-WebView"})
+     * BUG 162967
+     */
+    @FlakyTest
     public void testFling() throws Throwable {
         launchContentShellWithUrl(LARGE_PAGE);
         waitForActiveShellToBeDoneLoading();
