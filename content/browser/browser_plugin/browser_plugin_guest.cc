@@ -423,8 +423,7 @@ void BrowserPluginGuest::HandleInputEvent(RenderViewHost* render_view_host,
   guest_rect_ = guest_rect;
   RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
       web_contents()->GetRenderViewHost());
-  IPC::Message* message = new ViewMsg_HandleInputEvent(
-      guest_rvh->GetRoutingID());
+  IPC::Message* message = new ViewMsg_HandleInputEvent(routing_id());
 
   // Copy the WebInputEvent and modify the event type. The guest expects
   // WebInputEvent::RawKeyDowns and not KeyDowns.
@@ -439,8 +438,7 @@ void BrowserPluginGuest::HandleInputEvent(RenderViewHost* render_view_host,
   // TODO(fsamuel): What do we need to do here? This is for keyboard shortcuts.
   if (input_event->type == WebKit::WebInputEvent::RawKeyDown)
     message->WriteBool(false);
-  bool sent = guest_rvh->Send(message);
-  if (!sent) {
+  if (!Send(message)) {
     // If the embedder is waiting for a previous input ack, a new input message
     // won't get sent to the guest. Reply immediately with handled = false so
     // embedder doesn't hang.
@@ -487,9 +485,7 @@ void BrowserPluginGuest::SetFocus(bool focused) {
   if (focused_ == focused)
       return;
   focused_ = focused;
-  RenderViewHost* render_view_host = web_contents()->GetRenderViewHost();
-  render_view_host->Send(
-      new ViewMsg_SetFocus(render_view_host->GetRoutingID(), focused));
+  Send(new ViewMsg_SetFocus(routing_id(), focused));
 }
 
 void BrowserPluginGuest::ShowWidget(RenderViewHost* render_view_host,
@@ -583,9 +579,7 @@ void BrowserPluginGuest::DidStopLoading(RenderViewHost* render_view_host) {
 void BrowserPluginGuest::RenderViewReady() {
   // TODO(fsamuel): Investigate whether it's possible to update state earlier
   // here (see http://www.crbug.com/158151).
-  RenderViewHost* render_view_host = web_contents()->GetRenderViewHost();
-  render_view_host->Send(
-      new ViewMsg_SetFocus(render_view_host->GetRoutingID(), focused_));
+  Send(new ViewMsg_SetFocus(routing_id(), focused_));
   bool embedder_visible =
       embedder_web_contents_->GetBrowserPluginEmbedder()->visible();
   SetVisibility(embedder_visible, visible());
@@ -631,7 +625,7 @@ void BrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
 }
 
 void BrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {
-  embedder_web_contents_->GetRenderProcessHost()->Send(msg);
+  embedder_web_contents_->Send(msg);
 }
 
 }  // namespace content
