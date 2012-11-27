@@ -105,6 +105,16 @@ void DnsProbeService::StartProbes() {
   system_job_ = CreateSystemProbeJob(job_callback);
   public_job_ = CreatePublicProbeJob(job_callback);
 
+  // If we can't create one or both jobs, fail the probe immediately.
+  if (!system_job_.get() || !public_job_.get()) {
+    system_job_.reset();
+    public_job_.reset();
+    state_ = STATE_RESULTS_CACHED;
+    result_ = PROBE_UNKNOWN;
+    CallCallbacks();
+    return;
+  }
+
   state_ = STATE_PROBE_RUNNING;
   probe_start_time_ = base::Time::Now();
 }
@@ -165,6 +175,9 @@ void DnsProbeService::CallCallbacks() {
 scoped_ptr<DnsProbeJob> DnsProbeService::CreateProbeJob(
     const DnsConfig& dns_config,
     const DnsProbeJob::CallbackType& job_callback) {
+  if (!dns_config.IsValid())
+    return scoped_ptr<DnsProbeJob>(NULL);
+
   scoped_ptr<DnsClient> dns_client(DnsClient::CreateClient(NULL));
   dns_client->SetConfig(dns_config);
   return DnsProbeJob::CreateJob(dns_client.Pass(), job_callback, NULL);
@@ -192,7 +205,6 @@ void DnsProbeService::OnProbeJobComplete(DnsProbeJob* job,
 }
 
 void DnsProbeService::GetSystemDnsConfig(DnsConfig* config) {
-  // TODO(ttuttle): Make sure we handle missing config properly
   NetworkChangeNotifier::GetDnsConfig(config);
 }
 
