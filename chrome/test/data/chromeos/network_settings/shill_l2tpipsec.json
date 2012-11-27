@@ -1,0 +1,10 @@
+{ "GUID": "guid",
+  "Type": "vpn",
+  "Name": "MyL2TPVPN",
+  "Provider.Host": "some.host.org",
+  "Provider.Type": "l2tpipsec",
+  "L2TPIPsec.PSK": "some_preshared_key",
+  "L2TPIPsec.User": "some username",
+  "L2TPIPsec.Password": "some password",
+  "SaveCredentials": true
+}

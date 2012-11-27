@@ -613,6 +613,7 @@
         'browser/chromeos/network_settings/onc_normalizer_unittest.cc',
         'browser/chromeos/network_settings/onc_test_utils.cc',
         'browser/chromeos/network_settings/onc_test_utils.h',
+        'browser/chromeos/network_settings/onc_translator_unittest.cc',
         'browser/chromeos/network_settings/onc_validator_unittest.cc',
         'browser/chromeos/offline/offline_load_page_unittest.cc',
         'browser/chromeos/preferences_unittest.cc',

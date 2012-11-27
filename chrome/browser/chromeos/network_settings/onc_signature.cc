@@ -124,8 +124,8 @@ const OncFieldSignature openvpn_fields[] = {
     &kBoolSignature },
   { vpn::kRemoteCertEKU, flimflam::kOpenVPNRemoteCertEKUProperty,
     &kStringSignature },
-  { vpn::kRemoteCertKU, flimflam::kOpenVPNRemoteCertKUProperty,
-    &kStringListSignature },
+  // This field is converted during translation, see onc_translator_*.
+  { vpn::kRemoteCertKU, NULL, &kStringListSignature },
   { vpn::kRemoteCertTLS, flimflam::kOpenVPNRemoteCertTLSProperty,
     &kStringSignature },
   { vpn::kRenegSec, flimflam::kOpenVPNRenegSecProperty, &kIntegerSignature },
@@ -152,7 +152,8 @@ const OncFieldSignature vpn_fields[] = {
   { vpn::kIPsec, NULL, &kIPsecSignature },
   { vpn::kL2TP, NULL, &kL2TPSignature },
   { vpn::kOpenVPN, NULL, &kOpenVPNSignature },
-  { kType, flimflam::kProviderTypeProperty, &kStringSignature },
+  // This field is converted during translation, see onc_translator_*.
+  { kType, NULL, &kStringSignature },
   { NULL }
 };
 
@@ -169,6 +170,7 @@ const OncFieldSignature ipconfig_fields[] = {
   { kNameServers, NULL, &kStringSignature },
   { ipconfig::kRoutingPrefix, NULL, &kIntegerSignature },
   { kSearchDomains, NULL, &kStringListSignature },
+  // This field is converted during translation, see onc_translator_*.
   { kType, NULL, &kStringSignature },
   { NULL }
 };
@@ -217,7 +219,8 @@ const OncFieldSignature network_configuration_fields[] = {
   { kProxySettings, NULL, &kProxySettingsSignature },
   { kRemove, NULL, &kBoolSignature },
   { kSearchDomains, NULL, &kStringListSignature },
-  { kType, flimflam::kTypeProperty, &kStringSignature },
+  // This field is converted during translation, see onc_translator_*.
+  { kType, NULL, &kStringSignature },
   { kVPN, NULL, &kVPNSignature },
   { kWiFi, NULL, &kWiFiSignature },
   { NULL }
