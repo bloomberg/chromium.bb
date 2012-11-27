@@ -6,6 +6,10 @@
 
 #include <string>
 
+bool ExtensionTtsPlatformImpl::LoadBuiltInTtsExtension(Profile* profile) {
+  return false;
+}
+
 std::string ExtensionTtsPlatformImpl::gender() {
   return std::string();
 }

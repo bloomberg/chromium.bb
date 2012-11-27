@@ -14,7 +14,6 @@
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/speech/extension_api/tts_extension_api_chromeos.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -155,12 +154,6 @@ void AudioMixerCras::Connect() {
     return;
   }
   client_connected_ = true;
-
-  // The speech synthesis service shouldn't be initialized until after
-  // we get to this point, so we call this function to tell it that it's
-  // safe to do TTS now.  NotificationService would be cleaner,
-  // but it's not available at this point.
-  EnableChromeOsTts();
 
   ApplyState();
 }

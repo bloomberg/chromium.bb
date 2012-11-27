@@ -239,6 +239,8 @@
         <include name="IDR_CRYPTOHOME_JS" file="resources\chromeos\cryptohome.js" type="BINDATA" />
         <!-- manifest file of ChromeVox accessibility extension -->
         <include name="IDR_CHROMEVOX_MANIFEST" file="resources\chromeos\access_chromevox\manifest.json" type="BINDATA" />
+        <!-- manifest file of built-in speech synthesis extension -->
+        <include name="IDR_SPEECH_SYNTHESIS_MANIFEST" file="resources\chromeos\speech_synthesis\manifest.json" type="BINDATA" />
         <include name="IDR_DIAGNOSTICS_MAIN_CSS" file="resources\chromeos\diagnostics\main.css" type="BINDATA" />
         <include name="IDR_DIAGNOSTICS_MAIN_HTML" file="resources\chromeos\diagnostics\main.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_DIAGNOSTICS_MAIN_JS" file="resources\chromeos\diagnostics\main.js" type="BINDATA" />

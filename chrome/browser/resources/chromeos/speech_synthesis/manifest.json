@@ -1,0 +1,57 @@
+{
+  "name": "Chrome OS built-in text-to-speech extension",
+  "version": "0.0.1",
+  "description": "Text-to-speech (TTS) voice extension using Native Client technology.",
+  "manifest_version": 2,
+  "background": {
+    "scripts": [
+      "voice_data_hmm_en-US.js",
+      "tts_main.js"
+    ]
+  },
+  "permissions": [
+    "ttsEngine",
+    "unlimitedStorage"
+  ],
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDlKEJseIIbKFyX0BCWNYOWlPEUt1IxBvIoW1PI7DTmipbwyVr3s2EprewYdtr9hCO5Yzs5w/ai1Xnhet5PLAsMje6ZP0Kvq0tlVfaYF8oQHBPF+ifx31RBT7Cn+ZVKLq1fxrwzY063GVhW+CAr06Ar8YRFXtFoC4FHlUNDIoSb4wIDAQAB",
+  "tts_engine": {
+    "voices": [
+      {
+        "voice_name": "Chrome OS US English Voice",
+        "lang": "en-US",
+        "gender": "female",
+        "event_types": [ "start", "word", "end", "error" ]
+      },
+      {
+        "voice_name": "Chrome OS UK English Voice",
+        "lang": "en-GB",
+        "gender": "female",
+        "event_types": [ "start", "word", "end", "error" ]
+      },
+      {
+        "voice_name": "Chrome OS French Voice",
+        "lang": "fr-FR",
+        "gender": "female",
+        "event_types": [ "start", "word", "end", "error" ]
+      },
+      {
+        "voice_name": "Chrome OS Spanish Voice",
+        "lang": "es-ES",
+        "gender": "female",
+        "event_types": [ "start", "word", "end", "error" ]
+      },
+      {
+        "voice_name": "Chrome OS German Voice",
+        "lang": "de-DE",
+        "gender": "female",
+        "event_types": [ "start", "word", "end", "error" ]
+      },
+      {
+        "voice_name": "Chrome OS Italian Voice",
+        "lang": "it-IT",
+        "gender": "female",
+        "event_types": [ "start", "word", "end", "error" ]
+      }
+    ]
+  }
+}

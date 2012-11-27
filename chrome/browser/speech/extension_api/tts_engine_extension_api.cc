@@ -20,10 +20,10 @@ using extensions::Extension;
 
 namespace constants = tts_extension_api_constants;
 
-namespace events {
+namespace tts_engine_events {
 const char kOnSpeak[] = "ttsEngine.onSpeak";
 const char kOnStop[] = "ttsEngine.onStop";
-};  // namespace events
+};  // namespace tts_engine_events
 
 namespace {
 // Given a language/region code of the form 'fr-FR', returns just the basic
@@ -49,9 +49,9 @@ void GetExtensionVoices(Profile* profile, ListValue* result_voices) {
     const Extension* extension = *iter;
 
     if (!event_router->ExtensionHasEventListener(
-            extension->id(), events::kOnSpeak) ||
+            extension->id(), tts_engine_events::kOnSpeak) ||
         !event_router->ExtensionHasEventListener(
-            extension->id(), events::kOnStop)) {
+            extension->id(), tts_engine_events::kOnStop)) {
       continue;
     }
 
@@ -124,9 +124,9 @@ bool GetMatchingExtensionVoice(
       const Extension* extension = *iter;
 
       if (!event_router->ExtensionHasEventListener(
-              extension->id(), events::kOnSpeak) ||
+              extension->id(), tts_engine_events::kOnSpeak) ||
           !event_router->ExtensionHasEventListener(
-              extension->id(), events::kOnStop)) {
+              extension->id(), tts_engine_events::kOnStop)) {
         continue;
       }
 
@@ -221,7 +221,7 @@ void ExtensionTtsEngineSpeak(Utterance* utterance,
   extensions::ExtensionSystem::Get(utterance->profile())->event_router()->
       DispatchEventToExtension(
           extension->id(),
-          events::kOnSpeak,
+          tts_engine_events::kOnSpeak,
           args.Pass(),
           utterance->profile(),
           GURL());
@@ -232,7 +232,7 @@ void ExtensionTtsEngineStop(Utterance* utterance) {
   extensions::ExtensionSystem::Get(utterance->profile())->event_router()->
       DispatchEventToExtension(
           utterance->extension_id(),
-          events::kOnStop,
+          tts_engine_events::kOnStop,
           args.Pass(),
           utterance->profile(),
           GURL());

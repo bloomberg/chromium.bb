@@ -196,6 +196,13 @@ void ExtensionTtsController::SpeakNow(Utterance* utterance) {
       utterance->text(),
       utterance->lang(),
       utterance->continuous_parameters());
+
+  if (!success &&
+      GetPlatformImpl()->LoadBuiltInTtsExtension(utterance->profile())) {
+    utterance_queue_.push(utterance);
+    return;
+  }
+
   if (!success) {
     utterance->OnTtsEvent(TTS_EVENT_ERROR, kInvalidCharIndex,
                           GetPlatformImpl()->error());
@@ -302,6 +309,11 @@ void ExtensionTtsController::SpeakNextUtterance() {
     utterance_queue_.pop();
     SpeakNow(utterance);
   }
+}
+
+void ExtensionTtsController::RetrySpeakingQueuedUtterances() {
+  if (current_utterance_ == NULL && !utterance_queue_.empty())
+    SpeakNextUtterance();
 }
 
 void ExtensionTtsController::ClearUtteranceQueue(bool send_events) {

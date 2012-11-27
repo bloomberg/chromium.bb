@@ -381,10 +381,9 @@ void ComponentLoader::AddDefaultComponentExtensions() {
 #endif
 
 #if defined(OS_CHROMEOS)
-  // Register access extensions only if accessibility is enabled.
+  // Load ChromeVox extension now if spoken feedback is enabled.
   if (local_state_->GetBoolean(prefs::kSpokenFeedbackEnabled)) {
-    FilePath path = FilePath(extension_misc::kAccessExtensionPath)
-        .AppendASCII(extension_misc::kChromeVoxDirectoryName);
+    FilePath path = FilePath(extension_misc::kChromeVoxExtensionPath);
     Add(IDR_CHROMEVOX_MANIFEST, path);
   }
 #endif

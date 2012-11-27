@@ -133,9 +133,12 @@ const char kCloudPrintAppId[] = "mfehgcgbbipciphmccgaenjidiccnmng";
 const char kChromeAppId[] = "mgndgikekgjfcpckkfioiadnlibdjbkf";
 const char kAppLaunchHistogram[] = "Extensions.AppLaunch";
 #if defined(OS_CHROMEOS)
-const char kAccessExtensionPath[] =
-    "/usr/share/chromeos-assets/accessibility/extensions";
-const char kChromeVoxDirectoryName[] = "access_chromevox";
+const char kChromeVoxExtensionPath[] =
+    "/usr/share/chromeos-assets/accessibility/extensions/access_chromevox";
+const char kSpeechSynthesisExtensionPath[] =
+    "/usr/share/chromeos-assets/speech_synthesis/patts";
+const char kSpeechSynthesisExtensionId[] =
+    "gjjabgpgjpampikjhjpfhneeoapjbjaf";
 const char kWallpaperManagerId[] = "obklkkbkpaoaejdabbfldmcfplpdgolj";
 #endif
 

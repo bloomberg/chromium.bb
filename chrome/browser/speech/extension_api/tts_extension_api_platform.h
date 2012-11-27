@@ -18,6 +18,13 @@ class ExtensionTtsPlatformImpl {
   // Returns true if this platform implementation is supported and available.
   virtual bool PlatformImplAvailable() = 0;
 
+  // Some platforms may provide a built-in TTS extension. Returns true
+  // if the extension was not previously loaded and is now loading, and
+  // false if it's already loaded or if there's no extension to load.
+  // Will call ExtensionTtsController::RetrySpeakingQueuedUtterances when
+  // the extension finishes loading.
+  virtual bool LoadBuiltInTtsExtension(Profile* profile);
+
   // Speak the given utterance with the given parameters if possible,
   // and return true on success. Utterance will always be nonempty.
   // If rate, pitch, or volume are -1.0, they will be ignored.

@@ -211,10 +211,12 @@ namespace extension_misc {
   };
 
 #if defined(OS_CHROMEOS)
-  // The directory path on a ChromeOS device where accessibility extensions are
-  // stored.
-  extern const char kAccessExtensionPath[];
-  extern const char kChromeVoxDirectoryName[];
+  // Path to preinstalled ChromeVox screen reader extension.
+  extern const char kChromeVoxExtensionPath[];
+  // Path to preinstalled speech synthesis extension.
+  extern const char kSpeechSynthesisExtensionPath[];
+  // The extension id of the speech synthesis extension.
+  extern const char kSpeechSynthesisExtensionId[];
   // The extension id of the wallpaper manager application.
   extern const char kWallpaperManagerId[];
 #endif

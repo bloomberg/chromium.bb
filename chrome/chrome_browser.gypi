@@ -1796,6 +1796,8 @@
         'browser/speech/extension_api/tts_extension_api_platform.cc',
         'browser/speech/extension_api/tts_extension_api_platform.h',
         'browser/speech/extension_api/tts_extension_api_win.cc',
+        'browser/speech/extension_api/tts_extension_loader_chromeos.cc',
+        'browser/speech/extension_api/tts_extension_loader_chromeos.h',
         'browser/speech/speech_input_extension_manager.cc',
         'browser/speech/speech_input_extension_manager.h',
         'browser/speech/speech_recognition_bubble.cc',

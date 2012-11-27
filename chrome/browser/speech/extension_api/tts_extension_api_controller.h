@@ -214,6 +214,10 @@ class ExtensionTtsController {
   // if supported, and all voices registered by extensions.
   base::ListValue* GetVoices(Profile* profile);
 
+  // Called by TtsExtensionLoaderChromeOs::LoadTtsExtension when it
+  // finishes loading the built-in TTS component extension.
+  void RetrySpeakingQueuedUtterances();
+
   // For unit testing.
   void SetPlatformImpl(ExtensionTtsPlatformImpl* platform_impl);
   int QueueSize();

@@ -18,6 +18,11 @@ namespace extensions {
 class Extension;
 }
 
+namespace tts_engine_events {
+extern const char kOnSpeak[];
+extern const char kOnStop[];
+}
+
 // Return a list of all available voices registered by extensions.
 void GetExtensionVoices(Profile* profile, base::ListValue* result_voices);
 
