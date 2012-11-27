@@ -4,7 +4,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
@@ -12,7 +11,6 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -104,9 +102,9 @@ class TabStripControllerTest : public CocoaProfileTest {
 
   TabView* CreateTab() {
     SiteInstance* instance = SiteInstance::Create(profile());
-    TabContents* tab_contents = chrome::TabContentsFactory(
+    WebContents* web_contents = WebContents::Create(
         profile(), instance, MSG_ROUTING_NONE, NULL);
-    model_->AppendTabContents(tab_contents, true);
+    model_->AppendWebContents(web_contents, true);
     const NSUInteger tab_count = [controller_.get() viewsCount];
     return static_cast<TabView*>([controller_.get() viewAtIndex:tab_count - 1]);
   }

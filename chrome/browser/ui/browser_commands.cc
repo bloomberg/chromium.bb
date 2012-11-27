@@ -98,9 +98,6 @@ using content::WebContents;
 // TODO(avi): Kill this when TabContents goes away.
 class BrowserCommandsTabContentsCreator {
  public:
-  static TabContents* CreateTabContents(content::WebContents* contents) {
-    return TabContents::Factory::CreateTabContents(contents);
-  }
   static TabContents* CloneTabContents(TabContents* contents) {
     return TabContents::Factory::CloneTabContents(contents);
   }
@@ -634,7 +631,7 @@ void ConvertPopupToTabbedBrowser(Browser* browser) {
   TabContents* contents =
       browser->tab_strip_model()->DetachTabContentsAt(browser->active_index());
   Browser* b = new Browser(Browser::CreateParams(browser->profile()));
-  b->tab_strip_model()->AppendTabContents(contents, true);
+  b->tab_strip_model()->AppendWebContents(contents->web_contents(), true);
   b->window()->Show();
 }
 
@@ -1086,12 +1083,7 @@ void ConvertTabToAppWindow(Browser* browser,
   Browser* app_browser = new Browser(
       Browser::CreateParams::CreateForApp(
           Browser::TYPE_POPUP, app_name, gfx::Rect(), browser->profile()));
-  TabContents* tab_contents = TabContents::FromWebContents(contents);
-  if (!tab_contents) {
-    tab_contents =
-        BrowserCommandsTabContentsCreator::CreateTabContents(contents);
-  }
-  app_browser->tab_strip_model()->AppendTabContents(tab_contents, true);
+  app_browser->tab_strip_model()->AppendWebContents(contents, true);
 
   contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
   contents->GetRenderViewHost()->SyncRendererPrefs();

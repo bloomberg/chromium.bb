@@ -6,7 +6,6 @@
 
 #include "base/mac/mac_util.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
@@ -67,10 +66,10 @@ class FullscreenExitBubbleControllerTest : public CocoaProfileTest {
   }
 
   void AppendTabToStrip() {
-    TabContents* tab_contents = chrome::TabContentsFactory(
+    WebContents* web_contents = WebContents::Create(
         profile(), site_instance_, MSG_ROUTING_NONE, NULL);
-    browser()->tab_strip_model()->AppendTabContents(
-        tab_contents, /*foreground=*/true);
+    browser()->tab_strip_model()->AppendWebContents(
+        web_contents, /*foreground=*/true);
   }
 
   scoped_refptr<SiteInstance> site_instance_;
@@ -86,7 +85,8 @@ TEST_F(FullscreenExitBubbleControllerTest, DISABLED_DenyExitsFullscreen) {
   [bwc showWindow:nil];
 
   AppendTabToStrip();
-  WebContents* fullscreen_tab = chrome::GetActiveWebContents(browser());
+  WebContents* fullscreen_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
   {
     base::mac::ScopedNSAutoreleasePool pool;
     content::WindowedNotificationObserver fullscreen_observer(

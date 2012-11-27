@@ -79,9 +79,9 @@ bool TabStripModel::ContainsIndex(int index) const {
   return index >= 0 && index < count();
 }
 
-void TabStripModel::AppendTabContents(TabContents* contents,
+void TabStripModel::AppendWebContents(WebContents* contents,
                                       bool foreground) {
-  InsertWebContentsAt(count(), contents->web_contents(),
+  InsertWebContentsAt(count(), contents,
                       foreground ? (ADD_INHERIT_GROUP | ADD_ACTIVE) :
                                    ADD_NONE);
 }

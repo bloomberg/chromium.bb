@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
@@ -107,7 +107,8 @@ class ConstrainedWindowViewTest : public InProcessBrowserTest {
 // *) Constrained windows that are queued don't register themselves as
 //    accelerator targets until they are displayed.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents != NULL);
   ConstrainedWindowTabHelper* constrained_window_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents);
@@ -164,7 +165,8 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
   EXPECT_NE(test_dialog2->GetInitiallyFocusedView(),
             focus_manager->GetFocusedView());
 
-  chrome::ActivateTabAt(browser(), tab_with_constrained_window, false);
+  browser()->tab_strip_model()->ActivateTabAt(tab_with_constrained_window,
+                                              false);
 
   // Activating the previous tab should bring focus to the constrained window.
   EXPECT_EQ(test_dialog2->GetInitiallyFocusedView(),
@@ -181,7 +183,8 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
 // Tests that the constrained window is closed properly when its tab is
 // closed.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabCloseTest) {
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents != NULL);
   ConstrainedWindowTabHelper* constrained_window_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents);
@@ -205,7 +208,8 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabCloseTest) {
 // Tests that the constrained window is hidden when an other tab is selected and
 // shown when its tab is selected again.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabSwitchTest) {
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents != NULL);
 
   // Create a constrained dialog.  It will attach itself to tab_contents.
@@ -216,8 +220,8 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabSwitchTest) {
   EXPECT_TRUE(window->IsVisible());
 
   // Open a new tab. The constrained window should hide itself.
-  browser()->tab_strip_model()->AppendTabContents(
-      chrome::TabContentsFactory(
+  browser()->tab_strip_model()->AppendWebContents(
+      content::WebContents::Create(
           browser()->profile(), NULL, MSG_ROUTING_NONE, NULL),
       true);
   EXPECT_FALSE(window->IsVisible());
