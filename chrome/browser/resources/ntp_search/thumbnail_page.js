@@ -85,12 +85,9 @@ cr.define('ntp', function() {
       if (banner)
         thumbnailImage.removeChild(banner);
 
-      var favicon = this.querySelector('.thumbnail-favicon') ||
-                    this.ownerDocument.createElement('div');
-      favicon.className = 'thumbnail-favicon';
-      favicon.style.backgroundImage =
-          url('chrome://favicon/size/16/' + dataUrl);
-      this.appendChild(favicon);
+      var favicon = thumbnailImage.querySelector('.thumbnail-favicon');
+      if (favicon)
+        thumbnailImage.removeChild(favicon);
 
       var self = this;
       var image = new Image();
@@ -106,6 +103,13 @@ cr.define('ntp', function() {
         // TODO(jeremycho): Consult with UX on URL truncation.
         banner.textContent = dataUrl.replace(/^(http:\/\/)?(www\.)?|\/$/gi, '');
         thumbnailImage.appendChild(banner);
+
+        favicon = thumbnailImage.querySelector('.thumbnail-favicon') ||
+            self.ownerDocument.createElement('div');
+        favicon.className = 'thumbnail-favicon';
+        favicon.style.backgroundImage =
+            url('chrome://favicon/size/16/' + dataUrl);
+        thumbnailImage.appendChild(favicon);
       };
 
       var thumbnailUrl = ntp.getThumbnailUrl(dataUrl);
