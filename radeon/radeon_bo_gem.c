@@ -47,11 +47,11 @@
 #include "radeon_bo_gem.h"
 #include <fcntl.h>
 struct radeon_bo_gem {
-    struct radeon_bo_int base;
-    uint32_t            name;
-    int                 map_count;
-    atomic_t            reloc_in_cs;
-    void *priv_ptr;
+    struct radeon_bo_int    base;
+    uint32_t                name;
+    int                     map_count;
+    atomic_t                reloc_in_cs;
+    void                    *priv_ptr;
 };
 
 struct bo_manager_gem {
@@ -320,15 +320,21 @@ void *radeon_gem_get_reloc_in_cs(struct radeon_bo *bo)
 
 int radeon_gem_get_kernel_name(struct radeon_bo *bo, uint32_t *name)
 {
+    struct radeon_bo_gem *bo_gem = (struct radeon_bo_gem*)bo;
     struct radeon_bo_int *boi = (struct radeon_bo_int *)bo;
     struct drm_gem_flink flink;
     int r;
 
+    if (bo_gem->name) {
+        *name = bo_gem->name;
+        return 0;
+    }
     flink.handle = bo->handle;
     r = drmIoctl(boi->bom->fd, DRM_IOCTL_GEM_FLINK, &flink);
     if (r) {
         return r;
     }
+    bo_gem->name = flink.name;
     *name = flink.name;
     return 0;
 }
