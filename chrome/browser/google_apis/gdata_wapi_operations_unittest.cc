@@ -6,7 +6,6 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
-#include "base/string_split.h"
 #include "chrome/browser/google_apis/gdata_wapi_operations.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/google_apis/operation_registry.h"
@@ -26,6 +25,44 @@ namespace {
 
 const char kTestGDataAuthToken[] = "testtoken";
 const char kTestUserAgent[] = "test-user-agent";
+
+// Copies the results from GetDataCallback and quit the message loop.
+void CopyResultsFromGetDataCallbackAndQuit(
+    GDataErrorCode* out_result_code,
+    scoped_ptr<base::Value>* out_result_data,
+    GDataErrorCode result_code,
+    scoped_ptr<base::Value> result_data) {
+  *out_result_code = result_code;
+  *out_result_data = result_data.Pass();
+  MessageLoop::current()->Quit();
+}
+
+// Returns true if |json_data| equals to JSON data in |expected_json_file_path|.
+bool VerifyJsonData(const FilePath& expected_json_file_path,
+                    const base::Value* json_data) {
+  std::string expected_contents;
+  if (!file_util::ReadFileToString(expected_json_file_path, &expected_contents))
+    return false;
+
+  scoped_ptr<base::Value> expected_data(
+      base::JSONReader::Read(expected_contents));
+  return base::Value::Equals(expected_data.get(), json_data);
+}
+
+// Returns a HttpResponse created from the given JSON file path.
+scoped_ptr<test_server::HttpResponse> CreateJsonResponseFromFile(
+    const FilePath& file_path) {
+  std::string content;
+  if (!file_util::ReadFileToString(file_path, &content))
+    return scoped_ptr<test_server::HttpResponse>();
+
+  scoped_ptr<test_server::HttpResponse> http_response(
+      new test_server::HttpResponse);
+  http_response->set_code(test_server::SUCCESS);
+  http_response->set_content(content);
+  http_response->set_content_type("application/json");
+  return http_response.Pass();
+}
 
 // This class sets a request context getter for testing in
 // |testing_browser_process| and then clears the state when an instance of it
@@ -103,31 +140,36 @@ class GDataWapiOperationsTest : public testing::Test {
   // Handles a request for fetching a resource feed.
   scoped_ptr<test_server::HttpResponse> HandleResourceFeedRequest(
       const test_server::HttpRequest& request) {
+    const char kFeedPrefix[] = "/feeds/default/private/full/";
     if (!StartsWithASCII(request.relative_url,
-                         "/feeds/default/private/full",
+                         kFeedPrefix,
                          true /* case sensitive */)) {
       return scoped_ptr<test_server::HttpResponse>();
     }
 
     const GURL absolute_url = test_server_.GetURL(request.relative_url);
-    std::vector<std::string> path_components;
-    base::SplitString(absolute_url.path(), '/', &path_components);
+    // Remove the feed prefix.
+    std::string suffix = absolute_url.path();
+    ReplaceFirstSubstringAfterOffset(&suffix, 0, kFeedPrefix, "");
 
-    // For now, we only support a resource feed for a particular entry.
-    const std::string resource_id = net::UnescapeURLComponent(
-        path_components.back(), net::UnescapeRule::URL_SPECIAL_CHARS);
-    if (resource_id != "file:2_file_resource_id")
-      return scoped_ptr<test_server::HttpResponse>();
+    if (suffix == "-/mine") {
+      // Process the default feed.
+      return CreateJsonResponseFromFile(
+          test_util::GetTestFilePath("gdata/root_feed.json"));
+    } else {
+      // Process a feed for a single resource ID.
+      // For now, we only support a resource feed for a particular entry.
+      const std::string resource_id = net::UnescapeURLComponent(
+          suffix, net::UnescapeRule::URL_SPECIAL_CHARS);
+      if (resource_id != "file:2_file_resource_id")
+        return scoped_ptr<test_server::HttpResponse>();
 
-    std::string content;
-    file_util::ReadFileToString(
-        test_util::GetTestFilePath("gdata/file_entry.json"), &content);
-    scoped_ptr<test_server::HttpResponse> http_response(
-        new test_server::HttpResponse);
-    http_response->set_code(test_server::SUCCESS);
-    http_response->set_content(content);
-    http_response->set_content_type("application/json");
-    return http_response.Pass();
+      return CreateJsonResponseFromFile(
+          test_util::GetTestFilePath("gdata/file_entry.json"));
+    }
+
+    NOTREACHED();
+    return scoped_ptr<test_server::HttpResponse>();
   }
 
   MessageLoopForUI message_loop_;
@@ -156,33 +198,32 @@ void CopyResultsFromDownloadActionCallback(
   MessageLoop::current()->Quit();
 }
 
-// Copies the results from GetDataCallback and quit the message loop.
-void CopyResultsFromGetDataCallbackAndQuit(
-    GDataErrorCode* out_result_code,
-    scoped_ptr<base::Value>* out_result_data,
-    GDataErrorCode result_code,
-    scoped_ptr<base::Value> result_data) {
-  *out_result_code = result_code;
-  *out_result_data = result_data.Pass();
-  MessageLoop::current()->Quit();
-}
-
-// Returns true if |json_data| equals to JSON data in |expected_json_file_path|.
-bool VerifyJsonData(const FilePath& expected_json_file_path,
-                    const base::Value* json_data) {
-  std::string expected_contents;
-  if (!file_util::ReadFileToString(expected_json_file_path, &expected_contents))
-    return false;
-
-  scoped_ptr<base::Value> expected_data(
-      base::JSONReader::Read(expected_contents));
-  return base::Value::Equals(expected_data.get(), json_data);
-}
-
 }  // namespace
 
-// TODO(satorux): Write a test for GetDocumentsOperation, where the URL
-// parameter is empty (i.e. uses the default URL). crbug.com/162348
+TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_DefaultFeed) {
+  GDataErrorCode result_code = GDATA_OTHER_ERROR;
+  scoped_ptr<base::Value> result_data;
+
+  GetDocumentsOperation* operation = new GetDocumentsOperation(
+      &operation_registry_,
+      *url_generator_,
+      GURL(),  // Pass an empty URL to use the default feed
+      0,  // start changestamp
+      "",  // search string
+      false,  // shared with me
+      "",  // directory resource ID
+      base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
+                 &result_code,
+                 &result_data));
+  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, result_code);
+  ASSERT_TRUE(result_data);
+  EXPECT_TRUE(VerifyJsonData(
+      test_util::GetTestFilePath("gdata/root_feed.json"),
+      result_data.get()));
+}
 
 TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_ValidFeed) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
@@ -192,7 +233,7 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_ValidFeed) {
       &operation_registry_,
       *url_generator_,
       test_server_.GetURL("/files/chromeos/gdata/root_feed.json"),
-      0,  // start changestamp,
+      0,  // start changestamp
       "",  // search string
       false,  // shared with me
       "",  // directory resource ID
@@ -219,7 +260,7 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_InvalidFeed) {
       &operation_registry_,
       *url_generator_,
       test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
-      0,  // start changestamp,
+      0,  // start changestamp
       "",  // search string
       false,  // shared with me
       "",  // directory resource ID
