@@ -4,8 +4,8 @@
 
 
 cr.define('bmm', function() {
-  const Tree = cr.ui.Tree;
-  const TreeItem = cr.ui.TreeItem;
+  /** @const */ var Tree = cr.ui.Tree;
+  /** @const */ var TreeItem = cr.ui.TreeItem;
 
   var treeLookup = {};
   var tree;
@@ -214,12 +214,12 @@ cr.define('bmm', function() {
         parentItem.remove(itemToRemove);
     },
 
-    insertSubtree:function(folder) {
+    insertSubtree: function(folder) {
       if (!bmm.isFolder(folder))
         return;
       var children = folder.children;
       this.handleCreated(folder.id, folder);
-      for(var i = 0; i < children.length; i++) {
+      for (var i = 0; i < children.length; i++) {
         var child = children[i];
         this.insertSubtree(child);
       }
@@ -247,7 +247,8 @@ cr.define('bmm', function() {
        * parentTreeItem.
        * @param {!cr.ui.Tree|!cr.ui.TreeItem} parentTreeItem The parent tree
        *     element to append to.
-       * @param {!Array.<BookmarkTreeNode>} bookmarkNodes
+       * @param {!Array.<BookmarkTreeNode>} bookmarkNodes A list of bookmark
+       *     nodes to be added.
        * @return {boolean} Whether any directories where added.
        */
       function buildTreeItems(parentTreeItem, bookmarkNodes) {
@@ -278,7 +279,7 @@ cr.define('bmm', function() {
     clear: function() {
       // Remove all fields without recreating the object since other code
       // references it.
-      for (var id in treeLookup){
+      for (var id in treeLookup) {
         delete treeLookup[id];
       }
       this.textContent = '';
