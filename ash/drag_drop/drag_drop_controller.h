@@ -9,10 +9,10 @@
 #include "base/callback.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/animation/animation_delegate.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/events/event_handler.h"
-#include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/point.h"
 
 namespace aura {
@@ -21,7 +21,7 @@ class Window;
 }
 
 namespace ui {
-class LayerAnimationSequence;
+class LinearAnimation;
 }
 
 namespace ash {
@@ -38,7 +38,7 @@ class DragImageView;
 class ASH_EXPORT DragDropController
     : public aura::client::DragDropClient,
       public ui::EventHandler,
-      public ui::ImplicitAnimationObserver,
+      public ui::AnimationDelegate,
       public aura::WindowObserver {
  public:
   DragDropController();
@@ -74,8 +74,10 @@ class ASH_EXPORT DragDropController
  private:
   friend class ash::test::DragDropControllerTest;
 
-  // Implementation of ImplicitAnimationObserver
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
+  // Overridden from ui::AnimationDelegate:
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
 
   // Helper method to start drag widget flying back animation.
   void StartCanceledAnimation();
@@ -90,7 +92,12 @@ class ASH_EXPORT DragDropController
 
   // Window that is currently under the drag cursor.
   aura::Window* drag_window_;
+  // The location where drag is started in screen coordinate.
   gfx::Point drag_start_location_;
+  // The location where drag is canceled in screen coordinate.
+  gfx::Point drag_cancel_location_;
+
+  scoped_ptr<ui::LinearAnimation> cancel_animation_;
 
   // Indicates whether the caller should be blocked on a drag/drop session.
   // Only be used for tests.

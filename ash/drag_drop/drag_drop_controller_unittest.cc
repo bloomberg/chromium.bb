@@ -4,12 +4,14 @@
 
 #include "ash/drag_drop/drag_drop_controller.h"
 
+#include "ash/drag_drop/drag_image_view.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/location.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
+#include "ui/base/animation/linear_animation.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -119,13 +121,6 @@ class TestDragDropController : public internal::DragDropController {
     drag_string_.clear();
   }
 
-  bool drag_start_received_;
-  int num_drag_updates_;
-  bool drop_received_;
-  bool drag_canceled_;
-  string16 drag_string_;
-
- private:
   int StartDragAndDrop(const ui::OSExchangeData& data,
                        aura::RootWindow* root_window,
                        aura::Window* source_window,
@@ -154,6 +149,13 @@ class TestDragDropController : public internal::DragDropController {
     drag_canceled_ = true;
   }
 
+  bool drag_start_received_;
+  int num_drag_updates_;
+  bool drop_received_;
+  bool drag_canceled_;
+  string16 drag_string_;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(TestDragDropController);
 };
 
@@ -242,6 +244,16 @@ class DragDropControllerTest : public AshTestBase {
 
   aura::Window* GetDragWindow() {
     return drag_drop_controller_->drag_window_;
+  }
+
+  aura::Window* GetDragImageWindow() {
+    return drag_drop_controller_->drag_image_.get() ?
+        drag_drop_controller_->drag_image_->GetWidget()->GetNativeWindow() :
+        NULL;
+  }
+
+  void EndCancelAnimation() {
+    drag_drop_controller_->cancel_animation_->End();
   }
 
  protected:
@@ -675,6 +687,109 @@ TEST_F(DragDropControllerTest, PressingEscapeCancelsDragDrop) {
   EXPECT_EQ(0, drag_view->num_drops_);
   EXPECT_EQ(1, drag_view->num_drag_exits_);
   EXPECT_TRUE(drag_view->drag_done_received_);
+}
+
+namespace {
+
+class DragImageWindowObserver : public aura::WindowObserver {
+ public:
+  virtual void OnWindowDestroying(aura::Window* window) {
+    window_location_on_destroying_ = window->GetBoundsInScreen().origin();
+  }
+
+  gfx::Point window_location_on_destroying() const {
+    return window_location_on_destroying_;
+  }
+
+ public:
+  gfx::Point window_location_on_destroying_;
+};
+
+}
+
+// Verifies the drag image moves back to the position where drag is started
+// across displays when drag is cancelled.
+TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
+  UpdateDisplay("400x400,400x400");
+  Shell::RootWindowList root_windows =
+      Shell::GetInstance()->GetAllRootWindows();
+  for (Shell::RootWindowList::iterator iter = root_windows.begin();
+       iter != root_windows.end(); ++iter) {
+    aura::client::SetDragDropClient(*iter, drag_drop_controller_.get());
+  }
+
+  ui::OSExchangeData data;
+  data.SetString(UTF8ToUTF16("I am being dragged"));
+  {
+    scoped_ptr<views::Widget> widget(CreateNewWidget());
+    aura::Window* window = widget->GetNativeWindow();
+    drag_drop_controller_->StartDragAndDrop(
+        data,
+        window->GetRootWindow(),
+        window,
+        gfx::Point(5, 5),
+        ui::DragDropTypes::DRAG_MOVE,
+        ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+
+    DragImageWindowObserver observer;
+    ASSERT_TRUE(GetDragImageWindow());
+    GetDragImageWindow()->AddObserver(&observer);
+
+    {
+      ui::MouseEvent e(ui::ET_MOUSE_DRAGGED,
+                       gfx::Point(200, 0),
+                       gfx::Point(200, 0),
+                       ui::EF_NONE);
+      drag_drop_controller_->DragUpdate(window, e);
+    }
+    {
+      ui::MouseEvent e(ui::ET_MOUSE_DRAGGED,
+                       gfx::Point(600, 0),
+                       gfx::Point(600, 0),
+                       ui::EF_NONE);
+      drag_drop_controller_->DragUpdate(window, e);
+    }
+
+    drag_drop_controller_->DragCancel();
+    EndCancelAnimation();
+
+    EXPECT_EQ("5,5", observer.window_location_on_destroying().ToString());
+  }
+
+  {
+    scoped_ptr<views::Widget> widget(CreateNewWidget());
+    aura::Window* window = widget->GetNativeWindow();
+    drag_drop_controller_->StartDragAndDrop(
+        data,
+        window->GetRootWindow(),
+        window,
+        gfx::Point(405, 405),
+        ui::DragDropTypes::DRAG_MOVE,
+        ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+    DragImageWindowObserver observer;
+    ASSERT_TRUE(GetDragImageWindow());
+    GetDragImageWindow()->AddObserver(&observer);
+
+    {
+      ui::MouseEvent e(ui::ET_MOUSE_DRAGGED,
+                       gfx::Point(600, 0),
+                       gfx::Point(600, 0),
+                       ui::EF_NONE);
+      drag_drop_controller_->DragUpdate(window, e);
+    }
+    {
+      ui::MouseEvent e(ui::ET_MOUSE_DRAGGED,
+                       gfx::Point(200, 0),
+                       gfx::Point(200, 0),
+                       ui::EF_NONE);
+      drag_drop_controller_->DragUpdate(window, e);
+    }
+
+    drag_drop_controller_->DragCancel();
+    EndCancelAnimation();
+
+    EXPECT_EQ("405,405", observer.window_location_on_destroying().ToString());
+  }
 }
 
 }  // namespace test

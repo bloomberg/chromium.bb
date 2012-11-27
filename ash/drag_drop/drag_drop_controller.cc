@@ -16,12 +16,10 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/base/animation/linear_animation.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
 #include "ui/base/events/event.h"
-#include "ui/compositor/layer.h"
-#include "ui/compositor/layer_animator.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/views_delegate.h"
@@ -33,8 +31,10 @@ namespace internal {
 using aura::RootWindow;
 
 namespace {
-const base::TimeDelta kDragDropAnimationDuration =
-    base::TimeDelta::FromMilliseconds(250);
+// The duration of the drag cancel animation in millisecond.
+const int kCancelAnimationDuration = 250;
+// The frame rate of the drag cancel animation in hertz.
+const int kCancelAnimationFrameRate = 60;
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -52,6 +52,8 @@ DragDropController::DragDropController()
 DragDropController::~DragDropController() {
   Shell::GetInstance()->RemovePreTargetHandler(this);
   Cleanup();
+  if (cancel_animation_.get())
+    cancel_animation_->End();
   if (drag_image_.get())
     drag_image_.reset();
 }
@@ -82,6 +84,11 @@ int DragDropController::StartDragAndDrop(
 
   drag_window_ = NULL;
   drag_start_location_ = root_location - drag_image_offset_;
+  ash::wm::ConvertPointToScreen(root_window, &drag_start_location_);
+
+  // Ends cancel animation if it's in progress.
+  if (cancel_animation_.get())
+    cancel_animation_->End();
 
 #if !defined(OS_MACOSX)
   if (should_block_during_drag_drop_) {
@@ -263,8 +270,9 @@ void DragDropController::OnWindowDestroyed(aura::Window* window) {
 ////////////////////////////////////////////////////////////////////////////////
 // DragDropController, private:
 
-void DragDropController::OnImplicitAnimationsCompleted() {
-  DCHECK(drag_image_.get());
+void DragDropController::AnimationEnded(const ui::Animation* animation) {
+  drag_image_->SetScreenPosition(drag_start_location_);
+  cancel_animation_.reset();
 
   // By the time we finish animation, another drag/drop session may have
   // started. We do not want to destroy the drag image in that case.
@@ -272,19 +280,25 @@ void DragDropController::OnImplicitAnimationsCompleted() {
     drag_image_.reset();
 }
 
+void DragDropController::AnimationProgressed(const ui::Animation* animation) {
+  drag_image_->SetScreenPosition(gfx::Point(
+      animation->CurrentValueBetween(drag_cancel_location_.x(),
+                                     drag_start_location_.x()),
+      animation->CurrentValueBetween(drag_cancel_location_.y(),
+                                     drag_start_location_.y())));
+}
+
+void DragDropController::AnimationCanceled(const ui::Animation* animation) {
+  AnimationEnded(animation);
+}
+
 void DragDropController::StartCanceledAnimation() {
-  aura::Window* window = drag_image_->GetWidget()->GetNativeView();
-  ui::LayerAnimator* animator = window->layer()->GetAnimator();
-  animator->set_preemption_strategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-
-  // Stop waiting for any as yet unfinished implicit animations.
-  StopObservingImplicitAnimations();
-
-  ui::ScopedLayerAnimationSettings animation_setter(animator);
-  animation_setter.SetTransitionDuration(kDragDropAnimationDuration);
-  animation_setter.AddObserver(this);
-  window->SetBounds(gfx::Rect(drag_start_location_, window->bounds().size()));
+  DCHECK(drag_image_.get());
+  drag_cancel_location_ = drag_image_->GetBoundsInScreen().origin();
+  cancel_animation_.reset(new ui::LinearAnimation(kCancelAnimationDuration,
+                                                  kCancelAnimationFrameRate,
+                                                  this));
+  cancel_animation_->Start();
 }
 
 void DragDropController::Cleanup() {
