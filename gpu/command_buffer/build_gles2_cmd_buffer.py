@@ -1159,7 +1159,6 @@ _FUNCTION_INFO = {
     'type': 'Bind',
     'decoder_func': 'DoBindBuffer',
     'gen_func': 'GenBuffersARB',
-    'impl_func': False,
   },
   'BindFramebuffer': {
     'type': 'Bind',
@@ -1976,7 +1975,11 @@ _FUNCTION_INFO = {
     'client_test': False,
     'pepper_interface': 'ChromiumMapSub',
   },
-  'UseProgram': {'decoder_func': 'DoUseProgram', 'unit_test': False},
+  'UseProgram': {
+    'decoder_func': 'DoUseProgram',
+    'impl_func': False,
+    'unit_test': False,
+  },
   'ValidateProgram': {'decoder_func': 'DoValidateProgram'},
   'VertexAttrib1f': {'decoder_func': 'DoVertexAttrib1f'},
   'VertexAttrib1fv': {
@@ -3463,8 +3466,9 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     SetGLError(GL_INVALID_OPERATION, "%(name)s\", \"%(id)s reserved id");
     return;
   }
-  Bind%(type)sHelper(%(arg_string)s);
-  helper_->%(name)s(%(arg_string)s);
+  if (Bind%(type)sHelper(%(arg_string)s)) {
+    helper_->%(name)s(%(arg_string)s);
+  }
 }
 
 """
@@ -3482,6 +3486,36 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
           'id': name_arg.name,
           'type': name_arg.resource_type,
           'lc_type': name_arg.resource_type.lower(),
+        })
+
+  def WriteGLES2ImplementationUnitTest(self, func, file):
+    """Overrriden from TypeHandler."""
+    code = """
+TEST_F(GLES2ImplementationTest, %(name)s) {
+  struct Cmds {
+    %(name)s cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(%(cmd_args)s);
+
+  gl_->%(name)s(%(args)s);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  ClearCommands();
+  gl_->%(name)s(%(args)s);
+  EXPECT_TRUE(NoCommandsWritten());
+}
+"""
+    cmd_arg_strings = []
+    for count, arg in enumerate(func.GetCmdArgs()):
+      cmd_arg_strings.append(arg.GetValidClientSideCmdArg(func, count, 0))
+      count += 1
+    gl_arg_strings = []
+    for count, arg in enumerate(func.GetOriginalArgs()):
+      gl_arg_strings.append(arg.GetValidClientSideArg(func, count, 0))
+    file.Write(code % {
+          'name': func.name,
+          'args': ", ".join(gl_arg_strings),
+          'cmd_args': ", ".join(cmd_arg_strings),
         })
 
 
