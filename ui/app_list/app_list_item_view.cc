@@ -83,6 +83,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetEnabledColor(kTitleColor);
   title_->SetFont(GetTitleFont());
+  title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   const gfx::ShadowValue kIconShadows[] = {
     gfx::ShadowValue(gfx::Point(0, 2), 2, SkColorSetARGB(0x24, 0, 0, 0)),
@@ -189,21 +190,22 @@ std::string AppListItemView::GetClassName() const {
 void AppListItemView::Layout() {
   gfx::Rect rect(GetContentsBounds());
 
-  int left_right_padding = kLeftRightPaddingChars *
+  const int left_right_padding = kLeftRightPaddingChars *
       title_->font().GetAverageCharacterWidth();
-  gfx::Size title_size = title_->GetPreferredSize();
-
-  rect.Inset(left_right_padding, kTopPadding);
-  int y = rect.y();
+  rect.Inset(left_right_padding, kTopPadding, left_right_padding, 0);
+  const int y = rect.y();
 
   gfx::Rect icon_bounds(rect.x(), y, rect.width(), icon_size_.height());
   icon_bounds.Inset(gfx::ShadowValue::GetMargin(icon_shadows_));
   icon_->SetBoundsRect(icon_bounds);
 
-  title_->SetBounds(rect.x(),
-                    y + icon_size_.height() + kIconTitleSpacing,
-                    rect.width(),
-                    title_size.height());
+  const gfx::Size title_size = title_->GetPreferredSize();
+  gfx::Rect title_bounds(rect.x() + (rect.width() - title_size.width()) / 2,
+                         y + icon_size_.height() + kIconTitleSpacing,
+                         title_size.width(),
+                         title_size.height());
+  title_bounds.Intersect(rect);
+  title_->SetBoundsRect(title_bounds);
 }
 
 void AppListItemView::OnPaint(gfx::Canvas* canvas) {
