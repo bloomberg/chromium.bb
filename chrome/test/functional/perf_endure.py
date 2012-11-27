@@ -709,6 +709,8 @@ class ChromeEndureControlTest(ChromeEndureBaseTest):
                         test_description, lambda: scenario(driver))
 
 
+# TODO(dennisjeffrey): Make new WPR recordings of the Gmail tests so that we
+# can remove the special handling for when self._use_wpr is True.
 class ChromeEndureGmailTest(ChromeEndureBaseTest):
   """Long-running performance tests for Chrome using Gmail."""
 
@@ -718,6 +720,8 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
 
   def setUp(self):
     ChromeEndureBaseTest.setUp(self)
+
+    self._FRAME_XPATH = self._FRAME_XPATH if self._use_wpr else ''
 
     # Log into a test Google account and open up Gmail.
     self._LoginToGoogleAccount(account_key='test_google_account_gmail')
@@ -735,11 +739,14 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
     # DOM mutation observer mechanism.
     self._wait = WebDriverWait(self._driver, timeout=60)
 
-    # Wait until Gmail's 'canvas_frame' loads and the 'Inbox' link is present.
-    # TODO(dennisjeffrey): Check with the Gmail team to see if there's a better
-    # way to tell when the webpage is ready for user interaction.
-    self._wait.until(
-        self._SwitchToCanvasFrame)  # Raises exception if the timeout is hit.
+
+    if self._use_wpr:
+      # Wait until Gmail's 'canvas_frame' loads and the 'Inbox' link is present.
+      # TODO(dennisjeffrey): Check with the Gmail team to see if there's a
+      # better way to tell when the webpage is ready for user interaction.
+      self._wait.until(
+          self._SwitchToCanvasFrame)  # Raises exception if the timeout is hit.
+
     # Wait for the inbox to appear.
     self.WaitForDomNode('//a[starts-with(@title, "Inbox")]',
                         frame_xpath=self._FRAME_XPATH)
@@ -849,7 +856,7 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
     """
     test_description = 'ComposeDiscard'
 
-    def scenario():
+    def scenario_wpr():
       # Click the "Compose" button, enter some text into the "To" field, enter
       # some text into the "Subject" field, then click the "Discard" button to
       # discard the message.
@@ -882,6 +889,37 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
       self._wait.until(lambda _: not self._GetElement(
                            self._driver.find_element_by_name, 'to'))
 
+    def scenario_live():
+      compose_xpath = '//div[text()="COMPOSE"]'
+      self.WaitForDomNode(compose_xpath, frame_xpath=self._FRAME_XPATH)
+      compose_button = self._GetElement(self._driver.find_element_by_xpath,
+                                        compose_xpath)
+      self._ClickElementAndRecordLatency(
+          compose_button, test_description, 'Compose')
+
+      to_xpath = '//input[@tabindex="1" and @spellcheck="false"]'
+      self.WaitForDomNode(to_xpath, frame_xpath=self._FRAME_XPATH)
+      to_field = self._GetElement(self._driver.find_element_by_xpath, to_xpath)
+      to_field.send_keys('nobody@nowhere.com')
+
+      subject_xpath = '//input[@name="subjectbox"]'
+      self.WaitForDomNode(subject_xpath, frame_xpath=self._FRAME_XPATH)
+      subject_field = self._GetElement(self._driver.find_element_by_xpath,
+                                       subject_xpath)
+      subject_field.send_keys('This message is about to be discarded')
+
+      discard_xpath = '//div[@aria-label="Discard draft"]'
+      self.WaitForDomNode(discard_xpath, frame_xpath=self._FRAME_XPATH)
+      discard_button = self._GetElement(self._driver.find_element_by_xpath,
+                                        discard_xpath)
+      discard_button.click()
+
+      # Wait for the message to be discarded, assumed to be true after the
+      # "To" element is removed from the webpage DOM.
+      self._wait.until(lambda _: not self._GetElement(
+                           self._driver.find_element_by_name, 'to'))
+
+    scenario = scenario_wpr if self._use_wpr else scenario_live
     self._RunEndureTest(self._WEBAPP_NAME, self._TAB_TITLE_SUBSTRING,
                         test_description, scenario,
                         frame_xpath=self._FRAME_XPATH)
