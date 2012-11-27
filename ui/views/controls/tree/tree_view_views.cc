@@ -299,34 +299,16 @@ gfx::Size TreeView::GetPreferredSize() {
 }
 
 bool TreeView::OnMousePressed(const ui::MouseEvent& event) {
-  int row = (event.y() - kVerticalInset) / row_height_;
-  int depth;
-  InternalNode* node = GetNodeByRow(row, &depth);
-  if (node) {
-    RequestFocus();
-    gfx::Rect bounds(GetBoundsForNodeImpl(node, row, depth));
-    if (bounds.Contains(event.location())) {
-      int relative_x = event.x() - bounds.x();
-      if (base::i18n::IsRTL())
-        relative_x = bounds.width() - relative_x;
-      if (relative_x < kArrowRegionSize &&
-          model_->GetChildCount(node->model_node())) {
-        if (node->is_expanded())
-          Collapse(node->model_node());
-        else
-          Expand(node->model_node());
-      } else if (relative_x > kArrowRegionSize) {
-        SetSelectedNode(node->model_node());
-        if (event.flags() & ui::EF_IS_DOUBLE_CLICK) {
-          if (node->is_expanded())
-            Collapse(node->model_node());
-          else
-            Expand(node->model_node());
-        }
-      }
-    }
+  return OnClickOrTap(event);
+}
+
+ui::EventResult TreeView::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP ||
+      event->type() == ui::ET_GESTURE_DOUBLE_TAP) {
+    if (OnClickOrTap(*event))
+      return ui::ER_CONSUMED;
   }
-  return true;
+  return ui::ER_UNHANDLED;
 }
 
 void TreeView::ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture) {
@@ -539,6 +521,38 @@ void TreeView::OnFocus() {
 
 void TreeView::OnBlur() {
   SchedulePaintForNode(selected_node_);
+}
+
+bool TreeView::OnClickOrTap(const ui::LocatedEvent& event) {
+  int row = (event.y() - kVerticalInset) / row_height_;
+  int depth;
+  InternalNode* node = GetNodeByRow(row, &depth);
+  if (node) {
+    RequestFocus();
+    gfx::Rect bounds(GetBoundsForNodeImpl(node, row, depth));
+    if (bounds.Contains(event.location())) {
+      int relative_x = event.x() - bounds.x();
+      if (base::i18n::IsRTL())
+        relative_x = bounds.width() - relative_x;
+      if (relative_x < kArrowRegionSize &&
+          model_->GetChildCount(node->model_node())) {
+        if (node->is_expanded())
+          Collapse(node->model_node());
+        else
+          Expand(node->model_node());
+      } else if (relative_x > kArrowRegionSize) {
+        SetSelectedNode(node->model_node());
+        if (event.flags() & ui::EF_IS_DOUBLE_CLICK ||
+            event.type() == ui::ET_GESTURE_DOUBLE_TAP) {
+          if (node->is_expanded())
+            Collapse(node->model_node());
+          else
+            Expand(node->model_node());
+        }
+      }
+    }
+  }
+  return true;
 }
 
 void TreeView::LoadChildren(InternalNode* node) {

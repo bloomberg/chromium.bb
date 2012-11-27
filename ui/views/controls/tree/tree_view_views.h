@@ -108,6 +108,7 @@ class VIEWS_EXPORT TreeView : public View,
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual void ShowContextMenu(const gfx::Point& p,
                                bool is_mouse_gesture) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
@@ -146,6 +147,10 @@ class VIEWS_EXPORT TreeView : public View,
 
  private:
   friend class TreeViewViewsTest;
+
+  // Selects, expands or collapses nodes in the tree.  Consistent behavior for
+  // tap gesture and click events.
+  bool OnClickOrTap(const ui::LocatedEvent& event);
 
   // InternalNode is used to track information about the set of nodes displayed
   // by TreeViewViews.
