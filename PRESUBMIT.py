@@ -159,6 +159,7 @@ _BANNED_CPP_FUNCTIONS = (
        'id. Talk to robertshield@ for more information.',
       ),
       True,
+      (),
     ),
     (
       'browser::FindAnyBrowser',
