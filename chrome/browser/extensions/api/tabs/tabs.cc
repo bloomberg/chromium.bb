@@ -503,8 +503,8 @@ bool CreateWindowFunction::RunImpl() {
 #endif
         if (use_panels) {
           window_type = Browser::TYPE_PANEL;
-#if !defined(USE_ASH)
-          // Non-Ash has both docked and detached panel types.
+#if !defined(OS_CHROMEOS)
+          // Non-ChromeOS has both docked and detached panel types.
           if (type_str == keys::kWindowTypeValueDetachedPanel)
             panel_create_mode = PanelManager::CREATE_AS_DETACHED;
 #endif
@@ -581,7 +581,7 @@ bool CreateWindowFunction::RunImpl() {
     }
   }
 
-#if !defined(USE_ASH)
+#if !defined(OS_CHROMEOS)
   if (window_type == Browser::TYPE_PANEL) {
     std::string title =
         web_app::GenerateApplicationNameFromExtensionId(extension_id);
