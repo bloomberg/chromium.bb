@@ -11,37 +11,35 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
-#include <public/WebTransformationMatrix.h>
-
-using WebKit::WebTransformationMatrix;
+#include "ui/gfx/transform.h"
 
 namespace cc {
 namespace {
 
 TEST(MathUtilTest, verifyBackfaceVisibilityBasicCases)
 {
-    WebTransformationMatrix transform;
+    gfx::Transform transform;
 
-    transform.makeIdentity();
-    EXPECT_FALSE(transform.isBackFaceVisible());
+    transform.MakeIdentity();
+    EXPECT_FALSE(MathUtil::isBackFaceVisible(transform));
 
-    transform.makeIdentity();
-    transform.rotate3d(0, 80, 0);
-    EXPECT_FALSE(transform.isBackFaceVisible());
+    transform.MakeIdentity();
+    MathUtil::rotateEulerAngles(&transform, 0, 80, 0);
+    EXPECT_FALSE(MathUtil::isBackFaceVisible(transform));
 
-    transform.makeIdentity();
-    transform.rotate3d(0, 100, 0);
-    EXPECT_TRUE(transform.isBackFaceVisible());
+    transform.MakeIdentity();
+    MathUtil::rotateEulerAngles(&transform, 0, 100, 0);
+    EXPECT_TRUE(MathUtil::isBackFaceVisible(transform));
 
     // Edge case, 90 degree rotation should return false.
-    transform.makeIdentity();
-    transform.rotate3d(0, 90, 0);
-    EXPECT_FALSE(transform.isBackFaceVisible());
+    transform.MakeIdentity();
+    MathUtil::rotateEulerAngles(&transform, 0, 90, 0);
+    EXPECT_FALSE(MathUtil::isBackFaceVisible(transform));
 }
 
 TEST(MathUtilTest, verifyBackfaceVisibilityForPerspective)
 {
-    WebTransformationMatrix layerSpaceToProjectionPlane;
+    gfx::Transform layerSpaceToProjectionPlane;
 
     // This tests if isBackFaceVisible works properly under perspective transforms.
     // Specifically, layers that may have their back face visible in orthographic
@@ -50,11 +48,11 @@ TEST(MathUtilTest, verifyBackfaceVisibilityForPerspective)
     // Case 1: Layer is rotated by slightly more than 90 degrees, at the center of the
     //         prespective projection. In this case, the layer's back-side is visible to
     //         the camera.
-    layerSpaceToProjectionPlane.makeIdentity();
-    layerSpaceToProjectionPlane.applyPerspective(1);
-    layerSpaceToProjectionPlane.translate3d(0, 0, 0);
-    layerSpaceToProjectionPlane.rotate3d(0, 100, 0);
-    EXPECT_TRUE(layerSpaceToProjectionPlane.isBackFaceVisible());
+    layerSpaceToProjectionPlane.MakeIdentity();
+    layerSpaceToProjectionPlane.ApplyPerspectiveDepth(1);
+    layerSpaceToProjectionPlane.Translate3d(0, 0, 0);
+    MathUtil::rotateEulerAngles(&layerSpaceToProjectionPlane, 0, 100, 0);
+    EXPECT_TRUE(MathUtil::isBackFaceVisible(layerSpaceToProjectionPlane));
 
     // Case 2: Layer is rotated by slightly more than 90 degrees, but shifted off to the
     //         side of the camera. Because of the wide field-of-view, the layer's front
@@ -70,16 +68,16 @@ TEST(MathUtilTest, verifyBackfaceVisibilityForPerspective)
     // back side of layer -->|  \   /
     //                           \./ <-- camera origin
     //
-    layerSpaceToProjectionPlane.makeIdentity();
-    layerSpaceToProjectionPlane.applyPerspective(1);
-    layerSpaceToProjectionPlane.translate3d(-10, 0, 0);
-    layerSpaceToProjectionPlane.rotate3d(0, 100, 0);
-    EXPECT_FALSE(layerSpaceToProjectionPlane.isBackFaceVisible());
+    layerSpaceToProjectionPlane.MakeIdentity();
+    layerSpaceToProjectionPlane.ApplyPerspectiveDepth(1);
+    layerSpaceToProjectionPlane.Translate3d(-10, 0, 0);
+    MathUtil::rotateEulerAngles(&layerSpaceToProjectionPlane, 0, 100, 0);
+    EXPECT_FALSE(MathUtil::isBackFaceVisible(layerSpaceToProjectionPlane));
 
     // Case 3: Additionally rotating the layer by 180 degrees should of course show the
     //         opposite result of case 2.
-    layerSpaceToProjectionPlane.rotate3d(0, 180, 0);
-    EXPECT_TRUE(layerSpaceToProjectionPlane.isBackFaceVisible());
+    MathUtil::rotateEulerAngles(&layerSpaceToProjectionPlane, 0, 180, 0);
+    EXPECT_TRUE(MathUtil::isBackFaceVisible(layerSpaceToProjectionPlane));
 }
 
 TEST(MathUtilTest, verifyProjectionOfPerpendicularPlane)
@@ -87,9 +85,9 @@ TEST(MathUtilTest, verifyProjectionOfPerpendicularPlane)
     // In this case, the m33() element of the transform becomes zero, which could cause a
     // divide-by-zero when projecting points/quads.
 
-    WebTransformationMatrix transform;
-    transform.makeIdentity();
-    transform.setM33(0);
+    gfx::Transform transform;
+    transform.MakeIdentity();
+    transform.matrix().setDouble(2, 2, 0);
 
     gfx::RectF rect = gfx::RectF(0, 0, 1, 1);
     gfx::RectF projectedRect = MathUtil::projectClippedRect(transform, rect);
@@ -293,7 +291,7 @@ TEST(MathUtilGfxTransformTest, verifyDefaultConstructorCreatesIdentityMatrix)
     EXPECT_ROW2_EQ(0, 1, 0, 0, A);
     EXPECT_ROW3_EQ(0, 0, 1, 0, A);
     EXPECT_ROW4_EQ(0, 0, 0, 1, A);
-    EXPECT_TRUE(MathUtil::isIdentity(A));
+    EXPECT_TRUE(A.IsIdentity());
 }
 
 TEST(MathUtilGfxTransformTest, verifyCreateGfxTransformFor2dElements)
@@ -332,7 +330,7 @@ TEST(MathUtilGfxTransformTest, verifyMatrixInversion)
     // Invert a translation
     gfx::Transform translation;
     translation.Translate3d(2, 3, 4);
-    EXPECT_TRUE(MathUtil::isInvertible(translation));
+    EXPECT_TRUE(translation.IsInvertible());
 
     gfx::Transform inverseTranslation = MathUtil::inverse(translation);
     EXPECT_ROW1_EQ(1, 0, 0, -2, inverseTranslation);
@@ -349,7 +347,7 @@ TEST(MathUtilGfxTransformTest, verifyMatrixInversion)
     // Invert a non-uniform scale
     gfx::Transform scale;
     scale.Scale3d(4, 10, 100);
-    EXPECT_TRUE(MathUtil::isInvertible(scale));
+    EXPECT_TRUE(scale.IsInvertible());
 
     gfx::Transform inverseScale = MathUtil::inverse(scale);
     EXPECT_ROW1_EQ(0.25,   0,    0, 0, inverseScale);
@@ -364,12 +362,12 @@ TEST(MathUtilGfxTransformTest, verifyMatrixInversion)
     notInvertible.matrix().setDouble(1, 1, 0);
     notInvertible.matrix().setDouble(2, 2, 0);
     notInvertible.matrix().setDouble(3, 3, 0);
-    EXPECT_FALSE(MathUtil::isInvertible(notInvertible));
+    EXPECT_FALSE(notInvertible.IsInvertible());
 
     gfx::Transform inverseOfNotInvertible;
     initializeTestMatrix(&inverseOfNotInvertible); // initialize this to something non-identity, to make sure that assignment below actually took place.
     inverseOfNotInvertible = MathUtil::inverse(notInvertible);
-    EXPECT_TRUE(MathUtil::isIdentity(inverseOfNotInvertible));
+    EXPECT_TRUE(inverseOfNotInvertible.IsIdentity());
 }
 
 TEST(MathUtilGfxTransformTest, verifyTo2DTransform)
@@ -553,12 +551,12 @@ TEST(MathUtilGfxTransformTest, verifyMakeIdentiy)
 {
     gfx::Transform A;
     initializeTestMatrix(&A);
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     EXPECT_ROW1_EQ(1, 0, 0, 0, A);
     EXPECT_ROW2_EQ(0, 1, 0, 0, A);
     EXPECT_ROW3_EQ(0, 0, 1, 0, A);
     EXPECT_ROW4_EQ(0, 0, 0, 1, A);
-    EXPECT_TRUE(MathUtil::isIdentity(A));
+    EXPECT_TRUE(A.IsIdentity());
 }
 
 TEST(MathUtilGfxTransformTest, verifyTranslate)
@@ -571,7 +569,7 @@ TEST(MathUtilGfxTransformTest, verifyTranslate)
     EXPECT_ROW4_EQ(0, 0, 0, 1, A);
 
     // Verify that Translate() post-multiplies the existing matrix.
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.Scale(5, 5);
     A.Translate(2, 3);
     EXPECT_ROW1_EQ(5, 0, 0, 10, A);
@@ -590,7 +588,7 @@ TEST(MathUtilGfxTransformTest, verifyTranslate3d)
     EXPECT_ROW4_EQ(0, 0, 0, 1, A);
 
     // Verify that Translate3d() post-multiplies the existing matrix.
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.Scale3d(6, 7, 8);
     A.Translate3d(2, 3, 4);
     EXPECT_ROW1_EQ(6, 0, 0, 12, A);
@@ -609,7 +607,7 @@ TEST(MathUtilGfxTransformTest, verifyScale)
     EXPECT_ROW4_EQ(0, 0, 0, 1, A);
 
     // Verify that Scale() post-multiplies the existing matrix.
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.Translate3d(2, 3, 4);
     A.Scale(6, 7);
     EXPECT_ROW1_EQ(6, 0, 0, 2, A);
@@ -628,7 +626,7 @@ TEST(MathUtilGfxTransformTest, verifyScale3d)
     EXPECT_ROW4_EQ(0, 0, 0, 1, A);
 
     // Verify that scale3d() post-multiplies the existing matrix.
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.Translate3d(2, 3, 4);
     A.Scale3d(6, 7, 8);
     EXPECT_ROW1_EQ(6, 0, 0, 2, A);
@@ -647,7 +645,7 @@ TEST(MathUtilGfxTransformTest, verifyRotate)
     EXPECT_ROW4_EQ(0, 0, 0, 1, A);
 
     // Verify that Rotate() post-multiplies the existing matrix.
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.Scale3d(6, 7, 8);
     A.Rotate(90);
     EXPECT_ROW1_NEAR(0, -6, 0, 0, A, ERROR_THRESHOLD);
@@ -661,7 +659,7 @@ TEST(MathUtilGfxTransformTest, verifyRotateEulerAngles)
     gfx::Transform A;
 
     // Check rotation about z-axis
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     MathUtil::rotateEulerAngles(&A, 0, 0, 90);
     EXPECT_ROW1_NEAR(0, -1, 0, 0, A, ERROR_THRESHOLD);
     EXPECT_ROW2_NEAR(1, 0, 0, 0, A, ERROR_THRESHOLD);
@@ -669,7 +667,7 @@ TEST(MathUtilGfxTransformTest, verifyRotateEulerAngles)
     EXPECT_ROW4_EQ(0, 0, 0, 1, A);
 
     // Check rotation about x-axis
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     MathUtil::rotateEulerAngles(&A, 90, 0, 0);
     EXPECT_ROW1_EQ(1, 0, 0, 0, A);
     EXPECT_ROW2_NEAR(0, 0, -1, 0, A, ERROR_THRESHOLD);
@@ -678,7 +676,7 @@ TEST(MathUtilGfxTransformTest, verifyRotateEulerAngles)
 
     // Check rotation about y-axis.
     // Note carefully, the expected pattern is inverted compared to rotating about x axis or z axis.
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     MathUtil::rotateEulerAngles(&A, 0, 90, 0);
     EXPECT_ROW1_NEAR(0, 0, 1, 0, A, ERROR_THRESHOLD);
     EXPECT_ROW2_EQ(0, 1, 0, 0, A);
@@ -686,7 +684,7 @@ TEST(MathUtilGfxTransformTest, verifyRotateEulerAngles)
     EXPECT_ROW4_EQ(0, 0, 0, 1, A);
 
     // Verify that rotate3d(rx, ry, rz) post-multiplies the existing matrix.
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.Scale3d(6, 7, 8);
     MathUtil::rotateEulerAngles(&A, 0, 0, 90);
     EXPECT_ROW1_NEAR(0, -6, 0, 0, A, ERROR_THRESHOLD);
@@ -711,7 +709,7 @@ TEST(MathUtilGfxTransformTest, verifyRotateEulerAnglesOrderOfCompositeRotations)
     // from the other orderings. That way, this test verifies the exact ordering.
 
     gfx::Transform A;
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     MathUtil::rotateEulerAngles(&A, 10, 20, 30);
 
     EXPECT_ROW1_NEAR(0.8137976813493738026394908,
@@ -734,7 +732,7 @@ TEST(MathUtilGfxTransformTest, verifyRotateAxisAngleForAlignedAxes)
     gfx::Transform A;
 
     // Check rotation about z-axis
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     MathUtil::rotateAxisAngle(&A, 0, 0, 1, 90);
     EXPECT_ROW1_NEAR(0, -1, 0, 0, A, ERROR_THRESHOLD);
     EXPECT_ROW2_NEAR(1, 0, 0, 0, A, ERROR_THRESHOLD);
@@ -742,7 +740,7 @@ TEST(MathUtilGfxTransformTest, verifyRotateAxisAngleForAlignedAxes)
     EXPECT_ROW4_EQ(0, 0, 0, 1, A);
 
     // Check rotation about x-axis
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     MathUtil::rotateAxisAngle(&A, 1, 0, 0, 90);
     EXPECT_ROW1_EQ(1, 0, 0, 0, A);
     EXPECT_ROW2_NEAR(0, 0, -1, 0, A, ERROR_THRESHOLD);
@@ -751,7 +749,7 @@ TEST(MathUtilGfxTransformTest, verifyRotateAxisAngleForAlignedAxes)
 
     // Check rotation about y-axis.
     // Note carefully, the expected pattern is inverted compared to rotating about x axis or z axis.
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     MathUtil::rotateAxisAngle(&A, 0, 1, 0, 90);
     EXPECT_ROW1_NEAR(0, 0, 1, 0, A, ERROR_THRESHOLD);
     EXPECT_ROW2_EQ(0, 1, 0, 0, A);
@@ -759,7 +757,7 @@ TEST(MathUtilGfxTransformTest, verifyRotateAxisAngleForAlignedAxes)
     EXPECT_ROW4_EQ(0, 0, 0, 1, A);
 
     // Verify that rotate3d(axis, angle) post-multiplies the existing matrix.
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.Scale3d(6, 7, 8);
     MathUtil::rotateAxisAngle(&A, 0, 0, 1, 90);
     EXPECT_ROW1_NEAR(0, -6, 0, 0, A, ERROR_THRESHOLD);
@@ -796,7 +794,7 @@ TEST(MathUtilGfxTransformTest, verifyRotateAxisAngleForDegenerateAxis)
 
     MathUtil::rotateAxisAngle(&A, 0, 0, 0, 45);
     // Verify that A remains unchanged.
-    EXPECT_TRUE(MathUtil::isIdentity(A));
+    EXPECT_TRUE(A.IsIdentity());
 
     initializeTestMatrix(&A);
     MathUtil::rotateAxisAngle(&A, 0, 0, 0, 35);
@@ -819,7 +817,7 @@ TEST(MathUtilGfxTransformTest, verifySkewX)
 
     // Verify that skewX() post-multiplies the existing matrix.
     // Row 1, column 2, would incorrectly have value "7" if the matrix is pre-multiplied instead of post-multiplied.
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.Scale3d(6, 7, 8);
     A.SkewX(45);
     EXPECT_ROW1_EQ(6, 6, 0, 0, A);
@@ -839,7 +837,7 @@ TEST(MathUtilGfxTransformTest, verifySkewY)
 
     // Verify that skewY() post-multiplies the existing matrix.
     // Row 2, column 1, would incorrectly have value "6" if the matrix is pre-multiplied instead of post-multiplied.
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.Scale3d(6, 7, 8);
     A.SkewY(45);
     EXPECT_ROW1_EQ(6, 0, 0, 0, A);
@@ -858,7 +856,7 @@ TEST(MathUtilGfxTransformTest, verifyPerspectiveDepth)
     EXPECT_ROW4_EQ(0, 0, -1, 1, A);
 
     // Verify that PerspectiveDepth() post-multiplies the existing matrix.
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.Translate3d(2, 3, 4);
     A.ApplyPerspectiveDepth(1);
     EXPECT_ROW1_EQ(1, 0, -2, 2, A);
@@ -873,27 +871,27 @@ TEST(MathUtilGfxTransformTest, verifyHasPerspective)
     A.ApplyPerspectiveDepth(1);
     EXPECT_TRUE(MathUtil::hasPerspective(A));
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.ApplyPerspectiveDepth(0);
     EXPECT_FALSE(MathUtil::hasPerspective(A));
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(3, 0, -1);
     EXPECT_TRUE(MathUtil::hasPerspective(A));
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(3, 1, -1);
     EXPECT_TRUE(MathUtil::hasPerspective(A));
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(3, 2, -0.3);
     EXPECT_TRUE(MathUtil::hasPerspective(A));
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(3, 3, 0.5);
     EXPECT_TRUE(MathUtil::hasPerspective(A));
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(3, 3, 0);
     EXPECT_TRUE(MathUtil::hasPerspective(A));
 }
@@ -903,55 +901,55 @@ TEST(MathUtilGfxTransformTest, verifyIsInvertible)
     gfx::Transform A;
 
     // Translations, rotations, scales, skews and arbitrary combinations of them are invertible.
-    MathUtil::makeIdentity(&A);
-    EXPECT_TRUE(MathUtil::isInvertible(A));
+    A.MakeIdentity();
+    EXPECT_TRUE(A.IsInvertible());
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.Translate3d(2, 3, 4);
-    EXPECT_TRUE(MathUtil::isInvertible(A));
+    EXPECT_TRUE(A.IsInvertible());
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.Scale3d(6, 7, 8);
-    EXPECT_TRUE(MathUtil::isInvertible(A));
+    EXPECT_TRUE(A.IsInvertible());
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     MathUtil::rotateEulerAngles(&A, 10, 20, 30);
-    EXPECT_TRUE(MathUtil::isInvertible(A));
+    EXPECT_TRUE(A.IsInvertible());
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.SkewX(45);
-    EXPECT_TRUE(MathUtil::isInvertible(A));
+    EXPECT_TRUE(A.IsInvertible());
 
     // A perspective matrix (projection plane at z=0) is invertible. The intuitive
     // explanation is that perspective is eqivalent to a skew of the w-axis; skews are
     // invertible.
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.ApplyPerspectiveDepth(1);
-    EXPECT_TRUE(MathUtil::isInvertible(A));
+    EXPECT_TRUE(A.IsInvertible());
 
     // A "pure" perspective matrix derived by similar triangles, with m44() set to zero
     // (i.e. camera positioned at the origin), is not invertible.
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.ApplyPerspectiveDepth(1);
     A.matrix().setDouble(3, 3, 0);
-    EXPECT_FALSE(MathUtil::isInvertible(A));
+    EXPECT_FALSE(A.IsInvertible());
 
     // Adding more to a non-invertible matrix will not make it invertible in the general case.
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.ApplyPerspectiveDepth(1);
     A.matrix().setDouble(3, 3, 0);
     A.Scale3d(6, 7, 8);
     MathUtil::rotateEulerAngles(&A, 10, 20, 30);
     A.Translate3d(6, 7, 8);
-    EXPECT_FALSE(MathUtil::isInvertible(A));
+    EXPECT_FALSE(A.IsInvertible());
 
     // A degenerate matrix of all zeros is not invertible.
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(0, 0, 0);
     A.matrix().setDouble(1, 1, 0);
     A.matrix().setDouble(2, 2, 0);
     A.matrix().setDouble(3, 3, 0);
-    EXPECT_FALSE(MathUtil::isInvertible(A));
+    EXPECT_FALSE(A.IsInvertible());
 }
 
 TEST(MathUtilGfxTransformTest, verifyIsIdentity)
@@ -959,75 +957,75 @@ TEST(MathUtilGfxTransformTest, verifyIsIdentity)
     gfx::Transform A;
 
     initializeTestMatrix(&A);
-    EXPECT_FALSE(MathUtil::isIdentity(A));
+    EXPECT_FALSE(A.IsIdentity());
 
-    MathUtil::makeIdentity(&A);
-    EXPECT_TRUE(MathUtil::isIdentity(A));
+    A.MakeIdentity();
+    EXPECT_TRUE(A.IsIdentity());
 
     // Modifying any one individual element should cause the matrix to no longer be identity.
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(0, 0, 2);
-    EXPECT_FALSE(MathUtil::isIdentity(A));
+    EXPECT_FALSE(A.IsIdentity());
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(1, 0, 2);
-    EXPECT_FALSE(MathUtil::isIdentity(A));
+    EXPECT_FALSE(A.IsIdentity());
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(2, 0, 2);
-    EXPECT_FALSE(MathUtil::isIdentity(A));
+    EXPECT_FALSE(A.IsIdentity());
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(3, 0, 2);
-    EXPECT_FALSE(MathUtil::isIdentity(A));
+    EXPECT_FALSE(A.IsIdentity());
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(0, 1, 2);
-    EXPECT_FALSE(MathUtil::isIdentity(A));
+    EXPECT_FALSE(A.IsIdentity());
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(1, 1, 2);
-    EXPECT_FALSE(MathUtil::isIdentity(A));
+    EXPECT_FALSE(A.IsIdentity());
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(2, 1, 2);
-    EXPECT_FALSE(MathUtil::isIdentity(A));
+    EXPECT_FALSE(A.IsIdentity());
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(3, 1, 2);
-    EXPECT_FALSE(MathUtil::isIdentity(A));
+    EXPECT_FALSE(A.IsIdentity());
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(0, 2, 2);
-    EXPECT_FALSE(MathUtil::isIdentity(A));
+    EXPECT_FALSE(A.IsIdentity());
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(1, 2, 2);
-    EXPECT_FALSE(MathUtil::isIdentity(A));
+    EXPECT_FALSE(A.IsIdentity());
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(2, 2, 2);
-    EXPECT_FALSE(MathUtil::isIdentity(A));
+    EXPECT_FALSE(A.IsIdentity());
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(3, 2, 2);
-    EXPECT_FALSE(MathUtil::isIdentity(A));
+    EXPECT_FALSE(A.IsIdentity());
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(0, 3, 2);
-    EXPECT_FALSE(MathUtil::isIdentity(A));
+    EXPECT_FALSE(A.IsIdentity());
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(1, 3, 2);
-    EXPECT_FALSE(MathUtil::isIdentity(A));
+    EXPECT_FALSE(A.IsIdentity());
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(2, 3, 2);
-    EXPECT_FALSE(MathUtil::isIdentity(A));
+    EXPECT_FALSE(A.IsIdentity());
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(3, 3, 2);
-    EXPECT_FALSE(MathUtil::isIdentity(A));
+    EXPECT_FALSE(A.IsIdentity());
 }
 
 TEST(MathUtilGfxTransformTest, verifyIsIdentityOrTranslation)
@@ -1037,76 +1035,76 @@ TEST(MathUtilGfxTransformTest, verifyIsIdentityOrTranslation)
     initializeTestMatrix(&A);
     EXPECT_FALSE(MathUtil::isIdentityOrTranslation(A));
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     EXPECT_TRUE(MathUtil::isIdentityOrTranslation(A));
 
     // Modifying any non-translation components should cause isIdentityOrTranslation() to
     // return false. NOTE: (0, 3), (1, 3), and (2, 3) are the translation components, so
     // modifying them should still return true for isIdentityOrTranslation().
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(0, 0, 2);
     EXPECT_FALSE(MathUtil::isIdentityOrTranslation(A));
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(1, 0, 2);
     EXPECT_FALSE(MathUtil::isIdentityOrTranslation(A));
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(2, 0, 2);
     EXPECT_FALSE(MathUtil::isIdentityOrTranslation(A));
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(3, 0, 2);
     EXPECT_FALSE(MathUtil::isIdentityOrTranslation(A));
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(0, 0, 2);
     EXPECT_FALSE(MathUtil::isIdentityOrTranslation(A));
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(1, 1, 2);
     EXPECT_FALSE(MathUtil::isIdentityOrTranslation(A));
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(2, 1, 2);
     EXPECT_FALSE(MathUtil::isIdentityOrTranslation(A));
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(3, 1, 2);
     EXPECT_FALSE(MathUtil::isIdentityOrTranslation(A));
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(0, 2, 2);
     EXPECT_FALSE(MathUtil::isIdentityOrTranslation(A));
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(1, 2, 2);
     EXPECT_FALSE(MathUtil::isIdentityOrTranslation(A));
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(2, 2, 2);
     EXPECT_FALSE(MathUtil::isIdentityOrTranslation(A));
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(3, 2, 2);
     EXPECT_FALSE(MathUtil::isIdentityOrTranslation(A));
 
     // Note carefully - expecting true here.
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(0, 3, 2);
     EXPECT_TRUE(MathUtil::isIdentityOrTranslation(A));
 
     // Note carefully - expecting true here.
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(1, 3, 2);
     EXPECT_TRUE(MathUtil::isIdentityOrTranslation(A));
 
     // Note carefully - expecting true here.
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(2, 3, 2);
     EXPECT_TRUE(MathUtil::isIdentityOrTranslation(A));
 
-    MathUtil::makeIdentity(&A);
+    A.MakeIdentity();
     A.matrix().setDouble(3, 3, 2);
     EXPECT_FALSE(MathUtil::isIdentityOrTranslation(A));
 }

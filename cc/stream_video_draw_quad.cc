@@ -18,7 +18,7 @@ void StreamVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                  gfx::Rect rect,
                                  gfx::Rect opaque_rect,
                                  unsigned texture_id,
-                                 const WebKit::WebTransformationMatrix& matrix) {
+                                 const gfx::Transform& matrix) {
   gfx::Rect visible_rect = rect;
   bool needs_blending = false;
   DrawQuad::SetAll(shared_quad_state, DrawQuad::STREAM_VIDEO_CONTENT, rect,
@@ -33,7 +33,7 @@ void StreamVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                                  gfx::Rect visible_rect,
                                  bool needs_blending,
                                  unsigned texture_id,
-                                 const WebKit::WebTransformationMatrix& matrix) {
+                                 const gfx::Transform& matrix) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::STREAM_VIDEO_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
   this->texture_id = texture_id;

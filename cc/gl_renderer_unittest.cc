@@ -13,7 +13,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include <public/WebTransformationMatrix.h>
+#include "ui/gfx/transform.h"
 
 using namespace WebKit;
 using namespace WebKitTests;
@@ -60,7 +60,7 @@ public:
         m_rootLayer->createRenderSurface();
         RenderPass::Id renderPassId = m_rootLayer->renderSurface()->renderPassId();
         scoped_ptr<RenderPass> rootRenderPass = RenderPass::Create();
-        rootRenderPass->SetNew(renderPassId, gfx::Rect(), gfx::Rect(), WebTransformationMatrix());
+        rootRenderPass->SetNew(renderPassId, gfx::Rect(), gfx::Rect(), gfx::Transform());
         m_renderPassesInDrawOrder.push_back(rootRenderPass.get());
         m_renderPasses.set(renderPassId, rootRenderPass.Pass());
     }
@@ -531,7 +531,7 @@ TEST(GLRendererTest2, activeTextureState)
 
     cc::RenderPass::Id id(1, 1);
     scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
-    pass->SetNew(id, gfx::Rect(0, 0, 100, 100), gfx::Rect(0, 0, 100, 100), WebTransformationMatrix());
+    pass->SetNew(id, gfx::Rect(0, 0, 100, 100), gfx::Rect(0, 0, 100, 100), gfx::Transform());
     pass->AppendOneOfEveryQuadType(resourceProvider.get());
 
     context->setInDraw();

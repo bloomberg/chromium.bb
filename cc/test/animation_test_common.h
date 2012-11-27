@@ -69,12 +69,12 @@ public:
     virtual int id() const OVERRIDE;
     virtual void setOpacityFromAnimation(float) OVERRIDE;
     virtual float opacity() const OVERRIDE;
-    virtual void setTransformFromAnimation(const WebKit::WebTransformationMatrix&) OVERRIDE;
-    virtual const WebKit::WebTransformationMatrix& transform() const OVERRIDE;
+    virtual void setTransformFromAnimation(const gfx::Transform&) OVERRIDE;
+    virtual const gfx::Transform& transform() const OVERRIDE;
 
 private:
     float m_opacity;
-    WebKit::WebTransformationMatrix m_transform;
+    gfx::Transform m_transform;
 };
 
 int addOpacityTransitionToController(cc::LayerAnimationController&, double duration, float startOpacity, float endOpacity, bool useTimingFunction);

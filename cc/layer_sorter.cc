@@ -12,10 +12,9 @@
 #include "base/logging.h"
 #include "cc/math_util.h"
 #include "cc/render_surface_impl.h"
-#include <public/WebTransformationMatrix.h>
+#include "ui/gfx/transform.h"
 
 using namespace std;
-using WebKit::WebTransformationMatrix;
 
 namespace cc {
 
@@ -146,7 +145,7 @@ LayerShape::LayerShape()
 {
 }
 
-LayerShape::LayerShape(float width, float height, const WebTransformationMatrix& drawTransform)
+LayerShape::LayerShape(float width, float height, const gfx::Transform& drawTransform)
 {
     gfx::QuadF layerQuad(gfx::RectF(0, 0, width, height));
 
@@ -230,7 +229,7 @@ void LayerSorter::createGraphNodes(LayerList::iterator first, LayerList::iterato
 
         DVLOG(2) << "Layer " << node.layer->id() << " (" << node.layer->bounds().width() << " x " << node.layer->bounds().height() << ")";
 
-        WebTransformationMatrix drawTransform;
+        gfx::Transform drawTransform;
         float layerWidth, layerHeight;
         if (renderSurface) {
             drawTransform = renderSurface->drawTransform();

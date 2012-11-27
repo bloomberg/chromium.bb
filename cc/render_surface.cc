@@ -6,9 +6,7 @@
 
 #include "cc/layer.h"
 #include "cc/math_util.h"
-#include <public/WebTransformationMatrix.h>
-
-using WebKit::WebTransformationMatrix;
+#include "ui/gfx/transform.h"
 
 namespace cc {
 

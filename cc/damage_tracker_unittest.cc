@@ -285,8 +285,8 @@ TEST_F(DamageTrackerTest, verifyDamageForTransformedLayer)
     scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithOneSurface();
     LayerImpl* child = root->children()[0];
 
-    WebTransformationMatrix rotation;
-    rotation.rotate(45);
+    gfx::Transform rotation;
+    rotation.Rotate(45);
 
     clearDamageForAllSurfaces(root.get());
     child->setAnchorPoint(gfx::PointF(0.5, 0.5));
@@ -328,11 +328,11 @@ TEST_F(DamageTrackerTest, verifyDamageForPerspectiveClippedLayer)
     scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithOneSurface();
     LayerImpl* child = root->children()[0];
 
-    WebTransformationMatrix transform;
-    transform.translate3d(500, 500, 0);
-    transform.applyPerspective(1);
-    transform.rotate3d(0, 45, 0);
-    transform.translate3d(-50, -50, 0);
+    gfx::Transform transform;
+    transform.Translate3d(500, 500, 0);
+    transform.ApplyPerspectiveDepth(1);
+    MathUtil::rotateEulerAngles(&transform, 0, 45, 0);
+    transform.Translate3d(-50, -50, 0);
 
     // Set up the child
     child->setPosition(gfx::PointF(0, 0));
@@ -833,8 +833,8 @@ TEST_F(DamageTrackerTest, verifyDamageForReplica)
         scoped_ptr<LayerImpl> grandChild1Replica = LayerImpl::create(7);
         grandChild1Replica->setPosition(gfx::PointF());
         grandChild1Replica->setAnchorPoint(gfx::PointF());
-        WebTransformationMatrix reflection;
-        reflection.scale3d(-1, 1, 1);
+        gfx::Transform reflection;
+        reflection.Scale3d(-1, 1, 1);
         grandChild1Replica->setTransform(reflection);
         grandChild1->setReplicaLayer(grandChild1Replica.Pass());
     }
@@ -986,8 +986,8 @@ TEST_F(DamageTrackerTest, verifyDamageForReplicaMask)
         scoped_ptr<LayerImpl> grandChild1Replica = LayerImpl::create(6);
         grandChild1Replica->setPosition(gfx::PointF());
         grandChild1Replica->setAnchorPoint(gfx::PointF());
-        WebTransformationMatrix reflection;
-        reflection.scale3d(-1, 1, 1);
+        gfx::Transform reflection;
+        reflection.Scale3d(-1, 1, 1);
         grandChild1Replica->setTransform(reflection);
         grandChild1->setReplicaLayer(grandChild1Replica.Pass());
     }
@@ -1048,8 +1048,8 @@ TEST_F(DamageTrackerTest, verifyDamageForReplicaMaskWithAnchor)
         scoped_ptr<LayerImpl> grandChild1Replica = LayerImpl::create(6);
         grandChild1Replica->setPosition(gfx::PointF());
         grandChild1Replica->setAnchorPoint(gfx::PointF(1, 0)); // This is the anchor being tested.
-        WebTransformationMatrix reflection;
-        reflection.scale3d(-1, 1, 1);
+        gfx::Transform reflection;
+        reflection.Scale3d(-1, 1, 1);
         grandChild1Replica->setTransform(reflection);
         grandChild1->setReplicaLayer(grandChild1Replica.Pass());
     }

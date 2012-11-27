@@ -772,7 +772,7 @@ void Layer::RecomputeTransform() {
   translate.Translate(bounds_.x(), bounds_.y());
   transform.ConcatTransform(translate);
   transform.ConcatTransform(scale_translate);
-  cc_layer_->setTransform(WebKit::WebTransformationMatrix(transform));
+  cc_layer_->setTransform(transform);
 }
 
 void Layer::RecomputeDrawsContentAndUVRect() {

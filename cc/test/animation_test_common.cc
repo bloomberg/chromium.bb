@@ -174,12 +174,12 @@ float FakeLayerAnimationControllerClient::opacity() const
     return m_opacity;
 }
 
-void FakeLayerAnimationControllerClient::setTransformFromAnimation(const WebKit::WebTransformationMatrix& transform)
+void FakeLayerAnimationControllerClient::setTransformFromAnimation(const gfx::Transform& transform)
 {
     m_transform = transform;
 }
 
-const WebKit::WebTransformationMatrix& FakeLayerAnimationControllerClient::transform() const
+const gfx::Transform& FakeLayerAnimationControllerClient::transform() const
 {
     return m_transform;
 }

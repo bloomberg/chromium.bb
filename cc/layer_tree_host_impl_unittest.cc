@@ -552,7 +552,7 @@ TEST_P(LayerTreeHostImplTest, implPinchZoom)
     DCHECK(scrollLayer);
 
     const float minPageScale = 1, maxPageScale = 4;
-    const WebTransformationMatrix identityScaleTransform;
+    const gfx::Transform identityScaleTransform;
 
     // The impl-based pinch zoom should not adjust the max scroll position.
     {
@@ -606,7 +606,7 @@ TEST_P(LayerTreeHostImplTest, pinchGesture)
 
     const float minPageScale = m_hostImpl->settings().pageScalePinchZoomEnabled ? 1 : 0.5;
     const float maxPageScale = 4;
-    const WebTransformationMatrix identityScaleTransform;
+    const gfx::Transform identityScaleTransform;
 
     // Basic pinch zoom in gesture
     {
@@ -718,7 +718,7 @@ TEST_P(LayerTreeHostImplTest, pageScaleAnimation)
     const base::TimeDelta duration = base::TimeDelta::FromMilliseconds(100);
     const base::TimeTicks halfwayThroughAnimation = startTime + duration / 2;
     const base::TimeTicks endTime = startTime + duration;
-    const WebTransformationMatrix identityScaleTransform;
+    const gfx::Transform identityScaleTransform;
 
     // Non-anchor zoom-in
     {
@@ -1180,8 +1180,8 @@ TEST_P(LayerTreeHostImplTest, scrollMissesBackfacingChild)
     scoped_ptr<LayerImpl> child = createScrollableLayer(2, surfaceSize);
     m_hostImpl->setViewportSize(surfaceSize, surfaceSize);
 
-    WebTransformationMatrix matrix;
-    matrix.rotate3d(180, 0, 0);
+    gfx::Transform matrix;
+    MathUtil::rotateEulerAngles(&matrix, 180, 0, 0);
     child->setTransform(matrix);
     child->setDoubleSided(false);
 
@@ -1244,7 +1244,26 @@ TEST_P(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnMainThread)
     EXPECT_EQ(m_hostImpl->rootLayer()->maxScrollOffset(), expectedMaxScroll);
 
     // The page scale delta remains constant because the impl thread did not scale.
-    EXPECT_EQ(m_hostImpl->rootLayer()->implTransform(), WebTransformationMatrix());
+    // TODO: If possible, use gfx::Transform() or Skia equality functions. At
+    //       the moment we avoid that because skia does exact bit-wise equality
+    //       checking that does not consider -0 == +0.
+    //       http://code.google.com/p/chromium/issues/detail?id=162747
+    EXPECT_EQ(1.0, m_hostImpl->rootLayer()->implTransform().matrix().getDouble(0, 0));
+    EXPECT_EQ(0.0, m_hostImpl->rootLayer()->implTransform().matrix().getDouble(0, 1));
+    EXPECT_EQ(0.0, m_hostImpl->rootLayer()->implTransform().matrix().getDouble(0, 2));
+    EXPECT_EQ(0.0, m_hostImpl->rootLayer()->implTransform().matrix().getDouble(0, 3));
+    EXPECT_EQ(0.0, m_hostImpl->rootLayer()->implTransform().matrix().getDouble(1, 0));
+    EXPECT_EQ(1.0, m_hostImpl->rootLayer()->implTransform().matrix().getDouble(1, 1));
+    EXPECT_EQ(0.0, m_hostImpl->rootLayer()->implTransform().matrix().getDouble(1, 2));
+    EXPECT_EQ(0.0, m_hostImpl->rootLayer()->implTransform().matrix().getDouble(1, 3));
+    EXPECT_EQ(0.0, m_hostImpl->rootLayer()->implTransform().matrix().getDouble(2, 0));
+    EXPECT_EQ(0.0, m_hostImpl->rootLayer()->implTransform().matrix().getDouble(2, 1));
+    EXPECT_EQ(1.0, m_hostImpl->rootLayer()->implTransform().matrix().getDouble(2, 2));
+    EXPECT_EQ(0.0, m_hostImpl->rootLayer()->implTransform().matrix().getDouble(2, 3));
+    EXPECT_EQ(0.0, m_hostImpl->rootLayer()->implTransform().matrix().getDouble(3, 0));
+    EXPECT_EQ(0.0, m_hostImpl->rootLayer()->implTransform().matrix().getDouble(3, 1));
+    EXPECT_EQ(0.0, m_hostImpl->rootLayer()->implTransform().matrix().getDouble(3, 2));
+    EXPECT_EQ(1.0, m_hostImpl->rootLayer()->implTransform().matrix().getDouble(3, 3));
 }
 
 TEST_P(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnImplThread)
@@ -1278,8 +1297,8 @@ TEST_P(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnImplThread)
     EXPECT_EQ(m_hostImpl->rootLayer()->maxScrollOffset(), expectedMaxScroll);
 
     // The page scale delta should match the new scale on the impl side.
-    WebTransformationMatrix expectedScale;
-    expectedScale.scale(pageScale);
+    gfx::Transform expectedScale;
+    expectedScale.Scale(pageScale, pageScale);
     EXPECT_EQ(m_hostImpl->rootLayer()->implTransform(), expectedScale);
 }
 
@@ -1287,11 +1306,11 @@ TEST_P(LayerTreeHostImplTest, pageScaleDeltaAppliedToRootScrollLayerOnly)
 {
     gfx::Size surfaceSize(10, 10);
     float defaultPageScale = 1;
-    WebTransformationMatrix defaultPageScaleMatrix;
+    gfx::Transform defaultPageScaleMatrix;
 
     float newPageScale = 2;
-    WebTransformationMatrix newPageScaleMatrix;
-    newPageScaleMatrix.scale(newPageScale);
+    gfx::Transform newPageScaleMatrix;
+    newPageScaleMatrix.Scale(newPageScale, newPageScale);
 
     // Create a normal scrollable root layer and another scrollable child layer.
     setupScrollAndContentsLayers(surfaceSize);
@@ -1320,12 +1339,12 @@ TEST_P(LayerTreeHostImplTest, pageScaleDeltaAppliedToRootScrollLayerOnly)
     m_hostImpl->drawLayers(frame);
     m_hostImpl->didDrawAllLayers(frame);
 
-    EXPECT_EQ(root->drawTransform().m11(), newPageScale);
-    EXPECT_EQ(root->drawTransform().m22(), newPageScale);
-    EXPECT_EQ(child->drawTransform().m11(), newPageScale);
-    EXPECT_EQ(child->drawTransform().m22(), newPageScale);
-    EXPECT_EQ(grandChild->drawTransform().m11(), newPageScale);
-    EXPECT_EQ(grandChild->drawTransform().m22(), newPageScale);
+    EXPECT_EQ(root->drawTransform().matrix().getDouble(0, 0), newPageScale);
+    EXPECT_EQ(root->drawTransform().matrix().getDouble(1, 1), newPageScale);
+    EXPECT_EQ(child->drawTransform().matrix().getDouble(0, 0), newPageScale);
+    EXPECT_EQ(child->drawTransform().matrix().getDouble(1, 1), newPageScale);
+    EXPECT_EQ(grandChild->drawTransform().matrix().getDouble(0, 0), newPageScale);
+    EXPECT_EQ(grandChild->drawTransform().matrix().getDouble(1, 1), newPageScale);
 }
 
 TEST_P(LayerTreeHostImplTest, scrollChildAndChangePageScaleOnMainThread)
@@ -1367,8 +1386,8 @@ TEST_P(LayerTreeHostImplTest, scrollChildAndChangePageScaleOnMainThread)
     EXPECT_EQ(child->maxScrollOffset(), expectedMaxScroll);
 
     // The page scale delta remains constant because the impl thread did not scale.
-    WebTransformationMatrix identityTransform;
-    EXPECT_EQ(child->implTransform(), WebTransformationMatrix());
+    gfx::Transform identityTransform;
+    EXPECT_EQ(child->implTransform(), gfx::Transform());
 }
 
 TEST_P(LayerTreeHostImplTest, scrollChildBeyondLimit)
@@ -1456,8 +1475,8 @@ TEST_P(LayerTreeHostImplTest, scrollAxisAlignedRotatedLayer)
     setupScrollAndContentsLayers(gfx::Size(100, 100));
 
     // Rotate the root layer 90 degrees counter-clockwise about its center.
-    WebTransformationMatrix rotateTransform;
-    rotateTransform.rotate(-90);
+    gfx::Transform rotateTransform;
+    rotateTransform.Rotate(-90);
     m_hostImpl->rootLayer()->setTransform(rotateTransform);
 
     gfx::Size surfaceSize(50, 50);
@@ -1494,10 +1513,10 @@ TEST_P(LayerTreeHostImplTest, scrollNonAxisAlignedRotatedLayer)
 
     // Create a child layer that is rotated to a non-axis-aligned angle.
     scoped_ptr<LayerImpl> child = createScrollableLayer(childLayerId, m_hostImpl->rootLayer()->contentBounds());
-    WebTransformationMatrix rotateTransform;
-    rotateTransform.translate(-50, -50);
-    rotateTransform.rotate(childLayerAngle);
-    rotateTransform.translate(50, 50);
+    gfx::Transform rotateTransform;
+    rotateTransform.Translate(-50, -50);
+    rotateTransform.Rotate(childLayerAngle);
+    rotateTransform.Translate(50, 50);
     child->setTransform(rotateTransform);
 
     // Only allow vertical scrolling.
@@ -1553,8 +1572,8 @@ TEST_P(LayerTreeHostImplTest, scrollScaledLayer)
 
     // Scale the layer to twice its normal size.
     int scale = 2;
-    WebTransformationMatrix scaleTransform;
-    scaleTransform.scale(scale);
+    gfx::Transform scaleTransform;
+    scaleTransform.Scale(scale, scale);
     m_hostImpl->rootLayer()->setTransform(scaleTransform);
 
     gfx::Size surfaceSize(50, 50);
@@ -2747,9 +2766,9 @@ static inline scoped_ptr<RenderPass> createRenderPassWithResource(ResourceProvid
     ResourceProvider::ResourceId resourceId = provider->createResource(0, gfx::Size(1, 1), GL_RGBA, ResourceProvider::TextureUsageAny);
 
     scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
-    pass->SetNew(RenderPass::Id(1, 1), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), WebTransformationMatrix());
+    pass->SetNew(RenderPass::Id(1, 1), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), gfx::Transform());
     scoped_ptr<SharedQuadState> sharedState = SharedQuadState::Create();
-    sharedState->SetAll(WebTransformationMatrix(), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), false, 1);
+    sharedState->SetAll(gfx::Transform(), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), false, 1);
     scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
     quad->SetNew(sharedState.get(), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), resourceId, false, gfx::RectF(0, 0, 1, 1), false);
 
@@ -3169,10 +3188,10 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithClipping)
 
     // Rotation will put part of the child ouside the bounds of the root layer.
     // Nevertheless, the child layers should be drawn.
-    WebTransformationMatrix transform = surfaceLayerPtr->transform();
-    transform.translate(50, 50);
-    transform.rotate(35);
-    transform.translate(-50, -50);
+    gfx::Transform transform = surfaceLayerPtr->transform();
+    transform.Translate(50, 50);
+    transform.Rotate(35);
+    transform.Translate(-50, -50);
     surfaceLayerPtr->setTransform(transform);
 
     {
@@ -3203,9 +3222,9 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithClipping)
     }
 
     transform = surfaceLayerPtr->transform();
-    transform.translate(50, 50);
-    transform.rotate(-35);
-    transform.translate(-50, -50);
+    transform.Translate(50, 50);
+    transform.Rotate(-35);
+    transform.Translate(-50, -50);
     surfaceLayerPtr->setTransform(transform);
 
     // The surface is now aligned again, and the clipped parts are exposed.
@@ -3298,8 +3317,8 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusion)
     // "Unocclude" surface S1 and repeat draw.
     // Must remove S2's render pass since it's cached;
     // Must keep S1 quads because texture contained external occlusion.
-    WebTransformationMatrix transform = layerS2Ptr->transform();
-    transform.translate(150, 150);
+    gfx::Transform transform = layerS2Ptr->transform();
+    transform.Translate(150, 150);
     layerS2Ptr->setTransform(transform);
     {
         LayerTreeHostImpl::FrameData frame;
@@ -3322,7 +3341,7 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusion)
     // Must remove S1's render pass since it is now available in full.
     // S2 has no change so must also be removed.
     transform = layerS2Ptr->transform();
-    transform.translate(-15, -15);
+    transform.Translate(-15, -15);
     layerS2Ptr->setTransform(transform);
     {
         LayerTreeHostImpl::FrameData frame;
@@ -3413,8 +3432,8 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionEarlyOut)
     // "Unocclude" surface S1 and repeat draw.
     // Must remove S2's render pass since it's cached;
     // Must keep S1 quads because texture contained external occlusion.
-    WebTransformationMatrix transform = layerS2Ptr->transform();
-    transform.translate(100, 100);
+    gfx::Transform transform = layerS2Ptr->transform();
+    transform.Translate(100, 100);
     layerS2Ptr->setTransform(transform);
     {
         LayerTreeHostImpl::FrameData frame;
@@ -3437,7 +3456,7 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionEarlyOut)
     // Must remove S1's render pass since it is now available in full.
     // S2 has no change so must also be removed.
     transform = layerS2Ptr->transform();
-    transform.translate(-15, -15);
+    transform.Translate(-15, -15);
     layerS2Ptr->setTransform(transform);
     {
         LayerTreeHostImpl::FrameData frame;
@@ -3519,8 +3538,8 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionExternalOverInternal)
     // "Unocclude" surface S1 and repeat draw.
     // Must remove S2's render pass since it's cached;
     // Must keep S1 quads because texture contained external occlusion.
-    WebTransformationMatrix transform = layerS2Ptr->transform();
-    transform.translate(300, 0);
+    gfx::Transform transform = layerS2Ptr->transform();
+    transform.Translate(300, 0);
     layerS2Ptr->setTransform(transform);
     {
         LayerTreeHostImpl::FrameData frame;
@@ -3573,10 +3592,10 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionExternalNotAligned)
 
     addDrawingLayerTo(rootPtr, 2, gfx::Rect(0, 0, 400, 400), &layerS1Ptr);
     layerS1Ptr->setForceRenderSurface(true);
-    WebTransformationMatrix transform = layerS1Ptr->transform();
-    transform.translate(200, 200);
-    transform.rotate(45);
-    transform.translate(-200, -200);
+    gfx::Transform transform = layerS1Ptr->transform();
+    transform.Translate(200, 200);
+    transform.Rotate(45);
+    transform.Translate(-200, -200);
     layerS1Ptr->setTransform(transform);
 
     addDrawingLayerTo(layerS1Ptr, 3, gfx::Rect(200, 0, 200, 400), 0); // L11
@@ -3686,8 +3705,8 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionPartialSwap)
     // "Unocclude" surface S1 and repeat draw.
     // Must remove S2's render pass since it's cached;
     // Must keep S1 quads because texture contained external occlusion.
-    WebTransformationMatrix transform = layerS2Ptr->transform();
-    transform.translate(150, 150);
+    gfx::Transform transform = layerS2Ptr->transform();
+    transform.Translate(150, 150);
     layerS2Ptr->setTransform(transform);
     {
         LayerTreeHostImpl::FrameData frame;
@@ -3710,7 +3729,7 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionPartialSwap)
     // Must remove S1's render pass since it is now available in full.
     // S2 has no change so must also be removed.
     transform = layerS2Ptr->transform();
-    transform.translate(-15, -15);
+    transform.Translate(-15, -15);
     layerS2Ptr->setTransform(transform);
     {
         LayerTreeHostImpl::FrameData frame;
@@ -3968,8 +3987,8 @@ TEST_P(LayerTreeHostImplTest, surfaceTextureCaching)
     }
 
     // Change location of the intermediate layer
-    WebTransformationMatrix transform = intermediateLayerPtr->transform();
-    transform.setM41(1.0001);
+    gfx::Transform transform = intermediateLayerPtr->transform();
+    transform.matrix().setDouble(0, 3, 1.0001);
     intermediateLayerPtr->setTransform(transform);
     {
         LayerTreeHostImpl::FrameData frame;
@@ -4129,8 +4148,8 @@ TEST_P(LayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
     }
 
     // Change location of the intermediate layer
-    WebTransformationMatrix transform = intermediateLayerPtr->transform();
-    transform.setM41(1.0001);
+    gfx::Transform transform = intermediateLayerPtr->transform();
+    transform.matrix().setDouble(0, 3, 1.0001);
     intermediateLayerPtr->setTransform(transform);
     {
         LayerTreeHostImpl::FrameData frame;
@@ -4224,14 +4243,14 @@ static void configureRenderPassTestData(const char* testScript, RenderPassRemova
 
     // One shared state for all quads - we don't need the correct details
     testData.sharedQuadState = SharedQuadState::Create();
-    testData.sharedQuadState->SetAll(WebTransformationMatrix(), gfx::Rect(), gfx::Rect(), gfx::Rect(), false, 1.0);
+    testData.sharedQuadState->SetAll(gfx::Transform(), gfx::Rect(), gfx::Rect(), gfx::Rect(), false, 1.0);
 
     const char* currentChar = testScript;
 
     // Pre-create root pass
     RenderPass::Id rootRenderPassId = RenderPass::Id(testScript[0], testScript[1]);
     scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
-    pass->SetNew(rootRenderPassId, gfx::Rect(), gfx::Rect(), WebTransformationMatrix());
+    pass->SetNew(rootRenderPassId, gfx::Rect(), gfx::Rect(), gfx::Transform());
     testData.renderPassCache.add(rootRenderPassId, pass.Pass());
     while (*currentChar) {
         int layerId = *currentChar;
@@ -4291,7 +4310,7 @@ static void configureRenderPassTestData(const char* testScript, RenderPassRemova
                         renderer->setHaveCachedResourcesForRenderPassId(newRenderPassId);
 
                     scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
-                    pass->SetNew(newRenderPassId, gfx::Rect(), gfx::Rect(), WebTransformationMatrix());
+                    pass->SetNew(newRenderPassId, gfx::Rect(), gfx::Rect(), gfx::Transform());
                     testData.renderPassCache.add(newRenderPassId, pass.Pass());
                 }
 
@@ -4538,8 +4557,8 @@ void LayerTreeHostImplTest::pinchZoomPanViewportForcesCommitRedraw(const float d
     m_hostImpl->pinchGestureEnd();
     m_hostImpl->updateRootScrollLayerImplTransform();
 
-    WebTransformationMatrix expectedImplTransform;
-    expectedImplTransform.scale(pageScale);
+    gfx::Transform expectedImplTransform;
+    expectedImplTransform.Scale(pageScale, pageScale);
 
     // Verify the pinch zoom took place.
     EXPECT_EQ(expectedImplTransform, m_hostImpl->rootLayer()->implTransform());
@@ -4610,8 +4629,8 @@ void LayerTreeHostImplTest::pinchZoomPanViewportTest(const float deviceScaleFact
     m_hostImpl->pinchGestureEnd();
     m_hostImpl->updateRootScrollLayerImplTransform();
 
-    WebTransformationMatrix expectedImplTransform;
-    expectedImplTransform.scale(pageScale);
+    gfx::Transform expectedImplTransform;
+    expectedImplTransform.Scale(pageScale, pageScale);
 
     EXPECT_EQ(m_hostImpl->rootLayer()->implTransform(), expectedImplTransform);
 
@@ -4628,7 +4647,7 @@ void LayerTreeHostImplTest::pinchZoomPanViewportTest(const float deviceScaleFact
     m_hostImpl->updateRootScrollLayerImplTransform();
 
     gfx::Vector2dF expectedTranslation = gfx::ScaleVector2d(scrollDelta, m_hostImpl->deviceScaleFactor());
-    expectedImplTransform.translate(-expectedTranslation.x(), -expectedTranslation.y());
+    expectedImplTransform.Translate(-expectedTranslation.x(), -expectedTranslation.y());
 
     EXPECT_EQ(expectedImplTransform, m_hostImpl->rootLayer()->implTransform());
     // No change expected.
@@ -4645,7 +4664,7 @@ void LayerTreeHostImplTest::pinchZoomPanViewportTest(const float deviceScaleFact
     m_hostImpl->updateRootScrollLayerImplTransform();
 
     expectedTranslation = gfx::ScaleVector2d(scrollDelta, m_hostImpl->deviceScaleFactor());
-    expectedImplTransform.translate(-expectedTranslation.x(), -expectedTranslation.y());
+    expectedImplTransform.Translate(-expectedTranslation.x(), -expectedTranslation.y());
 
     EXPECT_EQ(expectedImplTransform, m_hostImpl->rootLayer()->implTransform());
     // No change expected.
@@ -4690,8 +4709,8 @@ void LayerTreeHostImplTest::pinchZoomPanViewportAndScrollTest(const float device
     m_hostImpl->pinchGestureEnd();
     m_hostImpl->updateRootScrollLayerImplTransform();
 
-    WebTransformationMatrix expectedImplTransform;
-    expectedImplTransform.scale(pageScale);
+    gfx::Transform expectedImplTransform;
+    expectedImplTransform.Scale(pageScale, pageScale);
 
     EXPECT_EQ(expectedImplTransform, m_hostImpl->rootLayer()->implTransform());
 
@@ -4727,7 +4746,7 @@ void LayerTreeHostImplTest::pinchZoomPanViewportAndScrollTest(const float device
 
     gfx::Vector2d expectedPanDelta(scrollDelta);
     gfx::Vector2dF expectedTranslation = gfx::ScaleVector2d(expectedPanDelta, m_hostImpl->deviceScaleFactor());
-    expectedImplTransform.translate(-expectedTranslation.x(), -expectedTranslation.y());
+    expectedImplTransform.Translate(-expectedTranslation.x(), -expectedTranslation.y());
 
     EXPECT_EQ(m_hostImpl->rootLayer()->implTransform(), expectedImplTransform);
 
@@ -4762,7 +4781,7 @@ void LayerTreeHostImplTest::pinchZoomPanViewportAndScrollTest(const float device
 
     expectedPanDelta = scrollDelta;
     expectedTranslation = gfx::ScaleVector2d(expectedPanDelta, m_hostImpl->deviceScaleFactor());
-    expectedImplTransform.translate(-expectedTranslation.x(), -expectedTranslation.y());
+    expectedImplTransform.Translate(-expectedTranslation.x(), -expectedTranslation.y());
 
     EXPECT_EQ(expectedImplTransform, m_hostImpl->rootLayer()->implTransform());
 
@@ -4809,8 +4828,8 @@ void LayerTreeHostImplTest::pinchZoomPanViewportAndScrollBoundaryTest(const floa
     m_hostImpl->pinchGestureEnd();
     m_hostImpl->updateRootScrollLayerImplTransform();
 
-    WebTransformationMatrix expectedImplTransform;
-    expectedImplTransform.scale(pageScale);
+    gfx::Transform expectedImplTransform;
+    expectedImplTransform.Scale(pageScale, pageScale);
 
     EXPECT_EQ(expectedImplTransform, m_hostImpl->rootLayer()->implTransform());
 
@@ -4836,7 +4855,7 @@ void LayerTreeHostImplTest::pinchZoomPanViewportAndScrollBoundaryTest(const floa
 
     gfx::Vector2d expectedPanDelta(2, 0); // This component gets handled by zoomViewport pan.
     gfx::Vector2dF expectedTranslation = gfx::ScaleVector2d(expectedPanDelta, m_hostImpl->deviceScaleFactor());
-    expectedImplTransform.translate(-expectedTranslation.x(), -expectedTranslation.y());
+    expectedImplTransform.Translate(-expectedTranslation.x(), -expectedTranslation.y());
 
     EXPECT_EQ(m_hostImpl->rootLayer()->implTransform(), expectedImplTransform);
 
@@ -4855,7 +4874,7 @@ void LayerTreeHostImplTest::pinchZoomPanViewportAndScrollBoundaryTest(const floa
 
     expectedPanDelta = gfx::Vector2d(0, 1);
     expectedTranslation = gfx::ScaleVector2d(expectedPanDelta, m_hostImpl->deviceScaleFactor());
-    expectedImplTransform.translate(-expectedTranslation.x(), -expectedTranslation.y());
+    expectedImplTransform.Translate(-expectedTranslation.x(), -expectedTranslation.y());
 
     EXPECT_EQ(expectedImplTransform, m_hostImpl->rootLayer()->implTransform());
 }

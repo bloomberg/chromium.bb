@@ -9,10 +9,7 @@
 
 namespace gfx {
 class Rect;
-}
-
-namespace WebKit {
-class WebTransformationMatrix;
+class Transform;
 }
 
 namespace cc {
@@ -31,7 +28,7 @@ public:
     // Records that an invalid tile was culled and did not need to be painted/uploaded, and did not contribute to other tiles needing to be painted.
     void didCullTilesForUpload(int count);
     // Records pixels that were uploaded to texture memory.
-    void didUpload(const WebKit::WebTransformationMatrix& transformToTarget, const gfx::Rect& uploadRect, const gfx::Rect& opaqueRect);
+    void didUpload(const gfx::Transform& transformToTarget, const gfx::Rect& uploadRect, const gfx::Rect& opaqueRect);
     // Record contents texture(s) behind present using the given number of bytes.
     void didUseContentsTextureMemoryBytes(size_t contentsTextureUseBytes);
     // Record RenderSurfaceImpl texture(s) being present using the given number of bytes.
@@ -40,9 +37,9 @@ public:
     // These methods are used for saving metrics during draw.
 
     // Record pixels that were not drawn to screen.
-    void didCullForDrawing(const WebKit::WebTransformationMatrix& transformToTarget, const gfx::Rect& beforeCullRect, const gfx::Rect& afterCullRect);
+    void didCullForDrawing(const gfx::Transform& transformToTarget, const gfx::Rect& beforeCullRect, const gfx::Rect& afterCullRect);
     // Record pixels that were drawn to screen.
-    void didDraw(const WebKit::WebTransformationMatrix& transformToTarget, const gfx::Rect& afterCullRect, const gfx::Rect& opaqueRect);
+    void didDraw(const gfx::Transform& transformToTarget, const gfx::Rect& afterCullRect, const gfx::Rect& opaqueRect);
 
     void recordMetrics(const LayerTreeHost*) const;
     void recordMetrics(const LayerTreeHostImpl*) const;

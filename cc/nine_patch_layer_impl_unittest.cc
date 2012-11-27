@@ -16,7 +16,7 @@
 #include "ui/gfx/safe_integer_conversions.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <public/WebTransformationMatrix.h>
+#include "ui/gfx/transform.h"
 
 namespace cc {
 namespace {
@@ -48,8 +48,8 @@ TEST(NinePatchLayerImplTest, verifyDrawQuads)
 
     // This scale should not affect the generated quad geometry, but only
     // the shared draw transform.
-    WebKit::WebTransformationMatrix transform;
-    transform.scale(10);
+    gfx::Transform transform;
+    transform.Scale(10, 10);
     layer->setDrawTransform(transform);
 
     AppendQuadsData data;

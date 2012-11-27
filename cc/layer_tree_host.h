@@ -206,7 +206,7 @@ public:
     // logical pixels in the un-zoomed viewport, the latter being the coordinates
     // required for hit-testing.
     gfx::PointF adjustEventPointForPinchZoom(const gfx::PointF& zoomedViewportPoint) const;
-    void setImplTransform(const WebKit::WebTransformationMatrix&);
+    void setImplTransform(const gfx::Transform&);
 
     void startRateLimiter(WebKit::WebGraphicsContext3D*);
     void stopRateLimiter(WebKit::WebGraphicsContext3D*);
@@ -289,7 +289,7 @@ private:
 
     float m_pageScaleFactor;
     float m_minPageScaleFactor, m_maxPageScaleFactor;
-    WebKit::WebTransformationMatrix m_implTransform;
+    gfx::Transform m_implTransform;
     bool m_triggerIdleUpdates;
 
     SkColor m_backgroundColor;

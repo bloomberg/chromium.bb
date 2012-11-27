@@ -14,9 +14,7 @@
 #include "cc/test/mock_quad_culler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <public/WebTransformationMatrix.h>
-
-using WebKit::WebTransformationMatrix;
+#include "ui/gfx/transform.h"
 
 namespace cc {
 namespace {
@@ -58,8 +56,8 @@ TEST(RenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->setContentRect(testRect));
 
     scoped_ptr<LayerImpl> dummyMask = LayerImpl::create(1);
-    WebTransformationMatrix dummyMatrix;
-    dummyMatrix.translate(1.0, 2.0);
+    gfx::Transform dummyMatrix;
+    dummyMatrix.Translate(1.0, 2.0);
 
     // The rest of the surface properties are either internal and should not cause change,
     // or they are already accounted for by the owninglayer->layerPropertyChanged().
@@ -83,9 +81,9 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
 
     gfx::Rect contentRect = gfx::Rect(gfx::Point(), gfx::Size(50, 50));
     gfx::Rect clipRect = gfx::Rect(gfx::Point(5, 5), gfx::Size(40, 40));
-    WebTransformationMatrix origin;
+    gfx::Transform origin;
 
-    origin.translate(30, 40);
+    origin.Translate(30, 40);
 
     renderSurface->setDrawTransform(origin);
     renderSurface->setContentRect(contentRect);
@@ -103,8 +101,8 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
     ASSERT_EQ(1u, sharedStateList.size());
     SharedQuadState* sharedQuadState = sharedStateList[0];
 
-    EXPECT_EQ(30, sharedQuadState->content_to_target_transform.m41());
-    EXPECT_EQ(40, sharedQuadState->content_to_target_transform.m42());
+    EXPECT_EQ(30, sharedQuadState->content_to_target_transform.matrix().getDouble(0, 3));
+    EXPECT_EQ(40, sharedQuadState->content_to_target_transform.matrix().getDouble(1, 3));
     EXPECT_RECT_EQ(contentRect, gfx::Rect(sharedQuadState->visible_content_rect));
     EXPECT_EQ(1, sharedQuadState->opacity);
 }
@@ -132,8 +130,8 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectRenderPass)
     rootLayer->addChild(owningLayer.Pass());
 
     gfx::Rect contentRect = gfx::Rect(gfx::Point(), gfx::Size(50, 50));
-    WebTransformationMatrix origin;
-    origin.translate(30, 40);
+    gfx::Transform origin;
+    origin.Translate(30, 40);
 
     renderSurface->setScreenSpaceTransform(origin);
     renderSurface->setContentRect(contentRect);

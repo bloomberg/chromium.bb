@@ -19,7 +19,7 @@ scoped_ptr<SharedQuadState> SharedQuadState::Copy() const {
 }
 
 void SharedQuadState::SetAll(
-    const WebKit::WebTransformationMatrix& content_to_target_transform,
+    const gfx::Transform& content_to_target_transform,
     const gfx::Rect& visible_content_rect,
     const gfx::Rect& clipped_rect_in_target,
     const gfx::Rect& clip_rect,

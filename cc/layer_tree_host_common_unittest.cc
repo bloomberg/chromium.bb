@@ -19,16 +19,15 @@
 #include "ui/gfx/size_conversions.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <public/WebTransformationMatrix.h>
+#include "ui/gfx/transform.h"
 
 using namespace WebKitTests;
-using WebKit::WebTransformationMatrix;
 
 namespace cc {
 namespace {
 
 template<typename LayerType>
-void setLayerPropertiesForTestingInternal(LayerType* layer, const WebTransformationMatrix& transform, const WebTransformationMatrix& sublayerTransform, const gfx::PointF& anchor, const gfx::PointF& position, const gfx::Size& bounds, bool preserves3D)
+void setLayerPropertiesForTestingInternal(LayerType* layer, const gfx::Transform& transform, const gfx::Transform& sublayerTransform, const gfx::PointF& anchor, const gfx::PointF& position, const gfx::Size& bounds, bool preserves3D)
 {
     layer->setTransform(transform);
     layer->setSublayerTransform(sublayerTransform);
@@ -38,13 +37,13 @@ void setLayerPropertiesForTestingInternal(LayerType* layer, const WebTransformat
     layer->setPreserves3D(preserves3D);
 }
 
-void setLayerPropertiesForTesting(Layer* layer, const WebTransformationMatrix& transform, const WebTransformationMatrix& sublayerTransform, const gfx::PointF& anchor, const gfx::PointF& position, const gfx::Size& bounds, bool preserves3D)
+void setLayerPropertiesForTesting(Layer* layer, const gfx::Transform& transform, const gfx::Transform& sublayerTransform, const gfx::PointF& anchor, const gfx::PointF& position, const gfx::Size& bounds, bool preserves3D)
 {
     setLayerPropertiesForTestingInternal<Layer>(layer, transform, sublayerTransform, anchor, position, bounds, preserves3D);
     layer->setAutomaticallyComputeRasterScale(true);
 }
 
-void setLayerPropertiesForTesting(LayerImpl* layer, const WebTransformationMatrix& transform, const WebTransformationMatrix& sublayerTransform, const gfx::PointF& anchor, const gfx::PointF& position, const gfx::Size& bounds, bool preserves3D)
+void setLayerPropertiesForTesting(LayerImpl* layer, const gfx::Transform& transform, const gfx::Transform& sublayerTransform, const gfx::PointF& anchor, const gfx::PointF& position, const gfx::Size& bounds, bool preserves3D)
 {
     setLayerPropertiesForTestingInternal<LayerImpl>(layer, transform, sublayerTransform, anchor, position, bounds, preserves3D);
     layer->setContentBounds(bounds);
@@ -52,7 +51,7 @@ void setLayerPropertiesForTesting(LayerImpl* layer, const WebTransformationMatri
 
 void executeCalculateDrawTransformsAndVisibility(Layer* rootLayer, float deviceScaleFactor = 1, float pageScaleFactor = 1)
 {
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     std::vector<scoped_refptr<Layer> > dummyRenderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     gfx::Size deviceViewportSize = gfx::Size(rootLayer->bounds().width() * deviceScaleFactor, rootLayer->bounds().height() * deviceScaleFactor);
@@ -66,7 +65,7 @@ void executeCalculateDrawTransformsAndVisibility(LayerImpl* rootLayer, float dev
 {
     // Note: this version skips layer sorting.
 
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     std::vector<LayerImpl*> dummyRenderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     gfx::Size deviceViewportSize = gfx::Size(rootLayer->bounds().width() * deviceScaleFactor, rootLayer->bounds().height() * deviceScaleFactor);
@@ -76,19 +75,6 @@ void executeCalculateDrawTransformsAndVisibility(LayerImpl* rootLayer, float dev
     LayerTreeHostCommon::calculateDrawTransforms(rootLayer, deviceViewportSize, deviceScaleFactor, pageScaleFactor, 0, dummyMaxTextureSize, dummyRenderSurfaceLayerList);
 }
 
-WebTransformationMatrix remove3DComponentOfMatrix(const WebTransformationMatrix& mat)
-{
-    WebTransformationMatrix ret = mat;
-    ret.setM13(0);
-    ret.setM23(0);
-    ret.setM31(0);
-    ret.setM32(0);
-    ret.setM33(1);
-    ret.setM34(0);
-    ret.setM43(0);
-    return ret;
-}
-
 scoped_ptr<LayerImpl> createTreeForFixedPositionTests()
 {
     scoped_ptr<LayerImpl> root = LayerImpl::create(1);
@@ -96,7 +82,7 @@ scoped_ptr<LayerImpl> createTreeForFixedPositionTests()
     scoped_ptr<LayerImpl> grandChild = LayerImpl::create(3);
     scoped_ptr<LayerImpl> greatGrandChild = LayerImpl::create(4);
 
-    WebTransformationMatrix IdentityMatrix;
+    gfx::Transform IdentityMatrix;
     gfx::PointF anchor(0, 0);
     gfx::PointF position(0, 0);
     gfx::Size bounds(100, 100);
@@ -160,7 +146,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForNoOpLayer)
     parent->addChild(child);
     child->addChild(grandChild);
 
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     setLayerPropertiesForTesting(parent.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
     setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(0, 0), false);
     setLayerPropertiesForTesting(grandChild.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(0, 0), false);
@@ -175,7 +161,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForNoOpLayer)
 
 TEST(LayerTreeHostCommonTest, verifyTransformsForSingleLayer)
 {
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     scoped_refptr<Layer> layer = Layer::create();
 
     scoped_refptr<Layer> root = Layer::create();
@@ -183,17 +169,17 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSingleLayer)
     root->addChild(layer);
 
     // Case 1: setting the sublayer transform should not affect this layer's draw transform or screen-space transform.
-    WebTransformationMatrix arbitraryTranslation;
-    arbitraryTranslation.translate(10, 20);
+    gfx::Transform arbitraryTranslation;
+    arbitraryTranslation.Translate(10, 20);
     setLayerPropertiesForTesting(layer.get(), identityMatrix, arbitraryTranslation, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
     executeCalculateDrawTransformsAndVisibility(root.get());
-    WebTransformationMatrix expectedDrawTransform = identityMatrix;
+    gfx::Transform expectedDrawTransform = identityMatrix;
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedDrawTransform, layer->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(identityMatrix, layer->screenSpaceTransform());
 
     // Case 2: Setting the bounds of the layer should not affect either the draw transform or the screenspace transform.
-    WebTransformationMatrix translationToCenter;
-    translationToCenter.translate(5, 6);
+    gfx::Transform translationToCenter;
+    translationToCenter.Translate(5, 6);
     setLayerPropertiesForTesting(layer.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(10, 12), false);
     executeCalculateDrawTransformsAndVisibility(root.get());
     EXPECT_TRANSFORMATION_MATRIX_EQ(identityMatrix, layer->drawTransform());
@@ -206,8 +192,8 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSingleLayer)
     EXPECT_TRANSFORMATION_MATRIX_EQ(identityMatrix, layer->screenSpaceTransform());
 
     // Case 4: A change in actual position affects both the draw transform and screen space transform.
-    WebTransformationMatrix positionTransform;
-    positionTransform.translate(0, 1.2);
+    gfx::Transform positionTransform;
+    positionTransform.Translate(0, 1.2);
     setLayerPropertiesForTesting(layer.get(), identityMatrix, identityMatrix, gfx::PointF(0.25, 0.25), gfx::PointF(0, 1.2f), gfx::Size(10, 12), false);
     executeCalculateDrawTransformsAndVisibility(root.get());
     EXPECT_TRANSFORMATION_MATRIX_EQ(positionTransform, layer->drawTransform());
@@ -215,17 +201,17 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSingleLayer)
 
     // Case 5: In the correct sequence of transforms, the layer transform should pre-multiply the translationToCenter. This is easily tested by
     //         using a scale transform, because scale and translation are not commutative.
-    WebTransformationMatrix layerTransform;
-    layerTransform.scale3d(2, 2, 1);
+    gfx::Transform layerTransform;
+    layerTransform.Scale3d(2, 2, 1);
     setLayerPropertiesForTesting(layer.get(), layerTransform, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(10, 12), false);
     executeCalculateDrawTransformsAndVisibility(root.get());
     EXPECT_TRANSFORMATION_MATRIX_EQ(layerTransform, layer->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(layerTransform, layer->screenSpaceTransform());
 
     // Case 6: The layer transform should occur with respect to the anchor point.
-    WebTransformationMatrix translationToAnchor;
-    translationToAnchor.translate(5, 0);
-    WebTransformationMatrix expectedResult = translationToAnchor * layerTransform * translationToAnchor.inverse();
+    gfx::Transform translationToAnchor;
+    translationToAnchor.Translate(5, 0);
+    gfx::Transform expectedResult = translationToAnchor * layerTransform * MathUtil::inverse(translationToAnchor);
     setLayerPropertiesForTesting(layer.get(), layerTransform, identityMatrix, gfx::PointF(0.5, 0), gfx::PointF(0, 0), gfx::Size(10, 12), false);
     executeCalculateDrawTransformsAndVisibility(root.get());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedResult, layer->drawTransform());
@@ -234,7 +220,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSingleLayer)
     // Case 7: Verify that position pre-multiplies the layer transform.
     //         The current implementation of calculateDrawTransforms does this implicitly, but it is
     //         still worth testing to detect accidental regressions.
-    expectedResult = positionTransform * translationToAnchor * layerTransform * translationToAnchor.inverse();
+    expectedResult = positionTransform * translationToAnchor * layerTransform * MathUtil::inverse(translationToAnchor);
     setLayerPropertiesForTesting(layer.get(), layerTransform, identityMatrix, gfx::PointF(0.5, 0), gfx::PointF(0, 1.2f), gfx::Size(10, 12), false);
     executeCalculateDrawTransformsAndVisibility(root.get());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedResult, layer->drawTransform());
@@ -243,7 +229,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSingleLayer)
 
 TEST(LayerTreeHostCommonTest, verifyTransformsForSimpleHierarchy)
 {
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     scoped_refptr<Layer> root = Layer::create();
     scoped_refptr<Layer> parent = Layer::create();
     scoped_refptr<Layer> child = Layer::create();
@@ -266,8 +252,8 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSimpleHierarchy)
     EXPECT_TRANSFORMATION_MATRIX_EQ(identityMatrix, grandChild->screenSpaceTransform());
 
     // Case 2: parent's position affects child and grandChild.
-    WebTransformationMatrix parentPositionTransform;
-    parentPositionTransform.translate(0, 1.2);
+    gfx::Transform parentPositionTransform;
+    parentPositionTransform.Translate(0, 1.2);
     setLayerPropertiesForTesting(parent.get(), identityMatrix, identityMatrix, gfx::PointF(0.25, 0.25), gfx::PointF(0, 1.2f), gfx::Size(10, 12), false);
     setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(16, 18), false);
     setLayerPropertiesForTesting(grandChild.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(76, 78), false);
@@ -278,11 +264,11 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSimpleHierarchy)
     EXPECT_TRANSFORMATION_MATRIX_EQ(parentPositionTransform, grandChild->screenSpaceTransform());
 
     // Case 3: parent's local transform affects child and grandchild
-    WebTransformationMatrix parentLayerTransform;
-    parentLayerTransform.scale3d(2, 2, 1);
-    WebTransformationMatrix parentTranslationToAnchor;
-    parentTranslationToAnchor.translate(2.5, 3);
-    WebTransformationMatrix parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * parentTranslationToAnchor.inverse();
+    gfx::Transform parentLayerTransform;
+    parentLayerTransform.Scale3d(2, 2, 1);
+    gfx::Transform parentTranslationToAnchor;
+    parentTranslationToAnchor.Translate(2.5, 3);
+    gfx::Transform parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * MathUtil::inverse(parentTranslationToAnchor);
     setLayerPropertiesForTesting(parent.get(), parentLayerTransform, identityMatrix, gfx::PointF(0.25, 0.25), gfx::PointF(0, 0), gfx::Size(10, 12), false);
     setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(16, 18), false);
     setLayerPropertiesForTesting(grandChild.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(76, 78), false);
@@ -296,14 +282,14 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSimpleHierarchy)
     //         scaling is used here again so that the correct sequence of transforms is properly tested.
     //         Note that preserves3D is false, but the sublayer matrix should retain its 3D properties when given to child.
     //         But then, the child also does not preserve3D. When it gives its hierarchy to the grandChild, it should be flattened to 2D.
-    WebTransformationMatrix parentSublayerMatrix;
-    parentSublayerMatrix.scale3d(10, 10, 3.3);
-    WebTransformationMatrix parentTranslationToCenter;
-    parentTranslationToCenter.translate(5, 6);
+    gfx::Transform parentSublayerMatrix;
+    parentSublayerMatrix.Scale3d(10, 10, 3.3);
+    gfx::Transform parentTranslationToCenter;
+    parentTranslationToCenter.Translate(5, 6);
     // Sublayer matrix is applied to the center of the parent layer.
-    parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * parentTranslationToAnchor.inverse()
-            * parentTranslationToCenter * parentSublayerMatrix * parentTranslationToCenter.inverse();
-    WebTransformationMatrix flattenedCompositeTransform = remove3DComponentOfMatrix(parentCompositeTransform);
+    parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * MathUtil::inverse(parentTranslationToAnchor)
+            * parentTranslationToCenter * parentSublayerMatrix * MathUtil::inverse(parentTranslationToCenter);
+    gfx::Transform flattenedCompositeTransform = MathUtil::to2dTransform(parentCompositeTransform);
     setLayerPropertiesForTesting(parent.get(), parentLayerTransform, parentSublayerMatrix, gfx::PointF(0.25, 0.25), gfx::PointF(0, 0), gfx::Size(10, 12), false);
     setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(16, 18), false);
     setLayerPropertiesForTesting(grandChild.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(76, 78), false);
@@ -336,26 +322,26 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSingleRenderSurface)
     child->addChild(grandChild);
 
     // One-time setup of root layer
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(1, 2), false);
 
     // Child is set up so that a new render surface should be created.
     child->setOpacity(0.5);
 
-    WebTransformationMatrix parentLayerTransform;
-    parentLayerTransform.scale3d(1, 0.9, 1);
-    WebTransformationMatrix parentTranslationToAnchor;
-    parentTranslationToAnchor.translate(25, 30);
-    WebTransformationMatrix parentSublayerMatrix;
-    parentSublayerMatrix.scale3d(0.9, 1, 3.3);
-    WebTransformationMatrix parentTranslationToCenter;
-    parentTranslationToCenter.translate(50, 60);
-    WebTransformationMatrix parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * parentTranslationToAnchor.inverse()
-            * parentTranslationToCenter * parentSublayerMatrix * parentTranslationToCenter.inverse();
+    gfx::Transform parentLayerTransform;
+    parentLayerTransform.Scale3d(1, 0.9, 1);
+    gfx::Transform parentTranslationToAnchor;
+    parentTranslationToAnchor.Translate(25, 30);
+    gfx::Transform parentSublayerMatrix;
+    parentSublayerMatrix.Scale3d(0.9, 1, 3.3);
+    gfx::Transform parentTranslationToCenter;
+    parentTranslationToCenter.Translate(50, 60);
+    gfx::Transform parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * MathUtil::inverse(parentTranslationToAnchor)
+            * parentTranslationToCenter * parentSublayerMatrix * MathUtil::inverse(parentTranslationToCenter);
     gfx::Vector2dF parentCompositeScale = MathUtil::computeTransform2dScaleComponents(parentCompositeTransform);
-    WebTransformationMatrix surfaceSublayerTransform;
-    surfaceSublayerTransform.scaleNonUniform(parentCompositeScale.x(), parentCompositeScale.y());
-    WebTransformationMatrix surfaceSublayerCompositeTransform = parentCompositeTransform * surfaceSublayerTransform.inverse();
+    gfx::Transform surfaceSublayerTransform;
+    surfaceSublayerTransform.Scale(parentCompositeScale.x(), parentCompositeScale.y());
+    gfx::Transform surfaceSublayerCompositeTransform = parentCompositeTransform * MathUtil::inverse(surfaceSublayerTransform);
 
     // Child's render surface should not exist yet.
     ASSERT_FALSE(child->renderSurface());
@@ -395,30 +381,30 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForReplica)
     child->setReplicaLayer(childReplica.get());
 
     // One-time setup of root layer
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(1, 2), false);
 
     // Child is set up so that a new render surface should be created.
     child->setOpacity(0.5);
 
-    WebTransformationMatrix parentLayerTransform;
-    parentLayerTransform.scale3d(2, 2, 1);
-    WebTransformationMatrix parentTranslationToAnchor;
-    parentTranslationToAnchor.translate(2.5, 3);
-    WebTransformationMatrix parentSublayerMatrix;
-    parentSublayerMatrix.scale3d(10, 10, 3.3);
-    WebTransformationMatrix parentTranslationToCenter;
-    parentTranslationToCenter.translate(5, 6);
-    WebTransformationMatrix parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * parentTranslationToAnchor.inverse()
-            * parentTranslationToCenter * parentSublayerMatrix * parentTranslationToCenter.inverse();
-    WebTransformationMatrix childTranslationToCenter;
-    childTranslationToCenter.translate(8, 9);
-    WebTransformationMatrix replicaLayerTransform;
-    replicaLayerTransform.scale3d(3, 3, 1);
+    gfx::Transform parentLayerTransform;
+    parentLayerTransform.Scale3d(2, 2, 1);
+    gfx::Transform parentTranslationToAnchor;
+    parentTranslationToAnchor.Translate(2.5, 3);
+    gfx::Transform parentSublayerMatrix;
+    parentSublayerMatrix.Scale3d(10, 10, 3.3);
+    gfx::Transform parentTranslationToCenter;
+    parentTranslationToCenter.Translate(5, 6);
+    gfx::Transform parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * MathUtil::inverse(parentTranslationToAnchor)
+            * parentTranslationToCenter * parentSublayerMatrix * MathUtil::inverse(parentTranslationToCenter);
+    gfx::Transform childTranslationToCenter;
+    childTranslationToCenter.Translate(8, 9);
+    gfx::Transform replicaLayerTransform;
+    replicaLayerTransform.Scale3d(3, 3, 1);
     gfx::Vector2dF parentCompositeScale = MathUtil::computeTransform2dScaleComponents(parentCompositeTransform);
-    WebTransformationMatrix surfaceSublayerTransform;
-    surfaceSublayerTransform.scaleNonUniform(parentCompositeScale.x(), parentCompositeScale.y());
-    WebTransformationMatrix replicaCompositeTransform = parentCompositeTransform * replicaLayerTransform * surfaceSublayerTransform.inverse();
+    gfx::Transform surfaceSublayerTransform;
+    surfaceSublayerTransform.Scale(parentCompositeScale.x(), parentCompositeScale.y());
+    gfx::Transform replicaCompositeTransform = parentCompositeTransform * replicaLayerTransform * MathUtil::inverse(surfaceSublayerTransform);
 
     // Child's render surface should not exist yet.
     ASSERT_FALSE(child->renderSurface());
@@ -475,7 +461,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForRenderSurfaceHierarchy)
     renderSurface2->setOpacity(0.33f);
 
     // One-time setup of root layer
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(1, 2), false);
 
     // All layers in the tree are initialized with an anchor at .25 and a size of (10,10).
@@ -485,38 +471,38 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForRenderSurfaceHierarchy)
     //
     // x component tests that layerTransform and sublayerTransform are done in the right order (translation and scale are noncommutative).
     // y component has a translation by 1 for every ancestor, which indicates the "depth" of the layer in the hierarchy.
-    WebTransformationMatrix translationToAnchor;
-    translationToAnchor.translate(2.5, 0);
-    WebTransformationMatrix translationToCenter;
-    translationToCenter.translate(5, 5);
-    WebTransformationMatrix layerTransform;
-    layerTransform.translate(1, 1);
-    WebTransformationMatrix sublayerTransform;
-    sublayerTransform.scale3d(10, 1, 1);
-    WebTransformationMatrix replicaLayerTransform;
-    replicaLayerTransform.scale3d(-2, 5, 1);
+    gfx::Transform translationToAnchor;
+    translationToAnchor.Translate(2.5, 0);
+    gfx::Transform translationToCenter;
+    translationToCenter.Translate(5, 5);
+    gfx::Transform layerTransform;
+    layerTransform.Translate(1, 1);
+    gfx::Transform sublayerTransform;
+    sublayerTransform.Scale3d(10, 1, 1);
+    gfx::Transform replicaLayerTransform;
+    replicaLayerTransform.Scale3d(-2, 5, 1);
 
-    WebTransformationMatrix A = translationToAnchor * layerTransform * translationToAnchor.inverse();
-    WebTransformationMatrix B = translationToCenter * sublayerTransform * translationToCenter.inverse();
-    WebTransformationMatrix R = A * translationToAnchor * replicaLayerTransform * translationToAnchor.inverse();
+    gfx::Transform A = translationToAnchor * layerTransform * MathUtil::inverse(translationToAnchor);
+    gfx::Transform B = translationToCenter * sublayerTransform * MathUtil::inverse(translationToCenter);
+    gfx::Transform R = A * translationToAnchor * replicaLayerTransform * MathUtil::inverse(translationToAnchor);
 
     gfx::Vector2dF surface1ParentTransformScale = MathUtil::computeTransform2dScaleComponents(A * B);
-    WebTransformationMatrix surface1SublayerTransform;
-    surface1SublayerTransform.scaleNonUniform(surface1ParentTransformScale.x(), surface1ParentTransformScale.y());
+    gfx::Transform surface1SublayerTransform;
+    surface1SublayerTransform.Scale(surface1ParentTransformScale.x(), surface1ParentTransformScale.y());
 
     // SS1 = transform given to the subtree of renderSurface1
-    WebTransformationMatrix SS1 = surface1SublayerTransform;
+    gfx::Transform SS1 = surface1SublayerTransform;
     // S1 = transform to move from renderSurface1 pixels to the layer space of the owning layer
-    WebTransformationMatrix S1 = surface1SublayerTransform.inverse();
+    gfx::Transform S1 = MathUtil::inverse(surface1SublayerTransform);
 
     gfx::Vector2dF surface2ParentTransformScale = MathUtil::computeTransform2dScaleComponents(SS1 * A * B);
-    WebTransformationMatrix surface2SublayerTransform;
-    surface2SublayerTransform.scaleNonUniform(surface2ParentTransformScale.x(), surface2ParentTransformScale.y());
+    gfx::Transform surface2SublayerTransform;
+    surface2SublayerTransform.Scale(surface2ParentTransformScale.x(), surface2ParentTransformScale.y());
 
     // SS2 = transform given to the subtree of renderSurface2
-    WebTransformationMatrix SS2 = surface2SublayerTransform;
+    gfx::Transform SS2 = surface2SublayerTransform;
     // S2 = transform to move from renderSurface2 pixels to the layer space of the owning layer
-    WebTransformationMatrix S2 = surface2SublayerTransform.inverse();
+    gfx::Transform S2 = MathUtil::inverse(surface2SublayerTransform);
 
     setLayerPropertiesForTesting(parent.get(), layerTransform, sublayerTransform, gfx::PointF(0.25, 0), gfx::PointF(0, 0), gfx::Size(10, 10), false);
     setLayerPropertiesForTesting(renderSurface1.get(), layerTransform, sublayerTransform, gfx::PointF(0.25, 0), gfx::PointF(0, 0), gfx::Size(10, 10), false);
@@ -606,17 +592,17 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForRenderSurfaceHierarchy)
     // Sanity check. If these fail there is probably a bug in the test itself.
     // It is expected that we correctly set up transforms so that the y-component of the screen-space transform
     // encodes the "depth" of the layer in the tree.
-    EXPECT_FLOAT_EQ(1, parent->screenSpaceTransform().m42());
-    EXPECT_FLOAT_EQ(2, childOfRoot->screenSpaceTransform().m42());
-    EXPECT_FLOAT_EQ(3, grandChildOfRoot->screenSpaceTransform().m42());
+    EXPECT_FLOAT_EQ(1, parent->screenSpaceTransform().matrix().getDouble(1, 3));
+    EXPECT_FLOAT_EQ(2, childOfRoot->screenSpaceTransform().matrix().getDouble(1, 3));
+    EXPECT_FLOAT_EQ(3, grandChildOfRoot->screenSpaceTransform().matrix().getDouble(1, 3));
 
-    EXPECT_FLOAT_EQ(2, renderSurface1->screenSpaceTransform().m42());
-    EXPECT_FLOAT_EQ(3, childOfRS1->screenSpaceTransform().m42());
-    EXPECT_FLOAT_EQ(4, grandChildOfRS1->screenSpaceTransform().m42());
+    EXPECT_FLOAT_EQ(2, renderSurface1->screenSpaceTransform().matrix().getDouble(1, 3));
+    EXPECT_FLOAT_EQ(3, childOfRS1->screenSpaceTransform().matrix().getDouble(1, 3));
+    EXPECT_FLOAT_EQ(4, grandChildOfRS1->screenSpaceTransform().matrix().getDouble(1, 3));
 
-    EXPECT_FLOAT_EQ(3, renderSurface2->screenSpaceTransform().m42());
-    EXPECT_FLOAT_EQ(4, childOfRS2->screenSpaceTransform().m42());
-    EXPECT_FLOAT_EQ(5, grandChildOfRS2->screenSpaceTransform().m42());
+    EXPECT_FLOAT_EQ(3, renderSurface2->screenSpaceTransform().matrix().getDouble(1, 3));
+    EXPECT_FLOAT_EQ(4, childOfRS2->screenSpaceTransform().matrix().getDouble(1, 3));
+    EXPECT_FLOAT_EQ(5, grandChildOfRS2->screenSpaceTransform().matrix().getDouble(1, 3));
 }
 
 TEST(LayerTreeHostCommonTest, verifyTransformsForFlatteningLayer)
@@ -630,10 +616,10 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForFlatteningLayer)
     scoped_refptr<Layer> child = Layer::create();
     scoped_refptr<LayerWithForcedDrawsContent> grandChild = make_scoped_refptr(new LayerWithForcedDrawsContent());
 
-    WebTransformationMatrix rotationAboutYAxis;
-    rotationAboutYAxis.rotate3d(0, 30, 0);
+    gfx::Transform rotationAboutYAxis;
+    MathUtil::rotateEulerAngles(&rotationAboutYAxis, 0, 30, 0);
 
-    const WebTransformationMatrix identityMatrix;
+    const gfx::Transform identityMatrix;
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, gfx::PointF(), gfx::PointF(), gfx::Size(100, 100), false);
     setLayerPropertiesForTesting(child.get(), rotationAboutYAxis, identityMatrix, gfx::PointF(), gfx::PointF(), gfx::Size(10, 10), false);
     setLayerPropertiesForTesting(grandChild.get(), rotationAboutYAxis, identityMatrix, gfx::PointF(), gfx::PointF(), gfx::Size(10, 10), false);
@@ -647,10 +633,10 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForFlatteningLayer)
     ASSERT_FALSE(child->preserves3D());
     ASSERT_FALSE(grandChild->preserves3D());
 
-    WebTransformationMatrix expectedChildDrawTransform = rotationAboutYAxis;
-    WebTransformationMatrix expectedChildScreenSpaceTransform = rotationAboutYAxis;
-    WebTransformationMatrix expectedGrandChildDrawTransform = rotationAboutYAxis; // draws onto child's renderSurface
-    WebTransformationMatrix expectedGrandChildScreenSpaceTransform = rotationAboutYAxis.to2dTransform() * rotationAboutYAxis;
+    gfx::Transform expectedChildDrawTransform = rotationAboutYAxis;
+    gfx::Transform expectedChildScreenSpaceTransform = rotationAboutYAxis;
+    gfx::Transform expectedGrandChildDrawTransform = rotationAboutYAxis; // draws onto child's renderSurface
+    gfx::Transform expectedGrandChildScreenSpaceTransform = MathUtil::to2dTransform(rotationAboutYAxis) * rotationAboutYAxis;
 
     executeCalculateDrawTransformsAndVisibility(root.get());
 
@@ -677,7 +663,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForDegenerateIntermediateLayer)
     scoped_refptr<LayerWithForcedDrawsContent> grandChild = make_scoped_refptr(new LayerWithForcedDrawsContent());
 
     // The child height is zero, but has non-zero width that should be accounted for while computing drawTransforms.
-    const WebTransformationMatrix identityMatrix;
+    const gfx::Transform identityMatrix;
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, gfx::PointF(), gfx::PointF(), gfx::Size(100, 100), false);
     setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, gfx::PointF(), gfx::PointF(), gfx::Size(10, 0), false);
     setLayerPropertiesForTesting(grandChild.get(), identityMatrix, identityMatrix, gfx::PointF(), gfx::PointF(), gfx::Size(10, 10), false);
@@ -700,7 +686,7 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceListForRenderSurfaceWithClipped
     scoped_refptr<Layer> renderSurface1 = Layer::create();
     scoped_refptr<LayerWithForcedDrawsContent> child = make_scoped_refptr(new LayerWithForcedDrawsContent());
 
-    const WebTransformationMatrix identityMatrix;
+    const gfx::Transform identityMatrix;
     setLayerPropertiesForTesting(parent.get(), identityMatrix, identityMatrix, gfx::PointF(), gfx::PointF(), gfx::Size(10, 10), false);
     setLayerPropertiesForTesting(renderSurface1.get(), identityMatrix, identityMatrix, gfx::PointF(), gfx::PointF(), gfx::Size(10, 10), false);
     setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, gfx::PointF(), gfx::PointF(30, 30), gfx::Size(10, 10), false);
@@ -728,7 +714,7 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceListForTransparentChild)
     scoped_refptr<Layer> renderSurface1 = Layer::create();
     scoped_refptr<LayerWithForcedDrawsContent> child = make_scoped_refptr(new LayerWithForcedDrawsContent());
 
-    const WebTransformationMatrix identityMatrix;
+    const gfx::Transform identityMatrix;
     setLayerPropertiesForTesting(renderSurface1.get(), identityMatrix, identityMatrix, gfx::PointF(), gfx::PointF(), gfx::Size(10, 10), false);
     setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, gfx::PointF(), gfx::PointF(), gfx::Size(10, 10), false);
 
@@ -757,7 +743,7 @@ TEST(LayerTreeHostCommonTest, verifyForceRenderSurface)
     scoped_refptr<LayerWithForcedDrawsContent> child = make_scoped_refptr(new LayerWithForcedDrawsContent());
     renderSurface1->setForceRenderSurface(true);
 
-    const WebTransformationMatrix identityMatrix;
+    const gfx::Transform identityMatrix;
     setLayerPropertiesForTesting(parent.get(), identityMatrix, identityMatrix, gfx::PointF(), gfx::PointF(), gfx::Size(10, 10), false);
     setLayerPropertiesForTesting(renderSurface1.get(), identityMatrix, identityMatrix, gfx::PointF(), gfx::PointF(), gfx::Size(10, 10), false);
     setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, gfx::PointF(), gfx::PointF(), gfx::Size(10, 10), false);
@@ -801,8 +787,8 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithD
     child->setScrollDelta(gfx::Vector2d(0, 0));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
-    WebTransformationMatrix expectedChildTransform;
-    WebTransformationMatrix expectedGrandChildTransform = expectedChildTransform;
+    gfx::Transform expectedChildTransform;
+    gfx::Transform expectedGrandChildTransform = expectedChildTransform;
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
@@ -812,8 +798,8 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithD
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     // Here the child is affected by scrollDelta, but the fixed position grandChild should not be affected.
-    expectedChildTransform.makeIdentity();
-    expectedChildTransform.translate(-10, -10);
+    expectedChildTransform.MakeIdentity();
+    expectedChildTransform.Translate(-10, -10);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
@@ -826,7 +812,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithT
     // In this case, the fixed position element inherits the container's transform,
     // but the scrollDelta that has to be undone should not be affected by that transform.
     //
-    // Transforms are in general non-commutative; using something like a non-uniform scale
+    // gfx::Transforms are in general non-commutative; using something like a non-uniform scale
     // helps to verify that translations and non-uniform scales are applied in the correct
     // order.
     scoped_ptr<LayerImpl> root = createTreeForFixedPositionTests();
@@ -834,8 +820,8 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithT
     LayerImpl* grandChild = child->children()[0];
 
     // This scale will cause child and grandChild to be effectively 200 x 800 with respect to the renderTarget.
-    WebTransformationMatrix nonUniformScale;
-    nonUniformScale.scaleNonUniform(2, 8);
+    gfx::Transform nonUniformScale;
+    nonUniformScale.Scale(2, 8);
     child->setTransform(nonUniformScale);
 
     child->setIsContainerForFixedPositionLayers(true);
@@ -845,10 +831,10 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithT
     child->setScrollDelta(gfx::Vector2d(0, 0));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
-    WebTransformationMatrix expectedChildTransform;
-    expectedChildTransform.multiply(nonUniformScale);
+    gfx::Transform expectedChildTransform;
+    expectedChildTransform.PreconcatTransform(nonUniformScale);
 
-    WebTransformationMatrix expectedGrandChildTransform = expectedChildTransform;
+    gfx::Transform expectedGrandChildTransform = expectedChildTransform;
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
@@ -858,9 +844,9 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithT
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     // The child should be affected by scrollDelta, but the fixed position grandChild should not be affected.
-    expectedChildTransform.makeIdentity();
-    expectedChildTransform.translate(-10, -20); // scrollDelta
-    expectedChildTransform.multiply(nonUniformScale);
+    expectedChildTransform.MakeIdentity();
+    expectedChildTransform.Translate(-10, -20); // scrollDelta
+    expectedChildTransform.PreconcatTransform(nonUniformScale);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
@@ -883,11 +869,11 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithD
     child->setScrollDelta(gfx::Vector2d(0, 0));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
-    WebTransformationMatrix expectedChildTransform;
-    WebTransformationMatrix expectedGrandChildTransform;
-    expectedGrandChildTransform.translate(8, 6);
+    gfx::Transform expectedChildTransform;
+    gfx::Transform expectedGrandChildTransform;
+    expectedGrandChildTransform.Translate(8, 6);
 
-    WebTransformationMatrix expectedGreatGrandChildTransform = expectedGrandChildTransform;
+    gfx::Transform expectedGreatGrandChildTransform = expectedGrandChildTransform;
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
@@ -898,10 +884,10 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithD
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     // Here the child and grandChild are affected by scrollDelta, but the fixed position greatGrandChild should not be affected.
-    expectedChildTransform.makeIdentity();
-    expectedChildTransform.translate(-10, -10);
-    expectedGrandChildTransform.makeIdentity();
-    expectedGrandChildTransform.translate(-2, -4);
+    expectedChildTransform.MakeIdentity();
+    expectedChildTransform.Translate(-10, -10);
+    expectedGrandChildTransform.MakeIdentity();
+    expectedGrandChildTransform.Translate(-2, -4);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGreatGrandChildTransform, greatGrandChild->drawTransform());
@@ -917,8 +903,8 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithD
     LayerImpl* grandChild = child->children()[0];
     LayerImpl* greatGrandChild = grandChild->children()[0];
 
-    WebTransformationMatrix rotationAboutZ;
-    rotationAboutZ.rotate3d(0, 0, 90);
+    gfx::Transform rotationAboutZ;
+    MathUtil::rotateEulerAngles(&rotationAboutZ, 0, 0, 90);
 
     child->setIsContainerForFixedPositionLayers(true);
     child->setTransform(rotationAboutZ);
@@ -930,15 +916,15 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithD
     child->setScrollDelta(gfx::Vector2d(0, 0));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
-    WebTransformationMatrix expectedChildTransform;
-    expectedChildTransform.multiply(rotationAboutZ);
+    gfx::Transform expectedChildTransform;
+    expectedChildTransform.PreconcatTransform(rotationAboutZ);
 
-    WebTransformationMatrix expectedGrandChildTransform;
-    expectedGrandChildTransform.multiply(rotationAboutZ); // child's local transform is inherited
-    expectedGrandChildTransform.translate(8, 6); // translation because of position occurs before layer's local transform.
-    expectedGrandChildTransform.multiply(rotationAboutZ); // grandChild's local transform
+    gfx::Transform expectedGrandChildTransform;
+    expectedGrandChildTransform.PreconcatTransform(rotationAboutZ); // child's local transform is inherited
+    expectedGrandChildTransform.Translate(8, 6); // translation because of position occurs before layer's local transform.
+    expectedGrandChildTransform.PreconcatTransform(rotationAboutZ); // grandChild's local transform
 
-    WebTransformationMatrix expectedGreatGrandChildTransform = expectedGrandChildTransform;
+    gfx::Transform expectedGreatGrandChildTransform = expectedGrandChildTransform;
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
@@ -949,15 +935,15 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithD
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     // Here the child and grandChild are affected by scrollDelta, but the fixed position greatGrandChild should not be affected.
-    expectedChildTransform.makeIdentity();
-    expectedChildTransform.translate(-10, -20); // scrollDelta
-    expectedChildTransform.multiply(rotationAboutZ);
+    expectedChildTransform.MakeIdentity();
+    expectedChildTransform.Translate(-10, -20); // scrollDelta
+    expectedChildTransform.PreconcatTransform(rotationAboutZ);
 
-    expectedGrandChildTransform.makeIdentity();
-    expectedGrandChildTransform.translate(-10, -20); // child's scrollDelta is inherited
-    expectedGrandChildTransform.multiply(rotationAboutZ); // child's local transform is inherited
-    expectedGrandChildTransform.translate(8, 6); // translation because of position occurs before layer's local transform.
-    expectedGrandChildTransform.multiply(rotationAboutZ); // grandChild's local transform
+    expectedGrandChildTransform.MakeIdentity();
+    expectedGrandChildTransform.Translate(-10, -20); // child's scrollDelta is inherited
+    expectedGrandChildTransform.PreconcatTransform(rotationAboutZ); // child's local transform is inherited
+    expectedGrandChildTransform.Translate(8, 6); // translation because of position occurs before layer's local transform.
+    expectedGrandChildTransform.PreconcatTransform(rotationAboutZ); // grandChild's local transform
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
@@ -977,8 +963,8 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     LayerImpl* grandChild = child->children()[0];
     LayerImpl* greatGrandChild = grandChild->children()[0];
 
-    WebTransformationMatrix rotationAboutZ;
-    rotationAboutZ.rotate3d(0, 0, 90);
+    gfx::Transform rotationAboutZ;
+    MathUtil::rotateEulerAngles(&rotationAboutZ, 0, 0, 90);
 
     child->setIsContainerForFixedPositionLayers(true);
     child->setTransform(rotationAboutZ);
@@ -990,15 +976,15 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     child->setScrollDelta(gfx::Vector2d(0, 0));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
-    WebTransformationMatrix expectedChildTransform;
-    expectedChildTransform.multiply(rotationAboutZ);
+    gfx::Transform expectedChildTransform;
+    expectedChildTransform.PreconcatTransform(rotationAboutZ);
 
-    WebTransformationMatrix expectedGrandChildTransform;
-    expectedGrandChildTransform.multiply(rotationAboutZ); // child's local transform is inherited
-    expectedGrandChildTransform.translate(8, 6); // translation because of position occurs before layer's local transform.
-    expectedGrandChildTransform.multiply(rotationAboutZ); // grandChild's local transform
+    gfx::Transform expectedGrandChildTransform;
+    expectedGrandChildTransform.PreconcatTransform(rotationAboutZ); // child's local transform is inherited
+    expectedGrandChildTransform.Translate(8, 6); // translation because of position occurs before layer's local transform.
+    expectedGrandChildTransform.PreconcatTransform(rotationAboutZ); // grandChild's local transform
 
-    WebTransformationMatrix expectedGreatGrandChildTransform = expectedGrandChildTransform;
+    gfx::Transform expectedGreatGrandChildTransform = expectedGrandChildTransform;
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
@@ -1010,16 +996,16 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     // Here the child and grandChild are affected by scrollDelta, but the fixed position greatGrandChild should not be affected.
-    expectedChildTransform.makeIdentity();
-    expectedChildTransform.translate(-10, 0); // scrollDelta
-    expectedChildTransform.multiply(rotationAboutZ);
+    expectedChildTransform.MakeIdentity();
+    expectedChildTransform.Translate(-10, 0); // scrollDelta
+    expectedChildTransform.PreconcatTransform(rotationAboutZ);
 
-    expectedGrandChildTransform.makeIdentity();
-    expectedGrandChildTransform.translate(-10, 0); // child's scrollDelta is inherited
-    expectedGrandChildTransform.multiply(rotationAboutZ); // child's local transform is inherited
-    expectedGrandChildTransform.translate(-5, 0); // grandChild's scrollDelta
-    expectedGrandChildTransform.translate(8, 6); // translation because of position occurs before layer's local transform.
-    expectedGrandChildTransform.multiply(rotationAboutZ); // grandChild's local transform
+    expectedGrandChildTransform.MakeIdentity();
+    expectedGrandChildTransform.Translate(-10, 0); // child's scrollDelta is inherited
+    expectedGrandChildTransform.PreconcatTransform(rotationAboutZ); // child's local transform is inherited
+    expectedGrandChildTransform.Translate(-5, 0); // grandChild's scrollDelta
+    expectedGrandChildTransform.Translate(8, 6); // translation because of position occurs before layer's local transform.
+    expectedGrandChildTransform.PreconcatTransform(rotationAboutZ); // grandChild's local transform
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
@@ -1043,20 +1029,20 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithI
     greatGrandChild->setFixedToContainerLayer(true);
     greatGrandChild->setDrawsContent(true);
 
-    WebTransformationMatrix rotationAboutZ;
-    rotationAboutZ.rotate3d(0, 0, 90);
+    gfx::Transform rotationAboutZ;
+    MathUtil::rotateEulerAngles(&rotationAboutZ, 0, 0, 90);
     grandChild->setTransform(rotationAboutZ);
 
     // Case 1: scrollDelta of 0, 0
     child->setScrollDelta(gfx::Vector2d(0, 0));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
-    WebTransformationMatrix expectedChildTransform;
-    WebTransformationMatrix expectedSurfaceDrawTransform;
-    expectedSurfaceDrawTransform.translate(8, 6);
-    expectedSurfaceDrawTransform.multiply(rotationAboutZ);
-    WebTransformationMatrix expectedGrandChildTransform;
-    WebTransformationMatrix expectedGreatGrandChildTransform;
+    gfx::Transform expectedChildTransform;
+    gfx::Transform expectedSurfaceDrawTransform;
+    expectedSurfaceDrawTransform.Translate(8, 6);
+    expectedSurfaceDrawTransform.PreconcatTransform(rotationAboutZ);
+    gfx::Transform expectedGrandChildTransform;
+    gfx::Transform expectedGreatGrandChildTransform;
     ASSERT_TRUE(grandChild->renderSurface());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedSurfaceDrawTransform, grandChild->renderSurface()->drawTransform());
@@ -1074,21 +1060,21 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithI
     // that surface. So, the net result is that, unlike previous tests where the fixed
     // position layer's transform remains unchanged, here the fixed position layer's
     // transform explicitly contains the translation that cancels out the scroll.
-    expectedChildTransform.makeIdentity();
-    expectedChildTransform.translate(-10, -30); // scrollDelta
+    expectedChildTransform.MakeIdentity();
+    expectedChildTransform.Translate(-10, -30); // scrollDelta
 
-    expectedSurfaceDrawTransform.makeIdentity();
-    expectedSurfaceDrawTransform.translate(-10, -30); // scrollDelta
-    expectedSurfaceDrawTransform.translate(8, 6);
-    expectedSurfaceDrawTransform.multiply(rotationAboutZ);
+    expectedSurfaceDrawTransform.MakeIdentity();
+    expectedSurfaceDrawTransform.Translate(-10, -30); // scrollDelta
+    expectedSurfaceDrawTransform.Translate(8, 6);
+    expectedSurfaceDrawTransform.PreconcatTransform(rotationAboutZ);
 
     // The rotation and its inverse are needed to place the scrollDelta compensation in
     // the correct space. This test will fail if the rotation/inverse are backwards, too,
     // so it requires perfect order of operations.
-    expectedGreatGrandChildTransform.makeIdentity();
-    expectedGreatGrandChildTransform.multiply(rotationAboutZ.inverse());
-    expectedGreatGrandChildTransform.translate(10, 30); // explicit canceling out the scrollDelta that gets embedded in the fixed position layer's surface.
-    expectedGreatGrandChildTransform.multiply(rotationAboutZ);
+    expectedGreatGrandChildTransform.MakeIdentity();
+    expectedGreatGrandChildTransform.PreconcatTransform(MathUtil::inverse(rotationAboutZ));
+    expectedGreatGrandChildTransform.Translate(10, 30); // explicit canceling out the scrollDelta that gets embedded in the fixed position layer's surface.
+    expectedGreatGrandChildTransform.PreconcatTransform(rotationAboutZ);
 
     ASSERT_TRUE(grandChild->renderSurface());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
@@ -1110,7 +1096,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
 
     // Add one more layer to the test tree for this scenario.
     {
-        WebTransformationMatrix identity;
+        gfx::Transform identity;
         scoped_ptr<LayerImpl> fixedPositionChild = LayerImpl::create(5);
         setLayerPropertiesForTesting(fixedPositionChild.get(), identity, identity, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
         greatGrandChild->addChild(fixedPositionChild.Pass());
@@ -1130,10 +1116,10 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     // verify that we have correct order-of-operations in the final scroll compensation.
     // Note that rotating about the center of the layer ensures we do not accidentally
     // clip away layers that we want to test.
-    WebTransformationMatrix rotationAboutZ;
-    rotationAboutZ.translate(50, 50);
-    rotationAboutZ.rotate3d(0, 0, 90);
-    rotationAboutZ.translate(-50, -50);
+    gfx::Transform rotationAboutZ;
+    rotationAboutZ.Translate(50, 50);
+    MathUtil::rotateEulerAngles(&rotationAboutZ, 0, 0, 90);
+    rotationAboutZ.Translate(-50, -50);
     grandChild->setTransform(rotationAboutZ);
     greatGrandChild->setTransform(rotationAboutZ);
 
@@ -1141,21 +1127,21 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     child->setScrollDelta(gfx::Vector2d(0, 0));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
-    WebTransformationMatrix expectedChildTransform;
+    gfx::Transform expectedChildTransform;
 
-    WebTransformationMatrix expectedGrandChildSurfaceDrawTransform;
-    expectedGrandChildSurfaceDrawTransform.translate(8, 6);
-    expectedGrandChildSurfaceDrawTransform.multiply(rotationAboutZ);
+    gfx::Transform expectedGrandChildSurfaceDrawTransform;
+    expectedGrandChildSurfaceDrawTransform.Translate(8, 6);
+    expectedGrandChildSurfaceDrawTransform.PreconcatTransform(rotationAboutZ);
 
-    WebTransformationMatrix expectedGrandChildTransform;
+    gfx::Transform expectedGrandChildTransform;
 
-    WebTransformationMatrix expectedGreatGrandChildSurfaceDrawTransform;
-    expectedGreatGrandChildSurfaceDrawTransform.translate(40, 60);
-    expectedGreatGrandChildSurfaceDrawTransform.multiply(rotationAboutZ);
+    gfx::Transform expectedGreatGrandChildSurfaceDrawTransform;
+    expectedGreatGrandChildSurfaceDrawTransform.Translate(40, 60);
+    expectedGreatGrandChildSurfaceDrawTransform.PreconcatTransform(rotationAboutZ);
 
-    WebTransformationMatrix expectedGreatGrandChildTransform;
+    gfx::Transform expectedGreatGrandChildTransform;
 
-    WebTransformationMatrix expectedFixedPositionChildTransform;
+    gfx::Transform expectedFixedPositionChildTransform;
 
     ASSERT_TRUE(grandChild->renderSurface());
     ASSERT_TRUE(greatGrandChild->renderSurface());
@@ -1170,13 +1156,13 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     child->setScrollDelta(gfx::Vector2d(10, 30));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
-    expectedChildTransform.makeIdentity();
-    expectedChildTransform.translate(-10, -30); // scrollDelta
+    expectedChildTransform.MakeIdentity();
+    expectedChildTransform.Translate(-10, -30); // scrollDelta
 
-    expectedGrandChildSurfaceDrawTransform.makeIdentity();
-    expectedGrandChildSurfaceDrawTransform.translate(-10, -30); // scrollDelta
-    expectedGrandChildSurfaceDrawTransform.translate(8, 6);
-    expectedGrandChildSurfaceDrawTransform.multiply(rotationAboutZ);
+    expectedGrandChildSurfaceDrawTransform.MakeIdentity();
+    expectedGrandChildSurfaceDrawTransform.Translate(-10, -30); // scrollDelta
+    expectedGrandChildSurfaceDrawTransform.Translate(8, 6);
+    expectedGrandChildSurfaceDrawTransform.PreconcatTransform(rotationAboutZ);
 
     // grandChild, greatGrandChild, and greatGrandChild's surface are not expected to
     // change, since they are all not fixed, and they are all drawn with respect to
@@ -1185,16 +1171,16 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     // But the great-great grandchild, "fixedPositionChild", should have a transform that explicitly cancels out the scrollDelta.
     // The expected transform is:
     //   compoundDrawTransform.inverse() * translate(positive scrollDelta) * compoundOriginTransform
-    WebTransformationMatrix compoundDrawTransform; // transform from greatGrandChildSurface's origin to the root surface.
-    compoundDrawTransform.translate(8, 6); // origin translation of grandChild
-    compoundDrawTransform.multiply(rotationAboutZ); // rotation of grandChild
-    compoundDrawTransform.translate(40, 60); // origin translation of greatGrandChild
-    compoundDrawTransform.multiply(rotationAboutZ); // rotation of greatGrandChild
+    gfx::Transform compoundDrawTransform; // transform from greatGrandChildSurface's origin to the root surface.
+    compoundDrawTransform.Translate(8, 6); // origin translation of grandChild
+    compoundDrawTransform.PreconcatTransform(rotationAboutZ); // rotation of grandChild
+    compoundDrawTransform.Translate(40, 60); // origin translation of greatGrandChild
+    compoundDrawTransform.PreconcatTransform(rotationAboutZ); // rotation of greatGrandChild
 
-    expectedFixedPositionChildTransform.makeIdentity();
-    expectedFixedPositionChildTransform.multiply(compoundDrawTransform.inverse());
-    expectedFixedPositionChildTransform.translate(10, 30); // explicit canceling out the scrollDelta that gets embedded in the fixed position layer's surface.
-    expectedFixedPositionChildTransform.multiply(compoundDrawTransform);
+    expectedFixedPositionChildTransform.MakeIdentity();
+    expectedFixedPositionChildTransform.PreconcatTransform(MathUtil::inverse(compoundDrawTransform));
+    expectedFixedPositionChildTransform.Translate(10, 30); // explicit canceling out the scrollDelta that gets embedded in the fixed position layer's surface.
+    expectedFixedPositionChildTransform.PreconcatTransform(compoundDrawTransform);
 
     ASSERT_TRUE(grandChild->renderSurface());
     ASSERT_TRUE(greatGrandChild->renderSurface());
@@ -1225,10 +1211,10 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithC
     child->setScrollDelta(gfx::Vector2d(0, 0));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
-    WebTransformationMatrix expectedSurfaceDrawTransform;
-    expectedSurfaceDrawTransform.translate(0, 0);
-    WebTransformationMatrix expectedChildTransform;
-    WebTransformationMatrix expectedGrandChildTransform;
+    gfx::Transform expectedSurfaceDrawTransform;
+    expectedSurfaceDrawTransform.Translate(0, 0);
+    gfx::Transform expectedChildTransform;
+    gfx::Transform expectedGrandChildTransform;
     ASSERT_TRUE(child->renderSurface());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedSurfaceDrawTransform, child->renderSurface()->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
@@ -1241,10 +1227,10 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithC
     // The surface is translated by scrollDelta, the child transform doesn't change
     // because it scrolls along with the surface, but the fixed position grandChild
     // needs to compensate for the scroll translation.
-    expectedSurfaceDrawTransform.makeIdentity();
-    expectedSurfaceDrawTransform.translate(-10, -10);
-    expectedGrandChildTransform.makeIdentity();
-    expectedGrandChildTransform.translate(10, 10);
+    expectedSurfaceDrawTransform.MakeIdentity();
+    expectedSurfaceDrawTransform.Translate(-10, -10);
+    expectedGrandChildTransform.MakeIdentity();
+    expectedGrandChildTransform.Translate(10, 10);
 
     ASSERT_TRUE(child->renderSurface());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedSurfaceDrawTransform, child->renderSurface()->drawTransform());
@@ -1271,8 +1257,8 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerThatI
     child->setScrollDelta(gfx::Vector2d(0, 0));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
-    WebTransformationMatrix expectedChildTransform;
-    WebTransformationMatrix expectedGrandChildTransform;
+    gfx::Transform expectedChildTransform;
+    gfx::Transform expectedGrandChildTransform;
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
 
@@ -1281,8 +1267,8 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerThatI
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     // Here the child is affected by scrollDelta, but the fixed position grandChild should not be affected.
-    expectedChildTransform.makeIdentity();
-    expectedChildTransform.translate(-10, -10);
+    expectedChildTransform.MakeIdentity();
+    expectedChildTransform.Translate(-10, -10);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
 }
@@ -1296,8 +1282,8 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerThatH
     LayerImpl* child = root->children()[0];
     LayerImpl* grandChild = child->children()[0];
 
-    WebTransformationMatrix rotationByZ;
-    rotationByZ.rotate3d(0, 0, 90);
+    gfx::Transform rotationByZ;
+    MathUtil::rotateEulerAngles(&rotationByZ, 0, 0, 90);
 
     root->setTransform(rotationByZ);
     grandChild->setFixedToContainerLayer(true);
@@ -1306,7 +1292,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerThatH
     root->setScrollDelta(gfx::Vector2d(0, 0));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(identityMatrix, child->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(identityMatrix, grandChild->drawTransform());
@@ -1319,10 +1305,10 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerThatH
     // the child's target surface (i.e. the root renderSurface). The grandChild is not
     // affected by the scrollDelta, so its drawTransform needs to explicitly
     // inverse-compensate for the scroll that's embedded in the target surface.
-    WebTransformationMatrix expectedGrandChildTransform;
-    expectedGrandChildTransform.multiply(rotationByZ.inverse());
-    expectedGrandChildTransform.translate(10, 20); // explicit canceling out the scrollDelta that gets embedded in the fixed position layer's surface.
-    expectedGrandChildTransform.multiply(rotationByZ);
+    gfx::Transform expectedGrandChildTransform;
+    expectedGrandChildTransform.PreconcatTransform(MathUtil::inverse(rotationByZ));
+    expectedGrandChildTransform.Translate(10, 20); // explicit canceling out the scrollDelta that gets embedded in the fixed position layer's surface.
+    expectedGrandChildTransform.PreconcatTransform(rotationByZ);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(identityMatrix, child->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
@@ -1344,7 +1330,7 @@ TEST(LayerTreeHostCommonTest, verifyClipRectCullsRenderSurfaces)
     // clipRect, and they should never get scheduled on the list of renderSurfaces.
     //
 
-    const WebTransformationMatrix identityMatrix;
+    const gfx::Transform identityMatrix;
     scoped_refptr<Layer> parent = Layer::create();
     scoped_refptr<Layer> child = Layer::create();
     scoped_refptr<Layer> grandChild = Layer::create();
@@ -1399,7 +1385,7 @@ TEST(LayerTreeHostCommonTest, verifyClipRectCullsSurfaceWithoutVisibleContent)
     // this clipping should be avoided and we should keep the grandChild
     // in the renderSurfaceLayerList.
 
-    const WebTransformationMatrix identityMatrix;
+    const gfx::Transform identityMatrix;
     scoped_refptr<Layer> parent = Layer::create();
     scoped_refptr<Layer> child = Layer::create();
     scoped_refptr<Layer> grandChild = Layer::create();
@@ -1457,7 +1443,7 @@ TEST(LayerTreeHostCommonTest, verifyIsClippedIsSetCorrectly)
     //  - but if the layer itself masks to bounds, it is considered clipped
     //    and propagates the clip to the subtree.
 
-    const WebTransformationMatrix identityMatrix;
+    const gfx::Transform identityMatrix;
     scoped_refptr<Layer> root = Layer::create();
     scoped_refptr<Layer> parent = Layer::create();
     scoped_refptr<Layer> child1 = Layer::create();
@@ -1552,7 +1538,7 @@ TEST(LayerTreeHostCommonTest, verifyDrawableContentRectForLayers)
     //   grandChild4 - outside parent's clipRect; the drawableContentRect should be empty.
     //
 
-    const WebTransformationMatrix identityMatrix;
+    const gfx::Transform identityMatrix;
     scoped_refptr<Layer> parent = Layer::create();
     scoped_refptr<Layer> child = Layer::create();
     scoped_refptr<Layer> grandChild1 = Layer::create();
@@ -1602,7 +1588,7 @@ TEST(LayerTreeHostCommonTest, verifyClipRectIsPropagatedCorrectlyToSurfaces)
     // have a clipRect of their own layer bounds, however, if masksToBounds was true.
     //
 
-    const WebTransformationMatrix identityMatrix;
+    const gfx::Transform identityMatrix;
     scoped_refptr<Layer> parent = Layer::create();
     scoped_refptr<Layer> child = Layer::create();
     scoped_refptr<Layer> grandChild1 = Layer::create();
@@ -1693,10 +1679,10 @@ TEST(LayerTreeHostCommonTest, verifyAnimationsForRenderSurfaceHierarchy)
     // Also put an animated opacity on a layer without descendants.
     addOpacityTransitionToController(*grandChildOfRoot->layerAnimationController(), 10, 1, 0, false);
 
-    WebTransformationMatrix layerTransform;
-    layerTransform.translate(1, 1);
-    WebTransformationMatrix sublayerTransform;
-    sublayerTransform.scale3d(10, 1, 1);
+    gfx::Transform layerTransform;
+    layerTransform.Translate(1, 1);
+    gfx::Transform sublayerTransform;
+    sublayerTransform.Scale3d(10, 1, 1);
 
     // Put a transform animation on the render surface.
     addAnimatedTransformToController(*renderSurface2->layerAnimationController(), 10, 30, 0);
@@ -1791,17 +1777,17 @@ TEST(LayerTreeHostCommonTest, verifyAnimationsForRenderSurfaceHierarchy)
     // Sanity check. If these fail there is probably a bug in the test itself.
     // It is expected that we correctly set up transforms so that the y-component of the screen-space transform
     // encodes the "depth" of the layer in the tree.
-    EXPECT_FLOAT_EQ(1, parent->screenSpaceTransform().m42());
-    EXPECT_FLOAT_EQ(2, childOfRoot->screenSpaceTransform().m42());
-    EXPECT_FLOAT_EQ(3, grandChildOfRoot->screenSpaceTransform().m42());
+    EXPECT_FLOAT_EQ(1, parent->screenSpaceTransform().matrix().getDouble(1, 3));
+    EXPECT_FLOAT_EQ(2, childOfRoot->screenSpaceTransform().matrix().getDouble(1, 3));
+    EXPECT_FLOAT_EQ(3, grandChildOfRoot->screenSpaceTransform().matrix().getDouble(1, 3));
 
-    EXPECT_FLOAT_EQ(2, renderSurface1->screenSpaceTransform().m42());
-    EXPECT_FLOAT_EQ(3, childOfRS1->screenSpaceTransform().m42());
-    EXPECT_FLOAT_EQ(4, grandChildOfRS1->screenSpaceTransform().m42());
+    EXPECT_FLOAT_EQ(2, renderSurface1->screenSpaceTransform().matrix().getDouble(1, 3));
+    EXPECT_FLOAT_EQ(3, childOfRS1->screenSpaceTransform().matrix().getDouble(1, 3));
+    EXPECT_FLOAT_EQ(4, grandChildOfRS1->screenSpaceTransform().matrix().getDouble(1, 3));
 
-    EXPECT_FLOAT_EQ(3, renderSurface2->screenSpaceTransform().m42());
-    EXPECT_FLOAT_EQ(4, childOfRS2->screenSpaceTransform().m42());
-    EXPECT_FLOAT_EQ(5, grandChildOfRS2->screenSpaceTransform().m42());
+    EXPECT_FLOAT_EQ(3, renderSurface2->screenSpaceTransform().matrix().getDouble(1, 3));
+    EXPECT_FLOAT_EQ(4, childOfRS2->screenSpaceTransform().matrix().getDouble(1, 3));
+    EXPECT_FLOAT_EQ(5, grandChildOfRS2->screenSpaceTransform().matrix().getDouble(1, 3));
 }
 
 TEST(LayerTreeHostCommonTest, verifyVisibleRectForIdentityTransform)
@@ -1809,7 +1795,7 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectForIdentityTransform)
     // Test the calculateVisibleRect() function works correctly for identity transforms.
 
     gfx::Rect targetSurfaceRect = gfx::Rect(gfx::Point(0, 0), gfx::Size(100, 100));
-    WebTransformationMatrix layerToSurfaceTransform;
+    gfx::Transform layerToSurfaceTransform;
 
     // Case 1: Layer is contained within the surface.
     gfx::Rect layerContentRect = gfx::Rect(gfx::Point(10, 10), gfx::Size(30, 30));
@@ -1835,24 +1821,24 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectForTranslations)
 
     gfx::Rect targetSurfaceRect = gfx::Rect(gfx::Point(0, 0), gfx::Size(100, 100));
     gfx::Rect layerContentRect = gfx::Rect(gfx::Point(0, 0), gfx::Size(30, 30));
-    WebTransformationMatrix layerToSurfaceTransform;
+    gfx::Transform layerToSurfaceTransform;
 
     // Case 1: Layer is contained within the surface.
-    layerToSurfaceTransform.makeIdentity();
-    layerToSurfaceTransform.translate(10, 10);
+    layerToSurfaceTransform.MakeIdentity();
+    layerToSurfaceTransform.Translate(10, 10);
     gfx::Rect expected = gfx::Rect(gfx::Point(0, 0), gfx::Size(30, 30));
     gfx::Rect actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
 
     // Case 2: Layer is outside the surface rect.
-    layerToSurfaceTransform.makeIdentity();
-    layerToSurfaceTransform.translate(120, 120);
+    layerToSurfaceTransform.MakeIdentity();
+    layerToSurfaceTransform.Translate(120, 120);
     actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_TRUE(actual.IsEmpty());
 
     // Case 3: Layer is partially overlapping the surface rect.
-    layerToSurfaceTransform.makeIdentity();
-    layerToSurfaceTransform.translate(80, 80);
+    layerToSurfaceTransform.MakeIdentity();
+    layerToSurfaceTransform.Translate(80, 80);
     expected = gfx::Rect(gfx::Point(0, 0), gfx::Size(20, 20));
     actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
@@ -1865,20 +1851,20 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor2DRotations)
 
     gfx::Rect targetSurfaceRect = gfx::Rect(gfx::Point(0, 0), gfx::Size(100, 100));
     gfx::Rect layerContentRect = gfx::Rect(gfx::Point(0, 0), gfx::Size(30, 30));
-    WebTransformationMatrix layerToSurfaceTransform;
+    gfx::Transform layerToSurfaceTransform;
 
     // Case 1: Layer is contained within the surface.
-    layerToSurfaceTransform.makeIdentity();
-    layerToSurfaceTransform.translate(50, 50);
-    layerToSurfaceTransform.rotate(45);
+    layerToSurfaceTransform.MakeIdentity();
+    layerToSurfaceTransform.Translate(50, 50);
+    layerToSurfaceTransform.Rotate(45);
     gfx::Rect expected = gfx::Rect(gfx::Point(0, 0), gfx::Size(30, 30));
     gfx::Rect actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
 
     // Case 2: Layer is outside the surface rect.
-    layerToSurfaceTransform.makeIdentity();
-    layerToSurfaceTransform.translate(-50, 0);
-    layerToSurfaceTransform.rotate(45);
+    layerToSurfaceTransform.MakeIdentity();
+    layerToSurfaceTransform.Translate(-50, 0);
+    layerToSurfaceTransform.Rotate(45);
     actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_TRUE(actual.IsEmpty());
 
@@ -1887,8 +1873,8 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor2DRotations)
     //         this case, the visible rect should still be the entire layer (remember the
     //         visible rect is computed in layer space); both the top-left and
     //         bottom-right corners of the layer are still visible.
-    layerToSurfaceTransform.makeIdentity();
-    layerToSurfaceTransform.rotate(45);
+    layerToSurfaceTransform.MakeIdentity();
+    layerToSurfaceTransform.Rotate(45);
     expected = gfx::Rect(gfx::Point(0, 0), gfx::Size(30, 30));
     actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
@@ -1898,9 +1884,9 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor2DRotations)
     //         of the surface overlapping the layer. In layer space, the render surface
     //         overlaps the right side of the layer. The visible rect should be the
     //         layer's right half.
-    layerToSurfaceTransform.makeIdentity();
-    layerToSurfaceTransform.translate(0, -sqrt(2.0) * 15);
-    layerToSurfaceTransform.rotate(45);
+    layerToSurfaceTransform.MakeIdentity();
+    layerToSurfaceTransform.Translate(0, -sqrt(2.0) * 15);
+    layerToSurfaceTransform.Rotate(45);
     expected = gfx::Rect(gfx::Point(15, 0), gfx::Size(15, 30)); // right half of layer bounds.
     actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
@@ -1912,11 +1898,11 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor3dOrthographicTransform)
 
     gfx::Rect targetSurfaceRect = gfx::Rect(gfx::Point(0, 0), gfx::Size(100, 100));
     gfx::Rect layerContentRect = gfx::Rect(gfx::Point(0, 0), gfx::Size(100, 100));
-    WebTransformationMatrix layerToSurfaceTransform;
+    gfx::Transform layerToSurfaceTransform;
 
     // Case 1: Orthographic projection of a layer rotated about y-axis by 45 degrees, should be fully contained in the renderSurface.
-    layerToSurfaceTransform.makeIdentity();
-    layerToSurfaceTransform.rotate3d(0, 45, 0);
+    layerToSurfaceTransform.MakeIdentity();
+    MathUtil::rotateEulerAngles(&layerToSurfaceTransform, 0, 45, 0);
     gfx::Rect expected = gfx::Rect(gfx::Point(0, 0), gfx::Size(100, 100));
     gfx::Rect actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
@@ -1925,9 +1911,9 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor3dOrthographicTransform)
     //         shifted to the side so only the right-half the layer would be visible on
     //         the surface.
     double halfWidthOfRotatedLayer = (100 / sqrt(2.0)) * 0.5; // 100 is the un-rotated layer width; divided by sqrt(2) is the rotated width.
-    layerToSurfaceTransform.makeIdentity();
-    layerToSurfaceTransform.translate(-halfWidthOfRotatedLayer, 0);
-    layerToSurfaceTransform.rotate3d(0, 45, 0); // rotates about the left edge of the layer
+    layerToSurfaceTransform.MakeIdentity();
+    layerToSurfaceTransform.Translate(-halfWidthOfRotatedLayer, 0);
+    MathUtil::rotateEulerAngles(&layerToSurfaceTransform, 0, 45, 0); // rotates about the left edge of the layer
     expected = gfx::Rect(gfx::Point(50, 0), gfx::Size(50, 100)); // right half of the layer.
     actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
@@ -1940,20 +1926,20 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor3dPerspectiveTransform)
 
     gfx::Rect targetSurfaceRect = gfx::Rect(gfx::Point(0, 0), gfx::Size(100, 100));
     gfx::Rect layerContentRect = gfx::Rect(gfx::Point(-50, -50), gfx::Size(200, 200));
-    WebTransformationMatrix layerToSurfaceTransform;
+    gfx::Transform layerToSurfaceTransform;
 
     // Case 1: Even though the layer is twice as large as the surface, due to perspective
     //         foreshortening, the layer will fit fully in the surface when its translated
     //         more than the perspective amount.
-    layerToSurfaceTransform.makeIdentity();
+    layerToSurfaceTransform.MakeIdentity();
 
     // The following sequence of transforms applies the perspective about the center of the surface.
-    layerToSurfaceTransform.translate(50, 50);
-    layerToSurfaceTransform.applyPerspective(9);
-    layerToSurfaceTransform.translate(-50, -50);
+    layerToSurfaceTransform.Translate(50, 50);
+    layerToSurfaceTransform.ApplyPerspectiveDepth(9);
+    layerToSurfaceTransform.Translate(-50, -50);
 
     // This translate places the layer in front of the surface's projection plane.
-    layerToSurfaceTransform.translate3d(0, 0, -27);
+    layerToSurfaceTransform.Translate3d(0, 0, -27);
 
     gfx::Rect expected = gfx::Rect(gfx::Point(-50, -50), gfx::Size(200, 200));
     gfx::Rect actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
@@ -1967,7 +1953,7 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor3dPerspectiveTransform)
     // Then, by similar triangles, if we want to move a layer by translating -50 units in projected surface units (so that only half of it is
     // visible), then we would need to translate by (-36 / 9) * -50 == -200 in the layer's units.
     //
-    layerToSurfaceTransform.translate3d(-200, 0, 0);
+    layerToSurfaceTransform.Translate3d(-200, 0, 0);
     expected = gfx::Rect(gfx::Point(50, -50), gfx::Size(100, 200)); // The right half of the layer's bounding rect.
     actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
@@ -1982,14 +1968,14 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor3dOrthographicIsNotClippedBehi
 
     gfx::Rect targetSurfaceRect = gfx::Rect(gfx::Point(0, 0), gfx::Size(100, 100));
     gfx::Rect layerContentRect = gfx::Rect(gfx::Point(0, 0), gfx::Size(100, 100));
-    WebTransformationMatrix layerToSurfaceTransform;
+    gfx::Transform layerToSurfaceTransform;
 
     // This sequence of transforms effectively rotates the layer about the y-axis at the
     // center of the layer.
-    layerToSurfaceTransform.makeIdentity();
-    layerToSurfaceTransform.translate(50, 0);
-    layerToSurfaceTransform.rotate3d(0, 45, 0);
-    layerToSurfaceTransform.translate(-50, 0);
+    layerToSurfaceTransform.MakeIdentity();
+    layerToSurfaceTransform.Translate(50, 0);
+    MathUtil::rotateEulerAngles(&layerToSurfaceTransform, 0, 45, 0);
+    layerToSurfaceTransform.Translate(-50, 0);
 
     gfx::Rect expected = gfx::Rect(gfx::Point(0, 0), gfx::Size(100, 100));
     gfx::Rect actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
@@ -2006,16 +1992,16 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor3dPerspectiveWhenClippedByW)
 
     gfx::Rect targetSurfaceRect = gfx::Rect(gfx::Point(-50, -50), gfx::Size(100, 100));
     gfx::Rect layerContentRect = gfx::Rect(gfx::Point(-10, -1), gfx::Size(20, 2));
-    WebTransformationMatrix layerToSurfaceTransform;
+    gfx::Transform layerToSurfaceTransform;
 
     // The layer is positioned so that the right half of the layer should be in front of
     // the camera, while the other half is behind the surface's projection plane. The
     // following sequence of transforms applies the perspective and rotation about the
     // center of the layer.
-    layerToSurfaceTransform.makeIdentity();
-    layerToSurfaceTransform.applyPerspective(1);
-    layerToSurfaceTransform.translate3d(-2, 0, 1);
-    layerToSurfaceTransform.rotate3d(0, 45, 0);
+    layerToSurfaceTransform.MakeIdentity();
+    layerToSurfaceTransform.ApplyPerspectiveDepth(1);
+    layerToSurfaceTransform.Translate3d(-2, 0, 1);
+    MathUtil::rotateEulerAngles(&layerToSurfaceTransform, 0, 45, 0);
 
     // Sanity check that this transform does indeed cause w < 0 when applying the
     // transform, otherwise this code is not testing the intended scenario.
@@ -2040,18 +2026,18 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectForPerspectiveUnprojection)
     // This sequence of transforms causes one corner of the layer to protrude across the w = 0 plane, and should be clipped.
     gfx::Rect targetSurfaceRect = gfx::Rect(gfx::Point(-50, -50), gfx::Size(100, 100));
     gfx::Rect layerContentRect = gfx::Rect(gfx::Point(-10, -10), gfx::Size(20, 20));
-    WebTransformationMatrix layerToSurfaceTransform;
-    layerToSurfaceTransform.makeIdentity();
-    layerToSurfaceTransform.applyPerspective(1);
-    layerToSurfaceTransform.translate3d(0, 0, -5);
-    layerToSurfaceTransform.rotate3d(0, 45, 0);
-    layerToSurfaceTransform.rotate3d(80, 0, 0);
+    gfx::Transform layerToSurfaceTransform;
+    layerToSurfaceTransform.MakeIdentity();
+    layerToSurfaceTransform.ApplyPerspectiveDepth(1);
+    layerToSurfaceTransform.Translate3d(0, 0, -5);
+    MathUtil::rotateEulerAngles(&layerToSurfaceTransform, 0, 45, 0);
+    MathUtil::rotateEulerAngles(&layerToSurfaceTransform, 80, 0, 0);
 
     // Sanity check that un-projection does indeed cause w < 0, otherwise this code is not
     // testing the intended scenario.
     bool clipped = false;
     gfx::RectF clippedRect = MathUtil::mapClippedRect(layerToSurfaceTransform, layerContentRect);
-    MathUtil::projectQuad(layerToSurfaceTransform.inverse(), gfx::QuadF(clippedRect), clipped);
+    MathUtil::projectQuad(MathUtil::inverse(layerToSurfaceTransform), gfx::QuadF(clippedRect), clipped);
     ASSERT_TRUE(clipped);
 
     // Only the corner of the layer is not visible on the surface because of being
@@ -2072,7 +2058,7 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForSimpleLayer
     root->addChild(child2);
     root->addChild(child3);
 
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
     setLayerPropertiesForTesting(child1.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(50, 50), false);
     setLayerPropertiesForTesting(child2.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(75, 75), gfx::Size(50, 50), false);
@@ -2109,7 +2095,7 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersClipp
     child->addChild(grandChild2);
     child->addChild(grandChild3);
 
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
     setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
     setLayerPropertiesForTesting(grandChild1.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(5, 5), gfx::Size(50, 50), false);
@@ -2151,7 +2137,7 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersInUnc
     renderSurface1->addChild(child2);
     renderSurface1->addChild(child3);
 
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
     setLayerPropertiesForTesting(renderSurface1.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(3, 4), false);
     setLayerPropertiesForTesting(child1.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(5, 5), gfx::Size(50, 50), false);
@@ -2195,7 +2181,7 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersInCli
     renderSurface1->addChild(child2);
     renderSurface1->addChild(child3);
 
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
     setLayerPropertiesForTesting(renderSurface1.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(3, 4), false);
     setLayerPropertiesForTesting(child1.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(5, 5), gfx::Size(50, 50), false);
@@ -2245,7 +2231,7 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForSurfaceHier
     renderSurface2->addChild(child2);
     renderSurface2->addChild(child3);
 
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
     setLayerPropertiesForTesting(renderSurface1.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(3, 4), false);
     setLayerPropertiesForTesting(renderSurface2.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(7, 13), false);
@@ -2300,9 +2286,9 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsWithTransformO
     root->addChild(renderSurface1);
     renderSurface1->addChild(child1);
 
-    WebTransformationMatrix identityMatrix;
-    WebTransformationMatrix childRotation;
-    childRotation.rotate(45);
+    gfx::Transform identityMatrix;
+    gfx::Transform childRotation;
+    childRotation.Rotate(45);
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
     setLayerPropertiesForTesting(renderSurface1.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(3, 4), false);
     setLayerPropertiesForTesting(child1.get(), childRotation, identityMatrix, gfx::PointF(0.5, 0.5), gfx::PointF(25, 25), gfx::Size(50, 50), false);
@@ -2340,9 +2326,9 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsWithTransformO
     root->addChild(renderSurface1);
     renderSurface1->addChild(child1);
 
-    WebTransformationMatrix identityMatrix;
-    WebTransformationMatrix childRotation;
-    childRotation.rotate(45);
+    gfx::Transform identityMatrix;
+    gfx::Transform childRotation;
+    childRotation.Rotate(45);
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(50, 50), false);
     setLayerPropertiesForTesting(renderSurface1.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(3, 4), false);
     setLayerPropertiesForTesting(child1.get(), childRotation, identityMatrix, gfx::PointF(0.5, 0.5), gfx::PointF(25, 25), gfx::Size(50, 50), false);
@@ -2384,7 +2370,7 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsInHighDPI)
     renderSurface2->addChild(child2);
     renderSurface2->addChild(child3);
 
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
     setLayerPropertiesForTesting(renderSurface1.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(5, 5), gfx::Size(3, 4), false);
     setLayerPropertiesForTesting(renderSurface2.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(5, 5), gfx::Size(7, 13), false);
@@ -2439,7 +2425,7 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithoutPreserves3d)
     // that 3d transforms still apply in this case, but they are "flattened" to each
     // parent layer according to current W3C spec.
 
-    const WebTransformationMatrix identityMatrix;
+    const gfx::Transform identityMatrix;
     scoped_refptr<Layer> parent = Layer::create();
     scoped_refptr<LayerWithForcedDrawsContent> frontFacingChild = make_scoped_refptr(new LayerWithForcedDrawsContent());
     scoped_refptr<LayerWithForcedDrawsContent> backFacingChild = make_scoped_refptr(new LayerWithForcedDrawsContent());
@@ -2469,16 +2455,16 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithoutPreserves3d)
     frontFacingChildOfBackFacingSurface->setDoubleSided(false);
     backFacingChildOfBackFacingSurface->setDoubleSided(false);
 
-    WebTransformationMatrix backfaceMatrix;
-    backfaceMatrix.translate(50, 50);
-    backfaceMatrix.rotate3d(0, 1, 0, 180);
-    backfaceMatrix.translate(-50, -50);
+    gfx::Transform backfaceMatrix;
+    backfaceMatrix.Translate(50, 50);
+    MathUtil::rotateAxisAngle(&backfaceMatrix, 0, 1, 0, 180);
+    backfaceMatrix.Translate(-50, -50);
 
     // Having a descendant and opacity will force these to have render surfaces.
     frontFacingSurface->setOpacity(0.5);
     backFacingSurface->setOpacity(0.5);
 
-    // Nothing preserves 3d. According to current W3C CSS Transforms spec, these layers
+    // Nothing preserves 3d. According to current W3C CSS gfx::Transforms spec, these layers
     // should blindly use their own local transforms to determine back-face culling.
     setLayerPropertiesForTesting(parent.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
     setLayerPropertiesForTesting(frontFacingChild.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
@@ -2531,7 +2517,7 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3d)
 {
     // Verify the behavior of back-face culling when preserves-3d transform style is used.
 
-    const WebTransformationMatrix identityMatrix;
+    const gfx::Transform identityMatrix;
     scoped_refptr<Layer> parent = Layer::create();
     scoped_refptr<LayerWithForcedDrawsContent> frontFacingChild = make_scoped_refptr(new LayerWithForcedDrawsContent());
     scoped_refptr<LayerWithForcedDrawsContent> backFacingChild = make_scoped_refptr(new LayerWithForcedDrawsContent());
@@ -2563,10 +2549,10 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3d)
     frontFacingChildOfBackFacingSurface->setDoubleSided(false);
     backFacingChildOfBackFacingSurface->setDoubleSided(false);
 
-    WebTransformationMatrix backfaceMatrix;
-    backfaceMatrix.translate(50, 50);
-    backfaceMatrix.rotate3d(0, 1, 0, 180);
-    backfaceMatrix.translate(-50, -50);
+    gfx::Transform backfaceMatrix;
+    backfaceMatrix.Translate(50, 50);
+    MathUtil::rotateAxisAngle(&backfaceMatrix, 0, 1, 0, 180);
+    backfaceMatrix.Translate(-50, -50);
 
     // Opacity will not force creation of renderSurfaces in this case because of the
     // preserve-3d transform style. Instead, an example of when a surface would be
@@ -2575,7 +2561,7 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3d)
     backFacingSurface->setReplicaLayer(dummyReplicaLayer2.get());
 
     // Each surface creates its own new 3d rendering context (as defined by W3C spec).
-    // According to current W3C CSS Transforms spec, layers in a 3d rendering context
+    // According to current W3C CSS gfx::Transforms spec, layers in a 3d rendering context
     // should use the transform with respect to that context. This 3d rendering context
     // occurs when (a) parent's transform style is flat and (b) the layer's transform
     // style is preserve-3d.
@@ -2628,7 +2614,7 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithAnimatingTransforms)
     // treated as "unknown" so we can not be sure that their back face is really showing.
     //
 
-    const WebTransformationMatrix identityMatrix;
+    const gfx::Transform identityMatrix;
     scoped_refptr<Layer> parent = Layer::create();
     scoped_refptr<LayerWithForcedDrawsContent> child = make_scoped_refptr(new LayerWithForcedDrawsContent());
     scoped_refptr<LayerWithForcedDrawsContent> animatingSurface = make_scoped_refptr(new LayerWithForcedDrawsContent());
@@ -2649,10 +2635,10 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithAnimatingTransforms)
     childOfAnimatingSurface->setDoubleSided(false);
     animatingChild->setDoubleSided(false);
 
-    WebTransformationMatrix backfaceMatrix;
-    backfaceMatrix.translate(50, 50);
-    backfaceMatrix.rotate3d(0, 1, 0, 180);
-    backfaceMatrix.translate(-50, -50);
+    gfx::Transform backfaceMatrix;
+    backfaceMatrix.Translate(50, 50);
+    MathUtil::rotateAxisAngle(&backfaceMatrix, 0, 1, 0, 180);
+    backfaceMatrix.Translate(-50, -50);
 
     // Make our render surface.
     animatingSurface->setForceRenderSurface(true);
@@ -2708,7 +2694,7 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3dForFlatteningS
     // Verify the behavior of back-face culling for a renderSurface that is created
     // when it flattens its subtree, and its parent has preserves-3d.
 
-    const WebTransformationMatrix identityMatrix;
+    const gfx::Transform identityMatrix;
     scoped_refptr<Layer> parent = Layer::create();
     scoped_refptr<LayerWithForcedDrawsContent> frontFacingSurface = make_scoped_refptr(new LayerWithForcedDrawsContent());
     scoped_refptr<LayerWithForcedDrawsContent> backFacingSurface = make_scoped_refptr(new LayerWithForcedDrawsContent());
@@ -2724,10 +2710,10 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3dForFlatteningS
     frontFacingSurface->setDoubleSided(false);
     backFacingSurface->setDoubleSided(false);
 
-    WebTransformationMatrix backfaceMatrix;
-    backfaceMatrix.translate(50, 50);
-    backfaceMatrix.rotate3d(0, 1, 0, 180);
-    backfaceMatrix.translate(-50, -50);
+    gfx::Transform backfaceMatrix;
+    backfaceMatrix.Translate(50, 50);
+    MathUtil::rotateAxisAngle(&backfaceMatrix, 0, 1, 0, 180);
+    backfaceMatrix.Translate(-50, -50);
 
     setLayerPropertiesForTesting(parent.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), true); // parent transform style is preserve3d.
     setLayerPropertiesForTesting(frontFacingSurface.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false); // surface transform style is flat.
@@ -2778,7 +2764,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayer)
 {
     scoped_ptr<LayerImpl> root = LayerImpl::create(12345);
 
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     gfx::PointF anchor(0, 0);
     gfx::PointF position(0, 0);
     gfx::Size bounds(100, 100);
@@ -2818,14 +2804,14 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForUninvertibleTransform)
 {
     scoped_ptr<LayerImpl> root = LayerImpl::create(12345);
 
-    WebTransformationMatrix uninvertibleTransform;
-    uninvertibleTransform.setM11(0);
-    uninvertibleTransform.setM22(0);
-    uninvertibleTransform.setM33(0);
-    uninvertibleTransform.setM44(0);
-    ASSERT_FALSE(uninvertibleTransform.isInvertible());
+    gfx::Transform uninvertibleTransform;
+    uninvertibleTransform.matrix().setDouble(0, 0, 0);
+    uninvertibleTransform.matrix().setDouble(1, 1, 0);
+    uninvertibleTransform.matrix().setDouble(2, 2, 0);
+    uninvertibleTransform.matrix().setDouble(3, 3, 0);
+    ASSERT_FALSE(uninvertibleTransform.IsInvertible());
 
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     gfx::PointF anchor(0, 0);
     gfx::PointF position(0, 0);
     gfx::Size bounds(100, 100);
@@ -2839,7 +2825,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForUninvertibleTransform)
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
     ASSERT_EQ(1u, root->renderSurface()->layerList().size());
-    ASSERT_FALSE(root->screenSpaceTransform().isInvertible());
+    ASSERT_FALSE(root->screenSpaceTransform().IsInvertible());
 
     // Hit testing any point should not hit the layer. If the invertible matrix is
     // accidentally ignored and treated like an identity, then the hit testing will
@@ -2877,7 +2863,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSinglePositionedLayer)
 {
     scoped_ptr<LayerImpl> root = LayerImpl::create(12345);
 
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     gfx::PointF anchor(0, 0);
     gfx::PointF position(50, 50); // this layer is positioned, and hit testing should correctly know where the layer is located.
     gfx::Size bounds(100, 100);
@@ -2918,11 +2904,11 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleRotatedLayer)
 {
     scoped_ptr<LayerImpl> root = LayerImpl::create(12345);
 
-    WebTransformationMatrix identityMatrix;
-    WebTransformationMatrix rotation45DegreesAboutCenter;
-    rotation45DegreesAboutCenter.translate(50, 50);
-    rotation45DegreesAboutCenter.rotate3d(0, 0, 45);
-    rotation45DegreesAboutCenter.translate(-50, -50);
+    gfx::Transform identityMatrix;
+    gfx::Transform rotation45DegreesAboutCenter;
+    rotation45DegreesAboutCenter.Translate(50, 50);
+    MathUtil::rotateEulerAngles(&rotation45DegreesAboutCenter, 0, 0, 45);
+    rotation45DegreesAboutCenter.Translate(-50, -50);
     gfx::PointF anchor(0, 0);
     gfx::PointF position(0, 0);
     gfx::Size bounds(100, 100);
@@ -2967,15 +2953,15 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSinglePerspectiveLayer)
 {
     scoped_ptr<LayerImpl> root = LayerImpl::create(12345);
 
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
 
     // perspectiveProjectionAboutCenter * translationByZ is designed so that the 100 x 100 layer becomes 50 x 50, and remains centered at (50, 50).
-    WebTransformationMatrix perspectiveProjectionAboutCenter;
-    perspectiveProjectionAboutCenter.translate(50, 50);
-    perspectiveProjectionAboutCenter.applyPerspective(1);
-    perspectiveProjectionAboutCenter.translate(-50, -50);
-    WebTransformationMatrix translationByZ;
-    translationByZ.translate3d(0, 0, -1);
+    gfx::Transform perspectiveProjectionAboutCenter;
+    perspectiveProjectionAboutCenter.Translate(50, 50);
+    perspectiveProjectionAboutCenter.ApplyPerspectiveDepth(1);
+    perspectiveProjectionAboutCenter.Translate(-50, -50);
+    gfx::Transform translationByZ;
+    translationByZ.Translate3d(0, 0, -1);
 
     gfx::PointF anchor(0, 0);
     gfx::PointF position(0, 0);
@@ -3027,7 +3013,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayerWithScaledContents)
     //
     scoped_ptr<LayerImpl> root = LayerImpl::create(1);
 
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     gfx::PointF anchor(0, 0);
 
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, anchor, gfx::PointF(0, 0), gfx::Size(100, 100), false);
@@ -3086,7 +3072,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSimpleClippedLayer)
 {
     // Test that hit-testing will only work for the visible portion of a layer, and not
     // the entire layer bounds. Here we just test the simple axis-aligned case.
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     gfx::PointF anchor(0, 0);
 
     scoped_ptr<LayerImpl> root = LayerImpl::create(1);
@@ -3154,7 +3140,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
     //
     scoped_ptr<LayerImpl> root = LayerImpl::create(123);
 
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     gfx::PointF anchor(0, 0);
     gfx::PointF position(0, 0);
     gfx::Size bounds(100, 100);
@@ -3171,8 +3157,8 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
         setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
         child->setMasksToBounds(true);
 
-        WebTransformationMatrix rotation45DegreesAboutCorner;
-        rotation45DegreesAboutCorner.rotate3d(0, 0, 45);
+        gfx::Transform rotation45DegreesAboutCorner;
+        MathUtil::rotateEulerAngles(&rotation45DegreesAboutCorner, 0, 0, 45);
 
         position = gfx::PointF(0, 0); // remember, positioned with respect to its parent which is already at 10, 10
         bounds = gfx::Size(200, 200); // to ensure it covers at least sqrt(2) * 100.
@@ -3180,12 +3166,12 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
         grandChild->setMasksToBounds(true);
 
         // Rotates about the center of the layer
-        WebTransformationMatrix rotatedLeafTransform;
-        rotatedLeafTransform.translate(-10, -10); // cancel out the grandParent's position
-        rotatedLeafTransform.rotate3d(0, 0, -45); // cancel out the corner 45-degree rotation of the parent.
-        rotatedLeafTransform.translate(50, 50);
-        rotatedLeafTransform.rotate3d(0, 0, 45);
-        rotatedLeafTransform.translate(-50, -50);
+        gfx::Transform rotatedLeafTransform;
+        rotatedLeafTransform.Translate(-10, -10); // cancel out the grandParent's position
+        MathUtil::rotateEulerAngles(&rotatedLeafTransform, 0, 0, -45); // cancel out the corner 45-degree rotation of the parent.
+        rotatedLeafTransform.Translate(50, 50);
+        MathUtil::rotateEulerAngles(&rotatedLeafTransform, 0, 0, 45);
+        rotatedLeafTransform.Translate(-50, -50);
         position = gfx::PointF(0, 0);
         bounds = gfx::Size(100, 100);
         setLayerPropertiesForTesting(rotatedLeaf.get(), rotatedLeafTransform, identityMatrix, anchor, position, bounds, false);
@@ -3250,7 +3236,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForNonClippingIntermediateLayer)
 {
     // This test checks that hit testing code does not accidentally clip to layer
     // bounds for a layer that actually does not clip.
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     gfx::PointF anchor(0, 0);
 
     scoped_ptr<LayerImpl> root = LayerImpl::create(1);
@@ -3311,7 +3297,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayers)
 {
     scoped_ptr<LayerImpl> root = LayerImpl::create(1);
 
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     gfx::PointF anchor(0, 0);
     gfx::PointF position(0, 0);
     gfx::Size bounds(100, 100);
@@ -3414,7 +3400,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayerLists)
     //
     scoped_ptr<LayerImpl> root = LayerImpl::create(1);
 
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     gfx::PointF anchor(0, 0);
     gfx::PointF position(0, 0);
     gfx::Size bounds(100, 100);
@@ -3536,7 +3522,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSingleLayer
 {
     scoped_ptr<LayerImpl> root = LayerImpl::create(12345);
 
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     Region touchHandlerRegion(gfx::Rect(10, 10, 50, 50));
     gfx::PointF anchor(0, 0);
     gfx::PointF position(0, 0);
@@ -3592,14 +3578,14 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForUninvertibl
 {
     scoped_ptr<LayerImpl> root = LayerImpl::create(12345);
 
-    WebTransformationMatrix uninvertibleTransform;
-    uninvertibleTransform.setM11(0);
-    uninvertibleTransform.setM22(0);
-    uninvertibleTransform.setM33(0);
-    uninvertibleTransform.setM44(0);
-    ASSERT_FALSE(uninvertibleTransform.isInvertible());
+    gfx::Transform uninvertibleTransform;
+    uninvertibleTransform.matrix().setDouble(0, 0, 0);
+    uninvertibleTransform.matrix().setDouble(1, 1, 0);
+    uninvertibleTransform.matrix().setDouble(2, 2, 0);
+    uninvertibleTransform.matrix().setDouble(3, 3, 0);
+    ASSERT_FALSE(uninvertibleTransform.IsInvertible());
 
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     Region touchHandlerRegion(gfx::Rect(10, 10, 50, 50));
     gfx::PointF anchor(0, 0);
     gfx::PointF position(0, 0);
@@ -3615,7 +3601,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForUninvertibl
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
     ASSERT_EQ(1u, root->renderSurface()->layerList().size());
-    ASSERT_FALSE(root->screenSpaceTransform().isInvertible());
+    ASSERT_FALSE(root->screenSpaceTransform().IsInvertible());
 
     // Hit checking any point should not hit the touch handler region on the layer. If the invertible matrix is
     // accidentally ignored and treated like an identity, then the hit testing will
@@ -3653,7 +3639,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSinglePosit
 {
     scoped_ptr<LayerImpl> root = LayerImpl::create(12345);
 
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     Region touchHandlerRegion(gfx::Rect(10, 10, 50, 50));
     gfx::PointF anchor(0, 0);
     gfx::PointF position(50, 50); // this layer is positioned, and hit testing should correctly know where the layer is located.
@@ -3711,7 +3697,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSingleLayer
     //
     scoped_ptr<LayerImpl> root = LayerImpl::create(1);
 
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     gfx::PointF anchor(0, 0);
 
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, anchor, gfx::PointF(0, 0), gfx::Size(100, 100), false);
@@ -3783,7 +3769,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSingleLayer
     // be able to hit the touch handler region by scaling the points accordingly.
     scoped_ptr<LayerImpl> root = LayerImpl::create(1);
 
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     gfx::PointF anchor(0, 0);
     // Set the bounds of the root layer big enough to fit the child when scaled.
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, anchor, gfx::PointF(0, 0), gfx::Size(100, 100), false);
@@ -3804,8 +3790,8 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSingleLayer
     int dummyMaxTextureSize = 512;
     float deviceScaleFactor = 3.0f;
     float pageScaleFactor = 5.0f;
-    WebTransformationMatrix pageScaleTransform;
-    pageScaleTransform.scale(pageScaleFactor);
+    gfx::Transform pageScaleTransform;
+    pageScaleTransform.Scale(pageScaleFactor, pageScaleFactor);
     root->setImplTransform(pageScaleTransform); // Applying the pageScaleFactor through implTransform.
     gfx::Size scaledBoundsForRoot = gfx::ToCeiledSize(gfx::ScaleSize(root->bounds(), deviceScaleFactor * pageScaleFactor));
     LayerTreeHostCommon::calculateDrawTransforms(root.get(), scaledBoundsForRoot, deviceScaleFactor, 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
@@ -3864,7 +3850,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSimpleClipp
 {
     // Test that hit-checking will only work for the visible portion of a layer, and not
     // the entire layer bounds. Here we just test the simple axis-aligned case.
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
     gfx::PointF anchor(0, 0);
 
     scoped_ptr<LayerImpl> root = LayerImpl::create(1);
@@ -3949,7 +3935,7 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPI)
 {
     // Verify draw and screen space transforms of layers not in a surface.
     MockContentLayerClient delegate;
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
 
     scoped_refptr<ContentLayer> parent = createDrawableContentLayer(&delegate);
     setLayerPropertiesForTesting(parent.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), true);
@@ -3983,7 +3969,7 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPI)
     EXPECT_EQ(1u, renderSurfaceLayerList.size());
 
     // Verify parent transforms
-    WebTransformationMatrix expectedParentTransform;
+    gfx::Transform expectedParentTransform;
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedParentTransform, parent->screenSpaceTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedParentTransform, parent->drawTransform());
 
@@ -3999,8 +3985,8 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPI)
     EXPECT_FLOAT_RECT_EQ(expectedParentDrawRect, parentScreenSpaceRect);
 
     // Verify child and childEmpty transforms. They should match.
-    WebTransformationMatrix expectedChildTransform;
-    expectedChildTransform.translate(deviceScaleFactor * child->position().x(), deviceScaleFactor * child->position().y());
+    gfx::Transform expectedChildTransform;
+    expectedChildTransform.Translate(deviceScaleFactor * child->position().x(), deviceScaleFactor * child->position().y());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->screenSpaceTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, childEmpty->drawTransform());
@@ -4023,10 +4009,10 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPI)
     EXPECT_FLOAT_RECT_EQ(expectedChildDrawRect, childEmptyScreenSpaceRect);
 
     // Verify childNoScale transforms
-    WebTransformationMatrix expectedChildNoScaleTransform = child->drawTransform();
+    gfx::Transform expectedChildNoScaleTransform = child->drawTransform();
     // All transforms operate on content rects. The child's content rect
     // incorporates device scale, but the childNoScale does not; add it here.
-    expectedChildNoScaleTransform.scale(deviceScaleFactor);
+    expectedChildNoScaleTransform.Scale(deviceScaleFactor, deviceScaleFactor);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildNoScaleTransform, childNoScale->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildNoScaleTransform, childNoScale->screenSpaceTransform());
 }
@@ -4035,7 +4021,7 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPIAccurateScaleZeroChi
 {
     // Verify draw and screen space transforms of layers not in a surface.
     MockContentLayerClient delegate;
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
 
     scoped_refptr<ContentLayer> parent = createDrawableContentLayer(&delegate);
     setLayerPropertiesForTesting(parent.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(133, 133), true);
@@ -4064,7 +4050,7 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPIAccurateScaleZeroChi
     EXPECT_EQ(1u, renderSurfaceLayerList.size());
 
     // Verify parent transforms
-    WebTransformationMatrix expectedParentTransform;
+    gfx::Transform expectedParentTransform;
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedParentTransform, parent->screenSpaceTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedParentTransform, parent->drawTransform());
 
@@ -4082,7 +4068,7 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPIAccurateScaleZeroChi
     EXPECT_FLOAT_RECT_EQ(expectedParentDrawRect, parentScreenSpaceRect);
 
     // Verify child transforms
-    WebTransformationMatrix expectedChildTransform;
+    gfx::Transform expectedChildTransform;
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->screenSpaceTransform());
 
@@ -4100,10 +4086,10 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPIAccurateScaleZeroChi
     EXPECT_FLOAT_RECT_EQ(expectedChildDrawRect, childScreenSpaceRect);
 
     // Verify childNoScale transforms
-    WebTransformationMatrix expectedChildNoScaleTransform = child->drawTransform();
+    gfx::Transform expectedChildNoScaleTransform = child->drawTransform();
     // All transforms operate on content rects. The child's content rect
     // incorporates device scale, but the childNoScale does not; add it here.
-    expectedChildNoScaleTransform.scale(deviceScaleFactor);
+    expectedChildNoScaleTransform.Scale(deviceScaleFactor, deviceScaleFactor);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildNoScaleTransform, childNoScale->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildNoScaleTransform, childNoScale->screenSpaceTransform());
 }
@@ -4111,15 +4097,15 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPIAccurateScaleZeroChi
 TEST(LayerTreeHostCommonTest, verifyContentsScale)
 {
     MockContentLayerClient delegate;
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
 
-    WebTransformationMatrix parentScaleMatrix;
+    gfx::Transform parentScaleMatrix;
     const double initialParentScale = 1.75;
-    parentScaleMatrix.scale(initialParentScale);
+    parentScaleMatrix.Scale(initialParentScale, initialParentScale);
 
-    WebTransformationMatrix childScaleMatrix;
+    gfx::Transform childScaleMatrix;
     const double initialChildScale = 1.25;
-    childScaleMatrix.scale(initialChildScale);
+    childScaleMatrix.Scale(initialChildScale, initialChildScale);
 
     float fixedRasterScale = 2.5;
 
@@ -4156,8 +4142,8 @@ TEST(LayerTreeHostCommonTest, verifyContentsScale)
     double pageScaleFactor = 1.5;
 
     // FIXME: Remove this when pageScaleFactor is applied in the compositor.
-    WebTransformationMatrix pageScaleMatrix;
-    pageScaleMatrix.scale(pageScaleFactor);
+    gfx::Transform pageScaleMatrix;
+    pageScaleMatrix.Scale(pageScaleFactor, pageScaleFactor);
     parent->setSublayerTransform(pageScaleMatrix);
 
     LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, renderSurfaceLayerList);
@@ -4170,16 +4156,16 @@ TEST(LayerTreeHostCommonTest, verifyContentsScale)
 
     // The parent is scaled up and shouldn't need to scale during draw. The child that can scale its contents should
     // also not need to scale during draw. This shouldn't change if the child has empty bounds. The other children should.
-    EXPECT_FLOAT_EQ(1, parent->drawTransform().m11());
-    EXPECT_FLOAT_EQ(1, parent->drawTransform().m22());
-    EXPECT_FLOAT_EQ(1, childScale->drawTransform().m11());
-    EXPECT_FLOAT_EQ(1, childScale->drawTransform().m22());
-    EXPECT_FLOAT_EQ(1, childEmpty->drawTransform().m11());
-    EXPECT_FLOAT_EQ(1, childEmpty->drawTransform().m22());
-    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, childNoScale->drawTransform().m11());
-    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, childNoScale->drawTransform().m22());
-    EXPECT_FLOAT_EQ(initialParentScale * initialChildScale / fixedRasterScale, childNoAutoScale->drawTransform().m11());
-    EXPECT_FLOAT_EQ(initialParentScale * initialChildScale / fixedRasterScale, childNoAutoScale->drawTransform().m22());
+    EXPECT_FLOAT_EQ(1, parent->drawTransform().matrix().getDouble(0, 0));
+    EXPECT_FLOAT_EQ(1, parent->drawTransform().matrix().getDouble(1, 1));
+    EXPECT_FLOAT_EQ(1, childScale->drawTransform().matrix().getDouble(0, 0));
+    EXPECT_FLOAT_EQ(1, childScale->drawTransform().matrix().getDouble(1, 1));
+    EXPECT_FLOAT_EQ(1, childEmpty->drawTransform().matrix().getDouble(0, 0));
+    EXPECT_FLOAT_EQ(1, childEmpty->drawTransform().matrix().getDouble(1, 1));
+    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, childNoScale->drawTransform().matrix().getDouble(0, 0));
+    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, childNoScale->drawTransform().matrix().getDouble(1, 1));
+    EXPECT_FLOAT_EQ(initialParentScale * initialChildScale / fixedRasterScale, childNoAutoScale->drawTransform().matrix().getDouble(0, 0));
+    EXPECT_FLOAT_EQ(initialParentScale * initialChildScale / fixedRasterScale, childNoAutoScale->drawTransform().matrix().getDouble(1, 1));
 
     // If the transform changes, we expect the contentsScale to remain unchanged.
     childScale->setTransform(identityMatrix);
@@ -4199,7 +4185,7 @@ TEST(LayerTreeHostCommonTest, verifyContentsScale)
 
     // FIXME: Remove this when pageScaleFactor is applied in the compositor.
     pageScaleMatrix = identityMatrix;
-    pageScaleMatrix.scale(pageScaleFactor);
+    pageScaleMatrix.Scale(pageScaleFactor, pageScaleFactor);
     parent->setSublayerTransform(pageScaleMatrix);
 
     renderSurfaceLayerList.clear();
@@ -4215,15 +4201,15 @@ TEST(LayerTreeHostCommonTest, verifyContentsScale)
 TEST(LayerTreeHostCommonTest, verifySmallContentsScale)
 {
     MockContentLayerClient delegate;
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
 
-    WebTransformationMatrix parentScaleMatrix;
+    gfx::Transform parentScaleMatrix;
     const double initialParentScale = 1.75;
-    parentScaleMatrix.scale(initialParentScale);
+    parentScaleMatrix.Scale(initialParentScale, initialParentScale);
 
-    WebTransformationMatrix childScaleMatrix;
+    gfx::Transform childScaleMatrix;
     const double initialChildScale = 0.25;
-    childScaleMatrix.scale(initialChildScale);
+    childScaleMatrix.Scale(initialChildScale, initialChildScale);
 
     scoped_refptr<ContentLayer> parent = createDrawableContentLayer(&delegate);
     setLayerPropertiesForTesting(parent.get(), parentScaleMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), true);
@@ -4244,8 +4230,8 @@ TEST(LayerTreeHostCommonTest, verifySmallContentsScale)
     double pageScaleFactor = 0.01;
 
     // FIXME: Remove this when pageScaleFactor is applied in the compositor.
-    WebTransformationMatrix pageScaleMatrix;
-    pageScaleMatrix.scale(pageScaleFactor);
+    gfx::Transform pageScaleMatrix;
+    pageScaleMatrix.Scale(pageScaleFactor, pageScaleFactor);
     parent->setSublayerTransform(pageScaleMatrix);
 
     LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, renderSurfaceLayerList);
@@ -4255,9 +4241,9 @@ TEST(LayerTreeHostCommonTest, verifySmallContentsScale)
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * 1, childScale);
 
     // When chilld's total scale becomes >= 1, we should save and use that scale factor.
-    childScaleMatrix.makeIdentity();
+    childScaleMatrix.MakeIdentity();
     const double finalChildScale = 0.75;
-    childScaleMatrix.scale(finalChildScale);
+    childScaleMatrix.Scale(finalChildScale, finalChildScale);
     childScale->setTransform(childScaleMatrix);
 
     renderSurfaceLayerList.clear();
@@ -4270,15 +4256,15 @@ TEST(LayerTreeHostCommonTest, verifySmallContentsScale)
 TEST(LayerTreeHostCommonTest, verifyContentsScaleForSurfaces)
 {
     MockContentLayerClient delegate;
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
 
-    WebTransformationMatrix parentScaleMatrix;
+    gfx::Transform parentScaleMatrix;
     const double initialParentScale = 2;
-    parentScaleMatrix.scale(initialParentScale);
+    parentScaleMatrix.Scale(initialParentScale, initialParentScale);
 
-    WebTransformationMatrix childScaleMatrix;
+    gfx::Transform childScaleMatrix;
     const double initialChildScale = 3;
-    childScaleMatrix.scale(initialChildScale);
+    childScaleMatrix.Scale(initialChildScale, initialChildScale);
 
     float fixedRasterScale = 4;
 
@@ -4341,8 +4327,8 @@ TEST(LayerTreeHostCommonTest, verifyContentsScaleForSurfaces)
     double pageScaleFactor = 7;
 
     // FIXME: Remove this when pageScaleFactor is applied in the compositor.
-    WebTransformationMatrix pageScaleMatrix;
-    pageScaleMatrix.scale(pageScaleFactor);
+    gfx::Transform pageScaleMatrix;
+    pageScaleMatrix.Scale(pageScaleFactor, pageScaleFactor);
     parent->setSublayerTransform(pageScaleMatrix);
 
     LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, renderSurfaceLayerList);
@@ -4360,70 +4346,70 @@ TEST(LayerTreeHostCommonTest, verifyContentsScaleForSurfaces)
     EXPECT_CONTENTS_SCALE_EQ(1, surfaceNoAutoScaleChildNoScale);
 
     // The parent is scaled up and shouldn't need to scale during draw.
-    EXPECT_FLOAT_EQ(1, parent->drawTransform().m11());
-    EXPECT_FLOAT_EQ(1, parent->drawTransform().m22());
+    EXPECT_FLOAT_EQ(1, parent->drawTransform().matrix().getDouble(0, 0));
+    EXPECT_FLOAT_EQ(1, parent->drawTransform().matrix().getDouble(1, 1));
 
     // RenderSurfaces should always be 1:1 with their target.
-    EXPECT_FLOAT_EQ(1, surfaceScale->renderSurface()->drawTransform().m11());
-    EXPECT_FLOAT_EQ(1, surfaceScale->renderSurface()->drawTransform().m22());
+    EXPECT_FLOAT_EQ(1, surfaceScale->renderSurface()->drawTransform().matrix().getDouble(0, 0));
+    EXPECT_FLOAT_EQ(1, surfaceScale->renderSurface()->drawTransform().matrix().getDouble(1, 1));
 
     // The surfaceScale can apply contents scale so the layer shouldn't need to scale during draw.
-    EXPECT_FLOAT_EQ(1, surfaceScale->drawTransform().m11());
-    EXPECT_FLOAT_EQ(1, surfaceScale->drawTransform().m22());
+    EXPECT_FLOAT_EQ(1, surfaceScale->drawTransform().matrix().getDouble(0, 0));
+    EXPECT_FLOAT_EQ(1, surfaceScale->drawTransform().matrix().getDouble(1, 1));
 
     // The surfaceScaleChildScale can apply contents scale so it shouldn't need to scale during draw.
-    EXPECT_FLOAT_EQ(1, surfaceScaleChildScale->drawTransform().m11());
-    EXPECT_FLOAT_EQ(1, surfaceScaleChildScale->drawTransform().m22());
+    EXPECT_FLOAT_EQ(1, surfaceScaleChildScale->drawTransform().matrix().getDouble(0, 0));
+    EXPECT_FLOAT_EQ(1, surfaceScaleChildScale->drawTransform().matrix().getDouble(1, 1));
 
     // The surfaceScaleChildNoScale can not apply contents scale, so it needs to be scaled during draw.
-    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale * initialChildScale, surfaceScaleChildNoScale->drawTransform().m11());
-    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale * initialChildScale, surfaceScaleChildNoScale->drawTransform().m22());
+    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale * initialChildScale, surfaceScaleChildNoScale->drawTransform().matrix().getDouble(0, 0));
+    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale * initialChildScale, surfaceScaleChildNoScale->drawTransform().matrix().getDouble(1, 1));
 
     // RenderSurfaces should always be 1:1 with their target.
-    EXPECT_FLOAT_EQ(1, surfaceNoScale->renderSurface()->drawTransform().m11());
-    EXPECT_FLOAT_EQ(1, surfaceNoScale->renderSurface()->drawTransform().m22());
+    EXPECT_FLOAT_EQ(1, surfaceNoScale->renderSurface()->drawTransform().matrix().getDouble(0, 0));
+    EXPECT_FLOAT_EQ(1, surfaceNoScale->renderSurface()->drawTransform().matrix().getDouble(1, 1));
 
     // The surfaceNoScale layer can not apply contents scale, so it needs to be scaled during draw.
-    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, surfaceNoScale->drawTransform().m11());
-    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, surfaceNoScale->drawTransform().m22());
+    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, surfaceNoScale->drawTransform().matrix().getDouble(0, 0));
+    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, surfaceNoScale->drawTransform().matrix().getDouble(1, 1));
 
     // The surfaceScaleChildScale can apply contents scale so it shouldn't need to scale during draw.
-    EXPECT_FLOAT_EQ(1, surfaceNoScaleChildScale->drawTransform().m11());
-    EXPECT_FLOAT_EQ(1, surfaceNoScaleChildScale->drawTransform().m22());
+    EXPECT_FLOAT_EQ(1, surfaceNoScaleChildScale->drawTransform().matrix().getDouble(0, 0));
+    EXPECT_FLOAT_EQ(1, surfaceNoScaleChildScale->drawTransform().matrix().getDouble(1, 1));
 
     // The surfaceScaleChildNoScale can not apply contents scale, so it needs to be scaled during draw.
-    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale * initialChildScale, surfaceNoScaleChildNoScale->drawTransform().m11());
-    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale * initialChildScale, surfaceNoScaleChildNoScale->drawTransform().m22());
+    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale * initialChildScale, surfaceNoScaleChildNoScale->drawTransform().matrix().getDouble(0, 0));
+    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale * initialChildScale, surfaceNoScaleChildNoScale->drawTransform().matrix().getDouble(1, 1));
 
     // RenderSurfaces should always be 1:1 with their target.
-    EXPECT_FLOAT_EQ(1, surfaceNoAutoScale->renderSurface()->drawTransform().m11());
-    EXPECT_FLOAT_EQ(1, surfaceNoAutoScale->renderSurface()->drawTransform().m22());
+    EXPECT_FLOAT_EQ(1, surfaceNoAutoScale->renderSurface()->drawTransform().matrix().getDouble(0, 0));
+    EXPECT_FLOAT_EQ(1, surfaceNoAutoScale->renderSurface()->drawTransform().matrix().getDouble(1, 1));
 
     // The surfaceNoAutoScale layer has a fixed contents scale, so it needs to be scaled during draw.
-    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale / (deviceScaleFactor * pageScaleFactor * fixedRasterScale), surfaceNoAutoScale->drawTransform().m11());
-    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale / (deviceScaleFactor * pageScaleFactor * fixedRasterScale), surfaceNoAutoScale->drawTransform().m22());
+    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale / (deviceScaleFactor * pageScaleFactor * fixedRasterScale), surfaceNoAutoScale->drawTransform().matrix().getDouble(0, 0));
+    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale / (deviceScaleFactor * pageScaleFactor * fixedRasterScale), surfaceNoAutoScale->drawTransform().matrix().getDouble(1, 1));
 
     // The surfaceScaleChildScale can apply contents scale so it shouldn't need to scale during draw.
-    EXPECT_FLOAT_EQ(1, surfaceNoAutoScaleChildScale->drawTransform().m11());
-    EXPECT_FLOAT_EQ(1, surfaceNoAutoScaleChildScale->drawTransform().m22());
+    EXPECT_FLOAT_EQ(1, surfaceNoAutoScaleChildScale->drawTransform().matrix().getDouble(0, 0));
+    EXPECT_FLOAT_EQ(1, surfaceNoAutoScaleChildScale->drawTransform().matrix().getDouble(1, 1));
 
     // The surfaceScaleChildNoScale can not apply contents scale, so it needs to be scaled during draw.
-    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale * initialChildScale, surfaceNoAutoScaleChildNoScale->drawTransform().m11());
-    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale * initialChildScale, surfaceNoAutoScaleChildNoScale->drawTransform().m22());
+    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale * initialChildScale, surfaceNoAutoScaleChildNoScale->drawTransform().matrix().getDouble(0, 0));
+    EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale * initialChildScale, surfaceNoAutoScaleChildNoScale->drawTransform().matrix().getDouble(1, 1));
 }
 
 TEST(LayerTreeHostCommonTest, verifyContentsScaleForAnimatingLayer)
 {
     MockContentLayerClient delegate;
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
 
-    WebTransformationMatrix parentScaleMatrix;
+    gfx::Transform parentScaleMatrix;
     const double initialParentScale = 1.75;
-    parentScaleMatrix.scale(initialParentScale);
+    parentScaleMatrix.Scale(initialParentScale, initialParentScale);
 
-    WebTransformationMatrix childScaleMatrix;
+    gfx::Transform childScaleMatrix;
     const double initialChildScale = 1.25;
-    childScaleMatrix.scale(initialChildScale);
+    childScaleMatrix.Scale(initialChildScale, initialChildScale);
 
     scoped_refptr<ContentLayer> parent = createDrawableContentLayer(&delegate);
     setLayerPropertiesForTesting(parent.get(), parentScaleMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), true);
@@ -4459,7 +4445,7 @@ TEST(LayerTreeHostCommonTest, verifyContentsScaleForAnimatingLayer)
 TEST(LayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPI)
 {
     MockContentLayerClient delegate;
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
 
     scoped_refptr<ContentLayer> parent = createDrawableContentLayer(&delegate);
     setLayerPropertiesForTesting(parent.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(30, 30), true);
@@ -4467,8 +4453,8 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPI)
     scoped_refptr<ContentLayer> child = createDrawableContentLayer(&delegate);
     setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(2, 2), gfx::Size(10, 10), true);
 
-    WebTransformationMatrix replicaTransform;
-    replicaTransform.scaleNonUniform(1, -1);
+    gfx::Transform replicaTransform;
+    replicaTransform.Scale(1, -1);
     scoped_refptr<ContentLayer> replica = createDrawableContentLayer(&delegate);
     setLayerPropertiesForTesting(replica.get(), replicaTransform, identityMatrix, gfx::PointF(0, 0), gfx::PointF(2, 2), gfx::Size(10, 10), true);
 
@@ -4496,45 +4482,45 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPI)
     // render surface (it needs one because it has a replica layer).
     EXPECT_EQ(2u, renderSurfaceLayerList.size());
 
-    WebTransformationMatrix expectedParentTransform;
+    gfx::Transform expectedParentTransform;
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedParentTransform, parent->screenSpaceTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedParentTransform, parent->drawTransform());
 
-    WebTransformationMatrix expectedDrawTransform;
+    gfx::Transform expectedDrawTransform;
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedDrawTransform, child->drawTransform());
 
-    WebTransformationMatrix expectedScreenSpaceTransform;
-    expectedScreenSpaceTransform.translate(deviceScaleFactor * child->position().x(), deviceScaleFactor * child->position().y());
+    gfx::Transform expectedScreenSpaceTransform;
+    expectedScreenSpaceTransform.Translate(deviceScaleFactor * child->position().x(), deviceScaleFactor * child->position().y());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedScreenSpaceTransform, child->screenSpaceTransform());
 
-    WebTransformationMatrix expectedDuplicateChildDrawTransform = child->drawTransform();
+    gfx::Transform expectedDuplicateChildDrawTransform = child->drawTransform();
     EXPECT_TRANSFORMATION_MATRIX_EQ(child->drawTransform(), duplicateChildNonOwner->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(child->screenSpaceTransform(), duplicateChildNonOwner->screenSpaceTransform());
     EXPECT_RECT_EQ(child->drawableContentRect(), duplicateChildNonOwner->drawableContentRect());
     EXPECT_EQ(child->contentBounds(), duplicateChildNonOwner->contentBounds());
 
-    WebTransformationMatrix expectedRenderSurfaceDrawTransform;
-    expectedRenderSurfaceDrawTransform.translate(deviceScaleFactor * child->position().x(), deviceScaleFactor * child->position().y());
+    gfx::Transform expectedRenderSurfaceDrawTransform;
+    expectedRenderSurfaceDrawTransform.Translate(deviceScaleFactor * child->position().x(), deviceScaleFactor * child->position().y());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedRenderSurfaceDrawTransform, child->renderSurface()->drawTransform());
 
-    WebTransformationMatrix expectedSurfaceDrawTransform;
-    expectedSurfaceDrawTransform.translate(deviceScaleFactor * 2, deviceScaleFactor * 2);
+    gfx::Transform expectedSurfaceDrawTransform;
+    expectedSurfaceDrawTransform.Translate(deviceScaleFactor * 2, deviceScaleFactor * 2);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedSurfaceDrawTransform, child->renderSurface()->drawTransform());
 
-    WebTransformationMatrix expectedSurfaceScreenSpaceTransform;
-    expectedSurfaceScreenSpaceTransform.translate(deviceScaleFactor * 2, deviceScaleFactor * 2);
+    gfx::Transform expectedSurfaceScreenSpaceTransform;
+    expectedSurfaceScreenSpaceTransform.Translate(deviceScaleFactor * 2, deviceScaleFactor * 2);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedSurfaceScreenSpaceTransform, child->renderSurface()->screenSpaceTransform());
 
-    WebTransformationMatrix expectedReplicaDrawTransform;
-    expectedReplicaDrawTransform.setM22(-1);
-    expectedReplicaDrawTransform.setM41(6);
-    expectedReplicaDrawTransform.setM42(6);
+    gfx::Transform expectedReplicaDrawTransform;
+    expectedReplicaDrawTransform.matrix().setDouble(1, 1, -1);
+    expectedReplicaDrawTransform.matrix().setDouble(0, 3, 6);
+    expectedReplicaDrawTransform.matrix().setDouble(1, 3, 6);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedReplicaDrawTransform, child->renderSurface()->replicaDrawTransform());
 
-    WebTransformationMatrix expectedReplicaScreenSpaceTransform;
-    expectedReplicaScreenSpaceTransform.setM22(-1);
-    expectedReplicaScreenSpaceTransform.setM41(6);
-    expectedReplicaScreenSpaceTransform.setM42(6);
+    gfx::Transform expectedReplicaScreenSpaceTransform;
+    expectedReplicaScreenSpaceTransform.matrix().setDouble(1, 1, -1);
+    expectedReplicaScreenSpaceTransform.matrix().setDouble(0, 3, 6);
+    expectedReplicaScreenSpaceTransform.matrix().setDouble(1, 3, 6);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedReplicaScreenSpaceTransform, child->renderSurface()->replicaScreenSpaceTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedReplicaScreenSpaceTransform, child->renderSurface()->replicaScreenSpaceTransform());
 }
@@ -4542,7 +4528,7 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPI)
 TEST(LayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPIAccurateScaleZeroPosition)
 {
     MockContentLayerClient delegate;
-    WebTransformationMatrix identityMatrix;
+    gfx::Transform identityMatrix;
 
     scoped_refptr<ContentLayer> parent = createDrawableContentLayer(&delegate);
     setLayerPropertiesForTesting(parent.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(33, 31), true);
@@ -4550,8 +4536,8 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPIAccurateScal
     scoped_refptr<ContentLayer> child = createDrawableContentLayer(&delegate);
     setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(13, 11), true);
 
-    WebTransformationMatrix replicaTransform;
-    replicaTransform.scaleNonUniform(1, -1);
+    gfx::Transform replicaTransform;
+    replicaTransform.Scale(1, -1);
     scoped_refptr<ContentLayer> replica = createDrawableContentLayer(&delegate);
     setLayerPropertiesForTesting(replica.get(), replicaTransform, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(13, 11), true);
 
@@ -4579,7 +4565,7 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPIAccurateScal
     // render surface (it needs one because it has a replica layer).
     EXPECT_EQ(2u, renderSurfaceLayerList.size());
 
-    WebTransformationMatrix identityTransform;
+    gfx::Transform identityTransform;
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(identityTransform, parent->screenSpaceTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(identityTransform, parent->drawTransform());
@@ -4594,12 +4580,12 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPIAccurateScal
     EXPECT_TRANSFORMATION_MATRIX_EQ(identityTransform, child->renderSurface()->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(identityTransform, child->renderSurface()->screenSpaceTransform());
 
-    WebTransformationMatrix expectedReplicaDrawTransform;
-    expectedReplicaDrawTransform.setM22(-1);
+    gfx::Transform expectedReplicaDrawTransform;
+    expectedReplicaDrawTransform.matrix().setDouble(1, 1, -1);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedReplicaDrawTransform, child->renderSurface()->replicaDrawTransform());
 
-    WebTransformationMatrix expectedReplicaScreenSpaceTransform;
-    expectedReplicaScreenSpaceTransform.setM22(-1);
+    gfx::Transform expectedReplicaScreenSpaceTransform;
+    expectedReplicaScreenSpaceTransform.matrix().setDouble(1, 1, -1);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedReplicaScreenSpaceTransform, child->renderSurface()->replicaScreenSpaceTransform());
 }
 

@@ -87,15 +87,15 @@ protected:
     virtual void ensureScissorTestDisabled() OVERRIDE;
 
 private:
-    static void toGLMatrix(float*, const WebKit::WebTransformationMatrix&);
+    static void toGLMatrix(float*, const gfx::Transform&);
     static int priorityCutoffValue(WebKit::WebGraphicsMemoryAllocation::PriorityCutoff);
 
     void drawCheckerboardQuad(const DrawingFrame&, const CheckerboardDrawQuad*);
     void drawDebugBorderQuad(const DrawingFrame&, const DebugBorderDrawQuad*);
     scoped_ptr<ScopedResource> drawBackgroundFilters(
         DrawingFrame&, const RenderPassDrawQuad*, const WebKit::WebFilterOperations&,
-        const WebKit::WebTransformationMatrix& contentsDeviceTransform,
-        const WebKit::WebTransformationMatrix& contentsDeviceTransformInverse);
+        const gfx::Transform& contentsDeviceTransform,
+        const gfx::Transform& contentsDeviceTransformInverse);
     void drawRenderPassQuad(DrawingFrame&, const RenderPassDrawQuad*);
     void drawSolidColorQuad(const DrawingFrame&, const SolidColorDrawQuad*);
     void drawStreamVideoQuad(const DrawingFrame&, const StreamVideoDrawQuad*);
@@ -106,9 +106,9 @@ private:
 
     void setShaderOpacity(float opacity, int alphaLocation);
     void setShaderQuadF(const gfx::QuadF&, int quadLocation);
-    void drawQuadGeometry(const DrawingFrame&, const WebKit::WebTransformationMatrix& drawTransform, const gfx::RectF& quadRect, int matrixLocation);
+    void drawQuadGeometry(const DrawingFrame&, const gfx::Transform& drawTransform, const gfx::RectF& quadRect, int matrixLocation);
 
-    void copyTextureToFramebuffer(const DrawingFrame&, int textureId, const gfx::Rect&, const WebKit::WebTransformationMatrix& drawMatrix);
+    void copyTextureToFramebuffer(const DrawingFrame&, int textureId, const gfx::Rect&, const gfx::Transform& drawMatrix);
 
     bool useScopedTexture(DrawingFrame&, const ScopedResource*, const gfx::Rect& viewportRect);
 

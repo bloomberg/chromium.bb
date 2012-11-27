@@ -7,7 +7,7 @@
 #include "content/public/common/common_param_traits.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
+#include "ui/gfx/transform.h"
 
 namespace IPC {
 
@@ -208,104 +208,108 @@ void ParamTraits<WebKit::WebFilterOperations>::Log(
   l->append(")");
 }
 
-void ParamTraits<WebKit::WebTransformationMatrix>::Write(
+void ParamTraits<gfx::Transform>::Write(
     Message* m, const param_type& p) {
-  WriteParam(m, p.m11());
-  WriteParam(m, p.m12());
-  WriteParam(m, p.m13());
-  WriteParam(m, p.m14());
-  WriteParam(m, p.m21());
-  WriteParam(m, p.m22());
-  WriteParam(m, p.m23());
-  WriteParam(m, p.m24());
-  WriteParam(m, p.m31());
-  WriteParam(m, p.m32());
-  WriteParam(m, p.m33());
-  WriteParam(m, p.m34());
-  WriteParam(m, p.m41());
-  WriteParam(m, p.m42());
-  WriteParam(m, p.m43());
-  WriteParam(m, p.m44());
+  WriteParam(m, p.matrix().getDouble(0, 0));
+  WriteParam(m, p.matrix().getDouble(1, 0));
+  WriteParam(m, p.matrix().getDouble(2, 0));
+  WriteParam(m, p.matrix().getDouble(3, 0));
+  WriteParam(m, p.matrix().getDouble(0, 1));
+  WriteParam(m, p.matrix().getDouble(1, 1));
+  WriteParam(m, p.matrix().getDouble(2, 1));
+  WriteParam(m, p.matrix().getDouble(3, 1));
+  WriteParam(m, p.matrix().getDouble(0, 2));
+  WriteParam(m, p.matrix().getDouble(1, 2));
+  WriteParam(m, p.matrix().getDouble(2, 2));
+  WriteParam(m, p.matrix().getDouble(3, 2));
+  WriteParam(m, p.matrix().getDouble(0, 3));
+  WriteParam(m, p.matrix().getDouble(1, 3));
+  WriteParam(m, p.matrix().getDouble(2, 3));
+  WriteParam(m, p.matrix().getDouble(3, 3));
 }
 
-bool ParamTraits<WebKit::WebTransformationMatrix>::Read(
+bool ParamTraits<gfx::Transform>::Read(
     const Message* m, PickleIterator* iter, param_type* r) {
+  // Note: In this function, "m12" means 1st row, 2nd column of the matrix.
+  // This is consistent with Skia's row-column notation, but backwards from
+  // WebCore's column-row notation.
   double m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34,
          m41, m42, m43, m44;
+
   bool success =
       ReadParam(m, iter, &m11) &&
-      ReadParam(m, iter, &m12) &&
-      ReadParam(m, iter, &m13) &&
-      ReadParam(m, iter, &m14) &&
       ReadParam(m, iter, &m21) &&
-      ReadParam(m, iter, &m22) &&
-      ReadParam(m, iter, &m23) &&
-      ReadParam(m, iter, &m24) &&
       ReadParam(m, iter, &m31) &&
-      ReadParam(m, iter, &m32) &&
-      ReadParam(m, iter, &m33) &&
-      ReadParam(m, iter, &m34) &&
       ReadParam(m, iter, &m41) &&
+      ReadParam(m, iter, &m12) &&
+      ReadParam(m, iter, &m22) &&
+      ReadParam(m, iter, &m32) &&
       ReadParam(m, iter, &m42) &&
+      ReadParam(m, iter, &m13) &&
+      ReadParam(m, iter, &m23) &&
+      ReadParam(m, iter, &m33) &&
       ReadParam(m, iter, &m43) &&
+      ReadParam(m, iter, &m14) &&
+      ReadParam(m, iter, &m24) &&
+      ReadParam(m, iter, &m34) &&
       ReadParam(m, iter, &m44);
 
   if (success) {
-    r->setM11(m11);
-    r->setM12(m12);
-    r->setM13(m13);
-    r->setM14(m14);
-    r->setM21(m21);
-    r->setM22(m22);
-    r->setM23(m23);
-    r->setM24(m24);
-    r->setM31(m31);
-    r->setM32(m32);
-    r->setM33(m33);
-    r->setM34(m34);
-    r->setM41(m41);
-    r->setM42(m42);
-    r->setM43(m43);
-    r->setM44(m44);
+    r->matrix().setDouble(0, 0, m11);
+    r->matrix().setDouble(1, 0, m21);
+    r->matrix().setDouble(2, 0, m31);
+    r->matrix().setDouble(3, 0, m41);
+    r->matrix().setDouble(0, 1, m12);
+    r->matrix().setDouble(1, 1, m22);
+    r->matrix().setDouble(2, 1, m32);
+    r->matrix().setDouble(3, 1, m42);
+    r->matrix().setDouble(0, 2, m13);
+    r->matrix().setDouble(1, 2, m23);
+    r->matrix().setDouble(2, 2, m33);
+    r->matrix().setDouble(3, 2, m43);
+    r->matrix().setDouble(0, 3, m14);
+    r->matrix().setDouble(1, 3, m24);
+    r->matrix().setDouble(2, 3, m34);
+    r->matrix().setDouble(3, 3, m44);
   }
 
   return success;
 }
 
-void ParamTraits<WebKit::WebTransformationMatrix>::Log(
+void ParamTraits<gfx::Transform>::Log(
     const param_type& p, std::string* l) {
   l->append("(");
-  LogParam(p.m11(), l);
+  LogParam(p.matrix().getDouble(0, 0), l);
   l->append(", ");
-  LogParam(p.m12(), l);
+  LogParam(p.matrix().getDouble(1, 0), l);
   l->append(", ");
-  LogParam(p.m13(), l);
+  LogParam(p.matrix().getDouble(2, 0), l);
   l->append(", ");
-  LogParam(p.m14(), l);
+  LogParam(p.matrix().getDouble(3, 0), l);
   l->append(", ");
-  LogParam(p.m21(), l);
+  LogParam(p.matrix().getDouble(0, 1), l);
   l->append(", ");
-  LogParam(p.m22(), l);
+  LogParam(p.matrix().getDouble(1, 1), l);
   l->append(", ");
-  LogParam(p.m23(), l);
+  LogParam(p.matrix().getDouble(2, 1), l);
   l->append(", ");
-  LogParam(p.m24(), l);
+  LogParam(p.matrix().getDouble(3, 1), l);
   l->append(", ");
-  LogParam(p.m31(), l);
+  LogParam(p.matrix().getDouble(0, 2), l);
   l->append(", ");
-  LogParam(p.m32(), l);
+  LogParam(p.matrix().getDouble(1, 2), l);
   l->append(", ");
-  LogParam(p.m33(), l);
+  LogParam(p.matrix().getDouble(2, 2), l);
   l->append(", ");
-  LogParam(p.m34(), l);
+  LogParam(p.matrix().getDouble(3, 2), l);
   l->append(", ");
-  LogParam(p.m41(), l);
+  LogParam(p.matrix().getDouble(0, 3), l);
   l->append(", ");
-  LogParam(p.m42(), l);
+  LogParam(p.matrix().getDouble(1, 3), l);
   l->append(", ");
-  LogParam(p.m43(), l);
+  LogParam(p.matrix().getDouble(2, 3), l);
   l->append(", ");
-  LogParam(p.m44(), l);
+  LogParam(p.matrix().getDouble(3, 3), l);
   l->append(") ");
 }
 
@@ -406,7 +410,7 @@ bool ParamTraits<cc::RenderPass>::Read(
   cc::RenderPass::Id id(-1, -1);
   gfx::Rect output_rect;
   gfx::RectF damage_rect;
-  WebKit::WebTransformationMatrix transform_to_root_target;
+  gfx::Transform transform_to_root_target;
   bool has_transparent_background;
   bool has_occlusion_from_outside_target_surface;
   WebKit::WebFilterOperations filters;

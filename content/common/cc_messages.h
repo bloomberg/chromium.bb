@@ -24,10 +24,13 @@
 #ifndef CONTENT_COMMON_CC_MESSAGES_H_
 #define CONTENT_COMMON_CC_MESSAGES_H_
 
+namespace gfx {
+class Transform;
+}
+
 namespace WebKit {
 class WebData;
 class WebFilterOperations;
-class WebTransformationMatrix;
 }
 
 namespace IPC {
@@ -57,8 +60,8 @@ struct ParamTraits<WebKit::WebFilterOperations> {
 };
 
 template <>
-struct ParamTraits<WebKit::WebTransformationMatrix> {
-  typedef WebKit::WebTransformationMatrix param_type;
+struct ParamTraits<gfx::Transform> {
+  typedef gfx::Transform param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

@@ -4,17 +4,18 @@
 
 #include "cc/render_pass.h"
 
+#include <public/WebFilterOperations.h>
+
 #include "cc/checkerboard_draw_quad.h"
+#include "cc/math_util.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/render_pass_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
-#include <public/WebFilterOperations.h>
-#include <public/WebTransformationMatrix.h>
+#include "ui/gfx/transform.h"
 
 using WebKit::WebFilterOperation;
 using WebKit::WebFilterOperations;
-using WebKit::WebTransformationMatrix;
 using WebKitTests::TestRenderPass;
 
 namespace cc {
@@ -25,7 +26,7 @@ struct RenderPassSize {
     RenderPass::Id m_id;
     QuadList m_quadList;
     SharedQuadStateList m_sharedQuadStateList;
-    WebKit::WebTransformationMatrix m_transformToRootTarget;
+    gfx::Transform m_transformToRootTarget;
     gfx::Rect m_outputRect;
     gfx::RectF m_damageRect;
     bool m_hasTransparentBackground;
@@ -39,7 +40,7 @@ TEST(RenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
 {
     RenderPass::Id id(3, 2);
     gfx::Rect outputRect(45, 22, 120, 13);
-    WebTransformationMatrix transformToRoot(1, 0.5, 0.5, -0.5, -1, 0);
+    gfx::Transform transformToRoot = MathUtil::createGfxTransform(1, 0.5, 0.5, -0.5, -1, 0);
     gfx::Rect damageRect(56, 123, 19, 43);
     bool hasTransparentBackground = true;
     bool hasOcclusionFromOutsideTargetSurface = true;
@@ -63,7 +64,7 @@ TEST(RenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
 
     // Stick a quad in the pass, this should not get copied.
     scoped_ptr<SharedQuadState> sharedState = SharedQuadState::Create();
-    sharedState->SetAll(WebTransformationMatrix(), gfx::Rect(), gfx::Rect(), gfx::Rect(), false, 1);
+    sharedState->SetAll(gfx::Transform(), gfx::Rect(), gfx::Rect(), gfx::Rect(), false, 1);
     pass->AppendSharedQuadState(sharedState.Pass());
 
     scoped_ptr<CheckerboardDrawQuad> checkerboardQuad = CheckerboardDrawQuad::Create();

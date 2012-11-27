@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "cc/io_surface_draw_quad.h"
 #include "cc/layer_tree_host_impl.h"
+#include "cc/math_util.h"
 #include "cc/quad_sink.h"
 #include "cc/resource_provider.h"
 #include "cc/stream_video_draw_quad.h"
@@ -30,7 +31,7 @@ VideoLayerImpl::VideoLayerImpl(int id, WebKit::WebVideoFrameProvider* provider,
     , m_externalTextureResource(0)
 {
     // This matrix is the default transformation for stream textures, and flips on the Y axis.
-    m_streamTextureMatrix = WebKit::WebTransformationMatrix(
+    m_streamTextureMatrix = MathUtil::createGfxTransform(
         1, 0, 0, 0,
         0, -1, 0, 0,
         0, 0, 1, 0,
@@ -252,8 +253,8 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
     }
     case GL_TEXTURE_EXTERNAL_OES: {
         // StreamTexture hardware decoder.
-        WebKit::WebTransformationMatrix transform(m_streamTextureMatrix);
-        transform.scaleNonUniform(texWidthScale, texHeightScale);
+        gfx::Transform transform(m_streamTextureMatrix);
+        transform.Scale(texWidthScale, texHeightScale);
         scoped_ptr<StreamVideoDrawQuad> streamVideoQuad = StreamVideoDrawQuad::Create();
         streamVideoQuad->SetNew(sharedQuadState, quadRect, opaqueRect, m_frame->texture_id(), transform);
         quadSink.append(streamVideoQuad.PassAs<DrawQuad>(), appendQuadsData);
@@ -401,7 +402,7 @@ void VideoLayerImpl::didReceiveFrame()
 
 void VideoLayerImpl::didUpdateMatrix(const float matrix[16])
 {
-    m_streamTextureMatrix = WebKit::WebTransformationMatrix(
+    m_streamTextureMatrix = MathUtil::createGfxTransform(
         matrix[0], matrix[1], matrix[2], matrix[3],
         matrix[4], matrix[5], matrix[6], matrix[7],
         matrix[8], matrix[9], matrix[10], matrix[11],

@@ -15,12 +15,11 @@
 #include "cc/tile_draw_quad.h"
 #include "cc/yuv_video_draw_quad.h"
 #include "cc/resource_provider.h"
-#include <public/WebTransformationMatrix.h>
+#include "ui/gfx/transform.h"
 
 namespace WebKitTests {
 
 using cc::DrawQuad;
-using WebKit::WebTransformationMatrix;
 
 void TestRenderPass::AppendOneOfEveryQuadType(cc::ResourceProvider* resourceProvider) {
   gfx::Rect rect(0, 0, 100, 100);
@@ -28,7 +27,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(cc::ResourceProvider* resourceProv
   cc::ResourceProvider::ResourceId texture_resource =
       resourceProvider->createResourceFromExternalTexture(1);
   scoped_ptr<cc::SharedQuadState> shared_state = cc::SharedQuadState::Create();
-  shared_state->SetAll(WebTransformationMatrix(),
+  shared_state->SetAll(gfx::Transform(),
                        rect,
                        rect,
                        rect,
@@ -87,7 +86,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(cc::ResourceProvider* resourceProv
                             rect,
                             opaque_rect,
                             1,
-                            WebKit::WebTransformationMatrix());
+                            gfx::Transform());
   AppendQuad(stream_video_quad.PassAs<DrawQuad>());
 
   scoped_ptr<cc::TextureDrawQuad> texture_quad =

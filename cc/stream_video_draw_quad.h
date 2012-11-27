@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
 #include "cc/draw_quad.h"
-#include <public/WebTransformationMatrix.h>
+#include "ui/gfx/transform.h"
 
 namespace cc {
 
@@ -20,7 +20,7 @@ class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
               gfx::Rect rect,
               gfx::Rect opaque_rect,
               unsigned texture_id,
-              const WebKit::WebTransformationMatrix& matrix);
+              const gfx::Transform& matrix);
 
   void SetAll(const SharedQuadState* shared_quad_state,
               gfx::Rect rect,
@@ -28,10 +28,10 @@ class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
               gfx::Rect visible_rect,
               bool needs_blending,
               unsigned texture_id,
-              const WebKit::WebTransformationMatrix& matrix);
+              const gfx::Transform& matrix);
 
   unsigned texture_id;
-  WebKit::WebTransformationMatrix matrix;
+  gfx::Transform matrix;
 
   static const StreamVideoDrawQuad* MaterialCast(const DrawQuad*);
  private:

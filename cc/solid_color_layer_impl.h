@@ -7,7 +7,6 @@
 
 #include "cc/cc_export.h"
 #include "cc/layer_impl.h"
-#include <public/WebTransformationMatrix.h>
 
 namespace cc {
 

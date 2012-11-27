@@ -6,9 +6,7 @@
 
 #include "cc/active_animation.h"
 #include "cc/keyframed_animation_curve.h"
-#include <public/WebTransformationMatrix.h>
-
-using WebKit::WebTransformationMatrix;
+#include "ui/gfx/transform.h"
 
 namespace cc {
 
@@ -373,7 +371,7 @@ void LayerAnimationController::tickAnimations(double monotonicTime)
 
             case ActiveAnimation::Transform: {
                 const TransformAnimationCurve* transformAnimationCurve = m_activeAnimations[i]->curve()->toTransformAnimationCurve();
-                const WebTransformationMatrix matrix = transformAnimationCurve->getValue(trimmed);
+                const gfx::Transform matrix = transformAnimationCurve->getValue(trimmed).toTransform();
                 if (m_activeAnimations[i]->isFinishedAt(monotonicTime))
                     m_activeAnimations[i]->setRunState(ActiveAnimation::Finished, monotonicTime);
 

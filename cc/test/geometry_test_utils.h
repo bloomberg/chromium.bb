@@ -5,6 +5,10 @@
 #ifndef CC_TEST_GEOMETRY_TEST_UTILS_H_
 #define CC_TEST_GEOMETRY_TEST_UTILS_H_
 
+namespace gfx {
+class Transform;
+}
+
 namespace WebKit {
 class WebTransformationMatrix;
 }
@@ -50,6 +54,9 @@ do { \
 // in bulk, it causes a significant slow-down in compilation time. This problem
 // exists with both gcc and clang, and bugs have been filed at
 // http://llvm.org/bugs/show_bug.cgi?id=13651 and http://gcc.gnu.org/bugzilla/show_bug.cgi?id=54337
+void ExpectTransformationMatrixEq(const gfx::Transform& expected,
+                                  const gfx::Transform& actual);
+
 void ExpectTransformationMatrixEq(const WebKit::WebTransformationMatrix& expected,
                                   const WebKit::WebTransformationMatrix& actual);
 

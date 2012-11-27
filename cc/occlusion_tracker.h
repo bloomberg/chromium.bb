@@ -35,9 +35,9 @@ public:
     void leaveLayer(const LayerIteratorPosition<LayerType>&);
 
     // Returns true if the given rect in content space for a layer is fully occluded in either screen space or the layer's target surface.  |renderTarget| is the contributing layer's render target, and |drawTransform|, |transformsToTargetKnown| and |clippedRectInTarget| are relative to that.
-    bool occluded(const LayerType* renderTarget, const gfx::Rect& contentRect, const WebKit::WebTransformationMatrix& drawTransform, bool implDrawTransformIsUnknown, const gfx::Rect& clippedRectInTarget, bool* hasOcclusionFromOutsideTargetSurface = 0) const;
+    bool occluded(const LayerType* renderTarget, const gfx::Rect& contentRect, const gfx::Transform& drawTransform, bool implDrawTransformIsUnknown, const gfx::Rect& clippedRectInTarget, bool* hasOcclusionFromOutsideTargetSurface = 0) const;
     // Gives an unoccluded sub-rect of |contentRect| in the content space of a layer. Used when considering occlusion for a layer that paints/draws something. |renderTarget| is the contributing layer's render target, and |drawTransform|, |transformsToTargetKnown| and |clippedRectInTarget| are relative to that.
-    gfx::Rect unoccludedContentRect(const LayerType* renderTarget, const gfx::Rect& contentRect, const WebKit::WebTransformationMatrix& drawTransform, bool implDrawTransformIsUnknown, const gfx::Rect& clippedRectInTarget, bool* hasOcclusionFromOutsideTargetSurface = 0) const;
+    gfx::Rect unoccludedContentRect(const LayerType* renderTarget, const gfx::Rect& contentRect, const gfx::Transform& drawTransform, bool implDrawTransformIsUnknown, const gfx::Rect& clippedRectInTarget, bool* hasOcclusionFromOutsideTargetSurface = 0) const;
 
     // Gives an unoccluded sub-rect of |contentRect| in the content space of the renderTarget owned by the layer.
     // Used when considering occlusion for a contributing surface that is rendering into another target.

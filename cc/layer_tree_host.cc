@@ -734,14 +734,14 @@ void LayerTreeHost::applyScrollAndScale(const ScrollAndScaleSet& info)
 gfx::PointF LayerTreeHost::adjustEventPointForPinchZoom(const gfx::PointF& zoomedViewportPoint)
     const
 {
-    if (m_implTransform.isIdentity())
+    if (m_implTransform.IsIdentity())
         return zoomedViewportPoint;
 
-    DCHECK(m_implTransform.isInvertible());
+    DCHECK(m_implTransform.IsInvertible());
 
     // Scale to screen space before applying implTransform inverse.
     gfx::PointF zoomedScreenspacePoint = gfx::ScalePoint(zoomedViewportPoint, deviceScaleFactor());
-    WebKit::WebTransformationMatrix inverseImplTransform = m_implTransform.inverse();
+    gfx::Transform inverseImplTransform = MathUtil::inverse(m_implTransform);
 
     bool wasClipped = false;
     gfx::PointF unzoomedScreenspacePoint = MathUtil::projectPoint(inverseImplTransform, zoomedScreenspacePoint, wasClipped);
@@ -753,7 +753,7 @@ gfx::PointF LayerTreeHost::adjustEventPointForPinchZoom(const gfx::PointF& zoome
     return unzoomedViewportPoint;
 }
 
-void LayerTreeHost::setImplTransform(const WebKit::WebTransformationMatrix& transform)
+void LayerTreeHost::setImplTransform(const gfx::Transform& transform)
 {
     m_implTransform = transform;
 }

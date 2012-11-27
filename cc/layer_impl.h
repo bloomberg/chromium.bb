@@ -5,6 +5,7 @@
 #ifndef CC_LAYER_IMPL_H_
 #define CC_LAYER_IMPL_H_
 
+#include <public/WebFilterOperations.h>
 #include <string>
 
 #include "base/logging.h"
@@ -21,8 +22,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
-#include <public/WebFilterOperations.h>
-#include <public/WebTransformationMatrix.h>
+#include "ui/gfx/transform.h"
 
 namespace cc {
 
@@ -49,8 +49,8 @@ public:
     virtual int id() const OVERRIDE;
     virtual void setOpacityFromAnimation(float) OVERRIDE;
     virtual float opacity() const OVERRIDE;
-    virtual void setTransformFromAnimation(const WebKit::WebTransformationMatrix&) OVERRIDE;
-    virtual const WebKit::WebTransformationMatrix& transform() const OVERRIDE;
+    virtual void setTransformFromAnimation(const gfx::Transform&) OVERRIDE;
+    virtual const gfx::Transform& transform() const OVERRIDE;
 
     // Tree structure.
     LayerImpl* parent() { return m_parent; }
@@ -145,8 +145,8 @@ public:
     void setUseLCDText(bool useLCDText) { m_useLCDText = useLCDText; }
     bool useLCDText() const { return m_useLCDText; }
 
-    void setSublayerTransform(const WebKit::WebTransformationMatrix&);
-    const WebKit::WebTransformationMatrix& sublayerTransform() const { return m_sublayerTransform; }
+    void setSublayerTransform(const gfx::Transform&);
+    const gfx::Transform& sublayerTransform() const { return m_sublayerTransform; }
 
     // Debug layer name.
     void setDebugName(const std::string& debugName) { m_debugName = debugName; }
@@ -193,8 +193,8 @@ public:
     const gfx::Vector2dF& scrollDelta() const { return m_scrollDelta; }
     void setScrollDelta(const gfx::Vector2dF&);
 
-    const WebKit::WebTransformationMatrix& implTransform() const { return m_implTransform; }
-    void setImplTransform(const WebKit::WebTransformationMatrix& transform);
+    const gfx::Transform& implTransform() const { return m_implTransform; }
+    void setImplTransform(const gfx::Transform& transform);
 
     const gfx::Vector2d& sentScrollDelta() const { return m_sentScrollDelta; }
     void setSentScrollDelta(const gfx::Vector2d& sentScrollDelta) { m_sentScrollDelta = sentScrollDelta; }
@@ -228,13 +228,13 @@ public:
     bool doubleSided() const { return m_doubleSided; }
     void setDoubleSided(bool);
 
-    void setTransform(const WebKit::WebTransformationMatrix&);
+    void setTransform(const gfx::Transform&);
     bool transformIsAnimating() const;
 
-    const WebKit::WebTransformationMatrix& drawTransform() const { return m_drawTransform; }
-    void setDrawTransform(const WebKit::WebTransformationMatrix& matrix) { m_drawTransform = matrix; }
-    const WebKit::WebTransformationMatrix& screenSpaceTransform() const { return m_screenSpaceTransform; }
-    void setScreenSpaceTransform(const WebKit::WebTransformationMatrix& matrix) { m_screenSpaceTransform = matrix; }
+    const gfx::Transform& drawTransform() const { return m_drawTransform; }
+    void setDrawTransform(const gfx::Transform& matrix) { m_drawTransform = matrix; }
+    const gfx::Transform& screenSpaceTransform() const { return m_screenSpaceTransform; }
+    void setScreenSpaceTransform(const gfx::Transform& matrix) { m_screenSpaceTransform = matrix; }
 
     bool drawTransformIsAnimating() const { return m_drawTransformIsAnimating; }
     void setDrawTransformIsAnimating(bool animating) { m_drawTransformIsAnimating = animating; }
@@ -357,8 +357,8 @@ private:
     bool m_preserves3D;
     bool m_useParentBackfaceVisibility;
     bool m_drawCheckerboardForMissingTiles;
-    WebKit::WebTransformationMatrix m_sublayerTransform;
-    WebKit::WebTransformationMatrix m_transform;
+    gfx::Transform m_sublayerTransform;
+    gfx::Transform m_transform;
     bool m_useLCDText;
 
     bool m_drawsContent;
@@ -372,7 +372,7 @@ private:
     gfx::Vector2dF m_scrollDelta;
     gfx::Vector2d m_sentScrollDelta;
     gfx::Vector2d m_maxScrollOffset;
-    WebKit::WebTransformationMatrix m_implTransform;
+    gfx::Transform m_implTransform;
 
     // The layer whose coordinate space this layer draws into. This can be
     // either the same layer (m_renderTarget == this) or an ancestor of this
@@ -392,8 +392,8 @@ private:
     WebKit::WebFilterOperations m_backgroundFilters;
     SkImageFilter* m_filter;
 
-    WebKit::WebTransformationMatrix m_drawTransform;
-    WebKit::WebTransformationMatrix m_screenSpaceTransform;
+    gfx::Transform m_drawTransform;
+    gfx::Transform m_screenSpaceTransform;
     bool m_drawTransformIsAnimating;
     bool m_screenSpaceTransformIsAnimating;
 

@@ -11,10 +11,8 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/rect_f.h"
+#include "ui/gfx/transform.h"
 #include "ui/gfx/vector2d_f.h"
-#include <public/WebTransformationMatrix.h>
-
-using WebKit::WebTransformationMatrix;
 
 namespace cc {
 
@@ -22,39 +20,39 @@ const double MathUtil::PI_DOUBLE = 3.14159265358979323846;
 const float MathUtil::PI_FLOAT = 3.14159265358979323846f;
 const double MathUtil::EPSILON = 1e-9;
 
-static HomogeneousCoordinate projectHomogeneousPoint(const WebTransformationMatrix& transform, const gfx::PointF& p)
+static HomogeneousCoordinate projectHomogeneousPoint(const gfx::Transform& transform, const gfx::PointF& p)
 {
     // In this case, the layer we are trying to project onto is perpendicular to ray
     // (point p and z-axis direction) that we are trying to project. This happens when the
     // layer is rotated so that it is infinitesimally thin, or when it is co-planar with
     // the camera origin -- i.e. when the layer is invisible anyway.
-    if (!transform.m33())
+    if (!transform.matrix().getDouble(2, 2))
         return HomogeneousCoordinate(0, 0, 0, 1);
 
     double x = p.x();
     double y = p.y();
-    double z = -(transform.m13() * x + transform.m23() * y + transform.m43()) / transform.m33();
+    double z = -(transform.matrix().getDouble(2, 0) * x + transform.matrix().getDouble(2, 1) * y + transform.matrix().getDouble(2, 3)) / transform.matrix().getDouble(2, 2);
     // implicit definition of w = 1;
 
-    double outX = x * transform.m11() + y * transform.m21() + z * transform.m31() + transform.m41();
-    double outY = x * transform.m12() + y * transform.m22() + z * transform.m32() + transform.m42();
-    double outZ = x * transform.m13() + y * transform.m23() + z * transform.m33() + transform.m43();
-    double outW = x * transform.m14() + y * transform.m24() + z * transform.m34() + transform.m44();
+    double outX = x * transform.matrix().getDouble(0, 0) + y * transform.matrix().getDouble(0, 1) + z * transform.matrix().getDouble(0, 2) + transform.matrix().getDouble(0, 3);
+    double outY = x * transform.matrix().getDouble(1, 0) + y * transform.matrix().getDouble(1, 1) + z * transform.matrix().getDouble(1, 2) + transform.matrix().getDouble(1, 3);
+    double outZ = x * transform.matrix().getDouble(2, 0) + y * transform.matrix().getDouble(2, 1) + z * transform.matrix().getDouble(2, 2) + transform.matrix().getDouble(2, 3);
+    double outW = x * transform.matrix().getDouble(3, 0) + y * transform.matrix().getDouble(3, 1) + z * transform.matrix().getDouble(3, 2) + transform.matrix().getDouble(3, 3);
 
     return HomogeneousCoordinate(outX, outY, outZ, outW);
 }
 
-static HomogeneousCoordinate mapHomogeneousPoint(const WebTransformationMatrix& transform, const gfx::Point3F& p)
+static HomogeneousCoordinate mapHomogeneousPoint(const gfx::Transform& transform, const gfx::Point3F& p)
 {
     double x = p.x();
     double y = p.y();
     double z = p.z();
     // implicit definition of w = 1;
 
-    double outX = x * transform.m11() + y * transform.m21() + z * transform.m31() + transform.m41();
-    double outY = x * transform.m12() + y * transform.m22() + z * transform.m32() + transform.m42();
-    double outZ = x * transform.m13() + y * transform.m23() + z * transform.m33() + transform.m43();
-    double outW = x * transform.m14() + y * transform.m24() + z * transform.m34() + transform.m44();
+    double outX = x * transform.matrix().getDouble(0, 0) + y * transform.matrix().getDouble(0, 1) + z * transform.matrix().getDouble(0, 2) + transform.matrix().getDouble(0, 3);
+    double outY = x * transform.matrix().getDouble(1, 0) + y * transform.matrix().getDouble(1, 1) + z * transform.matrix().getDouble(1, 2) + transform.matrix().getDouble(1, 3);
+    double outZ = x * transform.matrix().getDouble(2, 0) + y * transform.matrix().getDouble(2, 1) + z * transform.matrix().getDouble(2, 2) + transform.matrix().getDouble(2, 3);
+    double outW = x * transform.matrix().getDouble(3, 0) + y * transform.matrix().getDouble(3, 1) + z * transform.matrix().getDouble(3, 2) + transform.matrix().getDouble(3, 3);
 
     return HomogeneousCoordinate(outX, outY, outZ, outW);
 }
@@ -102,15 +100,15 @@ static inline void addVertexToClippedQuad(const gfx::PointF& newVertex, gfx::Poi
     numVerticesInClippedQuad++;
 }
 
-gfx::Rect MathUtil::mapClippedRect(const WebTransformationMatrix& transform, const gfx::Rect& srcRect)
+gfx::Rect MathUtil::mapClippedRect(const gfx::Transform& transform, const gfx::Rect& srcRect)
 {
     return gfx::ToEnclosingRect(mapClippedRect(transform, gfx::RectF(srcRect)));
 }
 
-gfx::RectF MathUtil::mapClippedRect(const WebTransformationMatrix& transform, const gfx::RectF& srcRect)
+gfx::RectF MathUtil::mapClippedRect(const gfx::Transform& transform, const gfx::RectF& srcRect)
 {
-    if (transform.isIdentityOrTranslation())
-        return srcRect + gfx::Vector2dF(static_cast<float>(transform.m41()), static_cast<float>(transform.m42()));
+    if (MathUtil::isIdentityOrTranslation(transform))
+        return srcRect + gfx::Vector2dF(static_cast<float>(transform.matrix().getDouble(0, 3)), static_cast<float>(transform.matrix().getDouble(1, 3)));
 
     // Apply the transform, but retain the result in homogeneous coordinates.
     gfx::QuadF q = gfx::QuadF(srcRect);
@@ -122,10 +120,10 @@ gfx::RectF MathUtil::mapClippedRect(const WebTransformationMatrix& transform, co
     return computeEnclosingClippedRect(h1, h2, h3, h4);
 }
 
-gfx::RectF MathUtil::projectClippedRect(const WebTransformationMatrix& transform, const gfx::RectF& srcRect)
+gfx::RectF MathUtil::projectClippedRect(const gfx::Transform& transform, const gfx::RectF& srcRect)
 {
-    if (transform.isIdentityOrTranslation())
-        return srcRect + gfx::Vector2dF(static_cast<float>(transform.m41()), static_cast<float>(transform.m42()));
+    if (MathUtil::isIdentityOrTranslation(transform))
+        return srcRect + gfx::Vector2dF(static_cast<float>(transform.matrix().getDouble(0, 3)), static_cast<float>(transform.matrix().getDouble(1, 3)));
 
     // Perform the projection, but retain the result in homogeneous coordinates.
     gfx::QuadF q = gfx::QuadF(srcRect);
@@ -137,7 +135,7 @@ gfx::RectF MathUtil::projectClippedRect(const WebTransformationMatrix& transform
     return computeEnclosingClippedRect(h1, h2, h3, h4);
 }
 
-void MathUtil::mapClippedQuad(const WebTransformationMatrix& transform, const gfx::QuadF& srcQuad, gfx::PointF clippedQuad[8], int& numVerticesInClippedQuad)
+void MathUtil::mapClippedQuad(const gfx::Transform& transform, const gfx::QuadF& srcQuad, gfx::PointF clippedQuad[8], int& numVerticesInClippedQuad)
 {
     HomogeneousCoordinate h1 = mapHomogeneousPoint(transform, gfx::Point3F(srcQuad.p1()));
     HomogeneousCoordinate h2 = mapHomogeneousPoint(transform, gfx::Point3F(srcQuad.p2()));
@@ -241,11 +239,11 @@ gfx::RectF MathUtil::computeEnclosingClippedRect(const HomogeneousCoordinate& h1
     return gfx::RectF(gfx::PointF(xmin, ymin), gfx::SizeF(xmax - xmin, ymax - ymin));
 }
 
-gfx::QuadF MathUtil::mapQuad(const WebTransformationMatrix& transform, const gfx::QuadF& q, bool& clipped)
+gfx::QuadF MathUtil::mapQuad(const gfx::Transform& transform, const gfx::QuadF& q, bool& clipped)
 {
-    if (transform.isIdentityOrTranslation()) {
+    if (MathUtil::isIdentityOrTranslation(transform)) {
         gfx::QuadF mappedQuad(q);
-        mappedQuad += gfx::Vector2dF(static_cast<float>(transform.m41()), static_cast<float>(transform.m42()));
+        mappedQuad += gfx::Vector2dF(static_cast<float>(transform.matrix().getDouble(0, 3)), static_cast<float>(transform.matrix().getDouble(1, 3)));
         clipped = false;
         return mappedQuad;
     }
@@ -261,7 +259,7 @@ gfx::QuadF MathUtil::mapQuad(const WebTransformationMatrix& transform, const gfx
     return gfx::QuadF(h1.cartesianPoint2d(), h2.cartesianPoint2d(), h3.cartesianPoint2d(), h4.cartesianPoint2d());
 }
 
-gfx::PointF MathUtil::mapPoint(const WebTransformationMatrix& transform, const gfx::PointF& p, bool& clipped)
+gfx::PointF MathUtil::mapPoint(const gfx::Transform& transform, const gfx::PointF& p, bool& clipped)
 {
     HomogeneousCoordinate h = mapHomogeneousPoint(transform, gfx::Point3F(p));
 
@@ -284,7 +282,7 @@ gfx::PointF MathUtil::mapPoint(const WebTransformationMatrix& transform, const g
     return h.cartesianPoint2d();
 }
 
-gfx::Point3F MathUtil::mapPoint(const WebTransformationMatrix& transform, const gfx::Point3F& p, bool& clipped)
+gfx::Point3F MathUtil::mapPoint(const gfx::Transform& transform, const gfx::Point3F& p, bool& clipped)
 {
     HomogeneousCoordinate h = mapHomogeneousPoint(transform, p);
 
@@ -307,7 +305,7 @@ gfx::Point3F MathUtil::mapPoint(const WebTransformationMatrix& transform, const 
     return h.cartesianPoint3d();
 }
 
-gfx::QuadF MathUtil::projectQuad(const WebTransformationMatrix& transform, const gfx::QuadF& q, bool& clipped)
+gfx::QuadF MathUtil::projectQuad(const gfx::Transform& transform, const gfx::QuadF& q, bool& clipped)
 {
     gfx::QuadF projectedQuad;
     bool clippedPoint;
@@ -323,7 +321,7 @@ gfx::QuadF MathUtil::projectQuad(const WebTransformationMatrix& transform, const
     return projectedQuad;
 }
 
-gfx::PointF MathUtil::projectPoint(const WebTransformationMatrix& transform, const gfx::PointF& p, bool& clipped)
+gfx::PointF MathUtil::projectPoint(const gfx::Transform& transform, const gfx::PointF& p, bool& clipped)
 {
     HomogeneousCoordinate h = projectHomogeneousPoint(transform, p);
 
@@ -347,7 +345,7 @@ gfx::PointF MathUtil::projectPoint(const WebTransformationMatrix& transform, con
     return h.cartesianPoint2d();
 }
 
-void MathUtil::flattenTransformTo2d(WebTransformationMatrix& transform)
+void MathUtil::flattenTransformTo2d(gfx::Transform& transform)
 {
     // Set both the 3rd row and 3rd column to (0, 0, 1, 0).
     //
@@ -359,13 +357,13 @@ void MathUtil::flattenTransformTo2d(WebTransformationMatrix& transform)
     //  - Because of linearity of transforms, this flattened transform also preserves the
     //    effect that any subsequent (post-multiplied) transforms would have on z values.
     //
-    transform.setM13(0);
-    transform.setM23(0);
-    transform.setM31(0);
-    transform.setM32(0);
-    transform.setM33(1);
-    transform.setM34(0);
-    transform.setM43(0);
+    transform.matrix().setDouble(2, 0, 0);
+    transform.matrix().setDouble(2, 1, 0);
+    transform.matrix().setDouble(0, 2, 0);
+    transform.matrix().setDouble(1, 2, 0);
+    transform.matrix().setDouble(2, 2, 1);
+    transform.matrix().setDouble(3, 2, 0);
+    transform.matrix().setDouble(2, 3, 0);
 }
 
 static inline float scaleOnAxis(double a, double b, double c)
@@ -373,12 +371,12 @@ static inline float scaleOnAxis(double a, double b, double c)
     return std::sqrt(a * a + b * b + c * c);
 }
 
-gfx::Vector2dF MathUtil::computeTransform2dScaleComponents(const WebTransformationMatrix& transform)
+gfx::Vector2dF MathUtil::computeTransform2dScaleComponents(const gfx::Transform& transform)
 {
-    if (transform.hasPerspective())
+    if (hasPerspective(transform))
         return gfx::Vector2dF(1, 1);
-    float xScale = scaleOnAxis(transform.m11(), transform.m12(), transform.m13());
-    float yScale = scaleOnAxis(transform.m21(), transform.m22(), transform.m23());
+    float xScale = scaleOnAxis(transform.matrix().getDouble(0, 0), transform.matrix().getDouble(1, 0), transform.matrix().getDouble(2, 0));
+    float yScale = scaleOnAxis(transform.matrix().getDouble(0, 1), transform.matrix().getDouble(1, 1), transform.matrix().getDouble(2, 1));
     return gfx::Vector2dF(xScale, yScale);
 }
 
@@ -396,23 +394,22 @@ gfx::Vector2dF MathUtil::projectVector(gfx::Vector2dF source, gfx::Vector2dF des
     return gfx::Vector2dF(projectedLength * destination.x(), projectedLength * destination.y());
 }
 
-bool MathUtil::isInvertible(const gfx::Transform& transform)
+bool MathUtil::isBackFaceVisible(const gfx::Transform& transform)
 {
-    const SkMatrix44& matrix = transform.matrix();
-    double determinant = matrix.determinant();
-    return abs(determinant) > EPSILON;
-}
+    // Compute whether a layer with a forward-facing normal of (0, 0, 1) would
+    // have its back face visible after applying the transform.
+    //
+    // This is done by transforming the normal and seeing if the resulting z
+    // value is positive or negative. However, note that transforming a normal
+    // actually requires using the inverse-transpose of the original transform.
 
-bool MathUtil::isBackFaceVisible(const gfx::Transform&)
-{
-    // TODO (shawnsingh): to be implemented in a follow up patch very soon.
-    NOTREACHED();
-    return false;
-}
+    // TODO (shawnsingh) make this perform more efficiently - we do not
+    // actually need to instantiate/invert/transpose any matrices, exploiting the
+    // fact that we only need to transform (0, 0, 1, 0).
+    gfx::Transform inverseTransform = MathUtil::inverse(transform);
+    const SkMatrix44& mInv = inverseTransform.matrix();
 
-bool MathUtil::isIdentity(const gfx::Transform& transform)
-{
-    return transform.matrix().isIdentity();
+    return mInv.getDouble(2, 2) < 0;
 }
 
 bool MathUtil::isIdentityOrTranslation(const gfx::Transform& transform)
@@ -436,11 +433,6 @@ bool MathUtil::hasPerspective(const gfx::Transform& transform)
     // being perspective here.
     const SkMatrix44& matrix = transform.matrix();
     return matrix.getDouble(3, 0) || matrix.getDouble(3, 1) || matrix.getDouble(3, 2) || (matrix.getDouble(3, 3) != 1);
-}
-
-void MathUtil::makeIdentity(gfx::Transform* transform)
-{
-    transform->matrix().setIdentity();
 }
 
 void MathUtil::rotateEulerAngles(gfx::Transform* transform, double eulerX, double eulerY, double eulerZ)

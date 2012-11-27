@@ -18,10 +18,9 @@
 #include "cc/test/tiled_layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect_conversions.h"
-#include <public/WebTransformationMatrix.h>
+#include "ui/gfx/transform.h"
 
 using namespace WebKitTests;
-using WebKit::WebTransformationMatrix;
 
 namespace cc {
 namespace {
@@ -1141,8 +1140,8 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndTransforms)
     // This makes sure the painting works when the occluded region (in screen space)
     // is transformed differently than the layer.
     layer->setBounds(gfx::Size(600, 600));
-    WebTransformationMatrix screenTransform;
-    screenTransform.scale(0.5);
+    gfx::Transform screenTransform;
+    screenTransform.Scale(0.5, 0.5);
     layer->setScreenSpaceTransform(screenTransform);
     layer->setDrawTransform(screenTransform);
 
@@ -1173,8 +1172,9 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndScaling)
     layer->setContentsScale(0.5);
     EXPECT_FLOAT_EQ(layer->contentsScaleX(), layer->contentsScaleY());
     layer->setBounds(gfx::Size(600, 600));
-    WebTransformationMatrix drawTransform;
-    drawTransform.scale(1 / layer->contentsScaleX());
+    gfx::Transform drawTransform;
+    double invScaleFactor = 1 / layer->contentsScaleX();
+    drawTransform.Scale(invScaleFactor, invScaleFactor);
     layer->setDrawTransform(drawTransform);
     layer->setScreenSpaceTransform(drawTransform);
 
@@ -1215,8 +1215,8 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndScaling)
     layer->fakeLayerUpdater()->clearUpdateCount();
 
     // This makes sure content scaling and transforms work together.
-    WebTransformationMatrix screenTransform;
-    screenTransform.scale(0.5);
+    gfx::Transform screenTransform;
+    screenTransform.Scale(0.5, 0.5);
     layer->setScreenSpaceTransform(screenTransform);
     layer->setDrawTransform(screenTransform);
 

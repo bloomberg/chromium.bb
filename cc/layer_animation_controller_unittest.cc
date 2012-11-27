@@ -9,17 +9,16 @@
 #include "cc/test/animation_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <public/WebTransformationMatrix.h>
+#include "ui/gfx/transform.h"
 
 using namespace WebKitTests;
-using WebKit::WebTransformationMatrix;
 
 namespace cc {
 namespace {
 
-void expectTranslateX(double translateX, const WebTransformationMatrix& matrix)
+void expectTranslateX(double translateX, const gfx::Transform& matrix)
 {
-    EXPECT_FLOAT_EQ(translateX, matrix.m41());
+    EXPECT_FLOAT_EQ(translateX, matrix.matrix().getDouble(0, 3));
 }
 
 scoped_ptr<ActiveAnimation> createActiveAnimation(scoped_ptr<AnimationCurve> curve, int id, ActiveAnimation::TargetProperty property)

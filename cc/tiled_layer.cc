@@ -14,7 +14,6 @@
 #include "ui/gfx/rect_conversions.h"
 
 using namespace std;
-using WebKit::WebTransformationMatrix;
 
 namespace cc {
 
@@ -484,7 +483,7 @@ void TiledLayer::updateTileTextures(const gfx::Rect& paintRect, int left, int to
 
             tile->updaterResource()->update(queue, sourceRect, destOffset, tile->partialUpdate, stats);
             if (occlusion)
-                occlusion->overdrawMetrics().didUpload(WebTransformationMatrix(), sourceRect, tile->opaqueRect());
+                occlusion->overdrawMetrics().didUpload(gfx::Transform(), sourceRect, tile->opaqueRect());
 
         }
     }

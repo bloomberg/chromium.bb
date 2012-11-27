@@ -4,6 +4,8 @@
 
 #include "cc/layer_tree_host_common.h"
 
+#include <algorithm>
+
 #include "cc/layer.h"
 #include "cc/layer_impl.h"
 #include "cc/layer_iterator.h"
@@ -13,10 +15,7 @@
 #include "cc/render_surface_impl.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect_conversions.h"
-#include <algorithm>
-#include <public/WebTransformationMatrix.h>
-
-using WebKit::WebTransformationMatrix;
+#include "ui/gfx/transform.h"
 
 namespace cc {
 
@@ -28,7 +27,7 @@ ScrollAndScaleSet::~ScrollAndScaleSet()
 {
 }
 
-gfx::Rect LayerTreeHostCommon::calculateVisibleRect(const gfx::Rect& targetSurfaceRect, const gfx::Rect& layerBoundRect, const WebTransformationMatrix& transform)
+gfx::Rect LayerTreeHostCommon::calculateVisibleRect(const gfx::Rect& targetSurfaceRect, const gfx::Rect& layerBoundRect, const gfx::Transform& transform)
 {
     // Is this layer fully contained within the target surface?
     gfx::Rect layerInSurfaceSpace = MathUtil::mapClippedRect(transform, layerBoundRect);
@@ -45,7 +44,7 @@ gfx::Rect LayerTreeHostCommon::calculateVisibleRect(const gfx::Rect& targetSurfa
     // This bounding rectangle may be larger than it needs to be (being
     // axis-aligned), but is a reasonable filter on the space to consider.
     // Non-invertible transforms will create an empty rect here.
-    const WebTransformationMatrix surfaceToLayer = transform.inverse();
+    const gfx::Transform surfaceToLayer = MathUtil::inverse(transform);
     gfx::Rect layerRect = gfx::ToEnclosingRect(MathUtil::projectClippedRect(surfaceToLayer, gfx::RectF(minimalSurfaceRect)));
     layerRect.Intersect(layerBoundRect);
     return layerRect;
@@ -86,21 +85,21 @@ static bool isLayerBackFaceVisible(LayerType* layer)
     // rendering context by checking if the parent preserves 3d.
 
     if (layerIsInExisting3DRenderingContext(layer))
-        return layer->drawTransform().isBackFaceVisible();
+        return MathUtil::isBackFaceVisible(layer->drawTransform());
 
     // In this case, either the layer establishes a new 3d rendering context, or is not in
     // a 3d rendering context at all.
-    return layer->transform().isBackFaceVisible();
+    return MathUtil::isBackFaceVisible(layer->transform());
 }
 
 template<typename LayerType>
-static bool isSurfaceBackFaceVisible(LayerType* layer, const WebTransformationMatrix& drawTransform)
+static bool isSurfaceBackFaceVisible(LayerType* layer, const gfx::Transform& drawTransform)
 {
     if (layerIsInExisting3DRenderingContext(layer))
-        return drawTransform.isBackFaceVisible();
+        return MathUtil::isBackFaceVisible(drawTransform);
 
     if (isRootLayerOfNewRenderingContext(layer))
-        return layer->transform().isBackFaceVisible();
+        return MathUtil::isBackFaceVisible(layer->transform());
 
     // If the renderSurface is not part of a new or existing rendering context, then the
     // layers that contribute to this surface will decide back-face visibility for themselves.
@@ -131,7 +130,7 @@ static gfx::Rect calculateVisibleContentRect(LayerType* layer)
         // In this case the target surface does clip layers that contribute to it. So, we
         // have convert the current surface's clipRect from its ancestor surface space to
         // the current surface space.
-        targetSurfaceClipRect = gfx::ToEnclosingRect(MathUtil::projectClippedRect(layer->renderTarget()->renderSurface()->drawTransform().inverse(), layer->renderTarget()->renderSurface()->clipRect()));
+        targetSurfaceClipRect = gfx::ToEnclosingRect(MathUtil::projectClippedRect(MathUtil::inverse(layer->renderTarget()->renderSurface()->drawTransform()), layer->renderTarget()->renderSurface()->clipRect()));
         targetSurfaceClipRect.Intersect(layer->drawableContentRect());
     }
 
@@ -141,12 +140,12 @@ static gfx::Rect calculateVisibleContentRect(LayerType* layer)
     return LayerTreeHostCommon::calculateVisibleRect(targetSurfaceClipRect, gfx::Rect(gfx::Point(), layer->contentBounds()), layer->drawTransform());
 }
 
-static bool isScaleOrTranslation(const WebTransformationMatrix& m)
+static bool isScaleOrTranslation(const gfx::Transform& m)
 {
-    return !m.m12() && !m.m13() && !m.m14()
-           && !m.m21() && !m.m23() && !m.m24()
-           && !m.m31() && !m.m32() && !m.m43()
-           && m.m44();
+    return !m.matrix().getDouble(1, 0) && !m.matrix().getDouble(2, 0) && !m.matrix().getDouble(3, 0)
+           && !m.matrix().getDouble(0, 1) && !m.matrix().getDouble(2, 1) && !m.matrix().getDouble(3, 1)
+           && !m.matrix().getDouble(0, 2) && !m.matrix().getDouble(1, 2) && !m.matrix().getDouble(2, 3)
+           && m.matrix().getDouble(3, 3);
 }
 
 static inline bool transformToParentIsKnown(LayerImpl*)
@@ -265,7 +264,7 @@ static bool subtreeShouldRenderToSeparateSurface(LayerType* layer, bool axisAlig
     return false;
 }
 
-WebTransformationMatrix computeScrollCompensationForThisLayer(LayerImpl* scrollingLayer, const WebTransformationMatrix& parentMatrix)
+gfx::Transform computeScrollCompensationForThisLayer(LayerImpl* scrollingLayer, const gfx::Transform& parentMatrix)
 {
     // For every layer that has non-zero scrollDelta, we have to compute a transform that can undo the
     // scrollDelta translation. In particular, we want this matrix to premultiply a fixed-position layer's
@@ -284,23 +283,23 @@ WebTransformationMatrix computeScrollCompensationForThisLayer(LayerImpl* scrolli
     // that fixed position layer is fixed onto the same renderTarget as this scrollingLayer.
     //
 
-    WebTransformationMatrix partialLayerOriginTransform = parentMatrix;
-    partialLayerOriginTransform.multiply(scrollingLayer->implTransform());
+    gfx::Transform partialLayerOriginTransform = parentMatrix;
+    partialLayerOriginTransform.PreconcatTransform(scrollingLayer->implTransform());
 
-    WebTransformationMatrix scrollCompensationForThisLayer = partialLayerOriginTransform; // Step 3
-    scrollCompensationForThisLayer.translate(scrollingLayer->scrollDelta().x(), scrollingLayer->scrollDelta().y()); // Step 2
-    scrollCompensationForThisLayer.multiply(partialLayerOriginTransform.inverse()); // Step 1
+    gfx::Transform scrollCompensationForThisLayer = partialLayerOriginTransform; // Step 3
+    scrollCompensationForThisLayer.Translate(scrollingLayer->scrollDelta().x(), scrollingLayer->scrollDelta().y()); // Step 2
+    scrollCompensationForThisLayer.PreconcatTransform(MathUtil::inverse(partialLayerOriginTransform)); // Step 1
     return scrollCompensationForThisLayer;
 }
 
-WebTransformationMatrix computeScrollCompensationMatrixForChildren(Layer* currentLayer, const WebTransformationMatrix& currentParentMatrix, const WebTransformationMatrix& currentScrollCompensation)
+gfx::Transform computeScrollCompensationMatrixForChildren(Layer* currentLayer, const gfx::Transform& currentParentMatrix, const gfx::Transform& currentScrollCompensation)
 {
     // The main thread (i.e. Layer) does not need to worry about scroll compensation.
     // So we can just return an identity matrix here.
-    return WebTransformationMatrix();
+    return gfx::Transform();
 }
 
-WebTransformationMatrix computeScrollCompensationMatrixForChildren(LayerImpl* layer, const WebTransformationMatrix& parentMatrix, const WebTransformationMatrix& currentScrollCompensationMatrix)
+gfx::Transform computeScrollCompensationMatrixForChildren(LayerImpl* layer, const gfx::Transform& parentMatrix, const gfx::Transform& currentScrollCompensationMatrix)
 {
     // "Total scroll compensation" is the transform needed to cancel out all scrollDelta translations that
     // occurred since the nearest container layer, even if there are renderSurfaces in-between.
@@ -323,7 +322,7 @@ WebTransformationMatrix computeScrollCompensationMatrixForChildren(LayerImpl* la
         return currentScrollCompensationMatrix;
 
     // Start as identity matrix.
-    WebTransformationMatrix nextScrollCompensationMatrix;
+    gfx::Transform nextScrollCompensationMatrix;
 
     // If this layer is not a container, then it inherits the existing scroll compensations.
     if (!layer->isContainerForFixedPositionLayers())
@@ -332,8 +331,8 @@ WebTransformationMatrix computeScrollCompensationMatrixForChildren(LayerImpl* la
     // If the current layer has a non-zero scrollDelta, then we should compute its local scrollCompensation
     // and accumulate it to the nextScrollCompensationMatrix.
     if (!layer->scrollDelta().IsZero()) {
-        WebTransformationMatrix scrollCompensationForThisLayer = computeScrollCompensationForThisLayer(layer, parentMatrix);
-        nextScrollCompensationMatrix.multiply(scrollCompensationForThisLayer);
+        gfx::Transform scrollCompensationForThisLayer = computeScrollCompensationForThisLayer(layer, parentMatrix);
+        nextScrollCompensationMatrix.PreconcatTransform(scrollCompensationForThisLayer);
     }
 
     // If the layer created its own renderSurface, we have to adjust nextScrollCompensationMatrix.
@@ -341,16 +340,16 @@ WebTransformationMatrix computeScrollCompensationMatrixForChildren(LayerImpl* la
     //  Step 1 (right-most in the math): transform from the new surface to the original ancestor surface
     //  Step 2: apply the scroll compensation
     //  Step 3: transform back to the new surface.
-    if (layer->renderSurface() && !nextScrollCompensationMatrix.isIdentity())
-        nextScrollCompensationMatrix = layer->renderSurface()->drawTransform().inverse() * nextScrollCompensationMatrix * layer->renderSurface()->drawTransform();
+    if (layer->renderSurface() && !nextScrollCompensationMatrix.IsIdentity())
+        nextScrollCompensationMatrix = MathUtil::inverse(layer->renderSurface()->drawTransform()) * nextScrollCompensationMatrix * layer->renderSurface()->drawTransform();
 
     return nextScrollCompensationMatrix;
 }
 
 // There is no contentsScale on impl thread.
-static inline void updateLayerContentsScale(LayerImpl*, const WebTransformationMatrix&, float, float, bool) { }
+static inline void updateLayerContentsScale(LayerImpl*, const gfx::Transform&, float, float, bool) { }
 
-static inline void updateLayerContentsScale(Layer* layer, const WebTransformationMatrix& combinedTransform, float deviceScaleFactor, float pageScaleFactor, bool animatingTransformToScreen)
+static inline void updateLayerContentsScale(Layer* layer, const gfx::Transform& combinedTransform, float deviceScaleFactor, float pageScaleFactor, bool animatingTransformToScreen)
 {
     float rasterScale = layer->rasterScale();
     if (!rasterScale) {
@@ -387,8 +386,8 @@ static inline void updateLayerContentsScale(Layer* layer, const WebTransformatio
 // Recursively walks the layer tree starting at the given node and computes all the
 // necessary transformations, clipRects, render surfaces, etc.
 template<typename LayerType, typename LayerList, typename RenderSurfaceType, typename LayerSorter>
-static void calculateDrawTransformsInternal(LayerType* layer, const WebTransformationMatrix& parentMatrix,
-    const WebTransformationMatrix& fullHierarchyMatrix, const WebTransformationMatrix& currentScrollCompensationMatrix,
+static void calculateDrawTransformsInternal(LayerType* layer, const gfx::Transform& parentMatrix,
+    const gfx::Transform& fullHierarchyMatrix, const gfx::Transform& currentScrollCompensationMatrix,
     const gfx::Rect& clipRectFromAncestor, bool ancestorClipsSubtree,
     RenderSurfaceType* nearestAncestorThatMovesPixels, LayerList& renderSurfaceLayerList, LayerList& layerList,
     LayerSorter* layerSorter, int maxTextureSize, float deviceScaleFactor, float pageScaleFactor, gfx::Rect& drawableContentRectOfSubtree)
@@ -405,7 +404,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
     //    projection applied at draw time flips the Y axis appropriately.
     //
     // 2. The anchor point, when given as a PointF object, is specified in "unit layer space",
-    //    where the bounds of the layer map to [0, 1]. However, as a WebTransformationMatrix object,
+    //    where the bounds of the layer map to [0, 1]. However, as a Transform object,
     //    the transform to the anchor point is specified in "layer space", where the bounds
     //    of the layer map to [bounds.width(), bounds.height()].
     //
@@ -458,7 +457,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
     //        S is the scale adjustment (to scale up a canonical quad to the layer's size)
     //
     // When a render surface has a replica layer, that layer's transform is used to draw a second copy of the surface.
-    // Transforms named here are relative to the surface, unless they specify they are relative to the replica layer.
+    // gfx::Transforms named here are relative to the surface, unless they specify they are relative to the replica layer.
     //
     // We will denote a scale by device scale S[deviceScale]
     //
@@ -503,16 +502,16 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
     gfx::PointF anchorPoint = layer->anchorPoint();
     gfx::PointF position = layer->position() - layer->scrollDelta();
 
-    WebTransformationMatrix layerLocalTransform;
+    gfx::Transform layerLocalTransform;
     // LT = Tr[origin] * Tr[origin2anchor]
-    layerLocalTransform.translate3d(position.x() + anchorPoint.x() * bounds.width(), position.y() + anchorPoint.y() * bounds.height(), layer->anchorPointZ());
+    layerLocalTransform.Translate3d(position.x() + anchorPoint.x() * bounds.width(), position.y() + anchorPoint.y() * bounds.height(), layer->anchorPointZ());
     // LT = Tr[origin] * Tr[origin2anchor] * M[layer]
-    layerLocalTransform.multiply(layer->transform());
+    layerLocalTransform.PreconcatTransform(layer->transform());
     // LT = Tr[origin] * Tr[origin2anchor] * M[layer] * Tr[anchor2origin]
-    layerLocalTransform.translate3d(-anchorPoint.x() * bounds.width(), -anchorPoint.y() * bounds.height(), -layer->anchorPointZ());
+    layerLocalTransform.Translate3d(-anchorPoint.x() * bounds.width(), -anchorPoint.y() * bounds.height(), -layer->anchorPointZ());
 
-    WebTransformationMatrix combinedTransform = parentMatrix;
-    combinedTransform.multiply(layerLocalTransform);
+    gfx::Transform combinedTransform = parentMatrix;
+    combinedTransform.PreconcatTransform(layerLocalTransform);
 
     // The layer's contentsSize is determined from the combinedTransform, which then informs the
     // layer's drawTransform.
@@ -531,23 +530,23 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
 
     // The drawTransform that gets computed below is effectively the layer's drawTransform, unless
     // the layer itself creates a renderSurface. In that case, the renderSurface re-parents the transforms.
-    WebTransformationMatrix drawTransform = combinedTransform;
+    gfx::Transform drawTransform = combinedTransform;
     // M[draw] = M[parent] * LT * S[layer2content]
-    drawTransform.scaleNonUniform(1.0 / layer->contentsScaleX(), 1.0 / layer->contentsScaleY());
+    drawTransform.Scale(1.0 / layer->contentsScaleX(), 1.0 / layer->contentsScaleY());
 
     // layerScreenSpaceTransform represents the transform between root layer's "screen space" and local content space.
-    WebTransformationMatrix layerScreenSpaceTransform = fullHierarchyMatrix;
+    gfx::Transform layerScreenSpaceTransform = fullHierarchyMatrix;
     if (!layer->preserves3D())
         MathUtil::flattenTransformTo2d(layerScreenSpaceTransform);
-    layerScreenSpaceTransform.multiply(drawTransform);
+    layerScreenSpaceTransform.PreconcatTransform(drawTransform);
     layer->setScreenSpaceTransform(layerScreenSpaceTransform);
 
     gfx::RectF contentRect(gfx::PointF(), layer->contentBounds());
 
     // fullHierarchyMatrix is the matrix that transforms objects between screen space (except projection matrix) and the most recent RenderSurfaceImpl's space.
     // nextHierarchyMatrix will only change if this layer uses a new RenderSurfaceImpl, otherwise remains the same.
-    WebTransformationMatrix nextHierarchyMatrix = fullHierarchyMatrix;
-    WebTransformationMatrix sublayerMatrix;
+    gfx::Transform nextHierarchyMatrix = fullHierarchyMatrix;
+    gfx::Transform sublayerMatrix;
 
     gfx::Vector2dF renderSurfaceSublayerScale = MathUtil::computeTransform2dScaleComponents(combinedTransform);
 
@@ -564,21 +563,21 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
 
         // The owning layer's draw transform has a scale from content to layer space which we need to undo and
         // replace with a scale from the surface's subtree into layer space.
-        drawTransform.scaleNonUniform(layer->contentsScaleX(), layer->contentsScaleY());
-        drawTransform.scaleNonUniform(1 / renderSurfaceSublayerScale.x(), 1 / renderSurfaceSublayerScale.y());
+        drawTransform.Scale(layer->contentsScaleX(), layer->contentsScaleY());
+        drawTransform.Scale(1 / renderSurfaceSublayerScale.x(), 1 / renderSurfaceSublayerScale.y());
         renderSurface->setDrawTransform(drawTransform);
 
         // The origin of the new surface is the upper left corner of the layer.
-        WebTransformationMatrix layerDrawTransform;
-        layerDrawTransform.scaleNonUniform(renderSurfaceSublayerScale.x(), renderSurfaceSublayerScale.y());
-        layerDrawTransform.scaleNonUniform(1.0 / layer->contentsScaleX(), 1.0 / layer->contentsScaleY());
+        gfx::Transform layerDrawTransform;
+        layerDrawTransform.Scale(renderSurfaceSublayerScale.x(), renderSurfaceSublayerScale.y());
+        layerDrawTransform.Scale(1.0 / layer->contentsScaleX(), 1.0 / layer->contentsScaleY());
         layer->setDrawTransform(layerDrawTransform);
 
         // Inside the surface's subtree, we scale everything to the owning layer's scale.
         // The sublayer matrix transforms centered layer rects into target
         // surface content space.
-        sublayerMatrix.makeIdentity();
-        sublayerMatrix.scaleNonUniform(renderSurfaceSublayerScale.x(), renderSurfaceSublayerScale.y());
+        sublayerMatrix.MakeIdentity();
+        sublayerMatrix.Scale(renderSurfaceSublayerScale.x(), renderSurfaceSublayerScale.y());
 
         // The opacity value is moved from the layer to its surface, so that the entire subtree properly inherits opacity.
         renderSurface->setDrawOpacity(drawOpacity);
@@ -594,7 +593,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
 
         // Update the aggregate hierarchy matrix to include the transform of the
         // newly created RenderSurfaceImpl.
-        nextHierarchyMatrix.multiply(renderSurface->drawTransform());
+        nextHierarchyMatrix.PreconcatTransform(renderSurface->drawTransform());
 
         // The new renderSurface here will correctly clip the entire subtree. So, we do
         // not need to continue propagating the clipping state further down the tree. This
@@ -665,9 +664,9 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
         MathUtil::flattenTransformTo2d(sublayerMatrix);
 
     // Apply the sublayer transform at the center of the layer.
-    sublayerMatrix.translate(0.5 * bounds.width(), 0.5 * bounds.height());
-    sublayerMatrix.multiply(layer->sublayerTransform());
-    sublayerMatrix.translate(-0.5 * bounds.width(), -0.5 * bounds.height());
+    sublayerMatrix.Translate(0.5 * bounds.width(), 0.5 * bounds.height());
+    sublayerMatrix.PreconcatTransform(layer->sublayerTransform());
+    sublayerMatrix.Translate(-0.5 * bounds.width(), -0.5 * bounds.height());
 
     LayerList& descendants = (layer->renderSurface() ? layer->renderSurface()->layerList() : layerList);
 
@@ -677,7 +676,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
     if (!layerShouldBeSkipped(layer))
         descendants.push_back(layer);
 
-    WebTransformationMatrix nextScrollCompensationMatrix = computeScrollCompensationMatrixForChildren(layer, parentMatrix, currentScrollCompensationMatrix);;
+    gfx::Transform nextScrollCompensationMatrix = computeScrollCompensationMatrixForChildren(layer, parentMatrix, currentScrollCompensationMatrix);;
 
     gfx::Rect accumulatedDrawableContentRectOfChildren;
     for (size_t i = 0; i < layer->children().size(); ++i) {
@@ -756,26 +755,26 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
 
         // The owning layer's screenSpaceTransform has a scale from content to layer space which we need to undo and
         // replace with a scale from the surface's subtree into layer space.
-        WebTransformationMatrix screenSpaceTransform = layer->screenSpaceTransform();
-        screenSpaceTransform.scaleNonUniform(layer->contentsScaleX(), layer->contentsScaleY());
-        screenSpaceTransform.scaleNonUniform(1 / renderSurfaceSublayerScale.x(), 1 / renderSurfaceSublayerScale.y());
+        gfx::Transform screenSpaceTransform = layer->screenSpaceTransform();
+        screenSpaceTransform.Scale(layer->contentsScaleX(), layer->contentsScaleY());
+        screenSpaceTransform.Scale(1 / renderSurfaceSublayerScale.x(), 1 / renderSurfaceSublayerScale.y());
         renderSurface->setScreenSpaceTransform(screenSpaceTransform);
 
         if (layer->replicaLayer()) {
-            WebTransformationMatrix surfaceOriginToReplicaOriginTransform;
-            surfaceOriginToReplicaOriginTransform.scaleNonUniform(renderSurfaceSublayerScale.x(), renderSurfaceSublayerScale.y());
-            surfaceOriginToReplicaOriginTransform.translate(layer->replicaLayer()->position().x() + layer->replicaLayer()->anchorPoint().x() * bounds.width(),
+            gfx::Transform surfaceOriginToReplicaOriginTransform;
+            surfaceOriginToReplicaOriginTransform.Scale(renderSurfaceSublayerScale.x(), renderSurfaceSublayerScale.y());
+            surfaceOriginToReplicaOriginTransform.Translate(layer->replicaLayer()->position().x() + layer->replicaLayer()->anchorPoint().x() * bounds.width(),
                                                             layer->replicaLayer()->position().y() + layer->replicaLayer()->anchorPoint().y() * bounds.height());
-            surfaceOriginToReplicaOriginTransform.multiply(layer->replicaLayer()->transform());
-            surfaceOriginToReplicaOriginTransform.translate(-layer->replicaLayer()->anchorPoint().x() * bounds.width(), -layer->replicaLayer()->anchorPoint().y() * bounds.height());
-            surfaceOriginToReplicaOriginTransform.scaleNonUniform(1 / renderSurfaceSublayerScale.x(), 1 / renderSurfaceSublayerScale.y());
+            surfaceOriginToReplicaOriginTransform.PreconcatTransform(layer->replicaLayer()->transform());
+            surfaceOriginToReplicaOriginTransform.Translate(-layer->replicaLayer()->anchorPoint().x() * bounds.width(), -layer->replicaLayer()->anchorPoint().y() * bounds.height());
+            surfaceOriginToReplicaOriginTransform.Scale(1 / renderSurfaceSublayerScale.x(), 1 / renderSurfaceSublayerScale.y());
 
             // Compute the replica's "originTransform" that maps from the replica's origin space to the target surface origin space.
-            WebTransformationMatrix replicaOriginTransform = layer->renderSurface()->drawTransform() * surfaceOriginToReplicaOriginTransform;
+            gfx::Transform replicaOriginTransform = layer->renderSurface()->drawTransform() * surfaceOriginToReplicaOriginTransform;
             renderSurface->setReplicaDrawTransform(replicaOriginTransform);
 
             // Compute the replica's "screenSpaceTransform" that maps from the replica's origin space to the screen's origin space.
-            WebTransformationMatrix replicaScreenSpaceTransform = layer->renderSurface()->screenSpaceTransform() * surfaceOriginToReplicaOriginTransform;
+            gfx::Transform replicaScreenSpaceTransform = layer->renderSurface()->screenSpaceTransform() * surfaceOriginToReplicaOriginTransform;
             renderSurface->setReplicaScreenSpaceTransform(replicaScreenSpaceTransform);
         }
 
@@ -819,9 +818,9 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
 void LayerTreeHostCommon::calculateDrawTransforms(Layer* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, int maxTextureSize, std::vector<scoped_refptr<Layer> >& renderSurfaceLayerList)
 {
     gfx::Rect totalDrawableContentRect;
-    WebTransformationMatrix identityMatrix;
-    WebTransformationMatrix deviceScaleTransform;
-    deviceScaleTransform.scale(deviceScaleFactor);
+    gfx::Transform identityMatrix;
+    gfx::Transform deviceScaleTransform;
+    deviceScaleTransform.Scale(deviceScaleFactor, deviceScaleFactor);
     std::vector<scoped_refptr<Layer> > dummyLayerList;
 
     // The root layer's renderSurface should receive the deviceViewport as the initial clipRect.
@@ -846,9 +845,9 @@ void LayerTreeHostCommon::calculateDrawTransforms(Layer* rootLayer, const gfx::S
 void LayerTreeHostCommon::calculateDrawTransforms(LayerImpl* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, LayerSorter* layerSorter, int maxTextureSize, std::vector<LayerImpl*>& renderSurfaceLayerList)
 {
     gfx::Rect totalDrawableContentRect;
-    WebTransformationMatrix identityMatrix;
-    WebTransformationMatrix deviceScaleTransform;
-    deviceScaleTransform.scale(deviceScaleFactor);
+    gfx::Transform identityMatrix;
+    gfx::Transform deviceScaleTransform;
+    deviceScaleTransform.Scale(deviceScaleFactor, deviceScaleFactor);
     std::vector<LayerImpl*> dummyLayerList;
 
     // The root layer's renderSurface should receive the deviceViewport as the initial clipRect.
@@ -870,15 +869,15 @@ void LayerTreeHostCommon::calculateDrawTransforms(LayerImpl* rootLayer, const gf
     DCHECK(rootLayer->renderSurface());
 }
 
-static bool pointHitsRect(const gfx::PointF& screenSpacePoint, const WebTransformationMatrix& localSpaceToScreenSpaceTransform, gfx::RectF localSpaceRect)
+static bool pointHitsRect(const gfx::PointF& screenSpacePoint, const gfx::Transform& localSpaceToScreenSpaceTransform, gfx::RectF localSpaceRect)
 {
     // If the transform is not invertible, then assume that this point doesn't hit this rect.
-    if (!localSpaceToScreenSpaceTransform.isInvertible())
+    if (!localSpaceToScreenSpaceTransform.IsInvertible())
         return false;
 
     // Transform the hit test point from screen space to the local space of the given rect.
     bool clipped = false;
-    gfx::PointF hitTestPointInLocalSpace = MathUtil::projectPoint(localSpaceToScreenSpaceTransform.inverse(), screenSpacePoint, clipped);
+    gfx::PointF hitTestPointInLocalSpace = MathUtil::projectPoint(MathUtil::inverse(localSpaceToScreenSpaceTransform), screenSpacePoint, clipped);
 
     // If projectPoint could not project to a valid value, then we assume that this point doesn't hit this rect.
     if (clipped)
@@ -887,15 +886,15 @@ static bool pointHitsRect(const gfx::PointF& screenSpacePoint, const WebTransfor
     return localSpaceRect.Contains(hitTestPointInLocalSpace);
 }
 
-static bool pointHitsRegion(gfx::PointF screenSpacePoint, const WebTransformationMatrix& screenSpaceTransform, const Region& layerSpaceRegion, float layerContentScaleX, float layerContentScaleY)
+static bool pointHitsRegion(gfx::PointF screenSpacePoint, const gfx::Transform& screenSpaceTransform, const Region& layerSpaceRegion, float layerContentScaleX, float layerContentScaleY)
 {
     // If the transform is not invertible, then assume that this point doesn't hit this region.
-    if (!screenSpaceTransform.isInvertible())
+    if (!screenSpaceTransform.IsInvertible())
         return false;
 
     // Transform the hit test point from screen space to the local space of the given region.
     bool clipped = false;
-    gfx::PointF hitTestPointInContentSpace = MathUtil::projectPoint(screenSpaceTransform.inverse(), screenSpacePoint, clipped);
+    gfx::PointF hitTestPointInContentSpace = MathUtil::projectPoint(MathUtil::inverse(screenSpaceTransform), screenSpacePoint, clipped);
     gfx::PointF hitTestPointInLayerSpace = gfx::ScalePoint(hitTestPointInContentSpace, 1 / layerContentScaleX, 1 / layerContentScaleY);
 
     // If projectPoint could not project to a valid value, then we assume that this point doesn't hit this region.

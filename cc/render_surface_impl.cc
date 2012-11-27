@@ -21,9 +21,7 @@
 #include "cc/shared_quad_state.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/rect_conversions.h"
-#include <public/WebTransformationMatrix.h>
-
-using WebKit::WebTransformationMatrix;
+#include "ui/gfx/transform.h"
 
 namespace cc {
 
@@ -80,10 +78,10 @@ void RenderSurfaceImpl::dumpSurface(std::string* str, int indent) const
 
     str->append(indentStr);
     base::StringAppendF(str, "drawTransform: %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f\n",
-        m_drawTransform.m11(), m_drawTransform.m12(), m_drawTransform.m13(), m_drawTransform.m14(),
-        m_drawTransform.m21(), m_drawTransform.m22(), m_drawTransform.m23(), m_drawTransform.m24(),
-        m_drawTransform.m31(), m_drawTransform.m32(), m_drawTransform.m33(), m_drawTransform.m34(),
-        m_drawTransform.m41(), m_drawTransform.m42(), m_drawTransform.m43(), m_drawTransform.m44());
+        m_drawTransform.matrix().getDouble(0, 0), m_drawTransform.matrix().getDouble(0, 1), m_drawTransform.matrix().getDouble(0, 2), m_drawTransform.matrix().getDouble(0, 3),
+        m_drawTransform.matrix().getDouble(1, 0), m_drawTransform.matrix().getDouble(1, 1), m_drawTransform.matrix().getDouble(1, 2), m_drawTransform.matrix().getDouble(1, 3),
+        m_drawTransform.matrix().getDouble(2, 0), m_drawTransform.matrix().getDouble(2, 1), m_drawTransform.matrix().getDouble(2, 2), m_drawTransform.matrix().getDouble(2, 3),
+        m_drawTransform.matrix().getDouble(3, 0), m_drawTransform.matrix().getDouble(3, 1), m_drawTransform.matrix().getDouble(3, 2), m_drawTransform.matrix().getDouble(3, 3));
 
     str->append(indentStr);
     base::StringAppendF(str, "damageRect is pos(%f, %f), size(%f, %f)\n",
@@ -199,7 +197,7 @@ void RenderSurfaceImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQ
     DCHECK(!forReplica || m_owningLayer->hasReplica());
 
     gfx::Rect clippedRectInTarget = computeClippedRectInTarget(m_owningLayer);
-    const WebTransformationMatrix& drawTransform = forReplica ? m_replicaDrawTransform : m_drawTransform;
+    const gfx::Transform& drawTransform = forReplica ? m_replicaDrawTransform : m_drawTransform;
     SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(SharedQuadState::Create());
     sharedQuadState->SetAll(drawTransform, m_contentRect, clippedRectInTarget, m_clipRect, m_isClipped, m_drawOpacity);
 

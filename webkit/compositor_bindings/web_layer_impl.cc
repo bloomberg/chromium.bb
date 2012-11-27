@@ -23,42 +23,6 @@ using cc::Layer;
 
 namespace WebKit {
 
-namespace {
-
-WebTransformationMatrix transformationMatrixFromSkMatrix44(const SkMatrix44& matrix)
-{
-    double data[16];
-    matrix.asColMajord(data);
-    return WebTransformationMatrix(data[0], data[1], data[2], data[3],
-                                   data[4], data[5], data[6], data[7],
-                                   data[8], data[9], data[10], data[11],
-                                   data[12], data[13], data[14], data[15]);
-}
-
-SkMatrix44 skMatrix44FromTransformationMatrix(const WebTransformationMatrix& matrix)
-{
-    SkMatrix44 skMatrix;
-    skMatrix.set(0, 0, SkDoubleToMScalar(matrix.m11()));
-    skMatrix.set(1, 0, SkDoubleToMScalar(matrix.m12()));
-    skMatrix.set(2, 0, SkDoubleToMScalar(matrix.m13()));
-    skMatrix.set(3, 0, SkDoubleToMScalar(matrix.m14()));
-    skMatrix.set(0, 1, SkDoubleToMScalar(matrix.m21()));
-    skMatrix.set(1, 1, SkDoubleToMScalar(matrix.m22()));
-    skMatrix.set(2, 1, SkDoubleToMScalar(matrix.m23()));
-    skMatrix.set(3, 1, SkDoubleToMScalar(matrix.m24()));
-    skMatrix.set(0, 2, SkDoubleToMScalar(matrix.m31()));
-    skMatrix.set(1, 2, SkDoubleToMScalar(matrix.m32()));
-    skMatrix.set(2, 2, SkDoubleToMScalar(matrix.m33()));
-    skMatrix.set(3, 2, SkDoubleToMScalar(matrix.m34()));
-    skMatrix.set(0, 3, SkDoubleToMScalar(matrix.m41()));
-    skMatrix.set(1, 3, SkDoubleToMScalar(matrix.m42()));
-    skMatrix.set(2, 3, SkDoubleToMScalar(matrix.m43()));
-    skMatrix.set(3, 3, SkDoubleToMScalar(matrix.m44()));
-    return skMatrix;
-}
-
-}
-
 WebLayer* WebLayer::create()
 {
     return new WebLayerImpl();
@@ -203,32 +167,36 @@ WebFloatPoint WebLayerImpl::position() const
 
 void WebLayerImpl::setSublayerTransform(const SkMatrix44& matrix)
 {
-    m_layer->setSublayerTransform(transformationMatrixFromSkMatrix44(matrix));
+    gfx::Transform subLayerTransform;
+    subLayerTransform.matrix() = matrix;
+    m_layer->setSublayerTransform(subLayerTransform);
 }
 
 void WebLayerImpl::setSublayerTransform(const WebTransformationMatrix& matrix)
 {
-    m_layer->setSublayerTransform(matrix);
+    m_layer->setSublayerTransform(matrix.toTransform());
 }
 
 SkMatrix44 WebLayerImpl::sublayerTransform() const
 {
-    return skMatrix44FromTransformationMatrix(m_layer->sublayerTransform());
+    return m_layer->sublayerTransform().matrix();
 }
 
 void WebLayerImpl::setTransform(const SkMatrix44& matrix)
 {
-    m_layer->setTransform(transformationMatrixFromSkMatrix44(matrix));
+    gfx::Transform transform;
+    transform.matrix() = matrix;
+    m_layer->setTransform(transform);
 }
 
 void WebLayerImpl::setTransform(const WebTransformationMatrix& matrix)
 {
-    m_layer->setTransform(matrix);
+    m_layer->setTransform(matrix.toTransform());
 }
 
 SkMatrix44 WebLayerImpl::transform() const
 {
-    return skMatrix44FromTransformationMatrix(m_layer->transform());
+    return m_layer->transform().matrix();
 }
 
 void WebLayerImpl::setDrawsContent(bool drawsContent)

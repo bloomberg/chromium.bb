@@ -9,42 +9,40 @@
 #include "base/debug/trace_event.h"
 #include "cc/math_util.h"
 #include "ui/gfx/rect_conversions.h"
-#include <public/WebTransformationMatrix.h>
+#include "ui/gfx/transform.h"
 
-using WebKit::WebTransformationMatrix;
-
-static WebTransformationMatrix orthoProjectionMatrix(float left, float right, float bottom, float top)
+static gfx::Transform orthoProjectionMatrix(float left, float right, float bottom, float top)
 {
     // Use the standard formula to map the clipping frustum to the cube from
     // [-1, -1, -1] to [1, 1, 1].
     float deltaX = right - left;
     float deltaY = top - bottom;
-    WebTransformationMatrix proj;
+    gfx::Transform proj;
     if (!deltaX || !deltaY)
         return proj;
-    proj.setM11(2.0f / deltaX);
-    proj.setM41(-(right + left) / deltaX);
-    proj.setM22(2.0f / deltaY);
-    proj.setM42(-(top + bottom) / deltaY);
+    proj.matrix().setDouble(0, 0, 2.0f / deltaX);
+    proj.matrix().setDouble(0, 3, -(right + left) / deltaX);
+    proj.matrix().setDouble(1, 1, 2.0f / deltaY);
+    proj.matrix().setDouble(1, 3, -(top + bottom) / deltaY);
 
     // Z component of vertices is always set to zero as we don't use the depth buffer
     // while drawing.
-    proj.setM33(0);
+    proj.matrix().setDouble(2, 2, 0);
 
     return proj;
 }
 
-static WebTransformationMatrix windowMatrix(int x, int y, int width, int height)
+static gfx::Transform windowMatrix(int x, int y, int width, int height)
 {
-    WebTransformationMatrix canvas;
+    gfx::Transform canvas;
 
     // Map to window position and scale up to pixel coordinates.
-    canvas.translate3d(x, y, 0);
-    canvas.scale3d(width, height, 0);
+    canvas.Translate3d(x, y, 0);
+    canvas.Scale3d(width, height, 0);
 
     // Map from ([-1, -1] to [1, 1]) -> ([0, 0] to [1, 1])
-    canvas.translate3d(0.5, 0.5, 0.5);
-    canvas.scale3d(0.5, 0.5, 0.5);
+    canvas.Translate3d(0.5, 0.5, 0.5);
+    canvas.Scale3d(0.5, 0.5, 0.5);
 
     return canvas;
 }
@@ -71,11 +69,11 @@ gfx::RectF DirectRenderer::quadVertexRect()
 }
 
 // static
-void DirectRenderer::quadRectTransform(WebKit::WebTransformationMatrix* quadRectTransform, const WebKit::WebTransformationMatrix& quadTransform, const gfx::RectF& quadRect)
+void DirectRenderer::quadRectTransform(gfx::Transform* quadRectTransform, const gfx::Transform& quadTransform, const gfx::RectF& quadRect)
 {
     *quadRectTransform = quadTransform;
-    quadRectTransform->translate(0.5 * quadRect.width() + quadRect.x(), 0.5 * quadRect.height() + quadRect.y());
-    quadRectTransform->scaleNonUniform(quadRect.width(), quadRect.height());
+    quadRectTransform->Translate(0.5 * quadRect.width() + quadRect.x(), 0.5 * quadRect.height() + quadRect.y());
+    quadRectTransform->Scale(quadRect.width(), quadRect.height());
 }
 
 // static
@@ -176,7 +174,7 @@ gfx::RectF DirectRenderer::computeScissorRectForRenderPass(const DrawingFrame& f
     if (frame.rootDamageRect == frame.rootRenderPass->output_rect)
         return renderPassScissor;
 
-    WebTransformationMatrix inverseTransform = frame.currentRenderPass->transform_to_root_target.inverse();
+    gfx::Transform inverseTransform = MathUtil::inverse(frame.currentRenderPass->transform_to_root_target);
     gfx::RectF damageRectInRenderPassSpace = MathUtil::projectClippedRect(inverseTransform, frame.rootDamageRect);
     renderPassScissor.Intersect(damageRectInRenderPassSpace);
 

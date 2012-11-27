@@ -12,8 +12,8 @@
 #include "cc/cc_export.h"
 #include "cc/scoped_ptr_vector.h"
 
-namespace WebKit {
-class WebTransformationMatrix;
+namespace gfx {
+class Transform;
 }
 
 namespace cc {
@@ -28,8 +28,8 @@ public:
     virtual int id() const = 0;
     virtual void setOpacityFromAnimation(float) = 0;
     virtual float opacity() const = 0;
-    virtual void setTransformFromAnimation(const WebKit::WebTransformationMatrix&) = 0;
-    virtual const WebKit::WebTransformationMatrix& transform() const = 0;
+    virtual void setTransformFromAnimation(const gfx::Transform&) = 0;
+    virtual const gfx::Transform& transform() const = 0;
 };
 
 class CC_EXPORT LayerAnimationController {

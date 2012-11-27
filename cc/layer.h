@@ -5,6 +5,10 @@
 #ifndef CC_LAYER_H_
 #define CC_LAYER_H_
 
+#include <public/WebFilterOperations.h>
+#include <string>
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "cc/cc_export.h"
 #include "cc/layer_animation_controller.h"
@@ -14,10 +18,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
-#include <public/WebFilterOperations.h>
-#include <public/WebTransformationMatrix.h>
-#include <string>
-#include <vector>
+#include "ui/gfx/transform.h"
 
 namespace WebKit {
 class WebAnimationDelegate;
@@ -51,11 +52,11 @@ public:
     virtual int id() const OVERRIDE;
     virtual void setOpacityFromAnimation(float) OVERRIDE;
     virtual float opacity() const OVERRIDE;
-    virtual void setTransformFromAnimation(const WebKit::WebTransformationMatrix&) OVERRIDE;
+    virtual void setTransformFromAnimation(const gfx::Transform&) OVERRIDE;
     // A layer's transform operates layer space. That is, entirely in logical,
     // non-page-scaled pixels (that is, they have page zoom baked in, but not page scale).
     // The root layer is a special case -- it operates in physical pixels.
-    virtual const WebKit::WebTransformationMatrix& transform() const OVERRIDE;
+    virtual const gfx::Transform& transform() const OVERRIDE;
 
     Layer* rootLayer();
     Layer* parent() { return m_parent; }
@@ -121,10 +122,10 @@ public:
     void setFixedToContainerLayer(bool);
     bool fixedToContainerLayer() const { return m_fixedToContainerLayer; }
 
-    void setSublayerTransform(const WebKit::WebTransformationMatrix&);
-    const WebKit::WebTransformationMatrix& sublayerTransform() const { return m_sublayerTransform; }
+    void setSublayerTransform(const gfx::Transform&);
+    const gfx::Transform& sublayerTransform() const { return m_sublayerTransform; }
 
-    void setTransform(const WebKit::WebTransformationMatrix&);
+    void setTransform(const gfx::Transform&);
     bool transformIsAnimating() const;
 
     const gfx::Rect& visibleContentRect() const { return m_visibleContentRect; }
@@ -163,8 +164,8 @@ public:
 
     gfx::Vector2d scrollDelta() const { return gfx::Vector2d(); }
 
-    void setImplTransform(const WebKit::WebTransformationMatrix&);
-    const WebKit::WebTransformationMatrix& implTransform() const { return m_implTransform; }
+    void setImplTransform(const gfx::Transform&);
+    const gfx::Transform& implTransform() const { return m_implTransform; }
 
     void setDoubleSided(bool);
     bool doubleSided() const { return m_doubleSided; }
@@ -225,12 +226,12 @@ public:
     // This moves from layer space, with origin in the center to target space with origin in the top left.
     // That is, it converts from logical, non-page-scaled, to target pixels (and if the target is the
     // root render surface, then this converts to physical pixels).
-    const WebKit::WebTransformationMatrix& drawTransform() const { return m_drawTransform; }
-    void setDrawTransform(const WebKit::WebTransformationMatrix& matrix) { m_drawTransform = matrix; }
+    const gfx::Transform& drawTransform() const { return m_drawTransform; }
+    void setDrawTransform(const gfx::Transform& matrix) { m_drawTransform = matrix; }
     // This moves from content space, with origin the top left to screen space with origin in the top left.
     // It converts logical, non-page-scaled pixels to physical pixels.
-    const WebKit::WebTransformationMatrix& screenSpaceTransform() const { return m_screenSpaceTransform; }
-    void setScreenSpaceTransform(const WebKit::WebTransformationMatrix& matrix) { m_screenSpaceTransform = matrix; }
+    const gfx::Transform& screenSpaceTransform() const { return m_screenSpaceTransform; }
+    void setScreenSpaceTransform(const gfx::Transform& matrix) { m_screenSpaceTransform = matrix; }
 
     bool isClipped() const { return m_isClipped; }
     void setIsClipped(bool isClipped) { m_isClipped = isClipped; }
@@ -386,8 +387,8 @@ private:
     bool m_drawCheckerboardForMissingTiles;
     bool m_forceRenderSurface;
 
-    WebKit::WebTransformationMatrix m_transform;
-    WebKit::WebTransformationMatrix m_sublayerTransform;
+    gfx::Transform m_transform;
+    gfx::Transform m_sublayerTransform;
 
     // Replica layer used for reflections.
     scoped_refptr<Layer> m_replicaLayer;
@@ -399,8 +400,8 @@ private:
 
     Layer* m_renderTarget;
 
-    WebKit::WebTransformationMatrix m_drawTransform;
-    WebKit::WebTransformationMatrix m_screenSpaceTransform;
+    gfx::Transform m_drawTransform;
+    gfx::Transform m_screenSpaceTransform;
     bool m_drawTransformIsAnimating;
     bool m_screenSpaceTransformIsAnimating;
 
@@ -415,7 +416,7 @@ private:
     bool m_automaticallyComputeRasterScale;
     bool m_boundsContainPageScale;
 
-    WebKit::WebTransformationMatrix m_implTransform;
+    gfx::Transform m_implTransform;
 
     WebKit::WebAnimationDelegate* m_layerAnimationDelegate;
     WebKit::WebLayerScrollClient* m_layerScrollClient;

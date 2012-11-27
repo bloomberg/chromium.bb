@@ -100,7 +100,7 @@ public:
     // origin of the zoomedDeviceViewport.
     //
     // implTransform = S[pageScale] * Tr[-zoomedDeviceViewportOffset]
-    WebKit::WebTransformationMatrix implTransform(bool pageScalePinchZoomEnabled) const;
+    gfx::Transform implTransform(bool pageScalePinchZoomEnabled) const;
 
 private:
     float m_pageScaleFactor;
@@ -228,7 +228,7 @@ public:
     void setPageScaleFactorAndLimits(float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor);
 
     scoped_ptr<ScrollAndScaleSet> processScrollDeltas();
-    WebKit::WebTransformationMatrix implTransform() const;
+    gfx::Transform implTransform() const;
 
     void startPageScaleAnimation(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration);
 

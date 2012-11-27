@@ -5,6 +5,9 @@
 #ifndef CC_RENDER_PASS_H_
 #define CC_RENDER_PASS_H_
 
+#include <public/WebFilterOperations.h>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "cc/cc_export.h"
 #include "cc/draw_quad.h"
@@ -14,9 +17,7 @@
 #include "cc/shared_quad_state.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/rect_f.h"
-#include <public/WebFilterOperations.h>
-#include <public/WebTransformationMatrix.h>
-#include <vector>
+#include "ui/gfx/transform.h"
 
 class SkImageFilter;
 
@@ -66,12 +67,12 @@ class CC_EXPORT RenderPass {
   void SetNew(Id id,
               gfx::Rect output_rect,
               gfx::RectF damage_rect,
-              const WebKit::WebTransformationMatrix& transform_to_root_target);
+              const gfx::Transform& transform_to_root_target);
 
   void SetAll(Id id,
               gfx::Rect output_rect,
               gfx::RectF damage_rect,
-              const WebKit::WebTransformationMatrix& transform_to_root_target,
+              const gfx::Transform& transform_to_root_target,
               bool has_transparent_background,
               bool has_occlusion_from_outside_target_surface,
               const WebKit::WebFilterOperations& filters,
@@ -87,7 +88,7 @@ class CC_EXPORT RenderPass {
 
   // Transforms from the origin of the |output_rect| to the origin of the root
   // render pass' |output_rect|.
-  WebKit::WebTransformationMatrix transform_to_root_target;
+  gfx::Transform transform_to_root_target;
 
   // If false, the pixels in the render pass' texture are all opaque.
   bool has_transparent_background;

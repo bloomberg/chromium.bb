@@ -16,7 +16,6 @@
 #include <public/WebSize.h>
 
 using namespace std;
-using WebKit::WebTransformationMatrix;
 
 namespace cc {
 
@@ -384,7 +383,7 @@ void Layer::setPosition(const gfx::PointF& position)
     setNeedsCommit();
 }
 
-void Layer::setSublayerTransform(const WebTransformationMatrix& sublayerTransform)
+void Layer::setSublayerTransform(const gfx::Transform& sublayerTransform)
 {
     if (m_sublayerTransform == sublayerTransform)
         return;
@@ -392,7 +391,7 @@ void Layer::setSublayerTransform(const WebTransformationMatrix& sublayerTransfor
     setNeedsCommit();
 }
 
-void Layer::setTransform(const WebTransformationMatrix& transform)
+void Layer::setTransform(const gfx::Transform& transform)
 {
     if (m_transform == transform)
         return;
@@ -480,7 +479,7 @@ void Layer::setForceRenderSurface(bool force)
     setNeedsCommit();
 }
 
-void Layer::setImplTransform(const WebTransformationMatrix& transform)
+void Layer::setImplTransform(const gfx::Transform& transform)
 {
     if (m_implTransform == transform)
         return;
@@ -726,12 +725,12 @@ void Layer::setOpacityFromAnimation(float opacity)
     m_opacity = opacity;
 }
 
-const WebKit::WebTransformationMatrix& Layer::transform() const
+const gfx::Transform& Layer::transform() const
 {
     return m_transform;
 }
 
-void Layer::setTransformFromAnimation(const WebTransformationMatrix& transform)
+void Layer::setTransformFromAnimation(const gfx::Transform& transform)
 {
     // This is called due to an ongoing accelerated animation. Since this animation is
     // also being run on the impl thread, there is no need to request a commit to push

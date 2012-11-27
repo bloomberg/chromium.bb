@@ -4,6 +4,9 @@
 
 #include "cc/occlusion_tracker.h"
 
+#include <public/WebFilterOperation.h>
+#include <public/WebFilterOperations.h>
+
 #include "cc/layer.h"
 #include "cc/layer_animation_controller.h"
 #include "cc/layer_impl.h"
@@ -16,9 +19,7 @@
 #include "cc/test/occlusion_tracker_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <public/WebFilterOperation.h>
-#include <public/WebFilterOperations.h>
-#include <public/WebTransformationMatrix.h>
+#include "ui/gfx/transform.h"
 
 using namespace WebKit;
 using namespace WebKitTests;
@@ -197,7 +198,7 @@ protected:
         LayerTreeHost::setNeedsFilterContext(false);
     }
 
-    typename Types::ContentLayerType* createRoot(const WebTransformationMatrix& transform, const gfx::PointF& position, const gfx::Size& bounds)
+    typename Types::ContentLayerType* createRoot(const gfx::Transform& transform, const gfx::PointF& position, const gfx::Size& bounds)
     {
         typename Types::ContentLayerPtrType layer(Types::createContentLayer());
         typename Types::ContentLayerType* layerPtr = layer.get();
@@ -208,7 +209,7 @@ protected:
         return layerPtr;
     }
 
-    typename Types::LayerType* createLayer(typename Types::LayerType* parent, const WebTransformationMatrix& transform, const gfx::PointF& position, const gfx::Size& bounds)
+    typename Types::LayerType* createLayer(typename Types::LayerType* parent, const gfx::Transform& transform, const gfx::PointF& position, const gfx::Size& bounds)
     {
         typename Types::LayerPtrType layer(Types::createLayer());
         typename Types::LayerType* layerPtr = layer.get();
@@ -217,7 +218,7 @@ protected:
         return layerPtr;
     }
 
-    typename Types::LayerType* createSurface(typename Types::LayerType* parent, const WebTransformationMatrix& transform, const gfx::PointF& position, const gfx::Size& bounds)
+    typename Types::LayerType* createSurface(typename Types::LayerType* parent, const gfx::Transform& transform, const gfx::PointF& position, const gfx::Size& bounds)
     {
         typename Types::LayerType* layer = createLayer(parent, transform, position, bounds);
         WebFilterOperations filters;
@@ -226,7 +227,7 @@ protected:
         return layer;
     }
 
-    typename Types::ContentLayerType* createDrawingLayer(typename Types::LayerType* parent, const WebTransformationMatrix& transform, const gfx::PointF& position, const gfx::Size& bounds, bool opaque)
+    typename Types::ContentLayerType* createDrawingLayer(typename Types::LayerType* parent, const gfx::Transform& transform, const gfx::PointF& position, const gfx::Size& bounds, bool opaque)
     {
         typename Types::ContentLayerPtrType layer(Types::createContentLayer());
         typename Types::ContentLayerType* layerPtr = layer.get();
@@ -246,7 +247,7 @@ protected:
         return layerPtr;
     }
 
-    typename Types::LayerType* createReplicaLayer(typename Types::LayerType* owningLayer, const WebTransformationMatrix& transform, const gfx::PointF& position, const gfx::Size& bounds)
+    typename Types::LayerType* createReplicaLayer(typename Types::LayerType* owningLayer, const gfx::Transform& transform, const gfx::PointF& position, const gfx::Size& bounds)
     {
         typename Types::ContentLayerPtrType layer(Types::createContentLayer());
         typename Types::ContentLayerType* layerPtr = layer.get();
@@ -264,7 +265,7 @@ protected:
         return layerPtr;
     }
 
-    typename Types::ContentLayerType* createDrawingSurface(typename Types::LayerType* parent, const WebTransformationMatrix& transform, const gfx::PointF& position, const gfx::Size& bounds, bool opaque)
+    typename Types::ContentLayerType* createDrawingSurface(typename Types::LayerType* parent, const gfx::Transform& transform, const gfx::PointF& position, const gfx::Size& bounds, bool opaque)
     {
         typename Types::ContentLayerType* layer = createDrawingLayer(parent, transform, position, bounds, opaque);
         WebFilterOperations filters;
@@ -349,24 +350,24 @@ protected:
         m_layerIterator = m_layerIteratorBegin;
     }
 
-    const WebTransformationMatrix identityMatrix;
+    const gfx::Transform identityMatrix;
 
 private:
-    void setBaseProperties(typename Types::LayerType* layer, const WebTransformationMatrix& transform, const gfx::PointF& position, const gfx::Size& bounds)
+    void setBaseProperties(typename Types::LayerType* layer, const gfx::Transform& transform, const gfx::PointF& position, const gfx::Size& bounds)
     {
         layer->setTransform(transform);
-        layer->setSublayerTransform(WebTransformationMatrix());
+        layer->setSublayerTransform(gfx::Transform());
         layer->setAnchorPoint(gfx::PointF(0, 0));
         layer->setPosition(position);
         layer->setBounds(bounds);
     }
 
-    void setProperties(Layer* layer, const WebTransformationMatrix& transform, const gfx::PointF& position, const gfx::Size& bounds)
+    void setProperties(Layer* layer, const gfx::Transform& transform, const gfx::PointF& position, const gfx::Size& bounds)
     {
         setBaseProperties(layer, transform, position, bounds);
     }
 
-    void setProperties(LayerImpl* layer, const WebTransformationMatrix& transform, const gfx::PointF& position, const gfx::Size& bounds)
+    void setProperties(LayerImpl* layer, const gfx::Transform& transform, const gfx::PointF& position, const gfx::Size& bounds)
     {
         setBaseProperties(layer, transform, position, bounds);
 
@@ -503,8 +504,8 @@ protected:
     OcclusionTrackerTestQuadsMismatchLayer(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        WebTransformationMatrix layerTransform;
-        layerTransform.translate(10, 10);
+        gfx::Transform layerTransform;
+        layerTransform.Translate(10, 10);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::Point(0, 0), gfx::Size(100, 100));
         typename Types::ContentLayerType* layer1 = this->createDrawingLayer(parent, layerTransform, gfx::PointF(0, 0), gfx::Size(90, 90), true);
@@ -523,8 +524,8 @@ protected:
         // layers, e.g. in terms of transforms or clip rect. This is typical for
         // DelegatedRendererLayer.
 
-        WebTransformationMatrix quadTransform;
-        quadTransform.translate(30, 30);
+        gfx::Transform quadTransform;
+        quadTransform.Translate(30, 30);
         gfx::Rect clipRectInTarget(0, 0, 100, 100);
 
         EXPECT_TRUE(occlusion.unoccludedContentRect(parent, gfx::Rect(0, 0, 10, 10), quadTransform, false, clipRectInTarget).IsEmpty());
@@ -543,10 +544,10 @@ protected:
     OcclusionTrackerTestRotatedChild(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        WebTransformationMatrix layerTransform;
-        layerTransform.translate(250, 250);
-        layerTransform.rotate(90);
-        layerTransform.translate(-250, -250);
+        gfx::Transform layerTransform;
+        layerTransform.Translate(250, 250);
+        layerTransform.Rotate(90);
+        layerTransform.Translate(-250, -250);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
         typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, layerTransform, gfx::PointF(30, 30), gfx::Size(500, 500), true);
@@ -595,8 +596,8 @@ protected:
     OcclusionTrackerTestTranslatedChild(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        WebTransformationMatrix layerTransform;
-        layerTransform.translate(20, 20);
+        gfx::Transform layerTransform;
+        layerTransform.Translate(20, 20);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
         typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, layerTransform, gfx::PointF(30, 30), gfx::Size(500, 500), true);
@@ -657,10 +658,10 @@ protected:
     OcclusionTrackerTestChildInRotatedChild(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        WebTransformationMatrix childTransform;
-        childTransform.translate(250, 250);
-        childTransform.rotate(90);
-        childTransform.translate(-250, -250);
+        gfx::Transform childTransform;
+        childTransform.Translate(250, 250);
+        childTransform.Rotate(90);
+        childTransform.Translate(-250, -250);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
         parent->setMasksToBounds(true);
@@ -737,13 +738,13 @@ protected:
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(200, 200));
 
-        WebTransformationMatrix layer1Matrix;
-        layer1Matrix.scale(2);
+        gfx::Transform layer1Matrix;
+        layer1Matrix.Scale(2, 2);
         typename Types::ContentLayerType* layer1 = this->createDrawingLayer(parent, layer1Matrix, gfx::PointF(0, 0), gfx::Size(100, 100), true);
         layer1->setForceRenderSurface(true);
 
-        WebTransformationMatrix layer2Matrix;
-        layer2Matrix.translate(25, 25);
+        gfx::Transform layer2Matrix;
+        layer2Matrix.Translate(25, 25);
         typename Types::ContentLayerType* layer2 = this->createDrawingLayer(layer1, layer2Matrix, gfx::PointF(0, 0), gfx::Size(50, 50), true);
         typename Types::ContentLayerType* occluder = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(100, 100), gfx::Size(500, 500), true);
         this->calcDrawEtc(parent);
@@ -771,10 +772,10 @@ protected:
     OcclusionTrackerTestVisitTargetTwoTimes(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        WebTransformationMatrix childTransform;
-        childTransform.translate(250, 250);
-        childTransform.rotate(90);
-        childTransform.translate(-250, -250);
+        gfx::Transform childTransform;
+        childTransform.Translate(250, 250);
+        childTransform.Rotate(90);
+        childTransform.Translate(-250, -250);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
         parent->setMasksToBounds(true);
@@ -876,13 +877,13 @@ protected:
     OcclusionTrackerTestSurfaceRotatedOffAxis(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        WebTransformationMatrix childTransform;
-        childTransform.translate(250, 250);
-        childTransform.rotate(95);
-        childTransform.translate(-250, -250);
+        gfx::Transform childTransform;
+        childTransform.Translate(250, 250);
+        childTransform.Rotate(95);
+        childTransform.Translate(-250, -250);
 
-        WebTransformationMatrix layerTransform;
-        layerTransform.translate(10, 10);
+        gfx::Transform layerTransform;
+        layerTransform.Translate(10, 10);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
         typename Types::LayerType* child = this->createLayer(parent, childTransform, gfx::PointF(30, 30), gfx::Size(500, 500));
@@ -939,10 +940,10 @@ protected:
     OcclusionTrackerTestSurfaceWithTwoOpaqueChildren(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        WebTransformationMatrix childTransform;
-        childTransform.translate(250, 250);
-        childTransform.rotate(90);
-        childTransform.translate(-250, -250);
+        gfx::Transform childTransform;
+        childTransform.Translate(250, 250);
+        childTransform.Rotate(90);
+        childTransform.Translate(-250, -250);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
         parent->setMasksToBounds(true);
@@ -1025,10 +1026,10 @@ protected:
     OcclusionTrackerTestOverlappingSurfaceSiblings(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        WebTransformationMatrix childTransform;
-        childTransform.translate(250, 250);
-        childTransform.rotate(90);
-        childTransform.translate(-250, -250);
+        gfx::Transform childTransform;
+        childTransform.Translate(250, 250);
+        childTransform.Rotate(90);
+        childTransform.Translate(-250, -250);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
         parent->setMasksToBounds(true);
@@ -1130,15 +1131,15 @@ protected:
     OcclusionTrackerTestOverlappingSurfaceSiblingsWithTwoTransforms(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        WebTransformationMatrix child1Transform;
-        child1Transform.translate(250, 250);
-        child1Transform.rotate(-90);
-        child1Transform.translate(-250, -250);
+        gfx::Transform child1Transform;
+        child1Transform.Translate(250, 250);
+        child1Transform.Rotate(-90);
+        child1Transform.Translate(-250, -250);
 
-        WebTransformationMatrix child2Transform;
-        child2Transform.translate(250, 250);
-        child2Transform.rotate(90);
-        child2Transform.translate(-250, -250);
+        gfx::Transform child2Transform;
+        child2Transform.Translate(250, 250);
+        child2Transform.Rotate(90);
+        child2Transform.Translate(-250, -250);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
         parent->setMasksToBounds(true);
@@ -1233,10 +1234,10 @@ protected:
     OcclusionTrackerTestFilters(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        WebTransformationMatrix layerTransform;
-        layerTransform.translate(250, 250);
-        layerTransform.rotate(90);
-        layerTransform.translate(-250, -250);
+        gfx::Transform layerTransform;
+        layerTransform.Translate(250, 250);
+        layerTransform.Rotate(90);
+        layerTransform.Translate(-250, -250);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
         parent->setMasksToBounds(true);
@@ -1867,8 +1868,8 @@ protected:
     OcclusionTrackerTest3dTransform(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        WebTransformationMatrix transform;
-        transform.rotate3d(0, 30, 0);
+        gfx::Transform transform;
+        MathUtil::rotateEulerAngles(&transform, 0, 30, 0);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 300));
         typename Types::LayerType* container = this->createLayer(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 300));
@@ -1898,10 +1899,10 @@ protected:
         // behavior is that a 3d layer simply does not add any occlusion to the occlusion
         // tracker.
 
-        WebTransformationMatrix translationToFront;
-        translationToFront.translate3d(0, 0, -10);
-        WebTransformationMatrix translationToBack;
-        translationToFront.translate3d(0, 0, -100);
+        gfx::Transform translationToFront;
+        translationToFront.Translate3d(0, 0, -10);
+        gfx::Transform translationToBack;
+        translationToFront.Translate3d(0, 0, -100);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 300));
         typename Types::ContentLayerType* child1 = this->createDrawingLayer(parent, translationToBack, gfx::PointF(0, 0), gfx::Size(100, 100), true);
@@ -1930,11 +1931,11 @@ protected:
     OcclusionTrackerTestPerspectiveTransform(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        WebTransformationMatrix transform;
-        transform.translate(150, 150);
-        transform.applyPerspective(400);
-        transform.rotate3d(1, 0, 0, -30);
-        transform.translate(-150, -150);
+        gfx::Transform transform;
+        transform.Translate(150, 150);
+        transform.ApplyPerspectiveDepth(400);
+        MathUtil::rotateAxisAngle(&transform, 1, 0, 0, -30);
+        transform.Translate(-150, -150);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 300));
         typename Types::LayerType* container = this->createLayer(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 300));
@@ -1960,13 +1961,13 @@ protected:
     void runMyTest()
     {
         // This test is based on the platform/chromium/compositing/3d-corners.html layout test.
-        WebTransformationMatrix transform;
-        transform.translate(250, 50);
-        transform.applyPerspective(10);
-        transform.translate(-250, -50);
-        transform.translate(250, 50);
-        transform.rotate3d(1, 0, 0, -167);
-        transform.translate(-250, -50);
+        gfx::Transform transform;
+        transform.Translate(250, 50);
+        transform.ApplyPerspectiveDepth(10);
+        transform.Translate(-250, -50);
+        transform.Translate(250, 50);
+        MathUtil::rotateAxisAngle(&transform, 1, 0, 0, -167);
+        transform.Translate(-250, -50);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(500, 100));
         typename Types::LayerType* container = this->createLayer(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(500, 500));
@@ -1993,11 +1994,11 @@ protected:
     OcclusionTrackerTestLayerBehindCameraDoesNotOcclude(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        WebTransformationMatrix transform;
-        transform.translate(50, 50);
-        transform.applyPerspective(100);
-        transform.translate3d(0, 0, 110);
-        transform.translate(-50, -50);
+        gfx::Transform transform;
+        transform.Translate(50, 50);
+        transform.ApplyPerspectiveDepth(100);
+        transform.Translate3d(0, 0, 110);
+        transform.Translate(-50, -50);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
         typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, transform, gfx::PointF(0, 0), gfx::Size(100, 100), true);
@@ -2024,11 +2025,11 @@ protected:
     OcclusionTrackerTestLargePixelsOccludeInsideClipRect(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        WebTransformationMatrix transform;
-        transform.translate(50, 50);
-        transform.applyPerspective(100);
-        transform.translate3d(0, 0, 99);
-        transform.translate(-50, -50);
+        gfx::Transform transform;
+        transform.Translate(50, 50);
+        transform.ApplyPerspectiveDepth(100);
+        transform.Translate3d(0, 0, 99);
+        transform.Translate(-50, -50);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
         parent->setMasksToBounds(true);
@@ -2249,10 +2250,10 @@ protected:
     OcclusionTrackerTestSurfaceOcclusionTranslatesToParent(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        WebTransformationMatrix surfaceTransform;
-        surfaceTransform.translate(300, 300);
-        surfaceTransform.scale(2);
-        surfaceTransform.translate(-150, -150);
+        gfx::Transform surfaceTransform;
+        surfaceTransform.Translate(300, 300);
+        surfaceTransform.Scale(2, 2);
+        surfaceTransform.Translate(-150, -150);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(500, 500));
         typename Types::ContentLayerType* surface = this->createDrawingSurface(parent, surfaceTransform, gfx::PointF(0, 0), gfx::Size(300, 300), false);
@@ -2563,8 +2564,8 @@ protected:
     OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        WebTransformationMatrix scaleByHalf;
-        scaleByHalf.scale(0.5);
+        gfx::Transform scaleByHalf;
+        scaleByHalf.Scale(0.5, 0.5);
 
         // Make a surface and its replica, each 50x50, that are completely surrounded by opaque layers which are above them in the z-order.
         // The surface is scaled to test that the pixel moving is done in the target space, where the background filter is applied, but the surface
@@ -2694,8 +2695,8 @@ protected:
     OcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        WebTransformationMatrix scaleByHalf;
-        scaleByHalf.scale(0.5);
+        gfx::Transform scaleByHalf;
+        scaleByHalf.Scale(0.5, 0.5);
 
         // Makes two surfaces that completely cover |parent|. The occlusion both above and below the filters will be reduced by each of them.
         typename Types::ContentLayerType* root = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(75, 75));
@@ -2879,8 +2880,8 @@ protected:
     OcclusionTrackerTestDontReduceOcclusionBelowBackgroundFilter(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        WebTransformationMatrix scaleByHalf;
-        scaleByHalf.scale(0.5);
+        gfx::Transform scaleByHalf;
+        scaleByHalf.Scale(0.5, 0.5);
 
         // Make a surface and its replica, each 50x50, with a smaller 30x30 layer centered below each.
         // The surface is scaled to test that the pixel moving is done in the target space, where the background filter is applied, but the surface
@@ -2927,8 +2928,8 @@ protected:
     OcclusionTrackerTestDontReduceOcclusionIfBackgroundFilterIsOccluded(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        WebTransformationMatrix scaleByHalf;
-        scaleByHalf.scale(0.5);
+        gfx::Transform scaleByHalf;
+        scaleByHalf.Scale(0.5, 0.5);
 
         // Make a surface and its replica, each 50x50, that are completely occluded by opaque layers which are above them in the z-order.
         // The surface is scaled to test that the pixel moving is done in the target space, where the background filter is applied, but the surface
@@ -2974,8 +2975,8 @@ protected:
     OcclusionTrackerTestReduceOcclusionWhenBackgroundFilterIsPartiallyOccluded(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        WebTransformationMatrix scaleByHalf;
-        scaleByHalf.scale(0.5);
+        gfx::Transform scaleByHalf;
+        scaleByHalf.Scale(0.5, 0.5);
 
         // Make a surface and its replica, each 50x50, that are partially occluded by opaque layers which are above them in the z-order.
         // The surface is scaled to test that the pixel moving is done in the target space, where the background filter is applied, but the surface

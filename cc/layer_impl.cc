@@ -18,8 +18,6 @@
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect_conversions.h"
 
-using WebKit::WebTransformationMatrix;
-
 namespace cc {
 
 LayerImpl::LayerImpl(int id)
@@ -236,14 +234,14 @@ InputHandlerClient::ScrollStatus LayerImpl::tryScroll(const gfx::PointF& screenS
         return InputHandlerClient::ScrollOnMainThread;
     }
 
-    if (!screenSpaceTransform().isInvertible()) {
+    if (!screenSpaceTransform().IsInvertible()) {
         TRACE_EVENT0("cc", "LayerImpl::tryScroll: Ignored nonInvertibleTransform");
         return InputHandlerClient::ScrollIgnored;
     }
 
     if (!nonFastScrollableRegion().IsEmpty()) {
         bool clipped = false;
-        gfx::PointF hitTestPointInContentSpace = MathUtil::projectPoint(screenSpaceTransform().inverse(), screenSpacePoint, clipped);
+        gfx::PointF hitTestPointInContentSpace = MathUtil::projectPoint(MathUtil::inverse(screenSpaceTransform()), screenSpacePoint, clipped);
         gfx::PointF hitTestPointInLayerSpace = gfx::ScalePoint(hitTestPointInContentSpace, 1 / contentsScaleX(), 1 / contentsScaleY());
         if (!clipped && nonFastScrollableRegion().Contains(gfx::ToRoundedPoint(hitTestPointInLayerSpace))) {
             TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed nonFastScrollableRegion");
@@ -308,10 +306,10 @@ void LayerImpl::dumpLayerProperties(std::string* str, int indent) const
 
     str->append(indentStr);
     base::StringAppendF(str, "drawTransform: %f, %f, %f, %f  //  %f, %f, %f, %f  //  %f, %f, %f, %f  //  %f, %f, %f, %f\n",
-        m_drawTransform.m11(), m_drawTransform.m12(), m_drawTransform.m13(), m_drawTransform.m14(),
-        m_drawTransform.m21(), m_drawTransform.m22(), m_drawTransform.m23(), m_drawTransform.m24(),
-        m_drawTransform.m31(), m_drawTransform.m32(), m_drawTransform.m33(), m_drawTransform.m34(),
-        m_drawTransform.m41(), m_drawTransform.m42(), m_drawTransform.m43(), m_drawTransform.m44());
+        m_drawTransform.matrix().getDouble(0, 0), m_drawTransform.matrix().getDouble(0, 1), m_drawTransform.matrix().getDouble(0, 2), m_drawTransform.matrix().getDouble(0, 3),
+        m_drawTransform.matrix().getDouble(1, 0), m_drawTransform.matrix().getDouble(1, 1), m_drawTransform.matrix().getDouble(1, 2), m_drawTransform.matrix().getDouble(1, 3),
+        m_drawTransform.matrix().getDouble(2, 0), m_drawTransform.matrix().getDouble(2, 1), m_drawTransform.matrix().getDouble(2, 2), m_drawTransform.matrix().getDouble(2, 3),
+        m_drawTransform.matrix().getDouble(3, 0), m_drawTransform.matrix().getDouble(3, 1), m_drawTransform.matrix().getDouble(3, 2), m_drawTransform.matrix().getDouble(3, 3));
 
     str->append(indentStr);
     base::StringAppendF(str, "drawsContent: %s\n", m_drawsContent ? "yes" : "no");
@@ -433,12 +431,12 @@ void LayerImpl::setOpacityFromAnimation(float opacity)
     setOpacity(opacity);
 }
 
-const WebKit::WebTransformationMatrix& LayerImpl::transform() const
+const gfx::Transform& LayerImpl::transform() const
 {
      return m_transform;
 }
 
-void LayerImpl::setTransformFromAnimation(const WebTransformationMatrix& transform)
+void LayerImpl::setTransformFromAnimation(const gfx::Transform& transform)
 {
     setTransform(transform);
 }
@@ -595,7 +593,7 @@ void LayerImpl::setPreserves3D(bool preserves3D)
     noteLayerPropertyChangedForSubtree();
 }
 
-void LayerImpl::setSublayerTransform(const WebTransformationMatrix& sublayerTransform)
+void LayerImpl::setSublayerTransform(const gfx::Transform& sublayerTransform)
 {
     if (m_sublayerTransform == sublayerTransform)
         return;
@@ -605,7 +603,7 @@ void LayerImpl::setSublayerTransform(const WebTransformationMatrix& sublayerTran
     noteLayerPropertyChangedForDescendants();
 }
 
-void LayerImpl::setTransform(const WebTransformationMatrix& transform)
+void LayerImpl::setTransform(const gfx::Transform& transform)
 {
     if (m_transform == transform)
         return;
@@ -656,7 +654,7 @@ void LayerImpl::setScrollDelta(const gfx::Vector2dF& scrollDelta)
     noteLayerPropertyChangedForSubtree();
 }
 
-void LayerImpl::setImplTransform(const WebKit::WebTransformationMatrix& transform)
+void LayerImpl::setImplTransform(const gfx::Transform& transform)
 {
     if (m_implTransform == transform)
         return;

@@ -4,8 +4,13 @@
 
 #include "cc/software_renderer.h"
 
+#include <public/WebCompositorSoftwareOutputDevice.h>
+#include <public/WebImage.h>
+#include <public/WebSize.h>
+
 #include "base/debug/trace_event.h"
 #include "cc/debug_border_draw_quad.h"
+#include "cc/math_util.h"
 #include "cc/render_pass_draw_quad.h"
 #include "cc/solid_color_draw_quad.h"
 #include "cc/texture_draw_quad.h"
@@ -17,31 +22,27 @@
 #include "third_party/skia/include/effects/SkLayerRasterizer.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
-#include <public/WebCompositorSoftwareOutputDevice.h>
-#include <public/WebImage.h>
-#include <public/WebSize.h>
-#include <public/WebTransformationMatrix.h>
+#include "ui/gfx/transform.h"
 
 using WebKit::WebCompositorSoftwareOutputDevice;
 using WebKit::WebSize;
-using WebKit::WebTransformationMatrix;
 
 namespace cc {
 
 namespace {
 
-void toSkMatrix(SkMatrix* flattened, const WebTransformationMatrix& m)
+void toSkMatrix(SkMatrix* flattened, const gfx::Transform& m)
 {
     // Convert from 4x4 to 3x3 by dropping the third row and column.
-    flattened->set(0, SkDoubleToScalar(m.m11()));
-    flattened->set(1, SkDoubleToScalar(m.m21()));
-    flattened->set(2, SkDoubleToScalar(m.m41()));
-    flattened->set(3, SkDoubleToScalar(m.m12()));
-    flattened->set(4, SkDoubleToScalar(m.m22()));
-    flattened->set(5, SkDoubleToScalar(m.m42()));
-    flattened->set(6, SkDoubleToScalar(m.m14()));
-    flattened->set(7, SkDoubleToScalar(m.m24()));
-    flattened->set(8, SkDoubleToScalar(m.m44()));
+    flattened->set(0, SkDoubleToScalar(m.matrix().getDouble(0, 0)));
+    flattened->set(1, SkDoubleToScalar(m.matrix().getDouble(0, 1)));
+    flattened->set(2, SkDoubleToScalar(m.matrix().getDouble(0, 3)));
+    flattened->set(3, SkDoubleToScalar(m.matrix().getDouble(1, 0)));
+    flattened->set(4, SkDoubleToScalar(m.matrix().getDouble(1, 1)));
+    flattened->set(5, SkDoubleToScalar(m.matrix().getDouble(1, 3)));
+    flattened->set(6, SkDoubleToScalar(m.matrix().getDouble(3, 0)));
+    flattened->set(7, SkDoubleToScalar(m.matrix().getDouble(3, 1)));
+    flattened->set(8, SkDoubleToScalar(m.matrix().getDouble(3, 3)));
 }
 
 bool isScaleAndTranslate(const SkMatrix& matrix)
@@ -184,9 +185,9 @@ bool SoftwareRenderer::isSoftwareResource(ResourceProvider::ResourceId id) const
 void SoftwareRenderer::drawQuad(DrawingFrame& frame, const DrawQuad* quad)
 {
     TRACE_EVENT0("cc", "SoftwareRenderer::drawQuad");
-    WebTransformationMatrix quadRectMatrix;
+    gfx::Transform quadRectMatrix;
     quadRectTransform(&quadRectMatrix, quad->quadTransform(), quad->rect);
-    WebTransformationMatrix contentsDeviceTransform = (frame.windowMatrix * frame.projectionMatrix * quadRectMatrix).to2dTransform();
+    gfx::Transform contentsDeviceTransform = MathUtil::to2dTransform(frame.windowMatrix * frame.projectionMatrix * quadRectMatrix);
     SkMatrix skDeviceMatrix;
     toSkMatrix(&skDeviceMatrix, contentsDeviceTransform);
     m_skCurrentCanvas->setMatrix(skDeviceMatrix);

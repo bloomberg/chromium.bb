@@ -76,8 +76,8 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     gfx::Rect arbitraryRect = gfx::Rect(arbitraryPoint, arbitrarySize);
     gfx::RectF arbitraryRectF = gfx::RectF(arbitraryPointF, gfx::SizeF(1.234f, 5.678f));
     SkColor arbitraryColor = SkColorSetRGB(10, 20, 30);
-    WebTransformationMatrix arbitraryTransform;
-    arbitraryTransform.scale3d(0.1, 0.2, 0.3);
+    gfx::Transform arbitraryTransform;
+    arbitraryTransform.Scale3d(0.1, 0.2, 0.3);
     WebFilterOperations arbitraryFilters;
     arbitraryFilters.append(WebFilterOperation::createOpacityFilter(0.5));
     SkAutoTUnref<SkImageFilter> arbitraryFilter(new SkBlurImageFilter(SK_Scalar1, SK_Scalar1));

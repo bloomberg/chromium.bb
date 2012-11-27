@@ -5,6 +5,8 @@
 #ifndef CC_VIDEO_LAYER_IMPL_H_
 #define CC_VIDEO_LAYER_IMPL_H_
 
+#include <public/WebVideoFrameProvider.h>
+
 #include "base/callback.h"
 #include "base/synchronization/lock.h"
 #include "cc/cc_export.h"
@@ -12,8 +14,7 @@
 #include "media/base/video_frame.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/size.h"
-#include <public/WebTransformationMatrix.h>
-#include <public/WebVideoFrameProvider.h>
+#include "ui/gfx/transform.h"
 
 namespace WebKit {
 class WebVideoFrame;
@@ -80,7 +81,7 @@ private:
     base::Lock m_providerLock;
     WebKit::WebVideoFrameProvider* m_provider;
 
-    WebKit::WebTransformationMatrix m_streamTextureMatrix;
+    gfx::Transform m_streamTextureMatrix;
 
     FrameUnwrapper m_unwrapper;
     WebKit::WebVideoFrame *m_webFrame;

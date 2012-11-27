@@ -11,9 +11,7 @@
 #include "cc/math_util.h"
 #include "ui/gfx/quad_f.h"
 #include "ui/gfx/rect.h"
-#include <public/WebTransformationMatrix.h>
-
-using WebKit::WebTransformationMatrix;
+#include "ui/gfx/transform.h"
 
 namespace cc {
 
@@ -49,7 +47,7 @@ static inline float polygonArea(const gfx::PointF points[8], int numPoints)
 }
 
 // Takes a given quad, maps it by the given transformation, and gives the area of the resulting polygon.
-static inline float areaOfMappedQuad(const WebTransformationMatrix& transform, const gfx::QuadF& quad)
+static inline float areaOfMappedQuad(const gfx::Transform& transform, const gfx::QuadF& quad)
 {
     gfx::PointF clippedQuad[8];
     int numVerticesInClippedQuad = 0;
@@ -71,7 +69,7 @@ void OverdrawMetrics::didCullTilesForUpload(int count)
         m_tilesCulledForUpload += count;
 }
 
-void OverdrawMetrics::didUpload(const WebTransformationMatrix& transformToTarget, const gfx::Rect& uploadRect, const gfx::Rect& opaqueRect)
+void OverdrawMetrics::didUpload(const gfx::Transform& transformToTarget, const gfx::Rect& uploadRect, const gfx::Rect& opaqueRect)
 {
     if (!m_recordMetricsForFrame)
         return;
@@ -99,7 +97,7 @@ void OverdrawMetrics::didUseRenderSurfaceTextureMemoryBytes(size_t renderSurface
     m_renderSurfaceTextureUseBytes += renderSurfaceUseBytes;
 }
 
-void OverdrawMetrics::didCullForDrawing(const WebTransformationMatrix& transformToTarget, const gfx::Rect& beforeCullRect, const gfx::Rect& afterCullRect)
+void OverdrawMetrics::didCullForDrawing(const gfx::Transform& transformToTarget, const gfx::Rect& beforeCullRect, const gfx::Rect& afterCullRect)
 {
     if (!m_recordMetricsForFrame)
         return;
@@ -110,7 +108,7 @@ void OverdrawMetrics::didCullForDrawing(const WebTransformationMatrix& transform
     m_pixelsCulledForDrawing += beforeCullArea - afterCullArea;
 }
 
-void OverdrawMetrics::didDraw(const WebTransformationMatrix& transformToTarget, const gfx::Rect& afterCullRect, const gfx::Rect& opaqueRect)
+void OverdrawMetrics::didDraw(const gfx::Transform& transformToTarget, const gfx::Rect& afterCullRect, const gfx::Rect& opaqueRect)
 {
     if (!m_recordMetricsForFrame)
         return;

@@ -23,9 +23,9 @@ using cc::TileDrawQuad;
 using cc::StreamVideoDrawQuad;
 using cc::VideoLayerImpl;
 using cc::YUVVideoDrawQuad;
+using gfx::Transform;
 using WebKit::WebFilterOperation;
 using WebKit::WebFilterOperations;
-using WebKit::WebTransformationMatrix;
 
 class CCMessagesTest : public testing::Test {
  protected:
@@ -173,10 +173,10 @@ class CCMessagesTest : public testing::Test {
 TEST_F(CCMessagesTest, AllQuads) {
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
 
-  WebTransformationMatrix arbitrary_matrix;
-  arbitrary_matrix.scale(3);
-  arbitrary_matrix.translate(-5, 20);
-  arbitrary_matrix.rotate(15);
+  Transform arbitrary_matrix;
+  arbitrary_matrix.Scale(3, 3);
+  arbitrary_matrix.Translate(-5, 20);
+  arbitrary_matrix.Rotate(15);
   gfx::Rect arbitrary_rect1(-5, 9, 3, 15);
   gfx::Rect arbitrary_rect2(40, 23, 11, 7);
   gfx::Rect arbitrary_rect3(7, -53, 22, 19);

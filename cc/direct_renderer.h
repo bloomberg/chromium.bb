@@ -39,8 +39,8 @@ public:
 
         gfx::RectF rootDamageRect;
 
-        WebKit::WebTransformationMatrix projectionMatrix;
-        WebKit::WebTransformationMatrix windowMatrix;
+        gfx::Transform projectionMatrix;
+        gfx::Transform windowMatrix;
         bool flippedY;
     };
 
@@ -71,7 +71,7 @@ protected:
     };
 
     static gfx::RectF quadVertexRect();
-    static void quadRectTransform(WebKit::WebTransformationMatrix* quadRectTransform, const WebKit::WebTransformationMatrix& quadTransform, const gfx::RectF& quadRect);
+    static void quadRectTransform(gfx::Transform* quadRectTransform, const gfx::Transform& quadTransform, const gfx::RectF& quadRect);
     static void initializeMatrices(DrawingFrame&, const gfx::Rect& drawRect, bool flipY);
     static gfx::Rect moveScissorToWindowSpace(const DrawingFrame&, gfx::RectF scissorRect);
     static gfx::RectF computeScissorRectForRenderPass(const DrawingFrame& frame);

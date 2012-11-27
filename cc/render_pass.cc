@@ -6,8 +6,6 @@
 
 #include "third_party/skia/include/core/SkImageFilter.h"
 
-using WebKit::WebTransformationMatrix;
-
 namespace cc {
 
 scoped_ptr<RenderPass> RenderPass::Create() {
@@ -44,7 +42,7 @@ scoped_ptr<RenderPass> RenderPass::Copy(Id new_id) const {
 void RenderPass::SetNew(Id id,
                         gfx::Rect output_rect,
                         gfx::RectF damage_rect,
-                        const WebKit::WebTransformationMatrix& transform_to_root_target) {
+                        const gfx::Transform& transform_to_root_target) {
   DCHECK_GT(id.layer_id, 0);
   DCHECK_GE(id.index, 0);
 
@@ -60,7 +58,7 @@ void RenderPass::SetNew(Id id,
 void RenderPass::SetAll(Id id,
                         gfx::Rect output_rect,
                         gfx::RectF damage_rect,
-                        const WebKit::WebTransformationMatrix& transform_to_root_target,
+                        const gfx::Transform& transform_to_root_target,
                         bool has_transparent_background,
                         bool has_occlusion_from_outside_target_surface,
                         const WebKit::WebFilterOperations& filters,

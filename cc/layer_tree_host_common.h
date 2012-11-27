@@ -9,8 +9,8 @@
 #include "cc/cc_export.h"
 #include "cc/scoped_ptr_vector.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/transform.h"
 #include "ui/gfx/vector2d.h"
-#include <public/WebTransformationMatrix.h>
 
 namespace cc {
 
@@ -20,7 +20,7 @@ class Layer;
 
 class CC_EXPORT LayerTreeHostCommon {
 public:
-    static gfx::Rect calculateVisibleRect(const gfx::Rect& targetSurfaceRect, const gfx::Rect& layerBoundRect, const WebKit::WebTransformationMatrix&);
+    static gfx::Rect calculateVisibleRect(const gfx::Rect& targetSurfaceRect, const gfx::Rect& layerBoundRect, const gfx::Transform&);
 
     static void calculateDrawTransforms(Layer* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, int maxTextureSize, std::vector<scoped_refptr<Layer> >& renderSurfaceLayerList);
     static void calculateDrawTransforms(LayerImpl* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, LayerSorter*, int maxTextureSize, std::vector<LayerImpl*>& renderSurfaceLayerList);

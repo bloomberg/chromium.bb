@@ -30,8 +30,8 @@ struct hash<cc::GraphEdge*> {
 } // namespace BASE_HASH_NAMESPACE
 #endif // COMPILER
 
-namespace WebKit {
-class WebTransformationMatrix;
+namespace gfx {
+class Transform;
 }
 
 namespace cc {
@@ -41,7 +41,7 @@ struct GraphEdge;
 // Holds various useful properties derived from a layer's 3D outline.
 struct CC_EXPORT LayerShape {
     LayerShape();
-    LayerShape(float width, float height, const WebKit::WebTransformationMatrix& drawTransform);
+    LayerShape(float width, float height, const gfx::Transform& drawTransform);
     ~LayerShape();
 
     float layerZFromProjectedPoint(const gfx::PointF&) const;

@@ -20,7 +20,6 @@
 #include "ui/gfx/quad_f.h"
 
 using namespace std;
-using WebKit::WebTransformationMatrix;
 
 namespace cc {
 

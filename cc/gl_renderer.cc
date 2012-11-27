@@ -43,7 +43,6 @@ using namespace std;
 using WebKit::WebGraphicsContext3D;
 using WebKit::WebGraphicsMemoryAllocation;
 using WebKit::WebSharedGraphicsContext3D;
-using WebKit::WebTransformationMatrix;
 
 namespace cc {
 
@@ -329,9 +328,9 @@ void GLRenderer::drawDebugBorderQuad(const DrawingFrame& frame, const DebugBorde
 
     // Use the full quadRect for debug quads to not move the edges based on partial swaps.
     const gfx::Rect& layerRect = quad->rect;
-    WebTransformationMatrix renderMatrix = quad->quadTransform();
-    renderMatrix.translate(0.5 * layerRect.width() + layerRect.x(), 0.5 * layerRect.height() + layerRect.y());
-    renderMatrix.scaleNonUniform(layerRect.width(), layerRect.height());
+    gfx::Transform renderMatrix = quad->quadTransform();
+    renderMatrix.Translate(0.5 * layerRect.width() + layerRect.x(), 0.5 * layerRect.height() + layerRect.y());
+    renderMatrix.Scale(layerRect.width(), layerRect.height());
     GLRenderer::toGLMatrix(&glMatrix[0], frame.projectionMatrix * renderMatrix);
     GLC(context(), context()->uniformMatrix4fv(program->vertexShader().matrixLocation(), 1, false, &glMatrix[0]));
 
@@ -435,8 +434,8 @@ static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, Sc
 scoped_ptr<ScopedResource> GLRenderer::drawBackgroundFilters(
     DrawingFrame& frame, const RenderPassDrawQuad* quad,
     const WebKit::WebFilterOperations& filters,
-    const WebTransformationMatrix& contentsDeviceTransform,
-    const WebTransformationMatrix& contentsDeviceTransformInverse)
+    const gfx::Transform& contentsDeviceTransform,
+    const gfx::Transform& contentsDeviceTransformInverse)
 {
     // This method draws a background filter, which applies a filter to any pixels behind the quad and seen through its background.
     // The algorithm works as follows:
@@ -492,10 +491,10 @@ scoped_ptr<ScopedResource> GLRenderer::drawBackgroundFilters(
 
     if (usingBackgroundTexture) {
         // Copy the readback pixels from device to the background texture for the surface.
-        WebTransformationMatrix deviceToFramebufferTransform;
-        deviceToFramebufferTransform.translate(quad->rect.width() / 2.0, quad->rect.height() / 2.0);
-        deviceToFramebufferTransform.scale3d(quad->rect.width(), quad->rect.height(), 1);
-        deviceToFramebufferTransform.multiply(contentsDeviceTransformInverse);
+        gfx::Transform deviceToFramebufferTransform;
+        deviceToFramebufferTransform.Translate(quad->rect.width() / 2.0, quad->rect.height() / 2.0);
+        deviceToFramebufferTransform.Scale3d(quad->rect.width(), quad->rect.height(), 1);
+        deviceToFramebufferTransform.PreconcatTransform(contentsDeviceTransformInverse);
         copyTextureToFramebuffer(frame, filteredDeviceBackgroundTextureId, deviceRect, deviceToFramebufferTransform);
     }
 
@@ -517,15 +516,15 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
     if (!renderPass)
         return;
 
-    WebTransformationMatrix quadRectMatrix;
+    gfx::Transform quadRectMatrix;
     quadRectTransform(&quadRectMatrix, quad->quadTransform(), quad->rect);
-    WebTransformationMatrix contentsDeviceTransform = (frame.windowMatrix * frame.projectionMatrix * quadRectMatrix).to2dTransform();
+    gfx::Transform contentsDeviceTransform = MathUtil::to2dTransform(frame.windowMatrix * frame.projectionMatrix * quadRectMatrix);
 
     // Can only draw surface if device matrix is invertible.
-    if (!contentsDeviceTransform.isInvertible())
+    if (!contentsDeviceTransform.IsInvertible())
         return;
 
-    WebTransformationMatrix contentsDeviceTransformInverse = contentsDeviceTransform.inverse();
+    gfx::Transform contentsDeviceTransformInverse = MathUtil::inverse(contentsDeviceTransform);
     scoped_ptr<ScopedResource> backgroundTexture = drawBackgroundFilters(
         frame, quad, renderPass->background_filters,
         contentsDeviceTransform, contentsDeviceTransformInverse);
@@ -749,8 +748,8 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
 
 
     gfx::QuadF localQuad;
-    WebTransformationMatrix deviceTransform = WebTransformationMatrix(frame.windowMatrix * frame.projectionMatrix * quad->quadTransform()).to2dTransform();
-    if (!deviceTransform.isInvertible())
+    gfx::Transform deviceTransform = MathUtil::to2dTransform(frame.windowMatrix * frame.projectionMatrix * quad->quadTransform());
+    if (!deviceTransform.IsInvertible())
         return;
 
     bool clipped = false;
@@ -840,7 +839,7 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
         LayerQuad deviceQuad(leftEdge, topEdge, rightEdge, bottomEdge);
 
         // Map device space quad to local space. deviceTransform has no 3d component since it was generated with to2dTransform() so we don't need to project.
-        WebTransformationMatrix deviceTransformInverse = deviceTransform.inverse();
+        gfx::Transform deviceTransformInverse = MathUtil::inverse(deviceTransform);
         localQuad = MathUtil::mapQuad(deviceTransformInverse, deviceQuad.ToQuadF(), clipped);
 
         // We should not DCHECK(!clipped) here, because anti-aliasing inflation may cause deviceQuad to become
@@ -1063,24 +1062,9 @@ void GLRenderer::ensureScissorTestDisabled()
     m_isScissorEnabled = false;
 }
 
-void GLRenderer::toGLMatrix(float* flattened, const WebTransformationMatrix& m)
+void GLRenderer::toGLMatrix(float* glMatrix, const gfx::Transform& transform)
 {
-    flattened[0] = m.m11();
-    flattened[1] = m.m12();
-    flattened[2] = m.m13();
-    flattened[3] = m.m14();
-    flattened[4] = m.m21();
-    flattened[5] = m.m22();
-    flattened[6] = m.m23();
-    flattened[7] = m.m24();
-    flattened[8] = m.m31();
-    flattened[9] = m.m32();
-    flattened[10] = m.m33();
-    flattened[11] = m.m34();
-    flattened[12] = m.m41();
-    flattened[13] = m.m42();
-    flattened[14] = m.m43();
-    flattened[15] = m.m44();
+    transform.matrix().asColMajorf(glMatrix);
 }
 
 void GLRenderer::setShaderQuadF(const gfx::QuadF& quad, int quadLocation)
@@ -1106,9 +1090,9 @@ void GLRenderer::setShaderOpacity(float opacity, int alphaLocation)
         GLC(m_context, m_context->uniform1f(alphaLocation, opacity));
 }
 
-void GLRenderer::drawQuadGeometry(const DrawingFrame& frame, const WebKit::WebTransformationMatrix& drawTransform, const gfx::RectF& quadRect, int matrixLocation)
+void GLRenderer::drawQuadGeometry(const DrawingFrame& frame, const gfx::Transform& drawTransform, const gfx::RectF& quadRect, int matrixLocation)
 {
-    WebTransformationMatrix quadRectMatrix;
+    gfx::Transform quadRectMatrix;
     quadRectTransform(&quadRectMatrix, drawTransform, quadRect);
     static float glMatrix[16];
     toGLMatrix(&glMatrix[0], frame.projectionMatrix * quadRectMatrix);
@@ -1117,7 +1101,7 @@ void GLRenderer::drawQuadGeometry(const DrawingFrame& frame, const WebKit::WebTr
     GLC(m_context, m_context->drawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0));
 }
 
-void GLRenderer::copyTextureToFramebuffer(const DrawingFrame& frame, int textureId, const gfx::Rect& rect, const WebTransformationMatrix& drawMatrix)
+void GLRenderer::copyTextureToFramebuffer(const DrawingFrame& frame, int textureId, const gfx::Rect& rect, const gfx::Transform& drawMatrix)
 {
     const RenderPassProgram* program = renderPassProgram();
 

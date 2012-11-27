@@ -10,8 +10,6 @@
 #include "cc/render_surface_impl.h"
 #include <public/WebFilterOperations.h>
 
-using WebKit::WebTransformationMatrix;
-
 namespace cc {
 
 scoped_ptr<DamageTracker> DamageTracker::create()
@@ -306,12 +304,12 @@ void DamageTracker::extendDamageForRenderSurface(LayerImpl* layer, gfx::RectF& t
 
     // If there was damage, transform it to target space, and possibly contribute its reflection if needed.
     if (!damageRectInLocalSpace.IsEmpty()) {
-        const WebTransformationMatrix& drawTransform = renderSurface->drawTransform();
+        const gfx::Transform& drawTransform = renderSurface->drawTransform();
         gfx::RectF damageRectInTargetSpace = MathUtil::mapClippedRect(drawTransform, damageRectInLocalSpace);
         targetDamageRect.Union(damageRectInTargetSpace);
 
         if (layer->replicaLayer()) {
-            const WebTransformationMatrix& replicaDrawTransform = renderSurface->replicaDrawTransform();
+            const gfx::Transform& replicaDrawTransform = renderSurface->replicaDrawTransform();
             targetDamageRect.Union(MathUtil::mapClippedRect(replicaDrawTransform, damageRectInLocalSpace));
         }
     }
@@ -323,7 +321,7 @@ void DamageTracker::extendDamageForRenderSurface(LayerImpl* layer, gfx::RectF& t
         bool replicaIsNew = false;
         removeRectFromCurrentFrame(replicaMaskLayer->id(), replicaIsNew);
 
-        const WebTransformationMatrix& replicaDrawTransform = renderSurface->replicaDrawTransform();
+        const gfx::Transform& replicaDrawTransform = renderSurface->replicaDrawTransform();
         gfx::RectF replicaMaskLayerRect = MathUtil::mapClippedRect(replicaDrawTransform, gfx::RectF(gfx::PointF(), replicaMaskLayer->bounds()));
         saveRectForNextFrame(replicaMaskLayer->id(), replicaMaskLayerRect);
 

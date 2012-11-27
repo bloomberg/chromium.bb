@@ -6,13 +6,14 @@
 #ifndef CC_RENDER_SURFACE_H_
 #define CC_RENDER_SURFACE_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "cc/cc_export.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
-#include <public/WebTransformationMatrix.h>
-#include <vector>
-#include "cc/cc_export.h"
+#include "ui/gfx/transform.h"
 
 namespace cc {
 
@@ -37,17 +38,17 @@ public:
 
     // This goes from content space with the origin in the center of the rect being transformed to the target space with the origin in the top left of the
     // rect being transformed. Position the rect so that the origin is in the center of it before applying this transform.
-    const WebKit::WebTransformationMatrix& drawTransform() const { return m_drawTransform; }
-    void setDrawTransform(const WebKit::WebTransformationMatrix& drawTransform) { m_drawTransform = drawTransform; }
+    const gfx::Transform& drawTransform() const { return m_drawTransform; }
+    void setDrawTransform(const gfx::Transform& drawTransform) { m_drawTransform = drawTransform; }
 
-    const WebKit::WebTransformationMatrix& screenSpaceTransform() const { return m_screenSpaceTransform; }
-    void setScreenSpaceTransform(const WebKit::WebTransformationMatrix& screenSpaceTransform) { m_screenSpaceTransform = screenSpaceTransform; }
+    const gfx::Transform& screenSpaceTransform() const { return m_screenSpaceTransform; }
+    void setScreenSpaceTransform(const gfx::Transform& screenSpaceTransform) { m_screenSpaceTransform = screenSpaceTransform; }
 
-    const WebKit::WebTransformationMatrix& replicaDrawTransform() const { return m_replicaDrawTransform; }
-    void setReplicaDrawTransform(const WebKit::WebTransformationMatrix& replicaDrawTransform) { m_replicaDrawTransform = replicaDrawTransform; }
+    const gfx::Transform& replicaDrawTransform() const { return m_replicaDrawTransform; }
+    void setReplicaDrawTransform(const gfx::Transform& replicaDrawTransform) { m_replicaDrawTransform = replicaDrawTransform; }
 
-    const WebKit::WebTransformationMatrix& replicaScreenSpaceTransform() const { return m_replicaScreenSpaceTransform; }
-    void setReplicaScreenSpaceTransform(const WebKit::WebTransformationMatrix& replicaScreenSpaceTransform) { m_replicaScreenSpaceTransform = replicaScreenSpaceTransform; }
+    const gfx::Transform& replicaScreenSpaceTransform() const { return m_replicaScreenSpaceTransform; }
+    void setReplicaScreenSpaceTransform(const gfx::Transform& replicaScreenSpaceTransform) { m_replicaScreenSpaceTransform = replicaScreenSpaceTransform; }
 
     bool targetSurfaceTransformsAreAnimating() const { return m_targetSurfaceTransformsAreAnimating; }
     void setTargetSurfaceTransformsAreAnimating(bool animating) { m_targetSurfaceTransformsAreAnimating = animating; }
@@ -80,10 +81,10 @@ private:
 
     float m_drawOpacity;
     bool m_drawOpacityIsAnimating;
-    WebKit::WebTransformationMatrix m_drawTransform;
-    WebKit::WebTransformationMatrix m_screenSpaceTransform;
-    WebKit::WebTransformationMatrix m_replicaDrawTransform;
-    WebKit::WebTransformationMatrix m_replicaScreenSpaceTransform;
+    gfx::Transform m_drawTransform;
+    gfx::Transform m_screenSpaceTransform;
+    gfx::Transform m_replicaDrawTransform;
+    gfx::Transform m_replicaScreenSpaceTransform;
     bool m_targetSurfaceTransformsAreAnimating;
     bool m_screenSpaceTransformsAreAnimating;
 
