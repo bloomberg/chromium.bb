@@ -14,6 +14,7 @@
 
 namespace base {
 class ListValue;
+class Value;
 }
 
 class TaskManagerHandler : public content::WebUIMessageHandler,
@@ -72,6 +73,30 @@ class TaskManagerHandler : public content::WebUIMessageHandler,
   void OnGroupAdded(int start, int length);
   void OnGroupChanged(int start, int length);
   void OnGroupRemoved(int start, int length);
+
+  // Creates or updates information for a single task group. A task group is a
+  // group of tasks associated with a single process ID. |group_index| is the
+  // integer index of the target process within the data model.
+  base::DictionaryValue* CreateTaskGroupValue(int group_index);
+
+  // Creates a list of values to display within a single column of the task
+  // manager for a single task group. |columnn_name| is the name of the column.
+  // |index| is the index of the resources associated with a process group.
+  // |length| is the number of values associated with the group, and is either
+  // 1 if all tasks within the group share a common value or equal to the
+  // number of tasks within the group.
+  void CreateGroupColumnList(const std::string& column_name,
+                             const int index,
+                             const int length,
+                             base::DictionaryValue* val);
+
+  // Retrieves the value of a property for a single task. |column_name| is the
+  // name of the property, which is associated with a column within the task
+  // manager or "about memory" page. |i| is the index of the task. Tasks are
+  // grouped by process ID, and the index of the task is the sum of the group
+  // offset and the index of the task within the group.
+  base::Value* CreateColumnValue(const std::string& column_name,
+                                 const int i);
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerHandler);
 };

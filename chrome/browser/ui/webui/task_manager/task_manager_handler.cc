@@ -25,136 +25,6 @@
 
 namespace {
 
-Value* CreateColumnValue(const TaskManagerModel* tm,
-                         const std::string& column_name,
-                         const int i) {
-  if (column_name == "uniqueId")
-    return Value::CreateIntegerValue(tm->GetResourceUniqueId(i));
-  if (column_name == "type") {
-    return Value::CreateStringValue(
-        TaskManager::Resource::GetResourceTypeAsString(
-        tm->GetResourceType(i)));
-  }
-  if (column_name == "processId")
-    return Value::CreateStringValue(tm->GetResourceProcessId(i));
-  if (column_name == "processIdValue")
-    return Value::CreateIntegerValue(tm->GetProcessId(i));
-  if (column_name == "cpuUsage")
-    return Value::CreateStringValue(tm->GetResourceCPUUsage(i));
-  if (column_name == "cpuUsageValue")
-    return Value::CreateDoubleValue(tm->GetCPUUsage(i));
-  if (column_name == "privateMemory")
-    return Value::CreateStringValue(tm->GetResourcePrivateMemory(i));
-  if (column_name == "privateMemoryValue") {
-    size_t private_memory;
-    tm->GetPrivateMemory(i, &private_memory);
-    return Value::CreateDoubleValue(private_memory);
-  }
-  if (column_name == "sharedMemory")
-    return Value::CreateStringValue(tm->GetResourceSharedMemory(i));
-  if (column_name == "sharedMemoryValue") {
-    size_t shared_memory;
-    tm->GetSharedMemory(i, &shared_memory);
-    return Value::CreateDoubleValue(shared_memory);
-  }
-  if (column_name == "physicalMemory")
-    return Value::CreateStringValue(tm->GetResourcePhysicalMemory(i));
-  if (column_name == "physicalMemoryValue") {
-    size_t physical_memory;
-    tm->GetPhysicalMemory(i, &physical_memory);
-    return Value::CreateDoubleValue(physical_memory);
-  }
-  if (column_name == "icon") {
-    return Value::CreateStringValue(
-               web_ui_util::GetBitmapDataUrl(*tm->GetResourceIcon(i).bitmap()));
-  }
-  if (column_name == "title")
-    return Value::CreateStringValue(tm->GetResourceTitle(i));
-  if (column_name == "profileName")
-    return Value::CreateStringValue(tm->GetResourceProfileName(i));
-  if (column_name == "networkUsage")
-    return Value::CreateStringValue(tm->GetResourceNetworkUsage(i));
-  if (column_name == "networkUsageValue")
-    return Value::CreateDoubleValue(tm->GetNetworkUsage(i));
-  if (column_name == "webCoreImageCacheSize")
-    return Value::CreateStringValue(tm->GetResourceWebCoreImageCacheSize(i));
-  if (column_name == "webCoreImageCacheSizeValue") {
-    WebKit::WebCache::ResourceTypeStats resource_stats;
-    tm->GetWebCoreCacheStats(i, &resource_stats);
-    return Value::CreateDoubleValue(resource_stats.images.size);
-  }
-  if (column_name == "webCoreScriptsCacheSize")
-    return Value::CreateStringValue(tm->GetResourceWebCoreScriptsCacheSize(i));
-  if (column_name == "webCoreScriptsCacheSizeValue") {
-    WebKit::WebCache::ResourceTypeStats resource_stats;
-    tm->GetWebCoreCacheStats(i, &resource_stats);
-    return Value::CreateDoubleValue(resource_stats.scripts.size);
-  }
-  if (column_name == "webCoreCSSCacheSize")
-    return Value::CreateStringValue(tm->GetResourceWebCoreCSSCacheSize(i));
-  if (column_name == "webCoreCSSCacheSizeValue") {
-    WebKit::WebCache::ResourceTypeStats resource_stats;
-    tm->GetWebCoreCacheStats(i, &resource_stats);
-    return Value::CreateDoubleValue(resource_stats.cssStyleSheets.size);
-  }
-  if (column_name == "fps")
-    return Value::CreateStringValue(tm->GetResourceFPS(i));
-  if (column_name == "fpsValue") {
-    float fps;
-    tm->GetFPS(i, &fps);
-    return Value::CreateDoubleValue(fps);
-  }
-  if (column_name == "videoMemory")
-    return Value::CreateStringValue(tm->GetResourceVideoMemory(i));
-  if (column_name == "videoMemoryValue") {
-    size_t video_memory;
-    bool has_duplicates;
-    double value;
-    if (tm->GetVideoMemory(i, &video_memory, &has_duplicates))
-      value = static_cast<double>(video_memory);
-    else
-      value = 0;
-    return Value::CreateDoubleValue(value);
-  }
-  if (column_name == "sqliteMemoryUsed")
-    return Value::CreateStringValue(tm->GetResourceSqliteMemoryUsed(i));
-  if (column_name == "sqliteMemoryUsedValue") {
-    size_t sqlite_memory;
-    tm->GetSqliteMemoryUsedBytes(i, &sqlite_memory);
-    return Value::CreateDoubleValue(sqlite_memory);
-  }
-  if (column_name == "goatsTeleported")
-    return Value::CreateStringValue(tm->GetResourceGoatsTeleported(i));
-  if (column_name == "goatsTeleportedValue")
-    return Value::CreateIntegerValue(tm->GetGoatsTeleported(i));
-  if (column_name == "v8MemoryAllocatedSize")
-    return Value::CreateStringValue(tm->GetResourceV8MemoryAllocatedSize(i));
-  if (column_name == "v8MemoryAllocatedSizeValue") {
-    size_t v8_memory;
-    tm->GetV8Memory(i, &v8_memory);
-    return Value::CreateDoubleValue(v8_memory);
-  }
-  if (column_name == "canInspect")
-    return Value::CreateBooleanValue(tm->CanInspect(i));
-  if (column_name == "canActivate")
-    return Value::CreateBooleanValue(tm->CanActivate(i));
-
-  NOTREACHED();
-  return NULL;
-}
-
-void CreateGroupColumnList(const TaskManagerModel* tm,
-                           const std::string& column_name,
-                           const int index,
-                           const int length,
-                           DictionaryValue* val) {
-  ListValue* list = new ListValue();
-  for (int i = index; i < (index + length); ++i) {
-    list->Append(CreateColumnValue(tm, column_name, i));
-  }
-  val->Set(column_name, list);
-}
-
 struct ColumnType {
   const char* column_id;
   // Whether the column has the real value separately or not, instead of the
@@ -187,43 +57,6 @@ const ColumnType kColumnsList[] = {
   {"canInspect", false, true},
   {"canActivate", false, true}
 };
-
-DictionaryValue* CreateTaskGroupValue(
-    const TaskManagerModel* tm,
-    const int group_index,
-    const std::set<std::string>& columns) {
-  DictionaryValue* val = new DictionaryValue();
-
-  const int group_count = tm->GroupCount();
-  if (group_index >= group_count)
-     return val;
-
-  int index = tm->GetResourceIndexForGroup(group_index, 0);
-  int length = tm->GetGroupRangeForResource(index).second;
-
-  // Forces to set following 3 columns regardless of |enable_columns|.
-  val->SetInteger("index", index);
-  val->SetBoolean("isBackgroundResource",
-                  tm->IsBackgroundResource(index));
-  CreateGroupColumnList(tm, "processId", index, 1, val);
-  CreateGroupColumnList(tm, "type", index, length, val);
-  CreateGroupColumnList(tm, "uniqueId", index, length, val);
-
-  for (size_t i = 0; i < arraysize(kColumnsList); ++i) {
-    const std::string column_id = kColumnsList[i].column_id;
-
-    if (columns.find(column_id) == columns.end())
-      continue;
-
-    int column_length = kColumnsList[i].has_multiple_data ? length : 1;
-    CreateGroupColumnList(tm, column_id, index, column_length, val);
-
-    if (kColumnsList[i].has_real_value)
-      CreateGroupColumnList(tm, column_id + "Value", index, column_length, val);
-  }
-
-  return val;
-}
 
 }  // namespace
 
@@ -399,9 +232,9 @@ void TaskManagerHandler::OnGroupChanged(const int group_start,
   base::FundamentalValue length_value(group_length);
   base::ListValue tasks_value;
 
-  for (int i = 0; i < group_length; ++i)
-    tasks_value.Append(
-        CreateTaskGroupValue(model_, group_start + i, enabled_columns_));
+  for (int i = 0; i < group_length; ++i) {
+    tasks_value.Append(CreateTaskGroupValue(group_start + i));
+  }
 
   if (is_enabled_ && is_alive()) {
     web_ui()->CallJavascriptFunction("taskChanged",
@@ -418,4 +251,177 @@ void TaskManagerHandler::OnGroupRemoved(const int group_start,
 }
 
 void TaskManagerHandler::OnReadyPeriodicalUpdate() {
+}
+
+base::DictionaryValue* TaskManagerHandler::CreateTaskGroupValue(
+    int group_index) {
+  DictionaryValue* val = new DictionaryValue();
+
+  if (group_index >= model_->GroupCount())
+     return val;
+
+  int index = model_->GetResourceIndexForGroup(group_index, 0);
+  int length = model_->GetGroupRangeForResource(index).second;
+
+  // Forces to set following 3 columns regardless of |enable_columns|.
+  val->SetInteger("index", index);
+  val->SetBoolean("isBackgroundResource",
+                  model_->IsBackgroundResource(index));
+  CreateGroupColumnList("processId", index, 1, val);
+  CreateGroupColumnList("type", index, length, val);
+  CreateGroupColumnList("uniqueId", index, length, val);
+
+  for (size_t i = 0; i < arraysize(kColumnsList); ++i) {
+    const std::string column_id = kColumnsList[i].column_id;
+
+    if (enabled_columns_.find(column_id) == enabled_columns_.end())
+      continue;
+
+    int column_length = kColumnsList[i].has_multiple_data ? length : 1;
+    CreateGroupColumnList(column_id, index, column_length, val);
+
+    if (kColumnsList[i].has_real_value)
+      CreateGroupColumnList(column_id + "Value", index, column_length, val);
+  }
+
+  return val;
+}
+
+void TaskManagerHandler::CreateGroupColumnList(const std::string& column_name,
+                                               const int index,
+                                               const int length,
+                                               DictionaryValue* val) {
+  ListValue* list = new ListValue();
+  for (int i = index; i < (index + length); ++i) {
+    list->Append(CreateColumnValue(column_name, i));
+  }
+  val->Set(column_name, list);
+}
+
+base::Value* TaskManagerHandler::CreateColumnValue(
+    const std::string& column_name,
+    const int i) {
+  if (column_name == "uniqueId")
+    return Value::CreateIntegerValue(model_->GetResourceUniqueId(i));
+  if (column_name == "type") {
+    return Value::CreateStringValue(
+        TaskManager::Resource::GetResourceTypeAsString(
+        model_->GetResourceType(i)));
+  }
+  if (column_name == "processId")
+    return Value::CreateStringValue(model_->GetResourceProcessId(i));
+  if (column_name == "processIdValue")
+    return Value::CreateIntegerValue(model_->GetProcessId(i));
+  if (column_name == "cpuUsage")
+    return Value::CreateStringValue(model_->GetResourceCPUUsage(i));
+  if (column_name == "cpuUsageValue")
+    return Value::CreateDoubleValue(model_->GetCPUUsage(i));
+  if (column_name == "privateMemory")
+    return Value::CreateStringValue(model_->GetResourcePrivateMemory(i));
+  if (column_name == "privateMemoryValue") {
+    size_t private_memory;
+    model_->GetPrivateMemory(i, &private_memory);
+    return Value::CreateDoubleValue(private_memory);
+  }
+  if (column_name == "sharedMemory")
+    return Value::CreateStringValue(model_->GetResourceSharedMemory(i));
+  if (column_name == "sharedMemoryValue") {
+    size_t shared_memory;
+    model_->GetSharedMemory(i, &shared_memory);
+    return Value::CreateDoubleValue(shared_memory);
+  }
+  if (column_name == "physicalMemory")
+    return Value::CreateStringValue(model_->GetResourcePhysicalMemory(i));
+  if (column_name == "physicalMemoryValue") {
+    size_t physical_memory;
+    model_->GetPhysicalMemory(i, &physical_memory);
+    return Value::CreateDoubleValue(physical_memory);
+  }
+  if (column_name == "icon") {
+    ui::ScaleFactor icon_scale_factor = web_ui()->GetDeviceScaleFactor();
+    const gfx::ImageSkia& image = model_->GetResourceIcon(i);
+    const gfx::ImageSkiaRep image_rep =
+        image.GetRepresentation(icon_scale_factor);
+    return Value::CreateStringValue(
+        web_ui_util::GetBitmapDataUrl(image_rep.sk_bitmap()));
+  }
+  if (column_name == "title")
+    return Value::CreateStringValue(model_->GetResourceTitle(i));
+  if (column_name == "profileName")
+    return Value::CreateStringValue(model_->GetResourceProfileName(i));
+  if (column_name == "networkUsage")
+    return Value::CreateStringValue(model_->GetResourceNetworkUsage(i));
+  if (column_name == "networkUsageValue")
+    return Value::CreateDoubleValue(model_->GetNetworkUsage(i));
+  if (column_name == "webCoreImageCacheSize") {
+    return Value::CreateStringValue(
+        model_->GetResourceWebCoreImageCacheSize(i));
+  }
+  if (column_name == "webCoreImageCacheSizeValue") {
+    WebKit::WebCache::ResourceTypeStats resource_stats;
+    model_->GetWebCoreCacheStats(i, &resource_stats);
+    return Value::CreateDoubleValue(resource_stats.images.size);
+  }
+  if (column_name == "webCoreScriptsCacheSize") {
+    return Value::CreateStringValue(
+        model_->GetResourceWebCoreScriptsCacheSize(i));
+  }
+  if (column_name == "webCoreScriptsCacheSizeValue") {
+    WebKit::WebCache::ResourceTypeStats resource_stats;
+    model_->GetWebCoreCacheStats(i, &resource_stats);
+    return Value::CreateDoubleValue(resource_stats.scripts.size);
+  }
+  if (column_name == "webCoreCSSCacheSize")
+    return Value::CreateStringValue(model_->GetResourceWebCoreCSSCacheSize(i));
+  if (column_name == "webCoreCSSCacheSizeValue") {
+    WebKit::WebCache::ResourceTypeStats resource_stats;
+    model_->GetWebCoreCacheStats(i, &resource_stats);
+    return Value::CreateDoubleValue(resource_stats.cssStyleSheets.size);
+  }
+  if (column_name == "fps")
+    return Value::CreateStringValue(model_->GetResourceFPS(i));
+  if (column_name == "fpsValue") {
+    float fps;
+    model_->GetFPS(i, &fps);
+    return Value::CreateDoubleValue(fps);
+  }
+  if (column_name == "videoMemory")
+    return Value::CreateStringValue(model_->GetResourceVideoMemory(i));
+  if (column_name == "videoMemoryValue") {
+    size_t video_memory;
+    bool has_duplicates;
+    double value;
+    if (model_->GetVideoMemory(i, &video_memory, &has_duplicates))
+      value = static_cast<double>(video_memory);
+    else
+      value = 0;
+    return Value::CreateDoubleValue(value);
+  }
+  if (column_name == "sqliteMemoryUsed")
+    return Value::CreateStringValue(model_->GetResourceSqliteMemoryUsed(i));
+  if (column_name == "sqliteMemoryUsedValue") {
+    size_t sqlite_memory;
+    model_->GetSqliteMemoryUsedBytes(i, &sqlite_memory);
+    return Value::CreateDoubleValue(sqlite_memory);
+  }
+  if (column_name == "goatsTeleported")
+    return Value::CreateStringValue(model_->GetResourceGoatsTeleported(i));
+  if (column_name == "goatsTeleportedValue")
+    return Value::CreateIntegerValue(model_->GetGoatsTeleported(i));
+  if (column_name == "v8MemoryAllocatedSize") {
+    return Value::CreateStringValue(
+        model_->GetResourceV8MemoryAllocatedSize(i));
+  }
+  if (column_name == "v8MemoryAllocatedSizeValue") {
+    size_t v8_memory;
+    model_->GetV8Memory(i, &v8_memory);
+    return Value::CreateDoubleValue(v8_memory);
+  }
+  if (column_name == "canInspect")
+    return Value::CreateBooleanValue(model_->CanInspect(i));
+  if (column_name == "canActivate")
+    return Value::CreateBooleanValue(model_->CanActivate(i));
+
+  NOTREACHED();
+  return NULL;
 }
