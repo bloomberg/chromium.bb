@@ -1,4 +1,4 @@
-.TH WESTON 1 "2012-09-13" "Weston __version__"
+.TH WESTON 1 "2012-11-27" "Weston __version__"
 .SH NAME
 weston \- the reference Wayland server
 .SH SYNOPSIS
@@ -167,6 +167,16 @@ Make the default size of each X window
 .\" ***************************************************************
 .SH FILES
 .
+If the environment variable is set, the configuration file is read
+from the respective path, or the current directory if neither is set.
+.PP
+.BI $XDG_CONFIG_HOME /weston.ini
+.br
+.BI $HOME /.config/weston.ini
+.br
+.I ./weston.ini
+.br
+.
 .\" ***************************************************************
 .SH ENVIRONMENT
 .
@@ -198,6 +208,8 @@ is already set, the default backend becomes
 This allows launching Weston as a nested server.
 .TP
 .B WAYLAND_SOCKET
+For Wayland clients, holds the file descriptor of an open local socket
+to a Wayland server.
 .TP
 .B XCURSOR_PATH
 Set the list of paths to look for cursors in. It changes both
@@ -213,6 +225,8 @@ Wayland and X11 clients. See
 (3).
 .TP
 .B XDG_CONFIG_HOME
+If set, specifies the directory where to look for
+.BR weston.ini .
 .TP
 .B XDG_RUNTIME_DIR
 The directory for Weston's socket and lock files.
@@ -220,6 +234,17 @@ Wayland clients will automatically use this.
 .
 .\" ***************************************************************
 .SH DIAGNOSTICS
+Weston has a segmentation fault handler, that attempts to restore
+the virtual console or ungrab X before raising
+.BR SIGTRAP .
+If you run
+.BR weston " under " gdb (1)
+from an X11 terminal or a different virtual terminal, and tell gdb
+.IP
+handle SIGSEGV nostop
+.PP
+This will allow weston to switch back to gdb on crash and then
+gdb will catch the crash with SIGTRAP.
 .
 .\" ***************************************************************
 .SH BUGS
