@@ -49,7 +49,9 @@ NTSTATUS SidestepResolverThunk::Setup(const void* target_module,
     return STATUS_BUFFER_TOO_SMALL;
 
   AutoProtectMemory memory;
-  memory.ChangeProtection(target_, kSizeOfSidestepStub, PAGE_READWRITE);
+  ret = memory.ChangeProtection(target_, kSizeOfSidestepStub, PAGE_READWRITE);
+  if (!NT_SUCCESS(ret))
+    return ret;
 
   sidestep::SideStepError rv = sidestep::PreamblePatcher::Patch(
       target_, reinterpret_cast<void*>(&thunk->internal_thunk), thunk_storage,

@@ -41,7 +41,9 @@ NTSTATUS EatResolverThunk::Setup(const void* target_module,
     return STATUS_BUFFER_TOO_SMALL;
 
   AutoProtectMemory memory;
-  memory.ChangeProtection(eat_entry_, sizeof(DWORD), PAGE_READWRITE);
+  ret = memory.ChangeProtection(eat_entry_, sizeof(DWORD), PAGE_READWRITE);
+  if (!NT_SUCCESS(ret))
+    return ret;
 
   // Perform the patch.
 #pragma warning(push)
