@@ -49,19 +49,23 @@ GURL GetURLForLayoutTest(const std::string& test_name,
     *expected_pixel_hash = pixel_hash;
   GURL test_url(path_or_url);
   if (!(test_url.is_valid() && test_url.has_scheme())) {
+    // We're outside of the message loop here, and this is a test.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
 #if defined(OS_WIN)
     std::wstring wide_path_or_url =
         base::SysNativeMBToWide(path_or_url);
-    test_url = net::FilePathToFileURL(FilePath(wide_path_or_url));
+    FilePath local_file(wide_path_or_url);
 #else
-    test_url = net::FilePathToFileURL(FilePath(path_or_url));
+    FilePath local_file(path_or_url);
 #endif
+    file_util::AbsolutePath(&local_file);
+    test_url = net::FilePathToFileURL(local_file);
   }
   FilePath local_path;
   {
+    // We're outside of the message loop here, and this is a test.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     if (net::FileURLToFilePath(test_url, &local_path)) {
-      // We're outside of the message loop here, and this is a test.
       file_util::SetCurrentDirectory(local_path.DirName());
     }
     if (current_working_directory)
