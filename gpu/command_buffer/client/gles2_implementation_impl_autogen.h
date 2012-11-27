@@ -17,6 +17,18 @@ void GLES2Implementation::AttachShader(GLuint program, GLuint shader) {
   helper_->AttachShader(program, shader);
 }
 
+void GLES2Implementation::BindBuffer(GLenum target, GLuint buffer) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBindBuffer(" << GLES2Util::GetStringBufferTarget(target) << ", " << buffer << ")");  // NOLINT
+  if (IsBufferReservedId(buffer)) {
+    SetGLError(GL_INVALID_OPERATION, "BindBuffer", "buffer reserved id");
+    return;
+  }
+  if (BindBufferHelper(target, buffer)) {
+    helper_->BindBuffer(target, buffer);
+  }
+}
+
 void GLES2Implementation::BindFramebuffer(GLenum target, GLuint framebuffer) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBindFramebuffer(" << GLES2Util::GetStringFrameBufferTarget(target) << ", " << framebuffer << ")");  // NOLINT
@@ -25,8 +37,9 @@ void GLES2Implementation::BindFramebuffer(GLenum target, GLuint framebuffer) {
         GL_INVALID_OPERATION, "BindFramebuffer", "framebuffer reserved id");
     return;
   }
-  BindFramebufferHelper(target, framebuffer);
-  helper_->BindFramebuffer(target, framebuffer);
+  if (BindFramebufferHelper(target, framebuffer)) {
+    helper_->BindFramebuffer(target, framebuffer);
+  }
 }
 
 void GLES2Implementation::BindRenderbuffer(
@@ -38,8 +51,9 @@ void GLES2Implementation::BindRenderbuffer(
         GL_INVALID_OPERATION, "BindRenderbuffer", "renderbuffer reserved id");
     return;
   }
-  BindRenderbufferHelper(target, renderbuffer);
-  helper_->BindRenderbuffer(target, renderbuffer);
+  if (BindRenderbufferHelper(target, renderbuffer)) {
+    helper_->BindRenderbuffer(target, renderbuffer);
+  }
 }
 
 void GLES2Implementation::BindTexture(GLenum target, GLuint texture) {
@@ -49,8 +63,9 @@ void GLES2Implementation::BindTexture(GLenum target, GLuint texture) {
     SetGLError(GL_INVALID_OPERATION, "BindTexture", "texture reserved id");
     return;
   }
-  BindTextureHelper(target, texture);
-  helper_->BindTexture(target, texture);
+  if (BindTextureHelper(target, texture)) {
+    helper_->BindTexture(target, texture);
+  }
 }
 
 void GLES2Implementation::BlendColor(
@@ -1181,12 +1196,6 @@ void GLES2Implementation::UniformMatrix4fv(
   helper_->UniformMatrix4fvImmediate(location, count, transpose, value);
 }
 
-void GLES2Implementation::UseProgram(GLuint program) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glUseProgram(" << program << ")");
-  helper_->UseProgram(program);
-}
-
 void GLES2Implementation::ValidateProgram(GLuint program) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glValidateProgram(" << program << ")");  // NOLINT
@@ -1415,8 +1424,9 @@ void GLES2Implementation::BindVertexArrayOES(GLuint array) {
         GL_INVALID_OPERATION, "BindVertexArrayOES", "array reserved id");
     return;
   }
-  BindVertexArrayHelper(array);
-  helper_->BindVertexArrayOES(array);
+  if (BindVertexArrayHelper(array)) {
+    helper_->BindVertexArrayOES(array);
+  }
 }
 
 void GLES2Implementation::GetTranslatedShaderSourceANGLE(

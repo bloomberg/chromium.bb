@@ -438,6 +438,7 @@ GLES2Implementation::GLES2Implementation(
       active_texture_unit_(0),
       bound_framebuffer_(0),
       bound_renderbuffer_(0),
+      current_program_(0),
       bound_array_buffer_id_(0),
       bound_element_array_buffer_id_(0),
       bound_pixel_unpack_transfer_buffer_id_(0),
@@ -1226,20 +1227,6 @@ void GLES2Implementation::BindUniformLocationCHROMIUM(
   helper_->SetBucketSize(kResultBucketId, 0);
 }
 
-void GLES2Implementation::BindBuffer(GLenum target, GLuint buffer) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBindBuffer("
-                 << GLES2Util::GetStringBufferTarget(target) << ", "
-                 << buffer << ")");
-  if (IsBufferReservedId(buffer)) {
-    SetGLError(GL_INVALID_OPERATION, "BindBuffer", "buffer reserved id");
-    return;
-  }
-  BindBufferHelper(target, buffer);
-  if (target != GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM)
-    helper_->BindBuffer(target, buffer);
-}
-
 void GLES2Implementation::GetVertexAttribPointerv(
     GLuint index, GLenum pname, void** ptr) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
@@ -1279,6 +1266,9 @@ bool GLES2Implementation::DeleteProgramHelper(GLuint program) {
         GL_INVALID_VALUE,
         "glDeleteProgram", "id not created by this context.");
     return false;
+  }
+  if (program == current_program_) {
+    current_program_ = 0;
   }
   return true;
 }
@@ -1363,6 +1353,15 @@ GLint GLES2Implementation::GetUniformLocation(
       this, program, name);
   GPU_CLIENT_LOG("returned " << loc);
   return loc;
+}
+
+void GLES2Implementation::UseProgram(GLuint program) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glUseProgram(" << program << ")");
+  if (current_program_ != program) {
+    current_program_ = program;
+    helper_->UseProgram(program);
+  }
 }
 
 bool GLES2Implementation::GetProgramivHelper(
@@ -2484,80 +2483,116 @@ void GLES2Implementation::ActiveTexture(GLenum texture) {
 // the old model but possibly not true in the new model if another context has
 // deleted the resource.
 
-void GLES2Implementation::BindBufferHelper(
+bool GLES2Implementation::BindBufferHelper(
     GLenum target, GLuint buffer) {
   // TODO(gman): See note #1 above.
+  bool changed = false;
   switch (target) {
     case GL_ARRAY_BUFFER:
-      bound_array_buffer_id_ = buffer;
+      if (bound_array_buffer_id_ != buffer) {
+        bound_array_buffer_id_ = buffer;
+        changed = true;
+      }
       break;
     case GL_ELEMENT_ARRAY_BUFFER:
-      bound_element_array_buffer_id_ = buffer;
+      if (bound_element_array_buffer_id_ != buffer) {
+        bound_element_array_buffer_id_ = buffer;
+        changed = true;
+      }
       break;
     case GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM:
       bound_pixel_unpack_transfer_buffer_id_ = buffer;
       break;
     default:
+      changed = true;
       break;
   }
   // TODO(gman): There's a bug here. If the target is invalid the ID will not be
   // used even though it's marked it as used here.
   GetIdHandler(id_namespaces::kBuffers)->MarkAsUsedForBind(buffer);
+  return changed;
 }
 
-void GLES2Implementation::BindFramebufferHelper(
+bool GLES2Implementation::BindFramebufferHelper(
     GLenum target, GLuint framebuffer) {
   // TODO(gman): See note #1 above.
+  bool changed = false;
   switch (target) {
     case GL_FRAMEBUFFER:
-      bound_framebuffer_ = framebuffer;
+      if (bound_framebuffer_ != framebuffer) {
+        bound_framebuffer_ = framebuffer;
+        changed = true;
+      }
       break;
     default:
+      changed = true;
       break;
   }
   // TODO(gman): There's a bug here. If the target is invalid the ID will not be
   // used even though it's marked it as used here.
   GetIdHandler(id_namespaces::kFramebuffers)->MarkAsUsedForBind(framebuffer);
+  return changed;
 }
 
-void GLES2Implementation::BindRenderbufferHelper(
+bool GLES2Implementation::BindRenderbufferHelper(
     GLenum target, GLuint renderbuffer) {
   // TODO(gman): See note #1 above.
+  bool changed = false;
   switch (target) {
     case GL_RENDERBUFFER:
-      bound_renderbuffer_ = renderbuffer;
+      if (bound_renderbuffer_ != renderbuffer) {
+        bound_renderbuffer_ = renderbuffer;
+        changed = true;
+      }
       break;
     default:
+      changed = true;
       break;
   }
   // TODO(gman): There's a bug here. If the target is invalid the ID will not be
   // used even though it's marked it as used here.
   GetIdHandler(id_namespaces::kRenderbuffers)->MarkAsUsedForBind(renderbuffer);
+  return changed;
 }
 
-void GLES2Implementation::BindTextureHelper(GLenum target, GLuint texture) {
+bool GLES2Implementation::BindTextureHelper(GLenum target, GLuint texture) {
   // TODO(gman): See note #1 above.
+  // TODO(gman): Change this to false once we figure out why it's failing
+  //     on daisy.
+  bool changed = true;
   TextureUnit& unit = texture_units_[active_texture_unit_];
   switch (target) {
     case GL_TEXTURE_2D:
-      unit.bound_texture_2d = texture;
+      if (unit.bound_texture_2d != texture) {
+        unit.bound_texture_2d = texture;
+        changed = true;
+      }
       break;
     case GL_TEXTURE_CUBE_MAP:
-      unit.bound_texture_cube_map = texture;
+      if (unit.bound_texture_cube_map != texture) {
+        unit.bound_texture_cube_map = texture;
+        changed = true;
+      }
       break;
     default:
+      changed = true;
       break;
   }
   // TODO(gman): There's a bug here. If the target is invalid the ID will not be
   // used. even though it's marked it as used here.
   GetIdHandler(id_namespaces::kTextures)->MarkAsUsedForBind(texture);
+  return changed;
 }
 
-void GLES2Implementation::BindVertexArrayHelper(GLuint array) {
+bool GLES2Implementation::BindVertexArrayHelper(GLuint array) {
   // TODO(gman): See note #1 above.
-  bound_vertex_array_id_ = array;
-
+  bool changed = false;
+  if (bound_vertex_array_id_ != array) {
+    bound_vertex_array_id_ = array;
+    changed = true;
+  }
   GetIdHandler(id_namespaces::kVertexArrays)->MarkAsUsedForBind(array);
+  return changed;
 }
 
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
