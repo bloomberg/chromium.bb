@@ -13,7 +13,6 @@ import android.view.KeyEvent;
 
 import org.chromium.chrome.browser.DevToolsServer;
 import org.chromium.chrome.browser.TabBase;
-import org.chromium.content.app.AppResource;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.DeviceUtils;
@@ -41,7 +40,6 @@ public class ChromiumTestShellActivity extends Activity {
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch(this);
 
-        initializeContentViewResources();
         ContentView.initChromiumBrowserProcess(this, ContentView.MAX_RENDERERS_AUTOMATIC);
 
         setContentView(R.layout.testshell_activity);
@@ -137,26 +135,6 @@ public class ChromiumTestShellActivity extends Activity {
             android.os.Debug.waitForDebugger();
             Log.e(TAG, "Java debugger connected. Resuming execution.");
         }
-    }
-
-    private void initializeContentViewResources() {
-        AppResource.DIMENSION_LINK_PREVIEW_OVERLAY_RADIUS = R.dimen.link_preview_overlay_radius;
-        AppResource.DRAWABLE_ICON_ACTION_BAR_SHARE = R.drawable.ic_menu_share_holo_light;
-        AppResource.DRAWABLE_ICON_ACTION_BAR_WEB_SEARCH = R.drawable.ic_menu_search_holo_light;
-        AppResource.DRAWABLE_LINK_PREVIEW_POPUP_OVERLAY = R.drawable.popup_zoomer_overlay;
-        AppResource.ID_AUTOFILL_LABEL = R.id.autofill_label;
-        AppResource.ID_AUTOFILL_NAME = R.id.autofill_name;
-        AppResource.LAYOUT_AUTOFILL_TEXT = R.layout.autofill_text;
-        AppResource.STRING_ACTION_BAR_SHARE = R.string.action_bar_share;
-        AppResource.STRING_ACTION_BAR_WEB_SEARCH = R.string.action_bar_search;
-        AppResource.STRING_CONTENT_VIEW_CONTENT_DESCRIPTION = R.string.accessibility_content_view;
-        AppResource.STRING_MEDIA_PLAYER_MESSAGE_PLAYBACK_ERROR =
-                R.string.media_player_error_text_invalid_progressive_playback;
-        AppResource.STRING_MEDIA_PLAYER_MESSAGE_UNKNOWN_ERROR =
-                R.string.media_player_error_text_unknown;
-        AppResource.STRING_MEDIA_PLAYER_ERROR_BUTTON = R.string.media_player_error_button;
-        AppResource.STRING_MEDIA_PLAYER_ERROR_TITLE = R.string.media_player_error_title;
-        AppResource.STRING_MEDIA_PLAYER_LOADING_VIDEO = R.string.media_player_loading_video;
     }
 
     private static String getUrlFromIntent(Intent intent) {

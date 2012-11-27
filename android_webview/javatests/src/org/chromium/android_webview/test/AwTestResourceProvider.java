@@ -7,7 +7,6 @@ package org.chromium.android_webview.test;
 import android.content.Context;
 
 import org.chromium.android_webview.AwResource;
-import org.chromium.content.app.AppResource;
 
 public class AwTestResourceProvider {
     private static boolean sInitialized;
@@ -16,12 +15,6 @@ public class AwTestResourceProvider {
         if (sInitialized) {
             return;
         }
-
-        AppResource.DRAWABLE_ICON_ACTION_BAR_SHARE = R.drawable.resource_icon;
-        AppResource.DRAWABLE_ICON_ACTION_BAR_WEB_SEARCH = R.drawable.resource_icon;
-
-        AppResource.STRING_ACTION_BAR_SHARE = R.string.test_string;
-        AppResource.STRING_ACTION_BAR_WEB_SEARCH = R.string.test_string;
 
         AwResource.setResources(context.getResources());
 
