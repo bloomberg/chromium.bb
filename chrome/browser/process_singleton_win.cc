@@ -22,6 +22,7 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_constants.h"
@@ -368,10 +369,13 @@ ProcessSingleton::~ProcessSingleton() {
 ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   if (is_virtualized_)
     return PROCESS_NOTIFIED;  // We already spawned the process in this case.
-  if (lock_file_ == INVALID_HANDLE_VALUE && !remote_window_)
+  if (lock_file_ == INVALID_HANDLE_VALUE && !remote_window_) {
     return LOCK_ERROR;
-  else if (!remote_window_)
+  } else if (!remote_window_) {
+    g_browser_process->PlatformSpecificCommandLineProcessing(
+        *CommandLine::ForCurrentProcess());
     return PROCESS_NONE;
+  }
 
   DWORD process_id = 0;
   DWORD thread_id = GetWindowThreadProcessId(remote_window_, &process_id);

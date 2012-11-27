@@ -98,6 +98,8 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual ComponentUpdateService* component_updater() OVERRIDE;
   virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
   virtual BookmarkPromptController* bookmark_prompt_controller() OVERRIDE;
+  virtual void PlatformSpecificCommandLineProcessing(
+      const CommandLine& command_line) OVERRIDE;
 
   // Set the local state for tests. Consumer is responsible for cleaning it up
   // afterwards (using ScopedTestingLocalState, for example).

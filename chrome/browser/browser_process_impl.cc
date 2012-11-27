@@ -92,6 +92,9 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "ui/views/focus/view_storage.h"
+#if defined(USE_AURA)
+#include "chrome/browser/metro_viewer/metro_viewer_process_host_win.h"
+#endif
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
 #endif
@@ -570,6 +573,12 @@ BookmarkPromptController* BrowserProcessImpl::bookmark_prompt_controller() {
   return bookmark_prompt_controller_.get();
 #endif
 }
+
+#if !defined(OS_WIN)
+void BrowserProcessImpl::PlatformSpecificCommandLineProcessing(
+    const CommandLine& command_line) {
+}
+#endif
 
 DownloadRequestLimiter* BrowserProcessImpl::download_request_limiter() {
   DCHECK(CalledOnValidThread());

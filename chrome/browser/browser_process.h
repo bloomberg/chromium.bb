@@ -18,6 +18,7 @@ class AutomationProviderList;
 class BackgroundModeManager;
 class BookmarkPromptController;
 class ChromeNetLog;
+class CommandLine;
 class CRLSetFetcher;
 class ComponentUpdateService;
 class DownloadRequestLimiter;
@@ -194,6 +195,9 @@ class BrowserProcess {
   virtual CRLSetFetcher* crl_set_fetcher() = 0;
 
   virtual BookmarkPromptController* bookmark_prompt_controller() = 0;
+
+  virtual void PlatformSpecificCommandLineProcessing(
+      const CommandLine& command_line) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcess);

@@ -50,11 +50,6 @@
 #include "ui/base/win/message_box_win.h"
 #include "ui/gfx/platform_font_win.h"
 
-#if defined(USE_AURA)
-#include "chrome/browser/metro_viewer/metro_viewer_process_host_win.h"
-#endif
-
-
 namespace {
 
 typedef HRESULT (STDAPICALLTYPE* RegisterApplicationRestartProc)(
@@ -227,17 +222,6 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopRun() {
   ChromeBrowserMainParts::PreMainMessageLoopRun();
 
   removable_device_notifications_window_->Init();
-
-#if defined(USE_AURA)
-  CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kViewerConnection) &&
-      !metro_viewer_process_host_) {
-    // Tell the metro viewer process host to connect to the given IPC channel.
-    metro_viewer_process_host_.reset(
-        new MetroViewerProcessHost(
-            command_line.GetSwitchValueASCII(switches::kViewerConnection)));
-  }
-#endif
 }
 
 // static

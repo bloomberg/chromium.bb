@@ -285,6 +285,10 @@ BookmarkPromptController* TestingBrowserProcess::bookmark_prompt_controller() {
 #endif
 }
 
+void TestingBrowserProcess::PlatformSpecificCommandLineProcessing(
+    const CommandLine& command_line) {
+}
+
 void TestingBrowserProcess::SetBookmarkPromptController(
     BookmarkPromptController* controller) {
 #if !defined(OS_IOS)

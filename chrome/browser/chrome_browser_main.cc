@@ -453,6 +453,8 @@ bool ProcessSingletonNotificationCallback(const CommandLine& command_line,
   if (!g_browser_process || g_browser_process->IsShuttingDown())
     return false;
 
+  g_browser_process->PlatformSpecificCommandLineProcessing(command_line);
+
   // TODO(erikwright): Consider removing this - AFAIK it is no longer used.
   // Handle the --uninstall-extension startup action. This needs to done here
   // in the process that is running with the target profile, otherwise the

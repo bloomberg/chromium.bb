@@ -39,6 +39,10 @@ class BrowserPolicyConnector;
 class PolicyService;
 };
 
+#if defined(OS_WIN) && defined(USE_AURA)
+class MetroViewerProcessHost;
+#endif
+
 // Real implementation of BrowserProcess that creates and returns the services.
 class BrowserProcessImpl : public BrowserProcess,
                            public base::NonThreadSafe {
@@ -117,6 +121,8 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual ComponentUpdateService* component_updater() OVERRIDE;
   virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
   virtual BookmarkPromptController* bookmark_prompt_controller() OVERRIDE;
+  virtual void PlatformSpecificCommandLineProcessing(
+      const CommandLine& command_line) OVERRIDE;
 
  private:
   void CreateMetricsService();
@@ -264,6 +270,15 @@ class BrowserProcessImpl : public BrowserProcess,
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   scoped_refptr<PluginsResourceService> plugins_resource_service_;
 #endif
+
+#if defined(OS_WIN) && defined(USE_AURA)
+  void PerformInitForWindowsAura(const CommandLine& command_line);
+
+  // Hosts the channel for the Windows 8 metro viewer process which runs in
+  // the ASH environment.
+  scoped_ptr<MetroViewerProcessHost> metro_viewer_process_host_;
+#endif
+
   // TODO(eroman): Remove this when done debugging 113031. This tracks
   // the callstack which released the final module reference count.
   base::debug::StackTrace release_last_reference_callstack_;

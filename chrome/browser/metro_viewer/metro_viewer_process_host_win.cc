@@ -5,6 +5,7 @@
 #include "chrome/browser/metro_viewer/metro_viewer_process_host_win.h"
 
 #include "base/logging.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "content/public/browser/browser_thread.h"
@@ -15,6 +16,7 @@
 
 MetroViewerProcessHost::MetroViewerProcessHost(
     const std::string& ipc_channel_name) {
+  g_browser_process->AddRefModule();
   channel_.reset(new IPC::ChannelProxy(
       ipc_channel_name.c_str(),
       IPC::Channel::MODE_NAMED_SERVER,
@@ -51,7 +53,8 @@ void  MetroViewerProcessHost::OnChannelError() {
   // TODO(cpu): At some point we only close the browser. Right now this
   // is very convenient for developing.
   DLOG(INFO) << "viewer channel error : Quitting browser";
-  browser::CloseAllBrowsers();
+  g_browser_process->ReleaseModule();
+  chrome::CloseAsh();
 }
 
 void MetroViewerProcessHost::OnSetTargetSurface(
