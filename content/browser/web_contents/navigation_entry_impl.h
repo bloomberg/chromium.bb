@@ -171,7 +171,8 @@ class CONTENT_EXPORT NavigationEntryImpl
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
   // Session/Tab restore save portions of this class so that it can be recreated
   // later. If you add a new field that needs to be persisted you'll have to
-  // update SessionService/TabRestoreService appropriately.
+  // update SessionService/TabRestoreService and Android WebView
+  // state_serializer.cc appropriately.
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
 
   // See the accessors above for descriptions.
@@ -205,7 +206,8 @@ class CONTENT_EXPORT NavigationEntryImpl
   // This member is not persisted with session restore.
   std::string extra_headers_;
 
-  // Used for specifying base URL for pages loaded via data URLs. Not persisted.
+  // Used for specifying base URL for pages loaded via data URLs. Only used and
+  // persisted by Android WebView.
   GURL base_url_for_data_url_;
 
   // Whether the entry, while loading, was created for a renderer-initiated

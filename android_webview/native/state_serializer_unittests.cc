@@ -49,6 +49,7 @@ TEST(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
   const string content_state("completely bogus state");
   const bool has_post_data = true;
   const GURL original_request_url("http://original_request_url");
+  const GURL base_url_for_data_url("http://base_url");
   const bool is_overriding_user_agent = true;
   const base::Time timestamp = base::Time::FromInternalValue(12345);
 
@@ -59,6 +60,7 @@ TEST(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
   entry->SetContentState(content_state);
   entry->SetHasPostData(has_post_data);
   entry->SetOriginalRequestURL(original_request_url);
+  entry->SetBaseURLForDataURL(base_url_for_data_url);
   entry->SetIsOverridingUserAgent(is_overriding_user_agent);
   entry->SetTimestamp(timestamp);
 
@@ -79,6 +81,7 @@ TEST(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
   EXPECT_EQ(content_state, copy->GetContentState());
   EXPECT_EQ(has_post_data, copy->GetHasPostData());
   EXPECT_EQ(original_request_url, copy->GetOriginalRequestURL());
+  EXPECT_EQ(base_url_for_data_url, copy->GetBaseURLForDataURL());
   EXPECT_EQ(is_overriding_user_agent, copy->GetIsOverridingUserAgent());
   EXPECT_EQ(timestamp, copy->GetTimestamp());
 }

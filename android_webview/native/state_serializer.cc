@@ -32,7 +32,7 @@ namespace {
 // Sanity check value that we are restoring from a valid pickle.
 // This can potentially used as an actual serialization version number in the
 // future if we ever decide to support restoring from older versions.
-const uint32 AW_STATE_VERSION = 20121116;
+const uint32 AW_STATE_VERSION = 20121126;
 
 }  // namespace
 
@@ -153,6 +153,9 @@ bool WriteNavigationEntryToPickle(const content::NavigationEntry& entry,
   if (!pickle->WriteString(entry.GetOriginalRequestURL().spec()))
     return false;
 
+  if (!pickle->WriteString(entry.GetBaseURLForDataURL().spec()))
+    return false;
+
   if (!pickle->WriteBool(static_cast<int>(entry.GetIsOverridingUserAgent())))
     return false;
 
@@ -221,6 +224,13 @@ bool RestoreNavigationEntryFromPickle(PickleIterator* iterator,
     if (!iterator->ReadString(&original_request_url))
       return false;
     entry->SetOriginalRequestURL(GURL(original_request_url));
+  }
+
+  {
+    string base_url_for_data_url;
+    if (!iterator->ReadString(&base_url_for_data_url))
+      return false;
+    entry->SetBaseURLForDataURL(GURL(base_url_for_data_url));
   }
 
   {
