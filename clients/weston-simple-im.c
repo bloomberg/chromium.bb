@@ -74,6 +74,7 @@ static const uint32_t ignore_keys_on_compose[] = {
 };
 
 typedef void (*keyboard_input_key_handler_t)(struct keyboard_input *keyboard_input,
+					     uint32_t serial,
 					     uint32_t time, uint32_t key, uint32_t unicode,
 					     enum wl_keyboard_key_state state, void *data);
 
@@ -170,7 +171,7 @@ keyboard_input_handle_key(struct keyboard_input *keyboard_input,
 		sym = syms[0];
 
 	if (keyboard_input->key_handler)
-		(*keyboard_input->key_handler)(keyboard_input, time, key, sym,
+		(*keyboard_input->key_handler)(keyboard_input, serial, time, key, sym,
 					       state, keyboard_input->user_data);
 }
 
@@ -367,7 +368,7 @@ compare_compose_keys(const void *c1, const void *c2)
 
 static void
 simple_im_key_handler(struct keyboard_input *keyboard_input,
-		      uint32_t time, uint32_t key, uint32_t sym,
+		      uint32_t serial, uint32_t time, uint32_t key, uint32_t sym,
 		      enum wl_keyboard_key_state state, void *data)
 {
 	struct simple_im *keyboard = data;
@@ -391,7 +392,7 @@ simple_im_key_handler(struct keyboard_input *keyboard_input,
 
 		for (i = 0; i < sizeof(ignore_keys_on_compose) / sizeof(ignore_keys_on_compose[0]); i++) {
 			if (sym == ignore_keys_on_compose[i]) {
-				input_method_context_key(context, display_get_serial(keyboard->display), time, key, state);
+				input_method_context_key(context, serial, time, key, state);
 				return;
 			}
 		}
@@ -440,7 +441,7 @@ simple_im_key_handler(struct keyboard_input *keyboard_input,
 	}
 
 	if (xkb_keysym_to_utf8(sym, text, sizeof(text)) <= 0) {
-		input_method_context_key(context, display_get_serial(keyboard->display), time, key, state);
+		input_method_context_key(context, serial, time, key, state);
 		return;
 	}
 
