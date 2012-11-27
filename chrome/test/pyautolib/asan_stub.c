@@ -21,10 +21,10 @@
 //
 // Option (2) is not easy because pyautolib uses code from Chrome
 // (see chrome_tests.gypi, dependencies for target_name: pyautolib) that
-// has been instrumented with ASAN. So even if we disable -faddress-sanitizer
+// has been instrumented with ASAN. So even if we disable -sanitize=address
 // for pyautolib own sources, ASAN instrumentation will creep in from there.
 // To avoid ASAN instrumentation, we might force Chrome build to compile all our
-// dependencies one more time without -faddress-sanitizer.
+// dependencies one more time without -fsanitize=address.
 //
 // Note also that using these empty stubs prevents ASAN from catching bugs in
 // Python-pyautolib process. But we do not need it, we are interested in Chrome

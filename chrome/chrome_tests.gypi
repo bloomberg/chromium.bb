@@ -2495,12 +2495,8 @@
               ],
             }],
             ['asan==1', {
-              'cflags!': [ '-faddress-sanitizer', '-fsanitize=address', ],
-              'xcode_settings': {
-                'OTHER_CFLAGS!': [
-                  '-faddress-sanitizer', '-fsanitize=address',
-                ],
-              },
+              'cflags!': [ '-fsanitize=address' ],
+              'xcode_settings': { 'OTHER_CFLAGS!': [ '-fsanitize=address' ] },
             }],
           ],
           'actions': [
