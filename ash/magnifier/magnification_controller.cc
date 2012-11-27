@@ -132,9 +132,9 @@ class MagnificationControllerImpl : virtual public MagnificationController,
 
   aura::RootWindow* root_window_;
 
-  // True if the magnified window is in motion of zooming or un-zooming effect.
-  // Otherwise, false.
-  bool is_on_zooming_;
+  // True if the magnified window is currently animating a change. Otherwise,
+  // false.
+  bool is_on_animation_;
 
   bool is_enabled_;
 
@@ -156,7 +156,7 @@ class MagnificationControllerImpl : virtual public MagnificationController,
 
 MagnificationControllerImpl::MagnificationControllerImpl()
     : root_window_(ash::Shell::GetPrimaryRootWindow()),
-      is_on_zooming_(false),
+      is_on_animation_(false),
       is_enabled_(false),
       move_cursor_after_animation_(false),
       scale_(std::numeric_limits<double>::min()) {
@@ -243,6 +243,9 @@ bool MagnificationControllerImpl::RedrawDIP(const gfx::PointF& position_in_dip,
       base::TimeDelta::FromMilliseconds(animate ? 100 : 0));
 
   root_window_->layer()->SetTransform(transform);
+
+  if (animate)
+    is_on_animation_ = true;
 
   return true;
 }
@@ -331,12 +334,10 @@ void MagnificationControllerImpl::OnMouseMove(const gfx::Point& location) {
     start_zoom = true;
   }
 
-  if (start_zoom && !is_on_zooming_) {
+  if (start_zoom && !is_on_animation_) {
     bool ret = RedrawDIP(gfx::Point(x, y), scale_, true);
 
     if (ret) {
-      is_on_zooming_ = true;
-
       int x_diff = origin_.x() - window_rect.x();
       int y_diff = origin_.y() - window_rect.y();
       // If the magnified region is moved, hides the mouse cursor and moves it.
@@ -390,7 +391,7 @@ void MagnificationControllerImpl::ValidateScale(float* scale) {
 }
 
 void MagnificationControllerImpl::OnImplicitAnimationsCompleted() {
-  if (!is_on_zooming_)
+  if (!is_on_animation_)
     return;
 
   if (move_cursor_after_animation_) {
@@ -402,7 +403,8 @@ void MagnificationControllerImpl::OnImplicitAnimationsCompleted() {
       aura::client::GetCursorClient(root_window_);
   if (cursor_client)
     cursor_client->ShowCursor(true);
-  is_on_zooming_ = false;
+
+  is_on_animation_ = false;
 }
 
 void MagnificationControllerImpl::SwitchTargetRootWindow(
