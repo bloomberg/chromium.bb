@@ -132,15 +132,9 @@ bool UsingOcclusionQuery() {
 int GetResampleCount(const gfx::Rect& src_subrect,
                      const gfx::Size& dst_size,
                      const gfx::Size& back_buffer_size) {
-  // Unless the back buffer is exactly the same as the dst, and src_subrect
-  // covers the whole back buffer, at least one copy is required. This is
-  // because GetRenderTargetData requires its src and dst to have the same
-  // dimensions.
+  // At least one copy is required, since the back buffer itself is not
+  // lockable.
   int min_resample_count = 1;
-  if (src_subrect == gfx::Rect(back_buffer_size) &&
-      dst_size == back_buffer_size) {
-    min_resample_count = 0;
-  }
   int width_count = 0;
   int width = src_subrect.width();
   while (width > dst_size.width()) {
@@ -540,7 +534,7 @@ bool AcceleratedPresenter::DoCopyTo(const gfx::Rect& requested_src_subrect,
     return false;
 
   // With window resizing, it's possible that the back buffer is smaller than
-  // the requested src subset. Clip to the actual back buffer .
+  // the requested src subset. Clip to the actual back buffer.
   gfx::Rect src_subrect = requested_src_subrect;
   src_subrect.Intersect(gfx::Rect(back_buffer_size));
 
@@ -602,30 +596,35 @@ bool AcceleratedPresenter::DoCopyTo(const gfx::Rect& requested_src_subrect,
     write_size = GetHalfSizeNoLessThan(write_size, dst_size);
     std::swap(read_buffer_index, write_buffer_index);
   }
+  D3DLOCKED_RECT locked_rect;
 
-  base::win::ScopedComPtr<IDirect3DSurface9> temp_surface;
+  // Empirical evidence seems to suggest that LockRect and memcpy are faster
+  // than would be GetRenderTargetData to an offscreen surface wrapping *buf.
   {
-    TRACE_EVENT0("gpu", "CreateOffscreenPlainSurface");
-    HANDLE handle = reinterpret_cast<HANDLE>(buf);
-    hr = present_thread_->device()->CreateOffscreenPlainSurface(
-        dst_size.width(),
-        dst_size.height(),
-        D3DFMT_A8R8G8B8,
-        D3DPOOL_SYSTEMMEM,
-        temp_surface.Receive(),
-        &handle);
+    TRACE_EVENT0("gpu", "LockRect");
+    hr = final_surface->LockRect(&locked_rect, NULL,
+                                 D3DLOCK_READONLY | D3DLOCK_NOSYSLOCK);
     if (FAILED(hr))
       return false;
   }
 
   {
-    // Copy the data in the temporary buffer to the surface backed by |buf|.
-    TRACE_EVENT0("gpu", "GetRenderTargetData");
-    hr = present_thread_->device()->GetRenderTargetData(final_surface,
-                                                        temp_surface);
-    if (FAILED(hr))
-      return false;
+    TRACE_EVENT0("gpu", "memcpy");
+    size_t bytesPerDstRow = 4 * dst_size.width();
+    size_t bytesPerSrcRow = locked_rect.Pitch;
+    if (bytesPerDstRow == bytesPerSrcRow) {
+      memcpy(reinterpret_cast<int8*>(buf),
+             reinterpret_cast<int8*>(locked_rect.pBits),
+             bytesPerDstRow * dst_size.height());
+    } else {
+      for (int i = 0; i < dst_size.height(); ++i) {
+        memcpy(reinterpret_cast<int8*>(buf) + bytesPerDstRow * i,
+               reinterpret_cast<int8*>(locked_rect.pBits) + bytesPerSrcRow * i,
+               bytesPerDstRow);
+      }
+    }
   }
+  final_surface->UnlockRect();
 
   return true;
 }
