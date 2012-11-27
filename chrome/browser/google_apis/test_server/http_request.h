@@ -32,7 +32,7 @@ struct HttpRequest {
   HttpRequest();
   ~HttpRequest();
 
-  GURL url;
+  std::string relative_url;  // Starts with '/'. Example: "/test?query=foo"
   HttpMethod method;
   std::map<std::string, std::string> headers;
   std::string content;

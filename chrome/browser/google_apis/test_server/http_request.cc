@@ -96,8 +96,9 @@ HttpRequestParser::ParseResult HttpRequestParser::ParseHeaders() {
     http_request_->method = GetMethodType(StringToLowerASCII(
         header_line_tokens[0]));
     // Address.
-    const GURL host = GURL("http://localhost/");
-    http_request_->url = host.Resolve(header_line_tokens[1]);
+    // Don't build an absolute URL as the parser does not know (should not
+    // know) anything about the server address.
+    http_request_->relative_url = header_line_tokens[1];
     // Protocol.
     const std::string protocol = StringToLowerASCII(header_line_tokens[2]);
     CHECK(protocol == "http/1.0" || protocol == "http/1.1") <<

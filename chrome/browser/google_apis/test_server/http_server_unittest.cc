@@ -79,9 +79,22 @@ class HttpServerTest : public testing::Test,
     message_loop_.Run();  // Will be terminated in OnURLFetchComplete().
   }
 
+  // Handles the request and returns a simple text content. Saves the
+  // request URL for verification.
+  scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
+    request_relative_url_ = request.relative_url;
+
+    scoped_ptr<HttpResponse> http_response(new HttpResponse);
+    http_response->set_code(SUCCESS);
+    http_response->set_content("<b>Worked!</b>");
+    http_response->set_content_type("text/html");
+    return http_response.Pass();
+  }
+
  protected:
   int num_responses_received_;
   int num_responses_expected_;
+  std::string request_relative_url_;
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
@@ -98,6 +111,26 @@ TEST_F(HttpServerTest, GetURL) {
   EXPECT_EQ(base::StringPrintf("http://127.0.0.1:%d/path?query=foo",
                                server_.port()),
             server_.GetURL("/path?query=foo").spec());
+}
+
+TEST_F(HttpServerTest, RegisterRequestHandler) {
+  server_.RegisterRequestHandler(base::Bind(&HttpServerTest::HandleRequest,
+                                            base::Unretained(this)));
+
+  scoped_ptr<net::URLFetcher> fetcher(
+      net::URLFetcher::Create(server_.GetURL("/test?q=foo"),
+                              net::URLFetcher::GET,
+                              this));
+  fetcher->SetRequestContext(request_context_getter_.get());
+  fetcher->Start();
+  WaitForResponses(1);
+
+  EXPECT_EQ(net::URLRequestStatus::SUCCESS, fetcher->GetStatus().status());
+  EXPECT_EQ(SUCCESS, fetcher->GetResponseCode());
+  EXPECT_EQ("<b>Worked!</b>", GetContentFromFetcher(*fetcher));
+  EXPECT_EQ("text/html", GetContentTypeFromFetcher(*fetcher));
+
+  EXPECT_EQ("/test?q=foo", request_relative_url_);
 }
 
 TEST_F(HttpServerTest, RegisterDefaultResponse) {

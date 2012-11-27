@@ -31,7 +31,8 @@ const int kRetries = 10;
 scoped_ptr<HttpResponse> HandleDefaultRequest(const GURL& url,
                                               const HttpResponse& response,
                                               const HttpRequest& request) {
-  if (url.path() != request.url.path())
+  const GURL request_url = url.Resolve(request.relative_url);
+  if (url.path() != request_url.path())
     return scoped_ptr<HttpResponse>(NULL);
   return scoped_ptr<HttpResponse>(new HttpResponse(response));
 }
@@ -136,7 +137,8 @@ void HttpServer::HandleRequest(HttpConnection* connection,
     }
   }
 
-  LOG(WARNING) << "Request not handled. Returning 404.";
+  LOG(WARNING) << "Request not handled. Returning 404: "
+               << request->relative_url;
   scoped_ptr<HttpResponse> not_found_response(new HttpResponse());
   not_found_response->set_code(NOT_FOUND);
   connection->SendResponse(not_found_response.Pass());
@@ -169,10 +171,9 @@ void HttpServer::RegisterDefaultResponse(
   DCHECK(StartsWithASCII(relative_path, "/", true /* case_sensitive */))
       << relative_path;
 
-  GURL request_url = base_url_.Resolve(relative_path);
   const HandleRequestCallback callback =
       base::Bind(&HandleDefaultRequest,
-                 request_url,
+                 GetURL(relative_path),
                  default_response);
   request_handlers_.push_back(callback);
 }

@@ -34,7 +34,7 @@ TEST(HttpRequestTest, ParseRequest) {
   // Fetch the first request and validate it.
   {
     scoped_ptr<HttpRequest> request = parser.GetRequest();
-    EXPECT_EQ("http://localhost/foobar.html", request->url.spec());
+    EXPECT_EQ("/foobar.html", request->relative_url);
     EXPECT_EQ(METHOD_POST, request->method);
     EXPECT_EQ("1234567890", request->content);
     ASSERT_EQ(3u, request->headers.size());
