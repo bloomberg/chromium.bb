@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -251,8 +250,7 @@ void NotificationOptionsMenuModel::ExecuteCommand(int command_id) {
       break;
     }
     case kOpenContentSettingsCommand: {
-      Browser* browser = chrome::FindLastActiveWithProfile(
-          balloon_->profile(), chrome::GetActiveDesktop());
+      Browser* browser = chrome::FindLastActiveWithProfile(balloon_->profile());
       if (!browser) {
         // It is possible that there is no browser window (e.g. when there are
         // background pages, or for a chrome frame process on windows).

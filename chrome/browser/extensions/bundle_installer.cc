@@ -107,7 +107,6 @@ BundleInstaller::BundleInstaller(Browser* browser,
                                  const BundleInstaller::ItemList& items)
     : approved_(false),
       browser_(browser),
-      host_desktop_type_(browser->host_desktop_type()),
       profile_(browser->profile()),
       delegate_(NULL) {
   BrowserList::AddObserver(this);
@@ -273,7 +272,7 @@ void BundleInstaller::ShowPrompt() {
     if (!browser) {
       // The browser that we got initially could have gone away during our
       // thread hopping.
-      browser = chrome::FindLastActiveWithProfile(profile_, host_desktop_type_);
+      browser = chrome::FindLastActiveWithProfile(profile_);
     }
     content::WebContents* web_contents = NULL;
     if (browser)
