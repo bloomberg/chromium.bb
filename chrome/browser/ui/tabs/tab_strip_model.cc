@@ -19,9 +19,9 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -57,8 +57,6 @@ TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
   DCHECK(delegate_);
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 content::Source<Profile>(profile_));
   order_controller_.reset(new TabStripModelOrderController(this));
 }
 
@@ -937,25 +935,6 @@ void TabStripModel::Observe(int type,
         // Note that we only detach the contents here, not close it - it's
         // already been closed. We just want to undo our bookkeeping.
         DetachTabContentsAt(index);
-      }
-      break;
-    }
-
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
-      const extensions::Extension* extension =
-          content::Details<extensions::UnloadedExtensionInfo>(
-              details)->extension;
-      // Iterate backwards as we may remove items while iterating.
-      for (int i = count() - 1; i >= 0; i--) {
-        WebContents* contents = GetWebContentsAtImpl(i);
-        if (extensions::TabHelper::FromWebContents(contents)->
-              extension_app() == extension) {
-          // The extension an app tab was created from has been nuked. Delete
-          // the WebContents. Deleting a WebContents results in a notification
-          // of type NOTIFICATION_WEB_CONTENTS_DESTROYED; we do the necessary
-          // cleanup in handling that notification.
-          InternalCloseTab(contents, i, false);
-        }
       }
       break;
     }

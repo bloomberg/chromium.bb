@@ -1915,11 +1915,21 @@ void Browser::Observe(int type,
         const Extension* extension =
             content::Details<extensions::UnloadedExtensionInfo>(
                 details)->extension;
+        // Iterate backwards as we may remove items while iterating.
         for (int i = tab_strip_model_->count() - 1; i >= 0; --i) {
           WebContents* web_contents = tab_strip_model_->GetWebContentsAt(i);
-          if (web_contents->GetURL().SchemeIs(extensions::kExtensionScheme) &&
-              web_contents->GetURL().host() == extension->id())
-            chrome::CloseWebContents(this, web_contents);
+          // Two cases are handled here:
+          // - The scheme check is for when an extension page is loaded in a
+          //   tab, e.g. chrome-extension://id/page.html.
+          // - The extension_app check is for apps, which can have non-extension
+          //   schemes, e.g. https://mail.google.com if you have the Gmail app
+          //   installed.
+          if ((web_contents->GetURL().SchemeIs(extensions::kExtensionScheme) &&
+               web_contents->GetURL().host() == extension->id()) ||
+              (extensions::TabHelper::FromWebContents(
+                   web_contents)->extension_app() == extension)) {
+            tab_strip_model_->CloseTabContentsAt(i, TabStripModel::CLOSE_NONE);
+          }
         }
       }
       break;
