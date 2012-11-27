@@ -163,9 +163,8 @@ class Builder(object):
     self.strip_all = options.strip_all
     self.strip_debug = options.strip_debug
 
-    if self.verbose:
-      print 'Compile options: %s' % self.compile_options
-      print 'Linker options: %s' % self.link_options
+    self.Log('Compile options: %s' % self.compile_options)
+    self.Log('Linker options: %s' % self.link_options)
 
   def GenNaClPath(self, path):
     """Helper which prepends path with the native client source directory."""
@@ -237,6 +236,10 @@ class Builder(object):
     """Generates link options, called once by __init__."""
     self.archive_options = []
 
+  def Log(self, msg):
+    if self.verbose:
+      print str(msg)
+
   def Run(self, cmd_line, out):
     """Helper which runs a command line."""
 
@@ -250,8 +253,7 @@ class Builder(object):
         temp_file.write(' '.join(cmd_line[1:]))
       cmd_line = [cmd_line[0], '@' + temp_file.name]
 
-    if self.verbose:
-      print ' '.join(cmd_line)
+    self.Log(' '.join(cmd_line))
     try:
       if self.is_pnacl_toolchain:
         # PNaCl toolchain executable is a script, not a binary, so it doesn't
@@ -366,12 +368,11 @@ class Builder(object):
       bin_name = self.GetCXXCompiler()
       extra = []
     else:
-      if self.verbose and ext != '.h':
-        print 'Skipping unknown type %s for %s.' % (ext, src)
+      if ext != '.h':
+        self.Log('Skipping unknown type %s for %s.' % (ext, src))
       return None
 
-    if self.verbose:
-      print '\nCompile %s' % src
+    self.Log('\nCompile %s' % src)
 
     out = self.GetObjectName(src)
     outd = out + '.d'
@@ -400,8 +401,7 @@ class Builder(object):
   def Link(self, srcs):
     """Link these objects with predetermined options and output name."""
     out = self.name
-    if self.verbose:
-      print '\nLink %s' % out
+    self.Log('\nLink %s' % out)
     bin_name = self.GetCXXCompiler()
     MakeDir(os.path.dirname(out))
     self.CleanOutput(out)
@@ -424,8 +424,7 @@ class Builder(object):
   def Translate(self, src):
     """Translate a pexe to a nexe."""
     out = self.name
-    if self.verbose:
-      print '\nTranslate %s' % out
+    self.Log('\nTranslate %s' % out)
     bin_name = self.GetBinName('translate')
     cmd_line = [bin_name, '-arch', self.arch, src, '-o', out]
 
@@ -437,9 +436,7 @@ class Builder(object):
   def Archive(self, srcs):
     """Archive these objects with predetermined options and output name."""
     out = self.name
-    if self.verbose:
-      print '\nArchive %s' % out
-
+    self.Log('\nArchive %s' % out)
 
     if '-r' in self.link_options:
       bin_name = self.GetCXXCompiler()
@@ -465,8 +462,7 @@ class Builder(object):
 
   def Strip(self, out):
     """Strip the NEXE"""
-    if self.verbose:
-      print '\nStrip %s' % out
+    self.Log('\nStrip %s' % out)
 
     tmp = out + '.tmp'
     self.CleanOutput(tmp)
