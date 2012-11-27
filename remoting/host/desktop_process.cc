@@ -49,8 +49,6 @@ void DesktopProcess::OnChannelConnected(int32 peer_pid) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   VLOG(1) << "IPC: desktop <- daemon (" << peer_pid << ")";
-
-  NOTIMPLEMENTED();
 }
 
 void DesktopProcess::OnChannelError() {

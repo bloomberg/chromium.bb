@@ -93,6 +93,7 @@ void DesktopSessionAgent::OnCaptureCompleted(
   // Serialize CaptureData
   SerializedCapturedData serialized_data;
   serialized_data.shared_buffer_id = capture_data->shared_buffer()->id();
+  serialized_data.bytes_per_row = capture_data->data_planes().strides[0];
   serialized_data.dimensions = capture_data->size();
   serialized_data.pixel_format = capture_data->pixel_format();
   serialized_data.capture_time_ms = capture_data->capture_time_ms();
@@ -118,6 +119,8 @@ bool DesktopSessionAgent::Start(const base::Closure& disconnected_task,
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   disconnected_task_ = disconnected_task;
+
+  // Create an IPC channel to communicate with the network process.
   if (!CreateChannelForNetworkProcess(desktop_pipe_out, &network_channel_))
     return false;
 

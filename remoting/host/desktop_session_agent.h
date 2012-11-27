@@ -95,12 +95,10 @@ class DesktopSessionAgent
   // Sends a message to the network process.
   void SendToNetwork(IPC::Message* message);
 
-  // Posted to |video_capture_task_runner_| task runner to start the video
-  // capturer.
+  // Posted to |video_capture_task_runner_| to start the video capturer.
   void StartVideoCapturer();
 
-  // Posted to |video_capture_task_runner_| task runner to stop the video
-  // capturer.
+  // Posted to |video_capture_task_runner_| to stop the video capturer.
   void StopVideoCapturer();
 
   // Getters providing access to the task runners for platform-specific derived
@@ -121,10 +119,10 @@ class DesktopSessionAgent
   // Task runner on which public methods of this class should be called.
   scoped_refptr<AutoThreadTaskRunner> caller_task_runner_;
 
-  // Message loop used by the IPC channel.
+  // Task runner used by the IPC channel.
   scoped_refptr<AutoThreadTaskRunner> io_task_runner_;
 
-  // Task runner dedicated to running themethods of the video capturer.
+  // Task runner dedicated to running methods of |video_capturer_|.
   scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner_;
 
   // Runs on |caller_task_runner_| to notify the caller that the network-to-
@@ -141,6 +139,7 @@ class DesktopSessionAgent
   typedef std::list<scoped_refptr<SharedBuffer> > SharedBuffers;
   SharedBuffers shared_buffers_;
 
+  // Captures the screen.
   scoped_ptr<VideoFrameCapturer> video_capturer_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopSessionAgent);

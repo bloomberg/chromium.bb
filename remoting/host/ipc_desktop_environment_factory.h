@@ -32,7 +32,8 @@ class IpcDesktopEnvironmentFactory
       IPC::ChannelProxy* daemon_channel,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner);
   virtual ~IpcDesktopEnvironmentFactory();
 
   virtual scoped_ptr<DesktopEnvironment> Create(ClientSession* client) OVERRIDE;
@@ -54,6 +55,9 @@ class IpcDesktopEnvironmentFactory
 
   // Task runner used to service calls to the DesktopSessionConnector APIs.
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
+
+  // Task runner used to run the video capturer.
+  scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner_;
 
   // List of DesktopEnvironment instances we've told the daemon process about.
   typedef std::map<int, IpcDesktopEnvironment*> ActiveConnectionsList;

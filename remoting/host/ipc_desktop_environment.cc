@@ -9,10 +9,15 @@
 #include "base/platform_file.h"
 #include "base/single_thread_task_runner.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "ipc/ipc_message_macros.h"
+#include "remoting/base/capture_data.h"
 #include "remoting/host/audio_capturer.h"
+#include "remoting/host/chromoting_messages.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/desktop_session_connector.h"
+#include "remoting/host/desktop_session_proxy.h"
 #include "remoting/host/event_executor.h"
+#include "remoting/host/ipc_video_frame_capturer.h"
 #include "remoting/host/video_frame_capturer.h"
 
 #if defined(OS_WIN)
@@ -26,34 +31,25 @@ IpcDesktopEnvironment::IpcDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     DesktopSessionConnector* desktop_session_connector,
+    scoped_refptr<DesktopSessionProxy> desktop_session_proxy,
     ClientSession* client)
     : DesktopEnvironment(
           AudioCapturer::Create(),
           EventExecutor::Create(input_task_runner, ui_task_runner),
-          VideoFrameCapturer::Create()),
+          scoped_ptr<VideoFrameCapturer>(
+              new IpcVideoFrameCapturer(desktop_session_proxy))),
       network_task_runner_(network_task_runner),
       desktop_session_connector_(desktop_session_connector),
       client_(client),
+      desktop_session_proxy_(desktop_session_proxy),
       connected_(false) {
 }
 
-bool IpcDesktopEnvironment::OnMessageReceived(const IPC::Message& message) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-
-  NOTIMPLEMENTED();
-  return false;
-}
-
-void IpcDesktopEnvironment::OnChannelConnected(int32 peer_pid) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-
-  VLOG(1) << "IPC: network <- desktop (" << peer_pid << ")";
-}
-
-void IpcDesktopEnvironment::OnChannelError() {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-
-  desktop_channel_.reset();
+IpcDesktopEnvironment::~IpcDesktopEnvironment() {
+  if (connected_) {
+    connected_ = false;
+    desktop_session_connector_->DisconnectTerminal(this);
+  }
 }
 
 void IpcDesktopEnvironment::Start(
@@ -78,48 +74,8 @@ void IpcDesktopEnvironment::OnDesktopSessionAgentAttached(
     IPC::PlatformFileForTransit desktop_pipe) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
-#if defined(OS_WIN)
-  // On Windows: |desktop_process| is a valid handle, but |desktop_pipe| needs
-  // to be duplicated from the desktop process.
-  base::win::ScopedHandle pipe;
-  if (!DuplicateHandle(desktop_process, desktop_pipe, GetCurrentProcess(),
-                       pipe.Receive(), 0, FALSE, DUPLICATE_SAME_ACCESS)) {
-    LOG_GETLASTERROR(ERROR) << "Failed to duplicate the desktop-to-network"
-                               " pipe handle";
-    return;
-  }
-
-  base::ClosePlatformFile(desktop_process);
-
-  // Connect to the desktop process.
-  desktop_channel_.reset(new IPC::ChannelProxy(IPC::ChannelHandle(pipe),
-                                               IPC::Channel::MODE_CLIENT,
-                                               this,
-                                               network_task_runner_));
-#elif defined(OS_POSIX)
-  // On posix: both |desktop_process| and |desktop_pipe| are valid file
-  // descriptors.
-  DCHECK(desktop_process.auto_close);
-  DCHECK(desktop_pipe.auto_close);
-
-  base::ClosePlatformFile(desktop_process.fd);
-
-  // Connect to the desktop process.
-  desktop_channel_.reset(new IPC::ChannelProxy(
-      IPC::ChannelHandle("", desktop_pipe),
-      IPC::Channel::MODE_CLIENT,
-      this,
-      network_task_runner_));
-#else
-#error Unsupported platform.
-#endif
-}
-
-IpcDesktopEnvironment::~IpcDesktopEnvironment() {
-  if (connected_) {
-    connected_ = false;
-    desktop_session_connector_->DisconnectTerminal(this);
-  }
+  desktop_session_proxy_->Disconnect();
+  desktop_session_proxy_->Connect(desktop_process, desktop_pipe);
 }
 
 }  // namespace remoting

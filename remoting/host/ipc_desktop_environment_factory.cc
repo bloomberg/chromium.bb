@@ -13,6 +13,7 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_session_connector.h"
+#include "remoting/host/desktop_session_proxy.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/ipc_desktop_environment.h"
 #include "remoting/host/video_frame_capturer.h"
@@ -23,10 +24,12 @@ IpcDesktopEnvironmentFactory::IpcDesktopEnvironmentFactory(
     IPC::ChannelProxy* daemon_channel,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner)
     : DesktopEnvironmentFactory(input_task_runner, ui_task_runner),
       daemon_channel_(daemon_channel),
       network_task_runner_(network_task_runner),
+      video_capture_task_runner_(video_capture_task_runner),
       next_id_(0) {
 }
 
@@ -37,8 +40,13 @@ scoped_ptr<DesktopEnvironment> IpcDesktopEnvironmentFactory::Create(
     ClientSession* client) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
+  scoped_refptr<DesktopSessionProxy> desktop_session_proxy(
+      new DesktopSessionProxy(network_task_runner_,
+                              video_capture_task_runner_));
+
   return scoped_ptr<DesktopEnvironment>(new IpcDesktopEnvironment(
-      input_task_runner_, network_task_runner_, ui_task_runner_, this, client));
+      input_task_runner_, network_task_runner_, ui_task_runner_,
+      this, desktop_session_proxy, client));
 }
 
 void IpcDesktopEnvironmentFactory::ConnectTerminal(

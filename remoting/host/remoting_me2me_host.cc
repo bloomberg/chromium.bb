@@ -562,7 +562,8 @@ void HostProcess::StartOnUiThread() {
           daemon_channel_.get(),
           context_->input_task_runner(),
           context_->network_task_runner(),
-          context_->ui_task_runner());
+          context_->ui_task_runner(),
+          context_->video_capture_task_runner());
   desktop_session_connector_ = desktop_environment_factory;
 #else // !defined(REMOTING_MULTI_PROCESS)
   DesktopEnvironmentFactory* desktop_environment_factory =

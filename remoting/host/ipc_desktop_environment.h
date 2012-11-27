@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
 #include "remoting/host/desktop_environment.h"
 
@@ -16,18 +15,15 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // base
 
-namespace IPC {
-class ChannelProxy;
-}  // base
-
 namespace remoting {
 
 class ClientSession;
 class DesktopSessionConnector;
+class DesktopSessionProxy;
 
 // A variant of desktop environment integrating with the desktop by means of
 // a helper process and talking to that process via IPC.
-class IpcDesktopEnvironment : public DesktopEnvironment, public IPC::Listener {
+class IpcDesktopEnvironment : public DesktopEnvironment {
  public:
   // |desktop_session_connector| is used to bind the IpcDesktopEnvironment to
   // a desktop session, to be notified with a new IPC channel every time
@@ -38,13 +34,9 @@ class IpcDesktopEnvironment : public DesktopEnvironment, public IPC::Listener {
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       DesktopSessionConnector* desktop_session_connector,
+      scoped_refptr<DesktopSessionProxy> desktop_session_proxy,
       ClientSession* client);
   virtual ~IpcDesktopEnvironment();
-
-  // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
 
   virtual void Start(
       scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
@@ -68,11 +60,10 @@ class IpcDesktopEnvironment : public DesktopEnvironment, public IPC::Listener {
   // Specifies the client session that owns |this|.
   ClientSession* client_;
 
+  scoped_refptr<DesktopSessionProxy> desktop_session_proxy_;
+
   // True if |this| has been connected to a desktop session.
   bool connected_;
-
-  // Connects |this| with the desktop process.
-  scoped_ptr<IPC::ChannelProxy> desktop_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(IpcDesktopEnvironment);
 };

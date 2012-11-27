@@ -58,7 +58,7 @@ class VideoFrameCapturer {
    public:
     virtual ~Delegate() {}
 
-    // Called when the capturer has completed. |capture_data| describes
+    // Called when a video frame has been captured. |capture_data| describes
     // a captured frame.
     virtual void OnCaptureCompleted(
         scoped_refptr<CaptureData> capture_data) = 0;

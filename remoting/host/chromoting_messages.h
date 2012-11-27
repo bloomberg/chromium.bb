@@ -94,7 +94,7 @@ IPC_MESSAGE_CONTROL1(ChromotingDesktopDaemonMsg_DesktopAttached,
 //-----------------------------------------------------------------------------
 // Chromoting messages sent from the desktop to the network process.
 
-// Notifies the network process that a shared buffer has been created. Receiving
+// Notifies the network process that a shared buffer has been created. Receipt
 // of this message must be confirmed by replying with
 // ChromotingNetworkDesktopMsg_SharedBufferCreated message.
 IPC_MESSAGE_CONTROL3(ChromotingDesktopNetworkMsg_CreateSharedBuffer,
@@ -127,6 +127,9 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_BEGIN(SerializedCapturedData)
   // ID of the shared memory buffer containing the pixels.
   IPC_STRUCT_MEMBER(int, shared_buffer_id)
+
+  // Width of a single row of pixels in bytes.
+  IPC_STRUCT_MEMBER(int, bytes_per_row)
 
   // Captured region.
   IPC_STRUCT_MEMBER(std::vector<SkIRect>, dirty_region)
