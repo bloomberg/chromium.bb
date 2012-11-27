@@ -131,22 +131,22 @@ const FilePath::CharType kGoodCrxManifestName[] =
     FILE_PATH_LITERAL("good_update_manifest.xml");
 
 const char* kURLs[] = {
-  chrome::kChromeUINewTabURL,
-  chrome::kChromeUIAboutURL,
-  chrome::kChromeUICreditsURL,
-  chrome::kChromeUIPolicyURL,
-  chrome::kChromeUIVersionURL,
+  "http://aaa.com/empty.html",
+  "http://bbb.com/empty.html",
+  "http://ccc.com/empty.html",
+  "http://ddd.com/empty.html",
+  "http://eee.com/empty.html",
 };
 
 // Filters requests to the hosts in |urls| and redirects them to the test data
 // dir through URLRequestMockHTTPJobs.
-void RedirectHostsToTestDataOnIOThread(const GURL* const urls[], size_t size) {
+void RedirectHostsToTestData(const char* const urls[], size_t size) {
   // Map the given hosts to the test data dir.
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
   for (size_t i = 0; i < size; ++i) {
-    const GURL* url = urls[i];
-    EXPECT_TRUE(url->is_valid());
-    filter->AddHostnameHandler(url->scheme(), url->host(),
+    const GURL url(urls[i]);
+    EXPECT_TRUE(url.is_valid());
+    filter->AddHostnameHandler(url.scheme(), url.host(),
                                URLRequestMockHTTPJob::Factory);
   }
 }
@@ -176,17 +176,19 @@ void MakeRequestFail(const std::string& host) {
   content::RunMessageLoop();
 }
 
-// Verifies that the given |url| can be opened. This assumes that |url| points
-// at empty.html in the test data dir.
-void CheckCanOpenURL(Browser* browser, const GURL& url) {
+// Verifies that the given url |spec| can be opened. This assumes that |spec|
+// points at empty.html in the test data dir.
+void CheckCanOpenURL(Browser* browser, const char* spec) {
+  GURL url(spec);
   ui_test_utils::NavigateToURL(browser, url);
   content::WebContents* contents = chrome::GetActiveWebContents(browser);
   EXPECT_EQ(url, contents->GetURL());
   EXPECT_EQ(net::FormatUrl(url, std::string()), contents->GetTitle());
 }
 
-// Verifies that access to the given |url| is blocked.
-void CheckURLIsBlocked(Browser* browser, const GURL& url) {
+// Verifies that access to the given url |spec| is blocked.
+void CheckURLIsBlocked(Browser* browser, const char* spec) {
+  GURL url(spec);
   ui_test_utils::NavigateToURL(browser, url);
   content::WebContents* contents = chrome::GetActiveWebContents(browser);
   EXPECT_EQ(url, contents->GetURL());
@@ -1346,27 +1348,24 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   // Checks that URLs can be blacklisted, and that exceptions can be made to
   // the blacklist.
-  const GURL kAAA("http://aaa.com/empty.html");
-  const GURL kBBB("http://bbb.com/empty.html");
-  const GURL kSUB_BBB("http://sub.bbb.com/empty.html");
-  const GURL kBBB_PATH("http://bbb.com/policy/device_management");
+
   // Filter |kURLS| on IO thread, so that requests to those hosts end up
   // as URLRequestMockHTTPJobs.
-  const GURL* kURLS[] = {
-    &kAAA,
-    &kBBB,
-    &kSUB_BBB,
-    &kBBB_PATH,
+  const char* kURLS[] = {
+    "http://aaa.com/empty.html",
+    "http://bbb.com/empty.html",
+    "http://sub.bbb.com/empty.html",
+    "http://bbb.com/policy/device_management",
   };
   BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(RedirectHostsToTestDataOnIOThread, kURLS, arraysize(kURLS)),
+      base::Bind(RedirectHostsToTestData, kURLS, arraysize(kURLS)),
       MessageLoop::QuitClosure());
   content::RunMessageLoop();
 
   // Verify that all the URLs can be opened without a blacklist.
   for (size_t i = 0; i < arraysize(kURLS); ++i)
-    CheckCanOpenURL(browser(), *kURLS[i]);
+    CheckCanOpenURL(browser(), kURLS[i]);
 
   // Set a blacklist.
   base::ListValue blacklist;
@@ -1377,9 +1376,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   provider_.UpdateChromePolicy(policies);
   FlushBlacklistPolicy();
   // All bbb.com URLs are blocked.
-  CheckCanOpenURL(browser(), kAAA);
+  CheckCanOpenURL(browser(), kURLS[0]);
   for (size_t i = 1; i < arraysize(kURLS); ++i)
-    CheckURLIsBlocked(browser(), *kURLS[i]);
+    CheckURLIsBlocked(browser(), kURLS[i]);
 
   // Whitelist some sites of bbb.com.
   base::ListValue whitelist;
@@ -1389,10 +1388,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
                POLICY_SCOPE_USER, whitelist.DeepCopy());
   provider_.UpdateChromePolicy(policies);
   FlushBlacklistPolicy();
-  CheckCanOpenURL(browser(), kAAA);
-  CheckURLIsBlocked(browser(), kBBB);
-  CheckCanOpenURL(browser(), kSUB_BBB);
-  CheckCanOpenURL(browser(), kBBB_PATH);
+  CheckCanOpenURL(browser(), kURLS[0]);
+  CheckURLIsBlocked(browser(), kURLS[1]);
+  CheckCanOpenURL(browser(), kURLS[2]);
+  CheckCanOpenURL(browser(), kURLS[3]);
 }
 
 // Flaky on Linux. http://crbug.com/155459
@@ -1502,6 +1501,9 @@ class RestoreOnStartupPolicyTest
     command_line->InitFromArgv(argv);
     ASSERT_TRUE(std::equal(argv.begin(), argv.end(),
                            command_line->argv().begin()));
+
+    // Redirect the test URLs to the test data directory.
+    RedirectHostsToTestData(kURLs, arraysize(kURLs));
   }
 
   void HomepageIsNotNTP() {
@@ -1536,7 +1538,7 @@ class RestoreOnStartupPolicyTest
         base::Value::CreateBooleanValue(true));
     provider_.UpdateChromePolicy(policies);
 
-    expected_urls_.push_back(GURL(kURLs[0]));
+    expected_urls_.push_back(GURL(chrome::kChromeUINewTabURL));
   }
 
   void ListOfURLs() {
@@ -1563,7 +1565,7 @@ class RestoreOnStartupPolicyTest
         key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
         base::Value::CreateIntegerValue(SessionStartupPref::kPrefValueNewTab));
     provider_.UpdateChromePolicy(policies);
-    expected_urls_.push_back(GURL(kURLs[0]));
+    expected_urls_.push_back(GURL(chrome::kChromeUINewTabURL));
   }
 
   void Last() {
