@@ -169,16 +169,17 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
                  mimetype)
 
   # Set the correct OAuth2 redirect URL.
-  baseUrl = (
-      'https://chromoting-oauth.talkgadget.google.com/'
-      'talkgadget/oauth/chrome-remote-desktop')
+  scheme = 'https://'
+  urlSuffix = '.talkgadget.google.com/talkgadget/oauth/chrome-remote-desktop'
+  url = scheme + 'chromoting-oauth' + urlSuffix
+  urlPattern = scheme + '*' + urlSuffix
   if (buildtype == 'Official'):
     oauth2RedirectUrlJs = (
-        "'" + baseUrl + "/rel/' + chrome.i18n.getMessage('@@extension_id')")
-    oauth2RedirectUrlJson = baseUrl + '/rel/*'
+        "'" + url + "/rel/' + chrome.i18n.getMessage('@@extension_id')")
+    oauth2RedirectUrlJson = urlPattern + '/rel/*'
   else:
-    oauth2RedirectUrlJs = "'" + baseUrl + "/dev'"
-    oauth2RedirectUrlJson = baseUrl + '/dev*'
+    oauth2RedirectUrlJs = "'" + url + "/dev'"
+    oauth2RedirectUrlJson = urlPattern  + '/dev*'
   findAndReplace(os.path.join(destination, 'plugin_settings.js'),
                  "'OAUTH2_REDIRECT_URL'",
                  oauth2RedirectUrlJs)
