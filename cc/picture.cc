@@ -72,8 +72,8 @@ void Picture::Record(ContentLayerClient* painter, gfx::Rect layer_rect,
 
 void Picture::Raster(SkCanvas* canvas) {
   TRACE_EVENT0("cc", "Picture::Raster");
-  canvas->translate(layer_rect_.x(), layer_rect_.y());
   canvas->save();
+  canvas->translate(layer_rect_.x(), layer_rect_.y());
   canvas->drawPicture(*picture_);
   canvas->restore();
 }

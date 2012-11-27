@@ -28,6 +28,7 @@ scoped_ptr<LayerImpl> PictureLayer::createLayerImpl() {
 }
 
 void PictureLayer::pushPropertiesTo(LayerImpl* base_layer) {
+  Layer::pushPropertiesTo(base_layer);
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
   pile_.PushPropertiesTo(layer_impl->pile_);
 

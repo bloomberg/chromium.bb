@@ -97,6 +97,7 @@ scoped_ptr<PicturePile> PicturePile::CloneForDrawing() const {
 void PicturePile::Raster(SkCanvas* canvas, gfx::Rect rect) {
   // TODO(enne): do this more efficiently, i.e. top down with Skia clips
   canvas->save();
+  canvas->translate(-rect.x(), -rect.y());
   SkRect layer_skrect = SkRect::MakeXYWH(rect.x(), rect.y(),
                                          rect.width(), rect.height());
   canvas->clipRect(layer_skrect);
