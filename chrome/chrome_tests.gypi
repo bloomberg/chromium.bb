@@ -1111,6 +1111,7 @@
         'browser/ui/webui/bidi_checker_web_ui_test.h',
         'browser/ui/webui/bookmarks_ui_browsertest.cc',
         'browser/ui/webui/chrome_url_data_manager_browsertest.cc',
+        'browser/ui/webui/constrained_web_dialog_ui_browsertest.cc',
         'browser/ui/webui/downloads_dom_handler_browsertest.cc',
         'browser/ui/webui/extensions/extension_settings_browsertest.js',
         'browser/ui/webui/help/help_browsertest.js',
@@ -1414,10 +1415,6 @@
             '../build/linux/system.gyp:gtk',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
-          'sources': [
-            # TODO(estade): port to win/mac.
-            'browser/ui/webui/constrained_web_dialog_ui_browsertest.cc',
-          ],
         }],
         ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
           'dependencies': [
@@ -1479,7 +1476,7 @@
             '../ui/views/views.gyp:views',
           ],
           'sources!': [
-            # TODO(estade): port to linux/views.
+            # TODO(estade): port to views.
             'browser/ui/webui/constrained_web_dialog_ui_browsertest.cc',
           ],
         }, { # else: toolkit_views == 0
