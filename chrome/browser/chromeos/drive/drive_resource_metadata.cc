@@ -530,7 +530,8 @@ void DriveResourceMetadata::RefreshEntryProto(
   DriveEntry* old_entry = GetEntryByResourceId(drive_entry->resource_id());
   DriveDirectory* old_parent = old_entry ? old_entry->parent() : NULL;
   DriveDirectory* new_parent = GetParent(entry_proto.parent_resource_id());
-  if (!old_parent || !new_parent) {
+  // We special case root here because old_parent of root is null.
+  if ((!old_parent || !new_parent) && old_entry != root_.get()) {
     PostGetEntryInfoWithFilePathCallbackError(callback,
                                               DRIVE_FILE_ERROR_NOT_FOUND);
     return;
@@ -542,10 +543,16 @@ void DriveResourceMetadata::RefreshEntryProto(
         old_entry->AsDriveDirectory());
   }
 
-  // Remove from the old parent and add to the new parent.
-  old_parent->RemoveEntry(old_entry);
   DriveEntry* new_entry = drive_entry.release();
-  new_parent->AddEntry(new_entry);  // Transfers ownership.
+  if (old_entry == root_.get()) {
+    // Replace root.
+    root_.reset(new_entry->AsDriveDirectory());
+    resource_map_[root_->resource_id()] = root_.get();
+  } else {
+    // Remove from the old parent and add to the new parent.
+    old_parent->RemoveEntry(old_entry);
+    new_parent->AddEntry(new_entry);  // Transfers ownership.
+  }
 
   DVLOG(1) << "RefreshEntryProto " << new_entry->GetFilePath().value();
   // Note that base_name is not the same for new_entry and entry_proto.
@@ -631,7 +638,7 @@ DriveDirectory* DriveResourceMetadata::GetParent(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (parent_resource_id.empty())
-    return root();
+    return root_.get();
 
   DriveEntry* entry = GetEntryByResourceId(parent_resource_id);
   return entry ? entry->AsDriveDirectory() : NULL;

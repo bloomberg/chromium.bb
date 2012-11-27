@@ -34,9 +34,10 @@ void CopyResultsFromInitFromDBCallback(DriveFileError* expected_error,
   *expected_error = actual_error;
 }
 
-void OnGetChildDirectories(std::set<FilePath>* out_changed_directories,
-                           const std::set<FilePath>& in_changed_directories) {
-  *out_changed_directories = in_changed_directories;
+void CopyResultFromGetChildDirectoriesCallback(
+    std::set<FilePath>* out_child_directories,
+    const std::set<FilePath>& in_child_directories) {
+  *out_child_directories = in_child_directories;
 }
 
 }  // namespace
@@ -748,6 +749,54 @@ TEST_F(DriveResourceMetadataTest, RefreshEntryProto) {
   EXPECT_FALSE(entry_proto.get());
 }
 
+// Test the special logic for RefreshEntryProto of root.
+TEST_F(DriveResourceMetadataTest, RefreshEntryProto_Root) {
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FilePath drive_file_path;
+  scoped_ptr<DriveEntryProto> entry_proto;
+
+  // Get root.
+  resource_metadata_.GetEntryInfoByPath(
+      FilePath::FromUTF8Unsafe("drive"),
+      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
+                 &error, &entry_proto));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_TRUE(entry_proto.get());
+  EXPECT_EQ("drive", entry_proto->base_name());
+  ASSERT_TRUE(entry_proto->file_info().is_directory());
+  EXPECT_EQ(kWAPIRootDirectoryResourceIdForTesting, entry_proto->resource_id());
+  EXPECT_TRUE(entry_proto->upload_url().empty());
+
+  // Set upload url and call RefreshEntryProto on root.
+  DriveEntryProto dir_entry_proto(*entry_proto);
+  dir_entry_proto.set_upload_url("http://root.upload.url/");
+  entry_proto.reset();
+  resource_metadata_.RefreshEntryProto(
+      dir_entry_proto,
+      base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
+                 &error, &drive_file_path, &entry_proto));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive"), drive_file_path);
+  ASSERT_TRUE(entry_proto.get());
+  EXPECT_EQ("drive", entry_proto->base_name());
+  EXPECT_TRUE(entry_proto->file_info().is_directory());
+  EXPECT_EQ(kWAPIRootDirectoryResourceIdForTesting, entry_proto->resource_id());
+  EXPECT_EQ("http://root.upload.url/", entry_proto->upload_url());
+
+  // Make sure the children have moved over. Test file9.
+  entry_proto.reset();
+  resource_metadata_.GetEntryInfoByPath(
+      FilePath::FromUTF8Unsafe("drive/dir1/dir3/file9"),
+      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
+                 &error, &entry_proto));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_TRUE(entry_proto.get());
+  EXPECT_EQ("file9", entry_proto->base_name());
+}
+
 TEST_F(DriveResourceMetadataTest, AddEntryToParent) {
   int sequence_id = 100;
   DriveEntryProto file_entry_proto = CreateDriveEntryProto(
@@ -803,26 +852,29 @@ TEST_F(DriveResourceMetadataTest, AddEntryToParent) {
 }
 
 TEST_F(DriveResourceMetadataTest, GetChildDirectories) {
-  std::set<FilePath> changed_directories;
+  std::set<FilePath> child_directories;
 
   // file9: not a directory, so no children.
   resource_metadata_.GetChildDirectories("resource_id:file9",
-      base::Bind(&OnGetChildDirectories, &changed_directories));
+      base::Bind(&CopyResultFromGetChildDirectoriesCallback,
+                 &child_directories));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_TRUE(changed_directories.empty());
+  EXPECT_TRUE(child_directories.empty());
 
   // dir2: no child directories.
   resource_metadata_.GetChildDirectories("resource_id:dir2",
-      base::Bind(&OnGetChildDirectories, &changed_directories));
+      base::Bind(&CopyResultFromGetChildDirectoriesCallback,
+                 &child_directories));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_TRUE(changed_directories.empty());
+  EXPECT_TRUE(child_directories.empty());
 
   // dir1: dir3 is the only child
   resource_metadata_.GetChildDirectories("resource_id:dir1",
-      base::Bind(&OnGetChildDirectories, &changed_directories));
+      base::Bind(&CopyResultFromGetChildDirectoriesCallback,
+                 &child_directories));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(1u, changed_directories.size());
-  EXPECT_EQ(1u, changed_directories.count(
+  EXPECT_EQ(1u, child_directories.size());
+  EXPECT_EQ(1u, child_directories.count(
       FilePath::FromUTF8Unsafe("drive/dir1/dir3")));
 
   // Add a few more directories to make sure deeper nesting works.
@@ -845,14 +897,15 @@ TEST_F(DriveResourceMetadataTest, GetChildDirectories) {
   ASSERT_TRUE(AddDriveEntryProto(sequence_id++, true, "resource_id:dir106"));
 
   resource_metadata_.GetChildDirectories("resource_id:dir2",
-      base::Bind(&OnGetChildDirectories, &changed_directories));
+      base::Bind(&CopyResultFromGetChildDirectoriesCallback,
+                 &child_directories));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(8u, changed_directories.size());
-  EXPECT_EQ(1u, changed_directories.count(FilePath::FromUTF8Unsafe(
+  EXPECT_EQ(8u, child_directories.size());
+  EXPECT_EQ(1u, child_directories.count(FilePath::FromUTF8Unsafe(
       "drive/dir2/dir101")));
-  EXPECT_EQ(1u, changed_directories.count(FilePath::FromUTF8Unsafe(
+  EXPECT_EQ(1u, child_directories.count(FilePath::FromUTF8Unsafe(
       "drive/dir2/dir101/dir104")));
-  EXPECT_EQ(1u, changed_directories.count(FilePath::FromUTF8Unsafe(
+  EXPECT_EQ(1u, child_directories.count(FilePath::FromUTF8Unsafe(
       "drive/dir2/dir101/dir102/dir105/dir106/dir107")));
 }
 

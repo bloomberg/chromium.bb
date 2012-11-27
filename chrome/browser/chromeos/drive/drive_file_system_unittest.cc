@@ -1028,13 +1028,22 @@ TEST_F(DriveFileSystemTest, SearchDuplicateNames) {
       FILE_PATH_LITERAL("drive/Duplicate Name.txt"));
   scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath1);
   ASSERT_TRUE(entry.get());
-  EXPECT_EQ("file:3_file_resource_id", entry->resource_id());
+  const std::string resource_id1 = entry->resource_id();
 
   const FilePath kFilePath2 = FilePath(
       FILE_PATH_LITERAL("drive/Duplicate Name (2).txt"));
   entry = GetEntryInfoByPathSync(kFilePath2);
   ASSERT_TRUE(entry.get());
-  EXPECT_EQ("file:4_file_resource_id", entry->resource_id());
+  const std::string resource_id2 = entry->resource_id();
+
+  // The entries are de-duped non-deterministically, so we shouldn't rely on the
+  // names matching specific resource ids.
+  const std::string file3_resource_id = "file:3_file_resource_id";
+  const std::string file4_resource_id = "file:4_file_resource_id";
+  EXPECT_TRUE(file3_resource_id == resource_id1 ||
+              file3_resource_id == resource_id2);
+  EXPECT_TRUE(file4_resource_id == resource_id1 ||
+              file4_resource_id == resource_id2);
 }
 
 TEST_F(DriveFileSystemTest, SearchExistingDirectory) {
