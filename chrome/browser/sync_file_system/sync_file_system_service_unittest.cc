@@ -71,12 +71,14 @@ class MockSyncEventObserver : public SyncEventObserver {
   MockSyncEventObserver() {}
   virtual ~MockSyncEventObserver() {}
 
-  MOCK_METHOD2(OnSyncStateUpdated,
-               void(SyncServiceState state,
+  MOCK_METHOD3(OnSyncStateUpdated,
+               void(const GURL& app_origin,
+                    SyncServiceState state,
                     const std::string& description));
-  MOCK_METHOD2(OnFileSynced,
-               void(const fileapi::FileSystemURL& url,
-                    fileapi::SyncOperationType operation));
+  MOCK_METHOD3(OnFileSynced,
+               void(fileapi::SyncStatusCode status,
+                    fileapi::SyncOperationType operation,
+                    const fileapi::FileSystemURL& url));
 };
 
 ACTION_P3(NotifyStateAndCallback,
@@ -88,7 +90,7 @@ ACTION_P3(NotifyStateAndCallback,
 }
 
 ACTION_P(RecordState, states) {
-  states->push_back(arg0);
+  states->push_back(arg1);
 }
 
 ACTION_P(MockStatusCallback, status) {
@@ -175,7 +177,7 @@ class SyncFileSystemServiceTest : public testing::Test {
       fileapi::SyncStatusCode expected_status,
       int expected_current_state_calls) {
     StrictMock<MockSyncEventObserver> event_observer;
-    sync_service_->AddSyncEventObserver(GURL(kOrigin), &event_observer);
+    sync_service_->AddSyncEventObserver(&event_observer);
 
     sync_service_->set_auto_sync_enabled(true);
 
@@ -192,7 +194,7 @@ class SyncFileSystemServiceTest : public testing::Test {
     }
 
     std::vector<SyncEventObserver::SyncServiceState> actual_states;
-    EXPECT_CALL(event_observer, OnSyncStateUpdated(_, _))
+    EXPECT_CALL(event_observer, OnSyncStateUpdated(GURL(), _, _))
         .WillRepeatedly(RecordState(&actual_states));
 
     SyncStatusCode actual_status = fileapi::SYNC_STATUS_UNKNOWN;
@@ -235,7 +237,6 @@ TEST_F(SyncFileSystemServiceTest, InitializeForApp) {
 
 TEST_F(SyncFileSystemServiceTest, InitializeForAppSuccess) {
   std::vector<SyncEventObserver::SyncServiceState> expected_states;
-  expected_states.push_back(SyncEventObserver::SYNC_SERVICE_INITIALIZING);
   expected_states.push_back(SyncEventObserver::SYNC_SERVICE_RUNNING);
 
   InitializeAppForObserverTest(
@@ -248,7 +249,6 @@ TEST_F(SyncFileSystemServiceTest, InitializeForAppSuccess) {
 
 TEST_F(SyncFileSystemServiceTest, InitializeForAppWithNetworkFailure) {
   std::vector<SyncEventObserver::SyncServiceState> expected_states;
-  expected_states.push_back(SyncEventObserver::SYNC_SERVICE_INITIALIZING);
   expected_states.push_back(
       SyncEventObserver::SYNC_SERVICE_TEMPORARY_UNAVAILABLE);
 
@@ -265,7 +265,6 @@ TEST_F(SyncFileSystemServiceTest, InitializeForAppWithNetworkFailure) {
 
 TEST_F(SyncFileSystemServiceTest, InitializeForAppWithError) {
   std::vector<SyncEventObserver::SyncServiceState> expected_states;
-  expected_states.push_back(SyncEventObserver::SYNC_SERVICE_INITIALIZING);
   expected_states.push_back(SyncEventObserver::SYNC_SERVICE_DISABLED);
 
   // Notify REMOTE_SERVICE_DISABLED and callback with

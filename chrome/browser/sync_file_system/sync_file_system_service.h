@@ -57,10 +57,8 @@ class SyncFileSystemService
       const fileapi::FileSystemURL& url,
       const fileapi::ConflictFileInfoCallback& callback);
 
-  void AddSyncEventObserver(const GURL& app_origin,
-                            SyncEventObserver* observer);
-  void RemoveSyncEventObserver(const GURL& app_origin,
-                               SyncEventObserver* observer);
+  void AddSyncEventObserver(SyncEventObserver* observer);
+  void RemoveSyncEventObserver(SyncEventObserver* observer);
 
   // Enables or disables automatic synchronization process.
   // If this is enabled the service automatically runs remote/local sync
@@ -144,9 +142,7 @@ class SyncFileSystemService
 
   std::set<GURL> pending_register_origins_;
 
-  typedef ObserverList<SyncEventObserver> EventObserverList;
-  typedef std::map<GURL, EventObserverList*> ObserverMap;
-  ObserverMap observer_map_;
+  ObserverList<SyncEventObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncFileSystemService);
 };

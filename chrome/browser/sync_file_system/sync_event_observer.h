@@ -23,10 +23,6 @@ class SyncEventObserver {
   virtual ~SyncEventObserver() {}
 
   enum SyncServiceState {
-    // The sync service is being initialized (e.g. restoring data from the
-    // database, checking connectivity and authenticating to the service etc).
-    SYNC_SERVICE_INITIALIZING,
-
     // The sync service is up and running.
     SYNC_SERVICE_RUNNING,
 
@@ -46,13 +42,16 @@ class SyncEventObserver {
   };
 
   // Reports there was a state change in the sync file system backend.
-  virtual void OnSyncStateUpdated(SyncServiceState state,
+  // If |app_origin| is empty, then broadcast to all registered apps.
+  virtual void OnSyncStateUpdated(const GURL& app_origin,
+                                  SyncServiceState state,
                                   const std::string& description) = 0;
 
   // Reports the file |url| was updated for |operation|
   // by the sync file system backend.
-  virtual void OnFileSynced(const fileapi::FileSystemURL& url,
-                            SyncOperationType operation) = 0;
+  virtual void OnFileSynced(fileapi::SyncStatusCode status,
+                            fileapi::SyncOperationType operation,
+                            const fileapi::FileSystemURL& url) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncEventObserver);

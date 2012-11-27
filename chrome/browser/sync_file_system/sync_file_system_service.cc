@@ -138,8 +138,6 @@ void SyncFileSystemService::Shutdown() {
 SyncFileSystemService::~SyncFileSystemService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!profile_);
-  STLDeleteContainerPairSecondPointers(observer_map_.begin(),
-                                       observer_map_.end());
 }
 
 void SyncFileSystemService::InitializeForApp(
@@ -155,13 +153,6 @@ void SyncFileSystemService::InitializeForApp(
   if (!inserted) {
     callback.Run(fileapi::SYNC_STATUS_OK);
     return;
-  }
-
-  if (ContainsKey(observer_map_, app_origin)) {
-    FOR_EACH_OBSERVER(
-        SyncEventObserver, *observer_map_[app_origin],
-        OnSyncStateUpdated(SyncEventObserver::SYNC_SERVICE_INITIALIZING,
-                           "Registering the application"));
   }
 
   scoped_refptr<SharedCallbackRunner> callback_runner(
@@ -229,20 +220,13 @@ void SyncFileSystemService::GetConflictFileInfo(
       url, callback_runner->CreateAssignAndRunCallback(remote_metadata));
 }
 
-void SyncFileSystemService::AddSyncEventObserver(
-    const GURL& app_origin,
-    SyncEventObserver* observer) {
-  if (!ContainsKey(observer_map_, app_origin))
-    observer_map_[app_origin] = new EventObserverList;
-  observer_map_[app_origin]->AddObserver(observer);
+void SyncFileSystemService::AddSyncEventObserver(SyncEventObserver* observer) {
+  observers_.AddObserver(observer);
 }
 
 void SyncFileSystemService::RemoveSyncEventObserver(
-    const GURL& app_origin,
     SyncEventObserver* observer) {
-  if (!ContainsKey(observer_map_, app_origin))
-    return;
-  observer_map_[app_origin]->RemoveObserver(observer);
+  observers_.RemoveObserver(observer);
 }
 
 SyncFileSystemService::SyncFileSystemService(Profile* profile)
@@ -440,17 +424,17 @@ void SyncFileSystemService::OnRemoteServiceStateUpdated(
     RemoteServiceState state,
     const std::string& description) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  for (ObserverMap::iterator iter = observer_map_.begin();
-       iter != observer_map_.end(); ++iter) {
-    FOR_EACH_OBSERVER(SyncEventObserver, *iter->second,
-                      OnSyncStateUpdated(RemoteStateToSyncServiceState(state),
-                                         description));
-  }
   if (state == REMOTE_SERVICE_OK) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE, base::Bind(&SyncFileSystemService::MaybeStartSync,
                               AsWeakPtr()));
   }
+
+  FOR_EACH_OBSERVER(
+      SyncEventObserver, observers_,
+      OnSyncStateUpdated(GURL(),
+                         RemoteStateToSyncServiceState(state),
+                         description));
 }
 
 // SyncFileSystemServiceFactory -----------------------------------------------
