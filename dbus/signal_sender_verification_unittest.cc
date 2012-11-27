@@ -51,7 +51,8 @@ class SignalSenderVerificationTest : public testing::Test {
 
     object_proxy_->SetNameOwnerChangedCallback(
         base::Bind(&SignalSenderVerificationTest::OnNameOwnerChanged,
-                   base::Unretained(this)));
+                   base::Unretained(this),
+                   &on_name_owner_changed_called_));
 
     // Connect to the "Test" signal of "org.chromium.TestInterface" from
     // the remote object.
@@ -119,18 +120,16 @@ class SignalSenderVerificationTest : public testing::Test {
     message_loop_.Quit();
   }
 
-  void OnNameOwnerChanged(dbus::Signal* signal) {
+  void OnNameOwnerChanged(bool* called_flag, dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
     std::string name, old_owner, new_owner;
     ASSERT_TRUE(reader.PopString(&name));
     ASSERT_TRUE(reader.PopString(&old_owner));
     ASSERT_TRUE(reader.PopString(&new_owner));
     latest_name_owner_ = new_owner;
-    on_name_owner_changed_called_ = true;
+    *called_flag = true;
     message_loop_.Quit();
   }
-
- protected:
 
   // Called when the "Test" signal is received, in the main thread.
   // Copy the string payload to |test_signal_string_|.
@@ -147,6 +146,8 @@ class SignalSenderVerificationTest : public testing::Test {
     ASSERT_TRUE(success);
     message_loop_.Quit();
   }
+
+ protected:
 
   // Wait for the hey signal to be received.
   void WaitForTestSignal() {
@@ -233,6 +234,73 @@ TEST_F(SignalSenderVerificationTest, TestOwnerChanged) {
   if (!on_name_owner_changed_called_ || !on_ownership_called_)
     message_loop_.Run();
   ASSERT_TRUE(on_name_owner_changed_called_);
+  ASSERT_TRUE(on_ownership_called_);
+
+  // latest_name_owner_ becomes non empty as the new owner appears.
+  ASSERT_FALSE(latest_name_owner_.empty());
+
+  // Now the second service owns the name.
+  const char kNewMessage[] = "hello, new world";
+
+  test_service2_->SendTestSignal(kNewMessage);
+  WaitForTestSignal();
+  ASSERT_EQ(kNewMessage, test_signal_string_);
+}
+
+TEST_F(SignalSenderVerificationTest, TestMultipleObjects) {
+  const char kMessage[] = "hello, world";
+
+  dbus::ObjectProxy* object_proxy2 = bus_->GetObjectProxy(
+      "org.chromium.TestService",
+      dbus::ObjectPath("/org/chromium/DifferentObject"));
+
+  bool second_name_owner_changed_called = false;
+  object_proxy2->SetNameOwnerChangedCallback(
+      base::Bind(&SignalSenderVerificationTest::OnNameOwnerChanged,
+                 base::Unretained(this),
+                 &second_name_owner_changed_called));
+
+  // Connect to a signal on the additional remote object to trigger the
+  // name owner matching.
+  object_proxy2->ConnectToSignal(
+      "org.chromium.DifferentTestInterface",
+      "Test",
+      base::Bind(&SignalSenderVerificationTest::OnTestSignal,
+                 base::Unretained(this)),
+      base::Bind(&SignalSenderVerificationTest::OnConnected,
+                 base::Unretained(this)));
+  // Wait until the object proxy is connected to the signal.
+  message_loop_.Run();
+
+  // Send the test signal from the exported object.
+  test_service_->SendTestSignal(kMessage);
+  // Receive the signal with the object proxy. The signal is handled in
+  // SignalSenderVerificationTest::OnTestSignal() in the main thread.
+  WaitForTestSignal();
+  ASSERT_EQ(kMessage, test_signal_string_);
+
+  // Release and acquire the name ownership.
+  // latest_name_owner_ should be non empty as |test_service_| owns the name.
+  ASSERT_FALSE(latest_name_owner_.empty());
+  test_service_->ShutdownAndBlock();
+  // OnNameOwnerChanged will PostTask to quit the message loop.
+  message_loop_.Run();
+  // latest_name_owner_ should be empty as the owner is gone.
+  ASSERT_TRUE(latest_name_owner_.empty());
+
+  // Reset the flag as NameOwnerChanged is already received in setup.
+  on_name_owner_changed_called_ = false;
+  second_name_owner_changed_called = false;
+  test_service2_->RequestOwnership(
+      base::Bind(&SignalSenderVerificationTest::OnOwnership,
+                 base::Unretained(this), true));
+  // Both of OnNameOwnerChanged() and OnOwnership() should quit the MessageLoop,
+  // but there's no expected order of those 2 event.
+  while (!on_name_owner_changed_called_ || !second_name_owner_changed_called ||
+         !on_ownership_called_)
+    message_loop_.Run();
+  ASSERT_TRUE(on_name_owner_changed_called_);
+  ASSERT_TRUE(second_name_owner_changed_called);
   ASSERT_TRUE(on_ownership_called_);
 
   // latest_name_owner_ becomes non empty as the new owner appears.
