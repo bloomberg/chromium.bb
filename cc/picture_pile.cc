@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "base/debug/trace_event.h"
 #include "cc/picture_pile.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
@@ -66,7 +67,8 @@ void PicturePile::Update(ContentLayerClient* painter, RenderingStats& stats) {
   pile_[0]->Record(painter, gfx::Rect(gfx::Point(), size_), stats);
 }
 
-void PicturePile::CopyAllButPile(PicturePile& from, PicturePile& to) {
+void PicturePile::CopyAllButPile(
+    const PicturePile& from, PicturePile& to) const {
   to.size_ = from.size_;
   to.invalidation_ = from.invalidation_;
   to.prev_invalidation_ = from.prev_invalidation_;
@@ -80,7 +82,8 @@ void PicturePile::PushPropertiesTo(PicturePile& other) {
     other.pile_[i] = pile_[i];
 }
 
-scoped_ptr<PicturePile> PicturePile::CloneForDrawing() {
+scoped_ptr<PicturePile> PicturePile::CloneForDrawing() const {
+  TRACE_EVENT0("cc", "PicturePile::CloneForDrawing");
   scoped_ptr<PicturePile> clone = make_scoped_ptr(new PicturePile);
   CopyAllButPile(*this, *clone);
 

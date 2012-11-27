@@ -7,7 +7,7 @@
 namespace cc {
 
 FakePictureLayerTilingClient::FakePictureLayerTilingClient()
-    : tile_manager_(&tile_manager_client_) {
+    : tile_manager_(&tile_manager_client_, NULL) {
 }
 
 FakePictureLayerTilingClient::~FakePictureLayerTilingClient() {

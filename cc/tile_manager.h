@@ -7,9 +7,15 @@
 
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "cc/layer_tree_host_impl.h"
+#include "cc/resource_pool.h"
 #include "cc/tile_priority.h"
+
+namespace base {
+class SequencedWorkerPool;
+}
 
 namespace cc {
 
@@ -39,15 +45,14 @@ enum TileManagerBin {
 // managed by the TileManager.
 class CC_EXPORT ManagedTileState {
  public:
-  ManagedTileState()
-    : can_use_gpu_memory(false)
-    , resource_id(0)
-    , resource_id_can_be_freed(0) {}
+  ManagedTileState();
+  ~ManagedTileState();
 
   // Persisted state: valid all the time.
   bool can_use_gpu_memory;
+  bool can_be_freed;
   ResourceProvider::ResourceId resource_id;
-  bool resource_id_can_be_freed;
+  bool resource_id_is_being_initialized;
 
   // Ephemeral state, valid only during Manage.
   TileManagerBin bin;
@@ -61,8 +66,8 @@ class CC_EXPORT ManagedTileState {
 // created, and unregister from the manager when they are deleted.
 class CC_EXPORT TileManager {
  public:
-  TileManager(TileManagerClient* client);
-  ~TileManager();
+  TileManager(TileManagerClient* client, ResourceProvider *resource_provider);
+  virtual ~TileManager();
 
   void SetGlobalState(const GlobalStateThatImpactsTilePriority& state);
   void ManageTiles();
@@ -75,18 +80,28 @@ class CC_EXPORT TileManager {
   void WillModifyTilePriority(Tile*, WhichTree, const TilePriority& new_priority);
 
  private:
+  void AssignGpuMemoryToTiles();
   void FreeResourcesForTile(Tile*);
   void ScheduleManageTiles();
-  void ScheduleMorePaintingJobs();
+  void DispatchMoreRasterTasks();
+  void DispatchOneRasterTask(scoped_refptr<Tile>);
+  void OnRasterTaskCompleted(
+      scoped_refptr<Tile>,
+      ResourceProvider::ResourceId,
+      scoped_ptr<PicturePile>);
+  void DidFinishTileInitialization(Tile*, ResourceProvider::ResourceId);
 
   TileManagerClient* client_;
+  scoped_ptr<ResourcePool> resource_pool_;
   bool manage_tiles_pending_;
+  int pending_raster_tasks_;
+  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
 
   GlobalStateThatImpactsTilePriority global_state_;
 
   typedef std::vector<Tile*> TileVector;
   TileVector tiles_;
-  TileVector tiles_that_need_to_be_painted_;
+  TileVector tiles_that_need_to_be_rasterized_;
 };
 
 }  // namespace cc

@@ -159,6 +159,8 @@
       'rendering_stats.h',
       'resource.cc',
       'resource.h',
+      'resource_pool.cc',
+      'resource_pool.h',
       'resource_provider.cc',
       'resource_provider.h',
       'resource_update.cc',

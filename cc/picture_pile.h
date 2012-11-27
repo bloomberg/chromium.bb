@@ -36,7 +36,7 @@ public:
   void PushPropertiesTo(PicturePile& other);
 
   // Clone a paint-safe version of this picture (with cloned PicturePileRecords)
-  scoped_ptr<PicturePile> CloneForDrawing();
+  scoped_ptr<PicturePile> CloneForDrawing() const;
 
   // Raster a subrect of this PicturePile into the given canvas.
   // It's only safe to call paint on a cloned version.
@@ -44,7 +44,7 @@ public:
   void Raster(SkCanvas* canvas, gfx::Rect rect);
 
 private:
-  void CopyAllButPile(PicturePile& from, PicturePile& to);
+  void CopyAllButPile(const PicturePile& from, PicturePile& to) const;
 
   std::vector<scoped_refptr<Picture> > pile_;
   gfx::Size size_;
