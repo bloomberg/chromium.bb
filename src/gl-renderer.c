@@ -517,6 +517,47 @@ calculate_edges(struct weston_surface *es, pixman_box32_t *rect,
 	return n;
 }
 
+static void
+transform_texcoord(struct weston_surface *es, GLfloat sx, GLfloat sy,
+		   GLfloat *tx, GLfloat *ty)
+{
+	switch(es->buffer_transform) {
+	case WL_OUTPUT_TRANSFORM_NORMAL:
+	default:
+		*tx = sx;
+		*ty = sy;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED:
+		*tx = 1.0 - sx;
+		*ty = sy;
+		break;
+	case WL_OUTPUT_TRANSFORM_90:
+		*tx = 1.0 - sy;
+		*ty = sx;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+		*tx = 1.0 - sy;
+		*ty = 1.0 - sx;
+		break;
+	case WL_OUTPUT_TRANSFORM_180:
+		*tx = 1.0 - sx;
+		*ty = 1.0 - sy;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+		*tx = sx;
+		*ty = 1.0 - sy;
+		break;
+	case WL_OUTPUT_TRANSFORM_270:
+		*tx = sy;
+		*ty = 1.0 - sx;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		*tx = sy;
+		*ty = sx;
+		break;
+	}
+}
+
 static int
 texture_region(struct weston_surface *es, pixman_region32_t *region,
 		pixman_region32_t *surf_region)
@@ -543,7 +584,7 @@ texture_region(struct weston_surface *es, pixman_region32_t *region,
 		pixman_box32_t *rect = &rects[i];
 		for (j = 0; j < nsurf; j++) {
 			pixman_box32_t *surf_rect = &surf_rects[j];
-			GLfloat sx, sy;
+			GLfloat sx, sy, tx, ty;
 			GLfloat ex[8], ey[8];          /* edge points in screen space */
 			int n;
 
@@ -572,8 +613,12 @@ texture_region(struct weston_surface *es, pixman_region32_t *region,
 				*(v++) = ex[k];
 				*(v++) = ey[k];
 				/* texcoord: */
-				*(v++) = sx * inv_width;
-				*(v++) = sy * inv_height;
+				transform_texcoord(es,
+						   sx * inv_width,
+						   sy * inv_height,
+						   &tx, &ty);
+				*(v++) = tx;
+				*(v++) = ty;
 			}
 
 			vtxcnt[nvtx++] = n;
@@ -1183,7 +1228,16 @@ gl_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 						    gs->images[i]);
 		}
 
-		es->pitch = buffer->width;
+		switch(es->buffer_transform) {
+		case WL_OUTPUT_TRANSFORM_90:
+		case WL_OUTPUT_TRANSFORM_270:
+		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+		case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+			es->pitch = buffer->height;
+			break;
+		default:
+			es->pitch = buffer->width;
+		}
 	} else {
 		weston_log("unhandled buffer type!\n");
 	}

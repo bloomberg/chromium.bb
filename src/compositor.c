@@ -245,6 +245,8 @@ weston_surface_create(struct weston_compositor *compositor)
 	pixman_region32_init(&surface->texture_damage);
 
 	surface->buffer = NULL;
+	surface->buffer_transform = WL_OUTPUT_TRANSFORM_NORMAL;
+	surface->pending.buffer_transform = surface->buffer_transform;
 	surface->output = NULL;
 	surface->plane = &compositor->primary_plane;
 
@@ -651,6 +653,34 @@ weston_surface_is_mapped(struct weston_surface *surface)
 		return 1;
 	else
 		return 0;
+}
+
+WL_EXPORT int32_t
+weston_surface_buffer_width(struct weston_surface *surface)
+{
+	switch (surface->buffer_transform) {
+	case WL_OUTPUT_TRANSFORM_90:
+	case WL_OUTPUT_TRANSFORM_270:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		return surface->buffer->height;
+	default:
+		return surface->buffer->width;
+	}
+}
+
+WL_EXPORT int32_t
+weston_surface_buffer_height(struct weston_surface *surface)
+{
+	switch (surface->buffer_transform) {
+	case WL_OUTPUT_TRANSFORM_90:
+	case WL_OUTPUT_TRANSFORM_270:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		return surface->buffer->width;
+	default:
+		return surface->buffer->height;
+	}
 }
 
 WL_EXPORT uint32_t
@@ -1237,6 +1267,31 @@ surface_set_input_region(struct wl_client *client,
 	}
 }
 
+static int
+surface_pending_buffer_has_different_size(struct weston_surface *surface)
+{
+	int width, height;
+
+	switch (surface->pending.buffer_transform) {
+	case WL_OUTPUT_TRANSFORM_90:
+	case WL_OUTPUT_TRANSFORM_270:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		height = surface->pending.buffer->width;
+		width = surface->pending.buffer->height;
+		break;
+	default:
+		width = surface->pending.buffer->width;
+		height = surface->pending.buffer->height;
+	}
+
+	if (width == surface->geometry.width &&
+	    height == surface->geometry.height)
+		return 0;
+	else
+		return 1;
+}
+
 static void
 surface_commit(struct wl_client *client, struct wl_resource *resource)
 {
@@ -1245,9 +1300,11 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 
 	if (surface->pending.sx || surface->pending.sy ||
 	    (surface->pending.buffer &&
-	     (surface->pending.buffer->width != surface->geometry.width ||
-	      surface->pending.buffer->height != surface->geometry.height)))
+	     surface_pending_buffer_has_different_size(surface)))
 		surface->geometry.dirty = 1;
+
+	/* wl_surface.set_buffer_rotation */
+	surface->buffer_transform = surface->pending.buffer_transform;
 
 	/* wl_surface.attach */
 	if (surface->pending.buffer || surface->pending.remove_contents)
@@ -1298,6 +1355,15 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 	weston_surface_schedule_repaint(surface);
 }
 
+static void
+surface_set_buffer_transform(struct wl_client *client,
+			     struct wl_resource *resource, int transform)
+{
+	struct weston_surface *surface = resource->data;
+
+	surface->pending.buffer_transform = transform;
+}
+
 static const struct wl_surface_interface surface_interface = {
 	surface_destroy,
 	surface_attach,
@@ -1305,7 +1371,8 @@ static const struct wl_surface_interface surface_interface = {
 	surface_frame,
 	surface_set_opaque_region,
 	surface_set_input_region,
-	surface_commit
+	surface_commit,
+	surface_set_buffer_transform
 };
 
 static void

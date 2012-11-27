@@ -2129,7 +2129,8 @@ configure_static_surface(struct weston_surface *es, struct weston_layer *layer)
 	}
 
 	weston_surface_configure(es, es->output->x, es->output->y,
-				 es->buffer->width, es->buffer->height);
+				 weston_surface_buffer_width(es),
+				 weston_surface_buffer_height(es));
 
 	if (wl_list_empty(&es->layer_link)) {
 		wl_list_insert(&layer->surface_list, &es->layer_link);
@@ -2815,12 +2816,14 @@ hide_input_panels(struct wl_listener *listener, void *data)
 static void
 center_on_output(struct weston_surface *surface, struct weston_output *output)
 {
-	float x = (output->width - surface->buffer->width) / 2;
-	float y = (output->height - surface->buffer->height) / 2;
+	int32_t width = weston_surface_buffer_width(surface);
+	int32_t height = weston_surface_buffer_height(surface);
+	float x, y;
 
-	weston_surface_configure(surface, output->x + x, output->y + y,
-				 surface->buffer->width,
-				 surface->buffer->height);
+	x = output->x + (output->width - width) / 2;
+	y = output->y + (output->height - height) / 2;
+
+	weston_surface_configure(surface, x, y, width, height);
 }
 
 static void
@@ -3029,6 +3032,8 @@ shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 {
 	struct shell_surface *shsurf = get_shell_surface(es);
 	struct desktop_shell *shell = shsurf->shell;
+	int32_t width = weston_surface_buffer_width(es);
+	int32_t height = weston_surface_buffer_height(es);
 	int type_changed = 0;
 
 	if (shsurf->next_type != SHELL_SURFACE_NONE &&
@@ -3038,10 +3043,10 @@ shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 	}
 
 	if (!weston_surface_is_mapped(es)) {
-		map(shell, es, es->buffer->width, es->buffer->height, sx, sy);
+		map(shell, es, width, height, sx, sy);
 	} else if (type_changed || sx != 0 || sy != 0 ||
-		   es->geometry.width != es->buffer->width ||
-		   es->geometry.height != es->buffer->height) {
+		   es->geometry.width != width ||
+		   es->geometry.height != height) {
 		float from_x, from_y;
 		float to_x, to_y;
 
@@ -3050,7 +3055,7 @@ shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 		configure(shell, es,
 			  es->geometry.x + to_x - from_x,
 			  es->geometry.y + to_y - from_y,
-			  es->buffer->width, es->buffer->height);
+			  width, height);
 	}
 }
 
@@ -3216,8 +3221,10 @@ static void
 input_panel_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 {
 	struct weston_mode *mode = surface->output->current;
-	float x = (mode->width - surface->buffer->width) / 2;
-	float y = mode->height - surface->buffer->height;
+	int32_t width = weston_surface_buffer_width(surface);
+	int32_t height = weston_surface_buffer_height(surface);
+	float x = (mode->width - width) / 2;
+	float y = mode->height - height;
 
 	/* Don't map the input panel here, wait for
 	 * show_input_panels signal. */
@@ -3225,8 +3232,7 @@ input_panel_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 	weston_surface_configure(surface,
 				 surface->output->x + x,
 				 surface->output->y + y,
-				 surface->buffer->width,
-				 surface->buffer->height);
+				 width, height);
 }
 
 static void

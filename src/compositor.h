@@ -437,6 +437,7 @@ struct weston_surface {
 
 	struct wl_buffer *buffer;
 	struct wl_listener buffer_destroy_listener;
+	uint32_t buffer_transform;
 
 	/* All the pending state, that wl_surface.commit will apply. */
 	struct {
@@ -458,6 +459,9 @@ struct weston_surface {
 
 		/* wl_surface.frame */
 		struct wl_list frame_callback_list;
+
+		/* wl_surface.set_buffer_transform */
+		uint32_t buffer_transform;
 	} pending;
 
 	/*
@@ -495,6 +499,10 @@ void
 weston_surface_from_global_fixed(struct weston_surface *surface,
 			         wl_fixed_t x, wl_fixed_t y,
 			         wl_fixed_t *sx, wl_fixed_t *sy);
+int32_t
+weston_surface_buffer_width(struct weston_surface *surface);
+int32_t
+weston_surface_buffer_height(struct weston_surface *surface);
 
 void
 weston_spring_init(struct weston_spring *spring,
