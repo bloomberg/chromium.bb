@@ -177,30 +177,6 @@ keyboard_input_handle_key(struct keyboard_input *keyboard_input,
 }
 
 static void
-keyboard_input_handle_modifiers(struct keyboard_input *keyboard_input,
-				uint32_t serial, uint32_t mods_depressed,
-				uint32_t mods_latched, uint32_t mods_locked,
-				uint32_t group)
-{
-	xkb_mod_mask_t mask;
-
-	xkb_state_update_mask(keyboard_input->state, mods_depressed, mods_latched,
-			      mods_locked, 0, 0, group);
-	mask = xkb_state_serialize_mods(keyboard_input->state,
-					XKB_STATE_DEPRESSED |
-					XKB_STATE_LATCHED);
-
-	keyboard_input->modifiers = 0;
-	if (mask & keyboard_input->control_mask)
-		keyboard_input->modifiers |= MOD_CONTROL_MASK;
-	if (mask & keyboard_input->alt_mask)
-		keyboard_input->modifiers |= MOD_ALT_MASK;
-	if (mask & keyboard_input->shift_mask)
-		keyboard_input->modifiers |= MOD_SHIFT_MASK;
-
-}
-
-static void
 keyboard_input_set_user_data(struct keyboard_input *keyboard_input, void *data)
 {
 	keyboard_input->user_data = data;
@@ -276,9 +252,22 @@ input_method_keyboard_modifiers(void *data,
 {
 	struct simple_im *keyboard = data;
 	struct input_method_context *context = keyboard->context;
+	struct keyboard_input *keyboard_input = keyboard->keyboard_input;
+	xkb_mod_mask_t mask;
 
-	keyboard_input_handle_modifiers(keyboard->keyboard_input, serial,
-					mods_depressed, mods_latched, mods_locked, group);
+	xkb_state_update_mask(keyboard_input->state, mods_depressed,
+			      mods_latched, mods_locked, 0, 0, group);
+	mask = xkb_state_serialize_mods(keyboard_input->state,
+					XKB_STATE_DEPRESSED |
+					XKB_STATE_LATCHED);
+
+	keyboard_input->modifiers = 0;
+	if (mask & keyboard_input->control_mask)
+		keyboard_input->modifiers |= MOD_CONTROL_MASK;
+	if (mask & keyboard_input->alt_mask)
+		keyboard_input->modifiers |= MOD_ALT_MASK;
+	if (mask & keyboard_input->shift_mask)
+		keyboard_input->modifiers |= MOD_SHIFT_MASK;
 
 	input_method_context_modifiers(context, serial,
 				       mods_depressed, mods_depressed,
