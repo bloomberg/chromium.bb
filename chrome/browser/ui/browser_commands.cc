@@ -565,7 +565,7 @@ bool CanDuplicateTab(const Browser* browser) {
   return contents && contents->GetController().GetLastCommittedEntry();
 }
 
-TabContents* DuplicateTabAt(Browser* browser, int index) {
+WebContents* DuplicateTabAt(Browser* browser, int index) {
   TabContents* contents = browser->tab_strip_model()->GetTabContentsAt(index);
   CHECK(contents);
   TabContents* contents_dupe =
@@ -617,7 +617,7 @@ TabContents* DuplicateTabAt(Browser* browser, int index) {
       SessionServiceFactory::GetForProfileIfExisting(browser->profile());
   if (session_service)
     session_service->TabRestored(contents_dupe->web_contents(), pinned);
-  return contents_dupe;
+  return contents_dupe->web_contents();
 }
 
 bool CanDuplicateTabAt(Browser* browser, int index) {
@@ -974,13 +974,12 @@ bool IsDebuggerAttachedToCurrentTab(Browser* browser) {
       content::DevToolsAgentHostRegistry::IsDebuggerAttached(contents) : false;
 }
 
-void ViewSource(Browser* browser, TabContents* contents) {
+void ViewSource(Browser* browser, WebContents* contents) {
   DCHECK(contents);
 
   // Use the last committed entry, since the pending entry hasn't loaded yet and
   // won't be copied into the cloned tab.
-  NavigationEntry* entry =
-    contents->web_contents()->GetController().GetLastCommittedEntry();
+  NavigationEntry* entry = contents->GetController().GetLastCommittedEntry();
   if (!entry)
     return;
 
@@ -988,7 +987,7 @@ void ViewSource(Browser* browser, TabContents* contents) {
 }
 
 void ViewSource(Browser* browser,
-                TabContents* contents,
+                WebContents* contents,
                 const GURL& url,
                 const std::string& content_state) {
   content::RecordAction(UserMetricsAction("ViewSource"));
@@ -997,7 +996,7 @@ void ViewSource(Browser* browser,
   // Note that Clone does not copy the pending or transient entries, so the
   // active entry in view_source_contents will be the last committed entry.
   TabContents* view_source_contents =
-      BrowserCommandsTabContentsCreator::CloneTabContents(contents);
+      BrowserCommandsTabContentsCreator::CreateTabContents(contents->Clone());
   view_source_contents->web_contents()->GetController().PruneAllButActive();
   NavigationEntry* active_entry =
       view_source_contents->web_contents()->GetController().GetActiveEntry();
@@ -1019,7 +1018,7 @@ void ViewSource(Browser* browser,
   if (browser->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP)) {
     // If this is a tabbed browser, just create a duplicate tab inside the same
     // window next to the tab being duplicated.
-    int index = browser->tab_strip_model()->GetIndexOfTabContents(contents);
+    int index = browser->tab_strip_model()->GetIndexOfWebContents(contents);
     int add_types = TabStripModel::ADD_ACTIVE |
         TabStripModel::ADD_INHERIT_GROUP;
     browser->tab_strip_model()->InsertWebContentsAt(
@@ -1053,11 +1052,12 @@ void ViewSource(Browser* browser,
 }
 
 void ViewSelectedSource(Browser* browser) {
-  ViewSource(browser, browser->tab_strip_model()->GetActiveTabContents());
+  ViewSource(browser, browser->tab_strip_model()->GetActiveWebContents());
 }
 
 bool CanViewSource(const Browser* browser) {
-  return GetActiveWebContents(browser)->GetController().CanViewSource();
+  return browser->tab_strip_model()->GetActiveWebContents()->
+      GetController().CanViewSource();
 }
 
 void CreateApplicationShortcuts(Browser* browser) {

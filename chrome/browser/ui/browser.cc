@@ -1501,16 +1501,14 @@ void Browser::OnStartDownload(WebContents* source,
 
 void Browser::ViewSourceForTab(WebContents* source, const GURL& page_url) {
   DCHECK(source);
-  TabContents* tab_contents = TabContents::FromWebContents(source);
-  chrome::ViewSource(this, tab_contents);
+  chrome::ViewSource(this, source);
 }
 
 void Browser::ViewSourceForFrame(WebContents* source,
                                  const GURL& frame_url,
                                  const std::string& frame_content_state) {
   DCHECK(source);
-  TabContents* tab_contents = TabContents::FromWebContents(source);
-  chrome::ViewSource(this, tab_contents, frame_url, frame_content_state);
+  chrome::ViewSource(this, source, frame_url, frame_content_state);
 }
 
 void Browser::ShowRepostFormWarningDialog(WebContents* source) {

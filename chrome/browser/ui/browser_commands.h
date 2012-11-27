@@ -16,7 +16,6 @@ class Browser;
 class CommandObserver;
 class GURL;
 class Profile;
-class TabContents;
 
 namespace content {
 class WebContents;
@@ -87,7 +86,7 @@ void SelectNumberedTab(Browser* browser, int index);
 void SelectLastTab(Browser* browser);
 void DuplicateTab(Browser* browser);
 bool CanDuplicateTab(const Browser* browser);
-TabContents* DuplicateTabAt(Browser* browser, int index);
+content::WebContents* DuplicateTabAt(Browser* browser, int index);
 bool CanDuplicateTabAt(Browser* browser, int index);
 void ConvertPopupToTabbedBrowser(Browser* browser);
 void Exit();
@@ -144,12 +143,12 @@ void ToggleFullscreenMode(Browser* browser);
 void ClearCache(Browser* browser);
 bool IsDebuggerAttachedToCurrentTab(Browser* browser);
 
-// Opens view-source tab for given tab contents.
-void ViewSource(Browser* browser, TabContents* tab);
+// Opens a view-source tab for a given web contents.
+void ViewSource(Browser* browser, content::WebContents* tab);
 
-// Opens view-source tab for any frame within given tab contents.
+// Opens a view-source tab for any frame within a given web contents.
 void ViewSource(Browser* browser,
-                TabContents* tab,
+                content::WebContents* tab,
                 const GURL& url,
                 const std::string& content_state);
 
