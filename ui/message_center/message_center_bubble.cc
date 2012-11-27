@@ -10,6 +10,8 @@
 #include "ui/gfx/size.h"
 #include "ui/message_center/message_view.h"
 #include "ui/message_center/message_view_factory.h"
+#include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
@@ -25,7 +27,11 @@ namespace {
 
 const int kMessageBubbleBaseMinHeight = 80;
 const int kMessageBubbleBaseMaxHeight = 400;
+const int kMarginBetweenItems = 10;
+const SkColor kMessageCenterBackgroundColor = SkColorSetRGB(0xd3, 0xd3, 0xd3);
 const SkColor kBorderDarkColor = SkColorSetRGB(0xaa, 0xaa, 0xaa);
+const SkColor kMessageItemBorderWidth = 1;
+const SkColor kMessageItemBorderColor = SkColorSetRGB(0xaa, 0xaa, 0xaa);
 
 // The view for the buttons at the bottom of the web notification tray.
 class WebNotificationButtonView : public views::View,
@@ -89,6 +95,8 @@ class FixedSizedScrollView : public views::ScrollView {
   FixedSizedScrollView() {
     set_focusable(true);
     set_notify_enter_exit_on_child(true);
+    set_background(views::Background::CreateSolidBackground(
+        kMessageCenterBackgroundColor));
   }
 
   virtual ~FixedSizedScrollView() {}
@@ -140,10 +148,13 @@ class FixedSizedScrollView : public views::ScrollView {
 class ScrollContentView : public views::View {
  public:
   ScrollContentView() {
-    views::BoxLayout* layout =
-        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1);
-    layout->set_spread_blank_space(true);
-    SetLayoutManager(layout);
+    SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kVertical,
+                             kMarginBetweenItems,
+                             kMarginBetweenItems,
+                             kMarginBetweenItems));
+    set_background(views::Background::CreateSolidBackground(
+        kMessageCenterBackgroundColor));
   }
 
   virtual ~ScrollContentView() {
@@ -198,6 +209,8 @@ class MessageCenterContentsView : public views::View {
       MessageView* view =
           MessageViewFactory::ViewForNotification(*iter, list_delegate_);
       view->set_scroller(scroller_);
+      view->set_border(views::Border::CreateSolidBorder(
+          kMessageItemBorderWidth, kMessageItemBorderColor));
       view->SetUpView();
       scroll_content_->AddChildView(view);
       if (++num_children >=
@@ -264,6 +277,7 @@ views::TrayBubbleView::InitParams MessageCenterBubble::GetInitParams(
   views::TrayBubbleView::InitParams init_params =
       GetDefaultInitParams(anchor_alignment);
   init_params.max_height = kMessageBubbleBaseMaxHeight;
+  init_params.bubble_width += kMarginBetweenItems * 2;
   init_params.can_activate = true;
   return init_params;
 }
