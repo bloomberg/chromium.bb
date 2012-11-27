@@ -67,6 +67,7 @@
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 
 #if defined(OS_POSIX)
+#include <pwd.h>
 #include <signal.h>
 #include "base/file_descriptor_posix.h"
 #include "remoting/host/pam_authorization_factory_posix.h"
@@ -79,11 +80,9 @@
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_LINUX)
-#include <pwd.h>
 #include "remoting/host/audio_capturer_linux.h"
 #endif  // defined(OS_LINUX)
 
-// N.B. OS_WIN is defined by including src/base headers.
 #if defined(OS_WIN)
 #include <commctrl.h>
 #include "base/win/scoped_handle.h"
@@ -115,17 +114,17 @@ void QuitMessageLoop(MessageLoop* message_loop) {
 
 // Returns true if GetUsername() is implemented on this platform.
 bool CanGetUsername() {
-#if defined(OS_LINUX)
+#if defined(OS_POSIX)
   return true;
-#else  // defined(OS_LINUX)
+#else  // !defined(OS_POSIX)
   return false;
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_POSIX)
 }  // namespace
 
 // Returns the username associated with this process, or the empty string on
 // error.
 std::string GetUsername() {
-#if defined(OS_LINUX)
+#if defined(OS_POSIX)
   long buf_size = sysconf(_SC_GETPW_R_SIZE_MAX);
   if (buf_size <= 0)
     return "";
@@ -136,10 +135,10 @@ std::string GetUsername() {
   if (!passwd_result)
     return "";
   return std::string(passwd_result->pw_name);
-#else  // defined(OS_LINUX)
+#else  // !defined(OS_POSIX)
   NOTREACHED();
   return "";
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_POSIX)
 }
 
 }  // namespace
@@ -750,9 +749,20 @@ bool HostProcess::OnUsernamePolicyUpdate(bool host_username_match_required) {
 
   if (host_username_match_required) {
     LOG(INFO) << "Policy requires host username match.";
-    if (!CanGetUsername() ||
+    bool shutdown = !CanGetUsername() ||
         !StartsWithASCII(xmpp_login_, GetUsername() + std::string("@"),
-                         false)) {
+                         false);
+
+#if defined(OS_MACOSX)
+    // On Mac, we run as root at the login screen, so the username won't match.
+    // However, there's no need to enforce the policy at the login screen, as
+    // the client will have to reconnect if a login occurs.
+    if (shutdown && getuid() == 0) {
+      shutdown = false;
+    }
+#endif
+
+    if (shutdown) {
       Shutdown(kUsernameMismatchExitCode);
     }
   } else {
