@@ -192,6 +192,10 @@ bool PluginDispatcher::Send(IPC::Message* msg) {
   if (msg->is_sync()) {
     // Synchronous messages might be re-entrant, so we need to drop the lock.
     ProxyAutoUnlock unlock;
+
+    // TODO(yzshen): Make sending message thread-safe. It may be accessed from
+    // non-main threads. Moreover, since the proxy lock has been released, it
+    // may be accessed by multiple threads at the same time.
     return Dispatcher::Send(msg);
   }
   return Dispatcher::Send(msg);

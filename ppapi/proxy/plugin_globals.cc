@@ -4,13 +4,45 @@
 
 #include "ppapi/proxy/plugin_globals.h"
 
+#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/ppb_message_loop_proxy.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/thunk/enter.h"
 
 namespace ppapi {
 namespace proxy {
+
+// It performs necessary locking/unlocking of the proxy lock, and forwards all
+// messages to the underlying sender.
+class PluginGlobals::BrowserSender : public IPC::Sender {
+ public:
+  // |underlying_sender| must outlive this object.
+  explicit BrowserSender(IPC::Sender* underlying_sender)
+      : underlying_sender_(underlying_sender) {
+  }
+
+  virtual ~BrowserSender() {}
+
+  // IPC::Sender implementation.
+  virtual bool Send(IPC::Message* msg) OVERRIDE {
+    if (msg->is_sync()) {
+      // Synchronous messages might be re-entrant, so we need to drop the lock.
+      ProxyAutoUnlock unlock;
+      return underlying_sender_->Send(msg);
+    }
+
+    return underlying_sender_->Send(msg);
+  }
+
+ private:
+  // Non-owning pointer.
+  IPC::Sender* underlying_sender_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserSender);
+};
 
 PluginGlobals* PluginGlobals::plugin_globals_ = NULL;
 
@@ -87,6 +119,7 @@ std::string PluginGlobals::GetCmdLine() {
 }
 
 void PluginGlobals::PreCacheFontForFlash(const void* logfontw) {
+  ProxyAutoUnlock unlock;
   plugin_proxy_delegate_->PreCacheFont(logfontw);
 }
 
@@ -116,6 +149,23 @@ void PluginGlobals::BroadcastLogWithSource(PP_Module /* module */,
 
 MessageLoopShared* PluginGlobals::GetCurrentMessageLoop() {
   return MessageLoopResource::GetCurrent();
+}
+
+IPC::Sender* PluginGlobals::GetBrowserSender() {
+  if (!browser_sender_.get()) {
+    browser_sender_.reset(
+        new BrowserSender(plugin_proxy_delegate_->GetBrowserSender()));
+  }
+
+  return browser_sender_.get();
+}
+
+std::string PluginGlobals::GetUILanguage() {
+  return plugin_proxy_delegate_->GetUILanguage();
+}
+
+void PluginGlobals::SetActiveURL(const std::string& url) {
+  plugin_proxy_delegate_->SetActiveURL(url);
 }
 
 MessageLoopResource* PluginGlobals::loop_for_main_thread() {

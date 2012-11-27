@@ -5,7 +5,6 @@
 #include "ppapi/proxy/ppb_network_monitor_private_proxy.h"
 
 #include "ppapi/proxy/enter_proxy.h"
-#include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/thunk/ppb_network_monitor_private_api.h"
@@ -98,7 +97,7 @@ PP_Resource PPB_NetworkMonitor_Private_Proxy::CreateProxyResource(
   proxy->monitors_count_++;
   if (proxy->monitors_count_ == 1) {
     // If that is the first network monitor then send Start message.
-    PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+    PluginGlobals::Get()->GetBrowserSender()->Send(
         new PpapiHostMsg_PPBNetworkMonitor_Start(
             dispatcher->plugin_dispatcher_id()));
 
@@ -143,7 +142,7 @@ void PPB_NetworkMonitor_Private_Proxy::OnNetworkMonitorDeleted(
     // Send Stop message if that was the last NetworkMonitor.
     PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
     if (dispatcher) {
-      PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+      PluginGlobals::Get()->GetBrowserSender()->Send(
           new PpapiHostMsg_PPBNetworkMonitor_Stop(
               dispatcher->plugin_dispatcher_id()));
     }

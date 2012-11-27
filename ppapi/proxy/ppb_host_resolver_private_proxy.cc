@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
-#include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/host_resource.h"
 
@@ -65,7 +64,7 @@ void HostResolver::SendResolve(const HostPortPair& host_port,
 }
 
 void HostResolver::SendToBrowser(IPC::Message* msg) {
-  PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(msg);
+  PluginGlobals::Get()->GetBrowserSender()->Send(msg);
 }
 
 }  // namespace

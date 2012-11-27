@@ -20,7 +20,6 @@
 #include "ppapi/proxy/gamepad_resource.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_flash_proxy.h"
 #include "ppapi/proxy/serialized_var.h"
@@ -303,7 +302,7 @@ PP_Var PPB_Instance_Proxy::GetFontFamilies(PP_Instance instance) {
   // Assume the font families don't change, so we can cache the result globally.
   CR_DEFINE_STATIC_LOCAL(std::string, families, ());
   if (families.empty()) {
-    PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+    PluginGlobals::Get()->GetBrowserSender()->Send(
         new PpapiHostMsg_PPBInstance_GetFontFamilies(&families));
   }
 
@@ -342,9 +341,8 @@ thunk::PPB_Flash_Functions_API* PPB_Instance_Proxy::GetFlashFunctionsAPI(
     return NULL;
 
   if (!data->flash_resource.get()) {
-    Connection connection(
-        PluginGlobals::Get()->plugin_proxy_delegate()->GetBrowserSender(),
-        dispatcher());
+    Connection connection(PluginGlobals::Get()->GetBrowserSender(),
+                          dispatcher());
     data->flash_resource = new FlashResource(connection, instance);
   }
   return data->flash_resource.get();
@@ -364,9 +362,8 @@ thunk::PPB_Flash_Clipboard_API* PPB_Instance_Proxy::GetFlashClipboardAPI(
     return NULL;
 
   if (!data->flash_clipboard_resource.get()) {
-    Connection connection(
-        PluginGlobals::Get()->plugin_proxy_delegate()->GetBrowserSender(),
-        dispatcher());
+    Connection connection(PluginGlobals::Get()->GetBrowserSender(),
+                          dispatcher());
     data->flash_clipboard_resource =
         new FlashClipboardResource(connection, instance);
   }
@@ -386,9 +383,8 @@ thunk::PPB_Gamepad_API* PPB_Instance_Proxy::GetGamepadAPI(
     return NULL;
 
   if (!data->gamepad_resource.get()) {
-    Connection connection(
-        PluginGlobals::Get()->plugin_proxy_delegate()->GetBrowserSender(),
-        dispatcher());
+    Connection connection(PluginGlobals::Get()->GetBrowserSender(),
+                          dispatcher());
     data->gamepad_resource = new GamepadResource(connection, instance);
   }
   return data->gamepad_resource.get();

@@ -129,7 +129,6 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
     virtual void Unregister(uint32 plugin_dispatcher_id) OVERRIDE;
 
     // PluginProxyDelegate implementation.
-    virtual bool SendToBrowser(IPC::Message* msg) OVERRIDE;
     virtual IPC::Sender* GetBrowserSender() OVERRIDE;
     virtual std::string GetUILanguage() OVERRIDE;
     virtual void PreCacheFont(const void* logfontw) OVERRIDE;

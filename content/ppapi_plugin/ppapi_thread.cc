@@ -75,6 +75,14 @@ PpapiThread::~PpapiThread() {
   WebKit::shutdown();
 }
 
+bool PpapiThread::Send(IPC::Message* msg) {
+  // Allow access from multiple threads.
+  if (MessageLoop::current() == message_loop())
+    return ChildThread::Send(msg);
+
+  return sync_message_filter()->Send(msg);
+}
+
 // The "regular" ChildThread implements this function and does some standard
 // dispatching, then uses the message router. We don't actually need any of
 // this so this function just overrides that one.
@@ -154,13 +162,6 @@ IPC::PlatformFileForTransit PpapiThread::ShareHandleWithRemote(
 
 std::set<PP_Instance>* PpapiThread::GetGloballySeenInstanceIDSet() {
   return &globally_seen_instance_ids_;
-}
-
-bool PpapiThread::SendToBrowser(IPC::Message* msg) {
-  if (MessageLoop::current() == message_loop())
-    return ChildThread::Send(msg);
-
-  return sync_message_filter()->Send(msg);
 }
 
 IPC::Sender* PpapiThread::GetBrowserSender() {

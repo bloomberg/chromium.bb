@@ -72,7 +72,6 @@ class PpapiDispatcher : public ProxyChannel,
   virtual void Unregister(uint32 plugin_dispatcher_id) OVERRIDE;
 
   // PluginProxyDelegate implementation.
-  virtual bool SendToBrowser(IPC::Message* msg) OVERRIDE;
   virtual IPC::Sender* GetBrowserSender() OVERRIDE;
   virtual std::string GetUILanguage() OVERRIDE;
   virtual void PreCacheFont(const void* logfontw) OVERRIDE;
@@ -142,10 +141,6 @@ uint32 PpapiDispatcher::Register(PluginDispatcher* plugin_dispatcher) {
 
 void PpapiDispatcher::Unregister(uint32 plugin_dispatcher_id) {
   plugin_dispatchers_.erase(plugin_dispatcher_id);
-}
-
-bool PpapiDispatcher::SendToBrowser(IPC::Message* msg) {
-  return Send(msg);
 }
 
 IPC::Sender* PpapiDispatcher::GetBrowserSender() {

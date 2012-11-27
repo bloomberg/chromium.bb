@@ -10,7 +10,6 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
-#include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_tcp_socket_private_proxy.h"
@@ -113,7 +112,7 @@ void TCPServerSocket::SendStopListening() {
 }
 
 void TCPServerSocket::SendToBrowser(IPC::Message* msg) {
-  PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(msg);
+  PluginGlobals::Get()->GetBrowserSender()->Send(msg);
 }
 
 }  // namespace
@@ -171,7 +170,7 @@ void PPB_TCPServerSocket_Private_Proxy::OnMsgListenACK(
   } else if (socket_id != 0 && status == PP_OK) {
     IPC::Message* msg =
         new PpapiHostMsg_PPBTCPServerSocket_Destroy(socket_id);
-    PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(msg);
+    PluginGlobals::Get()->GetBrowserSender()->Send(msg);
   }
 }
 
@@ -190,7 +189,7 @@ void PPB_TCPServerSocket_Private_Proxy::OnMsgAcceptACK(
                                   local_addr,
                                   remote_addr);
   } else if (accepted_socket_id != 0) {
-    PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+    PluginGlobals::Get()->GetBrowserSender()->Send(
         new PpapiHostMsg_PPBTCPSocket_Disconnect(accepted_socket_id));
   }
 }

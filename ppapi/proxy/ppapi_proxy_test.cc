@@ -249,12 +249,6 @@ void PluginProxyTestHarness::PluginDelegateMock::Unregister(
     uint32 plugin_dispatcher_id) {
 }
 
-bool PluginProxyTestHarness::PluginDelegateMock::SendToBrowser(
-    IPC::Message* msg) {
-  NOTREACHED();
-  return false;
-}
-
 IPC::Sender* PluginProxyTestHarness::PluginDelegateMock::GetBrowserSender() {
   return browser_sender_;
 }

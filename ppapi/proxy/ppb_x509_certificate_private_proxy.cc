@@ -6,7 +6,6 @@
 
 #include "ppapi/c/private/ppb_x509_certificate_private.h"
 #include "ppapi/proxy/plugin_globals.h"
-#include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/private/ppb_x509_certificate_private_shared.h"
 
@@ -45,7 +44,7 @@ bool X509CertificatePrivate::ParseDER(const std::vector<char>& der,
 }
 
 void X509CertificatePrivate::SendToBrowser(IPC::Message* msg) {
-  PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(msg);
+  PluginGlobals::Get()->GetBrowserSender()->Send(msg);
 }
 
 }  // namespace

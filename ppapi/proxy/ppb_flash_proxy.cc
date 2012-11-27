@@ -22,7 +22,6 @@
 #include "ppapi/proxy/pepper_file_messages.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
-#include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/proxy_module.h"
 #include "ppapi/proxy/serialized_var.h"
@@ -267,7 +266,7 @@ PP_Bool PPB_Flash_Proxy::IsRectTopmost(PP_Instance instance,
 }
 
 void PPB_Flash_Proxy::UpdateActivity(PP_Instance instance) {
-  PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+  PluginGlobals::Get()->GetBrowserSender()->Send(
       new PpapiHostMsg_PPBFlash_UpdateActivity(API_ID_PPB_FLASH));
 }
 
@@ -286,7 +285,7 @@ PP_Var PPB_Flash_Proxy::GetSetting(PP_Instance instance,
           plugin_dispatcher->preferences().is_stage3d_supported));
     case PP_FLASHSETTING_LANGUAGE:
       return StringVar::StringToPPVar(
-          PluginGlobals::Get()->plugin_proxy_delegate()->GetUILanguage());
+          PluginGlobals::Get()->GetUILanguage());
     case PP_FLASHSETTING_NUMCORES:
       return PP_MakeInt32(plugin_dispatcher->preferences().number_of_cpu_cores);
     case PP_FLASHSETTING_LSORESTRICTIONS: {
@@ -308,7 +307,7 @@ PP_Bool PPB_Flash_Proxy::SetCrashData(PP_Instance instance,
       if (!url_string_var)
         return PP_FALSE;
       std::string url_string(url_string_var->value());
-      PluginGlobals::Get()->plugin_proxy_delegate()->SetActiveURL(url_string);
+      PluginGlobals::Get()->SetActiveURL(url_string);
       return PP_TRUE;
   }
   return PP_FALSE;
@@ -336,7 +335,7 @@ int32_t PPB_Flash_Proxy::OpenFile(PP_Instance,
   ppapi::PepperFilePath pepper_path(ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL,
                                     FilePath::FromUTF8Unsafe(path));
 
-  if (PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+  if (PluginGlobals::Get()->GetBrowserSender()->Send(
           new PepperFileMsg_OpenFile(pepper_path, flags,
                                      &error, &transit_file))) {
     *file = IPC::PlatformFileForTransitToPlatformFile(transit_file);
@@ -357,7 +356,7 @@ int32_t PPB_Flash_Proxy::RenameFile(PP_Instance,
   ppapi::PepperFilePath pepper_to(ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL,
                                   FilePath::FromUTF8Unsafe(to_path));
 
-  PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+  PluginGlobals::Get()->GetBrowserSender()->Send(
       new PepperFileMsg_RenameFile(pepper_from, pepper_to, &error));
 
   return ppapi::PlatformFileErrorToPepperError(error);
@@ -370,7 +369,7 @@ int32_t PPB_Flash_Proxy::DeleteFileOrDir(PP_Instance,
   ppapi::PepperFilePath pepper_path(ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL,
                                     FilePath::FromUTF8Unsafe(path));
 
-  PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+  PluginGlobals::Get()->GetBrowserSender()->Send(
       new PepperFileMsg_DeleteFileOrDir(pepper_path,
                                         PP_ToBool(recursive),
                                         &error));
@@ -383,7 +382,7 @@ int32_t PPB_Flash_Proxy::CreateDir(PP_Instance, const char* path) {
   ppapi::PepperFilePath pepper_path(ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL,
                                     FilePath::FromUTF8Unsafe(path));
 
-  PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+  PluginGlobals::Get()->GetBrowserSender()->Send(
       new PepperFileMsg_CreateDir(pepper_path, &error));
 
   return ppapi::PlatformFileErrorToPepperError(error);
@@ -397,7 +396,7 @@ int32_t PPB_Flash_Proxy::QueryFile(PP_Instance,
   ppapi::PepperFilePath pepper_path(ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL,
                                     FilePath::FromUTF8Unsafe(path));
 
-  PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+  PluginGlobals::Get()->GetBrowserSender()->Send(
       new PepperFileMsg_QueryFile(pepper_path, &file_info, &error));
 
   if (error == base::PLATFORM_FILE_OK) {
@@ -423,7 +422,7 @@ int32_t PPB_Flash_Proxy::GetDirContents(PP_Instance,
   ppapi::PepperFilePath pepper_path(ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL,
                                     FilePath::FromUTF8Unsafe(path));
 
-  PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+  PluginGlobals::Get()->GetBrowserSender()->Send(
       new PepperFileMsg_GetDirContents(pepper_path, &entries, &error));
 
   if (error == base::PLATFORM_FILE_OK) {
@@ -453,7 +452,7 @@ int32_t PPB_Flash_Proxy::CreateTemporaryFile(PP_Instance instance,
   base::PlatformFileError error;
   IPC::PlatformFileForTransit transit_file;
 
-  if (PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+  if (PluginGlobals::Get()->GetBrowserSender()->Send(
           new PepperFileMsg_CreateTemporaryFile(&error, &transit_file))) {
     *file = IPC::PlatformFileForTransitToPlatformFile(transit_file);
   } else {

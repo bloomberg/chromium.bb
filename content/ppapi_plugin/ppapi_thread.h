@@ -46,6 +46,7 @@ class PpapiThread : public ChildThread,
 
  private:
   // ChildThread overrides.
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
 
@@ -64,7 +65,6 @@ class PpapiThread : public ChildThread,
   // PluginProxyDelegate.
   // SendToBrowser() is intended to be safe to use on another thread so
   // long as the main PpapiThread outlives it.
-  virtual bool SendToBrowser(IPC::Message* msg) OVERRIDE;
   virtual IPC::Sender* GetBrowserSender() OVERRIDE;
   virtual std::string GetUILanguage() OVERRIDE;
   virtual void PreCacheFont(const void* logfontw) OVERRIDE;

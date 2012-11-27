@@ -8,7 +8,6 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
-#include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/tracked_callback.h"
@@ -39,7 +38,7 @@ class Talk : public Resource, public thunk::PPB_Talk_Private_API {
 
     callback_ = callback;
 
-    if (PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+    if (PluginGlobals::Get()->GetBrowserSender()->Send(
         new PpapiHostMsg_PPBTalk_GetPermission(
             API_ID_PPB_TALK,
             dispatcher->plugin_dispatcher_id(),

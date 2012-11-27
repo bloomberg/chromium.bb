@@ -16,7 +16,6 @@
 #include "ppapi/proxy/flash_menu_resource.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
-#include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_audio_proxy.h"
@@ -386,9 +385,7 @@ bool ResourceCreationProxy::OnMessageReceived(const IPC::Message& msg) {
 }
 
 Connection ResourceCreationProxy::GetConnection() {
-  return Connection(
-      PluginGlobals::Get()->plugin_proxy_delegate()->GetBrowserSender(),
-      dispatcher());
+  return Connection(PluginGlobals::Get()->GetBrowserSender(), dispatcher());
 }
 
 }  // namespace proxy
