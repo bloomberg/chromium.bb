@@ -33,9 +33,6 @@ TEST_F(GLES2ImplementationTest, BindBuffer) {
 
   gl_->BindBuffer(GL_ARRAY_BUFFER, 2);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  ClearCommands();
-  gl_->BindBuffer(GL_ARRAY_BUFFER, 2);
-  EXPECT_TRUE(NoCommandsWritten());
 }
 
 TEST_F(GLES2ImplementationTest, BindFramebuffer) {
@@ -47,9 +44,6 @@ TEST_F(GLES2ImplementationTest, BindFramebuffer) {
 
   gl_->BindFramebuffer(GL_FRAMEBUFFER, 2);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  ClearCommands();
-  gl_->BindFramebuffer(GL_FRAMEBUFFER, 2);
-  EXPECT_TRUE(NoCommandsWritten());
 }
 
 TEST_F(GLES2ImplementationTest, BindRenderbuffer) {
@@ -61,9 +55,6 @@ TEST_F(GLES2ImplementationTest, BindRenderbuffer) {
 
   gl_->BindRenderbuffer(GL_RENDERBUFFER, 2);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  ClearCommands();
-  gl_->BindRenderbuffer(GL_RENDERBUFFER, 2);
-  EXPECT_TRUE(NoCommandsWritten());
 }
 
 TEST_F(GLES2ImplementationTest, BindTexture) {
@@ -75,9 +66,6 @@ TEST_F(GLES2ImplementationTest, BindTexture) {
 
   gl_->BindTexture(GL_TEXTURE_2D, 2);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  ClearCommands();
-  gl_->BindTexture(GL_TEXTURE_2D, 2);
-  EXPECT_TRUE(NoCommandsWritten());
 }
 
 TEST_F(GLES2ImplementationTest, BlendColor) {
@@ -1657,9 +1645,6 @@ TEST_F(GLES2ImplementationTest, BindVertexArrayOES) {
 
   gl_->BindVertexArrayOES(1);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  ClearCommands();
-  gl_->BindVertexArrayOES(1);
-  EXPECT_TRUE(NoCommandsWritten());
 }
 // TODO: Implement unit test for GenSharedIdsCHROMIUM
 // TODO: Implement unit test for DeleteSharedIdsCHROMIUM

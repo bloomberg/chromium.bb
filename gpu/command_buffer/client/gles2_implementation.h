@@ -383,11 +383,11 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
   bool IsTextureReservedId(GLuint id) { return false; }
   bool IsVertexArrayReservedId(GLuint id) { return false; }
 
-  bool BindBufferHelper(GLenum target, GLuint texture);
-  bool BindFramebufferHelper(GLenum target, GLuint texture);
-  bool BindRenderbufferHelper(GLenum target, GLuint texture);
-  bool BindTextureHelper(GLenum target, GLuint texture);
-  bool BindVertexArrayHelper(GLuint array);
+  void BindBufferHelper(GLenum target, GLuint texture);
+  void BindFramebufferHelper(GLenum target, GLuint texture);
+  void BindRenderbufferHelper(GLenum target, GLuint texture);
+  void BindTextureHelper(GLenum target, GLuint texture);
+  void BindVertexArrayHelper(GLuint array);
 
   void DeleteBuffersHelper(GLsizei n, const GLuint* buffers);
   void DeleteFramebuffersHelper(GLsizei n, const GLuint* framebuffers);
@@ -508,9 +508,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
 
   GLuint bound_framebuffer_;
   GLuint bound_renderbuffer_;
-
-  // The program in use by glUseProgram
-  GLuint current_program_;
 
   // The currently bound array buffer.
   GLuint bound_array_buffer_id_;
