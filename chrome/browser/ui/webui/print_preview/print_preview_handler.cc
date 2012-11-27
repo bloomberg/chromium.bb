@@ -11,6 +11,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/i18n/number_formatting.h"
 #include "base/json/json_reader.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/print_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -62,11 +64,6 @@
 // TODO(kinaba): provide more non-intrusive way for handling local/remote
 // distinction and remove these ugly #ifdef's. http://crbug.com/140425
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
-#endif
-
-#if !defined(OS_MACOSX)
-#include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
 #endif
 
 using content::BrowserThread;
@@ -757,18 +754,12 @@ void PrintPreviewHandler::SendInitialSettings(
     initial_settings.SetString(kAppState,
                                *sticky_settings->printer_app_state());
 
-#if defined(OS_MACOSX)
-  bool kiosk_mode = false;  // No kiosk mode on Mac yet.
-#else
   CommandLine* cmdline = CommandLine::ForCurrentProcess();
-  bool kiosk_mode = (cmdline->HasSwitch(switches::kKioskMode) &&
-                     cmdline->HasSwitch(switches::kKioskModePrinting));
-#endif
-  initial_settings.SetBoolean(kPrintAutomaticallyInKioskMode, kiosk_mode);
+  initial_settings.SetBoolean(kPrintAutomaticallyInKioskMode,
+                              cmdline->HasSwitch(switches::kKioskModePrinting));
 
-  if (print_preview_ui->source_is_modifiable()) {
+  if (print_preview_ui->source_is_modifiable())
     GetNumberFormatAndMeasurementSystem(&initial_settings);
-  }
   web_ui()->CallJavascriptFunction("setInitialSettings", initial_settings);
 }
 
@@ -820,20 +811,18 @@ void PrintPreviewHandler::SendCloudPrintJob() {
       web_ui()->GetController());
   print_preview_ui->GetPrintPreviewDataForIndex(
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
-  if (data.get() && data->size() > 0U && data->front()) {
-    // BASE64 encode the job data.
-    std::string raw_data(reinterpret_cast<const char*>(data->front()),
-                         data->size());
-    std::string base64_data;
-    if (!base::Base64Encode(raw_data, &base64_data)) {
-      NOTREACHED() << "Base64 encoding PDF data.";
-    }
-    StringValue data_value(base64_data);
+  DCHECK(data.get() && data->size() > 0U && data->front());
 
-    web_ui()->CallJavascriptFunction("printToCloud", data_value);
-  } else {
-    NOTREACHED();
+  // BASE64 encode the job data.
+  std::string raw_data(reinterpret_cast<const char*>(data->front()),
+                       data->size());
+  std::string base64_data;
+  if (!base::Base64Encode(raw_data, &base64_data)) {
+    NOTREACHED() << "Base64 encoding PDF data.";
   }
+  StringValue data_value(base64_data);
+
+  web_ui()->CallJavascriptFunction("printToCloud", data_value);
 }
 
 TabContents* PrintPreviewHandler::GetInitiatorTab() const {
