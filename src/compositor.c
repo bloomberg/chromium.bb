@@ -2793,9 +2793,6 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	output->mm_height = height;
 	output->dirty = 1;
 
-	if (transform != WL_OUTPUT_TRANSFORM_NORMAL)
-		output->disable_planes++;
-
 	weston_output_transform_init(output, transform);
 	weston_output_init_zoom(output);
 

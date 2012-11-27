@@ -316,10 +316,11 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 
 	if (es->geometry.x != output->base.x ||
 	    es->geometry.y != output->base.y ||
-	    es->geometry.width != output->base.current->width ||
-	    es->geometry.height != output->base.current->height ||
-	    es->transform.enabled ||
-	    es->buffer == NULL)
+	    es->buffer == NULL ||
+	    es->buffer->width != output->base.current->width ||
+	    es->buffer->height != output->base.current->height ||
+	    output->base.transform != es->buffer_transform ||
+	    es->transform.enabled)
 		return NULL;
 
 	bo = gbm_bo_import(c->gbm, GBM_BO_IMPORT_WL_BUFFER,
@@ -566,6 +567,9 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	uint32_t format;
 	wl_fixed_t sx1, sy1, sx2, sy2;
 
+	if (output_base->transform != WL_OUTPUT_TRANSFORM_NORMAL)
+		return NULL;
+
 	if (c->sprites_are_broken)
 		return NULL;
 
@@ -678,6 +682,8 @@ drm_output_prepare_cursor_surface(struct weston_output *output_base,
 		(struct drm_compositor *) output_base->compositor;
 	struct drm_output *output = (struct drm_output *) output_base;
 
+	if (output->base.transform != WL_OUTPUT_TRANSFORM_NORMAL)
+		return NULL;
 	if (output->cursor_surface)
 		return NULL;
 	if (es->output_mask != (1u << output_base->id))
