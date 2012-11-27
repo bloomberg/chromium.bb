@@ -41,7 +41,7 @@ class AutofillPopupView {
   // the delegate.
   void ClearExternalDelegate();
 
-  const gfx::Rect& element_bounds() { return element_bounds_; }
+  const gfx::Rect& element_bounds() const { return element_bounds_; }
 
  protected:
   // Display the autofill popup and fill it in with the values passed in.

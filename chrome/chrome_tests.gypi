@@ -1081,6 +1081,7 @@
         'browser/ui/find_bar/find_bar_host_browsertest.cc',
         'browser/ui/fullscreen/fullscreen_controller_browsertest.cc',
         'browser/ui/global_error/global_error_service_browsertest.cc',
+        'browser/ui/gtk/autofill/autofill_external_delegate_gtk_browsertest.cc',
         'browser/ui/gtk/bubble/bubble_gtk_browsertest.cc',
         'browser/ui/gtk/confirm_bubble_gtk_browsertest.cc',
         'browser/ui/gtk/location_bar_view_gtk_browsertest.cc',

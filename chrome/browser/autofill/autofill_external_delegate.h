@@ -139,6 +139,8 @@ class AutofillExternalDelegate
   // Return the web_contents associated with this delegate.
   content::WebContents* web_contents() { return web_contents_; }
 
+  bool popup_visible() const { return popup_visible_; }
+
  private:
   // Fills the form with the Autofill data corresponding to |unique_id|.
   // If |is_preview| is true then this is just a preview to show the user what

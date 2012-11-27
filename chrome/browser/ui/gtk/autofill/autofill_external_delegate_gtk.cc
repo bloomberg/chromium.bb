@@ -40,7 +40,8 @@ void AutofillExternalDelegateGtk::HideAutofillPopupInternal() {
   view_.reset();
 
   GtkWidget* toplevel = gtk_widget_get_toplevel(tab_native_view_);
-  g_signal_handler_disconnect(toplevel, event_handler_id_);
+  if (g_signal_handler_is_connected(toplevel, event_handler_id_))
+    g_signal_handler_disconnect(toplevel, event_handler_id_);
 }
 
 void AutofillExternalDelegateGtk::ApplyAutofillSuggestions(
@@ -82,6 +83,9 @@ void AutofillExternalDelegateGtk::CreateViewIfNeeded() {
 
 gboolean AutofillExternalDelegateGtk::HandleViewFocusOut(GtkWidget* sender,
                                                          GdkEventFocus* event) {
+  if (!popup_visible())
+    return FALSE;
+
   HideAutofillPopup();
 
   return TRUE;
