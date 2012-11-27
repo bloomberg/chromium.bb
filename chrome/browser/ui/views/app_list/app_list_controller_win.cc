@@ -14,7 +14,6 @@
 #include "base/win/shortcut.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
@@ -207,16 +206,8 @@ void AppListControllerDelegateWin::LaunchApp(Profile* profile,
   const extensions::Extension* extension = service->GetInstalledExtension(
       extension_id);
   DCHECK(extension);
-
-  // Look up the app preference to find out the right launch container. Default
-  // is to launch as a regular tab.
-  extension_misc::LaunchContainer launch_container =
-      service->extension_prefs()->GetLaunchContainer(extension,
-          extensions::ExtensionPrefs::LAUNCH_REGULAR);
-
-  application_launch::LaunchParams params(profile, extension, launch_container,
-      NEW_FOREGROUND_TAB);
-  application_launch::OpenApplication(params);
+  application_launch::OpenApplication(application_launch::LaunchParams(
+      profile, extension, extension_misc::LAUNCH_TAB, NEW_FOREGROUND_TAB));
 }
 
 void AppListController::ShowAppList() {
