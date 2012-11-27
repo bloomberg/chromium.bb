@@ -8,6 +8,7 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/proxy/audio_input_resource.h"
+#include "ppapi/proxy/browser_font_resource_trusted.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/file_chooser_resource.h"
 #include "ppapi/proxy/flash_device_id_resource.h"
@@ -47,7 +48,6 @@
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/ppb_resource_array_shared.h"
-#include "ppapi/shared_impl/private/ppb_browser_font_trusted_shared.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
@@ -301,8 +301,10 @@ PP_Resource ResourceCreationProxy::CreateBrowserFont(
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return 0;
-  return PPB_BrowserFont_Trusted_Shared::Create(
-      OBJECT_IS_PROXY, instance, *description, dispatcher->preferences());
+  if (!BrowserFontResource_Trusted::IsPPFontDescriptionValid(*description))
+    return 0;
+  return (new BrowserFontResource_Trusted(GetConnection(), instance,
+      *description, dispatcher->preferences()))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateBuffer(PP_Instance instance,

@@ -113,8 +113,6 @@
           'shared_impl/private/net_address_private_impl.cc',
           'shared_impl/private/net_address_private_impl.h',
 
-          'shared_impl/private/ppb_browser_font_trusted_shared.cc',
-          'shared_impl/private/ppb_browser_font_trusted_shared.h',
           'shared_impl/private/ppb_char_set_shared.cc',
           'shared_impl/private/ppb_char_set_shared.h',
           'shared_impl/private/ppb_host_resolver_shared.cc',

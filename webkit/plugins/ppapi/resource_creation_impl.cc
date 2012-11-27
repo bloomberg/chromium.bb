@@ -6,7 +6,6 @@
 
 #include "ppapi/c/pp_size.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
-#include "ppapi/shared_impl/private/ppb_browser_font_trusted_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/ppb_resource_array_shared.h"
 #include "ppapi/shared_impl/var.h"
@@ -75,18 +74,6 @@ PP_Resource ResourceCreationImpl::CreateAudioInput(PP_Instance instance) {
 
 PP_Resource ResourceCreationImpl::CreateBroker(PP_Instance instance) {
   return (new PPB_Broker_Impl(instance))->GetReference();
-}
-
-PP_Resource ResourceCreationImpl::CreateBrowserFont(
-    PP_Instance instance,
-    const PP_BrowserFont_Trusted_Description* description) {
-  PluginInstance* plugin_instance =
-      ResourceHelper::PPInstanceToPluginInstance(instance);
-  if (!plugin_instance)
-    return 0;
-  return ::ppapi::PPB_BrowserFont_Trusted_Shared::Create(
-      ::ppapi::OBJECT_IS_IMPL, instance, *description,
-      plugin_instance->delegate()->GetPreferences());
 }
 
 PP_Resource ResourceCreationImpl::CreateBuffer(PP_Instance instance,

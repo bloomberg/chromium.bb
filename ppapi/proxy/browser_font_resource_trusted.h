@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_SHARED_IMPL_PRIVATE_PPB_BROWSER_FONT_TRUSTED_SHARED_H_
-#define PPAPI_SHARED_IMPL_PRIVATE_PPB_BROWSER_FONT_TRUSTED_SHARED_H_
+#ifndef PPAPI_PROXY_BROWSER_FONT_TRUSTED_RESOURCE_H_
+#define PPAPI_PROXY_BROWSER_FONT_TRUSTED_RESOURCE_H_
 
 #include <string>
 
@@ -13,9 +13,9 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/proxy/plugin_resource.h"
+#include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
-#include "ppapi/shared_impl/ppapi_shared_export.h"
-#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_browser_font_trusted_api.h"
 
 class SkCanvas;
@@ -25,24 +25,24 @@ class WebFont;
 }
 
 namespace ppapi {
+namespace proxy {
 
-class PPAPI_SHARED_EXPORT PPB_BrowserFont_Trusted_Shared
-    : public Resource,
+class PPAPI_PROXY_EXPORT BrowserFontResource_Trusted
+    : public PluginResource,
       public thunk::PPB_BrowserFont_Trusted_API {
  public:
+  BrowserFontResource_Trusted(Connection connection,
+                              PP_Instance instance,
+                              const PP_BrowserFont_Trusted_Description& desc,
+                              const Preferences& prefs);
+
+  virtual ~BrowserFontResource_Trusted();
+
   // Validates the parameters in thee description. Can be called on any thread.
   static bool IsPPFontDescriptionValid(
       const PP_BrowserFont_Trusted_Description& desc);
 
-  virtual ~PPB_BrowserFont_Trusted_Shared();
-
-  static PP_Resource Create(
-      ResourceObjectType type,
-      PP_Instance instance,
-      const PP_BrowserFont_Trusted_Description& description,
-      const ::ppapi::Preferences& prefs);
-
-  // Resource.
+  // Resource override.
   virtual ::ppapi::thunk::PPB_BrowserFont_Trusted_API*
       AsPPB_BrowserFont_Trusted_API() OVERRIDE;
 
@@ -65,11 +65,6 @@ class PPAPI_SHARED_EXPORT PPB_BrowserFont_Trusted_Shared
       uint32_t char_offset) OVERRIDE;
 
  private:
-  PPB_BrowserFont_Trusted_Shared(ResourceObjectType type,
-                                 PP_Instance instance,
-                                 const PP_BrowserFont_Trusted_Description& desc,
-                                 const Preferences& prefs);
-
   // Internal version of DrawTextAt that takes a mapped PlatformCanvas.
   void DrawTextToCanvas(SkCanvas* destination,
                         const PP_BrowserFont_Trusted_TextRun& text,
@@ -78,11 +73,13 @@ class PPAPI_SHARED_EXPORT PPB_BrowserFont_Trusted_Shared
                         const PP_Rect* clip,
                         PP_Bool image_data_is_opaque);
 
+ private:
   scoped_ptr<WebKit::WebFont> font_;
 
-  DISALLOW_COPY_AND_ASSIGN(PPB_BrowserFont_Trusted_Shared);
+  DISALLOW_COPY_AND_ASSIGN(BrowserFontResource_Trusted);
 };
 
+}  // namespace proxy
 }  // namespace ppapi
 
-#endif  // PPAPI_SHARED_IMPL_PRIVATE_PPB_BROWSER_FONT_TRUSTED_SHARED_H_
+#endif  // PPAPI_PROXY_BROWSER_FONT_TRUSTED_RESOURCE_H_

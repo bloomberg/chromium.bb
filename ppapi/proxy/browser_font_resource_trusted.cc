@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/shared_impl/private/ppb_browser_font_trusted_shared.h"
+#include "ppapi/proxy/browser_font_resource_trusted.h"
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -13,14 +13,14 @@
 #include "ppapi/thunk/ppb_image_data_api.h"
 #include "ppapi/thunk/thunk.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/skia/include/core/SkRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFont.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFontDescription.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextRun.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFont.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFontDescription.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextRun.h"
+#include "third_party/skia/include/core/SkRect.h"
 #include "unicode/ubidi.h"
 
 using ppapi::StringVar;
@@ -35,6 +35,7 @@ using WebKit::WebTextRun;
 using WebKit::WebCanvas;
 
 namespace ppapi {
+namespace proxy {
 
 namespace {
 
@@ -223,7 +224,7 @@ WebFontDescription PPFontDescToWebFontDesc(
 }  // namespace
 
 // static
-bool PPB_BrowserFont_Trusted_Shared::IsPPFontDescriptionValid(
+bool BrowserFontResource_Trusted::IsPPFontDescriptionValid(
     const PP_BrowserFont_Trusted_Description& desc) {
   // Check validity of string. We can't check the actual text since we could
   // be on the wrong thread and don't know if we're in the plugin or the host.
@@ -246,37 +247,24 @@ bool PPB_BrowserFont_Trusted_Shared::IsPPFontDescriptionValid(
   return true;
 }
 
-// static
-PP_Resource PPB_BrowserFont_Trusted_Shared::Create(
-    ResourceObjectType type,
-    PP_Instance instance,
-    const PP_BrowserFont_Trusted_Description& description,
-    const Preferences& prefs) {
-  if (!PPB_BrowserFont_Trusted_Shared::IsPPFontDescriptionValid(description))
-    return 0;
-  return (new PPB_BrowserFont_Trusted_Shared(type, instance,
-                                             description,
-                                             prefs))->GetReference();
-}
-
-PPB_BrowserFont_Trusted_Shared::PPB_BrowserFont_Trusted_Shared(
-    ResourceObjectType type,
+BrowserFontResource_Trusted::BrowserFontResource_Trusted(
+    Connection connection,
     PP_Instance instance,
     const PP_BrowserFont_Trusted_Description& desc,
     const Preferences& prefs)
-    : Resource(type, instance),
+    : PluginResource(connection, instance),
       font_(WebFont::create(PPFontDescToWebFontDesc(desc, prefs))) {
 }
 
-PPB_BrowserFont_Trusted_Shared::~PPB_BrowserFont_Trusted_Shared() {
+BrowserFontResource_Trusted::~BrowserFontResource_Trusted() {
 }
 
 thunk::PPB_BrowserFont_Trusted_API*
-PPB_BrowserFont_Trusted_Shared::AsPPB_BrowserFont_Trusted_API() {
+BrowserFontResource_Trusted::AsPPB_BrowserFont_Trusted_API() {
   return this;
 }
 
-PP_Bool PPB_BrowserFont_Trusted_Shared::Describe(
+PP_Bool BrowserFontResource_Trusted::Describe(
     PP_BrowserFont_Trusted_Description* description,
     PP_BrowserFont_Trusted_Metrics* metrics) {
   if (description->face.type != PP_VARTYPE_UNDEFINED)
@@ -306,7 +294,7 @@ PP_Bool PPB_BrowserFont_Trusted_Shared::Describe(
   return PP_TRUE;
 }
 
-PP_Bool PPB_BrowserFont_Trusted_Shared::DrawTextAt(
+PP_Bool BrowserFontResource_Trusted::DrawTextAt(
     PP_Resource image_data,
     const PP_BrowserFont_Trusted_TextRun* text,
     const PP_Point* position,
@@ -338,7 +326,7 @@ PP_Bool PPB_BrowserFont_Trusted_Shared::DrawTextAt(
   return PP_TRUE;
 }
 
-int32_t PPB_BrowserFont_Trusted_Shared::MeasureText(
+int32_t BrowserFontResource_Trusted::MeasureText(
     const PP_BrowserFont_Trusted_TextRun* text) {
   WebTextRun run;
   if (!PPTextRunToWebTextRun(*text, &run))
@@ -346,7 +334,7 @@ int32_t PPB_BrowserFont_Trusted_Shared::MeasureText(
   return font_->calculateWidth(run);
 }
 
-uint32_t PPB_BrowserFont_Trusted_Shared::CharacterOffsetForPixel(
+uint32_t BrowserFontResource_Trusted::CharacterOffsetForPixel(
     const PP_BrowserFont_Trusted_TextRun* text,
     int32_t pixel_position) {
   TextRunCollection runs(*text);
@@ -367,7 +355,7 @@ uint32_t PPB_BrowserFont_Trusted_Shared::CharacterOffsetForPixel(
   return runs.text().size();
 }
 
-int32_t PPB_BrowserFont_Trusted_Shared::PixelOffsetForCharacter(
+int32_t BrowserFontResource_Trusted::PixelOffsetForCharacter(
     const PP_BrowserFont_Trusted_TextRun* text,
     uint32_t char_offset) {
   TextRunCollection runs(*text);
@@ -398,7 +386,7 @@ int32_t PPB_BrowserFont_Trusted_Shared::PixelOffsetForCharacter(
   return -1;  // Requested a char beyond the end.
 }
 
-void PPB_BrowserFont_Trusted_Shared::DrawTextToCanvas(
+void BrowserFontResource_Trusted::DrawTextToCanvas(
     SkCanvas* destination,
     const PP_BrowserFont_Trusted_TextRun& text,
     const PP_Point* position,
@@ -437,4 +425,5 @@ void PPB_BrowserFont_Trusted_Shared::DrawTextToCanvas(
   }
 }
 
+}  // namespace proxy
 }  // namespace ppapi

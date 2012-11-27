@@ -42,6 +42,9 @@ class PepperInProcessResourceCreation
   virtual ~PepperInProcessResourceCreation();
 
   // ResourceCreation_API implementation.
+  virtual PP_Resource CreateBrowserFont(
+      PP_Instance instance,
+      const PP_BrowserFont_Trusted_Description* description) OVERRIDE;
   virtual PP_Resource CreateFileChooser(
       PP_Instance instance,
       PP_FileChooserMode_Dev mode,

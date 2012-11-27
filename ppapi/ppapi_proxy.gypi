@@ -23,6 +23,8 @@
           'proxy/audio_input_resource.h',
           'proxy/broker_dispatcher.cc',
           'proxy/broker_dispatcher.h',
+          'proxy/browser_font_resource_trusted.cc',
+          'proxy/browser_font_resource_trusted.h',
           'proxy/connection.h',
           'proxy/dispatcher.cc',
           'proxy/dispatcher.h',
@@ -177,6 +179,7 @@
             'sources!': [
               'proxy/audio_input_resource.cc',
               'proxy/broker_dispatcher.cc',
+              'proxy/browser_font_resource_trusted.cc',
               'proxy/flash_clipboard_resource.cc',
               'proxy/flash_device_id_resource.cc',
               'proxy/flash_font_file_resource.cc',

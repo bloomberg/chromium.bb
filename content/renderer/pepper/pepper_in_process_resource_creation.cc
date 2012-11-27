@@ -13,6 +13,7 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/host/ppapi_host.h"
+#include "ppapi/proxy/browser_font_resource_trusted.h"
 #include "ppapi/proxy/file_chooser_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/printing_resource.h"
@@ -40,6 +41,21 @@ PepperInProcessResourceCreation::PepperInProcessResourceCreation(
 }
 
 PepperInProcessResourceCreation::~PepperInProcessResourceCreation() {
+}
+
+PP_Resource PepperInProcessResourceCreation::CreateBrowserFont(
+    PP_Instance instance,
+    const PP_BrowserFont_Trusted_Description* description) {
+  if (!ppapi::proxy::BrowserFontResource_Trusted::IsPPFontDescriptionValid(
+      *description))
+    return 0;
+  ppapi::Preferences prefs(
+      host_impl_->GetRenderViewForInstance(instance)->GetWebkitPreferences());
+  return (new ppapi::proxy::BrowserFontResource_Trusted(
+      host_impl_->in_process_router()->GetPluginConnection(),
+      instance,
+      *description,
+      prefs))->GetReference();
 }
 
 PP_Resource PepperInProcessResourceCreation::CreateFileChooser(
