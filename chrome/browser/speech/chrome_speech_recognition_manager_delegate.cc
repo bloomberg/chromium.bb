@@ -555,7 +555,8 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
   WebContents* web_contents = WebContents::FromRenderViewHost(render_view_host);
   chrome::ViewType view_type = chrome::GetViewType(web_contents);
 
-  if (view_type == chrome::VIEW_TYPE_TAB_CONTENTS) {
+  if (view_type == chrome::VIEW_TYPE_TAB_CONTENTS ||
+      web_contents->GetRenderProcessHost()->IsGuest()) {
     // If it is a tab, we can show the speech input bubble or ask for
     // permission.
 

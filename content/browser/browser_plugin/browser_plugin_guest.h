@@ -90,6 +90,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   void set_embedder_web_contents(WebContentsImpl* web_contents) {
     embedder_web_contents_ = web_contents;
   }
+  WebContentsImpl* embedder_web_contents() const {
+    return embedder_web_contents_;
+  }
 
   bool focused() const { return focused_; }
   bool visible() const { return visible_; }
@@ -208,7 +211,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   // Handles input event routed through the embedder (which is initiated in the
   // browser plugin (renderer side of the embedder)).
   virtual void HandleInputEvent(RenderViewHost* render_view_host,
-                                const gfx::Rect& guest_rect,
+                                const gfx::Rect& guest_window_rect,
+                                const gfx::Rect& guest_screen_rect,
                                 const WebKit::WebInputEvent& event,
                                 IPC::Message* reply_message);
   virtual bool ViewTakeFocus(bool reverse);
@@ -229,6 +233,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 #endif
                                const gfx::Size& damage_view_size,
                                float scale_factor);
+
+  gfx::Point GetScreenCoordinates(const gfx::Point& relative_position) const;
 
  private:
   friend class TestBrowserPluginGuest;
@@ -280,7 +286,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   gfx::Size damage_view_size_;
   float damage_buffer_scale_factor_;
   scoped_ptr<IPC::Message> pending_input_event_reply_;
-  gfx::Rect guest_rect_;
+  gfx::Rect guest_window_rect_;
+  gfx::Rect guest_screen_rect_;
   IDMap<RenderViewHost> pending_updates_;
   int pending_update_counter_;
   base::TimeDelta guest_hang_timeout_;

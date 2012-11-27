@@ -29,6 +29,7 @@ class CONTENT_EXPORT InputTagSpeechDispatcherHost
       public SpeechRecognitionEventListener {
  public:
   InputTagSpeechDispatcherHost(
+      bool guest,
       int render_process_id,
       net::URLRequestContextGetter* url_request_context_getter,
       SpeechRecognitionPreferences* recognition_preferences);
@@ -66,10 +67,14 @@ class CONTENT_EXPORT InputTagSpeechDispatcherHost
   void OnCancelRecognition(int render_view_id, int request_id);
   void OnStopRecording(int render_view_id, int request_id);
 
+  void StartRecognitionOnIO(
+      int render_process_id,
+      const InputTagSpeechHostMsg_StartRecognition_Params& params);
   // Returns the speech recognition manager to forward events to, creating one
   // if needed.
   SpeechRecognitionManager* manager();
 
+  bool guest_;
   int render_process_id_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<SpeechRecognitionPreferences> recognition_preferences_;

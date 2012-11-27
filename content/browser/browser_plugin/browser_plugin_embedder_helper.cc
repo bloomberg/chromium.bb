@@ -86,25 +86,19 @@ void BrowserPluginEmbedderHelper::OnHandleInputEvent(
     *handled = false;
     return;
   }
-  const gfx::Rect* guest_rect =
+  const gfx::Rect* guest_window_rect =
       reinterpret_cast<const gfx::Rect*>(guest_rect_data);
   const WebKit::WebInputEvent* input_event =
       reinterpret_cast<const WebKit::WebInputEvent*>(input_event_data);
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       render_view_host());
 
-  // Convert the window coordinates into screen coordinates.
-  gfx::Rect guest_screen_rect(*guest_rect);
-  if (rvh->GetView()) {
-    guest_screen_rect.Offset(
-        rvh->GetView()->GetViewBounds().OffsetFromOrigin());
-  }
 
   IPC::Message* reply_message =
       IPC::SyncMessage::GenerateReply(&message);
   embedder_->HandleInputEvent(instance_id,
                               rvh,
-                              guest_screen_rect,
+                              *guest_window_rect,
                               *input_event,
                               reply_message);
 }

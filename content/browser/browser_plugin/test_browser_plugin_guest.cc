@@ -120,11 +120,13 @@ void TestBrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
 
 void TestBrowserPluginGuest::HandleInputEvent(
     RenderViewHost* render_view_host,
-    const gfx::Rect& guest_rect,
+    const gfx::Rect& guest_window_rect,
+    const gfx::Rect& guest_screen_rect,
     const WebKit::WebInputEvent& event,
     IPC::Message* reply_message) {
   BrowserPluginGuest::HandleInputEvent(render_view_host,
-                                       guest_rect,
+                                       guest_window_rect,
+                                       guest_screen_rect,
                                        event,
                                        reply_message);
   input_observed_ = true;

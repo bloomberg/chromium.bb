@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
@@ -234,12 +235,22 @@ void BrowserPluginEmbedder::CleanUp() {
 
 void BrowserPluginEmbedder::HandleInputEvent(int instance_id,
                                              RenderViewHost* render_view_host,
-                                             const gfx::Rect& guest_rect,
+                                             const gfx::Rect& guest_window_rect,
                                              const WebKit::WebInputEvent& event,
                                              IPC::Message* reply_message) {
+  // Convert the window coordinates into screen coordinates.
+  gfx::Rect guest_screen_rect(guest_window_rect);
+  guest_screen_rect.Offset(
+      static_cast<RenderViewHostImpl*>(render_view_host)->GetView()->
+          GetViewBounds().OffsetFromOrigin());
   BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
-  if (guest)
-    guest->HandleInputEvent(render_view_host, guest_rect, event, reply_message);
+  if (guest) {
+    guest->HandleInputEvent(render_view_host,
+                            guest_window_rect,
+                            guest_screen_rect,
+                            event,
+                            reply_message);
+  }
 }
 
 void BrowserPluginEmbedder::DestroyGuestByInstanceID(int instance_id) {

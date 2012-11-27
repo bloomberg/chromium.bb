@@ -110,7 +110,7 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   // process) by passing them to appropriate guest's input handler.
   void HandleInputEvent(int instance_id,
                         RenderViewHost* render_view_host,
-                        const gfx::Rect& guest_rect,
+                        const gfx::Rect& guest_window_rect,
                         const WebKit::WebInputEvent& event,
                         IPC::Message* reply_message);
   void PluginDestroyed(int instance_id);

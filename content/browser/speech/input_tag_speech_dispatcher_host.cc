@@ -6,6 +6,9 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "content/browser/browser_plugin/browser_plugin_guest.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/speech_recognition_messages.h"
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_preferences.h"
@@ -25,10 +28,12 @@ void InputTagSpeechDispatcherHost::SetManagerForTests(
 }
 
 InputTagSpeechDispatcherHost::InputTagSpeechDispatcherHost(
+    bool guest,
     int render_process_id,
     net::URLRequestContextGetter* url_request_context_getter,
     SpeechRecognitionPreferences* recognition_preferences)
-    : render_process_id_(render_process_id),
+    : guest_(guest),
+      render_process_id_(render_process_id),
       url_request_context_getter_(url_request_context_getter),
       recognition_preferences_(recognition_preferences) {
   // Do not add any non-trivial initialization here, instead do it lazily when
@@ -64,9 +69,55 @@ bool InputTagSpeechDispatcherHost::OnMessageReceived(
 
 void InputTagSpeechDispatcherHost::OnStartRecognition(
     const InputTagSpeechHostMsg_StartRecognition_Params& params) {
+  if (guest_ && !BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(
+            &InputTagSpeechDispatcherHost::OnStartRecognition,
+            this,
+            params));
+    return;
+  }
 
+  DCHECK(!guest_ || BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  InputTagSpeechHostMsg_StartRecognition_Params input_params(params);
+  int render_process_id = render_process_id_;
+  // The chrome layer is mostly oblivious to BrowserPlugin guests and so it
+  // cannot correctly place the speech bubble relative to a guest. Thus, we
+  // set up the speech recognition context relative to the embedder.
+  if (guest_) {
+    RenderViewHostImpl* render_view_host =
+        RenderViewHostImpl::FromID(render_process_id_, params.render_view_id);
+    WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+        WebContents::FromRenderViewHost(render_view_host));
+    BrowserPluginGuest* guest = web_contents->GetBrowserPluginGuest();
+    input_params.element_rect.set_origin(
+        guest->GetScreenCoordinates(input_params.element_rect.origin()));
+    render_process_id =
+        guest->embedder_web_contents()->GetRenderProcessHost()->GetID();
+    input_params.render_view_id =
+        guest->embedder_web_contents()->GetRoutingID();
+  }
+
+  if (guest_) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(
+            &InputTagSpeechDispatcherHost::StartRecognitionOnIO,
+            this,
+            render_process_id,
+            input_params));
+  } else {
+    StartRecognitionOnIO(render_process_id, params);
+  }
+}
+
+void InputTagSpeechDispatcherHost::StartRecognitionOnIO(
+    int render_process_id,
+    const InputTagSpeechHostMsg_StartRecognition_Params& params) {
   SpeechRecognitionSessionContext context;
-  context.render_process_id = render_process_id_;
+  context.render_process_id = render_process_id;
   context.render_view_id = params.render_view_id;
   context.request_id = params.request_id;
   context.element_rect = params.element_rect;

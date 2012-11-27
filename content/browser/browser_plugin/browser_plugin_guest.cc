@@ -324,6 +324,13 @@ void BrowserPluginGuest::SetDamageBuffer(
   damage_buffer_scale_factor_ = scale_factor;
 }
 
+gfx::Point BrowserPluginGuest::GetScreenCoordinates(
+    const gfx::Point& relative_position) const {
+  gfx::Point screen_pos(relative_position);
+  screen_pos += guest_window_rect_.OffsetFromOrigin();
+  return screen_pos;
+}
+
 int BrowserPluginGuest::embedder_routing_id() const {
   return embedder_web_contents_->GetRoutingID();
 }
@@ -416,11 +423,13 @@ void BrowserPluginGuest::UpdateRectACK(
 }
 
 void BrowserPluginGuest::HandleInputEvent(RenderViewHost* render_view_host,
-                                          const gfx::Rect& guest_rect,
+                                          const gfx::Rect& guest_window_rect,
+                                          const gfx::Rect& guest_screen_rect,
                                           const WebKit::WebInputEvent& event,
                                           IPC::Message* reply_message) {
   DCHECK(!pending_input_event_reply_.get());
-  guest_rect_ = guest_rect;
+  guest_window_rect_ = guest_window_rect;
+  guest_screen_rect_ = guest_screen_rect;
   RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
       web_contents()->GetRenderViewHost());
   IPC::Message* message = new ViewMsg_HandleInputEvent(routing_id());
@@ -492,7 +501,7 @@ void BrowserPluginGuest::ShowWidget(RenderViewHost* render_view_host,
                                     int route_id,
                                     const gfx::Rect& initial_pos) {
   gfx::Rect screen_pos(initial_pos);
-  screen_pos.Offset(guest_rect_.OffsetFromOrigin());
+  screen_pos.Offset(guest_screen_rect_.OffsetFromOrigin());
   static_cast<WebContentsImpl*>(web_contents())->ShowCreatedWidget(route_id,
                                                                    screen_pos);
 }
