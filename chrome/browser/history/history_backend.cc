@@ -10,6 +10,7 @@
 #include <set>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
@@ -1593,10 +1594,8 @@ void HistoryBackend::QueryFilteredURLs(
 
   // Limit to the top |result_count| results.
   std::sort(data.begin(), data.end(), PageUsageData::Predicate);
-  if (result_count && static_cast<int>(data.size()) > result_count) {
-    STLDeleteContainerPointers(data.begin() + result_count, data.end());
+  if (result_count && implicit_cast<int>(data.size()) > result_count)
     data.resize(result_count);
-  }
 
   for (size_t i = 0; i < data.size(); ++i) {
     URLRow info;
