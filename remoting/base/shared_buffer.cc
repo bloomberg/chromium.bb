@@ -15,7 +15,7 @@ SharedBuffer::SharedBuffer(uint32 size)
 }
 
 SharedBuffer::SharedBuffer(
-    intptr_t id, base::SharedMemoryHandle handle, uint32 size)
+    int id, base::SharedMemoryHandle handle, uint32 size)
     : id_(id),
       shared_memory_(handle, kReadOnly),
       size_(size) {
@@ -23,7 +23,7 @@ SharedBuffer::SharedBuffer(
 }
 
 SharedBuffer::SharedBuffer(
-    intptr_t id, base::SharedMemoryHandle handle, base::ProcessHandle process,
+    int id, base::SharedMemoryHandle handle, base::ProcessHandle process,
     uint32 size)
     : id_(id),
       shared_memory_(handle, kReadOnly, process),

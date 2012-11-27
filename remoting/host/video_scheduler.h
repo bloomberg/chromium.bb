@@ -191,4 +191,4 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_SCREEN_RECORDER_H_
+#endif  // REMOTING_HOST_VIDEO_SCHEDULER_H_

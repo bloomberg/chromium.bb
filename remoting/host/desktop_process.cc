@@ -18,8 +18,6 @@
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_session_agent.h"
 
-const char kIoThreadName[] = "I/O thread";
-
 namespace remoting {
 
 DesktopProcess::DesktopProcess(
@@ -60,7 +58,8 @@ void DesktopProcess::OnChannelError() {
 
   // Shutdown the desktop process.
   daemon_channel_.reset();
-  desktop_agent_.reset();
+  desktop_agent_->Stop();
+  desktop_agent_ = NULL;
   caller_task_runner_ = NULL;
 }
 
@@ -69,12 +68,17 @@ bool DesktopProcess::Start() {
 
   // Launch the I/O thread.
   scoped_refptr<AutoThreadTaskRunner> io_task_runner =
-      AutoThread::CreateWithType(kIoThreadName, caller_task_runner_,
+      AutoThread::CreateWithType("I/O thread", caller_task_runner_,
                                  MessageLoop::TYPE_IO);
+
+  // Launch the video capture thread.
+  scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner =
+      AutoThread::Create("Video capture thread", caller_task_runner_);
 
   // Create a desktop agent.
   desktop_agent_ = DesktopSessionAgent::Create(caller_task_runner_,
-                                               io_task_runner);
+                                               io_task_runner,
+                                               video_capture_task_runner);
 
   // Start the agent and create an IPC channel to talk to it. It is safe to
   // use base::Unretained(this) here because the message loop below will run
@@ -83,7 +87,8 @@ bool DesktopProcess::Start() {
   if (!desktop_agent_->Start(base::Bind(&DesktopProcess::OnChannelError,
                                         base::Unretained(this)),
                              &desktop_pipe)) {
-    desktop_agent_.reset();
+    desktop_agent_ = NULL;
+    caller_task_runner_ = NULL;
     return false;
   }
 

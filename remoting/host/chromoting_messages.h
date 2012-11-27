@@ -2,11 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Defines IPC messages used by Chromoting components.
+#ifndef REMOTING_HOST_CHROMOTING_MESSAGES_H_
+#define REMOTING_HOST_CHROMOTING_MESSAGES_H_
+
+#include "ipc/ipc_platform_file.h"
+#include "third_party/skia/include/core/SkPoint.h"
+#include "third_party/skia/include/core/SkRect.h"
+#include "third_party/skia/include/core/SkSize.h"
+
+#endif  // REMOTING_HOST_CHROMOTING_MESSAGES_H_
 
 // Multiply-included message file, no traditional include guard.
 #include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_platform_file.h"
 
 #define IPC_MESSAGE_START ChromotingMsgStart
 
@@ -83,3 +90,78 @@ IPC_MESSAGE_CONTROL3(ChromotingDaemonDesktopMsg_Crash,
 // the receiver of the message.
 IPC_MESSAGE_CONTROL1(ChromotingDesktopDaemonMsg_DesktopAttached,
                      IPC::PlatformFileForTransit /* desktop_pipe */)
+
+//-----------------------------------------------------------------------------
+// Chromoting messages sent from the desktop to the network process.
+
+// Notifies the network process that a shared buffer has been created. Receiving
+// of this message must be confirmed by replying with
+// ChromotingNetworkDesktopMsg_SharedBufferCreated message.
+IPC_MESSAGE_CONTROL3(ChromotingDesktopNetworkMsg_CreateSharedBuffer,
+                     int /* id */,
+                     IPC::PlatformFileForTransit /* handle */,
+                     uint32 /* size */)
+
+// Request the network process to stop using a shared buffer.
+IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_ReleaseSharedBuffer,
+                     int /* id */)
+
+IPC_STRUCT_TRAITS_BEGIN(SkIPoint)
+  IPC_STRUCT_TRAITS_MEMBER(fX)
+  IPC_STRUCT_TRAITS_MEMBER(fY)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(SkIRect)
+  IPC_STRUCT_TRAITS_MEMBER(fLeft)
+  IPC_STRUCT_TRAITS_MEMBER(fTop)
+  IPC_STRUCT_TRAITS_MEMBER(fRight)
+  IPC_STRUCT_TRAITS_MEMBER(fBottom)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(SkISize)
+  IPC_STRUCT_TRAITS_MEMBER(fWidth)
+  IPC_STRUCT_TRAITS_MEMBER(fHeight)
+IPC_STRUCT_TRAITS_END()
+
+// Serialized CaptureData structure.
+IPC_STRUCT_BEGIN(SerializedCapturedData)
+  // ID of the shared memory buffer containing the pixels.
+  IPC_STRUCT_MEMBER(int, shared_buffer_id)
+
+  // Captured region.
+  IPC_STRUCT_MEMBER(std::vector<SkIRect>, dirty_region)
+
+  // Dimentions of the buffer in pixels.
+  IPC_STRUCT_MEMBER(SkISize, dimensions)
+
+  // Pixel format.
+  IPC_STRUCT_MEMBER(int32, pixel_format)
+
+  // Time spent in capture. Unit is in milliseconds.
+  IPC_STRUCT_MEMBER(int, capture_time_ms)
+
+  // Sequence number supplied by client for performance tracking.
+  IPC_STRUCT_MEMBER(int64, client_sequence_number)
+
+  // DPI for this frame.
+  IPC_STRUCT_MEMBER(SkIPoint, dpi)
+IPC_STRUCT_END()
+
+// Notifies the network process that a shared buffer has been created.
+IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_CaptureCompleted,
+                     SerializedCapturedData /* capture_data */ )
+
+
+//-----------------------------------------------------------------------------
+// Chromoting messages sent from the network to the desktop process.
+
+// Notifies the desktop process that the shared memory buffer has been mapped to
+// the memory of the network process and so it can be safely dropped by
+// the network process at any time.
+IPC_MESSAGE_CONTROL1(ChromotingNetworkDesktopMsg_SharedBufferCreated,
+                     int /* id */)
+
+IPC_MESSAGE_CONTROL1(ChromotingNetworkDesktopMsg_InvalidateRegion,
+                     std::vector<SkIRect> /* invalid_region */ )
+
+IPC_MESSAGE_CONTROL0(ChromotingNetworkDesktopMsg_CaptureFrame)

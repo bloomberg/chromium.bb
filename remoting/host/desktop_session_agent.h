@@ -5,6 +5,8 @@
 #ifndef REMOTING_HOST_DESKTOP_SESSION_AGENT_H_
 #define REMOTING_HOST_DESKTOP_SESSION_AGENT_H_
 
+#include <list>
+
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -12,6 +14,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
+#include "remoting/base/shared_buffer.h"
+#include "remoting/base/shared_buffer_factory.h"
+#include "remoting/host/video_frame_capturer.h"
+#include "third_party/skia/include/core/SkRect.h"
 
 namespace IPC {
 class ChannelProxy;
@@ -24,42 +30,91 @@ class AutoThreadTaskRunner;
 
 // Provides screen/audio capturing and input injection services for
 // the network process.
-class DesktopSessionAgent : public IPC::Listener {
+class DesktopSessionAgent
+    : public base::RefCountedThreadSafe<DesktopSessionAgent>,
+      public IPC::Listener,
+      public SharedBufferFactory,
+      public VideoFrameCapturer::Delegate {
  public:
-  static scoped_ptr<DesktopSessionAgent> Create(
+  static scoped_refptr<DesktopSessionAgent> Create(
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
-      scoped_refptr<AutoThreadTaskRunner> io_task_runner);
-
-  virtual ~DesktopSessionAgent();
+      scoped_refptr<AutoThreadTaskRunner> io_task_runner,
+      scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner);
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 
-  // Creates the screen/audio recorders, input stubs and the IPC channel to be
-  // used to access them. Returns a handle of the client end of the IPC channel
-  // pipe to be forwarder to the corresponding desktop environment.
-  bool Start(const base::Closure& done_task,
+  // SharedBufferFactory implementation.
+  virtual scoped_refptr<SharedBuffer> CreateSharedBuffer(uint32 size) OVERRIDE;
+  virtual void ReleaseSharedBuffer(scoped_refptr<SharedBuffer> buffer) OVERRIDE;
+
+  // VideoFrameCapturer::Delegate implementation.
+  virtual void OnCaptureCompleted(
+      scoped_refptr<CaptureData> capture_data) OVERRIDE;
+  virtual void OnCursorShapeChanged(
+      scoped_ptr<protocol::CursorShapeInfo> cursor_shape) OVERRIDE;
+
+  // Creates desktop integration components and a connected IPC channel to be
+  // used to access them. The client end of the channel is returned in
+  // the variable pointed by |desktop_pipe_out|.
+  //
+  // |disconnected_task| is invoked on |caller_task_runner_| to notify
+  // the caller that the network-to-desktop channel has been disconnected.
+  bool Start(const base::Closure& disconnected_task,
              IPC::PlatformFileForTransit* desktop_pipe_out);
+
+  // Stops the agent asynchronously.
+  void Stop();
 
  protected:
   DesktopSessionAgent(
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
-      scoped_refptr<AutoThreadTaskRunner> io_task_runner);
+      scoped_refptr<AutoThreadTaskRunner> io_task_runner,
+      scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner);
 
-  // Creates a pre-connected IPC channel to be used to access the screen/audio
+  friend class base::RefCountedThreadSafe<DesktopSessionAgent>;
+  virtual ~DesktopSessionAgent();
+
+  // Creates a connected IPC channel to be used to access the screen/audio
   // recorders and input stubs.
-  virtual bool DoCreateNetworkChannel(
+  virtual bool CreateChannelForNetworkProcess(
       IPC::PlatformFileForTransit* client_out,
       scoped_ptr<IPC::ChannelProxy>* server_out) = 0;
 
+  // Handles CaptureFrame requests from the client.
+  void OnCaptureFrame();
+
+  // Handles InvalidateRegion requests from the client.
+  void OnInvalidateRegion(const std::vector<SkIRect>& invalid_rects);
+
+  // Handles SharedBufferCreated notification from the client.
+  void OnSharedBufferCreated(int id);
+
+  // Sends a message to the network process.
+  void SendToNetwork(IPC::Message* message);
+
+  // Posted to |video_capture_task_runner_| task runner to start the video
+  // capturer.
+  void StartVideoCapturer();
+
+  // Posted to |video_capture_task_runner_| task runner to stop the video
+  // capturer.
+  void StopVideoCapturer();
+
+  // Getters providing access to the task runners for platform-specific derived
+  // classes.
   scoped_refptr<AutoThreadTaskRunner> caller_task_runner() const {
     return caller_task_runner_;
   }
 
   scoped_refptr<AutoThreadTaskRunner> io_task_runner() const {
     return io_task_runner_;
+  }
+
+  scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner() const {
+    return video_capture_task_runner_;
   }
 
  private:
@@ -69,12 +124,24 @@ class DesktopSessionAgent : public IPC::Listener {
   // Message loop used by the IPC channel.
   scoped_refptr<AutoThreadTaskRunner> io_task_runner_;
 
-  // Run on |caller_task_runner_| to notify the caller that |this| has been
-  // stopped.
-  base::Closure done_task_;
+  // Task runner dedicated to running themethods of the video capturer.
+  scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner_;
+
+  // Runs on |caller_task_runner_| to notify the caller that the network-to-
+  // desktop channel has been disconnected.
+  base::Closure disconnected_task_;
 
   // IPC channel connecting the desktop process with the network process.
   scoped_ptr<IPC::ChannelProxy> network_channel_;
+
+  // Next shared buffer ID to be used.
+  int next_shared_buffer_id_;
+
+  // List of the shared buffers registered via |SharedBufferFactory| interface.
+  typedef std::list<scoped_refptr<SharedBuffer> > SharedBuffers;
+  SharedBuffers shared_buffers_;
+
+  scoped_ptr<VideoFrameCapturer> video_capturer_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopSessionAgent);
 };

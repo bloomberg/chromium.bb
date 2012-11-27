@@ -8,8 +8,8 @@
 const uint32 kBufferSize = 4096;
 const int kPattern = 0x12345678;
 
-const intptr_t kIdZero = 0;
-const intptr_t kIdOne = 1;
+const int kIdZero = 0;
+const int kIdOne = 1;
 
 namespace remoting {
 

@@ -23,11 +23,13 @@ class DesktopSessionAgentPosix : public DesktopSessionAgent {
  public:
   DesktopSessionAgentPosix(
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
-      scoped_refptr<AutoThreadTaskRunner> io_task_runner);
-  virtual ~DesktopSessionAgentPosix();
+      scoped_refptr<AutoThreadTaskRunner> io_task_runner,
+      scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner);
 
  protected:
-  virtual bool DoCreateNetworkChannel(
+  virtual ~DesktopSessionAgentPosix();
+
+  virtual bool CreateChannelForNetworkProcess(
       IPC::PlatformFileForTransit* client_out,
       scoped_ptr<IPC::ChannelProxy>* server_out) OVERRIDE;
 
@@ -37,14 +39,16 @@ class DesktopSessionAgentPosix : public DesktopSessionAgent {
 
 DesktopSessionAgentPosix::DesktopSessionAgentPosix(
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
-    scoped_refptr<AutoThreadTaskRunner> io_task_runner)
-    : DesktopSessionAgent(caller_task_runner, io_task_runner) {
+    scoped_refptr<AutoThreadTaskRunner> io_task_runner,
+    scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner)
+    : DesktopSessionAgent(caller_task_runner, io_task_runner,
+                          video_capture_task_runner) {
 }
 
 DesktopSessionAgentPosix::~DesktopSessionAgentPosix() {
 }
 
-bool DesktopSessionAgentPosix::DoCreateNetworkChannel(
+bool DesktopSessionAgentPosix::CreateChannelForNetworkProcess(
     IPC::PlatformFileForTransit* client_out,
     scoped_ptr<IPC::ChannelProxy>* server_out) {
   // Create a socket pair.
@@ -83,11 +87,12 @@ bool DesktopSessionAgentPosix::DoCreateNetworkChannel(
 }
 
 // static
-scoped_ptr<DesktopSessionAgent> DesktopSessionAgent::Create(
+scoped_refptr<DesktopSessionAgent> DesktopSessionAgent::Create(
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
-    scoped_refptr<AutoThreadTaskRunner> io_task_runner) {
-  return scoped_ptr<DesktopSessionAgent>(new DesktopSessionAgentPosix(
-      caller_task_runner, io_task_runner));
+    scoped_refptr<AutoThreadTaskRunner> io_task_runner,
+    scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner) {
+  return scoped_refptr<DesktopSessionAgent>(new DesktopSessionAgentPosix(
+      caller_task_runner, io_task_runner, video_capture_task_runner));
 }
 
 }  // namespace remoting

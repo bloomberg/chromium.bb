@@ -57,7 +57,7 @@ class DesktopProcess : public IPC::Listener {
 
   // Provides screen/audio capturing and input injection services for
   // the network process.
-  scoped_ptr<DesktopSessionAgent> desktop_agent_;
+  scoped_refptr<DesktopSessionAgent> desktop_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopProcess);
 };
