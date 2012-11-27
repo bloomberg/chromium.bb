@@ -79,6 +79,7 @@ bool ShellRenderProcessObserver::OnControlMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ShellRenderProcessObserver, message)
     IPC_MESSAGE_HANDLER(ShellViewMsg_ResetAll, OnResetAll)
+    IPC_MESSAGE_HANDLER(ShellViewMsg_SetWebKitSourceDir, OnSetWebKitSourceDir)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -91,6 +92,11 @@ void ShellRenderProcessObserver::OnResetAll() {
     WebTestingSupport::resetInternalsObject(
         main_render_view_->GetWebView()->mainFrame());
   }
+}
+
+void ShellRenderProcessObserver::OnSetWebKitSourceDir(
+    const FilePath& webkit_source_dir) {
+  webkit_source_dir_ = webkit_source_dir;
 }
 
 }  // namespace content

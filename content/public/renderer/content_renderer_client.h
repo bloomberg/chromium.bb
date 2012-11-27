@@ -155,6 +155,7 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual bool WillSendRequest(WebKit::WebFrame* frame,
                                PageTransition transition_type,
                                const GURL& url,
+                               const GURL& first_party_for_cookies,
                                GURL* new_url);
 
   // Whether to pump events when sending sync cookie messages.  Needed if the

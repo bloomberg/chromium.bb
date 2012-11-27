@@ -34,10 +34,16 @@ class ShellContentRendererClient : public ContentRendererClient {
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params,
       WebKit::WebPlugin** plugin) OVERRIDE;
+  virtual bool WillSendRequest(WebKit::WebFrame* frame,
+                               PageTransition transition_type,
+                               const GURL& url,
+                               const GURL& first_party_for_cookies,
+                               GURL* new_url) OVERRIDE;
 
  private:
   void WebTestProxyCreated(RenderView* render_view,
                            WebTestRunner::WebTestProxyBase* proxy);
+  GURL RewriteLayoutTestsURL(const GURL& url);
 
   scoped_ptr<ShellRenderProcessObserver> shell_observer_;
 };

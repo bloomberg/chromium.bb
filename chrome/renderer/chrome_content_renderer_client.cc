@@ -839,9 +839,11 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
   return false;
 }
 
-bool ChromeContentRendererClient::WillSendRequest(WebKit::WebFrame* frame,
+bool ChromeContentRendererClient::WillSendRequest(
+    WebKit::WebFrame* frame,
     content::PageTransition transition_type,
     const GURL& url,
+    const GURL& first_party_for_cookies,
     GURL* new_url) {
   // Check whether the request should be allowed. If not allowed, we reset the
   // URL to something invalid to prevent the request and cause an error.

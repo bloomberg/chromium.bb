@@ -6,6 +6,9 @@
 
 namespace switches {
 
+// Allow access to external pages during layout tests.
+const char kAllowExternalPages[] = "allow-external-pages";
+
 // Check whether all system dependencies for running layout tests are met.
 const char kCheckLayoutTestSysDeps[] = "check-layout-test-sys-deps";
 

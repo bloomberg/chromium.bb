@@ -30,6 +30,10 @@ IPC_MESSAGE_ROUTED1(ShellViewMsg_CaptureImageDump,
 // Tells the renderer to reset all test runners.
 IPC_MESSAGE_CONTROL0(ShellViewMsg_ResetAll)
 
+// Sets the path to the WebKit checkout.
+IPC_MESSAGE_CONTROL1(ShellViewMsg_SetWebKitSourceDir,
+                     FilePath /* webkit source dir */)
+
 // Send a text dump of the WebContents to the render host.
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_TextDump,
                     std::string /* dump */)

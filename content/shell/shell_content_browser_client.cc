@@ -5,13 +5,16 @@
 #include "content/shell/shell_content_browser_client.h"
 
 #include "base/command_line.h"
-#include "base/file_path.h"
+#include "base/file_util.h"
+#include "base/path_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/shell/geolocation/shell_access_token_store.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_browser_main_parts.h"
 #include "content/shell/shell_devtools_delegate.h"
+#include "content/shell/shell_messages.h"
 #include "content/shell/shell_resource_dispatcher_host_delegate.h"
 #include "content/shell/shell_switches.h"
 #include "content/shell/shell_web_contents_view_delegate_creator.h"
@@ -28,8 +31,36 @@
 
 namespace content {
 
+namespace {
+
+FilePath GetWebKitRootDirFilePath() {
+  FilePath base_path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &base_path);
+  if (file_util::PathExists(
+          base_path.Append(FILE_PATH_LITERAL("third_party/WebKit")))) {
+    // We're in a WebKit-in-chrome checkout.
+    return base_path.Append(FILE_PATH_LITERAL("third_party/WebKit"));
+  } else if (file_util::PathExists(
+          base_path.Append(FILE_PATH_LITERAL("chromium")))) {
+    // We're in a WebKit-only checkout on Windows.
+    return base_path.Append(FILE_PATH_LITERAL("../.."));
+  } else if (file_util::PathExists(
+          base_path.Append(FILE_PATH_LITERAL("webkit/support")))) {
+    // We're in a WebKit-only/xcodebuild checkout on Mac
+    return base_path.Append(FILE_PATH_LITERAL("../../.."));
+  }
+  // We're in a WebKit-only, make-build, so the DIR_SOURCE_ROOT is already the
+  // WebKit root. That, or we have no idea where we are.
+  return base_path;
+}
+
+}  // namespace
+
 ShellContentBrowserClient::ShellContentBrowserClient()
     : shell_browser_main_parts_(NULL) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return;
+  webkit_source_dir_ = GetWebKitRootDirFilePath();
 }
 
 ShellContentBrowserClient::~ShellContentBrowserClient() {
@@ -39,6 +70,13 @@ BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
     const MainFunctionParams& parameters) {
   shell_browser_main_parts_ = new ShellBrowserMainParts(parameters);
   return shell_browser_main_parts_;
+}
+
+void ShellContentBrowserClient::RenderProcessHostCreated(
+    RenderProcessHost* host) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return;
+  host->Send(new ShellViewMsg_SetWebKitSourceDir(webkit_source_dir_));
 }
 
 void ShellContentBrowserClient::RenderViewHostCreated(

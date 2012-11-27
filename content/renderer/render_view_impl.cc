@@ -3589,7 +3589,11 @@ void RenderViewImpl::willSendRequest(WebFrame* frame,
   GURL request_url(request.url());
   GURL new_url;
   if (GetContentClient()->renderer()->WillSendRequest(
-      frame, transition_type, request_url, &new_url)) {
+          frame,
+          transition_type,
+          request_url,
+          request.firstPartyForCookies(),
+          &new_url)) {
     request.setURL(WebURL(new_url));
   }
 
