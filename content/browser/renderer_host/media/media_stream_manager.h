@@ -111,9 +111,10 @@ class CONTENT_EXPORT MediaStreamManager
   // Gets a list of devices of |type|, which must be MEDIA_DEVICE_AUDIO_CAPTURE
   // or MEDIA_DEVICE_VIDEO_CAPTURE.
   // The request is identified using the string returned to the caller.
-  // The request is persistent, which means the client keeps listening to
-  // device changes, such as plug/unplug, and expects new device list for
-  // such a change, till the client stops the request.
+  // When the |requester| is NULL, MediaStreamManager will enumerate both audio
+  // and video devices and also start monitoring device changes, such as
+  // plug/unplug. The new device lists will be delivered via media observer to
+  // MediaCaptureDevicesDispatcher.
   std::string EnumerateDevices(MediaStreamRequester* requester,
                                int render_process_id,
                                int render_view_id,

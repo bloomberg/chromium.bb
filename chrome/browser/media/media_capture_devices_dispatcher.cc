@@ -7,12 +7,14 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/media_devices_monitor.h"
 #include "content/public/common/media_stream_request.h"
 
 using content::BrowserThread;
 using content::MediaStreamDevices;
 
-MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher() {}
+MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
+    : devices_enumerated_(false) {}
 
 MediaCaptureDevicesDispatcher::~MediaCaptureDevicesDispatcher() {}
 
@@ -63,18 +65,31 @@ void MediaCaptureDevicesDispatcher::RemoveObserver(Observer* observer) {
 const MediaStreamDevices&
 MediaCaptureDevicesDispatcher::GetAudioCaptureDevices() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!devices_enumerated_) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&content::EnsureMonitorCaptureDevices));
+    devices_enumerated_ = true;
+  }
   return audio_devices_;
 }
 
 const MediaStreamDevices&
 MediaCaptureDevicesDispatcher::GetVideoCaptureDevices() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!devices_enumerated_) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&content::EnsureMonitorCaptureDevices));
+    devices_enumerated_ = true;
+  }
   return video_devices_;
 }
 
 void MediaCaptureDevicesDispatcher::UpdateAudioDevicesOnUIThread(
     const content::MediaStreamDevices& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  devices_enumerated_ = true;
   audio_devices_ = devices;
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnUpdateAudioDevices(audio_devices_));
@@ -83,8 +98,8 @@ void MediaCaptureDevicesDispatcher::UpdateAudioDevicesOnUIThread(
 void MediaCaptureDevicesDispatcher::UpdateVideoDevicesOnUIThread(
     const content::MediaStreamDevices& devices){
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  devices_enumerated_ = true;
   video_devices_ = devices;
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnUpdateVideoDevices(video_devices_));
 }
-

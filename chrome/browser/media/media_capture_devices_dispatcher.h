@@ -55,7 +55,8 @@ class MediaCaptureDevicesDispatcher
   friend class base::RefCountedThreadSafe<MediaCaptureDevicesDispatcher>;
   virtual ~MediaCaptureDevicesDispatcher();
 
-  // Called by the public functions, executed on UI thread.
+  // Called by the public Audio/VideoCaptureDevicesChanged() functions,
+  // executed on UI thread.
   void UpdateAudioDevicesOnUIThread(const content::MediaStreamDevices& devices);
   void UpdateVideoDevicesOnUIThread(const content::MediaStreamDevices& devices);
 
@@ -67,6 +68,10 @@ class MediaCaptureDevicesDispatcher
 
   // A list of observers for the device update notifications.
   ObserverList<Observer> observers_;
+
+  // Flag to indicate if device enumeration has been done/doing.
+  // Only accessed on UI thread.
+  bool devices_enumerated_;
 };
 
 #endif  // CHROME_BROWSER_MEDIA_MEDIA_CAPTURE_DEVICES_DISPATCHER_H_
