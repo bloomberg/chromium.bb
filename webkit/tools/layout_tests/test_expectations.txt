@@ -32,7 +32,5 @@
 #
 # EVERYTHING BELOW THIS LINE WILL BE DELETED AT EVERY WEBKIT DEPS ROLL
 
-compositing/checkerboard.html [ ImageOnlyFailure ]
-
 webkit.org/b/103140 inspector/console/command-line-api-inspect.html [ Skip ]
 webkit.org/b/103140 inspector/runtime/runtime-localStorage-getProperties.html [ Skip ]
