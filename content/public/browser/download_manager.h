@@ -152,6 +152,8 @@ class CONTENT_EXPORT DownloadManager
       bool opened) = 0;
 
   // The number of in progress (including paused) downloads.
+  // Performance note: this loops over all items. If profiling finds that this
+  // is too slow, use an AllDownloadItemNotifier to count in-progress items.
   virtual int InProgressCount() const = 0;
 
   virtual BrowserContext* GetBrowserContext() const = 0;

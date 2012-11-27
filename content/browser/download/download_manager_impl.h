@@ -113,15 +113,6 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   // and then notifies this update to the file's observer.
   void OnFileRemovalDetected(int32 download_id);
 
-  // Removes |download| from the active and in progress maps.
-  // Called when the download is cancelled or has an error.
-  // Does nothing if the download is not in the history DB.
-  void RemoveFromActiveList(DownloadItemImpl* download);
-
-  // Debugging routine to confirm relationship between below
-  // containers; no-op if NDEBUG.
-  void AssertContainersConsistent() const;
-
   // Remove from internal maps.
   int RemoveDownloadItems(const DownloadItemImplVector& pending_deletes);
 
@@ -136,12 +127,9 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       DownloadItemImpl* item,
       const ShouldOpenDownloadCallback& callback) OVERRIDE;
   virtual void CheckForFileRemoval(DownloadItemImpl* download_item) OVERRIDE;
-  virtual void DownloadStopped(DownloadItemImpl* download) OVERRIDE;
-  virtual void DownloadCompleted(DownloadItemImpl* download) OVERRIDE;
   virtual void DownloadOpened(DownloadItemImpl* download) OVERRIDE;
   virtual void DownloadRemoved(DownloadItemImpl* download) OVERRIDE;
   virtual void ShowDownloadInBrowser(DownloadItemImpl* download) OVERRIDE;
-  virtual void AssertStateConsistent(DownloadItemImpl* download) const OVERRIDE;
 
   // Factory for creation of downloads items.
   scoped_ptr<DownloadItemFactory> item_factory_;
@@ -152,26 +140,8 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   // |downloads_| is the owning set for all downloads known to the
   // DownloadManager.  This includes downloads started by the user in
   // this session, downloads initialized from the history system, and
-  // "save page as" downloads.  All other DownloadItem containers in
-  // the DownloadManager are maps; they do not own the DownloadItems.
-  // Note that this is the only place (with any functional implications;
-  // see save_page_downloads_ below) that "save page as" downloads are
-  // kept, as the DownloadManager's only job is to hold onto those
-  // until destruction.
-  //
-  // |active_downloads_| is a map of all downloads that are currently being
-  // processed.
-  //
-  // When a download is created through a user action, the corresponding
-  // DownloadItem* is placed in |active_downloads_| and remains there until the
-  // download is in a terminal state (COMPLETE or CANCELLED).  Once it has a
-  // valid handle, the DownloadItem* is placed in the |history_downloads_| map.
-  // Downloads from past sessions read from a persisted state from the history
-  // system are placed directly into |history_downloads_| since they have valid
-  // handles in the history system.
-
+  // "save page as" downloads.
   DownloadMap downloads_;
-  DownloadMap active_downloads_;
 
   int history_size_;
 

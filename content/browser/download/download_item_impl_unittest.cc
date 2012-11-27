@@ -41,8 +41,6 @@ class MockDelegate : public DownloadItemImplDelegate {
   MOCK_METHOD1(CheckForFileRemoval, void(DownloadItemImpl*));
   MOCK_CONST_METHOD0(GetBrowserContext, BrowserContext*());
   MOCK_METHOD1(UpdatePersistence, void(DownloadItemImpl*));
-  MOCK_METHOD1(DownloadStopped, void(DownloadItemImpl*));
-  MOCK_METHOD1(DownloadCompleted, void(DownloadItemImpl*));
   MOCK_METHOD1(DownloadOpened, void(DownloadItemImpl*));
   MOCK_METHOD1(DownloadRemoved, void(DownloadItemImpl*));
   MOCK_METHOD1(ShowDownloadInBrowser, void(DownloadItemImpl*));
@@ -201,7 +199,6 @@ class DownloadItemTest : public testing::Test {
     EXPECT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
     EXPECT_CALL(*download_file, Cancel());
-    EXPECT_CALL(delegate_, DownloadStopped(item));
     item->Cancel(true);
     loop_.RunUntilIdle();
   }
@@ -466,7 +463,6 @@ TEST_F(DownloadItemTest, CallbackAfterRename) {
   item->OnAllDataSaved("");
   EXPECT_CALL(*download_file, RenameAndAnnotate(final_path, _))
       .WillOnce(ScheduleRenameCallback(final_path));
-  EXPECT_CALL(*mock_delegate(), DownloadCompleted(item));
   EXPECT_CALL(*mock_delegate(), ShouldOpenDownload(item, _))
       .WillOnce(Return(true));
   EXPECT_CALL(*download_file, Detach());
@@ -501,7 +497,6 @@ TEST_F(DownloadItemTest, Canceled) {
   MockDownloadFile* download_file = AddDownloadFileToDownloadItem(item, NULL);
 
   // Confirm cancel sets state properly.
-  EXPECT_CALL(*mock_delegate(), DownloadStopped(item));
   EXPECT_CALL(*download_file, Cancel());
   item->Cancel(true);
   EXPECT_EQ(DownloadItem::CANCELLED, item->GetState());
@@ -555,7 +550,6 @@ TEST_F(DownloadItemTest, DestinationError) {
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE, item->GetLastReason());
   EXPECT_FALSE(observer.CheckUpdated());
 
-  EXPECT_CALL(*mock_delegate(), DownloadStopped(item));
   EXPECT_CALL(*download_file, Cancel());
   as_observer->DestinationError(
       DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED);

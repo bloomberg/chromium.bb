@@ -529,11 +529,6 @@ class DownloadManagerTest : public testing::Test {
     return *observer_;
   }
 
-  // Probe at private internals.
-  void DownloadStopped(DownloadItemImpl* item) {
-    download_manager_->DownloadStopped(item);
-  }
-
   void DownloadTargetDeterminedCallback(
       const FilePath& target_path,
       DownloadItem::TargetDisposition disposition,
@@ -628,6 +623,8 @@ TEST_F(DownloadManagerTest, StartDownload) {
 TEST_F(DownloadManagerTest, DetermineDownloadTarget_True) {
   // Put a mock we have a handle to on the download manager.
   MockDownloadItemImpl& item(AddItemToManager());
+  EXPECT_CALL(item, IsInProgress())
+      .WillRepeatedly(Return(true));
 
   EXPECT_CALL(GetMockDownloadManagerDelegate(),
               DetermineDownloadTarget(&item, _))
@@ -656,17 +653,6 @@ TEST_F(DownloadManagerTest, DetermineDownloadTarget_False) {
   EXPECT_EQ(DownloadItem::TARGET_DISPOSITION_OVERWRITE, target_disposition_);
   EXPECT_EQ(DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, danger_type_);
   EXPECT_EQ(path, intermediate_path_);
-}
-
-// Does DownloadStopped remove Download from appropriate queues?
-TEST_F(DownloadManagerTest, OnDownloadStopped) {
-  // Put a mock we have a handle to on the download manager.
-  MockDownloadItemImpl& item(AddItemToManager());
-
-  EXPECT_CALL(item, GetState())
-    .WillRepeatedly(Return(DownloadItem::CANCELLED));
-
-  DownloadStopped(&item);
 }
 
 }  // namespace content

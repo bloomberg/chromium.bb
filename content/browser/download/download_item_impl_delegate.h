@@ -74,8 +74,6 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
 
   // Handle any delegate portions of a state change operation on the
   // DownloadItem.
-  virtual void DownloadStopped(DownloadItemImpl* download);
-  virtual void DownloadCompleted(DownloadItemImpl* download);
   virtual void DownloadOpened(DownloadItemImpl* download);
   virtual void DownloadRemoved(DownloadItemImpl* download);
 

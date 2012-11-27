@@ -281,8 +281,6 @@ void DownloadManagerImpl::Shutdown() {
   FOR_EACH_OBSERVER(Observer, observers_, ManagerGoingDown(this));
   // TODO(benjhayden): Consider clearing observers_.
 
-  AssertContainersConsistent();
-
   // Go through all downloads in downloads_.  Dangerous ones we need to
   // remove on disk, and in progress ones we need to cancel.
   for (DownloadMap::iterator it = downloads_.begin(); it != downloads_.end();) {
@@ -313,12 +311,7 @@ void DownloadManagerImpl::Shutdown() {
   // and all in progress downloads have been cancelled.  We can now delete
   // anything left.
 
-  // We delete the downloads before clearing the active_downloads_ map
-  // so that downloads in the COMPLETING_INTERNAL state (which will have
-  // ignored the Cancel() above) will still show up in active_downloads_
-  // in order to satisfy the invariants enforced in AssertStateConsistent().
   STLDeleteValues(&downloads_);
-  active_downloads_.clear();
   downloads_.clear();
 
   // We'll have nothing more to report to the observers after this point.
@@ -433,9 +426,6 @@ DownloadItemImpl* DownloadManagerImpl::CreateDownloadItem(
 
   DCHECK(!ContainsKey(downloads_, download->GetId()));
   downloads_[download->GetId()] = download;
-  DCHECK(!ContainsKey(active_downloads_, download->GetId()));
-  active_downloads_[download->GetId()] = download;
-
   return download;
 }
 
@@ -466,46 +456,11 @@ DownloadItemImpl* DownloadManagerImpl::CreateSavePackageDownloadItem(
   return download_item;
 }
 
-void DownloadManagerImpl::AssertStateConsistent(
-    DownloadItemImpl* download) const {
-  CHECK(ContainsKey(downloads_, download->GetId()));
-
-  int64 state = download->GetState();
-  base::debug::Alias(&state);
-  if (DownloadItem::IN_PROGRESS == download->GetState())
-    CHECK(ContainsKey(active_downloads_, download->GetId()));
-}
-
-void DownloadManagerImpl::DownloadCompleted(DownloadItemImpl* download) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(download);
-  active_downloads_.erase(download->GetId());
-  AssertStateConsistent(download);
-}
-
 void DownloadManagerImpl::CancelDownload(int32 download_id) {
-  // A cancel at the right time could remove the download from the
-  // |active_downloads_| map before we get here.
-  if (ContainsKey(active_downloads_, download_id))
-    active_downloads_[download_id]->Cancel(true);
-}
-
-void DownloadManagerImpl::DownloadStopped(DownloadItemImpl* download) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  VLOG(20) << __FUNCTION__ << "()"
-           << " download = " << download->DebugString(true);
-
-  RemoveFromActiveList(download);
-  // This function is called from the DownloadItem, so DI state
-  // should already have been updated.
-  AssertStateConsistent(download);
-}
-
-void DownloadManagerImpl::RemoveFromActiveList(DownloadItemImpl* download) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(download);
-  active_downloads_.erase(download->GetId());
+  DownloadItem* download = GetDownload(download_id);
+  if (!download || !download->IsInProgress())
+    return;
+  download->Cancel(true);
 }
 
 void DownloadManagerImpl::SetDownloadItemFactoryForTesting(
@@ -561,7 +516,6 @@ int DownloadManagerImpl::RemoveDownloadsBetween(base::Time remove_begin,
     if (download->GetStartTime() >= remove_begin &&
         (remove_end.is_null() || download->GetStartTime() < remove_end) &&
         (download->IsComplete() || download->IsCancelled())) {
-      AssertStateConsistent(download);
       download->NotifyRemoved();
       pending_deletes.push_back(download);
     }
@@ -645,14 +599,10 @@ void DownloadManagerImpl::ShowDownloadInBrowser(DownloadItemImpl* download) {
 }
 
 int DownloadManagerImpl::InProgressCount() const {
-  // Don't use active_downloads_.count() because Cancel() leaves items in
-  // active_downloads_ if they haven't made it into the persistent store yet.
-  // Need to actually look at each item's state.
   int count = 0;
-  for (DownloadMap::const_iterator it = active_downloads_.begin();
-       it != active_downloads_.end(); ++it) {
-    DownloadItemImpl* item = it->second;
-    if (item->IsInProgress())
+  for (DownloadMap::const_iterator it = downloads_.begin();
+       it != downloads_.end(); ++it) {
+    if (it->second->IsInProgress())
       ++count;
   }
   return count;
@@ -667,40 +617,6 @@ void DownloadManagerImpl::GetAllDownloads(DownloadVector* downloads) {
        it != downloads_.end(); ++it) {
     downloads->push_back(it->second);
   }
-}
-
-// Confirm that everything in all maps is also in |downloads_|, and that
-// everything in |downloads_| is also in some other map.
-void DownloadManagerImpl::AssertContainersConsistent() const {
-#if !defined(NDEBUG)
-  // Turn everything into sets.
-  const DownloadMap* input_maps[] = {&active_downloads_};
-  DownloadSet active_set;
-  DownloadSet* all_sets[] = {&active_set};
-  DCHECK_EQ(ARRAYSIZE_UNSAFE(input_maps), ARRAYSIZE_UNSAFE(all_sets));
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_maps); i++) {
-    for (DownloadMap::const_iterator it = input_maps[i]->begin();
-         it != input_maps[i]->end(); ++it) {
-      all_sets[i]->insert(&*it->second);
-    }
-  }
-
-  DownloadSet all_downloads;
-  for (DownloadMap::const_iterator it = downloads_.begin();
-       it != downloads_.end(); ++it) {
-    all_downloads.insert(it->second);
-  }
-
-  // Check if each set is fully present in downloads, and create a union.
-  for (int i = 0; i < static_cast<int>(ARRAYSIZE_UNSAFE(all_sets)); i++) {
-    DownloadSet remainder;
-    std::insert_iterator<DownloadSet> insert_it(remainder, remainder.begin());
-    std::set_difference(all_sets[i]->begin(), all_sets[i]->end(),
-                        all_downloads.begin(), all_downloads.end(),
-                        insert_it);
-    DCHECK(remainder.empty());
-  }
-#endif
 }
 
 void DownloadManagerImpl::DownloadOpened(DownloadItemImpl* download) {

@@ -359,8 +359,6 @@ void DownloadItemImpl::Cancel(bool user_cancel) {
 
   // Cancel the originating URL request.
   request_handle_->CancelRequest();
-
-  delegate_->DownloadStopped(this);
 }
 
 void DownloadItemImpl::Delete(DeleteReason reason) {
@@ -1192,7 +1190,6 @@ void DownloadItemImpl::Completed() {
   DCHECK(all_data_saved_);
   end_time_ = base::Time::Now();
   TransitionTo(COMPLETE_INTERNAL);
-  delegate_->DownloadCompleted(this);
   RecordDownloadCompleted(start_tick_, received_bytes_);
 
   if (auto_opened_) {
@@ -1237,7 +1234,6 @@ void DownloadItemImpl::Interrupt(DownloadInterruptReason reason) {
   request_handle_->CancelRequest();
 
   RecordDownloadInterrupted(reason, received_bytes_, total_bytes_);
-  delegate_->DownloadStopped(this);
 }
 
 void DownloadItemImpl::CancelDownloadFile() {
