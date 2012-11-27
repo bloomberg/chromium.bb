@@ -127,18 +127,32 @@ void SyncFileSystemRequestFileSystemFunction::DidInitializeFileSystemContext(
     SendResponse(false);
     return;
   }
-  GetFileSystemContext()->OpenSyncableFileSystem(
-          service_name,
-          source_url().GetOrigin(),
-          fileapi::kFileSystemTypeSyncable,
-          true, /* create */
-          base::Bind(&self::DidOpenFileSystem, this));
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      Bind(&fileapi::FileSystemContext::OpenSyncableFileSystem,
+           GetFileSystemContext(),
+           service_name,
+           source_url().GetOrigin(),
+           fileapi::kFileSystemTypeSyncable,
+           true, /* create */
+           base::Bind(&self::DidOpenFileSystem, this)));
 }
 
 void SyncFileSystemRequestFileSystemFunction::DidOpenFileSystem(
     base::PlatformFileError error,
     const std::string& file_system_name,
     const GURL& root_url) {
+  // Repost to switch from IO thread to UI thread for SendResponse().
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        Bind(&SyncFileSystemRequestFileSystemFunction::DidOpenFileSystem,
+             this, error, file_system_name, root_url));
+    return;
+  }
+
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (error != base::PLATFORM_FILE_OK) {
     error_ = base::StringPrintf(kFileError, static_cast<int>(error));
