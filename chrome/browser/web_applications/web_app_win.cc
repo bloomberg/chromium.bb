@@ -186,6 +186,16 @@ bool CheckAndSaveIcon(const FilePath& icon_file, const SkBitmap& image) {
   return true;
 }
 
+FilePath GetShortcutExecutablePath(
+    const ShellIntegration::ShortcutInfo& shortcut_info) {
+  if (BrowserDistribution::GetDistribution()->AppHostIsSupported() &&
+      shortcut_info.is_platform_app) {
+    return chrome_launcher_support::GetAnyAppHostPath();
+  }
+
+  return chrome_launcher_support::GetAnyChromePath();
+}
+
 bool CreatePlatformShortcuts(
     const FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info) {
@@ -226,11 +236,7 @@ bool CreatePlatformShortcuts(
     return false;
   }
 
-  FilePath target_exe;
-  if (BrowserDistribution::GetDistribution()->AppHostIsSupported())
-    target_exe = chrome_launcher_support::GetAnyAppHostPath();
-  else
-    target_exe = chrome_launcher_support::GetAnyChromePath();
+  FilePath target_exe = GetShortcutExecutablePath(shortcut_info);
   DCHECK(!target_exe.empty());
 
   // Working directory.

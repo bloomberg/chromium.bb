@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -38,15 +39,10 @@ const int kDesiredSizes[] = {32};
 ShellIntegration::ShortcutInfo ShortcutInfoForExtensionAndProfile(
     const Extension* extension, Profile* profile) {
   ShellIntegration::ShortcutInfo shortcut_info;
-  shortcut_info.extension_id = extension->id();
-  shortcut_info.url = GURL(extension->launch_web_url());
-  shortcut_info.title = UTF8ToUTF16(extension->name());
-  shortcut_info.description = UTF8ToUTF16(extension->description());
-  shortcut_info.extension_path = extension->path();
+  web_app::UpdateShortcutInfoForApp(*extension, profile, &shortcut_info);
   shortcut_info.create_in_applications_menu = true;
   shortcut_info.create_in_quick_launch_bar = true;
   shortcut_info.create_on_desktop = true;
-  shortcut_info.profile_path = profile->GetPath();
   return shortcut_info;
 }
 

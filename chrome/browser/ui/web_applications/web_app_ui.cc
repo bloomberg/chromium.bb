@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
@@ -351,6 +352,18 @@ void UpdateShortcutForTabContents(WebContents* web_contents) {
   UpdateShortcutWorker* worker = new UpdateShortcutWorker(web_contents);
   worker->Run();
 #endif  // defined(OS_WIN)
+}
+
+void UpdateShortcutInfoForApp(const extensions::Extension& app,
+                              Profile* profile,
+                              ShellIntegration::ShortcutInfo* shortcut_info) {
+  shortcut_info->extension_id = app.id();
+  shortcut_info->is_platform_app = app.is_platform_app();
+  shortcut_info->url = GURL(app.launch_web_url());
+  shortcut_info->title = UTF8ToUTF16(app.name());
+  shortcut_info->description = UTF8ToUTF16(app.description());
+  shortcut_info->extension_path = app.path();
+  shortcut_info->profile_path = profile->GetPath();
 }
 
 }  // namespace web_app

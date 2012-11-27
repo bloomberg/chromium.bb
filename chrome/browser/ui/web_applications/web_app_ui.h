@@ -13,6 +13,12 @@ namespace content {
 class WebContents;
 }
 
+namespace extensions {
+class Extension;
+}
+
+class Profile;
+
 namespace web_app {
 
 // Extracts shortcut info of the given WebContents.
@@ -25,6 +31,13 @@ void GetShortcutInfoForTab(content::WebContents* web_contents,
 // and quick launch (as well as pinned shortcut) for shortcut and only
 // updates (recreates) them if they exits.
 void UpdateShortcutForTabContents(content::WebContents* web_contents);
+
+// Updates the shortcut info for |extension| and |profile|.
+// TODO(benwells): make this download the icon as well to remove boilerplate
+// code from call sites.
+void UpdateShortcutInfoForApp(const extensions::Extension& extension,
+                              Profile* profile,
+                              ShellIntegration::ShortcutInfo* shortcut_info);
 
 }  // namespace web_app
 

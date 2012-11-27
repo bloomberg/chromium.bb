@@ -93,6 +93,7 @@ class ShellIntegration {
     // and the launch url will be detected at start-up. In this case, |url|
     // is still used to generate the app id (windows app id, not chrome app id).
     std::string extension_id;
+    bool is_platform_app;
     string16 title;
     string16 description;
     FilePath extension_path;

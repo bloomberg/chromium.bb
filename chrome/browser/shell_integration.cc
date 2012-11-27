@@ -26,7 +26,8 @@ ShellIntegration::DefaultWebClientSetPermission
 }
 
 ShellIntegration::ShortcutInfo::ShortcutInfo()
-    : create_on_desktop(false),
+    : is_platform_app(false),
+      create_on_desktop(false),
       create_in_applications_menu(false),
       create_in_quick_launch_bar(false) {
 }
