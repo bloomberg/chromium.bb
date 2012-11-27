@@ -43,16 +43,33 @@ struct compose_seq {
 	const char *text;
 };
 
+struct simple_im;
+
+typedef void (*keyboard_input_key_handler_t)(struct simple_im *keyboard,
+					     uint32_t serial,
+					     uint32_t time, uint32_t key, uint32_t unicode,
+					     enum wl_keyboard_key_state state);
+
 struct simple_im {
 	struct input_method *input_method;
 	struct input_method_context *context;
-	struct xkb_context *xkb_context;
 	struct wl_display *display;
 	struct wl_registry *registry;
 	struct wl_keyboard *keyboard;
-	struct keyboard_input *keyboard_input;
 	enum compose_state compose_state;
 	struct compose_seq compose_seq;
+
+	struct xkb_context *xkb_context;
+
+	uint32_t modifiers;
+
+	struct xkb_keymap *keymap;
+	struct xkb_state *state;
+	xkb_mod_mask_t control_mask;
+	xkb_mod_mask_t alt_mask;
+	xkb_mod_mask_t shift_mask;
+
+	keyboard_input_key_handler_t key_handler;
 };
 
 static const struct compose_seq compose_seqs[] = {
@@ -73,50 +90,6 @@ static const uint32_t ignore_keys_on_compose[] = {
 	XKB_KEY_Shift_L,
 	XKB_KEY_Shift_R
 };
-
-typedef void (*keyboard_input_key_handler_t)(struct keyboard_input *keyboard_input,
-					     uint32_t serial,
-					     uint32_t time, uint32_t key, uint32_t unicode,
-					     enum wl_keyboard_key_state state, void *data);
-
-struct keyboard_input {
-	struct xkb_context *xkb_context;
-
-	uint32_t modifiers;
-
-	struct xkb_keymap *keymap;
-	struct xkb_state *state;
-	xkb_mod_mask_t control_mask;
-	xkb_mod_mask_t alt_mask;
-	xkb_mod_mask_t shift_mask;
-
-	void *user_data;
-	keyboard_input_key_handler_t key_handler;
-};
-
-static struct keyboard_input*
-keyboard_input_create(struct xkb_context *xkb_context)
-{
-	struct keyboard_input *keyboard_input;
-
-	keyboard_input = calloc(1, sizeof *keyboard_input);
-	keyboard_input->xkb_context = xkb_context;
-
-	return keyboard_input;
-}
-
-static void
-keyboard_input_set_user_data(struct keyboard_input *keyboard_input, void *data)
-{
-	keyboard_input->user_data = data;
-}
-
-static void
-keyboard_input_set_key_handler(struct keyboard_input *keyboard_input,
-			       keyboard_input_key_handler_t handler)
-{
-	keyboard_input->key_handler = handler;
-}
 
 static void
 input_method_context_surrounding_text(void *data,
@@ -152,7 +125,6 @@ input_method_keyboard_keymap(void *data,
 			     uint32_t size)
 {
 	struct simple_im *keyboard = data;
-	struct keyboard_input *keyboard_input = keyboard->keyboard_input;
 	char *map_str;
 
 	if (format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
@@ -166,8 +138,8 @@ input_method_keyboard_keymap(void *data,
 		return;
 	}
 
-	keyboard_input->keymap =
-		xkb_map_new_from_string(keyboard_input->xkb_context,
+	keyboard->keymap =
+		xkb_map_new_from_string(keyboard->xkb_context,
 					map_str,
 					XKB_KEYMAP_FORMAT_TEXT_V1,
 					0);
@@ -175,24 +147,24 @@ input_method_keyboard_keymap(void *data,
 	munmap(map_str, size);
 	close(fd);
 
-	if (!keyboard_input->keymap) {
+	if (!keyboard->keymap) {
 		fprintf(stderr, "failed to compile keymap\n");
 		return;
 	}
 
-	keyboard_input->state = xkb_state_new(keyboard_input->keymap);
-	if (!keyboard_input->state) {
+	keyboard->state = xkb_state_new(keyboard->keymap);
+	if (!keyboard->state) {
 		fprintf(stderr, "failed to create XKB state\n");
-		xkb_map_unref(keyboard_input->keymap);
+		xkb_map_unref(keyboard->keymap);
 		return;
 	}
 
-	keyboard_input->control_mask =
-		1 << xkb_map_mod_get_index(keyboard_input->keymap, "Control");
-	keyboard_input->alt_mask =
-		1 << xkb_map_mod_get_index(keyboard_input->keymap, "Mod1");
-	keyboard_input->shift_mask =
-		1 << xkb_map_mod_get_index(keyboard_input->keymap, "Shift");
+	keyboard->control_mask =
+		1 << xkb_map_mod_get_index(keyboard->keymap, "Control");
+	keyboard->alt_mask =
+		1 << xkb_map_mod_get_index(keyboard->keymap, "Mod1");
+	keyboard->shift_mask =
+		1 << xkb_map_mod_get_index(keyboard->keymap, "Shift");
 }
 
 static void
@@ -204,26 +176,25 @@ input_method_keyboard_key(void *data,
 			  uint32_t state_w)
 {
 	struct simple_im *keyboard = data;
-	struct keyboard_input *keyboard_input = keyboard->keyboard_input;
 	uint32_t code;
 	uint32_t num_syms;
 	const xkb_keysym_t *syms;
 	xkb_keysym_t sym;
 	enum wl_keyboard_key_state state = state_w;
 
-	if (!keyboard_input->state)
+	if (!keyboard->state)
 		return;
 
 	code = key + 8;
-	num_syms = xkb_key_get_syms(keyboard_input->state, code, &syms);
+	num_syms = xkb_key_get_syms(keyboard->state, code, &syms);
 
 	sym = XKB_KEY_NoSymbol;
 	if (num_syms == 1)
 		sym = syms[0];
 
-	if (keyboard_input->key_handler)
-		(*keyboard_input->key_handler)(keyboard_input, serial, time, key, sym,
-					       state, keyboard_input->user_data);
+	if (keyboard->key_handler)
+		(*keyboard->key_handler)(keyboard, serial, time, key, sym,
+					 state);
 }
 
 static void
@@ -237,22 +208,21 @@ input_method_keyboard_modifiers(void *data,
 {
 	struct simple_im *keyboard = data;
 	struct input_method_context *context = keyboard->context;
-	struct keyboard_input *keyboard_input = keyboard->keyboard_input;
 	xkb_mod_mask_t mask;
 
-	xkb_state_update_mask(keyboard_input->state, mods_depressed,
+	xkb_state_update_mask(keyboard->state, mods_depressed,
 			      mods_latched, mods_locked, 0, 0, group);
-	mask = xkb_state_serialize_mods(keyboard_input->state,
+	mask = xkb_state_serialize_mods(keyboard->state,
 					XKB_STATE_DEPRESSED |
 					XKB_STATE_LATCHED);
 
-	keyboard_input->modifiers = 0;
-	if (mask & keyboard_input->control_mask)
-		keyboard_input->modifiers |= MOD_CONTROL_MASK;
-	if (mask & keyboard_input->alt_mask)
-		keyboard_input->modifiers |= MOD_ALT_MASK;
-	if (mask & keyboard_input->shift_mask)
-		keyboard_input->modifiers |= MOD_SHIFT_MASK;
+	keyboard->modifiers = 0;
+	if (mask & keyboard->control_mask)
+		keyboard->modifiers |= MOD_CONTROL_MASK;
+	if (mask & keyboard->alt_mask)
+		keyboard->modifiers |= MOD_ALT_MASK;
+	if (mask & keyboard->shift_mask)
+		keyboard->modifiers |= MOD_SHIFT_MASK;
 
 	input_method_context_modifiers(context, serial,
 				       mods_depressed, mods_depressed,
@@ -347,11 +317,10 @@ compare_compose_keys(const void *c1, const void *c2)
 }
 
 static void
-simple_im_key_handler(struct keyboard_input *keyboard_input,
+simple_im_key_handler(struct simple_im *keyboard,
 		      uint32_t serial, uint32_t time, uint32_t key, uint32_t sym,
-		      enum wl_keyboard_key_state state, void *data)
+		      enum wl_keyboard_key_state state)
 {
-	struct simple_im *keyboard = data;
 	struct input_method_context *context = keyboard->context;
 	char text[64];
 
@@ -463,9 +432,7 @@ main(int argc, char *argv[])
 	}
 
 	simple_im.context = NULL;
-	simple_im.keyboard_input = keyboard_input_create(simple_im.xkb_context);
-	keyboard_input_set_user_data(simple_im.keyboard_input, &simple_im);
-	keyboard_input_set_key_handler(simple_im.keyboard_input, simple_im_key_handler);
+	simple_im.key_handler =  simple_im_key_handler;
 
 	while (ret != -1)
 		ret = wl_display_dispatch(simple_im.display);
