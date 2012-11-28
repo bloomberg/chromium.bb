@@ -14,6 +14,16 @@
 
 namespace views {
 
+namespace {
+
+aura::Window* FindFocusableWindowFor(aura::Window* window) {
+  while (window && !window->CanFocus())
+    window = window->parent();
+  return window;
+}
+
+}  // namespace
+
 DesktopActivationClient::DesktopActivationClient(aura::RootWindow* root_window)
     : root_window_(root_window),
       current_active_(NULL),
@@ -21,9 +31,11 @@ DesktopActivationClient::DesktopActivationClient(aura::RootWindow* root_window)
       ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)) {
   aura::client::GetFocusClient(root_window_)->AddObserver(this);
   aura::client::SetActivationClient(root_window_, this);
+  root_window->AddPreTargetHandler(this);
 }
 
 DesktopActivationClient::~DesktopActivationClient() {
+  root_window_->RemovePreTargetHandler(this);
   aura::client::GetFocusClient(root_window_)->RemoveObserver(this);
   aura::client::SetActivationClient(root_window_, NULL);
 }
@@ -117,6 +129,33 @@ bool DesktopActivationClient::CanActivateWindow(aura::Window* window) const {
        aura::client::GetActivationDelegate(window)->ShouldActivate(NULL));
 }
 
+ui::EventResult DesktopActivationClient::OnKeyEvent(ui::KeyEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult DesktopActivationClient::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->type() == ui::ET_MOUSE_PRESSED)
+    FocusWindowWithEvent(event);
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult DesktopActivationClient::OnScrollEvent(ui::ScrollEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult DesktopActivationClient::OnTouchEvent(ui::TouchEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult DesktopActivationClient::OnGestureEvent(
+    ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_BEGIN &&
+      event->details().touch_points() == 1) {
+    FocusWindowWithEvent(event);
+  }
+  return ui::ER_UNHANDLED;
+}
+
 aura::Window* DesktopActivationClient::GetActivatableWindow(
     aura::Window* window) {
   aura::Window* parent = window->parent();
@@ -132,6 +171,14 @@ aura::Window* DesktopActivationClient::GetActivatableWindow(
     child = child->parent();
   }
   return NULL;
+}
+
+void DesktopActivationClient::FocusWindowWithEvent(const ui::Event* event) {
+  aura::Window* window = static_cast<aura::Window*>(event->target());
+  if (GetActiveWindow() != window) {
+    aura::client::GetFocusClient(window)->FocusWindow(
+        FindFocusableWindowFor(window), event);
+  }
 }
 
 }  // namespace views

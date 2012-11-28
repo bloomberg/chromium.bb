@@ -32,6 +32,7 @@ namespace views {
 class VIEWS_EXPORT DesktopActivationClient
     : public aura::client::ActivationClient,
       public aura::WindowObserver,
+      public ui::EventHandler,
       public aura::client::FocusChangeObserver {
  public:
   explicit DesktopActivationClient(aura::RootWindow* root_window);
@@ -55,10 +56,19 @@ class VIEWS_EXPORT DesktopActivationClient
   // Overridden from aura::client::FocusChangeObserver:
   virtual void OnWindowFocused(aura::Window* window) OVERRIDE;
 
+  // Overridden from ui::EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+
  private:
   // Walks up the chain to find the correct parent window to activate when we
   // try to activate |window|.
   aura::Window* GetActivatableWindow(aura::Window* window);
+
+  void FocusWindowWithEvent(const ui::Event* event);
 
   aura::RootWindow* root_window_;
 
