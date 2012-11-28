@@ -26,9 +26,8 @@ class MessageViewMultiple : public MessageView {
  protected:
   MessageViewMultiple();
 
-  DISALLOW_COPY_AND_ASSIGN(MessageViewMultiple);
-
  private:
+  DISALLOW_COPY_AND_ASSIGN(MessageViewMultiple);
 };
 
 }  // namespace message_center
