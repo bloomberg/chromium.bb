@@ -173,7 +173,7 @@ void ShellWindowGtk::Hide() {
 }
 
 void ShellWindowGtk::Close() {
-  shell_window_->SaveWindowPosition();
+  shell_window_->OnNativeWindowChanged();
 
   // Cancel any pending callback from the window configure debounce timer.
   window_configure_debounce_timer_.Stop();
@@ -204,6 +204,7 @@ void ShellWindowGtk::Maximize() {
 
 void ShellWindowGtk::Minimize() {
   gtk_window_iconify(window_);
+  shell_window_->OnNativeWindowChanged();
 }
 
 void ShellWindowGtk::Restore() {
@@ -211,6 +212,7 @@ void ShellWindowGtk::Restore() {
     gtk_window_unmaximize(window_);
   else if (IsMinimized())
     gtk_window_deiconify(window_);
+  shell_window_->OnNativeWindowChanged();
 }
 
 void ShellWindowGtk::SetBounds(const gfx::Rect& bounds) {
@@ -275,7 +277,7 @@ gboolean ShellWindowGtk::OnConfigure(GtkWidget* widget,
 
 void ShellWindowGtk::OnDebouncedBoundsChanged() {
   gtk_window_util::UpdateWindowPosition(this, &bounds_, &restored_bounds_);
-  shell_window_->SaveWindowPosition();
+  shell_window_->OnNativeWindowChanged();
 }
 
 gboolean ShellWindowGtk::OnWindowState(GtkWidget* sender,
@@ -290,6 +292,7 @@ gboolean ShellWindowGtk::OnWindowState(GtkWidget* sender,
       rvh->ExitFullscreen();
   }
 
+  shell_window_->OnNativeWindowChanged();
   return FALSE;
 }
 

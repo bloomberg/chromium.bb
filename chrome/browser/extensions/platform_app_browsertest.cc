@@ -655,9 +655,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   }
 
   // In the GTK ShellWindow implementation there also is a delay between
-  // getting the correct bounds and it calling SaveWindowPosition, so call that
+  // getting the correct bounds and it calling SaveWindowPosition, so call a
   // method explicitly to make sure the value was stored.
-  window->SaveWindowPosition();
+  window->OnNativeWindowChanged();
 #endif  // defined(TOOLKIT_GTK)
 
   // Make sure the window was properly moved&resized.

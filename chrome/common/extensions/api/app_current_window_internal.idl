@@ -28,4 +28,12 @@
     static void hide();
     static void setBounds(Bounds bounds);
   };
+
+  interface Events {
+    static void onClosed();
+    static void onBoundsChanged();
+    static void onMinimized();
+    static void onMaximized();
+    static void onRestored();
+  };
 };

@@ -1,0 +1,9 @@
+{
+  "name": "app.windows properties",
+  "version": "1",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  }
+}

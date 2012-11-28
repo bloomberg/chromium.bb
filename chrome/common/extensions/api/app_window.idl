@@ -83,8 +83,14 @@ namespace app.window {
     // Minimize the window.
     static void minimize();
 
+    // Is the window minimized?
+    static boolean isMinimized();
+
     // Maximize the window.
     static void maximize();
+
+    // Is the window maximized?
+    static bool isMaximized();
 
     // Restore the window.
     static void restore();

@@ -88,6 +88,12 @@ chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
       return { left: bounds.left, top: bounds.top,
                width: bounds.width, height: bounds.height };
     };
+    AppWindow.prototype.isMinimized = function() {
+      return chromeHidden.appWindowData.minimized;
+    };
+    AppWindow.prototype.isMaximized = function() {
+      return chromeHidden.appWindowData.maximized;
+    };
 
     Object.defineProperty(AppWindow.prototype, 'id', {get: function() {
       return chromeHidden.appWindowData.id;
@@ -96,18 +102,39 @@ chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
     chromeHidden.appWindowData = {
       id: params.id || '',
       bounds: { left: params.bounds.left, top: params.bounds.top,
-                width: params.bounds.width, height: params.bounds.height }
+                width: params.bounds.width, height: params.bounds.height },
+      minimized: false,
+      maximized: false
     };
     chromeHidden.currentAppWindow = new AppWindow;
   });
 });
 
-chromeHidden.updateAppWindowBounds = function(info) {
-  var data = chromeHidden.appWindowData;
-  if (!data)
+function boundsEqual(bounds1, bounds2) {
+  if (!bounds1 || !bounds2)
+    return false;
+  return (bounds1.left == bounds2.left && bounds1.top == bounds2.top &&
+          bounds1.width == bounds2.width && bounds1.height == bounds2.height);
+}
+
+chromeHidden.updateAppWindowProperties = function(update) {
+  if (!chromeHidden.appWindowData)
     return;
-  data.bounds.left = info.left;
-  data.bounds.top = info.top;
-  data.bounds.width = info.width;
-  data.bounds.height = info.height;
+  var oldData = chromeHidden.appWindowData;
+  update.id = oldData.id;
+  chromeHidden.appWindowData = update;
+
+  var currentWindow = chromeHidden.currentAppWindow;
+
+  if (!boundsEqual(oldData.bounds, update.bounds))
+    currentWindow["onBoundsChanged"].dispatch();
+
+  if (!oldData.minimized && update.minimized)
+    currentWindow["onMinimized"].dispatch();
+  if (!oldData.maximized && update.maximized)
+    currentWindow["onMaximized"].dispatch();
+
+  if ((oldData.minimized && !update.minimized) ||
+      (oldData.maximized && !update.maximized))
+    currentWindow["onRestored"].dispatch();
 };

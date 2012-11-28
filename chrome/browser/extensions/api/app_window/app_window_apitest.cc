@@ -37,4 +37,16 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiBounds) {
   ASSERT_TRUE(success_listener.WaitUntilSatisfied());
 }
 
+// TODO(asargent) - Fix onMinimzed event on OSX (crbug.com/162793) and figure
+// out what to do about the fact that minimize events don't work under ubuntu
+// unity (crbug.com/162794 and https://bugs.launchpad.net/unity/+bug/998073).
+#if defined(TOOLKIT_VIEWS)
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiProperties) {
+  EXPECT_TRUE(
+      RunExtensionTest("platform_apps/windows_api_properties")) << message_;
+}
+
+#endif  // defined(TOOLKIT_VIEWS)
+
 }  // namespace extensions

@@ -101,9 +101,9 @@ class ShellWindow : public content::NotificationObserver,
   // invoke this method instead of using "delete this".
   void OnNativeClose();
 
-  // Should be called by native implementations when the window size/position
-  // has changed.
-  void SaveWindowPosition();
+  // Should be called by native implementations when the window size, position,
+  // or minimized/maximized state has changed.
+  void OnNativeWindowChanged();
 
  protected:
   ShellWindow(Profile* profile,
@@ -174,8 +174,8 @@ class ShellWindow : public content::NotificationObserver,
   void AddMessageToDevToolsConsole(content::ConsoleMessageLevel level,
                                    const std::string& message);
 
-  // Sends an update message with the current bounds to the renderer.
-  void SendBoundsUpdate();
+  // Saves the window geometry/position.
+  void SaveWindowPosition();
 
   virtual void UpdateDraggableRegions(
     const std::vector<extensions::DraggableRegion>& regions);

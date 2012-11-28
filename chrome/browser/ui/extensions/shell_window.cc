@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/extensions/shell_window.h"
 
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/shell_window_geometry_cache.h"
@@ -143,7 +144,7 @@ void ShellWindow::Init(const GURL& url,
   new_params.bounds = bounds;
 
   native_window_.reset(NativeShellWindow::Create(this, new_params));
-  SaveWindowPosition();
+  OnNativeWindowChanged();
 
   if (!params.hidden)
     GetBaseWindow()->Show();
@@ -286,6 +287,34 @@ void ShellWindow::OnNativeClose() {
   rvh->Send(new ExtensionMsg_AppWindowClosed(rvh->GetRoutingID()));
   delete this;
 }
+
+void ShellWindow::OnNativeWindowChanged() {
+  SaveWindowPosition();
+  if (!native_window_ || !web_contents_)
+    return;
+  ListValue args;
+  DictionaryValue* dictionary = new DictionaryValue();
+  args.Append(dictionary);
+
+  gfx::Rect bounds = native_window_->GetBounds();
+  app_window::Bounds update;
+  update.left.reset(new int(bounds.x()));
+  update.top.reset(new int(bounds.y()));
+  update.width.reset(new int(bounds.width()));
+  update.height.reset(new int(bounds.height()));
+  dictionary->Set("bounds", update.ToValue().release());
+  dictionary->SetBoolean("minimized", native_window_->IsMinimized());
+  dictionary->SetBoolean("maximized", native_window_->IsMaximized());
+
+  content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
+  rvh->Send(new ExtensionMsg_MessageInvoke(rvh->GetRoutingID(),
+                                           extension_->id(),
+                                           "updateAppWindowProperties",
+                                           args,
+                                           GURL(),
+                                           false));
+}
+
 
 BaseWindow* ShellWindow::GetBaseWindow() {
   return native_window_.get();
@@ -460,28 +489,8 @@ void ShellWindow::AddMessageToDevToolsConsole(ConsoleMessageLevel level,
       rvh->GetRoutingID(), level, message));
 }
 
-void ShellWindow::SendBoundsUpdate() {
-  if (!native_window_ || !web_contents_)
-    return;
-  gfx::Rect bounds = native_window_->GetBounds();
-  content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
-  ListValue args;
-  app_window::Bounds update;
-  update.left.reset(new int(bounds.x()));
-  update.top.reset(new int(bounds.y()));
-  update.width.reset(new int(bounds.width()));
-  update.height.reset(new int(bounds.height()));
-  args.Append(update.ToValue().release());
-  rvh->Send(new ExtensionMsg_MessageInvoke(rvh->GetRoutingID(),
-                                           extension_->id(),
-                                           "updateAppWindowBounds",
-                                           args,
-                                           GURL(),
-                                           false));
-}
 
 void ShellWindow::SaveWindowPosition() {
-  SendBoundsUpdate();
   if (window_key_.empty())
     return;
   if (!native_window_)

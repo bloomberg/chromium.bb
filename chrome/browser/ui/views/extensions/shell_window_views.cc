@@ -434,6 +434,7 @@ ShellWindowViews::ShellWindowViews(ShellWindow* shell_window,
           shell_window_));
 
   OnViewWasResized();
+  window_->AddObserver(this);
 }
 
 views::View* ShellWindowViews::GetInitiallyFocusedView() {
@@ -575,6 +576,7 @@ bool ShellWindowViews::IsAlwaysOnTop() const {
 }
 
 void ShellWindowViews::DeleteDelegate() {
+  window_->RemoveObserver(this);
   shell_window_->OnNativeClose();
 }
 
@@ -693,7 +695,17 @@ bool ShellWindowViews::ShouldShowWindowTitle() const {
 }
 
 void ShellWindowViews::OnWidgetMove() {
-  shell_window_->SaveWindowPosition();
+  shell_window_->OnNativeWindowChanged();
+}
+
+void ShellWindowViews::OnWidgetVisibilityChanged(views::Widget* widget,
+                                                 bool visible) {
+  shell_window_->OnNativeWindowChanged();
+}
+
+void ShellWindowViews::OnWidgetActivationChanged(views::Widget* widget,
+                                                 bool active) {
+  shell_window_->OnNativeWindowChanged();
 }
 
 void ShellWindowViews::Layout() {
@@ -733,7 +745,7 @@ void ShellWindowViews::RenderViewHostChanged() {
 void ShellWindowViews::SaveWindowPlacement(const gfx::Rect& bounds,
                                            ui::WindowShowState show_state) {
   views::WidgetDelegate::SaveWindowPlacement(bounds, show_state);
-  shell_window_->SaveWindowPosition();
+  shell_window_->OnNativeWindowChanged();
 }
 
 // static

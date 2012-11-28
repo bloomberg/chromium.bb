@@ -13,6 +13,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_observer.h"
 
 class ExtensionKeybindingRegistryViews;
 class Profile;
@@ -30,7 +31,8 @@ class WebView;
 }
 
 class ShellWindowViews : public NativeShellWindow,
-                         public views::WidgetDelegateView {
+                         public views::WidgetDelegateView,
+                         public views::WidgetObserver {
  public:
   ShellWindowViews(ShellWindow* shell_window,
                    const ShellWindow::CreateParams& params);
@@ -77,6 +79,12 @@ class ShellWindowViews : public NativeShellWindow,
   virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
   virtual bool ShouldShowWindowTitle() const OVERRIDE;
   virtual void OnWidgetMove() OVERRIDE;
+
+  // WidgetObserver implementation.
+  virtual void OnWidgetVisibilityChanged(views::Widget* widget,
+                                         bool visible) OVERRIDE;
+  virtual void OnWidgetActivationChanged(views::Widget* widget,
+                                         bool active) OVERRIDE;
 
  protected:
   // views::View implementation.

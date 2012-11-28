@@ -656,7 +656,7 @@ bool ShellWindowCocoa::IsAlwaysOnTop() const {
 
 void ShellWindowCocoa::WindowWillClose() {
   [window_controller_ setShellWindow:NULL];
-  shell_window_->SaveWindowPosition();
+  shell_window_->OnNativeWindowChanged();
   shell_window_->OnNativeClose();
 }
 
@@ -682,11 +682,11 @@ void ShellWindowCocoa::WindowDidResignKey() {
 }
 
 void ShellWindowCocoa::WindowDidResize() {
-  shell_window_->SaveWindowPosition();
+  shell_window_->OnNativeWindowChanged();
 }
 
 void ShellWindowCocoa::WindowDidMove() {
-  shell_window_->SaveWindowPosition();
+  shell_window_->OnNativeWindowChanged();
 }
 
 bool ShellWindowCocoa::HandledByExtensionCommand(NSEvent* event) {
