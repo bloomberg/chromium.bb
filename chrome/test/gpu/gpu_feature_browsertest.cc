@@ -234,6 +234,8 @@ IN_PROC_BROWSER_TEST_F(AcceleratedCompositingBlockedTest,
   RunEventTest(url, kSwapBuffersEvent, false);
 }
 
+#if !(defined(OS_WIN) && defined(USE_AURA))  // http://crbug.com/163046
+
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, ThreadedCompositingTextureSharing) {
   const std::string json_blacklist =
       "{\n"
@@ -257,6 +259,8 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, ThreadedCompositingTextureSharing) {
   const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
   RunEventTest(url, kThreadedCompositingEvent, false);
 }
+
+#endif
 
 class AcceleratedCompositingTest : public GpuFeatureTest {
  public:
