@@ -103,7 +103,8 @@ void DnsProbeService::StartProbes() {
   public_result_ = DnsProbeJob::SERVERS_UNKNOWN;
 
   system_job_ = CreateSystemProbeJob(job_callback);
-  public_job_ = CreatePublicProbeJob(job_callback);
+  if (system_job_.get())
+    public_job_ = CreatePublicProbeJob(job_callback);
 
   // If we can't create one or both jobs, fail the probe immediately.
   if (!system_job_.get() || !public_job_.get()) {
