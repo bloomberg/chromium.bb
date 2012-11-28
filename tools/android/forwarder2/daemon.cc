@@ -76,8 +76,6 @@ bool RunServerAcceptLoop(const std::string& welcome_message,
 
 void SigChildHandler(int signal_number) {
   DCHECK_EQ(signal_number, SIGCHLD);
-  SIGNAL_SAFE_LOG(ERROR, "Caught unexpected SIGCHLD");
-  // The daemon should not terminate while its parent is still running.
   int status;
   pid_t child_pid = waitpid(-1 /* any child */, &status, WNOHANG);
   if (child_pid < 0) {
@@ -85,6 +83,8 @@ void SigChildHandler(int signal_number) {
     return;
   }
   if (child_pid == 0)
+    return;
+  if (WIFEXITED(status) && WEXITSTATUS(status) == 0)
     return;
   // Avoid using StringAppendF() since it's unsafe in a signal handler due to
   // its use of LOG().
@@ -157,13 +157,12 @@ scoped_ptr<Socket> ConnectToUnixDomainSocket(
 // Handles creation and destruction of the PID file.
 class Daemon::PIDFile {
  public:
-  static scoped_ptr<PIDFile> Create(const std::string& path) {
-    scoped_ptr<PIDFile> pid_file;
+  static bool Create(const std::string& path, scoped_ptr<PIDFile>* pid_file) {
     int pid_file_fd = HANDLE_EINTR(
         open(path.c_str(), O_CREAT | O_WRONLY, 0600));
     if (pid_file_fd < 0) {
       PError("open()");
-      return pid_file.Pass();
+      return false;
     }
     file_util::ScopedFD fd_closer(&pid_file_fd);
     struct flock lock_info = {};
@@ -171,17 +170,19 @@ class Daemon::PIDFile {
     lock_info.l_whence = SEEK_CUR;
     if (HANDLE_EINTR(fcntl(pid_file_fd, F_SETLK, &lock_info)) < 0) {
       if (errno == EAGAIN || errno == EACCES) {
-        LOG(ERROR) << "Daemon already running (PID file already locked)";
-        return pid_file.Pass();
+        LOG(INFO) << "Daemon already running (PID file already locked)";
+        // Don't consider this case as a failure. This can happen when trying to
+        // spawn multiple daemons concurrently.
+        return true;
       }
       PError("lockf()");
-      return pid_file.Pass();
+      return false;
     }
     const std::string pid_string = base::StringPrintf("%d\n", getpid());
     CHECK(HANDLE_EINTR(write(pid_file_fd, pid_string.c_str(),
                              pid_string.length())));
-    pid_file.reset(new PIDFile(*fd_closer.release(), path));
-    return pid_file.Pass();
+    pid_file->reset(new PIDFile(*fd_closer.release(), path));
+    return true;
   }
 
   ~PIDFile() {
@@ -233,9 +234,10 @@ bool Daemon::SpawnIfNeeded() {
       // Child.
       case 0: {
         DCHECK(!pid_file_);
-        pid_file_ = PIDFile::Create(pid_file_path_);
-        if (!pid_file_)
+        if (!PIDFile::Create(pid_file_path_, &pid_file_))
           exit(1);
+        if (!pid_file_.get())  // Another daemon was spawn concurrently.
+          exit(0);
         if (setsid() < 0) {  // Detach the child process from its parent.
           PError("setsid()");
           exit(1);
