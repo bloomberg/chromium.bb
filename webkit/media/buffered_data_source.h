@@ -94,16 +94,14 @@ class BufferedDataSource : public media::DataSource {
   friend class BufferedDataSourceTest;
 
   // Task posted to perform actual reading on the render thread.
-  void ReadTask(int64 position, int read_size, uint8* read_buffer);
+  void ReadTask();
 
   // Cancels oustanding callbacks and sets |stop_signal_received_|. Safe to call
   // from any thread.
   void StopInternal_Locked();
 
-  // Task posted when Stop() is called. Stops |loader_|, resets Read()
-  // variables, and sets |stopped_on_render_loop_| to signal any remaining
-  // tasks to stop.
-  void CleanupTask();
+  // Stops |loader_| if present. Used by Abort() and Stop().
+  void StopLoader();
 
   // This task uses the current playback rate with the previous playback rate
   // to determine whether we are going from pause to play and play to pause,
@@ -116,11 +114,6 @@ class BufferedDataSource : public media::DataSource {
   // The method that performs actual read. This method can only be executed on
   // the render thread.
   void ReadInternal();
-
-  // Calls |read_cb_| and reset all read parameters. Non-negative |bytes_read|
-  // values represent successful reads, otherwise |bytes_read| should be
-  // kReadError.
-  void DoneRead_Locked(int bytes_read);
 
   // BufferedResourceLoader::Start() callback for initial load.
   void StartCallback(BufferedResourceLoader::Status status);
@@ -167,12 +160,10 @@ class BufferedDataSource : public media::DataSource {
   // Callback method from the pipeline for initialization.
   InitializeCB init_cb_;
 
-  // Read parameters received from the Read() method call.
-  media::DataSource::ReadCB read_cb_;
-  int read_size_;
-  uint8* read_buffer_;
-  // Retained between reads to make sense of buffering information.
-  int64 last_read_start_;
+  // Read parameters received from the Read() method call. Must be accessed
+  // under |lock_|.
+  class ReadOperation;
+  scoped_ptr<ReadOperation> read_op_;
 
   // This buffer is intermediate, we use it for BufferedResourceLoader to write
   // to. And when read in BufferedResourceLoader is done, we copy data from
@@ -190,19 +181,11 @@ class BufferedDataSource : public media::DataSource {
   // The message loop of the render thread.
   MessageLoop* render_loop_;
 
-  // Protects |stop_signal_received_|, |stopped_on_render_loop_| and
-  // |init_cb_|.
+  // Protects |stop_signal_received_| and |read_op_|.
   base::Lock lock_;
 
   // Whether we've been told to stop via Abort() or Stop().
-  //
-  // TODO(scherkus): Combine this bool with |stopped_on_render_loop_| as they're
-  // redundant.
   bool stop_signal_received_;
-
-  // This variable is set by CleanupTask() that indicates this object is stopped
-  // on the render thread and work should no longer progress.
-  bool stopped_on_render_loop_;
 
   // This variable is true when the user has requested the video to play at
   // least once.
@@ -211,9 +194,6 @@ class BufferedDataSource : public media::DataSource {
   // This variable holds the value of the preload attribute for the video
   // element.
   Preload preload_;
-
-  // Number of cache miss retries left.
-  int cache_miss_retries_left_;
 
   // Bitrate of the content, 0 if unknown.
   int bitrate_;

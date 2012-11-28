@@ -34,3 +34,5 @@
 
 webkit.org/b/103140 inspector/console/command-line-api-inspect.html [ Skip ]
 webkit.org/b/103140 inspector/runtime/runtime-localStorage-getProperties.html [ Skip ]
+
+http/tests/media/video-buffered-range-contains-currentTime.html [ ImageOnlyFailure ]

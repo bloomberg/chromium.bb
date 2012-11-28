@@ -593,6 +593,31 @@ TEST_F(BufferedDataSourceTest, Http_Read) {
   Stop();
 }
 
+TEST_F(BufferedDataSourceTest, Http_Read_Seek) {
+  InitializeWith206Response();
+
+  // Read a bit from the beginning.
+  ReadAt(0);
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize - 1));
+  ReceiveData(kDataSize);
+
+  // Simulate a seek by reading a bit beyond kDataSize.
+  ReadAt(kDataSize * 2);
+
+  // We receive data leading up to but not including our read.
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2 - 1));
+  ReceiveData(kDataSize);
+
+  // We now receive the rest of the data for our read.
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 3 - 1));
+  ReceiveData(kDataSize);
+
+  EXPECT_TRUE(data_source_->downloading());
+  Stop();
+}
+
 TEST_F(BufferedDataSourceTest, File_Read) {
   InitializeWithFileResponse();
 
