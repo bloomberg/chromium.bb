@@ -2908,7 +2908,7 @@ DialogType.isModal = function(type) {
    */
   FileManager.prototype.resolveSelectResults_ = function(fileUrls, callback) {
     if (this.isOnGData()) {
-      chrome.fileBrowserPrivate.getGDataFiles(
+      chrome.fileBrowserPrivate.getDriveFiles(
         fileUrls,
         function(localPaths) {
           fileUrls = [].concat(fileUrls);  // Clone the array.

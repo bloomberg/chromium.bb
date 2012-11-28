@@ -383,7 +383,7 @@ chrome.fileBrowserPrivate = {
 
   pinned_: {},
 
-  getGDataFileProperties: function(urls, callback) {
+  getDriveFileProperties: function(urls, callback) {
     var response = [];
     for (var i = 0; i != urls.length; i++) {
       var url = urls[i];
@@ -433,7 +433,7 @@ chrome.fileBrowserPrivate = {
     chrome.fileBrowserPrivate.onNetworkConnectionChanged.notify();
   },
 
-  pinGDataFile: function(urls, on, callback) {
+  pinDriveFile: function(urls, on, callback) {
     for (var i = 0; i != urls.length; i++) {
       var url = urls[i];
       if (on) {
@@ -442,7 +442,7 @@ chrome.fileBrowserPrivate = {
         delete chrome.fileBrowserPrivate.pinned_[url];
       }
     }
-    chrome.fileBrowserPrivate.getGDataFileProperties(urls, callback);
+    chrome.fileBrowserPrivate.getDriveFileProperties(urls, callback);
   },
 
   toggleFullscreen: function() {

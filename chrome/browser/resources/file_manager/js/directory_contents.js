@@ -513,7 +513,7 @@ DirectoryContentsGDataSearch.prototype.readNextChunk = function() {
     this.onNewEntries(entries);
   }).bind(this);
 
-  chrome.fileBrowserPrivate.searchGData(this.query_,
+  chrome.fileBrowserPrivate.searchDrive(this.query_,
                                         this.nextFeed_,
                                         searchCallback);
 };

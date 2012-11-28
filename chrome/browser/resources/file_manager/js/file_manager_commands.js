@@ -351,7 +351,7 @@ Commands.togglePinnedCommand = {
       });
     }
 
-    chrome.fileBrowserPrivate.pinGDataFile([entry.toURL()], pin, callback);
+    chrome.fileBrowserPrivate.pinDriveFile([entry.toURL()], pin, callback);
   },
   canExecute: function(event, fileManager) {
     var entry = CommandUtil.getSingleEntry(event, fileManager);

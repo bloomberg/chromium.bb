@@ -25,7 +25,7 @@ chromeHidden.registerCustomHook('fileBrowserPrivate', function(bindingsAPI) {
     request.callback = null;
   });
 
-  apiFunctions.setCustomCallback('searchGData',
+  apiFunctions.setCustomCallback('searchDrive',
                                  function(name, request, response) {
     if (response && !response.error && response.entries) {
       for (var i = 0; i < response.entries.length; i++)

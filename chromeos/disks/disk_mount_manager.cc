@@ -659,8 +659,8 @@ std::string DiskMountManager::MountTypeToString(MountType type) {
       return "file";
     case MOUNT_TYPE_NETWORK_STORAGE:
       return "network";
-    case MOUNT_TYPE_GDATA:
-      return "gdata";
+    case MOUNT_TYPE_GOOGLE_DRIVE:
+      return "drive";
     case MOUNT_TYPE_INVALID:
       return "invalid";
     default:
@@ -692,8 +692,8 @@ MountType DiskMountManager::MountTypeFromString(const std::string& type_str) {
     return MOUNT_TYPE_NETWORK_STORAGE;
   else if (type_str == "file")
     return MOUNT_TYPE_ARCHIVE;
-  else if (type_str == "gdata")
-    return MOUNT_TYPE_GDATA;
+  else if (type_str == "drive")
+    return MOUNT_TYPE_GOOGLE_DRIVE;
   else
     return MOUNT_TYPE_INVALID;
 }

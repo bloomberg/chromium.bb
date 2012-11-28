@@ -86,10 +86,10 @@ chrome.test.runTests([
       });
   },
   function driveSearch() {
-    chrome.fileBrowserPrivate.searchGData('foo', '',
+    chrome.fileBrowserPrivate.searchDrive('foo', '',
         function(entries, nextFeed) {
           verifySearchResult(entries, nextFeed, 'https://next_feed/');
-          chrome.fileBrowserPrivate.searchGData('foo', nextFeed,
+          chrome.fileBrowserPrivate.searchDrive('foo', nextFeed,
               function(entries, nextFeed) {
                 verifySearchResult(entries, nextFeed, '');
 

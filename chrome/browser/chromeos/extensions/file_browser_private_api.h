@@ -496,7 +496,7 @@ class FileDialogStringsFunction : public SyncExtensionFunction {
 // (drive::DriveFileError) for that entry in the returned list.
 class GetDriveFilePropertiesFunction : public FileBrowserFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getGDataFileProperties");
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getDriveFileProperties");
 
   GetDriveFilePropertiesFunction();
 
@@ -546,7 +546,7 @@ class GetDriveFilePropertiesFunction : public FileBrowserFunction {
 // returned list.
 class PinDriveFileFunction : public GetDriveFilePropertiesFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.pinGDataFile");
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.pinDriveFile");
 
   PinDriveFileFunction();
 
@@ -604,7 +604,7 @@ class GetFileLocationsFunction : public FileBrowserFunction {
 // TODO(satorux): Should we propagate error types to the JavasScript layer?
 class GetDriveFilesFunction : public FileBrowserFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getGDataFiles");
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getDriveFiles");
 
   GetDriveFilesFunction();
 
@@ -713,7 +713,7 @@ class SetPreferencesFunction : public SyncExtensionFunction {
 
 class SearchDriveFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.searchGData");
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.searchDrive");
 
   SearchDriveFunction();
 

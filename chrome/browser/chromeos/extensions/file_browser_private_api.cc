@@ -1426,7 +1426,7 @@ bool AddMountFunction::RunImpl() {
       SendResponse(false);
       break;
     }
-    case chromeos::MOUNT_TYPE_GDATA: {
+    case chromeos::MOUNT_TYPE_GOOGLE_DRIVE: {
       const bool success = true;
       // Pass back the drive mount point path as source path.
       const std::string& drive_path =

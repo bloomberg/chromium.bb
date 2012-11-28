@@ -694,7 +694,7 @@ GDataProvider.prototype.callApi_ = function() {
   this.callbacks_ = [];
   var self = this;
 
-  chrome.fileBrowserPrivate.getGDataFileProperties(urls, function(props) {
+  chrome.fileBrowserPrivate.getDriveFileProperties(urls, function(props) {
     for (var index = 0; index < urls.length; index++) {
       callbacks[index](self.convert_(props[index], urls[index]));
     }
@@ -702,7 +702,7 @@ GDataProvider.prototype.callApi_ = function() {
 };
 
 /**
- * @param {GDataFileProperties} data GData file properties.
+ * @param {DriveFileProperties} data Drive file properties.
  * @param {string} url File url.
  * @return {boolean} True if the file is available offline.
  */
@@ -718,7 +718,7 @@ GDataProvider.isAvailableOffline = function(data, url) {
 };
 
 /**
- * @param {GDataFileProperties} data GData file properties.
+ * @param {DriveFileProperties} data Drive file properties.
  * @return {boolean} True if opening the file does not require downloading it
  *    via a metered connection.
  */

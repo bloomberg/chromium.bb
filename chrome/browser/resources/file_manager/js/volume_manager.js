@@ -119,7 +119,7 @@ VolumeManager.prototype.initMountPoints_ = function() {
   function step(mountPoints) {
     if (index < mountPoints.length) {
       var info = mountPoints[index];
-      if (info.mountType == 'gdata')
+      if (info.mountType == 'drive')
         console.error('GData is not expected initially mounted');
       var error = info.mountCondition ? 'error_' + info.mountCondition : '';
       function onVolumeInfo(volume) {
@@ -197,7 +197,7 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
     }
   }
 
-  if (event.mountType == 'gdata') {
+  if (event.mountType == 'drive') {
     if (event.status == 'success') {
       if (event.eventType == 'mount') {
         // If the mount is not requested, the mount status will not be changed
@@ -268,7 +268,7 @@ VolumeManager.prototype.makeVolumeInfo_ = function(
 /**
  * Creates string to match mount events with requests.
  * @param {string} requestType 'mount' | 'unmount'.
- * @param {string} mountType 'device' | 'file' | 'network' | 'gdata'.
+ * @param {string} mountType 'device' | 'file' | 'network' | 'drive'.
  * @param {string} mountOrSourcePath Source path provided by API after
  *     resolving mount request or mountPath for unmount request.
  * @return {string} Key for |this.requests_|.
@@ -290,7 +290,7 @@ VolumeManager.prototype.mountGData = function(successCallback, errorCallback) {
     this.setGDataStatus_(VolumeManager.GDataStatus.UNMOUNTED);
   }
   var self = this;
-  this.mount_('', 'gdata', function(mountPath) {
+  this.mount_('', 'drive', function(mountPath) {
     this.waitGDataLoaded_(mountPath, function(success, error) {
       if (success) {
         successCallback(mountPath);
@@ -391,7 +391,7 @@ VolumeManager.prototype.getVolumeInfo_ = function(mountPath) {
 
 /**
  * @param {string} url URL for for |fileBrowserPrivate.addMount|.
- * @param {'gdata'|'file'} mountType Mount type for
+ * @param {'drive'|'file'} mountType Mount type for
  *     |fileBrowserPrivate.addMount|.
  * @param {Function} successCallback Success callback.
  * @param {Function} errorCallback Error callback.

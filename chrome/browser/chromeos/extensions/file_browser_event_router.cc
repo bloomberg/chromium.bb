@@ -244,7 +244,7 @@ void FileBrowserEventRouter::MountDrive(
   DiskMountManager::MountPointInfo mount_info(
       gdata_path,
       gdata_path,
-      chromeos::MOUNT_TYPE_GDATA,
+      chromeos::MOUNT_TYPE_GOOGLE_DRIVE,
       chromeos::disks::MOUNT_CONDITION_NONE);
 
   // Raise mount event.
@@ -454,7 +454,7 @@ void FileBrowserEventRouter::OnFileSystemBeingUnmounted() {
   DiskMountManager::MountPointInfo mount_info(
       gdata_path,
       gdata_path,
-      chromeos::MOUNT_TYPE_GDATA,
+      chromeos::MOUNT_TYPE_GOOGLE_DRIVE,
       chromeos::disks::MOUNT_CONDITION_NONE);
   OnMountEvent(DiskMountManager::UNMOUNTING, chromeos::MOUNT_ERROR_NONE,
                mount_info);
@@ -472,7 +472,7 @@ void FileBrowserEventRouter::OnAuthenticationFailed(
   DiskMountManager::MountPointInfo mount_info(
       gdata_path,
       gdata_path,
-      chromeos::MOUNT_TYPE_GDATA,
+      chromeos::MOUNT_TYPE_GOOGLE_DRIVE,
       chromeos::disks::MOUNT_CONDITION_NONE);
   OnMountEvent(DiskMountManager::UNMOUNTING, chromeos::MOUNT_ERROR_NONE,
                mount_info);
