@@ -9,7 +9,8 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/web_request/form_data_parser.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_constants.h"
-#include "net/base/upload_element.h"
+#include "net/base/upload_bytes_element_reader.h"
+#include "net/base/upload_file_element_reader.h"
 #include "net/url_request/url_request.h"
 
 using base::BinaryValue;
@@ -60,18 +61,19 @@ RawDataPresenter::RawDataPresenter()
 }
 RawDataPresenter::~RawDataPresenter() {}
 
-void RawDataPresenter::FeedNext(const net::UploadElement& element) {
+void RawDataPresenter::FeedNext(const net::UploadElementReader& reader) {
   if (!success_)
     return;
 
-  switch (element.type()) {
-    case net::UploadElement::TYPE_BYTES:
-      FeedNextBytes(element.bytes(), element.bytes_length());
-      break;
-    case net::UploadElement::TYPE_FILE:
-      // Insert the file path instead of the contents, which may be too large.
-      FeedNextFile(element.file_path().AsUTF8Unsafe());
-      break;
+  if (reader.AsBytesReader()) {
+    const net::UploadBytesElementReader* bytes_reader = reader.AsBytesReader();
+    FeedNextBytes(bytes_reader->bytes(), bytes_reader->length());
+  } else if (reader.AsFileReader()) {
+    // Insert the file path instead of the contents, which may be too large.
+    const net::UploadFileElementReader* file_reader = reader.AsFileReader();
+    FeedNextFile(file_reader->path().AsUTF8Unsafe());
+  } else {
+    NOTIMPLEMENTED();
   }
 }
 
@@ -114,15 +116,16 @@ ParsedDataPresenter::ParsedDataPresenter(const net::URLRequest& request)
 
 ParsedDataPresenter::~ParsedDataPresenter() {}
 
-void ParsedDataPresenter::FeedNext(const net::UploadElement& element) {
+void ParsedDataPresenter::FeedNext(const net::UploadElementReader& reader) {
   if (!success_)
     return;
 
-  if (element.type() != net::UploadElement::TYPE_BYTES) {
+  const net::UploadBytesElementReader* bytes_reader = reader.AsBytesReader();
+  if (!bytes_reader) {
     return;
   }
-  if (!parser_->SetSource(base::StringPiece(element.bytes(),
-                                            element.bytes_length()))) {
+  if (!parser_->SetSource(base::StringPiece(bytes_reader->bytes(),
+                                            bytes_reader->length()))) {
     Abort();
     return;
   }

@@ -52,8 +52,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/auth.h"
 #include "net/base/net_errors.h"
-#include "net/base/upload_data.h"
-#include "net/base/upload_element.h"
+#include "net/base/upload_data_stream.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -183,7 +182,7 @@ void ExtractRequestInfo(net::URLRequest* request, DictionaryValue* out) {
 // Extracts the body from |request| and writes the data into |out|.
 void ExtractRequestInfoBody(const net::URLRequest* request,
                             DictionaryValue* out) {
-  const net::UploadData* upload_data = request->get_upload();
+  const net::UploadDataStream* upload_data = request->get_upload();
   if (!upload_data ||
       (request->method() != "POST" && request->method() != "PUT"))
     return;  // Need to exit without "out->Set(keys::kRequestBodyKey, ...);" .
@@ -204,12 +203,13 @@ void ExtractRequestInfoBody(const net::URLRequest* request,
     keys::kRequestBodyRawKey
   };
 
-  const ScopedVector<net::UploadElement>& elements = upload_data->elements();
+  const ScopedVector<net::UploadElementReader>& readers =
+      upload_data->element_readers();
   bool some_succeeded = false;
   for (size_t i = 0; !some_succeeded && i < arraysize(presenters); ++i) {
-    ScopedVector<net::UploadElement>::const_iterator element;
-    for (element = elements.begin(); element != elements.end(); ++element)
-      presenters[i]->FeedNext(**element);
+    ScopedVector<net::UploadElementReader>::const_iterator reader;
+    for (reader = readers.begin(); reader != readers.end(); ++reader)
+      presenters[i]->FeedNext(**reader);
     if (presenters[i]->Succeeded()) {
       requestBody->Set(kKeys[i], presenters[i]->Result().release());
       some_succeeded = true;

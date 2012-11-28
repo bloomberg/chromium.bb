@@ -24,8 +24,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/net_util.h"
-#include "net/base/upload_data.h"
-#include "net/base/upload_element.h"
+#include "net/base/upload_bytes_element_reader.h"
+#include "net/base/upload_data_stream.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_test_job.h"
@@ -57,14 +57,17 @@ net::URLRequestJob* URLRequestFakerForPostRequests(
     net::NetworkDelegate* network_delegate,
     const std::string& scheme) {
   // Read the uploaded data and store it to g_last_upload_bytes.
-  const net::UploadData* upload_data = request->get_upload();
+  const net::UploadDataStream* upload_data = request->get_upload();
   g_last_upload_bytes.Get().clear();
   if (upload_data) {
-    const ScopedVector<net::UploadElement>& elements = upload_data->elements();
-    for (size_t i = 0; i < elements.size(); ++i) {
-      if (elements[i]->type() == net::UploadElement::TYPE_BYTES) {
+    const ScopedVector<net::UploadElementReader>& readers =
+        upload_data->element_readers();
+    for (size_t i = 0; i < readers.size(); ++i) {
+      const net::UploadBytesElementReader* bytes_reader =
+          readers[i]->AsBytesReader();
+      if (bytes_reader) {
         g_last_upload_bytes.Get() +=
-            std::string(elements[i]->bytes(), elements[i]->bytes_length());
+            std::string(bytes_reader->bytes(), bytes_reader->length());
       }
     }
   }

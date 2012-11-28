@@ -13,6 +13,7 @@
 #include "chrome/browser/net/cert_logger.pb.h"
 #include "net/base/load_flags.h"
 #include "net/base/ssl_info.h"
+#include "net/base/upload_data.h"
 #include "net/base/x509_certificate.h"
 #include "net/url_request/url_request_context.h"
 
@@ -77,7 +78,10 @@ void ChromeFraudulentCertificateReporter::SendReport(
 
   net::URLRequest* url_request = CreateURLRequest(request_context_);
   url_request->set_method("POST");
-  url_request->AppendBytesToUpload(report.data(), report.size());
+
+  scoped_refptr<net::UploadData> upload_data(new net::UploadData());
+  upload_data->AppendBytes(report.data(), report.size());
+  url_request->set_upload(upload_data);
 
   net::HttpRequestHeaders headers;
   headers.SetHeader(net::HttpRequestHeaders::kContentType,
@@ -117,4 +121,3 @@ void ChromeFraudulentCertificateReporter::OnReadCompleted(
     net::URLRequest* request, int bytes_read) {}
 
 }  // namespace chrome_browser_net
-

@@ -8,7 +8,8 @@
 #include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "net/base/upload_data.h"
+#include "net/base/upload_bytes_element_reader.h"
+#include "net/base/upload_data_stream.h"
 #include "net/test/test_server.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
@@ -45,14 +46,17 @@ class CannedResponseInterceptor : public net::URLRequest::Interceptor {
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) OVERRIDE {
     em::DeviceManagementRequest dm_request;
-    net::UploadData* upload = request->get_upload_mutable();
+    const net::UploadDataStream* upload = request->get_upload();
     if (request->url().GetOrigin() == service_url_.GetOrigin() &&
         request->url().path() == service_url_.path() &&
         upload != NULL &&
-        upload->elements().size() == 1) {
+        upload->element_readers().size() == 1 &&
+        upload->element_readers()[0]->AsBytesReader()) {
       std::string response_data;
-      ConstructResponse(upload->elements()[0]->bytes(),
-                        upload->elements()[0]->bytes_length(),
+      const net::UploadBytesElementReader* bytes_reader =
+          upload->element_readers()[0]->AsBytesReader();
+      ConstructResponse(bytes_reader->bytes(),
+                        bytes_reader->length(),
                         &response_data);
       return new net::URLRequestTestJob(request,
                                         network_delegate,

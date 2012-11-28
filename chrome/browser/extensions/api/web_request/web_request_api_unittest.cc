@@ -488,10 +488,11 @@ void ExtensionWebRequestTest::FireURLRequestWithData(
     request.SetExtraRequestHeaderByName(net::HttpRequestHeaders::kContentType,
                                         content_type,
                                         true /* overwrite */);
-  request.AppendBytesToUpload(&(bytes_1[0]), bytes_1.size());
-  net::UploadData* data = request.get_upload_mutable();
-  data->AppendFileRange(::FilePath(), 0, 0, base::Time());
-  request.AppendBytesToUpload(&(bytes_2[0]), bytes_2.size());
+  scoped_refptr<net::UploadData> upload_data(new net::UploadData());
+  upload_data->AppendBytes(&(bytes_1[0]), bytes_1.size());
+  upload_data->AppendFileRange(::FilePath(), 0, 0, base::Time());
+  upload_data->AppendBytes(&(bytes_2[0]), bytes_2.size());
+  request.set_upload(upload_data);
   ipc_sender_.PushTask(base::Bind(&base::DoNothing));
   request.Start();
 }

@@ -16,6 +16,9 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/base/upload_bytes_element_reader.h"
+#include "net/base/upload_data_stream.h"
+#include "net/base/upload_file_element_reader.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -29,9 +32,11 @@ using base::TimeDelta;
 using content::BrowserThread;
 using content::ResourceRequestInfo;
 
+namespace {
+
 // The list of filtered headers that are removed from requests sent via
 // StartAsync(). These must be lower case.
-static const char* const kFilteredHeaderStrings[] = {
+const char* const kFilteredHeaderStrings[] = {
   "connection",
   "cookie",
   "expect",
@@ -42,6 +47,34 @@ static const char* const kFilteredHeaderStrings[] = {
   "upgrade",
   "via"
 };
+
+// Creates UploadData from UploadDataStream.
+net::UploadData* CreateUploadData(
+    const net::UploadDataStream* upload_data_stream) {
+  net::UploadData* upload_data = new net::UploadData();
+  const ScopedVector<net::UploadElementReader>& element_readers =
+      upload_data_stream->element_readers();
+  for (size_t i = 0; i < element_readers.size(); ++i) {
+    const net::UploadElementReader* reader = element_readers[i];
+    if (reader->AsBytesReader()) {
+      const net::UploadBytesElementReader* bytes_reader =
+          reader->AsBytesReader();
+      upload_data->AppendBytes(bytes_reader->bytes(), bytes_reader->length());
+    } else if (reader->AsFileReader()) {
+      const net::UploadFileElementReader* file_reader =
+          reader->AsFileReader();
+      upload_data->AppendFileRange(file_reader->path(),
+                                   file_reader->range_offset(),
+                                   file_reader->range_length(),
+                                   file_reader->expected_modification_time());
+    } else {
+      NOTIMPLEMENTED();
+    }
+  }
+  return upload_data;
+}
+
+}  // namespace
 
 int URLRequestAutomationJob::instance_count_ = 0;
 bool URLRequestAutomationJob::is_protocol_factory_registered_ = false;
@@ -463,13 +496,18 @@ void URLRequestAutomationJob::StartAsync() {
     resource_type = info->GetResourceType();
   }
 
+  // Construct UploadData from UploadDataStream.
+  scoped_refptr<net::UploadData> upload_data;
+  if (request_->get_upload())
+    upload_data = CreateUploadData(request_->get_upload());
+
   // Ask automation to start this request.
   AutomationURLRequest automation_request;
   automation_request.url = request_->url().spec();
   automation_request.method = request_->method();
   automation_request.referrer = referrer.spec();
   automation_request.extra_request_headers = new_request_headers.ToString();
-  automation_request.upload_data = request_->get_upload_mutable();
+  automation_request.upload_data = upload_data;
   automation_request.resource_type = resource_type;
   automation_request.load_flags = request_->load_flags();
 

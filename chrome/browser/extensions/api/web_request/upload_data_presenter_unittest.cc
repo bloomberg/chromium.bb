@@ -6,7 +6,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/web_request/upload_data_presenter.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_constants.h"
-#include "net/base/upload_element.h"
+#include "net/base/upload_bytes_element_reader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::BinaryValue;
@@ -24,8 +24,7 @@ namespace extensions {
 TEST(WebRequestUploadDataPresenterTest, ParsedData) {
   // Input.
   const char block[] = "key.with.dots=value";
-  net::UploadElement element;
-  element.SetToBytes(block, sizeof(block) - 1);
+  net::UploadBytesElementReader element(block, sizeof(block) - 1);
 
   // Expected output.
   scoped_ptr<ListValue> values(new ListValue);

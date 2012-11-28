@@ -23,7 +23,7 @@ class FormDataParser;
 
 namespace net {
 class URLRequest;
-class UploadElement;
+class UploadElementReader;
 }
 
 namespace extensions {
@@ -43,16 +43,16 @@ void AppendKeyValuePair(const char* key,
 FORWARD_DECLARE_TEST(WebRequestUploadDataPresenterTest, RawData);
 
 // UploadDataPresenter is an interface for objects capable to consume a series
-// of UploadElement and represent this data as a base:Value.
+// of UploadElementReader and represent this data as a base:Value.
 //
 // Workflow for objects implementing this interface:
-// 1. Call object->FeedNext(element) for each element from the request's body.
+// 1. Call object->FeedNext(reader) for each element from the request's body.
 // 2. Check if object->Succeeded().
 // 3. If that check passed then retrieve object->Result().
 class UploadDataPresenter {
  public:
   virtual ~UploadDataPresenter();
-  virtual void FeedNext(const net::UploadElement& element) = 0;
+  virtual void FeedNext(const net::UploadElementReader& reader) = 0;
   virtual bool Succeeded() = 0;
   virtual scoped_ptr<base::Value> Result() = 0;
 
@@ -63,16 +63,16 @@ class UploadDataPresenter {
   DISALLOW_COPY_AND_ASSIGN(UploadDataPresenter);
 };
 
-// This class passes all the bytes from elements of TYPE_BYTES as a BinaryValue
-// for each such element. Elements of TYPE_FILE are presented as StringValue
-// containing the path for that file.
+// This class passes all the bytes from bytes elements as a BinaryValue for each
+// such element. File elements are presented as StringValue containing the path
+// for that file.
 class RawDataPresenter : public UploadDataPresenter {
  public:
   RawDataPresenter();
   virtual ~RawDataPresenter();
 
   // Implementation of UploadDataPresenter.
-  virtual void FeedNext(const net::UploadElement& element) OVERRIDE;
+  virtual void FeedNext(const net::UploadElementReader& reader) OVERRIDE;
   virtual bool Succeeded() OVERRIDE;
   virtual scoped_ptr<base::Value> Result() OVERRIDE;
 
@@ -88,9 +88,9 @@ class RawDataPresenter : public UploadDataPresenter {
   scoped_ptr<base::ListValue> list_;
 };
 
-// This class inspects the contents of elements of TYPE_BYTES. It uses the
+// This class inspects the contents of bytes elements. It uses the
 // parser classes inheriting from FormDataParser to parse the concatenated
-// content of such elements. If the parsing is successfull, the parsed form is
+// content of such elements. If the parsing is successful, the parsed form is
 // returned as a DictionaryValue. For example, a form consisting of
 // <input name="check" type="checkbox" value="A" checked />
 // <input name="check" type="checkbox" value="B" checked />
@@ -103,7 +103,7 @@ class ParsedDataPresenter : public UploadDataPresenter {
   virtual ~ParsedDataPresenter();
 
   // Implementation of UploadDataPresenter.
-  virtual void FeedNext(const net::UploadElement& element) OVERRIDE;
+  virtual void FeedNext(const net::UploadElementReader& reader) OVERRIDE;
   virtual bool Succeeded() OVERRIDE;
   virtual scoped_ptr<base::Value> Result() OVERRIDE;
 
