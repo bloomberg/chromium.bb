@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/file_util.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/sync_file_system/drive_file_sync_client.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
+#include "chrome/browser/sync_file_system/remote_change_processor.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
@@ -27,6 +29,36 @@
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
 namespace sync_file_system {
+
+namespace {
+
+const FilePath::CharType kTempDirName[] = FILE_PATH_LITERAL("tmp");
+const FilePath::CharType kSyncFileSystemDir[] =
+    FILE_PATH_LITERAL("Sync FileSystem");
+
+bool CreateTemporaryFile(const FilePath& dir_path, FilePath* temp_file) {
+  return file_util::CreateDirectory(dir_path) &&
+      file_util::CreateTemporaryFileInDir(dir_path, temp_file);
+}
+
+void DeleteTemporaryFile(const FilePath& file_path) {
+  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE)) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::FILE, FROM_HERE,
+        base::Bind(&DeleteTemporaryFile, file_path));
+    return;
+  }
+
+  if (!file_util::Delete(file_path, true))
+    LOG(ERROR) << "Leaked temporary file for Sync FileSystem: "
+               << file_path.value();
+}
+
+void DidUpdateConflictState(fileapi::SyncStatusCode status) {
+  DCHECK_EQ(fileapi::SYNC_STATUS_OK, status);
+}
+
+}  // namespace
 
 const char DriveFileSyncService::kServiceName[] = "drive";
 
@@ -81,13 +113,44 @@ class DriveFileSyncService::TaskToken {
   DISALLOW_COPY_AND_ASSIGN(TaskToken);
 };
 
-DriveFileSyncService::ChangeQueueItem::ChangeQueueItem() {
+struct DriveFileSyncService::ProcessRemoteChangeParam {
+  scoped_ptr<TaskToken> token;
+  RemoteChangeProcessor* processor;
+  RemoteChange remote_change;
+  fileapi::SyncOperationCallback callback;
+
+  DriveMetadata drive_metadata;
+  bool missing_db_entry;
+  bool metadata_updated;
+  FilePath temporary_file_path;
+  std::string md5_checksum;
+  fileapi::SyncOperationType operation_type;
+
+  ProcessRemoteChangeParam(scoped_ptr<TaskToken> token,
+                           RemoteChangeProcessor* processor,
+                           const RemoteChange& remote_change,
+                           const fileapi::SyncOperationCallback& callback)
+      : token(token.Pass()),
+        processor(processor),
+        remote_change(remote_change),
+        callback(callback),
+        missing_db_entry(false),
+        metadata_updated(false),
+        operation_type(fileapi::SYNC_OPERATION_NONE) {
+  }
+};
+
+DriveFileSyncService::ChangeQueueItem::ChangeQueueItem()
+    : changestamp(0),
+      sync_type(REMOTE_SYNC_TYPE_INCREMENTAL) {
 }
 
 DriveFileSyncService::ChangeQueueItem::ChangeQueueItem(
     int64 changestamp,
+    RemoteSyncType sync_type,
     const fileapi::FileSystemURL& url)
     : changestamp(changestamp),
+      sync_type(sync_type),
       url(url) {
 }
 
@@ -96,6 +159,8 @@ bool DriveFileSyncService::ChangeQueueComparator::operator()(
     const ChangeQueueItem& right) {
   if (left.changestamp != right.changestamp)
     return left.changestamp < right.changestamp;
+  if (left.sync_type != right.sync_type)
+    return left.sync_type < right.sync_type;
   return fileapi::FileSystemURL::Comparator()(left.url, right.url);
 }
 
@@ -112,6 +177,7 @@ DriveFileSyncService::RemoteChange::RemoteChange(
     const fileapi::FileChange& change,
     PendingChangeQueue::iterator position_in_queue)
     : changestamp(changestamp),
+      resource_id(resource_id),
       url(url),
       change(change),
       position_in_queue(position_in_queue) {
@@ -136,12 +202,14 @@ DriveFileSyncService::DriveFileSyncService(Profile* profile)
       state_(REMOTE_SERVICE_OK),
       largest_changestamp_(0),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  temporary_file_dir_ =
+      profile->GetPath().Append(kSyncFileSystemDir).Append(kTempDirName);
   token_.reset(new TaskToken(AsWeakPtr()));
 
   sync_client_.reset(new DriveFileSyncClient(profile));
 
   metadata_store_.reset(new DriveMetadataStore(
-      profile->GetPath(),
+      profile->GetPath().Append(kSyncFileSystemDir),
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::FILE)));
 
@@ -160,10 +228,11 @@ DriveFileSyncService::~DriveFileSyncService() {
 
 // static
 scoped_ptr<DriveFileSyncService> DriveFileSyncService::CreateForTesting(
+    const FilePath& base_dir,
     scoped_ptr<DriveFileSyncClient> sync_client,
     scoped_ptr<DriveMetadataStore> metadata_store) {
   return make_scoped_ptr(new DriveFileSyncService(
-      sync_client.Pass(), metadata_store.Pass()));
+      base_dir, sync_client.Pass(), metadata_store.Pass()));
 }
 
 void DriveFileSyncService::AddObserver(Observer* observer) {
@@ -235,10 +304,45 @@ void DriveFileSyncService::UnregisterOriginForTrackingChanges(
 void DriveFileSyncService::ProcessRemoteChange(
     RemoteChangeProcessor* processor,
     const fileapi::SyncOperationCallback& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(fileapi::SYNC_STATUS_FAILED,
-               fileapi::FileSystemURL(),
-               fileapi::SYNC_OPERATION_NONE);
+  scoped_ptr<TaskToken> token(
+      GetToken(FROM_HERE, TASK_TYPE_DRIVE, "Process remote change"));
+  if (!token) {
+    pending_tasks_.push_back(base::Bind(
+        &DriveFileSyncService::ProcessRemoteChange, AsWeakPtr(),
+        processor, callback));
+    return;
+  }
+
+  if (state_ == REMOTE_SERVICE_DISABLED) {
+    token->ResetTask(FROM_HERE);
+    NotifyTaskDone(last_operation_status_, token.Pass());
+    callback.Run(last_operation_status_, fileapi::FileSystemURL(),
+                 fileapi::SYNC_OPERATION_NONE);
+    return;
+  }
+
+  if (pending_changes_.empty()) {
+    NotifyTaskDone(fileapi::SYNC_STATUS_OK, token.Pass());
+    callback.Run(fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC,
+                 fileapi::FileSystemURL(),
+                 fileapi::SYNC_OPERATION_NONE);
+    return;
+  }
+
+  const fileapi::FileSystemURL& url = pending_changes_.begin()->url;
+  const GURL& origin = url.origin();
+  const FilePath& path = url.path();
+  DCHECK(ContainsKey(url_to_change_, origin));
+  PathToChange* path_to_change = &url_to_change_[origin];
+  DCHECK(ContainsKey(*path_to_change, path));
+  const RemoteChange& remote_change = (*path_to_change)[path];
+
+  scoped_ptr<ProcessRemoteChangeParam> param(new ProcessRemoteChangeParam(
+      token.Pass(), processor, remote_change, callback));
+  processor->PrepareForProcessRemoteChange(
+      remote_change.url,
+      base::Bind(&DriveFileSyncService::DidPrepareForProcessRemoteChange,
+                 AsWeakPtr(), base::Passed(&param)));
 }
 
 LocalChangeProcessor* DriveFileSyncService::GetLocalChangeProcessor() {
@@ -374,12 +478,15 @@ void DriveFileSyncService::ApplyLocalChange(
 
 // Called by CreateForTesting.
 DriveFileSyncService::DriveFileSyncService(
+    const FilePath& base_dir,
     scoped_ptr<DriveFileSyncClient> sync_client,
     scoped_ptr<DriveMetadataStore> metadata_store)
     : last_operation_status_(fileapi::SYNC_STATUS_OK),
       state_(REMOTE_SERVICE_OK),
       largest_changestamp_(0),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  temporary_file_dir_ = base_dir.Append(kTempDirName);
+
   token_.reset(new TaskToken(AsWeakPtr()));
   sync_client_ = sync_client.Pass();
   metadata_store_ = metadata_store.Pass();
@@ -597,7 +704,8 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
   typedef ScopedVector<google_apis::DocumentEntry>::const_iterator iterator;
   for (iterator itr = feed->entries().begin();
        itr != feed->entries().end(); ++itr) {
-    AppendNewRemoteChange(origin, *itr, largest_changestamp);
+    AppendNewRemoteChange(origin, *itr, largest_changestamp,
+                          REMOTE_SYNC_TYPE_BATCH);
   }
 
   GURL next_feed_url;
@@ -814,10 +922,271 @@ void DriveFileSyncService::DidDeleteFile(
   }
 }
 
+void DriveFileSyncService::DidPrepareForProcessRemoteChange(
+    scoped_ptr<ProcessRemoteChangeParam> param,
+    fileapi::SyncStatusCode status,
+    const fileapi::SyncFileMetadata& metadata,
+    const fileapi::FileChangeList& local_changes) {
+  if (status != fileapi::SYNC_STATUS_OK) {
+    AbortRemoteSync(param.Pass(), status);
+    return;
+  }
+
+  const fileapi::FileSystemURL& url = param->remote_change.url;
+  const DriveMetadata& drive_metadata = param->drive_metadata;
+
+  status = metadata_store_->ReadEntry(param->remote_change.url,
+                                      &param->drive_metadata);
+  DCHECK(status == fileapi::SYNC_STATUS_OK ||
+         status == fileapi::SYNC_DATABASE_ERROR_NOT_FOUND);
+
+  bool missing_db_entry = (status != fileapi::SYNC_STATUS_OK);
+  if (missing_db_entry) {
+    param->drive_metadata.set_resource_id(param->remote_change.resource_id);
+    param->drive_metadata.set_conflicted(false);
+  }
+  bool missing_local_file =
+      (metadata.file_type == fileapi::SYNC_FILE_TYPE_UNKNOWN);
+
+  if (param->drive_metadata.conflicted()) {
+    if (missing_local_file) {
+      if (param->remote_change.change.IsAddOrUpdate()) {
+        NOTIMPLEMENTED() << "ResolveToRemote()";
+        AbortRemoteSync(param.Pass(), fileapi::SYNC_STATUS_FAILED);
+        return;
+      }
+
+      DCHECK(param->remote_change.change.IsDelete());
+      param->operation_type = fileapi::SYNC_OPERATION_NONE;
+      DeleteMetadataForRemoteSync(param.Pass());
+      return;
+    }
+
+    DCHECK(!missing_local_file);
+    if (param->remote_change.change.IsAddOrUpdate()) {
+      param->operation_type = fileapi::SYNC_OPERATION_NONE;
+      param->drive_metadata.set_conflicted(true);
+
+      metadata_store_->UpdateEntry(
+          url, drive_metadata,
+          base::Bind(&DriveFileSyncService::CompleteRemoteSync, AsWeakPtr(),
+                     base::Passed(&param)));
+      return;
+    }
+
+    DCHECK(param->remote_change.change.IsDelete());
+    NOTIMPLEMENTED() << "ResolveToLocal()";
+    AbortRemoteSync(param.Pass(), fileapi::SYNC_STATUS_FAILED);
+    return;
+  }
+
+  DCHECK(!param->drive_metadata.conflicted());
+  if (param->remote_change.change.IsAddOrUpdate()) {
+    if (local_changes.empty()) {
+      if (missing_local_file) {
+        param->operation_type = fileapi::SYNC_OPERATION_ADD;
+        DownloadForRemoteSync(param.Pass());
+        return;
+      }
+
+      DCHECK(!missing_local_file);
+      param->operation_type = fileapi::SYNC_OPERATION_UPDATE;
+      DownloadForRemoteSync(param.Pass());
+      return;
+    }
+
+    DCHECK(!local_changes.empty());
+    if (local_changes.list().back().IsAddOrUpdate()) {
+      param->operation_type = fileapi::SYNC_OPERATION_NONE;
+      param->drive_metadata.set_conflicted(true);
+
+      metadata_store_->UpdateEntry(
+          url, drive_metadata,
+          base::Bind(&DriveFileSyncService::CompleteRemoteSync, AsWeakPtr(),
+                     base::Passed(&param)));
+      return;
+    }
+
+    DCHECK(local_changes.list().back().IsDelete());
+    param->operation_type = fileapi::SYNC_OPERATION_ADD;
+    DownloadForRemoteSync(param.Pass());
+    return;
+  }
+
+  DCHECK(param->remote_change.change.IsDelete());
+  if (local_changes.empty()) {
+    if (missing_local_file) {
+      param->operation_type = fileapi::SYNC_OPERATION_NONE;
+      DeleteMetadataForRemoteSync(param.Pass());
+      return;
+    }
+    DCHECK(!missing_local_file);
+    param->operation_type = fileapi::SYNC_OPERATION_DELETE;
+    param->processor->ApplyRemoteChange(
+        param->remote_change.change, FilePath(), url,
+        base::Bind(&DriveFileSyncService::DidApplyRemoteChange, AsWeakPtr(),
+                   base::Passed(&param)));
+    return;
+  }
+
+  DCHECK(!local_changes.empty());
+  if (local_changes.list().back().IsAddOrUpdate()) {
+    param->operation_type = fileapi::SYNC_OPERATION_NONE;
+    CompleteRemoteSync(param.Pass(), fileapi::SYNC_STATUS_OK);
+    return;
+  }
+
+  DCHECK(local_changes.list().back().IsDelete());
+  param->operation_type = fileapi::SYNC_OPERATION_NONE;
+  DeleteMetadataForRemoteSync(param.Pass());
+}
+
+void DriveFileSyncService::DownloadForRemoteSync(
+    scoped_ptr<ProcessRemoteChangeParam> param) {
+  // TODO(tzik): Use ShareableFileReference here after we get thread-safe
+  // version of it. crbug.com/162598
+  FilePath* temporary_file_path = &param->temporary_file_path;
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&CreateTemporaryFile,
+                 temporary_file_dir_, temporary_file_path),
+      base::Bind(&DriveFileSyncService::DidGetTemporaryFileForDownload,
+                 AsWeakPtr(), base::Passed(&param)));
+}
+
+void DriveFileSyncService::DidGetTemporaryFileForDownload(
+    scoped_ptr<ProcessRemoteChangeParam> param,
+    bool success) {
+  if (!success) {
+    AbortRemoteSync(param.Pass(), fileapi::SYNC_FILE_ERROR_FAILED);
+    return;
+  }
+
+  DriveMetadata metadata;
+  metadata_store_->ReadEntry(param->remote_change.url, &metadata);
+
+  const FilePath& temporary_file_path = param->temporary_file_path;
+  std::string resource_id = param->remote_change.resource_id;
+  sync_client_->DownloadFile(
+      resource_id, metadata.md5_checksum(),
+      temporary_file_path,
+      base::Bind(&DriveFileSyncService::DidDownloadFile,
+                 AsWeakPtr(), base::Passed(&param)));
+}
+
+void DriveFileSyncService::DidDownloadFile(
+    scoped_ptr<ProcessRemoteChangeParam> param,
+    google_apis::GDataErrorCode error,
+    const std::string& md5_checksum) {
+  if (error == google_apis::HTTP_NOT_MODIFIED) {
+    param->operation_type = fileapi::SYNC_OPERATION_NONE;
+    CompleteRemoteSync(param.Pass(), fileapi::SYNC_STATUS_OK);
+    return;
+  }
+
+  fileapi::SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  if (status != fileapi::SYNC_STATUS_OK) {
+    AbortRemoteSync(param.Pass(), status);
+    return;
+  }
+
+  param->md5_checksum = md5_checksum;
+  const fileapi::FileChange& change = param->remote_change.change;
+  const FilePath& temporary_file_path = param->temporary_file_path;
+  const fileapi::FileSystemURL& url = param->remote_change.url;
+  param->processor->ApplyRemoteChange(
+      change, temporary_file_path, url,
+      base::Bind(&DriveFileSyncService::DidApplyRemoteChange,
+                 AsWeakPtr(), base::Passed(&param)));
+}
+
+void DriveFileSyncService::DidApplyRemoteChange(
+    scoped_ptr<ProcessRemoteChangeParam> param,
+    fileapi::SyncStatusCode status) {
+  if (status != fileapi::SYNC_STATUS_OK) {
+    AbortRemoteSync(param.Pass(), status);
+    return;
+  }
+
+  fileapi::FileSystemURL url = param->remote_change.url;
+  if (param->remote_change.change.IsDelete()) {
+    DeleteMetadataForRemoteSync(param.Pass());
+    return;
+  }
+
+  DriveMetadata metadata;
+  metadata.set_resource_id(param->remote_change.resource_id);
+  metadata.set_md5_checksum(param->md5_checksum);
+  metadata.set_conflicted(false);
+
+  metadata_store_->UpdateEntry(
+      url, metadata,
+      base::Bind(&DriveFileSyncService::CompleteRemoteSync,
+                 AsWeakPtr(), base::Passed(&param)));
+}
+
+void DriveFileSyncService::DeleteMetadataForRemoteSync(
+    scoped_ptr<ProcessRemoteChangeParam> param) {
+  fileapi::FileSystemURL url = param->remote_change.url;
+  metadata_store_->DeleteEntry(
+      url,
+      base::Bind(&DriveFileSyncService::CompleteRemoteSync,
+                 AsWeakPtr(), base::Passed(&param)));
+}
+
+void DriveFileSyncService::CompleteRemoteSync(
+    scoped_ptr<ProcessRemoteChangeParam> param,
+    fileapi::SyncStatusCode status) {
+  if (status != fileapi::SYNC_STATUS_OK) {
+    AbortRemoteSync(param.Pass(), status);
+    return;
+  }
+
+  CancelRemoteChange(param->remote_change.url);
+
+  GURL origin = param->remote_change.url.origin();
+  if (metadata_store_->IsIncrementalSyncOrigin(origin)) {
+    int64 changestamp = param->remote_change.changestamp;
+    metadata_store_->SetLargestChangeStamp(
+        changestamp,
+        base::Bind(&DriveFileSyncService::FinalizeRemoteSync,
+                   AsWeakPtr(), base::Passed(&param)));
+    return;
+  }
+
+  if (param->drive_metadata.conflicted())
+    status = fileapi::SYNC_STATUS_HAS_CONFLICT;
+  FinalizeRemoteSync(param.Pass(), status);
+}
+
+void DriveFileSyncService::AbortRemoteSync(
+    scoped_ptr<ProcessRemoteChangeParam> param,
+    fileapi::SyncStatusCode status) {
+  FinalizeRemoteSync(param.Pass(), status);
+}
+
+void DriveFileSyncService::FinalizeRemoteSync(
+    scoped_ptr<ProcessRemoteChangeParam> param,
+    fileapi::SyncStatusCode status) {
+  if (!param->temporary_file_path.empty())
+    DeleteTemporaryFile(param->temporary_file_path);
+  param->token->ResetTask(FROM_HERE);
+  NotifyTaskDone(status, param->token.Pass());
+  if (status == fileapi::SYNC_STATUS_OK) {
+    param->callback.Run(status, param->remote_change.url,
+                        param->operation_type);
+  } else {
+    param->callback.Run(status, param->remote_change.url,
+                        fileapi::SYNC_OPERATION_NONE);
+  }
+}
+
 void DriveFileSyncService::AppendNewRemoteChange(
     const GURL& origin,
     google_apis::DocumentEntry* entry,
-    int64 changestamp) {
+    int64 changestamp,
+    RemoteSyncType sync_type) {
+  // TODO(tzik): Normalize the path here.
   FilePath path = FilePath::FromUTF8Unsafe(UTF16ToUTF8(entry->title()));
 
   PathToChange* path_to_change = &url_to_change_[origin];
@@ -846,9 +1215,8 @@ void DriveFileSyncService::AppendNewRemoteChange(
 
   fileapi::FileChange file_change(change_type, file_type);
 
-  ChangeQueueItem item(changestamp, url);
   std::pair<PendingChangeQueue::iterator, bool> inserted_to_queue =
-      pending_changes_.insert(ChangeQueueItem(changestamp, url));
+      pending_changes_.insert(ChangeQueueItem(changestamp, sync_type, url));
   DCHECK(inserted_to_queue.second);
 
   (*path_to_change)[path] = RemoteChange(
@@ -871,6 +1239,15 @@ void DriveFileSyncService::CancelRemoteChange(
   path_to_change->erase(found_change);
   if (path_to_change->empty())
     url_to_change_.erase(found_origin);
+
+  MaybeMarkAsIncrementalSyncOrigin(url.origin());
+}
+
+void DriveFileSyncService::MaybeMarkAsIncrementalSyncOrigin(
+    const GURL& origin) {
+  if (metadata_store_->IsBatchSyncOrigin(origin) &&
+      !ContainsKey(url_to_change_, origin))
+    metadata_store_->MoveBatchSyncOriginToIncremental(origin);
 }
 
 }  // namespace sync_file_system

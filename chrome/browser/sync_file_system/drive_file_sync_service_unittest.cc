@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 
+#include <utility>
+
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
@@ -12,12 +14,17 @@
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_client.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
+#include "chrome/browser/sync_file_system/mock_remote_change_processor.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread.h"
 #include "net/base/escape.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/syncable/sync_file_metadata.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
+
+#define FPL(x) FILE_PATH_LITERAL(x)
 
 using ::testing::AnyNumber;
 using ::testing::AtLeast;
@@ -25,6 +32,7 @@ using ::testing::InSequence;
 using ::testing::StrictMock;
 using ::testing::_;
 
+using google_apis::DocumentEntry;
 using google_apis::DriveServiceInterface;
 using google_apis::DriveUploaderInterface;
 using google_apis::test_util::LoadJSONFile;
@@ -76,7 +84,8 @@ class MockRemoteServiceObserver : public RemoteFileSyncService::Observer {
 class DriveFileSyncServiceTest : public testing::Test {
  public:
   DriveFileSyncServiceTest()
-      : mock_drive_service_(NULL) {
+      : file_thread_(content::BrowserThread::FILE, &message_loop_),
+        mock_drive_service_(NULL) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -85,8 +94,7 @@ class DriveFileSyncServiceTest : public testing::Test {
 
     mock_drive_service_ = new StrictMock<google_apis::MockDriveService>;
 
-    EXPECT_CALL(*mock_drive_service(),
-                Initialize(&profile_)).Times(1);
+    EXPECT_CALL(*mock_drive_service(), Initialize(&profile_));
 
     sync_client_ = DriveFileSyncClient::CreateForTesting(
         &profile_,
@@ -104,7 +112,7 @@ class DriveFileSyncServiceTest : public testing::Test {
 
   void SetUpDriveSyncService() {
     sync_service_ = DriveFileSyncService::CreateForTesting(
-        sync_client_.Pass(), metadata_store_.Pass()).Pass();
+        base_dir_.path(), sync_client_.Pass(), metadata_store_.Pass()).Pass();
     sync_service_->AddObserver(&mock_remote_observer_);
   }
 
@@ -160,12 +168,15 @@ class DriveFileSyncServiceTest : public testing::Test {
                        const std::string& resource_id,
                        const fileapi::FileSystemURL& url,
                        const fileapi::FileChange& file_change) {
+    typedef DriveFileSyncService::PendingChangeQueue::iterator iterator;
+    typedef DriveFileSyncService::ChangeQueueItem ChangeQueueItem;
     sync_service_->pending_changes_.clear();
 
-    DriveFileSyncService::ChangeQueueItem item(changestamp, url);
-    std::pair<DriveFileSyncService::PendingChangeQueue::iterator, bool>
-        inserted_to_queue = sync_service_->pending_changes_.insert(
-            DriveFileSyncService::ChangeQueueItem(changestamp, url));
+    std::pair<iterator, bool> inserted_to_queue =
+        sync_service_->pending_changes_.insert(
+            ChangeQueueItem(changestamp,
+                            DriveFileSyncService::REMOTE_SYNC_TYPE_BATCH,
+                            url));
     DCHECK(inserted_to_queue.second);
 
     DriveFileSyncService::PathToChange* path_to_change =
@@ -195,6 +206,10 @@ class DriveFileSyncServiceTest : public testing::Test {
     return &mock_remote_observer_;
   }
 
+  StrictMock<MockRemoteChangeProcessor>* mock_remote_processor() {
+    return &mock_remote_processor_;
+  }
+
   MessageLoop* message_loop() { return &message_loop_; }
   DriveFileSyncService* sync_service() { return sync_service_.get(); }
 
@@ -206,8 +221,53 @@ class DriveFileSyncServiceTest : public testing::Test {
     return sync_service_->pending_changes_;
   }
 
+  fileapi::FileSystemURL CreateURL(const GURL& origin,
+                                   const FilePath::StringType& path) {
+    return fileapi::CreateSyncableFileSystemURL(
+        origin, DriveFileSyncService::kServiceName, FilePath(path));
+  }
+
+  void ProcessRemoteChange(fileapi::SyncStatusCode expected_status,
+                           const fileapi::FileSystemURL& expected_url,
+                           fileapi::SyncOperationType expected_operation) {
+    fileapi::SyncStatusCode actual_status = fileapi::SYNC_STATUS_UNKNOWN;
+    fileapi::FileSystemURL actual_url;
+    fileapi::SyncOperationType actual_operation = fileapi::SYNC_OPERATION_NONE;
+
+    sync_service_->ProcessRemoteChange(
+        mock_remote_processor(),
+        base::Bind(&DriveFileSyncServiceTest::DidProcessRemoteChange,
+                   base::Unretained(this),
+                   &actual_status, &actual_url, &actual_operation));
+    message_loop_.RunUntilIdle();
+
+    EXPECT_EQ(expected_status, actual_status);
+    EXPECT_EQ(expected_url, actual_url);
+    EXPECT_EQ(expected_operation, actual_operation);
+  }
+
+  void DidProcessRemoteChange(fileapi::SyncStatusCode* status_out,
+                              fileapi::FileSystemURL* url_out,
+                              fileapi::SyncOperationType* operation_out,
+                              fileapi::SyncStatusCode status,
+                              const fileapi::FileSystemURL& url,
+                              fileapi::SyncOperationType operation) {
+    *status_out = status;
+    *url_out = url;
+    *operation_out = operation;
+  }
+
+  void AppendIncrementalRemoteChange(const GURL& origin,
+                                     google_apis::DocumentEntry* entry,
+                                     int64 changestamp) {
+    sync_service_->AppendNewRemoteChange(
+        origin, entry, changestamp,
+        DriveFileSyncService::REMOTE_SYNC_TYPE_INCREMENTAL);
+  }
+
  private:
   MessageLoop message_loop_;
+  content::TestBrowserThread file_thread_;
 
   base::ScopedTempDir base_dir_;
   TestingProfile profile_;
@@ -217,6 +277,7 @@ class DriveFileSyncServiceTest : public testing::Test {
   // Owned by |sync_client_|.
   StrictMock<google_apis::MockDriveService>* mock_drive_service_;
   StrictMock<MockRemoteServiceObserver> mock_remote_observer_;
+  StrictMock<MockRemoteChangeProcessor> mock_remote_processor_;
 
   scoped_ptr<DriveFileSyncClient> sync_client_;
   scoped_ptr<DriveMetadataStore> metadata_store_;
@@ -254,6 +315,45 @@ ACTION_P2(InvokeGetDataCallback5, error, result) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(arg5, error, base::Passed(&value)));
+}
+
+ACTION(PrepareForRemoteChange_Busy) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(arg1,
+                 fileapi::SYNC_STATUS_FILE_BUSY,
+                 fileapi::SyncFileMetadata(),
+                 fileapi::FileChangeList()));
+}
+
+ACTION(PrepareForRemoteChange_NotFound) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(arg1,
+                 fileapi::SYNC_STATUS_OK,
+                 fileapi::SyncFileMetadata(fileapi::SYNC_FILE_TYPE_UNKNOWN, 0,
+                                           base::Time()),
+                 fileapi::FileChangeList()));
+}
+
+ACTION(PrepareForRemoteChange_NotModified) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(arg1,
+                 fileapi::SYNC_STATUS_OK,
+                 fileapi::SyncFileMetadata(fileapi::SYNC_FILE_TYPE_FILE, 0,
+                                           base::Time()),
+                 fileapi::FileChangeList()));
+}
+
+ACTION(InvokeDidDownloadFile) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(arg3, google_apis::HTTP_SUCCESS, arg1));
+}
+
+ACTION(InvokeDidApplyRemoteChange) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(arg3, fileapi::SYNC_STATUS_OK));
 }
 
 #if !defined(OS_ANDROID)
@@ -610,6 +710,149 @@ TEST_F(DriveFileSyncServiceTest, ResolveSyncOperationType) {
       ResolveSyncOperationType(local_add_or_update_change, url)));
   EXPECT_TRUE(IsSyncOperationIgnore(
       ResolveSyncOperationType(local_delete_change, url)));
+}
+
+TEST_F(DriveFileSyncServiceTest, RemoteChange_NoChange) {
+  const std::string kSyncRootResourceId("folder:sync_root_resource_id");
+
+  metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
+
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeAvailable(_))
+      .Times(AnyNumber());
+
+  SetUpDriveSyncService();
+
+  ProcessRemoteChange(fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC,
+                      fileapi::FileSystemURL(),
+                      fileapi::SYNC_OPERATION_NONE);
+  EXPECT_TRUE(metadata_store()->batch_sync_origins().empty());
+  EXPECT_TRUE(metadata_store()->incremental_sync_origins().empty());
+  EXPECT_TRUE(pending_changes().empty());
+}
+
+TEST_F(DriveFileSyncServiceTest, RemoteChange_Busy) {
+  const GURL kOrigin("chrome-extension://example.com");
+  const std::string kDirectoryResourceId("folder:origin_directory_resource_id");
+  const std::string kSyncRootResourceId("folder:sync_root_resource_id");
+  const FilePath::StringType kFileName(FPL("File 1.mp3"));
+
+  metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
+  metadata_store()->AddBatchSyncOrigin(kOrigin, kDirectoryResourceId);
+  metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin);
+
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeAvailable(_))
+      .Times(AnyNumber());
+
+  EXPECT_CALL(*mock_remote_processor(),
+              PrepareForProcessRemoteChange(CreateURL(kOrigin, kFileName), _))
+      .WillOnce(PrepareForRemoteChange_Busy());
+
+  SetUpDriveSyncService();
+
+  scoped_ptr<DocumentEntry> entry(DocumentEntry::ExtractAndParse(
+      *LoadJSONFile("gdata/file_entry.json")));
+  AppendIncrementalRemoteChange(kOrigin, entry.get(), 12345);
+
+  ProcessRemoteChange(fileapi::SYNC_STATUS_FILE_BUSY,
+                      CreateURL(kOrigin, kFileName),
+                      fileapi::SYNC_OPERATION_NONE);
+}
+
+TEST_F(DriveFileSyncServiceTest, RemoteChange_NewFile) {
+  const GURL kOrigin("chrome-extension://example.com");
+  const std::string kDirectoryResourceId("folder:origin_directory_resource_id");
+  const std::string kSyncRootResourceId("folder:sync_root_resource_id");
+  const FilePath::StringType kFileName(FPL("File 1.mp3"));
+  const std::string kFileResourceId("file:2_file_resource_id");
+
+  metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
+  metadata_store()->AddBatchSyncOrigin(kOrigin, kDirectoryResourceId);
+  metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin);
+
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeAvailable(_))
+      .Times(AnyNumber());
+
+  EXPECT_CALL(*mock_remote_processor(),
+              PrepareForProcessRemoteChange(CreateURL(kOrigin, kFileName), _))
+      .WillOnce(PrepareForRemoteChange_NotFound());
+
+  scoped_ptr<Value> file_entry(LoadJSONFile("gdata/file_entry.json").Pass());
+  EXPECT_CALL(*mock_drive_service(),
+              GetDocumentEntry(kFileResourceId, _))
+      .WillOnce(InvokeGetDataCallback1(google_apis::HTTP_SUCCESS,
+                                       base::Passed(&file_entry)));
+
+  EXPECT_CALL(*mock_drive_service(),
+              DownloadFile(_, _, GURL("https://file_content_url"), _, _))
+      .WillOnce(InvokeDidDownloadFile());
+
+  EXPECT_CALL(*mock_remote_processor(),
+              ApplyRemoteChange(_, _, CreateURL(kOrigin, kFileName), _))
+      .WillOnce(InvokeDidApplyRemoteChange());
+
+  SetUpDriveSyncService();
+
+  scoped_ptr<DocumentEntry> entry(DocumentEntry::ExtractAndParse(
+      *LoadJSONFile("gdata/file_entry.json")));
+  AppendIncrementalRemoteChange(kOrigin, entry.get(), 12345);
+
+  ProcessRemoteChange(fileapi::SYNC_STATUS_OK,
+                      CreateURL(kOrigin, kFileName),
+                      fileapi::SYNC_OPERATION_ADD);
+}
+
+TEST_F(DriveFileSyncServiceTest, RemoteChange_UpdateFile) {
+  const GURL kOrigin("chrome-extension://example.com");
+  const std::string kDirectoryResourceId("folder:origin_directory_resource_id");
+  const std::string kSyncRootResourceId("folder:sync_root_resource_id");
+  const FilePath::StringType kFileName(FPL("File 1.mp3"));
+  const std::string kFileResourceId("file:2_file_resource_id");
+
+  metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
+  metadata_store()->AddBatchSyncOrigin(kOrigin, kDirectoryResourceId);
+  metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin);
+
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeAvailable(_))
+      .Times(AnyNumber());
+
+  EXPECT_CALL(*mock_remote_processor(),
+              PrepareForProcessRemoteChange(CreateURL(kOrigin, kFileName), _))
+      .WillOnce(PrepareForRemoteChange_NotModified());
+
+  scoped_ptr<Value> file_entry(LoadJSONFile("gdata/file_entry.json").Pass());
+  EXPECT_CALL(*mock_drive_service(),
+              GetDocumentEntry(kFileResourceId, _))
+      .WillOnce(InvokeGetDataCallback1(google_apis::HTTP_SUCCESS,
+                                       base::Passed(&file_entry)));
+
+  EXPECT_CALL(*mock_drive_service(),
+              DownloadFile(_, _, GURL("https://file_content_url"), _, _))
+      .WillOnce(InvokeDidDownloadFile());
+
+  EXPECT_CALL(*mock_remote_processor(),
+              ApplyRemoteChange(_, _, CreateURL(kOrigin, kFileName), _))
+      .WillOnce(InvokeDidApplyRemoteChange());
+
+  SetUpDriveSyncService();
+
+  scoped_ptr<DocumentEntry> entry(DocumentEntry::ExtractAndParse(
+      *LoadJSONFile("gdata/file_entry.json")));
+  AppendIncrementalRemoteChange(kOrigin, entry.get(), 12345);
+  ProcessRemoteChange(fileapi::SYNC_STATUS_OK,
+                      CreateURL(kOrigin, kFileName),
+                      fileapi::SYNC_OPERATION_UPDATE);
 }
 
 #endif  // !defined(OS_ANDROID)

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_REMOTE_FILE_SYNC_SERVICE_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_REMOTE_FILE_SYNC_SERVICE_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/sync_callbacks.h"

@@ -17,10 +17,12 @@
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/sync_callbacks.h"
+#include "webkit/fileapi/syncable/sync_operation_type.h"
 
 namespace google_apis {
 class DocumentFeed;
@@ -50,6 +52,7 @@ class DriveFileSyncService
   // Creates DriveFileSyncClient instance for testing.
   // |metadata_store| must be initialized beforehand.
   static scoped_ptr<DriveFileSyncService> CreateForTesting(
+      const FilePath& base_dir,
       scoped_ptr<DriveFileSyncClient> sync_client,
       scoped_ptr<DriveMetadataStore> metadata_store);
 
@@ -85,13 +88,23 @@ class DriveFileSyncService
  private:
   friend class DriveFileSyncServiceTest;
   class TaskToken;
+  struct ProcessRemoteChangeParam;
+
+  enum RemoteSyncType {
+    // Smaller number indicates higher priority in ChangeQueue.
+    REMOTE_SYNC_TYPE_INCREMENTAL = 0,
+    REMOTE_SYNC_TYPE_BATCH = 1,
+  };
 
   struct ChangeQueueItem {
     int64 changestamp;
+    RemoteSyncType sync_type;
     fileapi::FileSystemURL url;
 
     ChangeQueueItem();
-    ChangeQueueItem(int64 changestamp, const fileapi::FileSystemURL& url);
+    ChangeQueueItem(int64 changestamp,
+                    RemoteSyncType sync_type,
+                    const fileapi::FileSystemURL& url);
   };
 
   struct ChangeQueueComparator {
@@ -146,7 +159,8 @@ class DriveFileSyncService
     SYNC_OPERATION_FAILED,
   };
 
-  DriveFileSyncService(scoped_ptr<DriveFileSyncClient> sync_client,
+  DriveFileSyncService(const FilePath& base_dir,
+                       scoped_ptr<DriveFileSyncClient> sync_client,
                        scoped_ptr<DriveMetadataStore> metadata_store);
 
   // This should be called when an async task needs to get a task token.
@@ -224,11 +238,45 @@ class DriveFileSyncService
       const fileapi::SyncStatusCallback& callback,
       fileapi::SyncStatusCode status);
 
+  void DidPrepareForProcessRemoteChange(
+      scoped_ptr<ProcessRemoteChangeParam> param,
+      fileapi::SyncStatusCode status,
+      const fileapi::SyncFileMetadata& metadata,
+      const fileapi::FileChangeList& changes);
+  void DownloadForRemoteSync(
+      scoped_ptr<ProcessRemoteChangeParam> param);
+  void DidGetTemporaryFileForDownload(
+      scoped_ptr<ProcessRemoteChangeParam> param,
+      bool success);
+  void DidDownloadFile(scoped_ptr<ProcessRemoteChangeParam> param,
+                       google_apis::GDataErrorCode error,
+                       const std::string& md5_checksum);
+  void DidApplyRemoteChange(
+      scoped_ptr<ProcessRemoteChangeParam> param,
+      fileapi::SyncStatusCode status);
+  void DidCleanUpForRemoteSync(
+      scoped_ptr<ProcessRemoteChangeParam> param,
+      bool success);
+  void DeleteMetadataForRemoteSync(
+      scoped_ptr<ProcessRemoteChangeParam> param);
+  void CompleteRemoteSync(
+      scoped_ptr<ProcessRemoteChangeParam> param,
+      fileapi::SyncStatusCode status);
+  void AbortRemoteSync(
+      scoped_ptr<ProcessRemoteChangeParam> param,
+      fileapi::SyncStatusCode status);
+  void FinalizeRemoteSync(
+      scoped_ptr<ProcessRemoteChangeParam> param,
+      fileapi::SyncStatusCode status);
+
   void AppendNewRemoteChange(const GURL& origin,
                              google_apis::DocumentEntry* entry,
-                             int64 changestamp);
+                             int64 changestamp,
+                             RemoteSyncType sync_type);
   void CancelRemoteChange(const fileapi::FileSystemURL& url);
+  void MaybeMarkAsIncrementalSyncOrigin(const GURL& origin);
 
+  FilePath temporary_file_dir_;
   scoped_ptr<DriveMetadataStore> metadata_store_;
   scoped_ptr<DriveFileSyncClient> sync_client_;
 
