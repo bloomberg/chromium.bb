@@ -2315,8 +2315,8 @@ def ValidateTargetType(target, target_dict):
 
 
 def ValidateSourcesInTarget(target, target_dict, build_file):
-  # TODO: Check if MSVC allows this for non-static_library targets.
-  if target_dict.get('type', None) != 'static_library':
+  # TODO: Check if MSVC allows this for loadable_module targets.
+  if target_dict.get('type', None) not in ('static_library', 'shared_library'):
     return
   sources = target_dict.get('sources', [])
   basenames = {}
