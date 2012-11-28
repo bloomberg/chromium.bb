@@ -1031,7 +1031,7 @@ def CMDcommit(change_info, args):
     if change_info.issue:
       revision = re.compile(".*?\nCommitted revision (\d+)",
                             re.DOTALL).match(output).group(1)
-      viewvc_url = gclient_utils.UpgradeToHttps(GetCodeReviewSetting('VIEW_VC'))
+      viewvc_url = GetCodeReviewSetting('VIEW_VC')
       change_info.description += '\n'
       if viewvc_url and revision:
         change_info.description += "\nCommitted: " + viewvc_url + revision

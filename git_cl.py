@@ -349,8 +349,7 @@ class Settings(object):
 
   def GetViewVCUrl(self):
     if not self.viewvc_url:
-      self.viewvc_url = gclient_utils.UpgradeToHttps(
-          self._GetConfig('rietveld.viewvc-url', error_ok=True))
+      self.viewvc_url = self._GetConfig('rietveld.viewvc-url', error_ok=True)
     return self.viewvc_url
 
   def GetDefaultCCList(self):

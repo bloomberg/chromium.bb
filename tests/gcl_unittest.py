@@ -582,7 +582,7 @@ class CMDCommitUnittest(GclTestsBase):
     retval = gcl.CMDcommit(['naame'])
     self.assertEquals(retval, 0)
     self.assertEquals(change_info.description,
-        'deescription\n\nCommitted: https://view/12345')
+        'deescription\n\nCommitted: http://view/12345')
     # pylint: disable=W0212
     self.assertTrue(change_info._deleted)
     self.assertTrue(change_info._closed)
