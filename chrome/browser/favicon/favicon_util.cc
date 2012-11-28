@@ -37,15 +37,6 @@ std::vector<ui::ScaleFactor> FaviconUtil::GetFaviconScaleFactors() {
 }
 
 // static
-int FaviconUtil::DownloadFavicon(content::RenderViewHost* rvh,
-                                 const GURL& url,
-                                 int image_size) {
-  static int id = 0;
-  rvh->Send(new IconMsg_DownloadFavicon(rvh->GetRoutingID(), ++id, url,
-            image_size));
-  return id;
-}
-// static
 gfx::Image FaviconUtil::SelectFaviconFramesFromPNGs(
       const std::vector<history::FaviconBitmapResult>& png_data,
       const std::vector<ui::ScaleFactor> scale_factors,

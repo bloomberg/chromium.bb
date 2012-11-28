@@ -33,10 +33,10 @@ class FaviconDownloadHelper : public content::WebContentsObserver {
 
   virtual ~FaviconDownloadHelper();
 
-  // Download the favicon at |url|. Returns the unique id of the download
-  // request. The id will be passed to
-  // FaviconDownloadHelperDelegate::OnDidDownloadFavicon() once the favicon has
-  // been retrieved.
+  // Starts the download of the given favicon |url| and returns the unique id of
+  // the download request. When the download is finished, an
+  // IconHostMsg_DidDownloadFavicon IPC message will be sent and passed on to
+  // the delegate via FaviconDownloadHelperDelegate::OnDidDownloadFavicon().
   // Note that |image_size| is a hint for images with multiple sizes. The
   // downloaded image is not resized to the given image_size. If 0 is passed,
   // the first frame of the image is returned.

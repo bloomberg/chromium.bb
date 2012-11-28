@@ -5,13 +5,23 @@
 #include "chrome/browser/favicon/favicon_download_helper.h"
 
 #include "chrome/browser/favicon/favicon_download_helper_delegate.h"
-#include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/common/icon_messages.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 
 using content::WebContents;
+
+namespace {
+static int StartDownload(content::RenderViewHost* rvh,
+                           const GURL& url,
+                           int image_size) {
+  static int id = 0;
+  rvh->Send(new IconMsg_DownloadFavicon(rvh->GetRoutingID(), ++id, url,
+                                        image_size));
+  return id;
+}
+}  // namespace.
 
 FaviconDownloadHelper::FaviconDownloadHelper(
     WebContents* web_contents,
@@ -26,7 +36,7 @@ FaviconDownloadHelper::~FaviconDownloadHelper() {
 
 int FaviconDownloadHelper::DownloadFavicon(const GURL& url, int image_size) {
   content::RenderViewHost* host = web_contents()->GetRenderViewHost();
-  int id = FaviconUtil::DownloadFavicon(host, url, image_size);
+  int id = StartDownload(host, url, image_size);
   DownloadIdList::iterator i =
       std::find(download_ids_.begin(), download_ids_.end(), id);
   DCHECK(i == download_ids_.end());
