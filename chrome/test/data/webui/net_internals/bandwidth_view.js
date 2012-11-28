@@ -48,11 +48,11 @@ BandwidthTask.prototype = {
   },
 
   /**
-   * Returns the int value the specified cell of the
+   * Returns the float value the specified cell of the
    * |BandwidthView.BANDWIDTH_USAGE_TABLE| table.
    */
   getBandwidthTableCell_: function(row, col) {
-    return parseInt(NetInternalsTest.getStyledTableText(
+    return parseFloat(NetInternalsTest.getStyledTableText(
         BandwidthView.BANDWIDTH_USAGE_TABLE, row, col));
   },
 
@@ -61,25 +61,24 @@ BandwidthTask.prototype = {
    * Does not check exact displayed values, to avoid races, but makes sure
    * values are high enough after an event of interest.
    *
-   * @param row The row of the table to validate, starting with 0.
-   * @param expectedReceived Expected received content length.
-   * @param expectedOriginal Expected original content length.
+   * @param {number} col The column of the table to validate, either 1 or 2.
+   * @param {number} expectedReceived Expected received content length.
+   * @param {number} expectedOriginal Expected original content length.
    */
-  validateBandwidthTableRow_: function(
-      row, expectedReceived, expectedOriginal) {
-    var col1 = this.getBandwidthTableCell_(row, 1);
-    var col2 = this.getBandwidthTableCell_(row, 2);
-    var col3 = this.getBandwidthTableCell_(row, 3);
-    var col4 = this.getBandwidthTableCell_(row, 4);
-    var diff = col2 - col1;
-    var percent = 0;
-    if (col2 > 0) {
-      percent = Math.floor(col3 * 100 / col2);
-    }
-    expectLE(expectedReceived, col1);
-    expectLE(expectedOriginal, col2);
-    expectEquals(diff, col3);
-    expectEquals(percent, col4);
+  validateBandwidthTableColumn_: function(
+      col, expectedReceived, expectedOriginal) {
+    var row1 = this.getBandwidthTableCell_(0, col);
+    var row2 = this.getBandwidthTableCell_(1, col);
+    var row3 = this.getBandwidthTableCell_(2, col);
+    var row4 = this.getBandwidthTableCell_(3, col);
+
+    var expectedReceivedKB = (expectedReceived / 1024).toFixed(1);
+    var expectedOriginalKB = (expectedOriginal / 1024).toFixed(1);
+
+    expectLE(expectedOriginalKB, row1);
+    expectLE(expectedReceivedKB, row2);
+    expectFalse(isNaN(row3));
+    expectFalse(isNaN(row4));
   },
 
   /**
@@ -90,7 +89,7 @@ BandwidthTask.prototype = {
     if (this.historicVerified && this.sessionVerified) {
       // Check number of rows in the table.
       NetInternalsTest.checkStyledTableRows(
-          BandwidthView.BANDWIDTH_USAGE_TABLE, 2);
+          BandwidthView.BANDWIDTH_USAGE_TABLE, 4);
       this.onTaskDone();
     }
   },
@@ -109,8 +108,8 @@ BandwidthTask.prototype = {
     var expectedLength = this.expectedLength_ + this.faviconLength_;
     if (networkStats.session_received_content_length >= expectedLength) {
       expectLE(expectedLength, networkStats.session_original_content_length);
-      // Row 0 contains session information.
-      this.validateBandwidthTableRow_(0, expectedLength, expectedLength);
+      // Column 1 contains session information.
+      this.validateBandwidthTableColumn_(1, expectedLength, expectedLength);
       this.sessionVerified = true;
       this.completeIfDone();
     }
@@ -130,9 +129,9 @@ BandwidthTask.prototype = {
     var expectedLength = this.expectedLength_ + this.faviconLength_;
     if (networkStats.historic_received_content_length >= expectedLength) {
       expectLE(expectedLength, networkStats.historic_original_content_length);
-      // Row 1 contains historic information, and it should be the same as
+      // Column 2 contains historic information, and it should be the same as
       // the session information, because previously there was no history.
-      this.validateBandwidthTableRow_(1, expectedLength, expectedLength);
+      this.validateBandwidthTableColumn_(2, expectedLength, expectedLength);
       this.historicVerified = true;
       this.completeIfDone();
     }

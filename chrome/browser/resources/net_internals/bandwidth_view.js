@@ -76,20 +76,30 @@ var BandwidthView = (function() {
   };
 
   /**
+   * Converts bytes to kilobytes rounded to one decimal place.
+   */
+  function bytesToRoundedKilobytes(val) {
+    return (val / 1024).toFixed(1);
+  }
+
+  /**
+   * Returns bandwidth savings as a percent rounded to one decimal place.
+   */
+  function getPercentSavings(original, received) {
+    if (original > 0) {
+      return ((original - received) * 100 / original).toFixed(1);
+    }
+    return '0.0';
+  }
+
+  /**
    * Adds a row of bandwidth usage statistics to the bandwidth usage table.
    */
-  function addStatsRow(tablePrinter, name, receivedLength, originalLength) {
-    var difference = originalLength - receivedLength;
-    var percent = 0;
-    if (originalLength > 0) {
-      percent = Math.floor(difference * 100 / originalLength);
-    }
+  function addRow(tablePrinter, title, sessionValue, historicValue) {
     tablePrinter.addRow();
-    tablePrinter.addCell(name);
-    tablePrinter.addCell(receivedLength);
-    tablePrinter.addCell(originalLength);
-    tablePrinter.addCell(difference);
-    tablePrinter.addCell(percent);
+    tablePrinter.addCell(title);
+    tablePrinter.addCell(sessionValue);
+    tablePrinter.addCell(historicValue);
   }
 
   /**
@@ -99,20 +109,35 @@ var BandwidthView = (function() {
                                             historicNetworkStats) {
     var tablePrinter = new TablePrinter();
     tablePrinter.addHeaderCell('');
-    tablePrinter.addHeaderCell('Received Content Length (Bytes)');
-    tablePrinter.addHeaderCell('Original Content Length (Bytes)');
-    tablePrinter.addHeaderCell('Savings (Bytes)');
-    tablePrinter.addHeaderCell('Savings (%)');
+    tablePrinter.addHeaderCell('Session');
+    tablePrinter.addHeaderCell('Total');
+
+    var sessionOriginal = 0;
+    var historicOriginal = 0;
+    var sessionReceived = 0;
+    var historicReceived = 0;
+
     if (sessionNetworkStats != null) {
-      addStatsRow(tablePrinter, 'Session',
-          sessionNetworkStats.session_received_content_length,
-          sessionNetworkStats.session_original_content_length);
+      sessionOriginal = sessionNetworkStats.session_original_content_length;
+      sessionReceived = sessionNetworkStats.session_received_content_length;
     }
     if (historicNetworkStats != null) {
-      addStatsRow(tablePrinter, 'Total',
-          historicNetworkStats.historic_received_content_length,
-          historicNetworkStats.historic_original_content_length);
+      historicOriginal = historicNetworkStats.historic_original_content_length;
+      historicReceived = historicNetworkStats.historic_received_content_length;
     }
+
+    addRow(tablePrinter, 'Original (KB)',
+        bytesToRoundedKilobytes(sessionOriginal),
+        bytesToRoundedKilobytes(historicOriginal));
+    addRow(tablePrinter, 'Received (KB)',
+        bytesToRoundedKilobytes(sessionReceived),
+        bytesToRoundedKilobytes(historicReceived));
+    addRow(tablePrinter, 'Savings (KB)',
+        bytesToRoundedKilobytes(sessionOriginal - sessionReceived),
+        bytesToRoundedKilobytes(historicOriginal - historicReceived));
+    addRow(tablePrinter, 'Savings (%)',
+        getPercentSavings(sessionOriginal, sessionReceived),
+        getPercentSavings(historicOriginal, historicReceived));
     return tablePrinter;
   }
 
