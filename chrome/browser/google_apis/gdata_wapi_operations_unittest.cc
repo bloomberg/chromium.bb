@@ -205,17 +205,21 @@ class GDataWapiOperationsTest : public testing::Test {
           test_util::GetTestFilePath("gdata/root_feed.json"));
     } else {
       // Process a feed for a single resource ID.
-      // For now, we only support a resource feed for a particular entry.
       const std::string resource_id = net::UnescapeURLComponent(
           remaining_path, net::UnescapeRule::URL_SPECIAL_CHARS);
-      if (resource_id != "file:2_file_resource_id")
-        return scoped_ptr<test_server::HttpResponse>();
-
-      return CreateHttpResponseFromFile(
-          test_util::GetTestFilePath("gdata/file_entry.json"));
+      if (resource_id == "file:2_file_resource_id") {
+        return CreateHttpResponseFromFile(
+            test_util::GetTestFilePath("gdata/file_entry.json"));
+      } else if (resource_id == "folder:root" &&
+                 request.method == test_server::METHOD_POST) {
+        // This is a request for creating a directory in the root directory.
+        // TODO(satorux): we should generate valid JSON data for the newly
+        // created directory but for now, just return "directory_entry.json"
+        return CreateHttpResponseFromFile(
+            test_util::GetTestFilePath("gdata/directory_entry.json"));
+      }
     }
 
-    NOTREACHED();
     return scoped_ptr<test_server::HttpResponse>();
   }
 
@@ -453,8 +457,34 @@ TEST_F(GDataWapiOperationsTest, DeleteDocumentOperation) {
   EXPECT_EQ("*", http_request_.headers["If-Match"]);
 }
 
-// TODO(satorux): Write tests for CreateDirectoryOperation.
-// crbug.com/162348
+TEST_F(GDataWapiOperationsTest, CreateDirectoryOperation) {
+  GDataErrorCode result_code = GDATA_OTHER_ERROR;
+  scoped_ptr<base::Value> result_data;
+
+  // Create "new directory" in the root directory.
+  CreateDirectoryOperation* operation = new CreateDirectoryOperation(
+      &operation_registry_,
+      *url_generator_,
+      base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
+                 &result_code,
+                 &result_data),
+      test_server_.GetURL("/feeds/default/private/full/folder%3Aroot"),
+      "new directory");
+
+  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, result_code);
+  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_EQ("<?xml version=\"1.0\"?>\n"
+            "<entry xmlns=\"http://www.w3.org/2005/Atom\">\n"
+            " <category scheme=\"http://schemas.google.com/g/2005#kind\" "
+            "term=\"http://schemas.google.com/docs/2007#folder\"/>\n"
+            " <title>new directory</title>\n"
+            "</entry>\n",
+            http_request_.content);
+}
 
 // TODO(satorux): Write tests for CopyDocumentOperation.
 // crbug.com/162348
