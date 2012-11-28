@@ -25,7 +25,8 @@ class IBusPanelServiceImpl : public IBusPanelService {
  public:
   explicit IBusPanelServiceImpl(dbus::Bus* bus)
       : bus_(bus),
-        panel_handler_(NULL),
+        candidate_window_handler_(NULL),
+        property_handler_(NULL),
         weak_ptr_factory_(this) {
     exported_object_ = bus->GetExportedObject(
         dbus::ObjectPath(ibus::panel::kServicePath));
@@ -77,6 +78,22 @@ class IBusPanelServiceImpl : public IBusPanelService {
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&IBusPanelServiceImpl::OnMethodExported,
                    weak_ptr_factory_.GetWeakPtr()));
+
+    exported_object_->ExportMethod(
+        ibus::panel::kServiceInterface,
+        ibus::panel::kRegisterPropertiesMethod,
+        base::Bind(&IBusPanelServiceImpl::RegisterProperties,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&IBusPanelServiceImpl::OnMethodExported,
+                   weak_ptr_factory_.GetWeakPtr()));
+
+    exported_object_->ExportMethod(
+        ibus::panel::kServiceInterface,
+        ibus::panel::kUpdatePropertiesMethod,
+        base::Bind(&IBusPanelServiceImpl::UpdateProperties,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&IBusPanelServiceImpl::OnMethodExported,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   virtual ~IBusPanelServiceImpl() {
@@ -85,13 +102,17 @@ class IBusPanelServiceImpl : public IBusPanelService {
   }
 
   // IBusPanelService override.
-  virtual void Initialize(IBusPanelHandlerInterface* handler) OVERRIDE {
+  virtual void SetUpCandidateWindowHandler(
+      IBusPanelCandidateWindowHandlerInterface* handler) {
     DCHECK(handler);
-    if (panel_handler_ == NULL) {
-      panel_handler_ = handler;
-    } else {
-      LOG(ERROR) << "Already initialized.";
-    }
+    candidate_window_handler_ = handler;
+  }
+
+  // IBusPanelService override.
+  virtual void SetUpPropertyHandler(
+      IBusPanelPropertyHandlerInterface* handler) {
+    DCHECK(handler);
+    property_handler_ = handler;
   }
 
   // IBusPanelService override.
@@ -139,7 +160,9 @@ class IBusPanelServiceImpl : public IBusPanelService {
   // Handles UpdateLookupTable method call from ibus-daemon.
   void UpdateLookupTable(dbus::MethodCall* method_call,
                          dbus::ExportedObject::ResponseSender response_sender) {
-    DCHECK(panel_handler_);
+    if (!candidate_window_handler_)
+      return;
+
     dbus::MessageReader reader(method_call);
     ibus::IBusLookupTable table;
     if (!ibus::PopIBusLookupTable(&reader, &table)) {
@@ -153,7 +176,7 @@ class IBusPanelServiceImpl : public IBusPanelService {
                    << method_call->ToString();
       return;
     }
-    panel_handler_->UpdateLookupTable(table, visible);
+    candidate_window_handler_->UpdateLookupTable(table, visible);
     dbus::Response* response = dbus::Response::FromMethodCall(method_call);
     response_sender.Run(response);
   }
@@ -161,8 +184,10 @@ class IBusPanelServiceImpl : public IBusPanelService {
   // Handles HideLookupTable method call from ibus-daemon.
   void HideLookupTable(dbus::MethodCall* method_call,
                        dbus::ExportedObject::ResponseSender response_sender) {
-    DCHECK(panel_handler_);
-    panel_handler_->HideLookupTable();
+    if (!candidate_window_handler_)
+      return;
+
+    candidate_window_handler_->HideLookupTable();
     dbus::Response* response = dbus::Response::FromMethodCall(method_call);
     response_sender.Run(response);
   }
@@ -171,7 +196,9 @@ class IBusPanelServiceImpl : public IBusPanelService {
   void UpdateAuxiliaryText(
       dbus::MethodCall* method_call,
       dbus::ExportedObject::ResponseSender response_sender) {
-    DCHECK(panel_handler_);
+    if (!candidate_window_handler_)
+      return;
+
     dbus::MessageReader reader(method_call);
     std::string text;
     if (!ibus::PopStringFromIBusText(&reader, &text)) {
@@ -185,7 +212,7 @@ class IBusPanelServiceImpl : public IBusPanelService {
                    << method_call->ToString();
       return;
     }
-    panel_handler_->UpdateAuxiliaryText(text, visible);
+    candidate_window_handler_->UpdateAuxiliaryText(text, visible);
     dbus::Response* response = dbus::Response::FromMethodCall(method_call);
     response_sender.Run(response);
   }
@@ -193,8 +220,10 @@ class IBusPanelServiceImpl : public IBusPanelService {
   // Handles HideAuxiliaryText method call from ibus-daemon.
   void HideAuxiliaryText(dbus::MethodCall* method_call,
                          dbus::ExportedObject::ResponseSender response_sender) {
-    DCHECK(panel_handler_);
-    panel_handler_->HideAuxiliaryText();
+    if (!candidate_window_handler_)
+      return;
+
+    candidate_window_handler_->HideAuxiliaryText();
     dbus::Response* response = dbus::Response::FromMethodCall(method_call);
     response_sender.Run(response);
   }
@@ -202,7 +231,9 @@ class IBusPanelServiceImpl : public IBusPanelService {
   // Handles UpdatePreeditText method call from ibus-daemon.
   void UpdatePreeditText(dbus::MethodCall* method_call,
                          dbus::ExportedObject::ResponseSender response_sender) {
-    DCHECK(panel_handler_);
+    if (!candidate_window_handler_)
+      return;
+
     dbus::MessageReader reader(method_call);
     std::string text;
     if (!ibus::PopStringFromIBusText(&reader, &text)) {
@@ -222,7 +253,7 @@ class IBusPanelServiceImpl : public IBusPanelService {
                    << method_call->ToString();
       return;
     }
-    panel_handler_->UpdatePreeditText(text, cursor_pos, visible);
+    candidate_window_handler_->UpdatePreeditText(text, cursor_pos, visible);
     dbus::Response* response = dbus::Response::FromMethodCall(method_call);
     response_sender.Run(response);
   }
@@ -230,8 +261,49 @@ class IBusPanelServiceImpl : public IBusPanelService {
   // Handles HidePreeditText method call from ibus-daemon.
   void HidePreeditText(dbus::MethodCall* method_call,
                        dbus::ExportedObject::ResponseSender response_sender) {
-    DCHECK(panel_handler_);
-    panel_handler_->HidePreeditText();
+    if (!candidate_window_handler_)
+      return;
+
+    candidate_window_handler_->HidePreeditText();
+    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
+    response_sender.Run(response);
+  }
+
+  // Handles RegisterProperties method call from ibus-daemon.
+  void RegisterProperties(
+      dbus::MethodCall* method_call,
+      dbus::ExportedObject::ResponseSender response_sender) {
+    if (!property_handler_)
+      return;
+
+    dbus::MessageReader reader(method_call);
+    ibus::IBusPropertyList properties;
+    if (!ibus::PopIBusPropertyList(&reader, &properties)) {
+      DLOG(WARNING) << "RegisterProperties called with incorrect parameters:"
+                    << method_call->ToString();
+      return;
+    }
+    property_handler_->RegisterProperties(properties);
+
+    dbus::Response* response = dbus::Response::FromMethodCall(method_call);
+    response_sender.Run(response);
+  }
+
+  // Handles UpdateProperties method call from ibus-daemon.
+  void UpdateProperties(dbus::MethodCall* method_call,
+                        dbus::ExportedObject::ResponseSender response_sender) {
+    if (!property_handler_)
+      return;
+
+    dbus::MessageReader reader(method_call);
+    ibus::IBusPropertyList properties;
+    if (!ibus::PopIBusPropertyList(&reader, &properties)) {
+      DLOG(WARNING) << "RegisterProperties called with incorrect parameters:"
+                    << method_call->ToString();
+      return;
+    }
+    property_handler_->UpdateProperties(properties);
+
     dbus::Response* response = dbus::Response::FromMethodCall(method_call);
     response_sender.Run(response);
   }
@@ -247,8 +319,11 @@ class IBusPanelServiceImpl : public IBusPanelService {
   // D-Bus bus object used for unregistering exported methods in dtor.
   dbus::Bus* bus_;
 
-  // All incoming method calls are passed on to the |panel_handler_|.
-  IBusPanelHandlerInterface* panel_handler_;
+  // All incoming method calls are passed on to the |candidate_window_handler_|
+  // or |property_handler|. This class does not take ownership of following
+  // handlers.
+  IBusPanelCandidateWindowHandlerInterface* candidate_window_handler_;
+  IBusPanelPropertyHandlerInterface* property_handler_;
 
   scoped_refptr<dbus::ExportedObject> exported_object_;
   base::WeakPtrFactory<IBusPanelServiceImpl> weak_ptr_factory_;
@@ -261,7 +336,10 @@ class IBusPanelServiceStubImpl : public IBusPanelService {
   IBusPanelServiceStubImpl() {}
   virtual ~IBusPanelServiceStubImpl() {}
   // IBusPanelService overrides.
-  virtual void Initialize(IBusPanelHandlerInterface* handler) OVERRIDE {}
+  virtual void SetUpCandidateWindowHandler(
+      IBusPanelCandidateWindowHandlerInterface* handler) {}
+  virtual void SetUpPropertyHandler(
+      IBusPanelPropertyHandlerInterface* handler) {}
   virtual void CandidateClicked(uint32 index,
                                 ibus::IBusMouseButton button,
                                 uint32 state) OVERRIDE {}

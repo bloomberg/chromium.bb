@@ -27,10 +27,10 @@ class IBusProperty;
 class IBusText;
 typedef ScopedVector<IBusProperty> IBusPropertyList;
 
-// A interface to handle the panel client method call.
-class CHROMEOS_EXPORT IBusPanelHandlerInterface {
+// A interface to handle the candidate window related method call.
+class CHROMEOS_EXPORT IBusPanelCandidateWindowHandlerInterface {
  public:
-  virtual ~IBusPanelHandlerInterface() {}
+  virtual ~IBusPanelCandidateWindowHandlerInterface() {}
 
   // Called when the IME updates the lookup table.
   virtual void UpdateLookupTable(const ibus::IBusLookupTable& table,
@@ -55,7 +55,22 @@ class CHROMEOS_EXPORT IBusPanelHandlerInterface {
   virtual void HidePreeditText() = 0;
 
  protected:
-  IBusPanelHandlerInterface() {}
+  IBusPanelCandidateWindowHandlerInterface() {}
+};
+
+// A interface to handle the property related method call.
+class CHROMEOS_EXPORT IBusPanelPropertyHandlerInterface {
+ public:
+  virtual ~IBusPanelPropertyHandlerInterface() {}
+
+  // Called when a new property is registered.
+  virtual void RegisterProperties(const ibus::IBusPropertyList& properties) = 0;
+
+  // Called when current property is updated.
+  virtual void UpdateProperties(const ibus::IBusPropertyList& properties) = 0;
+
+ protected:
+  IBusPanelPropertyHandlerInterface() {}
 };
 
 // A class to make the actual DBus method call handling for IBusPanel service.
@@ -66,8 +81,17 @@ class CHROMEOS_EXPORT IBusPanelService {
  public:
   virtual ~IBusPanelService();
 
-  // Initializes Panel service with |handler|, which must not be NULL.
-  virtual void Initialize(IBusPanelHandlerInterface* handler) = 0;
+  // Sets up candidate window panel service with |handler|. This function can be
+  // called multiple times and also can be passed |handler| as NULL. Caller must
+  // release |handler|.
+  virtual void SetUpCandidateWindowHandler(
+      IBusPanelCandidateWindowHandlerInterface* handler) = 0;
+
+  // Sets up property panel service with |handler|. This function can be called
+  // multiple times and also can be passed |handler| as NULL. Caller must
+  // release |handler|.
+  virtual void SetUpPropertyHandler(
+      IBusPanelPropertyHandlerInterface* handler) = 0;
 
   // Emits CandidateClicked signal.
   virtual void CandidateClicked(uint32 index,

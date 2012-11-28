@@ -15,7 +15,10 @@ class MockIBusPanelService : public ibus::IBusPanelService {
   virtual ~MockIBusPanelService();
 
   // IBusPanelService overrides.
-  virtual void Initialize(ibus::IBusPanelHandlerInterface* handler) OVERRIDE;
+  virtual void SetUpCandidateWindowHandler(
+      ibus::IBusPanelCandidateWindowHandlerInterface* handler) OVERRIDE;
+  virtual void SetUpPropertyHandler(
+      ibus::IBusPanelPropertyHandlerInterface* handler) OVERRIDE;
   virtual void CandidateClicked(uint32 index,
                                 ibus::IBusMouseButton button,
                                 uint32 state) OVERRIDE;
