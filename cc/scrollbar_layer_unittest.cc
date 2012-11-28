@@ -8,6 +8,7 @@
 #include "cc/scrollbar_layer_impl.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/fake_web_scrollbar_theme_geometry.h"
+#include "cc/test/layer_tree_test_common.h"
 #include "cc/tree_synchronizer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebScrollbar.h>
@@ -119,6 +120,62 @@ TEST(ScrollbarLayerTest, scrollOffsetSynchronization)
     EXPECT_EQ(112, ccScrollbarLayer->currentPos());
     EXPECT_EQ(1000, ccScrollbarLayer->totalSize());
     EXPECT_EQ(300, ccScrollbarLayer->maximum());
+}
+
+class ScrollbarLayerTestMaxTextureSize : public WebKitTests::ThreadedTest {
+public:
+    ScrollbarLayerTestMaxTextureSize() {}
+
+    void setScrollbarBounds(gfx::Size bounds) {
+        m_bounds = bounds;
+    }
+
+    virtual void beginTest() OVERRIDE
+    {
+        scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());
+        m_scrollbarLayer = ScrollbarLayer::create(scrollbar.Pass(), m_painter, WebKit::FakeWebScrollbarThemeGeometry::create(), 1);
+        m_scrollbarLayer->setBounds(m_bounds);
+        m_layerTreeHost->rootLayer()->addChild(m_scrollbarLayer);
+
+        m_scrollLayer = Layer::create();
+        m_scrollbarLayer->setScrollLayerId(m_scrollLayer->id());
+        m_layerTreeHost->rootLayer()->addChild(m_scrollLayer);
+
+        postSetNeedsCommitToMainThread();
+    }
+
+    virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
+    {
+        m_layerTreeHost->initializeRendererIfNeeded();
+
+        const int kMaxTextureSize = m_layerTreeHost->rendererCapabilities().maxTextureSize;
+
+        // Check first that we're actually testing something.
+        EXPECT_GT(m_scrollbarLayer->bounds().width(), kMaxTextureSize);
+
+        EXPECT_EQ(m_scrollbarLayer->contentBounds().width(), kMaxTextureSize - 1);
+        EXPECT_EQ(m_scrollbarLayer->contentBounds().height(), kMaxTextureSize - 1);
+
+        endTest();
+    }
+
+    virtual void afterTest() OVERRIDE
+    {
+    }
+
+private:
+    scoped_refptr<ScrollbarLayer> m_scrollbarLayer;
+    scoped_refptr<Layer> m_scrollLayer;
+    WebKit::WebScrollbarThemePainter m_painter;
+    gfx::Size m_bounds;
+};
+
+TEST_F(ScrollbarLayerTestMaxTextureSize, runTest) {
+    WebKit::FakeWebGraphicsContext3D context;
+    int max_size = 0;
+    context.getIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
+    setScrollbarBounds(gfx::Size(max_size + 100, max_size + 100));
+    runTest(true);
 }
 
 }  // namespace

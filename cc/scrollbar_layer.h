@@ -30,6 +30,7 @@ public:
     virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
     virtual void setLayerTreeHost(LayerTreeHost*) OVERRIDE;
     virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
+    virtual void setContentsScale(float contentsScale) OVERRIDE;
 
     int scrollLayerId() const { return m_scrollLayerId; }
     void setScrollLayerId(int id) { m_scrollLayerId = id; }
@@ -44,6 +45,9 @@ private:
     void updatePart(CachingBitmapContentLayerUpdater*, LayerUpdater::Resource*, const gfx::Rect&, ResourceUpdateQueue&, RenderingStats&);
     void createUpdaterIfNeeded();
     gfx::Rect scrollbarLayerRectToContentRect(const gfx::Rect& layerRect) const;
+
+    int maxTextureSize();
+    float clampScaleToMaxTextureSize(float scale);
 
     scoped_ptr<WebKit::WebScrollbar> m_scrollbar;
     WebKit::WebScrollbarThemePainter m_painter;

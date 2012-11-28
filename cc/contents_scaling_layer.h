@@ -23,6 +23,8 @@ class CC_EXPORT ContentsScalingLayer : public Layer {
   ContentsScalingLayer();
   virtual ~ContentsScalingLayer();
 
+  gfx::Size computeContentBoundsForScale(float scaleX, float scaleY) const;
+
  private:
   float m_contentsScale;
 };

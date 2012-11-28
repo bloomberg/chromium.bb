@@ -154,6 +154,9 @@ ResourceProvider::ResourceId ResourceProvider::createResource(int pool, const gf
 
 ResourceProvider::ResourceId ResourceProvider::createGLTexture(int pool, const gfx::Size& size, GLenum format, TextureUsageHint hint)
 {
+    DCHECK_LE(size.width(), m_maxTextureSize);
+    DCHECK_LE(size.height(), m_maxTextureSize);
+
     DCHECK(m_threadChecker.CalledOnValidThread());
     unsigned textureId = 0;
     WebGraphicsContext3D* context3d = m_context->context3D();

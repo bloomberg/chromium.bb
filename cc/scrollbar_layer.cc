@@ -40,6 +40,32 @@ ScrollbarLayer::~ScrollbarLayer()
 {
 }
 
+int ScrollbarLayer::maxTextureSize() {
+    DCHECK(layerTreeHost());
+    return layerTreeHost()->rendererCapabilities().maxTextureSize;
+}
+
+float ScrollbarLayer::clampScaleToMaxTextureSize(float scale) {
+    // If the scaled contentBounds() is bigger than the max texture size of the
+    // device, we need to clamp it by rescaling, since contentBounds() is used
+    // below to set the texture size.
+    gfx::Size scaledBounds = computeContentBoundsForScale(scale, scale);
+    if (scaledBounds.width() > maxTextureSize() || scaledBounds.height() > maxTextureSize()) {
+         if (scaledBounds.width() > scaledBounds.height())
+             return (maxTextureSize() - 1) / static_cast<float>(bounds().width());
+         else
+             return (maxTextureSize() - 1) / static_cast<float>(bounds().height());
+   }
+    return scale;
+}
+
+void ScrollbarLayer::setContentsScale(float contentsScale) {
+    contentsScale = clampScaleToMaxTextureSize(contentsScale);
+    ContentsScalingLayer::setContentsScale(contentsScale);
+    DCHECK_LE(contentBounds().width(), maxTextureSize());
+    DCHECK_LE(contentBounds().height(), maxTextureSize());
+}
+
 void ScrollbarLayer::pushPropertiesTo(LayerImpl* layer)
 {
     ContentsScalingLayer::pushPropertiesTo(layer);
@@ -235,6 +261,8 @@ void ScrollbarLayer::setTexturePriorities(const PriorityCalculator&)
 {
     if (contentBounds().IsEmpty())
         return;
+    DCHECK_LE(contentBounds().width(), maxTextureSize());
+    DCHECK_LE(contentBounds().height(), maxTextureSize());
 
     createUpdaterIfNeeded();
 
