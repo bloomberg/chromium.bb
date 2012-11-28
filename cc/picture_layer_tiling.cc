@@ -58,6 +58,12 @@ void PictureLayerTiling::CreateTile(int i, int j) {
   TileMapKey key(i, j);
   DCHECK(!tiles_[key]);
   tiles_[key] = client_->CreateTile(this, tile_rect);
+
+  // TODO(enne): Remove this when we start setting priorities correctly.
+  TilePriority priority;
+  priority.resolution = HIGH_RESOLUTION;
+  priority.time_to_visible_in_seconds = 1000;
+  tiles_[key]->set_priority(ACTIVE_TREE, priority);
 }
 
 Region PictureLayerTiling::OpaqueRegionInContentRect(
