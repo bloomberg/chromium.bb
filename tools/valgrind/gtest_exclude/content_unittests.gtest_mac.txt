@@ -18,5 +18,4 @@ WebDragSourceMacTest.DragInvalidlyEscapedBookmarklet
 MacSandboxTest.ClipboardAccess
 
 # mach_override assertion, see http://crbug.com/162728
-BlobURLRequestJobTest.TestGetSimpleFileSystemFileRequest
-BlobURLRequestJobTest.TestGetLargeFileSystemFileRequest
+BlobURLRequestJobTest.*
