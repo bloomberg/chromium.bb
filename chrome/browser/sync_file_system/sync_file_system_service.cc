@@ -149,6 +149,8 @@ void SyncFileSystemService::InitializeForApp(
   DCHECK(remote_file_service_);
   DCHECK(app_origin == app_origin.GetOrigin());
 
+  DVLOG(1) << "InitializeForApp: " << app_origin.spec();
+
   bool inserted = initialized_app_origins_.insert(app_origin).second;
   if (!inserted) {
     callback.Run(fileapi::SYNC_STATUS_OK);
@@ -273,6 +275,7 @@ void SyncFileSystemService::DidRegisterOrigin(
     const GURL& app_origin,
     const fileapi::SyncStatusCallback& callback,
     fileapi::SyncStatusCode status) {
+  DVLOG(1) << "DidRegisterOrigin: " << app_origin.spec() << " " << status;
   if (status == fileapi::SYNC_STATUS_AUTHENTICATION_FAILED ||
       status == fileapi::SYNC_STATUS_RETRY ||
       status == fileapi::SYNC_STATUS_NETWORK_ERROR) {
@@ -281,8 +284,9 @@ void SyncFileSystemService::DidRegisterOrigin(
     // we can retry.
     pending_register_origins_.insert(app_origin);
     status = fileapi::SYNC_STATUS_OK;
+  } else {
+    pending_register_origins_.erase(app_origin);
   }
-  pending_register_origins_.erase(app_origin);
 
   // This could be given a null callback in retry cases.
   if (!callback.is_null())
@@ -322,6 +326,7 @@ void SyncFileSystemService::MaybeStartRemoteSync() {
   // worth trying to start another remote sync.
   if (is_waiting_remote_sync_enabled_)
     return;
+  DVLOG(1) << "Calling ProcessRemoteChange";
   remote_sync_running_ = true;
   remote_file_service_->ProcessRemoteChange(
       local_file_service_.get(),
@@ -339,6 +344,7 @@ void SyncFileSystemService::MaybeStartLocalSync() {
   // See if we cannot / should not start a new local sync.
   if (local_sync_running_ || pending_local_changes_ == 0)
     return;
+  DVLOG(1) << "Calling ProcessLocalChange";
   local_sync_running_ = true;
   local_file_service_->ProcessLocalChange(
       remote_file_service_->GetLocalChangeProcessor(),
@@ -350,6 +356,10 @@ void SyncFileSystemService::DidProcessRemoteChange(
     fileapi::SyncStatusCode status,
     const FileSystemURL& url,
     fileapi::SyncOperationType type) {
+  DVLOG(1) << "DidProcessRemoteChange: "
+           << " status=" << status
+           << " url=" << url.DebugString()
+           << " operation_type=" << type;
   DCHECK(remote_sync_running_);
   remote_sync_running_ = false;
   if (status == fileapi::SYNC_STATUS_OK &&
@@ -378,6 +388,9 @@ void SyncFileSystemService::DidProcessRemoteChange(
 
 void SyncFileSystemService::DidProcessLocalChange(
     fileapi::SyncStatusCode status, const FileSystemURL& url) {
+  DVLOG(1) << "DidProcessLocalChange: "
+           << " status=" << status
+           << " url=" << url.DebugString();
   DCHECK(local_sync_running_);
   local_sync_running_ = false;
   if (status == fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC) {
@@ -402,6 +415,7 @@ void SyncFileSystemService::OnSyncEnabledForRemoteSync() {
 void SyncFileSystemService::OnLocalChangeAvailable(int64 pending_changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_GE(pending_changes, 0);
+  DVLOG(1) << "OnLocalChangeAvailable: " << pending_changes;
   pending_local_changes_ = pending_changes;
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(&SyncFileSystemService::MaybeStartSync,
@@ -411,6 +425,7 @@ void SyncFileSystemService::OnLocalChangeAvailable(int64 pending_changes) {
 void SyncFileSystemService::OnRemoteChangeAvailable(int64 pending_changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_GE(pending_changes, 0);
+  DVLOG(1) << "OnRemoteChangeAvailable: " << pending_changes;
   pending_remote_changes_ = pending_changes;
   if (pending_changes > 0) {
     // The smallest change available might have changed from the previous one.
@@ -426,6 +441,8 @@ void SyncFileSystemService::OnRemoteServiceStateUpdated(
     RemoteServiceState state,
     const std::string& description) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DVLOG(1) << "OnRemoteServiceStateUpdated: " << state
+           << " " << description;
   if (state == REMOTE_SERVICE_OK) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE, base::Bind(&SyncFileSystemService::MaybeStartSync,

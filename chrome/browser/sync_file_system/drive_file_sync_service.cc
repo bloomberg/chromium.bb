@@ -49,11 +49,15 @@ class DriveFileSyncService::TaskToken {
     location_ = location;
     task_type_ = task_type;
     description_ = description;
+
+    DVLOG(1) << "Token updated: " << description_
+             << " " << location_.ToString();
   }
 
   const tracked_objects::Location& location() const { return location_; }
   TaskType task_type() const { return task_type_; }
   const std::string& description() const { return description_; }
+  std::string done_description() const { return description_ + " done"; }
 
   ~TaskToken() {
     // All task on DriveFileSyncService must hold TaskToken instance to ensure
@@ -293,7 +297,14 @@ void DriveFileSyncService::ApplyLocalChange(
     return;
   }
 
-  switch (ResolveSyncOperationType(local_file_change, url)) {
+  DriveFileSyncService::SyncOperationType operation =
+      ResolveSyncOperationType(local_file_change, url);
+
+  DVLOG(1) << "ApplyLocalChange for " << url.DebugString()
+           << " local_change:" << local_file_change.DebugString()
+           << " ==> operation:" << operation;
+
+  switch (operation) {
     case SYNC_OPERATION_UPLOAD_NEW_FILE: {
       sync_client_->UploadNewFile(
           metadata_store_->GetResourceIdForOrigin(url.origin()),
@@ -395,16 +406,18 @@ void DriveFileSyncService::NotifyTaskDone(fileapi::SyncStatusCode status,
   token_ = token.Pass();
 
   if (token_->task_type() != TASK_TYPE_NONE) {
+    DVLOG(1) << "NotifyTaskDone: " << token_->description()
+             << ": finished with status=" << status
+             << " " << token_->location().ToString();
+
     RemoteServiceState old_state = state_;
     UpdateServiceState();
 
-    // Notify remote sync service state for healthy running updates (OK to OK
-    // state transition) and for any state changes.
-    if ((state_ == REMOTE_SERVICE_OK && !token_->description().empty()) ||
-        old_state != state_) {
-      FOR_EACH_OBSERVER(Observer, observers_,
-                        OnRemoteServiceStateUpdated(state_,
-                                                    token_->description()));
+    // Notify remote sync service state if the state has been changed.
+    if (!token_->description().empty() || old_state != state_) {
+      FOR_EACH_OBSERVER(
+          Observer, observers_,
+          OnRemoteServiceStateUpdated(state_, token_->done_description()));
     }
   }
 

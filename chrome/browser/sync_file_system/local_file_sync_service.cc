@@ -219,6 +219,10 @@ void LocalFileSyncService::DidGetFileForLocalSync(
     ProcessLocalChange(processor, callback);
     return;
   }
+
+  DVLOG(1) << "ProcessLocalChange: " << sync_file_info.url.DebugString()
+           << " change:" << sync_file_info.changes.front().DebugString();
+
   DCHECK(processor);
   processor->ApplyLocalChange(
       sync_file_info.changes.front(),
@@ -238,6 +242,11 @@ void LocalFileSyncService::ProcessNextChangeForURL(
     const FileChange& last_change,
     const FileChangeList& changes,
     SyncStatusCode status) {
+  DVLOG(1) << "Processed one local change: "
+           << sync_file_info.url.DebugString()
+           << " change:" << last_change.DebugString()
+           << " status:" << status;
+
   if (status == fileapi::SYNC_FILE_ERROR_NOT_FOUND &&
       last_change.change() == FileChange::FILE_CHANGE_DELETE) {
     // This must be ok (and could happen).
