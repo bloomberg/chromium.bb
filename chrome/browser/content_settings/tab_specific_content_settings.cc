@@ -105,8 +105,11 @@ TabSpecificContentSettings* TabSpecificContentSettings::Get(
   if (!view)
     return NULL;
 
-  return TabSpecificContentSettings::FromWebContents(
-      WebContents::FromRenderViewHost(view));
+  WebContents* web_contents = WebContents::FromRenderViewHost(view);
+  if (!web_contents)
+    return NULL;
+
+  return TabSpecificContentSettings::FromWebContents(web_contents);
 }
 
 // static
