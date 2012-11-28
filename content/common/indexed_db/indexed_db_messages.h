@@ -233,10 +233,6 @@ IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessIndexedDBKey,
                      int32 /* thread_id */,
                      int32 /* response_id */,
                      content::IndexedDBKey /* indexed_db_key */)
-IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessIDBTransaction,
-                     int32 /* thread_id */,
-                     int32 /* response_id */,
-                     int32 /* idb_transaction_id */)
 IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessSerializedScriptValue,
                      int32 /* thread_id */,
                      int32 /* response_id */,
@@ -392,14 +388,6 @@ IPC_SYNC_MESSAGE_CONTROL3_1(IndexedDBHostMsg_DatabaseDeleteObjectStore,
                             int32, /* idb_database_id */
                             int64, /* object_store_id */
                             int32, /* transaction_id */
-                            WebKit::WebExceptionCode /* ec */)
-
-// WebIDBDatabase::setVersion() message.
-IPC_SYNC_MESSAGE_CONTROL4_1(IndexedDBHostMsg_DatabaseSetVersion,
-                            int32, /* idb_database_id */
-                            int32, /* thread_id */
-                            int32, /* response_id */
-                            string16, /* version */
                             WebKit::WebExceptionCode /* ec */)
 
 // WebIDBDatabase::transaction() message.

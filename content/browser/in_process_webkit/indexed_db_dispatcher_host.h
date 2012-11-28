@@ -120,11 +120,6 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
                              int64 object_store_id,
                              int32 transaction_id,
                              WebKit::WebExceptionCode* ec);
-    void OnSetVersion(int32 idb_database_id,
-                      int32 thread_id,
-                      int32 response_id,
-                      const string16& version,
-                      WebKit::WebExceptionCode* ec);
     void OnTransaction(int32 thread_id,
                        int32 idb_database_id,
                        const std::vector<int64>& names,

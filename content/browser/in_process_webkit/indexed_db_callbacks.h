@@ -51,21 +51,6 @@ class IndexedDBCallbacks : public IndexedDBCallbacksBase {
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
 };
 
-class IndexedDBCallbacksTransaction : public IndexedDBCallbacksBase {
- public:
-  IndexedDBCallbacksTransaction(
-      IndexedDBDispatcherHost* dispatcher_host,
-      int32 thread_id,
-      int32 response_id,
-      const GURL& origin_url);
-
-  virtual void onSuccess(WebKit::WebIDBTransaction* idb_object);
-
- private:
-  GURL origin_url_;
-  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacksTransaction);
-};
-
 class IndexedDBCallbacksDatabase : public IndexedDBCallbacksBase {
  public:
   IndexedDBCallbacksDatabase(

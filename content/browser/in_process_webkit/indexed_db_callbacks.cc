@@ -39,24 +39,6 @@ void IndexedDBCallbacksBase::onBlocked() {
                                                            response_id_));
 }
 
-IndexedDBCallbacksTransaction::IndexedDBCallbacksTransaction(
-      IndexedDBDispatcherHost* dispatcher_host,
-      int32 thread_id,
-      int32 response_id,
-      const GURL& origin_url)
-      : IndexedDBCallbacksBase(dispatcher_host, thread_id, response_id),
-        origin_url_(origin_url) {
-}
-
-void IndexedDBCallbacksTransaction::onSuccess(
-    WebKit::WebIDBTransaction* idb_object) {
-  int32 object_id =
-      dispatcher_host()->Add(idb_object, thread_id(), origin_url_);
-  dispatcher_host()->Send(
-      new IndexedDBMsg_CallbacksSuccessIDBTransaction(thread_id(),
-          response_id(), object_id));
-}
-
 IndexedDBCallbacksDatabase::IndexedDBCallbacksDatabase(
     IndexedDBDispatcherHost* dispatcher_host,
     int32 thread_id,

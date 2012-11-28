@@ -313,7 +313,6 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
                         OnCreateObjectStore)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDeleteObjectStore,
                         OnDeleteObjectStore)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseSetVersion, OnSetVersion)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseTransaction, OnTransaction)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseClose, OnClose)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDestroyed, OnDestroyed)
@@ -403,26 +402,6 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteObjectStore(
 
   *ec = 0;
   idb_database->deleteObjectStore(index_id, *idb_transaction, *ec);
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetVersion(
-    int32 idb_database_id,
-    int32 thread_id,
-    int32 response_id,
-    const string16& version,
-    WebKit::WebExceptionCode* ec) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBDatabase* idb_database = parent_->GetOrTerminateProcess(
-      &map_, idb_database_id);
-  if (!idb_database)
-    return;
-
-  *ec = 0;
-  idb_database->setVersion(
-      version,
-      new IndexedDBCallbacksTransaction(parent_, thread_id, response_id,
-          database_url_map_[idb_database_id]),
-      *ec);
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnTransaction(

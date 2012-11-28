@@ -126,16 +126,6 @@ void RendererWebIDBDatabaseImpl::deleteObjectStore(
           IndexedDBDispatcher::TransactionId(transaction), &ec));
 }
 
-void RendererWebIDBDatabaseImpl::setVersion(
-    const WebString& version,
-    WebIDBCallbacks* callbacks,
-    WebExceptionCode& ec) {
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance();
-  dispatcher->RequestIDBDatabaseSetVersion(
-      version, callbacks, idb_database_id_, &ec);
-}
-
 WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::transaction(
     const WebVector<long long>& object_store_ids,
     unsigned short mode) {

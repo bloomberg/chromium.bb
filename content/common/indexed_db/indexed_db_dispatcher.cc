@@ -101,8 +101,6 @@ void IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnSuccessIDBDatabase)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessIndexedDBKey,
                         OnSuccessIndexedDBKey)
-    IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessIDBTransaction,
-                        OnSuccessIDBTransaction)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessStringList,
                         OnSuccessStringList)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessSerializedScriptValue,
@@ -276,22 +274,6 @@ void IndexedDBDispatcher::RequestIDBDatabaseClose(int32 idb_database_id) {
   // the initial upgradeneeded event handler.
   if (pending_database_callbacks_.Lookup(idb_database_id))
     pending_database_callbacks_.Remove(idb_database_id);
-}
-
-void IndexedDBDispatcher::RequestIDBDatabaseSetVersion(
-    const string16& version,
-    WebIDBCallbacks* callbacks_ptr,
-    int32 idb_database_id,
-    WebExceptionCode* ec) {
-  ResetCursorPrefetchCaches();
-  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
-
-  int32 response_id = pending_callbacks_.Add(callbacks.release());
-  Send(new IndexedDBHostMsg_DatabaseSetVersion(idb_database_id,
-                                               CurrentWorkerId(),
-                                               response_id, version, ec));
-  if (*ec)
-    pending_callbacks_.Remove(response_id);
 }
 
 void IndexedDBDispatcher::RequestIDBIndexOpenObjectCursor(
@@ -541,17 +523,6 @@ void IndexedDBDispatcher::OnSuccessIndexedDBKey(
   if (!callbacks)
     return;
   callbacks->onSuccess(key);
-  pending_callbacks_.Remove(response_id);
-}
-
-void IndexedDBDispatcher::OnSuccessIDBTransaction(int32 thread_id,
-                                                  int32 response_id,
-                                                  int32 object_id) {
-  DCHECK_EQ(thread_id, CurrentWorkerId());
-  WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
-  if (!callbacks)
-    return;
-  callbacks->onSuccess(new RendererWebIDBTransactionImpl(object_id));
   pending_callbacks_.Remove(response_id);
 }
 

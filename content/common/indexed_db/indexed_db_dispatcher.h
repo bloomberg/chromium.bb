@@ -108,12 +108,6 @@ class CONTENT_EXPORT IndexedDBDispatcher
   void RequestIDBDatabaseClose(
       int32 idb_database_id);
 
-  void RequestIDBDatabaseSetVersion(
-      const string16& version,
-      WebKit::WebIDBCallbacks* callbacks,
-      int32 idb_database_id,
-      WebKit::WebExceptionCode* ec);
-
   void RequestIDBIndexOpenObjectCursor(
       const WebKit::WebIDBKeyRange& idb_key_range,
       unsigned short direction,
@@ -217,9 +211,6 @@ class CONTENT_EXPORT IndexedDBDispatcher
   void OnSuccessIndexedDBKey(int32 thread_id,
                              int32 response_id,
                              const IndexedDBKey& key);
-  void OnSuccessIDBTransaction(int32 thread_id,
-                               int32 response_id,
-                               int32 object_id);
   void OnSuccessOpenCursor(
       const IndexedDBMsg_CallbacksSuccessIDBCursor_Params& p);
   void OnSuccessCursorContinue(
