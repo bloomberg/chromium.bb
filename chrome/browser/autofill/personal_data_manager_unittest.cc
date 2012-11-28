@@ -647,7 +647,7 @@ TEST_F(PersonalDataManagerTest, ImportPhoneNumberSplitAcrossMultipleFields) {
   AutofillProfile expected;
   autofill_test::SetProfileInfo(&expected, "George", NULL,
       "Washington", NULL, NULL, "21 Laussat St", NULL,
-      "San Francisco", "California", "94102", NULL, "6505550000");
+      "San Francisco", "California", "94102", NULL, "(650) 555-0000");
   const std::vector<AutofillProfile*>& results = personal_data_->profiles();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected.Compare(*results[0]));
@@ -903,7 +903,6 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
   autofill_test::CreateTestFormField(
       "Email:", "email", "theprez@gmail.com", "text", &field);
   form1.fields.push_back(field);
-  // Phone gets updated.
   autofill_test::CreateTestFormField(
       "Phone:", "phone", "6505556666", "text", &field);
   form1.fields.push_back(field);
@@ -921,9 +920,10 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
   MessageLoop::current()->Run();
 
   AutofillProfile expected;
-  autofill_test::SetProfileInfo(&expected, "George", NULL,
-      "Washington", "theprez@gmail.com", NULL, "1600 Pennsylvania Avenue",
-      "Suite A", "San Francisco", "California", "94102", NULL, "4085556666");
+  autofill_test::SetProfileInfo(
+      &expected, "George", NULL, "Washington", "theprez@gmail.com", NULL,
+      "1600 Pennsylvania Avenue", "Suite A", "San Francisco", "California",
+      "94102", NULL, "(650) 555-6666");
   const std::vector<AutofillProfile*>& results1 = personal_data_->profiles();
   ASSERT_EQ(1U, results1.size());
   EXPECT_EQ(0, expected.Compare(*results1[0]));
@@ -979,7 +979,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
   // Add multi-valued phone number to expectation.  Also, country gets added.
   std::vector<string16> values;
   expected.GetMultiInfo(PHONE_HOME_WHOLE_NUMBER, &values);
-  values.push_back(ASCIIToUTF16("6502231234"));
+  values.push_back(ASCIIToUTF16("(650) 223-1234"));
   expected.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, values);
   expected.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("United States"));
   ASSERT_EQ(1U, results2.size());
@@ -1918,7 +1918,7 @@ TEST_F(PersonalDataManagerTest, CaseInsensitiveMultiValueAggregation) {
   AutofillProfile expected;
   autofill_test::SetProfileInfo(&expected, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, "21 Laussat St", NULL,
-      "San Francisco", "California", "94102", NULL, "817-555-6789");
+      "San Francisco", "California", "94102", NULL, "(817) 555-6789");
   const std::vector<AutofillProfile*>& results1 = personal_data_->profiles();
   ASSERT_EQ(1U, results1.size());
   EXPECT_EQ(0, expected.Compare(*results1[0]));
@@ -1965,9 +1965,9 @@ TEST_F(PersonalDataManagerTest, CaseInsensitiveMultiValueAggregation) {
 
   // Modify expected to include multi-valued fields.
   std::vector<string16> values;
-  expected.GetMultiInfo(PHONE_HOME_CITY_AND_NUMBER, &values);
-  values.push_back(ASCIIToUTF16("214-555-1234"));
-  expected.SetMultiInfo(PHONE_HOME_CITY_AND_NUMBER, values);
+  expected.GetMultiInfo(PHONE_HOME_WHOLE_NUMBER, &values);
+  values.push_back(ASCIIToUTF16("(214) 555-1234"));
+  expected.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, values);
 
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected.Compare(*results2[0]));

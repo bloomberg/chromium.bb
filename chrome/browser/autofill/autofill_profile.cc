@@ -426,7 +426,7 @@ int AutofillProfile::Compare(const AutofillProfile& profile) const {
                                                   NAME_MIDDLE,
                                                   NAME_LAST,
                                                   EMAIL_ADDRESS,
-                                                  PHONE_HOME_NUMBER };
+                                                  PHONE_HOME_WHOLE_NUMBER };
 
   for (size_t i = 0; i < arraysize(multi_value_types); ++i) {
     std::vector<string16> values_a;

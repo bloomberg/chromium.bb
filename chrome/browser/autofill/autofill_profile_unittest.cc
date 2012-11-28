@@ -578,6 +578,15 @@ TEST(AutofillProfileTest, Compare) {
       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
   EXPECT_GT(0, a.Compare(b));
   EXPECT_LT(0, b.Compare(a));
+
+  // Phone numbers are compared by the full number, including the area code.
+  // This is a regression test for http://crbug.com/163024
+  autofill_test::SetProfileInfo(&a, NULL, NULL, NULL, NULL,
+      NULL, NULL, NULL, NULL, NULL, NULL, NULL, "650.555.4321");
+  autofill_test::SetProfileInfo(&b, NULL, NULL, NULL, NULL,
+      NULL, NULL, NULL, NULL, NULL, NULL, NULL, "408.555.4321");
+  EXPECT_GT(0, a.Compare(b));
+  EXPECT_LT(0, b.Compare(a));
 }
 
 TEST(AutofillProfileTest, CountryCode) {
