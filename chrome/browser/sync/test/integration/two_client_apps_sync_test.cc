@@ -18,6 +18,7 @@ using apps_helper::CopyNTPOrdinals;
 using apps_helper::DisableApp;
 using apps_helper::EnableApp;
 using apps_helper::FixNTPOrdinalCollisions;
+using apps_helper::GetAppLaunchOrdinalForApp;
 using apps_helper::HasSameAppsAsVerifier;
 using apps_helper::IncognitoDisableApp;
 using apps_helper::IncognitoEnableApp;
@@ -368,13 +369,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UpdateAppLaunchOrdinal) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 
-  syncer::StringOrdinal initial_position =
-      syncer::StringOrdinal::CreateInitialOrdinal();
   InstallApp(GetProfile(0), 0);
   InstallApp(GetProfile(1), 0);
   InstallApp(verifier(), 0);
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  syncer::StringOrdinal initial_position =
+      GetAppLaunchOrdinalForApp(GetProfile(0), 0);
 
   syncer::StringOrdinal second_position = initial_position.CreateAfter();
   SetAppLaunchOrdinalForApp(GetProfile(0), 0, second_position);
