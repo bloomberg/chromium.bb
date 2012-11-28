@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_WEBTHEMEENGINE_IMPL_LINUX_H_
-#define WEBKIT_GLUE_WEBTHEMEENGINE_IMPL_LINUX_H_
+#ifndef WEBKIT_GLUE_WEBTHEMEENGINE_IMPL_DEFAULT_H_
+#define WEBKIT_GLUE_WEBTHEMEENGINE_IMPL_DEFAULT_H_
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/linux/WebThemeEngine.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/default/WebThemeEngine.h"
 
 namespace webkit_glue {
 
@@ -23,4 +23,4 @@ class WebThemeEngineImpl : public WebKit::WebThemeEngine {
 
 }  // namespace webkit_glue
 
-#endif  // WEBKIT_GLUE_WEBTHEMEENGINE_IMPL_LINUX_H_
+#endif  // WEBKIT_GLUE_WEBTHEMEENGINE_IMPL_DEFAULT_H_

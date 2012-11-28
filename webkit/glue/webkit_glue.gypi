@@ -352,8 +352,8 @@
         'websocketstreamhandle_impl.h',
         'webthemeengine_impl_android.cc',
         'webthemeengine_impl_android.h',
-        'webthemeengine_impl_linux.cc',
-        'webthemeengine_impl_linux.h',
+        'webthemeengine_impl_default.cc',
+        'webthemeengine_impl_default.h',
         'webthemeengine_impl_mac.cc',
         'webthemeengine_impl_mac.h',
         'webthemeengine_impl_win.cc',
@@ -384,6 +384,17 @@
       # own hard dependencies.
       'hard_dependency': 1,
       'conditions': [
+        ['use_default_render_theme==0', {
+          'sources/': [
+            ['exclude', 'webthemeengine_impl_default.cc'],
+            ['exclude', 'webthemeengine_impl_default.h'],
+          ],
+        }, {  # else: use_default_render_theme==1
+          'sources/': [
+            ['exclude', 'webthemeengine_impl_win.cc'],
+            ['exclude', 'webthemeengine_impl_win.h'],
+          ],
+        }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '<(DEPTH)/build/linux/system.gyp:gtk',

@@ -99,7 +99,7 @@ void UpdateFromSystemSettings(
       cursor_blink_time.InMilliseconds() ?
       cursor_blink_time.InMilliseconds() / kGtkCursorBlinkCycleFactor :
       0;
-#elif defined(USE_ASH)
+#elif defined(USE_DEFAULT_RENDER_THEME)
   // This color is 0x544d90fe modulated with 0xffffff.
   prefs->active_selection_bg_color = SkColorSetRGB(0xCB, 0xE4, 0xFA);
   prefs->active_selection_fg_color = SK_ColorBLACK;

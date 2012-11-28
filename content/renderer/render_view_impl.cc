@@ -5254,7 +5254,7 @@ void RenderViewImpl::OnSetRendererPrefs(
       renderer_prefs.track_color);
 #endif
 
-#if defined(USE_ASH) || defined(TOOLKIT_GTK)
+#if defined(USE_DEFAULT_RENDER_THEME) || defined(TOOLKIT_GTK)
   if (webview()) {
 #if defined(TOOLKIT_GTK)
     webview()->setScrollbarColors(

@@ -14,16 +14,15 @@
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/webkit_glue_export.h"
 
-#if defined(OS_WIN)
+#if defined(USE_DEFAULT_RENDER_THEME)
+#include "webkit/glue/webthemeengine_impl_default.h"
+#elif defined(OS_WIN)
 #include "webkit/glue/webthemeengine_impl_win.h"
 #elif defined(OS_MACOSX)
 #include "webkit/glue/webthemeengine_impl_mac.h"
 #elif defined(OS_ANDROID)
 #include "webkit/glue/webthemeengine_impl_android.h"
-#elif defined(OS_POSIX) && !defined(OS_ANDROID)
-#include "webkit/glue/webthemeengine_impl_linux.h"
 #endif
-
 
 class MessageLoop;
 

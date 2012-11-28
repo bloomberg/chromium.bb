@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/webthemeengine_impl_linux.h"
+#include "webkit/glue/webthemeengine_impl_default.h"
 
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
