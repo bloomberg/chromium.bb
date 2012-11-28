@@ -150,7 +150,7 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
       root_layer_(WebLayer::create()),
       tab_crashed_(false),
       window_android_(window_android) {
-  DCHECK(web_contents) <<
+  CHECK(web_contents) <<
       "A ContentViewCoreImpl should be created with a valid WebContents.";
 
   // When a tab is restored (from a saved state), it does not have a renderer
