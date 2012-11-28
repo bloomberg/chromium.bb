@@ -126,6 +126,7 @@ class PanelView : public NativePanel,
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
   // Overridden from views::WidgetObserver:
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
   virtual void OnWidgetActivationChanged(views::Widget* widget,
                                          bool active) OVERRIDE;
 
@@ -161,6 +162,9 @@ class PanelView : public NativePanel,
   // The window that holds all panel views. Lifetime managed by native widget.
   // See widget.h.
   views::Widget* window_;
+
+  // Close gets called more than once, so use this to do one-time clean up once.
+  bool window_closed_;
 
   // The view hosting the web contents. Will be destroyed when child views
   // of this class are destroyed.

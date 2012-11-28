@@ -205,6 +205,7 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds)
     : panel_(panel),
       bounds_(bounds),
       window_(NULL),
+      window_closed_(false),
       web_view_(NULL),
       always_on_top_(true),
       focused_(false),
@@ -362,7 +363,7 @@ void PanelView::SetWidgetBounds(const gfx::Rect& new_bounds) {
 
 void PanelView::ClosePanel() {
   // We're already closing. Do nothing.
-  if (!window_)
+  if (window_closed_)
     return;
 
   if (!panel_->ShouldCloseWindow())
@@ -380,8 +381,9 @@ void PanelView::ClosePanel() {
   }
 
   panel_->OnNativePanelClosed();
-  window_->Close();
-  window_ = NULL;
+  if (window_)
+    window_->Close();
+  window_closed_ = true;
 }
 
 void PanelView::ActivatePanel() {
@@ -641,14 +643,14 @@ void PanelView::WindowClosing() {
   // When closing a panel via window.close, API or the close button,
   // ClosePanel() is called first, destroying the native |window_|
   // which results in this method being called. ClosePanel() sets
-  // |window_| to NULL.
-  // If we still have a |window_| here, the close was triggered by the OS,
-  // (e.g. clicking on taskbar menu), which destroys the native |window_|
+  // |window_closed_| to NULL.
+  // If we still have a |window_closed_| here, the close was triggered by the
+  // OS, (e.g. clicking on taskbar menu), which destroys the native |window_|
   // without invoking ClosePanel() beforehand.
-  if (window_) {
+  if (!window_closed_) {
     panel_->OnWindowClosing();
     ClosePanel();
-    DCHECK(!window_);
+    DCHECK(window_closed_);
   }
 }
 
@@ -728,6 +730,10 @@ bool PanelView::AcceleratorPressed(const ui::Accelerator& accelerator) {
       accelerator_table.find(accelerator);
   DCHECK(iter != accelerator_table.end());
   return panel_->ExecuteCommandIfEnabled(iter->second);
+}
+
+void PanelView::OnWidgetClosing(views::Widget* widget) {
+  window_ = NULL;
 }
 
 void PanelView::OnWidgetActivationChanged(views::Widget* widget, bool active) {
