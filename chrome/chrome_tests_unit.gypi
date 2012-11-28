@@ -1690,6 +1690,8 @@
               ],
             }],
           ],
+          # Bundle all the necessary resources into the test bundle.
+          'includes': ['chrome_ios_bundle_resources.gypi'],
           'actions': [
             {
               'action_name': 'copy_test_data',
