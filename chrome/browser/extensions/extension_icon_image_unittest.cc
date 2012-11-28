@@ -45,7 +45,7 @@ SkBitmap EnsureBitmapSize(const SkBitmap& original, int size) {
   return resized;
 }
 
-// Used to test behaviour including images defined by an image skia source.
+// Used to test behavior including images defined by an image skia source.
 // |GetImageForScale| simply returns image representation from the image given
 // in the ctor.
 class MockImageSkiaSource : public gfx::ImageSkiaSource {
@@ -347,13 +347,17 @@ TEST_F(ExtensionIconImageTest, NoResources) {
   ExtensionIconSet empty_icon_set;
   gfx::ImageSkia default_icon = GetDefaultIcon();
 
-  IconImage image(extension, empty_icon_set, 24, default_icon, this);
+  const int kRequestedSize = 24;
+  IconImage image(extension, empty_icon_set, kRequestedSize, default_icon,
+                  this);
 
   gfx::ImageSkiaRep representation =
       image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
   EXPECT_TRUE(gfx::BitmapsAreEqual(
       representation.sk_bitmap(),
-      default_icon.GetRepresentation(ui::SCALE_FACTOR_100P).sk_bitmap()));
+      EnsureBitmapSize(
+          default_icon.GetRepresentation(ui::SCALE_FACTOR_100P).sk_bitmap(),
+          kRequestedSize)));
 
   EXPECT_EQ(0, ImageLoadedCount());
   // We should have a default icon representation.
@@ -362,7 +366,9 @@ TEST_F(ExtensionIconImageTest, NoResources) {
   representation = image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
   EXPECT_TRUE(gfx::BitmapsAreEqual(
       representation.sk_bitmap(),
-      default_icon.GetRepresentation(ui::SCALE_FACTOR_100P).sk_bitmap()));
+      EnsureBitmapSize(
+          default_icon.GetRepresentation(ui::SCALE_FACTOR_100P).sk_bitmap(),
+          kRequestedSize)));
 }
 
 // If resource set is invalid, image load should be done asynchronously and
@@ -373,18 +379,20 @@ TEST_F(ExtensionIconImageTest, InvalidResource) {
       "extension_icon_image", Extension::INVALID));
   ASSERT_TRUE(extension.get() != NULL);
 
+  const int kInvalidIconSize = 24;
   ExtensionIconSet invalid_icon_set;
-  invalid_icon_set.Add(24, "invalid.png");
+  invalid_icon_set.Add(kInvalidIconSize, "invalid.png");
 
   gfx::ImageSkia default_icon = GetDefaultIcon();
 
-  IconImage image(extension, invalid_icon_set, 24, default_icon, this);
+  IconImage image(extension, invalid_icon_set, kInvalidIconSize, default_icon,
+                  this);
 
   gfx::ImageSkiaRep representation =
       image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
   EXPECT_TRUE(gfx::BitmapsAreEqual(
       representation.sk_bitmap(),
-      CreateBlankBitmapForScale(24, ui::SCALE_FACTOR_100P)));
+      CreateBlankBitmapForScale(kInvalidIconSize, ui::SCALE_FACTOR_100P)));
 
   WaitForImageLoad();
   EXPECT_EQ(1, ImageLoadedCount());
@@ -394,7 +402,9 @@ TEST_F(ExtensionIconImageTest, InvalidResource) {
   representation = image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
   EXPECT_TRUE(gfx::BitmapsAreEqual(
       representation.sk_bitmap(),
-      default_icon.GetRepresentation(ui::SCALE_FACTOR_100P).sk_bitmap()));
+      EnsureBitmapSize(
+          default_icon.GetRepresentation(ui::SCALE_FACTOR_100P).sk_bitmap(),
+          kInvalidIconSize)));
 }
 
 // Test that IconImage works with lazily (but synchronously) created default
@@ -410,7 +420,9 @@ TEST_F(ExtensionIconImageTest, LazyDefaultIcon) {
 
   ExtensionIconSet empty_icon_set;
 
-  IconImage image(extension, empty_icon_set, 128, lazy_default_icon, this);
+  const int kRequestedSize = 128;
+  IconImage image(extension, empty_icon_set, kRequestedSize, lazy_default_icon,
+                  this);
 
   ASSERT_FALSE(lazy_default_icon.HasRepresentation(ui::SCALE_FACTOR_100P));
 
@@ -421,7 +433,9 @@ TEST_F(ExtensionIconImageTest, LazyDefaultIcon) {
   EXPECT_TRUE(lazy_default_icon.HasRepresentation(ui::SCALE_FACTOR_100P));
   EXPECT_TRUE(gfx::BitmapsAreEqual(
       representation.sk_bitmap(),
-      default_icon.GetRepresentation(ui::SCALE_FACTOR_100P).sk_bitmap()));
+      EnsureBitmapSize(
+          default_icon.GetRepresentation(ui::SCALE_FACTOR_100P).sk_bitmap(),
+          kRequestedSize)));
 
   // We should have a default icon representation.
   ASSERT_EQ(1u, image.image_skia().image_reps().size());
@@ -438,10 +452,12 @@ TEST_F(ExtensionIconImageTest, LazyDefaultIcon_AsyncIconImage) {
   gfx::ImageSkia lazy_default_icon(new MockImageSkiaSource(default_icon),
                                     default_icon.size());
 
+  const int kInvalidIconSize = 24;
   ExtensionIconSet invalid_icon_set;
-  invalid_icon_set.Add(24, "invalid.png");
+  invalid_icon_set.Add(kInvalidIconSize, "invalid.png");
 
-  IconImage image(extension, invalid_icon_set, 24, lazy_default_icon, this);
+  IconImage image(extension, invalid_icon_set, kInvalidIconSize,
+                  lazy_default_icon, this);
 
   ASSERT_FALSE(lazy_default_icon.HasRepresentation(ui::SCALE_FACTOR_100P));
 
@@ -458,7 +474,9 @@ TEST_F(ExtensionIconImageTest, LazyDefaultIcon_AsyncIconImage) {
   representation = image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
   EXPECT_TRUE(gfx::BitmapsAreEqual(
       representation.sk_bitmap(),
-      default_icon.GetRepresentation(ui::SCALE_FACTOR_100P).sk_bitmap()));
+      EnsureBitmapSize(
+          default_icon.GetRepresentation(ui::SCALE_FACTOR_100P).sk_bitmap(),
+          kInvalidIconSize)));
 }
 
 TEST_F(ExtensionIconImageTest, LoadPrecachedImage) {
@@ -492,7 +510,7 @@ TEST_F(ExtensionIconImageTest, LoadPrecachedImage) {
   ASSERT_EQ(1u, image.image_skia().image_reps().size());
 }
 
-// Tests behaviour of image created by IconImage after IconImage host goes
+// Tests behavior of image created by IconImage after IconImage host goes
 // away. The image should still return loaded representations. If requested
 // representation was not loaded while IconImage host was around, transparent
 // representations should be returned.
