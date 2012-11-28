@@ -120,14 +120,79 @@ h2 {
 .treatment {
     border: 1px solid;
     border-radius: 5px;
-    -moz-border-radius: 5px;
     padding: 7px;
     margin: 7px;
     box-shadow: 5px 5px 2px #ddd;
     border-color: #ccc
 }
 
+.inactive {
+    cursor: pointer;
+}
+
+.inactive .details {
+    display: none;
+}
+
+.active .details {
+    display: block;
+}
+
+.inactive .tooltip {
+    display: block;
+}
+
+.active .tooltip {
+    display: none;
+}
+
 .delete {
     float: right;
 }
 
+.command {
+    font-size: 10px;
+    font-family: monospace;
+    border-left: solid;
+    background: #eee;
+    word-wrap: break-word;
+}
+
+.rankable {
+    padding: 5px;
+    margin: 2px;
+    background: #eee;
+    border: solid;
+    border-width: 1px;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.rankable:hover {
+   background: #ddd;
+}
+
+.rank_container {
+    padding: 8px;
+    width: auto;
+    min-width: 100px;
+    text-align: center;
+    background-image: -webkit-linear-gradient(top, #eee 0%, #999 100%);
+    border-radius: 5px;
+}
+
+.rank {
+    padding: 0px;
+    margin: 0px;
+    height: auto;
+    min-height: 5px;
+    width: auto;
+}
+
+.highlighted {
+    background: #ff0;
+}
+
+.end {
+    min-height: 30px;
+}

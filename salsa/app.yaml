@@ -12,6 +12,9 @@ handlers:
 - url: /css
   static_dir: css
 
+- url: /exercises
+  static_dir: exercises
+
 - url: /create
   script: create.app
   login: required

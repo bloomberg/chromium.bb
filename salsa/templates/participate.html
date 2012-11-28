@@ -1,0 +1,240 @@
+{% extends "two_columns.html" %}
+
+{% block title %} Experiment Participation {% endblock %}
+
+{% block head %}
+  {{ super() }}
+
+  <script language="javascript" type="text/javascript">
+    function expand(treatment) {
+      // Expand the size of a treatment and shrink all the others
+      treatments = treatment.parentElement.children;
+      for (var i = 0; i < treatments.length; i++) {
+        treatments[i].className = 'treatment inactive';
+      }
+      treatment.className = 'treatment active';
+    }
+
+    function submitReview() {
+      var keys = [
+        {% for treatment in treatments %}
+          '{{ treatment.key() }}',
+        {% endfor %}
+      ]
+
+      // Go through the rank divs to find which treatments are in them
+      var container = document.getElementById('container');
+      var ranking = '';
+      var num_ranked = 0;
+      for (var i = 0; i < container.children.length; i++) {
+        var rank = container.children[i];
+        var ties = '';
+        for (var j = 0; j < rank.children.length; j++) {
+          var treatment_num = rank.children[j].innerHTML.replace(/[^0-9]/g, '');
+          if (!treatment_num)
+            continue;
+          ties = ties + keys[treatment_num] + '=';
+          num_ranked = num_ranked + 1;
+        }
+        if (ties != '')
+          ranking = ranking + ties.slice(0, -1) + '>';
+      }
+
+      // Make sure that all of the treatments got ranked
+      if (num_ranked != keys.length) {
+        alert('Please rank all of the treatments to continue.');
+        return;
+      }
+
+      // Build up a submit url and redirect to it
+      var submit_url = '/submit?exp_key={{ experiment.key() }}'
+      submit_url = submit_url + '&ranking=' + ranking.slice(0, -1);
+      window.location = submit_url;
+    }
+
+    function allowDrop(ev) {
+      ev.preventDefault();
+    }
+
+    function drag(ev) {
+      ev.dataTransfer.setData('source_id', ev.target.id);
+    }
+
+    function drop(ev) {
+      ev.preventDefault();
+      var target_id = ev.target.id;
+      // Confirm that you're not adding it to another rankable object
+      if (ev.target.className.indexOf('rankable') !== -1)
+        target_id = ev.target.parentNode.id;
+
+      // Get the actual Elements for the source and target
+      var source_id = ev.dataTransfer.getData('source_id');
+      var source = document.getElementById(source_id);
+      var target = document.getElementById(target_id);
+      target.appendChild(source);
+      unhighlight(target);
+
+      // Add new empty ranks on either side
+      var container = target.parentNode;
+      var newRankBefore = target.cloneNode();
+      var newRankAfter = target.cloneNode();
+      newRankBefore.id = newRankBefore.id + 'b';
+      newRankAfter.id = newRankAfter.id + 'a';
+      container.insertBefore(newRankBefore, target);
+      container.insertBefore(newRankAfter, target.nextSibling);
+
+      // Preform cleanup and cosmetic changes
+      removeExtraRanks(container);
+      adjustSizes(container);
+    }
+
+    function removeExtraRanks(container) {
+      // Flatten any adjacent empty ranks into a single empty rank
+      for (var i = 0; i < container.children.length; i++) {
+        child = container.children[i];
+        if (child.children.length)
+          continue;
+        nextChild = container.children[i + 1];
+        while (nextChild && !nextChild.children.length) {
+          container.removeChild(nextChild);
+          nextChild = container.children[i + 1];
+        }
+      }
+    }
+
+    function adjustSizes(container) {
+      // Make the first and last ranks larger than the others
+      var numChildren = container.children.length;
+      for (var i = 0; i < numChildren; i++) {
+        child = container.children[i];
+        if (!child || !child.className)
+          continue;
+        child.className = child.className.replace(/end/, '');
+        if (i == 0 || i == numChildren - 1) {
+          child.className = child.className + ' end';
+        }
+      }
+    }
+
+    function highlight(rank) {
+      rank.className = rank.className + ' highlighted';
+    }
+
+    function unhighlight(rank) {
+      rank.className = rank.className.replace(/highlighted/, ' ');
+    }
+  </script>
+{% endblock %}
+
+{% block first_column %}
+  <h1> {{ experiment.name }}: Participate </h1>
+
+  <p>
+    Below is a list of treatments for this experiment.  Each treatment
+    represents a variation on the touchpad processing algorithm.  To participate
+    in this experiment, please try out each of the treatments, and then rank
+    your experiences.
+  </p>
+
+  <p>
+    Each treatment has a command you can run on your Chromebook to temporarily
+    alter the way your touchpad works.  To try out an experiment, simply open
+    up Crosh with Ctrl + Alt + t and paste in the given command.  Note that to
+    paste into the terminal you must either right click and press paste or use
+    Ctrl + Shift + v on your keyboard.
+  </p>
+
+  <p>
+    Once you have applied a treatment, please complete the mouse exercise as it
+    will help you experience the changes and judge them more accurately.
+    Finally, once you have tried all of the treatments, use the form on the
+    right to rank your experiences and click "Submit" to record your responses.
+  </p>
+
+  <ul>
+    <li> Name: {{ experiment.name }}
+    <li> Owner:
+      <a href="mailto:{{ experiment.owner }}?cc=chromeos-tango@google.com">
+        {{ experiment.owner }}
+      </a>
+    <li> Created: {{ experiment.created }}
+    <li> Treatments:
+      {% for treatment in treatments %}
+        <div class="treatment {% if loop.first %}
+                                active
+                              {% else %}
+                                inactive
+                              {% endif %}" onclick="expand(this)">
+          {# TODO: remove the treatment names before release #}
+          <h2> Treatment #{{ loop.index0 }} : {{ treatment.name }} </h2>
+          <div class="tooltip"> click to expand... </div>
+          <div class="details">
+            <div class="command">
+              try_touch_experiment
+              {# Convert the properties and their values to a hex encoding #}
+              {# Properties are separated from values by colons (hex 3a) #}
+              {# Value/Property pairs are separated by commas (hex 2c) #}
+              {% for prop in properties if
+                    prop.parent_key() == treatment.key() %}
+                {{- prop.name.encode("hex") -}}
+                3a
+                {{- prop.value.encode("hex") -}}
+                {%- if not loop.last %}2c{% endif -%}
+              {% endfor %}
+            </div>
+
+            <p>
+              click <a href="exercises/LeftClickMe/experiment.html">here</a>
+              to complete the exercise
+            </p>
+          </div>
+        </div>
+      {% endfor %}
+  </ul>
+{% endblock %}
+
+{% block second_column %}
+  <h1> Rate your experiences </h1>
+  <p>
+    Drag the following blocks around to sort the treatments you just
+    experienced from best to worst.
+  </p>
+  <p>
+    The better a treatment is, the higher it should be placed.  If two
+    treatments were the same, you may place them next to each other.  Don't
+    be shy if you couldn't decide between two of them.  Ties provide valuable
+    information as well.
+  </p>
+
+  <table><tr>
+    <td>
+      <table>
+      {% for treatment in treatments %}
+        <tr><td>
+        <div class="rankable" id="test{{ loop.index0 }}" draggable="true"
+             ondragstart="drag(event)">
+          Treatment {{ loop.index0 }}
+        </div>
+        </td></tr>
+      {% endfor %}
+      </table>
+    </td>
+
+    <td>
+      <table>
+        <tr><th>&uarr; Better &uarr;</th></tr>
+        <tr><td>
+          <div id="container" class="rank_container">
+            <div id="rank1" ondragover="allowDrop(event)" ondrop="drop(event)"
+                 ondragenter="highlight(this)" ondragleave="unhighlight(this)"
+                 class="rank end"></div>
+          </div>
+        </td></tr>
+        <tr><th>&darr; Worse &darr;</th></tr>
+      </table>
+    </td>
+  </tr></table>
+
+  <p><button name="submit" onclick="submitReview()">Submit</button></p>
+
+{% endblock %}
