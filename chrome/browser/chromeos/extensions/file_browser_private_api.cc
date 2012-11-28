@@ -1471,9 +1471,8 @@ void AddMountFunction::GetLocalPathsResponseOnUIThread(
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
   drive::DriveCache* cache = system_service ? system_service->cache() : NULL;
   if (cache && cache->IsUnderDriveCacheDirectory(source_path)) {
-    cache->SetMountedState(
+    cache->MarkAsMounted(
         source_path,
-        true,
         base::Bind(&AddMountFunction::OnMountedStateSet, this, mount_type_str,
                    display_name));
   } else {

@@ -464,11 +464,10 @@ class DriveCacheTest : public testing::Test {
     VerifyCacheFileState(error, resource_id, md5);
   }
 
-  void TestSetMountedState(
+  void TestMarkAsMounted(
       const std::string& resource_id,
       const std::string& md5,
       const FilePath& file_path,
-      bool to_mount,
       DriveFileError expected_error,
       int expected_cache_state,
       DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
@@ -479,8 +478,8 @@ class DriveCacheTest : public testing::Test {
 
     DriveFileError error = DRIVE_FILE_OK;
     FilePath cache_file_path;
-    cache_->SetMountedState(
-        file_path, to_mount,
+    cache_->MarkAsMounted(
+        file_path,
         base::Bind(&test_util::CopyResultsFromGetFileFromCacheCallback,
                    &error, &cache_file_path));
     google_apis::test_util::RunBlockingPoolTask();
@@ -490,8 +489,40 @@ class DriveCacheTest : public testing::Test {
               cache_->GetCacheFilePath(resource_id,
                                        md5,
                                        expected_sub_dir_type_,
-                                       to_mount ?
-                                       DriveCache::CACHED_FILE_MOUNTED :
+                                       DriveCache::CACHED_FILE_MOUNTED));
+  }
+
+  void TestMarkAsUnmounted(
+      const std::string& resource_id,
+      const std::string& md5,
+      const FilePath& file_path,
+      DriveFileError expected_error,
+      int expected_cache_state,
+      DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
+    expected_error_ = expected_error;
+    expected_cache_state_ = expected_cache_state;
+    expected_sub_dir_type_ = expected_sub_dir_type;
+    expect_outgoing_symlink_ = false;
+
+    DriveFileError error = DRIVE_FILE_OK;
+    cache_->MarkAsUnmounted(
+        file_path,
+        base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+    google_apis::test_util::RunBlockingPoolTask();
+
+    FilePath cache_file_path;
+    cache_->GetFile(
+        resource_id, md5,
+        base::Bind(&test_util::CopyResultsFromGetFileFromCacheCallback,
+                   &error, &cache_file_path));
+    google_apis::test_util::RunBlockingPoolTask();
+    EXPECT_EQ(DRIVE_FILE_OK, error);
+
+    EXPECT_TRUE(file_util::PathExists(cache_file_path));
+    EXPECT_EQ(cache_file_path,
+              cache_->GetCacheFilePath(resource_id,
+                                       md5,
+                                       expected_sub_dir_type_,
                                        DriveCache::CACHED_FILE_FROM_SERVER));
   }
 
@@ -1267,12 +1298,12 @@ TEST_F(DriveCacheTest, MountUnmount) {
   file_path = cache_->GetCacheFilePath(resource_id, md5,
                                        DriveCache::CACHE_TYPE_TMP,
                                        DriveCache::CACHED_FILE_FROM_SERVER);
-  TestSetMountedState(resource_id, md5, file_path, true,
-                      DRIVE_FILE_OK,
-                      test_util::TEST_CACHE_STATE_PRESENT |
-                      test_util::TEST_CACHE_STATE_MOUNTED |
-                      test_util::TEST_CACHE_STATE_PERSISTENT,
-                      DriveCache::CACHE_TYPE_PERSISTENT);
+  TestMarkAsMounted(resource_id, md5, file_path,
+                    DRIVE_FILE_OK,
+                    test_util::TEST_CACHE_STATE_PRESENT |
+                    test_util::TEST_CACHE_STATE_MOUNTED |
+                    test_util::TEST_CACHE_STATE_PERSISTENT,
+                    DriveCache::CACHE_TYPE_PERSISTENT);
   EXPECT_TRUE(CacheEntryExists(resource_id, md5));
 
   // Clear mounted state of the file.
@@ -1280,7 +1311,7 @@ TEST_F(DriveCacheTest, MountUnmount) {
                                        md5,
                                        DriveCache::CACHE_TYPE_PERSISTENT,
                                        DriveCache::CACHED_FILE_MOUNTED);
-  TestSetMountedState(resource_id, md5, file_path, false,
+  TestMarkAsUnmounted(resource_id, md5, file_path,
                       DRIVE_FILE_OK,
                       test_util::TEST_CACHE_STATE_PRESENT,
                       DriveCache::CACHE_TYPE_TMP);

@@ -41,25 +41,33 @@ using drive::DriveSystemService;
 using drive::DriveSystemServiceFactory;
 
 namespace {
-  const char kDiskAddedEventType[] = "added";
-  const char kDiskRemovedEventType[] = "removed";
 
-  const char kPathChanged[] = "changed";
-  const char kPathWatchError[] = "error";
+const char kDiskAddedEventType[] = "added";
+const char kDiskRemovedEventType[] = "removed";
 
-  DictionaryValue* DiskToDictionaryValue(
-      const DiskMountManager::Disk* disk) {
-    DictionaryValue* result = new DictionaryValue();
-    result->SetString("mountPath", disk->mount_path());
-    result->SetString("devicePath", disk->device_path());
-    result->SetString("label", disk->device_label());
-    result->SetString("deviceType",
-        DiskMountManager::DeviceTypeToString(disk->device_type()));
-    result->SetInteger("totalSizeKB", disk->total_size_in_bytes() / 1024);
-    result->SetBoolean("readOnly", disk->is_read_only());
-    return result;
-  }
+const char kPathChanged[] = "changed";
+const char kPathWatchError[] = "error";
+
+DictionaryValue* DiskToDictionaryValue(
+    const DiskMountManager::Disk* disk) {
+  DictionaryValue* result = new DictionaryValue();
+  result->SetString("mountPath", disk->mount_path());
+  result->SetString("devicePath", disk->device_path());
+  result->SetString("label", disk->device_label());
+  result->SetString("deviceType",
+                    DiskMountManager::DeviceTypeToString(disk->device_type()));
+  result->SetInteger("totalSizeKB", disk->total_size_in_bytes() / 1024);
+  result->SetBoolean("readOnly", disk->is_read_only());
+  return result;
 }
+
+// Used as a callback for DriveCache::MarkAsUnmounted().
+void OnMarkAsUnmounted(drive::DriveFileError error) {
+  LOG_IF(ERROR, error != drive::DRIVE_FILE_OK)
+      << "Failed to unmount: " << error;
+}
+
+}  // namespace
 
 const char* MountErrorToString(chromeos::MountError error) {
   switch (error) {
@@ -338,10 +346,8 @@ void FileBrowserEventRouter::OnMountEvent(
           DriveSystemServiceFactory::GetForProfile(profile_);
       drive::DriveCache* cache =
           system_service ? system_service->cache() : NULL;
-      if (cache) {
-        cache->SetMountedState(
-            source_path, false, drive::GetFileFromCacheCallback());
-      }
+      if (cache)
+        cache->MarkAsUnmounted(source_path, base::Bind(&OnMarkAsUnmounted));
     }
   }
 }

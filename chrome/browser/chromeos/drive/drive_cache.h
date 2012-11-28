@@ -170,16 +170,15 @@ class DriveCache {
              const std::string& md5,
              const FileOperationCallback& callback);
 
-  // Modifies cache state, which involves the following:
-  // - moves |source_path| to |dest_path|, where
-  //   if we're mounting: |source_path| is the unmounted path and has .<md5>
-  //       extension, and |dest_path| is the mounted path in persistent dir
-  //       and has .<md5>.mounted extension;
-  //   if we're unmounting: the opposite is true for the two paths, i.e.
-  //       |dest_path| is the mounted path and |source_path| the unmounted path.
-  void SetMountedState(const FilePath& file_path,
-                       bool to_mount,
-                       const GetFileFromCacheCallback& callback);
+  // Set the state of the cache entry corresponding to file_path as mounted.
+  // |callback| must not be null.
+  void MarkAsMounted(const FilePath& file_path,
+                     const GetFileFromCacheCallback& callback);
+
+  // Set the state of the cache entry corresponding to file_path as unmounted.
+  // |callback| must not be null.
+  void MarkAsUnmounted(const FilePath& file_path,
+                       const FileOperationCallback& callback);
 
   // Modifies cache state, which involves the following:
   // - moves |source_path| to |dest_path| in persistent dir, where
@@ -316,10 +315,12 @@ class DriveCache {
   DriveFileError UnpinOnBlockingPool(const std::string& resource_id,
                                      const std::string& md5);
 
-  // Used to implement SetMountedState.
-  scoped_ptr<GetFileResult> SetMountedStateOnBlockingPool(
-      const FilePath& file_path,
-      bool to_mount);
+  // Used to implement MarkAsMounted.
+  scoped_ptr<GetFileResult> MarkAsMountedOnBlockingPool(
+      const FilePath& file_path);
+
+  // Used to implement MarkAsUnmounted.
+  DriveFileError MarkAsUnmountedOnBlockingPool(const FilePath& file_path);
 
   // Used to implement MarkDirty.
   DriveFileError MarkDirtyOnBlockingPool(const std::string& resource_id,

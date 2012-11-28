@@ -173,15 +173,15 @@ void DeleteFilesSelectively(const FilePath& path_to_delete_pattern,
 }
 
 // Runs callback with pointers dereferenced.
-// Used to implement GetFile, SetMountedState.
+// Used to implement GetFile, MarkAsMounted.
 void RunGetFileFromCacheCallback(
     const GetFileFromCacheCallback& callback,
     scoped_ptr<std::pair<DriveFileError, FilePath> > result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
   DCHECK(result.get());
 
-  if (!callback.is_null())
-    callback.Run(result->first, result->second);
+  callback.Run(result->first, result->second);
 }
 
 // Runs callback with pointers dereferenced.
@@ -369,17 +369,30 @@ void DriveCache::Unpin(const std::string& resource_id,
                  weak_ptr_factory_.GetWeakPtr(), resource_id, md5, callback));
 }
 
-void DriveCache::SetMountedState(const FilePath& file_path,
-                                 bool to_mount,
-                                 const GetFileFromCacheCallback& callback) {
+void DriveCache::MarkAsMounted(const FilePath& file_path,
+                               const GetFileFromCacheCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
-      base::Bind(&DriveCache::SetMountedStateOnBlockingPool,
-                 base::Unretained(this), file_path, to_mount),
+      base::Bind(&DriveCache::MarkAsMountedOnBlockingPool,
+                 base::Unretained(this), file_path),
       base::Bind(RunGetFileFromCacheCallback, callback));
+}
+
+void DriveCache::MarkAsUnmounted(const FilePath& file_path,
+                                 const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&DriveCache::MarkAsUnmountedOnBlockingPool,
+                 base::Unretained(this), file_path),
+      callback);
 }
 
 void DriveCache::MarkDirty(const std::string& resource_id,
@@ -798,9 +811,8 @@ DriveFileError DriveCache::UnpinOnBlockingPool(const std::string& resource_id,
   return DRIVE_FILE_OK;
 }
 
-scoped_ptr<DriveCache::GetFileResult> DriveCache::SetMountedStateOnBlockingPool(
-    const FilePath& file_path,
-    bool to_mount) {
+scoped_ptr<DriveCache::GetFileResult> DriveCache::MarkAsMountedOnBlockingPool(
+    const FilePath& file_path) {
   AssertOnSequencedWorkerPool();
 
   scoped_ptr<GetFileResult> result(new GetFileResult);
@@ -811,7 +823,7 @@ scoped_ptr<DriveCache::GetFileResult> DriveCache::SetMountedStateOnBlockingPool(
   std::string extra_extension;
   util::ParseCacheFilePath(file_path, &resource_id, &md5, &extra_extension);
   // The extra_extension shall be ".mounted" iff we're unmounting.
-  DCHECK(!to_mount == (extra_extension == util::kMountedArchiveFileExtension));
+  DCHECK(extra_extension != util::kMountedArchiveFileExtension);
 
   // Get cache entry associated with the resource_id and md5
   DriveCacheEntry cache_entry;
@@ -820,7 +832,7 @@ scoped_ptr<DriveCache::GetFileResult> DriveCache::SetMountedStateOnBlockingPool(
     return result.Pass();
   }
 
-  if (to_mount == cache_entry.is_mounted()) {
+  if (cache_entry.is_mounted()) {
     result->first = DRIVE_FILE_ERROR_INVALID_OPERATION;
     return result.Pass();
   }
@@ -836,34 +848,62 @@ scoped_ptr<DriveCache::GetFileResult> DriveCache::SetMountedStateOnBlockingPool(
   FilePath mounted_path = GetCacheFilePath(
       resource_id, md5, mounted_subdir, CACHED_FILE_MOUNTED);
 
-  // Determine the source and destination paths for moving the cache blob.
-  FilePath source_path;
-  FilePath cache_file_path;
-  CacheSubDirectoryType dest_subdir;
-  if (to_mount) {
-    source_path = unmounted_path;
-    cache_file_path = mounted_path;
-    dest_subdir = mounted_subdir;
-    cache_entry.set_is_mounted(true);
-  } else {
-    source_path = mounted_path;
-    cache_file_path = unmounted_path;
-    dest_subdir = unmounted_subdir;
-    cache_entry.set_is_mounted(false);
-  }
-
-  // Move cache blob from source path to destination path.
-  bool success = MoveFile(source_path, cache_file_path);
+  // Move cache file.
+  bool success = MoveFile(unmounted_path, mounted_path);
 
   if (success) {
     // Now that cache operation is complete, update metadata.
     cache_entry.set_md5(md5);
-    cache_entry.set_is_persistent(dest_subdir == CACHE_TYPE_PERSISTENT);
+    cache_entry.set_is_mounted(true);
+    cache_entry.set_is_persistent(true);
     metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
   }
   result->first = success ? DRIVE_FILE_OK : DRIVE_FILE_ERROR_FAILED;
-  result->second = cache_file_path;
+  result->second = mounted_path;
   return result.Pass();
+}
+
+DriveFileError DriveCache::MarkAsUnmountedOnBlockingPool(
+    const FilePath& file_path) {
+  AssertOnSequencedWorkerPool();
+
+  // Parse file path to obtain resource_id, md5 and extra_extension.
+  std::string resource_id;
+  std::string md5;
+  std::string extra_extension;
+  util::ParseCacheFilePath(file_path, &resource_id, &md5, &extra_extension);
+  // The extra_extension shall be ".mounted" iff we're unmounting.
+  DCHECK(extra_extension == util::kMountedArchiveFileExtension);
+
+  // Get cache entry associated with the resource_id and md5
+  DriveCacheEntry cache_entry;
+  if (!GetCacheEntryOnBlockingPool(resource_id, md5, &cache_entry))
+    return DRIVE_FILE_ERROR_NOT_FOUND;
+
+  if (!cache_entry.is_mounted())
+    return DRIVE_FILE_ERROR_INVALID_OPERATION;
+
+  // Get the subdir type and path for the unmounted state.
+  CacheSubDirectoryType unmounted_subdir =
+      cache_entry.is_pinned() ? CACHE_TYPE_PERSISTENT : CACHE_TYPE_TMP;
+  FilePath unmounted_path = GetCacheFilePath(
+      resource_id, md5, unmounted_subdir, CACHED_FILE_FROM_SERVER);
+
+  // Get the subdir type and path for the mounted state.
+  CacheSubDirectoryType mounted_subdir = CACHE_TYPE_PERSISTENT;
+  FilePath mounted_path = GetCacheFilePath(
+      resource_id, md5, mounted_subdir, CACHED_FILE_MOUNTED);
+
+  // Move cache file.
+  if (!MoveFile(mounted_path, unmounted_path))
+    return DRIVE_FILE_ERROR_FAILED;
+
+  // Now that cache operation is complete, update metadata.
+  cache_entry.set_md5(md5);
+  cache_entry.set_is_mounted(false);
+  cache_entry.set_is_persistent(unmounted_subdir == CACHE_TYPE_PERSISTENT);
+  metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
+  return DRIVE_FILE_OK;
 }
 
 DriveFileError DriveCache::MarkDirtyOnBlockingPool(
