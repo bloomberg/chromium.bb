@@ -128,7 +128,7 @@ deps = {
     'src/tools/grit':
         Var('git_url') + '/external/grit-i18n.git@9cb4f8962b26d916b6e7813858f3644d1fcd29c9',
     'src/tools/gyp':
-        Var('git_url') + '/external/gyp.git@63258b1bd7053628d9cb06d64e674dd1756c3a6d',
+        Var('git_url') + '/external/gyp.git@ee3aad419712c8d9648695a8c716560329599624',
     'src/tools/page_cycler/acid3':
         Var('git_url') + '/chromium/deps/acid3.git@bed664c3c6f4200d2ab6b139bddb628dcef6f5ed',
     'src/tools/swarm_client':
@@ -212,9 +212,9 @@ deps_os = {
         'src/third_party/WebKit/Source':
             None,
         'src/third_party/WebKit/Source/Platform/chromium/public':
-            Var('git_url') + '/external/WebKit/Source/Platform/chromium/public.git@a63b621e9d11994864b28fdf518ec157ce55d695',
+            Var('git_url') + '/external/WebKit/Source/Platform/chromium/public.git@98a49d951ff3696b250e0f5a69f2b364226badeb',
         'src/third_party/WebKit/Source/WebKit/chromium/public':
-            Var('git_url') + '/external/WebKit/Source/WebKit/chromium/public.git@cb6f6541d1ecc0fe799b23e04f40f0b7d5cf580c',
+            Var('git_url') + '/external/WebKit/Source/WebKit/chromium/public.git@b2f2218c3ff8ccdc990111ac00cd311c0dcf8839',
         'src/third_party/WebKit/Tools/DumpRenderTree':
             None,
         'src/third_party/WebKit/Tools/Scripts':
