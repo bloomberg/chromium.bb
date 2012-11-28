@@ -137,10 +137,7 @@ class SyncFileSystemService
 
   bool auto_sync_enabled_;
 
-  // TODO(kinuko): clean up this.
   std::set<GURL> initialized_app_origins_;
-
-  std::set<GURL> pending_register_origins_;
 
   ObserverList<SyncEventObserver> observers_;
 

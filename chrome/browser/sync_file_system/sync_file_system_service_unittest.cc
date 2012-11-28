@@ -252,13 +252,13 @@ TEST_F(SyncFileSystemServiceTest, InitializeForAppWithNetworkFailure) {
       SyncEventObserver::SYNC_SERVICE_TEMPORARY_UNAVAILABLE);
 
   // Notify REMOTE_SERVICE_TEMPORARY_UNAVAILABLE and callback with
-  // fileapi::SYNC_STATUS_NETWORK_ERROR.  This should NOT let the
+  // fileapi::SYNC_STATUS_NETWORK_ERROR.  This should let the
   // InitializeApp fail.
   InitializeAppForObserverTest(
       REMOTE_SERVICE_TEMPORARY_UNAVAILABLE,
       fileapi::SYNC_STATUS_NETWORK_ERROR,
       expected_states,
-      fileapi::SYNC_STATUS_OK,
+      fileapi::SYNC_STATUS_NETWORK_ERROR,
       0);
 }
 

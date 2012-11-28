@@ -58,6 +58,8 @@ void DidUpdateConflictState(fileapi::SyncStatusCode status) {
   DCHECK_EQ(fileapi::SYNC_STATUS_OK, status);
 }
 
+void EmptyStatusCallback(fileapi::SyncStatusCode code) {}
+
 }  // namespace
 
 const char DriveFileSyncService::kServiceName[] = "drive";
@@ -259,6 +261,14 @@ void DriveFileSyncService::RegisterOriginForTrackingChanges(
     token->ResetTask(FROM_HERE);
     NotifyTaskDone(last_operation_status_, token.Pass());
     callback.Run(last_operation_status_);
+    return;
+  }
+
+  if (metadata_store_->sync_root_directory().empty()) {
+    GetSyncRootDirectory(
+        token.Pass(),
+        base::Bind(&DriveFileSyncService::DidGetSyncRootForRegisterOrigin,
+                   AsWeakPtr(), origin, callback));
     return;
   }
 
@@ -512,6 +522,7 @@ void DriveFileSyncService::NotifyTaskDone(fileapi::SyncStatusCode status,
   last_operation_status_ = status;
   token_ = token.Pass();
 
+  RemoteServiceState old_state = state_;
   if (token_->task_type() != TASK_TYPE_NONE) {
     DVLOG(1) << "NotifyTaskDone: " << token_->description()
              << ": finished with status=" << status
@@ -529,10 +540,23 @@ void DriveFileSyncService::NotifyTaskDone(fileapi::SyncStatusCode status,
   }
 
   token_->ResetTask(FROM_HERE);
-  if (status == fileapi::SYNC_STATUS_OK && !pending_tasks_.empty()) {
+  if (!pending_tasks_.empty()) {
     base::Closure closure = pending_tasks_.front();
     pending_tasks_.pop_front();
     closure.Run();
+    return;
+  }
+
+  if (state_ != REMOTE_SERVICE_OK || old_state == state_)
+    return;
+
+  // If the state has become OK and we have any pending batch sync origins
+  // restart batch sync for them.
+  if (!pending_batch_sync_origins_.empty()) {
+    GURL origin = *pending_batch_sync_origins_.begin();
+    pending_batch_sync_origins_.erase(pending_batch_sync_origins_.begin());
+    std::string resource_id = metadata_store_->GetResourceIdForOrigin(origin);
+    StartBatchSyncForOrigin(origin, resource_id);
   }
 }
 
@@ -596,15 +620,10 @@ void DriveFileSyncService::DidInitializeMetadataStore(
   }
 
   if (metadata_store_->sync_root_directory().empty()) {
-    DCHECK(metadata_store_->batch_sync_origins().empty());
-    DCHECK(metadata_store_->incremental_sync_origins().empty());
-
-    token->UpdateTask(FROM_HERE, TASK_TYPE_DRIVE, "Retrieving drive root");
-    sync_client_->GetDriveDirectoryForSyncRoot(
-        base::Bind(&DriveFileSyncService::DidGetSyncRootDirectory,
-                   AsWeakPtr(), base::Passed(&token)));
+    GetSyncRootDirectory(token.Pass(), base::Bind(&EmptyStatusCallback));
     return;
   }
+
   NotifyTaskDone(status, token.Pass());
 
   for (std::map<GURL, std::string>::const_iterator itr =
@@ -615,18 +634,46 @@ void DriveFileSyncService::DidInitializeMetadataStore(
   }
 }
 
+void DriveFileSyncService::GetSyncRootDirectory(
+    scoped_ptr<TaskToken> token,
+    const fileapi::SyncStatusCallback& callback) {
+  DCHECK(metadata_store_->sync_root_directory().empty());
+  DCHECK(metadata_store_->batch_sync_origins().empty());
+  DCHECK(metadata_store_->incremental_sync_origins().empty());
+
+  token->UpdateTask(FROM_HERE, TASK_TYPE_DRIVE, "Retrieving drive root");
+  sync_client_->GetDriveDirectoryForSyncRoot(
+      base::Bind(&DriveFileSyncService::DidGetSyncRootDirectory,
+                  AsWeakPtr(), base::Passed(&token), callback));
+}
+
 void DriveFileSyncService::DidGetSyncRootDirectory(
     scoped_ptr<TaskToken> token,
+    const fileapi::SyncStatusCallback& callback,
     google_apis::GDataErrorCode error,
     const std::string& resource_id) {
+  fileapi::SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (error != google_apis::HTTP_SUCCESS &&
       error != google_apis::HTTP_CREATED) {
-    NotifyTaskDone(GDataErrorCodeToSyncStatusCode(error), token.Pass());
+    NotifyTaskDone(status, token.Pass());
+    callback.Run(status);
     return;
   }
 
   metadata_store_->SetSyncRootDirectory(resource_id);
   NotifyTaskDone(fileapi::SYNC_STATUS_OK, token.Pass());
+  callback.Run(status);
+}
+
+void DriveFileSyncService::DidGetSyncRootForRegisterOrigin(
+    const GURL& origin,
+    const fileapi::SyncStatusCallback& callback,
+    fileapi::SyncStatusCode status) {
+  if (status != fileapi::SYNC_STATUS_OK) {
+    callback.Run(status);
+    return;
+  }
+  RegisterOriginForTrackingChanges(origin, callback);
 }
 
 void DriveFileSyncService::StartBatchSyncForOrigin(
@@ -675,6 +722,7 @@ void DriveFileSyncService::DidGetLargestChangeStampForBatchSync(
     google_apis::GDataErrorCode error,
     int64 largest_changestamp) {
   if (error != google_apis::HTTP_SUCCESS) {
+    pending_batch_sync_origins_.insert(origin);
     // TODO(tzik): Refine this error code.
     NotifyTaskDone(GDataErrorCodeToSyncStatusCode(error), token.Pass());
     return;
@@ -696,6 +744,7 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::DocumentFeed> feed) {
   if (error != google_apis::HTTP_SUCCESS) {
+    pending_batch_sync_origins_.insert(origin);
     // TODO(tzik): Refine this error code.
     NotifyTaskDone(GDataErrorCodeToSyncStatusCode(error), token.Pass());
     return;
@@ -717,6 +766,7 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
             AsWeakPtr(), base::Passed(&token), origin, largest_changestamp));
     return;
   }
+
   NotifyTaskDone(fileapi::SYNC_STATUS_OK, token.Pass());
 }
 

@@ -151,8 +151,9 @@ void SyncFileSystemService::InitializeForApp(
 
   DVLOG(1) << "InitializeForApp: " << app_origin.spec();
 
-  bool inserted = initialized_app_origins_.insert(app_origin).second;
-  if (!inserted) {
+  if (initialized_app_origins_.find(app_origin) !=
+      initialized_app_origins_.end()) {
+    DVLOG(1) << "The app is already initialized: " << app_origin.spec();
     callback.Run(fileapi::SYNC_STATUS_OK);
     return;
   }
@@ -177,7 +178,6 @@ void SyncFileSystemService::GetConflictFiles(
   DCHECK(remote_file_service_);
   DCHECK(app_origin == app_origin.GetOrigin());
 
-  // TODO(kinuko): Should we just call Initialize first?
   if (!ContainsKey(initialized_app_origins_, app_origin)) {
     callback.Run(fileapi::SYNC_STATUS_NOT_INITIALIZED,
                  fileapi::FileSystemURLSet());
@@ -198,7 +198,6 @@ void SyncFileSystemService::GetConflictFileInfo(
   DCHECK(remote_file_service_);
   DCHECK(app_origin == app_origin.GetOrigin());
 
-  // TODO(kinuko): Should we just call Initialize first?
   if (!ContainsKey(initialized_app_origins_, app_origin)) {
     callback.Run(fileapi::SYNC_STATUS_NOT_INITIALIZED,
                  fileapi::ConflictFileInfo());
@@ -276,21 +275,11 @@ void SyncFileSystemService::DidRegisterOrigin(
     const fileapi::SyncStatusCallback& callback,
     fileapi::SyncStatusCode status) {
   DVLOG(1) << "DidRegisterOrigin: " << app_origin.spec() << " " << status;
-  if (status == fileapi::SYNC_STATUS_AUTHENTICATION_FAILED ||
-      status == fileapi::SYNC_STATUS_RETRY ||
-      status == fileapi::SYNC_STATUS_NETWORK_ERROR) {
-    // We're having temporary network errors or authentication errors.
-    // We're not yet sure if they're resolvable, but queue them up so that
-    // we can retry.
-    pending_register_origins_.insert(app_origin);
-    status = fileapi::SYNC_STATUS_OK;
-  } else {
-    pending_register_origins_.erase(app_origin);
-  }
 
-  // This could be given a null callback in retry cases.
-  if (!callback.is_null())
-    callback.Run(status);
+  if (status == fileapi::SYNC_STATUS_OK)
+    initialized_app_origins_.insert(app_origin);
+
+  callback.Run(status);
 }
 
 void SyncFileSystemService::MaybeStartSync() {
@@ -307,17 +296,6 @@ void SyncFileSystemService::MaybeStartSync() {
 void SyncFileSystemService::MaybeStartRemoteSync() {
   if (remote_file_service_->GetCurrentState() == REMOTE_SERVICE_DISABLED)
     return;
-  if (!pending_register_origins_.empty()) {
-    // Try if we can register pending origins.
-    // (Note that we don't preserve registration order here assuming it won't
-    // have visible impact in the fairness)
-    const GURL& origin = *pending_register_origins_.begin();
-    remote_file_service_->RegisterOriginForTrackingChanges(
-        origin,
-        base::Bind(&SyncFileSystemService::DidRegisterOrigin,
-                   AsWeakPtr(), origin, SyncStatusCallback()));
-    return;
-  }
   // See if we cannot / should not start a new remote sync.
   if (remote_sync_running_ || pending_remote_changes_ == 0)
     return;

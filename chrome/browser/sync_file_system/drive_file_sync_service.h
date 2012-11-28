@@ -212,9 +212,16 @@ class DriveFileSyncService
   void DidInitializeMetadataStore(scoped_ptr<TaskToken> token,
                                   fileapi::SyncStatusCode status,
                                   bool created);
+  void GetSyncRootDirectory(scoped_ptr<TaskToken> token,
+                            const fileapi::SyncStatusCallback& callback);
   void DidGetSyncRootDirectory(scoped_ptr<TaskToken> token,
+                               const fileapi::SyncStatusCallback& callback,
                                google_apis::GDataErrorCode error,
                                const std::string& resource_id);
+  void DidGetSyncRootForRegisterOrigin(
+      const GURL& origin,
+      const fileapi::SyncStatusCallback& callback,
+      fileapi::SyncStatusCode status);
   void StartBatchSyncForOrigin(const GURL& origin,
                                const std::string& resource_id);
   void DidGetDirectoryForOrigin(scoped_ptr<TaskToken> token,
@@ -287,6 +294,8 @@ class DriveFileSyncService
   int64 largest_changestamp_;
   PendingChangeQueue pending_changes_;
   URLToChange url_to_change_;
+
+  std::set<GURL> pending_batch_sync_origins_;
 
   // Absence of |token_| implies a task is running. Incoming tasks should
   // wait for the task to finish in |pending_tasks_| if |token_| is null.
