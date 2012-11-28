@@ -359,27 +359,40 @@ void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
   bool horizontal = alignment() == SHELF_ALIGNMENT_BOTTOM;
   bool should_change = false;
   if (gesture.type() == ui::ET_GESTURE_SCROLL_END) {
-    // If the shelf was dragged X% towards the correct direction, then it is
-    // hidden/shown.
+    // The visibility of the shelf changes only if the shelf was dragged X%
+    // along the correct axis. If the shelf was already visible, then the
+    // direction of the drag does not matter.
     const float kDragHideThreshold = 0.4f;
     gfx::Rect bounds = GetIdealBounds();
-    float drag_amount = gesture_drag_auto_hide_state_ == AUTO_HIDE_SHOWN ?
-        gesture_drag_amount_ : -gesture_drag_amount_;
-    if (horizontal)
-      should_change = drag_amount > kDragHideThreshold * bounds.height();
-    else if (alignment() == SHELF_ALIGNMENT_LEFT)
-      should_change = -drag_amount > kDragHideThreshold * bounds.width();
-    else
-      should_change = drag_amount > kDragHideThreshold * bounds.width();
+    float drag_ratio = fabs(gesture_drag_amount_) /
+                       (horizontal ?  bounds.height() : bounds.width());
+    if (gesture_drag_auto_hide_state_ == AUTO_HIDE_SHOWN) {
+      should_change = drag_ratio > kDragHideThreshold;
+    } else {
+      bool correct_direction = false;
+      switch (alignment()) {
+        case SHELF_ALIGNMENT_BOTTOM:
+        case SHELF_ALIGNMENT_RIGHT:
+          correct_direction = gesture_drag_amount_ < 0;
+          break;
+        case SHELF_ALIGNMENT_LEFT:
+          correct_direction = gesture_drag_amount_ > 0;
+          break;
+      }
+      should_change = correct_direction && drag_ratio > kDragHideThreshold;
+    }
   } else if (gesture.type() == ui::ET_SCROLL_FLING_START) {
-    if (horizontal)
-      should_change = gesture.details().velocity_y() > 0;
-    else if (alignment() == SHELF_ALIGNMENT_LEFT)
-      should_change = gesture.details().velocity_x() < 0;
-    else
-      should_change = gesture.details().velocity_x() > 0;
-    if (gesture_drag_auto_hide_state_ == AUTO_HIDE_HIDDEN)
-      should_change = !should_change;
+    if (gesture_drag_auto_hide_state_ == AUTO_HIDE_SHOWN) {
+      should_change = horizontal ? fabs(gesture.details().velocity_y()) > 0 :
+                                   fabs(gesture.details().velocity_x()) > 0;
+    } else {
+      if (horizontal)
+        should_change = gesture.details().velocity_y() < 0;
+      else if (alignment() == SHELF_ALIGNMENT_LEFT)
+        should_change = gesture.details().velocity_x() > 0;
+      else
+        should_change = gesture.details().velocity_x() < 0;
+    }
   } else {
     NOTREACHED();
   }

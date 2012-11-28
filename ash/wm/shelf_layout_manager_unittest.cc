@@ -695,14 +695,7 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
   // Swipe up on the shelf. This should not change any state.
   gfx::Point start =
       shelf->launcher_widget()->GetWindowBoundsInScreen().CenterPoint();
-  gfx::Point end(start.x(), start.y() - 100);
-  generator.GestureScrollSequence(start, end,
-      base::TimeDelta::FromMilliseconds(10), 1);
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
-  EXPECT_EQ(bounds_shelf.ToString(), window->bounds().ToString());
-  EXPECT_EQ(shelf_shown.ToString(),
-            shelf->launcher_widget()->GetWindowBoundsInScreen().ToString());
+  gfx::Point end(start.x(), start.y() + 100);
 
   // Swipe down on the shelf to hide it.
   end.set_y(start.y() + 100);
@@ -727,15 +720,20 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
   EXPECT_EQ(shelf_shown.ToString(),
             shelf->launcher_widget()->GetWindowBoundsInScreen().ToString());
 
-  // Swipe up again. This should not change any state.
+  // Swipe up again. The shelf should hide.
   end.set_y(start.y() - 100);
   generator.GestureScrollSequence(start, end,
       base::TimeDelta::FromMilliseconds(10), 1);
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
-  EXPECT_EQ(bounds_shelf.ToString(), window->bounds().ToString());
-  EXPECT_EQ(shelf_shown.ToString(),
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+  EXPECT_EQ(shelf_hidden.ToString(),
             shelf->launcher_widget()->GetWindowBoundsInScreen().ToString());
+
+  // Swipe up yet again to show it.
+  end.set_y(start.y() + 100);
+  generator.GestureScrollSequence(end, start,
+      base::TimeDelta::FromMilliseconds(10), 1);
 
   // Swipe down very little. It shouldn't change any state.
   end.set_y(start.y() + shelf_shown.height() * 3 / 10);
