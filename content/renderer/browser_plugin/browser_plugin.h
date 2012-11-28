@@ -135,7 +135,12 @@ class CONTENT_EXPORT BrowserPlugin :
   // Informs the BrowserPlugin of the cursor that the guest has requested.
   void SetCursor(const WebCursor& cursor);
 
+  // Returns true if |point| lies within the bounds of the plugin rectangle.
+  // Not OK to use this function for making security-sensitive decision since it
+  // can return false positives when the plugin has rotation transformation
+  // applied.
   bool InBounds(const gfx::Point& point) const;
+
   gfx::Point ToLocalCoordinates(const gfx::Point& point) const;
 
   // WebKit::WebPlugin implementation.

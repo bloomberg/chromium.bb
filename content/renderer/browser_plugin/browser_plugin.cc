@@ -756,6 +756,13 @@ void BrowserPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
 }
 
 bool BrowserPlugin::InBounds(const gfx::Point& position) const {
+  // Note that even for plugins that are rotated using rotate transformations,
+  // we use the the |plugin_rect_| provided by updateGeometry, which means we
+  // will be off if |position| is within the plugin rect but does not fall
+  // within the actual plugin boundary. Not supporting such edge case is OK
+  // since this function should not be used for making security-sensitive
+  // decisions.
+  // This also does not take overlapping plugins into account.
   bool result = position.x() >= plugin_rect_.x() &&
       position.x() < plugin_rect_.x() + plugin_rect_.width() &&
       position.y() >= plugin_rect_.y() &&
@@ -764,7 +771,8 @@ bool BrowserPlugin::InBounds(const gfx::Point& position) const {
 }
 
 gfx::Point BrowserPlugin::ToLocalCoordinates(const gfx::Point& point) const {
-  // TODO(lazyboy): Css transformations? http://crbug.com/160350.
+  if (container_)
+    return container_->windowToLocalPoint(WebKit::WebPoint(point));
   return gfx::Point(point.x() - plugin_rect_.x(), point.y() - plugin_rect_.y());
 }
 
