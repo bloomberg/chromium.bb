@@ -195,7 +195,7 @@ void TileManager::ManageTiles() {
   } else {
     bin_map[NOW_BIN] = NOW_BIN;
     bin_map[SOON_BIN] = SOON_BIN;
-    bin_map[EVENTUALLY_BIN] = NEVER_BIN;
+    bin_map[EVENTUALLY_BIN] = EVENTUALLY_BIN;
     bin_map[NEVER_BIN] = NEVER_BIN;
   }
   for (TileVector::iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
