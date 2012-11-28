@@ -205,10 +205,6 @@ std::string BaseNode::GetTitle() const {
   return result;
 }
 
-GURL BaseNode::GetURL() const {
-  return GURL(GetBookmarkSpecifics().url());
-}
-
 bool BaseNode::HasChildren() const {
   syncable::Directory* dir = GetTransaction()->GetDirectory();
   syncable::BaseTransaction* trans = GetTransaction()->GetWrappedTrans();
@@ -297,15 +293,6 @@ DictionaryValue* BaseNode::GetDetailsAsValue() const {
                        base::Int64ToString(GetFirstChildId()));
   node_info->Set("entry", GetEntry()->ToValue());
   return node_info;
-}
-
-void BaseNode::GetFaviconBytes(std::vector<unsigned char>* output) const {
-  if (!output)
-    return;
-  const std::string& favicon = GetBookmarkSpecifics().favicon();
-  output->assign(reinterpret_cast<const unsigned char*>(favicon.data()),
-      reinterpret_cast<const unsigned char*>(favicon.data() +
-                                             favicon.length()));
 }
 
 int64 BaseNode::GetExternalId() const {

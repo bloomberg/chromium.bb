@@ -113,20 +113,6 @@ class BaseNode {
   // data.  Can only be called if GetModelType() == BOOKMARK.
   const sync_pb::BookmarkSpecifics& GetBookmarkSpecifics() const;
 
-  // Legacy, bookmark-specific getter that wraps GetBookmarkSpecifics() above.
-  // Returns the URL of a bookmark object.
-  // TODO(ncarter): Remove this datatype-specific accessor.
-  GURL GetURL() const;
-
-  // Legacy, bookmark-specific getter that wraps GetBookmarkSpecifics() above.
-  // Fill in a vector with the byte data of this node's favicon.  Assumes
-  // that the node is a bookmark.
-  // Favicons are expected to be PNG images, and though no verification is
-  // done on the syncapi client of this, the server may reject favicon updates
-  // that are invalid for whatever reason.
-  // TODO(ncarter): Remove this datatype-specific accessor.
-  void GetFaviconBytes(std::vector<unsigned char>* output) const;
-
   // Getter specific to the APPS datatype.  Returns protobuf
   // data.  Can only be called if GetModelType() == APPS.
   const sync_pb::AppSpecifics& GetAppSpecifics() const;

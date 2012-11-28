@@ -112,12 +112,6 @@ class WriteNode : public BaseNode {
   // Should only be called if GetModelType() == BOOKMARK.
   void SetBookmarkSpecifics(const sync_pb::BookmarkSpecifics& specifics);
 
-  // Legacy, bookmark-specific setters that wrap SetBookmarkSpecifics() above.
-  // Should only be called if GetModelType() == BOOKMARK.
-  // TODO(ncarter): Remove these two datatype-specific accessors.
-  void SetURL(const GURL& url);
-  void SetFaviconBytes(const std::vector<unsigned char>& bytes);
-
   // Generic set specifics method. Will extract the model type from |specifics|.
   void SetEntitySpecifics(const sync_pb::EntitySpecifics& specifics);
 

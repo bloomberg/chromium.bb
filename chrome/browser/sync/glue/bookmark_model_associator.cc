@@ -125,7 +125,7 @@ BookmarkNodeFinder::BookmarkNodeFinder(const BookmarkNode* parent_node)
 const BookmarkNode* BookmarkNodeFinder::FindBookmarkNode(
     const syncer::BaseNode& sync_node) {
   // Create a bookmark node from the given sync node.
-  BookmarkNode temp_node(sync_node.GetURL());
+  BookmarkNode temp_node(GURL(sync_node.GetBookmarkSpecifics().url()));
   temp_node.SetTitle(UTF8ToUTF16(sync_node.GetTitle()));
   if (sync_node.GetIsFolder())
     temp_node.set_type(BookmarkNode::FOLDER);
@@ -324,7 +324,7 @@ bool BookmarkModelAssociator::NodesMatch(
   if (bookmark->is_folder() != sync_node->GetIsFolder())
     return false;
   if (bookmark->is_url()) {
-    if (bookmark->url() != sync_node->GetURL())
+    if (bookmark->url() != GURL(sync_node->GetBookmarkSpecifics().url()))
       return false;
   }
   // Don't compare favicons here, because they are not really

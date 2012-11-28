@@ -2123,7 +2123,7 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
 // See BookmarkChangeProcessor::PlaceSyncNode(..).
 TEST_F(SyncManagerTest, CreateLocalBookmark) {
   std::string title = "title";
-  GURL url("url");
+  std::string url = "url";
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode root_node(&trans);
@@ -2132,7 +2132,10 @@ TEST_F(SyncManagerTest, CreateLocalBookmark) {
     ASSERT_TRUE(node.InitByCreation(BOOKMARKS, root_node, NULL));
     node.SetIsFolder(false);
     node.SetTitle(UTF8ToWide(title));
-    node.SetURL(url);
+
+    sync_pb::BookmarkSpecifics bookmark_specifics(node.GetBookmarkSpecifics());
+    bookmark_specifics.set_url(url);
+    node.SetBookmarkSpecifics(bookmark_specifics);
   }
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -2144,7 +2147,7 @@ TEST_F(SyncManagerTest, CreateLocalBookmark) {
     ASSERT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(child_id));
     EXPECT_FALSE(node.GetIsFolder());
     EXPECT_EQ(title, node.GetTitle());
-    EXPECT_EQ(url, node.GetURL());
+    EXPECT_EQ(url, node.GetBookmarkSpecifics().url());
   }
 }
 
@@ -2669,7 +2672,7 @@ TEST_F(SyncManagerTest, SetPreviouslyEncryptedSpecifics) {
     EXPECT_EQ(BaseNode::INIT_OK,
               node.InitByClientTagLookup(BOOKMARKS, client_tag));
     EXPECT_EQ(title, node.GetTitle());
-    EXPECT_EQ(GURL(url), node.GetURL());
+    EXPECT_EQ(url, node.GetBookmarkSpecifics().url());
   }
 
   {
@@ -2678,7 +2681,10 @@ TEST_F(SyncManagerTest, SetPreviouslyEncryptedSpecifics) {
     WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK,
               node.InitByClientTagLookup(BOOKMARKS, client_tag));
-    node.SetURL(GURL(url2));
+
+    sync_pb::BookmarkSpecifics bookmark_specifics(node.GetBookmarkSpecifics());
+    bookmark_specifics.set_url(url2);
+    node.SetBookmarkSpecifics(bookmark_specifics);
   }
 
   {
@@ -2688,7 +2694,7 @@ TEST_F(SyncManagerTest, SetPreviouslyEncryptedSpecifics) {
     EXPECT_EQ(BaseNode::INIT_OK,
               node.InitByClientTagLookup(BOOKMARKS, client_tag));
     EXPECT_EQ(title, node.GetTitle());
-    EXPECT_EQ(GURL(url2), node.GetURL());
+    EXPECT_EQ(url2, node.GetBookmarkSpecifics().url());
     const syncable::Entry* node_entry = node.GetEntry();
     EXPECT_EQ(kEncryptedString, node_entry->Get(NON_UNIQUE_NAME));
     const sync_pb::EntitySpecifics& specifics = node_entry->Get(SPECIFICS);

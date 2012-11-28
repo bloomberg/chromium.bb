@@ -104,12 +104,6 @@ void WriteNode::SetTitle(const std::wstring& title) {
   MarkForSyncing();
 }
 
-void WriteNode::SetURL(const GURL& url) {
-  sync_pb::BookmarkSpecifics new_value = GetBookmarkSpecifics();
-  new_value.set_url(url.spec());
-  SetBookmarkSpecifics(new_value);
-}
-
 void WriteNode::SetAppSpecifics(
     const sync_pb::AppSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
@@ -511,12 +505,6 @@ bool WriteNode::PutPredecessor(const BaseNode* predecessor) {
   MarkForSyncing();
 
   return true;
-}
-
-void WriteNode::SetFaviconBytes(const vector<unsigned char>& bytes) {
-  sync_pb::BookmarkSpecifics new_value = GetBookmarkSpecifics();
-  new_value.set_favicon(bytes.empty() ? NULL : &bytes[0], bytes.size());
-  SetBookmarkSpecifics(new_value);
 }
 
 void WriteNode::MarkForSyncing() {

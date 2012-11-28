@@ -93,8 +93,11 @@ class FakeServerChange {
     EXPECT_EQ(node.GetParentId(), parent_id);
     node.SetIsFolder(is_folder);
     node.SetTitle(title);
-    if (!is_folder)
-      node.SetURL(GURL(url));
+    if (!is_folder) {
+      sync_pb::BookmarkSpecifics specifics(node.GetBookmarkSpecifics());
+      specifics.set_url(url);
+      node.SetBookmarkSpecifics(specifics);
+    }
     syncer::ChangeRecord record;
     record.action = syncer::ChangeRecord::ACTION_ADD;
     record.id = node.GetId();
@@ -455,7 +458,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     }
     EXPECT_EQ(bnode->is_folder(), gnode.GetIsFolder());
     if (bnode->is_url())
-      EXPECT_EQ(bnode->url(), gnode.GetURL());
+      EXPECT_EQ(bnode->url(), GURL(gnode.GetBookmarkSpecifics().url()));
 
     // Check for position matches.
     int browser_index = bnode->parent()->GetIndexOf(bnode);
