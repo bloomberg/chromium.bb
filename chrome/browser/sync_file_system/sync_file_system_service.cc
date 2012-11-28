@@ -352,8 +352,10 @@ void SyncFileSystemService::DidProcessRemoteChange(
     fileapi::SyncOperationType type) {
   DCHECK(remote_sync_running_);
   remote_sync_running_ = false;
-  if (status == fileapi::SYNC_STATUS_OK) {
-    // TODO(kinuko): Dispatch OnFileSynced notification.
+  if (status == fileapi::SYNC_STATUS_OK &&
+      type != fileapi::SYNC_OPERATION_NONE) {
+    // Notify observers of the changes made for a remote sync.
+    FOR_EACH_OBSERVER(SyncEventObserver, observers_, OnFileSynced(url, type));
   } else if (status == fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC) {
     // We seem to have no changes to work on. Reset the pending_remote_changes_
     // and return here.

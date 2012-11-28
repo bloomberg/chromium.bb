@@ -49,9 +49,8 @@ class SyncEventObserver {
 
   // Reports the file |url| was updated for |operation|
   // by the sync file system backend.
-  virtual void OnFileSynced(fileapi::SyncStatusCode status,
-                            fileapi::SyncOperationType operation,
-                            const fileapi::FileSystemURL& url) = 0;
+  virtual void OnFileSynced(const fileapi::FileSystemURL& url,
+                            fileapi::SyncOperationType operation) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncEventObserver);
