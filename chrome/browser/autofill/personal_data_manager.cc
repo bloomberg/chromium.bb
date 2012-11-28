@@ -853,8 +853,8 @@ void PersonalDataManager::SaveImportedProfile(
 
 
 void PersonalDataManager::SaveImportedCreditCard(
-    const CreditCard& imported_credit_card) {
-  DCHECK(!imported_credit_card.number().empty());
+    const CreditCard& imported_card) {
+  DCHECK(!imported_card.number().empty());
   if (browser_context_->IsOffTheRecord()) {
     // The |IsOffTheRecord| check should happen earlier in the import process,
     // upon form submission.
@@ -862,25 +862,25 @@ void PersonalDataManager::SaveImportedCreditCard(
     return;
   }
 
-  // Set to true if |imported_credit_card| is merged into the credit card list.
+  // Set to true if |imported_card| is merged into the credit card list.
   bool merged = false;
 
-  std::vector<CreditCard> creditcards;
+  std::vector<CreditCard> credit_cards;
   for (std::vector<CreditCard*>::const_iterator card = credit_cards_.begin();
        card != credit_cards_.end();
        ++card) {
-    // If |imported_credit_card| has not yet been merged, check whether it
-    // should be with the current |card|.
-    if (!merged && (*card)->UpdateFromImportedCard(imported_credit_card))
+    // If |imported_card| has not yet been merged, check whether it should be
+    // with the current |card|.
+    if (!merged && (*card)->UpdateFromImportedCard(imported_card))
       merged = true;
 
-    creditcards.push_back(**card);
+    credit_cards.push_back(**card);
   }
 
   if (!merged)
-    creditcards.push_back(imported_credit_card);
+    credit_cards.push_back(imported_card);
 
-  SetCreditCards(&creditcards);
+  SetCreditCards(&credit_cards);
 }
 
 void PersonalDataManager::EmptyMigrationTrash() {
