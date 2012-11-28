@@ -135,12 +135,10 @@ bool ProcessNeedsProfileDir(const std::string& process_type) {
   // On windows we don't want subprocesses other than the browser process and
   // service processes to be able to use the profile directory because if it
   // lies on a network share the sandbox will prevent us from accessing it.
-  // TODO(pastarmovj): For now gpu and plugin broker processes are whitelisted
-  // too because they do use the profile dir in some way but this must be
-  // investigated and fixed if possible.
+  // TODO(pastarmovj): For now plugin broker processes are whitelisted too
+  // because they do use the profile dir in some way and are not sandboxed.
   return process_type.empty() ||
          process_type == switches::kServiceProcess ||
-         process_type == switches::kGpuProcess ||
          process_type == switches::kNaClBrokerProcess ||
          process_type == switches::kNaClLoaderProcess ||
          process_type == switches::kPpapiBrokerProcess;
