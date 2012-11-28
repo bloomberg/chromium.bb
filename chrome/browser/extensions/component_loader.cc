@@ -329,8 +329,11 @@ void ComponentLoader::AddDefaultComponentExtensions() {
 #endif
 
 // Apps Debugger
-Add(IDR_APPS_DEBUGGER_MANIFEST,
-    FilePath(FILE_PATH_LITERAL("apps_debugger")));
+if (CommandLine::ForCurrentProcess()->HasSwitch(
+    switches::kAppsDebugger)) {
+  Add(IDR_APPS_DEBUGGER_MANIFEST,
+      FilePath(FILE_PATH_LITERAL("apps_debugger")));
+}
 
 #if defined(OS_CHROMEOS)
   Add(IDR_WALLPAPERMANAGER_MANIFEST,

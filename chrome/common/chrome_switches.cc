@@ -65,6 +65,9 @@ const char kAppId[]                         = "app-id";
 // mode.
 const char kApp[]                           = "app";
 
+// Flag to enable apps_debugger app.
+const char kAppsDebugger[]                  = "apps-debugger";
+
 // Specifies the initial size for application windows launched with --app.
 // --app-window-size=w,h
 const char kAppWindowSize[]                 = "app-window-size";
