@@ -243,7 +243,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void ForwardTouchEvent(const WebKit::WebTouchEvent& touch_event);
 
   // Forwards the given event immediately to the renderer.
-  void ForwardMouseEventImmediately(const WebKit::WebMouseEvent& mouse_event);
   void ForwardTouchEventImmediately(const WebKit::WebTouchEvent& touch_event);
   void ForwardGestureEventImmediately(
       const WebKit::WebGestureEvent& gesture_event);

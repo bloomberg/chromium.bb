@@ -128,8 +128,6 @@ bool GestureEventFilter::ShouldForwardForTapDeferral(
       if (!ShouldDiscardFlingCancelEvent(gesture_event)) {
         coalesced_gesture_events_.push_back(gesture_event);
         fling_in_progress_ = false;
-        tap_suppression_controller_->GestureFlingCancel(
-            gesture_event.timeStampSeconds);
         return ShouldHandleEventNow();
       }
       return false;
@@ -206,8 +204,6 @@ void GestureEventFilter::Reset() {
 void GestureEventFilter::ProcessGestureAck(bool processed, int type) {
   DCHECK_EQ(coalesced_gesture_events_.front().type, type);
   coalesced_gesture_events_.pop_front();
-  if (type == WebInputEvent::GestureFlingCancel)
-    tap_suppression_controller_->GestureFlingCancelAck(processed);
   if (!coalesced_gesture_events_.empty()) {
     WebGestureEvent next_gesture_event = coalesced_gesture_events_.front();
     render_widget_host_->ForwardGestureEventImmediately(next_gesture_event);

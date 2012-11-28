@@ -903,16 +903,37 @@ void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
     return;
   }
 
-  if (mouse_event.type == WebInputEvent::MouseDown &&
-      gesture_event_filter_->GetTapSuppressionController()->
+  // Avoid spamming the renderer with mouse move events.  It is important
+  // to note that WM_MOUSEMOVE events are anyways synthetic, but since our
+  // thread is able to rapidly consume WM_MOUSEMOVE events, we may get way
+  // more WM_MOUSEMOVE events than we wish to send to the renderer.
+  if (mouse_event.type == WebInputEvent::MouseMove) {
+    if (mouse_move_pending_) {
+      if (!next_mouse_move_.get()) {
+        next_mouse_move_.reset(new WebMouseEvent(mouse_event));
+      } else {
+        // Accumulate movement deltas.
+        int x = next_mouse_move_->movementX;
+        int y = next_mouse_move_->movementY;
+        *next_mouse_move_ = mouse_event;
+        next_mouse_move_->movementX += x;
+        next_mouse_move_->movementY += y;
+      }
+      return;
+    }
+    mouse_move_pending_ = true;
+  } else if (mouse_event.type == WebInputEvent::MouseDown) {
+    if (gesture_event_filter_->GetTapSuppressionController()->
           ShouldDeferMouseDown(mouse_event))
       return;
-  if (mouse_event.type == WebInputEvent::MouseUp &&
-      gesture_event_filter_->GetTapSuppressionController()->
+    OnUserGesture();
+  } else if (mouse_event.type == WebInputEvent::MouseUp) {
+    if (gesture_event_filter_->GetTapSuppressionController()->
           ShouldSuppressMouseUp())
       return;
+  }
 
-  ForwardMouseEventImmediately(mouse_event);
+  ForwardInputEvent(mouse_event, sizeof(WebMouseEvent), false);
 }
 
 void RenderWidgetHostImpl::OnPointerEventActivate() {
@@ -966,47 +987,6 @@ void RenderWidgetHostImpl::ForwardGestureEvent(
     return;
 
   ForwardInputEvent(gesture_event, sizeof(WebGestureEvent), false);
-}
-
-// Forwards MouseEvent without passing it through TapSuppressionController
-void RenderWidgetHostImpl::ForwardMouseEventImmediately(
-    const WebMouseEvent& mouse_event) {
-  TRACE_EVENT2("renderer_host",
-               "RenderWidgetHostImpl::ForwardMouseEventImmediately",
-               "x", mouse_event.x, "y", mouse_event.y);
-  if (ignore_input_events_ || process_->IgnoreInputEvents())
-    return;
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSimulateTouchScreenWithMouse)) {
-    SimulateTouchGestureWithMouse(mouse_event);
-    return;
-  }
-
-  // Avoid spamming the renderer with mouse move events.  It is important
-  // to note that WM_MOUSEMOVE events are anyways synthetic, but since our
-  // thread is able to rapidly consume WM_MOUSEMOVE events, we may get way
-  // more WM_MOUSEMOVE events than we wish to send to the renderer.
-  if (mouse_event.type == WebInputEvent::MouseMove) {
-    if (mouse_move_pending_) {
-      if (!next_mouse_move_.get()) {
-        next_mouse_move_.reset(new WebMouseEvent(mouse_event));
-      } else {
-        // Accumulate movement deltas.
-        int x = next_mouse_move_->movementX;
-        int y = next_mouse_move_->movementY;
-        *next_mouse_move_ = mouse_event;
-        next_mouse_move_->movementX += x;
-        next_mouse_move_->movementY += y;
-      }
-      return;
-    }
-    mouse_move_pending_ = true;
-  } else if (mouse_event.type == WebInputEvent::MouseDown) {
-    OnUserGesture();
-  }
-
-  ForwardInputEvent(mouse_event, sizeof(WebMouseEvent), false);
 }
 
 void RenderWidgetHostImpl::ForwardTouchEventImmediately(
