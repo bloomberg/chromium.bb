@@ -140,7 +140,8 @@ net::URLRequestJob* DoubleGetExperimentInterceptor::MaybeInterceptResponse(
   // Repeat the GET requests as it has non cacheable response with the right
   // MIME type.
   intercepted_requests_.insert(request->identifier());
-  return new net::URLRequestRedirectJob(request, network_delegate,
-                                        request->url());
+  return new net::URLRequestRedirectJob(
+      request, network_delegate, request->url(),
+      net::URLRequestRedirectJob::REDIRECT_302_FOUND);
 }
 

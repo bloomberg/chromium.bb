@@ -297,12 +297,13 @@ void FilterDisabledTests() {
 
     // These tests are unsupported in CF.
     "HTTPSRequestTest.HTTPSPreloadedHSTSTest",
+    "HTTPSRequestTest.HTTPSErrorsNoClobberTSSTest",
+    "HTTPSRequestTest.HSTSPreservesPosts",
     "HTTPSRequestTest.ResumeTest",
     "HTTPSRequestTest.SSLSessionCacheShardTest",
     "HTTPSRequestTest.SSLSessionCacheShardTest",
     "HTTPSRequestTest.SSLv3Fallback",
     "HTTPSRequestTest.TLSv1Fallback",
-    "HTTPSRequestTest.HTTPSErrorsNoClobberTSSTest",
     "HTTPSOCSPTest.*",
     "HTTPSEVCRLSetTest.*",
     "HTTPSCRLSetTest.*"

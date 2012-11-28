@@ -113,7 +113,9 @@ net::URLRequestJob* GViewRequestInterceptor::MaybeInterceptResponse(
   if (supported_mime_types_.count(mime_type) > 0) {
     std::string url(kGViewUrlPrefix);
     url += net::EscapePath(request->url().spec());
-    return new net::URLRequestRedirectJob(request, network_delegate, GURL(url));
+    return new net::URLRequestRedirectJob(
+        request, network_delegate, GURL(url),
+        net::URLRequestRedirectJob::REDIRECT_302_FOUND);
   }
   return NULL;
 }

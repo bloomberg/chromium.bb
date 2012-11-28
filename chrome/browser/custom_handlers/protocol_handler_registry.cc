@@ -151,7 +151,8 @@ net::URLRequestJob* ProtocolHandlerRegistry::Core::MaybeCreateJob(
     return NULL;
 
   return new net::URLRequestRedirectJob(
-      request, network_delegate, translated_url);
+      request, network_delegate, translated_url,
+      net::URLRequestRedirectJob::REDIRECT_302_FOUND);
 }
 
 // URLInterceptor ------------------------------------------------------------
