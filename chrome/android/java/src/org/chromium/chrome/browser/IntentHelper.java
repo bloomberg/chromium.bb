@@ -8,12 +8,14 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.Patterns;
 
 import org.chromium.base.CalledByNative;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -34,10 +36,11 @@ public abstract class IntentHelper {
      * @param subject The subject of the email.
      * @param body The body of the email.
      * @param chooserTitle The title of the activity chooser.
+     * @param fileToAttach The file name of the attachment.
      */
     @CalledByNative
-    static void sendEmail(
-            Context context, String email, String subject, String body, String chooserTitle) {
+    static void sendEmail(Context context, String email, String subject, String body,
+            String chooserTitle, String fileToAttach) {
         Set<String> possibleEmails = new HashSet<String>();
 
         if (!TextUtils.isEmpty(email)) {
@@ -60,6 +63,11 @@ public abstract class IntentHelper {
         }
         send.putExtra(Intent.EXTRA_SUBJECT, subject);
         send.putExtra(Intent.EXTRA_TEXT, Html.fromHtml(body));
+        if (!TextUtils.isEmpty(fileToAttach)) {
+            File fileIn = new File(fileToAttach);
+            send.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(fileIn));
+        }
+
         try {
             Intent chooser = Intent.createChooser(send, chooserTitle);
             // we start this activity outside the main activity.
