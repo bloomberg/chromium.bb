@@ -136,16 +136,16 @@ class MediaTransferProtocolDaemonClientImpl
       const std::string& handle,
       const std::string& path,
       uint32 offset,
-      uint32 length,
+      uint32 bytes_to_read,
       const ReadFileCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE {
-    // TODO(thestig) Use the method constant when available.
-    dbus::MethodCall method_call(mtpd::kMtpdInterface, "ReadFileChunkByPath");
+    dbus::MethodCall method_call(mtpd::kMtpdInterface,
+                                 mtpd::kReadFileChunkByPath);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(handle);
     writer.AppendString(path);
     writer.AppendUint32(offset);
-    writer.AppendUint32(length);
+    writer.AppendUint32(bytes_to_read);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&MediaTransferProtocolDaemonClientImpl::OnReadFile,
@@ -158,16 +158,16 @@ class MediaTransferProtocolDaemonClientImpl
   virtual void ReadFileChunkById(const std::string& handle,
                                  uint32 file_id,
                                  uint32 offset,
-                                 uint32 length,
+                                 uint32 bytes_to_read,
                                  const ReadFileCallback& callback,
                                  const ErrorCallback& error_callback) OVERRIDE {
-    // TODO(thestig) Use the method constant when available.
-    dbus::MethodCall method_call(mtpd::kMtpdInterface, "ReadFileChunkById");
+    dbus::MethodCall method_call(mtpd::kMtpdInterface,
+                                 mtpd::kReadFileChunkById);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(handle);
     writer.AppendUint32(file_id);
     writer.AppendUint32(offset);
-    writer.AppendUint32(length);
+    writer.AppendUint32(bytes_to_read);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&MediaTransferProtocolDaemonClientImpl::OnReadFile,
