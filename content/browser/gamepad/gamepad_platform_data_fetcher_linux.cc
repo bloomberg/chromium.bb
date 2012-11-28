@@ -235,7 +235,7 @@ void GamepadPlatformDataFetcherLinux::ReadDeviceData(size_t index) {
   DCHECK_GE(fd, 0);
 
   js_event event;
-  while (HANDLE_EINTR(read(fd, &event, sizeof(struct js_event)) > 0)) {
+  while (HANDLE_EINTR(read(fd, &event, sizeof(struct js_event))) > 0) {
     size_t item = event.number;
     if (event.type & JS_EVENT_AXIS) {
       if (item >= WebGamepad::axesLengthCap)
