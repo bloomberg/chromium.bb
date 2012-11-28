@@ -126,7 +126,6 @@ class TestGitCl(TestCase):
                    '-M'+similarity, 'fake_ancestor_sha'],), '+dat')
 
     return [
-      ((['git', 'config', 'gerrit.host'],), ''),
       ((['git', 'config', 'rietveld.server'],), 'codereview.example.com'),
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       similarity_call,
@@ -149,6 +148,7 @@ class TestGitCl(TestCase):
        'foo'),
       ((['git', 'config', 'user.email'],), 'me@example.com'),
       stat_call,
+      ((['git', 'config', 'gerrit.host'],), ''),
       ((['git', 'log', '--pretty=format:%s\n\n%b', 'fake_ancestor_sha..'],),
        'desc\n'),
     ]
@@ -433,7 +433,6 @@ class TestGitCl(TestCase):
   @classmethod
   def _gerrit_base_calls(cls):
     return [
-        ((['git', 'config', 'gerrit.host'],), 'gerrit.example.com'),
         ((['git', 'config', 'rietveld.server'],), 'codereview.example.com'),
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
         ((['git', 'config', '--int', '--get',
@@ -465,6 +464,7 @@ class TestGitCl(TestCase):
   @staticmethod
   def _gerrit_upload_calls(description, reviewers):
     calls = [
+        ((['git', 'config', 'gerrit.host'],), 'gerrit.example.com'),
         ((['git', 'log', '--pretty=format:%s\n\n%b', 'fake_ancestor_sha..'],),
          description)
         ]

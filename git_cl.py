@@ -1245,11 +1245,14 @@ def CMDupload(parser, args):
                     help="Emulate Subversion's auto properties feature.")
   parser.add_option('-c', '--use-commit-queue', action='store_true',
                     help='tell the commit queue to commit this patchset')
-  if settings.GetIsGerrit():
-    parser.add_option('--target_branch', dest='target_branch', default='master',
-                      help='target branch to upload')
+  parser.add_option('--target_branch',
+                    help='When uploading to gerrit, remote branch to '
+                         'use for CL.  Default: master')
   add_git_similarity(parser)
   (options, args) = parser.parse_args(args)
+
+  if options.target_branch and not settings.GetIsGerrit():
+    parser.error('Use --target_branch for non gerrit repository.')
 
   # Print warning if the user used the -m/--message argument.  This will soon
   # change to -t/--title.
