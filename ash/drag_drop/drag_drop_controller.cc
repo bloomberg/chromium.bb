@@ -40,7 +40,7 @@ const int kTouchCancelAnimationDuration = 20;
 const int kCancelAnimationFrameRate = 60;
 
 // For touch initiated dragging, we scale and shift drag image by the following:
-static const float kTouchDragImageScale = 1.2;
+static const float kTouchDragImageScale = 1.2f;
 static const int kTouchDragImageVerticalOffset = -25;
 
 // Adjusts the drag image bounds such that the new bounds are scaled by |scale|
