@@ -40,7 +40,6 @@ _FULL_BINHOST = 'FULL_BINHOST'
 _PORTAGE_BINHOST = 'PORTAGE_BINHOST'
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
 _PRINT_INTERVAL = 1
-BUILDBOT_ARCHIVE_PATH = '/b/archive'
 
 
 class NonHaltingBuilderStage(bs.BuilderStage):
@@ -109,7 +108,7 @@ class CleanUpStage(bs.BuilderStage):
 
   def _DeleteArchivedTrybotImages(self):
     """For trybots, clear all previus archive images to save space."""
-    archive_root = ArchiveStage.GetTrybotArchiveRoot(self._build_root)
+    archive_root = ArchiveStage.GetArchiveRoot(self._build_root, trybot=True)
     shutil.rmtree(archive_root, ignore_errors=True)
 
   def _DeleteArchivedPerfResults(self):
@@ -1475,11 +1474,14 @@ class ArchiveStage(BoardSpecificBuilderStage):
   option_name = 'archive'
   _VERSION_NOT_SET = '_not_set_version_'
   _REMOTE_TRYBOT_ARCHIVE_URL = 'gs://chromeos-image-archive'
+  _BUILDBOT_ARCHIVE = 'buildbot_archive'
+  _TRYBOT_ARCHIVE = 'trybot_archive'
 
   @classmethod
-  def GetTrybotArchiveRoot(cls, buildroot):
+  def GetArchiveRoot(cls, buildroot, trybot=False):
     """Return the location where trybot archive images are kept."""
-    return os.path.join(buildroot, 'trybot_archive')
+    archive_base = cls._TRYBOT_ARCHIVE if trybot else cls._BUILDBOT_ARCHIVE
+    return os.path.join(buildroot, archive_base)
 
   # This stage is intended to run in the background, in parallel with tests.
   def __init__(self, options, build_config, board):
@@ -1487,11 +1489,9 @@ class ArchiveStage(BoardSpecificBuilderStage):
     # Set version is dependent on setting external to class.  Do not use
     # directly.  Use GetVersion() instead.
     self._set_version = ArchiveStage._VERSION_NOT_SET
-    if self._options.buildbot and not self._options.debug:
-      self._archive_root = BUILDBOT_ARCHIVE_PATH
-    else:
-      self._archive_root = self.GetTrybotArchiveRoot(self._build_root)
-
+    self.prod_archive = self._options.buildbot and not self._options.debug
+    self._archive_root = self.GetArchiveRoot(
+        self._build_root, trybot=not self.prod_archive)
     self.bot_archive_root = os.path.join(self._archive_root, self._bot_id)
 
     # Queues that are populated during the Archive stage.

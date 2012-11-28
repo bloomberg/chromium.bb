@@ -7,6 +7,7 @@
 """Unittests for build stages."""
 
 import json
+import mock
 import mox
 import os
 import shutil
@@ -30,11 +31,12 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import osutils
+from chromite.lib import partial_mock
 from chromite.scripts import cbuildbot
 
 
 # pylint: disable=E1111,E1120,W0212,R0904
-class AbstractStageTest(cros_test_lib.MoxTestCase):
+class AbstractStageTest(cros_test_lib.MoxTempDirTestCase):
   """Base class for tests that test a particular build stage.
 
   Abstract base class that sets up the build config and options with some
@@ -42,6 +44,7 @@ class AbstractStageTest(cros_test_lib.MoxTestCase):
   """
 
   TARGET_MANIFEST_BRANCH = 'ooga_booga'
+  BUILDROOT = 'buildroot'
 
   def ConstructStage(self):
     """Returns an instance of the stage to be tested.
@@ -53,7 +56,7 @@ class AbstractStageTest(cros_test_lib.MoxTestCase):
     # Always stub RunCommmand out as we use it in every method.
     self.bot_id = 'x86-generic-paladin'
     self.build_config = config.config[self.bot_id].copy()
-    self.build_root = '/fake_root'
+    self.build_root = os.path.join(self.tempdir, self.BUILDROOT)
     self._boards = self.build_config['boards']
     self._current_board = self._boards[0]
 
@@ -62,14 +65,16 @@ class AbstractStageTest(cros_test_lib.MoxTestCase):
 
     # Use the cbuildbot parser to create properties and populate default values.
     parser = cbuildbot._CreateParser()
-    (self.options, _) = parser.parse_args([])
+    (self.options, _) = parser.parse_args(
+        ['-r', self.build_root, '--buildbot', '--noprebuilts',
+          '--buildnumber', '1234'])
 
-    self.options.buildroot = self.build_root
-    self.options.buildbot = True
-    self.options.debug = False
-    self.options.prebuilts = False
-    self.options.clobber = False
-    self.options.buildnumber = 1234
+    self.assertEquals(self.options.buildroot, self.build_root)
+    self.assertTrue(self.options.buildbot)
+    self.assertFalse(self.options.debug)
+    self.assertFalse(self.options.prebuilts)
+    self.assertFalse(self.options.clobber)
+    self.assertEquals(self.options.buildnumber, 1234)
 
     bs.BuilderStage.SetManifestBranch(self.TARGET_MANIFEST_BRANCH)
     portage_utilities._OVERLAY_LIST_CMD = '/bin/true'
@@ -88,6 +93,7 @@ class AbstractStageTest(cros_test_lib.MoxTestCase):
     stage = self.ConstructStage()
     stage.Run()
     self.assertTrue(results_lib.Results.BuildSucceededSoFar())
+
 
 
 class BuilderStageTest(AbstractStageTest):
@@ -1092,73 +1098,74 @@ class BuildTargetStageTest(AbstractStageTest):
     self.mox.VerifyAll()
 
 
-def _replace_archive_path(functor):
-  # If/when mox grows the ability to replace parts of a module selectively,
-  # use that and kill this.
-  # Till then, we just mutate the module and restore it on the way out.
-  def f(self):
-    original = stages.BUILDBOT_ARCHIVE_PATH
-    try:
-      stages.BUILDBOT_ARCHIVE_PATH = self.tempdir
-      return functor(self)
-    finally:
-      stages.BUILDBOT_ARCHIVE_PATH = original
-  return osutils.TempDirDecorator(f)
+class ArchiveStageMock(partial_mock.PartialMock):
+  """Partial mock for Archive Stage."""
+
+  TARGET = 'chromite.buildbot.cbuildbot_stages.ArchiveStage'
+  ATTRS = ('GetVersion',)
+
+  VERSION = '0.0.0.1'
+
+  def GetVersion(self, _inst):
+    return self.VERSION
 
 
 class ArchiveStageTest(AbstractStageTest):
+
+  @staticmethod
+  def _AutoPatch(to_patch):
+    """Patch a list of objects with autospec=True.
+
+    Arguments:
+      to_patch: A list of tuples in the form (target, attr) to patch.  Will be
+      directly passed to mock.patch.object.
+    """
+    for item in to_patch:
+      mock.patch.object(*item, autospec=True).start()
+
+  def _PatchDependencies(self):
+    """Patch dependencies of ArchiveStage.PerformStage()."""
+    to_patch = [
+        (background, 'RunParallelSteps'), (commands, 'PushImages'),
+        (commands, 'RemoveOldArchives'), (commands, 'UploadArchivedFile')]
+    self._AutoPatch(to_patch)
 
   def setUp(self):
     self._build_config = self.build_config.copy()
     self._build_config['upload_symbols'] = True
     self._build_config['push_image'] = True
 
-    self.mox.StubOutWithMock(stages.ArchiveStage, 'GetVersion')
-    stages.ArchiveStage.GetVersion().MultipleTimes().AndReturn('0.0.0.1')
-    self.mox.StubOutWithMock(background, 'RunParallelSteps')
-    self.mox.StubOutWithMock(commands, 'PushImages')
-    self.mox.StubOutWithMock(commands, 'RemoveOldArchives')
-    self.mox.StubOutWithMock(commands, 'UpdateLatestFile')
-    self.mox.StubOutWithMock(commands, 'UploadArchivedFile')
+    self.archive_mock = ArchiveStageMock()
+    self.archive_mock.Start()
+    self._PatchDependencies()
+
+  def tearDown(self):
+    self.archive_mock.Stop()
+    mock.patch.stopall()
 
   def ConstructStage(self):
     return stages.ArchiveStage(self.options, self._build_config,
                                self._current_board)
 
-  @_replace_archive_path
   def testArchive(self):
     """Simple did-it-run test."""
     # TODO(davidjames): Test the individual archive steps as well.
-    background.RunParallelSteps(mox.IgnoreArg())
-
-    commands.RemoveOldArchives(mox.IgnoreArg(), mox.IgnoreArg())
-    commands.UpdateLatestFile(mox.IgnoreArg(), mox.IgnoreArg())
-    commands.UploadArchivedFile(mox.IgnoreArg(), mox.IgnoreArg(),
-                                'LATEST', False)
-
-    self.mox.ReplayAll()
     self.RunStage()
-    self.mox.VerifyAll()
+    # pylint: disable=E1101
+    self.assertEquals(
+        commands.UploadArchivedFile.call_args[0][2:], ('LATEST', False))
 
-  @osutils.TempDirDecorator
   def testNoPushImagesForRemoteTrybot(self):
     """Test that remote trybot overrides work to disable push images."""
-    argv = ['--remote-trybot', '-r', self.tempdir, '--buildnumber=1234',
+    argv = ['--remote-trybot', '-r', self.build_root, '--buildnumber=1234',
             'x86-mario-release']
     parser = cbuildbot._CreateParser()
     (self.options, _args) = cbuildbot._ParseCommandLine(parser, argv)
     test_config = config.config['x86-mario-release']
     self._build_config = config.OverrideConfigForTrybot(test_config, True)
-
-    background.RunParallelSteps(mox.IgnoreArg())
-    commands.RemoveOldArchives(mox.IgnoreArg(), mox.IgnoreArg())
-    commands.UpdateLatestFile(mox.IgnoreArg(), mox.IgnoreArg())
-    commands.UploadArchivedFile(mox.IgnoreArg(), mox.IgnoreArg(),
-                                'LATEST', False)
-
-    self.mox.ReplayAll()
     self.RunStage()
-    self.mox.VerifyAll()
+    # pylint: disable=E1101
+    self.assertEquals(commands.PushImages.call_count, 0)
 
 
 class UploadPrebuiltsStageTest(AbstractStageTest):
