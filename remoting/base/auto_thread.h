@@ -40,13 +40,24 @@ class AutoThread : base::PlatformThread::Delegate {
       const char* name,
       scoped_refptr<AutoThreadTaskRunner> joiner);
 
+#if defined(OS_WIN)
+  // Create an AutoThread initialized for COM.  |com_init_type| specifies the
+  // type of COM apartment to initialize.
+  enum ComInitType { COM_INIT_NONE, COM_INIT_STA, COM_INIT_MTA };
+  static scoped_refptr<AutoThreadTaskRunner> CreateWithLoopAndComInitTypes(
+      const char* name,
+      scoped_refptr<AutoThreadTaskRunner> joiner,
+      MessageLoop::Type loop_type,
+      ComInitType com_init_type);
+#endif
+
   // Construct the AutoThread.  |name| identifies the thread for debugging.
   explicit AutoThread(const char* name);
 
   // Waits for the thread to exit, and then destroys it.
   virtual ~AutoThread();
 
-  // Starts a the thread, running the specified type of MessageLoop.  Returns
+  // Starts the thread, running the specified type of MessageLoop.  Returns
   // an AutoThreadTaskRunner through which tasks may be posted to the thread
   // if successful, or NULL on failure.
   //
@@ -58,8 +69,11 @@ class AutoThread : base::PlatformThread::Delegate {
   // thread will exit when no references to the TaskRunner remain.
   scoped_refptr<AutoThreadTaskRunner> StartWithType(MessageLoop::Type type);
 
-  // Shorthand for StartWithType(MessageLoop::TYPE_DEFAULT).
-  scoped_refptr<AutoThreadTaskRunner> Start();
+#if defined(OS_WIN)
+  // Configures the thread to initialize the specified COM apartment type.
+  // SetComInitType() must be called before Start().
+  void SetComInitType(ComInitType com_init_type);
+#endif
 
  private:
   AutoThread(const char* name, AutoThreadTaskRunner* joiner);
@@ -73,6 +87,11 @@ class AutoThread : base::PlatformThread::Delegate {
   // Used to pass data to ThreadMain.
   struct StartupData;
   StartupData* startup_data_;
+
+#if defined(OS_WIN)
+  // Specifies which kind of COM apartment to initialize, if any.
+  ComInitType com_init_type_;
+#endif
 
   // The thread's handle.
   base::PlatformThreadHandle thread_;
