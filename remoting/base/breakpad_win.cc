@@ -112,12 +112,10 @@ BreakpadWin::BreakpadWin() : handling_exception_(0) {
   if (length == 0)
     return;
 
-  // Minidump with stacks, PEB, TEB, unloaded module list and memory referenced
-  // from stack.
+  // Minidump with stacks, PEB, TEBs and unloaded module list.
   MINIDUMP_TYPE dump_type = static_cast<MINIDUMP_TYPE>(
       MiniDumpWithProcessThreadData |
-      MiniDumpWithUnloadedModules |
-      MiniDumpWithIndirectlyReferencedMemory);
+      MiniDumpWithUnloadedModules);
   breakpad_.reset(
       new google_breakpad::ExceptionHandler(
           temp_directory, &OnExceptionCallback, NULL, NULL,
