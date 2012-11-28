@@ -49,6 +49,7 @@ start_of_text:
 write_num_16:
         push {r4, lr}
         mov r3, sp
+        /* r12 is caller-saved: use it as a temporary register */
         sub r12, sp, #0x10
         bic sp, r12, #0xc0000000
 
@@ -79,6 +80,7 @@ do_digit_not_upper:
         bic r3, r3, #0xc000000f
         blx r3
 
+        /* r12 is caller-saved: use it as a temporary register */
         add r12, sp, #0x10
         bic sp, r12, #0xc0000000
         pop {r4, lr}
@@ -93,6 +95,7 @@ do_digit_not_upper:
          */
 write_char:
         push {lr}
+        /* r12 is caller-saved: use it as a temporary register */
         sub r12, sp, #0x10
         bic sp, r12, #0xc0000000
         strb r1, [sp]
@@ -107,6 +110,7 @@ write_char:
         bic r3, r3, #0xc000000f
         blx r3
 
+        /* r12 is caller-saved: use it as a temporary register */
         add r12, sp, #0x10
         bic sp, r12, #0xc0000000
         pop {lr}
