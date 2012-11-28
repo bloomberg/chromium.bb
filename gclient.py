@@ -642,23 +642,31 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           if parsed_url:
             env['GCLIENT_URL'] = parsed_url
           env['GCLIENT_DEP_PATH'] = self.name
-          if options.prepend_dir:
+          if options.prepend_dir and scm == 'git':
             print_stdout = False
             def filter_fn(line):
+              """Git-specific path marshaling. It is optimized for git-grep."""
+
+              def mod_path(git_pathspec):
+                match = re.match('^(\\S+?:)?([^\0]+)$', git_pathspec)
+                modified_path = os.path.join(self.name, match.group(2))
+                branch = match.group(1) or ''
+                return '%s%s' % (branch, modified_path)
+
+              match = re.match('^Binary file ([^\0]+) matches$', line)
+              if match:
+                print 'Binary file %s matches' % mod_path(match.group(1))
+                return
+
               items = line.split('\0')
-              if len(items) == 1:
-                match = re.match('Binary file (.*) matches$', line)
-                if match:
-                  print 'Binary file %s matches' % os.path.join(
-                      self.name, match.group(1))
-                else:
-                  print line
-              elif len(items) == 2 and items[1]:
-                print '%s : %s' % (os.path.join(self.name, items[0]), items[1])
-              else:
+              if len(items) == 2 and items[1]:
+                print '%s : %s' % (mod_path(items[0]), items[1])
+              elif len(items) >= 2:
                 # Multiple null bytes or a single trailing null byte indicate
                 # git is likely displaying filenames only (such as with -l)
-                print '\n'.join(os.path.join(self.name, f) for f in items if f)
+                print '\n'.join(mod_path(path) for path in items if path)
+              else:
+                print line
           else:
             print_stdout = True
             filter_fn = None
