@@ -531,9 +531,7 @@
 
       If this setting is enabled or not configured, users can print.
 
-      If this setting is disabled, users cannot print from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Printing is disabled in the wrench menu, extensions, JavaScript applications, etc. It is still possible to print from plugins that bypass <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> while printing. For example certain Flash applications has the print option in their context menu, and that will not be disabled.
-
-      If this policy is left not set, this will be enabled but the user will be able to change it.''',
+      If this setting is disabled, users cannot print from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Printing is disabled in the wrench menu, extensions, JavaScript applications, etc. It is still possible to print from plugins that bypass <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> while printing. For example, certain Flash applications have the print option in their context menu, which is not covered by this policy.''',
     },
     {
       'name': 'CloudPrintProxyEnabled',
@@ -548,9 +546,7 @@
 
       If this setting is enabled or not configured, users can enable the cloud print proxy by authentication with their Google account.
 
-      If this setting is disabled, users cannot enable the proxy, and the machine will not be allowed to share it's printers with <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>.
-
-      If this policy is left not set, this will be enabled but the user will be able to change it.''',
+      If this setting is disabled, users cannot enable the proxy, and the machine will not be allowed to share it's printers with <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>.''',
     },
     {
       'name': 'ForceSafeSearch',
@@ -2675,7 +2671,11 @@
       'example_value': False,
       'id': 117,
       'caption': '''Disable Print Preview''',
-      'desc': '''This setting is used to force the use of the system print dialog instead of print preview.''',
+      'desc': '''Show the system print dialog instead of print preview.
+
+      When this setting is enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will open the system print dialog instead of the built-in print preview when a user requests a page to be printed.
+
+      If this policy is not set or is set to false, print commands trigger the print preview screen.''',
     },
     {
       'name': 'DisableSSLRecordSplitting',
