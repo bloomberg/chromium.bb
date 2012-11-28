@@ -26,12 +26,18 @@ class LKGMNotFound(Exception):
   """Raised if a newer valid LKGM could not be found."""
 
 
+class LKGMNotCommitted(Exception):
+  """Raised if we could not submit a new LKGM."""
+
+
 class ChromeCommitter(object):
   """Committer object responsible for obtaining a new LKGM and committing it."""
 
   _COMMIT_MSG = ('Automated Commit: Committing new LKGM version %(version)s '
                  'for chromeos.')
-  _CANDIDATES_TO_CONSIDER = 8
+  _CANDIDATES_TO_CONSIDER = 10
+
+  _SLEEP_TIMEOUT = 30
 
   def __init__(self, checkout_dir, dryrun):
     self._checkout_dir = checkout_dir
@@ -76,10 +82,10 @@ class ChromeCommitter(object):
     """Finds a new LKGM for chrome from previous chromeos releases."""
     versions = self._GetLatestCanaryVersions()
     if not versions:
-      raise LKGMNotFound('No valid LKGM found newer than the old lkgm.')
+      raise LKGMNotFound('No valid LKGM found newer than the old LKGM.')
 
     canaries = cbuildbot_config.GetCanariesForChromeLKGM()
-    logging.info('Considering the following versions %s', ' '.join(versions))
+    logging.info('Considering the following versions: %s', ' '.join(versions))
     logging.info('Using scores from the following canaries: %s',
                  ' '.join(canaries))
 
@@ -91,7 +97,7 @@ class ChromeCommitter(object):
             builder, version, retries=0)
         if status:
           if status.Passed():
-            version_scores[version] = version_scores.setdefault(version, 0) + 1
+            version_scores[version] = version_scores.get(version, 0) + 1
           elif status.Failed():
             # We don't consider builds with any reporting failures.
             version_scores[version] = 0
@@ -126,9 +132,15 @@ class ChromeCommitter(object):
     commit_cmd = ['svn', 'commit', '--message',
                   self. _COMMIT_MSG % dict(version=self._lkgm)]
 
+    if not cros_build_lib.TreeOpen(gclient.STATUS_URL, self._SLEEP_TIMEOUT):
+      raise LKGMNotCommitted('Chromium Tree is closed')
+
     # Sadly svn commit does not have a dryrun option.
     if not self._dryrun:
-      cros_build_lib.RunCommand(commit_cmd, cwd=self._checkout_dir)
+      try:
+        cros_build_lib.RunCommand(commit_cmd, cwd=self._checkout_dir)
+      except cros_build_lib.RunCommandError as e:
+        raise LKGMNotCommitted('Could not submit LKGM: %r' % e)
     else:
       logging.info('Would have run: %s', ' '.join(commit_cmd))
 

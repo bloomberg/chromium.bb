@@ -528,6 +528,7 @@ class BuildSpecsManager(object):
     Args:
       builder: Builder to look at.
       version: Version string.
+      retries: Number of retries for getting the status.
 
     Returns:
       A BuilderStatus instance containing the builder status and any optional

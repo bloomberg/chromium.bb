@@ -75,22 +75,34 @@ class ChromeCommitterTester(cros_test_lib.MoxTestCase):
     versions = self.committer._GetLatestCanaryVersions()
     self.assertEqual(versions, expected_output)
 
-  def testFindNewLKGMBasic(self):
-    """Tests that we return the highest version if all versions are good."""
+  def _CommonNewLKGMMocks(self):
+    """Stubs out methods used by FindNewLKGM."""
     self.mox.StubOutWithMock(cbuildbot_config, 'GetCanariesForChromeLKGM')
     self.mox.StubOutWithMock(self.committer, '_GetLatestCanaryVersions')
     self.mox.StubOutWithMock(manifest_version.BuildSpecsManager,
                              'GetBuildStatus')
 
-    successful_status = manifest_version.BuilderStatus(
+  def _GetPassFailStatuses(self):
+    """Returns a tuple of pass/fail statuses."""
+    pass_status = manifest_version.BuilderStatus(
         manifest_version.BuilderStatus.STATUS_PASSED, None)
+    fail_status = manifest_version.BuilderStatus(
+        manifest_version.BuilderStatus.STATUS_FAILED, None)
+    return pass_status, fail_status
+
+
+  def testFindNewLKGMBasic(self):
+    """Tests that we return the highest version if all versions are good."""
+    self._CommonNewLKGMMocks()
+
+    pass_status, _ = self._GetPassFailStatuses()
     canaries = ['a-release', 'b-release', 'c-release']
     versions = ['4.0.0', '3.0.0', '2.0.0', '1.0.0']
     self.committer._GetLatestCanaryVersions().AndReturn(versions)
     cbuildbot_config.GetCanariesForChromeLKGM().AndReturn(canaries)
     manifest_version.BuildSpecsManager.GetBuildStatus(
         mox.IgnoreArg(), mox.IgnoreArg(), retries=0).MultipleTimes().AndReturn(
-            successful_status)
+            pass_status)
 
     self.mox.ReplayAll()
     self.committer.FindNewLKGM()
@@ -98,25 +110,19 @@ class ChromeCommitterTester(cros_test_lib.MoxTestCase):
 
   def testFindNewLKGMAdvanced(self):
     """Tests that we return the only version with passing canaries."""
-    self.mox.StubOutWithMock(cbuildbot_config, 'GetCanariesForChromeLKGM')
-    self.mox.StubOutWithMock(self.committer, '_GetLatestCanaryVersions')
-    self.mox.StubOutWithMock(manifest_version.BuildSpecsManager,
-                             'GetBuildStatus')
+    self._CommonNewLKGMMocks()
 
-    successful_status = manifest_version.BuilderStatus(
-        manifest_version.BuilderStatus.STATUS_PASSED, None)
-    bad_status = manifest_version.BuilderStatus(
-        manifest_version.BuilderStatus.STATUS_FAILED, None)
+    pass_status, fail_status = self._GetPassFailStatuses()
     canaries = ['a-release', 'b-release', 'c-release']
     versions = ['4.0.0', '3.0.0']
     self.committer._GetLatestCanaryVersions().AndReturn(versions)
     cbuildbot_config.GetCanariesForChromeLKGM().AndReturn(canaries)
     manifest_version.BuildSpecsManager.GetBuildStatus(
         mox.IgnoreArg(), '4.0.0', retries=0).MultipleTimes().AndReturn(
-            bad_status)
+            fail_status)
     manifest_version.BuildSpecsManager.GetBuildStatus(
         mox.IgnoreArg(), '3.0.0', retries=0).MultipleTimes().AndReturn(
-            successful_status)
+            pass_status)
 
     self.mox.ReplayAll()
     self.committer.FindNewLKGM()
@@ -125,7 +131,7 @@ class ChromeCommitterTester(cros_test_lib.MoxTestCase):
   def testFindNewLKGMWithFailures(self):
     """Ensure we reject versions with failed builds.
 
-    This test case is a bit more complex that the two above and tests the logic
+    This test case is a bit more complex than the two above and tests the logic
     where we want to reject versions with failed builds.
 
     In this example both versions have 2 passing builds. The older version
@@ -133,15 +139,9 @@ class ChromeCommitterTester(cros_test_lib.MoxTestCase):
     a failure. In this instance, our scoring mechanism should choose the older
     version.
     """
-    self.mox.StubOutWithMock(cbuildbot_config, 'GetCanariesForChromeLKGM')
-    self.mox.StubOutWithMock(self.committer, '_GetLatestCanaryVersions')
-    self.mox.StubOutWithMock(manifest_version.BuildSpecsManager,
-                             'GetBuildStatus')
+    self._CommonNewLKGMMocks()
 
-    successful_status = manifest_version.BuilderStatus(
-        manifest_version.BuilderStatus.STATUS_PASSED, None)
-    bad_status = manifest_version.BuilderStatus(
-        manifest_version.BuilderStatus.STATUS_FAILED, None)
+    pass_status, fail_status = self._GetPassFailStatuses()
     canaries = ['a-release', 'b-release', 'c-release']
     versions = ['4.0.0', '3.0.0']
     self.committer._GetLatestCanaryVersions().AndReturn(versions)
@@ -150,17 +150,17 @@ class ChromeCommitterTester(cros_test_lib.MoxTestCase):
       if canary in ['a-release', 'b-release']:
         manifest_version.BuildSpecsManager.GetBuildStatus(
             canary, '4.0.0', retries=0).MultipleTimes().AndReturn(
-                successful_status)
+                pass_status)
       else:
         manifest_version.BuildSpecsManager.GetBuildStatus(
             canary, '4.0.0', retries=0).MultipleTimes().AndReturn(
-                bad_status)
+                fail_status)
 
     for canary in canaries:
       if canary in ['a-release', 'b-release']:
         manifest_version.BuildSpecsManager.GetBuildStatus(
             canary, '3.0.0', retries=0).MultipleTimes().AndReturn(
-                successful_status)
+                pass_status)
       else:
         manifest_version.BuildSpecsManager.GetBuildStatus(
             canary, '3.0.0', retries=0).MultipleTimes().AndReturn(None)
