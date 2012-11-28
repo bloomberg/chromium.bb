@@ -90,9 +90,9 @@ class UI_EXPORT WindowImpl : public MessageMapInterface {
                                   WPARAM w_param,
                                   LPARAM l_param);
 
-  // Gets the window class name to use when creating the corresponding HWND.
+  // Gets the window class atom to use when creating the corresponding HWND.
   // If necessary, this registers the window class.
-  std::wstring GetWindowClassName();
+  ATOM GetWindowClassAtom();
 
   // All classes registered by WindowImpl start with this name.
   static const wchar_t* const kBaseClassName;

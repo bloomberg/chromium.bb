@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_BASE_BROWSER_WITH_TEST_WINDOW_TEST_H_
 #define CHROME_TEST_BASE_BROWSER_WITH_TEST_WINDOW_TEST_H_
 
+#include "base/at_exit.h"
 #include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/test_browser_window.h"
@@ -107,6 +108,7 @@ class BrowserWithTestWindowTest : public testing::Test {
  private:
   // We need to create a MessageLoop, otherwise a bunch of things fails.
   MessageLoopForUI ui_loop_;
+  base::ShadowingAtExitManager at_exit_manager_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread file_thread_;

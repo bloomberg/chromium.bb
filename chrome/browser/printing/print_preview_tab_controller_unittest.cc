@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/printing/print_preview_test.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -11,8 +11,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -30,18 +28,7 @@
 #define MAYBE_ClearInitiatorTabDetails ClearInitiatorTabDetails
 #endif
 
-class PrintPreviewTabControllerUnitTest : public BrowserWithTestWindowTest {
- public:
-  PrintPreviewTabControllerUnitTest() {}
-  virtual ~PrintPreviewTabControllerUnitTest() {}
-
- protected:
-  virtual void SetUp() OVERRIDE {
-    BrowserWithTestWindowTest::SetUp();
-
-    profile()->GetPrefs()->SetBoolean(prefs::kPrintPreviewDisabled, false);
-  }
-};
+typedef PrintPreviewTest PrintPreviewTabControllerUnitTest;
 
 // Create/Get a preview tab for initiator tab.
 TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_GetOrCreatePreviewTab) {

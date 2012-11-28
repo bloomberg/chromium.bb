@@ -37,6 +37,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -56,13 +57,19 @@ namespace {
 
 void EnableInternalPDFPluginForTab(TabContents* preview_tab) {
   // Always enable the internal PDF plugin for the print preview page.
+  FilePath pdf_plugin_path;
+  if (!PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_plugin_path))
+    return;
+
   webkit::WebPluginInfo pdf_plugin;
-  PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_plugin.path);
+  if (!content::PluginService::GetInstance()->GetPluginInfoByPath(
+      pdf_plugin_path, &pdf_plugin))
+    return;
 
   ChromePluginServiceFilter::GetInstance()->OverridePluginForTab(
-        preview_tab->web_contents()->GetRenderProcessHost()->GetID(),
-        preview_tab->web_contents()->GetRenderViewHost()->GetRoutingID(),
-        GURL(), pdf_plugin);
+      preview_tab->web_contents()->GetRenderProcessHost()->GetID(),
+      preview_tab->web_contents()->GetRenderViewHost()->GetRoutingID(),
+      GURL(), pdf_plugin);
 }
 
 // WebDialogDelegate that specifies what the print preview dialog

@@ -147,6 +147,8 @@
         'browser/prefs/pref_observer_mock.h',
         'browser/prefs/pref_service_mock_builder.cc',
         'browser/prefs/pref_service_mock_builder.h',
+        'browser/printing/print_preview_test.cc',
+        'browser/printing/print_preview_test.h',
         'browser/protector/mock_protector_service.cc',
         'browser/protector/mock_protector_service.h',
         'browser/protector/mock_setting_change.cc',
