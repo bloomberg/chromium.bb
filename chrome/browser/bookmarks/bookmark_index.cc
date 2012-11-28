@@ -52,7 +52,8 @@ BookmarkIndex::NodeSet::const_iterator BookmarkIndex::Match::nodes_end() const {
   return nodes.empty() ? terms.front()->second.end() : nodes.end();
 }
 
-BookmarkIndex::BookmarkIndex(Profile* profile) : profile_(profile) {
+BookmarkIndex::BookmarkIndex(content::BrowserContext* browser_context)
+    : browser_context_(browser_context) {
 }
 
 BookmarkIndex::~BookmarkIndex() {
@@ -111,9 +112,10 @@ void BookmarkIndex::GetBookmarksWithTitlesMatching(
 
 void BookmarkIndex::SortMatches(const Matches& matches,
                                 NodeTypedCountPairs* node_typed_counts) const {
-  HistoryService* const history_service = profile_ ?
-      HistoryServiceFactory::GetForProfile(profile_,
-                                           Profile::EXPLICIT_ACCESS) : NULL;
+  HistoryService* const history_service = browser_context_ ?
+      HistoryServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context_),
+          Profile::EXPLICIT_ACCESS) : NULL;
 
   history::URLDatabase* url_db = history_service ?
       history_service->InMemoryDatabase() : NULL;

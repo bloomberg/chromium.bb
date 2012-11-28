@@ -13,12 +13,15 @@
 #include "base/string16.h"
 
 class BookmarkNode;
-class Profile;
 class QueryNode;
 class QueryParser;
 
 namespace bookmark_utils {
 struct TitleMatch;
+}
+
+namespace content {
+class BrowserContext;
 }
 
 namespace history {
@@ -32,10 +35,9 @@ class URLDatabase;
 // BookmarkIndex maintains the index (index_) as a map of sets. The map (type
 // Index) maps from a lower case string to the set (type NodeSet) of
 // BookmarkNodes that contain that string in their title.
-
 class BookmarkIndex {
  public:
-  explicit BookmarkIndex(Profile* profile);
+  explicit BookmarkIndex(content::BrowserContext* browser_context);
   ~BookmarkIndex();
 
   // Invoked when a bookmark has been added to the model.
@@ -127,7 +129,7 @@ class BookmarkIndex {
 
   Index index_;
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkIndex);
 };

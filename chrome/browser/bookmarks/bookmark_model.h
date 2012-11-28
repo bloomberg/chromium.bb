@@ -251,7 +251,7 @@ class BookmarkModel : public content::NotificationObserver,
            node == mobile_node_;
   }
 
-  Profile* profile() const { return profile_; }
+  Profile* profile() { return profile_; }
 
   // Returns the parent the last node was added to. This never returns NULL
   // (as long as the model is loaded).
