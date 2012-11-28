@@ -20,7 +20,6 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
-#include "ui/aura/single_display_manager.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/views/widget/desktop_aura/desktop_stacking_client.h"
@@ -40,8 +39,7 @@ ExamplesBrowserMainParts::~ExamplesBrowserMainParts() {
 void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_.reset(new content::ShellBrowserContext(false));
 
-#if defined(USE_AURA)
-  aura::Env::GetInstance()->SetDisplayManager(new aura::SingleDisplayManager);
+#if !defined(OS_CHROMEOS) && defined(USE_AURA)
   stacking_client_.reset(new DesktopStackingClient);
   aura::client::SetStackingClient(stacking_client_.get());
   gfx::Screen::SetScreenInstance(
