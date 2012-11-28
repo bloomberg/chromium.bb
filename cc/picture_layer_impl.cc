@@ -41,7 +41,7 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
   for (PictureLayerTilingSet::Iterator iter(&tilings_, contentsScaleX(), rect);
        iter;
        ++iter) {
-    ResourceProvider::ResourceId resource;
+    ResourceProvider::ResourceId resource = 0;
     if (*iter)
       resource = iter->resource_id();
 
