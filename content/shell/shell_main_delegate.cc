@@ -101,6 +101,9 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
         switches::kUseGL, gfx::kGLImplementationOSMesaName);
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kIgnoreGpuBlacklist);
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableExperimentalWebKitFeatures);
+    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableCssShaders);
     net::CookieMonster::EnableFileScheme();
     if (!WebKitTestPlatformInitialize()) {
       if (exit_code)
