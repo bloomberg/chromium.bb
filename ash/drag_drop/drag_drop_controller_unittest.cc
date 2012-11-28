@@ -126,6 +126,23 @@ class DragTestView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(DragTestView);
 };
 
+class CompletableLinearAnimation : public ui::LinearAnimation {
+ public:
+  CompletableLinearAnimation(int duration,
+                             int frame_rate,
+                             ui::AnimationDelegate* delegate)
+      : ui::LinearAnimation(duration, frame_rate, delegate),
+        duration_(duration) {
+  }
+
+  void Complete() {
+    Step(start_time() + base::TimeDelta::FromMilliseconds(duration_));
+  }
+
+ private:
+  int duration_;
+};
+
 class TestDragDropController : public internal::DragDropController {
  public:
   TestDragDropController() : internal::DragDropController() {
@@ -166,6 +183,13 @@ class TestDragDropController : public internal::DragDropController {
   void DragCancel() OVERRIDE {
     DragDropController::DragCancel();
     drag_canceled_ = true;
+  }
+
+  ui::LinearAnimation* CreateCancelAnimation(
+      int duration,
+      int frame_rate,
+      ui::AnimationDelegate* delegate) OVERRIDE {
+    return new CompletableLinearAnimation(duration, frame_rate, delegate);
   }
 
   void DoDragCancel(int animation_duration_ms) OVERRIDE {
@@ -292,8 +316,11 @@ class DragDropControllerTest : public AshTestBase {
         NULL;
   }
 
-  void EndCancelAnimation() {
-    drag_drop_controller_->cancel_animation_->End();
+  void CompleteCancelAnimation() {
+    CompletableLinearAnimation* animation =
+        static_cast<CompletableLinearAnimation*>(
+            drag_drop_controller_->cancel_animation_.get());
+    animation->Complete();
   }
 
  protected:
@@ -835,7 +862,7 @@ TEST_F(DragDropControllerTest, TouchDragDropLongTapGestureIsForwarded) {
   SetDragSourceWindow(widget->GetNativeView());
   EXPECT_FALSE(drag_view->long_tap_received_);
   DispatchGesture(ui::ET_GESTURE_LONG_TAP, point);
-  EndCancelAnimation();
+  CompleteCancelAnimation();
   EXPECT_TRUE(drag_view->long_tap_received_);
 }
 
@@ -901,7 +928,7 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
     }
 
     drag_drop_controller_->DragCancel();
-    EndCancelAnimation();
+    CompleteCancelAnimation();
 
     EXPECT_EQ("5,5", observer.window_location_on_destroying().ToString());
   }
@@ -936,7 +963,7 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
     }
 
     drag_drop_controller_->DragCancel();
-    EndCancelAnimation();
+    CompleteCancelAnimation();
 
     EXPECT_EQ("405,405", observer.window_location_on_destroying().ToString());
   }

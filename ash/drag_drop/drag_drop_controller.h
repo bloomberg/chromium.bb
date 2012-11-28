@@ -74,6 +74,14 @@ class ASH_EXPORT DragDropController
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
  protected:
+  // Helper method to create a LinearAnimation object that will run the drag
+  // cancel animation. Caller take ownership of the returned object. Protected
+  // for testing.
+  virtual ui::LinearAnimation* CreateCancelAnimation(
+      int duration,
+      int frame_rate,
+      ui::AnimationDelegate* delegate);
+
   // Actual implementation of |DragCancel()|. protected for testing.
   virtual void DoDragCancel(int drag_cancel_animation_duration_ms);
 

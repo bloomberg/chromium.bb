@@ -399,11 +399,19 @@ void DragDropController::OnWindowDestroyed(aura::Window* window) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// DragDropController, protected:
+
+ui::LinearAnimation* DragDropController::CreateCancelAnimation(
+    int duration,
+    int frame_rate,
+    ui::AnimationDelegate* delegate) {
+  return new ui::LinearAnimation(duration, frame_rate, delegate);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // DragDropController, private:
 
 void DragDropController::AnimationEnded(const ui::Animation* animation) {
-  drag_image_->SetScreenPosition(
-      drag_image_final_bounds_for_cancel_animation_.origin());
   cancel_animation_.reset();
 
   // By the time we finish animation, another drag/drop session may have
@@ -456,9 +464,9 @@ void DragDropController::StartCanceledAnimation(int animation_duration_ms) {
   DCHECK(drag_image_.get());
   drag_image_initial_bounds_for_cancel_animation_ =
       drag_image_->GetBoundsInScreen();
-  cancel_animation_.reset(new ui::LinearAnimation(animation_duration_ms,
-                                                  kCancelAnimationFrameRate,
-                                                  this));
+  cancel_animation_.reset(CreateCancelAnimation(animation_duration_ms,
+                                                kCancelAnimationFrameRate,
+                                                this));
   cancel_animation_->Start();
 }
 
