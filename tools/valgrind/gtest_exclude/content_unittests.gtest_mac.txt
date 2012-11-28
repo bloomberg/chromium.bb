@@ -17,5 +17,6 @@ WebDragSourceMacTest.DragInvalidlyEscapedBookmarklet
 # Fail, see http://crbug.com/153007
 MacSandboxTest.ClipboardAccess
 
-# Crash, see http://crbug.com/162728
+# mach_override assertion, see http://crbug.com/162728
 BlobURLRequestJobTest.TestGetSimpleFileSystemFileRequest
+BlobURLRequestJobTest.TestGetLargeFileSystemFileRequest

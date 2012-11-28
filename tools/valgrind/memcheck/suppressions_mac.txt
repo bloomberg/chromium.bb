@@ -1707,32 +1707,6 @@
    fun:_ZN3net25DiskCacheBasedSSLHostInfo12OnIOCompleteEPNS0_22CacheOperationDataShimEi
 }
 {
-   bug_97818
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZL14NewFromFontRefPK8__CTFontPKc
-   fun:_Z26SkCreateTypefaceFromCTFontPK8__CTFont
-   fun:_ZN7WebCoreL10setupPaintEP7SkPaintPKNS_14SimpleFontDataEPKNS_4FontE*
-   fun:_ZNK7WebCore4Font10drawGlyphsEPNS_15GraphicsContextEPKNS_14SimpleFontDataERKNS_11GlyphBufferEiiRKNS_10FloatPointE
-   fun:_ZNK7WebCore4Font15drawGlyphBufferEPNS_15GraphicsContextERKNS_7TextRunERKNS_11GlyphBufferERKNS_10FloatPointE
-   fun:_ZNK7WebCore4Font14drawSimpleTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
-   fun:_ZNK7WebCore4Font8drawTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
-   fun:_ZN7WebCore15GraphicsContext8drawTextERKNS_4FontERKNS_7TextRunERKNS_10FloatPointEii
-   fun:_ZN7WebCoreL20paintTextWithShadowsEPNS_15GraphicsContextERKNS_4FontERKNS_7TextRunERKN3WTF12AtomicStringEiiiiRKNS_10FloatPointERKNS_9FloatRectEPKNS_10ShadowDataEbb
-   fun:_ZN7WebCore13InlineTextBox5paintERNS_9PaintInfoERKNS_*
-   fun:_ZN7WebCore13InlineFlowBox5paintERNS_9PaintInfoERKNS_*
-   fun:_ZN7WebCore13RootInlineBox5paintERNS_9PaintInfoERKNS_*
-   fun:_ZNK7WebCore17RenderLineBoxList5paintEPNS_20RenderBoxModelObjectERNS_9PaintInfoERKNS_*
-   fun:_ZN7WebCore11RenderBlock13paintContentsERNS_9PaintInfoERKNS_*
-   fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoERKNS_*
-   fun:_ZN7WebCore11RenderBlock5paintERNS_9PaintInfoERKNS_*
-   ...
-   fun:_ZN7WebCore11RenderBlock13paintChildrenERNS_9PaintInfoERKNS_*
-   fun:_ZN7WebCore11RenderBlock13paintContentsERNS_9PaintInfoERKNS_*
-   fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoERKNS_*
-   fun:_ZN7WebCore11RenderBlock5paintERNS_9PaintInfoERKNS_*
-}
-{
    bug_100022
    Memcheck:Unaddressable
    ...
@@ -1791,6 +1765,16 @@
    fun:-[NSPasteboard(ChimeraPasteboardURLUtils) getURLs:andTitles:convertingFilenames:]
    fun:_ZN2ui33PopulateURLAndTitleFromPasteboardEP4GURLPSbItN4base20string16_char_traitsESaItEEP12NSPasteboarda
    fun:_ZN24WebDragDestTest_URL_Test8TestBodyEv
+}
+{
+   bug_102920
+   Memcheck:Unaddressable
+   fun:MDItemCreate
+   fun:CSBackupSetItemExcluded
+   fun:_ZN4base3mac22SetFileBackupExclusionERK8FilePath
+   fun:_ZN7history17ThumbnailDatabase4InitERK8FilePathPKNS_16HistoryPublisherEPNS_11URLDatabaseE
+   fun:_ZN7history14HistoryBackend8InitImplERKSs
+   fun:_ZN7history14HistoryBackend4InitERKSsb
 }
 {
    bug_104756
@@ -2150,31 +2134,6 @@
    fun:_ZN4base14PlatformThread7SetNameEPKc
 }
 {
-   bug_107158
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZL14NewFromFontRefPK8__CTFontPKc
-   fun:_Z26SkCreateTypefaceFromCTFontPK8__CTFont
-   fun:_ZN7WebCoreL10setupPaintEP7SkPaintPKNS_14SimpleFontDataEPKNS_4FontEbb
-   fun:_ZNK7WebCore4Font10drawGlyphsEPNS_15GraphicsContextEPKNS_14SimpleFontDataERKNS_11GlyphBufferEiiRKNS_10FloatPointE
-   fun:_ZNK7WebCore4Font15drawGlyphBufferEPNS_15GraphicsContextERKNS_7TextRunERKNS_11GlyphBufferERKNS_10FloatPointE
-   fun:_ZNK7WebCore4Font14drawSimpleTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
-   fun:_ZNK7WebCore4Font8drawTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
-   fun:_ZN7WebCore15GraphicsContext8drawTextERKNS_4FontERKNS_7TextRunERKNS_10FloatPointEii
-   fun:_ZN7WebCoreL20paintTextWithShadowsEPNS_15GraphicsContextERKNS_4FontERKNS_7TextRunERKN3WTF12AtomicStringEiiiiRKNS_10FloatPointERKNS_9FloatRectEPKNS_10ShadowDataEbb
-   fun:_ZN7WebCore13InlineTextBox5paintERNS_9PaintInfoERKNS_8IntPointEii
-   fun:_ZN7WebCore13InlineFlowBox5paintERNS_9PaintInfoERKNS_8IntPointEii
-   fun:_ZN7WebCore13RootInlineBox5paintERNS_9PaintInfoERKNS_8IntPointEii
-   fun:_ZNK7WebCore17RenderLineBoxList5paintEPNS_20RenderBoxModelObjectERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore11RenderBlock13paintContentsERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore11RenderBlock5paintERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore11RenderBlock13paintChildrenERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore11RenderBlock13paintContentsERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore11RenderBlock5paintERNS_9PaintInfoERKNS_8IntPointE
-}
-{
    bug_107177
    Memcheck:Leak
    fun:calloc
@@ -2222,6 +2181,32 @@
    fun:_ZN6WebKit12WebFrameImpl16paintWithContextERN7WebCore15GraphicsContextERKNS_7WebRectE
 }
 {
+   bug_107541
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZL14NewFromFontRefPK8__CTFontPKc
+   fun:_Z26SkCreateTypefaceFromCTFontPK8__CTFont
+   fun:_ZN7WebCoreL10setupPaintEP7SkPaintPKNS_14SimpleFontDataEPKNS_4FontE*
+   fun:_ZNK7WebCore4Font10drawGlyphsEPNS_15GraphicsContextEPKNS_14SimpleFontDataERKNS_11GlyphBufferEiiRKNS_10FloatPointE
+   fun:_ZNK7WebCore4Font15drawGlyphBufferEPNS_15GraphicsContextERKNS_7TextRunERKNS_11GlyphBufferERKNS_10FloatPointE
+   fun:_ZNK7WebCore4Font14drawSimpleTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
+   fun:_ZNK7WebCore4Font8drawTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPoint*
+   fun:_ZN7WebCore15GraphicsContext8drawTextERKNS_4FontERKNS_7TextRunERKNS_10FloatPoint*
+   fun:_ZN7WebCoreL20paintTextWithShadowsEPNS_15GraphicsContextERKNS_4FontERKNS_7TextRunERKN3WTF12AtomicStringEiiiiRKNS_10FloatPointERKNS_9FloatRectEPKNS_10ShadowDataEbb
+   fun:_ZN7WebCore13InlineTextBox5paintERNS_9PaintInfoERKNS_*
+   fun:_ZN7WebCore13InlineFlowBox5paintERNS_9PaintInfoERKNS_*
+   fun:_ZN7WebCore13RootInlineBox5paintERNS_9PaintInfoERKNS_*
+   fun:_ZNK7WebCore17RenderLineBoxList5paintEPNS_20RenderBoxModelObjectERNS_9PaintInfoERKNS_*
+   fun:_ZN7WebCore11RenderBlock13paintContentsERNS_9PaintInfoERKNS_*
+   fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoERKNS_*
+   fun:_ZN7WebCore11RenderBlock5paintERNS_9PaintInfoERKNS_*
+   ...
+   fun:_ZN7WebCore11RenderBlock13paintChildrenERNS_9PaintInfoERKNS_*
+   fun:_ZN7WebCore11RenderBlock13paintContentsERNS_9PaintInfoERKNS_*
+   fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoERKNS_*
+   fun:_ZN7WebCore11RenderBlock5paintERNS_9PaintInfoERKNS_*
+}
+{
    bug_109994
    Memcheck:Leak
    ...
@@ -2235,16 +2220,6 @@
    fun:_ZN15ChromeTestSuite10InitializeEv
    fun:_ZN4base9TestSuite3RunEv
    fun:_ZN17UnitTestTestSuite3RunEv
-}
-{
-   bug_102920
-   Memcheck:Unaddressable
-   fun:MDItemCreate
-   fun:CSBackupSetItemExcluded
-   fun:_ZN4base3mac22SetFileBackupExclusionERK8FilePath
-   fun:_ZN7history17ThumbnailDatabase4InitERK8FilePathPKNS_16HistoryPublisherEPNS_11URLDatabaseE
-   fun:_ZN7history14HistoryBackend8InitImplERKSs
-   fun:_ZN7history14HistoryBackend4InitERKSsb
 }
 {
    bug_112078
