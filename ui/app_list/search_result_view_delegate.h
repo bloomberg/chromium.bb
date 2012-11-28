@@ -29,6 +29,6 @@ class SearchResultViewDelegate {
   virtual ~SearchResultViewDelegate() {}
 };
 
-}  // namespace ash
+}  // namespace app_list
 
 #endif  // UI_APP_LIST_SEARCH_RESULT_VIEW_DELEGATE_H_

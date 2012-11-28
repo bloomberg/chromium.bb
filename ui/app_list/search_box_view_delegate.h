@@ -20,6 +20,6 @@ class APP_LIST_EXPORT SearchBoxViewDelegate {
   virtual ~SearchBoxViewDelegate() {}
 };
 
-}  // namespace ash
+}  // namespace app_list
 
 #endif  // UI_APP_LIST_SEARCH_BOX_VIEW_DELEGATE_H_
