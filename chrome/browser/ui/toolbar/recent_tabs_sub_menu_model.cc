@@ -340,7 +340,10 @@ void RecentTabsSubMenuModel::BuildForeignTabItem(
   NavigationItem item(session_tag, tab.tab_id.id(),
                       current_navigation.virtual_url());
   int command_id = ModelIndexToCommandId(model_.size());
-  AddItem(command_id, current_navigation.title());
+  // There may be no tab title, in which case, use the url as tab title.
+  AddItem(command_id,
+          current_navigation.title().empty() ?
+              UTF8ToUTF16(item.url.spec()) : current_navigation.title());
   AddTabFavicon(model_.size(), command_id, item.url);
   model_.push_back(item);
 }
