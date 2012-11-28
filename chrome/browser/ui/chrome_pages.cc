@@ -20,8 +20,11 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/url_util.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
+#include "google_apis/gaia/gaia_urls.h"
+#include "googleurl/src/gurl.h"
 
 using content::UserMetricsAction;
 
@@ -40,6 +43,12 @@ void OpenBookmarkManagerWithHash(Browser* browser,
       GURL(kChromeUIBookmarksURL).Resolve(
       StringPrintf("/#%s%s", action.c_str(),
       base::Int64ToString(node_id).c_str()))));
+  params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
+  ShowSingletonTabOverwritingNTP(browser, params);
+}
+
+void NavigateToSingletonTab(Browser* browser, const GURL& url) {
+  NavigateParams params(GetSingletonTabNavigateParams(browser, url));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(browser, params);
 }
@@ -183,14 +192,25 @@ void ShowSyncSetup(Browser* browser, SyncPromoUI::Source source) {
     LoginUIService* login = LoginUIServiceFactory::GetForProfile(
         original_profile);
     if (use_web_flow || (show_promo && login->current_login_ui() == NULL)) {
-      GURL url(SyncPromoUI::GetSyncPromoURL(GURL(), source, false));
-      NavigateParams params(GetSingletonTabNavigateParams(browser, url));
-      params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
-      ShowSingletonTabOverwritingNTP(browser, params);
+      NavigateToSingletonTab(browser, GURL(SyncPromoUI::GetSyncPromoURL(GURL(),
+                                                            source,
+                                                            false)));
     } else {
       login->ShowLoginUI(browser);
     }
   }
+}
+
+void ShowGaiaSignin(Browser* browser,
+                    const std::string& service,
+                    const GURL& continue_url) {
+  GURL url(GaiaUrls::GetInstance()->service_login_url());
+  url = chrome_common_net::AppendQueryParameter(url, "service", service);
+  if (continue_url.is_valid())
+    url = chrome_common_net::AppendQueryParameter(url,
+                                                  "continue",
+                                                  continue_url.spec());
+  NavigateToSingletonTab(browser, url);
 }
 
 }  // namespace chrome
