@@ -641,6 +641,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
             env['GCLIENT_SCM'] = scm
           if parsed_url:
             env['GCLIENT_URL'] = parsed_url
+          env['GCLIENT_DEP_PATH'] = self.name
           if options.prepend_dir:
             print_stdout = False
             def filter_fn(line):
@@ -1256,6 +1257,8 @@ def CMDrecurse(parser, args):
   """Operates on all the entries.
 
   Runs a shell command on all entries.
+  Sets GCLIENT_DEP_PATH enviroment variable as the dep's relative location to
+  root directory of the checkout.
   """
   # Stop parsing at the first non-arg so that these go through to the command
   parser.disable_interspersed_args()
