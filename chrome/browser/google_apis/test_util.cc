@@ -11,8 +11,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
-#include "testing/gtest/include/gtest/gtest.h"
-
 
 namespace google_apis {
 namespace test_util {
@@ -43,8 +41,6 @@ FilePath GetTestFilePath(const std::string& relative_path) {
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("chromeos")
       .Append(FilePath::FromUTF8Unsafe(relative_path));
-  EXPECT_TRUE(file_util::PathExists(path)) <<
-      "Couldn't find " << path.value();
   return path;
 }
 
@@ -68,8 +64,8 @@ scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path) {
   std::string error;
   JSONFileValueSerializer serializer(path);
   scoped_ptr<base::Value> value(serializer.Deserialize(NULL, &error));
-  EXPECT_TRUE(value.get()) <<
-      "Parse error " << path.value() << ": " << error;
+  LOG_IF(WARNING, !value.get()) << "Failed to parse " << path.value()
+                                << ": " << error;
   return value.Pass();
 }
 
