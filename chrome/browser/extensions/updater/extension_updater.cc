@@ -537,6 +537,7 @@ bool ExtensionUpdater::GetPingDataForExtension(
   DCHECK(alive_);
   ping_data->rollcall_days = CalculatePingDays(
       extension_prefs_->LastPingDay(id));
+  ping_data->is_enabled = service_->IsExtensionEnabled(id);
   ping_data->active_days =
       CalculateActivePingDays(extension_prefs_->LastActivePingDay(id),
                               extension_prefs_->GetActiveBit(id));

@@ -76,7 +76,7 @@ int kExpectedLoadFlags =
     net::LOAD_DISABLE_CACHE;
 
 const ManifestFetchData::PingData kNeverPingedData(
-    ManifestFetchData::kNeverPinged, ManifestFetchData::kNeverPinged);
+    ManifestFetchData::kNeverPinged, ManifestFetchData::kNeverPinged, true);
 
 class MockExtensionDownloaderDelegate : public ExtensionDownloaderDelegate {
  public:
@@ -298,6 +298,10 @@ class ServiceForManifestTests : public MockService {
   virtual const Extension* GetPendingExtensionUpdate(
       const std::string& id) const OVERRIDE {
     return NULL;
+  }
+
+  virtual bool IsExtensionEnabled(const std::string& id) const OVERRIDE {
+    return !disabled_extensions_.Contains(id);
   }
 
   void set_extensions(ExtensionList extensions) {
@@ -749,7 +753,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ManifestFetchData* fetch2 = new ManifestFetchData(kUpdateUrl, 0);
     ManifestFetchData* fetch3 = new ManifestFetchData(kUpdateUrl, 0);
     ManifestFetchData* fetch4 = new ManifestFetchData(kUpdateUrl, 0);
-    ManifestFetchData::PingData zeroDays(0, 0);
+    ManifestFetchData::PingData zeroDays(0, 0, true);
     fetch1->AddExtension("1111", "1.0", &zeroDays, kEmptyUpdateUrlData, "");
     fetch2->AddExtension("2222", "2.0", &zeroDays, kEmptyUpdateUrlData, "");
     fetch3->AddExtension("3333", "3.0", &zeroDays, kEmptyUpdateUrlData, "");

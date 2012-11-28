@@ -48,6 +48,7 @@ class RenderProcessHost;
 
 namespace extensions {
 class ExtensionDownloader;
+class ManifestFetchData;
 }
 
 namespace net {
@@ -524,6 +525,7 @@ class MetricsServiceHelper {
  private:
   friend bool prerender::IsOmniboxEnabled(Profile* profile);
   friend class extensions::ExtensionDownloader;
+  friend class extensions::ManifestFetchData;
 
   // Returns true if prefs::kMetricsReportingEnabled is set.
   static bool IsMetricsReportingEnabled();
