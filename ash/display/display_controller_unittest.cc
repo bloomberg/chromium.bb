@@ -99,15 +99,19 @@ class DisplayControllerShutdownTest : public test::AshTestBase {
 typedef test::AshTestBase DisplayControllerTest;
 
 #if defined(OS_WIN)
-// TOD(oshima): Windows creates a window with smaller client area.
+// TODO(oshima): Windows creates a window with smaller client area.
 // Fix this and enable tests.
 #define MAYBE_SecondaryDisplayLayout DISABLED_SecondaryDisplayLayout
 #define MAYBE_BoundsUpdated DISABLED_BoundsUpdated
 #define MAYBE_UpdateDisplayWithHostOrigin DISABLED_UpdateDisplayWithHostOrigin
+#define MAYBE_CursorDeviceScaleFactorSwapPrimary \
+  DISABLED_CursorDeviceScaleFactorSwapPrimary
 #define MAYBE_Shutdown DISABLED_Shutdown
 #else
 #define MAYBE_SecondaryDisplayLayout SecondaryDisplayLayout
 #define MAYBE_BoundsUpdated BoundsUpdated
+#define MAYBE_CursorDeviceScaleFactorSwapPrimary \
+  CursorDeviceScaleFactorSwapPrimary
 #define MAYBE_UpdateDisplayWithHostOrigin UpdateDisplayWithHostOrigin
 #define MAYBE_Shutdown Shutdown
 #endif
@@ -498,7 +502,7 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
   EXPECT_TRUE(primary_root->Contains(launcher_window));
 }
 
-TEST_F(DisplayControllerTest, CursorDeviceScaleFactorSwapPrimary) {
+TEST_F(DisplayControllerTest, MAYBE_CursorDeviceScaleFactorSwapPrimary) {
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
 

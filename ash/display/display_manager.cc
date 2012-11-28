@@ -144,30 +144,19 @@ const gfx::Display& DisplayManager::FindDisplayContainingPoint(
 
 void DisplayManager::SetOverscanInsets(int64 display_id,
                                        const gfx::Insets& insets_in_dip) {
+  display_info_[display_id].overscan_insets_in_dip = insets_in_dip;
+
+  // Copies the |displays_| because UpdateDisplays() compares the passed
+  // displays and its internal |displays_|.
   DisplayList displays = displays_;
-  std::map<int64, gfx::Insets>::const_iterator old_overscan =
-      overscan_mapping_.find(display_id);
-  if (old_overscan != overscan_mapping_.end()) {
-    gfx::Insets old_insets = old_overscan->second;
-    for (DisplayList::iterator iter = displays.begin();
-         iter != displays.end(); ++iter) {
-      if (iter->id() == display_id) {
-        // Undo the existing insets before applying the new insets.
-        gfx::Rect bounds = iter->bounds_in_pixel();
-        bounds.Inset(old_insets.Scale(-iter->device_scale_factor()));
-        iter->SetScaleAndBounds(iter->device_scale_factor(), bounds);
-        break;
-      }
-    }
-  }
-  overscan_mapping_[display_id] = insets_in_dip;
-  OnNativeDisplaysChanged(displays);
+  UpdateDisplays(displays);
 }
 
 gfx::Insets DisplayManager::GetOverscanInsets(int64 display_id) const {
-  std::map<int64, gfx::Insets>::const_iterator it =
-      overscan_mapping_.find(display_id);
-  return (it != overscan_mapping_.end()) ? it->second : gfx::Insets();
+  std::map<int64, DisplayInfo>::const_iterator it =
+      display_info_.find(display_id);
+  return (it != display_info_.end()) ?
+      it->second.overscan_insets_in_dip : gfx::Insets();
 }
 
 void DisplayManager::OnNativeDisplaysChanged(
@@ -211,13 +200,34 @@ void DisplayManager::OnNativeDisplaysChanged(
     new_displays = updated_displays;
   }
 
+  for (DisplayList::const_iterator iter = new_displays.begin();
+       iter != new_displays.end(); ++iter) {
+    std::map<int64, DisplayInfo>::iterator info =
+        display_info_.find(iter->id());
+    if (info != display_info_.end()) {
+      info->second.original_bounds_in_pixel = iter->bounds_in_pixel();
+    } else {
+      display_info_[iter->id()].original_bounds_in_pixel =
+          iter->bounds_in_pixel();
+    }
+  }
+
+  UpdateDisplays(new_displays);
+  RefreshDisplayNames();
+}
+
+void DisplayManager::UpdateDisplays(
+    const std::vector<gfx::Display>& updated_displays) {
+  DisplayList new_displays = updated_displays;
+
   for (DisplayList::iterator iter = new_displays.begin();
        iter != new_displays.end(); ++iter) {
-    std::map<int64, gfx::Insets>::const_iterator overscan_insets =
-        overscan_mapping_.find(iter->id());
-    if (overscan_insets != overscan_mapping_.end()) {
-      gfx::Rect bounds = iter->bounds_in_pixel();
-      bounds.Inset(overscan_insets->second.Scale(iter->device_scale_factor()));
+    std::map<int64, DisplayInfo>::const_iterator info =
+        display_info_.find(iter->id());
+    if (info != display_info_.end()) {
+      gfx::Rect bounds = info->second.original_bounds_in_pixel;
+      bounds.Inset(info->second.overscan_insets_in_dip.Scale(
+          iter->device_scale_factor()));
       iter->SetScaleAndBounds(iter->device_scale_factor(), bounds);
     }
   }
@@ -281,7 +291,6 @@ void DisplayManager::OnNativeDisplaysChanged(
   }
 
   displays_ = new_displays;
-  RefreshDisplayNames();
 
   // Temporarily add displays to be removed because display object
   // being removed are accessed during shutting down the root.
@@ -379,10 +388,10 @@ std::string DisplayManager::GetDisplayNameFor(
   if (!display.is_valid())
     return l10n_util::GetStringUTF8(IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME);
 
-  std::map<int64, std::string>::const_iterator iter =
-      display_names_.find(display.id());
-  if (iter != display_names_.end())
-    return iter->second;
+  std::map<int64, DisplayInfo>::const_iterator iter =
+      display_info_.find(display.id());
+  if (iter != display_info_.end())
+    return iter->second.name;
 
   return base::StringPrintf("Display %d", static_cast<int>(display.id()));
 }
@@ -535,8 +544,6 @@ void DisplayManager::EnsurePointerInDisplays() {
 }
 
 void DisplayManager::RefreshDisplayNames() {
-  display_names_.clear();
-
 #if defined(OS_CHROMEOS)
   if (!base::chromeos::IsRunningOnChromeOS())
     return;
@@ -555,10 +562,10 @@ void DisplayManager::RefreshDisplayNames() {
             outputs[i], &manufacturer_id, &serial_number, &name)) {
       int64 id = gfx::Display::GetID(manufacturer_id, serial_number);
       if (IsInternalDisplayId(id)) {
-        display_names_[id] =
+        display_info_[id].name =
             l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME);
       } else {
-        display_names_[id] = name;
+        display_info_[id].name = name;
       }
     }
   }

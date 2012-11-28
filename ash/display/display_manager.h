@@ -86,6 +86,9 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   // contains each display's new infomration.
   void OnNativeDisplaysChanged(const std::vector<gfx::Display>& displays);
 
+  // Updates the internal display data and notifies observers about the changes.
+  void UpdateDisplays(const std::vector<gfx::Display>& displays);
+
   // Create a root window for given |display|.
   aura::RootWindow* CreateRootWindowForDisplay(const gfx::Display& display);
 
@@ -127,6 +130,19 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
 
   typedef std::vector<gfx::Display> DisplayList;
 
+  // Metadata for each display.
+  struct DisplayInfo {
+    // The cached name of the display.
+    std::string name;
+
+    // The original bounds_in_pixel for the display.  This can be different from
+    // the current one in case of overscan insets.
+    gfx::Rect original_bounds_in_pixel;
+
+    // The overscan insets for the display.
+    gfx::Insets overscan_insets_in_dip;
+  };
+
   void Init();
   void CycleDisplayImpl();
   void ScaleDisplayImpl();
@@ -164,11 +180,8 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
 
   bool force_bounds_changed_;
 
-  // The mapping from the display ID to its overscan insets.
-  std::map<int64, gfx::Insets> overscan_mapping_;
-
-  // The cached display's name for the display ID.
-  std::map<int64, std::string> display_names_;
+  // The mapping from the display ID to its internal data.
+  std::map<int64, DisplayInfo> display_info_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayManager);
 };
