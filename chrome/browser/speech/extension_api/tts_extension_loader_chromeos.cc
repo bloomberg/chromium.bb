@@ -41,7 +41,14 @@ class TtsExtensionLoaderChromeOsFactory : public ProfileKeyedServiceFactory {
 
   ~TtsExtensionLoaderChromeOsFactory() {}
 
-  ProfileKeyedService* BuildServiceInstanceFor(Profile* profile) const {
+  bool ServiceRedirectedInIncognito() const OVERRIDE {
+    // If given an incognito profile (including the Chrome OS login
+    // profile), share the service with the original profile.
+    return true;
+  }
+
+  ProfileKeyedService* BuildServiceInstanceFor(Profile* profile) const
+      OVERRIDE {
     return new TtsExtensionLoaderChromeOs(profile);
   }
 };
