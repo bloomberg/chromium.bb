@@ -1860,14 +1860,12 @@ void ImmediateInterpreter::FillResultGesture(
       float vx = out.dt ? (out.dx / out.dt) : 0.0;
       float vy = out.dt ? (out.dy / out.dt) : 0.0;
 
-      if (vx || vy) {
-        result_ = Gesture(kGestureFling,
-                          prev_state_.timestamp,
-                          hwstate.timestamp,
-                          vx,
-                          vy,
-                          GESTURES_FLING_START);
-      }
+      result_ = Gesture(kGestureFling,
+                        prev_state_.timestamp,
+                        hwstate.timestamp,
+                        vx,
+                        vy,
+                        GESTURES_FLING_START);
       break;
     }
     case kGestureTypeSwipe: {
