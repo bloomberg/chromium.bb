@@ -5,6 +5,7 @@
 #ifndef REMOTING_CODEC_VIDEO_ENCODER_VERBATIM_H_
 #define REMOTING_CODEC_VIDEO_ENCODER_VERBATIM_H_
 
+#include "base/time.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/proto/video.pb.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -44,6 +45,7 @@ class VideoEncoderVerbatim : public VideoEncoder {
 
   scoped_refptr<CaptureData> capture_data_;
   DataAvailableCallback callback_;
+  base::Time encode_start_time_;
 
   // The most recent screen size.
   SkISize screen_size_;

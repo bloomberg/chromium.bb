@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_native_library.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
@@ -93,7 +94,8 @@ class VideoFrameCapturerWin : public VideoFrameCapturer {
 
   // Creates a CaptureData instance wrapping the current framebuffer and
   // notifies |delegate_|.
-  void CaptureRegion(const SkRegion& region);
+  void CaptureRegion(const SkRegion& region,
+                     const base::Time& capture_start_time);
 
   // Captures the current screen contents into the current buffer.
   void CaptureImage();
@@ -240,6 +242,8 @@ void VideoFrameCapturerWin::InvalidateRegion(const SkRegion& invalid_region) {
 }
 
 void VideoFrameCapturerWin::CaptureFrame() {
+  base::Time capture_start_time = base::Time::Now();
+
   // Force the system to power-up display hardware, if it has been suspended.
   SetThreadExecutionState(ES_DISPLAY_REQUIRED);
 
@@ -278,7 +282,7 @@ void VideoFrameCapturerWin::CaptureFrame() {
   // the completion callback.
   SkRegion invalid_region;
   helper_.SwapInvalidRegion(&invalid_region);
-  CaptureRegion(invalid_region);
+  CaptureRegion(invalid_region, capture_start_time);
 
   // Check for cursor shape update.
   CaptureCursor();
@@ -363,7 +367,9 @@ void VideoFrameCapturerWin::PrepareCaptureResources() {
   }
 }
 
-void VideoFrameCapturerWin::CaptureRegion(const SkRegion& region) {
+void VideoFrameCapturerWin::CaptureRegion(
+    const SkRegion& region,
+    const base::Time& capture_start_time) {
   const VideoFrame* current_buffer = queue_.current_frame();
 
   DataPlanes planes;
@@ -379,6 +385,9 @@ void VideoFrameCapturerWin::CaptureRegion(const SkRegion& region) {
   helper_.set_size_most_recent(data->size());
 
   queue_.DoneWithCurrentFrame();
+
+  data->set_capture_time_ms(
+      (base::Time::Now() - capture_start_time).InMillisecondsRoundedUp());
   delegate_->OnCaptureCompleted(data);
 }
 

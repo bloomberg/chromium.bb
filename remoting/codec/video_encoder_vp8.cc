@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/sys_info.h"
+#include "base/time.h"
 #include "media/base/yuv_convert.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/base/util.h"
@@ -220,6 +221,8 @@ void VideoEncoderVp8::Encode(
   DCHECK_LE(32, capture_data->size().width());
   DCHECK_LE(32, capture_data->size().height());
 
+  base::Time encode_start_time = base::Time::Now();
+
   if (!initialized_ ||
       (capture_data->size() != SkISize::Make(image_->w, image_->h))) {
     bool ret = Init(capture_data->size());
@@ -288,6 +291,8 @@ void VideoEncoderVp8::Encode(
   packet->mutable_format()->set_screen_width(capture_data->size().width());
   packet->mutable_format()->set_screen_height(capture_data->size().height());
   packet->set_capture_time_ms(capture_data->capture_time_ms());
+  packet->set_encode_time_ms(
+      (base::Time::Now() - encode_start_time).InMillisecondsRoundedUp());
   packet->set_client_sequence_number(capture_data->client_sequence_number());
   SkIPoint dpi(capture_data->dpi());
   if (dpi.x())

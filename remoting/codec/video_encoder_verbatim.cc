@@ -34,6 +34,7 @@ void VideoEncoderVerbatim::Encode(
       << capture_data->pixel_format();
   capture_data_ = capture_data;
   callback_ = data_available_callback;
+  encode_start_time_ = base::Time::Now();
 
   const SkRegion& region = capture_data->dirty_region();
   SkRegion::Iterator iter(region);
@@ -92,6 +93,8 @@ void VideoEncoderVerbatim::EncodeRect(const SkIRect& rect, bool last) {
       packet->mutable_data()->resize(filled);
       packet->set_flags(packet->flags() | VideoPacket::LAST_PACKET);
       packet->set_capture_time_ms(capture_data_->capture_time_ms());
+      packet->set_encode_time_ms(
+          (base::Time::Now() - encode_start_time_).InMillisecondsRoundedUp());
       packet->set_client_sequence_number(
           capture_data_->client_sequence_number());
       SkIPoint dpi(capture_data_->dpi());

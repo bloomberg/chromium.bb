@@ -24,9 +24,8 @@ class VideoPacket;
 class VideoEncoder {
  public:
 
-  // DataAvailableCallback is called as blocks of data are made available
-  // from the encoder. Data made available by the encoder is in the form
-  // of HostMessage to reduce the amount of memory copies.
+  // DataAvailableCallback is called one or more times, for each chunk the
+  // underlying video encoder generates.
   typedef base::Callback<void(scoped_ptr<VideoPacket>)> DataAvailableCallback;
 
   virtual ~VideoEncoder() {}

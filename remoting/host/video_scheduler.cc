@@ -65,11 +65,8 @@ void VideoScheduler::OnCaptureCompleted(
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
   if (capture_data) {
-    base::TimeDelta capture_time = base::Time::Now() - capture_start_time_;
-    int capture_time_ms =
-        static_cast<int>(capture_time.InMilliseconds());
-    capture_data->set_capture_time_ms(capture_time_ms);
-    scheduler_.RecordCaptureTime(capture_time);
+    scheduler_.RecordCaptureTime(
+        base::TimeDelta::FromMilliseconds(capture_data->capture_time_ms()));
 
     // The best way to get this value is by binding the sequence number to
     // the callback when calling CaptureInvalidRects(). However the callback
@@ -201,7 +198,6 @@ void VideoScheduler::CaptureNextFrame() {
   ScheduleNextCapture();
 
   // And finally perform one capture.
-  capture_start_time_ = base::Time::Now();
   capturer_->CaptureFrame();
 }
 
@@ -269,7 +265,6 @@ void VideoScheduler::EncodeFrame(
     return;
   }
 
-  encode_start_time_ = base::Time::Now();
   encoder_->Encode(
       capture_data, false,
       base::Bind(&VideoScheduler::EncodedDataAvailableCallback, this));
@@ -281,11 +276,8 @@ void VideoScheduler::EncodedDataAvailableCallback(
 
   bool last = (packet->flags() & VideoPacket::LAST_PACKET) != 0;
   if (last) {
-    base::TimeDelta encode_time = base::Time::Now() - encode_start_time_;
-    int encode_time_ms =
-        static_cast<int>(encode_time.InMilliseconds());
-    packet->set_encode_time_ms(encode_time_ms);
-    scheduler_.RecordEncodeTime(encode_time);
+    scheduler_.RecordEncodeTime(
+        base::TimeDelta::FromMilliseconds(packet->encode_time_ms()));
   }
 
   network_task_runner_->PostTask(

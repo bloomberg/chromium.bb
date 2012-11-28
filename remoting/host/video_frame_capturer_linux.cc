@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/host/differ.h"
 #include "remoting/host/linux/x_server_pixel_buffer.h"
@@ -299,6 +300,8 @@ void VideoFrameCapturerLinux::InvalidateRegion(const SkRegion& invalid_region) {
 }
 
 void VideoFrameCapturerLinux::CaptureFrame() {
+  base::Time capture_start_time = base::Time::Now();
+
   // Process XEvents for XDamage and cursor shape tracking.
   ProcessPendingXEvents();
 
@@ -330,6 +333,9 @@ void VideoFrameCapturerLinux::CaptureFrame() {
   last_invalid_region_ = capture_data->dirty_region();
 
   queue_.DoneWithCurrentFrame();
+
+  capture_data->set_capture_time_ms(
+      (base::Time::Now() - capture_start_time).InMillisecondsRoundedUp());
   delegate_->OnCaptureCompleted(capture_data);
 }
 

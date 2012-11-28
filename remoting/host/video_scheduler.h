@@ -174,12 +174,6 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
   // True if capture of video frames is paused.
   bool is_paused_;
 
-  // Time when capture is started.
-  base::Time capture_start_time_;
-
-  // Time when encode is started.
-  base::Time encode_start_time_;
-
   // This is a number updated by client to trace performance.
   int64 sequence_number_;
 

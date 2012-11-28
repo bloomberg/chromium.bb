@@ -298,6 +298,8 @@ void VideoFrameCapturerMac::CaptureFrame() {
   // Only allow captures when the display configuration is not occurring.
   scoped_refptr<CaptureData> data;
 
+  base::Time capture_start_time = base::Time::Now();
+
   // Wait until the display configuration is stable. If one or more displays
   // are reconfiguring then |display_configuration_capture_event_| will not be
   // set until the reconfiguration completes.
@@ -363,6 +365,8 @@ void VideoFrameCapturerMac::CaptureFrame() {
   // Move the capture frame buffer queue on to the next buffer.
   queue_.DoneWithCurrentFrame();
 
+  data->set_capture_time_ms(
+      (base::Time::Now() - capture_start_time).InMillisecondsRoundedUp());
   delegate_->OnCaptureCompleted(data);
 }
 
