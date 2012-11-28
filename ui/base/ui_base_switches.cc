@@ -91,4 +91,6 @@ const char kDisableCoreAnimationPlugins[] =
 const char kTouchDevices[] = "touch-devices";
 #endif
 
+const char kEnableTouchDragDrop[] = "enable-touch-drag-drop";
+
 }  // namespace switches

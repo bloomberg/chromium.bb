@@ -49,6 +49,7 @@ UI_EXPORT extern const char kDisableCoreAnimationPlugins[];
 UI_EXPORT extern const char kTouchDevices[];
 #endif
 
+UI_EXPORT extern const char kEnableTouchDragDrop[];
 }  // namespace switches
 
 #endif  // UI_BASE_UI_BASE_SWITCHES_H_

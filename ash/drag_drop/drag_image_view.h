@@ -32,7 +32,11 @@ class DragImageView : public views::ImageView {
   void SetWidgetVisible(bool visible);
 
  private:
+  // Overridden from views::ImageView.
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+
   scoped_ptr<views::Widget> widget_;
+  gfx::Size widget_size_;
 
   DISALLOW_COPY_AND_ASSIGN(DragImageView);
 };

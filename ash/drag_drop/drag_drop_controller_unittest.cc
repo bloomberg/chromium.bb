@@ -7,6 +7,7 @@
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/root_window.h"
@@ -16,7 +17,11 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
 #include "ui/base/events/event.h"
+#include "ui/base/gestures/gesture_types.h"
+#include "ui/base/ui_base_switches.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/view.h"
 #include "ui/views/views_delegate.h"
@@ -42,6 +47,7 @@ class DragTestView : public views::View {
     num_drag_updates_ = 0;
     num_drops_ = 0;
     drag_done_received_ = false;
+    long_tap_received_ = false;
   }
 
   int VerticalDragThreshold() {
@@ -57,6 +63,7 @@ class DragTestView : public views::View {
   int num_drag_updates_;
   int num_drops_;
   bool drag_done_received_;
+  bool long_tap_received_;
 
  private:
   // View overrides:
@@ -66,10 +73,22 @@ class DragTestView : public views::View {
 
   void WriteDragData(const gfx::Point& p, OSExchangeData* data) OVERRIDE {
     data->SetString(UTF8ToUTF16("I am being dragged"));
+    ui::OSExchangeDataProviderAura& provider =
+        static_cast<ui::OSExchangeDataProviderAura&>(data->provider());
+    gfx::ImageSkiaRep* image = new gfx::ImageSkiaRep(
+        gfx::Size(10, 20), ui::SCALE_FACTOR_100P);
+    gfx::ImageSkia* image_skia = new gfx::ImageSkia(*image);
+    provider.set_drag_image(*image_skia);
   }
 
   bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
     return true;
+  }
+
+  ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    if (event->type() == ui::ET_GESTURE_LONG_TAP)
+      long_tap_received_ = true;
+    return ui::ER_UNHANDLED;
   }
 
   bool GetDropFormats(int* formats,
@@ -149,6 +168,11 @@ class TestDragDropController : public internal::DragDropController {
     drag_canceled_ = true;
   }
 
+  void DoDragCancel(int animation_duration_ms) OVERRIDE {
+    DragDropController::DoDragCancel(animation_duration_ms);
+    drag_canceled_ = true;
+  }
+
   bool drag_start_received_;
   int num_drag_updates_;
   bool drop_received_;
@@ -216,6 +240,13 @@ void AddViewToWidgetAndResize(views::Widget* widget, views::View* view) {
   widget->SetBounds(contents_view_bounds);
 }
 
+void DispatchGesture(ui::EventType gesture_type, gfx::Point location) {
+  ui::GestureEvent gesture_event(gesture_type, location.x(), location.y(), 0,
+      base::Time::NowFromSystemTime() - base::Time(),
+      ui::GestureEventDetails(gesture_type, 0, 0), 1);
+  Shell::GetPrimaryRootWindow()->DispatchGestureEvent(&gesture_event);
+}
+
 }  // namespace
 
 class DragDropControllerTest : public AshTestBase {
@@ -244,6 +275,15 @@ class DragDropControllerTest : public AshTestBase {
 
   aura::Window* GetDragWindow() {
     return drag_drop_controller_->drag_window_;
+  }
+
+  aura::Window* GetDragSourceWindow() {
+    return drag_drop_controller_->drag_source_window_;
+  }
+
+  void SetDragSourceWindow(aura::Window* drag_source_window) {
+    drag_drop_controller_->drag_source_window_ = drag_source_window;
+    drag_source_window->AddObserver(drag_drop_controller_.get());
   }
 
   aura::Window* GetDragImageWindow() {
@@ -689,6 +729,116 @@ TEST_F(DragDropControllerTest, PressingEscapeCancelsDragDrop) {
   EXPECT_TRUE(drag_view->drag_done_received_);
 }
 
+TEST_F(DragDropControllerTest, TouchDragDropInMultipleWindows) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableTouchDragDrop);
+  scoped_ptr<views::Widget> widget1(CreateNewWidget());
+  DragTestView* drag_view1 = new DragTestView;
+  AddViewToWidgetAndResize(widget1.get(), drag_view1);
+  scoped_ptr<views::Widget> widget2(CreateNewWidget());
+  DragTestView* drag_view2 = new DragTestView;
+  AddViewToWidgetAndResize(widget2.get(), drag_view2);
+  gfx::Rect widget1_bounds = widget1->GetClientAreaBoundsInScreen();
+  gfx::Rect widget2_bounds = widget2->GetClientAreaBoundsInScreen();
+  widget2->SetBounds(gfx::Rect(widget1_bounds.width(), 0,
+      widget2_bounds.width(), widget2_bounds.height()));
+
+  ui::OSExchangeData data;
+  data.SetString(UTF8ToUTF16("I am being dragged"));
+
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       widget1->GetNativeView());
+  generator.PressTouch();
+  gfx::Point point = gfx::Rect(drag_view1->bounds()).CenterPoint();
+  DispatchGesture(ui::ET_GESTURE_LONG_PRESS, point);
+  // Because we are not doing a blocking drag and drop, the original
+  // OSDragExchangeData object is lost as soon as we return from the drag
+  // initiation in DragDropController::StartDragAndDrop(). Hence we set the
+  // drag_data_ to a fake drag data object that we created.
+  UpdateDragData(&data);
+  gfx::Point gesture_location = point;
+  int num_drags = drag_view1->width();
+  for (int i = 0; i < num_drags; ++i) {
+    gesture_location.Offset(1, 0);
+    DispatchGesture(ui::ET_GESTURE_SCROLL_UPDATE, gesture_location);
+
+    // Execute any scheduled draws to process deferred mouse events.
+    RunAllPendingInMessageLoop();
+  }
+
+  DispatchGesture(ui::ET_GESTURE_SCROLL_END, gesture_location);
+
+  EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
+  EXPECT_EQ(num_drags, drag_drop_controller_->num_drag_updates_);
+  EXPECT_TRUE(drag_drop_controller_->drop_received_);
+  EXPECT_EQ(UTF8ToUTF16("I am being dragged"),
+      drag_drop_controller_->drag_string_);
+
+  EXPECT_EQ(1, drag_view1->num_drag_enters_);
+  int num_expected_updates = drag_view1->bounds().width() -
+      drag_view1->bounds().CenterPoint().x() - 1;
+  EXPECT_EQ(num_expected_updates, drag_view1->num_drag_updates_);
+  EXPECT_EQ(0, drag_view1->num_drops_);
+  EXPECT_EQ(1, drag_view1->num_drag_exits_);
+  EXPECT_TRUE(drag_view1->drag_done_received_);
+
+  EXPECT_EQ(1, drag_view2->num_drag_enters_);
+  num_expected_updates = num_drags - num_expected_updates;
+  EXPECT_EQ(num_expected_updates, drag_view2->num_drag_updates_);
+  EXPECT_EQ(1, drag_view2->num_drops_);
+  EXPECT_EQ(0, drag_view2->num_drag_exits_);
+  EXPECT_FALSE(drag_view2->drag_done_received_);
+}
+
+TEST_F(DragDropControllerTest, TouchDragDropCancelsOnLongTap) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableTouchDragDrop);
+  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  DragTestView* drag_view = new DragTestView;
+  AddViewToWidgetAndResize(widget.get(), drag_view);
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       widget->GetNativeView());
+
+  generator.PressTouch();
+  gfx::Point point = gfx::Rect(drag_view->bounds()).CenterPoint();
+  DispatchGesture(ui::ET_GESTURE_LONG_PRESS, point);
+  DispatchGesture(ui::ET_GESTURE_LONG_TAP, point);
+
+  EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
+  EXPECT_TRUE(drag_drop_controller_->drag_canceled_);
+  EXPECT_EQ(0, drag_drop_controller_->num_drag_updates_);
+  EXPECT_FALSE(drag_drop_controller_->drop_received_);
+  EXPECT_EQ(UTF8ToUTF16("I am being dragged"),
+            drag_drop_controller_->drag_string_);
+  EXPECT_EQ(0, drag_view->num_drag_enters_);
+  EXPECT_EQ(0, drag_view->num_drops_);
+  EXPECT_EQ(0, drag_view->num_drag_exits_);
+  EXPECT_TRUE(drag_view->drag_done_received_);
+}
+
+TEST_F(DragDropControllerTest, TouchDragDropLongTapGestureIsForwarded) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableTouchDragDrop);
+  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  DragTestView* drag_view = new DragTestView;
+  AddViewToWidgetAndResize(widget.get(), drag_view);
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       widget->GetNativeView());
+
+  generator.PressTouch();
+  gfx::Point point = gfx::Rect(drag_view->bounds()).CenterPoint();
+  DispatchGesture(ui::ET_GESTURE_LONG_PRESS, point);
+
+  // Since we are not running inside a nested loop, the |drag_source_window_|
+  // will get destroyed immediately. Hence we reassign it.
+  EXPECT_EQ(NULL, GetDragSourceWindow());
+  SetDragSourceWindow(widget->GetNativeView());
+  EXPECT_FALSE(drag_view->long_tap_received_);
+  DispatchGesture(ui::ET_GESTURE_LONG_TAP, point);
+  EndCancelAnimation();
+  EXPECT_TRUE(drag_view->long_tap_received_);
+}
+
 namespace {
 
 class DragImageWindowObserver : public aura::WindowObserver {
@@ -789,6 +939,10 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
     EndCancelAnimation();
 
     EXPECT_EQ("405,405", observer.window_location_on_destroying().ToString());
+  }
+  for (Shell::RootWindowList::iterator iter = root_windows.begin();
+       iter != root_windows.end(); ++iter) {
+    aura::client::SetDragDropClient(*iter, NULL);
   }
 }
 

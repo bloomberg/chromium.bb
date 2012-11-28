@@ -4,7 +4,9 @@
 
 #include "ash/drag_drop/drag_image_view.h"
 
+#include "skia/ext/image_operations.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/canvas.h"
 #include "ui/views/corewm/shadow_types.h"
 #include "ui/views/widget/widget.h"
 
@@ -45,10 +47,11 @@ DragImageView::~DragImageView() {
 
 void DragImageView::SetBoundsInScreen(const gfx::Rect& bounds) {
   widget_->SetBounds(bounds);
+  widget_size_ = bounds.size();
 }
 
 void DragImageView::SetScreenPosition(const gfx::Point& position) {
-  widget_->SetBounds(gfx::Rect(position, GetPreferredSize()));
+  widget_->SetBounds(gfx::Rect(position, widget_size_));
 }
 
 void DragImageView::SetWidgetVisible(bool visible) {
@@ -57,6 +60,18 @@ void DragImageView::SetWidgetVisible(bool visible) {
       widget_->Show();
     else
       widget_->Hide();
+  }
+}
+
+void DragImageView::OnPaint(gfx::Canvas* canvas) {
+  if (GetImage().size() == widget_size_) {
+    canvas->DrawImageInt(GetImage(), 0, 0);
+  } else {
+  SkBitmap scaled = skia::ImageOperations::Resize(
+      *GetImage().bitmap(), skia::ImageOperations::RESIZE_LANCZOS3,
+      widget_size_.width(), widget_size_.height());
+  SkPaint paint;
+  canvas->sk_canvas()->drawBitmap(scaled, 0, 0, &paint);
   }
 }
 

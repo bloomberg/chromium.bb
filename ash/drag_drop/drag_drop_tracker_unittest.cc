@@ -43,11 +43,11 @@ class DragDropTrackerTest : public test::AshTestBase {
     return target;
   }
 
-  static ui::MouseEvent* ConvertMouseEvent(aura::Window* target,
+  static ui::LocatedEvent* ConvertEvent(aura::Window* target,
                                            const ui::MouseEvent& event) {
     scoped_ptr<internal::DragDropTracker> tracker(
         new internal::DragDropTracker);
-    ui::MouseEvent* converted = tracker->ConvertMouseEvent(target, event);
+    ui::LocatedEvent* converted = tracker->ConvertEvent(target, event);
     return converted;
   }
 };
@@ -122,12 +122,12 @@ TEST_F(DragDropTrackerTest, MAYBE_GetTarget) {
 // TODO(mazda): Remove this once ash/wm/coordinate_conversion.h supports
 // non-X11 platforms.
 #if defined(USE_X11)
-#define MAYBE_ConvertMouseEvent ConvertMouseEvent
+#define MAYBE_ConvertEvent ConvertEvent
 #else
-#define MAYBE_ConvertMouseEvent DISABLED_ConvertMouseEvent
+#define MAYBE_ConvertEvent DISABLED_ConvertEvent
 #endif
 
-TEST_F(DragDropTrackerTest, MAYBE_ConvertMouseEvent) {
+TEST_F(DragDropTrackerTest, MAYBE_ConvertEvent) {
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(2U, root_windows.size());
 
@@ -150,8 +150,8 @@ TEST_F(DragDropTrackerTest, MAYBE_ConvertMouseEvent) {
                             gfx::Point(50, 50),
                             gfx::Point(50, 50),
                             ui::EF_NONE);
-  scoped_ptr<ui::MouseEvent> converted00(ConvertMouseEvent(window0.get(),
-                                                           original00));
+  scoped_ptr<ui::LocatedEvent> converted00(ConvertEvent(window0.get(),
+                                                        original00));
   EXPECT_EQ(original00.type(), converted00->type());
   EXPECT_EQ("50,50", converted00->location().ToString());
   EXPECT_EQ("50,50", converted00->root_location().ToString());
@@ -163,8 +163,8 @@ TEST_F(DragDropTrackerTest, MAYBE_ConvertMouseEvent) {
                             gfx::Point(350, 150),
                             gfx::Point(350, 150),
                             ui::EF_NONE);
-  scoped_ptr<ui::MouseEvent> converted01(ConvertMouseEvent(window1.get(),
-                                                           original01));
+  scoped_ptr<ui::LocatedEvent> converted01(ConvertEvent(window1.get(),
+                                                        original01));
   EXPECT_EQ(original01.type(), converted01->type());
   EXPECT_EQ("50,50", converted01->location().ToString());
   EXPECT_EQ("150,150", converted01->root_location().ToString());
@@ -179,8 +179,8 @@ TEST_F(DragDropTrackerTest, MAYBE_ConvertMouseEvent) {
                             gfx::Point(-150, 50),
                             gfx::Point(-150, 50),
                             ui::EF_NONE);
-  scoped_ptr<ui::MouseEvent> converted10(ConvertMouseEvent(window0.get(),
-                                                           original10));
+  scoped_ptr<ui::LocatedEvent> converted10(ConvertEvent(window0.get(),
+                                                        original10));
   EXPECT_EQ(original10.type(), converted10->type());
   EXPECT_EQ("50,50", converted10->location().ToString());
   EXPECT_EQ("50,50", converted10->root_location().ToString());
@@ -192,7 +192,7 @@ TEST_F(DragDropTrackerTest, MAYBE_ConvertMouseEvent) {
                             gfx::Point(150, 150),
                             gfx::Point(150, 150),
                             ui::EF_NONE);
-  scoped_ptr<ui::MouseEvent> converted11(ConvertMouseEvent(window1.get(),
+  scoped_ptr<ui::LocatedEvent> converted11(ConvertEvent(window1.get(),
                                                            original11));
   EXPECT_EQ(original11.type(), converted11->type());
   EXPECT_EQ("50,50", converted11->location().ToString());

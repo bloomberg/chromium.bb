@@ -203,7 +203,7 @@ WebKit::WebGestureEvent MakeWebGestureEventFromUIEvent(
           event.details().bounding_box().height();
       break;
     case ui::ET_GESTURE_LONG_TAP:
-      gesture_event.type = WebKit::WebInputEvent::Undefined;
+      gesture_event.type = WebKit::WebInputEvent::GestureLongTap;
       gesture_event.data.longPress.width =
           event.details().bounding_box().width();
       gesture_event.data.longPress.height =

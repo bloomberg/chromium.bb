@@ -7,13 +7,14 @@
 
 #include "ash/ash_export.h"
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/events/event_handler.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 
 namespace aura {
 class RootWindow;
@@ -67,9 +68,14 @@ class ASH_EXPORT DragDropController
   virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Overridden from aura::WindowObserver.
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
+
+ protected:
+  // Actual implementation of |DragCancel()|. protected for testing.
+  virtual void DoDragCancel(int drag_cancel_animation_duration_ms);
 
  private:
   friend class ash::test::DragDropControllerTest;
@@ -80,7 +86,10 @@ class ASH_EXPORT DragDropController
   virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
 
   // Helper method to start drag widget flying back animation.
-  void StartCanceledAnimation();
+  void StartCanceledAnimation(int animation_duration_ms);
+
+  // Helper method to forward |pending_log_tap_| event to |drag_source_window_|.
+  void ForwardPendingLongTap();
 
   // Helper method to reset everything.
   void Cleanup();
@@ -92,12 +101,15 @@ class ASH_EXPORT DragDropController
 
   // Window that is currently under the drag cursor.
   aura::Window* drag_window_;
-  // The location where drag is started in screen coordinate.
-  gfx::Point drag_start_location_;
-  // The location where drag is canceled in screen coordinate.
-  gfx::Point drag_cancel_location_;
+
+  // Starting and final bounds for the drag image for the drag cancel animation.
+  gfx::Rect drag_image_initial_bounds_for_cancel_animation_;
+  gfx::Rect drag_image_final_bounds_for_cancel_animation_;
 
   scoped_ptr<ui::LinearAnimation> cancel_animation_;
+
+  // Window that started the drag.
+  aura::Window* drag_source_window_;
 
   // Indicates whether the caller should be blocked on a drag/drop session.
   // Only be used for tests.
@@ -107,6 +119,14 @@ class ASH_EXPORT DragDropController
   base::Closure quit_closure_;
 
   scoped_ptr<ash::internal::DragDropTracker> drag_drop_tracker_;
+
+  ui::DragDropTypes::DragEventSource current_drag_event_source_;
+
+  // Holds a synthetic long tap event to be sent to the |drag_source_window_|.
+  // See comment in OnGestureEvent() on why we need this.
+  scoped_ptr<ui::GestureEvent> pending_long_tap_;
+
+  base::WeakPtrFactory<DragDropController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DragDropController);
 };

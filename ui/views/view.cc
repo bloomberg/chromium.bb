@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -18,6 +19,7 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
@@ -2002,8 +2004,20 @@ ui::EventResult View::ProcessGestureEvent(ui::GestureEvent* event) {
   if (status != ui::ER_UNHANDLED)
     return status;
 
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableTouchDragDrop)) {
+    if (event->type() == ui::ET_GESTURE_LONG_PRESS &&
+        (!drag_controller_ || drag_controller_->CanStartDragForView(
+            this, event->location(), event->location()))) {
+      if (DoDrag(*event, event->location(),
+          ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH))
+        return ui::ER_CONSUMED;
+    }
+  }
+
   if (context_menu_controller_ &&
       (event->type() == ui::ET_GESTURE_LONG_PRESS ||
+       event->type() == ui::ET_GESTURE_LONG_TAP ||
        event->type() == ui::ET_GESTURE_TWO_FINGER_TAP)) {
     gfx::Point location(event->location());
     ConvertPointToScreen(this, &location);

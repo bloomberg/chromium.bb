@@ -159,6 +159,9 @@ ui::EventResult ToplevelWindowEventHandler::OnMouseEvent(
 ui::EventResult ToplevelWindowEventHandler::OnGestureEvent(
     ui::GestureEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
+  if (!target->delegate())
+    return ui::ER_UNHANDLED;
+
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN: {
       int component =
