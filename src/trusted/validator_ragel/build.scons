@@ -240,8 +240,6 @@ if generate:
       LINKFLAGS='-g',
       CPPPATH='unreviewed')
 
-  test_dfa_object = test_env.Object('unreviewed/test_dfa.c')
-
   objdump, gas = env.Command(
       target=['objdump', 'gas'],
       source=['obtain_binutils.py'],
@@ -251,67 +249,39 @@ if generate:
   check_decoders = []
 
   for bits in ('32', '64'):
-    (one_valid_instr_rl,) = env.Command(
-        target='one_valid_instruction_x86_%s.rl' % bits,
-        source=[gen_dfa] + INST_DEFS,
-        action=('${SOURCES[0]} -o ${TARGET} %s '
-                '-d check_access,vex_prefix,opcode,parse_operands_states '
-                '-d parse_operands,instruction_name '
-                '-m %s') % (
-               ' '.join('${SOURCES[%d]}' % (i + 1)
-                        for i in range(len(INST_DEFS))),
-               {'32': 'ia32', '64': 'amd64'}[bits])
-    )
+    (one_valid_instr_rl,) = env.AutoDepsCommand(
+        'one_valid_instruction_x86_%s.rl' % bits,
+        [gen_dfa, '-o', '${TARGET}'] + map(env.File, INST_DEFS) +
+        ['-d', 'check_access,vex_prefix,opcode,parse_operands_states',
+         '-d', 'parse_operands,instruction_name',
+         '-m', {'32': 'ia32', '64': 'amd64'}[bits]])
 
     include_dir = one_valid_instr_rl.dir.get_abspath()
 
-    (one_instr_dot,) = env.Command(
-        target='one_instruction_x86_%s.dot' % bits,
-        source=[
-            'unreviewed/one_instruction_x86_%s.rl' % bits,
-            one_valid_instr_rl],
-        action=[
-            '%s -V -I%s -I.. ${SOURCES[0]} -o ${TARGET}' %
-            (ragel_binary, include_dir)]
-    )
+    (one_instr_xml,) = env.AutoDepsCommand(
+        'one_instruction_x86_%s.xml' % bits,
+        [ragel_binary,
+         '-x',
+         '-I%s' % include_dir,
+         '-I..',
+         env.File('unreviewed/one_instruction_x86_%s.rl' % bits),
+         '-o', '${TARGET}'],
+        extra_deps=[one_valid_instr_rl])
 
-    test_dfa_transitions = test_env.Command(
-        target='test_dfa_transitions_x86_%s.c' % bits,
-        source=['unreviewed/parse_dfa.py', one_instr_dot],
-        action='${PYTHON} ${SOURCES[0]} <"${SOURCES[1]}" >"${TARGET}"'
-    )
+    check_decoder = env.AutoDepsCommand(
+        'check_decoder_test_results_%s' % bits,
+        ['${PYTHON}',
+         env.File('check_decoder.py'),
+         one_instr_xml,
+         '--gas', gas,
+         '--objdump', objdump,
+         '--decoder', decoder_test,
+         '--bits', bits])
 
-    test_dfa_transitions_object = test_env.Object(test_dfa_transitions)
-
-    test_dfa = test_env.ComponentProgram(
-        'test_dfa_x86_%s' % bits,
-        [test_dfa_object, test_dfa_transitions_object])
-
-    fast_temp_for_test = '/dev/shm'
-
-    (check_decoder,) = env.Command(
-        target='objdump_test_fake_file_%s' % bits,
-        source=[
-            'unreviewed/run_objdump_test.py',
-            gas,
-            objdump,
-            decoder_test,
-            'unreviewed/decoder_test_one_file.sh',
-            test_dfa,
-        ],
-        action=[(
-            '${PYTHON} ${SOURCES[0]} '
-            '--gas="${SOURCES[1]} --%s" '
-            '--objdump="${SOURCES[2]}" '
-            '--decoder="${SOURCES[3]}" '
-            '--tester="${SOURCES[4]}" '
-            '-- '
-            '"${SOURCES[5]}" "%s"'
-            ) % (bits, fast_temp_for_test),
-        ])
     check_decoders.append(check_decoder)
 
-  SideEffect(fast_temp_for_test, check_decoders)
+  # Never run decoder tests in parallel because they can take all CPU.
+  SideEffect('check_decoder', check_decoders)
 
   env.AlwaysBuild(env.Alias('dfagen', automata))
   env.AlwaysBuild(env.Alias('dfaclean', action=map(Delete, automata)))
