@@ -200,6 +200,18 @@ BaseHistoryWebUITest.*
 SettingsFormatWebUITest.*
 ChromeMainTest.*
 AutofillPopupViewBrowserTest.*
+# DrM-i#1052-c#35
+WebUIBrowserExpectFailTest.*
+EncodingAliases/BrowserEncodingTest.*
+ExtensionSettingsWebUITest.*
+CrashRecoveryBrowserTest.*
+TracingBrowserTest.*
+LocaleTestDanish.*
+LocaleTestHebrew.*
+RegisterProtocolHandlerBrowserTest.*
+ServiceProcessControlBrowserTest.*
+SpeechRecognitionBubbleTest.*
+SpeechInputExtensionApiTest.
 
 # Failed tests from debug build
 # DrM-i#1052-c#21
@@ -249,3 +261,7 @@ PanelExtensionBrowserTest.*
 ToolbarViewTest.*
 # DrM-i#1052-c#32
 ExtensionOverrideTest.*
+# DrM-i#1052-c#35
+EncodingAliases/BrowserEncodingTest.*
+ChromeRenderProcessHostTestWithCommandLine.*
+PlatformAppDevToolsBrowserTest.*
