@@ -33,6 +33,9 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
     // be true if a notification was added or updated.
     virtual void MessageCenterChanged(bool new_notification) = 0;
 
+    // Called when a notification item is clicked.
+    virtual void ItemClicked(const std::string& notification_id) = 0;
+
    protected:
     virtual ~Host() {}
   };
@@ -54,8 +57,10 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
     // to identify the requesting browser context).
     virtual void ShowSettings(const std::string& notifcation_id) = 0;
 
-    // Called when the notification body is clicked on.
-    virtual void OnClicked(const std::string& notifcation_id) = 0;
+    // Called when the notification body is clicked on. |is_popup| is true
+    // only when the click happens on a popup item.
+    virtual void OnClicked(const std::string& notifcation_id,
+                           bool is_popup) = 0;
 
    protected:
     virtual ~Delegate() {}

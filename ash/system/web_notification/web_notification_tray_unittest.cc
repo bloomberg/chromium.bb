@@ -36,21 +36,22 @@ class TestDelegate : public message_center::MessageCenter::Delegate {
   virtual ~TestDelegate() {}
 
   // WebNotificationTray::Delegate overrides.
-  virtual void NotificationRemoved(const std::string& notifcation_id) {
+  virtual void NotificationRemoved(const std::string& notifcation_id) OVERRIDE {
     notification_ids_.erase(notifcation_id);
   }
 
-  virtual void DisableExtension(const std::string& notifcation_id) {
+  virtual void DisableExtension(const std::string& notifcation_id) OVERRIDE {
   }
 
   virtual void DisableNotificationsFromSource(
-      const std::string& notifcation_id) {
+      const std::string& notifcation_id) OVERRIDE {
   }
 
-  virtual void ShowSettings(const std::string& notifcation_id) {
+  virtual void ShowSettings(const std::string& notifcation_id) OVERRIDE {
   }
 
-  virtual void OnClicked(const std::string& notifcation_id) {
+  virtual void OnClicked(const std::string& notifcation_id,
+                         bool is_popup) OVERRIDE {
   }
 
   void AddNotification(WebNotificationTray* tray, const std::string& id) {

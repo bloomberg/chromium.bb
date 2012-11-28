@@ -89,6 +89,7 @@ void MessagePopupBubble::InitializeContents(
 }
 
 void MessagePopupBubble::OnBubbleViewDestroyed() {
+  list_delegate_->GetNotificationList()->MarkPopupsAsShown();
   contents_view_ = NULL;
 }
 

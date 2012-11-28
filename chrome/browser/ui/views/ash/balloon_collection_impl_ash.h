@@ -31,7 +31,8 @@ class BalloonCollectionImplAsh
   virtual void DisableNotificationsFromSource(
       const std::string& notifcation_id) OVERRIDE;
   virtual void ShowSettings(const std::string& notifcation_id) OVERRIDE;
-  virtual void OnClicked(const std::string& notifcation_id) OVERRIDE;
+  virtual void OnClicked(const std::string& notifcation_id,
+                         bool is_popup) OVERRIDE;
 
   // Adds a callback for WebUI message. Returns true if the callback
   // is succssfully registered, or false otherwise. It fails to add if
