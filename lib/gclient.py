@@ -31,29 +31,35 @@ def GetBaseURLs():
     external_url = 'http://src.chromium.org/svn'
     internal_url = 'svn://svn.chromium.org/chrome-internal'
 
-  return external_url, internal_url
+  # No mirror for this one at the moment.
+  pdf_url = 'svn://svn.chromium.org/pdf'
+
+  return external_url, internal_url, pdf_url
 
 
-def _GetGclientURLs(internal, rev):
+def _GetGclientURLs(internal, use_pdf, rev):
   """Get the URLs to use in gclient file.
 
   Args: See WriteConfigFile below.
   """
-  use_trunk = rev is None or isinstance(rev, (int, long))
-  external_url, internal_url = GetBaseURLs()
-  auxiliary_url = None
-  name = 'src' if use_trunk else 'CHROME_DEPS'
-  if use_trunk:
+  results = []
+  external_url, internal_url, pdf_url = GetBaseURLs()
+
+  if rev is None or isinstance(rev, (int, long)):
     rev_str = '@%s' % rev if rev else ''
-    primary_url = '%s/trunk/src%s' % (external_url, rev_str)
+    results.append(('src', '%s/trunk/src%s' % (external_url, rev_str)))
     if internal:
-      auxiliary_url = '%s/trunk/src-internal' % internal_url
+      results.append(('src-internal', '%s/trunk/src-internal' % internal_url))
+    if use_pdf:
+      results.append(('src-pdf', '%s/trunk/chrome' % pdf_url))
   elif internal:
     # TODO(petermayo): Fall back to the archive directory if needed.
     primary_url = '%s/trunk/tools/buildspec/releases/%s' % (internal_url, rev)
+    results.append(('CHROME_DEPS', primary_url))
   else:
-    primary_url = '%s/releases/%s' % (external_url, rev)
-  return primary_url, auxiliary_url, name
+    results.append(('CHROMIUM_DEPS', '%s/releases/%s' % (external_url, rev)))
+
+  return results
 
 
 def _GetGclientSolutions(internal, use_pdf, rev):
@@ -61,8 +67,9 @@ def _GetGclientSolutions(internal, use_pdf, rev):
 
   Args: See WriteConfigFile below.
   """
-  primary_url, auxiliary_url, name = _GetGclientURLs(internal, rev)
+  urls = _GetGclientURLs(internal, use_pdf, rev)
   custom_deps, custom_vars = {}, {}
+  # This suppresses pdf from a buildspec
   if not use_pdf:
     custom_deps.update({'src/pdf': None, 'src-pdf': None})
   if _UseGoloMirror():
@@ -77,13 +84,9 @@ def _GetGclientSolutions(internal, use_pdf, rev):
   custom_deps['src/third_party/WebKit/LayoutTests'] = None
 
   solutions = [{'name': name,
-                'url': primary_url,
+                'url': url,
                 'custom_deps': custom_deps,
-                'custom_vars': custom_vars}]
-  if auxiliary_url is not None:
-    # If we're syncing to TOT, we rely on gclient sync --transitive to figure
-    # out the approximate revision to pull from the internal DEPS.
-    solutions.append({'name': 'aux_src', 'url': auxiliary_url})
+                'custom_vars': custom_vars} for (name, url) in urls]
   return solutions
 
 

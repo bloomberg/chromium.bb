@@ -538,7 +538,7 @@ class CBuildBotTest(cros_test_lib.MoxTempDirTestCase):
     result = cros_build_lib.CommandResult(
         output='\n%s\n\n' % chrome_lkgm_expected)
 
-    gclient.GetBaseURLs().AndReturn((svn_url, None))
+    gclient.GetBaseURLs().AndReturn((svn_url, None, 'foo'))
     mox_args = [mox.In(full_svn_url)]
     if chrome_revision:
       mox_args += [mox.In(str(chrome_revision))]
