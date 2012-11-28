@@ -4,6 +4,7 @@
 #
 # The list is too long for gtest_filter, so we exclude the whole
 # test case if any of its tests failed.
+*FLAKY*
 
 # Timeout (400000 ms) Tests
 NaClBrowserTestGLibc.*
@@ -211,7 +212,12 @@ LocaleTestHebrew.*
 RegisterProtocolHandlerBrowserTest.*
 ServiceProcessControlBrowserTest.*
 SpeechRecognitionBubbleTest.*
-SpeechInputExtensionApiTest.
+SpeechInputExtensionApiTest.*
+# DrM-i#1052-c#36
+DownloadDangerPromptTest.*
+TtsApiTest.*
+RequirementsCheckerBrowserTest.*
+ToolbarImporterUtilsTest.*
 
 # Failed tests from debug build
 # DrM-i#1052-c#21
@@ -265,3 +271,7 @@ ExtensionOverrideTest.*
 EncodingAliases/BrowserEncodingTest.*
 ChromeRenderProcessHostTestWithCommandLine.*
 PlatformAppDevToolsBrowserTest.*
+# DrM-i#1052-c#36
+LocalePolicyTest.*
+ClipboardApiTest.*
+ExtensionDevToolsBrowserTest.*
