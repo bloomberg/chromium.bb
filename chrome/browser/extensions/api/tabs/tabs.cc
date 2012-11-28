@@ -1123,15 +1123,15 @@ bool DuplicateTabFunction::RunImpl() {
     return false;
   }
 
-  TabContents* new_contents = chrome::DuplicateTabAt(browser, tab_index);
+  WebContents* new_contents = chrome::DuplicateTabAt(browser, tab_index);
   if (!has_callback())
     return true;
 
-  int new_index = tab_strip->GetIndexOfTabContents(new_contents);
+  int new_index = tab_strip->GetIndexOfWebContents(new_contents);
 
   // Return data about the newly created tab.
   SetResult(ExtensionTabUtil::CreateTabValue(
-      new_contents->web_contents(),
+      new_contents,
       tab_strip, new_index, GetExtension()));
 
   return true;
