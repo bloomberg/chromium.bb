@@ -96,10 +96,6 @@ TabContents* TabContents::Factory::CreateTabContents(WebContents* contents) {
 }
 
 // static
-TabContents* TabContents::Factory::CloneTabContents(TabContents* contents) {
-  return contents->Clone();
-}
-
 TabContents::TabContents(WebContents* contents)
     : content::WebContentsObserver(contents),
       in_destructor_(false),
@@ -203,11 +199,6 @@ TabContents::TabContents(WebContents* contents)
 
 TabContents::~TabContents() {
   in_destructor_ = true;
-}
-
-TabContents* TabContents::Clone() {
-  WebContents* new_web_contents = web_contents()->Clone();
-  return new TabContents(new_web_contents);
 }
 
 // static

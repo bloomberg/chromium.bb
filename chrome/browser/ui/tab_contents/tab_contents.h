@@ -73,7 +73,6 @@ class TabContents : public content::WebContentsObserver {
     FRIEND_TEST_ALL_PREFIXES(SessionRestoreTest, SessionStorageAfterTabReplace);
 
     static TabContents* CreateTabContents(content::WebContents* contents);
-    static TabContents* CloneTabContents(TabContents* contents);
   };
 
   virtual ~TabContents();
@@ -106,10 +105,6 @@ class TabContents : public content::WebContentsObserver {
   // Takes ownership of |contents|, which must be heap-allocated (as it lives
   // in a scoped_ptr) and can not be NULL.
   explicit TabContents(content::WebContents* contents);
-
-  // Create a TabContents with the same state as this one. The returned
-  // heap-allocated pointer is owned by the caller.
-  TabContents* Clone();
 
   // WebContents (MUST BE LAST) ------------------------------------------------
 

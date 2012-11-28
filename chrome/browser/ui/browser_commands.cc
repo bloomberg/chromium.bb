@@ -98,8 +98,8 @@ using content::WebContents;
 // TODO(avi): Kill this when TabContents goes away.
 class BrowserCommandsTabContentsCreator {
  public:
-  static TabContents* CloneTabContents(TabContents* contents) {
-    return TabContents::Factory::CloneTabContents(contents);
+  static TabContents* CreateTabContents(content::WebContents* contents) {
+    return TabContents::Factory::CreateTabContents(contents);
   }
 };
 
@@ -143,7 +143,8 @@ WebContents* GetOrCloneTabForDisposition(Browser* browser,
     case NEW_FOREGROUND_TAB:
     case NEW_BACKGROUND_TAB: {
       current_tab =
-          BrowserCommandsTabContentsCreator::CloneTabContents(current_tab);
+          BrowserCommandsTabContentsCreator::CreateTabContents(
+              current_tab->web_contents()->Clone());
       browser->tab_strip_model()->AddTabContents(
           current_tab, -1, content::PAGE_TRANSITION_LINK,
           disposition == NEW_FOREGROUND_TAB ? TabStripModel::ADD_ACTIVE :
@@ -152,7 +153,8 @@ WebContents* GetOrCloneTabForDisposition(Browser* browser,
     }
     case NEW_WINDOW: {
       current_tab =
-          BrowserCommandsTabContentsCreator::CloneTabContents(current_tab);
+          BrowserCommandsTabContentsCreator::CreateTabContents(
+              current_tab->web_contents()->Clone());
       Browser* b = new Browser(Browser::CreateParams(browser->profile()));
       b->tab_strip_model()->AddTabContents(
           current_tab, -1, content::PAGE_TRANSITION_LINK,
@@ -566,16 +568,16 @@ bool CanDuplicateTab(const Browser* browser) {
 }
 
 TabContents* DuplicateTabAt(Browser* browser, int index) {
-  TabContents* contents = browser->tab_strip_model()->GetTabContentsAt(index);
+  WebContents* contents = browser->tab_strip_model()->GetWebContentsAt(index);
   CHECK(contents);
   TabContents* contents_dupe =
-      BrowserCommandsTabContentsCreator::CloneTabContents(contents);
+      BrowserCommandsTabContentsCreator::CreateTabContents(contents->Clone());
 
   bool pinned = false;
   if (browser->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP)) {
     // If this is a tabbed browser, just create a duplicate tab inside the same
     // window next to the tab being duplicated.
-    int index = browser->tab_strip_model()->GetIndexOfTabContents(contents);
+    int index = browser->tab_strip_model()->GetIndexOfWebContents(contents);
     pinned = browser->tab_strip_model()->IsTabPinned(index);
     int add_types = TabStripModel::ADD_ACTIVE |
         TabStripModel::ADD_INHERIT_GROUP |
@@ -997,7 +999,8 @@ void ViewSource(Browser* browser,
   // Note that Clone does not copy the pending or transient entries, so the
   // active entry in view_source_contents will be the last committed entry.
   TabContents* view_source_contents =
-      BrowserCommandsTabContentsCreator::CloneTabContents(contents);
+      BrowserCommandsTabContentsCreator::CreateTabContents(
+          contents->web_contents()->Clone());
   view_source_contents->web_contents()->GetController().PruneAllButActive();
   NavigationEntry* active_entry =
       view_source_contents->web_contents()->GetController().GetActiveEntry();
