@@ -1648,3 +1648,29 @@
    ...
    fun:net::FtpNetworkTransactionTest::ExecuteTransaction
 }
+{
+   bug_163111_a
+   Heapcheck:Leak
+   ...
+   fun:dbus::Response::FromMethodCall
+   fun:chromeos::ibus::IBusPanelServiceImpl::*Properties
+}
+{
+   bug_163111_b
+   Heapcheck:Leak
+   ...
+   fun:MethodCall
+   fun:chromeos::::ModemMessagingProxy::Delete
+   fun:chromeos::::ModemMessagingClientImpl::Delete
+   fun:chromeos::ModemMessagingClientTest_Delete_Test::TestBody
+}
+{
+   bug_163111_c
+   Heapcheck:Leak
+   ...
+   fun:dbus::MessageWriter::AppendBasic
+   fun:dbus::MessageWriter::AppendString
+   fun:chromeos::ibus::IBusObjectWriter::AddAttachment
+   fun:chromeos::ibus::AppendIBusLookupTable
+   fun:chromeos::ibus::IBusPanelServiceTest_UpdateLookupTableTest_Test::TestBody
+}

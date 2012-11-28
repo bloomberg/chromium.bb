@@ -6224,3 +6224,10 @@
    ...
    fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
 }
+{
+   bug_163111
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4dbus8Response14FromMethodCallEPNS_10MethodCallE
+   fun:_ZN8chromeos4ibus20IBusPanelServiceImpl*Properties*
+}
