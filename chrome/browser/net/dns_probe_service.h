@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/net/dns_probe_job.h"
+#include "net/base/network_change_notifier.h"
 
 namespace net {
 struct DnsConfig;
@@ -18,7 +19,7 @@ struct DnsConfig;
 
 namespace chrome_browser_net {
 
-class DnsProbeService {
+class DnsProbeService : public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   enum Result {
     PROBE_UNKNOWN,
@@ -33,6 +34,9 @@ class DnsProbeService {
   virtual ~DnsProbeService();
 
   void ProbeDns(const CallbackType& callback);
+
+  // NetworkChangeNotifier::IPAddressObserver implementation:
+  virtual void OnIPAddressChanged() OVERRIDE;
 
  protected:
   // This can be called by tests to pretend the cached reuslt has expired.

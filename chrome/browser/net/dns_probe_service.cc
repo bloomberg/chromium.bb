@@ -8,7 +8,6 @@
 #include "chrome/browser/net/dns_probe_job.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"
-#include "net/base/network_change_notifier.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config_service.h"
 #include "net/dns/dns_protocol.h"
@@ -43,9 +42,11 @@ DnsProbeService::DnsProbeService()
       public_result_(DnsProbeJob::SERVERS_UNKNOWN),
       state_(STATE_NO_RESULTS),
       result_(PROBE_UNKNOWN) {
+  NetworkChangeNotifier::AddIPAddressObserver(this);
 }
 
 DnsProbeService::~DnsProbeService() {
+  NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
 void DnsProbeService::ProbeDns(const DnsProbeService::CallbackType& callback) {
@@ -79,6 +80,11 @@ scoped_ptr<DnsProbeJob> DnsProbeService::CreatePublicProbeJob(
   DnsConfig public_config;
   GetPublicDnsConfig(&public_config);
   return CreateProbeJob(public_config, job_callback);
+}
+
+void DnsProbeService::OnIPAddressChanged() {
+  if (state_ == STATE_RESULTS_CACHED)
+    ExpireResults();
 }
 
 void DnsProbeService::ExpireResults() {
