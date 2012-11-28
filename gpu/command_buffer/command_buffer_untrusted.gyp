@@ -26,7 +26,7 @@
           'dependencies': [
             '../../native_client/tools.gyp:prep_toolchain',
             '../../base/base_untrusted.gyp:base_untrusted',
-            '../../third_party/khronos/khronos.gyp:headers',
+            '../../third_party/khronos/khronos.gyp:khronos_headers',
           ],
         },
       ],

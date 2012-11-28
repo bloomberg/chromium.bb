@@ -16,7 +16,7 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
-        '../third_party/khronos/khronos.gyp:headers',
+        '../third_party/khronos/khronos.gyp:khronos_headers',
         '../ui/gl/gl.gyp:gl',
         'command_buffer/command_buffer.gyp:gles2_utils',
         'gles2_cmd_helper',
@@ -38,7 +38,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
-        '../third_party/khronos/khronos.gyp:headers',
+        '../third_party/khronos/khronos.gyp:khronos_headers',
         '../ui/gl/gl.gyp:gl',
         'command_buffer/command_buffer.gyp:gles2_utils',
         'gles2_cmd_helper',
@@ -58,7 +58,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
-        '../third_party/khronos/khronos.gyp:headers',
+        '../third_party/khronos/khronos.gyp:khronos_headers',
         'command_buffer/command_buffer.gyp:gles2_utils',
         'gles2_cmd_helper',
       ],
@@ -255,7 +255,7 @@
       'dependencies': [
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../third_party/khronos/khronos.gyp:headers',
+        '../third_party/khronos/khronos.gyp:khronos_headers',
         '../ui/gl/gl.gyp:gl',
       ],
       'include_dirs': [

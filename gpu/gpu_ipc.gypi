@@ -5,7 +5,7 @@
 {
   'dependencies': [
     '../ipc/ipc.gyp:ipc',
-    '../third_party/khronos/khronos.gyp:headers',
+    '../third_party/khronos/khronos.gyp:khronos_headers',
   ],
   'include_dirs': [
     '..',

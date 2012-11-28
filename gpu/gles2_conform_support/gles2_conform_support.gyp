@@ -34,7 +34,7 @@
         '../../gpu/gpu.gyp:gpu',
         '../../gpu/gpu.gyp:gles2_implementation_client_side_arrays_no_check',
         '../../gpu/gpu.gyp:command_buffer_service',
-        '../../third_party/khronos/khronos.gyp:headers',
+        '../../third_party/khronos/khronos.gyp:khronos_headers',
         '../../ui/gl/gl.gyp:gl',
         '../../ui/ui.gyp:ui',
       ],
@@ -57,7 +57,7 @@
       'type': 'static_library',
       'dependencies': [
         'egl_native',
-        '../../third_party/khronos/khronos.gyp:headers',
+        '../../third_party/khronos/khronos.gyp:khronos_headers',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
@@ -79,7 +79,7 @@
       'type': 'static_library',
       'dependencies': [
         'egl_native',
-        '../../third_party/khronos/khronos.gyp:headers',
+        '../../third_party/khronos/khronos.gyp:khronos_headers',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {

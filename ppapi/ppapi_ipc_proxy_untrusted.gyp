@@ -49,7 +49,7 @@
             '../ipc/ipc_untrusted.gyp:ipc_untrusted',
             '../ppapi/ppapi_shared_untrusted.gyp:ppapi_shared_untrusted',
             '../ppapi/ppapi_ipc_untrusted.gyp:ppapi_ipc_untrusted',
-            '../third_party/khronos/khronos.gyp:headers',
+            '../third_party/khronos/khronos.gyp:khronos_headers',
           ],
         },
       ],

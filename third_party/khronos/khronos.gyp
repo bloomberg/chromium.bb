@@ -10,7 +10,7 @@
     ['use_system_khronos==0', {
       'targets': [
         {
-          'target_name': 'headers',
+          'target_name': 'khronos_headers',
           'type': 'none',
           'all_dependent_settings': {
             'include_dirs': [
@@ -22,7 +22,7 @@
     }, { # use_system_khronos==1
       'targets': [
         {
-          'target_name': 'headers',
+          'target_name': 'khronos_headers',
           'type': 'none',
           'all_dependent_settings': {
             'include_dirs': [

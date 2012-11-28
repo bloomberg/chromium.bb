@@ -39,7 +39,7 @@
       },
       'targets': [
         {
-          'target_name': 'headers',
+          'target_name': 'mesa_headers',
           'type': 'none',
           'direct_dependent_settings': {
             'include_dirs': [
@@ -58,7 +58,7 @@
             'MesaLib/src/mesa/main',
           ],
           'dependencies': [
-            'headers',
+            'mesa_headers',
           ],
           'sources': [
             '../talloc/talloc.c',
@@ -560,7 +560,7 @@
           'type': 'loadable_module',
           'mac_bundle': 0,
           'dependencies': [
-            'headers',
+            'mesa_headers',
             'mesa',
           ],
           # Fixes link problems on Mac OS X with missing __cxa_pure_virtual.
@@ -590,7 +590,7 @@
       'targets': [
         # TODO(phajdan.jr): Make this work, http://crbug.com/161389 .
         {
-          'target_name': 'headers',
+          'target_name': 'mesa_headers',
           'type': 'none',
         },
         {

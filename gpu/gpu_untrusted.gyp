@@ -33,7 +33,7 @@
           'dependencies': [
             '../native_client/tools.gyp:prep_toolchain',
             '../base/base_untrusted.gyp:base_untrusted',
-            '../third_party/khronos/khronos.gyp:headers',
+            '../third_party/khronos/khronos.gyp:khronos_headers',
             'command_buffer/command_buffer_untrusted.gyp:gles2_utils_untrusted',
             'gles2_cmd_helper_untrusted',
           ],

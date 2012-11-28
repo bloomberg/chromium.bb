@@ -17,7 +17,7 @@
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '<(DEPTH)/gpu/command_buffer/command_buffer.gyp:gles2_utils',
         '<(DEPTH)/skia/skia.gyp:skia',
-        '<(DEPTH)/third_party/mesa/mesa.gyp:headers',
+        '<(DEPTH)/third_party/mesa/mesa.gyp:mesa_headers',
         '<(DEPTH)/ui/ui.gyp:ui',
       ],
       'variables': {
@@ -37,7 +37,7 @@
         ],
       },
       'export_dependent_settings': [
-        '<(DEPTH)/third_party/mesa/mesa.gyp:headers',
+        '<(DEPTH)/third_party/mesa/mesa.gyp:mesa_headers',
       ],
      'sources': [
         'gl_bindings.h',

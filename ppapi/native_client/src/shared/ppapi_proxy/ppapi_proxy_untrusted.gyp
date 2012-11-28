@@ -13,7 +13,7 @@
       'dependencies': [
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
         '<(DEPTH)/media/media_untrusted.gyp:shared_memory_support_untrusted',
-        '<(DEPTH)/third_party/khronos/khronos.gyp:headers',
+        '<(DEPTH)/third_party/khronos/khronos.gyp:khronos_headers',
       ],
       'variables': {
         'nlib_target': 'libppruntime.a',
