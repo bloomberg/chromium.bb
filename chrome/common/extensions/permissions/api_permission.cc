@@ -326,6 +326,9 @@ void APIPermissionInfo::RegisterAllPermissions(
     { APIPermission::kUsb, "usb", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_USB,
       PermissionMessage::kUsb },
+    { APIPermission::kSystemIndicator, "systemIndicator", kFlagNone,
+      IDS_EXTENSION_PROMPT_WARNING_SYSTEM_INDICATOR,
+      PermissionMessage::kSystemIndicator },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(PermissionsToRegister); ++i) {

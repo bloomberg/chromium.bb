@@ -280,6 +280,10 @@
     "channel": "trunk",
     "extension_types": ["platform_app"]
   },
+  "systemIndicator": {
+    "channel": "dev",
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
   "storage": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"],

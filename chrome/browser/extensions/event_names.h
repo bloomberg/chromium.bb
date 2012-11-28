@@ -85,6 +85,9 @@ extern const char kOnStorageAvailableCapacityChanged[];
 extern const char kOnStorageAdded[];
 extern const char kOnStorageRemoved[];
 
+// System Indicator icon.
+extern const char kOnSystemIndicatorClicked[];
+
 }  // namespace event_names
 
 }  // namespace extensions

@@ -28,7 +28,6 @@
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
-#include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/skbitmap_operations.h"
 
 namespace {
@@ -292,6 +291,9 @@ int ExtensionAction::GetIconSizeForType(
   switch (type) {
     case extensions::Extension::ActionInfo::TYPE_BROWSER:
     case extensions::Extension::ActionInfo::TYPE_PAGE:
+    case extensions::Extension::ActionInfo::TYPE_SYSTEM_INDICATOR:
+      // TODO(dewittj) Report the actual icon size of the system
+      // indicator.
       return extension_misc::EXTENSION_ICON_ACTION;
     case extensions::Extension::ActionInfo::TYPE_SCRIPT_BADGE:
       return extension_misc::EXTENSION_ICON_BITTY;

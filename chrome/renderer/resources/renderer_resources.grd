@@ -67,6 +67,7 @@ without changes to the corresponding grd file. fb9 -->
         <include name="IDR_RUNTIME_CUSTOM_BINDINGS_JS" file="extensions\runtime_custom_bindings.js" type="BINDATA" />
         <include name="IDR_STORAGE_CUSTOM_BINDINGS_JS" file="extensions\storage_custom_bindings.js" type="BINDATA" />
         <include name="IDR_SYNC_FILE_SYSTEM_CUSTOM_BINDINGS_JS" file="extensions\sync_file_system_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_SYSTEM_INDICATOR_CUSTOM_BINDINGS_JS" file="extensions\system_indicator_custom_bindings.js" type="BINDATA" />
         <include name="IDR_TAB_CAPTURE_CUSTOM_BINDINGS_JS" file="extensions\tab_capture_custom_bindings.js" type="BINDATA" />
         <include name="IDR_TABS_CUSTOM_BINDINGS_JS" file="extensions\tabs_custom_bindings.js" type="BINDATA" />
         <include name="IDR_TTS_CUSTOM_BINDINGS_JS" file="extensions\tts_custom_bindings.js" type="BINDATA" />

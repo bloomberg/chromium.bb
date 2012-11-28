@@ -242,6 +242,10 @@
     "channel": "stable",
     "extension_types": "all"
   },
+  "system_indicator": {
+    "channel": "dev",
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
   "theme": {
     "channel": "stable",
     "extension_types": ["theme"]

@@ -881,6 +881,7 @@
         'browser/extensions/api/serial/serial_apitest.cc',
         'browser/extensions/api/socket/socket_apitest.cc',
         'browser/extensions/api/sync_file_system/sync_file_system_apitest.cc',
+        'browser/extensions/api/system_indicator/system_indicator_apitest.cc',
         'browser/extensions/api/system_info_cpu/system_info_cpu_apitest.cc',
         'browser/extensions/api/system_info_display/system_info_display_apitest.cc',
         'browser/extensions/api/system_info_memory/system_info_memory_apitest.cc',

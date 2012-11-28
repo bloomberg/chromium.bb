@@ -291,6 +291,7 @@
         'browser/extensions/api/socket/udp_socket.h',
         'browser/extensions/api/sync_file_system/sync_file_system_api.cc',
         'browser/extensions/api/sync_file_system/sync_file_system_api.h',
+        'browser/extensions/api/system_indicator/system_indicator_api.h',
         'browser/extensions/api/system_info_cpu/cpu_info_provider.cc',
         'browser/extensions/api/system_info_cpu/cpu_info_provider.h',
         'browser/extensions/api/system_info_cpu/cpu_info_provider_linux.cc',

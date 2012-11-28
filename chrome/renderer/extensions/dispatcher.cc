@@ -277,7 +277,6 @@ class LoggingNativeHandler : public NativeHandler {
     std::string ascii_value = *v8::String::AsciiValue(v8_string);
     return ascii_value.empty() ? dflt : ascii_value;
   }
-
 };
 
 void InstallAppBindings(ModuleSystem* module_system,
@@ -541,7 +540,7 @@ namespace {
 // WebKit.
 static int g_hack_extension_group = 0;
 
-}
+}  // namespace
 
 bool Dispatcher::AllowScriptExtension(WebFrame* frame,
                                       const std::string& v8_extension_name,
@@ -665,6 +664,8 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("storage", IDR_STORAGE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("syncFileSystem",
                              IDR_SYNC_FILE_SYSTEM_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("systemIndicator",
+                             IDR_SYSTEM_INDICATOR_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("tabCapture", IDR_TAB_CAPTURE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("tabs", IDR_TABS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("tts", IDR_TTS_CUSTOM_BINDINGS_JS);

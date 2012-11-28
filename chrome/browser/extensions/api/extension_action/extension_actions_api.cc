@@ -8,7 +8,7 @@
 
 #include "base/base64.h"
 #include "base/string_number_conversions.h"
-#include "base/string_piece.h"
+#include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/extension_action/extension_page_actions_api_constants.h"
 #include "chrome/browser/extensions/extension_action.h"
@@ -283,15 +283,17 @@ ExtensionActionFunction::~ExtensionActionFunction() {
 }
 
 bool ExtensionActionFunction::RunImpl() {
-  if (base::StringPiece(name()).starts_with("scriptBadge.")) {
-    extension_action_ = extensions::ExtensionActionManager::Get(profile_)->
-        GetScriptBadge(*GetExtension());
+  extensions::ExtensionActionManager* manager =
+      extensions::ExtensionActionManager::Get(profile_);
+  const extensions::Extension* extension = GetExtension();
+  if (StartsWithASCII(name(), "scriptBadge.", false)) {
+    extension_action_ = manager->GetScriptBadge(*extension);
+  } else if (StartsWithASCII(name(), "systemIndicator.", false)) {
+    extension_action_ = manager->GetSystemIndicator(*extension);
   } else {
-    extension_action_ = extensions::ExtensionActionManager::Get(profile_)->
-        GetBrowserAction(*GetExtension());
+    extension_action_ = manager->GetBrowserAction(*extension);
     if (!extension_action_) {
-      extension_action_ = extensions::ExtensionActionManager::Get(profile_)->
-          GetPageAction(*GetExtension());
+      extension_action_ = manager->GetPageAction(*extension);
     }
   }
   if (!extension_action_) {
@@ -302,52 +304,11 @@ bool ExtensionActionFunction::RunImpl() {
     return false;
   }
 
-  // There may or may not be details (depends on the function).
-  // The tabId might appear in details (if it exists) or as the first
-  // argument besides the action type (depends on the function).
-  {
-    base::Value* first_arg = NULL;
-    EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &first_arg));
-
-    switch (first_arg->GetType()) {
-      case Value::TYPE_INTEGER:
-        CHECK(first_arg->GetAsInteger(&tab_id_));
-        break;
-
-      case Value::TYPE_DICTIONARY: {
-        details_ = static_cast<base::DictionaryValue*>(first_arg);
-        base::Value* tab_id_value = NULL;
-        if (details_->Get("tabId", &tab_id_value)) {
-          switch (tab_id_value->GetType()) {
-            case Value::TYPE_NULL:
-              // Fine, equivalent to it being not-there, and tabId is optional.
-              break;
-            case Value::TYPE_INTEGER:
-              CHECK(tab_id_value->GetAsInteger(&tab_id_));
-              break;
-            default:
-              // Boom.
-              EXTENSION_FUNCTION_VALIDATE(false);
-          }
-        }
-        break;
-      }
-
-      case Value::TYPE_NULL:
-        // The tabId might be an optional argument.
-        break;
-
-      default:
-        EXTENSION_FUNCTION_VALIDATE(false);
-    }
-  }
+  // Populates the tab_id_ and details_ members.
+  EXTENSION_FUNCTION_VALIDATE(ExtractDataFromArguments());
 
   // Find the WebContents that contains this tab id if one is required.
-  if (tab_id_ == ExtensionAction::kDefaultTabId) {
-    EXTENSION_FUNCTION_VALIDATE(
-        extensions::ExtensionActionManager::Get(profile_)->
-        GetBrowserAction(*GetExtension()));
-  } else {
+  if (tab_id_ != ExtensionAction::kDefaultTabId) {
     ExtensionTabUtil::GetTabById(
         tab_id_, profile(), include_incognito(), NULL, NULL, &contents_, NULL);
     if (!contents_) {
@@ -355,9 +316,62 @@ bool ExtensionActionFunction::RunImpl() {
           kNoTabError, base::IntToString(tab_id_));
       return false;
     }
+  } else {
+    // Only browser actions and system indicators have a default tabId.
+    typedef extensions::Extension::ActionInfo ActionInfo;
+    ActionInfo::Type action_type = extension_action_->action_type();
+    EXTENSION_FUNCTION_VALIDATE(
+        action_type == ActionInfo::TYPE_BROWSER ||
+        action_type == ActionInfo::TYPE_SYSTEM_INDICATOR);
+  }
+  return RunExtensionAction();
+}
+
+bool ExtensionActionFunction::ExtractDataFromArguments() {
+  // There may or may not be details (depends on the function).
+  // The tabId might appear in details (if it exists), as the first
+  // argument besides the action type (depends on the function), or be omitted
+  // entirely.
+  base::Value* first_arg = NULL;
+  if (!args_->Get(0, &first_arg))
+    return true;
+
+  switch (first_arg->GetType()) {
+    case Value::TYPE_INTEGER:
+      CHECK(first_arg->GetAsInteger(&tab_id_));
+      break;
+
+    case Value::TYPE_DICTIONARY: {
+      // Found the details argument.
+      details_ = static_cast<base::DictionaryValue*>(first_arg);
+      // Still need to check for the tabId within details.
+      base::Value* tab_id_value = NULL;
+      if (details_->Get("tabId", &tab_id_value)) {
+        switch (tab_id_value->GetType()) {
+          case Value::TYPE_NULL:
+            // OK; tabId is optional, leave it default.
+            return true;
+          case Value::TYPE_INTEGER:
+            CHECK(tab_id_value->GetAsInteger(&tab_id_));
+            return true;
+          default:
+            // Boom.
+            return false;
+        }
+      }
+      // Not found; tabId is optional, leave it default.
+      break;
+    }
+
+    case Value::TYPE_NULL:
+      // The tabId might be an optional argument.
+      break;
+
+    default:
+      return false;
   }
 
-  return RunExtensionAction();
+  return true;
 }
 
 void ExtensionActionFunction::NotifyChange() {
@@ -375,6 +389,9 @@ void ExtensionActionFunction::NotifyChange() {
     case extensions::Extension::ActionInfo::TYPE_SCRIPT_BADGE:
       NotifyLocationBarChange();
       return;
+    case extensions::Extension::ActionInfo::TYPE_SYSTEM_INDICATOR:
+      NotifyStatusTrayChange();
+      return;
   }
   NOTREACHED();
 }
@@ -389,6 +406,11 @@ void ExtensionActionFunction::NotifyBrowserActionChange() {
 void ExtensionActionFunction::NotifyLocationBarChange() {
   extensions::TabHelper::FromWebContents(contents_)->
       location_bar_controller()->NotifyChange();
+}
+
+void ExtensionActionFunction::NotifyStatusTrayChange() {
+  // TODO(dewittj) Implement status tray behavior here.
+  // See http://crbug.com/142450.
 }
 
 // static

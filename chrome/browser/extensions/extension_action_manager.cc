@@ -109,7 +109,7 @@ ExtensionAction* GetOrCreateOrNull(
   return action.get();
 }
 
-}
+}  // namespace
 
 ExtensionAction* ExtensionActionManager::GetPageAction(
     const extensions::Extension& extension) const {
@@ -137,6 +137,13 @@ ExtensionAction* ExtensionActionManager::GetBrowserAction(
                            action_type, action_info);
 }
 
+ExtensionAction* ExtensionActionManager::GetSystemIndicator(
+    const extensions::Extension& extension) const {
+  return GetOrCreateOrNull(&system_indicators_, extension.id(),
+                           Extension::ActionInfo::TYPE_SYSTEM_INDICATOR,
+                           extension.system_indicator_info());
+}
+
 ExtensionAction* ExtensionActionManager::GetScriptBadge(
     const extensions::Extension& extension) const {
   return GetOrCreateOrNull(&script_badges_, extension.id(),
@@ -144,4 +151,4 @@ ExtensionAction* ExtensionActionManager::GetScriptBadge(
                            extension.script_badge_info());
 }
 
-}
+}  // namespace extensions

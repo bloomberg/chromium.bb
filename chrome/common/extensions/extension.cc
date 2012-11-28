@@ -2188,17 +2188,18 @@ bool Extension::LoadFileHandlers(string16* error) {
   return true;
 }
 
-bool Extension::LoadExtensionFeatures(const APIPermissionSet& api_permissions,
+bool Extension::LoadExtensionFeatures(APIPermissionSet* api_permissions,
                                       string16* error) {
   if (manifest_->HasKey(keys::kConvertedFromUserScript))
     manifest_->GetBoolean(keys::kConvertedFromUserScript,
                           &converted_from_user_script_);
 
   if (!LoadDevToolsPage(error) ||
-      !LoadInputComponents(api_permissions, error) ||
+      !LoadInputComponents(*api_permissions, error) ||
       !LoadContentScripts(error) ||
       !LoadPageAction(error) ||
       !LoadBrowserAction(error) ||
+      !LoadSystemIndicator(api_permissions, error) ||
       !LoadScriptBadge(error) ||
       !LoadFileBrowserHandlers(error) ||
       !LoadChromeURLOverrides(error) ||
@@ -2442,6 +2443,36 @@ bool Extension::LoadBrowserAction(string16* error) {
       browser_action_value, Extension::ActionInfo::TYPE_BROWSER, error);
   if (!browser_action_info_.get())
     return false;  // Failed to parse browser action definition.
+  return true;
+}
+
+bool Extension::LoadSystemIndicator(APIPermissionSet* api_permissions,
+                                    string16* error) {
+  if (!manifest_->HasKey(keys::kSystemIndicator)) {
+    // There was no manifest entry for the system indicator.
+    return true;
+  }
+
+  DictionaryValue* system_indicator_value = NULL;
+  if (!manifest_->GetDictionary(keys::kSystemIndicator,
+                                &system_indicator_value)) {
+    *error = ASCIIToUTF16(errors::kInvalidSystemIndicator);
+    return false;
+  }
+
+  system_indicator_info_ = LoadExtensionActionInfoHelper(
+      system_indicator_value,
+      Extension::ActionInfo::TYPE_SYSTEM_INDICATOR,
+      error);
+
+  if (!system_indicator_info_.get()) {
+    return false;
+  }
+
+  // Because the manifest was successfully parsed, auto-grant the permission.
+  // TODO(dewittj) Add this for all extension action APIs.
+  api_permissions->insert(APIPermission::kSystemIndicator);
+
   return true;
 }
 
@@ -3266,7 +3297,7 @@ bool Extension::InitFromValue(int flags, string16* error) {
   if (!LoadSharedFeatures(api_permissions, error))
     return false;
 
-  if (!LoadExtensionFeatures(api_permissions, error))
+  if (!LoadExtensionFeatures(&api_permissions, error))
     return false;
 
   if (!LoadThemeFeatures(error))

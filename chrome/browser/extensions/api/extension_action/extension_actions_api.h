@@ -67,9 +67,12 @@ class ExtensionActionFunction : public SyncExtensionFunction {
   virtual ~ExtensionActionFunction();
   virtual bool RunImpl() OVERRIDE;
   virtual bool RunExtensionAction() = 0;
+
+  bool ExtractDataFromArguments();
   void NotifyChange();
   void NotifyBrowserActionChange();
   void NotifyLocationBarChange();
+  void NotifyStatusTrayChange();
   bool SetVisible(bool visible);
 
   // Extension-related information for |tab_id_|.

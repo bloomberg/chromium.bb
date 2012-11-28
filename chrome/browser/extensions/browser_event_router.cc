@@ -585,6 +585,9 @@ void BrowserEventRouter::ExtensionActionExecuted(
     case Extension::ActionInfo::TYPE_SCRIPT_BADGE:
       event_name = "scriptBadge.onClicked";
       break;
+    case Extension::ActionInfo::TYPE_SYSTEM_INDICATOR:
+      // The System Indicator handles its own clicks.
+      break;
   }
 
   if (event_name) {

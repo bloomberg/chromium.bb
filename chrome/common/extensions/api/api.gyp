@@ -65,6 +65,7 @@
           'serial.idl',
           'socket.idl',
           'sync_file_system.idl',
+          'system_indicator.idl',
           'tab_capture.idl',
           'usb.idl',
         ],

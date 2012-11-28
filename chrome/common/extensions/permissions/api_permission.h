@@ -94,6 +94,7 @@ class APIPermission {
     kStorage,
     kSyncFileSystem,
     kSystemPrivate,
+    kSystemIndicator,
     kTab,
     kTabCapture,
     kTerminalPrivate,

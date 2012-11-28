@@ -224,6 +224,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
       TYPE_BROWSER,
       TYPE_PAGE,
       TYPE_SCRIPT_BADGE,
+      TYPE_SYSTEM_INDICATOR,
     };
 
     // Empty implies the key wasn't present.
@@ -679,6 +680,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const ActionInfo* browser_action_info() const {
     return browser_action_info_.get();
   }
+  const ActionInfo* system_indicator_info() const {
+    return system_indicator_info_.get();
+  }
   bool is_verbose_install_message() const {
     return !omnibox_keyword().empty() ||
            browser_action_info() ||
@@ -932,7 +936,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                        const base::DictionaryValue& handler_info,
                        string16* error);
   bool LoadFileHandlers(string16* error);
-  bool LoadExtensionFeatures(const APIPermissionSet& api_permissions,
+  bool LoadExtensionFeatures(APIPermissionSet* api_permissions,
                              string16* error);
   bool LoadDevToolsPage(string16* error);
   bool LoadInputComponents(const APIPermissionSet& api_permissions,
@@ -941,6 +945,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadPageAction(string16* error);
   bool LoadBrowserAction(string16* error);
   bool LoadScriptBadge(string16* error);
+  bool LoadSystemIndicator(APIPermissionSet* api_permissions, string16* error);
   bool LoadFileBrowserHandlers(string16* error);
   // Helper method to load a FileBrowserHandlerList from the manifest.
   FileBrowserHandlerList* LoadFileBrowserHandlersHelper(
@@ -1102,6 +1107,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The extension's script badge.  Never NULL.
   scoped_ptr<ActionInfo> script_badge_info_;
+
+  // The extension's system indicator, if any.
+  scoped_ptr<ActionInfo> system_indicator_info_;
 
   // The extension's file browser actions, if any.
   scoped_ptr<FileBrowserHandlerList> file_browser_handlers_;
