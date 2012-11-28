@@ -311,6 +311,77 @@ weston_surface_to_global_float(struct weston_surface *surface,
 }
 
 WL_EXPORT void
+weston_surface_to_buffer_float(struct weston_surface *surface,
+			       float sx, float sy, float *bx, float *by)
+{
+	switch (surface->buffer_transform) {
+	case WL_OUTPUT_TRANSFORM_NORMAL:
+	default:
+		*bx = sx;
+		*by = sy;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED:
+		*bx = surface->geometry.width - sx;
+		*by = sy;
+		break;
+	case WL_OUTPUT_TRANSFORM_90:
+		*bx = surface->geometry.height - sy;
+		*by = sx;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+		*bx = surface->geometry.height - sy;
+		*by = surface->geometry.width - sx;
+		break;
+	case WL_OUTPUT_TRANSFORM_180:
+		*bx = surface->geometry.width - sx;
+		*by = surface->geometry.height - sy;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+		*bx = sx;
+		*by = surface->geometry.height - sy;
+		break;
+	case WL_OUTPUT_TRANSFORM_270:
+		*bx = sy;
+		*by = surface->geometry.width - sx;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		*bx = sy;
+		*by = sx;
+		break;
+	}
+}
+
+WL_EXPORT pixman_box32_t
+weston_surface_to_buffer_rect(struct weston_surface *surface,
+			      pixman_box32_t rect)
+{
+	float x1, x2, y1, y2;
+
+	pixman_box32_t ret;
+
+	weston_surface_to_buffer_float(surface, rect.x1, rect.y1, &x1, &y1);
+	weston_surface_to_buffer_float(surface, rect.x2, rect.y2, &x2, &y2);
+
+	if (x1 <= x2) {
+		ret.x1 = x1;
+		ret.x2 = x2;
+	} else {
+		ret.x1 = x2;
+		ret.x2 = x1;
+	}
+
+	if (y1 <= y2) {
+		ret.y1 = y1;
+		ret.y2 = y2;
+	} else {
+		ret.y1 = y2;
+		ret.y2 = y1;
+	}
+
+	return ret;
+}
+
+WL_EXPORT void
 weston_surface_move_to_plane(struct weston_surface *surface,
 			     struct weston_plane *plane)
 {

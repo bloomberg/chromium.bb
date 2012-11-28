@@ -506,6 +506,13 @@ weston_surface_buffer_width(struct weston_surface *surface);
 int32_t
 weston_surface_buffer_height(struct weston_surface *surface);
 
+WL_EXPORT void
+weston_surface_to_buffer_float(struct weston_surface *surface,
+			       float x, float y, float *bx, float *by);
+pixman_box32_t
+weston_surface_to_buffer_rect(struct weston_surface *surface,
+			      pixman_box32_t rect);
+
 void
 weston_spring_init(struct weston_spring *spring,
 		   double k, double current, double target);

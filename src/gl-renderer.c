@@ -517,47 +517,6 @@ calculate_edges(struct weston_surface *es, pixman_box32_t *rect,
 	return n;
 }
 
-static void
-transform_texcoord(struct weston_surface *es, GLfloat sx, GLfloat sy,
-		   GLfloat *tx, GLfloat *ty)
-{
-	switch(es->buffer_transform) {
-	case WL_OUTPUT_TRANSFORM_NORMAL:
-	default:
-		*tx = sx;
-		*ty = sy;
-		break;
-	case WL_OUTPUT_TRANSFORM_FLIPPED:
-		*tx = 1.0 - sx;
-		*ty = sy;
-		break;
-	case WL_OUTPUT_TRANSFORM_90:
-		*tx = 1.0 - sy;
-		*ty = sx;
-		break;
-	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-		*tx = 1.0 - sy;
-		*ty = 1.0 - sx;
-		break;
-	case WL_OUTPUT_TRANSFORM_180:
-		*tx = 1.0 - sx;
-		*ty = 1.0 - sy;
-		break;
-	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
-		*tx = sx;
-		*ty = 1.0 - sy;
-		break;
-	case WL_OUTPUT_TRANSFORM_270:
-		*tx = sy;
-		*ty = 1.0 - sx;
-		break;
-	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		*tx = sy;
-		*ty = sx;
-		break;
-	}
-}
-
 static int
 texture_region(struct weston_surface *es, pixman_region32_t *region,
 		pixman_region32_t *surf_region)
@@ -578,13 +537,23 @@ texture_region(struct weston_surface *es, pixman_region32_t *region,
 	vtxcnt = wl_array_add(&ec->vtxcnt, nrects * nsurf * sizeof *vtxcnt);
 
 	inv_width = 1.0 / es->pitch;
-	inv_height = 1.0 / es->geometry.height;
+
+	switch (es->buffer_transform) {
+	case WL_OUTPUT_TRANSFORM_90:
+	case WL_OUTPUT_TRANSFORM_270:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		inv_height = 1.0 / es->geometry.width;
+		break;
+	default:
+		inv_height = 1.0 / es->geometry.height;
+	}
 
 	for (i = 0; i < nrects; i++) {
 		pixman_box32_t *rect = &rects[i];
 		for (j = 0; j < nsurf; j++) {
 			pixman_box32_t *surf_rect = &surf_rects[j];
-			GLfloat sx, sy, tx, ty;
+			GLfloat sx, sy, bx, by;
 			GLfloat ex[8], ey[8];          /* edge points in screen space */
 			int n;
 
@@ -613,12 +582,10 @@ texture_region(struct weston_surface *es, pixman_region32_t *region,
 				*(v++) = ex[k];
 				*(v++) = ey[k];
 				/* texcoord: */
-				transform_texcoord(es,
-						   sx * inv_width,
-						   sy * inv_height,
-						   &tx, &ty);
-				*(v++) = tx;
-				*(v++) = ty;
+				weston_surface_to_buffer_float(es, sx, sy,
+							       &bx, &by);
+				*(v++) = bx * inv_width;
+				*(v++) = by * inv_height;
 			}
 
 			vtxcnt[nvtx++] = n;
@@ -1107,12 +1074,14 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 	data = wl_shm_buffer_get_data(surface->buffer);
 	rectangles = pixman_region32_rectangles(&surface->texture_damage, &n);
 	for (i = 0; i < n; i++) {
-		glPixelStorei(GL_UNPACK_SKIP_PIXELS, rectangles[i].x1);
-		glPixelStorei(GL_UNPACK_SKIP_ROWS, rectangles[i].y1);
-		glTexSubImage2D(GL_TEXTURE_2D, 0,
-				rectangles[i].x1, rectangles[i].y1,
-				rectangles[i].x2 - rectangles[i].x1,
-				rectangles[i].y2 - rectangles[i].y1,
+		pixman_box32_t r;
+
+		r = weston_surface_to_buffer_rect(surface, rectangles[i]);
+
+		glPixelStorei(GL_UNPACK_SKIP_PIXELS, r.x1);
+		glPixelStorei(GL_UNPACK_SKIP_ROWS, r.y1);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, r.x1, r.y1,
+				r.x2 - r.x1, r.y2 - r.y1,
 				GL_BGRA_EXT, GL_UNSIGNED_BYTE, data);
 	}
 #endif
@@ -1228,16 +1197,7 @@ gl_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 						    gs->images[i]);
 		}
 
-		switch(es->buffer_transform) {
-		case WL_OUTPUT_TRANSFORM_90:
-		case WL_OUTPUT_TRANSFORM_270:
-		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-		case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-			es->pitch = buffer->height;
-			break;
-		default:
-			es->pitch = buffer->width;
-		}
+		es->pitch = buffer->width;
 	} else {
 		weston_log("unhandled buffer type!\n");
 	}
