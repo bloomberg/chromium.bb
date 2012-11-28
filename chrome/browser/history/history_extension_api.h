@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/extensions/api/history.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -81,6 +82,7 @@ class HistoryFunctionWithCallback : public HistoryFunction {
 
   // The consumer for the HistoryService callbacks.
   CancelableRequestConsumer cancelable_consumer_;
+  CancelableTaskTracker task_tracker_;
 
  private:
   // The actual call to SendResponse.  This is required since the semantics for

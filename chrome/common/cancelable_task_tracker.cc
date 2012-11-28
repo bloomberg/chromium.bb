@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
@@ -141,11 +142,12 @@ void CancelableTaskTracker::TryCancel(TaskId id) {
 
   hash_map<TaskId, CancellationFlag*>::const_iterator it = task_flags_.find(id);
   if (it == task_flags_.end()) {
-    // 3 possibilities:
-    // 1. Task (and reply) has finished running.
-    // 2. Task was canceled before and already untracked.
-    // 3. The TaskId is bad or never used.
-    // Since we only try best to cancel task and reply, it's OK to ignore these.
+    // Two possibilities:
+    //
+    //   1. The task has already been untracked.
+    //   2. The TaskId is bad or unknown.
+    //
+    // Since this function is best-effort, it's OK to ignore these.
     return;
   }
   it->second->Set();
@@ -162,6 +164,11 @@ void CancelableTaskTracker::TryCancelAll() {
   }
 }
 
+bool CancelableTaskTracker::HasTrackedTasks() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return !task_flags_.empty();
+}
+
 void CancelableTaskTracker::Track(TaskId id, CancellationFlag* flag) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -171,7 +178,6 @@ void CancelableTaskTracker::Track(TaskId id, CancellationFlag* flag) {
 
 void CancelableTaskTracker::Untrack(TaskId id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
   size_t num = task_flags_.erase(id);
   DCHECK_EQ(1u, num);
 }

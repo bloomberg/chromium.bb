@@ -155,7 +155,6 @@ BrowsingHistoryHandler::BrowsingHistoryHandler() {}
 
 BrowsingHistoryHandler::~BrowsingHistoryHandler() {
   cancelable_search_consumer_.CancelAllRequests();
-  cancelable_delete_consumer_.CancelAllRequests();
 }
 
 void BrowsingHistoryHandler::RegisterMessages() {
@@ -230,7 +229,7 @@ void BrowsingHistoryHandler::HandleQueryHistory(const ListValue* args) {
 }
 
 void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const ListValue* args) {
-  if (cancelable_delete_consumer_.HasPendingRequests()) {
+  if (delete_task_tracker_.HasTrackedTasks()) {
     web_ui()->CallJavascriptFunction("deleteFailed");
     return;
   }
@@ -265,9 +264,10 @@ void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const ListValue* args) {
   HistoryService* hs = HistoryServiceFactory::GetForProfile(
       Profile::FromWebUI(web_ui()), Profile::EXPLICIT_ACCESS);
   hs->ExpireHistoryBetween(
-      urls_to_be_deleted_, begin_time, end_time, &cancelable_delete_consumer_,
+      urls_to_be_deleted_, begin_time, end_time,
       base::Bind(&BrowsingHistoryHandler::RemoveComplete,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      &delete_task_tracker_);
 }
 
 void BrowsingHistoryHandler::HandleClearBrowsingData(const ListValue* args) {

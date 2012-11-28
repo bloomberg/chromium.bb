@@ -23,7 +23,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/bookmarks/bookmark_service.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/download_row.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_publisher.h"
@@ -2694,13 +2693,9 @@ void HistoryBackend::DeleteURL(const GURL& url) {
 }
 
 void HistoryBackend::ExpireHistoryBetween(
-    scoped_refptr<CancelableRequest<base::Closure> > request,
     const std::set<GURL>& restrict_urls,
     Time begin_time,
     Time end_time) {
-  if (request->canceled())
-    return;
-
   if (db_.get()) {
     if (begin_time.is_null() && end_time.is_null() && restrict_urls.empty()) {
       // Special case deleting all history so it can be faster and to reduce the
@@ -2718,8 +2713,6 @@ void HistoryBackend::ExpireHistoryBetween(
 
   if (begin_time <= first_recorded_time_)
     db_->GetStartDate(&first_recorded_time_);
-
-  request->ForwardResult();
 }
 
 void HistoryBackend::URLsNoLongerBookmarked(const std::set<GURL>& urls) {

@@ -21,6 +21,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/visit_filter.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/experimental_history.h"
 #include "content/public/browser/notification_details.h"
@@ -418,9 +419,9 @@ bool DeleteRangeHistoryFunction::RunAsyncImpl() {
       restrict_urls,
       start_time,
       end_time,
-      &cancelable_consumer_,
       base::Bind(&DeleteRangeHistoryFunction::DeleteComplete,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      &task_tracker_);
 
   return true;
 }
@@ -438,9 +439,9 @@ bool DeleteAllHistoryFunction::RunAsyncImpl() {
       restrict_urls,
       base::Time::UnixEpoch(),     // From the beginning of the epoch.
       base::Time::Now(),           // To the current time.
-      &cancelable_consumer_,
       base::Bind(&DeleteAllHistoryFunction::DeleteComplete,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      &task_tracker_);
 
   return true;
 }

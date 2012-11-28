@@ -65,6 +65,10 @@ class FakeNonThreadSafeTaskRunner : public base::TaskRunner {
 class CancelableTaskTrackerTest : public testing::Test {
  protected:
   virtual ~CancelableTaskTrackerTest() {
+    RunCurrentLoopUntilIdle();
+  }
+
+  void RunCurrentLoopUntilIdle() {
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
   }
@@ -142,8 +146,7 @@ TEST_F(CancelableTaskTrackerTest, NoCancel) {
 
   worker_thread.Stop();
 
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
+  RunCurrentLoopUntilIdle();
 
   EXPECT_FALSE(is_canceled.Run());
 }
@@ -288,8 +291,7 @@ TEST_F(CancelableTaskTrackerTest, CancelAll) {
 
   fake_task_runner->RunUntilIdle();
 
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
+  RunCurrentLoopUntilIdle();
 
   EXPECT_TRUE(is_canceled.Run());
 }
@@ -326,10 +328,78 @@ TEST_F(CancelableTaskTrackerTest, DestructionCancelsAll) {
 
   fake_task_runner->RunUntilIdle();
 
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
+  RunCurrentLoopUntilIdle();
 
   EXPECT_FALSE(is_canceled.Run());
+}
+
+// Post a task and cancel it.  HasTrackedTasks() should return true
+// from when the task is posted until the (do-nothing) reply task is
+// flushed.
+TEST_F(CancelableTaskTrackerTest, HasTrackedTasksPost) {
+  scoped_refptr<FakeNonThreadSafeTaskRunner> fake_task_runner(
+      new FakeNonThreadSafeTaskRunner());
+
+  EXPECT_FALSE(task_tracker_.HasTrackedTasks());
+
+  ignore_result(
+      task_tracker_.PostTask(
+          fake_task_runner,
+          FROM_HERE,
+          MakeExpectedNotRunClosure(FROM_HERE)));
+
+  task_tracker_.TryCancelAll();
+
+  fake_task_runner->RunUntilIdle();
+
+  EXPECT_TRUE(task_tracker_.HasTrackedTasks());
+
+  RunCurrentLoopUntilIdle();
+
+  EXPECT_FALSE(task_tracker_.HasTrackedTasks());
+}
+
+// Post a task with a reply and cancel it.  HasTrackedTasks() should
+// return true from when the task is posted until it is canceled.
+TEST_F(CancelableTaskTrackerTest, HasTrackedTasksPostWithReply) {
+  scoped_refptr<FakeNonThreadSafeTaskRunner> fake_task_runner(
+      new FakeNonThreadSafeTaskRunner());
+
+  EXPECT_FALSE(task_tracker_.HasTrackedTasks());
+
+  ignore_result(
+      task_tracker_.PostTaskAndReply(
+          fake_task_runner,
+          FROM_HERE,
+          MakeExpectedNotRunClosure(FROM_HERE),
+          MakeExpectedNotRunClosure(FROM_HERE)));
+
+  task_tracker_.TryCancelAll();
+
+  fake_task_runner->RunUntilIdle();
+
+  EXPECT_TRUE(task_tracker_.HasTrackedTasks());
+
+  RunCurrentLoopUntilIdle();
+
+  EXPECT_FALSE(task_tracker_.HasTrackedTasks());
+}
+
+// Create a new tracked task ID.  HasTrackedTasks() should return true
+// until the IsCanceledCallback is destroyed.
+TEST_F(CancelableTaskTrackerTest, HasTrackedTasksIsCancelled) {
+  EXPECT_FALSE(task_tracker_.HasTrackedTasks());
+
+  CancelableTaskTracker::IsCanceledCallback is_canceled;
+  ignore_result(task_tracker_.NewTrackedTaskId(&is_canceled));
+
+  task_tracker_.TryCancelAll();
+
+  EXPECT_TRUE(task_tracker_.HasTrackedTasks());
+
+  is_canceled.Reset();
+
+  EXPECT_FALSE(task_tracker_.HasTrackedTasks());
 }
 
 // The death tests below make sure that calling task tracker member

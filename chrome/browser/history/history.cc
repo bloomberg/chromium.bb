@@ -27,6 +27,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -52,6 +53,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/visitedlink/visitedlink_master.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -991,14 +993,19 @@ void HistoryService::DeleteURLsForTest(const std::vector<GURL>& urls) {
 
 void HistoryService::ExpireHistoryBetween(
     const std::set<GURL>& restrict_urls,
-    Time begin_time, Time end_time,
-    CancelableRequestConsumerBase* consumer,
-    const base::Closure& callback) {
+    Time begin_time,
+    Time end_time,
+    const base::Closure& callback,
+    CancelableTaskTracker* tracker) {
+  DCHECK(thread_);
   DCHECK(thread_checker_.CalledOnValidThread());
-  // We will update the visited links when we observe the delete notifications.
-  Schedule(PRIORITY_UI, &HistoryBackend::ExpireHistoryBetween, consumer,
-           new CancelableRequest<base::Closure>(callback),
-           restrict_urls, begin_time, end_time);
+  DCHECK(history_backend_.get());
+  tracker->PostTaskAndReply(
+      thread_->message_loop_proxy(),
+      FROM_HERE,
+      base::Bind(&HistoryBackend::ExpireHistoryBetween,
+                 history_backend_, restrict_urls, begin_time, end_time),
+      callback);
 }
 
 void HistoryService::BroadcastNotificationsHelper(

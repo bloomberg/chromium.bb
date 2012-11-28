@@ -75,6 +75,9 @@ class CancelableTaskTracker {
   // later call TryCancel() with the returned TaskId, and run |is_canceled_cb|
   // from any thread to check whether the TaskId is canceled.
   //
+  // The returned task ID is tracked until the last copy of
+  // |is_canceled_cb| is destroyed.
+  //
   // Note. This function is used to address some special cancelation requirement
   // in existing code. You SHOULD NOT need this function in new code.
   TaskId NewTrackedTaskId(IsCanceledCallback* is_canceled_cb);
@@ -91,6 +94,10 @@ class CancelableTaskTracker {
   // It's OK to call this function for more than once. The later calls are
   // noops.
   void TryCancelAll();
+
+  // Returns true iff there are in-flight tasks that are still being
+  // tracked.
+  bool HasTrackedTasks() const;
 
  private:
   void Track(TaskId id, base::CancellationFlag* flag);

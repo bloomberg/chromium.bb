@@ -36,6 +36,7 @@
 #endif
 
 class BookmarkService;
+class CancelableTaskTracker;
 class FilePath;
 class GURL;
 class HistoryURLProvider;
@@ -446,9 +447,10 @@ class HistoryService : public CancelableRequestProvider,
   // If |restrict_urls| is not empty, only visits to the URLs in this set are
   // removed.
   void ExpireHistoryBetween(const std::set<GURL>& restrict_urls,
-                            base::Time begin_time, base::Time end_time,
-                            CancelableRequestConsumerBase* consumer,
-                            const base::Closure& callback);
+                            base::Time begin_time,
+                            base::Time end_time,
+                            const base::Closure& callback,
+                            CancelableTaskTracker* tracker);
 
   // Downloads -----------------------------------------------------------------
 

@@ -11,6 +11,7 @@
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -69,8 +70,8 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   // Our consumer for search requests to the history service.
   CancelableRequestConsumerT<int, 0> cancelable_search_consumer_;
 
-  // Our consumer for delete requests to the history service.
-  CancelableRequestConsumerT<int, 0> cancelable_delete_consumer_;
+  // Our tracker for delete requests to the history service.
+  CancelableTaskTracker delete_task_tracker_;
 
   // The list of URLs that are in the process of being deleted.
   std::set<GURL> urls_to_be_deleted_;

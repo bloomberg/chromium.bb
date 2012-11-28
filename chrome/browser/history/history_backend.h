@@ -12,7 +12,6 @@
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/archived_database.h"
 #include "chrome/browser/history/expire_history_backend.h"
 #include "chrome/browser/history/history_database.h"
@@ -429,7 +428,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Calls ExpireHistoryBackend::ExpireHistoryBetween and commits the change.
   void ExpireHistoryBetween(
-      scoped_refptr<CancelableRequest<base::Closure> > request,
       const std::set<GURL>& restrict_urls,
       base::Time begin_time,
       base::Time end_time);

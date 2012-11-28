@@ -241,9 +241,9 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
             base::Time() : delete_end_;
       history_service->ExpireHistoryBetween(restrict_urls,
           delete_begin_, history_end_,
-          &request_consumer_,
           base::Bind(&BrowsingDataRemover::OnHistoryDeletionDone,
-                     base::Unretained(this)));
+                     base::Unretained(this)),
+          &history_task_tracker_);
     }
 
     // Need to clear the host cache and accumulated speculative data, as it also

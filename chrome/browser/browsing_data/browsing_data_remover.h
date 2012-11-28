@@ -14,8 +14,8 @@
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/time.h"
 #include "chrome/browser/api/prefs/pref_member.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -405,7 +405,7 @@ class BrowsingDataRemover : public content::NotificationObserver,
   ObserverList<Observer> observer_list_;
 
   // Used if we need to clear history.
-  CancelableRequestConsumer request_consumer_;
+  CancelableTaskTracker history_task_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemover);
 };
