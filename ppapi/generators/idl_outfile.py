@@ -16,7 +16,7 @@ from stat import *
 
 Option('diff', 'Generate a DIFF when saving the file.')
 
-def IsEquivelent(intext, outtext):
+def IsEquivalent(intext, outtext):
   if not intext: return False
   inlines = intext.split('\n')
   outlines = outtext.split('\n')
@@ -35,7 +35,8 @@ def IsEquivelent(intext, outtext):
     outwords = outline.split()
 
     if not inwords or not outwords: return False
-    if inwords[0] != outwords[0] or inwords[0] not in ('/*', '*'): return False
+    if inwords[0] != outwords[0] or inwords[0] not in ('/*', '*', '//'):
+      return False
 
     # Neither the year, nor the modified date need an exact match
     if inwords[1] == 'Copyright':
@@ -85,7 +86,7 @@ class IDLOutFile(object):
       else:
         intext = ''
 
-      if IsEquivelent(intext, outtext):
+      if IsEquivalent(intext, outtext):
         if GetOption('verbose'):
           InfoOut.Log('Output %s unchanged.' % self.filename)
         return False
