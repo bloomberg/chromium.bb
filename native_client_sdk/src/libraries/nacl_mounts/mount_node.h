@@ -64,8 +64,8 @@ protected:
   struct stat stat_;
   Mount* mount_;
 
-  friend class MountHFS;
   friend class MountMem;
+  friend class MountDev;
   friend class MountNodeDir;
 };
 

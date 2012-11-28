@@ -5,26 +5,29 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <string>
 #include <sys/stat.h>
 
-#include <string>
 
 #include "nacl_mounts/mount.h"
+#include "nacl_mounts/mount_dev.h"
 #include "nacl_mounts/mount_mem.h"
 #include "nacl_mounts/osdirent.h"
 
 #include "gtest/gtest.h"
 
-class MountMock : public MountMem {
+namespace {
+
+class MountMemMock : public MountMem {
  public:
-  MountMock()
-    : MountMem(),
-      nodes_(0) {
+  MountMemMock()
+      : MountMem(),
+        nodes_(0) {
     StringMap_t map;
     Init(1, map);
   };
 
-  MountNode *AllocateData(int mode) {
+  MountNode* AllocateData(int mode) {
     nodes_++;
     return MountMem::AllocateData(mode);
   }
@@ -38,10 +41,21 @@ class MountMock : public MountMem {
   int nodes_;
 };
 
+class MountDevMock : public MountDev {
+ public:
+  MountDevMock() : MountDev() {
+    StringMap_t map;
+    Init(1, map);
+  }
+};
+
+}  // namespace
+
+
 #define NULL_NODE ((MountNode *) NULL)
 
 TEST(MountTest, Sanity) {
-  MountMock* mnt = new MountMock();
+  MountMemMock* mnt = new MountMemMock();
   MountNode* file;
   MountNode* root;
 
@@ -127,7 +141,7 @@ TEST(MountTest, Sanity) {
 }
 
 TEST(MountTest, MemMountRemove) {
-  MountMock* mnt = new MountMock();
+  MountMemMock* mnt = new MountMemMock();
   MountNode* file;
 
   EXPECT_EQ(0, mnt->Mkdir(Path("/dir"), O_RDWR));
@@ -142,4 +156,79 @@ TEST(MountTest, MemMountRemove) {
   EXPECT_EQ(ENOENT, errno);
   EXPECT_EQ(NULL_NODE, mnt->Open(Path("/file"), O_RDONLY));
   EXPECT_EQ(ENOENT, errno);
+}
+
+TEST(MountTest, DevNull) {
+  MountDevMock* mnt = new MountDevMock();
+  MountNode* dev_null = mnt->Open(Path("/null"), O_RDWR);
+  ASSERT_NE(NULL_NODE, dev_null);
+
+  // Writing to /dev/null should write everything.
+  const char msg[] = "Dummy test message.";
+  EXPECT_EQ(strlen(msg), dev_null->Write(0, &msg[0], strlen(msg)));
+
+  // Reading from /dev/null should read nothing.
+  const int kBufferLength = 100;
+  char buffer[kBufferLength];
+  EXPECT_EQ(0, dev_null->Read(0, &buffer[0], kBufferLength));
+  EXPECT_EQ(0, mnt->Close(dev_null));
+}
+
+TEST(MountTest, DevZero) {
+  MountDevMock* mnt = new MountDevMock();
+  MountNode* dev_zero = mnt->Open(Path("/zero"), O_RDWR);
+  ASSERT_NE(NULL_NODE, dev_zero);
+
+  // Writing to /dev/zero should write everything.
+  const char msg[] = "Dummy test message.";
+  EXPECT_EQ(strlen(msg), dev_zero->Write(0, &msg[0], strlen(msg)));
+
+  // Reading from /dev/zero should read all zeroes.
+  const int kBufferLength = 100;
+  char buffer[kBufferLength];
+  // First fill with all 1s.
+  memset(&buffer[0], 0x1, kBufferLength);
+  EXPECT_EQ(kBufferLength, dev_zero->Read(0, &buffer[0], kBufferLength));
+
+  char zero_buffer[kBufferLength];
+  memset(&zero_buffer[0], 0, kBufferLength);
+  EXPECT_EQ(0, memcmp(&buffer[0], &zero_buffer[0], kBufferLength));
+  EXPECT_EQ(0, mnt->Close(dev_zero));
+}
+
+TEST(MountTest, DevUrandom) {
+  MountDevMock* mnt = new MountDevMock();
+  MountNode* dev_urandom = mnt->Open(Path("/urandom"), O_RDWR);
+  ASSERT_NE(NULL_NODE, dev_urandom);
+
+  // Writing to /dev/zero should write everything.
+  const char msg[] = "Dummy test message.";
+  EXPECT_EQ(strlen(msg), dev_urandom->Write(0, &msg[0], strlen(msg)));
+
+  // Reading from /dev/urandom should read random bytes.
+  const int kSampleBatches = 1000;
+  const int kSampleBatchSize = 1000;
+  const int kTotalSamples = kSampleBatches * kSampleBatchSize;
+
+  int byte_count[256] = {0};
+
+  unsigned char buffer[kSampleBatchSize];
+  for (int batch = 0; batch < kSampleBatches; ++batch) {
+    int bytes_read = dev_urandom->Read(0, &buffer[0], kSampleBatchSize);
+    EXPECT_EQ(kSampleBatchSize, bytes_read);
+
+    for (int i = 0; i < bytes_read; ++i) {
+      byte_count[buffer[i]]++;
+    }
+  }
+
+  double expected_count = kTotalSamples / 256.;
+  double chi_squared = 0;
+  for (int i = 0; i < 256; ++i) {
+    double difference = byte_count[i] - expected_count;
+    chi_squared += difference * difference / expected_count;
+  }
+
+  // Approximate chi-squared value for p-value 0.05, 255 degrees-of-freedom.
+  EXPECT_LE(chi_squared, 293.24);
 }

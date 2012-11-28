@@ -12,11 +12,10 @@
 
 #include "nacl_mounts/kernel_handle.h"
 #include "nacl_mounts/mount.h"
+#include "nacl_mounts/mount_dev.h"
 #include "nacl_mounts/mount_mem.h"
 #include "nacl_mounts/mount_node.h"
 #include "nacl_mounts/osstat.h"
-// TODO(binji): implement MountURL
-//#include "nacl_mounts/mount_url.h"
 #include "nacl_mounts/path.h"
 #include "utils/auto_lock.h"
 #include "utils/ref_object.h"
@@ -38,8 +37,7 @@ void KernelProxy::Init() {
   dev_ = 1;
 
   factories_["memfs"] = MountMem::Create<MountMem>;
-  // TODO(binji): implement MountURL
-  //factories_["urlfs"] = MountURL::Create;
+  factories_["dev"] = MountDev::Create<MountDev>;
 
   // Create memory mount at root
   StringMap_t smap;

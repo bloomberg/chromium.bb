@@ -27,6 +27,9 @@ def main(args):
   parser.add_option('-t', '--toolchain',
       help='Build using toolchain. Can be passed more than once.',
       action='append')
+  parser.add_option('--gyp',
+      help='Use gyp to build examples/libraries/Makefiles.',
+      action='store_true')
 
   options, args = parser.parse_args(args[1:])
 
@@ -42,6 +45,8 @@ def main(args):
   pepper_ver = str(int(build_utils.ChromeMajorVersion()))
   pepperdir = os.path.join(build_sdk.OUT_DIR, 'pepper_' + pepper_ver)
   platform = getos.GetPlatform()
+
+  build_sdk.options = options
 
   build_sdk.BuildStepCopyExamples(pepperdir, toolchains, options.experimental,
                                   options.clobber_examples)

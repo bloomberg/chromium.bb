@@ -14,19 +14,10 @@
 #include "utils/ref_object.h"
 
 class MountNode;
-class MountManager;
 
 typedef std::map<std::string, std::string> StringMap_t;
 
 
-// Mount serves as the base mounting class that will be used by
-// the mount manager (class MountManager).  The mount manager
-// relies heavily on the GetNode method as a way of directing
-// system calls that take a path as an argument.  The methods
-// of this class are pure virtual.  BaseMount class contains
-// stub implementations for these methods.  Feel free to use
-// BaseMount if your mount does not implement all of these
-// operations.
 class Mount : public RefObject {
  protected:
   // The protected functions are only used internally and will not

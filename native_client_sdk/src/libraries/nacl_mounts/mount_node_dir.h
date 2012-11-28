@@ -41,6 +41,7 @@ private:
   struct dirent* cache_;
   MountNodeMap_t map_;
 
+  friend class MountDev;
   friend class MountMem;
 };
 
