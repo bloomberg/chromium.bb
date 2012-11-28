@@ -152,8 +152,11 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   // The model object.
   RenderWidgetHostImpl* host_;
 
-  // Whether or not this widget is hidden.
-  bool is_hidden_;
+  // Whether or not this widget is potentially attached to the view hierarchy.
+  // This view may not actually be attached if this is true, but it should be
+  // treated as such, because as soon as a ContentViewCore is set the layer
+  // will be attached automatically.
+  bool is_layer_attached_;
 
   // ContentViewCoreImpl is our interface to the view system.
   ContentViewCoreImpl* content_view_core_;

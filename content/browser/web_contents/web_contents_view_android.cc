@@ -76,7 +76,6 @@ RenderWidgetHostView* WebContentsViewAndroid::CreateViewForWidget(
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(render_widget_host);
   RenderWidgetHostView* view = new RenderWidgetHostViewAndroid(
       rwhi, content_view_core_);
-  view->Show();
   return view;
 }
 

@@ -50,10 +50,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     RenderWidgetHostImpl* widget_host,
     ContentViewCoreImpl* content_view_core)
     : host_(widget_host),
-      // ContentViewCoreImpl represents the native side of the Java
-      // ContentViewCore.  It being NULL means that it is not attached to the
-      // View system yet, so we treat it as hidden.
-      is_hidden_(!content_view_core),
+      is_layer_attached_(true),
       content_view_core_(NULL),
       ime_adapter_android_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       cached_background_color_(SK_ColorWHITE),
@@ -67,18 +64,15 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     layer_ = texture_layer_->layer();
   }
 
+  layer_->setOpaque(true);
+  layer_->setDrawsContent(true);
+
   host_->SetView(this);
   SetContentViewCore(content_view_core);
-  // RenderWidgetHost is initialized as visible. If is_hidden_ is true, tell
-  // RenderWidgetHost to hide.
-  if (is_hidden_)
-    host_->WasHidden();
-
-  layer_->setOpaque(true);
-  layer_->setDrawsContent(!is_hidden_);
 }
 
 RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
+  SetContentViewCore(NULL);
   if (!shared_surface_.is_null()) {
     ImageTransportFactoryAndroid::GetInstance()->DestroySharedSurfaceHandle(
         shared_surface_);
@@ -105,21 +99,15 @@ RenderWidgetHostViewAndroid::GetRenderWidgetHost() const {
 }
 
 void RenderWidgetHostViewAndroid::WasShown() {
-  if (!is_hidden_)
+  if (!host_->is_hidden())
     return;
-  is_hidden_ = false;
+
   host_->WasShown();
 }
 
 void RenderWidgetHostViewAndroid::WasHidden() {
-  if (is_hidden_)
+  if (host_->is_hidden())
     return;
-
-  // If we receive any more paint messages while we are hidden, we want to
-  // ignore them so we don't re-allocate the backing store.  We will paint
-  // everything again when we become visible again.
-  //
-  is_hidden_ = true;
 
   // Inform the renderer that we are being hidden so it can reduce its resource
   // utilization.
@@ -240,20 +228,28 @@ bool RenderWidgetHostViewAndroid::IsSurfaceAvailableForCopy() const {
 }
 
 void RenderWidgetHostViewAndroid::Show() {
-  if (content_view_core_)
-    is_hidden_ = false;
+  if (is_layer_attached_)
+    return;
 
-  layer_->setDrawsContent(true);
+  is_layer_attached_ = true;
+  if (content_view_core_)
+    content_view_core_->AttachWebLayer(layer_);
 }
 
 void RenderWidgetHostViewAndroid::Hide() {
-  is_hidden_ = true;
+  if (!is_layer_attached_)
+    return;
 
-  layer_->setDrawsContent(false);
+  is_layer_attached_ = false;
+  if (content_view_core_)
+    content_view_core_->RemoveWebLayer(layer_);
 }
 
 bool RenderWidgetHostViewAndroid::IsShowing() {
-  return !is_hidden_;
+  // ContentViewCoreImpl represents the native side of the Java
+  // ContentViewCore.  It being NULL means that it is not attached
+  // to the View system yet, so we treat this RWHVA as hidden.
+  return is_layer_attached_ && content_view_core_;
 }
 
 gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
@@ -274,7 +270,7 @@ void RenderWidgetHostViewAndroid::SetIsLoading(bool is_loading) {
 
 void RenderWidgetHostViewAndroid::TextInputStateChanged(
     const ViewHostMsg_TextInputState_Params& params) {
-  if (is_hidden_)
+  if (!IsShowing())
     return;
 
   content_view_core_->ImeUpdateAdapter(
@@ -566,11 +562,11 @@ void RenderWidgetHostViewAndroid::UpdateFrameInfo(
 
 void RenderWidgetHostViewAndroid::SetContentViewCore(
     ContentViewCoreImpl* content_view_core) {
-  if (content_view_core_)
+  if (content_view_core_ && is_layer_attached_)
     content_view_core_->RemoveWebLayer(layer_);
 
   content_view_core_ = content_view_core;
-  if (content_view_core_)
+  if (content_view_core_ && is_layer_attached_)
     content_view_core_->AttachWebLayer(layer_);
 }
 
