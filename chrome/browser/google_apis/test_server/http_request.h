@@ -27,8 +27,7 @@ enum HttpMethod {
 };
 
 // Represents a HTTP request. Since it can be big, use scoped_ptr to pass it
-// instead of copying. However, the struct is copyable so tests can save and
-// examine a HTTP request.
+// instead of copying.
 struct HttpRequest {
   HttpRequest();
   ~HttpRequest();
@@ -38,6 +37,9 @@ struct HttpRequest {
   std::map<std::string, std::string> headers;
   std::string content;
   bool has_content;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HttpRequest);
 };
 
 // Parses the input data and produces a valid HttpRequest object. If there is
