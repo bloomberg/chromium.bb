@@ -380,6 +380,7 @@ include_rules = [
     '+build',
     '+googleurl',
     '+ipc',
+    '+library_loaders',
     '+unicode',
     '+testing'
 ]
