@@ -38,7 +38,8 @@ class FileBrowserNotificationsTest : public InProcessBrowserTest {
   scoped_ptr<FileBrowserNotifications> notifications_;
 };
 
-IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, TestBasic) {
+// http://crbug.com/163175
+IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, DISABLED_TestBasic) {
   InitNotifications();
   // Showing a notification adds a new notification.
   notifications_->ShowNotification(FileBrowserNotifications::DEVICE, "path");
