@@ -325,6 +325,8 @@ class MsvsSettings(object):
     cl('ExceptionHandling', map={'1': 'sc','2': 'a'}, prefix='/EH')
     cl('EnablePREfast', map={'true': '/analyze'})
     cl('AdditionalOptions', prefix='')
+    cflags.extend(['/FI' + f for f in self._Setting(
+        ('VCCLCompilerTool', 'ForcedIncludeFiles'), config, default=[])])
     # ninja handles parallelism by itself, don't have the compiler do it too.
     cflags = filter(lambda x: not x.startswith('/MP'), cflags)
     return cflags
