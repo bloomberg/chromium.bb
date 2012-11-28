@@ -71,9 +71,8 @@ class ExtensionUninstaller : public ExtensionUninstallDialog::Delegate {
       return;
     }
     controller_->AboutToUninstallApp();
-    ExtensionUninstallDialog* dialog =
-        ExtensionUninstallDialog::Create(NULL, this);
-    dialog->ConfirmUninstall(extension);
+    dialog_.reset(ExtensionUninstallDialog::Create(NULL, this));
+    dialog_->ConfirmUninstall(extension);
   }
 
  private:
@@ -102,6 +101,7 @@ class ExtensionUninstaller : public ExtensionUninstallDialog::Delegate {
   Profile* profile_;
   std::string extension_id_;
   AppListControllerDelegate* controller_;
+  scoped_ptr<ExtensionUninstallDialog> dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUninstaller);
 };
