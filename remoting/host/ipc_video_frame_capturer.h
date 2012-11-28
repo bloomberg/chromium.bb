@@ -36,6 +36,9 @@ class IpcVideoFrameCapturer : public VideoFrameCapturer {
   // a captured frame.
   void OnCaptureCompleted(scoped_refptr<CaptureData> capture_data);
 
+  // Called when the cursor shape has changed.
+  void OnCursorShapeChanged(scoped_ptr<protocol::CursorShapeInfo> cursor_shape);
+
  private:
   // Points to the delegate passed to VideoFrameCapturer::Start().
   VideoFrameCapturer::Delegate* delegate_;

@@ -14,6 +14,7 @@
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/ipc_video_frame_capturer.h"
+#include "remoting/proto/control.pb.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"
@@ -37,6 +38,8 @@ bool DesktopSessionProxy::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(DesktopSessionProxy, message)
     IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_CaptureCompleted,
                         OnCaptureCompleted)
+    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_CursorShapeChanged,
+                        OnCursorShapeChanged)
     IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_CreateSharedBuffer,
                         OnCreateSharedBuffer)
     IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_ReleaseSharedBuffer,
@@ -116,7 +119,7 @@ void DesktopSessionProxy::Disconnect() {
   // Generate fake responses to keep the video capturer in sync.
   while (pending_capture_frame_requests_) {
     --pending_capture_frame_requests_;
-    OnCaptureFrameCompleted(scoped_refptr<CaptureData>());
+    PostCaptureCompleted(scoped_refptr<CaptureData>());
   }
 }
 
@@ -254,20 +257,47 @@ void DesktopSessionProxy::OnCaptureCompleted(
   }
 
   --pending_capture_frame_requests_;
-  OnCaptureFrameCompleted(capture_data);
+  PostCaptureCompleted(capture_data);
 }
 
-void DesktopSessionProxy::OnCaptureFrameCompleted(
+void DesktopSessionProxy::OnCursorShapeChanged(
+    const std::string& serialized_cursor_shape) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  scoped_ptr<protocol::CursorShapeInfo> cursor_shape(
+      new protocol::CursorShapeInfo());
+  if (!cursor_shape->ParseFromString(serialized_cursor_shape)) {
+    LOG(ERROR) << "Failed to parse protocol::CursorShapeInfo.";
+    return;
+  }
+
+  PostCursorShape(cursor_shape.Pass());
+}
+
+void DesktopSessionProxy::PostCaptureCompleted(
     scoped_refptr<CaptureData> capture_data) {
   if (!video_capture_task_runner_->BelongsToCurrentThread()) {
     video_capture_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DesktopSessionProxy::OnCaptureFrameCompleted,
+        FROM_HERE, base::Bind(&DesktopSessionProxy::PostCaptureCompleted,
                               this, capture_data));
     return;
   }
 
   if (video_capturer_)
     video_capturer_->OnCaptureCompleted(capture_data);
+}
+
+void DesktopSessionProxy::PostCursorShape(
+    scoped_ptr<protocol::CursorShapeInfo> cursor_shape) {
+  if (!video_capture_task_runner_->BelongsToCurrentThread()) {
+    video_capture_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&DesktopSessionProxy::PostCursorShape,
+                              this, base::Passed(&cursor_shape)));
+    return;
+  }
+
+  if (video_capturer_)
+    video_capturer_->OnCursorShapeChanged(cursor_shape.Pass());
 }
 
 void DesktopSessionProxy::SendToDesktop(IPC::Message* message) {

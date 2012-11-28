@@ -6,6 +6,7 @@
 
 #include "remoting/base/capture_data.h"
 #include "remoting/host/desktop_session_proxy.h"
+#include "remoting/proto/control.pb.h"
 
 namespace remoting {
 
@@ -52,6 +53,12 @@ void IpcVideoFrameCapturer::OnCaptureCompleted(
 
   if (delegate_)
     delegate_->OnCaptureCompleted(capture_data);
+}
+
+void IpcVideoFrameCapturer::OnCursorShapeChanged(
+    scoped_ptr<protocol::CursorShapeInfo> cursor_shape) {
+  if (delegate_)
+    delegate_->OnCursorShapeChanged(cursor_shape.Pass());
 }
 
 }  // namespace remoting

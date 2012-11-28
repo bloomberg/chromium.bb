@@ -154,6 +154,10 @@ IPC_STRUCT_END()
 IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_CaptureCompleted,
                      SerializedCapturedData /* capture_data */ )
 
+// Carries a cursor share update from the desktop session agent to the client.
+// |serialized_cursor_shape| is a serialized protocol::CursorShapeInfo.
+IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_CursorShapeChanged,
+                     std::string /* serialized_cursor_shape */ )
 
 //-----------------------------------------------------------------------------
 // Chromoting messages sent from the network to the desktop process.

@@ -90,9 +90,16 @@ class DesktopSessionProxy
   // Handles CaptureCompleted notification from the desktop session agent.
   void OnCaptureCompleted(const SerializedCapturedData& serialized_data);
 
+  // Handles CursorShapeChanged notification from the desktop session agent.
+  void OnCursorShapeChanged(const std::string& serialized_cursor_shape);
+
   // Posted to |video_capture_task_runner_| to pass a captured video frame back
   // to |video_capturer_|.
-  void OnCaptureFrameCompleted(scoped_refptr<CaptureData> capture_data);
+  void PostCaptureCompleted(scoped_refptr<CaptureData> capture_data);
+
+  // Posted to |video_capture_task_runner_| to pass |cursor_shape| back to
+  // |video_capturer_|.
+  void PostCursorShape(scoped_ptr<protocol::CursorShapeInfo> cursor_shape);
 
   // Sends a message to the desktop session agent. The message is silently
   // deleted if the channel is broken.

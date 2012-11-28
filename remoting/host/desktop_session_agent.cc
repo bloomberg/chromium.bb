@@ -111,7 +111,15 @@ void DesktopSessionAgent::OnCursorShapeChanged(
     scoped_ptr<protocol::CursorShapeInfo> cursor_shape) {
   DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
 
-  NOTIMPLEMENTED();
+  // Serialize |cursor_shape| to a string.
+  std::string serialized_cursor_shape;
+  if (!cursor_shape->SerializeToString(&serialized_cursor_shape)) {
+    LOG(ERROR) << "Failed to serialize protocol::CursorShapeInfo.";
+    return;
+  }
+
+  SendToNetwork(new ChromotingDesktopNetworkMsg_CursorShapeChanged(
+      serialized_cursor_shape));
 }
 
 bool DesktopSessionAgent::Start(const base::Closure& disconnected_task,
