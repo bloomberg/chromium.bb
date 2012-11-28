@@ -68,18 +68,18 @@ void OnAddUploadFileCompleted(const FileOperationCallback& callback,
 // Checks if a local file at |local_file_path| is a JSON file referencing a
 // hosted document on blocking pool, and if so, gets the resource ID of the
 // document.
-void GetDocumentResourceIdOnBlockingPool(const FilePath& local_file_path,
-                                         std::string* resource_id) {
-  DCHECK(resource_id);
-
+std::string GetDocumentResourceIdOnBlockingPool(
+    const FilePath& local_file_path) {
+  std::string result;
   if (DocumentEntry::HasHostedDocumentExtension(local_file_path)) {
     std::string error;
     DictionaryValue* dict_value = NULL;
     JSONFileValueSerializer serializer(local_file_path);
     scoped_ptr<Value> value(serializer.Deserialize(NULL, &error));
     if (value.get() && value->GetAsDictionary(&dict_value))
-      dict_value->GetString("resource_id", resource_id);
+      dict_value->GetString("resource_id", &result);
   }
+  return result;
 }
 
 }  // namespace
@@ -526,30 +526,26 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterGetEntryInfo(
     return;
   }
 
-  std::string* resource_id = new std::string;
-  blocking_task_runner_->PostTaskAndReply(
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
       FROM_HERE,
-      base::Bind(&GetDocumentResourceIdOnBlockingPool,
-                 local_src_file_path,
-                 resource_id),
+      base::Bind(&GetDocumentResourceIdOnBlockingPool, local_src_file_path),
       base::Bind(&CopyOperation::TransferFileForResourceId,
                  weak_ptr_factory_.GetWeakPtr(),
                  local_src_file_path,
                  remote_dest_file_path,
-                 callback,
-                 base::Owned(resource_id)));
+                 callback));
 }
 
 void CopyOperation::TransferFileForResourceId(
     const FilePath& local_file_path,
     const FilePath& remote_dest_file_path,
     const FileOperationCallback& callback,
-    std::string* resource_id) {
+    const std::string& resource_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(resource_id);
   DCHECK(!callback.is_null());
 
-  if (resource_id->empty()) {
+  if (resource_id.empty()) {
     // If |resource_id| is empty, upload the local file as a regular file.
     TransferRegularFile(local_file_path, remote_dest_file_path, callback);
     return;
@@ -559,7 +555,7 @@ void CopyOperation::TransferFileForResourceId(
   // to the destination directory (collection).
   CopyDocumentToDirectory(
       remote_dest_file_path.DirName(),
-      *resource_id,
+      resource_id,
       // Drop the document extension, which should not be
       // in the document title.
       remote_dest_file_path.BaseName().RemoveExtension().value(),

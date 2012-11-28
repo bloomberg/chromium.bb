@@ -121,12 +121,6 @@ const DriveUserData* GetDriveUserData(const DownloadItem* download) {
       download->GetUserData(&kGDataPathKey));
 }
 
-void RunSubstituteDriveDownloadCallback(
-    const DriveDownloadObserver::SubstituteDriveDownloadPathCallback& callback,
-    const FilePath* file_path) {
-  callback.Run(*file_path);
-}
-
 DriveSystemService* GetSystemService(Profile* profile) {
   DriveSystemService* system_service =
       DriveSystemServiceFactory::GetForProfile(
@@ -138,14 +132,15 @@ DriveSystemService* GetSystemService(Profile* profile) {
 // Creates a temporary file |drive_tmp_download_path| in
 // |drive_tmp_download_dir|. Must be called on a thread that allows file
 // operations.
-void GetDriveTempDownloadPath(const FilePath& drive_tmp_download_dir,
-                              FilePath* drive_tmp_download_path) {
+FilePath GetDriveTempDownloadPath(const FilePath& drive_tmp_download_dir) {
   bool created = file_util::CreateDirectory(drive_tmp_download_dir);
   DCHECK(created) << "Can not create temp download directory at "
                   << drive_tmp_download_dir.value();
+  FilePath drive_tmp_download_path;
   created = file_util::CreateTemporaryFileInDir(drive_tmp_download_dir,
-                                                drive_tmp_download_path);
+                                                &drive_tmp_download_path);
   DCHECK(created) << "Temporary download file creation failed";
+  return drive_tmp_download_path;
 }
 
 // Substitutes virtual drive path for local temporary path.
@@ -160,15 +155,11 @@ void SubstituteDriveDownloadPathInternal(
 
   // Swap the drive path with a local path. Local path must be created
   // on a blocking thread.
-  FilePath* drive_tmp_download_path(new FilePath());
-  BrowserThread::GetBlockingPool()->PostTaskAndReply(
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetBlockingPool(),
       FROM_HERE,
-      base::Bind(&GetDriveTempDownloadPath,
-                 drive_tmp_download_dir,
-                 drive_tmp_download_path),
-      base::Bind(&RunSubstituteDriveDownloadCallback,
-                 callback,
-                 base::Owned(drive_tmp_download_path)));
+      base::Bind(&GetDriveTempDownloadPath, drive_tmp_download_dir),
+      callback);
 }
 
 // Callback for DriveFileSystem::CreateDirectory.

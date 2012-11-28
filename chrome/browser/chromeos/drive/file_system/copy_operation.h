@@ -213,11 +213,10 @@ class CopyOperation {
   //
   // Must be called from *UI* thread. |callback| is run on the calling thread.
   // |callback| must not be null.
-  void TransferFileForResourceId(
-      const FilePath& local_file_path,
-      const FilePath& remote_dest_file_path,
-      const FileOperationCallback& callback,
-      std::string* resource_id);
+  void TransferFileForResourceId(const FilePath& local_file_path,
+                                 const FilePath& remote_dest_file_path,
+                                 const FileOperationCallback& callback,
+                                 const std::string& resource_id);
 
   google_apis::DriveServiceInterface* drive_service_;
   DriveFileSystemInterface* drive_file_system_;

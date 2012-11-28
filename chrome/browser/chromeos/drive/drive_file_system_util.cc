@@ -74,33 +74,33 @@ FileWriteHelper* GetFileWriteHelper(Profile* profile) {
   return system_service ? system_service->file_write_helper() : NULL;
 }
 
-void GetHostedDocumentURLBlockingThread(const FilePath& drive_cache_path,
-                                        GURL* url) {
+GURL GetHostedDocumentURLBlockingThread(const FilePath& drive_cache_path) {
   std::string json;
   if (!file_util::ReadFileToString(drive_cache_path, &json)) {
     NOTREACHED() << "Unable to read file " << drive_cache_path.value();
-    return;
+    return GURL();
   }
   DVLOG(1) << "Hosted doc content " << json;
   scoped_ptr<base::Value> val(base::JSONReader::Read(json));
   base::DictionaryValue* dict_val;
   if (!val.get() || !val->GetAsDictionary(&dict_val)) {
     NOTREACHED() << "Parse failure for " << json;
-    return;
+    return GURL();
   }
   std::string edit_url;
   if (!dict_val->GetString("url", &edit_url)) {
     NOTREACHED() << "url field doesn't exist in " << json;
-    return;
+    return GURL();
   }
-  *url = GURL(edit_url);
-  DVLOG(1) << "edit url " << *url;
+  GURL url(edit_url);
+  DVLOG(1) << "edit url " << url;
+  return url;
 }
 
-void OpenEditURLUIThread(Profile* profile, const GURL* edit_url) {
+void OpenEditURLUIThread(Profile* profile, const GURL& edit_url) {
   Browser* browser = chrome::FindLastActiveWithProfile(profile);
   if (browser) {
-    browser->OpenURL(content::OpenURLParams(*edit_url, content::Referrer(),
+    browser->OpenURL(content::OpenURLParams(edit_url, content::Referrer(),
         CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
   }
 }
@@ -120,7 +120,7 @@ void OnGetEntryInfoByResourceId(Profile* profile,
   DCHECK(entry_proto.get());
   const std::string& base_name = entry_proto->base_name();
   const GURL edit_url = GetFileResourceUrl(resource_id, base_name);
-  OpenEditURLUIThread(profile, &edit_url);
+  OpenEditURLUIThread(profile, edit_url);
   DVLOG(1) << "OnFindEntryByResourceId " << edit_url;
 }
 
@@ -224,11 +224,11 @@ void ModifyDriveFileResourceUrl(Profile* profile,
       IsParent(drive_cache_path)) {
     // Handle hosted documents. The edit url is in the temporary file, so we
     // read it on a blocking thread.
-    GURL* edit_url = new GURL();
-    content::BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
-        base::Bind(&GetHostedDocumentURLBlockingThread,
-                   drive_cache_path, edit_url),
-        base::Bind(&OpenEditURLUIThread, profile, base::Owned(edit_url)));
+    base::PostTaskAndReplyWithResult(
+        content::BrowserThread::GetBlockingPool(),
+        FROM_HERE,
+        base::Bind(&GetHostedDocumentURLBlockingThread, drive_cache_path),
+        base::Bind(&OpenEditURLUIThread, profile));
     *url = GURL();
   } else if (cache->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_TMP).
                  IsParent(drive_cache_path) ||
