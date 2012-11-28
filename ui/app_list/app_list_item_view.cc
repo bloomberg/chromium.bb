@@ -271,6 +271,10 @@ bool AppListItemView::ShouldEnterPushedState(const ui::Event& event) {
 
 bool AppListItemView::OnMousePressed(const ui::MouseEvent& event) {
   CustomButton::OnMousePressed(event);
+
+  if (!ShouldEnterPushedState(event))
+    return true;
+
   apps_grid_view_->InitiateDrag(this, AppsGridView::MOUSE, event);
 
   if (apps_grid_view_->IsDraggedView(this)) {
