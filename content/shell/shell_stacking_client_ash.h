@@ -14,6 +14,7 @@ class RootWindow;
 class Window;
 namespace client {
 class DefaultCaptureClient;
+class FocusClient;
 }
 namespace test {
 class TestActivationClient;
@@ -55,6 +56,7 @@ class ShellStackingClientAsh : public aura::client::StackingClient {
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
   scoped_ptr<views::corewm::InputMethodEventFilter> input_method_filter_;
   scoped_ptr<aura::test::TestActivationClient> test_activation_client_;
+  scoped_ptr<aura::client::FocusClient> focus_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellStackingClientAsh);
 };

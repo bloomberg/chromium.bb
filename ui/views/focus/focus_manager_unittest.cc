@@ -17,7 +17,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/focus_manager.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #else
 #include "ui/views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
@@ -28,7 +28,7 @@ namespace views {
 
 void FocusNativeView(gfx::NativeView view) {
 #if defined(USE_AURA)
-  view->GetFocusManager()->SetFocusedWindow(view, NULL);
+  aura::client::GetFocusClient(view)->FocusWindow(view, NULL);
 #elif defined(OS_WIN)
   SetFocus(view);
 #else

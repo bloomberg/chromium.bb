@@ -13,7 +13,7 @@
 #include "base/command_line.h"
 #include "ui/aura/aura_switches.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/focus_manager.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -448,14 +448,15 @@ TEST_F(CustomFrameViewAshTest, MaximizeKeepFocus) {
   EXPECT_FALSE(maximize_button->maximizer());
   EXPECT_TRUE(ash::wm::IsWindowNormal(window));
 
-  aura::Window* active = window->GetFocusManager()->GetFocusedWindow();
+  aura::Window* active =
+      aura::client::GetFocusClient(window)->GetFocusedWindow();
 
   // Move the mouse cursor over the button to bring up the maximizer bubble.
   generator.MoveMouseTo(button_pos);
   EXPECT_TRUE(maximize_button->maximizer());
 
   // Check that the focused window is still the same.
-  EXPECT_EQ(active, window->GetFocusManager()->GetFocusedWindow());
+  EXPECT_EQ(active, aura::client::GetFocusClient(window)->GetFocusedWindow());
 }
 
 TEST_F(CustomFrameViewAshTest, MaximizeTap) {

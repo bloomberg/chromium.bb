@@ -117,8 +117,8 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
   capture_client_.reset(new aura::client::DefaultCaptureClient(root_window_));
   aura::client::SetCaptureClient(root_window_, capture_client_.get());
 
-  focus_manager_.reset(new aura::FocusManager);
-  root_window_->set_focus_manager(focus_manager_.get());
+  focus_client_.reset(new aura::FocusManager);
+  aura::client::SetFocusClient(root_window_, focus_client_.get());
 
   activation_client_.reset(new DesktopActivationClient(root_window_));
 
@@ -144,7 +144,7 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
   input_method_filter_->SetInputMethodPropertyInRootWindow(root_window_);
   root_window_event_filter_->AddHandler(input_method_filter_.get());
 
-  focus_manager_->SetFocusedWindow(content_window_, NULL);
+  focus_client_->FocusWindow(content_window_, NULL);
   root_window_->SetProperty(kContentWindowForRootWindow, content_window_);
 
   ui_controls::InstallUIControlsAura(CreateUIControlsAura(root_window_));

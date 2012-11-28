@@ -17,7 +17,7 @@
 #include "base/string_util.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/capture_client.h"
-#include "ui/aura/focus_manager.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_windows.h"
@@ -119,8 +119,8 @@ TEST_F(ExtendedDesktopTest, Basic) {
     EXPECT_TRUE(GetRootWindowController(*iter) != NULL);
   }
   // Make sure root windows share the same controllers.
-  EXPECT_EQ(root_windows[0]->GetFocusManager(),
-            root_windows[1]->GetFocusManager());
+  EXPECT_EQ(aura::client::GetFocusClient(root_windows[0]),
+            aura::client::GetFocusClient(root_windows[1]));
   EXPECT_EQ(aura::client::GetActivationClient(root_windows[0]),
             aura::client::GetActivationClient(root_windows[1]));
   EXPECT_EQ(aura::client::GetCaptureClient(root_windows[0]),
@@ -138,7 +138,7 @@ TEST_F(ExtendedDesktopTest, Activation) {
   EXPECT_EQ(root_windows[1], widget_on_2nd->GetNativeView()->GetRootWindow());
 
   EXPECT_EQ(widget_on_2nd->GetNativeView(),
-            root_windows[0]->GetFocusManager()->GetFocusedWindow());
+            aura::client::GetFocusClient(root_windows[0])->GetFocusedWindow());
   EXPECT_TRUE(wm::IsActiveWindow(widget_on_2nd->GetNativeView()));
 
   aura::test::EventGenerator generator_1st(root_windows[0]);
@@ -149,14 +149,14 @@ TEST_F(ExtendedDesktopTest, Activation) {
   generator_1st.ClickLeftButton();
 
   EXPECT_EQ(widget_on_1st->GetNativeView(),
-            root_windows[0]->GetFocusManager()->GetFocusedWindow());
+            aura::client::GetFocusClient(root_windows[0])->GetFocusedWindow());
   EXPECT_TRUE(wm::IsActiveWindow(widget_on_1st->GetNativeView()));
 
   generator_2nd.MoveMouseToCenterOf(widget_on_2nd->GetNativeView());
   generator_2nd.ClickLeftButton();
 
   EXPECT_EQ(widget_on_2nd->GetNativeView(),
-            root_windows[0]->GetFocusManager()->GetFocusedWindow());
+            aura::client::GetFocusClient(root_windows[0])->GetFocusedWindow());
   EXPECT_TRUE(wm::IsActiveWindow(widget_on_2nd->GetNativeView()));
 }
 
@@ -670,27 +670,28 @@ TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {
   lock_widget->Show();
   textfield->RequestFocus();
 
-  aura::FocusManager* focus_manager = root_windows[0]->GetFocusManager();
-  EXPECT_EQ(lock_widget->GetNativeView(), focus_manager->GetFocusedWindow());
+  aura::client::FocusClient* focus_client =
+      aura::client::GetFocusClient(root_windows[0]);
+  EXPECT_EQ(lock_widget->GetNativeView(), focus_client->GetFocusedWindow());
 
   // The lock window should get events on both root windows.
   aura::test::EventGenerator generator1(root_windows[0]);
   generator1.PressKey(ui::VKEY_A, 0);
   generator1.ReleaseKey(ui::VKEY_A, 0);
-  EXPECT_EQ(lock_widget->GetNativeView(), focus_manager->GetFocusedWindow());
+  EXPECT_EQ(lock_widget->GetNativeView(), focus_client->GetFocusedWindow());
   EXPECT_EQ("a", UTF16ToASCII(textfield->text()));
 
   aura::test::EventGenerator generator2(root_windows[1]);
   generator2.PressKey(ui::VKEY_B, 0);
   generator2.ReleaseKey(ui::VKEY_B, 0);
-  EXPECT_EQ(lock_widget->GetNativeView(), focus_manager->GetFocusedWindow());
+  EXPECT_EQ(lock_widget->GetNativeView(), focus_client->GetFocusedWindow());
   EXPECT_EQ("ab", UTF16ToASCII(textfield->text()));
 
   // Deleting 2nd display. The lock window still should get the events.
   UpdateDisplay("100x100");
   generator2.PressKey(ui::VKEY_C, 0);
   generator2.ReleaseKey(ui::VKEY_C, 0);
-  EXPECT_EQ(lock_widget->GetNativeView(), focus_manager->GetFocusedWindow());
+  EXPECT_EQ(lock_widget->GetNativeView(), focus_client->GetFocusedWindow());
   EXPECT_EQ("abc", UTF16ToASCII(textfield->text()));
 
   // Creating 2nd display again, and lock window still should get events
@@ -699,13 +700,13 @@ TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {
   root_windows = Shell::GetAllRootWindows();
   generator1.PressKey(ui::VKEY_D, 0);
   generator1.ReleaseKey(ui::VKEY_D, 0);
-  EXPECT_EQ(lock_widget->GetNativeView(), focus_manager->GetFocusedWindow());
+  EXPECT_EQ(lock_widget->GetNativeView(), focus_client->GetFocusedWindow());
   EXPECT_EQ("abcd", UTF16ToASCII(textfield->text()));
 
   aura::test::EventGenerator generator22(root_windows[1]);
   generator22.PressKey(ui::VKEY_E, 0);
   generator22.ReleaseKey(ui::VKEY_E, 0);
-  EXPECT_EQ(lock_widget->GetNativeView(), focus_manager->GetFocusedWindow());
+  EXPECT_EQ(lock_widget->GetNativeView(), focus_client->GetFocusedWindow());
   EXPECT_EQ("abcde", UTF16ToASCII(textfield->text()));
 }
 

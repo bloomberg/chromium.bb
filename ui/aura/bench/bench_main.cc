@@ -308,8 +308,8 @@ int main(int argc, char** argv) {
       root_window.get(),
       new aura::client::DefaultCaptureClient(root_window.get()));
 
-  scoped_ptr<aura::FocusManager> focus_manager(new aura::FocusManager);
-  root_window->set_focus_manager(focus_manager.get());
+  scoped_ptr<aura::client::FocusClient> focus_client(new aura::FocusManager);
+  aura::client::SetFocusClient(root_window.get(), focus_client.get());
 
   // add layers
   ColoredLayer background(SK_ColorRED);
@@ -353,7 +353,7 @@ int main(int argc, char** argv) {
 
   root_window->ShowRootWindow();
   MessageLoopForUI::current()->Run();
-  focus_manager.reset();
+  focus_client.reset();
   root_window.reset();
 
   ui::CompositorTestSupport::Terminate();

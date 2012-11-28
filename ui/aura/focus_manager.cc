@@ -5,26 +5,32 @@
 #include "ui/aura/focus_manager.h"
 
 #include "ui/aura/client/activation_client.h"
-#include "ui/aura/focus_change_observer.h"
+#include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_delegate.h"
 
 namespace aura {
+
+////////////////////////////////////////////////////////////////////////////////
+// FocusManager, public:
+
 FocusManager::FocusManager() : focused_window_(NULL) {
 }
 
 FocusManager::~FocusManager() {
 }
 
-void FocusManager::AddObserver(FocusChangeObserver* observer) {
+////////////////////////////////////////////////////////////////////////////////
+// FocusManager, client::FocusClient implementation:
+
+void FocusManager::AddObserver(client::FocusChangeObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void FocusManager::RemoveObserver(FocusChangeObserver* observer) {
+void FocusManager::RemoveObserver(client::FocusChangeObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void FocusManager::SetFocusedWindow(Window* focused_window,
-                                    const ui::Event* event) {
+void FocusManager::FocusWindow(Window* focused_window, const ui::Event* event) {
   if (focused_window == focused_window_)
     return;
   if (focused_window && !focused_window->CanFocus())
@@ -50,7 +56,7 @@ void FocusManager::SetFocusedWindow(Window* focused_window,
   if (focused_window_ && focused_window_->delegate())
     focused_window_->delegate()->OnFocus(old_focused_window);
   if (focused_window_) {
-    FOR_EACH_OBSERVER(FocusChangeObserver, observers_,
+    FOR_EACH_OBSERVER(client::FocusChangeObserver, observers_,
                       OnWindowFocused(focused_window));
   }
 }
@@ -59,8 +65,4 @@ Window* FocusManager::GetFocusedWindow() {
   return focused_window_;
 }
 
-bool FocusManager::IsFocusedWindow(const Window* window) const {
-  return focused_window_ == window;
-}
-
-}  // namespace ash
+}  // namespace aura

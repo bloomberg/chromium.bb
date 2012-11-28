@@ -451,7 +451,7 @@ void DesktopNativeWidgetAura::OnBlur() {
     GetWidget()->GetFocusManager()->StoreFocusedView();
   desktop_root_window_host_->OnNativeWidgetBlur();
   native_widget_delegate_->OnNativeBlur(
-      window_->GetFocusManager()->GetFocusedWindow());
+      aura::client::GetFocusClient(window_)->GetFocusedWindow());
 }
 
 gfx::NativeCursor DesktopNativeWidgetAura::GetCursor(const gfx::Point& point) {

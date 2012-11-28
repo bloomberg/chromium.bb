@@ -9,8 +9,8 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/client/activation_client.h"
+#include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/env_observer.h"
-#include "ui/aura/focus_change_observer.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/views/views_export.h"
@@ -32,7 +32,7 @@ namespace views {
 class VIEWS_EXPORT DesktopActivationClient
     : public aura::client::ActivationClient,
       public aura::WindowObserver,
-      public aura::FocusChangeObserver {
+      public aura::client::FocusChangeObserver {
  public:
   explicit DesktopActivationClient(aura::RootWindow* root_window);
   virtual ~DesktopActivationClient();
@@ -52,7 +52,7 @@ class VIEWS_EXPORT DesktopActivationClient
   // Overridden from aura::WindowObserver:
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
-  // Overridden from aura::FocusChangeObserver:
+  // Overridden from aura::client::FocusChangeObserver:
   virtual void OnWindowFocused(aura::Window* window) OVERRIDE;
 
  private:

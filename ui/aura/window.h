@@ -40,7 +40,6 @@ class Texture;
 
 namespace aura {
 
-class FocusManager;
 class LayoutManager;
 class RootWindow;
 class WindowDelegate;
@@ -306,11 +305,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Returns true if the Window can receive events.
   virtual bool CanReceiveEvents() const;
-
-  // Returns the FocusManager for the Window, which may be attached to a parent
-  // Window. Can return NULL if the Window has no FocusManager.
-  virtual FocusManager* GetFocusManager();
-  virtual const FocusManager* GetFocusManager() const;
 
   // Does a capture on the window. This does nothing if the window isn't showing
   // (VISIBILITY_SHOWN) or isn't contained in a valid window hierarchy.

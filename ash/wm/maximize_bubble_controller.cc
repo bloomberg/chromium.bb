@@ -12,7 +12,6 @@
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "third_party/skia/include/core/SkPath.h"
-#include "ui/aura/focus_manager.h"
 #include "ui/aura/window.h"
 #include "ui/base/animation/animation.h"
 #include "ui/base/l10n/l10n_util.h"

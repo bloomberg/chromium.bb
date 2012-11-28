@@ -81,8 +81,9 @@ void NativeViewHostAura::HideWidget() {
 
 void NativeViewHostAura::SetFocus() {
   aura::Window* window = host_->native_view();
-  if (window->GetFocusManager())
-    window->GetFocusManager()->SetFocusedWindow(window, NULL);
+  aura::client::FocusClient* client = aura::client::GetFocusClient(window);
+  if (client)
+    client->FocusWindow(window, NULL);
 }
 
 gfx::NativeViewAccessible NativeViewHostAura::GetNativeViewAccessible() {

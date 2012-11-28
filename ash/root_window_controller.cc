@@ -38,8 +38,8 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/tooltip_client.h"
-#include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -413,7 +413,7 @@ void RootWindowController::CloseChildWindows() {
 }
 
 void RootWindowController::MoveWindowsTo(aura::RootWindow* dst) {
-  aura::Window* focused = dst->GetFocusManager()->GetFocusedWindow();
+  aura::Window* focused = aura::client::GetFocusClient(dst)->GetFocusedWindow();
   aura::WindowTracker tracker;
   if (focused)
     tracker.Add(focused);
@@ -431,13 +431,13 @@ void RootWindowController::MoveWindowsTo(aura::RootWindow* dst) {
   // window may be deleted when losing focus (fullscreen flash for
   // example).  If the focused window is still alive after move, it'll
   // be re-focused below.
-  dst->GetFocusManager()->SetFocusedWindow(NULL, NULL);
+  aura::client::GetFocusClient(dst)->FocusWindow(NULL, NULL);
 
   ReparentAllWindows(root_window_.get(), dst);
 
   // Restore focused or active window if it's still alive.
   if (focused && tracker.Contains(focused) && dst->Contains(focused)) {
-    dst->GetFocusManager()->SetFocusedWindow(focused, NULL);
+    aura::client::GetFocusClient(dst)->FocusWindow(focused, NULL);
   } else if (active && tracker.Contains(active) && dst->Contains(active)) {
     activation_client->ActivateWindow(active);
   }

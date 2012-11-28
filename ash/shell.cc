@@ -232,7 +232,7 @@ Shell::~Shell() {
   // effects (e.g. crashes) from changing focus during shutdown.
   // See bug crbug.com/134502.
   if (active_root_window_)
-    active_root_window_->GetFocusManager()->SetFocusedWindow(NULL, NULL);
+    aura::client::GetFocusClient(active_root_window_)->FocusWindow(NULL, NULL);
 
   // Please keep in same order as in Init() because it's easy to miss one.
   RemovePreTargetHandler(user_activity_detector_.get());
@@ -409,10 +409,10 @@ void Shell::Init() {
   env_filter_.reset(new views::corewm::CompoundEventFilter);
   AddPreTargetHandler(env_filter_.get());
 
-  focus_manager_.reset(new aura::FocusManager);
+  focus_client_.reset(new aura::FocusManager);
   activation_controller_.reset(
       new internal::ActivationController(
-          focus_manager_.get(),
+          focus_client_.get(),
           new internal::AshActivationController));
   AddPreTargetHandler(activation_controller_.get());
 
@@ -771,7 +771,7 @@ SystemTray* Shell::system_tray() {
 }
 
 void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {
-  root->set_focus_manager(focus_manager_.get());
+  aura::client::SetFocusClient(root, focus_client_.get());
   internal::RootWindowController* controller =
       new internal::RootWindowController(root);
   controller->CreateContainers();
@@ -808,7 +808,7 @@ void Shell::InitRootWindowController(
   DCHECK(capture_controller_.get());
   DCHECK(window_cycle_controller_.get());
 
-  root_window->set_focus_manager(focus_manager_.get());
+  aura::client::SetFocusClient(root_window, focus_client_.get());
   input_method_filter_->SetInputMethodPropertyInRootWindow(root_window);
   aura::client::SetActivationClient(root_window, activation_controller_.get());
   aura::client::SetVisibilityClient(root_window, visibility_controller_.get());

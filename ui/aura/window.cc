@@ -525,18 +525,20 @@ Window* Window::GetToplevelWindow() {
 }
 
 void Window::Focus() {
-  DCHECK(GetFocusManager());
-  GetFocusManager()->SetFocusedWindow(this, NULL);
+  client::FocusClient* client = client::GetFocusClient(this);
+  DCHECK(client);
+  client->FocusWindow(this, NULL);
 }
 
 void Window::Blur() {
-  DCHECK(GetFocusManager());
-  GetFocusManager()->SetFocusedWindow(NULL, NULL);
+  client::FocusClient* client = client::GetFocusClient(this);
+  DCHECK(client);
+  client->FocusWindow(NULL, NULL);
 }
 
 bool Window::HasFocus() const {
-  const FocusManager* focus_manager = GetFocusManager();
-  return focus_manager ? focus_manager->IsFocusedWindow(this) : false;
+  client::FocusClient* client = client::GetFocusClient(this);
+  return client && client->GetFocusedWindow() == this;
 }
 
 bool Window::CanFocus() const {
@@ -563,15 +565,6 @@ bool Window::CanReceiveEvents() const {
     return false;
 
   return parent_ && IsVisible() && parent_->CanReceiveEvents();
-}
-
-FocusManager* Window::GetFocusManager() {
-  return const_cast<FocusManager*>(
-      static_cast<const Window*>(this)->GetFocusManager());
-}
-
-const FocusManager* Window::GetFocusManager() const {
-  return parent_ ? parent_->GetFocusManager() : NULL;
 }
 
 void Window::SetCapture() {

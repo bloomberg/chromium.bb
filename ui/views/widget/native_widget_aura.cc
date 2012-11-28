@@ -581,9 +581,9 @@ void NativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
 }
 
 void NativeWidgetAura::ClearNativeFocus() {
-  if (window_ && window_->GetFocusManager() &&
-      window_->Contains(window_->GetFocusManager()->GetFocusedWindow()))
-    window_->GetFocusManager()->SetFocusedWindow(window_, NULL);
+  aura::client::FocusClient* client = aura::client::GetFocusClient(window_);
+  if (window_ && client && window_->Contains(client->GetFocusedWindow()))
+    client->FocusWindow(window_, NULL);
 }
 
 gfx::Rect NativeWidgetAura::GetWorkAreaBoundsInScreen() const {
@@ -680,7 +680,8 @@ void NativeWidgetAura::OnBlur() {
   else
     DCHECK_EQ(ownership_, Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
 
-  delegate_->OnNativeBlur(window_->GetFocusManager()->GetFocusedWindow());
+  delegate_->OnNativeBlur(
+      aura::client::GetFocusClient(window_)->GetFocusedWindow());
 }
 
 gfx::NativeCursor NativeWidgetAura::GetCursor(const gfx::Point& point) {

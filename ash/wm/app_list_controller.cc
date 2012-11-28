@@ -14,7 +14,7 @@
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_view.h"
 #include "ui/app_list/pagination_model.h"
-#include "ui/aura/focus_manager.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/events/event.h"
@@ -160,7 +160,7 @@ void AppListController::SetView(app_list::AppListView* view) {
     Shell::GetInstance()->AddPreTargetHandler(this);
     Launcher::ForWindow(GetWindow())->AddIconObserver(this);
     widget->GetNativeView()->GetRootWindow()->AddRootWindowObserver(this);
-    widget->GetNativeView()->GetFocusManager()->AddObserver(this);
+    aura::client::GetFocusClient(widget->GetNativeView())->AddObserver(this);
     widget->SetOpacity(0);
     ScheduleAnimation();
 
@@ -180,7 +180,7 @@ void AppListController::ResetView() {
   Shell::GetInstance()->RemovePreTargetHandler(this);
   Launcher::ForWindow(GetWindow())->RemoveIconObserver(this);
   widget->GetNativeView()->GetRootWindow()->RemoveRootWindowObserver(this);
-  widget->GetNativeView()->GetFocusManager()->RemoveObserver(this);
+  aura::client::GetFocusClient(widget->GetNativeView())->RemoveObserver(this);
   view_ = NULL;
 }
 

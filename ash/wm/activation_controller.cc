@@ -16,8 +16,8 @@
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -144,20 +144,20 @@ aura::Window* FindFocusableWindowFor(aura::Window* window) {
 // ActivationController, public:
 
 ActivationController::ActivationController(
-    aura::FocusManager* focus_manager,
+    aura::client::FocusClient* focus_client,
     ActivationControllerDelegate* delegate)
-    : focus_manager_(focus_manager),
+    : focus_client_(focus_client),
       updating_activation_(false),
       active_window_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)),
       delegate_(delegate) {
   aura::Env::GetInstance()->AddObserver(this);
-  focus_manager_->AddObserver(this);
+  focus_client_->AddObserver(this);
 }
 
 ActivationController::~ActivationController() {
   aura::Env::GetInstance()->RemoveObserver(this);
-  focus_manager_->RemoveObserver(this);
+  focus_client_->RemoveObserver(this);
 }
 
 // static
@@ -320,8 +320,9 @@ void ActivationController::ActivateWindowWithEvent(aura::Window* window,
   active_window_ = window;
 
   if (window &&
-      !window->Contains(window->GetFocusManager()->GetFocusedWindow())) {
-    window->GetFocusManager()->SetFocusedWindow(window, event);
+      !window->Contains(aura::client::GetFocusClient(window)->
+          GetFocusedWindow())) {
+    aura::client::GetFocusClient(window)->FocusWindow(window, event);
   }
 
   FOR_EACH_OBSERVER(aura::client::ActivationChangeObserver,
@@ -413,7 +414,7 @@ aura::Window* ActivationController::GetTopmostWindowToActivateInContainer(
 void ActivationController::FocusWindowWithEvent(const ui::Event* event) {
   aura::Window* window = static_cast<aura::Window*>(event->target());
   if (GetActiveWindow() != window) {
-    window->GetFocusManager()->SetFocusedWindow(
+    aura::client::GetFocusClient(window)->FocusWindow(
         FindFocusableWindowFor(window), event);
   }
 }

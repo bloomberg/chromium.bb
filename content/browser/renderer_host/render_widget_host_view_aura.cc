@@ -31,6 +31,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/tooltip_client.h"
@@ -505,10 +506,11 @@ void RenderWidgetHostViewAura::MovePluginWindows(
 }
 
 void RenderWidgetHostViewAura::Focus() {
-  // Make sure we have a FocusManager before attempting to Focus(). In some
+  // Make sure we have a FocusClient before attempting to Focus(). In some
   // situations we may not yet be in a valid Window hierarchy (such as reloading
-  // after out of memory discared the tab).
-  if (window_->GetFocusManager())
+  // after out of memory discarded the tab).
+  aura::client::FocusClient* client = aura::client::GetFocusClient(window_);
+  if (client)
     window_->Focus();
 }
 
@@ -1505,7 +1507,8 @@ ui::EventResult RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
     // Focus the window we were created from.
     if (host_tracker_.get() && !host_tracker_->windows().empty()) {
       aura::Window* host = *(host_tracker_->windows().begin());
-      if (host->GetFocusManager())
+      aura::client::FocusClient* client = aura::client::GetFocusClient(host);
+      if (client)
         host->Focus();
     }
     if (!in_shutdown_) {

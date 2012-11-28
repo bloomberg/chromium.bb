@@ -22,9 +22,9 @@
 #include "ui/views/widget/desktop_aura/desktop_root_window_host.h"
 
 namespace aura {
-class FocusManager;
 namespace client {
 class DefaultCaptureClient;
+class FocusClient;
 class ScreenPositionClient;
 }
 }
@@ -209,7 +209,7 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
 
   // aura:: objects that we own.
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
-  scoped_ptr<aura::FocusManager> focus_manager_;
+  scoped_ptr<aura::client::FocusClient> focus_client_;
   scoped_ptr<DesktopActivationClient> activation_client_;
   scoped_ptr<DesktopCursorClient> cursor_client_;
   scoped_ptr<DesktopDispatcherClient> dispatcher_client_;

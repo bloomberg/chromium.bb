@@ -37,12 +37,12 @@ aura::Window* DesktopStackingClient::GetDefaultParent(aura::Window* context,
 }
 
 void DesktopStackingClient::CreateNULLParent() {
-  focus_manager_.reset(new aura::FocusManager);
+  focus_client_.reset(new aura::FocusManager);
 
   null_parent_.reset(new aura::RootWindow(
       aura::RootWindow::CreateParams(gfx::Rect(100, 100))));
   null_parent_->Init();
-  null_parent_->set_focus_manager(focus_manager_.get());
+  aura::client::SetFocusClient(null_parent_.get(), focus_client_.get());
 
   activation_client_.reset(new DesktopActivationClient(null_parent_.get()));
 

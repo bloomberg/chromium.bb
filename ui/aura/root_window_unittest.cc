@@ -102,6 +102,10 @@ Window* CreateWindow(int id, Window* parent, WindowDelegate* delegate) {
   return window;
 }
 
+bool IsFocusedWindow(aura::Window* window) {
+  return client::GetFocusClient(window)->GetFocusedWindow() == window;
+}
+
 }  // namespace
 
 typedef test::AuraTestBase RootWindowTest;
@@ -333,21 +337,21 @@ TEST_F(RootWindowTest, CanProcessEventsWithinSubtree) {
                                          client.GetLockWindow()));
 
   w1->Focus();
-  EXPECT_TRUE(w1->GetFocusManager()->IsFocusedWindow(w1));
+  EXPECT_TRUE(IsFocusedWindow(w1));
 
   client.Lock();
 
   // Since we're locked, the attempt to focus w2 will be ignored.
   w2->Focus();
-  EXPECT_TRUE(w1->GetFocusManager()->IsFocusedWindow(w1));
-  EXPECT_FALSE(w1->GetFocusManager()->IsFocusedWindow(w2));
+  EXPECT_TRUE(IsFocusedWindow(w1));
+  EXPECT_FALSE(IsFocusedWindow(w2));
 
   {
     // Attempting to send a key event to w1 (not in the lock container) should
     // cause focus to be reset.
     test::EventGenerator generator(root_window());
     generator.PressKey(ui::VKEY_SPACE, 0);
-    EXPECT_EQ(NULL, w1->GetFocusManager()->GetFocusedWindow());
+    EXPECT_EQ(NULL, client::GetFocusClient(w1)->GetFocusedWindow());
   }
 
   {
@@ -702,7 +706,7 @@ TEST_F(RootWindowTest, DeleteWindowDuringDispatch) {
   WindowTracker tracker;
   DeletingEventFilter* w1_filter = new DeletingEventFilter;
   w1->SetEventFilter(w1_filter);
-  w1->GetFocusManager()->SetFocusedWindow(w11, NULL);
+  client::GetFocusClient(w1.get())->FocusWindow(w11, NULL);
 
   test::EventGenerator generator(root_window(), w11);
 

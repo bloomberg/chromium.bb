@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/default_capture_client.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
@@ -42,21 +43,21 @@ AuraTestHelper::~AuraTestHelper() {
 
 void AuraTestHelper::SetUp() {
   setup_called_ = true;
-  aura::Env::GetInstance();
+  Env::GetInstance();
   test_screen_.reset(new TestScreen());
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
   root_window_.reset(test_screen_->CreateRootWindowForPrimaryDisplay());
   ui_controls::InstallUIControlsAura(CreateUIControlsAura(root_window_.get()));
 
-  focus_manager_.reset(new FocusManager);
-  root_window_->set_focus_manager(focus_manager_.get());
+  focus_client_.reset(new FocusManager);
+  client::SetFocusClient(root_window_.get(), focus_client_.get());
   stacking_client_.reset(new TestStackingClient(root_window_.get()));
   test_activation_client_.reset(
       new test::TestActivationClient(root_window_.get()));
   capture_client_.reset(new client::DefaultCaptureClient(root_window_.get()));
   test_input_method_.reset(new ui::test::DummyInputMethod);
   root_window_->SetProperty(
-      aura::client::kRootWindowInputMethodKey,
+      client::kRootWindowInputMethodKey,
       test_input_method_.get());
 
   root_window_->Show();
@@ -70,11 +71,11 @@ void AuraTestHelper::TearDown() {
   stacking_client_.reset();
   test_activation_client_.reset();
   capture_client_.reset();
-  focus_manager_.reset();
+  focus_client_.reset();
   root_window_.reset();
   test_screen_.reset();
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, NULL);
-  aura::Env::DeleteInstance();
+  Env::DeleteInstance();
 }
 
 void AuraTestHelper::RunAllPendingInMessageLoop() {

@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/timer.h"
 #include "ui/app_list/pagination_model_observer.h"
-#include "ui/aura/focus_change_observer.h"
+#include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/base/events/event_handler.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -35,7 +35,7 @@ namespace internal {
 // While the UI is visible, it monitors things such as app list widget's
 // activation state and desktop mouse click to auto dismiss the UI.
 class AppListController : public ui::EventHandler,
-                          public aura::FocusChangeObserver,
+                          public aura::client::FocusChangeObserver,
                           public aura::RootWindowObserver,
                           public ui::ImplicitAnimationObserver,
                           public views::WidgetObserver,
@@ -79,7 +79,7 @@ class AppListController : public ui::EventHandler,
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
-  // aura::FocusChangeObserver overrides:
+  // aura::client::FocusChangeObserver overrides:
   virtual void OnWindowFocused(aura::Window* window) OVERRIDE;
 
   // aura::RootWindowObserver overrides:

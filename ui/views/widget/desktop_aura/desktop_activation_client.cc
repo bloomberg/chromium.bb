@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/activation_change_observer.h"
-#include "ui/aura/focus_manager.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 
@@ -19,12 +19,12 @@ DesktopActivationClient::DesktopActivationClient(aura::RootWindow* root_window)
       current_active_(NULL),
       updating_activation_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)) {
-  root_window->GetFocusManager()->AddObserver(this);
+  aura::client::GetFocusClient(root_window_)->AddObserver(this);
   aura::client::SetActivationClient(root_window_, this);
 }
 
 DesktopActivationClient::~DesktopActivationClient() {
-  root_window_->GetFocusManager()->RemoveObserver(this);
+  aura::client::GetFocusClient(root_window_)->RemoveObserver(this);
   aura::client::SetActivationClient(root_window_, NULL);
 }
 
@@ -54,8 +54,9 @@ void DesktopActivationClient::ActivateWindow(aura::Window* window) {
   // Switch internal focus before we change the activation. Will probably cause
   // recursion.
   if (window &&
-      !window->Contains(window->GetFocusManager()->GetFocusedWindow())) {
-    window->GetFocusManager()->SetFocusedWindow(window, NULL);
+      !window->Contains(aura::client::GetFocusClient(window)->
+          GetFocusedWindow())) {
+    aura::client::GetFocusClient(window)->FocusWindow(window, NULL);
   }
 
   aura::Window* old_active = current_active_;

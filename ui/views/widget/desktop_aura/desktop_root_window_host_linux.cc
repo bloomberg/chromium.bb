@@ -214,8 +214,8 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
   // messages to us.
   X11DesktopHandler::get();
 
-  focus_manager_.reset(new aura::FocusManager);
-  root_window_->set_focus_manager(focus_manager_.get());
+  focus_client_.reset(new aura::FocusManager);
+  aura::client::SetFocusClient(root_window_.get(), focus_client_.get());
 
   activation_client_.reset(new DesktopActivationClient(root_window_));
 
@@ -250,7 +250,7 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
   aura::client::SetWindowMoveClient(root_window_,
                                     x11_window_move_client_.get());
 
-  focus_manager_->SetFocusedWindow(content_window_, NULL);
+  focus_client_->FocusWindow(content_window_, NULL);
   return root_window_;
 }
 
@@ -532,8 +532,9 @@ void DesktopRootWindowHostLinux::ClearNativeFocus() {
   // of focus changes into views.
   if (content_window_ && content_window_->GetFocusManager() &&
       content_window_->Contains(
-          content_window_->GetFocusManager()->GetFocusedWindow())) {
-    content_window_->GetFocusManager()->SetFocusedWindow(content_window_, NULL);
+          aura::client::GetFocusClient(content_window_)->GetFocusedWindow())) {
+    aura::client::GetFocusClient(content_window_)->FocusWindow(
+        content_window_, NULL);
   }
 }
 

@@ -27,10 +27,10 @@ class CommandLine;
 
 namespace aura {
 class EventFilter;
-class FocusManager;
 class RootWindow;
 class Window;
 namespace client {
+class FocusClient;
 class StackingClient;
 class UserActionClient;
 }
@@ -505,7 +505,7 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   scoped_ptr<HighContrastController> high_contrast_controller_;
   scoped_ptr<MagnificationController> magnification_controller_;
   scoped_ptr<PartialMagnificationController> partial_magnification_controller_;
-  scoped_ptr<aura::FocusManager> focus_manager_;
+  scoped_ptr<aura::client::FocusClient> focus_client_;
   scoped_ptr<aura::client::UserActionClient> user_action_client_;
   scoped_ptr<internal::MouseCursorEventFilter> mouse_cursor_filter_;
   scoped_ptr<internal::ScreenPositionController> screen_position_controller_;

@@ -47,7 +47,6 @@ class ViewProp;
 
 namespace aura {
 
-class FocusManager;
 class RootWindow;
 class RootWindowHost;
 class RootWindowObserver;
@@ -84,10 +83,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   ui::Compositor* compositor() { return compositor_.get(); }
   gfx::NativeCursor last_cursor() const { return last_cursor_; }
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
-
-  void set_focus_manager(FocusManager* focus_manager) {
-    focus_manager_ = focus_manager;
-  }
 
   // Initializes the root window.
   void Init();
@@ -254,7 +249,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Overridden from Window:
   virtual bool CanFocus() const OVERRIDE;
   virtual bool CanReceiveEvents() const OVERRIDE;
-  virtual FocusManager* GetFocusManager() OVERRIDE;
 
   // Overridden from aura::client::CaptureDelegate:
   virtual void UpdateCapture(Window* old_capture, Window* new_capture) OVERRIDE;
@@ -386,7 +380,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   Window* mouse_moved_handler_;
   Window* mouse_event_dispatch_target_;
   Window* event_dispatch_target_;
-  FocusManager* focus_manager_;
 
   // The gesture_recognizer_ for this.
   scoped_ptr<ui::GestureRecognizer> gesture_recognizer_;

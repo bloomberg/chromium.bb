@@ -10,7 +10,6 @@
 #include "ash/test/test_activation_delegate.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"

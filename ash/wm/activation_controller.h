@@ -11,14 +11,15 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/client/activation_client.h"
+#include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/env_observer.h"
-#include "ui/aura/focus_change_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/events/event_handler.h"
 
 namespace aura {
 namespace client {
 class ActivationChangeObserver;
+class FocusClient;
 }
 }
 
@@ -32,16 +33,16 @@ class ASH_EXPORT ActivationController
     : public aura::client::ActivationClient,
       public aura::WindowObserver,
       public aura::EnvObserver,
-      public aura::FocusChangeObserver,
+      public aura::client::FocusChangeObserver,
       public ui::EventHandler {
  public:
   // The ActivationController takes ownership of |delegate|.
-  ActivationController(aura::FocusManager* focus_manager,
+  ActivationController(aura::client::FocusClient* focus_client,
                        ActivationControllerDelegate* delegate);
   virtual ~ActivationController();
 
   // Returns true if |window| exists within a container that supports
-  // activation. |event| is the revent responsible for initiating the change, or
+  // activation. |event| is the event responsible for initiating the change, or
   // NULL if there is no event.
   static aura::Window* GetActivatableWindow(aura::Window* window,
                                             const ui::Event* event);
@@ -66,7 +67,7 @@ class ASH_EXPORT ActivationController
   // Overridden from aura::EnvObserver:
   virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
 
-  // Overridden from aura::FocusChangeObserver:
+  // Overridden from aura::client::FocusChangeObserver:
   virtual void OnWindowFocused(aura::Window* window) OVERRIDE;
 
  private:
@@ -99,7 +100,7 @@ class ASH_EXPORT ActivationController
   // result in focus changes.
   void FocusWindowWithEvent(const ui::Event* event);
 
-  aura::FocusManager* focus_manager_;
+  aura::client::FocusClient* focus_client_;
 
   // True inside ActivateWindow(). Used to prevent recursion of focus
   // change notifications causing activation.

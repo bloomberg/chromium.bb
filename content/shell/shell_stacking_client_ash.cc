@@ -28,12 +28,11 @@ aura::Window* ShellStackingClientAsh::GetDefaultParent(
     aura::Window* window,
     const gfx::Rect& bounds) {
   if (!root_window_.get()) {
-    aura::FocusManager* focus_manager = new aura::FocusManager;
-
     root_window_.reset(new aura::RootWindow(
         aura::RootWindow::CreateParams(gfx::Rect(100, 100))));
     root_window_->Init();
-    root_window_->set_focus_manager(focus_manager);
+    focus_client_.reset(new aura::FocusManager);
+    aura::client::SetFocusClient(root_window_.get(), focus_client_.get());
 
     root_window_event_filter_ = new views::corewm::CompoundEventFilter;
     // Pass ownership of the filter to the root_window.

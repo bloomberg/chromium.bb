@@ -396,9 +396,10 @@ void OmniboxViewViews::HandleFocusOut() {
 #if defined(USE_AURA)
   views::Widget* widget = GetWidget();
   if (widget) {
-    aura::RootWindow* root = widget->GetNativeView()->GetRootWindow();
-    if (root)
-      native_view = root->GetFocusManager()->GetFocusedWindow();
+    aura::client::FocusClient* client =
+        aura::client::GetFocusClient(widget->GetNativeView());
+    if (client)
+      native_view = client->GetFocusedWindow();
   }
 #endif
   model()->OnWillKillFocus(native_view);

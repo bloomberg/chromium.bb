@@ -11,9 +11,9 @@
 #include "ui/views/win/hwnd_message_handler_delegate.h"
 
 namespace aura {
-class FocusManager;
 namespace client {
 class DefaultCaptureClient;
+class FocusClient;
 class ScreenPositionClient;
 }
 }
@@ -210,7 +210,7 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   scoped_ptr<HWNDMessageHandler> message_handler_;
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
   scoped_ptr<DesktopDispatcherClient> dispatcher_client_;
-  scoped_ptr<aura::FocusManager> focus_manager_;
+  scoped_ptr<aura::client::FocusClient> focus_client_;
   // Depends on focus_manager_.
   scoped_ptr<DesktopActivationClient> activation_client_;
   scoped_ptr<corewm::InputMethodEventFilter> input_method_filter_;

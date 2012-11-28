@@ -17,9 +17,9 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/event_client.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window.h"
@@ -103,7 +103,6 @@ RootWindow::RootWindow(const CreateParams& params)
       mouse_moved_handler_(NULL),
       mouse_event_dispatch_target_(NULL),
       event_dispatch_target_(NULL),
-      focus_manager_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           gesture_recognizer_(ui::GestureRecognizer::Create(this))),
       synthesize_mouse_move_(false),
@@ -528,10 +527,6 @@ bool RootWindow::CanReceiveEvents() const {
   return IsVisible();
 }
 
-FocusManager* RootWindow::GetFocusManager() {
-  return focus_manager_;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, overridden from aura::client::CaptureDelegate:
 
@@ -692,8 +687,8 @@ void RootWindow::OnWindowHidden(Window* invisible,
   // the exception for the case where the focus managers change (otherwise a
   // focus manager might dereference a deleted root window).
   if (reason != WINDOW_MOVING ||
-      (new_root->GetFocusManager() != focus_manager_)) {
-    Window* focused_window = focus_manager_->GetFocusedWindow();
+      (client::GetFocusClient(new_root) != client::GetFocusClient(this))) {
+    Window* focused_window = client::GetFocusClient(this)->GetFocusedWindow();
     if (invisible->Contains(focused_window)) {
       Window* focus_to = invisible->transient_parent();
       if (focus_to) {
@@ -714,7 +709,7 @@ void RootWindow::OnWindowHidden(Window* invisible,
                                                                   NULL)))) {
         focus_to = NULL;
       }
-      GetFocusManager()->SetFocusedWindow(focus_to, NULL);
+      client::GetFocusClient(this)->FocusWindow(focus_to, NULL);
     }
   }
 
@@ -793,9 +788,9 @@ bool RootWindow::OnHostKeyEvent(ui::KeyEvent* event) {
   if (event->key_code() == ui::VKEY_UNKNOWN)
     return false;
   client::EventClient* client = client::GetEventClient(GetRootWindow());
-  Window* focused_window = focus_manager_->GetFocusedWindow();
+  Window* focused_window = client::GetFocusClient(this)->GetFocusedWindow();
   if (client && !client->CanProcessEventsWithinSubtree(focused_window)) {
-    GetFocusManager()->SetFocusedWindow(NULL, NULL);
+    client::GetFocusClient(this)->FocusWindow(NULL, NULL);
     return false;
   }
   return ProcessKeyEvent(focused_window, event);

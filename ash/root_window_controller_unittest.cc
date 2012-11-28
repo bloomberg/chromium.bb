@@ -12,8 +12,8 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/window_util.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -150,8 +150,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   aura::Window* d2 = aura::test::CreateTestWindowWithDelegate(
       &delete_on_blur_delegate, 0, gfx::Rect(50, 50, 100, 100), NULL);
   delete_on_blur_delegate.set_window(d2);
-  root_windows[0]->GetFocusManager()->SetFocusedWindow(
-      d2, NULL);
+  aura::client::GetFocusClient(root_windows[0])->FocusWindow(d2, NULL);
   tracker.Add(d2);
 
   UpdateDisplay("600x600");

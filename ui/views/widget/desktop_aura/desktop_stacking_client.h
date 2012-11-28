@@ -13,11 +13,11 @@
 #include "ui/views/views_export.h"
 
 namespace aura {
-class FocusManager;
 class RootWindow;
 class Window;
 namespace client {
 class DefaultCaptureClient;
+class FocusClient;
 }
 }
 
@@ -48,7 +48,7 @@ class VIEWS_EXPORT DesktopStackingClient : public aura::client::StackingClient {
 
   // All the member variables below are necessary for the NULL parent root
   // window to function.
-  scoped_ptr<aura::FocusManager> focus_manager_;
+  scoped_ptr<aura::client::FocusClient> focus_client_;
   // Depends on focus_manager_.
   scoped_ptr<DesktopActivationClient> activation_client_;
 
