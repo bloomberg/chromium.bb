@@ -5,7 +5,7 @@
 {
   'variables': {
     'chromium_code': 0,
-    'cc_tests_source_files': [
+    'cc_unit_tests_source_files': [
       'active_animation_unittest.cc',
       'content_layer_unittest.cc',
       'contents_scaling_layer_unittest.cc',
@@ -103,18 +103,45 @@
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../third_party/WebKit/Source/WTF/WTF.gyp/WTF.gyp:wtf',
-        '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore_platform_geometry',
         '../ui/ui.gyp:ui',
         'cc.gyp:cc',
         'cc_test_support',
       ],
       'sources': [
         'test/run_all_unittests.cc',
-        '<@(cc_tests_source_files)',
+        '<@(cc_unit_tests_source_files)',
       ],
       'include_dirs': [
-        'stubs',
+        'test',
+        '.',
+        '../third_party/WebKit/Source/Platform/chromium',
+      ],
+      'conditions': [
+        ['OS == "android" and gtest_target_type == "shared_library"', {
+          'dependencies': [
+            '../testing/android/native_test.gyp:native_test_native_code',
+          ],
+        }],
+      ],
+    },
+    {
+      'target_name': 'cc_perftests',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        '../base/base.gyp:test_support_base',
+        '../media/media.gyp:media',
+        '../skia/skia.gyp:skia',
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+        '../ui/ui.gyp:ui',
+        'cc.gyp:cc',
+        'cc_test_support',
+      ],
+      'sources': [
+        'layer_tree_host_perftest.cc',
+        'test/run_all_unittests.cc',
+      ],
+      'include_dirs': [
         'test',
         '.',
         '../third_party/WebKit/Source/Platform/chromium',
@@ -131,7 +158,6 @@
       'target_name': 'cc_test_support',
       'type': 'static_library',
       'include_dirs': [
-        'stubs',
         'test',
         '.',
         '..',
@@ -142,8 +168,6 @@
         '../testing/gtest.gyp:gtest',
         '../testing/gmock.gyp:gmock',
         '../skia/skia.gyp:skia',
-        '../third_party/WebKit/Source/WTF/WTF.gyp/WTF.gyp:wtf',
-        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit_wtf_support',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'sources': [
