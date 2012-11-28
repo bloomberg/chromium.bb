@@ -66,15 +66,18 @@ void AfterInitialize(bool unit_test_mode) {
 
   // We enable file-over-http to bridge the file protocol to http protocol
   // in here, which can
-  // (1) run the layout tests on android target device, but never need to
-  // push the test files and corresponding resources to device, which saves
-  // huge running time.
+  // (1) run the layout and performance tests on android target device, but
+  // never need to push the test files and corresponding resources to device,
+  // which saves huge running time.
   // (2) still run non-http layout (tests not under LayoutTests/http) tests
   // via file protocol without breaking test environment / convention of webkit
   // layout tests, which are followed by current all webkit ports.
   SimpleResourceLoaderBridge::AllowFileOverHTTP(
       "third_party/WebKit/LayoutTests/",
       GURL("http://127.0.0.1:8000/all-tests/"));
+  SimpleResourceLoaderBridge::AllowFileOverHTTP(
+      "third_party/WebKit/PerformanceTests/",
+      GURL("http://127.0.0.1:8000/all-perf-tests/"));
 }
 
 void BeforeShutdown() {
