@@ -337,11 +337,15 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServicePropertyChanged) {
   AddService(flimflam::kTypeWifi, kTestServicePath,
              flimflam::kStateIdle, true);
   message_loop_.RunUntilIdle();
-  // No new updates or services:
-  EXPECT_EQ(1, listener_->manager_updates());
-  EXPECT_EQ(2, listener_->list_updates(flimflam::kServicesProperty));
+  // Service list update should be received when watch list changes.
+  EXPECT_EQ(3, listener_->list_updates(flimflam::kServicesProperty));
+  // Number of services shouldn't change.
   EXPECT_EQ(kNumShillManagerClientStubImplServices + 1,
             listener_->entries(flimflam::kServicesProperty).size());
+  // Property update should be received when watched service is added.
+  EXPECT_EQ(1, listener_->
+            property_updates(flimflam::kServicesProperty)[kTestServicePath]);
+
   // Change a property.
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
       dbus::ObjectPath(kTestServicePath),
@@ -349,14 +353,14 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServicePropertyChanged) {
       scan_interval,
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
-  // Property change SHOULD trigger an update.
-  EXPECT_EQ(1, listener_->
+  // Property change should trigger another update.
+  EXPECT_EQ(2, listener_->
             property_updates(flimflam::kServicesProperty)[kTestServicePath]);
 
   // Remove a service
   RemoveService(kTestServicePath);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(3, listener_->list_updates(flimflam::kServicesProperty));
+  EXPECT_EQ(4, listener_->list_updates(flimflam::kServicesProperty));
   EXPECT_EQ(kNumShillManagerClientStubImplServices,
             listener_->entries(flimflam::kServicesProperty).size());
 

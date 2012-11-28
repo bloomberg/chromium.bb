@@ -88,7 +88,9 @@ void NetworkEventLog::AddEntry(const std::string& module,
   }
   if (entries_.size() >= kMaxNetworkEventLogEntries)
     entries_.pop_front();
-  entries_.push_back(LogEntry(module, event, description));
+  LogEntry entry(module, event, description);
+  entries_.push_back(entry);
+  VLOG(2) << entry.ToString();
 }
 
 std::string NetworkEventLog::GetAsString(StringOrder order,

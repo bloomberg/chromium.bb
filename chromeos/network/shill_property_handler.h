@@ -158,8 +158,8 @@ class CHROMEOS_EXPORT ShillPropertyHandler
   // Convenience pointer for ShillManagerClient
   ShillManagerClient* shill_manager_;
 
-  // Pending update count for each managed state type
-  std::map<ManagedState::ManagedType, int> pending_updates_;
+  // Pending update list for each managed state type
+  std::map<ManagedState::ManagedType, std::set<std::string> > pending_updates_;
 
   // List of network services with Shill property changed observers
   ShillServiceObserverMap observed_networks_;

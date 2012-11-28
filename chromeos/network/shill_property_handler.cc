@@ -93,7 +93,10 @@ void ShillPropertyHandler::RequestScan() const {
 
 void ShillPropertyHandler::RequestProperties(ManagedState::ManagedType type,
                                              const std::string& path) {
-  ++pending_updates_[type];
+  if (pending_updates_[type].find(path) != pending_updates_[type].end())
+    return;  // Update already requested.
+
+  pending_updates_[type].insert(path);
   if (type == ManagedState::MANAGED_TYPE_NETWORK) {
     DBusThreadManager::Get()->GetShillServiceClient()->GetProperties(
         dbus::ObjectPath(path),
@@ -155,9 +158,8 @@ bool ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
       UpdateManagedList(ManagedState::MANAGED_TYPE_NETWORK, *vlist);
   } else if (key == flimflam::kServiceWatchListProperty) {
     const base::ListValue* vlist = GetListValue(key, value);
-    if (vlist) {
+    if (vlist)
       UpdateObservedNetworkServices(*vlist);
-    }
   } else if (key == flimflam::kDevicesProperty) {
     const ListValue* vlist = GetListValue(key, value);
     if (vlist)
@@ -186,7 +188,7 @@ void ShillPropertyHandler::UpdateManagedList(ManagedState::ManagedType type,
   // called when the update requests have completed). If no requests
   // have been made, call ManagedStateListChanged to indicate that the
   // order of the list has changed.
-  if (pending_updates_[type] == 0)
+  if (pending_updates_[type].size() == 0)
     listener_->ManagedStateListChanged(type);
 }
 
@@ -204,22 +206,20 @@ void ShillPropertyHandler::UpdateObservedNetworkServices(
     if (iter2 != observed_networks_.end()) {
       new_observed[path] = iter2->second;
     } else {
+      // Request an update for the network.
+      RequestProperties(ManagedState::MANAGED_TYPE_NETWORK, path);
+      // Create an observer for future updates.
       new_observed[path] = new ShillServiceObserver(
           path, base::Bind(
               &ShillPropertyHandler::NetworkServicePropertyChangedCallback,
               weak_ptr_factory_.GetWeakPtr()));
+      network_event_log::AddEntry(kLogModule, "StartObserving", path);
     }
     observed_networks_.erase(path);
     // Limit the number of observed services.
     if (new_observed.size() >= kMaxObservedServices)
       break;
   }
-  network_event_log::AddEntry(
-      kLogModule, "ObservedListChanged",
-      StringPrintf("Entries: %"PRIuS " New: %"PRIuS,
-                   entries.GetSize(), new_observed.size()));
-  VLOG(2) << "UpdateObservedNetworkServices, new observed: "
-          << new_observed.size();
   // Delete network service observers still in observed_networks_.
   for (ShillServiceObserverMap::iterator iter =  observed_networks_.begin();
        iter != observed_networks_.end(); ++iter) {
@@ -235,7 +235,7 @@ void ShillPropertyHandler::GetPropertiesCallback(
     DBusMethodCallStatus call_status,
     const base::DictionaryValue& properties) {
   VLOG(2) << "GetPropertiesCallback: " << type << " : " << path;
-  --pending_updates_[type];
+  pending_updates_[type].erase(path);
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
     LOG(ERROR) << "Failed to get properties for: " << path
                << ": " << call_status;
@@ -243,7 +243,7 @@ void ShillPropertyHandler::GetPropertiesCallback(
   }
   listener_->UpdateManagedStateProperties(type, path, properties);
   // Notify the listener only when all updates for that type have completed.
-  if (pending_updates_[type] == 0)
+  if (pending_updates_[type].size() == 0)
     listener_->ManagedStateListChanged(type);
 }
 
