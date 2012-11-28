@@ -8,12 +8,11 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/api/prefs/pref_member.h"
+#include "chrome/browser/ui/zoom/zoom_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-
-class ZoomObserver;
 
 namespace content {
 class WebContents;
@@ -67,6 +66,9 @@ class ZoomController : public content::NotificationObserver,
 
   // Observer receiving notifications on state changes.
   ZoomObserver* observer_;
+
+  // TODO(eroman): temporary for investigating bug 144879.
+  HelperForBug144879 bug144879_;
 
   DISALLOW_COPY_AND_ASSIGN(ZoomController);
 };
