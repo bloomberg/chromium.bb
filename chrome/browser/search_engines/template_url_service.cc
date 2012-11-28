@@ -1151,6 +1151,7 @@ syncer::SyncMergeResult TemplateURLService::MergeDataAndStartSyncing(
       GetAllSyncData(syncer::SEARCH_ENGINES));
   SyncDataMap sync_data_map = CreateGUIDToSyncDataMap(initial_sync_data);
 
+  merge_result.set_num_items_before_association(local_data_map.size());
   for (SyncDataMap::const_iterator iter = sync_data_map.begin();
       iter != sync_data_map.end(); ++iter) {
     TemplateURL* local_turl = GetTemplateURLForGUID(iter->first);
@@ -1188,6 +1189,8 @@ syncer::SyncMergeResult TemplateURLService::MergeDataAndStartSyncing(
         UIThreadSearchTermsData search_terms_data(local_turl->profile());
         if (UpdateNoNotify(local_turl, *sync_turl, search_terms_data))
           NotifyObservers();
+        merge_result.set_num_items_modified(
+            merge_result.num_items_modified() + 1);
       } else if (sync_turl->last_modified() < local_turl->last_modified()) {
         // Otherwise, we know we have newer data, so update Sync with our
         // data fields.
@@ -1203,7 +1206,7 @@ syncer::SyncMergeResult TemplateURLService::MergeDataAndStartSyncing(
       // already-synced) TemplateURLs. It will prefer to keep entries from Sync
       // over not-yet-synced TemplateURLs.
       MergeInSyncTemplateURL(sync_turl.get(), sync_data_map, &new_changes,
-                             &local_data_map);
+                             &local_data_map, &merge_result);
     }
   }
 
@@ -1231,7 +1234,8 @@ syncer::SyncMergeResult TemplateURLService::MergeDataAndStartSyncing(
   PruneSyncChanges(&sync_data_map, &new_changes);
 
   LogDuplicatesHistogram(GetTemplateURLs());
-
+  merge_result.set_num_items_after_association(
+      GetAllSyncData(syncer::SEARCH_ENGINES).size());
   merge_result.set_error(
       sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes));
   if (merge_result.error().IsSet())
@@ -2438,7 +2442,8 @@ void TemplateURLService::MergeInSyncTemplateURL(
     TemplateURL* sync_turl,
     const SyncDataMap& sync_data,
     syncer::SyncChangeList* change_list,
-    SyncDataMap* local_data) {
+    SyncDataMap* local_data,
+    syncer::SyncMergeResult* merge_result) {
   DCHECK(sync_turl);
   DCHECK(!GetTemplateURLForGUID(sync_turl->sync_guid()));
   DCHECK(IsFromSync(sync_turl, sync_data));
@@ -2458,6 +2463,8 @@ void TemplateURLService::MergeInSyncTemplateURL(
       // update for the changed keyword to sync. We can reuse the logic from
       // ResolveSyncKeywordConflict for this.
       ResolveSyncKeywordConflict(sync_turl, conflicting_turl, change_list);
+      merge_result->set_num_items_modified(
+          merge_result->num_items_modified() + 1);
     } else {
       // |conflicting_turl| is not yet known to Sync. If it is better, then we
       // want to transfer its values up to sync. Otherwise, we remove it and
@@ -2485,11 +2492,15 @@ void TemplateURLService::MergeInSyncTemplateURL(
         // local model, since we've effectively "merged" it in by updating the
         // local conflicting entry with its sync_guid.
         should_add_sync_turl = false;
+        merge_result->set_num_items_modified(
+            merge_result->num_items_modified() + 1);
       } else {
         // We guarantee that this isn't the local search provider. Otherwise,
         // local would have won.
         DCHECK(conflicting_turl != GetDefaultSearchProvider());
         Remove(conflicting_turl);
+        merge_result->set_num_items_deleted(
+            merge_result->num_items_deleted() + 1);
       }
       // This TemplateURL was either removed or overwritten in the local model.
       // Remove the entry from the local data so it isn't pushed up to Sync.
@@ -2503,6 +2514,8 @@ void TemplateURLService::MergeInSyncTemplateURL(
     TemplateURLData data(sync_turl->data());
     data.id = kInvalidTemplateURLID;
     Add(new TemplateURL(profile_, data));
+    merge_result->set_num_items_added(
+        merge_result->num_items_added() + 1);
   }
 }
 

@@ -562,11 +562,14 @@ class TemplateURLService : public WebDataServiceConsumer,
   // model during MergeDataAndStartSyncing. If |sync_turl| replaces a local
   // entry, that entry is removed from |initial_data| to prevent it from being
   // sent up to Sync.
+  // |merge_result| tracks the changes made to the local model. Added/modified/
+  // deleted are updated depending on how the |sync_turl| is merged in.
   // This should only be called from MergeDataAndStartSyncing.
   void MergeInSyncTemplateURL(TemplateURL* sync_turl,
                               const SyncDataMap& sync_data,
                               syncer::SyncChangeList* change_list,
-                              SyncDataMap* local_data);
+                              SyncDataMap* local_data,
+                              syncer::SyncMergeResult* merge_result);
 
   // Checks a newly added TemplateURL from Sync by its sync_guid and sets it as
   // the default search provider if we were waiting for it.
