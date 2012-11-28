@@ -308,7 +308,6 @@ bool OmxVideoDecodeAccelerator::CreateComponent() {
 
   // Set output port parameters.
   port_format.nBufferCountActual = kNumPictureBuffers;
-  port_format.nBufferCountMin = kNumPictureBuffers;
   // Force an OMX_EventPortSettingsChanged event to be sent once we know the
   // stream's real dimensions (which can only happen once some Decode() work has
   // been done).
@@ -875,7 +874,7 @@ void OmxVideoDecodeAccelerator::OnOutputPortDisabled() {
   OMX_ERRORTYPE result = OMX_GetParameter(
       component_handle_, OMX_IndexParamPortDefinition, &port_format);
   RETURN_ON_OMX_FAILURE(result, "OMX_GetParameter", PLATFORM_FAILURE,);
-  DCHECK_EQ(port_format.nBufferCountMin, kNumPictureBuffers);
+  DCHECK_LE(port_format.nBufferCountMin, kNumPictureBuffers);
 
   // TODO(fischman): to support mid-stream resize, need to free/dismiss any
   // |pictures_| we already have.  Make sure that the shutdown-path agrees with
