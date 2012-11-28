@@ -12,8 +12,6 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/media/media_internals.h"
-#include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
@@ -21,10 +19,9 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -377,15 +374,9 @@ void TabRendererGtk::UpdateData(WebContents* contents,
     data_.crashed = contents->IsCrashed();
 
     // Set whether we are recording or capturing tab media for this tab.
-    int render_process_id = contents->GetRenderProcessHost()->GetID();
-    int render_view_id = contents->GetRenderViewHost()->GetRoutingID();
-    scoped_refptr<MediaStreamCaptureIndicator> capture_indicator =
-        MediaInternals::GetInstance()->GetMediaStreamCaptureIndicator();
-    if (capture_indicator->IsProcessCapturingTab(render_process_id,
-                                                 render_view_id)) {
+    if (chrome::ShouldShowProjectingIndicator(contents)) {
       data_.capture_state = PROJECTING;
-    } else if (capture_indicator->IsProcessCapturing(render_process_id,
-                                              render_view_id)) {
+    } else if (chrome::ShouldShowRecordingIndicator(contents)) {
       data_.capture_state = RECORDING;
     } else {
       data_.capture_state = NONE;

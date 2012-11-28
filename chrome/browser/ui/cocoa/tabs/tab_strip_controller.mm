@@ -22,8 +22,6 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/media/media_internals.h"
-#include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -56,11 +54,10 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_selection_model.h"
+#include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -1515,13 +1512,8 @@ private:
       if (newState == kTabDone) {
         NSImageView* imageView = [self iconImageViewForContents:contents];
 
-        int render_process_id = contents->GetRenderProcessHost()->GetID();
-        int render_view_id = contents->GetRenderViewHost()->GetRoutingID();
-        scoped_refptr<MediaStreamCaptureIndicator> capture_indicator =
-            MediaInternals::GetInstance()->GetMediaStreamCaptureIndicator();
         ui::ThemeProvider* theme = [[tabStripView_ window] themeProvider];
-        if (capture_indicator->IsProcessCapturing(render_process_id,
-                                                  render_view_id) && theme) {
+        if (chrome::ShouldShowRecordingIndicator(contents) && theme) {
           NSImage* recording = theme->GetNSImageNamed(IDR_TAB_RECORDING, true);
 
           NSRect frame =

@@ -1284,6 +1284,8 @@
         'browser/ui/tabs/tab_strip_model_utils.h',
         'browser/ui/tabs/tab_strip_selection_model.cc',
         'browser/ui/tabs/tab_strip_selection_model.h',
+        'browser/ui/tabs/tab_utils.cc',
+        'browser/ui/tabs/tab_utils.h',
         'browser/ui/toolbar/action_box_button_controller.cc',
         'browser/ui/toolbar/action_box_button_controller.h',
         'browser/ui/toolbar/action_box_menu_model.cc',
