@@ -61,9 +61,9 @@ const base::TimeDelta kChromeFrameVeryLongNavigationTimeout =
     base::TimeDelta::FromSeconds(90);
 #else
 const base::TimeDelta kChromeFrameLongNavigationTimeout =
-    base::TimeDelta::FromSeconds(15);
+    base::TimeDelta::FromSeconds(10);
 const base::TimeDelta kChromeFrameVeryLongNavigationTimeout =
-    base::TimeDelta::FromSeconds(45);
+    base::TimeDelta::FromSeconds(30);
 #endif
 
 // Callback function for EnumThreadWindows.
