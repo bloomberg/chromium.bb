@@ -815,7 +815,19 @@ void InstantController::Show(InstantShownReason reason,
     UMA_HISTOGRAM_TIMES("Instant.TimeToFirstShow", delta);
   }
 
-  model_.SetPreviewState(search_mode_, height, units);
+  // Show at 100% height except in the following cases:
+  // - The page wants to hide (height=0).
+  // - The page wants to show custom NTP content.
+  // - The page is over a website other than search or an NTP, and is not
+  //   already showing at 100% height.
+  const bool is_full_height =
+      model_.height() == 100 && model_.height_units() == INSTANT_SIZE_PERCENT;
+  if (height == 0 ||
+      reason == INSTANT_SHOWN_CUSTOM_NTP_CONTENT ||
+      (search_mode_.is_origin_default() && !is_full_height))
+    model_.SetPreviewState(search_mode_, height, units);
+  else
+    model_.SetPreviewState(search_mode_, 100, INSTANT_SIZE_PERCENT);
 }
 
 void InstantController::SendBoundsToPage() {
