@@ -6,8 +6,8 @@
 #define WEBKIT_FILEAPI_MEDIA_MTP_DEVICE_DELEGATE_H_
 
 #include "base/file_path.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "webkit/fileapi/file_system_file_util.h"
@@ -20,14 +20,11 @@ class Time;
 
 namespace fileapi {
 
-struct MTPDeviceDelegateDeleter;
-
-// Delegate for media transfer protocol (MTP_ device to perform media device
+// Delegate for media transfer protocol (MTP) device to perform media device
 // isolated file system operations. Class that implements this delegate does
-// the actual communication with the MTP device.
-class MTPDeviceDelegate
-    : public base::RefCountedThreadSafe<MTPDeviceDelegate,
-                                        MTPDeviceDelegateDeleter> {
+// the actual communication with the MTP device. ScopedMTPDeviceMapEntry class
+// manages the lifetime of the delegate via MTPDeviceMapService class.
+class MTPDeviceDelegate : public base::SupportsWeakPtr<MTPDeviceDelegate> {
  public:
   // Returns information about the given file path.
   virtual base::PlatformFileError GetFileInfo(
@@ -53,23 +50,24 @@ class MTPDeviceDelegate
   // Returns TaskRunner on which the operation is performed.
   virtual base::SequencedTaskRunner* GetMediaTaskRunner() = 0;
 
-  // Helper function to destruct the delegate object on UI thread.
-  virtual void DeleteOnCorrectThread() const = 0;
+  // Called when the
+  // (1) Browser application is in shutdown mode (or)
+  // (2) Last extension using this MTP device is destroyed (or)
+  // (3) Attached MTP device is removed (or)
+  // (4) User revoked the MTP device gallery permission.
+  // Ownership of |MTPDeviceDelegate| is handed off to the delegate
+  // implementation class by this call. This function should take care of
+  // deleting itself on the right thread. This function should cancel all the
+  // pending requests before posting any message to delete itself.
+  // Called on the IO thread.
+  virtual void CancelPendingTasksAndDeleteDelegate() = 0;
+
+  // Called on the IO thread.
+  virtual base::WeakPtr<MTPDeviceDelegate> GetAsWeakPtrOnIOThread() = 0;
 
  protected:
+  // Always destruct this object via CancelPendingTasksAndDeleteDelegate().
   virtual ~MTPDeviceDelegate() {}
-
- private:
-  friend struct MTPDeviceDelegateDeleter;
-  friend class base::DeleteHelper<MTPDeviceDelegate>;
-  friend class base::RefCountedThreadSafe<MTPDeviceDelegate,
-                                          MTPDeviceDelegateDeleter>;
-};
-
-struct MTPDeviceDelegateDeleter {
-  static void Destruct(const MTPDeviceDelegate* delegate) {
-    delegate->DeleteOnCorrectThread();
-  }
 };
 
 }  // namespace fileapi

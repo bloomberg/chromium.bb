@@ -20,11 +20,10 @@ MTPDeviceMapService* MTPDeviceMapService::GetInstance() {
 
 void MTPDeviceMapService::AddDelegate(
     const FilePath::StringType& device_location,
-    scoped_refptr<MTPDeviceDelegate> delegate) {
+    MTPDeviceDelegate* delegate) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(delegate.get());
+  DCHECK(delegate);
   DCHECK(!device_location.empty());
-
   if (ContainsKey(delegate_map_, device_location))
     return;
 
@@ -36,6 +35,7 @@ void MTPDeviceMapService::RemoveDelegate(
   DCHECK(thread_checker_.CalledOnValidThread());
   DelegateMap::iterator it = delegate_map_.find(device_location);
   DCHECK(it != delegate_map_.end());
+  it->second->CancelPendingTasksAndDeleteDelegate();
   delegate_map_.erase(it);
 }
 
@@ -53,7 +53,7 @@ MTPDeviceDelegate* MTPDeviceMapService::GetMTPDeviceDelegate(
 
   DelegateMap::const_iterator it = delegate_map_.find(device_location);
   DCHECK(it != delegate_map_.end());
-  return it->second.get();
+  return it->second;
 }
 
 MTPDeviceMapService::MTPDeviceMapService() {

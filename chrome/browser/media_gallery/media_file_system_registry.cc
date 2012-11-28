@@ -130,18 +130,17 @@ MediaFileSystemInfo::MediaFileSystemInfo(const std::string& fs_name,
 MediaFileSystemInfo::MediaFileSystemInfo() {}
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-
 ScopedMTPDeviceMapEntry::ScopedMTPDeviceMapEntry(
     const FilePath::StringType& device_location,
     const base::Closure& no_references_callback)
     : device_location_(device_location),
-      delegate_(new MTPDeviceDelegateImpl(device_location)),
       no_references_callback_(no_references_callback) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       Bind(&MTPDeviceMapService::AddDelegate,
            base::Unretained(MTPDeviceMapService::GetInstance()),
-           device_location_, make_scoped_refptr(delegate_)));
+           device_location_,
+           new MTPDeviceDelegateImpl(device_location_)));
 }
 
 ScopedMTPDeviceMapEntry::~ScopedMTPDeviceMapEntry() {
@@ -152,7 +151,6 @@ ScopedMTPDeviceMapEntry::~ScopedMTPDeviceMapEntry() {
            device_location_));
   no_references_callback_.Run();
 }
-
 #endif  // defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
 
 // The main owner of this class is
@@ -678,6 +676,9 @@ MediaFileSystemRegistry::~MediaFileSystemRegistry() {
   SystemMonitor* system_monitor = SystemMonitor::Get();
   if (system_monitor)
     system_monitor->RemoveDevicesChangedObserver(this);
+#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
+  DCHECK(mtp_device_delegate_map_.empty());
+#endif
 }
 
 void MediaFileSystemRegistry::OnMediaGalleriesRememberedGalleriesChanged(
@@ -721,23 +722,23 @@ ScopedMTPDeviceMapEntry*
 MediaFileSystemRegistry::GetOrCreateScopedMTPDeviceMapEntry(
     const FilePath::StringType& device_location) {
   MTPDeviceDelegateMap::iterator delegate_it =
-      mtp_delegate_map_.find(device_location);
-  if (delegate_it != mtp_delegate_map_.end() && delegate_it->second.get())
+      mtp_device_delegate_map_.find(device_location);
+  if (delegate_it != mtp_device_delegate_map_.end())
     return delegate_it->second;
   ScopedMTPDeviceMapEntry* mtp_device_host = new ScopedMTPDeviceMapEntry(
       device_location, base::Bind(
           &MediaFileSystemRegistry::RemoveScopedMTPDeviceMapEntry,
           base::Unretained(this), device_location));
-  mtp_delegate_map_[device_location] = mtp_device_host->AsWeakPtr();
+  mtp_device_delegate_map_[device_location] = mtp_device_host;
   return mtp_device_host;
 }
 
 void MediaFileSystemRegistry::RemoveScopedMTPDeviceMapEntry(
     const FilePath::StringType& device_location) {
   MTPDeviceDelegateMap::iterator delegate_it =
-      mtp_delegate_map_.find(device_location);
-  DCHECK(delegate_it != mtp_delegate_map_.end());
-  mtp_delegate_map_.erase(delegate_it);
+      mtp_device_delegate_map_.find(device_location);
+  DCHECK(delegate_it != mtp_device_delegate_map_.end());
+  mtp_device_delegate_map_.erase(delegate_it);
 }
 #endif
 

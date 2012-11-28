@@ -6,6 +6,7 @@
 #define WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_CONTEXT_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/media/mtp_device_file_system_config.h"
 #include "webkit/fileapi/task_runner_bound_observer_list.h"
@@ -38,12 +39,16 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext {
   int64 allowed_bytes_growth() const { return allowed_bytes_growth_; }
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  void set_mtp_device_delegate(MTPDeviceDelegate* delegate) {
+  // Called on IO thread.
+  void set_mtp_device_delegate(
+      const base::WeakPtr<MTPDeviceDelegate>& delegate) {
     mtp_device_delegate_ = delegate;
   }
 
-  MTPDeviceDelegate* mtp_device_delegate() const {
-    return mtp_device_delegate_.get();
+  // Caller of this function should dereference the delegate only on media
+  // sequenced task runner thread.
+  base::WeakPtr<MTPDeviceDelegate> mtp_device_delegate() const {
+    return mtp_device_delegate_;
   }
 #endif
 
@@ -91,8 +96,9 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext {
   UpdateObserverList update_observers_;
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  // Store the current mtp device delegate.
-  scoped_refptr<MTPDeviceDelegate> mtp_device_delegate_;
+  // The media transfer protocol (MTP) device delegate.
+  // Set on IO thread and dereferenced on media sequenced task runner thread.
+  base::WeakPtr<MTPDeviceDelegate> mtp_device_delegate_;
 #endif
 };
 

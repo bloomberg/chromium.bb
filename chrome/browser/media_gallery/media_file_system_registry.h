@@ -17,7 +17,6 @@
 #include "base/lazy_instance.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
 #include "base/system_monitor/system_monitor.h"
 #include "webkit/fileapi/media/mtp_device_file_system_config.h"
@@ -57,13 +56,12 @@ struct MediaFileSystemInfo {
 };
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-// Class to manage MTPDeviceDelegateImpl object for the attached MTP device.
-// Refcounted to reuse the same MTP device delegate entry across extensions.
-// This class supports WeakPtr (extends SupportsWeakPtr) to expose itself as
-// a weak pointer to MediaFileSystemRegistry.
+// Class to manage the lifetime of MTPDeviceDelegateImpl object for the
+// attached media transfer protocol (MTP) device. This object is constructed
+// for each MTP device. Refcounted to reuse the same MTP device delegate entry
+// across extensions.
 class ScopedMTPDeviceMapEntry
-    : public base::RefCounted<ScopedMTPDeviceMapEntry>,
-      public base::SupportsWeakPtr<ScopedMTPDeviceMapEntry> {
+    : public base::RefCounted<ScopedMTPDeviceMapEntry> {
  public:
   // |no_references_callback| is called when the last ScopedMTPDeviceMapEntry
   // reference goes away.
@@ -74,17 +72,14 @@ class ScopedMTPDeviceMapEntry
   // Friend declaration for ref counted implementation.
   friend class base::RefCounted<ScopedMTPDeviceMapEntry>;
 
-  // Private because this class is ref-counted.
+  // Private because this class is ref-counted. Destructed when the last user of
+  // this MTP device is destroyed or when the MTP device is detached from the
+  // system or when the browser is in shutdown mode or when the last extension
+  // revokes the MTP device gallery permissions.
   ~ScopedMTPDeviceMapEntry();
 
-  // Store the MTP or PTP device location.
+  // The MTP or PTP device location.
   const FilePath::StringType device_location_;
-
-  // Store a raw pointer of MTPDeviceDelegateImpl object.
-  // MTPDeviceDelegateImpl is ref-counted and owned by MTPDeviceMapService.
-  // This class tells MTPDeviceMapService to dispose of it when the last
-  // reference to |this| goes away.
-  MTPDeviceDelegateImpl* delegate_;
 
   // A callback to call when the last reference of this object goes away.
   base::Closure no_references_callback_;
@@ -161,10 +156,10 @@ class MediaFileSystemRegistry
   typedef std::map<Profile*, PrefChangeRegistrar*> PrefChangeRegistrarMap;
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  // Map a MTP or PTP device location to the weak pointer of
-  // ScopedMTPDeviceMapEntry.
-  typedef std::map<const FilePath::StringType,
-                   base::WeakPtr<ScopedMTPDeviceMapEntry> >
+  // Map a MTP or PTP device location to the raw pointer of
+  // ScopedMTPDeviceMapEntry. It is safe to store a raw pointer in this
+  // map.
+  typedef std::map<const FilePath::StringType, ScopedMTPDeviceMapEntry*>
       MTPDeviceDelegateMap;
 #endif
 
@@ -196,7 +191,7 @@ class MediaFileSystemRegistry
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   // Only accessed on the UI thread.
-  MTPDeviceDelegateMap mtp_delegate_map_;
+  MTPDeviceDelegateMap mtp_device_delegate_map_;
 #endif
 
   scoped_ptr<MediaFileSystemContext> file_system_context_;

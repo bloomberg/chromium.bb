@@ -63,7 +63,9 @@ PlatformFileError DeviceMediaFileUtil::GetFileInfo(
     const FileSystemURL& url,
     PlatformFileInfo* file_info,
     FilePath* platform_path) {
-  DCHECK(context->mtp_device_delegate());
+  if (!context->mtp_device_delegate().get())
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+
   PlatformFileError error =
       context->mtp_device_delegate()->GetFileInfo(url.path(), file_info);
   if (error != base::PLATFORM_FILE_OK)
@@ -80,7 +82,10 @@ scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
         FileSystemOperationContext* context,
         const FileSystemURL& url,
         bool recursive) {
-  DCHECK(context->mtp_device_delegate());
+  if (!context->mtp_device_delegate().get()) {
+    return scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>(
+        new FileSystemFileUtil::EmptyFileEnumerator());
+  }
   return make_scoped_ptr(new FilteringFileEnumerator(
       context->mtp_device_delegate()->CreateFileEnumerator(url.path(),
                                                            recursive),
@@ -113,7 +118,9 @@ PlatformFileError DeviceMediaFileUtil::Truncate(
 bool DeviceMediaFileUtil::IsDirectoryEmpty(
     FileSystemOperationContext* context,
     const FileSystemURL& url) {
-  DCHECK(context->mtp_device_delegate());
+  if (!context->mtp_device_delegate().get())
+    return false;
+
   scoped_ptr<AbstractFileEnumerator> enumerator(
       CreateFileEnumerator(context, url, false));
   FilePath path;
@@ -161,7 +168,8 @@ base::PlatformFileError DeviceMediaFileUtil::CreateSnapshotFile(
   DCHECK(file_info);
   DCHECK(local_path);
   DCHECK(snapshot_policy);
-  DCHECK(context->mtp_device_delegate());
+  if (!context->mtp_device_delegate().get())
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
   // We return a temporary file as a snapshot.
   *snapshot_policy = FileSystemFileUtil::kSnapshotFileTemporary;

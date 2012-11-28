@@ -7,10 +7,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "base/synchronization/waitable_event.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/media/mtp_device_delegate.h"
 
@@ -22,19 +21,22 @@ class SequencedTaskRunner;
 
 namespace chrome {
 
-// Helper class to communicate with MTP storage to complete isolated file system
-// operations. This class contains platform specific code to communicate with
-// the attached MTP storage. Instantiate this class per MTP storage.
-// This class is ref-counted, because MTPDeviceDelegate is ref-counted.
-class MTPDeviceDelegateImplLinux : public fileapi::MTPDeviceDelegate,
-                                   public content::NotificationObserver {
+// This class communicates with the MTP storage to complete the isolated file
+// system operations. This class contains platform specific code to communicate
+// with the attached MTP storage. Instantiate this class per MTP storage. This
+// object is constructed on the UI thread. This object is operated and
+// destructed on the sequenced task runner thread. ScopedMTPDeviceMapEntry class
+// manages the lifetime of this object via MTPDeviceMapService class. This class
+// supports weak pointers because the base class supports weak pointers.
+class MTPDeviceDelegateImplLinux : public fileapi::MTPDeviceDelegate {
  public:
-  // Constructed on UI thread. Defer the device initializations until the first
-  // file operation request. Do all the initializations in LazyInit() function.
+  // Should only be called by ScopedMTPDeviceMapEntry. Use
+  // GetAsWeakPtrOnIOThread() to get a weak pointer instance of this class.
+  // Defer the device initializations until the first file operation request.
+  // Do all the initializations in LazyInit() function.
   explicit MTPDeviceDelegateImplLinux(const std::string& device_location);
 
-  // Overridden from MTPDeviceDelegate. All the functions are called on
-  // |media_task_runner_|.
+  // MTPDeviceDelegate:
   virtual base::PlatformFileError GetFileInfo(
       const FilePath& file_path,
       base::PlatformFileInfo* file_info) OVERRIDE;
@@ -46,24 +48,24 @@ class MTPDeviceDelegateImplLinux : public fileapi::MTPDeviceDelegate,
       const FilePath& local_path,
       base::PlatformFileInfo* file_info) OVERRIDE;
   virtual base::SequencedTaskRunner* GetMediaTaskRunner() OVERRIDE;
-  virtual void DeleteOnCorrectThread() const OVERRIDE;
+  virtual void CancelPendingTasksAndDeleteDelegate() OVERRIDE;
+  virtual base::WeakPtr<fileapi::MTPDeviceDelegate> GetAsWeakPtrOnIOThread()
+      OVERRIDE;
 
  private:
-  friend struct fileapi::MTPDeviceDelegateDeleter;
-  friend class base::DeleteHelper<MTPDeviceDelegateImplLinux>;
-
-  // Private because this class is ref-counted.
+  // Destructed via DeleteDelegateOnTaskRunner(). Do all the clean up in
+  // DeleteDelegateOnTaskRunner().
   virtual ~MTPDeviceDelegateImplLinux();
-
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
   // Opens the device for communication. This function is called on
   // |media_task_runner_|. Returns true if the device is ready for
   // communication, else false.
   bool LazyInit();
+
+  // Deletes the delegate on the task runner thread. Called by
+  // CancelPendingTasksAndDeleteDelegate(). Performs clean up that needs to
+  // happen on |media_task_runner_|.
+  void DeleteDelegateOnTaskRunner();
 
   // Stores the registered file system device path value. This path does not
   // correspond to a real device path (E.g.: "/usb:2,2:81282").
@@ -82,12 +84,8 @@ class MTPDeviceDelegateImplLinux : public fileapi::MTPDeviceDelegate,
   base::WaitableEvent on_task_completed_event_;
 
   // Used to notify |media_task_runner_| pending tasks about the shutdown
-  // sequence.
+  // sequence. Signaled on the IO thread.
   base::WaitableEvent on_shutdown_event_;
-
-  // Handles registering notifications with the NotificationService.
-  // Used to listen for application termination message.
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(MTPDeviceDelegateImplLinux);
 };

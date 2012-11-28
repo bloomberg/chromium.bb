@@ -131,7 +131,8 @@ FileSystemOperation* IsolatedMountPointProvider::CreateFileSystemOperation(
         *error_code = base::PLATFORM_FILE_ERROR_NOT_FOUND;
       return NULL;
     }
-    operation_context->set_mtp_device_delegate(device_delegate);
+    operation_context->set_mtp_device_delegate(
+        device_delegate->GetAsWeakPtrOnIOThread());
     operation_context->set_task_runner(device_delegate->GetMediaTaskRunner());
     operation_context->set_media_path_filter(media_path_filter_.get());
   }
