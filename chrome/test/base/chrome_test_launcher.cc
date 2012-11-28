@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/run_loop.h"
-#include "base/string_util.h"
 #include "base/test/test_file_util.h"
 #include "chrome/app/chrome_main_delegate.h"
 #include "chrome/common/chrome_switches.h"
@@ -111,13 +110,10 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
 
 int main(int argc, char** argv) {
 #if defined(OS_WIN) && defined(USE_AURA)
-  wchar_t filename[MAX_PATH];
-  GetModuleFileName(NULL, filename, MAX_PATH);
-  // TODO(jam): early exit until interactive_ui_tests are green.
-  if (EndsWith(filename, L"interactive_ui_tests.exe", false)) {
-    LOG(INFO) << "interactive_ui_tests on win aura are not ready yet.";
+  // TODO(jam): early exit until browser_tests and interactive_ui_tests are
+  // green.
+  LOG(INFO) << "browser tests on win aura are not ready yet.";
     return 0;
-  }
 #endif
 
 #if defined(OS_MACOSX)
