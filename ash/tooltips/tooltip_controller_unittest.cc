@@ -44,12 +44,14 @@ class TooltipTestView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(TooltipTestView);
 };
 
-views::Widget* CreateNewWidgetWithBounds(const gfx::Rect& bounds) {
+views::Widget* CreateNewWidgetWithBoundsOn(int display,
+                                           const gfx::Rect& bounds) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.accept_events = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.context = Shell::GetAllRootWindows().at(display);
   params.parent_widget = NULL;
   params.child = true;
   params.bounds = bounds;
@@ -58,8 +60,8 @@ views::Widget* CreateNewWidgetWithBounds(const gfx::Rect& bounds) {
   return widget;
 }
 
-views::Widget* CreateNewWidget() {
-  return CreateNewWidgetWithBounds(gfx::Rect());
+views::Widget* CreateNewWidgetOn(int display) {
+  return CreateNewWidgetWithBoundsOn(display, gfx::Rect());
 }
 
 void AddViewToWidgetAndResize(views::Widget* widget, views::View* view) {
@@ -146,7 +148,7 @@ TEST_F(TooltipControllerTest, NonNullTooltipClient) {
 }
 
 TEST_F(TooltipControllerTest, ViewTooltip) {
-  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  scoped_ptr<views::Widget> widget(CreateNewWidgetOn(0));
   TooltipTestView* view = new TooltipTestView;
   AddViewToWidgetAndResize(widget.get(), view);
   view->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
@@ -176,7 +178,7 @@ TEST_F(TooltipControllerTest, ViewTooltip) {
 }
 
 TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
-  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  scoped_ptr<views::Widget> widget(CreateNewWidgetOn(0));
   TooltipTestView* view1 = new TooltipTestView;
   AddViewToWidgetAndResize(widget.get(), view1);
   view1->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
@@ -219,7 +221,7 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
 }
 
 TEST_F(TooltipControllerTest, EnableOrDisableTooltips) {
-  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  scoped_ptr<views::Widget> widget(CreateNewWidgetOn(0));
   TooltipTestView* view = new TooltipTestView;
   AddViewToWidgetAndResize(widget.get(), view);
   view->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
@@ -249,7 +251,7 @@ TEST_F(TooltipControllerTest, EnableOrDisableTooltips) {
 }
 
 TEST_F(TooltipControllerTest, HideTooltipWhenCursorHidden) {
-  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  scoped_ptr<views::Widget> widget(CreateNewWidgetOn(0));
   TooltipTestView* view = new TooltipTestView;
   AddViewToWidgetAndResize(widget.get(), view);
   view->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
@@ -369,7 +371,7 @@ TEST_F(TooltipControllerTest, TrimTooltipToFitTests) {
 }
 
 TEST_F(TooltipControllerTest, TooltipHidesOnKeyPressAndStaysHiddenUntilChange) {
-  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  scoped_ptr<views::Widget> widget(CreateNewWidgetOn(0));
   TooltipTestView* view1 = new TooltipTestView;
   AddViewToWidgetAndResize(widget.get(), view1);
   view1->set_tooltip_text(ASCIIToUTF16("Tooltip Text for view 1"));
@@ -424,7 +426,7 @@ TEST_F(TooltipControllerTest, TooltipHidesOnKeyPressAndStaysHiddenUntilChange) {
 }
 
 TEST_F(TooltipControllerTest, TooltipHidesOnTimeoutAndStaysHiddenUntilChange) {
-  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  scoped_ptr<views::Widget> widget(CreateNewWidgetOn(0));
   TooltipTestView* view1 = new TooltipTestView;
   AddViewToWidgetAndResize(widget.get(), view1);
   view1->set_tooltip_text(ASCIIToUTF16("Tooltip Text for view 1"));
@@ -481,15 +483,15 @@ TEST_F(TooltipControllerTest, TooltipHidesOnTimeoutAndStaysHiddenUntilChange) {
 TEST_F(TooltipControllerTest, TooltipsOnMultiDisplayShouldNotCrash) {
   UpdateDisplay("1000x600,600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  scoped_ptr<views::Widget> widget1(CreateNewWidgetWithBounds(
-      gfx::Rect(10, 10, 100, 100)));
+  scoped_ptr<views::Widget> widget1(CreateNewWidgetWithBoundsOn(
+      0, gfx::Rect(10, 10, 100, 100)));
   TooltipTestView* view1 = new TooltipTestView;
   AddViewToWidgetAndResize(widget1.get(), view1);
   view1->set_tooltip_text(ASCIIToUTF16("Tooltip Text for view 1"));
   EXPECT_EQ(widget1->GetNativeView()->GetRootWindow(), root_windows[0]);
 
-  scoped_ptr<views::Widget> widget2(CreateNewWidgetWithBounds(
-      gfx::Rect(1200, 10, 100, 100)));
+  scoped_ptr<views::Widget> widget2(CreateNewWidgetWithBoundsOn(
+      1, gfx::Rect(1200, 10, 100, 100)));
   TooltipTestView* view2 = new TooltipTestView;
   AddViewToWidgetAndResize(widget2.get(), view2);
   view2->set_tooltip_text(ASCIIToUTF16("Tooltip Text for view 2"));

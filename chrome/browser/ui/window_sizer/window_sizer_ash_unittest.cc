@@ -445,16 +445,13 @@ TEST_F(WindowSizerTest, LastWindowOffscreenWithNonAggressiveRepositioning) {
 // Test the placement of newly created windows.
 TEST_F(WindowSizerTestWithBrowser, PlaceNewWindows) {
   // Create a dummy window.
-  scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindowWithId(0, NULL));
+  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   window->SetBounds(gfx::Rect(16, 32, 640, 320));
 
-  scoped_ptr<aura::Window> popup(
-      aura::test::CreateTestWindowWithId(1, NULL));
+  scoped_ptr<aura::Window> popup(CreateTestWindowInShellWithId(1));
   popup->SetBounds(gfx::Rect(16, 32, 128, 256));
 
-  scoped_ptr<aura::Window> panel(
-      aura::test::CreateTestWindowWithId(2, NULL));
+  scoped_ptr<aura::Window> panel(CreateTestWindowInShellWithId(2));
   panel->SetBounds(gfx::Rect(32, 48, 256, 512));
 
   // Create a browser which we can use to pass into the GetWindowBounds
@@ -557,8 +554,7 @@ TEST_F(WindowSizerTestWithBrowser, PlaceNewWindows) {
 // Test that the show state is properly returned for non default cases.
 TEST_F(WindowSizerTestWithBrowser, TestShowState) {
   // Creating a browser & window to play with.
-  scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindowWithId(0, NULL));
+  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   window->SetBounds(gfx::Rect(16, 32, 640, 320));
 
   scoped_ptr<TestingProfile> profile(new TestingProfile());
@@ -570,8 +566,7 @@ TEST_F(WindowSizerTestWithBrowser, TestShowState) {
   scoped_ptr<Browser> browser(new Browser(window_params));
 
   // Create also a popup browser since that behaves different.
-  scoped_ptr<aura::Window> popup(
-      aura::test::CreateTestWindowWithId(1, NULL));
+  scoped_ptr<aura::Window> popup(CreateTestWindowInShellWithId(1));
   popup->SetBounds(gfx::Rect(16, 32, 128, 256));
 
   scoped_ptr<BrowserWindow> browser_popup(
@@ -608,8 +603,7 @@ TEST_F(WindowSizerTestWithBrowser, TestShowState) {
   // Now create a top level window and check again for both. Only the tabbed
   // window should follow the top level window's state.
   // Creating a browser & window to play with.
-  scoped_ptr<aura::Window> window2(
-      aura::test::CreateTestWindowWithId(0, NULL));
+  scoped_ptr<aura::Window> window2(CreateTestWindowInShellWithId(0));
   window->SetBounds(gfx::Rect(16, 32, 640, 320));
 
   scoped_ptr<BrowserWindow> browser_window2(
@@ -635,8 +629,7 @@ TEST_F(WindowSizerTestWithBrowser, TestShowState) {
 // Test that the default show state override behavior is properly handled.
 TEST_F(WindowSizerTestWithBrowser, TestShowStateDefaults) {
   // Creating a browser & window to play with.
-  scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindowWithId(0, NULL));
+  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   window->SetBounds(gfx::Rect(16, 32, 640, 320));
 
   scoped_ptr<TestingProfile> profile(new TestingProfile());
@@ -649,8 +642,7 @@ TEST_F(WindowSizerTestWithBrowser, TestShowStateDefaults) {
 
   // Create also a popup browser since that behaves slightly different for
   // defaults.
-  scoped_ptr<aura::Window> popup(
-      aura::test::CreateTestWindowWithId(1, NULL));
+  scoped_ptr<aura::Window> popup(CreateTestWindowInShellWithId(1));
   popup->SetBounds(gfx::Rect(16, 32, 128, 256));
 
   scoped_ptr<BrowserWindow> browser_popup(

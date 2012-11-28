@@ -152,7 +152,7 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
     //       +-- w3
     aura::Window* w1 = aura::test::CreateTestWindowWithDelegate(
         aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate(), 1,
-        gfx::Rect(0, 0, 50, 50), NULL);
+        gfx::Rect(0, 0, 50, 50), root_window());
     aura::test::CreateTestWindowWithDelegate(
         aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate(), 11,
         gfx::Rect(5, 5, 10, 10), w1);
@@ -161,7 +161,7 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
         gfx::Rect(15, 15, 10, 10), w1);
     aura::Window* w2 = aura::test::CreateTestWindowWithDelegate(
         aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate(), 2,
-        gfx::Rect(75, 75, 50, 50), NULL);
+        gfx::Rect(75, 75, 50, 50), root_window());
     aura::Window* w21 = aura::test::CreateTestWindowWithDelegate(
         aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate(), 21,
         gfx::Rect(5, 5, 10, 10), w2);
@@ -170,7 +170,7 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
         gfx::Rect(1, 1, 5, 5), w21);
     aura::test::CreateTestWindowWithDelegate(
         aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate(), 3,
-        gfx::Rect(125, 125, 50, 50), NULL);
+        gfx::Rect(125, 125, 50, 50), root_window());
   }
   virtual void TearDown() OVERRIDE {
     root_window()->RemovePreTargetHandler(focus_controller());

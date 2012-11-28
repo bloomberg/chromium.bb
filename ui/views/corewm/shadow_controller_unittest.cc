@@ -54,7 +54,7 @@ TEST_F(ShadowControllerTest, Shadow) {
   scoped_ptr<aura::Window> window(new aura::Window(NULL));
   window->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
-  window->SetParent(NULL);
+  SetDefaultParentByPrimaryRootWindow(window.get());
 
   // We should create the shadow before the window is visible (the shadow's
   // layer won't get drawn yet since it's a child of the window's layer).
@@ -90,7 +90,7 @@ TEST_F(ShadowControllerTest, ShadowBounds) {
   scoped_ptr<aura::Window> window(new aura::Window(NULL));
   window->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
-  window->SetParent(NULL);
+  SetDefaultParentByPrimaryRootWindow(window.get());
   window->Show();
 
   const gfx::Rect kOldBounds(20, 30, 400, 300);
@@ -119,7 +119,7 @@ TEST_F(ShadowControllerTest, ShadowStyle) {
   scoped_ptr<aura::Window> window1(new aura::Window(NULL));
   window1->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window1->Init(ui::LAYER_TEXTURED);
-  window1->SetParent(NULL);
+  SetDefaultParentByPrimaryRootWindow(window1.get());
   window1->SetBounds(gfx::Rect(10, 20, 300, 400));
   window1->Show();
   ActivateWindow(window1.get());
@@ -133,7 +133,7 @@ TEST_F(ShadowControllerTest, ShadowStyle) {
   scoped_ptr<aura::Window> window2(new aura::Window(NULL));
   window2->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window2->Init(ui::LAYER_TEXTURED);
-  window2->SetParent(NULL);
+  SetDefaultParentByPrimaryRootWindow(window2.get());
   window2->SetBounds(gfx::Rect(11, 21, 301, 401));
   window2->Show();
   ActivateWindow(window2.get());
@@ -152,7 +152,7 @@ TEST_F(ShadowControllerTest, SmallShadowsForTooltipsAndMenus) {
   scoped_ptr<aura::Window> tooltip_window(new aura::Window(NULL));
   tooltip_window->SetType(aura::client::WINDOW_TYPE_TOOLTIP);
   tooltip_window->Init(ui::LAYER_TEXTURED);
-  tooltip_window->SetParent(NULL);
+  SetDefaultParentByPrimaryRootWindow(tooltip_window.get());
   tooltip_window->SetBounds(gfx::Rect(10, 20, 300, 400));
   tooltip_window->Show();
 
@@ -163,7 +163,7 @@ TEST_F(ShadowControllerTest, SmallShadowsForTooltipsAndMenus) {
   scoped_ptr<aura::Window> menu_window(new aura::Window(NULL));
   menu_window->SetType(aura::client::WINDOW_TYPE_MENU);
   menu_window->Init(ui::LAYER_TEXTURED);
-  menu_window->SetParent(NULL);
+  SetDefaultParentByPrimaryRootWindow(menu_window.get());
   menu_window->SetBounds(gfx::Rect(10, 20, 300, 400));
   menu_window->Show();
 
@@ -180,7 +180,7 @@ TEST_F(ShadowControllerTest, TransientParentKeepsActiveShadow) {
   scoped_ptr<aura::Window> window1(new aura::Window(NULL));
   window1->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window1->Init(ui::LAYER_TEXTURED);
-  window1->SetParent(NULL);
+  SetDefaultParentByPrimaryRootWindow(window1.get());
   window1->SetBounds(gfx::Rect(10, 20, 300, 400));
   window1->Show();
   ActivateWindow(window1.get());
@@ -196,7 +196,7 @@ TEST_F(ShadowControllerTest, TransientParentKeepsActiveShadow) {
   scoped_ptr<aura::Window> window2(new aura::Window(NULL));
   window2->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window2->Init(ui::LAYER_TEXTURED);
-  window2->SetParent(NULL);
+  SetDefaultParentByPrimaryRootWindow(window2.get());
   window2->SetBounds(gfx::Rect(11, 21, 301, 401));
   window1->AddTransientChild(window2.get());
   aura::client::SetHideOnDeactivate(window2.get(), true);

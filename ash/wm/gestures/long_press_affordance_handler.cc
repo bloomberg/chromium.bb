@@ -68,9 +68,9 @@ views::Widget* CreateAffordanceWidget(aura::RootWindow* root_window) {
   params.transparent = true;
   widget->Init(params);
   widget->SetOpacity(0xFF);
-  widget->GetNativeWindow()->SetParent(
-      ash::GetRootWindowController(root_window)->GetContainer(
-          ash::internal::kShellWindowId_OverlayContainer));
+  ash::GetRootWindowController(root_window)->GetContainer(
+      ash::internal::kShellWindowId_OverlayContainer)->AddChild(
+          widget->GetNativeWindow());
   return widget;
 }
 

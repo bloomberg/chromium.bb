@@ -44,7 +44,7 @@ class BaseLayoutManagerTest : public test::AshTestBase {
   }
 
   aura::Window* CreateTestWindow(const gfx::Rect& bounds) {
-    return aura::test::CreateTestWindowWithBounds(bounds, NULL);
+    return CreateTestWindowInShellWithBounds(bounds);
   }
 
  private:

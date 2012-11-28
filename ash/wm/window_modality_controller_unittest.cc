@@ -43,11 +43,11 @@ bool ValidateStacking(aura::Window* parent, int ids[], int count) {
 TEST_F(WindowModalityControllerTest, BasicActivation) {
   aura::test::TestWindowDelegate d;
   scoped_ptr<aura::Window> w1(
-      aura::test::CreateTestWindowWithDelegate(&d, -1, gfx::Rect(), NULL));
+      CreateTestWindowInShellWithDelegate(&d, -1, gfx::Rect()));
   scoped_ptr<aura::Window> w11(
-      aura::test::CreateTestWindowWithDelegate(&d, -11, gfx::Rect(), NULL));
+      CreateTestWindowInShellWithDelegate(&d, -11, gfx::Rect()));
   scoped_ptr<aura::Window> w12(
-      aura::test::CreateTestWindowWithDelegate(&d, -12, gfx::Rect(), NULL));
+      CreateTestWindowInShellWithDelegate(&d, -12, gfx::Rect()));
 
   w1->AddTransientChild(w11.get());
   wm::ActivateWindow(w1.get());
@@ -88,13 +88,13 @@ TEST_F(WindowModalityControllerTest, BasicActivation) {
 TEST_F(WindowModalityControllerTest, NestedModals) {
   aura::test::TestWindowDelegate d;
   scoped_ptr<aura::Window> w1(
-      aura::test::CreateTestWindowWithDelegate(&d, -1, gfx::Rect(), NULL));
+      CreateTestWindowInShellWithDelegate(&d, -1, gfx::Rect()));
   scoped_ptr<aura::Window> w11(
-      aura::test::CreateTestWindowWithDelegate(&d, -11, gfx::Rect(), NULL));
+      CreateTestWindowInShellWithDelegate(&d, -11, gfx::Rect()));
   scoped_ptr<aura::Window> w111(
-      aura::test::CreateTestWindowWithDelegate(&d, -111, gfx::Rect(), NULL));
+      CreateTestWindowInShellWithDelegate(&d, -111, gfx::Rect()));
   scoped_ptr<aura::Window> w2(
-      aura::test::CreateTestWindowWithDelegate(&d, -2, gfx::Rect(), NULL));
+      CreateTestWindowInShellWithDelegate(&d, -2, gfx::Rect()));
 
   w1->AddTransientChild(w11.get());
   w11->AddTransientChild(w111.get());
@@ -141,14 +141,14 @@ TEST_F(WindowModalityControllerTest, NestedModals) {
 TEST_F(WindowModalityControllerTest, NestedModalsOuterClosed) {
   aura::test::TestWindowDelegate d;
   scoped_ptr<aura::Window> w1(
-      aura::test::CreateTestWindowWithDelegate(&d, -1, gfx::Rect(), NULL));
+      CreateTestWindowInShellWithDelegate(&d, -1, gfx::Rect()));
   scoped_ptr<aura::Window> w11(
-      aura::test::CreateTestWindowWithDelegate(&d, -11, gfx::Rect(), NULL));
+      CreateTestWindowInShellWithDelegate(&d, -11, gfx::Rect()));
   // |w111| will be owned and deleted by |w11|.
   aura::Window* w111 =
-      aura::test::CreateTestWindowWithDelegate(&d, -111, gfx::Rect(), NULL);
+      CreateTestWindowInShellWithDelegate(&d, -111, gfx::Rect());
   scoped_ptr<aura::Window> w2(
-      aura::test::CreateTestWindowWithDelegate(&d, -2, gfx::Rect(), NULL));
+      CreateTestWindowInShellWithDelegate(&d, -2, gfx::Rect()));
 
   w1->AddTransientChild(w11.get());
   w11->AddTransientChild(w111);
@@ -179,10 +179,10 @@ TEST_F(WindowModalityControllerTest, NestedModalsOuterClosed) {
 // Modality also prevents events from being passed to the transient parent.
 TEST_F(WindowModalityControllerTest, Events) {
   aura::test::TestWindowDelegate d;
-  scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(&d, -1,
-      gfx::Rect(0, 0, 100, 100), NULL));
-  scoped_ptr<aura::Window> w11(aura::test::CreateTestWindowWithDelegate(&d, -11,
-      gfx::Rect(20, 20, 50, 50), NULL));
+  scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(&d, -1,
+      gfx::Rect(0, 0, 100, 100)));
+  scoped_ptr<aura::Window> w11(CreateTestWindowInShellWithDelegate(&d, -11,
+      gfx::Rect(20, 20, 50, 50)));
 
   w1->AddTransientChild(w11.get());
 
@@ -211,11 +211,11 @@ TEST_F(WindowModalityControllerTest, Events) {
 TEST_F(WindowModalityControllerTest, GetModalTransient) {
   aura::test::TestWindowDelegate d;
   scoped_ptr<aura::Window> w1(
-      aura::test::CreateTestWindowWithDelegate(&d, -1, gfx::Rect(), NULL));
+      CreateTestWindowInShellWithDelegate(&d, -1, gfx::Rect()));
   scoped_ptr<aura::Window> w11(
       aura::test::CreateTestWindowWithDelegate(&d, -11, gfx::Rect(), w1.get()));
   scoped_ptr<aura::Window> w2(
-      aura::test::CreateTestWindowWithDelegate(&d, -2, gfx::Rect(), NULL));
+      CreateTestWindowInShellWithDelegate(&d, -2, gfx::Rect()));
   w2->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
 
   aura::Window* wt;
@@ -308,11 +308,11 @@ class TouchTrackerWindowDelegate : public aura::test::TestWindowDelegate {
 // Modality should prevent events from being passed to the transient parent.
 TEST_F(WindowModalityControllerTest, TouchEvent) {
   TouchTrackerWindowDelegate d1;
-  scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(&d1,
-      -1, gfx::Rect(0, 0, 100, 100), NULL));
+  scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(&d1,
+      -1, gfx::Rect(0, 0, 100, 100)));
   TouchTrackerWindowDelegate d11;
-  scoped_ptr<aura::Window> w11(aura::test::CreateTestWindowWithDelegate(&d11,
-      -11, gfx::Rect(20, 20, 50, 50), NULL));
+  scoped_ptr<aura::Window> w11(CreateTestWindowInShellWithDelegate(&d11,
+      -11, gfx::Rect(20, 20, 50, 50)));
 
   w1->AddTransientChild(w11.get());
   d1.reset();
@@ -496,13 +496,13 @@ TEST_F(WindowModalityControllerTest, ChildModalEventGenerator) {
 TEST_F(WindowModalityControllerTest, WindowModalAncestor) {
   aura::test::TestWindowDelegate d;
   scoped_ptr<aura::Window> w1(
-      aura::test::CreateTestWindowWithDelegate(&d, -1, gfx::Rect(), NULL));
+      CreateTestWindowInShellWithDelegate(&d, -1, gfx::Rect()));
   scoped_ptr<aura::Window> w2(
       aura::test::CreateTestWindowWithDelegate(&d, -11, gfx::Rect(), w1.get()));
   scoped_ptr<aura::Window> w3(
       aura::test::CreateTestWindowWithDelegate(&d, -11, gfx::Rect(), w2.get()));
   scoped_ptr<aura::Window> w4(
-      aura::test::CreateTestWindowWithDelegate(&d, -2, gfx::Rect(), NULL));
+      CreateTestWindowInShellWithDelegate(&d, -2, gfx::Rect()));
   w4->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
   w1->AddTransientChild(w4.get());
 
@@ -524,13 +524,13 @@ TEST_F(WindowModalityControllerTest, WindowModalAncestor) {
 TEST_F(WindowModalityControllerTest, ChildModalAncestor) {
   aura::test::TestWindowDelegate d;
   scoped_ptr<aura::Window> w1(
-      aura::test::CreateTestWindowWithDelegate(&d, -1, gfx::Rect(), NULL));
+      CreateTestWindowInShellWithDelegate(&d, -1, gfx::Rect()));
   scoped_ptr<aura::Window> w2(
       aura::test::CreateTestWindowWithDelegate(&d, -11, gfx::Rect(), w1.get()));
   scoped_ptr<aura::Window> w3(
       aura::test::CreateTestWindowWithDelegate(&d, -11, gfx::Rect(), w2.get()));
   scoped_ptr<aura::Window> w4(
-      aura::test::CreateTestWindowWithDelegate(&d, -2, gfx::Rect(), NULL));
+      CreateTestWindowInShellWithDelegate(&d, -2, gfx::Rect()));
   w4->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_CHILD);
   ash::wm::SetModalParent(w4.get(), w2.get());
   w1->AddTransientChild(w4.get());

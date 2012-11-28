@@ -62,7 +62,7 @@ const int kInitialPauseTimeMS = 750;
 void ReparentWindow(Window* window,
                     Window* new_parent,
                     Window* stack_beneath) {
-  window->SetParent(new_parent);
+  new_parent->AddChild(window);
   if (stack_beneath)
     new_parent->StackChildBelow(window, stack_beneath);
   for (size_t i = 0; i < window->transient_children().size(); ++i)

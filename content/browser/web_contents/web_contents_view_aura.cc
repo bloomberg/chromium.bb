@@ -504,7 +504,8 @@ void WebContentsViewAura::CreateView(const gfx::Size& initial_size) {
   window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   window_->SetTransparent(false);
   window_->Init(ui::LAYER_NOT_DRAWN);
-  window_->SetParent(NULL);
+  // TODO(erg): Do something else here later.
+  window_->SetDefaultParentByRootWindow(NULL, gfx::Rect());
   window_->layer()->SetMasksToBounds(true);
   window_->SetName("WebContentsViewAura");
 

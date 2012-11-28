@@ -22,8 +22,7 @@ TEST_F(VisibilityControllerTest, AnimateHideDoesntHideWindowLayer) {
   // We cannot disable animations for this test.
   ui::LayerAnimator::set_disable_animations_for_test(false);
 
-  scoped_ptr<aura::Window> container(
-      aura::test::CreateTestWindowWithId(-1, NULL));
+  scoped_ptr<aura::Window> container(CreateTestWindowInShellWithId(-1));
   SetChildWindowVisibilityChangesAnimated(container.get());
 
   aura::test::TestWindowDelegate d;

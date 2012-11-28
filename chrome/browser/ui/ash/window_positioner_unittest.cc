@@ -121,11 +121,11 @@ WindowPositionerTest::~WindowPositionerTest() {
 void WindowPositionerTest::SetUp() {
   AshTestBase::SetUp();
   // Create some default dummy windows.
-  window_.reset(aura::test::CreateTestWindowWithId(0, NULL));
+  window_.reset(CreateTestWindowInShellWithId(0));
   window_->SetBounds(gfx::Rect(16, 32, 640, 320));
-  popup_.reset(aura::test::CreateTestWindowWithId(1, NULL));
+  popup_.reset(CreateTestWindowInShellWithId(1));
   popup_->SetBounds(gfx::Rect(16, 32, 128, 256));
-  panel_.reset(aura::test::CreateTestWindowWithId(2, NULL));
+  panel_.reset(CreateTestWindowInShellWithId(2));
   panel_->SetBounds(gfx::Rect(32, 48, 256, 512));
 
   // Create a browser for the window.

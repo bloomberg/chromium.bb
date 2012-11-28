@@ -324,15 +324,18 @@ void RenderWidgetHostViewAura::InitAsPopup(
   window_->SetName("RenderWidgetHostViewAura");
 
   aura::RootWindow* root = popup_parent_host_view_->window_->GetRootWindow();
-  aura::Window* parent = aura::client::GetStackingClient()->GetDefaultParent(
-      window_, window_, bounds_in_screen);
-  window_->SetParent(parent);
+  window_->SetDefaultParentByRootWindow(root, bounds_in_screen);
 
+  // TODO(erg): While I could make sure details of the StackingClient are
+  // hidden behind aura, hiding the details of the ScreenPositionClient will
+  // take another effort.
   aura::client::ScreenPositionClient* screen_position_client =
       aura::client::GetScreenPositionClient(root);
   gfx::Point origin_in_parent(bounds_in_screen.origin());
-  if (screen_position_client)
-    screen_position_client->ConvertPointFromScreen(parent, &origin_in_parent);
+  if (screen_position_client) {
+    screen_position_client->ConvertPointFromScreen(
+        window_->parent(), &origin_in_parent);
+  }
   SetBounds(gfx::Rect(origin_in_parent, bounds_in_screen.size()));
   Show();
 }
@@ -344,7 +347,9 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
   window_->Init(ui::LAYER_TEXTURED);
   window_->SetName("RenderWidgetHostViewAura");
   window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  aura::Window* parent = NULL;
+
+  aura::RootWindow* parent = NULL;
+  gfx::Rect bounds;
   if (reference_host_view) {
     aura::Window* reference_window =
         static_cast<RenderWidgetHostViewAura*>(reference_host_view)->window_;
@@ -354,13 +359,11 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
     }
     gfx::Display display = gfx::Screen::GetScreenFor(window_)->
         GetDisplayNearestWindow(reference_window);
-    aura::client::StackingClient* stacking_client =
-        aura::client::GetStackingClient();
-    if (stacking_client)
-      parent = stacking_client->GetDefaultParent(
-          window_, window_, display.bounds());
+    parent = reference_window->GetRootWindow();
+    bounds = display.bounds();
   }
-  window_->SetParent(parent);
+  window_->SetDefaultParentByRootWindow(parent, bounds);
+
   Show();
   Focus();
 }

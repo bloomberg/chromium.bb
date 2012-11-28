@@ -100,7 +100,7 @@ class VideoDetectorTest : public AshTestBase {
 TEST_F(VideoDetectorTest, Basic) {
   gfx::Rect window_bounds(gfx::Point(), gfx::Size(1024, 768));
   scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindow(SK_ColorRED, 12345, window_bounds, NULL));
+      CreateTestWindowInShell(SK_ColorRED, 12345, window_bounds));
 
   // Send enough updates, but make them be too small to trigger detection.
   gfx::Rect update_region(
@@ -146,7 +146,7 @@ TEST_F(VideoDetectorTest, Basic) {
 TEST_F(VideoDetectorTest, WindowNotVisible) {
   gfx::Rect window_bounds(gfx::Point(), gfx::Size(1024, 768));
   scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindow(SK_ColorRED, 12345, window_bounds, NULL));
+      CreateTestWindowInShell(SK_ColorRED, 12345, window_bounds));
 
   // Reparent the window to the root to make sure that visibility changes aren't
   // animated.
@@ -189,9 +189,9 @@ TEST_F(VideoDetectorTest, MultipleWindows) {
   // Create two windows.
   gfx::Rect window_bounds(gfx::Point(), gfx::Size(1024, 768));
   scoped_ptr<aura::Window> window1(
-      aura::test::CreateTestWindow(SK_ColorRED, 12345, window_bounds, NULL));
+      CreateTestWindowInShell(SK_ColorRED, 12345, window_bounds));
   scoped_ptr<aura::Window> window2(
-      aura::test::CreateTestWindow(SK_ColorBLUE, 23456, window_bounds, NULL));
+      CreateTestWindowInShell(SK_ColorBLUE, 23456, window_bounds));
 
   // Even if there's video playing in both, the observer should only receive a
   // single notification.
@@ -212,7 +212,7 @@ TEST_F(VideoDetectorTest, MultipleWindows) {
 TEST_F(VideoDetectorTest, RepeatedNotifications) {
   gfx::Rect window_bounds(gfx::Point(), gfx::Size(1024, 768));
   scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindow(SK_ColorRED, 12345, window_bounds, NULL));
+      CreateTestWindowInShell(SK_ColorRED, 12345, window_bounds));
 
   gfx::Rect update_region(
       gfx::Point(),
@@ -238,7 +238,7 @@ TEST_F(VideoDetectorTest, RepeatedNotifications) {
 TEST_F(VideoDetectorTest, FullscreenWindow) {
   gfx::Rect window_bounds(gfx::Point(), gfx::Size(1024, 768));
   scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindow(SK_ColorRED, 12345, window_bounds, NULL));
+      CreateTestWindowInShell(SK_ColorRED, 12345, window_bounds));
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   window->Focus();
   gfx::Rect update_region(

@@ -34,7 +34,7 @@ Workspace::Workspace(WorkspaceManager* manager,
   // Do this so when animating out windows don't extend beyond the bounds.
   window_->layer()->SetMasksToBounds(true);
   window_->Hide();
-  window_->SetParent(parent);
+  parent->AddChild(window_);
   window_->SetProperty(internal::kUsesScreenCoordinatesKey, true);
 
   // The layout-manager cannot be created in the initializer list since it

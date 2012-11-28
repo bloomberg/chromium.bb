@@ -88,8 +88,7 @@ class UserActivityDetectorTest : public AshTestBase {
 // Checks that the observer is notified in response to different types of input
 // events.
 TEST_F(UserActivityDetectorTest, Basic) {
-  scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindowWithId(12345, NULL));
+  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(12345));
 
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE, false);
   SetEventTarget(window.get(), &key_event);
@@ -135,8 +134,7 @@ TEST_F(UserActivityDetectorTest, Basic) {
 
 // Checks that observers aren't notified too frequently.
 TEST_F(UserActivityDetectorTest, RateLimitNotifications) {
-  scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindowWithId(12345, NULL));
+  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(12345));
 
   // The observer should be notified about a key event.
   ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE, false);
@@ -170,8 +168,7 @@ TEST_F(UserActivityDetectorTest, RateLimitNotifications) {
 
 // Checks that the detector ignores synthetic mouse events.
 TEST_F(UserActivityDetectorTest, IgnoreSyntheticMouseEvents) {
-  scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindowWithId(12345, NULL));
+  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(12345));
   ui::MouseEvent mouse_event(
       ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), ui::EF_IS_SYNTHESIZED);
   SetEventTarget(window.get(), &mouse_event);

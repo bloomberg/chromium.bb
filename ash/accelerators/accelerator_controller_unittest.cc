@@ -427,7 +427,7 @@ TEST_F(AcceleratorControllerTest, IsRegistered) {
 
 TEST_F(AcceleratorControllerTest, WindowSnap) {
   scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindowWithBounds(gfx::Rect(5, 5, 20, 20), NULL));
+      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   const ui::Accelerator dummy;
 
   wm::ActivateWindow(window.get());
@@ -521,7 +521,7 @@ TEST_F(AcceleratorControllerTest, ControllerContext) {
 
 TEST_F(AcceleratorControllerTest, SuppressToggleMaximized) {
   scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindowWithBounds(gfx::Rect(5, 5, 20, 20), NULL));
+      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   wm::ActivateWindow(window.get());
   const ui::Accelerator accelerator(ui::VKEY_A, ui::EF_NONE);
   const ui::Accelerator empty_accelerator;
@@ -1206,7 +1206,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
         << " not found in kAcceleratorData. action: " << *it;
   }
   scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindowWithBounds(gfx::Rect(5, 5, 20, 20), NULL));
+      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   const ui::Accelerator dummy;
   wm::ActivateWindow(window.get());
   Shell::GetInstance()->SimulateModalWindowOpenForTesting(true);

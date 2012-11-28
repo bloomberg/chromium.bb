@@ -39,16 +39,15 @@ class PanelLayoutManagerTest : public ash::test::AshTestBase {
   }
 
   aura::Window* CreateNormalWindow() {
-    return aura::test::CreateTestWindowWithBounds(gfx::Rect(), NULL);
+    return CreateTestWindowInShellWithBounds(gfx::Rect());
   }
 
   aura::Window* CreatePanelWindow(const gfx::Rect& bounds) {
-    aura::Window* window = aura::test::CreateTestWindowWithDelegateAndType(
+    aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         NULL,
         aura::client::WINDOW_TYPE_PANEL,
         0,
-        bounds,
-        NULL /* parent should automatically become GetPanelContainer */);
+        bounds);
     ash::test::TestLauncherDelegate* launcher_delegate =
         ash::test::TestLauncherDelegate::instance();
     launcher_delegate->AddLauncherItem(window);

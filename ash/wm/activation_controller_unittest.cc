@@ -71,19 +71,29 @@ class GetTopmostWindowToActivateTest : public ActivationControllerTest {
   void CreateWindows() {
     // Create four windows, the first and third are not activatable, the second
     // and fourth are.
-    w1_.reset(CreateWindow(1, &ad_1_, kDefaultContainerID));
-    w2_.reset(CreateWindow(2, &ad_2_, kDefaultContainerID));
-    w3_.reset(CreateWindow(3, &ad_3_, kDefaultContainerID));
-    w4_.reset(CreateWindow(4, &ad_4_, kDefaultContainerID));
-    w5_.reset(CreateWindow(5, &ad_5_, c2));
-    w6_.reset(CreateWindow(6, &ad_6_, c2));
-    w7_.reset(CreateWindow(7, &ad_7_, c3));
+    w1_.reset(CreateWindowInShell(1, &ad_1_));
+    w2_.reset(CreateWindowInShell(2, &ad_2_));
+    w3_.reset(CreateWindowInShell(3, &ad_3_));
+    w4_.reset(CreateWindowInShell(4, &ad_4_));
+    w5_.reset(CreateWindowWithID(5, &ad_5_, c2));
+    w6_.reset(CreateWindowWithID(6, &ad_6_, c2));
+    w7_.reset(CreateWindowWithID(7, &ad_7_, c3));
   }
 
-  aura::Window* CreateWindow(int id,
-                             TestActivationDelegate* delegate,
-                             int container_id) {
-    aura::Window* parent = container_id == kDefaultContainerID ? NULL :
+  aura::Window* CreateWindowInShell(int id,
+                                    TestActivationDelegate* delegate) {
+    aura::Window* window = CreateTestWindowInShellWithDelegate(
+        &delegate_,
+        id,
+        gfx::Rect());
+    delegate->SetWindow(window);
+    return window;
+  }
+
+  aura::Window* CreateWindowWithID(int id,
+                                   TestActivationDelegate* delegate,
+                                   int container_id) {
+    aura::Window* parent =
         Shell::GetContainer(Shell::GetPrimaryRootWindow(), container_id);
     aura::Window* window = aura::test::CreateTestWindowWithDelegate(
         &delegate_,
@@ -191,8 +201,8 @@ TEST_F(ActivationControllerTest, ClickOnMenu) {
   TestActivationDelegate ad1;
   TestActivationDelegate ad2(false);
 
-  scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
-      &wd, 1, gfx::Rect(100, 100), NULL));
+  scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
+      &wd, 1, gfx::Rect(100, 100)));
   ad1.SetWindow(w1.get());
   EXPECT_EQ(NULL, wm::GetActiveWindow());
 
@@ -202,8 +212,8 @@ TEST_F(ActivationControllerTest, ClickOnMenu) {
   EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
 
   // Creates a menu that covers the transient parent.
-  scoped_ptr<aura::Window> menu(aura::test::CreateTestWindowWithDelegateAndType(
-      &wd, aura::client::WINDOW_TYPE_MENU, 2, gfx::Rect(100, 100), NULL));
+  scoped_ptr<aura::Window> menu(CreateTestWindowInShellWithDelegateAndType(
+      &wd, aura::client::WINDOW_TYPE_MENU, 2, gfx::Rect(100, 100)));
   ad2.SetWindow(menu.get());
   w1->AddTransientChild(menu.get());
 
@@ -217,10 +227,10 @@ TEST_F(ActivationControllerTest, ClickOnMenu) {
 TEST_F(ActivationControllerTest, Deactivate) {
   aura::test::TestWindowDelegate d1;
   aura::test::TestWindowDelegate d2;
-  scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
-      &d1, 1, gfx::Rect(), NULL));
-  scoped_ptr<aura::Window> w2(aura::test::CreateTestWindowWithDelegate(
-      &d2, 2, gfx::Rect(), NULL));
+  scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
+      &d1, 1, gfx::Rect()));
+  scoped_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
+      &d2, 2, gfx::Rect()));
   aura::Window* parent = w1->parent();
   parent->Show();
   ASSERT_TRUE(parent);
@@ -249,11 +259,11 @@ TEST_F(ActivationControllerTest, Deactivate) {
 TEST_F(ActivationControllerTest, NotActiveInLostActive) {
   TestActivationDelegate ad1;
   aura::test::TestWindowDelegate wd;
-  scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
-      &wd, 1, gfx::Rect(10, 10, 50, 50), NULL));
+  scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
+      &wd, 1, gfx::Rect(10, 10, 50, 50)));
   ad1.SetWindow(w1.get());
-  scoped_ptr<aura::Window> w2(aura::test::CreateTestWindowWithDelegate(
-      NULL, 1, gfx::Rect(10, 10, 50, 50), NULL));
+  scoped_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
+      NULL, 1, gfx::Rect(10, 10, 50, 50)));
 
   // Activate w1.
   wm::ActivateWindow(w1.get());
@@ -290,10 +300,10 @@ TEST_F(ActivationControllerTest, NotActiveInLostActive) {
 // active.
 TEST_F(ActivationControllerTest, FocusTriggersActivation) {
   aura::test::TestWindowDelegate wd;
-  scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
-      &wd, -1, gfx::Rect(50, 50), NULL));
-  scoped_ptr<aura::Window> w2(aura::test::CreateTestWindowWithDelegate(
-      &wd, -2, gfx::Rect(50, 50), NULL));
+  scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
+      &wd, -1, gfx::Rect(50, 50)));
+  scoped_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
+      &wd, -2, gfx::Rect(50, 50)));
   scoped_ptr<aura::Window> w21(aura::test::CreateTestWindowWithDelegate(
       &wd, -21, gfx::Rect(50, 50), w2.get()));
 
@@ -318,8 +328,8 @@ TEST_F(ActivationControllerTest, FocusTriggersActivation) {
 // window from claiming focus to that window.
 TEST_F(ActivationControllerTest, PreventFocusToNonActivatableWindow) {
   aura::test::TestWindowDelegate wd;
-  scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
-      &wd, -1, gfx::Rect(50, 50), NULL));
+  scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
+      &wd, -1, gfx::Rect(50, 50)));
   // The RootWindow is a non-activatable parent.
   scoped_ptr<aura::Window> w2(aura::test::CreateTestWindowWithDelegate(
       &wd, -2, gfx::Rect(50, 50), Shell::GetPrimaryRootWindow()));
@@ -357,8 +367,8 @@ TEST_F(ActivationControllerTest, CanActivateWindowIteselfTest)
   aura::test::TestWindowDelegate wd;
 
   // Normal Window
-  scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
-      &wd, -1, gfx::Rect(50, 50), NULL));
+  scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
+      &wd, -1, gfx::Rect(50, 50)));
   EXPECT_TRUE(wm::CanActivateWindow(w1.get()));
 
   // The RootWindow is a non-activatable parent.
@@ -370,29 +380,29 @@ TEST_F(ActivationControllerTest, CanActivateWindowIteselfTest)
   EXPECT_FALSE(wm::CanActivateWindow(w21.get()));
 
   // The window has a transient child.
-  scoped_ptr<aura::Window> w3(aura::test::CreateTestWindowWithDelegate(
-      &wd, -3, gfx::Rect(50, 50), NULL));
-  scoped_ptr<aura::Window> w31(aura::test::CreateTestWindowWithDelegate(
-      &wd, -31, gfx::Rect(50, 50), NULL));
+  scoped_ptr<aura::Window> w3(CreateTestWindowInShellWithDelegate(
+      &wd, -3, gfx::Rect(50, 50)));
+  scoped_ptr<aura::Window> w31(CreateTestWindowInShellWithDelegate(
+      &wd, -31, gfx::Rect(50, 50)));
   w3->AddTransientChild(w31.get());
   EXPECT_TRUE(wm::CanActivateWindow(w3.get()));
   EXPECT_TRUE(wm::CanActivateWindow(w31.get()));
 
   // The window has a transient window-modal child.
-  scoped_ptr<aura::Window> w4(aura::test::CreateTestWindowWithDelegate(
-      &wd, -4, gfx::Rect(50, 50), NULL));
-  scoped_ptr<aura::Window> w41(aura::test::CreateTestWindowWithDelegate(
-      &wd, -41, gfx::Rect(50, 50), NULL));
+  scoped_ptr<aura::Window> w4(CreateTestWindowInShellWithDelegate(
+      &wd, -4, gfx::Rect(50, 50)));
+  scoped_ptr<aura::Window> w41(CreateTestWindowInShellWithDelegate(
+      &wd, -41, gfx::Rect(50, 50)));
   w4->AddTransientChild(w41.get());
   w41->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
   EXPECT_FALSE(wm::CanActivateWindow(w4.get()));
   EXPECT_TRUE(wm::CanActivateWindow(w41.get()));
 
   // The window has a transient system-modal child.
-  scoped_ptr<aura::Window> w5(aura::test::CreateTestWindowWithDelegate(
-      &wd, -5, gfx::Rect(50, 50), NULL));
-  scoped_ptr<aura::Window> w51(aura::test::CreateTestWindowWithDelegate(
-      &wd, -51, gfx::Rect(50, 50), NULL));
+  scoped_ptr<aura::Window> w5(CreateTestWindowInShellWithDelegate(
+      &wd, -5, gfx::Rect(50, 50)));
+  scoped_ptr<aura::Window> w51(CreateTestWindowInShellWithDelegate(
+      &wd, -51, gfx::Rect(50, 50)));
   w5->AddTransientChild(w51.get());
   w51->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
   EXPECT_TRUE(wm::CanActivateWindow(w5.get()));
@@ -404,10 +414,10 @@ TEST_F(ActivationControllerTest, CanActivateWindowIteselfTest)
 // animate away.
 TEST_F(ActivationControllerTest, AnimateHideMaintainsStacking) {
   aura::test::TestWindowDelegate wd;
-  scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
-    &wd, -1, gfx::Rect(50, 50, 50, 50), NULL));
-  scoped_ptr<aura::Window> w2(aura::test::CreateTestWindowWithDelegate(
-      &wd, -2, gfx::Rect(75, 75, 50, 50), NULL));
+  scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
+    &wd, -1, gfx::Rect(50, 50, 50, 50)));
+  scoped_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
+      &wd, -2, gfx::Rect(75, 75, 50, 50)));
   wm::ActivateWindow(w2.get());
   EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
   w2->Hide();
@@ -423,8 +433,8 @@ TEST_F(ActivationControllerTest, AnimateHideMaintainsStacking) {
 // Verifies that activating a minimized window would restore it.
 TEST_F(ActivationControllerTest, ActivateMinimizedWindow) {
   aura::test::TestWindowDelegate wd;
-  scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
-      &wd, -1, gfx::Rect(50, 50), NULL));
+  scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
+      &wd, -1, gfx::Rect(50, 50)));
 
   wm::MinimizeWindow(w1.get());
   EXPECT_TRUE(wm::IsWindowMinimized(w1.get()));
@@ -438,10 +448,10 @@ TEST_F(ActivationControllerTest, ActivateMinimizedWindow) {
 // a replacement active window.
 TEST_F(ActivationControllerTest, NoAutoActivateMinimizedWindow) {
   aura::test::TestWindowDelegate wd;
-  scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
-    &wd, -1, gfx::Rect(50, 50, 50, 50), NULL));
-  scoped_ptr<aura::Window> w2(aura::test::CreateTestWindowWithDelegate(
-      &wd, -2, gfx::Rect(75, 75, 50, 50), NULL));
+  scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
+    &wd, -1, gfx::Rect(50, 50, 50, 50)));
+  scoped_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
+      &wd, -2, gfx::Rect(75, 75, 50, 50)));
 
   wm::MinimizeWindow(w1.get());
   EXPECT_TRUE(wm::IsWindowMinimized(w1.get()));
@@ -458,8 +468,8 @@ TEST_F(ActivationControllerTest, NoAutoActivateMinimizedWindow) {
 // Verifies that a window with a hidden layer can be activated.
 TEST_F(ActivationControllerTest, ActivateWithHiddenLayer) {
   aura::test::TestWindowDelegate wd;
-  scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
-    &wd, -1, gfx::Rect(50, 50, 50, 50), NULL));
+  scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
+    &wd, -1, gfx::Rect(50, 50, 50, 50)));
 
   EXPECT_TRUE(wm::CanActivateWindow(w1.get()));
   w1->layer()->SetVisible(false);
@@ -469,8 +479,7 @@ TEST_F(ActivationControllerTest, ActivateWithHiddenLayer) {
 // Verifies that a unrelated window cannot be activated when in a system modal
 // dialog.
 TEST_F(ActivationControllerTest, DontActivateWindowWhenInSystemModalDialog) {
-  scoped_ptr<aura::Window> normal_window(
-      aura::test::CreateTestWindowWithId(-1, NULL));
+  scoped_ptr<aura::Window> normal_window(CreateTestWindowInShellWithId(-1));
   EXPECT_FALSE(wm::IsActiveWindow(normal_window.get()));
   wm::ActivateWindow(normal_window.get());
   EXPECT_TRUE(wm::IsActiveWindow(normal_window.get()));

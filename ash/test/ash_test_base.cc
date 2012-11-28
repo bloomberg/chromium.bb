@@ -14,8 +14,11 @@
 #include "ash/test/test_shell_delegate.h"
 #include "base/run_loop.h"
 #include "content/public/test/web_contents_tester.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/test_window_delegate.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/base/ime/text_input_test_support.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/display.h"
@@ -76,6 +79,54 @@ void AshTestBase::UpdateDisplay(const std::string& display_specs) {
   DisplayManagerTestApi display_manager_test_api(
       Shell::GetInstance()->display_manager());
   display_manager_test_api.UpdateDisplay(display_specs);
+}
+
+aura::Window* AshTestBase::CreateTestWindowInShellWithId(int id) {
+  return CreateTestWindowInShellWithDelegate(NULL, id, gfx::Rect());
+}
+
+aura::Window* AshTestBase::CreateTestWindowInShellWithBounds(
+    const gfx::Rect& bounds) {
+  return CreateTestWindowInShellWithDelegate(NULL, 0, bounds);
+}
+
+aura::Window* AshTestBase::CreateTestWindowInShell(SkColor color,
+                                                   int id,
+                                                   const gfx::Rect& bounds) {
+  return CreateTestWindowInShellWithDelegate(
+      new aura::test::ColorTestWindowDelegate(color), id, bounds);
+}
+
+aura::Window* AshTestBase::CreateTestWindowInShellWithDelegate(
+    aura::WindowDelegate* delegate,
+    int id,
+    const gfx::Rect& bounds) {
+  return CreateTestWindowInShellWithDelegateAndType(
+      delegate,
+      aura::client::WINDOW_TYPE_NORMAL,
+      id,
+      bounds);
+}
+
+aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
+    aura::WindowDelegate* delegate,
+    aura::client::WindowType type,
+    int id,
+    const gfx::Rect& bounds) {
+  aura::Window* window = new aura::Window(delegate);
+  window->set_id(id);
+  window->SetType(type);
+  window->Init(ui::LAYER_TEXTURED);
+  window->SetBounds(bounds);
+  window->Show();
+  SetDefaultParentByPrimaryRootWindow(window);
+  window->SetProperty(aura::client::kCanMaximizeKey, true);
+  return window;
+}
+
+void AshTestBase::SetDefaultParentByPrimaryRootWindow(aura::Window* window) {
+  window->SetDefaultParentByRootWindow(
+      Shell::GetPrimaryRootWindow(), gfx::Rect());
 }
 
 void AshTestBase::RunAllPendingInMessageLoop() {

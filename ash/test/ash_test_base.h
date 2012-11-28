@@ -11,7 +11,14 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/aura/client/window_types.h"
 #include "ui/views/test/test_views_delegate.h"
+
+namespace aura {
+class Window;
+class WindowDelegate;
+}
 
 namespace ash {
 namespace internal {
@@ -48,6 +55,26 @@ class AshTestBase : public testing::Test {
   // Update the display configuration as given in |display_specs|.
   // See ash::test::DisplayManagerTestApi::UpdateDisplay for more details.
   void UpdateDisplay(const std::string& display_specs);
+
+  // Versions of the functions in aura::test:: that go through our shell
+  // StackingController instead of taking a parent.
+  aura::Window* CreateTestWindowInShellWithId(int id);
+  aura::Window* CreateTestWindowInShellWithBounds(const gfx::Rect& bounds);
+  aura::Window* CreateTestWindowInShell(SkColor color,
+                                        int id,
+                                        const gfx::Rect& bounds);
+  aura::Window* CreateTestWindowInShellWithDelegate(
+      aura::WindowDelegate* delegate,
+      int id,
+      const gfx::Rect& bounds);
+  aura::Window* CreateTestWindowInShellWithDelegateAndType(
+      aura::WindowDelegate* delegate,
+      aura::client::WindowType type,
+      int id,
+      const gfx::Rect& bounds);
+
+  // Attach |window| to the current shell's root window.
+  void SetDefaultParentByPrimaryRootWindow(aura::Window* window);
 
  protected:
   void RunAllPendingInMessageLoop();

@@ -52,18 +52,8 @@ Window* CreateTestWindowWithDelegateAndType(WindowDelegate* delegate,
   window->Init(ui::LAYER_TEXTURED);
   window->SetBounds(bounds);
   window->Show();
-  window->SetParent(parent);
+  parent->AddChild(window);
   window->SetProperty(aura::client::kCanMaximizeKey, true);
-  return window;
-}
-
-Window* CreateTransientChild(int id, Window* parent) {
-  Window* window = new Window(NULL);
-  window->set_id(id);
-  window->SetType(aura::client::WINDOW_TYPE_NORMAL);
-  window->Init(ui::LAYER_TEXTURED);
-  window->SetParent(NULL);
-  parent->AddTransientChild(window);
   return window;
 }
 

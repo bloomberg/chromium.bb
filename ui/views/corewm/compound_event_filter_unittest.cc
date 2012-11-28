@@ -80,7 +80,7 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
   aura::Env::GetInstance()->AddPreTargetHandler(compound_filter.get());
   aura::test::TestWindowDelegate delegate;
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(&delegate, 1234,
-      gfx::Rect(5, 5, 100, 100), NULL));
+      gfx::Rect(5, 5, 100, 100), root_window()));
   window->Show();
   window->SetCapture();
 
@@ -132,8 +132,9 @@ TEST_F(CompoundEventFilterTest, FilterConsumedGesture) {
   compound_filter->AddHandler(gesure_handler.get());
   aura::Env::GetInstance()->AddPreTargetHandler(compound_filter.get());
   aura::test::TestWindowDelegate delegate;
+  DCHECK(root_window());
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(&delegate, 1234,
-      gfx::Rect(5, 5, 100, 100), NULL));
+      gfx::Rect(5, 5, 100, 100), root_window()));
   window->Show();
 
   EXPECT_TRUE(window->CanFocus());

@@ -170,9 +170,12 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Assigns a new external texture to the window's layer.
   void SetExternalTexture(ui::Texture* texture);
 
-  // Sets the parent window of the window. If NULL, the window is parented to
-  // the root window.
-  void SetParent(Window* parent);
+  // Places this window per |root_window|'s stacking client. The final location
+  // may be a RootWindow other than the one passed in. |root_window| may not be
+  // NULL. |bounds_in_screen| may be empty; it is more optional context that
+  // may, but isn't necessarily used.
+  void SetDefaultParentByRootWindow(RootWindow* root_window,
+                                    const gfx::Rect& bounds_in_screen);
 
   // Stacks the specified child of this Window at the front of the z-order.
   void StackChildAtTop(Window* child);

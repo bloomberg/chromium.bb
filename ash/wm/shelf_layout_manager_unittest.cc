@@ -171,7 +171,7 @@ class ShelfLayoutManagerTest : public ash::test::AshTestBase {
     window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
     window->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);
-    window->SetParent(NULL);
+    SetDefaultParentByPrimaryRootWindow(window);
     return window;
   }
 

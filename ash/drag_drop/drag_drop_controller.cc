@@ -114,7 +114,7 @@ int DragDropController::StartDragAndDrop(
     return 0;
 
   current_drag_event_source_ = source;
-  DragDropTracker* tracker = new DragDropTracker;
+  DragDropTracker* tracker = new DragDropTracker(root_window);
   if (source == ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH) {
     // We need to transfer the current gesture sequence and the GR's touch event
     // queue to the |drag_drop_tracker_|'s capture window so that when it takes

@@ -142,7 +142,7 @@ int DemoMain() {
   window1.Init(ui::LAYER_TEXTURED);
   window1.SetBounds(gfx::Rect(100, 100, 400, 400));
   window1.Show();
-  window1.SetParent(NULL);
+  window1.SetDefaultParentByRootWindow(root_window.get(), gfx::Rect());
 
   DemoWindowDelegate window_delegate2(SK_ColorRED);
   aura::Window window2(&window_delegate2);
@@ -150,7 +150,7 @@ int DemoMain() {
   window2.Init(ui::LAYER_TEXTURED);
   window2.SetBounds(gfx::Rect(200, 200, 350, 350));
   window2.Show();
-  window2.SetParent(NULL);
+  window2.SetDefaultParentByRootWindow(root_window.get(), gfx::Rect());
 
   DemoWindowDelegate window_delegate3(SK_ColorGREEN);
   aura::Window window3(&window_delegate3);
@@ -158,7 +158,7 @@ int DemoMain() {
   window3.Init(ui::LAYER_TEXTURED);
   window3.SetBounds(gfx::Rect(10, 10, 50, 50));
   window3.Show();
-  window3.SetParent(&window2);
+  window2.AddChild(&window3);
 
   root_window->ShowRootWindow();
   MessageLoopForUI::current()->Run();

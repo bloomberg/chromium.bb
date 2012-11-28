@@ -34,8 +34,7 @@ class WindowAnimationsTest : public ash::test::AshTestBase {
 };
 
 TEST_F(WindowAnimationsTest, HideShowBrightnessGrayscaleAnimation) {
-  scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindowWithId(0, NULL));
+  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   window->Show();
   EXPECT_TRUE(window->layer()->visible());
 
@@ -71,8 +70,7 @@ TEST_F(WindowAnimationsTest, HideShowBrightnessGrayscaleAnimation) {
 }
 
 TEST_F(WindowAnimationsTest, LayerTargetVisibility) {
-  scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindowWithId(0, NULL));
+  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
 
   // Layer target visibility changes according to Show/Hide.
   window->Show();
@@ -86,8 +84,7 @@ TEST_F(WindowAnimationsTest, LayerTargetVisibility) {
 TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
   ui::LayerAnimator::set_disable_animations_for_test(false);
 
-  scoped_ptr<Window> window(
-      aura::test::CreateTestWindowWithId(0, NULL));
+  scoped_ptr<Window> window(CreateTestWindowInShellWithId(0));
   window->SetBounds(gfx::Rect(5, 10, 320, 240));
   window->Show();
 

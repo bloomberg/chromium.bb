@@ -94,7 +94,7 @@ class ToplevelWindowEventHandlerTest : public AshTestBase {
     aura::Window* w1 = new aura::Window(d1);
     w1->set_id(1);
     w1->Init(ui::LAYER_TEXTURED);
-    w1->SetParent(parent_);
+    parent_->AddChild(w1);
     w1->SetBounds(gfx::Rect(0, 0, 100, 100));
     w1->Show();
     return w1;

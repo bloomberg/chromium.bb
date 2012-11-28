@@ -41,7 +41,7 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindowBaseCases) {
   controller->HandleCycleWindow(WindowCycleController::FORWARD, false);
 
   // Create a single test window.
-  scoped_ptr<Window> window0(CreateTestWindowWithId(0, NULL));
+  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
   wm::ActivateWindow(window0.get());
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 
@@ -57,7 +57,7 @@ TEST_F(WindowCycleControllerTest, SingleWindowNotActive) {
       Shell::GetInstance()->window_cycle_controller();
 
   // Create a single test window.
-  scoped_ptr<Window> window0(CreateTestWindowWithId(0, NULL));
+  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
   wm::ActivateWindow(window0.get());
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 
@@ -77,9 +77,9 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
 
   // Set up several windows to use to test cycling.  Create them in reverse
   // order so they are stacked 0 over 1 over 2.
-  scoped_ptr<Window> window2(CreateTestWindowWithId(2, NULL));
-  scoped_ptr<Window> window1(CreateTestWindowWithId(1, NULL));
-  scoped_ptr<Window> window0(CreateTestWindowWithId(0, NULL));
+  scoped_ptr<Window> window2(CreateTestWindowInShellWithId(2));
+  scoped_ptr<Window> window1(CreateTestWindowInShellWithId(1));
+  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
   wm::ActivateWindow(window0.get());
 
   // Simulate pressing and releasing Alt-tab.
@@ -184,8 +184,8 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
 // Cycles between a maximized and normal window.
 TEST_F(WindowCycleControllerTest, MaximizedWindow) {
   // Create a couple of test windows.
-  scoped_ptr<Window> window0(CreateTestWindowWithId(0, NULL));
-  scoped_ptr<Window> window1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
+  scoped_ptr<Window> window1(CreateTestWindowInShellWithId(1));
 
   wm::MaximizeWindow(window1.get());
   wm::ActivateWindow(window1.get());
@@ -205,8 +205,8 @@ TEST_F(WindowCycleControllerTest, MaximizedWindow) {
 // Cycles to a minimized window.
 TEST_F(WindowCycleControllerTest, Minimized) {
   // Create a couple of test windows.
-  scoped_ptr<Window> window0(CreateTestWindowWithId(0, NULL));
-  scoped_ptr<Window> window1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
+  scoped_ptr<Window> window1(CreateTestWindowInShellWithId(1));
 
   wm::MinimizeWindow(window1.get());
   wm::ActivateWindow(window0.get());
@@ -229,8 +229,8 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopWindow) {
       Shell::GetInstance()->window_cycle_controller();
 
   // Set up several windows to use to test cycling.
-  scoped_ptr<Window> window0(CreateTestWindowWithId(0, NULL));
-  scoped_ptr<Window> window1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
+  scoped_ptr<Window> window1(CreateTestWindowInShellWithId(1));
 
   Window* top_container =
       Shell::GetContainer(
@@ -273,8 +273,8 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultiWindow) {
       Shell::GetInstance()->window_cycle_controller();
 
   // Set up several windows to use to test cycling.
-  scoped_ptr<Window> window0(CreateTestWindowWithId(0, NULL));
-  scoped_ptr<Window> window1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
+  scoped_ptr<Window> window1(CreateTestWindowInShellWithId(1));
 
   Window* top_container =
       Shell::GetContainer(
@@ -329,7 +329,7 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultipleRootWindows) {
   Shell::GetInstance()->set_active_root_window(root_windows[0]);
 
   // Create two windows in the primary root.
-  scoped_ptr<Window> window0(CreateTestWindowWithId(0, NULL));
+  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
   EXPECT_EQ(root_windows[0], window0->GetRootWindow());
   Window* top_container0 =
       Shell::GetContainer(
@@ -340,7 +340,7 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultipleRootWindows) {
 
   // And two on the secondary root.
   Shell::GetInstance()->set_active_root_window(root_windows[1]);
-  scoped_ptr<Window> window2(CreateTestWindowWithId(2, NULL));
+  scoped_ptr<Window> window2(CreateTestWindowInShellWithId(2));
   EXPECT_EQ(root_windows[1], window2->GetRootWindow());
 
   Window* top_container1 =
@@ -398,9 +398,9 @@ TEST_F(WindowCycleControllerTest, MostRecentlyUsed) {
       Shell::GetInstance()->window_cycle_controller();
 
   // Set up several windows to use to test cycling.
-  scoped_ptr<Window> window0(CreateTestWindowWithId(0, NULL));
-  scoped_ptr<Window> window1(CreateTestWindowWithId(1, NULL));
-  scoped_ptr<Window> window2(CreateTestWindowWithId(2, NULL));
+  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
+  scoped_ptr<Window> window1(CreateTestWindowInShellWithId(1));
+  scoped_ptr<Window> window2(CreateTestWindowInShellWithId(2));
 
   wm::ActivateWindow(window0.get());
 

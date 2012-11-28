@@ -72,6 +72,15 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     browser_context_.reset(new TestBrowserContext);
     MockRenderProcessHost* process_host =
         new MockRenderProcessHost(browser_context_.get());
+
+    parent_host_ = new RenderWidgetHostImpl(
+        &delegate_, process_host, MSG_ROUTING_NONE);
+    parent_view_ = static_cast<RenderWidgetHostViewAura*>(
+        RenderWidgetHostView::CreateViewForWidget(parent_host_));
+    parent_view_->InitAsChild(NULL);
+    parent_view_->GetNativeView()->SetDefaultParentByRootWindow(
+        aura_test_helper_->root_window(), gfx::Rect());
+
     widget_host_ = new RenderWidgetHostImpl(
         &delegate_, process_host, MSG_ROUTING_NONE);
     view_ = static_cast<RenderWidgetHostViewAura*>(
@@ -82,6 +91,9 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     if (view_)
       view_->Destroy();
     delete widget_host_;
+
+    parent_view_->Destroy();
+    delete parent_host_;
 
     browser_context_.reset();
     aura_test_helper_->TearDown();
@@ -98,6 +110,11 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
   // Tests should set these to NULL if they've already triggered their
   // destruction.
+  RenderWidgetHostImpl* parent_host_;
+  RenderWidgetHostViewAura* parent_view_;
+
+  // Tests should set these to NULL if they've already triggered their
+  // destruction.
   RenderWidgetHostImpl* widget_host_;
   RenderWidgetHostViewAura* view_;
 
@@ -110,7 +127,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 // Checks that a fullscreen view has the correct show-state and receives the
 // focus.
 TEST_F(RenderWidgetHostViewAuraTest, FocusFullscreen) {
-  view_->InitAsFullscreen(NULL);
+  view_->InitAsFullscreen(parent_view_);
   aura::Window* window = view_->GetNativeView();
   ASSERT_TRUE(window != NULL);
   EXPECT_EQ(ui::SHOW_STATE_FULLSCREEN,
@@ -126,7 +143,7 @@ TEST_F(RenderWidgetHostViewAuraTest, FocusFullscreen) {
 
 // Checks that a fullscreen view is destroyed when it loses the focus.
 TEST_F(RenderWidgetHostViewAuraTest, DestroyFullscreenOnBlur) {
-  view_->InitAsFullscreen(NULL);
+  view_->InitAsFullscreen(parent_view_);
   aura::Window* window = view_->GetNativeView();
   ASSERT_TRUE(window != NULL);
   ASSERT_TRUE(window->HasFocus());

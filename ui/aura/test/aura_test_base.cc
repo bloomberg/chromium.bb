@@ -5,6 +5,7 @@
 #include "ui/aura/test/aura_test_base.h"
 
 #include "ui/aura/test/aura_test_helper.h"
+#include "ui/aura/window.h"
 #include "ui/base/gestures/gesture_configuration.h"
 #include "ui/base/ime/text_input_test_support.h"
 
@@ -66,6 +67,20 @@ void AuraTestBase::TearDown() {
   helper_->TearDown();
   ui::TextInputTestSupport::Shutdown();
   testing::Test::TearDown();
+}
+
+Window* AuraTestBase::CreateTransientChild(int id, Window* parent) {
+  Window* window = new Window(NULL);
+  window->set_id(id);
+  window->SetType(aura::client::WINDOW_TYPE_NORMAL);
+  window->Init(ui::LAYER_TEXTURED);
+  window->SetDefaultParentByRootWindow(root_window(), gfx::Rect());
+  parent->AddTransientChild(window);
+  return window;
+}
+
+void AuraTestBase::SetDefaultParentByPrimaryRootWindow(aura::Window* window) {
+  window->SetDefaultParentByRootWindow(root_window(), gfx::Rect());
 }
 
 void AuraTestBase::RunAllPendingInMessageLoop() {

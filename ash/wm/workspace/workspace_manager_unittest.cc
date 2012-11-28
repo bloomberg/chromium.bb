@@ -54,7 +54,7 @@ class WorkspaceManagerTest : public test::AshTestBase {
     window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
     window->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);
-    window->SetParent(NULL);
+    SetDefaultParentByPrimaryRootWindow(window);
     return window;
   }
 
@@ -320,7 +320,7 @@ TEST_F(WorkspaceManagerTest, ChangeBoundsOfNormalWindow) {
 TEST_F(WorkspaceManagerTest, SnapToGrid) {
   scoped_ptr<Window> w1(CreateTestWindowUnparented());
   w1->SetBounds(gfx::Rect(1, 6, 25, 30));
-  w1->SetParent(NULL);
+  SetDefaultParentByPrimaryRootWindow(w1.get());
   // We are not aligning this anymore this way. When the window gets shown
   // the window is expected to be handled differently, but this cannot be
   // tested with this test. So the result of this test should be that the
@@ -836,7 +836,7 @@ TEST_F(WorkspaceManagerTest, MoveTransientOnMaximize) {
   // too.
   scoped_ptr<Window> w3(CreateTestWindowUnparented());
   w1->AddTransientChild(w3.get());
-  w3->SetParent(NULL);
+  SetDefaultParentByPrimaryRootWindow(w3.get());
   w3->Show();
   ASSERT_EQ("0 M3 active=1", StateString());
 
@@ -1026,9 +1026,9 @@ TEST_F(WorkspaceManagerTest, DontCrashOnChangeAndActivate) {
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
   DontCrashOnChangeAndActivateDelegate delegate;
-  scoped_ptr<Window> w1(
-      CreateTestWindowWithDelegate(&delegate, 1000, gfx::Rect(10, 11, 250, 251),
-                                   NULL));
+  scoped_ptr<Window> w1(CreateTestWindowInShellWithDelegate(
+      &delegate, 1000, gfx::Rect(10, 11, 250, 251)));
+
   w1->Show();
   wm::ActivateWindow(w1.get());
   wm::MaximizeWindow(w1.get());
@@ -1040,7 +1040,7 @@ TEST_F(WorkspaceManagerTest, DontCrashOnChangeAndActivate) {
   // window active.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
-  w1->SetParent(NULL);
+  SetDefaultParentByPrimaryRootWindow(w1.get());
   delegate.set_window(w1.get());
   w1->Show();
 }
@@ -1058,7 +1058,7 @@ TEST_F(WorkspaceManagerTest, TransientParent) {
   scoped_ptr<Window> w1(CreateTestWindowUnparented());
   Shell::GetInstance()->GetPrimaryRootWindow()->AddTransientChild(w1.get());
   w1->SetBounds(gfx::Rect(10, 11, 250, 251));
-  w1->SetParent(NULL);
+  SetDefaultParentByPrimaryRootWindow(w1.get());
   w1->Show();
   wm::ActivateWindow(w1.get());
 
@@ -1082,7 +1082,7 @@ TEST_F(WorkspaceManagerTest, TrackedByWorkspace) {
   scoped_ptr<Window> w2(CreateTestWindowUnparented());
   w2->SetBounds(gfx::Rect(1, 6, 25, 30));
   w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  w2->SetParent(NULL);
+  SetDefaultParentByPrimaryRootWindow(w2.get());
   w2->Show();
   SetTrackedByWorkspace(w2.get(), false);
   wm::ActivateWindow(w2.get());
@@ -1140,13 +1140,11 @@ TEST_F(WorkspaceManagerTest, DeactivateDropsToDesktop) {
 TEST_F(WorkspaceManagerTest, BasicAutoPlacing) {
   // Test 1: In case there is no manageable window, no window should shift.
 
-  scoped_ptr<aura::Window> window1(
-      aura::test::CreateTestWindowWithId(0, NULL));
+  scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(0));
   window1->SetBounds(gfx::Rect(16, 32, 640, 320));
   gfx::Rect desktop_area = window1->parent()->bounds();
 
-  scoped_ptr<aura::Window> window2(
-      aura::test::CreateTestWindowWithId(1, NULL));
+  scoped_ptr<aura::Window> window2(CreateTestWindowInShellWithId(1));
   // Trigger the auto window placement function by making it visible.
   // Note that the bounds are getting changed while it is invisible.
   window2->Hide();
@@ -1164,8 +1162,7 @@ TEST_F(WorkspaceManagerTest, BasicAutoPlacing) {
 
   // Test 2: Set up two managed windows and check their auto positioning.
   ash::wm::SetWindowPositionManaged(window1.get(), true);
-  scoped_ptr<aura::Window> window3(
-      aura::test::CreateTestWindowWithId(2, NULL));
+  scoped_ptr<aura::Window> window3(CreateTestWindowInShellWithId(2));
   ash::wm::SetWindowPositionManaged(window3.get(), true);
   // To avoid any auto window manager changes due to SetBounds, the window
   // gets first hidden and then shown again.
@@ -1187,8 +1184,7 @@ TEST_F(WorkspaceManagerTest, BasicAutoPlacing) {
 
   // Test 3: Set up a manageable and a non manageable window and check
   // positioning.
-  scoped_ptr<aura::Window> window4(
-      aura::test::CreateTestWindowWithId(3, NULL));
+  scoped_ptr<aura::Window> window4(CreateTestWindowInShellWithId(3));
   // To avoid any auto window manager changes due to SetBounds, the window
   // gets first hidden and then shown again.
   window1->Hide();
@@ -1217,12 +1213,10 @@ TEST_F(WorkspaceManagerTest, BasicAutoPlacing) {
 
 // Test the proper usage of user window movement interaction.
 TEST_F(WorkspaceManagerTest, TestUserMovedWindowRepositioning) {
-  scoped_ptr<aura::Window> window1(
-      aura::test::CreateTestWindowWithId(0, NULL));
+  scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(0));
   window1->SetBounds(gfx::Rect(16, 32, 640, 320));
   gfx::Rect desktop_area = window1->parent()->bounds();
-  scoped_ptr<aura::Window> window2(
-      aura::test::CreateTestWindowWithId(1, NULL));
+  scoped_ptr<aura::Window> window2(CreateTestWindowInShellWithId(1));
   window2->SetBounds(gfx::Rect(32, 48, 256, 512));
   window1->Hide();
   window2->Hide();
@@ -1263,16 +1257,14 @@ TEST_F(WorkspaceManagerTest, TestUserMovedWindowRepositioning) {
 // Test that user placed windows go back to their user placement after the user
 // closes all other windows.
 TEST_F(WorkspaceManagerTest, TestUserHandledWindowRestore) {
-  scoped_ptr<aura::Window> window1(
-      aura::test::CreateTestWindowWithId(0, NULL));
+  scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(0));
   gfx::Rect user_pos = gfx::Rect(16, 42, 640, 320);
   window1->SetBounds(user_pos);
   ash::wm::SetPreAutoManageWindowBounds(window1.get(), user_pos);
   gfx::Rect desktop_area = window1->parent()->bounds();
 
   // Create a second window to let the auto manager kick in.
-  scoped_ptr<aura::Window> window2(
-      aura::test::CreateTestWindowWithId(1, NULL));
+  scoped_ptr<aura::Window> window2(CreateTestWindowInShellWithId(1));
   window2->SetBounds(gfx::Rect(32, 48, 256, 512));
   window1->Hide();
   window2->Hide();
@@ -1300,14 +1292,12 @@ TEST_F(WorkspaceManagerTest, TestUserHandledWindowRestore) {
 
 // Test that a window from normal to minimize will repos the remaining.
 TEST_F(WorkspaceManagerTest, ToMinimizeRepositionsRemaining) {
-  scoped_ptr<aura::Window> window1(
-      aura::test::CreateTestWindowWithId(0, NULL));
+  scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(0));
   ash::wm::SetWindowPositionManaged(window1.get(), true);
   window1->SetBounds(gfx::Rect(16, 32, 640, 320));
   gfx::Rect desktop_area = window1->parent()->bounds();
 
-  scoped_ptr<aura::Window> window2(
-      aura::test::CreateTestWindowWithId(1, NULL));
+  scoped_ptr<aura::Window> window2(CreateTestWindowInShellWithId(1));
   ash::wm::SetWindowPositionManaged(window2.get(), true);
   window2->SetBounds(gfx::Rect(32, 48, 256, 512));
 
@@ -1330,13 +1320,11 @@ TEST_F(WorkspaceManagerTest, ToMinimizeRepositionsRemaining) {
 
 // Test that minimizing an initially maximized window will repos the remaining.
 TEST_F(WorkspaceManagerTest, MaxToMinRepositionsRemaining) {
-  scoped_ptr<aura::Window> window1(
-      aura::test::CreateTestWindowWithId(0, NULL));
+  scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(0));
   ash::wm::SetWindowPositionManaged(window1.get(), true);
   gfx::Rect desktop_area = window1->parent()->bounds();
 
-  scoped_ptr<aura::Window> window2(
-      aura::test::CreateTestWindowWithId(1, NULL));
+  scoped_ptr<aura::Window> window2(CreateTestWindowInShellWithId(1));
   ash::wm::SetWindowPositionManaged(window2.get(), true);
   window2->SetBounds(gfx::Rect(32, 48, 256, 512));
 
@@ -1353,14 +1341,12 @@ TEST_F(WorkspaceManagerTest, MaxToMinRepositionsRemaining) {
 
 // Test that nomral, maximize, minimizing will repos the remaining.
 TEST_F(WorkspaceManagerTest, NormToMaxToMinRepositionsRemaining) {
-  scoped_ptr<aura::Window> window1(
-      aura::test::CreateTestWindowWithId(0, NULL));
+  scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(0));
   window1->SetBounds(gfx::Rect(16, 32, 640, 320));
   ash::wm::SetWindowPositionManaged(window1.get(), true);
   gfx::Rect desktop_area = window1->parent()->bounds();
 
-  scoped_ptr<aura::Window> window2(
-      aura::test::CreateTestWindowWithId(1, NULL));
+  scoped_ptr<aura::Window> window2(CreateTestWindowInShellWithId(1));
   ash::wm::SetWindowPositionManaged(window2.get(), true);
   window2->SetBounds(gfx::Rect(32, 40, 256, 512));
 
@@ -1387,14 +1373,12 @@ TEST_F(WorkspaceManagerTest, NormToMaxToMinRepositionsRemaining) {
 
 // Test that nomral, maximize, normal will repos the remaining.
 TEST_F(WorkspaceManagerTest, NormToMaxToNormRepositionsRemaining) {
-  scoped_ptr<aura::Window> window1(
-      aura::test::CreateTestWindowWithId(0, NULL));
+  scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(0));
   window1->SetBounds(gfx::Rect(16, 32, 640, 320));
   ash::wm::SetWindowPositionManaged(window1.get(), true);
   gfx::Rect desktop_area = window1->parent()->bounds();
 
-  scoped_ptr<aura::Window> window2(
-      aura::test::CreateTestWindowWithId(1, NULL));
+  scoped_ptr<aura::Window> window2(CreateTestWindowInShellWithId(1));
   ash::wm::SetWindowPositionManaged(window2.get(), true);
   window2->SetBounds(gfx::Rect(32, 40, 256, 512));
 
@@ -1421,13 +1405,11 @@ TEST_F(WorkspaceManagerTest, NormToMaxToNormRepositionsRemaining) {
 // Test that animations are triggered.
 TEST_F(WorkspaceManagerTest, AnimatedNormToMaxToNormRepositionsRemaining) {
   ui::LayerAnimator::set_disable_animations_for_test(false);
-  scoped_ptr<aura::Window> window1(
-      aura::test::CreateTestWindowWithId(0, NULL));
+  scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(0));
   window1->Hide();
   window1->SetBounds(gfx::Rect(16, 32, 640, 320));
   gfx::Rect desktop_area = window1->parent()->bounds();
-  scoped_ptr<aura::Window> window2(
-      aura::test::CreateTestWindowWithId(1, NULL));
+  scoped_ptr<aura::Window> window2(CreateTestWindowInShellWithId(1));
   window2->Hide();
   window2->SetBounds(gfx::Rect(32, 48, 256, 512));
 

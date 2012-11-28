@@ -80,11 +80,10 @@ TEST_F(AcceleratorFilterTest, TestFilterWithoutFocus) {
 // Tests if AcceleratorFilter works as expected with a focused window.
 TEST_F(AcceleratorFilterTest, TestFilterWithFocus) {
   aura::test::TestWindowDelegate test_delegate;
-  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
+  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
       &test_delegate,
       -1,
-      gfx::Rect(),
-      NULL));
+      gfx::Rect()));
   wm::ActivateWindow(window.get());
 
   DummyScreenshotDelegate* delegate = new DummyScreenshotDelegate;

@@ -41,7 +41,7 @@ class MultiWindowResizeControllerTest : public test::AshTestBase {
     aura::Window* window = new aura::Window(delegate);
     window->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);
-    window->SetParent(NULL);
+    SetDefaultParentByPrimaryRootWindow(window);
     window->SetBounds(bounds);
     window->Show();
     return window;

@@ -22,19 +22,17 @@ class DragDropTrackerTest : public test::AshTestBase {
     UpdateDisplay("200x200,200x200");
   }
 
-  static aura::Window* CreateTestWindow(const gfx::Rect& bounds,
-                                        aura::Window* parent) {
+  aura::Window* CreateTestWindow(const gfx::Rect& bounds) {
     static int window_id = 0;
-    return aura::test::CreateTestWindowWithDelegate(
+    return CreateTestWindowInShellWithDelegate(
         aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate(),
         window_id++,
-        bounds,
-        parent);
+        bounds);
   }
 
   static aura::Window* GetTarget(const gfx::Point& location) {
     scoped_ptr<internal::DragDropTracker> tracker(
-        new internal::DragDropTracker);
+        new internal::DragDropTracker(Shell::GetPrimaryRootWindow()));
     ui::MouseEvent e(ui::ET_MOUSE_DRAGGED,
                      location,
                      location,
@@ -46,7 +44,7 @@ class DragDropTrackerTest : public test::AshTestBase {
   static ui::LocatedEvent* ConvertEvent(aura::Window* target,
                                            const ui::MouseEvent& event) {
     scoped_ptr<internal::DragDropTracker> tracker(
-        new internal::DragDropTracker);
+        new internal::DragDropTracker(Shell::GetPrimaryRootWindow()));
     ui::LocatedEvent* converted = tracker->ConvertEvent(target, event);
     return converted;
   }
@@ -67,13 +65,13 @@ TEST_F(DragDropTrackerTest, MAYBE_GetTarget) {
   Shell::GetInstance()->set_active_root_window(root_windows[0]);
 
   scoped_ptr<aura::Window> window0(
-      CreateTestWindow(gfx::Rect(0, 0, 100, 100), NULL));
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
   window0->Show();
 
   Shell::GetInstance()->set_active_root_window(root_windows[1]);
 
   scoped_ptr<aura::Window> window1(
-      CreateTestWindow(gfx::Rect(100, 100, 100, 100), NULL));
+      CreateTestWindow(gfx::Rect(100, 100, 100, 100)));
   window1->Show();
 
   // Make RootWindow0 active so that capture window is parented to it.
@@ -133,12 +131,12 @@ TEST_F(DragDropTrackerTest, MAYBE_ConvertEvent) {
 
   Shell::GetInstance()->set_active_root_window(root_windows[0]);
   scoped_ptr<aura::Window> window0(
-      CreateTestWindow(gfx::Rect(0, 0, 100, 100), NULL));
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
   window0->Show();
 
   Shell::GetInstance()->set_active_root_window(root_windows[1]);
   scoped_ptr<aura::Window> window1(
-      CreateTestWindow(gfx::Rect(100, 100, 100, 100), NULL));
+      CreateTestWindow(gfx::Rect(100, 100, 100, 100)));
   window1->Show();
 
   // Make RootWindow0 active so that capture window is parented to it.

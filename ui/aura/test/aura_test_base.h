@@ -13,6 +13,7 @@
 
 namespace aura {
 class RootWindow;
+class Window;
 namespace test {
 
 // A base class for aura unit tests.
@@ -25,6 +26,12 @@ class AuraTestBase : public testing::Test {
   // testing::Test:
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
+
+  // Creates a transient window that is transient to |parent|.
+  aura::Window* CreateTransientChild(int id, aura::Window* parent);
+
+  // Attach |window| to the current shell's root window.
+  void SetDefaultParentByPrimaryRootWindow(aura::Window* window);
 
  protected:
   void RunAllPendingInMessageLoop();

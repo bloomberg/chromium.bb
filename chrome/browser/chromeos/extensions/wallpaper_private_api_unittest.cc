@@ -52,10 +52,10 @@ class TestRestoreFunction : public WallpaperRestoreMinimizedWindowsFunction {
 }  // namespace
 
 TEST_F(WallpaperPrivateApiUnittest, HideAndRestoreWindows) {
-  scoped_ptr<aura::Window> window3(aura::test::CreateTestWindowWithId(3, NULL));
-  scoped_ptr<aura::Window> window2(aura::test::CreateTestWindowWithId(2, NULL));
-  scoped_ptr<aura::Window> window1(aura::test::CreateTestWindowWithId(1, NULL));
-  scoped_ptr<aura::Window> window0(aura::test::CreateTestWindowWithId(0, NULL));
+  scoped_ptr<aura::Window> window3(CreateTestWindowInShellWithId(3));
+  scoped_ptr<aura::Window> window2(CreateTestWindowInShellWithId(2));
+  scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
+  scoped_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
 
   ash::wm::MinimizeWindow(window3.get());
   ash::wm::MaximizeWindow(window1.get());

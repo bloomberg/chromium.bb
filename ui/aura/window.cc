@@ -33,19 +33,6 @@
 
 namespace aura {
 
-namespace {
-
-Window* GetParentForWindow(Window* window, Window* suggested_parent) {
-  if (suggested_parent)
-    return suggested_parent;
-  if (client::GetStackingClient())
-    return client::GetStackingClient()->GetDefaultParent(
-        window, window, gfx::Rect());
-  return NULL;
-}
-
-}  // namespace
-
 Window::TestApi::TestApi(Window* window) : window_(window) {}
 
 bool Window::TestApi::OwnsLayer() const {
@@ -333,8 +320,18 @@ void Window::SetExternalTexture(ui::Texture* texture) {
       WindowObserver, observers_, OnWindowPaintScheduled(this, region));
 }
 
-void Window::SetParent(Window* parent) {
-  GetParentForWindow(this, parent)->AddChild(this);
+void Window::SetDefaultParentByRootWindow(RootWindow* root_window,
+                                          const gfx::Rect& bounds_in_screen) {
+  // TODO(erg): Enable this DCHECK once it is safe.
+  //  DCHECK(root_window);
+
+  // Stacking clients are mandatory on RootWindow objects.
+  client::StackingClient* client = client::GetStackingClient(root_window);
+  DCHECK(client);
+
+  aura::Window* default_parent = client->GetDefaultParent(
+      root_window, this, bounds_in_screen);
+  default_parent->AddChild(this);
 }
 
 void Window::StackChildAtTop(Window* child) {

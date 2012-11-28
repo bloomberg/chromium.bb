@@ -96,7 +96,7 @@ Window* CreateWindow(int id, Window* parent, WindowDelegate* delegate) {
       test::TestWindowDelegate::CreateSelfDestroyingDelegate());
   window->set_id(id);
   window->Init(ui::LAYER_TEXTURED);
-  window->SetParent(parent);
+  parent->AddChild(window);
   window->SetBounds(gfx::Rect(0, 0, 100, 100));
   window->Show();
   return window;
@@ -120,9 +120,9 @@ TEST_F(RootWindowTest, OnHostMouseEvent) {
   gfx::Rect bounds1(100, 200, kWindowWidth, kWindowHeight);
   gfx::Rect bounds2(300, 400, kWindowWidth, kWindowHeight);
   scoped_ptr<aura::Window> window1(CreateTestWindowWithDelegate(
-      delegate1.get(), -1234, bounds1, NULL));
+      delegate1.get(), -1234, bounds1, root_window()));
   scoped_ptr<aura::Window> window2(CreateTestWindowWithDelegate(
-      delegate2.get(), -5678, bounds2, NULL));
+      delegate2.get(), -5678, bounds2, root_window()));
 
   // Send a mouse event to window1.
   gfx::Point point(101, 201);
@@ -155,7 +155,7 @@ TEST_F(RootWindowTest, HideCursor) {
   const int kWindowHeight = 45;
   gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
-      delegate.get(), -1234, bounds, NULL));
+      delegate.get(), -1234, bounds, root_window()));
   aura::Window* window_ptr = &*window;
 
   root_window()->OnCursorVisibilityChanged(true);
@@ -241,7 +241,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
 
 TEST_F(RootWindowTest, TranslatedEvent) {
   scoped_ptr<Window> w1(test::CreateTestWindowWithDelegate(NULL, 1,
-      gfx::Rect(50, 50, 100, 100), NULL));
+      gfx::Rect(50, 50, 100, 100), root_window()));
 
   gfx::Point origin(100, 100);
   ui::MouseEvent root(ui::ET_MOUSE_PRESSED, origin, origin, 0);
@@ -548,7 +548,7 @@ TEST_F(RootWindowTest, HoldMouseMove) {
 
   test::TestWindowDelegate delegate;
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
-      &delegate, 1, gfx::Rect(0, 0, 100, 100), NULL));
+      &delegate, 1, gfx::Rect(0, 0, 100, 100), root_window()));
 
   ui::MouseEvent mouse_move_event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
                                   gfx::Point(0, 0), 0);

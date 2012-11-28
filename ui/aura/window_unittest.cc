@@ -60,6 +60,11 @@ class WindowTest : public AuraTestBase {
         set_max_separation_for_gesture_touches_in_pixels(max_separation_);
   }
 
+  // Adds |window| to |root_window_|, through the StackingClient.
+  void SetDefaultParentByPrimaryRootWindow(aura::Window* window) {
+    window->SetDefaultParentByRootWindow(root_window(), gfx::Rect());
+  }
+
  private:
   int max_separation_;
 
@@ -253,7 +258,7 @@ class SelfEventHandlingWindowDelegate : public TestWindowDelegate {
 }  // namespace
 
 TEST_F(WindowTest, GetChildById) {
-  scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, root_window()));
   scoped_ptr<Window> w11(CreateTestWindowWithId(11, w1.get()));
   scoped_ptr<Window> w111(CreateTestWindowWithId(111, w11.get()));
   scoped_ptr<Window> w12(CreateTestWindowWithId(12, w1.get()));
@@ -273,8 +278,8 @@ TEST_F(WindowTest, Contains) {
   Window child2(NULL);
   child2.Init(ui::LAYER_NOT_DRAWN);
 
-  child1.SetParent(&parent);
-  child2.SetParent(&child1);
+  parent.AddChild(&child1);
+  child1.AddChild(&child2);
 
   EXPECT_TRUE(parent.Contains(&parent));
   EXPECT_TRUE(parent.Contains(&child1));
@@ -287,7 +292,8 @@ TEST_F(WindowTest, Contains) {
 
 TEST_F(WindowTest, ContainsPointInRoot) {
   scoped_ptr<Window> w(
-      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 5, 5), NULL));
+      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 5, 5),
+                       root_window()));
   EXPECT_FALSE(w->ContainsPointInRoot(gfx::Point(9, 9)));
   EXPECT_TRUE(w->ContainsPointInRoot(gfx::Point(10, 10)));
   EXPECT_TRUE(w->ContainsPointInRoot(gfx::Point(14, 14)));
@@ -297,7 +303,8 @@ TEST_F(WindowTest, ContainsPointInRoot) {
 
 TEST_F(WindowTest, ContainsPoint) {
   scoped_ptr<Window> w(
-      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 5, 5), NULL));
+      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 5, 5),
+                       root_window()));
   EXPECT_TRUE(w->ContainsPoint(gfx::Point(0, 0)));
   EXPECT_TRUE(w->ContainsPoint(gfx::Point(4, 4)));
   EXPECT_FALSE(w->ContainsPoint(gfx::Point(5, 5)));
@@ -308,7 +315,7 @@ TEST_F(WindowTest, ConvertPointToWindow) {
   // Window::ConvertPointToWindow is mostly identical to
   // Layer::ConvertPointToLayer, except NULL values for |source| are permitted,
   // in which case the function just returns.
-  scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, root_window()));
   gfx::Point reference_point(100, 100);
   gfx::Point test_point = reference_point;
   Window::ConvertPointToTarget(NULL, w1.get(), &test_point);
@@ -317,7 +324,8 @@ TEST_F(WindowTest, ConvertPointToWindow) {
 
 TEST_F(WindowTest, MoveCursorTo) {
   scoped_ptr<Window> w1(
-      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 500, 500), NULL));
+      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 500, 500),
+                       root_window()));
   scoped_ptr<Window> w11(
       CreateTestWindow(SK_ColorGREEN, 11, gfx::Rect(5, 5, 100, 100), w1.get()));
   scoped_ptr<Window> w111(
@@ -345,7 +353,8 @@ TEST_F(WindowTest, MoveCursorTo) {
 
 TEST_F(WindowTest, ContainsMouse) {
   scoped_ptr<Window> w(
-      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 500, 500), NULL));
+      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 500, 500),
+                       root_window()));
   w->Show();
   Window::TestApi w_test_api(w.get());
   RootWindow* root = root_window();
@@ -375,7 +384,8 @@ TEST_F(WindowTest, MoveCursorToWithTransformRootWindow) {
 // Tests Window::ConvertPointToWindow() with transform to non-root windows.
 TEST_F(WindowTest, MoveCursorToWithTransformWindow) {
   scoped_ptr<Window> w1(
-      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 500, 500), NULL));
+      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 500, 500),
+                       root_window()));
 
   gfx::Transform transform1;
   transform1.Scale(2, 2);
@@ -412,7 +422,8 @@ TEST_F(WindowTest, MoveCursorToWithTransformWindow) {
 // non-root windows.
 TEST_F(WindowTest, MoveCursorToWithComplexTransform) {
   scoped_ptr<Window> w1(
-      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 500, 500), NULL));
+      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 500, 500),
+                       root_window()));
   scoped_ptr<Window> w11(
       CreateTestWindow(SK_ColorGREEN, 11, gfx::Rect(5, 5, 100, 100), w1.get()));
   scoped_ptr<Window> w111(
@@ -456,7 +467,7 @@ TEST_F(WindowTest, HitTest) {
   w1.Init(ui::LAYER_TEXTURED);
   w1.SetBounds(gfx::Rect(10, 20, 50, 60));
   w1.Show();
-  w1.SetParent(NULL);
+  SetDefaultParentByPrimaryRootWindow(&w1);
 
   // Points are in the Window's coordinates.
   EXPECT_TRUE(w1.HitTest(gfx::Point(1, 1)));
@@ -487,7 +498,7 @@ TEST_F(WindowTest, HitTestMask) {
   w1.Init(ui::LAYER_NOT_DRAWN);
   w1.SetBounds(gfx::Rect(10, 20, 50, 60));
   w1.Show();
-  w1.SetParent(NULL);
+  SetDefaultParentByPrimaryRootWindow(&w1);
 
   // Points inside the mask.
   EXPECT_TRUE(w1.HitTest(gfx::Point(5, 6)));  // top-left
@@ -504,7 +515,8 @@ TEST_F(WindowTest, HitTestMask) {
 
 TEST_F(WindowTest, GetEventHandlerForPoint) {
   scoped_ptr<Window> w1(
-      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 500, 500), NULL));
+      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 500, 500),
+                       root_window()));
   scoped_ptr<Window> w11(
       CreateTestWindow(SK_ColorGREEN, 11, gfx::Rect(5, 5, 100, 100), w1.get()));
   scoped_ptr<Window> w111(
@@ -535,7 +547,8 @@ TEST_F(WindowTest, GetEventHandlerForPointWithOverride) {
   // If our child is flush to our top-left corner he gets events just inside the
   // window edges.
   scoped_ptr<Window> parent(
-      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 20, 400, 500), NULL));
+      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 20, 400, 500),
+                       root_window()));
   scoped_ptr<Window> child(
       CreateTestWindow(SK_ColorRED, 2, gfx::Rect(0, 0, 60, 70), parent.get()));
   EXPECT_EQ(child.get(), parent->GetEventHandlerForPoint(gfx::Point(0, 0)));
@@ -552,7 +565,7 @@ TEST_F(WindowTest, GetEventHandlerForPointWithOverrideDescendingOrder) {
   scoped_ptr<SelfEventHandlingWindowDelegate> parent_delegate(
       new SelfEventHandlingWindowDelegate);
   scoped_ptr<Window> parent(CreateTestWindowWithDelegate(
-      parent_delegate.get(), 1, gfx::Rect(10, 20, 400, 500), NULL));
+      parent_delegate.get(), 1, gfx::Rect(10, 20, 400, 500), root_window()));
   scoped_ptr<Window> child(
       CreateTestWindow(SK_ColorRED, 2, gfx::Rect(0, 0, 390, 480),
                        parent.get()));
@@ -568,16 +581,18 @@ TEST_F(WindowTest, GetTopWindowContainingPoint) {
   root->SetBounds(gfx::Rect(0, 0, 300, 300));
 
   scoped_ptr<Window> w1(
-      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 100, 100), NULL));
+      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 100, 100),
+                       root_window()));
   scoped_ptr<Window> w11(
       CreateTestWindow(SK_ColorGREEN, 11, gfx::Rect(0, 0, 120, 120), w1.get()));
 
   scoped_ptr<Window> w2(
-      CreateTestWindow(SK_ColorRED, 2, gfx::Rect(5, 5, 55, 55), NULL));
+      CreateTestWindow(SK_ColorRED, 2, gfx::Rect(5, 5, 55, 55),
+                       root_window()));
 
   scoped_ptr<Window> w3(
       CreateTestWindowWithDelegate(
-          NULL, 3, gfx::Rect(200, 200, 100, 100), NULL));
+          NULL, 3, gfx::Rect(200, 200, 100, 100), root_window()));
   scoped_ptr<Window> w31(
       CreateTestWindow(SK_ColorCYAN, 31, gfx::Rect(0, 0, 50, 50), w3.get()));
   scoped_ptr<Window> w311(
@@ -632,7 +647,7 @@ class AddedToRootWindowObserver : public WindowObserver {
 TEST_F(WindowTest, WindowAddedToRootWindowShouldNotifyChildAndNotParent) {
   AddedToRootWindowObserver parent_observer;
   AddedToRootWindowObserver child_observer;
-  scoped_ptr<Window> parent_window(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> parent_window(CreateTestWindowWithId(1, root_window()));
   scoped_ptr<Window> child_window(new Window(NULL));
   child_window->Init(ui::LAYER_TEXTURED);
   child_window->Show();
@@ -655,7 +670,8 @@ TEST_F(WindowTest, DestroyTest) {
   ChildWindowDelegateImpl child_delegate(&parent_delegate);
   {
     scoped_ptr<Window> parent(
-        CreateTestWindowWithDelegate(&parent_delegate, 0, gfx::Rect(), NULL));
+        CreateTestWindowWithDelegate(&parent_delegate, 0, gfx::Rect(),
+                                     root_window()));
     CreateTestWindowWithDelegate(&child_delegate, 0, gfx::Rect(), parent.get());
   }
   // Both the parent and child should have been destroyed.
@@ -671,7 +687,8 @@ TEST_F(WindowTest, OrphanedBeforeOnDestroyed) {
   DestroyOrphanDelegate child_delegate;
   {
     scoped_ptr<Window> parent(
-        CreateTestWindowWithDelegate(&parent_delegate, 0, gfx::Rect(), NULL));
+        CreateTestWindowWithDelegate(&parent_delegate, 0, gfx::Rect(),
+                                     root_window()));
     scoped_ptr<Window> child(CreateTestWindowWithDelegate(&child_delegate, 0,
           gfx::Rect(), parent.get()));
     child_delegate.set_window(child.get());
@@ -687,8 +704,8 @@ TEST_F(WindowTest, StackChildAtTop) {
   Window child2(NULL);
   child2.Init(ui::LAYER_NOT_DRAWN);
 
-  child1.SetParent(&parent);
-  child2.SetParent(&parent);
+  parent.AddChild(&child1);
+  parent.AddChild(&child2);
   ASSERT_EQ(2u, parent.children().size());
   EXPECT_EQ(&child1, parent.children()[0]);
   EXPECT_EQ(&child2, parent.children()[1]);
@@ -719,9 +736,9 @@ TEST_F(WindowTest, StackChildBelow) {
   child3.Init(ui::LAYER_NOT_DRAWN);
   child3.set_id(3);
 
-  child1.SetParent(&parent);
-  child2.SetParent(&parent);
-  child3.SetParent(&parent);
+  parent.AddChild(&child1);
+  parent.AddChild(&child2);
+  parent.AddChild(&child3);
   EXPECT_EQ("1 2 3", ChildWindowIDsAsString(&parent));
 
   parent.StackChildBelow(&child1, &child2);
@@ -748,8 +765,8 @@ TEST_F(WindowTest, StackChildAbove) {
   Window child3(NULL);
   child3.Init(ui::LAYER_NOT_DRAWN);
 
-  child1.SetParent(&parent);
-  child2.SetParent(&parent);
+  parent.AddChild(&child1);
+  parent.AddChild(&child2);
 
   // Move 1 in front of 2.
   parent.StackChildAbove(&child1, &child2);
@@ -762,7 +779,7 @@ TEST_F(WindowTest, StackChildAbove) {
 
   // Add 3, resulting in order [2, 1, 3], then move 2 in front of 1, resulting
   // in [1, 2, 3].
-  child3.SetParent(&parent);
+  parent.AddChild(&child3);
   parent.StackChildAbove(&child2, &child1);
   ASSERT_EQ(3u, parent.children().size());
   EXPECT_EQ(&child1, parent.children()[0]);
@@ -800,7 +817,7 @@ TEST_F(WindowTest, StackChildAbove) {
 TEST_F(WindowTest, CaptureTests) {
   CaptureWindowDelegateImpl delegate;
   scoped_ptr<Window> window(CreateTestWindowWithDelegate(
-      &delegate, 0, gfx::Rect(0, 0, 20, 20), NULL));
+      &delegate, 0, gfx::Rect(0, 0, 20, 20), root_window()));
   EXPECT_FALSE(window->HasCapture());
 
   delegate.ResetCounts();
@@ -851,10 +868,10 @@ TEST_F(WindowTest, CaptureTests) {
 TEST_F(WindowTest, TouchCaptureCancelsOtherTouches) {
   CaptureWindowDelegateImpl delegate1;
   scoped_ptr<Window> w1(CreateTestWindowWithDelegate(
-      &delegate1, 0, gfx::Rect(0, 0, 20, 20), NULL));
+      &delegate1, 0, gfx::Rect(0, 0, 20, 20), root_window()));
   CaptureWindowDelegateImpl delegate2;
   scoped_ptr<Window> w2(CreateTestWindowWithDelegate(
-      &delegate2, 0, gfx::Rect(20, 20, 20, 20), NULL));
+      &delegate2, 0, gfx::Rect(20, 20, 20, 20), root_window()));
 
   // Press on w1.
   ui::TouchEvent press(
@@ -899,7 +916,7 @@ TEST_F(WindowTest, TouchCaptureCancelsOtherTouches) {
 TEST_F(WindowTest, TouchCaptureDoesntCancelCapturedTouches) {
   CaptureWindowDelegateImpl delegate;
   scoped_ptr<Window> window(CreateTestWindowWithDelegate(
-      &delegate, 0, gfx::Rect(0, 0, 20, 20), NULL));
+      &delegate, 0, gfx::Rect(0, 0, 20, 20), root_window()));
 
   ui::TouchEvent press(
       ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 0, getTime());
@@ -927,7 +944,7 @@ TEST_F(WindowTest, TransferCaptureTouchEvents) {
   // Touch on |w1|.
   CaptureWindowDelegateImpl d1;
   scoped_ptr<Window> w1(CreateTestWindowWithDelegate(
-      &d1, 0, gfx::Rect(0, 0, 20, 20), NULL));
+      &d1, 0, gfx::Rect(0, 0, 20, 20), root_window()));
   ui::TouchEvent p1(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 0, getTime());
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&p1);
   // We will get both GESTURE_BEGIN and GESTURE_TAP_DOWN.
@@ -937,7 +954,7 @@ TEST_F(WindowTest, TransferCaptureTouchEvents) {
   // Touch on |w2| with a different id.
   CaptureWindowDelegateImpl d2;
   scoped_ptr<Window> w2(CreateTestWindowWithDelegate(
-      &d2, 0, gfx::Rect(40, 0, 40, 20), NULL));
+      &d2, 0, gfx::Rect(40, 0, 40, 20), root_window()));
   ui::TouchEvent p2(ui::ET_TOUCH_PRESSED, gfx::Point(41, 10), 1, getTime());
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&p2);
   EXPECT_EQ(0, d1.gesture_event_count());
@@ -956,7 +973,7 @@ TEST_F(WindowTest, TransferCaptureTouchEvents) {
 
   CaptureWindowDelegateImpl d3;
   scoped_ptr<Window> w3(CreateTestWindowWithDelegate(
-                            &d3, 0, gfx::Rect(0, 0, 100, 101), NULL));
+      &d3, 0, gfx::Rect(0, 0, 100, 101), root_window()));
   // Set capture on w3. No new events should be received.
   w3->SetCapture();
   EXPECT_EQ(0, d1.gesture_event_count());
@@ -977,10 +994,10 @@ TEST_F(WindowTest, TransferCaptureTouchEvents) {
 TEST_F(WindowTest, ChangeCaptureWhileMouseDown) {
   CaptureWindowDelegateImpl delegate;
   scoped_ptr<Window> window(CreateTestWindowWithDelegate(
-      &delegate, 0, gfx::Rect(0, 0, 20, 20), NULL));
+      &delegate, 0, gfx::Rect(0, 0, 20, 20), root_window()));
   CaptureWindowDelegateImpl delegate2;
   scoped_ptr<Window> w2(CreateTestWindowWithDelegate(
-      &delegate2, 0, gfx::Rect(20, 20, 20, 20), NULL));
+      &delegate2, 0, gfx::Rect(20, 20, 20, 20), root_window()));
 
   // Execute the scheduled draws so that mouse events are not
   // aggregated.
@@ -1016,7 +1033,7 @@ TEST_F(WindowTest, ChangeCaptureWhileMouseDown) {
 TEST_F(WindowTest, ReleaseCaptureOnDestroy) {
   CaptureWindowDelegateImpl delegate;
   scoped_ptr<Window> window(CreateTestWindowWithDelegate(
-      &delegate, 0, gfx::Rect(0, 0, 20, 20), NULL));
+      &delegate, 0, gfx::Rect(0, 0, 20, 20), root_window()));
   EXPECT_FALSE(window->HasCapture());
 
   // Do a capture.
@@ -1033,7 +1050,7 @@ TEST_F(WindowTest, ReleaseCaptureOnDestroy) {
 
 TEST_F(WindowTest, GetBoundsInRootWindow) {
   scoped_ptr<Window> viewport(CreateTestWindowWithBounds(
-      gfx::Rect(0, 0, 300, 300), NULL));
+      gfx::Rect(0, 0, 300, 300), root_window()));
   scoped_ptr<Window> child(CreateTestWindowWithBounds(
       gfx::Rect(0, 0, 100, 100), viewport.get()));
   // Sanity check.
@@ -1089,10 +1106,12 @@ class MouseEnterExitWindowDelegate : public TestWindowDelegate {
 TEST_F(WindowTest, MouseEnterExit) {
   MouseEnterExitWindowDelegate d1;
   scoped_ptr<Window> w1(
-      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50), NULL));
+      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50),
+                                   root_window()));
   MouseEnterExitWindowDelegate d2;
   scoped_ptr<Window> w2(
-      CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(70, 70, 50, 50), NULL));
+      CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(70, 70, 50, 50),
+                                   root_window()));
 
   test::EventGenerator generator(root_window());
   generator.MoveMouseToCenterOf(w1.get());
@@ -1115,10 +1134,12 @@ TEST_F(WindowTest, MouseEnterExit) {
 TEST_F(WindowTest, MouseEnterExitWithClick) {
   MouseEnterExitWindowDelegate d1;
   scoped_ptr<Window> w1(
-      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50), NULL));
+      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50),
+                                   root_window()));
   MouseEnterExitWindowDelegate d2;
   scoped_ptr<Window> w2(
-      CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(70, 70, 50, 50), NULL));
+      CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(70, 70, 50, 50),
+                                   root_window()));
 
   test::EventGenerator generator(root_window());
   generator.MoveMouseToCenterOf(w1.get());
@@ -1146,7 +1167,8 @@ TEST_F(WindowTest, MouseEnterExitWithClick) {
 TEST_F(WindowTest, MouseEnterExitWithDelete) {
   MouseEnterExitWindowDelegate d1;
   scoped_ptr<Window> w1(
-      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50), NULL));
+      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50),
+                                   root_window()));
 
   test::EventGenerator generator(root_window());
   generator.MoveMouseToCenterOf(w1.get());
@@ -1156,7 +1178,8 @@ TEST_F(WindowTest, MouseEnterExitWithDelete) {
   {
     MouseEnterExitWindowDelegate d2;
     scoped_ptr<Window> w2(
-        CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(10, 10, 50, 50), NULL));
+        CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(10, 10, 50, 50),
+                                     root_window()));
     // Enters / exits can be send asynchronously.
     RunAllPendingInMessageLoop();
     EXPECT_TRUE(d1.entered());
@@ -1175,7 +1198,8 @@ TEST_F(WindowTest, MouseEnterExitWithDelete) {
 TEST_F(WindowTest, MouseEnterExitWithHide) {
   MouseEnterExitWindowDelegate d1;
   scoped_ptr<Window> w1(
-      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50), NULL));
+      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50),
+                                   root_window()));
 
   test::EventGenerator generator(root_window());
   generator.MoveMouseToCenterOf(w1.get());
@@ -1184,7 +1208,8 @@ TEST_F(WindowTest, MouseEnterExitWithHide) {
 
   MouseEnterExitWindowDelegate d2;
   scoped_ptr<Window> w2(
-      CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(10, 10, 50, 50), NULL));
+      CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(10, 10, 50, 50),
+                                   root_window()));
   // Enters / exits can be send asynchronously.
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(d1.entered());
@@ -1209,7 +1234,7 @@ TEST_F(WindowTest, MouseEnterExitWithHide) {
 TEST_F(WindowTest, GetEventHandlerForPoint_NoDelegate) {
   TestWindowDelegate d111;
   scoped_ptr<Window> w1(CreateTestWindowWithDelegate(NULL, 1,
-      gfx::Rect(0, 0, 500, 500), NULL));
+      gfx::Rect(0, 0, 500, 500), root_window()));
   scoped_ptr<Window> w11(CreateTestWindowWithDelegate(NULL, 11,
       gfx::Rect(0, 0, 500, 500), w1.get()));
   scoped_ptr<Window> w111(CreateTestWindowWithDelegate(&d111, 111,
@@ -1253,7 +1278,8 @@ class VisibilityWindowDelegate : public TestWindowDelegate {
 TEST_F(WindowTest, Visibility) {
   VisibilityWindowDelegate d;
   VisibilityWindowDelegate d2;
-  scoped_ptr<Window> w1(CreateTestWindowWithDelegate(&d, 1, gfx::Rect(), NULL));
+  scoped_ptr<Window> w1(CreateTestWindowWithDelegate(&d, 1, gfx::Rect(),
+                                                     root_window()));
   scoped_ptr<Window> w2(
       CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(),  w1.get()));
   scoped_ptr<Window> w3(CreateTestWindowWithId(3, w2.get()));
@@ -1314,7 +1340,7 @@ TEST_F(WindowTest, IgnoreEventsTest) {
   TestWindowDelegate d111;
   TestWindowDelegate d121;
   scoped_ptr<Window> w1(CreateTestWindowWithDelegate(NULL, 1,
-      gfx::Rect(0, 0, 500, 500), NULL));
+      gfx::Rect(0, 0, 500, 500), root_window()));
   scoped_ptr<Window> w11(CreateTestWindowWithDelegate(&d11, 11,
       gfx::Rect(0, 0, 500, 500), w1.get()));
   scoped_ptr<Window> w111(CreateTestWindowWithDelegate(&d111, 111,
@@ -1371,7 +1397,7 @@ TEST_F(WindowTest, TransformGesture) {
   scoped_ptr<GestureTrackPositionDelegate> delegate(
       new GestureTrackPositionDelegate);
   scoped_ptr<Window> window(CreateTestWindowWithDelegate(delegate.get(), -1234,
-      gfx::Rect(0, 0, 20, 20), NULL));
+      gfx::Rect(0, 0, 20, 20), root_window()));
 
   // Rotate the root-window clock-wise 90 degrees.
   gfx::Transform transform;
@@ -1387,7 +1413,7 @@ TEST_F(WindowTest, TransformGesture) {
 
 // Various assertions for transient children.
 TEST_F(WindowTest, TransientChildren) {
-  scoped_ptr<Window> parent(CreateTestWindowWithId(0, NULL));
+  scoped_ptr<Window> parent(CreateTestWindowWithId(0, root_window()));
   scoped_ptr<Window> w1(CreateTestWindowWithId(1, parent.get()));
   scoped_ptr<Window> w3(CreateTestWindowWithId(3, parent.get()));
   Window* w2 = CreateTestWindowWithId(2, parent.get());
@@ -1422,7 +1448,7 @@ TEST_F(WindowTest, TransientChildren) {
 
 // Tests that when a focused window is closed, its parent inherits the focus.
 TEST_F(WindowTest, FocusedWindowTest) {
-  scoped_ptr<Window> parent(CreateTestWindowWithId(0, NULL));
+  scoped_ptr<Window> parent(CreateTestWindowWithId(0, root_window()));
   scoped_ptr<Window> child(CreateTestWindowWithId(1, parent.get()));
 
   parent->Show();
@@ -1442,14 +1468,14 @@ TEST_F(WindowTest, OldFocusedWindowTest) {
 
   FocusDelegate delegate1;
   scoped_ptr<Window> window1(
-      CreateTestWindowWithDelegate(&delegate1, 0, kBounds, NULL));
+      CreateTestWindowWithDelegate(&delegate1, 0, kBounds, root_window()));
   window1->Focus();
   ASSERT_TRUE(window1->HasFocus());
   EXPECT_TRUE(delegate1.previous_focused_window() == NULL);
 
   FocusDelegate delegate2;
   scoped_ptr<Window> window2(
-      CreateTestWindowWithDelegate(&delegate2, 1, kBounds, NULL));
+      CreateTestWindowWithDelegate(&delegate2, 1, kBounds, root_window()));
   window2->Focus();
   ASSERT_TRUE(window2->HasFocus());
   EXPECT_FALSE(window1->HasFocus());
@@ -1462,7 +1488,7 @@ DEFINE_WINDOW_PROPERTY_KEY(const char*, kStringKey, "squeamish");
 }
 
 TEST_F(WindowTest, Property) {
-  scoped_ptr<Window> w(CreateTestWindowWithId(0, NULL));
+  scoped_ptr<Window> w(CreateTestWindowWithId(0, root_window()));
 
   static const char native_prop_key[] = "fnord";
 
@@ -1521,7 +1547,7 @@ DEFINE_OWNED_WINDOW_PROPERTY_KEY(TestProperty, kOwnedKey, NULL);
 }  // namespace
 
 TEST_F(WindowTest, OwnedProperty) {
-  scoped_ptr<Window> w(CreateTestWindowWithId(0, NULL));
+  scoped_ptr<Window> w(CreateTestWindowWithId(0, root_window()));
   EXPECT_EQ(NULL, w->GetProperty(kOwnedKey));
   TestProperty* p1 = new TestProperty();
   w->SetProperty(kOwnedKey, p1);
@@ -1550,7 +1576,7 @@ TEST_F(WindowTest, SetBoundsInternalShouldCheckTargetBounds) {
   ui::LayerAnimator::set_disable_animations_for_test(false);
 
   scoped_ptr<Window> w1(
-      CreateTestWindowWithBounds(gfx::Rect(0, 0, 100, 100), NULL));
+      CreateTestWindowWithBounds(gfx::Rect(0, 0, 100, 100), root_window()));
 
   EXPECT_FALSE(!w1->layer());
   w1->layer()->GetAnimator()->set_disable_timer_for_test(true);
@@ -1680,7 +1706,7 @@ class WindowObserverTest : public WindowTest,
 
 // Various assertions for WindowObserver.
 TEST_F(WindowObserverTest, WindowObserver) {
-  scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, root_window()));
   w1->AddObserver(this);
 
   // Create a new window as a child of w1, our observer should be notified.
@@ -1693,7 +1719,7 @@ TEST_F(WindowObserverTest, WindowObserver) {
 
   // Create a window that isn't parented to w1, we shouldn't get any
   // notification.
-  scoped_ptr<Window> w3(CreateTestWindowWithId(3, NULL));
+  scoped_ptr<Window> w3(CreateTestWindowWithId(3, root_window()));
   EXPECT_EQ("added=0 removed=0", WindowObserverCountStateAndClear());
 
   // Similarly destroying w3 shouldn't notify us either.
@@ -1705,7 +1731,7 @@ TEST_F(WindowObserverTest, WindowObserver) {
 // Test if OnWindowVisibilityChagned is invoked with expected
 // parameters.
 TEST_F(WindowObserverTest, WindowVisibility) {
-  scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, root_window()));
   scoped_ptr<Window> w2(CreateTestWindowWithId(1, w1.get()));
   w2->AddObserver(this);
 
@@ -1747,13 +1773,13 @@ TEST_F(WindowObserverTest, WindowVisibility) {
 // Test if OnWindowDestroyed is invoked as expected.
 TEST_F(WindowObserverTest, WindowDestroyed) {
   // Delete a window should fire a destroyed notification.
-  scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, root_window()));
   w1->AddObserver(this);
   w1.reset();
   EXPECT_EQ(1, DestroyedCountAndClear());
 
   // Observe on child and delete parent window should fire a notification.
-  scoped_ptr<Window> parent(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> parent(CreateTestWindowWithId(1, root_window()));
   Window* child = CreateTestWindowWithId(1, parent.get());  // owned by parent
   child->AddObserver(this);
   parent.reset();
@@ -1762,7 +1788,7 @@ TEST_F(WindowObserverTest, WindowDestroyed) {
 
 TEST_F(WindowObserverTest, PropertyChanged) {
   // Setting property should fire a property change notification.
-  scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, root_window()));
   w1->AddObserver(this);
 
   static const WindowProperty<int> prop = {-2};
@@ -1791,8 +1817,8 @@ TEST_F(WindowObserverTest, PropertyChanged) {
 }
 
 TEST_F(WindowTest, AcquireLayer) {
-  scoped_ptr<Window> window1(CreateTestWindowWithId(1, NULL));
-  scoped_ptr<Window> window2(CreateTestWindowWithId(2, NULL));
+  scoped_ptr<Window> window1(CreateTestWindowWithId(1, root_window()));
+  scoped_ptr<Window> window2(CreateTestWindowWithId(2, root_window()));
   ui::Layer* parent = window1->parent()->layer();
   EXPECT_EQ(2U, parent->children().size());
 
@@ -1846,7 +1872,8 @@ TEST_F(WindowTest, RecreateLayer) {
 // and that RecreateLayer returns null.
 TEST_F(WindowTest, AcquireThenRecreateLayer) {
   scoped_ptr<Window> w(
-      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(0, 0, 100, 100), NULL));
+      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(0, 0, 100, 100),
+                       root_window()));
   scoped_ptr<ui::Layer>acquired_layer(w->AcquireLayer());
   scoped_ptr<ui::Layer>doubly_acquired_layer(w->RecreateLayer());
   EXPECT_EQ(NULL, doubly_acquired_layer.get());
@@ -1856,8 +1883,8 @@ TEST_F(WindowTest, AcquireThenRecreateLayer) {
 }
 
 TEST_F(WindowTest, StackWindowsWhoseLayersHaveNoDelegate) {
-  scoped_ptr<Window> window1(CreateTestWindowWithId(1, NULL));
-  scoped_ptr<Window> window2(CreateTestWindowWithId(2, NULL));
+  scoped_ptr<Window> window1(CreateTestWindowWithId(1, root_window()));
+  scoped_ptr<Window> window2(CreateTestWindowWithId(2, root_window()));
 
   // This brings window1 (and its layer) to the front.
   root_window()->StackChildAbove(window1.get(), window2.get());
@@ -1880,12 +1907,12 @@ TEST_F(WindowTest, StackTransientsWhoseLayersHaveNoDelegate) {
   RootWindow* root = root_window();
 
   // Create a window with several transients, then a couple windows on top.
-  scoped_ptr<Window> window1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> window1(CreateTestWindowWithId(1, root_window()));
   scoped_ptr<Window> window11(CreateTransientChild(11, window1.get()));
   scoped_ptr<Window> window12(CreateTransientChild(12, window1.get()));
   scoped_ptr<Window> window13(CreateTransientChild(13, window1.get()));
-  scoped_ptr<Window> window2(CreateTestWindowWithId(2, NULL));
-  scoped_ptr<Window> window3(CreateTestWindowWithId(3, NULL));
+  scoped_ptr<Window> window2(CreateTestWindowWithId(2, root_window()));
+  scoped_ptr<Window> window3(CreateTestWindowWithId(3, root_window()));
 
   EXPECT_EQ("1 11 12 13 2 3", ChildWindowIDsAsString(root));
 
@@ -1929,7 +1956,7 @@ class TestVisibilityClient : public client::VisibilityClient {
 TEST_F(WindowTest, VisibilityClientIsVisible) {
   TestVisibilityClient client(root_window());
 
-  scoped_ptr<Window> window(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> window(CreateTestWindowWithId(1, root_window()));
   EXPECT_TRUE(window->IsVisible());
   EXPECT_TRUE(window->layer()->visible());
 
@@ -2115,7 +2142,7 @@ TEST_F(WindowTest, StackingMadrigal) {
   new StackingMadrigalLayoutManager(root_window());
   StackingMadrigalVisibilityClient visibility_client(root_window());
 
-  scoped_ptr<Window> window1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> window1(CreateTestWindowWithId(1, root_window()));
   scoped_ptr<Window> window11(CreateTransientChild(11, window1.get()));
 
   visibility_client.set_ignored_window(window11.get());
@@ -2153,9 +2180,9 @@ TEST_F(WindowTest, StackingMadrigal) {
 // transient with a NULL layer delegate causes that primary window to be moved,
 // but the layer order not changed to match.  http://crbug.com/112562
 TEST_F(WindowTest, StackOverClosingTransient) {
-  scoped_ptr<Window> window1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> window1(CreateTestWindowWithId(1, root_window()));
   scoped_ptr<Window> transient1(CreateTransientChild(11, window1.get()));
-  scoped_ptr<Window> window2(CreateTestWindowWithId(2, NULL));
+  scoped_ptr<Window> window2(CreateTestWindowWithId(2, root_window()));
   scoped_ptr<Window> transient2(CreateTransientChild(21, window2.get()));
 
   // Both windows and layers are stacked in creation order.
@@ -2212,7 +2239,7 @@ TEST_F(WindowTest, StackOverClosingTransient) {
   EXPECT_EQ(root->layer()->children()[2], transient2->layer());
 
   // Open another window on top.
-  scoped_ptr<Window> window3(CreateTestWindowWithId(3, NULL));
+  scoped_ptr<Window> window3(CreateTestWindowWithId(3, root_window()));
 
   ASSERT_EQ(4u, root->children().size());
   EXPECT_EQ(root->children()[0], window1.get());
@@ -2293,7 +2320,7 @@ TEST_F(WindowTest, RootWindowAttachment) {
   w1->Init(ui::LAYER_NOT_DRAWN);
   w1->AddObserver(&observer);
 
-  w1->SetParent(NULL);
+  SetDefaultParentByPrimaryRootWindow(w1.get());
   EXPECT_EQ(1, observer.added_count());
   EXPECT_EQ(0, observer.removed_count());
 
@@ -2309,11 +2336,11 @@ TEST_F(WindowTest, RootWindowAttachment) {
   Window* w11 = new Window(NULL);
   w11->Init(ui::LAYER_NOT_DRAWN);
   w11->AddObserver(&observer);
-  w11->SetParent(w1.get());
+  w1->AddChild(w11);
   EXPECT_EQ(0, observer.added_count());
   EXPECT_EQ(0, observer.removed_count());
 
-  w1->SetParent(NULL);
+  SetDefaultParentByPrimaryRootWindow(w1.get());
   EXPECT_EQ(1, observer.added_count());
   EXPECT_EQ(0, observer.removed_count());
 
@@ -2330,16 +2357,16 @@ TEST_F(WindowTest, RootWindowAttachment) {
   w11 = new Window(NULL);
   w11->Init(ui::LAYER_NOT_DRAWN);
   w11->AddObserver(&observer);
-  w11->SetParent(w1.get());
+  w1->AddChild(w11);
   Window* w111 = new Window(NULL);
   w111->Init(ui::LAYER_NOT_DRAWN);
   w111->AddObserver(&observer);
-  w111->SetParent(w11);
+  w11->AddChild(w111);
 
   EXPECT_EQ(0, observer.added_count());
   EXPECT_EQ(0, observer.removed_count());
 
-  w1->SetParent(NULL);
+  SetDefaultParentByPrimaryRootWindow(w1.get());
   EXPECT_EQ(2, observer.added_count());
   EXPECT_EQ(0, observer.removed_count());
 
@@ -2359,7 +2386,7 @@ TEST_F(WindowTest, OwnedByParentFalse) {
   scoped_ptr<Window> w2(new Window(NULL));
   w2->set_owned_by_parent(false);
   w2->Init(ui::LAYER_NOT_DRAWN);
-  w2->SetParent(w1.get());
+  w1->AddChild(w2.get());
 
   w1.reset();
 
@@ -2402,10 +2429,10 @@ TEST_F(WindowTest, DeleteWindowFromOnWindowDestroyed) {
   OwningWindowDelegate delegate;
   Window* c1 = new Window(&delegate);
   c1->Init(ui::LAYER_NOT_DRAWN);
-  c1->SetParent(parent.get());
+  parent->AddChild(c1);
   Window* c2 = new Window(NULL);
   c2->Init(ui::LAYER_NOT_DRAWN);
-  c2->SetParent(parent.get());
+  parent->AddChild(c2);
   delegate.SetOwnedWindow(c2);
   parent.reset();
 }
@@ -2448,7 +2475,7 @@ TEST_F(WindowTest, DelegateNotifiedAsBoundsChange) {
 
   scoped_ptr<Window> window(
       CreateTestWindowWithDelegate(&delegate, 1,
-                                   gfx::Rect(0, 0, 100, 100), NULL));
+                                   gfx::Rect(0, 0, 100, 100), root_window()));
   window->layer()->GetAnimator()->set_disable_timer_for_test(true);
 
   delegate.clear_bounds_changed();
@@ -2482,7 +2509,7 @@ TEST_F(WindowTest, DelegateNotifiedAsBoundsChangeInHiddenLayer) {
 
   scoped_ptr<Window> window(
       CreateTestWindowWithDelegate(&delegate, 1,
-                                   gfx::Rect(0, 0, 100, 100), NULL));
+                                   gfx::Rect(0, 0, 100, 100), root_window()));
   window->layer()->GetAnimator()->set_disable_timer_for_test(true);
 
   delegate.clear_bounds_changed();
@@ -2550,8 +2577,8 @@ class AddChildNotificationsObserver : public WindowObserver {
 // Assertions around when root window notifications are sent.
 TEST_F(WindowTest, AddChildNotifications) {
   AddChildNotificationsObserver observer;
-  scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
-  scoped_ptr<Window> w2(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, root_window()));
+  scoped_ptr<Window> w2(CreateTestWindowWithId(1, root_window()));
   w2->AddObserver(&observer);
   w2->Focus();
   EXPECT_TRUE(w2->HasFocus());

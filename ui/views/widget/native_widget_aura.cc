@@ -108,24 +108,18 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   delegate_->OnNativeWidgetCreated();
 
   gfx::Rect window_bounds = params.bounds;
-  if (params.child) {
-    window_->SetParent(params.GetParent());
-  } else {
+  gfx::NativeView parent = params.GetParent();
+  if (!params.child) {
     // Set up the transient child before the window is added. This way the
     // LayoutManager knows the window has a transient parent.
-    gfx::NativeView parent = params.GetParent();
     if (parent && parent->type() != aura::client::WINDOW_TYPE_UNKNOWN) {
       parent->AddTransientChild(window_);
       parent = NULL;
     }
     // SetAlwaysOnTop before SetParent so that always-on-top container is used.
     SetAlwaysOnTop(params.keep_on_top);
-    // If the parent is not specified, find the default parent for
-    // the |window_| using the desired |window_bounds|.
-    if (!parent) {
-      parent = aura::client::GetStackingClient(params.GetParent())->
-          GetDefaultParent(params.context, window_, window_bounds);
-    } else if (window_bounds == gfx::Rect()) {
+    // Make sure we have a real |window_bounds|.
+    if (parent && window_bounds == gfx::Rect()) {
       // If a parent is specified but no bounds are given,
       // use the origin of the parent's display so that the widget
       // will be added to the same display as the parent.
@@ -133,7 +127,16 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
           GetDisplayNearestWindow(parent).bounds();
       window_bounds.set_origin(bounds.origin());
     }
-    window_->SetParent(parent);
+  }
+
+  if (parent) {
+    parent->AddChild(window_);
+  } else {
+    // TODO(erg): Remove this NULL check once we've made everything in views
+    // actually pass us a context.
+    aura::RootWindow* root_window =
+        params.context ? params.context->GetRootWindow() : NULL;
+    window_->SetDefaultParentByRootWindow(root_window, window_bounds);
   }
 
   // Wait to set the bounds until we have a parent. That way we can know our
@@ -1027,7 +1030,23 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
     (*it)->NotifyNativeViewHierarchyChanged(false, previous_parent);
   }
 
-  native_view->SetParent(new_parent);
+  if (new_parent) {
+    new_parent->AddChild(native_view);
+  } else {
+    // The following looks weird, but it's the equivalent of what aura has
+    // always done. (The previous behaviour of aura::Window::SetParent() used
+    // NULL as a special value that meant ask the StackingClient where things
+    // should go.)
+    //
+    // This probably isn't strictly correct, but its an invariant that a Window
+    // in use will be attached to a RootWindow, so we can't just call
+    // RemoveChild here. The only possible thing that could assign a RootWindow
+    // in this case is the stacking client of the current RootWindow. This
+    // matches our previous behaviour; the global stacking client would almost
+    // always reattach the window to the same RootWindow.
+    native_view->SetDefaultParentByRootWindow(native_view->GetRootWindow(),
+                                              gfx::Rect());
+  }
 
   // And now, notify them that they have a brand new parent.
   for (Widget::Widgets::iterator it = widgets.begin();

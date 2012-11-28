@@ -193,7 +193,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     ui::LayerType layer_type;
     // Only used by Aura. Provides additional context (generally a RootWindow)
     // during creation to allow the widget to determine which desktop type it
-    // will belong to. NULL indicates a normal native desktop.
+    // will belong to. NULL is not allowed if you are using aura.
     gfx::NativeView context;
   };
 

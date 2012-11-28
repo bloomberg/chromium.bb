@@ -22,7 +22,6 @@
 namespace ash {
 namespace test {
 
-using aura::test::CreateTestWindowWithId;
 using aura::Window;
 using internal::FocusCycler;
 
@@ -105,7 +104,7 @@ class FocusCyclerTest : public AshTestBase {
 
 TEST_F(FocusCyclerTest, CycleFocusBrowserOnly) {
   // Create a single test window.
-  scoped_ptr<Window> window0(CreateTestWindowWithId(0, NULL));
+  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
   wm::ActivateWindow(window0.get());
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 
@@ -120,7 +119,7 @@ TEST_F(FocusCyclerTest, CycleFocusForward) {
   InstallFocusCycleOnLauncher();
 
   // Create a single test window.
-  scoped_ptr<Window> window0(CreateTestWindowWithId(0, NULL));
+  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
   wm::ActivateWindow(window0.get());
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 
@@ -143,7 +142,7 @@ TEST_F(FocusCyclerTest, CycleFocusBackward) {
   InstallFocusCycleOnLauncher();
 
   // Create a single test window.
-  scoped_ptr<Window> window0(CreateTestWindowWithId(0, NULL));
+  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
   wm::ActivateWindow(window0.get());
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 
@@ -166,7 +165,7 @@ TEST_F(FocusCyclerTest, CycleFocusForwardBackward) {
   InstallFocusCycleOnLauncher();
 
   // Create a single test window.
-  scoped_ptr<Window> window0(CreateTestWindowWithId(0, NULL));
+  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
   wm::ActivateWindow(window0.get());
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 
@@ -230,7 +229,7 @@ TEST_F(FocusCyclerTest, Launcher_CycleFocusForward) {
   launcher_widget()->Hide();
 
   // Create a single test window.
-  scoped_ptr<Window> window0(CreateTestWindowWithId(0, NULL));
+  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
   wm::ActivateWindow(window0.get());
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 
@@ -249,7 +248,7 @@ TEST_F(FocusCyclerTest, Launcher_CycleFocusBackwardInvisible) {
   launcher_widget()->Hide();
 
   // Create a single test window.
-  scoped_ptr<Window> window0(CreateTestWindowWithId(0, NULL));
+  scoped_ptr<Window> window0(CreateTestWindowInShellWithId(0));
   wm::ActivateWindow(window0.get());
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 
