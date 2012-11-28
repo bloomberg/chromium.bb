@@ -85,21 +85,21 @@ static bool isLayerBackFaceVisible(LayerType* layer)
     // rendering context by checking if the parent preserves 3d.
 
     if (layerIsInExisting3DRenderingContext(layer))
-        return MathUtil::isBackFaceVisible(layer->drawTransform());
+        return layer->drawTransform().IsBackFaceVisible();
 
     // In this case, either the layer establishes a new 3d rendering context, or is not in
     // a 3d rendering context at all.
-    return MathUtil::isBackFaceVisible(layer->transform());
+    return layer->transform().IsBackFaceVisible();
 }
 
 template<typename LayerType>
 static bool isSurfaceBackFaceVisible(LayerType* layer, const gfx::Transform& drawTransform)
 {
     if (layerIsInExisting3DRenderingContext(layer))
-        return MathUtil::isBackFaceVisible(drawTransform);
+        return drawTransform.IsBackFaceVisible();
 
     if (isRootLayerOfNewRenderingContext(layer))
-        return MathUtil::isBackFaceVisible(layer->transform());
+        return layer->transform().IsBackFaceVisible();
 
     // If the renderSurface is not part of a new or existing rendering context, then the
     // layers that contribute to this surface will decide back-face visibility for themselves.
@@ -138,14 +138,6 @@ static gfx::Rect calculateVisibleContentRect(LayerType* layer)
         return gfx::Rect();
 
     return LayerTreeHostCommon::calculateVisibleRect(targetSurfaceClipRect, gfx::Rect(gfx::Point(), layer->contentBounds()), layer->drawTransform());
-}
-
-static bool isScaleOrTranslation(const gfx::Transform& m)
-{
-    return !m.matrix().getDouble(1, 0) && !m.matrix().getDouble(2, 0) && !m.matrix().getDouble(3, 0)
-           && !m.matrix().getDouble(0, 1) && !m.matrix().getDouble(2, 1) && !m.matrix().getDouble(3, 1)
-           && !m.matrix().getDouble(0, 2) && !m.matrix().getDouble(1, 2) && !m.matrix().getDouble(2, 3)
-           && m.matrix().getDouble(3, 3);
 }
 
 static inline bool transformToParentIsKnown(LayerImpl*)
@@ -562,7 +554,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, const gfx::Transfo
 
     gfx::Vector2dF renderSurfaceSublayerScale = MathUtil::computeTransform2dScaleComponents(combinedTransform);
 
-    if (subtreeShouldRenderToSeparateSurface(layer, isScaleOrTranslation(combinedTransform))) {
+    if (subtreeShouldRenderToSeparateSurface(layer, combinedTransform.IsScaleOrTranslation())) {
         // Check back-face visibility before continuing with this surface and its subtree
         if (!layer->doubleSided() && transformToParentIsKnown(layer) && isSurfaceBackFaceVisible(layer, combinedTransform))
             return;

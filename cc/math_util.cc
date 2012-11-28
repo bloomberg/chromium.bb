@@ -107,7 +107,7 @@ gfx::Rect MathUtil::mapClippedRect(const gfx::Transform& transform, const gfx::R
 
 gfx::RectF MathUtil::mapClippedRect(const gfx::Transform& transform, const gfx::RectF& srcRect)
 {
-    if (MathUtil::isIdentityOrTranslation(transform))
+    if (transform.IsIdentityOrTranslation())
         return srcRect + gfx::Vector2dF(static_cast<float>(transform.matrix().getDouble(0, 3)), static_cast<float>(transform.matrix().getDouble(1, 3)));
 
     // Apply the transform, but retain the result in homogeneous coordinates.
@@ -122,7 +122,7 @@ gfx::RectF MathUtil::mapClippedRect(const gfx::Transform& transform, const gfx::
 
 gfx::RectF MathUtil::projectClippedRect(const gfx::Transform& transform, const gfx::RectF& srcRect)
 {
-    if (MathUtil::isIdentityOrTranslation(transform))
+    if (transform.IsIdentityOrTranslation())
         return srcRect + gfx::Vector2dF(static_cast<float>(transform.matrix().getDouble(0, 3)), static_cast<float>(transform.matrix().getDouble(1, 3)));
 
     // Perform the projection, but retain the result in homogeneous coordinates.
@@ -241,7 +241,7 @@ gfx::RectF MathUtil::computeEnclosingClippedRect(const HomogeneousCoordinate& h1
 
 gfx::QuadF MathUtil::mapQuad(const gfx::Transform& transform, const gfx::QuadF& q, bool& clipped)
 {
-    if (MathUtil::isIdentityOrTranslation(transform)) {
+    if (transform.IsIdentityOrTranslation()) {
         gfx::QuadF mappedQuad(q);
         mappedQuad += gfx::Vector2dF(static_cast<float>(transform.matrix().getDouble(0, 3)), static_cast<float>(transform.matrix().getDouble(1, 3)));
         clipped = false;
@@ -373,7 +373,7 @@ static inline float scaleOnAxis(double a, double b, double c)
 
 gfx::Vector2dF MathUtil::computeTransform2dScaleComponents(const gfx::Transform& transform)
 {
-    if (hasPerspective(transform))
+    if (transform.HasPerspective())
         return gfx::Vector2dF(1, 1);
     float xScale = scaleOnAxis(transform.matrix().getDouble(0, 0), transform.matrix().getDouble(1, 0), transform.matrix().getDouble(2, 0));
     float yScale = scaleOnAxis(transform.matrix().getDouble(0, 1), transform.matrix().getDouble(1, 1), transform.matrix().getDouble(2, 1));
@@ -394,67 +394,20 @@ gfx::Vector2dF MathUtil::projectVector(gfx::Vector2dF source, gfx::Vector2dF des
     return gfx::Vector2dF(projectedLength * destination.x(), projectedLength * destination.y());
 }
 
-bool MathUtil::isBackFaceVisible(const gfx::Transform& transform)
-{
-    // Compute whether a layer with a forward-facing normal of (0, 0, 1) would
-    // have its back face visible after applying the transform.
-    //
-    // This is done by transforming the normal and seeing if the resulting z
-    // value is positive or negative. However, note that transforming a normal
-    // actually requires using the inverse-transpose of the original transform.
-
-    // TODO (shawnsingh) make this perform more efficiently - we do not
-    // actually need to instantiate/invert/transpose any matrices, exploiting the
-    // fact that we only need to transform (0, 0, 1, 0).
-    gfx::Transform inverseTransform = MathUtil::inverse(transform);
-    const SkMatrix44& mInv = inverseTransform.matrix();
-
-    return mInv.getDouble(2, 2) < 0;
-}
-
-bool MathUtil::isIdentityOrTranslation(const gfx::Transform& transform)
-{
-    const SkMatrix44& matrix = transform.matrix();
-
-    bool hasNoPerspective = !matrix.getDouble(3, 0) && !matrix.getDouble(3, 1) && !matrix.getDouble(3, 2) && (matrix.getDouble(3, 3) == 1);
-    bool hasNoRotationOrSkew = !matrix.getDouble(0, 1) && !matrix.getDouble(0, 2) && !matrix.getDouble(1, 0) &&
-        !matrix.getDouble(1, 2) && !matrix.getDouble(2, 0) && !matrix.getDouble(2, 1);
-    bool hasNoScale = matrix.getDouble(0, 0) == 1 && matrix.getDouble(1, 1) == 1 && matrix.getDouble(2, 2) == 1;
-
-    return hasNoPerspective && hasNoRotationOrSkew && hasNoScale;
-}
-
-bool MathUtil::hasPerspective(const gfx::Transform& transform)
-{
-    // Mathematically it is a bit too strict to expect the 4th element to be
-    // equal to 1. However, the only non-perspective case where this element
-    // becomes non-1 is when it was explicitly initialized. In that case it
-    // still causes us to have a nontrivial divide-by-w, so we count it as
-    // being perspective here.
-    const SkMatrix44& matrix = transform.matrix();
-    return matrix.getDouble(3, 0) || matrix.getDouble(3, 1) || matrix.getDouble(3, 2) || (matrix.getDouble(3, 3) != 1);
-}
-
 void MathUtil::rotateEulerAngles(gfx::Transform* transform, double eulerX, double eulerY, double eulerZ)
 {
     // TODO (shawnsingh): make this implementation faster and more accurate by
-    // hard-coding each matrix instead of calling rotateAxisAngle().
+    // hard-coding each matrix instead of calling RotateAbout().
     gfx::Transform rotationAboutX;
     gfx::Transform rotationAboutY;
     gfx::Transform rotationAboutZ;
 
-    MathUtil::rotateAxisAngle(&rotationAboutX, 1, 0, 0, eulerX);
-    MathUtil::rotateAxisAngle(&rotationAboutY, 0, 1, 0, eulerY);
-    MathUtil::rotateAxisAngle(&rotationAboutZ, 0, 0, 1, eulerZ);
+    rotationAboutX.RotateAboutXAxis(eulerX);
+    rotationAboutY.RotateAboutYAxis(eulerY);
+    rotationAboutZ.RotateAboutZAxis(eulerZ);
 
     gfx::Transform composite = rotationAboutZ * rotationAboutY * rotationAboutX;
     transform->PreconcatTransform(composite);
-}
-
-void MathUtil::rotateAxisAngle(gfx::Transform* transform, double i, double j, double k, double degrees)
-{
-    gfx::Vector3dF axis(i, j, k);
-    transform->RotateAbout(axis, degrees);
 }
 
 gfx::Transform MathUtil::inverse(const gfx::Transform& transform)

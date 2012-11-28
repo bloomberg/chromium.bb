@@ -29,13 +29,16 @@ class UI_EXPORT Transform {
   // Resets this transform to the identity transform.
   void MakeIdentity();
 
-  // Applies the current transformation on a rotation and assigns the result
+  // Applies the current transformation on a 2d rotation and assigns the result
   // to |this|.
-  void Rotate(double degree);
+  void Rotate(double degrees) { RotateAboutZAxis(degrees); }
 
   // Applies the current transformation on an axis-angle rotation and assigns
   // the result to |this|.
-  void RotateAbout(const Vector3dF& point, double degree);
+  void RotateAboutXAxis(double degrees);
+  void RotateAboutYAxis(double degrees);
+  void RotateAboutZAxis(double degrees);
+  void RotateAbout(const Vector3dF& axis, double degrees);
 
   // Applies the current transformation on a scaling and assigns the result
   // to |this|.
@@ -67,8 +70,22 @@ class UI_EXPORT Transform {
   // Returns true if this is the identity matrix.
   bool IsIdentity() const;
 
+  // Returns true if the matrix is either identity or pure translation.
+  bool IsIdentityOrTranslation() const;
+
+  // Returns true if the matrix is has only scaling and translation components.
+  bool IsScaleOrTranslation() const;
+
+  // Returns true if the matrix has any perspective component that would
+  // change the w-component of a homogeneous point.
+  bool HasPerspective() const;
+
   // Returns true if this transform is non-singular.
   bool IsInvertible() const;
+
+  // Returns true if a layer with a forward-facing normal of (0, 0, 1) would
+  // have its back side facing frontwards after applying the transform.
+  bool IsBackFaceVisible() const;
 
   // Inverts the transform which is passed in. Returns true if successful.
   bool GetInverse(Transform* transform) const WARN_UNUSED_RESULT;

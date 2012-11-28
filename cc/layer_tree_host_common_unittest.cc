@@ -2457,7 +2457,7 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithoutPreserves3d)
 
     gfx::Transform backfaceMatrix;
     backfaceMatrix.Translate(50, 50);
-    MathUtil::rotateAxisAngle(&backfaceMatrix, 0, 1, 0, 180);
+    backfaceMatrix.RotateAboutYAxis(180);
     backfaceMatrix.Translate(-50, -50);
 
     // Having a descendant and opacity will force these to have render surfaces.
@@ -2551,7 +2551,7 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3d)
 
     gfx::Transform backfaceMatrix;
     backfaceMatrix.Translate(50, 50);
-    MathUtil::rotateAxisAngle(&backfaceMatrix, 0, 1, 0, 180);
+    backfaceMatrix.RotateAboutYAxis(180);
     backfaceMatrix.Translate(-50, -50);
 
     // Opacity will not force creation of renderSurfaces in this case because of the
@@ -2637,7 +2637,7 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithAnimatingTransforms)
 
     gfx::Transform backfaceMatrix;
     backfaceMatrix.Translate(50, 50);
-    MathUtil::rotateAxisAngle(&backfaceMatrix, 0, 1, 0, 180);
+    backfaceMatrix.RotateAboutYAxis(180);
     backfaceMatrix.Translate(-50, -50);
 
     // Make our render surface.
@@ -2712,7 +2712,7 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3dForFlatteningS
 
     gfx::Transform backfaceMatrix;
     backfaceMatrix.Translate(50, 50);
-    MathUtil::rotateAxisAngle(&backfaceMatrix, 0, 1, 0, 180);
+    backfaceMatrix.RotateAboutYAxis(180);
     backfaceMatrix.Translate(-50, -50);
 
     setLayerPropertiesForTesting(parent.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), true); // parent transform style is preserve3d.

@@ -120,11 +120,7 @@ public:
     //
     // TODO(shawnsingh, vollick) we should phase out as much as possible of
     // these temporary functions, putting functionality into gfx::Transform.
-    static bool isBackFaceVisible(const gfx::Transform&);
-    static bool isIdentityOrTranslation(const gfx::Transform&);
-    static bool hasPerspective(const gfx::Transform&);
     static void rotateEulerAngles(gfx::Transform*, double eulerX, double eulerY, double eulerZ);
-    static void rotateAxisAngle(gfx::Transform*, double i, double j, double k, double degrees);
     static gfx::Transform inverse(const gfx::Transform&);
     static gfx::Transform to2dTransform(const gfx::Transform&);
     // Note carefully: the args here are labeled as per Webcore indexing conventions.

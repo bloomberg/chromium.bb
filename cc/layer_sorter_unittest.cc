@@ -64,7 +64,7 @@ TEST(LayerSorterTest, RightAngleOverlap)
     // Two layers forming a right angle with a perspective viewing transform.
     gfx::Transform leftFaceMatrix;
     leftFaceMatrix.Translate3d(-1, 0, -5);
-    MathUtil::rotateAxisAngle(&leftFaceMatrix, 0, 1, 0, -90);
+    leftFaceMatrix.RotateAboutYAxis(-90);
     leftFaceMatrix.Translate(-1, -1);
     LayerShape leftFace(2, 2, perspectiveMatrix * leftFaceMatrix);
     gfx::Transform frontFaceMatrix;
@@ -94,7 +94,7 @@ TEST(LayerSorterTest, IntersectingLayerOverlap)
 
     gfx::Transform throughMatrix;
     throughMatrix.Translate3d(0, 0, -4);
-    MathUtil::rotateAxisAngle(&throughMatrix, 0, 1, 0, 45);
+    throughMatrix.RotateAboutYAxis(45);
     throughMatrix.Translate(-1, -1);
     LayerShape rotatedFace(2, 2, perspectiveMatrix * throughMatrix);
     overlapResult = LayerSorter::checkOverlap(&frontFace, &rotatedFace, zThreshold, weight);
@@ -131,7 +131,7 @@ TEST(LayerSorterTest, LayersAtAngleOverlap)
     LayerShape layerB(8, 20, transformB);
 
     gfx::Transform transformC;
-    MathUtil::rotateAxisAngle(&transformC, 0, 1, 0, 40);
+    transformC.RotateAboutYAxis(40);
     transformC.Translate(-4, -10);
     LayerShape layerC(8, 20, transformC);
 

@@ -49,34 +49,71 @@ void Transform::MakeIdentity() {
   matrix_.setIdentity();
 }
 
-void Transform::Rotate(double degree) {
+void Transform::RotateAboutXAxis(double degrees) {
+  double radians = degrees * M_PI / 180;
+  double cosTheta = std::cos(radians);
+  double sinTheta = std::sin(radians);
   if (matrix_.isIdentity()) {
-    matrix_.setRotateDegreesAbout(SkDoubleToMScalar(0),
-                                  SkDoubleToMScalar(0),
-                                  SkDoubleToMScalar(1),
-                                  SkDoubleToMScalar(degree));
+      matrix_.set3x3(1, 0, 0,
+                     0, cosTheta, sinTheta,
+                     0, -sinTheta, cosTheta);
   } else {
     SkMatrix44 rot;
-    rot.setRotateDegreesAbout(SkDoubleToMScalar(0),
-                              SkDoubleToMScalar(0),
-                              SkDoubleToMScalar(1),
-                              SkDoubleToMScalar(degree));
+    rot.set3x3(1, 0, 0,
+               0, cosTheta, sinTheta,
+               0, -sinTheta, cosTheta);
     matrix_.preConcat(rot);
   }
 }
 
-void Transform::RotateAbout(const Vector3dF& axis, double degree) {
+void Transform::RotateAboutYAxis(double degrees) {
+  double radians = degrees * M_PI / 180;
+  double cosTheta = std::cos(radians);
+  double sinTheta = std::sin(radians);
+  if (matrix_.isIdentity()) {
+      // Note carefully the placement of the -sinTheta for rotation about
+      // y-axis is different than rotation about x-axis or z-axis.
+      matrix_.set3x3(cosTheta, 0, -sinTheta,
+                     0, 1, 0,
+                     sinTheta, 0, cosTheta);
+  } else {
+    SkMatrix44 rot;
+    rot.set3x3(cosTheta, 0, -sinTheta,
+               0, 1, 0,
+               sinTheta, 0, cosTheta);
+    matrix_.preConcat(rot);
+  }
+}
+
+void Transform::RotateAboutZAxis(double degrees) {
+  double radians = degrees * M_PI / 180;
+  double cosTheta = std::cos(radians);
+  double sinTheta = std::sin(radians);
+  if (matrix_.isIdentity()) {
+      matrix_.set3x3(cosTheta, sinTheta, 0,
+                     -sinTheta, cosTheta, 0,
+                     0, 0, 1);
+  } else {
+    SkMatrix44 rot;
+    rot.set3x3(cosTheta, sinTheta, 0,
+               -sinTheta, cosTheta, 0,
+               0, 0, 1);
+    matrix_.preConcat(rot);
+  }
+}
+
+void Transform::RotateAbout(const Vector3dF& axis, double degrees) {
   if (matrix_.isIdentity()) {
     matrix_.setRotateDegreesAbout(SkDoubleToMScalar(axis.x()),
                                   SkDoubleToMScalar(axis.y()),
                                   SkDoubleToMScalar(axis.z()),
-                                  SkDoubleToMScalar(degree));
+                                  SkDoubleToMScalar(degrees));
   } else {
     SkMatrix44 rot;
     rot.setRotateDegreesAbout(SkDoubleToMScalar(axis.x()),
                               SkDoubleToMScalar(axis.y()),
                               SkDoubleToMScalar(axis.z()),
-                              SkDoubleToMScalar(degree));
+                              SkDoubleToMScalar(degrees));
     matrix_.preConcat(rot);
   }
 }
@@ -185,8 +222,73 @@ bool Transform::IsIdentity() const {
   return matrix_.isIdentity();
 }
 
+bool Transform::IsIdentityOrTranslation() const {
+  bool has_no_perspective = !matrix_.getDouble(3, 0) &&
+                            !matrix_.getDouble(3, 1) &&
+                            !matrix_.getDouble(3, 2) &&
+                            (matrix_.getDouble(3, 3) == 1);
+
+  bool has_no_rotation_or_skew = !matrix_.getDouble(0, 1) &&
+                                 !matrix_.getDouble(0, 2) &&
+                                 !matrix_.getDouble(1, 0) &&
+                                 !matrix_.getDouble(1, 2) &&
+                                 !matrix_.getDouble(2, 0) &&
+                                 !matrix_.getDouble(2, 1);
+
+  bool has_no_scale = matrix_.getDouble(0, 0) == 1 &&
+                      matrix_.getDouble(1, 1) == 1 &&
+                      matrix_.getDouble(2, 2) == 1;
+
+  return has_no_perspective && has_no_rotation_or_skew && has_no_scale;
+}
+
+bool Transform::IsScaleOrTranslation() const {
+  bool has_no_perspective = !matrix_.getDouble(3, 0) &&
+                            !matrix_.getDouble(3, 1) &&
+                            !matrix_.getDouble(3, 2) &&
+                            (matrix_.getDouble(3, 3) == 1);
+
+  bool has_no_rotation_or_skew = !matrix_.getDouble(0, 1) &&
+                                 !matrix_.getDouble(0, 2) &&
+                                 !matrix_.getDouble(1, 0) &&
+                                 !matrix_.getDouble(1, 2) &&
+                                 !matrix_.getDouble(2, 0) &&
+                                 !matrix_.getDouble(2, 1);
+
+  return has_no_perspective && has_no_rotation_or_skew;
+}
+
+bool Transform::HasPerspective() const {
+  return matrix_.getDouble(3, 0) ||
+         matrix_.getDouble(3, 1) ||
+         matrix_.getDouble(3, 2) ||
+         (matrix_.getDouble(3, 3) != 1);
+}
+
 bool Transform::IsInvertible() const {
   return std::abs(matrix_.determinant()) > kTooSmallForDeterminant;
+}
+
+bool Transform::IsBackFaceVisible() const {
+  // Compute whether a layer with a forward-facing normal of (0, 0, 1) would
+  // have its back face visible after applying the transform.
+  //
+  // This is done by transforming the normal and seeing if the resulting z
+  // value is positive or negative. However, note that transforming a normal
+  // actually requires using the inverse-transpose of the original transform.
+
+  // TODO (shawnsingh) make this perform more efficiently - we do not
+  // actually need to instantiate/invert/transpose any matrices, exploiting the
+  // fact that we only need to transform (0, 0, 1, 0).
+  SkMatrix44 inverse;
+  bool invertible = matrix_.invert(&inverse);
+
+  // Assume the transform does not apply if it's not invertible, so it's
+  // front face remains visible.
+  if (!invertible)
+    return false;
+
+  return inverse.getDouble(2, 2) < 0;
 }
 
 bool Transform::GetInverse(Transform* transform) const {

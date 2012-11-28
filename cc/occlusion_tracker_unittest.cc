@@ -1934,7 +1934,7 @@ protected:
         gfx::Transform transform;
         transform.Translate(150, 150);
         transform.ApplyPerspectiveDepth(400);
-        MathUtil::rotateAxisAngle(&transform, 1, 0, 0, -30);
+        transform.RotateAboutXAxis(-30);
         transform.Translate(-150, -150);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 300));
@@ -1966,7 +1966,7 @@ protected:
         transform.ApplyPerspectiveDepth(10);
         transform.Translate(-250, -50);
         transform.Translate(250, 50);
-        MathUtil::rotateAxisAngle(&transform, 1, 0, 0, -167);
+        transform.RotateAboutXAxis(-167);
         transform.Translate(-250, -50);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(500, 100));
