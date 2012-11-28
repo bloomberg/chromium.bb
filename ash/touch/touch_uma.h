@@ -31,6 +31,14 @@ class TouchUMA {
                         const ui::TouchEvent& event);
 
  private:
+  void UpdateBurstData(const ui::TouchEvent& event);
+
+  // These are used to measure the number of touch-start events we receive in a
+  // quick succession, regardless of the target window.
+  bool touch_in_progress_;
+  int burst_length_;
+  base::TimeDelta last_touch_down_time_;
+
   DISALLOW_COPY_AND_ASSIGN(TouchUMA);
 };
 

@@ -7,6 +7,7 @@
 #include "ash/shell_delegate.h"
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
@@ -247,7 +248,9 @@ UMAEventType UMAEventTypeFromEvent(const ui::Event& event) {
 namespace ash {
 namespace internal {
 
-TouchUMA::TouchUMA() {
+TouchUMA::TouchUMA()
+    : touch_in_progress_(false),
+      burst_length_(0) {
 }
 
 TouchUMA::~TouchUMA() {
@@ -283,6 +286,8 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
   UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchRadius",
       static_cast<int>(std::max(event.radius_x(), event.radius_y())),
       1, 500, 100);
+
+  UpdateBurstData(event);
 
   WindowTouchDetails* details = target->GetProperty(kWindowTouchDetails);
   if (!details) {
@@ -385,6 +390,28 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
 
     details->last_move_time_[event.touch_id()] = event.time_stamp();
     details->last_touch_position_[event.touch_id()] = event.location();
+  }
+}
+
+void TouchUMA::UpdateBurstData(const ui::TouchEvent& event) {
+  if (event.type() == ui::ET_TOUCH_PRESSED) {
+    if (!touch_in_progress_) {
+      base::TimeDelta difference = event.time_stamp() - last_touch_down_time_;
+      if (difference > base::TimeDelta::FromMilliseconds(250)) {
+        if (burst_length_) {
+          UMA_HISTOGRAM_COUNTS_100("Ash.TouchStartBurst",
+                                   std::min(burst_length_, 100));
+        }
+        burst_length_ = 1;
+      } else {
+        ++burst_length_;
+      }
+    }
+    touch_in_progress_ = true;
+    last_touch_down_time_ = event.time_stamp();
+  } else if (event.type() == ui::ET_TOUCH_RELEASED) {
+    if (!aura::Env::GetInstance()->is_touch_down())
+      touch_in_progress_ = false;
   }
 }
 
