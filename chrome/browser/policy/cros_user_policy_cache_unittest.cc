@@ -65,7 +65,7 @@ class CrosUserPolicyCacheTest : public testing::Test {
 
   void CreatePolicyResponse(em::PolicyFetchResponse* response) {
     em::CloudPolicySettings policy_settings;
-    policy_settings.mutable_showhomebutton()->set_showhomebutton(true);
+    policy_settings.mutable_showhomebutton()->set_value(true);
 
     em::PolicyData policy_data;
     policy_data.set_policy_type(dm_protocol::kChromeUserPolicyType);

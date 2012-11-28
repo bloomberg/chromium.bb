@@ -19,10 +19,6 @@ namespace chromeos {
 class SessionManagerClient;
 }
 
-namespace enterprise_management {
-class CloudPolicySettings;
-}
-
 namespace policy {
 
 class LegacyPolicyCacheLoader;

@@ -64,7 +64,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
                                                   policy_file()));
     store_->AddObserver(&observer_);
 
-    policy_.payload().mutable_showhomebutton()->set_showhomebutton(true);
+    policy_.payload().mutable_showhomebutton()->set_value(true);
     policy_.Build();
   }
 

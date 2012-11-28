@@ -29,8 +29,7 @@ namespace policy {
 
 // Decodes a CloudPolicySettings object into a PolicyMap.
 // The implementation is generated code in policy/cloud_policy_generated.cc.
-void DecodePolicy(const em::CloudPolicySettings& policy,
-                  PolicyMap* policies);
+void DecodePolicy(const em::CloudPolicySettings& policy, PolicyMap* policies);
 
 // The implementations of these methods are in cloud_policy_generated.cc.
 Value* DecodeIntegerValue(google::protobuf::int64 value);
@@ -71,9 +70,9 @@ class UserPolicyCacheTest : public testing::Test {
     em::PolicyData signed_response;
     if (homepage != "") {
       em::CloudPolicySettings settings;
-      em::HomepageLocationProto* homepagelocation_proto =
+      em::StringPolicyProto* homepagelocation_proto =
           settings.mutable_homepagelocation();
-      homepagelocation_proto->set_homepagelocation(homepage);
+      homepagelocation_proto->set_value(homepage);
       homepagelocation_proto->mutable_policy_options()->set_mode(policy_mode);
       EXPECT_TRUE(
           settings.SerializeToString(signed_response.mutable_policy_value()));
@@ -135,24 +134,30 @@ class UserPolicyCacheTest : public testing::Test {
 
 TEST_F(UserPolicyCacheTest, DecodePolicy) {
   em::CloudPolicySettings settings;
-  settings.mutable_homepagelocation()->set_homepagelocation("chromium.org");
-  settings.mutable_javascriptenabled()->set_javascriptenabled(true);
+  settings.mutable_homepagelocation()->set_value("chromium.org");
+  settings.mutable_javascriptenabled()->set_value(true);
   settings.mutable_javascriptenabled()->mutable_policy_options()->set_mode(
       em::PolicyOptions::MANDATORY);
-  settings.mutable_policyrefreshrate()->set_policyrefreshrate(5);
+  settings.mutable_policyrefreshrate()->set_value(5);
   settings.mutable_policyrefreshrate()->mutable_policy_options()->set_mode(
       em::PolicyOptions::RECOMMENDED);
-  settings.mutable_showhomebutton()->set_showhomebutton(true);
+  settings.mutable_showhomebutton()->set_value(true);
   settings.mutable_showhomebutton()->mutable_policy_options()->set_mode(
       em::PolicyOptions::UNSET);
+  em::StringList* disabled_schemes =
+      settings.mutable_disabledschemes()->mutable_value();
+  disabled_schemes->add_entries("ftp");
+  disabled_schemes->add_entries("mailto");
 #ifdef NDEBUG
   // Setting an invalid PolicyMode enum value triggers a DCHECK in protobuf.
-  settings.mutable_homepageisnewtabpage()->set_homepageisnewtabpage(true);
+  settings.mutable_homepageisnewtabpage()->set_value(true);
   settings.mutable_homepageisnewtabpage()->mutable_policy_options()->set_mode(
       static_cast<em::PolicyOptions::PolicyMode>(-1));
 #endif
+
   PolicyMap policy;
   DecodePolicy(settings, &policy);
+
   PolicyMap expected;
   expected.Set(key::kHomepageLocation,
                POLICY_LEVEL_MANDATORY,
@@ -166,6 +171,14 @@ TEST_F(UserPolicyCacheTest, DecodePolicy) {
                POLICY_LEVEL_RECOMMENDED,
                POLICY_SCOPE_USER,
                Value::CreateIntegerValue(5));
+  base::ListValue expected_schemes;
+  expected_schemes.AppendString("ftp");
+  expected_schemes.AppendString("mailto");
+  expected.Set(key::kDisabledSchemes,
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               expected_schemes.DeepCopy());
+
   EXPECT_TRUE(policy.Equals(expected));
 }
 

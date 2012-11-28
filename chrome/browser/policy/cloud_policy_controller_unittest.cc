@@ -53,8 +53,8 @@ class CloudPolicyControllerTest : public testing::Test {
         file_thread_(BrowserThread::FILE, &loop_) {
     em::PolicyData signed_response;
     em::CloudPolicySettings settings;
-    em::DisableSpdyProto* spdy_proto = settings.mutable_disablespdy();
-    spdy_proto->set_disablespdy(true);
+    em::BooleanPolicyProto* spdy_proto = settings.mutable_disablespdy();
+    spdy_proto->set_value(true);
     spdy_proto->mutable_policy_options()->set_mode(
         em::PolicyOptions::MANDATORY);
     EXPECT_TRUE(

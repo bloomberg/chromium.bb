@@ -386,28 +386,26 @@ class RequestHandler(object):
       policies: The source: a dictionary containing policies under keys
           'recommended' and 'mandatory'.
     '''
-    for group in settings.DESCRIPTOR.fields:
-      # Create protobuf message for group.
-      group_message = eval('cp.' + group.message_type.name + '()')
-      # We assume that this policy group will be recommended, and only switch
-      # it to mandatory if at least one of its members is mandatory.
-      group_message.policy_options.mode = cp.PolicyOptions.RECOMMENDED
-      # Indicates if at least one field was set in |group_message|.
-      got_fields = False
-      # Iterate over fields of the message and feed them from the
-      # policy config file.
-      for field in group_message.DESCRIPTOR.fields:
-        field_value = None
-        if field.name in policies['mandatory']:
-          group_message.policy_options.mode = cp.PolicyOptions.MANDATORY
-          field_value = policies['mandatory'][field.name]
-        elif field.name in policies['recommended']:
-          field_value = policies['recommended'][field.name]
-        if field_value is not None:
-          got_fields = True
-          self.SetProtobufMessageField(group_message, field, field_value)
-      if got_fields:
-        settings.__getattribute__(group.name).CopyFrom(group_message)
+    for field in settings.DESCRIPTOR.fields:
+      # |field| is the entry for a specific policy in the top-level
+      # CloudPolicySettings proto.
+
+      # Look for this policy's value in the mandatory or recommended dicts.
+      if field.name in policies['mandatory']:
+        mode = cp.PolicyOptions.MANDATORY
+        value = policies['mandatory'][field.name]
+      elif field.name in policies['recommended']:
+        mode = cp.PolicyOptions.RECOMMENDED
+        value = policies['recommended'][field.name]
+      else:
+        continue
+
+      # Create protobuf message for this policy.
+      policy_message = eval('cp.' + field.message_type.name + '()')
+      policy_message.policy_options.mode = mode
+      field_descriptor = policy_message.DESCRIPTOR.fields_by_name['value']
+      self.SetProtobufMessageField(policy_message, field_descriptor, value)
+      settings.__getattribute__(field.name).CopyFrom(policy_message)
 
   def ProcessCloudPolicy(self, msg):
     """Handles a cloud policy request. (New protocol for policy requests.)

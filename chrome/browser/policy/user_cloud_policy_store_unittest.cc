@@ -60,7 +60,7 @@ class UserCloudPolicyStoreTest : public testing::Test {
     store_.reset(new UserCloudPolicyStore(profile_.get(), policy_file()));
     store_->AddObserver(&observer_);
 
-    policy_.payload().mutable_showhomebutton()->set_showhomebutton(true);
+    policy_.payload().mutable_showhomebutton()->set_value(true);
     policy_.Build();
   }
 
@@ -227,7 +227,7 @@ TEST_F(UserCloudPolicyStoreTest, StoreTwoTimes) {
   EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).Times(2);
 
   UserPolicyBuilder first_policy;
-  first_policy.payload().mutable_showhomebutton()->set_showhomebutton(false);
+  first_policy.payload().mutable_showhomebutton()->set_value(false);
   first_policy.Build();
   store_->Store(first_policy.policy());
   RunUntilIdle();

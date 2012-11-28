@@ -79,7 +79,7 @@ ACTION_P3(CreateSuccessfulPolicyResponse,
           serial_valid) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   em::CloudPolicySettings settings;
-  settings.mutable_homepagelocation()->set_homepagelocation(homepage_location);
+  settings.mutable_homepagelocation()->set_value(homepage_location);
   em::PolicyData policy_data;
   policy_data.set_policy_type(kPolicyType);
   policy_data.set_policy_value(settings.SerializeAsString());

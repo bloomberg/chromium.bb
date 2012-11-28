@@ -46,11 +46,17 @@ def main():
   parser.add_option('--pcc', '--policy-constants-source', dest='source_path',
                     help='generate source file of policy constants',
                     metavar='FILE')
-  parser.add_option('--ppb', '--policy-protobuf', dest='proto_path',
+  parser.add_option('--cpp', '--cloud-policy-protobuf',
+                    dest='cloud_policy_proto_path',
                     help='generate cloud policy protobuf file',
                     metavar='FILE')
-  parser.add_option('--ppd', '--protobuf-decoder', dest='decoder_path',
-                    help='generate C++ code decoding the policy protobuf',
+  parser.add_option('--csp', '--chrome-settings-protobuf',
+                    dest='chrome_settings_proto_path',
+                    help='generate chrome settings protobuf file',
+                    metavar='FILE')
+  parser.add_option('--cpd', '--cloud-policy-decoder',
+                    dest='cloud_policy_decoder_path',
+                    help='generate C++ code decoding the cloud policy protobuf',
                     metavar='FILE')
 
   (opts, args) = parser.parse_args()
@@ -64,10 +70,15 @@ def main():
     _WritePolicyConstantHeader(template_file_contents, args, opts)
   if opts.source_path is not None:
     _WritePolicyConstantSource(template_file_contents, args, opts)
-  if opts.proto_path is not None:
-    _WriteProtobuf(template_file_contents, args, opts.proto_path)
-  if opts.decoder_path is not None:
-    _WriteProtobufParser(template_file_contents, args, opts.decoder_path)
+  if opts.cloud_policy_proto_path is not None:
+    _WriteCloudPolicyProtobuf(
+        template_file_contents, args, opts.cloud_policy_proto_path)
+  if opts.chrome_settings_proto_path is not None:
+    _WriteChromeSettingsProtobuf(
+        template_file_contents, args, opts.chrome_settings_proto_path)
+  if opts.cloud_policy_decoder_path is not None:
+    _WriteCloudPolicyDecoder(
+        template_file_contents, args, opts.cloud_policy_decoder_path)
   return 0
 
 
@@ -112,6 +123,16 @@ def _RemovePlaceholders(text):
   return result;
 
 
+# Returns an iterator over all the policies in |template_file_contents|.
+def _Flatten(template_file_contents):
+  for policy in template_file_contents['policy_definitions']:
+    if policy['type'] == 'group':
+      for sub_policy in policy['policies']:
+        yield sub_policy
+    else:
+      yield policy
+
+
 # Returns a PolicyDetails named tuple with details about the given policy.
 def _GetPolicyDetails(policy):
   name = policy['name']
@@ -129,13 +150,7 @@ def _GetPolicyDetails(policy):
 
 
 def _GetPolicyList(template_file_contents):
-  policies = []
-  for policy in template_file_contents['policy_definitions']:
-    if policy['type'] == 'group':
-      for sub_policy in policy['policies']:
-        policies.append(_GetPolicyDetails(sub_policy))
-    else:
-      policies.append(_GetPolicyDetails(policy))
+  policies = [_GetPolicyDetails(p) for p in _Flatten(template_file_contents)]
   policies.sort(key=lambda policy: policy.name)
   return policies
 
@@ -275,8 +290,20 @@ def _WritePolicyConstantSource(template_file_contents, args, opts):
             '}  // namespace policy\n')
 
 
-#------------------ policy protobuf --------------------------------#
-PROTO_HEAD = '''
+#------------------ policy protobufs --------------------------------#
+CHROME_SETTINGS_PROTO_HEAD = '''
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package enterprise_management;
+
+// For StringList and PolicyOptions.
+import "cloud_policy.proto";
+
+'''
+
+CLOUD_POLICY_PROTO_HEAD = '''
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
@@ -299,6 +326,26 @@ message PolicyOptions {
   optional PolicyMode mode = 1 [default = MANDATORY];
 }
 
+message BooleanPolicyProto {
+  optional PolicyOptions policy_options = 1;
+  optional bool value = 2;
+}
+
+message IntegerPolicyProto {
+  optional PolicyOptions policy_options = 1;
+  optional int64 value = 2;
+}
+
+message StringPolicyProto {
+  optional PolicyOptions policy_options = 1;
+  optional string value = 2;
+}
+
+message StringListPolicyProto {
+  optional PolicyOptions policy_options = 1;
+  optional StringList value = 2;
+}
+
 '''
 
 
@@ -312,6 +359,17 @@ PROTOBUF_TYPE = {
   'main': 'bool',
   'string': 'string',
   'string-enum': 'string',
+}
+
+
+POLICY_PROTOBUF_TYPE = {
+  'dict': 'String',
+  'int': 'Integer',
+  'int-enum': 'Integer',
+  'list': 'StringList',
+  'main': 'Boolean',
+  'string': 'String',
+  'string-enum': 'String',
 }
 
 
@@ -334,24 +392,34 @@ def _WritePolicyProto(file, policy, fields):
              (policy['name'], policy['name'], policy['id'] + RESERVED_IDS)]
 
 
-def _WriteProtobuf(template_file_contents, args, outfilepath):
+def _WriteChromeSettingsProtobuf(template_file_contents, args, outfilepath):
   with open(outfilepath, 'w') as f:
     _OutputGeneratedWarningForC(f, args[2])
-    f.write(PROTO_HEAD)
+    f.write(CHROME_SETTINGS_PROTO_HEAD)
 
     fields = []
     f.write('// PBs for individual settings.\n\n')
-    for policy in template_file_contents['policy_definitions']:
-      if policy['type'] == 'group':
-        for sub_policy in policy['policies']:
-          _WritePolicyProto(f, sub_policy, fields)
-      else:
-        _WritePolicyProto(f, policy, fields)
+    for policy in _Flatten(template_file_contents):
+      _WritePolicyProto(f, policy, fields)
 
     f.write('// --------------------------------------------------\n'
             '// Big wrapper PB containing the above groups.\n\n'
-            'message CloudPolicySettings {\n')
+            'message ChromeSettingsProto {\n')
     f.write(''.join(fields))
+    f.write('}\n\n')
+
+
+def _WriteCloudPolicyProtobuf(template_file_contents, args, outfilepath):
+  with open(outfilepath, 'w') as f:
+    _OutputGeneratedWarningForC(f, args[2])
+    f.write(CLOUD_POLICY_PROTO_HEAD)
+    f.write('message CloudPolicySettings {\n')
+    for policy in _Flatten(template_file_contents):
+      if policy.get('device_only', False):
+        continue
+      proto_type = POLICY_PROTOBUF_TYPE[policy['type']]
+      f.write('  optional %sPolicyProto %s = %s;\n' %
+              (proto_type, policy['name'], policy['id'] + RESERVED_IDS))
     f.write('}\n\n')
 
 
@@ -423,19 +491,17 @@ def _WritePolicyCode(file, policy):
   if policy.get('device_only', False):
     return
   membername = policy['name'].lower()
-  proto_type = '%sProto' % policy['name']
-  proto_name = '%s_proto' % membername
+  proto_type = '%sPolicyProto' % POLICY_PROTOBUF_TYPE[policy['type']]
   file.write('  if (policy.has_%s()) {\n' % membername)
-  file.write('    const em::%s& %s = policy.%s();\n' %
-             (proto_type, proto_name, membername))
-  file.write('    if (%s.has_%s()) {\n' % (proto_name, membername))
+  file.write('    const em::%s& policy_proto = policy.%s();\n' %
+             (proto_type, membername))
+  file.write('    if (policy_proto.has_value()) {\n')
   file.write('      PolicyLevel level = POLICY_LEVEL_MANDATORY;\n'
              '      bool do_set = true;\n'
-             '      if (%s.has_policy_options()) {\n'
+             '      if (policy_proto.has_policy_options()) {\n'
              '        do_set = false;\n'
-             '        switch(%s.policy_options().mode()) {\n' %
-             (proto_name, proto_name))
-  file.write('          case em::PolicyOptions::MANDATORY:\n'
+             '        switch(policy_proto.policy_options().mode()) {\n'
+             '          case em::PolicyOptions::MANDATORY:\n'
              '            do_set = true;\n'
              '            level = POLICY_LEVEL_MANDATORY;\n'
              '            break;\n'
@@ -449,8 +515,7 @@ def _WritePolicyCode(file, policy):
              '      }\n'
              '      if (do_set) {\n')
   file.write('        Value* value = %s;\n' %
-             (_CreateValue(policy['type'],
-                           '%s.%s()' % (proto_name, membername))))
+             (_CreateValue(policy['type'], 'policy_proto.value()')))
   file.write('        map->Set(key::k%s, level, POLICY_SCOPE_USER, value);\n' %
              policy['name'])
   file.write('      }\n'
@@ -458,16 +523,12 @@ def _WritePolicyCode(file, policy):
              '  }\n')
 
 
-def _WriteProtobufParser(template_file_contents, args, outfilepath):
+def _WriteCloudPolicyDecoder(template_file_contents, args, outfilepath):
   with open(outfilepath, 'w') as f:
     _OutputGeneratedWarningForC(f, args[2])
     f.write(CPP_HEAD)
-    for policy in template_file_contents['policy_definitions']:
-      if policy['type'] == 'group':
-        for sub_policy in policy['policies']:
-          _WritePolicyCode(f, sub_policy)
-      else:
-        _WritePolicyCode(f, policy)
+    for policy in _Flatten(template_file_contents):
+      _WritePolicyCode(f, policy)
     f.write(CPP_FOOT)
 
 

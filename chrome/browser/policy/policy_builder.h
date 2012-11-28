@@ -126,9 +126,9 @@ class TypedPolicyBuilder : public PolicyBuilder {
 };
 
 typedef TypedPolicyBuilder<enterprise_management::CloudPolicySettings>
-  UserPolicyBuilder;
+    UserPolicyBuilder;
 typedef TypedPolicyBuilder<enterprise_management::ChromeDeviceSettingsProto>
-  DevicePolicyBuilder;
+    DevicePolicyBuilder;
 
 }  // namespace policy
 

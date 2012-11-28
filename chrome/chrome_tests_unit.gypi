@@ -11,7 +11,7 @@
       'dependencies': [
         # NOTE: New dependencies should generally be added in the OS!="ios"
         # dependencies block below, rather than here.
-        'app/policy/cloud_policy_codegen.gyp:policy',
+        'app/policy/cloud_policy_codegen.gyp:policy_test_support',
         'browser',
         '../sync/protocol/sync_proto.gyp:sync_proto',
         'chrome_resources.gyp:chrome_resources',
@@ -29,7 +29,7 @@
         '../testing/gtest.gyp:gtest',
       ],
       'export_dependent_settings': [
-        'app/policy/cloud_policy_codegen.gyp:policy',
+        'app/policy/cloud_policy_codegen.gyp:policy_test_support',
         '../base/base.gyp:test_support_base',
       ],
       'include_dirs': [

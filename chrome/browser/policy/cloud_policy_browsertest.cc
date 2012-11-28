@@ -17,6 +17,8 @@
 #include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_service.h"
+#include "chrome/browser/policy/proto/chrome_settings.pb.h"
+#include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/user_cloud_policy_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -43,6 +45,8 @@
 using testing::InvokeWithoutArgs;
 using testing::Mock;
 using testing::_;
+
+namespace em = enterprise_management;
 
 namespace policy {
 
@@ -262,5 +266,54 @@ INSTANTIATE_TEST_CASE_P(
     testing::Values(
         TestSetup(SetUpNewStackBeforeCreatingBrowser,
                   SetUpNewStackAfterCreatingBrowser)));
+
+TEST(CloudPolicyProtoTest, VerifyProtobufEquivalence) {
+  // There are 2 protobufs that can be used for user cloud policy:
+  // cloud_policy.proto and chrome_settings.proto. chrome_settings.proto is the
+  // version used by the server, but generates one proto message per policy; to
+  // save binary size on the client, the other version shares proto messages for
+  // policies of the same type. They generate the same bytes on the wire though,
+  // so they are compatible. This test verifies that that stays true.
+
+  // Build a ChromeSettingsProto message with one policy of each supported type.
+  em::ChromeSettingsProto chrome_settings;
+  chrome_settings.mutable_homepagelocation()->set_homepagelocation(
+      "chromium.org");
+  chrome_settings.mutable_showhomebutton()->set_showhomebutton(true);
+  chrome_settings.mutable_policyrefreshrate()->set_policyrefreshrate(100);
+  em::StringList* list =
+      chrome_settings.mutable_disabledschemes()->mutable_disabledschemes();
+  list->add_entries("ftp");
+  list->add_entries("mailto");
+  // Try explicitly setting a policy mode too.
+  chrome_settings.mutable_disablespdy()->set_disablespdy(false);
+  chrome_settings.mutable_disablespdy()->mutable_policy_options()->set_mode(
+      em::PolicyOptions::MANDATORY);
+  chrome_settings.mutable_syncdisabled()->set_syncdisabled(true);
+  chrome_settings.mutable_syncdisabled()->mutable_policy_options()->set_mode(
+      em::PolicyOptions::RECOMMENDED);
+
+  // Build an equivalent CloudPolicySettings message.
+  em::CloudPolicySettings cloud_policy;
+  cloud_policy.mutable_homepagelocation()->set_value("chromium.org");
+  cloud_policy.mutable_showhomebutton()->set_value(true);
+  cloud_policy.mutable_policyrefreshrate()->set_value(100);
+  list = cloud_policy.mutable_disabledschemes()->mutable_value();
+  list->add_entries("ftp");
+  list->add_entries("mailto");
+  cloud_policy.mutable_disablespdy()->set_value(false);
+  cloud_policy.mutable_disablespdy()->mutable_policy_options()->set_mode(
+      em::PolicyOptions::MANDATORY);
+  cloud_policy.mutable_syncdisabled()->set_value(true);
+  cloud_policy.mutable_syncdisabled()->mutable_policy_options()->set_mode(
+      em::PolicyOptions::RECOMMENDED);
+
+  // They should now serialize to the same bytes.
+  std::string chrome_settings_serialized;
+  std::string cloud_policy_serialized;
+  ASSERT_TRUE(chrome_settings.SerializeToString(&chrome_settings_serialized));
+  ASSERT_TRUE(cloud_policy.SerializeToString(&cloud_policy_serialized));
+  EXPECT_EQ(chrome_settings_serialized, cloud_policy_serialized);
+}
 
 }  // namespace policy

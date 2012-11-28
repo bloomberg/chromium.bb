@@ -23,8 +23,7 @@ namespace policy {
 
 // Decodes a CloudPolicySettings object into a policy map. The implementation is
 // generated code in policy/cloud_policy_generated.cc.
-void DecodePolicy(const em::CloudPolicySettings& policy,
-                  PolicyMap* policies);
+void DecodePolicy(const em::CloudPolicySettings& policy, PolicyMap* policies);
 
 // Takes care of sending a new policy blob to session manager and reports back
 // the status through a callback.

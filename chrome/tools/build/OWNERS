@@ -1,3 +1,7 @@
 # Primarily for */FILES.cfg
 kerz@chromium.org
 mmoss@chromium.org
+
+per-file generate_policy_source.py=joaodasilva@chromium.org
+per-file generate_policy_source.py=mnissler@chromium.org
+per-file generate_policy_source.py=pastarmovj@chromium.org

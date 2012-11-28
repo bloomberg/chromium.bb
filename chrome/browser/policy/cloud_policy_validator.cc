@@ -336,7 +336,7 @@ CloudPolicyValidator<PayloadProto>::~CloudPolicyValidator() {}
 
 template<typename PayloadProto>
 CloudPolicyValidator<PayloadProto>* CloudPolicyValidator<PayloadProto>::Create(
-    scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response) {
+    scoped_ptr<em::PolicyFetchResponse> policy_response) {
   return new CloudPolicyValidator(
       policy_response.Pass(),
       scoped_ptr<PayloadProto>(new PayloadProto()));
@@ -344,7 +344,7 @@ CloudPolicyValidator<PayloadProto>* CloudPolicyValidator<PayloadProto>::Create(
 
 template<typename PayloadProto>
 CloudPolicyValidator<PayloadProto>::CloudPolicyValidator(
-    scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response,
+    scoped_ptr<em::PolicyFetchResponse> policy_response,
     scoped_ptr<PayloadProto> payload)
     : CloudPolicyValidatorBase(policy_response.Pass(), payload.get()),
       payload_(payload.Pass()) {}
@@ -360,9 +360,7 @@ void CloudPolicyValidator<PayloadProto>::StartValidation(
                  base::Bind(completion_callback, this)));
 }
 
-template class CloudPolicyValidator<
-    enterprise_management::ChromeDeviceSettingsProto>;
-template class CloudPolicyValidator<
-    enterprise_management::CloudPolicySettings>;
+template class CloudPolicyValidator<em::ChromeDeviceSettingsProto>;
+template class CloudPolicyValidator<em::CloudPolicySettings>;
 
 }  // namespace policy

@@ -11,9 +11,8 @@
 #include "chrome/browser/policy/mock_device_management_service.h"
 #include "chrome/browser/policy/policy_builder.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
+#include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace em = enterprise_management;
 
 using testing::Mock;
 
@@ -35,8 +34,8 @@ class DeviceLocalAccountPolicyServiceTest
   virtual void SetUp() OVERRIDE {
     DeviceSettingsTestBase::SetUp();
 
-    device_local_account_policy_.payload().mutable_disablespdy()->
-        set_disablespdy(true);
+    device_local_account_policy_.payload().mutable_disablespdy()->set_value(
+        true);
     device_local_account_policy_.policy_data().set_policy_type(
         dm_protocol::kChromePublicAccountPolicyType);
     device_local_account_policy_.Build();
