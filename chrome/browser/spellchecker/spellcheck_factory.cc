@@ -5,7 +5,6 @@
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
@@ -40,10 +39,8 @@ ProfileKeyedService* SpellcheckServiceFactory::BuildServiceInstanceFor(
   SpellcheckService* spellcheck = new SpellcheckService(profile);
 
   // Instantiates Metrics object for spellchecking for use.
-  if (g_browser_process->metrics_service() &&
-      g_browser_process->metrics_service()->recording_active())
-    spellcheck->StartRecordingMetrics(
-        profile->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
+  spellcheck->StartRecordingMetrics(
+      profile->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
 
   return spellcheck;
 }
