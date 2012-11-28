@@ -18,6 +18,7 @@
         '<(DEPTH)/gpu/gpu.gyp:gles2_implementation',
         '<(DEPTH)/third_party/angle/src/build_angle.gyp:translator_glsl',
         '<(DEPTH)/ui/gl/gl.gyp:gl',
+        '<(DEPTH)/webkit/support/webkit_support.gyp:glue',
       ],
       'include_dirs': [
         '<(DEPTH)/skia/config',

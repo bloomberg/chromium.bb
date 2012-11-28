@@ -301,7 +301,6 @@
             '../ipc/ipc.gyp:test_support_ipc',
             '../ppapi/ppapi_internal.gyp:ppapi_shared',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-            '../ui/compositor/compositor.gyp:compositor_test_support',
           ],
           'export_dependent_settings': [
             'renderer',

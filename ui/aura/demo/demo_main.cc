@@ -19,7 +19,6 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/compositor/test/compositor_test_support.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 
@@ -126,7 +125,6 @@ class DemoStackingClient : public aura::client::StackingClient {
 int DemoMain() {
   // Create the message-loop here before creating the root window.
   MessageLoop message_loop(MessageLoop::TYPE_UI);
-  ui::CompositorTestSupport::Initialize();
   aura::Env::GetInstance();
   aura::TestScreen test_screen;
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, &test_screen);
@@ -162,8 +160,6 @@ int DemoMain() {
 
   root_window->ShowRootWindow();
   MessageLoopForUI::current()->Run();
-
-  ui::CompositorTestSupport::Terminate();
 
   return 0;
 }
