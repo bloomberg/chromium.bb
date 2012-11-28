@@ -168,7 +168,7 @@ ACTION_P(MockDownloadFileCallback, status) {
       content::BrowserThread::FILE,
       FROM_HERE,
       base::Bind(&CreateFileWithContent, arg1, kTestFileContent),
-      base::Bind(arg3, status, arg2, arg1)));
+      base::Bind(arg3, status, arg1)));
 }
 
 }  // namespace

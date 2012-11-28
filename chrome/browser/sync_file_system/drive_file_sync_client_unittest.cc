@@ -205,11 +205,10 @@ ACTION_P2(InvokeGetDataCallback5, error, result) {
 }
 
 // Invokes |arg3| as a DownloadActionCallback.
-ACTION_P3(InvokeDownloadActionCallback3,
-          error, content_url, downloaded_file_path) {
+ACTION_P2(InvokeDownloadActionCallback3, error, downloaded_file_path) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(arg3, error, content_url, downloaded_file_path));
+      base::Bind(arg3, error, downloaded_file_path));
 }
 
 // Invokes |arg1| as a EntryActionCallback.
@@ -606,7 +605,6 @@ TEST_F(DriveFileSyncClientTest, DownloadFile) {
                            entry->content_url(),
                            _, _))
       .WillOnce(InvokeDownloadActionCallback3(google_apis::HTTP_SUCCESS,
-                                              entry->content_url(),
                                               kLocalFilePath))
       .RetiresOnSaturation();
 

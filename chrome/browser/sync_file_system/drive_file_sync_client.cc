@@ -446,7 +446,6 @@ void DriveFileSyncClient::DidDownloadFile(
     const std::string& downloaded_file_md5,
     const DownloadFileCallback& callback,
     google_apis::GDataErrorCode error,
-    const GURL& content_url,
     const FilePath& downloaded_file_path) {
   DCHECK(CalledOnValidThread());
   callback.Run(error, downloaded_file_md5);

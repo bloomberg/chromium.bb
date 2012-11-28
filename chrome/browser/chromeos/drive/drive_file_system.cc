@@ -1557,7 +1557,6 @@ void DriveFileSystem::LoadRootFeedFromCacheForTesting(
 void DriveFileSystem::OnFileDownloaded(
     const GetFileFromCacheParams& params,
     google_apis::GDataErrorCode status,
-    const GURL& content_url,
     const FilePath& downloaded_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!params.get_file_callback.is_null());
@@ -1587,7 +1586,6 @@ void DriveFileSystem::OnFileDownloaded(
                  ui_weak_ptr_,
                  params,
                  status,
-                 content_url,
                  downloaded_file_path));
 }
 
@@ -1606,7 +1604,6 @@ void DriveFileSystem::UnpinIfPinned(
 void DriveFileSystem::OnFileDownloadedAndSpaceChecked(
     const GetFileFromCacheParams& params,
     google_apis::GDataErrorCode status,
-    const GURL& content_url,
     const FilePath& downloaded_file_path,
     bool has_enough_space) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

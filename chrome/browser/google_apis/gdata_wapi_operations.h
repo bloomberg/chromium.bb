@@ -102,7 +102,6 @@ class GetAccountMetadataOperation : public GetDataOperation {
 // Callback type for DownloadDocument/DownloadFile DocumentServiceInterface
 // calls.
 typedef base::Callback<void(GDataErrorCode error,
-                            const GURL& content_url,
                             const FilePath& temp_file)> DownloadActionCallback;
 
 // This class performs the operation for downloading of a given document/file.

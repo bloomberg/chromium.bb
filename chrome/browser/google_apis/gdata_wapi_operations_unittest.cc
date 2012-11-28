@@ -44,7 +44,6 @@ void CopyResultsFromDownloadActionCallback(
     GDataErrorCode* out_result_code,
     std::string* contents,
     GDataErrorCode result_code,
-    const GURL& /* content_url */,
     const FilePath& cache_file_path) {
   *out_result_code = result_code;
   file_util::ReadFileToString(cache_file_path, contents);

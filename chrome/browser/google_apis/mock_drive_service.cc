@@ -113,8 +113,7 @@ void MockDriveService::DownloadDocumentStub(
     const DownloadActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, HTTP_SUCCESS,
-                 content_url, local_tmp_path));
+      base::Bind(callback, HTTP_SUCCESS, local_tmp_path));
 }
 
 void MockDriveService::CopyDocumentStub(
@@ -180,7 +179,7 @@ void MockDriveService::DownloadFileStub(
   }
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(download_action_callback, error, content_url, local_tmp_path));
+      base::Bind(download_action_callback, error, local_tmp_path));
 }
 
 }  // namespace google_apis

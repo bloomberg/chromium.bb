@@ -360,7 +360,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Callback for handling file downloading requests.
   void OnFileDownloaded(const GetFileFromCacheParams& params,
                         google_apis::GDataErrorCode status,
-                        const GURL& content_url,
                         const FilePath& downloaded_file_path);
 
   // Unpins file if cache entry is pinned.
@@ -373,7 +372,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // an error in case we don't have enough disk space.
   void OnFileDownloadedAndSpaceChecked(const GetFileFromCacheParams& params,
                                        google_apis::GDataErrorCode status,
-                                       const GURL& content_url,
                                        const FilePath& downloaded_file_path,
                                        bool has_enough_space);
 

@@ -215,13 +215,13 @@ void DownloadFileOperation::ProcessURLFetchResults(const URLFetcher* source) {
   }
 
   if (!download_action_callback_.is_null())
-    download_action_callback_.Run(code, document_url_, temp_file);
+    download_action_callback_.Run(code, temp_file);
   OnProcessURLFetchResultsComplete(code == HTTP_SUCCESS);
 }
 
 void DownloadFileOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
   if (!download_action_callback_.is_null())
-    download_action_callback_.Run(code, document_url_, FilePath());
+    download_action_callback_.Run(code, FilePath());
 }
 
 //=========================== DeleteDocumentOperation ==========================
