@@ -328,6 +328,10 @@ void ComponentLoader::AddDefaultComponentExtensions() {
   Add(IDR_BOOKMARKS_MANIFEST, FilePath(FILE_PATH_LITERAL("bookmark_manager")));
 #endif
 
+// Apps Debugger
+Add(IDR_APPS_DEBUGGER_MANIFEST,
+    FilePath(FILE_PATH_LITERAL("apps_debugger")));
+
 #if defined(OS_CHROMEOS)
   Add(IDR_WALLPAPERMANAGER_MANIFEST,
       FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));

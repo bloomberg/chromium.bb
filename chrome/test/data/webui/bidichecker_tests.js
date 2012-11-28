@@ -60,7 +60,8 @@ function filtersForPage(pageName, isRTL) {
       "RTL" : [
         // BUG: http://crbug.com/93339
         bidichecker.FilterFactory.atText("Chrome Web Store"),
-        bidichecker.FilterFactory.atText("File Manager")
+        bidichecker.FilterFactory.atText("File Manager"),
+        bidichecker.FilterFactory.atText("Chrome Apps Debugger")
       ]
     },
     "chrome://feedback#0?description=%D7%91%D7%93%D7%99%D7%A7%D7%94" :
