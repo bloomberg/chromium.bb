@@ -174,6 +174,7 @@ public:
 
     // TileManagerClient implementation.
     virtual void ScheduleManageTiles() OVERRIDE;
+    virtual void ScheduleRedraw() OVERRIDE;
 
     // WebCompositorOutputSurfaceClient implementation.
     virtual void onVSyncParametersChanged(double monotonicTimebase, double intervalInSeconds) OVERRIDE;

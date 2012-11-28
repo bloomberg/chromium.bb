@@ -357,6 +357,8 @@ void TileManager::DidFinishTileInitialization(
   DCHECK(!managed_tile_state.resource_id);
   managed_tile_state.resource_id = resource_id;
   managed_tile_state.resource_id_is_being_initialized = false;
+  // TODO(qinmin): Make this conditional on managed_tile_state.bin == NOW_BIN.
+  client_->ScheduleRedraw();
 }
 
 }

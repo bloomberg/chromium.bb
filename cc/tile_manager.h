@@ -25,6 +25,7 @@ class ResourceProvider;
 class CC_EXPORT TileManagerClient {
  public:
   virtual void ScheduleManageTiles() = 0;
+  virtual void ScheduleRedraw() = 0;
 
  protected:
   virtual ~TileManagerClient() {}

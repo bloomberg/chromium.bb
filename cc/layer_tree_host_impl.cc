@@ -783,6 +783,12 @@ void LayerTreeHostImpl::ScheduleManageTiles()
       m_client->setNeedsManageTilesOnImplThread();
 }
 
+void LayerTreeHostImpl::ScheduleRedraw()
+{
+    if (m_client)
+      m_client->setNeedsRedrawOnImplThread();
+}
+
 void LayerTreeHostImpl::setManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
 {
     if (m_managedMemoryPolicy == policy)
