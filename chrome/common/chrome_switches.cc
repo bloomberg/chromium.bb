@@ -449,6 +449,9 @@ const char kDnsPrefetchDisable[]            = "dns-prefetch-disable";
 // scripts.
 const char kDumpHistogramsOnExit[]          = "dump-histograms-on-exit";
 
+// Enables the opt-in UI for the app list.
+const char kEnableAppListOptIn[]            = "enable-app-list-opt-in";
+
 // Enables the experimental asynchronous DNS client.
 const char kEnableAsyncDns[]                = "enable-async-dns";
 

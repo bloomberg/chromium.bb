@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/win/object_watcher.h"
 #include "base/win/scoped_handle.h"
-#include "chrome/browser/extensions/app_host_installer_win.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace extensions {

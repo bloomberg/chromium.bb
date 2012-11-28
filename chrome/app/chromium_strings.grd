@@ -932,6 +932,9 @@ For Chromium, processes used to display diagnostics information (such as this "a
       <message name="IDS_APP_LIST_SHORTCUT_NAME" desc="Name for the Chromium App List to appear in the taskbar and in any shortcuts to it.">
         Chromium Apps Launcher
       </message>
+      <message name="IDS_APP_LIST_OPT_IN_TEXT" desc="Text to appear in the prompt to use the Chrome app list.">
+        Use the Chromium Apps Launcher to launch your apps.
+      </message>
     </messages>
   </release>
 </grit>
