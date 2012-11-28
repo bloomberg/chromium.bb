@@ -29,6 +29,7 @@ public:
   virtual const char* layerTypeAsString() const OVERRIDE;
   virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
   virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
+  virtual void didUpdateTransforms() OVERRIDE;
 
   // PictureLayerTilingClient overrides.
   virtual scoped_refptr<Tile> CreateTile(PictureLayerTiling*,
@@ -36,9 +37,6 @@ public:
 
   // PushPropertiesTo active tree => pending tree
   void SyncFromActiveLayer(const PictureLayerImpl* other);
-
-  // Called post-calcDraw.
-  void Update();
 
 protected:
   PictureLayerImpl(int id);

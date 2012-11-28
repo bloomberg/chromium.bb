@@ -80,6 +80,16 @@ void PictureLayerImpl::dumpLayerProperties(std::string*, int indent) const {
   // TODO(enne): implement me
 }
 
+void PictureLayerImpl::didUpdateTransforms() {
+  tilings_.SetLayerBounds(bounds());
+  // TODO(enne): Add more tilings during pinch zoom.
+  if (!tilings_.num_tilings()) {
+    gfx::Size tile_size = layerTreeHostImpl()->settings().defaultTileSize;
+    tilings_.AddTiling(contentsScaleX(), tile_size);
+    // TODO(enne): handle invalidations, create new tiles
+  }
+}
+
 scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling*,
                                                  gfx::Rect rect) {
   TileManager* tile_manager = layerTreeHostImpl()->tileManager();
@@ -94,16 +104,6 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling*,
 
 void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
   tilings_.CloneFrom(other->tilings_);
-}
-
-void PictureLayerImpl::Update() {
-  tilings_.SetLayerBounds(bounds());
-  // TODO(enne): Add more tilings during pinch zoom.
-  if (!tilings_.num_tilings()) {
-    gfx::Size tile_size = layerTreeHostImpl()->settings().defaultTileSize;
-    tilings_.AddTiling(contentsScaleX(), tile_size);
-    // TODO(enne): handle invalidations, create new tiles
-  }
 }
 
 }  // namespace cc

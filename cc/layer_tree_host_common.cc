@@ -218,6 +218,18 @@ static inline bool subtreeShouldBeSkipped(Layer* layer)
     return !layer->opacity() && !layer->opacityIsAnimating();
 }
 
+// Called on each layer that could be drawn after all information from
+// calcDrawTransforms has been updated on that layer.  May have some false
+// positives (e.g. layers get this called on them but don't actually get drawn).
+static inline void markLayerAsUpdated(LayerImpl* layer)
+{
+    layer->didUpdateTransforms();
+}
+
+static inline void markLayerAsUpdated(Layer* layer)
+{
+}
+
 template<typename LayerType>
 static bool subtreeShouldRenderToSeparateSurface(LayerType* layer, bool axisAlignedWithRespectToParent)
 {
@@ -795,6 +807,8 @@ static void calculateDrawTransformsInternal(LayerType* layer, const gfx::Transfo
             return;
         }
     }
+
+    markLayerAsUpdated(layer);
 
     // If neither this layer nor any of its children were added, early out.
     if (sortingStartIndex == descendants.size())
