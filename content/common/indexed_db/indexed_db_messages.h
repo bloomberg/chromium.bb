@@ -396,9 +396,20 @@ IPC_SYNC_MESSAGE_CONTROL3_1(IndexedDBHostMsg_DatabaseDeleteObjectStore,
 // IDs to temporary IDs. We can then update the transaction
 // to its real ID asynchronously.
 // (Or make the key a pair <connection_id, transaction_id>.)
-IPC_SYNC_MESSAGE_CONTROL4_1(IndexedDBHostMsg_DatabaseTransaction,
+// TODO(alecflett): Remove this as part of
+// https://bugs.webkit.org/show_bug.cgi?id=102733.
+IPC_SYNC_MESSAGE_CONTROL4_1(IndexedDBHostMsg_DatabaseTransactionOld,
                             int32, /* thread_id */
                             int32, /* idb_database_id */
+                            std::vector<int64>, /* object_stores */
+                            int32, /* mode */
+                            int32) /* idb_transaction_id */
+
+// WebIDBDatabase::createTransaction() message.
+IPC_SYNC_MESSAGE_CONTROL5_1(IndexedDBHostMsg_DatabaseCreateTransaction,
+                            int32, /* thread_id */
+                            int32, /* idb_database_id */
+                            int64, /* transaction_id */
                             std::vector<int64>, /* object_stores */
                             int32, /* mode */
                             int32) /* idb_transaction_id */

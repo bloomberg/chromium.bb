@@ -126,6 +126,8 @@ void RendererWebIDBDatabaseImpl::deleteObjectStore(
           IndexedDBDispatcher::TransactionId(transaction), &ec));
 }
 
+// TODO(alecflett): Remove this as part of
+// https://bugs.webkit.org/show_bug.cgi?id=102733.
 WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::transaction(
     const WebVector<long long>& object_store_ids,
     unsigned short mode) {
@@ -134,13 +136,32 @@ WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::transaction(
   for (unsigned int i = 0; i < object_store_ids.size(); ++i)
       object_stores.push_back(object_store_ids[i]);
 
-  int transaction_id;
-  IndexedDBDispatcher::Send(new IndexedDBHostMsg_DatabaseTransaction(
+  int ipc_transaction_id;
+  IndexedDBDispatcher::Send(new IndexedDBHostMsg_DatabaseTransactionOld(
       WorkerTaskRunner::Instance()->CurrentWorkerId(),
-      idb_database_id_, object_stores, mode, &transaction_id));
+      idb_database_id_, object_stores, mode, &ipc_transaction_id));
+  if (!ipc_transaction_id)
+    return NULL;
+  return new RendererWebIDBTransactionImpl(ipc_transaction_id);
+}
+
+WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::createTransaction(
+    long long transaction_id,
+    const WebVector<long long>& object_store_ids,
+    unsigned short mode) {
+  std::vector<int64> object_stores;
+  object_stores.reserve(object_store_ids.size());
+  for (unsigned int i = 0; i < object_store_ids.size(); ++i)
+      object_stores.push_back(object_store_ids[i]);
+
+  int idb_transaction_id;
+  IndexedDBDispatcher::Send(new IndexedDBHostMsg_DatabaseCreateTransaction(
+      WorkerTaskRunner::Instance()->CurrentWorkerId(),
+      idb_database_id_, transaction_id, object_stores, mode,
+      &idb_transaction_id));
   if (!transaction_id)
     return NULL;
-  return new RendererWebIDBTransactionImpl(transaction_id);
+  return new RendererWebIDBTransactionImpl(idb_transaction_id);
 }
 
 void RendererWebIDBDatabaseImpl::close() {

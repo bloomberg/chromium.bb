@@ -8,6 +8,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/process.h"
+#include "base/process_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/in_process_webkit/indexed_db_callbacks.h"
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
@@ -313,7 +315,11 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
                         OnCreateObjectStore)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDeleteObjectStore,
                         OnDeleteObjectStore)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseTransaction, OnTransaction)
+    // TODO(alecflett): Remove this as part of
+    // https://bugs.webkit.org/show_bug.cgi?id=102733.
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseTransactionOld, OnTransaction)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCreateTransaction,
+                        OnCreateTransaction)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseClose, OnClose)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDestroyed, OnDestroyed)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -404,6 +410,8 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteObjectStore(
   idb_database->deleteObjectStore(index_id, *idb_transaction, *ec);
 }
 
+// TODO(alecflett): Remove this as part of
+// https://bugs.webkit.org/show_bug.cgi?id=102733.
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnTransaction(
     int32 thread_id,
     int32 idb_database_id,
@@ -421,6 +429,39 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnTransaction(
 
   WebIDBTransaction* transaction = database->transaction(
       object_stores, mode);
+  *idb_transaction_id = parent_->Add(transaction, thread_id,
+                                     database_url_map_[idb_database_id]);
+}
+
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateTransaction(
+    int32 thread_id,
+    int32 idb_database_id,
+    int64 transaction_id,
+    const std::vector<int64>& object_store_ids,
+    int32 mode,
+    int32* idb_transaction_id) {
+  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
+      &map_, idb_database_id);
+  if (!database)
+      return;
+
+  WebVector<long long> object_stores(object_store_ids.size());
+  for (size_t i = 0; i < object_store_ids.size(); ++i)
+      object_stores[i] = object_store_ids[i];
+
+  // Inject the renderer process id into the transaction id, to
+  // uniquely identify this transaction, and effectively bind it to
+  // the renderer that initiated it. The lower 32 bits of
+  // transaction_id are guaranteed to be unique within that renderer.
+  base::ProcessId pid = base::GetProcId(parent_->peer_handle());
+  DCHECK(!(transaction_id >> 32)) << "Transaction ids can only be 32 bits";
+  COMPILE_ASSERT(sizeof(base::ProcessId) <= sizeof(int32),
+                 Process_ID_must_fit_in_32_bits);
+
+  transaction_id |= (uint64(pid) << 32);
+
+  WebIDBTransaction* transaction = database->createTransaction(
+      transaction_id, object_stores, mode);
   *idb_transaction_id = parent_->Add(transaction, thread_id,
                                      database_url_map_[idb_database_id]);
 }

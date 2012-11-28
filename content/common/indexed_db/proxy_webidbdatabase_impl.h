@@ -39,8 +39,14 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
       long long object_store_id,
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode& ec);
+  // TODO(alecflett): Remove this as part of
+  // https://bugs.webkit.org/show_bug.cgi?id=102733.
   virtual WebKit::WebIDBTransaction* transaction(
-      const WebKit::WebVector<long long>& objectStoreIds,
+      const WebKit::WebVector<long long>& scope,
+      unsigned short mode);
+  virtual WebKit::WebIDBTransaction* createTransaction(
+      long long transaction_id,
+      const WebKit::WebVector<long long>& scope,
       unsigned short mode);
   virtual void close();
 

@@ -54,7 +54,6 @@ IndexedDBDispatcher::IndexedDBDispatcher() {
 }
 
 IndexedDBDispatcher::~IndexedDBDispatcher() {
-
   // Clear any pending callbacks - which may result in dispatch requests -
   // before marking the dispatcher as deleted.
   pending_callbacks_.Clear();
@@ -496,7 +495,7 @@ int32 IndexedDBDispatcher::TransactionId(
     const WebIDBTransaction& transaction) {
   const RendererWebIDBTransactionImpl* impl =
       static_cast<const RendererWebIDBTransactionImpl*>(&transaction);
-  return impl->id();
+  return impl->ipc_id();
 }
 
 void IndexedDBDispatcher::OnSuccessIDBDatabase(int32 thread_id,
