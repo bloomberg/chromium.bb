@@ -16,10 +16,7 @@
 // from here.
 #include "ipc/ipc_sender.h"
 
-// Ipc logging adds a dependency from the 'chrome' target on all ipc message
-// classes. In a component build, this would require exporting all message
-// classes, so don't support ipc logging in the components build.
-#if !defined(NDEBUG) && !defined(COMPONENT_BUILD)
+#if !defined(NDEBUG)
 #define IPC_MESSAGE_LOG_ENABLED
 #endif
 

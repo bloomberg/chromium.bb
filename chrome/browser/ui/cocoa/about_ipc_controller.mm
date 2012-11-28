@@ -20,7 +20,8 @@
     data_ = data;
     // data_.message_name may not have been filled in if it originated
     // somewhere other than the browser process.
-    IPC::Logging::GetMessageText(data_.type, &data_.message_name, NULL, NULL);
+    if (data_.message_name == "")
+      IPC::Logging::GetMessageText(data_.type, &data_.message_name, NULL, NULL);
   }
   return self;
 }
