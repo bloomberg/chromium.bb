@@ -157,6 +157,10 @@ string16 TestShellDelegate::GetTimeRemainingString(base::TimeDelta delta) {
   return string16();
 }
 
+string16 TestShellDelegate::GetTimeDurationLongString(base::TimeDelta delta) {
+  return string16();
+}
+
 void TestShellDelegate::SaveScreenMagnifierScale(double scale) {
 }
 

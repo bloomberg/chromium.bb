@@ -172,10 +172,13 @@ class ASH_EXPORT ShellDelegate {
   // Handles the Previous Track Media shortcut key.
   virtual void HandleMediaPrevTrack() = 0;
 
-  // Produces l10n-ed text of remaining time, e.g.: "13 mins left" or
+  // Produces l10n-ed text of remaining time, e.g.: "13 minutes left" or
   // "13 Minuten übrig".
   // Used, for example, to display the remaining battery life.
   virtual string16 GetTimeRemainingString(base::TimeDelta delta) = 0;
+
+  // Produces l10n-ed text for time duration, e.g.: "13 minutes" or "2 hours".
+  virtual string16 GetTimeDurationLongString(base::TimeDelta delta) = 0;
 
   // Saves the zoom scale of the full screen magnifier.
   virtual void SaveScreenMagnifierScale(double scale) = 0;

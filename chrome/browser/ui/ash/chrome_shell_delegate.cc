@@ -465,6 +465,9 @@ string16 ChromeShellDelegate::GetTimeRemainingString(base::TimeDelta delta) {
   return TimeFormat::TimeRemainingLong(delta);
 }
 
+string16 ChromeShellDelegate::GetTimeDurationLongString(base::TimeDelta delta) {
+  return TimeFormat::TimeDurationLong(delta);
+}
 void ChromeShellDelegate::SaveScreenMagnifierScale(double scale) {
 #if defined(OS_CHROMEOS)
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();

@@ -102,6 +102,29 @@ static const MessageIDs kTimeRemainingLongMessageIDs = { {
   }
 } };
 
+static const MessageIDs kTimeDurationLongMessageIDs = { {
+  {
+    IDS_TIME_DURATION_LONG_SECS_DEFAULT, IDS_TIME_DURATION_LONG_SEC_SINGULAR,
+    IDS_TIME_DURATION_LONG_SECS_ZERO, IDS_TIME_DURATION_LONG_SECS_TWO,
+    IDS_TIME_DURATION_LONG_SECS_FEW, IDS_TIME_DURATION_LONG_SECS_MANY
+  },
+  {
+    IDS_TIME_DURATION_LONG_MINS_DEFAULT, IDS_TIME_DURATION_LONG_MIN_SINGULAR,
+    IDS_TIME_DURATION_LONG_MINS_ZERO, IDS_TIME_DURATION_LONG_MINS_TWO,
+    IDS_TIME_DURATION_LONG_MINS_FEW, IDS_TIME_DURATION_LONG_MINS_MANY
+  },
+  {
+    IDS_TIME_HOURS_DEFAULT, IDS_TIME_HOUR_SINGULAR,
+    IDS_TIME_HOURS_ZERO, IDS_TIME_HOURS_TWO,
+    IDS_TIME_HOURS_FEW, IDS_TIME_HOURS_MANY
+  },
+  {
+    IDS_TIME_DAYS_DEFAULT, IDS_TIME_DAY_SINGULAR,
+    IDS_TIME_DAYS_ZERO, IDS_TIME_DAYS_TWO,
+    IDS_TIME_DAYS_FEW, IDS_TIME_DAYS_MANY
+  }
+} };
+
 static const MessageIDs kTimeElapsedMessageIDs = { {
   {
     IDS_TIME_ELAPSED_SECS_DEFAULT, IDS_TIME_ELAPSED_SEC_SINGULAR,
@@ -130,6 +153,7 @@ enum FormatType {
   FORMAT_SHORT,
   FORMAT_REMAINING,
   FORMAT_REMAINING_LONG,
+  FORMAT_DURATION_LONG,
   FORMAT_ELAPSED,
 };
 
@@ -145,6 +169,8 @@ class TimeFormatter {
           return time_left_formatter_;
         case FORMAT_REMAINING_LONG:
           return time_left_long_formatter_;
+        case FORMAT_DURATION_LONG:
+          return time_duration_long_formatter_;
         case FORMAT_ELAPSED:
           return time_elapsed_formatter_;
         default:
@@ -161,6 +187,8 @@ class TimeFormatter {
           return kTimeRemainingMessageIDs;
         case FORMAT_REMAINING_LONG:
           return kTimeRemainingLongMessageIDs;
+        case FORMAT_DURATION_LONG:
+          return kTimeDurationLongMessageIDs;
         case FORMAT_ELAPSED:
           return kTimeElapsedMessageIDs;
         default:
@@ -188,6 +216,7 @@ class TimeFormatter {
       BuildFormats(FORMAT_SHORT, &short_formatter_);
       BuildFormats(FORMAT_REMAINING, &time_left_formatter_);
       BuildFormats(FORMAT_REMAINING_LONG, &time_left_long_formatter_);
+      BuildFormats(FORMAT_DURATION_LONG, &time_duration_long_formatter_);
       BuildFormats(FORMAT_ELAPSED, &time_elapsed_formatter_);
     }
     ~TimeFormatter() {
@@ -197,6 +226,8 @@ class TimeFormatter {
                                  time_left_formatter_.end());
       STLDeleteContainerPointers(time_left_long_formatter_.begin(),
                                  time_left_long_formatter_.end());
+      STLDeleteContainerPointers(time_duration_long_formatter_.begin(),
+                                 time_duration_long_formatter_.end());
       STLDeleteContainerPointers(time_elapsed_formatter_.begin(),
                                  time_elapsed_formatter_.end());
     }
@@ -205,6 +236,7 @@ class TimeFormatter {
     std::vector<icu::PluralFormat*> short_formatter_;
     std::vector<icu::PluralFormat*> time_left_formatter_;
     std::vector<icu::PluralFormat*> time_left_long_formatter_;
+    std::vector<icu::PluralFormat*> time_duration_long_formatter_;
     std::vector<icu::PluralFormat*> time_elapsed_formatter_;
     static void BuildFormats(FormatType format_type,
                              std::vector<icu::PluralFormat*>* time_formats);
@@ -355,6 +387,11 @@ string16 TimeFormat::TimeRemainingLong(const TimeDelta& delta) {
 // static
 string16 TimeFormat::TimeRemainingShort(const TimeDelta& delta) {
   return FormatTimeImpl(delta, FORMAT_SHORT);
+}
+
+// static
+string16 TimeFormat::TimeDurationLong(const TimeDelta& delta) {
+  return FormatTimeImpl(delta, FORMAT_DURATION_LONG);
 }
 
 // static

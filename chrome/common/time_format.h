@@ -35,6 +35,9 @@ class TimeFormat {
   // Returns times in short-format: "3 mins", "2 days".
   static string16 TimeRemainingShort(const base::TimeDelta& delta);
 
+  // Return times in long-format: "2 hours", "25 minutes".
+  static string16 TimeDurationLong(const base::TimeDelta& delta);
+
   // For displaying a relative time in the past.  This method returns either
   // "Today", "Yesterday", or an empty string if it's older than that.  Returns
   // the empty string for days in the future.

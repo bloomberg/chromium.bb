@@ -105,25 +105,35 @@ void PowerStatusView::UpdateText() {
 }
 
 void PowerStatusView::UpdateTextForDefaultView() {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (supply_status_.line_power_on && supply_status_.battery_is_full) {
     time_status_label_->SetText(
-        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-            IDS_ASH_STATUS_TRAY_BATTERY_FULL));
+        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_FULL));
+    accessible_name_ = rb.GetLocalizedString(
+        IDS_ASH_STATUS_TRAY_BATTERY_FULL_CHARGE_ACCESSIBLE);
   } else if (supply_status_.battery_percentage < 0.0f) {
     time_status_label_->SetText(
-        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-            IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING));
+        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING));
+    accessible_name_ = rb.GetLocalizedString(
+        IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_ACCESSIBLE);
   } else {
     string16 battery_percentage = l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ONLY,
         base::IntToString16(GetRoundedBatteryPercentage()));
+    string16 battery_percentage_accessbile = l10n_util::GetStringFUTF16(
+        supply_status_.line_power_on ?
+            IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_CHARGING_ACCESSIBLE:
+            IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ACCESSIBLE ,
+        base::IntToString16(GetRoundedBatteryPercentage()));
     string16 battery_time = string16();
+    string16 battery_time_accessible = string16();
     int hour = 0;
     int min = 0;
     if (supply_status_.is_calculating_battery_time) {
       battery_time =
-          ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-              IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING);
+          rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING);
+      battery_time_accessible = rb.GetLocalizedString(
+          IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_ACCESSIBLE);
     } else {
       base::TimeDelta time = base::TimeDelta::FromSeconds(
           supply_status_.line_power_on ?
@@ -137,15 +147,27 @@ void PowerStatusView::UpdateTextForDefaultView() {
             base::IntToString16(min);
         battery_time =
             l10n_util::GetStringFUTF16(
-                IDS_ASH_STATUS_TRAY_BATTERY_TIME_ONLY,
+                supply_status_.line_power_on ?
+                    IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_SHORT :
+                    IDS_ASH_STATUS_TRAY_BATTERY_TIME_LEFT_SHORT,
                 base::IntToString16(hour),
                 minute);
+        battery_time_accessible =
+            l10n_util::GetStringFUTF16(
+                supply_status_.line_power_on ?
+                    IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_ACCESSIBLE :
+                    IDS_ASH_STATUS_TRAY_BATTERY_TIME_LEFT_ACCESSIBLE,
+                GetBatteryTimeAccessibilityString(hour, min));
       }
     }
     string16 battery_status = battery_time.empty() ?
         battery_percentage :
         battery_percentage + ASCIIToUTF16(" - ") + battery_time;
     time_status_label_->SetText(battery_status);
+    accessible_name_ = battery_time_accessible.empty() ?
+        battery_percentage_accessbile :
+        battery_percentage_accessbile + ASCIIToUTF16(". ")
+            + battery_time_accessible;
   }
 }
 
@@ -210,6 +232,25 @@ int PowerStatusView::GetRoundedBatteryPercentage() const {
   DCHECK(supply_status_.battery_percentage >= 0.0f);
   return std::max(kMinBatteryPercent,
       static_cast<int>(supply_status_.battery_percentage));
+}
+
+string16 PowerStatusView::GetBatteryTimeAccessibilityString(
+    int hour, int min) {
+  DCHECK(hour || min);
+  if (hour && !min) {
+    return Shell::GetInstance()->delegate()->GetTimeDurationLongString(
+        base::TimeDelta::FromHours(hour));
+  } else if (min  && !hour) {
+    return Shell::GetInstance()->delegate()->GetTimeDurationLongString(
+        base::TimeDelta::FromMinutes(min));
+  } else {
+    return l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_BATTERY_TIME_ACCESSIBLE,
+        Shell::GetInstance()->delegate()->GetTimeDurationLongString(
+            base::TimeDelta::FromHours(hour)),
+        Shell::GetInstance()->delegate()->GetTimeDurationLongString(
+            base::TimeDelta::FromMinutes(min)));
+  }
 }
 
 void PowerStatusView::UpdateIcon() {

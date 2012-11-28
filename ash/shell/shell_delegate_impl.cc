@@ -167,6 +167,10 @@ string16 ShellDelegateImpl::GetTimeRemainingString(base::TimeDelta delta) {
   return string16();
 }
 
+string16 ShellDelegateImpl::GetTimeDurationLongString(base::TimeDelta delta) {
+  return string16();
+}
+
 void ShellDelegateImpl::SaveScreenMagnifierScale(double scale) {
 }
 
