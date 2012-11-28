@@ -12,8 +12,10 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/font_settings/font_settings_api_factory.h"
 #include "chrome/browser/extensions/api/preference/preference_helpers.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -207,6 +209,30 @@ void FontSettingsEventRouter::OnFontPrefChanged(
       APIPermission::kFontSettings,
       false,
       pref_name);
+}
+
+FontSettingsAPI::FontSettingsAPI(Profile* profile) : profile_(profile) {
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, kOnDefaultFixedFontSizeChanged);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, kOnDefaultFontSizeChanged);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, kOnFontChanged);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, kOnMinimumFontSizeChanged);
+}
+
+FontSettingsAPI::~FontSettingsAPI() {
+}
+
+void FontSettingsAPI::Shutdown() {
+  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+}
+
+void FontSettingsAPI::OnListenerAdded(
+    const extensions::EventListenerInfo& details) {
+  font_settings_event_router_.reset(new FontSettingsEventRouter(profile_));
+  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
 
 bool ClearFontFunction::RunImpl() {

@@ -478,8 +478,8 @@ void ProcessesEventRouter::DispatchEvent(const char* event_name,
 bool ProcessesEventRouter::HasEventListeners(const std::string& event_name) {
   extensions::EventRouter* router =
       extensions::ExtensionSystem::Get(profile_)->event_router();
-    if (router && router->HasEventListener(event_name))
-      return true;
+  if (router && router->HasEventListener(event_name))
+    return true;
   return false;
 }
 
