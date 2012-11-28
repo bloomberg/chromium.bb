@@ -1945,6 +1945,16 @@ class ArchiveStage(BoardSpecificBuilderStage):
                                  cwd=archive_path)
       upload_queue.put([filename])
 
+    def BuildAndArchiveChromeSysroot():
+      """Generate and upload sysroot for building Chrome."""
+      assert archive_path.startswith(buildroot)
+      in_chroot_path = git.ReinterpretPathForChroot(archive_path)
+      cmd = ['cros_generate_sysroot', '--out-dir', in_chroot_path, '--board',
+             board, '--package', constants.CHROME_CP]
+      cros_build_lib.RunCommand(cmd, cwd=buildroot, enter_chroot=True)
+      filename = 'sysroot_%s.tar.xz' % constants.CHROME_CP.replace('/', '_')
+      upload_queue.put([filename])
+
     def PushImage():
       # This helper script is only available on internal manifests currently.
       if not config['internal']:
@@ -1978,7 +1988,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
       steps = [ArchiveReleaseArtifacts, ArchiveArtifactsForHWTesting,
                ArchiveTestResults]
       if config['images']:
-        steps.append(ArchiveStrippedChrome)
+        steps.extend([ArchiveStrippedChrome, BuildAndArchiveChromeSysroot])
 
       with bg_task_runner(upload_symbols_queue, UploadSymbols, 1):
         with bg_task_runner(upload_queue, UploadArtifact, num_upload_processes):
