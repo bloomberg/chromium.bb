@@ -108,17 +108,10 @@ void RootDidAddSubview(id self, SEL _cmd, NSView* subview) {
     // all windows hosting OpenGL content must not be opaque.
     [self setOpaque:NO];
 
-    // Always disable "content has shadow". This class assumes that all holes
-    // punched in the window are intentional, in order to show accelerated
-    // content underneath, so those holes cannot be allowed to cause holes in
-    // the shadow. Note that the edges trimmed from around the periphery of a
-    // window (through use of transparency) don't count as content area with
-    // regards to "content has shadow".
-    [self _setContentHasShadow:NO];
-
-    // Only set up opaques if the window is a proper window with a title bar
-    // and all.
     if (windowStyle & NSTitledWindowMask) {
+      // Only fiddle with shadows if the window is a proper window with a
+      // title bar and all.
+      [self _setContentHasShadow:NO];
 
       NSView* rootView = [[self contentView] superview];
       const NSRect rootBounds = [rootView bounds];
