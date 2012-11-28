@@ -466,7 +466,17 @@ void DriveFileSyncService::ApplyLocalChange(
     case SYNC_OPERATION_CONFLICT: {
       // Mark the file as conflicted.
       DriveMetadata metadata;
-      metadata_store_->ReadEntry(url, &metadata);
+      const fileapi::SyncStatusCode status =
+          metadata_store_->ReadEntry(url, &metadata);
+      if (status == fileapi::SYNC_DATABASE_ERROR_NOT_FOUND) {
+        // The file is not yet in the metadata store.
+        RemoteChange remote_change;
+        const bool has_remote_change = GetPendingChangeForFileSystemURL(
+            url, &remote_change);
+        DCHECK(has_remote_change);
+        metadata.set_resource_id(remote_change.resource_id);
+        metadata.set_md5_checksum(std::string());
+      }
       metadata.set_conflicted(true);
       metadata_store_->UpdateEntry(
           url, metadata,
@@ -800,32 +810,31 @@ DriveFileSyncService::ResolveSyncOperationType(
   // TODO(nhiroki): check metadata.conflicted() flag before checking the pending
   // change queue (http://crbug.com/162798).
 
-  URLToChange::const_iterator found_url = url_to_change_.find(url.origin());
-  if (found_url != url_to_change_.end()) {
-    const PathToChange& path_to_change = found_url->second;
-    PathToChange::const_iterator found_path = path_to_change.find(url.path());
-    if (found_path != path_to_change.end()) {
-      // Remote change for the file identified by |url| exists in the pending
-      // change queue.
-      const fileapi::FileChange& remote_file_change = found_path->second.change;
+  RemoteChange remote_change;
+  const bool has_remote_change = GetPendingChangeForFileSystemURL(
+      url, &remote_change);
 
-      // (RemoteChange) + (LocalChange) -> (Operation Type)
-      // AddOrUpdate    + AddOrUpdate   -> CONFLICT
-      // AddOrUpdate    + Delete        -> IGNORE
-      // Delete         + AddOrUpdate   -> UPLOAD_NEW_FILE
-      // Delete         + Delete        -> IGNORE
+  if (has_remote_change) {
+    // Remote change for the file identified by |url| exists in the pending
+    // change queue.
+    const fileapi::FileChange& remote_file_change = remote_change.change;
 
-      if (remote_file_change.IsAddOrUpdate() &&
-          local_file_change.IsAddOrUpdate())
-        return SYNC_OPERATION_CONFLICT;
-      else if (remote_file_change.IsDelete() &&
-               local_file_change.IsAddOrUpdate())
-        return SYNC_OPERATION_UPLOAD_NEW_FILE;
-      else if (local_file_change.IsDelete())
-        return SYNC_OPERATION_IGNORE;
-      NOTREACHED();
-      return SYNC_OPERATION_FAILED;
-    }
+    // (RemoteChange) + (LocalChange) -> (Operation Type)
+    // AddOrUpdate    + AddOrUpdate   -> CONFLICT
+    // AddOrUpdate    + Delete        -> IGNORE
+    // Delete         + AddOrUpdate   -> UPLOAD_NEW_FILE
+    // Delete         + Delete        -> IGNORE
+
+    if (remote_file_change.IsAddOrUpdate() &&
+        local_file_change.IsAddOrUpdate())
+      return SYNC_OPERATION_CONFLICT;
+    else if (remote_file_change.IsDelete() &&
+              local_file_change.IsAddOrUpdate())
+      return SYNC_OPERATION_UPLOAD_NEW_FILE;
+    else if (local_file_change.IsDelete())
+      return SYNC_OPERATION_IGNORE;
+    NOTREACHED();
+    return SYNC_OPERATION_FAILED;
   }
 
   DriveMetadata metadata;
@@ -1298,6 +1307,21 @@ void DriveFileSyncService::MaybeMarkAsIncrementalSyncOrigin(
   if (metadata_store_->IsBatchSyncOrigin(origin) &&
       !ContainsKey(url_to_change_, origin))
     metadata_store_->MoveBatchSyncOriginToIncremental(origin);
+}
+
+bool DriveFileSyncService::GetPendingChangeForFileSystemURL(
+    const fileapi::FileSystemURL& url,
+    RemoteChange* change) const {
+  DCHECK(change);
+  URLToChange::const_iterator found_url = url_to_change_.find(url.origin());
+  if (found_url == url_to_change_.end())
+    return false;
+  const PathToChange& path_to_change = found_url->second;
+  PathToChange::const_iterator found_path = path_to_change.find(url.path());
+  if (found_path == path_to_change.end())
+    return false;
+  *change = found_path->second;
+  return true;
 }
 
 }  // namespace sync_file_system

@@ -283,7 +283,12 @@ class DriveFileSyncService
   void CancelRemoteChange(const fileapi::FileSystemURL& url);
   void MaybeMarkAsIncrementalSyncOrigin(const GURL& origin);
 
+  // This returns false if no change is found for the |url|.
+  bool GetPendingChangeForFileSystemURL(const fileapi::FileSystemURL& url,
+                                        RemoteChange* change) const;
+
   FilePath temporary_file_dir_;
+
   scoped_ptr<DriveMetadataStore> metadata_store_;
   scoped_ptr<DriveFileSyncClient> sync_client_;
 
