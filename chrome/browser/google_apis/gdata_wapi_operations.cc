@@ -394,7 +394,7 @@ bool RenameResourceOperation::GetContentData(std::string* upload_content_type,
 
 //=========================== AuthorizeAppOperation ==========================
 
-AuthorizeAppsOperation::AuthorizeAppsOperation(
+AuthorizeAppOperation::AuthorizeAppOperation(
     OperationRegistry* registry,
     const GetDataCallback& callback,
     const GURL& document_url,
@@ -404,26 +404,26 @@ AuthorizeAppsOperation::AuthorizeAppsOperation(
       document_url_(document_url) {
 }
 
-AuthorizeAppsOperation::~AuthorizeAppsOperation() {}
+AuthorizeAppOperation::~AuthorizeAppOperation() {}
 
-URLFetcher::RequestType AuthorizeAppsOperation::GetRequestType() const {
+URLFetcher::RequestType AuthorizeAppOperation::GetRequestType() const {
   return URLFetcher::PUT;
 }
 
 std::vector<std::string>
-AuthorizeAppsOperation::GetExtraRequestHeaders() const {
+AuthorizeAppOperation::GetExtraRequestHeaders() const {
   std::vector<std::string> headers;
   headers.push_back(kIfMatchAllHeader);
   return headers;
 }
 
-void AuthorizeAppsOperation::ProcessURLFetchResults(const URLFetcher* source) {
+void AuthorizeAppOperation::ProcessURLFetchResults(const URLFetcher* source) {
   std::string data;
   source->GetResponseAsString(&data);
   GetDataOperation::ProcessURLFetchResults(source);
 }
 
-bool AuthorizeAppsOperation::GetContentData(std::string* upload_content_type,
+bool AuthorizeAppOperation::GetContentData(std::string* upload_content_type,
                                             std::string* upload_content) {
   upload_content_type->assign("application/atom+xml");
   XmlWriter xml_writer;
@@ -441,7 +441,7 @@ bool AuthorizeAppsOperation::GetContentData(std::string* upload_content_type,
   return true;
 }
 
-void AuthorizeAppsOperation::ParseResponse(
+void AuthorizeAppOperation::ParseResponse(
     GDataErrorCode fetch_error_code,
     const std::string& data) {
   // Parse entry XML.
@@ -477,7 +477,7 @@ void AuthorizeAppsOperation::ParseResponse(
   OnProcessURLFetchResultsComplete(success);
 }
 
-GURL AuthorizeAppsOperation::GetURL() const {
+GURL AuthorizeAppOperation::GetURL() const {
   return document_url_;
 }
 

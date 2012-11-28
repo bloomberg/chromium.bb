@@ -248,14 +248,15 @@ class RenameResourceOperation : public EntryActionOperation {
 
 //=========================== AuthorizeAppOperation ==========================
 
-// This class performs the operation for renaming a document/file/directory.
-class AuthorizeAppsOperation : public GetDataOperation {
+// This class performs the operation for authorizing an application specified
+// by |app_id| to access a document specified by |document_url| for .
+class AuthorizeAppOperation : public GetDataOperation {
  public:
-  AuthorizeAppsOperation(OperationRegistry* registry,
-                         const GetDataCallback& callback,
-                         const GURL& document_url,
-                         const std::string& app_ids);
-  virtual ~AuthorizeAppsOperation();
+  AuthorizeAppOperation(OperationRegistry* registry,
+                        const GetDataCallback& callback,
+                        const GURL& document_url,
+                        const std::string& app_id);
+  virtual ~AuthorizeAppOperation();
 
  protected:
   // Overridden from EntryActionOperation.
@@ -279,7 +280,7 @@ class AuthorizeAppsOperation : public GetDataOperation {
   std::string app_id_;
   GURL document_url_;
 
-  DISALLOW_COPY_AND_ASSIGN(AuthorizeAppsOperation);
+  DISALLOW_COPY_AND_ASSIGN(AuthorizeAppOperation);
 };
 
 //======================= AddResourceToDirectoryOperation ======================

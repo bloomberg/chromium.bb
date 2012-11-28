@@ -321,13 +321,15 @@ void GDataWapiService::ResumeUpload(const ResumeUploadParams& params,
 }
 
 void GDataWapiService::AuthorizeApp(const GURL& resource_url,
-                                    const std::string& app_ids,
+                                    const std::string& app_id,
                                     const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   runner_->StartOperationWithRetry(
-      new AuthorizeAppsOperation(operation_registry(), callback,
-                                 resource_url, app_ids));
+      new AuthorizeAppOperation(operation_registry(),
+                                callback,
+                                resource_url,
+                                app_id));
 }
 
 bool GDataWapiService::HasAccessToken() const {
