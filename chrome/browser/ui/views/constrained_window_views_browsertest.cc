@@ -205,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabCloseTest) {
       ConstrainedWindowViews::DEFAULT_INSETS);
 
   bool closed =
-      browser()->tab_strip_model()->CloseTabContentsAt(
+      browser()->tab_strip_model()->CloseWebContentsAt(
           browser()->tab_strip_model()->active_index(),
           TabStripModel::CLOSE_NONE);
   EXPECT_TRUE(closed);
@@ -236,14 +236,14 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabSwitchTest) {
 
   // Close the new tab. The constrained window should show itself again.
   bool closed =
-      browser()->tab_strip_model()->CloseTabContentsAt(
+      browser()->tab_strip_model()->CloseWebContentsAt(
           browser()->tab_strip_model()->active_index(),
           TabStripModel::CLOSE_NONE);
   EXPECT_TRUE(closed);
   EXPECT_TRUE(window->IsVisible());
 
   // Close the original tab.
-  browser()->tab_strip_model()->CloseTabContentsAt(
+  browser()->tab_strip_model()->CloseWebContentsAt(
       browser()->tab_strip_model()->active_index(),
       TabStripModel::CLOSE_NONE);
   content::RunAllPendingInMessageLoop();

@@ -558,7 +558,7 @@ void WebIntentPickerController::OnSendReturnMessage(
     if (browser) {
       int index = browser->tab_strip_model()->GetIndexOfWebContents(
           service_tab_);
-      browser->tab_strip_model()->CloseTabContentsAt(
+      browser->tab_strip_model()->CloseWebContentsAt(
           index, TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
 
       // Activate source tab.

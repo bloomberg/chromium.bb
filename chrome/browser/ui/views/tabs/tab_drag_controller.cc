@@ -1720,7 +1720,7 @@ void TabDragController::RevertDragAt(size_t drag_index) {
     } else {
       // The Tab was moved within the TabStrip where the drag was initiated.
       // Move it back to the starting location.
-      GetModel(source_tabstrip_)->MoveTabContentsAt(
+      GetModel(source_tabstrip_)->MoveWebContentsAt(
           index, data->source_model_index, false);
     }
   } else {

@@ -1312,7 +1312,7 @@ void AnimateCALayerOpacityFromTo(
     CGPoint lp = [layer convertPoint:p fromLayer:rootLayer_];
     if ([static_cast<CALayer*>([layer presentationLayer]) containsPoint:lp] &&
         !layer.hidden) {
-      tabStripModel_->CloseTabContentsAt(i,
+      tabStripModel_->CloseWebContentsAt(i,
           TabStripModel::CLOSE_USER_GESTURE |
           TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
       return;

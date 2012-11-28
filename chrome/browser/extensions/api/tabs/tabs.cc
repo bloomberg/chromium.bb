@@ -1507,7 +1507,7 @@ bool MoveTabsFunction::RunImpl() {
       new_index = source_tab_strip->count() - 1;
 
     if (new_index != tab_index)
-      source_tab_strip->MoveTabContentsAt(tab_index, new_index, false);
+      source_tab_strip->MoveWebContentsAt(tab_index, new_index, false);
 
     if (has_callback()) {
       tab_values.Append(ExtensionTabUtil::CreateTabValue(

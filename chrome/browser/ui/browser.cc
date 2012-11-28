@@ -1944,7 +1944,7 @@ void Browser::Observe(int type,
                web_contents->GetURL().host() == extension->id()) ||
               (extensions::TabHelper::FromWebContents(
                    web_contents)->extension_app() == extension)) {
-            tab_strip_model_->CloseTabContentsAt(i, TabStripModel::CLOSE_NONE);
+            tab_strip_model_->CloseWebContentsAt(i, TabStripModel::CLOSE_NONE);
           }
         }
       }
@@ -2054,7 +2054,7 @@ void Browser::ScheduleUIUpdate(const WebContents* source,
     // Update the loading state synchronously. This is so the throbber will
     // immediately start/stop, which gives a more snappy feel. We want to do
     // this for any tab so they start & stop quickly.
-    tab_strip_model_->UpdateTabContentsStateAt(
+    tab_strip_model_->UpdateWebContentsStateAt(
         tab_strip_model_->GetIndexOfWebContents(source),
         TabStripModelObserver::LOADING_ONLY);
     // The status bubble needs to be updated during INVALIDATE_TYPE_LOAD too,
@@ -2067,7 +2067,7 @@ void Browser::ScheduleUIUpdate(const WebContents* source,
     // we need to process the update synchronously. This state only matters for
     // the TabStripModel, so we notify the TabStripModel now and notify others
     // asynchronously.
-    tab_strip_model_->UpdateTabContentsStateAt(
+    tab_strip_model_->UpdateWebContentsStateAt(
         tab_strip_model_->GetIndexOfWebContents(source),
         TabStripModelObserver::TITLE_NOT_LOADING);
   }
@@ -2138,7 +2138,7 @@ void Browser::ProcessPendingUIUpdates() {
     // Updates that don't depend upon the selected state go here.
     if (flags &
         (content::INVALIDATE_TYPE_TAB | content::INVALIDATE_TYPE_TITLE)) {
-      tab_strip_model_->UpdateTabContentsStateAt(
+      tab_strip_model_->UpdateWebContentsStateAt(
           tab_strip_model_->GetIndexOfWebContents(contents),
           TabStripModelObserver::ALL);
     }

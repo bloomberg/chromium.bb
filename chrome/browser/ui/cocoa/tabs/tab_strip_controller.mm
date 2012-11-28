@@ -802,7 +802,7 @@ private:
       NSView* lastTab = [self viewAtIndex:numberOfOpenTabs - 1];
       availableResizeWidth_ = NSMaxX([lastTab frame]);
     }
-    tabStripModel_->CloseTabContentsAt(
+    tabStripModel_->CloseWebContentsAt(
         index,
         TabStripModel::CLOSE_USER_GESTURE |
         TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
@@ -1702,7 +1702,7 @@ private:
   int toIndex = [self indexOfPlaceholder];
   // Cancel any pending tab transition.
   hoverTabSelector_->CancelTabTransition();
-  tabStripModel_->MoveTabContentsAt(from, toIndex, true);
+  tabStripModel_->MoveWebContentsAt(from, toIndex, true);
 }
 
 // Drop a given TabContents at the location of the current placeholder.

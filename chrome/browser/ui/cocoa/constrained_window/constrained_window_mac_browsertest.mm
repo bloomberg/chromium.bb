@@ -117,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, TabClose) {
 
   // Close the tab.
   EXPECT_EQ(2, browser()->tab_count());
-  EXPECT_TRUE(browser()->tab_strip_model()->CloseTabContentsAt(
+  EXPECT_TRUE(browser()->tab_strip_model()->CloseWebContentsAt(
       1, TabStripModel::CLOSE_USER_GESTURE));
   EXPECT_EQ(1, browser()->tab_count());
 }

@@ -483,9 +483,9 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
   }
   EXPECT_EQ("1 2 3", GetTabStripStateString(tabstrip));
 
-  // Test CloseTabContentsAt
+  // Test CloseWebContentsAt
   {
-    EXPECT_TRUE(tabstrip.CloseTabContentsAt(2, TabStripModel::CLOSE_NONE));
+    EXPECT_TRUE(tabstrip.CloseWebContentsAt(2, TabStripModel::CLOSE_NONE));
     EXPECT_EQ(2, tabstrip.count());
 
     EXPECT_EQ(5, observer.GetStateCount());
@@ -508,9 +508,9 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
   }
   EXPECT_EQ("1 2", GetTabStripStateString(tabstrip));
 
-  // Test MoveTabContentsAt, select_after_move == true
+  // Test MoveWebContentsAt, select_after_move == true
   {
-    tabstrip.MoveTabContentsAt(1, 0, true);
+    tabstrip.MoveWebContentsAt(1, 0, true);
 
     EXPECT_EQ(1, observer.GetStateCount());
     State s1(contents2, 0, MockTabStripModelObserver::MOVE);
@@ -521,16 +521,16 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
   }
   EXPECT_EQ("2 1", GetTabStripStateString(tabstrip));
 
-  // Test MoveTabContentsAt, select_after_move == false
+  // Test MoveWebContentsAt, select_after_move == false
   {
-    tabstrip.MoveTabContentsAt(1, 0, false);
+    tabstrip.MoveWebContentsAt(1, 0, false);
     EXPECT_EQ(1, observer.GetStateCount());
     State s1(contents1, 0, MockTabStripModelObserver::MOVE);
     s1.src_index = 1;
     EXPECT_TRUE(observer.StateEquals(0, s1));
     EXPECT_EQ(1, tabstrip.active_index());
 
-    tabstrip.MoveTabContentsAt(0, 1, false);
+    tabstrip.MoveWebContentsAt(0, 1, false);
     observer.ClearStates();
   }
   EXPECT_EQ("2 1", GetTabStripStateString(tabstrip));
@@ -549,9 +549,9 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     EXPECT_EQ(1, tabstrip.GetIndexOfWebContents(tab_contents1->web_contents()));
   }
 
-  // Test UpdateTabContentsStateAt
+  // Test UpdateWebContentsStateAt
   {
-    tabstrip.UpdateTabContentsStateAt(0, TabStripModelObserver::ALL);
+    tabstrip.UpdateWebContentsStateAt(0, TabStripModelObserver::ALL);
     EXPECT_EQ(1, observer.GetStateCount());
     State s1(contents2, 0, MockTabStripModelObserver::CHANGE);
     EXPECT_TRUE(observer.StateEquals(0, s1));
@@ -573,7 +573,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
   // Test CloseSelectedTabs
   {
     tabstrip.CloseSelectedTabs();
-    // |CloseSelectedTabs| calls CloseTabContentsAt, we already tested that, now
+    // |CloseSelectedTabs| calls CloseWebContentsAt, we already tested that, now
     // just verify that the count and selected index have changed
     // appropriately...
     EXPECT_EQ(1, tabstrip.count());
@@ -851,11 +851,11 @@ TEST_F(TabStripModelTest, TestSelectOnClose) {
   EXPECT_EQ(0, tabstrip.active_index());
   tabstrip.ActivateTabAt(2, false);
   EXPECT_EQ(2, tabstrip.active_index());
-  tabstrip.CloseTabContentsAt(2, TabStripModel::CLOSE_NONE);
+  tabstrip.CloseWebContentsAt(2, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(2, tabstrip.active_index());
-  tabstrip.CloseTabContentsAt(2, TabStripModel::CLOSE_NONE);
+  tabstrip.CloseWebContentsAt(2, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(1, tabstrip.active_index());
-  tabstrip.CloseTabContentsAt(1, TabStripModel::CLOSE_NONE);
+  tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(0, tabstrip.active_index());
   // Finally test that when a tab has no "siblings" that the opener is
   // selected.
@@ -868,7 +868,7 @@ TEST_F(TabStripModelTest, TestSelectOnClose) {
                                TabStripModel::ADD_ACTIVE |
                                TabStripModel::ADD_INHERIT_GROUP);
   EXPECT_EQ(2, tabstrip.active_index());
-  tabstrip.CloseTabContentsAt(2, TabStripModel::CLOSE_NONE);
+  tabstrip.CloseWebContentsAt(2, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(0, tabstrip.active_index());
 
   tabstrip.CloseAllTabs();
@@ -1410,7 +1410,7 @@ TEST_F(TabStripModelTest, AppendContentsReselectionTest) {
   WebContents* target_blank = target_blank_contents->web_contents();
   tabstrip.AppendWebContents(target_blank, true);
   EXPECT_EQ(2, tabstrip.active_index());
-  tabstrip.CloseTabContentsAt(2, TabStripModel::CLOSE_NONE);
+  tabstrip.CloseWebContentsAt(2, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(0, tabstrip.active_index());
 
   // Clean up after ourselves.
@@ -1448,19 +1448,19 @@ TEST_F(TabStripModelTest, ReselectionConsidersChildrenTest) {
   EXPECT_EQ(page_a_a_a_contents, strip.GetTabContentsAt(2));
 
   // Close page A.A
-  strip.CloseTabContentsAt(strip.active_index(), TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(strip.active_index(), TabStripModel::CLOSE_NONE);
 
   // Page A.A.A should be selected, NOT A.B
   EXPECT_EQ(page_a_a_a_contents, strip.GetActiveTabContents());
 
   // Close page A.A.A
-  strip.CloseTabContentsAt(strip.active_index(), TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(strip.active_index(), TabStripModel::CLOSE_NONE);
 
   // Page A.B should be selected
   EXPECT_EQ(page_a_b_contents, strip.GetActiveTabContents());
 
   // Close page A.B
-  strip.CloseTabContentsAt(strip.active_index(), TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(strip.active_index(), TabStripModel::CLOSE_NONE);
 
   // Page A should be selected
   EXPECT_EQ(page_a_contents, strip.GetActiveTabContents());
@@ -1503,7 +1503,7 @@ TEST_F(TabStripModelTest, AddTabContents_NewTabAtEndOfStripInheritsGroup) {
 
   // Close the New Tab that was just opened. We should be returned to page B's
   // Tab...
-  strip.CloseTabContentsAt(4, TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(4, TabStripModel::CLOSE_NONE);
 
   EXPECT_EQ(1, strip.active_index());
 
@@ -1518,7 +1518,7 @@ TEST_F(TabStripModelTest, AddTabContents_NewTabAtEndOfStripInheritsGroup) {
   EXPECT_EQ(4, strip.active_index());
 
   // Close the Tab. Selection should shift back to page B's Tab.
-  strip.CloseTabContentsAt(4, TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(4, TabStripModel::CLOSE_NONE);
 
   EXPECT_EQ(1, strip.active_index());
 
@@ -1535,7 +1535,7 @@ TEST_F(TabStripModelTest, AddTabContents_NewTabAtEndOfStripInheritsGroup) {
   EXPECT_EQ(4, strip.active_index());
 
   // Close the Tab. The next-adjacent should be selected.
-  strip.CloseTabContentsAt(4, TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(4, TabStripModel::CLOSE_NONE);
 
   EXPECT_EQ(3, strip.active_index());
 
@@ -1579,7 +1579,7 @@ TEST_F(TabStripModelTest, NavigationForgetsOpeners) {
   strip.TabNavigating(page_d_contents, content::PAGE_TRANSITION_LINK);
 
   // Close page D, page C should be selected. (part of same group).
-  strip.CloseTabContentsAt(3, TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(3, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(2, strip.active_index());
 
   // Tell the TabStripModel that we are navigating in page C via a bookmark.
@@ -1587,7 +1587,7 @@ TEST_F(TabStripModelTest, NavigationForgetsOpeners) {
 
   // Close page C, page E should be selected. (C is no longer part of the
   // A-B-C-D group, selection moves to the right).
-  strip.CloseTabContentsAt(2, TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(2, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(page_e_contents, strip.GetTabContentsAt(strip.active_index()));
 
   strip.CloseAllTabs();
@@ -1631,7 +1631,7 @@ TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
 
   // At this point, if we close this tab the last selected one should be
   // re-selected.
-  strip.CloseTabContentsAt(strip.count() - 1, TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(strip.count() - 1, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(page_c_contents, strip.GetTabContentsAt(strip.active_index()));
 
   // TEST 2: If the user is in a group of tabs and opens a new tab at the end
@@ -1650,7 +1650,7 @@ TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
   strip.ActivateTabAt(strip.count() - 1, true);
 
   // Now close the last tab. The next adjacent should be selected.
-  strip.CloseTabContentsAt(strip.count() - 1, TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(strip.count() - 1, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(page_d_contents, strip.GetTabContentsAt(strip.active_index()));
 
   strip.CloseAllTabs();
@@ -1706,7 +1706,7 @@ TEST_F(TabStripModelTest, FastShutdown) {
     tabstrip.AppendWebContents(contents1, true);
     tabstrip.AppendWebContents(contents2, true);
 
-    tabstrip.CloseTabContentsAt(1, TabStripModel::CLOSE_NONE);
+    tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
     EXPECT_FALSE(contents1->GetRenderProcessHost()->FastShutdownStarted());
     EXPECT_EQ(1, tabstrip.count());
 
@@ -1795,7 +1795,7 @@ TEST_F(TabStripModelTest, Apps) {
 
   // Try to move tab 3 to position 0. This isn't legal and should be ignored.
   {
-    tabstrip.MoveTabContentsAt(2, 0, false);
+    tabstrip.MoveWebContentsAt(2, 0, false);
 
     ASSERT_EQ(0, observer.GetStateCount());
 
@@ -1807,7 +1807,7 @@ TEST_F(TabStripModelTest, Apps) {
 
   // Try to move tab 0 to position 3. This isn't legal and should be ignored.
   {
-    tabstrip.MoveTabContentsAt(0, 2, false);
+    tabstrip.MoveWebContentsAt(0, 2, false);
 
     ASSERT_EQ(0, observer.GetStateCount());
 
@@ -1819,7 +1819,7 @@ TEST_F(TabStripModelTest, Apps) {
 
   // Try to move tab 0 to position 1. This is a legal move.
   {
-    tabstrip.MoveTabContentsAt(0, 1, false);
+    tabstrip.MoveWebContentsAt(0, 1, false);
 
     ASSERT_EQ(1, observer.GetStateCount());
     State state(contents1, 1, MockTabStripModelObserver::MOVE);
@@ -1951,7 +1951,7 @@ TEST_F(TabStripModelTest, Pinning) {
 
   // Try to move tab "2" to the front, it should be ignored.
   {
-    tabstrip.MoveTabContentsAt(2, 0, false);
+    tabstrip.MoveWebContentsAt(2, 0, false);
 
     // As the order didn't change, we should get a pinned notification.
     ASSERT_EQ(0, observer.GetStateCount());
@@ -2304,7 +2304,7 @@ TEST_F(TabStripModelTest, MultipleSelection) {
   observer.ClearStates();
 
   // Closing one of the selected tabs, not the active one.
-  strip.CloseTabContentsAt(1, TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(3, strip.count());
   ASSERT_EQ(3, observer.GetStateCount());
   ASSERT_EQ(observer.GetStateAt(0).action,
@@ -2316,7 +2316,7 @@ TEST_F(TabStripModelTest, MultipleSelection) {
   observer.ClearStates();
 
   // Closing the active tab, while there are others tabs selected.
-  strip.CloseTabContentsAt(0, TabStripModel::CLOSE_NONE);
+  strip.CloseWebContentsAt(0, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(2, strip.count());
   ASSERT_EQ(5, observer.GetStateCount());
   ASSERT_EQ(observer.GetStateAt(0).action,

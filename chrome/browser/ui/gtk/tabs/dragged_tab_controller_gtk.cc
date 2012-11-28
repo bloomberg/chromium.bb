@@ -715,7 +715,7 @@ void DraggedTabControllerGtk::RevertDrag() {
           continue;
         int index = attached_tabstrip_->model()->GetIndexOfTabContents(
             drag_data_->get(i)->contents_);
-        source_tabstrip_->model()->MoveTabContentsAt(
+        source_tabstrip_->model()->MoveWebContentsAt(
             index, drag_data_->get(i)->source_model_index_, true);
       }
     }

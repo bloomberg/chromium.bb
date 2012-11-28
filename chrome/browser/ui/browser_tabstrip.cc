@@ -136,7 +136,7 @@ void CloseWebContents(Browser* browser, content::WebContents* contents) {
     NOTREACHED() << "CloseWebContents called for tab not in our strip";
     return;
   }
-  browser->tab_strip_model()->CloseTabContentsAt(
+  browser->tab_strip_model()->CloseWebContentsAt(
       index,
       TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
 }

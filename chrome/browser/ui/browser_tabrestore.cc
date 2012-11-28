@@ -146,7 +146,7 @@ void ReplaceRestoredTab(
       insertion_index + 1,
       web_contents,
       TabStripModel::ADD_ACTIVE | TabStripModel::ADD_INHERIT_GROUP);
-  browser->tab_strip_model()->CloseTabContentsAt(
+  browser->tab_strip_model()->CloseWebContentsAt(
       insertion_index, TabStripModel::CLOSE_NONE);
 }
 

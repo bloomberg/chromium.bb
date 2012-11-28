@@ -266,7 +266,7 @@ void TabStripModel::AddTabAtToSelection(int index) {
   SetSelection(new_model, NOTIFY_DEFAULT);
 }
 
-void TabStripModel::MoveTabContentsAt(int index,
+void TabStripModel::MoveWebContentsAt(int index,
                                       int to_position,
                                       bool select_after_move) {
   DCHECK(ContainsIndex(index));
@@ -281,7 +281,7 @@ void TabStripModel::MoveTabContentsAt(int index,
     return;
   }
 
-  MoveTabContentsAtImpl(index, to_position, select_after_move);
+  MoveWebContentsAtImpl(index, to_position, select_after_move);
 }
 
 void TabStripModel::MoveSelectedTabsTo(int index) {
@@ -349,7 +349,7 @@ int TabStripModel::GetIndexOfWebContents(const WebContents* contents) const {
   return kNoTab;
 }
 
-void TabStripModel::UpdateTabContentsStateAt(int index,
+void TabStripModel::UpdateWebContentsStateAt(int index,
     TabStripModelObserver::TabChangeType change_type) {
   DCHECK(ContainsIndex(index));
 
@@ -359,7 +359,7 @@ void TabStripModel::UpdateTabContentsStateAt(int index,
 
 void TabStripModel::CloseAllTabs() {
   // Set state so that observers can adjust their behavior to suit this
-  // specific condition when CloseTabContentsAt causes a flurry of
+  // specific condition when CloseWebContentsAt causes a flurry of
   // Close/Detach/Select notifications to be sent.
   closing_all_ = true;
   std::vector<int> closing_tabs;
@@ -368,7 +368,7 @@ void TabStripModel::CloseAllTabs() {
   InternalCloseTabs(closing_tabs, CLOSE_CREATE_HISTORICAL_TAB);
 }
 
-bool TabStripModel::CloseTabContentsAt(int index, uint32 close_types) {
+bool TabStripModel::CloseWebContentsAt(int index, uint32 close_types) {
   DCHECK(ContainsIndex(index));
   std::vector<int> closing_tabs;
   closing_tabs.push_back(index);
@@ -500,10 +500,10 @@ void TabStripModel::SetTabPinned(int index, bool pinned) {
     int non_mini_tab_index = IndexOfFirstNonMiniTab();
     contents_data_[index]->pinned = pinned;
     if (pinned && index != non_mini_tab_index) {
-      MoveTabContentsAtImpl(index, non_mini_tab_index, false);
+      MoveWebContentsAtImpl(index, non_mini_tab_index, false);
       index = non_mini_tab_index;
     } else if (!pinned && index + 1 != non_mini_tab_index) {
-      MoveTabContentsAtImpl(index, non_mini_tab_index - 1, false);
+      MoveWebContentsAtImpl(index, non_mini_tab_index - 1, false);
       index = non_mini_tab_index - 1;
     }
 
@@ -689,13 +689,13 @@ void TabStripModel::SelectLastTab() {
 void TabStripModel::MoveTabNext() {
   // TODO: this likely needs to be updated for multi-selection.
   int new_index = std::min(active_index() + 1, count() - 1);
-  MoveTabContentsAt(active_index(), new_index, true);
+  MoveWebContentsAt(active_index(), new_index, true);
 }
 
 void TabStripModel::MoveTabPrevious() {
   // TODO: this likely needs to be updated for multi-selection.
   int new_index = std::max(active_index() - 1, 0);
-  MoveTabContentsAt(active_index(), new_index, true);
+  MoveWebContentsAt(active_index(), new_index, true);
 }
 
 // Context menu functions.
@@ -1176,7 +1176,7 @@ void TabStripModel::SelectRelativeTab(bool next) {
   ActivateTabAt(index, true);
 }
 
-void TabStripModel::MoveTabContentsAtImpl(int index,
+void TabStripModel::MoveWebContentsAtImpl(int index,
                                           int to_position,
                                           bool select_after_move) {
   WebContentsData* moved_data = contents_data_[index];
@@ -1212,7 +1212,7 @@ void TabStripModel::MoveSelectedTabsToImpl(int index,
   size_t tab_index = start;
   while (tab_index < end &&
          selection_model_.selected_indices()[start] < index) {
-    MoveTabContentsAt(selection_model_.selected_indices()[start],
+    MoveWebContentsAt(selection_model_.selected_indices()[start],
                       target_index - 1, false);
     tab_index++;
   }
@@ -1221,7 +1221,7 @@ void TabStripModel::MoveSelectedTabsToImpl(int index,
   // selection.
   while (tab_index < end) {
     if (selection_model_.selected_indices()[tab_index] != target_index) {
-      MoveTabContentsAt(selection_model_.selected_indices()[tab_index],
+      MoveWebContentsAt(selection_model_.selected_indices()[tab_index],
                         target_index, false);
     }
     tab_index++;

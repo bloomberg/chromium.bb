@@ -88,21 +88,21 @@ TEST_F(TabposeWindowTest, TestModelObserver) {
   DCHECK_EQ([window thumbnailLayerCount], 3u);
   DCHECK_EQ([window selectedIndex], 2);
 
-  model->MoveTabContentsAt(0, 2, /*select_after_move=*/false);
+  model->MoveWebContentsAt(0, 2, /*select_after_move=*/false);
   DCHECK_EQ([window thumbnailLayerCount], 3u);
   DCHECK_EQ([window selectedIndex], 1);
 
-  model->MoveTabContentsAt(2, 0, /*select_after_move=*/false);
+  model->MoveWebContentsAt(2, 0, /*select_after_move=*/false);
   DCHECK_EQ([window thumbnailLayerCount], 3u);
   DCHECK_EQ([window selectedIndex], 2);
 
   [window selectTileAtIndexWithoutAnimation:0];
   DCHECK_EQ([window selectedIndex], 0);
 
-  model->MoveTabContentsAt(0, 2, /*select_after_move=*/false);
+  model->MoveWebContentsAt(0, 2, /*select_after_move=*/false);
   DCHECK_EQ([window selectedIndex], 2);
 
-  model->MoveTabContentsAt(2, 0, /*select_after_move=*/false);
+  model->MoveWebContentsAt(2, 0, /*select_after_move=*/false);
   DCHECK_EQ([window selectedIndex], 0);
 
   delete model->DetachTabContentsAt(0);
@@ -113,12 +113,12 @@ TEST_F(TabposeWindowTest, TestModelObserver) {
   DCHECK_EQ([window thumbnailLayerCount], 3u);
   DCHECK_EQ([window selectedIndex], 0);
 
-  model->CloseTabContentsAt(0, TabStripModel::CLOSE_NONE);
+  model->CloseWebContentsAt(0, TabStripModel::CLOSE_NONE);
   DCHECK_EQ([window thumbnailLayerCount], 2u);
   DCHECK_EQ([window selectedIndex], 0);
 
   [window selectTileAtIndexWithoutAnimation:1];
-  model->CloseTabContentsAt(0, TabStripModel::CLOSE_NONE);
+  model->CloseWebContentsAt(0, TabStripModel::CLOSE_NONE);
   DCHECK_EQ([window thumbnailLayerCount], 1u);
   DCHECK_EQ([window selectedIndex], 0);
 

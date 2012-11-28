@@ -43,7 +43,7 @@ class WebContents;
 //   You'll notice there is no explicit api for making a tab a mini-tab, rather
 //   there are two tab types that are implicitly mini-tabs:
 //   . App. Corresponds to an extension that wants an app tab. App tabs are
-//     identified by TabContents::extension_tab_helper()::is_app().
+//     identified by extensions::TabHelper::is_app().
 //     App tabs are always pinned (you can't unpin them).
 //   . Pinned. Any tab can be pinned. Non-app tabs whose pinned state is changed
 //     are moved to be with other mini-tabs or non-mini tabs.
@@ -87,7 +87,7 @@ class TabStripModel : public content::NotificationObserver {
     // The tab should be pinned.
     ADD_PINNED        = 1 << 1,
 
-    // If not set the insertion index of the TabContents is left up to
+    // If not set the insertion index of the WebContents is left up to
     // the Order Controller associated, so the final insertion index may differ
     // from the specified index. Otherwise the index supplied is used.
     ADD_FORCE_INDEX   = 1 << 2,
@@ -180,13 +180,13 @@ class TabStripModel : public content::NotificationObserver {
                            content::WebContents* contents,
                            int add_types);
 
-  // Closes the TabContents at the specified index. This causes the
-  // TabContents to be destroyed, but it may not happen immediately.
+  // Closes the WebContents at the specified index. This causes the
+  // WebContents to be destroyed, but it may not happen immediately.
   // |close_types| is a bitmask of CloseTypes. Returns true if the
-  // TabContents was closed immediately, false if it was not closed (we
+  // WebContents was closed immediately, false if it was not closed (we
   // may be waiting for a response from an onunload handler, or waiting for the
   // user to confirm closure).
-  bool CloseTabContentsAt(int index, uint32 close_types);
+  bool CloseWebContentsAt(int index, uint32 close_types);
 
   // Replaces the tab contents at |index| with |new_contents|. The
   // TabContents that was at |index| is returned and ownership returns
@@ -216,15 +216,15 @@ class TabStripModel : public content::NotificationObserver {
   // active tab index.
   void AddTabAtToSelection(int index);
 
-  // Move the TabContents at the specified index to another index. This
+  // Move the WebContents at the specified index to another index. This
   // method does NOT send Detached/Attached notifications, rather it moves the
-  // TabContents inline and sends a Moved notification instead.
+  // WebContents inline and sends a Moved notification instead.
   // If |select_after_move| is false, whatever tab was selected before the move
-  // will still be selected, but it's index may have incremented or decremented
+  // will still be selected, but its index may have incremented or decremented
   // one slot.
-  // NOTE: this does nothing if the move would result in app tabs and non-app
-  // tabs mixing.
-  void MoveTabContentsAt(int index, int to_position, bool select_after_move);
+  // NOTE: This respects basic ordering constraints and thus does nothing if the
+  // move would result in app tabs and non-app tabs mixing.
+  void MoveWebContentsAt(int index, int to_position, bool select_after_move);
 
   // Moves the selected tabs to |index|. |index| is treated as if the tab strip
   // did not contain any of the selected tabs. For example, if the tabstrip
@@ -258,9 +258,9 @@ class TabStripModel : public content::NotificationObserver {
   int GetIndexOfTabContents(const TabContents* contents) const;
   int GetIndexOfWebContents(const content::WebContents* contents) const;
 
-  // Notify any observers that the TabContents at the specified index has
+  // Notify any observers that the WebContents at the specified index has
   // changed in some way. See TabChangeType for details of |change_type|.
-  void UpdateTabContentsStateAt(
+  void UpdateWebContentsStateAt(
       int index,
       TabStripModelObserver::TabChangeType change_type);
 
@@ -534,9 +534,9 @@ class TabStripModel : public content::NotificationObserver {
   // (|forward| is false).
   void SelectRelativeTab(bool forward);
 
-  // Does the work of MoveTabContentsAt. This has no checks to make sure the
-  // position is valid, those are done in MoveTabContentsAt.
-  void MoveTabContentsAtImpl(int index,
+  // Does the work of MoveWebContentsAt. This has no checks to make sure the
+  // position is valid, those are done in MoveWebContentsAt.
+  void MoveWebContentsAtImpl(int index,
                              int to_position,
                              bool select_after_move);
 
