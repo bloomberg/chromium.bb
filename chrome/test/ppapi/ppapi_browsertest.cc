@@ -260,9 +260,14 @@ TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_Replace)
 TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_Flush)
 TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_FlushOffscreenUpdate)
 
+#if defined(OS_WIN) && !defined(USE_AURA)
+// These tests fail with the test compositor which is what's used by default for
+// browser tests on Windows Aura. Renable when the software compositor is
+// available.
 TEST_PPAPI_IN_PROCESS(Graphics3D)
 TEST_PPAPI_OUT_OF_PROCESS(Graphics3D)
 TEST_PPAPI_NACL_VIA_HTTP(Graphics3D)
+#endif
 
 TEST_PPAPI_IN_PROCESS(ImageData)
 TEST_PPAPI_OUT_OF_PROCESS(ImageData)
