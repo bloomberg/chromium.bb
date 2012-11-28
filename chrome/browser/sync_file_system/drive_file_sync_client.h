@@ -78,6 +78,11 @@ class DriveFileSyncClient : public base::NonThreadSafe,
   // Upon completion, invokes |callback|.
   void GetLargestChangeStamp(const ChangeStampCallback& callback);
 
+  // Fetches the document entry for the file identified by |resource_id|.
+  // Upon completion, invokes |callback|.
+  void GetDocumentEntry(const std::string& resource_id,
+                        const DocumentEntryCallback& callback);
+
   // Lists files in the directory identified by |resource_id|.
   // Upon completion, invokes |callback|.
   // The result may be chunked and may have successive results. The caller needs

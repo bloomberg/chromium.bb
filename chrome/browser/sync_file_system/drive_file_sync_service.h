@@ -160,6 +160,12 @@ class DriveFileSyncService
   void UpdateServiceState();
   base::WeakPtr<DriveFileSyncService> AsWeakPtr();
 
+
+  void DidGetRemoteFileMetadata(
+      const fileapi::SyncFileMetadataCallback& callback,
+      google_apis::GDataErrorCode error,
+      scoped_ptr<google_apis::DocumentEntry> entry);
+
   SyncOperationType ResolveSyncOperationType(
       const fileapi::FileChange& local_file_change,
       const fileapi::FileSystemURL& url);

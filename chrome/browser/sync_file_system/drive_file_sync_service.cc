@@ -252,9 +252,15 @@ void DriveFileSyncService::GetConflictFiles(
 void DriveFileSyncService::GetRemoteFileMetadata(
     const fileapi::FileSystemURL& url,
     const fileapi::SyncFileMetadataCallback& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(fileapi::SYNC_STATUS_FAILED,
-               fileapi::SyncFileMetadata());
+  DriveMetadata metadata;
+  const fileapi::SyncStatusCode status =
+      metadata_store_->ReadEntry(url, &metadata);
+  if (status != fileapi::SYNC_STATUS_OK)
+    callback.Run(status, fileapi::SyncFileMetadata());
+  sync_client_->GetDocumentEntry(
+      metadata.resource_id(),
+      base::Bind(&DriveFileSyncService::DidGetRemoteFileMetadata,
+                 AsWeakPtr(), callback));
 }
 
 RemoteServiceState DriveFileSyncService::GetCurrentState() const {
@@ -599,6 +605,21 @@ void DriveFileSyncService::DidRemoveOriginOnMetadataStore(
     fileapi::SyncStatusCode status) {
   NotifyTaskDone(status, token.Pass());
   callback.Run(status);
+}
+
+void DriveFileSyncService::DidGetRemoteFileMetadata(
+    const fileapi::SyncFileMetadataCallback& callback,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<google_apis::DocumentEntry> entry) {
+  fileapi::SyncFileType file_type = fileapi::SYNC_FILE_TYPE_UNKNOWN;
+  if (entry->is_file())
+    file_type = fileapi::SYNC_FILE_TYPE_FILE;
+  else if (entry->is_folder())
+    file_type = fileapi::SYNC_FILE_TYPE_DIRECTORY;
+  callback.Run(GDataErrorCodeToSyncStatusCode(error),
+               fileapi::SyncFileMetadata(file_type,
+                                         entry->file_size(),
+                                         entry->updated_time()));
 }
 
 DriveFileSyncService::SyncOperationType

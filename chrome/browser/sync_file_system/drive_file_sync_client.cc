@@ -220,6 +220,16 @@ void DriveFileSyncClient::GetLargestChangeStamp(
                  AsWeakPtr(), callback));
 }
 
+void DriveFileSyncClient::GetDocumentEntry(
+    const std::string& resource_id,
+    const DocumentEntryCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  drive_service_->GetDocumentEntry(
+      resource_id,
+      base::Bind(&DriveFileSyncClient::DidGetDocumentEntryData,
+                 AsWeakPtr(), callback));
+}
+
 void DriveFileSyncClient::DidGetAccountMetadata(
     const ChangeStampCallback& callback,
     google_apis::GDataErrorCode error,
