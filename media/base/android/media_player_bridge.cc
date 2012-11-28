@@ -56,13 +56,15 @@ MediaPlayerBridge::MediaPlayerBridge(
     const MediaPreparedCB& media_prepared_cb,
     const PlaybackCompleteCB& playback_complete_cb,
     const SeekCompleteCB& seek_complete_cb,
-    const TimeUpdateCB& time_update_cb)
+    const TimeUpdateCB& time_update_cb,
+    const MediaInterruptedCB& media_interrupted_cb)
     : media_error_cb_(media_error_cb),
       video_size_changed_cb_(video_size_changed_cb),
       buffering_update_cb_(buffering_update_cb),
       media_prepared_cb_(media_prepared_cb),
       playback_complete_cb_(playback_complete_cb),
       seek_complete_cb_(seek_complete_cb),
+      media_interrupted_cb_(media_interrupted_cb),
       time_update_cb_(time_update_cb),
       player_id_(player_id),
       prepared_(false),
@@ -245,6 +247,8 @@ void MediaPlayerBridge::Release() {
   JNIEnv* env = AttachCurrentThread();
   JNI_MediaPlayer::Java_MediaPlayer_release(env, j_media_player_.obj());
   j_media_player_.Reset();
+
+  listener_.ReleaseMediaPlayerListenerResources();
 }
 
 void MediaPlayerBridge::SetVolume(float left_volume, float right_volume) {
@@ -279,6 +283,12 @@ void MediaPlayerBridge::OnBufferingUpdate(int percent) {
 void MediaPlayerBridge::OnPlaybackComplete() {
   time_update_timer_.Stop();
   playback_complete_cb_.Run(player_id_);
+}
+
+
+void MediaPlayerBridge::OnMediaInterrupted() {
+  time_update_timer_.Stop();
+  media_interrupted_cb_.Run(player_id_);
 }
 
 void MediaPlayerBridge::OnSeekComplete() {

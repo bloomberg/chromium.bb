@@ -4,10 +4,12 @@
 
 package org.chromium.media;
 
+import android.Manifest.permission;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.Manifest.permission;
 import android.media.MediaPlayer;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
@@ -15,12 +17,12 @@ import org.chromium.base.JNINamespace;
 // This class implements all the listener interface for android mediaplayer.
 // Callbacks will be sent to the native class for processing.
 @JNINamespace("media")
-class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
-                                     MediaPlayer.OnCompletionListener,
-                                     MediaPlayer.OnBufferingUpdateListener,
-                                     MediaPlayer.OnSeekCompleteListener,
-                                     MediaPlayer.OnVideoSizeChangedListener,
-                                     MediaPlayer.OnErrorListener {
+class MediaPlayerListener extends PhoneStateListener implements MediaPlayer.OnPreparedListener,
+    MediaPlayer.OnCompletionListener,
+    MediaPlayer.OnBufferingUpdateListener,
+    MediaPlayer.OnSeekCompleteListener,
+    MediaPlayer.OnVideoSizeChangedListener,
+    MediaPlayer.OnErrorListener {
     // These values are mirrored as enums in media/base/android/media_player_bridge.h.
     // Please ensure they stay in sync.
     private static final int MEDIA_ERROR_FORMAT = 0;
@@ -34,9 +36,11 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
 
     // Used to determine the class instance to dispatch the native call to.
     private int mNativeMediaPlayerListener = 0;
+    private final Context mContext;
 
-    private MediaPlayerListener(int nativeMediaPlayerListener) {
+    private MediaPlayerListener(int nativeMediaPlayerListener, Context context) {
         mNativeMediaPlayerListener = nativeMediaPlayerListener;
+        mContext = context;
     }
 
     @Override
@@ -99,10 +103,29 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
         nativeOnMediaPrepared(mNativeMediaPlayerListener);
     }
 
+    @Override
+    public void onCallStateChanged(int type, String number) {
+        if (type != TelephonyManager.CALL_STATE_IDLE) {
+            nativeOnMediaInterrupted(mNativeMediaPlayerListener);
+        }
+    }
+
     @CalledByNative
-    private static void create(int nativeMediaPlayerListener,
+    public void releaseResources() {
+        // Unregister the listener
+        if (mContext != null) {
+            TelephonyManager mgr =
+                    (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+            if (mgr != null) {
+                mgr.listen(this, PhoneStateListener.LISTEN_NONE);
+            }
+        }
+    }
+
+    @CalledByNative
+    private static MediaPlayerListener create(int nativeMediaPlayerListener,
             Context context, MediaPlayer mediaPlayer) {
-        MediaPlayerListener listener = new MediaPlayerListener(nativeMediaPlayerListener);
+        MediaPlayerListener listener = new MediaPlayerListener(nativeMediaPlayerListener, context);
         mediaPlayer.setOnBufferingUpdateListener(listener);
         mediaPlayer.setOnCompletionListener(listener);
         mediaPlayer.setOnErrorListener(listener);
@@ -113,6 +136,13 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
                 context.checkCallingPermission(permission.WAKE_LOCK)) {
             mediaPlayer.setWakeMode(context, android.os.PowerManager.FULL_WAKE_LOCK);
         }
+
+        TelephonyManager mgr =
+                (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        if (mgr != null) {
+            mgr.listen(listener, PhoneStateListener.LISTEN_CALL_STATE);
+        }
+        return listener;
     }
 
     /**
@@ -135,4 +165,6 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
     private native void nativeOnPlaybackComplete(int nativeMediaPlayerListener);
 
     private native void nativeOnSeekComplete(int nativeMediaPlayerListener);
+
+    private native void nativeOnMediaInterrupted(int nativeMediaPlayerListener);
 }

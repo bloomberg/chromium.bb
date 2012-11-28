@@ -109,6 +109,10 @@ void WebMediaPlayerInProcessAndroid::SeekCompleteCallback(
   OnSeekComplete(current_time);
 }
 
+void WebMediaPlayerInProcessAndroid::MediaInterruptedCallback(int player_id) {
+  PauseInternal();
+}
+
 void WebMediaPlayerInProcessAndroid::MediaErrorCallback(int player_id,
                                                         int error_type) {
   OnMediaError(error_type);
@@ -148,6 +152,8 @@ void WebMediaPlayerInProcessAndroid::InitializeMediaPlayer(GURL url) {
       base::Bind(&WebMediaPlayerInProcessAndroid::SeekCompleteCallback,
                  base::Unretained(this)),
       base::Bind(&WebMediaPlayerInProcessAndroid::TimeUpdateCallback,
+                 base::Unretained(this)),
+      base::Bind(&WebMediaPlayerInProcessAndroid::MediaInterruptedCallback,
                  base::Unretained(this))));
 
   UpdateNetworkState(WebMediaPlayer::NetworkStateLoading);

@@ -77,6 +77,7 @@ class WebMediaPlayerInProcessAndroid : public WebMediaPlayerAndroid {
   void SeekCompleteCallback(int player_id, base::TimeDelta current_time);
   void MediaPreparedCallback(int player_id, base::TimeDelta duration);
   void TimeUpdateCallback(int player_id, base::TimeDelta current_time) {}
+  void MediaInterruptedCallback(int player_id);
 
   // WebMediaPlayerAndroid implementation.
   virtual void SetVideoSurface(jobject j_surface) OVERRIDE;

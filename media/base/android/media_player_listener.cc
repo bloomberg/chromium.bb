@@ -35,9 +35,20 @@ void MediaPlayerListener::CreateMediaPlayerListener(
     jobject context, jobject media_player) {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
+  j_media_player_listener_.Reset(
+      Java_MediaPlayerListener_create(
+          env, reinterpret_cast<intptr_t>(this), context, media_player));
+}
 
-  Java_MediaPlayerListener_create(
-      env, reinterpret_cast<intptr_t>(this), context, media_player);
+
+void MediaPlayerListener::ReleaseMediaPlayerListenerResources() {
+  JNIEnv* env = AttachCurrentThread();
+  CHECK(env);
+  if (!j_media_player_listener_.is_null()) {
+    Java_MediaPlayerListener_releaseResources(
+        env, j_media_player_listener_.obj());
+  }
+  j_media_player_listener_.Reset();
 }
 
 void MediaPlayerListener::OnMediaError(
@@ -75,6 +86,12 @@ void MediaPlayerListener::OnMediaPrepared(
     JNIEnv* /* env */, jobject /* obj */) {
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &MediaPlayerBridge::OnMediaPrepared, media_player_));
+}
+
+void MediaPlayerListener::OnMediaInterrupted(
+    JNIEnv* /* env */, jobject /* obj */) {
+  message_loop_->PostTask(FROM_HERE, base::Bind(
+      &MediaPlayerBridge::OnMediaInterrupted, media_player_));
 }
 
 bool MediaPlayerListener::RegisterMediaPlayerListener(JNIEnv* env) {

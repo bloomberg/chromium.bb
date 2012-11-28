@@ -40,9 +40,11 @@ class MediaPlayerListener {
   void OnPlaybackComplete(JNIEnv* /* env */, jobject /* obj */);
   void OnSeekComplete(JNIEnv* /* env */, jobject /* obj */);
   void OnMediaPrepared(JNIEnv* /* env */, jobject /* obj */);
+  void OnMediaInterrupted(JNIEnv* /* env */, jobject /* obj */);
 
   // Create a Java MediaPlayerListener object.
   void CreateMediaPlayerListener(jobject context, jobject media_player);
+  void ReleaseMediaPlayerListenerResources();
 
   // Register MediaPlayerListener in the system library loader.
   static bool RegisterMediaPlayerListener(JNIEnv* env);
@@ -53,6 +55,8 @@ class MediaPlayerListener {
 
   // The MediaPlayerBridge object all the callbacks should be send to.
   base::WeakPtr<MediaPlayerBridge> media_player_;
+
+  base::android::ScopedJavaGlobalRef<jobject> j_media_player_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPlayerListener);
 };

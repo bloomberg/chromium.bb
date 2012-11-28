@@ -56,6 +56,9 @@ class MEDIA_EXPORT MediaPlayerBridge {
   // Callbacks when seek completed. Args: player ID, current time.
   typedef base::Callback<void(int, base::TimeDelta)> SeekCompleteCB;
 
+  // Callbacks when seek completed. Args: player ID
+  typedef base::Callback<void(int)> MediaInterruptedCB;
+
   // Callbacks when playback completed. Args: player ID.
   typedef base::Callback<void(int)> PlaybackCompleteCB;
 
@@ -82,7 +85,8 @@ class MEDIA_EXPORT MediaPlayerBridge {
                     const MediaPreparedCB& media_prepared_cb,
                     const PlaybackCompleteCB& playback_complete_cb,
                     const SeekCompleteCB& seek_complete_cb,
-                    const TimeUpdateCB& time_update_cb);
+                    const TimeUpdateCB& time_update_cb,
+                    const MediaInterruptedCB& media_interrupted_cb);
   ~MediaPlayerBridge();
 
   typedef std::map<std::string, std::string> HeadersMap;
@@ -127,6 +131,7 @@ class MEDIA_EXPORT MediaPlayerBridge {
   void OnPlaybackComplete();
   void OnSeekComplete();
   void OnMediaPrepared();
+  void OnMediaInterrupted();
 
   // Prepare the player for playback, asynchronously. When succeeds,
   // OnMediaPrepared() will be called. Otherwise, OnMediaError() will
@@ -158,6 +163,7 @@ class MEDIA_EXPORT MediaPlayerBridge {
   MediaPreparedCB media_prepared_cb_;
   PlaybackCompleteCB playback_complete_cb_;
   SeekCompleteCB seek_complete_cb_;
+  MediaInterruptedCB media_interrupted_cb_;
 
   // Callbacks when timer events are received.
   TimeUpdateCB time_update_cb_;
