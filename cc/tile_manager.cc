@@ -21,6 +21,7 @@ void RasterizeTile(cc::PicturePile* picture_pile,
                    const gfx::Rect& rect) {
   TRACE_EVENT0("cc", "RasterizeTile");
   DCHECK(mapped_buffer);
+  DCHECK(picture_pile);
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, rect.width(), rect.height());
   bitmap.setPixels(mapped_buffer);
@@ -298,12 +299,17 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
   managed_tile_state.resource_id_is_being_initialized = true;
   managed_tile_state.can_be_freed = false;
 
+  // Get a pointer to the picture pile before the cloned_picture_pile
+  // reference is passed to base::Bind.
+  PicturePile* picture_pile = cloned_picture_pile.get();
+  DCHECK(picture_pile);
+
   ++pending_raster_tasks_;
   worker_pool_->GetTaskRunnerWithShutdownBehavior(
       base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)->PostTaskAndReply(
           FROM_HERE,
           base::Bind(&RasterizeTile,
-                     cloned_picture_pile.get(),
+                     picture_pile,
                      resource_pool_->resource_provider()->mapPixelBuffer(
                          resource_id),
                      tile->rect_inside_picture_),
