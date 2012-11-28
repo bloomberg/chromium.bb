@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/synchronization/lock.h"
 #include "googleurl/src/gurl.h"
 #include "media/filters/skcanvas_video_renderer.h"
 #include "skia/ext/platform_canvas.h"
@@ -152,7 +153,13 @@ class WebMediaPlayerMS
   MediaStreamClient* media_stream_client_;
   scoped_refptr<VideoFrameProvider> video_frame_provider_;
   bool paused_;
+  // |current_frame_| is updated only on main thread.
   scoped_refptr<media::VideoFrame> current_frame_;
+  // |current_frame_used_| is updated on both main and compositing thread.
+  // It's used to track whether |current_frame_| was painted for detecting
+  // when to increase |dropped_frame_count_|.
+  bool current_frame_used_;
+  base::Lock current_frame_lock_;
   bool pending_repaint_;
   bool received_first_frame_;
   bool sequence_started_;
