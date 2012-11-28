@@ -438,9 +438,8 @@ class SafeBrowsingServerTestHelper
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServerTestHelper);
 };
 
-// See http://crbug.com/96459
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServerTest,
-                       DISABLED_SafeBrowsingServerTest) {
+                       SafeBrowsingServerTest) {
   LOG(INFO) << "Start test";
   ASSERT_TRUE(InitSafeBrowsingService());
 
