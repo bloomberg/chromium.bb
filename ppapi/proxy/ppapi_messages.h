@@ -664,13 +664,6 @@ IPC_MESSAGE_ROUTED4(PpapiMsg_PPPContentDecryptor_DecryptAndDecode,
                     PP_DecryptorStreamType /* decoder_type */,
                     ppapi::proxy::PPPDecryptor_Buffer /* buffer */,
                     std::string /* serialized_block_info */)
-
-// PPB_Talk
-IPC_MESSAGE_ROUTED3(
-    PpapiMsg_PPBTalk_GetPermissionACK,
-    uint32 /* plugin_dispatcher_id */,
-    PP_Resource /* resource */,
-    int32_t /* result */)
 #endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
 
 // PPB_TCPSocket_Private.
@@ -1246,13 +1239,6 @@ IPC_SYNC_MESSAGE_ROUTED2_1(
     ppapi::HostResource /* font_file */,
     uint32_t /* table */,
     std::string /* result */)
-
-
-// PPB_Talk.
-IPC_MESSAGE_ROUTED2(
-    PpapiHostMsg_PPBTalk_GetPermission,
-    uint32 /* plugin_dispatcher_id */,
-    PP_Resource /* resource */)
 #endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
 
 // PPB_Testing.
@@ -1684,6 +1670,18 @@ IPC_MESSAGE_CONTROL3(PpapiHostMsg_VideoCapture_Open,
                      PP_VideoCaptureDeviceInfo_Dev /* requested_info */,
                      uint32_t /* buffer_count */)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_VideoCapture_OpenReply)
+
+// Talk ------------------------------------------------------------------------
+
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_Talk_Create)
+
+// Requests talk permissions. The host will respond with GetPermissionReply.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_Talk_GetPermission)
+
+// Response to GetPermission.
+//
+// The result of this message is the general Pepper "result" in the ReplyParams.
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_Talk_GetPermissionReply)
 
 // VideoCapture_Dev, host -> plugin
 IPC_MESSAGE_CONTROL3(PpapiPluginMsg_VideoCapture_OnDeviceInfo,

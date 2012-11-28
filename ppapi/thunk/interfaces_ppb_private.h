@@ -17,7 +17,6 @@ PROXIED_IFACE(PPB_X509Certificate_Private,
 
 #if !defined(OS_NACL)
 PROXIED_API(PPB_Broker)
-PROXIED_API(PPB_Talk_Private)
 
 PROXIED_IFACE(PPB_Broker, PPB_BROKER_TRUSTED_INTERFACE_0_2,
               PPB_BrokerTrusted_0_2)
@@ -41,7 +40,8 @@ PROXIED_IFACE(PPB_Instance, PPB_FLASHFULLSCREEN_INTERFACE_0_1,
               PPB_FlashFullscreen_0_1)
 PROXIED_IFACE(PPB_Instance, PPB_FLASHFULLSCREEN_INTERFACE_1_0,
               PPB_FlashFullscreen_0_1)
-PROXIED_IFACE(PPB_Talk_Private, PPB_TALK_PRIVATE_INTERFACE_1_0,
+
+PROXIED_IFACE(NoAPIName, PPB_TALK_PRIVATE_INTERFACE_1_0,
               PPB_Talk_Private_1_0)
 
 // Hack to keep font working. The Font 0.6 API is binary compatible with

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_talk_private.idl modified Fri Mar  9 11:03:31 2012. */
+/* From private/ppb_talk_private.idl modified Fri Nov  9 14:42:36 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_TALK_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_TALK_PRIVATE_H_
@@ -38,8 +38,8 @@ struct PPB_Talk_Private_1_0 {
   /**
    * Displays security UI.
    *
-   * The callback will be issued with PP_OK as the result of the user gave
-   * permission, or PP_ERROR_NOACCESS if the user denied.
+   * The callback will be issued with 1 as the result if the user gave
+   * permission, or 0 if the user denied.
    *
    * You can only have one call pending. It will return PP_OK_COMPLETIONPENDING
    * if the request is queued, or PP_ERROR_INPROGRESS if there is already a

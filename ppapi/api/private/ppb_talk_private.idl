@@ -22,8 +22,8 @@ interface PPB_Talk_Private {
   /**
    * Displays security UI.
    *
-   * The callback will be issued with PP_OK as the result of the user gave
-   * permission, or PP_ERROR_NOACCESS if the user denied.
+   * The callback will be issued with 1 as the result if the user gave
+   * permission, or 0 if the user denied.
    *
    * You can only have one call pending. It will return PP_OK_COMPLETIONPENDING
    * if the request is queued, or PP_ERROR_INPROGRESS if there is already a

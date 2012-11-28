@@ -5,6 +5,7 @@
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
 
 #include "chrome/browser/renderer_host/pepper/pepper_flash_device_id_host.h"
+#include "chrome/browser/renderer_host/pepper/pepper_talk_host.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/host/resource_host.h"
@@ -40,6 +41,9 @@ scoped_ptr<ResourceHost> ChromeBrowserPepperHostFactory::CreateResourceHost(
     switch (message.type()) {
       case PpapiHostMsg_FlashDeviceID_Create::ID:
         return scoped_ptr<ResourceHost>(new PepperFlashDeviceIDHost(
+            host_, instance, params.pp_resource()));
+      case PpapiHostMsg_Talk_Create::ID:
+        return scoped_ptr<ResourceHost>(new PepperTalkHost(
             host_, instance, params.pp_resource()));
     }
   }

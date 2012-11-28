@@ -44,7 +44,6 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
-#include "chrome/browser/pepper_gtalk_message_filter.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -621,11 +620,6 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
 #if defined(OS_ANDROID) && defined(USE_LINUX_BREAKPAD)
   InitCrashDumpManager();
 #endif
-}
-
-void ChromeContentBrowserClient::BrowserChildProcessHostCreated(
-    content::BrowserChildProcessHost* host) {
-  host->GetHost()->AddFilter(new PepperGtalkMessageFilter());
 }
 
 content::WebUIControllerFactory*
