@@ -889,11 +889,8 @@ bool NativeCellularNetworkParser::ParseValue(PropertyIndex index,
     case PROPERTY_INDEX_ACTIVATION_STATE: {
       std::string activation_state_string;
       if (value.GetAsString(&activation_state_string)) {
-        ActivationState prev_state = cellular_network->activation_state();
         cellular_network->set_activation_state(
             ParseActivationState(activation_state_string));
-        if (cellular_network->activation_state() != prev_state)
-          cellular_network->RefreshDataPlansIfNeeded();
         return true;
       }
       break;
@@ -997,13 +994,8 @@ bool NativeCellularNetworkParser::ParseValue(PropertyIndex index,
       // This property is ignored.
       return true;
     case PROPERTY_INDEX_STATE: {
-      // Save previous state before calling WirelessNetwork::ParseValue.
-      ConnectionState prev_state = cellular_network->state();
-      if (NativeWirelessNetworkParser::ParseValue(index, value, network)) {
-        if (cellular_network->state() != prev_state)
-          cellular_network->RefreshDataPlansIfNeeded();
+      if (NativeWirelessNetworkParser::ParseValue(index, value, network))
         return true;
-      }
       break;
     }
     default:

@@ -89,10 +89,6 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   virtual void Unlock() OVERRIDE;
   virtual bool IsLocked() OVERRIDE;
 
-  virtual void AddCellularDataPlanObserver(
-      CellularDataPlanObserver* observer) OVERRIDE;
-  virtual void RemoveCellularDataPlanObserver(
-      CellularDataPlanObserver* observer) OVERRIDE;
   virtual void AddPinOperationObserver(
       PinOperationObserver* observer) OVERRIDE;
   virtual void RemovePinOperationObserver(
@@ -181,10 +177,6 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   virtual const base::DictionaryValue* FindOncForNetwork(
       const std::string& unique_id) const OVERRIDE;
 
-  virtual const CellularDataPlanVector* GetDataPlans(
-      const std::string& path) const OVERRIDE;
-  virtual const CellularDataPlan* GetSignificantDataPlan(
-      const std::string& path) const OVERRIDE;
   virtual void SignalCellularPlanPayment() OVERRIDE;
   virtual bool HasRecentCellularPlanPayment() OVERRIDE;
   virtual const std::string& GetCellularHomeCarrierId() const OVERRIDE;
@@ -258,7 +250,6 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   typedef std::map<std::string, Network*> NetworkMap;
   typedef std::map<std::string, int> PriorityMap;
   typedef std::map<std::string, NetworkDevice*> NetworkDeviceMap;
-  typedef std::map<std::string, CellularDataPlanVector*> CellularDataPlanMap;
   typedef std::map<std::string, const base::DictionaryValue*> NetworkOncMap;
   typedef std::map<NetworkUIData::ONCSource,
                    std::set<std::string> > NetworkSourceMap;
@@ -315,14 +306,6 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   void ConnectToWifiNetworkUsingConnectData(WifiNetwork* wifi);
   // Called from CallRequestVirtualNetworkAndConnect.
   void ConnectToVirtualNetworkUsingConnectData(VirtualNetwork* vpn);
-  // Called from GetSignificantDataPlan.
-  const CellularDataPlan* GetSignificantDataPlanFromVector(
-      const CellularDataPlanVector* plans) const;
-  CellularNetwork::DataLeft GetDataLeft(
-      CellularDataPlanVector* data_plan_vector);
-  // Takes ownership of |data_plan|.
-  void UpdateCellularDataPlan(const std::string& service_path,
-                              CellularDataPlanVector* data_plan_vector);
 
   // Network list management functions.
   void ClearActiveNetwork(ConnectionType type);
@@ -368,7 +351,6 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   void SignalNetworkManagerObservers();
   void NotifyNetworkChanged(const Network* network);
   void NotifyNetworkDeviceChanged(NetworkDevice* device, PropertyIndex index);
-  void NotifyCellularDataPlanChanged();
   void NotifyPinOperationCompleted(PinOperationError error);
   void NotifyUserConnectionInitiated(const Network* network);
 
@@ -382,9 +364,6 @@ class NetworkLibraryImplBase : public NetworkLibrary {
 
   // Network manager observer list.
   ObserverList<NetworkManagerObserver> network_manager_observers_;
-
-  // Cellular data plan observer list.
-  ObserverList<CellularDataPlanObserver> data_plan_observers_;
 
   // PIN operation observer list.
   ObserverList<PinOperationObserver> pin_operation_observers_;
@@ -418,9 +397,6 @@ class NetworkLibraryImplBase : public NetworkLibrary {
 
   // A device path based map of all NetworkDevices.
   NetworkDeviceMap device_map_;
-
-  // A network service path based map of all CellularDataPlanVectors.
-  CellularDataPlanMap data_plan_map_;
 
   // The ethernet network.
   EthernetNetwork* ethernet_;

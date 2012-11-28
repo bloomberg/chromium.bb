@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/json/json_writer.h"  // for debug output only.
 #include "base/metrics/histogram.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
@@ -62,10 +63,6 @@ void NetworkLibraryImplCros::Init() {
   network_manager_watcher_.reset(CrosMonitorNetworkManagerProperties(
       base::Bind(&NetworkLibraryImplCros::NetworkManagerStatusChangedHandler,
                  weak_ptr_factory_.GetWeakPtr())));
-  data_plan_watcher_.reset(
-      CrosMonitorCellularDataPlan(
-          base::Bind(&NetworkLibraryImplCros::UpdateCellularDataPlan,
-                     weak_ptr_factory_.GetWeakPtr())));
   // Always have at least one device obsever so that device updates are
   // always received.
   network_device_observer_.reset(new NetworkLibraryDeviceObserver());
@@ -455,8 +452,6 @@ void NetworkLibraryImplCros::RequestNetworkScan() {
   if (wimax_enabled())
     CrosRequestNetworkScan(flimflam::kTypeWimax);
 
-  if (cellular_network())
-    cellular_network()->RefreshDataPlansIfNeeded();
   // Make sure all Manager info is up to date. This will also update
   // remembered networks and visible services.
   CrosRequestNetworkManagerProperties(

@@ -608,7 +608,6 @@
         'browser/chromeos/memory/oom_priority_manager_unittest.cc',
         'browser/chromeos/mobile_config_unittest.cc',
         'browser/chromeos/net/network_portal_detector_unittest.cc',
-        'browser/chromeos/network_message_observer_unittest.cc',
         'browser/chromeos/network_settings/onc_merger_unittest.cc',
         'browser/chromeos/network_settings/onc_normalizer_unittest.cc',
         'browser/chromeos/network_settings/onc_test_utils.cc',

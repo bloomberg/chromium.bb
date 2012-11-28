@@ -834,14 +834,6 @@ class WirelessNetwork : public Network {
 // Class for networks of TYPE_CELLULAR.
 class CellularNetwork : public WirelessNetwork {
  public:
-  enum DataLeft {
-    DATA_UNKNOWN,
-    DATA_NORMAL,
-    DATA_LOW,
-    DATA_VERY_LOW,
-    DATA_NONE
-  };
-
   // Test API for accessing setters in tests.
   class TestApi {
    public:
@@ -860,10 +852,6 @@ class CellularNetwork : public WirelessNetwork {
   // Starts device activation process. Returns false if the device state does
   // not permit activation.
   bool StartActivation();
-  // Requests data plans if the network is conencted and activated.
-  // Plan data will be passed through Network::Observer::CellularDataPlanChanged
-  // callback.
-  void RefreshDataPlansIfNeeded() const;
 
   const ActivationState activation_state() const { return activation_state_; }
   bool activated() const {
@@ -873,10 +861,6 @@ class CellularNetwork : public WirelessNetwork {
     return network_technology_;
   }
   const NetworkRoamingState roaming_state() const { return roaming_state_; }
-  bool needs_new_plan() const {
-    return SupportsDataPlan() && restricted_pool()
-        && connected() && activated();
-  }
   const std::string& operator_name() const { return operator_name_; }
   const std::string& operator_code() const { return operator_code_; }
   const std::string& operator_country() const { return operator_country_; }
@@ -884,7 +868,6 @@ class CellularNetwork : public WirelessNetwork {
   const std::string& usage_url() const { return usage_url_; }
   const std::string& post_data() const { return post_data_; }
   const bool using_post() const { return using_post_; }
-  DataLeft data_left() const { return data_left_; }
   const CellularApn& apn() const { return apn_; }
   const CellularApn& last_good_apn() const { return last_good_apn_; }
 
@@ -895,14 +878,10 @@ class CellularNetwork : public WirelessNetwork {
   void SetApn(const CellularApn& apn);
 
   // Returns true if network supports activation.
-  // Current implementation returns same as SupportsDataPlan().
   bool SupportsActivation() const;
 
   // Returns whether the network needs to be activated.
   bool NeedsActivation() const;
-
-  // Returns true if one of the usage_url_ / payment_url_ (or both) is defined.
-  bool SupportsDataPlan() const;
 
   // Return a URL for account info page.
   GURL GetAccountInfoUrl() const;
@@ -959,7 +938,6 @@ class CellularNetwork : public WirelessNetwork {
     using_post_ = using_post;
   }
   void set_usage_url(const std::string& usage_url) { usage_url_ = usage_url; }
-  void set_data_left(DataLeft data_left) { data_left_ = data_left; }
   void set_apn(const base::DictionaryValue& apn) { apn_.Set(apn); }
   void set_last_good_apn(const base::DictionaryValue& last_good_apn) {
     last_good_apn_.Set(last_good_apn);
@@ -977,7 +955,6 @@ class CellularNetwork : public WirelessNetwork {
   std::string post_data_;
   bool using_post_;
   // Cached values
-  DataLeft data_left_;  // Updated when data plans are updated.
   CellularApn apn_;
   CellularApn last_good_apn_;
 
@@ -1307,14 +1284,6 @@ class NetworkLibrary {
     virtual ~NetworkDeviceObserver() {}
   };
 
-  class CellularDataPlanObserver {
-   public:
-    // Called when the cellular data plan has changed.
-    virtual void OnCellularDataPlanChanged(NetworkLibrary* obj) = 0;
-   protected:
-    virtual ~CellularDataPlanObserver() {}
-  };
-
   class PinOperationObserver {
    public:
     // Called when pin async operation has completed.
@@ -1375,11 +1344,6 @@ class NetworkLibrary {
   virtual void Unlock() = 0;
   // Checks if access to network library is locked.
   virtual bool IsLocked() = 0;
-
-  virtual void AddCellularDataPlanObserver(
-      CellularDataPlanObserver* observer) = 0;
-  virtual void RemoveCellularDataPlanObserver(
-      CellularDataPlanObserver* observer) = 0;
 
   virtual void AddPinOperationObserver(PinOperationObserver* observer) = 0;
   virtual void RemovePinOperationObserver(PinOperationObserver* observer) = 0;
@@ -1533,20 +1497,6 @@ class NetworkLibrary {
   // which get reconfigured at startup.
   virtual const base::DictionaryValue* FindOncForNetwork(
       const std::string& unique_id) const = 0;
-
-  // Retrieves the data plans associated with |path|, NULL if there are no
-  // associated plans.
-  virtual const CellularDataPlanVector* GetDataPlans(
-      const std::string& path) const = 0;
-
-  // This returns the significant data plan. If the user only has the
-  // base data plan, then return that. If there is a base and a paid data plan,
-  // then the significant one is the paid one. So return the paid plan.
-  // If there are no data plans, then this method returns NULL.
-  // This returns a pointer to a member of data_plans_, so if SetDataPlans()
-  // gets called, the result becomes invalid.
-  virtual const CellularDataPlan* GetSignificantDataPlan(
-      const std::string& path) const = 0;
 
   // Records information that cellular plan payment has happened.
   virtual void SignalCellularPlanPayment() = 0;

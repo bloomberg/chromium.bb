@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/cros/network_library_impl_base.h"
 
 #include "base/bind.h"
+#include "base/memory/scoped_vector.h"
+#include "base/stl_util.h"
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
 #include "chrome/browser/chromeos/cros/onc_network_parser.h"
 #include "chrome/browser/chromeos/network_login_observer.h"
@@ -65,13 +67,11 @@ NetworkLibraryImplBase::NetworkLibraryImplBase()
 NetworkLibraryImplBase::~NetworkLibraryImplBase() {
   network_profile_observers_.Clear();
   network_manager_observers_.Clear();
-  data_plan_observers_.Clear();
   pin_operation_observers_.Clear();
   user_action_observers_.Clear();
   STLDeleteValues(&network_map_);
   ClearNetworks();
   DeleteRememberedNetworks();
-  STLDeleteValues(&data_plan_map_);
   STLDeleteValues(&device_map_);
   STLDeleteValues(&network_device_observers_);
   STLDeleteValues(&network_observers_);
@@ -209,17 +209,6 @@ bool NetworkLibraryImplBase::IsLocked() {
 }
 
 //////////////////////////////////////////////////////////////////////////////
-
-void NetworkLibraryImplBase::AddCellularDataPlanObserver(
-    CellularDataPlanObserver* observer) {
-  if (!data_plan_observers_.HasObserver(observer))
-    data_plan_observers_.AddObserver(observer);
-}
-
-void NetworkLibraryImplBase::RemoveCellularDataPlanObserver(
-    CellularDataPlanObserver* observer) {
-  data_plan_observers_.RemoveObserver(observer);
-}
 
 void NetworkLibraryImplBase::AddPinOperationObserver(
     PinOperationObserver* observer) {
@@ -591,100 +580,6 @@ const base::DictionaryValue* NetworkLibraryImplBase::FindOncForNetwork(
     const std::string& unique_id) const {
   NetworkOncMap::const_iterator iter = network_onc_map_.find(unique_id);
   return iter != network_onc_map_.end() ? iter->second : NULL;
-}
-
-////////////////////////////////////////////////////////////////////////////
-// Data Plans.
-
-const CellularDataPlanVector* NetworkLibraryImplBase::GetDataPlans(
-    const std::string& path) const {
-  CellularDataPlanMap::const_iterator iter = data_plan_map_.find(path);
-  if (iter == data_plan_map_.end())
-    return NULL;
-  // If we need a new plan, then ignore any data plans we have.
-  CellularNetwork* cellular = FindCellularNetworkByPath(path);
-  if (cellular && cellular->needs_new_plan())
-    return NULL;
-  return iter->second;
-}
-
-const CellularDataPlan* NetworkLibraryImplBase::GetSignificantDataPlan(
-    const std::string& path) const {
-  const CellularDataPlanVector* plans = GetDataPlans(path);
-  if (plans)
-    return GetSignificantDataPlanFromVector(plans);
-  return NULL;
-}
-
-const CellularDataPlan* NetworkLibraryImplBase::
-GetSignificantDataPlanFromVector(const CellularDataPlanVector* plans) const {
-  const CellularDataPlan* significant = NULL;
-  for (CellularDataPlanVector::const_iterator iter = plans->begin();
-       iter != plans->end(); ++iter) {
-    // Set significant to the first plan or to first non metered base plan.
-    if (significant == NULL ||
-        significant->plan_type == CELLULAR_DATA_PLAN_METERED_BASE)
-      significant = *iter;
-  }
-  return significant;
-}
-
-CellularNetwork::DataLeft NetworkLibraryImplBase::GetDataLeft(
-    CellularDataPlanVector* data_plan_vector) {
-  const CellularDataPlan* plan =
-      GetSignificantDataPlanFromVector(data_plan_vector);
-  if (!plan)
-    return CellularNetwork::DATA_UNKNOWN;
-  if (plan->plan_type == CELLULAR_DATA_PLAN_UNLIMITED) {
-    base::TimeDelta remaining = plan->remaining_time();
-    if (remaining <= base::TimeDelta::FromSeconds(0))
-      return CellularNetwork::DATA_NONE;
-    if (remaining <= base::TimeDelta::FromSeconds(kCellularDataVeryLowSecs))
-      return CellularNetwork::DATA_VERY_LOW;
-    if (remaining <= base::TimeDelta::FromSeconds(kCellularDataLowSecs))
-      return CellularNetwork::DATA_LOW;
-    return CellularNetwork::DATA_NORMAL;
-  } else if (plan->plan_type == CELLULAR_DATA_PLAN_METERED_PAID ||
-             plan->plan_type == CELLULAR_DATA_PLAN_METERED_BASE) {
-    int64 remaining = plan->remaining_data();
-    if (remaining <= 0)
-      return CellularNetwork::DATA_NONE;
-    if (remaining <= kCellularDataVeryLowBytes)
-      return CellularNetwork::DATA_VERY_LOW;
-    // For base plans, we do not care about low data.
-    if (remaining <= kCellularDataLowBytes &&
-        plan->plan_type != CELLULAR_DATA_PLAN_METERED_BASE)
-      return CellularNetwork::DATA_LOW;
-    return CellularNetwork::DATA_NORMAL;
-  }
-  return CellularNetwork::DATA_UNKNOWN;
-}
-
-void NetworkLibraryImplBase::UpdateCellularDataPlan(
-    const std::string& service_path,
-    CellularDataPlanVector* data_plan_vector) {
-  VLOG(1) << "Updating cellular data plans for: " << service_path;
-  // Find and delete any existing data plans associated with |service_path|.
-  CellularDataPlanMap::iterator found = data_plan_map_.find(service_path);
-  if (found != data_plan_map_.end())
-    delete found->second;  // This will delete existing data plans.
-  // Takes ownership of |data_plan_vector|.
-  data_plan_map_[service_path] = data_plan_vector;
-
-  // Now, update any matching cellular network's cached data
-  CellularNetwork* cellular = FindCellularNetworkByPath(service_path);
-  if (cellular) {
-    CellularNetwork::DataLeft data_left;
-    // If the network needs a new plan, then there's no data.
-    if (cellular->needs_new_plan())
-      data_left = CellularNetwork::DATA_NONE;
-    else
-      data_left = GetDataLeft(data_plan_vector);
-    VLOG(2) << " Data left: " << data_left
-            << " Need plan: " << cellular->needs_new_plan();
-    cellular->set_data_left(data_left);
-  }
-  NotifyCellularDataPlanChanged();
 }
 
 void NetworkLibraryImplBase::SignalCellularPlanPayment() {
@@ -1421,16 +1316,6 @@ void NetworkLibraryImplBase::AddNetwork(Network* network) {
 // Deletes a network. It must already be removed from any lists.
 void NetworkLibraryImplBase::DeleteNetwork(Network* network) {
   CHECK(network_map_.find(network->service_path()) == network_map_.end());
-  if (network->type() == TYPE_CELLULAR) {
-    // Find and delete any existing data plans associated with |service_path|.
-    CellularDataPlanMap::iterator found =
-        data_plan_map_.find(network->service_path());
-    if (found != data_plan_map_.end()) {
-      CellularDataPlanVector* data_plan_vector = found->second;
-      delete data_plan_vector;
-      data_plan_map_.erase(found);
-    }
-  }
   delete network;
 }
 
@@ -1770,12 +1655,6 @@ void NetworkLibraryImplBase::NotifyNetworkDeviceChanged(
     LOG(ERROR) << "Unexpected signal for unobserved device: "
                << device->name();
   }
-}
-
-void NetworkLibraryImplBase::NotifyCellularDataPlanChanged() {
-  FOR_EACH_OBSERVER(CellularDataPlanObserver,
-                    data_plan_observers_,
-                    OnCellularDataPlanChanged(this));
 }
 
 void NetworkLibraryImplBase::NotifyPinOperationCompleted(

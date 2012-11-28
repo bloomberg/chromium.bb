@@ -145,8 +145,6 @@
         'browser/chromeos/contacts/google_contact_store.h',
         'browser/chromeos/cros/burn_library.cc',
         'browser/chromeos/cros/burn_library.h',
-        'browser/chromeos/cros/cellular_data_plan.cc',
-        'browser/chromeos/cros/cellular_data_plan.h',
         'browser/chromeos/cros/cert_library.cc',
         'browser/chromeos/cros/cert_library.h',
         'browser/chromeos/cros/certificate_pattern.cc',

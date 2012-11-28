@@ -219,42 +219,6 @@ Press any key to continue exploring.
   <message name="IDS_NETWORK_ENROLLMENT_HANDLER_BUTTON" desc="Text of the accept button for generating a new network certificate.">
     Get new certificate
   </message>
-  <message name="IDS_NETWORK_PURCHASE_MORE_MESSAGE" desc="Message for purchase more link on notification when there is no cellular plan">
-    Buy plan...
-  </message>
-  <message name="IDS_NETWORK_MORE_INFO_MESSAGE" desc="Message for more info link on cellular plan low data notification">
-    More info...
-  </message>
-  <message name="IDS_NETWORK_LOW_DATA_TITLE" desc="Title for network low data notification">
-    Low <ph name="network">$1<ex>YBH</ex></ph> data
-  </message>
-  <message name="IDS_NETWORK_OUT_OF_DATA_TITLE" desc="Title for network out of data notification">
-    Out of <ph name="network">$1<ex>YBH</ex></ph> data
-  </message>
-  <message name="IDS_NETWORK_DATA_REMAINING_MESSAGE" desc="Message for network data remaining notification">
-    <ph name="megabytes">$1<ex>50</ex></ph> MB remaining
-  </message>
-  <message name="IDS_NETWORK_DATA_MB_AVAILABLE_MESSAGE" desc="Message for network data available menu item in megabytes">
-    <ph name="megabytes">$1<ex>50</ex></ph> MB available
-  </message>
-  <message name="IDS_NETWORK_DATA_LESS_THAN_ONE_MB_AVAILABLE_MESSAGE" desc="Message for network data available menu item when less than 1 MB available">
-    Less than 1 MB available
-  </message>
-  <message name="IDS_NETWORK_DATA_NONE_AVAILABLE_MESSAGE" desc="Message for network data available menu item when none available">
-    No data available
-  </message>
-  <message name="IDS_NETWORK_NO_DATA_PLAN_MESSAGE" desc="Message for network data remaining notification">
-    You are out of mobile data. Purchase another plan to use <ph name="network">$1<ex>YBH</ex></ph>.
-  </message>
-  <message name="IDS_NETWORK_NEARING_EXPIRATION_TITLE" desc="Title for network nearing expiration notification">
-    Nearing <ph name="network">$1<ex>YBH</ex></ph> expiration
-  </message>
-  <message name="IDS_NETWORK_NO_DATA_PLAN_TITLE" desc="Title for no cellular data plan notification">
-    <ph name="network">$1<ex>YBH</ex></ph> no data plan
-  </message>
-  <message name="IDS_NETWORK_DATA_EXPIRED_TITLE" desc="Title for network data expired notification">
-    <ph name="network">$1<ex>YBH</ex></ph> data expired
-  </message>
   <message name="IDS_NETWORK_CONNECTION_ERROR_TITLE" desc="Title for network connection error notification">
     Network Connection Error
   </message>
@@ -814,9 +778,6 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_BUY_PLAN" desc="In settings Internet options, the title for buy cellular data plan button.">
     Buy plan
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_NO_PLAN_LABEL" desc="In settings Internet options, the title for buy cellular data plan button.">
-    No data plan
-  </message>
   <message name="IDS_OPTIONS_SETTINGS_OPTIONS" desc="In the settings tab, the text on the button to display more options.">
     Options...
   </message>
@@ -960,9 +921,6 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_VPN" desc="In settings Internet options, the title for the VPN (Virtual Private Network) tab.">
     VPN
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_PLAN" desc="In settings Internet options, the title for buy cellular data plan button.">
-    Plan
   </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_CONNECTION" desc="In settings Internet options, the title for buy cellular data plan button.">
     Connection

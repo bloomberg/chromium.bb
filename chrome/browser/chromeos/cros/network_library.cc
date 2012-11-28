@@ -845,8 +845,7 @@ CellularNetwork::CellularNetwork(const std::string& service_path)
       activation_state_(ACTIVATION_STATE_UNKNOWN),
       network_technology_(NETWORK_TECHNOLOGY_UNKNOWN),
       roaming_state_(ROAMING_STATE_UNKNOWN),
-      using_post_(false),
-      data_left_(DATA_UNKNOWN) {
+      using_post_(false) {
 }
 
 CellularNetwork::~CellularNetwork() {
@@ -862,13 +861,6 @@ bool CellularNetwork::StartActivation() {
   // the process hasn't started yet.
   activation_state_ = ACTIVATION_STATE_ACTIVATING;
   return true;
-}
-
-void CellularNetwork::RefreshDataPlansIfNeeded() const {
-  if (!EnsureCrosLoaded())
-    return;
-  if (connected() && activated())
-    CrosRequestCellularDataPlanUpdate(service_path());
 }
 
 void CellularNetwork::SetApn(const CellularApn& apn) {
@@ -887,18 +879,12 @@ void CellularNetwork::SetApn(const CellularApn& apn) {
 }
 
 bool CellularNetwork::SupportsActivation() const {
-  return SupportsDataPlan();
+  return !usage_url().empty() || !payment_url().empty();
 }
 
 bool CellularNetwork::NeedsActivation() const {
   return (activation_state() != ACTIVATION_STATE_ACTIVATED &&
-          activation_state() != ACTIVATION_STATE_UNKNOWN) ||
-          needs_new_plan();
-}
-
-bool CellularNetwork::SupportsDataPlan() const {
-  // TODO(nkostylev): Are there cases when only one of this is defined?
-  return !usage_url().empty() || !payment_url().empty();
+          activation_state() != ACTIVATION_STATE_UNKNOWN);
 }
 
 GURL CellularNetwork::GetAccountInfoUrl() const {

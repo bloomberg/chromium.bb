@@ -72,10 +72,7 @@ int WimaxStrengthIndex(const WimaxNetwork* wimax) {
 }
 
 int CellularStrengthIndex(const CellularNetwork* cellular) {
-  if (cellular->data_left() == CellularNetwork::DATA_NONE)
-    return 0;
-  else
-    return StrengthIndex(cellular->strength(), kNumBarsImages - 1);
+  return StrengthIndex(cellular->strength(), kNumBarsImages - 1);
 }
 
 const gfx::ImageSkia* BadgeForNetworkTechnology(
@@ -85,40 +82,13 @@ const gfx::ImageSkia* BadgeForNetworkTechnology(
   int id = kUnknownBadgeType;
   switch (cellular->network_technology()) {
     case NETWORK_TECHNOLOGY_EVDO:
-      switch (cellular->data_left()) {
-        case CellularNetwork::DATA_NONE:
-          id = IDR_AURA_UBER_TRAY_NETWORK_3G_ERROR;
-          break;
-        case CellularNetwork::DATA_VERY_LOW:
-        case CellularNetwork::DATA_LOW:
-        case CellularNetwork::DATA_NORMAL:
-          id = (color == NetworkMenuIcon::COLOR_DARK) ?
-              IDR_AURA_UBER_TRAY_NETWORK_3G_DARK :
-              IDR_AURA_UBER_TRAY_NETWORK_3G_LIGHT;
-          break;
-        case CellularNetwork::DATA_UNKNOWN:
-          id = IDR_AURA_UBER_TRAY_NETWORK_3G_UNKNOWN;
-          break;
-      }
+      id = (color == NetworkMenuIcon::COLOR_DARK) ?
+          IDR_AURA_UBER_TRAY_NETWORK_3G_DARK :
+          IDR_AURA_UBER_TRAY_NETWORK_3G_LIGHT;
       break;
     case NETWORK_TECHNOLOGY_1XRTT:
-      switch (cellular->data_left()) {
-        case CellularNetwork::DATA_NONE:
-          id = IDR_AURA_UBER_TRAY_NETWORK_1X_ERROR;
-          break;
-        case CellularNetwork::DATA_VERY_LOW:
-        case CellularNetwork::DATA_LOW:
-        case CellularNetwork::DATA_NORMAL:
-          id = IDR_AURA_UBER_TRAY_NETWORK_1X;
-          break;
-        case CellularNetwork::DATA_UNKNOWN:
-          id = IDR_AURA_UBER_TRAY_NETWORK_1X_UNKNOWN;
-          break;
-      }
+      id = IDR_AURA_UBER_TRAY_NETWORK_1X;
       break;
-      // Note: we may not be able to obtain data usage info from GSM carriers,
-      // so there may not be a reason to create _ERROR or _UNKNOWN versions
-      // of the following icons.
     case NETWORK_TECHNOLOGY_GPRS:
       id = IDR_AURA_UBER_TRAY_NETWORK_GPRS;
       break;

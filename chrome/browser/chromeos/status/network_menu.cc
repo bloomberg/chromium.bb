@@ -545,7 +545,6 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
   bool cellular_enabled = cros->cellular_enabled();
   if (cellular_available && cellular_enabled) {
     const CellularNetworkVector& cell_networks = cros->cellular_networks();
-    const CellularNetwork* active_cellular = cros->cellular_network();
 
     bool separator_added = false;
     // List Cellular networks.
@@ -591,8 +590,6 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
       int flag = FLAG_CELLULAR;
       // If wifi is associated, then cellular is not active.
       bool isActive = ShouldHighlightNetwork(cell_networks[i]);
-      bool supports_data_plan =
-          active_cellular && active_cellular->SupportsDataPlan();
       if (isActive)
         flag |= FLAG_ASSOCIATED;
       const gfx::ImageSkia icon = NetworkMenuIcon::GetImage(cell_networks[i],
@@ -600,23 +597,6 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
       menu_items_.push_back(
           MenuItem(ui::MenuModel::TYPE_COMMAND,
                    label, icon, cell_networks[i]->service_path(), flag));
-      if (isActive && supports_data_plan) {
-        label.clear();
-        if (active_cellular->needs_new_plan()) {
-          label = l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_NO_PLAN_LABEL);
-        } else {
-          const chromeos::CellularDataPlan* plan =
-              cros->GetSignificantDataPlan(active_cellular->service_path());
-          if (plan)
-            label = plan->GetUsageInfo();
-        }
-        if (label.length()) {
-          menu_items_.push_back(
-              MenuItem(ui::MenuModel::TYPE_COMMAND,
-                       label, gfx::ImageSkia(),
-                       std::string(), FLAG_DISABLED));
-        }
-      }
     }
     const NetworkDevice* mobile_device = cros->FindMobileDevice();
     if (mobile_device) {

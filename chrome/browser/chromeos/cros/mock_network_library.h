@@ -32,8 +32,6 @@ class MockNetworkLibrary : public NetworkLibrary {
                                               NetworkDeviceObserver*));
   MOCK_METHOD2(RemoveNetworkDeviceObserver, void(const std::string&,
                                                  NetworkDeviceObserver*));
-  MOCK_METHOD1(AddCellularDataPlanObserver, void(CellularDataPlanObserver*));
-  MOCK_METHOD1(RemoveCellularDataPlanObserver, void(CellularDataPlanObserver*));
   MOCK_METHOD1(AddPinOperationObserver, void(PinOperationObserver*));
   MOCK_METHOD1(RemovePinOperationObserver, void(PinOperationObserver*));
   MOCK_METHOD1(AddUserActionObserver, void(UserActionObserver*));
@@ -100,10 +98,6 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_CONST_METHOD1(FindOncForNetwork,
                      const base::DictionaryValue*(
                          const std::string& unique_id));
-  MOCK_CONST_METHOD1(GetDataPlans,
-                     CellularDataPlanVector*(const std::string&));
-  MOCK_CONST_METHOD1(GetSignificantDataPlan,
-                     CellularDataPlan*(const std::string&));
 
   MOCK_METHOD2(ChangePin, void(const std::string&, const std::string&));
   MOCK_METHOD2(ChangeRequirePin, void(bool, const std::string&));

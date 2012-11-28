@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "chrome/browser/chromeos/cros/cellular_data_plan.h"
+#include "base/time.h"
 #include "chrome/browser/chromeos/cros/network_ip_config.h"
 
 namespace base {
@@ -60,11 +60,6 @@ typedef base::Callback<void(
     const std::string& path,
     const std::string& key,
     const base::Value& value)> NetworkPropertiesWatcherCallback;
-
-// Callback for data plan update watchers.
-typedef base::Callback<void(
-    const std::string& modem_service_path,
-    CellularDataPlanVector* data_plan_vector)> DataPlanUpdateWatcherCallback;
 
 // Callback for methods that initiate an operation and return no data.
 typedef base::Callback<void(
@@ -134,10 +129,6 @@ void CrosSetNetworkManagerProperty(const std::string& property,
 void CrosDeleteServiceFromProfile(const std::string& profile_path,
                                   const std::string& service_path);
 
-// Requests an update of the data plans. A callback will be received by any
-// object that invoked MonitorCellularDataPlan when up to date data is ready.
-void CrosRequestCellularDataPlanUpdate(const std::string& modem_service_path);
-
 // Sets up monitoring of the PropertyChanged signal on the shill manager.
 // The provided |callback| will be called whenever a manager property changes.
 CrosNetworkWatcher* CrosMonitorNetworkManagerProperties(
@@ -152,10 +143,6 @@ CrosNetworkWatcher* CrosMonitorNetworkServiceProperties(
 CrosNetworkWatcher* CrosMonitorNetworkDeviceProperties(
     const NetworkPropertiesWatcherCallback& callback,
     const std::string& device_path);
-
-// Sets up monitoring of the cellular data plan updates from Cashew.
-CrosNetworkWatcher* CrosMonitorCellularDataPlan(
-    const DataPlanUpdateWatcherCallback& callback);
 
 // Similar to MonitorNetworkManagerProperties for a specified network device.
 CrosNetworkWatcher* CrosMonitorSMS(const std::string& modem_device_path,

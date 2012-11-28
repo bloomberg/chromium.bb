@@ -26,9 +26,6 @@ class NetworkObserver {
   enum MessageType {
     // Priority order, highest to lowest.
     ERROR_CONNECT_FAILED,
-
-    MESSAGE_DATA_NONE,
-    MESSAGE_DATA_LOW,
     MESSAGE_DATA_PROMO,
   };
 

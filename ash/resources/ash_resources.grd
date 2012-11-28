@@ -140,8 +140,6 @@
 
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_MORE" file="common/status_more.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_NETWORK_FAILED" file="common/status_cellular_failed.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_DATA_LOW" file="common/status_data_low.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_DATA_NONE" file="common/status_data_none.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_FAILED" file="common/status_network_failed.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_INFO" file="common/status_network_info.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER" file="common/status_network_info_h.png" />
@@ -156,12 +154,8 @@
       <!-- ChromeOS specific icons -->
       <if expr="pp_ifdef('chromeos')">
 	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_1X" file="cros/network/statusbar_network_1x.png" />
-	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_1X_ERROR" file="cros/network/statusbar_network_1x_error.png" />
-	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_1X_UNKNOWN" file="cros/network/statusbar_network_1x_unknown.png" />
 	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_3G_DARK" file="cros/network/statusbar_network_3g_dark.png" />
-	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_3G_ERROR" file="cros/network/statusbar_network_3g_error.png" />
 	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_3G_LIGHT" file="cros/network/statusbar_network_3g_light.png" />
-	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_3G_UNKNOWN" file="cros/network/statusbar_network_3g_unknown.png" />
 	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_4G_DARK" file="cros/network/statusbar_network_4g_dark.png" />
 	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_4G_LIGHT" file="cros/network/statusbar_network_4g_light.png" />
 	<structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_ARCS_DARK" file="cros/network/statusbar_network_arcs_dark.png" />

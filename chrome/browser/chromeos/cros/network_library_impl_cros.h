@@ -196,9 +196,6 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   // For monitoring network manager status changes.
   scoped_ptr<CrosNetworkWatcher> network_manager_watcher_;
 
-  // For monitoring data plan changes to the connected cellular network.
-  scoped_ptr<CrosNetworkWatcher> data_plan_watcher_;
-
   // Network device observer.
   scoped_ptr<NetworkLibraryDeviceObserver> network_device_observer_;
 

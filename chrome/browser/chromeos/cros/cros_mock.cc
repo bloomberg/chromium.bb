@@ -78,8 +78,6 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
       .Times(AnyNumber());
   EXPECT_CALL(*mock_network_library_, AddNetworkDeviceObserver(_, _))
       .Times(AnyNumber());
-  EXPECT_CALL(*mock_network_library_, AddCellularDataPlanObserver(_))
-      .Times(AnyNumber());
   EXPECT_CALL(*mock_network_library_, RemoveNetworkProfileObserver(_))
       .Times(AnyNumber());
   EXPECT_CALL(*mock_network_library_, RemoveNetworkManagerObserver(_))
@@ -87,8 +85,6 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
   EXPECT_CALL(*mock_network_library_, RemoveNetworkDeviceObserver(_, _))
       .Times(AnyNumber());
   EXPECT_CALL(*mock_network_library_, RemoveObserverForAllNetworks(_))
-      .Times(AnyNumber());
-  EXPECT_CALL(*mock_network_library_, RemoveCellularDataPlanObserver(_))
       .Times(AnyNumber());
   EXPECT_CALL(*mock_network_library_, IsLocked())
       .Times(AnyNumber())

@@ -32,8 +32,7 @@ namespace options {
 class InternetOptionsHandler
   : public OptionsPageUIHandler,
     public chromeos::NetworkLibrary::NetworkManagerObserver,
-    public chromeos::NetworkLibrary::NetworkObserver,
-    public chromeos::NetworkLibrary::CellularDataPlanObserver {
+    public chromeos::NetworkLibrary::NetworkObserver {
  public:
   InternetOptionsHandler();
   virtual ~InternetOptionsHandler();
@@ -52,9 +51,6 @@ class InternetOptionsHandler
   // NetworkLibrary::NetworkObserver implementation.
   virtual void OnNetworkChanged(chromeos::NetworkLibrary* network_lib,
                                 const chromeos::Network* network) OVERRIDE;
-  // NetworkLibrary::CellularDataPlanObserver implementation.
-  virtual void OnCellularDataPlanChanged(
-      chromeos::NetworkLibrary* network_lib) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -85,10 +81,6 @@ class InternetOptionsHandler
   // be NULL.
   void DoConnect(chromeos::Network* network);
 
-  // Initiates cellular plan data refresh. The results from libcros will be
-  // passed through CellularDataPlanChanged() callback method.
-  // |args| will be [ service_path ]
-  void RefreshCellularPlanCallback(const base::ListValue* args);
   void SetActivationButtonVisibility(
       const chromeos::CellularNetwork* cellular,
       base::DictionaryValue* dictionary,
@@ -140,11 +132,6 @@ class InternetOptionsHandler
                             base::DictionaryValue* dictionary);
   void PopulateCellularDetails(const chromeos::CellularNetwork* cellular,
                                base::DictionaryValue* dictionary);
-
-  // Converts CellularDataPlan structure into dictionary for JS. Formats plan
-  // settings into human readable texts.
-  base::DictionaryValue* CellularDataPlanToDictionary(
-      const chromeos::CellularDataPlan* plan);
 
   // Converts CellularApn stuct into dictionary for JS.
   base::DictionaryValue* CreateDictionaryFromCellularApn(

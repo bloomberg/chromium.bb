@@ -11,7 +11,6 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/sms_watcher.h"
-#include "chromeos/dbus/cashew_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
@@ -110,17 +109,6 @@ class NetworkDevicePropertiesWatcher
   NetworkPropertiesWatcherCallback callback_;
 };
 
-// Converts a string to a CellularDataPlanType.
-CellularDataPlanType ParseCellularDataPlanType(const std::string& type) {
-  if (type == cashew::kCellularDataPlanUnlimited)
-    return CELLULAR_DATA_PLAN_UNLIMITED;
-  if (type == cashew::kCellularDataPlanMeteredPaid)
-    return CELLULAR_DATA_PLAN_METERED_PAID;
-  if (type == cashew::kCellularDataPlanMeteredBase)
-    return CELLULAR_DATA_PLAN_METERED_BASE;
-  return CELLULAR_DATA_PLAN_UNKNOWN;
-}
-
 // Gets a string property from dictionary.
 bool GetStringProperty(const base::DictionaryValue& dictionary,
                        const std::string& key,
@@ -155,61 +143,6 @@ bool GetTimeProperty(const base::DictionaryValue& dictionary,
   *out = base::Time::FromInternalValue(value_int64);
   return true;
 }
-
-// Class to watch data plan update without Libcros.
-class DataPlanUpdateWatcher : public CrosNetworkWatcher {
- public:
-  explicit DataPlanUpdateWatcher(const DataPlanUpdateWatcherCallback& callback)
-      : callback_(callback) {
-    DBusThreadManager::Get()->GetCashewClient()->SetDataPlansUpdateHandler(
-        base::Bind(&DataPlanUpdateWatcher::OnDataPlansUpdate,
-                   base::Unretained(this)));
-  }
-  virtual ~DataPlanUpdateWatcher() {
-    DBusThreadManager::Get()->GetCashewClient()->ResetDataPlansUpdateHandler();
-  }
-
- private:
-  void OnDataPlansUpdate(const std::string& service,
-                         const base::ListValue& data_plans) {
-    CellularDataPlanVector* data_plan_vector = new CellularDataPlanVector;
-    for (size_t i = 0; i != data_plans.GetSize(); ++i) {
-      const base::DictionaryValue* data_plan = NULL;
-      if (!data_plans.GetDictionary(i, &data_plan)) {
-        LOG(ERROR) << "data_plans["  << i << "] is not a dictionary.";
-        continue;
-      }
-      CellularDataPlan* plan = new CellularDataPlan;
-      // Plan name.
-      GetStringProperty(*data_plan, cashew::kCellularPlanNameProperty,
-                        &plan->plan_name);
-      // Plan type.
-      std::string plan_type_string;
-      GetStringProperty(*data_plan, cashew::kCellularPlanTypeProperty,
-                        &plan_type_string);
-      plan->plan_type = ParseCellularDataPlanType(plan_type_string);
-      // Update time.
-      GetTimeProperty(*data_plan, cashew::kCellularPlanUpdateTimeProperty,
-                      &plan->update_time);
-      // Start time.
-      GetTimeProperty(*data_plan, cashew::kCellularPlanStartProperty,
-                      &plan->plan_start_time);
-      // End time.
-      GetTimeProperty(*data_plan, cashew::kCellularPlanEndProperty,
-                      &plan->plan_end_time);
-      // Data bytes.
-      GetInt64Property(*data_plan, cashew::kCellularPlanDataBytesProperty,
-                       &plan->plan_data_bytes);
-      // Bytes used.
-      GetInt64Property(*data_plan, cashew::kCellularDataBytesUsedProperty,
-                       &plan->data_bytes_used);
-      data_plan_vector->push_back(plan);
-    }
-    callback_.Run(service, data_plan_vector);
-  }
-
-  DataPlanUpdateWatcherCallback callback_;
-};
 
 // Does nothing. Used as a callback.
 void DoNothingWithCallStatus(DBusMethodCallStatus call_status) {}
@@ -439,11 +372,6 @@ void CrosDeleteServiceFromProfile(const std::string& profile_path,
       base::Bind(&IgnoreErrors));
 }
 
-void CrosRequestCellularDataPlanUpdate(const std::string& modem_service_path) {
-  DBusThreadManager::Get()->GetCashewClient()->RequestDataPlansUpdate(
-      modem_service_path);
-}
-
 CrosNetworkWatcher* CrosMonitorNetworkManagerProperties(
     const NetworkPropertiesWatcherCallback& callback) {
   return new NetworkManagerPropertiesWatcher(callback);
@@ -459,11 +387,6 @@ CrosNetworkWatcher* CrosMonitorNetworkDeviceProperties(
     const NetworkPropertiesWatcherCallback& callback,
     const std::string& device_path) {
   return new NetworkDevicePropertiesWatcher(callback, device_path);
-}
-
-CrosNetworkWatcher* CrosMonitorCellularDataPlan(
-    const DataPlanUpdateWatcherCallback& callback) {
-  return new DataPlanUpdateWatcher(callback);
 }
 
 CrosNetworkWatcher* CrosMonitorSMS(const std::string& modem_device_path,

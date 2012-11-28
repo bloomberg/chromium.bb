@@ -156,7 +156,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public NetworkMenu::Delegate,
                            public NetworkLibrary::NetworkManagerObserver,
                            public NetworkLibrary::NetworkObserver,
-                           public NetworkLibrary::CellularDataPlanObserver,
                            public google_apis::DriveServiceObserver,
                            public content::NotificationObserver,
                            public input_method::InputMethodManager::Observer,
@@ -212,7 +211,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
     crosnet->AddNetworkManagerObserver(this);
     OnNetworkManagerChanged(crosnet);
-    crosnet->AddCellularDataPlanObserver(this);
 
     input_method::InputMethodManager::GetInstance()->AddObserver(this);
 
@@ -242,10 +240,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     DBusThreadManager::Get()->GetRootPowerManagerClient()->RemoveObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
-    if (crosnet) {
+    if (crosnet)
       crosnet->RemoveNetworkManagerObserver(this);
-      crosnet->RemoveCellularDataPlanObserver(this);
-    }
     input_method::InputMethodManager::GetInstance()->RemoveObserver(this);
     system::TimezoneSettings::GetInstance()->RemoveObserver(this);
     if (SystemKeyEventListener::GetInstance())
@@ -1029,11 +1025,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   // Overridden from NetworkLibrary::NetworkObserver.
   virtual void OnNetworkChanged(NetworkLibrary* crosnet,
       const Network* network) OVERRIDE {
-    NotifyRefreshNetwork();
-  }
-
-  // Overridden from NetworkLibrary::CellularDataPlanObserver.
-  virtual void OnCellularDataPlanChanged(NetworkLibrary* crosnet) OVERRIDE {
     NotifyRefreshNetwork();
   }
 

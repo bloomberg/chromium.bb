@@ -33,10 +33,6 @@ int GetMessageIcon(
         return IDR_AURA_UBER_TRAY_CELLULAR_NETWORK_FAILED;
       else
         return IDR_AURA_UBER_TRAY_NETWORK_FAILED;
-    case TrayNetwork::MESSAGE_DATA_LOW:
-      return IDR_AURA_UBER_TRAY_NETWORK_DATA_LOW;
-    case TrayNetwork::MESSAGE_DATA_NONE:
-      return IDR_AURA_UBER_TRAY_NETWORK_DATA_NONE;
     case TrayNetwork::MESSAGE_DATA_PROMO:
       return IDR_AURA_UBER_TRAY_NOTIFICATION_3G;
   }

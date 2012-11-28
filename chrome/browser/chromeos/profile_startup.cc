@@ -35,8 +35,6 @@ void ProfileStartup(Profile* profile, bool process_startup) {
     chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
         AddNetworkManagerObserver(network_message_observer);
     chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
-        AddCellularDataPlanObserver(network_message_observer);
-    chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
         AddUserActionObserver(network_message_observer);
 
     static chromeos::SmsObserver* sms_observer =
