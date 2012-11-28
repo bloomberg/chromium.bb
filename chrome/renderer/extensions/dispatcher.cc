@@ -1052,7 +1052,8 @@ Feature::Context Dispatcher::ClassifyJavaScriptContext(
         Feature::CONTENT_SCRIPT_CONTEXT : Feature::UNSPECIFIED_CONTEXT;
   }
 
-  // We have an explicit check for sandboxed pages first since:
+  // We have an explicit check for sandboxed pages before checking whether the
+  // extension is active in this process because:
   // 1. Sandboxed pages run in the same process as regular extension pages, so
   //    the extension is considered active.
   // 2. ScriptContext creation (which triggers bindings injection) happens
@@ -1117,14 +1118,19 @@ bool Dispatcher::CheckCurrentContextAccessToExtensionAPI(
     return false;
   }
 
-  // We should never end up with sandboxed contexts trying to invoke extension
-  // APIs, they don't get extension bindings injected. If we end up here it
-  // means that a sandboxed page somehow managed to invoke an API anyway, so
-  // we should abort.
+  // Theoretically we could end up with bindings being injected into sandboxed
+  // frames, for example content scripts. Don't let them execute API functions.
   WebKit::WebFrame* frame = context->web_frame();
   ExtensionURLInfo url_info(frame->document().securityOrigin(),
-      UserScriptSlave::GetDataSourceURLForFrame(frame));
-  CHECK(!extensions_.IsSandboxedPage(url_info));
+                            UserScriptSlave::GetDataSourceURLForFrame(frame));
+  if (extensions_.IsSandboxedPage(url_info)) {
+    static const char kMessage[] =
+        "%s cannot be used within a sandboxed frame.";
+    std::string error_msg = base::StringPrintf(kMessage, function_name.c_str());
+    v8::ThrowException(
+        v8::Exception::Error(v8::String::New(error_msg.c_str())));
+    return false;
+  }
 
   return true;
 }

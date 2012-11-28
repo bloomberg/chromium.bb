@@ -156,9 +156,6 @@ bool ExtensionSet::ExtensionBindingsAllowed(
 }
 
 bool ExtensionSet::IsSandboxedPage(const ExtensionURLInfo& info) const {
-  if (info.origin().isUnique())
-    return true;
-
   if (info.url().SchemeIs(extensions::kExtensionScheme)) {
     const Extension* extension = GetByID(info.url().host());
     if (extension) {
