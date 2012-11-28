@@ -24,7 +24,7 @@ namespace base {
 class Time;
 }
 
-// This class manages the various autofill tables within the SQLite database
+// This class manages the various Autofill tables within the SQLite database
 // passed to the constructor. It expects the following schemas:
 //
 // Note: The database stores time in seconds, UTC.
