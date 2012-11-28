@@ -4,7 +4,9 @@
 
 #include "chrome/browser/net/dns_probe_job.h"
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "net/base/address_list.h"
@@ -43,6 +45,8 @@ class DnsProbeJobImpl : public DnsProbeJob {
     QUERY_NET_ERROR,
   };
 
+  void Start();
+
   scoped_ptr<DnsTransaction> CreateTransaction(
       const std::string& hostname);
   void StartTransaction(DnsTransaction* transaction);
@@ -55,7 +59,6 @@ class DnsProbeJobImpl : public DnsProbeJob {
   void OnTransactionComplete(DnsTransaction* transaction,
                              int net_error,
                              const DnsResponse* response);
-  void RunCallback(DnsProbeJob::Result result);
 
   BoundNetLog bound_net_log_;
   scoped_ptr<DnsClient> dns_client_;
@@ -66,6 +69,7 @@ class DnsProbeJobImpl : public DnsProbeJob {
   bool bad_running_;
   QueryResult good_result_;
   QueryResult bad_result_;
+  base::WeakPtrFactory<DnsProbeJobImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsProbeJobImpl);
 };
@@ -80,10 +84,21 @@ DnsProbeJobImpl::DnsProbeJobImpl(scoped_ptr<DnsClient> dns_client,
       good_running_(false),
       bad_running_(false),
       good_result_(QUERY_UNKNOWN),
-      bad_result_(QUERY_UNKNOWN) {
+      bad_result_(QUERY_UNKNOWN),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(dns_client_.get());
   DCHECK(dns_client_->GetConfig());
 
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&DnsProbeJobImpl::Start,
+                 weak_factory_.GetWeakPtr()));
+}
+
+DnsProbeJobImpl::~DnsProbeJobImpl() {
+}
+
+void DnsProbeJobImpl::Start() {
   // TODO(ttuttle): Pick a good random hostname for the bad case.
   //                Consider running transactions in series?
   good_transaction_ = CreateTransaction("google.com");
@@ -98,9 +113,6 @@ DnsProbeJobImpl::DnsProbeJobImpl(scoped_ptr<DnsClient> dns_client,
 
   StartTransaction(good_transaction_.get());
   StartTransaction(bad_transaction_.get());
-}
-
-DnsProbeJobImpl::~DnsProbeJobImpl() {
 }
 
 scoped_ptr<DnsTransaction> DnsProbeJobImpl::CreateTransaction(
@@ -192,18 +204,9 @@ void DnsProbeJobImpl::OnTransactionComplete(DnsTransaction* transaction,
   if (good_running_ || bad_running_)
     return;
 
-  RunCallback(EvaluateQueryResults());
+  callback_.Run(this, EvaluateQueryResults());
 
   // TODO(ttuttle): Log probe finished.
-}
-
-void DnsProbeJobImpl::RunCallback(DnsProbeJob::Result result) {
-  // Make sure we're not running the callback in the constructor.
-  // This avoids a race where our owner tries to destroy us while we're still
-  // being created, then ends up with a dangling pointer to us.
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback_, base::Unretained(this), result));
 }
 
 }  // namespace

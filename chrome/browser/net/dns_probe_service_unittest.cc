@@ -5,6 +5,8 @@
 #include "chrome/browser/net/dns_probe_service.h"
 
 #include "base/bind.h"
+#include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/net/dns_probe_job.h"
@@ -16,14 +18,24 @@ namespace {
 
 class MockDnsProbeJob : public DnsProbeJob {
  public:
-  MockDnsProbeJob(const CallbackType& callback,
-                  Result result) {
+  MockDnsProbeJob(const CallbackType& callback, Result result)
+      : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(callback, base::Unretained(this), result));
+        base::Bind(&MockDnsProbeJob::CallCallback,
+                   weak_factory_.GetWeakPtr(),
+                   callback,
+                   result));
   }
 
   virtual ~MockDnsProbeJob() { }
+
+ private:
+  void CallCallback(const CallbackType& callback, Result result) {
+    callback.Run(this, result);
+  }
+
+  base::WeakPtrFactory<MockDnsProbeJob> weak_factory_;
 };
 
 class TestDnsProbeService : public DnsProbeService {
@@ -33,16 +45,30 @@ class TestDnsProbeService : public DnsProbeService {
         system_job_created_(false),
         public_job_created_(false),
         mock_system_result_(DnsProbeJob::SERVERS_UNKNOWN),
-        mock_public_result_(DnsProbeJob::SERVERS_UNKNOWN) {
+        mock_public_result_(DnsProbeJob::SERVERS_UNKNOWN),
+        mock_system_fail_(false) {
   }
 
   virtual ~TestDnsProbeService() { }
 
-  void SetMockJobResults(
+  void set_mock_results(
       DnsProbeJob::Result mock_system_result,
       DnsProbeJob::Result mock_public_result) {
     mock_system_result_ = mock_system_result;
     mock_public_result_ = mock_public_result;
+  }
+
+  void set_mock_system_fail(bool mock_system_fail) {
+    mock_system_fail_ = mock_system_fail;
+  }
+
+  bool jobs_created(void) {
+    return system_job_created_ && public_job_created_;
+  }
+
+  void ResetJobsCreated() {
+    system_job_created_ = false;
+    public_job_created_ = false;
   }
 
   void MockExpireResults() {
@@ -57,6 +83,9 @@ class TestDnsProbeService : public DnsProbeService {
 
   virtual scoped_ptr<DnsProbeJob> CreateSystemProbeJob(
       const DnsProbeJob::CallbackType& job_callback) OVERRIDE {
+    if (mock_system_fail_)
+      return scoped_ptr<DnsProbeJob>(NULL);
+
     system_job_created_ = true;
     return scoped_ptr<DnsProbeJob>(
         new MockDnsProbeJob(job_callback,
@@ -73,6 +102,7 @@ class TestDnsProbeService : public DnsProbeService {
 
   DnsProbeJob::Result mock_system_result_;
   DnsProbeJob::Result mock_public_result_;
+  bool mock_system_fail_;
 };
 
 class DnsProbeServiceTest : public testing::Test {
@@ -82,14 +112,9 @@ class DnsProbeServiceTest : public testing::Test {
         callback_result_(DnsProbeService::PROBE_UNKNOWN) {
   }
 
-  void SetMockJobResults(DnsProbeJob::Result mock_system_result,
-                         DnsProbeJob::Result mock_public_result) {
-    service_.SetMockJobResults(mock_system_result, mock_public_result);
-  }
-
   void Probe() {
     service_.ProbeDns(base::Bind(&DnsProbeServiceTest::ProbeCallback,
-                                  base::Unretained(this)));
+                                 base::Unretained(this)));
   }
 
   void RunUntilIdle() {
@@ -97,8 +122,9 @@ class DnsProbeServiceTest : public testing::Test {
     run_loop.RunUntilIdle();
   }
 
-  void ExpireResults() {
-    service_.MockExpireResults();
+  void Reset() {
+    service_.ResetJobsCreated();
+    callback_called_ = false;
   }
 
   MessageLoopForIO message_loop_;
@@ -117,11 +143,11 @@ TEST_F(DnsProbeServiceTest, Null) {
 }
 
 TEST_F(DnsProbeServiceTest, Probe) {
-  SetMockJobResults(DnsProbeJob::SERVERS_CORRECT, DnsProbeJob::SERVERS_CORRECT);
+  service_.set_mock_results(DnsProbeJob::SERVERS_CORRECT,
+                            DnsProbeJob::SERVERS_CORRECT);
 
   Probe();
-  EXPECT_TRUE(service_.system_job_created_);
-  EXPECT_TRUE(service_.public_job_created_);
+  EXPECT_TRUE(service_.jobs_created());
   EXPECT_FALSE(callback_called_);
 
   RunUntilIdle();
@@ -130,23 +156,17 @@ TEST_F(DnsProbeServiceTest, Probe) {
 }
 
 TEST_F(DnsProbeServiceTest, Cache) {
-  SetMockJobResults(DnsProbeJob::SERVERS_CORRECT, DnsProbeJob::SERVERS_CORRECT);
+  service_.set_mock_results(DnsProbeJob::SERVERS_CORRECT,
+                            DnsProbeJob::SERVERS_CORRECT);
 
   Probe();
-  EXPECT_TRUE(service_.system_job_created_);
-  EXPECT_TRUE(service_.public_job_created_);
-
   RunUntilIdle();
-  EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(DnsProbeService::PROBE_NXDOMAIN, callback_result_);
+  Reset();
 
-  callback_called_ = false;
-  service_.system_job_created_ = false;
-  service_.public_job_created_ = false;
+  // Cached NXDOMAIN result should persist.
 
   Probe();
-  EXPECT_FALSE(service_.system_job_created_);
-  EXPECT_FALSE(service_.public_job_created_);
+  EXPECT_FALSE(service_.jobs_created());
 
   RunUntilIdle();
   EXPECT_TRUE(callback_called_);
@@ -154,29 +174,41 @@ TEST_F(DnsProbeServiceTest, Cache) {
 }
 
 TEST_F(DnsProbeServiceTest, Expired) {
-  SetMockJobResults(DnsProbeJob::SERVERS_CORRECT, DnsProbeJob::SERVERS_CORRECT);
+  service_.set_mock_results(DnsProbeJob::SERVERS_CORRECT,
+                            DnsProbeJob::SERVERS_CORRECT);
 
   Probe();
-  EXPECT_TRUE(service_.system_job_created_);
-  EXPECT_TRUE(service_.public_job_created_);
+  EXPECT_TRUE(service_.jobs_created());
 
   RunUntilIdle();
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(DnsProbeService::PROBE_NXDOMAIN, callback_result_);
 
-  callback_called_ = false;
-  service_.system_job_created_ = false;
-  service_.public_job_created_ = false;
+  Reset();
 
-  ExpireResults();
+  service_.MockExpireResults();
 
   Probe();
-  EXPECT_TRUE(service_.system_job_created_);
-  EXPECT_TRUE(service_.public_job_created_);
+  EXPECT_TRUE(service_.jobs_created());
 
   RunUntilIdle();
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(DnsProbeService::PROBE_NXDOMAIN, callback_result_);
+}
+
+TEST_F(DnsProbeServiceTest, SystemFail) {
+  service_.set_mock_results(DnsProbeJob::SERVERS_CORRECT,
+                            DnsProbeJob::SERVERS_CORRECT);
+  service_.set_mock_system_fail(true);
+
+  Probe();
+  EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(DnsProbeService::PROBE_UNKNOWN, callback_result_);
+
+  Reset();
+
+  RunUntilIdle();
+  EXPECT_FALSE(callback_called_);
 }
 
 }  // namespace
