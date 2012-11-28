@@ -17,7 +17,6 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/corewm/window_util.h"
 
 namespace ash {
 namespace internal {
@@ -154,7 +153,7 @@ void BaseLayoutManager::ShowStateChanged(aura::Window* window,
   if (wm::IsWindowMinimized(window)) {
     // Save the previous show state so that we can correctly restore it.
     window->SetProperty(internal::kRestoreShowStateKey, last_show_state);
-    views::corewm::SetWindowVisibilityAnimationType(
+    SetWindowVisibilityAnimationType(
         window, WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
 
     // Hide the window.

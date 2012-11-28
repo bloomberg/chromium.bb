@@ -56,16 +56,13 @@
 #include "ui/views/widget/native_widget_win.h"
 #endif
 
-#if defined(USE_AURA)
-#include "ui/views/corewm/window_animations.h"
-#endif
-
 #if defined(USE_ASH)
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/visibility_controller.h"
+#include "ash/wm/window_animations.h"
 #include "ash/wm/window_modality_controller.h"
 #include "ui/aura/window.h"
 #endif
@@ -641,11 +638,11 @@ ConstrainedWindowViews::~ConstrainedWindowViews() {
 }
 
 void ConstrainedWindowViews::ShowConstrainedWindow() {
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   if (enable_chrome_style_) {
-    views::corewm::SetWindowVisibilityAnimationType(
+    ash::SetWindowVisibilityAnimationType(
         GetNativeWindow(),
-        views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_ROTATE);
+        ash::WINDOW_VISIBILITY_ANIMATION_TYPE_ROTATE);
   }
 #endif
   Show();

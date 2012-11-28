@@ -16,10 +16,6 @@
 #include "ui/gfx/path.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_AURA)
-#include "ui/views/corewm/window_animations.h"
-#endif
-
 #if defined(OS_WIN)
 #include <dwmapi.h>
 
@@ -27,6 +23,9 @@
 #if !defined(USE_AURA)
 #include "ui/base/win/shell.h"
 #endif
+#endif
+#if defined(USE_ASH)
+#include "ash/wm/window_animations.h"
 #endif
 
 namespace {
@@ -218,14 +217,17 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     params.bounds = GetPopupBounds();
     params.context = location_bar_->GetWidget()->GetNativeView();
     popup_->Init(params);
-#if defined(USE_AURA)
-    views::corewm::SetWindowVisibilityAnimationType(
+#if defined(USE_ASH)
+    ash::SetWindowVisibilityAnimationType(
         popup_->GetNativeView(),
-        views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
+        ash::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
+    // Meanie-pants designers won't let us animate the appearance in
+    // production, but we will do it anyway for desktop-aura for the time being
+    // as it lets usverify quickly that hotness is enabled.
 #if defined(OS_CHROMEOS)
     // No animation for autocomplete popup appearance.
-    views::corewm::SetWindowVisibilityAnimationTransition(
-        popup_->GetNativeView(), views::corewm::ANIMATE_HIDE);
+    ash::SetWindowVisibilityAnimationTransition(
+        popup_->GetNativeView(), ash::ANIMATE_HIDE);
 #endif
 #endif
     popup_->SetContentsView(this);

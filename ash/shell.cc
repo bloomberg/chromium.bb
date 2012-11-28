@@ -121,8 +121,8 @@ class DummyUserWallpaperDelegate : public UserWallpaperDelegate {
 
   virtual ~DummyUserWallpaperDelegate() {}
 
-  virtual int GetAnimationType() OVERRIDE {
-    return views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
+  virtual ash::WindowVisibilityAnimationType GetAnimationType() OVERRIDE {
+    return WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
   }
 
   virtual bool ShouldShowInitialAnimation() OVERRIDE {

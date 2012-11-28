@@ -39,19 +39,21 @@ TEST_F(WindowAnimationsTest, HideShowBrightnessGrayscaleAnimation) {
   EXPECT_TRUE(window->layer()->visible());
 
   // Hiding.
-  views::corewm::SetWindowVisibilityAnimationType(
+  SetWindowVisibilityAnimationType(
       window.get(),
       WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE);
-  AnimateOnChildWindowVisibilityChanged(window.get(), false);
+  ash::internal::AnimateOnChildWindowVisibilityChanged(
+      window.get(), false);
   EXPECT_EQ(0.0f, window->layer()->GetTargetOpacity());
   EXPECT_FALSE(window->layer()->GetTargetVisibility());
   EXPECT_FALSE(window->layer()->visible());
 
   // Showing.
-  views::corewm::SetWindowVisibilityAnimationType(
+  SetWindowVisibilityAnimationType(
       window.get(),
       WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE);
-  AnimateOnChildWindowVisibilityChanged(window.get(), true);
+  ash::internal::AnimateOnChildWindowVisibilityChanged(
+      window.get(), true);
   EXPECT_EQ(0.0f, window->layer()->GetTargetBrightness());
   EXPECT_EQ(0.0f, window->layer()->GetTargetGrayscale());
   EXPECT_TRUE(window->layer()->visible());

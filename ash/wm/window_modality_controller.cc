@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
@@ -15,7 +16,6 @@
 #include "ui/aura/window.h"
 #include "ui/base/events/event.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/views/corewm/window_animations.h"
 
 namespace ash {
 
@@ -151,8 +151,8 @@ bool WindowModalityController::ProcessLocatedEvent(aura::Window* target,
   aura::Window* modal_transient_child = wm::GetModalTransient(target);
   if (modal_transient_child && (event->type() == ui::ET_MOUSE_PRESSED ||
                                 event->type() == ui::ET_TOUCH_PRESSED)) {
-    views::corewm::AnimateWindow(modal_transient_child,
-                                 views::corewm::WINDOW_ANIMATION_TYPE_BOUNCE);
+    ash::internal::AnimateWindow(modal_transient_child,
+                                 ash::WINDOW_ANIMATION_TYPE_BOUNCE);
   }
   return !!modal_transient_child;
 }

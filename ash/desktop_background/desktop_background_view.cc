@@ -191,19 +191,20 @@ views::Widget* CreateDesktopBackground(aura::RootWindow* root_window,
   params.parent = root_window->GetChildById(container_id);
   desktop_widget->Init(params);
   desktop_widget->SetContentsView(new DesktopBackgroundView());
-  int animation_type = wallpaper_delegate->GetAnimationType();
-  views::corewm::SetWindowVisibilityAnimationType(
-      desktop_widget->GetNativeView(), animation_type);
+  ash::WindowVisibilityAnimationType animation_type =
+      wallpaper_delegate->GetAnimationType();
+  ash::SetWindowVisibilityAnimationType(desktop_widget->GetNativeView(),
+                                        animation_type);
   // Disable animation when creating the first widget. Otherwise, wallpaper
   // will animate from a white screen. Note that boot animation is different.
   // It animates from a white background.
-  if (animation_type == views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE &&
+  if (animation_type == ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE &&
       root_window->GetProperty(kAnimatingDesktopController) == NULL) {
-    views::corewm::SetWindowVisibilityAnimationTransition(
-        desktop_widget->GetNativeView(), views::corewm::ANIMATE_NONE);
+    ash::SetWindowVisibilityAnimationTransition(desktop_widget->GetNativeView(),
+                                                ash::ANIMATE_NONE);
   } else {
-    views::corewm::SetWindowVisibilityAnimationTransition(
-        desktop_widget->GetNativeView(), views::corewm::ANIMATE_SHOW);
+    ash::SetWindowVisibilityAnimationTransition(desktop_widget->GetNativeView(),
+                                                ash::ANIMATE_SHOW);
   }
   desktop_widget->SetBounds(params.parent->bounds());
   ui::ScopedLayerAnimationSettings settings(

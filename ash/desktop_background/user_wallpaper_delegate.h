@@ -6,7 +6,7 @@
 #define ASH_DESKTOP_BACKGROUND_USER_WALLPAPER_DELEGATE_H_
 
 #include "ash/ash_export.h"
-#include "ui/views/corewm/window_animations.h"
+#include "ash/wm/window_animations.h"
 
 namespace ash {
 
@@ -16,7 +16,7 @@ class ASH_EXPORT UserWallpaperDelegate {
 
   // Returns the type of window animation that should be used when showing the
   // wallpaper.
-  virtual int GetAnimationType() = 0;
+  virtual WindowVisibilityAnimationType GetAnimationType() = 0;
 
   // Should the slower initial animation be shown (as opposed to the faster
   // animation that's used e.g. when switching from one user's wallpaper to

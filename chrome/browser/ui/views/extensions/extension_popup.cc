@@ -24,7 +24,10 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
-#include "ui/views/corewm/window_animations.h"
+#endif
+
+#if defined(USE_ASH)
+#include "ash/wm/window_animations.h"
 #endif
 
 using content::RenderViewHost;
@@ -184,12 +187,12 @@ ExtensionPopup* ExtensionPopup::ShowPopup(
       arrow_location, show_action);
   views::BubbleDelegateView::CreateBubble(popup);
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   gfx::NativeView native_view = popup->GetWidget()->GetNativeView();
-  views::corewm::SetWindowVisibilityAnimationType(
+  ash::SetWindowVisibilityAnimationType(
       native_view,
-      views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
-  views::corewm::SetWindowVisibilityAnimationVerticalPosition(
+      ash::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
+  ash::SetWindowVisibilityAnimationVerticalPosition(
       native_view,
       -3.0f);
 #endif
