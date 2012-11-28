@@ -182,7 +182,7 @@ void BaseLayoutManager::UpdateBoundsFromShowState(aura::Window* window) {
                              BoundsWithScreenEdgeVisible(window,
                                                          bounds_in_parent));
       }
-      window->ClearProperty(aura::client::kRestoreBoundsKey);
+      ClearRestoreBounds(window);
       break;
     }
 

@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
@@ -401,6 +402,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
                                        target.get());
   gfx::Rect old_bounds = target->bounds();
   gfx::Point location(5, 5);
+  target->SetProperty(aura::client::kCanMaximizeKey, true);
 
   // Snap right;
   gfx::Point end = location;

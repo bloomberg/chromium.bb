@@ -24,9 +24,8 @@ void SetRestoreBoundsInScreen(aura::Window* window, const gfx::Rect& bounds) {
 }
 
 void SetRestoreBoundsInParent(aura::Window* window, const gfx::Rect& bounds) {
-  window->SetProperty(
-      aura::client::kRestoreBoundsKey,
-      new gfx::Rect(ScreenAsh::ConvertRectToScreen(window->parent(), bounds)));
+  SetRestoreBoundsInScreen(window,
+      ScreenAsh::ConvertRectToScreen(window->parent(), bounds));
 }
 
 const gfx::Rect* GetRestoreBoundsInScreen(aura::Window* window) {
@@ -34,7 +33,7 @@ const gfx::Rect* GetRestoreBoundsInScreen(aura::Window* window) {
 }
 
 gfx::Rect GetRestoreBoundsInParent(aura::Window* window) {
-  const gfx::Rect* rect = window->GetProperty(aura::client::kRestoreBoundsKey);
+  const gfx::Rect* rect = GetRestoreBoundsInScreen(window);
   if (!rect)
     return gfx::Rect();
   return ScreenAsh::ConvertRectFromScreen(window->parent(), *rect);

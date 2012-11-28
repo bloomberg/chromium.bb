@@ -109,7 +109,7 @@ void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowDestroying(
 ToplevelWindowEventHandler::ToplevelWindowEventHandler(aura::Window* owner)
     : in_move_loop_(false),
       move_cancelled_(false),
-      in_gesture_resize_(false),
+      in_gesture_drag_(false),
       destroyed_(NULL) {
   aura::client::SetWindowMoveClient(owner, this);
   Shell::GetInstance()->display_controller()->AddObserver(this);
@@ -170,34 +170,32 @@ ui::EventResult ToplevelWindowEventHandler::OnGestureEvent(
         window_resizer_.reset();
         return ui::ER_UNHANDLED;
       }
-      in_gesture_resize_ = true;
+      in_gesture_drag_ = true;
       gfx::Point location_in_parent(
           ConvertPointToParent(target, event->location()));
       CreateScopedWindowResizer(target, location_in_parent, component);
       break;
     }
     case ui::ET_GESTURE_SCROLL_UPDATE: {
-      if (!in_gesture_resize_)
+      if (!in_gesture_drag_)
         return ui::ER_UNHANDLED;
       HandleDrag(target, event);
       break;
     }
     case ui::ET_GESTURE_SCROLL_END:
     case ui::ET_SCROLL_FLING_START: {
-      ui::EventResult status = ui::ER_UNHANDLED;
-      if (in_gesture_resize_) {
-        // If the window was being resized, then just complete the resize.
-        CompleteDrag(DRAG_COMPLETE, event->flags());
-        if (in_move_loop_) {
-          quit_closure_.Run();
-          in_move_loop_ = false;
-        }
-        in_gesture_resize_ = false;
-        status = ui::ER_CONSUMED;
+      if (!in_gesture_drag_)
+        return ui::ER_UNHANDLED;
+
+      CompleteDrag(DRAG_COMPLETE, event->flags());
+      if (in_move_loop_) {
+        quit_closure_.Run();
+        in_move_loop_ = false;
       }
+      in_gesture_drag_ = false;
 
       if (event->type() == ui::ET_GESTURE_SCROLL_END)
-        return status;
+        return ui::ER_CONSUMED;
 
       int component =
           target->delegate()->GetNonClientComponent(event->location());
@@ -209,9 +207,10 @@ ui::EventResult ToplevelWindowEventHandler::OnGestureEvent(
       if (fabs(event->details().velocity_y()) >
           kMinVertVelocityForWindowMinimize) {
         // Minimize/maximize.
-        target->SetProperty(aura::client::kShowStateKey,
-            event->details().velocity_y() > 0 ? ui::SHOW_STATE_MINIMIZED :
-                                      ui::SHOW_STATE_MAXIMIZED);
+        if (event->details().velocity_y() > 0)
+          wm::MinimizeWindow(target);
+        else if (wm::CanMaximizeWindow(target))
+          wm::MaximizeWindow(target);
       } else if (fabs(event->details().velocity_x()) >
                  kMinHorizVelocityForWindowSwipe) {
         // Snap left/right.
@@ -246,7 +245,7 @@ aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
   DCHECK(root_window);
   gfx::Point drag_location;
   if (aura::Env::GetInstance()->is_touch_down()) {
-    in_gesture_resize_ = true;
+    in_gesture_drag_ = true;
     bool has_point = root_window->gesture_recognizer()->
         GetLastTouchPointForTarget(source, &drag_location);
     DCHECK(has_point);
@@ -272,7 +271,7 @@ aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
   if (destroyed)
     return aura::client::MOVE_CANCELED;
   destroyed_ = NULL;
-  in_gesture_resize_ = in_move_loop_ = false;
+  in_gesture_drag_ = in_move_loop_ = false;
   return move_cancelled_ ? aura::client::MOVE_CANCELED :
       aura::client::MOVE_SUCCESSFUL;
 }

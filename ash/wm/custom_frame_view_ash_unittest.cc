@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/maximize_bubble_controller.h"
+#include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/frame_maximize_button.h"
 #include "ash/wm/workspace/snap_sizer.h"
@@ -604,7 +605,7 @@ TEST_F(CustomFrameViewAshTest, MaximizeLeftRestore) {
   EXPECT_EQ(new_bounds.width(), initial_bounds.width());
   EXPECT_EQ(new_bounds.height(), initial_bounds.height());
   // Make sure that there is no restore rectangle left.
-  EXPECT_EQ(NULL, window->GetProperty(aura::client::kRestoreBoundsKey));
+  EXPECT_EQ(NULL, GetRestoreBoundsInScreen(window));
 }
 
 // Maximize, left/right maximize and then restore should works.
@@ -637,7 +638,7 @@ TEST_F(CustomFrameViewAshTest, MaximizeMaximizeLeftRestore) {
   EXPECT_EQ(new_bounds.width(), initial_bounds.width());
   EXPECT_EQ(new_bounds.height(), initial_bounds.height());
   // Make sure that there is no restore rectangle left.
-  EXPECT_EQ(NULL, window->GetProperty(aura::client::kRestoreBoundsKey));
+  EXPECT_EQ(NULL, GetRestoreBoundsInScreen(window));
 }
 
 // Left/right maximize, maximize and then restore should work.
@@ -665,7 +666,7 @@ TEST_F(CustomFrameViewAshTest, MaximizeLeftMaximizeRestore) {
   EXPECT_EQ(new_bounds.width(), initial_bounds.width());
   EXPECT_EQ(new_bounds.height(), initial_bounds.height());
   // Make sure that there is no restore rectangle left.
-  EXPECT_EQ(NULL, window->GetProperty(aura::client::kRestoreBoundsKey));
+  EXPECT_EQ(NULL, GetRestoreBoundsInScreen(window));
 }
 
 // Test that minimizing the window per keyboard closes the maximize bubble.

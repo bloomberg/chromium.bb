@@ -95,8 +95,8 @@ class ASH_EXPORT ToplevelWindowEventHandler
   // is used to move a window.
   bool move_cancelled_;
 
-  // Is a gesture-resize in progress?
-  bool in_gesture_resize_;
+  // Is a window move/resize in progress because of gesture events?
+  bool in_gesture_drag_;
 
   scoped_ptr<ScopedWindowResizer> window_resizer_;
 

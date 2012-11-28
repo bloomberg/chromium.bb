@@ -25,9 +25,7 @@ void SingleAxisMaximize(aura::Window* window, const gfx::Rect& maximize_rect) {
   gfx::Rect bounds_in_screen =
       ScreenAsh::ConvertRectToScreen(window->parent(), window->bounds());
 
-  window->ClearProperty(aura::client::kRestoreBoundsKey);
-  window->SetProperty(aura::client::kRestoreBoundsKey,
-                      new gfx::Rect(bounds_in_screen));
+  SetRestoreBoundsInScreen(window, bounds_in_screen);
   window->SetBounds(maximize_rect);
 }
 
@@ -36,7 +34,7 @@ void SingleAxisUnmaximize(aura::Window* window,
   gfx::Rect restore_bounds = ScreenAsh::ConvertRectFromScreen(
       window->parent(), restore_bounds_in_screen);
   window->SetBounds(restore_bounds);
-  window->ClearProperty(aura::client::kRestoreBoundsKey);
+  ClearRestoreBounds(window);
 }
 
 void ToggleMaximizedState(aura::Window* window) {
@@ -129,7 +127,7 @@ void WorkspaceEventHandler::HandleVerticalResizeDoubleClick(
     gfx::Rect work_area =
         Shell::GetScreen()->GetDisplayNearestWindow(target).work_area();
     const gfx::Rect* restore_bounds =
-        target->GetProperty(aura::client::kRestoreBoundsKey);
+        GetRestoreBoundsInScreen(target);
     if (component == HTBOTTOM || component == HTTOP) {
       if (restore_bounds &&
           (target->bounds().height() == work_area.height() &&

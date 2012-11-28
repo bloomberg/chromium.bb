@@ -324,7 +324,7 @@ void WorkspaceLayoutManager::UpdateBoundsFromShowState(Window* window) {
                 window->parent()->parent(),
                 bounds_in_parent));
       }
-      window->ClearProperty(aura::client::kRestoreBoundsKey);
+      ClearRestoreBounds(window);
       break;
     }
 
