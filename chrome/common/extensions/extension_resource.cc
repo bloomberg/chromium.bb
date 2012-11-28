@@ -67,7 +67,7 @@ FilePath ExtensionResource::GetFilePath(
          i = components.begin(); i != components.end(); i++) {
       if (*i == FilePath::kParentDirectory) {
         depth--;
-      } else {
+      } else if (*i != FilePath::kCurrentDirectory) {
         depth++;
       }
       if (depth < 0) {
