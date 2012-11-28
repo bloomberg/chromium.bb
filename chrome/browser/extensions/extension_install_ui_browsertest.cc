@@ -50,7 +50,12 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
   }
 
   const Extension* GetTheme() const {
-    return ThemeServiceFactory::GetThemeForProfile(browser()->profile());
+    Profile* profile = browser()->profile();
+    std::string theme_id = ThemeService::GetThemeIDForProfile(profile);
+    return
+        (theme_id == ThemeService::kDefaultThemeID) ?
+        NULL :
+        profile->GetExtensionService()->GetExtensionById(theme_id, false);
   }
 };
 

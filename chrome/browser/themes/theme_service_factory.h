@@ -26,10 +26,15 @@ class ThemeServiceFactory : public ProfileKeyedServiceFactory {
   // still needs a ThemeService to hand back the default theme images.
   static ThemeService* GetForProfile(Profile* profile);
 
-  // Returns the Extension that implements the theme associated with
-  // |profile|. Returns NULL if the theme is no longer installed, if there is
-  // no installed theme, or the theme was cleared.
-  static const extensions::Extension* GetThemeForProfile(Profile* profile);
+  // If the theme service for |profile| has been instantiated,
+  // immediately sets its theme to |theme|.  Otherwise, saves
+  // |theme|'s ID so that the theme service picks it up when it gets
+  // initialized.
+  //
+  // |theme| must already be installed in the extension service.
+  static void SetThemeForProfile(
+      Profile* profile,
+      const extensions::Extension* theme);
 
   static ThemeServiceFactory* GetInstance();
 

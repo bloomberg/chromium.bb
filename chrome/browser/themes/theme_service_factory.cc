@@ -19,22 +19,27 @@
 // static
 ThemeService* ThemeServiceFactory::GetForProfile(Profile* profile) {
   return static_cast<ThemeService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
-}
-
-// static
-const extensions::Extension* ThemeServiceFactory::GetThemeForProfile(
-    Profile* profile) {
-  std::string id = GetForProfile(profile)->GetThemeID();
-  if (id == ThemeService::kDefaultThemeID)
-    return NULL;
-
-  return profile->GetExtensionService()->GetExtensionById(id, false);
+      GetInstance()->GetServiceForProfile(profile, true /* create */));
 }
 
 // static
 ThemeServiceFactory* ThemeServiceFactory::GetInstance() {
   return Singleton<ThemeServiceFactory>::get();
+}
+
+// static
+void ThemeServiceFactory::SetThemeForProfile(
+    Profile* profile,
+    const extensions::Extension* theme) {
+  ThemeService* theme_service =
+      static_cast<ThemeService*>(
+          GetInstance()->GetServiceForProfile(profile, false /* create */));
+  if (theme_service) {
+    theme_service->SetTheme(theme);
+  } else {
+    // The theme service will pick up the new theme when it's created.
+    ThemeService::SaveThemeIDForProfile(profile, theme->id());
+  }
 }
 
 ThemeServiceFactory::ThemeServiceFactory()
