@@ -9,7 +9,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
 #import "chrome/browser/ui/cocoa/about_ipc_controller.h"
-#include "content/public/browser/content_ipc_logging.h"
+#include "content/public/browser/browser_ipc_logging.h"
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
 
