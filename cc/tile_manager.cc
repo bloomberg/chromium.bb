@@ -129,6 +129,8 @@ public:
 
 void TileManager::ManageTiles() {
   TRACE_EVENT0("cc", "TileManager::ManageTiles");
+  manage_tiles_pending_ = false;
+
   // The amount of time for which we want to have prepainting coverage.
   const double prepainting_window_time_seconds = 1.0;
   const double backfling_guard_distance_pixels = 314.0;
@@ -235,6 +237,11 @@ void TileManager::AssignGpuMemoryToTiles() {
     ManagedTileState& managed_tile_state = tile->managed_state();
     if (!managed_tile_state.can_be_freed)
       continue;
+    if (managed_tile_state.bin == NEVER_BIN) {
+      managed_tile_state.can_use_gpu_memory = false;
+      FreeResourcesForTile(tile);
+      continue;
+    }
     if (tile_bytes > bytes_left) {
       managed_tile_state.can_use_gpu_memory = false;
       FreeResourcesForTile(tile);
