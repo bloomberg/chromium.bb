@@ -4485,6 +4485,19 @@ TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
       "  }"
       "}";
   EXPECT_EQ(1, from_bookmark_visitor.Visit(json_data));
+
+  // Test is_from_webstore.
+  MockProviderVisitor from_webstore_visitor(
+      base_path, Extension::FROM_WEBSTORE);
+  json_data =
+      "{"
+      "  \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\": {"
+      "    \"external_crx\": \"RandomExtension.crx\","
+      "    \"external_version\": \"1.0\","
+      "    \"is_from_webstore\": true"
+      "  }"
+      "}";
+  EXPECT_EQ(1, from_webstore_visitor.Visit(json_data));
 }
 
 // Test loading good extensions from the profile directory.

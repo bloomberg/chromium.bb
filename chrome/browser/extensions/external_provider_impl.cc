@@ -45,14 +45,11 @@ namespace extensions {
 
 // Constants for keeping track of extension preferences in a dictionary.
 const char ExternalProviderImpl::kExternalCrx[] = "external_crx";
-const char ExternalProviderImpl::kExternalVersion[] =
-    "external_version";
-const char ExternalProviderImpl::kExternalUpdateUrl[] =
-    "external_update_url";
-const char ExternalProviderImpl::kSupportedLocales[] =
-    "supported_locales";
-const char ExternalProviderImpl::kIsBookmarkApp[] =
-    "is_bookmark_app";
+const char ExternalProviderImpl::kExternalVersion[] = "external_version";
+const char ExternalProviderImpl::kExternalUpdateUrl[] = "external_update_url";
+const char ExternalProviderImpl::kSupportedLocales[] = "supported_locales";
+const char ExternalProviderImpl::kIsBookmarkApp[] = "is_bookmark_app";
+const char ExternalProviderImpl::kIsFromWebstore[] = "is_from_webstore";
 
 ExternalProviderImpl::ExternalProviderImpl(
     VisitorInterface* service,
@@ -190,6 +187,11 @@ void ExternalProviderImpl::SetPrefs(DictionaryValue* prefs) {
     if (extension->GetBoolean(kIsBookmarkApp, &is_bookmark_app) &&
         is_bookmark_app) {
       creation_flags |= Extension::FROM_BOOKMARK;
+    }
+    bool is_from_webstore;
+    if (extension->GetBoolean(kIsFromWebstore, &is_from_webstore) &&
+        is_from_webstore) {
+      creation_flags |= Extension::FROM_WEBSTORE;
     }
 
     if (has_external_crx) {
