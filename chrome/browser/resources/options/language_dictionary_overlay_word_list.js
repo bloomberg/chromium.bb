@@ -165,6 +165,11 @@ cr.define('options.dictionary_words', function() {
       this.onWordListChanged();
       chrome.send('removeDictionaryWord', [item]);
     },
+
+    /** @override */
+    shouldFocusPlaceholder: function() {
+      return false;
+    },
   };
 
   return {
