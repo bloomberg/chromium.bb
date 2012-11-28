@@ -283,11 +283,14 @@ class PartialMock(object):
     cls = getattr(module, chunks[1])
     for attr in self.ATTRS:
       self.backup[attr] = getattr(cls, attr)
-      patcher = mock.patch.object(cls, attr, autospec=True)
-      self.patchers[attr] = patcher
-      m = patcher.start()
       src_attr = '_target%s' % attr if attr.startswith('__') else attr
-      m.side_effect = getattr(self, src_attr)
+      if callable(self.backup[attr]):
+        patcher = mock.patch.object(cls, attr, autospec=True,
+                                    side_effect=getattr(self, src_attr))
+      else:
+        patcher = mock.patch.object(cls, attr, getattr(self, src_attr))
+      patcher.start()
+      self.patchers[attr] = patcher
 
   def Stop(self):
     """Restores namespace to the unmocked state."""
