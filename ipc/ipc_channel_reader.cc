@@ -53,8 +53,8 @@ bool ChannelReader::DispatchInputData(const char* input_data,
     p = input_data;
     end = input_data + input_data_len;
   } else {
-    if (input_overflow_buf_.size() >
-        Channel::kMaximumMessageSize - input_data_len) {
+    if (input_overflow_buf_.size() + input_data_len >
+        Channel::kMaximumMessageSize) {
       input_overflow_buf_.clear();
       LOG(ERROR) << "IPC message is too big";
       return false;
