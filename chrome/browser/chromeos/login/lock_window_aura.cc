@@ -52,8 +52,8 @@ void LockWindowAura::Init() {
           ash::Shell::GetPrimaryRootWindow(),
           ash::internal::kShellWindowId_LockScreenContainer);
   views::Widget::Init(params);
-  ash::SetWindowVisibilityAnimationTransition(GetNativeView(),
-                                              ash::ANIMATE_NONE);
+  views::corewm::SetWindowVisibilityAnimationTransition(
+      GetNativeView(), views::corewm::ANIMATE_NONE);
 }
 
 }  // namespace chromeos

@@ -139,32 +139,6 @@ void CenterWindow(aura::Window* window) {
   window->SetBounds(center);
 }
 
-ui::Layer* RecreateWindowLayers(aura::Window* window, bool set_bounds) {
-  const gfx::Rect bounds = window->bounds();
-  ui::Layer* old_layer = window->RecreateLayer();
-  DCHECK(old_layer);
-  for (aura::Window::Windows::const_iterator it = window->children().begin();
-       it != window->children().end();
-       ++it) {
-    // Maintain the hierarchy of the detached layers.
-    old_layer->Add(RecreateWindowLayers(*it, set_bounds));
-  }
-  if (set_bounds)
-    window->SetBounds(bounds);
-  return old_layer;
-}
-
-void DeepDeleteLayers(ui::Layer* layer) {
-  std::vector<ui::Layer*> children = layer->children();
-  for (std::vector<ui::Layer*>::const_iterator it = children.begin();
-       it != children.end();
-       ++it) {
-    ui::Layer* child = *it;
-    DeepDeleteLayers(child);
-  }
-  delete layer;
-}
-
 bool IsWindowPositionManaged(const aura::Window* window) {
   return window->GetProperty(ash::internal::kWindowPositionManagedKey);
 }

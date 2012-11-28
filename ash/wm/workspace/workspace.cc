@@ -27,7 +27,7 @@ Workspace::Workspace(WorkspaceManager* manager,
       workspace_layout_manager_(NULL) {
   window_->SetProperty(internal::kChildWindowVisibilityChangesAnimatedKey,
                        true);
-  SetWindowVisibilityAnimationTransition(window_, ANIMATE_NONE);
+  SetWindowVisibilityAnimationTransition(window_, views::corewm::ANIMATE_NONE);
   window_->set_id(kShellWindowId_WorkspaceContainer);
   window_->SetName("WorkspaceContainer");
   window_->Init(ui::LAYER_NOT_DRAWN);

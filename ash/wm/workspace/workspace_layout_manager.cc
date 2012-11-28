@@ -23,6 +23,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/events/event.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/views/corewm/window_util.h"
 
 using aura::Window;
 
@@ -200,7 +201,7 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
           WorkspaceManager::IsMaximizedState(old_state) &&
           new_state != ui::SHOW_STATE_MINIMIZED))) {
       BuildWindowBoundsMap(window, &bounds_map);
-      cloned_layer = wm::RecreateWindowLayers(window, false);
+      cloned_layer = views::corewm::RecreateWindowLayers(window, false);
       // Constrained windows don't get their bounds reset when we update the
       // window bounds. Leaving them empty is unexpected, so we reset them now.
       ResetConstrainedWindowBoundsIfNecessary(bounds_map, window);
@@ -251,7 +252,7 @@ void WorkspaceLayoutManager::ShowStateChanged(
     DCHECK(!cloned_layer);
     // Save the previous show state so that we can correctly restore it.
     window->SetProperty(internal::kRestoreShowStateKey, last_show_state);
-    SetWindowVisibilityAnimationType(
+    views::corewm::SetWindowVisibilityAnimationType(
         window, WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
     workspace_manager()->OnWorkspaceWindowShowStateChanged(
         workspace_, window, last_show_state, NULL);

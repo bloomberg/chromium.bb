@@ -393,9 +393,9 @@ void MultiWindowResizeController::ShowNow() {
   ResizeView* view = new ResizeView(this, windows_.direction);
   resize_widget_->set_focus_on_creation(false);
   resize_widget_->Init(params);
-  SetWindowVisibilityAnimationType(
+  views::corewm::SetWindowVisibilityAnimationType(
       resize_widget_->GetNativeWindow(),
-      WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+      views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
   resize_widget_->GetNativeWindow()->SetName("MultiWindowResizeController");
   resize_widget_->SetContentsView(view);
   show_bounds_in_screen_ = ScreenAsh::ConvertRectToScreen(
