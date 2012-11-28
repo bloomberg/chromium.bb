@@ -86,7 +86,7 @@ class DevToolsHttpHandlerTest : public testing::Test {
 
 // Sometimes, an assertion fails in NotificationRegistrar.
 // http://crbug.com/161027
-#if defined(OS_ANDROID) || defined(OS_LINUX)
+#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_TestStartStop DISABLED_TestStartStop
 #else
 #define MAYBE_TestStartStop TestStartStop
