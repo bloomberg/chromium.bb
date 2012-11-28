@@ -94,7 +94,7 @@ void PhoneNumber::SetRawInfo(AutofillFieldType type, const string16& value) {
   }
 
   number_ = value;
-  cached_parsed_phone_ = autofill_i18n::PhoneObject(number_, GetLocale());
+  cached_parsed_phone_ = autofill_i18n::PhoneObject(number_, GetRegion());
 }
 
 // Normalize phones if |type| is a whole number:
@@ -107,7 +107,7 @@ string16 PhoneNumber::GetCanonicalizedInfo(AutofillFieldType type) const {
     return phone;
 
   string16 normalized_phone = autofill_i18n::NormalizePhoneNumber(phone,
-                                                                  GetLocale());
+                                                                  GetRegion());
   if (!normalized_phone.empty())
     return normalized_phone;
 
@@ -132,7 +132,7 @@ void PhoneNumber::GetMatchingTypes(const string16& text,
   // For US numbers, also compare to the three-digit prefix and the four-digit
   // suffix, since web sites often split numbers into these two fields.
   string16 number = GetCanonicalizedInfo(PHONE_HOME_NUMBER);
-  if (GetLocale() == "US" && number.size() == (kPrefixLength + kSuffixLength)) {
+  if (GetRegion() == "US" && number.size() == (kPrefixLength + kSuffixLength)) {
     string16 prefix = number.substr(kPrefixOffset, kPrefixLength);
     string16 suffix = number.substr(kSuffixOffset, kSuffixLength);
     if (text == prefix || text == suffix)
@@ -141,7 +141,7 @@ void PhoneNumber::GetMatchingTypes(const string16& text,
 
   string16 whole_number = GetCanonicalizedInfo(PHONE_HOME_WHOLE_NUMBER);
   if (!whole_number.empty() &&
-      autofill_i18n::NormalizePhoneNumber(text, GetLocale()) == whole_number) {
+      autofill_i18n::NormalizePhoneNumber(text, GetRegion()) == whole_number) {
     matching_types->insert(PHONE_HOME_WHOLE_NUMBER);
   }
 }
@@ -156,7 +156,7 @@ bool PhoneNumber::NormalizePhone() {
   return !number_.empty();
 }
 
-std::string PhoneNumber::GetLocale() const {
+std::string PhoneNumber::GetRegion() const {
   if (!profile_) {
     NOTREACHED();
     return "US";
@@ -166,9 +166,9 @@ std::string PhoneNumber::GetLocale() const {
 }
 
 void PhoneNumber::UpdateCacheIfNeeded() const {
-  std::string locale = GetLocale();
-  if (!number_.empty() && cached_parsed_phone_.GetLocale() != locale)
-    cached_parsed_phone_ = autofill_i18n::PhoneObject(number_, locale);
+  std::string region = GetRegion();
+  if (!number_.empty() && cached_parsed_phone_.GetRegion() != region)
+    cached_parsed_phone_ = autofill_i18n::PhoneObject(number_, region);
 }
 
 PhoneNumber::PhoneCombineHelper::PhoneCombineHelper() {
@@ -207,7 +207,7 @@ bool PhoneNumber::PhoneCombineHelper::SetInfo(AutofillFieldType field_type,
   return false;
 }
 
-bool PhoneNumber::PhoneCombineHelper::ParseNumber(const std::string& locale,
+bool PhoneNumber::PhoneCombineHelper::ParseNumber(const std::string& region,
                                                   string16* value) {
   if (!whole_number_.empty()) {
     *value = whole_number_;
@@ -216,7 +216,7 @@ bool PhoneNumber::PhoneCombineHelper::ParseNumber(const std::string& locale,
 
   return autofill_i18n::ConstructPhoneNumber(
       country_, city_, phone_,
-      locale,
+      region,
       (country_.empty() ?
           autofill_i18n::NATIONAL : autofill_i18n::INTERNATIONAL),
       value);
