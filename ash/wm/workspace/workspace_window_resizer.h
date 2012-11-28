@@ -27,6 +27,7 @@ namespace internal {
 
 class PhantomWindowController;
 class SnapSizer;
+class WindowSize;
 
 // WindowResizer implementation for workspaces. This enforces that windows are
 // not allowed to vertically move or resize outside of the work area. As windows
@@ -94,17 +95,36 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   gfx::Rect GetFinalBounds(const gfx::Rect& bounds) const;
 
   // Lays out the attached windows. |bounds| is the bounds of the main window.
-  void LayoutAttachedWindows(const gfx::Rect& bounds);
+  void LayoutAttachedWindows(gfx::Rect* bounds);
 
-  // Calculates the size (along the primary axis) of the attached windows.
-  // |initial_size| is the initial size of the main window, |current_size| the
-  // new size of the main window, |start| the position to layout the attached
-  // windows from and |end| the coordinate to position to.
-  void CalculateAttachedSizes(int initial_size,
-                              int current_size,
-                              int start,
-                              int end,
-                              std::vector<int>* sizes) const;
+  // Calculates the new sizes of the attached windows, given that the main
+  // window has been resized (along the primary axis) by |delta|.
+  // |available_size| is the maximum length of the space that the attached
+  // windows are allowed to occupy (ie: the distance between the right/bottom
+  // edge of the primary window and the right/bottom of the desktop area).
+  // Populates |sizes| with the desired sizes of the attached windows, and
+  // returns the number of pixels that couldn't be allocated to the attached
+  // windows (due to min/max size constraints).
+  // Note the return value can be positive or negative, a negative value
+  // indicating that that many pixels couldn't be removed from the attached
+  // windows.
+  int CalculateAttachedSizes(
+      int delta,
+      int available_size,
+      std::vector<int>* sizes) const;
+
+  // Divides |amount| evenly between |sizes|. If |amount| is negative it
+  // indicates how many pixels |sizes| should be shrunk by.
+  // Returns how many pixels failed to be allocated/removed from |sizes|.
+  int GrowFairly(int amount, std::vector<WindowSize>& sizes) const;
+
+  // Calculate the ratio of pixels that each WindowSize in |sizes| should
+  // receive when growing or shrinking.
+  void CalculateGrowthRatios(const std::vector<WindowSize*>& sizes,
+                             std::vector<float>* out_ratios) const;
+
+  // Adds a WindowSize to |sizes| for each attached window.
+  void CreateBucketsForAttached(std::vector<WindowSize>* sizes) const;
 
   // If possible snaps the window to a neary window. Updates |bounds| if there
   // was a close enough window.
@@ -177,21 +197,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // primary axis.
   std::vector<int> initial_size_;
 
-  // The min size of each of the windows in |attached_windows_| along the
-  // primary axis.
-  std::vector<int> min_size_;
-
-  // The amount each of the windows in |attached_windows_| can be compressed.
-  // This is a fraction of the amount a window can be compressed over the total
-  // space the windows can be compressed.
-  std::vector<float> compress_fraction_;
-
-  // The amount each of the windows in |attached_windows_| should be expanded
-  // by. This is used when the user drags to the left/up. In this case the main
-  // window shrinks and the attached windows expand.
-  std::vector<float> expand_fraction_;
-
-  // Sum of sizes in |min_size_|.
+  // Sum of the minimum sizes of the attached windows.
   int total_min_;
 
   // Sum of the sizes in |initial_size_|.

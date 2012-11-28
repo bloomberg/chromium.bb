@@ -235,6 +235,75 @@ const int WorkspaceWindowResizer::kMinOnscreenHeight = 32;
 // static
 const int WorkspaceWindowResizer::kScreenEdgeInset = 8;
 
+// Represents the width or height of a window with constraints on its minimum
+// and maximum size. 0 represents a lack of a constraint.
+class WindowSize {
+ public:
+  WindowSize(int size, int min, int max)
+      : size_(size),
+        min_(min),
+        max_(max) {
+    // Grow the min/max bounds to include the starting size.
+    if (is_underflowing())
+      min_ = size_;
+    if (is_overflowing())
+      max_ = size_;
+  }
+
+  bool is_at_capacity(bool shrinking) {
+    return size_ == (shrinking ? min_ : max_);
+  }
+
+  int size() const {
+    return size_;
+  }
+
+  bool has_min() const {
+    return min_ != 0;
+  }
+
+  bool has_max() const {
+    return max_ != 0;
+  }
+
+  bool is_valid() const {
+    return !is_overflowing() && !is_underflowing();
+  }
+
+  bool is_overflowing() const {
+    return has_max() && size_ > max_;
+  }
+
+  bool is_underflowing() const {
+    return has_min() && size_ < min_;
+  }
+
+  // Add |amount| to this WindowSize not exceeding min or max size constraints.
+  // Returns by how much |size_| + |amount| exceeds the min/max constraints.
+  int Add(int amount) {
+    DCHECK(is_valid());
+    int new_value = size_ + amount;
+
+    if (has_min() && new_value < min_) {
+      size_ = min_;
+      return new_value - min_;
+    }
+
+    if (has_max() && new_value > max_) {
+      size_ = max_;
+      return new_value - max_;
+    }
+
+    size_ = new_value;
+    return 0;
+  }
+
+ private:
+  int size_;
+  int min_;
+  int max_;
+};
+
 WorkspaceWindowResizer::~WorkspaceWindowResizer() {
   Shell* shell = Shell::GetInstance();
   shell->mouse_cursor_filter()->set_mouse_warp_mode(
@@ -299,7 +368,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
   }
 
   if (!attached_windows_.empty())
-    LayoutAttachedWindows(bounds);
+    LayoutAttachedWindows(&bounds);
   if (bounds != window()->bounds()) {
     bool destroyed = false;
     destroyed_ = &destroyed;
@@ -446,23 +515,9 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
     // This way we don't snap on resize.
     int min_size = std::min(initial_size,
                             std::max(PrimaryAxisSize(min), kMinOnscreenSize));
-    min_size_.push_back(min_size);
     total_min_ += min_size;
     total_initial_size_ += initial_size;
     total_available += std::max(min_size, initial_size) - min_size;
-  }
-
-  for (size_t i = 0; i < attached_windows_.size(); ++i) {
-    expand_fraction_.push_back(
-          static_cast<float>(initial_size_[i]) /
-          static_cast<float>(total_initial_size_));
-    if (total_initial_size_ != total_min_) {
-      compress_fraction_.push_back(
-          static_cast<float>(initial_size_[i] - min_size_[i]) /
-          static_cast<float>(total_available));
-    } else {
-      compress_fraction_.push_back(0.0f);
-    }
   }
 }
 
@@ -476,17 +531,30 @@ gfx::Rect WorkspaceWindowResizer::GetFinalBounds(
 }
 
 void WorkspaceWindowResizer::LayoutAttachedWindows(
-    const gfx::Rect& bounds) {
+    gfx::Rect* bounds) {
   gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(window()));
+  int initial_size = PrimaryAxisSize(details_.initial_bounds_in_parent.size());
+  int current_size = PrimaryAxisSize(bounds->size());
+  int start = PrimaryAxisCoordinate(bounds->right(), bounds->bottom());
+  int end = PrimaryAxisCoordinate(work_area.right(), work_area.bottom());
+
+  int delta = current_size - initial_size;
+  int available_size = end - start;
   std::vector<int> sizes;
-  CalculateAttachedSizes(
-      PrimaryAxisSize(details_.initial_bounds_in_parent.size()),
-      PrimaryAxisSize(bounds.size()),
-      PrimaryAxisCoordinate(bounds.right(), bounds.bottom()),
-      PrimaryAxisCoordinate(work_area.right(), work_area.bottom()),
-      &sizes);
+  int leftovers = CalculateAttachedSizes(delta, available_size, &sizes);
+
+  // Reallocate any leftover pixels back into the main window. This is
+  // necessary when, for example, the main window shrinks, but none of the
+  // attached windows can grow without exceeding their max size constraints.
+  // Adding the pixels back to the main window effectively prevents the main
+  // window from resizing too far.
+  if (details_.window_component == HTRIGHT)
+    bounds->set_width(bounds->width() + leftovers);
+  else
+    bounds->set_height(bounds->height() + leftovers);
+
   DCHECK_EQ(attached_windows_.size(), sizes.size());
-  int last = PrimaryAxisCoordinate(bounds.right(), bounds.bottom());
+  int last = PrimaryAxisCoordinate(bounds->right(), bounds->bottom());
   for (size_t i = 0; i < attached_windows_.size(); ++i) {
     gfx::Rect attached_bounds(attached_windows_[i]->bounds());
     if (details_.window_component == HTRIGHT) {
@@ -501,40 +569,98 @@ void WorkspaceWindowResizer::LayoutAttachedWindows(
   }
 }
 
-void WorkspaceWindowResizer::CalculateAttachedSizes(
-    int initial_size,
-    int current_size,
-    int start,
-    int end,
+int WorkspaceWindowResizer::CalculateAttachedSizes(
+    int delta,
+    int available_size,
     std::vector<int>* sizes) const {
-  sizes->clear();
-  if (current_size < initial_size) {
-    // If the primary window is sized smaller, resize the attached windows.
-    int current = start;
-    int delta = initial_size - current_size;
-    for (size_t i = 0; i < attached_windows_.size(); ++i) {
-      int next = current + initial_size_[i] + expand_fraction_[i] * delta;
-      if (i + 1 == attached_windows_.size())
-        next = start + total_initial_size_ + (initial_size - current_size);
-      sizes->push_back(next - current);
-      current = next;
-    }
-  } else if (start <= end - total_initial_size_) {
-    // All the windows fit at their initial size; tile them horizontally.
-    for (size_t i = 0; i < attached_windows_.size(); ++i)
-      sizes->push_back(initial_size_[i]);
+  std::vector<WindowSize> window_sizes;
+  CreateBucketsForAttached(&window_sizes);
+
+  // How much we need to grow the attached by (collectively).
+  int grow_attached_by = 0;
+  if (delta > 0) {
+    // If the attached windows don't fit when at their initial size, we will
+    // have to shrink them by how much they overflow.
+    if (total_initial_size_ >= available_size)
+      grow_attached_by = available_size - total_initial_size_;
   } else {
-    DCHECK_NE(total_initial_size_, total_min_);
-    int delta = total_initial_size_ - (end - start);
-    int current = start;
-    for (size_t i = 0; i < attached_windows_.size(); ++i) {
-      int size = initial_size_[i] -
-          static_cast<int>(compress_fraction_[i] * delta);
-      if (i + 1 == attached_windows_.size())
-        size = end - current;
-      current += size;
-      sizes->push_back(size);
+    // If we're shrinking, we grow the attached so the total size remains
+    // constant.
+    grow_attached_by = -delta;
+  }
+
+  int leftover_pixels = 0;
+  while (grow_attached_by != 0) {
+    int leftovers = GrowFairly(grow_attached_by, window_sizes);
+    if (leftovers == grow_attached_by) {
+      leftover_pixels = leftovers;
+      break;
     }
+    grow_attached_by = leftovers;
+  }
+
+  for (size_t i = 0; i < window_sizes.size(); ++i)
+    sizes->push_back(window_sizes[i].size());
+
+  return leftover_pixels;
+}
+
+int WorkspaceWindowResizer::GrowFairly(
+    int pixels,
+    std::vector<WindowSize>& sizes) const {
+  bool shrinking = pixels < 0;
+  std::vector<WindowSize*> nonfull_windows;
+  for (size_t i = 0; i < sizes.size(); ++i) {
+    if (!sizes[i].is_at_capacity(shrinking))
+      nonfull_windows.push_back(&sizes[i]);
+  }
+  std::vector<float> ratios;
+  CalculateGrowthRatios(nonfull_windows, &ratios);
+
+  int remaining_pixels = pixels;
+  bool add_leftover_pixels_to_last = true;
+  for (size_t i = 0; i < nonfull_windows.size(); ++i) {
+    int grow_by = pixels * ratios[i];
+    // Put any leftover pixels into the last window.
+    if (i == nonfull_windows.size() - 1 && add_leftover_pixels_to_last)
+      grow_by = remaining_pixels;
+    int remainder = nonfull_windows[i]->Add(grow_by);
+    int consumed = grow_by - remainder;
+    remaining_pixels -= consumed;
+    if (nonfull_windows[i]->is_at_capacity(shrinking) && remainder > 0) {
+      // Because this window overflowed, some of the pixels in
+      // |remaining_pixels| aren't there due to rounding errors. Rather than
+      // unfairly giving all those pixels to the last window, we refrain from
+      // allocating them so that this function can be called again to distribute
+      // the pixels fairly.
+      add_leftover_pixels_to_last = false;
+    }
+  }
+  return remaining_pixels;
+}
+
+void WorkspaceWindowResizer::CalculateGrowthRatios(
+    const std::vector<WindowSize*>& sizes,
+    std::vector<float>* out_ratios) const {
+  DCHECK(out_ratios->empty());
+  int total_value = 0;
+  for (size_t i = 0; i < sizes.size(); ++i)
+    total_value += sizes[i]->size();
+
+  for (size_t i = 0; i < sizes.size(); ++i)
+    out_ratios->push_back(
+        (static_cast<float>(sizes[i]->size())) / total_value);
+}
+
+void WorkspaceWindowResizer::CreateBucketsForAttached(
+    std::vector<WindowSize>* sizes) const {
+  for (size_t i = 0; i < attached_windows_.size(); i++) {
+    int initial_size = initial_size_[i];
+    aura::WindowDelegate* delegate = attached_windows_[i]->delegate();
+    int min = PrimaryAxisSize(delegate->GetMinimumSize());
+    int max = PrimaryAxisSize(delegate->GetMaximumSize());
+
+    sizes->push_back(WindowSize(initial_size, min, max));
   }
 }
 
