@@ -288,14 +288,7 @@ void ChromeBrowserFieldTrials::DisableNewTabFieldTrialIfNecesssary() {
 void ChromeBrowserFieldTrials::SetUpInfiniteCacheFieldTrial() {
   const base::FieldTrial::Probability kDivisor = 100;
 
-#if (defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_IOS))
   base::FieldTrial::Probability infinite_cache_probability = 0;
-#else
-  base::FieldTrial::Probability infinite_cache_probability = 1;
-#endif
-
-  if (parsed_command_line_.HasSwitch(switches::kDisableInfiniteCache))
-    infinite_cache_probability = 0;
 
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial("InfiniteCache", kDivisor,
@@ -308,11 +301,7 @@ void ChromeBrowserFieldTrials::SetUpInfiniteCacheFieldTrial() {
 void ChromeBrowserFieldTrials::SetUpCacheSensitivityAnalysisFieldTrial() {
   const base::FieldTrial::Probability kDivisor = 100;
 
-#if (defined(OS_ANDROID) || defined(OS_IOS))
   base::FieldTrial::Probability sensitivity_analysis_probability = 0;
-#else
-  base::FieldTrial::Probability sensitivity_analysis_probability = 0;
-#endif
 
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial("CacheSensitivityAnalysis",

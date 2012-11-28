@@ -324,9 +324,6 @@ const char kDisableExtensionsResourceWhitelist[] =
 const char kDisableImprovedDownloadProtection[] =
     "disable-improved-download-protection";
 
-// Disable the Infinite Cache.
-const char kDisableInfiniteCache[]          = "disable-infinite-cache";
-
 // Disable the internal Flash Player.
 const char kDisableInternalFlash[]          = "disable-internal-flash";
 
