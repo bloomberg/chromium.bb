@@ -72,7 +72,8 @@ function WallpaperManager(dialogDom) {
     try {
       this.manifest_ = JSON.parse(response);
     } catch (e) {
-      this.butterBar_.showError_('Failed to parse manifest.');
+      this.butterBar_.showError_('Failed to parse manifest.',
+                                 {help_url: LEARN_MORE_URL});
       this.manifest_ = {};
     }
   };
@@ -100,12 +101,14 @@ function WallpaperManager(dialogDom) {
         }
       } catch (e) {
         this.manifest_ = {};
-        this.butterBar_.showError_(str('connectionFailed'));
+        this.butterBar_.showError_(str('connectionFailed'),
+                                   {help_url: LEARN_MORE_URL});
         return;
       }
     }
     this.manifest_ = {};
-    this.butterBar_.showError_(str('connectionFailed'));
+    this.butterBar_.showError_(str('connectionFailed'),
+                               {help_url: LEARN_MORE_URL});
 
     // TODO(bshe): Fall back to saved manifest if there is a problem fetching
     // manifest from server.
@@ -203,7 +206,8 @@ function WallpaperManager(dialogDom) {
                                                self.onFinished_.bind(self));
           self.currentWallpaper_ = wallpaperURL;
         } else {
-          self.butterBar_.showError_(str('downloadFailed'));
+          self.butterBar_.showError_(str('downloadFailed'),
+                                     {help_url: LEARN_MORE_URL});
         }
         self.wallpaperRequest_ = null;
       });
@@ -297,14 +301,16 @@ function WallpaperManager(dialogDom) {
       console.error('More than one files are selected or no file selected');
     var file = files[0];
     if (!file.type.match('image/jpeg')) {
-      this.butterBar_.showError_(str('invalidWallpaper'));
+      this.butterBar_.showError_(str('invalidWallpaper'),
+                                 {help_url: LEARN_MORE_URL});
       return;
     }
     var reader = new FileReader();
     reader.readAsArrayBuffer(files[0]);
     var self = this;
     reader.addEventListener('error', function(e) {
-      this.butterBar_.showError_(str('accessFileFailure'));
+      this.butterBar_.showError_(str('accessFileFailure'),
+                                 {help_url: LEARN_MORE_URL});
     });
     reader.addEventListener('load', function(e) {
       self.customWallpaperData_ = e.target.result;
@@ -331,10 +337,12 @@ function WallpaperManager(dialogDom) {
    * Sets wallpaper finished. Displays error message in butter bar if any.
    */
   WallpaperManager.prototype.onFinished_ = function() {
-    if (chrome.runtime.lastError != undefined)
-      this.butterBar_.showError_(chrome.runtime.lastError.message);
-    else
+    if (chrome.runtime.lastError != undefined) {
+      this.butterBar_.showError_(chrome.runtime.lastError.message,
+                                 {help_url: LEARN_MORE_URL});
+    } else {
       this.butterBar_.hide_();
+    }
   };
 
   /**

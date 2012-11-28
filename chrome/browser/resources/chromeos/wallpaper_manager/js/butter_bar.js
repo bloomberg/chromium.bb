@@ -7,7 +7,14 @@
  * Justification is 1000ms for minimum display time plus 300ms for transition
  * duration.
  */
-var MINIMUM_BUTTER_DISPLAY_TIME_MS = 1300;
+/** @const */ var MINIMUM_BUTTER_DISPLAY_TIME_MS = 1300;
+
+/**
+ * URL of the learn more page for wallpaper picker.
+ */
+/** @const */ var LEARN_MORE_URL =
+    'https://support.google.com/chromeos/?p=wallpaper_fileerror&hl=' +
+        navigator.language;
 
 /**
  * Butter bar is shown on top of the wallpaper manager and is used to show the
@@ -52,7 +59,8 @@ ButterBar.prototype.isError_ = function() {
 /**
  * Show butter bar.
  * @param {string} message The message to be shown.
- * @param {object} opt_options Options: 'actions', 'progress', 'timeout'.
+ * @param {object} opt_options Options: 'actions', 'progress', 'timeout',
+ *     'help_url'.
  */
 ButterBar.prototype.show = function(message, opt_options) {
   this.clearShowTimeout_();
@@ -72,6 +80,15 @@ ButterBar.prototype.show = function(message, opt_options) {
     actions.hidden = false;
   } else {
     actions.hidden = true;
+  }
+
+  var learn_more = this.butter_.querySelector('.learn-more');
+  if (opt_options && 'help_url' in opt_options) {
+    learn_more.hidden = false;
+    learn_more.href = opt_options.help_url;
+  } else {
+    learn_more.hidden = true;
+    learn_more.href = '';
   }
 
   this.butter_.querySelector('.progress-bar').hidden =
@@ -267,7 +284,8 @@ ButterBar.prototype.onDownloadComplete_ = function(e) {
  * @param {Event} e An error ProgressEvent from XMLHttpRequest.
  */
 ButterBar.prototype.onDownloadError_ = function(e) {
-  this.showError_(loadTimeData.getString('downloadFailed'));
+  this.showError_(loadTimeData.getString('downloadFailed'),
+                  {help_url: LEARN_MORE_URL});
   this.xhr_ = null;
 };
 
