@@ -42,7 +42,9 @@ void FontAtlas::drawOneLineOfTextInternal(SkCanvas* canvas, const SkPaint& paint
     gfx::Point position = destPosition;
     for (unsigned i = 0; i < textLine.length(); ++i) {
         // If the ASCII code is out of bounds, then index 0 is used, which is just a plain rectangle glyph.
-        int asciiIndex = (textLine[i] < 128) ? textLine[i] : 0;
+        unsigned asciiIndex = textLine[i];
+        if (asciiIndex >= 128)
+          asciiIndex = 0;
         gfx::Rect glyphBounds = m_asciiToRectTable[asciiIndex];
         SkIRect source = SkIRect::MakeXYWH(glyphBounds.x(), glyphBounds.y(), glyphBounds.width(), glyphBounds.height());
         canvas->drawBitmapRect(m_atlas, &source, SkRect::MakeXYWH(position.x(), position.y(), glyphBounds.width(), glyphBounds.height()), &paint);
@@ -59,7 +61,9 @@ gfx::Size FontAtlas::textSize(const std::string& text)
     for (size_t i = 0; i < lines.size(); ++i) {
         int lineWidth = 0;
         for (size_t j = 0; j < lines[i].size(); ++j) {
-            int asciiIndex = (lines[i][j] < 128) ? lines[i][j] : 0;
+            unsigned asciiIndex = lines[i][j];
+            if (asciiIndex >= 128)
+              asciiIndex = 0;
             lineWidth += m_asciiToRectTable[asciiIndex].width();
         }
         if (lineWidth > maxWidth)
