@@ -11,7 +11,7 @@ vars = {
     'git_url':
          'https://chromium.googlesource.com',
     'webkit_rev':
-         '@9bedf5bdcf89c73788fc10cb7f78f74a514ba5e8'
+         '@50a5f36d4e91491ab3ac2638d4da86974b82b4fe'
 }
 
 deps = {
@@ -214,7 +214,7 @@ deps_os = {
         'src/third_party/WebKit/Source/Platform/chromium/public':
             Var('git_url') + '/external/WebKit/Source/Platform/chromium/public.git@98a49d951ff3696b250e0f5a69f2b364226badeb',
         'src/third_party/WebKit/Source/WebKit/chromium/public':
-            Var('git_url') + '/external/WebKit/Source/WebKit/chromium/public.git@b2f2218c3ff8ccdc990111ac00cd311c0dcf8839',
+            Var('git_url') + '/external/WebKit/Source/WebKit/chromium/public.git@952a7479cbf3cfde7cfc6a17a9e1ac15f0ea240d',
         'src/third_party/WebKit/Tools/DumpRenderTree':
             None,
         'src/third_party/WebKit/Tools/Scripts':
