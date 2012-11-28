@@ -215,7 +215,7 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
   X11DesktopHandler::get();
 
   focus_client_.reset(new aura::FocusManager);
-  aura::client::SetFocusClient(root_window_.get(), focus_client_.get());
+  aura::client::SetFocusClient(root_window_, focus_client_.get());
 
   activation_client_.reset(new DesktopActivationClient(root_window_));
 
@@ -530,7 +530,7 @@ void DesktopRootWindowHostLinux::ClearNativeFocus() {
   // This method is weird and misnamed. Instead of clearing the native focus,
   // it sets the focus to our |content_window_|, which will trigger a cascade
   // of focus changes into views.
-  if (content_window_ && content_window_->GetFocusManager() &&
+  if (content_window_ && aura::client::GetFocusClient(content_window_) &&
       content_window_->Contains(
           aura::client::GetFocusClient(content_window_)->GetFocusedWindow())) {
     aura::client::GetFocusClient(content_window_)->FocusWindow(
