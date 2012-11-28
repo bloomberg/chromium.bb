@@ -131,6 +131,7 @@ TEST_F(HyphenatorMessageFilterTest, OpenDictionary) {
       NULL, NULL);
   EXPECT_NE(base::kInvalidPlatformFileValue, file);
   filter_->SetDictionary(file);
+  file = base::kInvalidPlatformFileValue;  // Ownership has been transferred.
 
   // Send a HyphenatorHostMsg_OpenDictionary message with an empty locale and
   // verify it sends a HyphenatorMsg_SetDictionary message with a valid file.
@@ -148,8 +149,6 @@ TEST_F(HyphenatorMessageFilterTest, OpenDictionary) {
 
   // Delete all resources used by this test.
   filter_->Reset();
-  if (file != base::kInvalidPlatformFileValue)
-    base::ClosePlatformFile(file);
 }
 
 }  // namespace content
