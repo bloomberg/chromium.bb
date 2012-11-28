@@ -299,7 +299,6 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
     } else {
       // Sometimes we don't know where to dock. Stay undocked.
       dock_side_ = DEVTOOLS_DOCK_SIDE_UNDOCKED;
-      UpdateFrontendDockSide();
     }
   }
 
