@@ -60,9 +60,7 @@ class MEDIA_EXPORT GpuVideoDecoder
     virtual ~Factories();
   };
 
-  typedef base::Callback<
-      scoped_refptr<base::MessageLoopProxy>()> MessageLoopFactoryCB;
-  GpuVideoDecoder(const MessageLoopFactoryCB& message_loop_factory_cb,
+  GpuVideoDecoder(const scoped_refptr<base::MessageLoopProxy>& gvd_loop_proxy,
                   const scoped_refptr<base::MessageLoopProxy>& vda_loop_proxy,
                   const scoped_refptr<Factories>& factories);
 
@@ -158,9 +156,6 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   // Pointer to the demuxer stream that will feed us compressed buffers.
   scoped_refptr<DemuxerStream> demuxer_stream_;
-
-  // This is !is_null() iff Initialize() hasn't been called.
-  MessageLoopFactoryCB message_loop_factory_cb_;
 
   // MessageLoop on which to fire callbacks and trampoline calls to this class
   // if they arrive on other loops.

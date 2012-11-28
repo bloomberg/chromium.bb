@@ -24,6 +24,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebUserMediaRequest.h"
 #include "webkit/media/media_stream_client.h"
 
+namespace base{
+class MessageLoopProxy;
+}
+
 namespace webkit_media {
 class MediaStreamAudioRenderer;
 }
@@ -78,7 +82,7 @@ class CONTENT_EXPORT MediaStreamImpl
       const webkit_media::VideoFrameProvider::RepaintCB& repaint_cb) OVERRIDE;
   virtual scoped_refptr<media::VideoDecoder> GetVideoDecoder(
       const GURL& url,
-      media::MessageLoopFactory* message_loop_factory) OVERRIDE;
+      const scoped_refptr<base::MessageLoopProxy>& message_loop) OVERRIDE;
   virtual scoped_refptr<webkit_media::MediaStreamAudioRenderer>
       GetAudioRenderer(const GURL& url) OVERRIDE;
 
@@ -166,7 +170,7 @@ class CONTENT_EXPORT MediaStreamImpl
       const webkit_media::VideoFrameProvider::RepaintCB& repaint_cb);
   scoped_refptr<media::VideoDecoder> CreateVideoDecoder(
       webrtc::MediaStreamInterface* stream,
-      media::MessageLoopFactory* message_loop_factory);
+      const scoped_refptr<base::MessageLoopProxy>& message_loop);
   scoped_refptr<WebRtcAudioRenderer> CreateRemoteAudioRenderer(
         webrtc::MediaStreamInterface* stream);
 

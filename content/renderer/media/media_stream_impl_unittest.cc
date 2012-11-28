@@ -11,7 +11,6 @@
 #include "content/renderer/media/mock_media_stream_dispatcher.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "media/base/video_decoder.h"
-#include "media/base/message_loop_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamComponent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
@@ -150,24 +149,22 @@ TEST_F(MediaStreamImplTest, LocalMediaStream) {
   WebKit::WebMediaStreamDescriptor mixed_desc = RequestLocalMediaStream(true,
                                                                         true);
   // Create a renderer for the stream.
-  scoped_ptr<media::MessageLoopFactory> message_loop_factory(
-      new media::MessageLoopFactory());
   scoped_refptr<media::VideoDecoder> mixed_decoder(
-      ms_impl_->GetVideoDecoder(GURL(), message_loop_factory.get()));
+      ms_impl_->GetVideoDecoder(GURL(), base::MessageLoopProxy::current()));
   EXPECT_TRUE(mixed_decoder.get() != NULL);
 
   // Test a stream with audio only.
   WebKit::WebMediaStreamDescriptor audio_desc = RequestLocalMediaStream(true,
                                                                         false);
   scoped_refptr<media::VideoDecoder> audio_decoder(
-      ms_impl_->GetVideoDecoder(GURL(), message_loop_factory.get()));
+      ms_impl_->GetVideoDecoder(GURL(), base::MessageLoopProxy::current()));
   EXPECT_TRUE(audio_decoder.get() == NULL);
 
   // Test a stream with video only.
   WebKit::WebMediaStreamDescriptor video_desc = RequestLocalMediaStream(false,
                                                                         true);
   scoped_refptr<media::VideoDecoder> video_decoder(
-      ms_impl_->GetVideoDecoder(GURL(), message_loop_factory.get()));
+      ms_impl_->GetVideoDecoder(GURL(), base::MessageLoopProxy::current()));
   EXPECT_TRUE(video_decoder.get() != NULL);
 
   // Stop generated local streams.

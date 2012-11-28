@@ -50,11 +50,10 @@ GpuVideoDecoder::BufferData::BufferData(
 GpuVideoDecoder::BufferData::~BufferData() {}
 
 GpuVideoDecoder::GpuVideoDecoder(
-    const MessageLoopFactoryCB& message_loop_factory_cb,
+    const scoped_refptr<base::MessageLoopProxy>& gvd_loop_proxy,
     const scoped_refptr<base::MessageLoopProxy>& vda_loop_proxy,
     const scoped_refptr<Factories>& factories)
-    : message_loop_factory_cb_(message_loop_factory_cb),
-      gvd_loop_proxy_(NULL),
+    : gvd_loop_proxy_(gvd_loop_proxy),
       vda_loop_proxy_(vda_loop_proxy),
       factories_(factories),
       state_(kNormal),
@@ -63,7 +62,6 @@ GpuVideoDecoder::GpuVideoDecoder(
       next_picture_buffer_id_(0),
       next_bitstream_buffer_id_(0),
       error_occured_(false) {
-  DCHECK(!message_loop_factory_cb_.is_null());
   DCHECK(factories_);
 }
 
@@ -122,8 +120,7 @@ void GpuVideoDecoder::Stop(const base::Closure& closure) {
 void GpuVideoDecoder::Initialize(const scoped_refptr<DemuxerStream>& stream,
                                  const PipelineStatusCB& orig_status_cb,
                                  const StatisticsCB& statistics_cb) {
-  if (!gvd_loop_proxy_) {
-    gvd_loop_proxy_ = base::ResetAndReturn(&message_loop_factory_cb_).Run();
+  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
     gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::Initialize,
         this, stream, orig_status_cb, statistics_cb));

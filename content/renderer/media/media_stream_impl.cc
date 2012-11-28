@@ -19,7 +19,6 @@
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/webrtc_audio_renderer.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
-#include "media/base/message_loop_factory.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaConstraints.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -245,7 +244,7 @@ MediaStreamImpl::GetVideoFrameProvider(
 
 scoped_refptr<media::VideoDecoder> MediaStreamImpl::GetVideoDecoder(
     const GURL& url,
-    media::MessageLoopFactory* message_loop_factory) {
+    const scoped_refptr<base::MessageLoopProxy>& message_loop) {
   DCHECK(CalledOnValidThread());
   WebKit::WebMediaStreamDescriptor descriptor(GetMediaStream(url));
 
@@ -257,7 +256,7 @@ scoped_refptr<media::VideoDecoder> MediaStreamImpl::GetVideoDecoder(
 
   webrtc::MediaStreamInterface* stream = GetNativeMediaStream(descriptor);
   if (stream)
-    return CreateVideoDecoder(stream, message_loop_factory);
+    return CreateVideoDecoder(stream, message_loop);
   NOTREACHED();
   return NULL;
 }
@@ -532,7 +531,7 @@ MediaStreamImpl::CreateVideoFrameProvider(
 
 scoped_refptr<media::VideoDecoder> MediaStreamImpl::CreateVideoDecoder(
     webrtc::MediaStreamInterface* stream,
-    media::MessageLoopFactory* message_loop_factory) {
+    const scoped_refptr<base::MessageLoopProxy>& message_loop) {
   if (!stream->video_tracks() || stream->video_tracks()->count() == 0)
     return NULL;
 
@@ -540,8 +539,7 @@ scoped_refptr<media::VideoDecoder> MediaStreamImpl::CreateVideoDecoder(
            << stream->label();
 
   return new RTCVideoDecoder(
-      message_loop_factory->GetMessageLoop(
-          media::MessageLoopFactory::kPipeline),
+      message_loop,
       base::MessageLoopProxy::current(),
       stream->video_tracks()->at(0));
 }

@@ -11,9 +11,12 @@
 
 class GURL;
 
+namespace base {
+class MessageLoopProxy;
+}
+
 namespace media {
 class VideoDecoder;
-class MessageLoopFactory;
 }
 
 namespace webkit_media {
@@ -34,7 +37,7 @@ class MediaStreamClient {
 
   virtual scoped_refptr<media::VideoDecoder> GetVideoDecoder(
       const GURL& url,
-      media::MessageLoopFactory* message_loop_factory) = 0;
+      const scoped_refptr<base::MessageLoopProxy>& message_loop) = 0;
 
   virtual scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
       const GURL& url) = 0;

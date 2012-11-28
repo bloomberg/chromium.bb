@@ -112,14 +112,9 @@ bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
       new media::FilterCollection());
   collection->SetDemuxer(new media::FFmpegDemuxer(message_loop, data_source));
   collection->GetAudioDecoders()->push_back(new media::FFmpegAudioDecoder(
-      base::Bind(&media::MessageLoopFactory::GetMessageLoop,
-                 base::Unretained(message_loop_factory),
-                 media::MessageLoopFactory::kPipeline)));
+      message_loop));
   collection->GetVideoDecoders()->push_back(new media::FFmpegVideoDecoder(
-      base::Bind(&media::MessageLoopFactory::GetMessageLoop,
-                 base::Unretained(message_loop_factory),
-                 media::MessageLoopFactory::kPipeline),
-      NULL));
+      message_loop, NULL));
 
   // Create our video renderer and save a reference to it for painting.
   g_video_renderer = new media::VideoRendererBase(

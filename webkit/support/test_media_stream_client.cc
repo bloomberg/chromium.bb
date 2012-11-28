@@ -5,7 +5,6 @@
 #include "webkit/support/test_media_stream_client.h"
 
 #include "googleurl/src/gurl.h"
-#include "media/base/message_loop_factory.h"
 #include "media/base/pipeline.h"
 #include "media/filters/video_frame_generator.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaStreamRegistry.h"
@@ -61,7 +60,8 @@ TestMediaStreamClient::GetVideoFrameProvider(
 }
 
 scoped_refptr<media::VideoDecoder> TestMediaStreamClient::GetVideoDecoder(
-    const GURL& url, media::MessageLoopFactory* message_loop_factory) {
+    const GURL& url,
+    const scoped_refptr<base::MessageLoopProxy>& message_loop) {
   // This class is installed in a chain of possible VideoDecoder creators
   // which are called in order until one returns an object.
   // Make sure we are dealing with a Mock MediaStream. If not, bail out.
@@ -69,8 +69,7 @@ scoped_refptr<media::VideoDecoder> TestMediaStreamClient::GetVideoDecoder(
     return NULL;
 
   return new media::VideoFrameGenerator(
-      message_loop_factory->GetMessageLoop(
-          media::MessageLoopFactory::kPipeline),
+      message_loop,
       gfx::Size(kVideoCaptureWidth, kVideoCaptureHeight),
       base::TimeDelta::FromMilliseconds(kVideoCaptureFrameDurationMs));
 }

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "media/base/filter_collection.h"
-#include "media/base/message_loop_factory.h"
 #include "media/filters/decrypting_audio_decoder.h"
 #include "media/filters/decrypting_video_decoder.h"
 #include "media/filters/chunk_demuxer.h"
@@ -28,20 +27,15 @@ namespace webkit_media {
 // stream. Some decoder may only accept certain types of streams. For example,
 // DecryptingVideoDecoder only supports encrypted video stream.
 static void AddDefaultDecodersToCollection(
-    media::MessageLoopFactory* message_loop_factory,
+    const scoped_refptr<base::MessageLoopProxy>& message_loop,
     media::FilterCollection* filter_collection,
     ProxyDecryptor* proxy_decryptor) {
   scoped_refptr<media::FFmpegAudioDecoder> ffmpeg_audio_decoder =
-      new media::FFmpegAudioDecoder(
-          base::Bind(&media::MessageLoopFactory::GetMessageLoop,
-                     base::Unretained(message_loop_factory),
-                     media::MessageLoopFactory::kPipeline));
+      new media::FFmpegAudioDecoder(message_loop);
 
   scoped_refptr<media::DecryptingAudioDecoder> decrypting_audio_decoder =
       new media::DecryptingAudioDecoder(
-          base::Bind(&media::MessageLoopFactory::GetMessageLoop,
-                     base::Unretained(message_loop_factory),
-                     media::MessageLoopFactory::kPipeline),
+          message_loop,
           base::Bind(&ProxyDecryptor::RequestDecryptorNotification,
                      base::Unretained(proxy_decryptor)));
 
@@ -50,18 +44,12 @@ static void AddDefaultDecodersToCollection(
 
   scoped_refptr<media::DecryptingVideoDecoder> decrypting_video_decoder =
       new media::DecryptingVideoDecoder(
-          base::Bind(&media::MessageLoopFactory::GetMessageLoop,
-                     base::Unretained(message_loop_factory),
-                     media::MessageLoopFactory::kPipeline),
+          message_loop,
           base::Bind(&ProxyDecryptor::RequestDecryptorNotification,
                      base::Unretained(proxy_decryptor)));
 
   scoped_refptr<media::FFmpegVideoDecoder> ffmpeg_video_decoder =
-      new media::FFmpegVideoDecoder(
-          base::Bind(&media::MessageLoopFactory::GetMessageLoop,
-                     base::Unretained(message_loop_factory),
-                     media::MessageLoopFactory::kPipeline),
-          proxy_decryptor);
+      new media::FFmpegVideoDecoder(message_loop, proxy_decryptor);
 
   // TODO(xhwang): Ideally we should have decrypting video decoder after
   // regular video decoder since in the real world most videos are not
@@ -73,15 +61,16 @@ static void AddDefaultDecodersToCollection(
   filter_collection->GetVideoDecoders()->push_back(ffmpeg_video_decoder);
 }
 
-bool BuildMediaStreamCollection(const WebKit::WebURL& url,
-                                MediaStreamClient* client,
-                                media::MessageLoopFactory* message_loop_factory,
-                                media::FilterCollection* filter_collection) {
+bool BuildMediaStreamCollection(
+    const WebKit::WebURL& url,
+    MediaStreamClient* client,
+    const scoped_refptr<base::MessageLoopProxy>& message_loop,
+    media::FilterCollection* filter_collection) {
   if (!client)
     return false;
 
   scoped_refptr<media::VideoDecoder> video_decoder = client->GetVideoDecoder(
-      url, message_loop_factory);
+      url, message_loop);
   if (!video_decoder)
     return false;
 
@@ -98,7 +87,7 @@ bool BuildMediaStreamCollection(const WebKit::WebURL& url,
 
 void BuildMediaSourceCollection(
     const scoped_refptr<media::ChunkDemuxer>& demuxer,
-    media::MessageLoopFactory* message_loop_factory,
+    const scoped_refptr<base::MessageLoopProxy>& message_loop,
     media::FilterCollection* filter_collection,
     ProxyDecryptor* proxy_decryptor) {
   DCHECK(demuxer);
@@ -109,21 +98,19 @@ void BuildMediaSourceCollection(
   DCHECK_LE(filter_collection->GetVideoDecoders()->size(), 1u);
   filter_collection->GetVideoDecoders()->clear();
 
-  AddDefaultDecodersToCollection(message_loop_factory, filter_collection,
+  AddDefaultDecodersToCollection(message_loop, filter_collection,
                                  proxy_decryptor);
 }
 
 void BuildDefaultCollection(
     const scoped_refptr<media::DataSource>& data_source,
-    media::MessageLoopFactory* message_loop_factory,
+    const scoped_refptr<base::MessageLoopProxy>& message_loop,
     media::FilterCollection* filter_collection,
     ProxyDecryptor* proxy_decryptor) {
   filter_collection->SetDemuxer(new media::FFmpegDemuxer(
-      message_loop_factory->GetMessageLoop(
-          media::MessageLoopFactory::kPipeline),
-      data_source));
+      message_loop, data_source));
 
-  AddDefaultDecodersToCollection(message_loop_factory, filter_collection,
+  AddDefaultDecodersToCollection(message_loop, filter_collection,
                                  proxy_decryptor);
 }
 

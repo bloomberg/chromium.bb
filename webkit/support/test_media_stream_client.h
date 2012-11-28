@@ -32,7 +32,7 @@ class TestMediaStreamClient : public webkit_media::MediaStreamClient {
       const webkit_media::VideoFrameProvider::RepaintCB& repaint_cb) OVERRIDE;
   virtual scoped_refptr<media::VideoDecoder> GetVideoDecoder(
       const GURL& url,
-      media::MessageLoopFactory* message_loop_factory) OVERRIDE;
+      const scoped_refptr<base::MessageLoopProxy>& message_loop) OVERRIDE;
   virtual scoped_refptr<webkit_media::MediaStreamAudioRenderer>
       GetAudioRenderer(const GURL& url) OVERRIDE;
 };

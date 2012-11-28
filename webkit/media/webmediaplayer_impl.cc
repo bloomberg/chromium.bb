@@ -257,9 +257,13 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
   SetReadyState(WebMediaPlayer::ReadyStateHaveNothing);
   media_log_->AddEvent(media_log_->CreateLoadEvent(url.spec()));
 
+  scoped_refptr<base::MessageLoopProxy> message_loop =
+      message_loop_factory_->GetMessageLoop(
+          media::MessageLoopFactory::kPipeline);
+
   // Media streams pipelines can start immediately.
   if (BuildMediaStreamCollection(url, media_stream_client_,
-                                 message_loop_factory_.get(),
+                                 message_loop,
                                  filter_collection_.get())) {
     supports_save_ = false;
     StartPipeline();
@@ -273,7 +277,7 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
         BIND_TO_RENDER_LOOP_2(&WebMediaPlayerImpl::OnNeedKey, "", ""));
 
     BuildMediaSourceCollection(chunk_demuxer_,
-                               message_loop_factory_.get(),
+                               message_loop,
                                filter_collection_.get(),
                                &decryptor_);
     supports_save_ = false;
@@ -295,7 +299,7 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
   is_local_source_ = !gurl.SchemeIs("http") && !gurl.SchemeIs("https");
 
   BuildDefaultCollection(proxy_->data_source(),
-                         message_loop_factory_.get(),
+                         message_loop,
                          filter_collection_.get(),
                          &decryptor_);
 }

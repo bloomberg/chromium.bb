@@ -76,14 +76,9 @@ bool Movie::Open(const wchar_t* file_path, VideoRendererBase* video_renderer) {
   scoped_ptr<FilterCollection> collection(new FilterCollection());
   collection->SetDemuxer(new FFmpegDemuxer(pipeline_loop, data_source));
   collection->GetAudioDecoders()->push_back(new FFmpegAudioDecoder(
-      base::Bind(&MessageLoopFactory::GetMessageLoop,
-                 base::Unretained(message_loop_factory_.get()),
-                 media::MessageLoopFactory::kPipeline)));
+      pipeline_loop));
   collection->GetVideoDecoders()->push_back(new FFmpegVideoDecoder(
-      base::Bind(&MessageLoopFactory::GetMessageLoop,
-                 base::Unretained(message_loop_factory_.get()),
-                 media::MessageLoopFactory::kPipeline),
-      NULL));
+      pipeline_loop, NULL));
 
   // TODO(vrk): Re-enabled audio. (crbug.com/112159)
   collection->AddAudioRenderer(
