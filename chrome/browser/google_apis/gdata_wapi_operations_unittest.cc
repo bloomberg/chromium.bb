@@ -63,35 +63,19 @@ bool VerifyJsonData(const FilePath& expected_json_file_path,
   return base::Value::Equals(expected_data.get(), json_data);
 }
 
-// Returns a HttpResponse created from the given file path.
-scoped_ptr<test_server::HttpResponse> CreateHttpResponseFromFile(
+// Returns a HttpResponse created from the given JSON file path.
+scoped_ptr<test_server::HttpResponse> CreateJsonResponseFromFile(
     const FilePath& file_path) {
   std::string content;
   if (!file_util::ReadFileToString(file_path, &content))
     return scoped_ptr<test_server::HttpResponse>();
 
-  std::string content_type = "text/plain";
-  if (EndsWith(file_path.AsUTF8Unsafe(), ".json", true /* case sensitive */))
-    content_type = "application/json";
-
   scoped_ptr<test_server::HttpResponse> http_response(
       new test_server::HttpResponse);
   http_response->set_code(test_server::SUCCESS);
   http_response->set_content(content);
-  http_response->set_content_type(content_type);
+  http_response->set_content_type("application/json");
   return http_response.Pass();
-}
-
-// Removes |prefix| from |input| and stores the result in |output|. Returns
-// true if the prefix is removed.
-bool RemovePrefix(const std::string& input,
-                  const std::string& prefix,
-                  std::string* output) {
-  if (!StartsWithASCII(input, prefix, true /* case sensitive */))
-    return false;
-
-  *output = input.substr(prefix.size());
-  return true;
 }
 
 // This class sets a request context getter for testing in
@@ -138,9 +122,16 @@ class GDataWapiOperationsTest : public testing::Test {
             static_cast<TestingBrowserProcess*>(g_browser_process)));
 
     ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
-    test_server_.RegisterRequestHandler(
-        base::Bind(&GDataWapiOperationsTest::HandleDownloadRequest,
-                   base::Unretained(this)));
+    test_server_.RegisterFileResponse(
+        "/files/chromeos/gdata/testfile.txt",
+        test_util::GetTestFilePath("gdata/testfile.txt"),
+        "text/plain",
+        test_server::SUCCESS);
+    test_server_.RegisterFileResponse(
+        "/files/chromeos/gdata/root_feed.json",
+        test_util::GetTestFilePath("gdata/root_feed.json"),
+        "text/plain",
+        test_server::SUCCESS);
     test_server_.RegisterRequestHandler(
         base::Bind(&GDataWapiOperationsTest::HandleResourceFeedRequest,
                    base::Unretained(this)));
@@ -163,43 +154,34 @@ class GDataWapiOperationsTest : public testing::Test {
     return profile_->GetPath().Append(file_name);
   }
 
-  // Handles a request for downloading a file. Reads a file from the test
-  // directory and returns the content.
-  scoped_ptr<test_server::HttpResponse> HandleDownloadRequest(
-      const test_server::HttpRequest& request) {
-    const GURL absolute_url = test_server_.GetURL(request.relative_url);
-    std::string remaining_path;
-    if (!RemovePrefix(absolute_url.path(), "/files/", &remaining_path))
-      return scoped_ptr<test_server::HttpResponse>();
-
-    return CreateHttpResponseFromFile(
-        test_util::GetTestFilePath(remaining_path));
-  }
-
   // Handles a request for fetching a resource feed.
   scoped_ptr<test_server::HttpResponse> HandleResourceFeedRequest(
       const test_server::HttpRequest& request) {
-    const GURL absolute_url = test_server_.GetURL(request.relative_url);
-    std::string remaining_path;
-    if (!RemovePrefix(absolute_url.path(),
-                      "/feeds/default/private/full/",
-                      &remaining_path)) {
+    const char kFeedPrefix[] = "/feeds/default/private/full/";
+    if (!StartsWithASCII(request.relative_url,
+                         kFeedPrefix,
+                         true /* case sensitive */)) {
       return scoped_ptr<test_server::HttpResponse>();
     }
 
-    if (remaining_path == "-/mine") {
+    const GURL absolute_url = test_server_.GetURL(request.relative_url);
+    // Remove the feed prefix.
+    std::string suffix = absolute_url.path();
+    ReplaceFirstSubstringAfterOffset(&suffix, 0, kFeedPrefix, "");
+
+    if (suffix == "-/mine") {
       // Process the default feed.
-      return CreateHttpResponseFromFile(
+      return CreateJsonResponseFromFile(
           test_util::GetTestFilePath("gdata/root_feed.json"));
     } else {
       // Process a feed for a single resource ID.
       // For now, we only support a resource feed for a particular entry.
       const std::string resource_id = net::UnescapeURLComponent(
-          remaining_path, net::UnescapeRule::URL_SPECIAL_CHARS);
+          suffix, net::UnescapeRule::URL_SPECIAL_CHARS);
       if (resource_id != "file:2_file_resource_id")
         return scoped_ptr<test_server::HttpResponse>();
 
-      return CreateHttpResponseFromFile(
+      return CreateJsonResponseFromFile(
           test_util::GetTestFilePath("gdata/file_entry.json"));
     }
 
@@ -214,7 +196,7 @@ class GDataWapiOperationsTest : public testing::Test {
     if (absolute_url.path() != "/feeds/metadata/default")
       return scoped_ptr<test_server::HttpResponse>();
 
-    return CreateHttpResponseFromFile(
+    return CreateJsonResponseFromFile(
         test_util::GetTestFilePath("gdata/account_metadata.json"));
   }
 
@@ -263,7 +245,7 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_ValidFeed) {
   GetDocumentsOperation* operation = new GetDocumentsOperation(
       &operation_registry_,
       *url_generator_,
-      test_server_.GetURL("/files/gdata/root_feed.json"),
+      test_server_.GetURL("/files/chromeos/gdata/root_feed.json"),
       0,  // start changestamp
       "",  // search string
       false,  // shared with me
@@ -290,7 +272,7 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_InvalidFeed) {
   GetDocumentsOperation* operation = new GetDocumentsOperation(
       &operation_registry_,
       *url_generator_,
-      test_server_.GetURL("/files/gdata/testfile.txt"),
+      test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
       0,  // start changestamp
       "",  // search string
       false,  // shared with me
@@ -373,7 +355,7 @@ TEST_F(GDataWapiOperationsTest, DownloadFileOperation_ValidFile) {
                  &result_code,
                  &contents),
       GetContentCallback(),
-      test_server_.GetURL("/files/gdata/testfile.txt"),
+      test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
       FilePath::FromUTF8Unsafe("/dummy/gdata/testfile.txt"),
       GetTestCachedFilePath(FilePath::FromUTF8Unsafe("cached_testfile.txt")));
   operation->Start(kTestGDataAuthToken, kTestUserAgent);
@@ -396,7 +378,7 @@ TEST_F(GDataWapiOperationsTest, DownloadFileOperation_NonExistentFile) {
                  &result_code,
                  &contents),
       GetContentCallback(),
-      test_server_.GetURL("/files/gdata/no-such-file.txt"),
+      test_server_.GetURL("/files/chromeos/gdata/no-such-file.txt"),
       FilePath::FromUTF8Unsafe("/dummy/gdata/no-such-file.txt"),
       GetTestCachedFilePath(
           FilePath::FromUTF8Unsafe("cache_no-such-file.txt")));
