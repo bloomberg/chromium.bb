@@ -109,6 +109,9 @@ class Shell : public WebContentsDelegate,
                                           bool enter_fullscreen) OVERRIDE;
   virtual bool IsFullscreenForTabOrPending(
       const WebContents* web_contents) const OVERRIDE;
+  virtual void RequestToLockMouse(WebContents* web_contents,
+                                  bool user_gesture,
+                                  bool last_unlocked_by_target) OVERRIDE;
   virtual void CloseContents(WebContents* source) OVERRIDE;
   virtual bool CanOverscrollContent() const OVERRIDE;
   virtual void WebContentsCreated(WebContents* source_contents,

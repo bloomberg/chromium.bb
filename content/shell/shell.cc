@@ -213,6 +213,12 @@ bool Shell::IsFullscreenForTabOrPending(const WebContents* web_contents) const {
 #endif
 }
 
+void Shell::RequestToLockMouse(WebContents* web_contents,
+                               bool user_gesture,
+                               bool last_unlocked_by_target) {
+  web_contents->GotResponseToLockMouseRequest(true);
+}
+
 void Shell::CloseContents(WebContents* source) {
   Close();
 }
