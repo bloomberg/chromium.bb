@@ -56,6 +56,7 @@ class SpellCheckHostMetrics {
   void RecordSuggestionStats(int delta);
 
  private:
+  friend class SpellcheckHostMetricsTest;
   void OnHistogramTimerExpired();
 
   // Records various counters without changing their values.
@@ -63,12 +64,23 @@ class SpellCheckHostMetrics {
 
   // Number of corrected words of checked words.
   int misspelled_word_count_;
+  int last_misspelled_word_count_;
+
   // Number of checked words.
   int spellchecked_word_count_;
+  int last_spellchecked_word_count_;
+
   // Number of suggestion list showings.
   int suggestion_show_count_;
+  int last_suggestion_show_count_;
+
   // Number of misspelled words replaced by a user.
   int replaced_word_count_;
+  int last_replaced_word_count_;
+
+  // Last recorded number of unique words.
+  int last_unique_word_count_;
+
   // Time when first spellcheck happened.
   base::TimeTicks start_time_;
   // Set of checked words in the hashed form.
