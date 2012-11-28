@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_input_event.idl modified Tue Aug 14 09:41:28 2012. */
+/* From ppb_input_event.idl modified Mon Nov 26 19:51:21 2012. */
 
 #ifndef PPAPI_C_PPB_INPUT_EVENT_H_
 #define PPAPI_C_PPB_INPUT_EVENT_H_
@@ -274,7 +274,12 @@ typedef enum {
    *
    * Request touch events only if you intend to handle them. If the browser
    * knows you do not need to handle touch events, it can handle them at a
-   * higher level and achieve higher performance.
+   * higher level and achieve higher performance. If the plugin does not
+   * register for touch-events, then it will receive synthetic mouse events that
+   * are generated from the touch events (e.g. mouse-down for touch-start,
+   * mouse-move for touch-move (with left-button down), and mouse-up for
+   * touch-end. If the plugin does register for touch events, then the synthetic
+   * mouse events are not created.
    */
   PP_INPUTEVENT_CLASS_TOUCH = 1 << 3,
   /**
@@ -320,6 +325,9 @@ struct PPB_InputEvent_1_0 {
    * that message. Requesting that such messages be delivered, even if they are
    * processed very quickly, may have a noticeable effect on the performance of
    * the page.
+   *
+   * Note that synthetic mouse events will be generated from touch events if
+   * (and only if) the you do not request touch events.
    *
    * When requesting input events through this function, the events will be
    * delivered and <i>not</i> bubbled to the page. This means that even if you

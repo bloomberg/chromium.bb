@@ -562,7 +562,7 @@ bool PluginInstance::Initialize(WebPluginContainer* container,
   plugin_url_ = plugin_url;
   full_frame_ = full_frame;
 
-  container_->setIsAcceptingTouchEvents(IsAcceptingTouchEvents());
+  UpdateTouchEventRequest();
   container_->setWantsWheelEvents(IsAcceptingWheelEvents());
 
   SetGPUHistogram(delegate_->GetPreferences(), arg_names, arg_values);
@@ -672,7 +672,7 @@ bool PluginInstance::SendCompositionEventWithUnderlineInformationToPlugin(
 
 void PluginInstance::RequestInputEventsHelper(uint32_t event_classes) {
   if (event_classes & PP_INPUTEVENT_CLASS_TOUCH)
-    container_->setIsAcceptingTouchEvents(IsAcceptingTouchEvents());
+    UpdateTouchEventRequest();
   if (event_classes & PP_INPUTEVENT_CLASS_WHEEL)
     container_->setWantsWheelEvents(IsAcceptingWheelEvents());
 }
@@ -1173,9 +1173,12 @@ void PluginInstance::SendFocusChangeNotification() {
   instance_interface_->DidChangeFocus(pp_instance(), PP_FromBool(has_focus));
 }
 
-bool PluginInstance::IsAcceptingTouchEvents() const {
-  return (filtered_input_event_mask_ & PP_INPUTEVENT_CLASS_TOUCH) ||
-      (input_event_mask_ & PP_INPUTEVENT_CLASS_TOUCH);
+void PluginInstance::UpdateTouchEventRequest() {
+  bool raw_touch = (filtered_input_event_mask_ & PP_INPUTEVENT_CLASS_TOUCH) ||
+                   (input_event_mask_ & PP_INPUTEVENT_CLASS_TOUCH);
+  container_->requestTouchEventType(raw_touch ?
+      WebKit::WebPluginContainer::TouchEventRequestTypeRaw :
+      WebKit::WebPluginContainer::TouchEventRequestTypeSynthesizedMouse);
 }
 
 bool PluginInstance::IsAcceptingWheelEvents() const {

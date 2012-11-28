@@ -498,8 +498,8 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   bool PluginHasFocus() const;
   void SendFocusChangeNotification();
 
-  // Returns true if the plugin has registered to accept touch events.
-  bool IsAcceptingTouchEvents() const;
+  void UpdateTouchEventRequest();
+
   // Returns true if the plugin has registered to accept wheel events.
   bool IsAcceptingWheelEvents() const;
 

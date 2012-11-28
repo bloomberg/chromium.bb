@@ -860,6 +860,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View_PageHideShow) {
 // events to the renderer.
 IN_PROC_BROWSER_TEST_F(PPAPITest, InputEvent_AcceptTouchEvent) {
   std::string positive_tests[] = { "InputEvent_AcceptTouchEvent_1",
+                                   "InputEvent_AcceptTouchEvent_2",
                                    "InputEvent_AcceptTouchEvent_3",
                                    "InputEvent_AcceptTouchEvent_4"
                                  };
@@ -869,14 +870,6 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, InputEvent_AcceptTouchEvent) {
         GetRenderViewHost();
     RunTest(positive_tests[i]);
     EXPECT_TRUE(content::RenderViewHostTester::HasTouchEventHandler(host));
-  }
-
-  std::string negative_tests[] = { "InputEvent_AcceptTouchEvent_2" };
-  for (size_t i = 0; i < arraysize(negative_tests); ++i) {
-    RenderViewHost* host = chrome::GetActiveWebContents(browser())->
-        GetRenderViewHost();
-    RunTest(negative_tests[i]);
-    EXPECT_FALSE(content::RenderViewHostTester::HasTouchEventHandler(host));
   }
 }
 

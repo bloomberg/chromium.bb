@@ -685,8 +685,11 @@ void BrowserPlugin::GuestContentWindowReady(int content_window_routing_id) {
 }
 
 void BrowserPlugin::SetAcceptTouchEvents(bool accept) {
-  if (container())
-    container()->setIsAcceptingTouchEvents(accept);
+  if (container()) {
+    container()->requestTouchEventType(accept ?
+        WebKit::WebPluginContainer::TouchEventRequestTypeRaw :
+        WebKit::WebPluginContainer::TouchEventRequestTypeNone);
+  }
 }
 
 WebKit::WebPluginContainer* BrowserPlugin::container() const {
