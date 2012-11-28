@@ -202,17 +202,17 @@ void WebIntentPickerController::ShowDialog(DefaultsUsage suppress_defaults) {
   // in-flight dispatches since we don't create the picker
   // in this method, but only after calling the registry.
   if (picker_shown_) {
-    intents_dispatcher_->SendReplyMessage(
+    intents_dispatcher_->SendReply(webkit_glue::WebIntentReply(
         webkit_glue::WEB_INTENT_REPLY_FAILURE,
-        ASCIIToUTF16("Simultaneous intent invocation."));
+        ASCIIToUTF16("Simultaneous intent invocation.")));
     return;
   }
 
   // TODO(binji): Figure out what to do when intents are invoked from incognito
   // mode.
   if (profile_->IsOffTheRecord()) {
-    intents_dispatcher_->SendReplyMessage(
-        webkit_glue::WEB_INTENT_REPLY_FAILURE, string16());
+    intents_dispatcher_->SendReply(webkit_glue::WebIntentReply(
+        webkit_glue::WEB_INTENT_REPLY_FAILURE, string16()));
     return;
   }
 
@@ -447,8 +447,8 @@ void WebIntentPickerController::OnUserCancelledPickerDialog() {
   if (!intents_dispatcher_)
     return;
 
-  intents_dispatcher_->SendReplyMessage(
-      webkit_glue::WEB_INTENT_PICKER_CANCELLED, string16());
+  intents_dispatcher_->SendReply(webkit_glue::WebIntentReply(
+      webkit_glue::WEB_INTENT_PICKER_CANCELLED, string16()));
   web_intents::RecordPickerCancel(uma_bucket_);
 
   ClosePicker();
@@ -610,9 +610,9 @@ void WebIntentPickerController::OnWebIntentServicesAvailableForExplicitIntent(
   }
 
   // No acceptable extension. The intent cannot be dispatched.
-  intents_dispatcher_->SendReplyMessage(
+  intents_dispatcher_->SendReply(webkit_glue::WebIntentReply(
       webkit_glue::WEB_INTENT_REPLY_FAILURE,  ASCIIToUTF16(
-          "Explicit extension URL is not available."));
+          "Explicit extension URL is not available.")));
 
   AsyncOperationFinished();
 }
@@ -849,9 +849,9 @@ void WebIntentPickerController::AsyncOperationFinished() {
 void WebIntentPickerController::InvokeServiceWithSelection(
     const webkit_glue::WebIntentServiceData& service) {
   if (picker_shown_) {
-    intents_dispatcher_->SendReplyMessage(
+    intents_dispatcher_->SendReply(webkit_glue::WebIntentReply(
         webkit_glue::WEB_INTENT_REPLY_FAILURE,
-        ASCIIToUTF16("Simultaneous intent invocation."));
+        ASCIIToUTF16("Simultaneous intent invocation.")));
     return;
   }
 
