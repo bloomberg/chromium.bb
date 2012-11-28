@@ -833,6 +833,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableSoftwareCompositingGLAdapter,
     switches::kEnableStatsTable,
     switches::kEnableThreadedCompositing,
+    switches::kEnableTouchDragDrop,
     switches::kDisableThreadedCompositing,
     switches::kDisableTouchAdjustment,
     switches::kEnableViewport,

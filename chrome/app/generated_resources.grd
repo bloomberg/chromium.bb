@@ -6497,6 +6497,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_INTERACTIVE_AUTOCOMPLETE_DESCRIPTION" desc="Description of the flag to enable an interactive autocomplete UI.">
         Enable an interactive autocomplete UI that can be invoked by calling HTMLFormElement#requestAutocomplete.
       </message>
+      <message name="IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_NAME" desc="Name of the flag that enables touch initiated drag drop.">
+        Enable touch initiated drag and drop
+      </message>
+      <message name="IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_DESCRIPTION" desc="Description of the flag to enable touch initiated drag drop.">
+        Touch drag and drop can be initiated through long press on a draggable element.
+      </message>
       <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_FORM_FILLING_NAME" desc="Title for the flag to enable experimental form filling">
         Enable experimental form filling
       </message>

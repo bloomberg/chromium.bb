@@ -175,6 +175,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/dialogs/selected_file_info.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -667,6 +668,10 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
   webview()->setDeviceScaleFactor(device_scale_factor_);
   webkit_preferences_.Apply(webview());
   webview()->initializeMainFrame(this);
+
+  if (command_line.HasSwitch(switches::kEnableTouchDragDrop))
+    webview()->settings()->setTouchDragDropEnabled(true);
+
   if (!params->frame_name.empty())
     webview()->mainFrame()->setName(params->frame_name);
   webview()->settings()->setMinimumTimerInterval(

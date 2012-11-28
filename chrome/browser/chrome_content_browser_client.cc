@@ -110,6 +110,7 @@
 #include "ppapi/host/ppapi_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_switches.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/plugin_switches.h"
 
@@ -968,6 +969,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableNaClSRPCProxy,
       switches::kEnablePasswordGeneration,
       switches::kEnablePnacl,
+      switches::kEnableTouchDragDrop,
       switches::kEnableWatchdog,
       switches::kMemoryProfiling,
       switches::kMessageLoopHistogrammer,

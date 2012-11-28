@@ -1148,6 +1148,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableOverscrollHistoryNavigation)
   },
 #endif
+  {
+    "enable-touch-drag-drop",
+    IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_NAME,
+    IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_DESCRIPTION,
+    kOsWin | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableTouchDragDrop)
+  },
 };
 
 const Experiment* experiments = kExperiments;
