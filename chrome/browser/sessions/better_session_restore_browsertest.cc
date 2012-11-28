@@ -257,7 +257,14 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
       SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
 }
 
-IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, LocalStorageClearedOnExit) {
+// Flaky on Linux: http://crbug.com/163096
+#if defined(OS_LINUX)
+#define MAYBE_LocalStorageClearedOnExit DISABLED_LocalStorageClearedOnExit
+#else
+#define MAYBE_LocalStorageClearedOnExit LocalStorageClearedOnExit
+#endif
+IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
+                       MAYBE_LocalStorageClearedOnExit) {
   CheckReloadedPageNotRestored();
 }
 
