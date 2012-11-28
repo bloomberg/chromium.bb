@@ -132,6 +132,8 @@ LDPatterns = [
     "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))\n"),
   ( '-L(.+)',
     "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))\n"),
+  ( ('--library-path', '(.+)'),
+    "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))\n"),
 
   # We just ignore undefined symbols in shared objects, so
   # -rpath-link should not be necessary.
@@ -444,3 +446,30 @@ def LinkBC(inputs, output):
   RunWithEnv('${RUN_BCLD}',
              inputs=inputs,
              output=output)
+
+def get_help(unused_argv):
+  return """Usage: pnacl-ld [options] <input files> -o <output>
+
+Bitcode linker for PNaCl.  Similar to the binutils "ld" tool,
+but links bitcode instead of native code.  Supports many of the
+"ld" flags.
+
+OPTIONS:
+
+  -o <file>                   Set output file name
+  -l LIBNAME                  Search for library LIBNAME
+  -L DIRECTORY, --library-path DIRECTORY
+                              Add DIRECTORY to library search path
+
+  -r, --relocatable           Generate relocatable output
+
+  -O<opt-level>               Optimize output file
+  -M, --print-map             Print map file on standard output
+  --whole-archive             Include all objects from following archives
+  --no-whole-archive          Turn off --whole-archive
+  -s, --strip-all             Strip all symbols
+  -S, --strip-debug           Strip debugging symbols
+  --undefined SYMBOL          Start with undefined reference to SYMBOL
+
+  -help | -h                  Output this help.
+"""

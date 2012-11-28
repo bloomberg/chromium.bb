@@ -972,6 +972,8 @@ def GCCTypeToFileType(gcctype):
     Log.Fatal('language "%s" not recognized' % gcctype)
   return FILE_TYPE_MAP[gcctype]
 
+def HelpNotAvailable():
+  return 'Help text not available'
 
 def DriverMain(module, argv):
   # TODO(robertm): this is ugly - try to get rid of this
@@ -1004,7 +1006,7 @@ def DriverMain(module, argv):
       '--help-full' in argv):
     help_func = getattr(module, 'get_help', None)
     if not help_func:
-      Log.Fatal('Help text not available')
+      Log.Fatal(HelpNotAvailable())
     helpstr = help_func(argv)
     print helpstr
     return 0

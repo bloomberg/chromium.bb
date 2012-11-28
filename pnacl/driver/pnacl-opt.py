@@ -9,9 +9,10 @@
 # updates the copy in the toolchain/ tree.
 #
 
-import driver_tools
 from driver_env import env
 from driver_log import Log
+import driver_tools
+import subprocess
 
 EXTRA_ENV = {
   'DO_WRAP': '1',
@@ -43,7 +44,12 @@ def main(argv):
   return 0
 
 def get_help(unused_argv):
-  RunOpt(['--help'])
-  return ""
-
-
+  # Set errexit=False -- Do not exit early to allow testing.
+  # For some reason most the llvm tools return non-zero with --help,
+  # while all of the gnu tools return 0 with --help.
+  # On windows, the exit code is also inconsistent =(
+  code, stdout, stderr = driver_tools.Run('${LLVM_OPT} -help',
+                                          redirect_stdout=subprocess.PIPE,
+                                          redirect_stderr=subprocess.STDOUT,
+                                          errexit=False)
+  return stdout

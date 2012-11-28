@@ -35,13 +35,20 @@ EXTRA_ENV = {
 StripPatterns = [
     ( ('-o','(.*)'),     "env.set('OUTPUT', pathtools.normalize($0))"),
     ( ('-o','(.*)'),     "env.set('OUTPUT', pathtools.normalize($0))"),
-    ( '--strip-all',     "env.set('MODE', 'all')"),
-    ( '-s',              "env.set('MODE', 'all')"),
 
     ( '--do-not-wrap',   "env.set('DO_WRAP', '0')"),
 
+    ( '--strip-all',     "env.set('MODE', 'all')"),
+    ( '-s',              "env.set('MODE', 'all')"),
+
     ( '--strip-debug',   "env.set('MODE', 'debug')"),
     ( '-S',              "env.set('MODE', 'debug')"),
+    ( '-g',              "env.set('MODE', 'debug')"),
+    ( '-d',              "env.set('MODE', 'debug')"),
+
+    ( '(-p)',            "env.append('STRIP_FLAGS', $0)"),
+    ( '(--info)',        "env.append('STRIP_FLAGS', $0)"),
+
     ( '(-.*)',           driver_tools.UnrecognizedOption),
 
     ( '(.*)',            "env.append('INPUTS', pathtools.normalize($0))"),
@@ -55,6 +62,10 @@ def main(argv):
 
   if len(inputs) > 1 and output != '':
     Log.Fatal('Cannot have -o with multiple inputs')
+
+  if '--info' in env.get('STRIP_FLAGS'):
+    code, _, _ = driver_tools.Run('${STRIP} ${STRIP_FLAGS}')
+    return code
 
   for f in inputs:
     if output != '':
@@ -70,3 +81,21 @@ def main(argv):
     else:
       Log.Fatal('%s: File is neither ELF nor bitcode', pathtools.touser(f))
   return 0
+
+
+def get_help(unused_argv):
+  script = env.getone('SCRIPT_NAME')
+  return """Usage: %s <option(s)> in-file(s)
+  Removes symbols and sections from bitcode or native code.
+
+  The options are:
+  -p --preserve-dates              Copy modified/access timestamps to the output
+                                   (only native code for now)
+  -s --strip-all                   Remove all symbol and relocation information
+  -g -S -d --strip-debug           Remove all debugging symbols & sections
+  -h --help                        Display this output
+     --info                        List object formats & architectures supported
+  -o <file>                        Place stripped output into <file>
+
+%s: supported targets: bitcode, native code (see --info).
+""" % (script, script)

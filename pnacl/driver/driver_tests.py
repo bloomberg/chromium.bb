@@ -10,6 +10,7 @@ import unittest
 
 MODULES = [
     'expand_response_file_test',
+    'help_message_test',
 ]
 
 suite = unittest.TestLoader().loadTestsFromNames(MODULES)

@@ -72,3 +72,15 @@ def main(argv):
     env.pop()
   # only reached in case of no errors
   return 0
+
+def get_help(unused_argv):
+  return """Usage: pnacl-dis [options] <input binary file> -o <output.txt>
+
+Disassembler for PNaCl.  Converts either bitcode to text or
+native code to assembly.  For native code, this just a wrapper around objdump
+so this accepts the usual objdump flags.
+
+OPTIONS:
+  -o <file>        Output to file
+  -help | -h       Output this help.
+"""

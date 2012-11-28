@@ -650,7 +650,10 @@ def get_help(argv):
   if '--help-full' in argv:
     # To get ${CC}, etc.
     env.update(EXTRA_ENV)
-    stdout, _ = Run('"${CC}" --help')
+    code, stdout, stderr = Run('"${CC}" -help',
+                              redirect_stdout=subprocess.PIPE,
+                              redirect_stderr=subprocess.STDOUT,
+                              errexit=False)
     return stdout
   else:
     return """
