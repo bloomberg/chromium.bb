@@ -11,6 +11,7 @@
 
 namespace content {
 
+class MockRenderWidgetHost;
 class RenderWidgetHostImpl;
 
 // Controls the suppression of taps (rapid mousedown/mouseup sequences)
@@ -41,6 +42,8 @@ class TapSuppressionController {
   void GestureFlingCancel(double cancel_time);
 
  private:
+  friend class MockRenderWidgetHost;
+
    enum State {
      NOTHING,
      GFC_IN_PROGRESS,

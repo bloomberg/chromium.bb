@@ -132,7 +132,7 @@ void TapSuppressionController::GestureFlingCancelAck(bool processed) {
         TRACE_EVENT0("browser",
                      "TapSuppressionController::GestureFlingCancelAck");
         mouse_down_timer_.Stop();
-        render_widget_host_->ForwardMouseEvent(stashed_mouse_down_);
+        render_widget_host_->ForwardMouseEventImmediately(stashed_mouse_down_);
         state_ = NOTHING;
       } // Else waiting for the timer to release the mouse event.
       break;
@@ -164,7 +164,7 @@ void TapSuppressionController::MouseDownTimerExpired() {
     case MD_STASHED:
       TRACE_EVENT0("browser",
                    "TapSuppressionController::MouseDownTimerExpired");
-      render_widget_host_->ForwardMouseEvent(stashed_mouse_down_);
+      render_widget_host_->ForwardMouseEventImmediately(stashed_mouse_down_);
       state_ = NOTHING;
       break;
   }
