@@ -41,15 +41,11 @@ void PointerHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
       IDS_OPTIONS_SETTINGS_TAP_TO_CLICK_ENABLED_DESCRIPTION },
     { "primaryMouseRight",
       IDS_OPTIONS_SETTINGS_PRIMARY_MOUSE_RIGHT_DESCRIPTION },
-    { "pointerOverlaySectionTitleTouchpadScrollingDirection",
-      IDS_OPTIONS_SETTINGS_SCROLL_DIRECTION_DESCRIPTION },
-    { "scrollTraditional",
-      IDS_OPTIONS_SETTINGS_SCROLL_TRADITIONAL_DESCRIPTION },
   };
 
-  localized_strings->SetString("scrollNatural",
+  localized_strings->SetString("naturalScroll",
       l10n_util::GetStringFUTF16(
-          IDS_OPTIONS_SETTINGS_SCROLL_NATURAL_DESCRIPTION,
+          IDS_OPTIONS_SETTINGS_NATURAL_SCROLL_DESCRIPTION,
           ASCIIToUTF16(chrome::kNaturalScrollHelpURL)));
 
   RegisterStrings(localized_strings, resources, arraysize(resources));

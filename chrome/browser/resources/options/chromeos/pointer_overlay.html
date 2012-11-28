@@ -11,20 +11,11 @@
           <span i18n-content="enableTapToClick"></span>
         </label>
       </div>
-      <h3 i18n-content="pointerOverlaySectionTitleTouchpadScrollingDirection">
-      </h3>
-      <div class="radio">
+      <div class="checkbox">
         <label>
-          <input type="radio" metric="Options_TouchpadNaturalScroll" 
-              value="false" pref="settings.touchpad.natural_scroll" dialog-pref>
-          <span i18n-content="scrollTraditional"></span>
-        </label>
-      </div>
-      <div class="radio">
-        <label>
-          <input type="radio" metric="Options_TouchpadNaturalScroll" 
-              value="true" pref="settings.touchpad.natural_scroll" dialog-pref>
-          <span i18n-values=".innerHTML:scrollNatural"></span>
+          <input type="checkbox" metric="Options_TouchpadNaturalScroll"
+              pref="settings.touchpad.natural_scroll" dialog-pref>
+          <span i18n-values=".innerHTML:naturalScroll"></span>
         </label>
       </div>
     </section>
