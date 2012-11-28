@@ -188,7 +188,7 @@ class DriveCache {
   // |callback| must not be null.
   void MarkDirty(const std::string& resource_id,
                  const std::string& md5,
-                 const GetFileFromCacheCallback& callback);
+                 const FileOperationCallback& callback);
 
   // Modifies cache state, i.e. creates symlink in outgoing
   // dir to reference dirty file in persistent dir.
@@ -322,9 +322,8 @@ class DriveCache {
       bool to_mount);
 
   // Used to implement MarkDirty.
-  scoped_ptr<GetFileResult> MarkDirtyOnBlockingPool(
-      const std::string& resource_id,
-      const std::string& md5);
+  DriveFileError MarkDirtyOnBlockingPool(const std::string& resource_id,
+                                         const std::string& md5);
 
   // Used to implement CommitDirty.
   DriveFileError CommitDirtyOnBlockingPool(const std::string& resource_id,

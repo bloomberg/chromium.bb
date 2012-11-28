@@ -173,7 +173,7 @@ void DeleteFilesSelectively(const FilePath& path_to_delete_pattern,
 }
 
 // Runs callback with pointers dereferenced.
-// Used to implement GetFile, SetMountedState, MarkDirty.
+// Used to implement GetFile, SetMountedState.
 void RunGetFileFromCacheCallback(
     const GetFileFromCacheCallback& callback,
     scoped_ptr<std::pair<DriveFileError, FilePath> > result) {
@@ -384,7 +384,7 @@ void DriveCache::SetMountedState(const FilePath& file_path,
 
 void DriveCache::MarkDirty(const std::string& resource_id,
                            const std::string& md5,
-                           const GetFileFromCacheCallback& callback) {
+                           const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -393,7 +393,7 @@ void DriveCache::MarkDirty(const std::string& resource_id,
       FROM_HERE,
       base::Bind(&DriveCache::MarkDirtyOnBlockingPool,
                  base::Unretained(this), resource_id, md5),
-      base::Bind(&RunGetFileFromCacheCallback, callback));
+      callback);
 }
 
 void DriveCache::CommitDirty(const std::string& resource_id,
@@ -866,12 +866,10 @@ scoped_ptr<DriveCache::GetFileResult> DriveCache::SetMountedStateOnBlockingPool(
   return result.Pass();
 }
 
-scoped_ptr<DriveCache::GetFileResult> DriveCache::MarkDirtyOnBlockingPool(
+DriveFileError DriveCache::MarkDirtyOnBlockingPool(
     const std::string& resource_id,
     const std::string& md5) {
   AssertOnSequencedWorkerPool();
-
-  scoped_ptr<GetFileResult> result(new GetFileResult);
 
   // If file has already been marked dirty in previous instance of chrome, we
   // would have lost the md5 info during cache initialization, because the file
@@ -886,8 +884,7 @@ scoped_ptr<DriveCache::GetFileResult> DriveCache::MarkDirtyOnBlockingPool(
     LOG(WARNING) << "Can't mark dirty a file that wasn't cached: res_id="
                  << resource_id
                  << ", md5=" << md5;
-    result->first = DRIVE_FILE_ERROR_NOT_FOUND;
-    return result.Pass();
+    return DRIVE_FILE_ERROR_NOT_FOUND;
   }
 
   // If a file is already dirty (i.e. MarkDirtyInCache was called before),
@@ -907,13 +904,7 @@ scoped_ptr<DriveCache::GetFileResult> DriveCache::MarkDirtyOnBlockingPool(
                                              CACHED_FILE_FROM_SERVER);
     DeleteSymlink(symlink_path);
 
-    // Determine current path of dirty file.
-    result->first = DRIVE_FILE_OK;
-    result->second = GetCacheFilePath(resource_id,
-                                      md5,
-                                      CACHE_TYPE_PERSISTENT,
-                                      CACHED_FILE_LOCALLY_MODIFIED);
-    return result.Pass();
+    return DRIVE_FILE_OK;
   }
 
   // Move file to persistent dir with new .local extension.
@@ -948,9 +939,7 @@ scoped_ptr<DriveCache::GetFileResult> DriveCache::MarkDirtyOnBlockingPool(
     cache_entry.set_is_persistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
     metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
   }
-  result->first = success ? DRIVE_FILE_OK : DRIVE_FILE_ERROR_FAILED;
-  result->second = cache_file_path;
-  return result.Pass();
+  return success ? DRIVE_FILE_OK : DRIVE_FILE_ERROR_FAILED;
 }
 
 DriveFileError DriveCache::CommitDirtyOnBlockingPool(

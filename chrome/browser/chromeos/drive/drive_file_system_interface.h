@@ -146,6 +146,7 @@ class DriveFileSystemInterface {
   // Otherwise, Drive file system does not pick up the file for uploading.
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  // |callback| must not be null.
   virtual void OpenFile(const FilePath& file_path,
                         const OpenFileCallback& callback) = 0;
 

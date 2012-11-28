@@ -324,22 +324,16 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // |file_info.md5|.
   //
   // Can be called from UI thread. |callback| is run on the calling thread.
-  void OnGetFileCompleteForOpenFile(
-      const OpenFileCallback& callback,
-      const GetFileCompleteForOpenParams& file_info,
-      DriveFileError error,
-      const FilePath& file_path,
-      const std::string& mime_type,
-      DriveFileType file_type);
+  void OnGetFileCompleteForOpenFile(const GetFileCompleteForOpenParams& params,
+                                    DriveFileError error,
+                                    const FilePath& file_path,
+                                    const std::string& mime_type,
+                                    DriveFileType file_type);
 
-  // Invoked upon completion of MarkDirtyInCache initiated by OpenFile. Invokes
-  // |callback| with |cache_file_path|, which is the path of the cache file
-  // ready for modification.
-  //
-  // Must be called on UI thread.
-  void OnMarkDirtyInCacheCompleteForOpenFile(const OpenFileCallback& callback,
-                                             DriveFileError error,
-                                             const FilePath& cache_file_path);
+  // Invoked upon completion of MarkDirtyInCache initiated by OpenFile.
+  void OnMarkDirtyInCacheCompleteForOpenFile(
+      const GetFileCompleteForOpenParams& params,
+      DriveFileError error);
 
   // Callback for handling account metadata fetch.
   void OnGetAvailableSpace(const GetAvailableSpaceCallback& callback,

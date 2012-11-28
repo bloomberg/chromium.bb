@@ -216,16 +216,20 @@ DriveFileSystem::CreateDirectoryParams::~CreateDirectoryParams() {
 
 // DriveFileSystem::GetFileCompleteForOpenParams struct implementation.
 struct DriveFileSystem::GetFileCompleteForOpenParams {
-  GetFileCompleteForOpenParams(const std::string& resource_id,
+  GetFileCompleteForOpenParams(const OpenFileCallback& callback,
+                               const std::string& resource_id,
                                const std::string& md5);
+  OpenFileCallback callback;
   std::string resource_id;
   std::string md5;
 };
 
 DriveFileSystem::GetFileCompleteForOpenParams::GetFileCompleteForOpenParams(
+    const OpenFileCallback& callback,
     const std::string& resource_id,
     const std::string& md5)
-    : resource_id(resource_id),
+    : callback(callback),
+      resource_id(resource_id),
       md5(md5) {
 }
 
@@ -1917,6 +1921,8 @@ void DriveFileSystem::OpenFile(const FilePath& file_path,
                                const OpenFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!callback.is_null());
+
   google_apis::RunTaskOnUIThread(
       base::Bind(&DriveFileSystem::OpenFileOnUIThread,
                  ui_weak_ptr_,
@@ -1927,6 +1933,7 @@ void DriveFileSystem::OpenFile(const FilePath& file_path,
 void DriveFileSystem::OpenFileOnUIThread(const FilePath& file_path,
                                          const OpenFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   // If the file is already opened, it cannot be opened again before closed.
   // This is for avoiding simultaneous modification to the file, and moreover
@@ -1958,6 +1965,7 @@ void DriveFileSystem::OnGetEntryInfoCompleteForOpenFile(
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
   DCHECK(entry_proto.get() || error != DRIVE_FILE_OK);
 
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
@@ -1972,8 +1980,7 @@ void DriveFileSystem::OnGetEntryInfoCompleteForOpenFile(
   }
 
   if (error != DRIVE_FILE_OK) {
-    if (!callback.is_null())
-      callback.Run(error, FilePath());
+    callback.Run(error, FilePath());
     return;
   }
 
@@ -1984,8 +1991,8 @@ void DriveFileSystem::OnGetEntryInfoCompleteForOpenFile(
       file_path,
       base::Bind(&DriveFileSystem::OnGetFileCompleteForOpenFile,
                  ui_weak_ptr_,
-                 callback,
                  GetFileCompleteForOpenParams(
+                     callback,
                      entry_proto_ptr->resource_id(),
                      entry_proto_ptr->file_specific_info().file_md5())),
       google_apis::GetContentCallback(),
@@ -1993,17 +2000,16 @@ void DriveFileSystem::OnGetEntryInfoCompleteForOpenFile(
 }
 
 void DriveFileSystem::OnGetFileCompleteForOpenFile(
-    const OpenFileCallback& callback,
-    const GetFileCompleteForOpenParams& entry_proto,
+    const GetFileCompleteForOpenParams& params,
     DriveFileError error,
     const FilePath& file_path,
     const std::string& mime_type,
     DriveFileType file_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!params.callback.is_null());
 
   if (error != DRIVE_FILE_OK) {
-    if (!callback.is_null())
-      callback.Run(error, FilePath());
+    params.callback.Run(error, FilePath());
     return;
   }
 
@@ -2011,21 +2017,25 @@ void DriveFileSystem::OnGetFileCompleteForOpenFile(
   DCHECK_EQ(REGULAR_FILE, file_type);
 
   cache_->MarkDirty(
-      entry_proto.resource_id,
-      entry_proto.md5,
+      params.resource_id,
+      params.md5,
       base::Bind(&DriveFileSystem::OnMarkDirtyInCacheCompleteForOpenFile,
                  ui_weak_ptr_,
-                 callback));
+                 params));
 }
 
 void DriveFileSystem::OnMarkDirtyInCacheCompleteForOpenFile(
-    const OpenFileCallback& callback,
-    DriveFileError error,
-    const FilePath& cache_file_path) {
+    const GetFileCompleteForOpenParams& params,
+    DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!params.callback.is_null());
 
-  if (!callback.is_null())
-    callback.Run(error, cache_file_path);
+  if (error != DRIVE_FILE_OK) {
+    params.callback.Run(error, FilePath());
+    return;
+  }
+
+  cache_->GetFile(params.resource_id, params.md5, params.callback);
 }
 
 void DriveFileSystem::OnOpenFileFinished(const FilePath& file_path,
@@ -2033,6 +2043,7 @@ void DriveFileSystem::OnOpenFileFinished(const FilePath& file_path,
                                          DriveFileError result,
                                          const FilePath& cache_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   // All the invocation of |callback| from operations initiated from OpenFile
   // must go through here. Removes the |file_path| from the remembered set when
@@ -2040,8 +2051,7 @@ void DriveFileSystem::OnOpenFileFinished(const FilePath& file_path,
   if (result != DRIVE_FILE_OK)
     open_files_.erase(file_path);
 
-  if (!callback.is_null())
-    callback.Run(result, cache_file_path);
+  callback.Run(result, cache_file_path);
 }
 
 void DriveFileSystem::CloseFile(const FilePath& file_path,

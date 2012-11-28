@@ -180,12 +180,11 @@ class DriveCacheTest : public testing::Test {
       // Mark dirty.
       if (resource.is_dirty) {
         DriveFileError error = DRIVE_FILE_OK;
-        FilePath cache_file_path;
         cache_->MarkDirty(
             resource.resource_id,
             resource.md5,
-            base::Bind(&test_util::CopyResultsFromGetFileFromCacheCallback,
-                       &error, &cache_file_path));
+            base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
+                       &error));
         google_apis::test_util::RunBlockingPoolTask();
         EXPECT_EQ(DRIVE_FILE_OK, error);
 
@@ -391,36 +390,39 @@ class DriveCacheTest : public testing::Test {
     VerifyCacheFileState(error, resource_id, md5);
   }
 
-  void TestMarkDirty(
-      const std::string& resource_id,
-      const std::string& md5,
-      DriveFileError expected_error,
-      int expected_cache_state,
-      DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
+  void TestMarkDirty(const std::string& resource_id,
+                     const std::string& md5,
+                     DriveFileError expected_error,
+                     int expected_cache_state,
+                     DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
     expect_outgoing_symlink_ = false;
 
     DriveFileError error = DRIVE_FILE_OK;
-    FilePath cache_file_path;
     cache_->MarkDirty(
         resource_id, md5,
-        base::Bind(&test_util::CopyResultsFromGetFileFromCacheCallback,
-                   &error, &cache_file_path));
+        base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
     google_apis::test_util::RunBlockingPoolTask();
 
     VerifyCacheFileState(error, resource_id, md5);
 
-    // Verify filename of |cache_file_path|.
+    // Verify filename.
     if (error == DRIVE_FILE_OK) {
+      FilePath cache_file_path;
+      cache_->GetFile(
+          resource_id, md5,
+          base::Bind(&test_util::CopyResultsFromGetFileFromCacheCallback,
+                     &error, &cache_file_path));
+      google_apis::test_util::RunBlockingPoolTask();
+
+      EXPECT_EQ(DRIVE_FILE_OK, error);
       FilePath base_name = cache_file_path.BaseName();
       EXPECT_EQ(util::EscapeCacheFileName(resource_id) +
                 FilePath::kExtensionSeparator +
                 "local",
                 base_name.value());
-    } else {
-      EXPECT_TRUE(cache_file_path.empty());
     }
   }
 

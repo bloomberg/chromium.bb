@@ -504,31 +504,11 @@ class DriveFileSystemTest : public testing::Test {
     expect_outgoing_symlink_ = false;
 
     DriveFileError error = DRIVE_FILE_OK;
-    FilePath cache_file_path;
     cache_->MarkDirty(
         resource_id, md5,
-        base::Bind(&test_util::CopyResultsFromGetFileFromCacheCallback,
-                   &error, &cache_file_path));
+        base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
     google_apis::test_util::RunBlockingPoolTask();
-    VerifyMarkDirty(resource_id, md5, error, cache_file_path);
-  }
-
-  void VerifyMarkDirty(const std::string& resource_id,
-                       const std::string& md5,
-                       DriveFileError error,
-                       const FilePath& cache_file_path) {
     VerifyCacheFileState(error, resource_id, md5);
-
-    // Verify filename of |cache_file_path|.
-    if (error == DRIVE_FILE_OK) {
-      FilePath base_name = cache_file_path.BaseName();
-      EXPECT_EQ(util::EscapeCacheFileName(resource_id) +
-                FilePath::kExtensionSeparator +
-                "local",
-                base_name.value());
-    } else {
-      EXPECT_TRUE(cache_file_path.empty());
-    }
   }
 
   void TestCommitDirty(
@@ -563,7 +543,7 @@ class DriveFileSystemTest : public testing::Test {
                              test_util::TEST_CACHE_STATE_PERSISTENT);
     expected_sub_dir_type_ = DriveCache::CACHE_TYPE_PERSISTENT;
     expect_outgoing_symlink_ = false;
-    VerifyMarkDirty(resource_id, md5, error, cache_file_path);
+    VerifyCacheFileState(error, resource_id, md5);
   }
 
   // Verify the file identified by |resource_id| and |md5| is in the expected

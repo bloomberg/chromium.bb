@@ -235,8 +235,7 @@ class DriveSyncClientTest : public testing::Test {
     EXPECT_EQ(DRIVE_FILE_OK, error);
     cache_->MarkDirty(
         resource_id_dirty, md5_dirty,
-        base::Bind(&test_util::CopyResultsFromGetFileFromCacheCallback,
-                   &error, &cache_file_path));
+        base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
     google_apis::test_util::RunBlockingPoolTask();
     EXPECT_EQ(DRIVE_FILE_OK, error);
     cache_->CommitDirty(
