@@ -15,8 +15,8 @@ import command
 import toolchain_main
 
 GIT_REVISIONS = {
-    'binutils': 'cfe19a99b9ea8634672badf37c9f790a4e786b41',
-    'gcc': 'b6c3ab73d6b0da02dd1958270d0591d0bbd35661',
+    'binutils': 'a4e3eb107045eee497c9f3d81de896a8f4c0ea9f',
+    'gcc': '75a91184f2572f68512f7478c10c11bdc6d17c39',
     'newlib': '6a104f495cf91387ecec5f5f87c6e12d345b204c',
     }
 
@@ -210,14 +210,15 @@ def HostTools(target):
                   CONFIGURE_HOST_TOOL +
                   ConfigureTargetArgs(target) + [
                       '--enable-deterministic-archives',
-                      '--enable-gold',
                       ] + ([] if sys.platform == 'win32' else [
+                          # TODO(mcgrathr): The gold test suite fails in
+                          # the Windows build.  Build it again on Windows
+                          # when that is sorted out.
+                          '--enable-gold',
                           '--enable-plugins',
                           ])),
               command.Command(MAKE_PARALLEL_CMD),
-              # TODO(mcgrathr): Fix for failures under --without-zlib still
-              # pending upstream.
-              #command.Command(MAKE_CHECK_CMD),
+              command.Command(MAKE_CHECK_CMD),
               command.Command(MAKE_DESTDIR_CMD + ['install-strip']),
               REMOVE_INFO_DIR,
               ] +
