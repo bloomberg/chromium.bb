@@ -292,7 +292,8 @@ void BrowserViewLayout::Layout(views::View* host) {
         gfx::Rect(), true);
   }
 
-  if (active_bookmark_bar_ && browser()->search_model()->mode().is_ntp()) {
+  if (active_bookmark_bar_ && active_bookmark_bar_->IsDetached() &&
+      browser()->search_model()->mode().is_ntp()) {
     LayoutBookmarkBarAtBottom();
   } else {
 #if !defined(USE_AURA)
@@ -398,7 +399,7 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top) {
     //   |LayoutBookmarkBarAtBottom|.
     if (active_bookmark_bar_->IsDetached()) {
       int infobar_top = LayoutInfoBar(top);
-      return browser_view_->browser()->search_model()->mode().is_ntp() ?
+      return browser()->search_model()->mode().is_ntp() ?
           infobar_top : LayoutBookmarkBarAtTop(infobar_top);
     }
     // Otherwise, Bookmark bar first, Info bar second.
@@ -510,9 +511,9 @@ void BrowserViewLayout::LayoutTabContents(int top, int bottom) {
 int BrowserViewLayout::GetTopMarginForActiveContent() {
   if (!active_bookmark_bar_ || !browser_view_->IsBookmarkBarVisible() ||
       !active_bookmark_bar_->IsDetached() ||
-      // For |NTP| mode, bookmark bar does NOT overlap with top of content view;
-      // instead, it "overlaps" with bottom of content view, which is handled
-      // in |LayoutBookmarkBarAtBottom|.
+      // For |NTP| mode, detached bookmark bar does NOT overlap with top of
+      // content view; instead, it "overlaps" with bottom of content view, which
+      // is handled in |LayoutBookmarkBarAtBottom|.
       browser()->search_model()->mode().is_ntp()) {
     return 0;
   }

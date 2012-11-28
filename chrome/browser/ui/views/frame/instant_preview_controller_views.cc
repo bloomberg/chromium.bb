@@ -41,4 +41,6 @@ void InstantPreviewControllerViews::PreviewStateChanged(
     contents_->SetPreview(NULL, NULL, 100, INSTANT_SIZE_PERCENT);
     preview_.reset();
   }
+
+  browser_->MaybeUpdateBookmarkBarStateForInstantPreview(model.mode());
 }

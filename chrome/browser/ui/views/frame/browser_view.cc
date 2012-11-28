@@ -351,18 +351,19 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
                                         views::View* view) const {
   ui::ThemeProvider* tp = host_view_->GetThemeProvider();
 
-  // If search mode is |NTP|, bookmark bar is detached and floating on top of
-  // the content view (in z-order) and below the "Most Visited" thumbnails (in
-  // the y-direction).  It's visually nicer without the bookmark background, so
-  // utilize the existing background of content view, giving the impression that
-  // each bookmark button is part of the content view.
+  // If search mode is |NTP| and bookmark bar is detached, it's floating on top
+  // of the content view (in z-order) and below the "Most Visited" thumbnails
+  // (in the y-direction).  It's visually nicer without the bookmark background,
+  // so utilize the existing background of content view, giving the impression
+  // that each bookmark button is part of the content view.
   // For non-Aura builds, it's hard to layer with transparency, so the bottom of
   // the bookmark bar is drawn like the content view would be drawn underneath.
-  if (browser_view_->browser()->search_model()->mode().is_ntp()) {
+  if (browser_view_->browser()->search_model()->mode().is_ntp() &&
+      browser_->bookmark_bar_state() == BookmarkBar::DETACHED) {
 #if !defined(USE_AURA)
     PaintBottomBookmarkBarBackground(
         canvas, host_view_, tp, browser_view_->GetTabContentsContainerView()->
-            bounds().height() );
+            bounds().height());
 #endif
     BookmarkModel* bookmark_model =
         BookmarkModelFactory::GetForProfile(browser_->profile());
@@ -836,8 +837,18 @@ void BrowserView::BookmarkBarStateChanged(
         browser_->bookmark_bar_state(), change_type,
         browser_->search_model()->mode());
   }
+
   if (MaybeShowBookmarkBar(GetActiveWebContents()))
     Layout();
+
+  // If bookmark bar is detached in |NTP| mode, |BookmarkExtensionBackground|
+  // paints a separator above it; however, this separator doesn't separate the
+  // toolbar and bookmark bar because bookmark bar is at bottom of page.
+  // Force a repaint of toolbar to paint the separator below it.
+  if (browser_->search_model()->mode().is_ntp() &&
+      browser_->bookmark_bar_state() == BookmarkBar::DETACHED) {
+    toolbar_->SchedulePaint();
+  }
 }
 
 void BrowserView::UpdateDevTools() {

@@ -1297,6 +1297,24 @@ void Browser::ShowFirstRunBubble() {
   window()->GetLocationBar()->ShowFirstRunBubble();
 }
 
+void Browser::MaybeUpdateBookmarkBarStateForInstantPreview(
+    const chrome::search::Mode& mode) {
+  // This is invoked by a platform-specific implementation of
+  // |InstantPreviewController| to update bookmark bar state according to
+  // instant preview state.
+  // ModeChanged() updates bookmark bar state for all mode transitions except
+  // when transitioning from |NTP| to |SEARCH_SUGGESTIONS|, because that needs
+  // to be done when the suggestions are ready.
+  // If |mode| is |SEARCH_SUGGESTIONS| and bookmark bar is still showing
+  // attached, the previous mode is definitely NTP; it won't be |DEFAULT|
+  // because ModeChanged() would have handled that transition by hiding the
+  // bookmark bar.
+  if (mode.is_search_suggestions() &&
+      bookmark_bar_state_ == BookmarkBar::SHOW) {
+    UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_INSTANT_PREVIEW_STATE);
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, content::WebContentsDelegate implementation:
 
@@ -1981,6 +1999,15 @@ void Browser::Observe(int type,
 
 void Browser::ModeChanged(const chrome::search::Mode& old_mode,
                           const chrome::search::Mode& new_mode) {
+  // If mode is transitioning from |NTP| to |SEARCH_SUGGESTIONS|, don't update
+  // bookmark bar state now; wait till the instant preview is ready to show
+  // suggestions before starting the animation to hide the bookmark bar (in
+  // MaybeUpdateBookmarkBarStateForInstantPreview()).
+  // For other mode transitions, update bookmark bar state accordingly.
+  if (old_mode.is_ntp() && new_mode.is_search_suggestions() &&
+      bookmark_bar_state_ == BookmarkBar::SHOW) {
+    return;
+  }
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
 }
 
@@ -2267,9 +2294,7 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
   if (browser_defaults::bookmarks_enabled &&
       profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) &&
       (!window_ || !window_->IsFullscreen())) {
-    // Always show detached mode if search mode is |NTP|.
-    state = search_model_->mode().is_ntp() ?
-        BookmarkBar::DETACHED : BookmarkBar::SHOW;
+    state = BookmarkBar::SHOW;
   } else {
     WebContents* web_contents = tab_strip_model_->GetActiveWebContents();
     BookmarkTabHelper* bookmark_tab_helper =
@@ -2303,8 +2328,12 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
     return;
   }
 
+  // Don't animate if mode is |NTP| because the bookmark is attached at top when
+  // pref is on and detached at bottom when off.
   BookmarkBar::AnimateChangeType animate_type =
-      (reason == BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE) ?
+      ((reason == BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE &&
+        !search_model_->mode().is_ntp()) ||
+       reason == BOOKMARK_BAR_STATE_CHANGE_INSTANT_PREVIEW_STATE) ?
       BookmarkBar::ANIMATE_STATE_CHANGE :
       BookmarkBar::DONT_ANIMATE_STATE_CHANGE;
   window_->BookmarkBarStateChanged(animate_type);

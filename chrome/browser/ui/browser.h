@@ -502,6 +502,12 @@ class Browser : public TabStripModelObserver,
   // Show the first run search engine bubble on the location bar.
   void ShowFirstRunBubble();
 
+  // If necessary, update the bookmark bar state according to the instant
+  // preview state: when instant preview shows suggestions and bookmark bar is
+  // still showing attached, start the animation to hide it.
+  void MaybeUpdateBookmarkBarStateForInstantPreview(
+      const chrome::search::Mode& mode);
+
   FullscreenController* fullscreen_controller() {
     return fullscreen_controller_.get();
   }
@@ -560,6 +566,9 @@ class Browser : public TabStripModelObserver,
 
     // Change is the result of window toggling in/out of fullscreen mode.
     BOOKMARK_BAR_STATE_CHANGE_TOGGLE_FULLSCREEN,
+
+    // Change is the result of a state change in the instant preview.
+    BOOKMARK_BAR_STATE_CHANGE_INSTANT_PREVIEW_STATE,
   };
 
   // Overridden from content::WebContentsDelegate:
