@@ -913,6 +913,7 @@
             "type": "object",
             "name": "removeInfo",
             "properties": {
+              "windowId": {"type": "integer", "minimum": 0, "description": "the window whose tab is closed." },
               "isWindowClosing": {"type": "boolean", "description": "True when the tab is being closed because its window is being closed." }
             }
           }

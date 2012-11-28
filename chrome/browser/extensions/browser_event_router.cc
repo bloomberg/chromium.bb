@@ -236,6 +236,8 @@ void BrowserEventRouter::TabClosingAt(TabStripModel* tab_strip_model,
   args->Append(Value::CreateIntegerValue(tab_id));
 
   DictionaryValue* object_args = new DictionaryValue();
+  object_args->SetInteger(tab_keys::kWindowIdKey,
+                          ExtensionTabUtil::GetWindowIdOfTab(contents));
   object_args->SetBoolean(tab_keys::kWindowClosing,
                           tab_strip_model->closing_all());
   args->Append(object_args);
