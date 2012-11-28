@@ -22,15 +22,17 @@ public:
   PicturePile();
   ~PicturePile();
 
-  // Mark a portion of the PicturePile as invalid and needing to be re-recorded
-  // the next time update is called.
-  void Invalidate(gfx::Rect);
-
-  // Resize the PicturePile, invalidating / dropping recorded pictures as necessary.
+  // Resize the PicturePile, invalidating / dropping recorded pictures as
+  // necessary.
   void Resize(gfx::Size);
+  gfx::Size size() const { return size_; }
 
   // Re-record parts of the picture that are invalid.
-  void Update(ContentLayerClient* painter, RenderingStats&);
+  // Invalidations are in layer space.
+  void Update(
+      ContentLayerClient* painter,
+      const Region& invalidation,
+      RenderingStats& stats);
 
   // Update other with a shallow copy of this (main => compositor thread commit)
   void PushPropertiesTo(PicturePile& other);
@@ -44,12 +46,8 @@ public:
   void Raster(SkCanvas* canvas, gfx::Rect rect);
 
 private:
-  void CopyAllButPile(const PicturePile& from, PicturePile& to) const;
-
   std::vector<scoped_refptr<Picture> > pile_;
   gfx::Size size_;
-  Region invalidation_;
-  Region prev_invalidation_;
 
   DISALLOW_COPY_AND_ASSIGN(PicturePile);
 };

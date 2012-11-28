@@ -36,7 +36,10 @@ protected:
 private:
   ContentLayerClient* client_;
   PicturePile pile_;
-  Region invalidation_;
+  // Invalidation to use the next time update is called.
+  Region pending_invalidation_;
+  // Invalidation from the last time update was called.
+  Region pile_invalidation_;
 };
 
 }  // namespace cc

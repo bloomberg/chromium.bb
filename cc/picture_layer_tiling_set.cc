@@ -34,6 +34,9 @@ gfx::Size PictureLayerTilingSet::LayerBounds() const {
 }
 
 void PictureLayerTilingSet::Invalidate(const Region& invalidation) {
+  if (invalidation.IsEmpty())
+    return;
+
   for (size_t i = 0; i < tilings_.size(); ++i)
     tilings_[i]->Invalidate(invalidation);
 }

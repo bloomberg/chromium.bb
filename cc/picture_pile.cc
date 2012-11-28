@@ -16,10 +16,6 @@ PicturePile::PicturePile() {
 PicturePile::~PicturePile() {
 }
 
-void PicturePile::Invalidate(gfx::Rect rect) {
-  invalidation_.Union(rect);
-}
-
 class OutOfBoundsPredicate {
 public:
   OutOfBoundsPredicate(gfx::Size size) : layer_rect_(gfx::Point(), size) { }
@@ -30,23 +26,6 @@ public:
 };
 
 void PicturePile::Resize(gfx::Size size) {
-  if (size.width() > size_.width()) {
-    gfx::Rect invalid(
-        size_.width(),
-        0,
-        size.width() - size_.width(),
-        size.height());
-    Invalidate(invalid);
-  }
-  if (size.height() > size_.height()) {
-    gfx::Rect invalid(
-        0,
-        size_.height(),
-        size.width(),
-        size.height() - size_.height());
-    Invalidate(invalid);
-  }
-
   // Remove pictures that aren't in bounds anymore.
   if (size.width() < size_.width() || size.height() < size_.height()) {
     OutOfBoundsPredicate oob(size);
@@ -56,27 +35,22 @@ void PicturePile::Resize(gfx::Size size) {
   size_ = size;
 }
 
-void PicturePile::Update(ContentLayerClient* painter, RenderingStats& stats) {
-  // WebKit paints (i.e. recording) can cause invalidations, so record previous.
-  invalidation_.Swap(prev_invalidation_);
-  invalidation_.Clear();
-
+void PicturePile::Update(
+    ContentLayerClient* painter,
+    const Region&,
+    RenderingStats& stats) {
   // TODO(enne): Add things to the pile, consolidate if needed, etc...
+  // TODO(enne): Only re-record invalidated areas.
+  // TODO(enne): Also re-record areas that have been newly exposed by resize.
+
+  // Always re-record the entire layer into a single picture, just to get
+  // this class up and running.
   if (pile_.size() == 0)
     pile_.push_back(Picture::Create());
   pile_[0]->Record(painter, gfx::Rect(gfx::Point(), size_), stats);
 }
 
-void PicturePile::CopyAllButPile(
-    const PicturePile& from, PicturePile& to) const {
-  to.size_ = from.size_;
-  to.invalidation_ = from.invalidation_;
-  to.prev_invalidation_ = from.prev_invalidation_;
-}
-
 void PicturePile::PushPropertiesTo(PicturePile& other) {
-  CopyAllButPile(*this, other);
-
   other.pile_.resize(pile_.size());
   for (size_t i = 0; i < pile_.size(); ++i)
     other.pile_[i] = pile_[i];
@@ -85,8 +59,6 @@ void PicturePile::PushPropertiesTo(PicturePile& other) {
 scoped_ptr<PicturePile> PicturePile::CloneForDrawing() const {
   TRACE_EVENT0("cc", "PicturePile::CloneForDrawing");
   scoped_ptr<PicturePile> clone = make_scoped_ptr(new PicturePile);
-  CopyAllButPile(*this, *clone);
-
   clone->pile_.resize(pile_.size());
   for (size_t i = 0; i < pile_.size(); ++i)
     clone->pile_[i] = pile_[i]->Clone();
