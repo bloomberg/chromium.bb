@@ -117,7 +117,6 @@ void WebNotificationTray::ShowMessageCenterBubble() {
 void WebNotificationTray::HideMessageCenterBubble() {
   if (!message_center_bubble())
     return;
-  message_center_bubble_->bubble()->BubbleViewDestroyed();
   message_center_bubble_.reset();
   show_message_center_on_unlock_ = false;
   message_center_->SetMessageCenterVisible(false);
@@ -152,8 +151,6 @@ void WebNotificationTray::ShowPopupBubble() {
 }
 
 void WebNotificationTray::HidePopupBubble() {
-  if (popup_bubble())
-    popup_bubble_->bubble()->BubbleViewDestroyed();
   popup_bubble_.reset();
 }
 
@@ -274,11 +271,6 @@ void WebNotificationTray::MessageCenterChanged(bool new_notification) {
   UpdateTray();
   if (new_notification)
     ShowPopupBubble();
-}
-
-void WebNotificationTray::ItemClicked(const std::string& notification_id) {
-  if (popup_bubble())
-    HidePopupBubble();
 }
 
 void WebNotificationTray::ButtonPressed(views::Button* sender,

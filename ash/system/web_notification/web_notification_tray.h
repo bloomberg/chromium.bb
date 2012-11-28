@@ -92,7 +92,6 @@ class ASH_EXPORT WebNotificationTray
 
   // Overridden from message_center::MessageCenter::Host.
   virtual void MessageCenterChanged(bool new_notification) OVERRIDE;
-  virtual void ItemClicked(const std::string& notification_id) OVERRIDE;
 
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,

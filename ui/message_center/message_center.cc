@@ -128,9 +128,7 @@ void MessageCenter::ShowNotificationSettings(const std::string& id) {
 
 void MessageCenter::OnNotificationClicked(const std::string& id) {
   if (delegate_)
-    delegate_->OnClicked(id, HasPopupNotifications());
-  if (host_)
-    host_->ItemClicked(id);
+    delegate_->OnClicked(id);
 }
 
 NotificationList* MessageCenter::GetNotificationList() {

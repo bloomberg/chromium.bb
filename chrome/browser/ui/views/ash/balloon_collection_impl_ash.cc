@@ -77,14 +77,12 @@ void BalloonCollectionImplAsh::ShowSettings(const std::string& notifcation_id) {
     chrome::ShowContentSettings(browser, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
-void BalloonCollectionImplAsh::OnClicked(const std::string& notifcation_id,
-                                         bool is_popup) {
+void BalloonCollectionImplAsh::OnClicked(const std::string& notifcation_id) {
   Balloon* balloon = base().FindBalloonById(notifcation_id);
   if (!balloon)
     return;
   balloon->OnClick();
-  if (!is_popup)
-    RemoveById(notifcation_id);
+  RemoveById(notifcation_id);
 }
 
 bool BalloonCollectionImplAsh::AddWebUIMessageCallback(
