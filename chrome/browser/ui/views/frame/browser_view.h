@@ -229,11 +229,6 @@ class BrowserView : public BrowserWindow,
   // animations.
   void ToolbarSizeChanged(bool is_animating);
 
-  // For instant extended API, returns the size that the NTP theme background
-  // image should fill up in this view, which is from top of tab to bottom of
-  // content view; returns empty size otherwise.
-  gfx::Size GetNTPBackgroundFillSize() const;
-
 #if defined(USE_ASH)
   // Test support.
   BrowserLauncherItemController* launcher_item_controller() const {
