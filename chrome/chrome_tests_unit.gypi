@@ -185,6 +185,8 @@
         'browser/ui/panels/test_panel_strip_squeeze_observer.h',
         'browser/ui/views/find_bar_host_unittest_util_views.cc',
         'browser/ui/views/test/ui_test_utils_aura.cc',
+        'browser/ui/views/test/ui_test_utils_aura.h',
+        'browser/ui/views/test/ui_test_utils_views.cc',
         'browser/ui/views/test/ui_test_utils_win.cc',
         'common/extensions/extension_builder.cc',
         'common/extensions/extension_builder.h',
@@ -343,11 +345,6 @@
         ['OS=="win"', {
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
-          ],
-        }],
-        ['OS=="win" and use_aura==1', {
-          'sources/': [
-            ['exclude', 'browser/ui/views/test/ui_test_utils_win.cc'],
           ],
         }],
       ],
