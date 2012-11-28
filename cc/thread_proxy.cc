@@ -500,7 +500,7 @@ void ThreadProxy::scheduledActionBeginFrame()
     DCHECK_GT(m_layerTreeHostImpl->memoryAllocationLimitBytes(), 0u);
     beginFrameState->memoryAllocationLimitBytes = m_layerTreeHostImpl->memoryAllocationLimitBytes();
     if (m_layerTreeHost->contentsTextureManager())
-         m_layerTreeHost->contentsTextureManager()->getEvictedBackings(beginFrameState->evictedContentsTexturesBackings);
+        m_layerTreeHost->contentsTextureManager()->getEvictedBackings(beginFrameState->evictedContentsTexturesBackings);
 
     m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadProxy::beginFrame, base::Unretained(this), base::Passed(beginFrameState.Pass())));
 
@@ -516,6 +516,13 @@ void ThreadProxy::beginFrame(scoped_ptr<BeginFrameAndCommitState> beginFrameStat
     DCHECK(isMainThread());
     if (!m_layerTreeHost)
         return;
+
+    // Be sure to never early-out of unlinking evicted textures whenever, so that
+    // the each evicted backing is sent to the main thread exactly once.
+    if (beginFrameState && !beginFrameState->evictedContentsTexturesBackings.empty()) {
+        DCHECK(m_layerTreeHost->contentsTextureManager());
+        m_layerTreeHost->contentsTextureManager()->unlinkEvictedBackings(beginFrameState->evictedContentsTexturesBackings);
+    }
 
     if (m_deferCommits) {
         m_pendingDeferredCommit = beginFrameState.Pass();
@@ -570,9 +577,6 @@ void ThreadProxy::beginFrame(scoped_ptr<BeginFrameAndCommitState> beginFrameStat
         TRACE_EVENT0("cc", "EarlyOut_InitializeFailed");
         return;
     }
-
-    if (beginFrameState)
-        m_layerTreeHost->contentsTextureManager()->unlinkEvictedBackings(beginFrameState->evictedContentsTexturesBackings);
 
     scoped_ptr<ResourceUpdateQueue> queue = make_scoped_ptr(new ResourceUpdateQueue);
     m_layerTreeHost->updateLayers(*(queue.get()), beginFrameState ? beginFrameState->memoryAllocationLimitBytes : 0);

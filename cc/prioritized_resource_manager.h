@@ -159,7 +159,7 @@ private:
                                      ResourceProvider*);
     PrioritizedResource::Backing* createBacking(gfx::Size, GLenum format, ResourceProvider*);
     void evictFirstBackingResource(ResourceProvider*);
-    void deleteUnlinkedEvictedBackings();
+    void deleteAllEvictedBackings();
     void sortBackings();
 
     void assertInvariants();

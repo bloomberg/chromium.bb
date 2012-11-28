@@ -107,8 +107,8 @@ void PrioritizedResource::setPixels(ResourceProvider* resourceProvider,
 void PrioritizedResource::link(Backing* backing)
 {
     DCHECK(backing);
-    DCHECK(!backing->m_owner);
-    DCHECK(!m_backing);
+    CHECK(!backing->m_owner);
+    CHECK(!m_backing);
 
     m_backing = backing;
     m_backing->m_owner = this;
@@ -117,7 +117,7 @@ void PrioritizedResource::link(Backing* backing)
 void PrioritizedResource::unlink()
 {
     DCHECK(m_backing);
-    DCHECK(m_backing->m_owner == this);
+    CHECK(m_backing->m_owner == this);
 
     m_backing->m_owner = 0;
     m_backing = 0;
@@ -137,6 +137,7 @@ PrioritizedResource::Backing::Backing(unsigned id, ResourceProvider* resourcePro
     , m_wasAbovePriorityCutoffAtLastPriorityUpdate(false)
     , m_inDrawingImplTree(false)
     , m_resourceHasBeenDeleted(false)
+    , m_inMainThreadEvictedList(false)
 #ifndef NDEBUG
     , m_resourceProvider(resourceProvider)
 #endif
@@ -147,6 +148,7 @@ PrioritizedResource::Backing::~Backing()
 {
     DCHECK(!m_owner);
     DCHECK(m_resourceHasBeenDeleted);
+    CHECK(!m_inMainThreadEvictedList);
 }
 
 void PrioritizedResource::Backing::deleteResource(ResourceProvider* resourceProvider)

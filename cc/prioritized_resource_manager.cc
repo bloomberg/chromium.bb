@@ -36,7 +36,7 @@ PrioritizedResourceManager::~PrioritizedResourceManager()
     while (m_textures.size() > 0)
         unregisterTexture(*m_textures.begin());
 
-    deleteUnlinkedEvictedBackings();
+    deleteAllEvictedBackings();
     DCHECK(m_evictedBackings.empty());
 
     // Each remaining backing is a leaked opengl texture. There should be none.
@@ -314,7 +314,7 @@ void PrioritizedResourceManager::reduceMemory(ResourceProvider* resourceProvider
     }
 
     // And clear the list of evicted backings
-    deleteUnlinkedEvictedBackings();
+    deleteAllEvictedBackings();
 }
 
 void PrioritizedResourceManager::clearAllMemory(ResourceProvider* resourceProvider)
@@ -348,6 +348,11 @@ void PrioritizedResourceManager::getEvictedBackings(BackingList& evictedBackings
     DCHECK(m_proxy->isImplThread());
     evictedBackings.clear();
     evictedBackings.insert(evictedBackings.begin(), m_evictedBackings.begin(), m_evictedBackings.end());
+    for (BackingList::const_iterator it = evictedBackings.begin(); it != evictedBackings.end(); ++it) {
+        PrioritizedResource::Backing* backing = (*it);
+        CHECK(!backing->m_inMainThreadEvictedList);
+        backing->m_inMainThreadEvictedList = true;
+    }
 }
 
 void PrioritizedResourceManager::unlinkEvictedBackings(const BackingList& evictedBackings)
@@ -355,23 +360,25 @@ void PrioritizedResourceManager::unlinkEvictedBackings(const BackingList& evicte
     DCHECK(m_proxy->isMainThread());
     for (BackingList::const_iterator it = evictedBackings.begin(); it != evictedBackings.end(); ++it) {
         PrioritizedResource::Backing* backing = (*it);
-        if (backing->owner())
+        CHECK(backing->m_inMainThreadEvictedList);
+        backing->m_inMainThreadEvictedList = false;
+        if (backing->owner()) {
+            CHECK(backing->owner()->backing());
+            CHECK(backing->owner()->backing() == backing);
             backing->owner()->unlink();
+        }
     }
 }
 
-void PrioritizedResourceManager::deleteUnlinkedEvictedBackings()
+void PrioritizedResourceManager::deleteAllEvictedBackings()
 {
     DCHECK(m_proxy->isMainThread() || (m_proxy->isImplThread() && m_proxy->isMainThreadBlocked()));
-    BackingList newEvictedBackings;
     for (BackingList::const_iterator it = m_evictedBackings.begin(); it != m_evictedBackings.end(); ++it) {
         PrioritizedResource::Backing* backing = (*it);
-        if (backing->owner())
-            newEvictedBackings.push_back(backing);
-        else
-            delete backing;
+        CHECK(!backing->owner());
+        delete backing;
     }
-    m_evictedBackings.swap(newEvictedBackings);
+    m_evictedBackings.clear();
 }
 
 bool PrioritizedResourceManager::linkedEvictedBackingsExist() const

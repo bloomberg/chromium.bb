@@ -112,6 +112,7 @@ private:
         const Proxy* proxy() const;
 
         friend class PrioritizedResource;
+        friend class PrioritizedResourceManager;
         PrioritizedResource* m_owner;
         int m_priorityAtLastPriorityUpdate;
         bool m_wasAbovePriorityCutoffAtLastPriorityUpdate;
@@ -120,6 +121,12 @@ private:
         bool m_inDrawingImplTree;
 
         bool m_resourceHasBeenDeleted;
+
+        // Set when getEvictedBackings adds this backing to a list, and
+        // un-set unlinkEvictedBackings passes it back in. This must never
+        // be set when already true, and must be false when the backing is
+        // destroyed.
+        bool m_inMainThreadEvictedList;
 #ifndef NDEBUG
         ResourceProvider* m_resourceProvider;
 #endif
