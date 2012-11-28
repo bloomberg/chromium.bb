@@ -23,6 +23,7 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/test/gpu/gpu_test_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_implementation.h"
 
@@ -62,6 +63,10 @@ class GPUCrashTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(GPUCrashTest, Kill) {
+  // crbug.com/162982, flaky on Mac Retina Release.
+  if (GPUTestBotConfig::CurrentConfigMatches("MAC NVIDIA 0x0fd5 RELEASE"))
+    return;
+
   content::DOMMessageQueue message_queue;
 
   content::GpuDataManager::GetInstance()->
@@ -85,6 +90,10 @@ IN_PROC_BROWSER_TEST_F(GPUCrashTest, Kill) {
 }
 
 IN_PROC_BROWSER_TEST_F(GPUCrashTest, ContextLossRaisesInfobar) {
+  // crbug.com/162982, flaky on Mac Retina Release.
+  if (GPUTestBotConfig::CurrentConfigMatches("MAC NVIDIA 0x0fd5 RELEASE"))
+    return;
+
   // Load page and wait for it to load.
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
