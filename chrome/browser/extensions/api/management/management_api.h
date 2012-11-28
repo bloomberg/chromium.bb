@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_EXTENSIONS_API_MANAGEMENT_MANAGEMENT_API_H_
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -155,6 +157,30 @@ class ExtensionManagementEventRouter : public content::NotificationObserver {
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionManagementEventRouter);
+};
+
+class ExtensionManagementAPI : public ProfileKeyedService,
+                               public extensions::EventRouter::Observer {
+ public:
+  explicit ExtensionManagementAPI(Profile* profile);
+  virtual ~ExtensionManagementAPI();
+
+  // ProfileKeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
+
+  ExtensionManagementEventRouter* management_event_router() {
+    return management_event_router_.get();
+  }
+
+  // EventRouter::Observer implementation.
+  virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
+      OVERRIDE;
+
+ private:
+  Profile* profile_;
+
+  // Created lazily upon OnListenerAdded.
+  scoped_ptr<ExtensionManagementEventRouter> management_event_router_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_MANAGEMENT_MANAGEMENT_API_H_

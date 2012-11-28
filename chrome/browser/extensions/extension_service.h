@@ -43,7 +43,6 @@
 class BookmarkExtensionEventRouter;
 class CommandLine;
 class ExtensionErrorUI;
-class ExtensionManagementEventRouter;
 class ExtensionSyncData;
 class ExtensionToolbarModel;
 class HistoryExtensionEventRouter;
@@ -937,8 +936,6 @@ class ExtensionService
   scoped_ptr<BookmarkExtensionEventRouter> bookmark_event_router_;
 
   scoped_ptr<extensions::ExtensionCookiesEventRouter> cookies_event_router_;
-
-  scoped_ptr<ExtensionManagementEventRouter> management_event_router_;
 
   scoped_ptr<extensions::MediaGalleriesPrivateEventRouter>
       media_galleries_private_event_router_;

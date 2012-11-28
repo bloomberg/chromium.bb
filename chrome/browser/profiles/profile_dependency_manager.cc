@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/api/discovery/suggested_links_registry_factory.h"
 #include "chrome/browser/extensions/api/idle/idle_manager_factory.h"
+#include "chrome/browser/extensions/api/management/management_api_factory.h"
 #include "chrome/browser/extensions/api/processes/processes_api_factory.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry_factory.h"
 #include "chrome/browser/extensions/app_restore_service_factory.h"
@@ -225,11 +226,12 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::AppRestoreServiceFactory::GetInstance();
   extensions::BluetoothAPIFactory::GetInstance();
   extensions::CommandServiceFactory::GetInstance();
-  extensions::IdleManagerFactory::GetInstance();
-  extensions::SuggestedLinksRegistryFactory::GetInstance();
   extensions::ExtensionSystemFactory::GetInstance();
+  extensions::IdleManagerFactory::GetInstance();
   extensions::ProcessesAPIFactory::GetInstance();
+  extensions::SuggestedLinksRegistryFactory::GetInstance();
   extensions::TabCaptureRegistryFactory::GetInstance();
+  ExtensionManagementAPIFactory::GetInstance();
 #endif
   FaviconServiceFactory::GetInstance();
   FindBarStateFactory::GetInstance();

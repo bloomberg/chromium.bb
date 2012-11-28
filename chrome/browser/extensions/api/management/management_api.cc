@@ -653,3 +653,28 @@ void ExtensionManagementEventRouter::Observe(
       DispatchEventToRenderers(event_name, args.Pass(), NULL, GURL(),
                                extensions::EventFilteringInfo());
 }
+
+ExtensionManagementAPI::ExtensionManagementAPI(Profile* profile)
+    : profile_(profile) {
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, events::kOnExtensionInstalled);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, events::kOnExtensionUninstalled);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, events::kOnExtensionEnabled);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, events::kOnExtensionDisabled);
+}
+
+ExtensionManagementAPI::~ExtensionManagementAPI() {
+}
+
+void ExtensionManagementAPI::Shutdown() {
+  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+}
+
+void ExtensionManagementAPI::OnListenerAdded(
+    const extensions::EventListenerInfo& details) {
+  management_event_router_.reset(new ExtensionManagementEventRouter(profile_));
+  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+}
