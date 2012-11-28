@@ -123,3 +123,11 @@ const views::Widget* TabModalConfirmDialogViews::GetWidget() const {
 void TabModalConfirmDialogViews::DeleteDelegate() {
   delete this;
 }
+
+ui::ModalType TabModalConfirmDialogViews::GetModalType() const {
+#if defined(USE_ASH)
+  return ui::MODAL_TYPE_CHILD;
+#else
+  return views::WidgetDelegate::GetModalType();
+#endif
+}

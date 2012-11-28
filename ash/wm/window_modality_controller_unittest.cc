@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/capture_tracking_view.h"
+#include "ash/test/child_modal_window.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/event_generator.h"
@@ -206,8 +207,8 @@ TEST_F(WindowModalityControllerTest, Events) {
 
 // Creates windows w1 and non activatiable child w11. Creates transient window
 // w2 and adds it as a transeint child of w1. Ensures that w2 is parented to
-// the parent of w1, and that GetWindowModalTransient(w11) returns w2.
-TEST_F(WindowModalityControllerTest, GetWindowModalTransient) {
+// the parent of w1, and that GetModalTransient(w11) returns w2.
+TEST_F(WindowModalityControllerTest, GetModalTransient) {
   aura::test::TestWindowDelegate d;
   scoped_ptr<aura::Window> w1(
       aura::test::CreateTestWindowWithDelegate(&d, -1, gfx::Rect(), NULL));
@@ -218,7 +219,7 @@ TEST_F(WindowModalityControllerTest, GetWindowModalTransient) {
   w2->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
 
   aura::Window* wt;
-  wt = wm::GetWindowModalTransient(w1.get());
+  wt = wm::GetModalTransient(w1.get());
   ASSERT_EQ(static_cast<aura::Window*>(NULL), wt);
 
   // Parent w2 to w1. It should get parented to the parent of w1.
@@ -227,12 +228,12 @@ TEST_F(WindowModalityControllerTest, GetWindowModalTransient) {
   EXPECT_EQ(-2, w1->parent()->children().at(1)->id());
 
   // Request the modal transient window for w1, it should be w2.
-  wt = wm::GetWindowModalTransient(w1.get());
+  wt = wm::GetModalTransient(w1.get());
   ASSERT_NE(static_cast<aura::Window*>(NULL), wt);
   EXPECT_EQ(-2, wt->id());
 
   // Request the modal transient window for w11, it should also be w2.
-  wt = wm::GetWindowModalTransient(w11.get());
+  wt = wm::GetModalTransient(w11.get());
   ASSERT_NE(static_cast<aura::Window*>(NULL), wt);
   EXPECT_EQ(-2, wt->id());
 }
@@ -340,6 +341,211 @@ TEST_F(WindowModalityControllerTest, TouchEvent) {
     EXPECT_FALSE(d1.received_touch());
     EXPECT_FALSE(d11.received_touch());
   }
+}
+
+// Child-modal test.
+// Creates:
+// - A |parent| window that hosts a |modal_parent| window within itself. The
+//   |parent| and |modal_parent| windows are not the same window.  The
+//   |modal_parent| window is not activatable, because it's contained within the
+//   |parent| window.
+// - A |child| window with parent window |parent|, but is modal to
+//   |modal_parent| window.
+// Validates:
+// - Clicking on the |modal_parent| should activate the |child| window.
+// - Clicking on the |parent| window outside of the |modal_parent| bounds should
+//   activate the |parent| window.
+// - Clicking on the |child| while |parent| is active should activate the
+//   |child| window.
+// - Focus should follow the active window.
+TEST_F(WindowModalityControllerTest, ChildModal) {
+  ash::test::ChildModalParent* delegate = new ash::test::ChildModalParent;
+  views::Widget* widget = views::Widget::CreateWindowWithBounds(
+      delegate, gfx::Rect(0, 0, 400, 400));
+  widget->Show();
+
+  aura::Window* parent = widget->GetNativeView();
+  EXPECT_TRUE(wm::IsActiveWindow(parent));
+
+  aura::Window* modal_parent = delegate->GetModalParent();
+  EXPECT_NE(static_cast<aura::Window*>(NULL), modal_parent);
+  EXPECT_NE(parent, modal_parent);
+  EXPECT_FALSE(wm::IsActiveWindow(modal_parent));
+
+  delegate->ShowChild();
+  aura::Window* child = delegate->GetChild();
+  EXPECT_NE(static_cast<aura::Window*>(NULL), child);
+
+  EXPECT_TRUE(wm::IsActiveWindow(child));
+  EXPECT_FALSE(wm::IsActiveWindow(modal_parent));
+  EXPECT_FALSE(wm::IsActiveWindow(parent));
+
+  EXPECT_TRUE(child->HasFocus());
+  EXPECT_FALSE(modal_parent->HasFocus());
+  EXPECT_FALSE(parent->HasFocus());
+
+  wm::ActivateWindow(modal_parent);
+
+  EXPECT_TRUE(wm::IsActiveWindow(child));
+  EXPECT_FALSE(wm::IsActiveWindow(modal_parent));
+  EXPECT_FALSE(wm::IsActiveWindow(parent));
+
+  EXPECT_TRUE(child->HasFocus());
+  EXPECT_FALSE(modal_parent->HasFocus());
+  EXPECT_FALSE(parent->HasFocus());
+
+  wm::ActivateWindow(parent);
+
+  EXPECT_FALSE(wm::IsActiveWindow(child));
+  EXPECT_FALSE(wm::IsActiveWindow(modal_parent));
+  EXPECT_TRUE(wm::IsActiveWindow(parent));
+
+  EXPECT_FALSE(child->HasFocus());
+  EXPECT_FALSE(modal_parent->HasFocus());
+  EXPECT_TRUE(parent->HasFocus());
+
+  wm::ActivateWindow(child);
+
+  EXPECT_TRUE(wm::IsActiveWindow(child));
+  EXPECT_FALSE(wm::IsActiveWindow(modal_parent));
+  EXPECT_FALSE(wm::IsActiveWindow(parent));
+
+  EXPECT_TRUE(child->HasFocus());
+  EXPECT_FALSE(modal_parent->HasFocus());
+  EXPECT_FALSE(parent->HasFocus());
+}
+
+// Same as |ChildModal| test, but using |EventGenerator| rather than bypassing
+// it by calling |ActivateWindow|.
+TEST_F(WindowModalityControllerTest, ChildModalEventGenerator) {
+  ash::test::ChildModalParent* delegate = new ash::test::ChildModalParent;
+  views::Widget* widget = views::Widget::CreateWindowWithBounds(
+      delegate, gfx::Rect(0, 0, 400, 400));
+  widget->Show();
+
+  aura::Window* parent = widget->GetNativeView();
+  EXPECT_TRUE(wm::IsActiveWindow(parent));
+
+  aura::Window* modal_parent = delegate->GetModalParent();
+  EXPECT_NE(static_cast<aura::Window*>(NULL), modal_parent);
+  EXPECT_NE(parent, modal_parent);
+  EXPECT_FALSE(wm::IsActiveWindow(modal_parent));
+
+  delegate->ShowChild();
+  aura::Window* child = delegate->GetChild();
+  EXPECT_NE(static_cast<aura::Window*>(NULL), child);
+
+  EXPECT_TRUE(wm::IsActiveWindow(child));
+  EXPECT_FALSE(wm::IsActiveWindow(modal_parent));
+  EXPECT_FALSE(wm::IsActiveWindow(parent));
+
+  EXPECT_TRUE(child->HasFocus());
+  EXPECT_FALSE(modal_parent->HasFocus());
+  EXPECT_FALSE(parent->HasFocus());
+
+  {
+    aura::test::EventGenerator generator(
+        Shell::GetPrimaryRootWindow(),
+        parent->bounds().origin() +
+            gfx::Vector2d(10, parent->bounds().height() - 10));
+    generator.ClickLeftButton();
+    generator.ClickLeftButton();
+
+    EXPECT_TRUE(wm::IsActiveWindow(child));
+    EXPECT_FALSE(wm::IsActiveWindow(modal_parent));
+    EXPECT_FALSE(wm::IsActiveWindow(parent));
+
+    EXPECT_TRUE(child->HasFocus());
+    EXPECT_FALSE(modal_parent->HasFocus());
+    EXPECT_FALSE(parent->HasFocus());
+  }
+
+  {
+    aura::test::EventGenerator generator(
+        Shell::GetPrimaryRootWindow(),
+        parent->bounds().origin() + gfx::Vector2d(10, 10));
+    generator.ClickLeftButton();
+
+    EXPECT_FALSE(wm::IsActiveWindow(child));
+    EXPECT_FALSE(wm::IsActiveWindow(modal_parent));
+    EXPECT_TRUE(wm::IsActiveWindow(parent));
+
+    EXPECT_FALSE(child->HasFocus());
+    EXPECT_FALSE(modal_parent->HasFocus());
+    EXPECT_TRUE(parent->HasFocus());
+  }
+
+  {
+    aura::test::EventGenerator generator(
+        Shell::GetPrimaryRootWindow(),
+        child->bounds().origin() + gfx::Vector2d(10, 10));
+    generator.ClickLeftButton();
+
+    EXPECT_TRUE(wm::IsActiveWindow(child));
+    EXPECT_FALSE(wm::IsActiveWindow(modal_parent));
+    EXPECT_FALSE(wm::IsActiveWindow(parent));
+
+    EXPECT_TRUE(child->HasFocus());
+    EXPECT_FALSE(modal_parent->HasFocus());
+    EXPECT_FALSE(parent->HasFocus());
+  }
+}
+
+// Window-modal test for the case when the originally clicked window is an
+// ancestor of the modal parent.
+TEST_F(WindowModalityControllerTest, WindowModalAncestor) {
+  aura::test::TestWindowDelegate d;
+  scoped_ptr<aura::Window> w1(
+      aura::test::CreateTestWindowWithDelegate(&d, -1, gfx::Rect(), NULL));
+  scoped_ptr<aura::Window> w2(
+      aura::test::CreateTestWindowWithDelegate(&d, -11, gfx::Rect(), w1.get()));
+  scoped_ptr<aura::Window> w3(
+      aura::test::CreateTestWindowWithDelegate(&d, -11, gfx::Rect(), w2.get()));
+  scoped_ptr<aura::Window> w4(
+      aura::test::CreateTestWindowWithDelegate(&d, -2, gfx::Rect(), NULL));
+  w4->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  w1->AddTransientChild(w4.get());
+
+  wm::ActivateWindow(w1.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w4.get()));
+
+  wm::ActivateWindow(w2.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w4.get()));
+
+  wm::ActivateWindow(w3.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w4.get()));
+
+  wm::ActivateWindow(w4.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w4.get()));
+}
+
+// Child-modal test for the case when the originally clicked window is an
+// ancestor of the modal parent.
+TEST_F(WindowModalityControllerTest, ChildModalAncestor) {
+  aura::test::TestWindowDelegate d;
+  scoped_ptr<aura::Window> w1(
+      aura::test::CreateTestWindowWithDelegate(&d, -1, gfx::Rect(), NULL));
+  scoped_ptr<aura::Window> w2(
+      aura::test::CreateTestWindowWithDelegate(&d, -11, gfx::Rect(), w1.get()));
+  scoped_ptr<aura::Window> w3(
+      aura::test::CreateTestWindowWithDelegate(&d, -11, gfx::Rect(), w2.get()));
+  scoped_ptr<aura::Window> w4(
+      aura::test::CreateTestWindowWithDelegate(&d, -2, gfx::Rect(), NULL));
+  w4->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_CHILD);
+  ash::wm::SetModalParent(w4.get(), w2.get());
+  w1->AddTransientChild(w4.get());
+
+  wm::ActivateWindow(w1.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
+
+  wm::ActivateWindow(w2.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w4.get()));
+
+  wm::ActivateWindow(w3.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w4.get()));
+
+  wm::ActivateWindow(w4.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w4.get()));
 }
 
 }  // namespace internal

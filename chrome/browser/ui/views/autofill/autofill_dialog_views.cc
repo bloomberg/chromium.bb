@@ -148,6 +148,14 @@ bool AutofillDialogViews::UseChromeStyle() const {
   return true;
 }
 
+ui::ModalType AutofillDialogViews::GetModalType() const {
+#if defined(USE_ASH)
+  return ui::MODAL_TYPE_CHILD;
+#else
+  return views::WidgetDelegate::GetModalType();
+#endif
+}
+
 bool AutofillDialogViews::Cancel() {
   return true;
 }

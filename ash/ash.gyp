@@ -460,6 +460,8 @@
         'test/ash_test_base.h',
         'test/capture_tracking_view.cc',
         'test/capture_tracking_view.h',
+        'test/child_modal_window.cc',
+        'test/child_modal_window.h',
         'test/cursor_manager_test_api.cc',
         'test/cursor_manager_test_api.h',
         'test/launcher_view_test_api.cc',
@@ -640,6 +642,7 @@
         '../ui/views/views.gyp:views_test_support',
         'ash',
         'ash_resources',
+        'test_support_ash',
       ],
       'sources': [
         'shell/app_list.cc',

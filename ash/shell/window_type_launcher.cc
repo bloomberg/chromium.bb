@@ -14,6 +14,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/web_notification/web_notification_tray.h"
+#include "ash/test/child_modal_window.h"
 #include "base/bind.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -215,6 +216,9 @@ WindowTypeLauncher::WindowTypeLauncher()
       ALLOW_THIS_IN_INITIALIZER_LIST(window_modal_button_(
           new views::NativeTextButton(
               this, ASCIIToUTF16("Open Window Modal Window")))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(child_modal_button_(
+          new views::NativeTextButton(
+              this, ASCIIToUTF16("Open Child Modal Window")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(transient_button_(
           new views::NativeTextButton(
               this, ASCIIToUTF16("Open Non-Modal Transient Window")))),
@@ -249,6 +253,7 @@ WindowTypeLauncher::WindowTypeLauncher()
   AddViewToLayout(layout, widgets_button_);
   AddViewToLayout(layout, system_modal_button_);
   AddViewToLayout(layout, window_modal_button_);
+  AddViewToLayout(layout, child_modal_button_);
   AddViewToLayout(layout, transient_button_);
   AddViewToLayout(layout, examples_button_);
   AddViewToLayout(layout, show_hide_window_button_);
@@ -316,6 +321,8 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
   } else if (sender == window_modal_button_) {
     ModalWindow::OpenModalWindow(GetWidget()->GetNativeView(),
                                  ui::MODAL_TYPE_WINDOW);
+  } else if (sender == child_modal_button_) {
+    ash::test::CreateChildModalParent();
   } else if (sender == transient_button_) {
     NonModalTransient::OpenNonModalTransient(GetWidget()->GetNativeView());
   } else if (sender == show_hide_window_button_) {

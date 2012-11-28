@@ -237,6 +237,14 @@ views::View* CollectedCookiesViews::GetContentsView() {
   return this;
 }
 
+ui::ModalType CollectedCookiesViews::GetModalType() const {
+#if defined(USE_ASH)
+  return ui::MODAL_TYPE_CHILD;
+#else
+  return views::WidgetDelegate::GetModalType();
+#endif
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // CollectedCookiesViews, views::ButtonListener implementation:
 

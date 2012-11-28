@@ -223,6 +223,14 @@ views::View* SSLClientCertificateSelector::GetExtraView() {
   return view_cert_button_container_;
 }
 
+ui::ModalType SSLClientCertificateSelector::GetModalType() const {
+#if defined(USE_ASH)
+  return ui::MODAL_TYPE_CHILD;
+#else
+  return views::WidgetDelegate::GetModalType();
+#endif
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // views::ButtonListener implementation:
 

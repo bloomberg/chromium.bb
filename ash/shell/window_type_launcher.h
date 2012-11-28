@@ -73,6 +73,7 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   views::NativeTextButton* widgets_button_;
   views::NativeTextButton* system_modal_button_;
   views::NativeTextButton* window_modal_button_;
+  views::NativeTextButton* child_modal_button_;
   views::NativeTextButton* transient_button_;
   views::NativeTextButton* examples_button_;
   views::NativeTextButton* show_hide_window_button_;

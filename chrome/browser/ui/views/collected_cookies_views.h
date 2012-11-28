@@ -51,6 +51,7 @@ class CollectedCookiesViews : public views::DialogDelegateView,
   virtual void DeleteDelegate() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
+  virtual ui::ModalType GetModalType() const OVERRIDE;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,

@@ -127,6 +127,15 @@ class ConstrainedWebDialogDelegateViewViews
   virtual views::View* GetContentsView() OVERRIDE {
     return this;
   }
+
+  virtual ui::ModalType GetModalType() const OVERRIDE {
+#if defined(USE_ASH)
+    return ui::MODAL_TYPE_CHILD;
+#else
+    return views::WidgetDelegate::GetModalType();
+#endif
+  }
+
   virtual void OnWidgetMove() OVERRIDE {
     // We need to check the existence of the widget because when running on
     // WinXP this could get executed before the widget is entirely created.

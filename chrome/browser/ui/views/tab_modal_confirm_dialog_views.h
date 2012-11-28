@@ -43,6 +43,7 @@ class TabModalConfirmDialogViews : public TabModalConfirmDialog,
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
+  virtual ui::ModalType GetModalType() const OVERRIDE;
 
  private:
   virtual ~TabModalConfirmDialogViews();

@@ -32,7 +32,8 @@ enum DialogButton {
 enum ModalType {
   MODAL_TYPE_NONE   = 0,  // Window is not modal.
   MODAL_TYPE_WINDOW = 1,  // Window is modal to its transient parent.
-  MODAL_TYPE_SYSTEM = 2   // Window is modal to all other windows.
+  MODAL_TYPE_CHILD  = 2,  // Window is modal to a child of its transient parent.
+  MODAL_TYPE_SYSTEM = 3   // Window is modal to all other windows.
 };
 
 }  // namespace ui

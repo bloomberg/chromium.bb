@@ -43,6 +43,9 @@ extern const aura::WindowProperty<bool>* const
 extern const aura::WindowProperty<bool>* const
     kIgnoredByShelfKey;
 
+// Transient child's modal parent.
+extern const aura::WindowProperty<aura::Window*>* const kModalParentKey;
+
 // Used to remember the show state before the window was minimized.
 extern const aura::WindowProperty<ui::WindowShowState>* const
     kRestoreShowStateKey;

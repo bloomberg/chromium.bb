@@ -41,6 +41,12 @@ enum WindowVisibilityAnimationType {
   WINDOW_VISIBILITY_ANIMATION_TYPE_ROTATE,          // Window rotates in.
 };
 
+// Canned animations that take effect once but don't have a symmetric pair as
+// visiblity animations do.
+enum WindowAnimationType {
+  WINDOW_ANIMATION_TYPE_BOUNCE = 0,  // Window scales up and down.
+};
+
 // Type of visibility change transition that a window should animate.
 // Default behavior is to animate both show and hide.
 enum WindowVisibilityAnimationTransition {
@@ -98,6 +104,7 @@ namespace internal {
 // Returns false if the |window| didn't animate.
 ASH_EXPORT bool AnimateOnChildWindowVisibilityChanged(aura::Window* window,
                                                       bool visible);
+ASH_EXPORT bool AnimateWindow(aura::Window* window, WindowAnimationType type);
 
 // Creates vector of animation sequences that lasts for |duration| and changes
 // brightness and grayscale to |target_value|. Caller takes ownership of

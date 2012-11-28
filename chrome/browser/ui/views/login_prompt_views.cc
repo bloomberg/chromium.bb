@@ -85,6 +85,14 @@ class LoginHandlerViews : public LoginHandler,
     return enable_chrome_style_;
   }
 
+  virtual ui::ModalType GetModalType() const OVERRIDE {
+#if defined(USE_ASH)
+    return ui::MODAL_TYPE_CHILD;
+#else
+    return views::WidgetDelegate::GetModalType();
+#endif
+  }
+
   virtual bool Cancel() OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

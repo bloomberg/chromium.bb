@@ -20,6 +20,7 @@ class AshActivationController : public ActivationControllerDelegate {
  private:
   // Overridden from ActivationControllerDelegate:
   virtual aura::Window* WillActivateWindow(aura::Window* window) OVERRIDE;
+  virtual aura::Window* WillFocusWindow(aura::Window* window) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AshActivationController);
 };

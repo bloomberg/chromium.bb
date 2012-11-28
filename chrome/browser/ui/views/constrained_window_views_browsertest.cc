@@ -80,6 +80,14 @@ class TestConstrainedDialog : public views::DialogDelegate {
     return true;
   }
 
+  virtual ui::ModalType GetModalType() const OVERRIDE {
+#if defined(USE_ASH)
+    return ui::MODAL_TYPE_CHILD;
+#else
+    return views::WidgetDelegate::GetModalType();
+#endif
+  }
+
   bool done() {
     return done_;
   }

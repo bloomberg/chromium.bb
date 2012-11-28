@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/tab_contents/render_view_context_menu_views.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -68,20 +69,26 @@ bool ChromeWebContentsViewDelegateViews::Focus() {
     }
   }
 
-  ConstrainedWindowTabHelper* constrained_window_tab_helper =
-      ConstrainedWindowTabHelper::FromWebContents(web_contents_);
-  if (constrained_window_tab_helper) {
-    // TODO(erg): WebContents used to own constrained windows, which is why
-    // this is here. Eventually this should be ported to a containing view
-    // specializing in constrained window management.
-    if (constrained_window_tab_helper->constrained_window_count() > 0) {
-      ConstrainedWindow* window =
-          *constrained_window_tab_helper->constrained_window_begin();
-      DCHECK(window);
-      window->FocusConstrainedWindow();
-      return true;
+#if defined(USE_ASH)
+  if (!chrome::UseChromeStyleDialogs()) {
+#endif
+    ConstrainedWindowTabHelper* constrained_window_tab_helper =
+        ConstrainedWindowTabHelper::FromWebContents(web_contents_);
+    if (constrained_window_tab_helper) {
+      // TODO(erg): WebContents used to own constrained windows, which is why
+      // this is here. Eventually this should be ported to a containing view
+      // specializing in constrained window management.
+      if (constrained_window_tab_helper->constrained_window_count() > 0) {
+        ConstrainedWindow* window =
+            *constrained_window_tab_helper->constrained_window_begin();
+        DCHECK(window);
+        window->FocusConstrainedWindow();
+        return true;
+      }
     }
+#if defined(USE_ASH)
   }
+#endif
   return false;
 }
 

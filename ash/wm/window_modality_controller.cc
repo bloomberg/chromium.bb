@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "ash/wm/window_animations.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
@@ -21,19 +23,44 @@ namespace wm {
 
 namespace {
 
+bool HasAncestor(aura::Window* window, aura::Window* ancestor) {
+  if (!window)
+    return false;
+  if (window == ancestor)
+    return true;
+  return HasAncestor(window->parent(), ancestor);
+}
+
 bool TransientChildIsWindowModal(aura::Window* window) {
   return window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_WINDOW;
 }
 
-aura::Window* GetWindowModalTransientChild(aura::Window* window) {
+bool TransientChildIsChildModal(aura::Window* window) {
+  return window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_CHILD;
+}
+
+aura::Window* GetModalParent(aura::Window* window) {
+  return window->GetProperty(ash::internal::kModalParentKey);
+}
+
+bool IsModalTransientChild(aura::Window* transient, aura::Window* original) {
+  return transient->IsVisible() &&
+      (TransientChildIsWindowModal(transient) ||
+       (TransientChildIsChildModal(transient) &&
+        (HasAncestor(original, GetModalParent(transient)))));
+}
+
+aura::Window* GetModalTransientChild(
+    aura::Window* activatable,
+    aura::Window* original) {
   aura::Window::Windows::const_iterator it;
-  for (it = window->transient_children().begin();
-       it != window->transient_children().end();
+  for (it = activatable->transient_children().begin();
+       it != activatable->transient_children().end();
        ++it) {
-    if (TransientChildIsWindowModal(*it) && (*it)->IsVisible()) {
-      if (!(*it)->transient_children().empty())
-        return GetWindowModalTransientChild(*it);
-      return *it;
+    aura::Window* transient = *it;
+    if (IsModalTransientChild(transient, original)) {
+      return transient->transient_children().empty() ?
+          transient : GetModalTransientChild(transient, original);
     }
   }
   return NULL;
@@ -41,17 +68,21 @@ aura::Window* GetWindowModalTransientChild(aura::Window* window) {
 
 }  // namespace
 
-aura::Window* GetWindowModalTransient(aura::Window* window) {
+void SetModalParent(aura::Window* child, aura::Window* parent) {
+  child->SetProperty(ash::internal::kModalParentKey, parent);
+}
+
+aura::Window* GetModalTransient(aura::Window* window) {
   if (!window)
     return NULL;
 
   // We always want to check the for the transient child of the activatable
   // window.
-  window = wm::GetActivatableWindow(window);
-  if (!window)
+  aura::Window* activatable = wm::GetActivatableWindow(window);
+  if (!activatable)
     return NULL;
 
-  return GetWindowModalTransientChild(window);
+  return GetModalTransientChild(activatable, window);
 }
 
 }  // namespace wm
@@ -76,8 +107,8 @@ WindowModalityController::~WindowModalityController() {
 
 ui::EventResult WindowModalityController::OnKeyEvent(ui::KeyEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  return wm::GetWindowModalTransient(target) ? ui::ER_CONSUMED :
-                                               ui::ER_UNHANDLED;
+  return wm::GetModalTransient(target) ? ui::ER_CONSUMED :
+                                         ui::ER_UNHANDLED;
 }
 
 ui::EventResult WindowModalityController::OnMouseEvent(ui::MouseEvent* event) {
@@ -117,10 +148,11 @@ void WindowModalityController::OnWindowDestroyed(aura::Window* window) {
 
 bool WindowModalityController::ProcessLocatedEvent(aura::Window* target,
                                                    ui::LocatedEvent* event) {
-  aura::Window* modal_transient_child = wm::GetWindowModalTransient(target);
+  aura::Window* modal_transient_child = wm::GetModalTransient(target);
   if (modal_transient_child && (event->type() == ui::ET_MOUSE_PRESSED ||
                                 event->type() == ui::ET_TOUCH_PRESSED)) {
-    wm::ActivateWindow(modal_transient_child);
+    ash::internal::AnimateWindow(modal_transient_child,
+                                 ash::WINDOW_ANIMATION_TYPE_BOUNCE);
   }
   return !!modal_transient_child;
 }

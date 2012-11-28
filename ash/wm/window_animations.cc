@@ -96,6 +96,10 @@ const float kWindowAnimation_Rotate_PerspectiveDepth = 500.f;
 const float kWindowAnimation_Rotate_DegreesX = 5.f;
 const float kWindowAnimation_Rotate_ScaleFactor = .99f;
 
+const float kWindowAnimation_Bounce_Scale = 1.02f;
+const int kWindowAnimation_Bounce_DurationMS = 180;
+const int kWindowAnimation_Bounce_GrowShrinkDurationPercent = 40;
+
 // Tween type when cross fading a workspace window.
 const ui::Tween::Type kCrossFadeTweenType = ui::Tween::EASE_IN_OUT;
 
@@ -470,6 +474,50 @@ void AnimateShowWindow_BrightnessGrayscale(aura::Window* window) {
 
 void AnimateHideWindow_BrightnessGrayscale(aura::Window* window) {
   AnimateShowHideWindowCommon_BrightnessGrayscale(window, false);
+}
+
+ui::LayerAnimationElement* CreateGrowShrinkElement(
+    aura::Window* window, bool grow) {
+  scoped_ptr<ui::InterpolatedTransform> scale(new ui::InterpolatedScale(
+      gfx::Point3F(kWindowAnimation_Bounce_Scale,
+                   kWindowAnimation_Bounce_Scale,
+                   1),
+      gfx::Point3F(1, 1, 1)));
+  scoped_ptr<ui::InterpolatedTransform> scale_about_pivot(
+      new ui::InterpolatedTransformAboutPivot(
+          gfx::Point(window->bounds().width() * 0.5,
+                     window->bounds().height() * 0.5),
+          scale.release()));
+  scale_about_pivot->SetReversed(grow);
+  scoped_ptr<ui::LayerAnimationElement> transition(
+      ui::LayerAnimationElement::CreateInterpolatedTransformElement(
+          scale_about_pivot.release(),
+          base::TimeDelta::FromMilliseconds(
+              kWindowAnimation_Bounce_DurationMS *
+                  kWindowAnimation_Bounce_GrowShrinkDurationPercent / 100)));
+  transition->set_tween_type(grow ? ui::Tween::EASE_OUT : ui::Tween::EASE_IN);
+  return transition.release();
+}
+
+void AnimateBounce(aura::Window* window) {
+  ui::ScopedLayerAnimationSettings scoped_settings(
+      window->layer()->GetAnimator());
+  scoped_settings.SetPreemptionStrategy(
+      ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+  window->layer()->set_delegate(window);
+  scoped_ptr<ui::LayerAnimationSequence> sequence(
+      new ui::LayerAnimationSequence);
+  sequence->AddElement(CreateGrowShrinkElement(window, true));
+  ui::LayerAnimationElement::AnimatableProperties paused_properties;
+  paused_properties.insert(ui::LayerAnimationElement::BOUNDS);
+  sequence->AddElement(ui::LayerAnimationElement::CreatePauseElement(
+      paused_properties,
+      base::TimeDelta::FromMilliseconds(
+        kWindowAnimation_Bounce_DurationMS *
+            (100 - 2 * kWindowAnimation_Bounce_GrowShrinkDurationPercent) /
+            100)));
+  sequence->AddElement(CreateGrowShrinkElement(window, false));
+  window->layer()->GetAnimator()->StartAnimation(sequence.release());
 }
 
 void AddLayerAnimationsForRotate(aura::Window* window, bool show) {
@@ -884,6 +932,17 @@ CreateBrightnessGrayscaleAnimationSequence(float target_value,
   animations.push_back(grayscale_sequence.release());
 
   return animations;
+}
+
+bool AnimateWindow(aura::Window* window, WindowAnimationType type) {
+  switch (type) {
+    case WINDOW_ANIMATION_TYPE_BOUNCE:
+      AnimateBounce(window);
+      return true;
+    default:
+      NOTREACHED();
+      return false;
+  }
 }
 
 }  // namespace internal

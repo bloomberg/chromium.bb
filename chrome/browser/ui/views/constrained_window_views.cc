@@ -63,6 +63,7 @@
 #include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/visibility_controller.h"
 #include "ash/wm/window_animations.h"
+#include "ash/wm/window_modality_controller.h"
 #include "ui/aura/window.h"
 #endif
 
@@ -584,6 +585,10 @@ ConstrainedWindowViews::ConstrainedWindowViews(
   }
 
 #if defined(USE_ASH)
+  if (enable_chrome_style_) {
+    params.child = false;
+    DCHECK_EQ(widget_delegate->GetModalType(), ui::MODAL_TYPE_CHILD);
+  }
   // Ash window headers can be transparent.
   params.transparent = true;
   ash::SetChildWindowVisibilityChangesAnimated(params.GetParent());
@@ -624,6 +629,8 @@ ConstrainedWindowViews::ConstrainedWindowViews(
   constrained_window_tab_helper->AddConstrainedDialog(this);
 #if defined(USE_ASH)
   GetNativeWindow()->SetProperty(ash::kConstrainedWindowKey, true);
+  ash::wm::SetModalParent(GetNativeWindow(),
+                          web_contents_->GetView()->GetNativeView());
 #endif
 }
 
@@ -738,10 +745,6 @@ void ConstrainedWindowViews::Observe(
 #endif
   if (*content::Details<bool>(details).ptr()) {
     Show();
-#if defined(USE_ASH)
-    GetNativeWindow()->parent()->StackChildAbove(
-        GetNativeWindow(), web_contents_->GetNativeView());
-#endif
   } else {
     Hide();
   }
@@ -757,6 +760,11 @@ void ConstrainedWindowViews::PositionChromeStyleWindow(const gfx::Size& size) {
     Widget::CenterWindow(size);
     return;
   }
-
+#if defined(USE_ASH)
+  if (is_top_level()) {
+    point += web_contents_->GetNativeView()->parent()->bounds().origin().
+        OffsetFromOrigin();
+  }
+#endif
   SetBounds(gfx::Rect(point - gfx::Vector2d(size.width() / 2, 0), size));
 }

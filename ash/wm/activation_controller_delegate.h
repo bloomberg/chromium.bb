@@ -23,6 +23,10 @@ class ActivationControllerDelegate {
   // Returning some other window will activate that window instead.
   // Returning NULL will not change activation.
   virtual aura::Window* WillActivateWindow(aura::Window* window) = 0;
+
+  // Called when the ActivationController is about to focus |window|. Returns
+  // the window that should be focused instead.
+  virtual aura::Window* WillFocusWindow(aura::Window* window) = 0;
 };
 
 }  // namespace internal

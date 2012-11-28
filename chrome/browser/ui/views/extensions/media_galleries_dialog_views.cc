@@ -179,6 +179,14 @@ bool MediaGalleriesDialogViews::UseChromeStyle() const {
   return enable_chrome_style_;
 }
 
+ui::ModalType MediaGalleriesDialogViews::GetModalType() const {
+#if defined(USE_ASH)
+  return ui::MODAL_TYPE_CHILD;
+#else
+  return views::WidgetDelegate::GetModalType();
+#endif
+}
+
 views::View* MediaGalleriesDialogViews::GetExtraView() {
   if (!add_gallery_container_) {
     views::View* button = new views::NativeTextButton(this,

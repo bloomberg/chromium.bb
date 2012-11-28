@@ -277,6 +277,8 @@ ui::EventResult ActivationController::OnScrollEvent(ui::ScrollEvent* event) {
 }
 
 ui::EventResult ActivationController::OnTouchEvent(ui::TouchEvent* event) {
+  if (event->type() == ui::ET_TOUCH_PRESSED)
+    FocusWindowWithEvent(event);
   return ui::ER_UNHANDLED;
 }
 
@@ -413,6 +415,7 @@ aura::Window* ActivationController::GetTopmostWindowToActivateInContainer(
 
 void ActivationController::FocusWindowWithEvent(const ui::Event* event) {
   aura::Window* window = static_cast<aura::Window*>(event->target());
+  window = delegate_->WillFocusWindow(window);
   if (GetActiveWindow() != window) {
     aura::client::GetFocusClient(window)->FocusWindow(
         FindFocusableWindowFor(window), event);
