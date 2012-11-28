@@ -37,7 +37,7 @@ cr.define('ntp', function() {
    * @type {number}
    * @const
    */
-  var HEIGHT_FOR_BOTTOM_PANEL = 550;
+  var HEIGHT_FOR_BOTTOM_PANEL = 558;
 
   /**
    * The Bottom Panel width required to show 6 cols of Tiles, which is used

@@ -50,7 +50,6 @@
 
 .thumbnail .title,
 .thumbnail-banner {
-  bottom: -18px;
   color: #777;
   font-size: 0.9167em;
   overflow: hidden;
@@ -59,6 +58,18 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   width: 100%;
+}
+
+.thumbnail .title {
+  bottom: -26px;
+}
+
+.thumbnail-banner {
+  bottom: 25px;
+  display: block;
+  font-size: 1.14em;
+  margin: 0 7px;
+  width: 88%;
 }
 
 .thumbnail,
@@ -74,19 +85,11 @@
   width: 100%;
 }
 
-.thumbnail-banner {
-  bottom: 13px;
-  display: block;
-  font-size: 1.14em;
-  margin: 0 7px;
-  width: 88%;
-}
-
 .thumbnail-favicon {
   height: 16px;
   margin: 0 auto;
   position: relative;
-  top: 19px;
+  top: -8px;
   width: 16px;
 }
 
