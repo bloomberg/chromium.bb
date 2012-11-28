@@ -5,6 +5,7 @@
 #include "content/renderer/media/rtc_video_renderer.h"
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
@@ -102,6 +103,7 @@ void RTCVideoRenderer::DoRenderFrameOnMainThread(
     return;
   }
 
+  TRACE_EVENT0("video", "DoRenderFrameOnMainThread");
   repaint_cb_.Run(video_frame);
 }
 
