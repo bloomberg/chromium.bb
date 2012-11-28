@@ -36,6 +36,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/interstitial_page_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
+#include "content/browser/web_contents/web_contents_view_guest.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/browser_plugin_messages.h"
 #include "content/common/intents_messages.h"
@@ -399,22 +400,21 @@ WebContentsImpl* WebContentsImpl::CreateGuest(
     SiteInstance* site_instance,
     int guest_instance_id,
     const BrowserPluginHostMsg_CreateGuest_Params& params) {
-  WebContentsImpl* new_contents = WebContentsImpl::Create(
-      browser_context,
-      site_instance,
-      MSG_ROUTING_NONE,
-      NULL);  // base WebContents
-  WebContentsImpl* new_contents_impl =
-      static_cast<WebContentsImpl*>(new_contents);
+
+  WebContentsImpl* new_contents = new WebContentsImpl(browser_context, NULL);
 
   // This makes |new_contents| act as a guest.
   // For more info, see comment above class BrowserPluginGuest.
-  new_contents_impl->browser_plugin_guest_.reset(
-      BrowserPluginGuest::Create(
-          guest_instance_id,
-          new_contents_impl,
-          new_contents_impl->GetRenderViewHost(),
-          params));
+  new_contents->browser_plugin_guest_.reset(
+    BrowserPluginGuest::Create(
+        guest_instance_id,
+        new_contents,
+        params));
+
+  new_contents->Init(browser_context, site_instance, MSG_ROUTING_NONE, NULL);
+  new_contents->browser_plugin_guest_->InstallHelper(
+      new_contents->GetRenderViewHost());
+
   return new_contents;
 }
 
@@ -1155,11 +1155,20 @@ void WebContentsImpl::Init(BrowserContext* browser_context,
   if (view_.get()) {
     CHECK(render_view_host_delegate_view_);
   } else {
-    WebContentsViewDelegate* delegate =
-        GetContentClient()->browser()->GetWebContentsViewDelegate(
-            this);
-    view_.reset(CreateWebContentsView(
-        this, delegate, &render_view_host_delegate_view_));
+    if (browser_plugin_guest_.get() &&
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableBrowserPluginCompositing)) {
+      WebContentsViewGuest* rv = new WebContentsViewGuest(
+          this,
+          browser_plugin_guest_.get());
+      render_view_host_delegate_view_ = rv;
+      view_.reset(rv);
+    } else {
+      WebContentsViewDelegate* delegate =
+          GetContentClient()->browser()->GetWebContentsViewDelegate(this);
+      view_.reset(CreateWebContentsView(
+          this, delegate, &render_view_host_delegate_view_));
+    }
     CHECK(render_view_host_delegate_view_);
   }
   CHECK(view_.get());

@@ -26,7 +26,6 @@ class CONTENT_EXPORT BrowserPluginHostFactory {
   virtual BrowserPluginGuest* CreateBrowserPluginGuest(
       int instance_id,
       WebContentsImpl* web_contents,
-      RenderViewHost* render_view_host,
       const BrowserPluginHostMsg_CreateGuest_Params& params) = 0;
 
   virtual BrowserPluginEmbedder* CreateBrowserPluginEmbedder(

@@ -245,6 +245,10 @@ const char kEnableAcceleratedFilters[]      = "enable-accelerated-filters";
 // Turns on extremely verbose logging of accessibility events.
 const char kEnableAccessibilityLogging[]    = "enable-accessibility-logging";
 
+// Enables browser plugin compositing experiment.
+const char kEnableBrowserPluginCompositing[] =
+    "enable-browser-plugin-compositing";
+
 // Enables browser plugin for all types of pages.
 const char kEnableBrowserPluginForAllViewTypes[] =
     "enable-browser-plugin-for-all-view-types";

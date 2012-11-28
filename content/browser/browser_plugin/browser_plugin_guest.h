@@ -74,7 +74,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   static BrowserPluginGuest* Create(
       int instance_id,
       WebContentsImpl* web_contents,
-      content::RenderViewHost* render_view_host,
       const BrowserPluginHostMsg_CreateGuest_Params& params);
 
   // Overrides factory for testing. Default (NULL) value indicates regular
@@ -82,6 +81,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   static void set_factory_for_testing(BrowserPluginHostFactory* factory) {
     content::BrowserPluginGuest::factory_ = factory;
   }
+
+  void InstallHelper(content::RenderViewHost* render_view_host);
 
   void set_guest_hang_timeout_for_testing(const base::TimeDelta& timeout) {
     guest_hang_timeout_ = timeout;
@@ -241,7 +242,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 
   BrowserPluginGuest(int instance_id,
                      WebContentsImpl* web_contents,
-                     RenderViewHost* render_view_host,
                      const BrowserPluginHostMsg_CreateGuest_Params& params);
 
   // Returns the identifier that uniquely identifies a browser plugin guest

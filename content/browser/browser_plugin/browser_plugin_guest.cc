@@ -43,7 +43,6 @@ const int kGuestHangTimeoutMs = 5000;
 BrowserPluginGuest::BrowserPluginGuest(
     int instance_id,
     WebContentsImpl* web_contents,
-    RenderViewHost* render_view_host,
     const BrowserPluginHostMsg_CreateGuest_Params& params)
     : WebContentsObserver(web_contents),
       embedder_web_contents_(NULL),
@@ -62,12 +61,16 @@ BrowserPluginGuest::BrowserPluginGuest(
       max_auto_size_(params.auto_size_params.max_size),
       min_auto_size_(params.auto_size_params.min_size) {
   DCHECK(web_contents);
+}
+
+void BrowserPluginGuest::InstallHelper(
+    content::RenderViewHost* render_view_host) {
   // |render_view_host| manages the ownership of this BrowserPluginGuestHelper.
   new BrowserPluginGuestHelper(this, render_view_host);
 
   notification_registrar_.Add(
       this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
-      content::Source<content::WebContents>(web_contents));
+      content::Source<content::WebContents>(web_contents()));
 }
 
 BrowserPluginGuest::~BrowserPluginGuest() {
@@ -77,17 +80,14 @@ BrowserPluginGuest::~BrowserPluginGuest() {
 BrowserPluginGuest* BrowserPluginGuest::Create(
     int instance_id,
     WebContentsImpl* web_contents,
-    content::RenderViewHost* render_view_host,
     const BrowserPluginHostMsg_CreateGuest_Params& params) {
   RecordAction(UserMetricsAction("BrowserPlugin.Guest.Create"));
   if (factory_) {
     return factory_->CreateBrowserPluginGuest(instance_id,
                                               web_contents,
-                                              render_view_host,
                                               params);
   }
-  return new BrowserPluginGuest(
-      instance_id, web_contents, render_view_host, params);
+  return new BrowserPluginGuest(instance_id, web_contents,params);
 }
 
 void BrowserPluginGuest::Observe(int type,
