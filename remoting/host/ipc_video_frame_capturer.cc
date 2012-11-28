@@ -37,7 +37,7 @@ void IpcVideoFrameCapturer::InvalidateRegion(const SkRegion& invalid_region) {
   desktop_session_proxy_->InvalidateRegion(invalid_region);
 }
 
-void IpcVideoFrameCapturer::CaptureInvalidRegion() {
+void IpcVideoFrameCapturer::CaptureFrame() {
   desktop_session_proxy_->CaptureFrame();
 }
 

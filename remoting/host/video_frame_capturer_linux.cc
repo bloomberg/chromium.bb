@@ -62,7 +62,7 @@ class VideoFrameCapturerLinux : public VideoFrameCapturer {
   virtual void Stop() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
-  virtual void CaptureInvalidRegion() OVERRIDE;
+  virtual void CaptureFrame() OVERRIDE;
   virtual const SkISize& size_most_recent() const OVERRIDE;
 
  private:
@@ -75,6 +75,9 @@ class VideoFrameCapturerLinux : public VideoFrameCapturer {
   // ConfigNotify events.
   void ProcessPendingXEvents();
 
+  // Capture the cursor image and notify the delegate if it was captured.
+  void CaptureCursor();
+
   // Capture screen pixels, and return the data in a new CaptureData object,
   // to be freed by the caller.
   // In the DAMAGE case, the VideoFrameCapturerHelper already holds the list of
@@ -82,10 +85,7 @@ class VideoFrameCapturerLinux : public VideoFrameCapturer {
   // In the non-DAMAGE case, this captures the whole screen, then calculates
   // some invalid rectangles that include any differences between this and the
   // previous capture.
-  CaptureData* CaptureFrame();
-
-  // Capture the cursor image and notify the delegate if it was captured.
-  void CaptureCursor();
+  CaptureData* CaptureScreen();
 
   // Called when the screen configuration is changed. |root_window_size|
   // specifies size the most recent size of the root window.
@@ -298,7 +298,7 @@ void VideoFrameCapturerLinux::InvalidateRegion(const SkRegion& invalid_region) {
   helper_.InvalidateRegion(invalid_region);
 }
 
-void VideoFrameCapturerLinux::CaptureInvalidRegion() {
+void VideoFrameCapturerLinux::CaptureFrame() {
   // Process XEvents for XDamage and cursor shape tracking.
   ProcessPendingXEvents();
 
@@ -324,7 +324,7 @@ void VideoFrameCapturerLinux::CaptureInvalidRegion() {
                              current_buffer->bytes_per_row()));
   }
 
-  scoped_refptr<CaptureData> capture_data(CaptureFrame());
+  scoped_refptr<CaptureData> capture_data(CaptureScreen());
 
   // Swap the current & previous buffers ready for the next capture.
   last_invalid_region_ = capture_data->dirty_region();
@@ -395,7 +395,7 @@ void VideoFrameCapturerLinux::CaptureCursor() {
   delegate_->OnCursorShapeChanged(cursor_proto.Pass());
 }
 
-CaptureData* VideoFrameCapturerLinux::CaptureFrame() {
+CaptureData* VideoFrameCapturerLinux::CaptureScreen() {
   VideoFrame* current = queue_.current_frame();
   DataPlanes planes;
   planes.data[0] = current->pixels();

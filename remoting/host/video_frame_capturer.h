@@ -36,7 +36,7 @@ class SharedBufferFactory;
 //     screen. Some limited rect-merging (e.g., to eliminate exact
 //     duplicates) may be done here.
 //
-// (3) CaptureInvalidRegion
+// (3) CaptureFrame
 //     This is where the bits for the invalid rects are packaged up and sent
 //     to the encoder.
 //     A screen capture is performed if needed. For example, Windows requires
@@ -112,7 +112,7 @@ class VideoFrameCapturer {
   // It is OK to call this method while another thread is reading
   // data of the previous capture. There can be at most one concurrent read
   // going on when this method is called.
-  virtual void CaptureInvalidRegion() = 0;
+  virtual void CaptureFrame() = 0;
 
   // Get the size of the most recently captured screen.
   virtual const SkISize& size_most_recent() const = 0;

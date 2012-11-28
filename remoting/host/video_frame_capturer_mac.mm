@@ -88,7 +88,7 @@ class VideoFrameCapturerMac : public VideoFrameCapturer {
   virtual void Stop() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
-  virtual void CaptureInvalidRegion() OVERRIDE;
+  virtual void CaptureFrame() OVERRIDE;
   virtual const SkISize& size_most_recent() const OVERRIDE;
 
  private:
@@ -289,7 +289,7 @@ void VideoFrameCapturerMac::InvalidateRegion(const SkRegion& invalid_region) {
   helper_.InvalidateRegion(invalid_region);
 }
 
-void VideoFrameCapturerMac::CaptureInvalidRegion() {
+void VideoFrameCapturerMac::CaptureFrame() {
   // Only allow captures when the display configuration is not occurring.
   scoped_refptr<CaptureData> data;
 

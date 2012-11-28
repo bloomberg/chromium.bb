@@ -202,7 +202,7 @@ void VideoScheduler::CaptureNextFrame() {
 
   // And finally perform one capture.
   capture_start_time_ = base::Time::Now();
-  capturer_->CaptureInvalidRegion();
+  capturer_->CaptureFrame();
 }
 
 void VideoScheduler::FrameCaptureCompleted() {

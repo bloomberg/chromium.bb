@@ -101,7 +101,7 @@ class ClientSessionTest : public testing::Test {
     EXPECT_CALL(*capturer, Start(_));
     EXPECT_CALL(*capturer, Stop());
     EXPECT_CALL(*capturer, InvalidateRegion(_)).Times(AnyNumber());
-    EXPECT_CALL(*capturer, CaptureInvalidRegion()).Times(AnyNumber());
+    EXPECT_CALL(*capturer, CaptureFrame()).Times(AnyNumber());
     EXPECT_CALL(*capturer, size_most_recent())
         .WillRepeatedly(ReturnRef(screen_size_));
 

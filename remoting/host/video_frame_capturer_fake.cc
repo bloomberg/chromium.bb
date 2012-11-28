@@ -54,7 +54,7 @@ void VideoFrameCapturerFake::InvalidateRegion(const SkRegion& invalid_region) {
   helper_.InvalidateRegion(invalid_region);
 }
 
-void VideoFrameCapturerFake::CaptureInvalidRegion() {
+void VideoFrameCapturerFake::CaptureFrame() {
   GenerateImage();
   helper_.InvalidateScreen(size_);
 

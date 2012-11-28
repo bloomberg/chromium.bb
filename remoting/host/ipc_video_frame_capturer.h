@@ -29,7 +29,7 @@ class IpcVideoFrameCapturer : public VideoFrameCapturer {
   virtual void Stop() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
-  virtual void CaptureInvalidRegion() OVERRIDE;
+  virtual void CaptureFrame() OVERRIDE;
   virtual const SkISize& size_most_recent() const OVERRIDE;
 
   // Called when a video frame has been captured. |capture_data| describes

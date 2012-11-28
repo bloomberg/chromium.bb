@@ -100,12 +100,12 @@ TEST_F(VideoFrameCapturerMacTest, Capture) {
   capturer_->Start(&delegate_);
 
   // Check that we get an initial full-screen updated.
-  capturer_->CaptureInvalidRegion();
+  capturer_->CaptureFrame();
 
   // Check that subsequent dirty rects are propagated correctly.
   AddDirtyRect();
   capturer_->InvalidateRegion(region_);
-  capturer_->CaptureInvalidRegion();
+  capturer_->CaptureFrame();
   capturer_->Stop();
 }
 

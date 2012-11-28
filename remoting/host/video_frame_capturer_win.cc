@@ -84,7 +84,7 @@ class VideoFrameCapturerWin : public VideoFrameCapturer {
   virtual void Stop() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
-  virtual void CaptureInvalidRegion() OVERRIDE;
+  virtual void CaptureFrame() OVERRIDE;
   virtual const SkISize& size_most_recent() const OVERRIDE;
 
  private:
@@ -239,7 +239,7 @@ void VideoFrameCapturerWin::InvalidateRegion(const SkRegion& invalid_region) {
   helper_.InvalidateRegion(invalid_region);
 }
 
-void VideoFrameCapturerWin::CaptureInvalidRegion() {
+void VideoFrameCapturerWin::CaptureFrame() {
   // Force the system to power-up display hardware, if it has been suspended.
   SetThreadExecutionState(ES_DISPLAY_REQUIRED);
 

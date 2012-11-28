@@ -144,7 +144,7 @@ TEST_F(VideoSchedulerTest, StartAndStop) {
       .WillRepeatedly(ReturnRef(size_));
 
   // First the capturer is called.
-  Expectation capturer_capture = EXPECT_CALL(capturer_, CaptureInvalidRegion())
+  Expectation capturer_capture = EXPECT_CALL(capturer_, CaptureFrame())
       .After(capturer_start)
       .WillRepeatedly(InvokeWithoutArgs(
           this, &VideoSchedulerTest::GenerateOnCaptureCompleted));

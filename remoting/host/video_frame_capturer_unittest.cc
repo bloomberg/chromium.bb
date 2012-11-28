@@ -71,7 +71,7 @@ TEST_F(VideoFrameCapturerTest, Capture) {
 
   capturer_ = VideoFrameCapturer::Create();
   capturer_->Start(&delegate_);
-  capturer_->CaptureInvalidRegion();
+  capturer_->CaptureFrame();
   capturer_->Stop();
 }
 
@@ -91,7 +91,7 @@ TEST_F(VideoFrameCapturerTest, UseSharedBuffers) {
 
   capturer_ = VideoFrameCapturer::CreateWithFactory(&shared_buffer_factory_);
   capturer_->Start(&delegate_);
-  capturer_->CaptureInvalidRegion();
+  capturer_->CaptureFrame();
   capturer_->Stop();
   capturer_.reset();
 }

@@ -151,7 +151,7 @@ void DesktopSessionAgent::OnCaptureFrame() {
   // runner. If the client issues more requests, pixel data in captured frames
   // will likely be corrupted but stability of VideoFrameCapturer will not be
   // affected.
-  video_capturer_->CaptureInvalidRegion();
+  video_capturer_->CaptureFrame();
 }
 
 void DesktopSessionAgent::OnInvalidateRegion(
