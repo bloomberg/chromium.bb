@@ -106,12 +106,12 @@ def SendStack(last_tb, stack, url=None, maxlen=50, verbose=True):
   p(post(url or DEFAULT_URL + '/breakpad', params))
 
 
-def SendProfiling(url=None):
+def SendProfiling(duration, url=None):
   params = {
     'argv': ' '.join(sys.argv),
     # Strip the hostname.
     'domain': _HOST_NAME.split('.', 1)[-1],
-    'duration': time.time() - _TIME_STARTED,
+    'duration': duration,
     'platform': sys.platform,
   }
   post(url or DEFAULT_URL + '/profiling', params)
@@ -126,7 +126,9 @@ def CheckForException():
       if last_tb:
         SendStack(last_value, ''.join(traceback.format_tb(last_tb)))
   else:
-    SendProfiling()
+    duration = time.time() - _TIME_STARTED
+    if duration > 90:
+      SendProfiling(duration)
 
 
 def Register():
