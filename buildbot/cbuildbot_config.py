@@ -669,7 +669,7 @@ chrome_pgo = chrome_pfq.derive(
 
   vm_tests=None,
   hw_tests=['PGO_record'],
-  hw_tests_critical=False, # Set to true once hw tests are stable for pgo.
+  hw_tests_critical=True,
   hw_tests_pool=constants.HWTEST_CHROME_PFQ_POOL,
   hw_tests_num=1,
   hw_tests_timeout=90 * 60,
