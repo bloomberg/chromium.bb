@@ -31,6 +31,12 @@ class TestBrowserPluginEmbedder : public BrowserPluginEmbedder {
 
   // Waits until at least one guest is added to this embedder.
   void WaitForGuestAdded();
+  // Asks the renderer process for RenderViewHost at (|x|, |y|) and waits until
+  // the response arrives.
+  void WaitForRenderViewHostAtPosition(int x, int y);
+  RenderViewHost* last_rvh_at_position_response() {
+    return last_rvh_at_position_response_;
+  }
 
   WebContentsImpl* web_contents() const;
 
@@ -39,7 +45,10 @@ class TestBrowserPluginEmbedder : public BrowserPluginEmbedder {
   virtual void AddGuest(int instance_id,
                         WebContents* guest_web_contents) OVERRIDE;
 
+  void GetRenderViewHostCallback(RenderViewHost* rvh, int x, int y);
+
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  RenderViewHost* last_rvh_at_position_response_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserPluginEmbedder);
 };

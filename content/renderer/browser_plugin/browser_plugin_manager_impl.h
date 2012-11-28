@@ -59,7 +59,8 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
                       bool is_top_level);
   void OnSetCursor(int instance_id,
                    const WebCursor& cursor);
-  void OnPluginAtPositionRequest(int request_id,
+  void OnPluginAtPositionRequest(const IPC::Message& message,
+                                 int request_id,
                                  const gfx::Point& position);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginManagerImpl);

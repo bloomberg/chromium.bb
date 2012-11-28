@@ -1202,4 +1202,18 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AutoSizeAfterNavigation) {
   }
 }
 
+// Test for regression http://crbug.com/162961.
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, GetRenderViewHostAtPositionTest) {
+  const char kEmbedderURL[] = "files/browser_plugin_embedder.html";
+  const std::string embedder_code = StringPrintf("SetSize(%d, %d);", 100, 100);
+  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuestWithSize, true,
+                         embedder_code);
+  // Check for render view host at position (150, 150) that is outside the
+  // bounds of our guest, so this would respond with the render view host of the
+  // embedder.
+  test_embedder()->WaitForRenderViewHostAtPosition(150, 150);
+  ASSERT_EQ(test_embedder()->web_contents()->GetRenderViewHost(),
+            test_embedder()->last_rvh_at_position_response());
+}
+
 }  // namespace content

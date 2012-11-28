@@ -59,11 +59,13 @@ bool BrowserPluginManagerImpl::OnMessageReceived(
 }
 
 void BrowserPluginManagerImpl::OnPluginAtPositionRequest(
-    int request_id, const gfx::Point& position) {
+    const IPC::Message& message,
+    int request_id,
+    const gfx::Point& position) {
   int instance_id = -1;
   IDMap<BrowserPlugin>::iterator it(&instances_);
   gfx::Point local_position = position;
-  int source_routing_id = -1;
+  int source_routing_id = message.routing_id();
   while (!it.IsAtEnd()) {
     const BrowserPlugin* plugin = it.GetCurrentValue();
     // We need to check the plugin's routing id too since BrowserPluginManager

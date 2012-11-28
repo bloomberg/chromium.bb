@@ -16,10 +16,26 @@ namespace content {
 TestBrowserPluginEmbedder::TestBrowserPluginEmbedder(
     WebContentsImpl* web_contents,
     RenderViewHost* render_view_host)
-    : BrowserPluginEmbedder(web_contents, render_view_host) {
+    : BrowserPluginEmbedder(web_contents, render_view_host),
+      last_rvh_at_position_response_(NULL) {
 }
 
 TestBrowserPluginEmbedder::~TestBrowserPluginEmbedder() {
+}
+
+void TestBrowserPluginEmbedder::GetRenderViewHostCallback(
+    RenderViewHost* rvh, int x, int y) {
+  last_rvh_at_position_response_ = rvh;
+  if (message_loop_runner_)
+    message_loop_runner_->Quit();
+}
+
+void TestBrowserPluginEmbedder::WaitForRenderViewHostAtPosition(int x, int y) {
+  GetRenderViewHostAtPosition(x, y,
+      base::Bind(&TestBrowserPluginEmbedder::GetRenderViewHostCallback,
+                 base::Unretained(this)));
+  message_loop_runner_ = new MessageLoopRunner();
+  message_loop_runner_->Run();
 }
 
 void TestBrowserPluginEmbedder::AddGuest(int instance_id,
