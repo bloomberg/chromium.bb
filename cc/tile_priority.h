@@ -12,6 +12,13 @@
 
 namespace cc {
 
+enum WhichTree {
+  // Note: these must be 0 and 1 because we index with them in various places,
+  // e.g. in Tile::priority_.
+  ACTIVE_TREE = 0,
+  PENDING_TREE = 1
+};
+
 enum TileResolution {
   LOW_RESOLUTION = 0 ,
   HIGH_RESOLUTION = 1,

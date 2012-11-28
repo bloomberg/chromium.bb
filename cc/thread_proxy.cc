@@ -43,6 +43,7 @@ ThreadProxy::ThreadProxy(LayerTreeHost* layerTreeHost, scoped_ptr<Thread> implTh
     , m_started(false)
     , m_texturesAcquired(true)
     , m_inCompositeAndReadback(false)
+    , m_manageTilesPending(false)
     , m_mainThreadProxy(ScopedThreadProxy::create(Proxy::mainThread()))
     , m_beginFrameCompletionEventOnImplThread(0)
     , m_readbackRequestOnImplThread(0)
@@ -330,6 +331,22 @@ void ThreadProxy::setNeedsCommitOnImplThread()
     DCHECK(isImplThread());
     TRACE_EVENT0("cc", "ThreadProxy::setNeedsCommitOnImplThread");
     m_schedulerOnImplThread->setNeedsCommit();
+}
+
+void ThreadProxy::setNeedsManageTilesOnImplThread()
+{
+    if (m_manageTilesPending)
+      return;
+    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::manageTilesOnImplThread, base::Unretained(this)));
+    m_manageTilesPending = true;
+}
+
+void ThreadProxy::manageTilesOnImplThread()
+{
+    // TODO(nduca): If needed, move this into CCSchedulerStateMachine.
+    m_manageTilesPending = false;
+    if (m_layerTreeHostImpl)
+        m_layerTreeHostImpl->manageTiles();
 }
 
 void ThreadProxy::setNeedsForcedCommitOnImplThread()

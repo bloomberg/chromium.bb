@@ -96,6 +96,7 @@ public:
     virtual void onCanDrawStateChanged(bool canDraw) OVERRIDE { m_onCanDrawStateChangedCalled = true; }
     virtual void setNeedsRedrawOnImplThread() OVERRIDE { m_didRequestRedraw = true; }
     virtual void setNeedsCommitOnImplThread() OVERRIDE { m_didRequestCommit = true; }
+    virtual void setNeedsManageTilesOnImplThread() OVERRIDE { }
     virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime) OVERRIDE { }
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) OVERRIDE { return m_reduceMemoryResult; }
     virtual void sendManagedMemoryStats() OVERRIDE { }

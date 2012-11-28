@@ -275,6 +275,11 @@ void SingleThreadProxy::setNeedsCommitOnImplThread()
     m_layerTreeHost->scheduleComposite();
 }
 
+void SingleThreadProxy::setNeedsManageTilesOnImplThread()
+{
+    m_layerTreeHost->scheduleComposite();
+}
+
 void SingleThreadProxy::postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector> events, base::Time wallClockTime)
 {
     DCHECK(Proxy::isImplThread());
@@ -368,6 +373,9 @@ bool SingleThreadProxy::doComposite()
             return false;
 
         m_layerTreeHostImpl->animate(base::TimeTicks::Now(), base::Time::Now());
+
+        if (m_layerTreeHostImpl->settings().implSidePainting)
+          m_layerTreeHostImpl->manageTiles();
 
         // We guard prepareToDraw() with canDraw() because it always returns a valid frame, so can only
         // be used when such a frame is possible. Since drawLayers() depends on the result of

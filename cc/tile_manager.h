@@ -9,7 +9,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "cc/layer_tree_host_impl.h"
 #include "cc/resource_pool.h"
 #include "cc/tile_priority.h"
 
@@ -69,7 +68,9 @@ class CC_EXPORT TileManager {
   TileManager(TileManagerClient* client, ResourceProvider *resource_provider);
   virtual ~TileManager();
 
+  const GlobalStateThatImpactsTilePriority& GlobalState() const { return global_state_; }
   void SetGlobalState(const GlobalStateThatImpactsTilePriority& state);
+
   void ManageTiles();
 
  protected:

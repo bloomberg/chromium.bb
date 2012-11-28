@@ -15,6 +15,7 @@
 #include "cc/render_pass.h"
 #include "cc/render_pass_sink.h"
 #include "cc/renderer.h"
+#include "cc/tile_manager.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/rect.h"
 #include <public/WebCompositorOutputSurfaceClient.h>
@@ -33,13 +34,6 @@ class ResourceProvider;
 struct RendererCapabilities;
 struct RenderingStats;
 
-enum WhichTree {
-  // Note: these must be 0 and 1 because we index with them in various places,
-  // e.g. in Tile::priority_.
-  ACTIVE_TREE = 0,
-  PENDING_TREE = 1
-};
-
 // LayerTreeHost->Proxy callback interface.
 class LayerTreeHostImplClient {
 public:
@@ -49,6 +43,7 @@ public:
     virtual void onCanDrawStateChanged(bool canDraw) = 0;
     virtual void setNeedsRedrawOnImplThread() = 0;
     virtual void setNeedsCommitOnImplThread() = 0;
+    virtual void setNeedsManageTilesOnImplThread() = 0;
     virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime) = 0;
     // Returns true if resources were deleted by this call.
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) = 0;
@@ -117,6 +112,7 @@ private:
 // LayerTreeHostImpl owns the LayerImpl tree as well as associated rendering state
 class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
                                     public RendererClient,
+                                    public TileManagerClient,
                                     public NON_EXPORTED_BASE(WebKit::WebCompositorOutputSurfaceClient) {
     typedef std::vector<LayerImpl*> LayerList;
 
@@ -155,6 +151,8 @@ public:
     virtual void commitComplete();
     virtual void animate(base::TimeTicks monotonicTime, base::Time wallClockTime);
 
+    void manageTiles();
+
     // Returns false if problems occured preparing the frame, and we should try
     // to avoid displaying the frame. If prepareToDraw is called,
     // didDrawAllLayers must also be called, regardless of whether drawLayers is
@@ -174,6 +172,9 @@ public:
     virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
     virtual bool hasImplThread() const OVERRIDE;
 
+    // TileManagerClient implementation.
+    virtual void ScheduleManageTiles() OVERRIDE;
+
     // WebCompositorOutputSurfaceClient implementation.
     virtual void onVSyncParametersChanged(double monotonicTimebase, double intervalInSeconds) OVERRIDE;
 
@@ -188,6 +189,7 @@ public:
 
     bool initializeRenderer(scoped_ptr<GraphicsContext>);
     bool isContextLost();
+    TileManager* tileManager() { return m_tileManager.get(); }
     Renderer* renderer() { return m_renderer.get(); }
     const RendererCapabilities& rendererCapabilities() const;
 
@@ -330,6 +332,7 @@ private:
     scoped_ptr<GraphicsContext> m_context;
     scoped_ptr<ResourceProvider> m_resourceProvider;
     scoped_ptr<Renderer> m_renderer;
+    scoped_ptr<TileManager> m_tileManager;
     scoped_ptr<LayerImpl> m_rootLayerImpl;
     LayerImpl* m_rootScrollLayerImpl;
     LayerImpl* m_currentlyScrollingLayerImpl;

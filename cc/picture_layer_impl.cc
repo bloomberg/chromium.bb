@@ -82,8 +82,7 @@ void PictureLayerImpl::dumpLayerProperties(std::string*, int indent) const {
 
 scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling*,
                                                  gfx::Rect rect) {
-  // TODO(nduca): where does this come from?
-  TileManager* tile_manager = NULL;
+  TileManager* tile_manager = layerTreeHostImpl()->tileManager();
 
   return make_scoped_refptr(new Tile(
       tile_manager,

@@ -50,6 +50,7 @@ public:
     virtual void onCanDrawStateChanged(bool) OVERRIDE { }
     virtual void setNeedsRedrawOnImplThread() OVERRIDE { }
     virtual void setNeedsCommitOnImplThread() OVERRIDE { }
+    virtual void setNeedsManageTilesOnImplThread() OVERRIDE { }
     virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime) OVERRIDE { }
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) OVERRIDE { return true; }
     virtual void sendManagedMemoryStats() OVERRIDE { }

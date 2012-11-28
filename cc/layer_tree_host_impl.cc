@@ -291,6 +291,12 @@ void LayerTreeHostImpl::animate(base::TimeTicks monotonicTime, base::Time wallCl
     animateScrollbars(monotonicTime);
 }
 
+void LayerTreeHostImpl::manageTiles()
+{
+    DCHECK(m_tileManager);
+    m_tileManager->ManageTiles();
+}
+
 void LayerTreeHostImpl::startPageScaleAnimation(gfx::Vector2d targetOffset, bool anchorPoint, float pageScale, base::TimeTicks startTime, base::TimeDelta duration)
 {
     if (!m_rootScrollLayerImpl)
@@ -755,11 +761,26 @@ void LayerTreeHostImpl::enforceManagedMemoryPolicy(const ManagedMemoryPolicy& po
         m_client->onCanDrawStateChanged(canDraw());
     }
     m_client->sendManagedMemoryStats();
+
+    if (m_tileManager) {
+      // TODO(nduca): Pass something useful into the memory manager.
+      LOG(INFO) << "Setting up initial tile manager policy";
+      GlobalStateThatImpactsTilePriority new_state(m_tileManager->GlobalState());
+      new_state.memory_limit_in_bytes = PrioritizedResourceManager::defaultMemoryAllocationLimit();
+      new_state.memory_limit_policy = ALLOW_ANYTHING;
+      m_tileManager->SetGlobalState(new_state);
+    }
 }
 
 bool LayerTreeHostImpl::hasImplThread() const
 {
     return m_proxy->hasImplThread();
+}
+
+void LayerTreeHostImpl::ScheduleManageTiles()
+{
+    if (m_client)
+      m_client->setNeedsManageTilesOnImplThread();
 }
 
 void LayerTreeHostImpl::setManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
@@ -968,6 +989,7 @@ bool LayerTreeHostImpl::initializeRenderer(scoped_ptr<GraphicsContext> context)
     }
     // Note: order is important here.
     m_renderer.reset();
+    m_tileManager.reset();
     m_resourceProvider.reset();
     m_context.reset();
 
@@ -977,6 +999,9 @@ bool LayerTreeHostImpl::initializeRenderer(scoped_ptr<GraphicsContext> context)
     scoped_ptr<ResourceProvider> resourceProvider = ResourceProvider::create(context.get());
     if (!resourceProvider)
         return false;
+
+    if (m_settings.implSidePainting)
+      m_tileManager.reset(new TileManager(this, resourceProvider.get()));
 
     if (context->context3D())
         m_renderer = GLRenderer::create(this, resourceProvider.get());

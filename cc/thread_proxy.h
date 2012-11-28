@@ -61,6 +61,7 @@ public:
     virtual void onCanDrawStateChanged(bool canDraw) OVERRIDE;
     virtual void setNeedsRedrawOnImplThread() OVERRIDE;
     virtual void setNeedsCommitOnImplThread() OVERRIDE;
+    virtual void setNeedsManageTilesOnImplThread() OVERRIDE;
     virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime) OVERRIDE;
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) OVERRIDE;
     virtual void sendManagedMemoryStats() OVERRIDE;
@@ -118,6 +119,7 @@ private:
     void initializeContextOnImplThread(scoped_ptr<GraphicsContext>);
     void initializeRendererOnImplThread(CompletionEvent*, bool* initializeSucceeded, RendererCapabilities*);
     void layerTreeHostClosedOnImplThread(CompletionEvent*);
+    void manageTilesOnImplThread();
     void setFullRootLayerDamageOnImplThread();
     void acquireLayerTexturesForMainThreadOnImplThread(CompletionEvent*);
     void recreateContextOnImplThread(CompletionEvent*, scoped_ptr<GraphicsContext>, bool* recreateSucceeded, RendererCapabilities*);
@@ -137,6 +139,7 @@ private:
     bool m_started;
     bool m_texturesAcquired;
     bool m_inCompositeAndReadback;
+    bool m_manageTilesPending;
 
     scoped_ptr<LayerTreeHostImpl> m_layerTreeHostImpl;
 
