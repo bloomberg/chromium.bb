@@ -40,7 +40,7 @@ void CopyResultsFromGetDataCallbackAndQuit(
 // Copies the results from DownloadActionCallback and quit the message loop.
 // The contents of the download cache file are copied to a string, and the
 // file is removed.
-void CopyResultsFromDownloadActionCallbackAndQuit(
+void CopyResultsFromDownloadActionCallback(
     GDataErrorCode* out_result_code,
     std::string* contents,
     GDataErrorCode result_code,
@@ -48,14 +48,6 @@ void CopyResultsFromDownloadActionCallbackAndQuit(
   *out_result_code = result_code;
   file_util::ReadFileToString(cache_file_path, contents);
   file_util::Delete(cache_file_path, false);
-  MessageLoop::current()->Quit();
-}
-
-// Copies the result from EntryActionCallback and quit the message loop.
-void CopyResultFromEntryActionCallbackAndQuit(
-    GDataErrorCode* out_result_code,
-    GDataErrorCode result_code) {
-  *out_result_code = result_code;
   MessageLoop::current()->Quit();
 }
 
@@ -175,8 +167,6 @@ class GDataWapiOperationsTest : public testing::Test {
   // directory and returns the content.
   scoped_ptr<test_server::HttpResponse> HandleDownloadRequest(
       const test_server::HttpRequest& request) {
-    http_request_ = request;
-
     const GURL absolute_url = test_server_.GetURL(request.relative_url);
     std::string remaining_path;
     if (!RemovePrefix(absolute_url.path(), "/files/", &remaining_path))
@@ -189,8 +179,6 @@ class GDataWapiOperationsTest : public testing::Test {
   // Handles a request for fetching a resource feed.
   scoped_ptr<test_server::HttpResponse> HandleResourceFeedRequest(
       const test_server::HttpRequest& request) {
-    http_request_ = request;
-
     const GURL absolute_url = test_server_.GetURL(request.relative_url);
     std::string remaining_path;
     if (!RemovePrefix(absolute_url.path(),
@@ -222,8 +210,6 @@ class GDataWapiOperationsTest : public testing::Test {
   // Handles a request for fetching a metadata feed.
   scoped_ptr<test_server::HttpResponse> HandleMetadataFeedRequest(
       const test_server::HttpRequest& request) {
-    http_request_ = request;
-
     const GURL absolute_url = test_server_.GetURL(request.relative_url);
     if (absolute_url.path() != "/feeds/metadata/default")
       return scoped_ptr<test_server::HttpResponse>();
@@ -241,11 +227,6 @@ class GDataWapiOperationsTest : public testing::Test {
   OperationRegistry operation_registry_;
   scoped_ptr<GDataWapiUrlGenerator> url_generator_;
   scoped_ptr<ScopedRequestContextGetterForTesting> request_context_getter_;
-
-  // The incoming HTTP request is saved so tests can verify the request
-  // parameters like HTTP method (ex. some operations should use DELETE
-  // instead of GET).
-  test_server::HttpRequest http_request_;
 };
 
 }  // namespace
@@ -269,7 +250,6 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_DefaultFeed) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
   ASSERT_TRUE(result_data);
   EXPECT_TRUE(VerifyJsonData(
       test_util::GetTestFilePath("gdata/root_feed.json"),
@@ -295,7 +275,6 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_ValidFeed) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
   ASSERT_TRUE(result_data);
   EXPECT_TRUE(VerifyJsonData(
       test_util::GetTestFilePath("gdata/root_feed.json"),
@@ -323,7 +302,6 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_InvalidFeed) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(GDATA_PARSE_ERROR, result_code);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
   EXPECT_FALSE(result_data);
 }
 
@@ -342,7 +320,6 @@ TEST_F(GDataWapiOperationsTest, GetDocumentEntryOperation_ValidResourceId) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
   ASSERT_TRUE(result_data);
   EXPECT_TRUE(VerifyJsonData(
       test_util::GetTestFilePath("gdata/file_entry.json"),
@@ -364,7 +341,6 @@ TEST_F(GDataWapiOperationsTest, GetDocumentEntryOperation_InvalidResourceId) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_NOT_FOUND, result_code);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
   ASSERT_FALSE(result_data);
 }
 
@@ -383,7 +359,6 @@ TEST_F(GDataWapiOperationsTest, GetAccountMetadataOperation) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
   EXPECT_TRUE(VerifyJsonData(
       test_util::GetTestFilePath("gdata/account_metadata.json"),
       result_data.get()));
@@ -394,7 +369,7 @@ TEST_F(GDataWapiOperationsTest, DownloadFileOperation_ValidFile) {
   std::string contents;
   DownloadFileOperation* operation = new DownloadFileOperation(
       &operation_registry_,
-      base::Bind(&CopyResultsFromDownloadActionCallbackAndQuit,
+      base::Bind(&CopyResultsFromDownloadActionCallback,
                  &result_code,
                  &contents),
       GetContentCallback(),
@@ -405,8 +380,6 @@ TEST_F(GDataWapiOperationsTest, DownloadFileOperation_ValidFile) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
-
   const FilePath expected_path =
       test_util::GetTestFilePath("gdata/testfile.txt");
   std::string expected_contents;
@@ -419,7 +392,7 @@ TEST_F(GDataWapiOperationsTest, DownloadFileOperation_NonExistentFile) {
   std::string contents;
   DownloadFileOperation* operation = new DownloadFileOperation(
       &operation_registry_,
-      base::Bind(&CopyResultsFromDownloadActionCallbackAndQuit,
+      base::Bind(&CopyResultsFromDownloadActionCallback,
                  &result_code,
                  &contents),
       GetContentCallback(),
@@ -431,27 +404,11 @@ TEST_F(GDataWapiOperationsTest, DownloadFileOperation_NonExistentFile) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_NOT_FOUND, result_code);
-  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
   // Do not verify the not found message.
 }
 
-TEST_F(GDataWapiOperationsTest, DeleteDocumentOperation) {
-  GDataErrorCode result_code = GDATA_OTHER_ERROR;
-
-  DeleteDocumentOperation* operation = new DeleteDocumentOperation(
-      &operation_registry_,
-      base::Bind(&CopyResultFromEntryActionCallbackAndQuit,
-                 &result_code),
-      test_server_.GetURL(
-          "/feeds/default/private/full/file:2_file_resource_id"));
-
-  operation->Start(kTestGDataAuthToken, kTestUserAgent);
-  MessageLoop::current()->Run();
-
-  EXPECT_EQ(HTTP_SUCCESS, result_code);
-  EXPECT_EQ(test_server::METHOD_DELETE, http_request_.method);
-  EXPECT_EQ("*", http_request_.headers["If-Match"]);
-}
+// TODO(satorux): Write tests for DeleteDocumentOperation.
+// crbug.com/162348
 
 // TODO(satorux): Write tests for CreateDirectoryOperation.
 // crbug.com/162348
