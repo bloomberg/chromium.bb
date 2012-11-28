@@ -272,6 +272,34 @@ TEST_F(DelegatedRendererLayerImplTestSimple, QuadsFromRootRenderPassAreModifiedF
     EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(), frame.renderPasses[1]->quad_list[0]->quadTransform());
 }
 
+TEST_F(DelegatedRendererLayerImplTestSimple, DoesNotOwnARenderSurface)
+{
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
+    m_hostImpl->drawLayers(frame);
+    m_hostImpl->didDrawAllLayers(frame);
+
+    // If the DelegatedRendererLayer is axis aligned and has opacity 1, then
+    // it has no need to be a renderSurface for the quads it carries.
+    EXPECT_FALSE(m_delegatedRendererLayerPtr->renderSurface());
+}
+
+TEST_F(DelegatedRendererLayerImplTestSimple, DoesOwnARenderSurface)
+{
+    m_delegatedRendererLayerPtr->setOpacity(0.5f);
+
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
+    m_hostImpl->drawLayers(frame);
+    m_hostImpl->didDrawAllLayers(frame);
+
+    // This test case has quads from multiple layers in the delegated renderer,
+    // so if the DelegatedRendererLayer has opacity < 1, it should end up with
+    // a render surface.
+    EXPECT_TRUE(m_delegatedRendererLayerPtr->renderSurface());
+
+}
+
 class DelegatedRendererLayerImplTestOwnSurface : public DelegatedRendererLayerImplTestSimple {
 public:
     DelegatedRendererLayerImplTestOwnSurface()
