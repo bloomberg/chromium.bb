@@ -868,9 +868,14 @@ cr.define('options', function() {
         return false;
       }
       // If email is different from last email, and we have not already warned
-      // the user, tell them now.  Otherwise proceed as usual.
+      // the user, tell them now.  Otherwise proceed as usual. When comparing
+      // email ids, use @gmail.com as the domain if not provided.
+      function normalized_email(id) {
+        return ((id.indexOf('@') != -1) ? id : id + '@gmail.com');
+      }
       if (this.lastEmailAddress_.length > 0 &&
-          email.value != this.lastEmailAddress_ &&
+          normalized_email(email.value) !=
+              normalized_email(this.lastEmailAddress_) &&
           isErrormsgDifferentEmailHidden) {
         errormsgDifferentEmail.hidden = false;
         return false;
