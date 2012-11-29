@@ -17,7 +17,7 @@ class URLRequestMockLinkDoctorJob : public content::URLRequestMockHTTPJob {
   static net::URLRequest::ProtocolFactory Factory;
 
   // Adds the testing URLs to the net::URLRequestFilter.
-  static void AddUrlHandler();
+  static void AddUrlHandler(const FilePath& base_path);
 
  private:
   virtual ~URLRequestMockLinkDoctorJob() {}

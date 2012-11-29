@@ -14,11 +14,11 @@ using content::URLRequestMockHTTPJob;
 
 namespace {
 
-FilePath GetMockFilePath() {
-  FilePath test_dir;
-  bool success = PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
-  DCHECK(success);
-  return test_dir.AppendASCII("mock-link-doctor.html");
+// This is the file path leading to the root of the directory to use as the
+// root of the http server. This returns a reference that can be assigned to.
+FilePath& BasePath() {
+  CR_DEFINE_STATIC_LOCAL(FilePath, base_path, ());
+  return base_path;
 }
 
 }  // namespace
@@ -32,7 +32,9 @@ net::URLRequestJob* URLRequestMockLinkDoctorJob::Factory(
 }
 
 // static
-void URLRequestMockLinkDoctorJob::AddUrlHandler() {
+void URLRequestMockLinkDoctorJob::AddUrlHandler(const FilePath& base_path) {
+  BasePath() = base_path;
+
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
   filter->AddHostnameHandler("http",
                              google_util::LinkDoctorBaseURL().host(),
@@ -41,5 +43,8 @@ void URLRequestMockLinkDoctorJob::AddUrlHandler() {
 
 URLRequestMockLinkDoctorJob::URLRequestMockLinkDoctorJob(
     net::URLRequest* request, net::NetworkDelegate* network_delegate)
-    : URLRequestMockHTTPJob(request, network_delegate, GetMockFilePath()) {
+    : URLRequestMockHTTPJob(
+        request,
+        network_delegate,
+        BasePath().AppendASCII("mock-link-doctor.html")) {
 }
