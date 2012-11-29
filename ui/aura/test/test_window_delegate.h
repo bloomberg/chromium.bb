@@ -30,6 +30,14 @@ class TestWindowDelegate : public WindowDelegate {
     window_component_ = window_component;
   }
 
+  void set_minimum_size(const gfx::Size& minimum_size) {
+    minimum_size_ = minimum_size;
+  }
+
+  void set_maximum_size(const gfx::Size& maximum_size) {
+    maximum_size_ = maximum_size;
+  }
+
   // Overridden from WindowDelegate:
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual gfx::Size GetMaximumSize() const OVERRIDE;
@@ -62,6 +70,8 @@ class TestWindowDelegate : public WindowDelegate {
  private:
   int window_component_;
   bool delete_on_destroyed_;
+  gfx::Size minimum_size_;
+  gfx::Size maximum_size_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowDelegate);
 };

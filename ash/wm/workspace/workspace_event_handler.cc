@@ -120,6 +120,7 @@ ui::EventResult WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event) {
 void WorkspaceEventHandler::HandleVerticalResizeDoubleClick(
     aura::Window* target,
     ui::MouseEvent* event) {
+  gfx::Rect max_size(target->delegate()->GetMaximumSize());
   if (event->flags() & ui::EF_IS_DOUBLE_CLICK &&
       !wm::IsWindowMaximized(target)) {
     int component =
@@ -129,6 +130,9 @@ void WorkspaceEventHandler::HandleVerticalResizeDoubleClick(
     const gfx::Rect* restore_bounds =
         GetRestoreBoundsInScreen(target);
     if (component == HTBOTTOM || component == HTTOP) {
+      // Don't maximize vertically if the window has a max height defined.
+      if (max_size.height() != 0)
+        return;
       if (restore_bounds &&
           (target->bounds().height() == work_area.height() &&
            target->bounds().y() == work_area.y())) {
@@ -141,6 +145,9 @@ void WorkspaceEventHandler::HandleVerticalResizeDoubleClick(
                                      work_area.height()));
       }
     } else if (component == HTLEFT || component == HTRIGHT) {
+      // Don't maximize horizontally if the window has a max width defined.
+      if (max_size.width() != 0)
+        return;
       if (restore_bounds &&
           (target->bounds().width() == work_area.width() &&
            target->bounds().x() == work_area.x())) {

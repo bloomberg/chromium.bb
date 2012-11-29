@@ -34,11 +34,11 @@ TestWindowDelegate* TestWindowDelegate::CreateSelfDestroyingDelegate() {
 }
 
 gfx::Size TestWindowDelegate::GetMinimumSize() const {
-  return gfx::Size();
+  return minimum_size_;
 }
 
 gfx::Size TestWindowDelegate::GetMaximumSize() const {
-  return gfx::Size();
+  return maximum_size_;
 }
 
 void TestWindowDelegate::OnBoundsChanged(const gfx::Rect& old_bounds,
