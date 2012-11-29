@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_EXTENSIONS_SHELL_WINDOW_COCOA_H_
-#define CHROME_BROWSER_UI_COCOA_EXTENSIONS_SHELL_WINDOW_COCOA_H_
+#ifndef CHROME_BROWSER_UI_COCOA_EXTENSIONS_NATIVE_APP_WINDOW_COCOA_H_
+#define CHROME_BROWSER_UI_COCOA_EXTENSIONS_NATIVE_APP_WINDOW_COCOA_H_
 
 #import <Cocoa/Cocoa.h>
 #include <vector>
@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
-#include "chrome/browser/ui/extensions/native_shell_window.h"
+#include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/extensions/draggable_region.h"
 #import "third_party/GTM/AppKit/GTMWindowSheetController.h"
@@ -20,24 +20,24 @@
 
 class ExtensionKeybindingRegistryCocoa;
 class Profile;
-class ShellWindowCocoa;
+class NativeAppWindowCocoa;
 @class ShellNSWindow;
 class SkRegion;
 
 // A window controller for a minimal window to host a web app view. Passes
 // Objective-C notifications to the C++ bridge.
-@interface ShellWindowController : NSWindowController
-                                  <NSWindowDelegate,
-                                   GTMWindowSheetControllerDelegate,
-                                   ConstrainedWindowSupport,
-                                   BrowserCommandExecutor> {
+@interface NativeAppWindowController : NSWindowController
+                                      <NSWindowDelegate,
+                                       GTMWindowSheetControllerDelegate,
+                                       ConstrainedWindowSupport,
+                                       BrowserCommandExecutor> {
  @private
-  ShellWindowCocoa* shellWindow_;  // Weak; owns self.
+  NativeAppWindowCocoa* appWindow_;  // Weak; owns self.
   // Manages per-window sheets.
   scoped_nsobject<GTMWindowSheetController> sheetController_;
 }
 
-@property(assign, nonatomic) ShellWindowCocoa* shellWindow;
+@property(assign, nonatomic) NativeAppWindowCocoa* appWindow;
 
 // Consults the Command Registry to see if this |event| needs to be handled as
 // an extension command and returns YES if so (NO otherwise).
@@ -45,11 +45,11 @@ class SkRegion;
 
 @end
 
-// Cocoa bridge to ShellWindow.
-class ShellWindowCocoa : public NativeShellWindow {
+// Cocoa bridge to AppWindow.
+class NativeAppWindowCocoa : public NativeAppWindow {
  public:
-  ShellWindowCocoa(ShellWindow* shell_window,
-      const ShellWindow::CreateParams& params);
+  NativeAppWindowCocoa(ShellWindow* shell_window,
+                       const ShellWindow::CreateParams& params);
 
   // BaseWindow implementation.
   virtual bool IsActive() const OVERRIDE;
@@ -100,7 +100,7 @@ class ShellWindowCocoa : public NativeShellWindow {
   bool use_system_drag() const { return use_system_drag_; }
 
  protected:
-  // NativeShellWindow implementation.
+  // NativeAppWindow implementation.
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
   virtual bool IsFullscreenOrPending() const OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
@@ -112,7 +112,7 @@ class ShellWindowCocoa : public NativeShellWindow {
   virtual void RenderViewHostChanged() OVERRIDE {}
 
  private:
-  virtual ~ShellWindowCocoa();
+  virtual ~NativeAppWindowCocoa();
 
   ShellNSWindow* window() const;
 
@@ -132,7 +132,7 @@ class ShellWindowCocoa : public NativeShellWindow {
   void UpdateDraggableRegionsForCustomDrag(
       const std::vector<extensions::DraggableRegion>& regions);
 
-  ShellWindow* shell_window_; // weak - ShellWindow owns NativeShellWindow.
+  ShellWindow* shell_window_; // weak - ShellWindow owns NativeAppWindow.
 
   bool has_frame_;
 
@@ -142,7 +142,7 @@ class ShellWindowCocoa : public NativeShellWindow {
   gfx::Size min_size_;
   gfx::Size max_size_;
 
-  scoped_nsobject<ShellWindowController> window_controller_;
+  scoped_nsobject<NativeAppWindowController> window_controller_;
   NSInteger attention_request_id_;  // identifier from requestUserAttention
 
   // Indicates whether system drag or custom drag should be used, depending on
@@ -165,7 +165,7 @@ class ShellWindowCocoa : public NativeShellWindow {
   // handle.
   scoped_ptr<ExtensionKeybindingRegistryCocoa> extension_keybinding_registry_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellWindowCocoa);
+  DISALLOW_COPY_AND_ASSIGN(NativeAppWindowCocoa);
 };
 
-#endif  // CHROME_BROWSER_UI_COCOA_EXTENSIONS_SHELL_WINDOW_COCOA_H_
+#endif  // CHROME_BROWSER_UI_COCOA_EXTENSIONS_NATIVE_APP_WINDOW_COCOA_H_

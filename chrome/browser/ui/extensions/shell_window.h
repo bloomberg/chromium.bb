@@ -21,7 +21,7 @@
 
 class GURL;
 class Profile;
-class NativeShellWindow;
+class NativeAppWindow;
 
 namespace content {
 class WebContents;
@@ -93,7 +93,7 @@ class ShellWindow : public content::NotificationObserver,
     return GetBaseWindow()->GetNativeWindow();
   }
 
-  // NativeShellWindows should call this to determine what the window's title
+  // NativeAppWindows should call this to determine what the window's title
   // is on startup and from within UpdateWindowTitle().
   virtual string16 GetTitle() const;
 
@@ -211,7 +211,7 @@ class ShellWindow : public content::NotificationObserver,
   // Used for loading app_icon_.
   scoped_ptr<ImageLoadingTracker> app_icon_loader_;
 
-  scoped_ptr<NativeShellWindow> native_window_;
+  scoped_ptr<NativeAppWindow> native_app_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindow);
 };

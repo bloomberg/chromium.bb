@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/extensions/shell_window_views.h"
+#include "chrome/browser/ui/views/extensions/native_app_window_views.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -58,7 +58,7 @@ class ShellWindowFrameView : public views::NonClientFrameView,
  public:
   static const char kViewClassName[];
 
-  explicit ShellWindowFrameView(ShellWindowViews* window);
+  explicit ShellWindowFrameView(NativeAppWindowViews* window);
   virtual ~ShellWindowFrameView();
 
   void Init(views::Widget* frame);
@@ -87,7 +87,7 @@ class ShellWindowFrameView : public views::NonClientFrameView,
   virtual void ButtonPressed(views::Button* sender, const ui::Event& event)
       OVERRIDE;
 
-  ShellWindowViews* window_;
+  NativeAppWindowViews* window_;
   views::Widget* frame_;
   views::ImageButton* close_button_;
   views::ImageButton* maximize_button_;
@@ -100,7 +100,7 @@ class ShellWindowFrameView : public views::NonClientFrameView,
 const char ShellWindowFrameView::kViewClassName[] =
     "browser/ui/views/extensions/ShellWindowFrameView";
 
-ShellWindowFrameView::ShellWindowFrameView(ShellWindowViews* window)
+ShellWindowFrameView::ShellWindowFrameView(NativeAppWindowViews* window)
     : window_(window),
       frame_(NULL),
       close_button_(NULL) {
@@ -395,8 +395,9 @@ void ShellWindowFrameView::ButtonPressed(views::Button* sender,
     frame_->Minimize();
 }
 
-ShellWindowViews::ShellWindowViews(ShellWindow* shell_window,
-                                   const ShellWindow::CreateParams& win_params)
+NativeAppWindowViews::NativeAppWindowViews(
+    ShellWindow* shell_window,
+    const ShellWindow::CreateParams& win_params)
     : shell_window_(shell_window),
       web_view_(NULL),
       is_fullscreen_(false),
@@ -437,11 +438,11 @@ ShellWindowViews::ShellWindowViews(ShellWindow* shell_window,
   window_->AddObserver(this);
 }
 
-views::View* ShellWindowViews::GetInitiallyFocusedView() {
+views::View* NativeAppWindowViews::GetInitiallyFocusedView() {
   return web_view_;
 }
 
-bool ShellWindowViews::ShouldDescendIntoChildForEventHandling(
+bool NativeAppWindowViews::ShouldDescendIntoChildForEventHandling(
     gfx::NativeView child,
     const gfx::Point& location) {
 #if defined(USE_AURA)
@@ -455,11 +456,11 @@ bool ShellWindowViews::ShouldDescendIntoChildForEventHandling(
 #endif
 }
 
-void ShellWindowViews::OnFocus() {
+void NativeAppWindowViews::OnFocus() {
   web_view_->RequestFocus();
 }
 
-void ShellWindowViews::ViewHierarchyChanged(
+void NativeAppWindowViews::ViewHierarchyChanged(
     bool is_add, views::View *parent, views::View *child) {
   if (is_add && child == this) {
     web_view_ = new views::WebView(NULL);
@@ -468,15 +469,15 @@ void ShellWindowViews::ViewHierarchyChanged(
   }
 }
 
-gfx::Size ShellWindowViews::GetMinimumSize() {
+gfx::Size NativeAppWindowViews::GetMinimumSize() {
   return minimum_size_;
 }
 
-gfx::Size ShellWindowViews::GetMaximumSize() {
+gfx::Size NativeAppWindowViews::GetMaximumSize() {
   return maximum_size_;
 }
 
-void ShellWindowViews::SetFullscreen(bool fullscreen) {
+void NativeAppWindowViews::SetFullscreen(bool fullscreen) {
   is_fullscreen_ = fullscreen;
   window_->SetFullscreen(fullscreen);
   // TODO(jeremya) we need to call RenderViewHost::ExitFullscreen() if we
@@ -484,43 +485,43 @@ void ShellWindowViews::SetFullscreen(bool fullscreen) {
   // wasn't the app calling webkitCancelFullScreen().
 }
 
-bool ShellWindowViews::IsFullscreenOrPending() const {
+bool NativeAppWindowViews::IsFullscreenOrPending() const {
   return is_fullscreen_;
 }
 
-ShellWindowViews::~ShellWindowViews() {
+NativeAppWindowViews::~NativeAppWindowViews() {
   web_view_->SetWebContents(NULL);
 }
 
-bool ShellWindowViews::IsActive() const {
+bool NativeAppWindowViews::IsActive() const {
   return window_->IsActive();
 }
 
-bool ShellWindowViews::IsMaximized() const {
+bool NativeAppWindowViews::IsMaximized() const {
   return window_->IsMaximized();
 }
 
-bool ShellWindowViews::IsMinimized() const {
+bool NativeAppWindowViews::IsMinimized() const {
   return window_->IsMinimized();
 }
 
-bool ShellWindowViews::IsFullscreen() const {
+bool NativeAppWindowViews::IsFullscreen() const {
   return window_->IsFullscreen();
 }
 
-gfx::NativeWindow ShellWindowViews::GetNativeWindow() {
+gfx::NativeWindow NativeAppWindowViews::GetNativeWindow() {
   return window_->GetNativeWindow();
 }
 
-gfx::Rect ShellWindowViews::GetRestoredBounds() const {
+gfx::Rect NativeAppWindowViews::GetRestoredBounds() const {
   return window_->GetRestoredBounds();
 }
 
-gfx::Rect ShellWindowViews::GetBounds() const {
+gfx::Rect NativeAppWindowViews::GetBounds() const {
   return window_->GetWindowBoundsInScreen();
 }
 
-void ShellWindowViews::Show() {
+void NativeAppWindowViews::Show() {
   if (window_->IsVisible()) {
     window_->Activate();
     return;
@@ -529,70 +530,70 @@ void ShellWindowViews::Show() {
   window_->Show();
 }
 
-void ShellWindowViews::ShowInactive() {
+void NativeAppWindowViews::ShowInactive() {
   if (window_->IsVisible())
     return;
   window_->ShowInactive();
 }
 
-void ShellWindowViews::Hide() {
+void NativeAppWindowViews::Hide() {
   window_->Hide();
 }
 
-void ShellWindowViews::Close() {
+void NativeAppWindowViews::Close() {
   window_->Close();
 }
 
-void ShellWindowViews::Activate() {
+void NativeAppWindowViews::Activate() {
   window_->Activate();
 }
 
-void ShellWindowViews::Deactivate() {
+void NativeAppWindowViews::Deactivate() {
   window_->Deactivate();
 }
 
-void ShellWindowViews::Maximize() {
+void NativeAppWindowViews::Maximize() {
   window_->Maximize();
 }
 
-void ShellWindowViews::Minimize() {
+void NativeAppWindowViews::Minimize() {
   window_->Minimize();
 }
 
-void ShellWindowViews::Restore() {
+void NativeAppWindowViews::Restore() {
   window_->Restore();
 }
 
-void ShellWindowViews::SetBounds(const gfx::Rect& bounds) {
+void NativeAppWindowViews::SetBounds(const gfx::Rect& bounds) {
   GetWidget()->SetBounds(bounds);
 }
 
-void ShellWindowViews::FlashFrame(bool flash) {
+void NativeAppWindowViews::FlashFrame(bool flash) {
   window_->FlashFrame(flash);
 }
 
-bool ShellWindowViews::IsAlwaysOnTop() const {
+bool NativeAppWindowViews::IsAlwaysOnTop() const {
   return false;
 }
 
-void ShellWindowViews::DeleteDelegate() {
+void NativeAppWindowViews::DeleteDelegate() {
   window_->RemoveObserver(this);
   shell_window_->OnNativeClose();
 }
 
-bool ShellWindowViews::CanResize() const {
+bool NativeAppWindowViews::CanResize() const {
   return maximum_size_.IsEmpty() || minimum_size_ != maximum_size_;
 }
 
-bool ShellWindowViews::CanMaximize() const {
+bool NativeAppWindowViews::CanMaximize() const {
   return maximum_size_.IsEmpty();
 }
 
-views::View* ShellWindowViews::GetContentsView() {
+views::View* NativeAppWindowViews::GetContentsView() {
   return this;
 }
 
-views::NonClientFrameView* ShellWindowViews::CreateNonClientFrameView(
+views::NonClientFrameView* NativeAppWindowViews::CreateNonClientFrameView(
     views::Widget* widget) {
 #if defined(USE_ASH)
   if (chrome::IsNativeViewInAsh(widget->GetNativeView()) && !frameless_) {
@@ -606,19 +607,19 @@ views::NonClientFrameView* ShellWindowViews::CreateNonClientFrameView(
   return frame_view;
 }
 
-string16 ShellWindowViews::GetWindowTitle() const {
+string16 NativeAppWindowViews::GetWindowTitle() const {
   return shell_window_->GetTitle();
 }
 
-views::Widget* ShellWindowViews::GetWidget() {
+views::Widget* NativeAppWindowViews::GetWidget() {
   return window_;
 }
 
-const views::Widget* ShellWindowViews::GetWidget() const {
+const views::Widget* NativeAppWindowViews::GetWidget() const {
   return window_;
 }
 
-void ShellWindowViews::OnViewWasResized() {
+void NativeAppWindowViews::OnViewWasResized() {
   // TODO(jeremya): this doesn't seem like a terribly elegant way to keep the
   // window shape in sync.
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -670,7 +671,7 @@ void ShellWindowViews::OnViewWasResized() {
 #endif
 }
 
-gfx::ImageSkia ShellWindowViews::GetWindowAppIcon() {
+gfx::ImageSkia NativeAppWindowViews::GetWindowAppIcon() {
   gfx::Image app_icon = shell_window_->app_icon();
   if (app_icon.IsEmpty())
     return GetWindowIcon();
@@ -678,7 +679,7 @@ gfx::ImageSkia ShellWindowViews::GetWindowAppIcon() {
     return *app_icon.ToImageSkia();
 }
 
-gfx::ImageSkia ShellWindowViews::GetWindowIcon() {
+gfx::ImageSkia NativeAppWindowViews::GetWindowIcon() {
   content::WebContents* web_contents = shell_window_->web_contents();
   if (web_contents) {
     FaviconTabHelper* favicon_tab_helper =
@@ -690,39 +691,39 @@ gfx::ImageSkia ShellWindowViews::GetWindowIcon() {
   return gfx::ImageSkia();
 }
 
-bool ShellWindowViews::ShouldShowWindowTitle() const {
+bool NativeAppWindowViews::ShouldShowWindowTitle() const {
   return false;
 }
 
-void ShellWindowViews::OnWidgetMove() {
+void NativeAppWindowViews::OnWidgetMove() {
   shell_window_->OnNativeWindowChanged();
 }
 
-void ShellWindowViews::OnWidgetVisibilityChanged(views::Widget* widget,
-                                                 bool visible) {
+void NativeAppWindowViews::OnWidgetVisibilityChanged(views::Widget* widget,
+                                                     bool visible) {
   shell_window_->OnNativeWindowChanged();
 }
 
-void ShellWindowViews::OnWidgetActivationChanged(views::Widget* widget,
-                                                 bool active) {
+void NativeAppWindowViews::OnWidgetActivationChanged(views::Widget* widget,
+                                                     bool active) {
   shell_window_->OnNativeWindowChanged();
 }
 
-void ShellWindowViews::Layout() {
+void NativeAppWindowViews::Layout() {
   DCHECK(web_view_);
   web_view_->SetBounds(0, 0, width(), height());
   OnViewWasResized();
 }
 
-void ShellWindowViews::UpdateWindowIcon() {
+void NativeAppWindowViews::UpdateWindowIcon() {
   window_->UpdateWindowIcon();
 }
 
-void ShellWindowViews::UpdateWindowTitle() {
+void NativeAppWindowViews::UpdateWindowTitle() {
   window_->UpdateWindowTitle();
 }
 
-void ShellWindowViews::UpdateDraggableRegions(
+void NativeAppWindowViews::UpdateDraggableRegions(
     const std::vector<extensions::DraggableRegion>& regions) {
   // Draggable region is not supported for non-frameless window.
   if (!frameless_)
@@ -732,24 +733,24 @@ void ShellWindowViews::UpdateDraggableRegions(
   OnViewWasResized();
 }
 
-void ShellWindowViews::HandleKeyboardEvent(
+void NativeAppWindowViews::HandleKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
   unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
                                                         GetFocusManager());
 }
 
-void ShellWindowViews::RenderViewHostChanged() {
+void NativeAppWindowViews::RenderViewHostChanged() {
   OnViewWasResized();
 }
 
-void ShellWindowViews::SaveWindowPlacement(const gfx::Rect& bounds,
-                                           ui::WindowShowState show_state) {
+void NativeAppWindowViews::SaveWindowPlacement(const gfx::Rect& bounds,
+                                               ui::WindowShowState show_state) {
   views::WidgetDelegate::SaveWindowPlacement(bounds, show_state);
   shell_window_->OnNativeWindowChanged();
 }
 
 // static
-NativeShellWindow* NativeShellWindow::Create(
+NativeAppWindow* NativeAppWindow::Create(
     ShellWindow* shell_window, const ShellWindow::CreateParams& params) {
-  return new ShellWindowViews(shell_window, params);
+  return new NativeAppWindowViews(shell_window, params);
 }

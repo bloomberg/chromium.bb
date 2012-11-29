@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_SHELL_WINDOW_VIEWS_H_
-#define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_SHELL_WINDOW_VIEWS_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_NATIVE_APP_WINDOW_VIEWS_H_
+#define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_NATIVE_APP_WINDOW_VIEWS_H_
 
 #include "chrome/browser/ui/base_window.h"
-#include "chrome/browser/ui/extensions/native_shell_window.h"
+#include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -30,12 +30,12 @@ namespace views {
 class WebView;
 }
 
-class ShellWindowViews : public NativeShellWindow,
-                         public views::WidgetDelegateView,
-                         public views::WidgetObserver {
+class NativeAppWindowViews : public NativeAppWindow,
+                             public views::WidgetDelegateView,
+                             public views::WidgetObserver {
  public:
-  ShellWindowViews(ShellWindow* shell_window,
-                   const ShellWindow::CreateParams& params);
+  NativeAppWindowViews(ShellWindow* shell_window,
+                       const ShellWindow::CreateParams& params);
 
   bool frameless() const { return frameless_; }
   SkRegion* draggable_region() { return draggable_region_.get(); }
@@ -110,9 +110,9 @@ class ShellWindowViews : public NativeShellWindow,
  private:
   friend class ShellWindowFrameView;
 
-  virtual ~ShellWindowViews();
+  virtual ~NativeAppWindowViews();
 
-  // NativeShellWindow implementation.
+  // NativeAppWindow implementation.
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
   virtual bool IsFullscreenOrPending() const OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
@@ -125,7 +125,7 @@ class ShellWindowViews : public NativeShellWindow,
 
   void OnViewWasResized();
 
-  ShellWindow* shell_window_; // weak - ShellWindow owns NativeShellWindow.
+  ShellWindow* shell_window_; // weak - ShellWindow owns NativeAppWindow.
 
   views::WebView* web_view_;
   views::Widget* window_;
@@ -142,7 +142,7 @@ class ShellWindowViews : public NativeShellWindow,
 
   UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellWindowViews);
+  DISALLOW_COPY_AND_ASSIGN(NativeAppWindowViews);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_SHELL_WINDOW_VIEWS_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_NATIVE_APP_WINDOW_VIEWS_H_

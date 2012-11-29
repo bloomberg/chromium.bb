@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/gtk/extensions/shell_window_gtk.h"
+#include "chrome/browser/ui/gtk/extensions/native_app_window_gtk.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,8 +27,8 @@ const int kDebounceTimeoutMilliseconds = 100;
 
 } // namespace
 
-ShellWindowGtk::ShellWindowGtk(ShellWindow* shell_window,
-                               const ShellWindow::CreateParams& params)
+NativeAppWindowGtk::NativeAppWindowGtk(ShellWindow* shell_window,
+                                       const ShellWindow::CreateParams& params)
     : shell_window_(shell_window),
       window_(NULL),
       state_(GDK_WINDOW_STATE_WITHDRAWN),
@@ -123,11 +123,11 @@ ShellWindowGtk::ShellWindowGtk(ShellWindow* shell_window,
   ui::ActiveWindowWatcherX::AddObserver(this);
 }
 
-ShellWindowGtk::~ShellWindowGtk() {
+NativeAppWindowGtk::~NativeAppWindowGtk() {
   ui::ActiveWindowWatcherX::RemoveObserver(this);
 }
 
-bool ShellWindowGtk::IsActive() const {
+bool NativeAppWindowGtk::IsActive() const {
   if (ui::ActiveWindowWatcherX::WMSupportsActivation())
     return is_active_;
 
@@ -135,44 +135,44 @@ bool ShellWindowGtk::IsActive() const {
   return gtk_window_is_active(window_);
 }
 
-bool ShellWindowGtk::IsMaximized() const {
+bool NativeAppWindowGtk::IsMaximized() const {
   return (state_ & GDK_WINDOW_STATE_MAXIMIZED);
 }
 
-bool ShellWindowGtk::IsMinimized() const {
+bool NativeAppWindowGtk::IsMinimized() const {
   return (state_ & GDK_WINDOW_STATE_ICONIFIED);
 }
 
-bool ShellWindowGtk::IsFullscreen() const {
+bool NativeAppWindowGtk::IsFullscreen() const {
   return false;
 }
 
-gfx::NativeWindow ShellWindowGtk::GetNativeWindow() {
+gfx::NativeWindow NativeAppWindowGtk::GetNativeWindow() {
   return window_;
 }
 
-gfx::Rect ShellWindowGtk::GetRestoredBounds() const {
+gfx::Rect NativeAppWindowGtk::GetRestoredBounds() const {
   return restored_bounds_;
 }
 
-gfx::Rect ShellWindowGtk::GetBounds() const {
+gfx::Rect NativeAppWindowGtk::GetBounds() const {
   return bounds_;
 }
 
-void ShellWindowGtk::Show() {
+void NativeAppWindowGtk::Show() {
   gtk_window_present(window_);
 }
 
-void ShellWindowGtk::ShowInactive() {
+void NativeAppWindowGtk::ShowInactive() {
   gtk_window_set_focus_on_map(window_, false);
   gtk_widget_show(GTK_WIDGET(window_));
 }
 
-void ShellWindowGtk::Hide() {
+void NativeAppWindowGtk::Hide() {
   gtk_widget_hide(GTK_WIDGET(window_));
 }
 
-void ShellWindowGtk::Close() {
+void NativeAppWindowGtk::Close() {
   shell_window_->OnNativeWindowChanged();
 
   // Cancel any pending callback from the window configure debounce timer.
@@ -190,46 +190,44 @@ void ShellWindowGtk::Close() {
   gtk_widget_destroy(window);
 }
 
-void ShellWindowGtk::Activate() {
+void NativeAppWindowGtk::Activate() {
   gtk_window_present(window_);
 }
 
-void ShellWindowGtk::Deactivate() {
+void NativeAppWindowGtk::Deactivate() {
   gdk_window_lower(gtk_widget_get_window(GTK_WIDGET(window_)));
 }
 
-void ShellWindowGtk::Maximize() {
+void NativeAppWindowGtk::Maximize() {
   gtk_window_maximize(window_);
 }
 
-void ShellWindowGtk::Minimize() {
+void NativeAppWindowGtk::Minimize() {
   gtk_window_iconify(window_);
-  shell_window_->OnNativeWindowChanged();
 }
 
-void ShellWindowGtk::Restore() {
+void NativeAppWindowGtk::Restore() {
   if (IsMaximized())
     gtk_window_unmaximize(window_);
   else if (IsMinimized())
     gtk_window_deiconify(window_);
-  shell_window_->OnNativeWindowChanged();
 }
 
-void ShellWindowGtk::SetBounds(const gfx::Rect& bounds) {
+void NativeAppWindowGtk::SetBounds(const gfx::Rect& bounds) {
   gtk_window_move(window_, bounds.x(), bounds.y());
   gtk_window_util::SetWindowSize(window_,
       gfx::Size(bounds.width(), bounds.height()));
 }
 
-void ShellWindowGtk::FlashFrame(bool flash) {
+void NativeAppWindowGtk::FlashFrame(bool flash) {
   gtk_window_set_urgency_hint(window_, flash);
 }
 
-bool ShellWindowGtk::IsAlwaysOnTop() const {
+bool NativeAppWindowGtk::IsAlwaysOnTop() const {
   return false;
 }
 
-void ShellWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
+void NativeAppWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
   // Do nothing if we're in the process of closing the browser window.
   if (!window_)
     return;
@@ -239,8 +237,8 @@ void ShellWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
 
 // Callback for the delete event.  This event is fired when the user tries to
 // close the window (e.g., clicking on the X in the window manager title bar).
-gboolean ShellWindowGtk::OnMainWindowDeleteEvent(GtkWidget* widget,
-                                                 GdkEvent* event) {
+gboolean NativeAppWindowGtk::OnMainWindowDeleteEvent(GtkWidget* widget,
+                                                     GdkEvent* event) {
   Close();
 
   // Return true to prevent the GTK window from being destroyed.  Close will
@@ -248,8 +246,8 @@ gboolean ShellWindowGtk::OnMainWindowDeleteEvent(GtkWidget* widget,
   return TRUE;
 }
 
-gboolean ShellWindowGtk::OnConfigure(GtkWidget* widget,
-                                     GdkEventConfigure* event) {
+gboolean NativeAppWindowGtk::OnConfigure(GtkWidget* widget,
+                                         GdkEventConfigure* event) {
   // We update |bounds_| but not |restored_bounds_| here.  The latter needs
   // to be updated conditionally when the window is non-maximized and non-
   // fullscreen, but whether those state updates have been processed yet is
@@ -270,18 +268,18 @@ gboolean ShellWindowGtk::OnConfigure(GtkWidget* widget,
   window_configure_debounce_timer_.Stop();
   window_configure_debounce_timer_.Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(kDebounceTimeoutMilliseconds), this,
-      &ShellWindowGtk::OnDebouncedBoundsChanged);
+      &NativeAppWindowGtk::OnDebouncedBoundsChanged);
 
   return FALSE;
 }
 
-void ShellWindowGtk::OnDebouncedBoundsChanged() {
+void NativeAppWindowGtk::OnDebouncedBoundsChanged() {
   gtk_window_util::UpdateWindowPosition(this, &bounds_, &restored_bounds_);
   shell_window_->OnNativeWindowChanged();
 }
 
-gboolean ShellWindowGtk::OnWindowState(GtkWidget* sender,
-                                       GdkEventWindowState* event) {
+gboolean NativeAppWindowGtk::OnWindowState(GtkWidget* sender,
+                                           GdkEventWindowState* event) {
   state_ = event->new_window_state;
 
   if (content_thinks_its_fullscreen_ &&
@@ -292,12 +290,11 @@ gboolean ShellWindowGtk::OnWindowState(GtkWidget* sender,
       rvh->ExitFullscreen();
   }
 
-  shell_window_->OnNativeWindowChanged();
   return FALSE;
 }
 
-gboolean ShellWindowGtk::OnButtonPress(GtkWidget* widget,
-                                       GdkEventButton* event) {
+gboolean NativeAppWindowGtk::OnButtonPress(GtkWidget* widget,
+                                           GdkEventButton* event) {
   if (draggable_region_ && draggable_region_->contains(event->x, event->y)) {
     if (event->button == 1) {
       if (GDK_BUTTON_PRESS == event->type) {
@@ -326,7 +323,7 @@ gboolean ShellWindowGtk::OnButtonPress(GtkWidget* widget,
   return FALSE;
 }
 
-void ShellWindowGtk::SetFullscreen(bool fullscreen) {
+void NativeAppWindowGtk::SetFullscreen(bool fullscreen) {
   content_thinks_its_fullscreen_ = fullscreen;
   if (fullscreen)
     gtk_window_fullscreen(window_);
@@ -334,11 +331,11 @@ void ShellWindowGtk::SetFullscreen(bool fullscreen) {
     gtk_window_unfullscreen(window_);
 }
 
-bool ShellWindowGtk::IsFullscreenOrPending() const {
+bool NativeAppWindowGtk::IsFullscreenOrPending() const {
   return content_thinks_its_fullscreen_;
 }
 
-void ShellWindowGtk::UpdateWindowIcon() {
+void NativeAppWindowGtk::UpdateWindowIcon() {
   Profile* profile = shell_window_->profile();
   gfx::Image app_icon = shell_window_->app_icon();
   if (!app_icon.IsEmpty())
@@ -347,17 +344,17 @@ void ShellWindowGtk::UpdateWindowIcon() {
     gtk_util::SetWindowIcon(window_, profile);
 }
 
-void ShellWindowGtk::UpdateWindowTitle() {
+void NativeAppWindowGtk::UpdateWindowTitle() {
   string16 title = shell_window_->GetTitle();
   gtk_window_set_title(window_, UTF16ToUTF8(title).c_str());
 }
 
-void ShellWindowGtk::HandleKeyboardEvent(
+void NativeAppWindowGtk::HandleKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
   // No-op.
 }
 
-void ShellWindowGtk::UpdateDraggableRegions(
+void NativeAppWindowGtk::UpdateDraggableRegions(
     const std::vector<extensions::DraggableRegion>& regions) {
   // Draggable region is not supported for non-frameless window.
   if (!frameless_)
@@ -367,7 +364,8 @@ void ShellWindowGtk::UpdateDraggableRegions(
 }
 
 // static
-NativeShellWindow* NativeShellWindow::Create(
-    ShellWindow* shell_window, const ShellWindow::CreateParams& params) {
-  return new ShellWindowGtk(shell_window, params);
+NativeAppWindow* NativeAppWindow::Create(
+    ShellWindow* shell_window,
+    const ShellWindow::CreateParams& params) {
+  return new NativeAppWindowGtk(shell_window, params);
 }

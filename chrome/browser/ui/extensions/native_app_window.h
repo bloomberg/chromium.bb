@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_EXTENSIONS_NATIVE_SHELL_WINDOW_H_
-#define CHROME_BROWSER_UI_EXTENSIONS_NATIVE_SHELL_WINDOW_H_
+#ifndef CHROME_BROWSER_UI_EXTENSIONS_NATIVE_APP_WINDOW_H_
+#define CHROME_BROWSER_UI_EXTENSIONS_NATIVE_APP_WINDOW_H_
 
-#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/base_window.h"
+#include "chrome/browser/ui/extensions/shell_window.h"
 
 // This is an interface to a native implementation of a shell window, used for
 // new-style packaged apps. Shell windows contain a web contents, but no tabs
 // or URL bar.
-class NativeShellWindow : public BaseWindow {
+class NativeAppWindow : public BaseWindow {
  public:
   // Used by ShellWindow to instantiate the platform-specific ShellWindow code.
-  static NativeShellWindow* Create(ShellWindow* window,
-                                   const ShellWindow::CreateParams& params);
+  static NativeAppWindow* Create(ShellWindow* window,
+                                 const ShellWindow::CreateParams& params);
 
   // Called when the draggable regions are changed.
   virtual void UpdateDraggableRegions(
@@ -39,7 +39,7 @@ class NativeShellWindow : public BaseWindow {
   // this.
   virtual void RenderViewHostChanged() = 0;
 
-  virtual ~NativeShellWindow() {}
+  virtual ~NativeAppWindow() {}
 };
 
-#endif  // CHROME_BROWSER_UI_EXTENSIONS_NATIVE_SHELL_WINDOW_H_
+#endif  // CHROME_BROWSER_UI_EXTENSIONS_NATIVE_APP_WINDOW_H_

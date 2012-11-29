@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_EXTENSIONS_SHELL_WINDOW_GTK_H_
-#define CHROME_BROWSER_UI_GTK_EXTENSIONS_SHELL_WINDOW_GTK_H_
+#ifndef CHROME_BROWSER_UI_GTK_EXTENSIONS_NATIVE_APP_WINDOW_GTK_H_
+#define CHROME_BROWSER_UI_GTK_EXTENSIONS_NATIVE_APP_WINDOW_GTK_H_
 
 #include <gtk/gtk.h>
 
 #include "base/timer.h"
-#include "chrome/browser/ui/extensions/native_shell_window.h"
+#include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -23,12 +23,12 @@ namespace extensions {
 class Extension;
 }
 
-class ShellWindowGtk : public NativeShellWindow,
-                       public ExtensionViewGtk::Container,
-                       public ui::ActiveWindowWatcherXObserver {
+class NativeAppWindowGtk : public NativeAppWindow,
+                           public ExtensionViewGtk::Container,
+                           public ui::ActiveWindowWatcherXObserver {
  public:
-  ShellWindowGtk(ShellWindow* shell_window,
-                 const ShellWindow::CreateParams& params);
+  NativeAppWindowGtk(ShellWindow* shell_window,
+                     const ShellWindow::CreateParams& params);
 
   // BaseWindow implementation.
   virtual bool IsActive() const OVERRIDE;
@@ -55,7 +55,7 @@ class ShellWindowGtk : public NativeShellWindow,
   virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;
 
  private:
-  // NativeShellWindow implementation.
+  // NativeAppWindow implementation.
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
   virtual bool IsFullscreenOrPending() const OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
@@ -73,20 +73,20 @@ class ShellWindowGtk : public NativeShellWindow,
     return shell_window_->extension();
   }
 
-  virtual ~ShellWindowGtk();
+  virtual ~NativeAppWindowGtk();
 
-  CHROMEGTK_CALLBACK_1(ShellWindowGtk, gboolean, OnMainWindowDeleteEvent,
+  CHROMEGTK_CALLBACK_1(NativeAppWindowGtk, gboolean, OnMainWindowDeleteEvent,
                        GdkEvent*);
-  CHROMEGTK_CALLBACK_1(ShellWindowGtk, gboolean, OnConfigure,
+  CHROMEGTK_CALLBACK_1(NativeAppWindowGtk, gboolean, OnConfigure,
                        GdkEventConfigure*);
-  CHROMEGTK_CALLBACK_1(ShellWindowGtk, gboolean, OnWindowState,
+  CHROMEGTK_CALLBACK_1(NativeAppWindowGtk, gboolean, OnWindowState,
                        GdkEventWindowState*);
-  CHROMEGTK_CALLBACK_1(ShellWindowGtk, gboolean, OnButtonPress,
+  CHROMEGTK_CALLBACK_1(NativeAppWindowGtk, gboolean, OnButtonPress,
                        GdkEventButton*);
 
   void OnDebouncedBoundsChanged();
 
-  ShellWindow* shell_window_;  // weak - ShellWindow owns NativeShellWindow.
+  ShellWindow* shell_window_;  // weak - ShellWindow owns NativeAppWindow.
 
   GtkWindow* window_;
   GdkWindowState state_;
@@ -118,14 +118,14 @@ class ShellWindowGtk : public NativeShellWindow,
   bool frameless_;
 
   // The timer used to save the window position for session restore.
-  base::OneShotTimer<ShellWindowGtk> window_configure_debounce_timer_;
+  base::OneShotTimer<NativeAppWindowGtk> window_configure_debounce_timer_;
 
   // The Extension Keybinding Registry responsible for registering listeners for
   // accelerators that are sent to the window, that are destined to be turned
   // into events and sent to the extension.
   scoped_ptr<ExtensionKeybindingRegistryGtk> extension_keybinding_registry_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellWindowGtk);
+  DISALLOW_COPY_AND_ASSIGN(NativeAppWindowGtk);
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_EXTENSIONS_SHELL_WINDOW_GTK_H_
+#endif  // CHROME_BROWSER_UI_GTK_EXTENSIONS_NATIVE_APP_WINDOW_GTK_H_
