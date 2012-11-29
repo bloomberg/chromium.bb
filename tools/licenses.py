@@ -35,14 +35,26 @@ PRUNE_PATHS = set([
     os.path.join('third_party','valgrind'),
 
     # Used for development and test, not in the shipping product.
-    os.path.join('third_party','bidichecker'),
+    os.path.join('third_party','bison'),
     os.path.join('third_party','cygwin'),
+    os.path.join('third_party','gnu_binutils'),
     os.path.join('third_party','gold'),
+    os.path.join('third_party','gperf'),
     os.path.join('third_party','lighttpd'),
+    os.path.join('third_party','llvm'),
+    os.path.join('third_party','llvm-build'),
     os.path.join('third_party','mingw-w64'),
+    os.path.join('third_party','nacl_sdk_binaries'),
     os.path.join('third_party','pefile'),
+    os.path.join('third_party','perl'),
+    os.path.join('third_party','psyco_win32'),
+    os.path.join('third_party','pylib'),
     os.path.join('third_party','python_26'),
     os.path.join('third_party','pywebsocket'),
+    os.path.join('third_party','syzygy'),
+
+    # Chromium code in third_party.
+    os.path.join('third_party','fuzzymatch'),
 
     # Stuff pulled in from chrome-internal for official builds/tools.
     os.path.join('third_party', 'clear_cache'),
@@ -119,11 +131,13 @@ SPECIAL_CASES = {
         "Name": "gmock",
         "URL": "http://code.google.com/p/googlemock",
         "License": "BSD",
+        "License File": "NOT_SHIPPED",
     },
     os.path.join('testing', 'gtest'): {
         "Name": "gtest",
         "URL": "http://code.google.com/p/googletest",
         "License": "BSD",
+        "License File": "NOT_SHIPPED",
     },
     os.path.join('third_party', 'angle'): {
         "Name": "Almost Native Graphics Layer Engine",
@@ -145,7 +159,7 @@ SPECIAL_CASES = {
     },
     os.path.join('third_party', 'lss'): {
         "Name": "linux-syscall-support",
-        "URL": "http://code.google.com/p/lss/",
+        "URL": "http://code.google.com/p/linux-syscall-support/",
         "License": "BSD",
         "License File": "/LICENSE",
     },
@@ -168,11 +182,13 @@ SPECIAL_CASES = {
         "Name": "scons-2.0.1",
         "URL": "http://www.scons.org",
         "License": "MIT",
+        "License File": "NOT_SHIPPED",
     },
     os.path.join('third_party', 'trace-viewer'): {
         "Name": "trace-viewer",
         "URL": "http://code.google.com/p/trace-viewer",
         "License": "BSD",
+        "License File": "NOT_SHIPPED",
     },
     os.path.join('third_party', 'v8-i18n'): {
         "Name": "Internationalization Library for v8",
@@ -190,16 +206,19 @@ SPECIAL_CASES = {
         "Name": "webpagereplay",
         "URL": "http://code.google.com/p/web-page-replay",
         "License": "Apache 2.0",
+        "License File": "NOT_SHIPPED",
     },
     os.path.join('tools', 'grit'): {
         "Name": "grit",
         "URL": "http://code.google.com/p/grit-i18n",
         "License": "BSD",
+        "License File": "NOT_SHIPPED",
     },
     os.path.join('tools', 'gyp'): {
         "Name": "gyp",
         "URL": "http://code.google.com/p/gyp",
         "License": "BSD",
+        "License File": "NOT_SHIPPED",
     },
     os.path.join('v8'): {
         "Name": "V8 JavaScript Engine",
@@ -315,6 +334,12 @@ def ContainsFiles(path, root):
     return False
 
 
+def FilterDirsWithFiles(dirs_list, root):
+    # If a directory contains no files, assume it's a DEPS directory for a
+    # project not used by our current configuration and skip it.
+    return [x for x in dirs_list if ContainsFiles(x, root)]
+
+
 def FindThirdPartyDirs(prune_paths, root):
     """Find all third_party directories underneath the source root."""
     third_party_dirs = []
@@ -349,11 +374,10 @@ def FindThirdPartyDirs(prune_paths, root):
             dirs[:] = []
 
     for dir in ADDITIONAL_PATHS:
-        third_party_dirs.append(dir)
+        if dir not in prune_paths:
+            third_party_dirs.append(dir)
 
-    # If a directory contains no files, assume it's a DEPS directory for a
-    # project not used by our current configuration and skip it.
-    return [x for x in third_party_dirs if ContainsFiles(x, root)]
+    return third_party_dirs
 
 
 def ScanThirdPartyDirs(root=None):
@@ -361,6 +385,7 @@ def ScanThirdPartyDirs(root=None):
     if root is None:
       root = os.getcwd()
     third_party_dirs = FindThirdPartyDirs(PRUNE_PATHS, root)
+    third_party_dirs = FilterDirsWithFiles(third_party_dirs, root)
 
     errors = []
     for path in sorted(third_party_dirs):
