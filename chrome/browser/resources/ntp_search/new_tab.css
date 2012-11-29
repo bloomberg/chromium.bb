@@ -108,6 +108,18 @@ body {
   margin-top: 8px;
 }
 
+#promo-bubble-anchor {
+  bottom: 50px;
+  height: 10px;
+  left: 0;
+  position: absolute;
+  width: 90px;
+}
+
+.bubble .bubble-arrow {
+  display: none;
+}
+
 /* TODO(jeremycho): Figure out if we need this. */
 #attribution {
   bottom: 0;

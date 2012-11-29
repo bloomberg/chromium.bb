@@ -90,6 +90,14 @@ cr.define('ntp', function() {
   var notificationContainer;
 
   /**
+   * If non-null, an info bubble for showing messages to the user. It points at
+   * the Most Visited label, and is used to draw more attention to the
+   * navigation dot UI.
+   * @type {!Element|undefined}
+   */
+  var promoBubble;
+
+  /**
    * The total number of thumbnails that were hovered over.
    * @type {number}
    * @private
@@ -769,6 +777,30 @@ cr.define('ntp', function() {
                               loadTimeData.getString('mostvisited'));
     chrome.send('getMostVisited');
 
+    if (loadTimeData.valueExists('bubblePromoText')) {
+      promoBubble = new cr.ui.Bubble;
+      promoBubble.anchorNode = getRequiredElement('promo-bubble-anchor');
+      promoBubble.arrowLocation = cr.ui.ArrowLocation.BOTTOM_START;
+      promoBubble.bubbleAlignment = cr.ui.BubbleAlignment.ENTIRELY_VISIBLE;
+      promoBubble.deactivateToDismissDelay = 2000;
+      promoBubble.content = parseHtmlSubset(
+          loadTimeData.getString('bubblePromoText'), ['BR']);
+
+      var bubbleLink = promoBubble.querySelector('a');
+      if (bubbleLink) {
+        bubbleLink.addEventListener('click', function(e) {
+          chrome.send('bubblePromoLinkClicked');
+        });
+      }
+
+      promoBubble.handleCloseEvent = function() {
+        promoBubble.hide();
+        chrome.send('bubblePromoClosed');
+      };
+      promoBubble.show();
+      chrome.send('bubblePromoViewed');
+    }
+
     doWhenAllSectionsReady(function() {
       // Tell the slider about the pages.
       newTabView.updateSliderCards();
@@ -779,8 +811,8 @@ cr.define('ntp', function() {
       // partially rendered.
       $('bottom-panel').style.visibility = 'visible';
 
-      if (loadTimeData.valueExists('serverpromo')) {
-        var promo = loadTimeData.getString('serverpromo');
+      if (loadTimeData.valueExists('notificationPromoText')) {
+        var promoText = loadTimeData.getString('notificationPromoText');
         var tags = ['IMG'];
         var attrs = {
           src: function(node, value) {
@@ -788,8 +820,17 @@ cr.define('ntp', function() {
                    /^data\:image\/(?:png|gif|jpe?g)/.test(value);
           },
         };
-        showNotification(parseHtmlSubset(promo, tags, attrs), [], function() {
-          chrome.send('closeNotificationPromo');
+
+        var promo = parseHtmlSubset(promoText, tags, attrs);
+        var promoLink = promo.querySelector('a');
+        if (promoLink) {
+          promoLink.addEventListener('click', function(e) {
+            chrome.send('notificationPromoLinkClicked');
+          });
+        }
+
+        showNotification(promo, [], function() {
+          chrome.send('notificationPromoClosed');
         }, 60000);
         chrome.send('notificationPromoViewed');
       }

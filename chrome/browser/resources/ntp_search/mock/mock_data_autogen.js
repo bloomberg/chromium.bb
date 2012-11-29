@@ -1572,6 +1572,8 @@ chrome.mock && chrome.mock({
     'appuninstall': 'Remove from Chromium',
     'attributionintro': 'Theme created by',
     'bookmarkbarattached': false,
+    'bubblePromoText': '<strong>Chrome has auto-updated</strong><br/>' +
+        'You\'re now on the latest, greatest version.',
     'closedwindowmultiple': '$1 Tabs',
     'closedwindowsingle': '1 Tab',
     'collapseSessionMenuItemText': 'Collapse list',
@@ -1586,6 +1588,7 @@ chrome.mock && chrome.mock({
     'learn_more': 'Learn more',
     'most_visited_page_id': 1024,
     'mostvisited': 'Most visited',
+    'notificationPromoText': 'This is a single-line notification.',
     'otherSessions': 'Other devices',
     'otherSessionsEmpty': 'Access your open tabs on all of your devices.',
     'otherSessionsLearnMoreUrl': 'http://support.google.com/chrome/bin/' +
