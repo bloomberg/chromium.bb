@@ -763,8 +763,8 @@ void BrowserProcessImpl::CreateLocalState() {
 }
 
 void BrowserProcessImpl::PreCreateThreads() {
-  io_thread_.reset(new IOThread(
-      local_state(), net_log_.get(), extension_event_router_forwarder_.get()));
+  io_thread_.reset(new IOThread(local_state(), policy_service(), net_log_.get(),
+                                extension_event_router_forwarder_.get()));
 }
 
 void BrowserProcessImpl::PreMainMessageLoopRun() {

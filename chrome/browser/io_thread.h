@@ -19,6 +19,7 @@
 #include "net/base/network_change_notifier.h"
 
 class ChromeNetLog;
+class CommandLine;
 class PrefProxyConfigTrackerImpl;
 class PrefService;
 class SystemURLRequestContextGetter;
@@ -55,6 +56,10 @@ class URLRequestContextGetter;
 class URLRequestThrottlerManager;
 class URLSecurityManager;
 }  // namespace net
+
+namespace policy {
+class PolicyService;
+}  // namespace policy
 
 // Contains state associated with, initialized and cleaned up on, and
 // primarily used on, the IO thread.
@@ -130,6 +135,7 @@ class IOThread : public content::BrowserThreadDelegate {
 
   // |net_log| must either outlive the IOThread or be NULL.
   IOThread(PrefService* local_state,
+           policy::PolicyService* policy_service,
            ChromeNetLog* net_log,
            extensions::EventRouterForwarder* extension_event_router_forwarder);
 
@@ -152,15 +158,17 @@ class IOThread : public content::BrowserThreadDelegate {
   void ClearHostCache();
 
  private:
+  // Provide SystemURLRequestContextGetter with access to
+  // InitSystemRequestContext().
+  friend class SystemURLRequestContextGetter;
+
   // BrowserThreadDelegate implementation, runs on the IO thread.
   // This handles initialization and destruction of state that must
   // live on the IO thread.
   virtual void Init() OVERRIDE;
   virtual void CleanUp() OVERRIDE;
 
-  // Provide SystemURLRequestContextGetter with access to
-  // InitSystemRequestContext().
-  friend class SystemURLRequestContextGetter;
+  void InitializeNetworkOptions(const CommandLine& parsed_command_line);
 
   // Global state must be initialized on the IO thread, then this
   // method must be invoked on the UI thread.
@@ -233,6 +241,9 @@ class IOThread : public content::BrowserThreadDelegate {
       system_url_request_context_getter_;
 
   net::SdchManager* sdch_manager_;
+
+  // True if SPDY is disabled by policy.
+  bool is_spdy_disabled_by_policy_;
 
   base::WeakPtrFactory<IOThread> weak_factory_;
 

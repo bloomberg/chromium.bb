@@ -95,8 +95,8 @@ class ProfileManagerTest : public testing::Test {
         ui_thread_(BrowserThread::UI, &message_loop_),
         db_thread_(BrowserThread::DB, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
-        io_thread_(local_state_.Get(), NULL,
-                   extension_event_router_forwarder_) {
+        io_thread_(local_state_.Get(), g_browser_process->policy_service(),
+                   NULL, extension_event_router_forwarder_) {
 #if defined(OS_MACOSX)
     base::SystemMonitor::AllocateSystemIOPorts();
 #endif

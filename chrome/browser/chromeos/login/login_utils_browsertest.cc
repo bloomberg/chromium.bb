@@ -207,9 +207,6 @@ class LoginUtilsTest : public testing::Test,
     cryptohome::AsyncMethodCaller::InitializeForTesting(
         mock_async_method_caller_);
 
-    io_thread_state_.reset(new IOThread(local_state_.Get(), NULL, NULL));
-    browser_process_->SetIOThread(io_thread_state_.get());
-
     CrosLibrary::TestApi* test_api = CrosLibrary::Get()->GetTestApi();
     ASSERT_TRUE(test_api);
 
@@ -262,6 +259,11 @@ class LoginUtilsTest : public testing::Test,
         new ProfileManagerWithoutInit(scoped_temp_dir_.path()));
     connector_ = browser_process_->browser_policy_connector();
     connector_->Init();
+
+    io_thread_state_.reset(new IOThread(local_state_.Get(),
+                                        g_browser_process->policy_service(),
+                                        NULL, NULL));
+    browser_process_->SetIOThread(io_thread_state_.get());
 
     RunUntilIdle();
   }

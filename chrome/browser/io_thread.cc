@@ -34,6 +34,7 @@
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/net/spdyproxy/http_auth_handler_spdyproxy.h"
+#include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -57,8 +58,14 @@
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
+#include "net/spdy/spdy_session.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_throttler_manager.h"
+#include "net/websockets/websocket_job.h"
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#include "policy/policy_constants.h"
+#endif
 
 #if defined(USE_NSS)
 #include "net/ocsp/nss_ocsp.h"
@@ -324,12 +331,14 @@ IOThread::Globals::~Globals() {}
 // dependencies and (2) make IOThread more flexible for testing.
 IOThread::IOThread(
     PrefService* local_state,
+    policy::PolicyService* policy_service,
     ChromeNetLog* net_log,
     extensions::EventRouterForwarder* extension_event_router_forwarder)
     : net_log_(net_log),
       extension_event_router_forwarder_(extension_event_router_forwarder),
       globals_(NULL),
       sdch_manager_(NULL),
+      is_spdy_disabled_by_policy_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   // We call RegisterPrefs() here (instead of inside browser_prefs.cc) to make
   // sure that everything is initialized in the right order.
@@ -359,6 +368,12 @@ IOThread::IOThread(
                                       base::Unretained(this)));
   dns_client_enabled_.MoveToThread(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  is_spdy_disabled_by_policy_ = policy_service->GetPolicies(
+      policy::POLICY_DOMAIN_CHROME,
+      std::string()).Get(policy::key::kDisableSpdy) != NULL;
+#endif  // ENABLE_CONFIGURATION_POLICY
 
   BrowserThread::SetDelegate(BrowserThread::IO, this);
 }
@@ -506,6 +521,8 @@ void IOThread::Init() {
   session_params.testing_fixed_http_port = globals_->testing_fixed_http_port;
   session_params.testing_fixed_https_port = globals_->testing_fixed_https_port;
 
+  InitializeNetworkOptions(command_line);
+
   scoped_refptr<net::HttpNetworkSession> network_session(
       new net::HttpNetworkSession(session_params));
   globals_->proxy_script_fetcher_http_transaction_factory.reset(
@@ -576,6 +593,63 @@ void IOThread::CleanUp() {
   globals_ = NULL;
 
   base::debug::LeakTracker<SystemURLRequestContextGetter>::CheckForLeaks();
+}
+
+void IOThread::InitializeNetworkOptions(
+    const CommandLine& parsed_command_line) {
+  if (parsed_command_line.HasSwitch(switches::kEnableFileCookies)) {
+    // Enable cookie storage for file:// URLs.  Must do this before the first
+    // Profile (and therefore the first CookieMonster) is created.
+    net::CookieMonster::EnableFileScheme();
+  }
+
+  // If "spdy.disabled" preference is controlled via policy, then skip use-spdy
+  // command line flags.
+  if (is_spdy_disabled_by_policy_)
+    return;
+
+  if (parsed_command_line.HasSwitch(switches::kEnableIPPooling))
+    net::SpdySessionPool::enable_ip_pooling(true);
+
+  if (parsed_command_line.HasSwitch(switches::kDisableIPPooling))
+    net::SpdySessionPool::enable_ip_pooling(false);
+
+  if (parsed_command_line.HasSwitch(switches::kEnableSpdyCredentialFrames))
+    net::SpdySession::set_enable_credential_frames(true);
+  if (parsed_command_line.HasSwitch(switches::kMaxSpdySessionsPerDomain)) {
+    int value;
+    base::StringToInt(
+        parsed_command_line.GetSwitchValueASCII(
+            switches::kMaxSpdySessionsPerDomain),
+        &value);
+    net::SpdySessionPool::set_max_sessions_per_domain(value);
+  }
+
+  if (parsed_command_line.HasSwitch(switches::kEnableWebSocketOverSpdy)) {
+    // Enable WebSocket over SPDY.
+    net::WebSocketJob::set_websocket_over_spdy_enabled(true);
+  }
+
+  bool used_spdy_switch = false;
+  if (parsed_command_line.HasSwitch(switches::kUseSpdy)) {
+    std::string spdy_mode =
+      parsed_command_line.GetSwitchValueASCII(switches::kUseSpdy);
+    net::HttpNetworkLayer::EnableSpdy(spdy_mode);
+    used_spdy_switch = true;
+  }
+  if (parsed_command_line.HasSwitch(switches::kEnableSpdy3)) {
+    net::HttpStreamFactory::EnableNpnSpdy3();
+    used_spdy_switch = true;
+  } else if (parsed_command_line.HasSwitch(switches::kEnableNpn)) {
+    net::HttpStreamFactory::EnableNpnSpdy();
+    used_spdy_switch = true;
+  } else if (parsed_command_line.HasSwitch(switches::kEnableNpnHttpOnly)) {
+    net::HttpStreamFactory::EnableNpnHttpOnly();
+    used_spdy_switch = true;
+  }
+  if (!used_spdy_switch) {
+    net::HttpStreamFactory::EnableNpnSpdy3();
+  }
 }
 
 // static
