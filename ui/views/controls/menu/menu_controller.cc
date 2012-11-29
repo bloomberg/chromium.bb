@@ -1086,8 +1086,6 @@ void MenuController::UpdateInitialLocation(
     // nicely and menus close prematurely.
     pending_state_.initial_bounds.Inset(0, 1);
   }
-  if (position == MenuItemView::BOTTOMCENTER)
-    pending_state_.initial_bounds.Offset(0, kCenteredContextMenuYOffset);
 
   // Reverse anchor position for RTL languages.
   if (base::i18n::IsRTL()) {
@@ -1566,7 +1564,14 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
         x -= 1;
     } else if (state_.anchor == MenuItemView::BOTTOMCENTER) {
       x = x - (pref.width() - state_.initial_bounds.width()) / 2;
-      y = std::max(0, state_.initial_bounds.y() - pref.height());
+      if (pref.height() >
+          state_.initial_bounds.y() + kCenteredContextMenuYOffset) {
+        // Menu does not fit above the anchor. We move it to below.
+        y = state_.initial_bounds.y() - kCenteredContextMenuYOffset;
+      } else {
+        y = std::max(0, state_.initial_bounds.y() - pref.height()) +
+            kCenteredContextMenuYOffset;
+      }
     }
 
     if (!state_.monitor_bounds.IsEmpty() &&
