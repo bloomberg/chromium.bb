@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -156,7 +157,8 @@ void ExtensionInstallUIDefault::OnInstallFailure(
   if (disable_failure_ui_for_tests || skip_post_install_ui_)
     return;
 
-  Browser* browser = chrome::FindLastActiveWithProfile(profile_);
+  Browser* browser = chrome::FindLastActiveWithProfile(profile_,
+      chrome::GetActiveDesktop());
   WebContents* web_contents = chrome::GetActiveWebContents(browser);
   if (!web_contents)
     return;
@@ -283,6 +285,7 @@ ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithBrowser(
 // static
 ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithProfile(
     Profile* profile) {
-  Browser* browser = chrome::FindLastActiveWithProfile(profile);
+  Browser* browser = chrome::FindLastActiveWithProfile(profile,
+      chrome::GetActiveDesktop());
   return CreateInstallPromptWithBrowser(browser);
 }

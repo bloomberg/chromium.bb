@@ -612,7 +612,8 @@ bool ExecuteDefaultHandler(Profile* profile, const FilePath& path) {
 
   std::string extension_id = handler->extension_id();
   std::string action_id = handler->id();
-  Browser* browser = chrome::FindLastActiveWithProfile(profile);
+  Browser* browser = chrome::FindLastActiveWithProfile(profile,
+      chrome::HOST_DESKTOP_TYPE_ASH);
 
   // If there is no browsers for the profile, bail out. Return true so warning
   // about file type not being supported is not displayed.

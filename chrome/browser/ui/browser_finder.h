@@ -68,16 +68,16 @@ Browser* FindBrowserWithWebContents(const content::WebContents* web_contents);
 
 namespace chrome {
 
-// Returns the Browser object owned by |profile| whose window was most recently
-// active. If no such Browsers exist, returns NULL.
+// Returns the Browser object owned by |profile| on the given desktop type
+// whose window was most recently active. If no such Browsers exist, returns
+// NULL.
 //
 // WARNING: this is NULL until a browser becomes active. If during startup
 // a browser does not become active (perhaps the user launches Chrome, then
 // clicks on another app before the first browser window appears) then this
 // returns NULL.
 // WARNING #2: this will always be NULL in unit tests run on the bots.
-// DEPRECATED: DO NOT USE.
-Browser* FindLastActiveWithProfile(Profile* profile);
+Browser* FindLastActiveWithProfile(Profile* profile, HostDesktopType type);
 
 // Returns the Browser object on the given desktop type whose window was most
 // recently active. If no such Browsers exist, returns NULL.

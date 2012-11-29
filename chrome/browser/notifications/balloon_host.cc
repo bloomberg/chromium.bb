@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -84,7 +85,8 @@ void BalloonHost::AddNewContents(WebContents* source,
                                  bool user_gesture,
                                  bool* was_blocked) {
   Browser* browser = chrome::FindLastActiveWithProfile(
-      Profile::FromBrowserContext(new_contents->GetBrowserContext()));
+      Profile::FromBrowserContext(new_contents->GetBrowserContext()),
+      chrome::GetActiveDesktop());
   if (browser) {
     chrome::AddWebContents(browser, NULL, new_contents, disposition,
                            initial_pos, user_gesture, was_blocked);

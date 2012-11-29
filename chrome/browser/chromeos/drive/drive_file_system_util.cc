@@ -98,7 +98,8 @@ GURL GetHostedDocumentURLBlockingThread(const FilePath& drive_cache_path) {
 }
 
 void OpenEditURLUIThread(Profile* profile, const GURL& edit_url) {
-  Browser* browser = chrome::FindLastActiveWithProfile(profile);
+  Browser* browser = chrome::FindLastActiveWithProfile(profile,
+      chrome::HOST_DESKTOP_TYPE_ASH);
   if (browser) {
     browser->OpenURL(content::OpenURLParams(edit_url, content::Referrer(),
         CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));

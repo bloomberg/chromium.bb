@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/extensions/extension.h"
 
 namespace base {
@@ -185,6 +186,9 @@ class BundleInstaller : public WebstoreInstallHelper::Delegate,
 
   // The browser to show the confirmation bubble for.
   Browser* browser_;
+
+  // The desktop type of the browser.
+  chrome::HostDesktopType host_desktop_type_;
 
   // The profile that the bundle should be installed in.
   Profile* profile_;

@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/host_desktop.h"
 
 ExtensionErrorUIDefault::ExtensionErrorUIDefault(
     ExtensionService* extension_service)
@@ -23,7 +24,8 @@ ExtensionErrorUIDefault::~ExtensionErrorUIDefault() {
 
 bool ExtensionErrorUIDefault::ShowErrorInBubbleView() {
   Browser* browser =
-      chrome::FindLastActiveWithProfile(extension_service()->profile());
+      chrome::FindLastActiveWithProfile(extension_service()->profile(),
+                                        chrome::GetActiveDesktop());
   if (!browser)
     return false;
 

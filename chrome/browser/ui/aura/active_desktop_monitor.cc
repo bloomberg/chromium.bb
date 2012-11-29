@@ -31,7 +31,9 @@ ActiveDesktopMonitor::~ActiveDesktopMonitor() {
 
 // static
 chrome::HostDesktopType ActiveDesktopMonitor::GetLastActivatedDesktopType() {
-  return g_instance_->last_activated_desktop_;
+  // Tests may not have created the monitor.
+  return g_instance_ ? g_instance_->last_activated_desktop_ :
+      chrome::HOST_DESKTOP_TYPE_NATIVE;
 }
 
 // static

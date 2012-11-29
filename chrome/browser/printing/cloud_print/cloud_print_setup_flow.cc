@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/service_messages.h"
@@ -62,7 +63,8 @@ CloudPrintSetupFlow* CloudPrintSetupFlow::OpenDialog(
     const base::WeakPtr<Delegate>& delegate,
     gfx::NativeWindow parent_window) {
   DCHECK(profile);
-  Browser* browser = chrome::FindLastActiveWithProfile(profile);
+  Browser* browser = chrome::FindLastActiveWithProfile(profile,
+      chrome::GetActiveDesktop());
   // Set the arguments for showing the gaia login page.
   DictionaryValue args;
   args.SetString("user", "");
