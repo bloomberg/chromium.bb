@@ -20,7 +20,6 @@ namespace cc {
 
 class Tile;
 class TileVersion;
-class RenderingStats;
 class ResourceProvider;
 
 class CC_EXPORT TileManagerClient {
@@ -75,8 +74,6 @@ class CC_EXPORT TileManager {
 
   void ManageTiles();
 
-  void renderingStats(RenderingStats* stats);
-
  protected:
   // Methods called by Tile
   friend class Tile;
@@ -93,8 +90,7 @@ class CC_EXPORT TileManager {
   void OnRasterTaskCompleted(
       scoped_refptr<Tile>,
       ResourceProvider::ResourceId,
-      scoped_refptr<PicturePileImpl>,
-      RenderingStats*);
+      scoped_refptr<PicturePileImpl>);
   void DidFinishTileInitialization(Tile*, ResourceProvider::ResourceId);
 
   TileManagerClient* client_;
@@ -108,8 +104,6 @@ class CC_EXPORT TileManager {
   typedef std::vector<Tile*> TileVector;
   TileVector tiles_;
   TileVector tiles_that_need_to_be_rasterized_;
-
-  RenderingStats rendering_stats_;
 };
 
 }  // namespace cc

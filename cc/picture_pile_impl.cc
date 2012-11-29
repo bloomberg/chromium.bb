@@ -4,9 +4,7 @@
 
 #include "base/debug/trace_event.h"
 #include "cc/picture_pile_impl.h"
-#include "cc/rendering_stats.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkSize.h"
 
 namespace cc {
 
@@ -30,10 +28,7 @@ scoped_refptr<PicturePileImpl> PicturePileImpl::CloneForDrawing() const {
   return clone;
 }
 
-void PicturePileImpl::Raster(SkCanvas* canvas, gfx::Rect rect,
-                             RenderingStats* stats) {
-  base::TimeTicks rasterizeBeginTime = base::TimeTicks::Now();
-
+void PicturePileImpl::Raster(SkCanvas* canvas, gfx::Rect rect) {
   // TODO(enne): do this more efficiently, i.e. top down with Skia clips
   canvas->save();
   canvas->translate(-rect.x(), -rect.y());
@@ -44,14 +39,8 @@ void PicturePileImpl::Raster(SkCanvas* canvas, gfx::Rect rect,
     if (!pile_[i]->LayerRect().Intersects(rect))
       continue;
     pile_[i]->Raster(canvas);
-
-    SkISize deviceSize = canvas->getDeviceSize();
-    stats->totalPixelsRasterized += deviceSize.width() * deviceSize.height();
   }
   canvas->restore();
-
-  stats->totalRasterizeTimeInSeconds += (base::TimeTicks::Now() -
-                                         rasterizeBeginTime).InSecondsF();
 }
 
 }  // namespace cc
