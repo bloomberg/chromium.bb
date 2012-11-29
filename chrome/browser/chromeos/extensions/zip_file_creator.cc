@@ -11,6 +11,7 @@
 #include "base/memory/scoped_handle.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
@@ -39,11 +40,9 @@ ZipFileCreator::ZipFileCreator(
 
 void ZipFileCreator::Start() {
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&thread_identifier_));
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &ZipFileCreator::StartProcessOnIOThread,
-          this));
+  BrowserThread::GetBlockingPool()->PostTask(
+      FROM_HERE,
+      base::Bind(&ZipFileCreator::OpenFileHandleOnBlockingThreadPool, this));
 }
 
 ZipFileCreator::~ZipFileCreator() {
@@ -70,7 +69,7 @@ void ZipFileCreator::OnProcessCrashed(int exit_code) {
   ReportDone(false);
 }
 
-void ZipFileCreator::StartProcessOnIOThread() {
+void ZipFileCreator::OpenFileHandleOnBlockingThreadPool() {
   // Create the destination zip file only if it does not already exist.
   int flags = base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE;
   base::PlatformFileError error_code = base::PLATFORM_FILE_OK;
@@ -83,6 +82,12 @@ void ZipFileCreator::StartProcessOnIOThread() {
     return;
   }
 
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&ZipFileCreator::StartProcessOnIOThread, this, dest_file));
+}
+
+void ZipFileCreator::StartProcessOnIOThread(base::PlatformFile dest_file) {
   base::FileDescriptor dest_fd;
   dest_fd.fd = dest_file;
   dest_fd.auto_close = true;
