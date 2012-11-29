@@ -57,7 +57,7 @@ check_translation_with_mode(const char *tableList, const char *str,
   if (typeform != NULL)
     {
       typeformbuf = malloc(outlen);
-      strcpy(typeformbuf, typeform);
+      memcpy(typeformbuf, typeform, outlen);
     }
   if (!extParseChars(str, inbuf))
     {

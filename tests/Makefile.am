@@ -88,8 +88,12 @@ outpos_SOURCES =			\
 getTable_SOURCES = getTable.c
 
 typeform_SOURCES =				\
-typeform.c
+	typeform.c
 
+pass0_typebuf_SOURCES =			\
+	brl_checks.c				\
+	brl_checks.h				\
+	pass0_typebuf.c
 
 check_PROGRAMS =				\
 	pass2					\
@@ -109,7 +113,8 @@ check_PROGRAMS =				\
 	pass1Only				\
 	outpos				\
 	getTable \
-	typeform
+	typeform \
+	pass0_typebuf
 
 
 dist_check_SCRIPTS =		\
