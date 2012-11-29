@@ -92,9 +92,59 @@ GROUP ( libcrt_common.a libnacl.a )
   return template % ', '.join(['"' + fmt + '"' for fmt in format_list])
 
 
+# The default strip behavior removes debugging and symbol table
+# sections, but it leaves the .comment section.  This contains the
+# compiler version string, and so it changes when the compiler changes
+# even if the actual machine code it produces is completely identical.
+# Hence, the target library packages will always change when the
+# compiler changes unless these sections are removed.  Doing this
+# requires somehow teaching the makefile rules to pass the
+# --remove-section=.comment switch to TARGET-strip.  For the GCC
+# target libraries, setting STRIP_FOR_TARGET is sufficient.  But
+# quoting nightmares make it difficult to pass a command with a space
+# in it as the STRIP_FOR_TARGET value.  So the build writes a little
+# script that can be invoked with a simple name.
+#
+# Though the gcc target libraries' makefiles are smart enough to obey
+# STRIP_FOR_TARGET for library files, the newlib makefiles just
+# blindly use $(INSTALL_DATA) for both header (text) files and library
+# files.  Hence it's necessary to override its INSTALL_DATA setting to
+# one that will do stripping using this script, and thus the script
+# must silently do nothing to non-binary files.
+def ConfigureTargetPrep(arch):
+  script_file = 'strip_for_target'
+
+  config_target = arch + '-nacl'
+  script_contents = """\
+#!/bin/sh
+for arg; do
+  case "$arg" in
+  -*) ;;
+  *)
+    type=`file --brief --mime-type "$arg"`
+    case "$type" in
+      application/x-archive|application/x-object|application/x-executable) ;;
+      *) exit 0 ;;
+    esac
+    ;;
+  esac
+done
+exec %s-strip --remove-section=.comment "$@"
+""" % config_target
+
+  return [
+      command.WriteData(script_contents, script_file),
+      command.Command(['chmod', '+x', script_file]),
+      ]
+
+
 def ConfigureTargetArgs(arch):
   config_target = arch + '-nacl'
-  return ['--target=' + config_target, '--with-sysroot=/' + config_target]
+  return [
+      '--target=' + config_target,
+      '--with-sysroot=/' + config_target,
+      'STRIP_FOR_TARGET=%(cwd)s/strip_for_target',
+      ]
 
 
 def CommandsInBuild(command_lines):
@@ -204,7 +254,7 @@ def HostTools(target):
       'binutils_' + target: {
           'git_url': GIT_BASE_URL + '/nacl-binutils.git',
           'git_revision': GIT_REVISIONS['binutils'],
-          'commands': [
+          'commands': ConfigureTargetPrep(target) + [
               command.Command(
                   CONFIGURE_CMD +
                   CONFIGURE_HOST_TOOL +
@@ -252,7 +302,7 @@ def HostTools(target):
                   'libssp',
                   'libstdc++-v3',
                   ]],
-          'commands': [
+          'commands': ConfigureTargetPrep(target) + [
               ConfigureGccCommand(target),
               GccCommand(target, MAKE_PARALLEL_CMD + ['all-gcc']),
               # gcc/Makefile's install targets populate this directory
@@ -320,13 +370,18 @@ def TargetLibs(target):
   newlib_sysroot = '%(abs_newlib_' + target + ')s'
   newlib_tooldir = '%s/%s-nacl' % (newlib_sysroot, target)
 
+  # See the comment at ConfigureTargetPrep, above.
+  newlib_install_data = ' '.join(['STRIPPROG=%(cwd)s/strip_for_target',
+                                  '%(abs_src)s/install-sh',
+                                  '-c', '-s', '-m', '644'])
+
   libs = {
       'newlib_' + target: {
           'dependencies': lib_deps,
           'git_url': GIT_BASE_URL + '/nacl-newlib.git',
           'git_revision': GIT_REVISIONS['newlib'],
           'unpack_commands': newlib_unpack,
-          'commands': TargetCommands(target, [
+          'commands': ConfigureTargetPrep(target) + TargetCommands(target, [
               CONFIGURE_CMD +
               CONFIGURE_HOST_TOOL +
               ConfigureTargetArgs(target) + [
@@ -338,6 +393,7 @@ def TargetLibs(target):
                   '--enable-newlib-mb',
                   'CFLAGS=-O2',
                   'CFLAGS_FOR_TARGET=' + NewlibTargetCflags(target),
+                  'INSTALL_DATA=' + newlib_install_data,
                   ],
               MAKE_PARALLEL_CMD,
               MAKE_DESTDIR_CMD + ['install-strip'],
@@ -363,7 +419,7 @@ def TargetLibs(target):
           # TODO(mcgrathr): If upstream ever cleans up all their
           # interdependencies better, unpack the compiler, configure with
           # --disable-gcc, and just build all-target.
-          'commands': [
+          'commands': ConfigureTargetPrep(target) + [
               ConfigureGccCommand(target, [
                   '--with-build-sysroot=' + newlib_sysroot,
                   ]),
