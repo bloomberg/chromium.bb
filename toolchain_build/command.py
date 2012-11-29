@@ -107,7 +107,7 @@ class Command(object):
     check_call(command, **kwargs)
 
 
-def Mkdir(path, parents=False):
+def Mkdir(path, parents=False, **kwargs):
   """Convenience method for generating mkdir commands."""
   # TODO(bradnelson): Replace with something less hacky.
   func = 'os.mkdir'
@@ -115,15 +115,17 @@ def Mkdir(path, parents=False):
     func = 'os.makedirs'
   return Command([
       sys.executable, '-c',
-      'import sys,os; ' + func + '(sys.argv[1])', path])
+      'import sys,os; ' + func + '(sys.argv[1])', path],
+      **kwargs)
 
 
-def Copy(src, dst):
+def Copy(src, dst, **kwargs):
   """Convenience method for generating cp commands."""
   # TODO(bradnelson): Replace with something less hacky.
   return Command([
       sys.executable, '-c',
-      'import sys,shutil; shutil.copyfile(sys.argv[1], sys.argv[2])', src, dst])
+      'import sys,shutil; shutil.copyfile(sys.argv[1], sys.argv[2])', src, dst],
+      **kwargs)
 
 
 def RemoveDirectory(path):
