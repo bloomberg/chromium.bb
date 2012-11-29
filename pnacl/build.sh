@@ -1546,7 +1546,7 @@ install-unwind-header() {
   # across compilers or C libraries.
   INSTALL="/usr/bin/install -c -m 644"
   ${INSTALL} ${TC_SRC_GCC}/gcc/unwind-generic.h \
-             ${LLVM_INSTALL_DIR}/lib/clang/3.2/include/unwind.h
+             ${LLVM_INSTALL_DIR}/lib/clang/3.3/include/unwind.h
 }
 
 #########################################################################
@@ -1885,7 +1885,7 @@ binutils-configure() {
       # A mac-expert needs to look at this but
       # It seems that on mac the linker is storing "full" library paths into
       # the dynamic image, e.g, for the llc dynamic image we see  paths like:
-      # @executable_path/../lib/libLLVM-3.2svn.dylib
+      # @executable_path/../lib/libLLVM-3.3svn.dylib
       # This only works if at linktime the libraries are already at
       # @executable_path/../lib which is not the case for mac
       #local flags="-Xlinker -rpath -Xlinker '@executable_path/../lib'"
