@@ -53,17 +53,21 @@ remoting.HostController.AsyncResult = {
   FAILED_DIRECTORY: 3
 };
 
-/** @return {remoting.HostController.State} The current state of the daemon. */
-remoting.HostController.prototype.state = function() {
-  var result = this.plugin_.daemonState;
-  if (typeof(result) == 'undefined') {
-    // If the plug-in can't be instantiated, for example on ChromeOS, then
-    // return something sensible.
-    return remoting.HostController.State.NOT_IMPLEMENTED;
-  } else {
-    return result;
-  }
-};
+/**
+ * Checks if the host is installed on the local computer.
+ *
+ * TODO(sergeyu): Make this method asynchronous or just remove it and use
+ * getLocalHostStateAndId() instead.
+ *
+ * @return {boolean} True if the host is installed.
+ */
+remoting.HostController.prototype.isInstalled = function() {
+  var state = this.plugin_.daemonState;
+  return typeof(state) != 'undefined' &&
+    state != remoting.HostController.State.NOT_INSTALLED &&
+    state != remoting.HostController.State.INSTALLING;
+}
+
 
 /**
  * @param {function(boolean, boolean, boolean):void} callback Callback to be
@@ -269,9 +273,10 @@ remoting.HostController.prototype.updatePin = function(newPin, callback) {
  * Update the internal state so that the local host can be correctly filtered
  * out of the host list.
  *
- * @param {function(string?):void} onDone Completion callback.
+ * @param {function(remoting.HostController.State, string?):void} onDone
+ *     Completion callback.
  */
-remoting.HostController.prototype.getLocalHostId = function(onDone) {
+remoting.HostController.prototype.getLocalHostStateAndId = function(onDone) {
   /** @type {remoting.HostController} */
   var that = this;
   /** @param {string} configStr */
@@ -279,15 +284,23 @@ remoting.HostController.prototype.getLocalHostId = function(onDone) {
     var config = parseHostConfig_(configStr);
     if (config) {
       that.localHostId_ = config['host_id'];
-      onDone(that.localHostId_);
     } else {
-      onDone(null);
+      that.localHostId_ = null;
     }
+
+    var state = that.plugin_.daemonState;
+    if (typeof(state) == 'undefined') {
+      // If the plug-in can't be instantiated, for example on ChromeOS, then
+      // return something sensible.
+      state = remoting.HostController.State.NOT_IMPLEMENTED;
+    }
+
+    onDone(state, that.localHostId_);
   };
   try {
     this.plugin_.getDaemonConfig(onConfig);
   } catch (err) {
-    onDone(null);
+    onDone(remoting.HostController.State.NOT_IMPLEMENTED, null);
   }
 };
 

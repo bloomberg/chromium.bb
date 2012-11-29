@@ -192,8 +192,7 @@ remoting.HostSetupDialog.prototype.showForStartWithToken_ = function(token) {
       remoting.HostSetupFlow.State.HOST_STARTED];
 
   if (navigator.platform.indexOf('Mac') != -1 &&
-      this.hostController_.state() ==
-      remoting.HostController.State.NOT_INSTALLED) {
+      !this.hostController_.isInstalled()) {
     flow.unshift(remoting.HostSetupFlow.State.INSTALL_HOST);
   }
 
@@ -458,8 +457,7 @@ remoting.HostSetupDialog.validPin_ = function(pin) {
  * @return {void} Nothing.
  */
 remoting.HostSetupDialog.prototype.onInstallDialogOk = function() {
-  var state = this.hostController_.state();
-  if (state == remoting.HostController.State.STOPPED) {
+  if (this.hostController_.isInstalled()) {
     this.flow_.switchToNextStep(remoting.HostController.AsyncResult.OK);
     this.updateState_();
   } else {

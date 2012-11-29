@@ -110,38 +110,23 @@ remoting.initDaemonUi = function () {
   remoting.hostSetupDialog =
       new remoting.HostSetupDialog(remoting.hostController);
   // Display the cached host list, then asynchronously update and re-display it.
-  remoting.extractThisHostAndDisplay(true);
-  remoting.hostList.refresh(remoting.extractThisHostAndDisplay);
-};
-
-/**
- * Extract the remoting.Host object corresponding to this host (if any) and
- * display the list.
- *
- * @param {boolean} success True if the host list refresh was successful.
- * @return {void} Nothing.
- */
-remoting.extractThisHostAndDisplay = function(success) {
-  if (success) {
-    remoting.updateLocalHostState();
-  } else {
-    remoting.hostList.setLocalHostStateAndId(
-        remoting.hostController.state(), null);
-    remoting.hostList.display();
-  }
+  remoting.updateLocalHostState();
+  remoting.hostList.refresh(remoting.updateLocalHostState);
 };
 
 /**
  * Fetches local host state and updates host list accordingly.
  */
 remoting.updateLocalHostState = function() {
-  /** @param {string?} localHostId */
-  var onHostId = function(localHostId) {
-    remoting.hostList.setLocalHostStateAndId(
-        remoting.hostController.state(), localHostId);
+  /**
+   * @param {remoting.HostController.State} state Host state.
+   * @param {string?} localHostId
+   */
+  var onHostState = function(state, localHostId) {
+    remoting.hostList.setLocalHostStateAndId(state, localHostId);
     remoting.hostList.display();
   };
-  remoting.hostController.getLocalHostId(onHostId);
+  remoting.hostController.getLocalHostStateAndId(onHostState);
 }
 
 /**

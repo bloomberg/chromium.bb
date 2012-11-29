@@ -429,7 +429,7 @@ remoting.HostList.prototype.onErrorClick_ = function() {
   } else {
     this.lastError_ = '';
     this.display();
-    this.refresh(remoting.extractThisHostAndDisplay);
+    this.refresh(remoting.updateLocalHostState);
   }
 }
 
