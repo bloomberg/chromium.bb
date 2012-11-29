@@ -6,6 +6,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
+#include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -108,4 +109,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DISABLED_QueryLastFocusedWindowTabs) {
     EXPECT_NE(focused_window_id, utils::GetInteger(result_tab,
                                                    keys::kWindowIdKey));
   }
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabCurrentWindow) {
+  ASSERT_TRUE(RunExtensionTest("tabs/current_window")) << message_;
 }
