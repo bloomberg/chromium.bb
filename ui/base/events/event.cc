@@ -172,6 +172,8 @@ MouseEvent::MouseEvent(EventType type,
     : LocatedEvent(type, location, root_location,
                    base::Time::NowFromSystemTime() - base::Time(), flags),
       changed_button_flags_(0) {
+  if (this->type() == ET_MOUSE_MOVED && IsAnyButton())
+    set_type(ET_MOUSE_DRAGGED);
 }
 
 // static

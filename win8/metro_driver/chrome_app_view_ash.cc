@@ -19,7 +19,6 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
-#include "ui/base/events/event_constants.h"
 #include "ui/metro_viewer/metro_viewer_messages.h"
 #include "win8/metro_driver/metro_driver.h"
 #include "win8/metro_driver/winrt_utils.h"
@@ -200,7 +199,7 @@ uint32 GetKeyboardEventFlags() {
 }  // namespace
 
 ChromeAppViewAsh::ChromeAppViewAsh()
-    : ui_channel_(nullptr) {
+    : mouse_down_flags_(ui::EF_NONE), ui_channel_(nullptr) {
   globals.previous_state =
       winapp::Activation::ApplicationExecutionState_NotRunning;
 }
@@ -343,7 +342,8 @@ ChromeAppViewAsh::Uninitialize() {
   return S_OK;
 }
 
-HRESULT ChromeAppViewAsh::OnActivate(winapp::Core::ICoreApplicationView*,
+HRESULT ChromeAppViewAsh::OnActivate(
+    winapp::Core::ICoreApplicationView*,
     winapp::Activation::IActivatedEventArgs* args) {
   DVLOG(1) << __FUNCTION__;
 
@@ -366,7 +366,7 @@ HRESULT ChromeAppViewAsh::OnActivate(winapp::Core::ICoreApplicationView*,
 }
 
 HRESULT ChromeAppViewAsh::OnPointerMoved(winui::Core::ICoreWindow* sender,
-                                      winui::Core::IPointerEventArgs* args) {
+                                         winui::Core::IPointerEventArgs* args) {
   PointerInfoHandler pointer;
   HRESULT hr = pointer.Init(args);
   if (FAILED(hr))
@@ -375,31 +375,42 @@ HRESULT ChromeAppViewAsh::OnPointerMoved(winui::Core::ICoreWindow* sender,
 
   ui_channel_->Send(new MetroViewerHostMsg_MouseMoved(pointer.x(),
                                                       pointer.y(),
-                                                      0));
+                                                      mouse_down_flags_));
   return S_OK;
 }
 
-HRESULT ChromeAppViewAsh::OnPointerPressed(winui::Core::ICoreWindow* sender,
+// NOTE: From experimentation, it seems like Metro only sends a PointerPressed
+// event for the first button pressed and the last button released in a sequence
+// of mouse events.
+// For example, a sequence of LEFT_DOWN, RIGHT_DOWN, LEFT_UP, RIGHT_UP results
+// only in PointerPressed(LEFT)/PointerReleased(RIGHT) events.
+HRESULT ChromeAppViewAsh::OnPointerPressed(
+    winui::Core::ICoreWindow* sender,
     winui::Core::IPointerEventArgs* args) {
   PointerInfoHandler pointer;
   HRESULT hr = pointer.Init(args);
   if (FAILED(hr))
     return hr;
   DCHECK(pointer.IsMouse());
+
+  mouse_down_flags_ = pointer.flags();
   ui_channel_->Send(new MetroViewerHostMsg_MouseButton(pointer.x(), pointer.y(),
                                                        0,
                                                        ui::ET_MOUSE_PRESSED,
-                                                       pointer.flags()));
+                                                       mouse_down_flags_));
   return S_OK;
 }
 
-HRESULT ChromeAppViewAsh::OnPointerReleased(winui::Core::ICoreWindow* sender,
+HRESULT ChromeAppViewAsh::OnPointerReleased(
+    winui::Core::ICoreWindow* sender,
     winui::Core::IPointerEventArgs* args) {
   PointerInfoHandler pointer;
   HRESULT hr = pointer.Init(args);
   if (FAILED(hr))
     return hr;
   DCHECK(pointer.IsMouse());
+
+  mouse_down_flags_ = ui::EF_NONE;
   ui_channel_->Send(new MetroViewerHostMsg_MouseButton(pointer.x(), pointer.y(),
                                                        0,
                                                        ui::ET_MOUSE_RELEASED,
@@ -407,7 +418,8 @@ HRESULT ChromeAppViewAsh::OnPointerReleased(winui::Core::ICoreWindow* sender,
   return S_OK;
 }
 
-HRESULT ChromeAppViewAsh::OnWheel(winui::Core::ICoreWindow* sender,
+HRESULT ChromeAppViewAsh::OnWheel(
+    winui::Core::ICoreWindow* sender,
     winui::Core::IPointerEventArgs* args) {
   PointerInfoHandler pointer;
   HRESULT hr = pointer.Init(args);
@@ -421,8 +433,9 @@ HRESULT ChromeAppViewAsh::OnWheel(winui::Core::ICoreWindow* sender,
   return S_OK;
 }
 
-HRESULT ChromeAppViewAsh::OnKeyDown(winui::Core::ICoreWindow* sender,
-                                 winui::Core::IKeyEventArgs* args) {
+HRESULT ChromeAppViewAsh::OnKeyDown(
+    winui::Core::ICoreWindow* sender,
+    winui::Core::IKeyEventArgs* args) {
   winsys::VirtualKey virtual_key;
   HRESULT hr = args->get_VirtualKey(&virtual_key);
   if (FAILED(hr))
@@ -439,8 +452,9 @@ HRESULT ChromeAppViewAsh::OnKeyDown(winui::Core::ICoreWindow* sender,
   return S_OK;
 }
 
-HRESULT ChromeAppViewAsh::OnKeyUp(winui::Core::ICoreWindow* sender,
-                               winui::Core::IKeyEventArgs* args) {
+HRESULT ChromeAppViewAsh::OnKeyUp(
+    winui::Core::ICoreWindow* sender,
+    winui::Core::IKeyEventArgs* args) {
   winsys::VirtualKey virtual_key;
   HRESULT hr = args->get_VirtualKey(&virtual_key);
   if (FAILED(hr))

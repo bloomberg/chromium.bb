@@ -23,7 +23,7 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   static RemoteRootWindowHostWin* Instance();
   static RemoteRootWindowHostWin* Create(const gfx::Rect& bounds);
 
-  void OnMouseMoved(int32 x, int32 y, int32 extra);
+  void OnMouseMoved(int32 x, int32 y, int32 flags);
   void OnMouseButton(
       int32 x, int32 y, int32 extra, ui::EventType type, ui::EventFlags flags);
   void OnKeyDown(uint32 vkey,

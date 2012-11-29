@@ -23,8 +23,8 @@ IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_SetTargetSurface,
 IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_MouseMoved,
                      int32,       /* x-coordinate */
                      int32,       /* y-coordinate */
-                     int32        /* modifiers */)
-// Inforoms the brower that a mouse button was pressed.
+                     int32        /* flags */)
+// Informs the brower that a mouse button was pressed.
 IPC_MESSAGE_CONTROL5(MetroViewerHostMsg_MouseButton,
                      int32,           /* x-coordinate */
                      int32,           /* y-coordinate */

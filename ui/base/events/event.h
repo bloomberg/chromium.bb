@@ -328,6 +328,11 @@ class UI_EXPORT MouseEvent : public LocatedEvent {
     return (flags() & EF_RIGHT_MOUSE_BUTTON) != 0;
   }
 
+  bool IsAnyButton() const {
+    return (flags() & (EF_LEFT_MOUSE_BUTTON | EF_MIDDLE_MOUSE_BUTTON |
+                       EF_RIGHT_MOUSE_BUTTON)) != 0;
+  }
+
   // Compares two mouse down events and returns true if the second one should
   // be considered a repeat of the first.
   static bool IsRepeatedClickEvent(

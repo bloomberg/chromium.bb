@@ -11,6 +11,7 @@
 #include <windows.ui.viewmanagement.h>
 
 #include "base/memory/scoped_ptr.h"
+#include "ui/base/events/event_constants.h"
 #include "win8/metro_driver/direct3d_helper.h"
 
 namespace IPC {
@@ -70,6 +71,10 @@ class ChromeAppViewAsh
   EventRegistrationToken keyup_token_;
   EventRegistrationToken character_received_token_;
   EventRegistrationToken visibility_changed_token_;
+
+  // Keep state about which button is currently down, if any, as PointerMoved
+  // events do not contain that state, but Ash's MouseEvents need it.
+  ui::EventFlags mouse_down_flags_;
 
   metro_driver::Direct3DHelper direct3d_helper_;
 

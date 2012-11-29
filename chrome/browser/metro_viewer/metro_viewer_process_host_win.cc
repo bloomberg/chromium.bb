@@ -71,8 +71,8 @@ void MetroViewerProcessHost::OnSetTargetSurface(
 
 // TODO(cpu): Find a decent way to get to the root window host in the
 // next four methods.
-void MetroViewerProcessHost::OnMouseMoved(int32 x, int32 y, int32 modifiers) {
-  aura::RemoteRootWindowHostWin::Instance()->OnMouseMoved(x, y, modifiers);
+void MetroViewerProcessHost::OnMouseMoved(int32 x, int32 y, int32 flags) {
+  aura::RemoteRootWindowHostWin::Instance()->OnMouseMoved(x, y, flags);
 }
 
 void MetroViewerProcessHost::OnMouseButton(

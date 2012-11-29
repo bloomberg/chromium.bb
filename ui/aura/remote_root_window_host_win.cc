@@ -145,9 +145,9 @@ void RemoteRootWindowHostWin::OnDeviceScaleFactorChanged(
 void RemoteRootWindowHostWin::PrepareForShutdown() {
 }
 
-void RemoteRootWindowHostWin::OnMouseMoved(int32 x, int32 y, int32 extra) {
+void RemoteRootWindowHostWin::OnMouseMoved(int32 x, int32 y, int32 flags) {
   gfx::Point location(x, y);
-  ui::MouseEvent event(ui::ET_MOUSE_MOVED, location, location, 0);
+  ui::MouseEvent event(ui::ET_MOUSE_MOVED, location, location, flags);
   delegate_->OnHostMouseEvent(&event);
 }
 
