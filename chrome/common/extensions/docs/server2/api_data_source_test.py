@@ -118,11 +118,11 @@ class APIDataSourceTest(unittest.TestCase):
     dict_ = _JSCModel(self._LoadJSON('ref_test.json')[0],
                       self._CreateRefResolver('ref_test_data_source.json'),
                       False).ToDict()
-    self.assertEquals(_MakeLink('#type-type2', 'type2'),
+    self.assertEquals(_MakeLink('ref_test.html#type-type2', 'type2'),
                       _GetType(dict_, 'type1')['description'])
     self.assertEquals(
-        'A %s, or %s' % (_MakeLink('#type-type3', 'type3'),
-                         _MakeLink('#type-type2', 'type2')),
+        'A %s, or %s' % (_MakeLink('ref_test.html#type-type3', 'type3'),
+                         _MakeLink('ref_test.html#type-type2', 'type2')),
         _GetType(dict_, 'type2')['description'])
     self.assertEquals(
         '%s != %s' % (_MakeLink('other.html#type-type2', 'other.type2'),

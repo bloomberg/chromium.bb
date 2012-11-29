@@ -16,7 +16,7 @@ import third_party.json_schema_compiler.idl_parser as idl_parser
 # Increment this version when there are changes to the data stored in any of
 # the caches used by APIDataSource. This allows the cache to be invalidated
 # without having to flush memcache on the production server.
-_VERSION = 4
+_VERSION = 5
 
 def _RemoveNoDocs(item):
   if json_parse.IsDict(item):
@@ -71,7 +71,7 @@ class _JSCModel(object):
       type_name = ref.rsplit('.', 1)[-1]
     else:
       type_name = ref
-    return { 'href': '#type-%s' % type_name, 'text': ref }
+    return { 'href': '#type-%s' % type_name, 'text': ref, 'name': ref }
 
   def _FormatDescription(self, description):
     if description is None or '$ref:' not in description:

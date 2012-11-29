@@ -40,52 +40,82 @@ class APIDataSourceTest(unittest.TestCase):
                                  InMemoryObjectStore(''))
     self.assertEqual({
       'href': 'foo.html#type-foo_t1',
-      'text': 'foo.foo_t1'
+      'text': 'foo.foo_t1',
+      'name': 'foo_t1'
     }, resolver.GetLink('baz', 'foo.foo_t1'))
     self.assertEqual({
       'href': 'baz.html#event-baz_e1',
-      'text': 'baz_e1'
+      'text': 'baz_e1',
+      'name': 'baz_e1'
     }, resolver.GetLink('baz', 'baz.baz_e1'))
     self.assertEqual({
-      'href': '#event-baz_e1',
-      'text': 'baz_e1'
+      'href': 'baz.html#event-baz_e1',
+      'text': 'baz_e1',
+      'name': 'baz_e1'
     }, resolver.GetLink('baz', 'baz_e1'))
     self.assertEqual({
       'href': 'foo.html#method-foo_f1',
-      'text': 'foo.foo_f1'
+      'text': 'foo.foo_f1',
+      'name': 'foo_f1'
     }, resolver.GetLink('baz', 'foo.foo_f1'))
     self.assertEqual({
       'href': 'foo.html#property-foo_p3',
-      'text': 'foo.foo_p3'
+      'text': 'foo.foo_p3',
+      'name': 'foo_p3'
     }, resolver.GetLink('baz', 'foo.foo_p3'))
     self.assertEqual({
       'href': 'bar.bon.html#type-bar_bon_t3',
-      'text': 'bar.bon.bar_bon_t3'
+      'text': 'bar.bon.bar_bon_t3',
+      'name': 'bar_bon_t3'
     }, resolver.GetLink('baz', 'bar.bon.bar_bon_t3'))
     self.assertEqual({
-      'href': '#property-bar_bon_p3',
-      'text': 'bar_bon_p3'
+      'href': 'bar.bon.html#property-bar_bon_p3',
+      'text': 'bar_bon_p3',
+      'name': 'bar_bon_p3'
     }, resolver.GetLink('bar.bon', 'bar_bon_p3'))
     self.assertEqual({
       'href': 'bar.bon.html#property-bar_bon_p3',
-      'text': 'bar_bon_p3'
+      'text': 'bar_bon_p3',
+      'name': 'bar_bon_p3'
     }, resolver.GetLink('bar.bon', 'bar.bon.bar_bon_p3'))
     self.assertEqual({
       'href': 'bar.html#event-bar_e2',
-      'text': 'bar_e2'
+      'text': 'bar_e2',
+      'name': 'bar_e2'
     }, resolver.GetLink('bar', 'bar.bar_e2'))
     self.assertEqual({
       'href': 'bar.html#type-bon',
-      'text': 'bon'
+      'text': 'bon',
+      'name': 'bon'
     }, resolver.GetLink('bar', 'bar.bon'))
     self.assertEqual({
-      'href': '#event-foo_t3-foo_t3_e1',
-      'text': 'foo_t3.foo_t3_e1'
+      'href': 'foo.html#event-foo_t3-foo_t3_e1',
+      'text': 'foo_t3.foo_t3_e1',
+      'name': 'foo_t3_e1'
     }, resolver.GetLink('foo', 'foo_t3.foo_t3_e1'))
     self.assertEqual({
       'href': 'foo.html#event-foo_t3-foo_t3_e1',
-      'text': 'foo_t3.foo_t3_e1'
+      'text': 'foo_t3.foo_t3_e1',
+      'name': 'foo_t3_e1'
     }, resolver.GetLink('foo', 'foo.foo_t3.foo_t3_e1'))
+    self.assertEqual({
+      'href': 'foo.html#event-foo_t3-foo_t3_e1',
+      'text': 'foo_t3.foo_t3_e1',
+      'name': 'foo_t3_e1'
+    }, resolver.GetLink('foo', 'foo.foo_p1.foo_t3_e1'))
+    self.assertEqual({
+      'href': 'bar.html#property-bar_t1-bar_t1_p1',
+      'text': 'bar.bar_t1.bar_t1_p1',
+      'name': 'bar_t1_p1'
+    }, resolver.GetLink('foo', 'bar.bar_p3.bar_t1_p1'))
+    self.assertEqual({
+      'href': 'bar.html#property-bar_t1-bar_t1_p1',
+      'text': 'bar_t1.bar_t1_p1',
+      'name': 'bar_t1_p1'
+    }, resolver.GetLink('bar', 'bar_p3.bar_t1_p1'))
+    self.assertEqual(
+        None,
+        resolver.GetLink('bar', 'bar.bar_p3.bar_t2_p1'))
     self.assertEqual(
         None,
         resolver.GetLink('bar', 'bar.bon.bar_e3'))

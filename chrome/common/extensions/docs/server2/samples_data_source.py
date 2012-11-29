@@ -16,7 +16,7 @@ import url_constants
 DEFAULT_ICON_PATH = '/images/sample-default-icon.png'
 
 # See api_data_source.py for more info on _VERSION.
-_VERSION = 0
+_VERSION = 1
 
 class SamplesDataSource(object):
   """Constructs a list of samples and their respective files and api calls.
@@ -57,7 +57,15 @@ class SamplesDataSource(object):
                                request)
 
     def _GetAPIItems(self, js_file):
-      return set(re.findall('(chrome\.[a-zA-Z0-9\.]+)', js_file))
+      chrome_regex = '(chrome\.[a-zA-Z0-9\.]+)'
+      calls = set(re.findall(chrome_regex, js_file))
+      # Find APIs that have been assigned into variables.
+      assigned_vars = dict(re.findall('var\s*([^\s]+)\s*=\s*%s;' % chrome_regex,
+                                      js_file))
+      # Replace the variable name with the full API name.
+      for var_name, value in assigned_vars.iteritems():
+        js_file = js_file.replace(var_name, value)
+      return calls.union(re.findall(chrome_regex, js_file))
 
     def _GetDataFromManifest(self, path, file_system):
       manifest = file_system.ReadSingle(path + '/manifest.json')
@@ -114,7 +122,7 @@ class SamplesDataSource(object):
           api_items.update(self._GetAPIItems(js))
 
         api_calls = []
-        for item in api_items:
+        for item in sorted(api_items):
           if len(item.split('.')) < 3:
             continue
           if item.endswith('.removeListener') or item.endswith('.hasListener'):

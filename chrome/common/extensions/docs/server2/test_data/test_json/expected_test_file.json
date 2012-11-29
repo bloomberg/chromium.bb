@@ -27,7 +27,8 @@
               "id": "property-results-resultsElement",
               "link": {
                 "text": "TypeA",
-                "href": "#type-TypeA"
+                "href": "tester.html#type-TypeA",
+                "name": "TypeA"
               },
               "optional": false,
               "properties": [],
@@ -116,7 +117,8 @@
                 "id": "property-results-resultsElement",
                 "link": {
                   "text": "TypeA",
-                  "href": "#type-TypeA"
+                  "href": "tester.html#type-TypeA",
+                  "name": "TypeA"
                 },
                 "optional": false,
                 "properties": [],
@@ -156,7 +158,8 @@
             "id": "property-b-bElement",
             "link": {
               "text": "TypeA",
-              "href": "#type-TypeA"
+              "href": "tester.html#type-TypeA",
+              "name": "TypeA"
             },
             "optional": false,
             "properties": [],
@@ -203,7 +206,8 @@
           "id": "property-EventA-bookmark",
           "link": {
             "text": "TypeA",
-            "href": "#type-TypeA"
+            "href": "tester.html#type-TypeA",
+            "name": "TypeA"
           },
           "optional": false,
           "properties": [],
