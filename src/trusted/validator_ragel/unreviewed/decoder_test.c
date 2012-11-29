@@ -184,11 +184,14 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
   } else if (((struct DecodeState *)userdata)->fwait) {
     /* If it's x87 instruction then we can fold some fwait's in the instruction
        itself.  */
-    if (((begin[0] >= 0xd8) && (begin[0] <= 0xdf)) ||
-        ((((begin[0] & 0xf0) == 0x40) || (begin[0] == 0x66)) &&
-                                    (begin[1] >= 0xd8) && (begin[1] <= 0xdf)) ||
-        ((begin[0] == 0x66) || ((begin[1] & 0xf0) == 0x40) ||
-                                    (begin[2] >= 0xd8) || (begin[2] <= 0xdf))) {
+    if ((begin[0] >= 0xd8 && begin[0] <= 0xdf) ||
+        (((begin[0] & 0xf0) == 0x40 || (begin[0] == 0x66)) &&
+         begin[1] >= 0xd8 &&
+         begin[1] <= 0xdf) ||
+        (begin[0] == 0x66 &&
+         (begin[1] & 0xf0) == 0x40 &&
+         begin[2] >= 0xd8 &&
+         begin[2] <= 0xdf)) {
       /* fwait "prefix" can only include two 0x9b bytes or one rex byte - and
        * then only if the instruction itself have no rex prefix.  */
       int fwait_count = !!data16_prefix;
