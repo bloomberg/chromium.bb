@@ -398,8 +398,8 @@ void DevToolsWindow::CreateDevToolsBrowser() {
   }
 
   browser_ = new Browser(Browser::CreateParams::CreateForDevTools(profile_));
-  browser_->tab_strip_model()->AddTabContents(
-      tab_contents_, -1, content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+  browser_->tab_strip_model()->AddWebContents(
+      tab_contents_->web_contents(), -1, content::PAGE_TRANSITION_AUTO_TOPLEVEL,
       TabStripModel::ADD_ACTIVE);
 }
 

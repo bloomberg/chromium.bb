@@ -991,7 +991,7 @@ void Browser::RequestMediaAccessPermissionHelper(
 void Browser::UpdateUIForNavigationInTab(TabContents* contents,
                                          content::PageTransition transition,
                                          bool user_initiated) {
-  tab_strip_model_->TabNavigating(contents, transition);
+  tab_strip_model_->TabNavigating(contents->web_contents(), transition);
 
   bool contents_is_selected =
       contents == tab_strip_model_->GetActiveTabContents();

@@ -427,7 +427,7 @@ int TabStripModel::GetIndexOfLastWebContentsOpenedBy(const WebContents* opener,
   return kNoTab;
 }
 
-void TabStripModel::TabNavigating(TabContents* contents,
+void TabStripModel::TabNavigating(WebContents* contents,
                                   content::PageTransition transition) {
   if (ShouldForgetOpenersForTransition(transition)) {
     // Don't forget the openers if this tab is a New Tab page opened at the
@@ -444,7 +444,7 @@ void TabStripModel::TabNavigating(TabContents* contents,
       ForgetAllOpeners();
       // In this specific case we also want to reset the group relationship,
       // since it is now technically invalid.
-      ForgetGroup(contents->web_contents());
+      ForgetGroup(contents);
     }
   }
 }
@@ -603,7 +603,7 @@ void TabStripModel::SetSelectionFromModel(
   SetSelection(source, NOTIFY_DEFAULT);
 }
 
-void TabStripModel::AddTabContents(TabContents* contents,
+void TabStripModel::AddWebContents(WebContents* contents,
                                    int index,
                                    content::PageTransition transition,
                                    int add_types) {
@@ -638,11 +638,10 @@ void TabStripModel::AddTabContents(TabContents* contents,
     // is re-selected, not the next-adjacent.
     inherit_group = true;
   }
-  InsertWebContentsAt(index,
-                      contents->web_contents(),
+  InsertWebContentsAt(index, contents,
                       add_types | (inherit_group ? ADD_INHERIT_GROUP : 0));
   // Reset the index, just in case insert ended up moving it on us.
-  index = GetIndexOfTabContents(contents);
+  index = GetIndexOfWebContents(contents);
 
   if (inherit_group && transition == content::PAGE_TRANSITION_TYPED)
     contents_data_[index]->reset_group_on_select = true;
@@ -659,12 +658,12 @@ void TabStripModel::AddTabContents(TabContents* contents,
   // new background tab.
   if (WebContents* old_contents = GetActiveWebContents()) {
     if ((add_types & ADD_ACTIVE) == 0) {
-      contents->web_contents()->GetView()->
-          SizeContents(old_contents->GetView()->GetContainerSize());
+      contents->GetView()->SizeContents(
+          old_contents->GetView()->GetContainerSize());
       // We need to hide the contents or else we get and execute paints for
       // background tabs. With enough background tabs they will steal the
       // backing store of the visible tab causing flashing. See bug 20831.
-      contents->web_contents()->WasHidden();
+      contents->WasHidden();
     }
   }
 }
@@ -1018,12 +1017,12 @@ std::vector<int> TabStripModel::GetIndicesForCommand(int index) const {
   return selection_model_.selected_indices();
 }
 
-bool TabStripModel::IsNewTabAtEndOfTabStrip(TabContents* contents) const {
-  const GURL& url = contents->web_contents()->GetURL();
+bool TabStripModel::IsNewTabAtEndOfTabStrip(WebContents* contents) const {
+  const GURL& url = contents->GetURL();
   return url.SchemeIs(chrome::kChromeUIScheme) &&
          url.host() == chrome::kChromeUINewTabHost &&
-         contents == GetTabContentsAtImpl(count() - 1) &&
-         contents->web_contents()->GetController().GetEntryCount() == 1;
+         contents == GetWebContentsAtImpl(count() - 1) &&
+         contents->GetController().GetEntryCount() == 1;
 }
 
 bool TabStripModel::InternalCloseTabs(const std::vector<int>& indices,

@@ -12,7 +12,6 @@
 #include "content/public/browser/web_contents_observer.h"
 
 class Browser;
-class BrowserCommandsTabContentsCreator;
 class BrowserTabstripTabContentsCreator;
 class ChromeWebContentsHandler;
 class ConstrainedWebDialogDelegateBase;
@@ -56,7 +55,6 @@ class TabContents : public content::WebContentsObserver {
     // do so.
 
     friend class Browser;
-    friend class BrowserCommandsTabContentsCreator;
     friend class BrowserTabstripTabContentsCreator;
     friend class ChromeWebContentsHandler;
     friend class ConstrainedWebDialogDelegateBase;

@@ -92,7 +92,7 @@ void BrowserInstantController::CommitInstant(TabContents* preview,
                                              bool in_new_tab) {
   if (in_new_tab) {
     // TabStripModel takes ownership of |preview|.
-    browser_->tab_strip_model()->AddTabContents(preview, -1,
+    browser_->tab_strip_model()->AddWebContents(preview->web_contents(), -1,
         instant_.last_transition_type(), TabStripModel::ADD_ACTIVE);
   } else {
     TabContents* active_tab =

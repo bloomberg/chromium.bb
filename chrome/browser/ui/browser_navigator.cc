@@ -486,7 +486,7 @@ void Navigate(NavigateParams* params) {
       // By default, content believes it is not hidden.  When adding contents
       // in the background, tell it that it's hidden.
       if ((params->tabstrip_add_types & TabStripModel::ADD_ACTIVE) == 0) {
-        // TabStripModel::AddTabContents invokes WasHidden if not foreground.
+        // TabStripModel::AddWebContents invokes WasHidden if not foreground.
         params->target_contents->web_contents()->WasHidden();
       }
     } else {
@@ -538,8 +538,8 @@ void Navigate(NavigateParams* params) {
       params->tabstrip_add_types |= TabStripModel::ADD_FORCE_INDEX;
 
     // The navigation should insert a new tab into the target Browser.
-    params->browser->tab_strip_model()->AddTabContents(
-        params->target_contents,
+    params->browser->tab_strip_model()->AddWebContents(
+        params->target_contents->web_contents(),
         params->tabstrip_index,
         params->transition,
         params->tabstrip_add_types);

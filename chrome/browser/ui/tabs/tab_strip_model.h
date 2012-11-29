@@ -175,7 +175,7 @@ class TabStripModel : public content::NotificationObserver {
   // as such the ADD_FORCE_INDEX AddTabTypes is meaningless here.  The only time
   // the |index| is changed is if using the index would result in breaking the
   // constraint that all mini-tabs occur before non-mini-tabs.
-  // See also AddTabContents.
+  // See also AddWebContents.
   void InsertWebContentsAt(int index,
                            content::WebContents* contents,
                            int add_types);
@@ -294,11 +294,11 @@ class TabStripModel : public content::NotificationObserver {
   int GetIndexOfLastWebContentsOpenedBy(const content::WebContents* opener,
                                         int start_index) const;
 
-  // Called by the Browser when a navigation is about to occur in the specified
-  // TabContents. Depending on the tab, and the transition type of the
+  // To be called when a navigation is about to occur in the specified
+  // WebContents. Depending on the tab, and the transition type of the
   // navigation, the TabStripModel may adjust its selection and grouping
   // behavior.
-  void TabNavigating(TabContents* contents,
+  void TabNavigating(content::WebContents* contents,
                      content::PageTransition transition);
 
   // Forget all Opener relationships that are stored (but _not_ group
@@ -380,12 +380,12 @@ class TabStripModel : public content::NotificationObserver {
 
   // Command level API /////////////////////////////////////////////////////////
 
-  // Adds a TabContents at the best position in the TabStripModel given
+  // Adds a WebContents at the best position in the TabStripModel given
   // the specified insertion index, transition, etc. |add_types| is a bitmask of
   // AddTabTypes; see it for details. This method ends up calling into
-  // InsertWebContentsAt to do the actual insertion. Pass -1 for |index| to
+  // InsertWebContentsAt to do the actual insertion. Pass kNoTab for |index| to
   // append the contents to the end of the tab strip.
-  void AddTabContents(TabContents* contents,
+  void AddWebContents(content::WebContents* contents,
                       int index,
                       content::PageTransition transition,
                       int add_types);
@@ -474,12 +474,12 @@ class TabStripModel : public content::NotificationObserver {
   // determine which indices the command applies to.
   std::vector<int> GetIndicesForCommand(int index) const;
 
-  // Returns true if the specified TabContents is a New Tab at the end of
+  // Returns true if the specified WebContents is a New Tab at the end of
   // the tabstrip. We check for this because opener relationships are _not_
   // forgotten for the New Tab page opened as a result of a New Tab gesture
   // (e.g. Ctrl+T, etc) since the user may open a tab transiently to look up
   // something related to their current activity.
-  bool IsNewTabAtEndOfTabStrip(TabContents* contents) const;
+  bool IsNewTabAtEndOfTabStrip(content::WebContents* contents) const;
 
   // Closes the WebContentses at the specified indices. This causes the
   // WebContentses to be destroyed, but it may not happen immediately. If

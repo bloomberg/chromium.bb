@@ -105,7 +105,7 @@ void TabStripModelOrderController::ActiveTabChanged(
       old_opener = tabstrip_->GetOpenerOfWebContentsAt(index);
 
       // Forget any group/opener relationships that need to be reset whenever
-      // selection changes (see comment in TabStripModel::AddTabContentsAt).
+      // selection changes (see comment in TabStripModel::AddWebContentsAt).
       if (tabstrip_->ShouldResetGroupOnSelect(old_contents))
         tabstrip_->ForgetGroup(old_contents);
     }
