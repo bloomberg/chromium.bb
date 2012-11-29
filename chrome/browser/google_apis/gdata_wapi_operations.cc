@@ -456,6 +456,15 @@ void AuthorizeAppOperation::ParseResponse(
     }
   }
 
+  // |entry| is NULL if parsing of XML failed.
+  if (!entry) {
+    LOG(WARNING) << "Failed to parse the XML data: " << data;
+    RunCallback(GDATA_PARSE_ERROR, scoped_ptr<base::Value>());
+    const bool success = false;
+    OnProcessURLFetchResultsComplete(success);
+    return;
+  }
+
   // From the response, we create a list of the links returned, since those
   // are the only things we are interested in.
   scoped_ptr<base::ListValue> link_list(new ListValue);

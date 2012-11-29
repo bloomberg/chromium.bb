@@ -79,8 +79,11 @@ scoped_ptr<test_server::HttpResponse> CreateHttpResponseFromFile(
     return scoped_ptr<test_server::HttpResponse>();
 
   std::string content_type = "text/plain";
-  if (EndsWith(file_path.AsUTF8Unsafe(), ".json", true /* case sensitive */))
+  if (EndsWith(file_path.AsUTF8Unsafe(), ".json", true /* case sensitive */)) {
     content_type = "application/json";
+  } else if (EndsWith(file_path.AsUTF8Unsafe(), ".xml", true)) {
+    content_type = "text/xml";
+  }
 
   scoped_ptr<test_server::HttpResponse> http_response(
       new test_server::HttpResponse);
@@ -217,6 +220,13 @@ class GDataWapiOperationsTest : public testing::Test {
       const std::string resource_id = net::UnescapeURLComponent(
           remaining_path, net::UnescapeRule::URL_SPECIAL_CHARS);
       if (resource_id == "file:2_file_resource_id") {
+        // Check if this is an authorization request for an app.
+        if (request.method == test_server::METHOD_PUT &&
+            request.content.find("<docs:authorizedApp>") != std::string::npos) {
+          return CreateHttpResponseFromFile(
+              test_util::GetTestFilePath("gdata/entry.xml"));
+        }
+
         return CreateHttpResponseFromFile(
             test_util::GetTestFilePath("gdata/file_entry.json"));
       } else if (resource_id == "folder:root" &&
@@ -548,8 +558,61 @@ TEST_F(GDataWapiOperationsTest, RenameResourceOperation) {
             http_request_.content);
 }
 
-// TODO(satorux): Write tests for AuthorizeAppsOperation.
-// crbug.com/162348
+TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_ValidFeed) {
+  GDataErrorCode result_code = GDATA_OTHER_ERROR;
+  scoped_ptr<base::Value> result_data;
+
+  // Authorize an app with APP_ID to access to a document.
+  AuthorizeAppOperation* operation = new AuthorizeAppOperation(
+      &operation_registry_,
+      base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
+                 &result_code,
+                 &result_data),
+      test_server_.GetURL(
+          "/feeds/default/private/full/file:2_file_resource_id"),
+      "APP_ID");
+
+  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, result_code);
+  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ("*", http_request_.headers["If-Match"]);
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_EQ("<?xml version=\"1.0\"?>\n"
+            "<entry xmlns=\"http://www.w3.org/2005/Atom\" "
+            "xmlns:docs=\"http://schemas.google.com/docs/2007\">\n"
+            " <docs:authorizedApp>APP_ID</docs:authorizedApp>\n"
+            "</entry>\n",
+            http_request_.content);
+}
+
+TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_InvalidFeed) {
+  GDataErrorCode result_code = GDATA_OTHER_ERROR;
+  scoped_ptr<base::Value> result_data;
+
+  // Authorize an app with APP_ID to access to a document but an invalid feed.
+  AuthorizeAppOperation* operation = new AuthorizeAppOperation(
+      &operation_registry_,
+      base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
+                 &result_code,
+                 &result_data),
+      test_server_.GetURL("/files/gdata/testfile.txt"),
+      "APP_ID");
+
+  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(GDATA_PARSE_ERROR, result_code);
+  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ("*", http_request_.headers["If-Match"]);
+  EXPECT_EQ("<?xml version=\"1.0\"?>\n"
+            "<entry xmlns=\"http://www.w3.org/2005/Atom\" "
+            "xmlns:docs=\"http://schemas.google.com/docs/2007\">\n"
+            " <docs:authorizedApp>APP_ID</docs:authorizedApp>\n"
+            "</entry>\n",
+            http_request_.content);
+}
 
 // TODO(satorux): Write tests for AddResourceToDirectoryOperation.
 // crbug.com/162348
