@@ -518,7 +518,7 @@ void ToolbarView::ButtonPressed(views::Button* sender,
                                 const ui::Event& event) {
   int command = sender->tag();
   WindowOpenDisposition disposition =
-      chrome::DispositionFromEventFlags(sender->mouse_event_flags());
+      chrome::DispositionFromEventFlags(event.flags());
   if ((disposition == CURRENT_TAB) &&
       ((command == IDC_BACK) || (command == IDC_FORWARD))) {
     // Forcibly reset the location bar, since otherwise it won't discard any

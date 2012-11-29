@@ -121,7 +121,7 @@ void ReloadButton::ButtonPressed(views::Button* /* button */,
     // Shift-clicking or ctrl-clicking the reload button means we should ignore
     // any cached content.
     int command;
-    int flags = mouse_event_flags();
+    int flags = event.flags();
     if (event.IsShiftDown() || event.IsControlDown()) {
       command = IDC_RELOAD_IGNORING_CACHE;
       // Mask off Shift and Control so they don't affect the disposition below.

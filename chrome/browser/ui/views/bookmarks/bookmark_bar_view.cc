@@ -1145,7 +1145,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
   DCHECK(page_navigator_);
 
   WindowOpenDisposition disposition_from_event_flags =
-      chrome::DispositionFromEventFlags(sender->mouse_event_flags());
+      chrome::DispositionFromEventFlags(event.flags());
 
   if (node->is_url()) {
     RecordAppLaunch(browser_->profile(), node->url());

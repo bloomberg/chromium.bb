@@ -33,8 +33,6 @@ class VIEWS_EXPORT Button : public View {
   int tag() const { return tag_; }
   void set_tag(int tag) { tag_ = tag; }
 
-  int mouse_event_flags() const { return mouse_event_flags_; }
-
   void SetAccessibleName(const string16& name);
   void SetAccessibleKeyboardShortcut(const string16& shortcut);
 
@@ -66,9 +64,6 @@ class VIEWS_EXPORT Button : public View {
   // The id tag associated with this button. Used to disambiguate buttons in
   // the ButtonListener implementation.
   int tag_;
-
-  // Event flags present when the button was clicked.
-  int mouse_event_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(Button);
 };
