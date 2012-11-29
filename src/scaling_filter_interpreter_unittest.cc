@@ -124,7 +124,8 @@ class ScalingFilterInterpreterTestInterpreter : public Interpreter {
 TEST(ScalingFilterInterpreterTest, SimpleTest) {
   ScalingFilterInterpreterTestInterpreter* base_interpreter =
       new ScalingFilterInterpreterTestInterpreter;
-  ScalingFilterInterpreter interpreter(NULL, base_interpreter, NULL);
+  ScalingFilterInterpreter interpreter(NULL, base_interpreter, NULL,
+                                       GESTURES_DEVCLASS_TOUCHPAD);
 
   HardwareProperties initial_hwprops = {
     133, 728, 10279, 5822,  // left, top, right, bottom
@@ -344,7 +345,8 @@ static void RunTouchMajorAndMinorTest(
 TEST(ScalingFilterInterpreterTest, TouchMajorAndMinorTest) {
   ScalingFilterInterpreterTestInterpreter* base_interpreter =
       new ScalingFilterInterpreterTestInterpreter;
-  ScalingFilterInterpreter interpreter(NULL, base_interpreter, NULL);
+  ScalingFilterInterpreter interpreter(NULL, base_interpreter, NULL,
+                                       GESTURES_DEVCLASS_TOUCHPAD);
 
   const float e_x = 17;
   const float e_y = 71;

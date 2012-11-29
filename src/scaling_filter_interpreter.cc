@@ -14,10 +14,11 @@
 namespace gestures {
 
 // Takes ownership of |next|:
-ScalingFilterInterpreter::ScalingFilterInterpreter(PropRegistry* prop_reg,
-                                                   Interpreter* next,
-                                                   Tracer* tracer)
+ScalingFilterInterpreter::ScalingFilterInterpreter(
+    PropRegistry* prop_reg, Interpreter* next, Tracer* tracer,
+    GestureInterpreterDeviceClass devclass)
     : FilterInterpreter(NULL, next, tracer, false),
+      devclass_(devclass),
       tp_x_scale_(1.0),
       tp_y_scale_(1.0),
       tp_x_translate_(0.0),
@@ -31,7 +32,8 @@ ScalingFilterInterpreter::ScalingFilterInterpreter(PropRegistry* prop_reg,
       tp_y_bias_(prop_reg, "Touchpad Device Output Bias on Y-Axis", 0.0),
       pressure_scale_(prop_reg, "Pressure Calibration Slope", 1.0),
       pressure_translate_(prop_reg, "Pressure Calibration Offset", 0.0),
-      pressure_threshold_(prop_reg, "Pressure Minimum Threshold", 0.0) {
+      pressure_threshold_(prop_reg, "Pressure Minimum Threshold", 0.0),
+      mouse_cpi_(prop_reg, "Mouse CPI", 1000.0) {
   InitName();
 }
 
@@ -76,6 +78,23 @@ void ScalingFilterInterpreter::FilterLowPressure(HardwareState* hwstate) {
 }
 
 void ScalingFilterInterpreter::ScaleHardwareState(HardwareState* hwstate) {
+  if (devclass_ == GESTURES_DEVCLASS_TOUCHPAD)
+    ScaleTouchpadHardwareState(hwstate);
+  else if (devclass_ == GESTURES_DEVCLASS_MOUSE)
+    ScaleMouseHardwareState(hwstate);
+  else
+    Err("Couldn't recognize devclass: %d", devclass_);
+}
+
+void ScalingFilterInterpreter::ScaleMouseHardwareState(
+    HardwareState* hwstate) {
+  hwstate->rel_x = hwstate->rel_x / mouse_cpi_.val_ * 25.4;
+  hwstate->rel_y = hwstate->rel_y / mouse_cpi_.val_ * 25.4;
+  // TODO(clchiou): Scale rel_wheel and rel_hwheel
+}
+
+void ScalingFilterInterpreter::ScaleTouchpadHardwareState(
+    HardwareState* hwstate) {
   if (surface_area_from_pressure_.val_) {
     // Drop the small fingers, i.e. low pressures.
     FilterLowPressure(hwstate);

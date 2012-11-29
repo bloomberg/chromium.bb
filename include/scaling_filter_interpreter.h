@@ -49,8 +49,10 @@ class ScalingFilterInterpreter : public FilterInterpreter {
   FRIEND_TEST(ScalingFilterInterpreterTest, TouchMajorAndMinorTest);
  public:
   // Takes ownership of |next|:
-  ScalingFilterInterpreter(PropRegistry* prop_reg, Interpreter* next,
-                           Tracer* tracer);
+  ScalingFilterInterpreter(PropRegistry* prop_reg,
+                           Interpreter* next,
+                           Tracer* tracer,
+                           GestureInterpreterDeviceClass devclass);
   virtual ~ScalingFilterInterpreter() {}
 
  protected:
@@ -63,8 +65,12 @@ class ScalingFilterInterpreter : public FilterInterpreter {
 
  private:
   void ScaleHardwareState(HardwareState* hwstate);
+  void ScaleMouseHardwareState(HardwareState* hwstate);
+  void ScaleTouchpadHardwareState(HardwareState* hwstate);
   void ScaleGesture(Gesture* gs);
   void FilterLowPressure(HardwareState* hwstate);
+
+  GestureInterpreterDeviceClass devclass_;
 
   float tp_x_scale_, tp_y_scale_;
   float tp_x_translate_, tp_y_translate_;
@@ -93,6 +99,8 @@ class ScalingFilterInterpreter : public FilterInterpreter {
   DoubleProperty pressure_scale_;
   DoubleProperty pressure_translate_;
   DoubleProperty pressure_threshold_;
+
+  DoubleProperty mouse_cpi_;
 };
 
 }  // namespace gestures
