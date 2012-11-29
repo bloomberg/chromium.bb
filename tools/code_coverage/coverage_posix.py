@@ -244,6 +244,26 @@ gTestExclusions = {
          'AutomatedUITestBase.DragOut',), },
 }
 
+"""Since random tests are failing/hanging on coverage bot, we are enabling
+   tests feature by feature. crbug.com/159748
+   Below are the downloads related tests enabled.
+   SavePageBrowserTest.*
+   SavePageAsMHTMLBrowserTest.*
+   DownloadQueryTest.*
+   DownloadDangerPromptTest.*
+   DownloadTest.*
+"""
+gTestInclusions = {
+  'linux2': {
+    'browser_tests':
+        ('SavePageBrowserTest.*',
+         'SavePageAsMHTMLBrowserTest.*',
+         'DownloadQueryTest.*',
+         'DownloadDangerPromptTest.*',
+         'DownloadTest.*',),
+  },
+}
+
 
 def TerminateSignalHandler(sig, stack):
   """When killed, try and kill our child processes."""
@@ -782,6 +802,13 @@ class Coverage(object):
           # example: if base_unittests in ../blah/blah/base_unittests.exe
           if test in fulltest:
             negative_gfilter_list += excldict[test]
+
+    inclusions = gTestInclusions
+    include_dict = inclusions.get(sys.platform)
+    if include_dict:
+      for test in include_dict.keys():
+        if test in fulltest:
+          positive_gfilter_list += include_dict[test]
 
     fulltest_basename = os.path.basename(fulltest)
     if fulltest_basename in self.test_filters:
