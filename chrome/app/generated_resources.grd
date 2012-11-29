@@ -6730,7 +6730,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable tab scrubbing
       </message>
       <message name="IDS_FLAGS_ENABLE_TAB_SCRUBBING_DESCRIPTION" desc="Title for the flag to enable advanced gestures.">
-        Enables tab switching via ctrl + left drag.
+        Enables tab switching via 3 finger scroll.
       </message>
       <message name="IDS_FLAGS_ENABLE_IMMERSIVE_MODE_NAME" desc="Title for the flag to enable immersive mode.">
         Enable immersive windows

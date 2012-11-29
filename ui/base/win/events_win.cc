@@ -278,7 +278,8 @@ float GetTouchForce(const base::NativeEvent& native_event) {
 
 bool GetScrollOffsets(const base::NativeEvent& native_event,
                       float* x_offset,
-                      float* y_offset) {
+                      float* y_offset,
+                      int* finger_count) {
   // Not supported in Windows.
   NOTIMPLEMENTED();
   return false;
