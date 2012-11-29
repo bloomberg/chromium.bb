@@ -138,7 +138,8 @@ WebKit::WebGLId RenderWidgetHostViewAndroid::GetScaledContentTexture(
   GLHelper* helper = ImageTransportFactoryAndroid::GetInstance()->GetGLHelper();
   return helper->CopyAndScaleTexture(texture_id_in_layer_,
                                      texture_size_in_layer_,
-                                     size);
+                                     size,
+                                     true);
 }
 
 bool RenderWidgetHostViewAndroid::PopulateBitmapWithContents(jobject jbitmap) {
@@ -152,32 +153,31 @@ bool RenderWidgetHostViewAndroid::PopulateBitmapWithContents(jobject jbitmap) {
   // TODO(dtrainor): Eventually add support for multiple formats here.
   DCHECK(bitmap.format() == ANDROID_BITMAP_FORMAT_RGBA_8888);
 
-  WebKit::WebGLId texture = texture_id_in_layer_;
-
   GLHelper* helper = ImageTransportFactoryAndroid::GetInstance()->GetGLHelper();
 
-  // If we're trying to read to a bitmap of a different size, we need to copy
-  // and scale the texture before we can read it back.
-  if (bitmap.size() != texture_size_in_layer_) {
-    texture = helper->CopyAndScaleTexture(texture_id_in_layer_,
-                                          texture_size_in_layer_,
-                                          bitmap.size());
-    if (texture == 0)
-      return false;
-  }
+  WebKit::WebGLId texture = helper->CopyAndScaleTexture(texture_id_in_layer_,
+                                                        texture_size_in_layer_,
+                                                        bitmap.size(),
+                                                        true);
+  if (texture == 0)
+    return false;
 
   helper->ReadbackTextureSync(texture,
                               bitmap.size(),
                               static_cast<unsigned char*> (bitmap.pixels()));
 
-  if (texture != texture_id_in_layer_) {
-    // We created a temporary texture.  We need to clean it up.
-    WebKit::WebGraphicsContext3D* context =
-        ImageTransportFactoryAndroid::GetInstance()->GetContext3D();
-    context->deleteTexture(texture);
-  }
+  WebKit::WebGraphicsContext3D* context =
+      ImageTransportFactoryAndroid::GetInstance()->GetContext3D();
+  context->deleteTexture(texture);
 
   return true;
+}
+
+bool RenderWidgetHostViewAndroid::HasValidFrame() const {
+  return texture_id_in_layer_ != 0 &&
+      content_view_core_ &&
+      !texture_size_in_layer_.IsEmpty() &&
+      texture_size_in_layer_ == content_view_core_->GetBounds().size();
 }
 
 gfx::NativeView RenderWidgetHostViewAndroid::GetNativeView() const {

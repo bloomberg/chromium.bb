@@ -1088,6 +1088,12 @@ jboolean ContentViewCoreImpl::IsShowingInterstitialPage(JNIEnv* env,
   return web_contents_->ShowingInterstitialPage();
 }
 
+jboolean ContentViewCoreImpl::IsRenderWidgetHostViewReady(JNIEnv* env,
+                                                          jobject obj) {
+  RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
+  return view && view->HasValidFrame();
+}
+
 void ContentViewCoreImpl::ScrollFocusedEditableNodeIntoView(JNIEnv* env,
                                                             jobject obj) {
   RenderViewHost* host = web_contents_->GetRenderViewHost();

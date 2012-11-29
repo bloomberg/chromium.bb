@@ -59,7 +59,8 @@ class GLHelper {
   // the texture and |dst_size| is the size of the resulting copy.
   WebKit::WebGLId CopyAndScaleTexture(WebKit::WebGLId texture,
                                       const gfx::Size& src_size,
-                                      const gfx::Size& dst_size);
+                                      const gfx::Size& dst_size,
+                                      bool vertically_flip_texture);
 
   // Returns the shader compiled from the source.
   WebKit::WebGLId CompileShaderFromSource(const WebKit::WGC3Dchar* source,
