@@ -44,7 +44,6 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   virtual BluetoothInputClient* GetBluetoothInputClient() OVERRIDE;
   virtual BluetoothManagerClient* GetBluetoothManagerClient() OVERRIDE;
   virtual BluetoothNodeClient* GetBluetoothNodeClient() OVERRIDE;
-  virtual CashewClient* GetCashewClient() OVERRIDE;
   virtual CrosDisksClient* GetCrosDisksClient() OVERRIDE;
   virtual CryptohomeClient* GetCryptohomeClient() OVERRIDE;
   virtual DebugDaemonClient* GetDebugDaemonClient() OVERRIDE;

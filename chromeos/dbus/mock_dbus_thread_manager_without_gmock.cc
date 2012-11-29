@@ -80,11 +80,6 @@ BluetoothNodeClient*
   return NULL;
 }
 
-CashewClient* MockDBusThreadManagerWithoutGMock::GetCashewClient() {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 CrosDisksClient* MockDBusThreadManagerWithoutGMock::GetCrosDisksClient() {
   NOTIMPLEMENTED();
   return NULL;

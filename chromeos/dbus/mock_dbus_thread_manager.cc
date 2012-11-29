@@ -11,7 +11,6 @@
 #include "chromeos/dbus/mock_bluetooth_manager_client.h"
 #include "chromeos/dbus/mock_bluetooth_node_client.h"
 #include "chromeos/dbus/mock_bluetooth_out_of_band_client.h"
-#include "chromeos/dbus/mock_cashew_client.h"
 #include "chromeos/dbus/mock_cros_disks_client.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "chromeos/dbus/mock_debug_daemon_client.h"
@@ -47,7 +46,6 @@ MockDBusThreadManager::MockDBusThreadManager()
       mock_bluetooth_manager_client_(new MockBluetoothManagerClient),
       mock_bluetooth_node_client_(new MockBluetoothNodeClient),
       mock_bluetooth_out_of_band_client_(new MockBluetoothOutOfBandClient),
-      mock_cashew_client_(new MockCashewClient),
       mock_cros_disks_client_(new MockCrosDisksClient),
       mock_cryptohome_client_(new MockCryptohomeClient),
       mock_debugdaemon_client_(new MockDebugDaemonClient),
@@ -80,8 +78,6 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_bluetooth_node_client_.get()));
   EXPECT_CALL(*this, GetBluetoothOutOfBandClient())
       .WillRepeatedly(Return(mock_bluetooth_out_of_band_client_.get()));
-  EXPECT_CALL(*this, GetCashewClient())
-      .WillRepeatedly(Return(mock_cashew_client()));
   EXPECT_CALL(*this, GetCrosDisksClient())
       .WillRepeatedly(Return(mock_cros_disks_client()));
   EXPECT_CALL(*this, GetCryptohomeClient())

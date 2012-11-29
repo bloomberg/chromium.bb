@@ -31,7 +31,6 @@ class BluetoothInputClient;
 class BluetoothManagerClient;
 class BluetoothNodeClient;
 class BluetoothOutOfBandClient;
-class CashewClient;
 class CrosDisksClient;
 class CryptohomeClient;
 class DebugDaemonClient;
@@ -127,7 +126,6 @@ class CHROMEOS_EXPORT DBusThreadManager {
   virtual BluetoothManagerClient* GetBluetoothManagerClient() = 0;
   virtual BluetoothNodeClient* GetBluetoothNodeClient() = 0;
   virtual BluetoothOutOfBandClient* GetBluetoothOutOfBandClient() = 0;
-  virtual CashewClient* GetCashewClient() = 0;
   virtual CrosDisksClient* GetCrosDisksClient() = 0;
   virtual CryptohomeClient* GetCryptohomeClient() = 0;
   virtual DebugDaemonClient* GetDebugDaemonClient() = 0;
