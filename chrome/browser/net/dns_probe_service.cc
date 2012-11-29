@@ -132,6 +132,18 @@ void DnsProbeService::OnProbesComplete() {
   UMA_HISTOGRAM_ENUMERATION("DnsProbe.Probe.Result", result_, MAX_RESULT);
   UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.Elapsed", probe_elapsed);
 
+  if (NetworkChangeNotifier::IsOffline()) {
+    UMA_HISTOGRAM_ENUMERATION("DnsProbe.Probe.NcnOffline.Result",
+                              result_, MAX_RESULT);
+    UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.NcnOffline.Elapsed",
+                               probe_elapsed);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("DnsProbe.Probe.NcnOnline.Result",
+                              result_, MAX_RESULT);
+    UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.NcnOnline.Elapsed",
+                               probe_elapsed);
+  }
+
   state_ = STATE_RESULTS_CACHED;
   result_ = EvaluateResults();
 
