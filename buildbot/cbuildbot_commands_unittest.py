@@ -201,15 +201,12 @@ class CBuildBotTest(cros_test_lib.MoxTempDirTestCase):
     # Convenience variables to make archive easier to understand.
     chroot = os.path.join(buildroot, 'chroot')
     path_to_results = os.path.join(chroot, test_results_dir)
-    gzip = cros_build_lib.FindCompressor(
-        cros_build_lib.COMP_GZIP, chroot=chroot)
-
     cros_build_lib.SudoRunCommand(
         ['chmod', '-R', 'a+rw', path_to_results], print_cmd=False)
-    cros_build_lib.RunCommand(
-        ['tar', '-I', gzip, '-cf', test_tarball,
-         '--directory=%s' % path_to_results, '.'],
-        print_cmd=False)
+    self.mox.StubOutWithMock(cros_build_lib, 'CreateTarball')
+    cros_build_lib.CreateTarball(
+        test_tarball, path_to_results, chroot=chroot,
+        compression=cros_build_lib.COMP_GZIP)
     shutil.rmtree(path_to_results)
     self.mox.ReplayAll()
     commands.ArchiveTestResults(buildroot, test_results_dir, '')

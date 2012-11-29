@@ -136,7 +136,9 @@ def SudoRunCommand(cmd, user='root', **kwds):
 
   # Pass these values down into the sudo environment, since sudo will
   # just strip them normally.
-  extra_env = kwds.pop('extra_env', {}).copy()
+  extra_env = kwds.pop('extra_env', None)
+  extra_env = {} if extra_env is None else extra_env.copy()
+
   for var in constants.ENV_PASSTHRU:
     if var not in extra_env and var in os.environ:
       extra_env[var] = os.environ[var]
@@ -833,6 +835,36 @@ def FindCompressor(compression, chroot=None):
           return path
 
   return std
+
+
+def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
+                  inputs=None, extra_args=None, **kwds):
+  """Create a tarball.  Executes 'tar' on the commandline.
+
+  Arguments:
+    target: The path of the tar file to generate.
+    cwd: The directory to run the tar command.
+    sudo: Whether to run with "sudo".
+    compression: The type of compression desired.  See the FindCompressor
+      function for details.
+    chroot: See FindCompressor().
+    inputs: A list of files or directories to add to the tarball.  If unset,
+      defaults to ".".
+    extra_args: Extra args to pass to "tar".
+    kwds: Any RunCommand options/overrides to use.
+
+  Returns:
+    The cmd_result object returned by the RunCommand invocation.
+  """
+  if inputs is None:
+    inputs = ['.']
+  if extra_args is None:
+    extra_args = []
+
+  comp = FindCompressor(compression, chroot=chroot)
+  cmd = ['tar'] + extra_args + ['-I', comp, '-cf', target] + inputs
+  rc_func = SudoRunCommand if sudo else RunCommand
+  return rc_func(cmd, cwd=cwd, **kwds)
 
 
 def GetInput(prompt):

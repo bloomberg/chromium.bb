@@ -1385,6 +1385,7 @@ class SDKPackageStage(bs.BuilderStage):
   # Version of the Manifest file being generated. Should be incremented for
   # Major format changes.
   MANIFEST_VERSION = '1'
+  _EXCLUDED_PATHS = ('usr/lib/debug', 'usr/local/autotest', 'packages', 'tmp')
 
   def _PerformStage(self):
     tarball_name = 'built-sdk.tar.xz'
@@ -1404,7 +1405,7 @@ class SDKPackageStage(bs.BuilderStage):
     cmd = ['chmod', 'a+r', tarball_location]
     cros_build_lib.SudoRunCommand(cmd, cwd=board_location)
 
-  def CreateSDKTarball(self, chroot, sdk_path, dest_tarball):
+  def CreateSDKTarball(self, _chroot, sdk_path, dest_tarball):
     """Creates an SDK tarball from a given source chroot.
 
     Args:
@@ -1414,16 +1415,12 @@ class SDKPackageStage(bs.BuilderStage):
     """
     # TODO(zbehan): We cannot use xz from the chroot unless it's
     # statically linked.
-    compress = cros_build_lib.FindCompressor(cros_build_lib.COMP_XZ)
-    cmd = ['tar', '-c', '-I', compress, '-f', dest_tarball]
-    excluded_paths = ('usr/lib/debug', 'usr/local/autotest', 'packages',
-                      'tmp')
-    cmd.extend('--exclude=%s/*' % path for path in excluded_paths)
-    cmd.append('.')
+    extra_args = ['--exclude=%s/*' % path for path in self._EXCLUDED_PATHS]
     # Options for maximum compression.
     extra_env = { 'XZ_OPT' : '-e9' }
-
-    cros_build_lib.SudoRunCommand(cmd, extra_env=extra_env, cwd=sdk_path)
+    cros_build_lib.CreateTarball(
+        dest_tarball, sdk_path, sudo=True, extra_args=extra_args,
+        extra_env=extra_env)
 
   def CreateManifestFromSDK(self, sdk_path, dest_manifest):
     """Creates a manifest from a given source chroot.

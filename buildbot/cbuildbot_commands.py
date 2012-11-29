@@ -447,14 +447,12 @@ def ArchiveTestResults(buildroot, test_results_dir, prefix):
     test_tarball = os.path.join(buildroot, '%stest_results.tgz' % prefix)
     if os.path.exists(test_tarball):
       os.remove(test_tarball)
-    gzip = cros_build_lib.FindCompressor(
-        cros_build_lib.COMP_GZIP, chroot=chroot)
-    cros_build_lib.RunCommand(
-        ['tar', '-I', gzip, '-cf', test_tarball,
-         '--directory=%s' % results_path, '.'],
-        print_cmd=False)
-    shutil.rmtree(results_path)
 
+    cros_build_lib.CreateTarball(
+        test_tarball, results_path, compression=cros_build_lib.COMP_GZIP,
+        chroot=chroot)
+
+    shutil.rmtree(results_path)
     return test_tarball
 
   # pylint: disable=W0703
@@ -834,31 +832,33 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
 
   Returns the filename of the created debug tarball.
   """
-
   # Generate debug tarball. This needs to run as root because some of the
   # symbols are only readable by root.
   chroot = os.path.join(buildroot, 'chroot')
   board_dir = os.path.join(chroot, 'build', board, 'usr', 'lib')
-  gzip = cros_build_lib.FindCompressor(cros_build_lib.COMP_GZIP, chroot=chroot)
   debug_tgz = os.path.join(archive_path, 'debug.tgz')
-  cmd = ['tar', '-I', gzip, '-cf', debug_tgz]
-  if gdb_symbols:
-    cmd.extend(['--exclude', 'debug/usr/local/autotest',
-                '--exclude', 'debug/tests',
-                'debug'])
-  else:
-    cmd.append('debug/breakpad')
+  extra_args = None
+  inputs = None
 
-  tar_cmd = cros_build_lib.SudoRunCommand(cmd, cwd=board_dir,
-                                          error_code_ok=True)
+  if gdb_symbols:
+    extra_args = ['--exclude', 'debug/usr/local/autotest',
+                  '--exclude', 'debug/tests']
+    inputs = ['debug']
+  else:
+    inputs = ['debug/breakpad']
+
+  result = cros_build_lib.CreateTarball(
+      debug_tgz, board_dir, sudo=True, compression=cros_build_lib.COMP_GZIP,
+      chroot=chroot, inputs=inputs, extra_args=extra_args, error_code_ok=True)
 
   # Emerging the factory kernel while this is running installs different debug
   # symbols. When tar spots this, it flags this and returns status code 1.
   # The tarball is still OK, although the kernel debug symbols might be garbled.
   # If tar fails in a different way, it'll return an error code other than 1.
   # TODO(davidjames): Remove factory kernel emerge from archive_build.
-  if tar_cmd.returncode not in (0, 1):
-    raise Exception('%r failed with exit code %s' % (cmd, tar_cmd.returncode))
+  if result.returncode not in (0, 1):
+    raise Exception('Debug tarball creation failed with exit code %s'
+                    % (result.returncode))
 
   # Fix permissions and ownership on debug tarball.
   cros_build_lib.SudoRunCommand(['chown', str(os.getuid()), debug_tgz])
@@ -1068,13 +1068,14 @@ def BuildTarball(buildroot, input_list, tarball_output, cwd=None,
     cwd: Current working directory when tar command is executed.
     compressed: Whether or not the tarball should be compressed with pbzip2.
   """
-  cmd = ['tar']
+  compressor = cros_build_lib.COMP_NONE
+  chroot = None
   if compressed:
-    bzip2 = cros_build_lib.FindCompressor(
-        cros_build_lib.COMP_BZIP2, chroot=os.path.join(buildroot, 'chroot'))
-    cmd.append('--use-compress-program=%s' % bzip2)
-  cmd += ['-cf', tarball_output] + input_list
-  cros_build_lib.RunCommandCaptureOutput(cmd, cwd=cwd)
+    compressor = cros_build_lib.COMP_BZIP2
+    chroot = os.path.join(buildroot, 'chroot')
+  cros_build_lib.CreateTarball(
+      tarball_output, cwd, compression=compressor, chroot=chroot,
+      inputs=input_list)
 
 
 def FindFilesWithPattern(pattern, target='./', cwd=os.curdir):

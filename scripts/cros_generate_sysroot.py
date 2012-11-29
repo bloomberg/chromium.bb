@@ -77,11 +77,8 @@ class GenerateSysroot(object):
          '--usepkg-exclude=%s' % self.options.package, self.options.package])
 
   def _CreateTarball(self):
-    xz = cros_build_lib.FindCompressor(cros_build_lib.COMP_XZ)
-    cros_build_lib.SudoRunCommand(
-        ['tar', '-I', xz, '-cf',
-         os.path.join(self.options.out_dir, self.options.out_file), '.'],
-        cwd=self.sysroot)
+    target = os.path.join(self.options.out_dir, self.options.out_file)
+    cros_build_lib.CreateTarball(target, self.sysroot, sudo=True)
 
   def Perform(self):
     """Generate the sysroot."""
