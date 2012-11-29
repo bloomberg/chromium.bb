@@ -460,7 +460,7 @@ void FaviconHandler::GetFaviconForURL(
   GetFaviconService()->GetFaviconForURL(
       FaviconService::FaviconForURLParams(profile_, page_url, icon_types,
                                           preferred_icon_size(), consumer),
-                                          callback);
+      callback);
 }
 
 void FaviconHandler::SetHistoryFavicons(const GURL& page_url,
