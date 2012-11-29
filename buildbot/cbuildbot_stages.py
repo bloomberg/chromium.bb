@@ -1473,6 +1473,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
   _REMOTE_TRYBOT_ARCHIVE_URL = 'gs://chromeos-image-archive'
   _BUILDBOT_ARCHIVE = 'buildbot_archive'
   _TRYBOT_ARCHIVE = 'trybot_archive'
+  _IMAGE_SCRIPTS_TAR = 'image_scripts.tar.xz'
 
   @classmethod
   def GetArchiveRoot(cls, buildroot, trybot=False):
@@ -1732,8 +1733,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     #    \- ArchiveArtifactsForHWTesting
     #       \- ArchiveAutotestTarballs
     #       \- ArchivePayloads
-    #    \- ArchiveTestResults
-    #    \- ArchiveStrippedChrome
+    #    \- ArchiveImageScripts
     #    \- ArchiveReleaseArtifacts
     #       \- ArchiveDebugSymbols
     #       \- ArchiveFirmwareImages
@@ -1742,7 +1742,9 @@ class ArchiveStage(BoardSpecificBuilderStage):
     #          \- BuildAndArchiveFactoryImages
     #          \- ArchiveZipFiles
     #          \- ArchiveHWQual
-    #       \- PushImage
+    #       \- PushImage (blocks on BuildAndArchiveAllImages)
+    #    \- ArchiveStrippedChrome
+    #    \- ArchiveTestResults
 
     def ArchiveAutotestTarballs():
       """Archives the autotest tarballs produced in BuildTarget."""
@@ -1919,6 +1921,14 @@ class ArchiveStage(BoardSpecificBuilderStage):
       finally:
         self._hw_test_uploads_status_queue.put(success)
 
+    def ArchiveImageScripts():
+      """Archive tarball of generated image manipulation scripts."""
+      target = os.path.join(archive_path, self._IMAGE_SCRIPTS_TAR)
+      files = glob.glob(os.path.join(image_dir, '*.sh'))
+      files = [os.path.basename(f) for f in files]
+      cros_build_lib.CreateTarball(target, image_dir, inputs=files)
+      upload_queue.put([self._IMAGE_SCRIPTS_TAR])
+
     def ArchiveStrippedChrome():
       """Generate and upload stripped Chrome package."""
       cmd = ['strip_package', '--board', board, constants.CHROME_PN]
@@ -1985,7 +1995,8 @@ class ArchiveStage(BoardSpecificBuilderStage):
       steps = [ArchiveReleaseArtifacts, ArchiveArtifactsForHWTesting,
                ArchiveTestResults]
       if config['images']:
-        steps.extend([ArchiveStrippedChrome, BuildAndArchiveChromeSysroot])
+        steps.extend([ArchiveStrippedChrome, BuildAndArchiveChromeSysroot,
+                      ArchiveImageScripts])
 
       with bg_task_runner(upload_symbols_queue, UploadSymbols, 1):
         with bg_task_runner(upload_queue, UploadArtifact, num_upload_processes):
