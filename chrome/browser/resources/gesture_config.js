@@ -8,17 +8,129 @@
 var $ = function(id) { return document.getElementById(id); };
 
 /**
- * WebUI for configuring gesture.* preference values used by
- * Chrome's gesture recognition system.
+ * A generic WebUI for configuring preference values used by Chrome's gesture
+ * recognition systems.
+ * @param {string} prefix The prefix for the configuration fields.
+ * @param {object} fields An array of fields that contain the name of the pref
+ *    and user-visible labels.
  */
-var gesture_config = (function() {
-  'use strict';
+function GeneralConfig(prefix, fields) {
+  this.prefix = prefix;
+  this.fields = fields;
+}
 
+GeneralConfig.prototype = {
+  /**
+   * Sets up the form for configuring all the preference values.
+   */
+  buildAll: function() {
+    this.buildForm();
+    this.loadForm();
+    this.initForm();
+  },
+
+  /**
+   * Dynamically builds web-form based on the list of preferences.
+   */
+  buildForm: function() {
+    var buf = [];
+
+    for (var i = 0; i < this.fields.length; i++) {
+      var field = this.fields[i];
+
+      var row = $('gesture-form-row').cloneNode(true);
+      var label = row.querySelector('.row-label');
+      var input = row.querySelector('.row-input');
+      var units = row.querySelector('.row-units');
+
+      label.setAttribute('for', field.key);
+      label.textContent = field.label;
+      input.id = field.key;
+      input.min = field.min || 0;
+
+      if (field.max) input.max = field.max;
+      if (field.step) input.step = field.step;
+
+      $('gesture-form').appendChild(row);
+      if (field.units)
+        units.innerHTML = field.units;
+    }
+  },
+
+  /**
+   * Initializes the form by adding 'onChange' listeners to all fields.
+   */
+  initForm: function() {
+    for (var i = 0; i < this.fields.length; i++) {
+      var field = this.fields[i];
+      var config = this;
+      $(field.key).onchange = (function(key) {
+        config.setPreferenceValue(key, $(key).value);
+      }).bind(null, field.key);
+    }
+  },
+
+  /**
+   * Requests preference values for all the relevant fields.
+   */
+  loadForm: function() {
+    for (var i = 0; i < this.fields.length; i++)
+      this.getPreferenceValue(this.fields[i].key);
+  },
+
+  /**
+   * Handles processing of "Reset" button.
+   * Causes all form values to be updated based on current preference values.
+   * @return {bool} Returns false.
+   */
+  onReset: function() {
+    for (var i = 0; i < this.fields.length; i++) {
+      var field = this.fields[i];
+      this.resetPreferenceValue(field.key);
+    }
+    return false;
+  },
+
+  /**
+   * Requests a preference setting's value.
+   * This method is asynchronous; the result is provided by a call to
+   * getPreferenceValueResult.
+   * @param {string} prefName The name of the preference value being requested.
+   */
+  getPreferenceValue: function(prefName) {
+    chrome.send('getPreferenceValue', [this.prefix + prefName]);
+  },
+
+  /**
+   * Sets a preference setting's value.
+   * @param {string} prefName The name of the preference value being set.
+   * @param {value} value The value to be associated with prefName.
+   */
+  setPreferenceValue: function(prefName, value) {
+    chrome.send('setPreferenceValue',
+        [this.prefix + prefName, parseFloat(value)]);
+  },
+
+  /**
+   * Resets a preference to its default value and get that callback
+   * to getPreferenceValueResult with the new value of the preference.
+   * @param {string} prefName The name of the requested preference.
+   */
+  resetPreferenceValue: function(prefName) {
+    chrome.send('resetPreferenceValue', [this.prefix + prefName]);
+  }
+};
+
+/**
+ * Returns a GeneralConfig for configuring gestures.* preferences.
+ * @return {object} A GeneralConfig object.
+ */
+function GestureConfig() {
   /** Common prefix of gesture preferences. **/
   /** @const */ var GESTURE_PREFIX = 'gesture.';
 
   /** List of fields used to dynamically build form. **/
-  var FIELDS = [
+  var GESTURE_FIELDS = [
     {
       key: 'long_press_time_in_seconds',
       label: 'Long Press Time',
@@ -135,56 +247,67 @@ var gesture_config = (function() {
     }
   ];
 
+  return new GeneralConfig(GESTURE_PREFIX, GESTURE_FIELDS);
+}
+
+/**
+ * Returns a GeneralConfig for configuring overscroll.* preferences.
+ * @return {object} A GeneralConfig object.
+ */
+function OverscrollConfig() {
+  var OVERSCROLL_PREFIX = 'overscroll.';
+
+  var OVERSCROLL_FIELDS = [
+    {
+      key: 'horizontal_threshold_complete',
+      label: 'Complete when overscrolled (horizontal)',
+      units: '%'
+    },
+    {
+      key: 'vertical_threshold_complete',
+      label: 'Complete when overscrolled (vertical)',
+      units: '%'
+    },
+    {
+      key: 'minimum_threshold_start',
+      label: 'Start overscroll gesture after scrolling',
+      units: 'pixels'
+    },
+    {
+      key: 'horizontal_resist_threshold',
+      label: 'Start resisting overscroll after (horizontal)',
+      units: 'pixels'
+    },
+    {
+      key: 'vertical_resist_threshold',
+      label: 'Start resisting overscroll after (vertical)',
+      units: 'pixels'
+    },
+  ];
+
+  return new GeneralConfig(OVERSCROLL_PREFIX, OVERSCROLL_FIELDS);
+}
+
+/**
+ * WebUI instance for configuring gesture.* and overscroll.* preference values
+ * used by Chrome's gesture recognition system.
+ */
+var gesture_config = (function() {
+
   /**
-   * Dynamically builds web-form based on FIELDS list.
-   * @return {string} The form's HTML.
+   * Build and initialize the gesture configuration form.
    */
-  function buildForm() {
-    var buf = [];
+  function initialize() {
+    var g = GestureConfig();
+    g.buildAll();
 
-    for (var i = 0; i < FIELDS.length; i++) {
-      var field = FIELDS[i];
+    var o = OverscrollConfig();
+    o.buildAll();
 
-      var row = $('gesture-form-row').cloneNode(true);
-      var label = row.querySelector('.row-label');
-      var input = row.querySelector('.row-input');
-      var units = row.querySelector('.row-units');
-
-      row.id = '';
-      label.setAttribute('for', field.key);
-      label.textContent = field.label;
-      input.id = field.key;
-      input.min = field.min || 0;
-
-      if (field.max) input.max = field.max;
-      if (field.step) input.step = field.step;
-
-      $('gesture-form').appendChild(row);
-      if (field.units)
-        units.innerHTML = field.units;
-    }
-  }
-
-  /**
-   * Initialize the form by adding 'onChange' listeners to all fields.
-   */
-  function initForm() {
-    for (var i = 0; i < FIELDS.length; i++) {
-      var field = FIELDS[i];
-      $(field.key).onchange = (function(key) {
-        setPreferenceValue(key, $(key).value);
-      }).bind(null, field.key);
-    }
-  }
-
-  /**
-   * Request a preference setting's value.
-   * This method is asynchronous; the result is provided by a call to
-   * getPreferenceValueResult.
-   * @param {string} prefName The name of the preference value being requested.
-   */
-  function getPreferenceValue(prefName) {
-    chrome.send('getPreferenceValue', [GESTURE_PREFIX + prefName]);
+    $('reset-button').onclick = function() {
+      g.onReset();
+      o.onReset();
+    };
   }
 
   /**
@@ -195,54 +318,6 @@ var gesture_config = (function() {
   function getPreferenceValueResult(prefName, value) {
     prefName = prefName.substring(prefName.indexOf('.') + 1);
     $(prefName).value = value;
-  }
-
-  /**
-   * Set a preference setting's value.
-   * @param {string} prefName The name of the preference value being set.
-   * @param {value} value The value to be associated with prefName.
-   */
-  function setPreferenceValue(prefName, value) {
-    chrome.send(
-        'setPreferenceValue',
-        [GESTURE_PREFIX + prefName, parseFloat(value)]);
-  }
-
-  /**
-   * Reset a preference to its default value and get that callback
-   * to getPreferenceValueResult with the new value of the preference.
-   * @param {string} prefName The name of the requested preference.
-   */
-  function resetPreferenceValue(prefName) {
-    chrome.send('resetPreferenceValue', [GESTURE_PREFIX + prefName]);
-  }
-
-  /**
-   * Handle processing of "Reset" button.
-   * Causes off form values to be updated based on current preference values.
-   */
-  function onReset() {
-    for (var i = 0; i < FIELDS.length; i++) {
-      var field = FIELDS[i];
-      resetPreferenceValue(field.key);
-    }
-    return false;
-  }
-
-  function loadForm() {
-    for (var i = 0; i < FIELDS.length; i++)
-      getPreferenceValue(FIELDS[i].key);
-  }
-
-  /**
-   * Build and initialize the gesture configuration form.
-   */
-  function initialize() {
-    buildForm();
-    loadForm();
-    initForm();
-
-    $('reset-button').onclick = onReset.bind(this);
   }
 
   return {

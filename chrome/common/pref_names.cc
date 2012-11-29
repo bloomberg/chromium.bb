@@ -2130,6 +2130,17 @@ const char kFlingAccelerationCurveCoefficient2[] =
     "gesture.fling_acceleration_curve_coefficient_2";
 const char kFlingAccelerationCurveCoefficient3[] =
     "gesture.fling_acceleration_curve_coefficient_3";
+
+const char kOverscrollHorizontalThresholdComplete[] =
+    "overscroll.horizontal_threshold_complete";
+const char kOverscrollVerticalThresholdComplete[] =
+    "overscroll.vertical_threshold_complete";
+const char kOverscrollMinimumThresholdStart[] =
+    "overscroll.minimum_threshold_start";
+const char kOverscrollHorizontalResistThreshold[] =
+    "overscroll.horizontal_resist_threshold";
+const char kOverscrollVerticalResistThreshold[] =
+    "overscroll.vertical_resist_threshold";
 #endif
 
 // Indicates whether the browser is in managed mode.

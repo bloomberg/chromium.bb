@@ -23,6 +23,8 @@ class GesturePrefsObserverFactoryAura : public ProfileKeyedServiceFactory {
   GesturePrefsObserverFactoryAura();
   virtual ~GesturePrefsObserverFactoryAura();
 
+  void RegisterOverscrollPrefs(PrefService* prefs);
+
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;

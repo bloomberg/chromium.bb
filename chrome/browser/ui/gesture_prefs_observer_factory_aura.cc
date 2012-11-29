@@ -13,11 +13,17 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/overscroll_configuration.h"
 #include "ui/base/gestures/gesture_configuration.h"
 
 using ui::GestureConfiguration;
 
 namespace {
+
+struct OverscrollPref {
+  const char* pref_name;
+  content::OverscrollConfig config;
+};
 
 // This class manages gesture configuration preferences.
 class GesturePrefsObserver : public PrefObserver,
@@ -25,6 +31,26 @@ class GesturePrefsObserver : public PrefObserver,
  public:
   explicit GesturePrefsObserver(PrefService* prefs);
   virtual ~GesturePrefsObserver();
+
+  static const OverscrollPref* GetOverscrollPrefs() {
+    using namespace content;
+    static OverscrollPref overscroll_prefs[] = {
+      { prefs::kOverscrollHorizontalThresholdComplete,
+        OVERSCROLL_CONFIG_HORIZ_THRESHOLD_COMPLETE },
+      { prefs::kOverscrollVerticalThresholdComplete,
+        OVERSCROLL_CONFIG_VERT_THRESHOLD_COMPLETE },
+      { prefs::kOverscrollMinimumThresholdStart,
+        OVERSCROLL_CONFIG_MIN_THRESHOLD_START },
+      { prefs::kOverscrollHorizontalResistThreshold,
+        OVERSCROLL_CONFIG_HORIZ_RESIST_AFTER },
+      { prefs::kOverscrollVerticalResistThreshold,
+        OVERSCROLL_CONFIG_VERT_RESIST_AFTER },
+      { NULL,
+        OVERSCROLL_CONFIG_NONE },
+    };
+
+    return overscroll_prefs;
+  }
 
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
@@ -35,6 +61,8 @@ class GesturePrefsObserver : public PrefObserver,
 
  private:
   void Update();
+
+  void UpdateOverscrollPrefs();
 
   PrefChangeRegistrar registrar_;
   PrefService* prefs_;
@@ -70,12 +98,22 @@ const char* kPrefsToObserve[] = {
   prefs::kSemiLongPressTimeInSeconds,
 };
 
+const char* kOverscrollPrefs[] = {
+  prefs::kOverscrollHorizontalThresholdComplete,
+  prefs::kOverscrollVerticalThresholdComplete,
+  prefs::kOverscrollMinimumThresholdStart,
+  prefs::kOverscrollHorizontalResistThreshold,
+  prefs::kOverscrollVerticalResistThreshold,
+};
+
 GesturePrefsObserver::GesturePrefsObserver(PrefService* prefs)
     : prefs_(prefs) {
   registrar_.Init(prefs);
   registrar_.RemoveAll();
   for (size_t i = 0; i < arraysize(kPrefsToObserve); ++i)
     registrar_.Add(kPrefsToObserve[i], this);
+  for (size_t i = 0; i < arraysize(kOverscrollPrefs); ++i)
+    registrar_.Add(kOverscrollPrefs[i], this);
 }
 
 GesturePrefsObserver::~GesturePrefsObserver() {}
@@ -155,6 +193,17 @@ void GesturePrefsObserver::Update() {
   GestureConfiguration::set_rail_start_proportion(
       prefs_->GetDouble(
           prefs::kRailStartProportion));
+
+  UpdateOverscrollPrefs();
+}
+
+void GesturePrefsObserver::UpdateOverscrollPrefs() {
+  const OverscrollPref* overscroll_prefs =
+      GesturePrefsObserver::GetOverscrollPrefs();
+  for (int i = 0; overscroll_prefs[i].pref_name; ++i) {
+    content::SetOverscrollConfig(overscroll_prefs[i].config,
+        static_cast<float>(prefs_->GetDouble(overscroll_prefs[i].pref_name)));
+  }
 }
 
 }  // namespace
@@ -174,6 +223,19 @@ GesturePrefsObserverFactoryAura::~GesturePrefsObserverFactoryAura() {}
 ProfileKeyedService* GesturePrefsObserverFactoryAura::BuildServiceInstanceFor(
     Profile* profile) const {
   return new GesturePrefsObserver(profile->GetPrefs());
+}
+
+void GesturePrefsObserverFactoryAura::RegisterOverscrollPrefs(
+    PrefService* prefs) {
+  const OverscrollPref* overscroll_prefs =
+      GesturePrefsObserver::GetOverscrollPrefs();
+
+  for (int i = 0; overscroll_prefs[i].pref_name; ++i) {
+    prefs->RegisterDoublePref(
+        overscroll_prefs[i].pref_name,
+        content::GetOverscrollConfig(overscroll_prefs[i].config),
+        PrefService::UNSYNCABLE_PREF);
+  }
 }
 
 void GesturePrefsObserverFactoryAura::RegisterUserPrefs(PrefService* prefs) {
@@ -277,6 +339,8 @@ void GesturePrefsObserverFactoryAura::RegisterUserPrefs(PrefService* prefs) {
                             0.0,
                             PrefService::UNSYNCABLE_PREF);
   prefs->ClearPref(kTouchScreenFlingAccelerationAdjustment);
+
+  RegisterOverscrollPrefs(prefs);
 }
 
 bool GesturePrefsObserverFactoryAura::ServiceIsCreatedWithProfile() const {

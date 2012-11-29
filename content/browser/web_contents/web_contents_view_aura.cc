@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/overscroll_configuration.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -468,9 +469,10 @@ gfx::Vector2d WebContentsViewAura::GetTranslationForOverscroll(int delta_x,
   if (current_overscroll_gesture_ == OVERSCROLL_NORTH ||
       current_overscroll_gesture_ == OVERSCROLL_SOUTH) {
     // For vertical overscroll, always do a resisted drag.
-    const int kVerticalOverscrollAmount = 30;
+    const float threshold = GetOverscrollConfig(
+        OVERSCROLL_CONFIG_VERT_RESIST_AFTER);
     int scroll = GetResistedScrollAmount(abs(delta_y),
-                                         kVerticalOverscrollAmount);
+                                         static_cast<int>(threshold));
     return gfx::Vector2d(0, delta_y < 0 ? -scroll : scroll);
   }
 
@@ -485,9 +487,10 @@ gfx::Vector2d WebContentsViewAura::GetTranslationForOverscroll(int delta_x,
       return gfx::Vector2d(delta_x, 0);
   }
 
-  const int kHorizontalOverscrollAmount = 30;
+  const float threshold = GetOverscrollConfig(
+      OVERSCROLL_CONFIG_HORIZ_RESIST_AFTER);
   int scroll = GetResistedScrollAmount(abs(delta_x),
-                                       kHorizontalOverscrollAmount);
+                                       static_cast<int>(threshold));
   return gfx::Vector2d(delta_x < 0 ? -scroll : scroll, 0);
 }
 

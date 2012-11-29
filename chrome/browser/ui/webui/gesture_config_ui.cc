@@ -80,7 +80,18 @@ void GestureConfigUI::ResetPreferenceValue(const base::ListValue* args) {
   double d;
   if (prefs->GetDefaultPrefValue(pref_name.c_str())->GetAsDouble(&d)) {
     base::FundamentalValue js_pref_value(d);
-    prefs->SetDouble(pref_name.c_str(), d);
+    const PrefService::Preference* pref =
+        prefs->FindPreference(pref_name.c_str());
+    switch (pref->GetType()) {
+      case base::Value::TYPE_INTEGER:
+        prefs->SetInteger(pref_name.c_str(), static_cast<int>(d));
+        break;
+      case base::Value::TYPE_DOUBLE:
+        prefs->SetDouble(pref_name.c_str(), d);
+        break;
+      default:
+        NOTREACHED();
+    }
     web_ui()->CallJavascriptFunction(
         "gesture_config.getPreferenceValueResult",
         js_pref_name,

@@ -783,6 +783,11 @@ extern const char kFlingAccelerationCurveCoefficient0[];
 extern const char kFlingAccelerationCurveCoefficient1[];
 extern const char kFlingAccelerationCurveCoefficient2[];
 extern const char kFlingAccelerationCurveCoefficient3[];
+extern const char kOverscrollHorizontalThresholdComplete[];
+extern const char kOverscrollVerticalThresholdComplete[];
+extern const char kOverscrollMinimumThresholdStart[];
+extern const char kOverscrollHorizontalResistThreshold[];
+extern const char kOverscrollVerticalResistThreshold[];
 #endif
 
 extern const char kInManagedMode[];

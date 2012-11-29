@@ -7,11 +7,8 @@
 #include "content/browser/renderer_host/gesture_event_filter.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/public/browser/overscroll_configuration.h"
 #include "content/public/browser/render_widget_host_view.h"
-
-// TODO(sad): There are a number of thresholds used by the controller to decide
-// when to start/complete/discard the overscroll actions. Make these thresholds
-// easily configurable.
 
 namespace {
 
@@ -129,16 +126,14 @@ bool OverscrollController::DispatchEventCompletesAction (
   if (bounds.IsEmpty())
     return false;
 
-  const float kOverscrollHorizontalThreshold = 0.25f;
-  const float kOverscrollVerticalThreshold = 0.20f;
   float ratio, threshold;
   if (overscroll_mode_ == OVERSCROLL_WEST ||
       overscroll_mode_ == OVERSCROLL_EAST) {
     ratio = fabs(overscroll_delta_x_) / bounds.width();
-    threshold = kOverscrollHorizontalThreshold;
+    threshold = GetOverscrollConfig(OVERSCROLL_CONFIG_HORIZ_THRESHOLD_COMPLETE);
   } else {
     ratio = fabs(overscroll_delta_y_) / bounds.height();
-    threshold = kOverscrollVerticalThreshold;
+    threshold = GetOverscrollConfig(OVERSCROLL_CONFIG_VERT_THRESHOLD_COMPLETE);
   }
   return ratio >= threshold;
 }
@@ -210,9 +205,9 @@ void OverscrollController::ProcessOverscroll(float delta_x, float delta_y) {
   overscroll_delta_x_ += delta_x;
   overscroll_delta_y_ += delta_y;
 
-  const float kMinOverscrollThreshold = 30.f;
-  if (fabs(overscroll_delta_x_) < kMinOverscrollThreshold &&
-      fabs(overscroll_delta_y_) < kMinOverscrollThreshold) {
+  float threshold = GetOverscrollConfig(OVERSCROLL_CONFIG_MIN_THRESHOLD_START);
+  if (fabs(overscroll_delta_x_) < threshold &&
+      fabs(overscroll_delta_y_) < threshold) {
     SetOverscrollMode(OVERSCROLL_NONE);
     return;
   }
@@ -233,21 +228,21 @@ void OverscrollController::ProcessOverscroll(float delta_x, float delta_y) {
     // Do not include the threshold amount when sending the deltas to the
     // delegate.
     float delegate_delta_x = overscroll_delta_x_;
-    if (fabs(delegate_delta_x) > kMinOverscrollThreshold) {
+    if (fabs(delegate_delta_x) > threshold) {
       if (delegate_delta_x < 0)
-        delegate_delta_x += kMinOverscrollThreshold;
+        delegate_delta_x += threshold;
       else
-        delegate_delta_x -= kMinOverscrollThreshold;
+        delegate_delta_x -= threshold;
     } else {
       delegate_delta_x = 0.f;
     }
 
     float delegate_delta_y = overscroll_delta_y_;
-    if (fabs(delegate_delta_y) > kMinOverscrollThreshold) {
+    if (fabs(delegate_delta_y) > threshold) {
       if (delegate_delta_y < 0)
-        delegate_delta_y += kMinOverscrollThreshold;
+        delegate_delta_y += threshold;
       else
-        delegate_delta_y -= kMinOverscrollThreshold;
+        delegate_delta_y -= threshold;
     } else {
       delegate_delta_y = 0.f;
     }
