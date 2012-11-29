@@ -29,6 +29,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/transform.h"
+#include "ui/views/corewm/window_util.h"
 
 namespace ash {
 
@@ -317,7 +318,7 @@ WorkspaceWindowResizer::~WorkspaceWindowResizer() {
   drag_phantom_window_controller_.reset();
 
   if (layer_)
-    wm::DeepDeleteLayers(layer_);
+    views::corewm::DeepDeleteLayers(layer_);
 
   if (destroyed_)
     *destroyed_ = true;
@@ -960,7 +961,7 @@ bool WorkspaceWindowResizer::ShouldAllowMouseWarp() const {
 
 void WorkspaceWindowResizer::RecreateWindowLayers() {
   DCHECK(!layer_);
-  layer_ = wm::RecreateWindowLayers(window(), true);
+  layer_ = views::corewm::RecreateWindowLayers(window(), true);
   layer_->set_delegate(window()->layer()->delegate());
   // Place the layer at (0, 0) of the PhantomWindowController's window.
   gfx::Rect layer_bounds = layer_->bounds();

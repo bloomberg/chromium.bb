@@ -92,6 +92,7 @@
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/views/corewm/corewm_switches.h"
 #include "webkit/plugins/plugin_switches.h"
 
 using content::BrowserThread;
@@ -814,7 +815,6 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kUseGL,
       ::switches::kUserDataDir,
       ash::switches::kAshTouchHud,
-      ash::switches::kAshWindowAnimationsDisabled,
       ash::switches::kAuraLegacyPowerButton,
       ash::switches::kAuraNoShadows,
       ash::switches::kAshDisablePanelFitting,
@@ -825,6 +825,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       chromeos::switches::kEnableNewNetworkHandlers,
       gfx::switches::kEnableBrowserTextSubpixelPositioning,
       gfx::switches::kEnableWebkitTextSubpixelPositioning,
+      views::corewm::switches::kWindowAnimationsDisabled,
   };
   command_line->CopySwitchesFrom(base_command_line,
                                  kForwardSwitches,

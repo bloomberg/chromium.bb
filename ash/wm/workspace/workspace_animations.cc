@@ -4,11 +4,10 @@
 
 #include "ash/wm/workspace/workspace_animations.h"
 
-#include "ash/ash_switches.h"
-#include "base/command_line.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/views/corewm/window_animations.h"
 
 namespace ash {
 namespace internal {
@@ -66,8 +65,7 @@ void ShowWorkspace(aura::Window* window,
                    const WorkspaceAnimationDetails& details) {
   window->Show();
 
-  if (!details.animate || CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshWindowAnimationsDisabled)) {
+  if (!details.animate || views::corewm::WindowAnimationsDisabled(NULL)) {
     window->layer()->SetOpacity(1.0f);
     window->layer()->SetTransform(gfx::Transform());
     return;
@@ -112,8 +110,7 @@ void HideWorkspace(aura::Window* window,
   window->layer()->SetOpacity(1.0f);
   window->layer()->GetAnimator()->StopAnimating();
 
-  if (!details.animate || CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshWindowAnimationsDisabled)) {
+  if (!details.animate || views::corewm::WindowAnimationsDisabled(NULL)) {
     window->Hide();
     return;
   }

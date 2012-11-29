@@ -100,9 +100,7 @@ void SetBoundsAnimated(aura::Window* window, const gfx::Rect& bounds) {
   if (bounds == window->GetTargetBounds())
     return;
 
-  if (window->GetProperty(aura::client::kAnimationsDisabledKey) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshWindowAnimationsDisabled)) {
+  if (views::corewm::WindowAnimationsDisabled(window)) {
     window->SetBounds(bounds);
     return;
   }

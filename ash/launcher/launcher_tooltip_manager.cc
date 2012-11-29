@@ -348,7 +348,8 @@ void LauncherTooltipManager::CancelHidingAnimation() {
     return;
 
   gfx::NativeView native_view = widget_->GetNativeView();
-  SetWindowVisibilityAnimationTransition(native_view, ANIMATE_NONE);
+  views::corewm::SetWindowVisibilityAnimationTransition(
+      native_view, views::corewm::ANIMATE_NONE);
 }
 
 void LauncherTooltipManager::CloseSoon() {
@@ -376,9 +377,10 @@ void LauncherTooltipManager::CreateBubble(views::View* anchor,
   view_->SetText(text_);
 
   gfx::NativeView native_view = widget_->GetNativeView();
-  SetWindowVisibilityAnimationType(
-      native_view, WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
-  SetWindowVisibilityAnimationTransition(native_view, ANIMATE_HIDE);
+  views::corewm::SetWindowVisibilityAnimationType(
+      native_view, views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
+  views::corewm::SetWindowVisibilityAnimationTransition(
+      native_view, views::corewm::ANIMATE_HIDE);
 }
 
 }  // namespace internal

@@ -14,8 +14,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "ui/gl/gl_switches.h"
 
-#if defined(USE_ASH)
-#include "ash/ash_switches.h"
+#if defined(USE_AURA)
+#include "ui/views/corewm/corewm_switches.h"
 #endif
 
 namespace test_launcher_utils {
@@ -49,10 +49,11 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
   // auto-update.
   command_line->AppendSwitch(switches::kSkipGpuDataLoading);
 
-#if defined(USE_ASH)
+#if defined(USE_AURA)
   // Disable window animations under Ash as the animations effect the
   // coordinates returned and result in flake.
-  command_line->AppendSwitch(ash::switches::kAshWindowAnimationsDisabled);
+  command_line->AppendSwitch(
+      views::corewm::switches::kWindowAnimationsDisabled);
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)

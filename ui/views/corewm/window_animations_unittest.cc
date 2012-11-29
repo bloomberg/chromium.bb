@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/window_animations.h"
+#include "ui/views/corewm/window_animations.h"
 
-#include "ash/shell_window_ids.h"
-#include "ash/test/ash_test_base.h"
-#include "ash/wm/workspace_controller.h"
 #include "base/time.h"
+#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/base/animation/animation_container_element.h"
@@ -17,16 +15,16 @@
 using aura::Window;
 using ui::Layer;
 
-namespace ash {
-namespace internal {
+namespace views {
+namespace corewm {
 
-class WindowAnimationsTest : public ash::test::AshTestBase {
+class WindowAnimationsTest : public aura::test::AuraTestBase {
  public:
   WindowAnimationsTest() {}
 
   virtual void TearDown() OVERRIDE {
     ui::LayerAnimator::set_disable_animations_for_test(true);
-    AshTestBase::TearDown();
+    AuraTestBase::TearDown();
   }
 
  private:
@@ -34,12 +32,13 @@ class WindowAnimationsTest : public ash::test::AshTestBase {
 };
 
 TEST_F(WindowAnimationsTest, HideShowBrightnessGrayscaleAnimation) {
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  scoped_ptr<aura::Window> window(
+      aura::test::CreateTestWindowWithId(0, NULL));
   window->Show();
   EXPECT_TRUE(window->layer()->visible());
 
   // Hiding.
-  views::corewm::SetWindowVisibilityAnimationType(
+  SetWindowVisibilityAnimationType(
       window.get(),
       WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE);
   AnimateOnChildWindowVisibilityChanged(window.get(), false);
@@ -48,7 +47,7 @@ TEST_F(WindowAnimationsTest, HideShowBrightnessGrayscaleAnimation) {
   EXPECT_FALSE(window->layer()->visible());
 
   // Showing.
-  views::corewm::SetWindowVisibilityAnimationType(
+  SetWindowVisibilityAnimationType(
       window.get(),
       WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE);
   AnimateOnChildWindowVisibilityChanged(window.get(), true);
@@ -68,7 +67,8 @@ TEST_F(WindowAnimationsTest, HideShowBrightnessGrayscaleAnimation) {
 }
 
 TEST_F(WindowAnimationsTest, LayerTargetVisibility) {
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  scoped_ptr<aura::Window> window(
+      aura::test::CreateTestWindowWithId(0, NULL));
 
   // Layer target visibility changes according to Show/Hide.
   window->Show();
@@ -82,7 +82,8 @@ TEST_F(WindowAnimationsTest, LayerTargetVisibility) {
 TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
   ui::LayerAnimator::set_disable_animations_for_test(false);
 
-  scoped_ptr<Window> window(CreateTestWindowInShellWithId(0));
+  scoped_ptr<Window> window(
+      aura::test::CreateTestWindowWithId(0, NULL));
   window->SetBounds(gfx::Rect(5, 10, 320, 240));
   window->Show();
 

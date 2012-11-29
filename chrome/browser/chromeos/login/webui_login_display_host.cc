@@ -294,12 +294,12 @@ void WebUILoginDisplayHost::LoadURL(const GURL& url) {
 
     login_view_->Init(login_window_);
 
-    ash::SetWindowVisibilityAnimationDuration(
+    views::corewm::SetWindowVisibilityAnimationDuration(
         login_window_->GetNativeView(),
         base::TimeDelta::FromMilliseconds(kLoginFadeoutTransitionDurationMs));
-    ash::SetWindowVisibilityAnimationTransition(
+    views::corewm::SetWindowVisibilityAnimationTransition(
         login_window_->GetNativeView(),
-        ash::ANIMATE_HIDE);
+        views::corewm::ANIMATE_HIDE);
 
     login_window_->SetContentsView(login_view_);
     login_view_->UpdateWindowType();

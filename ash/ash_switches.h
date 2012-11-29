@@ -37,7 +37,6 @@ ASH_EXPORT extern const char kAshLauncherPerDisplay[];
 ASH_EXPORT extern const char kAshNewLockAnimationsEnabled[];
 ASH_EXPORT extern const char kAshSecondaryDisplayLayout[];
 ASH_EXPORT extern const char kAshTouchHud[];
-ASH_EXPORT extern const char kAshWindowAnimationsDisabled[];
 ASH_EXPORT extern const char kAuraGoogleDialogFrames[];
 ASH_EXPORT extern const char kAuraLegacyPowerButton[];
 ASH_EXPORT extern const char kAuraNoShadows[];

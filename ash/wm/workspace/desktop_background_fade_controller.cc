@@ -39,8 +39,9 @@ DesktopBackgroundFadeController::DesktopBackgroundFadeController(
   parent->StackChildBelow(fade_window, position_above);
   parent->StackChildAbove(fade_window, position_above);
   window_controller_->SetColor(start_color);
-  SetWindowVisibilityAnimationTransition(
-      window_controller_->GetWidget()->GetNativeView(), ANIMATE_NONE);
+  views::corewm::SetWindowVisibilityAnimationTransition(
+      window_controller_->GetWidget()->GetNativeView(),
+      views::corewm::ANIMATE_NONE);
   window_controller_->GetWidget()->Show();
   {
     ui::ScopedLayerAnimationSettings scoped_setter(

@@ -76,9 +76,6 @@ const char kAshSecondaryDisplayLayout[] = "ash-secondary-display-layout";
 // Enables the heads-up display for tracking touch points.
 const char kAshTouchHud[] = "ash-touch-hud";
 
-// If present animations are disabled.
-const char kAshWindowAnimationsDisabled[] = "ash-window-animations-disabled";
-
 // Use Google-style dialog box frames.
 const char kAuraGoogleDialogFrames[] = "aura-google-dialog-frames";
 

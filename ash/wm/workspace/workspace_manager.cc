@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <functional>
 
-#include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -24,7 +23,6 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace/workspace.h"
 #include "base/auto_reset.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "ui/aura/client/aura_constants.h"
@@ -465,8 +463,7 @@ void WorkspaceManager::SetUnminimizingWorkspace(Workspace* workspace) {
 
 void WorkspaceManager::FadeDesktop(aura::Window* window,
                                    base::TimeDelta duration) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshWindowAnimationsDisabled) ||
+  if (views::corewm::WindowAnimationsDisabled(NULL) ||
       ui::LayerAnimator::disable_animations_for_test())
     return;
 

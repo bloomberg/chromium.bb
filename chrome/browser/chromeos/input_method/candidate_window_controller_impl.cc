@@ -60,9 +60,9 @@ void CandidateWindowControllerImpl::CreateView() {
 #endif
   frame_->Init(params);
 #if defined(USE_ASH)
-  ash::SetWindowVisibilityAnimationType(
+  views::corewm::SetWindowVisibilityAnimationType(
       frame_->GetNativeView(),
-      ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+      views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
 #endif  // USE_ASH
 
   // Create the candidate window.
@@ -77,9 +77,9 @@ void CandidateWindowControllerImpl::CreateView() {
   infolist_window_.reset(new DelayableWidget);
   infolist_window_->Init(params);
 #if defined(USE_ASH)
-  ash::SetWindowVisibilityAnimationType(
+  views::corewm::SetWindowVisibilityAnimationType(
       infolist_window_->GetNativeView(),
-      ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+      views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
 #endif  // USE_ASH
 
   InfolistWindowView* infolist_view = new InfolistWindowView;
