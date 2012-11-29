@@ -157,6 +157,8 @@ class DeleteDocumentOperation : public EntryActionOperation {
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
 
  private:
+  GURL document_url_;
+
   DISALLOW_COPY_AND_ASSIGN(DeleteDocumentOperation);
 };
 
@@ -203,7 +205,7 @@ class CopyDocumentOperation : public GetDataOperation {
   virtual ~CopyDocumentOperation();
 
  protected:
-  // Overridden from GetDataOperation.
+  // Overridden from UrlFetchOperationBase.
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
 
   // Overridden from UrlFetchOperationBase.
@@ -241,6 +243,7 @@ class RenameResourceOperation : public EntryActionOperation {
                               std::string* upload_content) OVERRIDE;
 
  private:
+  GURL document_url_;
   FilePath::StringType new_name_;
 
   DISALLOW_COPY_AND_ASSIGN(RenameResourceOperation);
@@ -259,7 +262,7 @@ class AuthorizeAppOperation : public GetDataOperation {
   virtual ~AuthorizeAppOperation();
 
  protected:
-  // Overridden from EntryActionOperation.
+  // Overridden from GetDataOperation.
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
 
   // Overridden from UrlFetchOperationBase.
@@ -306,6 +309,7 @@ class AddResourceToDirectoryOperation : public EntryActionOperation {
  private:
   GDataWapiUrlGenerator url_generator_;
   GURL parent_content_url_;
+  GURL document_url_;
 
   DISALLOW_COPY_AND_ASSIGN(AddResourceToDirectoryOperation);
 };
@@ -314,6 +318,8 @@ class AddResourceToDirectoryOperation : public EntryActionOperation {
 
 // This class performs the operation for adding a document/file/directory
 // from a directory.
+//
+// TODO(satorux): Remove |document_url| parameter. crbug.com/163308
 class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
  public:
   RemoveResourceFromDirectoryOperation(OperationRegistry* registry,
@@ -332,6 +338,7 @@ class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
  private:
   std::string resource_id_;
   GURL parent_content_url_;
+  GURL document_url_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveResourceFromDirectoryOperation);
 };

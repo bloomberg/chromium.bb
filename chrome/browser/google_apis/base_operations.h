@@ -192,8 +192,7 @@ typedef base::Callback<void(GDataErrorCode error)> EntryActionCallback;
 class EntryActionOperation : public UrlFetchOperationBase {
  public:
   EntryActionOperation(OperationRegistry* registry,
-                       const EntryActionCallback& callback,
-                       const GURL& document_url);
+                       const EntryActionCallback& callback);
   virtual ~EntryActionOperation();
 
  protected:
@@ -201,11 +200,8 @@ class EntryActionOperation : public UrlFetchOperationBase {
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
-  const GURL& document_url() const { return document_url_; }
-
  private:
   EntryActionCallback callback_;
-  GURL document_url_;
 
   DISALLOW_COPY_AND_ASSIGN(EntryActionOperation);
 };

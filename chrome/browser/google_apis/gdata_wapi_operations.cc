@@ -230,13 +230,14 @@ DeleteDocumentOperation::DeleteDocumentOperation(
     OperationRegistry* registry,
     const EntryActionCallback& callback,
     const GURL& document_url)
-    : EntryActionOperation(registry, callback, document_url) {
+    : EntryActionOperation(registry, callback),
+      document_url_(document_url) {
 }
 
 DeleteDocumentOperation::~DeleteDocumentOperation() {}
 
 GURL DeleteDocumentOperation::GetURL() const {
-  return GDataWapiUrlGenerator::AddStandardUrlParams(document_url());
+  return GDataWapiUrlGenerator::AddStandardUrlParams(document_url_);
 }
 
 URLFetcher::RequestType DeleteDocumentOperation::GetRequestType() const {
@@ -353,7 +354,8 @@ RenameResourceOperation::RenameResourceOperation(
     const EntryActionCallback& callback,
     const GURL& document_url,
     const FilePath::StringType& new_name)
-    : EntryActionOperation(registry, callback, document_url),
+    : EntryActionOperation(registry, callback),
+      document_url_(document_url),
       new_name_(new_name) {
 }
 
@@ -371,7 +373,7 @@ RenameResourceOperation::GetExtraRequestHeaders() const {
 }
 
 GURL RenameResourceOperation::GetURL() const {
-  return GDataWapiUrlGenerator::AddStandardUrlParams(document_url());
+  return GDataWapiUrlGenerator::AddStandardUrlParams(document_url_);
 }
 
 bool RenameResourceOperation::GetContentData(std::string* upload_content_type,
@@ -498,9 +500,10 @@ AddResourceToDirectoryOperation::AddResourceToDirectoryOperation(
     const EntryActionCallback& callback,
     const GURL& parent_content_url,
     const GURL& document_url)
-    : EntryActionOperation(registry, callback, document_url),
+    : EntryActionOperation(registry, callback),
       url_generator_(url_generator),
-      parent_content_url_(parent_content_url) {
+      parent_content_url_(parent_content_url),
+      document_url_(document_url) {
 }
 
 AddResourceToDirectoryOperation::~AddResourceToDirectoryOperation() {}
@@ -525,7 +528,7 @@ bool AddResourceToDirectoryOperation::GetContentData(
   xml_writer.StartElement("entry");
   xml_writer.AddAttribute("xmlns", "http://www.w3.org/2005/Atom");
 
-  xml_writer.WriteElement("id", document_url().spec());
+  xml_writer.WriteElement("id", document_url_.spec());
 
   xml_writer.EndElement();  // Ends "entry" element.
   xml_writer.StopWriting();
@@ -543,9 +546,10 @@ RemoveResourceFromDirectoryOperation::RemoveResourceFromDirectoryOperation(
     const GURL& parent_content_url,
     const GURL& document_url,
     const std::string& document_resource_id)
-    : EntryActionOperation(registry, callback, document_url),
+    : EntryActionOperation(registry, callback),
       resource_id_(document_resource_id),
-      parent_content_url_(parent_content_url) {
+      parent_content_url_(parent_content_url),
+      document_url_(document_url) {
 }
 
 RemoveResourceFromDirectoryOperation::~RemoveResourceFromDirectoryOperation() {

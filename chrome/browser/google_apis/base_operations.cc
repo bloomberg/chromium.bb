@@ -322,11 +322,9 @@ UrlFetchOperationBase::GetWeakPtr() {
 //============================ EntryActionOperation ============================
 
 EntryActionOperation::EntryActionOperation(OperationRegistry* registry,
-                                           const EntryActionCallback& callback,
-                                           const GURL& document_url)
+                                           const EntryActionCallback& callback)
     : UrlFetchOperationBase(registry),
-      callback_(callback),
-      document_url_(document_url) {
+      callback_(callback) {
 }
 
 EntryActionOperation::~EntryActionOperation() {}
