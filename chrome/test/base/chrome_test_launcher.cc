@@ -118,6 +118,9 @@ int main(int argc, char** argv) {
     LOG(INFO) << "interactive_ui_tests on win aura are not ready yet.";
     return 0;
   }
+
+  // Also don't run browser_tests while last issues are being investigated.
+  return;
 #endif
 
 #if defined(OS_MACOSX)
