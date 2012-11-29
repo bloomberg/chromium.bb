@@ -125,9 +125,16 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_DNSError_Basic) {
   NavigateToURLAndWaitForTitle(GetDnsErrorURL(), "Mock Link Doctor", 2);
 }
 
+// See crbug.com/109669
+#if defined(USE_AURA)
+#define MAYBE_DNSError_GoBack1 DISABLED_DNSError_GoBack1
+#else
+#define MAYBE_DNSError_GoBack1 DNSError_GoBack1
+#endif
+
 // Test that a DNS error occuring in the main frame does not result in an
 // additional session history entry.
-IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack1) {
+IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_DNSError_GoBack1) {
   NavigateToFileURL(FILE_PATH_LITERAL("title2.html"));
   NavigateToURLAndWaitForTitle(GetDnsErrorURL(), "Mock Link Doctor", 2);
   GoBackAndWaitForTitle("Title Of Awesomeness", 1);
