@@ -58,8 +58,8 @@ WebAuthFlow::WebAuthFlow(
       provider_url_(provider_url),
       mode_(mode),
       initial_bounds_(initial_bounds),
-      contents_(NULL),
-      tab_contents_(NULL) {
+      popup_shown_(false),
+      contents_(NULL) {
   InitValidRedirectUrlPrefixes(extension_id);
 }
 
@@ -71,15 +71,16 @@ WebAuthFlow::~WebAuthFlow() {
   // below may generate notifications.
   registrar_.RemoveAll();
 
-  if (tab_contents_)
-    tab_contents_->web_contents()->Close();
-
   if (contents_) {
-    contents_->Stop();
-    // Tell message loop to delete contents_ instead of deleting it
-    // directly since destructor can run in response to a callback from
-    // contents_.
-    MessageLoop::current()->DeleteSoon(FROM_HERE, contents_);
+    if (popup_shown_) {
+      contents_->Close();
+    } else {
+      contents_->Stop();
+      // Tell message loop to delete contents_ instead of deleting it
+      // directly since destructor can run in response to a callback from
+      // contents_.
+      MessageLoop::current()->DeleteSoon(FROM_HERE, contents_);
+    }
   }
 }
 
@@ -108,19 +109,18 @@ WebContents* WebAuthFlow::CreateWebContents() {
 }
 
 void WebAuthFlow::ShowAuthFlowPopup() {
-  // Pass ownership of WebContents to TabContents.
-  tab_contents_ = TabContents::Factory::CreateTabContents(contents_);
-  contents_ = NULL;
   Browser::CreateParams browser_params(Browser::TYPE_POPUP, profile_);
   browser_params.initial_bounds = initial_bounds_;
   Browser* browser = new Browser(browser_params);
-  chrome::NavigateParams params(browser, tab_contents_);
+  chrome::NavigateParams params(
+      browser, TabContents::Factory::CreateTabContents(contents_));
   params.disposition = CURRENT_TAB;
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   chrome::Navigate(&params);
   // Observe method and WebContentsObserver::* methods will be called
   // for varous navigation events. That is where we check for redirect
   // to the right URL.
+  popup_shown_ = true;
 }
 
 bool WebAuthFlow::BeforeUrlLoaded(const GURL& url) {
@@ -133,7 +133,7 @@ bool WebAuthFlow::BeforeUrlLoaded(const GURL& url) {
 
 void WebAuthFlow::AfterUrlLoaded() {
   // Do nothing if a popup is already created.
-  if (tab_contents_)
+  if (popup_shown_)
     return;
 
   // Report results directly if not in interactive mode.
@@ -176,7 +176,6 @@ void WebAuthFlow::DidStopLoading(RenderViewHost* render_view_host) {
 
 void WebAuthFlow::WebContentsDestroyed(WebContents* web_contents) {
   contents_ = NULL;
-  tab_contents_ = NULL;
   ReportResult(GURL());
 }
 
