@@ -614,8 +614,33 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_InvalidFeed) {
             http_request_.content);
 }
 
-// TODO(satorux): Write tests for AddResourceToDirectoryOperation.
-// crbug.com/162348
+TEST_F(GDataWapiOperationsTest, AddResourceToDirectoryOperation) {
+  GDataErrorCode result_code = GDATA_OTHER_ERROR;
+
+  // Add a file to the root directory.
+  AddResourceToDirectoryOperation* operation =
+      new AddResourceToDirectoryOperation(
+          &operation_registry_,
+          *url_generator_,
+          base::Bind(&CopyResultFromEntryActionCallbackAndQuit,
+                     &result_code),
+          test_server_.GetURL("/feeds/default/private/full/folder%3Aroot"),
+          test_server_.GetURL(
+              "/feeds/default/private/full/file:2_file_resource_id"));
+
+  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, result_code);
+  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_EQ("<?xml version=\"1.0\"?>\n"
+            "<entry xmlns=\"http://www.w3.org/2005/Atom\">\n"
+            " <id>http://127.0.0.1:8040/feeds/default/private/full/"
+            "file:2_file_resource_id</id>\n"
+            "</entry>\n",
+            http_request_.content);
+}
 
 // TODO(satorux): Write tests for RemoveResourceFromDirectoryOperation.
 // crbug.com/162348
