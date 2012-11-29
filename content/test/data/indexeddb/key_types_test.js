@@ -141,8 +141,7 @@ function testInvalidKeys() {
         return;
       } catch (e) {
         window.ex = e;
-        // TODO(jsbell): Uncomment when wkbug.com/102514 has landed/rolled.
-        //shouldBe("ex.code", "0");
+        shouldBe("ex.code", "0");
         shouldBe("ex.name", "'DataError'");
       }
     });

@@ -97,8 +97,7 @@ function testOverLimit()
     } catch (e) {
       debug('Exception (expected)');
       ex = e;
-      // TODO(jsbell): Uncomment when wkbug.com/102514 has landed/rolled.
-      //shouldBe("ex.code", "0");
+      shouldBe("ex.code", "0");
       shouldBe("ex.name", "'DataError'");
     }
 
@@ -110,8 +109,7 @@ function testOverLimit()
     } catch (e) {
       debug('Exception (expected)');
       ex = e;
-      // TODO(jsbell): Uncomment when wkbug.com/102514 has landed/rolled.
-      //shouldBe("ex.code", "0");
+      shouldBe("ex.code", "0");
       shouldBe("ex.name", "'DataError'");
     }
 
@@ -127,8 +125,7 @@ function testOverLimit()
       } catch (e) {
         debug('Exception (expected)');
         ex = e;
-        // TODO(jsbell): Uncomment when wkbug.com/102514 has landed/rolled.
-        //shouldBe("ex.code", "0");
+        shouldBe("ex.code", "0");
         shouldBe("ex.name", "'DataError'");
 
         transaction.abort();
