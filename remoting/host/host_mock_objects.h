@@ -85,6 +85,23 @@ class MockContinueWindow : public ContinueWindow {
   MOCK_METHOD0(Hide, void());
 };
 
+class MockChromotingHostContext : public ChromotingHostContext {
+ public:
+  MockChromotingHostContext();
+  virtual ~MockChromotingHostContext();
+
+  MOCK_METHOD0(Start, bool());
+  MOCK_METHOD0(Stop, void());
+  MOCK_METHOD0(ui_task_runner, base::SingleThreadTaskRunner*());
+  MOCK_METHOD0(capture_task_runner, base::SingleThreadTaskRunner*());
+  MOCK_METHOD0(encode_task_runner, base::SingleThreadTaskRunner*());
+  MOCK_METHOD0(network_task_runner, base::SingleThreadTaskRunner*());
+  MOCK_METHOD0(io_task_runner, base::SingleThreadTaskRunner*());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockChromotingHostContext);
+};
+
 class MockClientSessionEventHandler : public ClientSession::EventHandler {
  public:
   MockClientSessionEventHandler();
