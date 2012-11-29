@@ -84,7 +84,7 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
 #if defined(OS_LINUX) && defined(USE_NSS)
   // Some out-of-process PPAPI plugins use NSS.
   // NSS must be initialized before enabling the sandbox below.
-  crypto::WarmUpNSSSafely();
+  crypto::InitNSSSafely();
 #endif
 
   // Allow the embedder to perform any necessary per-process initialization
