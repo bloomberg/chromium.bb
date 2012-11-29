@@ -377,9 +377,8 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, Geoposition) {
   CheckGeoposition(fake_latitude_, fake_longitude_);
 }
 
-// Crashy, http://crbug.com/70585.
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
-                       DISABLED_ErrorOnPermissionDenied) {
+                       ErrorOnPermissionDenied) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   AddGeolocationWatch(true);
   // Infobar was displayed, deny access and check for error code.
