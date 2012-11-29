@@ -38,11 +38,10 @@
 #include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/shared_impl/ppb_instance_shared.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
-#include "ppapi/thunk/ppb_flash_clipboard_api.h"
-#include "ppapi/thunk/ppb_flash_functions_api.h"
+#include "ppapi/shared_impl/singleton_resource_id.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_gamepad_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
-#include "ppapi/shared_impl/tracked_callback.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
@@ -366,12 +365,8 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size)
       OVERRIDE;
   virtual ::ppapi::thunk::PPB_Flash_API* GetFlashAPI() OVERRIDE;
-  virtual ::ppapi::thunk::PPB_Flash_Clipboard_API* GetFlashClipboardAPI(
-      PP_Instance instance) OVERRIDE;
-  virtual ::ppapi::thunk::PPB_Flash_Functions_API* GetFlashFunctionsAPI(
-      PP_Instance instance) OVERRIDE;
-  virtual ::ppapi::thunk::PPB_Gamepad_API* GetGamepadAPI(PP_Instance instance)
-      OVERRIDE;
+  virtual ::ppapi::Resource* GetSingletonResource(PP_Instance instance,
+      ::ppapi::SingletonResourceID id) OVERRIDE;
   virtual int32_t RequestInputEvents(PP_Instance instance,
                                      uint32_t event_classes) OVERRIDE;
   virtual int32_t RequestFilteringInputEvents(PP_Instance instance,
@@ -466,9 +461,12 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
 
   // Implements PPB_Gamepad_API. This is just to avoid having an excessive
   // number of interfaces implemented by PluginInstance.
-  class GamepadImpl : public ::ppapi::thunk::PPB_Gamepad_API {
+  class GamepadImpl : public ::ppapi::thunk::PPB_Gamepad_API,
+                      public ::ppapi::Resource {
    public:
     explicit GamepadImpl(PluginDelegate* delegate);
+    // Resource implementation.
+    virtual ::ppapi::thunk::PPB_Gamepad_API* AsPPB_Gamepad_API() OVERRIDE;
     virtual void Sample(PP_GamepadsSampleData* data) OVERRIDE;
    private:
     PluginDelegate* delegate_;
@@ -664,7 +662,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   std::vector<PP_PrintPageNumberRange_Dev> ranges_;
 #endif  // OS_LINUX || OS_WIN
 
-  GamepadImpl gamepad_impl_;
+  scoped_refptr< ::ppapi::Resource> gamepad_impl_;
 
   // The plugin print interface.
   const PPP_Printing_Dev* plugin_print_interface_;

@@ -21,6 +21,8 @@
 #include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/shared_impl/api_id.h"
+#include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/singleton_resource_id.h"
 
 // Windows headers interfere with this file.
 #ifdef PostMessage
@@ -32,15 +34,13 @@ struct PP_DecryptedFrameInfo;
 
 namespace ppapi {
 
+class Resource;
 class TrackedCallback;
 struct ViewData;
 
 namespace thunk {
 
 class PPB_Flash_API;
-class PPB_Flash_Clipboard_API;
-class PPB_Flash_Functions_API;
-class PPB_Gamepad_API;
 
 class PPB_Instance_API {
  public:
@@ -92,16 +92,13 @@ class PPB_Instance_API {
 
   // Flash (Deprecated for Flash_Functions).
   virtual PPB_Flash_API* GetFlashAPI() = 0;
-  // Flash_Functions
-  virtual PPB_Flash_Functions_API* GetFlashFunctionsAPI(
-      PP_Instance instance) = 0;
 
-  // Flash_Clipboard.
-  virtual PPB_Flash_Clipboard_API* GetFlashClipboardAPI(
-      PP_Instance instance) = 0;
-
-  // Gamepad.
-  virtual PPB_Gamepad_API* GetGamepadAPI(PP_Instance instance) = 0;
+  // This is an implementation-only function which grabs an instance of a
+  // "singleton resource". These are used to implement instance interfaces
+  // (functions which are associated with the instance itself as opposed to a
+  // resource).
+  virtual Resource* GetSingletonResource(
+      PP_Instance instance, SingletonResourceID id) = 0;
 
   // InputEvent.
   virtual int32_t RequestInputEvents(PP_Instance instance,

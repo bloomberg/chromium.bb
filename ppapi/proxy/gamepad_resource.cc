@@ -58,6 +58,10 @@ GamepadResource::GamepadResource(Connection connection, PP_Instance instance)
 GamepadResource::~GamepadResource() {
 }
 
+thunk::PPB_Gamepad_API* GamepadResource::AsPPB_Gamepad_API() {
+  return this;
+}
+
 void GamepadResource::Sample(PP_GamepadsSampleData* data) {
   if (!buffer_) {
     // Browser hasn't sent back our shared memory, give the plugin gamepad

@@ -17,13 +17,10 @@ namespace thunk {
 namespace {
 
 void SampleGamepads(PP_Instance instance, PP_GamepadsSampleData* data) {
-  EnterInstance enter(instance);
+  EnterInstanceAPI<PPB_Gamepad_API> enter(instance);
   if (enter.succeeded()) {
-    PPB_Gamepad_API* api = enter.functions()->GetGamepadAPI(instance);
-    if (api) {
-      api->Sample(data);
-      return;
-    }
+    enter.functions()->Sample(data);
+    return;
   }
   // Failure, zero out.
   memset(data, 0, sizeof(PP_GamepadsSampleData));

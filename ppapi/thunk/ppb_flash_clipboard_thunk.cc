@@ -16,31 +16,28 @@ namespace {
 
 uint32_t RegisterCustomFormat(PP_Instance instance,
                               const char* format_name) {
-  EnterInstance enter(instance);
+  EnterInstanceAPI<PPB_Flash_Clipboard_API> enter(instance);
   if (enter.failed())
     return PP_FALSE;
-  return enter.functions()->GetFlashClipboardAPI(
-      instance)->RegisterCustomFormat(instance, format_name);
+  return enter.functions()->RegisterCustomFormat(instance, format_name);
 }
 
 PP_Bool IsFormatAvailable(PP_Instance instance,
                           PP_Flash_Clipboard_Type clipboard_type,
                           uint32_t format) {
-  EnterInstance enter(instance);
+  EnterInstanceAPI<PPB_Flash_Clipboard_API> enter(instance);
   if (enter.failed())
     return PP_FALSE;
-  return enter.functions()->GetFlashClipboardAPI(
-      instance)->IsFormatAvailable(instance, clipboard_type, format);
+  return enter.functions()->IsFormatAvailable(instance, clipboard_type, format);
 }
 
 PP_Var ReadData(PP_Instance instance,
                 PP_Flash_Clipboard_Type clipboard_type,
                 uint32_t format) {
-  EnterInstance enter(instance);
+  EnterInstanceAPI<PPB_Flash_Clipboard_API> enter(instance);
   if (enter.failed())
     return PP_MakeUndefined();
-  return enter.functions()->GetFlashClipboardAPI(instance)->ReadData(
-      instance, clipboard_type, format);
+  return enter.functions()->ReadData(instance, clipboard_type, format);
 }
 
 int32_t WriteData(PP_Instance instance,
@@ -48,10 +45,10 @@ int32_t WriteData(PP_Instance instance,
                   uint32_t data_item_count,
                   const uint32_t formats[],
                   const PP_Var data_items[]) {
-  EnterInstance enter(instance);
+  EnterInstanceAPI<PPB_Flash_Clipboard_API> enter(instance);
   if (enter.failed())
     return enter.retval();
-  return enter.functions()->GetFlashClipboardAPI(instance)->WriteData(
+  return enter.functions()->WriteData(
       instance, clipboard_type, data_item_count, formats, data_items);
 }
 

@@ -35,6 +35,9 @@ class PPAPI_PROXY_EXPORT GamepadResource
   GamepadResource(Connection connection, PP_Instance instance);
   virtual ~GamepadResource();
 
+  // Resource implementation.
+  virtual thunk::PPB_Gamepad_API* AsPPB_Gamepad_API() OVERRIDE;
+
   // PPB_Gamepad_API.
   virtual void Sample(PP_GamepadsSampleData* data) OVERRIDE;
 

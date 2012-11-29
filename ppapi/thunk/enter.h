@@ -11,11 +11,11 @@
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/resource_tracker.h"
+#include "ppapi/shared_impl/singleton_resource_id.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 #include "ppapi/thunk/ppb_instance_api.h"
@@ -216,7 +216,7 @@ class PPAPI_THUNK_EXPORT EnterInstance
     : public subtle::EnterBase,
       public subtle::LockOnEntry<true> {
  public:
-  EnterInstance(PP_Instance instance);
+  explicit EnterInstance(PP_Instance instance);
   EnterInstance(PP_Instance instance,
                 const PP_CompletionCallback& callback);
   ~EnterInstance();
@@ -224,7 +224,7 @@ class PPAPI_THUNK_EXPORT EnterInstance
   bool succeeded() const { return !!functions_; }
   bool failed() const { return !functions_; }
 
-  PPB_Instance_API* functions() { return functions_; }
+  PPB_Instance_API* functions() const { return functions_; }
 
  private:
   PPB_Instance_API* functions_;
@@ -234,7 +234,7 @@ class PPAPI_THUNK_EXPORT EnterInstanceNoLock
     : public subtle::EnterBase,
       public subtle::LockOnEntry<false> {
  public:
-  EnterInstanceNoLock(PP_Instance instance);
+  explicit EnterInstanceNoLock(PP_Instance instance);
   EnterInstanceNoLock(PP_Instance instance,
                       const PP_CompletionCallback& callback);
   ~EnterInstanceNoLock();
@@ -245,13 +245,54 @@ class PPAPI_THUNK_EXPORT EnterInstanceNoLock
   PPB_Instance_API* functions_;
 };
 
+// EnterInstanceAPI ------------------------------------------------------------
+
+template<typename ApiT, bool lock_on_entry = true>
+class PPAPI_THUNK_EXPORT EnterInstanceAPI
+    : public subtle::EnterBase,
+      public subtle::LockOnEntry<lock_on_entry> {
+ public:
+  explicit EnterInstanceAPI(PP_Instance instance)
+      : EnterBase(),
+        functions_(NULL) {
+    PPB_Instance_API* ppb_instance =
+        PpapiGlobals::Get()->GetInstanceAPI(instance);
+    if (ppb_instance) {
+      Resource* resource =
+          ppb_instance->GetSingletonResource(instance,
+                                             ApiT::kSingletonResourceID);
+      if (resource)
+        functions_ = resource->GetAs<ApiT>();
+    }
+    SetStateForFunctionError(instance, functions_, true);
+  }
+  ~EnterInstanceAPI() {}
+
+  bool succeeded() const { return !!functions_; }
+  bool failed() const { return !functions_; }
+
+  ApiT* functions() const { return functions_; }
+
+ private:
+  ApiT* functions_;
+};
+
+template<typename ApiT>
+class PPAPI_THUNK_EXPORT EnterInstanceAPINoLock
+    : public EnterInstanceAPI<ApiT, false> {
+ public:
+  explicit EnterInstanceAPINoLock(PP_Instance instance)
+      : EnterInstanceAPI<ApiT, false>(instance) {
+  }
+};
+
 // EnterResourceCreation -------------------------------------------------------
 
 class PPAPI_THUNK_EXPORT EnterResourceCreation
     : public subtle::EnterBase,
       public subtle::LockOnEntry<true> {
  public:
-  EnterResourceCreation(PP_Instance instance);
+  explicit EnterResourceCreation(PP_Instance instance);
   ~EnterResourceCreation();
 
   ResourceCreationAPI* functions() { return functions_; }
@@ -264,7 +305,7 @@ class PPAPI_THUNK_EXPORT EnterResourceCreationNoLock
     : public subtle::EnterBase,
       public subtle::LockOnEntry<false> {
  public:
-  EnterResourceCreationNoLock(PP_Instance instance);
+  explicit EnterResourceCreationNoLock(PP_Instance instance);
   ~EnterResourceCreationNoLock();
 
   ResourceCreationAPI* functions() { return functions_; }

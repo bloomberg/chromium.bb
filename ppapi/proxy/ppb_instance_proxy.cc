@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/ppb_instance_proxy.h"
 
+#include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_time.h"
@@ -330,64 +331,47 @@ thunk::PPB_Flash_API* PPB_Instance_Proxy::GetFlashAPI() {
   return static_cast<PPB_Flash_Proxy*>(ip);
 }
 
-// TODO(raymes): We can most likely cut down this boilerplate for grabbing
-// singleton resource APIs.
-thunk::PPB_Flash_Functions_API* PPB_Instance_Proxy::GetFlashFunctionsAPI(
-    PP_Instance instance) {
+Resource* PPB_Instance_Proxy::GetSingletonResource(PP_Instance instance,
+                                                   SingletonResourceID id) {
+  InstanceData* data = static_cast<PluginDispatcher*>(dispatcher())->
+      GetInstanceData(instance);
+
+  InstanceData::SingletonResourceMap::iterator it =
+      data->singleton_resources.find(id);
+  if (it != data->singleton_resources.end())
+    return it->second.get();
+
+  scoped_refptr<Resource> new_singleton;
+  Connection connection(PluginGlobals::Get()->GetBrowserSender(), dispatcher());
+
+  switch (id) {
+    case GAMEPAD_SINGLETON_ID:
+      new_singleton = new GamepadResource(connection, instance);
+      break;
+// Flash resources aren't needed for NaCl.
 #if !defined(OS_NACL) && !defined(NACL_WIN64)
-  InstanceData* data = static_cast<PluginDispatcher*>(dispatcher())->
-      GetInstanceData(instance);
-  if (!data)
-    return NULL;
-
-  if (!data->flash_resource.get()) {
-    Connection connection(PluginGlobals::Get()->GetBrowserSender(),
-                          dispatcher());
-    data->flash_resource = new FlashResource(connection, instance);
-  }
-  return data->flash_resource.get();
+    case FLASH_SINGLETON_ID:
+      new_singleton = new FlashResource(connection, instance);
+      break;
+    case FLASH_CLIPBOARD_SINGLETON_ID:
+      new_singleton = new FlashClipboardResource(connection, instance);
+      break;
 #else
-  // Flash functions aren't implemented for nacl.
-  NOTIMPLEMENTED();
-  return NULL;
+    case FLASH_SINGLETON_ID:
+    case FLASH_CLIPBOARD_SINGLETON_ID:
+      NOTREACHED();
+      break;
 #endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
-}
-
-thunk::PPB_Flash_Clipboard_API* PPB_Instance_Proxy::GetFlashClipboardAPI(
-    PP_Instance instance) {
-#if !defined(OS_NACL) && !defined(NACL_WIN64)
-  InstanceData* data = static_cast<PluginDispatcher*>(dispatcher())->
-      GetInstanceData(instance);
-  if (!data)
-    return NULL;
-
-  if (!data->flash_clipboard_resource.get()) {
-    Connection connection(PluginGlobals::Get()->GetBrowserSender(),
-                          dispatcher());
-    data->flash_clipboard_resource =
-        new FlashClipboardResource(connection, instance);
   }
-  return data->flash_clipboard_resource.get();
-#else
-  // Flash functions aren't implemented for nacl.
-  NOTIMPLEMENTED();
-  return NULL;
-#endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
-}
 
-thunk::PPB_Gamepad_API* PPB_Instance_Proxy::GetGamepadAPI(
-    PP_Instance instance) {
-  InstanceData* data = static_cast<PluginDispatcher*>(dispatcher())->
-      GetInstanceData(instance);
-  if (!data)
+  if (!new_singleton) {
+    // Getting here implies that a constructor is missing in the above switch.
+    NOTREACHED();
     return NULL;
-
-  if (!data->gamepad_resource.get()) {
-    Connection connection(PluginGlobals::Get()->GetBrowserSender(),
-                          dispatcher());
-    data->gamepad_resource = new GamepadResource(connection, instance);
   }
-  return data->gamepad_resource.get();
+
+  data->singleton_resources[id] = new_singleton;
+  return new_singleton.get();
 }
 
 int32_t PPB_Instance_Proxy::RequestInputEvents(PP_Instance instance,

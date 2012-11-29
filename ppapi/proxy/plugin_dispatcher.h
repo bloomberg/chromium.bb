@@ -20,6 +20,7 @@
 #include "ppapi/proxy/dispatcher.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
+#include "ppapi/shared_impl/singleton_resource_id.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 
 namespace ppapi {
@@ -51,11 +52,10 @@ struct InstanceData {
   // When non-NULL, indicates the callback to execute when mouse lock is lost.
   scoped_refptr<TrackedCallback> mouse_lock_callback;
 
-  // The following are lazily created the first time the plugin requests them.
-  // (These are singleton-style resources).
-  scoped_refptr<GamepadResource> gamepad_resource;
-  scoped_refptr<FlashResource> flash_resource;
-  scoped_refptr<FlashClipboardResource> flash_clipboard_resource;
+  // A map of singleton resources which are lazily created.
+  typedef std::map<SingletonResourceID, scoped_refptr<Resource> >
+      SingletonResourceMap;
+  SingletonResourceMap singleton_resources;
 
   // Calls to |RequestSurroundingText()| are done by posted tasks. Track whether
   // a) a task is pending, to avoid redundant calls, and b) whether we should

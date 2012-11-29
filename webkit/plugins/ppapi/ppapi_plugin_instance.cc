@@ -113,11 +113,13 @@ using ppapi::PpapiGlobals;
 using ppapi::PPB_InputEvent_Shared;
 using ppapi::PPB_View_Shared;
 using ppapi::PPP_Instance_Combined;
+using ppapi::Resource;
 using ppapi::ScopedPPResource;
 using ppapi::StringVar;
 using ppapi::TrackedCallback;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
+using ppapi::thunk::PPB_Gamepad_API;
 using ppapi::thunk::PPB_Graphics2D_API;
 using ppapi::thunk::PPB_Graphics3D_API;
 using ppapi::thunk::PPB_ImageData_API;
@@ -318,7 +320,12 @@ PluginInstance* PluginInstance::Create(PluginDelegate* delegate,
 }
 
 PluginInstance::GamepadImpl::GamepadImpl(PluginDelegate* delegate)
-    : delegate_(delegate) {
+    : Resource(::ppapi::Resource::Untracked()),
+      delegate_(delegate) {
+}
+
+PPB_Gamepad_API* PluginInstance::GamepadImpl::AsPPB_Gamepad_API() {
+  return this;
 }
 
 void PluginInstance::GamepadImpl::Sample(PP_GamepadsSampleData* data) {
@@ -355,7 +362,7 @@ PluginInstance::PluginInstance(
       checked_for_plugin_input_event_interface_(false),
       checked_for_plugin_messaging_interface_(false),
       checked_for_plugin_pdf_interface_(false),
-      gamepad_impl_(delegate),
+      gamepad_impl_(new GamepadImpl(delegate)),
       plugin_print_interface_(NULL),
       plugin_graphics_3d_interface_(NULL),
       always_on_top_(false),
@@ -2127,21 +2134,21 @@ PP_Bool PluginInstance::GetScreenSize(PP_Instance instance, PP_Size* size) {
   return &flash_impl_;
 }
 
-::ppapi::thunk::PPB_Flash_Clipboard_API*
-PluginInstance::GetFlashClipboardAPI(PP_Instance /*instance*/) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
+::ppapi::Resource* PluginInstance::GetSingletonResource(
+    PP_Instance instance,
+    ::ppapi::SingletonResourceID id) {
+  // Flash APIs aren't implemented in-process.
+  switch (id) {
+    case ::ppapi::FLASH_SINGLETON_ID:
+    case ::ppapi::FLASH_CLIPBOARD_SINGLETON_ID:
+      NOTIMPLEMENTED();
+      return NULL;
+    case ::ppapi::GAMEPAD_SINGLETON_ID:
+      return gamepad_impl_;
+  }
 
-::ppapi::thunk::PPB_Flash_Functions_API*
-PluginInstance::GetFlashFunctionsAPI(PP_Instance /*instance*/) {
-  NOTIMPLEMENTED();
+  NOTREACHED();
   return NULL;
-}
-
-::ppapi::thunk::PPB_Gamepad_API* PluginInstance::GetGamepadAPI(
-    PP_Instance /* instance */) {
-  return &gamepad_impl_;
 }
 
 int32_t PluginInstance::RequestInputEvents(PP_Instance instance,

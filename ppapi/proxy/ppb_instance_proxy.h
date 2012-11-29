@@ -15,6 +15,7 @@
 #include "ppapi/proxy/proxy_completion_callback_factory.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/ppb_instance_shared.h"
+#include "ppapi/shared_impl/singleton_resource_id.h"
 #include "ppapi/thunk/ppb_instance_api.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
@@ -70,11 +71,8 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual PP_Bool GetScreenSize(PP_Instance instance,
                                 PP_Size* size) OVERRIDE;
   virtual thunk::PPB_Flash_API* GetFlashAPI() OVERRIDE;
-  virtual thunk::PPB_Flash_Functions_API* GetFlashFunctionsAPI(
-      PP_Instance instance) OVERRIDE;
-  virtual thunk::PPB_Flash_Clipboard_API* GetFlashClipboardAPI(
-      PP_Instance instance) OVERRIDE;
-  virtual thunk::PPB_Gamepad_API* GetGamepadAPI(PP_Instance instance) OVERRIDE;
+  virtual Resource* GetSingletonResource(PP_Instance instance,
+                                         SingletonResourceID id) OVERRIDE;
   virtual int32_t RequestInputEvents(PP_Instance instance,
                                      uint32_t event_classes) OVERRIDE;
   virtual int32_t RequestFilteringInputEvents(PP_Instance instance,
