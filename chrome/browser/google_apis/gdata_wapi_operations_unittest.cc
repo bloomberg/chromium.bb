@@ -236,6 +236,14 @@ class GDataWapiOperationsTest : public testing::Test {
         // created directory but for now, just return "directory_entry.json"
         return CreateHttpResponseFromFile(
             test_util::GetTestFilePath("gdata/directory_entry.json"));
+      } else if (resource_id == "folder:root/file:2_file_resource_id" &&
+                 request.method == test_server::METHOD_DELETE) {
+        // This is a request for deleting a file from the root directory.
+        // TODO(satorux): Investigate what's returned from the server, and
+        // copy it. For now, just return a random file, as the contents don't
+        // matter.
+        return CreateHttpResponseFromFile(
+            test_util::GetTestFilePath("gdata/testfile.txt"));
       }
     }
 
@@ -293,6 +301,9 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_DefaultFeed) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ("/feeds/default/private/full/-/mine?v=3&alt=json&showfolders=true"
+            "&max-results=500&include-installed-apps=true",
+            http_request_.relative_url);
   ASSERT_TRUE(result_data);
   EXPECT_TRUE(VerifyJsonData(
       test_util::GetTestFilePath("gdata/root_feed.json"),
@@ -319,6 +330,9 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_ValidFeed) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ("/files/gdata/root_feed.json?v=3&alt=json&showfolders=true"
+            "&max-results=500&include-installed-apps=true",
+            http_request_.relative_url);
   ASSERT_TRUE(result_data);
   EXPECT_TRUE(VerifyJsonData(
       test_util::GetTestFilePath("gdata/root_feed.json"),
@@ -347,6 +361,9 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_InvalidFeed) {
 
   EXPECT_EQ(GDATA_PARSE_ERROR, result_code);
   EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ("/files/gdata/testfile.txt?v=3&alt=json&showfolders=true"
+            "&max-results=500&include-installed-apps=true",
+            http_request_.relative_url);
   EXPECT_FALSE(result_data);
 }
 
@@ -366,6 +383,9 @@ TEST_F(GDataWapiOperationsTest, GetDocumentEntryOperation_ValidResourceId) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ("/feeds/default/private/full/file%3A2_file_resource_id"
+            "?v=3&alt=json",
+            http_request_.relative_url);
   ASSERT_TRUE(result_data);
   EXPECT_TRUE(VerifyJsonData(
       test_util::GetTestFilePath("gdata/file_entry.json"),
@@ -388,6 +408,8 @@ TEST_F(GDataWapiOperationsTest, GetDocumentEntryOperation_InvalidResourceId) {
 
   EXPECT_EQ(HTTP_NOT_FOUND, result_code);
   EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ("/feeds/default/private/full/%3Cinvalid%3E?v=3&alt=json",
+            http_request_.relative_url);
   ASSERT_FALSE(result_data);
 }
 
@@ -407,6 +429,8 @@ TEST_F(GDataWapiOperationsTest, GetAccountMetadataOperation) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ("/feeds/metadata/default?v=3&alt=json&include-installed-apps=true",
+            http_request_.relative_url);
   EXPECT_TRUE(VerifyJsonData(
       test_util::GetTestFilePath("gdata/account_metadata.json"),
       result_data.get()));
@@ -429,6 +453,7 @@ TEST_F(GDataWapiOperationsTest, DownloadFileOperation_ValidFile) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ("/files/gdata/testfile.txt", http_request_.relative_url);
 
   const FilePath expected_path =
       test_util::GetTestFilePath("gdata/testfile.txt");
@@ -455,6 +480,7 @@ TEST_F(GDataWapiOperationsTest, DownloadFileOperation_NonExistentFile) {
 
   EXPECT_EQ(HTTP_NOT_FOUND, result_code);
   EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ("/files/gdata/no-such-file.txt", http_request_.relative_url);
   // Do not verify the not found message.
 }
 
@@ -473,6 +499,8 @@ TEST_F(GDataWapiOperationsTest, DeleteDocumentOperation) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server::METHOD_DELETE, http_request_.method);
+  EXPECT_EQ("/feeds/default/private/full/file:2_file_resource_id?v=3&alt=json",
+            http_request_.relative_url);
   EXPECT_EQ("*", http_request_.headers["If-Match"]);
 }
 
@@ -495,6 +523,9 @@ TEST_F(GDataWapiOperationsTest, CreateDirectoryOperation) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ("/feeds/default/private/full/folder%3Aroot?v=3&alt=json",
+            http_request_.relative_url);
+
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_EQ("<?xml version=\"1.0\"?>\n"
             "<entry xmlns=\"http://www.w3.org/2005/Atom\">\n"
@@ -524,6 +555,9 @@ TEST_F(GDataWapiOperationsTest, CopyDocumentOperation) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ("/feeds/default/private/full?v=3&alt=json",
+            http_request_.relative_url);
+
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_EQ("<?xml version=\"1.0\"?>\n"
             "<entry xmlns=\"http://www.w3.org/2005/Atom\">\n"
@@ -550,6 +584,9 @@ TEST_F(GDataWapiOperationsTest, RenameResourceOperation) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ("/feeds/default/private/full/file:2_file_resource_id?v=3&alt=json",
+            http_request_.relative_url);
+
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_EQ("<?xml version=\"1.0\"?>\n"
             "<entry xmlns=\"http://www.w3.org/2005/Atom\">\n"
@@ -577,7 +614,10 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_ValidFeed) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ("/feeds/default/private/full/file:2_file_resource_id",
+            http_request_.relative_url);
   EXPECT_EQ("*", http_request_.headers["If-Match"]);
+
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_EQ("<?xml version=\"1.0\"?>\n"
             "<entry xmlns=\"http://www.w3.org/2005/Atom\" "
@@ -605,7 +645,10 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_InvalidFeed) {
 
   EXPECT_EQ(GDATA_PARSE_ERROR, result_code);
   EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ("/files/gdata/testfile.txt", http_request_.relative_url);
   EXPECT_EQ("*", http_request_.headers["If-Match"]);
+
+  EXPECT_TRUE(http_request_.has_content);
   EXPECT_EQ("<?xml version=\"1.0\"?>\n"
             "<entry xmlns=\"http://www.w3.org/2005/Atom\" "
             "xmlns:docs=\"http://schemas.google.com/docs/2007\">\n"
@@ -633,6 +676,9 @@ TEST_F(GDataWapiOperationsTest, AddResourceToDirectoryOperation) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ("/feeds/default/private/full/folder%3Aroot?v=3&alt=json",
+            http_request_.relative_url);
+
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_EQ("<?xml version=\"1.0\"?>\n"
             "<entry xmlns=\"http://www.w3.org/2005/Atom\">\n"
@@ -642,8 +688,31 @@ TEST_F(GDataWapiOperationsTest, AddResourceToDirectoryOperation) {
             http_request_.content);
 }
 
-// TODO(satorux): Write tests for RemoveResourceFromDirectoryOperation.
-// crbug.com/162348
+TEST_F(GDataWapiOperationsTest, RemoveResourceFromDirectoryOperation) {
+  GDataErrorCode result_code = GDATA_OTHER_ERROR;
+
+  // Remove a file from the root directory.
+  RemoveResourceFromDirectoryOperation* operation =
+      new RemoveResourceFromDirectoryOperation(
+          &operation_registry_,
+          base::Bind(&CopyResultFromEntryActionCallbackAndQuit,
+                     &result_code),
+          test_server_.GetURL("/feeds/default/private/full/folder%3Aroot"),
+          test_server_.GetURL(
+              "/feeds/default/private/full/file:2_file_resource_id"),
+          "file:2_file_resource_id");
+
+  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, result_code);
+  // DELETE method should be used, without the body content.
+  EXPECT_EQ(test_server::METHOD_DELETE, http_request_.method);
+  EXPECT_EQ("/feeds/default/private/full/folder%3Aroot/"
+            "file%3A2_file_resource_id?v=3&alt=json",
+            http_request_.relative_url);
+  EXPECT_FALSE(http_request_.has_content);
+}
 
 // TODO(satorux): Write tests for InitiateUploadOperation.
 // crbug.com/162348
