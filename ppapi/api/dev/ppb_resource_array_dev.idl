@@ -6,6 +6,9 @@
 /**
  * This file defines the <code>PPB_ResourceArray_Dev</code> interface.
  */
+
+[generate_thunk]
+
 label Chrome {
   M18 = 0.1
 };

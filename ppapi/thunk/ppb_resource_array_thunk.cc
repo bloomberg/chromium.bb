@@ -2,7 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// From dev/ppb_resource_array_dev.idl modified Mon Nov 26 10:53:45 2012.
+
+#include "ppapi/c/dev/ppb_resource_array_dev.h"
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_instance_api.h"
 #include "ppapi/thunk/ppb_resource_array_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
@@ -23,30 +29,34 @@ PP_Resource Create(PP_Instance instance,
 
 PP_Bool IsResourceArray(PP_Resource resource) {
   EnterResource<PPB_ResourceArray_API> enter(resource, false);
-  return enter.succeeded() ? PP_TRUE : PP_FALSE;
+  return PP_FromBool(enter.succeeded());
 }
 
 uint32_t GetSize(PP_Resource resource_array) {
   EnterResource<PPB_ResourceArray_API> enter(resource_array, true);
-  return enter.succeeded() ? enter.object()->GetSize() : 0;
+  if (enter.failed())
+    return 0;
+  return enter.object()->GetSize();
 }
 
 PP_Resource GetAt(PP_Resource resource_array, uint32_t index) {
   EnterResource<PPB_ResourceArray_API> enter(resource_array, true);
-  return enter.succeeded() ? enter.object()->GetAt(index) : 0;
+  if (enter.failed())
+    return 0;
+  return enter.object()->GetAt(index);
 }
 
-const PPB_ResourceArray_Dev g_ppb_resource_array_thunk = {
+const PPB_ResourceArray_Dev_0_1 g_ppb_resourcearray_dev_thunk_0_1 = {
   &Create,
   &IsResourceArray,
   &GetSize,
-  &GetAt
+  &GetAt,
 };
 
 }  // namespace
 
 const PPB_ResourceArray_Dev_0_1* GetPPB_ResourceArray_Dev_0_1_Thunk() {
-  return &g_ppb_resource_array_thunk;
+  return &g_ppb_resourcearray_dev_thunk_0_1;
 }
 
 }  // namespace thunk
