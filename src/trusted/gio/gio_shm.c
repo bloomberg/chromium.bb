@@ -445,9 +445,9 @@ int NaClGioShmAllocCtor(struct NaClGioShm *self,
   }
 
   rv = NaClGioShmCtorIntern(self, (struct NaClDesc *) shmp, shm_size);
+  NaClDescUnref((struct NaClDesc *) shmp);
 
   if (!rv) {
-    NaClDescUnref((struct NaClDesc *) shmp);
     free(shmp);
   }
   return rv;
