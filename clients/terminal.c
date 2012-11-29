@@ -2578,13 +2578,15 @@ terminal_create(struct display *display)
 static void
 terminal_destroy(struct terminal *terminal)
 {
+	display_unwatch_fd(terminal->display, terminal->master);
 	window_destroy(terminal->window);
 	close(terminal->master);
 	wl_list_remove(&terminal->link);
-	free(terminal);
 
 	if (wl_list_empty(&terminal_list))
-		exit(0);
+		display_exit(terminal->display);
+
+	free(terminal);
 }
 
 static void

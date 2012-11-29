@@ -4347,6 +4347,12 @@ display_watch_fd(struct display *display,
 }
 
 void
+display_unwatch_fd(struct display *display, int fd)
+{
+	epoll_ctl(display->epoll_fd, EPOLL_CTL_DEL, fd, NULL);
+}
+
+void
 display_run(struct display *display)
 {
 	struct task *task;

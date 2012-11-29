@@ -147,6 +147,9 @@ display_watch_fd(struct display *display,
 		 int fd, uint32_t events, struct task *task);
 
 void
+display_unwatch_fd(struct display *display, int fd);
+
+void
 display_run(struct display *d);
 
 void
