@@ -73,6 +73,10 @@ bool PendingExtensionManager::IsIdPending(const std::string& id) const {
   return false;
 }
 
+bool PendingExtensionManager::HasPendingExtensions() const {
+  return !pending_extension_list_.empty();
+}
+
 bool PendingExtensionManager::HasPendingExtensionFromSync() const {
   PendingExtensionList::const_iterator iter;
   for (iter = pending_extension_list_.begin();

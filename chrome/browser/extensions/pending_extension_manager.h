@@ -56,6 +56,9 @@ class PendingExtensionManager {
   // Is |id| in the set of pending extensions?
   bool IsIdPending(const std::string& id) const;
 
+  // Returns true if there are any extensions pending.
+  bool HasPendingExtensions() const;
+
   // Whether there is pending extension install from sync.
   bool HasPendingExtensionFromSync() const;
 

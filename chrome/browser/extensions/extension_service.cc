@@ -178,6 +178,9 @@ static const int kMaxExtensionAcknowledgePromptCount = 3;
 // Wait this many seconds after an extensions becomes idle before updating it.
 static const int kUpdateIdleDelay = 5;
 
+// Wait this many seconds before trying to garbage collect extensions again.
+static const int kGarbageCollectRetryDelay = 30;
+
 const char* kNaClPluginMimeType = "application/x-nacl";
 
 static bool IsSyncableExtension(const Extension& extension) {
@@ -1988,6 +1991,17 @@ void ExtensionService::ReloadExtensions() {
 void ExtensionService::GarbageCollectExtensions() {
   if (extension_prefs_->pref_service()->ReadOnly())
     return;
+
+  if (pending_extension_manager()->HasPendingExtensions()) {
+    // Don't garbage collect while there are pending installations, which may
+    // be using the temporary installation directory. Try to garbage collect
+    // again later.
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ExtensionService::GarbageCollectExtensions, AsWeakPtr()),
+        base::TimeDelta::FromSeconds(kGarbageCollectRetryDelay));
+    return;
+  }
 
   scoped_ptr<extensions::ExtensionPrefs::ExtensionsInfo> info(
       extension_prefs_->GetInstalledExtensionsInfo());
