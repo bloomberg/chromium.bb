@@ -71,6 +71,15 @@ class PanelLayoutManagerTest : public ash::test::AshTestBase {
     *widget = manager->callout_widget();
   }
 
+  void PanelsNotOverlapping(aura::Window* panel1, aura::Window* panel2) {
+    // Waits until all launcher view animations are done.
+    launcher_view_test()->RunMessageLoopUntilAnimationsDone();
+    gfx::Rect window1_bounds = panel1->GetBoundsInRootWindow();
+    gfx::Rect window2_bounds = panel2->GetBoundsInRootWindow();
+
+    EXPECT_FALSE(window1_bounds.Intersects(window2_bounds));
+  }
+
   // TODO(dcheng): This should be const, but GetScreenBoundsOfItemIconForWindow
   // takes a non-const Window. We can probably fix that.
   void IsPanelAboveLauncherIcon(aura::Window* panel) {
@@ -83,25 +92,28 @@ class PanelLayoutManagerTest : public ash::test::AshTestBase {
 
     gfx::Rect window_bounds = panel->GetBoundsInRootWindow();
 
-    // 1-pixel tolerance--since we center panels over their icons, panels with
-    // odd pixel widths won't be perfectly lined up with even pixel width
-    // launcher icons.
-    EXPECT_NEAR(icon_bounds.CenterPoint().x(),
-                window_bounds.CenterPoint().x(),
-                1);
+    // The horizontal bounds of the panel window should contain the bounds of
+    // the launcher icon.
+    EXPECT_LE(window_bounds.x(), icon_bounds.x());
+    EXPECT_GE(window_bounds.right(), icon_bounds.right());
     EXPECT_EQ(launcher->widget()->GetWindowBoundsInScreen().y(),
               window_bounds.bottom());
   }
 
-  void IsCalloutAbovePanel(aura::Window* panel) {
+  void IsCalloutAboveLauncherIcon(aura::Window* panel) {
     // Flush the message loop, since callout updates use a delayed task.
     MessageLoop::current()->RunUntilIdle();
     views::Widget* widget = NULL;
     GetCalloutWidget(&widget);
+
+    Launcher* launcher = Launcher::ForPrimaryDisplay();
+    gfx::Rect icon_bounds = launcher->GetScreenBoundsOfItemIconForWindow(panel);
+    ASSERT_FALSE(icon_bounds.IsEmpty());
+
     EXPECT_TRUE(widget->IsVisible());
     EXPECT_EQ(panel->GetBoundsInRootWindow().bottom(),
               widget->GetWindowBoundsInScreen().y());
-    EXPECT_NEAR(panel->GetBoundsInRootWindow().CenterPoint().x(),
+    EXPECT_NEAR(icon_bounds.CenterPoint().x(),
                 widget->GetWindowBoundsInScreen().CenterPoint().x(),
                 1);
   }
@@ -184,15 +196,15 @@ TEST_F(PanelLayoutManagerTest, MultiplePanelCallout) {
   scoped_ptr<aura::Window> w4(CreateNormalWindow());
   EXPECT_FALSE(IsCalloutVisible());
   wm::ActivateWindow(w1.get());
-  EXPECT_NO_FATAL_FAILURE(IsCalloutAbovePanel(w1.get()));
+  EXPECT_NO_FATAL_FAILURE(IsCalloutAboveLauncherIcon(w1.get()));
   wm::ActivateWindow(w2.get());
-  EXPECT_NO_FATAL_FAILURE(IsCalloutAbovePanel(w2.get()));
+  EXPECT_NO_FATAL_FAILURE(IsCalloutAboveLauncherIcon(w2.get()));
   wm::ActivateWindow(w3.get());
-  EXPECT_NO_FATAL_FAILURE(IsCalloutAbovePanel(w3.get()));
+  EXPECT_NO_FATAL_FAILURE(IsCalloutAboveLauncherIcon(w3.get()));
   wm::ActivateWindow(w4.get());
   EXPECT_FALSE(IsCalloutVisible());
   wm::ActivateWindow(w3.get());
-  EXPECT_NO_FATAL_FAILURE(IsCalloutAbovePanel(w3.get()));
+  EXPECT_NO_FATAL_FAILURE(IsCalloutAboveLauncherIcon(w3.get()));
   w3.reset();
   EXPECT_FALSE(IsCalloutVisible());
 }
@@ -257,6 +269,32 @@ TEST_F(PanelLayoutManagerTest, RemoveNonActivePanel) {
   EXPECT_NO_FATAL_FAILURE(IsPanelAboveLauncherIcon(w2.get()));
   EXPECT_NO_FATAL_FAILURE(IsPanelAboveLauncherIcon(w3.get()));
   EXPECT_TRUE(WindowIsAbove(w2.get(), w3.get()));
+}
+
+TEST_F(PanelLayoutManagerTest, SplitView) {
+  gfx::Rect bounds(0, 0, 90, 201);
+  scoped_ptr<aura::Window> w1(CreatePanelWindow(bounds));
+  scoped_ptr<aura::Window> w2(CreatePanelWindow(bounds));
+
+  EXPECT_NO_FATAL_FAILURE(PanelsNotOverlapping(w1.get(), w2.get()));
+}
+
+TEST_F(PanelLayoutManagerTest, FanWindows) {
+  gfx::Rect bounds(0, 0, 201, 201);
+  scoped_ptr<aura::Window> w1(CreatePanelWindow(bounds));
+  scoped_ptr<aura::Window> w2(CreatePanelWindow(bounds));
+  scoped_ptr<aura::Window> w3(CreatePanelWindow(bounds));
+
+  launcher_view_test()->RunMessageLoopUntilAnimationsDone();
+  int window_x1 = w1->GetBoundsInRootWindow().x();
+  int window_x2 = w2->GetBoundsInRootWindow().x();
+  int window_x3 = w3->GetBoundsInRootWindow().x();
+  Launcher* launcher = Launcher::ForPrimaryDisplay();
+  int icon_x1 = launcher->GetScreenBoundsOfItemIconForWindow(w1.get()).x();
+  int icon_x2 = launcher->GetScreenBoundsOfItemIconForWindow(w2.get()).x();
+  EXPECT_EQ(window_x2 - window_x1, window_x3 - window_x2);
+  int spacing = window_x2 - window_x1;
+  EXPECT_GT(spacing, icon_x2 - icon_x1);
 }
 
 }  // namespace internal
