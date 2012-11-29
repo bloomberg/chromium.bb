@@ -404,39 +404,45 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
   gfx::Point location(5, 5);
   target->SetProperty(aura::client::kCanMaximizeKey, true);
 
-  // Snap right;
   gfx::Point end = location;
-  end.Offset(100, 0);
-  generator.GestureScrollSequence(location, end,
-      base::TimeDelta::FromMilliseconds(5),
-      10);
-  RunAllPendingInMessageLoop();
 
-  // Verify that the window has moved after the gesture.
-  EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
+  // Snap right;
   {
+    // Get the expected snapped bounds before snapping.
     internal::SnapSizer sizer(target.get(), location,
         internal::SnapSizer::RIGHT_EDGE,
         internal::SnapSizer::OTHER_INPUT);
-    EXPECT_EQ(sizer.target_bounds().ToString(), target->bounds().ToString());
+    gfx::Rect snapped_bounds = sizer.GetSnapBounds(target->bounds());
+
+    end.Offset(100, 0);
+    generator.GestureScrollSequence(location, end,
+        base::TimeDelta::FromMilliseconds(5),
+        10);
+    RunAllPendingInMessageLoop();
+
+    // Verify that the window has moved after the gesture.
+    EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
+    EXPECT_EQ(snapped_bounds.ToString(), target->bounds().ToString());
   }
 
   old_bounds = target->bounds();
 
   // Snap left.
-  end = location = target->GetBoundsInRootWindow().CenterPoint();
-  end.Offset(-100, 0);
-  generator.GestureScrollSequence(location, end,
-      base::TimeDelta::FromMilliseconds(5),
-      10);
-  RunAllPendingInMessageLoop();
-
-  EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
   {
+    // Get the expected snapped bounds before snapping.
     internal::SnapSizer sizer(target.get(), location,
         internal::SnapSizer::LEFT_EDGE,
         internal::SnapSizer::OTHER_INPUT);
-    EXPECT_EQ(sizer.target_bounds().ToString(), target->bounds().ToString());
+    gfx::Rect snapped_bounds = sizer.GetSnapBounds(target->bounds());
+    end = location = target->GetBoundsInRootWindow().CenterPoint();
+    end.Offset(-100, 0);
+    generator.GestureScrollSequence(location, end,
+        base::TimeDelta::FromMilliseconds(5),
+        10);
+    RunAllPendingInMessageLoop();
+
+    EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
+    EXPECT_EQ(snapped_bounds.ToString(), target->bounds().ToString());
   }
 
   old_bounds = target->bounds();

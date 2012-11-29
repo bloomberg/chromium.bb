@@ -133,17 +133,13 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
       } else if (event.details().swipe_down()) {
         wm::MinimizeWindow(target);
       } else {
-        internal::SnapSizer sizer(target,
-            gfx::Point(),
-            event.details().swipe_left() ? internal::SnapSizer::LEFT_EDGE :
-                                           internal::SnapSizer::RIGHT_EDGE,
-            internal::SnapSizer::OTHER_INPUT);
-
         ui::ScopedLayerAnimationSettings scoped_setter(
             target->layer()->GetAnimator());
         scoped_setter.SetPreemptionStrategy(
             ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-        target->SetBounds(sizer.target_bounds());
+        internal::SnapSizer::SnapWindow(target,
+            event.details().swipe_left() ? internal::SnapSizer::LEFT_EDGE :
+                                           internal::SnapSizer::RIGHT_EDGE);
       }
       return true;
     }

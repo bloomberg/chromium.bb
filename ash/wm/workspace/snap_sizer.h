@@ -43,6 +43,9 @@ class ASH_EXPORT SnapSizer {
             InputType input_type);
   virtual ~SnapSizer();
 
+  // Snaps a window left or right.
+  static void SnapWindow(aura::Window* window, Edge edge);
+
   // Updates the target bounds based on a mouse move.
   void Update(const gfx::Point& location);
 

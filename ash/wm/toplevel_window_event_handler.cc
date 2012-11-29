@@ -214,17 +214,13 @@ ui::EventResult ToplevelWindowEventHandler::OnGestureEvent(
       } else if (fabs(event->details().velocity_x()) >
                  kMinHorizVelocityForWindowSwipe) {
         // Snap left/right.
-        internal::SnapSizer sizer(target,
-            gfx::Point(),
-            event->details().velocity_x() < 0 ? internal::SnapSizer::LEFT_EDGE :
-            internal::SnapSizer::RIGHT_EDGE,
-            internal::SnapSizer::OTHER_INPUT);
-
         ui::ScopedLayerAnimationSettings scoped_setter(
             target->layer()->GetAnimator());
         scoped_setter.SetPreemptionStrategy(
             ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-        target->SetBounds(sizer.target_bounds());
+        internal::SnapSizer::SnapWindow(target,
+            event->details().velocity_x() < 0 ?
+            internal::SnapSizer::LEFT_EDGE : internal::SnapSizer::RIGHT_EDGE);
       }
       break;
     }

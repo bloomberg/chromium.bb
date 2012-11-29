@@ -83,21 +83,12 @@ SystemGestureStatus SystemPinchHandler::ProcessGestureEvent(
       phantom_state_ = PHANTOM_WINDOW_NORMAL;
 
       if (event.details().swipe_left() || event.details().swipe_right()) {
-        // Snap for left/right swipes. In case the window is
-        // maximized/fullscreen, then restore the window first so that tiling
-        // works correctly.
-        if (wm::IsWindowMaximized(target_) ||
-            wm::IsWindowFullscreen(target_))
-          wm::RestoreWindow(target_);
-
+        // Snap for left/right swipes.
         ui::ScopedLayerAnimationSettings settings(
             target_->layer()->GetAnimator());
-        SnapSizer sizer(target_,
-            gfx::Point(),
+        internal::SnapSizer::SnapWindow(target_,
             event.details().swipe_left() ? internal::SnapSizer::LEFT_EDGE :
-                                           internal::SnapSizer::RIGHT_EDGE,
-            internal::SnapSizer::OTHER_INPUT);
-        target_->SetBounds(sizer.GetSnapBounds(target_->bounds()));
+                                           internal::SnapSizer::RIGHT_EDGE);
       } else if (event.details().swipe_up()) {
         if (!wm::IsWindowMaximized(target_) &&
             !wm::IsWindowFullscreen(target_))

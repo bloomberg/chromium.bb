@@ -86,7 +86,8 @@ bool CanResizeWindow(const aura::Window* window) {
 
 bool CanSnapWindow(aura::Window* window) {
   // If a window has a maximum size defined, snapping may make it too big.
-  return window->delegate()->GetMaximumSize().IsEmpty();
+  return window->delegate() ? window->delegate()->GetMaximumSize().IsEmpty() :
+                              true;
 }
 
 bool IsWindowNormal(const aura::Window* window) {

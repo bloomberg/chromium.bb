@@ -7,7 +7,9 @@
 #include <cmath>
 
 #include "ash/screen_ash.h"
+#include "ash/wm/property_util.h"
 #include "ash/wm/window_resizer.h"
+#include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/screen.h"
 
@@ -84,6 +86,27 @@ SnapSizer::SnapSizer(aura::Window* window,
 }
 
 SnapSizer::~SnapSizer() {
+}
+
+void SnapSizer::SnapWindow(aura::Window* window, SnapSizer::Edge edge) {
+  if (!wm::CanSnapWindow(window))
+    return;
+  internal::SnapSizer sizer(window, gfx::Point(), edge,
+      internal::SnapSizer::OTHER_INPUT);
+  if (wm::IsWindowFullscreen(window) || wm::IsWindowMaximized(window)) {
+    // Before we can set the bounds we need to restore the window.
+    // Restoring the window will set the window to its restored bounds.
+    // To avoid an unnecessary bounds changes (which may have side effects)
+    // we set the restore bounds to the bounds we want, restore the window,
+    // then reset the restore bounds. This way no unnecessary bounds
+    // changes occurs and the original restore bounds is remembered.
+    gfx::Rect restore = *GetRestoreBoundsInScreen(window);
+    SetRestoreBoundsInParent(window, sizer.GetSnapBounds(window->bounds()));
+    wm::RestoreWindow(window);
+    SetRestoreBoundsInScreen(window, restore);
+  } else {
+    window->SetBounds(sizer.GetSnapBounds(window->bounds()));
+  }
 }
 
 void SnapSizer::Update(const gfx::Point& location) {

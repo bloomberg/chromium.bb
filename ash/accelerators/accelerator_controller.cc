@@ -710,26 +710,9 @@ bool AcceleratorController::PerformAction(int action,
         break;
       }
 
-      internal::SnapSizer sizer(window,
-          gfx::Point(),
+      internal::SnapSizer::SnapWindow(window,
           action == WINDOW_SNAP_LEFT ? internal::SnapSizer::LEFT_EDGE :
-                                       internal::SnapSizer::RIGHT_EDGE,
-          internal::SnapSizer::OTHER_INPUT);
-      if (wm::IsWindowFullscreen(window) ||
-          wm::IsWindowMaximized(window)) {
-        // Before we can set the bounds we need to restore the window.
-        // Restoring the window will set the window to its restored bounds.
-        // To avoid an unnecessary bounds changes (which may have side effects)
-        // we set the restore bounds to the bounds we want, restore the window,
-        // then reset the restore bounds. This way no unnecessary bounds
-        // changes occurs and the original restore bounds is remembered.
-        gfx::Rect restore = *GetRestoreBoundsInScreen(window);
-        SetRestoreBoundsInParent(window, sizer.GetSnapBounds(window->bounds()));
-        wm::RestoreWindow(window);
-        SetRestoreBoundsInScreen(window, restore);
-      } else {
-        window->SetBounds(sizer.GetSnapBounds(window->bounds()));
-      }
+                                       internal::SnapSizer::RIGHT_EDGE);
       return true;
     }
     case WINDOW_MINIMIZE: {
