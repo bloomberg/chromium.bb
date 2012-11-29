@@ -121,7 +121,8 @@ AwContents::AwContents(JNIEnv* env,
       web_contents_delegate_(
           new AwWebContentsDelegate(env, web_contents_delegate)),
       view_visible_(false),
-      compositor_visible_(false) {
+      compositor_visible_(false),
+      is_composite_pending_(false) {
   android_webview::AwBrowserDependencyFactory* dependency_factory =
       android_webview::AwBrowserDependencyFactory::GetInstance();
 
@@ -159,8 +160,14 @@ void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
     compositor_visible_ = view_visible_;
     compositor_->SetVisible(compositor_visible_);
   }
-  if (compositor_visible_ && draw_info->mode == AwDrawGLInfo::kModeDraw)
-    compositor_->Composite();
+
+  if (!compositor_visible_ || draw_info->mode == AwDrawGLInfo::kModeProcess)
+    return;
+
+  DCHECK_EQ(draw_info->mode, AwDrawGLInfo::kModeDraw);
+
+  compositor_->Composite();
+  is_composite_pending_ = false;
 }
 
 jint AwContents::GetWebContents(JNIEnv* env, jobject obj) {
@@ -172,6 +179,7 @@ void AwContents::DidInitializeContentViewCore(JNIEnv* env, jobject obj,
   ContentViewCore* core = reinterpret_cast<ContentViewCore*>(content_view_core);
   DCHECK(core == ContentViewCore::FromWebContents(web_contents_.get()));
   compositor_->SetRootLayer(core->GetWebLayer());
+  Invalidate();
 }
 
 void AwContents::Destroy(JNIEnv* env, jobject obj) {
@@ -370,6 +378,21 @@ void AwContents::OnFindResultReceived(int active_ordinal,
 
 void AwContents::ScheduleComposite() {
   // TODO(joth): Call back out to framework attachFunctor (Java side) from here.
+  Invalidate();
+}
+
+void AwContents::Invalidate() {
+  if (is_composite_pending_)
+    return;
+
+  is_composite_pending_ = true;
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_AwContents_invalidate(env, obj.obj());
 }
 
 void AwContents::OnSwapBuffersCompleted() {
@@ -443,7 +466,7 @@ void AwContents::SetWindowViewVisibility(JNIEnv* env, jobject obj,
                                          bool window_visible,
                                          bool view_visible) {
   view_visible_ = window_visible && view_visible;
-  // TODO(joth): Request a DrawGL (kModeProcess) call, to tell the compositor.
+  Invalidate();
 }
 
 void AwContents::OnAttachedToWindow(JNIEnv* env, jobject obj, int w, int h) {

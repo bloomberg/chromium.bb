@@ -702,6 +702,11 @@ public class AwContents {
         mPossiblyStaleHitTestData.imgSrc = imgSrc;
     }
 
+    @CalledByNative
+    private void invalidate() {
+        mContainerView.invalidate();
+    }
+
     // -------------------------------------------------------------------------------------------
     // Helper methods
     // -------------------------------------------------------------------------------------------

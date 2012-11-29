@@ -108,6 +108,8 @@ class AwContents : public FindHelper::Listener,
   virtual void OnSwapBuffersCompleted() OVERRIDE;
 
  private:
+  void Invalidate();
+
   JavaObjectWeakGlobalRef java_ref_;
   scoped_ptr<content::WebContents> web_contents_;
   scoped_ptr<AwWebContentsDelegate> web_contents_delegate_;
@@ -117,6 +119,7 @@ class AwContents : public FindHelper::Listener,
   // State to track if the view is visible, and if the compositor knows yet.
   bool view_visible_;
   bool compositor_visible_;
+  bool is_composite_pending_;
 
   DISALLOW_COPY_AND_ASSIGN(AwContents);
 };
