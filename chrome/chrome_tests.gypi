@@ -652,7 +652,9 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations'
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
+        '../net/net.gyp:net',
       ],
       'include_dirs': [
         '..',
@@ -675,6 +677,12 @@
         'test/chromedriver/command_executor_impl.h',
         'test/chromedriver/commands.cc',
         'test/chromedriver/commands.h',
+        'test/chromedriver/net/sync_websocket.cc',
+        'test/chromedriver/net/sync_websocket.h',
+        'test/chromedriver/net/url_request_context_getter.cc',
+        'test/chromedriver/net/url_request_context_getter.h',
+        'test/chromedriver/net/websocket.cc',
+        'test/chromedriver/net/websocket.h',
         'test/chromedriver/session.cc',
         'test/chromedriver/session.h',
         'test/chromedriver/session_command.cc',
@@ -708,6 +716,28 @@
         'test/chromedriver/session_unittest.cc',
         'test/chromedriver/status_unittest.cc',
         'test/chromedriver/synchronized_map_unittest.cc',
+      ],
+    },
+    # ChromeDriver2 tests that aren't run on the main buildbots.
+    {
+      'target_name': 'chromedriver2_tests',
+      'type': 'executable',
+      'dependencies': [
+        'chromedriver2_lib',
+        '../base/base.gyp:base',
+        '../base/base.gyp:run_all_unittests',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
+        '../net/net.gyp:http_server',
+        '../net/net.gyp:net',
+        '../net/net.gyp:net_test_support',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'include_dirs': [
+        '..,'
+      ],
+      'sources': [
+        'test/chromedriver/net/sync_websocket_unittest.cc',
+        'test/chromedriver/net/websocket_unittest.cc',
       ],
     },
     # This is the new ChromeDriver based on DevTools.
