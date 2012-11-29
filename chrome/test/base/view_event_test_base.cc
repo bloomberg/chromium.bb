@@ -11,6 +11,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/ime/text_input_test_support.h"
+#include "ui/compositor/test/compositor_test_support.h"
 #include "ui/ui_controls/ui_controls.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -85,6 +86,7 @@ void ViewEventTestBase::Done() {
 
 void ViewEventTestBase::SetUp() {
   ui::TextInputTestSupport::Initialize();
+  ui::CompositorTestSupport::Initialize();
 #if defined(USE_ASH)
   ash::Shell::CreateInstance(new ash::test::TestShellDelegate());
 #endif
@@ -107,6 +109,7 @@ void ViewEventTestBase::TearDown() {
 #if defined(USE_AURA)
   aura::Env::DeleteInstance();
 #endif
+  ui::CompositorTestSupport::Terminate();
   ui::TextInputTestSupport::Shutdown();
 }
 
