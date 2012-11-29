@@ -659,6 +659,13 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAshDisableAutoWindowPlacement)
   },
+  {
+    "ash-enable-per-app-launcher",
+    IDS_FLAGS_ASH_ENABLE_PER_APP_LAUNCHER_NAME,
+    IDS_FLAGS_ASH_ENABLE_PER_APP_LAUNCHER_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(ash::switches::kAshEnablePerAppLauncher)
+  },
 #endif
   {
     "per-tile-painting",

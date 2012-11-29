@@ -393,7 +393,7 @@ ash::LauncherDelegate* ChromeShellDelegate::CreateLauncherDelegate(
   // Refactor so that there is just one launcher delegate in the
   // shell.
   if (!launcher_delegate_) {
-    launcher_delegate_ = new ChromeLauncherController(NULL, model);
+    launcher_delegate_ = ChromeLauncherController::CreateInstance(NULL, model);
     launcher_delegate_->Init();
   }
   return launcher_delegate_;

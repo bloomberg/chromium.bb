@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_app.h"
 
 #include <algorithm>
 #include <string>
@@ -32,9 +32,9 @@ namespace {
 const int kExpectedAppIndex = 1;
 }
 
-class ChromeLauncherControllerTest : public testing::Test {
+class ChromeLauncherControllerPerAppTest : public testing::Test {
  protected:
-  ChromeLauncherControllerTest()
+  ChromeLauncherControllerPerAppTest()
       : ui_thread_(content::BrowserThread::UI, &loop_),
         file_thread_(content::BrowserThread::FILE, &loop_),
         profile_(new TestingProfile()),
@@ -86,13 +86,13 @@ class ChromeLauncherControllerTest : public testing::Test {
   }
 
   // Gets the currently configured app launchers from the controller.
-  void GetAppLaunchers(ChromeLauncherController* controller,
+  void GetAppLaunchers(ChromeLauncherControllerPerApp* controller,
                        std::vector<std::string>* launchers) {
     launchers->clear();
     for (ash::LauncherItems::const_iterator iter(model_.items().begin());
          iter != model_.items().end(); ++iter) {
-      ChromeLauncherController::IDToItemControllerMap::const_iterator entry(
-          controller->id_to_item_controller_map_.find(iter->id));
+      ChromeLauncherControllerPerApp::IDToItemControllerMap::const_iterator
+          entry(controller->id_to_item_controller_map_.find(iter->id));
       if (iter->type == ash::TYPE_APP_SHORTCUT &&
           entry != controller->id_to_item_controller_map_.end()) {
         launchers->push_back(entry->second->app_id());
@@ -114,11 +114,11 @@ class ChromeLauncherControllerTest : public testing::Test {
 
   ExtensionService* extension_service_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerPerAppTest);
 };
 
-TEST_F(ChromeLauncherControllerTest, DefaultApps) {
-  ChromeLauncherController launcher_controller(profile_.get(), &model_);
+TEST_F(ChromeLauncherControllerPerAppTest, DefaultApps) {
+  ChromeLauncherControllerPerApp launcher_controller(profile_.get(), &model_);
   launcher_controller.Init();
 
   // Model should only contain the browser shortcut and app list items.
@@ -136,7 +136,7 @@ TEST_F(ChromeLauncherControllerTest, DefaultApps) {
   EXPECT_TRUE(launcher_controller.IsAppPinned(extension3_->id()));
 }
 
-TEST_F(ChromeLauncherControllerTest, Policy) {
+TEST_F(ChromeLauncherControllerPerAppTest, Policy) {
   extension_service_->AddExtension(extension1_.get());
   extension_service_->AddExtension(extension3_.get());
 
@@ -149,7 +149,7 @@ TEST_F(ChromeLauncherControllerTest, Policy) {
   // Only |extension1_| should get pinned. |extension2_| is specified but not
   // installed, and |extension3_| is part of the default set, but that shouldn't
   // take effect when the policy override is in place.
-  ChromeLauncherController launcher_controller(profile_.get(), &model_);
+  ChromeLauncherControllerPerApp launcher_controller(profile_.get(), &model_);
   launcher_controller.Init();
   EXPECT_EQ(3, model_.item_count());
   EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_.items()[kExpectedAppIndex].type);
@@ -177,11 +177,11 @@ TEST_F(ChromeLauncherControllerTest, Policy) {
   EXPECT_FALSE(launcher_controller.IsAppPinned(extension3_->id()));
 }
 
-TEST_F(ChromeLauncherControllerTest, UnpinWithUninstall) {
+TEST_F(ChromeLauncherControllerPerAppTest, UnpinWithUninstall) {
   extension_service_->AddExtension(extension3_.get());
   extension_service_->AddExtension(extension4_.get());
 
-  ChromeLauncherController launcher_controller(profile_.get(), &model_);
+  ChromeLauncherControllerPerApp launcher_controller(profile_.get(), &model_);
   launcher_controller.Init();
 
   EXPECT_TRUE(launcher_controller.IsAppPinned(extension3_->id()));
@@ -194,11 +194,11 @@ TEST_F(ChromeLauncherControllerTest, UnpinWithUninstall) {
   EXPECT_TRUE(launcher_controller.IsAppPinned(extension4_->id()));
 }
 
-TEST_F(ChromeLauncherControllerTest, PrefUpdates) {
+TEST_F(ChromeLauncherControllerPerAppTest, PrefUpdates) {
   extension_service_->AddExtension(extension2_.get());
   extension_service_->AddExtension(extension3_.get());
   extension_service_->AddExtension(extension4_.get());
-  ChromeLauncherController controller(profile_.get(), &model_);
+  ChromeLauncherControllerPerApp controller(profile_.get(), &model_);
 
   std::vector<std::string> expected_launchers;
   std::vector<std::string> actual_launchers;
@@ -249,10 +249,10 @@ TEST_F(ChromeLauncherControllerTest, PrefUpdates) {
   EXPECT_EQ(expected_launchers, actual_launchers);
 }
 
-TEST_F(ChromeLauncherControllerTest, PendingInsertionOrder) {
+TEST_F(ChromeLauncherControllerPerAppTest, PendingInsertionOrder) {
   extension_service_->AddExtension(extension1_.get());
   extension_service_->AddExtension(extension3_.get());
-  ChromeLauncherController controller(profile_.get(), &model_);
+  ChromeLauncherControllerPerApp controller(profile_.get(), &model_);
 
   base::ListValue pref_value;
   InsertPrefValue(&pref_value, 0, extension1_->id());

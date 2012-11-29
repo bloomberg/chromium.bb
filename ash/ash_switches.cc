@@ -51,6 +51,9 @@ const char kAshEnableAdvancedGestures[] = "ash-enable-advanced-gestures";
 const char kAshEnableMemoryMonitor[] = "ash-enable-memory-monitor";
 #endif
 
+// Enable the per application grouping version of the launcher.
+const char kAshEnablePerAppLauncher[] = "ash-enable-per-app-launcher";
+
 // Enables the Oak tree viewer.
 const char kAshEnableOak[] = "ash-enable-oak";
 

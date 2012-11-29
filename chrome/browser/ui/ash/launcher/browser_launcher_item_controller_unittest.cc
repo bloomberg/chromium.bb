@@ -115,7 +115,8 @@ class BrowserLauncherItemControllerTest
         new aura::test::TestActivationClient(root_window()));
     launcher_model_.reset(new ash::LauncherModel);
     launcher_delegate_.reset(
-        new ChromeLauncherController(profile(), launcher_model_.get()));
+        ChromeLauncherController::CreateInstance(profile(),
+                                                 launcher_model_.get()));
     app_tab_helper_ = new AppTabHelperImpl;
     app_icon_loader_ = new AppIconLoaderImpl;
     launcher_delegate_->SetAppTabHelperForTest(app_tab_helper_);
@@ -179,7 +180,7 @@ class BrowserLauncherItemControllerTest
   };
 
   const std::string& GetAppID(ash::LauncherID id) const {
-    return launcher_delegate_->id_to_item_controller_map_[id]->app_id();
+    return launcher_delegate_->GetAppIdFromLauncherIdForTest(id);
   }
 
   void ResetAppTabHelper() {
@@ -319,7 +320,8 @@ TEST_F(BrowserLauncherItemControllerTest, PersistPinned) {
   EXPECT_EQ(initial_size + 1, launcher_model_->items().size());
 
   launcher_delegate_.reset(
-      new ChromeLauncherController(profile(), launcher_model_.get()));
+      ChromeLauncherController::CreateInstance(profile(),
+                                               launcher_model_.get()));
   app_tab_helper_ = new AppTabHelperImpl;
   app_tab_helper_->SetAppID(tab1.get(), "1");
   ResetAppTabHelper();
