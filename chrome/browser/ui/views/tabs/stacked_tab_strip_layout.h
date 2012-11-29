@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_TABS_TOUCH_TAB_STRIP_LAYOUT_H_
-#define CHROME_BROWSER_UI_VIEWS_TABS_TOUCH_TAB_STRIP_LAYOUT_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TABS_STACKED_TAB_STRIP_LAYOUT_H_
+#define CHROME_BROWSER_UI_VIEWS_TABS_STACKED_TAB_STRIP_LAYOUT_H_
 
 #include "base/basictypes.h"
 #include "ui/gfx/size.h"
@@ -13,14 +13,14 @@ namespace views {
 class ViewModel;
 }
 
-// TouchTabStripLayout is used by TabStrip in touch mode. TouchTabStripLayout is
-// responsible for managing the bounds of the tabs. TouchTabStripLayout differs
-// from the normal layout in that it stacks tabs. Stacked tabs are tabs placed
-// nearly on top of each other, and if enough consecutive stacked tabs exist
-// they are placed on top of each other. Normally stacked tabs are placed after
-// mini-tabs, or at the end of the tabstrip, but during dragging tabs may be
-// stacked before or after the active tab.
-class TouchTabStripLayout {
+// StackedTabStripLayout is used by TabStrip in touch
+// mode. StackedTabStripLayout is responsible for managing the bounds of the
+// tabs. StackedTabStripLayout differs from the normal layout in that it stacks
+// tabs. Stacked tabs are tabs placed nearly on top of each other, and if enough
+// consecutive stacked tabs exist they are placed on top of each other. Normally
+// stacked tabs are placed after mini-tabs, or at the end of the tabstrip, but
+// during dragging tabs may be stacked before or after the active tab.
+class StackedTabStripLayout {
  public:
   static const int kAddTypeMini   = 1 << 0;
   static const int kAddTypeActive = 1 << 1;
@@ -30,12 +30,12 @@ class TouchTabStripLayout {
   // |max_stacked_count| the maximum number of consecutive tabs that can be
   // stacked before they are placed on top of each other, |view_model| is the
   // ViewModel the bounds of the tabs are placed in.
-  TouchTabStripLayout(const gfx::Size& size,
-                      int padding,
-                      int stacked_padding,
-                      int max_stacked_count,
-                      views::ViewModel* view_model);
-  ~TouchTabStripLayout();
+  StackedTabStripLayout(const gfx::Size& size,
+                        int padding,
+                        int stacked_padding,
+                        int max_stacked_count,
+                        views::ViewModel* view_model);
+  ~StackedTabStripLayout();
 
   // Sets the x-coordinate the normal tabs start at as well as the mini-tab
   // count. This is only useful if the mini-tab count or x-coordinate change.
@@ -75,7 +75,7 @@ class TouchTabStripLayout {
 
   // Returns the active index as used by this class. The active index dictates
   // stacking and what tabs are visible. As mini-tabs are never stacked,
-  // TouchTabStripLayout forces the active index to be in the normal tabs.
+  // StackedTabStripLayout forces the active index to be in the normal tabs.
   int active_index() const {
     return active_index_ < mini_tab_count_ ? mini_tab_count_ : active_index_;
   }
@@ -93,7 +93,7 @@ class TouchTabStripLayout {
 #endif
 
  private:
-  friend class TouchTabStripLayoutTest;
+  friend class StackedTabStripLayoutTest;
 
   // Sets the x-coordinate normal tabs start at, width mini-tab count and
   // active index at once.
@@ -236,7 +236,7 @@ class TouchTabStripLayout {
   // mini-tabs, or the x-coordinate of the first mini-tab.
   int first_tab_x_;
 
-  DISALLOW_COPY_AND_ASSIGN(TouchTabStripLayout);
+  DISALLOW_COPY_AND_ASSIGN(StackedTabStripLayout);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_TABS_TOUCH_TAB_STRIP_LAYOUT_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_TABS_STACKED_TAB_STRIP_LAYOUT_H_

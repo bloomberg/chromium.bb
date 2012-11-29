@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/tabs/touch_tab_strip_layout.h"
+#include "chrome/browser/ui/views/tabs/stacked_tab_strip_layout.h"
 
 #include <stdio.h>
 
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 
-TouchTabStripLayout::TouchTabStripLayout(const gfx::Size& size,
-                                         int padding,
-                                         int stacked_padding,
-                                         int max_stacked_count,
-                                         views::ViewModel* view_model)
+StackedTabStripLayout::StackedTabStripLayout(const gfx::Size& size,
+                                             int padding,
+                                             int stacked_padding,
+                                             int max_stacked_count,
+                                             views::ViewModel* view_model)
     : size_(size),
       padding_(padding),
       stacked_padding_(stacked_padding),
@@ -27,10 +27,10 @@ TouchTabStripLayout::TouchTabStripLayout(const gfx::Size& size,
       first_tab_x_(0) {
 }
 
-TouchTabStripLayout::~TouchTabStripLayout() {
+StackedTabStripLayout::~StackedTabStripLayout() {
 }
 
-void TouchTabStripLayout::SetXAndMiniCount(int x, int mini_tab_count) {
+void StackedTabStripLayout::SetXAndMiniCount(int x, int mini_tab_count) {
   first_tab_x_ = x;
   x_ = x;
   mini_tab_count_ = mini_tab_count;
@@ -48,7 +48,7 @@ void TouchTabStripLayout::SetXAndMiniCount(int x, int mini_tab_count) {
   LayoutByTabOffsetBefore(active_index());
 }
 
-void TouchTabStripLayout::SetWidth(int width) {
+void StackedTabStripLayout::SetWidth(int width) {
   if (width_ == width)
     return;
 
@@ -60,7 +60,7 @@ void TouchTabStripLayout::SetWidth(int width) {
   SetActiveBoundsAndLayoutFromActiveTab();
 }
 
-void TouchTabStripLayout::SetActiveIndex(int index) {
+void StackedTabStripLayout::SetActiveIndex(int index) {
   int old = active_index();
   active_index_ = index;
   if (old == active_index() || !requires_stacking())
@@ -71,7 +71,7 @@ void TouchTabStripLayout::SetActiveIndex(int index) {
   AdjustStackedTabs();
 }
 
-void TouchTabStripLayout::DragActiveTab(int delta) {
+void StackedTabStripLayout::DragActiveTab(int delta) {
   if (delta == 0 || !requires_stacking())
     return;
   int initial_x = ideal_x(active_index());
@@ -105,7 +105,7 @@ void TouchTabStripLayout::DragActiveTab(int delta) {
   AdjustStackedTabs();
 }
 
-void TouchTabStripLayout::SizeToFit() {
+void StackedTabStripLayout::SizeToFit() {
   if (!tab_count())
     return;
 
@@ -147,9 +147,7 @@ void TouchTabStripLayout::SizeToFit() {
   AdjustStackedTabs();
 }
 
-void TouchTabStripLayout::AddTab(int index,
-                                 int add_types,
-                                 int start_x) {
+void StackedTabStripLayout::AddTab(int index, int add_types, int start_x) {
   if (add_types & kAddTypeActive)
     active_index_ = index;
   else if (active_index_ >= index)
@@ -172,7 +170,7 @@ void TouchTabStripLayout::AddTab(int index,
     MakeVisible(index);
 }
 
-void TouchTabStripLayout::RemoveTab(int index, int start_x, int old_x) {
+void StackedTabStripLayout::RemoveTab(int index, int start_x, int old_x) {
   if (index == active_index_)
     active_index_ = std::min(active_index_, tab_count() - 1);
   else if (index < active_index_)
@@ -196,11 +194,11 @@ void TouchTabStripLayout::RemoveTab(int index, int start_x, int old_x) {
   AdjustStackedTabs();
 }
 
-void TouchTabStripLayout::MoveTab(int from,
-                                  int to,
-                                  int new_active_index,
-                                  int start_x,
-                                  int mini_tab_count) {
+void StackedTabStripLayout::MoveTab(int from,
+                                    int to,
+                                    int new_active_index,
+                                    int start_x,
+                                    int mini_tab_count) {
   x_ = start_x;
   mini_tab_count_ = mini_tab_count;
   active_index_ = new_active_index;
@@ -218,7 +216,7 @@ void TouchTabStripLayout::MoveTab(int from,
   first_tab_x_ = mini_tab_count > 0 ? ideal_x(0) : start_x;
 }
 
-bool TouchTabStripLayout::IsStacked(int index) const {
+bool StackedTabStripLayout::IsStacked(int index) const {
   if (index == active_index() || tab_count() == mini_tab_count_ ||
       index < mini_tab_count_)
     return false;
@@ -227,7 +225,7 @@ bool TouchTabStripLayout::IsStacked(int index) const {
   return ideal_x(index + 1) != ideal_x(index) + tab_offset();
 }
 
-void TouchTabStripLayout::SetActiveTabLocation(int x) {
+void StackedTabStripLayout::SetActiveTabLocation(int x) {
   if (!requires_stacking())
     return;
 
@@ -245,7 +243,7 @@ void TouchTabStripLayout::SetActiveTabLocation(int x) {
 }
 
 #if !defined(NDEBUG)
-std::string TouchTabStripLayout::BoundsString() const {
+std::string StackedTabStripLayout::BoundsString() const {
   std::string result;
   for (int i = 0; i < view_model_->view_size(); ++i) {
     if (!result.empty())
@@ -260,10 +258,10 @@ std::string TouchTabStripLayout::BoundsString() const {
 }
 #endif
 
-void TouchTabStripLayout::Reset(int x,
-                                int width,
-                                int mini_tab_count,
-                                int active_index) {
+void StackedTabStripLayout::Reset(int x,
+                                  int width,
+                                  int mini_tab_count,
+                                  int active_index) {
   x_ = x;
   width_ = width;
   mini_tab_count_ = mini_tab_count;
@@ -274,7 +272,7 @@ void TouchTabStripLayout::Reset(int x,
   ResetToIdealState();
 }
 
-void TouchTabStripLayout::ResetToIdealState() {
+void StackedTabStripLayout::ResetToIdealState() {
   if (tab_count() == mini_tab_count_)
     return;
 
@@ -315,7 +313,7 @@ void TouchTabStripLayout::ResetToIdealState() {
   AdjustStackedTabs();
 }
 
-void TouchTabStripLayout::MakeVisible(int index) {
+void StackedTabStripLayout::MakeVisible(int index) {
   // Currently no need to support tabs openning before |index| visible.
   if (index <= active_index() || !requires_stacking() || !IsStacked(index))
     return;
@@ -348,12 +346,12 @@ void TouchTabStripLayout::MakeVisible(int index) {
   AdjustStackedTabs();
 }
 
-int TouchTabStripLayout::ConstrainActiveX(int x) const {
+int StackedTabStripLayout::ConstrainActiveX(int x) const {
   return std::min(GetMaxX(active_index()),
                   std::max(GetMinX(active_index()), x));
 }
 
-void TouchTabStripLayout::SetActiveBoundsAndLayoutFromActiveTab() {
+void StackedTabStripLayout::SetActiveBoundsAndLayoutFromActiveTab() {
   int x = ConstrainActiveX(ideal_x(active_index()));
   SetIdealBoundsAt(active_index(), x);
   LayoutUsingCurrentBefore(active_index());
@@ -361,7 +359,7 @@ void TouchTabStripLayout::SetActiveBoundsAndLayoutFromActiveTab() {
   AdjustStackedTabs();
 }
 
-void TouchTabStripLayout::LayoutByTabOffsetAfter(int index) {
+void StackedTabStripLayout::LayoutByTabOffsetAfter(int index) {
   for (int i = index + 1; i < tab_count(); ++i) {
     int max_x = width_ - size_.width() -
         stacked_padding_for_count(tab_count() - i - 1);
@@ -371,7 +369,7 @@ void TouchTabStripLayout::LayoutByTabOffsetAfter(int index) {
   }
 }
 
-void TouchTabStripLayout::LayoutByTabOffsetBefore(int index) {
+void StackedTabStripLayout::LayoutByTabOffsetBefore(int index) {
   for (int i = index - 1; i >= mini_tab_count_; --i) {
     int min_x = x_ + stacked_padding_for_count(i - mini_tab_count_);
     int x = std::max(min_x, ideal_x(i + 1) - (tab_offset()));
@@ -379,7 +377,7 @@ void TouchTabStripLayout::LayoutByTabOffsetBefore(int index) {
   }
 }
 
-void TouchTabStripLayout::LayoutUsingCurrentAfter(int index) {
+void StackedTabStripLayout::LayoutUsingCurrentAfter(int index) {
   for (int i = index + 1; i < tab_count(); ++i) {
     int min_x = width_ - width_for_count(tab_count() - i);
     int x = std::max(min_x,
@@ -389,7 +387,7 @@ void TouchTabStripLayout::LayoutUsingCurrentAfter(int index) {
   }
 }
 
-void TouchTabStripLayout::LayoutUsingCurrentBefore(int index) {
+void StackedTabStripLayout::LayoutUsingCurrentBefore(int index) {
   for (int i = index - 1; i >= mini_tab_count_; --i) {
     int max_x = x_ + width_for_count(i - mini_tab_count_);
     if (i > mini_tab_count_)
@@ -401,17 +399,17 @@ void TouchTabStripLayout::LayoutUsingCurrentBefore(int index) {
   }
 }
 
-void TouchTabStripLayout::PushTabsAfter(int index, int delta) {
+void StackedTabStripLayout::PushTabsAfter(int index, int delta) {
   for (int i = index + 1; i < tab_count(); ++i)
     SetIdealBoundsAt(i, std::min(ideal_x(i) + delta, GetMaxDragX(i)));
 }
 
-void TouchTabStripLayout::PushTabsBefore(int index, int delta) {
+void StackedTabStripLayout::PushTabsBefore(int index, int delta) {
   for (int i = index - 1; i > mini_tab_count_; --i)
     SetIdealBoundsAt(i, std::max(ideal_x(i) - delta, GetMinDragX(i)));
 }
 
-void TouchTabStripLayout::LayoutForDragAfter(int index) {
+void StackedTabStripLayout::LayoutForDragAfter(int index) {
   for (int i = index + 1; i < tab_count(); ++i) {
     const int min_x = ideal_x(i - 1) + stacked_padding_;
     const int max_x = ideal_x(i - 1) + tab_offset();
@@ -420,7 +418,7 @@ void TouchTabStripLayout::LayoutForDragAfter(int index) {
   }
 }
 
-void TouchTabStripLayout::LayoutForDragBefore(int index) {
+void StackedTabStripLayout::LayoutForDragBefore(int index) {
   for (int i = index - 1; i >= mini_tab_count_; --i) {
     const int max_x = ideal_x(i + 1) - stacked_padding_;
     const int min_x = ideal_x(i + 1) - tab_offset();
@@ -443,7 +441,7 @@ void TouchTabStripLayout::LayoutForDragBefore(int index) {
   }
 }
 
-void TouchTabStripLayout::ExpandTabsBefore(int index, int delta) {
+void StackedTabStripLayout::ExpandTabsBefore(int index, int delta) {
   for (int i = index - 1; i >= mini_tab_count_ && delta > 0; --i) {
     const int max_x = ideal_x(active_index()) -
         stacked_padding_for_count(active_index() - i);
@@ -457,7 +455,7 @@ void TouchTabStripLayout::ExpandTabsBefore(int index, int delta) {
   }
 }
 
-void TouchTabStripLayout::ExpandTabsAfter(int index, int delta) {
+void StackedTabStripLayout::ExpandTabsAfter(int index, int delta) {
   if (index == tab_count() - 1)
     return;  // Nothing to expand.
 
@@ -473,7 +471,7 @@ void TouchTabStripLayout::ExpandTabsAfter(int index, int delta) {
   }
 }
 
-void TouchTabStripLayout::AdjustStackedTabs() {
+void StackedTabStripLayout::AdjustStackedTabs() {
   if (!requires_stacking() || tab_count() <= mini_tab_count_ + 1)
     return;
 
@@ -481,7 +479,7 @@ void TouchTabStripLayout::AdjustStackedTabs() {
   AdjustTrailingStackedTabs();
 }
 
-void TouchTabStripLayout::AdjustLeadingStackedTabs() {
+void StackedTabStripLayout::AdjustLeadingStackedTabs() {
   int index = mini_tab_count_ + 1;
   while (index < active_index() &&
          ideal_x(index) - ideal_x(index - 1) <= stacked_padding_ &&
@@ -503,7 +501,7 @@ void TouchTabStripLayout::AdjustLeadingStackedTabs() {
     SetIdealBoundsAt(index, x);
 }
 
-void TouchTabStripLayout::AdjustTrailingStackedTabs() {
+void StackedTabStripLayout::AdjustTrailingStackedTabs() {
   int index = tab_count() - 1;
   int max_stacked_x = width_ - size_.width() - max_stacked_width();
   while (index > active_index() &&
@@ -530,18 +528,18 @@ void TouchTabStripLayout::AdjustTrailingStackedTabs() {
     SetIdealBoundsAt(index, x);
 }
 
-void TouchTabStripLayout::SetIdealBoundsAt(int index, int x) {
+void StackedTabStripLayout::SetIdealBoundsAt(int index, int x) {
   view_model_->set_ideal_bounds(index, gfx::Rect(gfx::Point(x, 0), size_));
 }
 
-int TouchTabStripLayout::GetMinX(int index) const {
+int StackedTabStripLayout::GetMinX(int index) const {
   int leading_count = index - mini_tab_count_;
   int trailing_count = tab_count() - index;
   return std::max(x_ + stacked_padding_for_count(leading_count),
                   width_ - width_for_count(trailing_count));
 }
 
-int TouchTabStripLayout::GetMaxX(int index) const {
+int StackedTabStripLayout::GetMaxX(int index) const {
   int leading_count = index - mini_tab_count_;
   int trailing_count = tab_count() - index - 1;
   int trailing_offset = stacked_padding_for_count(trailing_count);
@@ -551,17 +549,17 @@ int TouchTabStripLayout::GetMaxX(int index) const {
   return std::min(width_ - trailing_offset - size_.width(), leading_size);
 }
 
-int TouchTabStripLayout::GetMinDragX(int index) const {
+int StackedTabStripLayout::GetMinDragX(int index) const {
   return x_ + stacked_padding_for_count(index - mini_tab_count_);
 }
 
-int TouchTabStripLayout::GetMaxDragX(int index) const {
+int StackedTabStripLayout::GetMaxDragX(int index) const {
   const int trailing_offset =
       stacked_padding_for_count(tab_count() - index - 1);
   return width_ - trailing_offset - size_.width();
 }
 
-int TouchTabStripLayout::GetMinXCompressed(int index) const {
+int StackedTabStripLayout::GetMinXCompressed(int index) const {
   DCHECK_GT(index, active_index());
   return std::max(
       width_ - width_for_count(tab_count() - index),

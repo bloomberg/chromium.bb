@@ -23,11 +23,11 @@
 #include "ui/views/view_model.h"
 
 class NewTabButton;
+class StackedTabStripLayout;
 class Tab;
 class TabDragController;
 class TabStripController;
 class TabStripSelectionModel;
-class TouchTabStripLayout;
 
 namespace views {
 class ImageView;
@@ -572,7 +572,7 @@ class TabStrip : public views::View,
   bool adjust_layout_;
 
   // Only used while in touch mode.
-  scoped_ptr<TouchTabStripLayout> touch_layout_;
+  scoped_ptr<StackedTabStripLayout> touch_layout_;
 
   // If true the layout type is set to TAB_STRIP_LAYOUT_SHRINK when the mouse
   // exits the tabstrip (as determined using MouseWatcher).

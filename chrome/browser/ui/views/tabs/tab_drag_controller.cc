@@ -20,9 +20,9 @@
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/dragged_tab_view.h"
 #include "chrome/browser/ui/views/tabs/native_view_photobooth.h"
+#include "chrome/browser/ui/views/tabs/stacked_tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/browser/ui/views/tabs/touch_tab_strip_layout.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_details.h"
@@ -997,7 +997,7 @@ void TabDragController::StartMoveStackedTimerIfNecessary(
     int delay_ms) {
   DCHECK(attached_tabstrip_);
 
-  TouchTabStripLayout* touch_layout = attached_tabstrip_->touch_layout_.get();
+  StackedTabStripLayout* touch_layout = attached_tabstrip_->touch_layout_.get();
   if (!touch_layout)
     return;
 
@@ -1172,8 +1172,8 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
     for (size_t i = 0; i < drag_data_.size(); ++i) {
       int add_types = TabStripModel::ADD_NONE;
       if (attached_tabstrip_->touch_layout_.get()) {
-        // TouchTabStripLayout positions relative to the active tab, if we don't
-        // add the tab as active things bounce around.
+        // StackedTabStripLayout positions relative to the active tab, if we
+        // don't add the tab as active things bounce around.
         DCHECK_EQ(1u, drag_data_.size());
         add_types |= TabStripModel::ADD_ACTIVE;
       }
@@ -1489,7 +1489,7 @@ bool TabDragController::ShouldDragToPreviousStackedTab(
 
 int TabDragController::GetInsertionIndexForDraggedBoundsStacked(
     const gfx::Rect& dragged_bounds) const {
-  TouchTabStripLayout* touch_layout = attached_tabstrip_->touch_layout_.get();
+  StackedTabStripLayout* touch_layout = attached_tabstrip_->touch_layout_.get();
   int active_index = touch_layout->active_index();
   // Search from the active index to the front of the tabstrip. Do this as tabs
   // overlap each other from the active index.

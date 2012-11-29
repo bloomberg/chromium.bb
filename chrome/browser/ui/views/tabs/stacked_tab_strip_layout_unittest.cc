@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/tabs/touch_tab_strip_layout.h"
+#include "chrome/browser/ui/views/tabs/stacked_tab_strip_layout.h"
 
 #include <string>
 
@@ -28,12 +28,12 @@ struct CommonTestData {
 
 }  // namespace
 
-class TouchTabStripLayoutTest : public testing::Test {
+class StackedTabStripLayoutTest : public testing::Test {
  public:
-  TouchTabStripLayoutTest() {}
+  StackedTabStripLayoutTest() {}
 
  protected:
-  void Reset(TouchTabStripLayout* layout,
+  void Reset(StackedTabStripLayout* layout,
              int x,
              int width,
              int mini_tab_count,
@@ -46,7 +46,7 @@ class TouchTabStripLayoutTest : public testing::Test {
       PrepareChildViewsFromString(data.start_bounds);
     else
       PrepareChildViewsFromString(data.expected_bounds);
-    layout_.reset(new TouchTabStripLayout(
+    layout_.reset(new StackedTabStripLayout(
                      gfx::Size(data.tab_size, 10), data.tab_padding,
                      data.stacked_offset, 4, &view_model_));
     if (data.start_bounds.empty()) {
@@ -128,18 +128,18 @@ class TouchTabStripLayoutTest : public testing::Test {
     return view_model_.ideal_bounds(index).x();
   }
 
-  scoped_ptr<TouchTabStripLayout> layout_;
+  scoped_ptr<StackedTabStripLayout> layout_;
   views::ViewModel view_model_;
 
  private:
   views::View view_;
 
-  DISALLOW_COPY_AND_ASSIGN(TouchTabStripLayoutTest);
+  DISALLOW_COPY_AND_ASSIGN(StackedTabStripLayoutTest);
 };
 
 // Random data.
-TEST_F(TouchTabStripLayoutTest, ValidateInitialLayout) {
-  TouchTabStripLayout layout(gfx::Size(100, 10), -10, 2, 4, &view_model_);
+TEST_F(StackedTabStripLayoutTest, ValidateInitialLayout) {
+  StackedTabStripLayout layout(gfx::Size(100, 10), -10, 2, 4, &view_model_);
   PrepareChildViews(12);
 
   for (int i = 120; i < 600; ++i) {
@@ -153,7 +153,7 @@ TEST_F(TouchTabStripLayoutTest, ValidateInitialLayout) {
 }
 
 // Ensure initial layout is correct.
-TEST_F(TouchTabStripLayoutTest, InitialLayout) {
+TEST_F(StackedTabStripLayoutTest, InitialLayout) {
   struct CommonTestData test_data[] = {
     { 0, 198, 100, -10, 1, 0, 9, "",
       "0 0 0 0 0 0 1 2 3 4 94 95 96 97 98 98 98 98" },
@@ -174,7 +174,7 @@ TEST_F(TouchTabStripLayoutTest, InitialLayout) {
 }
 
 // Assertions for dragging from an existing configuration.
-TEST_F(TouchTabStripLayoutTest, DragActiveTabExisting) {
+TEST_F(StackedTabStripLayoutTest, DragActiveTabExisting) {
   struct TestData {
     struct CommonTestData common_data;
     const int delta;
@@ -261,7 +261,7 @@ TEST_F(TouchTabStripLayoutTest, DragActiveTabExisting) {
 }
 
 // Assertions for SizeToFit().
-TEST_F(TouchTabStripLayoutTest, SizeToFit) {
+TEST_F(StackedTabStripLayoutTest, SizeToFit) {
   struct CommonTestData test_data[] = {
     // Dragged to the right.
     { 10, 240, 100, -10, 2, 2, 1, "0 5 10 100 138 140", "1 6 11 101 138 140"},
@@ -286,7 +286,7 @@ TEST_F(TouchTabStripLayoutTest, SizeToFit) {
 }
 
 // Assertions for AddTab().
-TEST_F(TouchTabStripLayoutTest, AddTab) {
+TEST_F(StackedTabStripLayoutTest, AddTab) {
   struct TestData {
     CommonTestData common_data;
     int add_index;
@@ -332,9 +332,9 @@ TEST_F(TouchTabStripLayoutTest, AddTab) {
     CreateLayout(test_data[i].common_data);
     int add_types = 0;
     if (test_data[i].add_active)
-      add_types |= TouchTabStripLayout::kAddTypeActive;
+      add_types |= StackedTabStripLayout::kAddTypeActive;
     if (test_data[i].add_mini)
-      add_types |= TouchTabStripLayout::kAddTypeMini;
+      add_types |= StackedTabStripLayout::kAddTypeMini;
     AddViewToViewModel(test_data[i].add_index);
     layout_->AddTab(test_data[i].add_index, add_types,
                     test_data[i].common_data.initial_x +
@@ -345,7 +345,7 @@ TEST_F(TouchTabStripLayoutTest, AddTab) {
 }
 
 // Assertions around removing tabs.
-TEST_F(TouchTabStripLayoutTest, RemoveTab) {
+TEST_F(StackedTabStripLayoutTest, RemoveTab) {
   // TODO: add coverage of removing mini tabs!
   struct TestData {
     struct CommonTestData common_data;
@@ -397,7 +397,7 @@ TEST_F(TouchTabStripLayoutTest, RemoveTab) {
 }
 
 // Assertions for SetWidth().
-TEST_F(TouchTabStripLayoutTest, SetWidth) {
+TEST_F(StackedTabStripLayoutTest, SetWidth) {
   struct TestData {
     CommonTestData common_data;
     int new_width;
@@ -429,7 +429,7 @@ TEST_F(TouchTabStripLayoutTest, SetWidth) {
 }
 
 // Assertions for SetActiveIndex().
-TEST_F(TouchTabStripLayoutTest, SetActiveIndex) {
+TEST_F(StackedTabStripLayoutTest, SetActiveIndex) {
   struct TestData {
     CommonTestData common_data;
     int new_index;
@@ -450,10 +450,10 @@ TEST_F(TouchTabStripLayoutTest, SetActiveIndex) {
 }
 
 // Makes sure don't crash when resized and only one tab.
-TEST_F(TouchTabStripLayoutTest, EmptyTest) {
-  TouchTabStripLayout layout(gfx::Size(160, 10), -27, 6, 4, &view_model_);
+TEST_F(StackedTabStripLayoutTest, EmptyTest) {
+  StackedTabStripLayout layout(gfx::Size(160, 10), -27, 6, 4, &view_model_);
   PrepareChildViews(1);
-  layout.AddTab(0, TouchTabStripLayout::kAddTypeActive, 0);
+  layout.AddTab(0, StackedTabStripLayout::kAddTypeActive, 0);
   layout.SetWidth(100);
   layout.SetWidth(50);
   layout.SetWidth(0);
@@ -461,7 +461,7 @@ TEST_F(TouchTabStripLayoutTest, EmptyTest) {
 }
 
 // Assertions around removing tabs.
-TEST_F(TouchTabStripLayoutTest, MoveTab) {
+TEST_F(StackedTabStripLayoutTest, MoveTab) {
   // TODO: add coverage of removing mini tabs!
   struct TestData {
     struct CommonTestData common_data;
@@ -503,10 +503,10 @@ TEST_F(TouchTabStripLayoutTest, MoveTab) {
 }
 
 // Assertions around IsStacked().
-TEST_F(TouchTabStripLayoutTest, IsStacked) {
+TEST_F(StackedTabStripLayoutTest, IsStacked) {
   // A single tab with enough space should never be stacked.
   PrepareChildViews(1);
-  layout_.reset(new TouchTabStripLayout(
+  layout_.reset(new StackedTabStripLayout(
                     gfx::Size(100, 10), -10, 2, 4, &view_model_));
   Reset(layout_.get(), 0, 400, 0, 0);
   EXPECT_FALSE(layout_->IsStacked(0));
@@ -524,17 +524,17 @@ TEST_F(TouchTabStripLayoutTest, IsStacked) {
 }
 
 // Assertions around SetXAndMiniCount.
-TEST_F(TouchTabStripLayoutTest, SetXAndMiniCount) {
+TEST_F(StackedTabStripLayoutTest, SetXAndMiniCount) {
   // Verifies we don't crash when transitioning to all mini-tabs.
   PrepareChildViews(1);
-  layout_.reset(new TouchTabStripLayout(
+  layout_.reset(new StackedTabStripLayout(
                     gfx::Size(100, 10), -10, 2, 4, &view_model_));
   Reset(layout_.get(), 0, 400, 0, 0);
   layout_->SetXAndMiniCount(0, 1);
 }
 
 // Assertions around SetXAndMiniCount.
-TEST_F(TouchTabStripLayoutTest, SetActiveTabLocation) {
+TEST_F(StackedTabStripLayoutTest, SetActiveTabLocation) {
   struct TestData {
     struct CommonTestData common_data;
     const int location;

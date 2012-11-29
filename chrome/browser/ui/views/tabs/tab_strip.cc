@@ -22,10 +22,10 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/tabs/stacked_tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
-#include "chrome/browser/ui/views/tabs/touch_tab_strip_layout.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -681,9 +681,9 @@ void TabStrip::AddTabAt(int model_index,
     GenerateIdealBoundsForMiniTabs(NULL);
     int add_types = 0;
     if (data.mini)
-      add_types |= TouchTabStripLayout::kAddTypeMini;
+      add_types |= StackedTabStripLayout::kAddTypeMini;
     if (is_active)
-      add_types |= TouchTabStripLayout::kAddTypeActive;
+      add_types |= StackedTabStripLayout::kAddTypeActive;
     touch_layout_->AddTab(model_index, add_types, GetStartXForNormalTabs());
   }
 
@@ -2506,7 +2506,7 @@ void TabStrip::SwapLayoutIfNecessary() {
   if (needs_touch) {
     gfx::Size tab_size(Tab::GetMinimumSelectedSize());
     tab_size.set_width(Tab::GetTouchWidth());
-    touch_layout_.reset(new TouchTabStripLayout(
+    touch_layout_.reset(new StackedTabStripLayout(
                             tab_size,
                             tab_h_offset(),
                             kStackedPadding,
@@ -2514,7 +2514,7 @@ void TabStrip::SwapLayoutIfNecessary() {
                             &tabs_));
     touch_layout_->SetWidth(width() - new_tab_button_width());
     // This has to be after SetWidth() as SetWidth() is going to reset the
-    // bounds of the mini-tabs (since TouchTabStripLayout doesn't yet know how
+    // bounds of the mini-tabs (since StackedTabStripLayout doesn't yet know how
     // many mini-tabs there are).
     GenerateIdealBoundsForMiniTabs(NULL);
     touch_layout_->SetXAndMiniCount(GetStartXForNormalTabs(),
