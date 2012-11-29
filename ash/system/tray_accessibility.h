@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_TRAY_ACCESSIBILITY_H_
 #define ASH_SYSTEM_TRAY_ACCESSIBILITY_H_
 
+#include "ash/shell_observer.h"
 #include "ash/system/tray/tray_image_item.h"
 
 namespace views {
@@ -19,13 +20,14 @@ class ASH_EXPORT AccessibilityObserver {
   virtual ~AccessibilityObserver() {}
 
   // Notifies when accessibilty mode changes.
-  virtual void OnAccessibilityModeChanged(bool enabled) = 0;
+  virtual void OnAccessibilityModeChanged() = 0;
 };
 
 namespace internal {
 
 class TrayAccessibility : public TrayImageItem,
-                          public AccessibilityObserver {
+                          public AccessibilityObserver,
+                          public ShellObserver {
  public:
   explicit TrayAccessibility(SystemTray* system_tray);
   virtual ~TrayAccessibility();
@@ -39,10 +41,17 @@ class TrayAccessibility : public TrayImageItem,
   virtual void DestroyDetailedView() OVERRIDE;
 
   // Overridden from AccessibilityObserver.
-  virtual void OnAccessibilityModeChanged(bool enabled) OVERRIDE;
+  virtual void OnAccessibilityModeChanged() OVERRIDE;
+
+  // Overriden from ShellObserver.
+  virtual void OnLoginStateChanged(user::LoginStatus status) OVERRIDE;
 
   views::View* default_;
   views::View* detailed_;
+
+  bool request_popup_view_;
+  bool accessibility_previously_enabled_;
+  user::LoginStatus login_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayAccessibility);
 };

@@ -23,15 +23,18 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api_controller.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -190,9 +193,9 @@ void EnableHighContrast(bool enabled) {
 #endif
 }
 
-void SetScreenMagnifier(ScreenMagnifierType type) {
+void SetMagnifier(ash::MagnifierType type) {
   if (MagnificationManager::GetInstance())
-    MagnificationManager::GetInstance()->SetScreenMagnifier(type);
+    MagnificationManager::GetInstance()->SetMagnifier(type);
 }
 
 void EnableVirtualKeyboard(bool enabled) {
@@ -244,28 +247,28 @@ bool IsHighContrastEnabled() {
   return high_contrast_enabled;
 }
 
-ScreenMagnifierType GetScreenMagnifierType() {
+ash::MagnifierType GetMagnifierType() {
   if (!MagnificationManager::GetInstance())
-    return MAGNIFIER_OFF;
-  return MagnificationManager::GetInstance()->GetScreenMagnifierType();
+    return ash::MAGNIFIER_OFF;
+  return MagnificationManager::GetInstance()->GetMagnifierType();
 }
 
-ScreenMagnifierType ScreenMagnifierTypeFromName(const char type_name[]) {
+ash::MagnifierType MagnifierTypeFromName(const char type_name[]) {
   if (0 == strcmp(type_name, kScreenMagnifierFull))
-    return MAGNIFIER_FULL;
+    return ash::MAGNIFIER_FULL;
   else if (0 == strcmp(type_name, kScreenMagnifierPartial))
-    return MAGNIFIER_PARTIAL;
+    return ash::MAGNIFIER_PARTIAL;
   else
-    return MAGNIFIER_OFF;
+    return ash::MAGNIFIER_OFF;
 }
 
-const char* ScreenMagnifierNameFromType(ScreenMagnifierType type) {
+const char* ScreenMagnifierNameFromType(ash::MagnifierType type) {
   switch (type) {
-    case MAGNIFIER_OFF:
+    case ash::MAGNIFIER_OFF:
       return kScreenMagnifierOff;
-    case MAGNIFIER_FULL:
+    case ash::MAGNIFIER_FULL:
       return kScreenMagnifierFull;
-    case MAGNIFIER_PARTIAL:
+    case ash::MAGNIFIER_PARTIAL:
       return kScreenMagnifierPartial;
   }
   return kScreenMagnifierOff;
@@ -274,6 +277,10 @@ const char* ScreenMagnifierNameFromType(ScreenMagnifierType type) {
 void MaybeSpeak(const std::string& utterance) {
   if (IsSpokenFeedbackEnabled())
     Speak(utterance);
+}
+
+void ShowAccessibilityHelp(Browser* browser) {
+  chrome::ShowSingletonTab(browser, GURL(chrome::kChromeAccessibilityHelpURL));
 }
 
 }  // namespace accessibility

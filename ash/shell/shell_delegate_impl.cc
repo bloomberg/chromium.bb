@@ -22,7 +22,9 @@ ShellDelegateImpl::ShellDelegateImpl()
     : watcher_(NULL),
       launcher_delegate_(NULL),
       locked_(false),
-      spoken_feedback_enabled_(false) {
+      spoken_feedback_enabled_(false),
+      high_contrast_enabled_(false),
+      screen_magnifier_type_(MAGNIFIER_OFF) {
 }
 
 ShellDelegateImpl::~ShellDelegateImpl() {
@@ -120,6 +122,26 @@ void ShellDelegateImpl::ToggleSpokenFeedback() {
 
 bool ShellDelegateImpl::IsSpokenFeedbackEnabled() const {
   return spoken_feedback_enabled_;
+}
+
+void ShellDelegateImpl::ToggleHighContrast() {
+  high_contrast_enabled_ = !high_contrast_enabled_;
+}
+
+bool ShellDelegateImpl::IsHighContrastEnabled() const {
+  return high_contrast_enabled_;
+}
+
+void ShellDelegateImpl::SetMagnifier(MagnifierType type) {
+  screen_magnifier_type_ = type;
+}
+
+MagnifierType ShellDelegateImpl::GetMagnifierType() const {
+  return screen_magnifier_type_;
+}
+
+bool ShellDelegateImpl::ShouldAlwaysShowAccessibilityMenu() const {
+  return false;
 }
 
 app_list::AppListViewDelegate* ShellDelegateImpl::CreateAppListViewDelegate() {

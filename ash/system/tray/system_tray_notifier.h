@@ -57,7 +57,7 @@ public:
   void AddSmsObserver(SmsObserver* observer);
 #endif
 
-  void NotifyAccessibilityModeChanged(bool spoken_feedback_enabled);
+  void NotifyAccessibilityModeChanged();
   void NotifyVolumeChanged(float level);
   void NotifyMuteToggled();
   void NotifyRefreshBluetooth();

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/magnifier/magnifier_constants.h"
 #include "ash/shell.h"
 #include "base/callback.h"
 #include "base/string16.h"
@@ -129,12 +130,27 @@ class ASH_EXPORT ShellDelegate {
   // Get the current browser context. This will get us the current profile.
   virtual content::BrowserContext* GetCurrentBrowserContext() = 0;
 
-  // Invoked when the user presses a shortcut to toggle spoken feedback
-  // for accessibility.
+  // Invoked to toggle spoken feedback for accessibility
   virtual void ToggleSpokenFeedback() = 0;
 
   // Returns true if spoken feedback is enabled.
   virtual bool IsSpokenFeedbackEnabled() const = 0;
+
+  // Invoked to toggle high contrast for accessibility.
+  virtual void ToggleHighContrast() = 0;
+
+  // Returns true if high contrast mode is enabled.
+  virtual bool IsHighContrastEnabled() const = 0;
+
+  // Invoked to change the mode of the screen magnifier.
+  virtual void SetMagnifier(MagnifierType type) = 0;
+
+  // Returns the current screen magnifier mode.
+  virtual MagnifierType GetMagnifierType() const = 0;
+
+  // Returns true if the user want to show accesibility menu even when all the
+  // accessibility features are disabled.
+  virtual bool ShouldAlwaysShowAccessibilityMenu() const = 0;
 
   // Invoked to create an AppListViewDelegate. Shell takes the ownership of
   // the created delegate.

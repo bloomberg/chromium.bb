@@ -56,8 +56,13 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual void ShowKeyboardOverlay() OVERRIDE;
   virtual void ShowTaskManager() OVERRIDE;
   virtual content::BrowserContext* GetCurrentBrowserContext() OVERRIDE;
-  virtual void ToggleSpokenFeedback() OVERRIDE;
+  virtual void ToggleHighContrast() OVERRIDE;
   virtual bool IsSpokenFeedbackEnabled() const OVERRIDE;
+  virtual void ToggleSpokenFeedback() OVERRIDE;
+  virtual bool IsHighContrastEnabled() const OVERRIDE;
+  virtual void SetMagnifier(ash::MagnifierType type) OVERRIDE;
+  virtual ash::MagnifierType GetMagnifierType() const OVERRIDE;
+  virtual bool ShouldAlwaysShowAccessibilityMenu() const OVERRIDE;
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual ash::LauncherDelegate* CreateLauncherDelegate(
       ash::LauncherModel* model) OVERRIDE;

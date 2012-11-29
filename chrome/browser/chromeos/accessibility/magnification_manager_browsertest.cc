@@ -43,14 +43,14 @@ class MagnificationManagerTest : public CrosInProcessBrowserTest {
     return PrefServiceBase::FromBrowserContext(profile());
   }
 
-  void SetScreenManagnifierTypeToPref(accessibility::ScreenMagnifierType type) {
-    prefs()->SetString(prefs::kScreenMagnifierType,
-                       ScreenMagnifierNameFromType(type));
+  void SetScreenManagnifierTypeToPref(ash::MagnifierType type) {
+    prefs()->SetString(prefs::kMagnifierType,
+                       accessibility::ScreenMagnifierNameFromType(type));
   }
 
-  void CheckCurrentScreenMagnifierType(
-      accessibility::ScreenMagnifierType type) {
-    EXPECT_EQ(MagnificationManager::GetInstance()->GetScreenMagnifierType(),
+  void CheckCurrentMagnifierType(
+      ash::MagnifierType type) {
+    EXPECT_EQ(MagnificationManager::GetInstance()->GetMagnifierType(),
              type);
   }
 
@@ -59,20 +59,20 @@ class MagnificationManagerTest : public CrosInProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, Login) {
   // Confirms that magnifier is enabled on the login screen.
-  CheckCurrentScreenMagnifierType(accessibility::MAGNIFIER_FULL);
+  CheckCurrentMagnifierType(ash::MAGNIFIER_FULL);
 
   // Logs in.
   UserManager::Get()->UserLoggedIn("owner@invalid.domain", true);
   UserManager::Get()->SessionStarted();
 
   // Confirms that magnifier is disabled just after login.
-  CheckCurrentScreenMagnifierType(accessibility::MAGNIFIER_OFF);
+  CheckCurrentMagnifierType(ash::MAGNIFIER_OFF);
 
   // Enables magnifier.
-  SetScreenManagnifierTypeToPref(accessibility::MAGNIFIER_FULL);
+  SetScreenManagnifierTypeToPref(ash::MAGNIFIER_FULL);
 
   // Confirms that magnifier is enabled.
-  CheckCurrentScreenMagnifierType(accessibility::MAGNIFIER_FULL);
+  CheckCurrentMagnifierType(ash::MAGNIFIER_FULL);
 }
 
 IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, WorkingWithPref) {
@@ -81,25 +81,25 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, WorkingWithPref) {
   UserManager::Get()->SessionStarted();
 
   // Confirms that magnifier is disabled just after login.
-  CheckCurrentScreenMagnifierType(accessibility::MAGNIFIER_OFF);
+  CheckCurrentMagnifierType(ash::MAGNIFIER_OFF);
 
   // Sets the pref as true to enable magnifier.
-  SetScreenManagnifierTypeToPref(accessibility::MAGNIFIER_FULL);
+  SetScreenManagnifierTypeToPref(ash::MAGNIFIER_FULL);
 
   // Confirms that magnifier is enabled.
-  CheckCurrentScreenMagnifierType(accessibility::MAGNIFIER_FULL);
+  CheckCurrentMagnifierType(ash::MAGNIFIER_FULL);
 
   // Sets the pref as false to disabled magnifier.
-  SetScreenManagnifierTypeToPref(accessibility::MAGNIFIER_OFF);
+  SetScreenManagnifierTypeToPref(ash::MAGNIFIER_OFF);
 
   // Confirms that magnifier is disabled.
-  CheckCurrentScreenMagnifierType(accessibility::MAGNIFIER_OFF);
+  CheckCurrentMagnifierType(ash::MAGNIFIER_OFF);
 
   // Sets the pref as true to enable magnifier again.
-  SetScreenManagnifierTypeToPref(accessibility::MAGNIFIER_FULL);
+  SetScreenManagnifierTypeToPref(ash::MAGNIFIER_FULL);
 
   // Confirms that magnifier is enabled.
-  CheckCurrentScreenMagnifierType(accessibility::MAGNIFIER_FULL);
+  CheckCurrentMagnifierType(ash::MAGNIFIER_FULL);
 }
 
 IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, ResumeSavedPref) {
@@ -107,13 +107,13 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, ResumeSavedPref) {
   UserManager::Get()->UserLoggedIn("owner@invalid.domain", true);
 
   // Sets the pref as true to enable magnifier before login.
-  SetScreenManagnifierTypeToPref(accessibility::MAGNIFIER_FULL);
+  SetScreenManagnifierTypeToPref(ash::MAGNIFIER_FULL);
 
   // Logs in.
   UserManager::Get()->SessionStarted();
 
   // Confirms that magnifier is enabled just after login.
-  CheckCurrentScreenMagnifierType(accessibility::MAGNIFIER_FULL);
+  CheckCurrentMagnifierType(ash::MAGNIFIER_FULL);
 }
 
 }  // namespace chromeos

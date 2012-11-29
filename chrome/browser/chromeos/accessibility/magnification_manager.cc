@@ -7,6 +7,7 @@
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/api/prefs/pref_member.h"
@@ -50,32 +51,35 @@ class MagnificationManagerImpl : public MagnificationManager,
   }
 
   // MagnificationManager implimentation:
-  accessibility::ScreenMagnifierType GetScreenMagnifierType() OVERRIDE {
+  ash::MagnifierType GetMagnifierType() OVERRIDE {
     if (!profile_)
-      return accessibility::MAGNIFIER_OFF;
+      return ash::MAGNIFIER_OFF;
 
     PrefService* prefs = profile_->GetPrefs();
     if (!prefs)
-      return accessibility::MAGNIFIER_OFF;
+      return ash::MAGNIFIER_OFF;
 
-    return accessibility::ScreenMagnifierTypeFromName(
-        prefs->GetString(prefs::kScreenMagnifierType).c_str());
+    return accessibility::MagnifierTypeFromName(
+        prefs->GetString(prefs::kMagnifierType).c_str());
   }
 
-  void SetScreenMagnifier(accessibility::ScreenMagnifierType type) OVERRIDE {
+  void SetMagnifier(ash::MagnifierType type) OVERRIDE {
     PrefService* prefs = profile_->GetPrefs();
     if (prefs) {
-      std::string typeString = ScreenMagnifierNameFromType(type);
-      if (typeString != prefs->GetString(prefs::kScreenMagnifierType)) {
-        prefs->SetString(prefs::kScreenMagnifierType, typeString);
+      std::string typeString = accessibility::ScreenMagnifierNameFromType(type);
+      if (typeString != prefs->GetString(prefs::kMagnifierType)) {
+        prefs->SetString(prefs::kMagnifierType, typeString);
         prefs->CommitPendingWrite();
       }
     }
 
+    ash::Shell::GetInstance()->system_tray_notifier()->
+        NotifyAccessibilityModeChanged();
+
     ash::Shell::GetInstance()->magnification_controller()->SetEnabled(
-        type == accessibility::MAGNIFIER_FULL);
+        type == ash::MAGNIFIER_FULL);
     ash::Shell::GetInstance()->partial_magnification_controller()->SetEnabled(
-        type == accessibility::MAGNIFIER_PARTIAL);
+        type == ash::MAGNIFIER_PARTIAL);
   }
 
  private:
@@ -88,7 +92,7 @@ class MagnificationManagerImpl : public MagnificationManager,
       pref_change_registrar_.reset(new PrefChangeRegistrar);
       pref_change_registrar_->Init(profile->GetPrefs());
       pref_change_registrar_->Add(
-          prefs::kScreenMagnifierType,
+          prefs::kMagnifierType,
           base::Bind(&MagnificationManagerImpl::UpdateMagnifierStatus,
                      base::Unretained(this)));
     }
@@ -100,12 +104,12 @@ class MagnificationManagerImpl : public MagnificationManager,
   void UpdateMagnifierStatus() {
     UserManager* manager = UserManager::Get();
     if (!profile_) {
-      SetScreenMagnifier(accessibility::MAGNIFIER_OFF);
+      SetMagnifier(ash::MAGNIFIER_OFF);
     } else if (manager && !manager->IsSessionStarted()) {
-      SetScreenMagnifier(accessibility::MAGNIFIER_FULL);
+      SetMagnifier(ash::MAGNIFIER_FULL);
     } else {
-      accessibility::ScreenMagnifierType type = GetScreenMagnifierType();
-      SetScreenMagnifier(type);
+      ash::MagnifierType type = GetMagnifierType();
+      SetMagnifier(type);
     }
   }
 

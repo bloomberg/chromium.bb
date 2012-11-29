@@ -29,9 +29,9 @@ class MagnificationManager {
   virtual ~MagnificationManager() {}
 
   // Returns the current type of the screen magnifier.
-  virtual accessibility::ScreenMagnifierType GetScreenMagnifierType() = 0;
+  virtual ash::MagnifierType GetMagnifierType() = 0;
   // Changes the type of the screen magnifier.
-  virtual void SetScreenMagnifier(accessibility::ScreenMagnifierType type) = 0;
+  virtual void SetMagnifier(ash::MagnifierType type) = 0;
 };
 
 }  // namespace chromeos

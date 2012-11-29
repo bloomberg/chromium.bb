@@ -42,6 +42,11 @@ class TestShellDelegate : public ShellDelegate {
   virtual content::BrowserContext* GetCurrentBrowserContext() OVERRIDE;
   virtual void ToggleSpokenFeedback() OVERRIDE;
   virtual bool IsSpokenFeedbackEnabled() const OVERRIDE;
+  virtual void ToggleHighContrast() OVERRIDE;
+  virtual bool IsHighContrastEnabled() const OVERRIDE;
+  virtual void SetMagnifier(MagnifierType type) OVERRIDE;
+  virtual MagnifierType GetMagnifierType() const OVERRIDE;
+  virtual bool ShouldAlwaysShowAccessibilityMenu() const OVERRIDE;
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual LauncherDelegate* CreateLauncherDelegate(
       ash::LauncherModel* model) OVERRIDE;
@@ -90,6 +95,8 @@ class TestShellDelegate : public ShellDelegate {
   bool locked_;
   bool session_started_;
   bool spoken_feedback_enabled_;
+  bool high_contrast_enabled_;
+  MagnifierType screen_magnifier_type_;
   bool user_logged_in_;
   bool can_lock_screen_;
   bool is_search_key_acting_as_function_key_;

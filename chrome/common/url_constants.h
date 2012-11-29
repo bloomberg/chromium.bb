@@ -308,6 +308,11 @@ extern const char kChromeHelpViaKeyboardURL[];
 extern const char kChromeHelpViaMenuURL[];
 extern const char kChromeHelpViaWebUIURL[];
 
+#if defined(OS_CHROMEOS)
+// Accessibility help link for Chrome.
+extern const char kChromeAccessibilityHelpURL[];
+#endif
+
 // "Learn more" URL for the one click signin infobar.
 extern const char kChromeSyncLearnMoreURL[];
 

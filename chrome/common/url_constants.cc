@@ -349,6 +349,11 @@ const char kChromeHelpViaWebUIURL[] =
     "https://support.google.com/chrome/?p=help&ctx=settings";
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_CHROMEOS)
+const char kChromeAccessibilityHelpURL[] =
+    "https://support.google.com/chromeos/?p=accessibility_menu";
+#endif  // defined(OS_CHROMEOS)
+
 const char kChromeSyncLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
     "http://support.google.com/chromeos/bin/answer.py?answer=165139";

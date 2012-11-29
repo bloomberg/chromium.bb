@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 
 #include "ash/launcher/launcher_types.h"
+#include "ash/magnifier/magnifier_constants.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/stacking_controller.h"
 #include "ash/wm/window_util.h"
@@ -335,6 +336,44 @@ void ChromeShellDelegate::ToggleSpokenFeedback() {
 bool ChromeShellDelegate::IsSpokenFeedbackEnabled() const {
 #if defined(OS_CHROMEOS)
   return chromeos::accessibility::IsSpokenFeedbackEnabled();
+#else
+  return false;
+#endif
+}
+
+bool ChromeShellDelegate::IsHighContrastEnabled() const {
+#if defined(OS_CHROMEOS)
+  return chromeos::accessibility::IsHighContrastEnabled();
+#else
+  return false;
+#endif
+}
+
+void ChromeShellDelegate::ToggleHighContrast() {
+#if defined(OS_CHROMEOS)
+  bool enabled = chromeos::accessibility::IsHighContrastEnabled();
+  chromeos::accessibility::EnableHighContrast(!enabled);
+#endif
+}
+
+ash::MagnifierType ChromeShellDelegate::GetMagnifierType() const {
+#if defined(OS_CHROMEOS)
+  return chromeos::accessibility::GetMagnifierType();
+#else
+  return ash::MAGNIFIER_OFF;
+#endif
+}
+
+void ChromeShellDelegate::SetMagnifier(ash::MagnifierType type) {
+#if defined(OS_CHROMEOS)
+  chromeos::accessibility::SetMagnifier(type);
+#endif
+}
+
+bool ChromeShellDelegate::ShouldAlwaysShowAccessibilityMenu() const {
+#if defined(OS_CHROMEOS)
+  // TODO(yoshiki): Add the checkbox on chrome://settings. crbug.com/158287
+  return false;
 #else
   return false;
 #endif

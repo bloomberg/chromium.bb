@@ -7,6 +7,10 @@
 
 #include <string>
 
+#include "ash/magnifier/magnifier_constants.h"
+
+class Browser;
+
 namespace content {
 class WebUI;
 }
@@ -14,30 +18,19 @@ class WebUI;
 namespace chromeos {
 namespace accessibility {
 
-// Enable or disable spoken feedback. Enabling spoken feedback installs the
+// Enables or disables spoken feedback. Enabling spoken feedback installs the
 // ChromeVox component extension.  If this is being called in a login/oobe
 // login screen, pass the WebUI object in login_web_ui so that ChromeVox
 // can be injected directly into that screen, otherwise it should be NULL.
 void EnableSpokenFeedback(bool enabled, content::WebUI* login_web_ui);
 
-// Enable or disable the high contrast mode for Chrome.
+// Enables or disables the high contrast mode for Chrome.
 void EnableHighContrast(bool enabled);
 
-// String constants of the magnifier types.
-extern const char kScreenMagnifierOff[];
-extern const char kScreenMagnifierFull[];
-extern const char kScreenMagnifierPartial[];
+// Sets the type of screen magnifier, or disable it.
+void SetMagnifier(ash::MagnifierType type);
 
-enum ScreenMagnifierType {
-  MAGNIFIER_OFF,
-  MAGNIFIER_FULL,
-  MAGNIFIER_PARTIAL,
-};
-
-// Set the type of screen magnifier, or disable it.
-void SetScreenMagnifier(ScreenMagnifierType type);
-
-// Enable or disable the virtual keyboard.
+// Enables or disable the virtual keyboard.
 void EnableVirtualKeyboard(bool enabled);
 
 // Toggles whether Chrome OS spoken feedback is on or off. See docs for
@@ -54,16 +47,19 @@ bool IsSpokenFeedbackEnabled();
 bool IsHighContrastEnabled();
 
 // Returns the current state of the screen magnifier.
-ScreenMagnifierType GetScreenMagnifierType();
+ash::MagnifierType GetMagnifierType();
 
-// Translates from a string to ScreenMagnifierType.
-ScreenMagnifierType ScreenMagnifierTypeFromName(const char type_name[]);
+// Translates from a string to MagnifierType.
+ash::MagnifierType MagnifierTypeFromName(const char type_name[]);
 
-// Translates from a ScreenMagnifierType to type string.
-const char* ScreenMagnifierNameFromType(ScreenMagnifierType type);
+// Translates from a MagnifierType to type string.
+const char* ScreenMagnifierNameFromType(ash::MagnifierType type);
 
-// Speak the given text if the accessibility pref is already set.
+// Speaks the given text if the accessibility pref is already set.
 void MaybeSpeak(const std::string& utterance);
+
+// Shows the accessibility help tab on the browser.
+void ShowAccessibilityHelp(Browser* browser);
 
 }  // namespace accessibility
 }  // namespace chromeos

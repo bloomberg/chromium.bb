@@ -1153,7 +1153,7 @@ cr.define('options', function() {
      * Set the initial state of the screen magnifier dropdown.
      * @private
      */
-    setScreenMagnifierTypeState_: function(type) {
+    setMagnifierTypeState_: function(type) {
       $('accessibility-screen-magnifier-type').value = type;
     },
 
@@ -1298,7 +1298,7 @@ cr.define('options', function() {
     'setMetricsReportingSettingVisibility',
     'setPasswordGenerationSettingVisibility',
     'setProfilesInfo',
-    'setScreenMagnifierTypeState',
+    'setMagnifierTypeState',
     'setSpokenFeedbackCheckboxState',
     'setThemesResetButtonEnabled',
     'setVirtualKeyboardCheckboxState',

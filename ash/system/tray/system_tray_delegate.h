@@ -149,6 +149,9 @@ class SystemTrayDelegate {
   // Shows settings related to input methods.
   virtual void ShowIMESettings() = 0;
 
+  // Show accessilibity help.
+  virtual void ShowAccessibilityHelp() = 0;
+
   // Shows help.
   virtual void ShowHelp() = 0;
 

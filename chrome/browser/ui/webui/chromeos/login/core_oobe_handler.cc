@@ -74,8 +74,8 @@ void CoreOobeHandler::GetLocalizedStrings(
     localized_strings->SetString("highContrastEnabled", "on");
   if (chromeos::accessibility::IsSpokenFeedbackEnabled())
     localized_strings->SetString("spokenFeedbackEnabled", "on");
-  if (chromeos::accessibility::GetScreenMagnifierType() !=
-      chromeos::accessibility::MAGNIFIER_OFF) {
+  if (chromeos::accessibility::GetMagnifierType() !=
+      ash::MAGNIFIER_OFF) {
     localized_strings->SetString("screenMagnifierEnabled", "on");
   }
 }
@@ -146,10 +146,9 @@ void CoreOobeHandler::HandleEnableScreenMagnifier(const base::ListValue* args) {
     return;
   }
   // TODO(nkostylev): Add support for partial screen magnifier.
-  chromeos::accessibility::ScreenMagnifierType type = enabled ?
-      chromeos::accessibility::MAGNIFIER_FULL :
-      chromeos::accessibility::MAGNIFIER_OFF;
-  chromeos::accessibility::SetScreenMagnifier(type);
+  ash::MagnifierType type = enabled ? ash::MAGNIFIER_FULL :
+                                      ash::MAGNIFIER_OFF;
+  chromeos::accessibility::SetMagnifier(type);
 }
 
 void CoreOobeHandler::HandleEnableSpokenFeedback(const base::ListValue* args) {

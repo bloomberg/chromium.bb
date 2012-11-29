@@ -131,6 +131,9 @@ void TestSystemTrayDelegate::ShowIMESettings() {
 void TestSystemTrayDelegate::ShowHelp() {
 }
 
+void TestSystemTrayDelegate::ShowAccessibilityHelp() {
+}
+
 void TestSystemTrayDelegate::ShutDown() {
   MessageLoop::current()->Quit();
 }

@@ -737,7 +737,7 @@ const char kHighContrastEnabled[] = "settings.a11y.high_contrast_enabled";
 // A double pref which determines a zooming scale of the screen magnifier.
 const char kScreenMagnifierScale[] = "settings.a11y.screen_magnifier_scale";
 // A string pref which determines what type of screen magnifier is enabled.
-const char kScreenMagnifierType[] = "settings.a11y.screen_magnifier_type";
+const char kMagnifierType[] = "settings.a11y.screen_magnifier_type";
 // A boolean pref which determines whether virtual keyboard is enabled.
 // TODO(hashimoto): Remove this pref.
 const char kVirtualKeyboardEnabled[] = "settings.a11y.virtual_keyboard";

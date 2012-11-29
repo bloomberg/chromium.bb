@@ -135,6 +135,7 @@
         'launcher/tabbed_launcher_button.h',
         'magnifier/magnification_controller.cc',
         'magnifier/magnification_controller.h',
+        'magnifier/magnifier_constants.h',
         'magnifier/partial_magnification_controller.cc',
         'magnifier/partial_magnification_controller.h',
         'root_window_controller.cc',

@@ -197,7 +197,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     registrar_.Add(this,
                    chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
                    content::NotificationService::AllSources());
-
   }
 
   virtual void Initialize() OVERRIDE {
@@ -219,10 +218,16 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (SystemKeyEventListener::GetInstance())
       SystemKeyEventListener::GetInstance()->AddCapsLockObserver(this);
 
-    accessibility_enabled_.Init(
+    spoken_feedback_enabled_.Init(
         prefs::kSpokenFeedbackEnabled,
         g_browser_process->local_state(),
-        base::Bind(&SystemTrayDelegate::OnSpokenFeedbackEnabledChanged,
+        base::Bind(&SystemTrayDelegate::OnAccessibilityModeChanged,
+                   base::Unretained(this)));
+
+    high_contrast_enabled_.Init(
+        prefs::kHighContrastEnabled,
+        g_browser_process->local_state(),
+        base::Bind(&SystemTrayDelegate::OnAccessibilityModeChanged,
                    base::Unretained(this)));
 
     network_icon_->SetResourceColorTheme(NetworkMenuIcon::COLOR_LIGHT);
@@ -353,6 +358,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ShowHelp() OVERRIDE {
     chrome::ShowHelp(GetAppropriateBrowser(), chrome::HELP_SOURCE_MENU);
+  }
+
+  virtual void ShowAccessibilityHelp() OVERRIDE {
+    accessibility::ShowAccessibilityHelp(GetAppropriateBrowser());
   }
 
   virtual void ShutDown() OVERRIDE {
@@ -769,6 +778,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         prefs::kShowLogoutButtonInTray,
         base::Bind(&SystemTrayDelegate::UpdateShowLogoutButtonInTray,
                    base::Unretained(this)));
+    pref_registrar_->Add(
+        prefs::kMagnifierType,
+        base::Bind(&SystemTrayDelegate::OnAccessibilityModeChanged,
+                   base::Unretained(this)));
+
     UpdateClockType();
     UpdateShowLogoutButtonInTray();
     search_key_mapped_to_ =
@@ -1095,10 +1109,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         prefs::kLanguageRemapSearchKeyTo);
   }
 
-  void OnSpokenFeedbackEnabledChanged() {
-    GetSystemTrayNotifier()->NotifyAccessibilityModeChanged(
-        accessibility_enabled_.prefs()->GetBoolean(
-            prefs::kSpokenFeedbackEnabled));
+  void OnAccessibilityModeChanged() {
+    GetSystemTrayNotifier()->NotifyAccessibilityModeChanged();
   }
 
   // Overridden from InputMethodManager::Observer.
@@ -1263,7 +1275,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
 
-  BooleanPrefMember accessibility_enabled_;
+  BooleanPrefMember spoken_feedback_enabled_;
+  BooleanPrefMember high_contrast_enabled_;
 
   scoped_ptr<DataPromoNotification> data_promo_notification_;
 

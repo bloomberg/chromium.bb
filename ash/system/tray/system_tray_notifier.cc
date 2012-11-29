@@ -81,12 +81,11 @@ void SystemTrayNotifier::AddSmsObserver(SmsObserver* observer) {
 }
 #endif
 
-void SystemTrayNotifier::NotifyAccessibilityModeChanged(
-    bool spoken_feedback_enabled) {
+void SystemTrayNotifier::NotifyAccessibilityModeChanged() {
   FOR_EACH_OBSERVER(
       AccessibilityObserver,
       accessibility_observers_,
-      OnAccessibilityModeChanged(spoken_feedback_enabled));
+      OnAccessibilityModeChanged());
 }
 
 void SystemTrayNotifier::NotifyVolumeChanged(float level) {

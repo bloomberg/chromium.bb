@@ -41,6 +41,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual void ShowDriveSettings() OVERRIDE;
   virtual void ShowIMESettings() OVERRIDE;
   virtual void ShowHelp() OVERRIDE;
+  virtual void ShowAccessibilityHelp() OVERRIDE;
   virtual void ShutDown() OVERRIDE;
   virtual void SignOut() OVERRIDE;
   virtual void RequestLockScreen() OVERRIDE;

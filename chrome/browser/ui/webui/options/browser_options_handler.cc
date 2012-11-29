@@ -1265,7 +1265,7 @@ void BrowserOptionsHandler::ScreenMagnifierChangeCallback(
   args->GetString(0, &type_name);
 
   PrefService* user_pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-  user_pref_service->SetString(prefs::kScreenMagnifierType,
+  user_pref_service->SetString(prefs::kMagnifierType,
                                type_name);
 }
 
@@ -1314,9 +1314,9 @@ void BrowserOptionsHandler::SetupAccessibilityFeatures() {
 
   PrefService* user_pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
   base::StringValue magnifier_type(
-      user_pref_service->GetString(prefs::kScreenMagnifierType));
+      user_pref_service->GetString(prefs::kMagnifierType));
   web_ui()->CallJavascriptFunction(
-      "BrowserOptions.setScreenMagnifierTypeState",
+      "BrowserOptions.setMagnifierTypeState",
       magnifier_type);
 }
 #endif
