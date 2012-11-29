@@ -10,6 +10,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "cc/rendering_stats.h"
 #include "cc/resource_pool.h"
 #include "cc/tile.h"
 #include "third_party/skia/include/core/SkDevice.h"
@@ -18,7 +19,8 @@ namespace {
 
 void RasterizeTile(cc::PicturePileImpl* picture_pile,
                    uint8_t* mapped_buffer,
-                   const gfx::Rect& rect) {
+                   const gfx::Rect& rect,
+                   cc::RenderingStats* stats) {
   TRACE_EVENT0("cc", "RasterizeTile");
   DCHECK(mapped_buffer);
   DCHECK(picture_pile);
@@ -27,7 +29,7 @@ void RasterizeTile(cc::PicturePileImpl* picture_pile,
   bitmap.setPixels(mapped_buffer);
   SkDevice device(bitmap);
   SkCanvas canvas(&device);
-  picture_pile->Raster(&canvas, rect);
+  picture_pile->Raster(&canvas, rect, stats);
 }
 
 const int kMaxRasterThreads = 1;
@@ -215,6 +217,12 @@ void TileManager::ManageTiles() {
   DispatchMoreRasterTasks();
 }
 
+void TileManager::renderingStats(RenderingStats* stats) {
+  stats->totalRasterizeTimeInSeconds =
+    rendering_stats_.totalRasterizeTimeInSeconds;
+  stats->totalPixelsRasterized = rendering_stats_.totalPixelsRasterized;
+}
+
 void TileManager::AssignGpuMemoryToTiles() {
   TRACE_EVENT0("cc", "TileManager::AssignGpuMemoryToTiles");
   // Some memory cannot be released. Figure out which.
@@ -299,6 +307,8 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
   managed_tile_state.resource_id_is_being_initialized = true;
   managed_tile_state.can_be_freed = false;
 
+  RenderingStats* stats = new RenderingStats();
+
   ++pending_raster_tasks_;
   worker_pool_->GetTaskRunnerWithShutdownBehavior(
       base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)->PostTaskAndReply(
@@ -307,20 +317,28 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
                      base::Unretained(cloned_picture_pile.get()),
                      resource_pool_->resource_provider()->mapPixelBuffer(
                          resource_id),
-                     tile->rect_inside_picture_),
+                     tile->rect_inside_picture_,
+                     stats),
           base::Bind(&TileManager::OnRasterTaskCompleted,
                      base::Unretained(this),
                      tile,
                      resource_id,
-                     cloned_picture_pile));
+                     cloned_picture_pile,
+                     stats));
 }
 
 void TileManager::OnRasterTaskCompleted(
     scoped_refptr<Tile> tile,
     ResourceProvider::ResourceId resource_id,
-    scoped_refptr<PicturePileImpl> cloned_picture_pile) {
+    scoped_refptr<PicturePileImpl> cloned_picture_pile,
+    RenderingStats* stats) {
   TRACE_EVENT0("cc", "TileManager::OnRasterTaskCompleted");
   --pending_raster_tasks_;
+
+  rendering_stats_.totalRasterizeTimeInSeconds +=
+    stats->totalRasterizeTimeInSeconds;
+  rendering_stats_.totalPixelsRasterized += stats->totalPixelsRasterized;
+  delete stats;
 
   // Release raster resources.
   resource_pool_->resource_provider()->unmapPixelBuffer(resource_id);
