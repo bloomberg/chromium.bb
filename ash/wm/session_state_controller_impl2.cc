@@ -55,9 +55,10 @@ void SessionStateControllerImpl2::OnAppTerminating() {
     Shell* shell = ash::Shell::GetInstance();
     shell->env_filter()->set_cursor_hidden_by_filter(false);
     shell->cursor_manager()->ShowCursor(false);
-    animator_->StartGlobalAnimation(
-        internal::SessionStateAnimator::ANIMATION_GRAYSCALE_BRIGHTNESS,
-        internal::SessionStateAnimator::ANIMATION_SPEED_FAST);
+    animator_->StartAnimation(
+        internal::SessionStateAnimator::kAllContainersMask,
+        internal::SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY,
+        internal::SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
   }
 }
 

@@ -532,8 +532,9 @@ TEST_F(SessionStateControllerImpl2Test, ShutdownWithoutButton) {
   state_controller_->OnLoginStateChanged(user::LOGGED_IN_USER);
   state_controller_->OnAppTerminating();
   EXPECT_TRUE(
-      animator_api_->RootWindowIsAnimated(
-          internal::SessionStateAnimator::ANIMATION_GRAYSCALE_BRIGHTNESS));
+      animator_api_->ContainersAreAnimated(
+          internal::SessionStateAnimator::kAllContainersMask,
+          internal::SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
   GenerateMouseMoveEvent();
   EXPECT_FALSE(cursor_visible());
 }
