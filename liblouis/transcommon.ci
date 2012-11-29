@@ -260,6 +260,16 @@ makeCorrections (void)
 	  break;
 	}
     }
+    
+    { // We have to transform typebuf accordingly
+      unsigned short* typebuf_temp = malloc (dest * sizeof (unsigned short));
+      int pos;
+      for (pos = 0; pos < dest; pos++)
+        typebuf_temp[pos] = typebuf[srcMapping[pos]];
+      memcpy (typebuf, typebuf_temp, dest * sizeof (unsigned short));
+      free(typebuf_temp);
+    }
+
 failure:
   realInlen = src;
   return 1;
