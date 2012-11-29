@@ -16,11 +16,11 @@ TEST(MouseInterpreterTest, SimpleTest) {
   Gesture* gs;
 
   HardwareState hwstates[] = {
-    { 200000, 0, 0, 0, NULL, 9, -7, 0, 0 },
-    { 210000, 0, 0, 0, NULL, 0, 0, 0, 0 },
+    { 200000, 0, 0, 0, NULL, 0, 0, 0, 0 },
+    { 210000, 0, 0, 0, NULL, 9, -7, 0, 0 },
     { 220000, 1, 0, 0, NULL, 0, 0, 0, 0 },
-    { 230000, 0, 0, 0, NULL, 0, 0, -3, 4 },
-    { 240000, 0, 0, 0, NULL, 0, 0, 0, 0 },
+    { 230000, 0, 0, 0, NULL, 0, 0, 0, 0 },
+    { 240000, 0, 0, 0, NULL, 0, 0, -3, 4 },
   };
 
   gs = mi.SyncInterpret(&hwstates[0], NULL);

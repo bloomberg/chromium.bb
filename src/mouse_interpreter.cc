@@ -39,18 +39,18 @@ Gesture* MouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                       hwstate->timestamp,
                       down,
                       up);
-  } else if (prev_state_.rel_hwheel || prev_state_.rel_wheel) {
+  } else if (hwstate->rel_hwheel || hwstate->rel_wheel) {
     result_ = Gesture(kGestureScroll,
                       prev_state_.timestamp,
                       hwstate->timestamp,
-                      prev_state_.rel_hwheel,
-                      prev_state_.rel_wheel);
-  } else if (prev_state_.rel_x || prev_state_.rel_y) {
+                      hwstate->rel_hwheel,
+                      hwstate->rel_wheel);
+  } else if (hwstate->rel_x || hwstate->rel_y) {
     result_ = Gesture(kGestureMove,
                       prev_state_.timestamp,
                       hwstate->timestamp,
-                      prev_state_.rel_x,
-                      prev_state_.rel_y);
+                      hwstate->rel_x,
+                      hwstate->rel_y);
   } else {
     result_.type = kGestureTypeNull;
   }
