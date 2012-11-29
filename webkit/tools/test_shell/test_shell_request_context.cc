@@ -137,7 +137,8 @@ void TestShellRequestContext::Init(
   file_system_context_ = static_cast<SimpleFileSystem*>(
       WebKit::webKitPlatformSupport()->fileSystem())->file_system_context();
 
-  net::URLRequestJobFactory* job_factory = new net::URLRequestJobFactoryImpl();
+  net::URLRequestJobFactoryImpl* job_factory =
+      new net::URLRequestJobFactoryImpl();
   job_factory->SetProtocolHandler(
       "blob",
       new webkit_blob::BlobProtocolHandler(
