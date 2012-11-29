@@ -144,9 +144,6 @@ void TokenService::UpdateCredentials(
   for (size_t i = 0; i < arraysize(kServices); i++) {
     fetchers_[i].reset();
   }
-
-  // Notify the CredentialCacheService that a new lsid and sid are available.
-  FireCredentialsUpdatedNotification(credentials.lsid, credentials.sid);
 }
 
 void TokenService::UpdateCredentialsWithOAuth2(
@@ -247,16 +244,6 @@ const std::string& TokenService::GetOAuth2LoginAccessToken() const {
 void TokenService::GetServiceNamesForTesting(std::vector<std::string>* names) {
   names->resize(arraysize(kServices));
   std::copy(kServices, kServices + arraysize(kServices), names->begin());
-}
-
-void TokenService::FireCredentialsUpdatedNotification(
-    const std::string& lsid,
-    const std::string& sid) {
-  CredentialsUpdatedDetails details(lsid, sid);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TOKEN_SERVICE_CREDENTIALS_UPDATED,
-      content::Source<TokenService>(this),
-      content::Details<const CredentialsUpdatedDetails>(&details));
 }
 
 // Note that this can fire twice or more for any given service.

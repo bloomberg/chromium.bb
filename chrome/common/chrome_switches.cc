@@ -1569,10 +1569,6 @@ const char kUseMockKeychain[]               = "use-mock-keychain";
 // modification or removal.
 const char kDisableDesktopShortcuts[]       = "disable-desktop-shortcuts";
 
-// Enables sync credential caching on Windows 8.
-// See chrome/browser/sync/credential_cache_service_win.h.
-const char kEnableSyncCredentialCaching[]    = "enable-sync-credential-caching";
-
 // For the DelegateExecute verb handler to launch Chrome in metro mode on
 // Windows 8 and higher.  Used when relaunching metro Chrome.
 const char kForceImmersive[]                 = "force-immersive";

@@ -100,18 +100,6 @@ class TokenService : public GaiaAuthConsumer,
     GoogleServiceAuthError error_;
   };
 
-  class CredentialsUpdatedDetails {
-   public:
-    CredentialsUpdatedDetails(const std::string& lsid,
-                              const std::string& sid)
-        : lsid_(lsid), sid_(sid) {}
-    const std::string& lsid() const { return lsid_; }
-    const std::string& sid() const { return sid_; }
-   private:
-    std::string lsid_;
-    std::string sid_;
-  };
-
   // Initialize this token service with a request source
   // (usually from a GaiaAuthConsumer constant), and the profile.
   // Typically you'd then update the credentials.
@@ -178,10 +166,6 @@ class TokenService : public GaiaAuthConsumer,
   void IssueAuthTokenForTest(const std::string& service,
                              const std::string& auth_token);
 
-  const GaiaAuthConsumer::ClientLoginResult& credentials() const {
-    return credentials_;
-  }
-
   // GaiaAuthConsumer implementation.
   virtual void OnIssueAuthTokenSuccess(const std::string& service,
                                        const std::string& auth_token) OVERRIDE;
@@ -202,9 +186,6 @@ class TokenService : public GaiaAuthConsumer,
   // Gets the list of all service names for which tokens will be retrieved.
   // This method is meant only for tests.
   static void GetServiceNamesForTesting(std::vector<std::string>* names);
-
-  void FireCredentialsUpdatedNotification(const std::string& lsid,
-                                          const std::string& sid);
 
   void FireTokenAvailableNotification(const std::string& service,
                                       const std::string& auth_token);

@@ -53,22 +53,3 @@ TEST(ChromePaths, UserCacheDir) {
   EXPECT_EQ(test_profile_dir.value(), cache_dir.value());
 #endif
 }
-
-#if defined(OS_WINDOWS)
-TEST(ChromePaths, AlternateUserDataDir) {
-  FilePath current_dir;
-  FilePath alternate_dir;
-
-  ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, current_dir));
-
-  // Check that we can get the alternate dir.
-  EXPECT_TRUE(PathService::Get(chrome::DIR_ALT_USER_DATA, alternate_dir));
-
-  // And that it's not the same as the current dir.
-  EXPECTE_NE(current_dir.value(), alternate_dir.value());
-
-  // And that it's the metro dir.
-  EXPECT_EQ(FilePath::StringType(kMetroChromeUserDataSubDir),
-            alternate_dir.DirName().BaseName().value());
-}
-#endif

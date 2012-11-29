@@ -885,12 +885,6 @@ enum NotificationType {
   // TokenRequestFailedDetails object.
   NOTIFICATION_TOKEN_REQUEST_FAILED,
 
-  // When the token service receives updated credentials with which to generate
-  // new tokens, one of these notifications is issued.
-  // The source is a TokenService on the Profile. The details are a
-  // CredentialsUpdatedDetails object.
-  NOTIFICATION_TOKEN_SERVICE_CREDENTIALS_UPDATED,
-
   // When a service has a new token they got from a frontend that the
   // TokenService should know about, fire this notification. The source is the
   // Profile. The details are a TokenAvailableDetails object.
