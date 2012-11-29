@@ -77,10 +77,6 @@ TEST_F(VertexAttribManagerTest, Basic) {
     EXPECT_EQ(GL_FALSE, info->normalized());
     EXPECT_EQ(0, info->gl_stride());
     EXPECT_FALSE(info->enabled());
-    EXPECT_EQ(0.0f, info->value().v[0]);
-    EXPECT_EQ(0.0f, info->value().v[1]);
-    EXPECT_EQ(0.0f, info->value().v[2]);
-    EXPECT_EQ(1.0f, info->value().v[3]);
     manager_->Enable(ii, true);
     EXPECT_TRUE(info->enabled());
   }

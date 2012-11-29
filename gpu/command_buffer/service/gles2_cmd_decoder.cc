@@ -1174,6 +1174,9 @@ class GLES2DecoderImpl : public GLES2Decoder {
       GLint fake_location, GLsizei count, GLboolean transpose,
       const GLfloat* value);
 
+  bool SetVertexAttribValue(
+    const char* function_name, GLuint index, const GLfloat* value);
+
   // Wrappers for glVertexAttrib??
   void DoVertexAttrib1f(GLuint index, GLfloat v0);
   void DoVertexAttrib2f(GLuint index, GLfloat v0, GLfloat v1);
@@ -1456,7 +1459,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   GLuint attrib_0_buffer_id_;
 
   // The value currently in attrib_0.
-  VertexAttribManager::VertexAttribInfo::Vec4 attrib_0_value_;
+  Vec4 attrib_0_value_;
 
   // Whether or not the attrib_0 buffer holds the attrib_0_value.
   bool attrib_0_buffer_matches_value_;
@@ -2036,6 +2039,7 @@ bool GLES2DecoderImpl::Initialize(
 
   disallowed_features_ = disallowed_features;
 
+  state_.attrib_values.resize(group_->max_vertex_attribs());
   default_vertex_attrib_manager_ = new VertexAttribManager();
   default_vertex_attrib_manager_->Initialize(group_->max_vertex_attribs());
 
@@ -5276,8 +5280,6 @@ bool GLES2DecoderImpl::SimulateAttrib0(
   // Make a buffer with a single repeated vec4 value enough to
   // simulate the constant value that is supposed to be here.
   // This is required to emulate GLES2 on GL.
-  typedef VertexAttribManager::VertexAttribInfo::Vec4 Vec4;
-
   GLuint num_vertices = max_vertex_accessed + 1;
   uint32 size_needed = 0;
 
@@ -5303,17 +5305,19 @@ bool GLES2DecoderImpl::SimulateAttrib0(
       return false;
     }
   }
+
+  const Vec4& value = state_.attrib_values[0];
   if (new_buffer ||
       (attrib_0_used &&
        (!attrib_0_buffer_matches_value_ ||
-        (info->value().v[0] != attrib_0_value_.v[0] ||
-         info->value().v[1] != attrib_0_value_.v[1] ||
-         info->value().v[2] != attrib_0_value_.v[2] ||
-         info->value().v[3] != attrib_0_value_.v[3])))) {
-    std::vector<Vec4> temp(num_vertices, info->value());
+        (value.v[0] != attrib_0_value_.v[0] ||
+         value.v[1] != attrib_0_value_.v[1] ||
+         value.v[2] != attrib_0_value_.v[2] ||
+         value.v[3] != attrib_0_value_.v[3])))) {
+    std::vector<Vec4> temp(num_vertices, value);
     glBufferSubData(GL_ARRAY_BUFFER, 0, size_needed, &temp[0].v[0]);
     attrib_0_buffer_matches_value_ = true;
-    attrib_0_value_ = info->value();
+    attrib_0_value_ = value;
     attrib_0_size_ = size_needed;
   }
 
@@ -5987,12 +5991,14 @@ void GLES2DecoderImpl::DoGetVertexAttribfv(
     case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:
       *params = static_cast<GLfloat>(info->normalized());
       break;
-    case GL_CURRENT_VERTEX_ATTRIB:
-      params[0] = info->value().v[0];
-      params[1] = info->value().v[1];
-      params[2] = info->value().v[2];
-      params[3] = info->value().v[3];
+    case GL_CURRENT_VERTEX_ATTRIB: {
+      const Vec4& value = state_.attrib_values[index];
+      params[0] = value.v[0];
+      params[1] = value.v[1];
+      params[2] = value.v[2];
+      params[3] = value.v[3];
       break;
+    }
     case GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE:
       *params = static_cast<GLfloat>(info->divisor());
       break;
@@ -6038,146 +6044,89 @@ void GLES2DecoderImpl::DoGetVertexAttribiv(
     case GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE:
       *params = info->divisor();
       break;
-    case GL_CURRENT_VERTEX_ATTRIB:
-      params[0] = static_cast<GLint>(info->value().v[0]);
-      params[1] = static_cast<GLint>(info->value().v[1]);
-      params[2] = static_cast<GLint>(info->value().v[2]);
-      params[3] = static_cast<GLint>(info->value().v[3]);
+    case GL_CURRENT_VERTEX_ATTRIB: {
+      const Vec4& value = state_.attrib_values[index];
+      params[0] = static_cast<GLint>(value.v[0]);
+      params[1] = static_cast<GLint>(value.v[1]);
+      params[2] = static_cast<GLint>(value.v[2]);
+      params[3] = static_cast<GLint>(value.v[3]);
       break;
+    }
     default:
       NOTREACHED();
       break;
   }
 }
 
-void GLES2DecoderImpl::DoVertexAttrib1f(GLuint index, GLfloat v0) {
-  VertexAttribManager::VertexAttribInfo* info =
-      state_.vertex_attrib_manager->GetVertexAttribInfo(index);
-  if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glVertexAttrib1f", "index out of range");
-    return;
+bool GLES2DecoderImpl::SetVertexAttribValue(
+    const char* function_name, GLuint index, const GLfloat* value) {
+  if (index >= state_.attrib_values.size()) {
+    SetGLError(GL_INVALID_VALUE, function_name, "index out of range");
+    return false;
   }
-  VertexAttribManager::VertexAttribInfo::Vec4 value;
-  value.v[0] = v0;
-  value.v[1] = 0.0f;
-  value.v[2] = 0.0f;
-  value.v[3] = 1.0f;
-  info->set_value(value);
-  glVertexAttrib1f(index, v0);
+  Vec4& v = state_.attrib_values[index];
+  v.v[0] = value[0];
+  v.v[1] = value[1];
+  v.v[2] = value[2];
+  v.v[3] = value[3];
+  return true;
+}
+
+void GLES2DecoderImpl::DoVertexAttrib1f(GLuint index, GLfloat v0) {
+  GLfloat v[4] = { v0, 0.0f, 0.0f, 1.0f, };
+  if (SetVertexAttribValue("glVertexAttrib1f", index, v)) {
+    glVertexAttrib1f(index, v0);
+  }
 }
 
 void GLES2DecoderImpl::DoVertexAttrib2f(GLuint index, GLfloat v0, GLfloat v1) {
-  VertexAttribManager::VertexAttribInfo* info =
-      state_.vertex_attrib_manager->GetVertexAttribInfo(index);
-  if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glVertexAttrib2f", "index out of range");
-    return;
+  GLfloat v[4] = { v0, v1, 0.0f, 1.0f, };
+  if (SetVertexAttribValue("glVertexAttrib2f", index, v)) {
+    glVertexAttrib2f(index, v0, v1);
   }
-  VertexAttribManager::VertexAttribInfo::Vec4 value;
-  value.v[0] = v0;
-  value.v[1] = v1;
-  value.v[2] = 0.0f;
-  value.v[3] = 1.0f;
-  info->set_value(value);
-  glVertexAttrib2f(index, v0, v1);
 }
 
 void GLES2DecoderImpl::DoVertexAttrib3f(
     GLuint index, GLfloat v0, GLfloat v1, GLfloat v2) {
-  VertexAttribManager::VertexAttribInfo* info =
-      state_.vertex_attrib_manager->GetVertexAttribInfo(index);
-  if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glVertexAttrib3f", "index out of range");
-    return;
+  GLfloat v[4] = { v0, v1, v2, 1.0f, };
+  if (SetVertexAttribValue("glVertexAttrib3f", index, v)) {
+    glVertexAttrib3f(index, v0, v1, v2);
   }
-  VertexAttribManager::VertexAttribInfo::Vec4 value;
-  value.v[0] = v0;
-  value.v[1] = v1;
-  value.v[2] = v2;
-  value.v[3] = 1.0f;
-  info->set_value(value);
-  glVertexAttrib3f(index, v0, v1, v2);
 }
 
 void GLES2DecoderImpl::DoVertexAttrib4f(
     GLuint index, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3) {
-  VertexAttribManager::VertexAttribInfo* info =
-      state_.vertex_attrib_manager->GetVertexAttribInfo(index);
-  if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glVertexAttrib4f", "index out of range");
-    return;
+  GLfloat v[4] = { v0, v1, v2, v3, };
+  if (SetVertexAttribValue("glVertexAttrib4f", index, v)) {
+    glVertexAttrib4f(index, v0, v1, v2, v3);
   }
-  VertexAttribManager::VertexAttribInfo::Vec4 value;
-  value.v[0] = v0;
-  value.v[1] = v1;
-  value.v[2] = v2;
-  value.v[3] = v3;
-  info->set_value(value);
-  glVertexAttrib4f(index, v0, v1, v2, v3);
 }
 
 void GLES2DecoderImpl::DoVertexAttrib1fv(GLuint index, const GLfloat* v) {
-  VertexAttribManager::VertexAttribInfo* info =
-      state_.vertex_attrib_manager->GetVertexAttribInfo(index);
-  if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glVertexAttrib1fv", "index out of range");
-    return;
+  GLfloat t[4] = { v[0], 0.0f, 0.0f, 1.0f, };
+  if (SetVertexAttribValue("glVertexAttrib1fv", index, t)) {
+    glVertexAttrib1fv(index, v);
   }
-  VertexAttribManager::VertexAttribInfo::Vec4 value;
-  value.v[0] = v[0];
-  value.v[1] = 0.0f;
-  value.v[2] = 0.0f;
-  value.v[3] = 1.0f;
-  info->set_value(value);
-  glVertexAttrib1fv(index, v);
 }
 
 void GLES2DecoderImpl::DoVertexAttrib2fv(GLuint index, const GLfloat* v) {
-  VertexAttribManager::VertexAttribInfo* info =
-      state_.vertex_attrib_manager->GetVertexAttribInfo(index);
-  if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glVertexAttrib2fv", "index out of range");
-    return;
+  GLfloat t[4] = { v[0], v[1], 0.0f, 1.0f, };
+  if (SetVertexAttribValue("glVertexAttrib2fv", index, t)) {
+    glVertexAttrib2fv(index, v);
   }
-  VertexAttribManager::VertexAttribInfo::Vec4 value;
-  value.v[0] = v[0];
-  value.v[1] = v[1];
-  value.v[2] = 0.0f;
-  value.v[3] = 1.0f;
-  info->set_value(value);
-  glVertexAttrib2fv(index, v);
 }
 
 void GLES2DecoderImpl::DoVertexAttrib3fv(GLuint index, const GLfloat* v) {
-  VertexAttribManager::VertexAttribInfo* info =
-      state_.vertex_attrib_manager->GetVertexAttribInfo(index);
-  if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glVertexAttrib3fv", "index out of range");
-    return;
+  GLfloat t[4] = { v[0], v[1], v[2], 1.0f, };
+  if (SetVertexAttribValue("glVertexAttrib3fv", index, t)) {
+    glVertexAttrib3fv(index, v);
   }
-  VertexAttribManager::VertexAttribInfo::Vec4 value;
-  value.v[0] = v[0];
-  value.v[1] = v[1];
-  value.v[2] = v[2];
-  value.v[3] = 1.0f;
-  info->set_value(value);
-  glVertexAttrib3fv(index, v);
 }
 
 void GLES2DecoderImpl::DoVertexAttrib4fv(GLuint index, const GLfloat* v) {
-  VertexAttribManager::VertexAttribInfo* info =
-      state_.vertex_attrib_manager->GetVertexAttribInfo(index);
-  if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glVertexAttrib4fv", "index out of range");
-    return;
+  if (SetVertexAttribValue("glVertexAttrib4fv", index, v)) {
+    glVertexAttrib4fv(index, v);
   }
-  VertexAttribManager::VertexAttribInfo::Vec4 value;
-  value.v[0] = v[0];
-  value.v[1] = v[1];
-  value.v[2] = v[2];
-  value.v[3] = v[3];
-  info->set_value(value);
-  glVertexAttrib4fv(index, v);
 }
 
 error::Error GLES2DecoderImpl::HandleVertexAttribPointer(

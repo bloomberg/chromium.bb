@@ -1195,27 +1195,16 @@ TEST_F(GLES2ImplementationTest, GetVertexBufferPointerv) {
   const GLuint kBufferId = 0x123;
   const GLint kOffset2 = 0x456;
 
-  // Only one set and one get because the client side buffer's info is stored
-  // on the client side.
+  // It's all cached on the client side so no get commands are issued.
   struct Cmds {
     BindBuffer bind;
     VertexAttribPointer set_pointer;
-    GetVertexAttribPointerv get_pointer;
   };
-
-  ExpectedMemoryInfo mem1 = GetExpectedResultMemory(16);
 
   Cmds expected;
   expected.bind.Init(GL_ARRAY_BUFFER, kBufferId);
   expected.set_pointer.Init(kAttribIndex2, kNumComponents2, GL_FLOAT, GL_FALSE,
                             kStride2, kOffset2);
-  expected.get_pointer.Init(kAttribIndex2, GL_VERTEX_ATTRIB_ARRAY_POINTER,
-                            mem1.id, mem1.offset);
-
-  // One call to flush to way for GetVertexAttribPointerv
-  EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(mem1.ptr, SizedResultHelper<uint32>(kOffset2)))
-      .RetiresOnSaturation();
 
   // Set one client side buffer.
   gl_->VertexAttribPointer(kAttribIndex1, kNumComponents1,
@@ -1236,7 +1225,6 @@ TEST_F(GLES2ImplementationTest, GetVertexBufferPointerv) {
 
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_TRUE(static_cast<const void*>(&verts) == ptr1);
-  // because the service is not running ptr2 is not read.
   EXPECT_TRUE(ptr2 == reinterpret_cast<void*>(kOffset2));
 }
 
@@ -1257,11 +1245,9 @@ TEST_F(GLES2ImplementationTest, GetVertexAttrib) {
     EnableVertexAttribArray enable;
     BindBuffer bind;
     VertexAttribPointer set_pointer;
-    GetVertexAttribiv get1;  // for getting the buffer from attrib2
     GetVertexAttribfv get2;  // for getting the value from attrib1
   };
 
-  ExpectedMemoryInfo mem1 = GetExpectedResultMemory(16);
   ExpectedMemoryInfo mem2 = GetExpectedResultMemory(16);
 
   Cmds expected;
@@ -1269,19 +1255,15 @@ TEST_F(GLES2ImplementationTest, GetVertexAttrib) {
   expected.bind.Init(GL_ARRAY_BUFFER, kBufferId);
   expected.set_pointer.Init(kAttribIndex2, kNumComponents2, GL_FLOAT, GL_FALSE,
                             kStride2, kOffset2);
-  expected.get1.Init(kAttribIndex2,
-                     GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING,
-                     mem1.id, mem1.offset);
   expected.get2.Init(kAttribIndex1,
                      GL_CURRENT_VERTEX_ATTRIB,
                      mem2.id, mem2.offset);
 
   FourFloats current_attrib(1.2f, 3.4f, 5.6f, 7.8f);
 
-  // One call to flush to way for GetVertexAttribiv
+  // One call to flush to wait for last call to GetVertexAttribiv
+  // as others are all cached.
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(
-          mem1.ptr, SizedResultHelper<GLuint>(kBufferId)))
       .WillOnce(SetMemory(
           mem2.ptr, SizedResultHelper<FourFloats>(current_attrib)))
       .RetiresOnSaturation();
@@ -2567,6 +2549,25 @@ TEST_F(GLES2ImplementationTest, CapabilitiesAreCached) {
     EXPECT_TRUE(result);
     EXPECT_TRUE(NoCommandsWritten());
   }
+}
+
+TEST_F(GLES2ImplementationTest, BindVertexArrayOES) {
+  GLuint id = 0;
+  gl_->GenVertexArraysOES(1, &id);
+  ClearCommands();
+
+  struct Cmds {
+    BindVertexArrayOES cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(id);
+
+  const void* commands = GetPut();
+  gl_->BindVertexArrayOES(id);
+  EXPECT_EQ(0, memcmp(&expected, commands, sizeof(expected)));
+  ClearCommands();
+  gl_->BindVertexArrayOES(id);
+  EXPECT_TRUE(NoCommandsWritten());
 }
 
 TEST_F(GLES2ImplementationTest, BeginEndQueryEXT) {

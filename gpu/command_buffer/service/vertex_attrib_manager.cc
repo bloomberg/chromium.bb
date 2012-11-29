@@ -31,10 +31,6 @@ VertexAttribManager::VertexAttribInfo::VertexAttribInfo()
       real_stride_(16),
       divisor_(0),
       list_(NULL) {
-  value_.v[0] = 0.0f;
-  value_.v[1] = 0.0f;
-  value_.v[2] = 0.0f;
-  value_.v[3] = 1.0f;
 }
 
 VertexAttribManager::VertexAttribInfo::~VertexAttribInfo() {

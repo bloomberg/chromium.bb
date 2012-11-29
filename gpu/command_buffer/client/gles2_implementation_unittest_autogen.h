@@ -1633,20 +1633,6 @@ TEST_F(GLES2ImplementationTest, IsVertexArrayOES) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_TRUE(result);
 }
-
-TEST_F(GLES2ImplementationTest, BindVertexArrayOES) {
-  struct Cmds {
-    BindVertexArrayOES cmd;
-  };
-  Cmds expected;
-  expected.cmd.Init(1);
-
-  gl_->BindVertexArrayOES(1);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  ClearCommands();
-  gl_->BindVertexArrayOES(1);
-  EXPECT_TRUE(NoCommandsWritten());
-}
 // TODO: Implement unit test for GenSharedIdsCHROMIUM
 // TODO: Implement unit test for DeleteSharedIdsCHROMIUM
 // TODO: Implement unit test for RegisterSharedIdsCHROMIUM

@@ -42,6 +42,7 @@
           '<(DEPTH)/gpu/command_buffer/client/gles2_interface.cc',
           '<(DEPTH)/gpu/command_buffer/client/program_info_manager.cc',
           '<(DEPTH)/gpu/command_buffer/client/transfer_buffer.cc',
+          '<(DEPTH)/gpu/command_buffer/client/vertex_array_object_manager.cc',
           '<(DEPTH)/gpu/command_buffer/client/gles2_lib.cc',
           '<(DEPTH)/gpu/command_buffer/client/mapped_memory.cc',
           '<(DEPTH)/gpu/command_buffer/client/query_tracker.cc',

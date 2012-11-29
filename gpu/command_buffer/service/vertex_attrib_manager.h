@@ -33,9 +33,6 @@ class GPU_EXPORT VertexAttribManager :
   class GPU_EXPORT VertexAttribInfo {
    public:
     typedef std::list<VertexAttribInfo*> VertexAttribInfoList;
-    struct Vec4 {
-      float v[4];
-    };
 
     VertexAttribInfo();
     ~VertexAttribInfo();
@@ -77,14 +74,6 @@ class GPU_EXPORT VertexAttribManager :
 
     bool enabled() const {
       return enabled_;
-    }
-
-    void set_value(const Vec4& value) {
-      value_ = value;
-    }
-
-    const Vec4& value() const {
-      return value_;
     }
 
     // Find the maximum vertex accessed, accounting for instancing.
@@ -170,9 +159,6 @@ class GPU_EXPORT VertexAttribManager :
     GLsizei real_stride_;
 
     GLsizei divisor_;
-
-    // The current value of the attrib.
-    Vec4 value_;
 
     // The buffer bound to this attribute.
     BufferManager::BufferInfo::Ref buffer_;

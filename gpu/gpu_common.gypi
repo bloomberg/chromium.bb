@@ -38,6 +38,8 @@
       'command_buffer/client/query_tracker.h',
       'command_buffer/client/share_group.cc',
       'command_buffer/client/share_group.h',
+      'command_buffer/client/vertex_array_object_manager.cc',
+      'command_buffer/client/vertex_array_object_manager.h',
     ]
   },
   'conditions': [

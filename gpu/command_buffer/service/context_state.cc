@@ -73,6 +73,7 @@ void ContextState::RestoreState() const {
   // TODO: This if should not be needed. RestoreState is getting called
   // before GLES2Decoder::Initialize which is a bug.
   if (vertex_attrib_manager) {
+    // TODO(gman): Move this restoration to VertexAttribManager.
     for (size_t attrib = 0; attrib < vertex_attrib_manager->num_attribs();
          ++attrib) {
       const VertexAttribManager::VertexAttribInfo* info =
@@ -97,6 +98,7 @@ void ContextState::RestoreState() const {
           glDisableVertexAttribArray(attrib);
         }
       }
+      glVertexAttrib4fv(attrib, attrib_values[attrib].v);
     }
     BufferManager::BufferInfo* element_array_buffer =
         vertex_attrib_manager->element_array_buffer();

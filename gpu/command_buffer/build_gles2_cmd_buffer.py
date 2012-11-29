@@ -2196,6 +2196,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoBindVertexArrayOES',
     'gen_func': 'GenVertexArraysOES',
     'unit_test': False,
+    'client_test': False,
   },
   'DeleteVertexArraysOES': {
     'type': 'DELn',
@@ -3583,6 +3584,7 @@ class GENnHandler(TypeHandler):
     code = """  GPU_CLIENT_SINGLE_THREAD_CHECK();
   GetIdHandler(id_namespaces::k%(resource_types)s)->
       MakeIds(this, 0, %(args)s);
+  %(name)sHelper(%(args)s);
   helper_->%(name)sImmediate(%(args)s);
   helper_->CommandBufferHelper::Flush();
 %(log_code)s

@@ -94,7 +94,7 @@ class TransferBufferInterface;
 
 namespace gles2 {
 
-class ClientSideBufferHelper;
+class VertexArrayObjectManager;
 
 // This class emulates GLES2 over command buffers. It can be used by a client
 // program so that the program does not need deal with shared memory and command
@@ -212,8 +212,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
   }
 
  private:
-  friend class ClientSideBufferHelper;
   friend class GLES2ImplementationTest;
+  friend class VertexArrayObjectManager;
 
   // Used to track whether an extension is available
   enum ExtensionStatus {
@@ -389,13 +389,20 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
   bool BindTextureHelper(GLenum target, GLuint texture);
   bool BindVertexArrayHelper(GLuint array);
 
+  void GenBuffersHelper(GLsizei n, const GLuint* buffers);
+  void GenFramebuffersHelper(GLsizei n, const GLuint* framebuffers);
+  void GenRenderbuffersHelper(GLsizei n, const GLuint* renderbuffers);
+  void GenTexturesHelper(GLsizei n, const GLuint* textures);
+  void GenVertexArraysOESHelper(GLsizei n, const GLuint* arrays);
+  void GenQueriesEXTHelper(GLsizei n, const GLuint* queries);
+
   void DeleteBuffersHelper(GLsizei n, const GLuint* buffers);
   void DeleteFramebuffersHelper(GLsizei n, const GLuint* framebuffers);
   void DeleteRenderbuffersHelper(GLsizei n, const GLuint* renderbuffers);
   void DeleteTexturesHelper(GLsizei n, const GLuint* textures);
   bool DeleteProgramHelper(GLuint program);
   bool DeleteShaderHelper(GLuint shader);
-  void DeleteQueriesEXTHelper(GLsizei n, const GLuint* textures);
+  void DeleteQueriesEXTHelper(GLsizei n, const GLuint* queries);
   void DeleteVertexArraysOESHelper(GLsizei n, const GLuint* arrays);
 
   void DeleteBuffersStub(GLsizei n, const GLuint* buffers);
@@ -421,6 +428,9 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
 
   GLuint GetMaxValueInBufferCHROMIUMHelper(
       GLuint buffer_id, GLsizei count, GLenum type, GLuint offset);
+
+  void RestoreElementAndArrayBuffers(bool restore);
+  void RestoreArrayBuffer(bool restrore);
 
   // The pixels pointer should already account for unpack skip rows and skip
   // pixels.
@@ -515,22 +525,12 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
   // The currently bound array buffer.
   GLuint bound_array_buffer_id_;
 
-  // The currently bound element array buffer.
-  GLuint bound_element_array_buffer_id_;
-
   // The currently bound pixel transfer buffer.
   GLuint bound_pixel_unpack_transfer_buffer_id_;
 
-  // GL names for the buffers used to emulate client side buffers.
-  GLuint client_side_array_id_;
-  GLuint client_side_element_array_id_;
-
-  // Info for each vertex attribute saved so we can simulate client side
-  // buffers.
-  scoped_ptr<ClientSideBufferHelper> client_side_buffer_helper_;
-
-  // The currently bound vertex array object (VAO)
-  GLuint bound_vertex_array_id_;
+  // Client side management for vertex array objects. Needed to correctly
+  // track client side arrays.
+  scoped_ptr<VertexArrayObjectManager> vertex_array_object_manager_;
 
   GLuint reserved_ids_[2];
 

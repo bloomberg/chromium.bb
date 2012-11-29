@@ -143,6 +143,7 @@
         'command_buffer/client/program_info_manager_unittest.cc',
         'command_buffer/client/ring_buffer_test.cc',
         'command_buffer/client/transfer_buffer_unittest.cc',
+        'command_buffer/client/vertex_array_object_manager_unittest.cc',
         'command_buffer/common/bitfield_helpers_test.cc',
         'command_buffer/common/command_buffer_mock.cc',
         'command_buffer/common/command_buffer_mock.h',

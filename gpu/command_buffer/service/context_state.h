@@ -77,6 +77,15 @@ struct GPU_EXPORT TextureUnit {
   }
 };
 
+struct Vec4 {
+  Vec4() {
+    v[0] = 0.0f;
+    v[1] = 0.0f;
+    v[2] = 0.0f;
+    v[3] = 1.0f;
+  }
+  float v[4];
+};
 
 struct GPU_EXPORT ContextState {
   ContextState();
@@ -116,6 +125,9 @@ struct GPU_EXPORT ContextState {
 
   // Which textures are bound to texture units through glActiveTexture.
   std::vector<TextureUnit> texture_units;
+
+  // The values for each attrib.
+  std::vector<Vec4> attrib_values;
 
   // Class that manages vertex attribs.
   VertexAttribManager::Ref vertex_attrib_manager;
