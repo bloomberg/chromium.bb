@@ -32,17 +32,20 @@ class CommonSwitches {
         script_bubble(
             switches::kScriptBubble,
             FeatureSwitch::DEFAULT_DISABLED),
-        // TODO(finnur): When enabling this, only enable for OS_WIN.
         sideload_wipeout(
             switches::kSideloadWipeout,
-            base::FieldTrialList::FindFullName("SideloadWipeout") == "Enabled" ?
-                FeatureSwitch::DEFAULT_ENABLED :
-                FeatureSwitch::DEFAULT_DISABLED),
+#if defined(OS_WIN)
+            FeatureSwitch::DEFAULT_ENABLED),
+#else
+            FeatureSwitch::DEFAULT_DISABLED),
+#endif
         prompt_for_external_extensions(
             switches::kPromptForExternalExtensions,
-            base::FieldTrialList::FindFullName("SideloadWipeout") == "Enabled" ?
-                FeatureSwitch::DEFAULT_ENABLED :
-                FeatureSwitch::DEFAULT_DISABLED),
+#if defined(OS_WIN)
+            FeatureSwitch::DEFAULT_ENABLED),
+#else
+            FeatureSwitch::DEFAULT_DISABLED),
+#endif
         tab_capture(
             switches::kTabCapture,
             FeatureSwitch::DEFAULT_ENABLED)
