@@ -4,9 +4,14 @@
 
 #include "cc/picture_layer_impl.h"
 
+#include "cc/append_quads_data.h"
+#include "cc/checkerboard_draw_quad.h"
+#include "cc/debug_border_draw_quad.h"
+#include "cc/debug_colors.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/math_util.h"
 #include "cc/quad_sink.h"
+#include "cc/solid_color_draw_quad.h"
 #include "cc/tile_draw_quad.h"
 
 namespace cc {
@@ -30,7 +35,8 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
   const gfx::Rect& rect = visibleContentRect();
   gfx::Rect content_rect(gfx::Point(), contentBounds());
 
-  SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
+  SharedQuadState* sharedQuadState =
+      quadSink.useSharedQuadState(createSharedQuadState());
   bool clipped = false;
   gfx::QuadF target_quad = MathUtil::mapQuad(
       drawTransform(),
@@ -39,6 +45,30 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
   bool isAxisAlignedInTarget = !clipped && target_quad.IsRectilinear();
   bool useAA = !isAxisAlignedInTarget;
 
+  if (showDebugBorders()) {
+    for (PictureLayerTilingSet::Iterator iter(&tilings_,
+                                              contentsScaleX(),
+                                              rect);
+         iter;
+         ++iter) {
+      SkColor color;
+      float width;
+      if (*iter && iter->resource_id()) {
+        color = DebugColors::TileBorderColor();
+        width = DebugColors::TileBorderWidth(layerTreeHostImpl());
+      } else {
+        color = DebugColors::MissingTileBorderColor();
+        width = DebugColors::MissingTileBorderWidth(layerTreeHostImpl());
+      }
+
+      scoped_ptr<DebugBorderDrawQuad> debugBorderQuad =
+          DebugBorderDrawQuad::Create();
+      gfx::Rect geometry_rect = iter.geometry_rect();
+      debugBorderQuad->SetNew(sharedQuadState, geometry_rect, color, width);
+      quadSink.append(debugBorderQuad.PassAs<DrawQuad>(), appendQuadsData);
+    }
+  }
+
   for (PictureLayerTilingSet::Iterator iter(&tilings_, contentsScaleX(), rect);
        iter;
        ++iter) {
@@ -46,12 +76,25 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
     if (*iter)
       resource = iter->resource_id();
 
+    gfx::Rect geometry_rect = iter.geometry_rect();
+
     if (!resource) {
-      // TODO(enne): draw checkerboards, etc...
+      if (drawCheckerboardForMissingTiles()) {
+        // TODO(enne): Figure out how to show debug "invalidated checker" color
+        scoped_ptr<CheckerboardDrawQuad> quad = CheckerboardDrawQuad::Create();
+        SkColor color = DebugColors::DefaultCheckerboardColor();
+        quad->SetNew(sharedQuadState, geometry_rect, color);
+        appendQuadsData.hadMissingTiles |=
+            quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
+      } else {
+        scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
+        quad->SetNew(sharedQuadState, geometry_rect, backgroundColor());
+        appendQuadsData.hadMissingTiles |=
+            quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
+      }
       continue;
     }
 
-    gfx::Rect geometry_rect = iter.geometry_rect();
     gfx::RectF texture_rect = iter.texture_rect();
     gfx::Rect opaque_rect = iter->opaque_rect();
     opaque_rect.Intersect(content_rect);

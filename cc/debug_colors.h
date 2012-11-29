@@ -41,6 +41,7 @@ class DebugColors {
   static SkColor CulledTileBorderColor();
   static int CulledTileBorderWidth(const LayerTreeHostImpl* host_impl);
 
+  static SkColor DefaultCheckerboardColor();
   static SkColor EvictedTileCheckerboardColor();
   static SkColor InvalidatedTileCheckerboardColor();
 

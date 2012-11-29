@@ -54,6 +54,9 @@ int DebugColors::CulledTileBorderWidth(const LayerTreeHostImpl* host_impl) { ret
 
 // ======= Checkerboard colors =======
 
+// Non-debug checkerboards are grey.
+SkColor DebugColors::DefaultCheckerboardColor() { return SkColorSetRGB(241, 241, 241); }
+
 // Invalidated tiles get sky blue checkerboards.
 SkColor DebugColors::InvalidatedTileCheckerboardColor() { return SkColorSetRGB(128, 200, 245); }
 

@@ -23,9 +23,6 @@ using namespace std;
 
 namespace cc {
 
-// Non-debug checkerboards are grey.
-const SkColor kTileCheckerboardColor = SkColorSetRGB(241, 241, 241);
-
 class DrawableTile : public LayerTilingData::Tile {
 public:
     static scoped_ptr<DrawableTile> create() { return make_scoped_ptr(new DrawableTile()); }
@@ -159,7 +156,7 @@ void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
                     if (showDebugBorders())
                         checkerColor = tile ? DebugColors::InvalidatedTileCheckerboardColor() : DebugColors::EvictedTileCheckerboardColor();
                     else
-                        checkerColor = kTileCheckerboardColor;
+                        checkerColor = DebugColors::DefaultCheckerboardColor();
 
                     scoped_ptr<CheckerboardDrawQuad> checkerboardQuad = CheckerboardDrawQuad::Create();
                     checkerboardQuad->SetNew(sharedQuadState, tileRect, checkerColor);
