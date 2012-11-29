@@ -193,6 +193,15 @@ class GDataWapiOperationsTest : public testing::Test {
 
     const GURL absolute_url = test_server_.GetURL(request.relative_url);
     std::string remaining_path;
+    if (absolute_url.path() == "/feeds/default/private/full" &&
+        request.method == test_server::METHOD_POST) {
+      // This is a request for copying a document.
+      // TODO(satorux): we should generate valid JSON data for the newly
+      // copied document but for now, just return "file_entry.json"
+      return CreateHttpResponseFromFile(
+          test_util::GetTestFilePath("gdata/file_entry.json"));
+    }
+
     if (!RemovePrefix(absolute_url.path(),
                       "/feeds/default/private/full/",
                       &remaining_path)) {
@@ -486,8 +495,33 @@ TEST_F(GDataWapiOperationsTest, CreateDirectoryOperation) {
             http_request_.content);
 }
 
-// TODO(satorux): Write tests for CopyDocumentOperation.
-// crbug.com/162348
+TEST_F(GDataWapiOperationsTest, CopyDocumentOperation) {
+  GDataErrorCode result_code = GDATA_OTHER_ERROR;
+  scoped_ptr<base::Value> result_data;
+
+  // Copy a document with a new name "New Document".
+  CopyDocumentOperation* operation = new CopyDocumentOperation(
+      &operation_registry_,
+      *url_generator_,
+      base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
+                 &result_code,
+                 &result_data),
+      "document:5_document_resource_id",  // source resource ID
+      FILE_PATH_LITERAL("New Document"));
+
+  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, result_code);
+  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_EQ("<?xml version=\"1.0\"?>\n"
+            "<entry xmlns=\"http://www.w3.org/2005/Atom\">\n"
+            " <id>document:5_document_resource_id</id>\n"
+            " <title>New Document</title>\n"
+            "</entry>\n",
+            http_request_.content);
+}
 
 // TODO(satorux): Write tests for RenameResourceOperation.
 // crbug.com/162348
