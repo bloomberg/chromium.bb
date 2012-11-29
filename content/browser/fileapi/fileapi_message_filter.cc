@@ -561,7 +561,16 @@ void FileAPIMessageFilter::OnCreateSnapshotFile(
   FileSystemURL url(path);
   base::Callback<void(const FilePath&)> register_file_callback =
       base::Bind(&FileAPIMessageFilter::RegisterFileAsBlob,
-                 this, blob_url, url.path());
+                 this, blob_url, url);
+
+  // Make sure if this file can be read by the renderer as this is
+  // called when the renderer is about to create a new File object
+  // (for reading the file).
+  base::PlatformFileError error;
+  if (!HasPermissionsForFile(url, kReadFilePermissions, &error)) {
+    Send(new FileSystemMsg_DidFail(request_id, error));
+    return;
+  }
 
   FileSystemOperation* operation = GetNewOperation(url, request_id);
   if (!operation)
@@ -762,24 +771,32 @@ void FileAPIMessageFilter::DidCreateSnapshot(
 }
 
 void FileAPIMessageFilter::RegisterFileAsBlob(const GURL& blob_url,
-                                              const FilePath& virtual_path,
+                                              const FileSystemURL& url,
                                               const FilePath& platform_path) {
   // Use the virtual path's extension to determine MIME type.
-  FilePath::StringType extension = virtual_path.Extension();
+  FilePath::StringType extension = url.path().Extension();
   if (!extension.empty())
     extension = extension.substr(1);  // Strip leading ".".
 
   scoped_refptr<webkit_blob::ShareableFileReference> shareable_file =
       webkit_blob::ShareableFileReference::Get(platform_path);
-  if (shareable_file &&
-      !ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
           process_id_, platform_path)) {
+    // If the underlying file system implementation is returning a new
+    // (likely temporary) snapshot file or the file is for sandboxed
+    // filesystems it's ok to grant permission here.
+    // (Note that we have also already checked if the renderer has the
+    // read permission for this file in OnCreateSnapshotFile.)
+    DCHECK(shareable_file ||
+           fileapi::SandboxMountPointProvider::CanHandleType(url.type()));
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
         process_id_, platform_path);
-    // This will revoke all permissions for the file when the last ref
-    // of the file is dropped (assuming it's ok).
-    shareable_file->AddFinalReleaseCallback(
-        base::Bind(&RevokeFilePermission, process_id_));
+    if (shareable_file) {
+      // This will revoke all permissions for the file when the last ref
+      // of the file is dropped (assuming it's ok).
+      shareable_file->AddFinalReleaseCallback(
+          base::Bind(&RevokeFilePermission, process_id_));
+    }
   }
 
   // This may fail, but then we'll be just setting the empty mime type.

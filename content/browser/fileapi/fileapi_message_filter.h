@@ -164,7 +164,7 @@ class FileAPIMessageFilter : public BrowserMessageFilter {
   // Registers the given file pointed by |virtual_path| and backed by
   // |platform_path| as the |blob_url|.  Called by DidCreateSnapshot.
   void RegisterFileAsBlob(const GURL& blob_url,
-                          const FilePath& virtual_path,
+                          const fileapi::FileSystemURL& url,
                           const FilePath& platform_path);
 
   // Checks renderer's access permissions for single file.
