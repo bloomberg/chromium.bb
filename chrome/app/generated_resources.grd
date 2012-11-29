@@ -11416,8 +11416,8 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         <message name="IDS_NEW_TAB_CONTEXT_MENU_OPEN_IN_INCOGNITO_TAB" desc="Context menu description for loading a link in an incognito tab">
           Open in incognito tab
         </message>
-        <message name="IDS_NEW_TAB_CONTEXT_MENU_REMOVE" desc="Context menu description for removing the selected item">
-          Remove
+        <message name="IDS_NEW_TAB_CONTEXT_MENU_REMOVE" desc="Context menu description for removing all recently closed items">
+          Remove all
         </message>
         <message name="IDS_NEW_TAB_CONTEXT_MENU_EDIT_BOOKMARK" desc="Context menu description for editing the selected bookmark">
           Edit bookmark
