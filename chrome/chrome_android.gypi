@@ -45,6 +45,7 @@
         '../media/media.gyp:media_java',
         'chrome.gyp:chrome_java',
         'chrome_android_paks',
+        'copy_devtools_resources',
         'libchromiumtestshell',
       ],
       'variables': {
@@ -55,7 +56,10 @@
         'resource_dir': '../res',
         'asset_location': '<(ant_build_out)/../assets/chrome',
         'native_libs_paths': [ '<(SHARED_LIB_DIR)/libchromiumtestshell.so', ],
-        'additional_input_paths': [ '<@(chrome_android_pak_output_resources)', ],
+        'additional_input_paths': [
+          '<@(chrome_android_pak_output_resources)',
+          '<(chrome_android_pak_output_folder)/devtools_resources.pak',
+        ],
       },
       'includes': [ '../build/java_apk.gypi', ],
     },
@@ -129,6 +133,21 @@
         {
           'destination': '<(chrome_android_pak_output_folder)',
           'files': [ '<@(chrome_android_pak_input_resources)' ],
+        }
+      ],
+    },
+    {
+      'target_name': 'copy_devtools_resources',
+      'type': 'none',
+      'dependencies': [
+        '<(DEPTH)/chrome/chrome_resources.gyp:chrome_extra_resources',
+      ],
+      'copies': [
+        {
+          'destination': '<(chrome_android_pak_output_folder)',
+          'files': [
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
+          ],
         }
       ],
     },

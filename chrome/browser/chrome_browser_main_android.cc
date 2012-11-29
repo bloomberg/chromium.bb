@@ -4,11 +4,14 @@
 
 #include "chrome/browser/chrome_browser_main_android.h"
 
+#include "base/path_service.h"
 #include "chrome/app/breakpad_linux.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/common/main_function_params.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_paths.h"
 
 ChromeBrowserMainPartsAndroid::ChromeBrowserMainPartsAndroid(
     const content::MainFunctionParams& parameters)
@@ -42,6 +45,20 @@ void ChromeBrowserMainPartsAndroid::PreEarlyInitialization() {
   MessageLoopForUI::current()->Start();
 
   ChromeBrowserMainParts::PreEarlyInitialization();
+}
+
+int ChromeBrowserMainPartsAndroid::PreCreateThreads() {
+  // PreCreateThreads initializes ResourceBundle instance.
+  const int result = ChromeBrowserMainParts::PreCreateThreads();
+
+  // Add devtools_resources.pak which is used in Chromium TestShell.
+  FilePath paks_path;
+  PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &paks_path);
+  ResourceBundle::GetSharedInstance().AddOptionalDataPackFromPath(
+      paks_path.Append(FILE_PATH_LITERAL("devtools_resources.pak")),
+      ui::SCALE_FACTOR_NONE);
+
+  return result;
 }
 
 void ChromeBrowserMainPartsAndroid::ShowMissingLocaleMessageBox() {

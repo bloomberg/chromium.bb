@@ -16,6 +16,7 @@ class ChromeBrowserMainPartsAndroid : public ChromeBrowserMainParts {
   // content::BrowserMainParts overrides.
   virtual void PreProfileInit() OVERRIDE;
   virtual void PreEarlyInitialization() OVERRIDE;
+  virtual int PreCreateThreads() OVERRIDE;
 
   // ChromeBrowserMainParts overrides.
   virtual void ShowMissingLocaleMessageBox() OVERRIDE;
