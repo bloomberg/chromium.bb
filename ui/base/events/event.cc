@@ -505,7 +505,7 @@ DropTargetEvent::DropTargetEvent(const OSExchangeData& data,
 ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
     : MouseEvent(native_event) {
   if (type() == ET_SCROLL) {
-    GetScrollOffsets(native_event, &x_offset_, &y_offset_);
+    GetScrollOffsets(native_event, &x_offset_, &y_offset_, &finger_count_);
     double start, end;
     GetGestureTimes(native_event, &start, &end);
   } else if (type() == ET_SCROLL_FLING_START) {

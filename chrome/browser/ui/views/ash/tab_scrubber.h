@@ -26,7 +26,7 @@ class TabScrubber : public ui::EventHandler,
   virtual ~TabScrubber();
 
   // ui::EventHandler overrides:
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,
@@ -34,16 +34,16 @@ class TabScrubber : public ui::EventHandler,
                        const content::NotificationDetails& details) OVERRIDE;
 
   Browser* GetActiveBrowser();
+  void StartScrubbing();
   void StopScrubbing();
 
   // Indicates that we are currently scrubbing.
   bool scrubbing_;
   // The browser that we are scrubbing.
   Browser* browser_;
-  // The tab that was active when we started scrubbing.
-  int initial_tab_index_;
   // The x value of the event that initiated scrubbing.
-  int initial_x_;
+  float scroll_x_;
+  float scroll_y_;
 
   content::NotificationRegistrar registrar_;
 
