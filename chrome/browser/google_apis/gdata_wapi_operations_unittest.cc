@@ -523,8 +523,30 @@ TEST_F(GDataWapiOperationsTest, CopyDocumentOperation) {
             http_request_.content);
 }
 
-// TODO(satorux): Write tests for RenameResourceOperation.
-// crbug.com/162348
+TEST_F(GDataWapiOperationsTest, RenameResourceOperation) {
+  GDataErrorCode result_code = GDATA_OTHER_ERROR;
+
+  // Rename a file with a new name "New File".
+  RenameResourceOperation* operation = new RenameResourceOperation(
+      &operation_registry_,
+      base::Bind(&CopyResultFromEntryActionCallbackAndQuit,
+                 &result_code),
+      test_server_.GetURL(
+          "/feeds/default/private/full/file:2_file_resource_id"),
+      FILE_PATH_LITERAL("New File"));
+
+  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, result_code);
+  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_EQ("<?xml version=\"1.0\"?>\n"
+            "<entry xmlns=\"http://www.w3.org/2005/Atom\">\n"
+            " <title>New File</title>\n"
+            "</entry>\n",
+            http_request_.content);
+}
 
 // TODO(satorux): Write tests for AuthorizeAppsOperation.
 // crbug.com/162348
