@@ -42,7 +42,7 @@ class ScriptBubbleView : public views::BubbleDelegateView,
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // LinkListener methods:
-  void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
  private:
   struct ScriptEntry {
