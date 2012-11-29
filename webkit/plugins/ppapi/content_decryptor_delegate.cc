@@ -6,7 +6,9 @@
 
 #include "base/callback_helpers.h"
 #include "base/debug/trace_event.h"
+#include "base/message_loop_proxy.h"
 #include "media/base/audio_decoder_config.h"
+#include "media/base/bind_to_loop.h"
 #include "media/base/channel_layout.h"
 #include "media/base/data_buffer.h"
 #include "media/base/decoder_buffer.h"
@@ -807,43 +809,41 @@ void ContentDecryptorDelegate::DeliverFrame(
     video_decode_cb.Run(media::Decryptor::kError, NULL);
     return;
   }
-  BufferAutoMapper mapper(enter.object());
-  if (!mapper.data() || !mapper.size()) {
+
+  scoped_refptr<PPB_Buffer_Impl> ppb_buffer =
+      static_cast<PPB_Buffer_Impl*>(enter.object());
+
+  uint8* frame_data = static_cast<uint8*>(ppb_buffer->Map());
+  if (!ppb_buffer->IsMapped() || !frame_data) {
     video_decode_cb.Run(media::Decryptor::kError, NULL);
     return;
   }
 
-  const uint8* frame_data = static_cast<uint8*>(mapper.data());
+  uint32_t mapped_size = 0;
+  if (!ppb_buffer->Describe(&mapped_size) || !mapped_size) {
+    video_decode_cb.Run(media::Decryptor::kError, NULL);
+    return;
+  }
+
   gfx::Size frame_size(frame_info->width, frame_info->height);
+  DCHECK_EQ(frame_info->format, PP_DECRYPTEDFRAMEFORMAT_YV12);
 
-  DCHECK(frame_info->format == PP_DECRYPTEDFRAMEFORMAT_YV12);
-  const media::VideoFrame::Format format = media::VideoFrame::YV12;
-
-  // TODO(tomfinegan): Find a way to take ownership of the shared memory
-  // managed by the PPB_Buffer_Dev, and avoid the extra copy.
-  scoped_refptr<media::VideoFrame> decoded_frame(
-      media::VideoFrame::CreateFrame(
-          format, frame_size, gfx::Rect(frame_size), frame_size,
+  // TODO(xhwang): Support visible_rect and natural_size in EME video decoding
+  // implementations.
+  scoped_refptr<media::VideoFrame> decoded_frame =
+      media::VideoFrame::WrapExternalYuvData(
+          media::VideoFrame::YV12,
+          frame_size, gfx::Rect(frame_size), frame_size,
+          frame_info->strides[PP_DECRYPTEDFRAMEPLANES_Y],
+          frame_info->strides[PP_DECRYPTEDFRAMEPLANES_U],
+          frame_info->strides[PP_DECRYPTEDFRAMEPLANES_V],
+          frame_data + frame_info->plane_offsets[PP_DECRYPTEDFRAMEPLANES_Y],
+          frame_data + frame_info->plane_offsets[PP_DECRYPTEDFRAMEPLANES_U],
+          frame_data + frame_info->plane_offsets[PP_DECRYPTEDFRAMEPLANES_V],
           base::TimeDelta::FromMicroseconds(
-              frame_info->tracking_info.timestamp)));
-
-  media::CopyYPlane(
-      frame_data + frame_info->plane_offsets[PP_DECRYPTEDFRAMEPLANES_Y],
-      frame_info->strides[PP_DECRYPTEDFRAMEPLANES_Y],
-      frame_info->height,
-      decoded_frame.get());
-
-  media::CopyUPlane(
-      frame_data + frame_info->plane_offsets[PP_DECRYPTEDFRAMEPLANES_U],
-      frame_info->strides[PP_DECRYPTEDFRAMEPLANES_U],
-      frame_info->height,
-      decoded_frame.get());
-
-  media::CopyVPlane(
-      frame_data + frame_info->plane_offsets[PP_DECRYPTEDFRAMEPLANES_V],
-      frame_info->strides[PP_DECRYPTEDFRAMEPLANES_V],
-      frame_info->height,
-      decoded_frame.get());
+              frame_info->tracking_info.timestamp),
+          media::BindToLoop(base::MessageLoopProxy::current(),
+                            base::Bind(&PPB_Buffer_Impl::Unmap, ppb_buffer)));
 
   video_decode_cb.Run(media::Decryptor::kSuccess, decoded_frame);
 }
