@@ -14,7 +14,7 @@
 #include "ui/gfx/size.h"
 
 namespace cc {
-
+class PicturePileImpl;
 struct RenderingStats;
 
 class CC_EXPORT PicturePile {
@@ -35,15 +35,7 @@ public:
       RenderingStats& stats);
 
   // Update other with a shallow copy of this (main => compositor thread commit)
-  void PushPropertiesTo(PicturePile& other);
-
-  // Clone a paint-safe version of this picture (with cloned PicturePileRecords)
-  scoped_ptr<PicturePile> CloneForDrawing() const;
-
-  // Raster a subrect of this PicturePile into the given canvas.
-  // It's only safe to call paint on a cloned version.
-  // It is assumed that contentsScale has already been applied to this canvas.
-  void Raster(SkCanvas* canvas, gfx::Rect rect);
+  void PushPropertiesTo(PicturePileImpl* other);
 
 private:
   std::vector<scoped_refptr<Picture> > pile_;

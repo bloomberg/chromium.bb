@@ -7,7 +7,8 @@
 namespace cc {
 
 FakePictureLayerTilingClient::FakePictureLayerTilingClient()
-    : tile_manager_(&tile_manager_client_, NULL) {
+    : tile_manager_(&tile_manager_client_, NULL),
+      pile_(PicturePileImpl::Create()) {
 }
 
 FakePictureLayerTilingClient::~FakePictureLayerTilingClient() {
@@ -17,7 +18,7 @@ scoped_refptr<Tile> FakePictureLayerTilingClient::CreateTile(
     PictureLayerTiling*,
     gfx::Rect rect) {
   return make_scoped_refptr(new Tile(&tile_manager_,
-                                     &pile_,
+                                     pile_.get(),
                                      tile_size_,
                                      GL_RGBA,
                                      rect));

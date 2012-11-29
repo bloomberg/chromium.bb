@@ -6,7 +6,7 @@
 #define CC_TEST_FAKE_PICTURE_LAYER_TILING_CLIENT_H_
 
 #include "cc/picture_layer_tiling.h"
-#include "cc/picture_pile.h"
+#include "cc/picture_pile_impl.h"
 #include "cc/test/fake_tile_manager_client.h"
 #include "cc/tile.h"
 #include "cc/tile_manager.h"
@@ -29,7 +29,7 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
  protected:
   FakeTileManagerClient tile_manager_client_;
   TileManager tile_manager_;
-  PicturePile pile_;
+  scoped_refptr<PicturePileImpl> pile_;
   gfx::Size tile_size_;
 };
 

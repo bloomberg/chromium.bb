@@ -16,7 +16,7 @@
 
 namespace {
 
-void RasterizeTile(cc::PicturePile* picture_pile,
+void RasterizeTile(cc::PicturePileImpl* picture_pile,
                    uint8_t* mapped_buffer,
                    const gfx::Rect& rect) {
   TRACE_EVENT0("cc", "RasterizeTile");
@@ -287,7 +287,7 @@ void TileManager::DispatchMoreRasterTasks() {
 
 void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
   TRACE_EVENT0("cc", "TileManager::DispatchOneRasterTask");
-  scoped_ptr<PicturePile> cloned_picture_pile =
+  scoped_refptr<PicturePileImpl> cloned_picture_pile =
       tile->picture_pile()->CloneForDrawing();
 
   ManagedTileState& managed_tile_state = tile->managed_state();
@@ -299,17 +299,12 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
   managed_tile_state.resource_id_is_being_initialized = true;
   managed_tile_state.can_be_freed = false;
 
-  // Get a pointer to the picture pile before the cloned_picture_pile
-  // reference is passed to base::Bind.
-  PicturePile* picture_pile = cloned_picture_pile.get();
-  DCHECK(picture_pile);
-
   ++pending_raster_tasks_;
   worker_pool_->GetTaskRunnerWithShutdownBehavior(
       base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)->PostTaskAndReply(
           FROM_HERE,
           base::Bind(&RasterizeTile,
-                     picture_pile,
+                     base::Unretained(cloned_picture_pile.get()),
                      resource_pool_->resource_provider()->mapPixelBuffer(
                          resource_id),
                      tile->rect_inside_picture_),
@@ -317,19 +312,18 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
                      base::Unretained(this),
                      tile,
                      resource_id,
-                     base::Passed(&cloned_picture_pile)));
+                     cloned_picture_pile));
 }
 
 void TileManager::OnRasterTaskCompleted(
     scoped_refptr<Tile> tile,
     ResourceProvider::ResourceId resource_id,
-    scoped_ptr<PicturePile> cloned_picture_pile) {
+    scoped_refptr<PicturePileImpl> cloned_picture_pile) {
   TRACE_EVENT0("cc", "TileManager::OnRasterTaskCompleted");
   --pending_raster_tasks_;
 
   // Release raster resources.
   resource_pool_->resource_provider()->unmapPixelBuffer(resource_id);
-  cloned_picture_pile.reset();
 
   ManagedTileState& managed_tile_state = tile->managed_state();
   managed_tile_state.can_be_freed = true;

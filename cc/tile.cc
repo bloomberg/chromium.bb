@@ -10,7 +10,7 @@
 namespace cc {
 
 Tile::Tile(TileManager* tile_manager,
-           PicturePile* picture_pile,
+           PicturePileImpl* picture_pile,
            gfx::Size tile_size,
            GLenum format,
            gfx::Rect rect_inside_picture)

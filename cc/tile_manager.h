@@ -90,7 +90,7 @@ class CC_EXPORT TileManager {
   void OnRasterTaskCompleted(
       scoped_refptr<Tile>,
       ResourceProvider::ResourceId,
-      scoped_ptr<PicturePile>);
+      scoped_refptr<PicturePileImpl>);
   void DidFinishTileInitialization(Tile*, ResourceProvider::ResourceId);
 
   TileManagerClient* client_;

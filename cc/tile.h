@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "cc/layer_tree_host_impl.h"
-#include "cc/picture_pile.h"
+#include "cc/picture_pile_impl.h"
 #include "cc/resource_provider.h"
 #include "cc/tile_manager.h"
 #include "cc/tile_priority.h"
@@ -23,13 +23,13 @@ class Tile;
 class CC_EXPORT Tile : public base::RefCounted<Tile> {
  public:
   Tile(TileManager* tile_manager,
-       PicturePile* picture_pile,
+       PicturePileImpl* picture_pile,
        gfx::Size tile_size,
        GLenum format,
        gfx::Rect rect_inside_picture);
 
-  const PicturePile* picture_pile() const {
-    return picture_pile_;
+  const PicturePileImpl* picture_pile() const {
+    return picture_pile_.get();
   }
 
   const TilePriority& priority(WhichTree tree) const {
@@ -64,7 +64,7 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
   ~Tile();
 
   TileManager* tile_manager_;
-  PicturePile* picture_pile_;
+  scoped_refptr<PicturePileImpl> picture_pile_;
   gfx::Rect tile_size_;
   GLenum format_;
   gfx::Rect rect_inside_picture_;

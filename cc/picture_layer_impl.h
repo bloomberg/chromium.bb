@@ -8,7 +8,7 @@
 #include "cc/layer_impl.h"
 #include "cc/picture_layer_tiling.h"
 #include "cc/picture_layer_tiling_set.h"
-#include "cc/picture_pile.h"
+#include "cc/picture_pile_impl.h"
 #include "cc/scoped_ptr_vector.h"
 
 namespace cc {
@@ -42,7 +42,7 @@ protected:
   PictureLayerImpl(int id);
 
   PictureLayerTilingSet tilings_;
-  PicturePile pile_;
+  scoped_refptr<PicturePileImpl> pile_;
 
   friend class PictureLayer;
   DISALLOW_COPY_AND_ASSIGN(PictureLayerImpl);

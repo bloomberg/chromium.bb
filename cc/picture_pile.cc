@@ -4,9 +4,8 @@
 
 #include <algorithm>
 
-#include "base/debug/trace_event.h"
 #include "cc/picture_pile.h"
-#include "third_party/skia/include/core/SkCanvas.h"
+#include "cc/picture_pile_impl.h"
 
 namespace cc {
 
@@ -50,35 +49,10 @@ void PicturePile::Update(
   pile_[0]->Record(painter, gfx::Rect(gfx::Point(), size_), stats);
 }
 
-void PicturePile::PushPropertiesTo(PicturePile& other) {
-  other.pile_.resize(pile_.size());
+void PicturePile::PushPropertiesTo(PicturePileImpl* other) {
+  other->pile_.resize(pile_.size());
   for (size_t i = 0; i < pile_.size(); ++i)
-    other.pile_[i] = pile_[i];
-}
-
-scoped_ptr<PicturePile> PicturePile::CloneForDrawing() const {
-  TRACE_EVENT0("cc", "PicturePile::CloneForDrawing");
-  scoped_ptr<PicturePile> clone = make_scoped_ptr(new PicturePile);
-  clone->pile_.resize(pile_.size());
-  for (size_t i = 0; i < pile_.size(); ++i)
-    clone->pile_[i] = pile_[i]->Clone();
-
-  return clone.Pass();
-}
-
-void PicturePile::Raster(SkCanvas* canvas, gfx::Rect rect) {
-  // TODO(enne): do this more efficiently, i.e. top down with Skia clips
-  canvas->save();
-  canvas->translate(-rect.x(), -rect.y());
-  SkRect layer_skrect = SkRect::MakeXYWH(rect.x(), rect.y(),
-                                         rect.width(), rect.height());
-  canvas->clipRect(layer_skrect);
-  for (size_t i = 0; i < pile_.size(); ++i) {
-    if (!pile_[i]->LayerRect().Intersects(rect))
-      continue;
-    pile_[i]->Raster(canvas);
-  }
-  canvas->restore();
+    other->pile_[i] = pile_[i];
 }
 
 }  // namespace cc

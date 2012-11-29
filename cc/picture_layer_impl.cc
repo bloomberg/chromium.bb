@@ -13,7 +13,8 @@ namespace cc {
 
 PictureLayerImpl::PictureLayerImpl(int id) :
     LayerImpl(id),
-    tilings_(this) {
+    tilings_(this),
+    pile_(PicturePileImpl::Create()) {
 }
 
 PictureLayerImpl::~PictureLayerImpl() {
@@ -96,7 +97,7 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling*,
 
   return make_scoped_refptr(new Tile(
       tile_manager,
-      &pile_,
+      pile_.get(),
       rect.size(),
       GL_RGBA,
       rect));
