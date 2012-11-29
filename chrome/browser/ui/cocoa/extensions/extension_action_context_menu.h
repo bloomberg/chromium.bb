@@ -20,6 +20,20 @@ class Extension;
 
 namespace extension_action_context_menu {
 
+// Enum of menu item choices to their respective indices. Exposed for use in
+// tests.
+// NOTE: This must be kept in sync with the implementation of the menu.
+typedef enum {
+  kExtensionContextName = 0,
+  kExtensionContextOptions = 2,
+  kExtensionContextUninstall = 3,
+  kExtensionContextHide = 4,
+  kExtensionContextManage = 6,
+  kExtensionContextInspect = 7
+} ExtensionType;
+
+class DevmodeObserver;
+
 }  // namespace extension_action_context_menu
 
 // A context menu used by any extension UI components that require it.
@@ -34,6 +48,9 @@ namespace extension_action_context_menu {
   // The browser that contains this extension. Weak.
   Browser* browser_;
 
+  // The observer used to listen for pref changed notifications.
+  scoped_ptr<extension_action_context_menu::DevmodeObserver> observer_;
+
   // Used to load the extension icon asynchronously on the I/O thread then show
   // the uninstall confirmation dialog.
   scoped_ptr<AsyncUninstaller> uninstaller_;
@@ -43,7 +60,6 @@ namespace extension_action_context_menu {
 - (id)initWithExtension:(const extensions::Extension*)extension
                 browser:(Browser*)browser
         extensionAction:(ExtensionAction*)action;
-
 @end
 
 typedef ExtensionActionContextMenu ExtensionActionContextMenuMac;

@@ -1089,6 +1089,7 @@
         'browser/ui/cocoa/constrained_window/constrained_window_mac_browsertest.mm',
         'browser/ui/cocoa/content_settings/collected_cookies_mac_browsertest.mm',
         'browser/ui/cocoa/content_settings/content_setting_bubble_cocoa_unittest.mm',
+        'browser/ui/cocoa/extensions/extension_action_context_menu_browsertest.mm',
         'browser/ui/cocoa/extensions/extension_install_dialog_controller_browsertest.mm',
         'browser/ui/cocoa/extensions/extension_install_prompt_test_utils.h',
         'browser/ui/cocoa/extensions/extension_install_prompt_test_utils.mm',
