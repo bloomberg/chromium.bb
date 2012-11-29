@@ -123,6 +123,16 @@ message PolicyFetchRequest {
   // missing from the server, as indicated by the valid_serial_number_missing
   // field in the last policy fetch response.
   optional string machine_id = 5;
+
+  // This field is used for devices to send the additional ID to fetch settings.
+  // Retrieving some settings requires more than just device or user ID.
+  // For example, to retrieve public account, devices need to pass in
+  // public account ID in addition to device ID. To retrieve extension or
+  // plug-in settings, devices need to pass in extension/plug-in ID in
+  // addition to user ID.
+  // policy_type represents the type of settings (e.g. public account,
+  // extension) devices request to fetch.
+  optional string settings_entity_id = 6;
 }
 
 // This message is included in serialized form in PolicyFetchResponse
@@ -188,6 +198,10 @@ message PolicyData {
   // number with a device policy fetch request.  Note that this only
   // applies to device policy.
   optional bool valid_serial_number_missing = 10;
+
+  // Indicates which public account or extension/plug-in this policy data is
+  // for. See PolicyFetchRequest.settings_entity_id for more details.
+  optional string settings_entity_id = 11;
 }
 
 message PolicyFetchResponse {
