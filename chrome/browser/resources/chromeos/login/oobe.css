@@ -838,7 +838,8 @@ html[oobe=old] .step-controls {
 #account-picker-dot,
 #enrollment-dot,
 #oauth-enrollment-dot,
-#reset-dot {
+#reset-dot,
+#tpm-error-message-dot {
   display: none;
 }
 
