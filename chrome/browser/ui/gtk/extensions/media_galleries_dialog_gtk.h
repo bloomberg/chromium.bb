@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_GTK_EXTENSIONS_MEDIA_GALLERIES_DIALOG_GTK_H_
 
 #include <gtk/gtk.h>
+
 #include <map>
 
 #include "base/compiler_specific.h"

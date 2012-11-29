@@ -60,8 +60,7 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
 
   // Adds a checkbox or updates an existing checkbox. Returns true if a new one
   // was added.
-  bool AddOrUpdateGallery(const MediaGalleryPrefInfo* gallery,
-                          bool permitted);
+  bool AddOrUpdateGallery(const MediaGalleryPrefInfo* gallery, bool permitted);
 
   MediaGalleriesDialogController* controller_;
 

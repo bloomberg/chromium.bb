@@ -55,7 +55,7 @@ void MediaGalleriesDialogGtk::InitWidgets() {
 
   const GalleryPermissions& permissions = controller_->permissions();
   for (GalleryPermissions::const_iterator iter = permissions.begin();
-       iter != permissions.end(); iter++) {
+       iter != permissions.end(); ++iter) {
     UpdateGallery(&iter->second.pref_info, iter->second.allowed);
   }
 
@@ -101,10 +101,9 @@ void MediaGalleriesDialogGtk::UpdateGallery(
   if (iter != checkbox_map_.end()) {
     widget = iter->second;
   } else {
-    widget = gtk_check_button_new_with_label(
-        UTF16ToUTF8(gallery->display_name).c_str());
-    gtk_widget_set_tooltip_text(widget,
-        UTF16ToUTF8(gallery->AbsolutePath().LossyDisplayName()).c_str());
+    widget = gtk_check_button_new();
+    gtk_widget_set_tooltip_text(widget, UTF16ToUTF8(
+        MediaGalleriesDialogController::GetGalleryTooltip(*gallery)).c_str());
     g_signal_connect(widget, "toggled", G_CALLBACK(OnToggledThunk), this);
     gtk_box_pack_start(GTK_BOX(checkbox_container_), widget, FALSE, FALSE, 0);
     gtk_widget_show(widget);
@@ -113,6 +112,9 @@ void MediaGalleriesDialogGtk::UpdateGallery(
 
   base::AutoReset<bool> reset(&ignore_toggles_, true);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), permitted);
+  std::string label_text = UTF16ToUTF8(
+      MediaGalleriesDialogController::GetGalleryDisplayName(*gallery));
+  gtk_button_set_label(GTK_BUTTON(widget), label_text.c_str());
 }
 
 GtkWidget* MediaGalleriesDialogGtk::GetWidgetRoot() {

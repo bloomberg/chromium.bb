@@ -7,7 +7,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
 #include "chrome/browser/ui/cocoa/key_equivalent_constants.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -166,9 +166,10 @@ void MediaGalleriesDialogCocoa::UpdateGalleryCheckbox(
     checkbox = new_checkbox.get();
   }
 
-  [checkbox setTitle:base::SysUTF16ToNSString(gallery->display_name)];
-  [checkbox setToolTip:
-      base::SysUTF16ToNSString(gallery->AbsolutePath().LossyDisplayName())];
+  [checkbox setTitle:base::SysUTF16ToNSString(
+      MediaGalleriesDialogController::GetGalleryDisplayName(*gallery))];
+  [checkbox setToolTip:base::SysUTF16ToNSString(
+      MediaGalleriesDialogController::GetGalleryTooltip(*gallery))];
   [checkbox setState:permitted ? NSOnState : NSOffState];
 
   [checkbox sizeToFit];

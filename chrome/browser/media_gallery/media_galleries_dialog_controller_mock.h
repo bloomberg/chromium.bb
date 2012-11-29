@@ -20,7 +20,7 @@ class MediaGalleriesDialogControllerMock
   MOCK_CONST_METHOD0(GetSubtext, string16());
   MOCK_CONST_METHOD0(HasPermittedGalleries, bool());
   MOCK_CONST_METHOD0(permissions, const KnownGalleryPermissions&());
-  MOCK_CONST_METHOD0(web_contents, content::WebContents*());
+  MOCK_METHOD0(web_contents, content::WebContents*());
 
   MOCK_METHOD0(OnAddFolderClicked, void());
   MOCK_METHOD2(DidToggleGallery, void(const MediaGalleryPrefInfo* pref_info,

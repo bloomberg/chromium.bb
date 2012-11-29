@@ -123,15 +123,20 @@ void MediaGalleriesDialogViews::UpdateGallery(
 bool MediaGalleriesDialogViews::AddOrUpdateGallery(
     const MediaGalleryPrefInfo* gallery,
     bool permitted) {
+  string16 label =
+      MediaGalleriesDialogController::GetGalleryDisplayName(*gallery);
   CheckboxMap::iterator iter = checkbox_map_.find(gallery);
   if (iter != checkbox_map_.end()) {
-    iter->second->SetChecked(permitted);
+    views::Checkbox* checkbox = iter->second;
+    checkbox->SetChecked(permitted);
+    checkbox->SetText(label);
     return false;
   }
 
-  views::Checkbox* checkbox = new views::Checkbox(gallery->display_name);
+  views::Checkbox* checkbox = new views::Checkbox(label);
   checkbox->set_listener(this);
-  checkbox->SetTooltipText(gallery->AbsolutePath().LossyDisplayName());
+  checkbox->SetTooltipText(
+      MediaGalleriesDialogController::GetGalleryTooltip(*gallery));
   checkbox_container_->AddChildView(checkbox);
   checkbox->SetChecked(permitted);
   checkbox_map_[gallery] = checkbox;
@@ -219,7 +224,7 @@ void MediaGalleriesDialogViews::ButtonPressed(views::Button* sender,
     return;
   }
 
-  for (CheckboxMap::iterator iter = checkbox_map_.begin();
+  for (CheckboxMap::const_iterator iter = checkbox_map_.begin();
        iter != checkbox_map_.end(); ++iter) {
     if (sender == iter->second) {
       controller_->DidToggleGallery(

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "base/system_monitor/system_monitor.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
 #include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/gfx/native_widget_types.h"
@@ -46,7 +47,9 @@ class MediaGalleriesDialog {
 // The controller is responsible for handling the logic of the dialog and
 // interfacing with the model (i.e., MediaGalleriesPreferences). It shows
 // the dialog and owns itself.
-class MediaGalleriesDialogController : public ui::SelectFileDialog::Listener {
+class MediaGalleriesDialogController
+    : public ui::SelectFileDialog::Listener,
+      public base::SystemMonitor::DevicesChangedObserver {
  public:
   // A fancy pair.
   struct GalleryPermission {
@@ -68,6 +71,8 @@ class MediaGalleriesDialogController : public ui::SelectFileDialog::Listener {
                                  const base::Closure& on_finish);
 
   // Called by the view.
+  static string16 GetGalleryDisplayName(const MediaGalleryPrefInfo& gallery);
+  static string16 GetGalleryTooltip(const MediaGalleryPrefInfo& gallery);
   virtual string16 GetHeader() const;
   virtual string16 GetSubtext() const;
   virtual bool HasPermittedGalleries() const;
@@ -76,12 +81,7 @@ class MediaGalleriesDialogController : public ui::SelectFileDialog::Listener {
                                 bool enabled);
   virtual void DialogFinished(bool accepted);
   virtual const KnownGalleryPermissions& permissions() const;
-  virtual content::WebContents* web_contents() const;
-
-  // SelectFileDialog::Listener implementation:
-  virtual void FileSelected(const FilePath& path,
-                            int index,
-                            void* params) OVERRIDE;
+  virtual content::WebContents* web_contents();
 
  protected:
   // For use with tests.
@@ -96,11 +96,26 @@ class MediaGalleriesDialogController : public ui::SelectFileDialog::Listener {
   // just a list and not a map.
   typedef std::list<GalleryPermission> NewGalleryPermissions;
 
+  // SelectFileDialog::Listener implementation:
+  virtual void FileSelected(const FilePath& path,
+                            int index,
+                            void* params) OVERRIDE;
+
+  // base::SystemMonitor::DevicesChangedObserver implementation:
+  virtual void OnRemovableStorageAttached(
+      const std::string& id,
+      const string16& name,
+      const FilePath::StringType& location) OVERRIDE;
+  virtual void OnRemovableStorageDetached(const std::string& id) OVERRIDE;
+
   // Populates |known_galleries_|.
-  void LookUpPermissions();
+  void InitializePermissions();
 
   // Saves state of |known_galleries_| and |new_galleries_| to model.
   void SavePermissions();
+
+  // Update the model and view when a device is attached or detached.
+  void UpdateGalleryOnDeviceEvent(const std::string& device_id, bool attached);
 
   // The web contents from which the request originated.
   content::WebContents* web_contents_;
