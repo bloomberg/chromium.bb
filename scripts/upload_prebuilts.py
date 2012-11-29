@@ -385,8 +385,9 @@ class PrebuiltUploader(object):
 
     RemoteUpload(self._acl, upload_files)
 
-  def _UploadBoardTarball(self, board_path, url_suffix, version, prepackaged):
-    """Upload a tarball of the board at the specified path to Google Storage.
+  def _UploadSdkTarball(self, board_path, url_suffix, version, prepackaged,
+                        toolchain_tarballs, toolchain_upload_path):
+    """Upload a tarball of the sdk at the specified path to Google Storage.
 
     Args:
       board_path: The path to the board dir.
@@ -394,6 +395,8 @@ class PrebuiltUploader(object):
       version: The version of the board.
       prepackaged: If given, a tarball that has been packaged outside of this
                    script and should be used.
+      toolchain_tarballs: List of toolchain tarballs to upload.
+      toolchain_upload_path: Path under the bucket to place toolchain tarballs.
     """
     remote_location = '%s/%s' % (self._upload_location.rstrip('/'), url_suffix)
     assert remote_location.startswith('gs://')
@@ -410,6 +413,13 @@ class PrebuiltUploader(object):
     _GsUpload(prepackaged + '.Manifest', remote_tarfile + '.Manifest',
               self._acl)
     _GsUpload(prepackaged, remote_tarfile, self._acl)
+
+    # Post the toolchain tarballs too.
+    for tarball in toolchain_tarballs:
+      target, local_path = tarball.split(':')
+      suburl = toolchain_upload_path % {'target': target}
+      remote_path = toolchain.GetSdkURL(for_gsutil=True, suburl=suburl)
+      _GsUpload(local_path, remote_path, self._acl)
 
     # Finally, also update the pointer to the latest SDK on which polling
     # scripts rely.
@@ -478,7 +488,8 @@ class PrebuiltUploader(object):
       UpdateBinhostConfFile(binhost_conf, key, binhost)
 
   def SyncBoardPrebuilts(self, version, key, git_sync, sync_binhost_conf,
-                         upload_board_tarball, prepackaged_board):
+                         upload_board_tarball, prepackaged_board,
+                         toolchain_tarballs, toolchain_upload_path):
     """Synchronize board prebuilt files.
 
     Args:
@@ -491,6 +502,8 @@ class PrebuiltUploader(object):
           chromiumos-overlay for the current board.
       upload_board_tarball: Include a tarball of the board in our upload.
       prepackaged_board: A tarball of the board built outside of this script.
+      toolchain_tarballs: A list of toolchain tarballs to upload.
+      toolchain_upload_path: Path under the bucket to place toolchain tarballs.
     """
     for target in self._GetTargets():
       board_path = os.path.join(self._build_path,
@@ -500,12 +513,16 @@ class PrebuiltUploader(object):
       packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
 
       if self._target == target and not self._skip_upload and not self._debug:
+        version_str = version[len('chroot-'):]
+
         # Upload board tarballs in the background.
         if upload_board_tarball:
-          tar_process = multiprocessing.Process(target=self._UploadBoardTarball,
-                                                args=(board_path, url_suffix,
-                                                      version,
-                                                      prepackaged_board))
+          if toolchain_upload_path:
+            toolchain_upload_path %= {'version': version_str}
+          tar_process = multiprocessing.Process(
+              target=self._UploadSdkTarball,
+              args=(board_path, url_suffix, version, prepackaged_board,
+                    toolchain_tarballs, toolchain_upload_path))
           tar_process.start()
 
         # Upload prebuilts.
@@ -520,7 +537,8 @@ class PrebuiltUploader(object):
             sdk_conf = os.path.join(self._build_path, self._binhost_conf_dir,
                                     'host/sdk_version.conf')
             sdk_settings = {
-                'SDK_LATEST_VERSION': version[len('chroot-'):],
+                'SDK_LATEST_VERSION': version_str,
+                'TC_PATH': toolchain_upload_path,
             }
             RevGitFile(sdk_conf, sdk_settings, dryrun=self._debug)
 
@@ -576,6 +594,11 @@ def ParseOptions():
   parser.add_option('-B', '--prepackaged-tarball', dest='prepackaged_tarball',
                     default=None,
                     help='Board tarball prebuilt outside of this script.')
+  parser.add_option('--toolchain-tarball', dest='toolchain_tarballs',
+                    action='append', default=[],
+                    help='Redistributable toolchain tarball.')
+  parser.add_option('--toolchain-upload-path', default='',
+                    help='Path to place toolchain tarballs in the sdk tree.')
   parser.add_option('', '--profile', dest='profile', default=None,
                     help='Profile that was built on this machine')
   parser.add_option('', '--slave-board', default=[], action='callback',
@@ -732,4 +755,6 @@ def main(_argv):
     uploader.SyncBoardPrebuilts(version, options.key, options.git_sync,
                                 options.sync_binhost_conf,
                                 options.upload_board_tarball,
-                                options.prepackaged_tarball)
+                                options.prepackaged_tarball,
+                                options.toolchain_tarballs,
+                                options.toolchain_upload_path)

@@ -1355,7 +1355,8 @@ class SDKPackageStage(bs.BuilderStage):
   def _PerformStage(self):
     tarball_name = 'built-sdk.tar.xz'
     tarball_location = os.path.join(self._build_root, tarball_name)
-    chroot_location = os.path.join(self._build_root, 'chroot')
+    chroot_location = os.path.join(self._build_root,
+                                   constants.DEFAULT_CHROOT_DIR)
     board_location = os.path.join(chroot_location, 'build/amd64-host')
     manifest_location = os.path.join(self._build_root,
                                      '%s.Manifest' % tarball_name)
@@ -1366,9 +1367,21 @@ class SDKPackageStage(bs.BuilderStage):
     # Create a package manifest for the tarball.
     self.CreateManifestFromSDK(board_location, manifest_location)
 
+    # Create toolchain packages.
+    self.CreateRedistributableToolchains(chroot_location)
+
     # Make sure the regular user has the permission to read.
     cmd = ['chmod', 'a+r', tarball_location]
     cros_build_lib.SudoRunCommand(cmd, cwd=board_location)
+
+  def CreateRedistributableToolchains(self, chroot_location):
+    osutils.RmDir(os.path.join(chroot_location,
+                               constants.SDK_TOOLCHAINS_OUTPUT),
+                  ignore_missing=True)
+    cros_build_lib.RunCommand(
+        ['cros_setup_toolchains', '--create-packages',
+         '--output-dir', os.path.join('/', constants.SDK_TOOLCHAINS_OUTPUT)],
+        enter_chroot=True)
 
   def CreateSDKTarball(self, _chroot, sdk_path, dest_tarball):
     """Creates an SDK tarball from a given source chroot.

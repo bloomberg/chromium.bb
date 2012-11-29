@@ -13,6 +13,7 @@ CHROMITE_BIN_SUBDIR = 'chromite/bin'
 CHROMITE_BIN_DIR = os.path.join(SOURCE_ROOT, CHROMITE_BIN_SUBDIR)
 PATH_TO_CBUILDBOT = os.path.join(CHROMITE_BIN_SUBDIR, 'cbuildbot')
 DEFAULT_CHROOT_DIR = 'chroot'
+SDK_TOOLCHAINS_OUTPUT = 'tmp/toolchain-pkgs'
 
 # Re-execution API constants.
 # Used by --resume and --bootstrap to decipher which options they

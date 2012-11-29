@@ -340,7 +340,7 @@ class TestSyncPrebuilts(cros_test_lib.MoxTestCase):
     self.mox.StubOutWithMock(multiprocessing.Process, 'start')
     self.mox.StubOutWithMock(multiprocessing.Process, 'join')
     multiprocessing.Process.__init__(target=mox.IgnoreArg(),
-        args=(board_path, url_suffix, self.version, None))
+        args=(board_path, url_suffix, self.version, None, None, None))
     multiprocessing.Process.start()
     prebuilt.PrebuiltUploader._UploadPrebuilt(package_path,
         packages_url_suffix).AndReturn(True)
@@ -360,7 +360,8 @@ class TestSyncPrebuilts(cros_test_lib.MoxTestCase):
     uploader = prebuilt.PrebuiltUploader(
         self.upload_location, 'public-read', self.binhost, [],
         self.build_path, [], False, 'foo', False, target, slave_targets)
-    uploader.SyncBoardPrebuilts(self.version, self.key, True, True, True, None)
+    uploader.SyncBoardPrebuilts(self.version, self.key, True, True, True, None,
+                                None, None)
 
 
 class TestMain(cros_test_lib.MoxTestCase):
@@ -381,6 +382,8 @@ class TestMain(cros_test_lib.MoxTestCase):
     options.git_sync = True
     options.upload_board_tarball = True
     options.prepackaged_tarball = None
+    options.toolchain_tarballs = []
+    options.toolchain_upload_path = ''
     options.upload = 'gs://upload/'
     options.binhost_base_url = options.upload
     options.prepend_version = True
@@ -413,9 +416,59 @@ class TestMain(cros_test_lib.MoxTestCase):
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, 'SyncBoardPrebuilts')
     prebuilt.PrebuiltUploader.SyncBoardPrebuilts(
         mox.IgnoreArg(), options.key, options.git_sync,
-        options.sync_binhost_conf, options.upload_board_tarball, None)
+        options.sync_binhost_conf, options.upload_board_tarball, None, [], '')
     self.mox.ReplayAll()
     prebuilt.main([])
+
+
+class TestSdk(cros_test_lib.MoxTestCase):
+  """Test logic related to uploading SDK binaries"""
+
+  def setUp(self):
+    self.mox.StubOutWithMock(prebuilt, '_GsUpload')
+    self.mox.StubOutWithMock(prebuilt, 'UpdateBinhostConfFile')
+
+    self.acl = 'magic-acl'
+
+    # All these args pretty much get ignored.  Whee.
+    self.uploader = prebuilt.PrebuiltUploader(
+        'gs://foo', self.acl, 'prebuilt', [], '/', [],
+        False, 'foo', False, 'x86-foo', [])
+
+  def testSdkUpload(self, cb=lambda:None, tc_tarballs=(),
+                    tc_upload_path=None):
+    """Make sure we can upload just an SDK tarball"""
+    tar = 'sdk.tar.xz'
+    ver = '1234'
+    vtar = 'cros-sdk-%s.tar.xz' % ver
+
+    prebuilt._GsUpload('%s.Manifest' % tar,
+                       'gs://chromiumos-sdk/%s.Manifest' % vtar, self.acl)
+    prebuilt._GsUpload(tar, 'gs://chromiumos-sdk/%s' % vtar, self.acl)
+    cb()
+    prebuilt._GsUpload(mox.IgnoreArg(),
+                       'gs://chromiumos-sdk/cros-sdk-latest.conf', self.acl)
+    self.mox.ReplayAll()
+
+    self.uploader._UploadSdkTarball('amd64-host', '', 'chroot-%s' % ver,
+                                    tar, tc_tarballs, tc_upload_path)
+
+  def testTarballUpload(self):
+    """Make sure processing of toolchain tarballs works"""
+    tc_tarballs = (
+        'i686:/some/i686.tar.xz',
+        'arm-none:/some/arm.tar.xz',
+    )
+    tc_upload_path = '1994/04/%(target)s-1994.04.02.tar.xz'
+    def cb():
+      for tc in tc_tarballs:
+        tc = tc.split(':')
+        prebuilt._GsUpload(
+            tc[1],
+            ('gs://chromiumos-sdk/' + tc_upload_path) % {'target': tc[0]},
+            self.acl)
+    self.testSdkUpload(cb, tc_tarballs, tc_upload_path)
+
 
 if __name__ == '__main__':
   cros_test_lib.main()

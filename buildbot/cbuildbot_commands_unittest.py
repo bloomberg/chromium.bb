@@ -171,6 +171,35 @@ class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     self.testUploadPrebuilts(builder_type=constants.CHROME_PFQ_TYPE,
                              chrome_rev='tot')
 
+  def testSdkPrebuilts(self):
+    """Test UploadPrebuilts for SDK builds."""
+    # A magical date for a magical time.
+    version = '1994.04.02.000000'
+
+    # Fake out toolchain tarballs.
+    tarball_dir = os.path.join(self._buildroot, constants.DEFAULT_CHROOT_DIR,
+                               constants.SDK_TOOLCHAINS_OUTPUT)
+    osutils.SafeMakedirs(tarball_dir)
+
+    tarball_args = []
+    for tarball_base in ('i686', 'arm-none-eabi'):
+      tarball = '%s.tar.xz' % tarball_base
+      tarball_path = os.path.join(tarball_dir, tarball)
+      osutils.Touch(tarball_path)
+      tarball_arg = '%s:%s' % (tarball_base, tarball_path)
+      tarball_args.extend(['--toolchain-tarball', tarball_arg])
+
+    with mock.patch.object(commands, '_GenerateSdkVersion',
+                           return_value=version):
+      self.testUploadPrebuilts(builder_type=constants.CHROOT_BUILDER_TYPE)
+    self.assertCommandContains(['--toolchain-upload-path',
+                                '1994/04/%%(target)s-%(version)s.tar.xz'])
+    self.assertCommandContains(tarball_args)
+    self.assertCommandContains(['--version', version])
+    self.assertCommandContains(['--prepackaged-tarball',
+                                os.path.join(self._buildroot,
+                                             'built-sdk.tar.xz')])
+
   def testDevInstallerPrebuilts(self, packages=('package1', 'package2')):
     """Test UploadDevInstallerPrebuilts."""
     args = ['gs://dontcare', 'some_path_to_key', 'https://my_test/location']

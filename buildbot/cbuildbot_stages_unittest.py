@@ -563,9 +563,13 @@ class SDKStageTest(AbstractStageTest, cros_test_lib.TempDirTestCase):
     fake_manifest = os.path.join(self.build_root,
                                  'built-sdk.tar.xz.Manifest')
     self.mox.StubOutWithMock(portage_utilities, 'ListInstalledPackages')
+    self.mox.StubOutWithMock(stages.SDKPackageStage,
+                             'CreateRedistributableToolchains')
 
     portage_utilities.ListInstalledPackages(self.fake_chroot).AndReturn(
         self.fake_packages)
+    # This code has its own unit tests, so no need to go testing it here.
+    stages.SDKPackageStage.CreateRedistributableToolchains(mox.IgnoreArg())
 
     self.mox.ReplayAll()
     self.RunStage()

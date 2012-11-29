@@ -4,6 +4,7 @@
 
 """Module containing the various individual commands a builder can run."""
 
+from datetime import datetime
 import fnmatch
 import getpass
 import glob
@@ -732,6 +733,18 @@ def AddPackagesForPrebuilt(filename):
     return None
 
 
+def _GenerateSdkVersion():
+  """Generate a version string for sdk builds
+
+  This needs to be global for test overrides.  It also needs to be done here
+  rather than in upload_prebuilts because we want to put toolchain tarballs
+  in a specific subdir and that requires keeping the version string in one
+  place.  Otherwise we'd have to have the various scripts re-interpret the
+  string and try and sync dates across.
+  """
+  return datetime.now().strftime('%Y.%m.%d.%H%M%S')
+
+
 def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot, **kwargs):
   """Upload Prebuilts for non-dev-installer use cases.
 
@@ -754,6 +767,30 @@ def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot, **kwargs):
                        '--upload-board-tarball'])
     tarball_location = os.path.join(buildroot, 'built-sdk.tar.xz')
     extra_args.extend(['--prepackaged-tarball', tarball_location])
+
+    # See _GenerateSdkVersion comments for more details.
+    version = _GenerateSdkVersion()
+    extra_args.extend(['--set-version', version])
+
+    # The local tarballs will be simply "<tuple>.tar.xz".  We need
+    # them to be "<tuple>-<version>.tar.xz" to avoid collisions.
+    for tarball in glob.glob(os.path.join(
+        buildroot, constants.DEFAULT_CHROOT_DIR,
+        constants.SDK_TOOLCHAINS_OUTPUT, '*.tar.*')):
+      tarball_components = os.path.basename(tarball).split('.', 1)
+
+      # Only add the path arg when processing the first tarball.  We do
+      # this to get access to the tarball suffix dynamically (so it can
+      # change and this code will still work).
+      if '--toolchain-upload-path' not in extra_args:
+        # Stick the toolchain tarballs into <year>/<month>/ subdirs so
+        # we don't start dumping even more stuff into the top level.
+        subdir = ('/'.join(version.split('.')[0:2]) + '/' +
+                  '%%(target)s-%(version)s.' + tarball_components[1])
+        extra_args.extend(['--toolchain-upload-path', subdir])
+
+      arg = '%s:%s' % (tarball_components[0], tarball)
+      extra_args.extend(['--toolchain-tarball', arg])
 
   if category == constants.CHROME_PFQ_TYPE:
     assert chrome_rev
