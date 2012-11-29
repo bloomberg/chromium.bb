@@ -129,8 +129,7 @@
    Heapcheck:Leak
    fun:sqlite3MemMalloc
    ...
-   fun:chromeos::OncNetworkParser::ParseServerOrCaCertificate
-   fun:chromeos::OncNetworkParser::ParseCertificate
+   fun:chromeos::onc::CertificateImporter::ParseServerOrCaCertificate
 }
 {
    bug_51988_i
@@ -1043,12 +1042,6 @@
    fun:v8::internal::V8::Initialize
    fun:v8::internal::Snapshot::Deserialize
    fun:v8::internal::Snapshot::Initialize
-}
-{
-   bug_99436
-   Heapcheck:Leak
-   ...
-   fun:chromeos::OncNetworkParserTest_TestCreateNetworkWifi*_Test::TestBody
 }
 {
    bug_100146

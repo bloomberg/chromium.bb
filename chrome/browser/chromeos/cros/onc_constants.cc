@@ -11,8 +11,9 @@ namespace onc {
 
 // Top Level ONC
 const char kCertificates[] = "Certificates";
+const char kEncryptedConfiguration[] = "EncryptedConfiguration";
 const char kNetworkConfigurations[] = "NetworkConfigurations";
-
+const char kUnencryptedConfiguration[] = "UnencryptedConfiguration";
 const char kNetworkConfiguration[] = "NetworkConfiguration";
 
 // Common keys/values.
@@ -82,8 +83,24 @@ const char kServer[] = "Server";
 const char kSubject[] = "Subject";
 const char kTrust[] = "Trust";
 const char kType[] = "Type";
+const char kWeb[] = "Web";
 const char kX509[] = "X509";
 }  // namespace certificate
+
+namespace encrypted {
+const char kAES256[] = "AES256";
+const char kCipher[] = "Cipher";
+const char kCiphertext[] = "Ciphertext";
+const char kHMACMethod[] = "HMACMethod";
+const char kHMAC[] = "HMAC";
+const char kIV[] = "IV";
+const char kIterations[] = "Iterations";
+const char kPBKDF2[] = "PBKDF2";
+const char kSHA1[] = "SHA1";
+const char kSalt[] = "Salt";
+const char kStretch[] = "Stretch";
+const char kType[] = "Type";
+}  // namespace encrypted
 
 namespace eap {
 const char kAnonymousIdentity[] = "AnonymousIdentity";

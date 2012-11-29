@@ -23,8 +23,6 @@ class Value;
 
 namespace net {
 class ProxyServer;
-class X509Certificate;
-typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
 }
 
 namespace chromeos {
@@ -55,17 +53,10 @@ class OncNetworkParser : public NetworkParser {
                                 const base::Value&,
                                 Network*);
 
-  OncNetworkParser(const std::string& onc_blob,
-                   const std::string& passphrase,
+  OncNetworkParser(const base::ListValue& network_configs,
                    NetworkUIData::ONCSource onc_source);
   virtual ~OncNetworkParser();
   static const EnumMapper<PropertyIndex>* property_mapper();
-
-  // Certificates pushed from a policy source with Web trust are only imported
-  // with ParseCertificate() if this permission is granted.
-  void set_allow_web_trust_from_policy(bool allow) {
-    allow_web_trust_from_policy_ = allow;
-  }
 
   // Returns the number of networks in the "NetworkConfigs" list.
   int GetNetworkConfigsSize() const;
@@ -79,14 +70,6 @@ class OncNetworkParser : public NetworkParser {
   // |removed| is set to true if the network should be removed.  |removed| may
   // be NULL.
   Network* ParseNetwork(int n, bool* marked_for_removal);
-
-  // Returns the number of certificates in the "Certificates" list.
-  int GetCertificatesSize() const;
-
-  // Call to parse and import the nth certificate in the certificate
-  // list into the certificate store.  Returns a NULL refptr if
-  // there's a parse error or if n is out of range.
-  scoped_refptr<net::X509Certificate> ParseCertificate(int n);
 
   virtual Network* CreateNetworkFromInfo(const std::string& service_path,
       const base::DictionaryValue& info) OVERRIDE;
@@ -135,14 +118,6 @@ class OncNetworkParser : public NetworkParser {
                                const std::string& onc_type);
 
 
-  // This lists the certificates that have the string |label| as their
-  // certificate nickname (exact match).
-  static void ListCertsWithNickname(const std::string& label,
-                                    net::CertificateList* result);
-  // This deletes any certificate that has the string |label| as its
-  // nickname (exact match).
-  static bool DeleteCertAndKeyByNickname(const std::string& label);
-
   // Find the PKCS#11 ID of the certificate with the given GUID.  Returns
   // an empty string on failure.
   static std::string GetPkcs11IdFromCertGuid(const std::string& guid);
@@ -162,31 +137,6 @@ class OncNetworkParser : public NetworkParser {
                                      const base::Value& value,
                                      Network* network);
  private:
-  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestAddClientCertificate);
-  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestUpdateClientCertificate);
-  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestReimportClientCertificate);
-  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestAddServerCertificate);
-  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestUpdateServerCertificate);
-  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestReimportServerCertificate);
-  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest,
-                           TestAddWebAuthorityCertificate);
-  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest,
-                           TestUpdateWebAuthorityCertificate);
-  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest,
-                           TestReimportWebAuthorityCertificate);
-  scoped_refptr<net::X509Certificate> ParseServerOrCaCertificate(
-    int cert_index,
-    const std::string& cert_type,
-    const std::string& guid,
-    base::DictionaryValue* certificate);
-  scoped_refptr<net::X509Certificate> ParseClientCertificate(
-    int cert_index,
-    const std::string& guid,
-    base::DictionaryValue* certificate);
-
-  base::DictionaryValue* Decrypt(const std::string& passphrase,
-                                 base::DictionaryValue* root);
-
   // Parse the ProxySettings dictionary.
   static bool ParseProxySettingsValue(OncNetworkParser* parser,
                                       PropertyIndex index,
@@ -233,13 +183,7 @@ class OncNetworkParser : public NetworkParser {
   // Where the ONC blob comes from.
   NetworkUIData::ONCSource onc_source_;
 
-  // Whether certificates with Web trust should be stored when pushed from a
-  // policy source.
-  bool allow_web_trust_from_policy_;
-
-  scoped_ptr<base::DictionaryValue> root_dict_;
-  base::ListValue* network_configs_;
-  base::ListValue* certificates_;
+  scoped_ptr<base::ListValue> network_configs_;
 
   DISALLOW_COPY_AND_ASSIGN(OncNetworkParser);
 };

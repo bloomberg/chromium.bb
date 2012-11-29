@@ -12,11 +12,15 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/cros/onc_constants.h"
 #include "chrome/browser/chromeos/cros/onc_network_parser.h"
+#include "chrome/browser/chromeos/network_settings/onc_certificate_importer.h"
+#include "chrome/browser/chromeos/network_settings/onc_utils.h"
 #include "chrome/common/chrome_paths.h"
 #include "crypto/nss_util.h"
 #include "net/base/crypto_module.h"
@@ -34,8 +38,9 @@ namespace {
 // Have to do a stub here because MOCK can't handle closure arguments.
 class StubEnrollmentDelegate : public EnrollmentDelegate {
  public:
-  explicit StubEnrollmentDelegate(OncNetworkParser* parser)
-    : did_enroll(false), correct_args(false), parser_(parser) {}
+  explicit StubEnrollmentDelegate()
+      : did_enroll(false),
+        correct_args(false) {}
 
   void Enroll(const std::vector<std::string>& uri_list,
               const base::Closure& closure) {
@@ -45,20 +50,12 @@ class StubEnrollmentDelegate : public EnrollmentDelegate {
     if (uri_list == expected_uri_list)
       correct_args = true;
 
-    scoped_refptr<net::X509Certificate> certificate0(
-        parser_->ParseCertificate(0));
-    scoped_refptr<net::X509Certificate> certificate1(
-        parser_->ParseCertificate(1));
-
-    if (certificate0.get() && certificate1.get()) {
-      did_enroll = true;
-      closure.Run();
-    }
+    did_enroll = true;
+    closure.Run();
   }
 
   bool did_enroll;
   bool correct_args;
-  OncNetworkParser* parser_;
 };
 
 void WifiNetworkConnectCallback(NetworkLibrary* cros, WifiNetwork* wifi) {
@@ -155,16 +152,33 @@ class NetworkLibraryStubTest : public testing::Test {
     EXPECT_EQ(0U, ListCertsInSlot(slot_->os_module_handle()).size());
   }
 
-  virtual void GetTestData(const std::string& filename, std::string* contents) {
+  virtual void GetTestData(const std::string& filename,
+                           scoped_ptr<base::ListValue>* certificates,
+                           scoped_ptr<base::ListValue>* network_configs) {
       FilePath path;
       std::string error;
       PathService::Get(chrome::DIR_TEST_DATA, &path);
       path = path.AppendASCII("chromeos").AppendASCII("cros").Append(filename);
-      ASSERT_TRUE(contents != NULL);
       ASSERT_TRUE(file_util::PathExists(path))
         << "Couldn't find test data file " << path.value();
-      ASSERT_TRUE(file_util::ReadFileToString(path, contents))
+      std::string contents;
+      ASSERT_TRUE(file_util::ReadFileToString(path, &contents))
         << "Unable to read test data file " << path.value();
+
+      scoped_ptr<base::DictionaryValue> root =
+          onc::ReadDictionaryFromJson(contents, &error);
+      CHECK(root.get() != NULL) << "ONC is not a valid json dictionary: "
+                                << error;
+
+      base::ListValue* certificates_ptr;
+      CHECK(root->GetListWithoutPathExpansion(onc::kCertificates,
+                                              &certificates_ptr));
+      certificates->reset(certificates_ptr->DeepCopy());
+
+      base::ListValue* network_configs_ptr;
+      CHECK(root->GetListWithoutPathExpansion(onc::kNetworkConfigurations,
+                                              &network_configs_ptr));
+      network_configs->reset(network_configs_ptr->DeepCopy());
   }
 
   ScopedStubCrosEnabler cros_stub_;
@@ -286,18 +300,23 @@ TEST_F(NetworkLibraryStubTest, NetworkConnectWifi) {
 
 TEST_F(NetworkLibraryStubTest, NetworkConnectOncWifi) {
   // Import a wireless network via loading an ONC file.
-  std::string test_blob;
-  GetTestData("cert-pattern.onc", &test_blob);
-  OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
+  scoped_ptr<base::ListValue> network_configs;
+  scoped_ptr<base::ListValue> certificates;
+  GetTestData("cert-pattern.onc", &certificates, &network_configs);
+
+  onc::CertificateImporter importer(NetworkUIData::ONC_SOURCE_USER_IMPORT,
+                                    false /* don't allow webtrust */);
+  EXPECT_TRUE(importer.ParseAndStoreCertificates(*certificates, NULL));
+
+  OncNetworkParser parser(*network_configs,
+                          NetworkUIData::ONC_SOURCE_USER_IMPORT);
   ASSERT_TRUE(parser.parse_error().empty());
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
-  EXPECT_EQ(2, parser.GetCertificatesSize());
   scoped_ptr<Network> network(parser.ParseNetwork(0, NULL));
   ASSERT_TRUE(network.get());
   EXPECT_EQ(CLIENT_CERT_TYPE_PATTERN, network->client_cert_type());
 
-  StubEnrollmentDelegate* enrollment_delegate =
-      new StubEnrollmentDelegate(&parser);
+  StubEnrollmentDelegate* enrollment_delegate = new StubEnrollmentDelegate();
 
   network->SetEnrollmentDelegate(enrollment_delegate);
   EXPECT_FALSE(enrollment_delegate->did_enroll);
@@ -317,18 +336,23 @@ TEST_F(NetworkLibraryStubTest, NetworkConnectOncWifi) {
 
 TEST_F(NetworkLibraryStubTest, NetworkConnectOncVPN) {
   // Import a wireless network via loading an ONC file.
-  std::string test_blob;
-  GetTestData("cert-pattern-vpn.onc", &test_blob);
-  OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
+  scoped_ptr<base::ListValue> network_configs;
+  scoped_ptr<base::ListValue> certificates;
+  GetTestData("cert-pattern-vpn.onc", &certificates, &network_configs);
+
+  onc::CertificateImporter importer(NetworkUIData::ONC_SOURCE_USER_IMPORT,
+                                    false /* don't allow webtrust */);
+  EXPECT_TRUE(importer.ParseAndStoreCertificates(*certificates, NULL));
+
+  OncNetworkParser parser(*network_configs,
+                          NetworkUIData::ONC_SOURCE_USER_IMPORT);
   ASSERT_TRUE(parser.parse_error().empty());
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
-  EXPECT_EQ(2, parser.GetCertificatesSize());
   scoped_ptr<Network> network(parser.ParseNetwork(0, NULL));
   ASSERT_TRUE(network.get());
   EXPECT_EQ(CLIENT_CERT_TYPE_PATTERN, network->client_cert_type());
 
-  StubEnrollmentDelegate* enrollment_delegate =
-      new StubEnrollmentDelegate(&parser);
+  StubEnrollmentDelegate* enrollment_delegate = new StubEnrollmentDelegate();
 
   network->SetEnrollmentDelegate(enrollment_delegate);
   EXPECT_FALSE(enrollment_delegate->did_enroll);

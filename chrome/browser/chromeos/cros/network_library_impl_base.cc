@@ -5,12 +5,17 @@
 #include "chrome/browser/chromeos/cros/network_library_impl_base.h"
 
 #include "base/bind.h"
+#include "base/json/json_reader.h"
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
+#include "chrome/browser/chromeos/cros/onc_constants.h"
 #include "chrome/browser/chromeos/cros/onc_network_parser.h"
 #include "chrome/browser/chromeos/network_login_observer.h"
-#include "chrome/common/net/x509_certificate_model.h"
+#include "chrome/browser/chromeos/network_settings/onc_certificate_importer.h"
+#include "chrome/browser/chromeos/network_settings/onc_signature.h"
+#include "chrome/browser/chromeos/network_settings/onc_utils.h"
+#include "chrome/browser/chromeos/network_settings/onc_validator.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/nss_util.h"  // crypto::GetTPMTokenInfo() for 802.1X and VPN.
 #include "grit/generated_resources.h"
@@ -1037,124 +1042,178 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
     }
   }
 
-  OncNetworkParser parser(onc_blob, passphrase, source);
-  parser.set_allow_web_trust_from_policy(allow_web_trust_from_policy);
-
-  if (!parser.parse_error().empty()) {
-    if (error)
-      *error = parser.parse_error();
-    DLOG(WARNING) << "Parse error when loading from ONC source " << source
-                  << ": " << *error;
+  VLOG(2) << __func__ << ": called on " << onc_blob;
+  std::string json_error;
+  scoped_ptr<base::DictionaryValue> root_dict =
+      onc::ReadDictionaryFromJson(onc_blob, &json_error);
+  if (root_dict.get() == NULL) {
+    if (error != NULL)
+      *error = json_error;
+    LOG(WARNING) << "ONC loaded from ONC source " << source
+                 << " is not a valid json dictionary: " << json_error;
     return false;
   }
 
-  for (int i = 0; i < parser.GetCertificatesSize(); i++) {
-    // Insert each of the available certs into the certificate DB.
-    if (parser.ParseCertificate(i).get() == NULL &&
-        !parser.parse_error().empty()) {
-      if (error)
-        *error = parser.parse_error();
-      DLOG(WARNING) << "Error during parsing certificate at index " << i
-                    << " from ONC source " << source
-                    << ": " << *error;
+  // Check and see if this is an encrypted ONC file. If so, decrypt it.
+  std::string onc_type;
+  root_dict->GetStringWithoutPathExpansion(onc::kType, &onc_type);
+  if (onc_type == onc::kEncryptedConfiguration) {
+    std::string decrypt_error;
+    root_dict = onc::Decrypt(passphrase, *root_dict, &decrypt_error);
+    if (root_dict.get() == NULL) {
+      if (error != NULL)
+        *error = decrypt_error;
+      LOG(WARNING) << "Couldn't decrypt the ONC from source " << source
+                   << " with error: " << decrypt_error;
       return false;
     }
   }
 
-  // Parse all networks. Bail out if that fails.
-  NetworkOncMap added_onc_map;
-  ScopedVector<Network> networks;
+  // Validate the ONC dictionary. We are liberal and ignore unknown field
+  // names and ignore invalid field names in kRecommended arrays.
+  onc::Validator validator(false,  // Ignore unknown fields.
+                           false,  // Ignore invalid recommended field names.
+                           true,  // Fail on missing fields.
+                           from_policy);
+
+  // Unknown fields are removed from the result.
+  root_dict = validator.ValidateAndRepairObject(
+      &onc::kUnencryptedConfigurationSignature,
+      *root_dict);
+
+  if (root_dict.get() == NULL) {
+    LOG(WARNING) << "ONC from source " << source
+                 << " is invalid and couldn't be repaired.";
+    return false;
+  }
+
+  const base::ListValue* certificates;
+  bool has_certificates =
+      root_dict->GetListWithoutPathExpansion(onc::kCertificates, &certificates);
+
+  const base::ListValue* network_configs;
+  bool has_network_configurations = root_dict->GetListWithoutPathExpansion(
+      onc::kNetworkConfigurations,
+      &network_configs);
+
+  // At least one of NetworkConfigurations or Certificates is required.
+  LOG_IF(WARNING, (!has_network_configurations && !has_certificates))
+      << "ONC from source " << source
+      << " has neither NetworkConfigurations nor Certificates.";
+
+  if (has_certificates) {
+    VLOG(2) << "ONC file has " << certificates->GetSize() << " certificates";
+
+    onc::CertificateImporter cert_importer(source, allow_web_trust_from_policy);
+    std::string cert_error;
+    if (!cert_importer.ParseAndStoreCertificates(*certificates, &cert_error)) {
+      if (error != NULL)
+        *error = cert_error;
+      LOG(WARNING) << "Cannot parse some of the certificates in the ONC from "
+                   << "source " << source << " with error: " << cert_error;
+      return false;
+    }
+  }
+
   std::set<std::string> removal_ids;
-  for (int i = 0; i < parser.GetNetworkConfigsSize(); i++) {
-    // Parse Open Network Configuration blob into a temporary Network object.
-    bool marked_for_removal = false;
-    Network* network = parser.ParseNetwork(i, &marked_for_removal);
-    if (!network) {
-      if (error)
-        *error = parser.parse_error();
-      DLOG(WARNING) << "Error during parsing network at index " << i
-                    << " from ONC source " << source
-                    << ": " << *error;
-      return false;
-    }
-
-    // Disallow anything but WiFi and Ethernet for device-level policy (which
-    // corresponds to shared networks). See also http://crosbug.com/28741.
-    if (source == NetworkUIData::ONC_SOURCE_DEVICE_POLICY &&
-        network->type() != TYPE_WIFI &&
-        network->type() != TYPE_ETHERNET) {
-      LOG(WARNING) << "Ignoring device-level policy-pushed network of type "
-                   << network->type();
-      delete network;
-      continue;
-    }
-
-    networks.push_back(network);
-    if (!(source == NetworkUIData::ONC_SOURCE_USER_IMPORT &&
-          marked_for_removal))
-      added_onc_map[network->unique_id()] = parser.GetNetworkConfig(i);
-
-    if (marked_for_removal)
-      removal_ids.insert(network->unique_id());
-  }
-
-  // Update the ONC map.
-  for (NetworkOncMap::iterator iter(added_onc_map.begin());
-       iter != added_onc_map.end(); ++iter) {
-    const base::DictionaryValue*& entry = network_onc_map_[iter->first];
-    delete entry;
-    entry = iter->second->DeepCopy();
-  }
-
-  // Configure the networks. While doing so, collect unique identifiers of the
-  // networks that are defined in the ONC blob in |network_ids|. They're later
-  // used to clean out any previously-existing networks that had been configured
-  // through policy but are no longer specified in the updated ONC blob.
-  VLOG(1) << "Loading ONC from source " << source << " with "
-          << parser.GetNetworkConfigsSize() << " network configs"
-          << " to profile " << profile->path;
   std::set<std::string>& network_ids(network_source_map_[source]);
   network_ids.clear();
-  for (std::vector<Network*>::iterator iter(networks.begin());
-       iter != networks.end(); ++iter) {
-    Network* network = *iter;
+  if (has_network_configurations) {
+    VLOG(2) << "ONC file has " << network_configs->GetSize() << " networks";
+    OncNetworkParser parser(*network_configs, source);
 
-    // Don't configure a network that is supposed to be removed. For
-    // policy-managed networks, the "remove" functionality of ONC is ignored.
-    if (source == NetworkUIData::ONC_SOURCE_USER_IMPORT &&
-        removal_ids.find(network->unique_id()) != removal_ids.end()) {
-      continue;
-    }
-
-    DictionaryValue dict;
-    for (Network::PropertyMap::const_iterator props =
-             network->property_map_.begin();
-         props != network->property_map_.end(); ++props) {
-      std::string key =
-          NativeNetworkParser::property_mapper()->GetKey(props->first);
-      if (!key.empty())
-        dict.SetWithoutPathExpansion(key, props->second->DeepCopy());
-      else
-        VLOG(2) << "Property " << props->first << " will not be sent";
-    }
-
-    // Set the appropriate profile for |source|.
-    dict.SetString(flimflam::kProfileProperty, profile->path);
-
-    // For Ethernet networks, apply them to the current Ethernet service.
-    if (network->type() == TYPE_ETHERNET) {
-      const EthernetNetwork* ethernet = ethernet_network();
-      if (ethernet) {
-        CallConfigureService(ethernet->unique_id(), &dict);
-      } else {
-        DLOG(WARNING) << "Tried to import ONC with an Ethernet network when "
-                      << "there is no active Ethernet connection.";
+    // Parse all networks. Bail out if that fails.
+    NetworkOncMap added_onc_map;
+    ScopedVector<Network> networks;
+    for (int i = 0; i < parser.GetNetworkConfigsSize(); i++) {
+      // Parse Open Network Configuration blob into a temporary Network object.
+      bool marked_for_removal = false;
+      Network* network = parser.ParseNetwork(i, &marked_for_removal);
+      if (!network) {
+        if (error != NULL)
+          *error = parser.parse_error();
+        LOG(WARNING) << "Error during parsing network at index " << i
+                     << " from ONC source " << source
+                     << ": " << parser.parse_error();
+        return false;
       }
-    } else {
-      CallConfigureService(network->unique_id(), &dict);
+
+      // Disallow anything but WiFi and Ethernet for device-level policy (which
+      // corresponds to shared networks). See also http://crosbug.com/28741.
+      if (source == NetworkUIData::ONC_SOURCE_DEVICE_POLICY &&
+          network->type() != TYPE_WIFI &&
+          network->type() != TYPE_ETHERNET) {
+        LOG(WARNING) << "Ignoring device-level policy-pushed network of type "
+                     << network->type();
+        delete network;
+        continue;
+      }
+
+      networks.push_back(network);
+      if (!(source == NetworkUIData::ONC_SOURCE_USER_IMPORT &&
+            marked_for_removal)) {
+        added_onc_map[network->unique_id()] = parser.GetNetworkConfig(i);
+      }
+
+      if (marked_for_removal)
+        removal_ids.insert(network->unique_id());
     }
 
-    network_ids.insert(network->unique_id());
+    // Update the ONC map.
+    for (NetworkOncMap::iterator iter(added_onc_map.begin());
+         iter != added_onc_map.end(); ++iter) {
+      const base::DictionaryValue*& entry = network_onc_map_[iter->first];
+      delete entry;
+      entry = iter->second->DeepCopy();
+    }
+
+    // Configure the networks. While doing so, collect unique identifiers of the
+    // networks that are defined in the ONC blob in |network_ids|. They're later
+    // used to clean out any previously-existing networks that had been
+    // configured through policy but are no longer specified in the updated ONC
+    // blob.
+    for (std::vector<Network*>::iterator iter(networks.begin());
+         iter != networks.end(); ++iter) {
+      Network* network = *iter;
+
+      // Don't configure a network that is supposed to be removed. For
+      // policy-managed networks, the "remove" functionality of ONC is ignored.
+      if (source == NetworkUIData::ONC_SOURCE_USER_IMPORT &&
+          removal_ids.find(network->unique_id()) != removal_ids.end()) {
+        continue;
+      }
+
+      DictionaryValue dict;
+      for (Network::PropertyMap::const_iterator props =
+               network->property_map_.begin();
+           props != network->property_map_.end(); ++props) {
+        std::string key =
+            NativeNetworkParser::property_mapper()->GetKey(props->first);
+        if (!key.empty())
+          dict.SetWithoutPathExpansion(key, props->second->DeepCopy());
+        else
+          VLOG(2) << "Property " << props->first << " will not be sent";
+      }
+
+      // Set the appropriate profile for |source|.
+      if (profile != NULL)
+        dict.SetString(flimflam::kProfileProperty, profile->path);
+
+      // For Ethernet networks, apply them to the current Ethernet service.
+      if (network->type() == TYPE_ETHERNET) {
+        const EthernetNetwork* ethernet = ethernet_network();
+        if (ethernet) {
+          CallConfigureService(ethernet->unique_id(), &dict);
+        } else {
+          DLOG(WARNING) << "Tried to import ONC with an Ethernet network when "
+                        << "there is no active Ethernet connection.";
+        }
+      } else {
+        CallConfigureService(network->unique_id(), &dict);
+      }
+
+      network_ids.insert(network->unique_id());
+    }
   }
 
   if (from_policy) {
@@ -1164,17 +1223,6 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
     // because ForgetNetwork() changes the remembered network vectors.
     ForgetNetworksById(source, network_ids, false);
   } else if (source == NetworkUIData::ONC_SOURCE_USER_IMPORT) {
-    // User-imported files should always contain something.
-    if (parser.GetNetworkConfigsSize() == 0 &&
-        parser.GetCertificatesSize() == 0) {
-      LOG(ERROR) << "ONC file contains no networks or certificates.";
-      if (error) {
-        *error = l10n_util::GetStringUTF8(
-            IDS_NETWORK_CONFIG_ERROR_NETWORK_IMPORT);
-      }
-      return false;
-    }
-
     if (removal_ids.empty())
       return true;
 

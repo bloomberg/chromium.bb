@@ -144,6 +144,9 @@ Press any key to continue exploring.
   <message name="IDS_OFFERS_CONSENT_INFOBAR_DISABLE_BUTTON" desc="Disable button label.">
     Deny
   </message>
+  <message name="IDS_NETWORK_CONFIG_ERROR_NETWORK_NOT_A_JSON_DICTIONARY" desc="Error for network configuration: Configuration is not a valid JSON dictionary.">
+    The configuration is not a valid JSON dictionary.
+  </message>
   <message name="IDS_NETWORK_CONFIG_LOADING_ERROR" desc="Error message for loading network configuration file.">
     Error loading network configuration file: <ph name="error">$1<ex>Unknown error</ex></ph>
   </message>

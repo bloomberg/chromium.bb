@@ -11,7 +11,9 @@ namespace onc {
 
 // Top Level ONC.
 extern const char kCertificates[];
+extern const char kEncryptedConfiguration[];
 extern const char kNetworkConfigurations[];
+extern const char kUnencryptedConfiguration[];
 
 // This is no ONC key or value but used for logging only.
 // TODO(pneubeck): Remove.
@@ -85,8 +87,24 @@ extern const char kServer[];
 extern const char kSubject[];
 extern const char kTrust[];
 extern const char kType[];
+extern const char kWeb[];
 extern const char kX509[];
 }  // namespace certificate
+
+namespace encrypted {
+extern const char kAES256[];
+extern const char kCipher[];
+extern const char kCiphertext[];
+extern const char kHMACMethod[];
+extern const char kHMAC[];
+extern const char kIV[];
+extern const char kIterations[];
+extern const char kPBKDF2[];
+extern const char kSHA1[];
+extern const char kSalt[];
+extern const char kStretch[];
+extern const char kType[];
+}  // namespace encrypted
 
 namespace eap {
 extern const char kAnonymousIdentity[];

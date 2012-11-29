@@ -13,7 +13,9 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/onc_constants.h"
-#include "chrome/browser/chromeos/cros/onc_network_parser.h"
+#include "chrome/browser/chromeos/network_settings/onc_signature.h"
+#include "chrome/browser/chromeos/network_settings/onc_utils.h"
+#include "chrome/browser/chromeos/network_settings/onc_validator.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
@@ -22,6 +24,10 @@
 #include "policy/policy_constants.h"
 
 namespace onc = chromeos::onc;
+
+namespace {
+
+}  // namespace
 
 namespace policy {
 
@@ -43,13 +49,32 @@ bool NetworkConfigurationPolicyHandler::CheckPolicySettings(
   if (value) {
     std::string onc_blob;
     value->GetAsString(&onc_blob);
-    // Policy-based ONC blobs cannot have a passphrase.
-    chromeos::OncNetworkParser parser(onc_blob, "", onc_source_);
-    if (!parser.parse_error().empty()) {
-      errors->AddError(policy_name(),
-                       IDS_POLICY_NETWORK_CONFIG_PARSE_ERROR,
-                       parser.parse_error());
+    std::string json_error;
+    scoped_ptr<base::DictionaryValue> root_dict =
+        onc::ReadDictionaryFromJson(onc_blob, &json_error);
+    if (root_dict.get() == NULL) {
+      errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_PARSE_ERROR,
+                       json_error);
       return false;
+    }
+
+    // Validate the ONC dictionary. We are liberal and ignore unknown field
+    // names and ignore invalid field names in kRecommended arrays.
+    onc::Validator validator(false,  // Ignore unknown fields.
+                             false,  // Ignore invalid recommended field names.
+                             true,  // Fail on missing fields.
+                             true);  // Validate for managed ONC
+
+    // ONC policies are always unencrypted.
+    root_dict = validator.ValidateAndRepairObject(
+        &onc::kUnencryptedConfigurationSignature,
+        *root_dict);
+
+    if (root_dict.get() == NULL) {
+      errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_PARSE_ERROR);
+      // Don't reject the policy, as some networks or certificates could still
+      // be applied.
+      return true;
     }
   }
 
