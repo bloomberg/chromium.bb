@@ -29,13 +29,9 @@ def SetupHostDir(env):
     host_arch = 'x86_64'
   elif sys.platform.startswith('linux'):
     os_shortname = 'linux'
-    machine = platform.machine()
-    if machine == 'x86_64':
-      host_arch = 'x86_64'
-    elif machine in ('i386', 'i686'):
-      host_arch = 'x86_32'
-    else:
-      raise Exception('Unknown architecture: %s' % machine)
+    # x86-32 host is always available, but x86-64 host is not always available
+    # if built from scratch, without building the full fat toolchain.
+    host_arch = 'x86_32'
   elif sys.platform in ('cygwin', 'win32'):
     os_shortname = 'win'
     host_arch= 'x86_32'
