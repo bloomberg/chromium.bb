@@ -405,7 +405,7 @@ bool AutofillManager::OnFormSubmitted(const FormData& form,
 
   // Only upload server statistics and UMA metrics if at least some local data
   // is available to use as a baseline.
-  const std::vector<AutofillProfile*>& profiles = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
   const std::vector<CreditCard*>& credit_cards = personal_data_->credit_cards();
   if (!profiles.empty() || !credit_cards.empty()) {
     // Copy the profile and credit card data, so that it can be accessed on a
@@ -936,7 +936,7 @@ bool AutofillManager::GetHost(RenderViewHost** host) const {
     return false;
 
   // No autofill data to return if the profiles are empty.
-  if (personal_data_->profiles().empty() &&
+  if (personal_data_->GetProfiles().empty() &&
       personal_data_->credit_cards().empty()) {
     return false;
   }
@@ -960,34 +960,18 @@ bool AutofillManager::GetProfileOrCreditCard(
          !base::IsValidGUID(profile_guid.first));
 
   // Find the profile that matches the |profile_guid|, if one is specified.
+  // Otherwise find the credit card that matches the |credit_card_guid|,
+  // if specified.
   if (base::IsValidGUID(profile_guid.first)) {
     *form_group = personal_data_->GetProfileByGUID(profile_guid.first);
-    if (*form_group) {
-      *variant = profile_guid.second;
-      return true;
-    } else {
-      // TODO(estade): this branch is actually hit quite often on mac:
-      // http://crbug.com/161867
-      NOTREACHED();
-      return false;
-    }
-  }
-
-  // Find the credit card that matches the |credit_card_guid|, if specified.
-  if (base::IsValidGUID(credit_card_guid.first)) {
+    *variant = profile_guid.second;
+  } else if (base::IsValidGUID(credit_card_guid.first)) {
     *form_group =
         personal_data_->GetCreditCardByGUID(credit_card_guid.first);
-    if (*form_group) {
-      *variant = credit_card_guid.second;
-      return true;
-    } else {
-      // TODO(estade): not sure if this branch can be hit.
-      NOTREACHED();
-      return false;
-    }
+    *variant = credit_card_guid.second;
   }
 
-  return false;
+  return !!*form_group;
 }
 
 bool AutofillManager::FindCachedForm(const FormData& form,
@@ -1117,7 +1101,7 @@ void AutofillManager::GetProfileSuggestions(
     std::vector<string16>* labels,
     std::vector<string16>* icons,
     std::vector<int>* unique_ids) const {
-  const std::vector<AutofillProfile*>& profiles = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
   if (!field.is_autofilled) {
     std::vector<AutofillProfile*> matched_profiles;
     for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();

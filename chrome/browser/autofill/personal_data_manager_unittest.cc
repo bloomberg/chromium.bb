@@ -120,7 +120,7 @@ TEST_F(PersonalDataManagerTest, AddProfile) {
   ResetPersonalDataManager();
 
   // Verify the addition.
-  const std::vector<AutofillProfile*>& results1 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results1.size());
   EXPECT_EQ(0, profile0.Compare(*results1[0]));
 
@@ -133,7 +133,7 @@ TEST_F(PersonalDataManagerTest, AddProfile) {
   ResetPersonalDataManager();
 
   // Verify the non-addition.
-  const std::vector<AutofillProfile*>& results2 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, profile0.Compare(*results2[0]));
 
@@ -151,7 +151,7 @@ TEST_F(PersonalDataManagerTest, AddProfile) {
   ResetPersonalDataManager();
 
   // Verify the addition.
-  const std::vector<AutofillProfile*>& results3 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results3 = personal_data_->GetProfiles();
   ASSERT_EQ(2U, results3.size());
   EXPECT_EQ(0, profile0.Compare(*results3[0]));
   EXPECT_EQ(0, profile1.Compare(*results3[1]));
@@ -185,7 +185,7 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
   MessageLoop::current()->Run();
 
-  const std::vector<AutofillProfile*>& results1 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
   ASSERT_EQ(2U, results1.size());
   EXPECT_EQ(0, profile0.Compare(*results1[0]));
   EXPECT_EQ(0, profile1.Compare(*results1[1]));
@@ -201,7 +201,7 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
   MessageLoop::current()->Run();
 
-  const std::vector<AutofillProfile*>& results2 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
   ASSERT_EQ(2U, results2.size());
   EXPECT_EQ(0, profile0.Compare(*results2[0]));
   EXPECT_EQ(0, profile2.Compare(*results2[1]));
@@ -212,7 +212,7 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
   ResetPersonalDataManager();
 
   // Verify that we've loaded the profiles from the web database.
-  const std::vector<AutofillProfile*>& results3 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results3 = personal_data_->GetProfiles();
   ASSERT_EQ(2U, results3.size());
   EXPECT_EQ(0, profile0.Compare(*results3[0]));
   EXPECT_EQ(0, profile2.Compare(*results3[1]));
@@ -303,7 +303,7 @@ TEST_F(PersonalDataManagerTest, AddProfilesAndCreditCards) {
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
   MessageLoop::current()->Run();
 
-  const std::vector<AutofillProfile*>& results1 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
   ASSERT_EQ(2U, results1.size());
   EXPECT_EQ(0, profile0.Compare(*results1[0]));
   EXPECT_EQ(0, profile1.Compare(*results1[1]));
@@ -348,7 +348,7 @@ TEST_F(PersonalDataManagerTest, PopulateUniqueIDsOnLoad) {
   MessageLoop::current()->Run();
 
   // Verify that we've loaded the profiles from the web database.
-  const std::vector<AutofillProfile*>& results2 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, profile0.Compare(*results2[0]));
 
@@ -364,7 +364,7 @@ TEST_F(PersonalDataManagerTest, PopulateUniqueIDsOnLoad) {
   MessageLoop::current()->Run();
 
   // Make sure the two profiles have different GUIDs, both valid.
-  const std::vector<AutofillProfile*>& results3 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results3 = personal_data_->GetProfiles();
   ASSERT_EQ(2U, results3.size());
   EXPECT_NE(results3[0]->guid(), results3[1]->guid());
   EXPECT_TRUE(base::IsValidGUID(results3[0]->guid()));
@@ -387,7 +387,7 @@ TEST_F(PersonalDataManagerTest, SetEmptyProfile) {
   ResetPersonalDataManager();
 
   // Verify that we've loaded the profiles from the web database.
-  const std::vector<AutofillProfile*>& results2 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
   ASSERT_EQ(0U, results2.size());
 }
 
@@ -438,7 +438,7 @@ TEST_F(PersonalDataManagerTest, Refresh) {
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
   MessageLoop::current()->Run();
 
-  const std::vector<AutofillProfile*>& results1 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
   ASSERT_EQ(2U, results1.size());
   EXPECT_EQ(profile0, *results1[0]);
   EXPECT_EQ(profile1, *results1[1]);
@@ -465,7 +465,7 @@ TEST_F(PersonalDataManagerTest, Refresh) {
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
   MessageLoop::current()->Run();
 
-  const std::vector<AutofillProfile*>& results2 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
   ASSERT_EQ(3U, results2.size());
   EXPECT_EQ(profile0, *results2[0]);
   EXPECT_EQ(profile1, *results2[1]);
@@ -489,7 +489,7 @@ TEST_F(PersonalDataManagerTest, Refresh) {
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
   MessageLoop::current()->Run();
 
-  const std::vector<AutofillProfile*>& results3 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results3 = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results3.size());
   EXPECT_EQ(profile0, *results2[0]);
 }
@@ -534,7 +534,7 @@ TEST_F(PersonalDataManagerTest, ImportFormData) {
   autofill_test::SetProfileInfo(&expected, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, "21 Laussat St", NULL,
       "San Francisco", "California", "94102", NULL, NULL);
-  const std::vector<AutofillProfile*>& results = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected.Compare(*results[0]));
 }
@@ -570,7 +570,7 @@ TEST_F(PersonalDataManagerTest, ImportFormDataBadEmail) {
                                               &imported_credit_card));
   ASSERT_EQ(static_cast<CreditCard*>(NULL), imported_credit_card);
 
-  const std::vector<AutofillProfile*>& results = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
   ASSERT_EQ(0U, results.size());
 }
 
@@ -593,7 +593,7 @@ TEST_F(PersonalDataManagerTest, ImportFormDataNotEnoughFilledFields) {
                                               &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
 
-  const std::vector<AutofillProfile*>& profiles = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
   ASSERT_EQ(0U, profiles.size());
   const std::vector<CreditCard*>& credit_cards = personal_data_->credit_cards();
   ASSERT_EQ(0U, credit_cards.size());
@@ -648,7 +648,7 @@ TEST_F(PersonalDataManagerTest, ImportPhoneNumberSplitAcrossMultipleFields) {
   autofill_test::SetProfileInfo(&expected, "George", NULL,
       "Washington", NULL, NULL, "21 Laussat St", NULL,
       "San Francisco", "California", "94102", NULL, "(650) 555-0000");
-  const std::vector<AutofillProfile*>& results = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected.Compare(*results[0]));
 }
@@ -731,7 +731,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentProfiles) {
   autofill_test::SetProfileInfo(&expected, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, "21 Laussat St", NULL,
       "San Francisco", "California", "94102", NULL, NULL);
-  const std::vector<AutofillProfile*>& results1 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results1.size());
   EXPECT_EQ(0, expected.Compare(*results1[0]));
 
@@ -770,7 +770,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentProfiles) {
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
   MessageLoop::current()->Run();
 
-  const std::vector<AutofillProfile*>& results2 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
 
   AutofillProfile expected2;
   autofill_test::SetProfileInfo(&expected2, "John", NULL,
@@ -822,7 +822,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoProfilesWithMultiValue) {
   autofill_test::SetProfileInfo(&expected, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, "21 Laussat St", NULL,
       "San Francisco", "California", "94102", NULL, NULL);
-  const std::vector<AutofillProfile*>& results1 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results1.size());
   EXPECT_EQ(0, expected.Compare(*results1[0]));
 
@@ -861,7 +861,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoProfilesWithMultiValue) {
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
   MessageLoop::current()->Run();
 
-  const std::vector<AutofillProfile*>& results2 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
 
   // Modify expected to include multi-valued fields.
   std::vector<string16> values;
@@ -924,7 +924,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
       &expected, "George", NULL, "Washington", "theprez@gmail.com", NULL,
       "1600 Pennsylvania Avenue", "Suite A", "San Francisco", "California",
       "94102", NULL, "(650) 555-6666");
-  const std::vector<AutofillProfile*>& results1 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results1.size());
   EXPECT_EQ(0, expected.Compare(*results1[0]));
 
@@ -974,7 +974,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
   MessageLoop::current()->Run();
 
-  const std::vector<AutofillProfile*>& results2 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
 
   // Add multi-valued phone number to expectation.  Also, country gets added.
   std::vector<string16> values;
@@ -1024,7 +1024,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInOld) {
   autofill_test::SetProfileInfo(&expected, "George", NULL,
       "Washington", NULL, NULL, "190 High Street", NULL,
       "Philadelphia", "Pennsylvania", "19106", NULL, NULL);
-  const std::vector<AutofillProfile*>& results1 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results1.size());
   EXPECT_EQ(0, expected.Compare(*results1[0]));
 
@@ -1063,7 +1063,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInOld) {
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
   MessageLoop::current()->Run();
 
-  const std::vector<AutofillProfile*>& results2 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
 
   AutofillProfile expected2;
   autofill_test::SetProfileInfo(&expected2, "George", NULL,
@@ -1117,7 +1117,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInNew) {
   autofill_test::SetProfileInfo(&expected, "George", NULL,
       "Washington", "theprez@gmail.com", "Government", "190 High Street", NULL,
       "Philadelphia", "Pennsylvania", "19106", NULL, NULL);
-  const std::vector<AutofillProfile*>& results1 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results1.size());
   EXPECT_EQ(0, expected.Compare(*results1[0]));
 
@@ -1157,7 +1157,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInNew) {
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
   MessageLoop::current()->Run();
 
-  const std::vector<AutofillProfile*>& results2 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
 
   // Expect no change.
   ASSERT_EQ(1U, results2.size());
@@ -1195,7 +1195,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithInsufficientAddress) {
 
   // Note: no refresh here.
 
-  const std::vector<AutofillProfile*>& profiles = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
   ASSERT_EQ(0U, profiles.size());
   const std::vector<CreditCard*>& credit_cards = personal_data_->credit_cards();
   ASSERT_EQ(0U, credit_cards.size());
@@ -1919,7 +1919,7 @@ TEST_F(PersonalDataManagerTest, CaseInsensitiveMultiValueAggregation) {
   autofill_test::SetProfileInfo(&expected, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, "21 Laussat St", NULL,
       "San Francisco", "California", "94102", NULL, "(817) 555-6789");
-  const std::vector<AutofillProfile*>& results1 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results1.size());
   EXPECT_EQ(0, expected.Compare(*results1[0]));
 
@@ -1961,7 +1961,7 @@ TEST_F(PersonalDataManagerTest, CaseInsensitiveMultiValueAggregation) {
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
   MessageLoop::current()->Run();
 
-  const std::vector<AutofillProfile*>& results2 = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
 
   // Modify expected to include multi-valued fields.
   std::vector<string16> values;

@@ -91,7 +91,8 @@ class PersonalDataManager
   virtual void RemoveByGUID(const std::string& guid);
 
   // Returns the profile with the specified |guid|, or NULL if there is no
-  // profile with the specified |guid|.
+  // profile with the specified |guid|. Both web and auxiliary profiles may
+  // be returned.
   AutofillProfile* GetProfileByGUID(const std::string& guid);
 
   // Adds |credit_card| to the web database.
@@ -105,7 +106,7 @@ class PersonalDataManager
   CreditCard* GetCreditCardByGUID(const std::string& guid);
 
   // Gets the field types availabe in the stored address and credit card data.
-  void GetNonEmptyTypes(FieldTypeSet* non_empty_types) const;
+  void GetNonEmptyTypes(FieldTypeSet* non_empty_types);
 
   // Returns true if the credit card information is stored with a password.
   bool HasPassword();
@@ -117,7 +118,7 @@ class PersonalDataManager
   // lifetime is until the web database is updated with new profile and credit
   // card information, respectively.  |profiles()| returns both web and
   // auxiliary profiles.  |web_profiles()| returns only web profiles.
-  const std::vector<AutofillProfile*>& profiles() const;
+  const std::vector<AutofillProfile*>& GetProfiles();
   virtual const std::vector<AutofillProfile*>& web_profiles() const;
   virtual const std::vector<CreditCard*>& credit_cards() const;
 
@@ -182,7 +183,7 @@ class PersonalDataManager
   virtual void LoadProfiles();
 
   // Loads the auxiliary profiles.  Currently Mac only.
-  void LoadAuxiliaryProfiles() const;
+  virtual void LoadAuxiliaryProfiles();
 
   // Loads the saved credit cards from the web database.
   virtual void LoadCreditCards();
@@ -217,6 +218,7 @@ class PersonalDataManager
   // For tests.
   const AutofillMetrics* metric_logger() const;
   void set_metric_logger(const AutofillMetrics* metric_logger);
+  void set_browser_context(content::BrowserContext* context);
 
   // The browser context this PersonalDataManager is in.
   content::BrowserContext* browser_context_;

@@ -294,7 +294,7 @@ void AutofillDialogController::GenerateComboboxModels() {
   }
   suggested_cc_.AddItem(ASCIIToUTF16("Enter new card"), "");
 
-  const std::vector<AutofillProfile*>& profiles = manager->profiles();
+  const std::vector<AutofillProfile*>& profiles = manager->GetProfiles();
   for (size_t i = 0; i < profiles.size(); ++i) {
     string16 email = profiles[i]->GetCanonicalizedInfo(EMAIL_ADDRESS);
     if (!email.empty())
@@ -313,7 +313,7 @@ void AutofillDialogController::PopulateInputsWithGuesses() {
 
   DetailInputs* profile_inputs[] = { &requested_email_fields_,
                                      &requested_billing_fields_ };
-  const std::vector<AutofillProfile*>& profiles = manager->profiles();
+  const std::vector<AutofillProfile*>& profiles = manager->GetProfiles();
   FormGroup* best_profile =
       GetBestDataSource(profiles, profile_inputs, arraysize(profile_inputs));
   if (best_profile) {

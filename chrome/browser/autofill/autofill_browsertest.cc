@@ -979,9 +979,9 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, FillProfileCrazyCharacters) {
   profiles.push_back(profile7);
 
   SetProfiles(&profiles);
-  ASSERT_EQ(profiles.size(), personal_data_manager()->profiles().size());
+  ASSERT_EQ(profiles.size(), personal_data_manager()->GetProfiles().size());
   for (size_t i = 0; i < profiles.size(); ++i)
-    ASSERT_EQ(profiles[i], *personal_data_manager()->profiles()[i]);
+    ASSERT_EQ(profiles[i], *personal_data_manager()->GetProfiles()[i]);
 
   std::vector<CreditCard> cards;
   CreditCard card1;
@@ -1054,8 +1054,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, Invalid) {
                           ASCIIToUTF16("Invalid_Phone_Number"));
   SetProfile(with_invalid);
 
-  ASSERT_EQ(1u, personal_data_manager()->profiles().size());
-  AutofillProfile profile = *personal_data_manager()->profiles()[0];
+  ASSERT_EQ(1u, personal_data_manager()->GetProfiles().size());
+  AutofillProfile profile = *personal_data_manager()->GetProfiles()[0];
   ASSERT_NE(without_invalid.GetRawInfo(PHONE_HOME_WHOLE_NUMBER),
             profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
 }
@@ -1117,7 +1117,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AggregatesMinValidProfile) {
   data["ADDRESS_HOME_ZIP"] = "94043";
   FillFormAndSubmit("duplicate_profiles_test.html", data);
 
-  ASSERT_EQ(1u, personal_data_manager()->profiles().size());
+  ASSERT_EQ(1u, personal_data_manager()->GetProfiles().size());
 }
 
 // Test Autofill does not aggregate profiles with no address info.
@@ -1134,7 +1134,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesNotAggregatedWithNoAddress) {
   data["PHONE_HOME_WHOLE_NUMBER"] = "650-555-4567";
   FillFormAndSubmit("duplicate_profiles_test.html", data);
 
-  ASSERT_TRUE(personal_data_manager()->profiles().empty());
+  ASSERT_TRUE(personal_data_manager()->GetProfiles().empty());
 }
 
 // Test Autofill does not aggregate profiles with an invalid email.
@@ -1152,7 +1152,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesNotAggregatedWithInvalidEmail) {
   data["PHONE_HOME_WHOLE_NUMBER"] = "408-871-4567";
   FillFormAndSubmit("duplicate_profiles_test.html", data);
 
-  ASSERT_TRUE(personal_data_manager()->profiles().empty());
+  ASSERT_TRUE(personal_data_manager()->GetProfiles().empty());
 }
 
 // http://crbug.com/150084
@@ -1257,12 +1257,12 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
   for (size_t i = 0; i < profiles.size(); ++i)
     FillFormAndSubmit("autofill_test_form.html", profiles[i]);
 
-  ASSERT_EQ(2u, personal_data_manager()->profiles().size());
+  ASSERT_EQ(2u, personal_data_manager()->GetProfiles().size());
   ASSERT_EQ(ASCIIToUTF16("(408) 871-4567"),
-            personal_data_manager()->profiles()[0]->GetRawInfo(
+            personal_data_manager()->GetProfiles()[0]->GetRawInfo(
                 PHONE_HOME_WHOLE_NUMBER));
   ASSERT_EQ(ASCIIToUTF16("+49 40/808179000"),
-            personal_data_manager()->profiles()[1]->GetRawInfo(
+            personal_data_manager()->GetProfiles()[1]->GetRawInfo(
                 PHONE_HOME_WHOLE_NUMBER));
 }
 
@@ -1283,8 +1283,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AppendCountryCodeForAggregatedPhones) {
   data["PHONE_HOME_WHOLE_NUMBER"] = "(08) 450 777-777";
   FillFormAndSubmit("autofill_test_form.html", data);
 
-  ASSERT_EQ(1u, personal_data_manager()->profiles().size());
-  string16 phone = personal_data_manager()->profiles()[0]->GetRawInfo(
+  ASSERT_EQ(1u, personal_data_manager()->GetProfiles().size());
+  string16 phone = personal_data_manager()->GetProfiles()[0]->GetRawInfo(
       PHONE_HOME_WHOLE_NUMBER);
   ASSERT_TRUE(StartsWith(phone, ASCIIToUTF16("+49"), true));
 }
@@ -1445,7 +1445,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfileWithEmailInOtherFieldNotSaved) {
   data["PHONE_HOME_WHOLE_NUMBER"] = "408-871-4567";
   FillFormAndSubmit("duplicate_profiles_test.html", data);
 
-  ASSERT_EQ(0u, personal_data_manager()->profiles().size());
+  ASSERT_EQ(0u, personal_data_manager()->GetProfiles().size());
 }
 
 // http://crbug.com/150084
@@ -1575,7 +1575,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
                        DISABLED_MergeAggregatedProfilesWithSameAddress) {
   AggregateProfilesIntoAutofillPrefs("dataset_2.txt");
 
-  ASSERT_EQ(3u, personal_data_manager()->profiles().size());
+  ASSERT_EQ(3u, personal_data_manager()->GetProfiles().size());
 }
 
 // Test profiles are not merged without mininum address values.
@@ -1587,7 +1587,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
                        DISABLED_ProfilesNotMergedWhenNoMinAddressData) {
   AggregateProfilesIntoAutofillPrefs("dataset_no_address.txt");
 
-  ASSERT_EQ(0u, personal_data_manager()->profiles().size());
+  ASSERT_EQ(0u, personal_data_manager()->GetProfiles().size());
 }
 
 // Test Autofill ability to merge duplicate profiles and throw away junk.
@@ -1599,5 +1599,5 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
       AggregateProfilesIntoAutofillPrefs("dataset_no_address.txt");
 
   ASSERT_GT(num_of_profiles,
-            static_cast<int>(personal_data_manager()->profiles().size()));
+            static_cast<int>(personal_data_manager()->GetProfiles().size()));
 }

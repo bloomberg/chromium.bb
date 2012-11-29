@@ -87,6 +87,10 @@ class TestPersonalDataManager : public PersonalDataManager {
     CreateTestAutofillProfiles(&web_profiles_);
   }
 
+  void SetBrowserContext(content::BrowserContext* context) {
+    set_browser_context(context);
+  }
+
   // Overridden to avoid a trip to the database. This should be a no-op except
   // for the side-effect of logging the profile count.
   virtual void LoadProfiles() OVERRIDE {
@@ -300,6 +304,7 @@ void AutofillMetricsTest::SetUp() {
 
   ChromeRenderViewHostTestHarness::SetUp();
   TabAutofillManagerDelegate::CreateForWebContents(web_contents());
+  personal_data_.SetBrowserContext(profile);
   autofill_manager_ = new TestAutofillManager(
       web_contents(),
       TabAutofillManagerDelegate::FromWebContents(web_contents()),

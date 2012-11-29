@@ -73,6 +73,10 @@ class TestPersonalDataManager : public PersonalDataManager {
     CreateTestCreditCards(&credit_cards_);
   }
 
+  void SetBrowserContext(content::BrowserContext* context) {
+    set_browser_context(context);
+  }
+
   // Factory method for keyed service.  PersonalDataManager is NULL for testing.
   static ProfileKeyedService* Build(Profile* profile) {
     return NULL;
@@ -122,12 +126,20 @@ class TestPersonalDataManager : public PersonalDataManager {
     }
   }
 
+  // Do nothing (auxiliary profiles will be created in
+  // CreateTestAuxiliaryProfile).
+  virtual void LoadAuxiliaryProfiles() OVERRIDE {}
+
   void ClearAutofillProfiles() {
     web_profiles_.clear();
   }
 
   void ClearCreditCards() {
     credit_cards_.clear();
+  }
+
+  void CreateTestAuxiliaryProfiles() {
+    CreateTestAutofillProfiles(&auxiliary_profiles_);
   }
 
   void CreateTestCreditCardsYearAndMonth(const char* year, const char* month) {
@@ -428,11 +440,11 @@ void ExpectFilledCreditCardFormElvis(int page_id,
 }
 
 void ExpectFilledCreditCardYearMonthWithYearMonth(int page_id,
-                                              const FormData& filled_form,
-                                              int expected_page_id,
-                                              bool has_address_fields,
-                                              const char* year,
-                                              const char* month) {
+                                                  const FormData& filled_form,
+                                                  int expected_page_id,
+                                                  bool has_address_fields,
+                                                  const char* year,
+                                                  const char* month) {
   ExpectFilledForm(page_id, filled_form, expected_page_id,
                    "", "", "", "", "", "", "", "", "", "", "",
                    "Miku Hatsune", "4234567890654321", month, year,
@@ -603,6 +615,7 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
 
     ChromeRenderViewHostTestHarness::SetUp();
     TabAutofillManagerDelegate::CreateForWebContents(web_contents());
+    personal_data_.SetBrowserContext(profile);
     autofill_manager_ = new TestAutofillManager(
         web_contents(),
         TabAutofillManagerDelegate::FromWebContents(web_contents()),
@@ -693,7 +706,7 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
     return true;
   }
 
-  bool GetAutofillFormDataFilledMessage(int *page_id, FormData* results) {
+  bool GetAutofillFormDataFilledMessage(int* page_id, FormData* results) {
     const uint32 kMsgID = AutofillMsg_FormDataFilled::ID;
     const IPC::Message* message =
         process()->sink().GetFirstMessageMatching(kMsgID);
@@ -1737,6 +1750,30 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsFancyPhone) {
 
 // Test that we correctly fill an address form.
 TEST_F(AutofillManagerTest, FillAddressForm) {
+  // Set up our form data.
+  FormData form;
+  CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  GUIDPair guid("00000000-0000-0000-0000-000000000001", 0);
+  GUIDPair empty(std::string(), 0);
+  FillAutofillFormData(kDefaultPageID, form, form.fields[0],
+                       PackGUIDs(empty, guid));
+
+  int page_id = 0;
+  FormData results;
+  EXPECT_TRUE(GetAutofillFormDataFilledMessage(&page_id, &results));
+  ExpectFilledAddressFormElvis(page_id, results, kDefaultPageID, false);
+}
+
+// Test that we correctly fill an address form from an auxiliary profile.
+TEST_F(AutofillManagerTest, FillAddressFormFromAuxiliaryProfile) {
+  personal_data_.ClearAutofillProfiles();
+  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile());
+  prefs->SetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled, true);
+  personal_data_.CreateTestAuxiliaryProfiles();
+
   // Set up our form data.
   FormData form;
   CreateTestAddressFormData(&form);

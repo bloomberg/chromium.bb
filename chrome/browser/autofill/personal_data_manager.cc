@@ -397,8 +397,9 @@ void PersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
 
 AutofillProfile* PersonalDataManager::GetProfileByGUID(
     const std::string& guid) {
-  for (std::vector<AutofillProfile*>::iterator iter = web_profiles_.begin();
-       iter != web_profiles_.end(); ++iter) {
+  const std::vector<AutofillProfile*>& profiles = GetProfiles();
+  for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();
+       iter != profiles.end(); ++iter) {
     if ((*iter)->guid() == guid)
       return *iter;
   }
@@ -489,8 +490,8 @@ CreditCard* PersonalDataManager::GetCreditCardByGUID(const std::string& guid) {
 }
 
 void PersonalDataManager::GetNonEmptyTypes(
-    FieldTypeSet* non_empty_types) const {
-  const std::vector<AutofillProfile*>& profiles = this->profiles();
+    FieldTypeSet* non_empty_types) {
+  const std::vector<AutofillProfile*>& profiles = GetProfiles();
   for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();
        iter != profiles.end(); ++iter) {
     (*iter)->GetNonEmptyTypes(non_empty_types);
@@ -506,18 +507,11 @@ bool PersonalDataManager::IsDataLoaded() const {
   return is_data_loaded_;
 }
 
-const std::vector<AutofillProfile*>& PersonalDataManager::profiles() const {
-  // |browser_context_| is NULL in AutofillManagerTest.
-  bool auxiliary_profiles_enabled = browser_context_ ?
-      PrefServiceBase::FromBrowserContext(browser_context_)->GetBoolean(
-          prefs::kAutofillAuxiliaryProfilesEnabled) :
-      false;
-  if (!auxiliary_profiles_enabled)
+const std::vector<AutofillProfile*>& PersonalDataManager::GetProfiles() {
+  if (!PrefServiceBase::FromBrowserContext(browser_context_)->GetBoolean(
+          prefs::kAutofillAuxiliaryProfilesEnabled)) {
     return web_profiles();
-
-#if !defined(OS_MACOSX)
-  NOTREACHED() << "Auxiliary profiles supported on Mac only";
-#endif
+  }
 
   profiles_.clear();
 
@@ -760,7 +754,7 @@ void PersonalDataManager::LoadProfiles() {
 // Win and Linux implementations do nothing.  Mac implementation fills in the
 // contents of |auxiliary_profiles_|.
 #if !defined(OS_MACOSX)
-void PersonalDataManager::LoadAuxiliaryProfiles() const {
+void PersonalDataManager::LoadAuxiliaryProfiles() {
 }
 #endif
 
@@ -884,15 +878,14 @@ void PersonalDataManager::SaveImportedCreditCard(
 }
 
 void PersonalDataManager::EmptyMigrationTrash() {
-  if (!browser_context_ || browser_context_->IsOffTheRecord())
+  if (browser_context_->IsOffTheRecord())
     return;
 
   scoped_ptr<AutofillWebDataService> autofill_data(
       AutofillWebDataService::FromBrowserContext(browser_context_));
-  if (!autofill_data.get()) {
-    NOTREACHED();
+  // Might be NULL during testing.
+  if (!autofill_data.get())
     return;
-  }
 
   ProfileSyncServiceBase* sync_service =
       ProfileSyncServiceBase::FromBrowserContext(browser_context_);
@@ -925,4 +918,9 @@ const AutofillMetrics* PersonalDataManager::metric_logger() const {
 void PersonalDataManager::set_metric_logger(
     const AutofillMetrics* metric_logger) {
   metric_logger_.reset(metric_logger);
+}
+
+void PersonalDataManager::set_browser_context(
+    content::BrowserContext* context) {
+  browser_context_ = context;
 }

@@ -369,7 +369,7 @@ class RemoveAutofillTester : public PersonalDataManagerObserver {
 
   // Returns true if there are autofill profiles.
   bool HasProfile() {
-    return !personal_data_manager_->profiles().empty() &&
+    return !personal_data_manager_->GetProfiles().empty() &&
            !personal_data_manager_->credit_cards().empty();
   }
 

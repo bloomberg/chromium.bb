@@ -253,7 +253,7 @@ void AuxiliaryProfilesImpl::GetAddressBookPhoneNumbers(
 }  // namespace
 
 // Populate |auxiliary_profiles_| with the Address Book data.
-void PersonalDataManager::LoadAuxiliaryProfiles() const {
+void PersonalDataManager::LoadAuxiliaryProfiles() {
   AuxiliaryProfilesImpl impl(&auxiliary_profiles_);
   impl.GetAddressBookMeCard();
 }
