@@ -453,9 +453,9 @@ FileSystemFileUtil* SandboxMountPointProvider::GetFileUtil(
 
 FilePath SandboxMountPointProvider::GetPathForPermissionsCheck(
     const FilePath& virtual_path) const {
-  // We simply return the very top directory of the sandbox
-  // filesystem regardless of the input path.
-  return new_base_path();
+  // Sandbox provider shouldn't directly grant permissions for its
+  // data directory.
+  return FilePath();
 }
 
 FileSystemOperation* SandboxMountPointProvider::CreateFileSystemOperation(

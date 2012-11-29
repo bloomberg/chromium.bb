@@ -111,7 +111,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemDirectoryDatabase {
   void HandleError(const tracked_objects::Location& from_here,
                    const leveldb::Status& status);
 
-  FilePath filesystem_data_directory_;
+  const FilePath filesystem_data_directory_;
   scoped_ptr<leveldb::DB> db_;
   base::Time last_reported_time_;
   DISALLOW_COPY_AND_ASSIGN(FileSystemDirectoryDatabase);

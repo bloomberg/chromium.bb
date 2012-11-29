@@ -524,6 +524,13 @@ void FileAPIMessageFilter::OnSyncGetPlatformPath(
   if (!url.is_valid())
     return;
 
+  // Make sure if this file is ok to be read (in the current architecture
+  // which means roughly same as the renderer is allowed to get the platform
+  // path to the file).
+  base::PlatformFileError error;
+  if (!HasPermissionsForFile(url, kReadFilePermissions, &error))
+    return;
+
   // This is called only by pepper plugin as of writing to get the
   // underlying platform path to upload a file in the sandboxed filesystem
   // (e.g. TEMPORARY or PERSISTENT).
@@ -533,8 +540,19 @@ void FileAPIMessageFilter::OnSyncGetPlatformPath(
       context_->CreateFileSystemOperation(
           url, NULL)->AsLocalFileSystemOperation();
   DCHECK(operation);
-  if (operation)
-    operation->SyncGetPlatformPath(url, platform_path);
+  if (!operation)
+    return;
+
+  operation->SyncGetPlatformPath(url, platform_path);
+
+  // The path is to be attached to URLLoader so we grant read permission
+  // for the file. (We first need to check if it can already be read not to
+  // overwrite existing permissions)
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+          process_id_, *platform_path)) {
+    ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
+        process_id_, *platform_path);
+  }
 }
 
 void FileAPIMessageFilter::OnCreateSnapshotFile(
@@ -817,6 +835,14 @@ bool FileAPIMessageFilter::HasPermissionsForFile(
     if (!success)
       *error = base::PLATFORM_FILE_ERROR_SECURITY;
     return success;
+  }
+
+  if (fileapi::SandboxMountPointProvider::CanHandleType(url.type())) {
+    // Sandboxed file system permissions should be implicitly granted.
+    // (And the application should not be given direct permission to the actual
+    // data directory in the sandboxed area.)
+    CHECK(mount_point_provider == context_->sandbox_provider());
+    return true;
   }
 
   file_path = mount_point_provider->GetPathForPermissionsCheck(url.path());

@@ -345,41 +345,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID());
 
-  // Grant most file permissions to this renderer.
-  // PLATFORM_FILE_TEMPORARY, PLATFORM_FILE_HIDDEN and
-  // PLATFORM_FILE_DELETE_ON_CLOSE are not granted, because no existing API
-  // requests them.
-  // This is for the filesystem sandbox.
-  ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
-      GetID(), storage_partition_impl->GetPath().Append(
-          fileapi::SandboxMountPointProvider::kNewFileSystemDirectory),
-      base::PLATFORM_FILE_OPEN |
-      base::PLATFORM_FILE_CREATE |
-      base::PLATFORM_FILE_OPEN_ALWAYS |
-      base::PLATFORM_FILE_CREATE_ALWAYS |
-      base::PLATFORM_FILE_OPEN_TRUNCATED |
-      base::PLATFORM_FILE_READ |
-      base::PLATFORM_FILE_WRITE |
-      base::PLATFORM_FILE_EXCLUSIVE_READ |
-      base::PLATFORM_FILE_EXCLUSIVE_WRITE |
-      base::PLATFORM_FILE_ASYNC |
-      base::PLATFORM_FILE_WRITE_ATTRIBUTES |
-      base::PLATFORM_FILE_ENUMERATE);
-  // This is so that we can read and move stuff out of the old filesystem
-  // sandbox.
-  ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
-      GetID(), storage_partition_impl_->GetPath().Append(
-          fileapi::SandboxMountPointProvider::kOldFileSystemDirectory),
-      base::PLATFORM_FILE_READ | base::PLATFORM_FILE_WRITE |
-      base::PLATFORM_FILE_WRITE_ATTRIBUTES | base::PLATFORM_FILE_ENUMERATE);
-  // This is so that we can rename the old sandbox out of the way so that we
-  // know we've taken care of it.
-  ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
-      GetID(), storage_partition_impl_->GetPath().Append(
-          fileapi::SandboxMountPointProvider::kRenamedOldFileSystemDirectory),
-      base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_CREATE_ALWAYS |
-      base::PLATFORM_FILE_WRITE);
-
   CHECK(!g_exited_main_message_loop);
   RegisterHost(GetID(), this);
   g_all_hosts.Get().set_check_on_null_data(true);
