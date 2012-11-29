@@ -51,7 +51,7 @@ std::string SerializeProfiles(const std::vector<AutofillProfile*>& profiles) {
     for (size_t j = 0; j < arraysize(kProfileFieldTypes); ++j) {
       AutofillFieldType type = kProfileFieldTypes[j];
       std::vector<string16> values;
-      profiles[i]->GetMultiInfo(type, &values);
+      profiles[i]->GetRawMultiInfo(type, &values);
       for (size_t k = 0; k < values.size(); ++k) {
         result += AutofillType::FieldTypeToString(type);
         result += kFieldSeparator;

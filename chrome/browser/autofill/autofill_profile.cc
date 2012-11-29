@@ -109,7 +109,7 @@ void GetFieldsForDistinguishingProfiles(
 // stored for a given |type| into a single string.  This string is returned.
 const string16 MultiString(const AutofillProfile& p, AutofillFieldType type) {
   std::vector<string16> values;
-  p.GetMultiInfo(type, &values);
+  p.GetRawMultiInfo(type, &values);
   string16 accumulate;
   for (size_t i = 0; i < values.size(); ++i) {
     if (i > 0)
@@ -300,8 +300,8 @@ bool AutofillProfile::SetCanonicalizedInfo(AutofillFieldType type,
   return false;
 }
 
-void AutofillProfile::SetMultiInfo(AutofillFieldType type,
-                                   const std::vector<string16>& values) {
+void AutofillProfile::SetRawMultiInfo(AutofillFieldType type,
+                                      const std::vector<string16>& values) {
   switch (AutofillType(type).group()) {
     case AutofillType::NAME:
       CopyValuesToItems(type, values, &name_, NameInfo());
@@ -328,8 +328,8 @@ void AutofillProfile::SetMultiInfo(AutofillFieldType type,
   }
 }
 
-void AutofillProfile::GetMultiInfo(AutofillFieldType type,
-                                   std::vector<string16>* values) const {
+void AutofillProfile::GetRawMultiInfo(AutofillFieldType type,
+                                      std::vector<string16>* values) const {
   GetMultiInfoImpl(type, false, values);
 }
 
@@ -431,8 +431,8 @@ int AutofillProfile::Compare(const AutofillProfile& profile) const {
   for (size_t i = 0; i < arraysize(multi_value_types); ++i) {
     std::vector<string16> values_a;
     std::vector<string16> values_b;
-    GetMultiInfo(multi_value_types[i], &values_a);
-    profile.GetMultiInfo(multi_value_types[i], &values_b);
+    GetRawMultiInfo(multi_value_types[i], &values_a);
+    profile.GetRawMultiInfo(multi_value_types[i], &values_b);
     if (values_a.size() < values_b.size())
       return -1;
     if (values_a.size() > values_b.size())
@@ -501,9 +501,9 @@ void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile) {
        iter != field_types.end(); ++iter) {
     if (AutofillProfile::SupportsMultiValue(*iter)) {
       std::vector<string16> new_values;
-      profile.GetMultiInfo(*iter, &new_values);
+      profile.GetRawMultiInfo(*iter, &new_values);
       std::vector<string16> existing_values;
-      GetMultiInfo(*iter, &existing_values);
+      GetRawMultiInfo(*iter, &existing_values);
 
       // GetMultiInfo always returns at least one element, even if the profile
       // has no data stored for this field type.
@@ -524,7 +524,7 @@ void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile) {
             existing_values.insert(existing_values.end(), *value_iter);
         }
       }
-      SetMultiInfo(*iter, existing_values);
+      SetRawMultiInfo(*iter, existing_values);
     } else {
       string16 new_value = profile.GetRawInfo(*iter);
       if (StringToLowerASCII(GetRawInfo(*iter)) !=

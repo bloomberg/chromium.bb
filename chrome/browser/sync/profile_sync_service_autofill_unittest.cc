@@ -801,9 +801,9 @@ bool IncludesField(const AutofillProfile& profile1,
                    const AutofillProfile& profile2,
                    AutofillFieldType field_type) {
   std::vector<string16> values1;
-  profile1.GetMultiInfo(field_type, &values1);
+  profile1.GetRawMultiInfo(field_type, &values1);
   std::vector<string16> values2;
-  profile2.GetMultiInfo(field_type, &values2);
+  profile2.GetRawMultiInfo(field_type, &values2);
 
   std::set<string16> values_set;
   for (size_t i = 0; i < values1.size(); ++i)

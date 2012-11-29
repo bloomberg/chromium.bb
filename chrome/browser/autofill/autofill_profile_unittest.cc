@@ -604,14 +604,14 @@ TEST(AutofillProfileTest, MultiValueNames) {
   std::vector<string16> set_values;
   set_values.push_back(kJohnDoe);
   set_values.push_back(kJohnPDoe);
-  p.SetMultiInfo(NAME_FULL, set_values);
+  p.SetRawMultiInfo(NAME_FULL, set_values);
 
   // Expect regular |GetInfo| returns the first element.
   EXPECT_EQ(kJohnDoe, p.GetRawInfo(NAME_FULL));
 
   // Ensure that we get out what we put in.
   std::vector<string16> get_values;
-  p.GetMultiInfo(NAME_FULL, &get_values);
+  p.GetRawMultiInfo(NAME_FULL, &get_values);
   ASSERT_EQ(2UL, get_values.size());
   EXPECT_EQ(kJohnDoe, get_values[0]);
   EXPECT_EQ(kJohnPDoe, get_values[1]);
@@ -621,8 +621,8 @@ TEST(AutofillProfileTest, MultiValueNames) {
   EXPECT_EQ(0, p.Compare(p2));
   const string16 kNoOne(ASCIIToUTF16("No One"));
   set_values[1] = kNoOne;
-  p.SetMultiInfo(NAME_FULL, set_values);
-  p.GetMultiInfo(NAME_FULL, &get_values);
+  p.SetRawMultiInfo(NAME_FULL, set_values);
+  p.GetRawMultiInfo(NAME_FULL, &get_values);
   ASSERT_EQ(2UL, get_values.size());
   EXPECT_EQ(kJohnDoe, get_values[0]);
   EXPECT_EQ(kNoOne, get_values[1]);
@@ -630,8 +630,8 @@ TEST(AutofillProfileTest, MultiValueNames) {
 
   // Delete values.
   set_values.clear();
-  p.SetMultiInfo(NAME_FULL, set_values);
-  p.GetMultiInfo(NAME_FULL, &get_values);
+  p.SetRawMultiInfo(NAME_FULL, set_values);
+  p.GetRawMultiInfo(NAME_FULL, &get_values);
   ASSERT_EQ(1UL, get_values.size());
   EXPECT_EQ(string16(), get_values[0]);
 
@@ -646,14 +646,14 @@ TEST(AutofillProfileTest, MultiValueEmails) {
   std::vector<string16> set_values;
   set_values.push_back(kJohnDoe);
   set_values.push_back(kJohnPDoe);
-  p.SetMultiInfo(EMAIL_ADDRESS, set_values);
+  p.SetRawMultiInfo(EMAIL_ADDRESS, set_values);
 
   // Expect regular |GetInfo| returns the first element.
   EXPECT_EQ(kJohnDoe, p.GetRawInfo(EMAIL_ADDRESS));
 
   // Ensure that we get out what we put in.
   std::vector<string16> get_values;
-  p.GetMultiInfo(EMAIL_ADDRESS, &get_values);
+  p.GetRawMultiInfo(EMAIL_ADDRESS, &get_values);
   ASSERT_EQ(2UL, get_values.size());
   EXPECT_EQ(kJohnDoe, get_values[0]);
   EXPECT_EQ(kJohnPDoe, get_values[1]);
@@ -663,8 +663,8 @@ TEST(AutofillProfileTest, MultiValueEmails) {
   EXPECT_EQ(0, p.Compare(p2));
   const string16 kNoOne(ASCIIToUTF16("no@one.com"));
   set_values[1] = kNoOne;
-  p.SetMultiInfo(EMAIL_ADDRESS, set_values);
-  p.GetMultiInfo(EMAIL_ADDRESS, &get_values);
+  p.SetRawMultiInfo(EMAIL_ADDRESS, set_values);
+  p.GetRawMultiInfo(EMAIL_ADDRESS, &get_values);
   ASSERT_EQ(2UL, get_values.size());
   EXPECT_EQ(kJohnDoe, get_values[0]);
   EXPECT_EQ(kNoOne, get_values[1]);
@@ -672,8 +672,8 @@ TEST(AutofillProfileTest, MultiValueEmails) {
 
   // Delete values.
   set_values.clear();
-  p.SetMultiInfo(EMAIL_ADDRESS, set_values);
-  p.GetMultiInfo(EMAIL_ADDRESS, &get_values);
+  p.SetRawMultiInfo(EMAIL_ADDRESS, set_values);
+  p.GetRawMultiInfo(EMAIL_ADDRESS, &get_values);
   ASSERT_EQ(1UL, get_values.size());
   EXPECT_EQ(string16(), get_values[0]);
 
@@ -688,14 +688,14 @@ TEST(AutofillProfileTest, MultiValuePhone) {
   std::vector<string16> set_values;
   set_values.push_back(kJohnDoe);
   set_values.push_back(kJohnPDoe);
-  p.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
+  p.SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
 
   // Expect regular |GetInfo| returns the first element.
   EXPECT_EQ(kJohnDoe, p.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
 
   // Ensure that we get out what we put in.
   std::vector<string16> get_values;
-  p.GetMultiInfo(PHONE_HOME_WHOLE_NUMBER, &get_values);
+  p.GetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, &get_values);
   ASSERT_EQ(2UL, get_values.size());
   EXPECT_EQ(kJohnDoe, get_values[0]);
   EXPECT_EQ(kJohnPDoe, get_values[1]);
@@ -705,8 +705,8 @@ TEST(AutofillProfileTest, MultiValuePhone) {
   EXPECT_EQ(0, p.Compare(p2));
   const string16 kNoOne(ASCIIToUTF16("4152110000"));
   set_values[1] = kNoOne;
-  p.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
-  p.GetMultiInfo(PHONE_HOME_WHOLE_NUMBER, &get_values);
+  p.SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
+  p.GetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, &get_values);
   ASSERT_EQ(2UL, get_values.size());
   EXPECT_EQ(kJohnDoe, get_values[0]);
   EXPECT_EQ(kNoOne, get_values[1]);
@@ -714,8 +714,8 @@ TEST(AutofillProfileTest, MultiValuePhone) {
 
   // Delete values.
   set_values.clear();
-  p.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
-  p.GetMultiInfo(PHONE_HOME_WHOLE_NUMBER, &get_values);
+  p.SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
+  p.GetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, &get_values);
   ASSERT_EQ(1UL, get_values.size());
   EXPECT_EQ(string16(), get_values[0]);
 

@@ -1563,7 +1563,7 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForMultiValuedProfileUnfilled) {
   std::vector<string16> multi_values(2);
   multi_values[0] = ASCIIToUTF16("Elvis Presley");
   multi_values[1] = ASCIIToUTF16("Elena Love");
-  profile->SetMultiInfo(NAME_FULL, multi_values);
+  profile->SetRawMultiInfo(NAME_FULL, multi_values);
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->AddProfile(profile);
 
@@ -1649,7 +1649,7 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForMultiValuedProfileFilled) {
   multi_values[0] = ASCIIToUTF16("Travis Smith");
   multi_values[1] = ASCIIToUTF16("Cynthia Love");
   multi_values[2] = ASCIIToUTF16("Zac Mango");
-  profile->SetMultiInfo(NAME_FULL, multi_values);
+  profile->SetRawMultiInfo(NAME_FULL, multi_values);
   autofill_manager_->AddProfile(profile);
 
   // Get the first name field.  And start out with "Travis", hoping for all the
@@ -1695,9 +1695,9 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsFancyPhone) {
   profile->set_guid("00000000-0000-0000-0000-000000000103");
   std::vector<string16> multi_values(1);
   multi_values[0] = ASCIIToUTF16("Natty Bumppo");
-  profile->SetMultiInfo(NAME_FULL, multi_values);
+  profile->SetRawMultiInfo(NAME_FULL, multi_values);
   multi_values[0] = ASCIIToUTF16("1800PRAIRIE");
-  profile->SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, multi_values);
+  profile->SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, multi_values);
   autofill_manager_->AddProfile(profile);
 
   const FormFieldData& field = form.fields[9];
@@ -2251,7 +2251,7 @@ TEST_F(AutofillManagerTest, FillAddressFormWithVariantType) {
   std::vector<string16> name_variants;
   name_variants.push_back(ASCIIToUTF16("Some Other Guy"));
   name_variants.push_back(elvis_name);
-  profile->SetMultiInfo(NAME_FULL, name_variants);
+  profile->SetRawMultiInfo(NAME_FULL, name_variants);
 
   GUIDPair guid(profile->guid(), 1);
   GUIDPair empty(std::string(), 0);
@@ -2415,7 +2415,7 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   phone_variants.push_back(ASCIIToUTF16("16505554567"));
   phone_variants.push_back(ASCIIToUTF16("18887771234"));
   work_profile->SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("United States"));
-  work_profile->SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, phone_variants);
+  work_profile->SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, phone_variants);
 
   page_id = 5;
   GUIDPair variant_guid(work_profile->guid(), 1);

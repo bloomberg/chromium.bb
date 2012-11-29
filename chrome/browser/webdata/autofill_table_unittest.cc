@@ -675,7 +675,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValueNames) {
   std::vector<string16> set_values;
   set_values.push_back(kJohnDoe);
   set_values.push_back(kJohnPDoe);
-  p.SetMultiInfo(NAME_FULL, set_values);
+  p.SetRawMultiInfo(NAME_FULL, set_values);
 
   EXPECT_TRUE(db.GetAutofillTable()->AddAutofillProfile(p));
 
@@ -688,7 +688,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValueNames) {
   // Update the values.
   const string16 kNoOne(ASCIIToUTF16("No One"));
   set_values[1] = kNoOne;
-  p.SetMultiInfo(NAME_FULL, set_values);
+  p.SetRawMultiInfo(NAME_FULL, set_values);
   EXPECT_TRUE(db.GetAutofillTable()->UpdateAutofillProfileMulti(p));
   ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);
@@ -697,7 +697,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValueNames) {
 
   // Delete values.
   set_values.clear();
-  p.SetMultiInfo(NAME_FULL, set_values);
+  p.SetRawMultiInfo(NAME_FULL, set_values);
   EXPECT_TRUE(db.GetAutofillTable()->UpdateAutofillProfileMulti(p));
   ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);
@@ -716,7 +716,7 @@ TEST_F(AutofillTableTest, AutofillProfileSingleValue) {
   std::vector<string16> set_values;
   set_values.push_back(kJohnDoe);
   set_values.push_back(kJohnPDoe);
-  p.SetMultiInfo(NAME_FULL, set_values);
+  p.SetRawMultiInfo(NAME_FULL, set_values);
 
   EXPECT_TRUE(db.GetAutofillTable()->AddAutofillProfile(p));
 
@@ -729,13 +729,13 @@ TEST_F(AutofillTableTest, AutofillProfileSingleValue) {
   const string16 kNoOne(ASCIIToUTF16("No One"));
   set_values.resize(1);
   set_values[0] = kNoOne;
-  p.SetMultiInfo(NAME_FULL, set_values);
+  p.SetRawMultiInfo(NAME_FULL, set_values);
   EXPECT_TRUE(db.GetAutofillTable()->UpdateAutofillProfile(p));
   ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p.PrimaryValue(), db_profile->PrimaryValue());
   EXPECT_EQ(p.guid(), db_profile->guid());
   EXPECT_NE(0, p.Compare(*db_profile));
-  db_profile->GetMultiInfo(NAME_FULL, &set_values);
+  db_profile->GetRawMultiInfo(NAME_FULL, &set_values);
   ASSERT_EQ(2UL, set_values.size());
   EXPECT_EQ(kNoOne, set_values[0]);
   EXPECT_EQ(kJohnPDoe, set_values[1]);
@@ -752,7 +752,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValueEmails) {
   std::vector<string16> set_values;
   set_values.push_back(kJohnDoe);
   set_values.push_back(kJohnPDoe);
-  p.SetMultiInfo(EMAIL_ADDRESS, set_values);
+  p.SetRawMultiInfo(EMAIL_ADDRESS, set_values);
 
   EXPECT_TRUE(db.GetAutofillTable()->AddAutofillProfile(p));
 
@@ -765,7 +765,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValueEmails) {
   // Update the values.
   const string16 kNoOne(ASCIIToUTF16("no@one.com"));
   set_values[1] = kNoOne;
-  p.SetMultiInfo(EMAIL_ADDRESS, set_values);
+  p.SetRawMultiInfo(EMAIL_ADDRESS, set_values);
   EXPECT_TRUE(db.GetAutofillTable()->UpdateAutofillProfileMulti(p));
   ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);
@@ -774,7 +774,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValueEmails) {
 
   // Delete values.
   set_values.clear();
-  p.SetMultiInfo(EMAIL_ADDRESS, set_values);
+  p.SetRawMultiInfo(EMAIL_ADDRESS, set_values);
   EXPECT_TRUE(db.GetAutofillTable()->UpdateAutofillProfileMulti(p));
   ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);
@@ -793,7 +793,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValuePhone) {
   std::vector<string16> set_values;
   set_values.push_back(kJohnDoe);
   set_values.push_back(kJohnPDoe);
-  p.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
+  p.SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
 
   EXPECT_TRUE(db.GetAutofillTable()->AddAutofillProfile(p));
 
@@ -806,7 +806,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValuePhone) {
   // Update the values.
   const string16 kNoOne(ASCIIToUTF16("4151110000"));
   set_values[1] = kNoOne;
-  p.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
+  p.SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
   EXPECT_TRUE(db.GetAutofillTable()->UpdateAutofillProfileMulti(p));
   ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);
@@ -815,7 +815,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValuePhone) {
 
   // Delete values.
   set_values.clear();
-  p.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
+  p.SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
   EXPECT_TRUE(db.GetAutofillTable()->UpdateAutofillProfileMulti(p));
   ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);

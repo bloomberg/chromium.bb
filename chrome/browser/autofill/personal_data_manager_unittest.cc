@@ -865,12 +865,12 @@ TEST_F(PersonalDataManagerTest, AggregateTwoProfilesWithMultiValue) {
 
   // Modify expected to include multi-valued fields.
   std::vector<string16> values;
-  expected.GetMultiInfo(NAME_FULL, &values);
+  expected.GetRawMultiInfo(NAME_FULL, &values);
   values.push_back(ASCIIToUTF16("John Adams"));
-  expected.SetMultiInfo(NAME_FULL, values);
-  expected.GetMultiInfo(EMAIL_ADDRESS, &values);
+  expected.SetRawMultiInfo(NAME_FULL, values);
+  expected.GetRawMultiInfo(EMAIL_ADDRESS, &values);
   values.push_back(ASCIIToUTF16("second@gmail.com"));
-  expected.SetMultiInfo(EMAIL_ADDRESS, values);
+  expected.SetRawMultiInfo(EMAIL_ADDRESS, values);
 
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected.Compare(*results2[0]));
@@ -978,9 +978,9 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
 
   // Add multi-valued phone number to expectation.  Also, country gets added.
   std::vector<string16> values;
-  expected.GetMultiInfo(PHONE_HOME_WHOLE_NUMBER, &values);
+  expected.GetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, &values);
   values.push_back(ASCIIToUTF16("(650) 223-1234"));
-  expected.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, values);
+  expected.SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, values);
   expected.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("United States"));
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected.Compare(*results2[0]));
@@ -1965,9 +1965,9 @@ TEST_F(PersonalDataManagerTest, CaseInsensitiveMultiValueAggregation) {
 
   // Modify expected to include multi-valued fields.
   std::vector<string16> values;
-  expected.GetMultiInfo(PHONE_HOME_WHOLE_NUMBER, &values);
+  expected.GetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, &values);
   values.push_back(ASCIIToUTF16("(214) 555-1234"));
-  expected.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, values);
+  expected.SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, values);
 
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected.Compare(*results2[0]));

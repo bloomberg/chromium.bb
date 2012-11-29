@@ -156,9 +156,9 @@ bool AddAutofillProfileNamesToProfile(sql::Connection* db,
   if (!s.Succeeded())
     return false;
 
-  profile->SetMultiInfo(NAME_FIRST, first_names);
-  profile->SetMultiInfo(NAME_MIDDLE, middle_names);
-  profile->SetMultiInfo(NAME_LAST, last_names);
+  profile->SetRawMultiInfo(NAME_FIRST, first_names);
+  profile->SetRawMultiInfo(NAME_MIDDLE, middle_names);
+  profile->SetRawMultiInfo(NAME_LAST, last_names);
   return true;
 }
 
@@ -181,7 +181,7 @@ bool AddAutofillProfileEmailsToProfile(sql::Connection* db,
   if (!s.Succeeded())
     return false;
 
-  profile->SetMultiInfo(EMAIL_ADDRESS, emails);
+  profile->SetRawMultiInfo(EMAIL_ADDRESS, emails);
   return true;
 }
 
@@ -207,18 +207,18 @@ bool AddAutofillProfilePhonesToProfile(sql::Connection* db,
   if (!s.Succeeded())
     return false;
 
-  profile->SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, numbers);
+  profile->SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, numbers);
   return true;
 }
 
 bool AddAutofillProfileNames(const AutofillProfile& profile,
                              sql::Connection* db) {
   std::vector<string16> first_names;
-  profile.GetMultiInfo(NAME_FIRST, &first_names);
+  profile.GetRawMultiInfo(NAME_FIRST, &first_names);
   std::vector<string16> middle_names;
-  profile.GetMultiInfo(NAME_MIDDLE, &middle_names);
+  profile.GetRawMultiInfo(NAME_MIDDLE, &middle_names);
   std::vector<string16> last_names;
-  profile.GetMultiInfo(NAME_LAST, &last_names);
+  profile.GetRawMultiInfo(NAME_LAST, &last_names);
   DCHECK_EQ(first_names.size(), middle_names.size());
   DCHECK_EQ(middle_names.size(), last_names.size());
 
@@ -242,7 +242,7 @@ bool AddAutofillProfileNames(const AutofillProfile& profile,
 bool AddAutofillProfileEmails(const AutofillProfile& profile,
                               sql::Connection* db) {
   std::vector<string16> emails;
-  profile.GetMultiInfo(EMAIL_ADDRESS, &emails);
+  profile.GetRawMultiInfo(EMAIL_ADDRESS, &emails);
 
   for (size_t i = 0; i < emails.size(); ++i) {
     // Add the new email.
@@ -263,7 +263,7 @@ bool AddAutofillProfileEmails(const AutofillProfile& profile,
 bool AddAutofillProfilePhones(const AutofillProfile& profile,
                               sql::Connection* db) {
   std::vector<string16> numbers;
-  profile.GetMultiInfo(PHONE_HOME_WHOLE_NUMBER, &numbers);
+  profile.GetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, &numbers);
 
   for (size_t i = 0; i < numbers.size(); ++i) {
     // Add the new number.
@@ -949,17 +949,17 @@ bool AutofillTable::UpdateAutofillProfile(const AutofillProfile& profile) {
   AutofillProfile new_profile(profile);
   std::vector<string16> values;
 
-  old_profile->GetMultiInfo(NAME_FULL, &values);
+  old_profile->GetRawMultiInfo(NAME_FULL, &values);
   values[0] = new_profile.GetRawInfo(NAME_FULL);
-  new_profile.SetMultiInfo(NAME_FULL, values);
+  new_profile.SetRawMultiInfo(NAME_FULL, values);
 
-  old_profile->GetMultiInfo(EMAIL_ADDRESS, &values);
+  old_profile->GetRawMultiInfo(EMAIL_ADDRESS, &values);
   values[0] = new_profile.GetRawInfo(EMAIL_ADDRESS);
-  new_profile.SetMultiInfo(EMAIL_ADDRESS, values);
+  new_profile.SetRawMultiInfo(EMAIL_ADDRESS, values);
 
-  old_profile->GetMultiInfo(PHONE_HOME_WHOLE_NUMBER, &values);
+  old_profile->GetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, &values);
   values[0] = new_profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER);
-  new_profile.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, values);
+  new_profile.SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, values);
 
   return UpdateAutofillProfileMulti(new_profile);
 }

@@ -52,10 +52,10 @@ class AutofillProfile : public FormGroup {
                              FormFieldData* field_data) const OVERRIDE;
 
   // Multi-value equivalents to |GetInfo| and |SetInfo|.
-  void SetMultiInfo(AutofillFieldType type,
-                    const std::vector<string16>& values);
-  void GetMultiInfo(AutofillFieldType type,
-                    std::vector<string16>* values) const;
+  void SetRawMultiInfo(AutofillFieldType type,
+                       const std::vector<string16>& values);
+  void GetRawMultiInfo(AutofillFieldType type,
+                       std::vector<string16>* values) const;
   void GetCanonicalizedMultiInfo(AutofillFieldType type,
                                  std::vector<string16>* values) const;
 

@@ -104,9 +104,9 @@ void GetValueList(const AutofillProfile& profile,
   list->reset(new ListValue);
 
   std::vector<string16> values;
-  profile.GetMultiInfo(type, &values);
+  profile.GetRawMultiInfo(type, &values);
 
-  // |GetMultiInfo()| always returns at least one, potentially empty, item.
+  // |GetRawMultiInfo()| always returns at least one, potentially empty, item.
   if (values.size() == 1 && values.front().empty())
     return;
 
@@ -125,7 +125,7 @@ void SetValueList(const ListValue* list,
     if (list->GetString(i, &value))
       values[i] = value;
   }
-  profile->SetMultiInfo(type, values);
+  profile->SetRawMultiInfo(type, values);
 }
 
 // Get the multi-valued element for |type| and return it in |ListValue| form.
@@ -136,13 +136,13 @@ void GetNameList(const AutofillProfile& profile,
   std::vector<string16> first_names;
   std::vector<string16> middle_names;
   std::vector<string16> last_names;
-  profile.GetMultiInfo(NAME_FIRST, &first_names);
-  profile.GetMultiInfo(NAME_MIDDLE, &middle_names);
-  profile.GetMultiInfo(NAME_LAST, &last_names);
+  profile.GetRawMultiInfo(NAME_FIRST, &first_names);
+  profile.GetRawMultiInfo(NAME_MIDDLE, &middle_names);
+  profile.GetRawMultiInfo(NAME_LAST, &last_names);
   DCHECK_EQ(first_names.size(), middle_names.size());
   DCHECK_EQ(first_names.size(), last_names.size());
 
-  // |GetMultiInfo()| always returns at least one, potentially empty, item.
+  // |GetRawMultiInfo()| always returns at least one, potentially empty, item.
   if (first_names.size() == 1 && first_names.front().empty() &&
       middle_names.front().empty() && last_names.front().empty()) {
     return;
@@ -185,9 +185,9 @@ void SetNameList(const ListValue* names, AutofillProfile* profile) {
     last_names[i] = last_name;
   }
 
-  profile->SetMultiInfo(NAME_FIRST, first_names);
-  profile->SetMultiInfo(NAME_MIDDLE, middle_names);
-  profile->SetMultiInfo(NAME_LAST, last_names);
+  profile->SetRawMultiInfo(NAME_FIRST, first_names);
+  profile->SetRawMultiInfo(NAME_MIDDLE, middle_names);
+  profile->SetRawMultiInfo(NAME_LAST, last_names);
 }
 
 // Pulls the phone number |index|, |phone_number_list|, and |country_code| from
