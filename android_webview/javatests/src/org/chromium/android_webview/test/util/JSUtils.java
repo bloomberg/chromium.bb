@@ -59,19 +59,19 @@ public class JSUtils {
     public static String executeJavaScriptAndWaitForResult(
             InstrumentationTestCase testCase,
             final AwContents awContents,
-            OnEvaluateJavaScriptResultHelper onEvaluateJavaScriptResultHelper,
+            final OnEvaluateJavaScriptResultHelper onEvaluateJavaScriptResultHelper,
             final String code) throws Throwable {
-        final AtomicInteger requestId = new AtomicInteger();
         int currentCallCount = onEvaluateJavaScriptResultHelper.getCallCount();
         testCase.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                requestId.set(awContents.getContentViewCore().evaluateJavaScript(code));
+                onEvaluateJavaScriptResultHelper.evaluateJavaScript(
+                        awContents.getContentViewCore(), code);
             }
         });
         onEvaluateJavaScriptResultHelper.waitForCallback(currentCallCount);
-        Assert.assertEquals("Response ID mismatch when evaluating JavaScript.",
-                requestId.get(), onEvaluateJavaScriptResultHelper.getId());
-        return onEvaluateJavaScriptResultHelper.getJsonResult();
+        Assert.assertTrue("Failed to retrieve JavaScript evaluation results.",
+                onEvaluateJavaScriptResultHelper.hasValue());
+        return onEvaluateJavaScriptResultHelper.getJsonResultAndClear();
     }
 }

@@ -34,7 +34,7 @@ public class ViewportTest extends ContentViewTestBase {
     }
 
     protected String evaluateStringValue(String expression) throws Throwable {
-        return JavaScriptUtils.executeJavaScriptAndWaitForResult(this, getContentView(),
+        return JavaScriptUtils.executeJavaScriptAndWaitForResult(getContentView(),
                 getTestCallbackHelperContainer(), expression);
     }
 

@@ -24,8 +24,9 @@ public class DOMUtils {
     /**
      * Returns the rect boundaries for a node by its id.
      */
-    public static Rect getNodeBounds(InstrumentationTestCase test, final ContentView view,
-            TestCallbackHelperContainer viewClient, String nodeId) throws Throwable {
+    public static Rect getNodeBounds(
+            final ContentView view, TestCallbackHelperContainer viewClient, String nodeId)
+            throws Throwable {
         StringBuilder sb = new StringBuilder();
         sb.append("(function() {");
         sb.append("  var node = document.getElementById('" + nodeId + "');");
@@ -41,8 +42,8 @@ public class DOMUtils {
         sb.append("  return [ x, y, width, height ];");
         sb.append("})();");
 
-        String jsonText = JavaScriptUtils.executeJavaScriptAndWaitForResult(test, view, viewClient,
-                sb.toString());
+        String jsonText = JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                view, viewClient, sb.toString());
 
         Assert.assertFalse("Failed to retrieve bounds for " + nodeId,
                 jsonText.trim().equalsIgnoreCase("null"));
@@ -71,7 +72,7 @@ public class DOMUtils {
     public static void clickNode(ActivityInstrumentationTestCase2 activityTestCase,
             final ContentView view, TestCallbackHelperContainer viewClient, String nodeId)
             throws Throwable {
-        Rect bounds = getNodeBounds(activityTestCase, view, viewClient, nodeId);
+        Rect bounds = getNodeBounds(view, viewClient, nodeId);
         Assert.assertNotNull("Failed to get DOM element bounds of '" + nodeId + "'.'", bounds);
 
         float scale = view.getScale();
@@ -88,12 +89,10 @@ public class DOMUtils {
     public static void longPressNode(ActivityInstrumentationTestCase2 activityTestCase,
             final ContentView view, TestCallbackHelperContainer viewClient, String nodeId)
             throws Throwable {
-        Rect bounds = getNodeBounds(activityTestCase, view, viewClient, nodeId);
+        Rect bounds = getNodeBounds(view, viewClient, nodeId);
         Assert.assertNotNull("Failed to get DOM element bounds of '" + nodeId + "'.'", bounds);
 
-        // TODO(leandrogracia): make this use view.getScale() once the correct value is available.
-        // WARNING: this will only work with a viewport fixed scale value of 1.0.
-        float scale = getDevicePixelRatio(activityTestCase, view, viewClient);
+        float scale = view.getScale();
         int clickX = (int)(bounds.exactCenterX() * scale + 0.5);
         int clickY = (int)(bounds.exactCenterY() * scale + 0.5);
 
@@ -104,24 +103,16 @@ public class DOMUtils {
     /**
      * Scrolls the view to ensure that the required DOM node is visible.
      */
-    public static void scrollNodeIntoView(InstrumentationTestCase test, final ContentView view,
+    public static void scrollNodeIntoView(final ContentView view,
             TestCallbackHelperContainer viewClient, String nodeId) throws Throwable {
-        JavaScriptUtils.executeJavaScriptAndWaitForResult(test, view, viewClient,
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(view, viewClient,
                 "document.getElementById('" + nodeId + "').scrollIntoView()");
-    }
-
-    // This is a temporary workaround to make clickNode and longPressNode work under fixed viewport
-    // scale settings of 1.0 until the new compositor correctly provides the ContentView page scale.
-    private static float getDevicePixelRatio(InstrumentationTestCase test, final ContentView view,
-            TestCallbackHelperContainer viewClient) throws Throwable {
-        return Float.valueOf(JavaScriptUtils.executeJavaScriptAndWaitForResult(test, view,
-                viewClient, "window.devicePixelRatio"));
     }
 
     /**
      * Returns the contents of the node by its id.
      */
-    public static String getNodeContents(InstrumentationTestCase test, final ContentView view,
+    public static String getNodeContents(final ContentView view,
             TestCallbackHelperContainer viewClient, String nodeId) throws Throwable {
         StringBuilder sb = new StringBuilder();
         sb.append("(function() {");
@@ -130,7 +121,7 @@ public class DOMUtils {
         sb.append("  return [ node.textContent ];");
         sb.append("})();");
 
-        String jsonText = JavaScriptUtils.executeJavaScriptAndWaitForResult(test, view, viewClient,
+        String jsonText = JavaScriptUtils.executeJavaScriptAndWaitForResult(view, viewClient,
                 sb.toString());
         Assert.assertFalse("Failed to retrieve contents for " + nodeId,
                 jsonText.trim().equalsIgnoreCase("null"));

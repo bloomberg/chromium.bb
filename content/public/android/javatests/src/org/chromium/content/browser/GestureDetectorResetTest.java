@@ -4,7 +4,6 @@
 
 package org.chromium.content.browser;
 
-import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.LargeTest;
 
 import junit.framework.Assert;
@@ -32,17 +31,15 @@ public class GestureDetectorResetTest extends ContentShellTestBase {
             "</body></html>";
 
     private static class NodeContentsIsEqualToCriteria implements Criteria {
-        private final InstrumentationTestCase mTest;
         private final ContentView mView;
         private final TestCallbackHelperContainer mViewClient;
         private final String mNodeId;
         private final String mExpectedContents;
 
         public NodeContentsIsEqualToCriteria(
-                InstrumentationTestCase test, ContentView view,
+                ContentView view,
                 TestCallbackHelperContainer viewClient,
                 String nodeId, String expectedContents) {
-            mTest = test;
             mView = view;
             mViewClient = viewClient;
             mNodeId = nodeId;
@@ -53,8 +50,7 @@ public class GestureDetectorResetTest extends ContentShellTestBase {
         @Override
         public boolean isSatisfied() {
             try {
-                String contents =
-                        DOMUtils.getNodeContents(mTest, mView, mViewClient, mNodeId);
+                String contents = DOMUtils.getNodeContents(mView, mViewClient, mNodeId);
                 return mExpectedContents.equals(contents);
             } catch (Throwable e) {
                 Assert.fail("Failed to retrieve node contents: " + e);
@@ -73,7 +69,7 @@ public class GestureDetectorResetTest extends ContentShellTestBase {
         // Initially the text on the page should say "not clicked".
         assertTrue("The page contents is invalid " + disambiguation,
                 CriteriaHelper.pollForCriteria(new NodeContentsIsEqualToCriteria(
-                        this, view, viewClient, "test", "not clicked")));
+                        view, viewClient, "test", "not clicked")));
 
         // Click the button.
         DOMUtils.clickNode(this, view, viewClient, "button");
@@ -81,7 +77,7 @@ public class GestureDetectorResetTest extends ContentShellTestBase {
         // After the click, the text on the page should say "clicked".
         assertTrue("The page contents didn't change after a click " + disambiguation,
                 CriteriaHelper.pollForCriteria(new NodeContentsIsEqualToCriteria(
-                        this, view, viewClient, "test", "clicked")));
+                        view, viewClient, "test", "clicked")));
     }
 
     /**

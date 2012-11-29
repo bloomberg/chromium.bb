@@ -11,6 +11,7 @@ import android.util.Pair;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.CookieManager;
+import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -114,23 +115,13 @@ public class CookieManagerTest extends AndroidWebViewTestBase {
 
     private void setCookie(final String name, final String value)
             throws Throwable {
-        OnEvaluateJavaScriptResultHelper onEvaluateJavaScriptResultHelper =
-                mContentsClient.getOnEvaluateJavaScriptResultHelper();
-        int currentCallCount = onEvaluateJavaScriptResultHelper.getCallCount();
-        final AtomicInteger requestId = new AtomicInteger();
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                requestId.set(mAwContents.getContentViewCore().evaluateJavaScript(
-                        "var expirationDate = new Date();" +
-                        "expirationDate.setDate(expirationDate.getDate() + 5);" +
-                        "document.cookie='" + name + "=" + value +
-                                "; expires=' + expirationDate.toUTCString();"));
-            }
-        });
-        onEvaluateJavaScriptResultHelper.waitForCallback(currentCallCount);
-        assertEquals("Response ID mismatch when evaluating JavaScript.",
-                requestId.get(), onEvaluateJavaScriptResultHelper.getId());
+        JSUtils.executeJavaScriptAndWaitForResult(
+                this, mAwContents,
+                mContentsClient.getOnEvaluateJavaScriptResultHelper(),
+                "var expirationDate = new Date();" +
+                "expirationDate.setDate(expirationDate.getDate() + 5);" +
+                "document.cookie='" + name + "=" + value +
+                        "; expires=' + expirationDate.toUTCString();");
     }
 
     private void waitForCookie(final String url) throws InterruptedException {

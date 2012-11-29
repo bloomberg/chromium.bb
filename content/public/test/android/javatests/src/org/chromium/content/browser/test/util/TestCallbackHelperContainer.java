@@ -5,7 +5,10 @@
 package org.chromium.content.browser.test.util;
 
 
+import android.util.Log;
+
 import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ContentViewCore;
 
 /**
  * This class is used to provide callback hooks for tests and related classes.
@@ -69,20 +72,54 @@ public class TestCallbackHelperContainer {
     }
 
     public static class OnEvaluateJavaScriptResultHelper extends CallbackHelper {
-        private int mId;
+        private volatile Integer mRequestId;
+        private volatile Integer mId;
         private String mJsonResult;
+
+        /**
+         * Starts evaluation of a given JavaScript code on a given contentViewCore.
+         * @param contentViewCore A ContentViewCore instance to be used.
+         * @param code A JavaScript code to be evaluated.
+         */
+        public void evaluateJavaScript(ContentViewCore contentViewCore, String code) {
+            setRequestId(contentViewCore.evaluateJavaScript(code));
+        }
+
+        /**
+         * Returns true if the evaluation started by evaluateJavaScript() has completed.
+         */
+        public boolean hasValue() {
+            return mId != null;
+        }
+
+        /**
+         * Returns the JSON result of a previously completed JavaScript evaluation and
+         * resets the helper to accept new evaluations.
+         * @return String JSON result of a previously completed JavaScript evaluation.
+         */
+        public String getJsonResultAndClear() {
+            assert hasValue();
+            String result = mJsonResult;
+            setRequestId(null);
+            return result;
+        }
+
+        private void setRequestId(Integer requestId) {
+            mRequestId = requestId;
+            mId = null;
+            mJsonResult = null;
+        }
         public void notifyCalled(int id, String jsonResult) {
-            mId = id;
+            if (mRequestId == null) {
+                Log.w("TestCallbackHelperContainer",
+                        "Received JavaScript eval result when request id was not set");
+                return;
+            }
+            if (id != mRequestId.intValue()) return;
+            assert mId == null;
+            mId = Integer.valueOf(id);
             mJsonResult = jsonResult;
             notifyCalled();
-        }
-        public int getId() {
-            assert getCallCount() > 0;
-            return mId;
-        }
-        public String getJsonResult() {
-            assert getCallCount() > 0;
-            return mJsonResult;
         }
     }
 
