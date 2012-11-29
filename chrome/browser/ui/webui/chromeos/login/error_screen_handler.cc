@@ -85,9 +85,9 @@ void ErrorScreenHandler::UpdateState(NetworkStateInformer::State state,
                                      const std::string& network_name,
                                      const std::string& reason,
                                      ConnectionType last_network_type) {
-  VLOG(1) << "ErrorScreenHandler::UpdateState(): state=" << state << ", "
-          << "network_name=" << network_name << ", reason=" << reason << ", "
-          << "last_network_type=" << last_network_type;
+  LOG(INFO) << "ErrorScreenHandler::UpdateState(): state=" << state << ", "
+            << "network_name=" << network_name << ", reason=" << reason << ", "
+            << "last_network_type=" << last_network_type;
   UpdateStateInternal(state, network_name, reason, last_network_type, false);
 }
 
@@ -154,7 +154,7 @@ void ErrorScreenHandler::UpdateStateInternal(NetworkStateInformer::State state,
     // Schedules a immediate retry.
     ReloadGaiaScreen();
     is_gaia_reloaded = true;
-    VLOG(1) << "Retry page load since proxy settings has been changed";
+    LOG(WARNING) << "Retry page load since proxy settings has been changed";
   }
 
   // Fake portal state for loading timeout.
@@ -172,9 +172,10 @@ void ErrorScreenHandler::UpdateStateInternal(NetworkStateInformer::State state,
   }
 
   if (!is_online && should_overlay) {
-    VLOG(1) << "Show offline message: state=" << state << ", "
-            << "network_name=" << network_name << ", reason=" << reason << ", "
-            << "is_under_captive_portal=" << is_under_captive_portal;
+    LOG(WARNING) << "Show offline message: state=" << state << ", "
+                 << "network_name=" << network_name << ", "
+                 << "reason=" << reason << ", "
+                 << "is_under_captive_portal=" << is_under_captive_portal;
     ClearOobeErrors();
     OnBeforeShow(last_network_type);
 
@@ -210,8 +211,8 @@ void ErrorScreenHandler::UpdateStateInternal(NetworkStateInformer::State state,
     HideCaptivePortal();
 
     if (is_shown()) {
-      VLOG(1) << "Hide offline message. state=" << state << ", "
-              << "network_name=" << network_name << ", reason=" << reason;
+      LOG(WARNING) << "Hide offline message. state=" << state << ", "
+                   << "network_name=" << network_name << ", reason=" << reason;
       OnBeforeHide();
       Hide();
 
