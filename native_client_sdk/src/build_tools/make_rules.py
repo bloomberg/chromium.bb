@@ -16,7 +16,6 @@ NEWLIB_CC?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-gcc -c
 NEWLIB_CXX?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-g++ -c
 NEWLIB_LINK?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-g++ -Wl,-as-needed
 NEWLIB_LIB?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-ar r
-NEWLIB_DUMP?=$(TC_PATH)/$(OSNAME)_x86_newlib/x86_64-nacl/bin/objdump
 NEWLIB_CCFLAGS?=-MMD -pthread $(NACL_WARNINGS) -idirafter $(NACL_SDK_ROOT)/include
 NEWLIB_LDFLAGS?=-pthread
 """
@@ -38,7 +37,6 @@ PNACL_CC?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang -c
 PNACL_CXX?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang++ -c
 PNACL_LINK?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang++
 PNACL_LIB?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-ar r
-PNACL_DUMP?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/objdump
 PNACL_CCFLAGS?=-MMD -pthread $(NACL_WARNINGS) -idirafter $(NACL_SDK_ROOT)/include
 PNACL_LDFLAGS?=-pthread
 TRANSLATE:=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-translate
@@ -141,7 +139,7 @@ WIN_LIB_RULES = {
 #
 NMF_RULE = """
 <tc>/<config>/<proj>.nmf : <NMF_TARGETS>
-<TAB>$(NMF) -D $(<DUMP>) -o $@ $^ -t <tc> -s <tc>/<config>
+<TAB>$(NMF) -o $@ $^ -s <tc>/<config>
 """
 
 NMF_EMPTY = """
@@ -151,7 +149,7 @@ NMF_EMPTY = """
 
 GLIBC_NMF_RULE = """
 <tc>/<config>/<proj>.nmf : <NMF_TARGETS>
-<TAB>$(NMF) -D $(<DUMP>) -o $@ $(GLIBC_PATHS) $^ -t <tc> -s <tc>/<config> $(GLIBC_REMAP)
+<TAB>$(NMF) -D $(<OBJDUMP>) -o $@ $(GLIBC_PATHS) $^ -s <tc>/<config> $(GLIBC_REMAP)
 """
 
 EXT_MAP = {
@@ -428,7 +426,6 @@ class MakeRules(object):
       tcname = tc
     self.vars['<CC>'] = '%s_CC' % TC
     self.vars['<CXX>'] = '%s_CXX' % TC
-    self.vars['<DUMP>'] = '%s_DUMP' % TC
     self.vars['<LIB>'] = '%s_LIB' % TC
     self.vars['<LINK>'] = '%s_LINK' % TC
     self.vars['<tc>'] = tc
@@ -489,10 +486,11 @@ def GenerateNMFRules(tc, main, dlls, cfg, arches):
   for arch in arches:
     replace = {
       '<config>' : cfg,
-      '<DUMP>' : '%s_DUMP' % tc.upper(),
       '<TAB>' : '\t',
       '<tc>' : tc
     }
+    if tc == 'glibc':
+      replace['<OBJDUMP>'] = 'GLIBC_DUMP'
     if '<ARCH>' in arch:
       replace['<ARCH>'] = arch['<ARCH>']
     for dll in dlls:
