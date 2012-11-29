@@ -1871,33 +1871,43 @@ void ImmediateInterpreter::FillResultGesture(
     case kGestureTypeSwipe: {
       if (!three_finger_swipe_enable_.val_)
         break;
-      float max_abs_dx = -INFINITY;
-      float max_dx = 0.0;
-      float max_abs_dy = -INFINITY;
-      float max_dy = 0.0;
+      float sum_delta[] = { 0.0, 0.0 };
+      bool valid[] = { true, true };
+      float finger_cnt[] = { 0.0, 0.0 };
+      float FingerState::*fields[] = { &FingerState::position_x,
+                                       &FingerState::position_y };
       for (set<short, kMaxGesturingFingers>::const_iterator it =
                fingers.begin(), e = fingers.end(); it != e; ++it) {
         if (!prev_state_.GetFingerState(*it)) {
           Err("missing prev state?");
           continue;
         }
-        float dx = hwstate.GetFingerState(*it)->position_x -
-            prev_state_.GetFingerState(*it)->position_x;
-        float dy = hwstate.GetFingerState(*it)->position_y -
-            prev_state_.GetFingerState(*it)->position_y;
-        if (fabsf(dx) > max_abs_dx) {
-          max_abs_dx = fabsf(dx);
-          max_dx = dx;
-        }
-        if (fabsf(dy) > max_abs_dy) {
-          max_abs_dy = fabsf(dy);
-          max_dy = dy;
+        // We have this loop in case we want to compute diagonal swipes at
+        // some point, even if currently we go with just one axis.
+        for (size_t i = 0; i < arraysize(fields); i++) {
+          bool correct_axis = (i == 1) == swipe_is_vertical_;
+          if (!valid[i] || !correct_axis)
+            continue;
+          float FingerState::*field = fields[i];
+          float delta = hwstate.GetFingerState(*it)->*field -
+              prev_state_.GetFingerState(*it)->*field;
+          // The multiply is to see if they have the same sign:
+          if (sum_delta[i] == 0.0 || sum_delta[i] * delta > 0) {
+            sum_delta[i] += delta;
+            finger_cnt[i] += 1.0;
+          } else {
+            sum_delta[i] = 0.0;
+            valid[i] = false;
+          }
         }
       }
-      result_ = Gesture(kGestureSwipe, prev_state_.timestamp,
-                        hwstate.timestamp,
-                        (!swipe_is_vertical_) ? max_dx : 0.0,
-                        swipe_is_vertical_ ? max_dy : 0.0);
+      result_ = Gesture(
+          kGestureSwipe, prev_state_.timestamp,
+          hwstate.timestamp,
+          (!swipe_is_vertical_ && finger_cnt[0]) ?
+          sum_delta[0] / finger_cnt[0] : 0.0,
+          (swipe_is_vertical_ && finger_cnt[1]) ?
+          sum_delta[1] / finger_cnt[1] : 0.0);
       break;
     }
 
