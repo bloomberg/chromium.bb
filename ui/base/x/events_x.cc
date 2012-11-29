@@ -40,8 +40,6 @@
 #define AXIS_LABEL_PROP_ABS_FLING_Y       "Abs Fling Y Velocity"
 #define AXIS_LABEL_PROP_ABS_FLING_STATE   "Abs Fling State"
 
-#define AXIS_LABEL_PROP_ABS_FINGER_COUNT   "Abs Finger Count"
-
 // New versions of the valuators, with double values instead of fixed point.
 #define AXIS_LABEL_PROP_ABS_DBL_START_TIME "Abs Dbl Start Timestamp"
 #define AXIS_LABEL_PROP_ABS_DBL_END_TIME   "Abs Dbl End Timestamp"
@@ -68,7 +66,6 @@ const char* kCMTCachedAtoms[] = {
   AXIS_LABEL_PROP_ABS_DBL_FLING_VX,
   AXIS_LABEL_PROP_ABS_DBL_FLING_VY,
   AXIS_LABEL_PROP_ABS_FLING_STATE,
-  AXIS_LABEL_PROP_ABS_FINGER_COUNT,
   NULL
 };
 
@@ -124,7 +121,6 @@ class CMTEventData {
     Atom fling_vy = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_FLING_Y);
     Atom fling_vy_dbl = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_DBL_FLING_VY);
     Atom fling_state = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_FLING_STATE);
-    Atom finger_count = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_FINGER_COUNT);
 
     for (int i = 0; i < count; ++i) {
       XIDeviceInfo* info = info_list + i;
@@ -152,9 +148,6 @@ class CMTEventData {
           is_cmt = true;
         } else if (v->label == y_axis) {
           valuators.scroll_y = number;
-          is_cmt = true;
-        } else if (v->label == finger_count) {
-          valuators.finger_count = number;
           is_cmt = true;
         } else if (v->label == start_time) {
           valuators.start_time = number;
@@ -229,18 +222,13 @@ class CMTEventData {
   // Returns true if this is a scroll event (a motion event with the necessary
   // valuators. Also returns the offsets. |x_offset| and |y_offset| can be
   // NULL.
-  bool GetScrollOffsets(const XEvent& xev,
-                        float* x_offset,
-                        float* y_offset,
-                        int* finger_count) {
+  bool GetScrollOffsets(const XEvent& xev, float* x_offset, float* y_offset) {
     XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev.xcookie.data);
 
     if (x_offset)
       *x_offset = 0;
     if (y_offset)
       *y_offset = 0;
-    if (finger_count)
-      *finger_count = 2;
 
     const int sourceid = xiev->sourceid;
     if (!cmt_devices_[sourceid])
@@ -262,8 +250,6 @@ class CMTEventData {
           *x_offset = *valuators * natural_scroll_factor;
         else if (y_offset && v.scroll_y == i)
           *y_offset = *valuators * natural_scroll_factor;
-        else if (finger_count && v.finger_count == i)
-          *finger_count = static_cast<int>(*valuators);
         valuators++;
       }
     }
@@ -372,7 +358,6 @@ class CMTEventData {
     int max;
     int scroll_x;
     int scroll_y;
-    int finger_count;
     int start_time;
     int end_time;
     int fling_vx;
@@ -388,7 +373,6 @@ class CMTEventData {
         : max(-1),
           scroll_x(-1),
           scroll_y(-1),
-          finger_count(-1),
           start_time(-1),
           end_time(-1),
           fling_vx(-1),
@@ -765,7 +749,7 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
           bool is_cancel;
           if (GetFlingData(native_event, &vx, &vy, &is_cancel)) {
             return is_cancel ? ET_SCROLL_FLING_CANCEL : ET_SCROLL_FLING_START;
-          } else if (GetScrollOffsets(native_event, NULL, NULL, NULL)) {
+          } else if (GetScrollOffsets(native_event, NULL, NULL)) {
             return ET_SCROLL;
           } else if (GetButtonMaskForX2Event(xievent)) {
             return ET_MOUSE_DRAGGED;
@@ -1082,10 +1066,9 @@ float GetTouchForce(const base::NativeEvent& native_event) {
 
 bool GetScrollOffsets(const base::NativeEvent& native_event,
                       float* x_offset,
-                      float* y_offset,
-                      int* finger_count) {
+                      float* y_offset) {
   return CMTEventData::GetInstance()->GetScrollOffsets(
-      *native_event, x_offset, y_offset, finger_count);
+      *native_event, x_offset, y_offset);
 }
 
 bool GetFlingData(const base::NativeEvent& native_event,

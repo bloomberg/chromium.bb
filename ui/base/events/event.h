@@ -581,8 +581,7 @@ class UI_EXPORT ScrollEvent : public MouseEvent {
               int flags)
       : MouseEvent(model, source, target, type, flags),
         x_offset_(model.x_offset_),
-        y_offset_(model.y_offset_),
-        finger_count_(model.finger_count_){
+        y_offset_(model.y_offset_) {
   }
 
   // Used for tests.
@@ -594,12 +593,10 @@ class UI_EXPORT ScrollEvent : public MouseEvent {
 
   float x_offset() const { return x_offset_; }
   float y_offset() const { return y_offset_; }
-  int finger_count() const { return finger_count_; }
 
  private:
   float x_offset_;
   float y_offset_;
-  int finger_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollEvent);
 };
