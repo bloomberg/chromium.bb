@@ -51,7 +51,7 @@ def GetSdkConfig():
           raise Exception('Malformed version file; line %r' % raw_line)
         d[chunks[0]] = chunks[1].strip().strip('"')
   except EnvironmentError, e:
-    if e.errnor != errno.ENOENT:
+    if e.errno != errno.ENOENT:
       raise
   return d
 
