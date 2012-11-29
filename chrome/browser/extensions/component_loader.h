@@ -65,6 +65,10 @@ class ComponentLoader {
   void Remove(const FilePath& root_directory);
   void Remove(const std::string& id);
 
+  // Call this during test setup to load component extensions that have
+  // background pages for testing, which could otherwise interfere with tests.
+  static void EnableBackgroundExtensionsForTesting();
+
   // Adds the default component extensions.
   void AddDefaultComponentExtensions();
 
@@ -109,6 +113,7 @@ class ComponentLoader {
   // Loads a registered component extension.
   const Extension* Load(const ComponentExtensionInfo& info);
 
+  void AddDefaultComponentExtensionsWithBackgroundPages();
   void AddFileManagerExtension();
 
 #if defined(OS_CHROMEOS)

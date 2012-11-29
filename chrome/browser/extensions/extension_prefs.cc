@@ -1653,11 +1653,12 @@ scoped_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledExtensionInfo(
   if (IsBlacklistBitSet(ext))
     return scoped_ptr<ExtensionInfo>();
   int state_value;
-  if (!ext->GetInteger(kPrefState, &state_value)) {
-    // This can legitimately happen if we store preferences for component
-    // extensions.
+  if (!ext->GetInteger(kPrefState, &state_value) ||
+      state_value == Extension::ENABLED_COMPONENT) {
+    // Old preferences files may not have kPrefState for component extensions.
     return scoped_ptr<ExtensionInfo>();
   }
+
   if (state_value == Extension::EXTERNAL_EXTENSION_UNINSTALLED) {
     LOG(WARNING) << "External extension with id " << extension_id
                  << " has been uninstalled by the user";

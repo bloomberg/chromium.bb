@@ -120,6 +120,10 @@ void TestExtensionService::AddExtension(const Extension* extension) {
   ADD_FAILURE();
 }
 
+void TestExtensionService::AddComponentExtension(const Extension* extension) {
+  ADD_FAILURE();
+}
+
 void TestExtensionService::UnloadExtension(
     const std::string& extension_id,
     extension_misc::UnloadedExtensionReason reason) {

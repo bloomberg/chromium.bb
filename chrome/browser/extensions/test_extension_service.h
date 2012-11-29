@@ -70,6 +70,8 @@ class TestExtensionService : public ExtensionServiceInterface {
   virtual base::SequencedTaskRunner* GetFileTaskRunner() OVERRIDE;
 
   virtual void AddExtension(const extensions::Extension* extension) OVERRIDE;
+  virtual void AddComponentExtension(
+      const extensions::Extension* extension) OVERRIDE;
 
   virtual void UnloadExtension(
       const std::string& extension_id,

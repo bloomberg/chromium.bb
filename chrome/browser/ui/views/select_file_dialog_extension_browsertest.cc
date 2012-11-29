@@ -12,6 +12,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"  // ASCIIToUTF16
 #include "build/build_config.h"
+#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
@@ -84,6 +85,8 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
   };
 
   virtual void SetUp() OVERRIDE {
+    extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
+
     // Create the dialog wrapper object, but don't show it yet.
     listener_.reset(new MockSelectFileDialogListener());
     dialog_ = new SelectFileDialogExtension(listener_.get(), NULL);

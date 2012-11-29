@@ -5,6 +5,7 @@
 #include "base/process_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -24,6 +25,12 @@
 using content::NavigationEntry;
 
 class ExtensionURLRewriteBrowserTest : public ExtensionBrowserTest {
+ public:
+  virtual void SetUp() OVERRIDE {
+    extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
+    ExtensionBrowserTest::SetUp();
+  }
+
  protected:
   std::string GetLocationBarText() const {
     return UTF16ToUTF8(

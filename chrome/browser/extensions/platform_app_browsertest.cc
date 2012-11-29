@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 #include "chrome/browser/extensions/platform_app_launcher.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -817,6 +818,132 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ReloadRelaunches) {
   launched_listener.Reply("reload");
   ASSERT_TRUE(launched_listener2.WaitUntilSatisfied());
   ASSERT_TRUE(GetFirstShellWindow());
+}
+
+namespace {
+
+// Simple observer to check for NOTIFICATION_EXTENSION_INSTALLED events to
+// ensure installation does or does not occur in certain scenarios.
+class CheckExtensionInstalledObserver : public content::NotificationObserver {
+ public:
+  CheckExtensionInstalledObserver() : seen_(false) {
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                   content::NotificationService::AllSources());
+  }
+
+  bool seen() const {
+    return seen_;
+  };
+
+  // NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
+    EXPECT_FALSE(seen_);
+    seen_ = true;
+  }
+
+ private:
+  bool seen_;
+  content::NotificationRegistrar registrar_;
+};
+
+}  // namespace
+
+// Component App Test 1 of 3: ensure that the initial load of a component
+// extension utilizing a background page (e.g. a v2 platform app) has its
+// background page run and is launchable. Waits for the Launched response from
+// the script resource in the opened shell window.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       PRE_PRE_ComponentAppBackgroundPage) {
+  CheckExtensionInstalledObserver should_install;
+
+  // Ensure that we wait until the background page is run (to register the
+  // OnLaunched listener) before trying to open the application. This is similar
+  // to LoadAndLaunchPlatformApp, but we want to load as a component extension.
+  content::WindowedNotificationObserver app_loaded_observer(
+      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+      content::NotificationService::AllSources());
+
+  const Extension* extension = LoadExtensionAsComponent(
+      test_data_dir_.AppendASCII("platform_apps").AppendASCII("component"));
+  ASSERT_TRUE(extension);
+
+  app_loaded_observer.Wait();
+  ASSERT_TRUE(should_install.seen());
+
+  ExtensionTestMessageListener launched_listener("Launched", false);
+  application_launch::OpenApplication(application_launch::LaunchParams(
+          browser()->profile(), extension, extension_misc::LAUNCH_NONE,
+          NEW_WINDOW));
+
+  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+}
+
+// Component App Test 2 of 3: ensure an installed component app can be launched
+// on a subsequent browser start, without requiring any install/upgrade logic
+// to be run, then perform setup for step 3.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       PRE_ComponentAppBackgroundPage) {
+
+  // Since the component app is now installed, re-adding it in the same profile
+  // should not cause it to be re-installed. Instead, we wait for the OnLaunched
+  // in a different observer (which would timeout if not the app was not
+  // previously installed properly) and then check this observer to make sure it
+  // never saw the NOTIFICATION_EXTENSION_INSTALLED event.
+  CheckExtensionInstalledObserver should_not_install;
+  const Extension* extension = LoadExtensionAsComponent(
+      test_data_dir_.AppendASCII("platform_apps").AppendASCII("component"));
+  ASSERT_TRUE(extension);
+
+  ExtensionTestMessageListener launched_listener("Launched", false);
+  application_launch::OpenApplication(application_launch::LaunchParams(
+          browser()->profile(), extension, extension_misc::LAUNCH_NONE,
+          NEW_WINDOW));
+
+  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  ASSERT_FALSE(should_not_install.seen());
+
+  // Simulate a "downgrade" from version 2 in the test manifest.json to 1.
+  ExtensionPrefs* extension_prefs =
+      extensions::ExtensionSystem::Get(browser()->profile())->
+      extension_service()->extension_prefs();
+
+  // Clear the registered events to ensure they are updated.
+  extension_prefs->SetRegisteredEvents(extension->id(),
+                                       std::set<std::string>());
+
+  const base::StringValue old_version("1");
+  std::string pref_path("extensions.settings.");
+  pref_path += extension->id();
+  pref_path += ".manifest.version";
+  extension_prefs->pref_service()->RegisterStringPref(
+      pref_path.c_str(), std::string(), PrefServiceBase::UNSYNCABLE_PREF);
+  extension_prefs->pref_service()->Set(pref_path.c_str(), old_version);
+}
+
+// Component App Test 3 of 3: simulate a component extension upgrade that
+// re-adds the OnLaunched event, and allows the app to be launched.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ComponentAppBackgroundPage) {
+  CheckExtensionInstalledObserver should_install;
+  // Since we are forcing an upgrade, we need to wait for the load again.
+  content::WindowedNotificationObserver app_loaded_observer(
+      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+      content::NotificationService::AllSources());
+
+  const Extension* extension = LoadExtensionAsComponent(
+      test_data_dir_.AppendASCII("platform_apps").AppendASCII("component"));
+  ASSERT_TRUE(extension);
+  app_loaded_observer.Wait();
+  ASSERT_TRUE(should_install.seen());
+
+  ExtensionTestMessageListener launched_listener("Launched", false);
+  application_launch::OpenApplication(application_launch::LaunchParams(
+          browser()->profile(), extension, extension_misc::LAUNCH_NONE,
+          NEW_WINDOW));
+
+  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 }
 
 }  // namespace extensions

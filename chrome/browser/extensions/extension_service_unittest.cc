@@ -4712,8 +4712,8 @@ TEST_F(ExtensionServiceTest, ComponentExtensions) {
   EXPECT_EQ(Extension::COMPONENT, loaded_[0]->location());
   EXPECT_EQ(1u, service_->extensions()->size());
 
-  // Component extensions shouldn't get recorded in the prefs.
-  ValidatePrefKeyCount(0);
+  // Component extensions get a prefs entry on first install.
+  ValidatePrefKeyCount(1);
 
   // Reload all extensions, and make sure it comes back.
   std::string extension_id = (*service_->extensions()->begin())->id();

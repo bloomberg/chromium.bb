@@ -674,16 +674,26 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorUncleanExitBrowserTest,
   performance_monitor()->CheckForUncleanExits();
   content::RunAllPendingInMessageLoop();
 
-  // Load the second profile, which has also exited uncleanly.
+  // Load the second profile, which has also exited uncleanly. Note that since
+  // the second profile is new, component extensions will be installed as part
+  // of the browser startup for that profile, generating extra events.
   g_browser_process->profile_manager()->GetProfile(second_profile_path);
   content::RunAllPendingInMessageLoop();
 
   Database::EventVector events = GetEvents();
 
-  const size_t kNumEvents = 2;
-  ASSERT_EQ(kNumEvents, events.size());
-  CheckEventType(EVENT_UNCLEAN_EXIT, events[0]);
-  CheckEventType(EVENT_UNCLEAN_EXIT, events[1]);
+  const size_t kNumUncleanExitEvents = 2;
+  size_t num_unclean_exit_events = 0;
+  for (size_t i = 0; i < events.size(); ++i) {
+    int event_type = -1;
+    if (events[i]->data()->GetInteger("eventType", &event_type) &&
+        event_type == EVENT_EXTENSION_INSTALL) {
+      continue;
+    }
+    CheckEventType(EVENT_UNCLEAN_EXIT, events[i]);
+    ++num_unclean_exit_events;
+  }
+  ASSERT_EQ(kNumUncleanExitEvents, num_unclean_exit_events);
 
   std::string event_profile;
   ASSERT_TRUE(events[0]->data()->GetString("profileName", &event_profile));

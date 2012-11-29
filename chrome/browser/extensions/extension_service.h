@@ -128,6 +128,8 @@ class ExtensionServiceInterface : public syncer::SyncableService {
   virtual void CheckForUpdatesSoon() = 0;
 
   virtual void AddExtension(const extensions::Extension* extension) = 0;
+  virtual void AddComponentExtension(
+      const extensions::Extension* extension) = 0;
 
   virtual void UnloadExtension(
       const std::string& extension_id,
@@ -420,6 +422,12 @@ class ExtensionService
   // extension has been loaded.  Called by the backend after an extension has
   // been loaded from a file and installed.
   virtual void AddExtension(const extensions::Extension* extension) OVERRIDE;
+
+  // Check if we have preferences for the component extension and, if not or if
+  // the stored version differs, install the extension (without requirements
+  // checking) before calling AddExtension.
+  virtual void AddComponentExtension(const extensions::Extension* extension)
+      OVERRIDE;
 
   // Called by the backend when an extension has been installed.
   void OnExtensionInstalled(
@@ -760,6 +768,15 @@ class ExtensionService
   // Removes the extension with the given id from the list of
   // terminated extensions if it is there.
   void UntrackTerminatedExtension(const std::string& id);
+
+  // Update preferences for a new or updated extension; notify observers that
+  // the extension is installed, e.g., to update event handlers on background
+  // pages; and perform other extension install tasks before calling
+  // AddExtension.
+  void AddNewOrUpdatedExtension(
+      const extensions::Extension* extension,
+      const syncer::StringOrdinal& page_ordinal,
+      extensions::Extension::State initial_state);
 
   // Handles sending notification that |extension| was loaded.
   void NotifyExtensionLoaded(const extensions::Extension* extension);

@@ -44,6 +44,8 @@ namespace extensions {
 
 namespace {
 
+static bool enable_background_extensions_during_testing = false;
+
 std::string GenerateId(const DictionaryValue* manifest, const FilePath& path) {
   std::string raw_key;
   std::string id_input;
@@ -197,7 +199,7 @@ const Extension* ComponentLoader::Load(const ComponentExtensionInfo& info) {
     return NULL;
   }
   CHECK_EQ(info.extension_id, extension->id()) << extension->name();
-  extension_service_->AddExtension(extension);
+  extension_service_->AddComponentExtension(extension);
   return extension;
 }
 
@@ -319,38 +321,25 @@ void ComponentLoader::AddScriptBubble() {
   }
 }
 
+// static
+void ComponentLoader::EnableBackgroundExtensionsForTesting() {
+  enable_background_extensions_during_testing = true;
+}
+
 void ComponentLoader::AddDefaultComponentExtensions() {
+  // Do not add component extensions that have background pages here -- add them
+  // to AddDefaultComponentExtensionsWithBackgroundPages.
+
 #if defined(OS_CHROMEOS)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession))
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kGuestSession))
     Add(IDR_BOOKMARKS_MANIFEST,
         FilePath(FILE_PATH_LITERAL("bookmark_manager")));
 #else
   Add(IDR_BOOKMARKS_MANIFEST, FilePath(FILE_PATH_LITERAL("bookmark_manager")));
 #endif
 
-// Apps Debugger
-if (CommandLine::ForCurrentProcess()->HasSwitch(
-    switches::kAppsDebugger)) {
-  Add(IDR_APPS_DEBUGGER_MANIFEST,
-      FilePath(FILE_PATH_LITERAL("apps_debugger")));
-}
-
 #if defined(OS_CHROMEOS)
-  Add(IDR_WALLPAPERMANAGER_MANIFEST,
-      FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));
-#endif
-
-#if defined(FILE_MANAGER_EXTENSION)
-  AddFileManagerExtension();
-#endif
-
-#if defined(OS_CHROMEOS)
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableBackgroundLoader)) {
-    Add(IDR_BACKLOADER_MANIFEST,
-        FilePath(FILE_PATH_LITERAL("backloader")));
-  }
-
   Add(IDR_MOBILE_MANIFEST,
       FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/mobile")));
 
@@ -378,21 +367,9 @@ if (CommandLine::ForCurrentProcess()->HasSwitch(
 
   Add(IDR_WEBSTORE_MANIFEST, FilePath(FILE_PATH_LITERAL("web_store")));
 
-#if defined(ENABLE_SETTINGS_APP)
-  Add(IDR_SETTINGS_APP_MANIFEST, FilePath(FILE_PATH_LITERAL("settings_app")));
-#endif
-
 #if !defined(OS_CHROMEOS)
   // Cloud Print component app. Not required on Chrome OS.
   Add(IDR_CLOUDPRINT_MANIFEST, FilePath(FILE_PATH_LITERAL("cloud_print")));
-#endif
-
-#if defined(OS_CHROMEOS)
-  // Load ChromeVox extension now if spoken feedback is enabled.
-  if (local_state_->GetBoolean(prefs::kSpokenFeedbackEnabled)) {
-    FilePath path = FilePath(extension_misc::kChromeVoxExtensionPath);
-    Add(IDR_CHROMEVOX_MANIFEST, path);
-  }
 #endif
 
   // If a URL for the enterprise webstore has been specified, load the
@@ -406,6 +383,47 @@ if (CommandLine::ForCurrentProcess()->HasSwitch(
 #endif
 
   AddScriptBubble();
+  AddDefaultComponentExtensionsWithBackgroundPages();
+}
+
+void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages() {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+
+  // Component extensions with background pages are not enabled during tests
+  // because they generate a lot of background behavior that can interfere.
+  if (!enable_background_extensions_during_testing &&
+      command_line->HasSwitch(switches::kTestType)) {
+    return;
+  }
+
+  // Apps Debugger
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAppsDebugger)) {
+    Add(IDR_APPS_DEBUGGER_MANIFEST,
+        FilePath(FILE_PATH_LITERAL("apps_debugger")));
+  }
+
+  AddFileManagerExtension();
+
+#if defined(OS_CHROMEOS)
+  Add(IDR_WALLPAPERMANAGER_MANIFEST,
+      FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));
+
+  if (command_line->HasSwitch(switches::kEnableBackgroundLoader)) {
+    Add(IDR_BACKLOADER_MANIFEST,
+        FilePath(FILE_PATH_LITERAL("backloader")));
+  }
+
+  // Load ChromeVox extension now if spoken feedback is enabled.
+  if (local_state_->GetBoolean(prefs::kSpokenFeedbackEnabled)) {
+    FilePath path = FilePath(extension_misc::kChromeVoxExtensionPath);
+    Add(IDR_CHROMEVOX_MANIFEST, path);
+  }
+#endif
+
+#if defined(ENABLE_SETTINGS_APP)
+  Add(IDR_SETTINGS_APP_MANIFEST, FilePath(FILE_PATH_LITERAL("settings_app")));
+#endif
 }
 
 // static

@@ -2099,6 +2099,25 @@ void ExtensionService::AddExtension(const Extension* extension) {
   DoPostLoadTasks(extension);
 }
 
+void ExtensionService::AddComponentExtension(const Extension* extension) {
+  const std::string old_version_string(
+      extension_prefs_->GetVersionString(extension->id()));
+  const Version old_version(old_version_string);
+
+  if (!old_version.IsValid() || !old_version.Equals(*extension->version())) {
+    VLOG(1) << "Component extension " << extension->name() << " ("
+        << extension->id() << ") installing/upgrading from '"
+        << old_version_string << "' to " << extension->version()->GetString();
+
+    AddNewOrUpdatedExtension(extension,
+                             syncer::StringOrdinal(),
+                             Extension::ENABLED_COMPONENT);
+    return;
+  }
+
+  AddExtension(extension);
+}
+
 void ExtensionService::InitializePermissions(const Extension* extension) {
   // If the extension has used the optional permissions API, it will have a
   // custom set of active permissions defined in the extension prefs. Here,
@@ -2367,16 +2386,29 @@ void ExtensionService::OnExtensionInstalled(
     return;
   }
 
+  // Transfer ownership of |extension|.
+  AddNewOrUpdatedExtension(
+      extension,
+      page_ordinal,
+      initial_enable ? Extension::ENABLED : Extension::DISABLED);
+}
+
+void ExtensionService::AddNewOrUpdatedExtension(
+    const Extension* extension,
+    const syncer::StringOrdinal& page_ordinal,
+    Extension::State initial_state) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   extension_prefs_->OnExtensionInstalled(
       extension,
-      initial_enable ? Extension::ENABLED : Extension::DISABLED,
+      initial_state,
       page_ordinal);
 
   // Unpacked extensions default to allowing file access, but if that has been
   // overridden, don't reset the value.
   if (Extension::ShouldAlwaysAllowFileAccess(extension->location()) &&
-      !extension_prefs_->HasAllowFileAccessSetting(id)) {
-    extension_prefs_->SetAllowFileAccess(id, true);
+      !extension_prefs_->HasAllowFileAccessSetting(extension->id())) {
+    extension_prefs_->SetAllowFileAccess(extension->id(), true);
   }
 
   FinishInstallation(extension);
