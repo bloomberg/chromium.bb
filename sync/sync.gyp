@@ -689,10 +689,15 @@
         ],
         'conditions': [
           ['OS == "ios" and coverage != 0', {
-            # These sources can't be built with coverage due to a toolchain
-            # bug: http://openradar.appspot.com/radar?id=1499403
             'sources!': [
+              # These sources can't be built with coverage due to a toolchain
+              # bug: http://openradar.appspot.com/radar?id=1499403
               'engine/syncer_unittest.cc',
+
+              # These tests crash when run with coverage turned on due to an
+              # issue with llvm_gcda_increment_indirect_counter:
+              # http://crbug.com/156058
+              'syncable/directory_backing_store_unittest.cc',
             ],
           }],
         ],
