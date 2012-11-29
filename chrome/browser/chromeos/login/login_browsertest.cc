@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
+#include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -125,6 +126,9 @@ IN_PROC_BROWSER_TEST_F(LoginCursorTest, CursorHidden) {
   // Cursor should be shown after cursor is moved.
   EXPECT_TRUE(ui_test_utils::SendMouseMoveSync(gfx::Point()));
   EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->cursor_visible());
+
+  MessageLoop::current()->DeleteSoon(FROM_HERE,
+                                     BaseLoginDisplayHost::default_host());
 }
 
 } // namespace chromeos
