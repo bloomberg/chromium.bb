@@ -218,6 +218,13 @@ DownloadDangerPromptTest.*
 TtsApiTest.*
 RequirementsCheckerBrowserTest.*
 ToolbarImporterUtilsTest.*
+# DrM-i#1052-c#37
+ExtensionCrxInstallerTest.*
+ExtensionDisabledGlobalErrorTest.*
+ExtensionTabsTest.*
+ExtensionModuleApiTest.*
+ExperimentalApiTest.*
+LocaleTestTraditionalChinese.*
 
 # Failed tests from debug build
 # DrM-i#1052-c#21
@@ -275,3 +282,5 @@ PlatformAppDevToolsBrowserTest.*
 LocalePolicyTest.*
 ClipboardApiTest.*
 ExtensionDevToolsBrowserTest.*
+# DrM-i#1052-c#37
+IFrameTest.*
