@@ -1856,6 +1856,7 @@ TEST_F(WindowTest, RecreateLayer) {
   ui::Layer* layer = w.layer();
   layer->set_scale_content(false);
   layer->SetVisible(false);
+  layer->SetMasksToBounds(true);
 
   ui::Layer child_layer;
   layer->Add(&child_layer);
@@ -1866,6 +1867,7 @@ TEST_F(WindowTest, RecreateLayer) {
   EXPECT_FALSE(layer->scale_content());
   EXPECT_FALSE(layer->visible());
   EXPECT_EQ(1u, layer->children().size());
+  EXPECT_TRUE(layer->GetMasksToBounds());
 }
 
 // Ensure that acquiring a layer then recreating a layer does not crash

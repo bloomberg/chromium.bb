@@ -161,6 +161,7 @@ ui::Layer* Window::RecreateLayer() {
   layer_->SetVisible(old_layer->visible());
   layer_->set_scale_content(old_layer->scale_content());
   layer_->set_delegate(this);
+  layer_->SetMasksToBounds(old_layer->GetMasksToBounds());
   UpdateLayerName(name_);
   layer_->SetFillsBoundsOpaquely(!transparent_);
   // Install new layer as a sibling of the old layer, stacked on top of it.
