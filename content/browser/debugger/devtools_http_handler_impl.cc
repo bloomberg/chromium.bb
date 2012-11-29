@@ -174,6 +174,7 @@ DevToolsHttpHandler* DevToolsHttpHandler::Start(
 }
 
 DevToolsHttpHandlerImpl::~DevToolsHttpHandlerImpl() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Stop() must be called prior to destruction.
   DCHECK(server_.get() == NULL);
   DCHECK(thread_.get() == NULL);
@@ -208,12 +209,18 @@ void DevToolsHttpHandlerImpl::ResetHandlerThread() {
   thread_.reset();
 }
 
+void DevToolsHttpHandlerImpl::ResetHandlerThreadAndRelease() {
+  ResetHandlerThread();
+  Release();
+}
+
 void DevToolsHttpHandlerImpl::Stop() {
   if (!thread_.get())
     return;
-  BrowserThread::PostTask(
+  BrowserThread::PostTaskAndReply(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DevToolsHttpHandlerImpl::StopHandlerThread, this));
+      base::Bind(&DevToolsHttpHandlerImpl::StopHandlerThread, this),
+      base::Bind(&DevToolsHttpHandlerImpl::ResetHandlerThreadAndRelease, this));
 }
 
 void DevToolsHttpHandlerImpl::SetRenderViewHostBinding(
@@ -629,6 +636,8 @@ DevToolsHttpHandlerImpl::DevToolsHttpHandlerImpl(
                  NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  NotificationService::AllBrowserContextsAndSources());
+
+  // Balanced in ResetHandlerThreadAndRelease().
   AddRef();
 }
 
@@ -652,12 +661,6 @@ void DevToolsHttpHandlerImpl::StopHandlerThread() {
       base::Bind(&DevToolsHttpHandlerImpl::Teardown, this));
   // Thread::Stop joins the thread.
   thread_->Stop();
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&DevToolsHttpHandlerImpl::ResetHandlerThread, this));
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&DevToolsHttpHandlerImpl::Release, this));
 }
 
 void DevToolsHttpHandlerImpl::Send200(int connection_id,

@@ -94,6 +94,7 @@ class DevToolsHttpHandlerImpl
   void OnCloseUI(int connection_id);
 
   void ResetHandlerThread();
+  void ResetHandlerThreadAndRelease();
 
   void Init();
   void Teardown();
