@@ -7,108 +7,102 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/threading/thread.h"
-#include "remoting/base/auto_thread_task_runner.h"
+#include "remoting/base/auto_thread.h"
 #include "remoting/host/url_request_context.h"
 
 namespace remoting {
 
 ChromotingHostContext::ChromotingHostContext(
-    scoped_refptr<AutoThreadTaskRunner> ui_task_runner)
-    : audio_thread_("ChromotingAudioThread"),
-      video_capture_thread_("ChromotingCaptureThread"),
-      video_encode_thread_("ChromotingEncodeThread"),
-      file_thread_("ChromotingFileIOThread"),
-      input_thread_("ChromotingInputThread"),
-      network_thread_("ChromotingNetworkThread"),
-      ui_task_runner_(ui_task_runner) {
+    AutoThreadTaskRunner* ui_task_runner)
+    : ui_task_runner_(ui_task_runner) {
+#if defined(OS_WIN)
+  // On Windows the AudioCapturer requires COM, so we run a single-threaded
+  // apartment, which requires a UI thread.
+  audio_task_runner_ = AutoThread::CreateWithLoopAndComInitTypes(
+      "ChromotingAudioThread", ui_task_runner_, MessageLoop::TYPE_UI,
+      AutoThread::COM_INIT_STA);
+#else // !defined(OS_WIN)
+  audio_task_runner_ = AutoThread::CreateWithType(
+      "ChromotingAudioThread", ui_task_runner_, MessageLoop::TYPE_IO);
+#endif // !defined(OS_WIN)
+
+  video_capture_task_runner_ = AutoThread::Create(
+      "ChromotingCaptureThread", ui_task_runner_);
+  video_encode_task_runner_ = AutoThread::Create(
+      "ChromotingEncodeThread", ui_task_runner_);
+  file_task_runner_ = AutoThread::CreateWithType(
+      "ChromotingFileThread", ui_task_runner_, MessageLoop::TYPE_IO);
+  input_task_runner_ = AutoThread::CreateWithType(
+      "ChromotingInputThread", ui_task_runner_, MessageLoop::TYPE_IO);
+  network_task_runner_ = AutoThread::CreateWithType(
+      "ChromotingNetworkThread", ui_task_runner_, MessageLoop::TYPE_IO);
+
+  url_request_context_getter_ = new URLRequestContextGetter(
+      ui_task_runner_, network_task_runner_);
 }
 
 ChromotingHostContext::~ChromotingHostContext() {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
 }
 
-bool ChromotingHostContext::Start() {
-  // Start all the threads.
-  base::Thread::Options io_thread_options(MessageLoop::TYPE_IO, 0);
+scoped_ptr<ChromotingHostContext> ChromotingHostContext::Create(
+    scoped_refptr<AutoThreadTaskRunner> ui_task_runner) {
+  DCHECK(ui_task_runner->BelongsToCurrentThread());
 
-  bool started = video_capture_thread_.Start() && video_encode_thread_.Start();
+  scoped_ptr<ChromotingHostContext> context(
+      new ChromotingHostContext(ui_task_runner));
+  if (!context->audio_task_runner_ ||
+      !context->video_capture_task_runner_ ||
+      !context->video_encode_task_runner_ ||
+      !context->file_task_runner_ ||
+      !context->input_task_runner_ ||
+      !context->network_task_runner_ ||
+      !context->url_request_context_getter_) {
+    context.reset();
+  }
 
-#if defined(OS_WIN)
-  // On Windows audio capturer needs to run on a UI thread that has COM
-  // initialized.
-  audio_thread_.init_com_with_mta(false);
-  started = started && audio_thread_.Start();
-#else  // defined(OS_WIN)
-  started = started && audio_thread_.StartWithOptions(io_thread_options);
-#endif  // !defined(OS_WIN)
-
-  started = started &&
-      file_thread_.StartWithOptions(io_thread_options) &&
-      input_thread_.StartWithOptions(io_thread_options) &&
-      network_thread_.StartWithOptions(io_thread_options);
-  if (!started)
-    return false;
-
-  // Wrap worker threads with |AutoThreadTaskRunner| and have them reference
-  // the main thread via |ui_task_runner_|, to ensure that it remain active to
-  // Stop() them when no references remain.
-  audio_task_runner_ =
-      new AutoThreadTaskRunner(audio_thread_.message_loop_proxy(),
-                               ui_task_runner_);
-  video_capture_task_runner_ =
-      new AutoThreadTaskRunner(video_capture_thread_.message_loop_proxy(),
-                               ui_task_runner_);
-  video_encode_task_runner_ =
-      new AutoThreadTaskRunner(video_encode_thread_.message_loop_proxy(),
-                               ui_task_runner_);
-  file_task_runner_ =
-      new AutoThreadTaskRunner(file_thread_.message_loop_proxy(),
-                               ui_task_runner_);
-  input_task_runner_ =
-      new AutoThreadTaskRunner(input_thread_.message_loop_proxy(),
-                               ui_task_runner_);
-  network_task_runner_ =
-      new AutoThreadTaskRunner(network_thread_.message_loop_proxy(),
-                               ui_task_runner_);
-
-  url_request_context_getter_ = new URLRequestContextGetter(
-      ui_task_runner(), network_task_runner());
-  return true;
+  return context.Pass();
 }
 
-base::SingleThreadTaskRunner* ChromotingHostContext::audio_task_runner() {
+scoped_refptr<AutoThreadTaskRunner>
+ChromotingHostContext::audio_task_runner() {
   return audio_task_runner_;
 }
 
-base::SingleThreadTaskRunner*
+scoped_refptr<AutoThreadTaskRunner>
 ChromotingHostContext::video_capture_task_runner() {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   return video_capture_task_runner_;
 }
 
-base::SingleThreadTaskRunner*
+scoped_refptr<AutoThreadTaskRunner>
 ChromotingHostContext::video_encode_task_runner() {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   return video_encode_task_runner_;
 }
 
-base::SingleThreadTaskRunner* ChromotingHostContext::file_task_runner() {
+scoped_refptr<AutoThreadTaskRunner>
+ChromotingHostContext::file_task_runner() {
   return file_task_runner_;
 }
 
-base::SingleThreadTaskRunner* ChromotingHostContext::input_task_runner() {
+scoped_refptr<AutoThreadTaskRunner>
+ChromotingHostContext::input_task_runner() {
   return input_task_runner_;
 }
 
-base::SingleThreadTaskRunner* ChromotingHostContext::network_task_runner() {
+scoped_refptr<AutoThreadTaskRunner>
+ChromotingHostContext::network_task_runner() {
   return network_task_runner_;
 }
 
-base::SingleThreadTaskRunner* ChromotingHostContext::ui_task_runner() {
+scoped_refptr<AutoThreadTaskRunner>
+ChromotingHostContext::ui_task_runner() {
   return ui_task_runner_;
 }
 
-const scoped_refptr<net::URLRequestContextGetter>&
+scoped_refptr<net::URLRequestContextGetter>
 ChromotingHostContext::url_request_context_getter() {
-  DCHECK(url_request_context_getter_.get());
   return url_request_context_getter_;
 }
 

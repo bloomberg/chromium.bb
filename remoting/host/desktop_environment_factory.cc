@@ -4,6 +4,7 @@
 
 #include "remoting/host/desktop_environment_factory.h"
 
+#include "base/single_thread_task_runner.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/client_session.h"

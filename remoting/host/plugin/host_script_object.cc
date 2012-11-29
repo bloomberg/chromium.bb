@@ -15,8 +15,8 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "net/base/net_util.h"
-#include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/auth_token_util.h"
+#include "remoting/base/auto_thread.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/desktop_environment_factory.h"
@@ -666,12 +666,13 @@ HostNPScriptObject::HostNPScriptObject(
       am_currently_logging_(false),
       state_(kDisconnected),
       daemon_controller_(DaemonController::Create()),
-      worker_thread_("RemotingHostPlugin"),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       weak_ptr_(weak_factory_.GetWeakPtr()) {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
-  worker_thread_.Start();
+  // Create worker thread for encryption key generation.
+  worker_thread_ = AutoThread::Create("ChromotingWorkerThread",
+                                      plugin_task_runner_);
 }
 
 HostNPScriptObject::~HostNPScriptObject() {
@@ -684,9 +685,6 @@ HostNPScriptObject::~HostNPScriptObject() {
     it2me_impl_->Disconnect();
     it2me_impl_ = NULL;
   }
-
-  // Stop the worker thread.
-  worker_thread_.Stop();
 }
 
 bool HostNPScriptObject::HasMethod(const std::string& method_name) {
@@ -955,9 +953,9 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
   }
 
   // Create threads for the Chromoting host & desktop environment to use.
-  scoped_ptr<ChromotingHostContext> host_context(
-      new ChromotingHostContext(plugin_task_runner_));
-  if (!host_context->Start()) {
+  scoped_ptr<ChromotingHostContext> host_context =
+    ChromotingHostContext::Create(plugin_task_runner_);
+  if (host_context) {
     SetException("connect: failed to start threads");
     return false;
   }
@@ -1060,7 +1058,7 @@ bool HostNPScriptObject::GenerateKeyPair(const NPVariant* args,
   // TODO(wez): HostNPScriptObject needn't be touched on worker
   // thread, so make DoGenerateKeyPair static and pass it a callback
   // to run (crbug.com/156257).
-  worker_thread_.message_loop_proxy()->PostTask(
+  worker_thread_->PostTask(
       FROM_HERE, base::Bind(&HostNPScriptObject::DoGenerateKeyPair,
                             base::Unretained(this), callback_obj));
   return true;

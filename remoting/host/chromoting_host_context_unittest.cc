@@ -14,17 +14,20 @@ namespace remoting {
 // operates properly and all threads and message loops are valid.
 TEST(ChromotingHostContextTest, StartAndStop) {
   MessageLoopForUI message_loop;
-  ChromotingHostContext context(new AutoThreadTaskRunner(
-      base::MessageLoopProxy::current()));
+  scoped_ptr<ChromotingHostContext> context =
+      ChromotingHostContext::Create(new AutoThreadTaskRunner(
+          base::MessageLoopProxy::current()));
 
-  context.Start();
-  EXPECT_TRUE(context.audio_task_runner());
-  EXPECT_TRUE(context.video_capture_task_runner());
-  EXPECT_TRUE(context.video_encode_task_runner());
-  EXPECT_TRUE(context.file_task_runner());
-  EXPECT_TRUE(context.input_task_runner());
-  EXPECT_TRUE(context.network_task_runner());
-  EXPECT_TRUE(context.ui_task_runner());
+  EXPECT_TRUE(context);
+  if (!context)
+    return;
+  EXPECT_TRUE(context->audio_task_runner());
+  EXPECT_TRUE(context->video_capture_task_runner());
+  EXPECT_TRUE(context->video_encode_task_runner());
+  EXPECT_TRUE(context->file_task_runner());
+  EXPECT_TRUE(context->input_task_runner());
+  EXPECT_TRUE(context->network_task_runner());
+  EXPECT_TRUE(context->ui_task_runner());
 }
 
 }  // namespace remoting
