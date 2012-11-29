@@ -1,0 +1,34 @@
+# -*- python -*-
+# Copyright 2012 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+# Run these tests natively to see how much overhead NaCl adds.  This
+# only works on Linux because the tests use pthreads (not available on
+# Windows) and clock_gettime() (not implemented by Mac OS X).
+if env.Bit('windows') or env.Bit('mac'):
+  Return()
+
+exe = env.ComponentProgram(
+    'performance_test',
+    ['perf_test_runner.cc',
+     'perf_test_basics.cc',
+     'perf_test_threads.cc'])
+
+description_list = ['trusted',
+                    env['TARGET_PLATFORM'].lower(),
+                    env['TARGET_FULLARCH']]
+description_string = '_'.join(description_list)
+
+node = env.CommandTest(
+    'performance_test.out', [exe, description_string],
+    # Don't hide output: We want the timings to be reported in the
+    # Buildbot logs so that Buildbot records the "RESULT" lines.
+    capture_output=False)
+# Disable this on Valgrind because TestThreadWakeup is very slow under
+# Valgrind, and because we don't particularly need to measure
+# performance under Valgrind.
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_trusted_performance_test',
+                       is_broken=env.Bit('running_on_valgrind'))

@@ -1,0 +1,45 @@
+# -*- python -*-
+# Copyright 2012 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+libs = []
+if env.Bit('nacl_glibc'):
+  # Needed for clock_gettime().
+  libs.append('rt')
+
+nexe = env.ComponentProgram(
+    'performance_test',
+    ['perf_test_runner.cc',
+     'perf_test_basics.cc',
+     'perf_test_threads.cc'],
+    EXTRA_LIBS=['${NONIRT_LIBS}', '${PTHREAD_LIBS}'] + libs)
+
+if 'TRUSTED_ENV' not in env:
+  Return()
+trusted_env = env['TRUSTED_ENV']
+
+description_list = [trusted_env['TARGET_PLATFORM'].lower(),
+                    env['TARGET_FULLARCH']]
+if env.Bit('nacl_glibc'):
+  description_list.append('glibc')
+else:
+  description_list.append('newlib')
+if env.Bit('tests_use_irt'):
+  description_list.append('irt')
+else:
+  description_list.append('nonirt')
+description_string = '_'.join(description_list)
+
+node = env.CommandSelLdrTestNacl(
+    'performance_test.out', nexe, [description_string],
+    # Don't hide output: We want the timings to be reported in the
+    # Buildbot logs so that Buildbot records the "RESULT" lines.
+    capture_output=False)
+# Disable this on Valgrind because TestThreadWakeup is very slow under
+# Valgrind, and because we don't particularly need to measure
+# performance under Valgrind.
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_performance_test',
+                       is_broken=env.Bit('running_on_valgrind'))
