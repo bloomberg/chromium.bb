@@ -1150,7 +1150,12 @@ TEST_F(TopSitesTest, Blacklisting) {
     ASSERT_EQ(2u + GetPrepopulatePages().size() - 1, q.urls().size());
     EXPECT_EQ("http://bbc.com/", q.urls()[0].url.spec());
     EXPECT_EQ("http://google.com/", q.urls()[1].url.spec());
-    EXPECT_NE(prepopulate_url.spec(), q.urls()[2].url.spec());
+    // Android has only one prepopulated page which has been blacklisted, so
+    // only 2 urls are returned.
+    if (q.urls().size() > 2)
+      EXPECT_NE(prepopulate_url.spec(), q.urls()[2].url.spec());
+    else
+      EXPECT_EQ(1u, GetPrepopulatePages().size());
   }
 
   // Remove all blacklisted sites.
