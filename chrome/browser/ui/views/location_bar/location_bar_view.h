@@ -43,6 +43,7 @@ class OpenPDFInReaderView;
 class PageActionWithBadgeView;
 class PageActionImageView;
 class Profile;
+class ScriptBubbleIconView;
 class SelectedKeywordView;
 class StarView;
 class TemplateURLService;
@@ -377,6 +378,13 @@ class LocationBarView : public LocationBar,
   // PageActions.
   void RefreshPageActionViews();
 
+  // Returns the number of scripts currently running on the page.
+  size_t ScriptBubbleScriptsRunning();
+
+  // Update the Script Bubble Icon, to reflect the number of content scripts
+  // running on the page.
+  void RefreshScriptBubble();
+
   // Update the view for the zoom icon based on the current tab's zoom.
   void RefreshZoomView();
 
@@ -473,6 +481,9 @@ class LocationBarView : public LocationBar,
 
   // The page action icon views.
   PageActionViews page_action_views_;
+
+  // The script bubble.
+  ScriptBubbleIconView* script_bubble_icon_view_;
 
   // The star.
   StarView* star_view_;

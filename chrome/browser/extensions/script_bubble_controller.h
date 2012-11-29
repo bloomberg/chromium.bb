@@ -22,14 +22,14 @@ class ScriptBubbleController
     : public TabHelper::ScriptExecutionObserver,
       public content::WebContentsObserver {
  public:
-  // Helper that gets the popup URL to use when the given set of extension ids
-  // have scripts running in the tab.
-  static GURL GetPopupUrl(const Extension* script_bubble,
-                          const std::set<std::string>& extension_ids);
-
   ScriptBubbleController(content::WebContents* web_contents,
                          TabHelper* tab_helper);
   virtual ~ScriptBubbleController();
+
+  // Returns a set of extension ids for extensions running content scripts.
+  const std::set<std::string>& extensions_running_scripts() {
+    return extensions_running_scripts_;
+  }
 
   // TabHelper::ScriptExecutionObserver implementation
   virtual void OnScriptsExecuted(
@@ -56,7 +56,7 @@ class ScriptBubbleController
   void UpdateScriptBubble();
 
   // The accumulated set of extension IDs that are operating on this tab.
-  std::set<std::string> executing_extension_ids_;
+  std::set<std::string> extensions_running_scripts_;
 
   DISALLOW_COPY_AND_ASSIGN(ScriptBubbleController);
 };

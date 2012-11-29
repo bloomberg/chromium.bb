@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
+#include "chrome/browser/extensions/script_bubble_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -42,6 +43,7 @@
 #include "chrome/browser/ui/views/location_bar/open_pdf_in_reader_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
+#include "chrome/browser/ui/views/location_bar/script_bubble_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/location_bar/web_intents_button_view.h"
@@ -183,6 +185,7 @@ LocationBarView::LocationBarView(Browser* browser,
       keyword_hint_view_(NULL),
       zoom_view_(NULL),
       open_pdf_in_reader_view_(NULL),
+      script_bubble_icon_view_(NULL),
       star_view_(NULL),
       web_intents_button_view_(NULL),
       action_box_button_view_(NULL),
@@ -290,6 +293,10 @@ void LocationBarView::Init() {
 
   open_pdf_in_reader_view_ = new OpenPDFInReaderView(this);
   AddChildView(open_pdf_in_reader_view_);
+
+  script_bubble_icon_view_ = new ScriptBubbleIconView(delegate());
+  AddChildView(script_bubble_icon_view_);
+  script_bubble_icon_view_->SetVisible(false);
 
   if (browser_defaults::bookmarks_enabled && (mode_ == NORMAL)) {
     // Note: condition above means that the star icon is hidden in popups and in
@@ -412,6 +419,7 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   ZoomBubbleView::CloseBubble();
   RefreshZoomView();
   RefreshPageActionViews();
+  RefreshScriptBubble();
   web_intents_button_view_->Update(GetWebContents());
   open_pdf_in_reader_view_->Update(
       model_->GetInputInProgress() ? NULL : GetWebContents());
@@ -442,6 +450,7 @@ void LocationBarView::UpdateContentSettingsIcons() {
 void LocationBarView::UpdatePageActions() {
   size_t count_before = page_action_views_.size();
   RefreshPageActionViews();
+  RefreshScriptBubble();
   if (page_action_views_.size() != count_before) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
@@ -699,6 +708,12 @@ void LocationBarView::Layout() {
   }
   if (star_view_ && star_view_->visible())
     entry_width -= star_view_->GetPreferredSize().width() + GetItemPadding();
+
+  if (script_bubble_icon_view_ && script_bubble_icon_view_->visible()) {
+    entry_width -= script_bubble_icon_view_->GetPreferredSize().width() +
+                   GetItemPadding();
+  }
+
   if (open_pdf_in_reader_view_ && open_pdf_in_reader_view_->visible()) {
     entry_width -= open_pdf_in_reader_view_->GetPreferredSize().width() +
         GetItemPadding();
@@ -785,6 +800,16 @@ void LocationBarView::Layout() {
     offset -= star_width;
     star_view_->SetBounds(offset, location_y, star_width, location_height);
     offset -= GetItemPadding() - star_view_->GetBuiltInHorizontalPadding();
+  }
+
+  if (script_bubble_icon_view_ && script_bubble_icon_view_->visible()) {
+    offset += script_bubble_icon_view_->GetBuiltInHorizontalPadding();
+    int width = script_bubble_icon_view_->GetPreferredSize().width();
+    offset -= width;
+    script_bubble_icon_view_->SetBounds(
+        offset, location_y, width, location_height);
+    offset -= GetItemPadding() -
+        script_bubble_icon_view_->GetBuiltInHorizontalPadding();
   }
 
   if (open_pdf_in_reader_view_ && open_pdf_in_reader_view_->visible()) {
@@ -1185,6 +1210,8 @@ void LocationBarView::RefreshPageActionViews() {
     if (!right_anchor)
       right_anchor = star_view_;
     if (!right_anchor)
+      right_anchor = script_bubble_icon_view_;
+    if (!right_anchor)
       right_anchor = action_box_button_view_;
     DCHECK(right_anchor);
 
@@ -1218,6 +1245,32 @@ void LocationBarView::RefreshPageActionViews() {
       }
     }
   }
+}
+
+size_t LocationBarView::ScriptBubbleScriptsRunning() {
+  WebContents* contents = delegate_->GetWebContents();
+  if (!contents)
+    return false;
+  extensions::TabHelper* extensions_tab_helper =
+      extensions::TabHelper::FromWebContents(contents);
+  if (!extensions_tab_helper)
+    return false;
+  extensions::ScriptBubbleController* script_bubble_controller =
+      extensions_tab_helper->script_bubble_controller();
+  if (!script_bubble_controller)
+    return false;
+  size_t script_count =
+      script_bubble_controller->extensions_running_scripts().size();
+  return script_count;
+}
+
+void LocationBarView::RefreshScriptBubble() {
+  if (!script_bubble_icon_view_)
+    return;
+  size_t script_count = ScriptBubbleScriptsRunning();
+  script_bubble_icon_view_->SetVisible(script_count > 0);
+  if (script_count > 0)
+    script_bubble_icon_view_->SetScriptCount(script_count);
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)

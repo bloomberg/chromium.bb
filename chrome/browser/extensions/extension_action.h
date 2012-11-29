@@ -247,8 +247,6 @@ class ExtensionAction {
   base::WeakPtr<IconAnimation> GetIconAnimation(int tab_id) const;
 
  private:
-  class IconWithBadgeImageSource;
-
   // Runs an animation on a tab.
   void RunIconAnimation(int tab_id);
 
@@ -261,15 +259,6 @@ class ExtensionAction {
   // TODO(tbarzic): The icon selection is done in ExtensionActionIconFactory.
   // We should probably move this there too.
   int GetIconWidth(int tab_id) const;
-
-  // Paints badge with specified parameters to |canvas|.
-  static void DoPaintBadge(gfx::Canvas* canvas,
-                           const gfx::Rect& bounds,
-                           const std::string& text,
-                           const SkColor& text_color_in,
-                           const SkColor& background_color_in,
-                           int icon_width,
-                           extensions::Extension::ActionInfo::Type action_type);
 
   template <class T>
   struct ValueTraits {

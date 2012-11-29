@@ -6,12 +6,52 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
+
+namespace {
+
+// Different platforms need slightly different constants to look good.
+#if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
+const float kTextSize = 9.0;
+const int kBottomMarginBrowserAction = 0;
+const int kBottomMarginPageAction = 2;
+const int kPadding = 2;
+const int kTopTextPadding = 0;
+#elif defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+const float kTextSize = 8.0;
+const int kBottomMarginBrowserAction = 5;
+const int kBottomMarginPageAction = 2;
+const int kPadding = 2;
+const int kTopTextPadding = 1;
+#elif defined(OS_MACOSX)
+const float kTextSize = 9.0;
+const int kBottomMarginBrowserAction = 5;
+const int kBottomMarginPageAction = 2;
+const int kPadding = 2;
+const int kTopTextPadding = 0;
+#else
+const float kTextSize = 10;
+const int kBottomMarginBrowserAction = 5;
+const int kBottomMarginPageAction = 2;
+const int kPadding = 2;
+// The padding between the top of the badge and the top of the text.
+const int kTopTextPadding = -1;
+#endif
+
+const int kBadgeHeight = 11;
+const int kMaxTextWidth = 23;
+
+// The minimum width for center-aligning the badge.
+const int kCenterAlignThreshold = 20;
+
+}  // namespace
 
 namespace badge_util {
 
@@ -98,6 +138,93 @@ SkBitmap DrawBadgeIconOverlay(const SkBitmap& icon,
 
   // Return the generated image.
   return canvas->ExtractImageRep().sk_bitmap();
+}
+
+void PaintBadge(gfx::Canvas* canvas,
+                const gfx::Rect& bounds,
+                const std::string& text,
+                const SkColor& text_color_in,
+                const SkColor& background_color_in,
+                int icon_width,
+                extensions::Extension::ActionInfo::Type action_type) {
+  if (text.empty())
+    return;
+
+  SkColor text_color = text_color_in;
+  if (SkColorGetA(text_color_in) == 0x00)
+    text_color = SK_ColorWHITE;
+
+  SkColor background_color = background_color_in;
+  if (SkColorGetA(background_color_in) == 0x00)
+      background_color = SkColorSetARGB(255, 218, 0, 24);
+
+  canvas->Save();
+
+  SkPaint* text_paint = badge_util::GetBadgeTextPaintSingleton();
+  text_paint->setTextSize(SkFloatToScalar(kTextSize));
+  text_paint->setColor(text_color);
+
+  // Calculate text width. We clamp it to a max size.
+  SkScalar sk_text_width = text_paint->measureText(text.c_str(), text.size());
+  int text_width = std::min(kMaxTextWidth, SkScalarFloor(sk_text_width));
+
+  // Calculate badge size. It is clamped to a min width just because it looks
+  // silly if it is too skinny.
+  int badge_width = text_width + kPadding * 2;
+  // Force the pixel width of badge to be either odd (if the icon width is odd)
+  // or even otherwise. If there is a mismatch you get http://crbug.com/26400.
+  if (icon_width != 0 && (badge_width % 2 != icon_width % 2))
+    badge_width += 1;
+  badge_width = std::max(kBadgeHeight, badge_width);
+
+  // Paint the badge background color in the right location. It is usually
+  // right-aligned, but it can also be center-aligned if it is large.
+  int rect_height = kBadgeHeight;
+  int bottom_margin =
+      action_type == extensions::Extension::ActionInfo::TYPE_BROWSER ?
+      kBottomMarginBrowserAction : kBottomMarginPageAction;
+  int rect_y = bounds.bottom() - bottom_margin - kBadgeHeight;
+  int rect_width = badge_width;
+  int rect_x = (badge_width >= kCenterAlignThreshold) ?
+      bounds.x() + (bounds.width() - badge_width) / 2 :
+      bounds.right() - badge_width;
+  gfx::Rect rect(rect_x, rect_y, rect_width, rect_height);
+
+  SkPaint rect_paint;
+  rect_paint.setStyle(SkPaint::kFill_Style);
+  rect_paint.setAntiAlias(true);
+  rect_paint.setColor(background_color);
+  canvas->DrawRoundRect(rect, 2, rect_paint);
+
+  // Overlay the gradient. It is stretchy, so we do this in three parts.
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  gfx::ImageSkia* gradient_left = rb.GetImageSkiaNamed(
+      IDR_BROWSER_ACTION_BADGE_LEFT);
+  gfx::ImageSkia* gradient_right = rb.GetImageSkiaNamed(
+      IDR_BROWSER_ACTION_BADGE_RIGHT);
+  gfx::ImageSkia* gradient_center = rb.GetImageSkiaNamed(
+      IDR_BROWSER_ACTION_BADGE_CENTER);
+
+  canvas->DrawImageInt(*gradient_left, rect.x(), rect.y());
+  canvas->TileImageInt(*gradient_center,
+      rect.x() + gradient_left->width(),
+      rect.y(),
+      rect.width() - gradient_left->width() - gradient_right->width(),
+      rect.height());
+  canvas->DrawImageInt(*gradient_right,
+      rect.right() - gradient_right->width(), rect.y());
+
+  // Finally, draw the text centered within the badge. We set a clip in case the
+  // text was too large.
+  rect.Inset(kPadding, 0);
+  canvas->ClipRect(rect);
+  canvas->sk_canvas()->drawText(
+      text.c_str(), text.size(),
+      SkFloatToScalar(rect.x() +
+                      static_cast<float>(rect.width() - text_width) / 2),
+      SkFloatToScalar(rect.y() + kTextSize + kTopTextPadding),
+      *text_paint);
+  canvas->Restore();
 }
 
 }  // namespace badge_util

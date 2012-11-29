@@ -7555,6 +7555,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TOOLTIP_STOP" desc="The tooltip for the stop button">
         Stop loading this page
       </message>
+      <message name="IDS_TOOLTIP_SCRIPT_BUBBLE" desc="The tooltip for script bubble">
+        View extensions interacting with page
+      </message>
       <message name="IDS_TOOLTIP_STAR" desc="The tooltip for bookmark button">
         Bookmark this page
       </message>
@@ -7594,6 +7597,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Find places to share
       </message>
 
+      <!--Script Bubble-->
+      <message name="IDS_SCRIPT_BUBBLE_HEADLINE" desc="The headline of the script bubble.">
+        Extensions interacting with this page:
+      </message>
       <!--Accessible name/action strings-->
       <message name="IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT" desc="The format for the accessible title of an incognito window">
         <ph name="WINDOW_TITLE">$1</ph> (Incognito)
@@ -7615,6 +7622,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ACCNAME_LOCATION" desc="The accessible name for the location bar edit field.">
         Address
+      </message>
+      <message name="IDS_ACCNAME_SCRIPT_BUBBLE" desc="The accessible name for the script bubble.">
+        Script Bubble
       </message>
       <message name="IDS_ACCNAME_STAR" desc="The accessible name for the bookmark button.">
         Bookmark

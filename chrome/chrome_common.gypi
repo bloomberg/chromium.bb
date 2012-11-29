@@ -223,6 +223,8 @@
         'common/form_field_data_predictions.cc',
         'common/form_field_data_predictions.h',
         'common/icon_messages.h',
+        'common/icon_with_badge_image_source.cc',
+        'common/icon_with_badge_image_source.h',
         'common/instant_types.cc',
         'common/instant_types.h',
         'common/json_schema_constants.cc',

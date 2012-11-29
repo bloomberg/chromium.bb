@@ -284,6 +284,14 @@
         25
       </message>
 
+      <!-- The width and height of the Script Bubble in characters and lines -->
+      <message name="IDS_SCRIPTBUBBLE_WIDTH_CHARS" use_name_for_id="true">
+        50
+      </message>
+      <message name="IDS_SCRIPTBUBBLE_HEIGHT_LINES" use_name_for_id="true">
+        5
+      </message>
+
       <!-- The width and height of the Page Info bubble characters and lines (See above). -->
       <message name="IDS_PAGEINFOBUBBLE_WIDTH_CHARS" use_name_for_id="true">
         50
