@@ -51,7 +51,7 @@ TEST_F('SandboxStatusUITest', 'MAYBE_testSUIDSandboxEnabled', function() {
     var suidno = document.body.innerText.match(suidnostring);
 
     expectEquals(null, suidno);
-    expectFalse(suidyes === null);
+    assertFalse(suidyes === null);
     expectEquals(suidyesstring, suidyes[0]);
 });
 
@@ -78,6 +78,6 @@ TEST_F('SandboxStatusUITest', 'MAYBE_testBPFSandboxEnabled', function() {
     var bpfno = document.body.innerText.match(bpfnostring);
 
     expectEquals(null, bpfno);
-    expectFalse(bpfyes === null);
+    assertFalse(bpfyes === null);
     expectEquals(bpfyesstring, bpfyes[0]);
 });
