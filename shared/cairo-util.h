@@ -23,6 +23,8 @@
 #ifndef _CAIRO_UTIL_H
 #define _CAIRO_UTIL_H
 
+#include <pixman.h>
+
 void
 surface_flush_device(cairo_surface_t *surface);
 
@@ -86,5 +88,8 @@ enum theme_location {
 
 enum theme_location
 theme_get_location(struct theme *t, int x, int y, int width, int height, int flags);
+
+pixman_image_t *
+load_image(const char *filename);
 
 #endif

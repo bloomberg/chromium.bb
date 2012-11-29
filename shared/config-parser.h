@@ -23,8 +23,6 @@
 #ifndef CONFIGPARSER_H
 #define CONFIGPARSER_H
 
-#include <pixman.h>
-
 enum config_key_type {
 	CONFIG_KEY_INTEGER,		/* typeof data = int */
 	CONFIG_KEY_UNSIGNED_INTEGER,	/* typeof data = unsigned int */
@@ -70,9 +68,6 @@ struct weston_option {
 int
 parse_options(const struct weston_option *options,
 	      int count, int argc, char *argv[]);
-
-pixman_image_t *
-load_image(const char *filename);
 
 #endif /* CONFIGPARSER_H */
 

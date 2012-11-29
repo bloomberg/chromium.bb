@@ -164,19 +164,13 @@ AS_IF([test "x$have_webp" = "xyes"],
 
 AC_CHECK_LIB([jpeg], [jpeg_CreateDecompress], have_jpeglib=yes)
 if test x$have_jpeglib = xyes; then
-  IMAGE_LIBS="$IMAGE_LIBS -ljpeg"
+  JPEG_LIBS="-ljpeg"
 else
   AC_ERROR([libjpeg not found])
 fi
+AC_SUBST(JPEG_LIBS)
 
 PKG_CHECK_MODULES(CAIRO, [cairo])
-SHARED_LIBS="$CAIRO_LIBS $PIXMAN_LIBS $PNG_LIBS $WEBP_LIBS $IMAGE_LIBS"
-SHARED_CFLAGS="$CAIRO_CFLAGS $PIXMAN_CFLAGS $PNG_CFLAGS $WEBP_CFLAGS"
-AC_SUBST(SHARED_LIBS)
-AC_SUBST(SHARED_CFLAGS)
-
-COMPOSITOR_LIBS="$COMPOSITOR_LIBS $IMAGE_LIBS"
-COMPOSITOR_CFLAGS="$COMPOSITOR_CFLAGS $IMAGE_CFLAGS"
 
 AC_ARG_ENABLE(simple-clients,
               AS_HELP_STRING([--disable-simple-clients],
@@ -204,9 +198,6 @@ if test x$enable_clients = xyes; then
 
   PKG_CHECK_MODULES(CLIENT, [wayland-client cairo >= 1.10.0 xkbcommon wayland-cursor])
   PKG_CHECK_MODULES(WESTON_INFO, [wayland-client])
-
-  CLIENT_CFLAGS="$CLIENT_CFLAGS $IMAGE_CFLAGS"
-  CLIENT_LIBS="$CLIENT_LIBS $IMAGE_LIBS"
 
   PKG_CHECK_MODULES(POPPLER, [poppler-glib glib-2.0 gobject-2.0 gio-2.0 ],
 			     [have_poppler=yes], [have_poppler=no])

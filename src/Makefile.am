@@ -126,7 +126,7 @@ if ENABLE_WAYLAND_COMPOSITOR
 wayland_backend = wayland-backend.la
 wayland_backend_la_LDFLAGS = -module -avoid-version
 wayland_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(WAYLAND_COMPOSITOR_LIBS) \
-	../shared/libshared.la
+	../shared/libshared-cairo.la
 wayland_backend_la_CFLAGS =			\
 	$(COMPOSITOR_CFLAGS)			\
 	$(WAYLAND_COMPOSITOR_CFLAGS)		\

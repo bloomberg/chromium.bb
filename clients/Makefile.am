@@ -89,7 +89,7 @@ libtoytoolkit_a_SOURCES =			\
 
 toolkit_libs =						\
 	libtoytoolkit.a					\
-	../shared/libshared.la				\
+	../shared/libshared-cairo.la			\
 	$(CLIENT_LIBS) $(CAIRO_EGL_LIBS) -lrt -lm
 
 flower_SOURCES = flower.c
