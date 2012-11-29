@@ -234,6 +234,8 @@
         
         # Moved from SkUserConfig.h, so we can rebaseline when we remove this.
         'SK_DISABLE_DITHER_32BIT_GRADIENT',
+
+        'SK_DISABLE_DASHING_OPTIMIZATION',
       ],
       'sources!': [
         '../third_party/skia/include/core/SkTypes.h',
