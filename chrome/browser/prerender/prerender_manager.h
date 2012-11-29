@@ -48,7 +48,8 @@ struct hash<content::WebContents*> {
     return reinterpret_cast<std::size_t>(value);
   }
 };
-}
+
+}  // namespace BASE_HASH_NAMESPACE
 
 #endif
 
@@ -291,7 +292,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     // other handles continue to track it.
     void OnCancelByHandle();
 
-    PrerenderContents* contents() { return contents_; }
+    PrerenderContents* contents() { return contents_.get(); }
+
+    PrerenderContents* ReleaseContents();
 
     int handle_count() const { return handle_count_; }
 
@@ -302,7 +305,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
    private:
     PrerenderManager* manager_;
-    PrerenderContents* contents_;
+    scoped_ptr<PrerenderContents> contents_;
 
     // The number of distinct PrerenderHandles created for |this|, including
     // ones that have called PrerenderData::OnNavigateAwayByHandle(), but not
@@ -432,10 +435,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       const content::Referrer& referrer,
       Origin origin,
       uint8 experiment_id);
-
-  // Deletes any PrerenderContents that have been added to the pending delete
-  // list.
-  void DeletePendingDeleteEntries();
 
   // Insures the |active_prerenders_| are sorted by increasing expiry time. Call
   // after every mutation of active_prerenders_ that can possibly make it

@@ -327,7 +327,7 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   DCHECK(!IsWebContentsPrerendering(web_contents, NULL));
 
   DeleteOldEntries();
-  DeletePendingDeleteEntries();
+  to_delete_prerenders_.clear();
   // TODO(ajwong): This doesn't handle isolated apps correctly.
   PrerenderData* prerender_data = FindPrerenderData(
           url,
@@ -397,11 +397,12 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
     return false;
 
   // At this point, we've determined that we will use the prerender.
-  scoped_ptr<PrerenderContents> prerender_contents(prerender_data->contents());
   ScopedVector<PrerenderData>::iterator to_erase =
-      FindIteratorForPrerenderContents(prerender_contents.get());
+      FindIteratorForPrerenderContents(prerender_data->contents());
   DCHECK(active_prerenders_.end() != to_erase);
   DCHECK_EQ(prerender_data, *to_erase);
+  scoped_ptr<PrerenderContents>
+      prerender_contents(prerender_data->ReleaseContents());
   active_prerenders_.erase(to_erase);
 
   if (!prerender_contents->load_start_time().is_null()) {
@@ -851,11 +852,12 @@ PrerenderManager::PrerenderData::~PrerenderData() {
 }
 
 void PrerenderManager::PrerenderData::MakeIntoMatchCompleteReplacement() {
+  DCHECK(contents_);
   contents_->set_match_complete_status(
       PrerenderContents::MATCH_COMPLETE_REPLACED);
-  PrerenderData* to_delete = new PrerenderData(manager_, contents_,
+  PrerenderData* to_delete = new PrerenderData(manager_, contents_.release(),
                                                expiry_time_);
-  contents_ = contents_->CreateMatchCompleteReplacement();
+  contents_.reset(to_delete->contents_->CreateMatchCompleteReplacement());
   manager_->to_delete_prerenders_.push_back(to_delete);
 }
 
@@ -893,6 +895,10 @@ void PrerenderManager::PrerenderData::OnCancelByHandle() {
       manager_->DestroyPendingPrerenderData(this);
     }
   }
+}
+
+PrerenderContents* PrerenderManager::PrerenderData::ReleaseContents() {
+  return contents_.release();
 }
 
 void PrerenderManager::SetPrerenderContentsFactory(
@@ -978,7 +984,7 @@ PrerenderHandle* PrerenderManager::AddPrerender(
   }
 
   DeleteOldEntries();
-  DeletePendingDeleteEntries();
+  to_delete_prerenders_.clear();
 
   GURL url = url_arg;
   GURL alias_url;
@@ -1103,7 +1109,7 @@ void PrerenderManager::PeriodicCleanup() {
                 std::mem_fun(
                     &PrerenderContents::DestroyWhenUsingTooManyResources));
 
-  DeletePendingDeleteEntries();
+  to_delete_prerenders_.clear();
 }
 
 void PrerenderManager::PostCleanupTask() {
@@ -1152,14 +1158,6 @@ PrerenderContents* PrerenderManager::CreatePrerenderContents(
   DCHECK(CalledOnValidThread());
   return prerender_contents_factory_->CreatePrerenderContents(
       this, prerender_tracker_, profile_, url, referrer, origin, experiment_id);
-}
-
-void PrerenderManager::DeletePendingDeleteEntries() {
-  while (!to_delete_prerenders_.empty()) {
-    scoped_ptr<PrerenderData> to_delete(to_delete_prerenders_.back());
-    to_delete_prerenders_.weak_erase(to_delete_prerenders_.end()-1);
-    delete to_delete->contents();
-  }
 }
 
 void PrerenderManager::SortActivePrerenders() {
@@ -1283,7 +1281,7 @@ void PrerenderManager::DestroyAllContents(FinalStatus final_status) {
     PrerenderContents* contents = active_prerenders_.front()->contents();
     contents->Destroy(final_status);
   }
-  DeletePendingDeleteEntries();
+  to_delete_prerenders_.clear();
 }
 
 void PrerenderManager::DestroyAndMarkMatchCompleteAsUsed(

@@ -113,7 +113,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
 
   PrerenderContents* FindEntry(const GURL& url) {
     DeleteOldEntries();
-    DeletePendingDeleteEntries();
+    to_delete_prerenders_.clear();
     if (PrerenderData* data = FindPrerenderData(url, NULL))
       return data->contents();
     return NULL;
@@ -123,12 +123,13 @@ class UnitTestPrerenderManager : public PrerenderManager {
     PrerenderData* prerender_data = FindPrerenderData(url, NULL);
     if (!prerender_data)
       return NULL;
-    PrerenderContents* prerender_contents = prerender_data->contents();
-    prerender_contents->set_final_status(FINAL_STATUS_USED);
     ScopedVector<PrerenderData>::iterator to_erase =
-        FindIteratorForPrerenderContents(prerender_contents);
-    DCHECK(to_erase != active_prerenders_.end());
+        FindIteratorForPrerenderContents(prerender_data->contents());
+    CHECK(to_erase != active_prerenders_.end());
+    PrerenderContents* prerender_contents = prerender_data->ReleaseContents();
     active_prerenders_.erase(to_erase);
+
+    prerender_contents->set_final_status(FINAL_STATUS_USED);
     prerender_contents->StartPendingPrerenders();
     return prerender_contents;
   }
@@ -199,7 +200,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
 
  private:
   void SetNextPrerenderContents(DummyPrerenderContents* prerender_contents) {
-    DCHECK(!next_prerender_contents_.get());
+    CHECK(!next_prerender_contents_.get());
     next_prerender_contents_.reset(prerender_contents);
     if (prerender_contents->expected_final_status() == FINAL_STATUS_USED)
       used_prerender_contents_.push_back(prerender_contents);
@@ -211,7 +212,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
       const Referrer& referrer,
       Origin origin,
       uint8 experiment_id) OVERRIDE {
-    DCHECK(next_prerender_contents_.get());
+    CHECK(next_prerender_contents_.get());
     EXPECT_EQ(url, next_prerender_contents_->prerender_url());
     EXPECT_EQ(origin, next_prerender_contents_->origin());
     return next_prerender_contents_.release();
@@ -642,7 +643,7 @@ TEST_F(PrerenderTest, PendingPrerenderTest) {
       prerender_manager()->AddPrerenderFromLinkRelPrerender(
           child_id, route_id, pending_url,
           Referrer(url, WebKit::WebReferrerPolicyDefault), kSize));
-  DCHECK(pending_prerender_handle.get());
+  CHECK(pending_prerender_handle.get());
   EXPECT_TRUE(pending_prerender_handle->IsValid());
   EXPECT_TRUE(pending_prerender_handle->IsPending());
 
@@ -709,7 +710,7 @@ TEST_F(PrerenderTest, CancelPendingPrerenderTest) {
       prerender_manager()->AddPrerenderFromLinkRelPrerender(
           child_id, route_id, pending_url,
           Referrer(url, WebKit::WebReferrerPolicyDefault), kSize));
-  DCHECK(pending_prerender_handle.get());
+  CHECK(pending_prerender_handle.get());
   EXPECT_TRUE(pending_prerender_handle->IsValid());
   EXPECT_TRUE(pending_prerender_handle->IsPending());
 
