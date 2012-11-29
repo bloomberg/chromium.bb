@@ -166,13 +166,9 @@ public class SandboxedProcessService extends Service {
             } catch (InterruptedException e) {
             }
         }
-
-        // This is not synchronized with the main thread in any way, but this is analogous
-        // to how desktop chrome terminates processes using SIGTERM. The mSandboxMainThread
-        // may run briefly before this is executed, but will eventually get a channel error
-        // and similarly commit suicide via SuicideOnChannelErrorFilter().
-        // TODO(tedbo): Why doesn't the activity manager SIGTERM/SIGKILL this service process?
-        nativeExitSandboxedProcess();
+        // Try to shutdown the SandboxMainThread gracefully, but it might not
+        // have chance to exit normally.
+        nativeShutdownSandboxMainThread();
     }
 
     @Override
@@ -254,4 +250,6 @@ public class SandboxedProcessService extends Service {
      * Force the sandboxed process to exit.
      */
     private static native void nativeExitSandboxedProcess();
+
+    private native void nativeShutdownSandboxMainThread();
 }

@@ -8,6 +8,8 @@
 #include "base/logging.h"
 #include "base/posix/global_descriptors.h"
 #include "content/common/android/surface_texture_peer.h"
+#include "content/common/child_process.h"
+#include "content/common/child_thread.h"
 #include "content/public/app/android_library_loader_hooks.h"
 #include "content/public/common/content_descriptors.h"
 #include "ipc/ipc_descriptors.h"
@@ -71,6 +73,10 @@ void InternalInitSandboxedProcess(const std::vector<int>& file_ids,
 
 }
 
+void QuitSandboxMainThreadMessageLoop() {
+  MessageLoop::current()->Quit();
+}
+
 }  // namespace <anonymous>
 
 namespace content {
@@ -98,6 +104,16 @@ void ExitSandboxedProcess(JNIEnv* env, jclass clazz) {
 
 bool RegisterSandboxedProcessService(JNIEnv* env) {
   return RegisterNativesImpl(env);
+}
+
+void ShutdownSandboxMainThread(JNIEnv* env, jobject obj) {
+  ChildProcess* current_process = ChildProcess::current();
+  if (!current_process)
+    return;
+  ChildThread* main_child_thread = current_process->main_thread();
+  if (main_child_thread && main_child_thread->message_loop())
+    main_child_thread->message_loop()->PostTask(FROM_HERE,
+        base::Bind(&QuitSandboxMainThreadMessageLoop));
 }
 
 }  // namespace content
