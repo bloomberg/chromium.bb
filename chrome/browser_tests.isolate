@@ -167,7 +167,6 @@
       'test/data/extensions/api_test/accessibility/',
       'test/data/extensions/api_test/all_urls/',
       'test/data/extensions/api_test/app_background_page/two_with_manifest/',
-      'test/data/extensions/api_test/content_scripts/bypass_page_csp/',
       'test/data/extensions/api_test/bindings/',
       'test/data/extensions/api_test/bluetooth/discovery_in_progress/',
       'test/data/extensions/api_test/browser_action/getters/',
@@ -218,6 +217,7 @@
           '<(PRODUCT_DIR)/nacl_helper<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/nacl_helper_bootstrap<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
+          'browser/safe_browsing/safe_browsing_testserver.py',
           'test/data/autofill/dataset_2.txt',
           'test/data/autofill/dataset_no_address.txt',
           'test/data/autofill/form_phones.html',
@@ -570,6 +570,7 @@
         ],
         'isolate_dependency_untracked': [
           'test/data/devtools/extensions/devtools_experimental/',
+          'test/data/extensions/api_test/content_scripts/bypass_page_csp/',
           'test/data/extensions/api_test/content_scripts/dont_match_host_permissions/',
           'test/data/extensions/api_test/keybinding/page_action/',
           'test/data/extensions/api_test/webstore_private/app/',
