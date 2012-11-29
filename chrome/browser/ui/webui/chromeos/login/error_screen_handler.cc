@@ -107,7 +107,7 @@ void ErrorScreenHandler::UpdateStateInternal(NetworkStateInformer::State state,
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         update_state_closure_.callback(),
-        base::TimeDelta::FromMilliseconds(kOfflineTimeoutSec));
+        base::TimeDelta::FromSeconds(kOfflineTimeoutSec));
     return;
   }
   set_is_first_update_state_call(false);
@@ -123,7 +123,7 @@ void ErrorScreenHandler::UpdateStateInternal(NetworkStateInformer::State state,
       MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           connecting_closure_.callback(),
-          base::TimeDelta::FromMilliseconds(kConnectingTimeoutSec));
+          base::TimeDelta::FromSeconds(kConnectingTimeoutSec));
     }
     return;
   }
