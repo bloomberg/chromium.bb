@@ -22,23 +22,23 @@ int main(int argc, char *argv[]) {
   int feature_id;
   NaClCPUDataGet(&cpu_data);
 
-  NaClGetCurrentCPUFeatures(&fv);
-  if (NaClArchSupported(&fv)) {
+  NaClGetCurrentCPUFeaturesX86((NaClCPUFeatures *) &fv);
+  if (NaClArchSupportedX86(&fv)) {
     printf("This is a native client %d-bit %s compatible computer\n",
            NACL_TARGET_SUBARCH, GetCPUIDString(&cpu_data));
   } else {
-    if (!fv.arch_features.f_cpuid_supported) {
+    if (!NaClGetCPUFeatureX86(&fv, NaClCPUFeature_CPUIDSupported)) {
       printf("Computer doesn't support CPUID\n");
     }
-    if (!fv.arch_features.f_cpu_supported) {
+    if (!NaClGetCPUFeatureX86(&fv, NaClCPUFeature_CPUSupported)) {
       printf("Computer id %s is not supported\n", GetCPUIDString(&cpu_data));
     }
   }
 
   printf("This processor has:\n");
-  for (feature_id = 0; feature_id < NaClCPUFeature_Max; ++feature_id) {
-    if (NaClGetCPUFeature(&fv, feature_id))
-      printf("        %s\n", NaClGetCPUFeatureName(feature_id));
+  for (feature_id = 0; feature_id < NaClCPUFeatureX86_Max; ++feature_id) {
+    if (NaClGetCPUFeatureX86(&fv, feature_id))
+      printf("        %s\n", NaClGetCPUFeatureX86Name(feature_id));
   }
   return 0;
 }

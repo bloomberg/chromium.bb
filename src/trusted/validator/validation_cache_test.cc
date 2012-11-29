@@ -11,6 +11,7 @@
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
 #include "native_client/src/trusted/validator/validation_cache.h"
+#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 
 #define CONTEXT_MARKER 31
 #define QUERY_MARKER 37
@@ -105,7 +106,8 @@ class ValidationCachingInterfaceTests : public ::testing::Test {
  protected:
   MockContext context;
   NaClValidationCache cache;
-  NaClCPUFeatures cpu_features;
+  const struct NaClValidatorInterface *validator;
+  NaClCPUFeatures *cpu_features;
 
   unsigned char code_buffer[CODE_SIZE];
 
@@ -122,18 +124,24 @@ class ValidationCachingInterfaceTests : public ::testing::Test {
     cache.SetKnownToValidate = MockSetCodeValidates;
     cache.DestroyQuery = MockDestroyQuery;
 
-    NaClSetAllCPUFeatures(&cpu_features);
+    validator = NaClCreateValidator();
+    cpu_features = (NaClCPUFeatures *) malloc(validator->CPUFeatureSize);
+    EXPECT_NE(cpu_features, (NaClCPUFeatures *) NULL);
+    validator->SetAllCPUFeatures(cpu_features);
 
     memset(code_buffer, 0x90, sizeof(code_buffer));
   }
 
   NaClValidationStatus Validate() {
-    const struct NaClValidatorInterface *validator = NaClCreateValidator();
     return validator->Validate(0, code_buffer, 32,
                                FALSE,  /* stubout_mode */
                                FALSE,  /* readonly_test */
-                               &cpu_features,
+                               cpu_features,
                                &cache);
+  }
+
+  void TearDown() {
+    free(cpu_features);
   }
 };
 
@@ -152,7 +160,7 @@ TEST_F(ValidationCachingInterfaceTests, NoCache) {
       0, code_buffer, CODE_SIZE,
       FALSE, /* stubout_mode */
       FALSE, /* readonly_test */
-      &cpu_features,
+      cpu_features,
       NULL);
   EXPECT_EQ(NaClValidationSucceeded, status);
 }
@@ -183,7 +191,9 @@ TEST_F(ValidationCachingInterfaceTests, SSE4Allowed) {
 TEST_F(ValidationCachingInterfaceTests, SSE4Stubout) {
   memcpy(code_buffer, sse41, CODE_SIZE);
   context.query_result = 0;
-  NaClSetCPUFeature(&cpu_features, NaClCPUFeature_SSE41, 0);
+  /* TODO(jfb) Use a safe cast here, this test should only run for x86. */
+  NaClSetCPUFeatureX86((NaClCPUFeaturesX86 *) cpu_features,
+                       NaClCPUFeature_SSE41, 0);
   NaClValidationStatus status = Validate();
   EXPECT_EQ(NaClValidationSucceeded, status);
   EXPECT_EQ(true, context.query_destroyed);

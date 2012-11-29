@@ -27,8 +27,10 @@ static NaClValidationStatus ApplyDfaValidator_x86_64(
     size_t size,
     int stubout_mode,
     int readonly_text,
-    const NaClCPUFeaturesX86 *cpu_features,
+    const NaClCPUFeatures *f,
     struct NaClValidationCache *cache) {
+  /* TODO(jfb) Use a safe cast here. */
+  NaClCPUFeaturesX86 *cpu_features = (NaClCPUFeaturesX86 *) f;
   enum NaClValidationStatus status = NaClValidationFailed;
   UNREFERENCED_PARAMETER(guest_addr);
   UNREFERENCED_PARAMETER(cache);
@@ -36,7 +38,7 @@ static NaClValidationStatus ApplyDfaValidator_x86_64(
   if (stubout_mode) {
     return NaClValidationFailedNotImplemented;
   }
-  if (!NaClArchSupported(cpu_features))
+  if (!NaClArchSupportedX86(cpu_features))
     return NaClValidationFailedCpuNotSupported;
   if (size & kBundleMask)
     return NaClValidationFailed;
@@ -58,8 +60,10 @@ static NaClValidationStatus ValidatorCodeCopy_x86_64(
     uint8_t *data_existing,
     uint8_t *data_new,
     size_t size,
-    const NaClCPUFeatures *cpu_features,
+    const NaClCPUFeatures *f,
     NaClCopyInstructionFunc copy_func) {
+  /* TODO(jfb) Use a safe cast here. */
+  NaClCPUFeaturesX86 *cpu_features = (NaClCPUFeaturesX86 *) f;
   struct CodeCopyCallbackData callback_data;
   UNREFERENCED_PARAMETER(guest_addr);
 
@@ -136,7 +140,9 @@ static NaClValidationStatus ValidatorCodeReplacement_x86_64(
     uint8_t *data_existing,
     uint8_t *data_new,
     size_t size,
-    const NaClCPUFeatures *cpu_features) {
+    const NaClCPUFeatures *f) {
+  /* TODO(jfb) Use a safe cast here. */
+  NaClCPUFeaturesX86 *cpu_features = (NaClCPUFeaturesX86 *) f;
   UNREFERENCED_PARAMETER(guest_addr);
 
   if (size & kBundleMask) {
@@ -156,6 +162,10 @@ static const struct NaClValidatorInterface validator = {
   ApplyDfaValidator_x86_64,
   ValidatorCodeCopy_x86_64,
   ValidatorCodeReplacement_x86_64,
+  sizeof(NaClCPUFeaturesX86),
+  NaClSetAllCPUFeaturesX86,
+  NaClGetCurrentCPUFeaturesX86,
+  NaClFixCPUFeaturesX86,
 };
 
 const struct NaClValidatorInterface *NaClDfaValidatorCreate_x86_64(void) {

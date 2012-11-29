@@ -56,6 +56,7 @@ if env.Bit('linux'):
 
   env.ComponentLibrary('mips_validator_core',
                        ['address_set.cc',
+                        'cpuid_mips.c',
                         'validator.cc',
                         'gen/decode.cc'])
 

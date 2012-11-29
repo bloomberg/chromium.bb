@@ -11,9 +11,9 @@
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/service_runtime/arch/mips/sel_ldr_mips.h"
-#include "native_client/src/trusted/validator_mips/validator.h"
+#include "native_client/src/trusted/validator_mips/cpuid_mips.h"
 #include "native_client/src/trusted/validator_mips/model.h"
-#include "native_client/src/trusted/validator/ncvalidate.h"
+#include "native_client/src/trusted/validator_mips/validator.h"
 
 using nacl_mips_val::SfiValidator;
 using nacl_mips_val::CodeSegment;
@@ -86,12 +86,12 @@ EXTERN_C_BEGIN
 int NCValidateSegment(uint8_t *mbase, uint32_t vbase, size_t size,
                       bool stubout_mode) {
   SfiValidator validator(
-      16,                             // 64,  // bytes per bundle
-      1U * NACL_DATA_SEGMENT_START,   // bytes of code space
-      1U * (1<<NACL_MAX_ADDR_BITS),   // bytes of data space // keep in sync w/
-                                      // SConstruct: irt_compatible_rodata_addr
-      kRegListReserved,               // read only register(s)
-      RegisterList(kRegisterStack));  // data addressing register(s)
+      16,                              // 64,  // bytes per bundle
+      1U * NACL_DATA_SEGMENT_START,    // bytes of code space
+      1U * (1 << NACL_MAX_ADDR_BITS),  // bytes of data space // keep in sync w/
+                                       // SConstruct: irt_compatible_rodata_addr
+      kRegListReserved,                // read only register(s)
+      RegisterList(kRegisterStack));   // data addressing register(s)
   bool success = false;
 
   vector<CodeSegment> segments;
@@ -166,6 +166,10 @@ static struct NaClValidatorInterface validator = {
   ApplyValidatorMips,
   ValidatorCopyNotImplemented,
   ValidatorCodeReplacementNotImplemented,
+  sizeof(NaClCPUFeaturesMips),
+  NaClSetAllCPUFeaturesMips,
+  NaClGetCurrentCPUFeaturesMips,
+  NaClFixCPUFeaturesMips,
 };
 
 const struct NaClValidatorInterface *NaClValidatorCreateMips() {

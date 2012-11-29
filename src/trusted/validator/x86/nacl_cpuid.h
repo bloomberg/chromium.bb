@@ -13,6 +13,8 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NACL_CPUID_H_
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/trusted/validator/ncvalidate.h"
+
 
 EXTERN_C_BEGIN
 
@@ -21,7 +23,9 @@ EXTERN_C_BEGIN
  * CPUFeatureDescriptions in nacl_cpuid.c.
  */
 typedef enum {
-  NaClCPUFeature_3DNOW = 0, /* AMD-specific */
+  NaClCPUFeature_CPUIDSupported,
+  NaClCPUFeature_CPUSupported,  /* CPU is one we support. */
+  NaClCPUFeature_3DNOW, /* AMD-specific */
   NaClCPUFeature_AES,
   NaClCPUFeature_AVX,
   NaClCPUFeature_BMI1,
@@ -57,19 +61,12 @@ typedef enum {
   NaClCPUFeature_TSC,
   NaClCPUFeature_x87,
   NaClCPUFeature_XOP, /* AMD-specific */
-  NaClCPUFeature_Max
-} NaClCPUFeatureID;
-
-/* Features needed to show that the architecture is supported. */
-typedef struct nacl_arch_features {
-  char f_cpuid_supported;  /* CPUID is defined for the hardward. */
-  char f_cpu_supported;    /* CPU is one we support. */
-} nacl_arch_features;
+  NaClCPUFeatureX86_Max
+} NaClCPUFeatureX86ID;
 
 /* Features we can get about the x86 hardware. */
-typedef struct cpu_feature_struct {
-  nacl_arch_features arch_features;
-  char data[NaClCPUFeature_Max];
+typedef struct cpu_feature_struct_X86 {
+  char data[NaClCPUFeatureX86_Max];
 } NaClCPUFeaturesX86;
 
 /* Define the maximum length of a CPUID string.
@@ -122,40 +119,35 @@ void NaClCPUDataGet(NaClCPUData* data);
  */
 char *GetCPUIDString(NaClCPUData* data);
 
-/* Set cpu check state fields to all true. */
-void NaClSetAllCPUFeatures(NaClCPUFeaturesX86 *features);
+/*
+ * Platform-independent NaClValidatorInterface functions.
+ */
+void NaClSetAllCPUFeaturesX86(NaClCPUFeatures *features);
+void NaClGetCurrentCPUFeaturesX86(NaClCPUFeatures *cpu_features);
+int NaClFixCPUFeaturesX86(NaClCPUFeatures *cpu_features);
 
-/* Clear cpu check state fields (i.e. set all fields to false). */
-void NaClClearCPUFeatures(NaClCPUFeaturesX86 *features);
-
-/* Set a feature. */
-void NaClSetCPUFeature(NaClCPUFeaturesX86 *features, NaClCPUFeatureID id,
-                       int state);
-
-/* Query whether a feature is supported. */
-static INLINE int NaClGetCPUFeature(const NaClCPUFeaturesX86 *features,
-                                    NaClCPUFeatureID id) {
+/*
+ * Platform-dependent getter/setter.
+ */
+static INLINE int NaClGetCPUFeatureX86(const NaClCPUFeaturesX86 *features,
+                                       NaClCPUFeatureX86ID id) {
   return features->data[id];
 }
 
-/* Get a short, printable name for the feature. */
-const char* NaClGetCPUFeatureName(NaClCPUFeatureID id);
+void NaClSetCPUFeatureX86(NaClCPUFeaturesX86 *features, NaClCPUFeatureX86ID id,
+                          int state);
+const char *NaClGetCPUFeatureX86Name(NaClCPUFeatureX86ID id);
 
-/* Copy a set of cpu features. */
-void NaClCopyCPUFeatures(NaClCPUFeaturesX86* target,
-                         const NaClCPUFeaturesX86* source);
-
-/* Get the features for the CPU this code is running on. */
-void NaClGetCurrentCPUFeatures(NaClCPUFeaturesX86 *cpu_features);
-
-/* Returns true if CPUID is defined, and the CPU is supported. */
-int NaClArchSupported(const NaClCPUFeaturesX86 *features);
-
-/* Update cpu_features to only include features in the fixed x86 model.
- * Returns 1 if cpu_features includes all features required by the model.
- * Otherwise returns 0.
+/*
+ * Platform-independent functions which are only used in platform-dependent
+ * code.
+ * TODO(jfb) The ARM and MIPS CPU feature do not offer NaClCopyCPUFeaturesX86
+ * and NaClArchSupportedX86, should they be removed?
  */
-int NaClFixCPUFeatures(NaClCPUFeaturesX86 *cpu_features);
+void NaClClearCPUFeaturesX86(NaClCPUFeaturesX86 *features);
+void NaClCopyCPUFeaturesX86(NaClCPUFeaturesX86 *target,
+                            const NaClCPUFeaturesX86 *source);
+int NaClArchSupportedX86(const NaClCPUFeaturesX86 *features);
 
 EXTERN_C_END
 

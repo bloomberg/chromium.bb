@@ -80,6 +80,7 @@ static NaClValidationStatus ValidatorCopyArm(
     const NaClCPUFeatures *cpu_features,
     NaClCopyInstructionFunc copy_func) {
   UNREFERENCED_PARAMETER(cpu_features);
+
   CheckAddressAlignAndOverflow((uint8_t *) guest_addr, size);
   CheckAddressOverflow(data_old, size);
   CheckAddressOverflow(data_new, size);
@@ -106,6 +107,7 @@ static NaClValidationStatus ValidatorCodeReplacementArm(
     size_t size,
     const NaClCPUFeatures *cpu_features) {
   UNREFERENCED_PARAMETER(cpu_features);
+
   CheckAddressAlignAndOverflow((uint8_t *) guest_addr, size);
   CheckAddressOverflow(data_old, size);
   CheckAddressOverflow(data_new, size);
@@ -127,7 +129,13 @@ static NaClValidationStatus ValidatorCodeReplacementArm(
 
 EXTERN_C_BEGIN
 
-static int NCValidateSegment(uint8_t *mbase, uint32_t vbase, size_t size) {
+static int NCValidateSegment(
+    uint8_t *mbase,
+    uint32_t vbase,
+    size_t size,
+    const NaClCPUFeatures *cpu_features) {
+  UNREFERENCED_PARAMETER(cpu_features);
+
   SfiValidator validator(
       kBytesPerBundle,
       kBytesOfCodeSpace,
@@ -153,7 +161,6 @@ static NaClValidationStatus ApplyValidatorArm(
     int readonly_text,
     const NaClCPUFeatures *cpu_features,
     struct NaClValidationCache *cache) {
-  UNREFERENCED_PARAMETER(cpu_features);
   /* The ARM validator is currently unsafe w.r.t. caching. */
   UNREFERENCED_PARAMETER(cache);
   CheckAddressAlignAndOverflow((uint8_t *) guest_addr, size);
@@ -165,7 +172,7 @@ static NaClValidationStatus ApplyValidatorArm(
   if (readonly_text)
     return NaClValidationFailedNotImplemented;
 
-  return ((0 == NCValidateSegment(data, guest_addr, size))
+  return ((0 == NCValidateSegment(data, guest_addr, size, cpu_features))
            ? NaClValidationSucceeded : NaClValidationFailed);
 }
 
@@ -173,6 +180,10 @@ static struct NaClValidatorInterface validator = {
   ApplyValidatorArm,
   ValidatorCopyArm,
   ValidatorCodeReplacementArm,
+  sizeof(NaClCPUFeaturesArm),
+  NaClSetAllCPUFeaturesArm,
+  NaClGetCurrentCPUFeaturesArm,
+  NaClFixCPUFeaturesArm,
 };
 
 const struct NaClValidatorInterface *NaClValidatorCreateArm() {

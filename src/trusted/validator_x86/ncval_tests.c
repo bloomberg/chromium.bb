@@ -991,14 +991,12 @@ void test_fail_on_bad_alignment(void) {
 
    printf("Running test_fail_on_bad_alignment...\n");
 
-  vstate = NCValidateInit(0x80000000, 0x1000, FALSE,
-                          &g_ncval_cpu_features);
+  vstate = NCValidateInit(0x80000000, 0x1000, FALSE, &g_ncval_cpu_features);
   CHECK(vstate != NULL);
   NCValidateFreeState(&vstate);
 
   /* Unaligned start addresses are not allowed. */
-  vstate = NCValidateInit(0x80000001, 0x1000, FALSE,
-                          &g_ncval_cpu_features);
+  vstate = NCValidateInit(0x80000001, 0x1000, FALSE, &g_ncval_cpu_features);
   CHECK(vstate == NULL);
 }
 
@@ -1016,16 +1014,16 @@ void test_stubout(void) {
   printf("Running test_stubout...\n");
 
   /* If MMX instructions are not allowed, stubout will occur. */
-  NaClSetCPUFeature(&g_ncval_cpu_features, NaClCPUFeature_MMX, FALSE);
+  NaClSetCPUFeatureX86(&g_ncval_cpu_features, NaClCPUFeature_MMX, FALSE);
   TestValidator(&test, TRUE);
-  NaClSetCPUFeature(&g_ncval_cpu_features, NaClCPUFeature_MMX, TRUE);
+  NaClSetCPUFeatureX86(&g_ncval_cpu_features, NaClCPUFeature_MMX, TRUE);
 }
 
 void ncvalidate_unittests(void) {
   size_t i;
 
   /* Default to stubbing out nothing. */
-  NaClSetAllCPUFeatures(&g_ncval_cpu_features);
+  NaClSetAllCPUFeaturesX86((NaClCPUFeatures *) &g_ncval_cpu_features);
 
   for (i = 0; i < NACL_ARRAY_SIZE(NCValTests); i++) {
     TestValidator(&NCValTests[i], FALSE);

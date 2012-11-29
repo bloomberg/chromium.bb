@@ -24,19 +24,11 @@
 static NORETURN_PTR void (*NaClSwitch)(struct NaClThreadContext *context);
 
 void NaClInitSwitchToApp(struct NaClApp *nap) {
-  NaClCPUFeaturesX86 cpu_features;
-
-  UNREFERENCED_PARAMETER(nap);
-
-  /*
-   * TODO(mcgrathr): This call is repeated in platform qualification and
-   * in every application of the validator.  It would be more efficient
-   * to do it once and then reuse the same data.
-   */
-  NaClGetCurrentCPUFeatures(&cpu_features);
-  if (NaClGetCPUFeature(&cpu_features, NaClCPUFeature_AVX)) {
+  /* TODO(jfb) Use a safe cast here. */
+  NaClCPUFeaturesX86 *features = (NaClCPUFeaturesX86 *) nap->cpu_features;
+  if (NaClGetCPUFeatureX86(features, NaClCPUFeature_AVX)) {
     NaClSwitch = NaClSwitchAVX;
-  } else if (NaClGetCPUFeature(&cpu_features, NaClCPUFeature_SSE)) {
+  } else if (NaClGetCPUFeatureX86(features, NaClCPUFeature_SSE)) {
     NaClSwitch = NaClSwitchSSE;
   } else {
     NaClSwitch = NaClSwitchNoSSE;

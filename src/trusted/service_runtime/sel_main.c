@@ -376,7 +376,7 @@ int NaClSelLdrMain(int argc, char **argv) {
       case 'Z':
         NaClLog(LOG_WARNING, "Enabling Fixed-Feature CPU Mode\n");
         nap->fixed_feature_cpu_mode = 1;
-        if (!NaClFixCPUFeatures(&nap->cpu_features)) {
+        if (!nap->validator->FixCPUFeatures(nap->cpu_features)) {
           NaClLog(LOG_ERROR,
                   "This CPU lacks features required by "
                   "fixed-function CPU mode.\n");

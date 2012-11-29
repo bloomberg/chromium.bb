@@ -29,8 +29,10 @@ static NaClValidationStatus ApplyValidator_x86_32(
     size_t size,
     int stubout_mode,
     int readonly_text,
-    const NaClCPUFeaturesX86 *cpu_features,
+    const NaClCPUFeatures *f,
     struct NaClValidationCache *cache) {
+  /* TODO(jfb) Use a safe cast here. */
+  const NaClCPUFeaturesX86 *cpu_features = (NaClCPUFeaturesX86 *) f;
   struct NCValidatorState *vstate;
   int validator_result = 0;
   void *query = NULL;
@@ -39,7 +41,7 @@ static NaClValidationStatus ApplyValidator_x86_32(
   if (stubout_mode && readonly_text)
     return NaClValidationFailedNotImplemented;
 
-  if (!NaClArchSupported(cpu_features))
+  if (!NaClArchSupportedX86(cpu_features))
     return NaClValidationFailedCpuNotSupported;
 
   /* Don't cache in stubout mode. */
@@ -95,9 +97,12 @@ static NaClValidationStatus ApplyValidatorCodeReplacement_x86_32(
     uint8_t *data_old,
     uint8_t *data_new,
     size_t size,
-    const NaClCPUFeaturesX86 *cpu_features) {
+    const NaClCPUFeatures *f) {
+  /* TODO(jfb) Use a safe cast here. */
+  const NaClCPUFeaturesX86 *cpu_features = (NaClCPUFeaturesX86 *) f;
+
   /* Check that the given parameter values are supported. */
-  if (!NaClArchSupported(cpu_features))
+  if (!NaClArchSupportedX86(cpu_features))
     return NaClValidationFailedCpuNotSupported;
 
   return NCValidateSegmentPair(data_old, data_new, guest_addr,
@@ -147,9 +152,12 @@ static NaClValidationStatus ApplyValidatorCopy_x86_32(
     uint8_t *data_old,
     uint8_t *data_new,
     size_t size,
-    const NaClCPUFeaturesX86 *cpu_features,
+    const NaClCPUFeatures *f,
     NaClCopyInstructionFunc copy_func) {
-  if (!NaClArchSupported(cpu_features))
+  /* TODO(jfb) Use a safe cast here. */
+  const NaClCPUFeaturesX86 *cpu_features = (NaClCPUFeaturesX86 *) f;
+
+  if (!NaClArchSupportedX86(cpu_features))
     return NaClValidationFailedCpuNotSupported;
 
   return ((0 == NCCopyCode(data_old, data_new, guest_addr, size, copy_func))
@@ -160,6 +168,10 @@ static const struct NaClValidatorInterface validator = {
   ApplyValidator_x86_32,
   ApplyValidatorCopy_x86_32,
   ApplyValidatorCodeReplacement_x86_32,
+  sizeof(NaClCPUFeaturesX86),
+  NaClSetAllCPUFeaturesX86,
+  NaClGetCurrentCPUFeaturesX86,
+  NaClFixCPUFeaturesX86,
 };
 
 const struct NaClValidatorInterface *NaClValidatorCreate_x86_32(void) {

@@ -209,13 +209,12 @@ bool Validate(
   UserData user_data(segment, errors, &jumps, &bad_jump_targets);
 
   // TODO(shcherbina): customize from command line
-  const NaClCPUFeaturesX86 *cpu_features = &kFullCPUIDFeatures;
 
   // We collect all errors except bad jump targets, and we separately
   // memoize all direct jumps (or calls) and bad jump targets.
   Bool result = validate_chunk(
       segment.data, segment.size,
-      CALL_USER_CALLBACK_ON_EACH_INSTRUCTION, cpu_features,
+      CALL_USER_CALLBACK_ON_EACH_INSTRUCTION, &kFullCPUIDFeatures,
       ProcessInstruction, &user_data);
 
   // Report destinations of jumps that lead to bad targets.
@@ -231,7 +230,7 @@ bool Validate(
   // for testing.
   CHECK(result == validate_chunk(
       segment.data, segment.size,
-      0, cpu_features,
+      0, &kFullCPUIDFeatures,
       ProcessError, NULL));
 
   return static_cast<bool>(result);

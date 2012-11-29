@@ -11,11 +11,18 @@
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/validator/cpufeatures.h"
+
 
 EXTERN_C_BEGIN
 
 struct NaClValidationCache;
+
+/*
+ * Forward-declared (but never defined) generic CPU features.
+ * Each architecture needs to cast from this generic type.
+ */
+struct NaClCPUFeaturesAbstract;
+typedef struct NaClCPUFeaturesAbstract NaClCPUFeatures;
 
 /* Defines possible validation status values. */
 typedef enum NaClValidationStatus {
@@ -119,11 +126,26 @@ typedef NaClValidationStatus (*NaClValidateCodeReplacementFunc)(
     size_t size,
     const NaClCPUFeatures *cpu_features);
 
+typedef void (*NaClCPUFeaturesAllFunc)(NaClCPUFeatures *f);
+typedef int (*NaClCPUFeaturesFixFunc)(NaClCPUFeatures *f);
+
 /* The full set of validator APIs. */
 struct NaClValidatorInterface {
+  /* Validation API. */
   NaClValidateFunc Validate;
   NaClCopyCodeFunc CopyCode;
   NaClValidateCodeReplacementFunc ValidateCodeReplacement;
+  /* CPU features API, used by validation and caching. */
+  size_t CPUFeatureSize;
+  /* Set CPU check state fields to all true. */
+  NaClCPUFeaturesAllFunc SetAllCPUFeatures;
+  /* Get the features for the CPU this code is running on. */
+  NaClCPUFeaturesAllFunc GetCurrentCPUFeatures;
+  /* Update cpu_features to only include features in the fixed architectural
+   * model. Returns 1 if cpu_features includes all features required by the
+   * model. Otherwise returns 0.
+   */
+  NaClCPUFeaturesFixFunc FixCPUFeatures;
 };
 
 /* Make a choice of validating functions. */

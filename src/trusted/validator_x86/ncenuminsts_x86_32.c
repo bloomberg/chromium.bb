@@ -116,10 +116,11 @@ Bool NaClSegmentValidates(uint8_t* mbase,
   const struct NaClValidatorInterface *validator = NaClCreateValidator();
 
   /* check if NaCl thinks the given code segment is valid. */
-  NaClSetAllCPUFeatures(&cpu_features);
+  NaClSetAllCPUFeaturesX86((NaClCPUFeatures *) &cpu_features);
   status = validator->Validate(
       vbase, mbase, size,
-      /* stubout_mode= */ FALSE, /* readonly_text= */ FALSE, &cpu_features,
+      /* stubout_mode= */ FALSE, /* readonly_text= */ FALSE,
+      (NaClCPUFeatures *) &cpu_features,
       NULL);
   switch (status) {
     case NaClValidationSucceeded:

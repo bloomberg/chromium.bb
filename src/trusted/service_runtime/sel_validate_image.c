@@ -71,7 +71,7 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
     status = validator->Validate(guest_addr, data, size,
                                  TRUE, /* stub out */
                                  FALSE, /* text is not read-only */
-                                 &nap->cpu_features,
+                                 nap->cpu_features,
                                  cache);
   }
   if (status == NaClValidationSucceeded) {
@@ -80,7 +80,7 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
     status = validator->Validate(guest_addr, data, size,
                                  FALSE, /* do not stub out */
                                  readonly_text,
-                                 &nap->cpu_features,
+                                 nap->cpu_features,
                                  cache);
   }
   return NaClValidateStatus(status);
@@ -98,7 +98,7 @@ int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
   }
 
   return NaClValidateStatus(nap->validator->ValidateCodeReplacement(
-      guest_addr, data_old, data_new, size, &nap->cpu_features));
+      guest_addr, data_old, data_new, size, nap->cpu_features));
 }
 
 int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
@@ -115,7 +115,7 @@ int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
   }
   status = NaClValidateStatus(nap->validator->CopyCode(
                               guest_addr, data_old, data_new, size,
-                              &nap->cpu_features,
+                              nap->cpu_features,
                               NaClCopyInstruction));
   /*
    * Flush the processor's instruction cache.  This is not necessary

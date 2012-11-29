@@ -45,6 +45,7 @@
       'type': 'static_library',
       'sources': [
         'address_set.cc',
+        'cpuid_mips.c',
         'inst_classes.cc',
         'validator.cc',
         '<(validate_gen_out)/decode.cc'

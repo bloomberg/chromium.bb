@@ -525,7 +525,7 @@ NaClValidatorState *NaClValidatorStateCreate(
     vstate->bundle_size = bundle_size;
     vstate->codesize = codesize;
     vstate->bundle_mask = bundle_size - 1;
-    NaClCopyCPUFeatures(&vstate->cpu_features, features);
+    NaClCopyCPUFeaturesX86(&vstate->cpu_features, features);
     vstate->base_register = base_register;
     vstate->validates_ok = TRUE;
     vstate->did_stub_out = FALSE;

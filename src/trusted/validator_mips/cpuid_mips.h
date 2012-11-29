@@ -7,30 +7,56 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_MIPS_CPUID_MIPS_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_MIPS_CPUID_MIPS_H_
 
+#include "native_client/src/include/nacl_compiler_annotations.h"
+#include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/portability.h"
+#include "native_client/src/trusted/validator/ncvalidate.h"
 
-typedef struct {
-  /* Add a dummy field because a zero-sized structure causes skew between C and
-   * C++.
-   */
-  int bogus;
+
+EXTERN_C_BEGIN
+
+/* List of features supported by MIPS CPUs. */
+typedef enum {
+#define NACL_MIPS_CPU_FEATURE(name) NACL_CONCAT(NaClCPUFeatureMips_, name),
+#include "native_client/src/trusted/validator_mips/cpuid_mips_features.h"
+#undef NACL_MIPS_CPU_FEATURE
+  /* Leave the following as the last entry. */
+  NaClCPUFeatureMips_Max
+} NaClCPUFeatureMipsID;
+
+typedef struct cpu_feature_struct_mips {
+  char data[NaClCPUFeatureMips_Max];
 } NaClCPUFeaturesMips;
 
-static INLINE void NaClGetCurrentCPUFeatures(
-     NaClCPUFeaturesMips *cpu_features) {
-  UNREFERENCED_PARAMETER(cpu_features);
+/*
+ * Platform-independent NaClValidatorInterface functions.
+ */
+void NaClSetAllCPUFeaturesMips(NaClCPUFeatures *features);
+void NaClGetCurrentCPUFeaturesMips(NaClCPUFeatures *features);
+int NaClFixCPUFeaturesMips(NaClCPUFeatures *features);
+
+/*
+ * Platform-dependent getter/setter.
+ */
+static INLINE int NaClGetCPUFeatureMips(const NaClCPUFeaturesMips *features,
+                                        NaClCPUFeatureMipsID id) {
+  return features->data[id];
 }
 
-static INLINE void NaClSetAllCPUFeatures(NaClCPUFeaturesMips *cpu_features) {
-  UNREFERENCED_PARAMETER(cpu_features);
-}
+void NaClSetCPUFeatureMips(NaClCPUFeaturesMips *features,
+                           NaClCPUFeatureMipsID id, int state);
+const char *NaClGetCPUFeatureMipsName(NaClCPUFeatureMipsID id);
 
-static INLINE void NaClClearCPUFeatures(NaClCPUFeaturesMips *cpu_features) {
-  UNREFERENCED_PARAMETER(cpu_features);
-}
+/*
+ * Platform-independent functions which are only used in platform-dependent
+ * code.
+ */
+void NaClClearCPUFeaturesMips(NaClCPUFeaturesMips *features);
+/*
+ * TODO(jfb) The x86 CPU features also offers these functions, which are
+ *  currently notused on MIPS: NaClCopyCPUFeaturesMips, NaClArchSupportedMips.
+ */
 
-static INLINE int NaClFixCPUFeatures(NaClCPUFeaturesMips *cpu_features) {
-  UNREFERENCED_PARAMETER(cpu_features);
-  return 1;
-}
+EXTERN_C_END
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_MIPS_CPUID_MIPS_H_

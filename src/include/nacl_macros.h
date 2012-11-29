@@ -17,6 +17,9 @@
 #define NACL_TO_STRING_INTERNAL(v) #v
 #define NACL_TO_STRING(v) NACL_TO_STRING_INTERNAL(v)
 
+#define NACL_CONCAT_INTERNAL(a, b) a ## b
+#define NACL_CONCAT(a, b) NACL_CONCAT_INTERNAL(a, b)
+
 /*****************************************************************************
  * Safety macros                                                             *
  *****************************************************************************/
@@ -204,6 +207,7 @@ static inline void *NaClArrayCheckHelper(void *arg) {
 #if defined(OS_WIN)
 #define NACL_COMPILE_TIME_ASSERT(boolexp)               \
   do {                                                  \
+    /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */             \
     char compile_time_assert[(boolexp) ? 1 : -1];       \
     (void) compile_time_assert;                         \
   } while (0)

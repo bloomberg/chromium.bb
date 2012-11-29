@@ -11,7 +11,7 @@ NaClValidatorState* NaClValidatorStateCreateDetailed(
     const NaClPcAddress vbase,
     const NaClMemorySize sz,
     const NaClOpKind base_register,
-    const NaClCPUFeaturesX86* features) {
+    const NaClCPUFeaturesX86 *features) {
   NaClValidatorState* state =
       NaClValidatorStateCreate(vbase, sz, base_register, FALSE, features);
   if (state != NULL) {

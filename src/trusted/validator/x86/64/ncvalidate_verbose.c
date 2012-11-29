@@ -9,6 +9,7 @@
 #include "native_client/src/trusted/validator/ncvalidate.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode_verbose.h"
 #include "native_client/src/trusted/validator/x86/64/ncvalidate.h"
@@ -27,7 +28,9 @@ static NaClValidationStatus NaClApplyValidatorVerbosely_x86_64(
     uintptr_t guest_addr,
     uint8_t *data,
     size_t size,
-    const NaClCPUFeaturesX86 *cpu_features) {
+    const NaClCPUFeatures *f) {
+  /* TODO(jfb) Use a safe cast here. */
+  const NaClCPUFeaturesX86 *cpu_features = (NaClCPUFeaturesX86 *) f;
   struct NaClValidatorState *vstate;
   NaClValidationStatus status =
       NaClValidatorSetup_x86_64(guest_addr, size, FALSE, cpu_features, &vstate);
@@ -46,10 +49,13 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely, x86, 64)
     (uintptr_t guest_addr,
      uint8_t *data,
      size_t size,
-     const NaClCPUFeaturesX86 *cpu_features) {
-  if (!NaClArchSupported(cpu_features))
+     const NaClCPUFeatures *f) {
+  /* TODO(jfb) Use a safe cast here. */
+  const NaClCPUFeaturesX86 *cpu_features = (NaClCPUFeaturesX86 *) f;
+
+  if (!NaClArchSupportedX86(cpu_features))
     return NaClValidationFailedCpuNotSupported;
 
   return NaClApplyValidatorVerbosely_x86_64(
-      guest_addr, data, size, cpu_features);
+      guest_addr, data, size, f);
 }

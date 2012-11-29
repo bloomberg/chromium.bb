@@ -23,22 +23,22 @@
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter_inl.c"
 
 void NaClCpuCheckMemoryInitialize(NaClValidatorState* state) {
-  NaClClearCPUFeatures(&state->cpu_checks.cpu_features);
+  NaClClearCPUFeaturesX86(&state->cpu_checks.cpu_features);
   state->cpu_checks.f_CMOV_and_x87 = FALSE;
   state->cpu_checks.f_MMX_or_SSE2 = FALSE;
 }
 
 /* Helper function to report unsupported features */
-static INLINE void NaClCheckFeature(NaClCPUFeatureID feature,
+static INLINE void NaClCheckFeature(NaClCPUFeatureX86ID feature,
                                     struct NaClValidatorState* vstate,
                                     Bool* squash_me) {
-  if (!NaClGetCPUFeature(&vstate->cpu_features, feature)) {
-    if (!NaClGetCPUFeature(&vstate->cpu_checks.cpu_features, feature)) {
+  if (!NaClGetCPUFeatureX86(&vstate->cpu_features, feature)) {
+    if (!NaClGetCPUFeatureX86(&vstate->cpu_checks.cpu_features, feature)) {
       NaClValidatorInstMessage(
           LOG_WARNING, vstate, vstate->cur_inst_state,
           "CPU model does not support %s instructions.\n",
-          NaClGetCPUFeatureName(feature));
-      NaClSetCPUFeature(&vstate->cpu_checks.cpu_features, feature, TRUE);
+          NaClGetCPUFeatureX86Name(feature));
+      NaClSetCPUFeatureX86(&vstate->cpu_checks.cpu_features, feature, TRUE);
     }
     *squash_me = TRUE;
   }
@@ -67,8 +67,8 @@ void NaClCpuCheck(struct NaClValidatorState* state,
       NaClCheckFeature(NaClCPUFeature_CMOV, state, &squash_me);
       break;
     case NACLi_FCMOV:
-      if (!(NaClGetCPUFeature(&state->cpu_features, NaClCPUFeature_CMOV) &&
-            NaClGetCPUFeature(&state->cpu_features, NaClCPUFeature_x87))) {
+      if (!(NaClGetCPUFeatureX86(&state->cpu_features, NaClCPUFeature_CMOV) &&
+            NaClGetCPUFeatureX86(&state->cpu_features, NaClCPUFeature_x87))) {
         if (!state->cpu_checks.f_CMOV_and_x87) {
           NaClValidatorInstMessage(
               LOG_WARNING, state, state->cur_inst_state,
@@ -87,8 +87,8 @@ void NaClCpuCheck(struct NaClValidatorState* state,
     case NACLi_MMXSSE2:
       /* Note: We accept these instructions if either MMX or SSE2 bits */
       /* are set, in case MMX instructions go away someday...          */
-      if (!(NaClGetCPUFeature(&state->cpu_features, NaClCPUFeature_MMX) ||
-            NaClGetCPUFeature(&state->cpu_features, NaClCPUFeature_SSE2))) {
+      if (!(NaClGetCPUFeatureX86(&state->cpu_features, NaClCPUFeature_MMX) ||
+            NaClGetCPUFeatureX86(&state->cpu_features, NaClCPUFeature_SSE2))) {
         if (!state->cpu_checks.f_MMX_or_SSE2) {
           NaClValidatorInstMessage(
               LOG_WARNING, state, state->cur_inst_state,

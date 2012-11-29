@@ -56,21 +56,19 @@ int main(int argc, char *argv[]) {
 
   Bool result = FALSE;
 
-  const NaClCPUFeaturesX86 *cpu_features = &kFullCPUIDFeatures;
-
   clock_t start = clock();
   for (int i = 0; i < repetitions; i++) {
     switch (segment.bitness) {
       case 32:
         result = ValidateChunkIA32(
             segment.data, segment.size,
-            0, cpu_features,
+            0, &kFullCPUIDFeatures,
             ProcessError, NULL);
         break;
       case 64:
         result = ValidateChunkAMD64(
             segment.data, segment.size,
-            0, cpu_features,
+            0, &kFullCPUIDFeatures,
             ProcessError, NULL);
         break;
       default:

@@ -21,34 +21,9 @@
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator/cpufeatures.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
 
-static Bool FixUpSection(uintptr_t load_address,
-                         unsigned char *code,
-                         size_t code_size) {
-  NaClValidationStatus status;
-  NaClCPUFeatures cpu_features;
-  const struct NaClValidatorInterface *validator = NaClCreateValidator();
-  /* Pretend that the CPU supports every feature so that we will only stub out
-   * instructions that NaCl will never allow under any condition.
-   */
-  NaClSetAllCPUFeatures(&cpu_features);
-
-  status = validator->Validate(load_address, code, code_size,
-       /* stubout_mode= */ TRUE, /* readonly_text= */ FALSE,
-       &cpu_features, NULL);
-  if (status == NaClValidationSucceeded) {
-    /* Now run the validator again, so that we report any errors
-     * that were not fixed by stubbing out. This is done so that
-     * the user knows that stubout doesn't fix all errors.
-     */
-    status = NACL_SUBARCH_NAME(ApplyValidatorVerbosely,
-                               NACL_TARGET_ARCH,
-                               NACL_TARGET_SUBARCH)
-        (load_address, code, code_size, &cpu_features);
-  }
-
+static Bool FixUpSectionCheckStatus(NaClValidationStatus status) {
   switch (status) {
     case NaClValidationSucceeded:
       return TRUE;
@@ -70,6 +45,44 @@ static Bool FixUpSection(uintptr_t load_address,
       fprintf(stderr, "Unable to stubout code, segmentation issues found\n");
       return FALSE;
   }
+  return FALSE;
+}
+
+static Bool FixUpSection(uintptr_t load_address,
+                         unsigned char *code,
+                         size_t code_size) {
+  Bool result;
+  NaClValidationStatus status;
+  const struct NaClValidatorInterface *validator = NaClCreateValidator();
+  NaClCPUFeatures *cpu_features = malloc(validator->CPUFeatureSize);
+  if (cpu_features == NULL) {
+    fprintf(stderr, "Unable to create memory for CPU features\n");
+    return FALSE;
+  }
+  /* Pretend that the CPU supports every feature so that we will only stub out
+   * instructions that NaCl will never allow under any condition.
+   */
+  validator->SetAllCPUFeatures(cpu_features);
+
+  status = validator->Validate(
+      load_address, code, code_size,
+      /* stubout_mode= */ TRUE,
+      /* readonly_text= */ FALSE,
+      cpu_features, NULL);
+  if (status == NaClValidationSucceeded) {
+    /* Now run the validator again, so that we report any errors
+     * that were not fixed by stubbing out. This is done so that
+     * the user knows that stubout doesn't fix all errors.
+     */
+    status = NACL_SUBARCH_NAME(ApplyValidatorVerbosely,
+                               NACL_TARGET_ARCH,
+                               NACL_TARGET_SUBARCH)
+        (load_address, code, code_size, cpu_features);
+  }
+
+  result = FixUpSectionCheckStatus(status);
+  free(cpu_features);
+  return result;
 }
 
 static void CheckBounds(unsigned char *data, size_t data_size,

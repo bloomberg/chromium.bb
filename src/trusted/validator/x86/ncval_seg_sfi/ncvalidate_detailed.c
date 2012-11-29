@@ -154,7 +154,7 @@ static void NCJumpSummarizeDetailed(struct NCValidatorState* vstate) {
 struct NCValidatorState *NCValidateInitDetailed(
     const NaClPcAddress vbase,
     const NaClMemorySize codesize,
-    const NaClCPUFeaturesX86* features) {
+    const NaClCPUFeaturesX86 *features) {
   struct NCValidatorState *vstate = NCValidateInit(vbase, codesize,
                                                    FALSE, features);
   if (NULL != vstate) {

@@ -74,7 +74,7 @@ Bool NaClInstValidates(uint8_t* mbase,
   Bool validates = FALSE;
   NaClCPUFeaturesX86 cpu_features;
 
-  NaClGetCurrentCPUFeatures(&cpu_features);
+  NaClGetCurrentCPUFeaturesX86((NaClCPUFeatures *) &cpu_features);
   NACL_FLAGS_unsafe_single_inst_mode = TRUE;
   state = NaClValidatorStateCreate(vbase, (NaClMemorySize) size, RegR15, FALSE,
                                    &cpu_features);
@@ -117,11 +117,11 @@ Bool NaClSegmentValidates(uint8_t* mbase,
   const struct NaClValidatorInterface *validator = NaClCreateValidator();
 
   /* check if NaCl thinks the given code segment is valid. */
-  NaClSetAllCPUFeatures(&cpu_features);
+  validator->SetAllCPUFeatures((NaClCPUFeatures *) &cpu_features);
   status = validator->Validate(
       vbase, mbase, size,
-      /* stubout_mode= */ FALSE, /* readonly_text= */ FALSE, &cpu_features,
-      NULL);
+      /* stubout_mode= */ FALSE, /* readonly_text= */ FALSE,
+      (NaClCPUFeatures *) &cpu_features, NULL);
   switch (status) {
     case NaClValidationSucceeded:
       return TRUE;

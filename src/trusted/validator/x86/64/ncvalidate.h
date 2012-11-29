@@ -11,6 +11,9 @@
  * for the x86-64 architecture.
  */
 
+#include "native_client/src/trusted/validator/ncvalidate.h"
+
+
 /* Creates a validator state and initializes it. Returns
  * NaClValidationSucceeded if successful. Otherwise, it returns
  * status describing reason for failure.

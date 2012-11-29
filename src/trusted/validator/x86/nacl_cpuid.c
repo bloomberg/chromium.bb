@@ -188,7 +188,9 @@ typedef struct cpufeature {
   const char *name;
 } CPUFeature;
 
-static const CPUFeature CPUFeatureDescriptions[(int)NaClCPUFeature_Max] = {
+static const CPUFeature CPUFeatureDescriptions[(int)NaClCPUFeatureX86_Max] = {
+  {0, 0, "CPUID supported"},
+  {0, 0, "CPU supported"},
   {CFReg_EDX_A, CPUID_EDX_3DN, "3DNow"},
   {CFReg_ECX_I, CPUID_ECX_AES, "AES"},
   {CFReg_ECX_I, CPUID_ECX_AVX, "AVX"},
@@ -423,13 +425,16 @@ char *GetCPUIDString(NaClCPUData* data) {
 }
 
 /* Returns true if the given feature is defined by the CPUID. */
-static int CheckCPUFeature(NaClCPUData* data, NaClCPUFeatureID fid) {
+static int CheckCPUFeature(NaClCPUData* data, NaClCPUFeatureX86ID fid) {
   const CPUFeature *f = &CPUFeatureDescriptions[fid];
   uint32_t *fv = data->_featurev;
-#if 0
-  printf("%s: %x (%08x & %08x)\n", f->name, (fv[f->reg] & f->mask),
-         fv[f->reg], f->mask);
-#endif
+  if ((fid == NaClCPUFeature_CPUIDSupported) ||
+      (fid == NaClCPUFeature_CPUSupported)) {
+    /* CPUIDSupported and CPUSupported aren't actually in CPUID,
+       CPUFeatureDescriptions therefore doesn't contain actual reg/mask for
+       them. */
+    return 1;
+  }
   if (fv[f->reg] & f->mask) {
     return 1;
   } else {
@@ -458,30 +463,24 @@ static void CacheCPUXCRVector(NaClCPUData* data) {
  * As as side effect, the given cpu features is cleared before
  * setting the appropriate fields.
  */
-static void CheckNaClArchFeatures(NaClCPUData* data,
-                                  nacl_arch_features* features) {
+static void CheckNaClArchFeatures(NaClCPUData *data,
+                                  NaClCPUFeaturesX86 *features) {
   const size_t kCPUID0Length = 12;
   char *cpuversionid;
-  memset(features, 0, sizeof(*features));
-  if (data->_has_CPUID) features->f_cpuid_supported = 1;
+  if (data->_has_CPUID) {
+    NaClSetCPUFeatureX86(features, NaClCPUFeature_CPUIDSupported, 1);
+  }
   cpuversionid = CPUVersionID(data);
   if (strncmp(cpuversionid, Intel_CPUID0, kCPUID0Length) == 0) {
-    features->f_cpu_supported = 1;
+    NaClSetCPUFeatureX86(features, NaClCPUFeature_CPUSupported, 1);
   } else if (strncmp(cpuversionid, AMD_CPUID0, kCPUID0Length) == 0) {
-    features->f_cpu_supported = 1;
+    NaClSetCPUFeatureX86(features, NaClCPUFeature_CPUSupported, 1);
   }
 }
 
-int NaClArchSupported(const NaClCPUFeaturesX86 *features) {
-  return (features->arch_features.f_cpuid_supported &&
-          features->arch_features.f_cpu_supported);
-}
-
-void NaClClearCPUFeatures(NaClCPUFeaturesX86 *features) {
-  memset(features, 0, sizeof(*features));
-}
-
-void NaClSetAllCPUFeatures(NaClCPUFeaturesX86 *features) {
+void NaClSetAllCPUFeaturesX86(NaClCPUFeatures *f) {
+  /* TODO(jfb) Use a safe cast in this interface. */
+  NaClCPUFeaturesX86 *features = (NaClCPUFeaturesX86 *) f;
   /* Be a little more pedantic than using memset because we don't know exactly
    * how the structure is laid out.  If we use memset, fields may be initialized
    * to 0xff instead of 1 ... this isn't the end of the world but it can
@@ -489,26 +488,10 @@ void NaClSetAllCPUFeatures(NaClCPUFeaturesX86 *features) {
    */
   int id;
   /* Ensure any padding is zeroed. */
-  NaClClearCPUFeatures(features);
-  features->arch_features.f_cpuid_supported = 1;
-  features->arch_features.f_cpu_supported = 1;
-  for (id = 0; id < NaClCPUFeature_Max; ++id) {
-    NaClSetCPUFeature(features, id, 1);
+  NaClClearCPUFeaturesX86(features);
+  for (id = 0; id < NaClCPUFeatureX86_Max; ++id) {
+    NaClSetCPUFeatureX86(features, id, 1);
   }
-}
-
-void NaClCopyCPUFeatures(NaClCPUFeaturesX86* target,
-                         const NaClCPUFeaturesX86* source) {
-  memcpy(target, source, sizeof(NaClCPUFeaturesX86));
-}
-
-void NaClSetCPUFeature(NaClCPUFeaturesX86 *features, NaClCPUFeatureID id,
-                       int state) {
-  features->data[id] = (char) state;
-}
-
-const char* NaClGetCPUFeatureName(NaClCPUFeatureID id) {
-  return CPUFeatureDescriptions[id].name;
 }
 
 /* WARNING: This routine and subroutines it uses are not threadsafe.
@@ -519,24 +502,26 @@ const char* NaClGetCPUFeatureName(NaClCPUFeatureID id) {
  */
 static void GetCPUFeatures(NaClCPUData* data, NaClCPUFeaturesX86 *cpuf) {
   int id;
-  NaClClearCPUFeatures(cpuf);
-  CheckNaClArchFeatures(data, &cpuf->arch_features);
-  if (!cpuf->arch_features.f_cpuid_supported) return;
+  NaClClearCPUFeaturesX86(cpuf);
+  CheckNaClArchFeatures(data, cpuf);
+  if (!NaClGetCPUFeatureX86(cpuf, NaClCPUFeature_CPUIDSupported)) {
+    return;
+  }
 
-  for (id = 0; id < NaClCPUFeature_Max; ++id) {
-    NaClSetCPUFeature(cpuf, id, CheckCPUFeature(data, id));
+  for (id = 0; id < NaClCPUFeatureX86_Max; ++id) {
+    NaClSetCPUFeatureX86(cpuf, id, CheckCPUFeature(data, id));
   }
 
   /*
    * If the operating system doesn't maintain the YMM state,
    * pretend we don't have the instructions available at all.
    */
-  if (!(NaClGetCPUFeature(cpuf, NaClCPUFeature_OSXSAVE)
+  if (!(NaClGetCPUFeatureX86(cpuf, NaClCPUFeature_OSXSAVE)
         && (data->_xcrv[0] & 6) == 6)) {
-    NaClSetCPUFeature(cpuf, NaClCPUFeature_AVX, 0);
-    NaClSetCPUFeature(cpuf, NaClCPUFeature_F16C, 0);
-    NaClSetCPUFeature(cpuf, NaClCPUFeature_FMA, 0);
-    NaClSetCPUFeature(cpuf, NaClCPUFeature_FMA4, 0);
+    NaClSetCPUFeatureX86(cpuf, NaClCPUFeature_AVX, 0);
+    NaClSetCPUFeatureX86(cpuf, NaClCPUFeature_F16C, 0);
+    NaClSetCPUFeatureX86(cpuf, NaClCPUFeature_FMA, 0);
+    NaClSetCPUFeatureX86(cpuf, NaClCPUFeature_FMA4, 0);
   }
 }
 
@@ -548,10 +533,12 @@ void NaClCPUDataGet(NaClCPUData* data) {
   CacheGetCPUIDString(data);
 }
 
-void NaClGetCurrentCPUFeatures(NaClCPUFeaturesX86 *cpu_features) {
+void NaClGetCurrentCPUFeaturesX86(NaClCPUFeatures *f) {
+  /* TODO(jfb) Use a safe cast in this interface. */
+  NaClCPUFeaturesX86 *features = (NaClCPUFeaturesX86 *) f;
   NaClCPUData cpu_data;
   NaClCPUDataGet(&cpu_data);
-  GetCPUFeatures(&cpu_data, cpu_features);
+  GetCPUFeatures(&cpu_data, features);
 }
 
 /* This array defines the CPU feature model for fixed-feature CPU
@@ -560,7 +547,9 @@ void NaClGetCurrentCPUFeatures(NaClCPUFeaturesX86 *cpu_features) {
  * post-Pentium III CPUs. This set may be something we need to
  * revisit in the future.
  */
-const int kFixedFeatureCPUModel[NaClCPUFeature_Max] = {
+const int kFixedFeatureCPUModel[NaClCPUFeatureX86_Max] = {
+  1, /* NaClCPUFeature_CPUIDSupported */
+  1, /* NaClCPUFeature_CPUSupported */
   0, /* NaClCPUFeature_3DNOW */  /* AMD-specific */
   0, /* NaClCPUFeature_AES */
   0, /* NaClCPUFeature_AVX */
@@ -599,25 +588,50 @@ const int kFixedFeatureCPUModel[NaClCPUFeature_Max] = {
   0  /* NaClCPUFeature_XOP */ /* AMD-specific */
 };
 
-int NaClFixCPUFeatures(NaClCPUFeaturesX86 *cpu_features) {
-  NaClCPUFeatureID fid;
+int NaClFixCPUFeaturesX86(NaClCPUFeatures *f) {
+  /* TODO(jfb) Use a safe cast in this interface. */
+  NaClCPUFeaturesX86 *features = (NaClCPUFeaturesX86 *) f;
+  NaClCPUFeatureX86ID fid;
   int rvalue = 1;
 
-  for (fid = 0; fid < NaClCPUFeature_Max; fid++) {
+  for (fid = 0; fid < NaClCPUFeatureX86_Max; fid++) {
     if (kFixedFeatureCPUModel[fid]) {
-      if (!NaClGetCPUFeature(cpu_features, fid)) {
+      if (!NaClGetCPUFeatureX86(features, fid)) {
         /* This CPU is missing a required feature. */
         NaClLog(LOG_ERROR,
                 "This CPU is missing a feature required by fixed-mode: %s\n",
-                NaClGetCPUFeatureName(fid));
+                NaClGetCPUFeatureX86Name(fid));
         rvalue = 0;  /* set return value to indicate failure */
       }
     } else {
       /* Feature is not in the fixed model.
-       * Ensure cpu_features does not have it either.
+       * Ensure features does not have it either.
        */
-      NaClSetCPUFeature(cpu_features, fid, 0);
+      NaClSetCPUFeatureX86(features, fid, 0);
     }
   }
   return rvalue;
+}
+
+const char* NaClGetCPUFeatureX86Name(NaClCPUFeatureX86ID id) {
+  return CPUFeatureDescriptions[id].name;
+}
+
+void NaClSetCPUFeatureX86(NaClCPUFeaturesX86 *f, NaClCPUFeatureX86ID id,
+                          int state) {
+  f->data[id] = (char) state;
+}
+
+void NaClClearCPUFeaturesX86(NaClCPUFeaturesX86 *features) {
+  memset(features, 0, sizeof(*features));
+}
+
+void NaClCopyCPUFeaturesX86(NaClCPUFeaturesX86 *target,
+                            const NaClCPUFeaturesX86 *source) {
+  memcpy(target, source, sizeof(*target));
+}
+
+int NaClArchSupportedX86(const NaClCPUFeaturesX86 *f) {
+  return (NaClGetCPUFeatureX86(f, NaClCPUFeature_CPUIDSupported) &&
+          NaClGetCPUFeatureX86(f, NaClCPUFeature_CPUSupported));
 }

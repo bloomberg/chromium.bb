@@ -383,8 +383,8 @@ struct NaClValidatorState* NaClValStateCreate(
       NACL_FLAGS_detailed_errors
       ? NaClValidatorStateCreateDetailed(vbase, sz, base_register,
                                          &ncval_cpu_features)
-      : NaClValidatorStateCreate(vbase, sz, base_register,
-                                 FALSE, &ncval_cpu_features);
+      : NaClValidatorStateCreate(vbase, sz, base_register, FALSE,
+                                 &ncval_cpu_features);
 }
 
 /* Returns the decoder tables to use. */
@@ -763,7 +763,7 @@ static Bool GrokABoolFlag(const char *arg) {
   /* A set of CPU features to check. */
   static struct {
     const char *feature_name;
-    NaClCPUFeatureID feature;
+    NaClCPUFeatureX86ID feature;
   } features[] = {
     { "--x87"    , NaClCPUFeature_x87 },
     { "--MMX"    , NaClCPUFeature_MMX },
@@ -799,7 +799,8 @@ static Bool GrokABoolFlag(const char *arg) {
   }
   for (i = 0; i < NACL_ARRAY_SIZE(features); ++i) {
     if (GrokBoolFlag(features[i].feature_name, arg, &flag_state)) {
-      NaClSetCPUFeature(&ncval_cpu_features, features[i].feature, flag_state);
+      NaClSetCPUFeatureX86(&ncval_cpu_features, features[i].feature,
+                           flag_state);
       return TRUE;
     }
   }
@@ -857,11 +858,11 @@ static int GrokFlags(int argc, const char *argv[]) {
     }
 #endif
     else if (0 == strcmp("--cpuid-all", arg)) {
-      NaClSetAllCPUFeatures(&ncval_cpu_features);
+      NaClSetAllCPUFeaturesX86((NaClCPUFeatures *) &ncval_cpu_features);
     } else if (0 == strcmp("--cpuid-none", arg)) {
-      NaClClearCPUFeatures(&ncval_cpu_features);
+      NaClClearCPUFeaturesX86(&ncval_cpu_features);
     } else if (GrokBoolFlag("--local_cpuid", arg, &flag)) {
-      NaClGetCurrentCPUFeatures(&ncval_cpu_features);
+      NaClGetCurrentCPUFeaturesX86((NaClCPUFeatures *) &ncval_cpu_features);
     } else {
       argv[new_argc++] = argv[i];
     }
@@ -922,7 +923,7 @@ int main(int argc, const char *argv[]) {
   NaClLogDisableTimestamp();
 
   /* By default, assume no local cpu features are available. */
-  NaClClearCPUFeatures(&ncval_cpu_features);
+  NaClClearCPUFeaturesX86(&ncval_cpu_features);
 
   /* Validate the specified input. */
   argc = GrokFlags(argc, argv);

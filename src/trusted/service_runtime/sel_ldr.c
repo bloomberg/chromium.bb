@@ -9,6 +9,7 @@
 /*
  * NaCl Simple/secure ELF loader (NaCl SEL).
  */
+#include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/include/nacl_macros.h"
@@ -68,15 +69,20 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
                                 struct NaClSyscallTableEntry *table) {
   struct NaClDescEffectorLdr  *effp;
 
-  /* Get the set of features that the CPU we're running on supports. */
-  /* These may be adjusted later in sel_main.c for fixed-feature CPU mode. */
-  NaClGetCurrentCPUFeatures(&nap->cpu_features);
-  nap->fixed_feature_cpu_mode = 0;
-
   /* The validation cache will be injected later, if it exists. */
   nap->validation_cache = NULL;
 
   nap->validator = NaClCreateValidator();
+
+  /* Get the set of features that the CPU we're running on supports. */
+  /* These may be adjusted later in sel_main.c for fixed-feature CPU mode. */
+  nap->cpu_features = (NaClCPUFeatures *) malloc(
+      nap->validator->CPUFeatureSize);
+  if (NULL == nap->cpu_features) {
+    goto cleanup_none;
+  }
+  nap->validator->GetCurrentCPUFeatures(nap->cpu_features);
+  nap->fixed_feature_cpu_mode = 0;
 
   nap->addr_bits = NACL_MAX_ADDR_BITS;
 
@@ -108,7 +114,7 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   nap->user_entry_pt = 0;
 
   if (!DynArrayCtor(&nap->threads, 2)) {
-    goto cleanup_none;
+    goto cleanup_cpu_features;
   }
   if (!DynArrayCtor(&nap->desc_tbl, 2)) {
     goto cleanup_threads;
@@ -270,6 +276,8 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   DynArrayDtor(&nap->desc_tbl);
  cleanup_threads:
   DynArrayDtor(&nap->threads);
+ cleanup_cpu_features:
+  free(nap->cpu_features);
  cleanup_none:
   return 0;
 }

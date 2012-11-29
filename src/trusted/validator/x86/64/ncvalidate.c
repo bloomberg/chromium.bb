@@ -11,6 +11,7 @@
 #include "native_client/src/trusted/validator/validation_cache.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
+#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 #include "native_client/src/trusted/validator/x86/nc_segment.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncval_decode_tables.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter.h"
@@ -43,8 +44,10 @@ static NaClValidationStatus ApplyValidator_x86_64(
     size_t size,
     int stubout_mode,
     int readonly_text,
-    const NaClCPUFeaturesX86 *cpu_features,
+    const NaClCPUFeatures *f,
     struct NaClValidationCache *cache) {
+  /* TODO(jfb) Use a safe cast here. */
+  const NaClCPUFeaturesX86 *cpu_features = (NaClCPUFeaturesX86 *) f;
   struct NaClValidatorState *vstate;
   NaClValidationStatus status;
   void *query = NULL;
@@ -53,7 +56,7 @@ static NaClValidationStatus ApplyValidator_x86_64(
   if (stubout_mode && readonly_text)
     return NaClValidationFailedNotImplemented;
 
-  if (!NaClArchSupported(cpu_features))
+  if (!NaClArchSupportedX86(cpu_features))
     return NaClValidationFailedCpuNotSupported;
 
   /* Don't cache in stubout mode. */
@@ -107,12 +110,14 @@ static NaClValidationStatus ApplyValidatorCodeReplacement_x86_64(
     uint8_t *data_old,
     uint8_t *data_new,
     size_t size,
-    const NaClCPUFeaturesX86 *cpu_features) {
+    const NaClCPUFeatures *f) {
+  /* TODO(jfb) Use a safe cast here. */
+  const NaClCPUFeaturesX86 *cpu_features = (NaClCPUFeaturesX86 *) f;
   NaClValidationStatus status;
   struct NaClValidatorState *vstate;
 
   /* Check that the given parameter values are supported. */
-  if (!NaClArchSupported(cpu_features))
+  if (!NaClArchSupportedX86(cpu_features))
     return NaClValidationFailedCpuNotSupported;
 
   /* Init then validator state. */
@@ -209,9 +214,11 @@ static NaClValidationStatus ApplyValidatorCopy_x86_64(
     uint8_t *data_old,
     uint8_t *data_new,
     size_t size,
-    const NaClCPUFeaturesX86 *cpu_features,
+    const NaClCPUFeatures *f,
     NaClCopyInstructionFunc copy_func) {
-  if (!NaClArchSupported(cpu_features))
+  /* TODO(jfb) Use a safe cast here. */
+  const NaClCPUFeaturesX86 *cpu_features = (NaClCPUFeaturesX86 *) f;
+  if (!NaClArchSupportedX86(cpu_features))
     return NaClValidationFailedCpuNotSupported;
 
   return (0 == CopyCodeIter(data_old, data_new, guest_addr, size, copy_func))
@@ -222,6 +229,10 @@ static const struct NaClValidatorInterface validator = {
   ApplyValidator_x86_64,
   ApplyValidatorCopy_x86_64,
   ApplyValidatorCodeReplacement_x86_64,
+  sizeof(NaClCPUFeaturesX86),
+  NaClSetAllCPUFeaturesX86,
+  NaClGetCurrentCPUFeaturesX86,
+  NaClFixCPUFeaturesX86,
 };
 
 const struct NaClValidatorInterface *NaClValidatorCreate_x86_64(void) {

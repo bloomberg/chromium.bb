@@ -55,7 +55,6 @@
 
 #include "native_client/src/trusted/service_runtime/name_service/name_service.h"
 
-#include "native_client/src/trusted/validator/cpufeatures.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
 
 EXTERN_C_BEGIN
@@ -327,8 +326,7 @@ struct NaClApp {
   int                       running;
   int                       exit_status;
 
-
-  NaClCPUFeatures           cpu_features;
+  NaClCPUFeatures           *cpu_features;
   int                       fixed_feature_cpu_mode;
   struct NaClValidationCache *validation_cache;
   int                       ignore_validator_result;

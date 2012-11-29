@@ -489,10 +489,11 @@ static int DoTest(int (*thetest)(void), const char *s) {
 # error Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS
 #endif
 
-static int DoCPUFeatureTest(NaClCPUFeaturesX86 *features, NaClCPUFeatureID id,
+static int DoCPUFeatureTest(NaClCPUFeaturesX86 *features,
+                            NaClCPUFeatureX86ID id,
                             int (*thetest)(void)) {
-  if (NaClGetCPUFeature(features, id))
-    return DoTest(thetest, NaClGetCPUFeatureName(id));
+  if (NaClGetCPUFeatureX86(features, id))
+    return DoTest(thetest, NaClGetCPUFeatureX86Name(id));
   else
     return 0;
 }
@@ -506,13 +507,13 @@ static void PrintFail(const char *why) {
 int CPUIDImplIsValid(void) {
   int rcode = 0;
   NaClCPUFeaturesX86 cpuf;
-  NaClGetCurrentCPUFeatures(&cpuf);
+  NaClGetCurrentCPUFeaturesX86((NaClCPUFeatures *) &cpuf);
 
-  if (!cpuf.arch_features.f_cpuid_supported) {
+  if (!NaClGetCPUFeatureX86(&cpuf, NaClCPUFeature_CPUIDSupported)) {
     PrintFail("CPUID not implemented");
     return 0;
   }
-  if (!cpuf.arch_features.f_cpu_supported) {
+  if (!NaClGetCPUFeatureX86(&cpuf, NaClCPUFeature_CPUSupported)) {
     PrintFail("CPU not supported");
     return 0;
   }

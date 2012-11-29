@@ -26,8 +26,10 @@ NaClValidationStatus ApplyDfaValidator_x86_32(
     size_t size,
     int stubout_mode,
     int readonly_text,
-    const NaClCPUFeaturesX86 *cpu_features,
+    const NaClCPUFeatures *f,
     struct NaClValidationCache *cache) {
+  /* TODO(jfb) Use a safe cast here. */
+  NaClCPUFeaturesX86 *cpu_features = (NaClCPUFeaturesX86 *) f;
   enum NaClValidationStatus status = NaClValidationFailed;
   UNREFERENCED_PARAMETER(guest_addr);
   UNREFERENCED_PARAMETER(cache);
@@ -35,7 +37,7 @@ NaClValidationStatus ApplyDfaValidator_x86_32(
   if (stubout_mode) {
     return NaClValidationFailedNotImplemented;
   }
-  if (!NaClArchSupported(cpu_features)) {
+  if (!NaClArchSupportedX86(cpu_features)) {
     return NaClValidationFailedCpuNotSupported;
   }
   if (ValidateChunkIA32(data, size, 0 /*options*/, cpu_features,
@@ -56,8 +58,10 @@ static NaClValidationStatus ValidatorCopy_x86_32(
     uint8_t *data_existing,
     uint8_t *data_new,
     size_t size,
-    const NaClCPUFeatures *cpu_features,
+    const NaClCPUFeatures *f,
     NaClCopyInstructionFunc copy_func) {
+  /* TODO(jfb) Use a safe cast here. */
+  NaClCPUFeaturesX86 *cpu_features = (NaClCPUFeaturesX86 *) f;
   struct CodeCopyCallbackData callback_data;
   UNREFERENCED_PARAMETER(guest_addr);
 
@@ -85,7 +89,7 @@ struct CodeReplacementCallbackData {
   /* Bitmap with boundaries of the instructions in the new code bundle.  */
   bitmap_word instruction_boundaries_new;
   /* cpu_features - needed for the call to ValidateChunkIA32.  */
-  const NaClCPUFeatures *cpu_features;
+  const NaClCPUFeaturesX86 *cpu_features;
   /* Pointer to the start of the current bundle in the old code.  */
   const uint8_t *bundle_existing;
   /* Pointer to the start of the new code.  */
@@ -206,7 +210,9 @@ static NaClValidationStatus ValidatorCodeReplacement_x86_32(
     uint8_t *data_existing,
     uint8_t *data_new,
     size_t size,
-    const NaClCPUFeatures *cpu_features) {
+    const NaClCPUFeatures *f) {
+  /* TODO(jfb) Use a safe cast here. */
+  NaClCPUFeaturesX86 *cpu_features = (NaClCPUFeaturesX86 *) f;
   struct CodeReplacementCallbackData callback_data;
   UNREFERENCED_PARAMETER(guest_addr);
 
@@ -234,6 +240,10 @@ static const struct NaClValidatorInterface validator = {
   ApplyDfaValidator_x86_32,
   ValidatorCopy_x86_32,
   ValidatorCodeReplacement_x86_32,
+  sizeof(NaClCPUFeaturesX86),
+  NaClSetAllCPUFeaturesX86,
+  NaClGetCurrentCPUFeaturesX86,
+  NaClFixCPUFeaturesX86,
 };
 
 const struct NaClValidatorInterface *NaClDfaValidatorCreate_x86_32(void) {

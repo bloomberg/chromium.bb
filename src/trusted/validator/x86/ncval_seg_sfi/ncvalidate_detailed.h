@@ -65,6 +65,6 @@
 struct NCValidatorState *NCValidateInitDetailed(
     const NaClPcAddress vbase,
     const NaClMemorySize codesize,
-    const NaClCPUFeaturesX86* features);
+    const NaClCPUFeaturesX86 *features);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_SEG_SFI_NCVALIDATE_DETAILED_H__ */

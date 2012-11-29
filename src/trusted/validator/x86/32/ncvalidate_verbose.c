@@ -47,8 +47,10 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely, x86, 32)
     (uintptr_t guest_addr,
      uint8_t *data,
      size_t size,
-     const NaClCPUFeaturesX86 *cpu_features) {
-  if (!NaClArchSupported(cpu_features))
+     const NaClCPUFeatures *f) {
+  /* TODO(jfb) Use a safe cast here. */
+  const NaClCPUFeaturesX86 *cpu_features = (NaClCPUFeaturesX86 *) f;
+  if (!NaClArchSupportedX86(cpu_features))
     return NaClValidationFailedCpuNotSupported;
 
   return NCApplyValidatorVerbosely_x86_32(

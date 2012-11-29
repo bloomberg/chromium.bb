@@ -43,6 +43,7 @@
         'address_set.cc',
         'actual_classes.cc',
         'baseline_classes.cc',
+        'cpuid_arm.c',
         'inst_classes.cc',
         'model.cc',
         'validator.cc',

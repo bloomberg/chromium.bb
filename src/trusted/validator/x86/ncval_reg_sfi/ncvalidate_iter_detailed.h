@@ -74,6 +74,6 @@ NaClValidatorState* NaClValidatorStateCreateDetailed(
     const NaClPcAddress vbase,
     const NaClMemorySize sz,
     const NaClOpKind base_register,
-    const NaClCPUFeaturesX86* features);
+    const NaClCPUFeaturesX86 *features);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NCVALIDATE_ITER_DETAILED_H__ */
