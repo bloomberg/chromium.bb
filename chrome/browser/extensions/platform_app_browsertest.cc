@@ -610,14 +610,16 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MutationEventsDisabled) {
 // geometry when opening new windows.
 // Originally disabled due to flakiness (see http://crbug.com/155459)
 // but now because a regression breaks the test (http://crbug.com/160343).
+#if defined(TOOLKIT_GTK)
 #define MAYBE_ShellWindowRestorePosition DISABLED_ShellWindowRestorePosition
+#else
+#define MAYBE_ShellWindowRestorePosition ShellWindowRestorePosition
+#endif
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        MAYBE_ShellWindowRestorePosition) {
   ExtensionTestMessageListener page2_listener("WaitForPage2", true);
-  ExtensionTestMessageListener page3_listener("WaitForPage3", true);
   ExtensionTestMessageListener done_listener("Done1", false);
   ExtensionTestMessageListener done2_listener("Done2", false);
-  ExtensionTestMessageListener done3_listener("Done3", false);
 
   ASSERT_TRUE(LoadAndLaunchPlatformApp("geometry"));
 
@@ -669,13 +671,6 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   // Wait for javascript to verify that the second window got the updated
   // coordinates, ignoring the default coordinates passed to the create method.
   ASSERT_TRUE(done2_listener.WaitUntilSatisfied());
-
-  // Tell javascript to open a third window.
-  page3_listener.Reply("continue");
-
-  // Wait for javascript to verify that the third window got the restored size
-  // and explicitly specified coordinates.
-  ASSERT_TRUE(done3_listener.WaitUntilSatisfied());
 }
 
 // Tests that a running app is recorded in the preferences as such.

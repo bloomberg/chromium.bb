@@ -3,23 +3,41 @@
 // found in the LICENSE file.
 
 chrome.app.runtime.onLaunched.addListener(function() {
-  chrome.app.window.create('page1.html',
-    {'id': 'test', 'defaultLeft': 113, 'defaultTop': 117,
-     'defaultWidth': 314, 'defaultHeight': 271, 'frame': 'none'},
-      function () {});
+  var win1;
+  chrome.app.window.create('empty.html',
+      { id: 'test',
+        left: 113, top: 117, width: 314, height: 271,
+        frame: 'none' }, function(win) {
+    win1 = win;
+
+    var bounds = win.getBounds();
+
+    // TODO(jeremya): convert to use getBounds() once
+    // https://codereview.chromium.org/11369039/ lands.
+    chrome.test.assertEq(113, bounds.left);
+    chrome.test.assertEq(117, bounds.top);
+    chrome.test.assertEq(314, bounds.width);
+    chrome.test.assertEq(271, bounds.height);
+    chrome.test.sendMessage('Done1');
+  });
 
   chrome.test.sendMessage('WaitForPage2', function(response) {
-    chrome.app.window.create('page2.html',
-       {'id': 'test', 'defaultLeft': 113, 'defaultTop': 117,
-        'defaultWidth': 314, 'defaultHeight': 271, 'frame': 'none'},
-        function () {});
-  });
+    win1.close();
+    chrome.app.window.create('empty.html',
+        { id: 'test',
+          left: 113, top: 117, width: 314, height: 271,
+          frame: 'none' }, function(win) {
+      var bounds = win.getBounds();
 
-  chrome.test.sendMessage('WaitForPage3', function(response) {
-    chrome.app.window.create('page3.html',
-      {'id': 'test', 'left': 201, 'top': 220,
-       'defaultWidth': 314, 'defaultHeight': 271, 'frame': 'none'},
-        function () {});
+      // TODO(jeremya): convert to use getBounds() once
+      // https://codereview.chromium.org/11369039/ lands.
+      chrome.test.assertEq(137, bounds.left);
+      chrome.test.assertEq(143, bounds.top);
+      chrome.test.assertEq(203, bounds.width);
+      chrome.test.assertEq(187, bounds.height);
+      chrome.test.sendMessage('Done2');
+      win.close()
+      window.close();
+    });
   });
-
 });
