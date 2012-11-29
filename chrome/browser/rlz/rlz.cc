@@ -47,6 +47,11 @@ static bool ClearReferral() {
 }  // namespace GoogleUpdateSettings
 #endif
 
+// There is no corresponding header for content/browser/browser_main_runner.cc
+// to export this global but it is used in other places as well (also defined
+// as "extern").
+extern bool g_exited_main_message_loop;
+
 using content::BrowserThread;
 using content::NavigationEntry;
 
@@ -123,6 +128,11 @@ void RecordProductEvents(bool first_run,
 bool SendFinancialPing(const std::string& brand,
                        const string16& lang,
                        const string16& referral) {
+  // It's possible for the user to close Chrome just before the time that this
+  // ping is due to go out.  Detect that condition and abort.
+  if (g_exited_main_message_loop)
+    return false;
+
   rlz_lib::AccessPoint points[] = {RLZTracker::CHROME_OMNIBOX,
                                    RLZTracker::CHROME_HOME_PAGE,
                                    rlz_lib::NO_ACCESS_POINT};
