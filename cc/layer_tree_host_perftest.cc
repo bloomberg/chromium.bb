@@ -86,9 +86,9 @@ class LayerTreeHostPerfTestSevenTabSwitcher : public LayerTreeHostPerfTest {
 
     layer = addChild(root, CreateLayer(628, 15, 0, 0)); // 6
     layer = addChild(root, CreateDecorationLayer(612, -1, 569, 807)); // 10
-    layer = addChild(root, CreateDecorationLayer(827.135986, -1, 354, 96)); // 9
+    layer = addChild(root, CreateDecorationLayer(827.135986f, -1, 354, 96)); // 9
     layer = addChild(root, CreateContentLayer(628, 15, 0, 0)); // 8
-    layer = addChild(root, CreateContentLayer(627.418, 15, 0, 0)); // 7
+    layer = addChild(root, CreateContentLayer(627.418f, 15, 0, 0)); // 7
 
     layer = addChild(root, CreateLayer(628, 161, 0, 0)); // 74
     layer = addChild(root, CreateDecorationLayer(564, 97, 665, 383)); // 82
@@ -100,9 +100,9 @@ class LayerTreeHostPerfTestSevenTabSwitcher : public LayerTreeHostPerfTest {
 
     layer = addChild(root, CreateLayer(628, 161, 0, 0)); // 75
     layer = addChild(root, CreateDecorationLayer(612, 145, 569, 807)); // 79
-    layer = addChild(root, CreateDecorationLayer(827.135986, 145, 354, 96)); // 78
+    layer = addChild(root, CreateDecorationLayer(827.135986f, 145, 354, 96)); // 78
     layer = addChild(root, CreateContentLayer(628, 161, 0, 0)); // 77
-    layer = addChild(root, CreateContentLayer(627.418, 161, 0, 0)); // 76
+    layer = addChild(root, CreateContentLayer(627.418f, 161, 0, 0)); // 76
 
     layer = addChild(root, CreateLayer(628, 417, 0, 0)); // 83
     layer = addChild(root, CreateDecorationLayer(564, 353, 665, 445)); // 91
@@ -114,9 +114,9 @@ class LayerTreeHostPerfTestSevenTabSwitcher : public LayerTreeHostPerfTest {
 
     layer = addChild(root, CreateLayer(628, 417, 0, 0)); // 84
     layer = addChild(root, CreateDecorationLayer(612, 401, 569, 807)); // 88
-    layer = addChild(root, CreateDecorationLayer(827.135986, 401, 354, 96)); // 87
+    layer = addChild(root, CreateDecorationLayer(827.135986f, 401, 354, 96)); // 87
     layer = addChild(root, CreateContentLayer(628, 417, 0, 0)); // 86
-    layer = addChild(root, CreateContentLayer(627.418, 417, 0, 0)); // 85
+    layer = addChild(root, CreateContentLayer(627.418f, 417, 0, 0)); // 85
 
     layer = addChild(root, CreateLayer(628, 735, 0, 0)); // 92
     layer = addChild(root, CreateDecorationLayer(564, 671, 665, 439)); // 100
@@ -128,9 +128,9 @@ class LayerTreeHostPerfTestSevenTabSwitcher : public LayerTreeHostPerfTest {
 
     layer = addChild(root, CreateLayer(628, 735, 0, 0)); // 93
     layer = addChild(root, CreateDecorationLayer(612, 719, 569, 807)); // 97
-    layer = addChild(root, CreateDecorationLayer(827.135986, 719, 354, 96)); // 96
+    layer = addChild(root, CreateDecorationLayer(827.135986f, 719, 354, 96)); // 96
     layer = addChild(root, CreateContentLayer(628, 735, 0, 0)); // 95
-    layer = addChild(root, CreateContentLayer(627.418, 735, 0, 0)); // 94
+    layer = addChild(root, CreateContentLayer(627.418f, 735, 0, 0)); // 94
 
     layer = addChild(root, CreateLayer(30, 15, 0, 0)); // 101
     layer = addChild(root, CreateDecorationLayer(-34, -49, 665, 337)); // 109
@@ -142,7 +142,7 @@ class LayerTreeHostPerfTestSevenTabSwitcher : public LayerTreeHostPerfTest {
 
     layer = addChild(root, CreateLayer(30, 15, 0, 0)); // 102
     layer = addChild(root, CreateDecorationLayer(14, -1, 569, 807)); // 106
-    layer = addChild(root, CreateDecorationLayer(229.135986, -1, 354, 96)); // 105
+    layer = addChild(root, CreateDecorationLayer(229.135986f, -1, 354, 96)); // 105
     layer = addChild(root, CreateContentLayer(30, 15, 0, 0)); // 104
     layer = addChild(root, CreateContentLayer(30, 15, 0, 0)); // 103
 
@@ -156,13 +156,13 @@ class LayerTreeHostPerfTestSevenTabSwitcher : public LayerTreeHostPerfTest {
 
     layer = addChild(root, CreateLayer(30, 227, 0, 0)); // 111
     layer = addChild(root, CreateDecorationLayer(14, 211, 569, 807)); // 115
-    layer = addChild(root, CreateDecorationLayer(229.135986, 211, 354, 96)); // 114
+    layer = addChild(root, CreateDecorationLayer(229.135986f, 211, 354, 96)); // 114
     layer = addChild(root, CreateContentLayer(30, 227, 0, 0)); // 113
     layer = addChild(root, CreateContentLayer(30, 227, 0, 0)); // 112
 
     layer = addChild(root, CreateLayer(30, 617, 0, 0)); // 119
     layer = addChild(root, CreateDecorationLayer(-34, 553, 665, 559)); // 127
-    layer = addChild(root, CreateDecorationLayer(136.349190, 566.524940, 569, 807)); // 126
+    layer = addChild(root, CreateDecorationLayer(136.349190f, 566.524940f, 569, 807)); // 126
     layer = addChild(root, CreateColorLayer(30, 617, 720, 1038)); // 125
     layer->setTransform(down_scale_matrix);
     layer = addChild(root, CreateContentLayer(30, 617, 720, 1038)); // 14
@@ -170,7 +170,7 @@ class LayerTreeHostPerfTestSevenTabSwitcher : public LayerTreeHostPerfTest {
 
     layer = addChild(root, CreateLayer(30, 617, 0, 0)); // 120
     layer = addChild(root, CreateDecorationLayer(14, 601, 569, 807)); // 124
-    layer = addChild(root, CreateDecorationLayer(229.135986, 601, 354, 96)); // 123
+    layer = addChild(root, CreateDecorationLayer(229.135986f, 601, 354, 96)); // 123
     layer = addChild(root, CreateContentLayer(30, 617, 0, 0)); // 122
     layer = addChild(root, CreateContentLayer(30, 617, 0, 0)); // 121
 
