@@ -232,6 +232,10 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_FORM_THIS_MONTH_LABEL;
     case WebLocalizedString::ThisWeekButtonLabel:
       return IDS_FORM_THIS_WEEK_LABEL;
+    case WebLocalizedString::ValidationBadInputForDateTime:
+      return IDS_FORM_VALIDATION_BAD_INPUT_DATETIME;
+    case WebLocalizedString::ValidationBadInputForNumber:
+      return IDS_FORM_VALIDATION_BAD_INPUT_NUMBER;
     case WebLocalizedString::ValidationPatternMismatch:
       return IDS_FORM_VALIDATION_PATTERN_MISMATCH;
     case WebLocalizedString::ValidationRangeOverflow:
