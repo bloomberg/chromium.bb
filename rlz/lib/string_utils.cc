@@ -10,8 +10,8 @@
 
 namespace rlz_lib {
 
-bool IsAscii(char letter) {
-  return (letter >= 0x0 && letter < 0x80);
+bool IsAscii(unsigned char letter) {
+  return letter < 0x80;
 }
 
 bool GetHexValue(char letter, int* value) {

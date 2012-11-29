@@ -11,7 +11,7 @@
 
 namespace rlz_lib {
 
-bool IsAscii(char letter);
+bool IsAscii(unsigned char letter);
 
 bool BytesToString(const unsigned char* data,
                    int data_len,
