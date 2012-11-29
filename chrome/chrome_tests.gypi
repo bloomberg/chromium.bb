@@ -207,7 +207,7 @@
         'browser/ui/views/keyboard_access_browsertest.cc',
         'browser/ui/views/menu_item_view_test.cc',
         'browser/ui/views/menu_model_adapter_test.cc',
-        #'browser/ui/views/panels/panel_view_browsertest.cc',
+        'browser/ui/views/panels/panel_view_browsertest.cc',
         'browser/ui/views/ssl_client_certificate_selector_browsertest.cc',
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h',
@@ -279,6 +279,10 @@
           'dependencies': [
             '../ui/views/views.gyp:views',
             '../ui/views/views.gyp:views_test_support',
+          ],
+        }, { # else: toolkit_views == 0
+          'sources/': [
+            ['exclude', '^browser/ui/views/'],
           ],
         }],
         ['use_ash==1', {
