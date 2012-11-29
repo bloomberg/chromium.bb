@@ -34,7 +34,7 @@ const char kDevice1Name[] = "d1";
 const char kDevice1NameWithSizeInfo[] = "110 KB d1";
 const char kDevice2[] = "/dev/disk/d2";
 const char kDevice2Name[] = "d2";
-const char kDevice2NameWithSizeInfo[] = "19.8 GB d2";
+const char kDevice2NameWithSizeInfo[] = "207 KB d2";
 const char kEmptyDeviceLabel[] = "";
 const char kMountPointA[] = "mnt_a";
 const char kMountPointB[] = "mnt_b";
@@ -48,7 +48,7 @@ const char kUniqueId2[] = "FFFF-FF0F";
 const char kVendorName[] = "CompanyA";
 
 uint64 kDevice1SizeInBytes = 113048;
-uint64 kDevice2SizeInBytes = 21231209600;
+uint64 kDevice2SizeInBytes = 212312;
 uint64 kSDCardSizeInBytes = 9000000;
 
 std::string GetDCIMDeviceId(const std::string& unique_id) {
