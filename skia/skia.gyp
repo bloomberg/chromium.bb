@@ -706,6 +706,8 @@
           # targets via common.gypi.
           'cflags!': [
             '-fno-omit-frame-pointer',
+            '-marm',
+            '-mapcs-frame',
           ],
           'cflags': [
             '-fomit-frame-pointer',
