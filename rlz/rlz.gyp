@@ -45,8 +45,8 @@
         'lib/lib_values.cc',
         'lib/machine_id.cc',
         'lib/machine_id.h',
-        'lib/recursive_lock.cc',
-        'lib/recursive_lock.h',
+        'lib/recursive_cross_process_lock_posix.cc',
+        'lib/recursive_cross_process_lock_posix.h',
         'lib/rlz_enums.h',
         'lib/rlz_lib.cc',
         'lib/rlz_lib.h',
@@ -97,12 +97,6 @@
             ],
           },
         }],
-        ['chromeos==0', {
-          'sources!': [
-            'lib/recursive_lock.cc',
-            'lib/recursive_lock.h',
-          ]
-        }],
       ],
     },
     {
@@ -122,7 +116,6 @@
         'lib/financial_ping_test.cc',
         'lib/lib_values_unittest.cc',
         'lib/machine_id_unittest.cc',
-        'lib/recursive_lock_unittest.cc',
         'lib/rlz_lib_test.cc',
         'lib/string_utils_unittest.cc',
         'test/rlz_test_helpers.cc',
@@ -136,11 +129,6 @@
             '../net/net.gyp:net_test_support',
           ],
         }],
-        ['chromeos==0', {
-          'sources!': [
-            'lib/recursive_lock_unittest.cc',
-          ],
-        }]
       ],
     },
     {

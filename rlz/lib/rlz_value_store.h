@@ -95,12 +95,7 @@ class ScopedRlzValueStoreLock {
   RlzValueStore* GetStore();
 
  private:
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  // On ChromeOS, there is a singleton instance of RlzValueStore.
   scoped_ptr<RlzValueStore> store_;
-#elif defined(OS_CHROMEOS)
-  class RlzValueStoreChromeOS* store_;
-#endif
 #if defined(OS_WIN)
   LibMutex lock_;
 #elif defined(OS_MACOSX)
@@ -108,20 +103,15 @@ class ScopedRlzValueStoreLock {
 #endif
 };
 
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_POSIX)
 namespace testing {
 // Prefix |directory| to the path where the RLZ data file lives, for tests.
 void SetRlzStoreDirectory(const FilePath& directory);
-}  // namespace testing
-#endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX)
-namespace testing {
-// Returns the path of the plist file used as data store.
-std::string RlzPlistFilenameStr();
+// Returns the path of the file used as data store.
+std::string RlzStoreFilenameStr();
 }  // namespace testing
-#endif  // defined(OS_MACOSX)
-
+#endif  // defined(OS_POSIX)
 
 }  // namespace rlz_lib
 

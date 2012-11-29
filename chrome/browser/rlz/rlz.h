@@ -15,7 +15,7 @@
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
 #include "base/string16.h"
-#include "base/threading/thread.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "rlz/lib/rlz_lib.h"
@@ -113,10 +113,6 @@ class RLZTracker : public content::NotificationObserver {
             bool google_default_homepage,
             bool is_google_in_startpages);
 
-  // Initializes task runners for tasks that access RlzValueStore and perform
-  // disk I/O.
-  virtual bool InitWorkers();
-
   // Implementation called from RecordProductEvent() static method.
   bool RecordProductEventImpl(rlz_lib::Product product,
                               rlz_lib::AccessPoint point,
@@ -169,12 +165,9 @@ class RLZTracker : public content::NotificationObserver {
   bool is_google_homepage_;
   bool is_google_in_startpages_;
 
-  // Dedicated RLZ thread for accessing RlzValueStore and doing I/O.
-  base::Thread rlz_thread_;
-
-  // Sequenced task runner used to post blocking tasks that access
-  // RlzValueStore.
-  base::SequencedTaskRunner* blocking_task_runner_;
+  // Unique sequence token so that tasks posted by RLZTracker are executed
+  // sequentially in the blocking pool.
+  base::SequencedWorkerPool::SequenceToken worker_pool_token_;
 
   // URLRequestContextGetter used by RLZ library.
   net::URLRequestContextGetter* url_request_context_;

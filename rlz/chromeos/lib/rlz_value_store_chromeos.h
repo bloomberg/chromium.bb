@@ -5,8 +5,9 @@
 #ifndef RLZ_CHROMEOS_LIB_RLZ_VALUE_STORE_CHROMEOS_H_
 #define RLZ_CHROMEOS_LIB_RLZ_VALUE_STORE_CHROMEOS_H_
 
-#include "base/prefs/persistent_pref_store.h"
+#include "base/file_path.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/values.h"
 #include "rlz/lib/rlz_value_store.h"
 
 namespace base {
@@ -15,28 +16,19 @@ class SequencedTaskRunner;
 class Value;
 }
 
-template <typename T> struct DefaultSingletonTraits;
-
 namespace rlz_lib {
 
-// An implementation of RlzValueStore for ChromeOS. Unlike Mac and Win
-// counterparts, it's non thread-safe and should only be accessed on a single
-// Thread instance that has a MessageLoop.
-class RlzValueStoreChromeOS : public RlzValueStore {
+// An implementation of RlzValueStore for ChromeOS.
+class RlzValueStoreChromeOS : public RlzValueStore,
+                              public base::NonThreadSafe {
  public:
-  static RlzValueStoreChromeOS* GetInstance();
+  // // Sets the task runner that will be used by ImportantFileWriter for write
+  // // operations.
+  // static void SetFileTaskRunner(base::SequencedTaskRunner* file_task_runner);
 
-  // Sets the MessageLoopProxy that underlying PersistentPrefStore will post I/O
-  // tasks to. Must be called before the first GetInstance() call.
-  static void SetIOTaskRunner(base::SequencedTaskRunner* io_task_runner);
-
-  // Must be invoked during shutdown to commit pending I/O.
-  static void Cleanup();
-
-  // Resets the store to its initial state. Should only be used for testing.
-  // Same restrictions as for calling GetInstance() for the first time apply,
-  // i.e. must call SetIOTaskRunner first.
-  static void ResetForTesting();
+  // Creates new instance and synchronously reads data from file.
+  RlzValueStoreChromeOS(const FilePath& store_path);
+  virtual ~RlzValueStoreChromeOS();
 
   // RlzValueStore overrides:
   virtual bool HasAccess(AccessType type) OVERRIDE;
@@ -68,28 +60,23 @@ class RlzValueStoreChromeOS : public RlzValueStore {
   virtual void CollectGarbage() OVERRIDE;
 
  private:
-  friend struct DefaultSingletonTraits<RlzValueStoreChromeOS>;
+  // Reads RLZ store from file.
+  void ReadStore();
 
-  // Used by JsonPrefStore for write operations.
-  static base::SequencedTaskRunner* io_task_runner_;
+  // Writes RLZ store back to file.
+  void WriteStore();
 
-  static bool created_;
-
-  RlzValueStoreChromeOS();
-  virtual ~RlzValueStoreChromeOS();
-
-  // Initializes RLZ store.
-  void ReadPrefs();
-
-  // Retrieves list at path |list_name| from JSON store.
-  base::ListValue* GetList(std::string list_name);
   // Adds |value| to list at |list_name| path in JSON store.
   bool AddValueToList(std::string list_name, base::Value* value);
   // Removes |value| from list at |list_name| path in JSON store.
   bool RemoveValueFromList(std::string list_name, const base::Value& value);
 
-  // Store with RLZ data.
-  scoped_refptr<PersistentPrefStore> rlz_store_;
+  // In-memory store with RLZ data.
+  scoped_ptr<base::DictionaryValue> rlz_store_;
+
+  FilePath store_path_;
+
+  bool read_only_;
 
   DISALLOW_COPY_AND_ASSIGN(RlzValueStoreChromeOS);
 };

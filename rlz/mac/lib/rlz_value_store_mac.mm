@@ -7,11 +7,11 @@
 #include "base/mac/foundation_util.h"
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "base/posix/eintr_wrapper.h"
 #include "base/sys_string_conversions.h"
 #include "rlz/lib/assert.h"
 #include "rlz/lib/lib_values.h"
 #include "rlz/lib/rlz_lib.h"
+#include "rlz/lib/recursive_cross_process_lock_posix.h"
 
 #import <Foundation/Foundation.h>
 #include <pthread.h>
@@ -217,97 +217,8 @@ NSMutableDictionary* RlzValueStoreMac::ProductDict(Product p) {
 
 namespace {
 
-// Creating a recursive cross-process mutex on windows is one line. On mac,
-// there's no primitve for that, so this lock is emulated by an in-process
-// mutex to get the recursive part, followed by a cross-process lock for the
-// cross-process part.
-
-// This is a struct so that it doesn't need a static initializer.
-struct RecursiveCrossProcessLock {
-  // Tries to acquire a recursive cross-process lock. Note that this _always_
-  // acquires the in-process lock (if it wasn't already acquired). The parent
-  // directory of |lock_file| must exist.
-  bool TryGetCrossProcessLock(NSString* lock_filename);
-
-  // Releases the lock. Should always be called, even if
-  // TryGetCrossProcessLock() returns false.
-  void ReleaseLock();
-
-  pthread_mutex_t recursive_lock_;
-  pthread_t locking_thread_;
-
-  int file_lock_;
-} g_recursive_lock = {
-  // PTHREAD_RECURSIVE_MUTEX_INITIALIZER doesn't exist before 10.7 and is buggy
-  // on 10.7 (http://gcc.gnu.org/bugzilla/show_bug.cgi?id=51906#c34), so emulate
-  // recursive locking with a normal non-recursive mutex.
-  PTHREAD_MUTEX_INITIALIZER,
-  0,
-  -1
-};
-
-bool RecursiveCrossProcessLock::TryGetCrossProcessLock(
-    NSString* lock_filename) {
-  bool just_got_lock = false;
-
-  // Emulate a recursive mutex with a non-recursive one.
-  if (pthread_mutex_trylock(&recursive_lock_) == EBUSY) {
-    if (pthread_equal(pthread_self(), locking_thread_) == 0) {
-      // Some other thread has the lock, wait for it.
-      pthread_mutex_lock(&recursive_lock_);
-      CHECK(locking_thread_ == 0);
-      just_got_lock = true;
-    }
-  } else {
-    just_got_lock = true;
-  }
-
-  locking_thread_ = pthread_self();
-
-  // Try to acquire file lock.
-  if (just_got_lock) {
-    const int kMaxTimeoutMS = 5000;  // Matches windows.
-    const int kSleepPerTryMS = 200;
-
-    CHECK(file_lock_ == -1);
-    file_lock_ = open([lock_filename fileSystemRepresentation],
-                      O_RDWR | O_CREAT,
-                      0666);
-    if (file_lock_ == -1)
-      return false;
-
-    int flock_result = -1;
-    int elapsed_ms = 0;
-    while ((flock_result =
-               HANDLE_EINTR(flock(file_lock_, LOCK_EX | LOCK_NB))) == -1 &&
-           errno == EWOULDBLOCK &&
-           elapsed_ms < kMaxTimeoutMS) {
-      usleep(kSleepPerTryMS * 1000);
-      elapsed_ms += kSleepPerTryMS;
-    }
-
-    if (flock_result == -1) {
-      ignore_result(HANDLE_EINTR(close(file_lock_)));
-      file_lock_ = -1;
-      return false;
-    }
-    return true;
-  } else {
-    return file_lock_ != -1;
-  }
-}
-
-void RecursiveCrossProcessLock::ReleaseLock() {
-  if (file_lock_ != -1) {
-    ignore_result(HANDLE_EINTR(flock(file_lock_, LOCK_UN)));
-    ignore_result(HANDLE_EINTR(close(file_lock_)));
-    file_lock_ = -1;
-  }
-
-  locking_thread_ = 0;
-  pthread_mutex_unlock(&recursive_lock_);
-}
-
+RecursiveCrossProcessLock g_recursive_lock =
+    RECURSIVE_CROSS_PROCESS_LOCK_INITIALIZER;
 
 // This is set during test execution, to write RLZ files into a temporary
 // directory instead of the user's Application Support folder.
@@ -363,8 +274,8 @@ NSString* RlzLockFilename() {
 }  // namespace
 
 ScopedRlzValueStoreLock::ScopedRlzValueStoreLock() {
-  bool got_distributed_lock =
-      g_recursive_lock.TryGetCrossProcessLock(RlzLockFilename());
+  bool got_distributed_lock = g_recursive_lock.TryGetCrossProcessLock(
+      FilePath([RlzLockFilename() fileSystemRepresentation]));
   // At this point, we hold the in-process lock, no matter the value of
   // |got_distributed_lock|.
 
@@ -451,7 +362,7 @@ void SetRlzStoreDirectory(const FilePath& directory) {
   }
 }
 
-std::string RlzPlistFilenameStr() {
+std::string RlzStoreFilenameStr() {
   @autoreleasepool {
     return std::string([RlzPlistFilename() fileSystemRepresentation]);
   }

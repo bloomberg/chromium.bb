@@ -28,11 +28,8 @@
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #include "rlz/win/lib/rlz_lib.h"  // InitializeTempHivesForTesting
-#elif defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#elif defined(OS_POSIX)
 #include "rlz/lib/rlz_value_store.h"  // SetRlzStoreDirectory
-#endif
-#if defined(OS_CHROMEOS)
-#include "rlz/chromeos/lib/rlz_value_store_chromeos.h"
 #endif
 
 using content::NavigationEntry;
@@ -119,10 +116,6 @@ class TestRLZTracker : public RLZTracker {
   }
 
  private:
-  virtual bool InitWorkers() OVERRIDE {
-    return true;
-  }
-
   virtual void ScheduleDelayedInit(int delay) OVERRIDE {
     // If the delay is 0, invoke the delayed init now. Otherwise,
     // don't schedule anything, it will be manually called during tests.
@@ -172,10 +165,6 @@ class TestRLZTracker : public RLZTracker {
 
 class RlzLibTest : public testing::Test {
  public:
-#if defined(OS_CHROMEOS)
-  RlzLibTest();
-#endif
-
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
@@ -197,21 +186,11 @@ class RlzLibTest : public testing::Test {
   TestRLZTracker tracker_;
 #if defined(OS_WIN)
   RegistryOverrideManager override_manager_;
-#elif defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#elif defined(OS_POSIX)
   base::ScopedTempDir temp_dir_;
   scoped_ptr<google_util::BrandForTesting> brand_override_;
 #endif
-#if defined(OS_CHROMEOS)
-  MessageLoop loop_;
-  base::Thread io_thread_;
-#endif
 };
-
-#if defined(OS_CHROMEOS)
-RlzLibTest::RlzLibTest()
-    : io_thread_("RlzLibTest-io") {
-}
-#endif
 
 void RlzLibTest::SetUp() {
   testing::Test::SetUp();
@@ -247,17 +226,9 @@ void RlzLibTest::SetUp() {
   // initialization performed above.
   override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE, kRlzTempHklm);
   override_manager_.OverrideRegistry(HKEY_CURRENT_USER, kRlzTempHkcu);
-#elif defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#elif defined(OS_POSIX)
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   rlz_lib::testing::SetRlzStoreDirectory(temp_dir_.path());
-#endif
-
-#if defined(OS_CHROMEOS)
-  base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
-  ASSERT_TRUE(io_thread_.StartWithOptions(options));
-  rlz_lib::SetIOTaskRunner(io_thread_.message_loop_proxy());
-  rlz_lib::RlzValueStoreChromeOS::ResetForTesting();
 #endif
 
   // Make sure a non-organic brand code is set in the registry or the RLZTracker
@@ -267,19 +238,16 @@ void RlzLibTest::SetUp() {
 }
 
 void RlzLibTest::TearDown() {
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_POSIX)
   rlz_lib::testing::SetRlzStoreDirectory(FilePath());
 #endif
-#if defined(OS_CHROMEOS)
-  io_thread_.Stop();
-#endif  // defined(OS_CHROMEOS)
   testing::Test::TearDown();
 }
 
 void RlzLibTest::SetMainBrand(const char* brand) {
 #if defined(OS_WIN)
   SetRegistryBrandValue(google_update::kRegRLZBrandField, brand);
-#elif defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#elif defined(OS_POSIX)
   brand_override_.reset(new google_util::BrandForTesting(brand));
 #endif
   std::string check_brand;

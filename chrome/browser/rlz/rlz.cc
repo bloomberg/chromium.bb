@@ -26,10 +26,6 @@
 #include "content/public/browser/notification_service.h"
 #include "net/http/http_util.h"
 
-#if defined(OS_CHROMEOS)
-#include "base/threading/sequenced_worker_pool.h"
-#endif
-
 #if defined(OS_WIN)
 #include "chrome/installer/util/google_update_settings.h"
 #else
@@ -55,8 +51,6 @@ using content::BrowserThread;
 using content::NavigationEntry;
 
 namespace {
-
-const char kRlzThreadName[] = "RLZ_thread";
 
 bool IsBrandOrganic(const std::string& brand) {
   return brand.empty() || google_util::IsOrganic(brand);
@@ -177,9 +171,6 @@ RLZTracker::RLZTracker()
       is_google_default_search_(false),
       is_google_homepage_(false),
       is_google_in_startpages_(false),
-      rlz_thread_(kRlzThreadName),
-      blocking_task_runner_(NULL),
-      url_request_context_(NULL),
       already_ran_(false),
       omnibox_used_(false),
       homepage_used_(false) {
@@ -207,9 +198,6 @@ bool RLZTracker::Init(bool first_run,
   is_google_default_search_ = is_google_default_search;
   is_google_homepage_ = is_google_homepage;
   is_google_in_startpages_ = is_google_in_startpages;
-
-  if (!InitWorkers())
-    return false;
 
   // A negative delay means that a financial ping should be sent immediately
   // after a first search is recorded, without waiting for the next restart
@@ -246,7 +234,7 @@ bool RLZTracker::Init(bool first_run,
                    content::NotificationService::AllSources());
   }
 
-  url_request_context_ = g_browser_process->system_request_context();
+  rlz_lib::SetURLRequestContext(g_browser_process->system_request_context());
   ScheduleDelayedInit(delay);
 
   return true;
@@ -255,35 +243,14 @@ bool RLZTracker::Init(bool first_run,
 void RLZTracker::ScheduleDelayedInit(int delay) {
   // The RLZTracker is a singleton object that outlives any runnable tasks
   // that will be queued up.
-  blocking_task_runner_->PostDelayedTask(
+  BrowserThread::GetBlockingPool()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&RLZTracker::DelayedInit, base::Unretained(this)),
       base::TimeDelta::FromMilliseconds(delay));
 }
 
-bool RLZTracker::InitWorkers() {
-  base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
-  if (!rlz_thread_.StartWithOptions(options))
-    return false;
-  blocking_task_runner_ = rlz_thread_.message_loop_proxy();
-
-#if defined(OS_CHROMEOS)
-  base::SequencedWorkerPool* worker_pool =
-      content::BrowserThread::GetBlockingPool();
-  if (!worker_pool)
-    return false;
-  rlz_lib::SetIOTaskRunner(
-      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
-          worker_pool->GetSequenceToken(),
-          base::SequencedWorkerPool::BLOCK_SHUTDOWN));
-#endif
-  return true;
-}
-
 void RLZTracker::DelayedInit() {
-  if (!already_ran_)
-    rlz_lib::SetURLRequestContext(url_request_context_);
+  worker_pool_token_ = BrowserThread::GetBlockingPool()->GetSequenceToken();
 
   bool schedule_ping = false;
 
@@ -316,7 +283,8 @@ void RLZTracker::DelayedInit() {
 }
 
 void RLZTracker::ScheduleFinancialPing() {
-  blocking_task_runner_->PostTask(
+  BrowserThread::GetBlockingPool()->PostSequencedWorkerTask(
+      worker_pool_token_,
       FROM_HERE,
       base::Bind(&RLZTracker::PingNowImpl, base::Unretained(this)));
 }
@@ -421,12 +389,13 @@ bool RLZTracker::ScheduleRecordProductEvent(rlz_lib::Product product,
                                             rlz_lib::Event event_id) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
     return false;
-  if (!blocking_task_runner_) {
+  if (!already_ran_) {
     LOG(ERROR) << "Attempted recording RLZ event before RLZ init.";
     return true;
   }
 
-  blocking_task_runner_->PostTask(
+  BrowserThread::GetBlockingPool()->PostSequencedWorkerTask(
+      worker_pool_token_,
       FROM_HERE,
       base::Bind(base::IgnoreResult(&RLZTracker::RecordProductEvent),
                  product, point, event_id));
@@ -454,7 +423,8 @@ void RLZTracker::RecordFirstSearch(rlz_lib::AccessPoint point) {
 bool RLZTracker::ScheduleRecordFirstSearch(rlz_lib::AccessPoint point) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
     return false;
-  blocking_task_runner_->PostTask(
+  BrowserThread::GetBlockingPool()->PostSequencedWorkerTask(
+      worker_pool_token_,
       FROM_HERE,
       base::Bind(&RLZTracker::RecordFirstSearch,
                  base::Unretained(this), point));
@@ -522,7 +492,8 @@ bool RLZTracker::ScheduleGetAccessPointRlz(rlz_lib::AccessPoint point) {
     return false;
 
   string16* not_used = NULL;
-  blocking_task_runner_->PostTask(
+  BrowserThread::GetBlockingPool()->PostSequencedWorkerTask(
+      worker_pool_token_,
       FROM_HERE,
       base::Bind(base::IgnoreResult(&RLZTracker::GetAccessPointRlz), point,
                  not_used));

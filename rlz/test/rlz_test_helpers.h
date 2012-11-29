@@ -10,29 +10,18 @@
 #include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_POSIX)
 #include "base/files/scoped_temp_dir.h"
-#endif
-#if defined(OS_CHROMEOS)
-#include "base/message_loop.h"
-#include "base/threading/thread.h"
 #endif
 
 class RlzLibTestNoMachineState : public ::testing::Test {
  protected:
-#if defined(OS_CHROMEOS)
-  RlzLibTestNoMachineState();
-#endif
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
 
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_POSIX)
  base::ScopedTempDir temp_dir_;
-#endif
-#if defined(OS_CHROMEOS)
-  base::Thread pref_store_io_thread_;
-  MessageLoop message_loop_;
 #endif
 };
 

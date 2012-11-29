@@ -13,12 +13,9 @@
 #include <shlwapi.h>
 #include "base/win/registry.h"
 #include "rlz/win/lib/rlz_lib.h"
-#elif defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#elif defined(OS_POSIX)
 #include "base/file_path.h"
 #include "rlz/lib/rlz_value_store.h"
-#endif
-#if defined(OS_CHROMEOS)
-#include "rlz/chromeos/lib/rlz_value_store_chromeos.h"
 #endif
 
 #if defined(OS_WIN)
@@ -62,41 +59,24 @@ void UndoOverrideRegistryHives() {
 }  // namespace
 #endif  // defined(OS_WIN)
 
-
-#if defined(OS_CHROMEOS)
-RlzLibTestNoMachineState::RlzLibTestNoMachineState()
-    : pref_store_io_thread_("test_rlz_pref_store_io_thread") {
-}
-#endif  // defined(OS_CHROMEOS)
-
 void RlzLibTestNoMachineState::SetUp() {
 #if defined(OS_WIN)
   OverrideRegistryHives();
 #elif defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool pool;
 #endif  // defined(OS_WIN)
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_POSIX)
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   rlz_lib::testing::SetRlzStoreDirectory(temp_dir_.path());
-#endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
-#if defined(OS_CHROMEOS)
-  base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
-  ASSERT_TRUE(pref_store_io_thread_.StartWithOptions(options));
-  rlz_lib::SetIOTaskRunner(pref_store_io_thread_.message_loop_proxy());
-  rlz_lib::RlzValueStoreChromeOS::ResetForTesting();
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_POSIX)
 }
 
 void RlzLibTestNoMachineState::TearDown() {
 #if defined(OS_WIN)
   UndoOverrideRegistryHives();
-#elif defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#elif defined(OS_POSIX)
   rlz_lib::testing::SetRlzStoreDirectory(FilePath());
 #endif  // defined(OS_WIN)
-#if defined(OS_CHROMEOS)
-  pref_store_io_thread_.Stop();
-#endif  // defined(OS_CHROMEOS)
 }
 
 void RlzLibTestBase::SetUp() {
