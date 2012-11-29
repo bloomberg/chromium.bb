@@ -450,7 +450,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_AutofillViaDownArrow) {
   CreateTestProfile();
 
   // Load the test page.
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
       GURL(std::string(kDataURIPrefix) + kTestFormString)));
 
@@ -507,7 +506,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_OnChangeAfterAutofill) {
       "</script>";
 
   // Load the test page.
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
       GURL(std::string(kDataURIPrefix) + kTestFormString + kOnChangeScript)));
 
@@ -582,7 +580,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, DISABLED_AutofillFormsDistinguishedById) {
       "newForm.id = 'newForm';"
       "mainForm.parentNode.insertBefore(newForm, mainForm);"
       "</script>";
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), GURL(kURL)));
 
   // Invoke Autofill.
@@ -598,7 +595,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, DISABLED_AutofillFormWithRepeatedField) {
   CreateTestProfile();
 
   // Load the test page.
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
       GURL(std::string(kDataURIPrefix) +
            "<form action=\"http://www.example.com/\" method=\"POST\">"
@@ -654,7 +650,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
   CreateTestProfile();
 
   // Load the test page.
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
       GURL(std::string(kDataURIPrefix) +
            "<form action=\"http://www.example.com/\" method=\"POST\">"
@@ -699,7 +694,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, DISABLED_DynamicFormFill) {
   CreateTestProfile();
 
   // Load the test page.
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
       GURL(std::string(kDataURIPrefix) +
            "<form id=\"form\" action=\"http://www.example.com/\""
@@ -798,7 +792,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_AutofillAfterReload) {
 
   // Load the test page.
   LOG(WARNING) << "Bringing browser window to front.";
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   LOG(WARNING) << "Navigating to URL.";
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
       GURL(std::string(kDataURIPrefix) + kTestFormString)));
@@ -849,7 +842,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, DISABLED_AutofillAfterTranslate) {
                "<label for=\"ph\">Phone number:</label>"
                " <input type=\"text\" id=\"ph\"><br>"
                "</form>");
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
 
   // Get translation bar.

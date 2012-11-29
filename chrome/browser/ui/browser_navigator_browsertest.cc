@@ -15,10 +15,6 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/omnibox/location_bar.h"
-#include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
-#include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
-#include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -1159,43 +1155,6 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(GetSettingsURL(),
             ShortenUberURL(chrome::GetActiveWebContents(browser())->GetURL()));
-}
-
-// Tests that when a new tab is opened from the omnibox, the focus is moved from
-// the omnibox for the current tab.
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       NavigateFromOmniboxIntoNewTab) {
-  GURL url("http://www.google.com/");
-  GURL url2("http://maps.google.com/");
-
-  // Navigate to url.
-  chrome::NavigateParams p(MakeNavigateParams());
-  p.disposition = CURRENT_TAB;
-  p.url = url;
-  chrome::Navigate(&p);
-
-  // Focus the omnibox.
-  chrome::FocusLocationBar(browser());
-
-  OmniboxEditController* controller =
-      browser()->window()->GetLocationBar()->GetLocationEntry()->model()->
-          controller();
-
-  // Simulate an alt-enter.
-  controller->OnAutocompleteAccept(url2, NEW_FOREGROUND_TAB,
-                                   content::PAGE_TRANSITION_TYPED, GURL());
-
-  // Make sure the second tab is selected.
-  EXPECT_EQ(1, browser()->active_index());
-
-  // The tab contents should have the focus in the second tab.
-  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
-
-  // Go back to the first tab. The focus should not be in the omnibox.
-  chrome::SelectPreviousTab(browser());
-  EXPECT_EQ(0, browser()->active_index());
-  EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(),
-                                            VIEW_ID_LOCATION_BAR));
 }
 
 // TODO(csilv): Update this for uber page. http://crbug.com/111579.

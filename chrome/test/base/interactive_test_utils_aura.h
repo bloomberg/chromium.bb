@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_TEST_UI_TEST_UTILS_AURA_H_
-#define CHROME_BROWSER_UI_VIEWS_TEST_UI_TEST_UTILS_AURA_H_
+#ifndef CHROME_TEST_BASE_INTERACTIVE_TEST_UTILS_AURA_H_
+#define CHROME_TEST_BASE_INTERACTIVE_TEST_UTILS_AURA_H_
 
 #include "chrome/test/base/ui_test_utils.h"
 
@@ -18,4 +18,4 @@ bool ShowAndFocusNativeWindowAura(gfx::NativeWindow window);
 
 }  // namespace ui_test_utils
 
-#endif  // CHROME_BROWSER_UI_VIEWS_TEST_UI_TEST_UTILS_AURA_H_
+#endif  // CHROME_TEST_BASE_INTERACTIVE_TEST_UTILS_AURA_H_

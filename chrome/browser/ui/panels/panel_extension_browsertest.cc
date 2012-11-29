@@ -6,7 +6,7 @@
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
@@ -231,27 +231,4 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, CustomContextMenu) {
   ASSERT_TRUE(menu->IsCommandIdEnabled(command_id));
   menu->ExecuteCommand(command_id);
   EXPECT_TRUE(onclick_listener.WaitUntilSatisfied());
-}
-
-class PanelExtensionApiTest : public ExtensionApiTest {
- protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnablePanels);
-  }
-};
-
-#if defined(OS_LINUX) || defined(USE_AURA)
-// Focus test fails if there is no window manager on Linux.
-// Aura panels have different behavior that do not apply to this test.
-#define MAYBE_FocusChangeEventOnMinimize DISABLED_FocusChangeEventOnMinimize
-#else
-#define MAYBE_FocusChangeEventOnMinimize FocusChangeEventOnMinimize
-#endif
-IN_PROC_BROWSER_TEST_F(PanelExtensionApiTest,
-                       MAYBE_FocusChangeEventOnMinimize) {
-  // This is needed so the subsequently created panels can be activated.
-  // On a Mac, it transforms background-only test process into foreground one.
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-  ASSERT_TRUE(RunExtensionTest("panels/focus_change_on_minimize")) << message_;
 }

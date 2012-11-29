@@ -80,7 +80,7 @@ class MapsGLEnduranceTest : public InProcessBrowserTest {
     ASSERT_TRUE(tracing::BeginTracing("-test_*"));
 #endif
 
-    ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+    browser()->window()->Activate();
     gfx::Rect new_bounds = GetNewTabContainerBounds(tab_container_size);
     browser()->window()->SetBounds(new_bounds);
 

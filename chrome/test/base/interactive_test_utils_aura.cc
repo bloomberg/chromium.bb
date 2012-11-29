@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/test/ui_test_utils_aura.h"
+#include "chrome/test/base/interactive_test_utils_aura.h"
 
-#include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #include "ui/aura/window.h"
 
 namespace ui_test_utils {

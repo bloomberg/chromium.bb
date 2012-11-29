@@ -167,7 +167,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(tracing::BeginTracing("-test_*"));
 #endif
 
-    ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+    browser()->window()->Activate();
 
     content::DOMMessageQueue message_queue;
     ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(url));
