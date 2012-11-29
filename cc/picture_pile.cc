@@ -45,8 +45,8 @@ void PicturePile::Update(
 
   // Always re-record the entire layer into a single picture, just to get
   // this class up and running.
-  if (pile_.size() == 0)
-    pile_.push_back(Picture::Create());
+  pile_.clear();
+  pile_.push_back(Picture::Create());
   pile_[0]->Record(painter, gfx::Rect(gfx::Point(), size_), stats);
 }
 

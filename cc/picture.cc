@@ -15,7 +15,7 @@ scoped_refptr<Picture> Picture::Create() {
   return make_scoped_refptr(new Picture());
 }
 
-Picture::Picture() : picture_(new SkPicture()) {
+Picture::Picture() {
 }
 
 Picture::Picture(SkPicture* picture, gfx::Rect layer_rect,
@@ -31,6 +31,7 @@ Picture::~Picture() {
 scoped_refptr<Picture> Picture::Clone() {
   // SkPicture is not thread-safe to rasterize with, so return a thread-safe
   // clone of it.
+  DCHECK(picture_.get());
   SkPicture* clone = picture_->clone();
   return make_scoped_refptr(new Picture(clone, layer_rect_, opaque_rect_));
 }
@@ -38,6 +39,11 @@ scoped_refptr<Picture> Picture::Clone() {
 void Picture::Record(ContentLayerClient* painter, gfx::Rect layer_rect,
                      RenderingStats& stats) {
   TRACE_EVENT0("cc", "Picture::Record");
+
+  // Record() should only be called once.
+  DCHECK(!picture_.get());
+  picture_.reset(new SkPicture);
+
   SkCanvas* canvas = picture_->beginRecording(
       layer_rect.width(),
       layer_rect.height(),
@@ -72,6 +78,7 @@ void Picture::Record(ContentLayerClient* painter, gfx::Rect layer_rect,
 
 void Picture::Raster(SkCanvas* canvas) {
   TRACE_EVENT0("cc", "Picture::Raster");
+  DCHECK(picture_.get());
   canvas->save();
   canvas->translate(layer_rect_.x(), layer_rect_.y());
   canvas->drawPicture(*picture_);

@@ -27,7 +27,8 @@ public:
   // Make a thread-safe clone for rasterizing with.
   scoped_refptr<Picture> Clone();
 
-  // Record a paint operation (clobbering any previous recording).
+  // Record a paint operation. To be able to safely use this SkPicture for
+  // playback on a different thread this can only be called once.
   void Record(ContentLayerClient*, gfx::Rect layer_rect, RenderingStats&);
 
   // Raster this Picture's layer_rect into the given canvas.
