@@ -24,22 +24,6 @@ const GdkDragAction kDownloadItemDragAction = GDK_ACTION_COPY;
 const GdkDragAction kBookmarkDragAction =
     static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_MOVE);
 
-void OnDragDataGetForDownloadItem(GtkSelectionData* selection_data,
-                                  guint target_type,
-                                  const DownloadItem* download_item) {
-  GURL url = net::FilePathToFileURL(download_item->GetFullPath());
-  ui::WriteURLWithName(selection_data, url,
-      UTF8ToUTF16(download_item->GetFileNameToReportUser().value()),
-      target_type);
-}
-
-void OnDragDataGetStandalone(GtkWidget* widget, GdkDragContext* context,
-                             GtkSelectionData* selection_data,
-                             guint target_type, guint time,
-                             const DownloadItem* item) {
-  OnDragDataGetForDownloadItem(selection_data, target_type, item);
-}
-
 }  // namespace
 
 // CustomDrag ------------------------------------------------------------------
@@ -77,10 +61,82 @@ void CustomDrag::OnDragEnd(GtkWidget* widget, GdkDragContext* drag_context) {
 
 // DownloadItemDrag ------------------------------------------------------------
 
+// Stores metadata for a drag & drop operation.
+class DownloadItemDrag::DragData {
+ public:
+  // Constructs a DragData object based on the current state of |item|.
+  explicit DragData(const DownloadItem* item);
+
+  // 'drag-data-get' signal handler.
+  CHROMEGTK_CALLBACK_4(DragData, void, OnDragDataGet, GdkDragContext*,
+                       GtkSelectionData*, guint, guint);
+
+  // Sets up a drag source and connects |drag_data| to 'drag-data-get' on
+  // |widget|. If |icon| is non-NULL it will be used as the drag icon. The
+  // object pointed to by |drag_data| will be deleted when the signal is
+  // disconnected.
+  static void AttachToWidget(scoped_ptr<DragData> drag_data,
+                             GtkWidget* widget,
+                             gfx::Image* icon);
+
+ private:
+  // GClosureNotify handler for destroying a DragData object. |data| is assumed
+  // to be a DragData*.
+  static void OnDestroy(gpointer data, GClosure* closure);
+
+  GURL url_;
+  string16 display_name_;
+};
+
+DownloadItemDrag::DragData::DragData(const DownloadItem* item)
+    : url_(net::FilePathToFileURL(item->GetFullPath())),
+      display_name_(item->GetFileNameToReportUser().LossyDisplayName()) {
+}
+
+void DownloadItemDrag::DragData::OnDragDataGet(GtkWidget* widget,
+                                               GdkDragContext* context,
+                                               GtkSelectionData* selection_data,
+                                               guint target_type,
+                                               guint time) {
+  ui::WriteURLWithName(selection_data, url_, display_name_, target_type);
+}
+
+// static
+void DownloadItemDrag::DragData::AttachToWidget(scoped_ptr<DragData> drag_data,
+                                                GtkWidget* widget,
+                                                gfx::Image* icon) {
+  gtk_drag_source_set(widget, GDK_BUTTON1_MASK, NULL, 0,
+                      kDownloadItemDragAction);
+  ui::SetSourceTargetListFromCodeMask(widget, kDownloadItemCodeMask);
+
+  // Disconnect previous signal handlers, if any.
+  g_signal_handlers_disconnect_matched(
+      widget, G_SIGNAL_MATCH_FUNC, 0, 0, NULL,
+      reinterpret_cast<gpointer>(&OnDragDataGetThunk),
+      NULL);
+
+  // Connect new signal handlers.
+  g_signal_connect_data(
+      widget, "drag-data-get",
+      G_CALLBACK(&OnDragDataGetThunk),
+      reinterpret_cast<gpointer>(drag_data.release()),
+      &OnDestroy,
+      static_cast<GConnectFlags>(0));
+
+  if (icon)
+    gtk_drag_source_set_icon_pixbuf(widget, icon->ToGdkPixbuf());
+}
+
+// static
+void DownloadItemDrag::DragData::OnDestroy(gpointer data, GClosure* closure) {
+  DragData* drag_data = reinterpret_cast<DragData*>(data);
+  delete drag_data;
+}
+
 DownloadItemDrag::DownloadItemDrag(const DownloadItem* item,
                                    gfx::Image* icon)
     : CustomDrag(icon, kDownloadItemCodeMask, kDownloadItemDragAction),
-      download_item_(item) {
+      drag_data_(new DragData(item)) {
 }
 
 DownloadItemDrag::~DownloadItemDrag() {
@@ -90,28 +146,15 @@ void DownloadItemDrag::OnDragDataGet(
     GtkWidget* widget, GdkDragContext* context,
     GtkSelectionData* selection_data,
     guint target_type, guint time) {
-  OnDragDataGetForDownloadItem(selection_data, target_type, download_item_);
+  drag_data_->OnDragDataGet(widget, context, selection_data, target_type, time);
 }
 
 // static
 void DownloadItemDrag::SetSource(GtkWidget* widget,
-                                 DownloadItem* item,
+                                 const DownloadItem* item,
                                  gfx::Image* icon) {
-  gtk_drag_source_set(widget, GDK_BUTTON1_MASK, NULL, 0,
-                      kDownloadItemDragAction);
-  ui::SetSourceTargetListFromCodeMask(widget, kDownloadItemCodeMask);
-
-  // Disconnect previous signal handlers, if any.
-  g_signal_handlers_disconnect_by_func(
-      widget,
-      reinterpret_cast<gpointer>(OnDragDataGetStandalone),
-      item);
-  // Connect new signal handlers.
-  g_signal_connect(widget, "drag-data-get",
-                   G_CALLBACK(OnDragDataGetStandalone), item);
-
-  if (icon)
-    gtk_drag_source_set_icon_pixbuf(widget, icon->ToGdkPixbuf());
+  scoped_ptr<DragData> drag_data(new DragData(item));
+  DragData::AttachToWidget(drag_data.Pass(), widget, icon);
 }
 
 // static
