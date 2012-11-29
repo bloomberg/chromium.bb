@@ -16,14 +16,12 @@ public:
     Mtpd_adaptor()
     : ::DBus::InterfaceAdaptor("org.chromium.Mtpd")
     {
-        register_method(Mtpd_adaptor, EnumerateStorage, _EnumerateStorage_stub);
+        register_method(Mtpd_adaptor, EnumerateStorages, _EnumerateStorages_stub);
         register_method(Mtpd_adaptor, GetStorageInfo, _GetStorageInfo_stub);
         register_method(Mtpd_adaptor, OpenStorage, _OpenStorage_stub);
         register_method(Mtpd_adaptor, CloseStorage, _CloseStorage_stub);
         register_method(Mtpd_adaptor, ReadDirectoryByPath, _ReadDirectoryByPath_stub);
         register_method(Mtpd_adaptor, ReadDirectoryById, _ReadDirectoryById_stub);
-        register_method(Mtpd_adaptor, ReadFileByPath, _ReadFileByPath_stub);
-        register_method(Mtpd_adaptor, ReadFileById, _ReadFileById_stub);
         register_method(Mtpd_adaptor, ReadFileChunkByPath, _ReadFileChunkByPath_stub);
         register_method(Mtpd_adaptor, ReadFileChunkById, _ReadFileChunkById_stub);
         register_method(Mtpd_adaptor, GetFileInfoByPath, _GetFileInfoByPath_stub);
@@ -32,7 +30,7 @@ public:
     }
     const ::DBus::IntrospectedInterface *introspect() const
     {
-        static const ::DBus::IntrospectedArgument EnumerateStorage_args[] =
+        static const ::DBus::IntrospectedArgument EnumerateStorages_args[] =
         {
             { "storageList", "as", false },
             { 0, 0, 0 }
@@ -67,20 +65,6 @@ public:
             { "handle", "s", true },
             { "fileId", "u", true },
             { "results", "ay", false },
-            { 0, 0, 0 }
-        };
-        static const ::DBus::IntrospectedArgument ReadFileByPath_args[] =
-        {
-            { "handle", "s", true },
-            { "filePath", "s", true },
-            { "data", "ay", false },
-            { 0, 0, 0 }
-        };
-        static const ::DBus::IntrospectedArgument ReadFileById_args[] =
-        {
-            { "handle", "s", true },
-            { "fileId", "u", true },
-            { "data", "ay", false },
             { 0, 0, 0 }
         };
         static const ::DBus::IntrospectedArgument ReadFileChunkByPath_args[] =
@@ -132,14 +116,12 @@ public:
         };
         static const ::DBus::IntrospectedMethod Mtpd_adaptor_methods[] =
         {
-            { "EnumerateStorage", EnumerateStorage_args },
+            { "EnumerateStorages", EnumerateStorages_args },
             { "GetStorageInfo", GetStorageInfo_args },
             { "OpenStorage", OpenStorage_args },
             { "CloseStorage", CloseStorage_args },
             { "ReadDirectoryByPath", ReadDirectoryByPath_args },
             { "ReadDirectoryById", ReadDirectoryById_args },
-            { "ReadFileByPath", ReadFileByPath_args },
-            { "ReadFileById", ReadFileById_args },
             { "ReadFileChunkByPath", ReadFileChunkByPath_args },
             { "ReadFileChunkById", ReadFileChunkById_args },
             { "GetFileInfoByPath", GetFileInfoByPath_args },
@@ -173,14 +155,12 @@ public:
     /* Methods exported by this interface.
      * You will have to implement them in your ObjectAdaptor.
      */
-    virtual std::vector< std::string > EnumerateStorage(::DBus::Error &error) = 0;
+    virtual std::vector< std::string > EnumerateStorages(::DBus::Error &error) = 0;
     virtual std::vector< uint8_t > GetStorageInfo(const std::string& storageName, ::DBus::Error &error) = 0;
     virtual std::string OpenStorage(const std::string& storageName, const std::string& mode, ::DBus::Error &error) = 0;
     virtual void CloseStorage(const std::string& handle, ::DBus::Error &error) = 0;
     virtual std::vector< uint8_t > ReadDirectoryByPath(const std::string& handle, const std::string& filePath, ::DBus::Error &error) = 0;
     virtual std::vector< uint8_t > ReadDirectoryById(const std::string& handle, const uint32_t& fileId, ::DBus::Error &error) = 0;
-    virtual std::vector< uint8_t > ReadFileByPath(const std::string& handle, const std::string& filePath, ::DBus::Error &error) = 0;
-    virtual std::vector< uint8_t > ReadFileById(const std::string& handle, const uint32_t& fileId, ::DBus::Error &error) = 0;
     virtual std::vector< uint8_t > ReadFileChunkByPath(const std::string& handle, const std::string& filePath, const uint32_t& offset, const uint32_t& count, ::DBus::Error &error) = 0;
     virtual std::vector< uint8_t > ReadFileChunkById(const std::string& handle, const uint32_t& fileId, const uint32_t& offset, const uint32_t& count, ::DBus::Error &error) = 0;
     virtual std::vector< uint8_t > GetFileInfoByPath(const std::string& handle, const std::string& filePath, ::DBus::Error &error) = 0;
@@ -205,11 +185,11 @@ private:
     /* unmarshallers (to unpack the DBus message before calling the actual
      * interface method)
      */
-    ::DBus::Message _EnumerateStorage_stub(const ::DBus::CallMessage &__call)
+    ::DBus::Message _EnumerateStorages_stub(const ::DBus::CallMessage &__call)
     {
         ::DBus::Error __error;
         std::vector< std::string > __argout;
-        __argout = EnumerateStorage(__error);
+        __argout = EnumerateStorages(__error);
         if (__error.is_set())
             return ::DBus::ErrorMessage(__call, __error.name(), __error.message());
         ::DBus::ReturnMessage __reply(__call);
@@ -280,36 +260,6 @@ private:
         uint32_t fileId; __ri >> fileId;
         std::vector< uint8_t > __argout;
         __argout = ReadDirectoryById(handle, fileId, __error);
-        if (__error.is_set())
-            return ::DBus::ErrorMessage(__call, __error.name(), __error.message());
-        ::DBus::ReturnMessage __reply(__call);
-        ::DBus::MessageIter __wi = __reply.writer();
-        __wi << __argout;
-        return __reply;
-    }
-    ::DBus::Message _ReadFileByPath_stub(const ::DBus::CallMessage &__call)
-    {
-        ::DBus::Error __error;
-        ::DBus::MessageIter __ri = __call.reader();
-        std::string handle; __ri >> handle;
-        std::string filePath; __ri >> filePath;
-        std::vector< uint8_t > __argout;
-        __argout = ReadFileByPath(handle, filePath, __error);
-        if (__error.is_set())
-            return ::DBus::ErrorMessage(__call, __error.name(), __error.message());
-        ::DBus::ReturnMessage __reply(__call);
-        ::DBus::MessageIter __wi = __reply.writer();
-        __wi << __argout;
-        return __reply;
-    }
-    ::DBus::Message _ReadFileById_stub(const ::DBus::CallMessage &__call)
-    {
-        ::DBus::Error __error;
-        ::DBus::MessageIter __ri = __call.reader();
-        std::string handle; __ri >> handle;
-        uint32_t fileId; __ri >> fileId;
-        std::vector< uint8_t > __argout;
-        __argout = ReadFileById(handle, fileId, __error);
         if (__error.is_set())
             return ::DBus::ErrorMessage(__call, __error.name(), __error.message());
         ::DBus::ReturnMessage __reply(__call);
