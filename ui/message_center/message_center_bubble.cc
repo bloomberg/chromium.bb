@@ -283,10 +283,10 @@ views::TrayBubbleView::InitParams MessageCenterBubble::GetInitParams(
 }
 
 void MessageCenterBubble::InitializeContents(
-    views::TrayBubbleView* bubble_view) {
-  bubble_view_ = bubble_view;
-  contents_view_ = new MessageCenterContentsView(list_delegate_);
-  bubble_view_->AddChildView(contents_view_);
+    views::TrayBubbleView* new_bubble_view) {
+  set_bubble_view(new_bubble_view);
+  contents_view_ = new MessageCenterContentsView(list_delegate());
+  bubble_view()->AddChildView(contents_view_);
   UpdateBubbleView();
   contents_view_->FocusContents();
 }
@@ -296,12 +296,12 @@ void MessageCenterBubble::OnBubbleViewDestroyed() {
 }
 
 void MessageCenterBubble::UpdateBubbleView() {
-  if (!bubble_view_)
+  if (!bubble_view())
     return;  // Could get called after view is closed
   contents_view_->Update(
-      list_delegate_->GetNotificationList()->notifications());
-  bubble_view_->Show();
-  bubble_view_->UpdateBubble();
+      list_delegate()->GetNotificationList()->notifications());
+  bubble_view()->Show();
+  bubble_view()->UpdateBubble();
 }
 
 void MessageCenterBubble::OnMouseEnteredView() {

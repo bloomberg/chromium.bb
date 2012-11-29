@@ -55,7 +55,12 @@ class MESSAGE_CENTER_EXPORT MessageBubbleBase {
  protected:
   views::TrayBubbleView::InitParams GetDefaultInitParams(
       views::TrayBubbleView::AnchorAlignment anchor_alignment);
+  NotificationList::Delegate* list_delegate() { return list_delegate_; }
+  void set_bubble_view(views::TrayBubbleView* bubble_view) {
+    bubble_view_ = bubble_view;
+  }
 
+ private:
   NotificationList::Delegate* list_delegate_;
   views::TrayBubbleView* bubble_view_;
   base::WeakPtrFactory<MessageBubbleBase> weak_ptr_factory_;
