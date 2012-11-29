@@ -78,6 +78,9 @@ class PersonalDataManager
   bool ImportFormData(const FormStructure& form,
                       const CreditCard** credit_card);
 
+  // Saves |imported_profile| to the WebDB if it exists.
+  virtual void SaveImportedProfile(const AutofillProfile& imported_profile);
+
   // Saves a credit card value detected in |ImportedFormData|.
   virtual void SaveImportedCreditCard(const CreditCard& imported_credit_card);
 
@@ -201,9 +204,6 @@ class PersonalDataManager
   // Cancels a pending query to the web database.  |handle| is a pointer to the
   // query handle.
   void CancelPendingQuery(WebDataServiceBase::Handle* handle);
-
-  // Saves |imported_profile| to the WebDB if it exists.
-  virtual void SaveImportedProfile(const AutofillProfile& imported_profile);
 
   // Notifies Sync about data migration if necessary.
   void EmptyMigrationTrash();

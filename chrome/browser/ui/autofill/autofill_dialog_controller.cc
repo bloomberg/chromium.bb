@@ -96,6 +96,16 @@ void FillInputsFromFormGroup(FormGroup* group,
   }
 }
 
+// Initializes |form_group| from user-entered data.
+void FillFormGroupFromOutputs(const DetailOutputMap& detail_outputs,
+                              FormGroup* form_group) {
+  for (DetailOutputMap::const_iterator iter = detail_outputs.begin();
+       iter != detail_outputs.end(); ++iter) {
+    if (!iter->second.empty())
+      form_group->SetRawInfo(iter->first->type, iter->second);
+  }
+}
+
 }  // namespace
 
 AutofillDialogController::AutofillDialogController(
@@ -278,7 +288,6 @@ void AutofillDialogController::ViewClosed(DialogAction action) {
     } else {
       FillOutputForSection(SECTION_SHIPPING);
     }
-    // TODO(estade): pass the result along to the page.
   }
 
   callback_.Run(&form_structure_);
@@ -360,18 +369,35 @@ void AutofillDialogController::FillOutputForSectionWithComparator(
       }
     }
   } else {
+    // The user manually input data.
     DetailOutputMap output;
     view_->GetUserInput(section, &output);
+
+    // First fill in |form_structure_| to return to the page.
     for (size_t i = 0; i < form_structure_.field_count(); ++i) {
       AutofillField* field = form_structure_.field(i);
       for (DetailOutputMap::iterator iter = output.begin();
            iter != output.end(); ++iter) {
         if (!iter->second.empty() && compare.Run(*iter->first, *field)) {
-          // TODO(estade): handle select controls and such.
+          // TODO(estade): handle select controls and such. Also, canonicalize
+          // the entered data.
           field->value = iter->second;
           break;
         }
       }
+    }
+
+    // Next, save the info as new or edited data.
+    PersonalDataManager* manager =
+        PersonalDataManagerFactory::GetForProfile(profile_);
+    if (section == SECTION_CC) {
+      CreditCard card;
+      FillFormGroupFromOutputs(output, &card);
+      manager->SaveImportedCreditCard(card);
+    } else {
+      AutofillProfile profile;
+      FillFormGroupFromOutputs(output, &profile);
+      manager->SaveImportedProfile(profile);
     }
   }
 }
