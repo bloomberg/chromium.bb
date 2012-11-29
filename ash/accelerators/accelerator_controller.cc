@@ -457,22 +457,22 @@ bool AcceleratorController::PerformAction(int action,
   // and BrowserView::HandleKeyboardEvent, for a single accelerator press.
   switch (action) {
     case CYCLE_BACKWARD_MRU:
-      if (key_code == ui::VKEY_TAB && shell->delegate())
+      if (key_code == ui::VKEY_TAB)
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_PREVWINDOW_TAB);
       return HandleCycleWindowMRU(WindowCycleController::BACKWARD,
                                   accelerator.IsAltDown());
     case CYCLE_FORWARD_MRU:
-      if (key_code == ui::VKEY_TAB && shell->delegate())
+      if (key_code == ui::VKEY_TAB)
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_NEXTWINDOW_TAB);
       return HandleCycleWindowMRU(WindowCycleController::FORWARD,
                                   accelerator.IsAltDown());
     case CYCLE_BACKWARD_LINEAR:
-      if (key_code == ui::VKEY_F5 && shell->delegate())
+      if (key_code == ui::VKEY_F5)
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_PREVWINDOW_F5);
       HandleCycleWindowLinear(CYCLE_BACKWARD);
       return true;
     case CYCLE_FORWARD_LINEAR:
-      if (key_code == ui::VKEY_F5 && shell->delegate())
+      if (key_code == ui::VKEY_F5)
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_NEXTWINDOW_F5);
       HandleCycleWindowLinear(CYCLE_FORWARD);
       return true;
@@ -494,8 +494,7 @@ bool AcceleratorController::PerformAction(int action,
     case TOGGLE_SPOKEN_FEEDBACK:
       return HandleToggleSpokenFeedback();
     case TOGGLE_WIFI:
-      if (Shell::GetInstance()->tray_delegate())
-        Shell::GetInstance()->tray_delegate()->ToggleWifi();
+      Shell::GetInstance()->tray_delegate()->ToggleWifi();
       return true;
 #endif
     case OPEN_FEEDBACK_PAGE:
@@ -508,7 +507,7 @@ bool AcceleratorController::PerformAction(int action,
       Shell::GetInstance()->delegate()->NewWindow(true /* is_incognito */);
       return true;
     case NEW_TAB:
-      if (key_code == ui::VKEY_T && shell->delegate())
+      if (key_code == ui::VKEY_T)
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_NEWTAB_T);
       Shell::GetInstance()->delegate()->NewTab();
       return true;
@@ -559,7 +558,7 @@ bool AcceleratorController::PerformAction(int action,
           return false;
         }
       }
-      if (key_code == ui::VKEY_LWIN && shell->delegate())
+      if (key_code == ui::VKEY_LWIN)
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_SEARCH_LWIN);
       // When spoken feedback is enabled, we should neither toggle the list nor
       // consume the key since Search+Shift is one of the shortcuts the a11y
@@ -731,7 +730,7 @@ bool AcceleratorController::PerformAction(int action,
       break;
     }
     case TOGGLE_MAXIMIZED: {
-      if (key_code == ui::VKEY_F4 && shell->delegate()) {
+      if (key_code == ui::VKEY_F4) {
         shell->delegate()->RecordUserMetricsAction(
             UMA_ACCEL_MAXIMIZE_RESTORE_F4);
       }

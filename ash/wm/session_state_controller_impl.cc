@@ -245,8 +245,7 @@ void SessionStateControllerImpl::RequestShutdownImpl() {
 
 void SessionStateControllerImpl::OnRootWindowHostCloseRequested(
                                                 const aura::RootWindow*) {
-  if(Shell::GetInstance() && Shell::GetInstance()->delegate())
-    Shell::GetInstance()->delegate()->Exit();
+  Shell::GetInstance()->delegate()->Exit();
 }
 
 void SessionStateControllerImpl::StartLockTimer() {
