@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_image_data.idl modified Wed Oct 31 10:35:03 2012. */
+/* From ppb_image_data.idl modified Tue Nov 13 08:48:25 2012. */
 
 #ifndef PPAPI_C_PPB_IMAGE_DATA_H_
 #define PPAPI_C_PPB_IMAGE_DATA_H_
@@ -114,7 +114,7 @@ struct PPB_ImageData_1_0 {
    *
    * @return A <code>PP_ImageDataFormat</code> containing the preferred format.
    */
-  PP_ImageDataFormat (*GetNativeImageDataFormat)();
+  PP_ImageDataFormat (*GetNativeImageDataFormat)(void);
   /**
    * IsImageDataFormatSupported() determines if the given image data format is
    * supported by the browser. Note: <code>PP_IMAGEDATAFORMAT_BGRA_PREMUL</code>

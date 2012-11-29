@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_testing_dev.idl modified Thu Dec 22 11:02:53 2011. */
+/* From dev/ppb_testing_dev.idl modified Mon Mar 19 12:02:10 2012. */
 
 #ifndef PPAPI_C_DEV_PPB_TESTING_DEV_H_
 #define PPAPI_C_DEV_PPB_TESTING_DEV_H_
@@ -94,7 +94,7 @@ struct PPB_Testing_Dev_0_91 {
    * Returns PP_TRUE if the plugin is running out-of-process, PP_FALSE
    * otherwise.
    */
-  PP_Bool (*IsOutOfProcess)();
+  PP_Bool (*IsOutOfProcess)(void);
   /**
    * Passes the input event to the browser, which sends it back to the
    * plugin. The plugin should implement PPP_InputEvent and register for
@@ -145,7 +145,7 @@ struct PPB_Testing_Dev_0_7 {
   void (*RunMessageLoop)(PP_Instance instance);
   void (*QuitMessageLoop)(PP_Instance instance);
   uint32_t (*GetLiveObjectsForInstance)(PP_Instance instance);
-  PP_Bool (*IsOutOfProcess)();
+  PP_Bool (*IsOutOfProcess)(void);
 };
 
 struct PPB_Testing_Dev_0_8 {
@@ -155,7 +155,7 @@ struct PPB_Testing_Dev_0_8 {
   void (*RunMessageLoop)(PP_Instance instance);
   void (*QuitMessageLoop)(PP_Instance instance);
   uint32_t (*GetLiveObjectsForInstance)(PP_Instance instance);
-  PP_Bool (*IsOutOfProcess)();
+  PP_Bool (*IsOutOfProcess)(void);
   void (*SimulateInputEvent)(PP_Instance instance, PP_Resource input_event);
 };
 
@@ -166,7 +166,7 @@ struct PPB_Testing_Dev_0_9 {
   void (*RunMessageLoop)(PP_Instance instance);
   void (*QuitMessageLoop)(PP_Instance instance);
   uint32_t (*GetLiveObjectsForInstance)(PP_Instance instance);
-  PP_Bool (*IsOutOfProcess)();
+  PP_Bool (*IsOutOfProcess)(void);
   void (*SimulateInputEvent)(PP_Instance instance, PP_Resource input_event);
   struct PP_Var (*GetDocumentURL)(PP_Instance instance,
                                   struct PP_URLComponents_Dev* components);

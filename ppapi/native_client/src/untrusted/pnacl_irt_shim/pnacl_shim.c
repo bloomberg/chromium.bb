@@ -273,13 +273,13 @@ void Pnacl_M14_PPB_Core_ReleaseResource(PP_Resource resource) {
 }
 
 static __attribute__((pnaclcall))
-PP_Time Pnacl_M14_PPB_Core_GetTime() {
+PP_Time Pnacl_M14_PPB_Core_GetTime(void) {
   const struct PPB_Core_1_0 *iface = Pnacl_WrapperInfo_PPB_Core_1_0.real_iface;
   return iface->GetTime();
 }
 
 static __attribute__((pnaclcall))
-PP_TimeTicks Pnacl_M14_PPB_Core_GetTimeTicks() {
+PP_TimeTicks Pnacl_M14_PPB_Core_GetTimeTicks(void) {
   const struct PPB_Core_1_0 *iface = Pnacl_WrapperInfo_PPB_Core_1_0.real_iface;
   return iface->GetTimeTicks();
 }
@@ -291,7 +291,7 @@ void Pnacl_M14_PPB_Core_CallOnMainThread(int32_t delay_in_milliseconds, struct P
 }
 
 static __attribute__((pnaclcall))
-PP_Bool Pnacl_M14_PPB_Core_IsMainThread() {
+PP_Bool Pnacl_M14_PPB_Core_IsMainThread(void) {
   const struct PPB_Core_1_0 *iface = Pnacl_WrapperInfo_PPB_Core_1_0.real_iface;
   return iface->IsMainThread();
 }
@@ -845,13 +845,13 @@ PP_Resource Pnacl_M25_PPB_MessageLoop_Create(PP_Instance instance) {
 }
 
 static __attribute__((pnaclcall))
-PP_Resource Pnacl_M25_PPB_MessageLoop_GetForMainThread() {
+PP_Resource Pnacl_M25_PPB_MessageLoop_GetForMainThread(void) {
   const struct PPB_MessageLoop_1_0 *iface = Pnacl_WrapperInfo_PPB_MessageLoop_1_0.real_iface;
   return iface->GetForMainThread();
 }
 
 static __attribute__((pnaclcall))
-PP_Resource Pnacl_M25_PPB_MessageLoop_GetCurrent() {
+PP_Resource Pnacl_M25_PPB_MessageLoop_GetCurrent(void) {
   const struct PPB_MessageLoop_1_0 *iface = Pnacl_WrapperInfo_PPB_MessageLoop_1_0.real_iface;
   return iface->GetCurrent();
 }
@@ -1833,7 +1833,7 @@ uint32_t Pnacl_M17_PPB_Testing_Dev_GetLiveObjectsForInstance(PP_Instance instanc
 }
 
 static __attribute__((pnaclcall))
-PP_Bool Pnacl_M17_PPB_Testing_Dev_IsOutOfProcess() {
+PP_Bool Pnacl_M17_PPB_Testing_Dev_IsOutOfProcess(void) {
   const struct PPB_Testing_Dev_0_9 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_9.real_iface;
   return iface->IsOutOfProcess();
 }
@@ -1879,7 +1879,7 @@ uint32_t Pnacl_M18_PPB_Testing_Dev_GetLiveObjectsForInstance(PP_Instance instanc
 }
 
 static __attribute__((pnaclcall))
-PP_Bool Pnacl_M18_PPB_Testing_Dev_IsOutOfProcess() {
+PP_Bool Pnacl_M18_PPB_Testing_Dev_IsOutOfProcess(void) {
   const struct PPB_Testing_Dev_0_91 *iface = Pnacl_WrapperInfo_PPB_Testing_Dev_0_91.real_iface;
   return iface->IsOutOfProcess();
 }
@@ -3385,10 +3385,10 @@ static struct PP_Var Pnacl_M18_PPP_Instance_Private_GetInstanceObject(PP_Instanc
 struct PPB_Core_1_0 Pnacl_Wrappers_PPB_Core_1_0 = {
     .AddRefResource = (void (*)(PP_Resource resource))&Pnacl_M14_PPB_Core_AddRefResource,
     .ReleaseResource = (void (*)(PP_Resource resource))&Pnacl_M14_PPB_Core_ReleaseResource,
-    .GetTime = (PP_Time (*)())&Pnacl_M14_PPB_Core_GetTime,
-    .GetTimeTicks = (PP_TimeTicks (*)())&Pnacl_M14_PPB_Core_GetTimeTicks,
+    .GetTime = (PP_Time (*)(void))&Pnacl_M14_PPB_Core_GetTime,
+    .GetTimeTicks = (PP_TimeTicks (*)(void))&Pnacl_M14_PPB_Core_GetTimeTicks,
     .CallOnMainThread = (void (*)(int32_t delay_in_milliseconds, struct PP_CompletionCallback callback, int32_t result))&Pnacl_M14_PPB_Core_CallOnMainThread,
-    .IsMainThread = (PP_Bool (*)())&Pnacl_M14_PPB_Core_IsMainThread
+    .IsMainThread = (PP_Bool (*)(void))&Pnacl_M14_PPB_Core_IsMainThread
 };
 
 struct PPB_FileIO_1_0 Pnacl_Wrappers_PPB_FileIO_1_0 = {
@@ -3519,8 +3519,8 @@ struct PPB_Instance_0_5 Pnacl_Wrappers_PPB_Instance_0_5 = {
 
 struct PPB_MessageLoop_1_0 Pnacl_Wrappers_PPB_MessageLoop_1_0 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M25_PPB_MessageLoop_Create,
-    .GetForMainThread = (PP_Resource (*)())&Pnacl_M25_PPB_MessageLoop_GetForMainThread,
-    .GetCurrent = (PP_Resource (*)())&Pnacl_M25_PPB_MessageLoop_GetCurrent,
+    .GetForMainThread = (PP_Resource (*)(void))&Pnacl_M25_PPB_MessageLoop_GetForMainThread,
+    .GetCurrent = (PP_Resource (*)(void))&Pnacl_M25_PPB_MessageLoop_GetCurrent,
     .AttachToCurrentThread = (int32_t (*)(PP_Resource message_loop))&Pnacl_M25_PPB_MessageLoop_AttachToCurrentThread,
     .Run = (int32_t (*)(PP_Resource message_loop))&Pnacl_M25_PPB_MessageLoop_Run,
     .PostWork = (int32_t (*)(PP_Resource message_loop, struct PP_CompletionCallback callback, int64_t delay_ms))&Pnacl_M25_PPB_MessageLoop_PostWork,
@@ -3788,7 +3788,7 @@ struct PPB_Testing_Dev_0_9 Pnacl_Wrappers_PPB_Testing_Dev_0_9 = {
     .RunMessageLoop = (void (*)(PP_Instance instance))&Pnacl_M17_PPB_Testing_Dev_RunMessageLoop,
     .QuitMessageLoop = (void (*)(PP_Instance instance))&Pnacl_M17_PPB_Testing_Dev_QuitMessageLoop,
     .GetLiveObjectsForInstance = (uint32_t (*)(PP_Instance instance))&Pnacl_M17_PPB_Testing_Dev_GetLiveObjectsForInstance,
-    .IsOutOfProcess = (PP_Bool (*)())&Pnacl_M17_PPB_Testing_Dev_IsOutOfProcess,
+    .IsOutOfProcess = (PP_Bool (*)(void))&Pnacl_M17_PPB_Testing_Dev_IsOutOfProcess,
     .SimulateInputEvent = (void (*)(PP_Instance instance, PP_Resource input_event))&Pnacl_M17_PPB_Testing_Dev_SimulateInputEvent,
     .GetDocumentURL = (struct PP_Var (*)(PP_Instance instance, struct PP_URLComponents_Dev* components))&Pnacl_M17_PPB_Testing_Dev_GetDocumentURL
 };
@@ -3798,7 +3798,7 @@ struct PPB_Testing_Dev_0_91 Pnacl_Wrappers_PPB_Testing_Dev_0_91 = {
     .RunMessageLoop = (void (*)(PP_Instance instance))&Pnacl_M18_PPB_Testing_Dev_RunMessageLoop,
     .QuitMessageLoop = (void (*)(PP_Instance instance))&Pnacl_M18_PPB_Testing_Dev_QuitMessageLoop,
     .GetLiveObjectsForInstance = (uint32_t (*)(PP_Instance instance))&Pnacl_M18_PPB_Testing_Dev_GetLiveObjectsForInstance,
-    .IsOutOfProcess = (PP_Bool (*)())&Pnacl_M18_PPB_Testing_Dev_IsOutOfProcess,
+    .IsOutOfProcess = (PP_Bool (*)(void))&Pnacl_M18_PPB_Testing_Dev_IsOutOfProcess,
     .SimulateInputEvent = (void (*)(PP_Instance instance, PP_Resource input_event))&Pnacl_M18_PPB_Testing_Dev_SimulateInputEvent,
     .GetDocumentURL = (struct PP_Var (*)(PP_Instance instance, struct PP_URLComponents_Dev* components))&Pnacl_M18_PPB_Testing_Dev_GetDocumentURL,
     .GetLiveVars = (uint32_t (*)(struct PP_Var live_vars[], uint32_t array_size))&Pnacl_M18_PPB_Testing_Dev_GetLiveVars

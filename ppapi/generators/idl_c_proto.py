@@ -412,6 +412,8 @@ class CGen(object):
                                    ptr_prefix='', include_name=True))
       if func_as_ptr:
         name = '(%s*%s)' % (ptr_prefix, name)
+      if not params:
+        params = ['void']
       out = '%s %s(%s)' % (rtype, name, ', '.join(params))
     self.LogExit('Exit Compose: %s' % out)
     return out

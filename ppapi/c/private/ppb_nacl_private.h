@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Fri Nov 16 05:20:17 2012. */
+/* From private/ppb_nacl_private.idl modified Tue Nov 20 08:49:26 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -74,15 +74,15 @@ struct PPB_NaCl_Private_1_0 {
   /* On POSIX systems, this function returns the file descriptor of
    * /dev/urandom.  On non-POSIX systems, this function returns 0.
    */
-  int32_t (*UrandomFD)();
+  int32_t (*UrandomFD)(void);
   /* Whether the Pepper 3D interfaces should be disabled in the NaCl PPAPI
    * proxy. This is so paranoid admins can effectively prevent untrusted shader
    * code to be processed by the graphics stack.
    */
-  PP_Bool (*Are3DInterfacesDisabled)();
+  PP_Bool (*Are3DInterfacesDisabled)(void);
   /* Enables the creation of sel_ldr processes off of the main thread.
    */
-  void (*EnableBackgroundSelLdrLaunch)();
+  void (*EnableBackgroundSelLdrLaunch)(void);
   /* This is Windows-specific.  This is a replacement for DuplicateHandle() for
    * use inside the Windows sandbox.  Note that we provide this via dependency
    * injection only to avoid the linkage problems that occur because the NaCl
@@ -107,10 +107,10 @@ struct PPB_NaCl_Private_1_0 {
   PP_FileHandle (*CreateTemporaryFile)(PP_Instance instance);
   /* Return true if we are off the record.
    */
-  PP_Bool (*IsOffTheRecord)();
+  PP_Bool (*IsOffTheRecord)(void);
   /* Return true if PNaCl is turned on.
    */
-  PP_Bool (*IsPnaclEnabled)();
+  PP_Bool (*IsPnaclEnabled)(void);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;

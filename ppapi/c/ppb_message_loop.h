@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_message_loop.idl modified Mon Nov 12 13:33:16 2012. */
+/* From ppb_message_loop.idl modified Tue Nov 20 08:49:26 2012. */
 
 #ifndef PPAPI_C_PPB_MESSAGE_LOOP_H_
 #define PPAPI_C_PPB_MESSAGE_LOOP_H_
@@ -155,12 +155,12 @@ struct PPB_MessageLoop_1_0 {
    * Returns a resource identifying the message loop for the main thread. The
    * main thread always has a message loop created by the system.
    */
-  PP_Resource (*GetForMainThread)();
+  PP_Resource (*GetForMainThread)(void);
   /**
    * Returns a reference to the PPB_MessageLoop object attached to the current
    * thread. If there is no attached message loop, the return value will be 0.
    */
-  PP_Resource (*GetCurrent)();
+  PP_Resource (*GetCurrent)(void);
   /**
    * Sets the given message loop resource as being the associated message loop
    * for the currently running thread.

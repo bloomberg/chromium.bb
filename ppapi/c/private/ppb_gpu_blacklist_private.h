@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_gpu_blacklist_private.idl,
- *   modified Wed Oct 10 15:34:44 2012.
+ *   modified Wed Oct 24 14:41:20 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_GPU_BLACKLIST_PRIVATE_H_
@@ -37,7 +37,7 @@ struct PPB_GpuBlacklist_Private_0_2 {
    * expose the 3D interfaces if the 3D support is software-emulated. When the
    * SRPC proxy is removed, this interface can also be removed.
    */
-  PP_Bool (*IsGpuBlacklisted)();
+  PP_Bool (*IsGpuBlacklisted)(void);
 };
 
 typedef struct PPB_GpuBlacklist_Private_0_2 PPB_GpuBlacklist_Private;

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppp.idl modified Mon Nov  5 15:50:24 2012. */
+/* From ppp.idl modified Tue Nov 13 08:48:25 2012. */
 
 #ifndef PPAPI_C_PPP_H_
 #define PPAPI_C_PPP_H_
@@ -145,7 +145,7 @@ typedef int32_t (*PP_InitializeModule_Func)(
 /**
  * Defines the type of the <code>PPP_ShutdownModule</code> function.
  */
-typedef void (*PP_ShutdownModule_Func)();
+typedef void (*PP_ShutdownModule_Func)(void);
 
 /**
  * Defines the type of the <code>PPP_ShutdownModule</code> function.

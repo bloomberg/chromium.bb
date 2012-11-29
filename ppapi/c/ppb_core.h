@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_core.idl modified Wed Oct  5 14:06:02 2011. */
+/* From ppb_core.idl modified Mon Mar 19 12:02:10 2012. */
 
 #ifndef PPAPI_C_PPB_CORE_H_
 #define PPAPI_C_PPB_CORE_H_
@@ -58,7 +58,7 @@ struct PPB_Core_1_0 {
    * @return A <code>PP_Time</code> containing the "wall clock time" according
    * to the browser.
    */
-  PP_Time (*GetTime)();
+  PP_Time (*GetTime)(void);
   /**
    * GetTimeTicks() returns the "tick time" according to the browser.
    * This clock is used by the browser when passing some event times to the
@@ -70,7 +70,7 @@ struct PPB_Core_1_0 {
    * @return A <code>PP_TimeTicks</code> containing the "tick time" according
    * to the browser.
    */
-  PP_TimeTicks (*GetTimeTicks)();
+  PP_TimeTicks (*GetTimeTicks)(void);
   /**
    * CallOnMainThread() schedules work to be executed on the main module thread
    * after the specified delay. The delay may be 0 to specify a call back as
@@ -107,7 +107,7 @@ struct PPB_Core_1_0 {
    * @return A <code>PP_Bool</code> containing <code>PP_TRUE</code> if the
    * current thread is the main pepper thread, otherwise <code>PP_FALSE</code>.
    */
-  PP_Bool (*IsMainThread)();
+  PP_Bool (*IsMainThread)(void);
 };
 
 typedef struct PPB_Core_1_0 PPB_Core;
