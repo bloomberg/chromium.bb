@@ -1711,8 +1711,10 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
 
   // Next, layout out the buttons. Any buttons that are placed beyond the
   // visible region and made invisible.
+  // Don't show instructions if bookmark bar is detached at bottom i.e. in |NTP|
+  // mode.
   if (GetBookmarkButtonCount() == 0 && model_ && model_->IsLoaded() &&
-      !browser_->search_model()->mode().is_ntp()) {
+      !(browser_->search_model()->mode().is_ntp() && IsDetached())) {
     gfx::Size pref = instructions_->GetPreferredSize();
     if (!compute_bounds_only) {
       instructions_->SetBounds(
