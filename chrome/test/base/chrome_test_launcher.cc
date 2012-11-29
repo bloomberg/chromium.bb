@@ -120,7 +120,7 @@ int main(int argc, char** argv) {
   }
 
   // Also don't run browser_tests while last issues are being investigated.
-  return;
+  return 0;
 #endif
 
 #if defined(OS_MACOSX)
