@@ -771,6 +771,15 @@ PepperPluginDelegateImpl::CreateImage2D(int width, int height) {
   return PepperPlatformImage2DImpl::Create(width, height);
 }
 
+webkit::ppapi::PluginDelegate::PlatformGraphics2D*
+PepperPluginDelegateImpl::GetGraphics2D(
+    webkit::ppapi::PluginInstance* instance,
+    PP_Resource resource) {
+  RendererPpapiHostImpl* host_impl = static_cast<RendererPpapiHostImpl*>(
+      instance->module()->GetEmbedderState());
+  return host_impl->GetPlatformGraphics2D(resource);
+}
+
 webkit::ppapi::PluginDelegate::PlatformContext3D*
     PepperPluginDelegateImpl::CreateContext3D() {
 #ifdef ENABLE_GPU

@@ -29,6 +29,8 @@
 #include "ppapi/shared_impl/ppb_view_shared.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_graphics_2d_api.h"
+#include "ppapi/thunk/ppb_graphics_3d_api.h"
 #include "ppapi/thunk/thunk.h"
 
 // Windows headers interfere with this file.
@@ -38,6 +40,8 @@
 
 using ppapi::thunk::EnterInstanceNoLock;
 using ppapi::thunk::EnterResourceNoLock;
+using ppapi::thunk::PPB_Graphics2D_API;
+using ppapi::thunk::PPB_Graphics3D_API;
 using ppapi::thunk::PPB_Instance_API;
 
 namespace ppapi {
@@ -198,17 +202,35 @@ PP_Bool PPB_Instance_Proxy::BindGraphics(PP_Instance instance,
   // If device is 0, pass a null HostResource. This signals the host to unbind
   // all devices.
   HostResource host_resource;
+  PP_Resource pp_resource = 0;
+  PP_Bool result = PP_FALSE;
   if (device) {
     Resource* resource =
         PpapiGlobals::Get()->GetResourceTracker()->GetResource(device);
     if (!resource || resource->pp_instance() != instance)
       return PP_FALSE;
     host_resource = resource->host_resource();
+    pp_resource = resource->pp_resource();
+  } else {
+    // Passing 0 means unbinding all devices.
+    dispatcher()->Send(new PpapiHostMsg_PPBInstance_BindGraphics(
+        API_ID_PPB_INSTANCE, instance, 0, &result));
+    return result;
   }
 
-  PP_Bool result = PP_FALSE;
-  dispatcher()->Send(new PpapiHostMsg_PPBInstance_BindGraphics(
-      API_ID_PPB_INSTANCE, instance, host_resource, &result));
+  // We need to pass different resource to Graphics 2D and 3D right now.  Once
+  // 3D is migrated to the new design, we should be able to unify this.
+  EnterResourceNoLock<PPB_Graphics2D_API> enter_2d(device, false);
+  EnterResourceNoLock<PPB_Graphics3D_API> enter_3d(device, false);
+  if (enter_2d.succeeded()) {
+    dispatcher()->Send(new PpapiHostMsg_PPBInstance_BindGraphics(
+        API_ID_PPB_INSTANCE, instance, pp_resource,
+        &result));
+  } else if (enter_3d.succeeded()) {
+    dispatcher()->Send(new PpapiHostMsg_PPBInstance_BindGraphics(
+        API_ID_PPB_INSTANCE, instance, host_resource.host_resource(),
+        &result));
+  }
   return result;
 }
 
@@ -788,12 +810,11 @@ void PPB_Instance_Proxy::OnHostMsgGetOwnerElementObject(
 }
 
 void PPB_Instance_Proxy::OnHostMsgBindGraphics(PP_Instance instance,
-                                               const HostResource& device,
+                                               PP_Resource device,
                                                PP_Bool* result) {
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
-    *result = enter.functions()->BindGraphics(instance,
-                                              device.host_resource());
+    *result = enter.functions()->BindGraphics(instance, device);
   }
 }
 

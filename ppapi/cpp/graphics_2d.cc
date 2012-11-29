@@ -62,9 +62,9 @@ void Graphics2D::PaintImageData(const ImageData& image,
   if (!has_interface<PPB_Graphics2D_1_0>())
     return;
   get_interface<PPB_Graphics2D_1_0>()->PaintImageData(pp_resource(),
-                                                  image.pp_resource(),
-                                                  &top_left.pp_point(),
-                                                  NULL);
+                                                      image.pp_resource(),
+                                                      &top_left.pp_point(),
+                                                      NULL);
 }
 
 void Graphics2D::PaintImageData(const ImageData& image,
@@ -73,24 +73,24 @@ void Graphics2D::PaintImageData(const ImageData& image,
   if (!has_interface<PPB_Graphics2D_1_0>())
     return;
   get_interface<PPB_Graphics2D_1_0>()->PaintImageData(pp_resource(),
-                                                  image.pp_resource(),
-                                                  &top_left.pp_point(),
-                                                  &src_rect.pp_rect());
+                                                      image.pp_resource(),
+                                                      &top_left.pp_point(),
+                                                      &src_rect.pp_rect());
 }
 
 void Graphics2D::Scroll(const Rect& clip, const Point& amount) {
   if (!has_interface<PPB_Graphics2D_1_0>())
     return;
   get_interface<PPB_Graphics2D_1_0>()->Scroll(pp_resource(),
-                                          &clip.pp_rect(),
-                                          &amount.pp_point());
+                                              &clip.pp_rect(),
+                                              &amount.pp_point());
 }
 
 void Graphics2D::ReplaceContents(ImageData* image) {
   if (!has_interface<PPB_Graphics2D_1_0>())
     return;
   get_interface<PPB_Graphics2D_1_0>()->ReplaceContents(pp_resource(),
-                                                   image->pp_resource());
+                                                       image->pp_resource());
 
   // On success, reset the image data. This is to help prevent people
   // from continuing to use the resource which will result in artifacts.
@@ -100,8 +100,8 @@ void Graphics2D::ReplaceContents(ImageData* image) {
 int32_t Graphics2D::Flush(const CompletionCallback& cc) {
   if (!has_interface<PPB_Graphics2D_1_0>())
     return cc.MayForce(PP_ERROR_NOINTERFACE);
-  return get_interface<PPB_Graphics2D_1_0>()->Flush(pp_resource(),
-                                                cc.pp_completion_callback());
+  return get_interface<PPB_Graphics2D_1_0>()->Flush(
+      pp_resource(), cc.pp_completion_callback());
 }
 
 }  // namespace pp

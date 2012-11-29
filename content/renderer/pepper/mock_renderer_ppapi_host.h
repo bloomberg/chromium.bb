@@ -45,6 +45,8 @@ class MockRendererPpapiHost : public RendererPpapiHost {
       PP_Instance instance) const OVERRIDE;
   virtual WebKit::WebPluginContainer* GetContainerForInstance(
       PP_Instance instance) const OVERRIDE;
+  virtual webkit::ppapi::PluginDelegate::PlatformGraphics2D*
+      GetPlatformGraphics2D(PP_Resource resource) OVERRIDE;
   virtual bool HasUserGesture(PP_Instance instance) const OVERRIDE;
   virtual int GetRoutingIDForWidget(PP_Instance instance) const OVERRIDE;
   virtual gfx::Point PluginPointToRenderView(
@@ -53,6 +55,7 @@ class MockRendererPpapiHost : public RendererPpapiHost {
   virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
       base::PlatformFile handle,
       bool should_close_source) OVERRIDE;
+  virtual bool IsRunningInProcess() const OVERRIDE;
 
  private:
   ppapi::proxy::ResourceMessageTestSink sink_;

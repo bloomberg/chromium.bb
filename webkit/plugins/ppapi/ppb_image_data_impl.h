@@ -91,6 +91,7 @@ class WEBKIT_PLUGINS_EXPORT PPB_ImageData_Impl
   virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) OVERRIDE;
   virtual SkCanvas* GetPlatformCanvas() OVERRIDE;
   virtual SkCanvas* GetCanvas() OVERRIDE;
+  virtual void SetUsedInReplaceContents() OVERRIDE;
 
   const SkBitmap* GetMappedBitmap() const;
 

@@ -22,20 +22,25 @@ class Point;
 class Rect;
 }
 
+namespace content {
+class PepperGraphics2DHost;
+}
+
 namespace webkit {
 namespace ppapi {
 
 class PPB_ImageData_Impl;
 class PluginInstance;
 
-class PPB_Graphics2D_Impl : public ::ppapi::Resource,
-                            public ::ppapi::thunk::PPB_Graphics2D_API {
+class WEBKIT_PLUGINS_EXPORT PPB_Graphics2D_Impl :
+    public ::ppapi::Resource,
+    public ::ppapi::thunk::PPB_Graphics2D_API {
  public:
   virtual ~PPB_Graphics2D_Impl();
 
-  WEBKIT_PLUGINS_EXPORT static PP_Resource Create(PP_Instance instance,
-                                                  const PP_Size& size,
-                                                  PP_Bool is_always_opaque);
+  static PP_Resource Create(PP_Instance instance,
+                            const PP_Size& size,
+                            PP_Bool is_always_opaque);
 
   bool is_always_opaque() const { return is_always_opaque_; }
 
@@ -83,9 +88,9 @@ class PPB_Graphics2D_Impl : public ::ppapi::Resource,
   // pixels as well for scrolling cases. Returns false for scrolling cases where
   // scaling either |op_rect| or |delta| would require scrolling to fall back to
   // invalidation due to rounding errors, true otherwise.
-  WEBKIT_PLUGINS_EXPORT static bool ConvertToLogicalPixels(float scale,
-                                                           gfx::Rect* op_rect,
-                                                           gfx::Point* delta);
+  static bool ConvertToLogicalPixels(float scale,
+                                     gfx::Rect* op_rect,
+                                     gfx::Point* delta);
 
  private:
   explicit PPB_Graphics2D_Impl(PP_Instance instance);
@@ -206,6 +211,7 @@ class PPB_Graphics2D_Impl : public ::ppapi::Resource,
 
   base::WeakPtrFactory<PPB_Graphics2D_Impl> weak_ptr_factory_;
 
+  friend class content::PepperGraphics2DHost;
   DISALLOW_COPY_AND_ASSIGN(PPB_Graphics2D_Impl);
 };
 

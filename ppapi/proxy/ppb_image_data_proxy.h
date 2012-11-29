@@ -59,10 +59,9 @@ class ImageData : public ppapi::Resource,
   virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) OVERRIDE;
   virtual SkCanvas* GetPlatformCanvas() OVERRIDE;
   virtual SkCanvas* GetCanvas() OVERRIDE;
+  virtual void SetUsedInReplaceContents() OVERRIDE;
 
   const PP_ImageDataDesc& desc() const { return desc_; }
-
-  void set_used_in_replace_contents() { used_in_replace_contents_ = true; }
 
   // Prepares this image data to be recycled to the plugin. The contents will be
   // cleared if zero_contents is set.

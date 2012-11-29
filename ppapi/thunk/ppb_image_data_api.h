@@ -42,6 +42,11 @@ class PPB_ImageData_API {
   //   * If the image is not mapped.
   //   * Within untrusted code (which does not have skia).
   virtual SkCanvas* GetCanvas() = 0;
+
+  // Sets whether this image was used in a ReplaceContents call. If the
+  // current implementation supports image data recycling (only supported
+  // out-of-process then it will be marked for potential re-use.
+  virtual void SetUsedInReplaceContents() = 0;
 };
 
 }  // namespace thunk

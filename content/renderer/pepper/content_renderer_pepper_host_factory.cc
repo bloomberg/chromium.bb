@@ -9,6 +9,7 @@
 #include "content/renderer/pepper/pepper_file_chooser_host.h"
 #include "content/renderer/pepper/pepper_flash_clipboard_host.h"
 #include "content/renderer/pepper/pepper_flash_host.h"
+#include "content/renderer/pepper/pepper_graphics_2d_host.h"
 #include "content/renderer/pepper/pepper_video_capture_host.h"
 #include "content/renderer/pepper/pepper_websocket_host.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
@@ -54,6 +55,17 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
       case PpapiHostMsg_FileChooser_Create::ID:
         return scoped_ptr<ResourceHost>(new PepperFileChooserHost(
             host_, instance, params.pp_resource()));
+      case PpapiHostMsg_Graphics2D_Create::ID: {
+        PpapiHostMsg_Graphics2D_Create::Schema::Param msg_params;
+        if (!PpapiHostMsg_Graphics2D_Create::Read(&message, &msg_params)) {
+          NOTREACHED();
+          return scoped_ptr<ResourceHost>();
+        }
+        return scoped_ptr<ResourceHost>(
+            PepperGraphics2DHost::Create(host_, instance, params.pp_resource(),
+                                         msg_params.a /* PP_Size */,
+                                         msg_params.b /* PP_Bool */));
+      }
       case PpapiHostMsg_VideoCapture_Create::ID: {
         PepperVideoCaptureHost* host = new PepperVideoCaptureHost(
             host_, instance, params.pp_resource());

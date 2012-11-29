@@ -128,6 +128,10 @@ SkCanvas* PPB_ImageData_Impl::GetCanvas() {
   return backend_->GetCanvas();
 }
 
+void PPB_ImageData_Impl::SetUsedInReplaceContents() {
+  // Nothing to do since we don't support image data re-use in-process.
+}
+
 const SkBitmap* PPB_ImageData_Impl::GetMappedBitmap() const {
   return backend_->GetMappedBitmap();
 }

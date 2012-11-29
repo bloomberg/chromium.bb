@@ -10,6 +10,7 @@
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/content_renderer_pepper_host_factory.h"
 #include "ppapi/host/ppapi_host.h"
+#include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 
 namespace IPC {
@@ -86,6 +87,8 @@ class RendererPpapiHostImpl
   virtual bool IsValidInstance(PP_Instance instance) const OVERRIDE;
   virtual webkit::ppapi::PluginInstance* GetPluginInstance(
       PP_Instance instance) const OVERRIDE;
+  virtual webkit::ppapi::PluginDelegate::PlatformGraphics2D*
+      GetPlatformGraphics2D(PP_Resource resource) OVERRIDE;
   virtual RenderView* GetRenderViewForInstance(
       PP_Instance instance) const OVERRIDE;
   virtual WebKit::WebPluginContainer* GetContainerForInstance(
@@ -98,6 +101,7 @@ class RendererPpapiHostImpl
   virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
       base::PlatformFile handle,
       bool should_close_source) OVERRIDE;
+  virtual bool IsRunningInProcess() const OVERRIDE;
 
  private:
   RendererPpapiHostImpl(webkit::ppapi::PluginModule* module,
@@ -123,6 +127,9 @@ class RendererPpapiHostImpl
 
   // Null when running out-of-process.
   scoped_ptr<PepperInProcessRouter> in_process_router_;
+
+  // Whether the plugin is running in process.
+  bool is_running_in_process_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererPpapiHostImpl);
 };

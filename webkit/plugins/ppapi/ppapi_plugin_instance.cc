@@ -77,7 +77,6 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/plugin_object.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
-#include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
@@ -347,6 +346,7 @@ PluginInstance::PluginInstance(
       full_frame_(false),
       sent_initial_did_change_view_(false),
       view_change_weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      bound_graphics_2d_platform_(NULL),
       has_webkit_focus_(false),
       has_content_area_focus_(false),
       find_identifier_(-1),
@@ -464,7 +464,7 @@ void PluginInstance::Paint(WebCanvas* canvas,
     return;
   }
 
-  PPB_Graphics2D_Impl* bound_graphics_2d = GetBoundGraphics2D();
+  PluginDelegate::PlatformGraphics2D* bound_graphics_2d = GetBoundGraphics2D();
   if (bound_graphics_2d)
     bound_graphics_2d->Paint(canvas, plugin_rect, paint_rect);
 }
@@ -935,13 +935,13 @@ bool PluginInstance::GetBitmapForOptimizedPluginPaint(
     float* scale_factor) {
   if (!always_on_top_)
     return false;
-  if (!GetBoundGraphics2D() || !GetBoundGraphics2D()->is_always_opaque())
+  if (!GetBoundGraphics2D() || !GetBoundGraphics2D()->IsAlwaysOpaque())
     return false;
 
   // We specifically want to compare against the area covered by the backing
   // store when seeing if we cover the given paint bounds, since the backing
   // store could be smaller than the declared plugin area.
-  PPB_ImageData_Impl* image_data = GetBoundGraphics2D()->image_data();
+  PPB_ImageData_Impl* image_data = GetBoundGraphics2D()->ImageData();
   // ImageDatas created by NaCl don't have a PlatformImage, so can't be
   // optimized this way.
   if (!image_data->PlatformImage())
@@ -1698,22 +1698,14 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
 #endif
 }
 
-PPB_Graphics2D_Impl* PluginInstance::GetBoundGraphics2D() const {
-  if (bound_graphics_.get() == NULL)
-    return NULL;
-
-  if (bound_graphics_->AsPPB_Graphics2D_API())
-    return static_cast<PPB_Graphics2D_Impl*>(bound_graphics_.get());
-  return NULL;
+PluginDelegate::PlatformGraphics2D* PluginInstance::GetBoundGraphics2D() const {
+  return bound_graphics_2d_platform_;
 }
 
 PPB_Graphics3D_Impl* PluginInstance::GetBoundGraphics3D() const {
-  if (bound_graphics_.get() == NULL)
+  if (bound_graphics_3d_.get() == NULL)
     return NULL;
-
-  if (bound_graphics_->AsPPB_Graphics3D_API())
-    return static_cast<PPB_Graphics3D_Impl*>(bound_graphics_.get());
-  return NULL;
+  return static_cast<PPB_Graphics3D_Impl*>(bound_graphics_3d_.get());
 }
 
 void PluginInstance::setBackingTextureId(unsigned int id, bool is_opaque) {
@@ -1874,14 +1866,16 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
   TRACE_EVENT0("ppapi", "PluginInstance::BindGraphics");
   // The Graphics3D instance can't be destroyed until we call
   // setBackingTextureId.
-  scoped_refptr< ::ppapi::Resource> old_graphics = bound_graphics_;
-  if (bound_graphics_.get()) {
-    if (GetBoundGraphics2D()) {
-      GetBoundGraphics2D()->BindToInstance(NULL);
-    } else if (GetBoundGraphics3D()) {
+  scoped_refptr< ::ppapi::Resource> old_graphics = bound_graphics_3d_;
+  if (bound_graphics_3d_.get()) {
+    if (GetBoundGraphics3D()) {
       GetBoundGraphics3D()->BindToInstance(false);
     }
-    bound_graphics_ = NULL;
+    bound_graphics_3d_ = NULL;
+  }
+  if (bound_graphics_2d_platform_) {
+    GetBoundGraphics2D()->BindToInstance(NULL);
+    bound_graphics_2d_platform_ = NULL;
   }
 
   // Special-case clearing the current device.
@@ -1897,21 +1891,16 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
       desired_fullscreen_state_ != view_data_.is_fullscreen)
     return PP_FALSE;
 
-  EnterResourceNoLock<PPB_Graphics2D_API> enter_2d(device, false);
-  PPB_Graphics2D_Impl* graphics_2d = enter_2d.succeeded() ?
-      static_cast<PPB_Graphics2D_Impl*>(enter_2d.object()) : NULL;
+  bound_graphics_2d_platform_ = delegate_->GetGraphics2D(this, device);
   EnterResourceNoLock<PPB_Graphics3D_API> enter_3d(device, false);
   PPB_Graphics3D_Impl* graphics_3d = enter_3d.succeeded() ?
       static_cast<PPB_Graphics3D_Impl*>(enter_3d.object()) : NULL;
 
-  if (graphics_2d) {
-    if (graphics_2d->pp_instance() != pp_instance())
-      return PP_FALSE;  // Can't bind other instance's contexts.
-    if (!graphics_2d->BindToInstance(this))
+  if (bound_graphics_2d_platform_) {
+    if (!bound_graphics_2d_platform_->BindToInstance(this))
       return PP_FALSE;  // Can't bind to more than one instance.
 
-    bound_graphics_ = graphics_2d;
-    setBackingTextureId(0, graphics_2d->is_always_opaque());
+    setBackingTextureId(0, bound_graphics_2d_platform_->IsAlwaysOpaque());
     // BindToInstance will have invalidated the plugin if necessary.
   } else if (graphics_3d) {
     // Make sure graphics can only be bound to the instance it is
@@ -1921,7 +1910,7 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
     if (!graphics_3d->BindToInstance(true))
       return PP_FALSE;
 
-    bound_graphics_ = graphics_3d;
+    bound_graphics_3d_ = graphics_3d;
     setBackingTextureId(graphics_3d->GetBackingTextureId(),
                         graphics_3d->IsOpaque());
   } else {

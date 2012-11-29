@@ -18,7 +18,6 @@
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_message_loop_impl.h"
-#include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_host_resolver_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
@@ -121,13 +120,6 @@ PP_Resource ResourceCreationImpl::CreateFlashMenu(
 
 PP_Resource ResourceCreationImpl::CreateFlashMessageLoop(PP_Instance instance) {
   return PPB_Flash_MessageLoop_Impl::Create(instance);
-}
-
-PP_Resource ResourceCreationImpl::CreateGraphics2D(
-    PP_Instance instance,
-    const PP_Size& size,
-    PP_Bool is_always_opaque) {
-  return PPB_Graphics2D_Impl::Create(instance, size, is_always_opaque);
 }
 
 PP_Resource ResourceCreationImpl::CreateGraphics3D(

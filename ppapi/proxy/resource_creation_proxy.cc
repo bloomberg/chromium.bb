@@ -14,6 +14,7 @@
 #include "ppapi/proxy/flash_device_id_resource.h"
 #include "ppapi/proxy/flash_font_file_resource.h"
 #include "ppapi/proxy/flash_menu_resource.h"
+#include "ppapi/proxy/graphics_2d_resource.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
@@ -25,7 +26,6 @@
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/ppb_file_system_proxy.h"
 #include "ppapi/proxy/ppb_flash_message_loop_proxy.h"
-#include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
 #include "ppapi/proxy/ppb_host_resolver_private_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
@@ -207,8 +207,8 @@ PP_Resource ResourceCreationProxy::CreateFileChooser(
 PP_Resource ResourceCreationProxy::CreateGraphics2D(PP_Instance instance,
                                                     const PP_Size& size,
                                                     PP_Bool is_always_opaque) {
-  return PPB_Graphics2D_Proxy::CreateProxyResource(instance, size,
-                                                   is_always_opaque);
+  return (new Graphics2DResource(GetConnection(), instance, size,
+                                 is_always_opaque))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateGraphics3D(

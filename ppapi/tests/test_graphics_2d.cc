@@ -14,11 +14,14 @@
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/graphics_2d_dev.h"
+#include "ppapi/cpp/dev/graphics_2d_dev.h"
 #include "ppapi/cpp/graphics_2d.h"
+#include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
+#include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
 REGISTER_TEST_CASE(Graphics2D);
@@ -63,6 +66,7 @@ void TestGraphics2D::RunTests(const std::string& filter) {
   RUN_TEST_FORCEASYNC_AND_NOT(FlushOffscreenUpdate, filter);
   RUN_TEST(Dev, filter);
   RUN_TEST(ReplaceContentsCaching, filter);
+  RUN_TEST(BindNull, filter);
 }
 
 void TestGraphics2D::QuitMessageLoop() {
@@ -87,6 +91,29 @@ bool TestGraphics2D::IsDCUniformColor(const pp::Graphics2D& dc,
   if (!ReadImageData(dc, &readback, pp::Point(0, 0)))
     return false;
   return IsSquareInImage(readback, 0, pp::Rect(dc.size()), color);
+}
+
+bool TestGraphics2D::ResourceHealthCheck(pp::Instance* instance,
+                                         pp::Graphics2D* context) {
+  TestCompletionCallback callback(instance->pp_instance(), callback_type());
+  callback.WaitForResult(context->Flush(callback));
+  if (callback.result() < 0)
+    return callback.result() != PP_ERROR_FAILED;
+  else if (callback.result() == 0)
+    return false;
+  return true;
+}
+
+bool TestGraphics2D::ResourceHealthCheckForC(pp::Instance* instance,
+                                             PP_Resource graphics_2d) {
+  TestCompletionCallback callback(instance->pp_instance(), callback_type());
+  callback.WaitForResult(graphics_2d_interface_->Flush(
+      graphics_2d, callback.GetCallback().pp_completion_callback()));
+  if (callback.result() < 0)
+    return callback.result() != PP_ERROR_FAILED;
+  else if (callback.result() == 0)
+    return false;
+  return true;
 }
 
 bool TestGraphics2D::FlushAndWaitForDone(pp::Graphics2D* context) {
@@ -260,31 +287,40 @@ std::string TestGraphics2D::TestInvalidResource() {
 
 std::string TestGraphics2D::TestInvalidSize() {
   pp::Graphics2D a(instance_, pp::Size(16, 0), false);
-  if (!a.is_null())
+  if (ResourceHealthCheck(instance_, &a))
     return "0 height accepted";
 
   pp::Graphics2D b(instance_, pp::Size(0, 16), false);
-  if (!b.is_null())
-    return "0 width accepted";
+  if (ResourceHealthCheck(instance_, &b))
+    return "0 height accepted";
 
   // Need to use the C API since pp::Size prevents negative sizes.
   PP_Size size;
   size.width = 16;
   size.height = -16;
-  ASSERT_FALSE(!!graphics_2d_interface_->Create(
-      instance_->pp_instance(), &size, PP_FALSE));
+  PP_Resource graphics = graphics_2d_interface_->Create(
+      instance_->pp_instance(), &size, PP_FALSE);
+  ASSERT_FALSE(ResourceHealthCheckForC(instance_, graphics));
 
   size.width = -16;
   size.height = 16;
-  ASSERT_FALSE(!!graphics_2d_interface_->Create(
-      instance_->pp_instance(), &size, PP_FALSE));
+  graphics = graphics_2d_interface_->Create(
+      instance_->pp_instance(), &size, PP_FALSE);
+  ASSERT_FALSE(ResourceHealthCheckForC(instance_, graphics));
+
+  // Overflow to negative size
+  size.width = std::numeric_limits<int32_t>::max();
+  size.height = std::numeric_limits<int32_t>::max();
+  graphics = graphics_2d_interface_->Create(
+      instance_->pp_instance(), &size, PP_FALSE);
+  ASSERT_FALSE(ResourceHealthCheckForC(instance_, graphics));
 
   PASS();
 }
 
 std::string TestGraphics2D::TestHumongous() {
   pp::Graphics2D a(instance_, pp::Size(100000, 100000), false);
-  if (!a.is_null())
+  if (ResourceHealthCheck(instance_, &a))
     return "Humongous device created";
   PASS();
 }
@@ -816,3 +852,24 @@ std::string TestGraphics2D::TestReplaceContentsCaching() {
 
   PASS();
 }
+
+std::string TestGraphics2D::TestBindNull() {
+  // Binding a null resource is not an error, it should clear all bound
+  // resources. We can't easily test what resource is bound, but we can test
+  // that this doesn't throw an error.
+  ASSERT_TRUE(instance_->BindGraphics(pp::Graphics2D()));
+  ASSERT_TRUE(instance_->BindGraphics(pp::Graphics3D()));
+
+  const int w = 115, h = 117;
+  pp::Graphics2D dc(instance_, pp::Size(w, h), false);
+  if (dc.is_null())
+    return "Failure creating device.";
+  if (!instance_->BindGraphics(dc))
+    return "Failure to bind the boring device.";
+
+  ASSERT_TRUE(instance_->BindGraphics(pp::Graphics2D()));
+  ASSERT_TRUE(instance_->BindGraphics(pp::Graphics3D()));
+
+  PASS();
+}
+

@@ -164,8 +164,8 @@ void PpapiHost::OnHostMsgResourceDestroyed(PP_Resource resource) {
   resources_.erase(found);
 }
 
-ResourceHost* PpapiHost::GetResourceHost(PP_Resource resource) {
-  ResourceMap::iterator found = resources_.find(resource);
+ResourceHost* PpapiHost::GetResourceHost(PP_Resource resource) const {
+  ResourceMap::const_iterator found = resources_.find(resource);
   return found == resources_.end() ? NULL : found->second.get();
 }
 

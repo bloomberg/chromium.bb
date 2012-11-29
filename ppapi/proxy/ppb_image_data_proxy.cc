@@ -402,6 +402,10 @@ SkCanvas* ImageData::GetCanvas() {
 #endif
 }
 
+void ImageData::SetUsedInReplaceContents() {
+  used_in_replace_contents_ = true;
+}
+
 void ImageData::RecycleToPlugin(bool zero_contents) {
   used_in_replace_contents_ = false;
   if (zero_contents) {

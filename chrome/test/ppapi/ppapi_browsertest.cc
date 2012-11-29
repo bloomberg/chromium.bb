@@ -259,6 +259,7 @@ TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_Scroll)
 TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_Replace)
 TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_Flush)
 TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_FlushOffscreenUpdate)
+TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_BindNull)
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 // These tests fail with the test compositor which is what's used by default for

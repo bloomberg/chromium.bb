@@ -87,7 +87,6 @@ class MessageChannel;
 class PluginDelegate;
 class PluginModule;
 class PluginObject;
-class PPB_Graphics2D_Impl;
 class PPB_Graphics3D_Impl;
 class PPB_ImageData_Impl;
 class PPB_URLLoader_Impl;
@@ -517,7 +516,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
 
   // Get the bound graphics context as a concrete 2D graphics context or returns
   // null if the context is not 2D.
-  PPB_Graphics2D_Impl* GetBoundGraphics2D() const;
+  PluginDelegate::PlatformGraphics2D* GetBoundGraphics2D() const;
 
   // Get the bound 3D graphics context.
   // Returns NULL if bound graphics is not a 3D context.
@@ -603,8 +602,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // view change events.
   base::WeakPtrFactory<PluginInstance> view_change_weak_ptr_factory_;
 
-  // The current device context for painting in 2D or 3D.
-  scoped_refptr< ::ppapi::Resource> bound_graphics_;
+  // The current device context for painting in 2D and 3D.
+  scoped_refptr< ::ppapi::Resource> bound_graphics_3d_;
+  PluginDelegate::PlatformGraphics2D* bound_graphics_2d_platform_;
 
   // We track two types of focus, one from WebKit, which is the focus among
   // all elements of the page, one one from the browser, which is whether the

@@ -450,11 +450,6 @@ IPC_MESSAGE_ROUTED2(
     ppapi::HostResource /* filesystem */,
     int32_t /* result */)
 
-// PPB_Graphics2D.
-IPC_MESSAGE_ROUTED2(PpapiMsg_PPBGraphics2D_FlushACK,
-                    ppapi::HostResource /* graphics_2d */,
-                    int32_t /* pp_error */)
-
 // PPB_Graphics3D.
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPBGraphics3D_SwapBuffersACK,
                     ppapi::HostResource /* graphics_3d */,
@@ -885,32 +880,6 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFileSystem_Open,
                     ppapi::HostResource /* result */,
                     int64_t /* expected_size */)
 
-// PPB_Graphics2D.
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBGraphics2D_Create,
-                           PP_Instance /* instance */,
-                           PP_Size /* size */,
-                           PP_Bool /* is_always_opaque */,
-                           ppapi::HostResource /* result */)
-IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBGraphics2D_PaintImageData,
-                    ppapi::HostResource /* graphics_2d */,
-                    ppapi::HostResource /* image_data */,
-                    PP_Point /* top_left */,
-                    bool /* src_rect_specified */,
-                    PP_Rect /* src_rect */)
-IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBGraphics2D_Scroll,
-                    ppapi::HostResource /* graphics_2d */,
-                    bool /* clip_specified */,
-                    PP_Rect /* clip */,
-                    PP_Point /* amount */)
-IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBGraphics2D_ReplaceContents,
-                    ppapi::HostResource /* graphics_2d */,
-                    ppapi::HostResource /* image_data */)
-IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBGraphics2D_Flush,
-                    ppapi::HostResource /* graphics_2d */)
-IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBGraphics2D_Dev_SetScale,
-                    ppapi::HostResource /* graphics_2d */,
-                    float /* scale */)
-
 // PPB_Graphics3D.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBGraphics3D_Create,
                            PP_Instance /* instance */,
@@ -976,7 +945,7 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_GetOwnerElementObject,
                            ppapi::proxy::SerializedVar /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_BindGraphics,
                            PP_Instance /* instance */,
-                           ppapi::HostResource /* device */,
+                           PP_Resource /* device */,
                            PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_1(
     PpapiHostMsg_PPBInstance_GetAudioHardwareOutputSampleRate,
@@ -1504,6 +1473,35 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_Gamepad_RequestMemory)
 // Reply to a RequestMemory call. This supplies the shared memory handle. The
 // actual handle is passed in the ReplyParams struct.
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_Gamepad_SendMemory)
+
+
+// Graphics2D, plugin -> host
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_Graphics2D_Create,
+                     PP_Size /* size */,
+                     PP_Bool /* is_always_opaque */)
+IPC_MESSAGE_CONTROL4(PpapiHostMsg_Graphics2D_PaintImageData,
+                     ppapi::HostResource /* image_data */,
+                     PP_Point /* top_left */,
+                     bool /* src_rect_specified */,
+                     PP_Rect /* src_rect */)
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_Graphics2D_Scroll,
+                     bool /* clip_specified */,
+                     PP_Rect /* clip */,
+                     PP_Point /* amount */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_Graphics2D_ReplaceContents,
+                     ppapi::HostResource /* image_data */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_Graphics2D_Dev_SetScale,
+                     float /* scale */)
+
+// Graphics2D, plugin -> host -> plugin
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_Graphics2D_Flush)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_Graphics2D_FlushAck)
+
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_Graphics2D_ReadImageData,
+                     PP_Resource /* image */,
+                     PP_Point /* top_left */)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_Graphics2D_ReadImageDataAck)
+
 
 // Printing.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Printing_Create)

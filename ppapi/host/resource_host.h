@@ -46,6 +46,8 @@ class PPAPI_HOST_EXPORT ResourceHost : public ResourceMessageHandler {
   virtual void SendReply(const ReplyMessageContext& context,
                          const IPC::Message& msg) OVERRIDE;
 
+  virtual bool IsGraphics2DHost() const { return false; }
+
  protected:
   // Adds a ResourceMessageFilter to handle resource messages. Incoming
   // messages will be passed to the handlers of these filters before being

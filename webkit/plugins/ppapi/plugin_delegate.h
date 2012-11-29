@@ -72,6 +72,7 @@ class ResourceCreationAPI;
 }  // namespace ppapi
 
 namespace WebKit {
+typedef SkCanvas WebCanvas;
 class WebGamepads;
 class WebPlugin;
 struct WebCompositionUnderline;
@@ -92,6 +93,8 @@ class FullscreenContainer;
 class PluginInstance;
 class PluginModule;
 class PPB_Broker_Impl;
+class PPB_Flash_Menu_Impl;
+class PPB_ImageData_Impl;
 class PPB_TCPSocket_Private_Impl;
 class PPB_UDPSocket_Private_Impl;
 
@@ -165,6 +168,33 @@ class PluginDelegate {
     virtual intptr_t GetSharedMemoryHandle(uint32* byte_count) const = 0;
 
     virtual TransportDIB* GetTransportDIB() const = 0;
+  };
+
+  class PlatformGraphics2D {
+   public:
+    virtual bool ReadImageData(PP_Resource image, const PP_Point* top_left) = 0;
+
+    // Assciates this device with the given plugin instance. You can pass NULL
+    // to clear the existing device. Returns true on success. In this case, a
+    // repaint of the page will also be scheduled. Failure means that the device
+    // is already bound to a different instance, and nothing will happen.
+    virtual bool BindToInstance(PluginInstance* new_instance) = 0;
+
+    // Paints the current backing store to the web page.
+    virtual void Paint(WebKit::WebCanvas* canvas,
+                       const gfx::Rect& plugin_rect,
+                       const gfx::Rect& paint_rect) = 0;
+
+    // Notifications about the view's progress painting.  See PluginInstance.
+    // These messages are used to send Flush callbacks to the plugin.
+    virtual void ViewWillInitiatePaint() = 0;
+    virtual void ViewInitiatedPaint() = 0;
+    virtual void ViewFlushedPaint() = 0;
+
+    virtual bool IsAlwaysOpaque() const = 0;
+    virtual void SetScale(float scale) = 0;
+    virtual float GetScale() const = 0;
+    virtual PPB_ImageData_Impl* ImageData() = 0;
   };
 
   class PlatformContext3D {
@@ -357,6 +387,10 @@ class PluginDelegate {
 
   // The caller will own the pointer returned from this.
   virtual PlatformImage2D* CreateImage2D(int width, int height) = 0;
+
+  // Returns the internal PlatformGraphics2D implementation.
+  virtual PlatformGraphics2D* GetGraphics2D(PluginInstance* instance,
+                                            PP_Resource graphics_2d) = 0;
 
   // The caller will own the pointer returned from this.
   virtual PlatformContext3D* CreateContext3D() = 0;

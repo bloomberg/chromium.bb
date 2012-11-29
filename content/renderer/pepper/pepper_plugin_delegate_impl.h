@@ -203,6 +203,9 @@ class PepperPluginDelegateImpl
       uint32_t sample_count,
       PlatformAudioInputClient* client) OVERRIDE;
   virtual PlatformImage2D* CreateImage2D(int width, int height) OVERRIDE;
+  virtual PlatformGraphics2D* GetGraphics2D(
+      webkit::ppapi::PluginInstance* instance,
+      PP_Resource resource) OVERRIDE;
   virtual PlatformContext3D* CreateContext3D() OVERRIDE;
   virtual void ReparentContext(PlatformContext3D*) OVERRIDE;
   virtual PlatformVideoCapture* CreateVideoCapture(

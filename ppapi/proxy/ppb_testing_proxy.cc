@@ -14,10 +14,13 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_graphics_2d_api.h"
 #include "ppapi/thunk/ppb_input_event_api.h"
 
 using ppapi::thunk::EnterInstance;
+using ppapi::thunk::EnterResource;
 using ppapi::thunk::EnterResourceNoLock;
+using ppapi::thunk::PPB_Graphics2D_API;
 using ppapi::thunk::PPB_InputEvent_API;
 
 namespace ppapi {
@@ -39,16 +42,12 @@ PP_Bool ReadImageData(PP_Resource graphics_2d,
       image_object->pp_instance() != graphics_2d_object->pp_instance())
     return PP_FALSE;
 
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(
-      image_object->pp_instance());
-  if (!dispatcher)
+  EnterResourceNoLock<PPB_Graphics2D_API> enter(graphics_2d, true);
+  if (enter.failed())
     return PP_FALSE;
-
-  PP_Bool result = PP_FALSE;
-  dispatcher->Send(new PpapiHostMsg_PPBTesting_ReadImageData(
-      API_ID_PPB_TESTING, graphics_2d_object->host_resource(),
-      image_object->host_resource(), *top_left, &result));
-  return result;
+  const HostResource& host_image = image_object->host_resource();
+  return enter.object()->ReadImageData(host_image.host_resource(), top_left) ?
+      PP_TRUE : PP_FALSE;
 }
 
 void RunMessageLoop(PP_Instance instance) {

@@ -37,6 +37,8 @@ class MockPluginDelegate : public PluginDelegate {
   virtual SkBitmap* GetSadPluginBitmap();
   virtual WebKit::WebPlugin* CreatePluginReplacement(const FilePath& file_path);
   virtual PlatformImage2D* CreateImage2D(int width, int height);
+  virtual PlatformGraphics2D* GetGraphics2D(PluginInstance* instance,
+                                            PP_Resource graphics_2d);
   virtual PlatformContext3D* CreateContext3D();
   virtual void ReparentContext(PlatformContext3D*);
   virtual PlatformVideoDecoder* CreateVideoDecoder(

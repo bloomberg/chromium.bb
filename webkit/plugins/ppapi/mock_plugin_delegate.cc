@@ -10,6 +10,7 @@
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGamepads.h"
 #include "webkit/plugins/ppapi/mock_platform_image_2d.h"
+#include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 namespace webkit {
@@ -75,6 +76,12 @@ MockPluginDelegate::PlatformImage2D* MockPluginDelegate::CreateImage2D(
     int width,
     int height) {
   return new MockPlatformImage2D(width, height);
+}
+
+PluginDelegate::PlatformGraphics2D* MockPluginDelegate::GetGraphics2D(
+    PluginInstance* instance,
+    PP_Resource graphics_2d) {
+  return NULL;
 }
 
 MockPluginDelegate::PlatformContext3D* MockPluginDelegate::CreateContext3D() {

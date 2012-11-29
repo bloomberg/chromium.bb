@@ -47,6 +47,12 @@ WebKit::WebPluginContainer* MockRendererPpapiHost::GetContainerForInstance(
   return NULL;
 }
 
+webkit::ppapi::PluginDelegate::PlatformGraphics2D*
+MockRendererPpapiHost::GetPlatformGraphics2D(PP_Resource resource) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 bool MockRendererPpapiHost::HasUserGesture(PP_Instance instance) const {
   return has_user_gesture_;
 }
@@ -66,6 +72,11 @@ IPC::PlatformFileForTransit MockRendererPpapiHost::ShareHandleWithRemote(
     bool should_close_source) {
   NOTIMPLEMENTED();
   return IPC::InvalidPlatformFileForTransit();
+}
+
+bool MockRendererPpapiHost::IsRunningInProcess() const {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 }  // namespace content

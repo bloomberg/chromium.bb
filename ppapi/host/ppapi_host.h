@@ -69,6 +69,9 @@ class PPAPI_HOST_EXPORT PpapiHost : public IPC::Sender, public IPC::Listener {
   // ownership of the pointer.
   void AddInstanceMessageFilter(scoped_ptr<InstanceMessageFilter> filter);
 
+  // Returns null if the resource doesn't exist.
+  host::ResourceHost* GetResourceHost(PP_Resource resource) const;
+
  private:
   friend class InstanceMessageFilter;
 
@@ -88,9 +91,6 @@ class PPAPI_HOST_EXPORT PpapiHost : public IPC::Sender, public IPC::Listener {
                                 PP_Instance instance,
                                 const IPC::Message& nested_msg);
   void OnHostMsgResourceDestroyed(PP_Resource resource);
-
-  // Returns null if the resource doesn't exist.
-  host::ResourceHost* GetResourceHost(PP_Resource resource);
 
   // Non-owning pointer.
   IPC::Sender* sender_;

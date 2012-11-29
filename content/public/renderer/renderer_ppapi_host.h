@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_instance.h"
+#include "webkit/plugins/ppapi/plugin_delegate.h"
 
 class FilePath;
 
@@ -89,6 +90,11 @@ class RendererPpapiHost {
   virtual WebKit::WebPluginContainer* GetContainerForInstance(
       PP_Instance instance) const = 0;
 
+  // Returns the PlatformGraphics2D for the given plugin resource, or NULL if
+  // the resource is invalid.
+  virtual webkit::ppapi::PluginDelegate::PlatformGraphics2D*
+      GetPlatformGraphics2D(PP_Resource resource) = 0;
+
   // Returns true if the given instance is considered to be currently
   // processing a user gesture or the plugin module has the "override user
   // gesture" flag set (in which case it can always do things normally
@@ -119,6 +125,9 @@ class RendererPpapiHost {
       base::PlatformFile handle,
       bool should_close_source) = 0;
 
+  // Returns true if the plugin is running in process.
+  virtual bool IsRunningInProcess() const = 0;
+
  protected:
   virtual ~RendererPpapiHost() {}
 };
@@ -126,4 +135,3 @@ class RendererPpapiHost {
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_RENDERER_RENDERER_PPAPI_HOST_H_
-
