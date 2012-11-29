@@ -5,11 +5,18 @@
 
 import sys
 import unittest
+import os
+
+# add tools folder to sys.path
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SDK_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
+sys.path.append(os.path.join(SDK_DIR, 'tools'))
 
 TEST_MODULES = [
+    'zip_test',
     'test_sdktools',
     'test_sdktools_commands',
-    'test_update_nacl_manifest'
+    'test_update_nacl_manifest',
 ]
 
 def main():

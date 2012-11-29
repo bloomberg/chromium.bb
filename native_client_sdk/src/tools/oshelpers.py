@@ -457,12 +457,16 @@ FuncMap = {
 
 
 def main(args):
-  func = FuncMap.get(args[1])
-  if not func:
-    print 'Do not recognize command: ' + args[1]
+  if not args:
+    print 'No command specified'
     print 'Available commands: %s' % ' '.join(FuncMap)
     return 1
-  return func(args[2:])
+  func = FuncMap.get(args[0])
+  if not func:
+    print 'Do not recognize command: ' + args[0]
+    print 'Available commands: %s' % ' '.join(FuncMap)
+    return 1
+  return func(args[1:])
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main(sys.argv[1:]))

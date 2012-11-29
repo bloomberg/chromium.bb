@@ -3,7 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import doctest
 import os
 import oshelpers
 import shutil
@@ -26,18 +25,17 @@ class RunZipError(subprocess.CalledProcessError):
     msg += '.\nstderr: """%s"""' % (self.error_output,)
     return msg
 
+
 def RunZip(args, cwd):
-  command = [sys.executable,
-             os.path.join(os.path.dirname(__file__), 'oshelpers.py'),
-             'zip'] + args
+  command = [sys.executable, 'oshelpers.py', 'zip'] + args
   process = subprocess.Popen(stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE,
                              args=command,
                              cwd=cwd)
   output, error_output = process.communicate()
-  retcode = process.poll()
+  retcode = process.returncode
 
-  if retcode != 0:
+  if retcode:
     raise RunZipError(retcode, command, output, error_output)
   return output, error_output
 
@@ -182,12 +180,5 @@ class TestZip(unittest.TestCase):
     self.assertEqual(len(self.zipfile.namelist()), 3)
 
 
-def main():
-  suite = unittest.TestLoader().loadTestsFromTestCase(TestZip)
-  suite.addTests(doctest.DocTestSuite(oshelpers))
-  result = unittest.TextTestRunner(verbosity=2).run(suite)
-  return int(not result.wasSuccessful())
-
-
 if __name__ == '__main__':
-  sys.exit(main())
+  unittest.main()
