@@ -1458,12 +1458,12 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     # and generating PCH. In the case of PCH, the "output" is specified by /Fp
     # rather than /Fo (for object files), but we still need to specify an /Fo
     # when compiling PCH.
-    cc_template = ('ninja -t msvc -r . -o $out -e $arch '
+    cc_template = ('ninja -t msvc -o $out -e $arch '
                    '-- '
                    '$cc /nologo /showIncludes /FC '
                    '@$out.rsp '
                    '$cflags_pch_c /c $in %(outspec)s /Fd$pdbname ')
-    cxx_template = ('ninja -t msvc -r . -o $out -e $arch '
+    cxx_template = ('ninja -t msvc -o $out -e $arch '
                     '-- '
                     '$cxx /nologo /showIncludes /FC '
                     '@$out.rsp '
