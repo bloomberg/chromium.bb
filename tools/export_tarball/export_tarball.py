@@ -101,6 +101,7 @@ def main(argv):
   parser.add_option("--remove-nonessential-files",
                     dest="remove_nonessential_files",
                     action="store_true", default=False)
+  parser.add_option("--xz", action="store_true")
 
   options, args = parser.parse_args(argv)
 
@@ -119,15 +120,27 @@ def main(argv):
     print 'Could not run build/util/lastchange.py to update LASTCHANGE.'
     return 1
 
-  output_fullname = args[0] + '.tar.bz2'
+  if options.xz:
+    output_fullname = args[0] + '.tar'
+  else:
+    output_fullname = args[0] + '.tar.bz2'
+
   output_basename = os.path.basename(args[0])
 
-  archive = MyTarFile.open(output_fullname, 'w:bz2')
+  if options.xz:
+    archive = MyTarFile.open(output_fullname, 'w')
+  else:
+    archive = MyTarFile.open(output_fullname, 'w:bz2')
   archive.set_remove_nonessential_files(options.remove_nonessential_files)
   try:
     archive.add(GetSourceDirectory(), arcname=output_basename)
   finally:
     archive.close()
+
+  if options.xz:
+    if subprocess.call(['xz', '-9', output_fullname]) != 0:
+      print 'xz -9 failed!'
+      return 1
 
   return 0
 
