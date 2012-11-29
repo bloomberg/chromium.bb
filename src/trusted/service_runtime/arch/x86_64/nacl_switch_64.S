@@ -41,24 +41,6 @@
 # define MACROARG2      \arg2
 #endif
 
-/*
- * This is "vxorps %ymm\N, %ymm\N, %ymm\N".
- * Some assembler versions don't know the AVX instructions.
- */
-MACRO(clear_ymm)
-.if MACROARG1 < 8
-        .byte 0xc5
-        .byte (~MACROARG1 << 3) | 4
-        .byte 0x57
-        .byte 0xc0 | (MACROARG1 << 3) | MACROARG1
-.else
-        .byte 0xc4, 0x41
-        .byte (~MACROARG1 << 3) & 0x7f | 4
-        .byte 0x57
-        .byte 0xc0 | ((MACROARG1 - 8) << 3) | (MACROARG1 - 8)
-.endif
-ENDMACRO
-
 
 MACRO(switcher)
 MACROENTRY
@@ -117,22 +99,11 @@ MACROENTRY
          * Clear the vector registers.
          */
 .if MACROARG2
-        clear_ymm 0
-        clear_ymm 1
-        clear_ymm 2
-        clear_ymm 3
-        clear_ymm 4
-        clear_ymm 5
-        clear_ymm 6
-        clear_ymm 7
-        clear_ymm 8
-        clear_ymm 9
-        clear_ymm 10
-        clear_ymm 11
-        clear_ymm 12
-        clear_ymm 13
-        clear_ymm 14
-        clear_ymm 15
+        /*
+         * This is "vzeroall".
+         * Some assembler versions don't know the AVX instructions.
+         */
+        .byte   0xc5, 0xfc, 0x77
 .else
         xorps   %xmm0, %xmm0
         xorps   %xmm1, %xmm1

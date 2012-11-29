@@ -37,17 +37,6 @@
 # define MACROARG2      \arg2
 #endif
 
-/*
- * This is "vxorps %ymm\N, %ymm\N, %ymm\N".
- * Some assembler versions don't know the AVX instructions.
- */
-MACRO(clear_ymm)
-        .byte 0xc5
-        .byte (~MACROARG1 << 3) | 4
-        .byte 0x57
-        .byte 0xc0 | MACROARG1 | (MACROARG1 << 3)
-ENDMACRO
-
 #define DO_NONE 0
 #define DO_SSE 1
 #define DO_AVX 2
@@ -64,14 +53,11 @@ MACROENTRY
          * Clear the vector registers.
          */
 .if MACROARG2 == DO_AVX
-        clear_ymm 0
-        clear_ymm 1
-        clear_ymm 2
-        clear_ymm 3
-        clear_ymm 4
-        clear_ymm 5
-        clear_ymm 6
-        clear_ymm 7
+        /*
+         * This is "vzeroall".
+         * Some assembler versions don't know the AVX instructions.
+         */
+        .byte   0xc5, 0xfc, 0x77
 .elseif MACROARG2 == DO_SSE
         xorps   %xmm0, %xmm0
         xorps   %xmm1, %xmm1
