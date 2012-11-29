@@ -137,6 +137,7 @@
                 '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_unscaled_resources.rc',
 
                 # TODO(sgk):  left-over from pre-gyp build, figure out
                 # if we still need them and/or how to update to gyp.

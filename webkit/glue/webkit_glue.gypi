@@ -40,6 +40,13 @@
           },
           'includes': [ '../../build/grit_action.gypi' ],
         },
+        {
+          'action_name': 'webkit_unscaled_resources',
+          'variables': {
+            'grit_grd_file': 'resources/webkit_unscaled_resources.grd',
+          },
+          'includes': [ '../../build/grit_action.gypi' ],
+        },
       ],
       'includes': [ '../../build/grit_target.gypi' ],
       'direct_dependent_settings': {

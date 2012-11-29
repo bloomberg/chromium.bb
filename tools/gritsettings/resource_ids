@@ -41,8 +41,10 @@
   "net/base/net_resources.grd": {
     "includes": [4000],
   },
-  "webkit/glue/resources/webkit_resources.grd": {
+  "webkit/glue/resources/webkit_unscaled_resources.grd": {
     "includes": [4500],
+  },
+  "webkit/glue/resources/webkit_resources.grd": {
     "structures": [4700],
   },
   "webkit/tools/test_shell/test_shell_resources.grd": {

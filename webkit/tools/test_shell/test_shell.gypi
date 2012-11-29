@@ -253,6 +253,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_unscaled_resources.rc',
           ],
           'configurations': {
             'Debug_Base': {
