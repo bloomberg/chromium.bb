@@ -125,7 +125,7 @@ void GLManager::Initialize(const GLManager::Options& options) {
 
   if (real_gl_context) {
     context_ = scoped_refptr<gfx::GLContext>(new gpu::GLContextVirtual(
-        share_group_.get(), real_gl_context, decoder_.get()));
+        share_group_.get(), real_gl_context, decoder_->AsWeakPtr()));
     ASSERT_TRUE(context_->Initialize(
         surface_.get(), gfx::PreferIntegratedGpu));
   } else {
@@ -206,4 +206,3 @@ bool GLManager::GetBufferChanged(int32 transfer_buffer_id) {
 }
 
 }  // namespace gpu
-

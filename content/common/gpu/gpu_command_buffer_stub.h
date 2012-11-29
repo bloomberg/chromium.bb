@@ -25,7 +25,6 @@
 #include "media/base/video_decoder_config.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
-#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_preference.h"
 #include "ui/surface/transport_dib.h"
@@ -222,7 +221,6 @@ class GpuCommandBufferStub
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
   scoped_ptr<gpu::GpuScheduler> scheduler_;
-  scoped_refptr<gfx::GLContext> context_;
   scoped_refptr<gfx::GLSurface> surface_;
 
   // SetParent may be called before Initialize, in which case we need to keep
@@ -250,6 +248,8 @@ class GpuCommandBufferStub
 
   GURL active_url_;
   size_t active_url_hash_;
+
+  size_t total_gpu_memory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferStub);
 };

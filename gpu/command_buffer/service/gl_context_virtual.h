@@ -6,7 +6,9 @@
 #define GPU_COMMAND_BUFFER_SERVICE_GL_CONTEXT_VIRTUAL_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "gpu/gpu_export.h"
 #include "ui/gl/gl_context.h"
 
@@ -27,7 +29,7 @@ class GPU_EXPORT GLContextVirtual : public gfx::GLContext {
   GLContextVirtual(
       gfx::GLShareGroup* share_group,
       gfx::GLContext* shared_context,
-      gles2::GLES2Decoder* decoder);
+      base::WeakPtr<gles2::GLES2Decoder> decoder);
 
   gfx::Display* display();
 
@@ -50,9 +52,10 @@ class GPU_EXPORT GLContextVirtual : public gfx::GLContext {
   virtual ~GLContextVirtual();
 
  private:
-  gfx::GLContext* shared_context_;
+  scoped_refptr<gfx::GLContext> shared_context_;
   gfx::Display* display_;
   scoped_ptr<gfx::GLStateRestorer> state_restorer_;
+  base::WeakPtr<gles2::GLES2Decoder> decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(GLContextVirtual);
 };

@@ -8,7 +8,8 @@
 
 namespace gpu {
 
-GLStateRestorerImpl::GLStateRestorerImpl(gles2::GLES2Decoder* decoder)
+GLStateRestorerImpl::GLStateRestorerImpl(
+    base::WeakPtr<gles2::GLES2Decoder> decoder)
     : decoder_(decoder) {
 }
 
@@ -16,9 +17,8 @@ GLStateRestorerImpl::~GLStateRestorerImpl() {
 }
 
 void GLStateRestorerImpl::RestoreState() {
+  DCHECK(decoder_.get());
   decoder_->RestoreState();
 }
 
 }  // namespace gpu
-
-

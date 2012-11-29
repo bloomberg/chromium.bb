@@ -23,8 +23,10 @@
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "content/common/gpu/sync_point_manager.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_switches.h"
@@ -121,7 +123,8 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       watchdog_(watchdog),
       sync_point_wait_count_(0),
       delayed_work_scheduled_(false),
-      active_url_(active_url) {
+      active_url_(active_url),
+      total_gpu_memory_(0) {
   active_url_hash_ = base::Hash(active_url.possibly_invalid_spec());
   FastSetActiveURL(active_url_, active_url_hash_);
   if (share_group) {
@@ -319,7 +322,9 @@ void GpuCommandBufferStub::Destroy() {
                     destruction_observers_,
                     OnWillDestroyStub(this));
 
+  scoped_refptr<gfx::GLContext> context;
   if (decoder_.get()) {
+    context = decoder_->GetGLContext();
     decoder_->Destroy(have_context);
     decoder_.reset();
   }
@@ -329,12 +334,9 @@ void GpuCommandBufferStub::Destroy() {
   // Make sure that context_ is current while we destroy surface_, because
   // surface_ may have GL resources that it needs to destroy, and will need
   // context_ to be current in order to not leak these resources.
-  if (context_.get())
-    context_->MakeCurrent(surface_.get());
+  if (context)
+    context->MakeCurrent(surface_.get());
   surface_ = NULL;
-
-  // Destroy context_, now that we have destroyed surface_.
-  context_ = NULL;
 }
 
 void GpuCommandBufferStub::OnInitializeFailed(IPC::Message* reply_message) {
@@ -394,11 +396,40 @@ void GpuCommandBufferStub::OnInitialize(
     return;
   }
 
-  context_ = gfx::GLContext::CreateGLContext(
-      channel_->share_group(),
-      surface_.get(),
-      gpu_preference_);
-  if (!context_.get()) {
+  scoped_refptr<gfx::GLContext> context;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableVirtualGLContexts) && channel_->share_group()) {
+    context = channel_->share_group()->GetSharedContext();
+    if (!context) {
+      context = gfx::GLContext::CreateGLContext(
+          channel_->share_group(),
+          channel_->gpu_channel_manager()->GetDefaultOffscreenSurface(),
+          gpu_preference_);
+      channel_->share_group()->SetSharedContext(context);
+    }
+    // This should be a non-virtual GL context.
+    DCHECK(context->GetHandle());
+    context = new gpu::GLContextVirtual(channel_->share_group(),
+                                        context,
+                                        decoder_->AsWeakPtr());
+    if (!context->Initialize(surface_, gpu_preference_)) {
+      // TODO(sievers): The real context created above for the default
+      // offscreen surface might not be compatible with this surface.
+      // Need to adjust at least GLX to be able to create the initial context
+      // with a config that is compatible with onscreen and offscreen surfaces.
+      context = NULL;
+      LOG(FATAL) << "Failed to initialize virtual GL context.";
+    } else {
+      LOG(INFO) << "Created virtual GL context.";
+    }
+  }
+  if (!context) {
+    context = gfx::GLContext::CreateGLContext(
+        channel_->share_group(),
+        surface_.get(),
+        gpu_preference_);
+  }
+  if (!context) {
     // Ensure the decoder is not destroyed if it is not initialized.
     decoder_.reset();
 
@@ -407,13 +438,16 @@ void GpuCommandBufferStub::OnInitialize(
     return;
   }
 
-  if (!context_->MakeCurrent(surface_.get())) {
+  if (!context->MakeCurrent(surface_.get())) {
     // Ensure the decoder is not destroyed if it is not initialized.
     decoder_.reset();
     LOG(ERROR) << "Failed to make context current.";
     OnInitializeFailed(reply_message);
     return;
   }
+
+  if (!context->GetTotalGpuMemory(&total_gpu_memory_))
+    total_gpu_memory_ = 0;
 
   if (!context_group_->has_program_cache()) {
     context_group_->set_program_cache(
@@ -422,7 +456,7 @@ void GpuCommandBufferStub::OnInitialize(
 
   // Initialize the decoder with either the view or pbuffer GLContext.
   if (!decoder_->Initialize(surface_,
-                            context_,
+                            context,
                             !surface_id(),
                             initial_size_,
                             disallowed_features_,
@@ -826,9 +860,8 @@ void GpuCommandBufferStub::SetPreemptByCounter(
 }
 
 bool GpuCommandBufferStub::GetTotalGpuMemory(size_t* bytes) {
-  if (!MakeCurrent())
-    return false;
-  return context_->GetTotalGpuMemory(bytes);
+  *bytes = total_gpu_memory_;
+  return !!total_gpu_memory_;
 }
 
 gfx::Size GpuCommandBufferStub::GetSurfaceSize() const {

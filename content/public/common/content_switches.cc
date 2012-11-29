@@ -361,6 +361,10 @@ const char kEnableStrictSiteIsolation[]     = "enable-strict-site-isolation";
 // Enable multithreaded GPU compositing of web content.
 const char kEnableThreadedCompositing[]     = "enable-threaded-compositing";
 
+// Allow GL contexts to be automatically virtualized (shared between command
+// buffer clients) if they are compatible.
+const char kEnableVirtualGLContexts[]       = "enable-virtual-gl-contexts";
+
 // Disable multithreaded GPU compositing of web content.
 const char kDisableThreadedCompositing[]     = "disable-threaded-compositing";
 

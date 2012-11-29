@@ -8,6 +8,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_GL_STATE_RESTORER_IMPL_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "gpu/gpu_export.h"
 #include "ui/gl/gl_state_restorer.h"
 
@@ -19,13 +20,13 @@ class GLES2Decoder;
 // This class implements a GLStateRestorer that forwards to a GLES2Decoder.
 class GPU_EXPORT GLStateRestorerImpl : public gfx::GLStateRestorer {
  public:
-   explicit GLStateRestorerImpl(gles2::GLES2Decoder* decoder);
+   explicit GLStateRestorerImpl(base::WeakPtr<gles2::GLES2Decoder> decoder);
    virtual ~GLStateRestorerImpl();
 
    virtual void RestoreState() OVERRIDE;
 
  private:
-   gles2::GLES2Decoder* decoder_;
+   base::WeakPtr<gles2::GLES2Decoder> decoder_;
 
    DISALLOW_COPY_AND_ASSIGN(GLStateRestorerImpl);
 };
@@ -33,4 +34,3 @@ class GPU_EXPORT GLStateRestorerImpl : public gfx::GLStateRestorer {
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GL_STATE_RESTORER_IMPL_H_
-

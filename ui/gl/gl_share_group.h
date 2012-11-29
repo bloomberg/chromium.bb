@@ -33,6 +33,11 @@ class GL_EXPORT GLShareGroup : public base::RefCounted<GLShareGroup> {
   // or NULL if there are no initialized contexts in the share group.
   GLContext* GetContext();
 
+  // Sets and returns the unique shared GL context. Used for context
+  // virtualization.
+  void SetSharedContext(GLContext* context);
+  GLContext* GetSharedContext();
+
  private:
   friend class base::RefCounted<GLShareGroup>;
 
@@ -42,6 +47,8 @@ class GL_EXPORT GLShareGroup : public base::RefCounted<GLShareGroup> {
   // cycle.
   typedef std::set<GLContext*> ContextSet;
   ContextSet contexts_;
+
+  GLContext* shared_context_;
 
   DISALLOW_COPY_AND_ASSIGN(GLShareGroup);
 };

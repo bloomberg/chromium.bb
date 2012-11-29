@@ -22,7 +22,6 @@
 #include "base/mac/scoped_cftyperef.h"
 #endif
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/string_number_conversions.h"
 #include "build/build_config.h"
 #define GLES2_GPU_SERVICE 1
@@ -56,7 +55,6 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
-#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -489,8 +487,7 @@ bool GLES2Decoder::IsAngle() {
 
 // This class implements GLES2Decoder so we don't have to expose all the GLES2
 // cmd stuff to outside this class.
-class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
-                         public GLES2Decoder {
+class GLES2DecoderImpl : public GLES2Decoder {
  public:
   static const int kMaxLogMessages = 256;
 
@@ -2967,7 +2964,7 @@ bool GLES2DecoderImpl::SetParent(GLES2Decoder* new_parent,
     new_parent_impl->texture_manager()->
        SetInfoTarget(offscreen_saved_color_texture_info_, GL_TEXTURE_2D);
 
-    parent_ = new_parent_impl->AsWeakPtr();
+    parent_ = base::AsWeakPtr<GLES2DecoderImpl>(new_parent_impl);
 
     UpdateParentTextureInfo();
   } else {

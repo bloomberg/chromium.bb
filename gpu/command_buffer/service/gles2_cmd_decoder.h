@@ -10,10 +10,12 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 #include "ui/gfx/size.h"
+#include "ui/gl/gl_context.h"
 
 namespace gfx {
 class GLContext;
@@ -45,7 +47,8 @@ struct DisallowedFeatures {
 
 // This class implements the AsyncAPIInterface interface, decoding GLES2
 // commands and calling GL.
-class GPU_EXPORT GLES2Decoder : public CommonDecoder {
+class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
+                                public CommonDecoder {
  public:
   typedef error::Error Error;
   typedef base::Callback<void(int32 id, const std::string& msg)> MsgCallback;

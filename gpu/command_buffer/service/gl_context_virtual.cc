@@ -12,11 +12,12 @@ namespace gpu {
 GLContextVirtual::GLContextVirtual(
     gfx::GLShareGroup* share_group,
     gfx::GLContext* shared_context,
-    gles2::GLES2Decoder* decoder)
+    base::WeakPtr<gles2::GLES2Decoder> decoder)
   : GLContext(share_group),
     shared_context_(shared_context),
     display_(NULL),
-    state_restorer_(new GLStateRestorerImpl(decoder)) {
+    state_restorer_(new GLStateRestorerImpl(decoder)),
+    decoder_(decoder) {
   shared_context_->SetupForVirtualization();
 }
 
@@ -28,20 +29,27 @@ bool GLContextVirtual::Initialize(
     gfx::GLSurface* compatible_surface, gfx::GpuPreference gpu_preference) {
   display_ = static_cast<gfx::Display*>(compatible_surface->GetDisplay());
 
+  if (!shared_context_->MakeCurrent(compatible_surface))
+    return false;
+
+  shared_context_->ReleaseCurrent(compatible_surface);
   return true;
 }
 
 void GLContextVirtual::Destroy() {
+  shared_context_ = NULL;
+  display_ = NULL;
 }
 
 bool GLContextVirtual::MakeCurrent(gfx::GLSurface* surface) {
-  shared_context_->MakeVirtuallyCurrent(this, surface);
+  if (decoder_.get())
+    shared_context_->MakeVirtuallyCurrent(this, surface);
+  else
+    shared_context_->MakeCurrent(surface);
   return true;
 }
 
 void GLContextVirtual::ReleaseCurrent(gfx::GLSurface* surface) {
-  shared_context_ = NULL;
-  display_ = NULL;
 }
 
 bool GLContextVirtual::IsCurrent(gfx::GLSurface* surface) {

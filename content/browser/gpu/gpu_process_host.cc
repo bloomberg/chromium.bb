@@ -915,6 +915,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     switches::kUIPrioritizeInGpuProcess,
 #endif
     switches::kCrashOnGpuHang,
+    switches::kEnableVirtualGLContexts,
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                              arraysize(kSwitchNames));
