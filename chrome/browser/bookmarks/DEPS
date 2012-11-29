@@ -27,7 +27,6 @@ include_rules = [
   "!chrome/browser/history/snippet.h",
   "!chrome/browser/importer/importer_data_types.h",
   "!chrome/browser/importer/importer_host.h",
-  "!chrome/browser/prefs/incognito_mode_prefs.h",
   "!chrome/browser/prefs/pref_service.h",
   "!chrome/browser/profiles/profile.h",
   "!chrome/browser/profiles/profile_dependency_manager.h",
@@ -50,7 +49,6 @@ specific_include_rules = {
     "!chrome/browser/extensions/extension_apitest.h",
     "!chrome/browser/history/in_memory_database.h",
     "!chrome/browser/importer/firefox2_importer.h",
-    "!chrome/browser/profiles/profile_manager.h",
     "!chrome/browser/ui/browser.h",
   ]
 }
