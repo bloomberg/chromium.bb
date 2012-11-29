@@ -122,8 +122,7 @@ void SyncFileSystemRequestFileSystemFunction::DidInitializeFileSystemContext(
     const std::string& service_name,
     fileapi::SyncStatusCode status) {
   if (status != fileapi::SYNC_STATUS_OK) {
-    // TODO(kinuko): Fix this. (http://crbug.com/153757)
-    error_ = base::StringPrintf(kFileError, static_cast<int>(status));
+    error_ = fileapi::SyncStatusCodeToString(status);
     SendResponse(false);
     return;
   }

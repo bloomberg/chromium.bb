@@ -5,6 +5,8 @@
 #ifndef WEBKIT_FILEAPI_SYNCABLE_SYNC_STATUS_CODE_H_
 #define WEBKIT_FILEAPI_SYNCABLE_SYNC_STATUS_CODE_H_
 
+#include <string>
+
 #include "base/platform_file.h"
 #include "webkit/storage/webkit_storage_export.h"
 
@@ -48,7 +50,7 @@ enum SyncStatusCode {
   // Sync specific status code.
   SYNC_STATUS_FILE_BUSY = -100,
   SYNC_STATUS_HAS_CONFLICT = -101,
-  SYNC_STATUS_NOT_A_CONFLICT = -102,
+  SYNC_STATUS_NO_CONFLICT = -102,
   SYNC_STATUS_ABORT = -103,
   SYNC_STATUS_NO_CHANGE_TO_SYNC = -104,
   SYNC_STATUS_RETRY = -105,
@@ -57,6 +59,8 @@ enum SyncStatusCode {
   SYNC_STATUS_NOT_INITIALIZED = -108,
   SYNC_STATUS_NOT_MODIFIED = -109,
 };
+
+WEBKIT_STORAGE_EXPORT std::string SyncStatusCodeToString(SyncStatusCode status);
 
 WEBKIT_STORAGE_EXPORT SyncStatusCode LevelDBStatusToSyncStatusCode(
     const leveldb::Status& status);

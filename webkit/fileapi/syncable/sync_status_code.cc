@@ -4,9 +4,88 @@
 
 #include "webkit/fileapi/syncable/sync_status_code.h"
 
+#include "base/logging.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 namespace fileapi {
+
+std::string SyncStatusCodeToString(SyncStatusCode status) {
+  switch (status) {
+    case SYNC_STATUS_OK:
+      return "OK.";
+    case SYNC_STATUS_UNKNOWN:
+      return "Unknown sync status.";
+    case SYNC_STATUS_FAILED:
+      return "Failed.";
+
+    // PlatformFile related errors.
+    // TODO(nhiroki): add stringize function for PlatformFileError into base/.
+    case SYNC_FILE_ERROR_FAILED:
+      return "File operation failed.";
+    case SYNC_FILE_ERROR_IN_USE:
+      return "File currently in use.";
+    case SYNC_FILE_ERROR_EXISTS:
+      return "File already exists.";
+    case SYNC_FILE_ERROR_NOT_FOUND:
+      return "File not found.";
+    case SYNC_FILE_ERROR_ACCESS_DENIED:
+      return "File access denied.";
+    case SYNC_FILE_ERROR_TOO_MANY_OPENED:
+      return "Too many files open.";
+    case SYNC_FILE_ERROR_NO_MEMORY:
+      return "Out of memory.";
+    case SYNC_FILE_ERROR_NO_SPACE:
+      return "No space left on disk.";
+    case SYNC_FILE_ERROR_NOT_A_DIRECTORY:
+      return "Not a directory.";
+    case SYNC_FILE_ERROR_INVALID_OPERATION:
+      return "Invalid file operation.";
+    case SYNC_FILE_ERROR_SECURITY:
+      return "Security error.";
+    case SYNC_FILE_ERROR_ABORT:
+      return "File operation aborted.";
+    case SYNC_FILE_ERROR_NOT_A_FILE:
+      return "Not a file.";
+    case SYNC_FILE_ERROR_NOT_EMPTY:
+      return "File not empty.";
+    case SYNC_FILE_ERROR_INVALID_URL:
+      return "Invalid URL.";
+
+    // Database related errors.
+    case SYNC_DATABASE_ERROR_NOT_FOUND:
+      return "Database not found.";
+    case SYNC_DATABASE_ERROR_CORRUPTION:
+      return "Database was corrupted.";
+    case SYNC_DATABASE_ERROR_IO_ERROR:
+      return "Database I/O error.";
+    case SYNC_DATABASE_ERROR_FAILED:
+      return "Database operation failed.";
+
+    // Sync specific status code.
+    case SYNC_STATUS_FILE_BUSY:
+      return "Sync: file is busy.";
+    case SYNC_STATUS_HAS_CONFLICT:
+      return "Sync: file has conflict.";
+    case SYNC_STATUS_NO_CONFLICT:
+      return "Sync: file has no conflict.";
+    case SYNC_STATUS_ABORT:
+      return "Sync: operation aborted.";
+    case SYNC_STATUS_NO_CHANGE_TO_SYNC:
+      return "Sync: no change to synchronize.";
+    case SYNC_STATUS_RETRY:
+      return "Sync: retry to synchronize.";
+    case SYNC_STATUS_NETWORK_ERROR:
+      return "Sync: network error.";
+    case SYNC_STATUS_AUTHENTICATION_FAILED:
+      return "Sync: authentication failed.";
+    case SYNC_STATUS_NOT_INITIALIZED:
+      return "Sync: not initialized.";
+    case SYNC_STATUS_NOT_MODIFIED:
+      return "Sync: file not modified.";
+  }
+  NOTREACHED();
+  return "Unknown error.";
+}
 
 SyncStatusCode LevelDBStatusToSyncStatusCode(const leveldb::Status& status) {
   if (status.ok())

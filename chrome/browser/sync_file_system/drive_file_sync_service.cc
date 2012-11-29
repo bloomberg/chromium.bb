@@ -576,7 +576,7 @@ void DriveFileSyncService::UpdateServiceState() {
     case fileapi::SYNC_STATUS_OK:
     case fileapi::SYNC_STATUS_FILE_BUSY:
     case fileapi::SYNC_STATUS_HAS_CONFLICT:
-    case fileapi::SYNC_STATUS_NOT_A_CONFLICT:
+    case fileapi::SYNC_STATUS_NO_CONFLICT:
     case fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC:
     case fileapi::SYNC_FILE_ERROR_NOT_FOUND:
     case fileapi::SYNC_FILE_ERROR_FAILED:
