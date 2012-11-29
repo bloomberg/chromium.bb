@@ -1,7 +1,6 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 #include "ui/message_center/quiet_mode_bubble.h"
 
 #include "base/time.h"
@@ -77,6 +76,10 @@ void QuietModeBubble::Close() {
     quiet_mode_1hour_ = NULL;
     quiet_mode_1day_ = NULL;
   }
+}
+
+views::Widget* QuietModeBubble::GetBubbleWidget() {
+  return bubble_ ? bubble_->GetWidget() : NULL;
 }
 
 void QuietModeBubble::InitializeBubbleContents() {

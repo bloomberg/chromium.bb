@@ -13,6 +13,7 @@
 namespace views {
 class BubbleDelegateView;
 class View;
+class Widget;
 }
 
 namespace message_center {
@@ -30,7 +31,8 @@ class MESSAGE_CENTER_EXPORT QuietModeBubble : public views::ButtonListener {
   // Close the quiet mode bubble.
   void Close();
 
-  views::BubbleDelegateView* bubble() { return bubble_; }
+  // Returns the widget for the bubble.
+  views::Widget* GetBubbleWidget();
 
  private:
   // Initialize the contents of the bubble.

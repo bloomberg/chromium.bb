@@ -84,6 +84,9 @@ class MESSAGE_CENTER_EXPORT NotificationList {
     // Called when a notification is clicked on.
     virtual void OnNotificationClicked(const std::string& id) = 0;
 
+    // Called when the quiet mode status has been changed.
+    virtual void OnQuietModeChanged(bool quiet_mode) = 0;
+
     // Returns the list of notifications to display.
     virtual NotificationList* GetNotificationList() = 0;
   };
@@ -169,6 +172,9 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   // |optional_fields|.
   void UnpackOptionalFields(const base::DictionaryValue* optional_fields,
                             Notification& notification);
+
+  // Sets the current quiet mode status to |quiet_mode|.
+  void SetQuietModeInternal(bool quiet_mode);
 
   Delegate* delegate_;
   Notifications notifications_;

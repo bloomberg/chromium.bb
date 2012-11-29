@@ -131,6 +131,10 @@ void MessageCenter::OnNotificationClicked(const std::string& id) {
     delegate_->OnClicked(id);
 }
 
+void MessageCenter::OnQuietModeChanged(bool quiet_mode) {
+  host_->MessageCenterChanged(true);
+}
+
 NotificationList* MessageCenter::GetNotificationList() {
   return notification_list_.get();
 }

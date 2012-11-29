@@ -219,7 +219,7 @@ void NotificationList::MarkPopupsAsShown() {
 }
 
 void NotificationList::SetQuietMode(bool quiet_mode) {
-  quiet_mode_ = quiet_mode;
+  SetQuietModeInternal(quiet_mode);
   quiet_mode_timer_.reset();
 }
 
@@ -230,11 +230,24 @@ void NotificationList::EnterQuietModeWithExpire(
     // scoped_ptr::reset().
     quiet_mode_timer_->Reset();
   } else {
-    quiet_mode_ = true;
+    SetQuietModeInternal(true);
     quiet_mode_timer_.reset(new base::OneShotTimer<NotificationList>);
     quiet_mode_timer_->Start(FROM_HERE, expires_in, base::Bind(
         &NotificationList::SetQuietMode, base::Unretained(this), false));
   }
+}
+
+void NotificationList::SetQuietModeInternal(bool quiet_mode) {
+  quiet_mode_ = quiet_mode;
+  if (quiet_mode_) {
+    for (Notifications::iterator iter = notifications_.begin();
+         iter != notifications_.end(); ++iter) {
+      iter->is_read = true;
+      iter->shown_as_popup = true;
+    }
+    unread_count_ = 0;
+  }
+  delegate_->OnQuietModeChanged(quiet_mode);
 }
 
 NotificationList::Notifications::iterator NotificationList::GetNotification(
@@ -262,11 +275,13 @@ void NotificationList::PushNotification(Notification& notification) {
   // Add the notification to the front (top) of the list and mark it
   // unread and unshown.
   if (!message_center_visible_) {
-    ++unread_count_;
     if (quiet_mode_) {
+      // TODO(mukai): needs to distinguish if a notification is dismissed by
+      // the quiet mode or user operation.
       notification.is_read = true;
       notification.shown_as_popup = true;
     } else {
+      ++unread_count_;
       notification.is_read = false;
       notification.shown_as_popup = false;
     }

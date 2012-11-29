@@ -116,6 +116,7 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
   virtual void DisableNotificationByUrl(const std::string& id) OVERRIDE;
   virtual void ShowNotificationSettings(const std::string& id) OVERRIDE;
   virtual void OnNotificationClicked(const std::string& id) OVERRIDE;
+  virtual void OnQuietModeChanged(bool quiet_mode) OVERRIDE;
   virtual NotificationList* GetNotificationList() OVERRIDE;
 
  private:
