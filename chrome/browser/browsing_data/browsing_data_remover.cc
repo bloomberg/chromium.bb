@@ -342,7 +342,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
                      base::Unretained(this), base::Unretained(rq_context)));
     }
 
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING) || defined(MOBILE_SAFE_BROWSING)
     // Clear the safebrowsing cookies only if time period is for "all time".  It
     // doesn't make sense to apply the time period of deleting in the last X
     // hours/days to the safebrowsing cookies since they aren't the result of

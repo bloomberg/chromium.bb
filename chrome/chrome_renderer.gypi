@@ -290,13 +290,13 @@
         }],
         ['safe_browsing==1', {
           'defines': [
-            'ENABLE_SAFE_BROWSING',
+            'FULL_SAFE_BROWSING',
           ],
           'dependencies': [
             'safe_browsing_proto',
             '../third_party/smhasher/smhasher.gyp:murmurhash3',
           ],
-        }, {  # safe_browsing==0
+        }, {  # safe_browsing==0 || safe_browsing==2
           'sources/': [
             ['exclude', '^renderer/safe_browsing/'],
           ],

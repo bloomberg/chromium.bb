@@ -176,6 +176,8 @@ void SafeBrowsingService::Initialize() {
       base::Bind(
           &SafeBrowsingService::InitURLRequestContextOnIOThread, this,
           make_scoped_refptr(g_browser_process->system_request_context())));
+
+#if defined(FULL_SAFE_BROWSING)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableClientSidePhishingDetection)) {
     csd_service_.reset(
@@ -185,6 +187,7 @@ void SafeBrowsingService::Initialize() {
   download_service_.reset(new safe_browsing::DownloadProtectionService(
       this,
       url_request_context_getter_));
+#endif
 
   // Track the safe browsing preference of existing profiles.
   // The SafeBrowsingService will be started if any existing profile has the
@@ -232,10 +235,14 @@ void SafeBrowsingService::ShutDown() {
 bool SafeBrowsingService::DownloadBinHashNeeded() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+#if defined(FULL_SAFE_BROWSING)
   return (database_manager_->download_protection_enabled() &&
           ui_manager_->CanReportStats()) ||
       (download_protection_service() &&
        download_protection_service()->enabled());
+#else
+  return false;
+#endif
 }
 
 net::URLRequestContextGetter* SafeBrowsingService::url_request_context() {
@@ -266,7 +273,12 @@ SafeBrowsingUIManager* SafeBrowsingService::CreateUIManager() {
 }
 
 SafeBrowsingDatabaseManager* SafeBrowsingService::CreateDatabaseManager() {
+
+#if defined(FULL_SAFE_BROWSING)
   return new SafeBrowsingDatabaseManager(this);
+#else
+  return NULL;
+#endif
 }
 
 void SafeBrowsingService::InitURLRequestContextOnIOThread(
@@ -330,6 +342,7 @@ void SafeBrowsingService::StartOnIOThread() {
       cmdline->GetSwitchValueASCII(switches::kSbURLPrefix) :
       kSbDefaultURLPrefix;
 
+#if defined(FULL_SAFE_BROWSING)
   DCHECK(database_manager_);
   database_manager_->StartOnIOThread();
 
@@ -339,6 +352,7 @@ void SafeBrowsingService::StartOnIOThread() {
                                           url_request_context_getter_,
                                           config);
   protocol_manager_->Initialize();
+#endif
 
   DCHECK(!ping_manager_);
   ping_manager_ =
@@ -349,18 +363,21 @@ void SafeBrowsingService::StartOnIOThread() {
 void SafeBrowsingService::StopOnIOThread(bool shutdown) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
+#if defined(FULL_SAFE_BROWSING)
   database_manager_->StopOnIOThread(shutdown);
+#endif
   ui_manager_->StopOnIOThread(shutdown);
 
   if (enabled_) {
     enabled_ = false;
 
+#if defined(FULL_SAFE_BROWSING)
     // This cancels all in-flight GetHash requests. Note that database_manager_
     // relies on the protocol_manager_ so if the latter is destroyed, the
     // former must be stopped.
     delete protocol_manager_;
     protocol_manager_ = NULL;
-
+#endif
     delete ping_manager_;
     ping_manager_ = NULL;
   }
@@ -440,6 +457,7 @@ void SafeBrowsingService::RefreshState() {
   else
     Stop(false);
 
+#if defined(FULL_SAFE_BROWSING)
   if (csd_service_.get())
     csd_service_->SetEnabledAndRefreshState(enable);
   if (download_service_.get()) {
@@ -447,4 +465,5 @@ void SafeBrowsingService::RefreshState() {
         enable && !CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableImprovedDownloadProtection));
   }
+#endif
 }

@@ -2215,9 +2215,9 @@
         }],
         ['safe_browsing==1', {
           'defines': [
-            'ENABLE_SAFE_BROWSING',
+            'FULL_SAFE_BROWSING',
           ],
-        }, {  # safe_browsing==0
+        }, {  # safe_browsing==0 || safe_browsing==2
           'dependencies!': [
             'safe_browsing_proto',
             'safe_browsing_report_proto',

@@ -1798,9 +1798,17 @@
         }],
         ['safe_browsing==1', {
           'defines': [
-            'ENABLE_SAFE_BROWSING',
+            'FULL_SAFE_BROWSING',
           ],
-        }, {  # safe_browsing == 0
+        }],
+        # TODO(sgurun): enable tests.
+        ['safe_browsing==2', {
+          'sources/': [
+            ['exclude', '^browser/safe_browsing/'],
+            ['exclude', '^renderer/safe_browsing/'],
+          ],
+        }],
+        ['safe_browsing==0', {
           'sources/': [
             ['exclude', '^browser/safe_browsing/'],
             ['exclude', '^renderer/safe_browsing/'],

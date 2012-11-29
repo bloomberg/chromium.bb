@@ -208,7 +208,7 @@ void BrowserProcessImpl::StartTearDown() {
   metrics_service_.reset();
   variations_service_.reset();
   intranet_redirect_detector_.reset();
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING) || defined(MOBILE_SAFE_BROWSING)
   if (safe_browsing_service_.get()) {
     safe_browsing_service()->ShutDown();
   }
@@ -876,7 +876,7 @@ void BrowserProcessImpl::CreateSafeBrowsingService() {
   // Set this flag to true so that we don't retry indefinitely to
   // create the service class if there was an error.
   created_safe_browsing_service_ = true;
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING) || defined(MOBILE_SAFE_BROWSING)
   safe_browsing_service_ = SafeBrowsingService::CreateSafeBrowsingService();
   safe_browsing_service_->Initialize();
 #endif

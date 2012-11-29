@@ -179,7 +179,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   net_predictor_.reset(new RendererNetPredictor());
   spellcheck_.reset(new SpellCheck());
   visited_link_slave_.reset(new VisitedLinkSlave());
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
   phishing_classifier_.reset(safe_browsing::PhishingClassifierFilter::Create());
 #endif
   prerender_dispatcher_.reset(new prerender::PrerenderDispatcher());
@@ -188,7 +188,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   thread->AddObserver(chrome_observer_.get());
   thread->AddObserver(extension_dispatcher_.get());
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
   thread->AddObserver(phishing_classifier_.get());
 #endif
   thread->AddObserver(spellcheck_.get());
@@ -277,7 +277,7 @@ void ChromeContentRendererClient::RenderViewCreated(
   new SearchBox(render_view);
   new SpellCheckProvider(render_view, spellcheck_.get());
   new prerender::PrerendererClient(render_view);
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
   safe_browsing::MalwareDOMDetails::Create(render_view);
 #endif
 

@@ -487,7 +487,7 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
   bool prerender_should_wait_for_ready_title_;
 };
 
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
 // A SafeBrowsingDatabaseManager implementation that returns a fixed result for
 // a given URL.
 class FakeSafeBrowsingDatabaseManager :  public SafeBrowsingDatabaseManager {
@@ -609,7 +609,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
  public:
   PrerenderBrowserTest()
       : prerender_contents_factory_(NULL),
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
         safe_browsing_factory_(new TestSafeBrowsingServiceFactory()),
 #endif
         use_https_src_server_(false),
@@ -629,7 +629,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
     SafeBrowsingService::RegisterFactory(safe_browsing_factory_.get());
 #endif
   }
@@ -905,7 +905,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     return static_cast<int>(history_list->GetSize());
   }
 
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
   FakeSafeBrowsingDatabaseManager* GetFakeSafeBrowsingDatabaseManager() {
     return safe_browsing_factory_->most_recent_service()->
         fake_database_manager();
@@ -1135,7 +1135,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   }
 
   WaitForLoadPrerenderContentsFactory* prerender_contents_factory_;
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
   scoped_ptr<TestSafeBrowsingServiceFactory> safe_browsing_factory_;
 #endif
   GURL dest_url_;
@@ -2153,7 +2153,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertIframe) {
                    1);
 }
 
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
 // Ensures that we do not prerender pages with a safe browsing
 // interstitial.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSafeBrowsingTopLevel) {

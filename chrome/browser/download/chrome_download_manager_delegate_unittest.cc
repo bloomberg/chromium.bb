@@ -134,7 +134,7 @@ struct DownloadTestCase {
   TestCaseExpectIntermediate  expected_intermediate;
 };
 
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
 // DownloadProtectionService with mock methods. Since the SafeBrowsingService is
 // set to NULL, it is not safe to call any non-mocked methods other than
 // SetEnabled() and enabled().
@@ -160,7 +160,7 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
  public:
   explicit TestChromeDownloadManagerDelegate(Profile* profile)
       : ChromeDownloadManagerDelegate(profile) {
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
     download_protection_service_.reset(new TestDownloadProtectionService());
     download_protection_service_->SetEnabled(true);
 #endif
@@ -168,7 +168,7 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
 
   virtual safe_browsing::DownloadProtectionService*
       GetDownloadProtectionService() OVERRIDE {
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
     return download_protection_service_.get();
 #else
     return NULL;
@@ -208,7 +208,7 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
                     const FilePath&,
                     const FileSelectedCallback&));
 
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
   // A TestDownloadProtectionService* is convenient for setting up mocks.
   TestDownloadProtectionService* test_download_protection_service() {
     return download_protection_service_.get();
@@ -218,7 +218,7 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
  private:
   ~TestChromeDownloadManagerDelegate() {}
 
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
   scoped_ptr<TestDownloadProtectionService> download_protection_service_;
 #endif
 };
@@ -395,7 +395,7 @@ void ChromeDownloadManagerDelegateTest::RunTestCaseWithDownloadItem(
   EXPECT_CALL(*download_manager_, GetAllDownloads(_))
       .WillRepeatedly(SetArgPointee<0>(items));
 
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
   // Results of SafeBrowsing URL check.
   DownloadProtectionService::DownloadCheckResult url_check_result =
       (test_case.danger_type == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL) ?
@@ -415,13 +415,13 @@ void ChromeDownloadManagerDelegateTest::RunTestCaseWithDownloadItem(
                 IsSupportedDownload(InfoMatchingURL(download_url)))
         .WillOnce(Return(maybe_dangerous));
   }
-#else // ENABLE_SAFE_BROWSING
+#else // FULL_SAFE_BROWSING
   // If safe browsing is not enabled, then these tests would fail. If such a
   // test was added, then fail early.
   EXPECT_NE(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL, test_case.danger_type);
   EXPECT_NE(content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
             test_case.danger_type);
-#endif // !ENABLE_SAFE_BROWSING
+#endif // !FULL_SAFE_BROWSING
 
   DownloadItem::TargetDisposition initial_disposition =
       (test_case.test_type == SAVE_AS) ?
@@ -589,7 +589,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_Basic) {
       EXPECT_CRDOWNLOAD
     },
 
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
     // These test cases are only applicable if safe browsing is enabled. Without
     // it, these are equivalent to FORCED/SAFE and SAFE_AS/SAFE respectively.
     {
@@ -626,7 +626,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_Basic) {
   RunTestCases(kBasicTestCases, arraysize(kBasicTestCases));
 }
 
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
 // The SafeBrowsing URL check is performed early. Make sure that a download item
 // that has been marked as DANGEROUS_URL behaves correctly.
 TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_DangerousURL) {
@@ -719,7 +719,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_DangerousURL) {
 
   RunTestCases(kDangerousURLTestCases, arraysize(kDangerousURLTestCases));
 }
-#endif  // ENABLE_SAFE_BROWSING
+#endif  // FULL_SAFE_BROWSING
 
 // These test cases are run with "Prompt for download" user preference set to
 // true. Even with the preference set, some of these downloads should not cause
@@ -787,7 +787,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_PromptAlways) {
       EXPECT_CRDOWNLOAD
     },
 
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
     // If safe browsing is disabled, this case is equivalent to AUTOMATIC/SAFE
     // since the download isn't marked as dangerous when we are going to prompt
     // the user.

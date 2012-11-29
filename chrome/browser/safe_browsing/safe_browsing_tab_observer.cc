@@ -15,7 +15,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #endif
 
@@ -23,7 +23,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(safe_browsing::SafeBrowsingTabObserver)
 
 namespace safe_browsing {
 
-#if !defined(ENABLE_SAFE_BROWSING)
+#if !defined(FULL_SAFE_BROWSING)
 // Provide a dummy implementation so that scoped_ptr<ClientSideDetectionHost>
 // has a concrete destructor to call. This is necessary because it is used
 // as a member of SafeBrowsingTabObserver, even if it only ever contains NULL.
@@ -32,7 +32,7 @@ class ClientSideDetectionHost { };
 
 SafeBrowsingTabObserver::SafeBrowsingTabObserver(
     content::WebContents* web_contents) : web_contents_(web_contents) {
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
@@ -59,7 +59,7 @@ SafeBrowsingTabObserver::~SafeBrowsingTabObserver() {
 // Internal helpers
 
 void SafeBrowsingTabObserver::UpdateSafebrowsingDetectionHost() {
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();

@@ -285,7 +285,7 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
     int route_id,
     ResourceType::Type resource_type,
     ScopedVector<content::ResourceThrottle>* throttles) {
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING) || defined(MOBILE_SAFE_BROWSING)
   // Insert safe browsing at the front of the list, so it gets to decide on
   // policies first.
   bool is_subresource_request = resource_type != ResourceType::MAIN_FRAME;

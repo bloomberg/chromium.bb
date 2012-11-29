@@ -227,7 +227,7 @@ class RemoveProfileCookieTester : public RemoveCookieTester {
   }
 };
 
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING) || defined(MOBILE_SAFE_BROWSING)
 class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
  public:
   RemoveSafeBrowsingCookieTester()
@@ -631,7 +631,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveCookieLastHour) {
   EXPECT_FALSE(tester.ContainsCookie());
 }
 
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING) || defined(MOBILE_SAFE_BROWSING)
 TEST_F(BrowsingDataRemoverTest, RemoveSafeBrowsingCookieForever) {
   RemoveSafeBrowsingCookieTester tester;
 

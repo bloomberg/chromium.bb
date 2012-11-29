@@ -367,7 +367,7 @@ void FeedbackUtil::SendReport(
   DispatchFeedback(profile, post_body, 0);
 }
 
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
 // static
 void FeedbackUtil::ReportPhishing(WebContents* current_tab,
                                    const std::string& phishing_url) {

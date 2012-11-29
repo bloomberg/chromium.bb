@@ -299,7 +299,7 @@ void ChromeRenderViewObserver::Navigate(const GURL& url) {
 
 void ChromeRenderViewObserver::OnSetClientSidePhishingDetection(
     bool enable_phishing_detection) {
-#if defined(ENABLE_SAFE_BROWSING) && !defined(OS_CHROMEOS)
+#if defined(FULL_SAFE_BROWSING) && !defined(OS_CHROMEOS)
   phishing_classifier_ = enable_phishing_detection ?
       safe_browsing::PhishingClassifierDelegate::Create(
           render_view(), NULL) :
@@ -772,7 +772,7 @@ void ChromeRenderViewObserver::CapturePageInfo(bool preliminary_capture) {
                                             contents));
   }
 
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
   // Will swap out the string.
   if (phishing_classifier_)
     phishing_classifier_->PageCaptured(&contents, preliminary_capture);

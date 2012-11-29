@@ -195,7 +195,7 @@ DownloadId ChromeDownloadManagerDelegate::GetNextId() {
 bool ChromeDownloadManagerDelegate::DetermineDownloadTarget(
     DownloadItem* download,
     const content::DownloadTargetCallback& callback) {
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
   DownloadProtectionService* service = GetDownloadProtectionService();
   if (service) {
     VLOG(2) << __FUNCTION__ << "() Start SB URL check for download = "
@@ -288,7 +288,7 @@ bool ChromeDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
 // static
 void ChromeDownloadManagerDelegate::DisableSafeBrowsing(DownloadItem* item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
   SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
       item->GetUserData(&safe_browsing_id));
   if (!state) {
@@ -303,7 +303,7 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
     DownloadItem* item,
     const base::Closure& internal_complete_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
   SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
       item->GetUserData(&safe_browsing_id));
   if (!state) {
@@ -477,7 +477,7 @@ void ChromeDownloadManagerDelegate::OpenWithWebIntent(
 }
 
 bool ChromeDownloadManagerDelegate::GenerateFileHash() {
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
   return profile_->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled) &&
       g_browser_process->safe_browsing_service()->DownloadBinHashNeeded();
 #else
@@ -536,7 +536,7 @@ void ChromeDownloadManagerDelegate::ClearLastDownloadPath() {
 
 DownloadProtectionService*
     ChromeDownloadManagerDelegate::GetDownloadProtectionService() {
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
   SafeBrowsingService* sb_service = g_browser_process->safe_browsing_service();
   if (sb_service && sb_service->download_protection_service() &&
       profile_->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)) {
@@ -748,7 +748,7 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
       danger_type = content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
     }
 
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING)
     DownloadProtectionService* service = GetDownloadProtectionService();
     // If this type of files is handled by the enhanced SafeBrowsing download
     // protection, mark it as potentially dangerous content until we are done

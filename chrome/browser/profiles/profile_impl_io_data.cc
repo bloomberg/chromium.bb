@@ -273,7 +273,7 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
       prefs::kRestoreOnStartup, pref_service, NULL);
   io_data_->session_startup_pref()->MoveToThread(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING) || defined(MOBILE_SAFE_BROWSING)
   io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
       pref_service, NULL);
   io_data_->safe_browsing_enabled()->MoveToThread(

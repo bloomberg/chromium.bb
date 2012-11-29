@@ -138,7 +138,7 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
   // Set initialized_ to true at the beginning in case any of the objects
   // below try to get the ResourceContext pointer.
   initialized_ = true;
-#if defined(ENABLE_SAFE_BROWSING)
+#if defined(FULL_SAFE_BROWSING) || defined(MOBILE_SAFE_BROWSING)
   io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
       profile_->GetPrefs(), NULL);
   io_data_->safe_browsing_enabled()->MoveToThread(

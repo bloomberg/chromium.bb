@@ -2362,9 +2362,46 @@
         }],
         ['safe_browsing==1', {
           'defines': [
-            'ENABLE_SAFE_BROWSING',
+            'FULL_SAFE_BROWSING',
           ],
-        }, {  # safe_browsing==0
+        }],
+        ['safe_browsing==2', {
+          'defines': [
+            'MOBILE_SAFE_BROWSING',
+          ],
+          'dependencies!': [
+            'safe_browsing_proto',
+            '../third_party/libusb/libusb.gyp:libusb',
+          ],
+         'sources!': [
+            'browser/renderer_host/safe_browsing_resource_throttle.cc',
+            'browser/renderer_host/safe_browsing_resource_throttle.h',
+          ],
+          'sources/': [
+            ['exclude', '^browser/safe_browsing/'],
+            ['include', '^browser/safe_browsing/malware_details.cc'],
+            ['include', '^browser/safe_browsing/malware_details.h'],
+            ['include', '^browser/safe_browsing/malware_details_cache.cc'],
+            ['include', '^browser/safe_browsing/malware_details_cache.h'],
+            ['include', '^browser/safe_browsing/malware_details_history.cc'],
+            ['include', '^browser/safe_browsing/malware_details_history.h'],
+            ['include', '^browser/safe_browsing/ping_manager.cc'],
+            ['include', '^browser/safe_browsing/ping_manager.h'],
+            ['include', '^browser/safe_browsing/protocol_manager_helper.cc'],
+            ['include', '^browser/safe_browsing/protocol_manager_helper.h'],
+            ['include', '^browser/safe_browsing/safe_browsing_blocking_page.cc'],
+            ['include', '^browser/safe_browsing/safe_browsing_blocking_page.h'],
+            ['include', '^browser/safe_browsing/safe_browsing_service.cc'],
+            ['include', '^browser/safe_browsing/safe_browsing_service.h'],
+            ['include', '^browser/safe_browsing/safe_browsing_tab_observer.cc'],
+            ['include', '^browser/safe_browsing/safe_browsing_tab_observer.h'],
+            ['include', '^browser/safe_browsing/safe_browsing_util.cc'],
+            ['include', '^browser/safe_browsing/safe_browsing_util.h'],
+            ['include', '^browser/safe_browsing/ui_manager.cc'],
+            ['include', '^browser/safe_browsing/ui_manager.h'],
+          ],
+        }],
+        ['safe_browsing==0', {
           'dependencies!': [
             'safe_browsing_proto',
             'safe_browsing_report_proto',
