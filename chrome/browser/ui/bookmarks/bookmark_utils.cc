@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 
 #include "base/logging.h"
+#include "base/prefs/public/pref_service_base.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/simple_message_box.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -183,6 +185,14 @@ void GetURLAndTitleToBookmark(content::WebContents* web_contents,
                               string16* title) {
   *url = web_contents->GetURL();
   *title = web_contents->GetTitle();
+}
+
+void ToggleBookmarkBarWhenVisible(content::BrowserContext* browser_context) {
+  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(browser_context);
+  const bool always_show = !prefs->GetBoolean(prefs::kShowBookmarkBar);
+
+  // The user changed when the bookmark bar is shown, update the preferences.
+  prefs->SetBoolean(prefs::kShowBookmarkBar, always_show);
 }
 
 }  // namespace chrome

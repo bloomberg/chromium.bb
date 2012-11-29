@@ -163,10 +163,6 @@ const BookmarkNode* ApplyEditsWithPossibleFolderChange(
     const string16& new_title,
     const GURL& new_url);
 
-// Toggles whether the bookmark bar is shown only on the new tab page or on
-// all tabs.  This is a preference modifier, not a visual modifier.
-void ToggleWhenVisible(Profile* profile);
-
 // Register user preferences for BookmarksBar.
 void RegisterUserPrefs(PrefServiceBase* prefs);
 

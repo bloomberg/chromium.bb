@@ -141,7 +141,7 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
     }
 
     case IDC_BOOKMARK_BAR_ALWAYS_SHOW:
-      bookmark_utils::ToggleWhenVisible(profile_);
+      chrome::ToggleBookmarkBarWhenVisible(profile_);
       break;
 
     case IDC_BOOKMARK_MANAGER: {

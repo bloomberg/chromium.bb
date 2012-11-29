@@ -192,10 +192,9 @@ TEST_F(BrowserWindowControllerTest, TestTheme) {
 TEST_F(BrowserWindowControllerTest, BookmarkBarControllerIndirection) {
   EXPECT_FALSE([controller_ isBookmarkBarVisible]);
 
-  // Explicitly show the bar. Can't use bookmark_utils::ToggleWhenVisible()
+  // Explicitly show the bar. Can't use chrome::ToggleBookmarkBarWhenVisible()
   // because of the notification issues.
-  profile()->GetPrefs()->
-      SetBoolean(prefs::kShowBookmarkBar, true);
+  profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
 
   [controller_ updateBookmarkBarVisibilityWithAnimation:NO];
   EXPECT_TRUE([controller_ isBookmarkBarVisible]);

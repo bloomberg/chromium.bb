@@ -434,15 +434,6 @@ const BookmarkNode* ApplyEditsWithPossibleFolderChange(
   return node;
 }
 
-// Formerly in BookmarkBarView.
-void ToggleWhenVisible(Profile* profile) {
-  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile);
-  const bool always_show = !prefs->GetBoolean(prefs::kShowBookmarkBar);
-
-  // The user changed when the bookmark bar is shown, update the preferences.
-  prefs->SetBoolean(prefs::kShowBookmarkBar, always_show);
-}
-
 void RegisterUserPrefs(PrefServiceBase* prefs) {
   prefs->RegisterBooleanPref(prefs::kShowBookmarkBar,
                              false,

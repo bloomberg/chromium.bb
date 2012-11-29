@@ -16,6 +16,7 @@ class Browser;
 class GURL;
 
 namespace content {
+class BrowserContext;
 class PageNavigator;
 class WebContents;
 }
@@ -51,6 +52,10 @@ bool HasBookmarkURLs(const std::vector<const BookmarkNode*>& selection);
 void GetURLAndTitleToBookmark(content::WebContents* web_contents,
                               GURL* url,
                               string16* title);
+
+// Toggles whether the bookmark bar is shown only on the new tab page or on
+// all tabs. This is a preference modifier, not a visual modifier.
+void ToggleBookmarkBarWhenVisible(content::BrowserContext* browser_context);
 
 }  // namespace chrome
 

@@ -34,6 +34,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -1249,7 +1250,7 @@ void BrowserView::ConfirmAddSearchProvider(TemplateURL* template_url,
 }
 
 void BrowserView::ToggleBookmarkBar() {
-  bookmark_utils::ToggleWhenVisible(browser_->profile());
+  chrome::ToggleBookmarkBarWhenVisible(browser_->profile());
 }
 
 void BrowserView::ShowUpdateChromeDialog() {

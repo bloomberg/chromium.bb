@@ -25,7 +25,6 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -36,6 +35,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -944,7 +944,7 @@ void BrowserWindowGtk::ConfirmAddSearchProvider(TemplateURL* template_url,
 }
 
 void BrowserWindowGtk::ToggleBookmarkBar() {
-  bookmark_utils::ToggleWhenVisible(browser_->profile());
+  chrome::ToggleBookmarkBarWhenVisible(browser_->profile());
 }
 
 void BrowserWindowGtk::ShowUpdateChromeDialog() {

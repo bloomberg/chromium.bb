@@ -11,11 +11,11 @@
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -418,7 +418,7 @@ bool BrowserWindowCocoa::IsPanel() const {
 // setting the preference sends notifications to all windows who then
 // know what to do.
 void BrowserWindowCocoa::ToggleBookmarkBar() {
-  bookmark_utils::ToggleWhenVisible(browser_->profile());
+  chrome::ToggleBookmarkBarWhenVisible(browser_->profile());
 }
 
 void BrowserWindowCocoa::AddFindBar(
