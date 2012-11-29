@@ -15,7 +15,6 @@
 
 class CookieSettings;
 class ExtensionInfoMap;
-class ManagedModeURLFilter;
 class PrefService;
 template<class T> class PrefMember;
 
@@ -45,32 +44,53 @@ class URLBlacklistManager;
 // add hooks into the network stack.
 class ChromeNetworkDelegate : public net::NetworkDelegate {
  public:
-  // If |profile| is NULL, events will be broadcasted to all profiles,
-  // otherwise they will only be sent to the specified profile.
-  // |enable_referrers| and |enable_do_not_track| should be initialized on the
-  // UI thread (see below) beforehand. This object's owner is responsible for
-  // cleaning it up at shutdown. |enable_do_not_track| can be NULL.
-  // If |cookie_settings| is NULL, all cookies are enabled, otherwise, the
-  // settings are enforced on all observed network requests.
-  ChromeNetworkDelegate(
-      extensions::EventRouterForwarder* event_router,
-      ExtensionInfoMap* extension_info_map,
-      const policy::URLBlacklistManager* url_blacklist_manager,
-      const ManagedModeURLFilter* managed_mode_url_filter,
-      void* profile,
-      CookieSettings* cookie_settings,
-      BooleanPrefMember* enable_referrers,
-      BooleanPrefMember* enable_do_not_track,
-      BooleanPrefMember* force_google_safe_search,
-      chrome_browser_net::LoadTimeStats* load_time_stats);
+  // |enable_referrers| (and all of the other optional PrefMembers) should be
+  // initialized on the UI thread (see below) beforehand. This object's owner is
+  // responsible for cleaning them up at shutdown.
+  ChromeNetworkDelegate(extensions::EventRouterForwarder* event_router,
+                        BooleanPrefMember* enable_referrers);
   virtual ~ChromeNetworkDelegate();
+
+  // Not inlined because we assign a scoped_refptr, which requires us to include
+  // the header file.
+  void set_extension_info_map(ExtensionInfoMap* extension_info_map);
+
+  void set_url_blacklist_manager(
+      const policy::URLBlacklistManager* url_blacklist_manager) {
+    url_blacklist_manager_ = url_blacklist_manager;
+  }
+
+  // If |profile| is NULL or not set, events will be broadcast to all profiles,
+  // otherwise they will only be sent to the specified profile.
+  void set_profile(void* profile) {
+    profile_ = profile;
+  }
+
+  // If |cookie_settings| is NULL or not set, all cookies are enabled,
+  // otherwise the settings are enforced on all observed network requests.
+  // Not inlined because we assign a scoped_refptr, which requires us to include
+  // the header file. Here we just forward-declare it.
+  void set_cookie_settings(CookieSettings* cookie_settings);
+
+  void set_load_time_stats(chrome_browser_net::LoadTimeStats* load_time_stats) {
+    load_time_stats_ = load_time_stats;
+  }
+
+  void set_enable_do_not_track(BooleanPrefMember* enable_do_not_track) {
+    enable_do_not_track_ = enable_do_not_track;
+  }
+
+  void set_force_google_safe_search(
+      BooleanPrefMember* force_google_safe_search) {
+    force_google_safe_search_ = force_google_safe_search;
+  }
 
   // Causes |OnCanThrottleRequest| to always return false, for all
   // instances of this object.
   static void NeverThrottleRequests();
 
   // Binds the pref members to |pref_service| and moves them to the IO thread.
-  // |enable_do_not_track| can be NULL.
+  // |enable_referrers| cannot be NULL, the others can.
   // This method should be called on the UI thread.
   static void InitializePrefsOnUIThread(
       BooleanPrefMember* enable_referrers,
@@ -154,10 +174,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
 
   // Weak, owned by our owner.
   const policy::URLBlacklistManager* url_blacklist_manager_;
-
-  // Weak pointer. The owner of this object needs to make sure that the
-  // |managed_mode_url_filter_| outlives it.
-  const ManagedModeURLFilter* managed_mode_url_filter_;
 
   // When true, allow access to all file:// URLs.
   static bool g_allow_file_access_;

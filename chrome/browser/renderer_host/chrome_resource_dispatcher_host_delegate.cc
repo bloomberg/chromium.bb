@@ -52,6 +52,8 @@
 
 #if defined(OS_ANDROID)
 #include "content/components/navigation_interception/intercept_navigation_delegate.h"
+#else
+#include "chrome/browser/managed_mode/managed_mode_resource_throttle.h"
 #endif
 
 // TODO(oshima): Enable this for other platforms.
@@ -292,6 +294,11 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
     throttles->push_back(SafeBrowsingResourceThrottleFactory::Create(
         request, child_id, route_id, is_subresource_request, safe_browsing_));
   }
+#endif
+
+#if !defined(OS_ANDROID)
+  throttles->push_back(new ManagedModeResourceThrottle(
+        request, child_id, route_id, !is_subresource_request));
 #endif
 
   content::ResourceThrottle* throttle =

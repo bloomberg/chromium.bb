@@ -71,10 +71,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 
-#if !defined(OS_ANDROID)
-#include "chrome/browser/managed_mode/managed_mode.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/drive_protocol_handler.h"
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
@@ -550,21 +546,18 @@ void ProfileIOData::LazyInitialize() const {
 
   chrome_url_data_manager_backend_.reset(new ChromeURLDataManagerBackend);
 
-  network_delegate_.reset(new ChromeNetworkDelegate(
-        io_thread_globals->extension_event_router_forwarder.get(),
-        profile_params_->extension_info_map,
-        url_blacklist_manager_.get(),
-#if !defined(OS_ANDROID)
-        ManagedMode::GetURLFilterForIOThread(),
-#else
-        NULL,
-#endif
-        profile_params_->profile,
-        profile_params_->cookie_settings,
-        &enable_referrers_,
-        &enable_do_not_track_,
-        &force_safesearch_,
-        load_time_stats_));
+  ChromeNetworkDelegate* network_delegate =
+      new ChromeNetworkDelegate(
+          io_thread_globals->extension_event_router_forwarder.get(),
+          &enable_referrers_);
+  network_delegate->set_extension_info_map(profile_params_->extension_info_map);
+  network_delegate->set_url_blacklist_manager(url_blacklist_manager_.get());
+  network_delegate->set_profile(profile_params_->profile);
+  network_delegate->set_cookie_settings(profile_params_->cookie_settings);
+  network_delegate->set_enable_do_not_track(&enable_do_not_track_);
+  network_delegate->set_force_google_safe_search(&force_safesearch_);
+  network_delegate->set_load_time_stats(load_time_stats_);
+  network_delegate_.reset(network_delegate);
 
   fraudulent_certificate_reporter_.reset(
       new chrome_browser_net::ChromeFraudulentCertificateReporter(

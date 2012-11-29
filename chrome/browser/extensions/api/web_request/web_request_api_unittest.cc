@@ -167,17 +167,18 @@ class ExtensionWebRequestTest : public testing::Test {
  public:
   ExtensionWebRequestTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        io_thread_(content::BrowserThread::IO, &message_loop_) {}
+        io_thread_(content::BrowserThread::IO, &message_loop_),
+        event_router_(new EventRouterForwarder) {}
 
  protected:
   virtual void SetUp() OVERRIDE {
-    event_router_ = new EventRouterForwarder();
-    enable_referrers_.Init(
-        prefs::kEnableReferrers, profile_.GetTestingPrefService(), NULL);
-    network_delegate_.reset(new ChromeNetworkDelegate(
-        event_router_.get(), NULL, NULL, NULL, &profile_,
-        CookieSettings::Factory::GetForProfile(&profile_), &enable_referrers_,
-        NULL, NULL, NULL));
+    ChromeNetworkDelegate::InitializePrefsOnUIThread(
+        &enable_referrers_, NULL, NULL, profile_.GetTestingPrefService());
+    network_delegate_.reset(
+        new ChromeNetworkDelegate(event_router_.get(), &enable_referrers_));
+    network_delegate_->set_profile(&profile_);
+    network_delegate_->set_cookie_settings(
+        CookieSettings::Factory::GetForProfile(&profile_));
     context_.reset(new net::TestURLRequestContext(true));
     context_->set_network_delegate(network_delegate_.get());
     context_->Init();
@@ -767,17 +768,18 @@ class ExtensionWebRequestHeaderModificationTest :
  public:
   ExtensionWebRequestHeaderModificationTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        io_thread_(content::BrowserThread::IO, &message_loop_) {}
+        io_thread_(content::BrowserThread::IO, &message_loop_),
+        event_router_(new EventRouterForwarder) {}
 
  protected:
   virtual void SetUp() {
-    event_router_ = new EventRouterForwarder();
-    enable_referrers_.Init(
-        prefs::kEnableReferrers, profile_.GetTestingPrefService(), NULL);
-    network_delegate_.reset(new ChromeNetworkDelegate(
-        event_router_.get(), NULL, NULL, NULL, &profile_,
-        CookieSettings::Factory::GetForProfile(&profile_), &enable_referrers_,
-        NULL, NULL, NULL));
+    ChromeNetworkDelegate::InitializePrefsOnUIThread(
+        &enable_referrers_, NULL, NULL, profile_.GetTestingPrefService());
+    network_delegate_.reset(
+        new ChromeNetworkDelegate(event_router_.get(), &enable_referrers_));
+    network_delegate_->set_profile(&profile_);
+    network_delegate_->set_cookie_settings(
+        CookieSettings::Factory::GetForProfile(&profile_));
     context_.reset(new net::TestURLRequestContext(true));
     host_resolver_.reset(new net::MockHostResolver());
     host_resolver_->rules()->AddSimulatedFailure("doesnotexist");

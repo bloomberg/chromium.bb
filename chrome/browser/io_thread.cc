@@ -422,17 +422,9 @@ void IOThread::Init() {
 
   globals_->extension_event_router_forwarder =
       extension_event_router_forwarder_;
-  ChromeNetworkDelegate* network_delegate = new ChromeNetworkDelegate(
-      extension_event_router_forwarder_,
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      &system_enable_referrers_,
-      NULL,
-      NULL,
-      NULL);
+  ChromeNetworkDelegate* network_delegate =
+      new ChromeNetworkDelegate(extension_event_router_forwarder_,
+                                &system_enable_referrers_);
   if (command_line.HasSwitch(switches::kDisableExtensionsHttpThrottling))
     network_delegate->NeverThrottleRequests();
   globals_->system_network_delegate.reset(network_delegate);

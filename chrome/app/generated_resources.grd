@@ -8021,6 +8021,26 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Clearing...
       </message>
 
+      <!-- Managed Mode Block Interstitial data -->
+      <message name="IDS_BLOCK_INTERSTITIAL_TITLE" desc="A title for the managed mode block interstitial page.">
+        Sad Robot
+      </message>
+      <message name="IDS_BLOCK_INTERSTITIAL_MESSAGE" desc="A message for the user when they attempt to visit a site outside of any content pack.">
+        Sorry, you're not allowed to access the following page:
+      </message>
+      <message name="IDS_BACK_BUTTON" desc="A button for going back to the last safe url after being blocked.">
+        Go back
+      </message>
+      <message name="IDS_CONTENT_PACKS_SECTION_BUTTON" desc="A button for going to the content pack starting page.">
+        Content Packs
+      </message>
+      <message name="IDS_BYPASS_BLOCK_MESSAGE" desc="A label for allowing custodians to allow a blocked site.">
+        Custodians can also allow this site.
+      </message>
+       <message name="IDS_BYPASS_BLOCK_BUTTON" desc="A button for allowing blocked site.">
+        Preview
+      </message>
+
       <!-- Content Settings dialog data -->
       <message name="IDS_CONTENT_SETTINGS_TITLE" desc="Title for content settings dialog">
         Content settings
