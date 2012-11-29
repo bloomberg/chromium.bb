@@ -143,8 +143,8 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
                  << sandbox_binary_ << " is owned by root and has mode 4755.";
     }
   } else {
-    LOG(WARNING) << "Running without the SUID sandbox! See "
-        "http://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment "
+    LOG(ERROR) << "Running without the SUID sandbox! See "
+        "https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment "
         "for more information on developing with the sandbox on.";
   }
 
