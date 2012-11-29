@@ -202,28 +202,38 @@ string Gesture::String() const {
                           "start: %f stop: %f)", start_time, end_time);
     case kGestureTypeMove:
       return StringPrintf("(Gesture type: move start: %f stop: %f "
-                          "dx: %f dy: %f)", start_time, end_time,
-                          details.move.dx, details.move.dy);
+                          "dx: %f dy: %f ordinal_dx: %f ordinal_dy: %f)",
+                          start_time, end_time,
+                          details.move.dx, details.move.dy,
+                          details.move.ordinal_dx, details.move.ordinal_dy);
     case kGestureTypeScroll:
       return StringPrintf("(Gesture type: scroll start: %f stop: %f "
-                          "dx: %f dy: %f)", start_time, end_time,
-                          details.scroll.dx, details.scroll.dy);
+                          "dx: %f dy: %f ordinal_dx: %f ordinal_dy: %f)",
+                          start_time, end_time,
+                          details.scroll.dx, details.scroll.dy,
+                          details.scroll.ordinal_dx, details.scroll.ordinal_dy);
     case kGestureTypePinch:
       return StringPrintf("(Gesture type: pinch start: %f stop: %f "
-                          "dz: %f)", start_time, end_time, details.pinch.dz);
+                          "dz: %f ordinal_dz: %f)", start_time, end_time,
+                          details.pinch.dz, details.pinch.ordinal_dz);
     case kGestureTypeButtonsChange:
       return StringPrintf("(Gesture type: buttons start: %f stop: "
                           "%f down: %d up: %d)", start_time, end_time,
                           details.buttons.down, details.buttons.up);
     case kGestureTypeFling:
       return StringPrintf("(Gesture type: fling start: %f stop: "
-                          "%f vx: %f vy: %f state: %s)", start_time, end_time,
+                          "%f vx: %f vy: %f ordinal_dx: %f ordinal_dy: %f "
+                          "state: %s)", start_time, end_time,
                           details.fling.vx, details.fling.vy,
+                          details.fling.ordinal_vx, details.fling.ordinal_vy,
                           details.fling.fling_state == GESTURES_FLING_START ?
                           "start" : "tapdown");
     case kGestureTypeSwipe:
       return StringPrintf("(Gesture type: swipe start: %f stop: %f "
-                          "dx: %f)", start_time, end_time, details.swipe.dx);
+                          "dx: %f dy: %f ordinal_dx: %f ordinal_dy: %f)",
+                          start_time, end_time,
+                          details.swipe.dx, details.swipe.dy,
+                          details.swipe.ordinal_dx, details.swipe.ordinal_dy);
     case kGestureTypeSwipeLift:
       return StringPrintf("(Gesture type: swipeLift start: %f stop: %f)",
                           start_time, end_time);
@@ -508,6 +518,9 @@ std::string GestureInterpreter::EncodeActivityLog() {
   return loggingFilter_->EncodeActivityLog();
 }
 
-const GestureMove kGestureMove = { 0, 0 };
-const GestureScroll kGestureScroll = { 0, 0, 0 };
+const GestureMove kGestureMove = { 0, 0, 0, 0 };
+const GestureScroll kGestureScroll = { 0, 0, 0, 0, 0 };
 const GestureButtonsChange kGestureButtonsChange = { 0, 0 };
+const GestureFling kGestureFling = { 0, 0, 0, 0, 0 };
+const GestureSwipe kGestureSwipe = { 0, 0, 0, 0 };
+const GesturePinch kGesturePinch = { 0, 0 };

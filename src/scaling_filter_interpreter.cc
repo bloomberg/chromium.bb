@@ -170,16 +170,22 @@ void ScalingFilterInterpreter::ScaleTouchpadHardwareState(
 void ScalingFilterInterpreter::ScaleGesture(Gesture* gs) {
   switch (gs->type) {
     case kGestureTypeMove:
-      gs->details.move.dx = gs->details.move.dx * screen_x_scale_;
-      gs->details.move.dy = gs->details.move.dy * screen_y_scale_;
+      gs->details.move.dx *= screen_x_scale_;
+      gs->details.move.dy *= screen_y_scale_;
+      gs->details.move.ordinal_dx *= screen_x_scale_;
+      gs->details.move.ordinal_dy *= screen_y_scale_;
       break;
     case kGestureTypeScroll:
-      gs->details.scroll.dx = gs->details.scroll.dx * screen_x_scale_;
-      gs->details.scroll.dy = gs->details.scroll.dy * screen_y_scale_;
+      gs->details.scroll.dx *= screen_x_scale_;
+      gs->details.scroll.dy *= screen_y_scale_;
+      gs->details.scroll.ordinal_dx *= screen_x_scale_;
+      gs->details.scroll.ordinal_dy *= screen_y_scale_;
       break;
     case kGestureTypeFling:
-      gs->details.fling.vx = gs->details.fling.vx * screen_x_scale_;
-      gs->details.fling.vy = gs->details.fling.vy * screen_y_scale_;
+      gs->details.fling.vx *= screen_x_scale_;
+      gs->details.fling.vy *= screen_y_scale_;
+      gs->details.fling.ordinal_vx *= screen_x_scale_;
+      gs->details.fling.ordinal_vy *= screen_y_scale_;
       break;
     default:
       break;

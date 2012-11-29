@@ -35,6 +35,7 @@ class IntegralGestureFilterInterpreter : public FilterInterpreter {
   void HandleGesture(Gesture** gs);
 
   float hscroll_remainder_, vscroll_remainder_;
+  float hscroll_ordinal_remainder_, vscroll_ordinal_remainder_;
 };
 
 }  // namespace gestures

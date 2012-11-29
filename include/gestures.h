@@ -151,12 +151,19 @@ struct HardwareState {
 #define GESTURES_FLING_TAP_DOWN 1  // Finger touched down/fling end
 
 // Gesture sub-structs
+
+// Note about ordinal_* values: Sometimes, UI will want to use unaccelerated
+// values for various gestures, so we expose the non-accelerated values in
+// the ordinal_* fields.
+
 typedef struct {
   float dx, dy;
+  float ordinal_dx, ordinal_dy;
 } GestureMove;
 
 typedef struct{
   float dx, dy;
+  float ordinal_dx, ordinal_dy;
   // If set, stop_fling means that this scroll should stop flinging, thus
   // if an interpreter suppresses it for any reason (e.g., rounds the size
   // down to 0, thus making it a noop), it will replace it with a Fling
@@ -173,11 +180,13 @@ typedef struct {
 typedef struct {
   // fling velocity (valid when fling_state is GESTURES_FLING_START):
   float vx, vy;
+  float ordinal_vx, ordinal_vy;
   unsigned fling_state:1;  // GESTURES_FLING_START or GESTURES_FLING_TAP_DOWN
 } GestureFling;
 
 typedef struct {
   float dx, dy;
+  float ordinal_dx, ordinal_dy;
 } GestureSwipe;
 
 typedef struct {
@@ -189,6 +198,7 @@ typedef struct {
   // <1.0 for outwards pinch
   // >1.0 for inwards pinch
   float dz;
+  float ordinal_dz;
 } GesturePinch;
 
 enum GestureType {
@@ -227,14 +237,14 @@ struct Gesture {
 #endif  // GESTURES_INTERNAL
   Gesture(const GestureMove&, stime_t start, stime_t end, float dx, float dy)
       : start_time(start), end_time(end), type(kGestureTypeMove) {
-    details.move.dx = dx;
-    details.move.dy = dy;
+    details.move.ordinal_dx = details.move.dx = dx;
+    details.move.ordinal_dy = details.move.dy = dy;
   }
   Gesture(const GestureScroll&,
           stime_t start, stime_t end, float dx, float dy)
       : start_time(start), end_time(end), type(kGestureTypeScroll) {
-    details.scroll.dx = dx;
-    details.scroll.dy = dy;
+    details.scroll.ordinal_dx = details.scroll.dx = dx;
+    details.scroll.ordinal_dy = details.scroll.dy = dy;
     details.scroll.stop_fling = 0;
   }
   Gesture(const GestureButtonsChange&,
@@ -246,8 +256,8 @@ struct Gesture {
   Gesture(const GestureFling&,
           stime_t start, stime_t end, float vx, float vy, unsigned state)
       : start_time(start), end_time(end), type(kGestureTypeFling) {
-    details.fling.vx = vx;
-    details.fling.vy = vy;
+    details.fling.ordinal_vx = details.fling.vx = vx;
+    details.fling.ordinal_vy = details.fling.vy = vy;
     details.fling.fling_state = state;
   }
   Gesture(const GestureSwipe&,
@@ -255,15 +265,15 @@ struct Gesture {
       : start_time(start),
         end_time(end),
         type(kGestureTypeSwipe) {
-    details.swipe.dx = dx;
-    details.swipe.dy = dy;
+    details.swipe.ordinal_dx = details.swipe.dx = dx;
+    details.swipe.ordinal_dy = details.swipe.dy = dy;
   }
   Gesture(const GesturePinch&,
           stime_t start, stime_t end, float dz)
       : start_time(start),
         end_time(end),
         type(kGestureTypePinch) {
-    details.pinch.dz = dz;
+    details.pinch.ordinal_dz = details.pinch.dz = dz;
   }
   Gesture(const GestureSwipeLift&, stime_t start, stime_t end)
       : start_time(start),
