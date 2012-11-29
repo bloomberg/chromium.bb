@@ -35,19 +35,24 @@ struct CategoryInfo {
 };
 
 // These are placeholders for now.
-// Update history.js if these values change.
 CategoryInfo g_categories[] = {
   {"com.google.chrome.animals", "Animals and Plants"},
   {"com.google.chrome.arts", "Arts"},
+  {"com.google.chrome.business", "Business"},
   {"com.google.chrome.computers", "Computers"},
   {"com.google.chrome.education", "Education"},
   {"com.google.chrome.entertainment", "Entertainment"},
-  {"com.google.chrome.family", "Family"},
   {"com.google.chrome.games", "Games"},
   {"com.google.chrome.health", "Health"},
+  {"com.google.chrome.home", "Home"},
+  {"com.google.chrome.international", "International"},
   {"com.google.chrome.news", "News"},
-  {"com.google.chrome.people", "People"},
+  {"com.google.chrome.people", "People and Society"},
+  {"com.google.chrome.places", "Places"},
   {"com.google.chrome.pre-school", "Pre-School"},
+  {"com.google.chrome.reference", "Reference"},
+  {"com.google.chrome.science", "Science"},
+  {"com.google.chrome.shopping", "Shopping"},
   {"com.google.chrome.sports", "Sports and Hobbies"},
   {"com.google.chrome.teens", "Teens"}
 };
