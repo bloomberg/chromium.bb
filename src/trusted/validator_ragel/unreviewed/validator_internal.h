@@ -190,13 +190,6 @@ extern const NaClCPUFeaturesX86 kValidatorCPUIDFeatures;
 #define SET_MODRM_BASE(N) base = (N)
 #define SET_MODRM_INDEX(N) index = (N)
 
-enum {
-  REX_B = 1,
-  REX_X = 2,
-  REX_R = 4,
-  REX_W = 8
-};
-
 enum operand_kind {
   OperandSandboxIrrelevant = 0,
   /*

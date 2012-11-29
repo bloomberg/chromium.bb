@@ -20,6 +20,13 @@
 # define FORCEINLINE __inline __attribute__ ((always_inline))
 #endif
 
+enum {
+  REX_B = 1,
+  REX_X = 2,
+  REX_R = 4,
+  REX_W = 8
+};
+
 static FORCEINLINE uint8_t RegFromOpcode(uint8_t modrm) {
   return modrm & 0x07;
 }
@@ -49,7 +56,7 @@ static FORCEINLINE uint8_t BaseFromSIB(uint8_t sib) {
 }
 
 static FORCEINLINE uint8_t BaseExtentionFromREX(uint8_t rex) {
-  return (rex & 0x01) << 3;
+  return (rex & REX_B) << 3;
 }
 
 static FORCEINLINE uint8_t BaseExtentionFromVEX(uint8_t vex2) {
@@ -57,11 +64,11 @@ static FORCEINLINE uint8_t BaseExtentionFromVEX(uint8_t vex2) {
 }
 
 static FORCEINLINE uint8_t IndexExtentionFromREX(uint8_t rex) {
-  return (rex & 0x02) << 2;
+  return (rex & REX_X) << 2;
 }
 
 static FORCEINLINE uint8_t IndexExtentionFromVEX(uint8_t vex2) {
-  return ((~vex2) & 0x40) >> 3;
+  return ((~vex2) & REX_R) >> 3;
 }
 
 static FORCEINLINE uint8_t RegisterExtentionFromREX(uint8_t rex) {
@@ -69,7 +76,7 @@ static FORCEINLINE uint8_t RegisterExtentionFromREX(uint8_t rex) {
 }
 
 static FORCEINLINE uint8_t RegisterExtentionFromVEX(uint8_t vex2) {
-  return ((~vex2) & 0x80) >> 4;
+  return ((~vex2) & REX_W) >> 4;
 }
 
 static FORCEINLINE uint8_t GetOperandFromVexIA32(uint8_t vex3) {
@@ -82,6 +89,63 @@ static FORCEINLINE uint8_t GetOperandFromVexAMD64(uint8_t vex3) {
 
 static FORCEINLINE uint8_t RegisterFromIS4(uint8_t is4) {
   return is4 >> 4;
+}
+
+/*
+ * SignExtendXXBit is used to sign-extend XX-bit value to unsigned 64-bit value.
+ *
+ * To do that you need to pass unsigned value of smaller then 64-bit size
+ * to this function: it will be converted to signed value and then
+ * sign-extended to become 64-bit value.
+ *
+ * Smaller values can be obtained by restricting this value further (which is
+ * safe according to the C language specification: see 6.2.1.2 in C90 and
+ * 6.3.1.3.2 in C99 specification).
+ *
+ * Note that these operations are safe but slightly unusual: they come very
+ * close to the edge of what “well-behaved C program is not supposed to do”,
+ * but they stay on the “safe” side of this boundary.  Specifically: this
+ * behavior triggers “implementation-defined behavior” (see 6.2.1.2 in C90
+ * specification and 6.3.1.3.3 in C99 specification) which sounds suspiciously
+ * similar to the dreaded “undefined behavior”, but in reality these two are
+ * quite different: any program which triggers “undefined behavior” is not a
+ * valid C program at all, but program which triggers “implementation-defined
+ * behavior” is quite valid C program.  What this program actually *does*
+ * depends on the specification of a given C compiler: each particular
+ * implementation must decide for itself what it'll do in this particular case
+ * and *stick* *to* *it*.  If the implementation uses two's-complement negative
+ * numbers (and all the implementation which can compile this code *must*
+ * support two's-complement arythmetic—see 7.18.1.1 in C99 specification) then
+ * the easiest thing to do is to do what we need here—this is what all known
+ * compilers for all known platforms are actually doing.
+ */
+static FORCEINLINE uint64_t SignExtend8Bit(uint64_t value) {
+  return (int8_t)value;
+}
+
+static FORCEINLINE uint64_t SignExtend16Bit(uint64_t value) {
+  return (int16_t)value;
+}
+
+static FORCEINLINE uint64_t SignExtend32Bit(uint64_t value) {
+  return (int32_t)value;
+}
+
+static FORCEINLINE uint64_t AnyFieldValue8bit(const uint8_t *start) {
+  return *start;
+}
+
+static FORCEINLINE uint64_t AnyFieldValue16bit(const uint8_t *start) {
+  return (start[0] + 256U * start[1]);
+}
+
+static FORCEINLINE uint64_t AnyFieldValue32bit(const uint8_t *start) {
+  return (start[0] + 256U * (start[1] + 256U * (start[2] + 256U * (start[3]))));
+}
+static FORCEINLINE uint64_t AnyFieldValue64bit(const uint8_t *start) {
+  return (*start + 256ULL * (start[1] + 256ULL * (start[2] + 256ULL *
+          (start[3] + 256ULL * (start[4] + 256ULL * (start[5] + 256ULL *
+           (start[6] + 256ULL * start[7])))))));
 }
 
 static const uint8_t index_registers[] = {

@@ -3,6 +3,15 @@
  * Compiled for x86-64 mode.
  */
 
+/*
+ * Full-blown decoder for amd64 case.  Can be used to decode instruction
+ * sequence and process it, but right now is only used in tests.
+ *
+ * The code is in [hand-written] “parse_instruction.rl” and in [auto-generated]
+ * “decoder_x86_64_instruction.rl” file.  This file only includes tiny amount
+ * of the glue code.
+ */
+
 #include <assert.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -11,9 +20,33 @@
 
 #include "native_client/src/include/elf32.h"
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator_ragel/unreviewed/decoding.h"
+#include "native_client/src/trusted/validator_ragel/unreviewed/decoder_internal.h"
 
 #include "native_client/src/trusted/validator_ragel/gen/decoder_x86_64_instruction_consts.h"
+
+/*
+ * These prefixes are only useful in AMD64 mode, but they will “cleaned up” by
+ * decoder's cleanup procedure in IA32 mode anyway.  That's why we define them
+ * twice: “real” version here and “do-nothing” in decoder_x86_32.rl.
+ */
+#define SET_REX_PREFIX(P) instruction.prefix.rex = (P)
+#define SET_VEX_PREFIX2(P) vex_prefix2 = (P)
+#define CLEAR_SPURIOUS_REX_B() \
+  instruction.prefix.rex_b_spurious = FALSE
+#define SET_SPURIOUS_REX_B() \
+  if (GET_REX_PREFIX() & REX_B) instruction.prefix.rex_b_spurious = TRUE
+#define CLEAR_SPURIOUS_REX_X() \
+  instruction.prefix.rex_x_spurious = FALSE
+#define SET_SPURIOUS_REX_X() \
+  if (GET_REX_PREFIX() & REX_X) instruction.prefix.rex_x_spurious = TRUE
+#define CLEAR_SPURIOUS_REX_R() \
+  instruction.prefix.rex_r_spurious = FALSE
+#define SET_SPURIOUS_REX_R() \
+  if (GET_REX_PREFIX() & REX_R) instruction.prefix.rex_r_spurious = TRUE
+#define CLEAR_SPURIOUS_REX_W() \
+  instruction.prefix.rex_w_spurious = FALSE
+#define SET_SPURIOUS_REX_W() \
+  if (GET_REX_PREFIX() & REX_W) instruction.prefix.rex_w_spurious = TRUE
 
 
 
@@ -12343,8 +12376,8 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	96u, 103u, 104u, 111u, 112u, 119u, 120u, 127u, 
 	128u, 135u, 136u, 143u, 144u, 151u, 152u, 159u, 
 	160u, 167u, 168u, 175u, 176u, 183u, 184u, 191u, 
-	192u, 199u, 200u, 207u, 216u, 223u, 224u, 231u, 
-	232u, 239u, 240u, 247u, 248u, 255u, 4u, 5u, 
+	192u, 199u, 200u, 207u, 208u, 215u, 216u, 223u, 
+	224u, 231u, 232u, 239u, 240u, 247u, 4u, 5u, 
 	12u, 13u, 20u, 21u, 28u, 29u, 36u, 37u, 
 	44u, 45u, 52u, 53u, 60u, 61u, 68u, 76u, 
 	84u, 92u, 100u, 108u, 116u, 124u, 132u, 140u, 
@@ -12355,8 +12388,8 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	104u, 111u, 112u, 119u, 120u, 127u, 128u, 135u, 
 	136u, 143u, 144u, 151u, 152u, 159u, 160u, 167u, 
 	168u, 175u, 176u, 183u, 184u, 191u, 192u, 199u, 
-	200u, 207u, 208u, 215u, 216u, 223u, 224u, 231u, 
-	232u, 239u, 248u, 255u, 5u, 13u, 21u, 29u, 
+	200u, 207u, 216u, 223u, 224u, 231u, 232u, 239u, 
+	240u, 247u, 248u, 255u, 5u, 13u, 21u, 29u, 
 	37u, 45u, 53u, 61u, 69u, 77u, 85u, 93u, 
 	101u, 109u, 117u, 125u, 133u, 141u, 149u, 157u, 
 	165u, 173u, 181u, 189u, 197u, 205u, 213u, 221u, 
@@ -12371,7 +12404,7 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	112u, 119u, 120u, 127u, 128u, 135u, 136u, 143u, 
 	144u, 151u, 152u, 159u, 160u, 167u, 168u, 175u, 
 	176u, 183u, 184u, 191u, 192u, 199u, 200u, 207u, 
-	208u, 215u, 216u, 223u, 224u, 231u, 232u, 239u, 
+	216u, 223u, 224u, 231u, 232u, 239u, 240u, 247u, 
 	248u, 255u, 4u, 5u, 12u, 13u, 20u, 21u, 
 	28u, 29u, 36u, 37u, 44u, 45u, 68u, 76u, 
 	84u, 92u, 100u, 108u, 132u, 140u, 148u, 156u, 
@@ -12708,8 +12741,8 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	87u, 88u, 95u, 96u, 103u, 104u, 111u, 112u, 
 	119u, 120u, 127u, 128u, 135u, 136u, 143u, 144u, 
 	151u, 152u, 159u, 160u, 167u, 168u, 175u, 176u, 
-	183u, 184u, 191u, 200u, 207u, 208u, 215u, 216u, 
-	223u, 224u, 231u, 232u, 239u, 240u, 247u, 248u, 
+	183u, 184u, 191u, 192u, 199u, 200u, 207u, 208u, 
+	215u, 216u, 223u, 224u, 231u, 232u, 239u, 248u, 
 	255u, 4u, 5u, 12u, 13u, 20u, 21u, 28u, 
 	29u, 36u, 37u, 44u, 45u, 68u, 76u, 84u, 
 	92u, 100u, 108u, 132u, 140u, 148u, 156u, 164u, 
@@ -13697,7 +13730,7 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	135u, 136u, 143u, 144u, 151u, 152u, 159u, 160u, 
 	167u, 168u, 175u, 176u, 183u, 184u, 191u, 192u, 
 	199u, 200u, 207u, 208u, 215u, 216u, 223u, 224u, 
-	231u, 240u, 247u, 248u, 255u, 5u, 13u, 21u, 
+	231u, 232u, 239u, 240u, 247u, 5u, 13u, 21u, 
 	29u, 37u, 45u, 53u, 61u, 69u, 77u, 85u, 
 	93u, 101u, 109u, 117u, 125u, 133u, 141u, 149u, 
 	157u, 165u, 173u, 181u, 189u, 197u, 205u, 213u, 
@@ -13712,8 +13745,8 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	111u, 112u, 119u, 120u, 127u, 128u, 135u, 136u, 
 	143u, 144u, 151u, 152u, 159u, 160u, 167u, 168u, 
 	175u, 176u, 183u, 184u, 191u, 192u, 199u, 200u, 
-	207u, 216u, 223u, 224u, 231u, 232u, 239u, 240u, 
-	247u, 248u, 255u, 192u, 239u, 4u, 5u, 68u, 
+	207u, 208u, 215u, 216u, 223u, 224u, 231u, 232u, 
+	239u, 240u, 247u, 192u, 239u, 4u, 5u, 68u, 
 	132u, 0u, 7u, 64u, 71u, 128u, 135u, 192u, 
 	199u, 4u, 5u, 12u, 13u, 20u, 21u, 28u, 
 	29u, 36u, 37u, 44u, 45u, 60u, 61u, 68u, 
@@ -13848,7 +13881,7 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	104u, 111u, 112u, 119u, 120u, 127u, 128u, 135u, 
 	136u, 143u, 144u, 151u, 152u, 159u, 160u, 167u, 
 	168u, 175u, 176u, 183u, 184u, 191u, 192u, 199u, 
-	200u, 207u, 208u, 215u, 216u, 223u, 232u, 239u, 
+	200u, 207u, 216u, 223u, 224u, 231u, 232u, 239u, 
 	240u, 247u, 248u, 255u, 4u, 5u, 12u, 13u, 
 	20u, 21u, 28u, 29u, 36u, 37u, 44u, 45u, 
 	52u, 53u, 60u, 61u, 68u, 76u, 84u, 92u, 
@@ -13860,7 +13893,7 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	112u, 119u, 120u, 127u, 128u, 135u, 136u, 143u, 
 	144u, 151u, 152u, 159u, 160u, 167u, 168u, 175u, 
 	176u, 183u, 184u, 191u, 192u, 199u, 200u, 207u, 
-	208u, 215u, 216u, 223u, 224u, 231u, 240u, 247u, 
+	208u, 215u, 216u, 223u, 224u, 231u, 232u, 239u, 
 	248u, 255u, 192u, 239u, 4u, 5u, 12u, 13u, 
 	20u, 21u, 28u, 29u, 36u, 37u, 44u, 45u, 
 	60u, 61u, 68u, 76u, 84u, 92u, 100u, 108u, 
@@ -24261,34 +24294,34 @@ static const unsigned char _x86_64_decoder_trans_keys[] = {
 	148u, 156u, 8u, 15u, 16u, 23u, 24u, 31u, 
 	72u, 79u, 80u, 87u, 88u, 95u, 136u, 143u, 
 	144u, 151u, 152u, 159u, 200u, 207u, 208u, 215u, 
-	216u, 223u, 0u, 1u, 2u, 3u, 5u, 6u, 
-	7u, 8u, 9u, 10u, 11u, 13u, 14u, 15u, 
-	16u, 17u, 18u, 19u, 21u, 22u, 23u, 24u, 
-	25u, 26u, 27u, 29u, 30u, 31u, 32u, 33u, 
-	34u, 35u, 37u, 38u, 39u, 40u, 41u, 42u, 
-	43u, 45u, 46u, 47u, 48u, 49u, 50u, 51u, 
-	53u, 54u, 55u, 56u, 57u, 58u, 59u, 61u, 
-	62u, 63u, 64u, 65u, 66u, 67u, 69u, 70u, 
-	71u, 72u, 73u, 74u, 75u, 77u, 78u, 79u, 
-	80u, 81u, 82u, 83u, 85u, 86u, 87u, 88u, 
-	89u, 90u, 91u, 93u, 94u, 95u, 96u, 97u, 
-	98u, 99u, 101u, 102u, 103u, 104u, 105u, 106u, 
-	107u, 109u, 110u, 111u, 112u, 113u, 114u, 115u, 
+	216u, 223u, 0u, 1u, 3u, 4u, 5u, 6u, 
+	7u, 8u, 9u, 11u, 12u, 13u, 14u, 15u, 
+	16u, 17u, 19u, 20u, 21u, 22u, 23u, 24u, 
+	25u, 27u, 28u, 29u, 30u, 31u, 32u, 33u, 
+	35u, 36u, 37u, 38u, 39u, 40u, 41u, 43u, 
+	44u, 45u, 46u, 47u, 48u, 49u, 51u, 52u, 
+	53u, 54u, 55u, 56u, 57u, 59u, 60u, 61u, 
+	62u, 63u, 64u, 65u, 67u, 68u, 69u, 70u, 
+	71u, 72u, 73u, 75u, 76u, 77u, 78u, 79u, 
+	80u, 81u, 83u, 84u, 85u, 86u, 87u, 88u, 
+	89u, 91u, 92u, 93u, 94u, 95u, 96u, 97u, 
+	99u, 100u, 101u, 102u, 103u, 104u, 105u, 107u, 
+	108u, 109u, 110u, 111u, 112u, 113u, 115u, 116u, 
 	117u, 118u, 119u, 120u, 121u, 122u, 123u, 124u, 
-	125u, 126u, 127u, 128u, 129u, 130u, 131u, 133u, 
-	134u, 135u, 136u, 137u, 138u, 139u, 141u, 142u, 
-	143u, 144u, 145u, 146u, 147u, 149u, 150u, 151u, 
-	152u, 153u, 154u, 155u, 157u, 158u, 159u, 160u, 
-	161u, 162u, 163u, 165u, 166u, 167u, 168u, 169u, 
-	170u, 171u, 173u, 174u, 175u, 176u, 177u, 178u, 
-	179u, 181u, 182u, 183u, 184u, 185u, 186u, 187u, 
-	189u, 190u, 191u, 192u, 193u, 194u, 195u, 197u, 
-	198u, 199u, 200u, 201u, 202u, 203u, 205u, 206u, 
-	207u, 208u, 209u, 210u, 211u, 213u, 214u, 215u, 
-	216u, 217u, 218u, 219u, 221u, 222u, 223u, 224u, 
-	225u, 226u, 227u, 229u, 230u, 231u, 232u, 233u, 
-	234u, 235u, 237u, 238u, 239u, 240u, 241u, 242u, 
-	243u, 245u, 246u, 247u, 248u, 249u, 250u, 251u, 
+	125u, 126u, 127u, 128u, 129u, 131u, 132u, 133u, 
+	134u, 135u, 136u, 137u, 139u, 140u, 141u, 142u, 
+	143u, 144u, 145u, 147u, 148u, 149u, 150u, 151u, 
+	152u, 153u, 155u, 156u, 157u, 158u, 159u, 160u, 
+	161u, 163u, 164u, 165u, 166u, 167u, 168u, 169u, 
+	171u, 172u, 173u, 174u, 175u, 176u, 177u, 179u, 
+	180u, 181u, 182u, 183u, 184u, 185u, 187u, 188u, 
+	189u, 190u, 191u, 192u, 193u, 195u, 196u, 197u, 
+	198u, 199u, 200u, 201u, 203u, 204u, 205u, 206u, 
+	207u, 208u, 209u, 211u, 212u, 213u, 214u, 215u, 
+	216u, 217u, 219u, 220u, 221u, 222u, 223u, 224u, 
+	225u, 227u, 228u, 229u, 230u, 231u, 232u, 233u, 
+	235u, 236u, 237u, 238u, 239u, 240u, 241u, 243u, 
+	244u, 245u, 246u, 247u, 248u, 249u, 250u, 251u, 
 	252u, 253u, 254u, 255u, 81u, 83u, 88u, 89u, 
 	90u, 92u, 93u, 94u, 95u, 194u, 81u, 88u, 
 	89u, 90u, 92u, 93u, 94u, 95u, 124u, 125u, 
@@ -26860,16 +26893,16 @@ static const short _x86_64_decoder_indicies[] = {
 	1939, 1941, 1943, 1945, 1947, 1892, 1895, 1898, 
 	1901, 1904, 1907, 1910, 1913, 1916, 1918, 1920, 
 	1922, 1924, 1926, 1928, 1930, 1932, 1934, 1936, 
-	1938, 1940, 1942, 1944, 1946, 1948, 1949, 1951, 
-	1952, 1953, 1954, 1955, 1950, 1957, 1958, 1960, 
+	1938, 1940, 1942, 1944, 1946, 1948, 1949, 1950, 
+	1951, 1952, 1953, 1954, 1955, 1957, 1958, 1960, 
 	1961, 1963, 1964, 1966, 1967, 1969, 1970, 1972, 
 	1973, 1975, 1976, 1978, 1979, 1981, 1983, 1985, 
 	1987, 1989, 1991, 1993, 1995, 1997, 1999, 2001, 
 	2003, 2005, 2007, 2009, 2011, 1956, 1959, 1962, 
 	1965, 1968, 1971, 1974, 1977, 1980, 1982, 1984, 
 	1986, 1988, 1990, 1992, 1994, 1996, 1998, 2000, 
-	2002, 2004, 2006, 2008, 2010, 2012, 2013, 2014, 
-	2015, 2016, 2017, 2019, 2018, 2021, 2021, 2021, 
+	2002, 2004, 2006, 2008, 2010, 2012, 2013, 2015, 
+	2016, 2017, 2018, 2019, 2014, 2021, 2021, 2021, 
 	2021, 2021, 2021, 2021, 2021, 2021, 2021, 2021, 
 	2021, 2021, 2021, 2021, 2021, 2021, 2021, 2021, 
 	2021, 2021, 2021, 2021, 2021, 2021, 2021, 2021, 
@@ -26881,7 +26914,7 @@ static const short _x86_64_decoder_indicies[] = {
 	2028, 2031, 2034, 2037, 2040, 2043, 2046, 2048, 
 	2050, 2052, 2054, 2056, 2058, 2060, 2062, 2064, 
 	2066, 2068, 2070, 2072, 2074, 2076, 2078, 2079, 
-	2080, 2081, 2082, 2083, 2085, 2084, 2087, 2088, 
+	2081, 2082, 2083, 2084, 2085, 2080, 2087, 2088, 
 	2087, 2088, 2087, 2088, 2087, 2088, 2087, 2088, 
 	2087, 2088, 2090, 2090, 2090, 2090, 2090, 2090, 
 	2092, 2092, 2092, 2092, 2092, 2092, 2086, 2089, 
@@ -27141,8 +27174,8 @@ static const short _x86_64_decoder_indicies[] = {
 	3463, 3465, 3467, 3412, 3415, 3418, 3421, 3424, 
 	3427, 3430, 3433, 3436, 3438, 3440, 3442, 3444, 
 	3446, 3448, 3450, 3452, 3454, 3456, 3458, 3460, 
-	3462, 3464, 3466, 3469, 3470, 3471, 3472, 3473, 
-	3474, 3475, 3468, 2087, 2088, 2087, 2088, 2087, 
+	3462, 3464, 3466, 3468, 3469, 3470, 3471, 3472, 
+	3473, 3475, 3474, 2087, 2088, 2087, 2088, 2087, 
 	2088, 2087, 2088, 2087, 2088, 2087, 2088, 2090, 
 	2090, 2090, 2090, 2090, 2090, 2092, 2092, 2092, 
 	2092, 2092, 2092, 2086, 2089, 2091, 3476, 52, 
@@ -28072,7 +28105,7 @@ static const short _x86_64_decoder_indicies[] = {
 	5549, 5552, 5555, 5558, 5561, 5564, 5567, 5570, 
 	5573, 5575, 5577, 5579, 5581, 5583, 5585, 5587, 
 	5589, 5591, 5593, 5595, 5597, 5599, 5601, 5603, 
-	5605, 5606, 5607, 5608, 5609, 5611, 5612, 5610, 
+	5605, 5606, 5607, 5608, 5609, 5610, 5611, 5612, 
 	5614, 5614, 5614, 5614, 5614, 5614, 5614, 5614, 
 	5614, 5614, 5614, 5614, 5614, 5614, 5614, 5614, 
 	5614, 5614, 5614, 5614, 5614, 5614, 5614, 5614, 
@@ -28084,8 +28117,8 @@ static const short _x86_64_decoder_indicies[] = {
 	5670, 5615, 5618, 5621, 5624, 5627, 5630, 5633, 
 	5636, 5639, 5641, 5643, 5645, 5647, 5649, 5651, 
 	5653, 5655, 5657, 5659, 5661, 5663, 5665, 5667, 
-	5669, 5671, 5672, 5674, 5675, 5676, 5677, 5678, 
-	5673, 5679, 52, 5681, 5682, 5684, 5686, 5680, 
+	5669, 5671, 5672, 5673, 5674, 5675, 5676, 5677, 
+	5678, 5679, 52, 5681, 5682, 5684, 5686, 5680, 
 	5683, 5685, 5687, 52, 5689, 5690, 5692, 5693, 
 	5695, 5696, 5698, 5699, 5701, 5702, 5704, 5705, 
 	5707, 5708, 5710, 5712, 5714, 5716, 5718, 5720, 
@@ -28195,7 +28228,7 @@ static const short _x86_64_decoder_indicies[] = {
 	6176, 6179, 6182, 6185, 6188, 6191, 6194, 6196, 
 	6198, 6200, 6202, 6204, 6206, 6208, 6210, 6212, 
 	6214, 6216, 6218, 6220, 6222, 6224, 6226, 6227, 
-	6228, 6229, 6231, 6232, 6233, 6230, 6235, 6236, 
+	6229, 6230, 6231, 6232, 6233, 6228, 6235, 6236, 
 	6238, 6239, 6241, 6242, 6244, 6245, 6247, 6248, 
 	6250, 6251, 6253, 6254, 6256, 6257, 6259, 6261, 
 	6263, 6265, 6267, 6269, 6271, 6273, 6275, 6277, 
@@ -28203,7 +28236,7 @@ static const short _x86_64_decoder_indicies[] = {
 	6240, 6243, 6246, 6249, 6252, 6255, 6258, 6260, 
 	6262, 6264, 6266, 6268, 6270, 6272, 6274, 6276, 
 	6278, 6280, 6282, 6284, 6286, 6288, 6290, 6291, 
-	6292, 6293, 6294, 6296, 6297, 6295, 6298, 52, 
+	6292, 6293, 6294, 6295, 6297, 6296, 6298, 52, 
 	6300, 6301, 6303, 6304, 6306, 6307, 6309, 6310, 
 	6312, 6313, 6315, 6316, 6318, 6319, 6321, 6323, 
 	6325, 6327, 6329, 6331, 6333, 6335, 6337, 6339, 
@@ -38426,35 +38459,35 @@ static const short _x86_64_decoder_indicies[] = {
 	15439, 15370, 15440, 15351, 15352, 15353, 15354, 15355, 
 	15356, 15410, 15411, 15412, 15413, 15414, 15415, 15416, 
 	15417, 15418, 15419, 15420, 15421, 52, 15441, 15442, 
-	15443, 15444, 15446, 15447, 15448, 15441, 15442, 15443, 
-	15444, 15446, 15447, 15448, 15441, 15442, 15443, 15444, 
-	15446, 15447, 15448, 15441, 15442, 15443, 15444, 15446, 
-	15447, 15448, 15441, 15442, 15443, 15444, 15446, 15447, 
-	15448, 15441, 15442, 15443, 15444, 15446, 15447, 15448, 
-	15441, 15442, 15443, 15444, 15446, 15447, 15448, 15441, 
-	15442, 15443, 15444, 15446, 15447, 15448, 15441, 15442, 
-	15443, 15444, 15446, 15447, 15448, 15441, 15442, 15443, 
-	15444, 15446, 15447, 15448, 15441, 15442, 15443, 15444, 
-	15446, 15447, 15448, 15441, 15442, 15443, 15444, 15446, 
-	15447, 15448, 15441, 15442, 15443, 15444, 15446, 15447, 
-	15448, 15441, 15442, 15443, 15444, 15446, 15447, 15448, 
-	15441, 15442, 15443, 15444, 15446, 15447, 15448, 15449, 
+	15444, 15445, 15446, 15447, 15448, 15441, 15442, 15444, 
+	15445, 15446, 15447, 15448, 15441, 15442, 15444, 15445, 
+	15446, 15447, 15448, 15441, 15442, 15444, 15445, 15446, 
+	15447, 15448, 15441, 15442, 15444, 15445, 15446, 15447, 
+	15448, 15441, 15442, 15444, 15445, 15446, 15447, 15448, 
+	15441, 15442, 15444, 15445, 15446, 15447, 15448, 15441, 
+	15442, 15444, 15445, 15446, 15447, 15448, 15441, 15442, 
+	15444, 15445, 15446, 15447, 15448, 15441, 15442, 15444, 
+	15445, 15446, 15447, 15448, 15441, 15442, 15444, 15445, 
+	15446, 15447, 15448, 15441, 15442, 15444, 15445, 15446, 
+	15447, 15448, 15441, 15442, 15444, 15445, 15446, 15447, 
+	15448, 15441, 15442, 15444, 15445, 15446, 15447, 15448, 
+	15441, 15442, 15444, 15445, 15446, 15447, 15448, 15449, 
 	15450, 15451, 15452, 15453, 15454, 15455, 15456, 15441, 
-	15457, 15443, 15444, 15446, 15447, 15448, 15441, 15457, 
-	15443, 15444, 15446, 15447, 15448, 15441, 15457, 15443, 
-	15444, 15446, 15447, 15448, 15441, 15457, 15443, 15444, 
-	15446, 15447, 15448, 15441, 15457, 15443, 15444, 15446, 
-	15447, 15448, 15441, 15457, 15443, 15444, 15446, 15447, 
-	15448, 15441, 15457, 15443, 15444, 15446, 15447, 15448, 
-	15441, 15457, 15443, 15444, 15446, 15447, 15448, 15441, 
-	15457, 15443, 15444, 15446, 15447, 15448, 15441, 15457, 
-	15443, 15444, 15446, 15447, 15448, 15441, 15457, 15443, 
-	15444, 15446, 15447, 15448, 15441, 15457, 15443, 15444, 
-	15446, 15447, 15448, 15441, 15457, 15443, 15444, 15446, 
-	15447, 15448, 15441, 15457, 15443, 15444, 15446, 15447, 
-	15448, 15441, 15457, 15443, 15444, 15446, 15447, 15448, 
+	15457, 15444, 15445, 15446, 15447, 15448, 15441, 15457, 
+	15444, 15445, 15446, 15447, 15448, 15441, 15457, 15444, 
+	15445, 15446, 15447, 15448, 15441, 15457, 15444, 15445, 
+	15446, 15447, 15448, 15441, 15457, 15444, 15445, 15446, 
+	15447, 15448, 15441, 15457, 15444, 15445, 15446, 15447, 
+	15448, 15441, 15457, 15444, 15445, 15446, 15447, 15448, 
+	15441, 15457, 15444, 15445, 15446, 15447, 15448, 15441, 
+	15457, 15444, 15445, 15446, 15447, 15448, 15441, 15457, 
+	15444, 15445, 15446, 15447, 15448, 15441, 15457, 15444, 
+	15445, 15446, 15447, 15448, 15441, 15457, 15444, 15445, 
+	15446, 15447, 15448, 15441, 15457, 15444, 15445, 15446, 
+	15447, 15448, 15441, 15457, 15444, 15445, 15446, 15447, 
+	15448, 15441, 15457, 15444, 15445, 15446, 15447, 15448, 
 	15458, 15459, 15451, 15452, 15460, 15454, 15455, 15456, 
-	15445, 14489, 14490, 14491, 14492, 14493, 14494, 14495, 
+	15443, 14489, 14490, 14491, 14492, 14493, 14494, 14495, 
 	14496, 14497, 14498, 52, 14511, 14512, 14513, 14514, 
 	14515, 14516, 14517, 14518, 14519, 14520, 14521, 14522, 
 	52, 14653, 14654, 14655, 14656, 14489, 14659, 14490, 
@@ -43405,74 +43438,17 @@ static const int x86_64_decoder_en_main = 3565;
 
 
 
-#define GET_REX_PREFIX() instruction.prefix.rex
-#define SET_REX_PREFIX(P) instruction.prefix.rex = (P)
-#define GET_VEX_PREFIX2() vex_prefix2
-#define SET_VEX_PREFIX2(P) vex_prefix2 = (P)
-#define GET_VEX_PREFIX3() vex_prefix3
-#define SET_VEX_PREFIX3(P) vex_prefix3 = (P)
-#define SET_DATA16_PREFIX(S) instruction.prefix.data16 = (S)
-#define SET_LOCK_PREFIX(S) instruction.prefix.lock = (S)
-#define SET_REPZ_PREFIX(S) instruction.prefix.repz = (S)
-#define SET_REPNZ_PREFIX(S) instruction.prefix.repnz = (S)
-#define SET_BRANCH_TAKEN(S) instruction.prefix.branch_taken = (S)
-#define SET_BRANCH_NOT_TAKEN(S) instruction.prefix.branch_not_taken = (S)
-#define SET_INSTRUCTION_NAME(N) instruction.name = (N)
-#define GET_OPERAND_NAME(N) instruction.operands[(N)].name
-#define SET_OPERAND_NAME(N, S) instruction.operands[(N)].name = (S)
-#define SET_OPERAND_TYPE(N, S) instruction.operands[(N)].type = (S)
-#define SET_OPERANDS_COUNT(N) instruction.operands_count = (N)
-#define SET_MODRM_BASE(N) instruction.rm.base = (N)
-#define SET_MODRM_INDEX(N) instruction.rm.index = (N)
-#define SET_MODRM_SCALE(S) instruction.rm.scale = (S)
-#define SET_DISP_TYPE(T) instruction.rm.disp_type = (T)
-#define SET_DISP_PTR(P) disp = (P)
-#define SET_IMM_TYPE(T) imm_operand = (T)
-#define SET_IMM_PTR(P) imm = (P)
-#define SET_IMM2_TYPE(T) imm2_operand = (T)
-#define SET_IMM2_PTR(P) imm2 = (P)
-#define SET_CPU_FEATURE(F)
-#define SET_ATT_INSTRUCTION_SUFFIX(S) instruction.att_instruction_suffix = (S)
-#define SET_SPURIOUS_DATA16() instruction.prefix.data16_spurious = TRUE;
-#define SET_SPURIOUS_REX_B() \
-  if (GET_REX_PREFIX() & REX_B) instruction.prefix.rex_b_spurious = TRUE;
-#define SET_SPURIOUS_REX_X() \
-  if (GET_REX_PREFIX() & REX_X) instruction.prefix.rex_x_spurious = TRUE;
-#define SET_SPURIOUS_REX_R() \
-  if (GET_REX_PREFIX() & REX_R) instruction.prefix.rex_r_spurious = TRUE;
-#define SET_SPURIOUS_REX_W() \
-  if (GET_REX_PREFIX() & REX_W) instruction.prefix.rex_w_spurious = TRUE;
-
-enum {
-  REX_B = 1,
-  REX_X = 2,
-  REX_R = 4,
-  REX_W = 8
-};
-
-enum imm_mode {
-  IMMNONE,
-  IMM2,
-  IMM8,
-  IMM16,
-  IMM32,
-  IMM64
-};
-
 int DecodeChunkAMD64(const uint8_t *data, size_t size,
                      ProcessInstructionFunc process_instruction,
                      ProcessDecodingErrorFunc process_error,
                      void *userdata) {
   const uint8_t *current_position = data;
   const uint8_t *end_of_data = data + size;
-  const uint8_t *disp = NULL;
-  const uint8_t *imm = NULL;
-  const uint8_t *imm2 = NULL;
   const uint8_t *instruction_start = current_position;
   uint8_t vex_prefix2 = 0xe0;
   uint8_t vex_prefix3 = 0x00;
-  enum imm_mode imm_operand = IMMNONE;
-  enum imm_mode imm2_operand = IMMNONE;
+  enum ImmediateMode imm_operand = IMMNONE;
+  enum ImmediateMode imm2_operand = IMMNONE;
   struct Instruction instruction;
   int result = TRUE;
 
@@ -48001,74 +47977,29 @@ _match:
 	break;
 	case 1413:
 	{
-        switch (instruction.rm.disp_type) {
-          case DISPNONE: instruction.rm.offset = 0; break;
-          case DISP8: instruction.rm.offset = (int8_t) *disp; break;
-          case DISP16: instruction.rm.offset =
-            (uint16_t) (disp[0] + 256U * disp[1]);
-            break;
-          case DISP32: instruction.rm.offset = (int32_t)
-            (disp[0] + 256U * (disp[1] + 256U * (disp[2] + 256U * (disp[3]))));
-            break;
-          case DISP64: instruction.rm.offset = (int64_t)
-            (*disp + 256ULL * (disp[1] + 256ULL * (disp[2] + 256ULL * (disp[3] +
-            256ULL * (disp[4] + 256ULL * (disp[5] + 256ULL * (disp[6] + 256ULL *
-                                                                 disp[7])))))));
-            break;
-        }
-        switch (imm_operand) {
-          case IMMNONE: instruction.imm[0] = 0; break;
-          case IMM2: instruction.imm[0] = imm[0] & 0x03; break;
-          case IMM8: instruction.imm[0] = imm[0]; break;
-          case IMM16: instruction.imm[0] = (uint64_t) (*imm + 256U * (imm[1]));
-            break;
-          case IMM32: instruction.imm[0] = (uint64_t)
-            (imm[0] + 256U * (imm[1] + 256U * (imm[2] + 256U * (imm[3]))));
-            break;
-          case IMM64: instruction.imm[0] = (uint64_t)
-            (imm[0] + 256LL * (imm[1] + 256ULL * (imm[2] + 256ULL * (imm[3] +
-            256ULL * (imm[4] + 256ULL * (imm[5] + 256ULL * (imm[6] + 256ULL *
-                                                                  imm[7])))))));
-            break;
-        }
-        switch (imm2_operand) {
-          case IMMNONE: instruction.imm[1] = 0; break;
-          case IMM2: instruction.imm[1] = imm2[0] & 0x03; break;
-          case IMM8: instruction.imm[1] = imm2[0]; break;
-          case IMM16: instruction.imm[1] = (uint64_t)
-            (imm2[0] + 256U * (imm2[1]));
-            break;
-          case IMM32: instruction.imm[1] = (uint64_t)
-            (imm2[0] + 256U * (imm2[1] + 256U * (imm2[2] + 256U * (imm2[3]))));
-            break;
-          case IMM64: instruction.imm[1] = (uint64_t)
-            (*imm2 + 256ULL * (imm2[1] + 256ULL * (imm2[2] + 256ULL * (imm2[3] +
-            256ULL * (imm2[4] + 256ULL * (imm2[5] + 256ULL * (imm2[6] + 256ULL *
-                                                                 imm2[7])))))));
-            break;
-        }
-        process_instruction(instruction_start, current_position+1, &instruction,
-                            userdata);
-        instruction_start = current_position + 1;
-        SET_DISP_TYPE(DISPNONE);
-        SET_IMM_TYPE(IMMNONE);
-        SET_IMM2_TYPE(IMMNONE);
-        SET_REX_PREFIX(FALSE);
-        SET_DATA16_PREFIX(FALSE);
-        SET_LOCK_PREFIX(FALSE);
-        SET_REPNZ_PREFIX(FALSE);
-        SET_REPZ_PREFIX(FALSE);
-        SET_BRANCH_NOT_TAKEN(FALSE);
-        SET_BRANCH_TAKEN(FALSE);
-        SET_VEX_PREFIX2(0xe0);
-        SET_VEX_PREFIX3(0x00);
-        SET_ATT_INSTRUCTION_SUFFIX(NULL);
-        instruction.prefix.data16_spurious = FALSE;
-        instruction.prefix.rex_b_spurious = FALSE;
-        instruction.prefix.rex_x_spurious = FALSE;
-        instruction.prefix.rex_r_spurious = FALSE;
-        instruction.prefix.rex_w_spurious = FALSE;
-    }
+    process_instruction(instruction_start, current_position+1, &instruction,
+                        userdata);
+    instruction_start = current_position + 1;
+    SET_DISP_TYPE(DISPNONE);
+    SET_IMM_TYPE(IMMNONE);
+    SET_IMM2_TYPE(IMMNONE);
+    SET_REX_PREFIX(FALSE);
+    SET_DATA16_PREFIX(FALSE);
+    SET_LOCK_PREFIX(FALSE);
+    SET_REPNZ_PREFIX(FALSE);
+    SET_REPZ_PREFIX(FALSE);
+    SET_BRANCH_NOT_TAKEN(FALSE);
+    SET_BRANCH_TAKEN(FALSE);
+    /* Top three bis of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(0xe0);
+    SET_VEX_PREFIX3(0x00);
+    SET_ATT_INSTRUCTION_SUFFIX(NULL);
+    CLEAR_SPURIOUS_DATA16();
+    CLEAR_SPURIOUS_REX_B();
+    CLEAR_SPURIOUS_REX_X();
+    CLEAR_SPURIOUS_REX_R();
+    CLEAR_SPURIOUS_REX_W();
+  }
 	break;
 	case 1414:
 	{ process_error(current_position, userdata);

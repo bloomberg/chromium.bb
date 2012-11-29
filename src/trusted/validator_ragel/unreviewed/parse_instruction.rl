@@ -4,6 +4,17 @@
  * found in the LICENSE file.
  */
 
+/*
+ * Hand-written Ragel machines and actions used in validator and decoding.
+ *
+ * Note: this file includes many different machines which are supposed to be
+ * used together to implement decoding.
+ *
+ * E.g. modrm_parsing_ia32 implements “ModR/M style memory access” used in ia32
+ * mode, but actions it uses may come from modrm_actions_ia32 or, alternatively,
+ * the higher-level machine may have it's own unique implementation of actions.
+ */
+
 %%{
   machine prefix_actions;
 
@@ -929,4 +940,40 @@
   rel8  = any >rel8_operand_begin @rel8_operand_end;
   rel16 = any $rel16_operand_begin any @rel16_operand_end;
   rel32 = any{3} $rel32_operand_begin any @rel32_operand_end;
+}%%
+
+
+%%{
+  machine decoder;
+
+  action process_collected_data {
+    process_instruction(instruction_start, current_position+1, &instruction,
+                        userdata);
+    instruction_start = current_position + 1;
+    SET_DISP_TYPE(DISPNONE);
+    SET_IMM_TYPE(IMMNONE);
+    SET_IMM2_TYPE(IMMNONE);
+    SET_REX_PREFIX(FALSE);
+    SET_DATA16_PREFIX(FALSE);
+    SET_LOCK_PREFIX(FALSE);
+    SET_REPNZ_PREFIX(FALSE);
+    SET_REPZ_PREFIX(FALSE);
+    SET_BRANCH_NOT_TAKEN(FALSE);
+    SET_BRANCH_TAKEN(FALSE);
+    /* Top three bis of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(0xe0);
+    SET_VEX_PREFIX3(0x00);
+    SET_ATT_INSTRUCTION_SUFFIX(NULL);
+    CLEAR_SPURIOUS_DATA16();
+    CLEAR_SPURIOUS_REX_B();
+    CLEAR_SPURIOUS_REX_X();
+    CLEAR_SPURIOUS_REX_R();
+    CLEAR_SPURIOUS_REX_W();
+  }
+
+  decoder = (one_instruction @process_collected_data)*
+    $!{ process_error(current_position, userdata);
+        result = FALSE;
+        goto error_detected;
+    };
 }%%

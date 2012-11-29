@@ -4,6 +4,11 @@
  * found in the LICENSE file.
  */
 
+/*
+ * Data structures for decoding instructions.  Includes definitions which are
+ * by both decoders (full-blown standalone one and reduced one in validator).
+ */
+
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_RAGEL_DECODER_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_RAGEL_DECODER_H_
 
