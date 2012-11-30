@@ -241,8 +241,10 @@ void GLRenderer::beginDrawingFrame(DrawingFrame& frame)
     GLC(m_context, m_context->disable(GL_CULL_FACE));
     GLC(m_context, m_context->colorMask(true, true, true, true));
     GLC(m_context, m_context->enable(GL_BLEND));
+    m_blendShadow = true;
     GLC(m_context, m_context->blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
     GLC(context(), context()->activeTexture(GL_TEXTURE0));
+    m_programShadow = 0;
 }
 
 void GLRenderer::doNoOp()
@@ -254,11 +256,10 @@ void GLRenderer::doNoOp()
 void GLRenderer::drawQuad(DrawingFrame& frame, const DrawQuad* quad)
 {
     DCHECK(quad->rect.Contains(quad->visible_rect));
-
-    if (quad->ShouldDrawWithBlending())
-        GLC(m_context, m_context->enable(GL_BLEND));
-    else
-        GLC(m_context, m_context->disable(GL_BLEND));
+    if (quad->material != DrawQuad::TEXTURE_CONTENT) {
+        flushTextureQuadCache();
+        setBlendEnabled(quad->ShouldDrawWithBlending());
+    }
 
     switch (quad->material) {
     case DrawQuad::INVALID:
@@ -283,7 +284,7 @@ void GLRenderer::drawQuad(DrawingFrame& frame, const DrawQuad* quad)
         drawStreamVideoQuad(frame, StreamVideoDrawQuad::MaterialCast(quad));
         break;
     case DrawQuad::TEXTURE_CONTENT:
-        drawTextureQuad(frame, TextureDrawQuad::MaterialCast(quad));
+        enqueueTextureQuad(frame, TextureDrawQuad::MaterialCast(quad));
         break;
     case DrawQuad::TILED_CONTENT:
         drawTileQuad(frame, TileDrawQuad::MaterialCast(quad));
@@ -298,7 +299,7 @@ void GLRenderer::drawCheckerboardQuad(const DrawingFrame& frame, const Checkerbo
 {
     const TileCheckerboardProgram* program = tileCheckerboardProgram();
     DCHECK(program && (program->initialized() || isContextLost()));
-    GLC(context(), context()->useProgram(program->program()));
+    setUseProgram(program->program());
 
     SkColor color = quad->color;
     GLC(context(), context()->uniform4f(program->fragmentShader().colorLocation(), SkColorGetR(color) / 255.0, SkColorGetG(color) / 255.0, SkColorGetB(color) / 255.0, 1));
@@ -324,7 +325,7 @@ void GLRenderer::drawDebugBorderQuad(const DrawingFrame& frame, const DebugBorde
     static float glMatrix[16];
     const SolidColorProgram* program = solidColorProgram();
     DCHECK(program && (program->initialized() || isContextLost()));
-    GLC(context(), context()->useProgram(program->program()));
+    setUseProgram(program->program());
 
     // Use the full quadRect for debug quads to not move the edges based on partial swaps.
     const gfx::Rect& layerRect = quad->rect;
@@ -342,7 +343,7 @@ void GLRenderer::drawDebugBorderQuad(const DrawingFrame& frame, const DebugBorde
     GLC(context(), context()->lineWidth(quad->width));
 
     // The indices for the line are stored in the same array as the triangle indices.
-    GLC(context(), context()->drawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 6 * sizeof(unsigned short)));
+    GLC(context(), context()->drawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 0));
 }
 
 static WebGraphicsContext3D* getFilterContext(bool hasImplThread)
@@ -587,7 +588,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
     int shaderAlphaLocation = -1;
     if (useAA && maskTextureId) {
         const RenderPassMaskProgramAA* program = renderPassMaskProgramAA();
-        GLC(context(), context()->useProgram(program->program()));
+        setUseProgram(program->program());
         GLC(context(), context()->uniform1i(program->fragmentShader().samplerLocation(), 0));
 
         shaderQuadLocation = program->vertexShader().pointLocation();
@@ -599,7 +600,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
         shaderAlphaLocation = program->fragmentShader().alphaLocation();
     } else if (!useAA && maskTextureId) {
         const RenderPassMaskProgram* program = renderPassMaskProgram();
-        GLC(context(), context()->useProgram(program->program()));
+        setUseProgram(program->program());
         GLC(context(), context()->uniform1i(program->fragmentShader().samplerLocation(), 0));
 
         shaderMaskSamplerLocation = program->fragmentShader().maskSamplerLocation();
@@ -609,7 +610,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
         shaderAlphaLocation = program->fragmentShader().alphaLocation();
     } else if (useAA && !maskTextureId) {
         const RenderPassProgramAA* program = renderPassProgramAA();
-        GLC(context(), context()->useProgram(program->program()));
+        setUseProgram(program->program());
         GLC(context(), context()->uniform1i(program->fragmentShader().samplerLocation(), 0));
 
         shaderQuadLocation = program->vertexShader().pointLocation();
@@ -618,7 +619,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
         shaderAlphaLocation = program->fragmentShader().alphaLocation();
     } else {
         const RenderPassProgram* program = renderPassProgram();
-        GLC(context(), context()->useProgram(program->program()));
+        setUseProgram(program->program());
         GLC(context(), context()->uniform1i(program->fragmentShader().samplerLocation(), 0));
 
         shaderMatrixLocation = program->vertexShader().matrixLocation();
@@ -660,7 +661,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
 void GLRenderer::drawSolidColorQuad(const DrawingFrame& frame, const SolidColorDrawQuad* quad)
 {
     const SolidColorProgram* program = solidColorProgram();
-    GLC(context(), context()->useProgram(program->program()));
+    setUseProgram(program->program());
 
     SkColor color = quad->color;
     float opacity = quad->opacity();
@@ -778,7 +779,7 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
         }
     }
 
-    GLC(context(), context()->useProgram(uniforms.program));
+    setUseProgram(uniforms.program);
     GLC(context(), context()->uniform1i(uniforms.samplerLocation, 0));
     ResourceProvider::ScopedReadLockGL quadResourceLock(m_resourceProvider, quad->resource_id);
     GLC(context(), context()->bindTexture(GL_TEXTURE_2D, quadResourceLock.textureId()));
@@ -895,7 +896,7 @@ void GLRenderer::drawYUVVideoQuad(const DrawingFrame& frame, const YUVVideoDrawQ
     GLC(context(), context()->activeTexture(GL_TEXTURE3));
     GLC(context(), context()->bindTexture(GL_TEXTURE_2D, vPlaneLock.textureId()));
 
-    GLC(context(), context()->useProgram(program->program()));
+    setUseProgram(program->program());
 
     GLC(context(), context()->uniform2f(program->vertexShader().texScaleLocation(), quad->tex_scale.width(), quad->tex_scale.height()));
     GLC(context(), context()->uniform1i(program->fragmentShader().yTextureLocation(), 1));
@@ -938,7 +939,7 @@ void GLRenderer::drawStreamVideoQuad(const DrawingFrame& frame, const StreamVide
     DCHECK(m_capabilities.usingEglImage);
 
     const VideoStreamTextureProgram* program = videoStreamTextureProgram();
-    GLC(context(), context()->useProgram(program->program()));
+    setUseProgram(program->program());
 
     toGLMatrix(&glMatrix[0], quad->matrix);
     GLC(context(), context()->uniformMatrix4fv(program->vertexShader().texMatrixLocation(), 1, false, glMatrix));
@@ -977,6 +978,102 @@ struct TexTransformTextureProgramBinding : TextureProgramBinding {
     int texTransformLocation;
 };
 
+void GLRenderer::flushTextureQuadCache()
+{
+    // Check to see if we have anything to draw.
+    if (m_drawCache.program_id == 0)
+      return;
+
+    // Set the correct blending mode.
+    setBlendEnabled(m_drawCache.needs_blending);
+
+    // Bind the program to the GL state.
+    setUseProgram(m_drawCache.program_id);
+
+    // Assume the current active textures is 0.
+    ResourceProvider::ScopedReadLockGL lockedQuad(m_resourceProvider, m_drawCache.resource_id);
+    GLC(context(), context()->bindTexture(GL_TEXTURE_2D, lockedQuad.textureId()));
+
+    // set up premultiplied alpha.
+    if (!m_drawCache.use_premultiplied_alpha) {
+      // As it turns out, the premultiplied alpha blending function (ONE, ONE_MINUS_SRC_ALPHA)
+        // will never cause the alpha channel to be set to anything less than 1.0 if it is
+        // initialized to that value! Therefore, premultipliedAlpha being false is the first
+        // situation we can generally see an alpha channel less than 1.0 coming out of the
+        // compositor. This is causing platform differences in some layout tests (see
+        // https://bugs.webkit.org/show_bug.cgi?id=82412), so in this situation, use a separate
+        // blend function for the alpha channel to avoid modifying it. Don't use colorMask for this
+        // as it has performance implications on some platforms.
+        GLC(context(), context()->blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE));
+    }
+
+    // Set the shader opacity.
+    setShaderOpacity(m_drawCache.alpha, m_drawCache.alpha_location);
+
+    COMPILE_ASSERT(sizeof(Float4) == 4 * sizeof(float), struct_is_densely_packed);
+    COMPILE_ASSERT(sizeof(Float16) == 16 * sizeof(float), struct_is_densely_packed);
+
+    // Upload the tranforms for both points and uvs.
+    GLC(m_context, m_context->uniformMatrix4fv((int)m_drawCache.matrix_location, (int)m_drawCache.matrix_data.size(), false, (float*)&m_drawCache.matrix_data.front()));
+    GLC(m_context, m_context->uniform4fv((int)m_drawCache.uv_xform_location, (int)m_drawCache.uv_xform_data.size(), (float*)&m_drawCache.uv_xform_data.front()));
+
+    // Draw the quads!
+    GLC(m_context, m_context->drawElements(GL_TRIANGLES, 6 * m_drawCache.matrix_data.size(), GL_UNSIGNED_SHORT, 0));
+
+    // Clean up after ourselves (reset state set above).
+     if (!m_drawCache.use_premultiplied_alpha)
+        GLC(m_context, m_context->blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
+
+    // Clear the cache.
+    m_drawCache.program_id = 0;
+    m_drawCache.uv_xform_data.resize(0);
+    m_drawCache.matrix_data.resize(0);
+}
+
+void GLRenderer::enqueueTextureQuad(const DrawingFrame& frame, const TextureDrawQuad* quad)
+{
+    // Choose the correcte texture program binding
+    TexTransformTextureProgramBinding binding;
+    if (quad->flipped)
+        binding.set(textureProgramFlip(), context());
+    else
+        binding.set(textureProgram(), context());
+
+    int resourceID = quad->resource_id;
+
+    if (m_drawCache.program_id != binding.programId ||
+        m_drawCache.resource_id != resourceID ||
+        m_drawCache.alpha != quad->opacity() ||
+        m_drawCache.use_premultiplied_alpha != quad->premultiplied_alpha ||
+        m_drawCache.needs_blending != quad->ShouldDrawWithBlending() ||
+        m_drawCache.matrix_data.size() >= 8) {
+        flushTextureQuadCache();
+        m_drawCache.program_id = binding.programId;
+        m_drawCache.resource_id = resourceID;
+        m_drawCache.alpha = quad->opacity();
+        m_drawCache.use_premultiplied_alpha = quad->premultiplied_alpha;
+        m_drawCache.needs_blending = quad->ShouldDrawWithBlending();
+
+        m_drawCache.alpha_location = binding.alphaLocation;
+        m_drawCache.uv_xform_location = binding.texTransformLocation;
+        m_drawCache.matrix_location = binding.matrixLocation;
+    }
+
+    // Generate the uv-transform
+    const gfx::RectF& uvRect = quad->uv_rect;
+    Float4 uv = {uvRect.x(), uvRect.y(), uvRect.width(), uvRect.height()};
+    m_drawCache.uv_xform_data.push_back(uv);
+
+    // Generate the transform matrix
+    gfx::Transform quadRectMatrix;
+    quadRectTransform(&quadRectMatrix, quad->quadTransform(), quad->rect);
+    quadRectMatrix = frame.projectionMatrix * quadRectMatrix;
+
+    Float16 m;
+    quadRectMatrix.matrix().asColMajorf(m.data);
+    m_drawCache.matrix_data.push_back(m);
+}
+
 void GLRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureDrawQuad* quad)
 {
     TexTransformTextureProgramBinding binding;
@@ -984,7 +1081,7 @@ void GLRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureDrawQua
         binding.set(textureProgramFlip(), context());
     else
         binding.set(textureProgram(), context());
-    GLC(context(), context()->useProgram(binding.programId));
+    setUseProgram(binding.programId);
     GLC(context(), context()->uniform1i(binding.samplerLocation, 0));
     const gfx::RectF& uvRect = quad->uv_rect;
     GLC(context(), context()->uniform4f(binding.texTransformLocation, uvRect.x(), uvRect.y(), uvRect.width(), uvRect.height()));
@@ -1016,7 +1113,7 @@ void GLRenderer::drawIOSurfaceQuad(const DrawingFrame& frame, const IOSurfaceDra
     TexTransformTextureProgramBinding binding;
     binding.set(textureIOSurfaceProgram(), context());
 
-    GLC(context(), context()->useProgram(binding.programId));
+    setUseProgram(binding.programId);
     GLC(context(), context()->uniform1i(binding.samplerLocation, 0));
     if (quad->orientation == IOSurfaceDrawQuad::FLIPPED)
         GLC(context(), context()->uniform4f(binding.texTransformLocation, 0, quad->io_surface_size.height(), quad->io_surface_size.width(), quad->io_surface_size.height() * -1.0));
@@ -1037,6 +1134,12 @@ void GLRenderer::finishDrawingFrame(DrawingFrame& frame)
     m_swapBufferRect.Union(gfx::ToEnclosingRect(frame.rootDamageRect));
 
     GLC(m_context, m_context->disable(GL_BLEND));
+    m_blendShadow = false;
+}
+
+void GLRenderer::finishDrawingQuadList()
+{
+    flushTextureQuadCache();
 }
 
 bool GLRenderer::flippedFramebuffer() const
@@ -1049,6 +1152,7 @@ void GLRenderer::ensureScissorTestEnabled()
     if (m_isScissorEnabled)
         return;
 
+    flushTextureQuadCache();
     GLC(m_context, m_context->enable(GL_SCISSOR_TEST));
     m_isScissorEnabled = true;
 }
@@ -1058,6 +1162,7 @@ void GLRenderer::ensureScissorTestDisabled()
     if (!m_isScissorEnabled)
         return;
 
+    flushTextureQuadCache();
     GLC(m_context, m_context->disable(GL_SCISSOR_TEST));
     m_isScissorEnabled = false;
 }
@@ -1090,6 +1195,26 @@ void GLRenderer::setShaderOpacity(float opacity, int alphaLocation)
         GLC(m_context, m_context->uniform1f(alphaLocation, opacity));
 }
 
+void GLRenderer::setBlendEnabled(bool enabled)
+{
+    if (enabled == m_blendShadow)
+        return;
+
+    if (enabled)
+        GLC(m_context, m_context->enable(GL_BLEND));
+    else
+        GLC(m_context, m_context->disable(GL_BLEND));
+    m_blendShadow = enabled;
+}
+
+void GLRenderer::setUseProgram(unsigned program)
+{
+    if (program == m_programShadow)
+        return;
+    GLC(m_context, m_context->useProgram(program));
+    m_programShadow = program;
+}
+
 void GLRenderer::drawQuadGeometry(const DrawingFrame& frame, const gfx::Transform& drawTransform, const gfx::RectF& quadRect, int matrixLocation)
 {
     gfx::Transform quadRectMatrix;
@@ -1107,7 +1232,7 @@ void GLRenderer::copyTextureToFramebuffer(const DrawingFrame& frame, int texture
 
     GLC(context(), context()->bindTexture(GL_TEXTURE_2D, textureId));
 
-    GLC(context(), context()->useProgram(program->program()));
+    setUseProgram(program->program());
     GLC(context(), context()->uniform1i(program->fragmentShader().samplerLocation(), 0));
     setShaderOpacity(1, program->fragmentShader().alphaLocation());
     drawQuadGeometry(frame, drawMatrix, rect, program->vertexShader().matrixLocation());
@@ -1358,6 +1483,7 @@ void GLRenderer::setScissorTestRect(const gfx::Rect& scissorRect)
         return;
 
     m_scissorRect = scissorRect;
+    flushTextureQuadCache();
     GLC(m_context, m_context->scissor(scissorRect.x(), scissorRect.y(), scissorRect.width(), scissorRect.height()));
 }
 
@@ -1527,6 +1653,7 @@ const GLRenderer::TextureProgram* GLRenderer::textureProgram()
     if (!m_textureProgram->initialized()) {
         TRACE_EVENT0("cc", "GLRenderer::textureProgram::initialize");
         m_textureProgram->initialize(m_context, m_isUsingBindUniform);
+        GLC(context(), context()->uniform1i(m_textureProgram.get()->fragmentShader().samplerLocation(), 0));
     }
     return m_textureProgram.get();
 }
@@ -1538,6 +1665,7 @@ const GLRenderer::TextureProgramFlip* GLRenderer::textureProgramFlip()
     if (!m_textureProgramFlip->initialized()) {
         TRACE_EVENT0("cc", "GLRenderer::textureProgramFlip::initialize");
         m_textureProgramFlip->initialize(m_context, m_isUsingBindUniform);
+        GLC(context(), context()->uniform1i(m_textureProgramFlip.get()->fragmentShader().samplerLocation(), 0));
     }
     return m_textureProgramFlip.get();
 }

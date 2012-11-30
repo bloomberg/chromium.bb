@@ -55,6 +55,8 @@
       'geometry_binding.h',
       'gl_renderer.cc',
       'gl_renderer.h',
+      'gl_renderer_draw_cache.cc',
+      'gl_renderer_draw_cache.h',
       'graphics_context.h',
       'hash_pair.h',
       'heads_up_display_layer.cc',

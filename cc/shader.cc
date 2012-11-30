@@ -159,13 +159,14 @@ std::string VertexShaderPosTexTransform::getShaderString() const
     return SHADER(
         attribute vec4 a_position;
         attribute vec2 a_texCoord;
-        uniform mat4 matrix;
-        uniform vec4 texTransform;
+        attribute float a_index;
+        uniform mat4 matrix[8];
+        uniform vec4 texTransform[8];
         varying vec2 v_texCoord;
         void main()
         {
-            gl_Position = matrix * a_position;
-            v_texCoord = a_texCoord * texTransform.zw + texTransform.xy;
+            gl_Position = matrix[int(a_index)] * a_position;
+            v_texCoord = a_texCoord * texTransform[int(a_index)].zw + texTransform[int(a_index)].xy;
         }
     );
 }

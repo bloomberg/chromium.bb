@@ -9,6 +9,7 @@
 #include "cc/checkerboard_draw_quad.h"
 #include "cc/debug_border_draw_quad.h"
 #include "cc/direct_renderer.h"
+#include "cc/gl_renderer_draw_cache.h"
 #include "cc/io_surface_draw_quad.h"
 #include "cc/render_pass_draw_quad.h"
 #include "cc/renderer.h"
@@ -85,6 +86,7 @@ protected:
     virtual bool flippedFramebuffer() const OVERRIDE;
     virtual void ensureScissorTestEnabled() OVERRIDE;
     virtual void ensureScissorTestDisabled() OVERRIDE;
+    virtual void finishDrawingQuadList() OVERRIDE;
 
 private:
     static void toGLMatrix(float*, const gfx::Transform&);
@@ -100,6 +102,8 @@ private:
     void drawSolidColorQuad(const DrawingFrame&, const SolidColorDrawQuad*);
     void drawStreamVideoQuad(const DrawingFrame&, const StreamVideoDrawQuad*);
     void drawTextureQuad(const DrawingFrame&, const TextureDrawQuad*);
+    void enqueueTextureQuad(const DrawingFrame&, const TextureDrawQuad*);
+    void flushTextureQuadCache();
     void drawIOSurfaceQuad(const DrawingFrame&, const IOSurfaceDrawQuad*);
     void drawTileQuad(const DrawingFrame&, const TileDrawQuad*);
     void drawYUVVideoQuad(const DrawingFrame&, const YUVVideoDrawQuad*);
@@ -107,6 +111,8 @@ private:
     void setShaderOpacity(float opacity, int alphaLocation);
     void setShaderQuadF(const gfx::QuadF&, int quadLocation);
     void drawQuadGeometry(const DrawingFrame&, const gfx::Transform& drawTransform, const gfx::RectF& quadRect, int matrixLocation);
+    void setBlendEnabled(bool enabled);
+    void setUseProgram(unsigned program);
 
     void copyTextureToFramebuffer(const DrawingFrame&, int textureId, const gfx::Rect&, const gfx::Transform& drawMatrix);
 
@@ -219,6 +225,9 @@ private:
     bool m_isUsingBindUniform;
     bool m_visible;
     bool m_isScissorEnabled;
+    bool m_blendShadow;
+    unsigned m_programShadow;
+    TexturedQuadDrawCache m_drawCache;
 
     scoped_ptr<ResourceProvider::ScopedWriteLockGL> m_currentFramebufferLock;
 

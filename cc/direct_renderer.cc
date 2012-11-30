@@ -207,6 +207,10 @@ void DirectRenderer::setScissorStateForQuadWithRenderPassScissor(const DrawingFr
     setScissorTestRect(moveScissorToWindowSpace(frame, quadScissorRect));
 }
 
+void DirectRenderer::finishDrawingQuadList()
+{
+}
+
 void DirectRenderer::drawRenderPass(DrawingFrame& frame, const RenderPass* renderPass)
 {
     TRACE_EVENT0("cc", "DirectRenderer::drawRenderPass");
@@ -236,6 +240,7 @@ void DirectRenderer::drawRenderPass(DrawingFrame& frame, const RenderPass* rende
         if (!shouldSkipQuad)
             drawQuad(frame, *it);
     }
+    finishDrawingQuadList();
 
     CachedResource* texture = m_renderPassTextures.get(renderPass->id);
     if (texture)

@@ -105,6 +105,7 @@ public:
     using GLRenderer::isFramebufferDiscarded;
     using GLRenderer::drawQuad;
     using GLRenderer::beginDrawingFrame;
+    using GLRenderer::finishDrawingQuadList;
 };
 
 class GLRendererTest : public testing::Test {
@@ -544,6 +545,7 @@ TEST(GLRendererTest2, activeTextureState)
          it != pass->quad_list.backToFrontEnd(); ++it) {
         renderer.drawQuad(drawingFrame, *it);
     }
+    renderer.finishDrawingQuadList();
     EXPECT_EQ(context->activeTexture(), GL_TEXTURE0);
 }
 

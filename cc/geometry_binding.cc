@@ -17,20 +17,42 @@ GeometryBinding::GeometryBinding(WebKit::WebGraphicsContext3D* context, const gf
     , m_quadElementsVbo(0)
     , m_initialized(false)
 {
-    // Vertex positions and texture coordinates for the 4 corners of a 1x1 quad.
     float vertices[] = { quadVertexRect.x(), quadVertexRect.bottom(), 0.0f, 0.0f,  1.0f,
                          quadVertexRect.x(), quadVertexRect.y(), 0.0f, 0.0f,  0.0f,
                          quadVertexRect.right(), quadVertexRect.y(), 0.0f, 1.0f,  0.0f,
-                         quadVertexRect.right(),  quadVertexRect.bottom(), 0.0f, 1.0f,  1.0f };
-    uint16_t indices[] = { 0, 1, 2, 0, 2, 3, // The two triangles that make up the layer quad.
-                           0, 1, 2, 3}; // A line path for drawing the layer border.
+                         quadVertexRect.right(), quadVertexRect.bottom(), 0.0f, 1.0f,  1.0f };
+
+    struct Vertex {
+        float a_position[3];
+        float a_texCoord[2];
+        float a_index; // index into the matrix array for this quad
+    };
+    struct Quad { Vertex v0, v1, v2, v3; };
+    struct QuadIndex { uint16_t data[6]; };
+
+    COMPILE_ASSERT(sizeof(Quad) == 24 * sizeof(float), struct_is_densely_packed);
+    COMPILE_ASSERT(sizeof(QuadIndex) == 6 * sizeof(uint16_t), struct_is_densely_packed);
+
+    Quad quad_list[8];
+    QuadIndex quad_index_list[8];
+    for (int i = 0; i < 8; i++) {
+        Vertex v0 = { quadVertexRect.x()    , quadVertexRect.bottom(), 0.0f,  0.0f, 1.0f, (float)i };
+        Vertex v1 = { quadVertexRect.x()    , quadVertexRect.y()     , 0.0f,  0.0f, 0.0f, (float)i };
+        Vertex v2 = { quadVertexRect.right(), quadVertexRect.y()     , 0.0f,  1.0f, 0.0f, (float)i };
+        Vertex v3 = { quadVertexRect.right(), quadVertexRect.bottom(), 0.0f,  1.0f, 1.0f, (float)i };
+        Quad x = { v0, v1, v2, v3 };
+        quad_list[i] = x;
+        QuadIndex y = { 0 + 4 * i, 1 + 4 * i, 2 + 4 * i, 3 + 4 * i, 0 + 4 * i, 2 + 4 * i };
+        quad_index_list[i] = y;
+    }
 
     GLC(m_context, m_quadVerticesVbo = m_context->createBuffer());
     GLC(m_context, m_quadElementsVbo = m_context->createBuffer());
+    GLC(m_context, m_quadListVerticesVbo = m_context->createBuffer());
     GLC(m_context, m_context->bindBuffer(GL_ARRAY_BUFFER, m_quadVerticesVbo));
-    GLC(m_context, m_context->bufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW));
+    GLC(m_context, m_context->bufferData(GL_ARRAY_BUFFER, sizeof(quad_list), quad_list, GL_STATIC_DRAW));
     GLC(m_context, m_context->bindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_quadElementsVbo));
-    GLC(m_context, m_context->bufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW));
+    GLC(m_context, m_context->bufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quad_index_list), quad_index_list, GL_STATIC_DRAW));
 
     m_initialized = true;
 }
@@ -43,14 +65,15 @@ GeometryBinding::~GeometryBinding()
 
 void GeometryBinding::prepareForDraw()
 {
-    GLC(m_context, m_context->bindBuffer(GL_ARRAY_BUFFER, quadVerticesVbo()));
     GLC(m_context, m_context->bindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadElementsVbo()));
-    unsigned offset = 0;
-    GLC(m_context, m_context->vertexAttribPointer(positionAttribLocation(), 3, GL_FLOAT, false, 5 * sizeof(float), offset));
-    offset += 3 * sizeof(float);
-    GLC(m_context, m_context->vertexAttribPointer(texCoordAttribLocation(), 2, GL_FLOAT, false, 5 * sizeof(float), offset));
+
+    GLC(m_context, m_context->bindBuffer(GL_ARRAY_BUFFER, quadVerticesVbo()));
+    GLC(m_context, m_context->vertexAttribPointer(positionAttribLocation(), 3, GL_FLOAT, false, 6 * sizeof(float), 0));
+    GLC(m_context, m_context->vertexAttribPointer(texCoordAttribLocation(), 2, GL_FLOAT, false, 6 * sizeof(float), 3 * sizeof(float)));
+    GLC(m_context, m_context->vertexAttribPointer(triangleIndexAttribLocation(), 1, GL_FLOAT, false, 6 * sizeof(float), 5 * sizeof(float)));
     GLC(m_context, m_context->enableVertexAttribArray(positionAttribLocation()));
     GLC(m_context, m_context->enableVertexAttribArray(texCoordAttribLocation()));
+    GLC(m_context, m_context->enableVertexAttribArray(triangleIndexAttribLocation()));
 }
 
 }  // namespace cc

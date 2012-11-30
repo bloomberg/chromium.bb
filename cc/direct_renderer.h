@@ -93,6 +93,7 @@ protected:
     virtual void drawQuad(DrawingFrame&, const DrawQuad*) = 0;
     virtual void beginDrawingFrame(DrawingFrame&) = 0;
     virtual void finishDrawingFrame(DrawingFrame&) = 0;
+    virtual void finishDrawingQuadList();
     virtual bool flippedFramebuffer() const = 0;
     virtual void ensureScissorTestEnabled() = 0;
     virtual void ensureScissorTestDisabled() = 0;
