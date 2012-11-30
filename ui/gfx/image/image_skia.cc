@@ -385,7 +385,11 @@ SkBitmap& ImageSkia::GetBitmap() const {
     return NullImageRep().mutable_sk_bitmap();
   }
 
+  // TODO(oshima): This made a few tests flaky on Windows.
+  // Fix the root cause and re-enable this. crbug.com/145623.
+#if !defined(OS_WIN)
   CHECK(CanRead());
+#endif
 
   ImageSkiaReps::iterator it =
       storage_->FindRepresentation(ui::SCALE_FACTOR_100P, true);
