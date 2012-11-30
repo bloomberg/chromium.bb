@@ -5,7 +5,6 @@
 #ifndef UI_BASE_EVENTS_EVENT_DISPATCHER_H_
 #define UI_BASE_EVENTS_EVENT_DISPATCHER_H_
 
-#include "base/auto_reset.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/events/event_target.h"
@@ -62,6 +61,9 @@ class UI_EXPORT EventDispatcher {
     return result;
   }
 
+  const Event* current_event() const { return current_event_; }
+  Event* current_event() { return current_event_; }
+
  private:
   class UI_EXPORT ScopedDispatchHelper : public NON_EXPORTED_BASE(
       Event::DispatcherApi) {
@@ -96,11 +98,19 @@ class UI_EXPORT EventDispatcher {
       return ui::ER_CONSUMED;
     bool destroyed = false;
     set_on_destroy_ = &destroyed;
+
+    // Do not use base::AutoReset for |current_event_|. The EventDispatcher can
+    // be destroyed by the event-handler during the event-dispatch. That would
+    // cause invalid memory-write when AutoReset tries to restore the value.
+    Event* old_event = current_event_;
+    current_event_ = event;
     int result = DispatchEventToSingleHandler(handler, event);
-    if (destroyed)
+    if (destroyed) {
       result |= ui::ER_CONSUMED;
-    else
+    } else {
+      current_event_ = old_event;
       set_on_destroy_ = NULL;
+    }
     return result;
   }
 
@@ -119,6 +129,8 @@ class UI_EXPORT EventDispatcher {
   // This is used to track whether the dispatcher has been destroyed in the
   // middle of dispatching an event.
   bool* set_on_destroy_;
+
+  Event* current_event_;
 
   DISALLOW_COPY_AND_ASSIGN(EventDispatcher);
 };

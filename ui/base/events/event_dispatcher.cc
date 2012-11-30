@@ -7,7 +7,8 @@
 namespace ui {
 
 EventDispatcher::EventDispatcher()
-    : set_on_destroy_(NULL) {
+    : set_on_destroy_(NULL),
+      current_event_(NULL) {
 }
 
 EventDispatcher::~EventDispatcher() {

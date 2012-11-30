@@ -422,10 +422,6 @@ class RenderWidgetHostViewAura
   };
   CanLockCompositorState can_lock_compositor_;
 
-  // Whether or not the ui::Event* being processed currently would cause
-  // |window_| to be activated.
-  bool pointer_activate_;
-
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };
 
