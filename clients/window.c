@@ -1715,14 +1715,11 @@ frame_resize_handler(struct widget *widget,
 
 	widget_set_allocation(widget, 0, 0, width, height);
 
-	if (child->opaque) {
-		widget->window->opaque_region =
-			wl_compositor_create_region(display->compositor);
+	if (child->opaque)
 		wl_region_add(widget->window->opaque_region,
 			      opaque_margin, opaque_margin,
 			      widget->allocation.width - 2 * opaque_margin,
 			      widget->allocation.height - 2 * opaque_margin);
-	}
 
 	/* frame internal buttons */
 	x_r = frame->widget->allocation.width - t->width - shadow_margin;
@@ -3077,6 +3074,7 @@ static void
 idle_resize(struct window *window)
 {
 	struct widget *widget;
+	struct wl_compositor *compositor = window->display->compositor;
 
 	window->resize_needed = 0;
 	widget = window->widget;
@@ -3091,10 +3089,10 @@ idle_resize(struct window *window)
 		window->input_region = NULL;
 	}
 
-	if (window->opaque_region) {
+	if (window->opaque_region)
 		wl_region_destroy(window->opaque_region);
-		window->opaque_region = NULL;
-	}
+
+	window->opaque_region = wl_compositor_create_region(compositor);
 
 	if (widget->resize_handler)
 		widget->resize_handler(widget,
@@ -3107,6 +3105,11 @@ idle_resize(struct window *window)
 		window->allocation = widget->allocation;
 		window_schedule_redraw(window);
 	}
+
+	if (widget->opaque)
+		wl_region_add(window->opaque_region, 0, 0,
+			      widget->allocation.width,
+			      widget->allocation.height);
 }
 
 void
