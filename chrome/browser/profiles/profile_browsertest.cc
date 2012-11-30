@@ -190,7 +190,13 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ProfileDeletedBeforeReadmeCreated) {
 }
 
 // Test that repeated setting of exit type is handled correctly.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ExitType) {
+#if defined(OS_WIN)
+// Flaky on Windows: http://crbug.com/163713
+#define MAYBE_ExitType DISABLED_ExitType
+#else
+#define MAYBE_ExitType ExitType
+#endif
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, MAYBE_ExitType) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
