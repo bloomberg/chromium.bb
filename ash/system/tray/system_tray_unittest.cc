@@ -89,6 +89,37 @@ class TestItem : public SystemTrayItem {
   views::View* notification_view_;
 };
 
+// Trivial item implementation that returns NULL from tray/default/detailed view
+// creation methods.
+class TestNoViewItem : public SystemTrayItem {
+ public:
+  TestNoViewItem() : SystemTrayItem(GetSystemTray()) {}
+
+  virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE {
+    return NULL;
+  }
+
+  virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE {
+    return NULL;
+  }
+
+  virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE {
+    return NULL;
+  }
+
+  virtual views::View* CreateNotificationView(
+      user::LoginStatus status) OVERRIDE {
+    return NULL;
+  }
+
+  virtual void DestroyTrayView() OVERRIDE {}
+  virtual void DestroyDefaultView() OVERRIDE {}
+  virtual void DestroyDetailedView() OVERRIDE {}
+  virtual void DestroyNotificationView() OVERRIDE {}
+  virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) OVERRIDE {
+  }
+};
+
 }  // namespace
 
 typedef AshTestBase SystemTrayTest;
@@ -134,6 +165,18 @@ TEST_F(SystemTrayTest, SystemTrayTestItems) {
   RunAllPendingInMessageLoop();
   ASSERT_TRUE(test_item->default_view() != NULL);
   ASSERT_TRUE(detailed_item->detailed_view() == NULL);
+}
+
+TEST_F(SystemTrayTest, SystemTrayNoViewItems) {
+  SystemTray* tray = GetSystemTray();
+  ASSERT_TRUE(tray->GetWidget());
+
+  // Verify that no crashes occur on items lacking some views.
+  TestNoViewItem* no_view_item = new TestNoViewItem;
+  tray->AddTrayItem(no_view_item);
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  tray->ShowDetailedView(no_view_item, 0, false, BUBBLE_USE_EXISTING);
+  RunAllPendingInMessageLoop();
 }
 
 TEST_F(SystemTrayTest, TrayWidgetAutoResizes) {
