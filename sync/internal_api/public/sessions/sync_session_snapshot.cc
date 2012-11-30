@@ -34,6 +34,7 @@ SyncSessionSnapshot::SyncSessionSnapshot(
     int num_hierarchy_conflicts,
     int num_server_conflicts,
     const SyncSourceInfo& source,
+    const std::vector<SyncSourceInfo>& debug_info_sources_list,
     bool notifications_enabled,
     size_t num_entries,
     base::Time sync_start_time,
@@ -48,6 +49,7 @@ SyncSessionSnapshot::SyncSessionSnapshot(
       num_hierarchy_conflicts_(num_hierarchy_conflicts),
       num_server_conflicts_(num_server_conflicts),
       source_(source),
+      debug_info_sources_list_(debug_info_sources_list),
       notifications_enabled_(notifications_enabled),
       num_entries_(num_entries),
       sync_start_time_(sync_start_time),
@@ -92,8 +94,14 @@ DictionaryValue* SyncSessionSnapshot::ToValue() const {
                     num_server_conflicts_);
   value->SetInteger("numEntries", num_entries_);
   value->Set("source", source_.ToValue());
+  scoped_ptr<ListValue> sources_list(new ListValue());
+  for (std::vector<SyncSourceInfo>::const_iterator i =
+       debug_info_sources_list_.begin();
+       i != debug_info_sources_list_.end(); ++i) {
+    sources_list->Append(i->ToValue());
+  }
+  value->Set("sourcesList", sources_list.release());
   value->SetBoolean("notificationsEnabled", notifications_enabled_);
-
 
   scoped_ptr<DictionaryValue> counter_entries(new DictionaryValue());
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; i++) {
@@ -153,6 +161,11 @@ int SyncSessionSnapshot::num_server_conflicts() const {
 
 SyncSourceInfo SyncSessionSnapshot::source() const {
   return source_;
+}
+
+const std::vector<SyncSourceInfo>&
+SyncSessionSnapshot::debug_info_sources_list() const {
+  return debug_info_sources_list_;
 }
 
 bool SyncSessionSnapshot::notifications_enabled() const {

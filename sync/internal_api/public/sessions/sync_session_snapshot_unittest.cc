@@ -53,6 +53,11 @@ TEST_F(SyncSessionSnapshotTest, SyncSessionSnapshotToValue) {
   SyncSourceInfo source;
   scoped_ptr<DictionaryValue> expected_source_value(source.ToValue());
 
+  std::vector<SyncSourceInfo> debug_info_sources_list;
+  debug_info_sources_list.push_back(source);
+  scoped_ptr<ListValue> expected_sources_list_value(new ListValue());
+  expected_sources_list_value->Append(source.ToValue());
+
   SyncSessionSnapshot snapshot(model_neutral,
                                kIsShareUsable,
                                initial_sync_ended,
@@ -62,13 +67,14 @@ TEST_F(SyncSessionSnapshotTest, SyncSessionSnapshotToValue) {
                                kNumHierarchyConflicts,
                                kNumServerConflicts,
                                source,
+                               debug_info_sources_list,
                                false,
                                0,
                                base::Time::Now(),
                                std::vector<int>(MODEL_TYPE_COUNT,0),
                                std::vector<int>(MODEL_TYPE_COUNT, 0));
   scoped_ptr<DictionaryValue> value(snapshot.ToValue());
-  EXPECT_EQ(19u, value->size());
+  EXPECT_EQ(20u, value->size());
   ExpectDictIntegerValue(model_neutral.num_successful_commits,
                          *value, "numSuccessfulCommits");
   ExpectDictIntegerValue(model_neutral.num_successful_bookmark_commits,
@@ -98,6 +104,7 @@ TEST_F(SyncSessionSnapshotTest, SyncSessionSnapshotToValue) {
   ExpectDictIntegerValue(kNumServerConflicts, *value,
                          "numServerConflicts");
   ExpectDictDictionaryValue(*expected_source_value, *value, "source");
+  ExpectDictListValue(*expected_sources_list_value, *value, "sourcesList");
   ExpectDictBooleanValue(false, *value, "notificationsEnabled");
 }
 

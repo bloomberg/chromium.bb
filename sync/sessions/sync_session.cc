@@ -80,6 +80,7 @@ SyncSession::SyncSession(SyncSessionContext* context, Delegate* delegate,
       enabled_groups_(ComputeEnabledGroups(routing_info_, workers_)) {
   status_controller_.reset(new StatusController(routing_info_));
   std::sort(workers_.begin(), workers_.end());
+  debug_info_sources_list_.push_back(source_);
 }
 
 SyncSession::~SyncSession() {}
@@ -92,6 +93,7 @@ void SyncSession::Coalesce(const SyncSession& session) {
 
   // When we coalesce sessions, the sync update source gets overwritten with the
   // most recent, while the type/state map gets merged.
+  debug_info_sources_list_.push_back(session.source_);
   CoalesceStates(&source_.types, session.source_.types);
   source_.updates_source = session.source_.updates_source;
 
@@ -177,6 +179,7 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
       status_controller_->num_hierarchy_conflicts(),
       status_controller_->num_server_conflicts(),
       source_,
+      debug_info_sources_list_,
       context_->notifications_enabled(),
       dir->GetEntriesCount(),
       status_controller_->sync_start_time(),

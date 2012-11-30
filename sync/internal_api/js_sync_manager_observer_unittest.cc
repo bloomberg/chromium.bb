@@ -75,20 +75,22 @@ TEST_F(JsSyncManagerObserverTest, OnInitializationComplete) {
 }
 
 TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
-  sessions::SyncSessionSnapshot snapshot(sessions::ModelNeutralState(),
-                                         false,
-                                         ModelTypeSet(),
-                                         ProgressMarkerMap(),
-                                         false,
-                                         5,
-                                         2,
-                                         7,
-                                         sessions::SyncSourceInfo(),
-                                         false,
-                                         0,
-                                         base::Time::Now(),
-                                         std::vector<int>(MODEL_TYPE_COUNT, 0),
-                                         std::vector<int>(MODEL_TYPE_COUNT, 0));
+  sessions::SyncSessionSnapshot snapshot(
+      sessions::ModelNeutralState(),
+      false,
+      ModelTypeSet(),
+      ProgressMarkerMap(),
+      false,
+      5,
+      2,
+      7,
+      sessions::SyncSourceInfo(),
+      std::vector<sessions::SyncSourceInfo>(),
+      false,
+      0,
+      base::Time::Now(),
+      std::vector<int>(MODEL_TYPE_COUNT, 0),
+      std::vector<int>(MODEL_TYPE_COUNT, 0));
   DictionaryValue expected_details;
   expected_details.Set("snapshot", snapshot.ToValue());
 

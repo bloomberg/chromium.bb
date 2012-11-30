@@ -165,6 +165,10 @@ class SyncSession {
   // The source for initiating this sync session.
   SyncSourceInfo source_;
 
+  // A list of sources for sessions that have been merged with this one.
+  // Currently used only for logging.
+  std::vector<SyncSourceInfo> debug_info_sources_list_;
+
   // Information about extensions activity since the last successful commit.
   ExtensionsActivityMonitor::Records extensions_activity_;
 
