@@ -61,7 +61,9 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // 1. Loads the dlls like mf/mfplat/d3d9, etc required for decoding.
   // 2. Setting up the device manager instance which is shared between all
   //    decoder instances.
-  static void PreSandboxInitialization();
+  // Invokes the completion task, potentially on another thread, when complete.
+  static void PreSandboxInitialization(
+      const base::Closure& completion_task);
 
  private:
   typedef void* EGLConfig;
@@ -69,7 +71,9 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // Creates and initializes an instance of the D3D device and the
   // corresponding device manager. The device manager instance is eventually
   // passed to the IMFTransform interface implemented by the h.264 decoder.
-  static bool CreateD3DDevManager();
+  // Invokes the completion task, potentially on another thread, when complete.
+  static void CreateD3DDevManager(
+      const base::Closure& completion_task);
 
   // Creates, initializes and sets the media types for the h.264 decoder.
   bool InitDecoder();

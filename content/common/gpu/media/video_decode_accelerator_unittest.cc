@@ -929,7 +929,11 @@ int main(int argc, char **argv) {
   content::RenderingHelper::InitializePlatform();
 
 #if defined(OS_WIN)
-  content::DXVAVideoDecodeAccelerator::PreSandboxInitialization();
+  base::WaitableEvent event(true, false);
+  content::DXVAVideoDecodeAccelerator::PreSandboxInitialization(
+      base::Bind(&base::WaitableEvent::Signal,
+                 base::Unretained(&event)));
+  event.Wait();
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
   content::OmxVideoDecodeAccelerator::PreSandboxInitialization();
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
