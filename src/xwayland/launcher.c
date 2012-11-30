@@ -39,7 +39,7 @@
 static int
 weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 {
-	struct weston_xserver *mxs = data;
+	struct weston_xserver *wxs = data;
 	char display[8], s[8];
 	int sv[2], client_fd;
 
@@ -48,8 +48,8 @@ weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 		return 1;
 	}
 
-	mxs->process.pid = fork();
-	switch (mxs->process.pid) {
+	wxs->process.pid = fork();
+	switch (wxs->process.pid) {
 	case 0:
 		/* SOCK_CLOEXEC closes both ends, so we need to unset
 		 * the flag on the client fd. */
@@ -60,7 +60,7 @@ weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 		snprintf(s, sizeof s, "%d", client_fd);
 		setenv("WAYLAND_SOCKET", s, 1);
 
-		snprintf(display, sizeof display, ":%d", mxs->display);
+		snprintf(display, sizeof display, ":%d", wxs->display);
 
 		if (execl(XSERVER_PATH,
 			  XSERVER_PATH,
@@ -75,15 +75,15 @@ weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 		exit(-1);
 
 	default:
-		weston_log("forked X server, pid %d\n", mxs->process.pid);
+		weston_log("forked X server, pid %d\n", wxs->process.pid);
 
 		close(sv[1]);
-		mxs->client = wl_client_create(mxs->wl_display, sv[0]);
+		wxs->client = wl_client_create(wxs->wl_display, sv[0]);
 
-		weston_watch_process(&mxs->process);
+		weston_watch_process(&wxs->process);
 
-		wl_event_source_remove(mxs->abstract_source);
-		wl_event_source_remove(mxs->unix_source);
+		wl_event_source_remove(wxs->abstract_source);
+		wl_event_source_remove(wxs->unix_source);
 		break;
 
 	case -1:
@@ -117,33 +117,33 @@ weston_xserver_shutdown(struct weston_xserver *wxs)
 static void
 weston_xserver_cleanup(struct weston_process *process, int status)
 {
-	struct weston_xserver *mxs =
+	struct weston_xserver *wxs =
 		container_of(process, struct weston_xserver, process);
 
-	mxs->process.pid = 0;
-	mxs->client = NULL;
-	mxs->resource = NULL;
+	wxs->process.pid = 0;
+	wxs->client = NULL;
+	wxs->resource = NULL;
 
-	mxs->abstract_source =
-		wl_event_loop_add_fd(mxs->loop, mxs->abstract_fd,
+	wxs->abstract_source =
+		wl_event_loop_add_fd(wxs->loop, wxs->abstract_fd,
 				     WL_EVENT_READABLE,
-				     weston_xserver_handle_event, mxs);
+				     weston_xserver_handle_event, wxs);
 
-	mxs->unix_source =
-		wl_event_loop_add_fd(mxs->loop, mxs->unix_fd,
+	wxs->unix_source =
+		wl_event_loop_add_fd(wxs->loop, wxs->unix_fd,
 				     WL_EVENT_READABLE,
-				     weston_xserver_handle_event, mxs);
+				     weston_xserver_handle_event, wxs);
 
-	if (mxs->wm) {
+	if (wxs->wm) {
 		weston_log("xserver exited, code %d\n", status);
-		weston_wm_destroy(mxs->wm);
-		mxs->wm = NULL;
+		weston_wm_destroy(wxs->wm);
+		wxs->wm = NULL;
 	} else {
 		/* If the X server crashes before it binds to the
 		 * xserver interface, shut down and don't try
 		 * again. */
 		weston_log("xserver crashing too fast: %d\n", status);
-		weston_xserver_shutdown(mxs);
+		weston_xserver_shutdown(wxs);
 	}
 }
 
@@ -315,64 +315,64 @@ WL_EXPORT int
 module_init(struct weston_compositor *compositor)
 {
 	struct wl_display *display = compositor->wl_display;
-	struct weston_xserver *mxs;
+	struct weston_xserver *wxs;
 	char lockfile[256], display_name[8];
 
-	mxs = malloc(sizeof *mxs);
-	memset(mxs, 0, sizeof *mxs);
+	wxs = malloc(sizeof *wxs);
+	memset(wxs, 0, sizeof *wxs);
 
-	mxs->process.cleanup = weston_xserver_cleanup;
-	mxs->wl_display = display;
-	mxs->compositor = compositor;
+	wxs->process.cleanup = weston_xserver_cleanup;
+	wxs->wl_display = display;
+	wxs->compositor = compositor;
 
-	mxs->display = 0;
+	wxs->display = 0;
 
  retry:
-	if (create_lockfile(mxs->display, lockfile, sizeof lockfile) < 0) {
+	if (create_lockfile(wxs->display, lockfile, sizeof lockfile) < 0) {
 		if (errno == EAGAIN) {
 			goto retry;
 		} else if (errno == EEXIST) {
-			mxs->display++;
+			wxs->display++;
 			goto retry;
 		} else {
-			free(mxs);
+			free(wxs);
 			return -1;
 		}
 	}
 
-	mxs->abstract_fd = bind_to_abstract_socket(mxs->display);
-	if (mxs->abstract_fd < 0 && errno == EADDRINUSE) {
-		mxs->display++;
+	wxs->abstract_fd = bind_to_abstract_socket(wxs->display);
+	if (wxs->abstract_fd < 0 && errno == EADDRINUSE) {
+		wxs->display++;
 		unlink(lockfile);
 		goto retry;
 	}
 
-	mxs->unix_fd = bind_to_unix_socket(mxs->display);
-	if (mxs->unix_fd < 0) {
+	wxs->unix_fd = bind_to_unix_socket(wxs->display);
+	if (wxs->unix_fd < 0) {
 		unlink(lockfile);
-		close(mxs->abstract_fd);
-		free(mxs);
+		close(wxs->abstract_fd);
+		free(wxs);
 		return -1;
 	}
 
-	snprintf(display_name, sizeof display_name, ":%d", mxs->display);
+	snprintf(display_name, sizeof display_name, ":%d", wxs->display);
 	weston_log("xserver listening on display %s\n", display_name);
 	setenv("DISPLAY", display_name, 1);
 
-	mxs->loop = wl_display_get_event_loop(display);
-	mxs->abstract_source =
-		wl_event_loop_add_fd(mxs->loop, mxs->abstract_fd,
+	wxs->loop = wl_display_get_event_loop(display);
+	wxs->abstract_source =
+		wl_event_loop_add_fd(wxs->loop, wxs->abstract_fd,
 				     WL_EVENT_READABLE,
-				     weston_xserver_handle_event, mxs);
-	mxs->unix_source =
-		wl_event_loop_add_fd(mxs->loop, mxs->unix_fd,
+				     weston_xserver_handle_event, wxs);
+	wxs->unix_source =
+		wl_event_loop_add_fd(wxs->loop, wxs->unix_fd,
 				     WL_EVENT_READABLE,
-				     weston_xserver_handle_event, mxs);
+				     weston_xserver_handle_event, wxs);
 
-	wl_display_add_global(display, &xserver_interface, mxs, bind_xserver);
+	wl_display_add_global(display, &xserver_interface, wxs, bind_xserver);
 
-	mxs->destroy_listener.notify = weston_xserver_destroy;
-	wl_signal_add(&compositor->destroy_signal, &mxs->destroy_listener);
+	wxs->destroy_listener.notify = weston_xserver_destroy;
+	wl_signal_add(&compositor->destroy_signal, &wxs->destroy_listener);
 
 	return 0;
 }
