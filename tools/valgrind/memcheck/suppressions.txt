@@ -5461,15 +5461,13 @@
    Memcheck:Leak
    fun:*alloc
    ...
-   fun:_mesa_symbol_table_add_symbol
-   fun:_ZN17glsl_symbol_table12add_variableEPKcP11ir_variable
-   fun:_ZL21populate_symbol_tableP9gl_shader
    fun:_ZL23link_intrastage_shadersP14__GLcontextRecP17gl_shader_programPP9gl_shaderj
    fun:_Z12link_shadersP14__GLcontextRecP17gl_shader_program
    fun:_mesa_glsl_link_shader
    fun:link_program
    fun:_mesa_LinkProgramARB
    fun:glLinkProgram
+   ...
    fun:_ZN3gpu5gles214ProgramManager11ProgramInfo4LinkEPNS0_13ShaderManagerEPNS0_16ShaderTranslatorES6_PNS0_11FeatureInfoE
    fun:_ZN3gpu5gles216GLES2DecoderImpl13DoLinkProgramEj
    fun:_ZN3gpu5gles216GLES2DecoderImpl17HandleLinkProgramEjRKNS0_11LinkProgramE
@@ -5925,7 +5923,7 @@
    bug_150995_c
    Memcheck:Leak
    fun:_Zna*
-   fun:_ZN14webkit_support12_GLOBAL__N_113DoLibpngWriteEP14png_struct_defP15png_info_structPNS0_15PngEncoderStateEiiiPKhiiiPFvS8_iPhPbERKSt6vectorINS0_7CommentESaISE_EE
+   fun:_ZN14webkit_support12_GLOBAL__N_113DoLibpngWriteEP14png_struct_defP15png_info_structPNS0_15PngEncoderStateEiiiPKhiiiPFvS8_iPhPbERKSt6vector*
    fun:_ZN14webkit_support26EncodeWithCompressionLevelEPKhNS_12_GLOBAL__N_111ColorFormatEiiibRKSt6vectorINS2_7CommentESaIS5_EEiPS4_IhSaIhEE
    fun:_ZN14webkit_support6EncodeEPKhNS_12_GLOBAL__N_111ColorFormatEiiibRKSt6vectorINS2_7CommentESaIS5_EEPS4_IhSaIhEE
    fun:_ZN14webkit_support25EncodeBGRAPNGWithChecksumEPKhiiibRKSsPSt6vectorIhSaIhEE
@@ -5945,6 +5943,27 @@
    fun:_ZN7WebCore22ResourceHandleInternal16didFinishLoadingEPN6WebKit12WebURLLoaderEd
    fun:_ZN11webkit_glue16WebURLLoaderImpl7Context18OnCompletedRequestEibRKSsRKN4base9TimeTicksE
    fun:_ZN12_GLOBAL__N_112RequestProxy22NotifyCompletedRequestEiRKSsRKN4base9TimeTicksE
+}
+{
+   bug_150995_d
+   Memcheck:Leak
+   fun:_Zna*
+   fun:_ZN14webkit_support12_GLOBAL__N_113DoLibpngWriteEP14png_struct_defP15png_info_structPNS0_15PngEncoderStateEiiiPKhiiiPFvS8_iPhPbERKSt6vector*
+   fun:_ZN14webkit_support26EncodeWithCompressionLevelEPKhNS_12_GLOBAL__N_111ColorFormatEiiibRKSt6vectorINS2_7CommentESaIS5_EEiPS4_IhSaIhEE
+   fun:_ZN14webkit_support6EncodeEPKhNS_12_GLOBAL__N_111ColorFormatEiiibRKSt6vectorINS2_7CommentESaIS5_EEPS4_IhSaIhEE
+   fun:_ZN14webkit_support25EncodeBGRAPNGWithChecksumEPKhiiibRKSsPSt6vectorIhSaIhEE
+   fun:_ZNK9TestShell9dumpImageEP8SkCanvas
+   fun:_ZN9TestShell4dumpEv
+   fun:_ZN9TestShell12testFinishedEv
+   fun:_ZN13DRTTestRunner18completeNotifyDoneEb
+   fun:_ZN13DRTTestRunner10notifyDoneERKN3WTF6VectorIN13WebTestRunner10CppVariantELm0EEEPS3_
+   fun:_ZN13WebTestRunner13CppBoundClass14MemberCallbackI13DRTTestRunnerE3runERKN3WTF6VectorINS_10CppVariantELm0EEEPS6_
+   fun:_ZN13WebTestRunner13CppBoundClass6invokeEPvPK10_NPVariantmPS2_
+   fun:_ZN13WebTestRunner11CppNPObject6invokeEP8NPObjectPvPK10_NPVariantjPS4_
+   fun:_ZN7WebCoreL18npObjectInvokeImplERKN2v89ArgumentsENS_18InvokeFunctionTypeE
+   fun:_ZN7WebCore21npObjectMethodHandlerERKN2v89ArgumentsE
+   fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+   fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
 }
 {
    bug_151006
