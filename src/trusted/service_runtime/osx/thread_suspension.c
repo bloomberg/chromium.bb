@@ -113,7 +113,8 @@ void NaClAppThreadGetSuspendedRegistersInternal(
    */
   struct NaClAppThreadSuspendedRegisters *state = natp->suspended_registers;
   uint32_t eip = state->context.uts.ts32.__eip;
-  if (eip >= (uintptr_t) NaClSwitchRemainingRegsViaECX &&
+  if (state->context.uts.ts32.__cs == NaClGetGlobalCs() &&
+      eip >= (uintptr_t) NaClSwitchRemainingRegsViaECX &&
       eip < (uintptr_t) NaClSwitchRemainingRegsAsmEnd) {
     state->context.uts.ts32.__eip = natp->user.gs_segment.new_prog_ctr;
     state->context.uts.ts32.__ecx = natp->user.gs_segment.new_ecx;
