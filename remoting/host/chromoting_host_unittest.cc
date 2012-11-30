@@ -118,19 +118,6 @@ class ChromotingHostTest : public testing::Test {
         base::Bind(&ChromotingHostTest::QuitMainMessageLoop,
                    base::Unretained(this)));
 
-    EXPECT_CALL(context_, ui_task_runner())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(ui_task_runner_.get()));
-    EXPECT_CALL(context_, capture_task_runner())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(ui_task_runner_.get()));
-    EXPECT_CALL(context_, encode_task_runner())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(ui_task_runner_.get()));
-    EXPECT_CALL(context_, network_task_runner())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(ui_task_runner_.get()));
-
     desktop_environment_factory_.reset(new MockDesktopEnvironmentFactory());
     EXPECT_CALL(*desktop_environment_factory_, CreatePtr(_))
         .Times(AnyNumber())
@@ -143,18 +130,17 @@ class ChromotingHostTest : public testing::Test {
         &signal_strategy_,
         desktop_environment_factory_.get(),
         scoped_ptr<protocol::SessionManager>(session_manager_),
-        context_.audio_task_runner(),
-        context_.capture_task_runner(),
-        context_.encode_task_runner(),
-        context_.network_task_runner());
+        ui_task_runner_,  // Audio
+        ui_task_runner_,  // Video capture
+        ui_task_runner_,  // Video encode
+        ui_task_runner_); // Network
     host_->AddStatusObserver(&host_status_observer_);
 
     disconnect_window_ = new MockDisconnectWindow();
     continue_window_ = new MockContinueWindow();
     local_input_monitor_ = new MockLocalInputMonitor();
     it2me_host_user_interface_.reset(
-        new MockIt2MeHostUserInterface(context_.network_task_runner(),
-                                       context_.ui_task_runner()));
+        new MockIt2MeHostUserInterface(ui_task_runner_, ui_task_runner_));
     it2me_host_user_interface_->InitFrom(
         scoped_ptr<DisconnectWindow>(disconnect_window_),
         scoped_ptr<ContinueWindow>(continue_window_),
@@ -250,10 +236,10 @@ class ChromotingHostTest : public testing::Test {
     protocol::ConnectionToClient* connection_ptr = connection.get();
     scoped_refptr<ClientSession> client = new ClientSession(
         host_.get(),
-        context_.audio_task_runner(),
-        context_.capture_task_runner(),
-        context_.encode_task_runner(),
-        context_.network_task_runner(),
+        ui_task_runner_,  // Audio
+        ui_task_runner_,  // Video capture
+        ui_task_runner_,  // Video encode
+        ui_task_runner_,  // Network
         connection.Pass(),
         desktop_environment_factory_.get(),
         base::TimeDelta());
@@ -261,22 +247,22 @@ class ChromotingHostTest : public testing::Test {
     connection_ptr->set_input_stub(
         client->desktop_environment()->event_executor());
 
-    context_.network_task_runner()->PostTask(
+    ui_task_runner_->PostTask(
         FROM_HERE, base::Bind(&ChromotingHostTest::AddClientToHost,
                               host_, client));
 
     if (authenticate) {
-      context_.network_task_runner()->PostTask(
+      ui_task_runner_->PostTask(
           FROM_HERE, base::Bind(&ClientSession::OnConnectionAuthenticated,
                                 client, connection_ptr));
       if (!reject) {
-        context_.network_task_runner()->PostTask(
+        ui_task_runner_->PostTask(
             FROM_HERE,
             base::Bind(&ClientSession::OnConnectionChannelsConnected,
                        client, connection_ptr));
       }
     } else {
-      context_.network_task_runner()->PostTask(
+      ui_task_runner_->PostTask(
           FROM_HERE, base::Bind(&ClientSession::OnConnectionClosed,
                                 client, connection_ptr,
                                 protocol::AUTHENTICATION_FAILED));
@@ -443,7 +429,6 @@ class ChromotingHostTest : public testing::Test {
  protected:
   MessageLoop message_loop_;
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner_;
-  MockChromotingHostContext context_;
   MockConnectionToClientEventHandler handler_;
   MockSignalStrategy signal_strategy_;
   scoped_ptr<MockDesktopEnvironmentFactory> desktop_environment_factory_;

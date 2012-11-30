@@ -7,11 +7,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/thread.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
+#include "base/memory/scoped_ptr.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -25,83 +21,72 @@ class AutoThreadTaskRunner;
 // process.  This class is virtual only for testing purposes (see below).
 class ChromotingHostContext {
  public:
-  // Create a context.
-  ChromotingHostContext(
-      scoped_refptr<AutoThreadTaskRunner> ui_task_runner);
   virtual ~ChromotingHostContext();
 
-  // TODO(ajwong): Move the Start method out of this class. Then
-  // create a static factory for construction, and destruction.  We
-  // should be able to remove the need for virtual functions below
-  // with that design, while preserving the relative simplicity of
-  // this API.
-  virtual bool Start();
+  // Create threads and URLRequestContextGetter for use by a host.
+  // During shutdown the caller should tear-down the ChromotingHostContext and
+  // then continue to run until |ui_task_runner| is no longer referenced.
+  // NULL is returned if any threads fail to start.
+  static scoped_ptr<ChromotingHostContext> Create(
+      scoped_refptr<AutoThreadTaskRunner> ui_task_runner);
 
   // Task runner for the thread used for audio capture and encoding.
-  virtual base::SingleThreadTaskRunner* audio_task_runner();
+  scoped_refptr<AutoThreadTaskRunner> audio_task_runner();
 
   // Task runner for the thread used by the ScreenRecorder to capture
   // the screen.
-  virtual base::SingleThreadTaskRunner* video_capture_task_runner();
+  scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner();
 
   // Task runner for the thread used to encode video streams.
-  virtual base::SingleThreadTaskRunner* video_encode_task_runner();
+  scoped_refptr<AutoThreadTaskRunner> video_encode_task_runner();
 
   // Task runner for the thread that is used for blocking file
   // IO. This thread is used by the URLRequestContext to read proxy
   // configuration and by NatConfig to read policy configs.
-  virtual base::SingleThreadTaskRunner* file_task_runner();
+  scoped_refptr<AutoThreadTaskRunner> file_task_runner();
 
   // Task runner for the thread that is used by the EventExecutor.
   //
   // TODO(sergeyu): Do we need a separate thread for EventExecutor?
   // Can we use some other thread instead?
-  virtual base::SingleThreadTaskRunner* input_task_runner();
+  scoped_refptr<AutoThreadTaskRunner> input_task_runner();
 
   // Task runner for the thread used for network IO. This thread runs
   // a libjingle message loop, and is the only thread on which
   // libjingle code may be run.
-  virtual base::SingleThreadTaskRunner* network_task_runner();
+  scoped_refptr<AutoThreadTaskRunner> network_task_runner();
 
   // Task runner for the thread that is used for the UI. In the NPAPI
   // plugin this corresponds to the main plugin thread.
-  virtual base::SingleThreadTaskRunner* ui_task_runner();
+  scoped_refptr<AutoThreadTaskRunner> ui_task_runner();
 
-  const scoped_refptr<net::URLRequestContextGetter>&
-      url_request_context_getter();
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ChromotingHostContextTest, StartAndStop);
+  ChromotingHostContext(AutoThreadTaskRunner* ui_task_runner);
 
-  // A thread that hosts audio capture and encoding.
-  base::Thread audio_thread_;
+  // Thread for audio capture and encoding.
+  scoped_refptr<AutoThreadTaskRunner> audio_task_runner_;
 
-  // A thread that hosts screen capture.
-  base::Thread video_capture_thread_;
+  // Thread for screen capture.
+  scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner_;
 
-  // A thread that hosts video encode operations.
-  base::Thread video_encode_thread_;
+  // Thread for video encoding.
+  scoped_refptr<AutoThreadTaskRunner> video_encode_task_runner_;
 
-  // Thread for blocking IO operations.
-  base::Thread file_thread_;
+  // Thread for I/O operations.
+  scoped_refptr<AutoThreadTaskRunner> file_task_runner_;
 
-  // A thread that hosts input injection.
-  base::Thread input_thread_;
+  // Thread for input injection.
+  scoped_refptr<AutoThreadTaskRunner> input_task_runner_;
 
-  // A thread that hosts all network operations.
-  base::Thread network_thread_;
+  // Thread for network operations.
+  scoped_refptr<AutoThreadTaskRunner> network_task_runner_;
 
-  // Task runners wrapping the above threads. These should be declared after
-  // the corresponding threads to guarantee proper order of destruction.
-  scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
-
+  // Caller-supplied UI thread. This is usually the application main thread.
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner_;
 
+  // Serves URLRequestContexts that use the network and UI task runners.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingHostContext);
