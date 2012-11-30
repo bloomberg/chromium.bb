@@ -3194,6 +3194,96 @@ GLboolean GLES2Implementation::UnmapBufferCHROMIUM(GLuint target) {
   return true;
 }
 
+void GLES2Implementation::AsyncTexImage2DCHROMIUM(
+    GLenum target, GLint level, GLint internalformat, GLsizei width,
+    GLsizei height, GLint border, GLenum format, GLenum type,
+    const void* pixels) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glTexImage2D("
+      << GLES2Util::GetStringTextureTarget(target) << ", "
+      << level << ", "
+      << GLES2Util::GetStringTextureInternalFormat(internalformat) << ", "
+      << width << ", " << height << ", " << border << ", "
+      << GLES2Util::GetStringTextureFormat(format) << ", "
+      << GLES2Util::GetStringPixelType(type) << ", "
+      << static_cast<const void*>(pixels) << ")");
+  if (level < 0 || height < 0 || width < 0) {
+    SetGLError(GL_INVALID_VALUE, "glTexImage2D", "dimension < 0");
+    return;
+  }
+  uint32 size;
+  uint32 unpadded_row_size;
+  uint32 padded_row_size;
+  if (!GLES2Util::ComputeImageDataSizes(
+          width, height, format, type, unpack_alignment_, &size,
+          &unpadded_row_size, &padded_row_size)) {
+    SetGLError(GL_INVALID_VALUE, "glTexImage2D", "image size too large");
+    return;
+  }
+
+  // If there's no data/buffer just issue the AsyncTexImage2D
+  if (!pixels && !bound_pixel_unpack_transfer_buffer_id_) {
+    helper_->AsyncTexImage2DCHROMIUM(
+       target, level, internalformat, width, height, border, format, type,
+       0, 0);
+    return;
+  }
+
+  // Otherwise, async uploads require a transfer buffer to be bound.
+  GLuint offset = ToGLuint(pixels);
+  BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
+      "glAsyncTexImage2DCHROMIUM", offset, size);
+  if (!buffer)
+    return;
+
+  helper_->AsyncTexImage2DCHROMIUM(
+      target, level, internalformat, width, height, border, format, type,
+      buffer->shm_id(), buffer->shm_offset() + offset);
+  return;
+}
+
+void GLES2Implementation::AsyncTexSubImage2DCHROMIUM(
+    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
+    GLsizei height, GLenum format, GLenum type, const void* pixels) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glAsyncTexSubImage2DCHROMIUM("
+      << GLES2Util::GetStringTextureTarget(target) << ", "
+      << level << ", "
+      << xoffset << ", " << yoffset << ", "
+      << width << ", " << height << ", "
+      << GLES2Util::GetStringTextureFormat(format) << ", "
+      << GLES2Util::GetStringPixelType(type) << ", "
+      << static_cast<const void*>(pixels) << ")");
+  if (level < 0 || height < 0 || width < 0) {
+    SetGLError(
+        GL_INVALID_VALUE, "glAsyncTexSubImage2DCHROMIUM", "dimension < 0");
+    return;
+  }
+
+  uint32 size;
+  uint32 unpadded_row_size;
+  uint32 padded_row_size;
+  if (!GLES2Util::ComputeImageDataSizes(
+        width, height, format, type, unpack_alignment_, &size,
+        &unpadded_row_size, &padded_row_size)) {
+    SetGLError(
+        GL_INVALID_VALUE, "glAsyncTexSubImage2DCHROMIUM", "size to large");
+    return;
+  }
+
+  // Async uploads require a transfer buffer to be bound.
+  GLuint offset = ToGLuint(pixels);
+  BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
+      "glAsyncTexSubImage2DCHROMIUM", offset, size);
+  if (!buffer)
+    return;
+
+  helper_->AsyncTexSubImage2DCHROMIUM(
+      target, level, xoffset, yoffset, width, height, format, type,
+      buffer->shm_id(), buffer->shm_offset() + offset);
+  return;
+}
+
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file
 // instead of having to edit some template or the code generator.

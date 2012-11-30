@@ -235,6 +235,7 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   bool npot_ok = false;
 
   AddExtensionString("GL_ANGLE_translated_shader_source");
+  AddExtensionString("GL_CHROMIUM_async_pixel_transfers");
   AddExtensionString("GL_CHROMIUM_bind_uniform_location");
   AddExtensionString("GL_CHROMIUM_command_buffer_query");
   AddExtensionString("GL_CHROMIUM_command_buffer_latency_query");

@@ -697,6 +697,20 @@ void GLES2TraceBeginCHROMIUM(const char* name) {
 void GLES2TraceEndCHROMIUM() {
   gles2::GetGLContext()->TraceEndCHROMIUM();
 }
+void GLES2AsyncTexSubImage2DCHROMIUM(
+    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
+    GLsizei height, GLenum format, GLenum type, const void* data) {
+  gles2::GetGLContext()->AsyncTexSubImage2DCHROMIUM(
+      target, level, xoffset, yoffset, width, height, format, type, data);
+}
+void GLES2AsyncTexImage2DCHROMIUM(
+    GLenum target, GLint level, GLint internalformat, GLsizei width,
+    GLsizei height, GLint border, GLenum format, GLenum type,
+    const void* pixels) {
+  gles2::GetGLContext()->AsyncTexImage2DCHROMIUM(
+      target, level, internalformat, width, height, border, format, type,
+      pixels);
+}
 
 namespace gles2 {
 
@@ -1024,6 +1038,10 @@ NameToFunc g_gles2_function_table[] = {
       glTraceBeginCHROMIUM), },
   { "glTraceEndCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
       glTraceEndCHROMIUM), },
+  { "glAsyncTexSubImage2DCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
+      glAsyncTexSubImage2DCHROMIUM), },
+  { "glAsyncTexImage2DCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
+      glAsyncTexImage2DCHROMIUM), },
   { NULL, NULL, },
 };
 

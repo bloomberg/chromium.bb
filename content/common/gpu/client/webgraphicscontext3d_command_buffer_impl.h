@@ -606,6 +606,28 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void* mapBufferCHROMIUM(WGC3Denum target, WGC3Denum access);
   virtual WGC3Dboolean unmapBufferCHROMIUM(WGC3Denum target);
 
+  // Async pixel transfer functions.
+  virtual void asyncTexImage2DCHROMIUM(
+      WGC3Denum target,
+      WGC3Dint level,
+      WGC3Denum internalformat,
+      WGC3Dsizei width,
+      WGC3Dsizei height,
+      WGC3Dint border,
+      WGC3Denum format,
+      WGC3Denum type,
+      const void* pixels);
+  virtual void asyncTexSubImage2DCHROMIUM(
+      WGC3Denum target,
+      WGC3Dint level,
+      WGC3Dint xoffset,
+      WGC3Dint yoffset,
+      WGC3Dsizei width,
+      WGC3Dsizei height,
+      WGC3Denum format,
+      WGC3Denum type,
+      const void* pixels);
+
  protected:
   virtual GrGLInterface* onCreateGrGLInterface();
 

@@ -290,6 +290,7 @@ static GLenum valid_query_target_table[] = {
   GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT,
   GL_COMMANDS_ISSUED_CHROMIUM,
   GL_LATENCY_QUERY_CHROMIUM,
+  GL_ASYNC_PIXEL_TRANSFERS_COMPLETED_CHROMIUM,
 };
 
 static GLenum valid_read_pixel_format_table[] = {

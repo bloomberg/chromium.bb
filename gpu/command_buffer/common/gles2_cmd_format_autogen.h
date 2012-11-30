@@ -10572,6 +10572,164 @@ COMPILE_ASSERT(sizeof(TraceEndCHROMIUM) == 4,
 COMPILE_ASSERT(offsetof(TraceEndCHROMIUM, header) == 0,
                OffsetOf_TraceEndCHROMIUM_header_not_0);
 
+struct AsyncTexSubImage2DCHROMIUM {
+  typedef AsyncTexSubImage2DCHROMIUM ValueType;
+  static const CommandId kCmdId = kAsyncTexSubImage2DCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(
+      GLenum _target, GLint _level, GLint _xoffset, GLint _yoffset,
+      GLsizei _width, GLsizei _height, GLenum _format, GLenum _type,
+      uint32 _data_shm_id, uint32 _data_shm_offset) {
+    SetHeader();
+    target = _target;
+    level = _level;
+    xoffset = _xoffset;
+    yoffset = _yoffset;
+    width = _width;
+    height = _height;
+    format = _format;
+    type = _type;
+    data_shm_id = _data_shm_id;
+    data_shm_offset = _data_shm_offset;
+  }
+
+  void* Set(
+      void* cmd, GLenum _target, GLint _level, GLint _xoffset, GLint _yoffset,
+      GLsizei _width, GLsizei _height, GLenum _format, GLenum _type,
+      uint32 _data_shm_id, uint32 _data_shm_offset) {
+    static_cast<ValueType*>(
+        cmd)->Init(
+            _target, _level, _xoffset, _yoffset, _width, _height, _format,
+            _type, _data_shm_id, _data_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 target;
+  int32 level;
+  int32 xoffset;
+  int32 yoffset;
+  int32 width;
+  int32 height;
+  uint32 format;
+  uint32 type;
+  uint32 data_shm_id;
+  uint32 data_shm_offset;
+};
+
+COMPILE_ASSERT(sizeof(AsyncTexSubImage2DCHROMIUM) == 44,
+               Sizeof_AsyncTexSubImage2DCHROMIUM_is_not_44);
+COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, header) == 0,
+               OffsetOf_AsyncTexSubImage2DCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, target) == 4,
+               OffsetOf_AsyncTexSubImage2DCHROMIUM_target_not_4);
+COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, level) == 8,
+               OffsetOf_AsyncTexSubImage2DCHROMIUM_level_not_8);
+COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, xoffset) == 12,
+               OffsetOf_AsyncTexSubImage2DCHROMIUM_xoffset_not_12);
+COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, yoffset) == 16,
+               OffsetOf_AsyncTexSubImage2DCHROMIUM_yoffset_not_16);
+COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, width) == 20,
+               OffsetOf_AsyncTexSubImage2DCHROMIUM_width_not_20);
+COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, height) == 24,
+               OffsetOf_AsyncTexSubImage2DCHROMIUM_height_not_24);
+COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, format) == 28,
+               OffsetOf_AsyncTexSubImage2DCHROMIUM_format_not_28);
+COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, type) == 32,
+               OffsetOf_AsyncTexSubImage2DCHROMIUM_type_not_32);
+COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, data_shm_id) == 36,
+               OffsetOf_AsyncTexSubImage2DCHROMIUM_data_shm_id_not_36);
+COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, data_shm_offset) == 40,
+               OffsetOf_AsyncTexSubImage2DCHROMIUM_data_shm_offset_not_40);
+
+struct AsyncTexImage2DCHROMIUM {
+  typedef AsyncTexImage2DCHROMIUM ValueType;
+  static const CommandId kCmdId = kAsyncTexImage2DCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(
+      GLenum _target, GLint _level, GLint _internalformat, GLsizei _width,
+      GLsizei _height, GLint _border, GLenum _format, GLenum _type,
+      uint32 _pixels_shm_id, uint32 _pixels_shm_offset) {
+    SetHeader();
+    target = _target;
+    level = _level;
+    internalformat = _internalformat;
+    width = _width;
+    height = _height;
+    border = _border;
+    format = _format;
+    type = _type;
+    pixels_shm_id = _pixels_shm_id;
+    pixels_shm_offset = _pixels_shm_offset;
+  }
+
+  void* Set(
+      void* cmd, GLenum _target, GLint _level, GLint _internalformat,
+      GLsizei _width, GLsizei _height, GLint _border, GLenum _format,
+      GLenum _type, uint32 _pixels_shm_id, uint32 _pixels_shm_offset) {
+    static_cast<ValueType*>(
+        cmd)->Init(
+            _target, _level, _internalformat, _width, _height, _border, _format,
+            _type, _pixels_shm_id, _pixels_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 target;
+  int32 level;
+  int32 internalformat;
+  int32 width;
+  int32 height;
+  int32 border;
+  uint32 format;
+  uint32 type;
+  uint32 pixels_shm_id;
+  uint32 pixels_shm_offset;
+};
+
+COMPILE_ASSERT(sizeof(AsyncTexImage2DCHROMIUM) == 44,
+               Sizeof_AsyncTexImage2DCHROMIUM_is_not_44);
+COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, header) == 0,
+               OffsetOf_AsyncTexImage2DCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, target) == 4,
+               OffsetOf_AsyncTexImage2DCHROMIUM_target_not_4);
+COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, level) == 8,
+               OffsetOf_AsyncTexImage2DCHROMIUM_level_not_8);
+COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, internalformat) == 12,
+               OffsetOf_AsyncTexImage2DCHROMIUM_internalformat_not_12);
+COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, width) == 16,
+               OffsetOf_AsyncTexImage2DCHROMIUM_width_not_16);
+COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, height) == 20,
+               OffsetOf_AsyncTexImage2DCHROMIUM_height_not_20);
+COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, border) == 24,
+               OffsetOf_AsyncTexImage2DCHROMIUM_border_not_24);
+COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, format) == 28,
+               OffsetOf_AsyncTexImage2DCHROMIUM_format_not_28);
+COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, type) == 32,
+               OffsetOf_AsyncTexImage2DCHROMIUM_type_not_32);
+COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, pixels_shm_id) == 36,
+               OffsetOf_AsyncTexImage2DCHROMIUM_pixels_shm_id_not_36);
+COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, pixels_shm_offset) == 40,
+               OffsetOf_AsyncTexImage2DCHROMIUM_pixels_shm_offset_not_40);
+
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 

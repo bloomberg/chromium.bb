@@ -9315,6 +9315,96 @@ void GLES2DecoderImpl::DoTraceEndCHROMIUM() {
   gpu_trace_stack_.pop();
 }
 
+error::Error GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM(
+    uint32 immediate_data_size, const gles2::AsyncTexImage2DCHROMIUM& c) {
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM");
+
+  // TODO: This is a copy of HandleTexImage2D validation. Merge
+  // as much of it as possible.
+  tex_image_2d_failed_ = true;
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLint internal_format = static_cast<GLint>(c.internalformat);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLint border = static_cast<GLint>(c.border);
+  GLenum format = static_cast<GLenum>(c.format);
+  GLenum type = static_cast<GLenum>(c.type);
+  uint32 pixels_shm_id = static_cast<uint32>(c.pixels_shm_id);
+  uint32 pixels_shm_offset = static_cast<uint32>(c.pixels_shm_offset);
+  uint32 pixels_size;
+  if (!GLES2Util::ComputeImageDataSizes(
+      width, height, format, type, state_.unpack_alignment, &pixels_size, NULL,
+      NULL)) {
+    return error::kOutOfBounds;
+  }
+  const void* pixels = NULL;
+  if (pixels_shm_id != 0 || pixels_shm_offset != 0) {
+    pixels = GetSharedMemoryAs<const void*>(
+        pixels_shm_id, pixels_shm_offset, pixels_size);
+    if (!pixels) {
+      return error::kOutOfBounds;
+    }
+  }
+
+  // TODO(epenner): Do this via an async task.
+  return DoTexImage2D(
+      target, level, internal_format, width, height, border, format, type,
+      pixels, pixels_size);
+}
+
+error::Error GLES2DecoderImpl::HandleAsyncTexSubImage2DCHROMIUM(
+    uint32 immediate_data_size, const gles2::AsyncTexSubImage2DCHROMIUM& c) {
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleAsyncTexSubImage2DCHROMIUM");
+
+  // TODO: This is a copy of HandleTexSubImage2D validation. Merge
+  // as much of it as possible.
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLint xoffset = static_cast<GLint>(c.xoffset);
+  GLint yoffset = static_cast<GLint>(c.yoffset);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLenum format = static_cast<GLenum>(c.format);
+  GLenum type = static_cast<GLenum>(c.type);
+  uint32 data_size;
+  if (!GLES2Util::ComputeImageDataSizes(
+      width, height, format, type, state_.unpack_alignment, &data_size,
+      NULL, NULL)) {
+    return error::kOutOfBounds;
+  }
+  const void* pixels = GetSharedMemoryAs<const void*>(
+      c.data_shm_id, c.data_shm_offset, data_size);
+  if (!validators_->texture_target.IsValid(target)) {
+    SetGLErrorInvalidEnum("glTexSubImage2D", target, "target");
+    return error::kNoError;
+  }
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D", "width < 0");
+    return error::kNoError;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D", "height < 0");
+    return error::kNoError;
+  }
+  if (!validators_->texture_format.IsValid(format)) {
+    SetGLErrorInvalidEnum("glTexSubImage2D", format, "format");
+    return error::kNoError;
+  }
+  if (!validators_->pixel_type.IsValid(type)) {
+    SetGLErrorInvalidEnum("glTexSubImage2D", type, "type");
+    return error::kNoError;
+  }
+  if (pixels == NULL) {
+    return error::kOutOfBounds;
+  }
+
+  // TODO(epenner): Do this via an async task.
+  DoTexSubImage2D(
+      target, level, xoffset, yoffset, width, height, format, type, pixels);
+  return error::kNoError;
+}
+
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file
 // instead of having to edit some template or the code generator.

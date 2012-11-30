@@ -1644,6 +1644,36 @@ WGC3Dboolean WebGraphicsContext3DCommandBufferImpl::unmapBufferCHROMIUM(
   return gl_->UnmapBufferCHROMIUM(target);
 }
 
+void WebGraphicsContext3DCommandBufferImpl::asyncTexImage2DCHROMIUM(
+    WGC3Denum target,
+    WGC3Dint level,
+    WGC3Denum internalformat,
+    WGC3Dsizei width,
+    WGC3Dsizei height,
+    WGC3Dint border,
+    WGC3Denum format,
+    WGC3Denum type,
+    const void* pixels) {
+  return gl_->AsyncTexImage2DCHROMIUM(
+      target, level, internalformat,
+      width, height, border, format, type, pixels);
+}
+
+void WebGraphicsContext3DCommandBufferImpl::asyncTexSubImage2DCHROMIUM(
+    WGC3Denum target,
+    WGC3Dint level,
+    WGC3Dint xoffset,
+    WGC3Dint yoffset,
+    WGC3Dsizei width,
+    WGC3Dsizei height,
+    WGC3Denum format,
+    WGC3Denum type,
+    const void *pixels) {
+  return gl_->AsyncTexSubImage2DCHROMIUM(
+      target, level, xoffset, yoffset,
+      width, height, format, type, pixels);
+}
+
 GrGLInterface* WebGraphicsContext3DCommandBufferImpl::onCreateGrGLInterface() {
   return webkit::gpu::CreateCommandBufferSkiaGLBinding();
 }

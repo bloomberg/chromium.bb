@@ -243,6 +243,8 @@
   OP(ReleaseTexImage2DCHROMIUM)                                /* 486 */ \
   OP(TraceBeginCHROMIUM)                                       /* 487 */ \
   OP(TraceEndCHROMIUM)                                         /* 488 */ \
+  OP(AsyncTexSubImage2DCHROMIUM)                               /* 489 */ \
+  OP(AsyncTexImage2DCHROMIUM)                                  /* 490 */ \
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

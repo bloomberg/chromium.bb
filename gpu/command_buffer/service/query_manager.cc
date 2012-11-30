@@ -162,6 +162,52 @@ void CommandLatencyQuery::Destroy(bool /* have_context */) {
 CommandLatencyQuery::~CommandLatencyQuery() {
 }
 
+class AsyncPixelTransfersCompletedQuery : public QueryManager::Query {
+ public:
+  AsyncPixelTransfersCompletedQuery(
+      QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
+
+  virtual bool Begin() OVERRIDE;
+  virtual bool End(uint32 submit_count) OVERRIDE;
+  virtual bool Process() OVERRIDE;
+  virtual void Destroy(bool have_context) OVERRIDE;
+
+ protected:
+  virtual ~AsyncPixelTransfersCompletedQuery();
+};
+
+AsyncPixelTransfersCompletedQuery::AsyncPixelTransfersCompletedQuery(
+    QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset)
+    : Query(manager, target, shm_id, shm_offset) {
+}
+
+bool AsyncPixelTransfersCompletedQuery::Begin() {
+  return true;
+}
+
+bool AsyncPixelTransfersCompletedQuery::End(uint32 submit_count) {
+  // TODO(epenner): Mark completion via an async task.
+  // TODO(epenner): This will be a boolean to start, indicating
+  // completion of all tasks in the query. We could change this
+  // to return a count of tasks completed instead.
+  MarkAsPending(submit_count);
+  return MarkAsCompleted(1);
+}
+
+bool AsyncPixelTransfersCompletedQuery::Process() {
+  NOTREACHED();
+  return true;
+}
+
+void AsyncPixelTransfersCompletedQuery::Destroy(bool /* have_context */) {
+  if (!IsDeleted()) {
+    MarkAsDeleted();
+  }
+}
+
+AsyncPixelTransfersCompletedQuery::~AsyncPixelTransfersCompletedQuery() {
+}
+
 class GetErrorQuery : public QueryManager::Query {
  public:
   GetErrorQuery(
@@ -247,6 +293,10 @@ QueryManager::Query* QueryManager::CreateQuery(
       break;
     case GL_LATENCY_QUERY_CHROMIUM:
       query = new CommandLatencyQuery(this, target, shm_id, shm_offset);
+      break;
+    case GL_ASYNC_PIXEL_TRANSFERS_COMPLETED_CHROMIUM:
+      query = new AsyncPixelTransfersCompletedQuery(
+          this, target, shm_id, shm_offset);
       break;
     case GL_GET_ERROR_QUERY_CHROMIUM:
       query = new GetErrorQuery(this, target, shm_id, shm_offset);

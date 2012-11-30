@@ -613,5 +613,15 @@ void GLES2InterfaceStub::TraceBeginCHROMIUM(const char* /* name */) {
 }
 void GLES2InterfaceStub::TraceEndCHROMIUM() {
 }
+void GLES2InterfaceStub::AsyncTexSubImage2DCHROMIUM(
+    GLenum /* target */, GLint /* level */, GLint /* xoffset */,
+    GLint /* yoffset */, GLsizei /* width */, GLsizei /* height */,
+    GLenum /* format */, GLenum /* type */, const void* /* data */) {
+}
+void GLES2InterfaceStub::AsyncTexImage2DCHROMIUM(
+    GLenum /* target */, GLint /* level */, GLint /* internalformat */,
+    GLsizei /* width */, GLsizei /* height */, GLint /* border */,
+    GLenum /* format */, GLenum /* type */, const void* /* pixels */) {
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_
 

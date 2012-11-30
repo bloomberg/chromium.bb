@@ -324,5 +324,12 @@ virtual void BindTexImage2DCHROMIUM(GLenum target, GLint imageId) OVERRIDE;
 virtual void ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) OVERRIDE;
 virtual void TraceBeginCHROMIUM(const char* name) OVERRIDE;
 virtual void TraceEndCHROMIUM() OVERRIDE;
+virtual void AsyncTexSubImage2DCHROMIUM(
+    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
+    GLsizei height, GLenum format, GLenum type, const void* data) OVERRIDE;
+virtual void AsyncTexImage2DCHROMIUM(
+    GLenum target, GLint level, GLint internalformat, GLsizei width,
+    GLsizei height, GLint border, GLenum format, GLenum type,
+    const void* pixels) OVERRIDE;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_AUTOGEN_H_
 

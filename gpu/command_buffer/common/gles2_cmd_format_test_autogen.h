@@ -4256,5 +4256,67 @@ TEST_F(GLES2FormatTest, TraceEndCHROMIUM) {
       next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, AsyncTexSubImage2DCHROMIUM) {
+  AsyncTexSubImage2DCHROMIUM& cmd = *GetBufferAs<AsyncTexSubImage2DCHROMIUM>();
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLenum>(11),
+      static_cast<GLint>(12),
+      static_cast<GLint>(13),
+      static_cast<GLint>(14),
+      static_cast<GLsizei>(15),
+      static_cast<GLsizei>(16),
+      static_cast<GLenum>(17),
+      static_cast<GLenum>(18),
+      static_cast<uint32>(19),
+      static_cast<uint32>(20));
+  EXPECT_EQ(static_cast<uint32>(AsyncTexSubImage2DCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.level);
+  EXPECT_EQ(static_cast<GLint>(13), cmd.xoffset);
+  EXPECT_EQ(static_cast<GLint>(14), cmd.yoffset);
+  EXPECT_EQ(static_cast<GLsizei>(15), cmd.width);
+  EXPECT_EQ(static_cast<GLsizei>(16), cmd.height);
+  EXPECT_EQ(static_cast<GLenum>(17), cmd.format);
+  EXPECT_EQ(static_cast<GLenum>(18), cmd.type);
+  EXPECT_EQ(static_cast<uint32>(19), cmd.data_shm_id);
+  EXPECT_EQ(static_cast<uint32>(20), cmd.data_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, AsyncTexImage2DCHROMIUM) {
+  AsyncTexImage2DCHROMIUM& cmd = *GetBufferAs<AsyncTexImage2DCHROMIUM>();
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLenum>(11),
+      static_cast<GLint>(12),
+      static_cast<GLint>(13),
+      static_cast<GLsizei>(14),
+      static_cast<GLsizei>(15),
+      static_cast<GLint>(16),
+      static_cast<GLenum>(17),
+      static_cast<GLenum>(18),
+      static_cast<uint32>(19),
+      static_cast<uint32>(20));
+  EXPECT_EQ(static_cast<uint32>(AsyncTexImage2DCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.level);
+  EXPECT_EQ(static_cast<GLint>(13), cmd.internalformat);
+  EXPECT_EQ(static_cast<GLsizei>(14), cmd.width);
+  EXPECT_EQ(static_cast<GLsizei>(15), cmd.height);
+  EXPECT_EQ(static_cast<GLint>(16), cmd.border);
+  EXPECT_EQ(static_cast<GLenum>(17), cmd.format);
+  EXPECT_EQ(static_cast<GLenum>(18), cmd.type);
+  EXPECT_EQ(static_cast<uint32>(19), cmd.pixels_shm_id);
+  EXPECT_EQ(static_cast<uint32>(20), cmd.pixels_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd));
+}
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_TEST_AUTOGEN_H_
 
