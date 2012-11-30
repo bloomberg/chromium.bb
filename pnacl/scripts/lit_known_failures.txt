@@ -1,26 +1,4 @@
 # This file contains known failures in the LLVM regression tests for PNaCl.
-CodeGen/Mips/brdelayslot.ll
-CodeGen/Mips/fastcc.ll
-CodeGen/Mips/null.ll
-CodeGen/X86/2010-05-26-DotDebugLoc.ll
-CodeGen/X86/MachineSink-DbgValue.ll
-CodeGen/X86/dbg-prolog-end.ll
-CodeGen/X86/dbg-value-range.ll
-DebugInfo/X86/ending-run.ll
-DebugInfo/X86/prologue-stack.ll
-DebugInfo/X86/stringpool.ll
-MC/Disassembler/X86/enhanced.txt
-CodeGen/ARM/2010-10-19-mc-elf-objheader.ll
-MC/MachO/ARM/nop-armv4-padding.s
-CodeGen/ARM/debug-info-branch-folding.ll
-CodeGen/ARM/debug-info-sreg2.ll
-CodeGen/ARM/ifcvt10.ll
-CodeGen/ARM/struct_byval.ll
-CodeGen/ARM/2012-10-04-AAPCS-byval-align8.ll
-MC/ARM/xscale-attributes.ll
-MC/ARM/elf-thumbfunc-reloc.ll
-CodeGen/ARM/2012-10-04-FixedFrame-vs-byval.ll
-CodeGen/ARM/2012-10-18-PR14099-ByvalFrameAddress.ll
 MC/ARM/arm_instructions.s
 
 # Failures only on mac
