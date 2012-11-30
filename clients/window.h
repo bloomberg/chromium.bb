@@ -193,6 +193,9 @@ typedef void (*window_drop_handler_t)(struct window *window,
 typedef void (*window_close_handler_t)(struct window *window, void *data);
 typedef void (*window_fullscreen_handler_t)(struct window *window, void *data);
 
+typedef void (*window_output_handler_t)(struct window *window, struct output *output,
+					int enter, void *data);
+
 typedef void (*widget_resize_handler_t)(struct widget *widget,
 					int32_t width, int32_t height,
 					void *data);
@@ -332,6 +335,9 @@ window_set_close_handler(struct window *window,
 void
 window_set_fullscreen_handler(struct window *window,
 			      window_fullscreen_handler_t handler);
+void
+window_set_output_handler(struct window *window,
+			  window_output_handler_t handler);
 
 void
 window_set_title(struct window *window, const char *title);
@@ -464,6 +470,9 @@ output_get_allocation(struct output *output, struct rectangle *allocation);
 
 struct wl_output *
 output_get_wl_output(struct output *output);
+
+enum wl_output_transform
+output_get_transform(struct output *output);
 
 void
 keysym_modifiers_add(struct wl_array *modifiers_map,

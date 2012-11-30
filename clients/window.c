@@ -221,6 +221,7 @@ struct window {
 	window_drop_handler_t drop_handler;
 	window_close_handler_t close_handler;
 	window_fullscreen_handler_t fullscreen_handler;
+	window_output_handler_t output_handler;
 
 	struct wl_callback *frame_cb;
 
@@ -3387,6 +3388,13 @@ window_set_fullscreen_handler(struct window *window,
 }
 
 void
+window_set_output_handler(struct window *window,
+			  window_output_handler_t handler)
+{
+	window->output_handler = handler;
+}
+
+void
 window_set_title(struct window *window, const char *title)
 {
 	free(window->title);
@@ -3446,6 +3454,10 @@ surface_enter(void *data,
 	window_output->output = output_found;
 
 	wl_list_insert (&window->window_output_list, &window_output->link);
+
+	if (window->output_handler)
+		window->output_handler(window, output_found, 1,
+				       window->user_data);
 }
 
 static void
@@ -3465,6 +3477,11 @@ surface_leave(void *data,
 
 	if (window_output_found) {
 		wl_list_remove(&window_output_found->link);
+
+		if (window->output_handler)
+			window->output_handler(window, window_output->output,
+					       0, window->user_data);
+
 		free(window_output_found);
 	}
 }
@@ -3890,6 +3907,12 @@ struct wl_output *
 output_get_wl_output(struct output *output)
 {
 	return output->output;
+}
+
+enum wl_output_transform
+output_get_transform(struct output *output)
+{
+	return output->transform;
 }
 
 static void
