@@ -32,11 +32,21 @@ cr.define('wallpapers', function() {
     decorate: function() {
       GridItem.prototype.decorate.call(this);
       var imageEl = cr.doc.createElement('img');
-      // Thumbnail
-      imageEl.src = this.dataItem.baseURL + ThumbnailSuffix;
-      // Remove any garbage added by GridItem and ListItem decorators.
-      this.textContent = '';
-      this.appendChild(imageEl);
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', this.dataItem.baseURL + ThumbnailSuffix, true);
+      xhr.responseType = 'blob';
+      xhr.send(null);
+      var self = this;
+      xhr.addEventListener('load', function(e) {
+        if (xhr.status === 200) {
+          self.textContent = '';
+          imageEl.src = window.URL.createObjectURL(xhr.response);
+          imageEl.addEventListener('load', function(e) {
+            window.URL.revokeObjectURL(this.src);
+          });
+          self.appendChild(imageEl);
+        }
+      });
     },
   };
 

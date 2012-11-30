@@ -81,7 +81,6 @@ const char* const kPaths[] = {
   chrome::kChromeUIProxySettingsHost,
   chrome::kChromeUISystemInfoHost,
   chrome::kChromeUITaskManagerHost,
-  chrome::kChromeUIWallpaperHost,
 #endif
 #if !defined(DISABLE_NACL)
   chrome::kChromeUINaClHost,

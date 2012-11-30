@@ -2,29 +2,20 @@
   // chrome-extension://obklkkbkpaoaejdabbfldmcfplpdgolj/
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC6czTauf4/ISarT2JOcjcanIq+kcL/2UOF56QqXNT6PFgEwBG1i9Tfw/dTE59qWdGuxWt4yQlChewOFaRP3nb9AygPFXO31pNXaCY9xyDsjE5RhVvVB0GJa3VHFITIROpBSJHXNOqZBm706A8SFCTauasdWPFSE6Y7sA13t1P0MwIDAQAB",
   "name": "Wallpaper Picker",
-  "version": "0.1",
+  // Updates version to 0.2 for v2 version wallpaper picker. Otherwise the event
+  // listener can not register appropriately. See crbug/157717.
+  "version": "0.2",
   "manifest_version": 2,
   "description": "An experimental wallpaper picker UI",
-  "chrome_url_overrides": {
-    "wallpapers": "main.html"
-  },
   "permissions": [
     "wallpaperPrivate",
-    "tabs",
-    "webRequest",
-    "http://lh5.ggpht.com/",
     "https://commondatastorage.googleapis.com/",
     "https://storage.googleapis.com/"
   ],
   "app": {
-    "launch": {
-      "container": "panel",
-      "width": 550,
-      "height": 440,
-      "local_path": "main.html"
+    "background": {
+      "scripts": ["js/event_page.js"]
     }
   },
-  "content_security_policy":
-    "default-src:none; object-src 'none'; script-src 'self'",
   "display_in_launcher": false
 }

@@ -2698,8 +2698,7 @@ bool Extension::LoadChromeURLOverrides(string16* error) {
                         page != chrome::kChromeUIHistoryHost);
 #if defined(OS_CHROMEOS)
     is_override = (is_override &&
-                   page != chrome::kChromeUIActivationMessageHost &&
-                   page != chrome::kChromeUIWallpaperHost);
+                   page != chrome::kChromeUIActivationMessageHost);
 #endif
 #if defined(FILE_MANAGER_EXTENSION)
     is_override = (is_override &&

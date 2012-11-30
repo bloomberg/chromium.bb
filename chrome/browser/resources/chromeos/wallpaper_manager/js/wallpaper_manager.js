@@ -20,8 +20,8 @@ function WallpaperManager(dialogDom) {
   this.butterBar_ = new ButterBar(this.dialogDom_);
   this.customWallpaperData_ = null;
   this.currentWallpaper_ = null;
+  this.wallpaperRequest_ = null;
   this.fetchManifest_();
-  this.initDom_();
 }
 
 // Anonymous 'namespace'.
@@ -64,54 +64,85 @@ function WallpaperManager(dialogDom) {
   };
 
   /**
-   * Parses a string as manifest(JSON). Sets manifest to an empty object if a
-   * parsing exception is catched.
-   * @param {string} response The string to parse as JSON.
-   */
-  WallpaperManager.prototype.parseManifest_ = function(response) {
-    try {
-      this.manifest_ = JSON.parse(response);
-    } catch (e) {
-      this.butterBar_.showError_('Failed to parse manifest.',
-                                 {help_url: LEARN_MORE_URL});
-      this.manifest_ = {};
-    }
-  };
-
-  /**
    * Requests wallpaper manifest file from server.
    */
   WallpaperManager.prototype.fetchManifest_ = function() {
-    var xhr = new XMLHttpRequest();
     var locale = navigator.language;
     var urls = [
         ManifestBaseURL + locale + '.json',
         // Fallback url. Use 'en' locale by default.
         ManifestBaseURL + 'en.json'];
 
-    for (var i = 0; i < urls.length; i++) {
-      xhr.open('GET', urls[i], false);
-      try {
-        xhr.send(null);
-        // TODO(bshe): We should save the downloaded manifest to local disk.
-        // Other components may want to use it (i.e. screen saver).
-        if (xhr.status === 200) {
-          this.parseManifest_(xhr.responseText);
-          return;
+    var asyncFetchManifestFromUrls = function(urls, func, successCallback,
+                                              failureCallback) {
+      var index = 0;
+      var loop = {
+        next: function() {
+          if (index < urls.length) {
+            func(loop, urls[index]);
+            index++;
+          } else {
+            failureCallback();
+          }
+        },
+
+        success: function(response) {
+          successCallback(response);
+        },
+
+        failure: function() {
+          failureCallback();
         }
+      };
+      loop.next();
+    };
+
+    var fetchManifestAsync = function(loop, url) {
+      var xhr = new XMLHttpRequest();
+      try {
+        xhr.addEventListener('loadend', function(e) {
+          if (this.status == 200 && this.responseText != null) {
+            try {
+              var manifest = JSON.parse(this.responseText);
+              loop.success(manifest);
+            } catch (e) {
+              loop.failure();
+            }
+          } else {
+            loop.next();
+          }
+        });
+        xhr.open('GET', url, true);
+        xhr.send(null);
       } catch (e) {
-        this.manifest_ = {};
-        this.butterBar_.showError_(str('connectionFailed'),
-                                   {help_url: LEARN_MORE_URL});
-        return;
+        loop.failure();
       }
-    }
+    };
+
+    asyncFetchManifestFromUrls(urls, fetchManifestAsync,
+                               this.onLoadManifestSuccess_.bind(this),
+                               this.onLoadManifestFailed_.bind(this));
+  };
+
+  /**
+   * Sets manifest loaded from server. Called after manifest is successfully
+   * loaded.
+   * @param {object} manifest The parsed manifest file.
+   */
+  WallpaperManager.prototype.onLoadManifestSuccess_ = function(manifest) {
+    this.manifest_ = manifest;
+    this.initDom_();
+  };
+
+  // Sets manifest to an empty object and shows connection error. Called after
+  // manifest failed to load.
+  WallpaperManager.prototype.onLoadManifestFailed_ = function() {
+    // TODO(bshe): Fall back to saved manifest if there is a problem fetching
+    // manifest from server.
     this.manifest_ = {};
     this.butterBar_.showError_(str('connectionFailed'),
                                {help_url: LEARN_MORE_URL});
-
-    // TODO(bshe): Fall back to saved manifest if there is a problem fetching
-    // manifest from server.
+    this.initDom_();
   };
 
   /**
