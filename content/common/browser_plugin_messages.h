@@ -63,6 +63,13 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_CreateGuest_Params)
   IPC_STRUCT_MEMBER(BrowserPluginHostMsg_AutoSize_Params, auto_size_params)
   IPC_STRUCT_MEMBER(BrowserPluginHostMsg_ResizeGuest_Params,
                     resize_guest_params)
+  // Hardware Accelerated Surface Params
+  IPC_STRUCT_MEMBER(int, gpu_process_id)
+  IPC_STRUCT_MEMBER(uint32, client_id)
+  IPC_STRUCT_MEMBER(uint32, context_id)
+  IPC_STRUCT_MEMBER(uint32, texture_id_0)
+  IPC_STRUCT_MEMBER(uint32, texture_id_1)
+  IPC_STRUCT_MEMBER(uint32, sync_point)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(BrowserPluginMsg_LoadCommit_Params)
@@ -192,6 +199,14 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_NavigateGuest,
                     int /* instance_id*/,
                     std::string /* src */)
 
+// Acknowledge that we presented a HW buffer and provide a sync point
+// to specify the location in the command stream when the compositor
+// is no longer using it.
+IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_BuffersSwappedACK,
+                    int /* route_id */,
+                    int /* gpu_host_id */,
+                    uint32 /* sync_point */)
+
 // When a BrowserPlugin has been removed from the embedder's DOM, it informs
 // the browser process to cleanup the guest.
 IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_PluginDestroyed,
@@ -310,3 +325,25 @@ IPC_MESSAGE_ROUTED3(BrowserPluginMsg_UpdateRect,
 IPC_MESSAGE_ROUTED2(BrowserPluginMsg_PluginAtPositionRequest,
                     int /* request_id */,
                     gfx::Point /* position */)
+
+// Signal to the embedder that accelerated compositing was enabled
+// in the guest renderer.
+IPC_MESSAGE_ROUTED1(BrowserPluginMsg_AcceleratedCompositingEnabled,
+                    int /* instance_id */)
+
+// Guest renders into an FBO with textures provided by the embedder.
+// When HW accelerated buffers are swapped in the guest, the message
+// is forwarded to the embedder to notify it of a new texture
+// available for compositing.
+IPC_MESSAGE_ROUTED4(BrowserPluginMsg_BuffersSwapped,
+                    int /* instance_id */,
+                    uint64 /* surface_handle */,
+                    int /* route_id */,
+                    int /* gpu_host_id */)
+
+// HW accelerated surface was created in the guest, forward this
+// information to the embedder to update rendering parameters
+// in the compositor.
+IPC_MESSAGE_ROUTED2(BrowserPluginMsg_AcceleratedSurfaceNew,
+                    int /* instance_id */,
+                    gfx::Size /* size */)

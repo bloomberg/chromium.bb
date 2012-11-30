@@ -234,6 +234,13 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 #endif
                                const gfx::Size& damage_view_size,
                                float scale_factor);
+  // Overridden in tests.
+  virtual void SetCompositingBufferData(int gpu_process_id,
+                                        uint32 client_id,
+                                        uint32 context_id,
+                                        uint32 texture_id_0,
+                                        uint32 texture_id_1,
+                                        uint32 sync_point);
 
   gfx::Point GetScreenCoordinates(const gfx::Point& relative_position) const;
 
@@ -296,6 +303,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   bool auto_size_enabled_;
   gfx::Size max_auto_size_;
   gfx::Size min_auto_size_;
+
+  // Hardware Accelerated Surface Params
+  gfx::GLSurfaceHandle surface_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginGuest);
 };

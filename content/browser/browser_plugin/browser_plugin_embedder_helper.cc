@@ -56,6 +56,8 @@ bool BrowserPluginEmbedderHelper::OnMessageReceived(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetAutoSize, OnSetAutoSize)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_PluginAtPositionResponse,
                         OnPluginAtPositionResponse)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_BuffersSwappedACK,
+                        OnSwapBuffersACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -127,6 +129,15 @@ void BrowserPluginEmbedderHelper::OnUpdateRectACK(
                            message_id,
                            auto_size_params,
                            resize_guest_params);
+}
+
+void BrowserPluginEmbedderHelper::OnSwapBuffersACK(int route_id,
+                                                   int gpu_host_id,
+                                                   uint32 sync_point) {
+  RenderWidgetHostImpl::AcknowledgeBufferPresent(route_id,
+                                                 gpu_host_id,
+                                                 true,
+                                                 sync_point);
 }
 
 void BrowserPluginEmbedderHelper::OnSetFocus(int instance_id, bool focused) {

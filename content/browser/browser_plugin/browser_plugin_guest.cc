@@ -335,6 +335,30 @@ int BrowserPluginGuest::embedder_routing_id() const {
   return embedder_web_contents_->GetRoutingID();
 }
 
+void BrowserPluginGuest::SetCompositingBufferData(int gpu_process_id,
+                                                  uint32 client_id,
+                                                  uint32 context_id,
+                                                  uint32 texture_id_0,
+                                                  uint32 texture_id_1,
+                                                  uint32 sync_point) {
+  // This is the signal for having no context
+  if (texture_id_0 == 0) {
+    DCHECK(texture_id_1 == 0);
+    return;
+  }
+
+  DCHECK(texture_id_1 != 0);
+  DCHECK(texture_id_0 != texture_id_1);
+
+  surface_handle_ = gfx::GLSurfaceHandle(gfx::kNullPluginWindow, true);
+  surface_handle_.parent_gpu_process_id = gpu_process_id;
+  surface_handle_.parent_client_id = client_id;
+  surface_handle_.parent_context_id = context_id;
+  surface_handle_.parent_texture_id[0] = texture_id_0;
+  surface_handle_.parent_texture_id[1] = texture_id_1;
+  surface_handle_.sync_point = sync_point;
+}
+
 bool BrowserPluginGuest::InAutoSizeBounds(const gfx::Size& size) const {
   return size.width() <= max_auto_size_.width() &&
       size.height() <= max_auto_size_.height();
