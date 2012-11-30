@@ -779,6 +779,11 @@ void AutofillManager::OnRequestAutocomplete(const FormData& form) {
 }
 
 void AutofillManager::ReturnAutocompleteData(const FormStructure* result) {
+  // web_contents() will be NULL when the interactive autocomplete is closed due
+  // to a tab or browser window closing.
+  if (!web_contents())
+    return;
+
   RenderViewHost* host = web_contents()->GetRenderViewHost();
   if (!host)
     return;
