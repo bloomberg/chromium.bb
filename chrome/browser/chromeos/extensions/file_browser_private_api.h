@@ -76,7 +76,6 @@ class FileWatchBrowserFunctionBase : public AsyncExtensionFunction {
  private:
   void RespondOnUIThread(bool success);
   void RunFileWatchOperationOnFileThread(
-      scoped_refptr<fileapi::FileSystemContext> file_system_context,
       scoped_refptr<FileBrowserEventRouter> event_router,
       const GURL& file_url,
       const std::string& extension_id);
@@ -274,12 +273,6 @@ class ViewFilesFunction : public FileBrowserFunction {
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
-
- private:
-  // A callback method to handle the result of
-  // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
-  void GetLocalPathsResponseOnUIThread(const std::string& internal_task_id,
-                                       const SelectedFileInfoList& files);
 };
 
 // Select multiple files.  Closes the dialog window.
@@ -384,11 +377,6 @@ class FormatDeviceFunction : public FileBrowserFunction {
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
-
- private:
-  // A callback method to handle the result of
-  // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
-  void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
 };
 
 // Sets last modified date in seconds of local file
@@ -420,10 +408,6 @@ class GetSizeStatsFunction : public FileBrowserFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // A callback method to handle the result of
-  // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
-  void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
-
   void GetDriveAvailableSpaceCallback(drive::DriveFileError error,
                                       int64 bytes_total,
                                       int64 bytes_used);
@@ -445,11 +429,6 @@ class GetVolumeMetadataFunction : public FileBrowserFunction {
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
-
- private:
-  // A callback method to handle the result of
-  // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
-  void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
 };
 
 // Toggles fullscreen mode for the browser.
@@ -574,7 +553,7 @@ class PinDriveFileFunction : public GetDriveFilePropertiesFunction {
 };
 
 // Get file locations for the given list of file URLs. Returns a list of
-// location idenfitiers, like ['drive', 'local'], where 'drive' means the
+// location identifiers, like ['drive', 'local'], where 'drive' means the
 // file is on gdata, and 'local' means the file is on the local drive.
 class GetFileLocationsFunction : public FileBrowserFunction {
  public:
@@ -587,11 +566,6 @@ class GetFileLocationsFunction : public FileBrowserFunction {
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
-
- private:
-  // A callback method to handle the result of
-  // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
-  void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
 };
 
 // Get gdata files for the given list of file URLs. Initiate downloading of
@@ -663,8 +637,6 @@ class CancelFileTransfersFunction : public FileBrowserFunction {
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
-
-  void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
 };
 
 // Implements the chrome.fileBrowserPrivate.transferFile method.
@@ -681,10 +653,6 @@ class TransferFileFunction : public FileBrowserFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // Helper callback for handling response from
-  // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread()
-  void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
-
   // Helper callback for handling response from DriveFileSystem::TransferFile().
   void OnTransferCompleted(drive::DriveFileError error);
 };
@@ -805,11 +773,6 @@ class ZipSelectionFunction : public FileBrowserFunction,
   virtual void OnZipDone(bool success) OVERRIDE;
 
  private:
-  // A callback method to handle the result of
-  // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
-  void GetLocalPathsResponseOnUIThread(const std::string dest_name,
-                                       const SelectedFileInfoList& files);
-
   scoped_refptr<extensions::ZipFileCreator> zip_file_creator_;
 };
 
