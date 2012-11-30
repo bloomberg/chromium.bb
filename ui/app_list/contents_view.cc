@@ -220,18 +220,17 @@ ui::EventResult ContentsView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 ui::EventResult ContentsView::OnScrollEvent(ui::ScrollEvent* event) {
-  if (show_state_ != SHOW_APPS)
+  if (show_state_ != SHOW_APPS ||
+      event->type() == ui::ET_SCROLL_FLING_CANCEL ||
+      abs(event->x_offset()) < kMinScrollToSwitchPage) {
     return ui::ER_UNHANDLED;
-
-  if (abs(event->x_offset()) > kMinScrollToSwitchPage) {
-    if (!pagination_model_->has_transition()) {
-      pagination_model_->SelectPageRelative(event->x_offset() > 0 ? -1 : 1,
-                                            true);
-    }
-    return ui::ER_HANDLED;
   }
 
-  return ui::ER_UNHANDLED;
+  if (!pagination_model_->has_transition()) {
+    pagination_model_->SelectPageRelative(event->x_offset() > 0 ? -1 : 1,
+                                          true);
+  }
+  return ui::ER_HANDLED;
 }
 
 }  // namespace app_list

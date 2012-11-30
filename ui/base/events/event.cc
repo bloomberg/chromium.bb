@@ -510,9 +510,13 @@ ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
     GetScrollOffsets(native_event, &x_offset_, &y_offset_, &finger_count_);
     double start, end;
     GetGestureTimes(native_event, &start, &end);
-  } else if (type() == ET_SCROLL_FLING_START) {
+  } else if (type() == ET_SCROLL_FLING_START ||
+             type() == ET_SCROLL_FLING_CANCEL) {
     bool is_cancel;
     GetFlingData(native_event, &x_offset_, &y_offset_, &is_cancel);
+  } else {
+    NOTREACHED() << "Unexpected event type " << type()
+        << " when constructing a ScrollEvent.";
   }
 }
 
