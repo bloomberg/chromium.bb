@@ -4,6 +4,10 @@
 
 #include "chrome/browser/media_gallery/mtp_device_delegate_impl_linux.h"
 
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -352,14 +356,17 @@ class ReadFileWorker
  public:
   // Constructed on |media_task_runner_| thread.
   ReadFileWorker(const std::string& handle,
-                 const std::string& path,
+                 const std::string& src_path,
                  uint32 total_size,
+                 const FilePath& dest_path,
                  SequencedTaskRunner* task_runner,
                  WaitableEvent* task_completed_event,
                  WaitableEvent* shutdown_event)
       : device_handle_(handle),
-        path_(path),
+        src_path_(src_path),
         total_bytes_(total_size),
+        dest_path_(dest_path),
+        bytes_read_(0),
         error_occurred_(false),
         media_task_runner_(task_runner),
         on_task_completed_event_(task_completed_event),
@@ -377,18 +384,34 @@ class ReadFileWorker
       return;
     }
 
-    while (!error_occurred_ && (data_.size() < total_bytes_) &&
-           !cancel_tasks_flag_.IsSet()) {
+    int dest_fd = open(dest_path_.value().c_str(), O_WRONLY);
+    if (dest_fd < 0)
+      return;
+    file_util::ScopedFD dest_fd_scoper(&dest_fd);
+
+    while (bytes_read_ < total_bytes_) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                               Bind(&ReadFileWorker::DoWorkOnUIThread, this));
       on_task_completed_event_->Wait();
-      if (on_shutdown_event_->IsSignaled())
+      if (error_occurred_)
+        break;
+      if (on_shutdown_event_->IsSignaled()) {
         cancel_tasks_flag_.Set();
+        break;
+      }
+
+      int bytes_written =
+          file_util::WriteFileDescriptor(dest_fd, data_.data(), data_.size());
+      if (static_cast<int>(data_.size()) != bytes_written)
+        break;
+
+      bytes_read_ += data_.size();
     }
   }
 
-  // Returns the media file contents received from mtpd.
-  const std::string& data() const { return data_; }
+  bool Succeeded() const {
+    return !error_occurred_ && (bytes_read_ == total_bytes_);
+  }
 
   // Returns the |media_task_runner_| associated with this worker object.
   // This function is exposed for WorkerDeleter struct to access the
@@ -415,7 +438,7 @@ class ReadFileWorker
       return;
 
     GetMediaTransferProtocolManager()->ReadFileChunkByPath(
-        device_handle_, path_, data_.size(), BytesToRead(),
+        device_handle_, src_path_, bytes_read_, BytesToRead(),
         Bind(&ReadFileWorker::OnDidWorkOnUIThread, this));
   }
 
@@ -427,41 +450,46 @@ class ReadFileWorker
     if (cancel_tasks_flag_.IsSet())
       return;
 
-    error_occurred_ = error;
-    if (!error) {
-      if ((BytesToRead() == data.size())) {
-        // TODO(kmadhusu): Data could be really huge. Consider passing data by
-        // pointer/ref rather than by value here to avoid an extra data copy.
-        data_.append(data);
-      } else {
-        NOTREACHED();
-        error_occurred_ = true;
-      }
-    }
+    error_occurred_ = error || (data.size() != BytesToRead());
+    if (!error_occurred_)
+      data_ = data;
     on_task_completed_event_->Signal();
   }
 
   uint32 BytesToRead() const {
     // Read data in 1 MB chunks.
     static const uint32 kReadChunkSize = 1024 * 1024;
-    return std::min(kReadChunkSize,
-                    total_bytes_ - static_cast<uint32>(data_.size()));
+    return std::min(kReadChunkSize, total_bytes_ - bytes_read_);
   }
 
   // The device unique identifier to query the device.
   const std::string device_handle_;
 
   // The media device file path.
-  const std::string path_;
-
-  // The data from mtpd.
-  std::string data_;
+  const std::string src_path_;
 
   // Number of bytes to read.
   const uint32 total_bytes_;
 
+  // Where to write the data read from the device.
+  const FilePath dest_path_;
+
+  /*****************************************************************************
+   * The variables below are accessed on both |media_task_runner_| and the UI
+   * thread. However, there's no concurrent access because the UI thread is in a
+   * blocked state when access occurs on |media_task_runner_|.
+   */
+
+  // Number of bytes read from the device.
+  uint32 bytes_read_;
+
+  // Temporary data storage.
+  std::string data_;
+
   // Whether an error occurred during file transfer.
   bool error_occurred_;
+
+  /****************************************************************************/
 
   // A reference to |media_task_runner_| to destruct this object on the correct
   // thread.
@@ -860,22 +888,17 @@ PlatformFileError MTPDeviceDelegateImplLinux::CreateSnapshotFile(
   scoped_refptr<ReadFileWorker> worker(new ReadFileWorker(
       device_handle_,
       GetDeviceRelativePath(device_path_, device_file_path.value()),
-      file_info->size,
-      media_task_runner_, &on_task_completed_event_, &on_shutdown_event_));
+      file_info->size, local_path, media_task_runner_,
+      &on_task_completed_event_, &on_shutdown_event_));
   worker->Run();
 
-  const std::string& file_data = worker->data();
-  int data_size = static_cast<int>(file_data.length());
-  if (file_data.empty() ||
-      file_util::WriteFile(local_path, file_data.c_str(),
-                           data_size) != data_size) {
+  if (!worker->Succeeded())
     return base::PLATFORM_FILE_ERROR_FAILED;
-  }
 
   // Modify the last modified time to null. This prevents the time stamp
   // verfication in LocalFileStreamReader.
   file_info->last_modified = base::Time();
-  return error;
+  return base::PLATFORM_FILE_OK;
 }
 
 SequencedTaskRunner* MTPDeviceDelegateImplLinux::GetMediaTaskRunner() {
