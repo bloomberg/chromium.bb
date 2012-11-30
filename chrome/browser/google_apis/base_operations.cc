@@ -46,6 +46,26 @@ scoped_ptr<base::Value> ParseJsonOnBlockingPool(const std::string& data) {
   return value.Pass();
 }
 
+// Returns response headers as a string. Returns a warning message if
+// |url_fetcher| does not contain a valid response. Used only for debugging.
+std::string GetResponseHeadersAsString(
+    const URLFetcher* url_fetcher) {
+  // net::HttpResponseHeaders::raw_headers(), as the name implies, stores
+  // all headers in their raw format, i.e each header is null-terminated.
+  // So logging raw_headers() only shows the first header, which is probably
+  // the status line.  GetNormalizedHeaders, on the other hand, will show all
+  // the headers, one per line, which is probably what we want.
+  std::string headers;
+  // Check that response code indicates response headers are valid (i.e. not
+  // malformed) before we retrieve the headers.
+  if (url_fetcher->GetResponseCode() == URLFetcher::RESPONSE_CODE_INVALID) {
+    headers.assign("Response headers are malformed!!");
+  } else {
+    url_fetcher->GetResponseHeaders()->GetNormalizedHeaders(&headers);
+  }
+  return headers;
+}
+
 }  // namespace
 
 namespace google_apis {
@@ -54,8 +74,8 @@ namespace google_apis {
 
 UrlFetchOperationBase::UrlFetchOperationBase(OperationRegistry* registry)
     : OperationRegistry::Operation(registry),
-      re_authenticate_count_(0),
       save_temp_file_(false),
+      re_authenticate_count_(0),
       started_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -65,8 +85,8 @@ UrlFetchOperationBase::UrlFetchOperationBase(OperationRegistry* registry,
                                              OperationType type,
                                              const FilePath& path)
     : OperationRegistry::Operation(registry, type, path),
-      re_authenticate_count_(0),
       save_temp_file_(false),
+      re_authenticate_count_(0),
       started_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -151,8 +171,8 @@ void UrlFetchOperationBase::DoCancel() {
   RunCallbackOnPrematureFailure(GDATA_CANCELLED);
 }
 
-GDataErrorCode UrlFetchOperationBase::GetErrorCode(
-    const URLFetcher* source) const {
+// static
+GDataErrorCode UrlFetchOperationBase::GetErrorCode(const URLFetcher* source) {
   GDataErrorCode code = static_cast<GDataErrorCode>(source->GetResponseCode());
   if (code == HTTP_SUCCESS && !source->GetStatus().is_success()) {
     // If the HTTP response code is SUCCESS yet the URL request failed, it is
@@ -212,24 +232,6 @@ void UrlFetchOperationBase::OnAuthFailed(GDataErrorCode code) {
   // gdata operation will be deleted from the OperationRegistry and become
   // invalid.
   NotifyFinish(OPERATION_FAILED);
-}
-
-std::string UrlFetchOperationBase::GetResponseHeadersAsString(
-    const URLFetcher* url_fetcher) {
-  // net::HttpResponseHeaders::raw_headers(), as the name implies, stores
-  // all headers in their raw format, i.e each header is null-terminated.
-  // So logging raw_headers() only shows the first header, which is probably
-  // the status line.  GetNormalizedHeaders, on the other hand, will show all
-  // the headers, one per line, which is probably what we want.
-  std::string headers;
-  // Check that response code indicates response headers are valid (i.e. not
-  // malformed) before we retrieve the headers.
-  if (url_fetcher->GetResponseCode() == URLFetcher::RESPONSE_CODE_INVALID) {
-    headers.assign("Response headers are malformed!!");
-  } else {
-    url_fetcher->GetResponseHeaders()->GetNormalizedHeaders(&headers);
-  }
-  return headers;
 }
 
 base::WeakPtr<AuthenticatedOperationInterface>
