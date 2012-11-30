@@ -66,6 +66,21 @@ bool BalloonCollectionBase::CloseAllBySourceOrigin(
   return !to_close.empty();
 }
 
+bool BalloonCollectionBase::CloseAllByProfile(Profile* profile) {
+  // Use a local list of balloons to close to avoid breaking
+  // iterator changes on each close.
+  Balloons to_close;
+  Balloons::iterator iter;
+  for (iter = balloons_.begin(); iter != balloons_.end(); ++iter) {
+    if ((*iter)->profile() == profile)
+      to_close.push_back(*iter);
+  }
+  for (iter = to_close.begin(); iter != to_close.end(); ++iter)
+    (*iter)->CloseByScript();
+
+  return !to_close.empty();
+}
+
 void BalloonCollectionBase::CloseAll() {
   // Use a local list of balloons to close to avoid breaking
   // iterator changes on each close.

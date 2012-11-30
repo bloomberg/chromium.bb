@@ -37,6 +37,7 @@ class NotificationUIManagerMac : public NotificationUIManager {
                    Profile* profile) OVERRIDE;
   virtual bool CancelById(const std::string& notification_id) OVERRIDE;
   virtual bool CancelAllBySourceOrigin(const GURL& source_origin) OVERRIDE;
+  virtual bool CancelAllByProfile(Profile* profile) OVERRIDE;
   virtual void CancelAll() OVERRIDE;
   virtual BalloonCollection* balloon_collection() OVERRIDE;
   virtual NotificationPrefsManager* prefs_manager() OVERRIDE;
@@ -57,10 +58,12 @@ class NotificationUIManagerMac : public NotificationUIManager {
   // (model) notification. This assumes ownership (i.e. does not retain a_view)
   // of both objects and will delete them on destruction.
   struct ControllerNotification {
-    ControllerNotification(id<CrUserNotification> a_view,
+    ControllerNotification(Profile* a_profile,
+                           id<CrUserNotification> a_view,
                            Notification* a_model);
     ~ControllerNotification();
 
+    Profile* profile;
     id<CrUserNotification> view;
     Notification* model;
 

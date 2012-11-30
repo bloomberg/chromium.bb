@@ -36,6 +36,7 @@ class MockBalloonCollection : public BalloonCollection {
                    Profile* profile) {}
   virtual bool RemoveById(const std::string& id) { return false; }
   virtual bool RemoveBySourceOrigin(const GURL& origin) { return false; }
+  virtual bool RemoveByProfile(Profile* profile) { return false; }
   virtual void RemoveAll() {}
   virtual bool HasSpace() const { return true; }
   virtual void ResizeBalloon(Balloon* balloon, const gfx::Size& size) {}

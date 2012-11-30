@@ -48,6 +48,7 @@ class BalloonCollectionImpl : public BalloonCollection,
                    Profile* profile) OVERRIDE;
   virtual bool RemoveById(const std::string& id) OVERRIDE;
   virtual bool RemoveBySourceOrigin(const GURL& source_origin) OVERRIDE;
+  virtual bool RemoveByProfile(Profile* profile) OVERRIDE;
   virtual void RemoveAll() OVERRIDE;
   virtual bool HasSpace() const OVERRIDE;
   virtual void ResizeBalloon(Balloon* balloon, const gfx::Size& size) OVERRIDE;

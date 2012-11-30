@@ -45,6 +45,7 @@ class NotificationUIManagerImpl
                    Profile* profile) OVERRIDE;
   virtual bool CancelById(const std::string& notification_id) OVERRIDE;
   virtual bool CancelAllBySourceOrigin(const GURL& source_origin) OVERRIDE;
+  virtual bool CancelAllByProfile(Profile* profile) OVERRIDE;
   virtual void CancelAll() OVERRIDE;
   virtual BalloonCollection* balloon_collection() OVERRIDE;
   virtual NotificationPrefsManager* prefs_manager() OVERRIDE;

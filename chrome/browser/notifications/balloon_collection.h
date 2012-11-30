@@ -62,6 +62,9 @@ class BalloonCollection {
   // true if anything was removed.
   virtual bool RemoveBySourceOrigin(const GURL& source_origin) = 0;
 
+  // Removes any balloons matching |profile.  Returns true if any were removed.
+  virtual bool RemoveByProfile(Profile* profile) = 0;
+
   // Removes all balloons.
   virtual void RemoveAll() = 0;
 

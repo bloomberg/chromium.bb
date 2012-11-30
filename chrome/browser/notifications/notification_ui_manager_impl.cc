@@ -96,8 +96,8 @@ void NotificationUIManagerImpl::Add(const Notification& notification,
 
 bool NotificationUIManagerImpl::CancelById(const std::string& id) {
   // See if this ID hasn't been shown yet.
-  NotificationDeque::iterator iter;
-  for (iter = show_queue_.begin(); iter != show_queue_.end(); ++iter) {
+  for (NotificationDeque::iterator iter = show_queue_.begin();
+       iter != show_queue_.end(); ++iter) {
     if ((*iter)->notification().notification_id() == id) {
       show_queue_.erase(iter);
       return true;
@@ -111,17 +111,29 @@ bool NotificationUIManagerImpl::CancelAllBySourceOrigin(const GURL& source) {
   // Same pattern as CancelById, but more complicated than the above
   // because there may be multiple notifications from the same source.
   bool removed = false;
-  NotificationDeque::iterator iter;
-  for (iter = show_queue_.begin(); iter != show_queue_.end();) {
-    if ((*iter)->notification().origin_url() == source) {
-      iter = show_queue_.erase(iter);
+  for (NotificationDeque::iterator loopiter = show_queue_.begin();
+       loopiter != show_queue_.end(); ) {
+    NotificationDeque::iterator curiter = loopiter++;
+    if ((*curiter)->notification().origin_url() == source) {
+      show_queue_.erase(curiter);
       removed = true;
-    } else {
-      ++iter;
     }
   }
-
   return balloon_collection_->RemoveBySourceOrigin(source) || removed;
+}
+
+bool NotificationUIManagerImpl::CancelAllByProfile(Profile* profile) {
+  // Same pattern as CancelAllBySourceOrigin.
+  bool removed = false;
+  for (NotificationDeque::iterator loopiter = show_queue_.begin();
+       loopiter != show_queue_.end(); ) {
+    NotificationDeque::iterator curiter = loopiter++;
+    if ((*curiter)->profile() == profile) {
+      show_queue_.erase(curiter);
+      removed = true;
+    }
+  }
+  return balloon_collection_->RemoveByProfile(profile) || removed;
 }
 
 void NotificationUIManagerImpl::CancelAll() {
@@ -185,8 +197,8 @@ bool NotificationUIManagerImpl::TryReplacement(
 
   // First check the queue of pending notifications for replacement.
   // Then check the list of notifications already being shown.
-  NotificationDeque::iterator iter;
-  for (iter = show_queue_.begin(); iter != show_queue_.end(); ++iter) {
+  for (NotificationDeque::const_iterator iter = show_queue_.begin();
+       iter != show_queue_.end(); ++iter) {
     if (origin == (*iter)->notification().origin_url() &&
         replace_id == (*iter)->notification().replace_id()) {
       (*iter)->Replace(notification);
@@ -194,15 +206,13 @@ bool NotificationUIManagerImpl::TryReplacement(
     }
   }
 
-  BalloonCollection::Balloons::iterator balloon_iter;
-  BalloonCollection::Balloons balloons =
+  const BalloonCollection::Balloons& balloons =
       balloon_collection_->GetActiveBalloons();
-  for (balloon_iter = balloons.begin();
-       balloon_iter != balloons.end();
-       ++balloon_iter) {
-    if (origin == (*balloon_iter)->notification().origin_url() &&
-        replace_id == (*balloon_iter)->notification().replace_id()) {
-      (*balloon_iter)->Update(notification);
+  for (BalloonCollection::Balloons::const_iterator iter = balloons.begin();
+       iter != balloons.end(); ++iter) {
+    if (origin == (*iter)->notification().origin_url() &&
+        replace_id == (*iter)->notification().replace_id()) {
+      (*iter)->Update(notification);
       return true;
     }
   }
@@ -227,10 +237,9 @@ void NotificationUIManagerImpl::SetPositionPreference(
 
 void NotificationUIManagerImpl::GetQueuedNotificationsForTesting(
     std::vector<const Notification*>* notifications) {
-  NotificationDeque::const_iterator queued_iter;
-  for (queued_iter = show_queue_.begin(); queued_iter != show_queue_.end();
-       ++queued_iter) {
-    notifications->push_back(&(*queued_iter)->notification());
+  for (NotificationDeque::const_iterator iter = show_queue_.begin();
+       iter != show_queue_.end(); ++iter) {
+    notifications->push_back(&(*iter)->notification());
   }
 }
 

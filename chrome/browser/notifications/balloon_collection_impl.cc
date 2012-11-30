@@ -100,6 +100,10 @@ bool BalloonCollectionImpl::RemoveBySourceOrigin(const GURL& origin) {
   return base_.CloseAllBySourceOrigin(origin);
 }
 
+bool BalloonCollectionImpl::RemoveByProfile(Profile* profile) {
+  return base_.CloseAllByProfile(profile);
+}
+
 void BalloonCollectionImpl::RemoveAll() {
   base_.CloseAll();
 }

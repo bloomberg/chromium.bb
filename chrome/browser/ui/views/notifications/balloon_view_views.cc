@@ -116,8 +116,10 @@ BalloonViewImpl::~BalloonViewImpl() {
 
 void BalloonViewImpl::Close(bool by_user) {
   animation_->Stop();
-  html_contents_->Shutdown();
-  // Detach contents from widget before then close.
+  // Destroy html_contents_ here since it relies on Profile which might get
+  // deleted before the destructor is called when the views are torn down.
+  html_contents_.reset();
+  // Detach contents from the widget before they close.
   // This is necessary because a widget may be deleted
   // after this when chrome is shutting down.
   html_container_->GetRootView()->RemoveAllChildViews(true);

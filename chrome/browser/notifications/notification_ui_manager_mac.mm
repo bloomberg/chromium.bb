@@ -99,8 +99,11 @@ NotificationUIManager* NotificationUIManager::Create(
 }
 
 NotificationUIManagerMac::ControllerNotification::ControllerNotification(
-    id<CrUserNotification> a_view, Notification* a_model)
-    : view(a_view),
+    Profile* a_profile,
+    id<CrUserNotification> a_view,
+    Notification* a_model)
+    : profile(a_profile),
+      view(a_view),
       model(a_model) {
 }
 
@@ -150,10 +153,11 @@ void NotificationUIManagerMac::Add(const Notification& notification,
                                     forKey:kNotificationIDKey];
     ns_notification.hasActionButton = NO;
 
-    notification_map_.insert(
-        std::make_pair(notification.notification_id(),
-            new ControllerNotification(ns_notification,
-                                       new Notification(notification))));
+    notification_map_.insert(std::make_pair(
+        notification.notification_id(),
+        new ControllerNotification(profile,
+                                   ns_notification,
+                                   new Notification(notification))));
 
     [GetNotificationCenter() deliverNotification:ns_notification];
   }
@@ -174,6 +178,23 @@ bool NotificationUIManagerMac::CancelAllBySourceOrigin(
   for (NotificationMap::iterator it = notification_map_.begin();
        it != notification_map_.end();) {
     if (it->second->model->origin_url() == source_origin) {
+      // RemoveNotification will erase from the map, invalidating iterator
+      // references to the removed element.
+      success |= RemoveNotification((it++)->second->view);
+    } else {
+      ++it;
+    }
+  }
+
+  return success;
+}
+
+bool NotificationUIManagerMac::CancelAllByProfile(Profile* profile) {
+  bool success = builtin_manager_->CancelAllByProfile(profile);
+
+  for (NotificationMap::iterator it = notification_map_.begin();
+       it != notification_map_.end();) {
+    if (it->second->profile == profile) {
       // RemoveNotification will erase from the map, invalidating iterator
       // references to the removed element.
       success |= RemoveNotification((it++)->second->view);

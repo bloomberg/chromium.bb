@@ -41,7 +41,7 @@ BalloonViewHost::BalloonViewHost(Balloon* balloon)
 }
 
 BalloonViewHost::~BalloonViewHost() {
- Shutdown();
+  Shutdown();
 }
 
 void BalloonViewHost::Init(gfx::NativeView parent_native_view) {
