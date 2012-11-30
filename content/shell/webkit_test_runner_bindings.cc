@@ -112,6 +112,23 @@ v8::Handle<v8::Value> SetWaitUntilDone(const v8::Arguments& args) {
   return v8::Undefined();
 }
 
+v8::Handle<v8::Value> SetXSSAuditorEnabled(
+    const v8::Arguments& args) {
+  RenderView* view = GetCurrentRenderView();
+  if (!view)
+    return v8::Undefined();
+
+  if (args.Length() != 1 || !args[0]->IsBoolean())
+    return v8::Undefined();
+
+  WebKitTestRunner* runner = WebKitTestRunner::Get(view);
+  if (!runner)
+    return v8::Undefined();
+
+  runner->SetXSSAuditorEnabled(args[0]->BooleanValue());
+  return v8::Undefined();
+}
+
 v8::Handle<v8::Value> GetWorkerThreadCount(const v8::Arguments& args) {
   RenderView* view = GetCurrentRenderView();
   if (!view)
@@ -169,6 +186,8 @@ WebKitTestRunnerBindings::GetNativeFunction(v8::Handle<v8::String> name) {
   }
   if (name->Equals(v8::String::New("SetWaitUntilDone")))
     return v8::FunctionTemplate::New(SetWaitUntilDone);
+  if (name->Equals(v8::String::New("SetXSSAuditorEnabled")))
+    return v8::FunctionTemplate::New(SetXSSAuditorEnabled);
   if (name->Equals(v8::String::New("GetWorkerThreadCount")))
     return v8::FunctionTemplate::New(GetWorkerThreadCount);
   if (name->Equals(v8::String::New("NotImplemented")))

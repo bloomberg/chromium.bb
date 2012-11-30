@@ -677,6 +677,8 @@ class CONTENT_EXPORT RenderViewImpl
   virtual int GetPageId() const OVERRIDE;
   virtual gfx::Size GetSize() const OVERRIDE;
   virtual webkit_glue::WebPreferences& GetWebkitPreferences() OVERRIDE;
+  virtual void SetWebkitPreferences(
+      const webkit_glue::WebPreferences& preferences) OVERRIDE;
   virtual WebKit::WebView* GetWebView() OVERRIDE;
   virtual WebKit::WebNode GetFocusedNode() const OVERRIDE;
   virtual WebKit::WebNode GetContextMenuNode() const OVERRIDE;

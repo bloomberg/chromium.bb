@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
+#include "content/shell/shell_webpreferences.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestDelegate.h"
 
 class SkCanvas;
@@ -59,7 +60,9 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual WebKit::WebString getAbsoluteWebStringFromUTF8Path(
       const std::string& utf8_path);
 
+  void Reset();
   void Display();
+  void SetXSSAuditorEnabled(bool enabled);
 
   void set_proxy(WebTestRunner::WebTestProxyBase* proxy) { proxy_ = proxy; }
 
@@ -80,6 +83,7 @@ class WebKitTestRunner : public RenderViewObserver,
 
   WebTestRunner::WebTestProxyBase* proxy_;
 
+  ShellWebPreferences prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(WebKitTestRunner);
 };

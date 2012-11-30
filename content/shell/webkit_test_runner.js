@@ -13,6 +13,7 @@ var testRunner = testRunner || {};
   native function SetPrinting();
   native function SetShouldStayOnPageAfterHandlingBeforeUnload();
   native function SetWaitUntilDone();
+  native function SetXSSAuditorEnabled();
 
   native function NotImplemented();
 
@@ -45,6 +46,9 @@ var testRunner = testRunner || {};
         this,
         "setShouldStayOnPageAfterHandlingBeforeUnload",
         {value: SetShouldStayOnPageAfterHandlingBeforeUnload});
+    Object.defineProperty(this,
+                          "setXSSAuditorEnabled",
+                          {value: SetXSSAuditorEnabled});
     Object.defineProperty(this, "waitUntilDone", {value: SetWaitUntilDone});
 
     var stubs = [

@@ -180,6 +180,7 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   is_printing_ = false;
   should_stay_on_page_after_handling_before_unload_ = false;
   wait_until_done_ = false;
+  prefs_ = ShellWebPreferences();
   watchdog_.Cancel();
   if (main_window_) {
     Observe(NULL);
@@ -231,6 +232,8 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_PrintMessage, OnPrintMessage)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_TextDump, OnTextDump)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ImageDump, OnImageDump)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_OverridePreferences,
+                        OnOverridePreferences)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -346,6 +349,11 @@ void WebKitTestController::OnTextDump(const std::string& dump) {
 
 void WebKitTestController::OnPrintMessage(const std::string& message) {
   printer_->AddMessageRaw(message);
+}
+
+void WebKitTestController::OnOverridePreferences(
+    const ShellWebPreferences& prefs) {
+  prefs_ = prefs;
 }
 
 // WebKitTestRunnerHost -------------------------------------------------------

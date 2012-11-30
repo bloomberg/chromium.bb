@@ -9,6 +9,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_switches.h"
+#include "content/shell/webkit_test_runner.h"
 #include "content/shell/webkit_test_runner_bindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTestingSupport.h"
@@ -98,6 +99,7 @@ bool ShellRenderProcessObserver::OnControlMessageReceived(
 void ShellRenderProcessObserver::OnResetAll() {
   test_interfaces_->resetAll();
   if (main_render_view_) {
+    WebKitTestRunner::Get(main_render_view_)->Reset();
     WebTestingSupport::resetInternalsObject(
         main_render_view_->GetWebView()->mainFrame());
   }

@@ -98,9 +98,7 @@ void ShellContentBrowserClient::OverrideWebkitPrefs(
     webkit_glue::WebPreferences* prefs) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;
-  prefs->dom_paste_enabled = true;
-  prefs->javascript_can_access_clipboard = true;
-  prefs->allow_universal_access_from_file_urls = true;
+  WebKitTestController::Get()->web_preferences().Apply(prefs);
 }
 
 void ShellContentBrowserClient::ResourceDispatcherHostCreated() {

@@ -4311,6 +4311,10 @@ WebPreferences& RenderViewImpl::GetWebkitPreferences() {
   return webkit_preferences_;
 }
 
+void RenderViewImpl::SetWebkitPreferences(const WebPreferences& preferences) {
+  OnUpdateWebPreferences(preferences);
+}
+
 WebKit::WebView* RenderViewImpl::GetWebView() {
   return webview();
 }

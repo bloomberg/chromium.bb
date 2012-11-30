@@ -32,6 +32,7 @@
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTask.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/webpreferences.h"
 
 using WebKit::WebContextMenuData;
 using WebKit::WebElement;
@@ -270,6 +271,21 @@ void WebKitTestRunner::Display() {
   proxy_->setPaintRect(rect);
   PaintInvalidatedRegion();
   DisplayRepaintMask();
+}
+
+void WebKitTestRunner::SetXSSAuditorEnabled(bool enabled) {
+  prefs_.xss_auditor_enabled = enabled;
+  webkit_glue::WebPreferences prefs = render_view()->GetWebkitPreferences();
+  prefs_.Apply(&prefs);
+  render_view()->SetWebkitPreferences(prefs);
+  Send(new ShellViewHostMsg_OverridePreferences(routing_id(), prefs_));
+}
+
+void WebKitTestRunner::Reset() {
+  prefs_ = ShellWebPreferences();
+  webkit_glue::WebPreferences prefs = render_view()->GetWebkitPreferences();
+  prefs_.Apply(&prefs);
+  render_view()->SetWebkitPreferences(prefs);
 }
 
 // Private methods  -----------------------------------------------------------

@@ -110,6 +110,8 @@
         'shell/shell_switches.h',
         'shell/shell_url_request_context_getter.cc',
         'shell/shell_url_request_context_getter.h',
+        'shell/shell_webpreferences.cc',
+        'shell/shell_webpreferences.h',
         'shell/shell_web_contents_view_delegate_creator.h',
         'shell/shell_web_contents_view_delegate_gtk.cc',
         'shell/shell_web_contents_view_delegate_mac.mm',
