@@ -40,7 +40,7 @@ MediaStorageUtil::Type GetDeviceType(bool is_removable, bool has_dcim) {
 
 }  // namespace
 
-DiskInfoMac::DiskInfoMac() {
+DiskInfoMac::DiskInfoMac() : total_size_in_bytes_(0) {
 }
 
 DiskInfoMac::~DiskInfoMac() {
@@ -60,6 +60,13 @@ DiskInfoMac DiskInfoMac::BuildDiskInfoOnFileThread(CFDictionaryRef dict) {
       dict, kDADiskDescriptionVolumePathKey);
   NSURL* nsurl = base::mac::CFToNSCast(url);
   info.mount_point_ = base::mac::NSStringToFilePath([nsurl path]);
+  CFNumberRef size_number =
+      base::mac::GetValueFromDictionary<CFNumberRef>(
+          dict, kDADiskDescriptionMediaSizeKey);
+  if (size_number) {
+    CFNumberGetValue(size_number, kCFNumberLongLongType,
+                     &(info.total_size_in_bytes_));
+  }
 
   string16 vendor_name = GetUTF16FromDictionary(
       dict, kDADiskDescriptionDeviceVendorKey);
@@ -67,9 +74,13 @@ DiskInfoMac DiskInfoMac::BuildDiskInfoOnFileThread(CFDictionaryRef dict) {
       dict, kDADiskDescriptionDeviceModelKey);
   string16 volume_name = GetUTF16FromDictionary(
       dict, kDADiskDescriptionVolumeNameKey);
-  info.display_name_ = vendor_name;
-  info.display_name_ = JoinName(info.display_name_, model_name);
-  info.display_name_ = JoinName(info.display_name_, volume_name);
+
+  if (!volume_name.empty()) {
+    info.device_name_ = volume_name;
+  } else {
+    info.device_name_ = GetFullProductName(UTF16ToUTF8(vendor_name),
+                                           UTF16ToUTF8(model_name));
+  }
   info.model_name_ = UTF16ToUTF8(model_name);
 
   CFUUIDRef uuid = base::mac::GetValueFromDictionary<CFUUIDRef>(

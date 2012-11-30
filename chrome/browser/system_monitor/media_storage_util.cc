@@ -266,7 +266,7 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const FilePath& path,
     }
 
     if (device_name) {
-#if defined(OS_LINUX)  // Implies OS_CHROMEOS
+#if defined(OS_MACOSX) || defined(OS_LINUX)  // Implies OS_CHROMEOS
       *device_name = GetDisplayNameForDevice(
           notifier->GetStorageSize(device_info.location),
           sub_folder_path.value().empty() ?

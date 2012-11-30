@@ -19,12 +19,15 @@
 
 namespace chrome {
 
+uint64 kTestSize = 1000000ULL;
+
 namespace {
 
 DiskInfoMac CreateDiskInfoMac(const std::string& unique_id,
                               const std::string& model_name,
                               const string16& display_name,
-                              const FilePath& mount_point) {
+                              const FilePath& mount_point,
+                              uint64 size_bytes) {
   NSMutableDictionary *dict = [NSMutableDictionary dictionary];
   [dict setObject:@"dummy_bsd_name"
            forKey:base::mac::CFToNSCast(kDADiskDescriptionMediaBSDNameKey)];
@@ -41,6 +44,8 @@ DiskInfoMac CreateDiskInfoMac(const std::string& unique_id,
            forKey:base::mac::CFToNSCast(kDADiskDescriptionVolumeNameKey)];
   [dict setObject:[NSNumber numberWithBool:YES]
            forKey:base::mac::CFToNSCast(kDADiskDescriptionMediaRemovableKey)];
+  [dict setObject:[NSNumber numberWithInt:size_bytes]
+           forKey:base::mac::CFToNSCast(kDADiskDescriptionMediaSizeKey)];
   return DiskInfoMac::BuildDiskInfoOnFileThread(base::mac::NSToCFCast(dict));
 }
 
@@ -64,11 +69,13 @@ class RemovableDeviceNotificationsMacTest : public testing::Test {
     notifications_ = new RemovableDeviceNotificationsMac;
 
     unique_id_ = "test_id";
-    display_name_ = ASCIIToUTF16("Test Display Name");
+    display_name_ = ASCIIToUTF16("977 KB Test Display Name");
     mount_point_ = FilePath("/unused_test_directory");
     device_id_ = MediaStorageUtil::MakeDeviceId(
         MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM, unique_id_);
-    disk_info_ = CreateDiskInfoMac(unique_id_, "", display_name_, mount_point_);
+    disk_info_ = CreateDiskInfoMac(unique_id_, "",
+                                   ASCIIToUTF16("Test Display Name"),
+                                   mount_point_, kTestSize);
   }
 
  protected:
@@ -122,9 +129,10 @@ TEST_F(RemovableDeviceNotificationsMacTest, UpdateVolumeName) {
   }
 
   {
-    string16 new_display_name(ASCIIToUTF16("Test Display Name"));
+    string16 new_display_name(ASCIIToUTF16("977 KB Test Display Name"));
     DiskInfoMac info2 = CreateDiskInfoMac(
-        unique_id_, "", new_display_name, mount_point_);
+        unique_id_, "", ASCIIToUTF16("Test Display Name"), mount_point_,
+        kTestSize);
     EXPECT_CALL(*mock_devices_changed_observer_,
                 OnRemovableStorageDetached(device_id_));
     EXPECT_CALL(*mock_devices_changed_observer_,
@@ -144,7 +152,8 @@ TEST_F(RemovableDeviceNotificationsMacTest, DCIM) {
 
   FilePath mount_point = temp_dir.path();
   DiskInfoMac info = CreateDiskInfoMac(
-      unique_id_, "", display_name_, mount_point);
+      unique_id_, "", ASCIIToUTF16("Test Display Name"), mount_point,
+      kTestSize);
   std::string device_id = MediaStorageUtil::MakeDeviceId(
       MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM, unique_id_);
 
@@ -174,11 +183,24 @@ TEST_F(RemovableDeviceNotificationsMacTest, GetDeviceInfo) {
   EXPECT_TRUE(notifications_->GetDeviceInfoForPath(
       mount_point_.AppendASCII("foo"), &info));
   EXPECT_EQ(info.device_id, device_id_);
-  EXPECT_EQ(info.name, display_name_);
+  EXPECT_EQ(info.name, ASCIIToUTF16("Test Display Name"));
   EXPECT_EQ(info.location, mount_point_.value());
 
   EXPECT_FALSE(notifications_->GetDeviceInfoForPath(
       FilePath("/non/matching/path"), &info));
+}
+
+TEST_F(RemovableDeviceNotificationsMacTest, GetStorageSize) {
+  EXPECT_CALL(*mock_devices_changed_observer_,
+              OnRemovableStorageAttached(testing::_,
+                                         testing::_,
+                                         testing::_));
+  notifications_->UpdateDisk(
+      disk_info_, RemovableDeviceNotificationsMac::UPDATE_DEVICE_ADDED);
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(kTestSize,
+            notifications_->GetStorageSize("/unused_test_directory"));
 }
 
 // Test that mounting a DMG doesn't send a notification.
@@ -188,7 +210,7 @@ TEST_F(RemovableDeviceNotificationsMacTest, DMG) {
                                          testing::_,
                                          testing::_)).Times(0);
   DiskInfoMac info = CreateDiskInfoMac(
-      unique_id_, "Disk Image", display_name_, mount_point_);
+      unique_id_, "Disk Image", display_name_, mount_point_, kTestSize);
   notifications_->UpdateDisk(
       info, RemovableDeviceNotificationsMac::UPDATE_DEVICE_ADDED);
   message_loop_.RunUntilIdle();

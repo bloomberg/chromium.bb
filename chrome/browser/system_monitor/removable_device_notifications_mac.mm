@@ -4,6 +4,7 @@
 
 #include "chrome/browser/system_monitor/removable_device_notifications_mac.h"
 
+#include "chrome/browser/system_monitor/media_device_notifications_utils.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chrome {
@@ -115,10 +116,12 @@ void RemovableDeviceNotificationsMac::UpdateDisk(
   } else {
     disk_info_map_[info.bsd_name()] = info;
     MediaStorageUtil::RecordDeviceInfoHistogram(true, info.device_id(),
-                                                info.display_name());
+                                                info.device_name());
     if (ShouldPostNotificationForDisk(info)) {
+      string16 display_name = GetDisplayNameForDevice(
+          info.total_size_in_bytes(), info.device_name());
       base::SystemMonitor::Get()->ProcessRemovableStorageAttached(
-          info.device_id(), info.display_name(), info.mount_point().value());
+          info.device_id(), display_name, info.mount_point().value());
     }
   }
 }
@@ -135,7 +138,7 @@ bool RemovableDeviceNotificationsMac::GetDeviceInfoForPath(
     DiskInfoMac info;
     if (FindDiskWithMountPoint(current, &info)) {
       device_info->device_id = info.device_id();
-      device_info->name = info.display_name();
+      device_info->name = info.device_name();
       device_info->location = info.mount_point().value();
       return true;
     }
@@ -143,6 +146,14 @@ bool RemovableDeviceNotificationsMac::GetDeviceInfoForPath(
   }
 
   return false;
+}
+
+uint64 RemovableDeviceNotificationsMac::GetStorageSize(
+    const std::string& location) const {
+  DiskInfoMac info;
+  if (!FindDiskWithMountPoint(FilePath(location), &info))
+    return 0;
+  return info.total_size_in_bytes();
 }
 
 // static
@@ -185,7 +196,7 @@ bool RemovableDeviceNotificationsMac::ShouldPostNotificationForDisk(
   // are removable. Also exclude disk images (DMGs).
   return !info.bsd_name().empty() &&
          !info.device_id().empty() &&
-         !info.display_name().empty() &&
+         !info.device_name().empty() &&
          !info.mount_point().empty() &&
          info.model_name() != kDiskImageModelName &&
          (info.type() == MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM ||

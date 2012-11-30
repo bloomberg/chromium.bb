@@ -40,6 +40,11 @@ class RemovableDeviceNotificationsMac :
       const FilePath& path,
       base::SystemMonitor::RemovableStorageInfo* device_info) const;
 
+  // Returns the storage size of the device present at |location|. If the
+  // device information is unavailable, returns zero. |location| must be a
+  // top-level mount point.
+  uint64 GetStorageSize(const std::string& location) const;
+
  private:
   friend class base::RefCountedThreadSafe<RemovableDeviceNotificationsMac>;
   virtual ~RemovableDeviceNotificationsMac();
