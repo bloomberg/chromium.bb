@@ -1823,6 +1823,11 @@ public class ContentViewCore implements MotionEventDelegate {
         // update mNativeScrollX/Y here for consistency.
         mNativeScrollX = x;
         mNativeScrollY = y;
+
+        if (mNativePageScaleFactor != scale && mContentViewClient != null) {
+            mContentViewClient.onScaleChanged(mNativePageScaleFactor, scale);
+        }
+
         mNativePageScaleFactor = scale;
 
         mPopupZoomer.hide(true);

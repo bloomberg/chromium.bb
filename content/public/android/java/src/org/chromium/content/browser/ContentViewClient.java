@@ -34,6 +34,13 @@ public class ContentViewClient {
     public void onUpdateTitle(String title) {
     }
 
+    /**
+      * Lets client listen on the scaling changes on delayed, throttled
+      * and best-effort basis. Used for WebView.onScaleChanged.
+      */
+    public void onScaleChanged(float oldScale, float newScale) {
+    }
+
     public void onTabCrash() {
     }
 
