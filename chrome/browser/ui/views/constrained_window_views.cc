@@ -632,8 +632,8 @@ ConstrainedWindowViews::ConstrainedWindowViews(
   constrained_window_tab_helper->AddConstrainedDialog(this);
 #if defined(USE_ASH)
   GetNativeWindow()->SetProperty(ash::kConstrainedWindowKey, true);
-  ash::wm::SetModalParent(GetNativeWindow(),
-                          web_contents_->GetView()->GetNativeView());
+  ash::SetModalParent(GetNativeWindow(),
+                      web_contents_->GetView()->GetNativeView());
 #endif
 }
 

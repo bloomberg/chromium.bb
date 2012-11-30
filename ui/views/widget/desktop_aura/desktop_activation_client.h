@@ -46,6 +46,7 @@ class VIEWS_EXPORT DesktopActivationClient
   virtual void ActivateWindow(aura::Window* window) OVERRIDE;
   virtual void DeactivateWindow(aura::Window* window) OVERRIDE;
   virtual aura::Window* GetActiveWindow() OVERRIDE;
+  virtual aura::Window* GetActivatableWindow(aura::Window* window) OVERRIDE;
   virtual bool OnWillFocusWindow(aura::Window* window,
                                  const ui::Event* event) OVERRIDE;
   virtual bool CanActivateWindow(aura::Window* window) const OVERRIDE;
@@ -64,10 +65,6 @@ class VIEWS_EXPORT DesktopActivationClient
   virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
-  // Walks up the chain to find the correct parent window to activate when we
-  // try to activate |window|.
-  aura::Window* GetActivatableWindow(aura::Window* window);
-
   void FocusWindowWithEvent(const ui::Event* event);
 
   aura::RootWindow* root_window_;

@@ -19,16 +19,12 @@ class LocatedEvent;
 
 namespace ash {
 
-namespace wm {
-
 // Sets the modal parent for the child.
 ASH_EXPORT void SetModalParent(aura::Window* child, aura::Window* parent);
 
 // Returns the modal transient child of |window|, or NULL if |window| does not
 // have any modal transient children.
 ASH_EXPORT aura::Window* GetModalTransient(aura::Window* window);
-
-}
 
 namespace internal {
 

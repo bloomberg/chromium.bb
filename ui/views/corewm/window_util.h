@@ -19,6 +19,15 @@ class Layer;
 namespace views {
 namespace corewm {
 
+VIEWS_EXPORT void ActivateWindow(aura::Window* window);
+VIEWS_EXPORT void DeactivateWindow(aura::Window* window);
+VIEWS_EXPORT bool IsActiveWindow(aura::Window* window);
+VIEWS_EXPORT bool CanActivateWindow(aura::Window* window);
+
+// Retrieves the activatable window for |window|. The ActivationClient makes
+// this determination.
+VIEWS_EXPORT aura::Window* GetActivatableWindow(aura::Window* window);
+
 // Deletes |layer| and all its child layers.
 VIEWS_EXPORT void DeepDeleteLayers(ui::Layer* layer);
 

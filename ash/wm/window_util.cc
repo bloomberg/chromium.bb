@@ -19,31 +19,22 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/corewm/window_util.h"
 
 namespace ash {
 namespace wm {
 
+// TODO(beng): replace many of these functions with the corewm versions.
 void ActivateWindow(aura::Window* window) {
-  DCHECK(window);
-  DCHECK(window->GetRootWindow());
-  aura::client::GetActivationClient(window->GetRootWindow())->ActivateWindow(
-      window);
+  views::corewm::ActivateWindow(window);
 }
 
 void DeactivateWindow(aura::Window* window) {
-  DCHECK(window);
-  DCHECK(window->GetRootWindow());
-  aura::client::GetActivationClient(window->GetRootWindow())->DeactivateWindow(
-      window);
+  views::corewm::DeactivateWindow(window);
 }
 
 bool IsActiveWindow(aura::Window* window) {
-  DCHECK(window);
-  if (!window->GetRootWindow())
-    return false;
-  aura::client::ActivationClient* client =
-      aura::client::GetActivationClient(window->GetRootWindow());
-  return client && client->GetActiveWindow() == window;
+  return views::corewm::IsActiveWindow(window);
 }
 
 aura::Window* GetActiveWindow() {
@@ -52,7 +43,7 @@ aura::Window* GetActiveWindow() {
 }
 
 aura::Window* GetActivatableWindow(aura::Window* window) {
-  return internal::ActivationController::GetActivatableWindow(window, NULL);
+  return views::corewm::GetActivatableWindow(window);
 }
 
 bool IsActiveWindowFullscreen() {
@@ -68,12 +59,7 @@ bool IsActiveWindowFullscreen() {
 }
 
 bool CanActivateWindow(aura::Window* window) {
-  DCHECK(window);
-  if (!window->GetRootWindow())
-    return false;
-  aura::client::ActivationClient* client =
-      aura::client::GetActivationClient(window->GetRootWindow());
-  return client && client->CanActivateWindow(window);
+  return views::corewm::CanActivateWindow(window);
 }
 
 bool CanMaximizeWindow(const aura::Window* window) {

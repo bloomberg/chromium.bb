@@ -56,6 +56,7 @@ class VIEWS_EXPORT FocusController : public aura::client::ActivationClient,
   virtual void ActivateWindow(aura::Window* window) OVERRIDE;
   virtual void DeactivateWindow(aura::Window* window) OVERRIDE;
   virtual aura::Window* GetActiveWindow() OVERRIDE;
+  virtual aura::Window* GetActivatableWindow(aura::Window* window) OVERRIDE;
   virtual bool OnWillFocusWindow(aura::Window* window,
                                  const ui::Event* event) OVERRIDE;
   virtual bool CanActivateWindow(aura::Window* window) const OVERRIDE;

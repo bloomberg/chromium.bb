@@ -29,7 +29,7 @@ AshActivationController::~AshActivationController() {
 
 aura::Window* AshActivationController::WillActivateWindow(
     aura::Window* window) {
-  aura::Window* window_modal_transient = wm::GetModalTransient(window);
+  aura::Window* window_modal_transient = GetModalTransient(window);
   if (window_modal_transient)
     return window_modal_transient;
 
@@ -69,7 +69,7 @@ aura::Window* AshActivationController::WillActivateWindow(
 
 aura::Window* AshActivationController::WillFocusWindow(
     aura::Window* window) {
-  aura::Window* window_modal_transient = wm::GetModalTransient(window);
+  aura::Window* window_modal_transient = GetModalTransient(window);
   if (window_modal_transient)
     return window_modal_transient;
   return window;

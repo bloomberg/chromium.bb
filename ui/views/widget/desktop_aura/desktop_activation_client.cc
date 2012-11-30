@@ -100,6 +100,23 @@ aura::Window* DesktopActivationClient::GetActiveWindow() {
   return current_active_;
 }
 
+aura::Window* DesktopActivationClient::GetActivatableWindow(
+    aura::Window* window) {
+  aura::Window* parent = window->parent();
+  aura::Window* child = window;
+  while (parent) {
+    if (CanActivateWindow(child))
+      return child;
+    // If |child| isn't activatable, but has transient parent, trace
+    // that path instead.
+    if (child->transient_parent())
+      return GetActivatableWindow(child->transient_parent());
+    parent = parent->parent();
+    child = child->parent();
+  }
+  return NULL;
+}
+
 bool DesktopActivationClient::OnWillFocusWindow(aura::Window* window,
                                                 const ui::Event* event) {
   return CanActivateWindow(GetActivatableWindow(window));
@@ -154,23 +171,6 @@ ui::EventResult DesktopActivationClient::OnGestureEvent(
     FocusWindowWithEvent(event);
   }
   return ui::ER_UNHANDLED;
-}
-
-aura::Window* DesktopActivationClient::GetActivatableWindow(
-    aura::Window* window) {
-  aura::Window* parent = window->parent();
-  aura::Window* child = window;
-  while (parent) {
-    if (CanActivateWindow(child))
-      return child;
-    // If |child| isn't activatable, but has transient parent, trace
-    // that path instead.
-    if (child->transient_parent())
-      return GetActivatableWindow(child->transient_parent());
-    parent = parent->parent();
-    child = child->parent();
-  }
-  return NULL;
 }
 
 void DesktopActivationClient::FocusWindowWithEvent(const ui::Event* event) {

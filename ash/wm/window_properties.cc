@@ -25,7 +25,6 @@ DEFINE_OWNED_WINDOW_PROPERTY_KEY(ash::internal::AlwaysOnTopController,
 DEFINE_WINDOW_PROPERTY_KEY(
     bool, kChildWindowVisibilityChangesAnimatedKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kIgnoredByShelfKey, false);
-DEFINE_WINDOW_PROPERTY_KEY(aura::Window*, kModalParentKey, NULL);
 DEFINE_WINDOW_PROPERTY_KEY(
     ui::WindowShowState, kRestoreShowStateKey, ui::SHOW_STATE_DEFAULT);
 DEFINE_WINDOW_PROPERTY_KEY(RootWindowController*,

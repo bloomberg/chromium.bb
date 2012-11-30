@@ -147,7 +147,7 @@ gfx::NativeWindow ChildModalParent::GetChild() const {
 views::Widget* ChildModalParent::CreateChild() {
   views::Widget* child = views::Widget::CreateWindowWithParent(
       new ChildModalWindow, GetWidget()->GetNativeView());
-  ash::wm::SetModalParent(child->GetNativeView(), GetModalParent());
+  ash::SetModalParent(child->GetNativeView(), GetModalParent());
   child->AddObserver(this);
   child->GetNativeView()->SetName("ChildModalWindow");
   return child;
