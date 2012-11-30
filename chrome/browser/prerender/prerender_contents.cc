@@ -167,66 +167,37 @@ class PrerenderContents::TabContentsDelegateImpl
   PrerenderContents* prerender_contents_;
 };
 
-void PrerenderContents::AddPendingPrerender(
-    const base::WeakPtr<PrerenderHandle> weak_prerender_handle,
-    const Origin origin,
+PrerenderContents::PendingPrerenderInfo::PendingPrerenderInfo(
+    base::WeakPtr<PrerenderHandle> weak_prerender_handle,
+    Origin origin,
     const GURL& url,
     const content::Referrer& referrer,
-    const gfx::Size& size) {
-  pending_prerenders_.push_back(
-      PendingPrerenderInfo(weak_prerender_handle, origin, url, referrer, size));
+    const gfx::Size& size) : weak_prerender_handle(weak_prerender_handle),
+                             origin(origin),
+                             url(url),
+                             referrer(referrer),
+                             size(size) {
 }
 
-bool PrerenderContents::IsPendingEntry(
-    const PrerenderHandle& prerender_handle) const {
-  for (std::vector<PendingPrerenderInfo>::const_iterator it =
-           pending_prerenders_.begin();
-       it != pending_prerenders_.end();
-       ++it) {
-    if (it->weak_prerender_handle.get() == &prerender_handle)
-      return true;
-  }
-  return false;
+PrerenderContents::PendingPrerenderInfo::~PendingPrerenderInfo() {
+}
+
+void PrerenderContents::AddPendingPrerender(
+    scoped_ptr<PendingPrerenderInfo> pending_prerender_info) {
+  pending_prerenders_.push_back(pending_prerender_info.release());
 }
 
 void PrerenderContents::StartPendingPrerenders() {
   SessionStorageNamespace* session_storage_namespace = NULL;
-  if (prerender_contents_.get()) {
+  if (prerender_contents_) {
     // TODO(ajwong): This does not correctly handle storage for isolated apps.
     session_storage_namespace =
         prerender_contents_->web_contents()->GetController()
             .GetDefaultSessionStorageNamespace();
   }
-  DCHECK(child_id_ == -1 || session_storage_namespace);
-
-  std::vector<PendingPrerenderInfo> pending_prerender_list;
-  pending_prerender_list.swap(pending_prerenders_);
-  for (std::vector<PendingPrerenderInfo>::iterator it =
-           pending_prerender_list.begin();
-       it != pending_prerender_list.end();
-       ++it) {
-    if (it->weak_prerender_handle && it->weak_prerender_handle->IsValid()) {
-      prerender_manager_->StartPendingPrerender(
-          it->weak_prerender_handle.get(), it->origin, child_id_,
-          it->url, it->referrer, it->size, session_storage_namespace);
-    }
-  }
-}
-
-PrerenderContents::PendingPrerenderInfo::PendingPrerenderInfo(
-    const base::WeakPtr<PrerenderHandle> weak_prerender_handle,
-    const Origin origin,
-    const GURL& url,
-    const content::Referrer& referrer,
-    const gfx::Size& size)
-    : weak_prerender_handle(weak_prerender_handle),
-      origin(origin),
-      url(url),
-      referrer(referrer),
-      size(size) {
-}
-
-PrerenderContents::PendingPrerenderInfo::~PendingPrerenderInfo() {
+  prerender_manager_->StartPendingPrerenders(
+      child_id_, &pending_prerenders_, session_storage_namespace);
+  pending_prerenders_.clear();
 }
 
 PrerenderContents::PrerenderContents(
@@ -497,6 +468,10 @@ void PrerenderContents::Observe(int type,
 
 void PrerenderContents::OnRenderViewHostCreated(
     RenderViewHost* new_render_view_host) {
+}
+
+size_t PrerenderContents::pending_prerender_count() const {
+  return pending_prerenders_.size();
 }
 
 WebContents* PrerenderContents::CreateWebContents(

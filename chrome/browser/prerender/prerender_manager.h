@@ -324,15 +324,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void SetPrerenderContentsFactory(
       PrerenderContents::Factory* prerender_contents_factory);
 
-  // Adds a prerender from a pending Prerender, called by
+  // Adds prerenders from the pending Prerenders, called by
   // PrerenderContents::StartPendingPrerenders.
-  void StartPendingPrerender(
-      PrerenderHandle* existing_prerender_handle,
-      Origin origin,
+  void StartPendingPrerenders(
       int process_id,
-      const GURL& url,
-      const content::Referrer& referrer,
-      const gfx::Size& size,
+      ScopedVector<PrerenderContents::PendingPrerenderInfo>* pending_prerenders,
       content::SessionStorageNamespace* session_storage_namespace);
 
   // Called by a PrerenderData to self-destroy, but only when the PrerenderData

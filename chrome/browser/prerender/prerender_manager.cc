@@ -281,9 +281,14 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromLinkRelPrerender(
       pending_prerenders_.push_back(new PrerenderData(this));
       PrerenderHandle* prerender_handle =
           new PrerenderHandle(pending_prerenders_.back());
-      contents->AddPendingPrerender(
-          prerender_handle->weak_ptr_factory_.GetWeakPtr(), origin,
-          url, referrer, size);
+      DCHECK(prerender_handle->IsPending());
+
+      scoped_ptr<PrerenderContents::PendingPrerenderInfo>
+          pending_prerender_info(new PrerenderContents::PendingPrerenderInfo(
+              prerender_handle->weak_ptr_factory_.GetWeakPtr(),
+              origin, url, referrer, size));
+
+      contents->AddPendingPrerender(pending_prerender_info.Pass());
       return prerender_handle;
     }
   }
@@ -907,36 +912,42 @@ void PrerenderManager::SetPrerenderContentsFactory(
   prerender_contents_factory_.reset(prerender_contents_factory);
 }
 
-void PrerenderManager::StartPendingPrerender(
-    PrerenderHandle* existing_prerender_handle,
-    Origin origin,
-    int process_id,
-    const GURL& url,
-    const content::Referrer& referrer,
-    const gfx::Size& size,
+void PrerenderManager::StartPendingPrerenders(
+    const int process_id,
+    ScopedVector<PrerenderContents::PendingPrerenderInfo>* pending_prerenders,
     content::SessionStorageNamespace* session_storage_namespace) {
-  DCHECK(existing_prerender_handle);
-  DCHECK(existing_prerender_handle->IsValid());
-  DCHECK(existing_prerender_handle->IsPending());
-  DCHECK(process_id == -1 || session_storage_namespace);
+  for (ScopedVector<PrerenderContents::PendingPrerenderInfo>::iterator
+           it = pending_prerenders->begin();
+       it != pending_prerenders->end(); ++it) {
+    PrerenderContents::PendingPrerenderInfo* info = *it;
+    PrerenderHandle* existing_prerender_handle =
+        info->weak_prerender_handle.get();
+    if (!existing_prerender_handle || !existing_prerender_handle->IsValid())
+      continue;
 
-  scoped_ptr<PrerenderHandle> swap_prerender_handle(AddPrerender(
-      origin, process_id, url, referrer, size, session_storage_namespace));
-  if (swap_prerender_handle.get()) {
-    // AddPrerender has returned a new prerender handle to us. We want to make
-    // |existing_prerender_handle| active, so swap the underlying PrerenderData
-    // between the two handles, and delete our old handle (which will release
-    // our entry in the pending_prerenders_).
-    existing_prerender_handle->SwapPrerenderDataWith(
-        swap_prerender_handle.get());
-    swap_prerender_handle->OnCancel();
-    return;
+    DCHECK(existing_prerender_handle->IsPending());
+    DCHECK(process_id == -1 || session_storage_namespace);
+
+    scoped_ptr<PrerenderHandle> swap_prerender_handle(AddPrerender(
+        info->origin, process_id,
+        info->url, info->referrer, info->size,
+        session_storage_namespace));
+    if (swap_prerender_handle.get()) {
+      // AddPrerender has returned a new prerender handle to us. We want to make
+      // |existing_prerender_handle| active, so swap the underlying
+      // PrerenderData between the two handles, and delete our old handle (which
+      // will release our entry in the pending_prerender_list_).
+      existing_prerender_handle->SwapPrerenderDataWith(
+          swap_prerender_handle.get());
+      swap_prerender_handle->OnCancel();
+      continue;
+    }
+
+    // We could not start our Prerender. Canceling the existing handle will make
+    // it return false for PrerenderHandle::IsPending(), and will release the
+    // PrerenderData from pending_prerender_list_.
+    existing_prerender_handle->OnCancel();
   }
-
-  // We could not start our Prerender. Canceling the existing handle will make
-  // it return false for PrerenderHandle::IsPending(), and will release the
-  // PrerenderData from pending_prerenders_.
-  existing_prerender_handle->OnCancel();
 }
 
 void PrerenderManager::SourceNavigatedAway(PrerenderData* prerender_data) {
