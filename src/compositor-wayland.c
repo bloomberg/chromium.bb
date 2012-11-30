@@ -38,6 +38,7 @@
 
 #include "compositor.h"
 #include "gl-renderer.h"
+#include "../shared/cairo-util.h"
 
 struct wayland_compositor {
 	struct weston_compositor	 base;

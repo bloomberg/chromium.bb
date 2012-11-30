@@ -96,6 +96,8 @@ x11_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(X11_COMPOSITOR_LIBS) \
 	../shared/libshared-cairo.la
 x11_backend_la_CFLAGS =				\
 	$(COMPOSITOR_CFLAGS)			\
+	$(PIXMAN_CFLAGS)			\
+	$(CAIRO_CFLAGS)				\
 	$(X11_COMPOSITOR_CFLAGS)		\
 	$(GCC_CFLAGS)
 x11_backend_la_SOURCES = compositor-x11.c
@@ -129,6 +131,8 @@ wayland_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(WAYLAND_COMPOSITOR_LIBS) \
 	../shared/libshared-cairo.la
 wayland_backend_la_CFLAGS =			\
 	$(COMPOSITOR_CFLAGS)			\
+	$(PIXMAN_CFLAGS)			\
+	$(CAIRO_CFLAGS)				\
 	$(WAYLAND_COMPOSITOR_CFLAGS)		\
 	$(GCC_CFLAGS)
 wayland_backend_la_SOURCES = compositor-wayland.c

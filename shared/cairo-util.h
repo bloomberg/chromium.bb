@@ -23,6 +23,7 @@
 #ifndef _CAIRO_UTIL_H
 #define _CAIRO_UTIL_H
 
+#include <cairo.h>
 #include <pixman.h>
 
 void

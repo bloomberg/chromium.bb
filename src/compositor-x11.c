@@ -48,6 +48,7 @@
 #include "compositor.h"
 #include "gl-renderer.h"
 #include "../shared/config-parser.h"
+#include "../shared/cairo-util.h"
 
 #define DEFAULT_AXIS_STEP_DISTANCE wl_fixed_from_int(10)
 

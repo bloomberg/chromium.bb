@@ -29,7 +29,7 @@
 #include <png.h>
 #include <pixman.h>
 
-#include "config-parser.h"
+#include "cairo-util.h"
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
