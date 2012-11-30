@@ -1681,9 +1681,10 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
     double current_state = 1 - size_animation_->GetCurrentValue();
     int horizontal_padding =
         GetNtpHorizontalPadding(browser_->search_model()->mode(), IsDetached());
-    x += static_cast<int>(horizontal_padding * current_state);
+    int x_inset = static_cast<int>(horizontal_padding * current_state);
+    x += x_inset;
+    width -= 2 * x_inset;
     y += static_cast<int>(kNewtabVerticalPadding * current_state);
-    width -= static_cast<int>(horizontal_padding * current_state);
     height += View::height() -
         static_cast<int>(kNewtabVerticalPadding * 2 * current_state);
     separator_margin -= static_cast<int>(kSeparatorMargin * current_state);
