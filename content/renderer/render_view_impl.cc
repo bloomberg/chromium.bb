@@ -5728,6 +5728,12 @@ void RenderViewImpl::DidHandleTouchEvent(const WebTouchEvent& event) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidHandleTouchEvent(event));
 }
 
+bool RenderViewImpl::HasTouchEventHandlersAt(const gfx::Point& point) const {
+  if (!webview())
+    return false;
+  return webview()->hasTouchEventHandlersAt(point);
+}
+
 void RenderViewImpl::OnWasHidden() {
   RenderWidget::OnWasHidden();
 

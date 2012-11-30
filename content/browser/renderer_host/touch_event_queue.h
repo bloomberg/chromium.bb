@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
+#include "content/port/common/input_event_ack_state.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 namespace content {
@@ -32,7 +33,7 @@ class TouchEventQueue {
   // Notifies the queue that a touch-event has been processed by the renderer.
   // At this point, the queue may send one or more gesture events and/or
   // additional queued touch-events to the renderer.
-  void ProcessTouchAck(bool processed);
+  void ProcessTouchAck(InputEventAckState ack_result);
 
   // Empties the queue of touch events. This may result in any number of gesture
   // events being sent to the renderer.
@@ -55,7 +56,7 @@ class TouchEventQueue {
 
   // Pops the touch-event from the top of the queue and sends it to the
   // RenderWidgetHostView. This reduces the size of the queue by one.
-  void PopTouchEventToView(bool processed);
+  void PopTouchEventToView(InputEventAckState ack_result);
 
   // The RenderWidgetHost that owns this event-queue.
   RenderWidgetHostImpl* render_widget_host_;

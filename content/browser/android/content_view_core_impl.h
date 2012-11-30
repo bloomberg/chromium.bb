@@ -215,7 +215,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   void SetTitle(const string16& title);
 
   bool HasFocus();
-  void ConfirmTouchEvent(bool handled);
+  void ConfirmTouchEvent(InputEventAckState ack_result);
   void HasTouchEventHandlers(bool need_touch_events);
   void OnSelectionChanged(const std::string& text);
   void OnSelectionBoundsChanged(

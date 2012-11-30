@@ -1112,7 +1112,7 @@ void RenderWidgetHostImpl::ForwardInputEvent(const WebInputEvent& input_event,
       // to the touch-event queue immediately. Mark the event as not processed,
       // to make sure that the touch-scroll gesture that initiated the
       // overscroll is updated properly.
-      touch_event_queue_->ProcessTouchAck(false);
+      touch_event_queue_->ProcessTouchAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
     }
     return;
   }
@@ -1676,9 +1676,11 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
       "x+y", params.bitmap_rect.x() + params.bitmap_rect.y());
 }
 
-void RenderWidgetHostImpl::OnMsgInputEventAck(WebInputEvent::Type event_type,
-                                              bool processed) {
+void RenderWidgetHostImpl::OnMsgInputEventAck(
+    WebInputEvent::Type event_type, InputEventAckState ack_result) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::OnMsgInputEventAck");
+  bool processed = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
+
   if (!in_process_event_types_.empty() &&
       in_process_event_types_.front() == event_type)
     in_process_event_types_.pop();
@@ -1714,7 +1716,7 @@ void RenderWidgetHostImpl::OnMsgInputEventAck(WebInputEvent::Type event_type,
   } else if (type == WebInputEvent::MouseWheel) {
     ProcessWheelAck(processed);
   } else if (WebInputEvent::isTouchEventType(type)) {
-    ProcessTouchAck(processed);
+    ProcessTouchAck(ack_result);
   } else if (WebInputEvent::isGestureEventType(type)) {
     ProcessGestureAck(processed, type);
   }
@@ -1854,8 +1856,8 @@ void RenderWidgetHostImpl::ProcessGestureAck(bool processed, int type) {
   gesture_event_filter_->ProcessGestureAck(processed, type);
 }
 
-void RenderWidgetHostImpl::ProcessTouchAck(bool processed) {
-  touch_event_queue_->ProcessTouchAck(processed);
+void RenderWidgetHostImpl::ProcessTouchAck(InputEventAckState ack_result) {
+  touch_event_queue_->ProcessTouchAck(ack_result);
 }
 
 void RenderWidgetHostImpl::OnMsgFocus() {

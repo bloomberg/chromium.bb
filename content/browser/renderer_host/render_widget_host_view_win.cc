@@ -815,15 +815,15 @@ void RenderWidgetHostViewWin::SetBackground(const SkBitmap& background) {
 }
 
 void RenderWidgetHostViewWin::ProcessAckedTouchEvent(
-    const WebKit::WebTouchEvent& touch,
-    bool processed) {
+    const WebKit::WebTouchEvent& touch, InputEventAckState ack_result) {
   DCHECK(touch_events_enabled_);
 
   ScopedVector<ui::TouchEvent> events;
   if (!MakeUITouchEventsFromWebTouchEvents(touch, &events))
     return;
 
-  ui::EventResult result = processed ? ui::ER_HANDLED : ui::ER_UNHANDLED;
+  ui::EventResult result = (ack_result ==
+      INPUT_EVENT_ACK_STATE_CONSUMED) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
   for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(),
       end = events.end(); iter != end; ++iter)  {
     scoped_ptr<ui::GestureRecognizer::Gestures> gestures;

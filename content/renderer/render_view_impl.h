@@ -761,6 +761,7 @@ class CONTENT_EXPORT RenderViewImpl
       const WebKit::WebGestureEvent& event) OVERRIDE;
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event) OVERRIDE;
   virtual void DidHandleTouchEvent(const WebKit::WebTouchEvent& event) OVERRIDE;
+  virtual bool HasTouchEventHandlersAt(const gfx::Point& point) const OVERRIDE;
   virtual void OnSetFocus(bool enable) OVERRIDE;
   virtual void OnWasHidden() OVERRIDE;
   virtual void OnWasShown(bool needs_repainting) OVERRIDE;

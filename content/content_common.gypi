@@ -375,6 +375,7 @@
     'common/webmessageportchannel_impl.h',
     'common/worker_messages.h',
     'common/zygote_commands_linux.h',
+    'port/common/input_event_ack_state.h',
     'public/common/common_param_traits.cc',
     'public/common/common_param_traits.h',
     'public/common/common_param_traits_macros.h',

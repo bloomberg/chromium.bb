@@ -45,6 +45,7 @@ namespace WebKit {
 class WebGestureEvent;
 class WebMouseEvent;
 struct WebRenderingStatsImpl;
+struct WebPoint;
 class WebTouchEvent;
 }
 
@@ -429,6 +430,10 @@ class CONTENT_EXPORT RenderWidget
   // Called by OnHandleInputEvent() to notify subclasses that a touch event was
   // just handled.
   virtual void DidHandleTouchEvent(const WebKit::WebTouchEvent& event) {}
+
+  // Check whether the WebWidget has any touch event handlers registered
+  // at the given point.
+  virtual bool HasTouchEventHandlersAt(const gfx::Point& point) const;
 
   // Should return true if the underlying WebWidget is responsible for
   // the scheduling of compositing requests.

@@ -22,6 +22,7 @@
 #include "base/timer.h"
 #include "build/build_config.h"
 #include "content/common/view_message_enums.h"
+#include "content/port/common/input_event_ack_state.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/common/page_zoom.h"
 #include "ipc/ipc_listener.h"
@@ -573,7 +574,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void OnMsgUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
   void OnMsgUpdateIsDelayed();
   void OnMsgInputEventAck(WebKit::WebInputEvent::Type event_type,
-                          bool processed);
+                          InputEventAckState ack_result);
   void OnMsgBeginSmoothScroll(
       int gesture_id,
       const ViewHostMsg_BeginSmoothScroll_Params &params);
@@ -679,7 +680,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Called on OnMsgInputEventAck() to process a touch event ack message.
   // This can result in a gesture event being generated and sent back to the
   // renderer.
-  void ProcessTouchAck(bool processed);
+  void ProcessTouchAck(InputEventAckState ack_result);
 
   // Called when there is a new auto resize (using a post to avoid a stack
   // which may get in recursive loops).

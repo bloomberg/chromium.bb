@@ -344,7 +344,7 @@ class TestView : public TestRenderWidgetHostView {
     return bounds_;
   }
   virtual void ProcessAckedTouchEvent(const WebTouchEvent& touch,
-                                      bool processed) OVERRIDE {
+                                      InputEventAckState ack_result) OVERRIDE {
     acked_event_ = touch;
     ++acked_event_count_;
   }
@@ -493,8 +493,10 @@ class RenderWidgetHostTest : public testing::Test {
   }
 
   void SendInputEventACK(WebInputEvent::Type type, bool processed) {
+    InputEventAckState ack_result = processed ?
+        INPUT_EVENT_ACK_STATE_CONSUMED : INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
     scoped_ptr<IPC::Message> response(
-        new ViewHostMsg_HandleInputEvent_ACK(0, type, processed));
+        new ViewHostMsg_HandleInputEvent_ACK(0, type, ack_result));
     host_->OnMessageReceived(*response);
   }
 

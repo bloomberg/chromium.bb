@@ -9,6 +9,7 @@ include_rules = [
   # directories in content/ so we disallow all of them.
   "-content",
   "+content/common",
+  "+content/port/common",
   "+content/public/common",
   "+content/public/test",
   "+content/shell",  # for content_browsertests

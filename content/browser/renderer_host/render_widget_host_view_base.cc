@@ -480,8 +480,7 @@ SmoothScrollGesture* RenderWidgetHostViewBase::CreateSmoothScrollGesture(
 }
 
 void RenderWidgetHostViewBase::ProcessAckedTouchEvent(
-    const WebKit::WebTouchEvent& touch,
-    bool processed) {
+    const WebKit::WebTouchEvent& touch, InputEventAckState ack_result) {
 }
 
 }  // namespace content

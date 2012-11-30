@@ -51,8 +51,9 @@ void BrowserPluginGuestHelper::OnUpdateRect(
 
 void BrowserPluginGuestHelper::OnHandleInputEventAck(
     WebKit::WebInputEvent::Type event_type,
-    bool processed) {
-  guest_->HandleInputEventAck(render_view_host(), processed);
+    InputEventAckState ack_result) {
+  guest_->HandleInputEventAck(render_view_host(),
+                              ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
 }
 
 void BrowserPluginGuestHelper::OnTakeFocus(bool reverse) {

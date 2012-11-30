@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_BROWSER_PLUGIN_BROWSER_PLUGIN_GUEST_HELPER_H_
 #define CONTENT_BROWSER_BROWSER_PLUGIN_BROWSER_PLUGIN_GUEST_HELPER_H_
 
+#include "content/port/common/input_event_ack_state.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
@@ -46,7 +47,7 @@ class BrowserPluginGuestHelper : public RenderViewHostObserver {
   void OnUpdateDragCursor(WebKit::WebDragOperation current_op);
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
   void OnHandleInputEventAck(WebKit::WebInputEvent::Type event_type,
-                             bool processed);
+                             InputEventAckState ack_result);
   void OnTakeFocus(bool reverse);
   void OnShowWidget(int route_id, const gfx::Rect& initial_pos);
   void OnMsgHasTouchEventHandlers(bool has_handlers);

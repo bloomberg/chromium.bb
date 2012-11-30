@@ -590,9 +590,19 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
   if (!processed && is_keyboard_shortcut)
     suppress_next_char_events_ = true;
 
+  InputEventAckState ack_result = processed ?
+      INPUT_EVENT_ACK_STATE_CONSUMED : INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+  if (!processed &&  input_event->type == WebInputEvent::TouchStart) {
+    const WebTouchEvent& touch_event =
+        *static_cast<const WebTouchEvent*>(input_event);
+    ack_result = HasTouchEventHandlersAt(touch_event.touches[0].position) ?
+        INPUT_EVENT_ACK_STATE_NOT_CONSUMED :
+        INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
+  }
+
   IPC::Message* response =
       new ViewHostMsg_HandleInputEvent_ACK(routing_id_, input_event->type,
-                                           processed);
+                                           ack_result);
   bool event_type_gets_rate_limited =
       input_event->type == WebInputEvent::MouseMove ||
       input_event->type == WebInputEvent::MouseWheel ||
@@ -1966,6 +1976,10 @@ bool RenderWidget::WillHandleGestureEvent(
 
 bool RenderWidget::WebWidgetHandlesCompositorScheduling() const {
   return false;
+}
+
+bool RenderWidget::HasTouchEventHandlersAt(const gfx::Point& point) const {
+  return true;
 }
 
 }  // namespace content

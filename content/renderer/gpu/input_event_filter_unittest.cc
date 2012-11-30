@@ -162,11 +162,11 @@ TEST(InputEventFilterTest, Basic) {
     EXPECT_EQ(ViewHostMsg_HandleInputEvent_ACK::ID, message->type());
 
     WebInputEvent::Type event_type = WebInputEvent::Undefined;
-    bool processed = false;
+    InputEventAckState ack_result = INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
     EXPECT_TRUE(ViewHostMsg_HandleInputEvent_ACK::Read(message, &event_type,
-                                                       &processed));
+                                                       &ack_result));
     EXPECT_EQ(kEvents[i].type, event_type);
-    EXPECT_FALSE(processed);
+    EXPECT_EQ(ack_result, INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
 
     const WebInputEvent* event = event_recorder.record_at(i);
     ASSERT_TRUE(event);
@@ -211,11 +211,11 @@ TEST(InputEventFilterTest, Basic) {
     EXPECT_EQ(ViewHostMsg_HandleInputEvent_ACK::ID, message->type());
 
     WebInputEvent::Type event_type = WebInputEvent::Undefined;
-    bool processed = false;
+    InputEventAckState ack_result = INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
     EXPECT_TRUE(ViewHostMsg_HandleInputEvent_ACK::Read(message, &event_type,
-                                                       &processed));
+                                                       &ack_result));
     EXPECT_EQ(kEvents[i].type, event_type);
-    EXPECT_TRUE(processed);
+    EXPECT_EQ(ack_result, INPUT_EVENT_ACK_STATE_CONSUMED);
   }
 
   filter->OnFilterRemoved();

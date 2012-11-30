@@ -470,12 +470,13 @@ void ContentViewCoreImpl::ShowSelectPopupMenu(
                                        multiple, selected_array.obj());
 }
 
-void ContentViewCoreImpl::ConfirmTouchEvent(bool handled) {
+void ContentViewCoreImpl::ConfirmTouchEvent(InputEventAckState ack_result) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
     return;
-  Java_ContentViewCore_confirmTouchEvent(env, j_obj.obj(), handled);
+  bool processed = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
+  Java_ContentViewCore_confirmTouchEvent(env, j_obj.obj(), processed);
 }
 
 void ContentViewCoreImpl::HasTouchEventHandlers(bool need_touch_events) {

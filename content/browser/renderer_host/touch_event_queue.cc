@@ -105,8 +105,8 @@ void TouchEventQueue::QueueEvent(const WebKit::WebTouchEvent& event) {
   touch_queue_.push_back(new CoalescedWebTouchEvent(event));
 }
 
-void TouchEventQueue::ProcessTouchAck(bool processed) {
-  PopTouchEventToView(processed);
+void TouchEventQueue::ProcessTouchAck(InputEventAckState ack_result) {
+  PopTouchEventToView(ack_result);
   // If there's a queued touch-event, then forward it to the renderer now.
   if (!touch_queue_.empty()) {
     render_widget_host_->ForwardTouchEventImmediately(
@@ -116,7 +116,7 @@ void TouchEventQueue::ProcessTouchAck(bool processed) {
 
 void TouchEventQueue::FlushQueue() {
   while (!touch_queue_.empty())
-    PopTouchEventToView(false);
+    PopTouchEventToView(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 }
 
 void TouchEventQueue::Reset() {
@@ -131,7 +131,7 @@ const WebKit::WebTouchEvent& TouchEventQueue::GetLatestEvent() const {
   return touch_queue_.back()->coalesced_event();
 }
 
-void TouchEventQueue::PopTouchEventToView(bool processed) {
+void TouchEventQueue::PopTouchEventToView(InputEventAckState ack_result) {
   if (touch_queue_.empty())
     return;
   scoped_ptr<CoalescedWebTouchEvent> acked_event(touch_queue_.front());
@@ -144,7 +144,7 @@ void TouchEventQueue::PopTouchEventToView(bool processed) {
   for (WebTouchEventList::const_iterator iter = acked_event->begin(),
        end = acked_event->end();
        iter != end; ++iter) {
-    view->ProcessAckedTouchEvent((*iter), processed);
+    view->ProcessAckedTouchEvent((*iter), ack_result);
   }
 }
 
