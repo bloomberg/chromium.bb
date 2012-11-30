@@ -292,7 +292,6 @@ GCCPatterns = [
   ( '(-pedantic)',            AddCCFlag),
   ( '(-pedantic-errors)',     AddCCFlag),
   ( '(-g.*)',                 AddCCFlag),
-  ( '(-v|--v)',               AddCCFlag),
 
   ( '(-pthreads?)',           "env.set('PTHREAD', '1')"),
 
@@ -350,7 +349,7 @@ GCCPatterns = [
   ( '(-print-.*)',            "env.set('DIAGNOSTIC', '1')"),
   ( '(--print.*)',            "env.set('DIAGNOSTIC', '1')"),
   ( '(-dumpspecs)',           "env.set('DIAGNOSTIC', '1')"),
-  ( '(--version)',            "env.set('DIAGNOSTIC', '1')"),
+  ( '(-v|--v|--version)',     "env.set('DIAGNOSTIC', '1')"),
   ( '(-V)',                   "env.set('DIAGNOSTIC', '1')\n"
                               "env.clear('CC_FLAGS')"),
   # These are preprocessor flags which should be passed to the frontend, but
