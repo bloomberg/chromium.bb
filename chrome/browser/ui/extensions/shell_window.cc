@@ -141,6 +141,27 @@ void ShellWindow::Init(const GURL& url,
   }
 
   ShellWindow::CreateParams new_params = params;
+
+  gfx::Size& minimum_size = new_params.minimum_size;
+  gfx::Size& maximum_size = new_params.maximum_size;
+
+  // In the case that minimum size > maximum size, we consider the minimum
+  // size to be more important.
+  if (maximum_size.width() && maximum_size.width() < minimum_size.width())
+    maximum_size.set_width(minimum_size.width());
+  if (maximum_size.height() && maximum_size.height() < minimum_size.height())
+    maximum_size.set_height(minimum_size.height());
+
+  if (maximum_size.width() && bounds.width() > maximum_size.width())
+    bounds.set_width(maximum_size.width());
+  if (bounds.width() != INT_MIN && bounds.width() < minimum_size.width())
+    bounds.set_width(minimum_size.width());
+
+  if (maximum_size.height() && bounds.height() > maximum_size.height())
+    bounds.set_height(maximum_size.height());
+  if (bounds.height() != INT_MIN && bounds.height() < minimum_size.height())
+    bounds.set_height(minimum_size.height());
+
   new_params.bounds = bounds;
 
   native_app_window_.reset(NativeAppWindow::Create(this, new_params));
