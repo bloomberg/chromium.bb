@@ -61,9 +61,10 @@ const GdkColor kFindFailureBackgroundColor = GDK_COLOR_RGB(255, 102, 102);
 const GdkColor kFindSuccessTextColor = GDK_COLOR_RGB(178, 178, 178);
 
 // Padding around the container.
-const int kBarPaddingTopBottom = 4;
+const int kBarPaddingTop = 2;
+const int kBarPaddingBottom = 3;
 const int kEntryPaddingLeft = 6;
-const int kCloseButtonPaddingLeft = 3;
+const int kCloseButtonPadding = 3;
 const int kBarPaddingRight = 4;
 
 // The height of the findbar dialog, as dictated by the size of the background
@@ -229,9 +230,9 @@ void FindBarGtk::InitWidgets() {
   // the slide effect.
   GtkWidget* hbox = gtk_hbox_new(false, 0);
   container_ = gtk_util::CreateGtkBorderBin(hbox, NULL,
-      kBarPaddingTopBottom, kBarPaddingTopBottom,
+      kBarPaddingTop, kBarPaddingBottom,
       kEntryPaddingLeft, kBarPaddingRight);
-  gtk_widget_set_size_request(container_, kFindBarWidth, -1);
+  gtk_widget_set_size_request(container_, kFindBarWidth, kFindBarHeight);
   ViewIDUtil::SetID(container_, VIEW_ID_FIND_IN_PAGE);
   gtk_widget_set_app_paintable(container_, TRUE);
 
@@ -239,9 +240,14 @@ void FindBarGtk::InitWidgets() {
                                            SlideAnimatorGtk::DOWN,
                                            0, false, true, NULL));
 
-  close_button_.reset(CustomDrawButton::CloseButton(theme_service_));
-  gtk_util::CenterWidgetInHBox(hbox, close_button_->widget(), true,
-                               kCloseButtonPaddingLeft);
+  GtkWidget* close_alignment = gtk_alignment_new(0, 0.6, 1, 0);
+  close_button_.reset(new CustomDrawButton(
+      theme_service_, IDR_TAB_CLOSE,
+      IDR_TAB_CLOSE_P, IDR_TAB_CLOSE_H, IDR_TAB_CLOSE,
+      GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU));
+  gtk_container_add(GTK_CONTAINER(close_alignment), close_button_->widget());
+  gtk_box_pack_end(GTK_BOX(hbox), close_alignment, FALSE, FALSE,
+                   kCloseButtonPadding);
   g_signal_connect(close_button_->widget(), "clicked",
                    G_CALLBACK(OnClickedThunk), this);
   gtk_widget_set_tooltip_text(close_button_->widget(),
@@ -537,11 +543,12 @@ void FindBarGtk::Observe(int type,
 
     gtk_misc_set_alignment(GTK_MISC(match_count_label_), 0.5, 1.0);
 
+    // This is necessary to make the close button dark enough.
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     close_button_->SetBackground(
         theme_service_->GetColor(ThemeService::COLOR_TAB_TEXT),
-        rb.GetImageNamed(IDR_CLOSE_BAR).AsBitmap(),
-        rb.GetImageNamed(IDR_CLOSE_BAR_MASK).AsBitmap());
+        rb.GetImageNamed(IDR_TAB_CLOSE).AsBitmap(),
+        rb.GetImageNamed(IDR_TAB_CLOSE).AsBitmap());
   }
 
   UpdateMatchLabelAppearance(match_label_failure_);
