@@ -1853,11 +1853,12 @@ bool BrowserView::GetSavedWindowPlacement(
   }
 #endif
 
-  if ((browser_->is_type_popup() &&
-       !browser_->is_devtools() && !browser_->is_app()) ||
-      (browser_->is_type_panel())) {
-    // We are a popup window. The value passed in |bounds| represents two
-    // pieces of information:
+  if ((browser_->is_type_popup() || browser_->is_type_panel()) &&
+      bounds->width() == browser_->override_bounds().width() &&
+      bounds->height() == browser_->override_bounds().height() &&
+      !browser_->is_devtools()) {
+    // This is a popup window that has not been resized. The value passed in
+    // |bounds| represents two pieces of information:
     // - the position of the window, in screen coordinates (outer position).
     // - the size of the content area (inner size).
     // We need to use these values to determine the appropriate size and
