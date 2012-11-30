@@ -92,10 +92,6 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // apps, not hosted apps.
   virtual content::SiteInstance* GetSiteInstanceForURL(const GURL& url);
 
-  // Registers a RenderViewHost as hosting a given extension.
-  void RegisterRenderViewHost(content::RenderViewHost* render_view_host,
-                              const extensions::Extension* extension);
-
   // Unregisters a RenderViewHost as hosting any extension.
   void UnregisterRenderViewHost(content::RenderViewHost* render_view_host);
 
@@ -174,13 +170,8 @@ class ExtensionProcessManager : public content::NotificationObserver {
   struct BackgroundPageData;
   typedef std::string ExtensionId;
   typedef std::map<ExtensionId, BackgroundPageData> BackgroundPageDataMap;
-
-  // Contains all extension-related RenderViewHost instances for all extensions.
-  // We also keep a cache of the host's view type, because that information
-  // is not accessible at registration/deregistration time.
   typedef std::map<content::RenderViewHost*,
       chrome::ViewType> ExtensionRenderViews;
-  ExtensionRenderViews all_extension_views_;
 
   // Close the given |host| iff it's a background page.
   void CloseBackgroundHost(extensions::ExtensionHost* host);
@@ -197,13 +188,17 @@ class ExtensionProcessManager : public content::NotificationObserver {
   void CloseLazyBackgroundPageNow(const std::string& extension_id,
                                   int sequence_id);
 
-  // Updates a potentially-registered RenderViewHost once it has been
-  // associated with a WebContents. This allows us to gather information that
-  // was not available when the host was first registered.
-  void UpdateRegisteredRenderView(content::RenderViewHost* render_view_host);
+  // Potentially registers a RenderViewHost, if it is associated with an
+  // extension. Does nothing if this is not an extension renderer.
+  void RegisterRenderViewHost(content::RenderViewHost* render_view_host);
 
   // Clears background page data for this extension.
   void ClearBackgroundPageData(const std::string& extension_id);
+
+  // Contains all active extension-related RenderViewHost instances for all
+  // extensions. We also keep a cache of the host's view type, because that
+  // information is not accessible at registration/deregistration time.
+  ExtensionRenderViews all_extension_views_;
 
   BackgroundPageDataMap background_page_data_;
 

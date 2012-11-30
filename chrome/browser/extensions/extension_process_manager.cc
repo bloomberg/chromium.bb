@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
@@ -155,6 +156,8 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<Profile>(profile));
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
+                 content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
@@ -362,13 +365,10 @@ const Extension* ExtensionProcessManager::GetExtensionForRenderViewHost(
 
   ExtensionService* service =
       extensions::ExtensionSystem::Get(GetProfile())->extension_service();
-  return service->extensions()->GetByID(GetExtensionID(render_view_host));
-}
+  if (!service)
+    return NULL;
 
-void ExtensionProcessManager::RegisterRenderViewHost(
-    RenderViewHost* render_view_host,
-    const Extension* extension) {
-  all_extension_views_[render_view_host] = chrome::VIEW_TYPE_INVALID;
+  return service->extensions()->GetByID(GetExtensionID(render_view_host));
 }
 
 void ExtensionProcessManager::UnregisterRenderViewHost(
@@ -386,7 +386,7 @@ void ExtensionProcessManager::UnregisterRenderViewHost(
   chrome::ViewType view_type = view->second;
   all_extension_views_.erase(view);
 
-  // Keepalive count, balanced in UpdateRegisteredRenderView.
+  // Keepalive count, balanced in RegisterRenderViewHost.
   if (view_type != chrome::VIEW_TYPE_INVALID &&
       view_type != chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
     const Extension* extension = GetExtensionForRenderViewHost(
@@ -396,20 +396,15 @@ void ExtensionProcessManager::UnregisterRenderViewHost(
   }
 }
 
-void ExtensionProcessManager::UpdateRegisteredRenderView(
+void ExtensionProcessManager::RegisterRenderViewHost(
     RenderViewHost* render_view_host) {
-  ExtensionRenderViews::iterator view =
-      all_extension_views_.find(render_view_host);
-  if (view == all_extension_views_.end())
+  const Extension* extension = GetExtensionForRenderViewHost(
+      render_view_host);
+  if (!extension)
     return;
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_VIEW_REGISTERED,
-      content::Source<Profile>(GetProfile()),
-      content::Details<RenderViewHost>(render_view_host));
-
   WebContents* web_contents = WebContents::FromRenderViewHost(render_view_host);
-  view->second = chrome::GetViewType(web_contents);
+  all_extension_views_[render_view_host] = chrome::GetViewType(web_contents);
 
   // Keep the lazy background page alive as long as any non-background-page
   // extension views are visible. Keepalive count balanced in
@@ -625,10 +620,41 @@ void ExtensionProcessManager::Observe(
       break;
     }
 
+    case content::NOTIFICATION_WEB_CONTENTS_SWAPPED: {
+      // We get this notification both for new WebContents and when one
+      // has its RenderViewHost replaced (e.g. when a user does a cross-site
+      // navigation away from an extension URL). For the replaced case, we must
+      // unregister the old RVH so it doesn't count as an active view that would
+      // keep the event page alive.
+      content::WebContents* contents =
+          content::Source<content::WebContents>(source).ptr();
+      if (contents->GetBrowserContext() != GetProfile())
+        break;
+
+      content::RenderViewHost* old_render_view_host =
+          content::Details<content::RenderViewHost>(details).ptr();
+      if (old_render_view_host)
+        UnregisterRenderViewHost(old_render_view_host);
+      RegisterRenderViewHost(contents->GetRenderViewHost());
+      break;
+    }
+
     case content::NOTIFICATION_WEB_CONTENTS_CONNECTED: {
       content::WebContents* contents =
           content::Source<content::WebContents>(source).ptr();
-      UpdateRegisteredRenderView(contents->GetRenderViewHost());
+      if (contents->GetBrowserContext() != GetProfile())
+        break;
+      const Extension* extension = GetExtensionForRenderViewHost(
+          contents->GetRenderViewHost());
+      if (!extension)
+        return;
+
+      // RegisterRenderViewHost is called too early (before the process is
+      // available), so we need to wait until now to notify.
+      content::NotificationService::current()->Notify(
+          chrome::NOTIFICATION_EXTENSION_VIEW_REGISTERED,
+          content::Source<Profile>(GetProfile()),
+          content::Details<RenderViewHost>(contents->GetRenderViewHost()));
       break;
     }
 

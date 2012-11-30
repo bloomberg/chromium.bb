@@ -34,7 +34,6 @@ ChromeRenderViewHostObserver::ChromeRenderViewHostObserver(
   profile_ = Profile::FromBrowserContext(
       site_instance->GetBrowserContext());
 
-  InitRenderViewHostForExtensions();
   InitRenderViewForExtensions();
 }
 
@@ -72,19 +71,6 @@ bool ChromeRenderViewHostObserver::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void ChromeRenderViewHostObserver::InitRenderViewHostForExtensions() {
-  const Extension* extension = GetExtension();
-  if (!extension)
-    return;
-
-  ExtensionProcessManager* process_manager =
-      extensions::ExtensionSystem::Get(profile_)->process_manager();
-  CHECK(process_manager);
-
-  // TODO(creis): Use this to replace SetInstalledAppForRenderer.
-  process_manager->RegisterRenderViewHost(render_view_host(), extension);
 }
 
 void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {

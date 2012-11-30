@@ -445,7 +445,8 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void RenderViewGoneFromRenderManager(
       RenderViewHost* render_view_host) OVERRIDE;
   virtual void UpdateRenderViewSizeForRenderManager() OVERRIDE;
-  virtual void NotifySwappedFromRenderManager() OVERRIDE;
+  virtual void NotifySwappedFromRenderManager(
+      RenderViewHost* old_render_view_host) OVERRIDE;
   virtual int CreateOpenerRenderViewsForRenderManager(
       SiteInstance* instance) OVERRIDE;
   virtual NavigationControllerImpl&
@@ -657,7 +658,7 @@ class CONTENT_EXPORT WebContentsImpl
   // Misc non-view stuff -------------------------------------------------------
 
   // Helper functions for sending notifications.
-  void NotifySwapped();
+  void NotifySwapped(RenderViewHost* old_render_view_host);
   void NotifyConnected();
   void NotifyDisconnected();
 

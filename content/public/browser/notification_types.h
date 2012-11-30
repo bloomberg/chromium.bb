@@ -172,7 +172,8 @@ enum NotificationType {
   // with another one, possibly changing processes. The source is a
   // Source<WebContents> with a pointer to the WebContents.  A
   // NOTIFICATION_WEB_CONTENTS_DISCONNECTED notification is guaranteed before
-  // the source pointer becomes junk.  No details are expected.
+  // the source pointer becomes junk.  Details are the RenderViewHost that
+  // has been replaced, or NULL if the old RVH was shut down.
   NOTIFICATION_WEB_CONTENTS_SWAPPED,
 
   // This message is sent after a WebContents is disconnected from the

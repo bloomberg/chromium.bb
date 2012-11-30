@@ -32,9 +32,6 @@ class ChromeRenderViewHostObserver : public content::RenderViewHostObserver {
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
-   // Does extension-specific initialization when a new RenderViewHost is
-   // created.
-  void InitRenderViewHostForExtensions();
    // Does extension-specific initialization when a new renderer process is
    // created by a RenderViewHost.
   void InitRenderViewForExtensions();

@@ -260,6 +260,35 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForRequest) {
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
 }
 
+// Tests that the lazy background page stays alive until all visible views are
+// closed.
+IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForNTP) {
+  LazyBackgroundObserver lazybg;
+  ResultCatcher catcher;
+  FilePath extdir = test_data_dir_.AppendASCII("lazy_background_page").
+      AppendASCII("wait_for_ntp");
+  const Extension* extension = LoadExtension(extdir);
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  // The extension should've opened a new tab to an extension page.
+  EXPECT_EQ(std::string(chrome::kChromeUINewTabURL),
+            chrome::GetActiveWebContents(browser())->GetURL().spec());
+
+  // Lazy Background Page still exists, because the extension created a new tab
+  // to an extension page.
+  ExtensionProcessManager* pm =
+      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
+  EXPECT_TRUE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
+
+  // Navigate away from the NTP, which should close the event page.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  lazybg.Wait();
+
+  // Lazy Background Page has been shut down.
+  EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
+}
+
 // Tests that an incognito split mode extension gets 2 lazy background pages,
 // and they each load and unload at the proper times.
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, IncognitoSplitMode) {

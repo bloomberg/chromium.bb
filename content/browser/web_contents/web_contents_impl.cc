@@ -2516,7 +2516,7 @@ bool WebContentsImpl::UpdateTitleForEntry(NavigationEntryImpl* entry,
   return true;
 }
 
-void WebContentsImpl::NotifySwapped() {
+void WebContentsImpl::NotifySwapped(RenderViewHost* old_render_view_host) {
   // After sending out a swap notification, we need to send a disconnect
   // notification so that clients that pick up a pointer to |this| can NULL the
   // pointer.  See Bug 1230284.
@@ -2524,7 +2524,7 @@ void WebContentsImpl::NotifySwapped() {
   NotificationService::current()->Notify(
       NOTIFICATION_WEB_CONTENTS_SWAPPED,
       Source<WebContents>(this),
-      NotificationService::NoDetails());
+      Details<RenderViewHost>(old_render_view_host));
 
   // Ensure that the associated embedder gets cleared after a RenderViewHost
   // gets swapped, so we don't reuse the same embedder next time a
@@ -3217,8 +3217,8 @@ void WebContentsImpl::UpdateRenderViewSizeForRenderManager() {
     view_->SizeContents(size);
 }
 
-void WebContentsImpl::NotifySwappedFromRenderManager() {
-  NotifySwapped();
+void WebContentsImpl::NotifySwappedFromRenderManager(RenderViewHost* rvh) {
+  NotifySwapped(rvh);
 }
 
 int WebContentsImpl::CreateOpenerRenderViewsForRenderManager(

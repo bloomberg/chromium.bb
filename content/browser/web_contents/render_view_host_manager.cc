@@ -757,11 +757,12 @@ void RenderViewHostManager::CommitPending() {
     swapped_out_hosts_[old_site_instance_id] = old_render_view_host;
   } else {
     old_render_view_host->Shutdown();
+    old_render_view_host = NULL;  // Shutdown() deletes it.
   }
 
   // Let the task manager know that we've swapped RenderViewHosts, since it
   // might need to update its process groupings.
-  delegate_->NotifySwappedFromRenderManager();
+  delegate_->NotifySwappedFromRenderManager(old_render_view_host);
 }
 
 RenderViewHostImpl* RenderViewHostManager::UpdateRendererStateForNavigate(
