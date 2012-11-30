@@ -126,8 +126,7 @@ cr.define('login', function() {
 
       cr.ui.DropDown.show('offline-networks-list', false, lastNetworkType);
 
-      $('error-guest-signin').hidden = $('guestSignin').hidden ||
-          !$('add-user-header-bar-item').hidden;
+      $('error-guest-signin').hidden = $('guestSignin').hidden;
 
       $('error-offline-login').hidden = !currentScreen.isOfflineAllowed;
     },

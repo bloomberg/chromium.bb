@@ -349,6 +349,9 @@ void ErrorScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("errorScreenUpdate",
       base::Bind(&ErrorScreenHandler::HandleErrorScreenUpdate,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("updateGaiaIsLocal",
+      base::Bind(&ErrorScreenHandler::HandleUpdateGaiaIsLocal,
+                 base::Unretained(this)));
 }
 
 void ErrorScreenHandler::GetLocalizedStrings(
