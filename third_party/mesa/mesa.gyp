@@ -592,6 +592,11 @@
         {
           'target_name': 'mesa_headers',
           'type': 'none',
+          'direct_dependent_settings': {
+            'defines': [
+              'USE_SYSTEM_MESA',
+            ],
+          }
         },
         {
           'target_name': 'mesa',
