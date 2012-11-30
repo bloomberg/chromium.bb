@@ -188,6 +188,8 @@
         'common/extensions/permissions/api_permission.h',
         'common/extensions/permissions/api_permission_set.cc',
         'common/extensions/permissions/api_permission_set.h',
+        'common/extensions/permissions/bluetooth_device_permission.cc',
+        'common/extensions/permissions/bluetooth_device_permission.h',
         'common/extensions/permissions/permission_message.cc',
         'common/extensions/permissions/permission_message.h',
         'common/extensions/permissions/permission_set.cc',

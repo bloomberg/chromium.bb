@@ -660,6 +660,7 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("pageAction", IDR_PAGE_ACTION_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("pageCapture",
                              IDR_PAGE_CAPTURE_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("permissions", IDR_PERMISSIONS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("runtime", IDR_RUNTIME_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("storage", IDR_STORAGE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("syncFileSystem",

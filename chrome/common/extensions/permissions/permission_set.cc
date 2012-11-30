@@ -197,6 +197,23 @@ PermissionSet* PermissionSet::CreateUnion(
   return new PermissionSet(apis, explicit_hosts, scriptable_hosts);
 }
 
+// static
+PermissionSet* PermissionSet::ExcludeNotInManifestPermissions(
+    const PermissionSet* set) {
+  if (!set)
+    return new PermissionSet();
+
+  APIPermissionSet apis;
+  for (APIPermissionSet::const_iterator i = set->apis().begin();
+       i != set->apis().end(); ++i) {
+    if (!i->ManifestEntryForbidden())
+      apis.insert(i->Clone());
+  }
+
+  return new PermissionSet(
+      apis, set->explicit_hosts(), set->scriptable_hosts());
+}
+
 bool PermissionSet::operator==(
     const PermissionSet& rhs) const {
   return apis_ == rhs.apis_ &&

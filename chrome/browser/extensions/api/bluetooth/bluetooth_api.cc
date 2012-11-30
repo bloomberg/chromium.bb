@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/bluetooth.h"
+#include "chrome/common/extensions/permissions/bluetooth_device_permission.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -62,6 +63,7 @@ const char kCouldNotGetLocalOutOfBandPairingData[] =
     "Could not get local Out Of Band Pairing Data";
 const char kCouldNotSetOutOfBandPairingData[] =
     "Could not set Out Of Band Pairing Data";
+const char kDevicePermissionDenied[] = "Permission to access device denied";
 const char kFailedToConnect[] = "Connection failed";
 const char kInvalidDevice[] = "Invalid device";
 const char kInvalidUuid[] = "Invalid UUID";
@@ -342,6 +344,13 @@ bool BluetoothConnectFunction::RunImpl() {
   scoped_ptr<Connect::Params> params(Connect::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
   const bluetooth::ConnectOptions& options = params->options;
+
+  BluetoothDevicePermission::CheckParam param(options.device_address);
+  if (!GetExtension()->CheckAPIPermissionWithParam(
+        APIPermission::kBluetoothDevice, &param)) {
+    SetError(kDevicePermissionDenied);
+    return false;
+  }
 
   std::string uuid = device::bluetooth_utils::CanonicalUuid(
       options.service_uuid);

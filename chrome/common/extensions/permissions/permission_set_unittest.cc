@@ -735,6 +735,14 @@ TEST(PermissionsTest, PermissionMessages) {
        i != permissions.end(); ++i) {
     const APIPermissionInfo* permission_info = i->info();
     EXPECT_TRUE(permission_info != NULL);
+
+    // Always skip permissions that cannot be in the manifest.
+    const APIPermission* permission = permission_info->CreateAPIPermission();
+    if (permission->ManifestEntryForbidden()) {
+      continue;
+    }
+    delete permission;
+
     if (skip.count(i->id())) {
       EXPECT_EQ(PermissionMessage::kNone, permission_info->message_id())
           << "unexpected message_id for " << permission_info->name();
