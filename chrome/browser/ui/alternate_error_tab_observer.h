@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_ALTERNATE_ERROR_TAB_OBSERVER_H_
 
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -18,7 +19,8 @@ class Profile;
 class AlternateErrorPageTabObserver
     : public content::WebContentsObserver,
       public content::NotificationObserver,
-      public content::WebContentsUserData<AlternateErrorPageTabObserver> {
+      public content::WebContentsUserData<AlternateErrorPageTabObserver>,
+      public PrefObserver {
  public:
   virtual ~AlternateErrorPageTabObserver();
 
@@ -37,13 +39,15 @@ class AlternateErrorPageTabObserver
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // PrefObserver overrides:
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
+
   // Internal helpers ----------------------------------------------------------
 
   // Returns the server that can provide alternate error pages.  If the returned
   // URL is empty, the default error page built into WebKit will be used.
   GURL GetAlternateErrorPageURL() const;
-
-  void OnAlternateErrorPagesEnabledChanged();
 
   // Send the alternate error page URL to the renderer.
   void UpdateAlternateErrorPageURL(content::RenderViewHost* rvh);

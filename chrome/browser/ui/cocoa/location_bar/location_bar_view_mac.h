@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/ui/browser.h"
@@ -45,7 +46,8 @@ class ZoomDecoration;
 class LocationBarViewMac : public LocationBar,
                            public LocationBarTesting,
                            public OmniboxEditController,
-                           public content::NotificationObserver {
+                           public content::NotificationObserver,
+                           public PrefObserver {
  public:
   LocationBarViewMac(AutocompleteTextField* field,
                      CommandUpdater* command_updater,
@@ -178,6 +180,10 @@ class LocationBarViewMac : public LocationBar,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // PrefObserver:
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
+
   Browser* browser() const { return browser_; }
 
  private:
@@ -189,8 +195,6 @@ class LocationBarViewMac : public LocationBar,
 
   // Clear the page-action decorations.
   void DeletePageActionDecorations();
-
-  void OnEditBookmarksEnabledChanged();
 
   // Re-generate the page-action decorations from the profile's
   // extension service.

@@ -159,40 +159,16 @@ BrowserCommandController::BrowserCommandController(Browser* browser)
   PrefService* local_state = g_browser_process->local_state();
   if (local_state) {
     local_pref_registrar_.Init(local_state);
-    local_pref_registrar_.Add(
-        prefs::kAllowFileSelectionDialogs,
-        base::Bind(
-            &BrowserCommandController::UpdateCommandsForFileSelectionDialogs,
-            base::Unretained(this)));
-    local_pref_registrar_.Add(
-        prefs::kInManagedMode,
-        base::Bind(
-            &BrowserCommandController::UpdateCommandsForMultipleProfiles,
-            base::Unretained(this)));
+    local_pref_registrar_.Add(prefs::kAllowFileSelectionDialogs, this);
+    local_pref_registrar_.Add(prefs::kInManagedMode, this);
   }
 
   profile_pref_registrar_.Init(profile()->GetPrefs());
-  profile_pref_registrar_.Add(
-      prefs::kDevToolsDisabled,
-      base::Bind(&BrowserCommandController::UpdateCommandsForDevTools,
-                 base::Unretained(this)));
-  profile_pref_registrar_.Add(
-      prefs::kEditBookmarksEnabled,
-      base::Bind(&BrowserCommandController::UpdateCommandsForBookmarkEditing,
-                 base::Unretained(this)));
-  profile_pref_registrar_.Add(
-      prefs::kShowBookmarkBar,
-      base::Bind(&BrowserCommandController::UpdateCommandsForBookmarkBar,
-                 base::Unretained(this)));
-  profile_pref_registrar_.Add(
-      prefs::kIncognitoModeAvailability,
-      base::Bind(
-          &BrowserCommandController::UpdateCommandsForIncognitoAvailability,
-          base::Unretained(this)));
-  profile_pref_registrar_.Add(
-      prefs::kPrintingEnabled,
-      base::Bind(&BrowserCommandController::UpdatePrintingState,
-                 base::Unretained(this)));
+  profile_pref_registrar_.Add(prefs::kDevToolsDisabled, this);
+  profile_pref_registrar_.Add(prefs::kEditBookmarksEnabled, this);
+  profile_pref_registrar_.Add(prefs::kShowBookmarkBar, this);
+  profile_pref_registrar_.Add(prefs::kIncognitoModeAvailability, this);
+  profile_pref_registrar_.Add(prefs::kPrintingEnabled, this);
 
   InitCommandState();
 
@@ -708,6 +684,32 @@ void BrowserCommandController::Observe(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// PrefObserver implementation:
+
+void BrowserCommandController::OnPreferenceChanged(
+    PrefServiceBase* service,
+    const std::string& pref_name) {
+  if (pref_name == prefs::kPrintingEnabled) {
+    UpdatePrintingState();
+  } else if (pref_name == prefs::kIncognitoModeAvailability) {
+    UpdateCommandsForIncognitoAvailability();
+  } else if (pref_name == prefs::kDevToolsDisabled) {
+    UpdateCommandsForDevTools();
+  } else if (pref_name == prefs::kEditBookmarksEnabled) {
+    UpdateCommandsForBookmarkEditing();
+  } else if (pref_name == prefs::kShowBookmarkBar) {
+    UpdateCommandsForBookmarkBar();
+  } else if (pref_name == prefs::kAllowFileSelectionDialogs) {
+    UpdateSaveAsState();
+    UpdateOpenFileState();
+  } else if (pref_name == prefs::kInManagedMode) {
+    UpdateCommandsForMultipleProfiles();
+  } else {
+    NOTREACHED();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // BrowserCommandController, TabStripModelObserver implementation:
 
 void BrowserCommandController::TabInsertedAt(WebContents* contents,
@@ -1048,11 +1050,6 @@ void BrowserCommandController::UpdateCommandsForBookmarkBar() {
       browser_defaults::bookmarks_enabled &&
       !profile()->GetPrefs()->IsManagedPreference(prefs::kShowBookmarkBar) &&
       show_main_ui);
-}
-
-void BrowserCommandController::UpdateCommandsForFileSelectionDialogs() {
-  UpdateSaveAsState();
-  UpdateOpenFileState();
 }
 
 void BrowserCommandController::UpdateCommandsForFullscreenMode(
