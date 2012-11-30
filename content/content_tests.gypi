@@ -793,6 +793,11 @@
                 '../webkit/webkit.gyp:pull_in_copy_TestNetscapePlugIn',
               ],
             }],
+            ['enable_webrtc==1', {
+              'sources': [
+                'browser/webrtc_getusermedia_browsertest.cc',
+              ],
+            }],
           ],
         },
       ],

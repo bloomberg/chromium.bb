@@ -1,0 +1,18 @@
+<html>
+<head>
+  <script type="text/javascript">
+  function getUserMedia(constraints) {
+    navigator.webkitGetUserMedia(constraints, okCallback, failedCallback);
+  }
+
+  function failedCallback(error) {
+    document.title = 'GetUserMedia call failed with code ' + error.code;
+  }
+
+  function okCallback(stream) {
+    stream.stop();
+    document.title = 'OK';
+  }
+  </script>
+</head>
+</html>
