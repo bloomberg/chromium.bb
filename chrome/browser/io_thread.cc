@@ -222,6 +222,25 @@ ConstructSystemRequestContext(IOThread::Globals* globals,
   return context;
 }
 
+void InitializeNetworkSessionParams(
+    const IOThread::Globals& globals,
+    net::HttpNetworkSession::Params* params) {
+  params->host_resolver = globals.host_resolver.get();
+  params->cert_verifier = globals.cert_verifier.get();
+  params->server_bound_cert_service =
+      globals.system_server_bound_cert_service.get();
+  params->transport_security_state = globals.transport_security_state.get();
+  params->ssl_config_service = globals.ssl_config_service.get();
+  params->http_auth_handler_factory = globals.http_auth_handler_factory.get();
+  params->http_server_properties = globals.http_server_properties.get();
+  params->network_delegate = globals.system_network_delegate.get();
+  params->host_mapping_rules = globals.host_mapping_rules.get();
+  params->ignore_certificate_errors = globals.ignore_certificate_errors;
+  params->http_pipelining_enabled = globals.http_pipelining_enabled;
+  params->testing_fixed_http_port = globals.testing_fixed_http_port;
+  params->testing_fixed_https_port = globals.testing_fixed_https_port;
+}
+
 }  // namespace
 
 class IOThread::LoggingNetworkChangeObserver
@@ -496,30 +515,10 @@ void IOThread::Init() {
   }
 
   net::HttpNetworkSession::Params session_params;
-  session_params.host_resolver = globals_->host_resolver.get();
-  session_params.cert_verifier = globals_->cert_verifier.get();
-  session_params.server_bound_cert_service =
-      globals_->system_server_bound_cert_service.get();
-  session_params.transport_security_state =
-      globals_->transport_security_state.get();
+  InitializeNetworkSessionParams(*globals_, &session_params);
+  session_params.net_log = net_log_;
   session_params.proxy_service =
       globals_->proxy_script_fetcher_proxy_service.get();
-  session_params.ssl_config_service = globals_->ssl_config_service.get();
-  session_params.http_auth_handler_factory =
-      globals_->http_auth_handler_factory.get();
-  session_params.http_server_properties =
-      globals_->http_server_properties.get();
-  session_params.network_delegate = globals_->system_network_delegate.get();
-  // TODO(rtenneti): We should probably use HttpServerPropertiesManager for the
-  // system URLRequestContext too. There's no reason this should be tied to a
-  // profile.
-  session_params.net_log = net_log_;
-  session_params.host_mapping_rules = globals_->host_mapping_rules.get();
-  session_params.ignore_certificate_errors =
-      globals_->ignore_certificate_errors;
-  session_params.http_pipelining_enabled = globals_->http_pipelining_enabled;
-  session_params.testing_fixed_http_port = globals_->testing_fixed_http_port;
-  session_params.testing_fixed_https_port = globals_->testing_fixed_https_port;
 
   InitializeNetworkOptions(command_line);
 
@@ -833,24 +832,9 @@ void IOThread::InitSystemRequestContextOnIOThread() {
           command_line));
 
   net::HttpNetworkSession::Params system_params;
-  system_params.host_resolver = globals_->host_resolver.get();
-  system_params.cert_verifier = globals_->cert_verifier.get();
-  system_params.server_bound_cert_service =
-      globals_->system_server_bound_cert_service.get();
-  system_params.transport_security_state =
-      globals_->transport_security_state.get();
-  system_params.proxy_service = globals_->system_proxy_service.get();
-  system_params.ssl_config_service = globals_->ssl_config_service.get();
-  system_params.http_auth_handler_factory =
-      globals_->http_auth_handler_factory.get();
-  system_params.http_server_properties = globals_->http_server_properties.get();
-  system_params.network_delegate = globals_->system_network_delegate.get();
+  InitializeNetworkSessionParams(*globals_, &system_params);
   system_params.net_log = net_log_;
-  system_params.host_mapping_rules = globals_->host_mapping_rules.get();
-  system_params.ignore_certificate_errors = globals_->ignore_certificate_errors;
-  system_params.http_pipelining_enabled = globals_->http_pipelining_enabled;
-  system_params.testing_fixed_http_port = globals_->testing_fixed_http_port;
-  system_params.testing_fixed_https_port = globals_->testing_fixed_https_port;
+  system_params.proxy_service = globals_->system_proxy_service.get();
 
   globals_->system_http_transaction_factory.reset(
       new net::HttpNetworkLayer(
