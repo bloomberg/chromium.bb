@@ -255,10 +255,12 @@ function onClientStateChange_(oldState, newState) {
         remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_ME2ME);
       }
     } else {
-      // The transition from CONNECTING to CLOSED state may happen
-      // only with older client plugins. Current version should go the
-      // FAILED state when connection fails.
-      showConnectError_(remoting.Error.INVALID_ACCESS_CODE);
+      // A state transition from CONNECTING -> CLOSED can happen if the host
+      // closes the connection without an error message instead of accepting it.
+      // For example, it does this if it fails to activate curtain mode. Since
+      // there's no way of knowing exactly what went wrong, we rely on server-
+      // side logs in this case and show a generic error message.
+      showConnectError_(remoting.Error.UNEXPECTED);
     }
 
   } else if (newState == remoting.ClientSession.State.FAILED) {

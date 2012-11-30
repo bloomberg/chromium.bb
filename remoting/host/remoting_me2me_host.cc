@@ -212,7 +212,9 @@ class HostProcess
 
   void OnAuthFailed();
 
-  void RejectAuthenticatingClient();
+  void OnCurtainModeFailed();
+
+  void OnRemoteSessionSwitchedToConsole();
 
   // Invoked when the user uses the Disconnect windows to terminate
   // the sessions, or when the local session is activated in curtain mode.
@@ -312,9 +314,9 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
   // Create the platform-specific curtain-mode implementation.
   // TODO(wez): Create this on the network thread?
   curtain_ = CurtainMode::Create(
-      base::Bind(&HostProcess::OnDisconnectRequested,
+      base::Bind(&HostProcess::OnRemoteSessionSwitchedToConsole,
                  base::Unretained(this)),
-      base::Bind(&HostProcess::RejectAuthenticatingClient,
+      base::Bind(&HostProcess::OnCurtainModeFailed,
                  base::Unretained(this)));
 
   StartOnUiThread();
@@ -934,10 +936,17 @@ void HostProcess::OnAuthFailed() {
   Shutdown(kInvalidOauthCredentialsExitCode);
 }
 
-void HostProcess::RejectAuthenticatingClient() {
+void HostProcess::OnCurtainModeFailed() {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
   DCHECK(host_);
+  LOG(ERROR) << "Curtain mode failed to activate. Closing connection.";
   host_->RejectAuthenticatingClient();
+}
+
+void HostProcess::OnRemoteSessionSwitchedToConsole() {
+  LOG(INFO) << "The remote session switched was to the console."
+               " Closing connection.";
+  OnDisconnectRequested();
 }
 
 // Invoked when the user uses the Disconnect windows to terminate
