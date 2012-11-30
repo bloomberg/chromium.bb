@@ -190,8 +190,10 @@ void ExistingUserController::UpdateLoginDisplay(const UserList& users) {
   if (show_users_on_signin) {
     for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
       // TODO(xiyuan): Clean user profile whose email is not in whitelist.
-      if (LoginUtils::IsWhitelisted((*it)->email()))
+      if (LoginUtils::IsWhitelisted((*it)->email()) ||
+          (*it)->GetType() != User::USER_TYPE_REGULAR) {
         filtered_users.push_back(*it);
+      }
     }
   }
 

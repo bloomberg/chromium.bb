@@ -20,6 +20,7 @@ const char* kHandledSettings[] = {
   kAccountsPrefShowUserNamesOnSignIn,
   kAccountsPrefUsers,
   kAccountsPrefEphemeralUsersEnabled,
+  kAccountsPrefDeviceLocalAccounts,
   kDeviceOwner,
   kPolicyMissingMitigationMode,
   kReleaseChannel,
@@ -84,6 +85,7 @@ void StubCrosSettingsProvider::SetDefaults() {
   values_.SetBoolean(kAccountsPrefAllowGuest, true);
   values_.SetBoolean(kAccountsPrefAllowNewUser, true);
   values_.SetBoolean(kAccountsPrefShowUserNamesOnSignIn, true);
+  values_.SetValue(kAccountsPrefDeviceLocalAccounts, new ListValue);
   // |kDeviceOwner| will be set to the logged-in user by |UserManager|.
 }
 

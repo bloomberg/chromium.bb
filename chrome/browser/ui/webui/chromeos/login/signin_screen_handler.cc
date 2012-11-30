@@ -68,6 +68,7 @@ const char kKeyUsername[] = "username";
 const char kKeyDisplayName[] = "displayName";
 const char kKeyEmailAddress[] = "emailAddress";
 const char kKeyNameTooltip[] = "nameTooltip";
+const char kKeyPublicAccount[] = "publicAccount";
 const char kKeySignedIn[] = "signedIn";
 const char kKeyCanRemove[] = "canRemove";
 const char kKeyOauthTokenStatus[] = "oauthTokenStatus";
@@ -735,6 +736,7 @@ void SigninScreenHandler::SendUserList(bool animated) {
     std::string owner;
     chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
     bool is_owner = (email == owner);
+    bool public_account = ((*it)->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT);
     bool signed_in = *it == UserManager::Get()->GetLoggedInUser();
 
     if (non_owner_count < max_non_owner_users || is_owner) {
@@ -743,6 +745,7 @@ void SigninScreenHandler::SendUserList(bool animated) {
       user_dict->SetString(kKeyEmailAddress, (*it)->display_email());
       user_dict->SetString(kKeyDisplayName, (*it)->GetDisplayName());
       user_dict->SetString(kKeyNameTooltip, (*it)->display_email());
+      user_dict->SetBoolean(kKeyPublicAccount, public_account);
       user_dict->SetInteger(kKeyOauthTokenStatus, (*it)->oauth_token_status());
       user_dict->SetBoolean(kKeySignedIn, signed_in);
 
@@ -753,6 +756,7 @@ void SigninScreenHandler::SendUserList(bool animated) {
                             !single_user &&
                             !email.empty() &&
                             !is_owner &&
+                            !public_account &&
                             !signed_in);
 
       users_list.Append(user_dict);
