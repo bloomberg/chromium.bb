@@ -323,6 +323,7 @@ class MsvsSettings(object):
     cl('RuntimeLibrary',
         map={'0': 'T', '1': 'Td', '2': 'D', '3': 'Dd'}, prefix='/M')
     cl('ExceptionHandling', map={'1': 'sc','2': 'a'}, prefix='/EH')
+    cl('DefaultCharIsUnsigned', map={'true': '/J'})
     cl('EnablePREfast', map={'true': '/analyze'})
     cl('AdditionalOptions', prefix='')
     cflags.extend(['/FI' + f for f in self._Setting(
