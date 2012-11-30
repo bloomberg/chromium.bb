@@ -52,7 +52,7 @@ class CrosDBusService {
   virtual ~CrosDBusService();
 
  private:
-  // Initializes the global instance for testing. Takes the ownership of
+  // Initializes the global instance for testing. Takes ownership of
   // |proxy_resolution_service|.
   friend class CrosDBusServiceTest;
   static void InitializeForTesting(
