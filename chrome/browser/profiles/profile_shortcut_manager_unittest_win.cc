@@ -141,14 +141,18 @@ class ProfileShortcutManagerTest : public testing::Test {
                                      const FilePath& profile_path) {
     EXPECT_TRUE(file_util::PathExists(shortcut_path)) << location.ToString();
 
-    // TODO(asvitkine): With this new struct method for VerifyShortcut you can
-    // now test more properties like: arguments, icon, icon_index, and app_id.
+    // Ensure that the corresponding icon exists.
+    const FilePath icon_path =
+        profile_path.AppendASCII(profiles::internal::kProfileIconFileName);
+    EXPECT_TRUE(file_util::PathExists(icon_path)) << location.ToString();
+
     base::win::ShortcutProperties expected_properties;
     expected_properties.set_target(exe_path_);
     expected_properties.set_description(distribution_->GetAppDescription());
     expected_properties.set_dual_mode(false);
     expected_properties.set_arguments(
         profiles::internal::CreateProfileShortcutFlags(profile_path));
+    expected_properties.set_icon(icon_path, 0);
     base::win::ValidateShortcut(shortcut_path, expected_properties);
   }
 
@@ -194,6 +198,19 @@ class ProfileShortcutManagerTest : public testing::Test {
     return shortcut_path;
   }
 
+  void RenameProfile(const tracked_objects::Location& location,
+                     const FilePath& profile_path,
+                     const string16& new_profile_name) {
+    const size_t profile_index =
+        profile_info_cache_->GetIndexOfProfileWithPath(profile_2_path_);
+    ASSERT_NE(std::string::npos, profile_index);
+    ASSERT_NE(profile_info_cache_->GetNameOfProfileAtIndex(profile_index),
+              new_profile_name);
+    profile_info_cache_->SetNameOfProfileAtIndex(profile_index,
+                                                 new_profile_name);
+    RunPendingTasks();
+  }
+
   BrowserDistribution* distribution_;
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -225,14 +242,19 @@ TEST_F(ProfileShortcutManagerTest, UnbadgedShortcutFilename) {
                                                               distribution_));
 }
 
+TEST_F(ProfileShortcutManagerTest, ShortcutFlags) {
+  const string16 kProfileName = L"MyProfileX";
+  const FilePath profile_path =
+      profile_info_cache_->GetUserDataDir().Append(kProfileName);
+  EXPECT_EQ(L"--profile-directory=\"" + kProfileName + L"\"",
+            profiles::internal::CreateProfileShortcutFlags(profile_path));
+}
+
 TEST_F(ProfileShortcutManagerTest, DesktopShortcutsCreate) {
   SetupDefaultProfileShortcut(FROM_HERE);
+  // Validation is done by |ValidateProfileShortcutAtPath()| which is called
+  // by |CreateProfileWithShortcut()|.
   CreateProfileWithShortcut(FROM_HERE, profile_2_name_, profile_2_path_);
-  // We now have 2 profiles, so we expect a new shortcut with profile
-  // information for this 2nd profile.
-  const FilePath icon_path =
-      profile_2_path_.AppendASCII(profiles::internal::kProfileIconFileName);
-  ASSERT_TRUE(file_util::PathExists(icon_path));
 }
 
 TEST_F(ProfileShortcutManagerTest, DesktopShortcutsUpdate) {
@@ -241,13 +263,27 @@ TEST_F(ProfileShortcutManagerTest, DesktopShortcutsUpdate) {
 
   // Cause an update in ProfileShortcutManager by modifying the profile info
   // cache.
-  const string16 new_profile_name = L"New Profile Name";
-  profile_info_cache_->SetNameOfProfileAtIndex(
-      profile_info_cache_->GetIndexOfProfileWithPath(profile_2_path_),
-      new_profile_name);
-  RunPendingTasks();
+  const string16 new_profile_2_name = L"New Profile Name";
+  RenameProfile(FROM_HERE, profile_2_path_, new_profile_2_name);
   EXPECT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_2_name_));
-  ValidateProfileShortcut(FROM_HERE, new_profile_name, profile_2_path_);
+  ValidateProfileShortcut(FROM_HERE, new_profile_2_name, profile_2_path_);
+}
+
+TEST_F(ProfileShortcutManagerTest, CreateSecondProfileBadgesFirstShortcut) {
+  SetupDefaultProfileShortcut(FROM_HERE);
+  // Assert that a shortcut without a profile name exists.
+  ASSERT_TRUE(ProfileShortcutExistsAtDefaultPath(string16()));
+
+  // Create a second profile without a shortcut.
+  profile_info_cache_->AddProfileToCache(profile_2_path_, profile_2_name_,
+                                         string16(), 0);
+  RunPendingTasks();
+
+  // Ensure that the second profile doesn't have a shortcut and that the first
+  // profile's shortcut got renamed and badged.
+  EXPECT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_2_name_));
+  EXPECT_FALSE(ProfileShortcutExistsAtDefaultPath(string16()));
+  ValidateProfileShortcut(FROM_HERE, profile_1_name_, profile_1_path_);
 }
 
 TEST_F(ProfileShortcutManagerTest, DesktopShortcutsDeleteSecondToLast) {
@@ -361,11 +397,7 @@ TEST_F(ProfileShortcutManagerTest, RenamedDesktopShortcutsAfterProfileRename) {
 
   // Now, rename the profile.
   const string16 new_profile_2_name = L"New profile";
-  ASSERT_NE(profile_2_name_, new_profile_2_name);
-  profile_info_cache_->SetNameOfProfileAtIndex(
-      profile_info_cache_->GetIndexOfProfileWithPath(profile_2_path_),
-      new_profile_2_name);
-  RunPendingTasks();
+  RenameProfile(FROM_HERE, profile_2_path_, new_profile_2_name);
 
   // The original shortcut should be renamed but the copied shortcut should
   // keep its name.
