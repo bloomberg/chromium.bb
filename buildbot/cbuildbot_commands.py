@@ -1170,20 +1170,21 @@ def BuildImageZip(archive_dir, image_dir):
   return filename
 
 
-def BuildSingleImageZip(archive_dir, filename, image_bin):
-  """Build image zipfile in archive_dir from specified image.
+def BuildStandaloneImageTarball(archive_dir, image_bin):
+  """Create a compressed tarball from the specified image.
 
   Args:
     archive_dir: Directory to store image zip.
-    filename: Filename to use for image zip.
     image_bin: Image to zip up.
 
-    Returns the base name of the zipfile.
+    Returns the base name of the tarball.
   """
-  zipfile = os.path.join(archive_dir, filename)
-  cros_build_lib.RunCommandCaptureOutput(
-      ['zip', zipfile, os.path.basename(image_bin)],
-      cwd=os.path.dirname(image_bin))
+  # Strip off the .bin from the filename.
+  image_dir, image_filename = os.path.split(image_bin)
+  filename = '%s.tar.xz' % os.path.splitext(image_filename)[0]
+  archive_filename = os.path.join(archive_dir, filename)
+  cros_build_lib.CreateTarball(archive_filename, image_dir,
+                               inputs=[image_filename])
   return filename
 
 

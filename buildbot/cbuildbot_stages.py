@@ -1741,6 +1741,8 @@ class ArchiveStage(BoardSpecificBuilderStage):
     #       \- BuildAndArchiveAllImages
     #          (builds recovery image first, then launches functions below)
     #          \- BuildAndArchiveFactoryImages
+    #          \- ArchiveStandaloneTarballs
+    #             \- ArchiveStandaloneTarball
     #          \- ArchiveZipFiles
     #          \- ArchiveHWQual
     #       \- PushImage (blocks on BuildAndArchiveAllImages)
@@ -1843,20 +1845,26 @@ class ArchiveStage(BoardSpecificBuilderStage):
             buildroot, board, archive_path, image_root)
         release_upload_queue.put([filename])
 
+    def ArchiveStandaloneTarball(image_file):
+      """Build and upload a single tarball."""
+      release_upload_queue.put([commands.BuildStandaloneImageTarball(
+          archive_path, image_file)])
+
+    def ArchiveStandaloneTarballs():
+      """Build and upload standalone tarballs for each image."""
+      inputs = []
+      for image_file in glob.glob(os.path.join(image_dir, '*.bin')):
+        if os.path.basename(image_file) != 'chromiumos_qemu_image.bin':
+          inputs.append([image_file])
+      parallel.RunTasksInProcessPool(ArchiveStandaloneTarball, inputs)
+
     def ArchiveZipFiles():
       """Build and archive zip files.
 
       This includes:
-        - standalone zip files for each image
         - image.zip (all images in one big zip file)
         - the au-generator.zip used for update payload generation.
       """
-      # Upload standalone zip files for each image.
-      for image_file in glob.glob(os.path.join(image_dir, '*.bin')):
-        zipfile = '%s.zip' % os.path.splitext(os.path.basename(image_file))[0]
-        release_upload_queue.put([commands.BuildSingleImageZip(
-            archive_path, zipfile, image_file)])
-
       # Zip up everything in the image directory.
       image_zip = commands.BuildImageZip(archive_path, image_dir)
       release_upload_queue.put([image_zip])
@@ -1903,6 +1911,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
       if config['images']:
         parallel.RunParallelSteps([BuildAndArchiveFactoryImages,
                                    ArchiveHWQual,
+                                   ArchiveStandaloneTarballs,
                                    ArchiveZipFiles])
 
     def UploadArtifact(filename):
