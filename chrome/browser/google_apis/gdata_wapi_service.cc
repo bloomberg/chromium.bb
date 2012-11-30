@@ -291,7 +291,6 @@ void GDataWapiService::RemoveResourceFromDirectory(
           operation_registry(),
           callback,
           parent_content_url,
-          resource_url,
           resource_id));
 }
 

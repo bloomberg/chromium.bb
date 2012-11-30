@@ -775,8 +775,6 @@ TEST_F(GDataWapiOperationsTest, RemoveResourceFromDirectoryOperation) {
           base::Bind(&CopyResultFromEntryActionCallbackAndQuit,
                      &result_code),
           test_server_.GetURL("/feeds/default/private/full/folder%3Aroot"),
-          test_server_.GetURL(
-              "/feeds/default/private/full/file:2_file_resource_id"),
           "file:2_file_resource_id");
 
   operation->Start(kTestGDataAuthToken, kTestUserAgent);

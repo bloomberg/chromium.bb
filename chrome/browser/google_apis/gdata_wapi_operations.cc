@@ -550,12 +550,10 @@ RemoveResourceFromDirectoryOperation::RemoveResourceFromDirectoryOperation(
     OperationRegistry* registry,
     const EntryActionCallback& callback,
     const GURL& parent_content_url,
-    const GURL& document_url,
     const std::string& document_resource_id)
     : EntryActionOperation(registry, callback),
       resource_id_(document_resource_id),
-      parent_content_url_(parent_content_url),
-      document_url_(document_url) {
+      parent_content_url_(parent_content_url) {
 }
 
 RemoveResourceFromDirectoryOperation::~RemoveResourceFromDirectoryOperation() {
