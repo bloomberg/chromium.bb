@@ -22,13 +22,15 @@ var BASE_INSTRUCTIONS = {
 var MODIFIER_TO_CLASS = {
   'SHIFT': 'modifier-shift',
   'CTRL': 'modifier-ctrl',
-  'ALT': 'modifier-alt'
+  'ALT': 'modifier-alt',
+  'SEARCH': 'modifier-search'
 };
 
 var IDENTIFIER_TO_CLASS = {
   '2A': 'is-shift',
   '1D': 'is-ctrl',
-  '38': 'is-alt'
+  '38': 'is-alt',
+  'E0 5B': 'is-search'
 };
 
 var LABEL_TO_IDENTIFIER = {
@@ -116,12 +118,57 @@ function getLayouts() {
   return keyboardOverlayData['layouts'];
 }
 
+// Cache the shortcut data after it is constructed.
+var shortcutDataCache;
+
 /**
  * Returns shortcut data.
  * @return {Object} Keyboard shortcut data.
  */
 function getShortcutData() {
-  return keyboardOverlayData['shortcut'];
+  if (shortcutDataCache)
+    return shortcutDataCache;
+
+  shortcutDataCache = keyboardOverlayData['shortcut'];
+
+  var searchKeyIsModifier =
+      loadTimeData.getString('keyboardSearchKeyActsAsFunctionKey') == 'true';
+  if (searchKeyIsModifier) {
+    // TODO(mazda): Clean this up and move these out to the data js.
+    var searchModifierRemoveShortcuts = {
+      'backspace<>ALT': 'keyboardOverlayDelete',
+      'down<>ALT': 'keyboardOverlayPageDown',
+      'down<>ALT<>CTRL': 'keyboardOverlayEnd',
+      'up<>ALT': 'keyboardOverlayPageUp',
+      'up<>ALT<>CTRL': 'keyboardOverlayHome'
+    };
+    var searchModifierAddShortcuts = {
+      '1<>SEARCH': 'keyboardOverlayF1',
+      '2<>SEARCH': 'keyboardOverlayF2',
+      '3<>SEARCH': 'keyboardOverlayF3',
+      '4<>SEARCH': 'keyboardOverlayF4',
+      '5<>SEARCH': 'keyboardOverlayF5',
+      '6<>SEARCH': 'keyboardOverlayF6',
+      '7<>SEARCH': 'keyboardOverlayF7',
+      '8<>SEARCH': 'keyboardOverlayF8',
+      '9<>SEARCH': 'keyboardOverlayF9',
+      '0<>SEARCH': 'keyboardOverlayF10',
+      '-<>SEARCH': 'keyboardOverlayF11',
+      '=<>SEARCH': 'keyboardOverlayF12',
+      'backspace<>SEARCH': 'keyboardOverlayDelete',
+      'down<>SEARCH': 'keyboardOverlayPageDown',
+      'right<>SEARCH': 'keyboardOverlayEnd',
+      'up<>SEARCH': 'keyboardOverlayPageUp',
+      'left<>SEARCH': 'keyboardOverlayHome'
+    };
+
+    for (var key in searchModifierRemoveShortcuts)
+      delete shortcutDataCache[key];
+    for (var key in searchModifierAddShortcuts)
+      shortcutDataCache[key] = searchModifierAddShortcuts[key];
+  }
+
+  return shortcutDataCache;
 }
 
 /**
@@ -163,6 +210,8 @@ function hex2char(hex) {
   return result;
 }
 
+var searchIsPressed = false;
+
 /**
  * Returns a list of modifiers from the key event.
  * @param {Event} e The key event.
@@ -177,17 +226,22 @@ function getModifiers(e) {
     16: 'SHIFT',
     17: 'CTRL',
     18: 'ALT',
+    91: 'SEARCH',
   };
   var modifierWithKeyCode = keyCodeToModifier[e.keyCode];
-  var isPressed = {'SHIFT': e.shiftKey, 'CTRL': e.ctrlKey, 'ALT': e.altKey};
-  // if e.keyCode is one of Shift, Ctrl and Alt, isPressed should
-  // be changed because the key currently pressed
-  // does not affect the values of e.shiftKey, e.ctrlKey and e.altKey
+  var isPressed = {
+      'SHIFT': e.shiftKey,
+      'CTRL': e.ctrlKey,
+      'ALT': e.altKey,
+      'SEARCH': searchIsPressed
+  };
   if (modifierWithKeyCode)
     isPressed[modifierWithKeyCode] = isKeyDown;
 
+  searchIsPressed = isPressed['SEARCH'];
+
   // make the result array
-  return ['SHIFT', 'CTRL', 'ALT'].filter(
+  return ['SHIFT', 'CTRL', 'ALT', 'SEARCH'].filter(
       function(modifier) {
         return isPressed[modifier];
       }).sort();
@@ -248,7 +302,8 @@ function getKeyClasses(identifier, modifiers) {
 
   if ((identifier == '2A' && contains(modifiers, 'SHIFT')) ||
       (identifier == '1D' && contains(modifiers, 'CTRL')) ||
-      (identifier == '38' && contains(modifiers, 'ALT'))) {
+      (identifier == '38' && contains(modifiers, 'ALT')) ||
+      (identifier == 'E0 5B' && contains(modifiers, 'SEARCH'))) {
     classes.push('pressed');
     classes.push(IDENTIFIER_TO_CLASS[identifier]);
   }
@@ -515,8 +570,15 @@ function initLayout() {
   var instructionsText = document.createElement('div');
   instructionsText.id = 'instructions-text';
   instructionsText.className = 'keyboard-overlay-instructions-text';
-  instructionsText.innerHTML =
-      loadTimeData.getString('keyboardOverlayInstructions');
+  var searchKeyIsModifier =
+      loadTimeData.getString('keyboardSearchKeyActsAsFunctionKey') == 'true';
+  if (searchKeyIsModifier) {
+    instructionsText.innerHTML =
+        loadTimeData.getString('keyboardOverlayInstructionsWithSearch');
+  } else {
+    instructionsText.innerHTML =
+        loadTimeData.getString('keyboardOverlayInstructions');
+  }
   instructions.appendChild(instructionsText);
   var instructionsHideText = document.createElement('div');
   instructionsHideText.id = 'instructions-hide-text';

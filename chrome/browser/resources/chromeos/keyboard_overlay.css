@@ -89,6 +89,10 @@ body {
   border-color: rgb(184, 84, 84);
 }
 
+.keyboard-overlay-key.is-shortcut.modifier-search {
+  border-color: rgb(204, 204, 80);
+}
+
 .keyboard-overlay-key.is-shortcut.modifier-shift.modifier-ctrl {
   border-color: rgb(121, 172, 143);
 }
@@ -159,6 +163,10 @@ body {
 .keyboard-overlay-key.pressed.is-alt.modifier-shift.modifier-ctrl {
   background: -webkit-linear-gradient(top left, rgb(115, 95, 41),
                                                 rgb(80, 36, 27));
+}
+
+.keyboard-overlay-key.pressed.is-search {
+  background: -webkit-linear-gradient(rgb(242, 242, 126), rgb(186, 186, 52));
 }
 
 .keyboard-overlay-shortcut-text {

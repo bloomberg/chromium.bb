@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -61,7 +63,21 @@ struct I18nContentToMessage {
 } kI18nContentToMessage[] = {
   { "keyboardOverlayLearnMore", IDS_KEYBOARD_OVERLAY_LEARN_MORE },
   { "keyboardOverlayTitle", IDS_KEYBOARD_OVERLAY_TITLE },
+  { "keyboardOverlayF1", IDS_KEYBOARD_OVERLAY_F1 },
+  { "keyboardOverlayF2", IDS_KEYBOARD_OVERLAY_F2 },
+  { "keyboardOverlayF3", IDS_KEYBOARD_OVERLAY_F3 },
+  { "keyboardOverlayF4", IDS_KEYBOARD_OVERLAY_F4 },
+  { "keyboardOverlayF5", IDS_KEYBOARD_OVERLAY_F5 },
+  { "keyboardOverlayF6", IDS_KEYBOARD_OVERLAY_F6 },
+  { "keyboardOverlayF7", IDS_KEYBOARD_OVERLAY_F7 },
+  { "keyboardOverlayF8", IDS_KEYBOARD_OVERLAY_F8 },
+  { "keyboardOverlayF9", IDS_KEYBOARD_OVERLAY_F9 },
+  { "keyboardOverlayF10", IDS_KEYBOARD_OVERLAY_F10 },
+  { "keyboardOverlayF11", IDS_KEYBOARD_OVERLAY_F11 },
+  { "keyboardOverlayF12", IDS_KEYBOARD_OVERLAY_F12 },
   { "keyboardOverlayInstructions", IDS_KEYBOARD_OVERLAY_INSTRUCTIONS },
+  { "keyboardOverlayInstructionsWithSearch",
+    IDS_KEYBOARD_OVERLAY_INSTRUCTIONS_WITH_SEARCH },
   { "keyboardOverlayInstructionsHide", IDS_KEYBOARD_OVERLAY_INSTRUCTIONS_HIDE },
   { "keyboardOverlayActivateLastLauncherItem",
     IDS_KEYBOARD_OVERLAY_ACTIVATE_LAST_LAUNCHER_ITEM },
@@ -222,7 +238,8 @@ std::string ModifierKeyToLabel(ModifierKey modifier) {
   return "";
 }
 
-ChromeWebUIDataSource* CreateKeyboardOverlayUIHTMLSource() {
+ChromeWebUIDataSource* CreateKeyboardOverlayUIHTMLSource(
+    bool search_key_acts_as_function_key) {
   ChromeWebUIDataSource* source =
       new ChromeWebUIDataSource(chrome::kChromeUIKeyboardOverlayHost);
 
@@ -232,6 +249,8 @@ ChromeWebUIDataSource* CreateKeyboardOverlayUIHTMLSource() {
   }
 
   source->AddString("keyboardOverlayLearnMoreURL", UTF8ToUTF16(kLearnMoreURL));
+  source->AddString("keyboardSearchKeyActsAsFunctionKey",
+                    search_key_acts_as_function_key ? "true" : "false");
   source->set_json_path("strings.js");
   source->set_use_json_js_format_v2();
   source->add_resource_path("keyboard_overlay.js", IDR_KEYBOARD_OVERLAY_JS);
@@ -347,7 +366,17 @@ KeyboardOverlayUI::KeyboardOverlayUI(content::WebUI* web_ui)
   KeyboardOverlayHandler* handler = new KeyboardOverlayHandler(profile);
   web_ui->AddMessageHandler(handler);
 
+  PrefService* pref_service = profile->GetPrefs();
+  bool chromebook_function_key = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableChromebookFunctionKey);
+  bool chromeos_keyboard = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kHasChromeOSKeyboard);
+
+  bool search_key_acts_as_function_key = chromeos_keyboard &&
+      chromebook_function_key &&
+      pref_service->GetBoolean(prefs::kLanguageSearchKeyActsAsFunctionKey);
+
   // Set up the chrome://keyboardoverlay/ source.
   ChromeURLDataManager::AddDataSource(profile,
-      CreateKeyboardOverlayUIHTMLSource());
+      CreateKeyboardOverlayUIHTMLSource(search_key_acts_as_function_key));
 }
