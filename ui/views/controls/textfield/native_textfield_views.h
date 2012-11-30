@@ -48,6 +48,11 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
                                           public ui::TextInputClient,
                                           public TextfieldViewsModel::Delegate {
  public:
+  // Interval over which the cursor/caret blinks.  This represents the full
+  // cycle; the caret is shown for half of this time and hidden for the other
+  // half.
+  static const int kCursorBlinkCycleMs;
+
   explicit NativeTextfieldViews(Textfield* parent);
   virtual ~NativeTextfieldViews();
 

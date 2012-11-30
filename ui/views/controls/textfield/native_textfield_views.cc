@@ -53,16 +53,14 @@ const SkColor kReadonlyTextColor = SK_ColorDKGRAY;
 // Default "system" color for text cursor.
 const SkColor kDefaultCursorColor = SK_ColorBLACK;
 
-// Parameters to control cursor blinking.
-const int kCursorVisibleTimeMs = 800;
-const int kCursorInvisibleTimeMs = 500;
-
 }  // namespace
 
 namespace views {
 
 const char NativeTextfieldViews::kViewClassName[] =
     "views/NativeTextfieldViews";
+
+const int NativeTextfieldViews::kCursorBlinkCycleMs = 1000;
 
 NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
     : textfield_(parent),
@@ -565,7 +563,7 @@ void NativeTextfieldViews::HandleFocus() {
       FROM_HERE,
       base::Bind(&NativeTextfieldViews::UpdateCursor,
                  cursor_timer_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kCursorVisibleTimeMs));
+      base::TimeDelta::FromMilliseconds(kCursorBlinkCycleMs / 2));
 }
 
 void NativeTextfieldViews::HandleBlur() {
@@ -923,8 +921,7 @@ void NativeTextfieldViews::UpdateCursor() {
       FROM_HERE,
       base::Bind(&NativeTextfieldViews::UpdateCursor,
                  cursor_timer_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(
-          is_cursor_visible_ ? kCursorVisibleTimeMs : kCursorInvisibleTimeMs));
+      base::TimeDelta::FromMilliseconds(kCursorBlinkCycleMs / 2));
 }
 
 void NativeTextfieldViews::RepaintCursor() {
