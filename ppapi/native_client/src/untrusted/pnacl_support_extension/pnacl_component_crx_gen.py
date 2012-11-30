@@ -3,18 +3,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""
-   This script packages the PNaCl translator files as a Chrome Extension (crx),
-   which can be used as a straight-forward CRX, or used with the Chrome
-   incremental installer (component updater).
+"""This script packages the PNaCl translator files as:
+   (1) a Chrome Extension (crx), which can be used as a straight-forward CRX,
+   or used with the Chrome incremental installer (component updater)
+   (2) a Chrome Extension as a zip for uploading to the CWS.
+   (3) layout files for a normal Chrome installer.
 
    This script depends on and pulls in the translator nexes and libraries
-   from the toolchain directory (so that must be downloaded first), fills
-   in the CRX manifest files, and zips and signs the CRXes using
-   chrome (which must also be downloaded first), etc.
+   from the toolchain directory (so that must be downloaded first) and
+   it depends on the pnacl_irt_shim.
 """
 
 import glob
+import logging
 import optparse
 import os
 import platform
@@ -39,16 +40,20 @@ J = os.path.join
 # This is based on the machine "building" this extension.
 # We also used this to identify the arch-specific different versions of
 # this extension.
-def GetBuildArch():
-  arch = platform.machine()
-  if arch in ('x86_64', 'amd64'):
+
+def CanonicalArch(arch):
+  if arch in ('x86_64', 'x86-64', 'x64', 'amd64'):
     return 'x86-64'
   # TODO(jvoung): be more specific about the arm architecture version?
-  if arch.startswith('armv7'):
+  if arch in ('arm', 'armv7'):
     return 'arm'
-  x86_32_re = re.compile('^i.86$')
-  if x86_32_re.search(arch) or arch == 'x86_32' or arch == 'x86':
+  if re.match('^i.86$', arch) or arch in ('x86_32', 'x86-32', 'ia32', 'x86'):
     return 'x86-32'
+  return None
+
+def GetBuildArch():
+  arch = platform.machine()
+  return CanonicalArch(arch)
 
 BUILD_ARCH = GetBuildArch()
 ARCHES = ['x86-32', 'x86-64', 'arm']
@@ -107,6 +112,22 @@ def GetBuildPlatform():
     raise Exception('Unknown platform: %s' % sys.platform)
   return platform
 BUILD_PLATFORM = GetBuildPlatform()
+
+
+def DetermineInstallerArches(target_arch):
+  arch = CanonicalArch(target_arch)
+  if not IsValidArch(arch):
+    raise Exception('Unknown target_arch %s' % target_arch)
+  # On windows, we need x86-32 and x86-64 (assuming non-windows RT).
+  if BUILD_PLATFORM == 'windows':
+    if arch.startswith('x86'):
+      return ['x86-32', 'x86-64']
+    else:
+      raise Exception('Unknown target_arch on windows w/ target_arch == %s' %
+                      target_arch)
+  else:
+    return [arch]
+
 
 class CRXGen(object):
   """ Generate a CRX file. Can generate a fresh CRX and private key, or
@@ -187,7 +208,10 @@ class PnaclPackaging(object):
                                              web_accessible,
                                              all_host_permissions,
                                              manifest_key)
+    # For now, make the ABI version the same as pnacl-version...
+    # It should probably be separate though.
     PnaclPackaging.GeneratePnaclInfo(target_dir, version, arch)
+
 
   @staticmethod
   def GenerateExtensionManifest(target_dir, version,
@@ -210,12 +234,21 @@ class PnaclPackaging(object):
     output_fd.close()
 
   @staticmethod
-  def GeneratePnaclInfo(target_dir, version, arch):
+  def GeneratePnaclInfo(target_dir, version, arch, is_installer=False):
     pnacl_template_fd = open(PnaclPackaging.pnacl_template, 'r')
     pnacl_template = pnacl_template_fd.read()
     pnacl_template_fd.close()
-    output_fd = open(J(target_dir, PnaclPackaging.pnacl_json), 'w')
-    # For now, make the ABI version the same as pnacl-version.
+    if is_installer:
+      out_name = J(target_dir, UseWhitelistedChars(PnaclPackaging.pnacl_json,
+                                                   None))
+    else:
+      out_name = J(target_dir, PnaclPackaging.pnacl_json)
+    output_fd = open(out_name, 'w')
+    if isinstance(arch, list):
+      # FIXME: Handle a list of arches, not just a wildcard "all".
+      # Alternatively, perhaps we shouldn't bother checking what arch is
+      # installed and assume the installer does the right thing.
+      arch = 'all'
     output_fd.write(pnacl_template % { "abi-version" : version,
                                        "arch" : arch, })
     output_fd.close()
@@ -268,7 +301,7 @@ class PnaclDirs(object):
 ######################################################################
 
 def StepBanner(short_desc, long_desc):
-  print "**** %s\t%s" % (short_desc, long_desc)
+  logging.info("**** %s\t%s", short_desc, long_desc)
 
 
 def Clean():
@@ -277,7 +310,9 @@ def Clean():
   if os.path.isdir(out_dir):
     shutil.rmtree(out_dir)
   else:
-    print 'Clean skipped -- no previous output directory!'
+    logging.info('Clean skipped -- no previous output directory!')
+
+######################################################################
 
 
 def ZipDirectory(base_dir, zipfile):
@@ -329,11 +364,12 @@ def GeneratePrivateKey(options):
   shutil.copy2(J(tempdir, 'dummy_extension.pem'),
                PnaclDirs.OutputDir())
   shutil.rmtree(tempdir)
-  print ('\n<<< Fresh key is now in %s/dummy_extension.pem >>>\n' %
-         PnaclDirs.OutputDir())
+  logging.info('\n<<< Fresh key is now in %s/dummy_extension.pem >>>\n' %
+               PnaclDirs.OutputDir())
 
 
-def BuildArchCRXForComponentUpdater(version_quad, arch, lib_overrides, options):
+def BuildArchCRXForComponentUpdater(version_quad, arch, lib_overrides,
+                                    options):
   """ Build an architecture specific version for the chrome component
   install (an actual CRX, vs a zip file).  Though this is a CRX,
   it is not used as a chrome extension as the CWS and unpacked version.
@@ -355,15 +391,8 @@ def BuildArchCRXForComponentUpdater(version_quad, arch, lib_overrides, options):
   # Also copy files from the list of overrides.
   if arch in lib_overrides:
     for override in lib_overrides[arch]:
-      print 'Copying override %s to %s' % (override, target_dir)
+      logging.info('Copying override %s to %s' % (override, target_dir))
       shutil.copy2(override, target_dir)
-
-  # Filter out native libraries related to glibc.
-  patterns = ['*nonshared.a', '*.so', '*.so.*']
-  for pat in patterns:
-    for f in glob.glob(J(target_dir, pat)):
-      print 'Filtering out glibc file: %s' % f
-      os.remove(f)
 
   # Skip the CRX generation if we are only building the unpacked version
   # for commandline testing.
@@ -434,19 +463,96 @@ def BuildUnpacked(version_quad):
                                    PnaclPackaging.WEBSTORE_PUBLIC_KEY)
 
 
-def BuildAll(version_quad, lib_overrides, options):
-  """ Package the pnacl components 3 ways.
+def BuildExtensionStyle(version_quad, lib_overrides, options):
+  """ Package the pnacl components 3 ways, all of which are
+  chrome-extension-like.
+
   1) Arch-specific CRXes that can be queried by Omaha.
   2) A zip containing all arch files for the Chrome Webstore.
   3) An unpacked extension with all arch files for offline testing.
   """
-  StepBanner("BUILD_ALL", "Packaging for version: %s" % version_quad)
+  StepBanner("BUILD_ALL", "Packaging extension for version: %s" % version_quad)
   for arch in ARCHES:
     BuildArchCRXForComponentUpdater(version_quad, arch, lib_overrides, options)
   LayoutAllDir(version_quad)
   if not options.unpacked_only:
     BuildCWSZip(version_quad)
   BuildUnpacked(version_quad)
+
+######################################################################
+
+def UseWhitelistedChars(orig_basename, arch):
+  """ Make the filename match the pattern expected by pnacl_file_host.
+
+  Currently, this assumes there is prefix "pnacl_public_" and
+  that the allowed chars are in the set [a-zA-Z0-9_].
+  """
+  if arch:
+    target_basename = 'pnacl_public_%s_%s' % (arch, orig_basename)
+  else:
+    target_basename = 'pnacl_public_%s' % orig_basename
+  result = re.sub(r'[^a-zA-Z0-9_]', '_', target_basename)
+  logging.info('UseWhitelistedChars using: %s' % result)
+  return result
+
+def CopyFlattenDirsAndPrefix(src_dir, arch, dest_dir):
+  """ Copy files from src_dir to dest_dir.
+
+  When copying, also rename the files such that they match the white-listing
+  pattern in chrome/browser/nacl_host/pnacl_file_host.cc.
+  """
+  for (root, dirs, files) in os.walk(src_dir, followlinks=True):
+    for f in files:
+      # Assume a flat directory.
+      assert (f == os.path.basename(f))
+      full_name = J(root, f)
+      target_name = UseWhitelistedChars(f, arch)
+      shutil.copy2(full_name, J(dest_dir, target_name))
+
+
+def BuildArchForInstaller(version_quad, arch, lib_overrides, options):
+  """ Build an architecture specific version for the chrome installer.
+  """
+  target_dir = PnaclDirs.OutputDir()
+
+  StepBanner('BUILD INSTALLER',
+             'Packaging for arch %s in %s' % (arch, target_dir))
+
+  # Copy llc.nexe and ld.nexe, but with some renaming and directory flattening.
+  CopyFlattenDirsAndPrefix(PnaclDirs.SandboxedCompilerDir(arch),
+                           arch,
+                           target_dir)
+
+  # Copy native libraries, also with renaming and directory flattening.
+  CopyFlattenDirsAndPrefix(PnaclDirs.LibDir(arch), arch, target_dir)
+
+  # Also copy files from the list of overrides.
+  # This needs the arch tagged onto the name too, like the other files.
+  if arch in lib_overrides:
+    for override in lib_overrides[arch]:
+      override_base = os.path.basename(override)
+      target_name = UseWhitelistedChars(override_base, arch)
+      shutil.copy2(override, J(target_dir, target_name))
+
+
+def BuildInstallerStyle(version_quad, lib_overrides, options):
+  """ Package the pnacl component for use within the chrome installer
+  infrastructure.  These files need to be named in a special way
+  so that white-listing of files is easy.
+  """
+  StepBanner("BUILD_ALL", "Packaging installer for version: %s" % version_quad)
+  arches = DetermineInstallerArches(options.installer_only)
+  for arch in arches:
+    BuildArchForInstaller(version_quad, arch, lib_overrides, options)
+  # Generate pnacl info manifest.
+  # Hack around the fact that there may be more than one arch, on Windows.
+  if len(arches) == 1:
+    arches = arches[0]
+  PnaclPackaging.GeneratePnaclInfo(PnaclDirs.OutputDir(), version_quad,
+                                   arches, is_installer=True)
+
+
+######################################################################
 
 
 def Main():
@@ -460,6 +566,9 @@ def Main():
   parser.add_option('-u', '--unpacked_only', action='store_true',
                     dest='unpacked_only', default=False,
                     help='Only generate the unpacked version')
+  parser.add_option('-i', '--installer_only',
+                    dest='installer_only', default=None,
+                    help='Only generate the chrome installer version for arch')
   parser.add_option('-d', '--dest', dest='dest',
                     help='The destination root for laying out the extension')
   parser.add_option('-p', '--priv_key',
@@ -475,8 +584,17 @@ def Main():
                     help='Generate a fresh private key, and exit.')
   parser.add_option('-C', '--chrome_path', dest='chrome_path',
                     help='Location of chrome.')
+  parser.add_option('-v', '--verbose', dest='verbose', default=False,
+                    action='store_true',
+                    help='Print verbose debug messages.')
 
   (options, args) = parser.parse_args()
+  if options.verbose:
+    logging.getLogger().setLevel(logging.DEBUG)
+  else:
+    logging.getLogger().setLevel(logging.ERROR)
+  logging.info('pnacl_component_crx_gen w/ options %s and args %s\n'
+               % (options, args))
 
   # Set destination directory before doing any cleaning, etc.
   if options.dest:
@@ -492,6 +610,7 @@ def Main():
   lib_overrides = {}
   for o in options.lib_overrides:
     arch, override_lib = o.split(',')
+    arch = CanonicalArch(arch)
     if not IsValidArch(arch):
       raise Exception('Unknown arch for -L: %s (from %s)' % (arch, o))
     if not os.path.isfile(override_lib):
@@ -510,7 +629,10 @@ def Main():
     print 'Invalid version format: %s\n' % version_quad
     return 1
 
-  BuildAll(version_quad, lib_overrides, options)
+  if options.installer_only:
+    BuildInstallerStyle(version_quad, lib_overrides, options)
+  else:
+    BuildExtensionStyle(version_quad, lib_overrides, options)
   return 0
 
 

@@ -528,10 +528,10 @@ def BuildStepBuildToolchains(pepperdir, platform, arch, pepper_ver,
       for arch in ('ia32', 'arm'):
         # Fill in the latest native pnacl shim library from the chrome build.
         GypNinjaBuild_Pnacl('gypbuild-' + arch, arch)
-        release_build_dir = os.path.join(OUT_DIR, 'gypbuild-' + arch,
-                                         'Release')
-
         pnacl_libdir_map = { 'ia32': 'x86-64', 'arm': 'arm' }
+        release_build_dir = os.path.join(OUT_DIR, 'gypbuild-' + arch,
+                                         'Release', 'gen', 'tc_pnacl_translate',
+                                         'lib-' + pnacl_libdir_map[arch])
         buildbot_common.CopyFile(
             os.path.join(release_build_dir, 'libpnacl_irt_shim.a'),
             GetPNaClNativeLib(pnacldir, pnacl_libdir_map[arch]))
