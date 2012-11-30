@@ -14,4 +14,19 @@ GpuRenderingStats::GpuRenderingStats()
 GpuRenderingStats::~GpuRenderingStats() {
 }
 
+void GpuRenderingStats::EnumerateFields(
+    cc::RenderingStats::Enumerator* enumerator) const {
+  enumerator->AddInt("globalTextureUploadCount", global_texture_upload_count);
+  enumerator->AddTimeDeltaInSecondsF("globalTotalTextureUploadTimeInSeconds",
+                                     global_total_texture_upload_time);
+  enumerator->AddInt("textureUploadCount", texture_upload_count);
+  enumerator->AddTimeDeltaInSecondsF("totalTextureUploadTimeInSeconds",
+                           total_texture_upload_time);
+  enumerator->AddTimeDeltaInSecondsF(
+      "globalTotalProcessingCommandsTimeInSeconds",
+      global_total_processing_commands_time);
+  enumerator->AddTimeDeltaInSecondsF("totalProcessingCommandsTimeInSeconds",
+                                     total_processing_commands_time);
+}
+
 }  // namespace content
