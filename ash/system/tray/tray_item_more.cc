@@ -31,6 +31,7 @@ TrayItemMore::TrayItemMore(SystemTrayItem* owner, bool show_more)
   AddChildView(icon_);
 
   label_ = new views::Label;
+  label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(label_);
 
   if (show_more) {

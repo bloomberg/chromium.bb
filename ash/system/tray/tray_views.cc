@@ -224,6 +224,7 @@ void HoverHighlightView::AddIconAndLabel(const gfx::ImageSkia& image,
   AddChildView(image_view);
 
   text_label_ = new views::Label(text);
+  text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   text_label_->SetFont(text_label_->font().DeriveFont(0, style));
   if (text_default_color_)
     text_label_->SetEnabledColor(text_default_color_);
@@ -273,6 +274,7 @@ views::Label* HoverHighlightView::AddCheckableLabel(const string16& text,
     AddChildView(image_view);
 
     text_label_ = new views::Label(text);
+    text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     text_label_->SetFont(text_label_->font().DeriveFont(0, style));
     text_label_->SetDisabledColor(SkColorSetARGB(127, 0, 0, 0));
     if (text_default_color_)
