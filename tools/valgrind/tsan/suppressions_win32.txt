@@ -235,13 +235,6 @@
   fun:_free_dbg
   fun:_aligned_free_dbg
   fun:_aligned_free
-  fun:media::VideoFrame::~VideoFrame
-  fun:media::VideoFrame::`scalar deleting destructor'
-  fun:base::RefCountedThreadSafe::DeleteInternal
-  fun:base::RefCountedThreadSafe::Release
-  fun:base::RefCountedThreadSafe::Release
-  fun:scoped_refptr::operator=
-  fun:media::VideoRendererBase::AttemptFlush_Locked
-  fun:media::VideoRendererBase::OnDecoderFlushDone
+  fun:media::ReleaseData
   fun:base::internal::RunnableAdapter::Run
 }
