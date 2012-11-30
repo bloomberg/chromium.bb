@@ -164,14 +164,15 @@ EventExecutorLinux::Core::Core(
       wheel_ticks_y_(0.0f),
       display_(XOpenDisplay(NULL)),
       root_window_(BadValue) {
-#if defined(REMOTING_HOST_LINUX_CLIPBOARD)
-  if (!task_runner_->BelongsToCurrentThread())
-    task_runner_->PostTask(FROM_HERE, base::Bind(&Core::InitClipboard, this));
-#endif  // REMOTING_HOST_LINUX_CLIPBOARD
 }
 
 bool EventExecutorLinux::Core::Init() {
   CHECK(display_);
+
+#if defined(REMOTING_HOST_LINUX_CLIPBOARD)
+  if (!task_runner_->BelongsToCurrentThread())
+    task_runner_->PostTask(FROM_HERE, base::Bind(&Core::InitClipboard, this));
+#endif  // REMOTING_HOST_LINUX_CLIPBOARD
 
   root_window_ = RootWindow(display_, DefaultScreen(display_));
   if (root_window_ == BadValue) {
