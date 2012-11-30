@@ -143,7 +143,7 @@ IPC_MESSAGE_ROUTED1(AutofillMsg_RequestAutocompleteSuccess,
 // Sent when requestAutocomplete() fails. Currently, this happens when a form is
 // requested to be autocompleted with no input or select tags with autocomplete
 // attributes.
-IPC_MESSAGE_ROUTED0(AutofillMsg_RequestAutocompleteError);
+IPC_MESSAGE_ROUTED0(AutofillMsg_RequestAutocompleteError)
 
 // Autofill messages sent from the renderer to the browser.
 
