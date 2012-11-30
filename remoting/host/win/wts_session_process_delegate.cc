@@ -337,7 +337,7 @@ bool WtsSessionProcessDelegate::Core::LaunchProcess(
 }
 
 bool WtsSessionProcessDelegate::Core::Initialize(uint32 session_id) {
-  if (base::win::GetVersion() == base::win::VERSION_XP)
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
     launch_elevated_ = false;
 
   if (launch_elevated_) {

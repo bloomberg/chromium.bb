@@ -380,7 +380,7 @@ bool CreateRemoteSessionProcess(
     DWORD creation_flags,
     PROCESS_INFORMATION* process_information_out)
 {
-  DCHECK(base::win::GetVersion() == base::win::VERSION_XP);
+  DCHECK_LT(base::win::GetVersion(), base::win::VERSION_VISTA);
 
   base::win::ScopedHandle pipe;
   if (!ConnectToExecutionServer(session_id, &pipe))
@@ -592,7 +592,7 @@ bool LaunchProcessWithToken(const FilePath& binary,
   // of |user_token|. Since Winlogon runs as SYSTEM, this suits our needs.
   if (!result &&
       GetLastError() == ERROR_PIPE_NOT_CONNECTED &&
-      base::win::GetVersion() == base::win::VERSION_XP) {
+      base::win::GetVersion() < base::win::VERSION_VISTA) {
     DWORD session_id;
     DWORD return_length;
     result = GetTokenInformation(user_token,
