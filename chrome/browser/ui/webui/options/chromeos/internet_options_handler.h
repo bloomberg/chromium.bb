@@ -162,6 +162,8 @@ class InternetOptionsHandler
       chromeos::NetworkMethodErrorType error,
       const std::string& error_message);
 
+  // Retrieves a data url for a resource.
+  std::string GetIconDataUrl(int resource_id) const;
 
   // Convenience pointer to netwrok library (will not change).
   chromeos::NetworkLibrary* cros_;

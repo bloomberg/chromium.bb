@@ -106,6 +106,13 @@ cr.define('options.network', function() {
   var enableDataRoaming_ = false;
 
   /**
+   * Icon to use when not connected to a particular type of network.
+   * @type {!Object.<string, string>} Mapping of network type to icon data url.
+   * @private
+   */
+  var defaultIcons_ = {};
+
+  /**
    * Create an element in the network list for controlling network
    * connectivity.
    * @param {Object} data Description of the network list or command.
@@ -191,7 +198,10 @@ cr.define('options.network', function() {
      * @type {string}
      */
     set iconType(type) {
-      this.icon_.classList.add('network-' + type);
+      if (defaultIcons_[type])
+        this.iconURL = defaultIcons_[type];
+      else
+        this.icon_.classList.add('network-' + type);
     },
 
     /**
@@ -921,6 +931,15 @@ cr.define('options.network', function() {
         this.update(entry);
       }
     }
+  };
+
+  /**
+   * Sets the default icon to use for each network type if disconnected.
+   * @param {!Object.<string, string>} data Mapping of network type to icon
+   *     data url.
+   */
+  NetworkList.setDefaultNetworkIcons = function(data) {
+    defaultIcons_ = Object.create(data);
   };
 
   /**

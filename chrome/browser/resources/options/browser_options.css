@@ -179,7 +179,6 @@ list:not([disabled]) > .network-group[selected] {
 }
 
 .other-cellulars > .network-menu-item-icon {
-  background-image: url('chrome://theme/IDR_STATUSBAR_NETWORK_BARS_DARK');
   background-position: left top;
 }
 
@@ -208,26 +207,6 @@ list:not([disabled]) > .network-group[selected] {
   87.5%  {
     background-position: 0 25%;
   }
-}
-
-.network-wifi {
-  background-image: url('chrome://theme/IDR_STATUSBAR_NETWORK_ARCS_DARK');
-  background-size: 25px;
-}
-
-.network-wimax {
-  background-image: url('chrome://theme/IDR_STATUSBAR_NETWORK_BARS_DARK');
-  background-size: 25px;
-}
-
-.network-cellular {
-  background-image: url('chrome://theme/IDR_STATUSBAR_NETWORK_BARS_DARK');
-  background-size: 25px;
-}
-
-.network-vpn {
-  background-image: url('chrome://theme/IDR_STATUSBAR_VPN');
-  background-size: 25px;
 }
 
 .network-add-connection,

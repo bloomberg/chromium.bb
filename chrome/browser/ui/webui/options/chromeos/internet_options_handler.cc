@@ -53,6 +53,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "grit/ash_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -106,6 +107,8 @@ const char kGoogleNameServers[] = "8.8.4.4,8.8.8.8";
 // Functions we call in JavaScript.
 const char kRefreshNetworkDataFunction[] =
     "options.network.NetworkList.refreshNetworkData";
+const char kSetDefaultNetworkIconsFunction[] =
+    "options.network.NetworkList.setDefaultNetworkIcons";
 const char kShowDetailedInfoFunction[] =
     "options.internet.DetailsInternetPage.showDetailedInfo";
 const char kUpdateCarrierFunction[] =
@@ -145,6 +148,7 @@ const char kTagAutoConnect[] = "autoConnect";
 const char kTagBssid[] = "bssid";
 const char kTagCarrierSelectFlag[] = "showCarrierSelect";
 const char kTagCarrierUrl[] = "carrierUrl";
+const char kTagCellular[] = "cellular";
 const char kTagCellularAvailable[] = "cellularAvailable";
 const char kTagCellularBusy[] = "cellularBusy";
 const char kTagCellularEnabled[] = "cellularEnabled";
@@ -219,8 +223,10 @@ const char kTagTrue[] = "true";
 const char kTagType[] = "type";
 const char kTagUsername[] = "username";
 const char kTagValue[] = "value";
+const char kTagVpn[] = "vpn";
 const char kTagVpnList[] = "vpnList";
 const char kTagWarning[] = "warning";
+const char kTagWifi[] = "wifi";
 const char kTagWifiAvailable[] = "wifiAvailable";
 const char kTagWifiBusy[] = "wifiBusy";
 const char kTagWifiEnabled[] = "wifiEnabled";
@@ -742,6 +748,15 @@ void InternetOptionsHandler::GetLocalizedValues(
 }
 
 void InternetOptionsHandler::InitializePage() {
+  DictionaryValue dictionary;
+  dictionary.SetString(kTagCellular,
+      GetIconDataUrl(IDR_AURA_UBER_TRAY_NETWORK_BARS_DARK));
+  dictionary.SetString(kTagWifi,
+      GetIconDataUrl(IDR_AURA_UBER_TRAY_NETWORK_ARCS_DARK));
+  dictionary.SetString(kTagVpn,
+      GetIconDataUrl(IDR_AURA_UBER_TRAY_NETWORK_VPN));
+  web_ui()->CallJavascriptFunction(kSetDefaultNetworkIconsFunction,
+                                   dictionary);
   cros_->RequestNetworkScan();
 }
 
@@ -958,6 +973,14 @@ void InternetOptionsHandler::ChangePinCallback(const ListValue* args) {
 
 void InternetOptionsHandler::RefreshNetworksCallback(const ListValue* args) {
   cros_->RequestNetworkScan();
+}
+
+std::string InternetOptionsHandler::GetIconDataUrl(int resource_id) const {
+  gfx::ImageSkia* icon =
+      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
+  gfx::ImageSkiaRep image_rep = icon->GetRepresentation(
+      web_ui()->GetDeviceScaleFactor());
+  return web_ui_util::GetBitmapDataUrl(image_rep.sk_bitmap());
 }
 
 void InternetOptionsHandler::RefreshNetworkData() {
