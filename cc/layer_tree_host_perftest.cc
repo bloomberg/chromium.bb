@@ -4,6 +4,12 @@
 
 #include "cc/layer_tree_host.h"
 
+#include "base/base_paths.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
+#include "base/json/json_reader.h"
+#include "base/path_service.h"
+#include "base/string_piece.h"
 #include "cc/content_layer.h"
 #include "cc/nine_patch_layer.h"
 #include "cc/solid_color_layer.h"
@@ -13,12 +19,37 @@
 namespace cc {
 namespace {
 
-class LayerTreeHostPerfTest : public WebKitTests::ThreadedTest {};
+static const int kTimeLimitMillis = 2000;
 
-class LayerTreeHostPerfTestSevenTabSwitcher : public LayerTreeHostPerfTest {
+class LayerTreeHostPerfTest : public WebKitTests::ThreadedTest {
  public:
-  LayerTreeHostPerfTestSevenTabSwitcher() : num_draws_(0) {
+  LayerTreeHostPerfTest()
+      : num_draws_(0) {
     fake_delegate_.setPaintAllOpaque(true);
+  }
+
+  virtual void beginTest() OVERRIDE {
+    buildTree();
+    start_time_ = base::TimeTicks::HighResNow();
+    postSetNeedsCommitToMainThread();
+  }
+
+  virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    ++num_draws_;
+    if ((base::TimeTicks::HighResNow() - start_time_) >=
+        base::TimeDelta::FromMilliseconds(kTimeLimitMillis))
+      endTest();
+    impl->setNeedsRedraw();
+  }
+
+  virtual void buildTree() {}
+
+  virtual void afterTest() OVERRIDE {
+    base::TimeDelta elapsed = base::TimeTicks::HighResNow() - start_time_;
+    // Format matches chrome/test/perf/perf_test.h:PrintResult
+    printf("*RESULT %s: frames= %.2f runs/s\n",
+           test_name_.c_str(),
+           num_draws_ / elapsed.InSecondsF());
   }
 
   scoped_refptr<Layer> CreateLayer(float x, float y, int width, int height) {
@@ -48,6 +79,10 @@ class LayerTreeHostPerfTestSevenTabSwitcher : public LayerTreeHostPerfTest {
   }
 
   scoped_refptr<NinePatchLayer> CreateDecorationLayer(float x, float y, int width, int height) {
+    return CreateDecorationLayer(x, y, width, height, gfx::Rect(0, 0, width, height));
+  }
+
+  scoped_refptr<NinePatchLayer> CreateDecorationLayer(float x, float y, int width, int height, gfx::Rect aperture) {
     scoped_refptr<NinePatchLayer> layer = NinePatchLayer::create();
     layer->setAnchorPoint(gfx::Point());
     layer->setPosition(gfx::PointF(x, y));
@@ -57,7 +92,7 @@ class LayerTreeHostPerfTestSevenTabSwitcher : public LayerTreeHostPerfTest {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
     bitmap.allocPixels(NULL, NULL);
-    layer->setBitmap(bitmap, gfx::Rect(0, 0, width, height));
+    layer->setBitmap(bitmap, aperture);
 
     return layer;
   }
@@ -67,7 +102,21 @@ class LayerTreeHostPerfTestSevenTabSwitcher : public LayerTreeHostPerfTest {
     return child;
   }
 
-  virtual void beginTest() OVERRIDE {
+ protected:
+  base::TimeTicks start_time_;
+  int num_draws_;
+  std::string test_name_;
+  WebKitTests::FakeContentLayerClient fake_delegate_;
+};
+
+class LayerTreeHostPerfTestSevenTabSwitcher : public LayerTreeHostPerfTest {
+ public:
+  LayerTreeHostPerfTestSevenTabSwitcher()
+      : LayerTreeHostPerfTest() {
+    test_name_ = "SevenTabSwitcher";
+  }
+
+  virtual void buildTree() OVERRIDE {
     scoped_refptr<Layer> root = CreateLayer(0, 0, 720, 1038); // 1
     scoped_refptr<Layer> layer;
 
@@ -176,24 +225,103 @@ class LayerTreeHostPerfTestSevenTabSwitcher : public LayerTreeHostPerfTest {
 
     m_layerTreeHost->setViewportSize(gfx::Size(720, 1038), gfx::Size(720, 1038));
     m_layerTreeHost->setRootLayer(root);
-    postSetNeedsCommitToMainThread();
   }
-
-  virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    impl->setNeedsRedraw();
-    ++num_draws_;
-    if (num_draws_ > 120)
-      endTest();
-  }
-
-  virtual void afterTest() OVERRIDE {}
-
- private:
-  int num_draws_;
-  WebKitTests::FakeContentLayerClient fake_delegate_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostPerfTestSevenTabSwitcher);
+TEST_F(LayerTreeHostPerfTestSevenTabSwitcher, runSingleThread) {
+  runTest(false);
+}
+
+class LayerTreeHostPerfTestJsonReader : public LayerTreeHostPerfTest {
+ public:
+  LayerTreeHostPerfTestJsonReader()
+      : LayerTreeHostPerfTest() {
+  }
+
+  void readTestFile(std::string name) {
+    test_name_ = name;
+    FilePath filepath;
+    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &filepath));
+    filepath = filepath.AppendASCII("cc").AppendASCII("test")
+                       .AppendASCII("data").AppendASCII(name + ".json");
+    std::string json;
+    ASSERT_TRUE(file_util::ReadFileToString(filepath, &json));
+    tree_.reset(base::JSONReader::Read(json));
+    ASSERT_TRUE(tree_);
+  }
+
+  scoped_refptr<Layer> parseLayer(base::Value* val) {
+    DictionaryValue* dict;
+    bool success = true;
+    success &= val->GetAsDictionary(&dict);
+    std::string layer_type;
+    success &= dict->GetString("LayerType", &layer_type);
+    ListValue* list;
+    success &= dict->GetList("Bounds", &list);
+    int width, height;
+    success &= list->GetInteger(0, &width);
+    success &= list->GetInteger(1, &height);
+    success &= dict->GetList("Position", &list);
+    double position_x, position_y;
+    success &= list->GetDouble(0, &position_x);
+    success &= list->GetDouble(1, &position_y);
+
+    scoped_refptr<Layer> new_layer;
+    if (layer_type == "SolidColorLayer") {
+      new_layer = CreateColorLayer(position_x, position_y, width, height);
+    } else if (layer_type == "ContentLayer") {
+      new_layer = CreateContentLayer(position_x, position_y, width, height);
+    } else if (layer_type == "NinePatchLayer") {
+      success &= dict->GetList("ImageAperture", &list);
+      int aperture_x, aperture_y, aperture_width, aperture_height;
+      success &= list->GetInteger(0, &aperture_x);
+      success &= list->GetInteger(1, &aperture_y);
+      success &= list->GetInteger(2, &aperture_width);
+      success &= list->GetInteger(3, &aperture_height);
+
+      new_layer = CreateDecorationLayer(
+          position_x, position_y, width, height,
+          gfx::Rect(aperture_x, aperture_y, aperture_width, aperture_height));
+
+    } else { // Type "Layer" or "unknown"
+      new_layer = CreateLayer(position_x, position_y, width, height);
+    }
+
+    success &= dict->GetList("DrawTransform", &list);
+    double transform[16];
+    for (int i = 0; i < 16; ++i)
+      success &= list->GetDouble(i, &transform[i]);
+
+    gfx::Transform gfxTransform;
+    gfxTransform.matrix().setColMajord(transform);
+    new_layer->setTransform(gfxTransform);
+
+    success &= dict->GetList("Children", &list);
+    for (ListValue::const_iterator it = list->begin();
+         it != list->end(); ++it) {
+      new_layer->addChild(parseLayer(*it));
+    }
+
+    if (!success)
+      ADD_FAILURE() << "Could not parse json data";
+
+    return new_layer;
+  }
+
+  virtual void buildTree() OVERRIDE {
+    gfx::Size viewport = gfx::Size(720, 1038);
+    m_layerTreeHost->setViewportSize(viewport, viewport);
+    m_layerTreeHost->setRootLayer(parseLayer(tree_.get()));
+  }
+
+ private:
+  scoped_ptr<base::Value> tree_;
+};
+
+TEST_F(LayerTreeHostPerfTestJsonReader, tenTenSingleThread) {
+  readTestFile("10_10_layer_tree");
+  runTest(false);
+}
 
 }  // namespace
 }  // namespace cc

@@ -194,5 +194,21 @@
         },
       ],
     }],
+    ['OS == "android" and gtest_target_type == "shared_library"', {
+      'targets': [
+        {
+          'target_name': 'cc_perftests_apk',
+          'type': 'none',
+          'dependencies': [
+            'cc_perftests',
+          ],
+          'variables': {
+            'test_suite_name': 'cc_perftests',
+            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)cc_perftests<(SHARED_LIB_SUFFIX)',
+          },
+          'includes': [ '../build/apk_test.gypi' ],
+        },
+      ],
+    }]
   ],
 }
