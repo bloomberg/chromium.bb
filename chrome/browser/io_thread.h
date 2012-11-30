@@ -170,6 +170,23 @@ class IOThread : public content::BrowserThreadDelegate {
 
   void InitializeNetworkOptions(const CommandLine& parsed_command_line);
 
+  // Enable the SPDY protocol.  If this function is not called, SPDY/3
+  // will be enabled.
+  //   "off"                      : Disables SPDY support entirely.
+  //   "ssl"                      : Forces SPDY for all HTTPS requests.
+  //   "no-ssl"                   : Forces SPDY for all HTTP requests.
+  //   "no-ping"                  : Disables SPDY ping connection testing.
+  //   "exclude=<host>"           : Disables SPDY support for the host <host>.
+  //   "no-compress"              : Disables SPDY header compression.
+  //   "no-alt-protocols          : Disables alternate protocol support.
+  //   "force-alt-protocols       : Forces an alternate protocol of SPDY/2
+  //                                on port 443.
+  //   "single-domain"            : Forces all spdy traffic to a single domain.
+  //   "init-max-streams=<limit>" : Specifies the maximum number of concurrent
+  //                                streams for a SPDY session, unless the
+  //                                specifies a different value via SETTINGS.
+  void EnableSpdy(const std::string& mode);
+
   // Global state must be initialized on the IO thread, then this
   // method must be invoked on the UI thread.
   void InitSystemRequestContext();

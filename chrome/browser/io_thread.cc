@@ -634,7 +634,7 @@ void IOThread::InitializeNetworkOptions(
   if (parsed_command_line.HasSwitch(switches::kUseSpdy)) {
     std::string spdy_mode =
       parsed_command_line.GetSwitchValueASCII(switches::kUseSpdy);
-    net::HttpNetworkLayer::EnableSpdy(spdy_mode);
+    EnableSpdy(spdy_mode);
     used_spdy_switch = true;
   }
   if (parsed_command_line.HasSwitch(switches::kEnableSpdy3)) {
@@ -649,6 +649,68 @@ void IOThread::InitializeNetworkOptions(
   }
   if (!used_spdy_switch) {
     net::HttpStreamFactory::EnableNpnSpdy3();
+  }
+}
+
+void IOThread::EnableSpdy(const std::string& mode) {
+  static const char kOff[] = "off";
+  static const char kSSL[] = "ssl";
+  static const char kDisableSSL[] = "no-ssl";
+  static const char kDisablePing[] = "no-ping";
+  static const char kExclude[] = "exclude";  // Hosts to exclude
+  static const char kDisableCompression[] = "no-compress";
+  static const char kDisableAltProtocols[] = "no-alt-protocols";
+  static const char kForceAltProtocols[] = "force-alt-protocols";
+  static const char kSingleDomain[] = "single-domain";
+
+  static const char kInitialMaxConcurrentStreams[] = "init-max-streams";
+
+  std::vector<std::string> spdy_options;
+  base::SplitString(mode, ',', &spdy_options);
+
+  for (std::vector<std::string>::iterator it = spdy_options.begin();
+       it != spdy_options.end(); ++it) {
+    const std::string& element = *it;
+    std::vector<std::string> name_value;
+    base::SplitString(element, '=', &name_value);
+    const std::string& option = name_value.size() > 0 ? name_value[0] : "";
+    const std::string value = name_value.size() > 1 ? name_value[1] : "";
+
+    if (option == kOff) {
+      net::HttpStreamFactory::set_spdy_enabled(false);
+    } else if (option == kDisableSSL) {
+      net::SpdySession::set_default_protocol(net::kProtoSPDY2);
+      net::HttpStreamFactory::set_force_spdy_over_ssl(false);
+      net::HttpStreamFactory::set_force_spdy_always(true);
+    } else if (option == kSSL) {
+      net::SpdySession::set_default_protocol(net::kProtoSPDY2);
+      net::HttpStreamFactory::set_force_spdy_over_ssl(true);
+      net::HttpStreamFactory::set_force_spdy_always(true);
+    } else if (option == kDisablePing) {
+      net::SpdySession::set_enable_ping_based_connection_checking(false);
+    } else if (option == kExclude) {
+      net::HttpStreamFactory::add_forced_spdy_exclusion(value);
+    } else if (option == kDisableCompression) {
+      net::BufferedSpdyFramer::set_enable_compression_default(false);
+    } else if (option == kDisableAltProtocols) {
+      net::HttpStreamFactory::set_use_alternate_protocols(false);
+    } else if (option == kForceAltProtocols) {
+      net::PortAlternateProtocolPair pair;
+      pair.port = 443;
+      pair.protocol = net::NPN_SPDY_2;
+      net::HttpServerPropertiesImpl::ForceAlternateProtocol(pair);
+    } else if (option == kSingleDomain) {
+      DLOG(INFO) << "FORCING SINGLE DOMAIN";
+      net::SpdySessionPool::ForceSingleDomain();
+    } else if (option == kInitialMaxConcurrentStreams) {
+      int streams;
+      if (base::StringToInt(value, &streams) && streams > 0)
+        net::SpdySession::set_init_max_concurrent_streams(streams);
+    } else if (option.empty() && it == spdy_options.begin()) {
+      continue;
+    } else {
+      LOG(DFATAL) << "Unrecognized spdy option: " << option;
+    }
   }
 }
 

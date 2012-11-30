@@ -113,7 +113,7 @@ void ChromeBenchmarkingMessageFilter::OnEnableSpdy(bool enable) {
   }
   if (enable) {
     net::HttpStreamFactory::EnableNpnSpdy();
-    net::HttpNetworkLayer::EnableSpdy("force-alt-protocols");
+    net::HttpNetworkLayer::ForceAlternateProtocol();
   } else {
     net::HttpStreamFactory::EnableNpnHttpOnly();
   }
@@ -167,4 +167,3 @@ bool ChromeBenchmarkingMessageFilter::CheckBenchmarkingEnabled() const {
   }
   return result;
 }
-
