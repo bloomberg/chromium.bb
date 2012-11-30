@@ -43,6 +43,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
+// http://crbug.com/31663
+#if !(defined(OS_WIN) && defined(USE_AURA))
+
 using content::WebContents;
 
 // On Linux this is crashing intermittently http://crbug/84719
@@ -609,3 +612,5 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   DCHECK_NE(model()->GetResourceWebCoreCSSCacheSize(resource_count),
             l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT));
 }
+
+#endif
