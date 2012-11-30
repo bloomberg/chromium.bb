@@ -49,7 +49,6 @@ HeadsUpDisplayLayerImpl::HeadsUpDisplayLayerImpl(int id)
     , m_averageFPS(0)
     , m_minFPS(0)
     , m_maxFPS(0)
-    , m_showFPSCounter(false)
 {
 }
 
@@ -60,11 +59,6 @@ HeadsUpDisplayLayerImpl::~HeadsUpDisplayLayerImpl()
 void HeadsUpDisplayLayerImpl::setFontAtlas(scoped_ptr<FontAtlas> fontAtlas)
 {
     m_fontAtlas = fontAtlas.Pass();
-}
-
-void HeadsUpDisplayLayerImpl::setShowFPSCounter(bool show)
-{
-    m_showFPSCounter = show;
 }
 
 void HeadsUpDisplayLayerImpl::willDraw(ResourceProvider* resourceProvider)
@@ -150,9 +144,9 @@ bool HeadsUpDisplayLayerImpl::layerIsAlwaysDamaged() const
 
 void HeadsUpDisplayLayerImpl::drawHudContents(SkCanvas* canvas)
 {
-    const LayerTreeSettings& settings = layerTreeHostImpl()->settings();
+    const LayerTreeDebugState& debugState = layerTreeHostImpl()->debugState();
 
-    if (settings.showPlatformLayerTree) {
+    if (debugState.showPlatformLayerTree) {
         SkPaint paint = createPaint();
         paint.setColor(SkColorSetARGB(192, 0, 0, 0));
         canvas->drawRect(SkRect::MakeXYWH(0, 0, bounds().width(), bounds().height()), paint);
@@ -160,15 +154,15 @@ void HeadsUpDisplayLayerImpl::drawHudContents(SkCanvas* canvas)
 
     int platformLayerTreeTop = 0;
 
-    if (m_showFPSCounter)
+    if (debugState.showFPSCounter)
         platformLayerTreeTop = drawFPSCounter(canvas, layerTreeHostImpl()->fpsCounter());
 
-    if (settings.showPlatformLayerTree && m_fontAtlas.get()) {
+    if (debugState.showPlatformLayerTree && m_fontAtlas) {
         std::string layerTree = layerTreeHostImpl()->layerTreeAsText();
         m_fontAtlas->drawText(canvas, createPaint(), layerTree, gfx::Point(2, platformLayerTreeTop), bounds());
     }
 
-    if (settings.showDebugRects())
+    if (debugState.showHudRects())
         drawDebugRects(canvas, layerTreeHostImpl()->debugRectHistory());
 }
 

@@ -12,7 +12,6 @@
 #include "cc/damage_tracker.h"
 #include "cc/debug_rect_history.h"
 #include "cc/delay_based_time_source.h"
-#include "cc/font_atlas.h"
 #include "cc/frame_rate_counter.h"
 #include "cc/gl_renderer.h"
 #include "cc/heads_up_display_layer_impl.h"
@@ -211,6 +210,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
     , m_scrollingLayerIdFromPreviousTree(-1)
     , m_scrollDeltaIsInViewportSpace(false)
     , m_settings(settings)
+    , m_debugState(settings.initialDebugState)
     , m_deviceScaleFactor(1)
     , m_visible(true)
     , m_contentsTexturesPurged(false)
@@ -497,9 +497,9 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
     OcclusionTrackerImpl occlusionTracker(m_rootLayerImpl->renderSurface()->contentRect(), recordMetricsForFrame);
     occlusionTracker.setMinimumTrackingSize(m_settings.minimumOcclusionTrackingSize);
 
-    if (settings().showOccludingRects)
+    if (m_debugState.showOccludingRects)
         occlusionTracker.setOccludingScreenSpaceRectsContainer(&frame.occludingScreenSpaceRects);
-    if (settings().showNonOccludingRects)
+    if (m_debugState.showNonOccludingRects)
         occlusionTracker.setNonOccludingScreenSpaceRectsContainer(&frame.nonOccludingScreenSpaceRects);
 
     // Add quads to the Render passes in FrontToBack order to allow for testing occlusion and performing culling during the tree walk.
@@ -827,8 +827,8 @@ void LayerTreeHostImpl::drawLayers(const FrameData& frame)
     // RenderWidget.
     m_fpsCounter->markBeginningOfFrame(base::TimeTicks::Now());
 
-    if (m_settings.showDebugRects())
-        m_debugRectHistory->saveDebugRectsForCurrentFrame(m_rootLayerImpl.get(), *frame.renderSurfaceLayerList, frame.occludingScreenSpaceRects, frame.nonOccludingScreenSpaceRects, settings());
+    if (m_debugState.showHudRects())
+        m_debugRectHistory->saveDebugRectsForCurrentFrame(m_rootLayerImpl.get(), *frame.renderSurfaceLayerList, frame.occludingScreenSpaceRects, frame.nonOccludingScreenSpaceRects, m_debugState);
 
     // Because the contents of the HUD depend on everything else in the frame, the contents
     // of its texture are updated as the last thing before the frame is drawn.

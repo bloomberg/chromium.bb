@@ -14,7 +14,7 @@
 namespace cc {
 
 class LayerImpl;
-struct LayerTreeSettings;
+struct LayerTreeDebugState;
 
 // There are currently six types of debug rects:
 //
@@ -59,7 +59,7 @@ public:
     ~DebugRectHistory();
 
     // Note: Saving debug rects must happen before layers' change tracking is reset.
-    void saveDebugRectsForCurrentFrame(LayerImpl* rootLayer, const std::vector<LayerImpl*>& renderSurfaceLayerList, const std::vector<gfx::Rect>& occludingScreenSpaceRects, const std::vector<gfx::Rect>& nonOccludingScreenSpaceRects, const LayerTreeSettings&);
+    void saveDebugRectsForCurrentFrame(LayerImpl* rootLayer, const std::vector<LayerImpl*>& renderSurfaceLayerList, const std::vector<gfx::Rect>& occludingScreenSpaceRects, const std::vector<gfx::Rect>& nonOccludingScreenSpaceRects, const LayerTreeDebugState& debugState);
 
     const std::vector<DebugRect>& debugRects() { return m_debugRects; }
 

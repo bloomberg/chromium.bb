@@ -40,9 +40,6 @@ bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSetti
     LayerTreeSettings settings;
     settings.acceleratePainting = webSettings.acceleratePainting;
     settings.implSidePainting = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnableImplSidePainting);
-    settings.showDebugBorders = webSettings.showDebugBorders;
-    settings.showPlatformLayerTree = webSettings.showPlatformLayerTree;
-    settings.showPaintRects = webSettings.showPaintRects;
     settings.renderVSyncEnabled = webSettings.renderVSyncEnabled;
     settings.perTilePaintingEnabled = webSettings.perTilePaintingEnabled;
     settings.acceleratedAnimationEnabled = webSettings.acceleratedAnimationEnabled;
@@ -50,12 +47,13 @@ bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSetti
     settings.refreshRate = webSettings.refreshRate;
     settings.defaultTileSize = webSettings.defaultTileSize;
     settings.maxUntiledLayerSize = webSettings.maxUntiledLayerSize;
+    settings.initialDebugState.showFPSCounter = webSettings.showFPSCounter;
+    settings.initialDebugState.showPaintRects = webSettings.showPaintRects;
+    settings.initialDebugState.showPlatformLayerTree = webSettings.showPlatformLayerTree;
+    settings.initialDebugState.showDebugBorders = webSettings.showDebugBorders;
     m_layerTreeHost = LayerTreeHost::create(this, settings, implThread.Pass());
     if (!m_layerTreeHost.get())
         return false;
-
-    if (webSettings.showFPSCounter)
-        setShowFPSCounter(true);
     return true;
 }
 
@@ -182,7 +180,9 @@ void WebLayerTreeViewImpl::renderingStats(WebRenderingStats& stats) const
 
 void WebLayerTreeViewImpl::setShowFPSCounter(bool show)
 {
-    m_layerTreeHost->setShowFPSCounter(show);
+    LayerTreeDebugState debugState = m_layerTreeHost->debugState();
+    debugState.showFPSCounter = show;
+    m_layerTreeHost->setDebugState(debugState);
 }
 
 void WebLayerTreeViewImpl::setFontAtlas(SkBitmap bitmap, WebRect asciiToWebRectTable[128], int fontHeight) {

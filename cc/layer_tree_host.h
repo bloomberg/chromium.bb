@@ -50,14 +50,14 @@ class HeadsUpDisplayLayer;
 class Region;
 struct ScrollAndScaleSet;
 
-struct CC_EXPORT LayerTreeSettings {
-    LayerTreeSettings();
-    ~LayerTreeSettings();
+struct CC_EXPORT LayerTreeDebugState {
+    LayerTreeDebugState();
+    ~LayerTreeDebugState();
 
-    bool acceleratePainting;
-    bool implSidePainting;
-    bool showDebugBorders;
+    bool showFPSCounter;
     bool showPlatformLayerTree;
+    bool showDebugBorders;
+
     bool showPaintRects;
     bool showPropertyChangedRects;
     bool showSurfaceDamageRects;
@@ -65,6 +65,20 @@ struct CC_EXPORT LayerTreeSettings {
     bool showReplicaScreenSpaceRects;
     bool showOccludingRects;
     bool showNonOccludingRects;
+
+    bool showHudInfo() const;
+    bool showHudRects() const;
+
+    static bool equal(const LayerTreeDebugState& a, const LayerTreeDebugState& b);
+    static LayerTreeDebugState unite(const LayerTreeDebugState& a, const LayerTreeDebugState& b);
+};
+
+struct CC_EXPORT LayerTreeSettings {
+    LayerTreeSettings();
+    ~LayerTreeSettings();
+
+    bool acceleratePainting;
+    bool implSidePainting;
     bool renderVSyncEnabled;
     bool perTilePaintingEnabled;
     bool partialSwapEnabled;
@@ -78,8 +92,7 @@ struct CC_EXPORT LayerTreeSettings {
     gfx::Size maxUntiledLayerSize;
     gfx::Size minimumOcclusionTrackingSize;
 
-    bool showDebugInfo() const { return showPlatformLayerTree || showDebugRects(); }
-    bool showDebugRects() const { return showPaintRects || showPropertyChangedRects || showSurfaceDamageRects || showScreenSpaceRects || showReplicaScreenSpaceRects || showOccludingRects || showNonOccludingRects; }
+    LayerTreeDebugState initialDebugState;
 };
 
 // Provides information on an Impl's rendering capabilities back to the LayerTreeHost
@@ -183,6 +196,9 @@ public:
 
     const LayerTreeSettings& settings() const { return m_settings; }
 
+    void setDebugState(const LayerTreeDebugState& debugState);
+    const LayerTreeDebugState& debugState() const { return m_debugState; }
+
     void setViewportSize(const gfx::Size& layoutViewportSize, const gfx::Size& deviceViewportSize);
 
     const gfx::Size& layoutViewportSize() const { return m_layoutViewportSize; }
@@ -221,7 +237,6 @@ public:
     void setDeviceScaleFactor(float);
     float deviceScaleFactor() const { return m_deviceScaleFactor; }
 
-    void setShowFPSCounter(bool show);
     void setFontAtlas(scoped_ptr<FontAtlas>);
 
     HeadsUpDisplayLayer* hudLayer() const { return m_hudLayer.get(); }
@@ -278,6 +293,7 @@ private:
     scoped_ptr<PrioritizedResource> m_surfaceMemoryPlaceholder;
 
     LayerTreeSettings m_settings;
+    LayerTreeDebugState m_debugState;
 
     gfx::Size m_layoutViewportSize;
     gfx::Size m_deviceViewportSize;

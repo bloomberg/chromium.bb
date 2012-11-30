@@ -17,7 +17,6 @@ scoped_refptr<HeadsUpDisplayLayer> HeadsUpDisplayLayer::create()
 
 HeadsUpDisplayLayer::HeadsUpDisplayLayer()
     : Layer()
-    , m_showFPSCounter(false)
 {
     setBounds(gfx::Size(256, 128));
 }
@@ -28,14 +27,14 @@ HeadsUpDisplayLayer::~HeadsUpDisplayLayer()
 
 void HeadsUpDisplayLayer::update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&)
 {
-    const LayerTreeSettings& settings = layerTreeHost()->settings();
+    const LayerTreeDebugState& debugState = layerTreeHost()->debugState();
     int maxTextureSize = layerTreeHost()->rendererCapabilities().maxTextureSize;
 
     gfx::Size bounds;
     gfx::Transform matrix;
     matrix.MakeIdentity();
 
-    if (settings.showPlatformLayerTree || settings.showDebugRects()) {
+    if (debugState.showPlatformLayerTree || debugState.showHudRects()) {
         int width = std::min(maxTextureSize, layerTreeHost()->deviceViewportSize().width());
         int height = std::min(maxTextureSize, layerTreeHost()->deviceViewportSize().height());
         bounds = gfx::Size(width, height);
@@ -59,12 +58,6 @@ void HeadsUpDisplayLayer::setFontAtlas(scoped_ptr<FontAtlas> fontAtlas)
     setNeedsCommit();
 }
 
-void HeadsUpDisplayLayer::setShowFPSCounter(bool show)
-{
-    m_showFPSCounter = show;
-    setNeedsCommit();
-}
-
 scoped_ptr<LayerImpl> HeadsUpDisplayLayer::createLayerImpl()
 {
     return HeadsUpDisplayLayerImpl::create(m_layerId).PassAs<LayerImpl>();
@@ -74,11 +67,11 @@ void HeadsUpDisplayLayer::pushPropertiesTo(LayerImpl* layerImpl)
 {
     Layer::pushPropertiesTo(layerImpl);
 
-    HeadsUpDisplayLayerImpl* hudLayerImpl = static_cast<HeadsUpDisplayLayerImpl*>(layerImpl);
-    hudLayerImpl->setShowFPSCounter(m_showFPSCounter);
+    if (!m_fontAtlas)
+        return;
 
-    if (m_fontAtlas.get())
-        hudLayerImpl->setFontAtlas(m_fontAtlas.Pass());
+    HeadsUpDisplayLayerImpl* hudLayerImpl = static_cast<HeadsUpDisplayLayerImpl*>(layerImpl);
+    hudLayerImpl->setFontAtlas(m_fontAtlas.Pass());
 }
 
 }  // namespace cc

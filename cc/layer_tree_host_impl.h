@@ -255,6 +255,9 @@ public:
     ResourceProvider* resourceProvider() const { return m_resourceProvider.get(); }
     Proxy* proxy() const { return m_proxy; }
 
+    void setDebugState(const LayerTreeDebugState& debugState) { m_debugState = debugState; }
+    const LayerTreeDebugState& debugState() const { return m_debugState; }
+
     class CC_EXPORT CullRenderPassesWithCachedTextures {
     public:
         bool shouldRemoveRenderPass(const RenderPassDrawQuad&, const FrameData&) const;
@@ -341,6 +344,7 @@ private:
     int m_scrollingLayerIdFromPreviousTree;
     bool m_scrollDeltaIsInViewportSpace;
     LayerTreeSettings m_settings;
+    LayerTreeDebugState m_debugState;
     gfx::Size m_layoutViewportSize;
     gfx::Size m_deviceViewportSize;
     float m_deviceScaleFactor;

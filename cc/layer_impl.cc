@@ -149,7 +149,7 @@ bool LayerImpl::showDebugBorders() const
 {
     if (!m_layerTreeHostImpl)
         return false;
-    return m_layerTreeHostImpl->settings().showDebugBorders;
+    return m_layerTreeHostImpl->debugState().showDebugBorders;
 }
 
 void LayerImpl::getDebugBorderProperties(SkColor* color, float* width) const

@@ -36,11 +36,10 @@ namespace cc {
 
 bool LayerTreeHost::s_needsFilterContext = false;
 
-LayerTreeSettings::LayerTreeSettings()
-    : acceleratePainting(false)
-    , implSidePainting(false)
-    , showDebugBorders(false)
+LayerTreeDebugState::LayerTreeDebugState()
+    : showFPSCounter(false)
     , showPlatformLayerTree(false)
+    , showDebugBorders(false)
     , showPaintRects(false)
     , showPropertyChangedRects(false)
     , showSurfaceDamageRects(false)
@@ -48,6 +47,50 @@ LayerTreeSettings::LayerTreeSettings()
     , showReplicaScreenSpaceRects(false)
     , showOccludingRects(false)
     , showNonOccludingRects(false)
+{
+}
+
+LayerTreeDebugState::~LayerTreeDebugState()
+{
+}
+
+bool LayerTreeDebugState::showHudInfo() const
+{
+    return showFPSCounter || showPlatformLayerTree || showHudRects();
+}
+
+bool LayerTreeDebugState::showHudRects() const
+{
+    return showPaintRects || showPropertyChangedRects || showSurfaceDamageRects || showScreenSpaceRects || showReplicaScreenSpaceRects || showOccludingRects || showNonOccludingRects;
+}
+
+bool LayerTreeDebugState::equal(const LayerTreeDebugState& a, const LayerTreeDebugState& b)
+{
+    return memcmp(&a, &b, sizeof(LayerTreeDebugState)) == 0;
+}
+
+LayerTreeDebugState LayerTreeDebugState::unite(const LayerTreeDebugState& a, const LayerTreeDebugState& b)
+{
+    LayerTreeDebugState r(a);
+
+    r.showFPSCounter |= b.showFPSCounter;
+    r.showPlatformLayerTree |= b.showPlatformLayerTree;
+    r.showDebugBorders |= b.showDebugBorders;
+
+    r.showPaintRects |= b.showPaintRects;
+    r.showPropertyChangedRects |= b.showPropertyChangedRects;
+    r.showSurfaceDamageRects |= b.showSurfaceDamageRects;
+    r.showScreenSpaceRects |= b.showScreenSpaceRects;
+    r.showReplicaScreenSpaceRects |= b.showReplicaScreenSpaceRects;
+    r.showOccludingRects |= b.showOccludingRects;
+    r.showNonOccludingRects |= b.showNonOccludingRects;
+
+    return r;
+}
+
+LayerTreeSettings::LayerTreeSettings()
+    : acceleratePainting(false)
+    , implSidePainting(false)
     , renderVSyncEnabled(true)
     , perTilePaintingEnabled(false)
     , partialSwapEnabled(false)
@@ -62,15 +105,16 @@ LayerTreeSettings::LayerTreeSettings()
     , minimumOcclusionTrackingSize(gfx::Size(160, 160))
 {
     // TODO(danakj): Move this to chromium when we don't go through the WebKit API anymore.
-    showPropertyChangedRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowPropertyChangedRects);
-    showSurfaceDamageRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowSurfaceDamageRects);
-    showScreenSpaceRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowScreenSpaceRects);
-    showReplicaScreenSpaceRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowReplicaScreenSpaceRects);
-    showOccludingRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowOccludingRects);
-    showNonOccludingRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowNonOccludingRects);
     partialSwapEnabled = CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePartialSwap);
     backgroundColorInsteadOfCheckerboard = CommandLine::ForCurrentProcess()->HasSwitch(switches::kBackgroundColorInsteadOfCheckerboard);
     showOverdrawInTracing = CommandLine::ForCurrentProcess()->HasSwitch(switches::kTraceOverdraw);
+
+    initialDebugState.showPropertyChangedRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowPropertyChangedRects);
+    initialDebugState.showSurfaceDamageRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowSurfaceDamageRects);
+    initialDebugState.showScreenSpaceRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowScreenSpaceRects);
+    initialDebugState.showReplicaScreenSpaceRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowReplicaScreenSpaceRects);
+    initialDebugState.showOccludingRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowOccludingRects);
+    initialDebugState.showNonOccludingRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowNonOccludingRects);
 }
 
 LayerTreeSettings::~LayerTreeSettings()
@@ -119,6 +163,7 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client, const LayerTreeSetting
     , m_numTimesRecreateShouldFail(0)
     , m_numFailedRecreateAttempts(0)
     , m_settings(settings)
+    , m_debugState(settings.initialDebugState)
     , m_deviceScaleFactor(1)
     , m_visible(true)
     , m_pageScaleFactor(1)
@@ -289,6 +334,7 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
     hostImpl->setPageScaleFactorAndLimits(m_pageScaleFactor, m_minPageScaleFactor, m_maxPageScaleFactor);
     hostImpl->setBackgroundColor(m_backgroundColor);
     hostImpl->setHasTransparentBackground(m_hasTransparentBackground);
+    hostImpl->setDebugState(m_debugState);
 
     m_commitNumber++;
 }
@@ -297,12 +343,6 @@ void LayerTreeHost::createHUDLayerIfNeeded()
 {
     if (!m_hudLayer)
         m_hudLayer = HeadsUpDisplayLayer::create();
-}
-
-void LayerTreeHost::setShowFPSCounter(bool show)
-{
-    createHUDLayerIfNeeded();
-    m_hudLayer->setShowFPSCounter(show);
 }
 
 void LayerTreeHost::setFontAtlas(scoped_ptr<FontAtlas> fontAtlas)
@@ -315,7 +355,7 @@ void LayerTreeHost::willCommit()
 {
     m_client->willCommit();
 
-    if (m_settings.showDebugInfo())
+    if (m_debugState.showHudInfo())
         createHUDLayerIfNeeded();
 
     if (m_rootLayer && m_hudLayer && !m_hudLayer->parent())
@@ -439,6 +479,17 @@ void LayerTreeHost::setRootLayer(scoped_refptr<Layer> rootLayer)
     if (m_hudLayer)
         m_hudLayer->removeFromParent();
 
+    setNeedsCommit();
+}
+
+void LayerTreeHost::setDebugState(const LayerTreeDebugState& debugState)
+{
+    LayerTreeDebugState newDebugState = LayerTreeDebugState::unite(m_settings.initialDebugState, debugState);
+
+    if (LayerTreeDebugState::equal(m_debugState, newDebugState))
+        return;
+
+    m_debugState = newDebugState;
     setNeedsCommit();
 }
 

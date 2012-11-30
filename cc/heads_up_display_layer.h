@@ -19,7 +19,6 @@ public:
     virtual bool drawsContent() const OVERRIDE;
 
     void setFontAtlas(scoped_ptr<FontAtlas>);
-    void setShowFPSCounter(bool);
 
     virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE;
     virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
@@ -31,7 +30,6 @@ private:
     virtual ~HeadsUpDisplayLayer();
 
     scoped_ptr<FontAtlas> m_fontAtlas;
-    bool m_showFPSCounter;
 };
 
 }  // namespace cc

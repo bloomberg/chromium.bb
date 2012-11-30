@@ -300,11 +300,13 @@ Compositor::Compositor(CompositorDelegate* delegate,
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   cc::LayerTreeSettings settings;
-  settings.showPlatformLayerTree =
+  settings.initialDebugState.showFPSCounter =
+      command_line->HasSwitch(switches::kUIShowFPSCounter);
+  settings.initialDebugState.showPlatformLayerTree =
       command_line->HasSwitch(switches::kUIShowLayerTree);
   settings.refreshRate =
       test_compositor_enabled ? kTestRefreshRate : kDefaultRefreshRate;
-  settings.showDebugBorders =
+  settings.initialDebugState.showDebugBorders =
       command_line->HasSwitch(switches::kUIShowLayerBorders);
   settings.partialSwapEnabled =
       command_line->HasSwitch(switches::kUIEnablePartialSwap);
@@ -318,8 +320,6 @@ Compositor::Compositor(CompositorDelegate* delegate,
   }
 
   host_ = cc::LayerTreeHost::create(this, settings, thread.Pass());
-  host_->setShowFPSCounter(
-      command_line->HasSwitch(switches::kUIShowFPSCounter));
   host_->setRootLayer(root_web_layer_);
   host_->setSurfaceReady();
 }
