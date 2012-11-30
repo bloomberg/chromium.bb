@@ -616,7 +616,7 @@ weston_wm_handle_selection_event(struct weston_wm *wm,
 	return 0;
 }
 
-void
+static void
 weston_wm_set_selection(struct wl_listener *listener, void *data)
 {
 	struct wl_seat *seat = data;

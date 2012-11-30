@@ -128,9 +128,6 @@ struct weston_wm {
 void
 dump_property(struct weston_wm *wm, xcb_atom_t property,
 	      xcb_get_property_reply_t *reply);
-void
-read_and_dump_property(struct weston_wm *wm,
-		       xcb_window_t window, xcb_atom_t property);
 
 const char *
 get_atom_name(xcb_connection_t *c, xcb_atom_t atom);
@@ -140,9 +137,6 @@ weston_wm_selection_init(struct weston_wm *wm);
 int
 weston_wm_handle_selection_event(struct weston_wm *wm,
 				 xcb_generic_event_t *event);
-
-void
-weston_wm_set_selection(struct wl_listener *listener, void *data);
 
 extern const struct xserver_interface xserver_implementation;
 

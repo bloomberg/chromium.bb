@@ -268,7 +268,7 @@ dump_property(struct weston_wm *wm,
 	}
 }
 
-void
+static void
 read_and_dump_property(struct weston_wm *wm,
 		       xcb_window_t window, xcb_atom_t property)
 {
