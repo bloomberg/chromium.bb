@@ -311,6 +311,10 @@ void HeadsUpDisplayLayerImpl::drawFPSCounterGraphAndHistogram(SkCanvas* canvas, 
 void HeadsUpDisplayLayerImpl::drawDebugRects(SkCanvas* canvas, DebugRectHistory* debugRectHistory)
 {
     const std::vector<DebugRect>& debugRects = debugRectHistory->debugRects();
+    float rectScale = 1 / layerTreeHostImpl()->deviceScaleFactor();
+
+    canvas->save();
+    canvas->scale(rectScale, rectScale);
 
     for (size_t i = 0; i < debugRects.size(); ++i) {
         SkColor strokeColor = 0;
@@ -366,6 +370,8 @@ void HeadsUpDisplayLayerImpl::drawDebugRects(SkCanvas* canvas, DebugRectHistory*
         paint.setStrokeWidth(SkFloatToScalar(strokeWidth));
         canvas->drawRect(skRect, paint);
     }
+
+    canvas->restore();
 }
 
 const char* HeadsUpDisplayLayerImpl::layerTypeAsString() const
