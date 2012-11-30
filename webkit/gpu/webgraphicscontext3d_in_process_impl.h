@@ -8,12 +8,14 @@
 #include <list>
 #include <set>
 
+#include "base/compiler_specific.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "third_party/angle/include/GLSLANG/ShaderLang.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "ui/gfx/native_widget_types.h"
+#include "webkit/gpu/webkit_gpu_export.h"
 
 #if !defined(OS_MACOSX)
 #define FLIP_FRAMEBUFFER_VERTICALLY
@@ -51,7 +53,8 @@ namespace gpu {
 // It is provided for support of test_shell and any Chromium ports
 // where an in-renderer WebGL implementation would be helpful.
 
-class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
+class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessImpl :
+    public NON_EXPORTED_BASE(WebGraphicsContext3D) {
  public:
   // Creates a WebGraphicsContext3DInProcessImpl for a given window. If window
   // is gfx::kNullPluginWindow, then it creates an offscreen context.

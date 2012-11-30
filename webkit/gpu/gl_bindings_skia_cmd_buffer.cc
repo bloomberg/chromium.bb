@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
-#include "webkit/glue/gl_bindings_skia_cmd_buffer.h"
+#include "webkit/gpu/gl_bindings_skia_cmd_buffer.h"
 
 #ifndef GL_GLEXT_PROTOTYPES
 #define GL_GLEXT_PROTOTYPES
@@ -12,7 +11,8 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 
-namespace webkit_glue {
+namespace webkit {
+namespace gpu {
 
 GrGLInterface* CreateCommandBufferSkiaGLBinding() {
   GrGLInterface* interface = new GrGLInterface;
@@ -119,4 +119,5 @@ GrGLInterface* CreateCommandBufferSkiaGLBinding() {
   return interface;
 }
 
-}  // namespace webkit_glue
+}  // namespace gpu
+}  // namespace webkit

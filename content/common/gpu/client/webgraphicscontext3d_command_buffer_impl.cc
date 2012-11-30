@@ -34,7 +34,7 @@
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/ipc/command_buffer_proxy.h"
-#include "webkit/glue/gl_bindings_skia_cmd_buffer.h"
+#include "webkit/gpu/gl_bindings_skia_cmd_buffer.h"
 
 namespace content {
 static base::LazyInstance<base::Lock>::Leaky
@@ -1645,7 +1645,7 @@ WGC3Dboolean WebGraphicsContext3DCommandBufferImpl::unmapBufferCHROMIUM(
 }
 
 GrGLInterface* WebGraphicsContext3DCommandBufferImpl::onCreateGrGLInterface() {
-  return webkit_glue::CreateCommandBufferSkiaGLBinding();
+  return webkit::gpu::CreateCommandBufferSkiaGLBinding();
 }
 
 namespace {

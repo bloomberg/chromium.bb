@@ -33,13 +33,10 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
-#include "webkit/glue/gl_bindings_skia_cmd_buffer.h"
+#include "webkit/gpu/gl_bindings_skia_cmd_buffer.h"
 
 using gpu::Buffer;
 using gpu::CommandBuffer;
@@ -1657,7 +1654,7 @@ WGC3Dboolean WebGraphicsContext3DInProcessCommandBufferImpl::
 
 GrGLInterface* WebGraphicsContext3DInProcessCommandBufferImpl::
     onCreateGrGLInterface() {
-  return webkit_glue::CreateCommandBufferSkiaGLBinding();
+  return CreateCommandBufferSkiaGLBinding();
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::OnContextLost() {

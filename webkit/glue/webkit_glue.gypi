@@ -293,8 +293,6 @@
         'fling_animator_impl_android.h',
         'ftp_directory_listing_response_delegate.cc',
         'ftp_directory_listing_response_delegate.h',
-        'gl_bindings_skia_cmd_buffer.cc',
-        'gl_bindings_skia_cmd_buffer.h',
         'glue_serialize.cc',
         'glue_serialize.h',
         'image_decoder.cc',

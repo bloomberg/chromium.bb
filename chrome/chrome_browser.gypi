@@ -2217,6 +2217,7 @@
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
             '../third_party/npapi/npapi.gyp:npapi',
             '../third_party/re2/re2.gyp:re2',
+            '../ui/gl/gl.gyp:gl',
             '../ui/surface/surface.gyp:surface',
             '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
             '../v8/tools/gyp/v8.gyp:v8',

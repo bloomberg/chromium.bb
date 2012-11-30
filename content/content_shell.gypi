@@ -40,6 +40,7 @@
         '../net/net.gyp:net',
         '../net/net.gyp:net_resources',
         '../skia/skia.gyp:skia',
+        '../ui/gl/gl.gyp:gl',
         '../ui/ui.gyp:ui',
         '../v8/tools/gyp/v8.gyp:v8',
         '../webkit/support/webkit_support.gyp:webkit_support',

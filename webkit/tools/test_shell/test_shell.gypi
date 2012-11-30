@@ -212,6 +212,7 @@
         '<(DEPTH)/third_party/mesa/mesa.gyp:osmesa',
         'pull_in_copy_TestNetscapePlugIn',
         '<(DEPTH)/tools/imagediff/image_diff.gyp:image_diff',
+        '<(DEPTH)/ui/gl/gl.gyp:gl',
       ],
       'defines': [
         # Technically not a unit test but require functions available only to

@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_GL_BINDINGS_SKIA_CMD_BUFFER_H_
-#define WEBKIT_GLUE_GL_BINDINGS_SKIA_CMD_BUFFER_H_
+#ifndef WEBKIT_GPU_GL_BINDINGS_SKIA_CMD_BUFFER_H_
+#define WEBKIT_GPU_GL_BINDINGS_SKIA_CMD_BUFFER_H_
 
-#include "webkit/glue/webkit_glue_export.h"
+#include "webkit/gpu/webkit_gpu_export.h"
 
 struct GrGLInterface;
 
-namespace webkit_glue {
+namespace webkit {
+namespace gpu {
 
 // The GPU back-end for skia requires pointers to GL functions. This function
 // returns a binding for skia-gpu to the cmd buffers GL.
-WEBKIT_GLUE_EXPORT GrGLInterface* CreateCommandBufferSkiaGLBinding();
+WEBKIT_GPU_EXPORT GrGLInterface* CreateCommandBufferSkiaGLBinding();
 
-}  // namespace webkit_glue
+}  // namespace gpu
+}  // namespace webkit
 
 #endif  // WEBKIT_GLUE_GL_BINDINGS_SKIA_CMD_BUFFER_H_
-
