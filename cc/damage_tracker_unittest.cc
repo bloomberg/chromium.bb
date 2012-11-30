@@ -113,6 +113,7 @@ scoped_ptr<LayerImpl> createTestTreeWithTwoSurfaces()
     child1->setContentBounds(gfx::Size(30, 30));
     child1->setOpacity(0.5); // with a child that drawsContent, this will cause the layer to create its own renderSurface.
     child1->setDrawsContent(false); // this layer does not draw, but is intended to create its own renderSurface.
+    child1->setForceRenderSurface(true);
 
     child2->setPosition(gfx::PointF(11, 11));
     child2->setAnchorPoint(gfx::PointF());
@@ -723,6 +724,7 @@ TEST_F(DamageTrackerTest, verifyDamageForAddingAndRemovingRenderSurfaces)
     //
     clearDamageForAllSurfaces(root.get());
     child1->setOpacity(1);
+    child1->setForceRenderSurface(false);
     emulateDrawingOneFrame(root.get());
 
     // Sanity check that there is only one surface now.
@@ -743,6 +745,7 @@ TEST_F(DamageTrackerTest, verifyDamageForAddingAndRemovingRenderSurfaces)
     // Then change the tree so that the render surface is added back.
     clearDamageForAllSurfaces(root.get());
     child1->setOpacity(0.5);
+    child1->setForceRenderSurface(true);
     emulateDrawingOneFrame(root.get());
 
     // Sanity check that there is a new surface now.

@@ -112,13 +112,17 @@ void LayerImpl::createRenderSurface()
     setRenderTarget(this);
 }
 
-bool LayerImpl::descendantDrawsContent()
+int LayerImpl::descendantsDrawContent()
 {
+    int result = 0;
     for (size_t i = 0; i < m_children.size(); ++i) {
-        if (m_children[i]->drawsContent() || m_children[i]->descendantDrawsContent())
-            return true;
+        if (m_children[i]->drawsContent())
+            ++result;
+        result += m_children[i]->descendantsDrawContent();
+        if (result > 1)
+            return result;
     }
-    return false;
+    return result;
 }
 
 scoped_ptr<SharedQuadState> LayerImpl::createSharedQuadState() const

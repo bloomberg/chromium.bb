@@ -38,6 +38,8 @@ struct AppendQuadsData;
 
 class CC_EXPORT LayerImpl : public LayerAnimationControllerClient {
 public:
+    typedef ScopedPtrVector<LayerImpl> LayerList;
+
     static scoped_ptr<LayerImpl> create(int id)
     {
         return make_scoped_ptr(new LayerImpl(id));
@@ -55,7 +57,7 @@ public:
     // Tree structure.
     LayerImpl* parent() { return m_parent; }
     const LayerImpl* parent() const { return m_parent; }
-    const ScopedPtrVector<LayerImpl>& children() const { return m_children; }
+    const LayerList& children() const { return m_children; }
     void addChild(scoped_ptr<LayerImpl>);
     void removeFromParent();
     void removeAllChildren();
@@ -97,8 +99,10 @@ public:
     bool forceRenderSurface() const { return m_forceRenderSurface; }
     void setForceRenderSurface(bool force) { m_forceRenderSurface = force; }
 
-    // Returns true if any of the layer's descendants has content to draw.
-    virtual bool descendantDrawsContent();
+    // Returns 0 if none of the layer's descendants has content to draw,
+    // 1 if exactly one descendant has content to draw, or a number >1
+    // (but necessary the exact number of descendants) otherwise.
+    virtual int descendantsDrawContent();
 
     void setAnchorPoint(const gfx::PointF&);
     const gfx::PointF& anchorPoint() const { return m_anchorPoint; }
@@ -314,7 +318,7 @@ private:
 
     // Properties internal to LayerImpl
     LayerImpl* m_parent;
-    ScopedPtrVector<LayerImpl> m_children;
+    LayerList m_children;
     // m_maskLayer can be temporarily stolen during tree sync, we need this ID to confirm newly assigned layer is still the previous one
     int m_maskLayerId;
     scoped_ptr<LayerImpl> m_maskLayer;

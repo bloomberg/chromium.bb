@@ -214,7 +214,8 @@ TEST(LayerIteratorTest, complexTreeMultiSurface)
     rootLayer->addChild(root2);
     rootLayer->addChild(root3);
     root2->setDrawsContent(false);
-    root2->setOpacity(0.5); // Force the layer to own a new surface.
+    root2->setOpacity(0.5);
+    root2->setForceRenderSurface(true); // Force the layer to own a new surface.
     root2->addChild(root21);
     root2->addChild(root22);
     root2->addChild(root23);

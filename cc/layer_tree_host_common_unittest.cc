@@ -327,6 +327,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSingleRenderSurface)
 
     // Child is set up so that a new render surface should be created.
     child->setOpacity(0.5);
+    child->setForceRenderSurface(true);
 
     gfx::Transform parentLayerTransform;
     parentLayerTransform.Scale3d(1, 0.9, 1);
@@ -1355,6 +1356,7 @@ TEST(LayerTreeHostCommonTest, verifyClipRectCullsRenderSurfaces)
 
     child->setMasksToBounds(true);
     child->setOpacity(0.4f);
+    child->setForceRenderSurface(true);
     grandChild->setOpacity(0.5);
     greatGrandChild->setOpacity(0.4f);
 
@@ -1401,7 +1403,9 @@ TEST(LayerTreeHostCommonTest, verifyClipRectCullsSurfaceWithoutVisibleContent)
 
     parent->setMasksToBounds(true);
     child->setOpacity(0.4f);
+    child->setForceRenderSurface(true);
     grandChild->setOpacity(0.4f);
+    grandChild->setForceRenderSurface(true);
 
     std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
@@ -1629,10 +1633,15 @@ TEST(LayerTreeHostCommonTest, verifyClipRectIsPropagatedCorrectlyToSurfaces)
 
     // Force everyone to be a render surface.
     child->setOpacity(0.4f);
+    child->setForceRenderSurface(true);
     grandChild1->setOpacity(0.5);
+    grandChild1->setForceRenderSurface(true);
     grandChild2->setOpacity(0.5);
+    grandChild2->setForceRenderSurface(true);
     grandChild3->setOpacity(0.5);
+    grandChild3->setForceRenderSurface(true);
     grandChild4->setOpacity(0.5);
+    grandChild4->setForceRenderSurface(true);
 
     std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
@@ -4609,6 +4618,26 @@ TEST(LayerTreeHostCommonTest, verifySubtreeSearch)
     EXPECT_EQ(maskLayer, LayerTreeHostCommon::findLayerInSubtree(root.get(), maskLayer->id()));
     EXPECT_EQ(replicaLayer, LayerTreeHostCommon::findLayerInSubtree(root.get(), replicaLayer->id()));
     EXPECT_EQ(0, LayerTreeHostCommon::findLayerInSubtree(root.get(), nonexistentId));
+}
+
+TEST(LayerTreeHostCommonTest, verifyTransparentChildRenderSurfaceCreation)
+{
+    scoped_refptr<Layer> root = Layer::create();
+    scoped_refptr<Layer> child = Layer::create();
+    scoped_refptr<LayerWithForcedDrawsContent> grandChild = make_scoped_refptr(new LayerWithForcedDrawsContent());
+
+    const gfx::Transform identityMatrix;
+    setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, gfx::PointF(), gfx::PointF(), gfx::Size(100, 100), false);
+    setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, gfx::PointF(), gfx::PointF(), gfx::Size(10, 10), false);
+    setLayerPropertiesForTesting(grandChild.get(), identityMatrix, identityMatrix, gfx::PointF(), gfx::PointF(), gfx::Size(10, 10), false);
+
+    root->addChild(child);
+    child->addChild(grandChild);
+    child->setOpacity(0.5f);
+
+    executeCalculateDrawTransformsAndVisibility(root.get());
+
+    EXPECT_FALSE(child->renderSurface());
 }
 
 }  // namespace

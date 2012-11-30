@@ -2389,6 +2389,7 @@ static scoped_ptr<LayerTreeHostImpl> setupLayersForOpacity(bool partialSwap, Lay
     child->setContentBounds(child->bounds());
     child->setVisibleContentRect(childRect);
     child->setDrawsContent(false);
+    child->setForceRenderSurface(true);
 
     grandChild->setAnchorPoint(gfx::PointF(0, 0));
     grandChild->setPosition(gfx::Point(grandChildRect.x(), grandChildRect.y()));
@@ -3138,7 +3139,8 @@ static void setupLayersForTextureCaching(LayerTreeHostImpl* layerTreeHostImpl, L
     // It will contain other layers that draw content.
     addDrawingLayerTo(intermediateLayerPtr, 3, gfx::Rect(10, 10, rootSize.width(), rootSize.height()), &surfaceLayerPtr);
     surfaceLayerPtr->setDrawsContent(false); // only children draw content
-    surfaceLayerPtr->setOpacity(0.5f); // This will cause it to have a surface
+    surfaceLayerPtr->setOpacity(0.5f);
+    surfaceLayerPtr->setForceRenderSurface(true); // This will cause it to have a surface
 
     // Child of the surface layer will produce some quads
     addDrawingLayerTo(surfaceLayerPtr, 4, gfx::Rect(5, 5, rootSize.width() - 25, rootSize.height() - 25), &childPtr);
@@ -3182,7 +3184,8 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithClipping)
 
     // Surface layer is the layer that changes its opacity
     // It will contain other layers that draw content.
-    surfaceLayerPtr->setOpacity(0.5f); // This will cause it to have a surface
+    surfaceLayerPtr->setOpacity(0.5f);
+    surfaceLayerPtr->setForceRenderSurface(true); // This will cause it to have a surface
 
     addDrawingLayerTo(surfaceLayerPtr, 4, gfx::Rect(0, 0, 100, 3), 0);
     addDrawingLayerTo(surfaceLayerPtr, 5, gfx::Rect(0, 97, 100, 3), 0);

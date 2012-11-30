@@ -250,19 +250,20 @@ static bool subtreeShouldRenderToSeparateSurface(LayerType* layer, bool axisAlig
         return true;
 
     // Cache this value, because otherwise it walks the entire subtree several times.
-    bool descendantDrawsContent = layer->descendantDrawsContent();
+    int descendantsDrawContent = layer->descendantsDrawContent();
 
     // If the layer flattens its subtree (i.e. the layer doesn't preserve-3d), but it is
     // treated as a 3D object by its parent (i.e. parent does preserve-3d).
-    if (layerIsInExisting3DRenderingContext(layer) && !layer->preserves3D() && descendantDrawsContent)
+    if (layerIsInExisting3DRenderingContext(layer) && !layer->preserves3D() && descendantsDrawContent > 0)
         return true;
 
     // If the layer clips its descendants but it is not axis-aligned with respect to its parent.
-    if (layerClipsSubtree(layer) && !axisAlignedWithRespectToParent && descendantDrawsContent)
+    if (layerClipsSubtree(layer) && !axisAlignedWithRespectToParent && descendantsDrawContent > 0)
         return true;
 
     // If the layer has opacity != 1 and does not have a preserves-3d transform style.
-    if (layer->opacity() != 1 && !layer->preserves3D() && descendantDrawsContent)
+    if (layer->opacity() != 1 && !layer->preserves3D() && descendantsDrawContent > 0
+        && (layer->drawsContent() || descendantsDrawContent > 1))
         return true;
 
     return false;
@@ -487,10 +488,10 @@ static void calculateDrawTransformsInternal(LayerType* layer, const gfx::Transfo
 
     gfx::Rect clipRectForSubtree;
     bool subtreeShouldBeClipped = false;
-    
+
     float drawOpacity = layer->opacity();
     bool drawOpacityIsAnimating = layer->opacityIsAnimating();
-    if (layer->parent() && layer->parent()->preserves3D()) {
+    if (layer->parent()) {
         drawOpacity *= layer->parent()->drawOpacity();
         drawOpacityIsAnimating |= layer->parent()->drawOpacityIsAnimating();
     }

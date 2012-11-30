@@ -267,8 +267,10 @@ public:
     void setBoundsContainPageScale(bool);
     bool boundsContainPageScale() const { return m_boundsContainPageScale; }
 
-    // Returns true if any of the layer's descendants has content to draw.
-    bool descendantDrawsContent();
+    // Returns 0 if none of the layer's descendants has content to draw,
+    // 1 if exactly one descendant has content to draw, or a number >1
+    // (but necessary the exact number of descendants) otherwise.
+    int descendantsDrawContent();
 
     LayerTreeHost* layerTreeHost() const { return m_layerTreeHost; }
 

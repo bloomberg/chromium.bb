@@ -22,14 +22,14 @@ DelegatedRendererLayerImpl::~DelegatedRendererLayerImpl()
     clearRenderPasses();
 }
 
-bool DelegatedRendererLayerImpl::descendantDrawsContent()
+int DelegatedRendererLayerImpl::descendantsDrawContent()
 {
     // FIXME: This could possibly return false even though there are some
     // quads present as they could all be from a single layer (or set of
     // layers without children). If this happens, then make a test that
     // ensures the opacity is being changed on quads in the root RenderPass
     // when this layer doesn't own a RenderSurfaceImpl.
-    return !m_renderPassesInDrawOrder.isEmpty();
+    return m_renderPassesInDrawOrder.isEmpty() ? 0 : 2;
 }
 
 bool DelegatedRendererLayerImpl::hasContributingDelegatedRenderPasses() const
