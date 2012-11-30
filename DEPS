@@ -597,8 +597,6 @@ hooks = [
     "action": [
         "python", "src/build/download_nacl_toolchains.py",
          "--no-arm-trusted",
-         "--save-downloads-dir",
-             "src/native_client_sdk/src/build_tools/toolchain_archives",
          "--keep",
     ],
   },
