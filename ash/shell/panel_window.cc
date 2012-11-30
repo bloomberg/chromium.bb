@@ -76,7 +76,7 @@ bool PanelWindow::CanMaximize() const {
 
 views::NonClientFrameView* PanelWindow::CreateNonClientFrameView(
     views::Widget* widget) {
-  return new PanelFrameView(widget);
+  return new PanelFrameView(widget, PanelFrameView::FRAME_NONE);
 }
 
 }  // namespace ash

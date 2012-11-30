@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/frame_painter.h"
 #include "ash/wm/panel_frame_view.h"
+
+#include "ash/wm/frame_painter.h"
 #include "grit/ash_resources.h"
 #include "grit/ui_strings.h"  // Accessibility names
 #include "third_party/skia/include/core/SkPaint.h"
@@ -22,8 +23,17 @@
 
 namespace ash {
 
-PanelFrameView::PanelFrameView(views::Widget* frame)
-    : frame_painter_(new FramePainter) {
+PanelFrameView::PanelFrameView(views::Widget* frame, FrameType frame_type) {
+  if (frame_type != FRAME_NONE)
+    InitFramePainter(frame);
+}
+
+PanelFrameView::~PanelFrameView() {
+}
+
+void PanelFrameView::InitFramePainter(views::Widget* frame) {
+  frame_painter_.reset(new FramePainter);
+
   close_button_ = new views::ImageButton(this);
   close_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
@@ -38,10 +48,9 @@ PanelFrameView::PanelFrameView(views::Widget* frame)
                        FramePainter::SIZE_BUTTON_MINIMIZES);
 }
 
-PanelFrameView::~PanelFrameView() {
-}
-
 void PanelFrameView::Layout() {
+  if (!frame_painter_.get())
+    return;
   frame_painter_->LayoutHeader(this, true);
 }
 
@@ -54,7 +63,7 @@ void PanelFrameView::UpdateWindowIcon() {
 }
 
 void PanelFrameView::UpdateWindowTitle() {
-  NOTIMPLEMENTED();
+  // TODO(stevenjb): Support titles for panels?
 }
 
 void PanelFrameView::GetWindowMask(const gfx::Size&, gfx::Path*) {
@@ -62,10 +71,14 @@ void PanelFrameView::GetWindowMask(const gfx::Size&, gfx::Path*) {
 }
 
 int PanelFrameView::NonClientHitTest(const gfx::Point& point) {
+  if (!frame_painter_.get())
+    return HTNOWHERE;
   return frame_painter_->NonClientHitTest(this, point);
 }
 
 void PanelFrameView::OnPaint(gfx::Canvas* canvas) {
+  if (!frame_painter_.get())
+    return;
   bool paint_as_active = ShouldPaintAsActive();
   int theme_image_id = paint_as_active ? IDR_AURA_WINDOW_HEADER_BASE_ACTIVE :
       IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
@@ -79,6 +92,8 @@ void PanelFrameView::OnPaint(gfx::Canvas* canvas) {
 }
 
 gfx::Rect PanelFrameView::GetBoundsForClientView() const {
+  if (!frame_painter_.get())
+    return bounds();
   return frame_painter_->GetBoundsForClientView(
       close_button_->bounds().bottom(),
       bounds());
@@ -86,6 +101,8 @@ gfx::Rect PanelFrameView::GetBoundsForClientView() const {
 
 gfx::Rect PanelFrameView::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
+  if (!frame_painter_.get())
+    return client_bounds;
   return frame_painter_->GetWindowBoundsForClientBounds(
       close_button_->bounds().bottom(), client_bounds);
 }
@@ -94,6 +111,8 @@ void PanelFrameView::ButtonPressed(views::Button* sender,
                                    const ui::Event& event) {
   if (sender == close_button_)
     GetWidget()->Close();
+  if (sender == minimize_button_)
+    GetWidget()->Minimize();
 }
 
 }  // namespace ash

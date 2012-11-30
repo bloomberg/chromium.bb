@@ -15,8 +15,9 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "ui/aura/window.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_windows.h"
+#include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -295,6 +296,28 @@ TEST_F(PanelLayoutManagerTest, FanWindows) {
   EXPECT_EQ(window_x2 - window_x1, window_x3 - window_x2);
   int spacing = window_x2 - window_x1;
   EXPECT_GT(spacing, icon_x2 - icon_x1);
+}
+
+TEST_F(PanelLayoutManagerTest, MinimizeRestorePanel) {
+  gfx::Rect bounds(0, 0, 201, 201);
+  scoped_ptr<aura::Window> window(CreatePanelWindow(bounds));
+  // Activate the window, ensure callout is visible.
+  wm::ActivateWindow(window.get());
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(IsCalloutVisible());
+  // Minimize the panel, callout should be hidden.
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(IsCalloutVisible());
+  // Restore the pantel; panel should not be activated by default and callout
+  // should be hidden.
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(IsCalloutVisible());
+  // Activate the window, ensure callout is visible.
+  wm::ActivateWindow(window.get());
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(IsCalloutVisible());
 }
 
 }  // namespace internal

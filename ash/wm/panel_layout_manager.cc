@@ -11,6 +11,8 @@
 #include "ash/shell.h"
 #include "ash/wm/frame_painter.h"
 #include "ash/wm/property_util.h"
+#include "ash/wm/window_animations.h"
+#include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -19,6 +21,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
@@ -33,8 +36,6 @@ namespace {
 const int kPanelMarginEdge = 4;
 const int kPanelMarginMiddle = 8;
 const int kPanelIdealSpacing = 4;
-
-const int kMinimizedHeight = 24;
 
 const float kMaxHeightFactor = .80f;
 const float kMaxWidthFactor = .50f;
@@ -159,6 +160,7 @@ void PanelLayoutManager::StartDragging(aura::Window* panel) {
   DCHECK(!dragged_panel_);
   DCHECK(panel->parent() == panel_container_);
   dragged_panel_ = panel;
+  Relayout();
 }
 
 void PanelLayoutManager::FinishDragging() {
@@ -176,28 +178,10 @@ void PanelLayoutManager::ToggleMinimize(aura::Window* panel) {
   DCHECK(panel->parent() == panel_container_);
   if (panel->GetProperty(aura::client::kShowStateKey) ==
       ui::SHOW_STATE_MINIMIZED) {
-    const gfx::Rect& old_bounds = panel->bounds();
     panel->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-
-    gfx::Rect new_bounds(old_bounds);
-    const gfx::Rect* restore_bounds = GetRestoreBoundsInScreen(panel);
-    if (restore_bounds) {
-      new_bounds.set_height(restore_bounds->height());
-      new_bounds.set_y(old_bounds.bottom() - restore_bounds->height());
-      SetChildBounds(panel, new_bounds);
-      ClearRestoreBounds(panel);
-    }
   } else {
-    const gfx::Rect& old_bounds = panel->bounds();
     panel->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
-    SetRestoreBoundsInParent(panel, old_bounds);
-    SetChildBounds(panel,
-                   gfx::Rect(old_bounds.x(),
-                             old_bounds.bottom() - kMinimizedHeight,
-                             old_bounds.width(),
-                             kMinimizedHeight));
   }
-  Relayout();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -210,6 +194,7 @@ void PanelLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   if (child == callout_widget_->GetNativeWindow())
     return;
   panel_windows_.push_back(child);
+  child->AddObserver(this);
   Relayout();
 }
 
@@ -218,6 +203,7 @@ void PanelLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
       std::find(panel_windows_.begin(), panel_windows_.end(), child);
   if (found != panel_windows_.end())
     panel_windows_.erase(found);
+  child->RemoveObserver(this);
 
   if (dragged_panel_ == child)
     dragged_panel_ = NULL;
@@ -279,6 +265,22 @@ void PanelLayoutManager::OnLauncherIconPositionsChanged() {
   Relayout();
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// PanelLayoutManager, WindowObserver implementation:
+
+void PanelLayoutManager::OnWindowPropertyChanged(aura::Window* window,
+                                                 const void* key,
+                                                 intptr_t old) {
+  if (key != aura::client::kShowStateKey)
+    return;
+  ui::WindowShowState new_state =
+      window->GetProperty(aura::client::kShowStateKey);
+  if (new_state == ui::SHOW_STATE_MINIMIZED)
+    MinimizePanel(window);
+  else
+    RestorePanel(window);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager, aura::client::ActivationChangeObserver implementation:
 void PanelLayoutManager::OnWindowActivated(aura::Window* active,
@@ -291,9 +293,23 @@ void PanelLayoutManager::OnWindowActivated(aura::Window* active,
   }
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager private implementation:
+
+void PanelLayoutManager::MinimizePanel(aura::Window* panel) {
+  views::corewm::SetWindowVisibilityAnimationType(
+      panel, WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
+  panel->Hide();
+  if (wm::IsActiveWindow(panel))
+    wm::DeactivateWindow(panel);
+  Relayout();
+}
+
+void PanelLayoutManager::RestorePanel(aura::Window* panel) {
+  panel->Show();
+  Relayout();
+}
+
 void PanelLayoutManager::Relayout() {
   if (!launcher_ || !launcher_->widget())
     return;
@@ -324,7 +340,9 @@ void PanelLayoutManager::Relayout() {
     if (icon_bounds.IsEmpty())
       continue;
 
-    if (panel->HasFocus()) {
+    if (panel->HasFocus() ||
+        panel->Contains(
+            aura::client::GetFocusClient(panel)->GetFocusedWindow())) {
       DCHECK(!active_panel);
       active_panel = panel;
     }

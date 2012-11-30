@@ -4,432 +4,61 @@
 
 #include "chrome/browser/ui/views/extensions/native_app_window_views.h"
 
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
+#include "chrome/browser/ui/views/extensions/shell_window_frame_view.h"
 #include "chrome/common/extensions/draggable_region.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "grit/theme_resources.h"
-#include "grit/ui_strings.h"  // Accessibility names
-#include "third_party/skia/include/core/SkPaint.h"
-#include "ui/base/hit_test.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/image/image.h"
-#include "ui/gfx/path.h"
-#include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/webview/webview.h"
-#include "ui/views/layout/grid_layout.h"
-#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "ui/base/win/shell.h"
 #endif
 
 #if defined(USE_ASH)
-#include "ash/ash_constants.h"
 #include "ash/wm/custom_frame_view_ash.h"
+#include "ash/wm/panel_frame_view.h"
 #include "chrome/browser/ui/ash/ash_util.h"
-#include "ui/aura/env.h"
-#include "ui/aura/window.h"
 #endif
 
 namespace {
+const int kMinPanelWidth = 100;
+const int kMinPanelHeight = 100;
+const int kDefaultPanelWidth = 200;
+const int kDefaultPanelHeight = 300;
 const int kResizeInsideBoundsSize = 5;
-const int kResizeAreaCornerSize = 16;
-
-// Height of the chrome-style caption, in pixels.
-const int kCaptionHeight = 25;
-}  // namespace
-
-class ShellWindowFrameView : public views::NonClientFrameView,
-                             public views::ButtonListener {
- public:
-  static const char kViewClassName[];
-
-  explicit ShellWindowFrameView(NativeAppWindowViews* window);
-  virtual ~ShellWindowFrameView();
-
-  void Init(views::Widget* frame);
-
-  // views::NonClientFrameView implementation.
-  virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
-  virtual gfx::Rect GetWindowBoundsForClientBounds(
-      const gfx::Rect& client_bounds) const OVERRIDE;
-  virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
-  virtual void GetWindowMask(const gfx::Size& size,
-                             gfx::Path* window_mask) OVERRIDE;
-  virtual void ResetWindowControls() OVERRIDE {}
-  virtual void UpdateWindowIcon() OVERRIDE {}
-  virtual void UpdateWindowTitle() OVERRIDE {}
-
-  // views::View implementation.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual std::string GetClassName() const OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
-  virtual gfx::Size GetMaximumSize() OVERRIDE;
-
- private:
-  // views::ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* sender, const ui::Event& event)
-      OVERRIDE;
-
-  NativeAppWindowViews* window_;
-  views::Widget* frame_;
-  views::ImageButton* close_button_;
-  views::ImageButton* maximize_button_;
-  views::ImageButton* restore_button_;
-  views::ImageButton* minimize_button_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellWindowFrameView);
-};
-
-const char ShellWindowFrameView::kViewClassName[] =
-    "browser/ui/views/extensions/ShellWindowFrameView";
-
-ShellWindowFrameView::ShellWindowFrameView(NativeAppWindowViews* window)
-    : window_(window),
-      frame_(NULL),
-      close_button_(NULL) {
-}
-
-ShellWindowFrameView::~ShellWindowFrameView() {
-}
-
-void ShellWindowFrameView::Init(views::Widget* frame) {
-  frame_ = frame;
-
-  if (!window_->frameless()) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    close_button_ = new views::ImageButton(this);
-    close_button_->SetImage(views::CustomButton::STATE_NORMAL,
-        rb.GetNativeImageNamed(IDR_APP_WINDOW_CLOSE).ToImageSkia());
-    close_button_->SetImage(views::CustomButton::STATE_HOVERED,
-        rb.GetNativeImageNamed(IDR_APP_WINDOW_CLOSE_H).ToImageSkia());
-    close_button_->SetImage(views::CustomButton::STATE_PRESSED,
-        rb.GetNativeImageNamed(IDR_APP_WINDOW_CLOSE_P).ToImageSkia());
-    close_button_->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
-    AddChildView(close_button_);
-    maximize_button_ = new views::ImageButton(this);
-    maximize_button_->SetImage(views::CustomButton::STATE_NORMAL,
-        rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE).ToImageSkia());
-    maximize_button_->SetImage(views::CustomButton::STATE_HOVERED,
-        rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE_H).ToImageSkia());
-    maximize_button_->SetImage(views::CustomButton::STATE_PRESSED,
-        rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE_P).ToImageSkia());
-    maximize_button_->SetImage(views::CustomButton::STATE_DISABLED,
-        rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE_D).ToImageSkia());
-    maximize_button_->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MAXIMIZE));
-    AddChildView(maximize_button_);
-    restore_button_ = new views::ImageButton(this);
-    restore_button_->SetImage(views::CustomButton::STATE_NORMAL,
-        rb.GetNativeImageNamed(IDR_APP_WINDOW_RESTORE).ToImageSkia());
-    restore_button_->SetImage(views::CustomButton::STATE_HOVERED,
-        rb.GetNativeImageNamed(IDR_APP_WINDOW_RESTORE_H).ToImageSkia());
-    restore_button_->SetImage(views::CustomButton::STATE_PRESSED,
-        rb.GetNativeImageNamed(IDR_APP_WINDOW_RESTORE_P).ToImageSkia());
-    restore_button_->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_APP_ACCNAME_RESTORE));
-    AddChildView(restore_button_);
-    minimize_button_ = new views::ImageButton(this);
-    minimize_button_->SetImage(views::CustomButton::STATE_NORMAL,
-        rb.GetNativeImageNamed(IDR_APP_WINDOW_MINIMIZE).ToImageSkia());
-    minimize_button_->SetImage(views::CustomButton::STATE_HOVERED,
-        rb.GetNativeImageNamed(IDR_APP_WINDOW_MINIMIZE_H).ToImageSkia());
-    minimize_button_->SetImage(views::CustomButton::STATE_PRESSED,
-        rb.GetNativeImageNamed(IDR_APP_WINDOW_MINIMIZE_P).ToImageSkia());
-    minimize_button_->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
-    AddChildView(minimize_button_);
-  }
-
-#if defined(USE_ASH)
-  aura::Window* window = frame->GetNativeWindow();
-  if (chrome::IsNativeWindowInAsh(window)) {
-  // Ensure we get resize cursors for a few pixels outside our bounds.
-  window->SetHitTestBoundsOverrideOuter(
-      gfx::Insets(-ash::kResizeOutsideBoundsSize,
-                  -ash::kResizeOutsideBoundsSize,
-                  -ash::kResizeOutsideBoundsSize,
-                  -ash::kResizeOutsideBoundsSize),
-      ash::kResizeOutsideBoundsScaleForTouch);
-  // Ensure we get resize cursors just inside our bounds as well.
-  // TODO(jeremya): do we need to update these when in fullscreen/maximized?
-  window->set_hit_test_bounds_override_inner(
-      gfx::Insets(ash::kResizeInsideBoundsSize, ash::kResizeInsideBoundsSize,
-                    ash::kResizeInsideBoundsSize,
-                    ash::kResizeInsideBoundsSize));
-  }
-#endif
-}
-
-gfx::Rect ShellWindowFrameView::GetBoundsForClientView() const {
-  if (window_->frameless() || frame_->IsFullscreen())
-    return bounds();
-  return gfx::Rect(0, kCaptionHeight, width(),
-      std::max(0, height() - kCaptionHeight));
-}
-
-gfx::Rect ShellWindowFrameView::GetWindowBoundsForClientBounds(
-      const gfx::Rect& client_bounds) const {
-  if (window_->frameless()) {
-    gfx::Rect window_bounds = client_bounds;
-    // Enforce minimum size (1, 1) in case that client_bounds is passed with
-    // empty size. This could occur when the frameless window is being
-    // initialized.
-    if (window_bounds.IsEmpty()) {
-      window_bounds.set_width(1);
-      window_bounds.set_height(1);
-    }
-    return window_bounds;
-  }
-
-  int closeButtonOffsetX =
-      (kCaptionHeight - close_button_->height()) / 2;
-  int header_width = close_button_->width() + closeButtonOffsetX * 2;
-  return gfx::Rect(client_bounds.x(),
-                   std::max(0, client_bounds.y() - kCaptionHeight),
-                   std::max(header_width, client_bounds.width()),
-                   client_bounds.height() + kCaptionHeight);
-}
-
-int ShellWindowFrameView::NonClientHitTest(const gfx::Point& point) {
-  if (frame_->IsFullscreen())
-    return HTCLIENT;
-
-  int resize_inside_bounds_size = kResizeInsideBoundsSize;
-  int resize_area_corner_size = kResizeAreaCornerSize;
-
-#if defined(USE_ASH)
-  gfx::Rect expanded_bounds = bounds();
-  int outside_bounds = ash::kResizeOutsideBoundsSize;
-  if (aura::Env::GetInstance()->is_touch_down())
-    outside_bounds *= ash::kResizeOutsideBoundsScaleForTouch;
-  expanded_bounds.Inset(-outside_bounds, -outside_bounds);
-  if (!expanded_bounds.Contains(point))
-    return HTNOWHERE;
-
-  resize_inside_bounds_size = ash::kResizeInsideBoundsSize;
-  resize_area_corner_size = ash::kResizeAreaCornerSize;
-#endif
-
-  // Check the frame first, as we allow a small area overlapping the contents
-  // to be used for resize handles.
-  bool can_ever_resize = frame_->widget_delegate() ?
-      frame_->widget_delegate()->CanResize() :
-      false;
-  if (can_ever_resize) {
-    // Don't allow overlapping resize handles when the window is maximized or
-    // fullscreen, as it can't be resized in those states.
-    int resize_border =
-        frame_->IsMaximized() || frame_->IsFullscreen() ? 0 :
-        resize_inside_bounds_size;
-    int frame_component = GetHTComponentForFrame(point,
-                                                 resize_border,
-                                                 resize_border,
-                                                 resize_area_corner_size,
-                                                 resize_area_corner_size,
-                                                 can_ever_resize);
-    if (frame_component != HTNOWHERE)
-      return frame_component;
-  }
-
-  // Check for possible draggable region in the client area for the frameless
-  // window.
-  if (window_->frameless() &&
-      window_->draggable_region() &&
-      window_->draggable_region()->contains(point.x(), point.y()))
-    return HTCAPTION;
-
-  int client_component = frame_->client_view()->NonClientHitTest(point);
-  if (client_component != HTNOWHERE)
-    return client_component;
-
-  // Then see if the point is within any of the window controls.
-  if (close_button_ && close_button_->visible() &&
-      close_button_->GetMirroredBounds().Contains(point))
-    return HTCLOSE;
-
-  // Caption is a safe default.
-  return HTCAPTION;
-}
-
-void ShellWindowFrameView::GetWindowMask(const gfx::Size& size,
-                                         gfx::Path* window_mask) {
-  // We got nothing to say about no window mask.
-}
-
-gfx::Size ShellWindowFrameView::GetPreferredSize() {
-  gfx::Size pref = frame_->client_view()->GetPreferredSize();
-  gfx::Rect bounds(0, 0, pref.width(), pref.height());
-  return frame_->non_client_view()->GetWindowBoundsForClientBounds(
-      bounds).size();
-}
-
-void ShellWindowFrameView::Layout() {
-  if (window_->frameless())
-    return;
-  gfx::Size close_size = close_button_->GetPreferredSize();
-  int closeButtonOffsetY =
-      (kCaptionHeight - close_size.height()) / 2;
-  const int kButtonSpacing = 9;
-
-  close_button_->SetBounds(
-      width() - kButtonSpacing - close_size.width(),
-      closeButtonOffsetY,
-      close_size.width(),
-      close_size.height());
-
-  bool can_ever_resize = frame_->widget_delegate() ?
-      frame_->widget_delegate()->CanResize() :
-      false;
-  maximize_button_->SetEnabled(can_ever_resize);
-  gfx::Size maximize_size = maximize_button_->GetPreferredSize();
-  maximize_button_->SetBounds(
-      close_button_->x() - kButtonSpacing - maximize_size.width(),
-      closeButtonOffsetY,
-      maximize_size.width(),
-      maximize_size.height());
-  gfx::Size restore_size = restore_button_->GetPreferredSize();
-  restore_button_->SetBounds(
-      close_button_->x() - kButtonSpacing - restore_size.width(),
-      closeButtonOffsetY,
-      restore_size.width(),
-      restore_size.height());
-
-  bool maximized = frame_->IsMaximized();
-  maximize_button_->SetVisible(!maximized);
-  restore_button_->SetVisible(maximized);
-  if (maximized)
-    maximize_button_->SetState(views::CustomButton::STATE_NORMAL);
-  else
-    restore_button_->SetState(views::CustomButton::STATE_NORMAL);
-
-  gfx::Size minimize_size = minimize_button_->GetPreferredSize();
-  minimize_button_->SetBounds(
-      maximize_button_->x() - kButtonSpacing - minimize_size.width(),
-      closeButtonOffsetY,
-      minimize_size.width(),
-      minimize_size.height());
-}
-
-void ShellWindowFrameView::OnPaint(gfx::Canvas* canvas) {
-  if (window_->frameless())
-    return;
-  // TODO(jeremya): different look for inactive?
-  SkPaint paint;
-  paint.setAntiAlias(false);
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setColor(SK_ColorWHITE);
-  gfx::Path path;
-  const int radius = frame_->IsMaximized() ? 0 : 1;
-  path.moveTo(0, radius);
-  path.lineTo(radius, 0);
-  path.lineTo(width() - radius - 1, 0);
-  path.lineTo(width(), radius + 1);
-  path.lineTo(width(), kCaptionHeight);
-  path.lineTo(0, kCaptionHeight);
-  path.close();
-  canvas->DrawPath(path, paint);
-}
-
-std::string ShellWindowFrameView::GetClassName() const {
-  return kViewClassName;
-}
-
-gfx::Size ShellWindowFrameView::GetMinimumSize() {
-  gfx::Size min_size = frame_->client_view()->GetMinimumSize();
-  if (window_->frameless())
-    return min_size;
-
-  // Ensure we can display the top of the caption area.
-  gfx::Rect client_bounds = GetBoundsForClientView();
-  min_size.Enlarge(0, client_bounds.y());
-  // Ensure we have enough space for the window icon and buttons.  We allow
-  // the title string to collapse to zero width.
-  int closeButtonOffsetX =
-      (kCaptionHeight - close_button_->height()) / 2;
-  int header_width = close_button_->width() + closeButtonOffsetX * 2;
-  if (header_width > min_size.width())
-    min_size.set_width(header_width);
-  return min_size;
-}
-
-gfx::Size ShellWindowFrameView::GetMaximumSize() {
-  gfx::Size max_size = frame_->client_view()->GetMaximumSize();
-  if (window_->frameless())
-    return max_size;
-
-  if (!max_size.IsEmpty()) {
-    gfx::Rect client_bounds = GetBoundsForClientView();
-    max_size.Enlarge(0, client_bounds.y());
-  }
-  return max_size;
-}
-
-void ShellWindowFrameView::ButtonPressed(views::Button* sender,
-                                         const ui::Event& event) {
-  DCHECK(!window_->frameless());
-  if (sender == close_button_)
-    frame_->Close();
-  else if (sender == maximize_button_)
-    frame_->Maximize();
-  else if (sender == restore_button_)
-    frame_->Restore();
-  else if (sender == minimize_button_)
-    frame_->Minimize();
 }
 
 NativeAppWindowViews::NativeAppWindowViews(
     ShellWindow* shell_window,
-    const ShellWindow::CreateParams& win_params)
+    const ShellWindow::CreateParams& create_params)
     : shell_window_(shell_window),
       web_view_(NULL),
+      window_(NULL),
       is_fullscreen_(false),
-      frameless_(win_params.frame == ShellWindow::CreateParams::FRAME_NONE) {
+      frameless_(create_params.frame == ShellWindow::FRAME_NONE) {
+  minimum_size_ = create_params.minimum_size;
+  maximum_size_ = create_params.maximum_size;
+
   window_ = new views::Widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.delegate = this;
-  params.remove_standard_frame = true;
-  params.use_system_default_icon = true;
-  minimum_size_ = win_params.minimum_size;
-  maximum_size_ = win_params.maximum_size;
-  window_->Init(params);
-  gfx::Rect window_bounds =
-      window_->non_client_view()->GetWindowBoundsForClientBounds(
-          win_params.bounds);
-  // Center window if no position was specified.
-  if (win_params.bounds.x() == INT_MIN || win_params.bounds.y() == INT_MIN) {
-    window_->CenterWindow(window_bounds.size());
-  } else {
-    window_->SetBounds(window_bounds);
-  }
-#if defined(OS_WIN) && !defined(USE_AURA)
-  std::string app_name = web_app::GenerateApplicationNameFromExtensionId(
-      extension()->id());
-  ui::win::SetAppIdForWindow(
-      ShellIntegration::GetAppModelIdForProfile(
-          UTF8ToWide(app_name), shell_window_->profile()->GetPath()),
-      GetWidget()->GetTopLevelWidget()->GetNativeWindow());
-#endif
+  if (create_params.window_type == ShellWindow::WINDOW_TYPE_PANEL)
+    InitializePanelWindow(create_params);
+  else
+    InitializeDefaultWindow(create_params);
 
   extension_keybinding_registry_.reset(
-      new ExtensionKeybindingRegistryViews(shell_window_->profile(),
+      new ExtensionKeybindingRegistryViews(
+          profile(),
           window_->GetFocusManager(),
           extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
           shell_window_));
@@ -438,60 +67,65 @@ NativeAppWindowViews::NativeAppWindowViews(
   window_->AddObserver(this);
 }
 
-views::View* NativeAppWindowViews::GetInitiallyFocusedView() {
-  return web_view_;
-}
-
-bool NativeAppWindowViews::ShouldDescendIntoChildForEventHandling(
-    gfx::NativeView child,
-    const gfx::Point& location) {
-#if defined(USE_AURA)
-  DCHECK_EQ(child, web_view_->web_contents()->GetView()->GetNativeView());
-  // Shell window should claim mouse events that fall within the draggable
-  // region.
-  return !draggable_region_.get() ||
-         !draggable_region_->contains(location.x(), location.y());
-#else
-  return true;
-#endif
-}
-
-void NativeAppWindowViews::OnFocus() {
-  web_view_->RequestFocus();
-}
-
-void NativeAppWindowViews::ViewHierarchyChanged(
-    bool is_add, views::View *parent, views::View *child) {
-  if (is_add && child == this) {
-    web_view_ = new views::WebView(NULL);
-    AddChildView(web_view_);
-    web_view_->SetWebContents(web_contents());
-  }
-}
-
-gfx::Size NativeAppWindowViews::GetMinimumSize() {
-  return minimum_size_;
-}
-
-gfx::Size NativeAppWindowViews::GetMaximumSize() {
-  return maximum_size_;
-}
-
-void NativeAppWindowViews::SetFullscreen(bool fullscreen) {
-  is_fullscreen_ = fullscreen;
-  window_->SetFullscreen(fullscreen);
-  // TODO(jeremya) we need to call RenderViewHost::ExitFullscreen() if we
-  // ever drop the window out of fullscreen in response to something that
-  // wasn't the app calling webkitCancelFullScreen().
-}
-
-bool NativeAppWindowViews::IsFullscreenOrPending() const {
-  return is_fullscreen_;
-}
-
 NativeAppWindowViews::~NativeAppWindowViews() {
   web_view_->SetWebContents(NULL);
 }
+
+void NativeAppWindowViews::InitializeDefaultWindow(
+    const ShellWindow::CreateParams& create_params) {
+  views::Widget::InitParams init_params(views::Widget::InitParams::TYPE_WINDOW);
+  init_params.delegate = this;
+  init_params.remove_standard_frame = true;
+  init_params.use_system_default_icon = true;
+  window_->Init(init_params);
+  gfx::Rect window_bounds =
+      window_->non_client_view()->GetWindowBoundsForClientBounds(
+          create_params.bounds);
+  // Center window if no position was specified.
+  if (create_params.bounds.x() == INT_MIN ||
+      create_params.bounds.y() == INT_MIN) {
+    window_->CenterWindow(window_bounds.size());
+  } else {
+    window_->SetBounds(window_bounds);
+  }
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+  std::string app_name = web_app::GenerateApplicationNameFromExtensionId(
+      extension()->id());
+  ui::win::SetAppIdForWindow(
+      ShellIntegration::GetAppModelIdForProfile(
+          UTF8ToWide(app_name), shell_window_->profile()->GetPath()),
+      GetWidget()->GetTopLevelWidget()->GetNativeWindow());
+#endif
+}
+
+void NativeAppWindowViews::InitializePanelWindow(
+    const ShellWindow::CreateParams& create_params) {
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_PANEL);
+  params.delegate = this;
+
+  preferred_size_ = gfx::Size(create_params.bounds.width(),
+                              create_params.bounds.height());
+  if (preferred_size_.width() == 0)
+    preferred_size_.set_width(kDefaultPanelWidth);
+  else if (preferred_size_.width() < kMinPanelWidth)
+    preferred_size_.set_width(kMinPanelWidth);
+
+  if (preferred_size_.height() == 0)
+    preferred_size_.set_height(kDefaultPanelHeight);
+  else if (preferred_size_.height() < kMinPanelHeight)
+    preferred_size_.set_height(kMinPanelHeight);
+
+  params.bounds = gfx::Rect(preferred_size_.width(), preferred_size_.height());
+  window_->Init(params);
+
+  gfx::Rect window_bounds =
+      window_->non_client_view()->GetWindowBoundsForClientBounds(
+          create_params.bounds);
+  window_->SetBounds(window_bounds);
+}
+
+// BaseWindow implementation.
 
 bool NativeAppWindowViews::IsActive() const {
   return window_->IsActive();
@@ -573,52 +207,11 @@ void NativeAppWindowViews::FlashFrame(bool flash) {
 }
 
 bool NativeAppWindowViews::IsAlwaysOnTop() const {
-  return false;
+  return shell_window_->window_type() == ShellWindow::WINDOW_TYPE_PANEL;
 }
 
-void NativeAppWindowViews::DeleteDelegate() {
-  window_->RemoveObserver(this);
-  shell_window_->OnNativeClose();
-}
-
-bool NativeAppWindowViews::CanResize() const {
-  return maximum_size_.IsEmpty() || minimum_size_ != maximum_size_;
-}
-
-bool NativeAppWindowViews::CanMaximize() const {
-  return maximum_size_.IsEmpty();
-}
-
-views::View* NativeAppWindowViews::GetContentsView() {
-  return this;
-}
-
-views::NonClientFrameView* NativeAppWindowViews::CreateNonClientFrameView(
-    views::Widget* widget) {
-#if defined(USE_ASH)
-  if (chrome::IsNativeViewInAsh(widget->GetNativeView()) && !frameless_) {
-    ash::CustomFrameViewAsh* frame = new ash::CustomFrameViewAsh();
-    frame->Init(widget);
-    return frame;
-  }
-#endif
-  ShellWindowFrameView* frame_view = new ShellWindowFrameView(this);
-  frame_view->Init(window_);
-  return frame_view;
-}
-
-string16 NativeAppWindowViews::GetWindowTitle() const {
-  return shell_window_->GetTitle();
-}
-
-views::Widget* NativeAppWindowViews::GetWidget() {
-  return window_;
-}
-
-const views::Widget* NativeAppWindowViews::GetWidget() const {
-  return window_;
-}
-
+// Private method. TODO(stevenjb): Move this below InitializePanelWindow()
+// to match declaration order.
 void NativeAppWindowViews::OnViewWasResized() {
   // TODO(jeremya): this doesn't seem like a terribly elegant way to keep the
   // window shape in sync.
@@ -671,6 +264,32 @@ void NativeAppWindowViews::OnViewWasResized() {
 #endif
 }
 
+// WidgetDelegate implementation.
+
+void NativeAppWindowViews::OnWidgetMove() {
+  shell_window_->OnNativeWindowChanged();
+}
+
+views::View* NativeAppWindowViews::GetInitiallyFocusedView() {
+  return web_view_;
+}
+
+bool NativeAppWindowViews::CanResize() const {
+  return maximum_size_.IsEmpty() || minimum_size_ != maximum_size_;
+}
+
+bool NativeAppWindowViews::CanMaximize() const {
+  return maximum_size_.IsEmpty();
+}
+
+string16 NativeAppWindowViews::GetWindowTitle() const {
+  return shell_window_->GetTitle();
+}
+
+bool NativeAppWindowViews::ShouldShowWindowTitle() const {
+  return false;
+}
+
 gfx::ImageSkia NativeAppWindowViews::GetWindowAppIcon() {
   gfx::Image app_icon = shell_window_->app_icon();
   if (app_icon.IsEmpty())
@@ -691,13 +310,61 @@ gfx::ImageSkia NativeAppWindowViews::GetWindowIcon() {
   return gfx::ImageSkia();
 }
 
-bool NativeAppWindowViews::ShouldShowWindowTitle() const {
-  return false;
-}
-
-void NativeAppWindowViews::OnWidgetMove() {
+void NativeAppWindowViews::SaveWindowPlacement(const gfx::Rect& bounds,
+                                               ui::WindowShowState show_state) {
+  views::WidgetDelegate::SaveWindowPlacement(bounds, show_state);
   shell_window_->OnNativeWindowChanged();
 }
+
+void NativeAppWindowViews::DeleteDelegate() {
+  window_->RemoveObserver(this);
+  shell_window_->OnNativeClose();
+}
+
+views::Widget* NativeAppWindowViews::GetWidget() {
+  return window_;
+}
+
+const views::Widget* NativeAppWindowViews::GetWidget() const {
+  return window_;
+}
+
+views::NonClientFrameView* NativeAppWindowViews::CreateNonClientFrameView(
+    views::Widget* widget) {
+#if defined(USE_ASH)
+  if (chrome::IsNativeViewInAsh(widget->GetNativeView())) {
+    if (shell_window_->window_type() == ShellWindow::WINDOW_TYPE_PANEL) {
+      ash::PanelFrameView::FrameType frame_type = frameless_ ?
+          ash::PanelFrameView::FRAME_NONE : ash::PanelFrameView::FRAME_ASH;
+      return new ash::PanelFrameView(widget, frame_type);
+    }
+    if (!frameless_) {
+      ash::CustomFrameViewAsh* frame = new ash::CustomFrameViewAsh();
+      frame->Init(widget);
+      return frame;
+    }
+  }
+#endif
+  ShellWindowFrameView* frame_view = new ShellWindowFrameView(this);
+  frame_view->Init(window_);
+  return frame_view;
+}
+
+bool NativeAppWindowViews::ShouldDescendIntoChildForEventHandling(
+    gfx::NativeView child,
+    const gfx::Point& location) {
+#if defined(USE_AURA)
+  DCHECK_EQ(child, web_view_->web_contents()->GetView()->GetNativeView());
+  // Shell window should claim mouse events that fall within the draggable
+  // region.
+  return !draggable_region_.get() ||
+         !draggable_region_->contains(location.x(), location.y());
+#else
+  return true;
+#endif
+}
+
+// WidgetObserver implementation.
 
 void NativeAppWindowViews::OnWidgetVisibilityChanged(views::Widget* widget,
                                                      bool visible) {
@@ -709,10 +376,60 @@ void NativeAppWindowViews::OnWidgetActivationChanged(views::Widget* widget,
   shell_window_->OnNativeWindowChanged();
 }
 
+// views::View implementation.
+
 void NativeAppWindowViews::Layout() {
   DCHECK(web_view_);
   web_view_->SetBounds(0, 0, width(), height());
   OnViewWasResized();
+}
+
+void NativeAppWindowViews::ViewHierarchyChanged(
+    bool is_add, views::View *parent, views::View *child) {
+  if (is_add && child == this) {
+    web_view_ = new views::WebView(NULL);
+    AddChildView(web_view_);
+    web_view_->SetWebContents(web_contents());
+  }
+}
+
+gfx::Size NativeAppWindowViews::GetPreferredSize() {
+  if (!preferred_size_.IsEmpty())
+    return preferred_size_;
+  return views::View::GetPreferredSize();
+}
+
+gfx::Size NativeAppWindowViews::GetMinimumSize() {
+  return minimum_size_;
+}
+
+gfx::Size NativeAppWindowViews::GetMaximumSize() {
+  return maximum_size_;
+}
+
+void NativeAppWindowViews::OnFocus() {
+  web_view_->RequestFocus();
+}
+
+// NativeAppWindow implementation.
+
+void NativeAppWindowViews::SetFullscreen(bool fullscreen) {
+  // Fullscreen not supported by panels.
+  if (shell_window_->window_type() == ShellWindow::WINDOW_TYPE_PANEL)
+    return;
+  is_fullscreen_ = fullscreen;
+  window_->SetFullscreen(fullscreen);
+  // TODO(jeremya) we need to call RenderViewHost::ExitFullscreen() if we
+  // ever drop the window out of fullscreen in response to something that
+  // wasn't the app calling webkitCancelFullScreen().
+}
+
+bool NativeAppWindowViews::IsFullscreenOrPending() const {
+  return is_fullscreen_;
+}
+
+views::View* NativeAppWindowViews::GetContentsView() {
+  return this;
 }
 
 void NativeAppWindowViews::UpdateWindowIcon() {
@@ -743,11 +460,8 @@ void NativeAppWindowViews::RenderViewHostChanged() {
   OnViewWasResized();
 }
 
-void NativeAppWindowViews::SaveWindowPlacement(const gfx::Rect& bounds,
-                                               ui::WindowShowState show_state) {
-  views::WidgetDelegate::SaveWindowPlacement(bounds, show_state);
-  shell_window_->OnNativeWindowChanged();
-}
+//------------------------------------------------------------------------------
+// NativeAppWindow::Create
 
 // static
 NativeAppWindow* NativeAppWindow::Create(

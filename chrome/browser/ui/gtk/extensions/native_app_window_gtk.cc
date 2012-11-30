@@ -34,7 +34,7 @@ NativeAppWindowGtk::NativeAppWindowGtk(ShellWindow* shell_window,
       state_(GDK_WINDOW_STATE_WITHDRAWN),
       is_active_(false),
       content_thinks_its_fullscreen_(false),
-      frameless_(params.frame == ShellWindow::CreateParams::FRAME_NONE) {
+      frameless_(params.frame == ShellWindow::FRAME_NONE) {
   window_ = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
 
   gfx::NativeView native_view =

@@ -9,6 +9,8 @@
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/stl_util.h"
+#include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -19,15 +21,10 @@
 
 namespace {
 
-// Currently apps have a single launcher item, so the launcher id is the
-// same as the app id. In the future, this may not be true (e.g. for panels).
 std::string GetAppLauncherId(ShellWindow* shell_window) {
+  if (shell_window->window_type() == ShellWindow::WINDOW_TYPE_PANEL)
+    return StringPrintf("panel:%d", shell_window->session_id().id());
   return shell_window->extension()->id();
-}
-
-bool AppLauncherIdIsForApp(const std::string& app_launcher_id,
-                           const std::string& app_id) {
-  return app_launcher_id == app_id;
 }
 
 // Functor for std::find_if used in AppLauncherItemController.
@@ -114,7 +111,7 @@ class ShellWindowLauncherController::AppLauncherItemController
 
   virtual void Activate() OVERRIDE {
     DCHECK(!shell_windows_.empty());
-    ShowAndActivate(shell_windows_.front());
+    shell_windows_.front()->GetBaseWindow()->Activate();
   }
 
   virtual void Close() OVERRIDE {
@@ -139,14 +136,14 @@ class ShellWindowLauncherController::AppLauncherItemController
       if (first_window->GetBaseWindow()->IsActive())
         first_window->GetBaseWindow()->Minimize();
       else
-        ShowAndActivate(first_window);
+        RestoreOrShow(first_window);
     } else {
       if (!first_window->GetBaseWindow()->IsActive()) {
-        ShowAndActivate(first_window);
+        RestoreOrShow(first_window);
       } else {
         shell_windows_.pop_front();
         shell_windows_.push_back(first_window);
-        ShowAndActivate(shell_windows_.front());
+        RestoreOrShow(shell_windows_.front());
       }
     }
   }
@@ -163,8 +160,12 @@ class ShellWindowLauncherController::AppLauncherItemController
  private:
   typedef std::list<ShellWindow*> ShellWindowList;
 
-  void ShowAndActivate(ShellWindow* shell_window) {
-    shell_window->GetBaseWindow()->Show();
+  void RestoreOrShow(ShellWindow* shell_window) {
+    if (shell_window->GetBaseWindow()->IsMinimized())
+      shell_window->GetBaseWindow()->Restore();
+    else
+      shell_window->GetBaseWindow()->Show();
+    // Always activate windows when shown from the launcher.
     shell_window->GetBaseWindow()->Activate();
   }
 

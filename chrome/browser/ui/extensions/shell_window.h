@@ -44,16 +44,23 @@ class ShellWindow : public content::NotificationObserver,
                     public ImageLoadingTracker::Observer,
                     public extensions::ExtensionKeybindingRegistry::Delegate {
  public:
-  struct CreateParams {
-    enum Frame {
-      FRAME_CHROME, // Chrome-style window frame.
-      FRAME_NONE, // Frameless window.
-    };
+  enum WindowType {
+    WINDOW_TYPE_DEFAULT,  // Default shell window
+    WINDOW_TYPE_PANEL,  // OS controlled panel window (Ash only)
+  };
 
+  enum Frame {
+    FRAME_CHROME,  // Chrome-style window frame.
+    FRAME_NONE,  // Frameless window.
+  };
+
+  struct CreateParams {
     CreateParams();
     ~CreateParams();
 
+    WindowType window_type;
     Frame frame;
+
     // Specify the initial bounds of the window. INT_MIN designates
     // 'unspecified' for any coordinate, and should be replaced with a default
     // value.
@@ -85,6 +92,7 @@ class ShellWindow : public content::NotificationObserver,
   const SessionID& session_id() const { return session_id_; }
   const extensions::Extension* extension() const { return extension_; }
   content::WebContents* web_contents() const { return web_contents_.get(); }
+  WindowType window_type() const { return window_type_; }
   Profile* profile() const { return profile_; }
   const gfx::Image& app_icon() const { return app_icon_; }
 
@@ -202,6 +210,7 @@ class ShellWindow : public content::NotificationObserver,
 
   const SessionID session_id_;
   scoped_ptr<content::WebContents> web_contents_;
+  WindowType window_type_;
   content::NotificationRegistrar registrar_;
   ExtensionFunctionDispatcher extension_function_dispatcher_;
 

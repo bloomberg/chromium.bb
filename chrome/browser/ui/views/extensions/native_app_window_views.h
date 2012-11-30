@@ -36,9 +36,15 @@ class NativeAppWindowViews : public NativeAppWindow,
  public:
   NativeAppWindowViews(ShellWindow* shell_window,
                        const ShellWindow::CreateParams& params);
+  virtual ~NativeAppWindowViews();
 
   bool frameless() const { return frameless_; }
   SkRegion* draggable_region() { return draggable_region_.get(); }
+
+ private:
+  void InitializeDefaultWindow(const ShellWindow::CreateParams& create_params);
+  void InitializePanelWindow(const ShellWindow::CreateParams& create_params);
+  void OnViewWasResized();
 
   // BaseWindow implementation.
   virtual bool IsActive() const OVERRIDE;
@@ -62,23 +68,25 @@ class NativeAppWindowViews : public NativeAppWindow,
   virtual bool IsAlwaysOnTop() const OVERRIDE;
 
   // WidgetDelegate implementation.
+  virtual void OnWidgetMove() OVERRIDE;
+  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
+  virtual bool CanResize() const OVERRIDE;
+  virtual bool CanMaximize() const OVERRIDE;
+  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual bool ShouldShowWindowTitle() const OVERRIDE;
+  virtual gfx::ImageSkia GetWindowAppIcon() OVERRIDE;
+  virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
+  virtual void SaveWindowPlacement(const gfx::Rect& bounds,
+                                   ui::WindowShowState show_state) OVERRIDE;
+  virtual void DeleteDelegate() OVERRIDE;
+  virtual views::Widget* GetWidget() OVERRIDE;
+  virtual const views::Widget* GetWidget() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
   virtual views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) OVERRIDE;
-  virtual bool CanResize() const OVERRIDE;
-  virtual bool CanMaximize() const OVERRIDE;
-  virtual views::Widget* GetWidget() OVERRIDE;
-  virtual const views::Widget* GetWidget() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
-  virtual void DeleteDelegate() OVERRIDE;
-  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual bool ShouldDescendIntoChildForEventHandling(
       gfx::NativeView child,
       const gfx::Point& location) OVERRIDE;
-  virtual gfx::ImageSkia GetWindowAppIcon() OVERRIDE;
-  virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
-  virtual bool ShouldShowWindowTitle() const OVERRIDE;
-  virtual void OnWidgetMove() OVERRIDE;
 
   // WidgetObserver implementation.
   virtual void OnWidgetVisibilityChanged(views::Widget* widget,
@@ -86,31 +94,14 @@ class NativeAppWindowViews : public NativeAppWindow,
   virtual void OnWidgetActivationChanged(views::Widget* widget,
                                          bool active) OVERRIDE;
 
- protected:
   // views::View implementation.
   virtual void Layout() OVERRIDE;
   virtual void ViewHierarchyChanged(
       bool is_add, views::View *parent, views::View *child) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;
   virtual gfx::Size GetMaximumSize() OVERRIDE;
   virtual void OnFocus() OVERRIDE;
-
-  Profile* profile() { return shell_window_->profile(); }
-  content::WebContents* web_contents() {
-    return shell_window_->web_contents();
-  }
-  const extensions::Extension* extension() {
-    return shell_window_->extension();
-  }
-
-  // views::WidgetDelegate implementation.
-  virtual void SaveWindowPlacement(const gfx::Rect& bounds,
-                                   ui::WindowShowState show_state) OVERRIDE;
-
- private:
-  friend class ShellWindowFrameView;
-
-  virtual ~NativeAppWindowViews();
 
   // NativeAppWindow implementation.
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
@@ -123,10 +114,15 @@ class NativeAppWindowViews : public NativeAppWindow,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void RenderViewHostChanged() OVERRIDE;
 
-  void OnViewWasResized();
+  Profile* profile() { return shell_window_->profile(); }
+  content::WebContents* web_contents() {
+    return shell_window_->web_contents();
+  }
+  const extensions::Extension* extension() {
+    return shell_window_->extension();
+  }
 
   ShellWindow* shell_window_; // weak - ShellWindow owns NativeAppWindow.
-
   views::WebView* web_view_;
   views::Widget* window_;
   bool is_fullscreen_;
@@ -136,6 +132,7 @@ class NativeAppWindowViews : public NativeAppWindow,
   bool frameless_;
   gfx::Size minimum_size_;
   gfx::Size maximum_size_;
+  gfx::Size preferred_size_;
 
   // The class that registers for keyboard shortcuts for extension commands.
   scoped_ptr<ExtensionKeybindingRegistryViews> extension_keybinding_registry_;

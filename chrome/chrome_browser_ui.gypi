@@ -1453,6 +1453,8 @@
         'browser/ui/views/extensions/media_galleries_dialog_views.h',
         'browser/ui/views/extensions/native_app_window_views.cc',
         'browser/ui/views/extensions/native_app_window_views.h',
+        'browser/ui/views/extensions/shell_window_frame_view.cc',
+        'browser/ui/views/extensions/shell_window_frame_view.h',
         'browser/ui/views/external_protocol_dialog.cc',
         'browser/ui/views/external_protocol_dialog.h',
         'browser/ui/views/external_tab_container_win.cc',

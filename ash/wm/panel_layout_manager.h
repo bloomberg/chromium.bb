@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura/window_observer.h"
 
 namespace aura {
 class Window;
@@ -45,6 +46,7 @@ namespace internal {
 class ASH_EXPORT PanelLayoutManager
     : public aura::LayoutManager,
       public ash::LauncherIconObserver,
+      public aura::WindowObserver,
       public aura::client::ActivationChangeObserver {
  public:
   explicit PanelLayoutManager(aura::Window* panel_container);
@@ -70,6 +72,11 @@ class ASH_EXPORT PanelLayoutManager
   // Overridden from ash::LauncherIconObserver
   virtual void OnLauncherIconPositionsChanged() OVERRIDE;
 
+  // Overridden from aura::WindowObserver
+  virtual void OnWindowPropertyChanged(aura::Window* window,
+                                       const void* key,
+                                       intptr_t old) OVERRIDE;
+
   // Overridden from aura::client::ActivationChangeObserver
   virtual void OnWindowActivated(aura::Window* active,
                                  aura::Window* old_active) OVERRIDE;
@@ -78,6 +85,9 @@ class ASH_EXPORT PanelLayoutManager
   friend class PanelLayoutManagerTest;
 
   typedef std::list<aura::Window*> PanelList;
+
+  void MinimizePanel(aura::Window* panel);
+  void RestorePanel(aura::Window* panel);
 
   // Called whenever the panel layout might change.
   void Relayout();

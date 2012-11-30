@@ -33,6 +33,7 @@ const char kInvalidWindowId[] =
     "The window id can not be more than 256 characters long.";
 }
 
+const char kPanelTypeOption[] = "panel";
 const char kNoneFrameOption[] = "none";
 const char kHtmlFrameOption[] = "experimental-html";
 
@@ -144,16 +145,24 @@ bool AppWindowCreateFunction::RunImpl() {
         create_params.bounds.set_y(*bounds->top.get());
     }
 
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableExperimentalExtensionApis)) {
+      if (options->type.get()) {
+        if (*options->type == kPanelTypeOption)
+          create_params.window_type = ShellWindow::WINDOW_TYPE_PANEL;
+      }
+    }
+
     if (options->frame.get()) {
       if (*options->frame == kHtmlFrameOption &&
           CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kEnableExperimentalExtensionApis)) {
-        create_params.frame = ShellWindow::CreateParams::FRAME_NONE;
+        create_params.frame = ShellWindow::FRAME_NONE;
         inject_html_titlebar = true;
       } else if (*options->frame == kNoneFrameOption) {
-        create_params.frame = ShellWindow::CreateParams::FRAME_NONE;
+        create_params.frame = ShellWindow::FRAME_NONE;
       } else {
-        create_params.frame = ShellWindow::CreateParams::FRAME_CHROME;
+        create_params.frame = ShellWindow::FRAME_CHROME;
       }
     }
 

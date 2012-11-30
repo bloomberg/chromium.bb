@@ -74,7 +74,8 @@ void SuspendRenderViewHost(RenderViewHost* rvh) {
 }  // namespace
 
 ShellWindow::CreateParams::CreateParams()
-  : frame(ShellWindow::CreateParams::FRAME_CHROME),
+  : window_type(ShellWindow::WINDOW_TYPE_DEFAULT),
+    frame(ShellWindow::FRAME_CHROME),
     bounds(INT_MIN, INT_MIN, INT_MIN, INT_MIN),
     creator_process_id(0), hidden(false) {
 }
@@ -85,7 +86,7 @@ ShellWindow::CreateParams::~CreateParams() {
 ShellWindow* ShellWindow::Create(Profile* profile,
                                  const extensions::Extension* extension,
                                  const GURL& url,
-                                 const ShellWindow::CreateParams& params) {
+                                 const CreateParams& params) {
   // This object will delete itself when the window is closed.
   ShellWindow* window = new ShellWindow(profile, extension);
   window->Init(url, params);
@@ -98,12 +99,15 @@ ShellWindow::ShellWindow(Profile* profile,
     : profile_(profile),
       extension_(extension),
       web_contents_(NULL),
+      window_type_(WINDOW_TYPE_DEFAULT),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           extension_function_dispatcher_(profile, this)) {
 }
 
 void ShellWindow::Init(const GURL& url,
                        const ShellWindow::CreateParams& params) {
+  window_type_ = params.window_type;
+
   web_contents_.reset(WebContents::Create(
       profile(), SiteInstance::CreateForURL(profile(), url), MSG_ROUTING_NONE,
       NULL));
@@ -167,8 +171,12 @@ void ShellWindow::Init(const GURL& url,
   native_app_window_.reset(NativeAppWindow::Create(this, new_params));
   OnNativeWindowChanged();
 
-  if (!params.hidden)
-    GetBaseWindow()->Show();
+  if (!params.hidden) {
+    if (params.window_type == WINDOW_TYPE_PANEL)
+      GetBaseWindow()->ShowInactive();  // Panels are not activated by default.
+    else
+      GetBaseWindow()->Show();
+  }
 
   // If the new view is in the same process as the creator, block the created
   // RVH from loading anything until the background page has had a chance to do
@@ -345,7 +353,8 @@ string16 ShellWindow::GetTitle() const {
   // WebContents::GetTitle() will return the page's URL if there's no <title>
   // specified. However, we'd prefer to show the name of the extension in that
   // case, so we directly inspect the NavigationEntry's title.
-  if (!web_contents()->GetController().GetActiveEntry() ||
+  if (!web_contents() ||
+      !web_contents()->GetController().GetActiveEntry() ||
       web_contents()->GetController().GetActiveEntry()->GetTitle().empty())
     return UTF8ToUTF16(extension()->name());
   string16 title = web_contents()->GetTitle();

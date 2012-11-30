@@ -190,7 +190,7 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
     ShellWindow* shell_window,
     const ShellWindow::CreateParams& params)
     : shell_window_(shell_window),
-      has_frame_(params.frame == ShellWindow::CreateParams::FRAME_CHROME),
+      has_frame_(params.frame == ShellWindow::FRAME_CHROME),
       attention_request_id_(0),
       use_system_drag_(true) {
   // Flip coordinates based on the primary screen.
