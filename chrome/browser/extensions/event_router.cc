@@ -65,6 +65,8 @@ void DispatchOnInstalledEvent(
                                                old_version, chrome_updated);
 }
 
+void DoNothing(extensions::ExtensionHost* host) {}
+
 }  // namespace
 
 struct EventRouter::ListenerProcess {
@@ -127,6 +129,8 @@ EventRouter::EventRouter(Profile* profile, ExtensionPrefs* extension_prefs)
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
+                 content::Source<Profile>(profile_));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_ENABLED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
@@ -605,6 +609,18 @@ void EventRouter::Observe(int type,
       // We're done restarting Chrome after an update.
       dispatch_chrome_updated_event_ = false;
       break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_ENABLED: {
+      // If the extension has a lazy background page, make sure it gets loaded
+      // to register the events the extension is interested in.
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
+      if (extension->has_lazy_background_page()) {
+        LazyBackgroundTaskQueue* queue =
+            ExtensionSystem::Get(profile_)->lazy_background_task_queue();
+        queue->AddPendingTask(profile_, extension->id(),
+                              base::Bind(&DoNothing));
+      }
     }
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       // Add all registered lazy listeners to our cache.

@@ -30,6 +30,24 @@ const char kOnRestartedEvent[] = "app.runtime.onRestarted";
 const char kCallbackNotFoundError[] =
     "WebIntent callback not found; perhaps already responded to";
 
+void DispatchOnLaunchedEventImpl(const std::string& extension_id,
+                                 scoped_ptr<base::ListValue> args,
+                                 Profile* profile) {
+  extensions::ExtensionSystem* system =
+      extensions::ExtensionSystem::Get(profile);
+  // Special case: normally, extensions add their own lazy event listeners.
+  // However, since the extension might have just been enabled, it hasn't had a
+  // chance to register for events. So we register on its behalf. If the
+  // extension does not actually have a listener, the event will just be
+  // ignored (but an app that doesn't listen for the onLaunched event doesn't
+  // make sense anyway).
+  system->event_router()->AddLazyEventListener(kOnLaunchedEvent, extension_id);
+  system->event_router()->DispatchEventToExtension(
+      extension_id, kOnLaunchedEvent, args.Pass(), profile, GURL());
+  system->event_router()->RemoveLazyEventListener(kOnLaunchedEvent,
+                                                  extension_id);
+}
+
 }  // anonymous namespace
 
 namespace extensions {
@@ -38,9 +56,7 @@ namespace extensions {
 void AppEventRouter::DispatchOnLaunchedEvent(
     Profile* profile, const Extension* extension) {
   scoped_ptr<ListValue> arguments(new ListValue());
-  extensions::ExtensionSystem::Get(profile)->event_router()->
-      DispatchEventToExtension(extension->id(), kOnLaunchedEvent,
-                               arguments.Pass(), profile, GURL());
+  DispatchOnLaunchedEventImpl(extension->id(), arguments.Pass(), profile);
 }
 
 // static.
@@ -68,9 +84,7 @@ void AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
   items->Append(launch_item);
   launch_data->Set("items", items);
   args->Append(launch_data);
-  extensions::ExtensionSystem::Get(profile)->event_router()->
-      DispatchEventToExtension(extension->id(), kOnLaunchedEvent, args.Pass(),
-                               profile, GURL());
+  DispatchOnLaunchedEventImpl(extension->id(), args.Pass(), profile);
 }
 
 // static.
@@ -126,9 +140,7 @@ void AppEventRouter::DispatchOnLaunchedEventWithWebIntent(
   int intent_id =
       callbacks->RegisterCallback(extension, intents_dispatcher, source);
   args->Append(base::Value::CreateIntegerValue(intent_id));
-  extensions::ExtensionSystem::Get(profile)->event_router()->
-      DispatchEventToExtension(extension->id(), kOnLaunchedEvent, args.Pass(),
-                               profile, GURL());
+  DispatchOnLaunchedEventImpl(extension->id(), args.Pass(), profile);
 }
 
 bool AppRuntimePostIntentResponseFunction::RunImpl() {
