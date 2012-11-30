@@ -39,13 +39,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   virtual std::string GetDefaultDownloadName() OVERRIDE;
   virtual WebContentsViewDelegate* GetWebContentsViewDelegate(
       WebContents* web_contents) OVERRIDE;
-  virtual bool CanCreateWindow(
-      const GURL& opener_url,
-      const GURL& source_origin,
-      WindowContainerType container_type,
-      ResourceContext* context,
-      int render_process_id,
-      bool* no_javascript_access) OVERRIDE;
 
 #if defined(OS_ANDROID)
   virtual void GetAdditionalMappedFilesForChildProcess(

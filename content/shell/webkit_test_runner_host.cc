@@ -181,7 +181,6 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   should_stay_on_page_after_handling_before_unload_ = false;
   wait_until_done_ = false;
   prefs_ = ShellWebPreferences();
-  can_open_windows_ = false;
   watchdog_.Cancel();
   if (main_window_) {
     Observe(NULL);
@@ -381,7 +380,6 @@ bool WebKitTestRunnerHost::OnMessageReceived(
         OnSetShouldStayOnPageAfterHandlingBeforeUnload)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_WaitUntilDone, OnWaitUntilDone)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_NotImplemented, OnNotImplemented)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_CanOpenWindows, OnCanOpenWindows)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -419,10 +417,6 @@ void WebKitTestRunnerHost::OnNotImplemented(
     const std::string& object_name,
     const std::string& property_name) {
   WebKitTestController::Get()->NotImplemented(object_name, property_name);
-}
-
-void WebKitTestRunnerHost::OnCanOpenWindows() {
-  WebKitTestController::Get()->set_can_open_windows(true);
 }
 
 }  // namespace content

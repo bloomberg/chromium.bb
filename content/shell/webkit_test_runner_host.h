@@ -109,10 +109,6 @@ class WebKitTestController : public base::NonThreadSafe,
   }
   bool is_printing() const { return is_printing_; }
   void set_is_printing(bool is_printing) { is_printing_ = is_printing; }
-  bool can_open_windows() const { return can_open_windows_; }
-  void set_can_open_windows(bool can_open_windows) {
-    can_open_windows_ = can_open_windows;
-  }
 
   // WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -150,7 +146,6 @@ class WebKitTestController : public base::NonThreadSafe,
   bool is_printing_;
   bool should_stay_on_page_after_handling_before_unload_;
   bool wait_until_done_;
-  bool can_open_windows_;
   ShellWebPreferences prefs_;
 
   base::CancelableClosure watchdog_;
@@ -174,7 +169,6 @@ class WebKitTestRunnerHost : public RenderViewHostObserver {
   void OnSetPrinting();
   void OnSetShouldStayOnPageAfterHandlingBeforeUnload(bool should_stay_on_page);
   void OnWaitUntilDone();
-  void OnCanOpenWindows();
 
   void OnNotImplemented(const std::string& object_name,
                         const std::string& method_name);
