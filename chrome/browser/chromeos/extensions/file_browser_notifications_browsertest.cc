@@ -13,6 +13,8 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 
@@ -44,26 +46,26 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, DISABLED_TestBasic) {
   // Showing a notification adds a new notification.
   notifications_->ShowNotification(FileBrowserNotifications::DEVICE, "path");
   EXPECT_EQ(1u, notifications_->GetNotificationCountForTest());
-  EXPECT_TRUE(FindNotification("Dpath"));
+  EXPECT_TRUE(FindNotification("Device_path"));
 
   // Updating the same notification maintains the same count.
   notifications_->ShowNotification(FileBrowserNotifications::DEVICE, "path");
   EXPECT_EQ(1u, notifications_->GetNotificationCountForTest());
-  EXPECT_TRUE(FindNotification("Dpath"));
+  EXPECT_TRUE(FindNotification("Device_path"));
 
   // A new notification increases the count.
   notifications_->ShowNotification(FileBrowserNotifications::DEVICE_FAIL,
                                    "path");
   EXPECT_EQ(2u, notifications_->GetNotificationCountForTest());
-  EXPECT_TRUE(FindNotification("DFpath"));
-  EXPECT_TRUE(FindNotification("Dpath"));
+  EXPECT_TRUE(FindNotification("DeviceFail_path"));
+  EXPECT_TRUE(FindNotification("Device_path"));
 
   // Hiding a notification removes it from our data.
   notifications_->HideNotification(FileBrowserNotifications::DEVICE_FAIL,
                                    "path");
   EXPECT_EQ(1u, notifications_->GetNotificationCountForTest());
-  EXPECT_FALSE(FindNotification("DFpath"));
-  EXPECT_TRUE(FindNotification("Dpath"));
+  EXPECT_FALSE(FindNotification("DeviceFail_path"));
+  EXPECT_TRUE(FindNotification("Device_path"));
 };
 
 // Note: Delayed tests use a delay time of 0 so that tasks wille execute
@@ -75,12 +77,12 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, ShowDelayedTest) {
                                           "path",
                                           base::TimeDelta::FromSeconds(0));
   EXPECT_EQ(0u, notifications_->GetNotificationCountForTest());
-  EXPECT_FALSE(FindNotification("Dpath"));
+  EXPECT_FALSE(FindNotification("Device_path"));
 
   // Running the message loop should create the notification.
   content::RunAllPendingInMessageLoop();
   EXPECT_EQ(1u, notifications_->GetNotificationCountForTest());
-  EXPECT_TRUE(FindNotification("Dpath"));
+  EXPECT_TRUE(FindNotification("Device_path"));
 
   // Showing a notification both immediately and delayed results in one
   // additional notification.
@@ -90,13 +92,13 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, ShowDelayedTest) {
   notifications_->ShowNotification(FileBrowserNotifications::DEVICE_FAIL,
                                    "path");
   EXPECT_EQ(2u, notifications_->GetNotificationCountForTest());
-  EXPECT_TRUE(FindNotification("DFpath"));
+  EXPECT_TRUE(FindNotification("DeviceFail_path"));
 
   // When the delayed notification is processed, it's an update, so we still
   // only have two notifications.
   content::RunAllPendingInMessageLoop();
   EXPECT_EQ(2u, notifications_->GetNotificationCountForTest());
-  EXPECT_TRUE(FindNotification("DFpath"));
+  EXPECT_TRUE(FindNotification("DeviceFail_path"));
 
   // If we schedule a show for later, then hide before it becomes visible,
   // the notification should not be added.
@@ -106,16 +108,16 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, ShowDelayedTest) {
   notifications_->HideNotification(FileBrowserNotifications::FORMAT_FAIL,
                                    "path");
   EXPECT_EQ(2u, notifications_->GetNotificationCountForTest());
-  EXPECT_TRUE(FindNotification("Dpath"));
-  EXPECT_TRUE(FindNotification("DFpath"));
-  EXPECT_FALSE(FindNotification("Fpath"));
+  EXPECT_TRUE(FindNotification("Device_path"));
+  EXPECT_TRUE(FindNotification("DeviceFail_path"));
+  EXPECT_FALSE(FindNotification("Format_path"));
 
   // Even after processing messages, no new notification should be added.
   content::RunAllPendingInMessageLoop();
   EXPECT_EQ(2u, notifications_->GetNotificationCountForTest());
-  EXPECT_TRUE(FindNotification("Dpath"));
-  EXPECT_TRUE(FindNotification("DFpath"));
-  EXPECT_FALSE(FindNotification("Fpath"));
+  EXPECT_TRUE(FindNotification("Device_path"));
+  EXPECT_TRUE(FindNotification("DeviceFail_path"));
+  EXPECT_FALSE(FindNotification("Format_path"));
 }
 
 IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, HideDelayedTest) {
@@ -126,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, HideDelayedTest) {
                                           "path",
                                           base::TimeDelta::FromSeconds(0));
   EXPECT_EQ(1u, notifications_->GetNotificationCountForTest());
-  EXPECT_TRUE(FindNotification("Dpath"));
+  EXPECT_TRUE(FindNotification("Device_path"));
 
   // Running pending messges should remove the notification.
   content::RunAllPendingInMessageLoop();
@@ -146,6 +148,33 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, HideDelayedTest) {
                                           base::TimeDelta::FromSeconds(0));
   content::RunAllPendingInMessageLoop();
   EXPECT_EQ(0u, notifications_->GetNotificationCountForTest());
+}
+
+// Tests that showing two notifications with the same notification ids and
+// different messages results in showing the second notification's message.
+// This situation can be encountered while showing notifications for
+// MountCompletedEvent.
+IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, IdenticalNotificationIds) {
+  InitNotifications();
+  notifications_->RegisterDevice("path");
+
+  notifications_->ManageNotificationsOnMountCompleted("path", "", false, false,
+      false);
+  content::RunAllPendingInMessageLoop();
+
+  EXPECT_EQ(
+    l10n_util::GetStringUTF16(IDS_DEVICE_UNKNOWN_DEFAULT_MESSAGE),
+    notifications_->GetNotificationMessageForTest("DeviceFail_path"));
+
+  notifications_->ManageNotificationsOnMountCompleted("path", "", false, false,
+      false);
+  content::RunAllPendingInMessageLoop();
+
+  EXPECT_EQ(
+    l10n_util::GetStringUTF16(IDS_MULTIPART_DEVICE_UNSUPPORTED_DEFAULT_MESSAGE),
+    notifications_->GetNotificationMessageForTest("DeviceFail_path"));
+
+  notifications_->UnregisterDevice("path");
 }
 
 }  // namespace chromeos.

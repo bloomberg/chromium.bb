@@ -212,7 +212,7 @@ TEST(FileBrowserMountNotificationsTest, MulitpleFail) {
               device_label)));
   }
 
- notifications->ManageNotificationsOnMountCompleted(notification_path,
+  notifications->ManageNotificationsOnMountCompleted(notification_path,
       device_label, true, false, false);
   notifications->ManageNotificationsOnMountCompleted(notification_path,
       device_label, false, false, false);

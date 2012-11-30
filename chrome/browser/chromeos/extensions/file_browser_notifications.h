@@ -19,24 +19,28 @@ class Profile;
 class FileBrowserNotifications
     : public base::SupportsWeakPtr<FileBrowserNotifications> {
  public:
+  // If changing the enum, please also update kNotificationTypes in .cc file.
   enum NotificationType {
     DEVICE,
     DEVICE_FAIL,
     DEVICE_HARD_UNPLUG,
+    DEVICE_EXTERNAL_STORAGE_DISABLED,
     FORMAT_SUCCESS,
     FORMAT_FAIL,
     FORMAT_START,
     FORMAT_START_FAIL,
-    GDATA_SYNC,
-    GDATA_SYNC_SUCCESS,
-    GDATA_SYNC_FAIL,
   };
 
   explicit FileBrowserNotifications(Profile* profile);
   virtual ~FileBrowserNotifications();
 
-  void RegisterDevice(const std::string& path);
-  void UnregisterDevice(const std::string& path);
+  // Registers the removable device whose mount events will be handled in
+  // |ManageNotificationsOnMountComplete|.
+  void RegisterDevice(const std::string& system_path);
+
+  // Unregisters the removable device whose mount events will be handled in
+  // |ManageNotificationsOnMountComplete|.
+  void UnregisterDevice(const std::string& system_path);
 
   void ManageNotificationsOnMountCompleted(const std::string& system_path,
                                            const std::string& label,
@@ -47,12 +51,8 @@ class FileBrowserNotifications
   void ManageNotificationOnGDataSyncProgress(int count);
   void ManageNotificationOnGDataSyncFinish(bool success);
 
-  // Retreives message body based on |type|.
+  // Primary method for showing a notification.
   void ShowNotification(NotificationType type, const std::string& path);
-  // Primary method for showing a notification. Virtual for mock in unittest.
-  virtual void ShowNotificationWithMessage(NotificationType type,
-                                           const std::string& path,
-                                           const string16& message);
   void ShowNotificationDelayed(NotificationType type,
                                const std::string& path,
                                base::TimeDelta delay);
@@ -66,9 +66,12 @@ class FileBrowserNotifications
   size_t GetNotificationCountForTest() const {
     return notification_map_.size();
   }
+
   bool HasNotificationForTest(const std::string& id) const {
     return notification_map_.find(id) != notification_map_.end();
   }
+
+  string16 GetNotificationMessageForTest(const std::string& id) const;
 
  private:
   class NotificationMessage;
@@ -77,8 +80,10 @@ class FileBrowserNotifications
   typedef std::map<std::string, MountRequestsInfo> MountRequestsMap;
   typedef std::map<std::string, NotificationMessage*> NotificationMap;
 
-  std::string CreateNotificationId(NotificationType type,
-                                   const std::string& path);
+  // Virtual for mock in unittest.
+  virtual void ShowNotificationWithMessage(NotificationType type,
+                                           const std::string& path,
+                                           const string16& message);
   void ShowNotificationById(NotificationType type,
                             const std::string& notification_id,
                             const string16& message);

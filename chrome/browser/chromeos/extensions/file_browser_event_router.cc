@@ -660,7 +660,8 @@ void FileBrowserEventRouter::OnDiskRemoved(
 
   if (!disk->mount_path().empty()) {
     notifications_->ShowNotification(
-        FileBrowserNotifications::DEVICE_HARD_UNPLUG, disk->device_path());
+        FileBrowserNotifications::DEVICE_HARD_UNPLUG,
+        disk->system_path_prefix());
     DiskMountManager::GetInstance()->UnmountPath(
         disk->mount_path(), chromeos::UNMOUNT_OPTIONS_LAZY);
   }
@@ -676,10 +677,9 @@ void FileBrowserEventRouter::OnDeviceAdded(
   // If the policy is set instead of showing the new device notification we show
   // a notification that the operation is not permitted.
   if (profile_->GetPrefs()->GetBoolean(prefs::kExternalStorageDisabled)) {
-    notifications_->ShowNotificationWithMessage(
-        FileBrowserNotifications::DEVICE_FAIL,
-        device_path,
-        l10n_util::GetStringUTF16(IDS_EXTERNAL_STORAGE_DISABLED_MESSAGE));
+    notifications_->ShowNotification(
+        FileBrowserNotifications::DEVICE_EXTERNAL_STORAGE_DISABLED,
+        device_path);
     return;
   }
 
