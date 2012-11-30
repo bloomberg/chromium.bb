@@ -9,7 +9,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class GURL;
 class WebUIBrowserTest;
