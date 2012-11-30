@@ -178,12 +178,11 @@ class DriveServiceInterface {
                                       const EntryActionCallback& callback) = 0;
 
   // Removes a resource (document, file, collection) identified by its
-  // 'self' link |resource_url| from a collection with a content link
+  // |resource_id| from a collection with a content link
   // |parent_content_url|. Upon completion, invokes |callback| with
   // results on the calling thread.
   virtual void RemoveResourceFromDirectory(
       const GURL& parent_content_url,
-      const GURL& resource_url,
       const std::string& resource_id,
       const EntryActionCallback& callback) = 0;
 

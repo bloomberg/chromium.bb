@@ -237,7 +237,6 @@ void DriveAPIService::AddResourceToDirectory(
 
 void DriveAPIService::RemoveResourceFromDirectory(
     const GURL& parent_content_url,
-    const GURL& resource_url,
     const std::string& resource_id,
     const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

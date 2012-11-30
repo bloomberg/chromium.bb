@@ -254,7 +254,6 @@ void MoveOperation::RemoveEntryFromNonRootDirectoryAfterEntryInfoPair(
   // The entry is moved to the root directory.
   drive_service_->RemoveResourceFromDirectory(
       GURL(dir_proto->content_url()),
-      GURL(entry_proto->edit_url()),
       entry_proto->resource_id(),
       base::Bind(&MoveOperation::MoveEntryToDirectory,
                  weak_ptr_factory_.GetWeakPtr(),

@@ -1675,7 +1675,6 @@ TEST_F(DriveFileSystemTest, MoveFileFromSubDirectoryToRoot) {
   EXPECT_CALL(*mock_drive_service_,
               RemoveResourceFromDirectory(
                   GURL(src_parent_proto->content_url()),
-                  GURL(src_entry_proto->edit_url()),
                   src_file_resource_id, _));
 
   FileOperationCallback callback =
@@ -1742,7 +1741,6 @@ TEST_F(DriveFileSystemTest, MoveFileBetweenSubDirectories) {
   EXPECT_CALL(*mock_drive_service_,
               RemoveResourceFromDirectory(
                   GURL(src_parent_proto->content_url()),
-                  GURL(src_entry_proto->edit_url()),
                   src_file_resource_id, _));
   EXPECT_CALL(*mock_drive_service_,
               AddResourceToDirectory(

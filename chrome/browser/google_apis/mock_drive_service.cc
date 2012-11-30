@@ -39,7 +39,7 @@ MockDriveService::MockDriveService() {
   ON_CALL(*this, AddResourceToDirectory(_, _, _))
       .WillByDefault(
           Invoke(this, &MockDriveService::AddResourceToDirectoryStub));
-  ON_CALL(*this, RemoveResourceFromDirectory(_, _, _, _))
+  ON_CALL(*this, RemoveResourceFromDirectory(_, _, _))
       .WillByDefault(
           Invoke(this, &MockDriveService::RemoveResourceFromDirectoryStub));
   ON_CALL(*this, AddNewDirectory(_, _, _))
@@ -139,7 +139,6 @@ void MockDriveService::AddResourceToDirectoryStub(
 
 void MockDriveService::RemoveResourceFromDirectoryStub(
     const GURL& parent_content_url,
-    const GURL& resource_url,
     const std::string& resource_id,
     const EntryActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(

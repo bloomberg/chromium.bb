@@ -68,9 +68,8 @@ class MockDriveService : public DriveServiceInterface {
                void(const GURL& parent_content_url,
                     const GURL& resource_url,
                     const EntryActionCallback& callback));
-  MOCK_METHOD4(RemoveResourceFromDirectory,
+  MOCK_METHOD3(RemoveResourceFromDirectory,
                void(const GURL& parent_content_url,
-                    const GURL& resource_url,
                     const std::string& resource_id,
                     const EntryActionCallback& callback));
   MOCK_METHOD3(AddNewDirectory,
@@ -133,7 +132,7 @@ class MockDriveService : public DriveServiceInterface {
   // value of |account_metadata_|.
   void GetAccountMetadataStub(const GetDataCallback& callback);
 
-  // Will call |callback| with HTTP_SUCCESS and the |document_url|.
+  // Will call |callback| with HTTP_SUCCESS.
   void DeleteDocumentStub(const GURL& document_url,
                           const EntryActionCallback& callback);
 
@@ -152,21 +151,20 @@ class MockDriveService : public DriveServiceInterface {
                         const FilePath::StringType& new_name,
                         const GetDataCallback& callback);
 
-  // Will call |callback| with HTTP_SUCCESS and the |document_url|.
+  // Will call |callback| with HTTP_SUCCESS.
   void RenameResourceStub(const GURL& document_url,
                           const FilePath::StringType& new_name,
                           const EntryActionCallback& callback);
 
-  // Will call |callback| with HTTP_SUCCESS and the |resource_url|.
+  // Will call |callback| with HTTP_SUCCESS.
   void AddResourceToDirectoryStub(
       const GURL& parent_content_url,
       const GURL& resource_url,
       const EntryActionCallback& callback);
 
-  // Will call |callback| with HTTP_SUCCESS and the |resource_url|.
+  // Will call |callback| with HTTP_SUCCESS.
   void RemoveResourceFromDirectoryStub(
       const GURL& parent_content_url,
-      const GURL& resource_url,
       const std::string& resource_id,
       const EntryActionCallback& callback);
 
