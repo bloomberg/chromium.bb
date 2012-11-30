@@ -240,6 +240,13 @@ void
 window_show_frame_menu(struct window *window,
 		       struct input *input, uint32_t time);
 
+int
+window_get_buffer_transform(struct window *window);
+
+void
+window_set_buffer_transform(struct window *window,
+			    enum wl_output_transform transform);
+
 void
 window_destroy(struct window *window);
 

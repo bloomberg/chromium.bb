@@ -209,6 +209,7 @@ struct window {
 	int focus_count;
 
 	enum window_buffer_type buffer_type;
+	enum wl_output_transform buffer_transform;
 	struct toysurface *toysurface;
 	cairo_surface_t *cairo_surface;
 
@@ -1181,11 +1182,24 @@ window_get_display(struct window *window)
 static void
 window_create_surface(struct window *window)
 {
+	struct rectangle allocation = window->allocation;
 	uint32_t flags = 0;
 	int dx, dy;
 
 	if (!window->transparent)
 		flags = SURFACE_OPAQUE;
+
+	switch (window->buffer_transform) {
+	case WL_OUTPUT_TRANSFORM_90:
+	case WL_OUTPUT_TRANSFORM_270:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		allocation.width = window->allocation.height;
+		allocation.height = window->allocation.width;
+		break;
+	default:
+		break;
+	}
 
 	if (!window->toysurface &&
 	    window->buffer_type == WINDOW_BUFFER_TYPE_EGL_WINDOW &&
@@ -1193,20 +1207,34 @@ window_create_surface(struct window *window)
 		window->toysurface =
 			egl_window_surface_create(window->display,
 						  window->surface, flags,
-						  &window->allocation);
+						  &allocation);
 	}
 
 	if (!window->toysurface)
 		window->toysurface = shm_surface_create(window->display,
 							window->surface, flags,
-							&window->allocation);
+							&allocation);
 
 	window_get_resize_dx_dy(window, &dx, &dy);
 	window->cairo_surface =
 		window->toysurface->prepare(window->toysurface, dx, dy,
-					    window->allocation.width,
-					    window->allocation.height,
+					    allocation.width,
+					    allocation.height,
 					    window->resizing);
+}
+
+int
+window_get_buffer_transform(struct window *window)
+{
+	return window->buffer_transform;
+}
+
+void
+window_set_buffer_transform(struct window *window,
+			    enum wl_output_transform transform)
+{
+	window->buffer_transform = transform;
+	wl_surface_set_buffer_transform(window->surface, transform);
 }
 
 static void frame_destroy(struct frame *frame);
