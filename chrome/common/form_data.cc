@@ -30,3 +30,7 @@ bool FormData::operator==(const FormData& form) const {
           user_submitted == form.user_submitted &&
           fields == form.fields);
 }
+
+bool FormData::operator!=(const FormData& form) const {
+  return !operator==(form);
+}

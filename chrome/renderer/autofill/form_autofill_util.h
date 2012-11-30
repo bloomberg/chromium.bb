@@ -20,7 +20,7 @@ class WebInputElement;
 
 namespace autofill {
 
-// A bit field mask for form requirements.
+// A bit field mask for form or form element requirements.
 enum RequirementsMask {
   REQUIRE_NONE         = 0,  // No requirements.
   REQUIRE_AUTOCOMPLETE = 1,  // Require that autocomplete != off.
@@ -97,6 +97,12 @@ bool FindFormAndFieldForInputElement(const WebKit::WebInputElement& element,
 // initiated the auto-fill process.
 void FillForm(const FormData& form,
               const WebKit::WebInputElement& element);
+
+// Fills focusable and non-focusable form control elements within |form_element|
+// with field data from |form_data|.
+void FillFormIncludingNonFocusableElements(
+    const FormData& form_data,
+    const WebKit::WebFormElement& form_element);
 
 // Previews the form represented by |form|.  |element| is the input element that
 // initiated the preview process.

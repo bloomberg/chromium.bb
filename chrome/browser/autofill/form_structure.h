@@ -145,6 +145,10 @@ class FormStructure {
 
   virtual std::string server_experiment_id() const;
 
+  // Returns a FormData containing the data this form structure knows about.
+  // |user_submitted| is currently always false.
+  FormData ToFormData() const;
+
   bool operator==(const FormData& form) const;
   bool operator!=(const FormData& form) const;
 

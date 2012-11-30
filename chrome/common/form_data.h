@@ -32,6 +32,7 @@ struct FormData {
 
   // Used by FormStructureTest.
   bool operator==(const FormData& form) const;
+  bool operator!=(const FormData& form) const;
 };
 
 #endif  // CHROME_COMMON_FORM_DATA_H__

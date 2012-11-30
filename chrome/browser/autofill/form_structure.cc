@@ -522,7 +522,7 @@ bool FormStructure::IsAutofillable(bool require_method_post) const {
   // TODO(ramankk): Remove this check once we have better way of identifying the
   // cases to trigger experimental form filling.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableExperimentalFormFilling))
+          switches::kEnableExperimentalFormFilling))
     return true;
 
   if (autofill_count() < kRequiredFillableFields)
@@ -545,7 +545,7 @@ bool FormStructure::ShouldBeParsed(bool require_method_post) const {
   // TODO(ramankk): Remove this check once we have better way of identifying the
   // cases to trigger experimental form filling.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableExperimentalFormFilling))
+          switches::kEnableExperimentalFormFilling))
     return true;
 
   if (field_count() < kRequiredFillableFields)
@@ -812,6 +812,21 @@ size_t FormStructure::field_count() const {
 
 std::string FormStructure::server_experiment_id() const {
   return server_experiment_id_;
+}
+
+FormData FormStructure::ToFormData() const {
+  // |data.user_submitted| will always be false.
+  FormData data;
+  data.name = form_name_;
+  data.origin = source_url_;
+  data.action = target_url_;
+  data.method = ASCIIToUTF16(method_ == POST ? "POST" : "GET");
+
+  for (size_t i = 0; i < fields_.size(); ++i) {
+    data.fields.push_back(FormFieldData(*fields_[i]));
+  }
+
+  return data;
 }
 
 bool FormStructure::operator==(const FormData& form) const {

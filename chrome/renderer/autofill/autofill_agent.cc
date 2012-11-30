@@ -158,8 +158,10 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
                         OnAcceptDataListSuggestion)
     IPC_MESSAGE_HANDLER(AutofillMsg_AcceptPasswordAutofillSuggestion,
                         OnAcceptPasswordAutofillSuggestion)
-    IPC_MESSAGE_HANDLER(AutofillMsg_RequestAutocompleteFinished,
-                        OnRequestAutocompleteFinished)
+    IPC_MESSAGE_HANDLER(AutofillMsg_RequestAutocompleteSuccess,
+                        OnRequestAutocompleteSuccess)
+    IPC_MESSAGE_HANDLER(AutofillMsg_RequestAutocompleteError,
+                        OnRequestAutocompleteError)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -331,8 +333,8 @@ void AutofillAgent::textFieldDidEndEditing(const WebInputElement& element) {
 
 void AutofillAgent::textFieldDidChange(const WebInputElement& element) {
   if (did_set_node_text_) {
-      did_set_node_text_ = false;
-      return;
+    did_set_node_text_ = false;
+    return;
   }
 
   // We post a task for doing the Autofill as the caret position is not set
@@ -589,12 +591,20 @@ void AutofillAgent::OnAcceptPasswordAutofillSuggestion(const string16& value) {
   DCHECK(handled);
 }
 
-void AutofillAgent::OnRequestAutocompleteFinished(
+void AutofillAgent::FinishAutocompleteRequest(
     WebFormElement::AutocompleteResult result) {
   DCHECK(!in_flight_request_form_.isNull());
-
   in_flight_request_form_.finishRequestAutocomplete(result);
   in_flight_request_form_.reset();
+}
+
+void AutofillAgent::OnRequestAutocompleteSuccess(const FormData& form_data) {
+  FillFormIncludingNonFocusableElements(form_data, in_flight_request_form_);
+  FinishAutocompleteRequest(WebFormElement::AutocompleteResultSuccess);
+}
+
+void AutofillAgent::OnRequestAutocompleteError() {
+  FinishAutocompleteRequest(WebFormElement::AutocompleteResultError);
 }
 
 void AutofillAgent::ShowSuggestions(const WebInputElement& element,

@@ -413,15 +413,16 @@ void GetOptionStringsFromElement(const WebSelectElement& select_element,
 }
 
 // The callback type used by |ForEachMatchingFormField()|.
-typedef void (*Callback)(WebKit::WebFormControlElement*,
-                         const FormFieldData*,
-                         bool);
+typedef void (*Callback)(const FormFieldData&,
+                         bool, /* is_initiating_element */
+                         WebKit::WebFormControlElement*);
 
 // For each autofillable field in |data| that matches a field in the |form|,
 // the |callback| is invoked with the corresponding |form| field data.
 void ForEachMatchingFormField(const WebFormElement& form_element,
                               const WebElement& initiating_element,
                               const FormData& data,
+                              bool only_focusable_elements,
                               Callback callback) {
   std::vector<WebFormControlElement> control_elements;
   ExtractAutofillableElements(form_element, autofill::REQUIRE_AUTOCOMPLETE,
@@ -466,20 +467,20 @@ void ForEachMatchingFormField(const WebFormElement& form_element,
     }
 
     if (!element->isEnabled() || element->isReadOnly() ||
-        !element->isFocusable())
+        (only_focusable_elements && !element->isFocusable()))
       continue;
 
-    callback(element, &data.fields[i], is_initiating_element);
+    callback(data.fields[i], is_initiating_element, element);
   }
 }
 
 // Sets the |field|'s value to the value in |data|.
 // Also sets the "autofilled" attribute, causing the background to be yellow.
-void FillFormField(WebKit::WebFormControlElement* field,
-                   const FormFieldData* data,
-                   bool is_initiating_node) {
+void FillFormField(const FormFieldData& data,
+                   bool is_initiating_node,
+                   WebKit::WebFormControlElement* field) {
   // Nothing to fill.
-  if (data->value.empty())
+  if (data.value.empty())
     return;
 
   WebInputElement* input_element = toWebInputElement(field);
@@ -487,7 +488,7 @@ void FillFormField(WebKit::WebFormControlElement* field,
     // If the maxlength attribute contains a negative value, maxLength()
     // returns the default maxlength value.
     input_element->setValue(
-        data->value.substr(0, input_element->maxLength()), true);
+        data.value.substr(0, input_element->maxLength()), true);
     input_element->setAutofilled(true);
     if (is_initiating_node) {
       int length = input_element->value().length();
@@ -498,8 +499,8 @@ void FillFormField(WebKit::WebFormControlElement* field,
   } else {
     DCHECK(IsSelectElement(*field));
     WebSelectElement select_element = field->to<WebSelectElement>();
-    if (select_element.value() != data->value) {
-      select_element.setValue(data->value);
+    if (select_element.value() != data.value) {
+      select_element.setValue(data.value);
       select_element.dispatchFormControlChangeEvent();
     }
   }
@@ -507,11 +508,11 @@ void FillFormField(WebKit::WebFormControlElement* field,
 
 // Sets the |field|'s "suggested" (non JS visible) value to the value in |data|.
 // Also sets the "autofilled" attribute, causing the background to be yellow.
-void PreviewFormField(WebKit::WebFormControlElement* field,
-                      const FormFieldData* data,
-                      bool is_initiating_node) {
+void PreviewFormField(const FormFieldData& data,
+                      bool is_initiating_node,
+                      WebKit::WebFormControlElement* field) {
   // Nothing to preview.
-  if (data->value.empty())
+  if (data.value.empty())
     return;
 
   // Only preview input fields.
@@ -522,7 +523,7 @@ void PreviewFormField(WebKit::WebFormControlElement* field,
   // If the maxlength attribute contains a negative value, maxLength()
   // returns the default maxlength value.
   input_element->setSuggestedValue(
-      data->value.substr(0, input_element->maxLength()));
+      data.value.substr(0, input_element->maxLength()));
   input_element->setAutofilled(true);
   if (is_initiating_node) {
     // Select the part of the text that the user didn't type.
@@ -820,6 +821,19 @@ void FillForm(const FormData& form, const WebInputElement& element) {
   ForEachMatchingFormField(form_element,
                            element,
                            form,
+                           true, /* only_focusable_elements */
+                           &FillFormField);
+}
+
+void FillFormIncludingNonFocusableElements(const FormData& form_data,
+                                     const WebFormElement& form_element) {
+  if (form_element.isNull())
+    return;
+
+  ForEachMatchingFormField(form_element,
+                           WebInputElement(),
+                           form_data,
+                           false, /* only_focusable_elements */
                            &FillFormField);
 }
 
@@ -831,6 +845,7 @@ void PreviewForm(const FormData& form, const WebInputElement& element) {
   ForEachMatchingFormField(form_element,
                            element,
                            form,
+                           true, /* only_focusable_elements */
                            &PreviewFormField);
 }
 

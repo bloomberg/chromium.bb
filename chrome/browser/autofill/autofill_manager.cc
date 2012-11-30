@@ -789,13 +789,12 @@ void AutofillManager::ReturnAutocompleteData(const FormStructure* result) {
     return;
 
   if (!result) {
-    host->Send(new AutofillMsg_RequestAutocompleteFinished(
-        host->GetRoutingID(), WebKit::WebFormElement::AutocompleteResultError));
-  } else {
-    // TODO(estade): implement non-failure case.
-    host->Send(new AutofillMsg_RequestAutocompleteFinished(
-        host->GetRoutingID(), WebKit::WebFormElement::AutocompleteResultError));
+    host->Send(new AutofillMsg_RequestAutocompleteError(host->GetRoutingID()));
+    return;
   }
+
+  host->Send(new AutofillMsg_RequestAutocompleteSuccess(host->GetRoutingID(),
+                                                        result->ToFormData()));
 }
 
 void AutofillManager::OnLoadedServerPredictions(

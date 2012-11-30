@@ -2063,3 +2063,34 @@ TEST(FormStructureTest, CheckFormSignature) {
       std::string("https://login.facebook.com&login_form&email&first")),
       form_structure->FormSignature());
 }
+
+TEST(FormStructureTest, ToFormData) {
+  FormData form;
+  form.name = ASCIIToUTF16("the-name");
+  form.method = ASCIIToUTF16("POST");
+  form.origin = GURL("http://cool.com");
+  form.action = form.origin.Resolve("/login");
+
+  FormFieldData field;
+  field.label = ASCIIToUTF16("username");
+  field.name = ASCIIToUTF16("username");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("password");
+  field.name = ASCIIToUTF16("password");
+  field.form_control_type = "password";
+  form.fields.push_back(field);
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("Submit");
+  field.form_control_type = "submit";
+  form.fields.push_back(field);
+
+  EXPECT_EQ(form, FormStructure(form).ToFormData());
+
+  // Currently |FormStructure(form_data)ToFormData().user_submitted| is always
+  // false. This forces a future author that changes this to update this test.
+  form.user_submitted = true;
+  EXPECT_NE(form, FormStructure(form).ToFormData());
+}
