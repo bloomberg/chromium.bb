@@ -117,6 +117,45 @@ class EventRewriterTest : public testing::Test {
         keycode_home_(XKeysymToKeycode(display_, XK_Home)),
         keycode_end_(XKeysymToKeycode(display_, XK_End)),
         keycode_launch7_(XKeysymToKeycode(display_, XF86XK_Launch7)),
+        keycode_f1_(XKeysymToKeycode(display_, XK_F1)),
+        keycode_f2_(XKeysymToKeycode(display_, XK_F2)),
+        keycode_f3_(XKeysymToKeycode(display_, XK_F3)),
+        keycode_f4_(XKeysymToKeycode(display_, XK_F4)),
+        keycode_f5_(XKeysymToKeycode(display_, XK_F5)),
+        keycode_f6_(XKeysymToKeycode(display_, XK_F6)),
+        keycode_f7_(XKeysymToKeycode(display_, XK_F7)),
+        keycode_f8_(XKeysymToKeycode(display_, XK_F8)),
+        keycode_f9_(XKeysymToKeycode(display_, XK_F9)),
+        keycode_f10_(XKeysymToKeycode(display_, XK_F10)),
+        keycode_f11_(XKeysymToKeycode(display_, XK_F11)),
+        keycode_f12_(XKeysymToKeycode(display_, XK_F12)),
+        keycode_browser_back_(XKeysymToKeycode(display_, XF86XK_Back)),
+        keycode_browser_forward_(XKeysymToKeycode(display_, XF86XK_Forward)),
+        keycode_browser_refresh_(XKeysymToKeycode(display_, XF86XK_Reload)),
+        keycode_media_launch_app1_(XKeysymToKeycode(display_, XF86XK_LaunchA)),
+        keycode_media_launch_app2_(XKeysymToKeycode(display_, XF86XK_LaunchB)),
+        keycode_brightness_down_(XKeysymToKeycode(
+            display_, XF86XK_MonBrightnessDown)),
+        keycode_brightness_up_(XKeysymToKeycode(
+            display_, XF86XK_MonBrightnessUp)),
+        keycode_volume_mute_(XKeysymToKeycode(display_, XF86XK_AudioMute)),
+        keycode_volume_down_(XKeysymToKeycode(
+            display_, XF86XK_AudioLowerVolume)),
+        keycode_volume_up_(XKeysymToKeycode(
+            display_, XF86XK_AudioRaiseVolume)),
+        keycode_power_(XKeysymToKeycode(display_, XF86XK_PowerOff)),
+        keycode_1_(XKeysymToKeycode(display_, XK_1)),
+        keycode_2_(XKeysymToKeycode(display_, XK_2)),
+        keycode_3_(XKeysymToKeycode(display_, XK_3)),
+        keycode_4_(XKeysymToKeycode(display_, XK_4)),
+        keycode_5_(XKeysymToKeycode(display_, XK_5)),
+        keycode_6_(XKeysymToKeycode(display_, XK_6)),
+        keycode_7_(XKeysymToKeycode(display_, XK_7)),
+        keycode_8_(XKeysymToKeycode(display_, XK_8)),
+        keycode_9_(XKeysymToKeycode(display_, XK_9)),
+        keycode_0_(XKeysymToKeycode(display_, XK_0)),
+        keycode_minus_(XKeysymToKeycode(display_, XK_minus)),
+        keycode_equal_(XKeysymToKeycode(display_, XK_equal)),
         input_method_manager_mock_(NULL) {
   }
   virtual ~EventRewriterTest() {}
@@ -183,6 +222,41 @@ class EventRewriterTest : public testing::Test {
   const KeyCode keycode_home_;
   const KeyCode keycode_end_;
   const KeyCode keycode_launch7_;  // F16
+  const KeyCode keycode_f1_;
+  const KeyCode keycode_f2_;
+  const KeyCode keycode_f3_;
+  const KeyCode keycode_f4_;
+  const KeyCode keycode_f5_;
+  const KeyCode keycode_f6_;
+  const KeyCode keycode_f7_;
+  const KeyCode keycode_f8_;
+  const KeyCode keycode_f9_;
+  const KeyCode keycode_f10_;
+  const KeyCode keycode_f11_;
+  const KeyCode keycode_f12_;
+  const KeyCode keycode_browser_back_;
+  const KeyCode keycode_browser_forward_;
+  const KeyCode keycode_browser_refresh_;
+  const KeyCode keycode_media_launch_app1_;
+  const KeyCode keycode_media_launch_app2_;
+  const KeyCode keycode_brightness_down_;
+  const KeyCode keycode_brightness_up_;
+  const KeyCode keycode_volume_mute_;
+  const KeyCode keycode_volume_down_;
+  const KeyCode keycode_volume_up_;
+  const KeyCode keycode_power_;
+  const KeyCode keycode_1_;
+  const KeyCode keycode_2_;
+  const KeyCode keycode_3_;
+  const KeyCode keycode_4_;
+  const KeyCode keycode_5_;
+  const KeyCode keycode_6_;
+  const KeyCode keycode_7_;
+  const KeyCode keycode_8_;
+  const KeyCode keycode_9_;
+  const KeyCode keycode_0_;
+  const KeyCode keycode_minus_;
+  const KeyCode keycode_equal_;
   chromeos::ScopedMockUserManagerEnabler user_manager_mock_;
   chromeos::input_method::MockInputMethodManager* input_method_manager_mock_;
 };
@@ -1686,108 +1760,185 @@ TEST_F(EventRewriterTest, TestRewriteBackspaceAndArrowKeys) {
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
 
-  // Alt+Backspace -> Delete
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_DELETE,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_delete_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_BACK,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_backspace_,
-                                      Mod1Mask));
+  // On non-chromebooks, the keyboard doesn't need to be remapped.
 
-  // Ctrl+Alt+Backspace -> Ctrl+Delete
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_DELETE,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_delete_,
-                                      ControlMask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_BACK,
-                                      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_backspace_,
-                                      Mod1Mask | ControlMask));
+  struct {
+    ui::KeyboardCode input;
+    KeyCode input_native;
+    unsigned int input_mods;
+    unsigned int input_native_mods;
+    ui::KeyboardCode output;
+    KeyCode output_native;
+    unsigned int output_mods;
+    unsigned int output_native_mods;
+  } default_tests[] = {
+    { ui::VKEY_BACK, keycode_backspace_,
+      ui::EF_ALT_DOWN, Mod1Mask,
+      ui::VKEY_BACK, keycode_backspace_,
+      ui::EF_ALT_DOWN, Mod1Mask, },
+    { ui::VKEY_UP, keycode_up_,
+      ui::EF_ALT_DOWN, Mod1Mask,
+      ui::VKEY_UP, keycode_up_,
+      ui::EF_ALT_DOWN, Mod1Mask, },
+    { ui::VKEY_UP, keycode_up_,
+      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask,
+      ui::VKEY_UP, keycode_up_,
+      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask, },
+    { ui::VKEY_DOWN, keycode_down_,
+      ui::EF_ALT_DOWN, Mod1Mask,
+      ui::VKEY_DOWN, keycode_down_,
+      ui::EF_ALT_DOWN, Mod1Mask, },
+    { ui::VKEY_LEFT, keycode_left_, 0, 0,
+      ui::VKEY_LEFT, keycode_left_, 0, 0 },
+    { ui::VKEY_RIGHT, keycode_right_, 0, 0,
+      ui::VKEY_RIGHT, keycode_right_, 0, 0 }
+  };
 
-  // Alt+Up -> Prior
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_PRIOR,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_prior_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_UP,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_up_,
-                                      Mod1Mask));
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(default_tests); ++i) {
+    EXPECT_EQ(GetExpectedResultAsString(default_tests[i].output,
+                                        default_tests[i].output_mods,
+                                        ui::ET_KEY_PRESSED,
+                                        default_tests[i].output_native,
+                                        default_tests[i].output_native_mods,
+                                        KeyPress),
+              GetRewrittenEventAsString(&rewriter,
+                                        default_tests[i].input,
+                                        default_tests[i].input_mods,
+                                        ui::ET_KEY_PRESSED,
+                                        default_tests[i].input_native,
+                                        default_tests[i].input_native_mods));
 
-  // Alt+Down -> Next
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NEXT,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_next_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_DOWN,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_down_,
-                                      Mod1Mask));
+    // Search key as a modifier does not change the outcome.
+    EXPECT_EQ(GetExpectedResultAsString(default_tests[i].output,
+                                        default_tests[i].output_mods,
+                                        ui::ET_KEY_PRESSED,
+                                        default_tests[i].output_native,
+                                        Mod4Mask |
+                                        default_tests[i].output_native_mods,
+                                        KeyPress),
+              GetRewrittenEventAsString(&rewriter,
+                                        default_tests[i].input,
+                                        default_tests[i].input_mods,
+                                        ui::ET_KEY_PRESSED,
+                                        default_tests[i].input_native,
+                                        Mod4Mask |
+                                        default_tests[i].input_native_mods));
+  }
 
-  // Ctrl+Alt+Up -> Home
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_HOME,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_home_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_UP,
-                                      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_up_,
-                                      Mod1Mask | ControlMask));
+  // On a chromebook, an external keyboard doesn't need to be remapped.
+  const CommandLine original_cl(*CommandLine::ForCurrentProcess());
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kHasChromeOSKeyboard, "");
 
-  // Ctrl+Alt+Down -> End
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_END,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_end_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_DOWN,
-                                      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_down_,
-                                      Mod1Mask | ControlMask));
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(default_tests); ++i) {
+    EXPECT_EQ(GetExpectedResultAsString(default_tests[i].output,
+                                        default_tests[i].output_mods,
+                                        ui::ET_KEY_PRESSED,
+                                        default_tests[i].output_native,
+                                        default_tests[i].output_native_mods,
+                                        KeyPress),
+              GetRewrittenEventAsString(&rewriter,
+                                        default_tests[i].input,
+                                        default_tests[i].input_mods,
+                                        ui::ET_KEY_PRESSED,
+                                        default_tests[i].input_native,
+                                        default_tests[i].input_native_mods));
 
-  // Shift+Ctrl+Alt+Down -> Shift+End
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_END,
-                                      ui::EF_SHIFT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_end_,
-                                      ShiftMask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_DOWN,
-                                      ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN |
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_down_,
-                                      ShiftMask | Mod1Mask | ControlMask));
+    // Search key as a modifier does not change the outcome.
+    EXPECT_EQ(GetExpectedResultAsString(default_tests[i].output,
+                                        default_tests[i].output_mods,
+                                        ui::ET_KEY_PRESSED,
+                                        default_tests[i].output_native,
+                                        Mod4Mask |
+                                        default_tests[i].output_native_mods,
+                                        KeyPress),
+              GetRewrittenEventAsString(&rewriter,
+                                        default_tests[i].input,
+                                        default_tests[i].input_mods,
+                                        ui::ET_KEY_PRESSED,
+                                        default_tests[i].input_native,
+                                        Mod4Mask |
+                                        default_tests[i].input_native_mods));
+  }
+
+  // The internal chromebook keybaord should be remapped.
+  rewriter.set_force_chromeos_keyboard_for_testing(true);
+
+  struct {
+    ui::KeyboardCode input;
+    KeyCode input_native;
+    unsigned int input_mods;
+    unsigned int input_native_mods;
+    ui::KeyboardCode output;
+    KeyCode output_native;
+    unsigned int output_mods;
+    unsigned int output_native_mods;
+  } chromeos_tests[] = {
+    // Alt+Backspace -> Delete
+    { ui::VKEY_BACK, keycode_backspace_,
+      ui::EF_ALT_DOWN, Mod1Mask,
+      ui::VKEY_DELETE, keycode_delete_,
+      0, 0, },
+    // Control+Alt+Backspace -> Control+Delete
+    { ui::VKEY_BACK, keycode_backspace_,
+      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask,
+      ui::VKEY_DELETE, keycode_delete_,
+      ui::EF_CONTROL_DOWN, ControlMask, },
+    // Alt+Up -> Prior
+    { ui::VKEY_UP, keycode_up_,
+      ui::EF_ALT_DOWN, Mod1Mask,
+      ui::VKEY_PRIOR, keycode_prior_,
+      0, 0, },
+    // Alt+Down -> Next
+    { ui::VKEY_DOWN, keycode_down_,
+      ui::EF_ALT_DOWN, Mod1Mask,
+      ui::VKEY_NEXT, keycode_next_,
+      0, 0, },
+    // Ctrl+Alt+Up -> Home
+    { ui::VKEY_UP, keycode_up_,
+      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask,
+      ui::VKEY_HOME, keycode_home_,
+      0, 0, },
+    // Ctrl+Alt+Down -> End
+    { ui::VKEY_DOWN, keycode_down_,
+      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask,
+      ui::VKEY_END, keycode_end_,
+      0, 0, }
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(chromeos_tests); ++i) {
+    EXPECT_EQ(GetExpectedResultAsString(chromeos_tests[i].output,
+                                        chromeos_tests[i].output_mods,
+                                        ui::ET_KEY_PRESSED,
+                                        chromeos_tests[i].output_native,
+                                        chromeos_tests[i].output_native_mods,
+                                        KeyPress),
+              GetRewrittenEventAsString(&rewriter,
+                                        chromeos_tests[i].input,
+                                        chromeos_tests[i].input_mods,
+                                        ui::ET_KEY_PRESSED,
+                                        chromeos_tests[i].input_native,
+                                        chromeos_tests[i].input_native_mods));
+
+    // Search key as a modifier does not change the outcome.
+    EXPECT_EQ(GetExpectedResultAsString(chromeos_tests[i].output,
+                                        chromeos_tests[i].output_mods,
+                                        ui::ET_KEY_PRESSED,
+                                        chromeos_tests[i].output_native,
+                                        Mod4Mask |
+                                        chromeos_tests[i].output_native_mods,
+                                        KeyPress),
+              GetRewrittenEventAsString(&rewriter,
+                                        chromeos_tests[i].input,
+                                        chromeos_tests[i].input_mods,
+                                        ui::ET_KEY_PRESSED,
+                                        chromeos_tests[i].input_native,
+                                        Mod4Mask |
+                                        chromeos_tests[i].input_native_mods));
+  }
 
   // Make Search key act like a Function key for accessing extended key
   // bindings.
-  const CommandLine original_cl(*CommandLine::ForCurrentProcess());
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kEnableChromebookFunctionKey, "");
   BooleanPrefMember search_key_as_function_key;
@@ -1795,206 +1946,436 @@ TEST_F(EventRewriterTest, TestRewriteBackspaceAndArrowKeys) {
                                   &prefs, NULL);
   search_key_as_function_key.SetValue(true);
 
-  // Alt+Backspace -> Alt+Backspace
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_BACK,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_backspace_,
-                                      Mod1Mask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_BACK,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_backspace_,
-                                      Mod1Mask));
 
-  // Search+Backspace -> Delete
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_DELETE,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_delete_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_BACK,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_backspace_,
-                                      Mod4Mask));
+  // An external keyboard should still not be remapped.
+  rewriter.set_force_chromeos_keyboard_for_testing(false);
 
-  // Ctrl+Search+Backspace -> Ctrl+Delete
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_DELETE,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_delete_,
-                                      ControlMask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_BACK,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_backspace_,
-                                      Mod4Mask | ControlMask));
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(default_tests); ++i) {
+    EXPECT_EQ(GetExpectedResultAsString(default_tests[i].output,
+                                        default_tests[i].output_mods,
+                                        ui::ET_KEY_PRESSED,
+                                        default_tests[i].output_native,
+                                        default_tests[i].output_native_mods,
+                                        KeyPress),
+              GetRewrittenEventAsString(&rewriter,
+                                        default_tests[i].input,
+                                        default_tests[i].input_mods,
+                                        ui::ET_KEY_PRESSED,
+                                        default_tests[i].input_native,
+                                        default_tests[i].input_native_mods));
 
-  // Alt+Search+Backspace -> Alt+Delete
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_DELETE,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_delete_,
-                                      Mod1Mask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_BACK,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_backspace_,
-                                      Mod4Mask | Mod1Mask));
+    // Search key as a modifier does not change the outcome.
+    EXPECT_EQ(GetExpectedResultAsString(default_tests[i].output,
+                                        default_tests[i].output_mods,
+                                        ui::ET_KEY_PRESSED,
+                                        default_tests[i].output_native,
+                                        Mod4Mask |
+                                        default_tests[i].output_native_mods,
+                                        KeyPress),
+              GetRewrittenEventAsString(&rewriter,
+                                        default_tests[i].input,
+                                        default_tests[i].input_mods,
+                                        ui::ET_KEY_PRESSED,
+                                        default_tests[i].input_native,
+                                        Mod4Mask |
+                                        default_tests[i].input_native_mods));
+  }
 
-  // Alt+Up -> Alt+Up
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_UP,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_up_,
-                                      Mod1Mask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_UP,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_up_,
-                                      Mod1Mask));
+  // The ChromeOS keyboard should be remapped with Search key modifiers.
+  rewriter.set_force_chromeos_keyboard_for_testing(true);
 
-  // Search+Up -> Prior
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_PRIOR,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_prior_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_UP,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_up_,
-                                      Mod4Mask));
+  struct {
+    ui::KeyboardCode input;
+    KeyCode input_native;
+    unsigned int input_mods;
+    unsigned int input_native_mods;
+    ui::KeyboardCode output;
+    KeyCode output_native;
+    unsigned int output_mods;
+    unsigned int output_native_mods;
+  } search_tests[] = {
+    { ui::VKEY_BACK, keycode_backspace_,
+      ui::EF_ALT_DOWN, Mod1Mask,
+      ui::VKEY_BACK, keycode_backspace_,
+      ui::EF_ALT_DOWN, Mod1Mask, },
+    { ui::VKEY_UP, keycode_up_,
+      ui::EF_ALT_DOWN, Mod1Mask,
+      ui::VKEY_UP, keycode_up_,
+      ui::EF_ALT_DOWN, Mod1Mask, },
+    { ui::VKEY_UP, keycode_up_,
+      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask,
+      ui::VKEY_UP, keycode_up_,
+      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask, },
+    { ui::VKEY_DOWN, keycode_down_,
+      ui::EF_ALT_DOWN, Mod1Mask,
+      ui::VKEY_DOWN, keycode_down_,
+      ui::EF_ALT_DOWN, Mod1Mask, },
+    { ui::VKEY_LEFT, keycode_left_, 0, 0,
+      ui::VKEY_LEFT, keycode_left_, 0, 0 },
+    { ui::VKEY_RIGHT, keycode_right_, 0, 0,
+      ui::VKEY_RIGHT, keycode_right_, 0, 0 },
 
-  // Alt+Down -> Alt+Down
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_DOWN,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_down_,
-                                      Mod1Mask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_DOWN,
-                                      ui::EF_ALT_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_down_,
-                                      Mod1Mask));
+    // Search+Backspace -> Delete
+    { ui::VKEY_BACK, keycode_backspace_,
+      0, Mod4Mask,
+      ui::VKEY_DELETE, keycode_delete_,
+      0, 0, },
+    // Alt+Search+Backspace -> Alt+Delete
+    { ui::VKEY_BACK, keycode_backspace_,
+      ui::EF_ALT_DOWN, Mod4Mask | Mod1Mask,
+      ui::VKEY_DELETE, keycode_delete_,
+      ui::EF_ALT_DOWN, Mod1Mask, },
+    // Search+Up -> Prior
+    { ui::VKEY_UP, keycode_up_,
+      0, Mod4Mask,
+      ui::VKEY_PRIOR, keycode_prior_,
+      0, 0, },
+    // Search+Down -> Next
+    { ui::VKEY_DOWN, keycode_down_,
+      0, Mod4Mask,
+      ui::VKEY_NEXT, keycode_next_,
+      0, 0, },
+    // Search+Left -> Home
+    { ui::VKEY_LEFT, keycode_left_,
+      0, Mod4Mask,
+      ui::VKEY_HOME, keycode_home_,
+      0, 0, },
+    // Control+Search+Left -> Home
+    { ui::VKEY_LEFT, keycode_left_,
+      ui::EF_CONTROL_DOWN, Mod4Mask | ControlMask,
+      ui::VKEY_HOME, keycode_home_,
+      ui::EF_CONTROL_DOWN, ControlMask },
+    // Search+Right -> End
+    { ui::VKEY_RIGHT, keycode_right_,
+      0, Mod4Mask,
+      ui::VKEY_END, keycode_end_,
+      0, 0, },
+    // Control+Search+Right -> End
+    { ui::VKEY_RIGHT, keycode_right_,
+      ui::EF_CONTROL_DOWN, Mod4Mask | ControlMask,
+      ui::VKEY_END, keycode_end_,
+      ui::EF_CONTROL_DOWN, ControlMask }
+  };
 
-  // Search+Down -> Next
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NEXT,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_next_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_DOWN,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_down_,
-                                      Mod4Mask));
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(search_tests); ++i) {
+    EXPECT_EQ(GetExpectedResultAsString(search_tests[i].output,
+                                        search_tests[i].output_mods,
+                                        ui::ET_KEY_PRESSED,
+                                        search_tests[i].output_native,
+                                        search_tests[i].output_native_mods,
+                                        KeyPress),
+              GetRewrittenEventAsString(&rewriter,
+                                        search_tests[i].input,
+                                        search_tests[i].input_mods,
+                                        ui::ET_KEY_PRESSED,
+                                        search_tests[i].input_native,
+                                        search_tests[i].input_native_mods));
+  }
 
-  // Ctrl+Alt+Up -> Ctrl+Alt+Up
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_UP,
-                                      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_up_,
-                                      Mod1Mask | ControlMask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_UP,
-                                      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_up_,
-                                      Mod1Mask | ControlMask));
+  *CommandLine::ForCurrentProcess() = original_cl;
+}
 
-  // Search+Left -> Home
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_HOME,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_home_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_LEFT,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_left_,
-                                      Mod4Mask));
+TEST_F(EventRewriterTest, TestRewriteFunctionKeys) {
+  const CommandLine original_cl(*CommandLine::ForCurrentProcess());
+  TestingPrefService prefs;
+  chromeos::Preferences::RegisterUserPrefs(&prefs);
+  EventRewriter rewriter;
+  rewriter.set_pref_service_for_testing(&prefs);
 
-  // Ctrl+Alt+Down -> Ctrl+Alt+Down
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_DOWN,
-                                      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_down_,
-                                      Mod1Mask | ControlMask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_DOWN,
-                                      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_down_,
-                                      Mod1Mask | ControlMask));
+  // When not on a chromebook, F<numbers> are not rewritten.
 
-  // Search+Right -> End
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_END,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_end_,
-                                      0U,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_RIGHT,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_right_,
-                                      Mod4Mask));
+  struct {
+    ui::KeyboardCode input;
+    KeyCode input_native;
+    ui::KeyboardCode output;
+    KeyCode output_native;
+  } default_tests[] = {
+    { ui::VKEY_F1, keycode_f1_, ui::VKEY_F1, keycode_f1_, },
+    { ui::VKEY_F2, keycode_f2_, ui::VKEY_F2, keycode_f2_, },
+    { ui::VKEY_F3, keycode_f3_, ui::VKEY_F3, keycode_f3_, },
+    { ui::VKEY_F4, keycode_f4_, ui::VKEY_F4, keycode_f4_, },
+    { ui::VKEY_F5, keycode_f5_, ui::VKEY_F5, keycode_f5_, },
+    { ui::VKEY_F6, keycode_f6_, ui::VKEY_F6, keycode_f6_, },
+    { ui::VKEY_F7, keycode_f7_, ui::VKEY_F7, keycode_f7_, },
+    { ui::VKEY_F8, keycode_f8_, ui::VKEY_F8, keycode_f8_, },
+    { ui::VKEY_F9, keycode_f9_, ui::VKEY_F9, keycode_f9_, },
+    { ui::VKEY_F10, keycode_f10_, ui::VKEY_F10, keycode_f10_, },
+    { ui::VKEY_F11, keycode_f11_, ui::VKEY_F11, keycode_f11_, },
+    { ui::VKEY_F12, keycode_f12_, ui::VKEY_F12, keycode_f12_, },
+    { ui::VKEY_1, keycode_1_, ui::VKEY_1, keycode_1_, },
+    { ui::VKEY_2, keycode_2_, ui::VKEY_2, keycode_2_, },
+    { ui::VKEY_3, keycode_3_, ui::VKEY_3, keycode_3_, },
+    { ui::VKEY_4, keycode_4_, ui::VKEY_4, keycode_4_, },
+    { ui::VKEY_5, keycode_5_, ui::VKEY_5, keycode_5_, },
+    { ui::VKEY_6, keycode_6_, ui::VKEY_6, keycode_6_, },
+    { ui::VKEY_7, keycode_7_, ui::VKEY_7, keycode_7_, },
+    { ui::VKEY_8, keycode_8_, ui::VKEY_8, keycode_8_, },
+    { ui::VKEY_9, keycode_9_, ui::VKEY_9, keycode_9_, },
+    { ui::VKEY_0, keycode_0_, ui::VKEY_0, keycode_0_, },
+    { ui::VKEY_OEM_MINUS, keycode_minus_, ui::VKEY_OEM_MINUS, keycode_minus_, },
+    { ui::VKEY_OEM_PLUS, keycode_equal_, ui::VKEY_OEM_PLUS, keycode_equal_, },
+  };
 
-  // Ctrl+Search+Left -> Control+Home
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_HOME,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_home_,
-                                      ControlMask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_LEFT,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_left_,
-                                      Mod4Mask | ControlMask));
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(default_tests); ++i) {
+    EXPECT_EQ(GetExpectedResultAsString(default_tests[i].output,
+                                        0,
+                                        ui::ET_KEY_PRESSED,
+                                        default_tests[i].output_native,
+                                        0U,
+                                        KeyPress),
+              GetRewrittenEventAsString(&rewriter,
+                                        default_tests[i].input,
+                                        0,
+                                        ui::ET_KEY_PRESSED,
+                                        default_tests[i].input_native,
+                                        0));
 
-  // Ctrl+Search+Right -> Control+End
-  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_END,
-                                      ui::EF_CONTROL_DOWN,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_end_,
-                                      ControlMask,
-                                      KeyPress),
-            GetRewrittenEventAsString(&rewriter,
-                                      ui::VKEY_RIGHT,
-                                      0,
-                                      ui::ET_KEY_PRESSED,
-                                      keycode_right_,
-                                      Mod4Mask | ControlMask));
+    // Search key as a modifier does not change the outcome.
+    EXPECT_EQ(GetExpectedResultAsString(default_tests[i].output,
+                                        0,
+                                        ui::ET_KEY_PRESSED,
+                                        default_tests[i].output_native,
+                                        Mod4Mask,
+                                        KeyPress),
+              GetRewrittenEventAsString(&rewriter,
+                                        default_tests[i].input,
+                                        0,
+                                        ui::ET_KEY_PRESSED,
+                                        default_tests[i].input_native,
+                                        Mod4Mask));
+  }
+
+  // When on a Chromebook, but on the external keyboard, F<numbers> are not
+  // rewritten.
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kHasChromeOSKeyboard, "");
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(default_tests); ++i) {
+    EXPECT_EQ(GetExpectedResultAsString(default_tests[i].output,
+                                        0,
+                                        ui::ET_KEY_PRESSED,
+                                        default_tests[i].output_native,
+                                        0U,
+                                        KeyPress),
+              GetRewrittenEventAsString(&rewriter,
+                                        default_tests[i].input,
+                                        0,
+                                        ui::ET_KEY_PRESSED,
+                                        default_tests[i].input_native,
+                                        0));
+
+    // Search key as a modifier does not change the outcome.
+    EXPECT_EQ(GetExpectedResultAsString(default_tests[i].output,
+                                        0,
+                                        ui::ET_KEY_PRESSED,
+                                        default_tests[i].output_native,
+                                        Mod4Mask,
+                                        KeyPress),
+              GetRewrittenEventAsString(&rewriter,
+                                        default_tests[i].input,
+                                        0,
+                                        ui::ET_KEY_PRESSED,
+                                        default_tests[i].input_native,
+                                        Mod4Mask));
+  }
+
+  // When on a chromebook keyboard, F<number> keys do special stuff.
+  rewriter.set_force_chromeos_keyboard_for_testing(true);
+
+  struct {
+    ui::KeyboardCode input;
+    KeyCode input_native;
+    ui::KeyboardCode output;
+    KeyCode output_native;
+  } chromeos_tests[] = {
+    { // F1 -> Back
+      ui::VKEY_F1, keycode_f1_,
+      ui::VKEY_BROWSER_BACK, keycode_browser_back_
+    },
+    { // F2 -> Forward
+      ui::VKEY_F2, keycode_f2_,
+      ui::VKEY_BROWSER_FORWARD, keycode_browser_forward_
+    },
+    { // F3 -> Refresh
+      ui::VKEY_F3, keycode_f3_,
+      ui::VKEY_BROWSER_REFRESH, keycode_browser_refresh_
+    },
+    { // F4 -> Launch App 2
+      ui::VKEY_F4, keycode_f4_,
+      ui::VKEY_MEDIA_LAUNCH_APP2, keycode_media_launch_app2_
+    },
+    { // F5 -> Launch App 1
+      ui::VKEY_F5, keycode_f5_,
+      ui::VKEY_MEDIA_LAUNCH_APP1, keycode_media_launch_app1_
+    },
+    { // F6 -> Brightness down
+      ui::VKEY_F6, keycode_f6_,
+      ui::VKEY_BRIGHTNESS_DOWN, keycode_brightness_down_
+    },
+    { // F7 -> Brightness up
+      ui::VKEY_F7, keycode_f7_,
+      ui::VKEY_BRIGHTNESS_UP, keycode_brightness_up_
+    },
+    { // F8 -> Volume Mute
+      ui::VKEY_F8, keycode_f8_,
+      ui::VKEY_VOLUME_MUTE, keycode_volume_mute_
+    },
+    { // F9 -> Volume Down
+      ui::VKEY_F9, keycode_f9_,
+      ui::VKEY_VOLUME_DOWN, keycode_volume_down_
+    },
+    { // F10 -> Volume Up
+      ui::VKEY_F10, keycode_f10_,
+      ui::VKEY_VOLUME_UP, keycode_volume_up_
+    },
+    { // F11 -> F11
+      ui::VKEY_F11, keycode_f11_,
+      ui::VKEY_F11, keycode_f11_
+    },
+    { // F12 -> F12
+      ui::VKEY_F12, keycode_f12_,
+      ui::VKEY_F12, keycode_f12_,
+    },
+    // The number row should not be rewritten.
+    { ui::VKEY_1, keycode_1_, ui::VKEY_1, keycode_1_, },
+    { ui::VKEY_2, keycode_2_, ui::VKEY_2, keycode_2_, },
+    { ui::VKEY_3, keycode_3_, ui::VKEY_3, keycode_3_, },
+    { ui::VKEY_4, keycode_4_, ui::VKEY_4, keycode_4_, },
+    { ui::VKEY_5, keycode_5_, ui::VKEY_5, keycode_5_, },
+    { ui::VKEY_6, keycode_6_, ui::VKEY_6, keycode_6_, },
+    { ui::VKEY_7, keycode_7_, ui::VKEY_7, keycode_7_, },
+    { ui::VKEY_8, keycode_8_, ui::VKEY_8, keycode_8_, },
+    { ui::VKEY_9, keycode_9_, ui::VKEY_9, keycode_9_, },
+    { ui::VKEY_0, keycode_0_, ui::VKEY_0, keycode_0_, },
+    { ui::VKEY_OEM_MINUS, keycode_minus_, ui::VKEY_OEM_MINUS, keycode_minus_, },
+    { ui::VKEY_OEM_PLUS, keycode_equal_, ui::VKEY_OEM_PLUS, keycode_equal_, },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(chromeos_tests); ++i) {
+    EXPECT_EQ(GetExpectedResultAsString(chromeos_tests[i].output,
+                                        0,
+                                        ui::ET_KEY_PRESSED,
+                                        chromeos_tests[i].output_native,
+                                        0U,
+                                        KeyPress),
+              GetRewrittenEventAsString(&rewriter,
+                                        chromeos_tests[i].input,
+                                        0,
+                                        ui::ET_KEY_PRESSED,
+                                        chromeos_tests[i].input_native,
+                                        0));
+
+    // Search key as a modifier does not change the outcome.
+    EXPECT_EQ(GetExpectedResultAsString(chromeos_tests[i].output,
+                                        0,
+                                        ui::ET_KEY_PRESSED,
+                                        chromeos_tests[i].output_native,
+                                        Mod4Mask,
+                                        KeyPress),
+              GetRewrittenEventAsString(&rewriter,
+                                        chromeos_tests[i].input,
+                                        0,
+                                        ui::ET_KEY_PRESSED,
+                                        chromeos_tests[i].input_native,
+                                        Mod4Mask));
+  }
+
+  // Make Search key act like a Function key for accessing extended key
+  // bindings. Now Search key as a modifier will make the number row
+  // act like the F<number> row.
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnableChromebookFunctionKey, "");
+  BooleanPrefMember search_key_as_function_key;
+  search_key_as_function_key.Init(prefs::kLanguageSearchKeyActsAsFunctionKey,
+                                  &prefs, NULL);
+  search_key_as_function_key.SetValue(true);
+
+  // Without a Search key modifier, the results should be the same as before.
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(chromeos_tests); ++i) {
+    EXPECT_EQ(GetExpectedResultAsString(chromeos_tests[i].output,
+                                        0,
+                                        ui::ET_KEY_PRESSED,
+                                        chromeos_tests[i].output_native,
+                                        0U,
+                                        KeyPress),
+              GetRewrittenEventAsString(&rewriter,
+                                        chromeos_tests[i].input,
+                                        0,
+                                        ui::ET_KEY_PRESSED,
+                                        chromeos_tests[i].input_native,
+                                        0));
+  }
+
+  struct {
+    ui::KeyboardCode input;
+    KeyCode input_native;
+    ui::KeyboardCode output;
+    KeyCode output_native;
+  } search_key_tests[] = {
+    // The number row should be rewritten as the F<number> row.
+    { ui::VKEY_1, keycode_1_, ui::VKEY_F1, keycode_f1_, },
+    { ui::VKEY_2, keycode_2_, ui::VKEY_F2, keycode_f2_, },
+    { ui::VKEY_3, keycode_3_, ui::VKEY_F3, keycode_f3_, },
+    { ui::VKEY_4, keycode_4_, ui::VKEY_F4, keycode_f4_, },
+    { ui::VKEY_5, keycode_5_, ui::VKEY_F5, keycode_f5_, },
+    { ui::VKEY_6, keycode_6_, ui::VKEY_F6, keycode_f6_, },
+    { ui::VKEY_7, keycode_7_, ui::VKEY_F7, keycode_f7_, },
+    { ui::VKEY_8, keycode_8_, ui::VKEY_F8, keycode_f8_, },
+    { ui::VKEY_9, keycode_9_, ui::VKEY_F9, keycode_f9_, },
+    { ui::VKEY_0, keycode_0_, ui::VKEY_F10, keycode_f10_, },
+    { ui::VKEY_OEM_MINUS, keycode_minus_, ui::VKEY_F11, keycode_f11_, },
+    { ui::VKEY_OEM_PLUS, keycode_equal_, ui::VKEY_F12, keycode_f12_, },
+  };
+
+  // But with a Search key as a modifier, we should have new rewrite rules now.
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(search_key_tests); ++i) {
+    EXPECT_EQ(GetExpectedResultAsString(search_key_tests[i].output,
+                                        0,
+                                        ui::ET_KEY_PRESSED,
+                                        search_key_tests[i].output_native,
+                                        0,
+                                        KeyPress),
+              GetRewrittenEventAsString(&rewriter,
+                                        search_key_tests[i].input,
+                                        0,
+                                        ui::ET_KEY_PRESSED,
+                                        search_key_tests[i].input_native,
+                                        Mod4Mask));
+
+    // Other modifiers should be preserved.
+    EXPECT_EQ(GetExpectedResultAsString(search_key_tests[i].output,
+                                        ui::EF_ALT_DOWN,
+                                        ui::ET_KEY_PRESSED,
+                                        search_key_tests[i].output_native,
+                                        Mod1Mask,
+                                        KeyPress),
+              GetRewrittenEventAsString(&rewriter,
+                                        search_key_tests[i].input,
+                                        ui::EF_ALT_DOWN,
+                                        ui::ET_KEY_PRESSED,
+                                        search_key_tests[i].input_native,
+                                        Mod4Mask | Mod1Mask));
+
+    EXPECT_EQ(GetExpectedResultAsString(search_key_tests[i].output,
+                                        ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+                                        ui::ET_KEY_PRESSED,
+                                        search_key_tests[i].output_native,
+                                        ControlMask | Mod1Mask,
+                                        KeyPress),
+              GetRewrittenEventAsString(&rewriter,
+                                        search_key_tests[i].input,
+                                        ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+                                        ui::ET_KEY_PRESSED,
+                                        search_key_tests[i].input_native,
+                                        Mod4Mask | ControlMask | Mod1Mask));
+  }
 
   *CommandLine::ForCurrentProcess() = original_cl;
 }
 
 TEST_F(EventRewriterTest, TestRewriteBackspaceAndArrowKeysWithSearchRemapped) {
+  const CommandLine original_cl(*CommandLine::ForCurrentProcess());
+
   // Remap Search to Control.
   TestingPrefService prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
@@ -2004,6 +2385,10 @@ TEST_F(EventRewriterTest, TestRewriteBackspaceAndArrowKeysWithSearchRemapped) {
 
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
+
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kHasChromeOSKeyboard, "");
+  rewriter.set_force_chromeos_keyboard_for_testing(true);
 
   // Alt+Search+Down -> End
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_END,
@@ -2032,6 +2417,8 @@ TEST_F(EventRewriterTest, TestRewriteBackspaceAndArrowKeysWithSearchRemapped) {
                                       ui::ET_KEY_PRESSED,
                                       keycode_down_,
                                       ShiftMask | Mod1Mask | Mod4Mask));
+
+  *CommandLine::ForCurrentProcess() = original_cl;
 }
 
 TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {

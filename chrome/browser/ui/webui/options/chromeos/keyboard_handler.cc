@@ -102,7 +102,7 @@ void KeyboardHandler::InitializePage() {
         "options.KeyboardOverlay.showCapsLockOptions", show_options);
   }
 
-  if (chromebook_function_key) {
+  if (chromeos_keyboard && chromebook_function_key) {
     web_ui()->CallJavascriptFunction(
         "options.KeyboardOverlay.showFunctionKeyOptions", show_options);
   }

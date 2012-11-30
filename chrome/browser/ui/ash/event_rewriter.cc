@@ -121,12 +121,6 @@ bool HasChromeOSKeyboard() {
       switches::kHasChromeOSKeyboard);
 }
 
-bool EventSourceIsChromebookKeyboard(ui::KeyEvent* /* event */) {
-  // TODO(danakj): Determine if the event came from a Chromebook internal
-  // keyboard.
-  return true;
-}
-
 bool IsMod3UsedByCurrentInputMethod() {
   // Since both German Neo2 XKB layout and Caps Lock depend on Mod3Mask,
   // it's not possible to make both features work. For now, we don't remap
@@ -149,6 +143,7 @@ const PrefService* GetPrefService() {
 EventRewriter::EventRewriter()
     : last_device_id_(kBadDeviceId),
 #if defined(OS_CHROMEOS)
+      force_chromeos_keyboard_for_testing_(false),
       xkeyboard_(NULL),
 #endif
       pref_service_(NULL) {
@@ -199,6 +194,17 @@ EventRewriter::DeviceType EventRewriter::GetDeviceType(
     if (found_apple && found_keyboard)
       return kDeviceAppleKeyboard;
   }
+
+#if defined(OS_CHROMEOS)
+  if (HasChromeOSKeyboard()) {
+    // The chromebook internal keyboard's name.
+    if (LowerCaseEqualsASCII(device_name, "at translated set 2 keyboard"))
+      return kDeviceChromeOSKeyboard;
+    // The chromebox chrome-specific keyboard's name.
+    if (LowerCaseEqualsASCII(device_name, "samsung usb keyboard"))
+      return kDeviceChromeOSKeyboard;
+  }
+#endif
 
   return kDeviceUnknown;
 }
@@ -275,90 +281,95 @@ void EventRewriter::DeviceKeyPressedOrReleased(int device_id) {
 }
 
 void EventRewriter::RefreshKeycodes() {
-  Display* display = ui::GetXDisplay();
-  control_l_xkeycode_ = XKeysymToKeycode(display, XK_Control_L);
-  control_r_xkeycode_ = XKeysymToKeycode(display, XK_Control_R);
-  alt_l_xkeycode_ = XKeysymToKeycode(display, XK_Alt_L);
-  alt_r_xkeycode_ = XKeysymToKeycode(display, XK_Alt_R);
-  meta_l_xkeycode_ = XKeysymToKeycode(display, XK_Meta_L);
-  meta_r_xkeycode_ = XKeysymToKeycode(display, XK_Meta_R);
-  windows_l_xkeycode_ = XKeysymToKeycode(display, XK_Super_L);
-  caps_lock_xkeycode_ = XKeysymToKeycode(display, XK_Caps_Lock);
-  void_symbol_xkeycode_ = XKeysymToKeycode(display, XK_VoidSymbol);
-  delete_xkeycode_ = XKeysymToKeycode(display, XK_Delete);
-  home_xkeycode_ = XKeysymToKeycode(display, XK_Home);
-  end_xkeycode_ = XKeysymToKeycode(display, XK_End);
-  prior_xkeycode_ = XKeysymToKeycode(display, XK_Prior);
-  next_xkeycode_ = XKeysymToKeycode(display, XK_Next);
-  kp_0_xkeycode_ = XKeysymToKeycode(display, XK_KP_0);
-  kp_1_xkeycode_ = XKeysymToKeycode(display, XK_KP_1);
-  kp_2_xkeycode_ = XKeysymToKeycode(display, XK_KP_2);
-  kp_3_xkeycode_ = XKeysymToKeycode(display, XK_KP_3);
-  kp_4_xkeycode_ = XKeysymToKeycode(display, XK_KP_4);
-  kp_5_xkeycode_ = XKeysymToKeycode(display, XK_KP_5);
-  kp_6_xkeycode_ = XKeysymToKeycode(display, XK_KP_6);
-  kp_7_xkeycode_ = XKeysymToKeycode(display, XK_KP_7);
-  kp_8_xkeycode_ = XKeysymToKeycode(display, XK_KP_8);
-  kp_9_xkeycode_ = XKeysymToKeycode(display, XK_KP_9);
-  kp_decimal_xkeycode_ = XKeysymToKeycode(display, XK_KP_Decimal);
+  keysym_to_keycode_map_.clear();
 }
 
 KeyCode EventRewriter::NativeKeySymToNativeKeycode(KeySym keysym) {
-  switch (keysym) {
-    case XK_Control_L:
-      return control_l_xkeycode_;
-    case XK_Control_R:
-      return control_r_xkeycode_;
-    case XK_Alt_L:
-      return alt_l_xkeycode_;
-    case XK_Alt_R:
-      return alt_r_xkeycode_;
-    case XK_Meta_L:
-      return meta_l_xkeycode_;
-    case XK_Meta_R:
-      return meta_r_xkeycode_;
-    case XK_Super_L:
-      return windows_l_xkeycode_;
-    case XK_Caps_Lock:
-      return caps_lock_xkeycode_;
-    case XK_VoidSymbol:
-      return void_symbol_xkeycode_;
-    case XK_Delete:
-      return delete_xkeycode_;
-    case XK_Home:
-      return home_xkeycode_;
-    case XK_End:
-      return end_xkeycode_;
-    case XK_Prior:
-      return prior_xkeycode_;
-    case XK_Next:
-      return next_xkeycode_;
-    case XK_KP_0:
-      return kp_0_xkeycode_;
-    case XK_KP_1:
-      return kp_1_xkeycode_;
-    case XK_KP_2:
-      return kp_2_xkeycode_;
-    case XK_KP_3:
-      return kp_3_xkeycode_;
-    case XK_KP_4:
-      return kp_4_xkeycode_;
-    case XK_KP_5:
-      return kp_5_xkeycode_;
-    case XK_KP_6:
-      return kp_6_xkeycode_;
-    case XK_KP_7:
-      return kp_7_xkeycode_;
-    case XK_KP_8:
-      return kp_8_xkeycode_;
-    case XK_KP_9:
-      return kp_9_xkeycode_;
-    case XK_KP_Decimal:
-      return kp_decimal_xkeycode_;
-    default:
-      break;
+  if (keysym_to_keycode_map_.count(keysym))
+    return keysym_to_keycode_map_[keysym];
+
+  Display* display = ui::GetXDisplay();
+  KeyCode keycode = XKeysymToKeycode(display, keysym);
+  keysym_to_keycode_map_[keysym] = keycode;
+  return keycode;
+}
+
+bool EventRewriter::EventSourceIsChromeOSKeyboard() const {
+  if (force_chromeos_keyboard_for_testing_)
+    return true;
+
+  if (last_device_id_ == kBadDeviceId)
+    return false;
+
+  // Check which device generated |event|.
+  std::map<int, DeviceType>::const_iterator iter =
+      device_id_to_type_.find(last_device_id_);
+  if (iter == device_id_to_type_.end()) {
+    LOG(ERROR) << "Device ID " << last_device_id_ << " is unknown.";
+    return false;
   }
-  return 0U;
+
+  const DeviceType type = iter->second;
+  return type == kDeviceChromeOSKeyboard;
+}
+
+bool EventRewriter::RewriteWithKeyboardRemappingsByKeySym(
+    const KeyboardRemapping* remappings,
+    size_t num_remappings,
+    KeySym keysym,
+    unsigned int native_mods,
+    unsigned int mods,
+    KeySym* remapped_native_keysym,
+    unsigned int* remapped_native_mods,
+    ui::KeyboardCode* remapped_keycode,
+    unsigned int* remapped_mods) {
+  for (size_t i = 0; i < num_remappings; ++i) {
+    const KeyboardRemapping& map = remappings[i];
+
+    if (keysym != map.input_keysym)
+      continue;
+    unsigned int matched_mods = native_mods & map.input_native_mods;
+    if (matched_mods != map.input_native_mods)
+      continue;
+
+    *remapped_native_keysym = map.output_keysym;
+    *remapped_keycode = map.output_keycode;
+    *remapped_native_mods = native_mods & ~map.input_native_mods;
+    *remapped_mods = mods & ~map.input_mods;
+    return true;
+  }
+
+  return false;
+}
+
+bool EventRewriter::RewriteWithKeyboardRemappingsByKeyCode(
+    const KeyboardRemapping* remappings,
+    size_t num_remappings,
+    KeyCode keycode,
+    unsigned int native_mods,
+    unsigned int mods,
+    KeySym* remapped_native_keysym,
+    unsigned int* remapped_native_mods,
+    ui::KeyboardCode* remapped_keycode,
+    unsigned int* remapped_mods) {
+  for (size_t i = 0; i < num_remappings; ++i) {
+    const KeyboardRemapping& map = remappings[i];
+
+    KeyCode input_keycode = NativeKeySymToNativeKeycode(map.input_keysym);
+    if (keycode != input_keycode)
+      continue;
+    unsigned int matched_mods = native_mods & map.input_native_mods;
+    if (matched_mods != map.input_native_mods)
+      continue;
+
+    *remapped_native_keysym = map.output_keysym;
+    *remapped_keycode = map.output_keycode;
+    *remapped_native_mods = native_mods & ~map.input_native_mods;
+    *remapped_mods = mods & ~map.input_mods;
+    return true;
+  }
+
+  return false;
 }
 #endif
 
@@ -372,7 +383,7 @@ void EventRewriter::Rewrite(ui::KeyEvent* event) {
   RewriteModifiers(event);
   RewriteNumPadKeys(event);
   RewriteBackspaceAndArrowKeys(event);
-  // TODO(yusukes): Implement crosbug.com/27167 (allow sending function keys).
+  RewriteFunctionKeys(event);
 }
 
 bool EventRewriter::IsAppleKeyboard() const {
@@ -568,57 +579,68 @@ bool EventRewriter::RewriteNumPadKeys(ui::KeyEvent* event) {
   const KeySym keysym = XLookupKeysym(xkey, 0);
   switch (keysym) {
     case XK_KP_Insert:
-      OverwriteEvent(event, kp_0_xkeycode_, xkey->state | Mod2Mask,
+      OverwriteEvent(event, NativeKeySymToNativeKeycode(XK_KP_0),
+                     xkey->state | Mod2Mask,
                      ui::VKEY_NUMPAD0, event->flags());
       rewritten = true;
       break;
     case XK_KP_Delete:
-      OverwriteEvent(event, kp_decimal_xkeycode_, xkey->state | Mod2Mask,
+      OverwriteEvent(event, NativeKeySymToNativeKeycode(XK_KP_Decimal),
+                     xkey->state | Mod2Mask,
                      ui::VKEY_DECIMAL, event->flags());
       rewritten = true;
       break;
     case XK_KP_End:
-      OverwriteEvent(event, kp_1_xkeycode_, xkey->state | Mod2Mask,
+      OverwriteEvent(event, NativeKeySymToNativeKeycode(XK_KP_1),
+                     xkey->state | Mod2Mask,
                      ui::VKEY_NUMPAD1, event->flags());
       rewritten = true;
       break;
     case XK_KP_Down:
-      OverwriteEvent(event, kp_2_xkeycode_, xkey->state | Mod2Mask,
+      OverwriteEvent(event, NativeKeySymToNativeKeycode(XK_KP_2),
+                     xkey->state | Mod2Mask,
                      ui::VKEY_NUMPAD2, event->flags());
       rewritten = true;
       break;
     case XK_KP_Next:
-      OverwriteEvent(event, kp_3_xkeycode_, xkey->state | Mod2Mask,
+      OverwriteEvent(event, NativeKeySymToNativeKeycode(XK_KP_3),
+                     xkey->state | Mod2Mask,
                      ui::VKEY_NUMPAD3, event->flags());
       rewritten = true;
       break;
     case XK_KP_Left:
-      OverwriteEvent(event, kp_4_xkeycode_, xkey->state | Mod2Mask,
+      OverwriteEvent(event, NativeKeySymToNativeKeycode(XK_KP_4),
+                     xkey->state | Mod2Mask,
                      ui::VKEY_NUMPAD4, event->flags());
       rewritten = true;
       break;
     case XK_KP_Begin:
-      OverwriteEvent(event, kp_5_xkeycode_, xkey->state | Mod2Mask,
+      OverwriteEvent(event, NativeKeySymToNativeKeycode(XK_KP_5),
+                     xkey->state | Mod2Mask,
                      ui::VKEY_NUMPAD5, event->flags());
       rewritten = true;
       break;
     case XK_KP_Right:
-      OverwriteEvent(event, kp_6_xkeycode_, xkey->state | Mod2Mask,
+      OverwriteEvent(event, NativeKeySymToNativeKeycode(XK_KP_6),
+                     xkey->state | Mod2Mask,
                      ui::VKEY_NUMPAD6, event->flags());
       rewritten = true;
       break;
     case XK_KP_Home:
-      OverwriteEvent(event, kp_7_xkeycode_, xkey->state | Mod2Mask,
+      OverwriteEvent(event, NativeKeySymToNativeKeycode(XK_KP_7),
+                     xkey->state | Mod2Mask,
                      ui::VKEY_NUMPAD7, event->flags());
       rewritten = true;
       break;
     case XK_KP_Up:
-      OverwriteEvent(event, kp_8_xkeycode_, xkey->state | Mod2Mask,
+      OverwriteEvent(event, NativeKeySymToNativeKeycode(XK_KP_8),
+                     xkey->state | Mod2Mask,
                      ui::VKEY_NUMPAD8, event->flags());
       rewritten = true;
       break;
     case XK_KP_Prior:
-      OverwriteEvent(event, kp_9_xkeycode_, xkey->state | Mod2Mask,
+      OverwriteEvent(event, NativeKeySymToNativeKeycode(XK_KP_9),
+                     xkey->state | Mod2Mask,
                      ui::VKEY_NUMPAD9, event->flags());
       rewritten = true;
       break;
@@ -642,13 +664,12 @@ bool EventRewriter::RewriteNumPadKeys(ui::KeyEvent* event) {
 }
 
 bool EventRewriter::RewriteBackspaceAndArrowKeys(ui::KeyEvent* event) {
-  bool rewritten = false;
 #if defined(OS_CHROMEOS)
-  // On a Chromebook keyboard, modifier keys can be used to access extended
+  // On a ChromeOS keyboard, modifier keys can be used to access extended
   // keyboard shortcuts. On other keyboards, keys such as delete and page up are
   // already available, so we do not need to rewrite anything here.
-  if (!EventSourceIsChromebookKeyboard(event))
-    return rewritten;
+  if (!EventSourceIsChromeOSKeyboard())
+    return false;
 
   const PrefService* pref_service =
       pref_service_ ? pref_service_ : GetPrefService();
@@ -657,78 +678,211 @@ bool EventRewriter::RewriteBackspaceAndArrowKeys(ui::KeyEvent* event) {
 
   bool search_as_function_key = chromebook_function_key && pref_service &&
       pref_service->GetBoolean(prefs::kLanguageSearchKeyActsAsFunctionKey);
+  if (search_as_function_key)
+    DCHECK(HasChromeOSKeyboard());
 
   XEvent* xev = event->native_event();
   XKeyEvent* xkey = &(xev->xkey);
   const KeySym keysym = XLookupKeysym(xkey, 0);
 
+  KeySym remapped_native_keysym = 0;
+  unsigned int remapped_native_mods = 0;
+  ui::KeyboardCode remapped_keycode = ui::VKEY_UNKNOWN;
+  unsigned int remapped_mods = 0;
+
   if (!search_as_function_key) {
-    if (keysym == XK_BackSpace && (xkey->state & Mod1Mask)) {
-      // Without Search as Function key: Remap Alt+Backspace to Delete.
-      OverwriteEvent(event, delete_xkeycode_, xkey->state & ~Mod1Mask,
-                     ui::VKEY_DELETE, event->flags() & ~ui::EF_ALT_DOWN);
-      rewritten = true;
-    } else if (keysym == XK_Up &&
-               (xkey->state & ControlMask) && (xkey->state & Mod1Mask)) {
-      // Without Search as Function key: Remap Ctrl+Alt+Up to Home.
-      OverwriteEvent(event,
-                     home_xkeycode_,
-                     xkey->state & ~(Mod1Mask | ControlMask),
-                     ui::VKEY_HOME,
-                     event->flags() & ~(ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN));
-      rewritten = true;
-    } else if (keysym == XK_Up && (xkey->state & Mod1Mask)) {
-      // Without Search as Function key: Remap Alt+Up to Prior (aka PageUp).
-      OverwriteEvent(event, prior_xkeycode_, xkey->state & ~Mod1Mask,
-                     ui::VKEY_PRIOR, event->flags() & ~ui::EF_ALT_DOWN);
-      rewritten = true;
-    } else if (keysym == XK_Down &&
-               (xkey->state & ControlMask) && (xkey->state & Mod1Mask)) {
-      // Without Search as Function key: Remap Ctrl+Alt+Down to End.
-      OverwriteEvent(event,
-                     end_xkeycode_,
-                     xkey->state & ~(Mod1Mask | ControlMask),
-                     ui::VKEY_END,
-                     event->flags() & ~(ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN));
-      rewritten = true;
-    } else if (keysym == XK_Down && (xkey->state & Mod1Mask)) {
-      // Without Search as Function key: Remap Alt+Down to Next (aka PageDown).
-      OverwriteEvent(event, next_xkeycode_, xkey->state & ~Mod1Mask,
-                     ui::VKEY_NEXT, event->flags() & ~ui::EF_ALT_DOWN);
-      rewritten = true;
-    }
+    static const KeyboardRemapping remappings[] = {
+      { // Alt+BackSpace -> Delete
+        XK_BackSpace,
+        ui::EF_ALT_DOWN, Mod1Mask,
+        XK_Delete, ui::VKEY_DELETE,
+      },
+      { // Control+Alt+Up -> Home
+        XK_Up,
+        ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask,
+        XK_Home, ui::VKEY_HOME,
+      },
+      { // Alt+Up -> Prior (aka PageUp)
+        XK_Up,
+        ui::EF_ALT_DOWN, Mod1Mask,
+        XK_Prior, ui::VKEY_PRIOR,
+      },
+      { // Control+Alt+Down -> End
+        XK_Down,
+        ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask,
+        XK_End, ui::VKEY_END,
+      },
+      { // Alt+Down -> Next (aka PageDown)
+        XK_Down,
+        ui::EF_ALT_DOWN, Mod1Mask,
+        XK_Next, ui::VKEY_NEXT,
+      }
+    };
+
+    RewriteWithKeyboardRemappingsByKeySym(remappings,
+                                          arraysize(remappings),
+                                          keysym,
+                                          xkey->state,
+                                          event->flags(),
+                                          &remapped_native_keysym,
+                                          &remapped_native_mods,
+                                          &remapped_keycode,
+                                          &remapped_mods);
   } else {
-    if (keysym == XK_BackSpace && (xkey->state & Mod4Mask)) {
-      // With Search as Function key: Remap Search+Backspace to Delete.
-      OverwriteEvent(event, delete_xkeycode_, xkey->state & ~Mod4Mask,
-                     ui::VKEY_DELETE, event->flags());
-      rewritten = true;
-    } else if (keysym == XK_Left && (xkey->state & Mod4Mask)) {
-      // With Search as Function key: Remap Search+Left to Home.
-      OverwriteEvent(event, home_xkeycode_, xkey->state & ~Mod4Mask,
-                     ui::VKEY_HOME, event->flags());
-      rewritten = true;
-    } else if (keysym == XK_Up && (xkey->state & Mod4Mask)) {
-      // With Search as Function key: Remap Search+Up to Prior (aka PageUp).
-      OverwriteEvent(event, prior_xkeycode_, xkey->state & ~Mod4Mask,
-                     ui::VKEY_PRIOR, event->flags());
-      rewritten = true;
-    } else if (keysym == XK_Right && (xkey->state & Mod4Mask)) {
-      // With Search as Function key: Remap Search+Right to End.
-      OverwriteEvent(event, end_xkeycode_, xkey->state & ~Mod4Mask,
-                     ui::VKEY_END, event->flags());
-      rewritten = true;
-    } else if (keysym == XK_Down && (xkey->state & Mod4Mask)) {
-      // With Search as Function key: Remap Search+Down to Next (aka PageDown).
-      OverwriteEvent(event, next_xkeycode_, xkey->state & ~Mod4Mask,
-                     ui::VKEY_NEXT, event->flags());
-      rewritten = true;
-    }
+    static const KeyboardRemapping remappings[] = {
+      { // Search+BackSpace -> Delete
+        XK_BackSpace,
+        0, Mod4Mask,
+        XK_Delete, ui::VKEY_DELETE,
+      },
+      { // Search+Left -> Home
+        XK_Left,
+        0, Mod4Mask,
+        XK_Home, ui::VKEY_HOME,
+      },
+      { // Search+Up -> Prior (aka PageUp)
+        XK_Up,
+        0, Mod4Mask,
+        XK_Prior, ui::VKEY_PRIOR,
+      },
+      { // Search+Right -> End
+        XK_Right,
+        0, Mod4Mask,
+        XK_End, ui::VKEY_END,
+      },
+      { // Search+Down -> Next (aka PageDown)
+        XK_Down,
+        0, Mod4Mask,
+        XK_Next, ui::VKEY_NEXT,
+      }
+    };
+
+    RewriteWithKeyboardRemappingsByKeySym(remappings,
+                                          arraysize(remappings),
+                                          keysym,
+                                          xkey->state,
+                                          event->flags(),
+                                          &remapped_native_keysym,
+                                          &remapped_native_mods,
+                                          &remapped_keycode,
+                                          &remapped_mods);
   }
+
+  if (!remapped_native_keysym || remapped_keycode == ui::VKEY_UNKNOWN)
+    return false;
+
+  OverwriteEvent(event,
+                 NativeKeySymToNativeKeycode(remapped_native_keysym),
+                 remapped_native_mods,
+                 remapped_keycode,
+                 remapped_mods);
+  return true;
 #else
   // TODO(yusukes): Support Ash on other platforms if needed.
+  return false;
 #endif
-  return rewritten;
+}
+
+bool EventRewriter::RewriteFunctionKeys(ui::KeyEvent* event) {
+#if defined(OS_CHROMEOS)
+  XEvent* xev = event->native_event();
+  XKeyEvent* xkey = &(xev->xkey);
+  const KeySym keysym = XLookupKeysym(xkey, 0);
+
+  KeySym remapped_native_keysym = 0;
+  unsigned int remapped_native_mods = 0;
+  ui::KeyboardCode remapped_keycode = ui::VKEY_UNKNOWN;
+  unsigned int remapped_mods = 0;
+
+  // On a ChromeOS keyboard, F<number> keys have special purposes. On other
+  // keyboards, they should act as usual.
+  if (!EventSourceIsChromeOSKeyboard())
+    return false;
+
+  // Rewrite the actual F1-F12 keys on a Chromebook keyboard to special keys.
+  static const KeyboardRemapping fkeys_to_special_keys[] = {
+    { XK_F1, 0, 0, XF86XK_Back, ui::VKEY_BROWSER_BACK, },
+    { XK_F2, 0, 0, XF86XK_Forward, ui::VKEY_BROWSER_FORWARD, },
+    { XK_F3, 0, 0, XF86XK_Reload, ui::VKEY_BROWSER_REFRESH, },
+    { XK_F4, 0, 0, XF86XK_LaunchB, ui::VKEY_MEDIA_LAUNCH_APP2, },
+    { XK_F5, 0, 0, XF86XK_LaunchA, ui::VKEY_MEDIA_LAUNCH_APP1, },
+    { XK_F6, 0, 0, XF86XK_MonBrightnessDown, ui::VKEY_BRIGHTNESS_DOWN, },
+    { XK_F7, 0, 0, XF86XK_MonBrightnessUp, ui::VKEY_BRIGHTNESS_UP, },
+    { XK_F8, 0, 0, XF86XK_AudioMute, ui::VKEY_VOLUME_MUTE, },
+    { XK_F9, 0, 0, XF86XK_AudioLowerVolume, ui::VKEY_VOLUME_DOWN, },
+    { XK_F10, 0, 0, XF86XK_AudioRaiseVolume, ui::VKEY_VOLUME_UP, },
+  };
+
+  bool remapped =
+      RewriteWithKeyboardRemappingsByKeySym(fkeys_to_special_keys,
+                                            arraysize(fkeys_to_special_keys),
+                                            keysym,
+                                            xkey->state,
+                                            event->flags(),
+                                            &remapped_native_keysym,
+                                            &remapped_native_mods,
+                                            &remapped_keycode,
+                                            &remapped_mods);
+
+  if (!remapped) {
+    const PrefService* pref_service =
+        pref_service_ ? pref_service_ : GetPrefService();
+    bool chromebook_function_key = CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableChromebookFunctionKey);
+
+    bool search_as_function_key = chromebook_function_key && pref_service &&
+        pref_service->GetBoolean(prefs::kLanguageSearchKeyActsAsFunctionKey);
+    if (search_as_function_key)
+      DCHECK(HasChromeOSKeyboard());
+
+    // When using Search as a Function key, remap Search+<number> to F<number>.
+    if (search_as_function_key && xkey->state & Mod4Mask) {
+      // We check the keycode here instead of the keysym, as these keys have
+      // different keysyms when modifiers are pressed, such as shift.
+
+      // TODO(danakj): On some i18n keyboards, these choices will be bad and we
+      // should make layout-specific choices here. For eg. on a french keyboard
+      // "-" and "6" are the same key, so F11 will not be accessible.
+      static const KeyboardRemapping number_keys_to_fkeys[] = {
+        { XK_1, 0, Mod4Mask, XK_F1, ui::VKEY_F1, },
+        { XK_2, 0, Mod4Mask, XK_F2, ui::VKEY_F2, },
+        { XK_3, 0, Mod4Mask, XK_F3, ui::VKEY_F3, },
+        { XK_4, 0, Mod4Mask, XK_F4, ui::VKEY_F4, },
+        { XK_5, 0, Mod4Mask, XK_F5, ui::VKEY_F5, },
+        { XK_6, 0, Mod4Mask, XK_F6, ui::VKEY_F6, },
+        { XK_7, 0, Mod4Mask, XK_F7, ui::VKEY_F7, },
+        { XK_8, 0, Mod4Mask, XK_F8, ui::VKEY_F8, },
+        { XK_9, 0, Mod4Mask, XK_F9, ui::VKEY_F9, },
+        { XK_0, 0, Mod4Mask, XK_F10, ui::VKEY_F10, },
+        { XK_minus, 0, Mod4Mask, XK_F11, ui::VKEY_F11, },
+        { XK_equal, 0, Mod4Mask, XK_F12, ui::VKEY_F12, }
+      };
+
+      RewriteWithKeyboardRemappingsByKeyCode(number_keys_to_fkeys,
+                                             arraysize(number_keys_to_fkeys),
+                                             xkey->keycode,
+                                             xkey->state,
+                                             event->flags(),
+                                             &remapped_native_keysym,
+                                             &remapped_native_mods,
+                                             &remapped_keycode,
+                                             &remapped_mods);
+    }
+  }
+
+  if (!remapped_native_keysym || remapped_keycode == ui::VKEY_UNKNOWN)
+    return false;
+
+  OverwriteEvent(event,
+                 NativeKeySymToNativeKeycode(remapped_native_keysym),
+                 remapped_native_mods,
+                 remapped_keycode,
+                 remapped_mods);
+  return true;
+#else
+  // TODO(danakj): Support Ash on other platforms if needed.
+  return false;
+#endif
 }
 
 void EventRewriter::RewriteLocatedEvent(ui::LocatedEvent* event) {
@@ -800,6 +954,11 @@ EventRewriter::DeviceType EventRewriter::DeviceAddedInternal(
   if (type == kDeviceAppleKeyboard) {
     VLOG(1) << "Apple keyboard '" << device_name << "' connected: "
             << "id=" << device_id;
+#if defined(OS_CHROMEOS)
+  } else if (type == kDeviceChromeOSKeyboard) {
+    VLOG(1) << "ChromeOS keyboard '" << device_name << "' connected: "
+            << "id=" << device_id;
+#endif
   }
   // Always overwrite the existing device_id since the X server may reuse a
   // device id for an unattached device.

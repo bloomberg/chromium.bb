@@ -15,7 +15,7 @@ namespace ash {
 
 bool KeyboardBrightnessController::HandleKeyboardBrightnessDown(
     const ui::Accelerator& accelerator) {
-  if (accelerator.key_code() == ui::VKEY_F6) {
+  if (accelerator.key_code() == ui::VKEY_BRIGHTNESS_DOWN) {
     Shell::GetInstance()->delegate()->RecordUserMetricsAction(
         UMA_ACCEL_KEYBOARD_BRIGHTNESS_DOWN_F6);
   }
@@ -27,7 +27,7 @@ bool KeyboardBrightnessController::HandleKeyboardBrightnessDown(
 
 bool KeyboardBrightnessController::HandleKeyboardBrightnessUp(
     const ui::Accelerator& accelerator) {
-  if (accelerator.key_code() == ui::VKEY_F7) {
+  if (accelerator.key_code() == ui::VKEY_BRIGHTNESS_UP) {
     Shell::GetInstance()->delegate()->RecordUserMetricsAction(
         UMA_ACCEL_KEYBOARD_BRIGHTNESS_UP_F7);
   }

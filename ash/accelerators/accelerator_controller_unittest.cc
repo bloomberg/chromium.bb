@@ -599,32 +599,34 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
 #if defined(OS_CHROMEOS)
   // CycleBackward
   EXPECT_TRUE(ProcessWithContext(
-      ui::Accelerator(ui::VKEY_F5, ui::EF_SHIFT_DOWN)));
+      ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_SHIFT_DOWN)));
   // CycleForward
   EXPECT_TRUE(ProcessWithContext(
-      ui::Accelerator(ui::VKEY_F5, ui::EF_NONE)));
+      ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE)));
 
   // Take screenshot / partial screenshot
   // True should always be returned regardless of the existence of the delegate.
   {
     EXPECT_TRUE(ProcessWithContext(
-        ui::Accelerator(ui::VKEY_F5, ui::EF_CONTROL_DOWN)));
+        ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN)));
     EXPECT_TRUE(ProcessWithContext(
         ui::Accelerator(ui::VKEY_PRINT, ui::EF_NONE)));
     EXPECT_TRUE(ProcessWithContext(
-        ui::Accelerator(ui::VKEY_F5, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
+        ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1,
+                        ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
     DummyScreenshotDelegate* delegate = new DummyScreenshotDelegate;
     GetController()->SetScreenshotDelegate(
         scoped_ptr<ScreenshotDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_take_screenshot_count());
     EXPECT_TRUE(ProcessWithContext(
-        ui::Accelerator(ui::VKEY_F5, ui::EF_CONTROL_DOWN)));
+        ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN)));
     EXPECT_EQ(1, delegate->handle_take_screenshot_count());
     EXPECT_TRUE(ProcessWithContext(
         ui::Accelerator(ui::VKEY_PRINT, ui::EF_NONE)));
     EXPECT_EQ(2, delegate->handle_take_screenshot_count());
     EXPECT_TRUE(ProcessWithContext(
-        ui::Accelerator(ui::VKEY_F5, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
+        ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1,
+                        ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
     EXPECT_EQ(2, delegate->handle_take_screenshot_count());
   }
 #endif
@@ -691,50 +693,6 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
         ui::Accelerator(ui::VKEY_LWIN, ui::EF_ALT_DOWN)));
     EXPECT_TRUE(delegate->IsCapsLockEnabled());
   }
-#if defined(OS_CHROMEOS)
-  // Volume
-  const ui::Accelerator f8(ui::VKEY_F8, ui::EF_NONE);
-  const ui::Accelerator f9(ui::VKEY_F9, ui::EF_NONE);
-  const ui::Accelerator f10(ui::VKEY_F10, ui::EF_NONE);
-  {
-    EXPECT_TRUE(ProcessWithContext(f8));
-    EXPECT_TRUE(ProcessWithContext(f9));
-    EXPECT_TRUE(ProcessWithContext(f10));
-    DummyVolumeControlDelegate* delegate =
-        new DummyVolumeControlDelegate(false);
-    ash::Shell::GetInstance()->tray_delegate()->SetVolumeControlDelegate(
-        scoped_ptr<VolumeControlDelegate>(delegate).Pass());
-    EXPECT_EQ(0, delegate->handle_volume_mute_count());
-    EXPECT_FALSE(ProcessWithContext(f8));
-    EXPECT_EQ(1, delegate->handle_volume_mute_count());
-    EXPECT_EQ(f8, delegate->last_accelerator());
-    EXPECT_EQ(0, delegate->handle_volume_down_count());
-    EXPECT_FALSE(ProcessWithContext(f9));
-    EXPECT_EQ(1, delegate->handle_volume_down_count());
-    EXPECT_EQ(f9, delegate->last_accelerator());
-    EXPECT_EQ(0, delegate->handle_volume_up_count());
-    EXPECT_FALSE(ProcessWithContext(f10));
-    EXPECT_EQ(1, delegate->handle_volume_up_count());
-    EXPECT_EQ(f10, delegate->last_accelerator());
-  }
-  {
-    DummyVolumeControlDelegate* delegate = new DummyVolumeControlDelegate(true);
-    ash::Shell::GetInstance()->tray_delegate()->SetVolumeControlDelegate(
-        scoped_ptr<VolumeControlDelegate>(delegate).Pass());
-    EXPECT_EQ(0, delegate->handle_volume_mute_count());
-    EXPECT_TRUE(ProcessWithContext(f8));
-    EXPECT_EQ(1, delegate->handle_volume_mute_count());
-    EXPECT_EQ(f8, delegate->last_accelerator());
-    EXPECT_EQ(0, delegate->handle_volume_down_count());
-    EXPECT_TRUE(ProcessWithContext(f9));
-    EXPECT_EQ(1, delegate->handle_volume_down_count());
-    EXPECT_EQ(f9, delegate->last_accelerator());
-    EXPECT_EQ(0, delegate->handle_volume_up_count());
-    EXPECT_TRUE(ProcessWithContext(f10));
-    EXPECT_EQ(1, delegate->handle_volume_up_count());
-    EXPECT_EQ(f10, delegate->last_accelerator());
-  }
-#endif
   const ui::Accelerator volume_mute(ui::VKEY_VOLUME_MUTE, ui::EF_NONE);
   const ui::Accelerator volume_down(ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
   const ui::Accelerator volume_up(ui::VKEY_VOLUME_UP, ui::EF_NONE);
@@ -775,53 +733,21 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   }
 #if defined(OS_CHROMEOS)
   // Brightness
-  const ui::Accelerator f6(ui::VKEY_F6, ui::EF_NONE);
-  const ui::Accelerator f7(ui::VKEY_F7, ui::EF_NONE);
-  {
-    EXPECT_FALSE(ProcessWithContext(f6));
-    EXPECT_FALSE(ProcessWithContext(f7));
-    DummyBrightnessControlDelegate* delegate =
-        new DummyBrightnessControlDelegate(true);
-    GetController()->SetBrightnessControlDelegate(
-        scoped_ptr<BrightnessControlDelegate>(delegate).Pass());
-    EXPECT_FALSE(ProcessWithContext(f6));
-    EXPECT_FALSE(ProcessWithContext(f7));
-  }
-  // Enable internal display.
-  EnableInternalDisplay();
-  {
-    EXPECT_FALSE(ProcessWithContext(f6));
-    EXPECT_FALSE(ProcessWithContext(f7));
-    DummyBrightnessControlDelegate* delegate =
-        new DummyBrightnessControlDelegate(false);
-    GetController()->SetBrightnessControlDelegate(
-        scoped_ptr<BrightnessControlDelegate>(delegate).Pass());
-    EXPECT_EQ(0, delegate->handle_brightness_down_count());
-    EXPECT_FALSE(ProcessWithContext(f6));
-    EXPECT_EQ(1, delegate->handle_brightness_down_count());
-    EXPECT_EQ(f6, delegate->last_accelerator());
-    EXPECT_EQ(0, delegate->handle_brightness_up_count());
-    EXPECT_FALSE(ProcessWithContext(f7));
-    EXPECT_EQ(1, delegate->handle_brightness_up_count());
-    EXPECT_EQ(f7, delegate->last_accelerator());
-  }
-  {
-    DummyBrightnessControlDelegate* delegate =
-        new DummyBrightnessControlDelegate(true);
-    GetController()->SetBrightnessControlDelegate(
-        scoped_ptr<BrightnessControlDelegate>(delegate).Pass());
-    EXPECT_EQ(0, delegate->handle_brightness_down_count());
-    EXPECT_TRUE(ProcessWithContext(f6));
-    EXPECT_EQ(1, delegate->handle_brightness_down_count());
-    EXPECT_EQ(f6, delegate->last_accelerator());
-    EXPECT_EQ(0, delegate->handle_brightness_up_count());
-    EXPECT_TRUE(ProcessWithContext(f7));
-    EXPECT_EQ(1, delegate->handle_brightness_up_count());
-    EXPECT_EQ(f7, delegate->last_accelerator());
-  }
   // ui::VKEY_BRIGHTNESS_DOWN/UP are not defined on Windows.
   const ui::Accelerator brightness_down(ui::VKEY_BRIGHTNESS_DOWN, ui::EF_NONE);
   const ui::Accelerator brightness_up(ui::VKEY_BRIGHTNESS_UP, ui::EF_NONE);
+  {
+    EXPECT_FALSE(ProcessWithContext(brightness_down));
+    EXPECT_FALSE(ProcessWithContext(brightness_up));
+    DummyBrightnessControlDelegate* delegate =
+        new DummyBrightnessControlDelegate(true);
+    GetController()->SetBrightnessControlDelegate(
+        scoped_ptr<BrightnessControlDelegate>(delegate).Pass());
+    EXPECT_FALSE(ProcessWithContext(brightness_down));
+    EXPECT_FALSE(ProcessWithContext(brightness_up));
+  }
+  // Enable internal display.
+  EnableInternalDisplay();
   {
     DummyBrightnessControlDelegate* delegate =
         new DummyBrightnessControlDelegate(false);
@@ -852,23 +778,25 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   }
 
   // Keyboard brightness
-  const ui::Accelerator alt_f6(ui::VKEY_F6, ui::EF_ALT_DOWN);
-  const ui::Accelerator alt_f7(ui::VKEY_F7, ui::EF_ALT_DOWN);
+  const ui::Accelerator alt_brightness_down(ui::VKEY_BRIGHTNESS_DOWN,
+                                            ui::EF_ALT_DOWN);
+  const ui::Accelerator alt_brightness_up(ui::VKEY_BRIGHTNESS_UP,
+                                          ui::EF_ALT_DOWN);
   {
-    EXPECT_TRUE(ProcessWithContext(alt_f6));
-    EXPECT_TRUE(ProcessWithContext(alt_f7));
+    EXPECT_TRUE(ProcessWithContext(alt_brightness_down));
+    EXPECT_TRUE(ProcessWithContext(alt_brightness_up));
     DummyKeyboardBrightnessControlDelegate* delegate =
         new DummyKeyboardBrightnessControlDelegate(false);
     GetController()->SetKeyboardBrightnessControlDelegate(
         scoped_ptr<KeyboardBrightnessControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_keyboard_brightness_down_count());
-    EXPECT_FALSE(ProcessWithContext(alt_f6));
+    EXPECT_FALSE(ProcessWithContext(alt_brightness_down));
     EXPECT_EQ(1, delegate->handle_keyboard_brightness_down_count());
-    EXPECT_EQ(alt_f6, delegate->last_accelerator());
+    EXPECT_EQ(alt_brightness_down, delegate->last_accelerator());
     EXPECT_EQ(0, delegate->handle_keyboard_brightness_up_count());
-    EXPECT_FALSE(ProcessWithContext(alt_f7));
+    EXPECT_FALSE(ProcessWithContext(alt_brightness_up));
     EXPECT_EQ(1, delegate->handle_keyboard_brightness_up_count());
-    EXPECT_EQ(alt_f7, delegate->last_accelerator());
+    EXPECT_EQ(alt_brightness_up, delegate->last_accelerator());
   }
   {
     DummyKeyboardBrightnessControlDelegate* delegate =
@@ -876,13 +804,13 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     GetController()->SetKeyboardBrightnessControlDelegate(
         scoped_ptr<KeyboardBrightnessControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_keyboard_brightness_down_count());
-    EXPECT_TRUE(ProcessWithContext(alt_f6));
+    EXPECT_TRUE(ProcessWithContext(alt_brightness_down));
     EXPECT_EQ(1, delegate->handle_keyboard_brightness_down_count());
-    EXPECT_EQ(alt_f6, delegate->last_accelerator());
+    EXPECT_EQ(alt_brightness_down, delegate->last_accelerator());
     EXPECT_EQ(0, delegate->handle_keyboard_brightness_up_count());
-    EXPECT_TRUE(ProcessWithContext(alt_f7));
+    EXPECT_TRUE(ProcessWithContext(alt_brightness_up));
     EXPECT_EQ(1, delegate->handle_keyboard_brightness_up_count());
-    EXPECT_EQ(alt_f7, delegate->last_accelerator());
+    EXPECT_EQ(alt_brightness_up, delegate->last_accelerator());
   }
 #endif
 
@@ -1224,54 +1152,56 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   // Screenshot
   {
     EXPECT_TRUE(ProcessWithContext(
-        ui::Accelerator(ui::VKEY_F5, ui::EF_CONTROL_DOWN)));
+        ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN)));
     EXPECT_TRUE(ProcessWithContext(
         ui::Accelerator(ui::VKEY_PRINT, ui::EF_NONE)));
     EXPECT_TRUE(ProcessWithContext(
-        ui::Accelerator(ui::VKEY_F5, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
+        ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1,
+                        ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
     DummyScreenshotDelegate* delegate = new DummyScreenshotDelegate;
     GetController()->SetScreenshotDelegate(
         scoped_ptr<ScreenshotDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_take_screenshot_count());
     EXPECT_TRUE(ProcessWithContext(
-        ui::Accelerator(ui::VKEY_F5, ui::EF_CONTROL_DOWN)));
+        ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN)));
     EXPECT_EQ(1, delegate->handle_take_screenshot_count());
     EXPECT_TRUE(ProcessWithContext(
         ui::Accelerator(ui::VKEY_PRINT, ui::EF_NONE)));
     EXPECT_EQ(2, delegate->handle_take_screenshot_count());
     EXPECT_TRUE(ProcessWithContext(
-        ui::Accelerator(ui::VKEY_F5, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
+        ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1,
+ ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
     EXPECT_EQ(2, delegate->handle_take_screenshot_count());
   }
   // Brightness
-  const ui::Accelerator f6(ui::VKEY_F6, ui::EF_NONE);
-  const ui::Accelerator f7(ui::VKEY_F7, ui::EF_NONE);
+  const ui::Accelerator brightness_down(ui::VKEY_BRIGHTNESS_DOWN, ui::EF_NONE);
+  const ui::Accelerator brightness_up(ui::VKEY_BRIGHTNESS_UP, ui::EF_NONE);
   {
-    EXPECT_FALSE(ProcessWithContext(f6));
-    EXPECT_FALSE(ProcessWithContext(f7));
+    EXPECT_FALSE(ProcessWithContext(brightness_down));
+    EXPECT_FALSE(ProcessWithContext(brightness_up));
     DummyBrightnessControlDelegate* delegate =
         new DummyBrightnessControlDelegate(true);
     GetController()->SetBrightnessControlDelegate(
         scoped_ptr<BrightnessControlDelegate>(delegate).Pass());
-    EXPECT_FALSE(ProcessWithContext(f6));
-    EXPECT_FALSE(ProcessWithContext(f7));
+    EXPECT_FALSE(ProcessWithContext(brightness_down));
+    EXPECT_FALSE(ProcessWithContext(brightness_up));
   }
   EnableInternalDisplay();
   {
-    EXPECT_FALSE(ProcessWithContext(f6));
-    EXPECT_FALSE(ProcessWithContext(f7));
+    EXPECT_FALSE(ProcessWithContext(brightness_down));
+    EXPECT_FALSE(ProcessWithContext(brightness_up));
     DummyBrightnessControlDelegate* delegate =
         new DummyBrightnessControlDelegate(false);
     GetController()->SetBrightnessControlDelegate(
         scoped_ptr<BrightnessControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_brightness_down_count());
-    EXPECT_FALSE(ProcessWithContext(f6));
+    EXPECT_FALSE(ProcessWithContext(brightness_down));
     EXPECT_EQ(1, delegate->handle_brightness_down_count());
-    EXPECT_EQ(f6, delegate->last_accelerator());
+    EXPECT_EQ(brightness_down, delegate->last_accelerator());
     EXPECT_EQ(0, delegate->handle_brightness_up_count());
-    EXPECT_FALSE(ProcessWithContext(f7));
+    EXPECT_FALSE(ProcessWithContext(brightness_up));
     EXPECT_EQ(1, delegate->handle_brightness_up_count());
-    EXPECT_EQ(f7, delegate->last_accelerator());
+    EXPECT_EQ(brightness_up, delegate->last_accelerator());
   }
   {
     DummyBrightnessControlDelegate* delegate =
@@ -1279,55 +1209,55 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
     GetController()->SetBrightnessControlDelegate(
         scoped_ptr<BrightnessControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_brightness_down_count());
-    EXPECT_TRUE(ProcessWithContext(f6));
+    EXPECT_TRUE(ProcessWithContext(brightness_down));
     EXPECT_EQ(1, delegate->handle_brightness_down_count());
-    EXPECT_EQ(f6, delegate->last_accelerator());
+    EXPECT_EQ(brightness_down, delegate->last_accelerator());
     EXPECT_EQ(0, delegate->handle_brightness_up_count());
-    EXPECT_TRUE(ProcessWithContext(f7));
+    EXPECT_TRUE(ProcessWithContext(brightness_up));
     EXPECT_EQ(1, delegate->handle_brightness_up_count());
-    EXPECT_EQ(f7, delegate->last_accelerator());
+    EXPECT_EQ(brightness_up, delegate->last_accelerator());
   }
   // Volume
-  const ui::Accelerator f8(ui::VKEY_F8, ui::EF_NONE);
-  const ui::Accelerator f9(ui::VKEY_F9, ui::EF_NONE);
-  const ui::Accelerator f10(ui::VKEY_F10, ui::EF_NONE);
+  const ui::Accelerator volume_mute(ui::VKEY_VOLUME_MUTE, ui::EF_NONE);
+  const ui::Accelerator volume_down(ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
+  const ui::Accelerator volume_up(ui::VKEY_VOLUME_UP, ui::EF_NONE);
   {
-    EXPECT_TRUE(ProcessWithContext(f8));
-    EXPECT_TRUE(ProcessWithContext(f9));
-    EXPECT_TRUE(ProcessWithContext(f10));
+    EXPECT_TRUE(ProcessWithContext(volume_mute));
+    EXPECT_TRUE(ProcessWithContext(volume_down));
+    EXPECT_TRUE(ProcessWithContext(volume_up));
     DummyVolumeControlDelegate* delegate =
         new DummyVolumeControlDelegate(false);
     ash::Shell::GetInstance()->tray_delegate()->SetVolumeControlDelegate(
         scoped_ptr<VolumeControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_volume_mute_count());
-    EXPECT_FALSE(ProcessWithContext(f8));
+    EXPECT_FALSE(ProcessWithContext(volume_mute));
     EXPECT_EQ(1, delegate->handle_volume_mute_count());
-    EXPECT_EQ(f8, delegate->last_accelerator());
+    EXPECT_EQ(volume_mute, delegate->last_accelerator());
     EXPECT_EQ(0, delegate->handle_volume_down_count());
-    EXPECT_FALSE(ProcessWithContext(f9));
+    EXPECT_FALSE(ProcessWithContext(volume_down));
     EXPECT_EQ(1, delegate->handle_volume_down_count());
-    EXPECT_EQ(f9, delegate->last_accelerator());
+    EXPECT_EQ(volume_down, delegate->last_accelerator());
     EXPECT_EQ(0, delegate->handle_volume_up_count());
-    EXPECT_FALSE(ProcessWithContext(f10));
+    EXPECT_FALSE(ProcessWithContext(volume_up));
     EXPECT_EQ(1, delegate->handle_volume_up_count());
-    EXPECT_EQ(f10, delegate->last_accelerator());
+    EXPECT_EQ(volume_up, delegate->last_accelerator());
   }
   {
     DummyVolumeControlDelegate* delegate = new DummyVolumeControlDelegate(true);
     ash::Shell::GetInstance()->tray_delegate()->SetVolumeControlDelegate(
         scoped_ptr<VolumeControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_volume_mute_count());
-    EXPECT_TRUE(ProcessWithContext(f8));
+    EXPECT_TRUE(ProcessWithContext(volume_mute));
     EXPECT_EQ(1, delegate->handle_volume_mute_count());
-    EXPECT_EQ(f8, delegate->last_accelerator());
+    EXPECT_EQ(volume_mute, delegate->last_accelerator());
     EXPECT_EQ(0, delegate->handle_volume_down_count());
-    EXPECT_TRUE(ProcessWithContext(f9));
+    EXPECT_TRUE(ProcessWithContext(volume_down));
     EXPECT_EQ(1, delegate->handle_volume_down_count());
-    EXPECT_EQ(f9, delegate->last_accelerator());
+    EXPECT_EQ(volume_down, delegate->last_accelerator());
     EXPECT_EQ(0, delegate->handle_volume_up_count());
-    EXPECT_TRUE(ProcessWithContext(f10));
+    EXPECT_TRUE(ProcessWithContext(volume_up));
     EXPECT_EQ(1, delegate->handle_volume_up_count());
-    EXPECT_EQ(f10, delegate->last_accelerator());
+    EXPECT_EQ(volume_up, delegate->last_accelerator());
   }
 }
 #endif

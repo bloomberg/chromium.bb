@@ -11,7 +11,7 @@
 
 bool BrightnessController::HandleBrightnessDown(
     const ui::Accelerator& accelerator) {
-  if (accelerator.key_code() == ui::VKEY_F6)
+  if (accelerator.key_code() == ui::VKEY_BRIGHTNESS_DOWN)
     content::RecordAction(
         content::UserMetricsAction("Accel_BrightnessDown_F6"));
 
@@ -22,7 +22,7 @@ bool BrightnessController::HandleBrightnessDown(
 
 bool BrightnessController::HandleBrightnessUp(
     const ui::Accelerator& accelerator) {
-  if (accelerator.key_code() == ui::VKEY_F7)
+  if (accelerator.key_code() == ui::VKEY_BRIGHTNESS_UP)
     content::RecordAction(content::UserMetricsAction("Accel_BrightnessUp_F7"));
 
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->

@@ -2643,7 +2643,7 @@ void BrowserView::UpdateAcceleratorMetrics(
     case IDC_BACK:
       if (key_code == ui::VKEY_BACK)
         content::RecordAction(UserMetricsAction("Accel_Back_Backspace"));
-      else if (key_code == ui::VKEY_F1)
+      else if (key_code == ui::VKEY_BROWSER_BACK)
         content::RecordAction(UserMetricsAction("Accel_Back_F1"));
       else if (key_code == ui::VKEY_LEFT)
         content::RecordAction(UserMetricsAction("Accel_Back_Left"));
@@ -2651,7 +2651,7 @@ void BrowserView::UpdateAcceleratorMetrics(
     case IDC_FORWARD:
       if (key_code == ui::VKEY_BACK)
         content::RecordAction(UserMetricsAction("Accel_Forward_Backspace"));
-      else if (key_code == ui::VKEY_F2)
+      else if (key_code == ui::VKEY_BROWSER_FORWARD)
         content::RecordAction(UserMetricsAction("Accel_Forward_F2"));
       else if (key_code == ui::VKEY_RIGHT)
         content::RecordAction(UserMetricsAction("Accel_Forward_Right"));
@@ -2660,11 +2660,11 @@ void BrowserView::UpdateAcceleratorMetrics(
     case IDC_RELOAD_IGNORING_CACHE:
       if (key_code == ui::VKEY_R)
         content::RecordAction(UserMetricsAction("Accel_Reload_R"));
-      else if (key_code == ui::VKEY_F3)
+      else if (key_code == ui::VKEY_BROWSER_REFRESH)
         content::RecordAction(UserMetricsAction("Accel_Reload_F3"));
       break;
     case IDC_FULLSCREEN:
-      if (key_code == ui::VKEY_F4)
+      if (key_code == ui::VKEY_MEDIA_LAUNCH_APP2)
         content::RecordAction(UserMetricsAction("Accel_Fullscreen_F4"));
       break;
     case IDC_FOCUS_LOCATION:

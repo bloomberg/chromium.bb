@@ -466,12 +466,12 @@ bool AcceleratorController::PerformAction(int action,
       return HandleCycleWindowMRU(WindowCycleController::FORWARD,
                                   accelerator.IsAltDown());
     case CYCLE_BACKWARD_LINEAR:
-      if (key_code == ui::VKEY_F5)
+      if (key_code == ui::VKEY_MEDIA_LAUNCH_APP1)
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_PREVWINDOW_F5);
       HandleCycleWindowLinear(CYCLE_BACKWARD);
       return true;
     case CYCLE_FORWARD_LINEAR:
-      if (key_code == ui::VKEY_F5)
+      if (key_code == ui::VKEY_MEDIA_LAUNCH_APP1)
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_NEXTWINDOW_F5);
       HandleCycleWindowLinear(CYCLE_FORWARD);
       return true;
@@ -732,7 +732,7 @@ bool AcceleratorController::PerformAction(int action,
       break;
     }
     case TOGGLE_MAXIMIZED: {
-      if (key_code == ui::VKEY_F4) {
+      if (key_code == ui::VKEY_MEDIA_LAUNCH_APP2) {
         shell->delegate()->RecordUserMetricsAction(
             UMA_ACCEL_MAXIMIZE_RESTORE_F4);
       }
