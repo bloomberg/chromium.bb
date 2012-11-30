@@ -21,6 +21,7 @@ valgrind = env.ComponentObject(
 
 nc_objs = [env.ComponentObject(module, module + '.c')
            for module in [
+               'futex',
                'nc_thread',
                'nc_mutex',
                'nc_condvar',

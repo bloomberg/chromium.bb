@@ -34,6 +34,7 @@
 # support_srcs
       # We also get nc_init_private.c, nc_thread.c and nc_tsd.c via
       # #includes of .c files.
+      '../pthread/futex.c',
       '../pthread/nc_mutex.c',
       '../pthread/nc_condvar.c',
       '../pthread/nc_token.c',

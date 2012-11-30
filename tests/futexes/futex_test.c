@@ -16,9 +16,14 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/untrusted/valgrind/dynamic_annotations.h"
 
+#if !defined(__GLIBC__)
+# include "native_client/src/untrusted/pthread/futex.h"
+#endif
+
 
 /*
- * This tests nacl-glibc's futex implementation.
+ * This tests the futex implementations used in nacl-glibc and
+ * nacl-newlib.
  *
  * Technically, the futex interface is allowed to generate spurious
  * wakeups, and our futex implementation uses host OS interfaces which
@@ -31,31 +36,45 @@
  */
 
 
+#if defined(__GLIBC__)
+
 /*
  * nacl-glibc does not provide a header file that declares these
  * functions, so we declare them here.
  */
 int __nacl_futex_wait(volatile int *addr, int val, unsigned int bitset,
-                      const struct timespec *timeout);
+                      const struct timespec *abstime);
 
 int __nacl_futex_wake(volatile int *addr, int nwake, unsigned int bitset,
                       int *count);
 
 #define __FUTEX_BITSET_MATCH_ANY 0xffffffff
 
-
 /*
  * We do not test the futex bitset functionality yet, so we use these
  * wrappers to avoid specifying bitsets in the test functions.
  */
 static int futex_wait(volatile int *addr, int val,
-                      const struct timespec *timeout) {
-  return __nacl_futex_wait(addr, val, __FUTEX_BITSET_MATCH_ANY, timeout);
+                      const struct timespec *abstime) {
+  return -__nacl_futex_wait(addr, val, __FUTEX_BITSET_MATCH_ANY, abstime);
 }
 
 static int futex_wake(volatile int *addr, int nwake, int *count) {
-  return __nacl_futex_wake(addr, nwake, __FUTEX_BITSET_MATCH_ANY, count);
+  return -__nacl_futex_wake(addr, nwake, __FUTEX_BITSET_MATCH_ANY, count);
 }
+
+#else
+
+static int futex_wait(volatile int *addr, int val,
+                      const struct timespec *abstime) {
+  return __nc_futex_wait(addr, val, abstime);
+}
+
+static int futex_wake(volatile int *addr, int nwake, int *count) {
+  return __nc_futex_wake(addr, nwake, count);
+}
+
+#endif
 
 
 void test_futex_wait_value_mismatch(void) {
@@ -65,14 +84,27 @@ void test_futex_wait_value_mismatch(void) {
    * This should return EWOULDBLOCK, but the implementation in
    * futex_emulation.c in nacl-glibc has a bug.
    */
+#if defined(__GLIBC__)
   ASSERT_EQ(rc, 0);
+#else
+  ASSERT_EQ(rc, EWOULDBLOCK);
+#endif
 }
 
 void test_futex_wait_timeout(void) {
-  struct timespec timeout = { 0, 1000 /* nanoseconds */ };
+  struct timespec abstime = { 0, 1000 /* nanoseconds */ };
   int futex_value = 123;
-  int rc = futex_wait(&futex_value, futex_value, &timeout);
-  ASSERT_EQ(rc, -ETIMEDOUT);
+  int rc = futex_wait(&futex_value, futex_value, &abstime);
+  ASSERT_EQ(rc, ETIMEDOUT);
+
+  /*
+   * Check that this thread has removed itself from the wait queue;
+   * futex_wait() needs to do this.
+   */
+  int count;
+  rc = futex_wake(&futex_value, INT_MAX, &count);
+  ASSERT_EQ(rc, 0);
+  ASSERT_EQ(count, 0);
 }
 
 
@@ -156,6 +188,12 @@ void test_futex_wakeup(void) {
   struct ThreadState thread;
   create_waiting_thread(&futex_value, &thread);
   check_futex_wake(&futex_value, INT_MAX, 1);
+  /*
+   * The thread should have been removed from the wait queue so that
+   * futex_wake() will not return a count of 1 again.  futex_wake()
+   * should remove it; it is not enough for futex_wait() to do it.
+   */
+  check_futex_wake(&futex_value, INT_MAX, 0);
   assert_thread_woken(&thread);
 
   /* Clean up. */

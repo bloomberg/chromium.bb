@@ -5,11 +5,6 @@
 
 Import('env')
 
-# This tests nacl-glibc's futex implementation, so this only works
-# with nacl-glibc.
-if not env.Bit('nacl_glibc'):
-  Return()
-
 valgrind = env.ComponentObject(
     'valgrind_annotations.o',
     '${MAIN_DIR}/src/untrusted/valgrind/dynamic_annotations.c')
