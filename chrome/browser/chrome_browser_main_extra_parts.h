@@ -15,6 +15,11 @@
 // separate to allow stages to be further subdivided for Chrome specific
 // initialization stages (e.g. browser process init, profile init).
 
+// While ChromeBrowserMainParts are platform-specific,
+// ChromeBrowserMainExtraParts are used to do further initialization for various
+// Chrome toolkits (e.g., GTK, VIEWS, ASH, AURA, etc.; see
+// ChromeContentBrowserClient::CreateBrowserMainParts()).
+
 class ChromeBrowserMainExtraParts {
  public:
   virtual ~ChromeBrowserMainExtraParts() {}
@@ -33,6 +38,8 @@ class ChromeBrowserMainExtraParts {
   // MainMessageLoopRun methods.
   virtual void PreProfileInit() {}
   virtual void PostProfileInit() {}
+  virtual void PreInteractiveFirstRunInit() {}
+  virtual void PostInteractiveFirstRunInit() {}
   virtual void PreBrowserStart() {}
   virtual void PostBrowserStart() {}
   virtual void PreMainMessageLoopRun() {}

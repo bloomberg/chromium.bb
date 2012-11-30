@@ -180,5 +180,4 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
   return SKIP_FIRST_RUN;
 }
 
-
 }  // namespace first_run

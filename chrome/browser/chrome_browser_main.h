@@ -78,6 +78,8 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // in order from PreMainMessageLoopRun(). See implementation for details.
   virtual void PreProfileInit();
   virtual void PostProfileInit();
+  virtual void PreInteractiveFirstRunInit();
+  virtual void PostInteractiveFirstRunInit();
   virtual void PreBrowserStart();
   virtual void PostBrowserStart();
 

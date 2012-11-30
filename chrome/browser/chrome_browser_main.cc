@@ -31,7 +31,6 @@
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -848,6 +847,10 @@ void ChromeBrowserMainParts::PreMainMessageLoopRun() {
 //   ... additional setup, including CreateProfile()
 //   PostProfileInit()
 //   ... additional setup
+//   PreInteractiveFirstRunInit()
+//   ... first_run::AutoImport()
+//   PostInteractiveFirstRunInit()
+//   ... additional setup
 //   PreBrowserStart()
 //   ... browser_creator_->Start (OR parameters().ui_task->Run())
 //   PostBrowserStart()
@@ -860,6 +863,16 @@ void ChromeBrowserMainParts::PreProfileInit() {
 void ChromeBrowserMainParts::PostProfileInit() {
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostProfileInit();
+}
+
+void ChromeBrowserMainParts::PreInteractiveFirstRunInit() {
+  for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
+    chrome_extra_parts_[i]->PreInteractiveFirstRunInit();
+}
+
+void ChromeBrowserMainParts::PostInteractiveFirstRunInit() {
+  for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
+    chrome_extra_parts_[i]->PostInteractiveFirstRunInit();
 }
 
 void ChromeBrowserMainParts::PreBrowserStart() {
@@ -1130,25 +1143,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // preferences are registered, since some of the code that the importer
   // touches reads preferences.
   if (is_first_run_) {
-#if defined(OS_WIN)
-    // On Windows, trigger the Active Setup command for system-level Chromes to
-    // finish configuring this user's install (e.g. per-user shortcuts).
-    // Delay the task slightly to give Chrome launch I/O priority while also
-    // making sure shortcuts are created promptly to avoid annoying the user by
-    // re-creating shortcuts he previously deleted.
-    // TODO(gab): Add a first run section to ChromeBrowserMainParts and remove
-    // OS specific sections below.
-    static const int64 kTiggerActiveSetupDelaySeconds = 5;
-    FilePath chrome_exe;
-    if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-      NOTREACHED();
-    } else if (!InstallUtil::IsPerUserInstall(chrome_exe.value().c_str())) {
-      BrowserThread::GetBlockingPool()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&InstallUtil::TriggerActiveSetupCommand),
-          base::TimeDelta::FromSeconds(kTiggerActiveSetupDelaySeconds));
-    }
-#endif  // OS_WIN
+    PreInteractiveFirstRunInit();
+
     if (!first_run_ui_bypass_) {
       first_run::AutoImport(profile_,
                             master_prefs_->homepage_defined,
@@ -1157,6 +1153,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
                             master_prefs_->make_chrome_default,
                             process_singleton_.get());
 #if defined(OS_POSIX) && !defined(OS_CHROMEOS)
+      // TODO(thakis): Look into moving this POSIX-specific section to
+      // ChromeBrowserMainPartsPosix::PostInteractiveFirstRunInit().
+
       // On Windows, the download is tagged with enable/disable stats so there
       // is no need for this code.
 
@@ -1166,6 +1165,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
         local_state_->SetBoolean(prefs::kMetricsReportingEnabled, true);
 #endif  // OS_POSIX && !OS_CHROMEOS
     }  // if (!first_run_ui_bypass_)
+    PostInteractiveFirstRunInit();
 
     browser_process_->profile_manager()->OnImportFinished(profile_);
 

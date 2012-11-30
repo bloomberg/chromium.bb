@@ -11,11 +11,14 @@
 
 #include "base/command_line.h"
 #include "base/environment.h"
+#include "base/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "base/string_number_conversions.h"
+#include "base/threading/sequenced_worker_pool.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/metro.h"
 #include "base/win/text_services_message_filter.h"
@@ -39,6 +42,7 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/shell_util.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/main_function_params.h"
 #include "grit/app_locale_settings.h"
 #include "grit/chromium_strings.h"
@@ -224,6 +228,32 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopRun() {
   removable_device_notifications_window_->Init();
 }
 
+void ChromeBrowserMainPartsWin::PreInteractiveFirstRunInit() {
+  // Trigger the Active Setup command for system-level Chromes to finish
+  // configuring this user's install (e.g. per-user shortcuts).
+  // Delay the task slightly to give Chrome launch I/O priority while also
+  // making sure shortcuts are created promptly to avoid annoying the user by
+  // re-creating shortcuts he previously deleted.
+  static const int64 kTiggerActiveSetupDelaySeconds = 5;
+  FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED();
+  } else if (!InstallUtil::IsPerUserInstall(chrome_exe.value().c_str())) {
+    content::BrowserThread::GetBlockingPool()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&InstallUtil::TriggerActiveSetupCommand),
+        base::TimeDelta::FromSeconds(kTiggerActiveSetupDelaySeconds));
+  }
+
+  ChromeBrowserMainParts::PreInteractiveFirstRunInit();
+}
+
+void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {
+  ui::MessageBox(NULL, ASCIIToUTF16(chrome_browser::kMissingLocaleDataMessage),
+                 ASCIIToUTF16(chrome_browser::kMissingLocaleDataTitle),
+                 MB_OK | MB_ICONERROR | MB_TOPMOST);
+}
+
 // static
 void ChromeBrowserMainPartsWin::PrepareRestartOnCrashEnviroment(
     const CommandLine& parsed_command_line) {
@@ -291,12 +321,6 @@ void ChromeBrowserMainPartsWin::RegisterApplicationRestart(
                       ", command_line: " << command_line.GetCommandLineString();
     }
   }
-}
-
-void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {
-  ui::MessageBox(NULL, ASCIIToUTF16(chrome_browser::kMissingLocaleDataMessage),
-                 ASCIIToUTF16(chrome_browser::kMissingLocaleDataTitle),
-                 MB_OK | MB_ICONERROR | MB_TOPMOST);
 }
 
 // static
