@@ -253,7 +253,9 @@ void InstallerState::Initialize(const CommandLine& command_line,
 
       // The product is being uninstalled.
     }
-    if (!keep_binaries) {
+    if (!keep_binaries &&
+        machine_state.GetProductState(system_install(),
+                                      BrowserDistribution::CHROME_BINARIES)) {
       Product* p = AddProductFromPreferences(
           BrowserDistribution::CHROME_BINARIES, prefs, machine_state);
       VLOG(1) << (is_uninstall ? "Uninstall" : "Install")
