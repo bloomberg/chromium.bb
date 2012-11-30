@@ -8,7 +8,6 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -32,7 +31,6 @@ class Extension;
 
 class BrowserWindowCocoa :
     public BrowserWindow,
-    public PrefObserver,
     public extensions::ExtensionKeybindingRegistry::Delegate {
  public:
   BrowserWindowCocoa(Browser* browser,
@@ -146,10 +144,6 @@ class BrowserWindowCocoa :
                                 const gfx::Rect& rect) OVERRIDE;
   virtual void ShowAvatarBubbleFromAvatarButton() OVERRIDE;
 
-  // Overridden from NotificationObserver
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
-
   // Overridden from ExtensionKeybindingRegistry::Delegate:
   virtual extensions::ActiveTabPermissionGranter*
       GetActiveTabPermissionGranter() OVERRIDE;
@@ -164,6 +158,7 @@ class BrowserWindowCocoa :
   virtual void DestroyBrowser() OVERRIDE;
 
  private:
+  virtual void OnShowBookmarkBarChanged();
   NSWindow* window() const;  // Accessor for the (current) |NSWindow|.
 
   PrefChangeRegistrar pref_change_registrar_;

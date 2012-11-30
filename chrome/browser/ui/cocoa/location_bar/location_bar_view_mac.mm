@@ -138,8 +138,11 @@ LocationBarViewMac::LocationBarViewMac(
       chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
       content::Source<Profile>(browser_->profile()));
 
-  edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
-                               profile_->GetPrefs(), this);
+  edit_bookmarks_enabled_.Init(
+      prefs::kEditBookmarksEnabled,
+      profile_->GetPrefs(),
+      base::Bind(&LocationBarViewMac::OnEditBookmarksEnabledChanged,
+                 base::Unretained(this)));
 }
 
 LocationBarViewMac::~LocationBarViewMac() {
@@ -596,8 +599,7 @@ void LocationBarViewMac::Observe(int type,
   }
 }
 
-void LocationBarViewMac::OnPreferenceChanged(PrefServiceBase* service,
-                                             const std::string& pref_name) {
+void LocationBarViewMac::OnEditBookmarksEnabledChanged() {
   UpdateStarDecorationVisibility();
   OnChanged();
 }

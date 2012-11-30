@@ -89,7 +89,10 @@ BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
     attention_request_id_(0) {
 
   pref_change_registrar_.Init(browser_->profile()->GetPrefs());
-  pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
+  pref_change_registrar_.Add(
+      prefs::kShowBookmarkBar,
+      base::Bind(&BrowserWindowCocoa::OnShowBookmarkBarChanged,
+                 base::Unretained(this)));
   gfx::Rect bounds;
   chrome::GetSavedWindowBoundsAndShowState(browser_,
                                            &bounds,
@@ -614,9 +617,7 @@ bool BrowserWindowCocoa::GetConstrainedWindowTopY(int* top_y) {
   return false;
 }
 
-void BrowserWindowCocoa::OnPreferenceChanged(PrefServiceBase* service,
-                                             const std::string& pref_name) {
-  DCHECK(pref_name == prefs::kShowBookmarkBar);
+void BrowserWindowCocoa::OnShowBookmarkBarChanged() {
   [controller_ updateBookmarkBarVisibilityWithAnimation:YES];
 }
 
