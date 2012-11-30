@@ -66,13 +66,13 @@ InitiateUploadParams::InitiateUploadParams(
     const std::string& content_type,
     int64 content_length,
     const GURL& upload_location,
-    const FilePath& virtual_path)
+    const FilePath& drive_file_path)
     : upload_mode(upload_mode),
       title(title),
       content_type(content_type),
       content_length(content_length),
       upload_location(upload_location),
-      virtual_path(virtual_path) {
+      drive_file_path(drive_file_path) {
 }
 
 InitiateUploadParams::~InitiateUploadParams() {
@@ -86,14 +86,14 @@ ResumeUploadParams::ResumeUploadParams(
     const std::string& content_type,
     scoped_refptr<net::IOBuffer> buf,
     const GURL& upload_location,
-    const FilePath& virtual_path) : upload_mode(upload_mode),
+    const FilePath& drive_file_path) : upload_mode(upload_mode),
                                     start_range(start_range),
                                     end_range(end_range),
                                     content_length(content_length),
                                     content_type(content_type),
                                     buf(buf),
                                     upload_location(upload_location),
-                                    virtual_path(virtual_path) {
+                                    drive_file_path(drive_file_path) {
 }
 
 ResumeUploadParams::~ResumeUploadParams() {
@@ -104,7 +104,7 @@ ResumeUploadParams::~ResumeUploadParams() {
 GetDocumentsOperation::GetDocumentsOperation(
     OperationRegistry* registry,
     const GDataWapiUrlGenerator& url_generator,
-    const GURL& url,
+    const GURL& override_url,
     int start_changestamp,
     const std::string& search_string,
     bool shared_with_me,
@@ -112,7 +112,7 @@ GetDocumentsOperation::GetDocumentsOperation(
     const GetDataCallback& callback)
     : GetDataOperation(registry, callback),
       url_generator_(url_generator),
-      override_url_(url),
+      override_url_(override_url),
       start_changestamp_(start_changestamp),
       search_string_(search_string),
       shared_with_me_(shared_with_me),
@@ -169,15 +169,15 @@ DownloadFileOperation::DownloadFileOperation(
     OperationRegistry* registry,
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback,
-    const GURL& document_url,
-    const FilePath& virtual_path,
+    const GURL& content_url,
+    const FilePath& drive_file_path,
     const FilePath& output_file_path)
     : UrlFetchOperationBase(registry,
                             OPERATION_DOWNLOAD,
-                            virtual_path),
+                            drive_file_path),
       download_action_callback_(download_action_callback),
       get_content_callback_(get_content_callback),
-      document_url_(document_url) {
+      content_url_(content_url) {
   // Make sure we download the content into a temp file.
   if (output_file_path.empty())
     save_temp_file_ = true;
@@ -189,7 +189,7 @@ DownloadFileOperation::~DownloadFileOperation() {}
 
 // Overridden from UrlFetchOperationBase.
 GURL DownloadFileOperation::GetURL() const {
-  return document_url_;
+  return content_url_;
 }
 
 void DownloadFileOperation::OnURLFetchDownloadProgress(const URLFetcher* source,
@@ -235,15 +235,15 @@ void DownloadFileOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
 DeleteDocumentOperation::DeleteDocumentOperation(
     OperationRegistry* registry,
     const EntryActionCallback& callback,
-    const GURL& document_url)
+    const GURL& edit_url)
     : EntryActionOperation(registry, callback),
-      document_url_(document_url) {
+      edit_url_(edit_url) {
 }
 
 DeleteDocumentOperation::~DeleteDocumentOperation() {}
 
 GURL DeleteDocumentOperation::GetURL() const {
-  return GDataWapiUrlGenerator::AddStandardUrlParams(document_url_);
+  return GDataWapiUrlGenerator::AddStandardUrlParams(edit_url_);
 }
 
 URLFetcher::RequestType DeleteDocumentOperation::GetRequestType() const {
@@ -358,10 +358,10 @@ bool CopyDocumentOperation::GetContentData(std::string* upload_content_type,
 RenameResourceOperation::RenameResourceOperation(
     OperationRegistry* registry,
     const EntryActionCallback& callback,
-    const GURL& document_url,
+    const GURL& edit_url,
     const FilePath::StringType& new_name)
     : EntryActionOperation(registry, callback),
-      document_url_(document_url),
+      edit_url_(edit_url),
       new_name_(new_name) {
 }
 
@@ -379,7 +379,7 @@ RenameResourceOperation::GetExtraRequestHeaders() const {
 }
 
 GURL RenameResourceOperation::GetURL() const {
-  return GDataWapiUrlGenerator::AddStandardUrlParams(document_url_);
+  return GDataWapiUrlGenerator::AddStandardUrlParams(edit_url_);
 }
 
 bool RenameResourceOperation::GetContentData(std::string* upload_content_type,
@@ -405,11 +405,11 @@ bool RenameResourceOperation::GetContentData(std::string* upload_content_type,
 AuthorizeAppOperation::AuthorizeAppOperation(
     OperationRegistry* registry,
     const GetDataCallback& callback,
-    const GURL& document_url,
+    const GURL& edit_url,
     const std::string& app_id)
     : GetDataOperation(registry, callback),
       app_id_(app_id),
-      document_url_(document_url) {
+      edit_url_(edit_url) {
 }
 
 AuthorizeAppOperation::~AuthorizeAppOperation() {}
@@ -495,7 +495,7 @@ void AuthorizeAppOperation::ParseResponse(
 }
 
 GURL AuthorizeAppOperation::GetURL() const {
-  return document_url_;
+  return edit_url_;
 }
 
 //======================= AddResourceToDirectoryOperation ======================
@@ -505,11 +505,11 @@ AddResourceToDirectoryOperation::AddResourceToDirectoryOperation(
     const GDataWapiUrlGenerator& url_generator,
     const EntryActionCallback& callback,
     const GURL& parent_content_url,
-    const GURL& document_url)
+    const GURL& edit_url)
     : EntryActionOperation(registry, callback),
       url_generator_(url_generator),
       parent_content_url_(parent_content_url),
-      document_url_(document_url) {
+      edit_url_(edit_url) {
 }
 
 AddResourceToDirectoryOperation::~AddResourceToDirectoryOperation() {}
@@ -534,7 +534,7 @@ bool AddResourceToDirectoryOperation::GetContentData(
   xml_writer.StartElement("entry");
   xml_writer.AddAttribute("xmlns", "http://www.w3.org/2005/Atom");
 
-  xml_writer.WriteElement("id", document_url_.spec());
+  xml_writer.WriteElement("id", edit_url_.spec());
 
   xml_writer.EndElement();  // Ends "entry" element.
   xml_writer.StopWriting();
@@ -587,7 +587,7 @@ InitiateUploadOperation::InitiateUploadOperation(
     const InitiateUploadParams& params)
     : UrlFetchOperationBase(registry,
                             OPERATION_UPLOAD,
-                            params.virtual_path),
+                            params.drive_file_path),
       callback_(callback),
       params_(params),
       initiate_upload_url_(chrome_common_net::AppendOrReplaceQueryParameter(
@@ -692,7 +692,7 @@ ResumeUploadOperation::ResumeUploadOperation(
     const ResumeUploadParams& params)
   : UrlFetchOperationBase(registry,
                           OPERATION_UPLOAD,
-                          params.virtual_path),
+                          params.drive_file_path),
       callback_(callback),
       params_(params),
       last_chunk_completed_(false) {
@@ -724,7 +724,7 @@ void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
         end_range_received = ranges[0].last_byte_position();
       }
     }
-    DVLOG(1) << "Got response for [" << params_.virtual_path.value()
+    DVLOG(1) << "Got response for [" << params_.drive_file_path.value()
              << "]: code=" << code
              << ", range_hdr=[" << range_received
              << "], range_parsed=" << start_range_received
@@ -733,7 +733,7 @@ void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
     // There might be explanation of unexpected error code in response.
     std::string response_content;
     source->GetResponseAsString(&response_content);
-    DVLOG(1) << "Got response for [" << params_.virtual_path.value()
+    DVLOG(1) << "Got response for [" << params_.drive_file_path.value()
              << "]: code=" << code
              << ", content=[\n" << response_content << "\n]";
 

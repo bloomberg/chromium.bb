@@ -23,16 +23,28 @@ class DocumentEntry;
 // This class performs the operation for fetching a document list.
 class GetDocumentsOperation : public GetDataOperation {
  public:
-  // |start_changestamp| specifies the starting point of change list or 0 if
-  // all changes are necessary.
-  // If |shared_with_me| is true, it searches for the files shared to the user,
-  // otherwise searches for the files owned by the user.
-  // |url| specifies URL for documents feed fetching operation. If empty URL is
-  // passed, the default URL is used and returns the first page of the result.
-  // When non-first page result is requested, |url| should be specified.
+  // override_url:
+  //   If empty, a hard-coded base URL of the WAPI server is used to fetch
+  //   the first page of the feed. This parameter is used for fetching 2nd
+  //   page and onward.
+  //
+  // start_changestamp:
+  //   This parameter specifies the starting point of a delta feed or 0 if a
+  //   full feed is necessary.
+  //
+  // search_string:
+  //   If non-empty, fetches a list of documents that match the search
+  //   string.
+  //
+  // shared_with_me:
+  //   If true, fetches a list of documents shared to the user, otherwise
+  //   fetches a list of documents owned by the user.
+  //
+  // directory_resource_id:
+  //   If non-empty, fetches a list of documents in a particular directory.
   GetDocumentsOperation(OperationRegistry* registry,
                         const GDataWapiUrlGenerator& url_generator,
-                        const GURL& url,
+                        const GURL& override_url,
                         int start_changestamp,
                         const std::string& search_string,
                         bool shared_with_me,
@@ -41,16 +53,16 @@ class GetDocumentsOperation : public GetDataOperation {
   virtual ~GetDocumentsOperation();
 
  protected:
-  // Overridden from GetDataOperation.
+  // UrlFetchOperationBase overrides.
   virtual GURL GetURL() const OVERRIDE;
 
  private:
-  GDataWapiUrlGenerator url_generator_;
-  GURL override_url_;
-  int start_changestamp_;
-  std::string search_string_;
-  bool shared_with_me_;
-  std::string directory_resource_id_;
+  const GDataWapiUrlGenerator url_generator_;
+  const GURL override_url_;
+  const int start_changestamp_;
+  const std::string search_string_;
+  const bool shared_with_me_;
+  const std::string directory_resource_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GetDocumentsOperation);
 };
@@ -67,13 +79,13 @@ class GetDocumentEntryOperation : public GetDataOperation {
   virtual ~GetDocumentEntryOperation();
 
  protected:
-  // Overridden from GetGdataOperation.
+  // UrlFetchOperationBase overrides.
   virtual GURL GetURL() const OVERRIDE;
 
  private:
-  GDataWapiUrlGenerator url_generator_;
+  const GDataWapiUrlGenerator url_generator_;
   // Resource id of the requested entry.
-  std::string resource_id_;
+  const std::string resource_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GetDocumentEntryOperation);
 };
@@ -89,11 +101,11 @@ class GetAccountMetadataOperation : public GetDataOperation {
   virtual ~GetAccountMetadataOperation();
 
  protected:
-  // Overridden from GetDataOperation.
+  // UrlFetchOperationBase overrides.
   virtual GURL GetURL() const OVERRIDE;
 
  private:
-  GDataWapiUrlGenerator url_generator_;
+  const GDataWapiUrlGenerator url_generator_;
   DISALLOW_COPY_AND_ASSIGN(GetAccountMetadataOperation);
 };
 
@@ -107,22 +119,39 @@ typedef base::Callback<void(GDataErrorCode error,
 // This class performs the operation for downloading of a given document/file.
 class DownloadFileOperation : public UrlFetchOperationBase {
  public:
+  // download_action_callback:
+  //   This callback is called when the download is complete.
+  //
+  // get_content_callback:
+  //   This callback is called when some part of the content is
+  //   read. Used to read the download content progressively.
+  //
+  // content_url:
+  //   Specifies the target file to download.
+  //
+  // drive_file_path:
+  //   Specifies the drive path of the target file. Shown in UI.
+  //   TODO(satorux): Remove the drive file path hack. crbug.com/163296
+  //
+  // output_file_path:
+  //   Specifies the file path to save the downloaded file.
+  //
   DownloadFileOperation(
       OperationRegistry* registry,
       const DownloadActionCallback& download_action_callback,
       const GetContentCallback& get_content_callback,
-      const GURL& document_url,
-      const FilePath& virtual_path,
+      const GURL& content_url,
+      const FilePath& drive_file_path,
       const FilePath& output_file_path);
   virtual ~DownloadFileOperation();
 
  protected:
-  // Overridden from UrlFetchOperationBase.
+  // UrlFetchOperationBase overrides.
   virtual GURL GetURL() const OVERRIDE;
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
-  // Overridden from net::URLFetcherDelegate.
+  // net::URLFetcherDelegate overrides.
   virtual void OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                           int64 current, int64 total) OVERRIDE;
   virtual bool ShouldSendDownloadData() OVERRIDE;
@@ -131,9 +160,9 @@ class DownloadFileOperation : public UrlFetchOperationBase {
       scoped_ptr<std::string> download_data) OVERRIDE;
 
  private:
-  DownloadActionCallback download_action_callback_;
-  GetContentCallback get_content_callback_;
-  GURL document_url_;
+  const DownloadActionCallback download_action_callback_;
+  const GetContentCallback get_content_callback_;
+  const GURL content_url_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFileOperation);
 };
@@ -145,19 +174,17 @@ class DeleteDocumentOperation : public EntryActionOperation {
  public:
   DeleteDocumentOperation(OperationRegistry* registry,
                           const EntryActionCallback& callback,
-                          const GURL& document_url);
+                          const GURL& edit_url);
   virtual ~DeleteDocumentOperation();
 
  protected:
-  // Overridden from UrlFetchOperationBase.
+  // UrlFetchOperationBase overrides.
   virtual GURL GetURL() const OVERRIDE;
-
-  // Overridden from EntryActionOperation.
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
 
  private:
-  GURL document_url_;
+  const GURL edit_url_;
 
   DISALLOW_COPY_AND_ASSIGN(DeleteDocumentOperation);
 };
@@ -167,7 +194,9 @@ class DeleteDocumentOperation : public EntryActionOperation {
 // This class performs the operation for creating a directory.
 class CreateDirectoryOperation : public GetDataOperation {
  public:
-  // Empty |parent_content_url| will create the directory in the root folder.
+  // A new directory will be created under a directory specified by
+  // |parent_content_url|. If this parameter is empty, a new directory will
+  // be created in the root directory.
   CreateDirectoryOperation(OperationRegistry* registry,
                            const GDataWapiUrlGenerator& url_generator,
                            const GetDataCallback& callback,
@@ -176,25 +205,25 @@ class CreateDirectoryOperation : public GetDataOperation {
   virtual ~CreateDirectoryOperation();
 
  protected:
-  // Overridden from UrlFetchOperationBase.
+  // UrlFetchOperationBase overrides.
   virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
-
-  // Overridden from UrlFetchOperationBase.
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) OVERRIDE;
 
  private:
-  GDataWapiUrlGenerator url_generator_;
-  GURL parent_content_url_;
-  FilePath::StringType directory_name_;
+  const GDataWapiUrlGenerator url_generator_;
+  const GURL parent_content_url_;
+  const FilePath::StringType directory_name_;
 
   DISALLOW_COPY_AND_ASSIGN(CreateDirectoryOperation);
 };
 
 //============================ CopyDocumentOperation ===========================
 
-// This class performs the operation for making a copy of a document.
+// This class performs the operation for making a copy of a hosted document.
+// Note that this function cannot be used to copy regular files, as it's not
+// supported by WAPI.
 class CopyDocumentOperation : public GetDataOperation {
  public:
   CopyDocumentOperation(OperationRegistry* registry,
@@ -205,18 +234,16 @@ class CopyDocumentOperation : public GetDataOperation {
   virtual ~CopyDocumentOperation();
 
  protected:
-  // Overridden from UrlFetchOperationBase.
+  // UrlFetchOperationBase overrides.
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
-
-  // Overridden from UrlFetchOperationBase.
   virtual GURL GetURL() const OVERRIDE;
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) OVERRIDE;
 
  private:
-  GDataWapiUrlGenerator url_generator_;
-  std::string resource_id_;
-  FilePath::StringType new_name_;
+  const GDataWapiUrlGenerator url_generator_;
+  const std::string resource_id_;
+  const FilePath::StringType new_name_;
 
   DISALLOW_COPY_AND_ASSIGN(CopyDocumentOperation);
 };
@@ -228,23 +255,21 @@ class RenameResourceOperation : public EntryActionOperation {
  public:
   RenameResourceOperation(OperationRegistry* registry,
                           const EntryActionCallback& callback,
-                          const GURL& document_url,
+                          const GURL& edit_url,
                           const FilePath::StringType& new_name);
   virtual ~RenameResourceOperation();
 
  protected:
-  // Overridden from EntryActionOperation.
+  // UrlFetchOperationBase overrides.
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
-
-  // Overridden from UrlFetchOperationBase.
   virtual GURL GetURL() const OVERRIDE;
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) OVERRIDE;
 
  private:
-  GURL document_url_;
-  FilePath::StringType new_name_;
+  const GURL edit_url_;
+  const FilePath::StringType new_name_;
 
   DISALLOW_COPY_AND_ASSIGN(RenameResourceOperation);
 };
@@ -252,25 +277,21 @@ class RenameResourceOperation : public EntryActionOperation {
 //=========================== AuthorizeAppOperation ==========================
 
 // This class performs the operation for authorizing an application specified
-// by |app_id| to access a document specified by |document_url| for .
+// by |app_id| to access a document specified by |edit_url| for .
 class AuthorizeAppOperation : public GetDataOperation {
  public:
   AuthorizeAppOperation(OperationRegistry* registry,
                         const GetDataCallback& callback,
-                        const GURL& document_url,
+                        const GURL& edit_url,
                         const std::string& app_id);
   virtual ~AuthorizeAppOperation();
 
  protected:
-  // Overridden from GetDataOperation.
+  // UrlFetchOperationBase overrides.
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
-
-  // Overridden from UrlFetchOperationBase.
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
-
-  // Overridden from GetDataOperation.
   virtual GURL GetURL() const OVERRIDE;
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
 
@@ -280,8 +301,8 @@ class AuthorizeAppOperation : public GetDataOperation {
                              const std::string& data) OVERRIDE;
 
  private:
-  std::string app_id_;
-  GURL document_url_;
+  const std::string app_id_;
+  const GURL edit_url_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthorizeAppOperation);
 };
@@ -296,20 +317,20 @@ class AddResourceToDirectoryOperation : public EntryActionOperation {
                                   const GDataWapiUrlGenerator& url_generator,
                                   const EntryActionCallback& callback,
                                   const GURL& parent_content_url,
-                                  const GURL& document_url);
+                                  const GURL& edit_url);
   virtual ~AddResourceToDirectoryOperation();
 
  protected:
-  // Overridden from UrlFetchOperationBase.
+  // UrlFetchOperationBase overrides.
   virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) OVERRIDE;
 
  private:
-  GDataWapiUrlGenerator url_generator_;
-  GURL parent_content_url_;
-  GURL document_url_;
+  const GDataWapiUrlGenerator url_generator_;
+  const GURL parent_content_url_;
+  const GURL edit_url_;
 
   DISALLOW_COPY_AND_ASSIGN(AddResourceToDirectoryOperation);
 };
@@ -327,14 +348,14 @@ class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
   virtual ~RemoveResourceFromDirectoryOperation();
 
  protected:
-  // Overridden from UrlFetchOperationBase.
+  // UrlFetchOperationBase overrides.
   virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
 
  private:
-  std::string resource_id_;
-  GURL parent_content_url_;
+  const std::string resource_id_;
+  const GURL parent_content_url_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveResourceFromDirectoryOperation);
 };
@@ -347,25 +368,27 @@ class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
 // When uploading a new file (UPLOAD_NEW_FILE):
 // - |title| should be set.
 // - |upload_location| should be the upload_url() of the parent directory.
+//   (resumable-create-media URL)
 //
 // When updating an existing file (UPLOAD_EXISTING_FILE):
 // - |title| should be empty
 // - |upload_location| should be the upload_url() of the existing file.
+//   (resumable-edit-media URL)
 struct InitiateUploadParams {
   InitiateUploadParams(UploadMode upload_mode,
                        const std::string& title,
                        const std::string& content_type,
                        int64 content_length,
                        const GURL& upload_location,
-                       const FilePath& virtual_path);
+                       const FilePath& drive_file_path);
   ~InitiateUploadParams();
 
-  UploadMode upload_mode;
-  std::string title;
-  std::string content_type;
-  int64 content_length;
-  GURL upload_location;
-  FilePath virtual_path;
+  const UploadMode upload_mode;
+  const std::string title;
+  const std::string content_type;
+  const int64 content_length;
+  const GURL upload_location;
+  const FilePath drive_file_path;
 };
 
 // Callback type for DocumentServiceInterface::InitiateUpload.
@@ -373,30 +396,39 @@ typedef base::Callback<void(GDataErrorCode error,
                             const GURL& upload_url)> InitiateUploadCallback;
 
 // This class performs the operation for initiating the upload of a file.
+// |callback| will be called with the obtained upload URL. The URL will be
+// used with ResumeUploadOperation to upload the content to the server.
+//
+// Here's the flow of uploading:
+// 1) Get the upload URL with InitiateUploadOperation.
+// 2) Upload the first 512KB (see kUploadChunkSize in drive_uploader.cc)
+//    of the target file to the upload URL
+// 3) If there is more data to upload, go to 2).
+//
 class InitiateUploadOperation : public UrlFetchOperationBase {
  public:
+  // |callback| will be called with the upload URL, where upload data is
+  // uploaded to with ResumeUploadOperation.
   InitiateUploadOperation(OperationRegistry* registry,
                           const InitiateUploadCallback& callback,
                           const InitiateUploadParams& params);
   virtual ~InitiateUploadOperation();
 
  protected:
-  // Overridden from UrlFetchOperationBase.
+  // UrlFetchOperationBase overrides.
   virtual GURL GetURL() const OVERRIDE;
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
   virtual void NotifySuccessToOperationRegistry() OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
-
-  // Overridden from UrlFetchOperationBase.
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) OVERRIDE;
 
  private:
-  InitiateUploadCallback callback_;
-  InitiateUploadParams params_;
-  GURL initiate_upload_url_;
+  const InitiateUploadCallback callback_;
+  const InitiateUploadParams params_;
+  const GURL initiate_upload_url_;
 
   DISALLOW_COPY_AND_ASSIGN(InitiateUploadOperation);
 };
@@ -404,6 +436,7 @@ class InitiateUploadOperation : public UrlFetchOperationBase {
 //============================ ResumeUploadOperation ===========================
 
 // Struct for response to ResumeUpload.
+// TODO(satorux): Should return the next upload URL. crbug.com/163555
 struct ResumeUploadResponse {
   ResumeUploadResponse();
   ResumeUploadResponse(GDataErrorCode code,
@@ -413,8 +446,8 @@ struct ResumeUploadResponse {
 
   GDataErrorCode code;
   int64 start_range_received;
-  int64 end_range_received;
-  FilePath virtual_path;
+  int64 end_range_received;  // inclusive. See below.
+  FilePath drive_file_path;
 };
 
 // Struct for passing params needed for DriveServiceInterface::ResumeUpload()
@@ -427,19 +460,25 @@ struct ResumeUploadParams {
                      const std::string& content_type,
                      scoped_refptr<net::IOBuffer> buf,
                      const GURL& upload_location,
-                     const FilePath& virtual_path);
+                     const FilePath& drive_file_path);
   ~ResumeUploadParams();
 
-  UploadMode upload_mode;  // Mode of the upload.
-  int64 start_range;  // Start of range of contents currently stored in |buf|.
-  int64 end_range;  // End of range of contents currently stored in |buf|.
-  int64 content_length;  // File content-Length.
-  std::string content_type;   // Content-Type of file.
-  scoped_refptr<net::IOBuffer> buf;  // Holds current content to be uploaded.
-  GURL upload_location;   // Url of where to upload the file to.
-  // Virtual GData path of the file seen in the UI. Not necessary for
+  const UploadMode upload_mode;  // Mode of the upload.
+  // Start of range of contents currently stored in |buf|.
+  const int64 start_range;
+  // End of range of contents currently stored in |buf|. This is inclusive.
+  // For instance, if you are to upload the first 500 bytes of date,
+  // |start_range| is 0 and |end_range| is 499.
+  const int64 end_range;
+  const int64 content_length;  // File content-Length.
+  const std::string content_type;   // Content-Type of file.
+  // Holds current content to be uploaded.
+  const scoped_refptr<net::IOBuffer> buf;
+  const GURL upload_location;   // Url of where to upload the file to.
+  // Drive file path of the file seen in the UI. Not necessary for
   // resuming an upload, but used for adding an entry to OperationRegistry.
-  FilePath virtual_path;
+  // TODO(satorux): Remove the drive file path hack. crbug.com/163296
+  const FilePath drive_file_path;
 };
 
 // Callback type for DocumentServiceInterface::ResumeUpload.
@@ -448,34 +487,42 @@ typedef base::Callback<void(
     scoped_ptr<google_apis::DocumentEntry> new_entry)> ResumeUploadCallback;
 
 // This class performs the operation for resuming the upload of a file.
+// More specifically, this operation uploads a chunk of data carried in |buf|
+// of ResumeUploadResponse.
 class ResumeUploadOperation : public UrlFetchOperationBase {
  public:
+  // |callback| will be called on completion of the operation.
+  //
+  // If there is more data to upload, |code| in ResumeUploadParams is set to
+  // HTTP_RESUME_INCOMPLETE, and |new_entry| parameter is NULL.
+  //
+  // If upload is complete, |code| is set to HTTP_CREATED for a new file, or
+  // HTTP_SUCCES for an existing file. |new_entry| contains the document
+  // entry of the newly uploaded file.
   ResumeUploadOperation(OperationRegistry* registry,
                         const ResumeUploadCallback& callback,
                         const ResumeUploadParams& params);
   virtual ~ResumeUploadOperation();
 
  protected:
-  // Overridden from UrlFetchOperationBase.
+  // UrlFetchOperationBase overrides.
   virtual GURL GetURL() const OVERRIDE;
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
   virtual void NotifyStartToOperationRegistry() OVERRIDE;
   virtual void NotifySuccessToOperationRegistry() OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
-
-  // Overridden from UrlFetchOperationBase.
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) OVERRIDE;
 
-  // Overridden from content::UrlFetcherDelegate
+  // content::UrlFetcherDelegate overrides.
   virtual void OnURLFetchUploadProgress(const net::URLFetcher* source,
                                         int64 current, int64 total) OVERRIDE;
 
  private:
-  ResumeUploadCallback callback_;
-  ResumeUploadParams params_;
+  const ResumeUploadCallback callback_;
+  const ResumeUploadParams params_;
   bool last_chunk_completed_;
 
   DISALLOW_COPY_AND_ASSIGN(ResumeUploadOperation);
