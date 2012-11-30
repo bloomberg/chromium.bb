@@ -662,12 +662,6 @@ void GLES2Implementation::RestoreArrayBuffer(bool restore) {
   }
 }
 
-void GLES2Implementation::Clear(GLbitfield mask) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glClear(" << mask << ")");
-  helper_->Clear(mask);
-}
-
 void GLES2Implementation::DrawElements(
     GLenum mode, GLsizei count, GLenum type, const void* indices) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();

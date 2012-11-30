@@ -1184,6 +1184,8 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'extension': True,
     'pepper_interface': 'FramebufferBlit',
+    'defer_reads': True,
+    'defer_draws': True,
   },
   'BufferData': {
     'type': 'Manual',
@@ -1203,8 +1205,8 @@ _FUNCTION_INFO = {
     'result': ['GLenum'],
   },
   'Clear': {
-    'type': 'Manual',
-    'cmd_args': 'GLbitfield mask'
+    'decoder_func': 'DoClear',
+    'defer_draws': True,
   },
   'ClearColor': {
     'type': 'StateSet',
@@ -1263,9 +1265,11 @@ _FUNCTION_INFO = {
   'CopyTexImage2D': {
     'decoder_func': 'DoCopyTexImage2D',
     'unit_test': False,
+    'defer_reads': True,
   },
   'CopyTexSubImage2D': {
     'decoder_func': 'DoCopyTexSubImage2D',
+    'defer_reads': True,
   },
   'CreateProgram': {
     'type': 'Create',
@@ -1396,12 +1400,14 @@ _FUNCTION_INFO = {
   'DrawArrays': {
     'type': 'Manual',
     'cmd_args': 'GLenumDrawMode mode, GLint first, GLsizei count',
+    'defer_draws': True,
   },
   'DrawElements': {
     'type': 'Manual',
     'cmd_args': 'GLenumDrawMode mode, GLsizei count, '
                 'GLenumIndexType type, GLuint index_offset',
-    'client_test': False
+    'client_test': False,
+    'defer_draws': True,
   },
   'Enable': {
     'decoder_func': 'DoEnable',
@@ -1794,6 +1800,7 @@ _FUNCTION_INFO = {
         'uint32 pixels_shm_id, uint32 pixels_shm_offset, '
         'uint32 result_shm_id, uint32 result_shm_offset',
     'result': ['uint32'],
+    'defer_reads': True,
   },
   'RegisterSharedIdsCHROMIUM': {
     'type': 'Custom',
@@ -2097,6 +2104,7 @@ _FUNCTION_INFO = {
     'extension': True,
     'unit_test': False,
     'pepper_interface': 'InstancedArrays',
+    'defer_draws': True,
   },
   'DrawElementsInstancedANGLE': {
     'type': 'Manual',
@@ -2106,6 +2114,7 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'client_test': False,
     'pepper_interface': 'InstancedArrays',
+    'defer_draws': True,
   },
   'VertexAttribDivisorANGLE': {
     'type': 'Manual',
@@ -2567,6 +2576,7 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
         "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
         "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
+    self.WriteHandlerDeferReadWrite(func, file);
     if len(func.GetOriginalArgs()) > 0:
       last_arg = func.GetLastOriginalArg()
       all_but_last_arg = func.GetOriginalArgs()[:-1]
@@ -2586,6 +2596,7 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
         "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
         "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
+    self.WriteHandlerDeferReadWrite(func, file);
     last_arg = func.GetLastOriginalArg()
     all_but_last_arg = func.GetOriginalArgs()[:-1]
     for arg in all_but_last_arg:
@@ -2604,6 +2615,7 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
         "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
         "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
+    self.WriteHandlerDeferReadWrite(func, file);
     last_arg = func.GetLastOriginalArg()
     all_but_last_arg = func.GetOriginalArgs()[:-1]
     for arg in all_but_last_arg:
@@ -2615,6 +2627,20 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     file.Write("  return error::kNoError;\n")
     file.Write("}\n")
     file.Write("\n")
+
+  def WriteHandlerDeferReadWrite(self, func, file):
+    """Writes the code to handle deferring reads or writes."""
+    defer_reads = func.GetInfo('defer_reads')
+    defer_draws = func.GetInfo('defer_draws')
+    conditions = []
+    if defer_draws:
+      conditions.append('ShouldDeferDraws()');
+    if defer_reads:
+      conditions.append('ShouldDeferReads()');
+    if not conditions:
+      return
+    file.Write("  if (%s)\n" % ' || '.join(conditions))
+    file.Write("    return error::kDeferCommandUntilLater;\n")
 
   def WriteValidUnitTest(self, func, file, test, extra = {}):
     """Writes a valid unit test."""

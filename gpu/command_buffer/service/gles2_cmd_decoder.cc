@@ -1409,6 +1409,12 @@ class GLES2DecoderImpl : public GLES2Decoder {
            surface_->DeferDraws();
   }
 
+  bool ShouldDeferReads() {
+    return !offscreen_target_frame_buffer_.get() &&
+           state_.bound_read_framebuffer == NULL &&
+           surface_->DeferDraws();
+  }
+
   void ForceCompileShaderIfPending(ShaderManager::ShaderInfo* info);
 
   // Generate a member function prototype for each command in an automated and
@@ -3125,7 +3131,7 @@ bool GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
 
 error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
     uint32 immediate_data_size, const gles2::ResizeCHROMIUM& c) {
-  if (ShouldDeferDraws())
+  if (!offscreen_target_frame_buffer_.get() && surface_->DeferDraws())
     return error::kDeferCommandUntilLater;
 
   GLuint width = static_cast<GLuint>(c.width);
@@ -4238,8 +4244,7 @@ error::Error GLES2DecoderImpl::HandleRegisterSharedIdsCHROMIUM(
 }
 
 error::Error GLES2DecoderImpl::DoClear(GLbitfield mask) {
-  if (ShouldDeferDraws())
-    return error::kDeferCommandUntilLater;
+  DCHECK(!ShouldDeferDraws());
   if (CheckBoundFramebuffersValid("glClear")) {
     UNSHIPPED_TRACE_EVENT_INSTANT2(
         "test_gpu", "DoClear",
@@ -4249,12 +4254,6 @@ error::Error GLES2DecoderImpl::DoClear(GLbitfield mask) {
     glClear(mask);
   }
   return error::kNoError;
-}
-
-error::Error GLES2DecoderImpl::HandleClear(
-    uint32 immediate_data_size, const gles2::Clear& c) {
-  GLbitfield mask = static_cast<GLbitfield>(c.mask);
-  return DoClear(mask);
 }
 
 void GLES2DecoderImpl::DoFramebufferRenderbuffer(
@@ -4505,6 +4504,7 @@ void GLES2DecoderImpl::DoBlitFramebufferEXT(
     GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1,
     GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
     GLbitfield mask, GLenum filter) {
+  DCHECK(!ShouldDeferReads() && !ShouldDeferDraws());
   if (!features().chromium_framebuffer_multisample) {
     SetGLError(GL_INVALID_OPERATION,
                "glBlitFramebufferEXT", "function not available");
@@ -6238,6 +6238,8 @@ error::Error GLES2DecoderImpl::HandleVertexAttribDivisorANGLE(
 
 error::Error GLES2DecoderImpl::HandleReadPixels(
     uint32 immediate_data_size, const gles2::ReadPixels& c) {
+  if (ShouldDeferReads())
+    return error::kDeferCommandUntilLater;
   GLint x = c.x;
   GLint y = c.y;
   GLsizei width = c.width;
@@ -7424,6 +7426,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     GLsizei width,
     GLsizei height,
     GLint border) {
+  DCHECK(!ShouldDeferReads());
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
   if (!info) {
     SetGLError(GL_INVALID_OPERATION,
@@ -7526,6 +7529,7 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
     GLint y,
     GLsizei width,
     GLsizei height) {
+  DCHECK(!ShouldDeferReads());
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
   if (!info) {
     SetGLError(GL_INVALID_OPERATION,

@@ -117,6 +117,12 @@ GLenum GLES2Implementation::CheckFramebufferStatus(GLenum target) {
   return *result;
 }
 
+void GLES2Implementation::Clear(GLbitfield mask) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glClear(" << mask << ")");
+  helper_->Clear(mask);
+}
+
 void GLES2Implementation::ClearColor(
     GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();

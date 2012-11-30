@@ -252,6 +252,15 @@ error::Error GLES2DecoderImpl::HandleCheckFramebufferStatus(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleClear(
+    uint32 immediate_data_size, const gles2::Clear& c) {
+  if (ShouldDeferDraws())
+    return error::kDeferCommandUntilLater;
+  GLbitfield mask = static_cast<GLbitfield>(c.mask);
+  DoClear(mask);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleClearColor(
     uint32 immediate_data_size, const gles2::ClearColor& c) {
   GLclampf red = static_cast<GLclampf>(c.red);
@@ -402,6 +411,8 @@ error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2DImmediate(
 
 error::Error GLES2DecoderImpl::HandleCopyTexImage2D(
     uint32 immediate_data_size, const gles2::CopyTexImage2D& c) {
+  if (ShouldDeferReads())
+    return error::kDeferCommandUntilLater;
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
   GLenum internalformat = static_cast<GLenum>(c.internalformat);
@@ -438,6 +449,8 @@ error::Error GLES2DecoderImpl::HandleCopyTexImage2D(
 
 error::Error GLES2DecoderImpl::HandleCopyTexSubImage2D(
     uint32 immediate_data_size, const gles2::CopyTexSubImage2D& c) {
+  if (ShouldDeferReads())
+    return error::kDeferCommandUntilLater;
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
   GLint xoffset = static_cast<GLint>(c.xoffset);
@@ -2635,6 +2648,8 @@ error::Error GLES2DecoderImpl::HandleViewport(
 
 error::Error GLES2DecoderImpl::HandleBlitFramebufferEXT(
     uint32 immediate_data_size, const gles2::BlitFramebufferEXT& c) {
+  if (ShouldDeferDraws() || ShouldDeferReads())
+    return error::kDeferCommandUntilLater;
   GLint srcX0 = static_cast<GLint>(c.srcX0);
   GLint srcY0 = static_cast<GLint>(c.srcY0);
   GLint srcX1 = static_cast<GLint>(c.srcX1);
