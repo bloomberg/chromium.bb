@@ -1614,6 +1614,9 @@ void LayerTreeHostImpl::renderingStats(RenderingStats* stats) const
     stats->numImplThreadScrolls = m_numImplThreadScrolls;
     stats->numMainThreadScrolls = m_numMainThreadScrolls;
     stats->numLayersDrawn = m_cumulativeNumLayersDrawn;
+
+    if (m_tileManager)
+        m_tileManager->renderingStats(stats);
 }
 
 void LayerTreeHostImpl::animateScrollbars(base::TimeTicks time)
