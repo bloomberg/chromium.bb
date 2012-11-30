@@ -66,6 +66,12 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&UpdateEngineClientImpl::StatusUpdateConnected,
                    weak_ptr_factory_.GetWeakPtr()));
+
+    // Get update engine status for the initial status. Update engine won't
+    // send StatusUpdate signal unless there is a status change. If chrome
+    // crashes after UPDATE_STATUS_UPDATED_NEED_REBOOT status is set,
+    // restarted chrome would not get this status. See crbug.com/154104.
+    GetUpdateEngineStatus();
   }
 
   virtual ~UpdateEngineClientImpl() {
@@ -157,6 +163,19 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
   }
 
  private:
+  void GetUpdateEngineStatus() {
+    dbus::MethodCall method_call(
+        update_engine::kUpdateEngineInterface,
+        update_engine::kGetStatus);
+    update_engine_proxy_->CallMethodWithErrorCallback(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&UpdateEngineClientImpl::OnGetStatus,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&UpdateEngineClientImpl::OnGetStatusError,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
   // Called when a response for RequestUpdateCheck() is received.
   void OnRequestUpdateCheck(const UpdateCheckCallback& callback,
                             dbus::Response* response) {
@@ -201,6 +220,35 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     }
     VLOG(1) << "The current release track received: " << release_track;
     callback.Run(release_track);
+  }
+
+  // Called when a response for GetStatus is received.
+  void OnGetStatus(dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Failed to get response for GetStatus request.";
+      return;
+    }
+
+    dbus::MessageReader reader(response);
+    std::string current_operation;
+    Status status;
+    if (!(reader.PopInt64(&status.last_checked_time) &&
+          reader.PopDouble(&status.download_progress) &&
+          reader.PopString(&current_operation) &&
+          reader.PopString(&status.new_version) &&
+          reader.PopInt64(&status.new_size))) {
+      LOG(ERROR) << "GetStatus had incorrect response: "
+                 << response->ToString();
+      return;
+    }
+    status.status = UpdateStatusFromString(current_operation);
+    last_status_ = status;
+    FOR_EACH_OBSERVER(Observer, observers_, UpdateStatusChanged(status));
+  }
+
+  // Called when GetStatus call failed.
+  void OnGetStatusError(dbus::ErrorResponse* error) {
+    LOG(ERROR) << "GetStatus request failed with error: " << error->ToString();
   }
 
   // Called when a status update signal is received.
