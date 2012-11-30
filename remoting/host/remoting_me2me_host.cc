@@ -621,6 +621,7 @@ void HostProcess::ShutdownOnUiThread() {
   DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
 
   // Tear down resources that need to be torn down on the UI thread.
+  network_change_notifier_.reset();
   config_watcher_.reset();
   daemon_channel_.reset();
   desktop_environment_factory_.reset();
