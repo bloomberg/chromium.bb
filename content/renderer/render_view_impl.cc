@@ -1073,8 +1073,7 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
     is_reload = false;
   }
 
-  pending_navigation_params_.reset(new ViewMsg_Navigate_Params);
-  *pending_navigation_params_.get() = params;
+  pending_navigation_params_.reset(new ViewMsg_Navigate_Params(params));
 
   // If we are reloading, then WebKit will use the history state of the current
   // page, so we should just ignore any given history state.  Otherwise, if we
