@@ -93,12 +93,13 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
                                  const BookmarkNode* bookmark_node,
                                  BookmarkModel* model);
 
-  // Applies the favicon 1x |bitmap_data| to |bookmark_node|.
+  // Applies the 1x favicon |bitmap_data| and |icon_url| to |bookmark_node|.
   // |profile| is the profile that contains the HistoryService and BookmarkModel
   // for the bookmark in question.
   static void ApplyBookmarkFavicon(
       const BookmarkNode* bookmark_node,
       Profile* profile,
+      const GURL& icon_url,
       const scoped_refptr<base::RefCountedMemory>& bitmap_data);
 
   // Sets the favicon of the given sync node from the given bookmark node.

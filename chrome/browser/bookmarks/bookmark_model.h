@@ -79,6 +79,10 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   const GURL& url() const { return url_; }
   void set_url(const GURL& url) { url_ = url; }
 
+  // Returns the favicon's URL. Returns an empty URL if there is no favicon
+  // associated with this bookmark.
+  const GURL& icon_url() const { return icon_url_; }
+
   Type type() const { return type_; }
   void set_type(Type type) { type_ = type; }
 
@@ -133,6 +137,11 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   // Called when the favicon becomes invalid.
   void InvalidateFavicon();
 
+  // Sets the favicon's URL.
+  void set_icon_url(const GURL& icon_url) {
+    icon_url_ = icon_url;
+  }
+
   const gfx::Image& favicon() const { return favicon_; }
   void set_favicon(const gfx::Image& icon) { favicon_ = icon; }
 
@@ -164,6 +173,9 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
 
   // The favicon of this node.
   gfx::Image favicon_;
+
+  // The URL of the node's favicon.
+  GURL icon_url_;
 
   // The loading state of the favicon.
   FaviconState favicon_state_;

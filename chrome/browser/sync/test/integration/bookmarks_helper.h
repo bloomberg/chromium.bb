@@ -88,12 +88,12 @@ void SetTitle(int profile,
                      const BookmarkNode* node,
                      const std::wstring& new_title);
 
-// Sets the favicon of the node |node| (of type BookmarkNode::URL) in the
-// bookmark model of profile |profile| using the data in |icon_bytes_vector|.
-void SetFavicon(
-    int profile,
-    const BookmarkNode* node,
-    const std::vector<unsigned char>& icon_bytes_vector);
+// Sets the |icon_url| and |image| data for the favicon for |node| in the
+// bookmark model for |profile|.
+void SetFavicon(int profile,
+                const BookmarkNode* node,
+                const GURL& icon_url,
+                const gfx::Image& image);
 
 // Changes the url of the node |node| in the bookmark model of profile
 // |profile| to |new_url|. Returns a pointer to the node with the changed url.
@@ -165,8 +165,9 @@ int CountFoldersWithTitlesMatching(
     int profile,
     const std::wstring& title) WARN_UNUSED_RESULT;
 
-// Creates a unique favicon using |seed|.
-std::vector<unsigned char> CreateFavicon(int seed);
+// Creates a favicon of |color| with image reps of the platform's supported
+// scale factors (eg MacOS) in addition to 1x.
+gfx::Image CreateFavicon(SkColor color);
 
 // Returns a URL identifiable by |i|.
 std::string IndexedURL(int i);

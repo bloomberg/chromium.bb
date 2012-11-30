@@ -443,11 +443,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
 
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, BookmarksWithTypedVisit) {
   GURL bookmark_url("http://www.bookmark.google.com/");
+  GURL bookmark_icon_url("http://www.bookmark.google.com/favicon.ico");
   ASSERT_TRUE(SetupClients());
   // Create a bookmark.
   const BookmarkNode* node = bookmarks_helper::AddURL(
       0, bookmarks_helper::IndexedURLTitle(0), bookmark_url);
-  bookmarks_helper::SetFavicon(0, node, bookmarks_helper::CreateFavicon(254));
+  bookmarks_helper::SetFavicon(0, node, bookmark_icon_url,
+      bookmarks_helper::CreateFavicon(SK_ColorWHITE));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));

@@ -700,15 +700,22 @@ bool BookmarkChangeProcessor::SetBookmarkFavicon(
     BookmarkModel* bookmark_model) {
   const sync_pb::BookmarkSpecifics& specifics =
       sync_node->GetBookmarkSpecifics();
-  const std::string& icon_str = specifics.favicon();
-  if (icon_str.empty())
+  const std::string& icon_bytes_str = specifics.favicon();
+  if (icon_bytes_str.empty())
     return false;
 
   scoped_refptr<base::RefCountedString> icon_bytes(
       new base::RefCountedString());
-  icon_bytes->data().assign(icon_str);
+  icon_bytes->data().assign(icon_bytes_str);
+  GURL icon_url(specifics.icon_url());
 
-  ApplyBookmarkFavicon(bookmark_node, bookmark_model->profile(),
+  // Old clients may not be syncing the favicon URL. If the icon URL is not
+  // synced, use the page URL as a fake icon URL as it is guaranteed to be
+  // unique.
+  if (icon_url.is_empty())
+    icon_url = bookmark_node->url();
+
+  ApplyBookmarkFavicon(bookmark_node, bookmark_model->profile(), icon_url,
                        icon_bytes);
 
   return true;
@@ -718,6 +725,7 @@ bool BookmarkChangeProcessor::SetBookmarkFavicon(
 void BookmarkChangeProcessor::ApplyBookmarkFavicon(
     const BookmarkNode* bookmark_node,
     Profile* profile,
+    const GURL& icon_url,
     const scoped_refptr<base::RefCountedMemory>& bitmap_data) {
   HistoryService* history =
       HistoryServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
@@ -727,13 +735,12 @@ void BookmarkChangeProcessor::ApplyBookmarkFavicon(
   history->AddPageNoVisitForBookmark(bookmark_node->url(),
                                      bookmark_node->GetTitle());
   // The client may have cached the favicon at 2x. Use MergeFavicon() as not to
-  // overwrite the cached 2x favicon bitmap. Use the page URL as a fake icon URL
-  // as it is guaranteed to be unique. Sync favicons are always
-  // gfx::kFaviconSize in width and height. Store the favicon into history as
-  // such.
+  // overwrite the cached 2x favicon bitmap. Sync favicons are always
+  // gfx::kFaviconSize in width and height. Store the favicon into history
+  // as such.
   gfx::Size pixel_size(gfx::kFaviconSize, gfx::kFaviconSize);
   favicon_service->MergeFavicon(bookmark_node->url(),
-                                bookmark_node->url(),
+                                icon_url,
                                 history::FAVICON,
                                 bitmap_data,
                                 pixel_size);
@@ -750,6 +757,7 @@ void BookmarkChangeProcessor::SetSyncNodeFavicon(
     sync_pb::BookmarkSpecifics updated_specifics(
         sync_node->GetBookmarkSpecifics());
     updated_specifics.set_favicon(&favicon_bytes[0], favicon_bytes.size());
+    updated_specifics.set_icon_url(bookmark_node->icon_url().spec());
     sync_node->SetBookmarkSpecifics(updated_specifics);
   }
 }

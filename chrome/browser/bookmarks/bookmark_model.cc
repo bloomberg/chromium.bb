@@ -144,6 +144,7 @@ void BookmarkNode::Initialize(int64 id) {
 }
 
 void BookmarkNode::InvalidateFavicon() {
+  icon_url_ = GURL();
   favicon_ = gfx::Image();
   favicon_state_ = INVALID_FAVICON;
 }
@@ -894,6 +895,7 @@ void BookmarkModel::OnFaviconDataAvailable(
   node->set_favicon_state(BookmarkNode::LOADED_FAVICON);
   if (!image_result.image.IsEmpty()) {
     node->set_favicon(image_result.image);
+    node->set_icon_url(image_result.icon_url);
     FaviconLoaded(node);
   }
 }

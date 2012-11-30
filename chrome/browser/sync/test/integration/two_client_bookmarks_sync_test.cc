@@ -53,10 +53,6 @@ class TwoClientBookmarksSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientBookmarksSyncTest);
 };
 
-const std::vector<unsigned char> GenericFavicon() {
-  return CreateFavicon(254);
-}
-
 IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
@@ -142,10 +138,52 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_AddFirstBMWithFavicon) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  const BookmarkNode* bookmark = AddURL(0, kGenericURLTitle, GURL(kGenericURL));
+  const GURL page_url(kGenericURL);
+  const GURL icon_url("http://www.google.com/favicon.ico");
+
+  const BookmarkNode* bookmark = AddURL(0, kGenericURLTitle, page_url);
+
   ASSERT_TRUE(bookmark != NULL);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  SetFavicon(0, bookmark, GenericFavicon());
+  SetFavicon(0, bookmark, icon_url, CreateFavicon(SK_ColorWHITE));
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(AllModelsMatchVerifier());
+}
+
+// Test that the history service logic for not losing the hidpi versions of
+// favicons as a result of sync does not result in dropping sync updates.
+// In particular, the synced 16x16 favicon bitmap should overwrite 16x16
+// favicon bitmaps on all clients. (Though non-16x16 favicon bitmaps
+// are unchanged).
+IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_SetFaviconHiDPI) {
+  // Set the supported scale factors to include 2x such that CreateFavicon()
+  // creates a favicon with hidpi representations and that methods in the
+  // FaviconService request hidpi favicons.
+  std::vector<ui::ScaleFactor> supported_scale_factors;
+  supported_scale_factors.push_back(ui::SCALE_FACTOR_100P);
+  supported_scale_factors.push_back(ui::SCALE_FACTOR_200P);
+  ui::test::SetSupportedScaleFactors(supported_scale_factors);
+
+  const GURL page_url(kGenericURL);
+  const GURL icon_url1("http://www.google.com/favicon1.ico");
+  const GURL icon_url2("http://www.google.com/favicon2.ico");
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  const BookmarkNode* bookmark0 = AddURL(0, kGenericURLTitle, page_url);
+  ASSERT_TRUE(bookmark0 != NULL);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  SetFavicon(0, bookmark0, icon_url1, CreateFavicon(SK_ColorWHITE));
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  const BookmarkNode* bookmark1 = GetUniqueNodeByURL(1, page_url);
+  SetFavicon(1, bookmark1, icon_url1, CreateFavicon(SK_ColorBLUE));
+  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  SetFavicon(0, bookmark0, icon_url2, CreateFavicon(SK_ColorGREEN));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 }

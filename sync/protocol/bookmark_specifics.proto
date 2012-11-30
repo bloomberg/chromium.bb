@@ -22,5 +22,6 @@ message BookmarkSpecifics {
   // Corresponds to BookmarkNode::date_added() and is the internal value from
   // base::Time.
   optional int64 creation_time_us = 4;
+  optional string icon_url = 5;
 }
 
