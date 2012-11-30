@@ -6,6 +6,7 @@
 
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_state_restorer.h"
+#include "ui/gl/gl_surface.h"
 
 namespace gfx {
 
@@ -68,8 +69,7 @@ void RealGLApi::Initialize(DriverGL* driver) {
 VirtualGLApi::VirtualGLApi()
     : driver_(NULL),
       real_context_(NULL),
-      current_context_(NULL),
-      current_surface_(NULL) {
+      current_context_(NULL) {
 }
 
 VirtualGLApi::~VirtualGLApi() {
@@ -82,13 +82,26 @@ void VirtualGLApi::Initialize(DriverGL* driver, GLContext* real_context) {
 
 bool VirtualGLApi::MakeCurrent(GLContext* virtual_context, GLSurface* surface) {
   bool switched_contexts = g_current_gl_context != this;
-  if (switched_contexts || surface != current_surface_) {
-    // TODO: Emit warning on Android?
-    if (!real_context_->MakeCurrent(surface)) {
+  GLSurface* current_surface = GLSurface::GetCurrent();
+  if (switched_contexts || surface != current_surface) {
+    if (!switched_contexts && current_surface &&
+        virtual_context->IsCurrent(surface)) {
+      // MakeCurrent 'lite' path that avoids potentially expensive MakeCurrent()
+      // calls if the GLSurface uses the same underlying surface or renders to
+      // an FBO.
+      if (!surface->OnMakeCurrent(real_context_)) {
+        LOG(ERROR) << "Could not make GLSurface current.";
+        return false;
+      }
+    } else if (!real_context_->MakeCurrent(surface)) {
       return false;
     }
-    current_surface_ = surface;
   }
+
+  DCHECK(GLSurface::GetCurrent());
+  DCHECK(real_context_->IsCurrent(GLSurface::GetCurrent()));
+  DCHECK(virtual_context->IsCurrent(surface));
+
   if (switched_contexts || virtual_context != current_context_) {
     current_context_ = virtual_context;
     // Set all state that is different from the real state
@@ -1059,5 +1072,3 @@ GLboolean VirtualGLApi::glIsVertexArrayOESFn(GLuint array) {
 }
 
 }  // namespace gfx
-
-

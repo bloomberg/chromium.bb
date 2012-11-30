@@ -337,6 +337,8 @@ void GpuCommandBufferStub::Destroy() {
   if (context)
     context->MakeCurrent(surface_.get());
   surface_ = NULL;
+  if (context)
+    context->ReleaseCurrent(NULL);
 }
 
 void GpuCommandBufferStub::OnInitializeFailed(IPC::Message* reply_message) {

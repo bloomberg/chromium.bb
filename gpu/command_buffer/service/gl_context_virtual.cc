@@ -50,10 +50,22 @@ bool GLContextVirtual::MakeCurrent(gfx::GLSurface* surface) {
 }
 
 void GLContextVirtual::ReleaseCurrent(gfx::GLSurface* surface) {
+  if (IsCurrent(surface))
+    shared_context_->ReleaseCurrent(surface);
 }
 
 bool GLContextVirtual::IsCurrent(gfx::GLSurface* surface) {
-  return true;
+  bool context_current = shared_context_->IsCurrent(NULL);
+  if (!context_current)
+    return false;
+
+  if (!surface)
+    return true;
+
+  gfx::GLSurface* current_surface = gfx::GLSurface::GetCurrent();
+  return surface->GetBackingFrameBufferObject() ||
+      (current_surface &&
+       current_surface->GetHandle() == surface->GetHandle());
 }
 
 void* GLContextVirtual::GetHandle() {

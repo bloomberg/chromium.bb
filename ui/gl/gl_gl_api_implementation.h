@@ -67,14 +67,8 @@ class GL_EXPORT VirtualGLApi : public GLApi {
 
   // The current virtual context.
   GLContext* current_context_;
-
-  // The current surface.
-  GLSurface* current_surface_;
 };
 
 }  // namespace gfx
 
 #endif  // UI_GL_GL_API_IMPLEMENTATION_H_
-
-
-
