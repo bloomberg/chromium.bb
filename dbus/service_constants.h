@@ -666,6 +666,11 @@ const char kProviderRequiresRoamingProperty[] =
 const char kSIMPresentProperty[] = "Cellular.SIMPresent";
 const char kSupportedCarriersProperty[] = "Cellular.SupportedCarriers";
 
+// Error strings.
+const char kErrorEapAuthenticationFailed[] = "eap-authentication-failed";
+const char kErrorEapLocalTlsFailed[] = "eap-local-tls-failed";
+const char kErrorEapRemoteTlsFailed[] = "eap-remote-tls-failed";
+
 // IPConfig property names.
 const char kSearchDomainsProperty[] = "SearchDomains";
 
