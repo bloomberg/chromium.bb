@@ -1843,10 +1843,8 @@ ui::TextInputType RenderWidget::WebKitToUiTextInputType(
 }
 
 ui::TextInputType RenderWidget::GetTextInputType() {
-  if (webwidget_) {
-    WebKit::WebTextInputType type = webwidget_->textInputType();
-    return WebKitToUiTextInputType(type);
-  }
+  if (webwidget_)
+    return WebKitToUiTextInputType(webwidget_->textInputInfo().type);
   return ui::TEXT_INPUT_TYPE_NONE;
 }
 
