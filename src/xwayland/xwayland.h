@@ -27,10 +27,6 @@
 
 #include "../compositor.h"
 
-struct xserver {
-	struct wl_resource resource;
-};
-
 struct weston_xserver {
 	struct wl_display *wl_display;
 	struct wl_event_loop *loop;
