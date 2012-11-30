@@ -580,7 +580,7 @@ ui::EventResult DesktopNativeWidgetAura::OnGestureEvent(
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopNativeWidgetAura, aura::ActivationDelegate implementation:
 
-bool DesktopNativeWidgetAura::ShouldActivate(const ui::Event* event) {
+bool DesktopNativeWidgetAura::ShouldActivate() const {
   return can_activate_ && native_widget_delegate_->CanActivate();
 }
 

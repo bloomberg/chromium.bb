@@ -200,7 +200,7 @@ class RenderWidgetHostViewAura
   virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Overridden from aura::client::ActivationDelegate:
-  virtual bool ShouldActivate(const ui::Event* event) OVERRIDE;
+  virtual bool ShouldActivate() const OVERRIDE;
   virtual void OnActivated() OVERRIDE;
   virtual void OnLostActive() OVERRIDE;
 
@@ -421,6 +421,10 @@ class RenderWidgetHostViewAura
     NO_PENDING_COMMIT,
   };
   CanLockCompositorState can_lock_compositor_;
+
+  // Whether or not the ui::Event* being processed currently would cause
+  // |window_| to be activated.
+  bool pointer_activate_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };
