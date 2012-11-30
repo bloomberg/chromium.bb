@@ -1929,6 +1929,10 @@ const ViewData* PluginInstance::GetViewData(PP_Instance instance) {
   return &view_data_;
 }
 
+PP_Bool PluginInstance::FlashIsFullscreen(PP_Instance instance) {
+  return PP_FromBool(flash_fullscreen_);
+}
+
 PP_Var PluginInstance::GetWindowObject(PP_Instance instance) {
   if (!container_)
     return PP_MakeUndefined();
@@ -2128,8 +2132,9 @@ PP_Bool PluginInstance::GetScreenSize(PP_Instance instance, PP_Size* size) {
     ::ppapi::SingletonResourceID id) {
   // Flash APIs aren't implemented in-process.
   switch (id) {
-    case ::ppapi::FLASH_SINGLETON_ID:
     case ::ppapi::FLASH_CLIPBOARD_SINGLETON_ID:
+    case ::ppapi::FLASH_FULLSCREEN_SINGLETON_ID:
+    case ::ppapi::FLASH_SINGLETON_ID:
       NOTIMPLEMENTED();
       return NULL;
     case ::ppapi::GAMEPAD_SINGLETON_ID:

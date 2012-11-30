@@ -113,10 +113,6 @@ bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgGetLocalTimeZoneOffset)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_IsRectTopmost,
                         OnHostMsgIsRectTopmost)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_FlashSetFullscreen,
-                        OnHostMsgFlashSetFullscreen)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_FlashGetScreenSize,
-                        OnHostMsgFlashGetScreenSize)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_OpenFileRef,
                         OnHostMsgOpenFileRef)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_QueryFileRef,
@@ -494,30 +490,6 @@ int32_t PPB_Flash_Proxy::QueryFileRef(PP_Instance instance,
   return result;
 }
 
-PP_Bool PPB_Flash_Proxy::FlashIsFullscreen(PP_Instance instance) {
-  InstanceData* data = static_cast<PluginDispatcher*>(dispatcher())->
-      GetInstanceData(instance);
-  if (!data)
-    return PP_FALSE;
-  return data->flash_fullscreen;
-}
-
-PP_Bool PPB_Flash_Proxy::FlashSetFullscreen(PP_Instance instance,
-                                            PP_Bool fullscreen) {
-  PP_Bool result = PP_FALSE;
-  dispatcher()->Send(new PpapiHostMsg_PPBFlash_FlashSetFullscreen(
-      API_ID_PPB_FLASH, instance, fullscreen, &result));
-  return result;
-}
-
-PP_Bool PPB_Flash_Proxy::FlashGetScreenSize(PP_Instance instance,
-                                            PP_Size* size) {
-  PP_Bool result = PP_FALSE;
-  dispatcher()->Send(new PpapiHostMsg_PPBFlash_FlashGetScreenSize(
-      API_ID_PPB_FLASH, instance, &result, size));
-  return result;
-}
-
 void PPB_Flash_Proxy::OnHostMsgSetInstanceAlwaysOnTop(PP_Instance instance,
                                                       PP_Bool on_top) {
   EnterInstanceNoLock enter(instance);
@@ -619,31 +591,6 @@ void PPB_Flash_Proxy::OnHostMsgIsRectTopmost(PP_Instance instance,
     *result = enter.functions()->GetFlashAPI()->IsRectTopmost(instance, &rect);
   else
     *result = PP_FALSE;
-}
-
-void PPB_Flash_Proxy::OnHostMsgFlashSetFullscreen(PP_Instance instance,
-                                                  PP_Bool fullscreen,
-                                                  PP_Bool* result) {
-  EnterInstanceNoLock enter(instance);
-  if (enter.succeeded()) {
-    *result = enter.functions()->GetFlashAPI()->FlashSetFullscreen(
-        instance, fullscreen);
-  } else {
-    *result = PP_FALSE;
-  }
-}
-
-void PPB_Flash_Proxy::OnHostMsgFlashGetScreenSize(PP_Instance instance,
-                                                  PP_Bool* result,
-                                                  PP_Size* size) {
-  EnterInstanceNoLock enter(instance);
-  if (enter.succeeded()) {
-    *result = enter.functions()->GetFlashAPI()->FlashGetScreenSize(
-        instance, size);
-  } else {
-    size->width = 0;
-    size->height = 0;
-  }
 }
 
 void PPB_Flash_Proxy::OnHostMsgOpenFileRef(

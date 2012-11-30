@@ -111,11 +111,6 @@ class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
   virtual int32_t QueryFileRef(PP_Instance instance,
                                PP_Resource file_ref,
                                PP_FileInfo* info) OVERRIDE;
-  virtual PP_Bool FlashIsFullscreen(PP_Instance instance) OVERRIDE;
-  virtual PP_Bool FlashSetFullscreen(PP_Instance instance,
-                                     PP_Bool fullscreen) OVERRIDE;
-  virtual PP_Bool FlashGetScreenSize(PP_Instance instance,
-                                     PP_Size* size) OVERRIDE;
 
   static const ApiID kApiID = API_ID_PPB_FLASH;
 
@@ -139,12 +134,6 @@ class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
   void OnHostMsgIsRectTopmost(PP_Instance instance,
                               PP_Rect rect,
                               PP_Bool* result);
-  void OnHostMsgFlashSetFullscreen(PP_Instance instance,
-                                   PP_Bool fullscreen,
-                                   PP_Bool* result);
-  void OnHostMsgFlashGetScreenSize(PP_Instance instance,
-                                   PP_Bool* result,
-                                   PP_Size* size);
   void OnHostMsgOpenFileRef(PP_Instance instance,
                             const ppapi::HostResource& host_resource,
                             int32_t mode,

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/renderer/pepper/pepper_flash_font_file_host.h"
+#include "chrome/renderer/pepper/pepper_flash_fullscreen_host.h"
 #include "chrome/renderer/pepper/pepper_flash_menu_host.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
@@ -49,6 +50,11 @@ ChromeRendererPepperHostFactory::CreateResourceHost(
           return scoped_ptr<ResourceHost>(new PepperFlashFontFileHost(
               host_, instance, params.pp_resource(), description, charset));
         }
+        break;
+      }
+      case PpapiHostMsg_FlashFullscreen_Create::ID: {
+        return scoped_ptr<ResourceHost>(new PepperFlashFullscreenHost(
+            host_, instance, params.pp_resource()));
         break;
       }
       case PpapiHostMsg_FlashMenu_Create::ID: {

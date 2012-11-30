@@ -17,6 +17,7 @@
 #include "ppapi/proxy/content_decryptor_private_serializer.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/flash_clipboard_resource.h"
+#include "ppapi/proxy/flash_fullscreen_resource.h"
 #include "ppapi/proxy/flash_resource.h"
 #include "ppapi/proxy/gamepad_resource.h"
 #include "ppapi/proxy/host_dispatcher.h"
@@ -249,6 +250,13 @@ const ViewData* PPB_Instance_Proxy::GetViewData(PP_Instance instance) {
   return &data->view;
 }
 
+PP_Bool PPB_Instance_Proxy::FlashIsFullscreen(PP_Instance instance) {
+  // This function is only used for proxying in the renderer process. It is not
+  // implemented in the plugin process.
+  NOTREACHED();
+  return PP_FALSE;
+}
+
 PP_Var PPB_Instance_Proxy::GetWindowObject(PP_Instance instance) {
   ReceiveSerializedVarReturnValue result;
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_GetWindowObject(
@@ -372,15 +380,19 @@ Resource* PPB_Instance_Proxy::GetSingletonResource(PP_Instance instance,
       break;
 // Flash resources aren't needed for NaCl.
 #if !defined(OS_NACL) && !defined(NACL_WIN64)
-    case FLASH_SINGLETON_ID:
-      new_singleton = new FlashResource(connection, instance);
-      break;
     case FLASH_CLIPBOARD_SINGLETON_ID:
       new_singleton = new FlashClipboardResource(connection, instance);
       break;
-#else
+    case FLASH_FULLSCREEN_SINGLETON_ID:
+      new_singleton = new FlashFullscreenResource(connection, instance);
+      break;
     case FLASH_SINGLETON_ID:
+      new_singleton = new FlashResource(connection, instance);
+      break;
+#else
     case FLASH_CLIPBOARD_SINGLETON_ID:
+    case FLASH_FULLSCREEN_SINGLETON_ID:
+    case FLASH_SINGLETON_ID:
       NOTREACHED();
       break;
 #endif  // !defined(OS_NACL) && !defined(NACL_WIN64)

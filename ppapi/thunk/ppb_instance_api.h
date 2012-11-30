@@ -49,8 +49,11 @@ class PPB_Instance_API {
   virtual PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) = 0;
   virtual PP_Bool IsFullFrame(PP_Instance instance) = 0;
 
-  // Not an exposed PPAPI function, this returns the internal view data struct.
+  // Unexposed PPAPI functions for proxying.
+  // Returns the internal view data struct.
   virtual const ViewData* GetViewData(PP_Instance instance) = 0;
+  // Returns the flash fullscreen status.
+  virtual PP_Bool FlashIsFullscreen(PP_Instance instance) = 0;
 
   // InstancePrivate.
   virtual PP_Var GetWindowObject(PP_Instance instance) = 0;

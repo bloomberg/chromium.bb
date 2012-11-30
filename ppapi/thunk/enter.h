@@ -248,7 +248,7 @@ class PPAPI_THUNK_EXPORT EnterInstanceNoLock
 // EnterInstanceAPI ------------------------------------------------------------
 
 template<typename ApiT, bool lock_on_entry = true>
-class PPAPI_THUNK_EXPORT EnterInstanceAPI
+class EnterInstanceAPI
     : public subtle::EnterBase,
       public subtle::LockOnEntry<lock_on_entry> {
  public:
@@ -278,8 +278,7 @@ class PPAPI_THUNK_EXPORT EnterInstanceAPI
 };
 
 template<typename ApiT>
-class PPAPI_THUNK_EXPORT EnterInstanceAPINoLock
-    : public EnterInstanceAPI<ApiT, false> {
+class EnterInstanceAPINoLock : public EnterInstanceAPI<ApiT, false> {
  public:
   explicit EnterInstanceAPINoLock(PP_Instance instance)
       : EnterInstanceAPI<ApiT, false>(instance) {

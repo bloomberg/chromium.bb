@@ -95,12 +95,6 @@ class PPAPI_THUNK_EXPORT PPB_Flash_API {
   virtual int32_t QueryFileRef(PP_Instance instance,
                                PP_Resource file_ref,
                                PP_FileInfo* info) = 0;
-
-  // FlashFullscreen.
-  virtual PP_Bool FlashIsFullscreen(PP_Instance instance) = 0;
-  virtual PP_Bool FlashSetFullscreen(PP_Instance instance,
-                                     PP_Bool fullscreen) = 0;
-  virtual PP_Bool FlashGetScreenSize(PP_Instance instance, PP_Size* size) = 0;
 };
 
 }  // namespace thunk

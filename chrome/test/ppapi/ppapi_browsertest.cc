@@ -582,27 +582,6 @@ TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileSystem)
 
 TEST_PPAPI_NACL_VIA_HTTP(MAYBE_FileSystem)
 
-// Mac/Aura reach NOTIMPLEMENTED/time out.
-// Other systems work in-process, but flake out-of-process because of the
-// asyncronous nature of the proxy.
-// mac: http://crbug.com/96767
-// aura: http://crbug.com/104384
-// async flakiness:  http://crbug.com/108471
-#if defined(OS_MACOSX) || defined(USE_AURA)
-#define MAYBE_FlashFullscreen DISABLED_FlashFullscreen
-#define MAYBE_OutOfProcessFlashFullscreen DISABLED_FlashFullscreen
-#else
-#define MAYBE_FlashFullscreen FlashFullscreen
-#define MAYBE_OutOfProcessFlashFullscreen FlashFullscreen
-#endif
-
-IN_PROC_BROWSER_TEST_F(PPAPITest, MAYBE_FlashFullscreen) {
-  RunTestViaHTTP("FlashFullscreen");
-}
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_OutOfProcessFlashFullscreen) {
-  RunTestViaHTTP("FlashFullscreen");
-}
-
 #if defined(OS_MACOSX)
 // http://crbug.com/103912
 #define MAYBE_Fullscreen DISABLED_Fullscreen
@@ -918,6 +897,15 @@ TEST_PPAPI_OUT_OF_PROCESS(MessageLoop_Post)
 // Going forward, Flash APIs will only work out-of-process.
 TEST_PPAPI_OUT_OF_PROCESS(FlashClipboard)
 TEST_PPAPI_OUT_OF_PROCESS(FlashFile_CreateTemporaryFile)
+// Mac/Aura reach NOTIMPLEMENTED/time out.
+// mac: http://crbug.com/96767
+// aura: http://crbug.com/104384
+#if defined(OS_MACOSX) || defined(USE_AURA)
+#define MAYBE_FlashFullscreen DISABLED_FlashFullscreen
+#else
+#define MAYBE_FlashFullscreen FlashFullscreen
+#endif
+TEST_PPAPI_OUT_OF_PROCESS(MAYBE_FlashFullscreen)
 
 TEST_PPAPI_IN_PROCESS(TalkPrivate)
 TEST_PPAPI_OUT_OF_PROCESS(TalkPrivate)

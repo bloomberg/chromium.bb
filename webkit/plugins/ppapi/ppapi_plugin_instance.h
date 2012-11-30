@@ -343,6 +343,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
                                PP_Resource device) OVERRIDE;
   virtual PP_Bool IsFullFrame(PP_Instance instance) OVERRIDE;
   virtual const ::ppapi::ViewData* GetViewData(PP_Instance instance) OVERRIDE;
+  virtual PP_Bool FlashIsFullscreen(PP_Instance instance) OVERRIDE;
   virtual PP_Var GetWindowObject(PP_Instance instance) OVERRIDE;
   virtual PP_Var GetOwnerElementObject(PP_Instance instance) OVERRIDE;
   virtual PP_Var ExecuteScript(PP_Instance instance,

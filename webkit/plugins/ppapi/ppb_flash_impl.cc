@@ -457,20 +457,5 @@ int32_t PPB_Flash_Impl::QueryFileRef(PP_Instance pp_instance,
   return ::ppapi::PlatformFileErrorToPepperError(result);
 }
 
-PP_Bool PPB_Flash_Impl::FlashIsFullscreen(PP_Instance instance) {
-  return PP_FromBool(instance_->flash_fullscreen());
-}
-
-PP_Bool PPB_Flash_Impl::FlashSetFullscreen(PP_Instance instance,
-                                           PP_Bool fullscreen) {
-  instance_->FlashSetFullscreen(PP_ToBool(fullscreen), true);
-  return PP_TRUE;
-}
-
-PP_Bool PPB_Flash_Impl::FlashGetScreenSize(PP_Instance instance,
-                                           PP_Size* size) {
-  return instance_->GetScreenSize(instance, size);
-}
-
 }  // namespace ppapi
 }  // namespace webkit

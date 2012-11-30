@@ -11,7 +11,6 @@
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_fullscreen.h"
 #include "ppapi/c/ppp_instance.h"
-#include "ppapi/c/private/ppb_flash_fullscreen.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
@@ -21,23 +20,22 @@
 #include "ppapi/shared_impl/ppb_view_shared.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_flash_fullscreen_api.h"
 #include "ppapi/thunk/ppb_view_api.h"
 
 namespace ppapi {
 namespace proxy {
 
+using thunk::EnterInstanceAPINoLock;
+using thunk::EnterInstanceNoLock;
+using thunk::EnterResourceNoLock;
+using thunk::PPB_Flash_Fullscreen_API;
+using thunk::PPB_Instance_API;
+using thunk::PPB_View_API;
+
 namespace {
 
 #if !defined(OS_NACL)
-PP_Bool IsFlashFullscreen(PP_Instance instance,
-                          HostDispatcher* dispatcher) {
-  const PPB_FlashFullscreen* flash_fullscreen_interface =
-      static_cast<const PPB_FlashFullscreen*>(
-          dispatcher->local_get_interface()(PPB_FLASHFULLSCREEN_INTERFACE));
-  DCHECK(flash_fullscreen_interface);
-  return flash_fullscreen_interface->IsFullscreen(instance);
-}
-
 PP_Bool DidCreate(PP_Instance instance,
                   uint32_t argc,
                   const char* argn[],
@@ -64,15 +62,19 @@ void DidDestroy(PP_Instance instance) {
 void DidChangeView(PP_Instance instance, PP_Resource view_resource) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
 
-  thunk::EnterResourceNoLock<thunk::PPB_View_API> enter(view_resource, false);
-  if (enter.failed()) {
+  EnterResourceNoLock<PPB_View_API> enter_view(view_resource, false);
+  if (enter_view.failed()) {
     NOTREACHED();
     return;
   }
 
+  PP_Bool flash_fullscreen = PP_FALSE;
+  EnterInstanceNoLock enter_instance(instance);
+  if (!enter_instance.failed())
+    flash_fullscreen = enter_instance.functions()->FlashIsFullscreen(instance);
   dispatcher->Send(new PpapiMsg_PPPInstance_DidChangeView(
-      API_ID_PPP_INSTANCE, instance, enter.object()->GetData(),
-      IsFlashFullscreen(instance, dispatcher)));
+      API_ID_PPP_INSTANCE, instance, enter_view.object()->GetData(),
+      flash_fullscreen));
 }
 
 void DidChangeFocus(PP_Instance instance, PP_Bool has_focus) {
@@ -223,9 +225,13 @@ void PPP_Instance_Proxy::OnPluginMsgDidChangeView(
   InstanceData* data = dispatcher->GetInstanceData(instance);
   if (!data)
     return;
-
   data->view = new_data;
-  data->flash_fullscreen = flash_fullscreen;
+
+#if !defined(OS_NACL)
+  EnterInstanceAPINoLock<PPB_Flash_Fullscreen_API> enter(instance);
+  if (!enter.failed())
+    enter.functions()->SetLocalIsFullscreen(instance, flash_fullscreen);
+#endif  // !defined(OS_NACL)
 
   ScopedPPResource resource(
       ScopedPPResource::PassRef(),

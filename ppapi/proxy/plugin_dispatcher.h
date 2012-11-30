@@ -47,8 +47,6 @@ struct InstanceData {
 
   ViewData view;
 
-  PP_Bool flash_fullscreen;  // Used for PPB_FlashFullscreen.
-
   // When non-NULL, indicates the callback to execute when mouse lock is lost.
   scoped_refptr<TrackedCallback> mouse_lock_callback;
 

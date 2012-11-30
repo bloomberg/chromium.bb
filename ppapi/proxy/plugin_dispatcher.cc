@@ -50,8 +50,7 @@ DispatcherSet* g_live_dispatchers = NULL;
 }  // namespace
 
 InstanceData::InstanceData()
-    : flash_fullscreen(PP_FALSE),
-      is_request_surrounding_text_pending(false),
+    : is_request_surrounding_text_pending(false),
       should_do_request_surrounding_text(false) {
 }
 

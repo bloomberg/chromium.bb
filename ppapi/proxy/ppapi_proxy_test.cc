@@ -175,7 +175,6 @@ void PluginProxyTestHarness::SetUpHarness() {
       PpapiPermissions(),
       false));
   plugin_dispatcher_->InitWithTestSink(&sink());
-  plugin_dispatcher_->DidCreateInstance(pp_instance());
   // The plugin proxy delegate is needed for
   // |PluginProxyDelegate::GetBrowserSender| which is used
   // in |ResourceCreationProxy::GetConnection| to get the channel to the
@@ -183,6 +182,7 @@ void PluginProxyTestHarness::SetUpHarness() {
   // for test purposes.
   plugin_delegate_mock_.set_browser_sender(plugin_dispatcher_.get());
   PluginGlobals::Get()->set_plugin_proxy_delegate(&plugin_delegate_mock_);
+  plugin_dispatcher_->DidCreateInstance(pp_instance());
 }
 
 void PluginProxyTestHarness::SetUpHarnessWithChannel(
@@ -204,6 +204,8 @@ void PluginProxyTestHarness::SetUpHarnessWithChannel(
   plugin_dispatcher_->InitPluginWithChannel(&plugin_delegate_mock_,
                                             channel_handle,
                                             is_client);
+  plugin_delegate_mock_.set_browser_sender(plugin_dispatcher_.get());
+  PluginGlobals::Get()->set_plugin_proxy_delegate(&plugin_delegate_mock_);
   plugin_dispatcher_->DidCreateInstance(pp_instance());
 }
 
