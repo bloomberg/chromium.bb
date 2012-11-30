@@ -17,6 +17,7 @@
 namespace remoting {
 
 DesktopSessionAgent::~DesktopSessionAgent() {
+  DCHECK(!network_channel_);
   DCHECK(!video_capturer_);
 }
 
@@ -140,6 +141,9 @@ bool DesktopSessionAgent::Start(const base::Closure& disconnected_task,
 
 void DesktopSessionAgent::Stop() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  // Make sure the channel is closed.
+  network_channel_.reset();
 
   // Stop the video capturer.
   video_capture_task_runner()->PostTask(
