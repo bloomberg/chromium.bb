@@ -25,27 +25,27 @@ TEST(IBusControllerImplTest, TestFindAndUpdateProperty) {
   EXPECT_FALSE(FindAndUpdateProperty(InputMethodProperty(), &properties));
 
   properties.push_back(
-      InputMethodProperty("key1", "label1", false, false, 0));
+      InputMethodProperty("key1", "label1", false, false));
   EXPECT_FALSE(FindAndUpdateProperty(InputMethodProperty(), &properties));
   EXPECT_FALSE(FindAndUpdateProperty(
-      InputMethodProperty("keyX", "labelX", false, false, 0), &properties));
-  EXPECT_EQ(InputMethodProperty("key1", "label1", false, false, 0),
+      InputMethodProperty("keyX", "labelX", false, false), &properties));
+  EXPECT_EQ(InputMethodProperty("key1", "label1", false, false),
             properties[0]);
   EXPECT_TRUE(FindAndUpdateProperty(
-      InputMethodProperty("key1", "labelY", false, false, 0), &properties));
-  EXPECT_EQ(InputMethodProperty("key1", "labelY", false, false, 0),
+      InputMethodProperty("key1", "labelY", false, false), &properties));
+  EXPECT_EQ(InputMethodProperty("key1", "labelY", false, false),
             properties[0]);
 
   properties.push_back(
-      InputMethodProperty("key2", "label2", false, false, 0));
+      InputMethodProperty("key2", "label2", false, false));
   EXPECT_FALSE(FindAndUpdateProperty(InputMethodProperty(), &properties));
   EXPECT_FALSE(FindAndUpdateProperty(
-      InputMethodProperty("keyX", "labelX", false, false, 0), &properties));
-  EXPECT_EQ(InputMethodProperty("key2", "label2", false, false, 0),
+      InputMethodProperty("keyX", "labelX", false, false), &properties));
+  EXPECT_EQ(InputMethodProperty("key2", "label2", false, false),
             properties[1]);
   EXPECT_TRUE(FindAndUpdateProperty(
-      InputMethodProperty("key2", "labelZ", false, false, 0), &properties));
-  EXPECT_EQ(InputMethodProperty("key2", "labelZ", false, false, 0),
+      InputMethodProperty("key2", "labelZ", false, false), &properties));
+  EXPECT_EQ(InputMethodProperty("key2", "labelZ", false, false),
             properties[1]);
 }
 

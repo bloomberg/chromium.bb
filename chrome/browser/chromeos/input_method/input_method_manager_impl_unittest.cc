@@ -559,8 +559,7 @@ TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodProperties) {
   current_property_list.push_back(InputMethodProperty("key",
                                                       "label",
                                                       false,
-                                                      false,
-                                                      -1));
+                                                      false));
   controller_->SetCurrentPropertiesForTesting(current_property_list);
   controller_->NotifyPropertyChangedForTesting();
 
@@ -592,8 +591,7 @@ TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodPropertiesTwoImes) {
   current_property_list.push_back(InputMethodProperty("key-mozc",
                                                       "label",
                                                       false,
-                                                      false,
-                                                      -1));
+                                                      false));
   controller_->SetCurrentPropertiesForTesting(current_property_list);
   controller_->NotifyPropertyChangedForTesting();
 
@@ -609,8 +607,7 @@ TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodPropertiesTwoImes) {
   current_property_list.push_back(InputMethodProperty("key-chewing",
                                                       "label",
                                                       false,
-                                                      false,
-                                                      -1));
+                                                      false));
   controller_->SetCurrentPropertiesForTesting(current_property_list);
   controller_->NotifyPropertyChangedForTesting();
   ASSERT_EQ(1U, manager_->GetCurrentInputMethodProperties().size());

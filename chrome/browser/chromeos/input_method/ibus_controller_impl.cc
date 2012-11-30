@@ -48,11 +48,7 @@ bool FindAndUpdateProperty(
   for (size_t i = 0; i < prop_list->size(); ++i) {
     chromeos::input_method::InputMethodProperty& prop = prop_list->at(i);
     if (prop.key == new_prop.key) {
-      const int saved_id = prop.selection_item_id;
-      // Update the list except the radio id. As written in
-      // chromeos_input_method.h, |prop.selection_item_id| is dummy.
       prop = new_prop;
-      prop.selection_item_id = saved_id;
       return true;
     }
   }
@@ -98,7 +94,6 @@ bool PropertyHasChildren(IBusProperty* prop) {
 // result to |out_prop_list|. This function returns true on success, and
 // returns false if sanity checks for |ibus_prop| fail.
 bool ConvertProperty(IBusProperty* ibus_prop,
-                     int selection_item_id,
                      InputMethodPropertyList* out_prop_list) {
   DCHECK(ibus_prop);
   DCHECK(out_prop_list);
@@ -128,8 +123,6 @@ bool ConvertProperty(IBusProperty* ibus_prop,
   }
 
   const bool is_selection_item = (type == PROP_TYPE_RADIO);
-  selection_item_id = is_selection_item ?
-      selection_item_id : InputMethodProperty::kInvalidSelectionItemId;
 
   bool is_selection_item_checked = false;
   if (state == PROP_STATE_INCONSISTENT) {
@@ -168,8 +161,7 @@ bool ConvertProperty(IBusProperty* ibus_prop,
   out_prop_list->push_back(InputMethodProperty(key,
                                                label_to_use,
                                                is_selection_item,
-                                               is_selection_item_checked,
-                                               selection_item_id));
+                                               is_selection_item_checked));
   return true;
 }
 
@@ -181,40 +173,28 @@ bool FlattenProperty(IBusProperty* ibus_prop,
   DCHECK(ibus_prop);
   DCHECK(out_prop_list);
 
-  int selection_item_id = -1;
-  std::stack<std::pair<IBusProperty*, int> > prop_stack;
-  prop_stack.push(std::make_pair(ibus_prop, selection_item_id));
+  const gchar* key = ibus_property_get_key(ibus_prop);
 
-  while (!prop_stack.empty()) {
-    IBusProperty* prop = prop_stack.top().first;
-    const gchar* key = ibus_property_get_key(prop);
-    const int current_selection_item_id = prop_stack.top().second;
-    prop_stack.pop();
+  // Filter out unnecessary properties.
+  if (PropertyKeyIsBlacklisted(key))
+    return true;
 
-    // Filter out unnecessary properties.
-    if (PropertyKeyIsBlacklisted(key))
-      continue;
+  // Convert |prop| to InputMethodProperty and push it to |out_prop_list|.
+  if (!ConvertProperty(ibus_prop, out_prop_list))
+    return false;
 
-    // Convert |prop| to InputMethodProperty and push it to |out_prop_list|.
-    if (!ConvertProperty(prop, current_selection_item_id, out_prop_list))
-      return false;
-
-    // Process childrens iteratively (if any). Push all sub properties to the
-    // stack.
-    if (PropertyHasChildren(prop)) {
-      ++selection_item_id;
-      for (int i = 0;; ++i) {
-        IBusProperty* sub_prop =
-            ibus_prop_list_get(ibus_property_get_sub_props(prop), i);
-        if (!sub_prop)
-          break;
-        prop_stack.push(std::make_pair(sub_prop, selection_item_id));
-      }
-      ++selection_item_id;
+  // Process childrens iteratively (if any). Push all sub properties to the
+  // stack.
+  if (PropertyHasChildren(ibus_prop)) {
+    for (int i = 0;; ++i) {
+      IBusProperty* sub_prop =
+          ibus_prop_list_get(ibus_property_get_sub_props(ibus_prop), i);
+      if (!sub_prop)
+        break;
+      if (!FlattenProperty(sub_prop, out_prop_list))
+        return false;
     }
   }
-  std::reverse(out_prop_list->begin(), out_prop_list->end());
-
   return true;
 }
 

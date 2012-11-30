@@ -11,13 +11,12 @@ namespace input_method {
 
 TEST(InputMethodPropertyTest, TestOperatorEqual) {
   InputMethodProperty empty;
-  InputMethodProperty reference("key", "label", true, true, 1);
+  InputMethodProperty reference("key", "label", true, true);
 
-  InputMethodProperty p1("X", "label", true, true, 1);
-  InputMethodProperty p2("key", "X", true, true, 1);
-  InputMethodProperty p3("key", "label", false, true, 1);
-  InputMethodProperty p4("key", "label", true, false, 1);
-  InputMethodProperty p5("key", "label", true, true, 0);
+  InputMethodProperty p1("X", "label", true, true);
+  InputMethodProperty p2("key", "X", true, true);
+  InputMethodProperty p3("key", "label", false, true);
+  InputMethodProperty p4("key", "label", true, false);
 
   EXPECT_EQ(empty, empty);
   EXPECT_EQ(reference, reference);
@@ -26,7 +25,6 @@ TEST(InputMethodPropertyTest, TestOperatorEqual) {
   EXPECT_NE(reference, p2);
   EXPECT_NE(reference, p3);
   EXPECT_NE(reference, p4);
-  EXPECT_NE(reference, p5);
 }
 
 }  // namespace input_method

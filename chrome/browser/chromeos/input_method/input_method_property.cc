@@ -14,20 +14,17 @@ namespace input_method {
 InputMethodProperty::InputMethodProperty(const std::string& in_key,
                                          const std::string& in_label,
                                          bool in_is_selection_item,
-                                         bool in_is_selection_item_checked,
-                                         int in_selection_item_id)
+                                         bool in_is_selection_item_checked)
     : key(in_key),
       label(in_label),
       is_selection_item(in_is_selection_item),
-      is_selection_item_checked(in_is_selection_item_checked),
-      selection_item_id(in_selection_item_id) {
+      is_selection_item_checked(in_is_selection_item_checked) {
   DCHECK(!key.empty());
 }
 
 InputMethodProperty::InputMethodProperty()
     : is_selection_item(false),
-      is_selection_item_checked(false),
-      selection_item_id(kInvalidSelectionItemId) {
+      is_selection_item_checked(false) {
 }
 
 InputMethodProperty::~InputMethodProperty() {
@@ -37,8 +34,7 @@ bool InputMethodProperty::operator==(const InputMethodProperty& other) const {
   return key == other.key &&
       label == other.label &&
       is_selection_item == other.is_selection_item &&
-      is_selection_item_checked == other.is_selection_item_checked &&
-      selection_item_id == other.selection_item_id;
+      is_selection_item_checked == other.is_selection_item_checked;
 }
 
 bool InputMethodProperty::operator!=(const InputMethodProperty& other) const {
@@ -50,8 +46,7 @@ std::string InputMethodProperty::ToString() const {
   stream << "key=" << key
          << ", label=" << label
          << ", is_selection_item=" << is_selection_item
-         << ", is_selection_item_checked=" << is_selection_item_checked
-         << ", selection_item_id=" << selection_item_id;
+         << ", is_selection_item_checked=" << is_selection_item_checked;
   return stream.str();
 }
 

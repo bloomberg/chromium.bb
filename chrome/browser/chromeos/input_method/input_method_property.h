@@ -16,8 +16,7 @@ struct InputMethodProperty {
   InputMethodProperty(const std::string& in_key,
                       const std::string& in_label,
                       bool in_is_selection_item,
-                      bool in_is_selection_item_checked,
-                      int in_selection_item_id);
+                      bool in_is_selection_item_checked);
 
   InputMethodProperty();
   ~InputMethodProperty();
@@ -35,10 +34,6 @@ struct InputMethodProperty {
   bool is_selection_item;  // true if the property is a selection item.
   bool is_selection_item_checked;  // true if |is_selection_item| is true and
                                    // the selection_item is selected.
-  int selection_item_id;  // A group ID (>= 0) of the selection item.
-                          // kInvalidSelectionItemId if |is_selection_item| is
-                          // false.
-  static const int kInvalidSelectionItemId = -1;
 };
 typedef std::vector<InputMethodProperty> InputMethodPropertyList;
 
