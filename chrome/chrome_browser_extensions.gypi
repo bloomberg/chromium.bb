@@ -287,6 +287,8 @@
         'browser/extensions/api/socket/tcp_socket.h',
         'browser/extensions/api/socket/udp_socket.cc',
         'browser/extensions/api/socket/udp_socket.h',
+        'browser/extensions/api/sync_file_system/extension_sync_event_observer.cc',
+        'browser/extensions/api/sync_file_system/extension_sync_event_observer.h',
         'browser/extensions/api/sync_file_system/sync_file_system_api.cc',
         'browser/extensions/api/sync_file_system/sync_file_system_api.h',
         'browser/extensions/api/system_indicator/system_indicator_api.h',

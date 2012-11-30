@@ -88,6 +88,10 @@ extern const char kOnStorageRemoved[];
 // System Indicator icon.
 extern const char kOnSystemIndicatorClicked[];
 
+// SyncFileSystem.
+extern const char kOnSyncStateChanged[];
+extern const char kOnFileSynced[];
+
 }  // namespace event_names
 
 }  // namespace extensions

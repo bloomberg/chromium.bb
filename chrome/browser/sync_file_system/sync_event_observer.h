@@ -9,6 +9,8 @@
 
 #include "webkit/fileapi/syncable/sync_operation_type.h"
 
+class GURL;
+
 namespace fileapi {
 class FileSystemURL;
 }

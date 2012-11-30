@@ -78,6 +78,9 @@ const char kOnStorageRemoved[] = "experimental.systemInfo.storage.onRemoved";
 
 const char kOnSystemIndicatorClicked[] = "systemIndicator.onClicked";
 
+const char kOnSyncStateChanged[] = "syncFileSystem.onSyncStateChanged";
+const char kOnFileSynced[] = "syncFileSystem.onFileSynced";
+
 }  // namespace event_names
 
 }  // namespace extensions

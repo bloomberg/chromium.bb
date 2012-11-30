@@ -14,30 +14,34 @@ namespace syncFileSystem {
     DOMString description;
   };
   
+  enum SyncOperationType {
+    added, updated, deleted
+  };
+  
   enum SyncStateStatus {
     // The sync service is being initialized (e.g. restoring data from the
     // database, checking connectivity and authenticating to the service etc).
-    INITIALIZING,
+    initializing,
 
     // The sync service is up and running.
-    RUNNING,
+    running,
 
     // The sync service is not synchronizing files because the remote service
     // needs to be authenticated by the user to proceed.
-    AUTHENTICATION_REQUIRED,
+    authentication_required,
 
     // The sync service is not synchronizing files because the remote service
     // is (temporarily) unavailable due to some recoverable errors, e.g.
     // network is offline, the remote service is down or not
     // reachable etc. More details should be given by |description| parameter
     // in OnSyncStateUpdated (which could contain service-specific details).
-    TEMPORARY_UNAVAILABLE,
+    temporary_unavailable,
 
     // The sync service is disabled and the content will never sync.
     // (E.g. this could happen when the user has no account on
     // the remote service or the sync service has had an unrecoverable
     // error.)
-    DISABLED
+    disabled
   };
 
   // [nodoc] A callback type for requestFileSystem.
@@ -71,5 +75,10 @@ namespace syncFileSystem {
     // sync backend.  (E.g. the sync is temporarily disabled due to
     // network or authentication error etc)
     static void onSyncStateChanged(SyncState detail);
+    
+    // Fired when a file has been updated by the background sync service.
+    // TODO(calvinlo): Convert |file_entry_path| from to Webkit FileEntry.
+    static void onFileSynced(DOMString file_entry_path,
+                             SyncOperationType operation);
   };
 };
