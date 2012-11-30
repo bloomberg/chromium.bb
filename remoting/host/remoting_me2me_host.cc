@@ -1087,11 +1087,13 @@ int main(int argc, char** argv) {
 
   // Create the main message loop and start helper threads.
   MessageLoop message_loop(MessageLoop::TYPE_UI);
-  scoped_ptr<remoting::ChromotingHostContext> context =
-      remoting::ChromotingHostContext::Create(
+  base::Closure quit_message_loop = base::Bind(&QuitMessageLoop, &message_loop);
+  scoped_ptr<remoting::ChromotingHostContext> context(
+      new remoting::ChromotingHostContext(
           new remoting::AutoThreadTaskRunner(message_loop.message_loop_proxy(),
-                                             MessageLoop::QuitClosure()));
-  if (context)
+                                             quit_message_loop)));
+
+  if (!context->Start())
     return remoting::kInitializationFailed;
 
   // Create & start the HostProcess using these threads.

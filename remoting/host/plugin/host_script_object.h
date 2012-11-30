@@ -287,7 +287,7 @@ class HostNPScriptObject {
   // TODO(sergeyu): Replace this thread with
   // SequencedWorkerPool. Problem is that SequencedWorkerPool relies
   // on MessageLoopProxy::current().
-  scoped_refptr<AutoThreadTaskRunner> worker_thread_;
+  base::Thread worker_thread_;
 
   //////////////////////////////////////////////////////////
   // Plugin state used for both Ir2Me and Me2Me.
