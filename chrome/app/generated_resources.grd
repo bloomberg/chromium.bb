@@ -5100,9 +5100,6 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH" desc="Permission string for access to the Bluetooth API.">
         Access Bluetooth on your system
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_DEVICE" desc="Permission string for access to a specific the Bluetooth device.">
-        Access the Bluetooth device "<ph name="DEVICE_NAME">$1<ex>Galaxy Nexus</ex></ph>".
-      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_AUDIO_CAPTURE" desc="Permission string for access to audio capture devices.">
         Use your microphone
       </message>

@@ -7,7 +7,6 @@
 #include "base/values.h"
 #include "chrome/common/extensions/api/permissions.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/permissions/bluetooth_device_permission.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "extensions/common/error_utils.h"
@@ -29,8 +28,6 @@ const char kInvalidOrigin[] =
     "Invalid value for origin pattern *: *";
 const char kUnknownPermissionError[] =
     "'*' is not a recognized permission.";
-const char kNonBluetoothPermissionWithArgument[] =
-    "Only the bluetoothDevice permission supports arguments.";
 
 }  // namespace
 
@@ -40,7 +37,7 @@ scoped_ptr<Permissions> PackPermissionSet(const PermissionSet* set) {
   permissions->permissions.reset(new std::vector<std::string>());
   for (APIPermissionSet::const_iterator i = set->apis().begin();
        i != set->apis().end(); ++i) {
-    permissions->permissions->push_back(i->ToString());
+    permissions->permissions->push_back(i->name());
   }
 
   permissions->origins.reset(new std::vector<std::string>());
@@ -59,39 +56,13 @@ scoped_refptr<PermissionSet> UnpackPermissionSet(
     PermissionsInfo* info = PermissionsInfo::GetInstance();
     for (std::vector<std::string>::iterator it = permissions_list->begin();
         it != permissions_list->end(); ++it) {
-      // This is a compromise: we currently can't switch to a blend of
-      // objects/strings all the way through the API. Until then, put this
-      // processing here.
-      // http://code.google.com/p/chromium/issues/detail?id=162042
-      if (it->find("|") != std::string::npos) {
-        size_t delimiter = it->find("|");
-        std::string permission_name = it->substr(0, delimiter);
-        std::string permission_arg = it->substr(delimiter + 1);
-
-        // Restrict this to the bluetoothDevice permission for now, to
-        // discourage the use of this style of permission spreading until it is
-        // better supported.
-        const APIPermissionInfo* permission_info = info->GetByID(
-            APIPermission::kBluetoothDevice);
-        if (permission_name != permission_info->name()) {
-          *error = kNonBluetoothPermissionWithArgument;
-          return NULL;
-        }
-
-        BluetoothDevicePermission *permission =
-            new BluetoothDevicePermission(permission_info);
-        permission->AddDevicesFromString(permission_arg);
-
-        apis.insert(permission);
-      } else {
-        const APIPermissionInfo* permission_info = info->GetByName(*it);
-        if (!permission_info) {
-          *error = ErrorUtils::FormatErrorMessage(
-              kUnknownPermissionError, *it);
-          return NULL;
-        }
-        apis.insert(permission_info->id());
+      const APIPermissionInfo* permission_info = info->GetByName(*it);
+      if (!permission_info) {
+        *error = ErrorUtils::FormatErrorMessage(
+            kUnknownPermissionError, *it);
+        return NULL;
       }
+      apis.insert(permission_info->id());
     }
   }
 

@@ -519,8 +519,6 @@ const char kOneUISurfaceOnly[] =
     "Only one of 'browser_action', 'page_action', and 'app' can be specified.";
 const char kPermissionNotAllowed[] =
     "Access to permission '*' denied.";
-const char kPermissionNotAllowedInManifest[] =
-    "Permission '*' cannot be specified in the manifest.";
 const char kPlatformAppNeedsManifestVersion2[] =
     "Packaged apps need manifest_version set to >= 2";
 const char kReservedMessageFound[] =

@@ -46,7 +46,6 @@ class APIPermission {
     kAudioCapture,
     kBackground,
     kBluetooth,
-    kBluetoothDevice,
     kBookmark,
     kBookmarkManagerPrivate,
     kBrowsingData,
@@ -133,13 +132,6 @@ class APIPermission {
   const APIPermissionInfo* info() const {
     return info_;
   }
-
-  // Returns a string representation of this permissions.  The default string
-  // representation is the name of the permission.
-  virtual std::string ToString() const;
-
-  // Returns true if this permission cannot be found in the manifest.
-  virtual bool ManifestEntryForbidden() const;
 
   // Returns true if this permission has any PermissionMessages.
   virtual bool HasMessages() const = 0;

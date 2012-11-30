@@ -59,11 +59,6 @@ class PermissionSet
   static PermissionSet* CreateUnion(
       const PermissionSet* set1, const PermissionSet* set2);
 
-  // Creates a new permission set that only contains permissions that must be
-  // in the manifest.  Passes ownership of the new set to the caller.
-  static PermissionSet* ExcludeNotInManifestPermissions(
-      const PermissionSet* set);
-
   bool operator==(const PermissionSet& rhs) const;
 
   // Returns true if |set| is a subset of this.
