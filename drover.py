@@ -9,6 +9,7 @@ import re
 import string
 import sys
 import urllib2
+import urlparse
 
 import breakpad  # pylint: disable=W0611
 
@@ -421,6 +422,43 @@ def getBranchForMilestone(milestone):
   return None
 
 
+def getSVNAuthInfo(folder=None):
+  """Fetches SVN authorization information in the subversion auth folder and
+  returns it as a dictionary of dictionaries."""
+  if not folder:
+    if sys.platform == 'win32':
+      folder = '%%APPDATA%\\Subversion\\auth'
+    else:
+      folder = '~/.subversion/auth'
+  folder = os.path.expandvars(os.path.expanduser(folder))
+  svn_simple_folder = os.path.join(folder, 'svn.simple')
+  results = {}
+  try:
+    for auth_file in os.listdir(svn_simple_folder):
+      # Read the SVN auth file, convert it into a dictionary, and store it.
+      results[auth_file] = dict(re.findall(r'K [0-9]+\n(.*)\nV [0-9]+\n(.*)\n', 
+          open(os.path.join(svn_simple_folder, auth_file)).read()))
+  except Exception as _:
+    pass
+  return results
+
+
+def getCurrentSVNUsers(url):
+  """Tries to fetch the current SVN in the current checkout by scanning the
+  SVN authorization folder for a match with the current SVN URL."""
+  netloc = urlparse.urlparse(url)[1]
+  auth_infos = getSVNAuthInfo()
+  results = []
+  for _, auth_info in auth_infos.iteritems():
+    if ('svn:realmstring' in auth_info 
+        and netloc in auth_info['svn:realmstring']):
+      username = auth_info['username']
+      results.append(username)
+      if 'google.com' in username:
+        results.append(username.replace('google.com', 'chromium.org'))
+  return results
+
+
 def prompt(question):
   while True:
     print question + " [y|n]:",
@@ -537,10 +575,17 @@ def drover(options, args):
     if not author:
       author = getAuthor(TRUNK_URL, revision)
 
+  # Check that the author of the CL is different than the user making
+  # the revert.  If they're the same, then we'll want to prompt the user
+  # for a different reviewer to TBR.
+  current_users = getCurrentSVNUsers(BASE_URL)
+  is_self_revert = options.revert and author in current_users
+
   filename = str(revision)+".txt"
   out = open(filename,"w")
-  out.write(action +" " + str(revision) + " - ")
-  out.write(getRevisionLog(url, revision))
+  out.write(action +" " + str(revision) + "\n")
+  for line in getRevisionLog(url, revision).splitlines():
+    out.write('> %s\n' % line)
   if (author):
     out.write("\nTBR=" + author)
   out.close()
@@ -563,7 +608,7 @@ def drover(options, args):
          " --send_mail --no_presubmit --reviewers=" + author)
 
   if options.revertbot or prompt("Would you like to upload?"):
-    if PROMPT_FOR_AUTHOR:
+    if PROMPT_FOR_AUTHOR or is_self_revert:
       author = text_prompt("Enter new author or press enter to accept default",
                            author)
     if options.revertbot and options.revertbot_reviewers:
