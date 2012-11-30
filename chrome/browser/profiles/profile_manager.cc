@@ -999,6 +999,14 @@ bool ProfileManager::IsMultipleProfilesEnabled() {
 }
 
 void ProfileManager::AutoloadProfiles() {
+  // If running in the background is disabled for the browser, do not autoload
+  // any profiles.
+  PrefService* local_state = g_browser_process->local_state();
+  if (!local_state->HasPrefPath(prefs::kBackgroundModeEnabled) ||
+      !local_state->GetBoolean(prefs::kBackgroundModeEnabled)) {
+    return;
+  }
+
   ProfileInfoCache& cache = GetProfileInfoCache();
   size_t number_of_profiles = cache.GetNumberOfProfiles();
   for (size_t p = 0; p < number_of_profiles; ++p) {

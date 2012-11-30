@@ -320,6 +320,15 @@ TEST_F(ProfileManagerTest, CreateProfilesAsync) {
 TEST_F(ProfileManagerTest, AutoloadProfilesWithBackgroundApps) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  local_state_.Get()->SetUserPref(prefs::kBackgroundModeEnabled,
+                                  Value::CreateBooleanValue(true));
+
+  // Setting a pref which is not applicable to a system (i.e., Android in this
+  // case) does not necessarily create it. Don't bother continuing with the
+  // test if this pref doesn't exist because it will not load the profiles if
+  // it cannot verify that the pref for background mode is enabled.
+  if (!local_state_.Get()->HasPrefPath(prefs::kBackgroundModeEnabled))
+    return;
 
   EXPECT_EQ(0u, cache.GetNumberOfProfiles());
   cache.AddProfileToCache(cache.GetUserDataDir().AppendASCII("path_1"),
@@ -335,6 +344,26 @@ TEST_F(ProfileManagerTest, AutoloadProfilesWithBackgroundApps) {
   profile_manager->AutoloadProfiles();
 
   EXPECT_EQ(2u, profile_manager->GetLoadedProfiles().size());
+}
+
+TEST_F(ProfileManagerTest, DoNotAutoloadProfilesIfBackgroundModeOff) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  local_state_.Get()->SetUserPref(prefs::kBackgroundModeEnabled,
+                                  Value::CreateBooleanValue(false));
+
+  EXPECT_EQ(0u, cache.GetNumberOfProfiles());
+  cache.AddProfileToCache(cache.GetUserDataDir().AppendASCII("path_1"),
+                          ASCIIToUTF16("name_1"), string16(), 0);
+  cache.AddProfileToCache(cache.GetUserDataDir().AppendASCII("path_2"),
+                          ASCIIToUTF16("name_2"), string16(), 0);
+  cache.SetBackgroundStatusOfProfileAtIndex(0, false);
+  cache.SetBackgroundStatusOfProfileAtIndex(1, true);
+  EXPECT_EQ(2u, cache.GetNumberOfProfiles());
+
+  profile_manager->AutoloadProfiles();
+
+  EXPECT_EQ(0u, profile_manager->GetLoadedProfiles().size());
 }
 
 TEST_F(ProfileManagerTest, InitProfileUserPrefs) {
