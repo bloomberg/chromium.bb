@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_HISTORY_TEXT_DATABASE_MANAGER_H_
 #define CHROME_BROWSER_HISTORY_TEXT_DATABASE_MANAGER_H_
 
+#include <cstddef>
 #include <set>
 #include <vector>
 
@@ -135,6 +136,11 @@ class TextDatabaseManager {
   void DeleteFromUncommitted(const std::set<GURL>& restrict_urls,
                              base::Time begin, base::Time end);
 
+  // This function removes entries from the same list as
+  // DeleteFromUncommitted() with times belonging to the given list of
+  // times, which must be in reverse chronological order.
+  void DeleteFromUncommittedForTimes(const std::vector<base::Time>& times);
+
   // Deletes all full text search data by removing the files from the disk.
   // This must be called OUTSIDE of a transaction since it actually deletes the
   // files rather than messing with the database.
@@ -157,12 +163,15 @@ class TextDatabaseManager {
                       std::vector<TextDatabase::Match>* results,
                       base::Time* first_time_searched);
 
+  size_t GetUncommittedEntryCountForTest() const;
+
  private:
   // These tests call ExpireRecentChangesForTime to force expiration.
   FRIEND_TEST_ALL_PREFIXES(TextDatabaseManagerTest, InsertPartial);
   FRIEND_TEST_ALL_PREFIXES(TextDatabaseManagerTest, PartialComplete);
   FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, DeleteURLAndFavicon);
   FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, FlushRecentURLsUnstarred);
+  FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, FlushURLsForTimes);
   FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest,
                            FlushRecentURLsUnstarredRestricted);
 

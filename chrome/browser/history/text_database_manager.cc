@@ -4,6 +4,9 @@
 
 #include "chrome/browser/history/text_database_manager.h"
 
+#include <algorithm>
+#include <functional>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
@@ -372,6 +375,30 @@ void TextDatabaseManager::DeleteFromUncommitted(
   }
 }
 
+void TextDatabaseManager::DeleteFromUncommittedForTimes(
+    const std::vector<base::Time>& times) {
+  // |times| must be in reverse chronological order, i.e. each member
+  // must be earlier than or the same as the one before it.
+  DCHECK(
+      std::adjacent_find(
+          times.begin(), times.end(), std::less<base::Time>()) ==
+      times.end());
+
+  // Both |recent_changes_| and |times| are in reverse chronological order.
+  RecentChangeList::iterator it = recent_changes_.begin();
+  std::vector<base::Time>::const_iterator time_it = times.begin();
+  while (it != recent_changes_.end() && time_it != times.end()) {
+    base::Time visit_time = it->second.visit_time();
+    if (visit_time == *time_it) {
+      it = recent_changes_.Erase(it);
+    } else if (visit_time < *time_it) {
+      ++time_it;
+    } else /* if (visit_time > *time_it) */ {
+      ++it;
+    }
+  }
+}
+
 void TextDatabaseManager::DeleteAll() {
   DCHECK_EQ(0, transaction_nesting_) << "Calling deleteAll in a transaction.";
 
@@ -487,6 +514,10 @@ void TextDatabaseManager::GetTextMatches(
   // When there were no databases in the range, we need to fix up the min time.
   if (!checked_one)
     *first_time_searched = options.begin_time;
+}
+
+size_t TextDatabaseManager::GetUncommittedEntryCountForTest() const {
+  return recent_changes_.size();
 }
 
 TextDatabase* TextDatabaseManager::GetDB(TextDatabase::DBIdent id,

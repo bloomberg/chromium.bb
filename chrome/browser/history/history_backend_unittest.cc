@@ -6,6 +6,9 @@
 #include <set>
 #include <vector>
 
+#include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -13,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/string16.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -2669,24 +2673,58 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
 }
 
 TEST_F(HistoryBackendTest, AddPageNoVisitForBookmark) {
-    ASSERT_TRUE(backend_.get());
+  ASSERT_TRUE(backend_.get());
 
-    GURL url("http://www.google.com");
-    string16 title(UTF8ToUTF16("Bookmark title"));
-    backend_->AddPageNoVisitForBookmark(url, title);
+  GURL url("http://www.google.com");
+  string16 title(UTF8ToUTF16("Bookmark title"));
+  backend_->AddPageNoVisitForBookmark(url, title);
 
-    URLRow row;
-    backend_->GetURL(url, &row);
-    EXPECT_EQ(url, row.url());
-    EXPECT_EQ(title, row.title());
-    EXPECT_EQ(0, row.visit_count());
+  URLRow row;
+  backend_->GetURL(url, &row);
+  EXPECT_EQ(url, row.url());
+  EXPECT_EQ(title, row.title());
+  EXPECT_EQ(0, row.visit_count());
 
-    backend_->DeleteURL(url);
-    backend_->AddPageNoVisitForBookmark(url, string16());
-    backend_->GetURL(url, &row);
-    EXPECT_EQ(url, row.url());
-    EXPECT_EQ(UTF8ToUTF16(url.spec()), row.title());
-    EXPECT_EQ(0, row.visit_count());
+  backend_->DeleteURL(url);
+  backend_->AddPageNoVisitForBookmark(url, string16());
+  backend_->GetURL(url, &row);
+  EXPECT_EQ(url, row.url());
+  EXPECT_EQ(UTF8ToUTF16(url.spec()), row.title());
+  EXPECT_EQ(0, row.visit_count());
+}
+
+TEST_F(HistoryBackendTest, ExpireHistoryForTimes) {
+  ASSERT_TRUE(backend_.get());
+
+  HistoryAddPageArgs args[5];
+  for (size_t i = 0; i < arraysize(args); ++i) {
+    args[i].url = GURL("http://example" + base::IntToString(i) + ".com");
+    args[i].time = base::Time::FromInternalValue(i);
+    backend_->AddPage(args[i]);
+  }
+  EXPECT_EQ(base::Time(), backend_->GetFirstRecordedTimeForTest());
+
+  URLRow row;
+  for (size_t i = 0; i < arraysize(args); ++i) {
+    EXPECT_TRUE(backend_->GetURL(args[i].url, &row));
+  }
+
+  std::vector<base::Time> times;
+  times.push_back(args[0].time);
+  // Insert twice to make sure we handle duplicate times correctly.
+  times.push_back(args[2].time);
+  times.push_back(args[2].time);
+  times.push_back(args[4].time);
+  backend_->ExpireHistoryForTimes(times);
+
+  EXPECT_EQ(base::Time::FromInternalValue(1),
+            backend_->GetFirstRecordedTimeForTest());
+
+  EXPECT_FALSE(backend_->GetURL(args[0].url, &row));
+  EXPECT_TRUE(backend_->GetURL(args[1].url, &row));
+  EXPECT_FALSE(backend_->GetURL(args[2].url, &row));
+  EXPECT_TRUE(backend_->GetURL(args[3].url, &row));
+  EXPECT_FALSE(backend_->GetURL(args[4].url, &row));
 }
 
 }  // namespace history

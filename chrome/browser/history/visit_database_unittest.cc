@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <set>
+#include <vector>
+
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/history/visit_database.h"
 #include "sql/connection.h"
@@ -156,16 +160,17 @@ TEST_F(VisitDatabaseTest, Update) {
 
 // TODO(brettw) write test for GetMostRecentVisitForURL!
 
-TEST_F(VisitDatabaseTest, GetVisibleVisitsInRange) {
+namespace {
+
+std::vector<VisitRow> GetTestVisitRows() {
   // Add one visit.
-  VisitRow visit_info1(1, Time::Now(), 0,
+  VisitRow visit_info1(1, Time::UnixEpoch(), 0,
       static_cast<content::PageTransition>(
           content::PAGE_TRANSITION_LINK |
           content::PAGE_TRANSITION_CHAIN_START |
           content::PAGE_TRANSITION_CHAIN_END),
       0);
   visit_info1.visit_id = 1;
-  EXPECT_TRUE(AddVisit(&visit_info1, SOURCE_BROWSED));
 
   // Add second visit for the same page.
   VisitRow visit_info2(visit_info1.url_id,
@@ -176,7 +181,6 @@ TEST_F(VisitDatabaseTest, GetVisibleVisitsInRange) {
           content::PAGE_TRANSITION_CHAIN_END),
       0);
   visit_info2.visit_id = 2;
-  EXPECT_TRUE(AddVisit(&visit_info2, SOURCE_BROWSED));
 
   // Add third visit for a different page.
   VisitRow visit_info3(2,
@@ -186,7 +190,6 @@ TEST_F(VisitDatabaseTest, GetVisibleVisitsInRange) {
           content::PAGE_TRANSITION_CHAIN_START),
       0);
   visit_info3.visit_id = 3;
-  EXPECT_TRUE(AddVisit(&visit_info3, SOURCE_BROWSED));
 
   // Add a redirect visit from the last page.
   VisitRow visit_info4(3,
@@ -196,7 +199,6 @@ TEST_F(VisitDatabaseTest, GetVisibleVisitsInRange) {
           content::PAGE_TRANSITION_CHAIN_END),
       0);
   visit_info4.visit_id = 4;
-  EXPECT_TRUE(AddVisit(&visit_info4, SOURCE_BROWSED));
 
   // Add a subframe visit.
   VisitRow visit_info5(4,
@@ -207,27 +209,104 @@ TEST_F(VisitDatabaseTest, GetVisibleVisitsInRange) {
           content::PAGE_TRANSITION_CHAIN_END),
       0);
   visit_info5.visit_id = 5;
-  EXPECT_TRUE(AddVisit(&visit_info5, SOURCE_BROWSED));
 
-  // Query the visits for all time, we should not get the first (duplicate of
-  // the second) or the redirect or subframe visits.
+  std::vector<VisitRow> test_visit_rows;
+  test_visit_rows.push_back(visit_info1);
+  test_visit_rows.push_back(visit_info2);
+  test_visit_rows.push_back(visit_info3);
+  test_visit_rows.push_back(visit_info4);
+  test_visit_rows.push_back(visit_info5);
+  return test_visit_rows;
+}
+
+}  // namespace
+
+TEST_F(VisitDatabaseTest, GetVisitsForTimes) {
+  std::vector<VisitRow> test_visit_rows = GetTestVisitRows();
+
+  for (size_t i = 0; i < test_visit_rows.size(); ++i) {
+    EXPECT_TRUE(AddVisit(&test_visit_rows[i], SOURCE_BROWSED));
+  }
+
+  // Query the visits for all our times.  We should get all visits.
+  {
+    std::vector<base::Time> times;
+    for (size_t i = 0; i < test_visit_rows.size(); ++i) {
+      times.push_back(test_visit_rows[i].visit_time);
+    }
+    VisitVector results;
+    GetVisitsForTimes(times, &results);
+    EXPECT_EQ(static_cast<size_t>(5), results.size());
+  }
+
+  // Query the visits for a single time.
+  for (size_t i = 0; i < test_visit_rows.size(); ++i) {
+    std::vector<base::Time> times;
+    times.push_back(test_visit_rows[i].visit_time);
+    VisitVector results;
+    GetVisitsForTimes(times, &results);
+    ASSERT_EQ(static_cast<size_t>(1), results.size());
+    EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[i]));
+  }
+}
+
+TEST_F(VisitDatabaseTest, GetAllVisitsInRange) {
+  std::vector<VisitRow> test_visit_rows = GetTestVisitRows();
+
+  for (size_t i = 0; i < test_visit_rows.size(); ++i) {
+    EXPECT_TRUE(AddVisit(&test_visit_rows[i], SOURCE_BROWSED));
+  }
+
+  // Query the visits for all time.  We should get all visits.
   VisitVector results;
-  GetVisibleVisitsInRange(Time(), Time(), 0, &results);
-  ASSERT_EQ(static_cast<size_t>(2), results.size());
-  EXPECT_TRUE(IsVisitInfoEqual(results[0], visit_info4) &&
-              IsVisitInfoEqual(results[1], visit_info2));
+  GetAllVisitsInRange(Time(), Time(), 0, &results);
+  ASSERT_EQ(static_cast<size_t>(5), results.size());
+  for (size_t i = 0; i < test_visit_rows.size(); ++i) {
+    EXPECT_TRUE(IsVisitInfoEqual(results[i], test_visit_rows[i]));
+  }
 
   // Query a time range and make sure beginning is inclusive and ending is
   // exclusive.
-  GetVisibleVisitsInRange(visit_info2.visit_time, visit_info4.visit_time, 0,
-                          &results);
+  GetAllVisitsInRange(test_visit_rows[1].visit_time,
+                      test_visit_rows[3].visit_time, 0,
+                      &results);
+  ASSERT_EQ(static_cast<size_t>(2), results.size());
+  EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[1]));
+  EXPECT_TRUE(IsVisitInfoEqual(results[1], test_visit_rows[2]));
+
+  // Query for a max count and make sure we get only that number.
+  GetAllVisitsInRange(Time(), Time(), 1, &results);
   ASSERT_EQ(static_cast<size_t>(1), results.size());
-  EXPECT_TRUE(IsVisitInfoEqual(results[0], visit_info2));
+  EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[0]));
+}
+
+TEST_F(VisitDatabaseTest, GetVisibleVisitsInRange) {
+  std::vector<VisitRow> test_visit_rows = GetTestVisitRows();
+
+  for (size_t i = 0; i < test_visit_rows.size(); ++i) {
+    EXPECT_TRUE(AddVisit(&test_visit_rows[i], SOURCE_BROWSED));
+  }
+
+  // Query the visits for all time.  We should not get the first
+  // (duplicate of the second) or the redirect or subframe visits.
+  VisitVector results;
+  GetVisibleVisitsInRange(Time(), Time(), 0, &results);
+  ASSERT_EQ(static_cast<size_t>(2), results.size());
+  EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[3]) &&
+              IsVisitInfoEqual(results[1], test_visit_rows[1]));
+
+  // Query a time range and make sure beginning is inclusive and ending is
+  // exclusive.
+  GetVisibleVisitsInRange(test_visit_rows[1].visit_time,
+                      test_visit_rows[3].visit_time, 0,
+                      &results);
+  ASSERT_EQ(static_cast<size_t>(1), results.size());
+  EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[1]));
 
   // Query for a max count and make sure we get only that number.
   GetVisibleVisitsInRange(Time(), Time(), 1, &results);
   ASSERT_EQ(static_cast<size_t>(1), results.size());
-  EXPECT_TRUE(IsVisitInfoEqual(results[0], visit_info4));
+  EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[3]));
 }
 
 TEST_F(VisitDatabaseTest, VisitSource) {

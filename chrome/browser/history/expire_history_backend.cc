@@ -5,11 +5,13 @@
 #include "chrome/browser/history/expire_history_backend.h"
 
 #include <algorithm>
+#include <functional>
 #include <limits>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/api/bookmarks/bookmark_service.h"
 #include "chrome/browser/history/archived_database.h"
@@ -266,6 +268,30 @@ void ExpireHistoryBackend::ExpireHistoryBetween(
         visits.push_back(*visit);
     }
   }
+  ExpireVisits(visits);
+}
+
+void ExpireHistoryBackend::ExpireHistoryForTimes(
+    const std::vector<base::Time>& times) {
+  // |times| must be in reverse chronological order and have no
+  // duplicates, i.e. each member must be earlier than the one before
+  // it.
+  DCHECK(
+      std::adjacent_find(
+          times.begin(), times.end(), std::less_equal<base::Time>()) ==
+      times.end());
+
+  if (!main_db_)
+    return;
+
+  // There may be stuff in the text database manager's temporary cache.
+  if (text_db_)
+    text_db_->DeleteFromUncommittedForTimes(times);
+
+  // Find the affected visits and delete them.
+  // TODO(brettw): bug 1171164: We should query the archived database here, too.
+  VisitVector visits;
+  main_db_->GetVisitsForTimes(times, &visits);
   ExpireVisits(visits);
 }
 

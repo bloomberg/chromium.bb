@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_HISTORY_VISIT_DATABASE_H_
 #define CHROME_BROWSER_HISTORY_VISIT_DATABASE_H_
 
+#include <vector>
+
 #include "chrome/browser/history/history_types.h"
 
 namespace sql {
@@ -60,6 +62,14 @@ class VisitDatabase {
   // have the |is_indexed| field set to true, in no particular order.
   // Returns true on success (although there may still be no matches).
   bool GetIndexedVisitsForURL(URLID url_id, VisitVector* visits);
+
+  // Fills the vector with all visits with times in the given list.
+  //
+  // The results will be in no particular order.  Also, no duplicate
+  // detection is performed, so if |times| has duplicate times,
+  // |visits| may have duplicate visits.
+  bool GetVisitsForTimes(const std::vector<base::Time>& times,
+                         VisitVector* visits);
 
   // Fills all visits in the time range [begin, end) to the given vector. Either
   // time can be is_null(), in which case the times in that direction are

@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_HISTORY_HISTORY_BACKEND_H_
 #define CHROME_BROWSER_HISTORY_HISTORY_BACKEND_H_
 
+#include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/containers/mru_cache.h"
 #include "base/file_path.h"
@@ -432,6 +434,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       base::Time begin_time,
       base::Time end_time);
 
+  // Calls ExpireHistoryBackend::ExpireHistoryForTimes and commits the change.
+  void ExpireHistoryForTimes(const std::vector<base::Time>& times);
+
   // Bookmarks -----------------------------------------------------------------
 
   // Notification that a URL is no longer bookmarked. If there are no visits
@@ -470,6 +475,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Returns true if the passed visit time is already expired (used by the sync
   // code to avoid syncing visits that would immediately be expired).
   virtual bool IsExpiredVisitTime(const base::Time& time);
+
+  base::Time GetFirstRecordedTimeForTest() {
+    return first_recorded_time_;
+  }
 
  protected:
   virtual ~HistoryBackend();

@@ -5,6 +5,7 @@
 #include "chrome/browser/history/history_backend.h"
 
 #include <algorithm>
+#include <functional>
 #include <list>
 #include <map>
 #include <set>
@@ -2712,6 +2713,33 @@ void HistoryBackend::ExpireHistoryBetween(
   }
 
   if (begin_time <= first_recorded_time_)
+    db_->GetStartDate(&first_recorded_time_);
+}
+
+void HistoryBackend::ExpireHistoryForTimes(
+    const std::vector<base::Time>& times) {
+  // Put the times in reverse chronological order and remove
+  // duplicates (for expirer_.ExpireHistoryForTimes()).
+  std::vector<base::Time> sorted_times = times;
+  std::sort(sorted_times.begin(), sorted_times.end(),
+            std::greater<base::Time>());
+  sorted_times.erase(
+      std::unique(sorted_times.begin(), sorted_times.end()),
+      sorted_times.end());
+
+  if (sorted_times.empty())
+    return;
+
+  if (db_.get()) {
+    expirer_.ExpireHistoryForTimes(sorted_times);
+    // Force a commit, if the user is deleting something for privacy reasons,
+    // we want to get it on disk ASAP.
+    Commit();
+  }
+
+  // Update the first recorded time if we've expired it.
+  if (std::binary_search(sorted_times.begin(), sorted_times.end(),
+                         first_recorded_time_, std::greater<base::Time>()))
     db_->GetStartDate(&first_recorded_time_);
 }
 
