@@ -72,6 +72,7 @@ class ExtensionManagedModeEventRouter;
 class ExtensionSyncData;
 class ExtensionSystem;
 class ExtensionUpdater;
+class FontSettingsEventRouter;
 class MediaGalleriesPrivateEventRouter;
 class PendingExtensionManager;
 class PreferenceEventRouter;
@@ -960,6 +961,8 @@ class ExtensionService
       push_messaging_event_router_;
 
   scoped_ptr<extensions::WebNavigationEventRouter> web_navigation_event_router_;
+
+  scoped_ptr<extensions::FontSettingsEventRouter> font_settings_event_router_;
 
   scoped_ptr<extensions::ExtensionManagedModeEventRouter>
       managed_mode_event_router_;
