@@ -7,10 +7,6 @@
 
 #include "ui/views/views_export.h"
 
-namespace gfx {
-class Rect;
-}
-
 namespace views {
 
 class Widget;
@@ -24,8 +20,7 @@ class VIEWS_EXPORT WidgetObserver {
 
   virtual void OnWidgetActivationChanged(Widget* widget, bool active) {}
 
-  virtual void OnWidgetBoundsChanged(Widget* widget,
-                                     const gfx::Rect& new_bounds) {}
+  virtual void OnWidgetMoved(Widget* widget) {}
 
  protected:
   virtual ~WidgetObserver() {}

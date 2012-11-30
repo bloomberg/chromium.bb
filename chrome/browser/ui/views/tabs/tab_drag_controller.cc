@@ -659,8 +659,7 @@ void TabDragController::DidProcessEvent(const base::NativeEvent& event) {
   }
 }
 
-void TabDragController::OnWidgetBoundsChanged(views::Widget* widget,
-                                              const gfx::Rect& new_bounds) {
+void TabDragController::OnWidgetMoved(views::Widget* widget) {
   Drag(GetCursorScreenPoint());
 }
 
