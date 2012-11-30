@@ -53,6 +53,7 @@ class CC_EXPORT ManagedTileState {
   bool can_be_freed;
   ResourceProvider::ResourceId resource_id;
   bool resource_id_is_being_initialized;
+  bool contents_swizzled;
 
   // Ephemeral state, valid only during Manage.
   TileManagerBin bin;

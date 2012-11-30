@@ -48,8 +48,7 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
 
   const gfx::Rect& opaque_rect() const { return opaque_rect_; }
 
-  // TODO(enne): Make this real
-  bool contents_swizzled() const { return false; }
+  bool contents_swizzled() const { return managed_state_.contents_swizzled; }
 
  private:
   // Methods called by by tile manager.

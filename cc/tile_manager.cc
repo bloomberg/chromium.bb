@@ -10,6 +10,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "cc/platform_color.h"
 #include "cc/resource_pool.h"
 #include "cc/tile.h"
 #include "third_party/skia/include/core/SkDevice.h"
@@ -46,7 +47,8 @@ ManagedTileState::ManagedTileState()
     : can_use_gpu_memory(false),
       can_be_freed(true),
       resource_id(0),
-      resource_id_is_being_initialized(false) {
+      resource_id_is_being_initialized(false),
+      contents_swizzled(false) {
 }
 
 ManagedTileState::~ManagedTileState() {
@@ -340,6 +342,12 @@ void TileManager::OnRasterTaskCompleted(
   if (managed_tile_state.can_use_gpu_memory) {
     resource_pool_->resource_provider()->setPixelsFromBuffer(resource_id);
     resource_pool_->resource_provider()->releasePixelBuffer(resource_id);
+
+    // The component order may be bgra if we uploaded bgra pixels to rgba
+    // texture. Mark contents as swizzled if image component order is
+    // different than texture format.
+    managed_tile_state.contents_swizzled =
+        !PlatformColor::sameComponentOrder(tile->format_);
 
     DidFinishTileInitialization(tile, resource_id);
   } else {
