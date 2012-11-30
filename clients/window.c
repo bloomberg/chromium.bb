@@ -147,17 +147,22 @@ struct window_output {
 	struct wl_list link;
 };
 
+enum toysurface_prepare_flags {
+	SURFACE_HINT_RESIZE = 0x01,
+};
+
 struct toysurface {
 	/*
 	 * Prepare the surface for drawing. Makes sure there is a surface
 	 * of the right size available for rendering, and returns it.
 	 * dx,dy are the x,y of wl_surface.attach.
 	 * width,height are the new surface size.
-	 * If resize_hint is non-zero, the user is doing continuous resizing.
+	 * If flags has SURFACE_HINT_RESIZE set, the user is
+	 * doing continuous resizing.
 	 * Returns the Cairo surface to draw to.
 	 */
 	cairo_surface_t *(*prepare)(struct toysurface *base, int dx, int dy,
-				    int width, int height, int resize_hint);
+				    int width, int height, uint32_t flags);
 
 	/*
 	 * Post the surface to the server, returning the server allocation
@@ -413,7 +418,7 @@ to_egl_window_surface(struct toysurface *base)
 
 static cairo_surface_t *
 egl_window_surface_prepare(struct toysurface *base, int dx, int dy,
-			   int width, int height, int resize_hint)
+			   int width, int height, uint32_t flags)
 {
 	struct egl_window_surface *surface = to_egl_window_surface(base);
 
@@ -835,8 +840,9 @@ static const struct wl_buffer_listener shm_surface_buffer_listener = {
 
 static cairo_surface_t *
 shm_surface_prepare(struct toysurface *base, int dx, int dy,
-		    int width, int height, int resize_hint)
+		    int width, int height, uint32_t flags)
 {
+	int resize_hint = !!(flags & SURFACE_HINT_RESIZE);
 	struct shm_surface *surface = to_shm_surface(base);
 	struct rectangle rect = { 0, 0, width, height };
 	struct shm_surface_leaf *leaf;
@@ -1216,12 +1222,17 @@ window_create_surface(struct window *window)
 							window->surface, flags,
 							&allocation);
 
+	if (window->resizing)
+		flags = SURFACE_HINT_RESIZE;
+	else
+		flags = 0;
+
 	window_get_resize_dx_dy(window, &dx, &dy);
 	window->cairo_surface =
 		window->toysurface->prepare(window->toysurface, dx, dy,
 					    allocation.width,
 					    allocation.height,
-					    window->resizing);
+					    flags);
 }
 
 int
