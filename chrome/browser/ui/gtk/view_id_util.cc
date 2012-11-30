@@ -113,6 +113,9 @@ const char* GetNameFromID(ViewID id) {
     case VIEW_ID_ZOOM_BUTTON:
       return "chrome-zoom-button";
 
+    case VIEW_ID_SCRIPT_BUBBLE:
+      return "chrome-script-bubble-button";
+
     // These are never hit because the tab container uses the delegate to
     // set its ID.
     case VIEW_ID_TAB_CONTAINER:

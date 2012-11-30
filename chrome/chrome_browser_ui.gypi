@@ -1045,6 +1045,8 @@
         'browser/ui/gtk/rounded_window.h',
         'browser/ui/gtk/sad_tab_gtk.cc',
         'browser/ui/gtk/sad_tab_gtk.h',
+        'browser/ui/gtk/script_bubble_gtk.cc',
+        'browser/ui/gtk/script_bubble_gtk.h',
         'browser/ui/gtk/simple_message_box_gtk.cc',
         'browser/ui/gtk/slide_animator_gtk.cc',
         'browser/ui/gtk/slide_animator_gtk.h',

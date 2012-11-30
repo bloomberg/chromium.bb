@@ -366,10 +366,14 @@ class LocationBarViewGtk : public OmniboxEditController,
                        GtkAllocation*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnZoomButtonPress,
                        GdkEventButton*);
+  CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnScriptBubbleButtonPress,
+                       GdkEventButton*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, void, OnStarButtonSizeAllocate,
                        GtkAllocation*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnStarButtonPress,
                        GdkEventButton*);
+  CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean,
+                       OnScriptBubbleButtonExpose, GdkEventExpose*);
 
   // Updates the site type area: changes the icon and shows/hides the EV
   // certificate information.
@@ -396,7 +400,8 @@ class LocationBarViewGtk : public OmniboxEditController,
   // available horizontal space in the location bar.
   void AdjustChildrenVisibility();
 
-  // Build the zoom, and star icons.
+  // Helpers to build create the various buttons that show up in the location
+  // bar.
   GtkWidget* CreateIconButton(
       GtkWidget** image,
       int image_id,
@@ -404,12 +409,13 @@ class LocationBarViewGtk : public OmniboxEditController,
       int tooltip_id,
       gboolean (click_callback)(GtkWidget*, GdkEventButton*, gpointer));
   void CreateZoomButton();
+  void CreateScriptBubbleButton();
   void CreateStarButton();
 
-  // Update the zoom icon after zoom changes.
+  // Helpers to update state of the various buttons that show up in the
+  // location bar.
   void UpdateZoomIcon();
-
-  // Update the star icon after it is toggled or the theme changes.
+  void UpdateScriptBubbleIcon();
   void UpdateStarIcon();
 
   // Returns true if we should only show the URL and none of the extras like
@@ -422,6 +428,10 @@ class LocationBarViewGtk : public OmniboxEditController,
   // Zoom button.
   ui::OwnedWidgetGtk zoom_;
   GtkWidget* zoom_image_;
+
+  ui::OwnedWidgetGtk script_bubble_button_;
+  GtkWidget* script_bubble_button_image_;
+  size_t num_running_scripts_;
 
   // Star button.
   ui::OwnedWidgetGtk star_;
