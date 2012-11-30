@@ -13,6 +13,7 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnRece
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
 
 class TestAwContentsClient extends NullContentsClient {
+    private String mUpdatedTitle;
     private OnPageStartedHelper mOnPageStartedHelper;
     private OnPageFinishedHelper mOnPageFinishedHelper;
     private OnReceivedErrorHelper mOnReceivedErrorHelper;
@@ -45,6 +46,15 @@ class TestAwContentsClient extends NullContentsClient {
 
     public AddMessageToConsoleHelper getAddMessageToConsoleHelper() {
         return mAddMessageToConsoleHelper;
+    }
+
+    @Override
+    public void onUpdateTitle(String title) {
+        mUpdatedTitle = title;
+    }
+
+    public String getUpdatedTitle() {
+        return mUpdatedTitle;
     }
 
     @Override

@@ -536,12 +536,12 @@ public class AwContents {
         boolean rv = mContentViewCore.onTouchEvent(event);
 
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-          int actionIndex = event.getActionIndex();
+            int actionIndex = event.getActionIndex();
 
-          // Note this will trigger IPC back to browser even if nothing is hit.
-          nativeRequestNewHitTestDataAt(mNativeAwContents,
-                                        Math.round(event.getX(actionIndex)),
-                                        Math.round(event.getY(actionIndex)));
+            // Note this will trigger IPC back to browser even if nothing is hit.
+            nativeRequestNewHitTestDataAt(mNativeAwContents,
+                                          Math.round(event.getX(actionIndex)),
+                                          Math.round(event.getY(actionIndex)));
         }
 
         return rv;
@@ -575,12 +575,18 @@ public class AwContents {
         mContentViewCore.onAttachedToWindow();
         nativeOnAttachedToWindow(mNativeAwContents, mContainerView.getWidth(),
                 mContainerView.getHeight());
+
+        // This is for the case where this is created by restoreState, which
+        // needs to call to NavigationController::LoadIfNecessary to actually
+        // load the restored page.
+        if (!mIsPaused) onResume();
     }
 
     /**
      * @see android.view.View#onDetachedFromWindow()
      */
     public void onDetachedFromWindow() {
+        if (mNativeAwContents == 0) return;
         nativeOnDetachedFromWindow(mNativeAwContents);
         mContentViewCore.onDetachedFromWindow();
     }
@@ -659,7 +665,15 @@ public class AwContents {
         byte[] state = inState.getByteArray(SAVE_RESTORE_STATE_KEY);
         if (state == null) return false;
 
-        return nativeRestoreFromOpaqueState(mNativeAwContents, state);
+        boolean result = nativeRestoreFromOpaqueState(mNativeAwContents, state);
+
+        // The onUpdateTitle callback normally happens when a page is loaded,
+        // but is optimized out in the restoreState case because the title is
+        // already restored. See WebContentsImpl::UpdateTitleForEntry. So we
+        // call the callback explicitly here.
+        if (result) mContentsClient.onUpdateTitle(mContentViewCore.getTitle());
+
+        return result;
     }
 
     //--------------------------------------------------------------------------------------------

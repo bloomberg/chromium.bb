@@ -98,6 +98,8 @@ bool RestoreFromPickle(PickleIterator* iterator,
     if (!internal::RestoreNavigationEntryFromPickle(iterator,
                                                     restored_entries[i]))
       return false;
+
+    restored_entries[i]->SetPageID(i);
   }
 
   // |web_contents| takes ownership of these entries after this call.

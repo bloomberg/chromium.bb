@@ -141,7 +141,8 @@ public class SaveRestoreStateTest extends AndroidWebViewTestBase {
         assertTrue(pollOnUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                return TITLES[0].equals(restoredVars.contentViewCore.getTitle());
+                return TITLES[0].equals(restoredVars.contentViewCore.getTitle()) &&
+                       TITLES[0].equals(restoredVars.contentsClient.getUpdatedTitle());
             }
         }));
     }
