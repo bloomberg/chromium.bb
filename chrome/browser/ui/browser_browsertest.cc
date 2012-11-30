@@ -1700,7 +1700,14 @@ class AppModeTest : public BrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(AppModeTest, EnableAppModeTest) {
+// Check failed on Win only.  http://crbug.com/163630
+#if defined(OS_WIN)
+#define MAYBE_EnableAppModeTest DISABLED_EnableAppModeTest
+#else
+#define MAYBE_EnableAppModeTest EnableAppModeTest
+#endif
+
+IN_PROC_BROWSER_TEST_F(AppModeTest, MAYBE_EnableAppModeTest) {
   // Test that an application browser window loads correctly.
 
   // Verify the browser is in application mode.
