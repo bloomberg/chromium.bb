@@ -13,6 +13,7 @@ in manifest.
 import buildbot_common
 import csv
 import cStringIO
+import difflib
 import email
 import json
 import manifest_util
@@ -308,6 +309,38 @@ class VersionFinder(object):
     return self._DoGetMostRecentSharedVersion(platforms,
         shared_version_generator, allow_trunk_revisions=True)
 
+  def GetAvailablePlatformArchivesFor(self, version, platforms,
+                                      allow_trunk_revisions):
+    """Returns a sequence of archives that exist for a given version, on the
+    given platforms.
+
+    The second element of the returned tuple is a list of all platforms that do
+    not have an archive for the given version.
+
+    Args:
+      version: The version to find archives for. (e.g. "18.0.1025.164")
+      platforms: A sequence of platforms to consider, e.g.
+          ('mac', 'linux', 'win')
+      allow_trunk_revisions: If True, will search for archives using the
+          trunk revision that matches the branch version.
+    Returns:
+      A tuple (archives, missing_platforms). |archives| is a list of archive
+      URLs, |missing_platforms| is a list of platform names.
+    """
+    archives = self._GetAvailableArchivesFor(version)
+    missing_platforms = set(platforms) - set(GetPlatformsFromArchives(archives))
+    if allow_trunk_revisions and missing_platforms:
+      # Try to find trunk archives for platforms that are missing archives.
+      trunk_version = self.delegate.GetTrunkRevision(version)
+      trunk_archives = self._GetAvailableArchivesFor(trunk_version)
+      for trunk_archive in trunk_archives:
+        trunk_archive_platform = GetPlatformFromArchiveUrl(trunk_archive)
+        if trunk_archive_platform in missing_platforms:
+          archives.append(trunk_archive)
+          missing_platforms.discard(trunk_archive_platform)
+
+    return archives, missing_platforms
+
   def _DoGetMostRecentSharedVersion(self, platforms, shared_version_generator,
       allow_trunk_revisions):
     """Returns the most recent version of a pepper bundle that exists on all
@@ -321,7 +354,7 @@ class VersionFinder(object):
       shared_version_generator: A generator that will yield (version, channel)
           tuples in order of most recent to least recent.
       allow_trunk_revisions: If True, will search for archives using the
-            trunk revision that matches the branch version.
+          trunk revision that matches the branch version.
     Returns:
       A tuple (version, channel, archives). The version is a string such as
       "19.0.1084.41". The channel is one of ('stable', 'beta', 'dev',
@@ -345,18 +378,8 @@ class VersionFinder(object):
           msg += '  %s (%s) %s\n' % (version, channel, archive_msg)
         raise Exception(msg)
 
-      archives = self._GetAvailableNaClSDKArchivesFor(version)
-      missing_platforms = set(platforms) - \
-          set(GetPlatformsFromArchives(archives))
-      if allow_trunk_revisions and missing_platforms:
-        # Try to find trunk archives for platforms that are missing archives.
-        trunk_version = self.delegate.GetTrunkRevision(version)
-        trunk_archives = self._GetAvailableNaClSDKArchivesFor(trunk_version)
-        for trunk_archive in trunk_archives:
-          trunk_archive_platform = GetPlatformFromArchiveUrl(trunk_archive)
-          if trunk_archive_platform in missing_platforms:
-            archives.append(trunk_archive)
-            missing_platforms.discard(trunk_archive_platform)
+      archives, missing_platforms = self.GetAvailablePlatformArchivesFor(
+          version, platforms, allow_trunk_revisions)
 
       if not missing_platforms:
         return version, channel, archives
@@ -438,7 +461,7 @@ class VersionFinder(object):
         # force increment to next version for all platforms
         shared_version = None
 
-  def _GetAvailableNaClSDKArchivesFor(self, version_string):
+  def _GetAvailableArchivesFor(self, version_string):
     """Downloads a list of all available archives for a given version.
 
     Args:
@@ -464,6 +487,8 @@ class Updater(object):
   def __init__(self, delegate):
     self.delegate = delegate
     self.versions_to_update = []
+    self.online_manifest = manifest_util.SDKManifest()
+    self._FetchOnlineManifest()
 
   def AddVersionToUpdate(self, bundle_name, version, channel, archives):
     """Add a pepper version to update in the uploaded manifest.
@@ -477,6 +502,10 @@ class Updater(object):
 
   def Update(self, manifest):
     """Update a manifest and upload it.
+
+    Note that bundles will not be updated if the current version is newer.
+    That is, the updater will never automatically update to an older version of
+    a bundle.
 
     Args:
       manifest: The manifest used as a template for updating. Only pepper
@@ -498,6 +527,16 @@ class Updater(object):
         # snippet.
         platform_bundle.name = bundle_name
         bundle.MergeWithBundle(platform_bundle)
+
+      # Check to ensure this bundle is newer than the online bundle.
+      online_bundle = self.online_manifest.GetBundle(bundle_name)
+      if online_bundle and online_bundle.revision >= bundle.revision:
+        self.delegate.Print(
+            '  Revision %s is not newer than than online revision %s. '
+            'Skipping.' % (bundle.revision, online_bundle.revision))
+
+        manifest.MergeBundle(online_bundle)
+        continue
 
       major_version = SplitVersion(version)[0]
       if major_version < max_stable_version and channel == 'stable':
@@ -541,18 +580,21 @@ class Updater(object):
     Args:
       manifest: The new manifest to upload.
     """
-    if self.delegate.dryrun:
-      name = MANIFEST_BASENAME + ".new"
-      self.delegate.Print("Writing new manifest: %s" % name)
-      with open(name, 'w') as f:
-        f.write(manifest.GetDataAsString())
-      stdout = self.delegate.GsUtil_cat(GS_SDK_MANIFEST)
+    new_manifest_string = manifest.GetDataAsString()
+    online_manifest_string = self.online_manifest.GetDataAsString()
 
-      online = MANIFEST_BASENAME + ".online"
-      self.delegate.Print("Writing online manifest: %s" % online)
-      with open(online, 'w') as f:
-        f.write(stdout)
-      os.system('diff -u %s %s' % (online, name))
+    if self.delegate.dryrun:
+      self.delegate.Print(''.join(list(difflib.unified_diff(
+          online_manifest_string.splitlines(1),
+          new_manifest_string.splitlines(1)))))
+    else:
+      online_manifest = manifest_util.SDKManifest()
+      online_manifest.LoadDataFromString(online_manifest_string)
+
+      if online_manifest == manifest:
+        self.delegate.Print('New manifest doesn\'t differ from online manifest.'
+            'Skipping upload.')
+        return
 
     timestamp_manifest_path = GS_MANIFEST_BACKUP_DIR + \
         GetTimestampManifestName()
@@ -562,9 +604,32 @@ class Updater(object):
     # copy from timestampped copy over the official manifest.
     self.delegate.GsUtil_cp(timestamp_manifest_path, GS_SDK_MANIFEST)
 
+  def _FetchOnlineManifest(self):
+    try:
+      online_manifest_string = self.delegate.GsUtil_cat(GS_SDK_MANIFEST)
+    except subprocess.CalledProcessError:
+      # It is not a failure if the online manifest doesn't exist.
+      online_manifest_string = ''
 
-def Run(delegate, platforms):
-  """Entry point for the auto-updater."""
+    if online_manifest_string:
+      self.online_manifest.LoadDataFromString(online_manifest_string)
+
+
+def Run(delegate, platforms, fixed_bundle_versions=None):
+  """Entry point for the auto-updater.
+
+  Args:
+    delegate: The Delegate object to use for reading Urls, files, etc.
+    platforms: A sequence of platforms to consider, e.g.
+        ('mac', 'linux', 'win')
+    fixed_bundle_versions: A sequence of tuples (bundle_name, version_string).
+        e.g. ('pepper_21', '21.0.1145.0')
+  """
+  if fixed_bundle_versions:
+    fixed_bundle_versions = dict(fixed_bundle_versions)
+  else:
+    fixed_bundle_versions = {}
+
   manifest = delegate.GetRepoManifest()
   auto_update_bundles = []
   for bundle in manifest.GetBundles():
@@ -588,6 +653,21 @@ def Run(delegate, platforms):
     else:
       version, channel, archives = version_finder.GetMostRecentSharedVersion(
           bundle.version, platforms)
+
+    if bundle.name in fixed_bundle_versions:
+      # Ensure this version is valid for all platforms.
+      # If it is, use the channel found above (because the channel for this
+      # version may not be in the history.)
+      version = fixed_bundle_versions[bundle.name]
+      delegate.Print('Fixed bundle version: %s, %s' % (bundle.name, version))
+      allow_trunk_revisions = bundle.name == CANARY_BUNDLE_NAME
+      archives, missing = version_finder.GetAvailablePlatformArchivesFor(
+          version, platforms, allow_trunk_revisions)
+      if missing:
+        delegate.Print(
+            'An archive for version %s of bundle %s doesn\'t exist '
+            'for platform(s): %s' % (version, bundle.name, ', '.join(missing)))
+        return
 
     updater.AddVersionToUpdate(bundle.name, version, channel, archives)
 
@@ -642,6 +722,9 @@ def main(args):
       action='store_true')
   parser.add_option('-v', '--verbose', help='print more diagnotic messages.',
       action='store_true')
+  parser.add_option('--bundle-version',
+      help='Manually set a bundle version. This can be passed more than once. '
+      'format: --bundle-version pepper_24=24.0.1312.25', action='append')
   options, args = parser.parse_args(args[1:])
 
   if (options.mailfrom is None) != (not options.mailto):
@@ -650,6 +733,13 @@ def main(args):
     sys.stderr.write('warning: Disabling email, one of --mailto or --mailfrom '
         'was missing.\n')
 
+  # Parse bundle versions.
+  fixed_bundle_versions = {}
+  if options.bundle_version:
+    for bundle_version_string in options.bundle_version:
+      bundle_name, version = bundle_version_string.split('=')
+      fixed_bundle_versions[bundle_name] = version
+
   if options.mailfrom and options.mailto:
     # Capture stderr so it can be emailed, if necessary.
     sys.stderr = CapturedFile(sys.stderr)
@@ -657,7 +747,7 @@ def main(args):
   try:
     try:
       delegate = RealDelegate(options.dryrun, options.gsutil, options.verbose)
-      Run(delegate, ('mac', 'win', 'linux'))
+      Run(delegate, ('mac', 'win', 'linux'), fixed_bundle_versions)
     except Exception:
       if options.mailfrom and options.mailto:
         traceback.print_exc()

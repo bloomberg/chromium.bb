@@ -136,6 +136,9 @@ class MakeHistory(object):
 
 
 class MakeFiles(dict):
+  def AddOnlineManifest(self, manifest_string):
+    self['naclsdk_manifest2.json'] = manifest_string
+
   def Add(self, bundle, add_archive_for_os=OS_MLW, add_json_for_os=OS_MLW):
     for archive in bundle.GetArchives():
       if not archive.host_os in add_archive_for_os:
@@ -162,6 +165,7 @@ class TestDelegate(update_nacl_manifest.Delegate):
     self.files = files
     self.version_mapping = version_mapping
     self.dryrun = 0
+    self.called_gsutil_cp = False
 
   def GetRepoManifest(self):
     return self.manifest
@@ -187,6 +191,7 @@ class TestDelegate(update_nacl_manifest.Delegate):
     return self.files[path]
 
   def GsUtil_cp(self, src, dest, stdin=None):
+    self.called_gsutil_cp = True
     dest_path = GetPathFromGsUrl(dest)
     if src == '-':
       self.files[dest_path] = stdin
@@ -237,8 +242,8 @@ class TestUpdateManifest(unittest.TestCase):
     self.delegate = TestDelegate(self.manifest, self.history.history,
         self.files, self.version_mapping)
 
-  def _Run(self, host_oses):
-    update_nacl_manifest.Run(self.delegate, host_oses)
+  def _Run(self, host_oses, fixed_bundle_versions=None):
+    update_nacl_manifest.Run(self.delegate, host_oses, fixed_bundle_versions)
 
   def _HasUploadedManifest(self):
     return 'naclsdk_manifest2.json' in self.files
@@ -275,12 +280,12 @@ class TestUpdateManifest(unittest.TestCase):
     self.manifest = MakeManifest(B18_0_1025_163_R1_MLW)
     self._MakeDelegate()
     self._Run(OS_MLW)
-    self.assertEqual(self._HasUploadedManifest(), False)
+    self.assertFalse(self._HasUploadedManifest())
 
     # Add another bundle, make sure it still doesn't update
     self.manifest.AddBundle(B19_0_1084_41_R1_MLW)
     self._Run(OS_MLW)
-    self.assertEqual(self._HasUploadedManifest(), False)
+    self.assertFalse(self._HasUploadedManifest())
 
   def testSimpleUpdate(self):
     self.manifest = MakeManifest(B18_R1_NONE)
@@ -385,7 +390,7 @@ class TestUpdateManifest(unittest.TestCase):
         B18_0_1025_163_R1_MLW)
     self._MakeDelegate()
     self._Run(OS_MLW)
-    self.assertEqual(self._HasUploadedManifest(), False)
+    self.assertFalse(self._HasUploadedManifest())
 
   def testUpdateWithHistoryWithExtraneousPlatforms(self):
     self.manifest = MakeManifest(B18_R1_NONE)
@@ -529,6 +534,54 @@ mac,canary,21.0.1156.0,2012-05-30 12:14:21.305090"""
     self.assertEqual(p18_bundle.stability, POST_STABLE)
     p19_bundle = self.uploaded_manifest.GetBundle(B19_R1_NONE.name)
     self.assertEqual(p19_bundle.stability, STABLE)
+
+  def testDontPushIfNoChange(self):
+    # Make an online manifest that already has this bundle.
+    online_manifest = MakeManifest(B18_0_1025_163_R1_MLW)
+    self.files.AddOnlineManifest(online_manifest.GetDataAsString())
+
+    self.manifest = MakeManifest(B18_R1_NONE)
+    self.history.Add(OS_MLW, DEV, V18_0_1025_163)
+    self.files.Add(B18_0_1025_163_R1_MLW)
+
+    self._MakeDelegate()
+    self._Run(OS_MLW)
+    self.assertFalse(self.delegate.called_gsutil_cp)
+
+  def testDontPushIfRollback(self):
+    # Make an online manifest that has a newer bundle
+    online_manifest = MakeManifest(B18_0_1025_184_R1_MLW)
+    self.files.AddOnlineManifest(online_manifest.GetDataAsString())
+
+    self.manifest = MakeManifest(B18_R1_NONE)
+    self.history.Add(OS_MLW, DEV, V18_0_1025_163)
+    self.files.Add(B18_0_1025_163_R1_MLW)
+
+    self._MakeDelegate()
+    self._Run(OS_MLW)
+    self.assertFalse(self.delegate.called_gsutil_cp)
+
+  def testRunWithFixedBundleVersions(self):
+    self.manifest = MakeManifest(B18_R1_NONE)
+    self.history.Add(OS_MLW, BETA, V18_0_1025_163)
+    self.files.Add(B18_0_1025_163_R1_MLW)
+    self.files.Add(B18_0_1025_184_R1_MLW)
+
+    self._MakeDelegate()
+    self._Run(OS_MLW, [('pepper_18', '18.0.1025.184')])
+    self._ReadUploadedManifest()
+    self._AssertUploadedManifestHasBundle(B18_0_1025_184_R1_MLW, BETA)
+    self.assertEqual(len(self.uploaded_manifest.GetBundles()), 1)
+
+  def testRunWithMissingFixedBundleVersions(self):
+    self.manifest = MakeManifest(B18_R1_NONE)
+    self.history.Add(OS_MLW, BETA, V18_0_1025_163)
+    self.files.Add(B18_0_1025_163_R1_MLW)
+
+    self._MakeDelegate()
+    self._Run(OS_MLW, [('pepper_18', '18.0.1025.184')])
+    # Nothing should be uploaded if the user gives a missing fixed version.
+    self.assertFalse(self.delegate.called_gsutil_cp)
 
 
 class TestUpdateVitals(unittest.TestCase):

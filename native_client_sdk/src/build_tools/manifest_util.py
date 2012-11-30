@@ -543,6 +543,27 @@ class SDKManifest(object):
   def __str__(self):
     return self.GetDataAsString()
 
+  def __eq__(self, other):
+    # Access to protected member _manifest_data of a client class
+    # pylint: disable=W0212
+    if (self._manifest_data['manifest_version'] !=
+        other._manifest_data['manifest_version']):
+      return False
+
+    self_bundle_names = set(b.name for b in self.GetBundles())
+    other_bundle_names = set(b.name for b in other.GetBundles())
+    if self_bundle_names != other_bundle_names:
+      return False
+
+    for bundle_name in self_bundle_names:
+      if self.GetBundle(bundle_name) != other.GetBundle(bundle_name):
+        return False
+
+    return True
+
+  def __ne__(self, other):
+    return not (self == other)
+
   def GetDataAsString(self):
     """Returns the current JSON manifest object, pretty-printed"""
     return DictToJSON(self._manifest_data)
