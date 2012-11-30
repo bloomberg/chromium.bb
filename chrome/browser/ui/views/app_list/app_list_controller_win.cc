@@ -124,6 +124,7 @@ class AppListController {
   void CloseAppList();
   void AppListClosing();
   void AppListActivationChanged(bool active);
+  app_list::AppListView* GetView() { return current_view_; }
 
  private:
   // Utility methods for showing the app list.
@@ -205,7 +206,14 @@ void AppListControllerDelegateWin::ShowCreateShortcutsDialog(
   const extensions::Extension* extension = service->GetInstalledExtension(
       extension_id);
   DCHECK(extension);
-  chrome::ShowCreateChromeAppShortcutsDialog(NULL, profile, extension);
+
+  app_list::AppListView* view = g_app_list_controller.Get().GetView();
+  if (!view)
+    return;
+
+  gfx::NativeWindow parent_hwnd =
+      view->GetWidget()->GetTopLevelWidget()->GetNativeWindow();
+  chrome::ShowCreateChromeAppShortcutsDialog(parent_hwnd, profile, extension);
 }
 
 void AppListControllerDelegateWin::ActivateApp(Profile* profile,
