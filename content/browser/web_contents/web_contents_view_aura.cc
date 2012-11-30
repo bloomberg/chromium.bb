@@ -264,6 +264,8 @@ class WebContentsViewAura::WindowObserver
 
   virtual ~WindowObserver() {
     view_->window_->RemoveObserver(this);
+    if (view_->window_->GetRootWindow())
+      view_->window_->GetRootWindow()->RemoveRootWindowObserver(this);
     if (parent_)
       parent_->RemoveObserver(this);
   }
