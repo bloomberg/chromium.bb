@@ -6,7 +6,9 @@
 
 #include "skia/ext/image_operations.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/dip_util.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/views/corewm/shadow_types.h"
 #include "ui/views/widget/widget.h"
 
@@ -64,14 +66,34 @@ void DragImageView::SetWidgetVisible(bool visible) {
 }
 
 void DragImageView::OnPaint(gfx::Canvas* canvas) {
+  if (GetImage().isNull())
+    return;
+
+  // |widget_size_| is in DIP. ImageSkia::size() also returns the size in DIP.
   if (GetImage().size() == widget_size_) {
     canvas->DrawImageInt(GetImage(), 0, 0);
   } else {
-  SkBitmap scaled = skia::ImageOperations::Resize(
-      *GetImage().bitmap(), skia::ImageOperations::RESIZE_LANCZOS3,
-      widget_size_.width(), widget_size_.height());
-  SkPaint paint;
-  canvas->sk_canvas()->drawBitmap(scaled, 0, 0, &paint);
+    float device_scale = 1;
+    if (widget_->GetNativeView() && widget_->GetNativeView()->layer()) {
+      device_scale = ui::GetDeviceScaleFactor(
+          widget_->GetNativeView()->layer());
+    }
+    ui::ScaleFactor device_scale_factor =
+        ui::GetScaleFactorFromScale(device_scale);
+
+    // The drag image already has device scale factor applied. But
+    // |widget_size_| is in DIP units.
+    gfx::Size scaled_widget_size = gfx::ToRoundedSize(
+        gfx::ScaleSize(widget_size_, device_scale));
+    gfx::ImageSkiaRep image_rep = GetImage().GetRepresentation(
+        device_scale_factor);
+    if (image_rep.is_null())
+      return;
+    SkBitmap scaled = skia::ImageOperations::Resize(
+        image_rep.sk_bitmap(), skia::ImageOperations::RESIZE_LANCZOS3,
+        scaled_widget_size.width(), scaled_widget_size.height());
+    gfx::ImageSkia image_skia(gfx::ImageSkiaRep(scaled, device_scale_factor));
+    canvas->DrawImageInt(image_skia, 0, 0);
   }
 }
 
