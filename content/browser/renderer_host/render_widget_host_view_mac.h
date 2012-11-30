@@ -199,6 +199,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase {
   RenderWidgetHostViewCocoa* cocoa_view() const { return cocoa_view_; }
 
   void SetDelegate(NSObject<RenderWidgetHostViewMacDelegate>* delegate);
+  void SetAllowOverlappingViews(bool overlapping);
 
   // RenderWidgetHostView implementation.
   virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE;
@@ -424,6 +425,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase {
   AcceleratedSurfaceContainerManagerMac plugin_container_manager_;
 
   scoped_ptr<CompositingIOSurfaceMac> compositing_iosurface_;
+
+  // Whether to allow overlapping views.
+  bool allow_overlapping_views_;
 
   NSWindow* pepper_fullscreen_window() const {
     return pepper_fullscreen_window_;

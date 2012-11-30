@@ -96,6 +96,12 @@ gfx::Rect WebContentsViewGuest::GetViewBounds() const {
   return rect;
 }
 
+#if defined(OS_MACOSX)
+void WebContentsViewGuest::SetAllowOverlappingViews(bool overlapping) {
+  NOTIMPLEMENTED();
+}
+#endif
+
 WebContents* WebContentsViewGuest::web_contents() {
   return web_contents_;
 }

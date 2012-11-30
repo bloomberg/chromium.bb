@@ -117,6 +117,16 @@ class CONTENT_EXPORT WebContentsView {
 
   // Get the bounds of the View, relative to the parent.
   virtual gfx::Rect GetViewBounds() const = 0;
+
+#if defined(OS_MACOSX)
+  // The web contents view assumes that its view will never be overlapped by
+  // another view (either partially or fully). This allows it to perform
+  // optimizations. If the view is in a view hierarchy where it might be
+  // overlapped by another view, notify the view by calling this with |true|
+  // before it draws for the first time. After the first draw, do not change
+  // this setting.
+  virtual void SetAllowOverlappingViews(bool overlapping) = 0;
+#endif
 };
 
 }  // namespace content

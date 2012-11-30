@@ -167,7 +167,8 @@ CompositingIOSurfaceMac::CopyContext::CopyContext() {
 CompositingIOSurfaceMac::CopyContext::~CopyContext() {
 }
 
-CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create() {
+// static
+CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create(SurfaceOrder order) {
   TRACE_EVENT0("browser", "CompositingIOSurfaceMac::Create");
   IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
   if (!io_surface_support) {
@@ -198,10 +199,13 @@ CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create() {
     return NULL;
   }
 
-  // We "punch a hole" in the window, and have the WindowServer render the
-  // OpenGL surface underneath so we can draw over it.
-  GLint belowWindow = -1;
-  [glContext setValues:&belowWindow forParameter:NSOpenGLCPSurfaceOrder];
+  // If requested, ask the WindowServer to render the OpenGL surface underneath
+  // the window. This, combined with a hole punched in the window, will allow
+  // for views to "overlap" the GL surface from the user's point of view.
+  if (order == SURFACE_ORDER_BELOW_WINDOW) {
+    GLint belowWindow = -1;
+    [glContext setValues:&belowWindow forParameter:NSOpenGLCPSurfaceOrder];
+  }
 
   CGLContextObj cglContext = (CGLContextObj)[glContext CGLContextObj];
   if (!cglContext) {

@@ -85,6 +85,7 @@ class WebContentsViewMac : public WebContentsView,
   virtual bool IsEventTracking() const OVERRIDE;
   virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
+  virtual void SetAllowOverlappingViews(bool overlapping) OVERRIDE;
 
   // Backend implementation of RenderViewHostDelegateView.
   virtual void ShowContextMenu(const ContextMenuParams& params,
@@ -125,6 +126,9 @@ class WebContentsViewMac : public WebContentsView,
 
   // Our optional delegate.
   scoped_ptr<WebContentsViewDelegate> delegate_;
+
+  // Whether to allow overlapping views.
+  bool allow_overlapping_views_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewMac);
 };

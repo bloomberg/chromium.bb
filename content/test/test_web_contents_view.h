@@ -58,6 +58,9 @@ class TestWebContentsView : public WebContentsView,
   virtual bool IsEventTracking() const OVERRIDE;
   virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
+#if defined(OS_MACOSX)
+  virtual void SetAllowOverlappingViews(bool overlapping) OVERRIDE;
+#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsView);

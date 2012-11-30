@@ -108,4 +108,9 @@ gfx::Rect TestWebContentsView::GetViewBounds() const {
   return gfx::Rect();
 }
 
+#if defined(OS_MACOSX)
+void TestWebContentsView::SetAllowOverlappingViews(bool overlapping) {
+}
+#endif
+
 }  // namespace content

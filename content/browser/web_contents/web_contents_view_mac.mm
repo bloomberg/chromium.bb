@@ -79,7 +79,8 @@ WebContentsView* CreateWebContentsView(
 WebContentsViewMac::WebContentsViewMac(WebContentsImpl* web_contents,
                                        WebContentsViewDelegate* delegate)
     : web_contents_(web_contents),
-      delegate_(delegate) {
+      delegate_(delegate),
+      allow_overlapping_views_(false) {
 }
 
 WebContentsViewMac::~WebContentsViewMac() {
@@ -116,6 +117,7 @@ RenderWidgetHostView* WebContentsViewMac::CreateViewForWidget(
         delegate()->CreateRenderWidgetHostViewDelegate(render_widget_host);
     view->SetDelegate(rw_delegate);
   }
+  view->SetAllowOverlappingViews(allow_overlapping_views_);
 
   // Fancy layout comes later; for now just make it our size and resize it
   // with us. In case there are other siblings of the content area, we want
@@ -332,6 +334,17 @@ gfx::Rect WebContentsViewMac::GetViewBounds() const {
   // This method is not currently used on mac.
   NOTIMPLEMENTED();
   return gfx::Rect();
+}
+
+void WebContentsViewMac::SetAllowOverlappingViews(bool overlapping) {
+  if (allow_overlapping_views_ == overlapping)
+    return;
+
+  allow_overlapping_views_ = overlapping;
+  RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
+      web_contents_->GetRenderWidgetHostView());
+  if (view)
+    view->SetAllowOverlappingViews(allow_overlapping_views_);
 }
 
 void WebContentsViewMac::CloseTab() {
