@@ -32,6 +32,8 @@ x86-32)
                         --build=i686-pc-linux-gnu \
                         --target=i686-pc-linux-gnu"
   readonly LIBDIR=lib32
+  readonly CUSTOM_CFLAGS=""
+  readonly CUSTOM_LDFLAGS=""
   ;;
 x86-64)
   readonly USE_PNACL=0
@@ -40,6 +42,8 @@ x86-64)
                         --build=x86_64-pc-linux-gnu \
                         --target=x86_64-pc-linux-gnu"
   readonly LIBDIR=lib
+  readonly CUSTOM_CFLAGS=""
+  readonly CUSTOM_LDFLAGS=""
   ;;
 arm)
   readonly USE_PNACL=1
