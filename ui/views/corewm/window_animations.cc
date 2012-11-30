@@ -66,7 +66,7 @@ const int kDefaultAnimationDurationForMenuMS = 150;
 
 const float kWindowAnimation_HideOpacity = 0.f;
 const float kWindowAnimation_ShowOpacity = 1.f;
-const float kWindowAnimation_TranslateFactor = 0.025f;
+const float kWindowAnimation_TranslateFactor = 0.5f;
 const float kWindowAnimation_ScaleFactor = .95f;
 
 const int kWindowAnimation_Rotate_DurationMS = 180;
