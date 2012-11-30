@@ -269,25 +269,72 @@ bool Transform::IsInvertible() const {
 }
 
 bool Transform::IsBackFaceVisible() const {
-  // Compute whether a layer with a forward-facing normal of (0, 0, 1) would
-  // have its back face visible after applying the transform.
+  // Compute whether a layer with a forward-facing normal of (0, 0, 1, 0)
+  // would have its back face visible after applying the transform.
   //
   // This is done by transforming the normal and seeing if the resulting z
   // value is positive or negative. However, note that transforming a normal
   // actually requires using the inverse-transpose of the original transform.
+  //
+  // We can avoid inverting and transposing the matrix since we know we want
+  // to transform only the specific normal vector (0, 0, 1, 0). In this case,
+  // we only need the 3rd row, 3rd column of the inverse-transpose. We can
+  // calculate only the 3rd row 3rd column element of the inverse, skipping
+  // everything else.
+  //
+  // For more information, refer to:
+  //   http://en.wikipedia.org/wiki/Invertible_matrix#Analytic_solution
+  //
 
-  // TODO (shawnsingh) make this perform more efficiently - we do not
-  // actually need to instantiate/invert/transpose any matrices, exploiting the
-  // fact that we only need to transform (0, 0, 1, 0).
-  SkMatrix44 inverse;
-  bool invertible = matrix_.invert(&inverse);
+  double determinant = matrix_.determinant();
 
-  // Assume the transform does not apply if it's not invertible, so it's
-  // front face remains visible.
-  if (!invertible)
+  // If matrix was not invertible, then just assume back face is not visible.
+  if (std::abs(determinant) <= kTooSmallForDeterminant)
     return false;
 
-  return inverse.getDouble(2, 2) < 0;
+  // Compute the cofactor of the 3rd row, 3rd column.
+  double cofactor_part_1 =
+      matrix_.getDouble(0, 0) *
+      matrix_.getDouble(1, 1) *
+      matrix_.getDouble(3, 3);
+
+  double cofactor_part_2 =
+      matrix_.getDouble(0, 1) *
+      matrix_.getDouble(1, 3) *
+      matrix_.getDouble(3, 0);
+
+  double cofactor_part_3 =
+      matrix_.getDouble(0, 3) *
+      matrix_.getDouble(1, 0) *
+      matrix_.getDouble(3, 1);
+
+  double cofactor_part_4 =
+      matrix_.getDouble(0, 0) *
+      matrix_.getDouble(1, 3) *
+      matrix_.getDouble(3, 1);
+
+  double cofactor_part_5 =
+      matrix_.getDouble(0, 1) *
+      matrix_.getDouble(1, 0) *
+      matrix_.getDouble(3, 3);
+
+  double cofactor_part_6 =
+      matrix_.getDouble(0, 3) *
+      matrix_.getDouble(1, 1) *
+      matrix_.getDouble(3, 0);
+
+  double cofactor33 =
+      cofactor_part_1 +
+      cofactor_part_2 +
+      cofactor_part_3 -
+      cofactor_part_4 -
+      cofactor_part_5 -
+      cofactor_part_6;
+
+  // Technically the transformed z component is cofactor33 / determinant.  But
+  // we can avoid the costly division because we only care about the resulting
+  // +/- sign; we can check this equivalently by multiplication.
+  return cofactor33 * determinant < 0;
 }
 
 bool Transform::GetInverse(Transform* transform) const {
