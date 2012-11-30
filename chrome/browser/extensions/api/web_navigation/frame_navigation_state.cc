@@ -37,10 +37,6 @@ FrameNavigationState::FrameID::FrameID(
       render_view_host(render_view_host) {
 }
 
-bool FrameNavigationState::FrameID::IsValid() const {
-  return frame_num >= 0 && render_view_host;
-}
-
 bool FrameNavigationState::FrameID::operator<(
     const FrameNavigationState::FrameID& other) const {
   return frame_num < other.frame_num ||

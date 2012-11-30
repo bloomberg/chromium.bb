@@ -27,8 +27,6 @@ class FrameNavigationState {
     FrameID();
     FrameID(int64 frame_num, content::RenderViewHost* render_view_host);
 
-    bool IsValid() const;
-
     bool operator<(const FrameID& other) const;
     bool operator==(const FrameID& other) const;
     bool operator!=(const FrameID& other) const;
