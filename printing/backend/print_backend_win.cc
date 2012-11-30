@@ -26,8 +26,10 @@ class PrinterInfo {
   bool GetPrinterInfo(HANDLE printer, int level) {
     DWORD buf_size = 0;
     GetPrinter(printer, level, NULL, 0, &buf_size);
-    if (buf_size == 0)
+    if (buf_size == 0) {
+      LOG(WARNING) << "Failed to GetPrinter, error = " << GetLastError();
       return false;
+    }
     buffer_.reset(new uint8[buf_size]);
     memset(buffer_.get(), 0, buf_size);
     return !!GetPrinter(printer, level, buffer_.get(), buf_size, &buf_size);
@@ -126,12 +128,16 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
   OpenPrinter(const_cast<LPTSTR>(UTF8ToWide(printer_name).c_str()),
               printer_handle.Receive(), NULL);
   DCHECK(printer_handle);
-  if (!printer_handle.IsValid())
+  if (!printer_handle.IsValid()) {
+    LOG(WARNING) << "Failed to open printer, error = " << GetLastError();
     return false;
+  }
 
   PrinterInfo<PRINTER_INFO_5> info_5;
-  if (!info_5.GetPrinterInfo(printer_handle, 5))
+  if (!info_5.GetPrinterInfo(printer_handle, 5)) {
+    LOG(WARNING) << "Failed to get PRINTER_INFO_5, error = " << GetLastError();
     return false;
+  }
 
   // Get printer capabilities. For more info see here:
   // http://msdn.microsoft.com/en-us/library/windows/desktop/dd183552(v=vs.85).aspx
@@ -147,18 +153,25 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
                                               NULL,
                                               NULL) == 1);
 
+  DEVMODE* devmode = NULL;
   // PRINTER_INFO_9 retrieves current user settings.
   PrinterInfo<PRINTER_INFO_9> info_9;
-  if (!info_9.GetPrinterInfo(printer_handle, 9))
-    return false;
-  DEVMODE* devmode = info_9.get()->pDevMode;
+  if (info_9.GetPrinterInfo(printer_handle, 9)) {
+    devmode = info_9.get()->pDevMode;
+  } else {
+    LOG(WARNING) << "Failed to get PRINTER_INFO_9, error = " << GetLastError();
+  }
 
   // Sometimes user settings are not available (have not been setted up yet).
   // Use printer default settings (PRINTER_INFO_8) in this case.
   PrinterInfo<PRINTER_INFO_8> info_8;
   if (!devmode) {
-    if (info_8.GetPrinterInfo(printer_handle, 8))
+    if (info_8.GetPrinterInfo(printer_handle, 8)) {
       devmode = info_8.get()->pDevMode;
+    } else {
+      LOG(WARNING) << "Failed to get PRINTER_INFO_8, error = " <<
+                      GetLastError();
+    }
   }
   if (!devmode)
     return false;

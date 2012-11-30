@@ -127,7 +127,7 @@ void PrintSystemTaskProxy::GetPrinterCapabilities(
 
   printing::PrinterSemanticCapsAndDefaults info;
   if (!print_backend_->GetPrinterSemanticCapsAndDefaults(printer_name, &info)) {
-    VLOG(1) << "Failed to get capabilities for " << printer_name;
+    LOG(WARNING) << "Failed to get capabilities for " << printer_name;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&PrintSystemTaskProxy::SendFailedToGetPrinterCapabilities,
