@@ -32,32 +32,32 @@ static void AddDefaultDecodersToCollection(
     ProxyDecryptor* proxy_decryptor) {
   scoped_refptr<media::FFmpegAudioDecoder> ffmpeg_audio_decoder =
       new media::FFmpegAudioDecoder(message_loop);
-
-  scoped_refptr<media::DecryptingAudioDecoder> decrypting_audio_decoder =
-      new media::DecryptingAudioDecoder(
-          message_loop,
-          base::Bind(&ProxyDecryptor::RequestDecryptorNotification,
-                     base::Unretained(proxy_decryptor)));
-
   filter_collection->GetAudioDecoders()->push_back(ffmpeg_audio_decoder);
-  filter_collection->GetAudioDecoders()->push_back(decrypting_audio_decoder);
 
-  scoped_refptr<media::DecryptingVideoDecoder> decrypting_video_decoder =
-      new media::DecryptingVideoDecoder(
-          message_loop,
-          base::Bind(&ProxyDecryptor::RequestDecryptorNotification,
-                     base::Unretained(proxy_decryptor)));
+  if (proxy_decryptor) {
+    scoped_refptr<media::DecryptingAudioDecoder> decrypting_audio_decoder =
+        new media::DecryptingAudioDecoder(
+            message_loop,
+            base::Bind(&ProxyDecryptor::RequestDecryptorNotification,
+                       base::Unretained(proxy_decryptor)));
+    filter_collection->GetAudioDecoders()->push_back(decrypting_audio_decoder);
+
+    scoped_refptr<media::DecryptingVideoDecoder> decrypting_video_decoder =
+        new media::DecryptingVideoDecoder(
+            message_loop,
+            base::Bind(&ProxyDecryptor::RequestDecryptorNotification,
+                       base::Unretained(proxy_decryptor)));
+    // TODO(xhwang): Ideally we should have decrypting video decoder after
+    // regular video decoder since in the real world most videos are not
+    // encrypted. For now FFmpegVideoDecoder can also do decryption
+    // (decrypt-only), and we perfer DecryptingVideoDecoder (decrypt-and-decode)
+    // to FFmpegVideoDecoder. Fix this order when we move decryption out of
+    // FFmpegVideoDecoder.
+    filter_collection->GetVideoDecoders()->push_back(decrypting_video_decoder);
+  }
 
   scoped_refptr<media::FFmpegVideoDecoder> ffmpeg_video_decoder =
       new media::FFmpegVideoDecoder(message_loop, proxy_decryptor);
-
-  // TODO(xhwang): Ideally we should have decrypting video decoder after
-  // regular video decoder since in the real world most videos are not
-  // encrypted. For now FFmpegVideoDecoder can also do decryption
-  // (decrypt-only), and we perfer DecryptingVideoDecoder (decrypt-and-decode)
-  // to FFmpegVideoDecoder. Fix this order when we move decryption out of
-  // FFmpegVideoDecoder.
-  filter_collection->GetVideoDecoders()->push_back(decrypting_video_decoder);
   filter_collection->GetVideoDecoders()->push_back(ffmpeg_video_decoder);
 }
 

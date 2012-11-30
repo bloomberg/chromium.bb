@@ -359,7 +359,7 @@ class WebMediaPlayerImpl
   bool supports_save_;
 
   // The decryptor that manages decryption keys and decrypts encrypted frames.
-  ProxyDecryptor decryptor_;
+  scoped_ptr<ProxyDecryptor> decryptor_;
 
   bool starting_;
 

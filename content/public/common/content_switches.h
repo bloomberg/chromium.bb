@@ -95,7 +95,6 @@ CONTENT_EXPORT extern const char kEnableBrowserPluginForAllViewTypes[];
 CONTENT_EXPORT extern const char kEnableCompositingForFixedPosition[];
 CONTENT_EXPORT extern const char kEnableCssShaders[];
 CONTENT_EXPORT extern const char kEnableDeviceMotion[];
-CONTENT_EXPORT extern const char kEnableEncryptedMedia[];
 CONTENT_EXPORT extern const char kEnableExperimentalWebKitFeatures[];
 extern const char kEnableFastback[];
 CONTENT_EXPORT extern const char kEnableFixedLayout[];

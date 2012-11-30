@@ -263,10 +263,6 @@ const char kEnableCssShaders[]              = "enable-css-shaders";
 // Enables device motion events.
 const char kEnableDeviceMotion[]            = "enable-device-motion";
 
-// Enables support for encrypted media. Current implementation is
-// incomplete and this flag is used for development and testing.
-const char kEnableEncryptedMedia[]          = "enable-encrypted-media";
-
 // Enables WebKit features that are in development.
 const char kEnableExperimentalWebKitFeatures[] =
     "enable-experimental-webkit-features";
