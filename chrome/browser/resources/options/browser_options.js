@@ -32,6 +32,15 @@ cr.define('options', function() {
      */
     onShowHomeButtonChangedCalled_: false,
 
+    /**
+     * Track if page initialization is complete.  All C++ UI handlers have the
+     * chance to manipulate page content within their InitializePage mathods.
+     * This flag is set to true after all initializers have been called.
+     * @type (boolean}
+     * @private
+     */
+    initializationComplete_: false,
+
     /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
@@ -418,6 +427,16 @@ cr.define('options', function() {
       $('search-field').focus();
     },
 
+   /**
+    * Called after all C++ UI handlers have called InitializePage to notify
+    * that initialization is complete.
+    * @private
+    */
+    notifyInitializationComplete_: function() {
+      this.initializationComplete_ = true;
+      cr.dispatchSimpleEvent(document, 'initializationComplete');
+    },
+
     /**
      * Event listener for the 'session.restore_on_startup' pref.
      * @param {Event} event The preference change event.
@@ -546,6 +565,17 @@ cr.define('options', function() {
                           /* animate */ false);
         this.updateAdvancedSettingsExpander_();
       }
+
+      if (!this.initializationComplete_) {
+        var self = this;
+        var callback = function() {
+           document.removeEventListener('initializationComplete', callback);
+           self.scrollToSection_(section);
+        };
+        document.addEventListener('initializationComplete', callback);
+        return;
+      }
+
       var pageContainer = $('page-container');
       var pageTop = parseFloat(pageContainer.style.top);
       var topSection = document.querySelector('#page-container section');
@@ -1286,6 +1316,7 @@ cr.define('options', function() {
     'getCurrentProfile',
     'getStartStopSyncButton',
     'hideBluetoothSettings',
+    'notifyInitializationComplete',
     'removeBluetoothDevice',
     'removeCloudPrintConnectorSection',
     'scrollToSection',

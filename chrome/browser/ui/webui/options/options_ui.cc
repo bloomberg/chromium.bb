@@ -378,6 +378,9 @@ void OptionsUI::InitializeHandlers() {
   // do various things like show/hide sections and send data to the Javascript.
   for (size_t i = 0; i < handlers_.size(); ++i)
     handlers_[i]->InitializePage();
+
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.notifyInitializationComplete");
 }
 
 void OptionsUI::RenderViewCreated(content::RenderViewHost* render_view_host) {
