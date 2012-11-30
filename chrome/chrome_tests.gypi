@@ -178,6 +178,8 @@
         'browser/extensions/window_open_interactive_apitest.cc',
         'browser/instant/instant_browsertest.cc',
         'browser/mouseleave_browsertest.cc',
+        'browser/notifications/desktop_notifications_unittest.cc',
+        'browser/notifications/desktop_notifications_unittest.h',
         'browser/printing/print_dialog_cloud_interative_uitest.cc',
         'browser/task_manager/task_manager_browsertest_util.cc',
         'browser/ui/browser_focus_uitest.cc',
@@ -324,6 +326,7 @@
             'browser/ui/panels/panel_drag_browsertest.cc',
             'browser/ui/panels/panel_resize_browsertest.cc',
             'browser/ui/views/panels/panel_view_browsertest.cc',
+            'browser/notifications/desktop_notifications_unittest.cc',
           ],
         }],
         ['OS=="win"', {
@@ -1053,8 +1056,6 @@
         'browser/net/load_timing_observer_browsertest.cc',
         'browser/net/predictor_browsertest.cc',
         'browser/net/proxy_browsertest.cc',
-        'browser/notifications/desktop_notifications_unittest.cc',
-        'browser/notifications/desktop_notifications_unittest.h',
         'browser/notifications/notification_browsertest.cc',
         'browser/page_cycler/page_cycler_browsertest.cc',
         'browser/performance_monitor/performance_monitor_browsertest.cc',
@@ -1358,7 +1359,6 @@
             ['exclude', '^browser/protector'],
           ],
           'sources!': [
-            'browser/notifications/desktop_notifications_unittest.cc',
             'browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc',
             'browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc',
             'browser/service/service_process_control_browsertest.cc',
