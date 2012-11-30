@@ -118,7 +118,7 @@ TEST_F(ThreadWrapperTest, Post) {
       MatchMessage(&handler2_, kTestMessage1, data4)))
       .WillOnce(DeleteMessageData());
 
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(ThreadWrapperTest, PostDelayed) {
@@ -174,7 +174,7 @@ TEST_F(ThreadWrapperTest, Clear) {
       MatchMessage(&handler2_, kTestMessage2, null_data)))
       .WillOnce(DeleteMessageData());
 
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(ThreadWrapperTest, ClearDelayed) {
@@ -299,7 +299,7 @@ TEST_F(ThreadWrapperTest, Dispose) {
   bool deleted_;
   thread_->Dispose(new DeletableObject(&deleted_));
   EXPECT_FALSE(deleted_);
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   EXPECT_TRUE(deleted_);
 }
 

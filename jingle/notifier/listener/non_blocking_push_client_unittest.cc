@@ -34,17 +34,17 @@ class NonBlockingPushClientTest : public testing::Test {
                        base::Unretained(this))));
     push_client_->AddObserver(&fake_observer_);
     // Pump message loop to run CreateFakePushClient.
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   virtual void TearDown() OVERRIDE {
     // Clear out any pending notifications before removing observers.
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
     push_client_->RemoveObserver(&fake_observer_);
     push_client_.reset();
     // Then pump message loop to run
     // NonBlockingPushClient::DestroyOnDelegateThread().
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   scoped_ptr<PushClient> CreateFakePushClient() {
@@ -71,7 +71,7 @@ TEST_F(NonBlockingPushClientTest, UpdateSubscriptions) {
 
   push_client_->UpdateSubscriptions(subscriptions);
   EXPECT_TRUE(fake_push_client_->subscriptions().empty());
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   EXPECT_TRUE(
       SubscriptionListsEqual(
           fake_push_client_->subscriptions(), subscriptions));
@@ -85,7 +85,7 @@ TEST_F(NonBlockingPushClientTest, UpdateCredentials) {
   push_client_->UpdateCredentials(kEmail, kToken);
   EXPECT_TRUE(fake_push_client_->email().empty());
   EXPECT_TRUE(fake_push_client_->token().empty());
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   EXPECT_EQ(kEmail, fake_push_client_->email());
   EXPECT_EQ(kToken, fake_push_client_->token());
 }
@@ -106,7 +106,7 @@ TEST_F(NonBlockingPushClientTest, SendNotification) {
 
   push_client_->SendNotification(notification);
   EXPECT_TRUE(fake_push_client_->sent_notifications().empty());
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   ASSERT_EQ(1u, fake_push_client_->sent_notifications().size());
   EXPECT_TRUE(
       fake_push_client_->sent_notifications()[0].Equals(notification));
@@ -116,7 +116,7 @@ TEST_F(NonBlockingPushClientTest, SendNotification) {
 TEST_F(NonBlockingPushClientTest, SendPing) {
   push_client_->SendPing();
   EXPECT_EQ(0, fake_push_client_->sent_pings());
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   ASSERT_EQ(1, fake_push_client_->sent_pings());
 }
 
@@ -126,12 +126,12 @@ TEST_F(NonBlockingPushClientTest, NotificationStateChange) {
   EXPECT_EQ(DEFAULT_NOTIFICATION_ERROR,
             fake_observer_.last_notifications_disabled_reason());
   fake_push_client_->EnableNotifications();
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   EXPECT_EQ(NO_NOTIFICATION_ERROR,
             fake_observer_.last_notifications_disabled_reason());
   fake_push_client_->DisableNotifications(
       NOTIFICATION_CREDENTIALS_REJECTED);
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   EXPECT_EQ(NOTIFICATION_CREDENTIALS_REJECTED,
             fake_observer_.last_notifications_disabled_reason());
 }
@@ -141,7 +141,7 @@ TEST_F(NonBlockingPushClientTest, OnIncomingNotification) {
   const Notification notification = MakeTestNotification();
 
   fake_push_client_->SimulateIncomingNotification(notification);
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   EXPECT_TRUE(
       fake_observer_.last_incoming_notification().Equals(notification));
 }

@@ -47,7 +47,7 @@ class XmppPushClientTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     // Clear out any messages posted by XmppPushClient.
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
     xmpp_push_client_->RemoveObserver(&mock_observer_);
     xmpp_push_client_.reset();
   }

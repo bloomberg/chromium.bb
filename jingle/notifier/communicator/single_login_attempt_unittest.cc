@@ -98,7 +98,7 @@ class SingleLoginAttemptTest : public ::testing::Test {
         attempt_(login_settings_, &fake_delegate_) {}
 
   virtual void TearDown() OVERRIDE {
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   void FireRedirect(buzz::XmlElement* redirect_error) {

@@ -82,7 +82,7 @@ class XmppConnectionTest : public testing::Test {
 
   virtual void TearDown() {
     // Clear out any messages posted by XmppConnection's destructor.
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   // Needed by XmppConnection.
@@ -112,7 +112,7 @@ TEST_F(XmppConnectionTest, ImmediateFailure) {
 
   // We need to do this *before* |xmpp_connection| gets destroyed or
   // our delegate won't be called.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(XmppConnectionTest, PreAuthFailure) {
@@ -131,7 +131,7 @@ TEST_F(XmppConnectionTest, PreAuthFailure) {
 
   // We need to do this *before* |xmpp_connection| gets destroyed or
   // our delegate won't be called.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(XmppConnectionTest, FailureAfterPreAuth) {
@@ -150,7 +150,7 @@ TEST_F(XmppConnectionTest, FailureAfterPreAuth) {
 
   // We need to do this *before* |xmpp_connection| gets destroyed or
   // our delegate won't be called.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(XmppConnectionTest, RaisedError) {
@@ -247,7 +247,7 @@ TEST_F(XmppConnectionTest, TasksDontRunAfterXmppConnectionDestructor) {
   }
 
   // This should destroy |task_pump|, but |task| still shouldn't run.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 }  // namespace notifier

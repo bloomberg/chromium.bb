@@ -28,7 +28,7 @@ TEST_F(TaskPumpTest, Basic) {
   EXPECT_CALL(*task, ProcessStart()).WillOnce(Return(TASK_STATE_DONE));
   task->Start();
 
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 }
 
 TEST_F(TaskPumpTest, Stop) {
@@ -42,7 +42,7 @@ TEST_F(TaskPumpTest, Stop) {
   task->Start();
 
   task_pump.Stop();
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 }
 
 }  // namespace

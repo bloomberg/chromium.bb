@@ -45,7 +45,7 @@ class ProxyResolvingClientSocketTest : public testing::Test {
   virtual void TearDown() {
     // Clear out any messages posted by ProxyResolvingClientSocket's
     // destructor.
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   MessageLoop message_loop_;
