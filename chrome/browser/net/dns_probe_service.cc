@@ -128,29 +128,35 @@ void DnsProbeService::StartProbes() {
 void DnsProbeService::OnProbesComplete() {
   DCHECK_EQ(STATE_PROBE_RUNNING, state_);
 
-  base::TimeDelta probe_elapsed = base::Time::Now() - probe_start_time_;
-  UMA_HISTOGRAM_ENUMERATION("DnsProbe.Probe.Result", result_, MAX_RESULT);
-  UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.Elapsed", probe_elapsed);
-
-  if (NetworkChangeNotifier::IsOffline()) {
-    UMA_HISTOGRAM_ENUMERATION("DnsProbe.Probe.NcnOffline.Result",
-                              result_, MAX_RESULT);
-    UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.NcnOffline.Elapsed",
-                               probe_elapsed);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("DnsProbe.Probe.NcnOnline.Result",
-                              result_, MAX_RESULT);
-    UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.NcnOnline.Elapsed",
-                               probe_elapsed);
-  }
-
   state_ = STATE_RESULTS_CACHED;
   result_ = EvaluateResults();
+
+  HistogramProbes();
 
   CallCallbacks();
 }
 
-DnsProbeService::Result DnsProbeService::EvaluateResults() {
+void DnsProbeService::HistogramProbes() const {
+  DCHECK_EQ(STATE_RESULTS_CACHED, state_);
+  DCHECK_NE(MAX_RESULT, result_);
+
+  base::TimeDelta elapsed = base::Time::Now() - probe_start_time_;
+
+  UMA_HISTOGRAM_ENUMERATION("DnsProbe.Probe.Result", result_, MAX_RESULT);
+  UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.Elapsed", elapsed);
+
+  if (NetworkChangeNotifier::IsOffline()) {
+    UMA_HISTOGRAM_ENUMERATION("DnsProbe.Probe.NcnOffline.Result",
+                              result_, MAX_RESULT);
+    UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.NcnOffline.Elapsed", elapsed);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("DnsProbe.Probe.NcnOnline.Result",
+                              result_, MAX_RESULT);
+    UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.NcnOnline.Elapsed", elapsed);
+  }
+}
+
+DnsProbeService::Result DnsProbeService::EvaluateResults() const {
   DCHECK_NE(DnsProbeJob::SERVERS_UNKNOWN, system_result_);
   DCHECK_NE(DnsProbeJob::SERVERS_UNKNOWN, public_result_);
 

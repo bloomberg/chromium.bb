@@ -54,7 +54,8 @@ class DnsProbeService : public net::NetworkChangeNotifier::IPAddressObserver {
   void CallCallbacks();
 
   void OnProbeJobComplete(DnsProbeJob* job, DnsProbeJob::Result result);
-  Result EvaluateResults();
+  Result EvaluateResults() const;
+  void HistogramProbes() const;
 
   // These are expected to be overridden by tests to return mock jobs.
   virtual scoped_ptr<DnsProbeJob> CreateSystemProbeJob(
