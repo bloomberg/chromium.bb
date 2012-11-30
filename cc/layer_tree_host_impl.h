@@ -379,7 +379,7 @@ private:
     size_t m_numImplThreadScrolls;
     size_t m_numMainThreadScrolls;
 
-    size_t m_cumulativeNumLayersInLayerTree;
+    size_t m_cumulativeNumLayersDrawn;
 
     DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

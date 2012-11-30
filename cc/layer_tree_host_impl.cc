@@ -226,7 +226,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
     , m_debugRectHistory(DebugRectHistory::create())
     , m_numImplThreadScrolls(0)
     , m_numMainThreadScrolls(0)
-    , m_cumulativeNumLayersInLayerTree(0)
+    , m_cumulativeNumLayersDrawn(0)
 {
     DCHECK(m_proxy->isImplThread());
     didVisibilityChange(this, m_visible);
@@ -547,7 +547,7 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
                 appendQuadsForLayer(targetRenderPass, *it, occlusionTracker, appendQuadsData);
             }
 
-            ++m_cumulativeNumLayersInLayerTree;
+            ++m_cumulativeNumLayersDrawn;
         }
 
         if (appendQuadsData.hadOcclusionFromOutsideTargetSurface)
@@ -1613,7 +1613,7 @@ void LayerTreeHostImpl::renderingStats(RenderingStats* stats) const
     stats->droppedFrameCount = fpsCounter()->droppedFrameCount();
     stats->numImplThreadScrolls = m_numImplThreadScrolls;
     stats->numMainThreadScrolls = m_numMainThreadScrolls;
-    stats->numLayersInLayerTree = m_cumulativeNumLayersInLayerTree;
+    stats->numLayersDrawn = m_cumulativeNumLayersDrawn;
 }
 
 void LayerTreeHostImpl::animateScrollbars(base::TimeTicks time)

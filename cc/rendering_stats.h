@@ -23,7 +23,7 @@ struct CC_EXPORT RenderingStats {
     int64 totalPixelsRasterized;
     int64 numImplThreadScrolls;
     int64 numMainThreadScrolls;
-    int64 numLayersInLayerTree;
+    int64 numLayersDrawn;
 
     RenderingStats();
 };

@@ -18,7 +18,7 @@ RenderingStats::RenderingStats()
       totalPixelsRasterized(0),
       numImplThreadScrolls(0),
       numMainThreadScrolls(0),
-      numLayersInLayerTree(0) {
+      numLayersDrawn(0) {
 }
 
 }  // namespace cc
