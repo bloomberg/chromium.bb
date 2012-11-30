@@ -18,7 +18,12 @@ namespace {
 
 // Default maximum time between the GestureRecognizer generating a
 // GestureTapDown and when it is forwarded to the renderer.
+#if !defined(OS_ANDROID)
 static const int kTapDownDeferralTimeMs = 150;
+#else
+// Android OS sends this gesture with a delay already.
+static const int kTapDownDeferralTimeMs = 0;
+#endif
 
 // Default debouncing interval duration: if a scroll is in progress, non-scroll
 // events during this interval are deferred to either its end or discarded on

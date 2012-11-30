@@ -141,6 +141,10 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
     return gesture_event_filter_->coalesced_gesture_events_.at(i);
   }
 
+  bool shouldDeferTapDownEvents() {
+    return gesture_event_filter_->maximum_tap_gap_time_ms_ != 0;
+  }
+
   bool ScrollingInProgress() {
     return gesture_event_filter_->scrolling_in_progress_;
   }
@@ -1445,8 +1449,11 @@ TEST_F(RenderWidgetHostTest, DebounceDefersFollowingGestureEvents) {
 
   // The deferred events are correctly queued in coalescing queue.
   EXPECT_EQ(1U, process_->sink().message_count());
-  // NOTE: The  TapDown is still deferred hence not queued.
-  EXPECT_EQ(4U, host_->GestureEventLastQueueEventSize());
+  if (host_->shouldDeferTapDownEvents())
+    // NOTE: The  TapDown is still deferred hence not queued.
+    EXPECT_EQ(4U, host_->GestureEventLastQueueEventSize());
+  else
+    EXPECT_EQ(5U, host_->GestureEventLastQueueEventSize());
   EXPECT_EQ(0U, host_->GestureEventDebouncingQueueSize());
   EXPECT_FALSE(host_->ScrollingInProgress());
 
