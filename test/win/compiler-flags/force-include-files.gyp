@@ -5,7 +5,7 @@
 {
   'targets': [
     {
-      'target_name': 'my_target',
+      'target_name': 'test_force_include_files',
       'type': 'executable',
       'msvs_settings': {
         'VCCLCompilerTool': {
@@ -13,7 +13,7 @@
         },
       },
       'sources': [
-        'hello.cc',
+        'force-include-files.cc',
       ],
     },
   ],
