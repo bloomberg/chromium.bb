@@ -4,6 +4,7 @@
 
 #include "ash/wm/workspace/workspace_animations.h"
 
+#include "ash/wm/window_animations.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -18,26 +19,6 @@ namespace {
 
 // Tween type used when showing/hiding workspaces.
 const ui::Tween::Type kWorkspaceTweenType = ui::Tween::EASE_OUT;
-
-// Scales for workspaces above/below current workspace.
-const float kWorkspaceScaleAbove = 1.1f;
-const float kWorkspaceScaleBelow = .9f;
-
-enum WorkspaceScaleType {
-  WORKSPACE_SCALE_ABOVE,
-  WORKSPACE_SCALE_BELOW,
-};
-
-// Applies the specified WorkspaceScaleType.
-void ApplyWorkspaceScale(ui::Layer* layer, WorkspaceScaleType type) {
-  const float scale = type == WORKSPACE_SCALE_ABOVE ? kWorkspaceScaleAbove :
-      kWorkspaceScaleBelow;
-  gfx::Transform transform;
-  transform.Translate(-layer->bounds().width() * (scale - 1.0f) / 2,
-                      -layer->bounds().height() * (scale - 1.0f) / 2);
-  transform.Scale(scale, scale);
-  layer->SetTransform(transform);
-}
 
 // If |details.duration| is not-empty it is returned, otherwise
 // |kWorkspaceSwitchTimeMS| is returned.
@@ -73,9 +54,9 @@ void ShowWorkspace(aura::Window* window,
 
   window->layer()->SetOpacity(details.animate_opacity ? 0.0f : 1.0f);
   if (details.animate_scale) {
-    ApplyWorkspaceScale(window->layer(),
-                        details.direction == WORKSPACE_ANIMATE_UP ?
-                            WORKSPACE_SCALE_BELOW : WORKSPACE_SCALE_ABOVE);
+    SetTransformForScaleAnimation(window->layer(),
+        details.direction == WORKSPACE_ANIMATE_UP ?
+            LAYER_SCALE_ANIMATION_BELOW : LAYER_SCALE_ANIMATION_BELOW);
   } else {
     window->layer()->SetTransform(gfx::Transform());
   }
@@ -130,9 +111,9 @@ void HideWorkspace(aura::Window* window,
   settings.SetTransitionDuration(DurationForWorkspaceShowOrHide(details));
   settings.SetTweenType(kWorkspaceTweenType);
   if (details.animate_scale) {
-    ApplyWorkspaceScale(window->layer(),
-                        details.direction == WORKSPACE_ANIMATE_UP ?
-                            WORKSPACE_SCALE_ABOVE : WORKSPACE_SCALE_BELOW);
+    SetTransformForScaleAnimation(window->layer(),
+        details.direction == WORKSPACE_ANIMATE_UP ?
+            LAYER_SCALE_ANIMATION_ABOVE : LAYER_SCALE_ANIMATION_BELOW);
   } else {
     window->layer()->SetTransform(gfx::Transform());
   }

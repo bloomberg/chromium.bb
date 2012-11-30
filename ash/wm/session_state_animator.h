@@ -68,6 +68,8 @@ class ASH_EXPORT SessionStateAnimator {
     ANIMATION_SPEED_SHOW_LOCK_SCREEN,
     // Speed for workspace-like animations in "new" animation set.
     ANIMATION_SPEED_MOVE_WINDOWS,
+    // Speed for undoing workspace-like animations in "new" animation set.
+    ANIMATION_SPEED_UNDO_MOVE_WINDOWS,
     // Speed for shutdown in "new" animation set.
     ANIMATION_SPEED_SHUTDOWN,
     // Speed for reverting shutdown in "new" animation set.

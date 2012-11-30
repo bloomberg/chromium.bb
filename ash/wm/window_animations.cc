@@ -62,6 +62,10 @@ const float kWindowAnimation_MinimizeRotate = 0.f;
 // Tween type when cross fading a workspace window.
 const ui::Tween::Type kCrossFadeTweenType = ui::Tween::EASE_IN_OUT;
 
+// Scales for AshWindow above/below current workspace.
+const float kLayerScaleAboveSize = 1.1f;
+const float kLayerScaleBelowSize = .9f;
+
 int64 Round64(float f) {
   return static_cast<int64>(f + 0.5f);
 }
@@ -219,8 +223,6 @@ void AnimateShowWindow_BrightnessGrayscale(aura::Window* window) {
 void AnimateHideWindow_BrightnessGrayscale(aura::Window* window) {
   AnimateShowHideWindowCommon_BrightnessGrayscale(window, false);
 }
-
-
 
 bool AnimateShowWindow(aura::Window* window) {
   if (!views::corewm::HasWindowVisibilityAnimationTransition(
@@ -499,6 +501,19 @@ CreateBrightnessGrayscaleAnimationSequence(float target_value,
   animations.push_back(grayscale_sequence.release());
 
   return animations;
+}
+
+// Returns scale related to the specified AshWindowScaleType.
+void SetTransformForScaleAnimation(ui::Layer* layer,
+                                   LayerScaleAnimationDirection type) {
+  const float scale =
+      type == LAYER_SCALE_ANIMATION_ABOVE ? kLayerScaleAboveSize :
+          kLayerScaleBelowSize;
+  gfx::Transform transform;
+  transform.Translate(-layer->bounds().width() * (scale - 1.0f) / 2,
+                      -layer->bounds().height() * (scale - 1.0f) / 2);
+  transform.Scale(scale, scale);
+  layer->SetTransform(transform);
 }
 
 }  // namespace ash

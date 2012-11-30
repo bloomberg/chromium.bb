@@ -7,11 +7,11 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_animations.h"
-#include "ash/wm/workspace/workspace_animations.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -153,50 +153,74 @@ void RestoreWindow(aura::Window* window, ui::LayerAnimationObserver* observer) {
 
 void HideWindow(aura::Window* window,
                 base::TimeDelta duration,
-                WorkspaceAnimationDirection direction,
+                bool above,
                 ui::LayerAnimationObserver* observer) {
-  WorkspaceAnimationDetails details;
-  details.direction = direction;
-  details.animate = true;
-  details.animate_scale = true;
-  details.animate_opacity = true;
-  details.duration = duration;
-  HideWorkspace(window, details);
+  ui::Layer* layer = window->layer();
+  ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
+
+  settings.SetTransitionDuration(duration);
+
+  settings.SetTweenType(ui::Tween::EASE_OUT);
+  SetTransformForScaleAnimation(layer,
+      above ? LAYER_SCALE_ANIMATION_ABOVE : LAYER_SCALE_ANIMATION_BELOW);
+
+  settings.SetTweenType(ui::Tween::EASE_IN_OUT);
+  layer->SetOpacity(0.0f);
+
+  // After the animation completes snap the transform back to the identity,
+  // otherwise any one that asks for screen bounds gets a slightly scaled
+  // version.
+  settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
+  settings.SetTransitionDuration(base::TimeDelta());
+  layer->SetTransform(gfx::Transform());
+
   // A bit of a dirty trick: we need to catch the end of the animation we don't
   // control. So we use two facts we know: which animator will be used and the
   // target opacity to add "Do nothing" animation sequence.
   // Unfortunately, we can not just use empty LayerAnimationSequence, because
   // it does not call NotifyEnded().
-  ui::LayerAnimationSequence* sequence = new ui::LayerAnimationSequence(
-      ui::LayerAnimationElement::CreateOpacityElement(
-          0.0, base::TimeDelta()));
-  if (observer)
-    sequence->AddObserver(observer);
-  window->layer()->GetAnimator()->ScheduleAnimation(sequence);
+  if (observer) {
+    ui::LayerAnimationSequence* sequence = new ui::LayerAnimationSequence(
+        ui::LayerAnimationElement::CreateOpacityElement(
+            0.0, base::TimeDelta()));
+      sequence->AddObserver(observer);
+    layer->GetAnimator()->ScheduleAnimation(sequence);
+  }
 }
 
 void ShowWindow(aura::Window* window,
-                base::TimeDelta length,
-                WorkspaceAnimationDirection direction,
+                base::TimeDelta duration,
+                bool above,
                 ui::LayerAnimationObserver* observer) {
-  WorkspaceAnimationDetails details;
-  details.direction = direction;
-  details.animate = true;
-  details.animate_scale = true;
-  details.animate_opacity = true;
-  details.duration = length;
-  ShowWorkspace(window, details);
+  ui::Layer* layer = window->layer();
+  ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
+
+  // Set initial state of animation
+  settings.SetTransitionDuration(base::TimeDelta());
+  SetTransformForScaleAnimation(layer,
+      above ? LAYER_SCALE_ANIMATION_ABOVE : LAYER_SCALE_ANIMATION_BELOW);
+
+  // Animate to target values.
+  settings.SetTransitionDuration(duration);
+
+  settings.SetTweenType(ui::Tween::EASE_OUT);
+  layer->SetTransform(gfx::Transform());
+
+  settings.SetTweenType(ui::Tween::EASE_IN_OUT);
+  layer->SetOpacity(1.0f);
+
   // A bit of a dirty trick: we need to catch the end of the animation we don't
   // control. So we use two facts we know: which animator will be used and the
   // target opacity to add "Do nothing" animation sequence.
   // Unfortunately, we can not just use empty LayerAnimationSequence, because
   // it does not call NotifyEnded().
-  ui::LayerAnimationSequence* sequence = new ui::LayerAnimationSequence(
-      ui::LayerAnimationElement::CreateOpacityElement(
-          1.0, base::TimeDelta()));
-  if (observer)
+  if (observer) {
+    ui::LayerAnimationSequence* sequence = new ui::LayerAnimationSequence(
+        ui::LayerAnimationElement::CreateOpacityElement(
+            1.0, base::TimeDelta()));
     sequence->AddObserver(observer);
-  window->layer()->GetAnimator()->ScheduleAnimation(sequence);
+    layer->GetAnimator()->ScheduleAnimation(sequence);
+  }
 }
 
 // Starts grayscale/brightness animation for |window| over |duration|. Target
@@ -374,10 +398,12 @@ base::TimeDelta SessionStateAnimator::GetDuration(AnimationSpeed speed) {
       return base::TimeDelta::FromMilliseconds(200);
     case ANIMATION_SPEED_MOVE_WINDOWS:
       return base::TimeDelta::FromMilliseconds(400);
+    case ANIMATION_SPEED_UNDO_MOVE_WINDOWS:
+      return base::TimeDelta::FromMilliseconds(600);
     case ANIMATION_SPEED_SHUTDOWN:
       return base::TimeDelta::FromMilliseconds(1000);
     case ANIMATION_SPEED_REVERT_SHUTDOWN:
-      return base::TimeDelta::FromMilliseconds(400);
+      return base::TimeDelta::FromMilliseconds(1500);
   }
   // Satisfy compilers that do not understand that we will return from switch
   // above anyway.
@@ -501,16 +527,16 @@ void SessionStateAnimator::RunAnimationForWindow(
       RestoreWindow(window, observer);
       break;
     case ANIMATION_LIFT:
-      HideWindow(window, duration, WORKSPACE_ANIMATE_UP, observer);
+      HideWindow(window, duration, true, observer);
       break;
     case ANIMATION_DROP:
-      ShowWindow(window, duration, WORKSPACE_ANIMATE_DOWN, observer);
+      ShowWindow(window, duration, true, observer);
       break;
     case ANIMATION_RAISE_TO_SCREEN:
-      ShowWindow(window, duration, WORKSPACE_ANIMATE_UP, observer);
+      ShowWindow(window, duration, false, observer);
       break;
     case ANIMATION_LOWER_BELOW_SCREEN:
-      HideWindow(window, duration, WORKSPACE_ANIMATE_DOWN, observer);
+      HideWindow(window, duration, false, observer);
       break;
     case ANIMATION_PARTIAL_FADE_IN:
       StartPartialFadeAnimation(
