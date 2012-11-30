@@ -168,10 +168,6 @@ class ExtensionManagementAPI : public ProfileKeyedService,
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
-  ExtensionManagementEventRouter* management_event_router() {
-    return management_event_router_.get();
-  }
-
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
       OVERRIDE;

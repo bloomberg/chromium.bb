@@ -9,13 +9,6 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
 // static
-ExtensionManagementAPI* ExtensionManagementAPIFactory::GetForProfile(
-    Profile* profile) {
-  return static_cast<ExtensionManagementAPI*>(
-      GetInstance()->GetServiceForProfile(profile, true));
-}
-
-// static
 ExtensionManagementAPIFactory* ExtensionManagementAPIFactory::GetInstance() {
   return Singleton<ExtensionManagementAPIFactory>::get();
 }

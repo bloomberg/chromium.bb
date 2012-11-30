@@ -12,8 +12,6 @@ class ExtensionManagementAPI;
 
 class ExtensionManagementAPIFactory : public ProfileKeyedServiceFactory {
  public:
-  static ExtensionManagementAPI* GetForProfile(Profile* profile);
-
   static ExtensionManagementAPIFactory* GetInstance();
 
  private:
