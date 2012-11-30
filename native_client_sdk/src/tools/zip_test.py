@@ -104,6 +104,8 @@ class TestZip(unittest.TestCase):
     self.RunZip([self.zipname, 'dir1'])
     self.OpenZipFile()
     self.assertEqual(len(self.zipfile.namelist()), 1)
+    self.assertRaises(KeyError, self.zipfile.getinfo, 'dir1')
+    self.zipfile.getinfo('dir1/')
 
   def testAddRecursive(self):
     os.mkdir(self.GetTempPath('dir1'))

@@ -9,6 +9,7 @@ import optparse
 import os
 import posixpath
 import shutil
+import stat
 import sys
 import time
 import zipfile
@@ -425,7 +426,24 @@ def Zip(args):
         zip_path = file_info_or_zip_path
 
       if os_path:
-        zip_stream.write(os_path, zip_path)
+        st = os.stat(os_path)
+        if stat.S_ISDIR(st.st_mode):
+          # Python 2.6 on the buildbots doesn't support writing directories to
+          # zip files. This was resolved in a later version of Python 2.6.
+          # We'll work around it by writing an empty file with the correct
+          # path. (This is basically what later versions do anyway.)
+          zip_info = zipfile.ZipInfo()
+          zip_info.filename = zip_path
+          zip_info.date_time = time.localtime(st.st_mtime)[0:6]
+          zip_info.compress_type = zip_stream.compression
+          zip_info.flag_bits = 0x00
+          zip_info.external_attr = (st[0] & 0xFFFF) << 16L
+          zip_info.CRC = 0
+          zip_info.compress_size = 0
+          zip_info.file_size = 0
+          zip_stream.writestr(zip_info, '')
+        else:
+          zip_stream.write(os_path, zip_path)
       else:
         zip_stream.writestr(file_info_or_zip_path, file_bytes)
 
