@@ -280,6 +280,8 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
     { "themesReset", IDS_THEMES_RESET_BUTTON },
 #endif
 #if defined(OS_CHROMEOS)
+    { "accessibilityExplanation",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_EXPLANATION },
     { "accessibilityHighContrast",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_HIGH_CONTRAST_DESCRIPTION },
     { "accessibilityScreenMagnifier",
@@ -412,6 +414,9 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
   // TODO(pastarmovj): replace this with a call to the CrosSettings list
   // handling functionality to come.
   values->Set("timezoneList", GetTimezoneList().release());
+
+  values->SetString("accessibilityLearnMoreURL",
+                    chrome::kChromeAccessibilityHelpURL);
 #endif
 #if defined(OS_MACOSX)
   values->SetString("macPasswordsWarning",
