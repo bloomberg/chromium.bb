@@ -12,8 +12,10 @@
 #include "ash/shell.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_shell_delegate.h"
+#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "content/public/test/web_contents_tester.h"
+#include "ui/aura/aura_switches.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -41,6 +43,8 @@ AshTestBase::~AshTestBase() {
 }
 
 void AshTestBase::SetUp() {
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kAuraHostWindowSize, "0+0-800x600");
   // Disable animations during tests.
   ui::LayerAnimator::set_disable_animations_for_test(true);
   ui::TextInputTestSupport::Initialize();
@@ -48,10 +52,10 @@ void AshTestBase::SetUp() {
   test_shell_delegate_ = new TestShellDelegate;
   ash::Shell::CreateInstance(test_shell_delegate_);
   Shell::GetPrimaryRootWindow()->Show();
+  Shell::GetPrimaryRootWindow()->ShowRootWindow();
   // Move the mouse cursor to far away so that native events doesn't
   // interfere test expectations.
   Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));
-  UpdateDisplay("800x600");
   Shell::GetInstance()->cursor_manager()->ShowCursor(true);
 }
 
