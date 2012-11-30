@@ -14,6 +14,9 @@ namespace skia {
 // thread.
 class SK_API LazyPixelRef : public SkPixelRef {
  public:
+  LazyPixelRef() : SkPixelRef(0) {}
+  virtual ~LazyPixelRef() {}
+
   struct PrepareParams {
     // Clipping rect for this pixel ref.
     SkIRect clip_rect;
