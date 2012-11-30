@@ -186,13 +186,13 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(tray_bluetooth);
   AddTrayItem(tray_drive);
   AddTrayItem(tray_locale);
+  AddTrayItem(tray_accessibility);
 #if defined(OS_CHROMEOS)
   AddTrayItem(tray_display);
 #endif
   AddTrayItem(tray_volume);
   AddTrayItem(tray_brightness);
   AddTrayItem(tray_update);
-  AddTrayItem(tray_accessibility);
   AddTrayItem(tray_caps_lock);
   AddTrayItem(tray_settings);
   AddTrayItem(tray_date);
