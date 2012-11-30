@@ -129,8 +129,10 @@ class UserView : public views::View,
 
   // Create container for buttons.
   void AddButtonContainer() {
-    TrayPopupLabelButton* button = new TrayPopupLabelButton(this,
-        ash::user::GetLocalizedSignOutStringForStatus(login_, true));
+    const string16 title = ash::user::GetLocalizedSignOutStringForStatus(login_,
+                                                                         true);
+    TrayPopupLabelButton* button = new TrayPopupLabelButton(this, title);
+    button->SetAccessibleName(title);
     AddChildView(button);
     signout_ = button;
   }
