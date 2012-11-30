@@ -67,6 +67,13 @@ cr.define('oobe', function() {
     },
 
     /**
+     * Returns a control which should receive an initial focus.
+     */
+    get defaultControl() {
+      return $('reset-cancel-button');
+    },
+
+    /**
      * Cancels the reset and drops the user back to the login screen.
      */
     cancel: function() {

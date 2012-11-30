@@ -78,6 +78,13 @@ cr.define('oobe', function() {
       buttons.push(continueButton);
 
       return buttons;
+    },
+
+    /**
+     * Returns a control which should receive an initial focus.
+     */
+    get defaultControl() {
+      return $('language-select');
     }
   };
 

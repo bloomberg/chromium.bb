@@ -259,6 +259,11 @@ cr.define('cr.ui.login', function() {
       this.currentStep_ = nextStepIndex;
       $('oobe').className = nextStepId;
 
+      // Focus the default control (if specified).
+      var defaultControl = newStep.defaultControl;
+      if (defaultControl)
+        defaultControl.focus();
+
       $('step-logo').hidden = newStep.classList.contains('no-logo');
 
       chrome.send('updateCurrentScreen', [this.currentScreen.id]);

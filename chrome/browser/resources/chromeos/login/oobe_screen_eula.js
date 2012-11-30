@@ -70,6 +70,13 @@ cr.define('oobe', function() {
     },
 
     /**
+     * Returns a control which should receive an initial focus.
+     */
+    get defaultControl() {
+      return $('accept-button');
+    },
+
+    /**
      * Updates localized content of the screen that is not updated via template.
      */
     updateLocalizedContent: function() {

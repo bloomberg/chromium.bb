@@ -96,6 +96,7 @@ cr.define('cr.ui', function() {
     $('security-ok-button').addEventListener('click', function(event) {
       $('popup-overlay').hidden = true;
     });
+
     // Do not allow focus leaving the overlay.
     $('popup-overlay').addEventListener('focusout', function(event) {
       // WebKit does not allow immediate focus return.
