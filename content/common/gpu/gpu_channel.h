@@ -90,6 +90,11 @@ class GpuChannel : public IPC::Listener,
   // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
+  // Requeue the message that is currently being processed to the beginning of
+  // the queue. Used when the processing of a message gets aborted because of
+  // unscheduling conditions.
+  void RequeueMessage();
+
   // This is called when a command buffer transitions from the unscheduled
   // state to the scheduled state, which potentially means the channel
   // transitions from the unscheduled to the scheduled state. When this occurs
@@ -219,6 +224,7 @@ class GpuChannel : public IPC::Listener,
   bool software_;
   bool handle_messages_scheduled_;
   bool processed_get_state_fast_;
+  IPC::Message* currently_processing_message_;
 
 #if defined(OS_ANDROID)
   scoped_ptr<StreamTextureManagerAndroid> stream_texture_manager_;

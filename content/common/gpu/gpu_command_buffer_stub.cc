@@ -750,14 +750,24 @@ void GpuCommandBufferStub::OnDiscardBackbuffer() {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnDiscardBackbuffer");
   if (!surface_)
     return;
-  surface_->SetBackbufferAllocation(false);
+  if (surface_->DeferDraws()) {
+    DCHECK(!IsScheduled());
+    channel_->RequeueMessage();
+  } else {
+    surface_->SetBackbufferAllocation(false);
+  }
 }
 
 void GpuCommandBufferStub::OnEnsureBackbuffer() {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnEnsureBackbuffer");
   if (!surface_)
     return;
-  surface_->SetBackbufferAllocation(true);
+  if (surface_->DeferDraws()) {
+    DCHECK(!IsScheduled());
+    channel_->RequeueMessage();
+  } else {
+    surface_->SetBackbufferAllocation(true);
+  }
 }
 
 void GpuCommandBufferStub::AddSyncPoint(uint32 sync_point) {

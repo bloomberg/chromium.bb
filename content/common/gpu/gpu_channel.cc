@@ -235,6 +235,7 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
       software_(software),
       handle_messages_scheduled_(false),
       processed_get_state_fast_(false),
+      currently_processing_message_(NULL),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(gpu_channel_manager);
   DCHECK(client_id);
@@ -358,6 +359,14 @@ bool GpuChannel::Send(IPC::Message* message) {
   }
 
   return channel_->Send(message);
+}
+
+void GpuChannel::RequeueMessage() {
+  DCHECK(currently_processing_message_);
+  deferred_messages_.push_front(
+      new IPC::Message(*currently_processing_message_));
+  unprocessed_messages_->IncCount();
+  currently_processing_message_ = NULL;
 }
 
 void GpuChannel::OnScheduled() {
@@ -540,8 +549,13 @@ void GpuChannel::HandleMessage() {
 
     processed_get_state_fast_ =
         (message->type() == GpuCommandBufferMsg_GetStateFast::ID);
+
+    currently_processing_message_ = message.get();
+    bool result = router_.RouteMessage(*message);
+    currently_processing_message_ = NULL;
+
     // Handle deferred control messages.
-    if (!router_.RouteMessage(*message)) {
+    if (!result) {
       // Respond to sync messages even if router failed to route.
       if (message->is_sync()) {
         IPC::Message* reply = IPC::SyncMessage::GenerateReply(&*message);

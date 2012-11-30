@@ -175,6 +175,7 @@ unsigned int TextureImageTransportSurface::GetBackingFrameBufferObject() {
 }
 
 void TextureImageTransportSurface::SetBackbufferAllocation(bool allocation) {
+  DCHECK(!is_swap_buffers_pending_);
   if (backbuffer_suggested_allocation_ == allocation)
      return;
   backbuffer_suggested_allocation_ = allocation;
