@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/snapshot_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -237,7 +238,7 @@ Browser* CreateBrowserWindow(const Browser::CreateParams& params,
     // The false parameter passed below is to ensure that we find a browser
     // object matching the profile passed in, instead of the original profile
     new_window = browser::FindTabbedBrowser(
-        profile, false, params.host_desktop_type);
+        profile, false, chrome::GetActiveDesktop());
 
   if (!new_window)
     new_window = new Browser(params);
