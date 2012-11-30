@@ -1043,6 +1043,16 @@ int main(int argc, char** argv) {
 
   CommandLine::Init(argc, argv);
 
+  // Initialize Breakpad as early as possible. On Windows, this happens in
+  // WinMain(), so it shouldn't also be done here. The command-line needs to be
+  // initialized first, so that the preference for crash-reporting can be looked
+  // up in the config file.
+#if defined(MAC_BREAKPAD)
+  if (remoting::IsUsageStatsAllowed()) {
+    remoting::InitializeCrashReporting();
+  }
+#endif  // MAC_BREAKPAD
+
   // This object instance is required by Chrome code (for example,
   // LazyInstance, MessageLoop).
   base::AtExitManager exit_manager;
@@ -1094,7 +1104,7 @@ int CALLBACK WinMain(HINSTANCE instance,
                      HINSTANCE previous_instance,
                      LPSTR command_line,
                      int show_command) {
-#ifdef OFFICIAL_BUILD
+#if defined(OFFICIAL_BUILD)
   if (remoting::IsUsageStatsAllowed()) {
     remoting::InitializeCrashReporting();
   }

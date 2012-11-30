@@ -957,6 +957,11 @@
         'base/breakpad_win.cc',
       ],
       'conditions': [
+        ['OS=="mac"', {
+          'dependencies': [
+            '../breakpad/breakpad.gyp:breakpad',
+          ],
+        }],
         ['OS=="win"', {
           'dependencies': [
             '../breakpad/breakpad.gyp:breakpad_handler',
@@ -1649,6 +1654,7 @@
         'host/url_request_context.cc',
         'host/url_request_context.h',
         'host/usage_stats_consent.h',
+        'host/usage_stats_consent_mac.cc',
         'host/usage_stats_consent_win.cc',
         'host/video_frame.cc',
         'host/video_frame.h',
@@ -1843,9 +1849,19 @@
                 # A real .dSYM is needed for dump_syms to operate on.
                 'mac_real_dsym': 1,
               },
-            }],
+              'defines': ['MAC_BREAKPAD'],
+              'copies': [
+                {
+                  'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Resources',
+                  'files': [
+                    '<(PRODUCT_DIR)/crash_inspector',
+                    '<(PRODUCT_DIR)/crash_report_sender.app'
+                  ],
+                },
+              ],
+            }],  # mac_breakpad==1
           ],  # conditions
-        }],
+        }],  # OS=mac
         ['OS=="win"', {
           'product_name': 'remoting_host',
           'dependencies': [

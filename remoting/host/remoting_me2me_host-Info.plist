@@ -28,5 +28,9 @@
   <string>COPYRIGHT_INFO</string>
   <key>LSUIElement</key>
   <string>1</string>
+  <key>BreakpadProduct</key>
+  <string>Chromoting_Mac</string>
+  <key>BreakpadVersion</key>
+  <string>VERSION_FULL</string>
 </dict>
 </plist>
