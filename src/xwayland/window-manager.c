@@ -1249,7 +1249,7 @@ weston_wm_handle_event(int fd, uint32_t mask, void *data)
 }
 
 static void
-wxs_wm_get_resources(struct weston_wm *wm)
+weston_wm_get_resources(struct weston_wm *wm)
 {
 
 #define F(field) offsetof(struct weston_wm, field)
@@ -1471,7 +1471,7 @@ weston_wm_create(struct weston_xserver *wxs)
 				     weston_wm_handle_event, wm);
 	wl_event_source_check(wm->source);
 
-	wxs_wm_get_resources(wm);
+	weston_wm_get_resources(wm);
 
 	values[0] =
 		XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY |
