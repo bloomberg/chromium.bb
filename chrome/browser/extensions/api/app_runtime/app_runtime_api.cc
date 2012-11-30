@@ -168,7 +168,9 @@ bool AppRuntimePostIntentResponseFunction::RunImpl() {
   std::string data;
   EXTENSION_FUNCTION_VALIDATE(details->GetString(kIntentDataKey, &data));
 
-  intents_dispatcher->SendReplyMessage(reply_type, UTF8ToUTF16(data));
+  intents_dispatcher->SendReply(webkit_glue::WebIntentReply(
+      reply_type, UTF8ToUTF16(data)));
+
   return true;
 }
 

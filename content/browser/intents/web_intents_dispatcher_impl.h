@@ -37,10 +37,6 @@ class WebIntentsDispatcherImpl : public WebIntentsDispatcher,
   virtual const webkit_glue::WebIntentData& GetIntent() OVERRIDE;
   virtual void DispatchIntent(WebContents* destination_contents) OVERRIDE;
   virtual void ResetDispatch() OVERRIDE;
-  // Deprecated. Use SendReply.
-  // TODO(smckay): Eliminate use of SendReplyMessage in followup CL.
-  virtual void SendReplyMessage(webkit_glue::WebIntentReplyType reply_type,
-                                const string16& data) OVERRIDE;
   virtual void SendReply(const webkit_glue::WebIntentReply& reply) OVERRIDE;
   virtual void RegisterReplyNotification(
       const WebIntentsDispatcher::ReplyNotification& closure) OVERRIDE;

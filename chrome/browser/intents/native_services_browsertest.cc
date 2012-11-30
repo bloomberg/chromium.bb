@@ -57,12 +57,6 @@ class TestIntentsDispatcher : public content::WebIntentsDispatcher {
   virtual void DispatchIntent(content::WebContents* web_contents) OVERRIDE {}
   virtual void ResetDispatch() OVERRIDE {}
 
-  virtual void SendReplyMessage(
-      webkit_glue::WebIntentReplyType reply_type,
-      const string16& data) OVERRIDE {
-    SendReply(webkit_glue::WebIntentReply(reply_type, data));
-  }
-
   virtual void SendReply(const webkit_glue::WebIntentReply& reply) OVERRIDE {
     reply_.reset(new webkit_glue::WebIntentReply(reply));
   }

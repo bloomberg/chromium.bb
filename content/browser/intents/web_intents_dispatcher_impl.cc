@@ -55,12 +55,6 @@ void WebIntentsDispatcherImpl::ResetDispatch() {
   }
 }
 
-void WebIntentsDispatcherImpl::SendReplyMessage(
-    webkit_glue::WebIntentReplyType reply_type,
-    const string16& data) {
-  SendReply(webkit_glue::WebIntentReply(reply_type, data));
-}
-
 void WebIntentsDispatcherImpl::SendReply(
     const webkit_glue::WebIntentReply& reply) {
   intent_injector_ = NULL;

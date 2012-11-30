@@ -1708,9 +1708,9 @@ void Browser::WebIntentDispatch(
         extensions_service->extensions()->GetExtensionOrAppByURL(
             ExtensionURLInfo(web_contents->GetURL())) == NULL) {
       web_intents::RecordIntentsDispatchDisabled();
-      intents_dispatcher->SendReplyMessage(
+      intents_dispatcher->SendReply(webkit_glue::WebIntentReply(
           webkit_glue::WEB_INTENT_REPLY_FAILURE,
-          ASCIIToUTF16("Intents may only be invoked from extensions/apps."));
+          ASCIIToUTF16("Intents may only be invoked from extensions/apps.")));
       return;
     }
   }
@@ -1722,9 +1722,9 @@ void Browser::WebIntentDispatch(
       intents_dispatcher->GetIntent().action !=
       ASCIIToUTF16(web_intents::kActionView)) {
     web_intents::RecordIntentsDispatchDisabled();
-    intents_dispatcher->SendReplyMessage(
+    intents_dispatcher->SendReply(webkit_glue::WebIntentReply(
         webkit_glue::WEB_INTENT_REPLY_FAILURE,
-        ASCIIToUTF16("Intents may only be invoked from extensions/apps."));
+        ASCIIToUTF16("Intents may only be invoked from extensions/apps.")));
     return;
   }
 #endif

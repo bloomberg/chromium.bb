@@ -45,8 +45,6 @@ class CONTENT_EXPORT InternalWebIntentsDispatcher
   virtual const webkit_glue::WebIntentData& GetIntent() OVERRIDE;
   virtual void DispatchIntent(WebContents* destination_contents) OVERRIDE;
   virtual void ResetDispatch() OVERRIDE;
-  virtual void SendReplyMessage(webkit_glue::WebIntentReplyType reply_type,
-                                const string16& data) OVERRIDE;
   virtual void SendReply(const webkit_glue::WebIntentReply& reply) OVERRIDE;
   virtual void RegisterReplyNotification(
       const WebIntentsDispatcher::ReplyNotification& closure) OVERRIDE;

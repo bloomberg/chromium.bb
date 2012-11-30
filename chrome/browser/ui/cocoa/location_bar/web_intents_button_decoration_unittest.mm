@@ -53,6 +53,6 @@ TEST_F(WebIntentsButtonDecorationTest, IdentifiesWebIntentService) {
   decoration_.Update(contents.get());
   EXPECT_TRUE(decoration_.IsVisible());
 
-  dispatcher->SendReplyMessage(webkit_glue::WEB_INTENT_REPLY_SUCCESS,
-                               string16());
+  dispatcher->SendReply(webkit_glue::WebIntentReply(
+      webkit_glue::WEB_INTENT_REPLY_SUCCESS, string16()));
 }

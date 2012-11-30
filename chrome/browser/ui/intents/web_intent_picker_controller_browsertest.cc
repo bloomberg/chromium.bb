@@ -197,11 +197,6 @@ class IntentsDispatcherMock : public content::WebIntentsDispatcher {
   virtual void ResetDispatch() OVERRIDE {
   }
 
-  virtual void SendReplyMessage(webkit_glue::WebIntentReplyType reply_type,
-                                const string16& data) OVERRIDE {
-    replied_ = true;
-  }
-
   virtual void SendReply(const webkit_glue::WebIntentReply& reply) OVERRIDE {
     replied_ = true;
   }

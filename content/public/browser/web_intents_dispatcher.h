@@ -58,10 +58,6 @@ class CONTENT_EXPORT WebIntentsDispatcher {
   // Abandon current attempt to dispatch, allow new call to DispatchIntent.
   virtual void ResetDispatch() = 0;
 
-  // Deprecated. Use SendReply.
-  virtual void SendReplyMessage(webkit_glue::WebIntentReplyType reply_type,
-                                const string16& data) = 0;
-
   // Return a reply to the source context which invoked the intent.
   // Calls the reply notifications, if any are registered.
   // Deletes |this| object after handling is complete.

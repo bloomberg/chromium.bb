@@ -43,12 +43,6 @@ void InternalWebIntentsDispatcher::ResetDispatch() {
   }
 }
 
-void InternalWebIntentsDispatcher::SendReplyMessage(
-    webkit_glue::WebIntentReplyType reply_type,
-    const string16& data) {
-  SendReply(webkit_glue::WebIntentReply(reply_type, data));
-}
-
 void InternalWebIntentsDispatcher::SendReply(
     const webkit_glue::WebIntentReply& reply) {
   intent_injector_ = NULL;
