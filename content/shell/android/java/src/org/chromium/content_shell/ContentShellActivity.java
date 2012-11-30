@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 
 import org.chromium.content.app.LibraryLoader;
+import org.chromium.content.browser.ActivityContentVideoViewDelegate;
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.DeviceUtils;
@@ -56,7 +57,8 @@ public class ContentShellActivity extends Activity {
         mActivityNativeWindow = new ActivityNativeWindow(this);
         mActivityNativeWindow.restoreInstanceState(savedInstanceState);
         mShellManager.setWindow(mActivityNativeWindow);
-        ContentVideoView.registerChromeActivity(this);
+        ContentVideoView.registerContentVideoViewContextDelegate(
+            new ActivityContentVideoViewDelegate(this));
 
         String startupUrl = getUrlFromIntent(getIntent());
         if (!TextUtils.isEmpty(startupUrl)) {
