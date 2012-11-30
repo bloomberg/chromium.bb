@@ -25,8 +25,7 @@ static const char* kBasicTests[] = {
   "basics-shared-workers.html",
   // Failing on Precise bot (crbug.com/145592).
   // "basics-workers.html",
-  // Failing on all platforms (crbug.com/160961).
-  // "database-basics.html",
+  "database-basics.html",
   "factory-basics.html",
   "index-basics.html",
   "objectstore-basics.html",
@@ -46,7 +45,7 @@ static const char* kIndexTests[] = {
   // Flaky: http://crbug.com/123685
   // "index-basics-workers.html",
   "index-count.html",
-  "index-cursor.html",  // Locally takes ~6s compared to <1 for the others.
+  "index-cursor.html",
   "index-get-key-argument-required.html",
   "index-multientry.html",
   "index-population.html",
@@ -93,18 +92,16 @@ static const char* kRegressionTests[] = {
 
 const char* kIntVersionTests[] = {
   "intversion-abort-in-initial-upgradeneeded.html",
-  // Needs to be renamed after https://bugs.webkit.org/show_bug.cgi?id=102318
-  // lands and is rolled into chromium.
-//  "intversion-and-setversion.html",
   "intversion-blocked.html",
   "intversion-close-between-events.html",
   "intversion-close-in-oncomplete.html",
   "intversion-close-in-upgradeneeded.html",
   "intversion-delete-in-upgradeneeded.html",
-  // "intversion-gated-on-delete.html", // behaves slightly differently in DRT
+  "intversion-gated-on-delete.html",
   "intversion-long-queue.html",
   "intversion-omit-parameter.html",
   "intversion-open-with-version.html",
+  "intversion-upgrades.html",
   NULL
 };
 
@@ -115,8 +112,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, BasicTests) {
 }
 
 
-// Started failing after WebKit roll: http://crbug.com/162204
-IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, DISABLED_ComplexTests) {
+IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, ComplexTests) {
   RunLayoutTests(kComplexTests);
 }
 
