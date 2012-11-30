@@ -273,6 +273,8 @@
         'wm/always_on_top_controller.h',
         'wm/ash_activation_controller.cc',
         'wm/ash_activation_controller.h',
+        'wm/ash_focus_rules.cc',
+        'wm/ash_focus_rules.h',
         'wm/base_layout_manager.cc',
         'wm/base_layout_manager.h',
         'wm/boot_splash_screen.cc',
