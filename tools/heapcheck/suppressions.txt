@@ -1667,3 +1667,10 @@
    fun:chromeos::ibus::AppendIBusLookupTable
    fun:chromeos::ibus::IBusPanelServiceTest_UpdateLookupTableTest_Test::TestBody
 }
+{
+   bug_163111_d
+   Heapcheck:Leak
+   ...
+   fun:dbus::Response::FromMethodCall
+   fun:chromeos::ibus::IBusPanelServiceImpl::UpdateProperty
+}
