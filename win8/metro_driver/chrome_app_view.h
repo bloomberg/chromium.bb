@@ -139,9 +139,6 @@ class ChromeAppView
   MetroDialogBox dialog_box_;
 };
 
-// This function is exported by chrome.exe.
-typedef int (__cdecl *BreakpadExceptionHandler)(EXCEPTION_POINTERS* info);
-
 // Global information used across the metro driver.
 struct Globals {
   LPTHREAD_START_ROUTINE host_main;
@@ -164,7 +161,6 @@ struct Globals {
   // to be initiated from that thread, notably spawning file pickers.
   base::MessageLoopProxy* appview_msg_loop;
   winapp::Core::ICoreApplicationExit* app_exit;
-  BreakpadExceptionHandler breakpad_exception_handler;
   string16 metro_command_line_switches;
 };
 

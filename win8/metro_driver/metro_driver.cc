@@ -147,14 +147,6 @@ int InitMetro(LPTHREAD_START_ROUTINE thread_proc, void* context) {
 
 #if defined(NDEBUG)
   logging::SetMinLogLevel(logging::LOG_ERROR);
-  // Bind to the breakpad handling function.
-  globals.breakpad_exception_handler =
-      reinterpret_cast<BreakpadExceptionHandler>(
-          ::GetProcAddress(::GetModuleHandle(NULL),
-                           "CrashForException"));
-  if (!globals.breakpad_exception_handler) {
-    DVLOG(0) << "CrashForException export not found";
-  }
 #else
   logging::SetMinLogLevel(logging::LOG_VERBOSE);
   // Set the error reporting flags to always raise an exception,
