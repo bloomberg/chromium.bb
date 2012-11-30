@@ -15,14 +15,11 @@ class BrowserDesktopRootWindowHost;
 class BrowserFrame;
 class BrowserView;
 
-namespace ash {
-namespace internal {
-class VisibilityController;
-}
-}
-
 namespace views {
 class MenuRunner;
+namespace corewm {
+class VisibilityController;
+}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -65,7 +62,7 @@ class DesktopBrowserFrameAura : public views::DesktopNativeWidgetAura,
   // System menu.
   scoped_ptr<views::MenuRunner> menu_runner_;
 
-  scoped_ptr<ash::internal::VisibilityController> visibility_controller_;
+  scoped_ptr<views::corewm::VisibilityController> visibility_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopBrowserFrameAura);
 };

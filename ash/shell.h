@@ -57,6 +57,7 @@ namespace corewm {
 class CompoundEventFilter;
 class InputMethodEventFilter;
 class ShadowController;
+class VisibilityController;
 }
 }
 
@@ -109,7 +110,6 @@ class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
 class TooltipController;
 class TouchObserverHUD;
-class VisibilityController;
 class WindowModalityController;
 class WorkspaceController;
 }
@@ -492,8 +492,8 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   scoped_ptr<internal::DragDropController> drag_drop_controller_;
   scoped_ptr<internal::ResizeShadowController> resize_shadow_controller_;
   scoped_ptr<views::corewm::ShadowController> shadow_controller_;
+  scoped_ptr<views::corewm::VisibilityController> visibility_controller_;
   scoped_ptr<internal::TooltipController> tooltip_controller_;
-  scoped_ptr<internal::VisibilityController> visibility_controller_;
   scoped_ptr<DesktopBackgroundController> desktop_background_controller_;
   scoped_ptr<PowerButtonController> power_button_controller_;
   scoped_ptr<SessionStateController> session_state_controller_;

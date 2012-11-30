@@ -33,11 +33,6 @@ class RootWindowController;
 extern const aura::WindowProperty<internal::AlwaysOnTopController*>* const
     kAlwaysOnTopControllerKey;
 
-// Property set on all windows whose child windows' visibility changes are
-// animated.
-extern const aura::WindowProperty<bool>* const
-    kChildWindowVisibilityChangesAnimatedKey;
-
 // True if the window is ignored by the shelf layout manager for purposes of
 // darkening the shelf.
 extern const aura::WindowProperty<bool>* const

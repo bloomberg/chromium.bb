@@ -13,6 +13,7 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace/workspace_manager.h"
 #include "ui/aura/window.h"
+#include "ui/views/corewm/visibility_controller.h"
 
 namespace ash {
 namespace internal {
@@ -25,8 +26,7 @@ Workspace::Workspace(WorkspaceManager* manager,
       window_(new aura::Window(NULL)),
       event_handler_(new WorkspaceEventHandler(window_)),
       workspace_layout_manager_(NULL) {
-  window_->SetProperty(internal::kChildWindowVisibilityChangesAnimatedKey,
-                       true);
+  views::corewm::SetChildWindowVisibilityChangesAnimated(window_);
   SetWindowVisibilityAnimationTransition(window_, views::corewm::ANIMATE_NONE);
   window_->set_id(kShellWindowId_WorkspaceContainer);
   window_->SetName("WorkspaceContainer");

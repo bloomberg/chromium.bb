@@ -2,31 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_VISIBILITY_CONTROLLER_H_
-#define ASH_WM_VISIBILITY_CONTROLLER_H_
+#ifndef UI_VIEWS_COREWM_VISIBILITY_CONTROLLER_H_
+#define UI_VIEWS_COREWM_VISIBILITY_CONTROLLER_H_
 
-#include "ash/ash_export.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "ui/aura/client/visibility_client.h"
+#include "ui/views/views_export.h"
 
-namespace ash {
-namespace internal {
+namespace views {
+namespace corewm {
 
-class ASH_EXPORT VisibilityController : public aura::client::VisibilityClient {
+class VIEWS_EXPORT VisibilityController
+    : public aura::client::VisibilityClient {
  public:
   VisibilityController();
   virtual ~VisibilityController();
 
+ protected:
+  // Subclasses override if they want to call a different implementation of
+  // this function.
+  // TODO(beng): potentially replace by an actual window animator class in
+  //             window_animations.h.
+  virtual bool CallAnimateOnChildWindowVisibilityChanged(aura::Window* window,
+                                                         bool visible);
+
+ private:
   // Overridden from aura::client::VisibilityClient:
   virtual void UpdateLayerVisibility(aura::Window* window,
                                      bool visible) OVERRIDE;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(VisibilityController);
 };
-
-}  // namespace internal
 
 // Suspends the animations for visibility changes during the lifetime of an
 // instance of this class.
@@ -41,7 +48,7 @@ class ASH_EXPORT VisibilityController : public aura::client::VisibilityClient {
 //   // previous state.
 // }
 //
-class ASH_EXPORT SuspendChildWindowVisibilityAnimations {
+class VIEWS_EXPORT SuspendChildWindowVisibilityAnimations {
  public:
   // Suspend visibility animations of child windows.
   explicit SuspendChildWindowVisibilityAnimations(aura::Window* window);
@@ -60,8 +67,9 @@ class ASH_EXPORT SuspendChildWindowVisibilityAnimations {
 };
 
 // Tells |window| to animate visibility changes to its children.
-void ASH_EXPORT SetChildWindowVisibilityChangesAnimated(aura::Window* window);
+void VIEWS_EXPORT SetChildWindowVisibilityChangesAnimated(aura::Window* window);
 
-}  // namespace ash
+}  // namespace corewm
+}  // namespace views
 
-#endif  // ASH_WM_VISIBILITY_CONTROLLER_H_
+#endif  // UI_VIEWS_COREWM_VISIBILITY_CONTROLLER_H_

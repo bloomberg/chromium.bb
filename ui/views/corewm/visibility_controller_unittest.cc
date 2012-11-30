@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/visibility_controller.h"
+#include "ui/views/corewm/visibility_controller.h"
 
-#include "ash/test/ash_test_base.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 
-namespace ash {
-namespace internal {
+namespace views {
+namespace corewm {
 
-typedef test::AshTestBase VisibilityControllerTest;
+typedef aura::test::AuraTestBase VisibilityControllerTest;
 
 // Hiding a window in an animatable container should not hide the window's layer
 // immediately.
@@ -22,17 +23,19 @@ TEST_F(VisibilityControllerTest, AnimateHideDoesntHideWindowLayer) {
   // We cannot disable animations for this test.
   ui::LayerAnimator::set_disable_animations_for_test(false);
 
-  scoped_ptr<aura::Window> container(CreateTestWindowInShellWithId(-1));
-  SetChildWindowVisibilityChangesAnimated(container.get());
+  VisibilityController controller;
+  aura::client::SetVisibilityClient(root_window(), &controller);
+
+  SetChildWindowVisibilityChangesAnimated(root_window());
 
   aura::test::TestWindowDelegate d;
   scoped_ptr<aura::Window> animatable(
       aura::test::CreateTestWindowWithDelegate(
-          &d, -2, gfx::Rect(0, 0, 50, 50), container.get()));
+          &d, -2, gfx::Rect(0, 0, 50, 50), root_window()));
   scoped_ptr<aura::Window> non_animatable(
       aura::test::CreateTestWindowWithDelegateAndType(
           &d, aura::client::WINDOW_TYPE_CONTROL, -3, gfx::Rect(51, 51, 50, 50),
-          container.get()));
+          root_window()));
   EXPECT_TRUE(animatable->IsVisible());
   EXPECT_TRUE(animatable->layer()->visible());
   animatable->Hide();
@@ -44,7 +47,9 @@ TEST_F(VisibilityControllerTest, AnimateHideDoesntHideWindowLayer) {
   non_animatable->Hide();
   EXPECT_FALSE(non_animatable->IsVisible());
   EXPECT_FALSE(non_animatable->layer()->visible());
+
+  aura::client::SetVisibilityClient(root_window(), NULL);
 }
 
-}  // namespace internal
-}  // namespace ash
+}  // namespace corewm
+}  // namespace views

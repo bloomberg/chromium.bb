@@ -2,22 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/visibility_controller.h"
+#include "ui/views/corewm/visibility_controller.h"
 
-#include "ash/shell.h"
-#include "ash/wm/window_animations.h"
-#include "ash/wm/window_properties.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_property.h"
 #include "ui/compositor/layer.h"
+#include "ui/views/corewm/window_animations.h"
 
-namespace ash {
-namespace internal {
+namespace views {
+namespace corewm {
 
 namespace {
 
+// Property set on all windows whose child windows' visibility changes are
+// animated.
+DEFINE_WINDOW_PROPERTY_KEY(
+    bool, kChildWindowVisibilityChangesAnimatedKey, false);
+
 bool ShouldAnimateWindow(aura::Window* window) {
   return window->parent() && window->parent()->GetProperty(
-      internal::kChildWindowVisibilityChangesAnimatedKey);
+      kChildWindowVisibilityChangesAnimatedKey);
 }
 
 }  // namespace
@@ -28,12 +32,19 @@ VisibilityController::VisibilityController() {
 VisibilityController::~VisibilityController() {
 }
 
+bool VisibilityController::CallAnimateOnChildWindowVisibilityChanged(
+    aura::Window* window,
+    bool visible) {
+  return AnimateOnChildWindowVisibilityChanged(window, visible);
+}
+
 void VisibilityController::UpdateLayerVisibility(aura::Window* window,
                                                  bool visible) {
   bool animated = window->type() != aura::client::WINDOW_TYPE_CONTROL &&
                   window->type() != aura::client::WINDOW_TYPE_UNKNOWN &&
                   ShouldAnimateWindow(window);
-  animated = animated && AnimateOnChildWindowVisibilityChanged(window, visible);
+  animated = animated &&
+      CallAnimateOnChildWindowVisibilityChanged(window, visible);
 
   if (!visible) {
     // For window hiding animation, we want to check if the window is already
@@ -51,28 +62,26 @@ void VisibilityController::UpdateLayerVisibility(aura::Window* window,
     window->layer()->SetVisible(visible);
 }
 
-}  // namespace internal
-
 SuspendChildWindowVisibilityAnimations::SuspendChildWindowVisibilityAnimations(
     aura::Window* window)
     : window_(window),
       original_enabled_(window->GetProperty(
-          internal::kChildWindowVisibilityChangesAnimatedKey)) {
-  window_->ClearProperty(internal::kChildWindowVisibilityChangesAnimatedKey);
+          kChildWindowVisibilityChangesAnimatedKey)) {
+  window_->ClearProperty(kChildWindowVisibilityChangesAnimatedKey);
 }
 
 SuspendChildWindowVisibilityAnimations::
     ~SuspendChildWindowVisibilityAnimations() {
-  if (original_enabled_) {
-    window_->SetProperty(internal::kChildWindowVisibilityChangesAnimatedKey,
-                         true);
-  } else {
-    window_->ClearProperty(internal::kChildWindowVisibilityChangesAnimatedKey);
-  }
+  if (original_enabled_)
+    window_->SetProperty(kChildWindowVisibilityChangesAnimatedKey, true);
+  else
+    window_->ClearProperty(kChildWindowVisibilityChangesAnimatedKey);
 }
 
 void SetChildWindowVisibilityChangesAnimated(aura::Window* window) {
-  window->SetProperty(internal::kChildWindowVisibilityChangesAnimatedKey, true);
+  window->SetProperty(kChildWindowVisibilityChangesAnimatedKey, true);
 }
 
-}  // namespace ash
+}  // namespace corewm
+}  // namespace views
+

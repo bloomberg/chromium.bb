@@ -58,7 +58,7 @@
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/user_activity_detector.h"
 #include "ash/wm/video_detector.h"
-#include "ash/wm/visibility_controller.h"
+#include "ash/wm/window_animations.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_modality_controller.h"
 #include "ash/wm/window_properties.h"
@@ -86,6 +86,7 @@
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/input_method_event_filter.h"
 #include "ui/views/corewm/shadow_controller.h"
+#include "ui/views/corewm/visibility_controller.h"
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
@@ -152,6 +153,24 @@ class DummyUserWallpaperDelegate : public UserWallpaperDelegate {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyUserWallpaperDelegate);
+};
+
+// A Corewm VisibilityController subclass that calls the Ash animation routine
+// so we can pick up our extended animations. See ash/wm/window_animations.h.
+class AshVisibilityController : public views::corewm::VisibilityController {
+ public:
+  AshVisibilityController() {}
+  virtual ~AshVisibilityController() {}
+
+ private:
+  // Overridden from views::corewm::VisibilityController:
+  virtual bool CallAnimateOnChildWindowVisibilityChanged(
+      aura::Window* window,
+      bool visible) OVERRIDE {
+    return AnimateOnChildWindowVisibilityChanged(window, visible);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(AshVisibilityController);
 };
 
 }  // namespace
@@ -486,7 +505,7 @@ void Shell::Init() {
   stacking_client_.reset(delegate_->CreateStackingClient());
   if (stacking_client_.get())
     aura::client::SetStackingClient(stacking_client_.get());
-  visibility_controller_.reset(new internal::VisibilityController);
+  visibility_controller_.reset(new AshVisibilityController);
   drag_drop_controller_.reset(new internal::DragDropController);
   user_action_client_.reset(delegate_->CreateUserActionClient());
   window_modality_controller_.reset(new internal::WindowModalityController);

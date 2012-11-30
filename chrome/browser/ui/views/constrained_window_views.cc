@@ -57,6 +57,7 @@
 #endif
 
 #if defined(USE_AURA)
+#include "ui/views/corewm/visibility_controller.h"
 #include "ui/views/corewm/window_animations.h"
 #endif
 
@@ -65,7 +66,6 @@
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/custom_frame_view_ash.h"
-#include "ash/wm/visibility_controller.h"
 #include "ash/wm/window_modality_controller.h"
 #include "ui/aura/window.h"
 #endif
@@ -594,7 +594,7 @@ ConstrainedWindowViews::ConstrainedWindowViews(
   }
   // Ash window headers can be transparent.
   params.transparent = true;
-  ash::SetChildWindowVisibilityChangesAnimated(params.GetParent());
+  views::corewm::SetChildWindowVisibilityChangesAnimated(params.GetParent());
   // No animations should get performed on the window since that will re-order
   // the window stack which will then cause many problems.
   if (params.parent && params.parent->parent()) {
@@ -743,7 +743,7 @@ void ConstrainedWindowViews::Observe(
   DCHECK(enable_chrome_style_);
   DCHECK_EQ(type, content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED);
 #if defined(USE_ASH)
-  ash::SuspendChildWindowVisibilityAnimations
+  views::corewm::SuspendChildWindowVisibilityAnimations
       suspend(GetNativeWindow()->parent());
 #endif
   if (*content::Details<bool>(details).ptr()) {
