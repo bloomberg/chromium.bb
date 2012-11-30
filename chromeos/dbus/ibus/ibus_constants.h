@@ -11,6 +11,12 @@ namespace ibus {
 
 const char kServiceName[] = "org.freedesktop.IBus";
 
+const char kDBusServiceName[] = "org.freedesktop.DBus";
+const char kDBusObjectPath[] = "/org/freedesktop/DBus";
+const char kDBusInterface[] = "org.freedesktop.DBus";
+const char kGetNameOwnerMethod[] = "GetNameOwner";
+const char kNameOwnerChangedSignal[] = "NameOwnerChanged";
+
 namespace bus {
 const char kServicePath[] = "/org/freedesktop/IBus";
 const char kServiceInterface[] = "org.freedesktop.IBus";
@@ -69,6 +75,7 @@ const char kCommitTextSignal[] = "CommitText";
 }  // namespace engine
 
 namespace panel {
+const char kServiceName[] = "org.freedesktop.IBus.Panel";
 const char kServicePath[] = "/org/freedesktop/IBus/Panel";
 const char kServiceInterface[] = "org.freedesktop.IBus.Panel";
 const char kUpdateLookupTableMethod[] = "UpdateLookupTable";
@@ -102,6 +109,7 @@ enum IBusMouseButton {
 };
 
 namespace config {
+const char kServiceName[] = "org.freedesktop.IBus.Config";
 const char kServicePath[] = "/org/freedesktop/IBus/Config";
 const char kServiceInterface[] = "org.freedesktop.IBus.Config";
 const char kSetValueMethod[] = "SetValue";

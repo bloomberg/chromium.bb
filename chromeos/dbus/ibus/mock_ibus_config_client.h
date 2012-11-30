@@ -6,6 +6,7 @@
 #define CHROMEOS_DBUS_IBUS_MOCK_IBUS_CONFIG_CLIENT_H_
 
 #include <string>
+#include <vector>
 
 #include "chromeos/dbus/ibus/ibus_config_client.h"
 
@@ -15,6 +16,7 @@ class MockIBusConfigClient : public IBusConfigClient {
  public:
   MockIBusConfigClient();
   virtual ~MockIBusConfigClient();
+  virtual void InitializeAsync(const OnIBusConfigReady& onready) OVERRIDE;
 
   virtual void SetStringValue(const std::string& key,
                               const std::string& section,
@@ -42,4 +44,4 @@ class MockIBusConfigClient : public IBusConfigClient {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_IBUS_MOCK_IBUS_CLIENT_H_
+#endif  // CHROMEOS_DBUS_IBUS_MOCK_IBUS_CONFIG_CLIENT_H_

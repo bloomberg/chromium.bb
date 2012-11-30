@@ -4,12 +4,17 @@
 
 #include "chromeos/dbus/ibus/mock_ibus_config_client.h"
 
+#include <vector>
+
 namespace chromeos {
 
 MockIBusConfigClient::MockIBusConfigClient() {
 }
 
 MockIBusConfigClient::~MockIBusConfigClient() {}
+
+void MockIBusConfigClient::InitializeAsync(const OnIBusConfigReady& onready) {
+}
 
 void MockIBusConfigClient::SetStringValue(const std::string& key,
                                           const std::string& section,
