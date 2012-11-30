@@ -30,10 +30,6 @@ public abstract class AwBrowserProcess {
      */
     public static void loadLibrary() {
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
-        // We don't need to extract any paks because for WebView, they are
-        // in the system image. TODO(joth): remove the paks and make ResourceExtractor
-        // a true no-op for this use-case (i.e. remove need to pass empty string here).
-        ResourceExtractor.setMandatoryPaksToExtract("");
         LibraryLoader.setLibraryToLoad(NATIVE_LIBRARY);
         LibraryLoader.ensureInitialized();
     }
