@@ -16,7 +16,7 @@ import url_constants
 DEFAULT_ICON_PATH = '/images/sample-default-icon.png'
 
 # See api_data_source.py for more info on _VERSION.
-_VERSION = 1
+_VERSION = 2
 
 class SamplesDataSource(object):
   """Constructs a list of samples and their respective files and api calls.
@@ -76,7 +76,7 @@ class SamplesDataSource(object):
         return None
       l10n_data = {
         'name': manifest_json.get('name', ''),
-        'description': manifest_json.get('description', ''),
+        'description': manifest_json.get('description', None),
         'icon': manifest_json.get('icons', {}).get('128', None),
         'default_locale': manifest_json.get('default_locale', None),
         'locales': {}
@@ -199,7 +199,7 @@ class SamplesDataSource(object):
         api_calls_unix = [model.UnixName(call['name'])
                           for call in sample['api_calls']]
         for call in api_calls_unix:
-          if api_search in call:
+          if call.startswith(api_search):
             samples_list.append(sample)
             break
     except NotImplementedError:
@@ -218,6 +218,8 @@ class SamplesDataSource(object):
     for dict_ in samples_list:
       name = dict_['name']
       description = dict_['description']
+      if description is None:
+        description = ''
       if name.startswith('__MSG_') or description.startswith('__MSG_'):
         try:
           # Copy the sample dict so we don't change the dict in the cache.

@@ -1,17 +1,10 @@
 [
   {
     "api_calls": [
-      { "name": "bobaloo" },
+      { "name": "bobaloo.foop" },
       { "name": "jimmy.bobaloo.loopoo" },
       { "name": "jimmy.jimmy" },
       { "name": "hallo.bobaloo" }
-    ]
-  },
-  {
-    "api_calls": [
-      { "name": "timmy.bobaloo.affa" },
-      { "name": "jimmy.baloo.loopoo" },
-      { "name": "jimmy.jimmy" }
     ]
   }
 ]
