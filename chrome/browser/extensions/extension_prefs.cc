@@ -1462,7 +1462,13 @@ void ExtensionPrefs::OnExtensionInstalled(
   ScopedExtensionPrefUpdate update(prefs_, id);
   DictionaryValue* extension_dict = update.Get();
   const base::Time install_time = time_provider_->GetCurrentTime();
-  extension_dict->Set(kPrefState, Value::CreateIntegerValue(initial_state));
+
+  // Leave the state blank for component extensions so that old chrome versions
+  // loading new profiles do not fail in GetInstalledExtensionInfo. Older
+  // Chrome versions would only check for an omitted state.
+  if (initial_state != Extension::ENABLED_COMPONENT)
+    extension_dict->Set(kPrefState, Value::CreateIntegerValue(initial_state));
+
   extension_dict->Set(kPrefLocation,
                       Value::CreateIntegerValue(extension->location()));
   extension_dict->Set(kPrefCreationFlags,
