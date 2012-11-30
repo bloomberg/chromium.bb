@@ -8,6 +8,7 @@ var testRunner = testRunner || {};
   native function Display();
   native function GetWorkerThreadCount();
   native function NotifyDone();
+  native function SetCanOpenWindows();
   native function SetDumpAsText();
   native function SetDumpChildFramesAsText();
   native function SetPrinting();
@@ -41,6 +42,9 @@ var testRunner = testRunner || {};
     Object.defineProperty(this,
                           "dumpChildFramesAsText",
                           {value: SetDumpChildFramesAsText});
+    Object.defineProperty(this,
+                          "setCanOpenWindows",
+                          {value: SetCanOpenWindows});
     Object.defineProperty(this, "setPrinting", {value: SetPrinting});
     Object.defineProperty(
         this,
