@@ -5,7 +5,6 @@
 #include "chrome/browser/google_apis/base_operations.h"
 
 #include "base/json/json_reader.h"
-#include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/task_runner_util.h"
@@ -13,9 +12,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "content/public/browser/browser_thread.h"
-#include "google_apis/gaia/gaia_urls.h"
-#include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
@@ -25,13 +21,6 @@ using content::BrowserThread;
 using net::URLFetcher;
 
 namespace {
-
-// Used for success ratio histograms. 0 for failure, 1 for success,
-// 2 for no connection (likely offline).
-const int kSuccessRatioHistogramFailure = 0;
-const int kSuccessRatioHistogramSuccess = 1;
-const int kSuccessRatioHistogramNoConnection = 2;
-const int kSuccessRatioHistogramMaxValue = 3;  // The max value is exclusive.
 
 // Template for optional OAuth2 authorization HTTP header.
 const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
@@ -60,76 +49,6 @@ scoped_ptr<base::Value> ParseJsonOnBlockingPool(const std::string& data) {
 }  // namespace
 
 namespace google_apis {
-
-//================================ AuthOperation ===============================
-
-AuthOperation::AuthOperation(OperationRegistry* registry,
-                             const AuthStatusCallback& callback,
-                             const std::vector<std::string>& scopes,
-                             const std::string& refresh_token)
-    : OperationRegistry::Operation(registry),
-      refresh_token_(refresh_token),
-      callback_(callback),
-      scopes_(scopes) {
-}
-
-AuthOperation::~AuthOperation() {}
-
-void AuthOperation::Start() {
-  DCHECK(!refresh_token_.empty());
-  oauth2_access_token_fetcher_.reset(new OAuth2AccessTokenFetcher(
-      this, g_browser_process->system_request_context()));
-  NotifyStart();
-  oauth2_access_token_fetcher_->Start(
-      GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
-      GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
-      refresh_token_,
-      scopes_);
-}
-
-void AuthOperation::DoCancel() {
-  oauth2_access_token_fetcher_->CancelRequest();
-  if (!callback_.is_null())
-    callback_.Run(GDATA_CANCELLED, std::string());
-}
-
-// Callback for OAuth2AccessTokenFetcher on success. |access_token| is the token
-// used to start fetching user data.
-void AuthOperation::OnGetTokenSuccess(const std::string& access_token,
-                                      const base::Time& expiration_time) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess",
-                            kSuccessRatioHistogramSuccess,
-                            kSuccessRatioHistogramMaxValue);
-
-  callback_.Run(HTTP_SUCCESS, access_token);
-  NotifyFinish(OPERATION_COMPLETED);
-}
-
-// Callback for OAuth2AccessTokenFetcher on failure.
-void AuthOperation::OnGetTokenFailure(const GoogleServiceAuthError& error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  LOG(WARNING) << "AuthOperation: token request using refresh token failed: "
-               << error.ToString();
-
-  // There are many ways to fail, but if the failure is due to connection,
-  // it's likely that the device is off-line. We treat the error differently
-  // so that the file manager works while off-line.
-  if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED) {
-    UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess",
-                              kSuccessRatioHistogramNoConnection,
-                              kSuccessRatioHistogramMaxValue);
-    callback_.Run(GDATA_NO_CONNECTION, std::string());
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess",
-                              kSuccessRatioHistogramFailure,
-                              kSuccessRatioHistogramMaxValue);
-    callback_.Run(HTTP_UNAUTHORIZED, std::string());
-  }
-  NotifyFinish(OPERATION_FAILED);
-}
 
 //============================ UrlFetchOperationBase ===========================
 

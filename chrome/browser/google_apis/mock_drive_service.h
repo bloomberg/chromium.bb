@@ -120,10 +120,6 @@ class MockDriveService : public DriveServiceInterface {
   // Helper stub methods for functions which take callbacks, so that
   // the callbacks get called with testable results.
 
-  // Will call |callback| with HTTP_SUCCESS and the token "test_auth_token"
-  // as the token.
-  void AuthenticateStub(const AuthStatusCallback& callback);
-
   // Will call |callback| with HTTP_SUCCESS and a StringValue with the current
   // value of |feed_data_|.
   void GetDocumentsStub(const GURL& feed_url,

@@ -25,40 +25,6 @@ class Value;
 
 namespace google_apis {
 
-//================================ AuthOperation ===============================
-
-// Callback type for authentication related DriveServiceInterface calls.
-typedef base::Callback<void(GDataErrorCode error,
-                            const std::string& token)> AuthStatusCallback;
-
-// OAuth2 authorization token retrieval operation.
-class AuthOperation : public OperationRegistry::Operation,
-                      public OAuth2AccessTokenConsumer {
- public:
-  AuthOperation(OperationRegistry* registry,
-                const AuthStatusCallback& callback,
-                const std::vector<std::string>& scopes,
-                const std::string& refresh_token);
-  virtual ~AuthOperation();
-  void Start();
-
-  // Overridden from OAuth2AccessTokenConsumer:
-  virtual void OnGetTokenSuccess(const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
-  virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
-
-  // Overridden from OperationRegistry::Operation
-  virtual void DoCancel() OVERRIDE;
-
- private:
-  std::string refresh_token_;
-  AuthStatusCallback callback_;
-  std::vector<std::string> scopes_;
-  scoped_ptr<OAuth2AccessTokenFetcher> oauth2_access_token_fetcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(AuthOperation);
-};
-
 //======================= AuthenticatedOperationInterface ======================
 
 // An interface for implementing an operation used by DriveServiceInterface.

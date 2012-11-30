@@ -22,6 +22,10 @@ namespace google_apis {
 class OperationRegistry;
 class AuthServiceObserver;
 
+// Callback type for authentication related DriveServiceInterface calls.
+typedef base::Callback<void(GDataErrorCode error,
+                            const std::string& token)> AuthStatusCallback;
+
 // This class provides authentication for Google services.
 // It integrates specific service integration with OAuth2 stack
 // (TokenService) and provides OAuth2 token refresh infrastructure.

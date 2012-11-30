@@ -9,6 +9,8 @@
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/google_apis/auth_service_observer.h"
 #include "chrome/browser/google_apis/base_operations.h"
 #include "chrome/browser/google_apis/task_util.h"
@@ -21,6 +23,9 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/gaia_urls.h"
+#include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_access_token_fetcher.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -29,6 +34,113 @@
 using content::BrowserThread;
 
 namespace google_apis {
+
+namespace {
+
+// Used for success ratio histograms. 0 for failure, 1 for success,
+// 2 for no connection (likely offline).
+const int kSuccessRatioHistogramFailure = 0;
+const int kSuccessRatioHistogramSuccess = 1;
+const int kSuccessRatioHistogramNoConnection = 2;
+const int kSuccessRatioHistogramMaxValue = 3;  // The max value is exclusive.
+
+}  // namespace
+
+// OAuth2 authorization token retrieval operation.
+class AuthOperation : public OperationRegistry::Operation,
+                      public OAuth2AccessTokenConsumer {
+ public:
+  AuthOperation(OperationRegistry* registry,
+                const AuthStatusCallback& callback,
+                const std::vector<std::string>& scopes,
+                const std::string& refresh_token);
+  virtual ~AuthOperation();
+  void Start();
+
+  // Overridden from OAuth2AccessTokenConsumer:
+  virtual void OnGetTokenSuccess(const std::string& access_token,
+                                 const base::Time& expiration_time) OVERRIDE;
+  virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
+
+  // Overridden from OperationRegistry::Operation
+  virtual void DoCancel() OVERRIDE;
+
+ private:
+  std::string refresh_token_;
+  AuthStatusCallback callback_;
+  std::vector<std::string> scopes_;
+  scoped_ptr<OAuth2AccessTokenFetcher> oauth2_access_token_fetcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(AuthOperation);
+};
+
+AuthOperation::AuthOperation(OperationRegistry* registry,
+                             const AuthStatusCallback& callback,
+                             const std::vector<std::string>& scopes,
+                             const std::string& refresh_token)
+    : OperationRegistry::Operation(registry),
+      refresh_token_(refresh_token),
+      callback_(callback),
+      scopes_(scopes) {
+}
+
+AuthOperation::~AuthOperation() {}
+
+void AuthOperation::Start() {
+  DCHECK(!refresh_token_.empty());
+  oauth2_access_token_fetcher_.reset(new OAuth2AccessTokenFetcher(
+      this, g_browser_process->system_request_context()));
+  NotifyStart();
+  oauth2_access_token_fetcher_->Start(
+      GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
+      GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
+      refresh_token_,
+      scopes_);
+}
+
+void AuthOperation::DoCancel() {
+  oauth2_access_token_fetcher_->CancelRequest();
+  if (!callback_.is_null())
+    callback_.Run(GDATA_CANCELLED, std::string());
+}
+
+// Callback for OAuth2AccessTokenFetcher on success. |access_token| is the token
+// used to start fetching user data.
+void AuthOperation::OnGetTokenSuccess(const std::string& access_token,
+                                      const base::Time& expiration_time) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess",
+                            kSuccessRatioHistogramSuccess,
+                            kSuccessRatioHistogramMaxValue);
+
+  callback_.Run(HTTP_SUCCESS, access_token);
+  NotifyFinish(OPERATION_COMPLETED);
+}
+
+// Callback for OAuth2AccessTokenFetcher on failure.
+void AuthOperation::OnGetTokenFailure(const GoogleServiceAuthError& error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  LOG(WARNING) << "AuthOperation: token request using refresh token failed: "
+               << error.ToString();
+
+  // There are many ways to fail, but if the failure is due to connection,
+  // it's likely that the device is off-line. We treat the error differently
+  // so that the file manager works while off-line.
+  if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED) {
+    UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess",
+                              kSuccessRatioHistogramNoConnection,
+                              kSuccessRatioHistogramMaxValue);
+    callback_.Run(GDATA_NO_CONNECTION, std::string());
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess",
+                              kSuccessRatioHistogramFailure,
+                              kSuccessRatioHistogramMaxValue);
+    callback_.Run(HTTP_UNAUTHORIZED, std::string());
+  }
+  NotifyFinish(OPERATION_FAILED);
+}
 
 void AuthService::Initialize(Profile* profile) {
   profile_ = profile;

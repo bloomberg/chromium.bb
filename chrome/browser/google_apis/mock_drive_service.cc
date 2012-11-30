@@ -62,13 +62,6 @@ void MockDriveService::set_search_result(
   search_result_ = test_util::LoadJSONFile(search_result_feed);
 }
 
-void MockDriveService::AuthenticateStub(
-    const AuthStatusCallback& callback) {
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, HTTP_SUCCESS, "my_auth_token"));
-}
-
 void MockDriveService::GetDocumentsStub(
     const GURL& feed_url,
     int64 start_changestamp,

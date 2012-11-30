@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/base_operations.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
@@ -46,16 +47,12 @@ class OperationRunner {
   // Cancels all in-flight operations.
   void CancelAll();
 
-  // Authenticates the user by fetching the auth token as needed. |callback|
-  // will be run with the error code and the auth token, on the thread this
-  // function is run.
-  void Authenticate(const AuthStatusCallback& callback);
-
   // Starts an operation implementing the AuthenticatedOperationInterface
   // interface, and makes the operation retry upon authentication failures by
   // calling back to RetryOperation.
   void StartOperationWithRetry(AuthenticatedOperationInterface* operation);
 
+ private:
   // Starts an operation implementing the AuthenticatedOperationInterface
   // interface.
   void StartOperation(AuthenticatedOperationInterface* operation);
@@ -70,7 +67,6 @@ class OperationRunner {
   // forces an authentication token refresh.
   void RetryOperation(AuthenticatedOperationInterface* operation);
 
- private:
   Profile* profile_;  // not owned
 
   scoped_ptr<AuthService> auth_service_;

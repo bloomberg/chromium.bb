@@ -39,11 +39,6 @@ void OperationRunner::CancelAll() {
   operation_registry_->CancelAll();
 }
 
-void OperationRunner::Authenticate(const AuthStatusCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  auth_service_->StartAuthentication(operation_registry_.get(), callback);
-}
-
 void OperationRunner::StartOperationWithRetry(
     AuthenticatedOperationInterface* operation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
