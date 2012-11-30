@@ -20,10 +20,6 @@ RulesRegistryWithCache::RulesRegistryWithCache(Delegate* delegate)
     : delegate_(delegate) {
 }
 
-void RulesRegistryWithCache::AddReadyCallback(const base::Closure& callback) {
-  ready_callbacks_.push_back(callback);
-}
-
 void RulesRegistryWithCache::OnReady() {
   for (size_t i = 0; i < ready_callbacks_.size(); ++i)
     ready_callbacks_[i].Run();
