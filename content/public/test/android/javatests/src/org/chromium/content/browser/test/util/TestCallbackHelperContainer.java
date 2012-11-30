@@ -23,6 +23,12 @@ public class TestCallbackHelperContainer {
         mTestWebContentsObserver = new TestWebContentsObserver(contentView.getContentViewCore());
     }
 
+    protected TestCallbackHelperContainer(
+            TestContentViewClient viewClient, TestWebContentsObserver contentsObserver) {
+        mTestContentViewClient = viewClient;
+        mTestWebContentsObserver = contentsObserver;
+    }
+
     public static class OnPageFinishedHelper extends CallbackHelper {
         private String mUrl;
         public void notifyCalled(String url) {
