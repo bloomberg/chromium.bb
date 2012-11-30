@@ -12,13 +12,11 @@
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
-#include "base/values.h"
 #include "chrome/browser/api/sync/profile_sync_service_observer.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -39,7 +37,6 @@ class UserManagerImpl : public UserManager,
   virtual ~UserManagerImpl();
 
   // UserManager implementation:
-  virtual void Shutdown() OVERRIDE;
   virtual UserImageManager* GetUserImageManager() OVERRIDE;
   virtual const UserList& GetUsers() const OVERRIDE;
   virtual void UserLoggedIn(const std::string& email,
@@ -71,7 +68,6 @@ class UserManagerImpl : public UserManager,
   virtual bool IsCurrentUserEphemeral() const OVERRIDE;
   virtual bool CanCurrentUserLock() const OVERRIDE;
   virtual bool IsUserLoggedIn() const OVERRIDE;
-  virtual bool IsLoggedInAsRegularUser() const OVERRIDE;
   virtual bool IsLoggedInAsDemoUser() const OVERRIDE;
   virtual bool IsLoggedInAsPublicAccount() const OVERRIDE;
   virtual bool IsLoggedInAsGuest() const OVERRIDE;
@@ -129,32 +125,13 @@ class UserManagerImpl : public UserManager,
   // Triggers an asynchronous ownership check.
   void CheckOwnership();
 
-  // Removes data stored or cached outside the user's cryptohome (wallpaper,
-  // avatar, OAuth token status, display name, display email).
-  void RemoveNonCryptohomeData(const std::string& email);
+  // Removes the user from the persistent list only. Also removes the user's
+  // picture.
+  void RemoveUserFromListInternal(const std::string& email);
 
-  // Removes a regular user from the user list. Returns the user if found or
-  // NULL otherwise. Also removes the user from the persistent regular user
-  // list.
-  User *RemoveRegularUserFromList(const std::string& email);
-
-  // Replaces the list of public accounts with |public_accounts|. Ensures that
-  // data belonging to accounts no longer on the list is removed. Returns |true|
-  // if the list has changed.
-  // Public accounts are defined by policy. This method is called whenever an
-  // updated list of public accounts is received from policy.
-  bool UpdateAndCleanUpPublicAccounts(const base::ListValue& public_accounts);
-
-  // Interface to the signed settings store.
-  CrosSettings* cros_settings_;
-
-  // True if users have been loaded from prefs already.
-  bool users_loaded_;
-
-  // List of all known users. User instances are owned by |this|. Regular users
-  // are removed by |RemoveUserFromList|, public accounts by
-  // |UpdateAndCleanUpPublicAccounts|.
-  UserList users_;
+  // List of all known users. User instances are owned by |this| and deleted
+  // when users are removed by |RemoveUserFromListInternal|.
+  mutable UserList users_;
 
   // The logged-in user. NULL until a user has logged in, then points to one
   // of the User instances in |users_|, the |guest_user_| instance or an
@@ -199,7 +176,6 @@ class UserManagerImpl : public UserManager,
 
   ObserverList<UserManager::Observer> observer_list_;
 
-  // User avatar manager.
   scoped_ptr<UserImageManagerImpl> user_image_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerImpl);

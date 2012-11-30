@@ -85,8 +85,7 @@ void DeviceSettingsService::Shutdown() {
                              pending_operations_.end());
   pending_operations_.clear();
 
-  if (session_manager_client_)
-    session_manager_client_->RemoveObserver(this);
+  session_manager_client_->RemoveObserver(this);
   session_manager_client_ = NULL;
   owner_key_util_ = NULL;
 }

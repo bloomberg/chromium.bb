@@ -62,10 +62,6 @@ class UserManager {
   // Registers user manager preferences.
   static void RegisterPrefs(PrefService* local_state);
 
-  // Indicates imminent shutdown, allowing the UserManager to remove any
-  // observers it has registered.
-  virtual void Shutdown() = 0;
-
   virtual ~UserManager();
 
   virtual UserImageManager* GetUserImageManager() = 0;

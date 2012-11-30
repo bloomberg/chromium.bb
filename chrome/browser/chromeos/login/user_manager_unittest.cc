@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/chromeos/settings/cros_settings_provider.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -81,14 +80,6 @@ class UserManagerTest : public testing::Test {
     cros_settings_->AddSettingsProvider(device_settings_provider_);
 
     UserManager::Set(old_user_manager_);
-
-    // Shut down the DeviceSettingsService.
-    DeviceSettingsService::Get()->Shutdown();
-
-    // Shut down the remaining UserManager instances.
-    if (user_manager_impl)
-      user_manager_impl->Shutdown();
-    UserManager::Get()->Shutdown();
   }
 
   bool GetUserManagerEphemeralUsersEnabled() const {
@@ -112,8 +103,6 @@ class UserManagerTest : public testing::Test {
   }
 
   void ResetUserManager() {
-    if (user_manager_impl)
-      user_manager_impl->Shutdown();
     user_manager_impl.reset(new UserManagerImpl());
     UserManager::Set(user_manager_impl.get());
   }
