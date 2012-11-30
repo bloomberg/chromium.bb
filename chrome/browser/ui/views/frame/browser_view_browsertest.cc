@@ -9,11 +9,10 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/view.h"
 
 using views::FocusManager;
-using views::View;
 
 typedef InProcessBrowserTest BrowserViewTest;
 
@@ -39,6 +38,8 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, MAYBE_FullscreenClearsFocus) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserViewTest, ImmersiveMode) {
+  ui::LayerAnimator::set_disable_animations_for_test(true);
+
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
   ImmersiveModeController* controller =
       browser_view->immersive_mode_controller();
@@ -56,15 +57,47 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, ImmersiveMode) {
   controller->SetEnabled(true);
   EXPECT_TRUE(controller->enabled());
   EXPECT_TRUE(controller->ShouldHideTopViews());
+  EXPECT_FALSE(controller->IsRevealed());
   EXPECT_TRUE(browser_view->tabstrip()->IsImmersiveStyle());
   EXPECT_TRUE(browser_view->IsTabStripVisible());
   EXPECT_FALSE(browser_view->IsToolbarVisible());
 
   // Trigger a reveal keeps us in immersive mode, but top-of-window views
   // become visible.
-  controller->RevealTopViews();
+  controller->StartRevealForTest();
   EXPECT_TRUE(controller->enabled());
   EXPECT_FALSE(controller->ShouldHideTopViews());
+  EXPECT_TRUE(controller->IsRevealed());
+  EXPECT_FALSE(browser_view->tabstrip()->IsImmersiveStyle());
+  EXPECT_TRUE(browser_view->IsTabStripVisible());
+  EXPECT_TRUE(browser_view->IsToolbarVisible());
+
+  // Ending a reveal keeps us in immersive mode, but toolbar goes invisible.
+  controller->EndRevealForTest();
+  EXPECT_TRUE(controller->enabled());
+  EXPECT_TRUE(controller->ShouldHideTopViews());
+  EXPECT_FALSE(controller->IsRevealed());
+  EXPECT_TRUE(browser_view->tabstrip()->IsImmersiveStyle());
+  EXPECT_TRUE(browser_view->IsTabStripVisible());
+  EXPECT_FALSE(browser_view->IsToolbarVisible());
+
+  // Disabling immersive mode puts us back to the beginning.
+  controller->SetEnabled(false);
+  EXPECT_FALSE(controller->enabled());
+  EXPECT_FALSE(controller->ShouldHideTopViews());
+  EXPECT_FALSE(controller->IsRevealed());
+  EXPECT_FALSE(browser_view->tabstrip()->IsImmersiveStyle());
+  EXPECT_TRUE(browser_view->IsTabStripVisible());
+  EXPECT_TRUE(browser_view->IsToolbarVisible());
+
+  // Disabling immersive mode while we are revealed should take us back to
+  // the beginning.
+  controller->SetEnabled(true);
+  controller->StartRevealForTest();
+  controller->SetEnabled(false);
+  EXPECT_FALSE(controller->enabled());
+  EXPECT_FALSE(controller->ShouldHideTopViews());
+  EXPECT_FALSE(controller->IsRevealed());
   EXPECT_FALSE(browser_view->tabstrip()->IsImmersiveStyle());
   EXPECT_TRUE(browser_view->IsTabStripVisible());
   EXPECT_TRUE(browser_view->IsToolbarVisible());

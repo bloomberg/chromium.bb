@@ -176,6 +176,10 @@ const int kNewtabBarRoundness = 5;
 
 // Returned from BrowserView::GetClassName.
 const char BrowserView::kViewClassName[] = "browser/ui/views/BrowserView";
+// static
+const int BrowserView::kTabstripIndex = 0;
+const int BrowserView::kInfoBarIndex = 1;
+const int BrowserView::kToolbarIndex = 2;
 
 namespace {
 
@@ -531,6 +535,9 @@ BrowserView::~BrowserView() {
   // TabstripModel, which is destroyed by the browser.
   launcher_item_controller_.reset();
 #endif
+
+  // Immersive mode may need to reparent views before they are removed/deleted.
+  immersive_mode_controller_.reset();
 
   preview_controller_.reset();
 
@@ -2162,19 +2169,19 @@ void BrowserView::Init() {
       new BrowserTabStripController(browser_.get(),
                                     browser_->tab_strip_model());
   tabstrip_ = new TabStrip(tabstrip_controller);
-  AddChildView(tabstrip_);
+  AddChildViewAt(tabstrip_, kTabstripIndex);
   tabstrip_controller->InitFromModel(tabstrip_);
 
   infobar_container_ = new InfoBarContainerView(this,
                                                 browser()->search_model());
-  AddChildView(infobar_container_);
+  AddChildViewAt(infobar_container_, kInfoBarIndex);
 
   contents_container_ = new views::WebView(browser_->profile());
   contents_container_->set_id(VIEW_ID_TAB_CONTAINER);
   contents_ = new ContentsContainer(contents_container_);
 
   toolbar_ = new ToolbarView(browser_.get());
-  AddChildView(toolbar_);
+  AddChildViewAt(toolbar_, kToolbarIndex);
   toolbar_->Init();
 
   preview_controller_.reset(

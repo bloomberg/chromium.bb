@@ -9,9 +9,11 @@
 #include "base/compiler_specific.h"
 #include "base/timer.h"
 #include "ui/base/events/event_handler.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/mouse_watcher.h"
 
 class BrowserView;
+class RevealView;
 
 namespace views {
 class MouseWatcher;
@@ -21,6 +23,7 @@ class MouseWatcher;
 // the top-of-window views are hidden until the mouse hits the top of the screen
 // and the tab strip is painted in a rectangular "light-bar" style.
 class ImmersiveModeController : public ui::EventHandler,
+                                public ui::ImplicitAnimationObserver,
                                 public views::MouseWatcherListener {
  public:
   explicit ImmersiveModeController(BrowserView* browser_view);
@@ -31,12 +34,9 @@ class ImmersiveModeController : public ui::EventHandler,
   bool enabled() const { return enabled_; }
 
   // True when we are hiding the top views due to immersive mode.
-  bool ShouldHideTopViews() const { return enabled_ && hide_top_views_; }
+  bool ShouldHideTopViews() const { return enabled_ && !revealed_; }
 
-  // Temporarily reveals the top-of-window views while in immersive mode,
-  // hiding them when the cursor exits the area of the top views.
-  // Visible for testing.
-  void RevealTopViews();
+  bool IsRevealed() const { return enabled_ && revealed_; }
 
   // ui::EventHandler overrides:
   virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
@@ -45,18 +45,47 @@ class ImmersiveModeController : public ui::EventHandler,
   virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
   virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
+  // ui::ImplicitAnimationObserver overrides:
+  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
+
   // views::MouseWatcherListener overrides:
   virtual void MouseMovedOutOfHost() OVERRIDE;
 
+  // Testing interface.
+  void StartRevealForTest();
+  void EndRevealForTest();
+
  private:
+  // Temporarily reveals the top-of-window views while in immersive mode,
+  // hiding them when the cursor exits the area of the top views.
+  void StartReveal();
+
+  // Slide in the reveal view.
+  void AnimateShowRevealView();
+
+  // Starts watching the mouse for when it leaves the RevealView.
+  void StartMouseWatcher();
+
+  // Hides the top-of-window views.
+  void EndReveal(bool animate);
+
+  // Slide out the reveal view. Deletes the view when complete.
+  void AnimateHideRevealView();
+
+  // Cleans up the reveal view when the slide-out completes.
+  void ResetRevealView();
+
   // Browser view holding the views to be shown and hidden. Not owned.
   BrowserView* browser_view_;
 
   // True when in immersive mode.
   bool enabled_;
 
-  // True when the top-of-window views are being hidden by immersive mode.
-  bool hide_top_views_;
+  // True when the top-of-window views are being shown in a temporary reveal.
+  bool revealed_;
+
+  // View holding the tabstrip and toolbar during a reveal.
+  scoped_ptr<RevealView> reveal_view_;
 
   // Timer to track cursor being held at the top.
   base::OneShotTimer<ImmersiveModeController> top_timer_;

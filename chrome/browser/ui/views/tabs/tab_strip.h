@@ -207,6 +207,9 @@ class TabStrip : public views::View,
   virtual views::View* GetEventHandlerForPoint(
       const gfx::Point& point) OVERRIDE;
 
+  // Returns preferred height in immersive style.
+  static int GetImmersiveHeight();
+
  protected:
   // Horizontal gap between mini and non-mini-tabs.
   static const int kMiniToNonMiniGap;

@@ -1156,6 +1156,8 @@ bool TabStrip::ShouldPaintTab(const Tab* tab, gfx::Rect* clip) {
 }
 
 void TabStrip::SetImmersiveStyle(bool enable) {
+  if (immersive_style_ == enable)
+    return;
   immersive_style_ = enable;
   if (immersive_style_) {
     // Dominant colors are only updated automatically when the tab strip is
@@ -1385,6 +1387,11 @@ views::View* TabStrip::GetEventHandlerForPoint(const gfx::Point& point) {
       return ConvertPointToViewAndGetEventHandler(this, tab, point);
   }
   return this;
+}
+
+// static
+int TabStrip::GetImmersiveHeight() {
+  return Tab::GetImmersiveHeight();
 }
 
 int TabStrip::GetMiniTabCount() const {

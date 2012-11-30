@@ -99,6 +99,10 @@ class BrowserView : public BrowserWindow,
  public:
   // The browser view's class name.
   static const char kViewClassName[];
+  // Initial child indices for well-known views.
+  static const int kTabstripIndex;
+  static const int kInfoBarIndex;
+  static const int kToolbarIndex;
 
   explicit BrowserView(Browser* browser);
   virtual ~BrowserView();
@@ -577,39 +581,37 @@ class BrowserView : public BrowserWindow,
 
   // BrowserView layout (LTR one is pictured here).
   //
-  // ----------------------------------------------------------------
-  // | Tabs (1)                                                     |
-  // |--------------------------------------------------------------|
-  // | Navigation buttons, menus and the address bar (toolbar_)     |
-  // |--------------------------------------------------------------|
-  // | All infobars (infobar_container_) *                          |
-  // |--------------------------------------------------------------|
-  // | Bookmarks (bookmark_bar_view_) *                             |
-  // |--------------------------------------------------------------|
-  // |Page content (contents_)                                     ||
-  // |-------------------------------------------------------------||
-  // || contents_container_ and/or                                |||
-  // || preview_controller_->preview_container_                   |||
-  // ||                                                           |||
-  // ||                                                           |||
-  // ||                                                           |||
-  // ||                                                           |||
-  // ||                                                           |||
-  // |-------------------------------------------------------------||
-  // |==(2)=========================================================|
-  // |                                                              |
-  // |                                                              |
-  // | Debugger (devtools_container_)                               |
-  // |                                                              |
-  // |                                                              |
-  // |--------------------------------------------------------------|
-  // | Active downloads (download_shelf_)                           |
-  // ----------------------------------------------------------------
+  // --------------------------------------------------------------------
+  // | Tabs (tabstrip_) [1]                                             |
+  // |------------------------------------------------------------------|
+  // | Navigation buttons, menus and the address bar (toolbar_) [1]     |
+  // |------------------------------------------------------------------|
+  // | All infobars (infobar_container_) [2]                            |
+  // |------------------------------------------------------------------|
+  // | Bookmarks (bookmark_bar_view_) [2]                               |
+  // |------------------------------------------------------------------|
+  // | Debugger splitter (contents_split_)                              |
+  // |  +------------------------------------------------------------+  |
+  // |  | Page content (contents_)                                   |  |
+  // |  |  +------------------------------------------------------+  |  |
+  // |  |  | contents_container_ and/or                           |  |  |
+  // |  |  | preview_controller_->preview_container_              |  |  |
+  // |  |  |                                                      |  |  |
+  // |  |  |                                                      |  |  |
+  // |  |  +------------------------------------------------------+  |  |
+  // |  +------------------------------------------------------------+  |
+  // |  +------------------------------------------------------------+  |
+  // |  | Debugger (devtools_container_)                             |  |
+  // |  |                                                            |  |
+  // |  +------------------------------------------------------------+  |
+  // |------------------------------------------------------------------|
+  // | Active downloads (download_shelf_)                               |
+  // --------------------------------------------------------------------
   //
-  // (1) - tabstrip_, default position
-  // (2) - contents_split_
-  //
-  // * - The bookmark bar and info bar are swapped when on the new tab page.
+  // [1] During an immersive mode reveal the tab strip and toolbar may be
+  //     reparented to a temporary view and may not be direct children of
+  //     this view.
+  // [2] The bookmark bar and info bar are swapped when on the new tab page.
   //     Additionally contents_ is positioned on top of the bookmark bar when
   //     the bookmark bar is detached. This is done to allow the
   //     preview_controller_->preview_container_ to appear over the bookmark

@@ -12,6 +12,8 @@
 class InfoBarContainerView : public views::AccessiblePaneView,
                              public InfoBarContainer {
  public:
+  static const char kViewClassName[];
+
   explicit InfoBarContainerView(Delegate* delegate,
                                 chrome::search::SearchModel* search_model);
   virtual ~InfoBarContainerView();
@@ -19,6 +21,7 @@ class InfoBarContainerView : public views::AccessiblePaneView,
  private:
   // AccessiblePaneView:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 

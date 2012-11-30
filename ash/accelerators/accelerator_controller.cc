@@ -280,15 +280,13 @@ bool HandlePrintLayerHierarchy() {
 }
 
 bool HandlePrintViewHierarchy() {
-  aura::Window* default_container =
-      Shell::GetPrimaryRootWindowController()->GetContainer(
-          internal::kShellWindowId_DefaultContainer);
-  if (default_container->children().empty())
+  aura::Window* active_window = ash::wm::GetActiveWindow();
+  if (!active_window)
     return true;
-  aura::Window* browser_frame = default_container->children()[0];
   views::Widget* browser_widget =
-      views::Widget::GetWidgetForNativeWindow(browser_frame);
-  views::PrintViewHierarchy(browser_widget->GetRootView());
+      views::Widget::GetWidgetForNativeWindow(active_window);
+  if (browser_widget)
+    views::PrintViewHierarchy(browser_widget->GetRootView());
   return true;
 }
 
