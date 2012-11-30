@@ -320,6 +320,9 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxUpOrDownKeyPressed,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxModeChanged,
                     chrome::search::Mode /* mode */)
 
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSetDisplayInstantResults,
+                    bool /* display_instant_results */)
+
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxThemeChanged,
                     ThemeBackgroundInfo /* value */)
 

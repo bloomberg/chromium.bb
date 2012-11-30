@@ -351,6 +351,13 @@ void InstantLoader::SendThemeAreaHeight(int height) {
       rvh->GetRoutingID(), height));
 }
 
+void InstantLoader::SetDisplayInstantResults(bool display_instant_results) {
+  content::RenderViewHost* rvh =
+      preview_contents_->web_contents()->GetRenderViewHost();
+  rvh->Send(new ChromeViewMsg_SearchBoxSetDisplayInstantResults(
+      rvh->GetRoutingID(), display_instant_results));
+}
+
 void InstantLoader::OnUpOrDownKeyPressed(int count) {
   content::RenderViewHost* rvh =
       preview_contents_->web_contents()->GetRenderViewHost();

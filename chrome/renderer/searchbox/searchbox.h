@@ -39,6 +39,7 @@ class SearchBox : public content::RenderViewObserver,
   size_t selection_end() const { return selection_end_; }
   int results_base() const { return results_base_; }
   const chrome::search::Mode& mode() const { return mode_; }
+  bool display_instant_results() const { return display_instant_results_; }
 
   gfx::Rect GetRect();
   const std::vector<InstantAutocompleteResult>& GetAutocompleteResults();
@@ -64,6 +65,7 @@ class SearchBox : public content::RenderViewObserver,
       const std::vector<InstantAutocompleteResult>& results);
   void OnUpOrDownKeyPressed(int count);
   void OnModeChanged(const chrome::search::Mode& mode);
+  void OnSetDisplayInstantResults(bool display_instant_results);
   void OnThemeChanged(const ThemeBackgroundInfo& theme_info);
   void OnThemeAreaHeightChanged(int height);
 
@@ -82,6 +84,7 @@ class SearchBox : public content::RenderViewObserver,
   chrome::search::Mode mode_;
   ThemeBackgroundInfo theme_info_;
   int theme_area_height_;
+  bool display_instant_results_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBox);
 };

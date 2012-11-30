@@ -80,6 +80,9 @@ class InstantLoader : public content::NotificationObserver {
   // Tells the preview page about the current theme area height.
   void SendThemeAreaHeight(int height);
 
+  // Tells the preview page whether it is allowed to display Instant results.
+  void SetDisplayInstantResults(bool display_instant_results);
+
   // Tells the preview page that the user pressed the up or down key. |count|
   // is a repeat count, negative for moving up, positive for moving down.
   void OnUpOrDownKeyPressed(int count);

@@ -17,7 +17,8 @@ SearchBox::SearchBox(content::RenderView* render_view)
       selection_end_(0),
       results_base_(0),
       last_results_base_(0),
-      theme_area_height_(0) {
+      theme_area_height_(0),
+      display_instant_results_(false) {
 }
 
 SearchBox::~SearchBox() {
@@ -101,6 +102,8 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
                         OnUpOrDownKeyPressed)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxModeChanged,
                         OnModeChanged)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxSetDisplayInstantResults,
+                        OnSetDisplayInstantResults)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxThemeChanged,
                         OnThemeChanged)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxThemeAreaHeightChanged,
@@ -188,6 +191,10 @@ void SearchBox::OnModeChanged(const chrome::search::Mode& mode) {
   }
 }
 
+void SearchBox::OnSetDisplayInstantResults(bool display_instant_results) {
+  display_instant_results_ = display_instant_results;
+}
+
 void SearchBox::OnThemeChanged(const ThemeBackgroundInfo& theme_info) {
   theme_info_ = theme_info;
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
@@ -215,4 +222,5 @@ void SearchBox::Reset() {
   mode_ = chrome::search::Mode();
   theme_info_ = ThemeBackgroundInfo();
   theme_area_height_ = 0;
+  display_instant_results_ = false;
 }

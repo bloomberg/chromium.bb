@@ -208,6 +208,10 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // Gets the current session context.
   static v8::Handle<v8::Value> GetContext(const v8::Arguments& args);
 
+  // Gets whether to display Instant results.
+  static v8::Handle<v8::Value> GetDisplayInstantResults(
+      const v8::Arguments& args);
+
   // Gets the background info of the theme currently adopted by browser.
   // Call only when overlay is showing NTP page.
   static v8::Handle<v8::Value> GetThemeBackgroundInfo(
@@ -275,6 +279,8 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(GetAutocompleteResults);
   if (name->Equals(v8::String::New("GetContext")))
     return v8::FunctionTemplate::New(GetContext);
+  if (name->Equals(v8::String::New("GetDisplayInstantResults")))
+    return v8::FunctionTemplate::New(GetDisplayInstantResults);
   if (name->Equals(v8::String::New("GetThemeBackgroundInfo")))
     return v8::FunctionTemplate::New(GetThemeBackgroundInfo);
   if (name->Equals(v8::String::New("GetThemeAreaHeight")))
@@ -428,6 +434,19 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetContext(
   return context;
 }
 
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetDisplayInstantResults(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return v8::Undefined();
+
+  bool display_instant_results =
+      SearchBox::Get(render_view)->display_instant_results();
+  DVLOG(1) << "GetDisplayInstantResults: " << display_instant_results;
+  return v8::Boolean::New(display_instant_results);
+}
+
+// static
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetThemeBackgroundInfo(
     const v8::Arguments& args) {
   DVLOG(1) << "GetThemeBackgroundInfo";
@@ -522,7 +541,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetThemeBackgroundInfo(
   return info;
 }
 
-
+// static
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetThemeAreaHeight(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();

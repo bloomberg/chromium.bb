@@ -30,6 +30,7 @@ if (!chrome.searchBox) {
     native function GetHeight();
     native function GetAutocompleteResults();
     native function GetContext();
+    native function GetDisplayInstantResults();
     native function GetThemeBackgroundInfo();
     native function GetThemeAreaHeight();
     native function NavigateContentWindow();
@@ -177,6 +178,7 @@ if (!chrome.searchBox) {
     this.__defineGetter__('height', GetHeight);
     this.__defineGetter__('nativeSuggestions', GetAutocompleteResultsWrapper);
     this.__defineGetter__('context', GetContext);
+    this.__defineGetter__('displayInstantResults', GetDisplayInstantResults);
     this.__defineGetter__('themeBackgroundInfo', GetThemeBackgroundInfo);
     this.__defineGetter__('themeAreaHeight', GetThemeAreaHeight);
     this.setSuggestions = function(text) {

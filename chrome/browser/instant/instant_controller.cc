@@ -551,9 +551,15 @@ void InstantController::ActiveTabChanged() {
 }
 
 void InstantController::SetInstantEnabled(bool instant_enabled) {
+  DVLOG(1) << "SetInstantEnabled: " << instant_enabled;
   instant_enabled_ = instant_enabled;
-  if (!extended_enabled_ && !instant_enabled_)
+  if (extended_enabled_) {
+    // Reset the loader whenever the Instant pref changes.
     DeleteLoader();
+    CreateDefaultLoader();
+  } else if (!instant_enabled_) {
+    DeleteLoader();
+  }
 }
 
 void InstantController::ThemeChanged(const ThemeBackgroundInfo& theme_info) {
@@ -702,9 +708,10 @@ bool InstantController::ResetLoader(const TemplateURL* template_url,
     loader_.reset(new InstantLoader(this, instant_url, active_tab));
     loader_->Init();
 
-    // Ensure the searchbox API has the correct theme-related info and context.
+    // Ensure the searchbox API has the correct initial state.
     if (extended_enabled_) {
       browser_->UpdateThemeInfoForPreview();
+      loader_->SetDisplayInstantResults(instant_enabled_);
       loader_->SearchModeChanged(search_mode_);
     }
 
@@ -816,13 +823,15 @@ void InstantController::Show(InstantShownReason reason,
   }
 
   // Show at 100% height except in the following cases:
+  // - Instant is disabled. In this case the page should only ever show
+  //   a dropdown and we should always accept its height.
   // - The page wants to hide (height=0).
   // - The page wants to show custom NTP content.
   // - The page is over a website other than search or an NTP, and is not
   //   already showing at 100% height.
   const bool is_full_height =
       model_.height() == 100 && model_.height_units() == INSTANT_SIZE_PERCENT;
-  if (height == 0 ||
+  if (height == 0 || !instant_enabled_ ||
       reason == INSTANT_SHOWN_CUSTOM_NTP_CONTENT ||
       (search_mode_.is_origin_default() && !is_full_height))
     model_.SetPreviewState(search_mode_, height, units);
