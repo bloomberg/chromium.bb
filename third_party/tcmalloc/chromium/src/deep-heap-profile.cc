@@ -245,18 +245,21 @@ int DeepHeapProfile::FillOrderedProfile(char raw_buffer[], int buffer_size) {
 
   // Allocate a list for mmap'ed regions.
   num_mmap_allocations_ = 0;
-  heap_profile_->mmap_address_map_->Iterate(CountMMap, this);
-  mmap_list_length_ = 0;
-  mmap_list_ = reinterpret_cast<MMapListEntry*>(heap_profile_->alloc_(
-      sizeof(MMapListEntry) * num_mmap_allocations_));
+  if (heap_profile_->mmap_address_map_) {
+    heap_profile_->mmap_address_map_->Iterate(CountMMap, this);
 
-  // Touch all the allocated pages.  Touching is required to avoid new page
-  // commitment while filling the list in SnapshotProcMaps.
-  for (int i = 0;
-       i < num_mmap_allocations_;
-       i += getpagesize() / 2 / sizeof(MMapListEntry))
-    mmap_list_[i].first_address = 0;
-  mmap_list_[num_mmap_allocations_ - 1].last_address = 0;
+    mmap_list_length_ = 0;
+    mmap_list_ = reinterpret_cast<MMapListEntry*>(heap_profile_->alloc_(
+        sizeof(MMapListEntry) * num_mmap_allocations_));
+
+    // Touch all the allocated pages.  Touching is required to avoid new page
+    // commitment while filling the list in SnapshotProcMaps.
+    for (int i = 0;
+         i < num_mmap_allocations_;
+         i += getpagesize() / 2 / sizeof(MMapListEntry))
+      mmap_list_[i].first_address = 0;
+    mmap_list_[num_mmap_allocations_ - 1].last_address = 0;
+  }
 
   stats_.SnapshotProcMaps(memory_residence_info_getter_, NULL, 0);
 
@@ -701,11 +704,13 @@ void DeepHeapProfile::GlobalStats::SnapshotAllocations(
                                                            deep_profile);
 
   // mmap allocations.
-  deep_profile->heap_profile_->mmap_address_map_->Iterate(RecordMMap,
-                                                          deep_profile);
-  std::sort(deep_profile->mmap_list_,
-            deep_profile->mmap_list_ + deep_profile->mmap_list_length_,
-            ByFirstAddress);
+  if (deep_profile->heap_profile_->mmap_address_map_) {
+    deep_profile->heap_profile_->mmap_address_map_->Iterate(RecordMMap,
+                                                            deep_profile);
+    std::sort(deep_profile->mmap_list_,
+              deep_profile->mmap_list_ + deep_profile->mmap_list_length_,
+              ByFirstAddress);
+  }
 }
 
 void DeepHeapProfile::GlobalStats::Unparse(TextBuffer* buffer) {
