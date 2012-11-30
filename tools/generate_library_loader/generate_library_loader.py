@@ -146,6 +146,7 @@ def main():
   parser.add_option('--output-h')
   parser.add_option('--header')
 
+  parser.add_option('--bundled-header')
   parser.add_option('--use-extern-c', action='store_true', default=False)
   parser.add_option('--link-directly', type=int, default=0)
 
@@ -190,7 +191,10 @@ def main():
       'unique_prefix': unique_prefix
     })
 
-  wrapped_header_include = '#include %s' % options.header
+  header = options.header
+  if options.link_directly == 0 and options.bundled_header:
+    header = options.bundled_header
+  wrapped_header_include = '#include %s\n' % header
 
   # Some libraries (e.g. libpci) have headers that cannot be included
   # without extern "C", otherwise they cause the link to fail.
