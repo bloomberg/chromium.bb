@@ -136,10 +136,6 @@ bool GestureEventFilter::ShouldForwardForTapDeferral(
         return ShouldHandleEventNow();
       }
       return false;
-    case WebInputEvent::GestureFlingStart:
-      fling_in_progress_ = true;
-      coalesced_gesture_events_.push_back(gesture_event);
-      return ShouldHandleEventNow();
     case WebInputEvent::GestureTapDown:
       // GestureTapDown is always paired with either a Tap, DoubleTap, LongPress
       // or TapCancel, so it should be impossible to have more than one
@@ -177,6 +173,8 @@ bool GestureEventFilter::ShouldForwardForTapDeferral(
       }
       coalesced_gesture_events_.push_back(gesture_event);
       return ShouldHandleEventNow();
+    case WebInputEvent::GestureFlingStart:
+      fling_in_progress_ = true;
     case WebInputEvent::GestureScrollBegin:
     case WebInputEvent::GesturePinchBegin:
       send_gtd_timer_.Stop();
