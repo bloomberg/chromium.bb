@@ -206,13 +206,17 @@ void Transform::ApplyPerspectiveDepth(double depth) {
 }
 
 void Transform::PreconcatTransform(const Transform& transform) {
-  if (!transform.matrix_.isIdentity()) {
+  if (matrix_.isIdentity()) {
+    matrix_ = transform.matrix_;
+  } else if (!transform.matrix_.isIdentity()) {
     matrix_.preConcat(transform.matrix_);
   }
 }
 
 void Transform::ConcatTransform(const Transform& transform) {
-  if (!transform.matrix_.isIdentity()) {
+  if (matrix_.isIdentity()) {
+    matrix_ = transform.matrix_;
+  } else if (!transform.matrix_.isIdentity()) {
     matrix_.postConcat(transform.matrix_);
   }
 }
@@ -222,6 +226,9 @@ bool Transform::IsIdentity() const {
 }
 
 bool Transform::IsIdentityOrTranslation() const {
+  if (matrix_.isIdentity())
+    return true;
+
   bool has_no_perspective = !matrix_.getDouble(3, 0) &&
                             !matrix_.getDouble(3, 1) &&
                             !matrix_.getDouble(3, 2) &&
@@ -242,6 +249,9 @@ bool Transform::IsIdentityOrTranslation() const {
 }
 
 bool Transform::IsScaleOrTranslation() const {
+  if (matrix_.isIdentity())
+    return true;
+
   bool has_no_perspective = !matrix_.getDouble(3, 0) &&
                             !matrix_.getDouble(3, 1) &&
                             !matrix_.getDouble(3, 2) &&
@@ -258,10 +268,11 @@ bool Transform::IsScaleOrTranslation() const {
 }
 
 bool Transform::HasPerspective() const {
-  return matrix_.getDouble(3, 0) ||
-         matrix_.getDouble(3, 1) ||
-         matrix_.getDouble(3, 2) ||
-         (matrix_.getDouble(3, 3) != 1);
+  return !matrix_.isIdentity() &&
+         (matrix_.getDouble(3, 0) ||
+          matrix_.getDouble(3, 1) ||
+          matrix_.getDouble(3, 2) ||
+          (matrix_.getDouble(3, 3) != 1));
 }
 
 bool Transform::IsInvertible() const {
@@ -271,7 +282,9 @@ bool Transform::IsInvertible() const {
 bool Transform::IsBackFaceVisible() const {
   // Compute whether a layer with a forward-facing normal of (0, 0, 1, 0)
   // would have its back face visible after applying the transform.
-  //
+  if (matrix_.isIdentity())
+    return false;
+
   // This is done by transforming the normal and seeing if the resulting z
   // value is positive or negative. However, note that transforming a normal
   // actually requires using the inverse-transpose of the original transform.
@@ -374,6 +387,9 @@ bool Transform::TransformPointReverse(Point3F& point) const {
 }
 
 void Transform::TransformRect(RectF* rect) const {
+  if (matrix_.isIdentity())
+    return;
+
   SkRect src = RectFToSkRect(*rect);
   const SkMatrix& matrix = matrix_;
   matrix.mapRect(&src);
@@ -381,9 +397,13 @@ void Transform::TransformRect(RectF* rect) const {
 }
 
 bool Transform::TransformRectReverse(RectF* rect) const {
+  if (matrix_.isIdentity())
+    return true;
+
   SkMatrix44 inverse;
   if (!matrix_.invert(&inverse))
     return false;
+
   const SkMatrix& matrix = inverse;
   SkRect src = RectFToSkRect(*rect);
   matrix.mapRect(&src);
@@ -414,18 +434,25 @@ bool Transform::Blend(const Transform& from, double progress) {
 }
 
 Transform Transform::operator*(const Transform& other) const {
+  if (matrix_.isIdentity())
+    return other;
+  if (other.matrix_.isIdentity())
+    return *this;
   Transform to_return;
   to_return.matrix_.setConcat(matrix_, other.matrix_);
   return to_return;
 }
 
 Transform& Transform::operator*=(const Transform& other) {
-  matrix_.preConcat(other.matrix_);
+  PreconcatTransform(other);
   return *this;
 }
 
 void Transform::TransformPointInternal(const SkMatrix44& xform,
                                        Point3F& point) const {
+  if (xform.isIdentity())
+    return;
+
   SkMScalar p[4] = {
     SkDoubleToMScalar(point.x()),
     SkDoubleToMScalar(point.y()),
@@ -444,6 +471,9 @@ void Transform::TransformPointInternal(const SkMatrix44& xform,
 
 void Transform::TransformPointInternal(const SkMatrix44& xform,
                                        Point& point) const {
+  if (xform.isIdentity())
+    return;
+
   SkMScalar p[4] = {
     SkDoubleToMScalar(point.x()),
     SkDoubleToMScalar(point.y()),
