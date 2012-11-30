@@ -724,7 +724,8 @@
         'test/chromedriver/synchronized_map_unittest.cc',
       ],
     },
-    # ChromeDriver2 tests that aren't run on the main buildbots.
+    # ChromeDriver2 tests that aren't run on the main buildbot. Available
+    # as an optional test type on trybots.
     {
       'target_name': 'chromedriver2_tests',
       'type': 'executable',
