@@ -225,6 +225,9 @@ class WebMediaPlayerAndroid
   // Whether media player needs to re-establish the surface texture peer.
   bool needs_establish_peer_;
 
+  // Whether the video size info is available.
+  bool has_size_info_;
+
   // Object for allocating stream textures.
   scoped_ptr<StreamTextureFactory> stream_texture_factory_;
 

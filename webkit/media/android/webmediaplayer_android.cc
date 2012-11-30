@@ -41,6 +41,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       is_playing_(false),
       needs_establish_peer_(true),
+      has_size_info_(false),
       stream_texture_factory_(factory) {
   main_loop_->AddDestructionObserver(this);
   if (manager_)
@@ -130,8 +131,8 @@ bool WebMediaPlayerAndroid::totalBytesKnown() {
 
 bool WebMediaPlayerAndroid::hasVideo() const {
   // If we have obtained video size information before, use it.
-  if (!natural_size_.isEmpty())
-    return true;
+  if (has_size_info_)
+    return !natural_size_.isEmpty();
 
   // TODO(qinmin): need a better method to determine whether the current media
   // content contains video. Android does not provide any function to do
@@ -323,6 +324,7 @@ void WebMediaPlayerAndroid::OnMediaError(int error_type) {
 }
 
 void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
+  has_size_info_ = true;
   if (natural_size_.width == width && natural_size_.height == height)
     return;
 
