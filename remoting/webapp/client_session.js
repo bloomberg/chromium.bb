@@ -109,6 +109,7 @@ remoting.ClientSession = function(hostJid, hostPublicKey, sharedSecret,
 // no corresponding plugin state transition.
 /** @enum {number} */
 remoting.ClientSession.State = {
+  CONNECTION_DROPPED: -4,  // Succeeded, but subsequently closed with an error.
   CREATED: -3,
   BAD_PLUGIN_VERSION: -2,
   UNKNOWN_PLUGIN_ERROR: -1,
@@ -553,10 +554,14 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
   // If connection errors are being suppressed from the logs, translate
   // FAILED to CLOSED here. This ensures that the duration is still logged.
   var state = this.state;
-  if (this.state == remoting.ClientSession.State.FAILED &&
-      !this.logErrors_) {
-    console.log('Suppressing error.');
-    state = remoting.ClientSession.State.CLOSED;
+  if (this.state == remoting.ClientSession.State.FAILED) {
+    if (oldState == remoting.ClientSession.State.CONNECTING &&
+        !this.logErrors_) {
+      console.log('Suppressing error.');
+      state = remoting.ClientSession.State.CLOSED;
+    } else if (oldState == remoting.ClientSession.State.CONNECTED) {
+      state = remoting.ClientSession.State.CONNECTION_DROPPED;
+    }
   }
   this.logToServer.logClientSessionStateChange(state, this.error, this.mode);
 };

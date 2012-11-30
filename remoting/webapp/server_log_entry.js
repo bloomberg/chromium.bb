@@ -62,6 +62,8 @@ remoting.ServerLogEntry.getValueForSessionState = function(state) {
       return 'closed';
     case remoting.ClientSession.State.FAILED:
       return 'connection-failed';
+    case remoting.ClientSession.State.CONNECTION_DROPPED:
+      return 'connection-dropped';
     default:
       return 'undefined-' + state;
   }
