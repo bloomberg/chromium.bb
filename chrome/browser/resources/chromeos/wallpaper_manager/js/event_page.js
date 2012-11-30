@@ -17,7 +17,11 @@ chrome.app.runtime.onLaunched.addListener(function() {
   chrome.app.window.create('main.html', {
     frame: 'chrome',
     width: WALLPAPER_PICKER_WIDTH,
-    height: WALLPAPER_PICKER_HEIGHT
+    height: WALLPAPER_PICKER_HEIGHT,
+    minWidth: WALLPAPER_PICKER_WIDTH,
+    maxWidth: WALLPAPER_PICKER_WIDTH,
+    minHeight: WALLPAPER_PICKER_HEIGHT,
+    maxHeight: WALLPAPER_PICKER_HEIGHT
   }, function(w) {
     wallpaperPickerWindow = w;
     chrome.wallpaperPrivate.minimizeInactiveWindows();
