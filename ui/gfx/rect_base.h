@@ -145,12 +145,15 @@ class UI_EXPORT RectBase {
   bool SharesEdgeWith(const Class& rect) const;
 
  protected:
-  RectBase(const PointClass& origin, const SizeClass& size);
-  explicit RectBase(const SizeClass& size);
-  explicit RectBase(const PointClass& origin);
+  RectBase(const PointClass& origin, const SizeClass& size)
+      : origin_(origin), size_(size) {}
+  explicit RectBase(const SizeClass& size)
+      : size_(size) {}
+  explicit RectBase(const PointClass& origin)
+      : origin_(origin) {}
   // Destructor is intentionally made non virtual and protected.
   // Do not make this public.
-  ~RectBase();
+  ~RectBase() {}
 
  private:
   PointClass origin_;

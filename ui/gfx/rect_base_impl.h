@@ -34,48 +34,6 @@ template<typename Class,
          typename InsetsClass,
          typename VectorClass,
          typename Type>
-RectBase<Class, PointClass, SizeClass, InsetsClass, VectorClass, Type>::
-    RectBase(const PointClass& origin, const SizeClass& size)
-    : origin_(origin), size_(size) {
-}
-
-template<typename Class,
-         typename PointClass,
-         typename SizeClass,
-         typename InsetsClass,
-         typename VectorClass,
-         typename Type>
-RectBase<Class, PointClass, SizeClass, InsetsClass, VectorClass, Type>::
-    RectBase(const SizeClass& size)
-    : size_(size) {
-}
-
-template<typename Class,
-         typename PointClass,
-         typename SizeClass,
-         typename InsetsClass,
-         typename VectorClass,
-         typename Type>
-RectBase<Class, PointClass, SizeClass, InsetsClass, VectorClass, Type>::
-    RectBase(const PointClass& origin)
-    : origin_(origin) {
-}
-
-template<typename Class,
-         typename PointClass,
-         typename SizeClass,
-         typename InsetsClass,
-         typename VectorClass,
-         typename Type>
-RectBase<Class, PointClass, SizeClass, InsetsClass, VectorClass, Type>::
-    ~RectBase() {}
-
-template<typename Class,
-         typename PointClass,
-         typename SizeClass,
-         typename InsetsClass,
-         typename VectorClass,
-         typename Type>
 void RectBase<Class, PointClass, SizeClass, InsetsClass, VectorClass, Type>::
     SetRect(Type x, Type y, Type width, Type height) {
   origin_.SetPoint(x, y);
