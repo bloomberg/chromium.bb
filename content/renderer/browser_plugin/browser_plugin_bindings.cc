@@ -396,11 +396,9 @@ class BrowserPluginPropertyBinding {
     return WebBindings::getStringIdentifier(name_.c_str()) == name;
   }
   virtual bool GetProperty(BrowserPluginBindings* bindings,
-                           NPIdentifier name,
                            NPVariant* result) = 0;
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
-                           NPIdentifier name,
                            const NPVariant* variant) = 0;
  private:
   std::string name_;
@@ -415,7 +413,6 @@ class BrowserPluginPropertyBindingAutoSize
       BrowserPluginPropertyBinding(kAttributeAutoSize) {
   }
   virtual bool GetProperty(BrowserPluginBindings* bindings,
-                           NPIdentifier name,
                            NPVariant* result) OVERRIDE {
     bool autosize = bindings->instance()->auto_size_attribute();
     BOOLEAN_TO_NPVARIANT(autosize, *result);
@@ -423,7 +420,6 @@ class BrowserPluginPropertyBindingAutoSize
   }
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
-                           NPIdentifier name,
                            const NPVariant* variant) OVERRIDE {
     bool autosize = NPVARIANT_TO_BOOLEAN(*variant);
     bindings->instance()->SetAutoSizeAttribute(autosize);
@@ -440,7 +436,6 @@ class BrowserPluginPropertyBindingContentWindow
       BrowserPluginPropertyBinding(kAttributeContentWindow) {
   }
   virtual bool GetProperty(BrowserPluginBindings* bindings,
-                           NPIdentifier name,
                            NPVariant* result) OVERRIDE {
     NPObject* obj = bindings->instance()->GetContentWindow();
     if (obj) {
@@ -451,7 +446,6 @@ class BrowserPluginPropertyBindingContentWindow
   }
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
-                           NPIdentifier name,
                            const NPVariant* variant) OVERRIDE {
     return false;
   }
@@ -466,7 +460,6 @@ class BrowserPluginPropertyBindingMaxHeight
       BrowserPluginPropertyBinding(kAttributeMaxHeight) {
   }
   virtual bool GetProperty(BrowserPluginBindings* bindings,
-                           NPIdentifier name,
                            NPVariant* result) OVERRIDE {
     int max_height = bindings->instance()->max_height_attribute();
     INT32_TO_NPVARIANT(max_height, *result);
@@ -474,7 +467,6 @@ class BrowserPluginPropertyBindingMaxHeight
   }
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
-                           NPIdentifier name,
                            const NPVariant* variant) OVERRIDE {
     int max_height = Int32FromNPVariant(*variant);
     bindings->instance()->SetMaxHeightAttribute(max_height);
@@ -491,7 +483,6 @@ class BrowserPluginPropertyBindingMaxWidth
       BrowserPluginPropertyBinding(kAttributeMaxWidth) {
   }
   virtual bool GetProperty(BrowserPluginBindings* bindings,
-                           NPIdentifier name,
                            NPVariant* result) OVERRIDE {
     int max_width = bindings->instance()->max_width_attribute();
     INT32_TO_NPVARIANT(max_width, *result);
@@ -499,7 +490,6 @@ class BrowserPluginPropertyBindingMaxWidth
   }
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
-                           NPIdentifier name,
                            const NPVariant* variant) OVERRIDE {
     int max_width = Int32FromNPVariant(*variant);
     bindings->instance()->SetMaxWidthAttribute(max_width);
@@ -516,7 +506,6 @@ class BrowserPluginPropertyBindingMinHeight
       BrowserPluginPropertyBinding(kAttributeMinHeight) {
   }
   virtual bool GetProperty(BrowserPluginBindings* bindings,
-                           NPIdentifier name,
                            NPVariant* result) OVERRIDE {
     int min_height = bindings->instance()->min_height_attribute();
     INT32_TO_NPVARIANT(min_height, *result);
@@ -524,7 +513,6 @@ class BrowserPluginPropertyBindingMinHeight
   }
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
-                           NPIdentifier name,
                            const NPVariant* variant) OVERRIDE {
     int min_height = Int32FromNPVariant(*variant);
     bindings->instance()->SetMinHeightAttribute(min_height);
@@ -541,7 +529,6 @@ class BrowserPluginPropertyBindingMinWidth
       BrowserPluginPropertyBinding(kAttributeMinWidth) {
   }
   virtual bool GetProperty(BrowserPluginBindings* bindings,
-                           NPIdentifier name,
                            NPVariant* result) OVERRIDE {
     int min_width = bindings->instance()->min_width_attribute();
     INT32_TO_NPVARIANT(min_width, *result);
@@ -549,7 +536,6 @@ class BrowserPluginPropertyBindingMinWidth
   }
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
-                           NPIdentifier name,
                            const NPVariant* variant) OVERRIDE {
     int min_width = Int32FromNPVariant(*variant);
     bindings->instance()->SetMinWidthAttribute(min_width);
@@ -566,14 +552,12 @@ class BrowserPluginPropertyBindingPartition
       BrowserPluginPropertyBinding(kAttributePartition) {
   }
   virtual bool GetProperty(BrowserPluginBindings* bindings,
-                           NPIdentifier name,
                            NPVariant* result) OVERRIDE {
     std::string partition_id = bindings->instance()->GetPartitionAttribute();
     return StringToNPVariant(partition_id, result);
   }
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
-                           NPIdentifier name,
                            const NPVariant* variant) OVERRIDE {
     std::string partition_id = StringFromNPVariant(*variant);
     std::string error_message;
@@ -595,14 +579,12 @@ class BrowserPluginPropertyBindingSrc : public BrowserPluginPropertyBinding {
       BrowserPluginPropertyBinding(kAttributeSrc) {
   }
   virtual bool GetProperty(BrowserPluginBindings* bindings,
-                           NPIdentifier name,
                            NPVariant* result) OVERRIDE {
     std::string src = bindings->instance()->src_attribute();
     return StringToNPVariant(src, result);
   }
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
-                           NPIdentifier name,
                            const NPVariant* variant) OVERRIDE {
     std::string src = StringFromNPVariant(*variant);
     std::string error_message;
@@ -699,7 +681,7 @@ bool BrowserPluginBindings::SetProperty(NPObject* np_obj,
        iter != property_bindings_.end();
        ++iter) {
     if ((*iter)->MatchesName(name))
-      return (*iter)->SetProperty(this, np_obj, name, variant);
+      return (*iter)->SetProperty(this, np_obj, variant);
   }
   return false;
 }
@@ -709,7 +691,7 @@ bool BrowserPluginBindings::GetProperty(NPIdentifier name, NPVariant* result) {
        iter != property_bindings_.end();
        ++iter) {
     if ((*iter)->MatchesName(name))
-      return (*iter)->GetProperty(this, name, result);
+      return (*iter)->GetProperty(this, result);
   }
   return false;
 }
