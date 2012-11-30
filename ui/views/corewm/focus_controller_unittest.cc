@@ -267,7 +267,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     ActivateWindowById(2);
     EXPECT_EQ(2, GetActiveWindowId());
     DeactivateWindow(GetActiveWindow());
-    EXPECT_EQ(3, GetActiveWindowId());
+    EXPECT_EQ(1, GetActiveWindowId());
   }
   virtual void FocusEvents() OVERRIDE {
     FocusEventsTestHandler handler(root_window()->GetChildById(1));

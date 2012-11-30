@@ -779,8 +779,6 @@ Window* Window::GetWindowForPoint(const gfx::Point& local_point,
 }
 
 void Window::RemoveChildImpl(Window* child, Window* new_parent) {
-  Windows::iterator i = std::find(children_.begin(), children_.end(), child);
-  DCHECK(i != children_.end());
   if (layout_manager_.get())
     layout_manager_->OnWillRemoveWindowFromLayout(child);
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWillRemoveWindow(child));
@@ -796,6 +794,8 @@ void Window::RemoveChildImpl(Window* child, Window* new_parent) {
   // expect the hierarchy to go unchanged as the Window is destroyed.
   if (child->layer_owner_.get())
     layer_->Remove(child->layer_);
+  Windows::iterator i = std::find(children_.begin(), children_.end(), child);
+  DCHECK(i != children_.end());
   children_.erase(i);
   child->OnParentChanged();
   if (layout_manager_.get())

@@ -5,6 +5,7 @@
 #include "ui/views/corewm/focus_controller.h"
 
 #include "base/auto_reset.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/views/corewm/focus_change_event.h"
 #include "ui/views/corewm/focus_rules.h"
@@ -13,12 +14,27 @@ namespace views {
 namespace corewm {
 namespace {
 
+// When a modal window is activated, we bring its entire transient parent chain
+// to the front. This function must be called before the modal transient is
+// stacked at the top to ensure correct stacking order.
+void StackTransientParentsBelowModalWindow(aura::Window* window) {
+  if (window->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_WINDOW)
+    return;
+
+  aura::Window* transient_parent = window->transient_parent();
+  while (transient_parent) {
+    transient_parent->parent()->StackChildAtTop(transient_parent);
+    transient_parent = transient_parent->transient_parent();
+  }
+}
+
 // Updates focused window state and dispatches changing/changed events.
 void DispatchEventsAndUpdateState(ui::EventDispatcher* dispatcher,
                                   int changing_event_type,
                                   int changed_event_type,
                                   aura::Window** state,
                                   aura::Window* new_state,
+                                  bool restack,
                                   ui::EventTarget** event_dispatch_target) {
   int result = ui::ER_UNHANDLED;
   {
@@ -30,6 +46,11 @@ void DispatchEventsAndUpdateState(ui::EventDispatcher* dispatcher,
       << "Focus and Activation events cannot be consumed";
 
   *state = new_state;
+
+  if (restack && new_state) {
+    StackTransientParentsBelowModalWindow(new_state);
+    new_state->parent()->StackChildAtTop(new_state);
+  }
 
   {
     base::AutoReset<ui::EventTarget*> reset(event_dispatch_target, *state);
@@ -183,6 +204,7 @@ void FocusController::SetFocusedWindow(aura::Window* window) {
       FocusChangeEvent::focus_changed_event_type(),
       &focused_window_,
       window,
+      /* restack */ false,
       &event_dispatch_target_);
 }
 
@@ -198,6 +220,7 @@ void FocusController::SetActiveWindow(aura::Window* window) {
       FocusChangeEvent::activation_changed_event_type(),
       &active_window_,
       window,
+      /* restack */ true,
       &event_dispatch_target_);
 }
 
