@@ -14,12 +14,6 @@ namespace gfx {
 
 template class PointBase<Point, int, Vector2d>;
 
-Point::Point() : PointBase<Point, int, Vector2d>(0, 0) {
-}
-
-Point::Point(int x, int y) : PointBase<Point, int, Vector2d>(x, y) {
-}
-
 #if defined(OS_WIN)
 Point::Point(DWORD point) : PointBase<Point, int, Vector2d>(0, 0){
   POINTS points = MAKEPOINTS(point);

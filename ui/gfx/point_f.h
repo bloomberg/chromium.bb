@@ -16,9 +16,9 @@ namespace gfx {
 // A floating version of gfx::Point.
 class UI_EXPORT PointF : public PointBase<PointF, float, Vector2dF> {
  public:
-  PointF();
-  PointF(float x, float y);
-  ~PointF();
+  PointF() : PointBase<PointF, float, Vector2dF>(0, 0) {}
+  PointF(float x, float y) : PointBase<PointF, float, Vector2dF>(x, y) {}
+  ~PointF() {}
 
   void Scale(float scale) {
     Scale(scale, scale);

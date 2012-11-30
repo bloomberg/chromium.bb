@@ -11,15 +11,6 @@ namespace gfx {
 
 template class SizeBase<SizeF, float>;
 
-SizeF::SizeF() : SizeBase<SizeF, float>(0, 0) {}
-
-SizeF::SizeF(float width, float height) : SizeBase<SizeF, float>(0, 0) {
-  set_width(width);
-  set_height(height);
-}
-
-SizeF::~SizeF() {}
-
 std::string SizeF::ToString() const {
   return base::StringPrintf("%fx%f", width(), height());
 }

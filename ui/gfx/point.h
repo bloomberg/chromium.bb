@@ -24,8 +24,8 @@ namespace gfx {
 // A point has an x and y coordinate.
 class UI_EXPORT Point : public PointBase<Point, int, Vector2d> {
  public:
-  Point();
-  Point(int x, int y);
+  Point() : PointBase<Point, int, Vector2d>(0, 0) {}
+  Point(int x, int y) : PointBase<Point, int, Vector2d>(x, y) {}
 #if defined(OS_WIN)
   // |point| is a DWORD value that contains a coordinate.  The x-coordinate is
   // the low-order short and the y-coordinate is the high-order short.  This

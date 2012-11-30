@@ -16,13 +16,6 @@ namespace gfx {
 
 template class SizeBase<Size, int>;
 
-Size::Size() : SizeBase<Size, int>(0, 0) {}
-
-Size::Size(int width, int height) : SizeBase<Size, int>(0, 0) {
-  set_width(width);
-  set_height(height);
-}
-
 #if defined(OS_MACOSX)
 Size::Size(const CGSize& s) : SizeBase<Size, int>(0, 0) {
   set_width(s.width);
@@ -35,8 +28,6 @@ Size& Size::operator=(const CGSize& s) {
   return *this;
 }
 #endif
-
-Size::~Size() {}
 
 #if defined(OS_WIN)
 SIZE Size::ToSIZE() const {

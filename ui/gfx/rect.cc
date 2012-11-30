@@ -23,27 +23,6 @@ template class RectBase<Rect, Point, Size, Insets, Vector2d, int>;
 
 typedef class RectBase<Rect, Point, Size, Insets, Vector2d, int> RectBaseT;
 
-Rect::Rect() : RectBaseT(gfx::Point()) {
-}
-
-Rect::Rect(int width, int height)
-    : RectBaseT(gfx::Size(width, height)) {
-}
-
-Rect::Rect(int x, int y, int width, int height)
-    : RectBaseT(gfx::Point(x, y), gfx::Size(width, height)) {
-}
-
-Rect::Rect(const gfx::Size& size)
-    : RectBaseT(size) {
-}
-
-Rect::Rect(const gfx::Point& origin, const gfx::Size& size)
-    : RectBaseT(origin, size) {
-}
-
-Rect::~Rect() {}
-
 #if defined(OS_WIN)
 Rect::Rect(const RECT& r)
     : RectBaseT(gfx::Point(r.left, r.top)) {

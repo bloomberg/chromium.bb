@@ -19,27 +19,6 @@ template class RectBase<RectF, PointF, SizeF, InsetsF, Vector2dF, float>;
 typedef class RectBase<RectF, PointF, SizeF, InsetsF, Vector2dF,
                        float> RectBaseT;
 
-RectF::RectF() : RectBaseT(gfx::SizeF()) {
-}
-
-RectF::RectF(float width, float height)
-    : RectBaseT(gfx::SizeF(width, height)) {
-}
-
-RectF::RectF(float x, float y, float width, float height)
-    : RectBaseT(gfx::PointF(x, y), gfx::SizeF(width, height)) {
-}
-
-RectF::RectF(const gfx::SizeF& size)
-    : RectBaseT(size) {
-}
-
-RectF::RectF(const gfx::PointF& origin, const gfx::SizeF& size)
-    : RectBaseT(origin, size) {
-}
-
-RectF::~RectF() {}
-
 bool RectF::IsExpressibleAsRect() const {
   return IsExpressibleAsInt(x()) && IsExpressibleAsInt(y()) &&
       IsExpressibleAsInt(width()) && IsExpressibleAsInt(height()) &&
