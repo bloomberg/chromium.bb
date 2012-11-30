@@ -432,7 +432,7 @@ uint16 KeyEvent::GetUnmodifiedCharacter() const {
 #endif
 }
 
-KeyEvent* KeyEvent::Copy() {
+KeyEvent* KeyEvent::Copy() const {
   KeyEvent* copy = new KeyEvent(::CopyNativeEvent(native_event()), is_char());
 #if defined(USE_X11)
   copy->set_delete_native_event(true);

@@ -507,7 +507,7 @@ class UI_EXPORT KeyEvent : public Event {
   uint16 GetUnmodifiedCharacter() const;
 
   // Returns the copy of this key event. Used in NativeWebKeyboardEvent.
-  KeyEvent* Copy();
+  KeyEvent* Copy() const;
 
   KeyboardCode key_code() const { return key_code_; }
   bool is_char() const { return is_char_; }
