@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_ANDROID_PHONE_NUMBER_DETECTOR_H_
 
 #include "base/compiler_specific.h"
+#include "content/common/content_export.h"
 #include "content/renderer/android/content_detector.h"
 
 namespace content {
@@ -13,7 +14,7 @@ namespace content {
 class PhoneNumberDetectorTest;
 
 // Finds a telephone number in the given content text string.
-class PhoneNumberDetector : public ContentDetector {
+class CONTENT_EXPORT PhoneNumberDetector : public ContentDetector {
  public:
   PhoneNumberDetector();
   explicit PhoneNumberDetector(const std::string& region);

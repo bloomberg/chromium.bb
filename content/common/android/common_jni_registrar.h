@@ -7,11 +7,13 @@
 
 #include <jni.h>
 
+#include "content/common/content_export.h"
+
 namespace content {
 namespace android {
 
 // Register all JNI bindings necessary for content browser.
-bool RegisterCommonJni(JNIEnv* env);
+CONTENT_EXPORT bool RegisterCommonJni(JNIEnv* env);
 
 }  // namespace android
 }  // namespace content

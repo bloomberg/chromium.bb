@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/string_tokenizer.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
@@ -16,7 +17,8 @@ namespace address_parser {
 // Internal classes and functions for address parsing.
 namespace internal {
 
-struct Word {
+// Exposed for tests.
+struct CONTENT_EXPORT Word {
   string16::const_iterator begin;
   string16::const_iterator end;
 
@@ -25,7 +27,8 @@ struct Word {
        const string16::const_iterator& end);
 };
 
-class HouseNumberParser {
+// Exposed for tests.
+class CONTENT_EXPORT HouseNumberParser {
  public:
   HouseNumberParser() {}
 
@@ -63,15 +66,16 @@ typedef std::vector<Word> WordList;
 typedef StringTokenizerT<string16, string16::const_iterator>
     String16Tokenizer;
 
-bool FindStateStartingInWord(WordList* words,
-                             size_t state_first_word,
-                             size_t* state_last_word,
-                             String16Tokenizer* tokenizer,
-                             size_t* state_index);
+// These are exposed for tests.
+CONTENT_EXPORT bool FindStateStartingInWord(WordList* words,
+                                            size_t state_first_word,
+                                            size_t* state_last_word,
+                                            String16Tokenizer* tokenizer,
+                                            size_t* state_index);
 
-bool IsValidLocationName(const Word& word);
-bool IsZipValid(const Word& word, size_t state_index);
-bool IsZipValidForState(const Word& word, size_t state_index);
+CONTENT_EXPORT bool IsValidLocationName(const Word& word);
+CONTENT_EXPORT bool IsZipValid(const Word& word, size_t state_index);
+CONTENT_EXPORT bool IsZipValidForState(const Word& word, size_t state_index);
 
 }  // namespace internal
 

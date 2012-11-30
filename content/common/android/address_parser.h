@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_ADDRESS_PARSER_H_
 
 #include "base/string16.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
@@ -22,10 +23,10 @@ bool FindAddress(const string16& text, string16* address);
 // position to search from, |end| is the position to search to.  |start_pos|
 // and |end_pos| are set to the starting and ending position of the address,
 // if found.
-bool FindAddress(const string16::const_iterator& begin,
-                 const string16::const_iterator& end,
-                 size_t* start_pos,
-                 size_t* end_pos);
+CONTENT_EXPORT bool FindAddress(const string16::const_iterator& begin,
+                                const string16::const_iterator& end,
+                                size_t* start_pos,
+                                size_t* end_pos);
 
 }  // namespace address_parser
 
