@@ -26,6 +26,8 @@ namespace net {
 class URLRequest;
 }
 
+class InputStreamReaderWrapper;
+
 // A request job that reads data from a Java InputStream.
 class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
  public:
@@ -42,13 +44,13 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
     virtual bool GetMimeType(
         JNIEnv* env,
         net::URLRequest* request,
-        const android_webview::InputStream& stream,
+        android_webview::InputStream* stream,
         std::string* mime_type) = 0;
 
     virtual bool GetCharset(
         JNIEnv* env,
         net::URLRequest* request,
-        const android_webview::InputStream& stream,
+        android_webview::InputStream* stream,
         std::string* charset) = 0;
 
     virtual ~Delegate() {}
@@ -79,7 +81,7 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
 
   // Creates an InputStreamReader instance.
   // Overridden in unittests to return a mock.
-  virtual scoped_refptr<android_webview::InputStreamReader>
+  virtual scoped_ptr<android_webview::InputStreamReader>
       CreateStreamReader(android_webview::InputStream* stream);
 
  private:
@@ -90,8 +92,7 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
 
   net::HttpByteRange byte_range_;
   scoped_ptr<Delegate> delegate_;
-  scoped_refptr<android_webview::InputStreamReader> input_stream_reader_;
-  scoped_ptr<android_webview::InputStream> stream_;
+  scoped_refptr<InputStreamReaderWrapper> input_stream_reader_wrapper_;
   base::WeakPtrFactory<AndroidStreamReaderURLRequestJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidStreamReaderURLRequestJob);

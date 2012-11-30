@@ -54,12 +54,12 @@ class AndroidStreamReaderURLRequestJobDelegateImpl
 
   virtual bool GetMimeType(JNIEnv* env,
                            net::URLRequest* request,
-                           const InputStream& stream,
+                           InputStream* stream,
                            std::string* mime_type) OVERRIDE;
 
   virtual bool GetCharset(JNIEnv* env,
                           net::URLRequest* request,
-                          const InputStream& stream,
+                          InputStream* stream,
                           std::string* charset) OVERRIDE;
 
   virtual ~AndroidStreamReaderURLRequestJobDelegateImpl();
@@ -151,7 +151,7 @@ AndroidStreamReaderURLRequestJobDelegateImpl::OpenInputStream(
 bool AndroidStreamReaderURLRequestJobDelegateImpl::GetMimeType(
     JNIEnv* env,
     net::URLRequest* request,
-    const android_webview::InputStream& stream,
+    android_webview::InputStream* stream,
     std::string* mime_type) {
   DCHECK(env);
   DCHECK(request);
@@ -162,7 +162,7 @@ bool AndroidStreamReaderURLRequestJobDelegateImpl::GetMimeType(
   ScopedJavaLocalRef<jstring> url =
       ConvertUTF8ToJavaString(env, request->url().spec());
   const InputStreamImpl* stream_impl =
-      InputStreamImpl::FromInputStream(&stream);
+      InputStreamImpl::FromInputStream(stream);
   ScopedJavaLocalRef<jstring> returned_type =
       android_webview::Java_AndroidProtocolHandler_getMimeType(
           env,
@@ -178,7 +178,7 @@ bool AndroidStreamReaderURLRequestJobDelegateImpl::GetMimeType(
 bool AndroidStreamReaderURLRequestJobDelegateImpl::GetCharset(
     JNIEnv* env,
     net::URLRequest* request,
-    const android_webview::InputStream& stream,
+    android_webview::InputStream* stream,
     std::string* charset) {
   // TODO: We should probably be getting this from the managed side.
   return false;

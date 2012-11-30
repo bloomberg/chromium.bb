@@ -76,7 +76,7 @@ class StreamReaderDelegate :
   virtual bool GetMimeType(
       JNIEnv* env,
       net::URLRequest* request,
-      const android_webview::InputStream& stream,
+      android_webview::InputStream* stream,
       std::string* mime_type) {
     return false;
   }
@@ -84,7 +84,7 @@ class StreamReaderDelegate :
   virtual bool GetCharset(
       JNIEnv* env,
       net::URLRequest* request,
-      const android_webview::InputStream& stream,
+      android_webview::InputStream* stream,
       std::string* charset) {
     return false;
   }
@@ -93,12 +93,10 @@ class StreamReaderDelegate :
 class MockInputStreamReader : public InputStreamReader {
  public:
   MockInputStreamReader() : InputStreamReader(new NotImplInputStream()) {}
+  ~MockInputStreamReader() {}
 
   MOCK_METHOD1(Seek, int(const net::HttpByteRange& byte_range));
-
   MOCK_METHOD2(ReadRawData, int(net::IOBuffer* buffer, int buffer_size));
- protected:
-  ~MockInputStreamReader() {}
 };
 
 
@@ -108,17 +106,17 @@ class TestStreamReaderJob : public AndroidStreamReaderURLRequestJob {
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
       scoped_ptr<Delegate> delegate,
-      scoped_refptr<InputStreamReader> stream_reader)
+      scoped_ptr<InputStreamReader> stream_reader)
       : AndroidStreamReaderURLRequestJob(request,
                                          network_delegate,
                                          delegate.Pass()),
-        stream_reader_(stream_reader) {
+        stream_reader_(stream_reader.Pass()) {
     message_loop_proxy_ = base::MessageLoopProxy::current();
   }
 
-  virtual scoped_refptr<InputStreamReader> CreateStreamReader(
+  virtual scoped_ptr<InputStreamReader> CreateStreamReader(
       InputStream* stream) {
-    return stream_reader_;
+    return stream_reader_.Pass();
   }
  protected:
   virtual ~TestStreamReaderJob() {}
@@ -127,7 +125,7 @@ class TestStreamReaderJob : public AndroidStreamReaderURLRequestJob {
     return message_loop_proxy_.get();
   }
 
-  scoped_refptr<InputStreamReader> stream_reader_;
+  scoped_ptr<InputStreamReader> stream_reader_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 };
 
@@ -156,7 +154,7 @@ class AndroidStreamReaderURLRequestJobTest : public Test {
     req->SetExtraRequestHeaders(headers);
   }
 
-  void SetUpTestJob(InputStreamReader* stream_reader) {
+  void SetUpTestJob(scoped_ptr<InputStreamReader> stream_reader) {
     scoped_ptr<AndroidStreamReaderURLRequestJob::Delegate>
         stream_reader_delegate(new StreamReaderDelegate());
     TestStreamReaderJob* test_stream_reader_job =
@@ -164,7 +162,7 @@ class AndroidStreamReaderURLRequestJobTest : public Test {
             req_.get(),
             &network_delegate_,
             stream_reader_delegate.Pass(),
-            stream_reader);
+            stream_reader.Pass());
     // The Interceptor is owned by the |factory_|.
     TestJobInterceptor* interceptor = new TestJobInterceptor;
     interceptor->set_main_intercept_job(test_stream_reader_job);
@@ -180,8 +178,8 @@ class AndroidStreamReaderURLRequestJobTest : public Test {
 };
 
 TEST_F(AndroidStreamReaderURLRequestJobTest, ReadEmptyStream) {
-  scoped_refptr<StrictMock<MockInputStreamReader> > stream_reader =
-      new StrictMock<MockInputStreamReader>();
+  scoped_ptr<StrictMock<MockInputStreamReader> > stream_reader(
+      new StrictMock<MockInputStreamReader>());
   {
     InSequence s;
     EXPECT_CALL(*stream_reader, Seek(_))
@@ -190,7 +188,7 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, ReadEmptyStream) {
         .WillOnce(Return(0));
   }
 
-  SetUpTestJob(stream_reader);
+  SetUpTestJob(stream_reader.PassAs<InputStreamReader>());
 
   req_->Start();
 
@@ -205,8 +203,8 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, ReadPartOfStream) {
   const int bytes_available = 128;
   const int offset = 32;
   const int bytes_to_read = bytes_available - offset;
-  scoped_refptr<StrictMock<MockInputStreamReader> > stream_reader =
-      new StrictMock<MockInputStreamReader>();
+  scoped_ptr<StrictMock<MockInputStreamReader> > stream_reader(
+      new StrictMock<MockInputStreamReader>());
   {
     InSequence s;
     EXPECT_CALL(*stream_reader, Seek(_))
@@ -219,7 +217,7 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, ReadPartOfStream) {
         .WillOnce(Return(0));
   }
 
-  SetUpTestJob(stream_reader);
+  SetUpTestJob(stream_reader.PassAs<InputStreamReader>());
 
   SetRange(req_.get(), offset, bytes_available);
   req_->Start();
@@ -237,8 +235,8 @@ TEST_F(AndroidStreamReaderURLRequestJobTest,
   const int bytes_available = 128;
   const int offset = 0;
   const int bytes_to_read = bytes_available - offset;
-  scoped_refptr<StrictMock<MockInputStreamReader> > stream_reader =
-      new StrictMock<MockInputStreamReader>();
+  scoped_ptr<StrictMock<MockInputStreamReader> > stream_reader(
+      new StrictMock<MockInputStreamReader>());
   {
     InSequence s;
     EXPECT_CALL(*stream_reader, Seek(_))
@@ -249,7 +247,7 @@ TEST_F(AndroidStreamReaderURLRequestJobTest,
         .WillOnce(Return(0));
   }
 
-  SetUpTestJob(stream_reader);
+  SetUpTestJob(stream_reader.PassAs<InputStreamReader>());
 
   SetRange(req_.get(), offset, bytes_available_reported);
   req_->Start();
@@ -265,15 +263,15 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, DeleteJobMidWaySeek) {
   const int offset = 20;
   const int bytes_available = 128;
   base::RunLoop loop;
-  scoped_refptr<StrictMock<MockInputStreamReader> > stream_reader =
-      new StrictMock<MockInputStreamReader>();
+  scoped_ptr<StrictMock<MockInputStreamReader> > stream_reader(
+      new StrictMock<MockInputStreamReader>());
   EXPECT_CALL(*stream_reader, Seek(_))
       .WillOnce(DoAll(InvokeWithoutArgs(&loop, &base::RunLoop::Quit),
                       Return(bytes_available)));
   ON_CALL(*stream_reader, ReadRawData(_, _))
       .WillByDefault(Return(0));
 
-  SetUpTestJob(stream_reader);
+  SetUpTestJob(stream_reader.PassAs<InputStreamReader>());
 
   SetRange(req_.get(), offset, bytes_available);
   req_->Start();
@@ -289,8 +287,8 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, DeleteJobMidWayRead) {
   const int offset = 20;
   const int bytes_available = 128;
   base::RunLoop loop;
-  scoped_refptr<StrictMock<MockInputStreamReader> > stream_reader =
-      new StrictMock<MockInputStreamReader>();
+  scoped_ptr<StrictMock<MockInputStreamReader> > stream_reader(
+      new StrictMock<MockInputStreamReader>());
   net::CompletionCallback read_completion_callback;
   EXPECT_CALL(*stream_reader, Seek(_))
       .WillOnce(Return(bytes_available));
@@ -298,7 +296,7 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, DeleteJobMidWayRead) {
       .WillOnce(DoAll(InvokeWithoutArgs(&loop, &base::RunLoop::Quit),
                       Return(bytes_available)));
 
-  SetUpTestJob(stream_reader);
+  SetUpTestJob(stream_reader.PassAs<InputStreamReader>());
 
   SetRange(req_.get(), offset, bytes_available);
   req_->Start();

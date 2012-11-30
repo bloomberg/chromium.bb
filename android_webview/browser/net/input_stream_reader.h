@@ -17,11 +17,11 @@ namespace android_webview {
 class InputStream;
 
 // Class responsible for reading the InputStream.
-class InputStreamReader
-    : public base::RefCountedThreadSafe<InputStreamReader> {
+class InputStreamReader {
  public:
   // The constructor is called on the IO thread, not on the worker thread.
   InputStreamReader(android_webview::InputStream* stream);
+  virtual ~InputStreamReader();
 
   // Perform a seek operation on the InputStream associated with this job.
   // On successful completion the InputStream would have skipped reading the
@@ -41,12 +41,7 @@ class InputStreamReader
   // will indicate the expected size of the content.
   virtual int ReadRawData(net::IOBuffer* buffer, int buffer_size);
 
- protected:
-  virtual ~InputStreamReader();
-
  private:
-  friend class base::RefCountedThreadSafe<InputStreamReader>;
-
   // Verify the requested range against the stream size.
   // net::OK is returned on success, the error code otherwise.
   int VerifyRequestedRange(net::HttpByteRange* byte_range,

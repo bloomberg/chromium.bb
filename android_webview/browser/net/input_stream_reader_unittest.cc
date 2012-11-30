@@ -40,22 +40,22 @@ class MockInputStream : public InputStream {
 class InputStreamReaderTest : public Test {
  public:
   InputStreamReaderTest()
-      : input_stream_reader_(new InputStreamReader(&input_stream_)) {
+      : input_stream_reader_(&input_stream_) {
   }
  protected:
   int SeekRange(int first_byte, int last_byte) {
     net::HttpByteRange byte_range;
     byte_range.set_first_byte_position(first_byte);
     byte_range.set_last_byte_position(last_byte);
-    return input_stream_reader_->Seek(byte_range);
+    return input_stream_reader_.Seek(byte_range);
   }
 
   int ReadRawData(scoped_refptr<net::IOBuffer> buffer, int bytesToRead) {
-    return input_stream_reader_->ReadRawData(buffer.get(), bytesToRead);
+    return input_stream_reader_.ReadRawData(buffer.get(), bytesToRead);
   }
 
   MockInputStream input_stream_;
-  scoped_refptr<InputStreamReader> input_stream_reader_;
+  InputStreamReader input_stream_reader_;
 };
 
 TEST_F(InputStreamReaderTest, BytesAvailableFailurePropagationOnSeek) {

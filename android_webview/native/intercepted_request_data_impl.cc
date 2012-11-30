@@ -35,14 +35,14 @@ class StreamReaderJobDelegateImpl :
 
     virtual bool GetMimeType(JNIEnv* env,
                              net::URLRequest* request,
-                             const android_webview::InputStream& stream,
+                             android_webview::InputStream* stream,
                              std::string* mime_type) OVERRIDE {
       return intercepted_request_data_impl_->GetMimeType(env, mime_type);
     }
 
     virtual bool GetCharset(JNIEnv* env,
                             net::URLRequest* request,
-                            const android_webview::InputStream& stream,
+                            android_webview::InputStream* stream,
                             std::string* charset) OVERRIDE {
       return intercepted_request_data_impl_->GetCharset(env, charset);
     }

@@ -14,6 +14,9 @@ class IOBuffer;
 namespace android_webview {
 
 // Abstract wrapper used to access the InputStream Java class.
+// This class is safe to pass around between threads (the destructor,
+// constructor and methods can be called on different threads) but calling
+// methods concurrently might have undefined results.
 class InputStream {
  public:
   virtual ~InputStream() {}
