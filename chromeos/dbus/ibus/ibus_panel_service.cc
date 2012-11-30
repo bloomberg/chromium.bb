@@ -89,8 +89,8 @@ class IBusPanelServiceImpl : public IBusPanelService {
 
     exported_object_->ExportMethod(
         ibus::panel::kServiceInterface,
-        ibus::panel::kUpdatePropertiesMethod,
-        base::Bind(&IBusPanelServiceImpl::UpdateProperties,
+        ibus::panel::kUpdatePropertyMethod,
+        base::Bind(&IBusPanelServiceImpl::UpdateProperty,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&IBusPanelServiceImpl::OnMethodExported,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -289,20 +289,20 @@ class IBusPanelServiceImpl : public IBusPanelService {
     response_sender.Run(response);
   }
 
-  // Handles UpdateProperties method call from ibus-daemon.
-  void UpdateProperties(dbus::MethodCall* method_call,
-                        dbus::ExportedObject::ResponseSender response_sender) {
+  // Handles UpdateProperty method call from ibus-daemon.
+  void UpdateProperty(dbus::MethodCall* method_call,
+                      dbus::ExportedObject::ResponseSender response_sender) {
     if (!property_handler_)
       return;
 
     dbus::MessageReader reader(method_call);
-    ibus::IBusPropertyList properties;
-    if (!ibus::PopIBusPropertyList(&reader, &properties)) {
+    ibus::IBusProperty property;
+    if (!ibus::PopIBusProperty(&reader, &property)) {
       DLOG(WARNING) << "RegisterProperties called with incorrect parameters:"
                     << method_call->ToString();
       return;
     }
-    property_handler_->UpdateProperties(properties);
+    property_handler_->UpdateProperty(property);
 
     dbus::Response* response = dbus::Response::FromMethodCall(method_call);
     response_sender.Run(response);

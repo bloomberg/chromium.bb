@@ -54,8 +54,7 @@ class MockIBusPanelPropertyHandler : public IBusPanelPropertyHandlerInterface {
   MockIBusPanelPropertyHandler() {}
   MOCK_METHOD1(RegisterProperties,
                void(const ibus::IBusPropertyList& properties));
-  MOCK_METHOD1(UpdateProperties,
-               void(const ibus::IBusPropertyList& properties));
+  MOCK_METHOD1(UpdateProperty, void(const ibus::IBusProperty& property));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockIBusPanelPropertyHandler);
@@ -183,6 +182,21 @@ class PropertyListVerifier {
   const std::vector<std::string> expected_keys_;
 };
 
+// This class is used to verify that a method call which has a Property object.
+// This class verifies a method call has correct argument based on |key|.
+class PropertyVerifier {
+ public:
+  explicit PropertyVerifier(const std::string& key) : key_(key) {}
+
+  // Verifies the given |resposne| has IBusPropertyList.
+  void Verify(const ibus::IBusProperty& property) {
+    EXPECT_EQ(key_, property.key());
+  }
+
+ private:
+  const std::string key_;
+};
+
 }  // namespace
 
 class IBusPanelServiceTest : public testing::Test {
@@ -249,7 +263,7 @@ class IBusPanelServiceTest : public testing::Test {
 
     EXPECT_CALL(*mock_exported_object_, ExportMethod(
         ibus::panel::kServiceInterface,
-        ibus::panel::kUpdatePropertiesMethod, _, _))
+        ibus::panel::kUpdatePropertyMethod, _, _))
         .WillRepeatedly(
             Invoke(this, &IBusPanelServiceTest::OnMethodExported));
 
@@ -548,42 +562,33 @@ TEST_F(IBusPanelServiceTest, RegisterPropertiesTest) {
             method_callback_map_.end());
   method_callback_map_[ibus::panel::kRegisterPropertiesMethod].Run(
       &method_call,
-      base::Bind(&MockResponseSender::Run,
-                 base::Unretained(&response_sender)));
+      base::Bind(&MockResponseSender::Run, base::Unretained(&response_sender)));
 }
 
-TEST_F(IBusPanelServiceTest, UpdatePropertiesTest) {
+TEST_F(IBusPanelServiceTest, UpdatePropertyTest) {
   // Set expectations.
-  std::vector<std::string> keys;
-  keys.push_back("key1");
-  keys.push_back("key2");
-  keys.push_back("key3");
-  ibus::IBusPropertyList properties;
-  for (size_t i = 0; i < keys.size(); ++i) {
-    ibus::IBusProperty* property = new ibus::IBusProperty;
-    property->set_key(keys[i]);
-    properties.push_back(property);
-  }
+  const char kKey[] = "key";
+  ibus::IBusProperty property;
+  property.set_key(kKey);
 
-  PropertyListVerifier response_expectation(keys);
-  EXPECT_CALL(*property_handler_, UpdateProperties(_))
-      .WillOnce(Invoke(&response_expectation,
-                        &PropertyListVerifier::Verify));
+  PropertyVerifier response_expectation(kKey);
+  EXPECT_CALL(*property_handler_, UpdateProperty(_))
+      .WillOnce(Invoke(&response_expectation, &PropertyVerifier::Verify));
 
   MockResponseSender response_sender;
   EXPECT_CALL(response_sender, Run(_));
 
   // Create method call;
   dbus::MethodCall method_call(ibus::panel::kServiceInterface,
-                               ibus::panel::kUpdatePropertiesMethod);
+                               ibus::panel::kUpdatePropertyMethod);
   method_call.SetSerial(1UL);
   dbus::MessageWriter writer(&method_call);
-  ibus::AppendIBusPropertyList(properties, &writer);
+  ibus::AppendIBusProperty(property, &writer);
 
   // Call exported function.
-  EXPECT_NE(method_callback_map_.find(ibus::panel::kUpdatePropertiesMethod),
+  EXPECT_NE(method_callback_map_.find(ibus::panel::kUpdatePropertyMethod),
             method_callback_map_.end());
-  method_callback_map_[ibus::panel::kUpdatePropertiesMethod].Run(
+  method_callback_map_[ibus::panel::kUpdatePropertyMethod].Run(
       &method_call,
       base::Bind(&MockResponseSender::Run,
                  base::Unretained(&response_sender)));
