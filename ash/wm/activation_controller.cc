@@ -111,7 +111,7 @@ bool CanActivateWindowWithEvent(aura::Window* window,
   return window &&
       VisibilityMatches(window, visibility_type) &&
       (!aura::client::GetActivationDelegate(window) ||
-        aura::client::GetActivationDelegate(window)->ShouldActivate()) &&
+        aura::client::GetActivationDelegate(window)->ShouldActivate(event)) &&
       SupportsChildActivation(window->parent()) &&
       (BelongsToContainerWithEqualOrGreaterId(
           window, kShellWindowId_SystemModalContainer) ||

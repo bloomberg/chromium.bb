@@ -37,7 +37,7 @@ class TestActivationDelegate : public aura::client::ActivationDelegate {
   }
 
   // Overridden from client::ActivationDelegate:
-  virtual bool ShouldActivate() const OVERRIDE;
+  virtual bool ShouldActivate(const ui::Event* event) OVERRIDE;
   virtual void OnActivated() OVERRIDE;
   virtual void OnLostActive() OVERRIDE;
 
@@ -47,7 +47,7 @@ class TestActivationDelegate : public aura::client::ActivationDelegate {
   bool activate_;
   int activated_count_;
   int lost_active_count_;
-  mutable int should_activate_count_;
+  int should_activate_count_;
 
   DISALLOW_COPY_AND_ASSIGN(TestActivationDelegate);
 };

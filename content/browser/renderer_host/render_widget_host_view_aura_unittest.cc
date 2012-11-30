@@ -138,7 +138,7 @@ TEST_F(RenderWidgetHostViewAuraTest, FocusFullscreen) {
 
   // Check that we'll also say it's okay to activate the window when there's an
   // ActivationClient defined.
-  EXPECT_TRUE(view_->ShouldActivate());
+  EXPECT_TRUE(view_->ShouldActivate(NULL));
 }
 
 // Checks that a fullscreen view is destroyed when it loses the focus.

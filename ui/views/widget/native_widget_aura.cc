@@ -850,7 +850,7 @@ ui::EventResult NativeWidgetAura::OnGestureEvent(ui::GestureEvent* event) {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, aura::ActivationDelegate implementation:
 
-bool NativeWidgetAura::ShouldActivate() const {
+bool NativeWidgetAura::ShouldActivate(const ui::Event* event) {
   return can_activate_ && delegate_->CanActivate();
 }
 
