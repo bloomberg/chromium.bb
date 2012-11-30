@@ -127,11 +127,6 @@ public abstract class AwContentsClient extends ContentViewClient {
         }
 
         @Override
-        public void onUrlStarredChanged(boolean starred) {
-            // TODO: implement
-        }
-
-        @Override
         public void showRepostFormWarningDialog(ContentViewCore contentViewCore) {
             Message dontResend = mHandler.obtainMessage(CANCEL_PENDING_RELOAD, contentViewCore);
             Message resend = mHandler.obtainMessage(CONTINUE_PENDING_RELOAD, contentViewCore);

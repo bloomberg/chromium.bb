@@ -48,10 +48,6 @@ public class WebContentsDelegateAndroid {
     }
 
     @CalledByNative
-    public void onUrlStarredChanged(boolean starred) {
-    }
-
-    @CalledByNative
     public void onLoadStarted() {
     }
 

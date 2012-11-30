@@ -218,17 +218,6 @@ bool WebContentsDelegateAndroid::AddMessageToConsole(
       jsource_id.obj());
 }
 
-// TODO(merge): WARNING! method no longer available on the base class.
-// See http://crbug.com/149477
-void WebContentsDelegateAndroid::URLStarredChanged(WebContents* source,
-                                                   bool starred) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
-  if (obj.is_null())
-    return;
-  Java_WebContentsDelegateAndroid_onUrlStarredChanged(env, obj.obj(), starred);
-}
-
 // This is either called from TabContents::DidNavigateMainFramePostCommit() with
 // an empty GURL or responding to RenderViewHost::OnMsgUpateTargetURL(). In
 // Chrome, the latter is not always called, especially not during history
