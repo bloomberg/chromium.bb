@@ -305,6 +305,34 @@ drm_fb_set_buffer(struct drm_fb *fb, struct wl_buffer *buffer)
 		      &fb->buffer_destroy_listener);
 }
 
+static int
+drm_output_check_scanout_format(struct drm_output *output,
+				struct weston_surface *es, struct gbm_bo *bo)
+{
+	int ret = 0;
+	uint32_t format;
+	pixman_region32_t r;
+
+	format = gbm_bo_get_format(bo);
+
+	if (format == GBM_FORMAT_XRGB8888)
+		ret = 1;
+	else if (format == GBM_FORMAT_ARGB8888) {
+		/* We can only scanout an ARGB buffer if the surface's
+		 * opaque region covers the whole output */
+		pixman_region32_init(&r);
+		pixman_region32_subtract(&r, &output->base.region,
+					 &es->opaque);
+
+		if (!pixman_region32_not_empty(&r))
+			ret = 1;
+
+		pixman_region32_fini(&r);
+	}
+
+	return ret;
+}
+
 static struct weston_plane *
 drm_output_prepare_scanout_surface(struct weston_output *_output,
 				   struct weston_surface *es)
@@ -330,10 +358,7 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 	if (!bo)
 		return NULL;
 
-	/* Need to verify output->region contained in surface opaque
-	 * region.  Or maybe just that format doesn't have alpha.
-	 * For now, scanout only if format is XRGB8888. */
-	if (gbm_bo_get_format(bo) != GBM_FORMAT_XRGB8888) {
+	if (!drm_output_check_scanout_format(output, es, bo)) {
 		gbm_bo_destroy(bo);
 		return NULL;
 	}
