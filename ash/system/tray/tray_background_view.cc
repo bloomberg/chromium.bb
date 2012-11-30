@@ -18,6 +18,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/background.h"
@@ -51,7 +52,8 @@ class TrayBackgroundView::TrayWidgetObserver : public views::WidgetObserver {
       : host_(host) {
   }
 
-  virtual void OnWidgetMoved(views::Widget* widget) OVERRIDE {
+  virtual void OnWidgetBoundsChanged(views::Widget* widget,
+                                     const gfx::Rect& new_bounds) OVERRIDE {
     host_->AnchorUpdated();
   }
 

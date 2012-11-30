@@ -243,7 +243,8 @@ class TabDragController : public content::WebContentsDelegate,
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
   // Overriden from views::WidgetObserver:
-  virtual void OnWidgetMoved(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetBoundsChanged(views::Widget* widget,
+                                     const gfx::Rect& new_bounds) OVERRIDE;
 
   // Overriden from TabStripModelObserver:
   virtual void TabStripEmpty() OVERRIDE;

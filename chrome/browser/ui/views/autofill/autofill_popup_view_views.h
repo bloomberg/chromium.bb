@@ -8,6 +8,7 @@
 #include "chrome/browser/autofill/autofill_popup_view.h"
 #include "content/public/browser/keyboard_listener.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_observer.h"
 
 class AutofillExternalDelegateViews;
 
@@ -17,6 +18,7 @@ class WebContents;
 
 // The View Autofill popup implementation.
 class AutofillPopupViewViews : public views::WidgetDelegateView,
+                               public views::WidgetObserver,
                                public AutofillPopupView,
                                public KeyboardListener {
  public:
@@ -33,6 +35,10 @@ class AutofillPopupViewViews : public views::WidgetDelegateView,
 
   // views:Views implementation.
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+
+  // views::WidgetObserver implementation.
+  virtual void OnWidgetBoundsChanged(views::Widget* widget,
+                                     const gfx::Rect& new_bounds) OVERRIDE;
 
   // KeyboardListener implementation.
   virtual bool HandleKeyPressEvent(ui::KeyEvent* event) OVERRIDE;

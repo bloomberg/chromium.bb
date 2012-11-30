@@ -45,6 +45,11 @@ void AutofillPopupViewViews::Hide() {
   if (GetWidget())
     GetWidget()->Close();
   web_contents_->GetRenderViewHost()->RemoveKeyboardListener(this);
+
+  views::Widget* browser_widget =
+      views::Widget::GetTopLevelWidgetForNativeView(
+          web_contents_->GetView()->GetTopLevelNativeWindow());
+  browser_widget->RemoveObserver(this);
 }
 
 void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
@@ -59,6 +64,11 @@ void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
     else
       DrawAutofillEntry(canvas, i, line_rect);
   }
+}
+
+void AutofillPopupViewViews::OnWidgetBoundsChanged(views::Widget* widget,
+                                                 const gfx::Rect& new_bounds) {
+  external_delegate()->HideAutofillPopup();
 }
 
 bool AutofillPopupViewViews::HandleKeyPressEvent(ui::KeyEvent* event) {
@@ -76,11 +86,7 @@ bool AutofillPopupViewViews::HandleKeyPressEvent(ui::KeyEvent* event) {
       SetSelectedLine(autofill_values().size() - 1);
       return true;
     case ui::VKEY_ESCAPE:
-      if (external_delegate()) {
-        external_delegate()->HideAutofillPopup();
-      } else {
-        Hide();
-      }
+       external_delegate()->HideAutofillPopup();
       return true;
     case ui::VKEY_DELETE:
       return event->IsShiftDown() && RemoveSelectedLine();
@@ -109,6 +115,13 @@ void AutofillPopupViewViews::ShowInternal() {
     gfx::Rect client_area;
     web_contents_->GetContainerBounds(&client_area);
     widget->SetBounds(client_area);
+
+    // Setup an observer to check for when the browser moves or changes size,
+    // since the popup should always be hidden in those cases.
+    views::Widget* browser_widget =
+        views::Widget::GetTopLevelWidgetForNativeView(
+            web_contents_->GetView()->GetTopLevelNativeWindow());
+    browser_widget->AddObserver(this);
   }
 
   set_border(views::Border::CreateSolidBorder(kBorderThickness, kBorderColor));

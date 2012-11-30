@@ -11,6 +11,10 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace ui {
 class SlideAnimation;
 }
@@ -48,7 +52,8 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   virtual void OnWidgetClosing(Widget* widget) OVERRIDE;
   virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) OVERRIDE;
   virtual void OnWidgetActivationChanged(Widget* widget, bool active) OVERRIDE;
-  virtual void OnWidgetMoved(Widget* widget) OVERRIDE;
+  virtual void OnWidgetBoundsChanged(Widget* widget,
+                                     const gfx::Rect& new_bounds) OVERRIDE;
 
   bool close_on_esc() const { return close_on_esc_; }
   void set_close_on_esc(bool close_on_esc) { close_on_esc_ = close_on_esc; }

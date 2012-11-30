@@ -725,7 +725,8 @@ class WidgetObserverTest : public WidgetTest,
         widget_closed_(NULL),
         widget_activated_(NULL),
         widget_shown_(NULL),
-        widget_hidden_(NULL) {
+        widget_hidden_(NULL),
+        widget_bounds_changed_(NULL) {
   }
 
   virtual ~WidgetObserverTest() {}
@@ -759,6 +760,11 @@ class WidgetObserverTest : public WidgetTest,
       widget_hidden_ = widget;
   }
 
+  virtual void OnWidgetBoundsChanged(Widget* widget,
+                                     const gfx::Rect& new_bounds) OVERRIDE {
+    widget_bounds_changed_ = widget;
+  }
+
   void reset() {
     active_ = NULL;
     widget_closed_ = NULL;
@@ -766,6 +772,7 @@ class WidgetObserverTest : public WidgetTest,
     widget_deactivated_ = NULL;
     widget_shown_ = NULL;
     widget_hidden_ = NULL;
+    widget_bounds_changed_ = NULL;
   }
 
   Widget* NewWidget() {
@@ -780,6 +787,7 @@ class WidgetObserverTest : public WidgetTest,
   const Widget* widget_deactivated() const { return widget_deactivated_; }
   const Widget* widget_shown() const { return widget_shown_; }
   const Widget* widget_hidden() const { return widget_hidden_; }
+  const Widget* widget_bounds_changed() const { return widget_bounds_changed_; }
 
  private:
 
@@ -790,6 +798,7 @@ class WidgetObserverTest : public WidgetTest,
   Widget* widget_deactivated_;
   Widget* widget_shown_;
   Widget* widget_hidden_;
+  Widget* widget_bounds_changed_;
 };
 
 TEST_F(WidgetObserverTest, DISABLED_ActivationChange) {
@@ -858,6 +867,23 @@ TEST_F(WidgetObserverTest, DestroyBubble) {
 
   anchor->Hide();
   anchor->CloseNow();
+}
+
+TEST_F(WidgetObserverTest, WidgetBoundsChanged) {
+  Widget* child1 = NewWidget();
+  Widget* child2 = NewWidget();
+
+  child1->OnNativeWidgetMove();
+  EXPECT_EQ(child1, widget_bounds_changed());
+
+  child2->OnNativeWidgetMove();
+  EXPECT_EQ(child2, widget_bounds_changed());
+
+  child1->OnNativeWidgetSizeChanged(gfx::Size());
+  EXPECT_EQ(child1, widget_bounds_changed());
+
+  child2->OnNativeWidgetSizeChanged(gfx::Size());
+  EXPECT_EQ(child2, widget_bounds_changed());
 }
 
 #if !defined(USE_AURA) && defined(OS_WIN)

@@ -6,6 +6,7 @@
 
 #include "ui/base/animation/slide_animation.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/rect.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -229,7 +230,8 @@ void BubbleDelegateView::OnWidgetActivationChanged(Widget* widget,
     GetWidget()->Close();
 }
 
-void BubbleDelegateView::OnWidgetMoved(Widget* widget) {
+void BubbleDelegateView::OnWidgetBoundsChanged(Widget* widget,
+                                               const gfx::Rect& new_bounds) {
   if (move_with_anchor() && anchor_widget() == widget)
     SizeToContents();
 }

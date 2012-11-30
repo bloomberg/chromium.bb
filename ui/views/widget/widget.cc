@@ -1017,7 +1017,9 @@ gfx::Size Widget::GetMaximumSize() {
 
 void Widget::OnNativeWidgetMove() {
   widget_delegate_->OnWidgetMove();
-  FOR_EACH_OBSERVER(WidgetObserver, observers_, OnWidgetMoved(this));
+  FOR_EACH_OBSERVER(WidgetObserver, observers_, OnWidgetBoundsChanged(
+      this,
+      GetWindowBoundsInScreen()));
 }
 
 void Widget::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
@@ -1028,6 +1030,10 @@ void Widget::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
   // startup procedures.
   if (native_widget_initialized_)
     SaveWindowPlacement();
+
+  FOR_EACH_OBSERVER(WidgetObserver, observers_, OnWidgetBoundsChanged(
+      this,
+      GetWindowBoundsInScreen()));
 }
 
 void Widget::OnNativeWidgetBeginUserBoundsChange() {
