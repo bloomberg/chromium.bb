@@ -662,7 +662,7 @@ void DriveFileSyncService::DidGetSyncRootDirectory(
     const fileapi::SyncStatusCallback& callback,
     google_apis::GDataErrorCode error,
     const std::string& resource_id) {
-  fileapi::SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  fileapi::SyncStatusCode status = GDataErrorCodeToSyncStatusCodeWrapper(error);
   if (error != google_apis::HTTP_SUCCESS &&
       error != google_apis::HTTP_CREATED) {
     NotifyTaskDone(status, token.Pass());
@@ -711,7 +711,8 @@ void DriveFileSyncService::DidGetDirectoryForOrigin(
     const std::string& resource_id) {
   if (error != google_apis::HTTP_SUCCESS &&
       error != google_apis::HTTP_CREATED) {
-    fileapi::SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+    fileapi::SyncStatusCode status =
+        GDataErrorCodeToSyncStatusCodeWrapper(error);
     NotifyTaskDone(status, token.Pass());
     callback.Run(status);
     return;
@@ -734,7 +735,7 @@ void DriveFileSyncService::DidGetLargestChangeStampForBatchSync(
   if (error != google_apis::HTTP_SUCCESS) {
     pending_batch_sync_origins_.insert(origin);
     // TODO(tzik): Refine this error code.
-    NotifyTaskDone(GDataErrorCodeToSyncStatusCode(error), token.Pass());
+    NotifyTaskDone(GDataErrorCodeToSyncStatusCodeWrapper(error), token.Pass());
     return;
   }
 
@@ -756,7 +757,7 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
   if (error != google_apis::HTTP_SUCCESS) {
     pending_batch_sync_origins_.insert(origin);
     // TODO(tzik): Refine this error code.
-    NotifyTaskDone(GDataErrorCodeToSyncStatusCode(error), token.Pass());
+    NotifyTaskDone(GDataErrorCodeToSyncStatusCodeWrapper(error), token.Pass());
     return;
   }
 
@@ -797,7 +798,7 @@ void DriveFileSyncService::DidGetRemoteFileMetadata(
     file_type = fileapi::SYNC_FILE_TYPE_FILE;
   else if (entry->is_folder())
     file_type = fileapi::SYNC_FILE_TYPE_DIRECTORY;
-  callback.Run(GDataErrorCodeToSyncStatusCode(error),
+  callback.Run(GDataErrorCodeToSyncStatusCodeWrapper(error),
                fileapi::SyncFileMetadata(file_type,
                                          entry->file_size(),
                                          entry->updated_time()));
@@ -869,8 +870,8 @@ void DriveFileSyncService::DidApplyLocalChange(
     fileapi::SyncStatusCode status) {
   if (status == fileapi::SYNC_STATUS_OK) {
     CancelRemoteChange(url);
-    NotifyTaskDone(GDataErrorCodeToSyncStatusCode(error), token.Pass());
-    callback.Run(GDataErrorCodeToSyncStatusCode(error));
+    NotifyTaskDone(GDataErrorCodeToSyncStatusCodeWrapper(error), token.Pass());
+    callback.Run(GDataErrorCodeToSyncStatusCodeWrapper(error));
     return;
   }
   NotifyTaskDone(status, token.Pass());
@@ -896,7 +897,8 @@ void DriveFileSyncService::DidUploadNewFile(
                    AsWeakPtr(), base::Passed(&token), url, error, callback));
     return;
   }
-  const fileapi::SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  const fileapi::SyncStatusCode status =
+      GDataErrorCodeToSyncStatusCodeWrapper(error);
   NotifyTaskDone(status, token.Pass());
   callback.Run(status);
 }
@@ -939,7 +941,7 @@ void DriveFileSyncService::DidUploadExistingFile(
     }
     default: {
       const fileapi::SyncStatusCode status =
-          GDataErrorCodeToSyncStatusCode(error);
+          GDataErrorCodeToSyncStatusCodeWrapper(error);
       DCHECK_NE(fileapi::SYNC_STATUS_OK, status);
       DidApplyLocalChange(token.Pass(), url, error, callback, status);
       return;
@@ -973,7 +975,7 @@ void DriveFileSyncService::DidDeleteFile(
     }
     default: {
       const fileapi::SyncStatusCode status =
-          GDataErrorCodeToSyncStatusCode(error);
+          GDataErrorCodeToSyncStatusCodeWrapper(error);
       DCHECK_NE(fileapi::SYNC_STATUS_OK, status);
       DidApplyLocalChange(token.Pass(), url, error, callback, status);
       return;
@@ -1143,7 +1145,7 @@ void DriveFileSyncService::DidDownloadFile(
     return;
   }
 
-  fileapi::SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  fileapi::SyncStatusCode status = GDataErrorCodeToSyncStatusCodeWrapper(error);
   if (status != fileapi::SYNC_STATUS_OK) {
     AbortRemoteSync(param.Pass(), status);
     return;
@@ -1322,6 +1324,15 @@ bool DriveFileSyncService::GetPendingChangeForFileSystemURL(
     return false;
   *change = found_path->second;
   return true;
+}
+
+fileapi::SyncStatusCode
+DriveFileSyncService::GDataErrorCodeToSyncStatusCodeWrapper(
+    google_apis::GDataErrorCode error) const {
+  fileapi::SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  if (status != fileapi::SYNC_STATUS_OK && !sync_client_->IsAuthenticated())
+    return fileapi::SYNC_STATUS_AUTHENTICATION_FAILED;
+  return status;
 }
 
 }  // namespace sync_file_system

@@ -287,6 +287,11 @@ class DriveFileSyncService
   bool GetPendingChangeForFileSystemURL(const fileapi::FileSystemURL& url,
                                         RemoteChange* change) const;
 
+  // A wrapper implementation to GDataErrorCodeToSyncStatusCode which returns
+  // authentication error if the user is not signed in.
+  fileapi::SyncStatusCode GDataErrorCodeToSyncStatusCodeWrapper(
+      google_apis::GDataErrorCode error) const;
+
   FilePath temporary_file_dir_;
 
   scoped_ptr<DriveMetadataStore> metadata_store_;
