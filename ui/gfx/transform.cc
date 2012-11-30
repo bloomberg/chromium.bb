@@ -32,7 +32,6 @@ double TanDegrees(double degrees) {
 }  // namespace
 
 Transform::Transform() {
-  matrix_.reset();
 }
 
 Transform::~Transform() {}
