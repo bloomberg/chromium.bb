@@ -769,6 +769,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kForceSyncSpellCheck)
   },
   {
+    "spellcheck-autocorrect",
+    IDS_FLAGS_SPELLCHECK_AUTOCORRECT,
+    IDS_FLAGS_SPELLCHECK_AUTOCORRECT_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableSpellingAutoCorrect)
+  },
+  {
     "touch-events",
     IDS_TOUCH_EVENTS_NAME,
     IDS_TOUCH_EVENTS_DESCRIPTION,

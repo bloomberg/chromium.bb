@@ -6853,6 +6853,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_FORCE_SYNC_SPELLCHECK_DESCRIPTION" desc="Description for the flag to force synchronous spellchecking.">
         Force use of synchronous spellchecking. Enabling this flag will prevent Chrome from using a web service to get spellchecking results.
       </message>
+      <message name="IDS_FLAGS_SPELLCHECK_AUTOCORRECT" desc="Title for the flag to turn on text autocorrection.">
+        Enable Automatic Spelling Correction
+      </message>
+      <message name="IDS_FLAGS_SPELLCHECK_AUTOCORRECT_DESCRIPTION" desc="Description for the flag to force synchronous spellchecking.">
+        Turn on autocorrection of text while typing. Synchronous spellchecking is not compatible with this feature.
+      </message>
       <message name="IDS_FLAGS_NO_DISCARD_TABS_NAME" desc="Name for the flag to disable the tab discarding feature.">
         Don't discard tabs.
       </message>
