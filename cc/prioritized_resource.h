@@ -122,11 +122,6 @@ private:
 
         bool m_resourceHasBeenDeleted;
 
-        // Set when getEvictedBackings adds this backing to a list, and
-        // un-set unlinkEvictedBackings passes it back in. This must never
-        // be set when already true, and must be false when the backing is
-        // destroyed.
-        bool m_inMainThreadEvictedList;
 #ifndef NDEBUG
         ResourceProvider* m_resourceProvider;
 #endif

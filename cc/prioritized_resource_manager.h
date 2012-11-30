@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "cc/cc_export.h"
 #include "cc/proxy.h"
 #include "cc/prioritized_resource.h"
@@ -82,16 +83,17 @@ public:
     // be called on the impl thread while the main thread is running. Returns true if resources are
     // indeed evicted as a result of this call.
     bool reduceMemoryOnImplThread(size_t limitBytes, int priorityCutoff, ResourceProvider*);
+
     // Returns true if there exist any textures that are linked to backings that have had their
     // resources evicted. Only when we commit a tree that has no textures linked to evicted backings
-    // may we allow drawing.
+    // may we allow drawing. After an eviction, this will not become true until
+    // unlinkAndClearEvictedBackings is called.
     bool linkedEvictedBackingsExist() const;
-    // Retrieve the list of all contents textures' backings that have been evicted, to pass to the
-    // main thread to unlink them from their owning textures.
-    void getEvictedBackings(BackingList& evictedBackings);
-    // Unlink the list of contents textures' backings from their owning textures on the main thread
-    // before updating layers.
-    void unlinkEvictedBackings(const BackingList& evictedBackings);
+
+    // Unlink the list of contents textures' backings from their owning textures and delete the evicted
+    // backings' structures. This is called just before updating layers, and is only ever called on the
+    // main thread.
+    void unlinkAndClearEvictedBackings();
 
     bool requestLate(PrioritizedResource*);
 
@@ -159,7 +161,6 @@ private:
                                      ResourceProvider*);
     PrioritizedResource::Backing* createBacking(gfx::Size, GLenum format, ResourceProvider*);
     void evictFirstBackingResource(ResourceProvider*);
-    void deleteAllEvictedBackings();
     void sortBackings();
 
     void assertInvariants();
@@ -188,6 +189,11 @@ private:
     // are not sorted by priority.
     BackingList m_backings;
     bool m_backingsTailNotSorted;
+
+    // The list of backings that have been evicted, but may still be linked
+    // to textures. This can be accessed concurrently by the main and impl
+    // threads, and may only be accessed while holding m_evictedBackingsLock.
+    mutable base::Lock m_evictedBackingsLock;
     BackingList m_evictedBackings;
 
     TextureVector m_tempTextureVector;

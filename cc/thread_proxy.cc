@@ -516,9 +516,6 @@ void ThreadProxy::scheduledActionBeginFrame()
     beginFrameState->implTransform = m_layerTreeHostImpl->implTransform();
     DCHECK_GT(m_layerTreeHostImpl->memoryAllocationLimitBytes(), 0u);
     beginFrameState->memoryAllocationLimitBytes = m_layerTreeHostImpl->memoryAllocationLimitBytes();
-    if (m_layerTreeHost->contentsTextureManager())
-        m_layerTreeHost->contentsTextureManager()->getEvictedBackings(beginFrameState->evictedContentsTexturesBackings);
-
     m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadProxy::beginFrame, base::Unretained(this), base::Passed(beginFrameState.Pass())));
 
     if (m_beginFrameCompletionEventOnImplThread) {
@@ -533,13 +530,6 @@ void ThreadProxy::beginFrame(scoped_ptr<BeginFrameAndCommitState> beginFrameStat
     DCHECK(isMainThread());
     if (!m_layerTreeHost)
         return;
-
-    // Be sure to never early-out of unlinking evicted textures whenever, so that
-    // the each evicted backing is sent to the main thread exactly once.
-    if (beginFrameState && !beginFrameState->evictedContentsTexturesBackings.empty()) {
-        DCHECK(m_layerTreeHost->contentsTextureManager());
-        m_layerTreeHost->contentsTextureManager()->unlinkEvictedBackings(beginFrameState->evictedContentsTexturesBackings);
-    }
 
     if (m_deferCommits) {
         m_pendingDeferredCommit = beginFrameState.Pass();
@@ -582,6 +572,12 @@ void ThreadProxy::beginFrame(scoped_ptr<BeginFrameAndCommitState> beginFrameStat
 
     if (beginFrameState)
         m_layerTreeHost->updateAnimations(beginFrameState->monotonicFrameBeginTime);
+
+    // Unlink any backings that the impl thread has evicted, so that we know to re-paint
+    // them in updateLayers.
+    if (m_layerTreeHost->contentsTextureManager())
+        m_layerTreeHost->contentsTextureManager()->unlinkAndClearEvictedBackings();
+
     m_layerTreeHost->layout();
 
     // Clear the commit flag after updating animations and layout here --- objects that only

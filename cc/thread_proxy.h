@@ -88,7 +88,6 @@ private:
         base::TimeTicks monotonicFrameBeginTime;
         scoped_ptr<ScrollAndScaleSet> scrollInfo;
         gfx::Transform implTransform;
-        PrioritizedResourceManager::BackingList evictedContentsTexturesBackings;
         size_t memoryAllocationLimitBytes;
     };
 

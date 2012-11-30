@@ -342,13 +342,7 @@ bool SingleThreadProxy::commitAndComposite()
     if (!m_layerTreeHost->initializeRendererIfNeeded())
         return false;
 
-    // Unlink any texture backings that were deleted
-    PrioritizedResourceManager::BackingList evictedContentsTexturesBackings;
-    {
-        DebugScopedSetImplThread impl(this);
-        m_layerTreeHost->contentsTextureManager()->getEvictedBackings(evictedContentsTexturesBackings);
-    }
-    m_layerTreeHost->contentsTextureManager()->unlinkEvictedBackings(evictedContentsTexturesBackings);
+    m_layerTreeHost->contentsTextureManager()->unlinkAndClearEvictedBackings();
 
     scoped_ptr<ResourceUpdateQueue> queue = make_scoped_ptr(new ResourceUpdateQueue);
     m_layerTreeHost->updateLayers(*(queue.get()), m_layerTreeHostImpl->memoryAllocationLimitBytes());

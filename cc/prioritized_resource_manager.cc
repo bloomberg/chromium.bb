@@ -36,7 +36,7 @@ PrioritizedResourceManager::~PrioritizedResourceManager()
     while (m_textures.size() > 0)
         unregisterTexture(*m_textures.begin());
 
-    deleteAllEvictedBackings();
+    unlinkAndClearEvictedBackings();
     DCHECK(m_evictedBackings.empty());
 
     // Each remaining backing is a leaked opengl texture. There should be none.
@@ -306,15 +306,6 @@ void PrioritizedResourceManager::reduceMemory(ResourceProvider* resourceProvider
                                     EvictOnlyRecyclable,
                                     UnlinkBackings,
                                     resourceProvider);
-
-    // Unlink all evicted backings
-    for (BackingList::const_iterator it = m_evictedBackings.begin(); it != m_evictedBackings.end(); ++it) {
-        if ((*it)->owner())
-            (*it)->owner()->unlink();
-    }
-
-    // And clear the list of evicted backings
-    deleteAllEvictedBackings();
 }
 
 void PrioritizedResourceManager::clearAllMemory(ResourceProvider* resourceProvider)
@@ -343,39 +334,14 @@ bool PrioritizedResourceManager::reduceMemoryOnImplThread(size_t limitBytes, int
                                        resourceProvider);
 }
 
-void PrioritizedResourceManager::getEvictedBackings(BackingList& evictedBackings)
-{
-    DCHECK(m_proxy->isImplThread());
-    evictedBackings.clear();
-    evictedBackings.insert(evictedBackings.begin(), m_evictedBackings.begin(), m_evictedBackings.end());
-    for (BackingList::const_iterator it = evictedBackings.begin(); it != evictedBackings.end(); ++it) {
-        PrioritizedResource::Backing* backing = (*it);
-        CHECK(!backing->m_inMainThreadEvictedList);
-        backing->m_inMainThreadEvictedList = true;
-    }
-}
-
-void PrioritizedResourceManager::unlinkEvictedBackings(const BackingList& evictedBackings)
+void PrioritizedResourceManager::unlinkAndClearEvictedBackings()
 {
     DCHECK(m_proxy->isMainThread());
-    for (BackingList::const_iterator it = evictedBackings.begin(); it != evictedBackings.end(); ++it) {
-        PrioritizedResource::Backing* backing = (*it);
-        CHECK(backing->m_inMainThreadEvictedList);
-        backing->m_inMainThreadEvictedList = false;
-        if (backing->owner()) {
-            CHECK(backing->owner()->backing());
-            CHECK(backing->owner()->backing() == backing);
-            backing->owner()->unlink();
-        }
-    }
-}
-
-void PrioritizedResourceManager::deleteAllEvictedBackings()
-{
-    DCHECK(m_proxy->isMainThread() || (m_proxy->isImplThread() && m_proxy->isMainThreadBlocked()));
+    base::AutoLock scoped_lock(m_evictedBackingsLock);
     for (BackingList::const_iterator it = m_evictedBackings.begin(); it != m_evictedBackings.end(); ++it) {
         PrioritizedResource::Backing* backing = (*it);
-        CHECK(!backing->owner());
+        if (backing->owner())
+            backing->owner()->unlink();
         delete backing;
     }
     m_evictedBackings.clear();
@@ -383,6 +349,8 @@ void PrioritizedResourceManager::deleteAllEvictedBackings()
 
 bool PrioritizedResourceManager::linkedEvictedBackingsExist() const
 {
+    DCHECK(m_proxy->isImplThread() && m_proxy->isMainThreadBlocked());
+    base::AutoLock scoped_lock(m_evictedBackingsLock);
     for (BackingList::const_iterator it = m_evictedBackings.begin(); it != m_evictedBackings.end(); ++it) {
         if ((*it)->owner())
             return true;
@@ -446,6 +414,7 @@ void PrioritizedResourceManager::evictFirstBackingResource(ResourceProvider* res
     backing->deleteResource(resourceProvider);
     m_memoryUseBytes -= backing->bytes();
     m_backings.pop_front();
+    base::AutoLock scoped_lock(m_evictedBackingsLock);
     m_evictedBackings.push_back(backing);
 }
 
@@ -468,6 +437,7 @@ void PrioritizedResourceManager::assertInvariants()
     for (TextureSet::iterator it = m_textures.begin(); it != m_textures.end(); ++it) {
         PrioritizedResource* texture = (*it);
         PrioritizedResource::Backing* backing = texture->backing();
+        base::AutoLock scoped_lock(m_evictedBackingsLock);
         if (backing) {
             if (backing->resourceHasBeenDeleted()) {
                 DCHECK(std::find(m_backings.begin(), m_backings.end(), backing) == m_backings.end());

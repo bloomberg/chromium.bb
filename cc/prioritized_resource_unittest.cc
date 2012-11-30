@@ -89,6 +89,11 @@ public:
         return texture->m_backing->wasAbovePriorityCutoffAtLastPriorityUpdate();
     }
 
+    size_t evictedBackingCount(PrioritizedResourceManager* resourceManager)
+    {
+        return resourceManager->m_evictedBackings.size();
+    }
+
 protected:
     FakeProxy m_proxy;
     const gfx::Size m_textureSize;
@@ -232,16 +237,15 @@ TEST_F(PrioritizedResourceTest, changePriorityCutoff)
 
     // Do a one-time eviction for one more texture based on priority cutoff
     PrioritizedResourceManager::BackingList evictedBackings;
+    resourceManager->unlinkAndClearEvictedBackings();
     {
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
         resourceManager->reduceMemoryOnImplThread(texturesMemorySize(8), 104, resourceProvider());
-        resourceManager->getEvictedBackings(evictedBackings);
-        EXPECT_EQ(0, evictedBackings.size());
+        EXPECT_EQ(0, evictedBackingCount(resourceManager.get()));
         resourceManager->reduceMemoryOnImplThread(texturesMemorySize(8), 103, resourceProvider());
-        resourceManager->getEvictedBackings(evictedBackings);
-        EXPECT_EQ(1, evictedBackings.size());
+        EXPECT_EQ(1, evictedBackingCount(resourceManager.get()));
     }
-    resourceManager->unlinkEvictedBackings(evictedBackings);
+    resourceManager->unlinkAndClearEvictedBackings();
     EXPECT_EQ(texturesMemorySize(3), resourceManager->memoryUseBytes());
 
     // Re-allocate the the texture after the one-time drop.
