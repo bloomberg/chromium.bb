@@ -109,7 +109,7 @@ public class Shell extends LinearLayout {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if ((actionId != EditorInfo.IME_ACTION_GO) && (event == null ||
                         event.getKeyCode() != KeyEvent.KEYCODE_ENTER ||
-                        event.getAction() != KeyEvent.ACTION_UP)) {
+                        event.getAction() != KeyEvent.ACTION_DOWN)) {
                     return false;
                 }
                 loadUrl(mUrlTextView.getText().toString());
