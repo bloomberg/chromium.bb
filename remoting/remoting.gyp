@@ -1594,6 +1594,8 @@
         'host/ipc_desktop_environment_factory.h',
         'host/ipc_desktop_environment.cc',
         'host/ipc_desktop_environment.h',
+        'host/ipc_event_executor.cc',
+        'host/ipc_event_executor.h',
         'host/ipc_video_frame_capturer.cc',
         'host/ipc_video_frame_capturer.h',
         'host/it2me_host_user_interface.cc',

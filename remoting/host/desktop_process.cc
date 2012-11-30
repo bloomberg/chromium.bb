@@ -64,6 +64,11 @@ void DesktopProcess::OnChannelError() {
 bool DesktopProcess::Start() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
+  // Launch the input thread.
+  scoped_refptr<AutoThreadTaskRunner> input_task_runner =
+      AutoThread::CreateWithType("Input thread", caller_task_runner_,
+                                 MessageLoop::TYPE_IO);
+
   // Launch the I/O thread.
   scoped_refptr<AutoThreadTaskRunner> io_task_runner =
       AutoThread::CreateWithType("I/O thread", caller_task_runner_,
@@ -75,6 +80,7 @@ bool DesktopProcess::Start() {
 
   // Create a desktop agent.
   desktop_agent_ = DesktopSessionAgent::Create(caller_task_runner_,
+                                               input_task_runner,
                                                io_task_runner,
                                                video_capture_task_runner);
 

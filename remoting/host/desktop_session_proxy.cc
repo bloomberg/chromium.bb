@@ -15,6 +15,7 @@
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/ipc_video_frame_capturer.h"
 #include "remoting/proto/control.pb.h"
+#include "remoting/proto/event.pb.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"
@@ -44,6 +45,8 @@ bool DesktopSessionProxy::OnMessageReceived(const IPC::Message& message) {
                         OnCreateSharedBuffer)
     IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_ReleaseSharedBuffer,
                         OnReleaseSharedBuffer)
+    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_InjectClipboardEvent,
+                        OnInjectClipboardEvent)
   IPC_END_MESSAGE_MAP()
 
   return handled;
@@ -121,6 +124,53 @@ void DesktopSessionProxy::Disconnect() {
     --pending_capture_frame_requests_;
     PostCaptureCompleted(scoped_refptr<CaptureData>());
   }
+}
+
+void DesktopSessionProxy::InjectClipboardEvent(
+    const protocol::ClipboardEvent& event) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  std::string serialized_event;
+  if (!event.SerializeToString(&serialized_event)) {
+    LOG(ERROR) << "Failed to serialize protocol::ClipboardEvent.";
+    return;
+  }
+
+  SendToDesktop(
+      new ChromotingNetworkDesktopMsg_InjectClipboardEvent(serialized_event));
+}
+
+void DesktopSessionProxy::InjectKeyEvent(const protocol::KeyEvent& event) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  std::string serialized_event;
+  if (!event.SerializeToString(&serialized_event)) {
+    LOG(ERROR) << "Failed to serialize protocol::KeyEvent.";
+    return;
+  }
+
+  SendToDesktop(
+      new ChromotingNetworkDesktopMsg_InjectKeyEvent(serialized_event));
+}
+
+void DesktopSessionProxy::InjectMouseEvent(const protocol::MouseEvent& event) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  std::string serialized_event;
+  if (!event.SerializeToString(&serialized_event)) {
+    LOG(ERROR) << "Failed to serialize protocol::MouseEvent.";
+    return;
+  }
+
+  SendToDesktop(
+      new ChromotingNetworkDesktopMsg_InjectMouseEvent(serialized_event));
+}
+
+void DesktopSessionProxy::StartEventExecutor(
+    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  client_clipboard_ = client_clipboard.Pass();
 }
 
 void DesktopSessionProxy::InvalidateRegion(const SkRegion& invalid_region) {
@@ -273,6 +323,20 @@ void DesktopSessionProxy::OnCursorShapeChanged(
 
   PostCursorShape(cursor_shape.Pass());
 }
+
+void DesktopSessionProxy::OnInjectClipboardEvent(
+    const std::string& serialized_event) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  protocol::ClipboardEvent event;
+  if (!event.ParseFromString(serialized_event)) {
+    LOG(ERROR) << "Failed to parse protocol::ClipboardEvent.";
+    return;
+  }
+
+  client_clipboard_->InjectClipboardEvent(event);
+}
+
 
 void DesktopSessionProxy::PostCaptureCompleted(
     scoped_refptr<CaptureData> capture_data) {

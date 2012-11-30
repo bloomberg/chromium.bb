@@ -159,6 +159,11 @@ IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_CaptureCompleted,
 IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_CursorShapeChanged,
                      std::string /* serialized_cursor_shape */ )
 
+// Carries a clipboard event from the desktop session agent to the client.
+// |serialized_event| is a serialized protocol::ClipboardEvent.
+IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_InjectClipboardEvent,
+                     std::string /* serialized_event */ )
+
 //-----------------------------------------------------------------------------
 // Chromoting messages sent from the network to the desktop process.
 
@@ -172,3 +177,18 @@ IPC_MESSAGE_CONTROL1(ChromotingNetworkDesktopMsg_InvalidateRegion,
                      std::vector<SkIRect> /* invalid_region */ )
 
 IPC_MESSAGE_CONTROL0(ChromotingNetworkDesktopMsg_CaptureFrame)
+
+// Carries a clipboard event from the client to the desktop session agent.
+// |serialized_event| is a serialized protocol::ClipboardEvent.
+IPC_MESSAGE_CONTROL1(ChromotingNetworkDesktopMsg_InjectClipboardEvent,
+                     std::string /* serialized_event */ )
+
+// Carries a keyboard event from the client to the desktop session agent.
+// |serialized_event| is a serialized protocol::KeyEvent.
+IPC_MESSAGE_CONTROL1(ChromotingNetworkDesktopMsg_InjectKeyEvent,
+                     std::string /* serialized_event */ )
+
+// Carries a mouse event from the client to the desktop session agent.
+// |serialized_event| is a serialized protocol::MouseEvent.
+IPC_MESSAGE_CONTROL1(ChromotingNetworkDesktopMsg_InjectMouseEvent,
+                     std::string /* serialized_event */ )

@@ -14,6 +14,8 @@
 #include "ipc/ipc_platform_file.h"
 #include "remoting/base/shared_buffer.h"
 #include "remoting/host/video_frame_capturer.h"
+#include "remoting/proto/event.pb.h"
+#include "remoting/protocol/clipboard_stub.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
 #if defined(OS_WIN)
@@ -72,6 +74,12 @@ class DesktopSessionProxy
   // StopVideoCapturer() has been called will be silently dropped.
   void StopVideoCapturer();
 
+  // APIs used to implement the EventExecutor interface.
+  void InjectClipboardEvent(const protocol::ClipboardEvent& event);
+  void InjectKeyEvent(const protocol::KeyEvent& event);
+  void InjectMouseEvent(const protocol::MouseEvent& event);
+  void StartEventExecutor(scoped_ptr<protocol::ClipboardStub> client_clipboard);
+
  private:
   friend class base::RefCountedThreadSafe<DesktopSessionProxy>;
   virtual ~DesktopSessionProxy();
@@ -101,6 +109,9 @@ class DesktopSessionProxy
   // |video_capturer_|.
   void PostCursorShape(scoped_ptr<protocol::CursorShapeInfo> cursor_shape);
 
+  // Handles InjectClipboardEvent request from the desktop integration process.
+  void OnInjectClipboardEvent(const std::string& serialized_event);
+
   // Sends a message to the desktop session agent. The message is silently
   // deleted if the channel is broken.
   void SendToDesktop(IPC::Message* message);
@@ -111,6 +122,9 @@ class DesktopSessionProxy
 
   // Task runner on which |video_capturer_delegate_| will be invoked.
   scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner_;
+
+  // Points to the client stub passed to StartEventExecutor().
+  scoped_ptr<protocol::ClipboardStub> client_clipboard_;
 
   // IPC channel to the desktop session agent.
   scoped_ptr<IPC::ChannelProxy> desktop_channel_;

@@ -17,6 +17,7 @@
 #include "remoting/host/desktop_session_connector.h"
 #include "remoting/host/desktop_session_proxy.h"
 #include "remoting/host/event_executor.h"
+#include "remoting/host/ipc_event_executor.h"
 #include "remoting/host/ipc_video_frame_capturer.h"
 #include "remoting/host/video_frame_capturer.h"
 
@@ -35,7 +36,8 @@ IpcDesktopEnvironment::IpcDesktopEnvironment(
     ClientSession* client)
     : DesktopEnvironment(
           AudioCapturer::Create(),
-          EventExecutor::Create(input_task_runner, ui_task_runner),
+          scoped_ptr<EventExecutor>(
+              new IpcEventExecutor(desktop_session_proxy)),
           scoped_ptr<VideoFrameCapturer>(
               new IpcVideoFrameCapturer(desktop_session_proxy))),
       network_task_runner_(network_task_runner),

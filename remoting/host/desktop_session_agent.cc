@@ -10,11 +10,55 @@
 #include "ipc/ipc_message_macros.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/capture_data.h"
+#include "remoting/base/constants.h"
+#include "remoting/base/util.h"
 #include "remoting/host/chromoting_messages.h"
+#include "remoting/host/event_executor.h"
 #include "remoting/proto/control.pb.h"
+#include "remoting/proto/event.pb.h"
+#include "remoting/protocol/clipboard_stub.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
 namespace remoting {
+
+namespace {
+
+// USB to XKB keycode map table.
+#define USB_KEYMAP(usb, xkb, win, mac) {usb, xkb}
+#include "ui/base/keycodes/usb_keycode_map.h"
+#undef USB_KEYMAP
+
+// Routes local clipboard events though the IPC channel to the network process.
+class DesktopSesssionClipboardStub : public protocol::ClipboardStub {
+ public:
+  explicit DesktopSesssionClipboardStub(
+      scoped_refptr<DesktopSessionAgent> desktop_session_agent);
+  virtual ~DesktopSesssionClipboardStub();
+
+  // protocol::ClipboardStub implementation.
+  virtual void InjectClipboardEvent(
+      const protocol::ClipboardEvent& event) OVERRIDE;
+
+ private:
+  scoped_refptr<DesktopSessionAgent> desktop_session_agent_;
+
+  DISALLOW_COPY_AND_ASSIGN(DesktopSesssionClipboardStub);
+};
+
+DesktopSesssionClipboardStub::DesktopSesssionClipboardStub(
+    scoped_refptr<DesktopSessionAgent> desktop_session_agent)
+    : desktop_session_agent_(desktop_session_agent) {
+}
+
+DesktopSesssionClipboardStub::~DesktopSesssionClipboardStub() {
+}
+
+void DesktopSesssionClipboardStub::InjectClipboardEvent(
+    const protocol::ClipboardEvent& event) {
+  desktop_session_agent_->InjectClipboardEvent(event);
+}
+
+}  // namespace
 
 DesktopSessionAgent::~DesktopSessionAgent() {
   DCHECK(!network_channel_);
@@ -32,7 +76,14 @@ bool DesktopSessionAgent::OnMessageReceived(const IPC::Message& message) {
                         OnInvalidateRegion)
     IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_SharedBufferCreated,
                         OnSharedBufferCreated)
+    IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_InjectClipboardEvent,
+                        OnInjectClipboardEvent)
+    IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_InjectKeyEvent,
+                        OnInjectKeyEvent)
+    IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_InjectMouseEvent,
+                        OnInjectMouseEvent)
   IPC_END_MESSAGE_MAP()
+
   return handled;
 }
 
@@ -123,6 +174,20 @@ void DesktopSessionAgent::OnCursorShapeChanged(
       serialized_cursor_shape));
 }
 
+void DesktopSessionAgent::InjectClipboardEvent(
+    const protocol::ClipboardEvent& event) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  std::string serialized_event;
+  if (!event.SerializeToString(&serialized_event)) {
+    LOG(ERROR) << "Failed to serialize protocol::ClipboardEvent.";
+    return;
+  }
+
+  SendToNetwork(
+      new ChromotingDesktopNetworkMsg_InjectClipboardEvent(serialized_event));
+}
+
 bool DesktopSessionAgent::Start(const base::Closure& disconnected_task,
                                 IPC::PlatformFileForTransit* desktop_pipe_out) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
@@ -132,6 +197,13 @@ bool DesktopSessionAgent::Start(const base::Closure& disconnected_task,
   // Create an IPC channel to communicate with the network process.
   if (!CreateChannelForNetworkProcess(desktop_pipe_out, &network_channel_))
     return false;
+
+  // Create and start the event executor.
+  event_executor_ = EventExecutor::Create(input_task_runner(),
+                                          caller_task_runner());
+  scoped_ptr<protocol::ClipboardStub> clipboard_stub(
+      new DesktopSesssionClipboardStub(this));
+  event_executor_->Start(clipboard_stub.Pass());
 
   // Start the video capturer.
   video_capture_task_runner()->PostTask(
@@ -144,6 +216,8 @@ void DesktopSessionAgent::Stop() {
 
   // Make sure the channel is closed.
   network_channel_.reset();
+
+  event_executor_.reset();
 
   // Stop the video capturer.
   video_capture_task_runner()->PostTask(
@@ -211,6 +285,76 @@ void DesktopSessionAgent::OnSharedBufferCreated(int id) {
   }
 }
 
+void DesktopSessionAgent::OnInjectClipboardEvent(
+    const std::string& serialized_event) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  protocol::ClipboardEvent event;
+  if (!event.ParseFromString(serialized_event)) {
+    LOG(ERROR) << "Failed to parse protocol::ClipboardEvent.";
+    return;
+  }
+
+  // Currently we only handle UTF-8 text.
+  if (event.mime_type().compare(kMimeTypeTextUtf8) != 0)
+    return;
+
+  if (!StringIsUtf8(event.data().c_str(), event.data().length())) {
+    LOG(ERROR) << "ClipboardEvent: data is not UTF-8 encoded.";
+    return;
+  }
+
+  event_executor_->InjectClipboardEvent(event);
+}
+
+void DesktopSessionAgent::OnInjectKeyEvent(
+    const std::string& serialized_event) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  protocol::KeyEvent event;
+  if (!event.ParseFromString(serialized_event)) {
+    LOG(ERROR) << "Failed to parse protocol::KeyEvent.";
+    return;
+  }
+
+  // Ignore unknown keycodes.
+  if (event.has_usb_keycode() &&
+      UsbKeycodeToNativeKeycode(event.usb_keycode()) == kInvalidKeycode) {
+    LOG(ERROR) << "KeyEvent: unknown USB keycode: "
+               << std::hex << event.usb_keycode() << std::dec;
+    return;
+  }
+
+  event_executor_->InjectKeyEvent(event);
+}
+
+void DesktopSessionAgent::OnInjectMouseEvent(
+    const std::string& serialized_event) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  protocol::MouseEvent event;
+  if (!event.ParseFromString(serialized_event)) {
+    LOG(ERROR) << "Failed to parse protocol::MouseEvent.";
+    return;
+  }
+
+  // Validate the specified button index.
+  if (event.has_button() &&
+      !(protocol::MouseEvent::BUTTON_LEFT <= event.button() &&
+          event.button() < protocol::MouseEvent::BUTTON_MAX)) {
+    LOG(ERROR) << "MouseEvent: unknown button: " << event.button();
+    return;
+  }
+
+  // Do not allow negative coordinates.
+  if (event.has_x())
+    event.set_x(std::max(0, event.x()));
+  if (event.has_y())
+    event.set_y(std::max(0, event.y()));
+
+  event_executor_->InjectMouseEvent(event);
+}
+
 void DesktopSessionAgent::SendToNetwork(IPC::Message* message) {
   if (!caller_task_runner()->BelongsToCurrentThread()) {
     caller_task_runner()->PostTask(
@@ -248,9 +392,11 @@ void DesktopSessionAgent::StopVideoCapturer() {
 
 DesktopSessionAgent::DesktopSessionAgent(
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
+    scoped_refptr<AutoThreadTaskRunner> input_task_runner,
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
     scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner)
     : caller_task_runner_(caller_task_runner),
+      input_task_runner_(input_task_runner),
       io_task_runner_(io_task_runner),
       video_capture_task_runner_(video_capture_task_runner),
       next_shared_buffer_id_(1) {

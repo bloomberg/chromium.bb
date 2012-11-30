@@ -17,6 +17,7 @@
 #include "remoting/base/shared_buffer.h"
 #include "remoting/base/shared_buffer_factory.h"
 #include "remoting/host/video_frame_capturer.h"
+#include "remoting/protocol/clipboard_stub.h"
 #include "third_party/skia/include/core/SkRect.h"
 
 namespace IPC {
@@ -27,6 +28,7 @@ class Message;
 namespace remoting {
 
 class AutoThreadTaskRunner;
+class EventExecutor;
 
 // Provides screen/audio capturing and input injection services for
 // the network process.
@@ -38,6 +40,7 @@ class DesktopSessionAgent
  public:
   static scoped_refptr<DesktopSessionAgent> Create(
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
+      scoped_refptr<AutoThreadTaskRunner> input_task_runner,
       scoped_refptr<AutoThreadTaskRunner> io_task_runner,
       scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner);
 
@@ -56,6 +59,10 @@ class DesktopSessionAgent
   virtual void OnCursorShapeChanged(
       scoped_ptr<protocol::CursorShapeInfo> cursor_shape) OVERRIDE;
 
+  // Forwards a local clipboard event though the IPC channel to the network
+  // process.
+  void InjectClipboardEvent(const protocol::ClipboardEvent& event);
+
   // Creates desktop integration components and a connected IPC channel to be
   // used to access them. The client end of the channel is returned in
   // the variable pointed by |desktop_pipe_out|.
@@ -71,6 +78,7 @@ class DesktopSessionAgent
  protected:
   DesktopSessionAgent(
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
+      scoped_refptr<AutoThreadTaskRunner> input_task_runner,
       scoped_refptr<AutoThreadTaskRunner> io_task_runner,
       scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner);
 
@@ -92,6 +100,11 @@ class DesktopSessionAgent
   // Handles SharedBufferCreated notification from the client.
   void OnSharedBufferCreated(int id);
 
+  // Handles event executor requests from the client.
+  void OnInjectClipboardEvent(const std::string& serialized_event);
+  void OnInjectKeyEvent(const std::string& serialized_event);
+  void OnInjectMouseEvent(const std::string& serialized_event);
+
   // Sends a message to the network process.
   void SendToNetwork(IPC::Message* message);
 
@@ -107,6 +120,10 @@ class DesktopSessionAgent
     return caller_task_runner_;
   }
 
+  scoped_refptr<AutoThreadTaskRunner> input_task_runner() const {
+    return input_task_runner_;
+  }
+
   scoped_refptr<AutoThreadTaskRunner> io_task_runner() const {
     return io_task_runner_;
   }
@@ -119,6 +136,9 @@ class DesktopSessionAgent
   // Task runner on which public methods of this class should be called.
   scoped_refptr<AutoThreadTaskRunner> caller_task_runner_;
 
+  // Task runner on which keyboard/mouse input is injected.
+  scoped_refptr<AutoThreadTaskRunner> input_task_runner_;
+
   // Task runner used by the IPC channel.
   scoped_refptr<AutoThreadTaskRunner> io_task_runner_;
 
@@ -128,6 +148,9 @@ class DesktopSessionAgent
   // Runs on |caller_task_runner_| to notify the caller that the network-to-
   // desktop channel has been disconnected.
   base::Closure disconnected_task_;
+
+  // Executes keyboard, mouse and clipboard events.
+  scoped_ptr<EventExecutor> event_executor_;
 
   // IPC channel connecting the desktop process with the network process.
   scoped_ptr<IPC::ChannelProxy> network_channel_;

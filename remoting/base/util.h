@@ -96,6 +96,9 @@ std::string ReplaceLfByCrLf(const std::string& in);
 // Replaces every occurrence of "\r\n" in a string by "\n".
 std::string ReplaceCrLfByLf(const std::string& in);
 
+// Checks if the given string is a valid UTF-8 string.
+bool StringIsUtf8(const char* data, size_t length);
+
 }  // namespace remoting
 
 #endif  // REMOTING_BASE_UTIL_H_

@@ -25,6 +25,7 @@ class DesktopSessionAgentWin : public DesktopSessionAgent {
  public:
   DesktopSessionAgentWin(
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
+      scoped_refptr<AutoThreadTaskRunner> input_task_runner,
       scoped_refptr<AutoThreadTaskRunner> io_task_runner,
       scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner);
 
@@ -41,9 +42,11 @@ class DesktopSessionAgentWin : public DesktopSessionAgent {
 
 DesktopSessionAgentWin::DesktopSessionAgentWin(
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
+    scoped_refptr<AutoThreadTaskRunner> input_task_runner,
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
     scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner)
     : DesktopSessionAgent(caller_task_runner,
+                          input_task_runner,
                           io_task_runner,
                           video_capture_task_runner) {
 }
@@ -87,10 +90,12 @@ bool DesktopSessionAgentWin::CreateChannelForNetworkProcess(
 // static
 scoped_refptr<DesktopSessionAgent> DesktopSessionAgent::Create(
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
+    scoped_refptr<AutoThreadTaskRunner> input_task_runner,
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
     scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner) {
   return scoped_refptr<DesktopSessionAgent>(new DesktopSessionAgentWin(
-      caller_task_runner, io_task_runner, video_capture_task_runner));
+      caller_task_runner, input_task_runner, io_task_runner,
+      video_capture_task_runner));
 }
 
 }  // namespace remoting
