@@ -42,16 +42,11 @@ endif
 
 if BUILD_SIMPLE_EGL_CLIENTS
 simple_egl_clients_programs =			\
-	simple-egl				\
-	transformed
+	simple-egl
 
 simple_egl_SOURCES = simple-egl.c
 simple_egl_CPPFLAGS = $(SIMPLE_EGL_CLIENT_CFLAGS)
 simple_egl_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
-
-transformed_SOURCES = transformed.c
-transformed_CPPFLAGS = $(SIMPLE_EGL_CLIENT_CFLAGS)
-transformed_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
 endif
 
 if BUILD_CLIENTS
@@ -67,6 +62,7 @@ clients_programs =				\
 	eventdemo				\
 	clickdot				\
 	editor					\
+	transformed				\
 	$(full_gl_client_programs)
 
 desktop_shell = weston-desktop-shell
@@ -122,6 +118,9 @@ eventdemo_LDADD = $(toolkit_libs)
 
 clickdot_SOURCES = clickdot.c
 clickdot_LDADD = $(toolkit_libs)
+
+transformed_SOURCES = transformed.c
+transformed_LDADD = $(toolkit_libs)
 
 editor_SOURCES = 				\
 	editor.c				\
