@@ -315,9 +315,6 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
                         OnCreateObjectStore)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDeleteObjectStore,
                         OnDeleteObjectStore)
-    // TODO(alecflett): Remove this as part of
-    // https://bugs.webkit.org/show_bug.cgi?id=102733.
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseTransactionOld, OnTransaction)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCreateTransaction,
                         OnCreateTransaction)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseClose, OnClose)
@@ -408,29 +405,6 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteObjectStore(
 
   *ec = 0;
   idb_database->deleteObjectStore(index_id, *idb_transaction, *ec);
-}
-
-// TODO(alecflett): Remove this as part of
-// https://bugs.webkit.org/show_bug.cgi?id=102733.
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnTransaction(
-    int32 thread_id,
-    int32 idb_database_id,
-    const std::vector<int64>& object_store_ids,
-    int32 mode,
-    int32* idb_transaction_id) {
-  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
-      &map_, idb_database_id);
-  if (!database)
-      return;
-
-  WebVector<long long> object_stores(object_store_ids.size());
-  for (size_t i = 0; i < object_store_ids.size(); ++i)
-      object_stores[i] = object_store_ids[i];
-
-  WebIDBTransaction* transaction = database->transaction(
-      object_stores, mode);
-  *idb_transaction_id = parent_->Add(transaction, thread_id,
-                                     database_url_map_[idb_database_id]);
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateTransaction(

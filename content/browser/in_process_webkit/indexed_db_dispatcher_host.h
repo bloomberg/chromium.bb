@@ -120,13 +120,6 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
                              int64 object_store_id,
                              int32 transaction_id,
                              WebKit::WebExceptionCode* ec);
-    // TODO(alecflett): Remove this as part of
-    // https://bugs.webkit.org/show_bug.cgi?id=102733.
-    void OnTransaction(int32 thread_id,
-                       int32 idb_database_id,
-                       const std::vector<int64>& scope,
-                       int32 mode,
-                       int32* idb_transaction_id);
     void OnCreateTransaction(int32 thread_id,
                              int32 idb_database_id,
                              int64 transaction_id,
