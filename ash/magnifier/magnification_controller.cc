@@ -107,6 +107,8 @@ class MagnificationControllerImpl : virtual public MagnificationController,
 
   // Returns the default scale which depends on the login status.
   float GetDefaultZoomScale() const {
+    // TODO(yoshiki,mazda): Do not use SystemTrayDelegate to get the user login
+    // status (http://crbug.com/163170).
     user::LoginStatus login = Shell::GetInstance()->tray_delegate() ?
         Shell::GetInstance()->tray_delegate()->GetUserLoginStatus() :
         user::LOGGED_IN_NONE;
@@ -159,7 +161,7 @@ MagnificationControllerImpl::MagnificationControllerImpl()
       is_on_animation_(false),
       is_enabled_(false),
       move_cursor_after_animation_(false),
-      scale_(std::numeric_limits<double>::min()) {
+      scale_(kNonMagnifiedScale) {
   Shell::GetInstance()->AddPreTargetHandler(this);
 }
 
@@ -351,8 +353,13 @@ void MagnificationControllerImpl::AfterAnimationMoveCursorTo(
     const gfx::Point& location) {
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window_);
-  if (cursor_client)
+  if (cursor_client) {
+    // When cursor is invisible, do not move or show the cursor after the
+    // animation.
+    if (!cursor_client->IsCursorVisible())
+      return;
     cursor_client->ShowCursor(false);
+  }
   move_cursor_after_animation_ = true;
   position_after_animation_ = location;
 }
@@ -397,12 +404,12 @@ void MagnificationControllerImpl::OnImplicitAnimationsCompleted() {
   if (move_cursor_after_animation_) {
     root_window_->MoveCursorTo(position_after_animation_);
     move_cursor_after_animation_ = false;
-  }
 
-  aura::client::CursorClient* cursor_client =
-      aura::client::GetCursorClient(root_window_);
-  if (cursor_client)
-    cursor_client->ShowCursor(true);
+    aura::client::CursorClient* cursor_client =
+        aura::client::GetCursorClient(root_window_);
+    if (cursor_client)
+      cursor_client->ShowCursor(true);
+  }
 
   is_on_animation_ = false;
 }
