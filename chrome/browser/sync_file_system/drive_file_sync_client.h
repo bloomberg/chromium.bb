@@ -136,6 +136,11 @@ class DriveFileSyncClient : public base::NonThreadSafe,
                           int64 file_size,
                           const UploadFileCallback& callback);
 
+  // Returns true if the user is authenticated.
+  bool IsAuthenticated() const {
+    return drive_service_->HasRefreshToken();
+  }
+
   // Deletes the file identified by |resource_id|.
   // |remote_file_md5| represents the expected hash value of the file to be
   // deleted from Drive. If |remote_file_md5| is different from the actual
