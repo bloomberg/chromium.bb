@@ -38,7 +38,7 @@ void TestActivationDelegate::SetWindow(aura::Window* window) {
   aura::client::SetActivationDelegate(window, this);
 }
 
-bool TestActivationDelegate::ShouldActivate(const ui::Event* event) {
+bool TestActivationDelegate::ShouldActivate() const {
   should_activate_count_++;
   return activate_;
 }

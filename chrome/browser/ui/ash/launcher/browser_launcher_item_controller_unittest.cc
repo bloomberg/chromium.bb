@@ -159,7 +159,7 @@ class BrowserLauncherItemControllerTest
     }
 
     // aura::client::ActivationDelegate overrides.
-    virtual bool ShouldActivate(const ui::Event* event) OVERRIDE {
+    virtual bool ShouldActivate() const OVERRIDE {
       return true;
     }
     virtual void OnActivated() OVERRIDE {

@@ -285,7 +285,8 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       paint_canvas_(NULL),
       synthetic_move_sent_(false),
       accelerated_compositing_state_changed_(false),
-      can_lock_compositor_(YES) {
+      can_lock_compositor_(YES),
+      pointer_activate_(false) {
   host_->SetView(this);
   window_observer_.reset(new WindowObserver(this));
   window_->AddObserver(window_observer_.get());
@@ -1541,6 +1542,8 @@ ui::EventResult RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
 
 ui::EventResult RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnMouseEvent");
+  pointer_activate_ = event->type() == ui::ET_MOUSE_PRESSED;
+
   if (mouse_locked_) {
     // Hide the cursor if someone else has shown it.
     aura::client::CursorClient* cursor_client =
@@ -1681,10 +1684,12 @@ ui::EventResult RenderWidgetHostViewAura::OnGestureEvent(
   RenderViewHostDelegate* delegate = NULL;
   if (popup_type_ == WebKit::WebPopupTypeNone && !is_fullscreen_)
     delegate = RenderViewHost::From(host_)->GetDelegate();
-  if (delegate && event->type() == ui::ET_GESTURE_BEGIN &&
-      event->details().touch_points() == 1) {
+
+  bool gesture_begin = event->type() == ui::ET_GESTURE_BEGIN &&
+      event->details().touch_points() == 1;
+  if (delegate && gesture_begin)
     delegate->HandleGestureBegin();
-  }
+  pointer_activate_ = gesture_begin;
 
   WebKit::WebGestureEvent gesture = MakeWebGestureEvent(event);
   if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
@@ -1722,24 +1727,19 @@ ui::EventResult RenderWidgetHostViewAura::OnGestureEvent(
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, aura::client::ActivationDelegate implementation:
 
-bool RenderWidgetHostViewAura::ShouldActivate(const ui::Event* event) {
-  bool activate = false;
-  if (event) {
-    if (event->type() == ui::ET_MOUSE_PRESSED) {
-      activate = true;
-    } else if (event->type() == ui::ET_GESTURE_BEGIN) {
-      activate = static_cast<const ui::GestureEvent*>(event)->
-          details().touch_points() == 1;
-    }
-  } else {
-    return true;
-  }
-  if (activate)
-    host_->OnPointerEventActivate();
+bool RenderWidgetHostViewAura::ShouldActivate() const {
   return is_fullscreen_;
 }
 
 void RenderWidgetHostViewAura::OnActivated() {
+  // |pointer_activate_| will be true when we are activated as the result of
+  // a valid input event.
+  // TODO(sadrul): It would be nice if we could get the currently processed
+  //               event from the RootWindow's EventDispatcher, then we could
+  //               avoid this extra field and just check the type/details on
+  //               the current event here.
+  if (pointer_activate_)
+    host_->OnPointerEventActivate();
 }
 
 void RenderWidgetHostViewAura::OnLostActive() {
