@@ -649,7 +649,9 @@ void InstantController::SetSuggestions(
     }
   }
 
-  Show(INSTANT_SHOWN_QUERY_SUGGESTIONS, 100, INSTANT_SIZE_PERCENT);
+  // Extended mode pages will show() when ready.
+  if (!extended_enabled_)
+    Show(INSTANT_SHOWN_QUERY_SUGGESTIONS, 100, INSTANT_SIZE_PERCENT);
 }
 
 void InstantController::CommitInstantLoader(InstantLoader* loader) {
