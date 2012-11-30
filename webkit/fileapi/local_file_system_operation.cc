@@ -36,7 +36,7 @@ bool IsMediaFileSystemType(FileSystemType type) {
 }
 
 bool IsCrossOperationAllowed(FileSystemType src_type,
-                                                FileSystemType dest_type) {
+                             FileSystemType dest_type) {
   // If two types are supposed to run on different task runners we should not
   // allow cross FileUtil operations at this layer.
   return IsMediaFileSystemType(src_type) == IsMediaFileSystemType(dest_type);
@@ -116,6 +116,7 @@ void LocalFileSystemOperation::Copy(const FileSystemURL& src_url,
                                     const FileSystemURL& dest_url,
                                     const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationCopy));
+  is_cross_operation_ = (src_url.type() != dest_url.type());
 
   base::PlatformFileError result = SetUp(src_url, &src_util_, SETUP_FOR_READ);
   if (result == base::PLATFORM_FILE_OK)
@@ -141,7 +142,18 @@ void LocalFileSystemOperation::Move(const FileSystemURL& src_url,
                                     const FileSystemURL& dest_url,
                                     const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationMove));
+  is_cross_operation_ = (src_url.type() != dest_url.type());
+
   scoped_ptr<LocalFileSystemOperation> deleter(this);
+
+  // Temporarily disables cross-filesystem move.
+  // TODO(kinuko,tzik,kinaba): This special handling must be removed once
+  // we support saner cross-filesystem operation.
+  // (See http://crbug.com/130055)
+  if (is_cross_operation_) {
+    callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+    return;
+  }
 
   base::PlatformFileError result = SetUp(src_url, &src_util_, SETUP_FOR_WRITE);
   if (result == base::PLATFORM_FILE_OK)
@@ -152,17 +164,6 @@ void LocalFileSystemOperation::Move(const FileSystemURL& src_url,
   }
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
-    return;
-  }
-
-  // Temporarily disables cross-filesystem move for sandbox filesystems.
-  // TODO(kinuko,tzik,kinaba): This special handling must be removed once
-  // we support saner cross-filesystem operation.
-  // (See http://crbug.com/130055)
-  if (src_url.type() != dest_url.type() &&
-      (src_url.type() == kFileSystemTypeTemporary ||
-       src_url.type() == kFileSystemTypePersistent)) {
-    callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
@@ -455,6 +456,7 @@ LocalFileSystemOperation::LocalFileSystemOperation(
     : operation_context_(operation_context.Pass()),
       src_util_(NULL),
       dest_util_(NULL),
+      is_cross_operation_(false),
       peer_handle_(base::kNullProcessHandle),
       pending_operation_(kOperationNone),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -769,8 +771,14 @@ base::PlatformFileError LocalFileSystemOperation::SetUp(
     return base::PLATFORM_FILE_ERROR_SECURITY;
 
   if (mode == SETUP_FOR_READ) {
-    operation_context_->access_observers()->Notify(
-        &FileAccessObserver::OnAccess, MakeTuple(url));
+    // TODO(kinuko): This doesn't work well for cross-filesystem operation
+    // in the current architecture since the operation context (thus the
+    // observers) is configured for the destination URL while this method
+    // could be called for both src and dest URL.
+    if (!is_cross_operation_) {
+      operation_context_->access_observers()->Notify(
+          &FileAccessObserver::OnAccess, MakeTuple(url));
+    }
     return base::PLATFORM_FILE_OK;
   }
 

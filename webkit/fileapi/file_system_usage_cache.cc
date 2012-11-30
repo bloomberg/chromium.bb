@@ -12,7 +12,7 @@ namespace fileapi {
 
 const FilePath::CharType FileSystemUsageCache::kUsageFileName[] =
     FILE_PATH_LITERAL(".usage");
-const char FileSystemUsageCache::kUsageFileHeader[] = "FSU4";
+const char FileSystemUsageCache::kUsageFileHeader[] = "FSU5";
 const int FileSystemUsageCache::kUsageFileHeaderSize = 4;
 
 /* Pickle::{Read,Write}Bool treat bool as int */

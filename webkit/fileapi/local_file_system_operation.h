@@ -242,6 +242,10 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
   FileSystemFileUtil* src_util_;  // Not owned.
   FileSystemFileUtil* dest_util_;  // Not owned.
 
+  // Indicates if this operation is for cross filesystem operation or not.
+  // TODO(kinuko): This should be cleaned up.
+  bool is_cross_operation_;
+
   // This is set before any write operations to dispatch
   // FileUpdateObserver::StartUpdate and FileUpdateObserver::EndUpdate.
   ScopedVector<ScopedUpdateNotifier> scoped_update_notifiers_;

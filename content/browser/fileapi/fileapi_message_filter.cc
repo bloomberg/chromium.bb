@@ -236,7 +236,7 @@ void FileAPIMessageFilter::OnMove(
     return;
   }
 
-  FileSystemOperation* operation = GetNewOperation(src_url, request_id);
+  FileSystemOperation* operation = GetNewOperation(dest_url, request_id);
   if (!operation)
     return;
   operation->Move(
@@ -256,7 +256,7 @@ void FileAPIMessageFilter::OnCopy(
     return;
   }
 
-  FileSystemOperation* operation = GetNewOperation(src_url, request_id);
+  FileSystemOperation* operation = GetNewOperation(dest_url, request_id);
   if (!operation)
     return;
   operation->Copy(
