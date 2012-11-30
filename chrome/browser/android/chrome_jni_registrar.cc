@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/android/chrome_http_auth_handler.h"
 #include "chrome/browser/ui/android/javascript_app_modal_dialog_android.h"
 #include "content/components/navigation_interception/component_jni_registrar.h"
+#include "content/components/web_contents_delegate_android/color_chooser_android.h"
 #include "content/components/web_contents_delegate_android/component_jni_registrar.h"
 
 namespace chrome {
@@ -31,6 +32,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
       ChromeHttpAuthHandler::RegisterChromeHttpAuthHandler },
   { "ChromeWebContentsDelegateAndroid",
       RegisterChromeWebContentsDelegateAndroid },
+  { "ColorChooserAndroid", content::RegisterColorChooserAndroid },
   { "ContentViewUtil", RegisterContentViewUtil },
   { "DevToolsServer", RegisterDevToolsServer },
   { "IntentHelper", RegisterIntentHelper },

@@ -77,7 +77,6 @@
         'browser/ui/android/certificate_viewer_android.cc',
         'browser/ui/android/chrome_http_auth_handler.cc',
         'browser/ui/android/chrome_http_auth_handler.h',
-        'browser/ui/android/color_chooser_android.cc',
         'browser/ui/android/extensions/extension_install_dialog_android.cc',
         'browser/ui/android/extensions/extension_view_android.cc',
         'browser/ui/android/extensions/extension_view_android.h',

@@ -320,6 +320,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual JavaScriptDialogCreator* GetJavaScriptDialogCreator();
 
   // Called when color chooser should open. Returns the opened color chooser.
+  // Ownership of the returned pointer is transferred to the caller.
   virtual content::ColorChooser* OpenColorChooser(WebContents* web_contents,
                                                   int color_chooser_id,
                                                   SkColor color);
