@@ -462,6 +462,7 @@
         ['OS=="win"', {
           'dependencies': [
             'chrome_dll',
+            'chrome_nacl_win64',
             'chrome_version_resources',
             'installer_util',
             'image_pre_reader',
