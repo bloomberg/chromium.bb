@@ -57,9 +57,27 @@ void SpellcheckCustomDictionary::LoadDictionaryIntoCustomWordList(
   }
 
   base::SplitString(contents, '\n', custom_words);
+
+  // Erase duplicates.
+  std::sort(custom_words->begin(), custom_words->end());
+  custom_words->erase(std::unique(custom_words->begin(), custom_words->end()),
+                      custom_words->end());
+
   // Clear out empty words.
   custom_words->erase(remove_if(custom_words->begin(), custom_words->end(),
     mem_fun_ref(&std::string::empty)), custom_words->end());
+
+  // Write out the clean file.
+  std::stringstream ss;
+  for (WordList::iterator it = custom_words->begin();
+       it != custom_words->end();
+       ++it) {
+    ss << *it << '\n';
+  }
+  contents = ss.str();
+  file_util::WriteFile(custom_dictionary_path_,
+                       contents.c_str(),
+                       contents.length());
 }
 
 void SpellcheckCustomDictionary::SetCustomWordList(WordList* custom_words) {
@@ -170,8 +188,8 @@ void SpellcheckCustomDictionary::EraseWordFromCustomDictionary(
   WordList custom_words;
   LoadDictionaryIntoCustomWordList(&custom_words);
 
-  char empty[] = {'\0'};
-  char separator[] = {'\n', '\0'};
+  const char empty[] = {'\0'};
+  const char separator[] = {'\n', '\0'};
   file_util::WriteFile(custom_dictionary_path_, empty, 0);
   for (WordList::iterator it = custom_words.begin();
       it != custom_words.end();

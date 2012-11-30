@@ -15,12 +15,6 @@
 
 namespace options {
 
-namespace {
-bool StringCompare(const std::string& a, const std::string& b) {
-  return a.compare(b) < 0;
-}
-}  // namespace
-
 LanguageDictionaryOverlayHandler::LanguageDictionaryOverlayHandler()
     : overlay_initialized_(false),
       dictionary_(NULL) {
@@ -99,10 +93,8 @@ void LanguageDictionaryOverlayHandler::ResetDictionaryWords() {
     dictionary_->AddObserver(this);
   }
 
-  std::vector<std::string> words = dictionary_->GetWords();
-  std::sort(words.begin(), words.end(), StringCompare);
   ListValue list_value;
-  list_value.AppendStrings(words);
+  list_value.AppendStrings(dictionary_->GetWords());
   web_ui()->CallJavascriptFunction("EditDictionaryOverlay.setWordList",
                                    list_value);
 }

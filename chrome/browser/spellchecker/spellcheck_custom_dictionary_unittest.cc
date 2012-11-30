@@ -102,6 +102,7 @@ TEST_F(SpellcheckCustomDictionaryTest, SaveAndLoad) {
 
   // The custom word list should include written words.
   custom_dictionary->LoadDictionaryIntoCustomWordList(&loaded_custom_words);
+  std::sort(expected.begin(), expected.end());
   EXPECT_EQ(loaded_custom_words, expected);
 
   // Load in another instance of SpellCheckService.
@@ -151,10 +152,12 @@ TEST_F(SpellcheckCustomDictionaryTest, MultiProfile) {
 
   WordList actual1;
   custom_dictionary->LoadDictionaryIntoCustomWordList(&actual1);
+  std::sort(expected1.begin(), expected1.end());
   EXPECT_EQ(actual1, expected1);
 
   WordList actual2;
   custom_dictionary2->LoadDictionaryIntoCustomWordList(&actual2);
+  std::sort(expected2.begin(), expected2.end());
   EXPECT_EQ(actual2, expected2);
 
   // Flush the loop now to prevent service init tasks from being run during

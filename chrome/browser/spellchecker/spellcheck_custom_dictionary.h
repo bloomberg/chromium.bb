@@ -32,6 +32,9 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary {
 
   const chrome::spellcheck_common::WordList& GetWords() const;
 
+  // Populates the |custom_words| with the list of words in the custom
+  // dictionary file. Makes sure that the custom dictionary file is sorted and
+  // does not have duplicates.
   void LoadDictionaryIntoCustomWordList(
       chrome::spellcheck_common::WordList* custom_words);
 
@@ -48,7 +51,7 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary {
 
   void WriteWordToCustomDictionary(const std::string& word);
 
-  // Removes the given word from the custom words list and inform renderer of
+  // Removes the given word from the custom words list and informs renderer of
   // the update. Returns false for words that are not in the dictionary.
   bool RemoveWord(const std::string& word);
 
