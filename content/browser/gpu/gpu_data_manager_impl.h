@@ -78,6 +78,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
   virtual uint32 GetWindowCount() const OVERRIDE;
   virtual void UnblockDomainFrom3DAPIs(const GURL& url) OVERRIDE;
   virtual void DisableDomainBlockingFor3DAPIsForTesting() OVERRIDE;
+  virtual void DisableGpuWatchdog() OVERRIDE;
 
   // This collects preliminary GPU info, load GpuBlacklist, and compute the
   // preliminary blacklisted features; it should only be called at browser

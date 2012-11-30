@@ -100,6 +100,9 @@ class GpuDataManager {
   // Disables domain blocking for 3D APIs. For use only in tests.
   virtual void DisableDomainBlockingFor3DAPIsForTesting() = 0;
 
+  // Disable the gpu process watchdog thread.
+  virtual void DisableGpuWatchdog() = 0;
+
  protected:
   virtual ~GpuDataManager() {}
 };

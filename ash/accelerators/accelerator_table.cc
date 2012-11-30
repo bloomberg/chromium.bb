@@ -86,7 +86,9 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_O, ui::EF_CONTROL_DOWN, OPEN_FILE_MANAGER_DIALOG },
   { true, ui::VKEY_M, ui::EF_CONTROL_DOWN, OPEN_FILE_MANAGER_TAB },
   { true, ui::VKEY_T, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, OPEN_CROSH },
-#endif  // !defined(OS_CHROMEOS)
+  { true, ui::VKEY_G, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+    DISABLE_GPU_WATCHDOG },
+#endif  // defined(OS_CHROMEOS)
   { true, ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, OPEN_FEEDBACK_PAGE },
   { true, ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, EXIT },
   { true, ui::VKEY_Z, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
@@ -201,6 +203,7 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   BRIGHTNESS_UP,
 #if defined(OS_CHROMEOS)
   CYCLE_DISPLAY_MODE,
+  DISABLE_GPU_WATCHDOG,
 #endif  // defined(OS_CHROMEOS)
   DISABLE_CAPS_LOCK,
   KEYBOARD_BRIGHTNESS_DOWN,

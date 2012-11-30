@@ -377,6 +377,13 @@ void GpuDataManagerImpl::DisableDomainBlockingFor3DAPIsForTesting() {
   domain_blocking_enabled_ = false;
 }
 
+void GpuDataManagerImpl::DisableGpuWatchdog() {
+  GpuProcessHost::SendOnIO(
+      GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+      CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
+      new GpuMsg_DisableWatchdog);
+}
+
 void GpuDataManagerImpl::AppendRendererCommandLine(
     CommandLine* command_line) const {
   DCHECK(command_line);

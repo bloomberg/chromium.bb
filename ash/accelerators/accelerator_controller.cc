@@ -43,6 +43,7 @@
 #include "ash/wm/workspace/snap_sizer.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -495,6 +496,9 @@ bool AcceleratorController::PerformAction(int action,
       return HandleToggleSpokenFeedback();
     case TOGGLE_WIFI:
       Shell::GetInstance()->tray_delegate()->ToggleWifi();
+      return true;
+    case DISABLE_GPU_WATCHDOG:
+      content::GpuDataManager::GetInstance()->DisableGpuWatchdog();
       return true;
 #endif
     case OPEN_FEEDBACK_PAGE:
