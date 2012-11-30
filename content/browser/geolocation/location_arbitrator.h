@@ -5,101 +5,35 @@
 #ifndef CONTENT_BROWSER_GEOLOCATION_LOCATION_ARBITRATOR_H_
 #define CONTENT_BROWSER_GEOLOCATION_LOCATION_ARBITRATOR_H_
 
-#include "base/memory/scoped_vector.h"
-#include "base/string16.h"
-#include "base/time.h"
-#include "content/browser/geolocation/location_provider.h"
-#include "content/browser/geolocation/geolocation_observer.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/access_token_store.h"
-#include "content/public/common/geoposition.h"
-#include "net/url_request/url_request_context_getter.h"
-
-namespace net {
-class URLRequestContextGetter;
-}
 
 namespace content {
-class AccessTokenStore;
-class LocationProviderBase;
+
+struct GeolocationObserverOptions;
 
 // This class is responsible for handling updates from multiple underlying
 // providers and resolving them to a single 'best' location fix at any given
 // moment.
-class CONTENT_EXPORT GeolocationArbitrator
-    : public LocationProviderBase::ListenerInterface {
- public:
-  // Number of milliseconds newer a location provider has to be that it's worth
-  // switching to this location provider on the basis of it being fresher
-  // (regardles of relative accuracy). Public for tests.
-  static const int64 kFixStaleTimeoutMilliseconds;
-
-  explicit GeolocationArbitrator(GeolocationObserver* observer);
-  virtual ~GeolocationArbitrator();
-
-  static GURL DefaultNetworkProviderURL();
+class CONTENT_EXPORT GeolocationArbitrator {
+public:
+  virtual ~GeolocationArbitrator() {};
 
   // See more details in geolocation_provider.
-  void StartProviders(const GeolocationObserverOptions& options);
-  void StopProviders();
+  virtual void StartProviders(const GeolocationObserverOptions& options) = 0;
+  virtual void StopProviders() = 0;
 
   // Called everytime permission is granted to a page for using geolocation.
   // This may either be through explicit user action (e.g. responding to the
   // infobar prompt) or inferred from a persisted site permission.
   // The arbitrator will inform all providers of this, which may in turn use
   // this information to modify their internal policy.
-  void OnPermissionGranted();
+  virtual void OnPermissionGranted() = 0;
 
   // Returns true if this arbitrator has received at least one call to
   // OnPermissionGranted().
-  bool HasPermissionBeenGranted() const;
-
-  // ListenerInterface
-  virtual void LocationUpdateAvailable(LocationProviderBase* provider) OVERRIDE;
-
- protected:
-
-  AccessTokenStore* GetAccessTokenStore();
-
-  // These functions are useful for injection of dependencies in derived
-  // testing classes.
-  virtual AccessTokenStore* NewAccessTokenStore();
-  virtual LocationProviderBase* NewNetworkLocationProvider(
-      AccessTokenStore* access_token_store,
-      net::URLRequestContextGetter* context,
-      const GURL& url,
-      const string16& access_token);
-  virtual LocationProviderBase* NewSystemLocationProvider();
-  virtual base::Time GetTimeNow() const;
-
- private:
-  // Takes ownership of |provider| on entry; it will either be added to
-  // |providers_| or deleted on error (e.g. it fails to start).
-  void RegisterProvider(LocationProviderBase* provider);
-  void OnAccessTokenStoresLoaded(
-      AccessTokenStore::AccessTokenSet access_token_store,
-      net::URLRequestContextGetter* context_getter);
-  void DoStartProviders();
-  // Returns true if |new_position| is an improvement over |old_position|.
-  // Set |from_same_provider| to true if both the positions came from the same
-  // provider.
-  bool IsNewPositionBetter(const Geoposition& old_position,
-                           const Geoposition& new_position,
-                           bool from_same_provider) const;
-
-  scoped_refptr<AccessTokenStore> access_token_store_;
-  GeolocationObserver* observer_;
-  ScopedVector<LocationProviderBase> providers_;
-  GeolocationObserverOptions current_provider_options_;
-  // The provider which supplied the current |position_|
-  const LocationProviderBase* position_provider_;
-  bool is_permission_granted_;
-  // The current best estimate of our position.
-  Geoposition position_;
-
-  DISALLOW_COPY_AND_ASSIGN(GeolocationArbitrator);
+  virtual bool HasPermissionBeenGranted() const = 0;
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_GEOLOCATION_LOCATION_ARBITRATOR_H_
+#endif  // CONTENT_BROWSER_GEOLOCATION_LOCATION_ARBITRATOR_IMPL_H_

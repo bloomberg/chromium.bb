@@ -5,7 +5,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/geolocation/fake_access_token_store.h"
 #include "content/browser/geolocation/geolocation_observer.h"
-#include "content/browser/geolocation/location_arbitrator.h"
+#include "content/browser/geolocation/location_arbitrator_impl.h"
 #include "content/browser/geolocation/location_provider.h"
 #include "content/browser/geolocation/mock_location_provider.h"
 #include "content/public/common/geoposition.h"
@@ -61,12 +61,12 @@ void SetReferencePosition(MockLocationProvider* provider) {
 
 namespace {
 
-class TestingGeolocationArbitrator : public GeolocationArbitrator {
+class TestingGeolocationArbitrator : public GeolocationArbitratorImpl {
  public:
   TestingGeolocationArbitrator(
       GeolocationObserver* observer,
       AccessTokenStore* access_token_store)
-      : GeolocationArbitrator(observer),
+      : GeolocationArbitratorImpl(observer),
         cell_(NULL),
         gps_(NULL),
         access_token_store_(access_token_store) {
@@ -130,7 +130,7 @@ class GeolocationLocationArbitratorTest : public testing::Test {
   base::TimeDelta SwitchOnFreshnessCliff() {
     // Add 1, to ensure it meets any greater-than test.
     return base::TimeDelta::FromMilliseconds(
-        GeolocationArbitrator::kFixStaleTimeoutMilliseconds + 1);
+        GeolocationArbitratorImpl::kFixStaleTimeoutMilliseconds + 1);
   }
 
   MockLocationProvider* cell() {

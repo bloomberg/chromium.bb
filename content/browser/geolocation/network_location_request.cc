@@ -13,7 +13,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "content/browser/geolocation/location_arbitrator.h"
+#include "content/browser/geolocation/location_arbitrator_impl.h"
 #include "content/public/common/geoposition.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
@@ -156,7 +156,7 @@ struct AccessPointLess {
 };
 
 GURL FormRequestURL(const GURL& url) {
-  if (url == GeolocationArbitrator::DefaultNetworkProviderURL()) {
+  if (url == GeolocationArbitratorImpl::DefaultNetworkProviderURL()) {
     std::string api_key = google_apis::GetAPIKey();
     if (!api_key.empty()) {
       std::string query(url.query());

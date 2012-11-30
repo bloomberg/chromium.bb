@@ -8,12 +8,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/string16.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/time.h"
 #include "content/browser/geolocation/geolocation_provider.h"
-#include "content/browser/geolocation/location_arbitrator.h"
 #include "content/browser/geolocation/location_provider.h"
-#include "content/browser/geolocation/mock_location_provider.h"
+#include "content/browser/geolocation/mock_location_arbitrator.h"
 #include "content/public/browser/access_token_store.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
@@ -30,89 +28,26 @@ namespace content {
 
 class LocationProviderForTestArbitrator : public GeolocationProvider {
  public:
-  explicit LocationProviderForTestArbitrator(base::WaitableEvent* event)
-      : event_(event) {
-  }
-
+  LocationProviderForTestArbitrator() : mock_arbitrator_(NULL) {}
   virtual ~LocationProviderForTestArbitrator() {}
+
+  // Only valid for use on the geolocation thread.
+  MockGeolocationArbitrator* mock_arbitrator() const {
+    return mock_arbitrator_;
+  }
 
  protected:
   // GeolocationProvider implementation:
   virtual GeolocationArbitrator* CreateArbitrator() OVERRIDE;
 
  private:
-  base::WaitableEvent* event_;
-};
-
-class StartStopMockLocationProvider : public MockLocationProvider {
- public:
-  StartStopMockLocationProvider(base::WaitableEvent* event) :
-      MockLocationProvider(&instance_),
-      event_(event) {
-  }
-
-  virtual ~StartStopMockLocationProvider() {
-    event_->Signal();
-  }
-
- private:
-  base::WaitableEvent* event_;
-};
-
-// The AccessTokenStore will be accessed from the geolocation helper thread. The
-// existing FakeAccessTokenStore class cannot be used here because it is based
-// on gmock and gmock is not thread-safe on Windows.
-// See: http://code.google.com/p/googlemock/issues/detail?id=156
-class TestingAccessTokenStore : public AccessTokenStore {
- public:
-  TestingAccessTokenStore(base::WaitableEvent* event) : event_(event) {}
-
-  virtual void LoadAccessTokens(const LoadAccessTokensCallbackType& callback)
-        OVERRIDE {
-    callback.Run(AccessTokenSet(), NULL);
-    event_->Signal();
-  }
-
-  virtual void SaveAccessToken(const GURL& server_url,
-                               const string16& access_token) OVERRIDE {}
-
- protected:
-  virtual ~TestingAccessTokenStore() {}
-
- private:
-  base::WaitableEvent* event_;
-};
-
-class TestGeolocationArbitrator : public GeolocationArbitrator {
- public:
-  TestGeolocationArbitrator(GeolocationObserver* observer,
-                            base::WaitableEvent* event)
-      : GeolocationArbitrator(observer),
-        event_(event) {
-  }
-
-  virtual AccessTokenStore* NewAccessTokenStore() OVERRIDE {
-    return new TestingAccessTokenStore(event_);
-  }
-
-  virtual LocationProviderBase* NewNetworkLocationProvider(
-      AccessTokenStore* access_token_store,
-      net::URLRequestContextGetter* context,
-      const GURL& url,
-      const string16& access_token) OVERRIDE {
-    return new StartStopMockLocationProvider(event_);
-  }
-
-  virtual LocationProviderBase* NewSystemLocationProvider() OVERRIDE  {
-    return NULL;
-  }
-
- private:
-  base::WaitableEvent* event_;
+  MockGeolocationArbitrator* mock_arbitrator_;
 };
 
 GeolocationArbitrator* LocationProviderForTestArbitrator::CreateArbitrator() {
-  return new TestGeolocationArbitrator(this, event_);
+  DCHECK(mock_arbitrator_ == NULL);
+  mock_arbitrator_ = new MockGeolocationArbitrator;
+  return mock_arbitrator_;
 }
 
 class NullGeolocationObserver : public GeolocationObserver {
@@ -175,83 +110,94 @@ class GeolocationProviderTest : public testing::Test {
   GeolocationProviderTest()
       : message_loop_(),
         io_thread_(BrowserThread::IO, &message_loop_),
-        event_(false, false),
-        provider_(new LocationProviderForTestArbitrator(&event_)) {
+        provider_(new LocationProviderForTestArbitrator) {
   }
 
-  ~GeolocationProviderTest() {
-  }
+  ~GeolocationProviderTest() {}
 
-  void WaitAndReset() {
-    event_.Wait();
-    event_.Reset();
-  }
+  LocationProviderForTestArbitrator* provider() { return provider_.get(); }
+
+  // Called on test thread.
+  bool ProvidersStarted();
+
+ private:
+  // Called on provider thread.
+  void GetProvidersStarted(bool* started);
 
   MessageLoop message_loop_;
   TestBrowserThread io_thread_;
-
-  base::WaitableEvent event_;
   scoped_ptr<LocationProviderForTestArbitrator> provider_;
 };
 
+
+bool GeolocationProviderTest::ProvidersStarted() {
+  DCHECK(provider_->IsRunning());
+  DCHECK(MessageLoop::current() == &message_loop_);
+  bool started;
+  provider_->message_loop_proxy()->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&GeolocationProviderTest::GetProvidersStarted,
+                 base::Unretained(this),
+                 &started),
+      MessageLoop::QuitClosure());
+  message_loop_.Run();
+  return started;
+}
+
+void GeolocationProviderTest::GetProvidersStarted(bool* started) {
+  DCHECK(MessageLoop::current() == provider_->message_loop());
+  *started = provider_->mock_arbitrator()->providers_started();
+}
+
+
 // Regression test for http://crbug.com/59377
 TEST_F(GeolocationProviderTest, OnPermissionGrantedWithoutObservers) {
-  EXPECT_FALSE(provider_->HasPermissionBeenGranted());
-  provider_->OnPermissionGranted();
-  EXPECT_TRUE(provider_->HasPermissionBeenGranted());
+  EXPECT_FALSE(provider()->HasPermissionBeenGranted());
+  provider()->OnPermissionGranted();
+  EXPECT_TRUE(provider()->HasPermissionBeenGranted());
 }
 
 TEST_F(GeolocationProviderTest, StartStop) {
-  EXPECT_FALSE(provider_->IsRunning());
+  EXPECT_FALSE(provider()->IsRunning());
   NullGeolocationObserver null_observer;
   GeolocationObserverOptions options;
-  provider_->AddObserver(&null_observer, options);
-  EXPECT_TRUE(provider_->IsRunning());
-  // Wait for token load request from the arbitrator to come through.
-  WaitAndReset();
+  provider()->AddObserver(&null_observer, options);
+  EXPECT_TRUE(provider()->IsRunning());
+  EXPECT_TRUE(ProvidersStarted());
 
-  EXPECT_EQ(MockLocationProvider::instance_->state_,
-            MockLocationProvider::LOW_ACCURACY);
-  provider_->RemoveObserver(&null_observer);
-  // Wait for the providers to be stopped now that all clients are gone.
-  WaitAndReset();
-  EXPECT_TRUE(provider_->IsRunning());
+  provider()->RemoveObserver(&null_observer);
+  EXPECT_FALSE(ProvidersStarted());
+  EXPECT_TRUE(provider()->IsRunning());
 }
 
 TEST_F(GeolocationProviderTest, OverrideLocationForTesting) {
   Geoposition position;
   position.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
-  provider_->OverrideLocationForTesting(position);
+  provider()->OverrideLocationForTesting(position);
   // Adding an observer when the location is overridden should synchronously
   // update the observer with our overridden position.
   MockGeolocationObserver mock_observer;
   EXPECT_CALL(mock_observer, OnLocationUpdate(GeopositionEq(position)));
-  provider_->AddObserver(&mock_observer, GeolocationObserverOptions());
-  // Wait for token load request from the arbitrator to come through.
-  WaitAndReset();
-
-  provider_->RemoveObserver(&mock_observer);
+  provider()->AddObserver(&mock_observer, GeolocationObserverOptions());
+  provider()->RemoveObserver(&mock_observer);
   // Wait for the providers to be stopped now that all clients are gone.
-  WaitAndReset();
+  EXPECT_FALSE(ProvidersStarted());
 }
 
 TEST_F(GeolocationProviderTest, Callback) {
   MockGeolocationCallbackWrapper callback_wrapper;
-  provider_->RequestCallback(
+  provider()->RequestCallback(
       base::Bind(&MockGeolocationCallbackWrapper::Callback,
                  base::Unretained(&callback_wrapper)));
-  // Wait for token load request from the arbitrator to come through.
-  WaitAndReset();
-
   Geoposition position;
   position.latitude = 12;
   position.longitude = 34;
   position.accuracy = 56;
   position.timestamp = base::Time::Now();
   EXPECT_CALL(callback_wrapper, Callback(GeopositionEq(position)));
-  provider_->OverrideLocationForTesting(position);
+  provider()->OverrideLocationForTesting(position);
   // Wait for the providers to be stopped now that all clients are gone.
-  WaitAndReset();
+  EXPECT_FALSE(ProvidersStarted());
 }
 
 }  // namespace content

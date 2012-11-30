@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
-#include "content/browser/geolocation/location_arbitrator.h"
+#include "content/browser/geolocation/location_arbitrator_impl.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -193,7 +193,7 @@ void GeolocationProvider::CleanUp() {
 }
 
 GeolocationArbitrator* GeolocationProvider::CreateArbitrator() {
-  return new GeolocationArbitrator(this);
+  return new GeolocationArbitratorImpl(this);
 }
 
 }  // namespace content
