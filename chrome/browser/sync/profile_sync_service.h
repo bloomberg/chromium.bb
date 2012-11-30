@@ -590,7 +590,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   void ConfigureDataTypeManager();
 
   // Starts up the backend sync components.
-  void StartUp();
+  virtual void StartUp();
   // Shuts down the backend sync components.
   // |sync_disabled| indicates if syncing is being disabled or not.
   void ShutdownImpl(bool sync_disabled);

@@ -48,6 +48,20 @@ ACTION_P2(InvokeOnConfigureDone, pss, result) {
   service->OnConfigureDone(configure_result);
 }
 
+class FakeTokenService : public TokenService {
+ public:
+  FakeTokenService() {}
+  virtual ~FakeTokenService() {}
+
+  virtual void LoadTokensFromDB() OVERRIDE {
+    set_tokens_loaded(true);
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_TOKEN_LOADING_FINISHED,
+        content::Source<TokenService>(this),
+        content::NotificationService::NoDetails());
+  }
+};
+
 // TODO(chron): Test not using cros_user flag and use signin_
 class ProfileSyncServiceStartupTest : public testing::Test {
  public:
@@ -176,9 +190,16 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   EXPECT_TRUE(service_->ShouldPushChanges());
 }
 
+ProfileKeyedService* BuildFakeTokenService(Profile* profile) {
+  return new FakeTokenService();
+}
+
 TEST_F(ProfileSyncServiceStartupTest, StartNoCredentials) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(0);
+  TokenService* token_service = static_cast<TokenService*>(
+      TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile_.get(), BuildFakeTokenService));
 
   // We've never completed startup.
   profile_->GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
@@ -208,11 +229,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartNoCredentials) {
   service_->SetSetupInProgress(true);
   service_->signin()->StartSignIn("test_user", "", "", "");
   // NOTE: Unlike StartFirstTime, this test does not issue any auth tokens.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TOKEN_LOADING_FINISHED,
-      content::Source<TokenService>(
-          TokenServiceFactory::GetForProfile(profile_.get())),
-      content::NotificationService::NoDetails());
+  token_service->LoadTokensFromDB();
   service_->SetSetupInProgress(false);
   // Backend should initialize using a bogus GAIA token for credentials.
   EXPECT_TRUE(service_->ShouldPushChanges());
@@ -222,16 +239,15 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
   EXPECT_CALL(*factory_mock(), CreateDataTypeManager(_, _, _, _)).Times(0);
   profile_->GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
+  TokenService* token_service = static_cast<TokenService*>(
+      TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile_.get(), BuildFakeTokenService));
 
   service_->Initialize();
   // Sync should not start because there are no tokens yet.
   EXPECT_FALSE(service_->ShouldPushChanges());
   EXPECT_FALSE(service_->GetBackendForTest());
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TOKEN_LOADING_FINISHED,
-      content::Source<TokenService>(
-          TokenServiceFactory::GetForProfile(profile_.get())),
-      content::NotificationService::NoDetails());
+  token_service->LoadTokensFromDB();
   service_->SetSetupInProgress(false);
   // Sync should not start because there are still no tokens.
   EXPECT_FALSE(service_->ShouldPushChanges());

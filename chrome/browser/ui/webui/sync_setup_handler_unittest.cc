@@ -486,6 +486,8 @@ TEST_F(SyncSetupHandlerTest, DisplayForceLogin) {
                 profile_.get())->current_login_ui());
 }
 
+// Verifies that the handler correctly handles a cancellation when
+// it is displaying the spinner to the user.
 TEST_F(SyncSetupHandlerTest, DisplayConfigureWithBackendDisabledAndCancel) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
@@ -497,6 +499,11 @@ TEST_F(SyncSetupHandlerTest, DisplayConfigureWithBackendDisabledAndCancel) {
   EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error_));
   EXPECT_CALL(*mock_pss_, sync_initialized()).WillRepeatedly(Return(false));
 
+  // We're simulating a user setting up sync, which would cause the backend to
+  // kick off initialization, but not download user data types. The sync
+  // backend will try to download control data types (e.g encryption info), but
+  // that won't finish for this test as we're simulating cancelling while the
+  // spinner is showing.
   handler_->OpenSyncSetup(false);
   EXPECT_EQ(handler_.get(),
             LoginUIServiceFactory::GetForProfile(
@@ -514,6 +521,8 @@ TEST_F(SyncSetupHandlerTest, DisplayConfigureWithBackendDisabledAndCancel) {
                 profile_.get())->current_login_ui());
 }
 
+// Verifies that the handler correctly transitions from showing the spinner
+// to showing a configuration page when signin completes successfully.
 TEST_F(SyncSetupHandlerTest,
        DisplayConfigureWithBackendDisabledAndSigninSuccess) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
@@ -555,6 +564,40 @@ TEST_F(SyncSetupHandlerTest,
   CheckBool(dictionary, "syncAllDataTypes", true);
   CheckBool(dictionary, "encryptAllData", false);
   CheckBool(dictionary, "usePassphrase", false);
+}
+
+// Verifies the case where the user cancels after the sync backend has
+// initialized (meaning it already transitioned from the spinner to a proper
+// configuration page, tested by
+// DisplayConfigureWithBackendDisabledAndSigninSuccess), but before the user
+// before the user has continued on.
+TEST_F(SyncSetupHandlerTest,
+       DisplayConfigureWithBackendDisabledAndCancelAfterSigninSuccess) {
+  EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
+      .WillRepeatedly(Return(false));
+  error_ = GoogleServiceAuthError::None();
+  EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error_));
+  EXPECT_CALL(*mock_pss_, sync_initialized())
+      .WillOnce(Return(false))
+      .WillRepeatedly(Return(true));
+  SetDefaultExpectationsForConfigPage();
+  handler_->OpenSyncSetup(false);
+  handler_->SigninSuccess();
+
+  // It's important to tell sync the user cancelled the setup flow before we
+  // tell it we're through with the setup progress.
+  testing::InSequence seq;
+  EXPECT_CALL(*mock_pss_, DisableForUser());
+  EXPECT_CALL(*mock_pss_, SetSetupInProgress(false));
+
+  handler_->CloseSyncSetup();
+  EXPECT_EQ(NULL,
+            LoginUIServiceFactory::GetForProfile(
+                profile_.get())->current_login_ui());
 }
 
 TEST_F(SyncSetupHandlerTest,

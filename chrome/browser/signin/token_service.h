@@ -132,7 +132,7 @@ class TokenService : public GaiaAuthConsumer,
   // Async load all tokens for services we know of from the DB.
   // You should do this at startup. Optionally you can do it again
   // after you reset in memory credentials.
-  void LoadTokensFromDB();
+  virtual void LoadTokensFromDB();
 
   // Clear all DB stored tokens for the current profile. Tokens may still be
   // available in memory. If a DB load is pending it may still be serviced.
@@ -180,6 +180,11 @@ class TokenService : public GaiaAuthConsumer,
   virtual void OnWebDataServiceRequestDone(
       WebDataService::Handle h,
       const WDTypedResult* result) OVERRIDE;
+
+ protected:
+  void set_tokens_loaded(bool loaded) {
+    tokens_loaded_ = loaded;
+  }
 
  private:
 

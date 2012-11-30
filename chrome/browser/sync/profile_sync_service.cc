@@ -257,23 +257,28 @@ void ProfileSyncService::TryStart() {
   if (!token_service)
     return;
   // Don't start the backend if the token service hasn't finished loading tokens
-  // yet (if the backend is started before the sync token has been loaded,
-  // GetCredentials() will return bogus credentials). On auto_start platforms
+  // yet. Note if the backend is started before the sync token has been loaded,
+  // GetCredentials() will return bogus credentials. On auto_start platforms
   // (like ChromeOS) we don't start sync until tokens are loaded, because the
   // user can be "signed in" on those platforms long before the tokens get
   // loaded, and we don't want to generate spurious auth errors.
-  if (IsSyncTokenAvailable() ||
-      (!auto_start_enabled_ && token_service->TokensLoadedFromDB())) {
-    if (HasSyncSetupCompleted() || auto_start_enabled_) {
-      // If sync setup has completed we always start the backend.
-      // If autostart is enabled, but we haven't completed sync setup, we try to
-      // start sync anyway, since it's possible we crashed/shutdown after
-      // logging in but before the backend finished initializing the last time.
-      // Note that if we haven't finished setting up sync, backend bring up will
-      // be done by the wizard.
-      StartUp();
-    }
+  if (!IsSyncTokenAvailable() &&
+      !(!auto_start_enabled_ && token_service->TokensLoadedFromDB())) {
+    return;
   }
+
+  // If sync setup has completed we always start the backend. If the user is in
+  // the process of setting up now, we should start the backend to download
+  // account control state / encryption information). If autostart is enabled,
+  // but we haven't completed sync setup, we try to start sync anyway, since
+  // it's possible we crashed/shutdown after logging in but before the backend
+  // finished initializing the last time.
+  if (!HasSyncSetupCompleted() && !setup_in_progress_ && !auto_start_enabled_)
+    return;
+
+  // All systems Go for launch.
+  StartUp();
+
 }
 
 void ProfileSyncService::StartSyncingWithServer() {
@@ -1709,11 +1714,9 @@ void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
   NotifyObservers();
   if (is_sync_managed) {
     DisableForUser();
-  } else if (HasSyncSetupCompleted() &&
-             IsSyncEnabledAndLoggedIn() &&
-             IsSyncTokenAvailable()) {
-    // Previously-configured sync has been re-enabled, so start sync now.
-    StartUp();
+  } else {
+    // Sync is no longer disabled by policy. Try starting it up if appropriate.
+    TryStart();
   }
 }
 
@@ -1764,34 +1767,19 @@ void ProfileSyncService::Observe(int type,
       const TokenService::TokenAvailableDetails& token_details =
           *(content::Details<const TokenService::TokenAvailableDetails>(
               details).ptr());
-      if (IsTokenServiceRelevant(token_details.service()) &&
-          IsSyncEnabledAndLoggedIn() &&
-          IsSyncTokenAvailable()) {
-        if (backend_initialized_)
-          backend_->UpdateCredentials(GetCredentials());
-        else
-          StartUp();
-      }
-      break;
-    }
+      if (!IsTokenServiceRelevant(token_details.service()))
+        break;
+    } // Fall through.
     case chrome::NOTIFICATION_TOKEN_LOADING_FINISHED: {
       // This notification gets fired when TokenService loads the tokens
       // from storage.
-      if (IsSyncEnabledAndLoggedIn()) {
-        // Don't start up sync and generate an auth error on auto_start
-        // platforms as they have their own way to resolve TokenService errors.
-        // (crbug.com/128592).
-        if (auto_start_enabled_ && !IsSyncTokenAvailable())
-          break;
-
-        // Initialize the backend if sync is enabled. If the sync token was
-        // not loaded, GetCredentials() will generate invalid credentials to
-        // cause the backend to generate an auth error (crbug.com/121755).
-        if (backend_initialized_)
-          backend_->UpdateCredentials(GetCredentials());
-        else
-          StartUp();
-      }
+      // Initialize the backend if sync is enabled. If the sync token was
+      // not loaded, GetCredentials() will generate invalid credentials to
+      // cause the backend to generate an auth error (crbug.com/121755).
+      if (backend_initialized_)
+        backend_->UpdateCredentials(GetCredentials());
+      else
+        TryStart();
       break;
     }
     default: {

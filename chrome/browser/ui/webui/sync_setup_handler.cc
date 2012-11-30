@@ -1018,8 +1018,6 @@ void SyncSetupHandler::CloseSyncSetup() {
   }
 
   if (sync_service) {
-    sync_service->SetSetupInProgress(false);
-
     // Make sure user isn't left half-logged-in (signed in, but without sync
     // started up). If the user hasn't finished setting up sync, then sign out
     // and shut down sync.
@@ -1030,6 +1028,7 @@ void SyncSetupHandler::CloseSyncSetup() {
       browser_sync::SyncPrefs sync_prefs(GetProfile()->GetPrefs());
       sync_prefs.SetStartSuppressed(true);
     }
+    sync_service->SetSetupInProgress(false);
   }
 
   // Reset the attempted email address and error, otherwise the sync setup
@@ -1063,6 +1062,7 @@ void SyncSetupHandler::OpenSyncSetup(bool force_login) {
   //    logged in.
   // 6) One-click signin (credentials are already available, so should display
   //    sync configure UI, not login UI).
+  // 7) ChromeOS re-enable after disabling sync.
   if (force_login ||
       !service->IsSyncEnabledAndLoggedIn() ||
       service->GetAuthError().state() != GoogleServiceAuthError::NONE) {
@@ -1071,7 +1071,8 @@ void SyncSetupHandler::OpenSyncSetup(bool force_login) {
     DisplayGaiaLogin(false);
   } else {
     // User is already logged in. They must have brought up the config wizard
-    // via the "Advanced..." button or through One-Click signin (cases 5/6).
+    // via the "Advanced..." button or through One-Click signin (cases 5/6), or
+    // they are re-enabling sync on Chrome OS.
     DisplayConfigureSync(true, false);
   }
 
