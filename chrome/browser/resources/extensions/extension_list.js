@@ -42,6 +42,10 @@ cr.define('options', function() {
       this.showExtensionNodes_();
     },
 
+    getIdQueryParam_: function() {
+      return parseQueryParams(document.location)['id'];
+    },
+
     /**
      * Creates all extension items from scratch.
      * @private
@@ -49,6 +53,20 @@ cr.define('options', function() {
     showExtensionNodes_: function() {
       // Iterate over the extension data and add each item to the list.
       this.data_.extensions.forEach(this.createNode_, this);
+
+      var id_to_highlight = this.getIdQueryParam_();
+      if (id_to_highlight) {
+        // Scroll offset should be calculated slightly higher than the actual
+        // offset of the element being scrolled to, so that it ends up not all
+        // the way at the top. That way it is clear that there are more elements
+        // above the element being scrolled to.
+        var scroll_fudge = 1.2;
+        var offset = $(id_to_highlight).offsetTop -
+                     (scroll_fudge * $(id_to_highlight).clientHeight);
+        var wrapper = this.parentNode;
+        var list = wrapper.parentNode;
+        list.scrollTop = offset;
+      }
 
       if (this.data_.extensions.length == 0)
         this.classList.add('empty-extension-list');
@@ -73,6 +91,10 @@ cr.define('options', function() {
 
       if (!extension.userModifiable)
         node.classList.add('may-not-disable');
+
+      var id_to_highlight = this.getIdQueryParam_();
+      if (node.id == id_to_highlight)
+        node.classList.add('extension-highlight');
 
       var item = node.querySelector('.extension-list-item');
       item.style.backgroundImage = 'url(' + extension.icon + ')';

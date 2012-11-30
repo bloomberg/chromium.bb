@@ -275,6 +275,14 @@ html[dir='rtl'] #extension-settings .trash {
   visibility: hidden;
 }
 
+.extension-highlight {
+  background: rgb(238, 238, 238);
+  background-position: auto;
+  background-repeat: auto;
+  border-radius: 3px;
+  padding: 5px 0 5px 5px;
+}
+
 .may-not-disable .optional-controls .optional-controls-disableable {
   display: none;
 }
