@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "cc/hash_pair.h"
+
+#include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -28,7 +30,8 @@ TEST_F(HashPairTest, IntegerPairs) {
   INSERT_PAIR_TEST(ShortShortPair, 4, 6);
   INSERT_PAIR_TEST(ShortIntPair, 7, (1 << 30) + 4342);
   INSERT_PAIR_TEST(ShortInt32Pair, 9, (1 << 29) + 378128932);
-  INSERT_PAIR_TEST(ShortInt64Pair, 10, (1LL << 60) + 78931732321);
+  INSERT_PAIR_TEST(ShortInt64Pair, 10,
+                   (GG_INT64_C(1) << 60) + GG_INT64_C(78931732321));
 
   typedef std::pair<int, short> IntShortPair;
   typedef std::pair<int, int> IntIntPair;
@@ -38,7 +41,8 @@ TEST_F(HashPairTest, IntegerPairs) {
   INSERT_PAIR_TEST(IntShortPair, 4, 6);
   INSERT_PAIR_TEST(IntIntPair, 7, (1 << 30) + 4342);
   INSERT_PAIR_TEST(IntInt32Pair, 9, (1 << 29) + 378128932);
-  INSERT_PAIR_TEST(IntInt64Pair, 10, (1LL << 60) + 78931732321);
+  INSERT_PAIR_TEST(IntInt64Pair, 10,
+                   (GG_INT64_C(1) << 60) + GG_INT64_C(78931732321));
 
   typedef std::pair<int32, short> Int32ShortPair;
   typedef std::pair<int32, int> Int32IntPair;
@@ -48,7 +52,8 @@ TEST_F(HashPairTest, IntegerPairs) {
   INSERT_PAIR_TEST(Int32ShortPair, 4, 6);
   INSERT_PAIR_TEST(Int32IntPair, 7, (1 << 30) + 4342);
   INSERT_PAIR_TEST(Int32Int32Pair, 9, (1 << 29) + 378128932);
-  INSERT_PAIR_TEST(Int32Int64Pair, 10, (1LL << 60) + 78931732321);
+  INSERT_PAIR_TEST(Int32Int64Pair, 10,
+                   (GG_INT64_C(1) << 60) + GG_INT64_C(78931732321));
 
   typedef std::pair<int64, short> Int64ShortPair;
   typedef std::pair<int64, int> Int64IntPair;
@@ -58,7 +63,8 @@ TEST_F(HashPairTest, IntegerPairs) {
   INSERT_PAIR_TEST(Int64ShortPair, 4, 6);
   INSERT_PAIR_TEST(Int64IntPair, 7, (1 << 30) + 4342);
   INSERT_PAIR_TEST(Int64Int32Pair, 9, (1 << 29) + 378128932);
-  INSERT_PAIR_TEST(Int64Int64Pair, 10, (1LL << 60) + 78931732321);
+  INSERT_PAIR_TEST(Int64Int64Pair, 10,
+                   (GG_INT64_C(1) << 60) + GG_INT64_C(78931732321));
 }
 
 }  // anonymous namespace
