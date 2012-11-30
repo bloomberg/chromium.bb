@@ -43,6 +43,12 @@ namespace google_apis {
 
 //============================ Structs ===========================
 
+ResumeUploadResponse::ResumeUploadResponse()
+    : code(HTTP_SUCCESS),
+      start_range_received(0),
+      end_range_received(0) {
+}
+
 ResumeUploadResponse::ResumeUploadResponse(GDataErrorCode code,
                                            int64 start_range_received,
                                            int64 end_range_received)
@@ -646,7 +652,7 @@ InitiateUploadOperation::GetExtraRequestHeaders() const {
       kUploadContentLength + base::Int64ToString(params_.content_length));
 
   if (params_.upload_mode == UPLOAD_EXISTING_FILE)
-    headers.push_back("If-Match: *");
+    headers.push_back(kIfMatchAllHeader);
 
   return headers;
 }

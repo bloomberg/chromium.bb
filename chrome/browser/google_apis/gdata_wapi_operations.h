@@ -409,6 +409,7 @@ class InitiateUploadOperation : public UrlFetchOperationBase {
 
 // Struct for response to ResumeUpload.
 struct ResumeUploadResponse {
+  ResumeUploadResponse();
   ResumeUploadResponse(GDataErrorCode code,
                        int64 start_range_received,
                        int64 end_range_received);

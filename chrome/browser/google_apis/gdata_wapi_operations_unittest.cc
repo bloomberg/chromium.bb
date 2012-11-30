@@ -6,7 +6,11 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/message_loop_proxy.h"
+#include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/google_apis/gdata_wapi_operations.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/google_apis/operation_registry.h"
 #include "chrome/browser/google_apis/test_server/http_server.h"
@@ -59,6 +63,28 @@ void CopyResultFromEntryActionCallbackAndQuit(
   MessageLoop::current()->Quit();
 }
 
+// Copies the result from InitiateUploadCallback and quit the message loop.
+void CopyResultFromInitiateUploadCallbackAndQuit(
+    GDataErrorCode* out_result_code,
+    GURL* out_upload_url,
+    GDataErrorCode result_code,
+    const GURL& upload_url) {
+  *out_result_code = result_code;
+  *out_upload_url = upload_url;
+  MessageLoop::current()->Quit();
+}
+
+// Copies the result from ResumeUploadCallback and quit the message loop.
+void CopyResultFromResumeUploadCallbackAndQuit(
+    ResumeUploadResponse* out_response,
+    scoped_ptr<DocumentEntry>* out_new_entry,
+    const ResumeUploadResponse& response,
+    scoped_ptr<DocumentEntry> new_entry) {
+  *out_response = response;
+  *out_new_entry = new_entry.Pass();
+  MessageLoop::current()->Quit();
+}
+
 // Returns true if |json_data| equals to JSON data in |expected_json_file_path|.
 bool VerifyJsonData(const FilePath& expected_json_file_path,
                     const base::Value* json_data) {
@@ -82,7 +108,7 @@ scoped_ptr<test_server::HttpResponse> CreateHttpResponseFromFile(
   if (EndsWith(file_path.AsUTF8Unsafe(), ".json", true /* case sensitive */)) {
     content_type = "application/json";
   } else if (EndsWith(file_path.AsUTF8Unsafe(), ".xml", true)) {
-    content_type = "text/xml";
+    content_type = "application/atom+xml";
   }
 
   scoped_ptr<test_server::HttpResponse> http_response(
@@ -157,6 +183,12 @@ class GDataWapiOperationsTest : public testing::Test {
                    base::Unretained(this)));
     test_server_.RegisterRequestHandler(
         base::Bind(&GDataWapiOperationsTest::HandleMetadataFeedRequest,
+                   base::Unretained(this)));
+    test_server_.RegisterRequestHandler(
+        base::Bind(&GDataWapiOperationsTest::HandleCreateSessionRequest,
+                   base::Unretained(this)));
+    test_server_.RegisterRequestHandler(
+        base::Bind(&GDataWapiOperationsTest::HandleUploadRequest,
                    base::Unretained(this)));
 
     url_generator_.reset(new GDataWapiUrlGenerator(
@@ -261,6 +293,44 @@ class GDataWapiOperationsTest : public testing::Test {
 
     return CreateHttpResponseFromFile(
         test_util::GetTestFilePath("gdata/account_metadata.json"));
+  }
+
+  // Handles a request for creating a session for uploading.
+  scoped_ptr<test_server::HttpResponse> HandleCreateSessionRequest(
+      const test_server::HttpRequest& request) {
+    http_request_ = request;
+
+    const GURL absolute_url = test_server_.GetURL(request.relative_url);
+    if (absolute_url.path() ==
+        // This is an upload URL of the root directory.
+        "/feeds/upload/create-session/default/private/full" ||
+        absolute_url.path() ==
+        // This is an upload URL of an existing file.
+        "/feeds/upload/create-session/default/private/full/file:foo") {
+      scoped_ptr<test_server::HttpResponse> http_response(
+          new test_server::HttpResponse);
+      http_response->set_code(test_server::SUCCESS);
+      http_response->AddCustomHeader("Location",
+                                     test_server_.GetURL("/upload_url").spec());
+      return http_response.Pass();
+    }
+
+    return scoped_ptr<test_server::HttpResponse>();
+  }
+
+  // Handles a request for uploading content.
+  scoped_ptr<test_server::HttpResponse> HandleUploadRequest(
+      const test_server::HttpRequest& request) {
+    http_request_ = request;
+
+    const GURL absolute_url = test_server_.GetURL(request.relative_url);
+    if (absolute_url.path() != "/upload_url")
+      return scoped_ptr<test_server::HttpResponse>();
+
+    // TODO(satorux): We should create a correct entry for the uploaded file,
+    // but for now, just return entry.xml.
+    return CreateHttpResponseFromFile(
+        test_util::GetTestFilePath("gdata/entry.xml"));
   }
 
   MessageLoopForUI message_loop_;
@@ -525,6 +595,7 @@ TEST_F(GDataWapiOperationsTest, CreateDirectoryOperation) {
   EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
   EXPECT_EQ("/feeds/default/private/full/folder%3Aroot?v=3&alt=json",
             http_request_.relative_url);
+  EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
 
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_EQ("<?xml version=\"1.0\"?>\n"
@@ -557,6 +628,7 @@ TEST_F(GDataWapiOperationsTest, CopyDocumentOperation) {
   EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
   EXPECT_EQ("/feeds/default/private/full?v=3&alt=json",
             http_request_.relative_url);
+  EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
 
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_EQ("<?xml version=\"1.0\"?>\n"
@@ -586,6 +658,8 @@ TEST_F(GDataWapiOperationsTest, RenameResourceOperation) {
   EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
   EXPECT_EQ("/feeds/default/private/full/file:2_file_resource_id?v=3&alt=json",
             http_request_.relative_url);
+  EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
+  EXPECT_EQ("*", http_request_.headers["If-Match"]);
 
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_EQ("<?xml version=\"1.0\"?>\n"
@@ -616,6 +690,7 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_ValidFeed) {
   EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
   EXPECT_EQ("/feeds/default/private/full/file:2_file_resource_id",
             http_request_.relative_url);
+  EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
   EXPECT_EQ("*", http_request_.headers["If-Match"]);
 
   EXPECT_TRUE(http_request_.has_content);
@@ -646,6 +721,7 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_InvalidFeed) {
   EXPECT_EQ(GDATA_PARSE_ERROR, result_code);
   EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
   EXPECT_EQ("/files/gdata/testfile.txt", http_request_.relative_url);
+  EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
   EXPECT_EQ("*", http_request_.headers["If-Match"]);
 
   EXPECT_TRUE(http_request_.has_content);
@@ -678,6 +754,7 @@ TEST_F(GDataWapiOperationsTest, AddResourceToDirectoryOperation) {
   EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
   EXPECT_EQ("/feeds/default/private/full/folder%3Aroot?v=3&alt=json",
             http_request_.relative_url);
+  EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
 
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_EQ("<?xml version=\"1.0\"?>\n"
@@ -711,13 +788,271 @@ TEST_F(GDataWapiOperationsTest, RemoveResourceFromDirectoryOperation) {
   EXPECT_EQ("/feeds/default/private/full/folder%3Aroot/"
             "file%3A2_file_resource_id?v=3&alt=json",
             http_request_.relative_url);
+  EXPECT_EQ("*", http_request_.headers["If-Match"]);
   EXPECT_FALSE(http_request_.has_content);
 }
 
-// TODO(satorux): Write tests for InitiateUploadOperation.
-// crbug.com/162348
+// This test exercises InitiateUploadOperation and ResumeUploadOperation for
+// a scenario of uploading a new file.
+TEST_F(GDataWapiOperationsTest, UploadNewFile) {
+  const std::string kUploadContent = "hello";
+  GDataErrorCode result_code = GDATA_OTHER_ERROR;
+  GURL upload_url;
 
-// TODO(satorux): Write tests for ResumeUploadOperation.
-// crbug.com/162348
+  // 1) Get the upload URL for uploading a new file.
+  InitiateUploadParams initiate_params(
+      UPLOAD_NEW_FILE,
+      "New file",
+      "text/plain",
+      kUploadContent.size(),
+      test_server_.GetURL("/feeds/upload/create-session/default/private/full"),
+      FilePath::FromUTF8Unsafe("drive/newfile.txt"));
+
+  InitiateUploadOperation* initiate_operation =
+      new InitiateUploadOperation(
+          &operation_registry_,
+          base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
+                     &result_code,
+                     &upload_url),
+          initiate_params);
+
+  initiate_operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, result_code);
+  EXPECT_EQ(test_server_.GetURL("/upload_url"), upload_url);
+  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  // convert=false should be passed as files should be uploaded as-is.
+  EXPECT_EQ("/feeds/upload/create-session/default/private/full?convert=false",
+            http_request_.relative_url);
+  EXPECT_EQ("text/plain", http_request_.headers["X-Upload-Content-Type"]);
+  EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
+  EXPECT_EQ(base::Int64ToString(kUploadContent.size()),
+            http_request_.headers["X-Upload-Content-Length"]);
+
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_EQ("<?xml version=\"1.0\"?>\n"
+            "<entry xmlns=\"http://www.w3.org/2005/Atom\" "
+            "xmlns:docs=\"http://schemas.google.com/docs/2007\">\n"
+            " <title>New file</title>\n"
+            "</entry>\n",
+            http_request_.content);
+
+  // 2) Upload the content to the upload URL.
+  scoped_refptr<net::IOBuffer> buffer = new net::StringIOBuffer(kUploadContent);
+  ResumeUploadParams resume_params(
+      UPLOAD_NEW_FILE,
+      0,  // start_range
+      static_cast<int64>(kUploadContent.size()) - 1, // end_range (inclusive)
+      kUploadContent.size(),  // content_length,
+      "text/plain",  // content_type
+      buffer,
+      upload_url,
+      FilePath::FromUTF8Unsafe("drive/newfile.txt"));
+
+  ResumeUploadResponse response;
+  scoped_ptr<DocumentEntry> new_entry;
+
+  ResumeUploadOperation* resume_operation =
+      new ResumeUploadOperation(
+          &operation_registry_,
+          base::Bind(&CopyResultFromResumeUploadCallbackAndQuit,
+                     &response,
+                     &new_entry),
+          resume_params);
+
+  resume_operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, result_code);
+  // METHOD_PUT should be used to upload data.
+  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  // Request should go to the upload URL.
+  EXPECT_EQ(upload_url.path(), http_request_.relative_url);
+  // Content-Range header should be added.
+  EXPECT_EQ("bytes 0-" +
+            base::Int64ToString(kUploadContent.size() -1) + "/" +
+            base::Int64ToString(kUploadContent.size()),
+            http_request_.headers["Content-Range"]);
+  // The upload content should be set in the HTTP request.
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_EQ(kUploadContent, http_request_.content);
+}
+
+// This test exercises InitiateUploadOperation and ResumeUploadOperation for
+// a scenario of uploading a new *empty* file.
+//
+// The test is almost identical to UploadNewFile. The only difference is the
+// expectation for the Content-Range header.
+TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
+  const std::string kUploadContent = "";
+  GDataErrorCode result_code = GDATA_OTHER_ERROR;
+  GURL upload_url;
+
+  // 1) Get the upload URL for uploading a new file.
+  InitiateUploadParams initiate_params(
+      UPLOAD_NEW_FILE,
+      "New file",
+      "text/plain",
+      kUploadContent.size(),
+      test_server_.GetURL("/feeds/upload/create-session/default/private/full"),
+      FilePath::FromUTF8Unsafe("drive/newfile.txt"));
+
+  InitiateUploadOperation* initiate_operation =
+      new InitiateUploadOperation(
+          &operation_registry_,
+          base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
+                     &result_code,
+                     &upload_url),
+          initiate_params);
+
+  initiate_operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, result_code);
+  EXPECT_EQ(test_server_.GetURL("/upload_url"), upload_url);
+  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  // convert=false should be passed as files should be uploaded as-is.
+  EXPECT_EQ("/feeds/upload/create-session/default/private/full?convert=false",
+            http_request_.relative_url);
+  EXPECT_EQ("text/plain", http_request_.headers["X-Upload-Content-Type"]);
+  EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
+  EXPECT_EQ(base::Int64ToString(kUploadContent.size()),
+            http_request_.headers["X-Upload-Content-Length"]);
+
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_EQ("<?xml version=\"1.0\"?>\n"
+            "<entry xmlns=\"http://www.w3.org/2005/Atom\" "
+            "xmlns:docs=\"http://schemas.google.com/docs/2007\">\n"
+            " <title>New file</title>\n"
+            "</entry>\n",
+            http_request_.content);
+
+  // 2) Upload the content to the upload URL.
+  scoped_refptr<net::IOBuffer> buffer = new net::StringIOBuffer(kUploadContent);
+  ResumeUploadParams resume_params(
+      UPLOAD_NEW_FILE,
+      0,  // start_range
+      static_cast<int64>(kUploadContent.size()) - 1, // end_range (inclusive)
+      kUploadContent.size(),  // content_length,
+      "text/plain",  // content_type
+      buffer,
+      upload_url,
+      FilePath::FromUTF8Unsafe("drive/newfile.txt"));
+
+  ResumeUploadResponse response;
+  scoped_ptr<DocumentEntry> new_entry;
+
+  ResumeUploadOperation* resume_operation =
+      new ResumeUploadOperation(
+          &operation_registry_,
+          base::Bind(&CopyResultFromResumeUploadCallbackAndQuit,
+                     &response,
+                     &new_entry),
+          resume_params);
+
+  resume_operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, result_code);
+  // METHOD_PUT should be used to upload data.
+  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  // Request should go to the upload URL.
+  EXPECT_EQ(upload_url.path(), http_request_.relative_url);
+  // Content-Range header should not exit if the content is empty.
+  // We should not generate the header with an invalid value "bytes 0--1/0".
+  EXPECT_EQ(0U, http_request_.headers.count("Content-Range"));
+  // The upload content should be set in the HTTP request.
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_EQ(kUploadContent, http_request_.content);
+}
+
+// This test exercises InitiateUploadOperation and ResumeUploadOperation for
+// a scenario of updating an existing file.
+TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
+  const std::string kUploadContent = "hello";
+  GDataErrorCode result_code = GDATA_OTHER_ERROR;
+  GURL upload_url;
+
+  // 1) Get the upload URL for uploading an existing file.
+  InitiateUploadParams initiate_params(
+      UPLOAD_EXISTING_FILE,
+      "Existing file",
+      "text/plain",
+      kUploadContent.size(),
+      test_server_.GetURL(
+          "/feeds/upload/create-session/default/private/full/file:foo"),
+      FilePath::FromUTF8Unsafe("drive/existingfile.txt"));
+
+  InitiateUploadOperation* initiate_operation =
+      new InitiateUploadOperation(
+          &operation_registry_,
+          base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
+                     &result_code,
+                     &upload_url),
+          initiate_params);
+
+  initiate_operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, result_code);
+  EXPECT_EQ(test_server_.GetURL("/upload_url"), upload_url);
+  // For updating an existing file, METHOD_PUT should be used.
+  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  // convert=false should be passed as files should be uploaded as-is.
+  EXPECT_EQ("/feeds/upload/create-session/default/private/full/file:foo"
+            "?convert=false",
+            http_request_.relative_url);
+  // Even though the body is empty, the content type should be set to
+  // "text/plain".
+  EXPECT_EQ("text/plain", http_request_.headers["Content-Type"]);
+  EXPECT_EQ("text/plain", http_request_.headers["X-Upload-Content-Type"]);
+  EXPECT_EQ(base::Int64ToString(kUploadContent.size()),
+            http_request_.headers["X-Upload-Content-Length"]);
+  // For updating an existing file, an empty body should be attached (PUT
+  // requires a body)
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_EQ("", http_request_.content);
+
+  // 2) Upload the content to the upload URL.
+  scoped_refptr<net::IOBuffer> buffer = new net::StringIOBuffer(kUploadContent);
+  ResumeUploadParams resume_params(
+      UPLOAD_EXISTING_FILE,
+      0,  // start_range
+      static_cast<int64>(kUploadContent.size()) - 1, // end_range (inclusive)
+      kUploadContent.size(),  // content_length,
+      "text/plain",  // content_type
+      buffer,
+      upload_url,
+      FilePath::FromUTF8Unsafe("drive/existingfile.txt"));
+
+  ResumeUploadResponse response;
+  scoped_ptr<DocumentEntry> new_entry;
+
+  ResumeUploadOperation* resume_operation =
+      new ResumeUploadOperation(
+          &operation_registry_,
+          base::Bind(&CopyResultFromResumeUploadCallbackAndQuit,
+                     &response,
+                     &new_entry),
+          resume_params);
+
+  resume_operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, result_code);
+  // METHOD_PUT should be used to upload data.
+  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  // Request should go to the upload URL.
+  EXPECT_EQ(upload_url.path(), http_request_.relative_url);
+  // Content-Range header should be added.
+  EXPECT_EQ("bytes 0-" +
+            base::Int64ToString(kUploadContent.size() -1) + "/" +
+            base::Int64ToString(kUploadContent.size()),
+            http_request_.headers["Content-Range"]);
+  // The upload content should be set in the HTTP request.
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_EQ(kUploadContent, http_request_.content);
+}
 
 }  // namespace google_apis
