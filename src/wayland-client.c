@@ -940,6 +940,7 @@ wl_display_dispatch_queue(struct wl_display *display,
  * If there are no events queued, this functions return immediately.
  *
  * \memberof wl_display
+ * \since 1.0.2
  */
 WL_EXPORT int
 wl_display_dispatch_queue_pending(struct wl_display *display,
