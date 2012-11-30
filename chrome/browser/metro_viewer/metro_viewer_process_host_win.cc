@@ -6,13 +6,39 @@
 
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/ash_init.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list_impl.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/aura/remote_root_window_host_win.h"
 #include "ui/metro_viewer/metro_viewer_messages.h"
 #include "ui/surface/accelerated_surface_win.h"
+
+namespace {
+
+void CloseOpenAshBrowsers() {
+  chrome::BrowserListImpl* browser_list =
+      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  if (browser_list) {
+    for (chrome::BrowserListImpl::const_iterator i = browser_list->begin();
+            i != browser_list->end(); ++i) {
+      Browser* browser = *i;
+      browser->window()->Close();
+      // If the attempt to Close the browser fails due to unload handlers on
+      // the page or in progress downloads, etc, destroy all tabs on the page.
+      while (browser->tab_count())
+        delete browser->tab_strip_model()->GetTabContentsAt(0);
+    }
+  }
+}
+
+}  // namespace
+
 
 MetroViewerProcessHost::MetroViewerProcessHost(
     const std::string& ipc_channel_name) {
@@ -54,6 +80,7 @@ void  MetroViewerProcessHost::OnChannelError() {
   // is very convenient for developing.
   DLOG(INFO) << "viewer channel error : Quitting browser";
   g_browser_process->ReleaseModule();
+  CloseOpenAshBrowsers();
   chrome::CloseAsh();
 }
 
