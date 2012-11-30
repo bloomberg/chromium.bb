@@ -69,8 +69,9 @@ class SettingsDefaultView : public ash::internal::ActionableView {
   virtual ~SettingsDefaultView() {}
 
   void UpdatePowerStatus(const PowerSupplyStatus& status) {
-    if (power_status_view_)
-      power_status_view_->UpdatePowerStatus(status);
+    if (!power_status_view_)
+      return;
+    power_status_view_->UpdatePowerStatus(status);
     string16 accessible_name = label_ ?
         label_->text() + ASCIIToUTF16(", ") +
             power_status_view_->accessible_name() :
