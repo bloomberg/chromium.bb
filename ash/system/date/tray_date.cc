@@ -19,6 +19,7 @@
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "third_party/skia/include/core/SkRect.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -71,6 +72,7 @@ class DateDefaultView : public views::View,
         IDR_AURA_UBER_TRAY_HELP_HOVER,
         IDR_AURA_UBER_TRAY_HELP_HOVER,
         IDS_ASH_STATUS_TRAY_HELP);
+    help_->SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_HELP));
     view->AddButton(help_);
 
     if (login != ash::user::LOGGED_IN_LOCKED &&
@@ -81,6 +83,8 @@ class DateDefaultView : public views::View,
           IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER,
           IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER,
           IDS_ASH_STATUS_TRAY_SHUTDOWN);
+      shutdown_->SetTooltipText(
+          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SHUTDOWN));
       view->AddButton(shutdown_);
     }
 
@@ -91,6 +95,8 @@ class DateDefaultView : public views::View,
           IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER,
           IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER,
           IDS_ASH_STATUS_TRAY_LOCK);
+      lock_->SetTooltipText(
+          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LOCK));
       view->AddButton(lock_);
     }
   }
