@@ -19,12 +19,11 @@ int LauncherItemTypeToWeight(LauncherItemType type) {
     case TYPE_APP_SHORTCUT:
       return 1;
     case TYPE_TABBED:
+    case TYPE_APP_PANEL:
     case TYPE_PLATFORM_APP:
       return 2;
     case TYPE_APP_LIST:
       return 3;
-    case TYPE_APP_PANEL:
-      return 4;
   }
 
   NOTREACHED() << "Invalid type " << type;
@@ -116,13 +115,6 @@ LauncherItems::const_iterator LauncherModel::ItemByID(int id) const {
       return i;
   }
   return items_.end();
-}
-
-int LauncherModel::FirstPanelIndex() const {
-  LauncherItem weight_dummy;
-  weight_dummy.type = TYPE_APP_PANEL;
-  return std::lower_bound(items_.begin(), items_.end(), weight_dummy,
-                          CompareByWeight) - items_.begin();
 }
 
 void LauncherModel::SetStatus(Status status) {

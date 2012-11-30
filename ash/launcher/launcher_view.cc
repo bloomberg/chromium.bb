@@ -310,6 +310,7 @@ void LauncherView::Init() {
   }
   UpdateFirstButtonPadding();
   LauncherStatusChanged();
+
   overflow_button_ = new OverflowButton(this);
   overflow_button_->set_context_menu_controller(this);
   ConfigureChildView(overflow_button_);
@@ -332,8 +333,7 @@ void LauncherView::SetAlignment(ShelfAlignment alignment) {
 
 gfx::Rect LauncherView::GetIdealBoundsOfItemIcon(LauncherID id) {
   int index = model_->ItemIndexByID(id);
-  if (index == -1 || (index > last_visible_index_ &&
-                      index < model_->FirstPanelIndex()))
+  if (index == -1 || index > last_visible_index_)
     return gfx::Rect();
   const gfx::Rect& ideal_bounds(view_model_->ideal_bounds(index));
   DCHECK_NE(TYPE_APP_LIST, model_->items()[index].type);
@@ -396,7 +396,6 @@ void LauncherView::LayoutToIdealBounds() {
 
 void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
   int available_size = primary_axis_coordinate(width(), height());
-  int first_panel_index = model_->FirstPanelIndex();
   if (!available_size)
     return;
 
@@ -408,20 +407,20 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
       std::max(width() - kLauncherPreferredSize,
           ShelfLayoutManager::kAutoHideSize + 1));
   int y = primary_axis_coordinate(0, leading_inset());
-  int w = primary_axis_coordinate(kLauncherPreferredSize, width());
-  int h = primary_axis_coordinate(height(), kLauncherPreferredSize);
-  for (int i = 0; i < first_panel_index; ++i) {
+  for (int i = 0; i < view_model_->view_size(); ++i) {
     if (i < first_visible_index_) {
       view_model_->set_ideal_bounds(i, gfx::Rect(x, y, 0, 0));
       continue;
     }
 
+    int w = primary_axis_coordinate(kLauncherPreferredSize, width());
+    int h = primary_axis_coordinate(height(), kLauncherPreferredSize);
     view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
     x = primary_axis_coordinate(x + w + kButtonSpacing, x);
     y = primary_axis_coordinate(y, y + h + kButtonSpacing);
   }
 
-  int app_list_index = first_panel_index - 1;
+  int app_list_index = view_model_->view_size() - 1;
   if (is_overflow_mode()) {
     last_visible_index_ = app_list_index - 1;
     for (int i = 0; i < view_model_->view_size(); ++i) {
@@ -431,31 +430,17 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     return;
   }
 
-  // Right aligned icons.
-  // TODO(flackr): The right aligned icons may not fit in the launcher in which
-  // case they should be moved to an overflow bubble. See
-  // http://crbug.com/162558 for panel overflow details.
-  int end_position = available_size - kButtonSpacing;
-  x = primary_axis_coordinate(end_position, leading_inset());
-  y = primary_axis_coordinate(0, end_position);
-  for (int i = view_model_->view_size() - 1;
-       i >= first_panel_index; --i) {
-    x = primary_axis_coordinate(x - w - kButtonSpacing, x);
-    y = primary_axis_coordinate(y, y - h - kButtonSpacing);
-    view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
-    end_position = primary_axis_coordinate(x, y);
-  }
-
   bounds->overflow_bounds.set_size(gfx::Size(
       primary_axis_coordinate(kLauncherPreferredSize, width()),
       primary_axis_coordinate(height(), kLauncherPreferredSize)));
   last_visible_index_ = DetermineLastVisibleIndex(
-      end_position - leading_inset() - 2 * kLauncherPreferredSize);
+      available_size - leading_inset() - kLauncherPreferredSize -
+      kButtonSpacing - kLauncherPreferredSize);
   bool show_overflow = (last_visible_index_ + 1 < app_list_index);
 
   for (int i = 0; i < view_model_->view_size(); ++i) {
     view_model_->view_at(i)->SetVisible(
-        i <= last_visible_index_ || i >= app_list_index);
+        i == app_list_index || i <= last_visible_index_);
   }
 
   overflow_button_->SetVisible(show_overflow);
@@ -617,12 +602,10 @@ void LauncherView::ContinueDrag(const ui::LocatedEvent& event) {
 
   // Constrain the location to the range of valid indices for the type.
   std::pair<int, int> indices(GetDragRange(current_index));
-  int first_drag_index = indices.first;
   int last_drag_index = indices.second;
   // If the last index isn't valid, we're overflowing. Constrain to the app list
   // (which is the last visible item).
-  if (first_drag_index < model_->FirstPanelIndex() &&
-      last_drag_index > last_visible_index_)
+  if (last_drag_index > last_visible_index_)
     last_drag_index = last_visible_index_;
   int x = 0, y = 0;
   if (is_horizontal_alignment()) {
@@ -667,11 +650,13 @@ bool LauncherView::SameDragType(LauncherItemType typea,
                                 LauncherItemType typeb) const {
   switch (typea) {
     case TYPE_TABBED:
+    case TYPE_APP_PANEL:
     case TYPE_PLATFORM_APP:
-      return (typeb == TYPE_TABBED || typeb == TYPE_PLATFORM_APP);
+      return (typeb == TYPE_TABBED ||
+          typeb == TYPE_APP_PANEL ||
+          typeb == TYPE_PLATFORM_APP);
     case TYPE_APP_SHORTCUT:
     case TYPE_APP_LIST:
-    case TYPE_APP_PANEL:
     case TYPE_BROWSER_SHORTCUT:
       return typeb == typea;
   }
@@ -830,8 +815,7 @@ void LauncherView::LauncherItemAdded(int model_index) {
   // is hidden, so it visually appears as though we are providing space for
   // it. When done we'll fade the view in.
   AnimateToIdealBounds();
-  if (model_index <= last_visible_index_ ||
-      model_index >= model_->FirstPanelIndex()) {
+  if (model_index <= last_visible_index_) {
     bounds_animator_->SetAnimationDelegate(
         view, new StartFadeAnimationDelegate(this, view), true);
   } else {

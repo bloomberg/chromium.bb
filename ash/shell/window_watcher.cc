@@ -79,8 +79,7 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
   static int image_count = 0;
   ash::LauncherModel* model = Launcher::ForPrimaryDisplay()->model();
   ash::LauncherItem item;
-  item.type = new_window->type() == aura::client::WINDOW_TYPE_PANEL ?
-                                    ash::TYPE_APP_PANEL : ash::TYPE_TABBED;
+  item.type = ash::TYPE_TABBED;
   id_to_window_[model->next_id()] = new_window;
 
   SkBitmap icon_bitmap;
