@@ -360,6 +360,8 @@ widget_add_widget(struct widget *parent, void *data);
 void
 widget_destroy(struct widget *widget);
 void
+widget_set_default_cursor(struct widget *widget, int cursor);
+void
 widget_get_allocation(struct widget *widget, struct rectangle *allocation);
 
 void

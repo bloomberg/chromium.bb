@@ -129,13 +129,6 @@ redraw_handler(struct widget *widget, void *data)
 	cairo_surface_destroy(surface);
 }
 
-static int
-motion_handler(struct widget *widget, struct input *input,
-	       uint32_t time, float x, float y, void *data)
-{
-	return CURSOR_HAND1;
-}
-
 static void
 button_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
@@ -184,8 +177,8 @@ int main(int argc, char *argv[])
 
 	widget_set_resize_handler(flower.widget, resize_handler);
 	widget_set_redraw_handler(flower.widget, redraw_handler);
-	widget_set_motion_handler(flower.widget, motion_handler);
 	widget_set_button_handler(flower.widget, button_handler);
+	widget_set_default_cursor(flower.widget, CURSOR_HAND1);
 
 	window_schedule_resize(flower.window, flower.width, flower.height);
 

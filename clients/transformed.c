@@ -185,13 +185,6 @@ output_handler(struct window *window, struct output *output, int enter,
 	window_schedule_redraw(window);
 }
 
-static int
-motion_handler(struct widget *widget, struct input *input,
-	       uint32_t time, float x, float y, void *data)
-{
-	return CURSOR_BLANK;
-}
-
 static void
 button_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
@@ -237,9 +230,9 @@ int main(int argc, char *argv[])
 	window_set_title(transformed.window, "Transformed");
 
 	widget_set_transparent(transformed.widget, 0);
+	widget_set_default_cursor(transformed.widget, CURSOR_BLANK);
 
 	widget_set_redraw_handler(transformed.widget, redraw_handler);
-	widget_set_motion_handler(transformed.widget, motion_handler);
 	widget_set_button_handler(transformed.widget, button_handler);
 
 	window_set_fullscreen_handler(transformed.window, fullscreen_handler);

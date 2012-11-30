@@ -253,6 +253,7 @@ struct widget {
 	void *user_data;
 	int opaque;
 	int tooltip_count;
+	int default_cursor;
 };
 
 struct input {
@@ -1334,6 +1335,7 @@ widget_create(struct window *window, void *data)
 	widget->opaque = 0;
 	widget->tooltip = NULL;
 	widget->tooltip_count = 0;
+	widget->default_cursor = CURSOR_LEFT_PTR;
 
 	return widget;
 }
@@ -1376,6 +1378,12 @@ widget_destroy(struct widget *widget)
 
 	wl_list_remove(&widget->link);
 	free(widget);
+}
+
+void
+widget_set_default_cursor(struct widget *widget, int cursor)
+{
+	widget->default_cursor = cursor;
 }
 
 void
@@ -2241,7 +2249,7 @@ input_set_focus_widget(struct input *input, struct widget *focus,
 		       float x, float y)
 {
 	struct widget *old, *widget;
-	int pointer = CURSOR_LEFT_PTR;
+	int cursor;
 
 	if (focus == input->focus_widget)
 		return;
@@ -2262,10 +2270,12 @@ input_set_focus_widget(struct input *input, struct widget *focus,
 			widget = input->grab;
 		input->focus_widget = focus;
 		if (widget->enter_handler)
-			pointer = widget->enter_handler(focus, input, x, y,
-							widget->user_data);
+			cursor = widget->enter_handler(focus, input, x, y,
+						       widget->user_data);
+		else
+			cursor = widget->default_cursor;
 
-		input_set_pointer_image(input, pointer);
+		input_set_pointer_image(input, cursor);
 	}
 }
 
@@ -2354,7 +2364,7 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
 	struct input *input = data;
 	struct window *window = input->pointer_focus;
 	struct widget *widget;
-	int cursor = CURSOR_LEFT_PTR;
+	int cursor;
 	float sx = wl_fixed_to_double(sx_w);
 	float sy = wl_fixed_to_double(sy_w);
 
@@ -2377,6 +2387,8 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
 		cursor = widget->motion_handler(input->focus_widget,
 						input, time, sx, sy,
 						widget->user_data);
+	else
+		cursor = input->focus_widget->default_cursor;
 
 	input_set_pointer_image(input, cursor);
 }
