@@ -171,8 +171,10 @@
         'browser/extensions/api/tabs/tabs_interactive_test.cc',
         'browser/extensions/extension_apitest.cc',
         'browser/extensions/extension_browsertest.cc',
+        'browser/extensions/extension_crash_recovery_browsertest.cc',
         'browser/extensions/extension_function_test_utils.cc',
         'browser/extensions/extension_keybinding_apitest.cc',
+        'browser/extensions/notifications_apitest.cc',
         'browser/extensions/window_open_interactive_apitest.cc',
         'browser/instant/instant_browsertest.cc',
         'browser/mouseleave_browsertest.cc',
@@ -281,6 +283,7 @@
         ['notifications==0', {
           'sources/': [
             ['exclude', '^browser/notifications/'],
+            ['exclude', '^browser/extensions/notifications_apitest.cc'],
           ],
         }],
         ['toolkit_views==1', {
@@ -973,7 +976,6 @@
         'browser/extensions/extension_browsertest.cc',
         'browser/extensions/extension_browsertest.h',
         'browser/extensions/extension_context_menu_browsertest.cc',
-        'browser/extensions/extension_crash_recovery_browsertest.cc',
         'browser/extensions/extension_devtools_browsertest.cc',
         'browser/extensions/extension_devtools_browsertest.h',
         'browser/extensions/extension_devtools_browsertests.cc',
@@ -1004,7 +1006,6 @@
         'browser/extensions/lazy_background_page_apitest.cc',
         'browser/extensions/lazy_background_page_test_util.h',
         'browser/extensions/mutation_observers_apitest.cc',
-        'browser/extensions/notifications_apitest.cc',
         'browser/extensions/options_page_apitest.cc',
         'browser/extensions/page_action_browsertest.cc',
         'browser/extensions/platform_app_browsertest.cc',
@@ -1383,11 +1384,6 @@
           'sources/': [
             ['exclude', '^browser/speech/'],
             ['exclude', '^../content/browser/speech/'],
-          ],
-        }],
-        ['notifications==0', {
-          'sources!': [
-            'browser/extensions/notifications_apitest.cc',
           ],
         }],
         ['safe_browsing==1', {
