@@ -291,8 +291,11 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
   bool is_subresource_request = resource_type != ResourceType::MAIN_FRAME;
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   if (io_data->safe_browsing_enabled()->GetValue()) {
-    throttles->push_back(SafeBrowsingResourceThrottleFactory::Create(
-        request, child_id, route_id, is_subresource_request, safe_browsing_));
+    content::ResourceThrottle* throttle =
+        SafeBrowsingResourceThrottleFactory::Create(request, child_id, route_id,
+            is_subresource_request, safe_browsing_);
+    DCHECK(throttle);
+    throttles->push_back(throttle);
   }
 #endif
 
