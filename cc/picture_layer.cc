@@ -42,6 +42,7 @@ void PictureLayer::pushPropertiesTo(LayerImpl* base_layer) {
 void PictureLayer::setNeedsDisplayRect(const gfx::RectF& layer_rect) {
   gfx::Rect rect = gfx::ToEnclosedRect(layer_rect);
   pending_invalidation_.Union(rect);
+  Layer::setNeedsDisplayRect(layer_rect);
 }
 
 void PictureLayer::update(ResourceUpdateQueue&, const OcclusionTracker*,
