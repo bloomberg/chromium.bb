@@ -172,7 +172,8 @@ void SettingsFrontend::RunWithStorage(
   // TODO(kalman): change RunWithStorage() to take a
   // scoped_refptr<const Extension> instead.
   scoped_refptr<const Extension> extension =
-      profile_->GetExtensionService()->GetExtensionById(extension_id, true);
+      extensions::ExtensionSystem::Get(profile_)->extension_service()->
+          GetExtensionById(extension_id, true);
   CHECK(extension);
 
   cache->GetMessageLoop()->PostTask(

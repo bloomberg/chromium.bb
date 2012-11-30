@@ -39,6 +39,7 @@
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
@@ -962,7 +963,8 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
   file_handler_util::FindDefaultTasks(profile_, file_urls,
                                       common_tasks, &default_tasks);
 
-  ExtensionService* service = profile_->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   for (std::set<const FileBrowserHandler*>::const_iterator iter =
            common_tasks.begin();
        iter != common_tasks.end();

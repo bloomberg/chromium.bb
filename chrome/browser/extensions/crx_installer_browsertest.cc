@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -82,7 +83,8 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
       const std::string& ext_relpath,
       const std::string& id,
       MockInstallPrompt* mock_install_prompt) {
-    ExtensionService* service = browser()->profile()->GetExtensionService();
+    ExtensionService* service = extensions::ExtensionSystem::Get(
+        browser()->profile())->extension_service();
     FilePath ext_path = test_data_dir_.AppendASCII(ext_relpath);
 
     std::string error;
@@ -119,7 +121,8 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExperimentalExtensionApis);
 
-    ExtensionService* service = browser()->profile()->GetExtensionService();
+    ExtensionService* service = extensions::ExtensionSystem::Get(
+        browser()->profile())->extension_service();
 
     MockInstallPrompt* mock_prompt =
         CreateMockInstallPromptForBrowser(browser());
@@ -142,7 +145,8 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
 #endif
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, MAYBE_Whitelisting) {
   std::string id = "hdgllgikmikobbofgnabhfimcfoopgnd";
-  ExtensionService* service = browser()->profile()->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+      browser()->profile())->extension_service();
 
   // Even whitelisted extensions with NPAPI should not prompt.
   MockInstallPrompt* mock_prompt =
@@ -247,7 +251,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, DoNotGrantScopes) {
 #endif
 // Crashy: http://crbug.com/140893
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, DISABLED_AllowOffStore) {
-  ExtensionService* service = browser()->profile()->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+      browser()->profile())->extension_service();
   const bool kTestData[] = {false, true};
 
   for (size_t i = 0; i < arraysize(kTestData); ++i) {

@@ -597,7 +597,8 @@ bool GetExtensionForId(
     const extensions::Extension** extension) {
   if (id.type() != AutomationId::kTypeExtension)
     return false;
-  ExtensionService* service = profile->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(profile)->
+      extension_service();
   const extensions::Extension* installed_extension =
       service->GetInstalledExtension(id.id());
   if (installed_extension)

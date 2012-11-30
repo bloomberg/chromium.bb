@@ -84,7 +84,8 @@ scoped_refptr<extensions::CrxInstaller> OpenChromeExtension(
     const DownloadItem& download_item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  ExtensionService* service = profile->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(profile)->
+      extension_service();
   CHECK(service);
 
   scoped_refptr<extensions::CrxInstaller> installer(

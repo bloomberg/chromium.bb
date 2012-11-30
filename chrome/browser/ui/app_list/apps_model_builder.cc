@@ -10,6 +10,7 @@
 #include "base/auto_reset.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/extension_app_item.h"
@@ -45,7 +46,8 @@ AppsModelBuilder::AppsModelBuilder(Profile* profile,
       model_(model),
       ignore_changes_(false) {
   extensions::ExtensionPrefs* extension_prefs =
-      profile_->GetExtensionService()->extension_prefs();
+      extensions::ExtensionSystem::Get(profile_)->extension_service()->
+          extension_prefs();
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
       content::Source<Profile>(profile_));
@@ -76,7 +78,8 @@ void AppsModelBuilder::Build() {
 }
 
 void AppsModelBuilder::PopulateApps() {
-  ExtensionService* service = profile_->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (!service)
     return;
 

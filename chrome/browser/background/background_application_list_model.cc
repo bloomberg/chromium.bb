@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -181,7 +182,8 @@ BackgroundApplicationListModel::BackgroundApplicationListModel(Profile* profile)
   registrar_.Add(this,
                  chrome::NOTIFICATION_BACKGROUND_CONTENTS_SERVICE_CHANGED,
                  content::Source<Profile>(profile));
-  ExtensionService* service = profile->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(profile)->
+      extension_service();
   if (service && service->is_ready())
     Update();
 }
@@ -312,7 +314,8 @@ void BackgroundApplicationListModel::Observe(
     Update();
     return;
   }
-  ExtensionService* service = profile_->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(profile_)->
+      extension_service();
   if (!service || !service->is_ready())
     return;
 
@@ -391,7 +394,8 @@ void BackgroundApplicationListModel::RemoveObserver(Observer* observer) {
 // differs from the old list, it generates OnApplicationListChanged events for
 // each observer.
 void BackgroundApplicationListModel::Update() {
-  ExtensionService* service = profile_->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(profile_)->
+      extension_service();
 
   // Discover current background applications, compare with previous list, which
   // is consistently sorted, and notify observers if they differ.

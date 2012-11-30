@@ -525,8 +525,9 @@ bool SpeechInputExtensionManager::Start(
       NOTREACHED();
   }
 
-  const extensions::Extension* extension = profile_->GetExtensionService()->
-      GetExtensionById(extension_id, true);
+  const extensions::Extension* extension =
+      extensions::ExtensionSystem::Get(profile_)->extension_service()->
+          GetExtensionById(extension_id, true);
   DCHECK(extension);
   const std::string& extension_name = extension->name();
 

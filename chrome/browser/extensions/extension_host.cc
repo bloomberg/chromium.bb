@@ -230,7 +230,8 @@ void ExtensionHost::CreateRenderViewNow() {
   LoadInitialURL();
   if (is_background_page()) {
     DCHECK(IsRenderViewLive());
-    profile_->GetExtensionService()->DidCreateRenderViewForBackgroundPage(this);
+    extensions::ExtensionSystem::Get(profile_)->extension_service()->
+        DidCreateRenderViewForBackgroundPage(this);
   }
 }
 
@@ -246,7 +247,8 @@ const GURL& ExtensionHost::GetURL() const {
 
 void ExtensionHost::LoadInitialURL() {
   if (!is_background_page() &&
-      !profile_->GetExtensionService()->IsBackgroundPageReady(extension_)) {
+      !extensions::ExtensionSystem::Get(profile_)->extension_service()->
+          IsBackgroundPageReady(extension_)) {
     // Make sure the background page loads before any others.
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
                    content::Source<Extension>(extension_));
@@ -270,7 +272,7 @@ void ExtensionHost::Observe(int type,
                             const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY:
-      DCHECK(profile_->GetExtensionService()->
+      DCHECK(extensions::ExtensionSystem::Get(profile_)->extension_service()->
           IsBackgroundPageReady(extension_));
       LoadInitialURL();
       break;
@@ -388,7 +390,8 @@ void ExtensionHost::DocumentAvailableInMainFrame() {
 
   document_element_available_ = true;
   if (is_background_page()) {
-    profile_->GetExtensionService()->SetBackgroundPageReady(extension_);
+    extensions::ExtensionSystem::Get(profile_)->extension_service()->
+        SetBackgroundPageReady(extension_);
   } else {
     switch (extension_host_type_) {
       case chrome::VIEW_TYPE_EXTENSION_INFOBAR:

@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -79,8 +80,10 @@ BrowserActionsContainer::BrowserActionsContainer(Browser* browser,
       ALLOW_THIS_IN_INITIALIZER_LIST(show_menu_task_factory_(this)) {
   set_id(VIEW_ID_BROWSER_ACTION_TOOLBAR);
 
-  if (profile_->GetExtensionService()) {
-    model_ = profile_->GetExtensionService()->toolbar_model();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  if (service) {
+    model_ = service->toolbar_model();
     model_->AddObserver(this);
   }
 
@@ -502,7 +505,8 @@ extensions::ActiveTabPermissionGranter*
 
 void BrowserActionsContainer::MoveBrowserAction(const std::string& extension_id,
                                                 size_t new_index) {
-  ExtensionService* service = profile_->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (service) {
     const Extension* extension = service->GetExtensionById(extension_id, false);
     model_->MoveBrowserAction(extension, new_index);
@@ -627,7 +631,8 @@ void BrowserActionsContainer::BrowserActionAdded(const Extension* extension,
   // Enlarge the container if it was already at maximum size and we're not in
   // the middle of upgrading.
   if ((model_->GetVisibleIconCount() < 0) &&
-      !profile_->GetExtensionService()->IsBeingUpgraded(extension)) {
+      !extensions::ExtensionSystem::Get(profile_)->extension_service()->
+          IsBeingUpgraded(extension)) {
     suppress_chevron_ = true;
     SaveDesiredSizeAndAnimate(ui::Tween::LINEAR, visible_actions + 1);
   } else {
@@ -651,7 +656,8 @@ void BrowserActionsContainer::BrowserActionRemoved(const Extension* extension) {
 
       // If the extension is being upgraded we don't want the bar to shrink
       // because the icon is just going to get re-added to the same location.
-      if (profile_->GetExtensionService()->IsBeingUpgraded(extension))
+      if (extensions::ExtensionSystem::Get(profile_)->extension_service()->
+              IsBeingUpgraded(extension))
         return;
 
       if (browser_action_views_.size() > visible_actions) {
@@ -810,7 +816,8 @@ bool BrowserActionsContainer::ShouldDisplayBrowserAction(
   // Only display incognito-enabled extensions while in incognito mode.
   return
       (!profile_->IsOffTheRecord() ||
-       profile_->GetExtensionService()->IsIncognitoEnabled(extension->id()));
+       extensions::ExtensionSystem::Get(profile_)->extension_service()->
+           IsIncognitoEnabled(extension->id()));
 }
 
 void BrowserActionsContainer::ShowPopup(

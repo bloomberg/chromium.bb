@@ -11,6 +11,7 @@
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/automation_id.h"
 #include "chrome/common/automation_messages.h"
@@ -189,7 +190,8 @@ bool GetExtensionFromJSONArgsHelper(
     *error = base::StringPrintf("Missing or invalid key: %s", key.c_str());
     return false;
   }
-  ExtensionService* service = profile->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(profile)->
+      extension_service();
   if (!service) {
     *error = "No extensions service.";
     return false;

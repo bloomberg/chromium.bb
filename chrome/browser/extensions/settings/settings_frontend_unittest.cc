@@ -94,8 +94,10 @@ class ExtensionSettingsFrontendTest : public testing::Test {
 
 TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   const std::string id = "ext";
-  profile_->GetMockExtensionService()->AddExtensionWithId(
-      id, Extension::TYPE_EXTENSION);
+  ExtensionServiceInterface* esi =
+      extensions::ExtensionSystem::Get(profile_.get())->extension_service();
+  static_cast<extensions::settings_test_util::MockExtensionService*>(esi)->
+      AddExtensionWithId(id, Extension::TYPE_EXTENSION);
 
   ValueStore* storage = util::GetStorage(id, frontend_.get());
 
@@ -125,8 +127,10 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
 
 TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
   const std::string id = "ext";
-  profile_->GetMockExtensionService()->AddExtensionWithId(
-      id, Extension::TYPE_LEGACY_PACKAGED_APP);
+  ExtensionServiceInterface* esi =
+      extensions::ExtensionSystem::Get(profile_.get())->extension_service();
+  static_cast<extensions::settings_test_util::MockExtensionService*>(esi)->
+      AddExtensionWithId(id, Extension::TYPE_LEGACY_PACKAGED_APP);
 
   ValueStore* storage = util::GetStorage(id, frontend_.get());
 
@@ -151,8 +155,10 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
 
 TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
   const std::string id = "ext";
-  profile_->GetMockExtensionService()->AddExtensionWithId(
-      id, Extension::TYPE_EXTENSION);
+  ExtensionServiceInterface* esi =
+      extensions::ExtensionSystem::Get(profile_.get())->extension_service();
+  static_cast<extensions::settings_test_util::MockExtensionService*>(esi)->
+      AddExtensionWithId(id, Extension::TYPE_EXTENSION);
 
   ValueStore* storage = util::GetStorage(id, frontend_.get());
 
@@ -187,8 +193,10 @@ TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
 TEST_F(ExtensionSettingsFrontendTest,
        QuotaLimitsEnforcedCorrectlyForSyncAndLocal) {
   const std::string id = "ext";
-  profile_->GetMockExtensionService()->AddExtensionWithId(
-      id, Extension::TYPE_EXTENSION);
+  ExtensionServiceInterface* esi =
+      extensions::ExtensionSystem::Get(profile_.get())->extension_service();
+  static_cast<extensions::settings_test_util::MockExtensionService*>(esi)->
+      AddExtensionWithId(id, Extension::TYPE_EXTENSION);
 
   ValueStore* sync_storage =
       util::GetStorage(id, settings::SYNC, frontend_.get());
@@ -264,8 +272,11 @@ TEST_F(ExtensionSettingsFrontendTest,
   const std::string id = "ext";
   std::set<std::string> permissions;
   permissions.insert("unlimitedStorage");
-  profile_->GetMockExtensionService()->AddExtensionWithIdAndPermissions(
-      id, Extension::TYPE_EXTENSION, permissions);
+  ExtensionServiceInterface* esi =
+      extensions::ExtensionSystem::Get(profile_.get())->extension_service();
+  static_cast<extensions::settings_test_util::MockExtensionService*>(esi)->
+      AddExtensionWithIdAndPermissions(id, Extension::TYPE_EXTENSION,
+          permissions);
 
   frontend_->RunWithStorage(
       id, settings::SYNC, base::Bind(&UnlimitedSyncStorageTestCallback));

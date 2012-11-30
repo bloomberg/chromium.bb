@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/api/preference/preference_api_constants.h"
 #include "chrome/browser/extensions/api/preference/preference_helpers.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_installer.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -88,8 +89,8 @@ bool ClearContentSettingsFunction::RunImpl() {
     }
   }
 
-  ContentSettingsStore* store =
-      profile_->GetExtensionService()->GetContentSettingsStore();
+  ContentSettingsStore* store = extensions::ExtensionSystem::Get(profile_)->
+      extension_service()->GetContentSettingsStore();
   store->ClearContentSettingsForExtension(extension_id(), scope);
 
   return true;
@@ -241,8 +242,8 @@ bool SetContentSettingFunction::RunImpl() {
     return false;
   }
 
-  ContentSettingsStore* store =
-      profile_->GetExtensionService()->GetContentSettingsStore();
+  ContentSettingsStore* store = extensions::ExtensionSystem::Get(profile_)->
+      extension_service()->GetContentSettingsStore();
   store->SetExtensionContentSetting(extension_id(), primary_pattern,
                                     secondary_pattern, content_type,
                                     resource_identifier, setting, scope);

@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -268,7 +269,8 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
       [BrowserActionsController registerUserPrefs:profile_->GetPrefs()];
 
     observer_.reset(new ExtensionServiceObserverBridge(self, browser_));
-    ExtensionService* extensionService = profile_->GetExtensionService();
+    ExtensionService* extensionService =
+        extensions::ExtensionSystem::Get(profile_)->extension_service();
     // |extensionService| can be NULL in Incognito.
     if (extensionService) {
       toolbarModel_ = extensionService->toolbar_model();
@@ -767,7 +769,8 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
   // Only display incognito-enabled extensions while in incognito mode.
   return
       (!profile_->IsOffTheRecord() ||
-       profile_->GetExtensionService()->IsIncognitoEnabled(extension->id()));
+       extensions::ExtensionSystem::Get(profile_)->extension_service()->
+           IsIncognitoEnabled(extension->id()));
 }
 
 - (void)showChevronIfNecessaryInFrame:(NSRect)frame animate:(BOOL)animate {

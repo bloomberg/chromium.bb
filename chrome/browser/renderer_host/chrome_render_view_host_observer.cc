@@ -87,8 +87,8 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
     ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
         process->GetID(), chrome::kChromeUIScheme);
 
-    if (profile_->GetExtensionService()->extension_prefs()->AllowFileAccess(
-          extension->id())) {
+    if (extensions::ExtensionSystem::Get(profile_)->extension_service()->
+            extension_prefs()->AllowFileAccess(extension->id())) {
       ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
           process->GetID(), chrome::kFileScheme);
     }
@@ -126,7 +126,8 @@ const Extension* ChromeRenderViewHostObserver::GetExtension() {
   if (!site.SchemeIs(extensions::kExtensionScheme))
     return NULL;
 
-  ExtensionService* service = profile_->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (!service)
     return NULL;
 

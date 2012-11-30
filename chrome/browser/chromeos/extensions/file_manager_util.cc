@@ -25,6 +25,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -515,7 +516,8 @@ void OpenFileBrowser(const FilePath& path,
     url += "#/" + net::EscapeUrlEncodedData(virtual_path.value(), false);
   }
 
-  ExtensionService* service = profile->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!service)
     return;
 
@@ -767,7 +769,8 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
           GetFileBrowserExtensionUrl().GetOrigin(), &url))
         return false;
 
-      ExtensionService* service = profile->GetExtensionService();
+      ExtensionService* service =
+        extensions::ExtensionSystem::Get(profile)->extension_service();
       if (!service)
         return false;
 
@@ -812,7 +815,8 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
 }
 
 void InstallCRX(Browser* browser, const FilePath& path) {
-  ExtensionService* service = browser->profile()->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(browser->profile())->extension_service();
   CHECK(service);
 
   content::WebContents* web_contents =

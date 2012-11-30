@@ -10,12 +10,14 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/settings/leveldb_settings_storage_factory.h"
 #include "chrome/browser/extensions/settings/settings_frontend.h"
 #include "chrome/browser/extensions/settings/settings_storage_factory.h"
 #include "chrome/browser/extensions/settings/settings_sync_util.h"
 #include "chrome/browser/extensions/settings/settings_test_util.h"
 #include "chrome/browser/extensions/settings/syncable_settings_storage.h"
+#include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/value_store/testing_value_store.h"
 #include "content/public/test/test_browser_thread.h"
 #include "sync/api/sync_change_processor.h"
@@ -225,7 +227,10 @@ class ExtensionSettingsSyncTest : public testing::Test {
   // its storage area.
   ValueStore* AddExtensionAndGetStorage(
       const std::string& id, Extension::Type type) {
-    profile_->GetMockExtensionService()->AddExtensionWithId(id, type);
+    ExtensionServiceInterface* esi =
+        extensions::ExtensionSystem::Get(profile_.get())->extension_service();
+    static_cast<extensions::settings_test_util::MockExtensionService*>(esi)->
+        AddExtensionWithId(id, type);
     return util::GetStorage(id, frontend_.get());
   }
 

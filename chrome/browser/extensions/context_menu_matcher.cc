@@ -6,6 +6,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/common/context_menu_params.h"
 #include "ui/gfx/favicon_size.h"
@@ -28,7 +29,8 @@ void ContextMenuMatcher::AppendExtensionItems(const std::string& extension_id,
                                               const string16& selection_text,
                                               int* index)
 {
-  ExtensionService* service = profile_->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   MenuManager* manager = service->menu_manager();
   const Extension* extension = service->GetExtensionById(extension_id, false);
   DCHECK_GE(*index, 0);
@@ -115,7 +117,8 @@ bool ContextMenuMatcher::IsCommandIdEnabled(int command_id) const {
 void ContextMenuMatcher::ExecuteCommand(int command_id,
     content::WebContents* web_contents,
     const content::ContextMenuParams& params) {
-  MenuManager* manager = profile_->GetExtensionService()->menu_manager();
+  MenuManager* manager = extensions::ExtensionSystem::Get(profile_)->
+      extension_service()->menu_manager();
   MenuItem* item = GetExtensionMenuItem(command_id);
   if (!item)
     return;
@@ -204,7 +207,8 @@ void ContextMenuMatcher::RecursivelyAppendExtensionItems(
 }
 
 MenuItem* ContextMenuMatcher::GetExtensionMenuItem(int id) const {
-  MenuManager* manager = profile_->GetExtensionService()->menu_manager();
+  MenuManager* manager = extensions::ExtensionSystem::Get(profile_)->
+      extension_service()->menu_manager();
   std::map<int, MenuItem::Id>::const_iterator i =
       extension_item_map_.find(id);
   if (i != extension_item_map_.end()) {
@@ -216,7 +220,8 @@ MenuItem* ContextMenuMatcher::GetExtensionMenuItem(int id) const {
 }
 
 void ContextMenuMatcher::SetExtensionIcon(const std::string& extension_id) {
-  ExtensionService* service = profile_->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   MenuManager* menu_manager = service->menu_manager();
 
   int index = menu_model_->GetItemCount() - 1;

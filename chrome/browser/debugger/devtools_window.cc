@@ -15,6 +15,7 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/api/debugger/debugger_api.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -455,8 +456,8 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
     }
   }
   ListValue results;
-  const ExtensionService* extension_service =
-      tab_contents_->profile()->GetOriginalProfile()->GetExtensionService();
+  const ExtensionService* extension_service = extensions::ExtensionSystem::Get(
+      tab_contents_->profile()->GetOriginalProfile())->extension_service();
   if (!extension_service)
     return;
 

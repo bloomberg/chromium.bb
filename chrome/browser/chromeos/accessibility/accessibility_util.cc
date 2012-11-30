@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/file_reader.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -134,7 +135,7 @@ void EnableSpokenFeedback(bool enabled, content::WebUI* login_web_ui) {
   // Load/Unload ChromeVox
   Profile* profile = ProfileManager::GetDefaultProfile();
   ExtensionService* extension_service =
-      profile->GetExtensionService();
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   FilePath path = FilePath(extension_misc::kChromeVoxExtensionPath);
   if (enabled) {  // Load ChromeVox
     std::string extension_id =

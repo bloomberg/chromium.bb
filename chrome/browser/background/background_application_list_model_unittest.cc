@@ -17,6 +17,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -122,7 +123,8 @@ void RemoveBackgroundPermission(ExtensionService* service,
 // extensions, of which some are Background Apps and others are not.
 TEST_F(BackgroundApplicationListModelTest, ExplicitTest) {
   InitializeAndLoadEmptyExtensionService();
-  ExtensionService* service = profile_->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(profile_.get())->
+      extension_service();
   ASSERT_TRUE(service);
   ASSERT_TRUE(service->is_ready());
   ASSERT_TRUE(service->extensions());
@@ -188,7 +190,8 @@ TEST_F(BackgroundApplicationListModelTest, ExplicitTest) {
 // With minimal test logic, verifies behavior with dynamic permissions.
 TEST_F(BackgroundApplicationListModelTest, AddRemovePermissionsTest) {
   InitializeAndLoadEmptyExtensionService();
-  ExtensionService* service = profile_->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(profile_.get())->
+      extension_service();
   ASSERT_TRUE(service);
   ASSERT_TRUE(service->is_ready());
   ASSERT_TRUE(service->extensions());
@@ -337,7 +340,8 @@ void TogglePermission(ExtensionService* service,
 // removing extensions, of which some are Background Apps and others are not.
 TEST_F(BackgroundApplicationListModelTest, RandomTest) {
   InitializeAndLoadEmptyExtensionService();
-  ExtensionService* service = profile_->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(profile_.get())->
+      extension_service();
   ASSERT_TRUE(service);
   ASSERT_TRUE(service->is_ready());
   ASSERT_TRUE(service->extensions());

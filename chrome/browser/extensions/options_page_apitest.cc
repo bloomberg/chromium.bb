@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -33,7 +34,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_OptionsPage) {
   const Extension* extension =
       InstallExtension(test_data_dir_.AppendASCII("options.crx"), 1);
   ASSERT_TRUE(extension);
-  ExtensionService* service = browser()->profile()->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+      browser()->profile())->extension_service();
   ASSERT_EQ(1u, service->extensions()->size());
 
   // Go to the Extension Settings page and click the Options button.

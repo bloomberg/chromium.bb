@@ -34,7 +34,8 @@ ExtensionKeybindingRegistry::~ExtensionKeybindingRegistry() {
 }
 
 void ExtensionKeybindingRegistry::Init() {
-  ExtensionService* service = profile_->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (!service)
     return;  // ExtensionService can be null during testing.
 

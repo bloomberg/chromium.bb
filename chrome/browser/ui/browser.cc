@@ -53,6 +53,7 @@
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/file_select_helper.h"
@@ -1703,7 +1704,8 @@ void Browser::WebIntentDispatch(
   if (web_contents &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kWebIntentsInvocationEnabled)) {
-    ExtensionService* extensions_service = profile_->GetExtensionService();
+    ExtensionService* extensions_service =
+        extensions::ExtensionSystem::Get(profile_)->extension_service();
     if (!extensions_service ||
         extensions_service->extensions()->GetExtensionOrAppByURL(
             ExtensionURLInfo(web_contents->GetURL())) == NULL) {
@@ -2344,7 +2346,8 @@ bool Browser::MaybeCreateBackgroundContents(int route_id,
                                             const string16& frame_name,
                                             const GURL& target_url) {
   GURL opener_url = opener_web_contents->GetURL();
-  ExtensionService* extensions_service = profile_->GetExtensionService();
+  ExtensionService* extensions_service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
 
   if (!opener_url.is_valid() ||
       frame_name.empty() ||

@@ -62,7 +62,7 @@ class AsyncUninstaller : public ExtensionUninstallDialog::Delegate {
 
   // ExtensionUninstallDialog::Delegate:
   virtual void ExtensionUninstallAccepted() {
-    profile_->GetExtensionService()->
+    extensions::ExtensionSystem::Get(profile_)->extension_service()->
         UninstallExtension(extension_->id(), false, NULL);
   }
   virtual void ExtensionUninstallCanceled() {}
@@ -223,8 +223,8 @@ enum {
       break;
     }
     case kExtensionContextHide: {
-      ExtensionService* extension_service =
-          browser_->profile()->GetExtensionService();
+      ExtensionService* extension_service = extensions::ExtensionSystem::Get(
+          browser_->profile())->extension_service();
       extension_service->extension_prefs()->
           SetBrowserActionVisibility(extension_, false);
       break;

@@ -3694,7 +3694,8 @@ void TestingAutomationProvider::InstallExtension(
   }
   args->GetBoolean("from_webstore", &from_webstore);
 
-  ExtensionService* service = browser->profile()->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+      browser->profile())->extension_service();
   ExtensionProcessManager* manager =
       extensions::ExtensionSystem::Get(browser->profile())->process_manager();
   if (service && manager) {
@@ -3775,7 +3776,8 @@ void TestingAutomationProvider::GetExtensionsInfo(DictionaryValue* args,
     reply.SendError(error_msg);
     return;
   }
-  ExtensionService* service = browser->profile()->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+      browser->profile())->extension_service();
   if (!service) {
     reply.SendError("No extensions service.");
     return;
@@ -3850,7 +3852,8 @@ void TestingAutomationProvider::UninstallExtensionById(
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
-  ExtensionService* service = browser->profile()->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+      browser->profile())->extension_service();
   if (!service) {
     AutomationJSONReply(this, reply_message).SendError(
         "No extensions service.");
@@ -3902,7 +3905,8 @@ void TestingAutomationProvider::SetExtensionStateById(
     return;
   }
 
-  ExtensionService* service = browser->profile()->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+      browser->profile())->extension_service();
   ExtensionProcessManager* manager =
       extensions::ExtensionSystem::Get(browser->profile())->process_manager();
   if (!service) {
@@ -4118,7 +4122,8 @@ void TestingAutomationProvider::UpdateExtensionsNow(
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
-  ExtensionService* service = browser->profile()->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+      browser->profile())->extension_service();
   if (!service) {
     AutomationJSONReply(this, reply_message).SendError(
         "No extensions service.");
@@ -5015,7 +5020,8 @@ void TestingAutomationProvider::LaunchApp(
     return;
   }
 
-  ExtensionService* service = browser->profile()->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+      browser->profile())->extension_service();
   if (!service) {
     AutomationJSONReply(this, reply_message).SendError(
         "No extensions service.");
@@ -5073,7 +5079,8 @@ void TestingAutomationProvider::SetAppLaunchType(
     return;
   }
 
-  ExtensionService* service = browser->profile()->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+      browser->profile())->extension_service();
   if (!service) {
     reply.SendError("No extensions service.");
     return;

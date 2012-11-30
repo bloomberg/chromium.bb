@@ -15,6 +15,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -210,8 +211,8 @@ class BrowserTest : public ExtensionBrowserTest {
 
   // Returns the app extension aptly named "App Test".
   const Extension* GetExtension() {
-    const ExtensionSet* extensions =
-        browser()->profile()->GetExtensionService()->extensions();
+    const ExtensionSet* extensions = extensions::ExtensionSystem::Get(
+        browser()->profile())->extension_service()->extensions();
     for (ExtensionSet::const_iterator it = extensions->begin();
          it != extensions->end(); ++it) {
       if ((*it)->name() == "App Test")
@@ -886,7 +887,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TabClosingWhenRemovingExtension) {
   model->AddObserver(&observer);
 
   // Uninstall the extension and make sure TabClosing is sent.
-  ExtensionService* service = browser()->profile()->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+      browser()->profile())->extension_service();
   service->UninstallExtension(GetExtension()->id(), false, NULL);
   EXPECT_EQ(1, observer.closing_count());
 
@@ -1254,7 +1256,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
   CommandUpdater* command_updater =
       browser()->command_controller()->command_updater();
   // Disable extensions. This should disable Extensions menu.
-  browser()->profile()->GetExtensionService()->set_extensions_enabled(false);
+  extensions::ExtensionSystem::Get(browser()->profile())->extension_service()->
+      set_extensions_enabled(false);
   // Set Incognito to DISABLED.
   IncognitoModePrefs::SetAvailability(browser()->profile()->GetPrefs(),
                                       IncognitoModePrefs::DISABLED);

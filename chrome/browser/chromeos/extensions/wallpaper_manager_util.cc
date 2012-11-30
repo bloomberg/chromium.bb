@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -21,7 +22,8 @@ namespace wallpaper_manager_util {
 
 void OpenWallpaperManager() {
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-  ExtensionService* service = profile->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!service)
     return;
 

@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/preference/preference_helpers.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -226,7 +227,8 @@ bool ClearFontFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(
       profile_->GetPrefs()->FindPreference(pref_path.c_str()));
 
-  ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
+  ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(profile_)->
+      extension_service()->extension_prefs();
   prefs->RemoveExtensionControlledPref(extension_id(),
                                        pref_path.c_str(),
                                        kExtensionPrefsScopeRegular);
@@ -283,7 +285,8 @@ bool SetFontFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(
       profile_->GetPrefs()->FindPreference(pref_path.c_str()));
 
-  ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
+  ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(profile_)->
+      extension_service()->extension_prefs();
   prefs->SetExtensionControlledPref(
       extension_id(),
       pref_path.c_str(),
@@ -340,7 +343,8 @@ bool ClearFontPrefExtensionFunction::RunImpl() {
     return false;
   }
 
-  ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
+  ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(profile_)->
+      extension_service()->extension_prefs();
   prefs->RemoveExtensionControlledPref(extension_id(),
                                        GetPrefName(),
                                        kExtensionPrefsScopeRegular);
@@ -381,7 +385,8 @@ bool SetFontPrefExtensionFunction::RunImpl() {
   Value* value;
   EXTENSION_FUNCTION_VALIDATE(details->Get(GetKey(), &value));
 
-  ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
+  ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(profile_)->
+      extension_service()->extension_prefs();
   prefs->SetExtensionControlledPref(extension_id(),
                                     GetPrefName(),
                                     kExtensionPrefsScopeRegular,

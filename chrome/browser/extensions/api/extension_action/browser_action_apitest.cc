@@ -122,7 +122,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
   ui_test_utils::NavigateToURL(browser(),
       test_server()->GetURL("files/extensions/test_file.txt"));
 
-  ExtensionService* service = browser()->profile()->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+      browser()->profile())->extension_service();
   service->toolbar_model()->ExecuteBrowserAction(extension, browser(), NULL);
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -486,8 +487,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoBasic) {
   // Now enable the extension in incognito mode, and test that the browser
   // action shows up. Note that we don't update the existing window at the
   // moment, so we just create a new one.
-  browser()->profile()->GetExtensionService()->extension_prefs()->
-      SetIsIncognitoEnabled(extension->id(), true);
+  extensions::ExtensionSystem::Get(browser()->profile())->extension_service()->
+      extension_prefs()->SetIsIncognitoEnabled(extension->id(), true);
 
   chrome::CloseWindow(incognito_browser);
   incognito_browser = new Browser(Browser::CreateParams(incognito_profile));
@@ -499,7 +500,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoBasic) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoDragging) {
-  ExtensionService* service = browser()->profile()->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+      browser()->profile())->extension_service();
 
   // The tooltips for each respective browser action.
   const char kTooltipA[] = "Make this page red";
@@ -588,8 +590,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_CloseBackgroundPage) {
       content::NotificationService::AllSources());
 
   // Click the browser action.
-  browser()->profile()->GetExtensionService()->toolbar_model()->
-      ExecuteBrowserAction(extension, browser(), NULL);
+  extensions::ExtensionSystem::Get(browser()->profile())->extension_service()->
+      toolbar_model()->ExecuteBrowserAction(extension, browser(), NULL);
 
   // It can take a moment for the background page to actually get destroyed
   // so we wait for the notification before checking that it's really gone

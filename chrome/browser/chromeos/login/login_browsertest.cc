@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
@@ -107,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(LoginGuestTest, GuestIsOTR) {
   EXPECT_EQ("Default", profile->GetPath().BaseName().value());
   EXPECT_TRUE(profile->IsOffTheRecord());
   // Ensure there's extension service for this profile.
-  EXPECT_TRUE(profile->GetExtensionService());
+  EXPECT_TRUE(extensions::ExtensionSystem::Get(profile)->extension_service());
 }
 
 // Verifies the cursor is not hidden at startup when running guest session.

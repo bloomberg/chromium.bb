@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -153,7 +154,8 @@ void SelectFileDialogExtension::ExtensionTerminated(
   if (profile_) {
     MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(&ExtensionService::ReloadExtension,
-            base::Unretained(profile_->GetExtensionService()),
+            base::Unretained(extensions::ExtensionSystem::Get(profile_)->
+                extension_service()),
         extension_id));
   }
 

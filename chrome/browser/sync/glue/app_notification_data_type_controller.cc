@@ -7,6 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/generic_change_processor.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
@@ -44,7 +45,8 @@ AppNotificationDataTypeController::~AppNotificationDataTypeController() {
 
 extensions::AppNotificationManager*
 AppNotificationDataTypeController::GetAppNotificationManager() {
-  return profile_->GetExtensionService()->app_notification_manager();
+  return extensions::ExtensionSystem::Get(profile_)->extension_service()->
+      app_notification_manager();
 }
 
 // We want to start the extensions::AppNotificationManager before we begin

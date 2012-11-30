@@ -93,7 +93,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
                        UninstallWithConfirmDialog) {
-  ExtensionService* service = browser()->profile()->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+      browser()->profile())->extension_service();
 
   // Install an extension.
   const extensions::Extension* extension = InstallExtension(
@@ -180,7 +181,8 @@ class ExtensionManagementApiEscalationTest :
         pem_path,
         FilePath());
 
-    ExtensionService* service = browser()->profile()->GetExtensionService();
+    ExtensionService* service = extensions::ExtensionSystem::Get(
+        browser()->profile())->extension_service();
 
     // Install low-permission version of the extension.
     ASSERT_TRUE(InstallExtension(path_v1, 1));

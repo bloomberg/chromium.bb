@@ -6,6 +6,7 @@
 #include "chrome/browser/extensions/app_notify_channel_setup.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -68,7 +69,8 @@ IN_PROC_BROWSER_TEST_F(AppNotificationTest, SaveClientId) {
     content::RunMessageLoop();
   EXPECT_TRUE(interceptor.was_called());
 
-  ExtensionService* service = browser()->profile()->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+      browser()->profile())->extension_service();
   ExtensionPrefs* prefs = service->extension_prefs();
   std::string saved_id = prefs->GetAppNotificationClientId(app->id());
   EXPECT_EQ(kExpectedClientId, saved_id);

@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/api/tabs/tabs.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -564,8 +565,8 @@ NSImage* LocationBarViewMac::GetKeywordImage(const string16& keyword) {
   const TemplateURL* template_url = TemplateURLServiceFactory::GetForProfile(
       profile_)->GetTemplateURLForKeyword(keyword);
   if (template_url && template_url->IsExtensionKeyword()) {
-    return profile_->GetExtensionService()->GetOmniboxIcon(
-        template_url->GetExtensionId()).AsNSImage();
+    return extensions::ExtensionSystem::Get(profile_)->extension_service()->
+        GetOmniboxIcon(template_url->GetExtensionId()).AsNSImage();
   }
 
   return OmniboxViewMac::ImageForResource(IDR_OMNIBOX_SEARCH);

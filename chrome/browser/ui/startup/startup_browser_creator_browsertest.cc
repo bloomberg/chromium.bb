@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -64,7 +65,8 @@ class StartupBrowserCreatorTest : public ExtensionBrowserTest {
                const Extension** out_app_extension) {
     ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(app_name.c_str())));
 
-    ExtensionService* service = browser()->profile()->GetExtensionService();
+    ExtensionService* service = extensions::ExtensionSystem::Get(
+        browser()->profile())->extension_service();
     *out_app_extension = service->GetExtensionById(
         last_loaded_extension_id_, false);
     ASSERT_TRUE(*out_app_extension);
@@ -75,7 +77,8 @@ class StartupBrowserCreatorTest : public ExtensionBrowserTest {
 
   void SetAppLaunchPref(const std::string& app_id,
                         extensions::ExtensionPrefs::LaunchType launch_type) {
-    ExtensionService* service = browser()->profile()->GetExtensionService();
+    ExtensionService* service = extensions::ExtensionSystem::Get(
+        browser()->profile())->extension_service();
     service->extension_prefs()->SetLaunchType(app_id, launch_type);
   }
 

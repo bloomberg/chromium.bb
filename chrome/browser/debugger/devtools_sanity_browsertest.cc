@@ -195,7 +195,8 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
 
  private:
   bool LoadExtensionFromPath(const FilePath& path) {
-    ExtensionService* service = browser()->profile()->GetExtensionService();
+    ExtensionService* service = extensions::ExtensionSystem::Get(
+        browser()->profile())->extension_service();
     size_t num_before = service->extensions()->size();
     {
       content::NotificationRegistrar registrar;

@@ -635,10 +635,12 @@ GURL ChromeContentBrowserClient::GetEffectiveURL(
   // installed app, the effective URL is an extension URL with the ID of that
   // extension as the host. This has the effect of grouping apps together in
   // a common SiteInstance.
-  if (!profile || !profile->GetExtensionService())
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  if (!extension_service)
     return url;
 
-  const Extension* extension = profile->GetExtensionService()->extensions()->
+  const Extension* extension = extension_service->extensions()->
       GetHostedAppByURL(ExtensionURLInfo(url));
   if (!extension)
     return url;
@@ -662,10 +664,12 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
     return false;
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  if (!profile || !profile->GetExtensionService())
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  if (!extension_service)
     return false;
 
-  const Extension* extension = profile->GetExtensionService()->extensions()->
+  const Extension* extension = extension_service->extensions()->
       GetExtensionOrAppByURL(ExtensionURLInfo(effective_url));
   if (!extension)
     return false;
@@ -696,7 +700,8 @@ bool ChromeContentBrowserClient::IsSuitableHost(
     const GURL& site_url) {
   Profile* profile =
       Profile::FromBrowserContext(process_host->GetBrowserContext());
-  ExtensionService* service = profile->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   extensions::ProcessMap* process_map = service->process_map();
 
   // Don't allow the Task Manager to share a process with anything else.
@@ -743,7 +748,8 @@ bool ChromeContentBrowserClient::ShouldTryToUseExistingProcessHost(
     return false;
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  ExtensionService* service = profile->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!service)
     return false;
 
@@ -789,7 +795,8 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
 
   Profile* profile = Profile::FromBrowserContext(
       site_instance->GetBrowserContext());
-  ExtensionService* service = profile->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!service)
     return;
 
@@ -818,7 +825,8 @@ void ChromeContentBrowserClient::SiteInstanceDeleting(
 
   Profile* profile = Profile::FromBrowserContext(
       site_instance->GetBrowserContext());
-  ExtensionService* service = profile->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!service)
     return;
 
@@ -915,9 +923,10 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     if (process) {
       Profile* profile = Profile::FromBrowserContext(
           process->GetBrowserContext());
-      if (profile->GetExtensionService()) {
-        extensions::ProcessMap* process_map =
-            profile->GetExtensionService()->process_map();
+      ExtensionService* extension_service =
+          extensions::ExtensionSystem::Get(profile)->extension_service();
+      if (extension_service) {
+        extensions::ProcessMap* process_map = extension_service->process_map();
         if (process_map && process_map->Contains(process->GetID()))
           command_line->AppendSwitch(switches::kExtensionProcess);
       }
@@ -1359,7 +1368,8 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
   // extension has the 'notify' permission. (If the extension does not have the
   // permission, the user will still be prompted.)
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  ExtensionService* service = profile->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   const Extension* extension = !service ? NULL :
       service->extensions()->GetExtensionOrAppByURL(ExtensionURLInfo(
           source_origin));
@@ -1649,7 +1659,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 
   WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
   chrome::ViewType view_type = chrome::GetViewType(web_contents);
-  ExtensionService* service = profile->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   if (service) {
     const GURL& url = rvh->GetSiteInstance()->GetSiteURL();
     const Extension* extension = service->extensions()->GetByID(url.host());
@@ -1788,8 +1799,10 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
   const Extension* extension = NULL;
-  if (profile && profile->GetExtensionService()) {
-    extension = profile->GetExtensionService()->extensions()->
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  if (extension_service) {
+    extension = extension_service->extensions()->
         GetExtensionOrAppByURL(ExtensionURLInfo(url));
   }
 

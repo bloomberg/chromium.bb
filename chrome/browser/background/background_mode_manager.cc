@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -266,7 +267,8 @@ void BackgroundModeManager::RegisterProfile(Profile* profile) {
 void BackgroundModeManager::LaunchBackgroundApplication(
     Profile* profile,
     const Extension* extension) {
-  ExtensionService* service = profile->GetExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(profile)->
+      extension_service();
   extension_misc::LaunchContainer launch_container =
       service->extension_prefs()->GetLaunchContainer(
           extension, extensions::ExtensionPrefs::LAUNCH_REGULAR);
@@ -302,8 +304,10 @@ void BackgroundModeManager::Observe(
                 *extension, profile)) {
           // Extensions loaded after the ExtensionsService is ready should be
           // treated as new installs.
-          if (profile->GetExtensionService()->is_ready())
+          if (extensions::ExtensionSystem::Get(profile)->extension_service()->
+                  is_ready()) {
             OnBackgroundAppInstalled(extension);
+          }
         }
       }
       break;

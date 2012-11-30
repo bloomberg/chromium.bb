@@ -118,6 +118,12 @@ EventRouter* MockExtensionSystem::event_router() {
   return event_router_.get();
 }
 
+ExtensionService* MockExtensionSystem::extension_service() {
+  ExtensionServiceInterface* as_interface =
+      static_cast<ExtensionServiceInterface*>(&extension_service_);
+  return static_cast<ExtensionService*>(as_interface);
+}
+
 ProfileKeyedService* BuildMockExtensionSystem(Profile* profile) {
   return new MockExtensionSystem(profile);
 }
@@ -131,16 +137,6 @@ MockProfile::MockProfile(const FilePath& file_path)
 }
 
 MockProfile::~MockProfile() {}
-
-MockExtensionService* MockProfile::GetMockExtensionService() {
-  return &extension_service_;
-}
-
-ExtensionService* MockProfile::GetExtensionService() {
-  ExtensionServiceInterface* as_interface =
-      static_cast<ExtensionServiceInterface*>(&extension_service_);
-  return static_cast<ExtensionService*>(as_interface);
-}
 
 // ScopedSettingsFactory
 

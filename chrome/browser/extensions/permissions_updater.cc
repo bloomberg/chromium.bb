@@ -226,7 +226,8 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
 }
 
 ExtensionPrefs* PermissionsUpdater::GetExtensionPrefs() {
-  return profile_->GetExtensionService()->extension_prefs();
+  return extensions::ExtensionSystem::Get(profile_)->extension_service()->
+      extension_prefs();
 }
 
 }  // namespace extensions

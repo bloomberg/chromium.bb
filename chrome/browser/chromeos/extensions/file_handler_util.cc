@@ -158,7 +158,8 @@ std::string EscapedUtf8ToLower(const std::string& str) {
 bool GetFileBrowserHandlers(Profile* profile,
                             const GURL& selected_file_url,
                             FileBrowserHandlerSet* results) {
-  ExtensionService* service = profile->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!service)
     return false;  // In unit-tests, we may not have an ExtensionService.
 
@@ -645,7 +646,8 @@ Browser* FileTaskExecutor::GetBrowser() const {
 const Extension* FileTaskExecutor::GetExtension() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  ExtensionService* service = profile()->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile())->extension_service();
   return service ? service->GetExtensionById(extension_id_, false) :
                    NULL;
 }

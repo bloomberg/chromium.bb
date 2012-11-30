@@ -13,6 +13,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/geolocation/geolocation_infobar_queue_controller.h"
 #include "chrome/browser/geolocation/geolocation_permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
@@ -55,7 +56,8 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
       tab_util::GetWebContentsByID(render_process_id, render_view_id);
   const GeolocationPermissionRequestID id(render_process_id, render_view_id,
                                           bridge_id);
-  ExtensionService* extension_service = profile_->GetExtensionService();
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (extension_service) {
     const extensions::Extension* extension =
         extension_service->extensions()->GetExtensionOrAppByURL(

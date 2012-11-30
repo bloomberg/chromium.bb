@@ -65,7 +65,8 @@ class ExtensionUninstaller : public ExtensionUninstallDialog::Delegate {
 
   void Run() {
     const Extension* extension =
-        profile_->GetExtensionService()->GetExtensionById(extension_id_, true);
+        extensions::ExtensionSystem::Get(profile_)->extension_service()->
+            GetExtensionById(extension_id_, true);
     if (!extension) {
       CleanUp();
       return;
@@ -78,7 +79,8 @@ class ExtensionUninstaller : public ExtensionUninstallDialog::Delegate {
  private:
   // Overridden from ExtensionUninstallDialog::Delegate:
   virtual void ExtensionUninstallAccepted() OVERRIDE {
-    ExtensionService* service = profile_->GetExtensionService();
+    ExtensionService* service =
+        extensions::ExtensionSystem::Get(profile_)->extension_service();
     const Extension* extension = service->GetExtensionById(extension_id_, true);
     if (extension) {
       service->UninstallExtension(extension_id_,
@@ -109,26 +111,29 @@ class ExtensionUninstaller : public ExtensionUninstallDialog::Delegate {
 extensions::ExtensionPrefs::LaunchType GetExtensionLaunchType(
     Profile* profile,
     const Extension* extension) {
-  return profile->GetExtensionService()->extension_prefs()->GetLaunchType(
-      extension, extensions::ExtensionPrefs::LAUNCH_DEFAULT);
+  return extensions::ExtensionSystem::Get(profile)->extension_service()->
+      extension_prefs()->GetLaunchType(extension,
+          extensions::ExtensionPrefs::LAUNCH_DEFAULT);
 }
 
 void SetExtensionLaunchType(
     Profile* profile,
     const std::string& extension_id,
     extensions::ExtensionPrefs::LaunchType launch_type) {
-  profile->GetExtensionService()->extension_prefs()->SetLaunchType(
-      extension_id, launch_type);
+  extensions::ExtensionSystem::Get(profile)->extension_service()->
+      extension_prefs()->SetLaunchType(extension_id, launch_type);
 }
 
 bool IsExtensionEnabled(Profile* profile, const std::string& extension_id) {
-  ExtensionService* service = profile->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   return service->IsExtensionEnabled(extension_id) &&
       !service->GetTerminatedExtension(extension_id);
 }
 
 ExtensionSorting* GetExtensionSorting(Profile* profile) {
-  return profile->GetExtensionService()->extension_prefs()->extension_sorting();
+  return extensions::ExtensionSystem::Get(profile)->extension_service()->
+      extension_prefs()->extension_sorting();
 }
 
 bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
@@ -152,8 +157,8 @@ ExtensionAppItem::~ExtensionAppItem() {
 }
 
 const Extension* ExtensionAppItem::GetExtension() const {
-  const Extension* extension =
-      profile_->GetExtensionService()->GetInstalledExtension(extension_id_);
+  const Extension* extension = extensions::ExtensionSystem::Get(profile_)->
+      extension_service()->GetInstalledExtension(extension_id_);
   return extension;
 }
 
@@ -171,7 +176,8 @@ void ExtensionAppItem::Move(const ExtensionAppItem* prev,
   if (!prev && !next)
     return;
 
-  ExtensionService* service = profile_->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   service->extension_prefs()->SetAppDraggedByUser(extension_id_);
 
   // Handles only predecessor or only successor case.

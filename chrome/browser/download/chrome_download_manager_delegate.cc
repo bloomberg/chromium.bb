@@ -29,6 +29,7 @@
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/intents/web_intents_util.h"
@@ -410,7 +411,7 @@ bool ChromeDownloadManagerDelegate::ShouldOpenWithWebIntents(
   const char kQuickOfficeExtensionId[] = "gbkeegbaiigmenfmjfclcdgdpimamgkj";
   const char kQuickOfficeDevExtensionId[] = "ionpfmkccalenbmnddpbmocokhaknphg";
   ExtensionServiceInterface* extension_service =
-      profile_->GetExtensionService();
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
 
   bool use_quickoffice = false;
   if (extension_service &&

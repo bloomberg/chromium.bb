@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -46,7 +47,8 @@ class NaClExtensionTest : public ExtensionBrowserTest {
 
   const Extension* InstallExtension(InstallType install_type) {
     FilePath file_path = test_data_dir_.AppendASCII("native_client");
-    ExtensionService* service = browser()->profile()->GetExtensionService();
+    ExtensionService* service = extensions::ExtensionSystem::Get(
+        browser()->profile())->extension_service();
     const Extension* extension = NULL;
     switch (install_type) {
       case INSTALL_TYPE_COMPONENT:

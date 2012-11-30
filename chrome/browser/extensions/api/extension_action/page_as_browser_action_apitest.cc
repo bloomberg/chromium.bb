@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -60,8 +61,8 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, Basic) {
   ASSERT_FALSE(extension_action_manager()->GetPageAction(*extension));
 
   // With the "action box" there won't be browser actions unless they're pinned.
-  ExtensionPrefs* prefs =
-      browser()->profile()->GetExtensionService()->extension_prefs();
+  ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(
+      browser()->profile())->extension_service()->extension_prefs();
   prefs->SetBrowserActionVisibility(extension, true);
 
   // Test that there is a browser action in the toolbar.
@@ -86,7 +87,8 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, Basic) {
   {
     // Simulate the page action being clicked.
     ResultCatcher catcher;
-    ExtensionService* service = browser()->profile()->GetExtensionService();
+    ExtensionService* service = extensions::ExtensionSystem::Get(
+        browser()->profile())->extension_service();
     service->toolbar_model()->ExecuteBrowserAction(extension, browser(), NULL);
     EXPECT_TRUE(catcher.GetNextResult());
   }
@@ -128,7 +130,8 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, AddPopup) {
   // install a page action popup.
   {
     ResultCatcher catcher;
-    ExtensionService* service = browser()->profile()->GetExtensionService();
+    ExtensionService* service = extensions::ExtensionSystem::Get(
+        browser()->profile())->extension_service();
     service->toolbar_model()->ExecuteBrowserAction(extension, browser(), NULL);
     ASSERT_TRUE(catcher.GetNextResult());
   }

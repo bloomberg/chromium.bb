@@ -18,6 +18,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
@@ -1622,7 +1623,8 @@ void TemplateURLService::NotifyLoaded() {
   for (PendingExtensionIDs::const_iterator i(pending_extension_ids_.begin());
        i != pending_extension_ids_.end(); ++i) {
     const extensions::Extension* extension =
-        profile_->GetExtensionService()->GetExtensionById(*i, true);
+        extensions::ExtensionSystem::Get(profile_)->extension_service()->
+            GetExtensionById(*i, true);
     if (extension)
       RegisterExtensionKeyword(extension);
   }

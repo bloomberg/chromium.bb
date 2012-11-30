@@ -192,6 +192,7 @@
             'chrome_resources.gyp:chrome_resources',
             'chrome_resources.gyp:chrome_strings',
             'chrome_resources.gyp:theme_resources',
+            'common/extensions/api/api.gyp:api',
             '../base/base.gyp:base',
             '../content/content.gyp:content_browser',
             '../net/net.gyp:http_server',

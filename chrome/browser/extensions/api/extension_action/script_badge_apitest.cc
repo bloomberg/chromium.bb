@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -77,7 +78,8 @@ IN_PROC_BROWSER_TEST_F(ScriptBadgeApiTest, Basics) {
   {
     // Simulate the script badge being clicked.
     ResultCatcher catcher;
-    ExtensionService* service = browser()->profile()->GetExtensionService();
+    ExtensionService* service = extensions::ExtensionSystem::Get(
+        browser()->profile())->extension_service();
     service->browser_event_router()->ScriptBadgeExecuted(
         browser()->profile(), *script_badge, tab_id);
     EXPECT_TRUE(catcher.GetNextResult());

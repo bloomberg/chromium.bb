@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -99,7 +100,8 @@ std::string OfflineLoadPage::GetHTMLContents() {
       web_contents_->GetBrowserContext());
   DCHECK(profile);
   const extensions::Extension* extension = NULL;
-  ExtensionService* extensions_service = profile->GetExtensionService();
+  ExtensionService* extensions_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   // Extension service does not exist in test.
   if (extensions_service)
     extension = extensions_service->extensions()->GetHostedAppByURL(

@@ -71,9 +71,11 @@ class MockExtensionSystem : public TestExtensionSystem {
   virtual ~MockExtensionSystem();
 
   virtual EventRouter* event_router() OVERRIDE;
+  virtual ExtensionService* extension_service() OVERRIDE;
 
  private:
   scoped_ptr<EventRouter> event_router_;
+  MockExtensionService extension_service_;
 
   DISALLOW_COPY_AND_ASSIGN(MockExtensionSystem);
 };
@@ -84,14 +86,6 @@ class MockProfile : public TestingProfile {
  public:
   explicit MockProfile(const FilePath& file_path);
   virtual ~MockProfile();
-
-  // Returns the same object as GetExtensionService, but not coaxed into an
-  // ExtensionService; use this method from tests.
-  MockExtensionService* GetMockExtensionService();
-  virtual ExtensionService* GetExtensionService() OVERRIDE;
-
- private:
-  MockExtensionService extension_service_;
 };
 
 // SettingsStorageFactory which acts as a wrapper for other factories.

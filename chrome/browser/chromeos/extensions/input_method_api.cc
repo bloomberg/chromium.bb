@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 
 namespace extensions {
@@ -24,7 +25,8 @@ bool GetInputMethodFunction::RunImpl() {
   return false;
 #else
   chromeos::ExtensionInputMethodEventRouter* router =
-      profile_->GetExtensionService()->input_method_event_router();
+      extensions::ExtensionSystem::Get(profile_)->extension_service()->
+          input_method_event_router();
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::GetInstance();
   const std::string input_method =

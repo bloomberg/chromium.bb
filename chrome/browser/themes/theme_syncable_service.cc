@@ -6,6 +6,7 @@
 
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/common/extensions/extension.h"
@@ -196,7 +197,7 @@ void ThemeSyncableService::SetCurrentThemeFromThemeSpecifics(
     GURL update_url(theme_specifics.custom_theme_update_url());
     DVLOG(1) << "Applying theme " << id << " with update_url " << update_url;
     ExtensionServiceInterface* extensions_service =
-        profile_->GetExtensionService();
+        extensions::ExtensionSystem::Get(profile_)->extension_service();
     CHECK(extensions_service);
     const extensions::Extension* extension =
         extensions_service->GetExtensionById(id, true);
@@ -238,8 +239,8 @@ void ThemeSyncableService::GetThemeSpecificsFromCurrentTheme(
   const extensions::Extension* current_theme =
       theme_service_->UsingDefaultTheme() ?
           NULL :
-          profile_->GetExtensionService()->GetExtensionById(
-              theme_service_->GetThemeID(), false);
+          extensions::ExtensionSystem::Get(profile_)->extension_service()->
+              GetExtensionById(theme_service_->GetThemeID(), false);
   bool use_custom_theme = (current_theme != NULL);
   theme_specifics->set_use_custom_theme(use_custom_theme);
   if (IsSystemThemeDistinctFromDefaultTheme()) {

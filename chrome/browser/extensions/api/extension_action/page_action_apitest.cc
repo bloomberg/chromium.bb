@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -56,7 +57,8 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, Basic) {
     ResultCatcher catcher;
     int tab_id =
         ExtensionTabUtil::GetTabId(chrome::GetActiveWebContents(browser()));
-    ExtensionService* service = browser()->profile()->GetExtensionService();
+    ExtensionService* service = extensions::ExtensionSystem::Get(
+        browser()->profile())->extension_service();
     service->browser_event_router()->PageActionExecuted(
         browser()->profile(), *action, tab_id, "", 0);
     EXPECT_TRUE(catcher.GetNextResult());
@@ -100,7 +102,8 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, AddPopup) {
   // install a page action popup.
   {
     ResultCatcher catcher;
-    ExtensionService* service = browser()->profile()->GetExtensionService();
+    ExtensionService* service = extensions::ExtensionSystem::Get(
+        browser()->profile())->extension_service();
     service->browser_event_router()->PageActionExecuted(
         browser()->profile(), *page_action, tab_id, "", 1);
     ASSERT_TRUE(catcher.GetNextResult());
@@ -178,7 +181,8 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, OldPageActions) {
     ResultCatcher catcher;
     int tab_id =
         ExtensionTabUtil::GetTabId(chrome::GetActiveWebContents(browser()));
-    ExtensionService* service = browser()->profile()->GetExtensionService();
+    ExtensionService* service = extensions::ExtensionSystem::Get(
+        browser()->profile())->extension_service();
     ExtensionAction* page_action = GetPageAction(*extension);
     service->browser_event_router()->PageActionExecuted(
         browser()->profile(), *page_action, tab_id, "", 1);

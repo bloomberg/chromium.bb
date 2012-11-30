@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -502,8 +503,8 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
       desired_width_(0),
       start_width_(0),
       weak_factory_(this) {
-  ExtensionService* extension_service = profile_->GetExtensionService();
-  // The |extension_service| can be NULL in Incognito.
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (!extension_service)
     return;
 
@@ -698,7 +699,8 @@ bool BrowserActionsToolbarGtk::ShouldDisplayBrowserAction(
     const Extension* extension) {
   // Only display incognito-enabled extensions while in incognito mode.
   return (!profile_->IsOffTheRecord() ||
-          profile_->GetExtensionService()->IsIncognitoEnabled(extension->id()));
+          extensions::ExtensionSystem::Get(profile_)->extension_service()->
+              IsIncognitoEnabled(extension->id()));
 }
 
 void BrowserActionsToolbarGtk::HidePopup() {

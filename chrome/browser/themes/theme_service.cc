@@ -393,7 +393,8 @@ void ThemeService::SaveThemeIDForProfile(
 
 // static
 void ThemeService::RemoveUnusedThemesForProfile(Profile* profile) {
-  ExtensionService* extension_service = profile->GetExtensionService();
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!extension_service)
     return;
   std::string current_theme = GetThemeIDForProfile(profile);
@@ -627,7 +628,8 @@ void ThemeService::LoadThemePrefs() {
     } else {
       // TODO(erg): We need to pop up a dialog informing the user that their
       // theme is being migrated.
-      ExtensionService* service = profile_->GetExtensionService();
+      ExtensionService* service =
+          extensions::ExtensionSystem::Get(profile_)->extension_service();
       if (service) {
         const Extension* extension =
             service->GetExtensionById(current_id, false);

@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_prefs_scope.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -275,7 +276,8 @@ void PreferenceEventRouter::OnPrefChanged(PrefServiceBase* pref_service,
   const PrefServiceBase::Preference* pref =
       pref_service->FindPreference(browser_pref.c_str());
   CHECK(pref);
-  ExtensionService* extension_service = profile_->GetExtensionService();
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   PrefTransformerInterface* transformer =
       PrefMapping::GetInstance()->FindTransformerForBrowserPref(browser_pref);
   Value* transformed_value =
@@ -372,7 +374,8 @@ bool GetPreferenceFunction::RunImpl() {
   // Retrieve incognito status.
   if (incognito) {
     extensions::ExtensionPrefs* ep =
-        profile_->GetExtensionService()->extension_prefs();
+        extensions::ExtensionSystem::Get(profile_)->extension_service()->
+            extension_prefs();
     result->SetBoolean(keys::kIncognitoSpecific,
                        ep->HasIncognitoPrefValue(browser_pref));
   }
@@ -432,7 +435,8 @@ bool SetPreferenceFunction::RunImpl() {
   if (!ValidateBrowserPref(pref_key, &browser_pref))
     return false;
   extensions::ExtensionPrefs* prefs =
-      profile_->GetExtensionService()->extension_prefs();
+      extensions::ExtensionSystem::Get(profile_)->extension_service()->
+          extension_prefs();
   const PrefService::Preference* pref =
       prefs->pref_service()->FindPreference(browser_pref.c_str());
   CHECK(pref);
@@ -508,7 +512,8 @@ bool ClearPreferenceFunction::RunImpl() {
     return false;
 
   extensions::ExtensionPrefs* prefs =
-      profile_->GetExtensionService()->extension_prefs();
+      extensions::ExtensionSystem::Get(profile_)->extension_service()->
+          extension_prefs();
   prefs->RemoveExtensionControlledPref(extension_id(), browser_pref, scope);
   return true;
 }

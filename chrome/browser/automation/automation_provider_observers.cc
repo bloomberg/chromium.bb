@@ -34,6 +34,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
@@ -1918,7 +1919,8 @@ NTPInfoObserver::NTPInfoObserver(AutomationProvider* automation,
   }
 
   // Collect information about the apps in the new tab page.
-  ExtensionService* ext_service = automation_->profile()->GetExtensionService();
+  ExtensionService* ext_service = extensions::ExtensionSystem::Get(
+      automation_->profile())->extension_service();
   if (!ext_service) {
     AutomationJSONReply(automation_, reply_message_.release())
         .SendError("No ExtensionService.");

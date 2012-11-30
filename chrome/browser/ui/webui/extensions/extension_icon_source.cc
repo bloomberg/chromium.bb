@@ -15,6 +15,7 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -292,7 +293,8 @@ bool ExtensionIconSource::ParseData(const std::string& path,
 
   std::string extension_id = path_parts.at(0);
   const extensions::Extension* extension =
-      profile_->GetExtensionService()->GetInstalledExtension(extension_id);
+      extensions::ExtensionSystem::Get(profile_)->extension_service()->
+          GetInstalledExtension(extension_id);
   if (!extension)
     return false;
 
