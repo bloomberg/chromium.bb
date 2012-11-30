@@ -97,7 +97,6 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_METHOD0(MarkAsComplete, void());
   MOCK_METHOD1(OnAllDataSaved, void(const std::string&));
   MOCK_METHOD0(OnDownloadedFileRemoved, void());
-  MOCK_METHOD0(MaybeCompleteDownload, void());
   virtual void Start(
       scoped_ptr<DownloadFile> download_file) OVERRIDE {
     MockStart(download_file.get());
@@ -561,10 +560,6 @@ class DownloadManagerTest : public testing::Test {
 
     EXPECT_CALL(item, IsInProgress())
         .WillOnce(Return(true));
-
-    // History addition should result in a call into MaybeCompleteDownload().
-    EXPECT_CALL(item, MaybeCompleteDownload())
-        .WillOnce(Return());
   }
 
  protected:

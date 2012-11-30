@@ -4,11 +4,10 @@
 
 // File method ordering: Methods in this file are in the same order as
 // in download_item_impl.h, with the following exception: The public
-// interfaces Start, MaybeCompleteDownload, and OnDownloadCompleting
-// are placed in chronological order with the other (private) routines
-// that together define a DownloadItem's state transitions
-// as the download progresses.  See "Download progression cascade" later in
-// this file.
+// interface Start is placed in chronological order with the other
+// (private) routines that together define a DownloadItem's state
+// transitions as the download progresses.  See "Download progression
+// cascade" later in this file.
 
 // A regular DownloadItem (created for a download in this session of the
 // browser) normally goes through the following states:

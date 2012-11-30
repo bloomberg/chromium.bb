@@ -460,13 +460,12 @@ TEST_F(DownloadItemTest, CallbackAfterRename) {
   ::testing::Mock::VerifyAndClearExpectations(download_file);
   ::testing::Mock::VerifyAndClearExpectations(mock_delegate());
 
-  item->OnAllDataSaved("");
   EXPECT_CALL(*download_file, RenameAndAnnotate(final_path, _))
       .WillOnce(ScheduleRenameCallback(final_path));
   EXPECT_CALL(*mock_delegate(), ShouldOpenDownload(item, _))
       .WillOnce(Return(true));
   EXPECT_CALL(*download_file, Detach());
-  item->MaybeCompleteDownload();
+  item->DestinationObserverAsWeakPtr()->DestinationCompleted("");
   RunAllPendingInMessageLoops();
   ::testing::Mock::VerifyAndClearExpectations(download_file);
   ::testing::Mock::VerifyAndClearExpectations(mock_delegate());

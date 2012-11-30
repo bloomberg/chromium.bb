@@ -154,11 +154,6 @@ class CONTENT_EXPORT DownloadItemImpl
   // Start the download
   virtual void Start(scoped_ptr<DownloadFile> download_file);
 
-  // If all pre-requisites have been met, complete download processing, i.e. do
-  // internal cleanup, file rename, and potentially auto-open.  (Dangerous
-  // downloads still may block on user acceptance after this point.)
-  virtual void MaybeCompleteDownload();
-
   // Needed because of interwining with DownloadManagerImpl --------------------
 
   // TODO(rdsmith): Unwind DownloadManagerImpl and DownloadItemImpl,
@@ -260,10 +255,15 @@ class CONTENT_EXPORT DownloadItemImpl
   void OnDownloadRenamedToIntermediateName(
       DownloadInterruptReason reason, const FilePath& full_path);
 
+  // If all pre-requisites have been met, complete download processing, i.e. do
+  // internal cleanup, file rename, and potentially auto-open.  (Dangerous
+  // downloads still may block on user acceptance after this point.)
+  void MaybeCompleteDownload();
+
   // Called when the download is ready to complete.
   // This may perform final rename if necessary and will eventually call
   // DownloadItem::Completed().
-  virtual void OnDownloadCompleting();
+  void OnDownloadCompleting();
 
   // Called after the delegate has given the go-ahead to actually complete
   // the download.
@@ -274,7 +274,7 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Called if the embedder took over opening a download, to indicate that
   // the download has been opened.
-  virtual void DelayedDownloadOpened(bool auto_opened);
+  void DelayedDownloadOpened(bool auto_opened);
 
   // Called when the entire download operation (including renaming etc)
   // is completed.
@@ -283,7 +283,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // Helper routines -----------------------------------------------------------
 
   // Indicate that an error has occurred on the download.
-  virtual void Interrupt(DownloadInterruptReason reason);
+  void Interrupt(DownloadInterruptReason reason);
 
   // Cancel the DownloadFile if we have it.
   void CancelDownloadFile();
