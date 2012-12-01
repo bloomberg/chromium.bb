@@ -74,7 +74,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "4.6",
+  "version": "4.7",
   "entries": [
     {
       "id": 1,
@@ -518,17 +518,6 @@
       "cr_bugs": [129848],
       "os": {
         "type": "linux"
-      },
-      "blacklist": [
-        "flash_stage3d"
-      ]
-    },
-    {
-      "id": 36,
-      "description": "Stage3D is not supported on ChromeOS.",
-      "cr_bugs": [129848],
-      "os": {
-        "type": "chromeos"
       },
       "blacklist": [
         "flash_stage3d"
