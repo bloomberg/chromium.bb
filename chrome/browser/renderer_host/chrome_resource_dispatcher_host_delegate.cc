@@ -294,8 +294,8 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
     content::ResourceThrottle* throttle =
         SafeBrowsingResourceThrottleFactory::Create(request, child_id, route_id,
             is_subresource_request, safe_browsing_);
-    DCHECK(throttle);
-    throttles->push_back(throttle);
+    if (throttle)
+      throttles->push_back(throttle);
   }
 #endif
 
