@@ -75,7 +75,8 @@ class ActionBoxTest : public InProcessBrowserTest,
 
 // Test if Bookmark star appears after bookmarking a page in the action box, and
 // disappears after unbookmarking a page.
-IN_PROC_BROWSER_TEST_F(ActionBoxTest, BookmarkAPageTest) {
+// Flakily fails: http://crbug.com/163733
+IN_PROC_BROWSER_TEST_F(ActionBoxTest, DISABLED_BookmarkAPageTest) {
   LocationBarTesting* loc_bar =
       browser()->window()->GetLocationBar()->GetLocationBarForTesting();
 
