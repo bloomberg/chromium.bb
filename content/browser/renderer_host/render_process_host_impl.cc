@@ -357,6 +357,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 }
 
 RenderProcessHostImpl::~RenderProcessHostImpl() {
+  DCHECK(!run_renderer_in_process());
   ChildProcessSecurityPolicyImpl::GetInstance()->Remove(GetID());
 
   // We may have some unsent messages at this point, but that's OK.
@@ -364,13 +365,6 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
   while (!queued_messages_.empty()) {
     delete queued_messages_.front();
     queued_messages_.pop();
-  }
-
-  if (run_renderer_in_process()) {
-    // In single process mode, need to set IO allowed in browser main thread
-    // before joining the renderer thread
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    in_process_renderer_.reset();
   }
 
   ClearTransportDIBCache();
@@ -876,7 +870,7 @@ base::ProcessHandle RenderProcessHostImpl::GetHandle() {
 
 bool RenderProcessHostImpl::FastShutdownIfPossible() {
   if (run_renderer_in_process())
-    return false;  // Single process mode can't do fast shutdown.
+    return false;  // Single process mode never shutdown the renderer.
 
   if (!GetContentClient()->browser()->IsFastShutdownPossible())
     return false;
@@ -1133,7 +1127,9 @@ void RenderProcessHostImpl::Release(int routing_id) {
     return;
   }
 #endif
-  Cleanup();
+  // Keep the one renderer thread around forever in single process mode.
+  if (!run_renderer_in_process())
+    Cleanup();
 }
 
 void RenderProcessHostImpl::Cleanup() {
@@ -1486,8 +1482,9 @@ int RenderProcessHostImpl::GetActiveViewCount() {
 void RenderProcessHostImpl::OnShutdownRequest() {
   // Don't shut down if there are more active RenderViews than the one asking
   // to close, or if there are pending RenderViews being swapped back in.
+  // In single process mode, we never shutdown the renderer.
   int num_active_views = GetActiveViewCount();
-  if (pending_views_ || num_active_views > 1)
+  if (pending_views_ || num_active_views > 1 || run_renderer_in_process())
     return;
 
   // Notify any contents that might have swapped out renderers from this
