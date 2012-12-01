@@ -28,6 +28,10 @@ class UI_EXPORT EventHandler {
   EventHandler();
   virtual ~EventHandler();
 
+  // This is called for all events. The default implementation routes the event
+  // to one of the event-specific callbacks (OnKeyEvent, OnMouseEvent etc.). If
+  // this is overridden, then normally, the override should chain into the
+  // default implementation for un-handled events.
   virtual EventResult OnEvent(Event* event);
 
   virtual EventResult OnKeyEvent(KeyEvent* event);
