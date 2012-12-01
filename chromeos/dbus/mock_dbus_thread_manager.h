@@ -87,6 +87,7 @@ class MockDBusThreadManager : public DBusThreadManager {
   MOCK_METHOD0(GetSpeechSynthesizerClient, SpeechSynthesizerClient*(void));
   MOCK_METHOD0(GetUpdateEngineClient, UpdateEngineClient*(void));
   MOCK_METHOD0(GetIBusClient, IBusClient*(void));
+  MOCK_METHOD0(GetIBusConfigClient, IBusConfigClient*(void));
   MOCK_METHOD0(GetIBusInputContextClient, IBusInputContextClient*(void));
   MOCK_METHOD0(GetIBusEngineFactoryService, IBusEngineFactoryService*(void));
   MOCK_METHOD1(GetIBusEngineService,

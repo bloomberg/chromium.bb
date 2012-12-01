@@ -19,12 +19,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/rand_util.h"
-#include "base/stringprintf.h"
 #include "base/string_split.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/chromeos/input_method/input_method_config.h"
 #include "chrome/browser/chromeos/input_method/input_method_property.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/ibus/ibus_config_client.h"
 #include "chromeos/dbus/ibus/ibus_constants.h"
 #include "chromeos/dbus/ibus/ibus_input_context_client.h"
 #include "content/public/browser/browser_thread.h"
@@ -53,6 +54,10 @@ bool FindAndUpdateProperty(
     }
   }
   return false;
+}
+
+void ConfigSetValueErrorCallback() {
+  DVLOG(1) << "IBusConfig: SetValue is failed.";
 }
 
 }  // namespace
@@ -431,7 +436,6 @@ class IBusAddressWatcher {
 
 IBusControllerImpl::IBusControllerImpl()
     : ibus_(NULL),
-      ibus_config_(NULL),
       process_handle_(base::kNullProcessHandle),
       ibus_daemon_status_(IBUS_DAEMON_STOP),
       input_method_(NULL),
@@ -446,15 +450,6 @@ IBusControllerImpl::~IBusControllerImpl() {
         ibus_,
         reinterpret_cast<gpointer>(G_CALLBACK(BusConnectedThunk)),
         this);
-    g_signal_handlers_disconnect_by_func(
-        ibus_,
-        reinterpret_cast<gpointer>(G_CALLBACK(BusDisconnectedThunk)),
-        this);
-    g_signal_handlers_disconnect_by_func(
-        ibus_,
-        reinterpret_cast<gpointer>(G_CALLBACK(BusNameOwnerChangedThunk)),
-        this);
-
     // Disconnect signals for the panel service as well.
     // When Chrome is shutting down, g_object_get_data fails and returns NULL.
     // TODO(nona): Investigate the reason of failure(crosbug.com/129142).
@@ -513,12 +508,6 @@ bool IBusControllerImpl::Stop() {
                         NULL  /* cancellable */,
                         NULL  /* callback */,
                         NULL  /* user_data */);
-    if (ibus_config_) {
-      // Release |ibus_config_| unconditionally to make sure next
-      // IBusConnectionsAreAlive() call will return false.
-      g_object_unref(ibus_config_);
-      ibus_config_ = NULL;
-    }
   } else {
     base::KillProcess(process_handle_, -1, false /* wait */);
     DVLOG(1) << "Killing ibus-daemon. PID="
@@ -605,17 +594,15 @@ bool IBusControllerImpl::ActivateInputMethodProperty(const std::string& key) {
 
 bool IBusControllerImpl::IBusConnectionsAreAlive() {
   return (ibus_daemon_status_ == IBUS_DAEMON_RUNNING) &&
-      ibus_ && ibus_bus_is_connected(ibus_) && ibus_config_;
+      ibus_ && ibus_bus_is_connected(ibus_);
 }
 
 void IBusControllerImpl::MaybeRestoreConnections() {
   if (IBusConnectionsAreAlive())
     return;
-  MaybeRestoreIBusConfig();
   if (IBusConnectionsAreAlive()) {
     DVLOG(1) << "ibus-daemon and ibus-memconf processes are ready.";
     ConnectPanelServiceSignals();
-    SendAllInputMethodConfigs();
     if (!current_input_method_id_.empty())
       SendChangeInputMethodRequest(current_input_method_id_);
   }
@@ -643,63 +630,6 @@ void IBusControllerImpl::MaybeInitializeIBusBus() {
   }
 }
 
-void IBusControllerImpl::MaybeRestoreIBusConfig() {
-  if (!ibus_)
-    return;
-
-  // Destroy the current |ibus_config_| object. No-op if it's NULL.
-  MaybeDestroyIBusConfig();
-
-  if (ibus_config_)
-    return;
-
-  GDBusConnection* ibus_connection = ibus_bus_get_connection(ibus_);
-  if (!ibus_connection) {
-    DVLOG(1) << "Couldn't create an ibus config object since "
-             << "IBus connection is not ready.";
-    return;
-  }
-
-  const gboolean disconnected
-      = g_dbus_connection_is_closed(ibus_connection);
-  if (disconnected) {
-    // |ibus_| object is not NULL, but the connection between ibus-daemon
-    // is not yet established. In this case, we don't create |ibus_config_|
-    // object.
-    DVLOG(1) << "Couldn't create an ibus config object since "
-             << "IBus connection is closed.";
-    return;
-  }
-  // If memconf is not successfully started yet, ibus_config_new() will
-  // return NULL. Otherwise, it returns a transfer-none and non-floating
-  // object. ibus_config_new() sometimes issues a D-Bus *synchronous* IPC
-  // to check if the org.freedesktop.IBus.Config service is available.
-  ibus_config_ = ibus_config_new(ibus_connection,
-                                 NULL /* do not cancel the operation */,
-                                 NULL /* do not get error information */);
-  if (!ibus_config_) {
-    DVLOG(1) << "ibus_config_new() failed. ibus-memconf is not ready?";
-    return;
-  }
-
-  // TODO(yusukes): g_object_weak_ref might be better since it allows
-  // libcros to detect the delivery of the "destroy" glib signal the
-  // |ibus_config_| object.
-  g_object_ref(ibus_config_);
-  DVLOG(1) << "ibus_config_ is ready.";
-}
-
-void IBusControllerImpl::MaybeDestroyIBusConfig() {
-  if (!ibus_) {
-    DVLOG(1) << "MaybeDestroyIBusConfig: ibus_ is NULL";
-    return;
-  }
-  if (ibus_config_ && !ibus_bus_is_connected(ibus_)) {
-    g_object_unref(ibus_config_);
-    ibus_config_ = NULL;
-  }
-}
-
 void IBusControllerImpl::SendChangeInputMethodRequest(const std::string& id) {
   // Change the global engine *asynchronously*.
   ibus_bus_set_global_engine_async(ibus_,
@@ -710,68 +640,42 @@ void IBusControllerImpl::SendChangeInputMethodRequest(const std::string& id) {
                                    NULL);  // user_data
 }
 
-void IBusControllerImpl::SendAllInputMethodConfigs() {
-  DCHECK(IBusConnectionsAreAlive());
-
-  InputMethodConfigRequests::const_iterator iter =
-      current_config_values_.begin();
-  for (; iter != current_config_values_.end(); ++iter) {
-    SetInputMethodConfigInternal(iter->first, iter->second);
-  }
-}
-
 bool IBusControllerImpl::SetInputMethodConfigInternal(
     const ConfigKeyType& key,
     const InputMethodConfigValue& value) {
-  if (!IBusConnectionsAreAlive())
-    return true;
+  IBusConfigClient* client = DBusThreadManager::Get()->GetIBusConfigClient();
+  if (!client)
+    return false;
 
-  // Convert the type of |value| from our structure to GVariant.
-  GVariant* variant = NULL;
   switch (value.type) {
     case InputMethodConfigValue::kValueTypeString:
-      variant = g_variant_new_string(value.string_value.c_str());
-      break;
+      client->SetStringValue(key.first,
+                             key.second,
+                             value.string_value,
+                             base::Bind(&ConfigSetValueErrorCallback));
+      return true;
     case InputMethodConfigValue::kValueTypeInt:
-      variant = g_variant_new_int32(value.int_value);
-      break;
+      client->SetIntValue(key.first,
+                          key.second,
+                          value.int_value,
+                          base::Bind(&ConfigSetValueErrorCallback));
+      return true;
     case InputMethodConfigValue::kValueTypeBool:
-      variant = g_variant_new_boolean(value.bool_value);
-      break;
+      client->SetBoolValue(key.first,
+                           key.second,
+                           value.bool_value,
+                           base::Bind(&ConfigSetValueErrorCallback));
+      return true;
     case InputMethodConfigValue::kValueTypeStringList:
-      GVariantBuilder variant_builder;
-      g_variant_builder_init(&variant_builder, G_VARIANT_TYPE("as"));
-      const size_t size = value.string_list_value.size();
-      // |size| could be 0 for some special configurations such as IBus hotkeys.
-      for (size_t i = 0; i < size; ++i) {
-        g_variant_builder_add(&variant_builder,
-                              "s",
-                              value.string_list_value[i].c_str());
-      }
-      variant = g_variant_builder_end(&variant_builder);
-      break;
+      client->SetStringListValue(key.first,
+                                 key.second,
+                                 value.string_list_value,
+                                 base::Bind(&ConfigSetValueErrorCallback));
+      return true;
+    default:
+      DVLOG(1) << "SendInputMethodConfig: unknown value.type";
+      return false;
   }
-
-  if (!variant) {
-    DVLOG(1) << "SendInputMethodConfig: unknown value.type";
-    return false;
-  }
-  DCHECK(g_variant_is_floating(variant));
-  DCHECK(ibus_config_);
-
-  // Set an ibus configuration value *asynchronously*.
-  ibus_config_set_value_async(ibus_config_,
-                              key.first.c_str(),
-                              key.second.c_str(),
-                              variant,
-                              -1,  // use the default ibus timeout
-                              NULL,  // cancellable
-                              SetInputMethodConfigCallback,
-                              g_object_ref(ibus_config_));
-
-  // Since |variant| is floating, ibus_config_set_value_async consumes
-  // (takes ownership of) the variable.
-  return true;
 }
 
 void IBusControllerImpl::ConnectBusSignals() {
@@ -786,16 +690,6 @@ void IBusControllerImpl::ConnectBusSignals() {
                          "connected",
                          G_CALLBACK(BusConnectedThunk),
                          this);
-
-  g_signal_connect(ibus_,
-                   "disconnected",
-                   G_CALLBACK(BusDisconnectedThunk),
-                   this);
-
-  g_signal_connect(ibus_,
-                   "name-owner-changed",
-                   G_CALLBACK(BusNameOwnerChangedThunk),
-                   this);
 }
 
 void IBusControllerImpl::ConnectPanelServiceSignals() {
@@ -822,47 +716,6 @@ void IBusControllerImpl::ConnectPanelServiceSignals() {
 
 void IBusControllerImpl::BusConnected(IBusBus* bus) {
   DVLOG(1) << "IBus connection is established.";
-  MaybeRestoreConnections();
-}
-
-void IBusControllerImpl::BusDisconnected(IBusBus* bus) {
-  DVLOG(1) << "IBus connection is terminated.";
-  // ibus-daemon might be terminated. Since |ibus_| object will automatically
-  // connect to the daemon if it restarts, we don't have to set NULL on ibus_.
-  // Call MaybeDestroyIBusConfig() to set |ibus_config_| to NULL temporarily.
-  MaybeDestroyIBusConfig();
-}
-
-void IBusControllerImpl::BusNameOwnerChanged(IBusBus* bus,
-                                             const gchar* name,
-                                             const gchar* old_name,
-                                             const gchar* new_name) {
-  DCHECK(name);
-  DCHECK(old_name);
-  DCHECK(new_name);
-
-  if (name != std::string("org.freedesktop.IBus.Config")) {
-    // Not a signal for ibus-memconf.
-    return;
-  }
-
-  const std::string empty_string;
-  if (old_name != empty_string || new_name == empty_string) {
-    // ibus-memconf died?
-    DVLOG(1) << "Unexpected name owner change: name=" << name
-             << ", old_name=" << old_name << ", new_name=" << new_name;
-    // TODO(yusukes): it might be nice to set |ibus_config_| to NULL and call
-    // a new callback function like OnDisconnect() here to allow Chrome to
-    // recover all input method configurations when ibus-memconf is
-    // automatically restarted by ibus-daemon. Though ibus-memconf is pretty
-    // stable and unlikely crashes.
-    return;
-  }
-  DVLOG(1) << "IBus config daemon is started. Recovering ibus_config_";
-
-  // Try to recover |ibus_config_|. If the |ibus_config_| object is
-  // successfully created, |OnConnectionChange| will be called to
-  // notify Chrome that IBus is ready.
   MaybeRestoreConnections();
 }
 
@@ -989,6 +842,14 @@ void IBusControllerImpl::set_input_method_for_testing(
   input_method_ = input_method;
 }
 
+void IBusControllerImpl::OnIBusConfigClientInitialized() {
+  InputMethodConfigRequests::const_iterator iter =
+      current_config_values_.begin();
+  for (; iter != current_config_values_.end(); ++iter) {
+    SetInputMethodConfigInternal(iter->first, iter->second);
+  }
+}
+
 // static
 void IBusControllerImpl::IBusDaemonInitializationDone(
     IBusControllerImpl* controller,
@@ -1007,33 +868,13 @@ void IBusControllerImpl::IBusDaemonInitializationDone(
   DCHECK(input_method_ibus);
   input_method_ibus->OnConnected();
 
+  DBusThreadManager::Get()->GetIBusConfigClient()->InitializeAsync(
+      base::Bind(&IBusControllerImpl::OnIBusConfigClientInitialized,
+                 controller->weak_ptr_factory_.GetWeakPtr()));
+
   FOR_EACH_OBSERVER(Observer, controller->observers_, OnConnected());
 
   VLOG(1) << "The ibus-daemon initialization is done.";
-}
-
-// static
-void IBusControllerImpl::SetInputMethodConfigCallback(GObject* source_object,
-                                                      GAsyncResult* res,
-                                                      gpointer user_data) {
-  IBusConfig* config = IBUS_CONFIG(user_data);
-  g_return_if_fail(config);
-
-  GError* error = NULL;
-  const gboolean result =
-      ibus_config_set_value_async_finish(config, res, &error);
-
-  if (!result) {
-    std::string message = "(unknown error)";
-    if (error && error->message) {
-      message = error->message;
-    }
-    DVLOG(1) << "ibus_config_set_value_async failed: " << message;
-  }
-
-  if (error)
-    g_error_free(error);
-  g_object_unref(config);
 }
 
 // static

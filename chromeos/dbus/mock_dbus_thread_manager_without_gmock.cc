@@ -6,6 +6,7 @@
 
 #include "chromeos/dbus/dbus_thread_manager_observer.h"
 #include "chromeos/dbus/ibus/mock_ibus_client.h"
+#include "chromeos/dbus/ibus/mock_ibus_config_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_engine_factory_service.h"
 #include "chromeos/dbus/ibus/mock_ibus_engine_service.h"
 #include "chromeos/dbus/ibus/mock_ibus_input_context_client.h"
@@ -200,6 +201,10 @@ BluetoothOutOfBandClient*
 
 IBusClient* MockDBusThreadManagerWithoutGMock::GetIBusClient() {
   return mock_ibus_client_.get();
+}
+
+IBusConfigClient* MockDBusThreadManagerWithoutGMock::GetIBusConfigClient() {
+  return mock_ibus_config_client_.get();
 }
 
 IBusInputContextClient*

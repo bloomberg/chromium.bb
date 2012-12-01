@@ -72,9 +72,6 @@ class IBusControllerImpl : public IBusControllerBase {
 
   // Functions that end with Thunk are used to deal with glib callbacks.
   CHROMEG_CALLBACK_0(IBusControllerImpl, void, BusConnected, IBusBus*);
-  CHROMEG_CALLBACK_0(IBusControllerImpl, void, BusDisconnected, IBusBus*);
-  CHROMEG_CALLBACK_3(IBusControllerImpl, void, BusNameOwnerChanged,
-                     IBusBus*, const gchar*, const gchar*, const gchar*);
   CHROMEG_CALLBACK_1(IBusControllerImpl, void, RegisterProperties,
                      IBusPanelService*, IBusPropList*);
   CHROMEG_CALLBACK_1(IBusControllerImpl, void, UpdateProperty,
@@ -107,9 +104,6 @@ class IBusControllerImpl : public IBusControllerBase {
   // Just calls ibus_bus_set_global_engine_async() with the |id|.
   void SendChangeInputMethodRequest(const std::string& id);
 
-  // Calls SetInputMethodConfigInternal() for each |current_config_values_|.
-  void SendAllInputMethodConfigs();
-
   // Starts listening to the "connected", "disconnected", and
   // "name-owner-changed" D-Bus signals from ibus-daemon.
   void ConnectBusSignals();
@@ -140,11 +134,8 @@ class IBusControllerImpl : public IBusControllerBase {
   // The injected object must be released by caller.
   void set_input_method_for_testing(ui::InputMethodIBus* input_method);
 
-  // A callback function that will be called when ibus_config_set_value_async()
-  // request is finished.
-  static void SetInputMethodConfigCallback(GObject* source_object,
-                                           GAsyncResult* res,
-                                           gpointer user_data);
+  // Called when the IBusConfigClient is initialized.
+  void OnIBusConfigClientInitialized();
 
   // Called when the input method process is shut down.
   static void OnIBusDaemonExit(GPid pid,
