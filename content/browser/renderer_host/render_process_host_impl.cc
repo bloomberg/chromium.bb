@@ -837,6 +837,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kBackgroundColorInsteadOfCheckerboard,
     cc::switches::kEnableImplSidePainting,
     cc::switches::kEnablePartialSwap,
+    cc::switches::kNumRasterThreads,
     cc::switches::kShowPropertyChangedRects,
     cc::switches::kShowSurfaceDamageRects,
     cc::switches::kShowScreenSpaceRects,

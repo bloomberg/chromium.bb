@@ -7,12 +7,15 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "cc/platform_color.h"
 #include "cc/rendering_stats.h"
 #include "cc/resource_pool.h"
+#include "cc/switches.h"
 #include "cc/tile.h"
 #include "third_party/skia/include/core/SkDevice.h"
 
@@ -33,7 +36,8 @@ void RasterizeTile(cc::PicturePileImpl* picture_pile,
   picture_pile->Raster(&canvas, rect, stats);
 }
 
-const int kMaxRasterThreads = 1;
+const int kMaxRasterThreads = 64;
+const int kDefaultNumberOfRasterThreads = 1;
 
 const char* kRasterThreadNamePrefix = "CompositorRaster";
 
@@ -64,9 +68,23 @@ TileManager::TileManager(
       resource_pool_(ResourcePool::Create(resource_provider,
                                           Renderer::ImplPool)),
       manage_tiles_pending_(false),
-      pending_raster_tasks_(0),
-      worker_pool_(new base::SequencedWorkerPool(kMaxRasterThreads,
-                                                 kRasterThreadNamePrefix)) {
+      pending_raster_tasks_(0) {
+  size_t worker_threads = kDefaultNumberOfRasterThreads;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          cc::switches::kNumRasterThreads)) {
+    std::string num_raster_threads =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            cc::switches::kNumRasterThreads);
+    int num_threads;
+    if (base::StringToInt(num_raster_threads, &num_threads) &&
+        num_threads > 0 && num_threads <= kMaxRasterThreads) {
+      worker_threads = num_threads;
+    } else {
+      LOG(WARNING) << "Bad number of raster threads: " << num_raster_threads;
+    }
+  }
+  worker_pool_ = new base::SequencedWorkerPool(worker_threads,
+                                               kRasterThreadNamePrefix);
 }
 
 TileManager::~TileManager() {

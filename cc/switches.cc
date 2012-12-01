@@ -25,6 +25,9 @@ const char kEnablePerTilePainting[]         = "enable-per-tile-painting";
 // compositor.
 const char kEnablePinchInCompositor[]       = "enable-pinch-in-compositor";
 
+// Number of worker threads used to rasterize content.
+const char kNumRasterThreads[] = "num-raster-threads";
+
 // Show rects in the HUD around layers whose properties have changed.
 const char kShowPropertyChangedRects[] = "show-property-changed-rects";
 
