@@ -144,9 +144,20 @@ bool StrCaseStr(std::string haystack, std::string needle) {
   return haystack.find(needle) != std::string::npos;
 }
 
+bool IsExtendedRootURL(const GURL& url) {
+  const std::string& path = url.path();
+  return path == "/index.html" || path == "/home.html" ||
+      path == "/main.html" ||
+      path == "/index.htm" || path == "/home.htm" || path == "/main.htm" ||
+      path == "/index.php" || path == "/home.php" || path == "/main.php" ||
+      path == "/index.asp" || path == "/home.asp" || path == "/main.asp" ||
+      path == "/index.py" || path == "/home.py" || path == "/main.py" ||
+      path == "/index.pl" || path == "/home.pl" || path == "/main.pl";
+}
+
 bool IsRootPageURL(const GURL& url) {
-  return (url.path() == "/" || url.path() == "") && (!url.has_query()) &&
-    (!url.has_ref());
+  return (url.path() == "/" || url.path() == "" || IsExtendedRootURL(url)) &&
+      (!url.has_query()) && (!url.has_ref());
 }
 
 int64 URLHashToInt64(const unsigned char* data) {
@@ -384,6 +395,10 @@ void PrerenderLocalPredictor::OnLookupURL(history::URLID url_id,
   }
   if (IsRootPageURL(url))
     RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_ROOT_PAGE);
+  if (IsExtendedRootURL(url))
+    RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_EXTENDED_ROOT_PAGE);
+  if (IsRootPageURL(url) && url.SchemeIs("http"))
+    RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_ROOT_PAGE_HTTP);
   if (url.SchemeIs("http"))
     RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_IS_HTTP);
   if (url.has_query())
