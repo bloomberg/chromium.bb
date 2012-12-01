@@ -294,7 +294,6 @@ void GtkThemeService::Init(Profile* profile) {
   registrar_.Add(prefs::kUsesSystemTheme,
                  base::Bind(&GtkThemeService::OnUsesSystemThemeChanged,
                             base::Unretained(this)));
-  use_gtk_ = profile->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
   ThemeService::Init(profile);
 }
 
@@ -620,6 +619,14 @@ void GtkThemeService::ClearAllThemeData() {
 }
 
 void GtkThemeService::LoadThemePrefs() {
+  if (ThemeService::UsingDefaultTheme()) {
+    use_gtk_ = profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
+  } else {
+    // Do this here since ThemeServiceFactory::SetThemeForProfile()
+    // doesn't know to set kUsesSystemTheme to false.
+    profile()->GetPrefs()->SetBoolean(prefs::kUsesSystemTheme, false);
+    use_gtk_ = false;
+  }
   if (use_gtk_) {
     LoadGtkValues();
   } else {

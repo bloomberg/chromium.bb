@@ -1034,11 +1034,7 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
   // extension.
   system_->RegisterExtensionWithRequestContexts(extension);
 
-  if (extension->is_theme()) {
-#if defined(ENABLE_THEMES)
-    ThemeServiceFactory::SetThemeForProfile(profile_, extension);
-#endif
-  } else {
+  if (!extension->is_theme()) {
     // Tell renderers about non-theme extensions (renderers don't need
     // to know about themes).
     for (content::RenderProcessHost::iterator i(
@@ -2114,6 +2110,13 @@ void ExtensionService::AddExtension(const Extension* extension) {
   SyncExtensionChangeIfNeeded(*extension);
   NotifyExtensionLoaded(extension);
   DoPostLoadTasks(extension);
+
+#if defined(ENABLE_THEMES)
+  if (extension->is_theme()) {
+    // Notify the ThemeService about the newly-installed theme.
+    ThemeServiceFactory::SetThemeForProfile(profile_, extension);
+  }
+#endif
 }
 
 void ExtensionService::AddComponentExtension(const Extension* extension) {
