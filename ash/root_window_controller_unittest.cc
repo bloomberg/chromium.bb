@@ -119,12 +119,10 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   views::Widget* maximized = CreateTestWidget(gfx::Rect(700, 10, 100, 100));
   maximized->Maximize();
   EXPECT_EQ(root_windows[1], maximized->GetNativeView()->GetRootWindow());
-#if !defined(OS_WIN)
-  // TODO(oshima): Window reports smaller screen size. Investigate why.
+
   EXPECT_EQ("600,0 500x500", maximized->GetWindowBoundsInScreen().ToString());
   EXPECT_EQ("0,0 500x500",
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
-#endif
 
   views::Widget* minimized = CreateTestWidget(gfx::Rect(800, 10, 100, 100));
   minimized->Minimize();
@@ -135,13 +133,11 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   views::Widget* fullscreen = CreateTestWidget(gfx::Rect(900, 10, 100, 100));
   fullscreen->SetFullscreen(true);
   EXPECT_EQ(root_windows[1], fullscreen->GetNativeView()->GetRootWindow());
-#if !defined(OS_WIN)
-  // TODO(oshima): Window reports smaller screen size. Investigate why.
+
   EXPECT_EQ("600,0 500x500",
             fullscreen->GetWindowBoundsInScreen().ToString());
   EXPECT_EQ("0,0 500x500",
             fullscreen->GetNativeView()->GetBoundsInRootWindow().ToString());
-#endif
 
   // Make sure a window that will delete itself when losing focus
   // will not crash.

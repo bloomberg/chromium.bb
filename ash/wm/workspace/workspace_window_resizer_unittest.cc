@@ -163,25 +163,6 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
 
 }  // namespace
 
-// Fails on win_aura since ash::GetRootWindowRelativeToWindow is not implemented
-// yet for the platform.
-#if defined(OS_WIN)
-#define MAYBE_WindowDragWithMultiDisplays \
-  DISABLED_WindowDragWithMultiDisplays
-#define MAYBE_WindowDragWithMultiDisplaysRightToLeft \
-  DISABLED_WindowDragWithMultiDisplaysRightToLeft
-#define MAYBE_PhantomStyle DISABLED_PhantomStyle
-#define MAYBE_CancelSnapPhantom DISABLED_CancelSnapPhantom
-#define MAYBE_CursorDeviceScaleFactor DISABLED_CursorDeviceScaleFactor
-#else
-#define MAYBE_WindowDragWithMultiDisplays WindowDragWithMultiDisplays
-#define MAYBE_WindowDragWithMultiDisplaysRightToLeft \
-  WindowDragWithMultiDisplaysRightToLeft
-#define MAYBE_PhantomStyle PhantomStyle
-#define MAYBE_CancelSnapPhantom CancelSnapPhantom
-#define MAYBE_CursorDeviceScaleFactor CursorDeviceScaleFactor
-#endif
-
 // Assertions around attached window resize dragging from the right with 2
 // windows.
 TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_2) {
@@ -390,15 +371,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_2) {
 
 // Assertions around attached window resize dragging from the bottom with 3
 // windows.
-// TODO(oshima): Host window doesn't get a resize event after
-// SetHostSize on Windows trybot, which gives wrong work/display area.
-// crbug.com/141577.
-#if defined(OS_WIN)
-#define MAYBE_AttachedResize_BOTTOM_3 DISABLED_AttachedResize_BOTTOM_3
-#else
-#define MAYBE_AttachedResize_BOTTOM_3 AttachedResize_BOTTOM_3
-#endif
-TEST_F(WorkspaceWindowResizerTest, MAYBE_AttachedResize_BOTTOM_3) {
+TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3) {
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
   root->SetHostSize(gfx::Size(600, 800));
 
@@ -506,7 +479,6 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
               GetRestoreBoundsInScreen(window_.get())->ToString());
   }
 
-#if !defined(OS_WIN)
   // Test if the restore bounds is correct in multiple displays.
   ClearRestoreBounds(window_.get());
   UpdateDisplay("800x600,200x600");
@@ -533,7 +505,6 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     EXPECT_EQ("800,10 50x60",
               GetRestoreBoundsInScreen(window_.get())->ToString());
   }
-#endif
 }
 
 // Check that non resizable windows will not get resized.
@@ -550,7 +521,7 @@ TEST_F(WorkspaceWindowResizerTest, NonResizableWindows) {
 }
 
 // Verifies a window can be moved from the primary display to another.
-TEST_F(WorkspaceWindowResizerTest, MAYBE_WindowDragWithMultiDisplays) {
+TEST_F(WorkspaceWindowResizerTest, WindowDragWithMultiDisplays) {
   // The secondary display is logically on the right, but on the system (e.g. X)
   // layer, it's below the primary one. See UpdateDisplay() in ash_test_base.cc.
   UpdateDisplay("800x600,800x600");
@@ -613,7 +584,7 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_WindowDragWithMultiDisplays) {
 
 // Verifies a window can be moved from the secondary display to primary.
 TEST_F(WorkspaceWindowResizerTest,
-       MAYBE_WindowDragWithMultiDisplaysRightToLeft) {
+       WindowDragWithMultiDisplaysRightToLeft) {
   UpdateDisplay("800x600,800x600");
   shelf_layout_manager()->LayoutShelf();
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
@@ -637,7 +608,7 @@ TEST_F(WorkspaceWindowResizerTest,
 }
 
 // Verifies the style of the drag phantom window is correct.
-TEST_F(WorkspaceWindowResizerTest, MAYBE_PhantomStyle) {
+TEST_F(WorkspaceWindowResizerTest, PhantomStyle) {
   UpdateDisplay("800x600,800x600");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2U, root_windows.size());
@@ -712,7 +683,7 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_PhantomStyle) {
 }
 
 // Verifies the style of the drag phantom window is correct.
-TEST_F(WorkspaceWindowResizerTest, MAYBE_CancelSnapPhantom) {
+TEST_F(WorkspaceWindowResizerTest, CancelSnapPhantom) {
   UpdateDisplay("800x600,800x600");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2U, root_windows.size());
@@ -1400,7 +1371,7 @@ TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_LEFT) {
 
 // Verifies cursor's device scale factor is updated whe a window is moved across
 // root windows with different device scale factors (http://crbug.com/154183).
-TEST_F(WorkspaceWindowResizerTest, MAYBE_CursorDeviceScaleFactor) {
+TEST_F(WorkspaceWindowResizerTest, CursorDeviceScaleFactor) {
   // The secondary display is logically on the right, but on the system (e.g. X)
   // layer, it's below the primary one. See UpdateDisplay() in ash_test_base.cc.
   UpdateDisplay("400x400,800x800*2");
