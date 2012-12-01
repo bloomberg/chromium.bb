@@ -549,6 +549,12 @@ deps_os = {
 
     "src/third_party/findbugs":
       "/trunk/deps/third_party/findbugs@163586",
+
+    "src/third_party/guava/src":
+      Var('chromium_git') + '/external/guava-libraries.git@c523556ab7d0f05afadebd20e7768d4c16af8771',
+
+    "src/third_party/jsr-305/src":
+      (Var("googlecode_url") % "jsr-305") + "/trunk@51",
   },
 }
 
