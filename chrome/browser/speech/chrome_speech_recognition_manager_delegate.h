@@ -40,8 +40,8 @@ class ChromeSpeechRecognitionManagerDelegate
   virtual void OnSoundEnd(int session_id) OVERRIDE;
   virtual void OnAudioEnd(int session_id) OVERRIDE;
   virtual void OnRecognitionEnd(int session_id) OVERRIDE;
-  virtual void OnRecognitionResult(
-      int session_id, const content::SpeechRecognitionResult& result) OVERRIDE;
+  virtual void OnRecognitionResults(
+      int session_id, const content::SpeechRecognitionResults& result) OVERRIDE;
   virtual void OnRecognitionError(
       int session_id, const content::SpeechRecognitionError& error) OVERRIDE;
   virtual void OnAudioLevelsChange(int session_id, float volume,

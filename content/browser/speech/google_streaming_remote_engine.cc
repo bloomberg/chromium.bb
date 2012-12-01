@@ -436,9 +436,11 @@ GoogleStreamingRemoteEngine::ProcessDownstreamResponse(
     }
   }
 
+  SpeechRecognitionResults results;
   for (int i = 0; i < ws_event.result_size(); ++i) {
     const proto::SpeechRecognitionResult& ws_result = ws_event.result(i);
-    SpeechRecognitionResult result;
+    results.push_back(SpeechRecognitionResult());
+    SpeechRecognitionResult& result = results.back();
     result.is_provisional = !(ws_result.has_final() && ws_result.final());
 
     if (!result.is_provisional)
@@ -459,9 +461,9 @@ GoogleStreamingRemoteEngine::ProcessDownstreamResponse(
 
       result.hypotheses.push_back(hypothesis);
     }
-
-    delegate()->OnSpeechRecognitionEngineResult(result);
   }
+
+  delegate()->OnSpeechRecognitionEngineResults(results);
 
   return state_;
 }
@@ -472,7 +474,7 @@ GoogleStreamingRemoteEngine::RaiseNoMatchErrorIfGotNoResults(
   if (!got_last_definitive_result_) {
     // Provide an empty result to notify that recognition is ended with no
     // errors, yet neither any further results.
-    delegate()->OnSpeechRecognitionEngineResult(SpeechRecognitionResult());
+    delegate()->OnSpeechRecognitionEngineResults(SpeechRecognitionResults());
   }
   return AbortSilently(event_args);
 }

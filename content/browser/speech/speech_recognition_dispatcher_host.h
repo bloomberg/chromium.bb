@@ -40,9 +40,9 @@ class CONTENT_EXPORT SpeechRecognitionDispatcherHost
   virtual void OnSoundEnd(int session_id) OVERRIDE;
   virtual void OnAudioEnd(int session_id) OVERRIDE;
   virtual void OnRecognitionEnd(int session_id) OVERRIDE;
-  virtual void OnRecognitionResult(
+  virtual void OnRecognitionResults(
       int session_id,
-      const SpeechRecognitionResult& result) OVERRIDE;
+      const SpeechRecognitionResults& results) OVERRIDE;
   virtual void OnRecognitionError(
       int session_id,
       const SpeechRecognitionError& error) OVERRIDE;
