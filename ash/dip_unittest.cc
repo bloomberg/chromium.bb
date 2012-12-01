@@ -27,15 +27,8 @@ namespace ash {
 
 typedef ash::test::AshTestBase DIPTest;
 
-#if defined(OS_WIN)
-// Windows/Aura doesn't have DIP support in display yet.
-#define MAYBE_WorkArea DISABLED_WorkArea
-#else
-#define MAYBE_WorkArea WorkArea
-#endif
-
 // Test if the WM sets correct work area under different density.
-TEST_F(DIPTest, MAYBE_WorkArea) {
+TEST_F(DIPTest, WorkArea) {
   ChangeDisplayConfig(1.0f, gfx::Rect(0, 0, 1000, 900));
 
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();

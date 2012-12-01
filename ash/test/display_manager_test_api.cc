@@ -41,9 +41,6 @@ DisplayManagerTestApi::~DisplayManagerTestApi() {}
 void DisplayManagerTestApi::UpdateDisplay(
     const std::string& display_specs) {
   std::vector<gfx::Display> displays = CreateDisplaysFromString(display_specs);
-  display_manager_->SetDisplayIdsForTest(&displays);
-  display_manager_->OnNativeDisplaysChanged(displays);
-
   bool is_host_origin_set = false;
   for (size_t i = 0; i < displays.size(); ++i) {
     if (displays[i].bounds_in_pixel().origin() != gfx::Point(0, 0)) {
@@ -57,14 +54,21 @@ void DisplayManagerTestApi::UpdateDisplay(
   // previous one for GPU performance reasons. Try to emulate the behavior
   // unless host origins are explicitly set.
   if (!is_host_origin_set) {
-    Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-    int next_y = 0;
-    for (size_t i = 0; i < root_windows.size(); ++i) {
-      const gfx::Size size = root_windows[i]->GetHostSize();
-      root_windows[i]->SetHostBounds(gfx::Rect(gfx::Point(0, next_y), size));
-      next_y += size.height();
+    // Sart from (1,1) so that windows won't overlap with native mouse cursor.
+    // See |AshTestBase::SetUp()|.
+    int next_y = 1;
+    for (std::vector<gfx::Display>::iterator iter = displays.begin();
+         iter != displays.end(); ++iter) {
+      gfx::Rect bounds(iter->GetSizeInPixel());
+      bounds.set_x(1);
+      bounds.set_y(next_y);
+      next_y += bounds.height();
+      iter->SetScaleAndBounds(iter->device_scale_factor(), bounds);
     }
   }
+
+  display_manager_->SetDisplayIdsForTest(&displays);
+  display_manager_->OnNativeDisplaysChanged(displays);
 }
 
 }  // namespace test

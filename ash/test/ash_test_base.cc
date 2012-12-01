@@ -26,6 +26,10 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 
+#if defined(OS_WIN)
+#include "ui/aura/root_window_host_win.h"
+#endif
+
 namespace ash {
 namespace test {
 
@@ -43,8 +47,13 @@ AshTestBase::~AshTestBase() {
 }
 
 void AshTestBase::SetUp() {
+  // Use the origin (1,1) so that it doesn't over
+  // lap with the native mouse cursor.
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kAuraHostWindowSize, "0+0-800x600");
+      switches::kAuraHostWindowSize, "1+1-800x600");
+#if defined(OS_WIN)
+  aura::test::SetUsePopupAsRootWindowForTest(true);
+#endif
   // Disable animations during tests.
   ui::LayerAnimator::set_disable_animations_for_test(true);
   ui::TextInputTestSupport::Initialize();
@@ -53,9 +62,9 @@ void AshTestBase::SetUp() {
   ash::Shell::CreateInstance(test_shell_delegate_);
   Shell::GetPrimaryRootWindow()->Show();
   Shell::GetPrimaryRootWindow()->ShowRootWindow();
-  // Move the mouse cursor to far away so that native events doesn't
+  // Move the mouse cursor to (0,0) so that native events doesn't
   // interfere test expectations.
-  Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));
+  Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(0, 0));
   Shell::GetInstance()->cursor_manager()->ShowCursor(true);
 }
 
@@ -67,6 +76,9 @@ void AshTestBase::TearDown() {
   Shell::DeleteInstance();
   aura::Env::DeleteInstance();
   ui::TextInputTestSupport::Shutdown();
+#if defined(OS_WIN)
+  aura::test::SetUsePopupAsRootWindowForTest(false);
+#endif
 }
 
 void AshTestBase::ChangeDisplayConfig(float scale,
