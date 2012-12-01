@@ -29,10 +29,20 @@ TextureDefinition::LevelInfo::LevelInfo(GLenum target,
 
 TextureDefinition::TextureDefinition(GLenum target,
                                      GLuint service_id,
+                                     GLenum min_filter,
+                                     GLenum mag_filter,
+                                     GLenum wrap_s,
+                                     GLenum wrap_t,
+                                     GLenum usage,
                                      bool immutable,
                                      const LevelInfos& level_infos)
     : target_(target),
       service_id_(service_id),
+      min_filter_(min_filter),
+      mag_filter_(mag_filter),
+      wrap_s_(wrap_s),
+      wrap_t_(wrap_t),
+      usage_(usage),
       immutable_(immutable),
       level_infos_(level_infos) {
 }

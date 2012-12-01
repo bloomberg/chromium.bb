@@ -968,6 +968,11 @@ TextureDefinition* TextureManager::Save(TextureInfo* info) {
 
   return new TextureDefinition(info->target(),
                                old_service_id,
+                               info->min_filter(),
+                               info->mag_filter(),
+                               info->wrap_s(),
+                               info->wrap_t(),
+                               info->usage(),
                                immutable,
                                level_infos);
 }
@@ -1014,6 +1019,11 @@ bool TextureManager::Restore(TextureInfo* info,
   glDeleteTextures(1, &old_service_id);
   info->SetServiceId(definition->ReleaseServiceId());
   info->SetImmutable(definition->immutable());
+  SetParameter(info, GL_TEXTURE_MIN_FILTER, definition->min_filter());
+  SetParameter(info, GL_TEXTURE_MAG_FILTER, definition->mag_filter());
+  SetParameter(info, GL_TEXTURE_WRAP_S, definition->wrap_s());
+  SetParameter(info, GL_TEXTURE_WRAP_T, definition->wrap_t());
+  SetParameter(info, GL_TEXTURE_USAGE_ANGLE, definition->usage());
 
   return true;
 }
