@@ -90,7 +90,7 @@ class Upgrader(object):
   """A class to perform various tasks related to updating Portage packages."""
 
   PORTAGE_GIT_URL = '%s/chromiumos/overlays/portage.git' % (
-      constants.GIT_HTTP_TESTING_URL)
+      constants.GIT_HTTP_URL)
   ORIGIN_GENTOO = 'origin/gentoo'
 
   UPSTREAM_OVERLAY_NAME = 'portage'
