@@ -48,7 +48,6 @@
       'media.media_basic_playback',
       'multiprofile',
       'nacl_sdk',
-      'notifications',
       'ntp',
       'omnibox',
       'passwords',
@@ -99,10 +98,6 @@
       # Mysteriously broken?
       # crbug.com/138857
       '-multiprofile.MultiprofileTest.testMakeSearchEngineDefaultInMultiprofile',
-      # crbug.com/105560
-      '-notifications',
-      # crbug.com/99506
-      '-notifications.NotificationsTest.testSpecialURLNotification',
       # crbug.com/143308
       '-omnibox.OmniboxLiveTest.testGoogleSearch',
       # crbug.com/71715
@@ -154,8 +149,8 @@
       # -imports.ImportsTest.testFirefoxImportFromPrefs
       # Disabled on vista in the actual test. crbug.com/89767
       # -imports.ImportsTest.testImportFirefoxPasswordsFromPrefs
-      # crbug.com/95031
-      '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
+      # crbug.com/125424
+      '-media.media_basic_playback.MediaBasicPlaybackTest.testBasicPlaybackMatrix',
       # crbug.com/117569
       '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
       # crbug.com/98526
@@ -197,10 +192,6 @@
       # crbug.com/121484
       '-multiprofile.MultiprofileTest.test20NewProfiles',
       '-ntp.NTPTest.testLaunchAppNewWindow',  # crbug.com/79812
-      # Causes browser crash.  crbug.com/93548
-      '-notifications.NotificationsTest.testIncognitoNotification',
-      '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
-      '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
       # crbug.com/70437
       '-omnibox.OmniboxTest.testHistoryResult',
       # crbug.com/91617
@@ -222,8 +213,6 @@
       # ===========================
       # Permanently-disabled tests.
       # ===========================
-      # crbug.com/104206
-      '-notifications.NotificationsTest.testKillNotificationProcess',
       # System password manager obstructs password automation.
       '-passwords',
 
@@ -234,8 +223,6 @@
       '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
       # crbug.com/111289
       '-extensions.ExtensionsTest.testAllowAccessFileURLs',
-      # crbug.com/66072
-      '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
       # crbug.com/91033
       '-omnibox.OmniboxTest.testOmniboxSearchHistory',
       # Gnome / kwallet popups on linux break sync tests.  crbug.com/80329
@@ -318,8 +305,6 @@
       '-chromeos_wifi_sanity.ChromeosWifiSanity.testConnectToHiddenWiFiNonExistent',
       # crosbug.com/20025
       '-chromeos_browser.ChromeosBrowserTest.testFullScreen',
-      # crbug.com/102549
-      '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
       # Chrome driver does not work in Chrome OS.
       # crosbug.com/19556
       '-prefs_ui',

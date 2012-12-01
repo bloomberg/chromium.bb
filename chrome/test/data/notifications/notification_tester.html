@@ -26,23 +26,6 @@ function createNotification(iconUrl, title, text, replaceId) {
   createNotificationHelper(note, replaceId, true);
 }
 
-// Creates an HTML notification with a given content url.
-// Returns an id for the notification, which can be used to cancel it with
-// |cancelNotification|. If two notifications are created with the same
-// replaceId, the second one should replace the first. If the notification
-// cannot be created, this returns -1.
-// If |waitForDisplay| is true, a response will not be sent until the
-// notification is actually displayed.
-function createHTMLNotification(contentUrl, replaceId, waitForDisplay) {
-  try {
-    var note = webkitNotifications.createHTMLNotification(contentUrl);
-  } catch (exception)  {
-    sendResultToTest(-1);
-    return;
-  }
-  createNotificationHelper(note, replaceId, waitForDisplay);
-}
-
 // Cancels a notification with the given id. The notification must be showing,
 // as opposed to waiting to be shown in the display queue.
 // Returns '1' on success.
