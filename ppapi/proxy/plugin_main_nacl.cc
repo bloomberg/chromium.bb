@@ -228,6 +228,8 @@ int IrtInit() {
 }
 
 int PpapiPluginMain() {
+  IrtInit();
+
   // Though it isn't referenced here, we must instantiate an AtExitManager.
   base::AtExitManager exit_manager;
   MessageLoop loop;
