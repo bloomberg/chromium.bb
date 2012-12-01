@@ -680,6 +680,7 @@
         'browser/extensions/api/socket/tcp_socket_unittest.cc',
         'browser/extensions/api/socket/udp_socket_unittest.cc',
         'browser/extensions/api/system_info_storage/storage_info_provider_linux_unittest.cc',
+        'browser/extensions/api/system_info_storage/storage_info_provider_unittest.cc',
         'browser/extensions/api/web_navigation/frame_navigation_state_unittest.cc',
         'browser/extensions/api/web_request/form_data_parser_unittest.cc',
         'browser/extensions/api/web_request/upload_data_presenter_unittest.cc',

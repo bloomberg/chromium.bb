@@ -4,8 +4,15 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_STORAGE_STORAGE_INFO_PROVIDER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_STORAGE_STORAGE_INFO_PROVIDER_H_
 
+#include <set>
+
+#include "base/memory/ref_counted.h"
+#include "base/observer_list_threadsafe.h"
+#include "base/timer.h"
 #include "chrome/browser/extensions/system_info_provider.h"
 #include "chrome/common/extensions/api/experimental_system_info_storage.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace extensions {
 namespace systeminfo {
@@ -27,17 +34,81 @@ typedef std::vector<linked_ptr<
     api::experimental_system_info_storage::StorageUnitInfo> > StorageInfo;
 
 class StorageInfoProvider
-    : public SystemInfoProvider<StorageInfo> {
+    : public content::NotificationObserver,
+      public SystemInfoProvider<StorageInfo> {
  public:
-  virtual ~StorageInfoProvider() {}
+  class Observer {
+   public:
+    virtual ~Observer() {}
+
+    // Called from FILE thread when the storage free space changes.
+    virtual void OnStorageFreeSpaceChanged(const std::string& id,
+                                           double old_value,
+                                           double new_value) = 0;
+  };
+
+  virtual ~StorageInfoProvider();
 
   // Get the single shared instance of StorageInfoProvider.
   static StorageInfoProvider* Get();
+
+  // Add and remove observer, both can be called from any thread.
+  void AddObserver(Observer* obs);
+  void RemoveObserver(Observer* obs);
+
+  // Start and stop watching the given storage |id|.
+  virtual void StartWatching(const std::string& id);
+  virtual void StopWatching(const std::string& id);
+
+  // Set the watching time interval.
+  void set_watching_interval(unsigned int ms) { watching_interval_ = ms; }
 
   // Get the information for the storage unit specified by the |id| parameter,
   // and output the result to the |info|.
   virtual bool QueryUnitInfo(const std::string& id,
       api::experimental_system_info_storage::StorageUnitInfo* info) = 0;
+
+ protected:
+  StorageInfoProvider();
+
+ private:
+  typedef std::map<std::string, double> StorageIDToSizeMap;
+
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  // Start watching the given storage |id| on FILE thread.
+  void StartWatchingOnFileThread(const std::string& id);
+
+  // Stop the watching the the given storage |id| on FILE thread.
+  void StopWatchingOnFileThread(const std::string& id);
+
+  // Check if the free space changes for the watched storages by iterating over
+  // the |storage_id_to_size_map_|. It is called on FILE thread.
+  void CheckWatchedStorages();
+
+  // Force to destory the watching timer if the application is terminating or
+  // there is no any one storage to be watched. It is called on FILE thread.
+  void DestroyWatchingTimer();
+
+  // Mapping of the storage being watched and the recent free space value.
+  StorageIDToSizeMap storage_id_to_size_map_;
+
+  // The timer used for watching the storage free space changes periodically.
+  // It lives on the FILE thread.
+  base::RepeatingTimer<StorageInfoProvider>* watching_timer_;
+
+  // The thread-safe observer list that observe the changes happening on the
+  // storages.
+  scoped_refptr<ObserverListThreadSafe<Observer> > observers_;
+
+  // The time interval for watching the free space change, in milliseconds.
+  unsigned int watching_interval_;
+
+  // Used to observe app termination notification.
+  content::NotificationRegistrar registrar_;
 };
 
 }  // namespace extensions
