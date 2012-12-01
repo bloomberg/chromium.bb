@@ -390,7 +390,7 @@ std::string DisplayManager::GetDisplayNameFor(
 
   std::map<int64, DisplayInfo>::const_iterator iter =
       display_info_.find(display.id());
-  if (iter != display_info_.end())
+  if (iter != display_info_.end() && !iter->second.name.empty())
     return iter->second.name;
 
   return base::StringPrintf("Display %d", static_cast<int>(display.id()));
@@ -558,15 +558,14 @@ void DisplayManager::RefreshDisplayNames() {
     uint16 manufacturer_id = 0;
     uint32 serial_number = 0;
     std::string name;
-    if (ui::GetOutputDeviceData(
-            outputs[i], &manufacturer_id, &serial_number, &name)) {
-      int64 id = gfx::Display::GetID(manufacturer_id, serial_number);
-      if (IsInternalDisplayId(id)) {
-        display_info_[id].name =
-            l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME);
-      } else {
-        display_info_[id].name = name;
-      }
+    ui::GetOutputDeviceData(
+        outputs[i], &manufacturer_id, &serial_number, &name);
+    int64 id = gfx::Display::GetID(manufacturer_id, serial_number);
+    if (IsInternalDisplayId(id)) {
+      display_info_[id].name =
+          l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME);
+    } else if (!name.empty()) {
+      display_info_[id].name = name;
     }
   }
 #endif
