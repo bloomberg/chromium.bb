@@ -20,10 +20,12 @@
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 #include "chrome/browser/extensions/platform_app_launcher.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
@@ -146,6 +148,8 @@ const char kTestFilePath[] = "platform_apps/launch_files/test.txt";
 
 }  // namespace
 
+// TODO(benwells): Break up this file into some sensible smaller files.
+
 // Tests that CreateShellWindow doesn't crash if you close it straight away.
 // LauncherPlatformAppBrowserTest relies on this behaviour, but is only run for
 // ash, so we test that it works here.
@@ -153,6 +157,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, CreateAndCloseShellWindow) {
   const Extension* extension = LoadAndLaunchPlatformApp("minimal");
   ShellWindow* window = CreateShellWindow(extension);
   CloseShellWindow(window);
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 // Tests that platform apps can be launched in incognito mode without crashing.
@@ -177,6 +182,16 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_LaunchAppIncognito) {
           NEW_WINDOW));
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  CloseShellWindowsAndWaitForAppToExit();
+}
+
+// Tests that the browser process is kept alive by the platform app's background
+// page.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppEventPageKeepsBrowserAlive) {
+  LoadAndLaunchPlatformApp("minimal");
+  browser()->window()->Close();
+  ASSERT_TRUE(browser::WillKeepAlive());
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 // Tests that platform apps received the "launch" event when launched.
@@ -211,6 +226,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchReply) {
       web_contents);
 
   ASSERT_TRUE(handler.WaitUntilReply());
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 // Tests that platform apps cannot use certain disabled window properties, but
@@ -221,10 +237,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisabledWindowProperties) {
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, EmptyContextMenu) {
-  ExtensionTestMessageListener launched_listener("Launched", false);
   LoadAndLaunchPlatformApp("minimal");
-
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
   // The empty app doesn't add any context menu items, so its menu should
   // only include the developer tools.
@@ -241,15 +254,11 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, EmptyContextMenu) {
   ASSERT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP));
   ASSERT_FALSE(menu->HasCommandWithId(IDC_BACK));
   ASSERT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
-  ExtensionTestMessageListener launched_listener("Launched", false);
   LoadAndLaunchPlatformApp("context_menu");
-
-  // Wait for the extension to tell us it's initialized its context menus and
-  // launched a window.
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
   // The context_menu app has two context menu items. These, along with a
   // separator and the developer tools, is all that should be in the menu.
@@ -269,15 +278,11 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
   ASSERT_FALSE(menu->HasCommandWithId(IDC_BACK));
   ASSERT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
   ASSERT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_UNDO));
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, InstalledAppWithContextMenu) {
-  ExtensionTestMessageListener launched_listener("Launched", false);
   InstallAndLaunchPlatformApp("context_menu");
-
-  // Wait for the extension to tell us it's initialized its context menus and
-  // launched a window.
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
   // The context_menu app has two context menu items. For an installed app
   // these are all that should be in the menu.
@@ -297,15 +302,11 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, InstalledAppWithContextMenu) {
   ASSERT_FALSE(menu->HasCommandWithId(IDC_BACK));
   ASSERT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
   ASSERT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_UNDO));
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuTextField) {
-  ExtensionTestMessageListener launched_listener("Launched", false);
   LoadAndLaunchPlatformApp("context_menu");
-
-  // Wait for the extension to tell us it's initialized its context menus and
-  // launched a window.
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
   // The context_menu app has one context menu item. This, along with a
   // separator and the developer tools, is all that should be in the menu.
@@ -326,15 +327,11 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuTextField) {
   ASSERT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_COPY));
   ASSERT_FALSE(menu->HasCommandWithId(IDC_BACK));
   ASSERT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuSelection) {
-  ExtensionTestMessageListener launched_listener("Launched", false);
   LoadAndLaunchPlatformApp("context_menu");
-
-  // Wait for the extension to tell us it's initialized its context menus and
-  // launched a window.
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
   // The context_menu app has one context menu item. This, along with a
   // separator and the developer tools, is all that should be in the menu.
@@ -355,15 +352,11 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuSelection) {
   ASSERT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_COPY));
   ASSERT_FALSE(menu->HasCommandWithId(IDC_BACK));
   ASSERT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuClicked) {
-  ExtensionTestMessageListener launched_listener("Launched", false);
   LoadAndLaunchPlatformApp("context_menu_click");
-
-  // Wait for the extension to tell us it's initialized its context menus and
-  // launched a window.
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
   // Test that the menu item shows up
   WebContents* web_contents = GetFirstShellWindowWebContents();
@@ -382,13 +375,15 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuClicked) {
   menu->ExecuteCommand(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST);
 
   ASSERT_TRUE(onclicked_listener.WaitUntilSatisfied());
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowNavigation) {
   TabsAddedNotificationObserver observer(2);
 
   ASSERT_TRUE(StartTestServer());
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/navigation")) << message_;
+  ASSERT_TRUE(RunPlatformAppTestReturnImmediately("platform_apps/navigation"))
+      << message_;
 
   observer.Wait();
   ASSERT_EQ(2U, observer.tabs().size());
@@ -396,6 +391,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowNavigation) {
             observer.tabs()[0]->GetURL().spec());
   EXPECT_EQ("http://chromium.org/",
             observer.tabs()[1]->GetURL().spec());
+  browser()->window()->Close();
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Iframes) {
@@ -465,9 +462,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ExtensionWindowingApis) {
   ASSERT_EQ(0U, GetShellWindowCount());
 
   // Launch a platform app that shows a window.
-  ExtensionTestMessageListener launched_listener("Launched", false);
   LoadAndLaunchPlatformApp("minimal");
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
   ASSERT_EQ(1U, GetShellWindowCount());
   ShellWindowRegistry::ShellWindowSet shell_windows =
       ShellWindowRegistry::Get(browser()->profile())->shell_windows();
@@ -484,13 +479,12 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ExtensionWindowingApis) {
   // to get a list of all the shell windows, so we can test this.
 
   // Launch another platform app that also shows a window.
-  ExtensionTestMessageListener launched_listener2("Launched", false);
   LoadAndLaunchPlatformApp("context_menu");
-  ASSERT_TRUE(launched_listener2.WaitUntilSatisfied());
 
   // There are two total shell windows, but each app can only see its own.
   ASSERT_EQ(2U, GetShellWindowCount());
   // TODO(jeremya): as above, this requires more extension functions.
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 // ChromeOS does not support passing arguments on the command line, so the tests
@@ -535,6 +529,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithRelativeFile) {
     message_ = catcher.message();
     ASSERT_TRUE(0);
   }
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 // Tests that no launch data is sent through if the file is of the wrong MIME
@@ -601,6 +596,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OpenLink) {
   LoadAndLaunchPlatformApp("open_link");
   observer.Wait();
   ASSERT_EQ(2, browser()->tab_count());
+  browser()->window()->Close();
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MutationEventsDisabled) {
@@ -672,6 +669,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   // Wait for javascript to verify that the second window got the updated
   // coordinates, ignoring the default coordinates passed to the create method.
   ASSERT_TRUE(done2_listener.WaitUntilSatisfied());
+
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 // Tests that a running app is recorded in the preferences as such.
@@ -703,6 +702,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, RunningAppsAreRecorded) {
   AppRestoreServiceFactory::GetForProfile(browser()->profile())->
       HandleStartup(true);
   restart_listener.WaitUntilSatisfied();
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 namespace {
@@ -720,10 +720,8 @@ class PlatformAppDevToolsBrowserTest : public PlatformAppBrowserTest {
 void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(
     const char* name, int test_flags) {
   using content::DevToolsAgentHostRegistry;
-  ExtensionTestMessageListener launched_listener("Launched", false);
   const Extension* extension = LoadAndLaunchPlatformApp(name);
   ASSERT_TRUE(extension);
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
   ShellWindow* window = GetFirstShellWindow();
   ASSERT_TRUE(window);
   ASSERT_EQ(window->window_key().empty(), (test_flags & HAS_ID) == 0);
@@ -761,6 +759,7 @@ void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(
     ASSERT_TRUE(rvh);
     ASSERT_TRUE(DevToolsAgentHostRegistry::HasDevToolsAgentHost(rvh));
   }
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 }  // namespace
@@ -802,14 +801,19 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_ConstrainedWindowRequest) {
   ExtensionTestMessageListener listener("PermissionRequestDone", false);
   constrained_window_tab_helper->CloseConstrainedWindows();
   ASSERT_TRUE(listener.WaitUntilSatisfied());
+
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 // Tests that an app calling chrome.runtime.reload will reload the app and
 // relaunch it if it was running.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ReloadRelaunches) {
   ExtensionTestMessageListener launched_listener("Launched", true);
-  const Extension* extension = LoadAndLaunchPlatformApp("reload");
+  const Extension* extension = LoadPlatformApp("reload");
   ASSERT_TRUE(extension);
+  application_launch::OpenApplication(application_launch::LaunchParams(
+      browser()->profile(), extension, extension_misc::LAUNCH_NONE,
+      NEW_WINDOW));
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
   ASSERT_TRUE(GetFirstShellWindow());
 
@@ -818,6 +822,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ReloadRelaunches) {
   launched_listener.Reply("reload");
   ASSERT_TRUE(launched_listener2.WaitUntilSatisfied());
   ASSERT_TRUE(GetFirstShellWindow());
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 namespace {
@@ -879,6 +884,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
           NEW_WINDOW));
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 // Component App Test 2 of 3: ensure an installed component app can be launched
@@ -921,6 +928,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   extension_prefs->pref_service()->RegisterStringPref(
       pref_path.c_str(), std::string(), PrefServiceBase::UNSYNCABLE_PREF);
   extension_prefs->pref_service()->Set(pref_path.c_str(), old_version);
+
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 // Component App Test 3 of 3: simulate a component extension upgrade that
@@ -944,6 +953,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ComponentAppBackgroundPage) {
           NEW_WINDOW));
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 }  // namespace extensions

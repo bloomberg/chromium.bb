@@ -6,11 +6,14 @@
 
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/sync_app_helper.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/test/test_utils.h"
 
 using sync_datatype_helper::test;
 
@@ -18,6 +21,19 @@ namespace {
 
 std::string CreateFakeAppName(int index) {
   return "fakeapp" + base::IntToString(index);
+}
+
+void WaitForPlatformAppsToUnloadForProfile(Profile* profile) {
+  // Note this will hang if there are extensions with persistent background
+  // pages loaded.
+  ExtensionProcessManager* pm =
+      extensions::ExtensionSystem::Get(profile)->process_manager();
+  while (!pm->background_hosts().empty()) {
+    content::WindowedNotificationObserver destroyed_observer(
+        chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+        content::NotificationService::AllSources());
+    destroyed_observer.Wait();
+  }
 }
 
 }  // namespace
@@ -124,6 +140,15 @@ void CopyNTPOrdinals(Profile* source, Profile* destination, int index) {
 
 void FixNTPOrdinalCollisions(Profile* profile) {
   SyncAppHelper::GetInstance()->FixNTPOrdinalCollisions(profile);
+}
+
+void WaitForPlatformAppsToUnload() {
+  // First run any pending tasks to allow any about to load background
+  // pages to load.
+  MessageLoop::current()->RunUntilIdle();
+  for (int i = 0; i < test()->num_clients(); ++i)
+    WaitForPlatformAppsToUnloadForProfile(test()->GetProfile(i));
+  WaitForPlatformAppsToUnloadForProfile(test()->verifier());
 }
 
 }  // namespace apps_helper

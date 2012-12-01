@@ -145,6 +145,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPExtension) {
       base::StringPrintf("udp:%s:%d", host_port_pair.host().c_str(), port));
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPExtension) {
@@ -172,6 +173,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPExtension) {
       base::StringPrintf("tcp:%s:%d", host_port_pair.host().c_str(), port));
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPServerExtension) {
@@ -184,9 +186,12 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPServerExtension) {
       base::StringPrintf("tcp_server:%s:%d", kHostname.c_str(), kPort));
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPServerUnbindOnUnload) {
   ASSERT_TRUE(RunExtensionTest("socket/unload")) << message_;
+  CloseShellWindowsAndWaitForAppToExit();
   ASSERT_TRUE(RunExtensionTest("socket/unload")) << message_;
+  CloseShellWindowsAndWaitForAppToExit();
 }

@@ -3,19 +3,30 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/apps_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/common/chrome_switches.h"
 
 using apps_helper::AllProfilesHaveSameAppsAsVerifier;
 using apps_helper::InstallApp;
 using apps_helper::InstallPlatformApp;
+using apps_helper::WaitForPlatformAppsToUnload;
 
 class SingleClientAppsSyncTest : public SyncTest {
  public:
   SingleClientAppsSyncTest() : SyncTest(SINGLE_CLIENT) {}
 
   virtual ~SingleClientAppsSyncTest() {}
+
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    SyncTest::SetUpCommandLine(command_line);
+    // Make event pages get suspended quicker.
+    command_line->AppendSwitchASCII(switches::kEventPageIdleTime, "1");
+    command_line->AppendSwitchASCII(switches::kEventPageUnloadingTime, "1");
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientAppsSyncTest);
@@ -53,6 +64,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, StartWithSomePlatformApps) {
   ASSERT_TRUE(SetupSync());
 
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  WaitForPlatformAppsToUnload();
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomeLegacyApps) {
@@ -83,6 +96,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomePlatformApps) {
       "Waiting for app changes."));
 
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  WaitForPlatformAppsToUnload();
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomeApps) {
@@ -106,4 +121,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomeApps) {
       "Waiting for app changes."));
 
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  WaitForPlatformAppsToUnload();
 }

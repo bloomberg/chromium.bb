@@ -174,6 +174,13 @@ bool ExtensionApiTest::RunPageTest(const std::string& page_url,
 }
 
 bool ExtensionApiTest::RunPlatformAppTest(const char* extension_name) {
+  bool res = RunPlatformAppTestReturnImmediately(extension_name);
+  CloseShellWindowsAndWaitForAppToExit();
+  return res;
+}
+
+bool ExtensionApiTest::RunPlatformAppTestReturnImmediately(
+    const char* extension_name) {
   return RunExtensionTestImpl(extension_name, "", kFlagLaunchPlatformApp);
 }
 

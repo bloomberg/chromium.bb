@@ -101,5 +101,5 @@ IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveHostname) {
 }
 
 IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsExtension) {
-  ASSERT_TRUE(RunExtensionTest("dns/api")) << message_;
+  ASSERT_TRUE(RunPlatformAppTest("dns/api")) << message_;
 }

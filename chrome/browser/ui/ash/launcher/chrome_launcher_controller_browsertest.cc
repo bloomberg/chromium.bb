@@ -127,7 +127,7 @@ class LauncherAppBrowserTest : public ExtensionBrowserTest {
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchUnpinned) {
   ash::Launcher* launcher = ash::Launcher::ForPrimaryDisplay();
   int item_count = launcher->model()->item_count();
-  const Extension* extension = LoadAndLaunchPlatformApp("launch");
+  const Extension* extension = LoadPlatformApp("launch");
   ShellWindow* window = CreateShellWindow(extension);
   ++item_count;
   ASSERT_EQ(item_count, launcher->model()->item_count());
@@ -138,6 +138,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchUnpinned) {
   CloseShellWindow(window);
   --item_count;
   EXPECT_EQ(item_count, launcher->model()->item_count());
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 // Test that we can launch a platform app that already has a shortcut.
@@ -145,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchPinned) {
   int item_count = launcher_->model()->item_count();
 
   // First get app_id.
-  const Extension* extension = LoadAndLaunchPlatformApp("launch");
+  const Extension* extension = LoadPlatformApp("launch");
   const std::string app_id = extension->id();
 
   // Then create a shortcut.
@@ -170,12 +171,13 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchPinned) {
   item = *launcher_->model()->ItemByID(shortcut_id);
   EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item.type);
   EXPECT_EQ(ash::STATUS_CLOSED, item.status);
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, PinRunning) {
   // Run.
   int item_count = launcher_->model()->item_count();
-  const Extension* extension = LoadAndLaunchPlatformApp("launch");
+  const Extension* extension = LoadPlatformApp("launch");
   ShellWindow* window = CreateShellWindow(extension);
   ++item_count;
   ASSERT_EQ(item_count, launcher_->model()->item_count());
@@ -209,13 +211,14 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, PinRunning) {
   // Then close it, make sure the item remains.
   CloseShellWindow(window);
   ASSERT_EQ(item_count, launcher_->model()->item_count());
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, UnpinRunning) {
   int item_count = launcher_->model()->item_count();
 
   // First get app_id.
-  const Extension* extension = LoadAndLaunchPlatformApp("launch");
+  const Extension* extension = LoadPlatformApp("launch");
   const std::string app_id = extension->id();
 
   // Then create a shortcut.
@@ -256,6 +259,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, UnpinRunning) {
   CloseShellWindow(window);
   --item_count;
   ASSERT_EQ(item_count, launcher_->model()->item_count());
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 // Test that we can launch a platform app with more than one window.
@@ -263,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MultipleWindows) {
   int item_count = launcher_->model()->item_count();
 
   // First run app.
-  const Extension* extension = LoadAndLaunchPlatformApp("launch");
+  const Extension* extension = LoadPlatformApp("launch");
   ShellWindow* window1 = CreateShellWindow(extension);
   ++item_count;
   ASSERT_EQ(item_count, launcher_->model()->item_count());
@@ -292,6 +296,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MultipleWindows) {
   // Confirm item is removed.
   --item_count;
   ASSERT_EQ(item_count, launcher_->model()->item_count());
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 // Times out on ChromeOS: http://crbug.com/159394
@@ -304,7 +309,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MAYBE_MultipleApps) {
   int item_count = launcher_->model()->item_count();
 
   // First run app.
-  const Extension* extension1 = LoadAndLaunchPlatformApp("launch");
+  const Extension* extension1 = LoadPlatformApp("launch");
   ShellWindow* window1 = CreateShellWindow(extension1);
   ++item_count;
   ASSERT_EQ(item_count, launcher_->model()->item_count());
@@ -315,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MAYBE_MultipleApps) {
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
 
   // Then run second app.
-  const Extension* extension2 = LoadAndLaunchPlatformApp("launch_2");
+  const Extension* extension2 = LoadPlatformApp("launch_2");
   ShellWindow* window2 = CreateShellWindow(extension2);
   ++item_count;
   ASSERT_EQ(item_count, launcher_->model()->item_count());
@@ -341,7 +346,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MAYBE_MultipleApps) {
   CloseShellWindow(window1);
   --item_count;
   ASSERT_EQ(item_count, launcher_->model()->item_count());
-
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 // Confirm that app windows can be reactivated by clicking their icons and that
@@ -356,7 +361,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MAYBE_WindowActivation) {
   int item_count = launcher_->model()->item_count();
 
   // First run app.
-  const Extension* extension1 = LoadAndLaunchPlatformApp("launch");
+  const Extension* extension1 = LoadPlatformApp("launch");
   ShellWindow* window1 = CreateShellWindow(extension1);
   ++item_count;
   ASSERT_EQ(item_count, launcher_->model()->item_count());
@@ -367,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MAYBE_WindowActivation) {
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
 
   // Then run second app.
-  const Extension* extension2 = LoadAndLaunchPlatformApp("launch_2");
+  const Extension* extension2 = LoadPlatformApp("launch_2");
   ShellWindow* window2 = CreateShellWindow(extension2);
   ++item_count;
   ASSERT_EQ(item_count, launcher_->model()->item_count());
@@ -436,13 +441,14 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MAYBE_WindowActivation) {
   CloseShellWindow(window1);
   --item_count;
   EXPECT_EQ(item_count, launcher_->model()->item_count());
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, BrowserActivation) {
   int item_count = launcher_->model()->item_count();
 
   // First run app.
-  const Extension* extension1 = LoadAndLaunchPlatformApp("launch");
+  const Extension* extension1 = LoadPlatformApp("launch");
   CreateShellWindow(extension1);
   ++item_count;
   ASSERT_EQ(item_count, launcher_->model()->item_count());
@@ -455,6 +461,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, BrowserActivation) {
   ash::wm::ActivateWindow(browser()->window()->GetNativeWindow());
   EXPECT_EQ(ash::STATUS_RUNNING,
             launcher_->model()->ItemByID(item_id1)->status);
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 // Test that we can launch an app with a shortcut.

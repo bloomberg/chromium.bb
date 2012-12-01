@@ -52,7 +52,7 @@ class PushMessagingApiTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, EventDispatch) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
-  ExtensionTestMessageListener ready("ready", true);
+  ExtensionTestMessageListener ready("ready", false);
 
   const extensions::Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("push_messaging"));
@@ -71,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, EventDispatch) {
 IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, ReceivesPush) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
-  ExtensionTestMessageListener ready("ready", true);
+  ExtensionTestMessageListener ready("ready", false);
 
   const extensions::Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("push_messaging"));
