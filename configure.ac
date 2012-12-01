@@ -76,6 +76,20 @@ fi
 AC_PATH_PROG(XSLTPROC, xsltproc)
 AM_CONDITIONAL([HAVE_XSLTPROC], [test "x$XSLTPROC" != "x"])
 
+AC_MSG_CHECKING([for docbook manpages stylesheet])
+MANPAGES_STYLESHEET=http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl
+AC_PATH_PROGS_FEATURE_CHECK([XSLTPROC_TMP], [xsltproc],
+			    AS_IF([`"$ac_path_XSLTPROC_TMP" --nonet "$MANPAGES_STYLESHEET" > /dev/null 2>&1`],
+				  [HAVE_MANPAGES_STYLESHEET=yes]))
+if test "x$HAVE_MANPAGES_STYLESHEET" = "xyes"; then
+	AM_CONDITIONAL([HAVE_MANPAGES_STYLESHEET], true)
+	AC_SUBST(MANPAGES_STYLESHEET)
+	AC_MSG_RESULT([yes])
+else
+	AM_CONDITIONAL([HAVE_MANPAGES_STYLESHEET], false)
+	AC_MSG_RESULT([no])
+fi
+
 AM_CONDITIONAL(BUILD_DOCS, [test x$enable_documentation = xyes])
 if test "x$enable_documentation" = "xyes"; then
 	AC_PATH_PROG(DOXYGEN, doxygen)

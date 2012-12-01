@@ -16,6 +16,7 @@ EXTRA_DIST =
 man_MANS =
 
 if HAVE_XSLTPROC
+if HAVE_MANPAGES_STYLESHEET
 
 CLEANFILES += $(MANPAGES) $(MANPAGES_ALIASES)
 EXTRA_DIST += $(MANPAGES) $(MANPAGES_ALIASES) $(XML_FILES)
@@ -25,11 +26,12 @@ XSLTPROC_FLAGS = \
 	--stringparam man.authors.section.enabled 0 \
 	--stringparam man.copyright.section.enabled 0 \
 	--stringparam funcsynopsis.style ansi \
-	--stringparam man.output.quietly 1
+	--stringparam man.output.quietly 1 \
+	--nonet
 
 XSLTPROC_PROCESS_MAN = \
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && \
-	$(XSLTPROC) -o $@ $(XSLTPROC_FLAGS) http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $< && \
+	$(XSLTPROC) -o $@ $(XSLTPROC_FLAGS) $(MANPAGES_STYLESHEET) $< && \
 	$(SED) -i -e 's/^\.so \(.*\)\.\(.\)$$/\.so man\2\/\1\.\2/' $(MANPAGES_ALIASES)
 
 %.1: %.xml
@@ -46,4 +48,5 @@ XSLTPROC_PROCESS_MAN = \
 
 wl_display_connect_to_fd.3: wl_display_connect.3
 
+endif # HAVE_MANPAGES_STYLESHEET
 endif # HAVE_XSLTPROC
