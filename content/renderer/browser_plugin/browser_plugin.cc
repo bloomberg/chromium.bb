@@ -613,13 +613,14 @@ void BrowserPlugin::LoadCommit(
   // If the guest has just committed a new navigation then it is no longer
   // crashed.
   guest_crashed_ = false;
-  src_ = params.url.spec();
+  if (params.is_top_level)
+    src_ = params.url.spec();
   process_id_ = params.process_id;
   current_nav_entry_index_ = params.current_entry_index;
   nav_entry_count_ = params.entry_count;
 
   std::map<std::string, base::Value*> props;
-  props[kURL] = base::Value::CreateStringValue(src_);
+  props[kURL] = base::Value::CreateStringValue(params.url.spec());
   props[kIsTopLevel] = base::Value::CreateBooleanValue(params.is_top_level);
   TriggerEvent(kEventLoadCommit, &props);
 }
