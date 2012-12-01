@@ -10842,7 +10842,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         ... and <ph name="EXTENSION_COUNT">$1<ex>42</ex></ph> more.
       </message>
       <message name="IDS_OPTIONS_SIDELOAD_WIPEOUT_BUBBLE_HEADLINE" desc="Text in headline of the bubble explaining that extensions have been disabled.">
-        Some extensions were disabled
+        Time for a tune-up
       </message>
       <message name="IDS_OPTIONS_SIDELOAD_WIPEOUT_RECOURSE" desc="Text in the bubble that explains what the user can do after the extension has been disabled.">
         You can always enable or disable any extension in the extension settings page.
