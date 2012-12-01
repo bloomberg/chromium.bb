@@ -115,6 +115,16 @@ class UI_EXPORT EventDispatcher {
   }
 
   EventResult DispatchEventToSingleHandler(EventHandler* handler, Event* event);
+  EventResult DispatchEventToSingleHandler(EventHandler* handler,
+                                           KeyEvent* event);
+  EventResult DispatchEventToSingleHandler(EventHandler* handler,
+                                           MouseEvent* event);
+  EventResult DispatchEventToSingleHandler(EventHandler* handler,
+                                           ScrollEvent* event);
+  EventResult DispatchEventToSingleHandler(EventHandler* handler,
+                                           TouchEvent* event);
+  EventResult DispatchEventToSingleHandler(EventHandler* handler,
+                                           GestureEvent* event);
 
   // This is used to track whether the dispatcher has been destroyed in the
   // middle of dispatching an event.
