@@ -226,6 +226,16 @@ table.
        For more information see
        <a href="notifications.html">Desktop Notifications</a>.</td>
 </tr>
+{{?is_apps}}
+<tr>
+  <td> "pointerLock" </td>
+  <td> Required to use
+    <a href="http://www.w3.org/TR/pointerlock/">Pointer Lock</a> via calls to
+    <code>webkitRequestPointerLock</code></a> or Pepper's
+    <a href="https://developers.google.com/native-client/peppercpp/classpp_1_1_mouse_lock">
+    Mouse Lock API</a>. </td>
+</tr>
+{{/is_apps}}
 {{^is_apps}}
 <tr>
   <td> "privacy" </td>

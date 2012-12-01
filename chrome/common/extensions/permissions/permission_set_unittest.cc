@@ -653,19 +653,20 @@ TEST(PermissionsTest, PermissionMessages) {
   // a prompt.
   skip.insert(APIPermission::kActiveTab);
   skip.insert(APIPermission::kAlarms);
+  skip.insert(APIPermission::kAppCurrentWindowInternal);
   skip.insert(APIPermission::kAppNotifications);
   skip.insert(APIPermission::kAppRuntime);
   skip.insert(APIPermission::kAppWindow);
-  skip.insert(APIPermission::kAppCurrentWindowInternal);
   skip.insert(APIPermission::kBrowsingData);
   skip.insert(APIPermission::kContextMenus);
   skip.insert(APIPermission::kFontSettings);
   skip.insert(APIPermission::kIdle);
   skip.insert(APIPermission::kNotification);
+  skip.insert(APIPermission::kPointerLock);
   skip.insert(APIPermission::kPushMessaging);
-  skip.insert(APIPermission::kUnlimitedStorage);
   skip.insert(APIPermission::kStorage);
   skip.insert(APIPermission::kTts);
+  skip.insert(APIPermission::kUnlimitedStorage);
   skip.insert(APIPermission::kWebView);
 
   // TODO(erikkay) add a string for this permission.

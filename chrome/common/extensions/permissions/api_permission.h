@@ -84,6 +84,7 @@ class APIPermission {
     kMetricsPrivate,
     kNotification,
     kPageCapture,
+    kPointerLock,
     kPlugin,
     kPrivacy,
     kProxy,

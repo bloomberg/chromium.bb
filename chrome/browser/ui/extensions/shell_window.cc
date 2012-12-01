@@ -310,6 +310,13 @@ void ShellWindow::HandleKeyboardEvent(
   native_app_window_->HandleKeyboardEvent(event);
 }
 
+void ShellWindow::RequestToLockMouse(WebContents* web_contents,
+                                     bool user_gesture,
+                                     bool last_unlocked_by_target) {
+  web_contents->GotResponseToLockMouseRequest(
+      extension_->HasAPIPermission(extensions::APIPermission::kPointerLock));
+}
+
 void ShellWindow::OnNativeClose() {
   extensions::ShellWindowRegistry::Get(profile_)->RemoveShellWindow(this);
   content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();

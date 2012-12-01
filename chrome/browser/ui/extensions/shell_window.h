@@ -164,6 +164,9 @@ class ShellWindow : public content::NotificationObserver,
   virtual void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual void RequestToLockMouse(content::WebContents* web_contents,
+                                  bool user_gesture,
+                                  bool last_unlocked_by_target) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

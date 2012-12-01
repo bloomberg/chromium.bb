@@ -235,6 +235,10 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
+  "pointerLock": {
+    "channel": "dev",
+    "extension_types": ["platform_app"]
+  },
   "plugin": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]

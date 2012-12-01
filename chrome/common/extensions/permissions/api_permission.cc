@@ -329,6 +329,7 @@ void APIPermissionInfo::RegisterAllPermissions(
     { APIPermission::kSystemIndicator, "systemIndicator", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_SYSTEM_INDICATOR,
       PermissionMessage::kSystemIndicator },
+    { APIPermission::kPointerLock, "pointerLock" },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(PermissionsToRegister); ++i) {
