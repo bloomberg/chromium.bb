@@ -42,11 +42,7 @@ SpeechRecognitionManager* SpeechRecognitionDispatcherHost::manager() {
   if (manager_for_tests_)
     return manager_for_tests_;
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableScriptedSpeech))
-    return SpeechRecognitionManager::GetInstance();
-
-  return NULL;
+  return SpeechRecognitionManager::GetInstance();
 }
 
 bool SpeechRecognitionDispatcherHost::OnMessageReceived(

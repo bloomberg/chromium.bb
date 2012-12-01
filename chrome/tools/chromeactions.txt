@@ -19,7 +19,6 @@
 0x6d932203ed5c6ae8	AboutFlags_enable-nacl-exception-handling
 0xa4ed571713f9e346	AboutFlags_enable-nacl-ipc-proxy
 0x26ca6c633d183f66	AboutFlags_enable-pnacl
-0x98ffd067fa68e69f	AboutFlags_enable-scripted-speech
 0x1a3d598e2cd416a0	AboutFlags_enable-smooth-scrolling
 0x22268494c966e464	AboutFlags_enable-website-settings
 0x79571e31c2dc4d3c	AboutFlags_experimental-location-features

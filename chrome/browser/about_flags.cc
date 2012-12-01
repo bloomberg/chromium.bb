@@ -439,13 +439,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableNaClSRPCProxy)
   },
   {
-    "enable-scripted-speech",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_ENABLE_SCRIPTED_SPEECH_NAME,
-    IDS_FLAGS_ENABLE_SCRIPTED_SPEECH_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableScriptedSpeech)
-  },
-  {
     "extension-apis",  // FLAGS:RECORD_UMA
     IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_NAME,
     IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_DESCRIPTION,
