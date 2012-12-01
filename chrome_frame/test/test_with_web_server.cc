@@ -442,7 +442,8 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabIE_MIMEFilterBasic) {
   SimpleBrowserTest(IE, kMIMEFilterBasicPage);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_Resize) {
+// Times out: http://crbug.com/163728
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeIE_Resize) {
   SimpleBrowserTest(IE, L"chrome_frame_resize.html");
 }
 
@@ -612,8 +613,8 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabIE_CFInstallDismiss) {
 }
 
 const wchar_t kInitializeHiddenPage[] = L"initialize_hidden.html";
-
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_InitializeHidden) {
+// Times out: http://crbug.com/163728
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeIE_InitializeHidden) {
   SimpleBrowserTest(IE, kInitializeHiddenPage);
 }
 
@@ -662,8 +663,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_MetaTag) {
   SimpleBrowserTest(IE, kMetaTagPage);
 }
 
+// Times out: http://crbug.com/163728
 const wchar_t kCFProtocolPage[] = L"cf_protocol.html";
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_CFProtocol) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_CFProtocol) {
   // Temporarily enable  gcf: protocol for this test.
   SetConfigBool(kAllowUnsafeURLs, true);
   SimpleBrowserTest(IE, kCFProtocolPage);
@@ -687,8 +689,9 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ReferrerTest) {
   SimpleBrowserTest(IE, kReferrerMainTest);
 }
 
+// Times out: http://crbug.com/163728
 const wchar_t kSubFrameTestPage[] = L"full_tab_sub_frame_main.html";
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_SubFrame) {
+TEST_F(ChromeFrameTestWithWebServer, DISALBED_FullTabModeIE_SubFrame) {
   SimpleBrowserTest(IE, kSubFrameTestPage);
 }
 
