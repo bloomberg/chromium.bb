@@ -424,13 +424,6 @@ cr.define('options', function() {
     secondaryDisplay_: null,
 
     /**
-     * The flag to check if the current options status should be sent to the
-     * system or not (unchanged).
-     * @private
-     */
-    dirty_: false,
-
-    /**
      * The container div element which contains all of the display rectangles.
      * @private
      */
@@ -464,7 +457,7 @@ cr.define('options', function() {
 
       var container = $('display-options-displays-view-host');
       container.onmousemove = this.onMouseMove_.bind(this);
-      container.onmouseup = this.endDragging_.bind(this);
+      window.addEventListener('mouseup', this.endDragging_.bind(this), true);
       container.ontouchmove = this.onTouchMove_.bind(this);
       container.ontouchend = this.endDragging_.bind(this);
 
@@ -584,7 +577,6 @@ cr.define('options', function() {
       }
       chrome.send('setDisplayLayout',
                   [this.layout_, offset / this.visualScale_]);
-      this.dirty_ = false;
     },
 
     /**
@@ -747,7 +739,6 @@ cr.define('options', function() {
         break;
       }
 
-      this.dirty_ = true;
       return false;
     },
 
@@ -824,9 +815,11 @@ cr.define('options', function() {
                           MIN_OFFSET_OVERLAP);
           draggingDiv.style.left = left + 'px';
         }
-        this.dragging_ = null;
-        if (this.dirty_)
+        var originalPosition = this.dragging_.display.originalPosition;
+        if (originalPosition.x != draggingDiv.offsetLeft ||
+            originalPosition.y != draggingDiv.offsetTop)
           this.applyResult_();
+        this.dragging_ = null;
       }
       this.updateSelectedDisplayDescription_();
       return false;
@@ -841,7 +834,7 @@ cr.define('options', function() {
           this.displays_[this.focusedIndex_] == null) {
         $('selected-display-data-container').hidden = true;
         $('display-configuration-arrow').hidden = true;
-        $('display-options-set-primary').disabled = true;
+        $('display-options-set-primary').hidden = true;
         return;
       }
 
@@ -868,12 +861,14 @@ cr.define('options', function() {
 
       var arrow = $('display-configuration-arrow');
       arrow.hidden = false;
-      arrow.style.top =
-          $('display-configurations').offsetTop - arrow.offsetHeight / 2 + 'px';
+      // Adding 1 px to the position to fit the border line and the border in
+      // arrow precisely.
+      arrow.style.top = $('display-configurations').offsetTop -
+          arrow.offsetHeight / 2 + 1 + 'px';
       arrow.style.left = display.div.offsetLeft + display.div.offsetWidth / 2 -
           arrow.offsetWidth / 2 + 'px';
 
-      $('display-options-set-primary').disabled =
+      $('display-options-set-primary').hidden =
           this.displays_[this.focusedIndex_].isPrimary;
     },
 
@@ -901,8 +896,10 @@ cr.define('options', function() {
           FOCUSED_BORDER_WIDTH_PX : NORMAL_BORDER_WIDTH_PX;
       display.div.style.width =
           display.width * this.visualScale_ - borderWidth * 2 + 'px';
-      display.div.style.height =
-          display.height * this.visualScale_ - borderWidth * 2 + 'px';
+      var newHeight = display.height * this.visualScale_ - borderWidth * 2;
+      display.div.style.height = newHeight + 'px';
+      display.nameContainer.style.marginTop =
+            (newHeight - display.nameContainer.offsetHeight) / 2 + 'px';
       if (display.isPrimary) {
         var launcher = display.div.firstChild;
         if (launcher && launcher.id == 'display-launcher') {
@@ -916,8 +913,9 @@ cr.define('options', function() {
      * @private
      */
     layoutMirroringDisplays_: function() {
-      // Offset pixels for secondary display rectangles.
-      /** @const */ var MIRRORING_OFFSET_PIXELS = 2;
+      // Offset pixels for secondary display rectangles. The offset includes the
+      // border width.
+      /** @const */ var MIRRORING_OFFSET_PIXELS = 3;
       // Always show two displays because there must be two displays when
       // the display_options is enabled.  Don't rely on displays_.length because
       // there is only one display from chrome's perspective in mirror mode.
@@ -1018,12 +1016,13 @@ cr.define('options', function() {
         } else {
           this.secondaryDisplay_ = display;
         }
-        this.resizeDisplayRectangle_(display, i);
-        div.style.left = display.x * this.visualScale_ + offset.x + 'px';
-        div.style.top = display.y * this.visualScale_ + offset.y + 'px';
         var displayNameContainer = document.createElement('div');
         displayNameContainer.textContent = display.name;
         div.appendChild(displayNameContainer);
+        display.nameContainer = displayNameContainer;
+        this.resizeDisplayRectangle_(display, i);
+        div.style.left = display.x * this.visualScale_ + offset.x + 'px';
+        div.style.top = display.y * this.visualScale_ + offset.y + 'px';
 
         div.onmousedown = this.onMouseDown_.bind(this);
         div.ontouchstart = this.onTouchStart_.bind(this);
@@ -1035,6 +1034,7 @@ cr.define('options', function() {
         // |displaysView_|.  Otherwise its offsetHeight is yet 0.
         displayNameContainer.style.marginTop =
             (div.offsetHeight - displayNameContainer.offsetHeight) / 2 + 'px';
+        display.originalPosition = {x: div.offsetLeft, y: div.offsetTop};
       }
     },
 
