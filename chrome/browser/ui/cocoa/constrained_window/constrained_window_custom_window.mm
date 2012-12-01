@@ -30,7 +30,7 @@
                   backing:(NSBackingStoreType)bufferingType
                     defer:(BOOL)deferCreation {
   if ((self = [super initWithContentRect:contentRect
-                               styleMask:windowStyle
+                               styleMask:NSBorderlessWindowMask
                                  backing:bufferingType
                                    defer:NO])) {
     [self setHasShadow:YES];
