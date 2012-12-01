@@ -95,7 +95,21 @@ class DisplayManagerTest : public test::AshTestBase,
   DISALLOW_COPY_AND_ASSIGN(DisplayManagerTest);
 };
 
-TEST_F(DisplayManagerTest, NativeDisplayTest) {
+#if defined(OS_CHROMEOS)
+// TODO(oshima): This fails with non extended desktop on windows.
+// Reenable when extended desktop is enabled by default.
+#define MAYBE_NativeDisplayTest NativeDisplayTest
+#define MAYBE_EmulatorTest EmulatorTest
+#define MAYBE_OverscanInsetsTest OverscanInsetsTest
+#define MAYBE_ZeroOverscanInsets ZeroOverscanInsets
+#else
+#define MAYBE_NativeDisplayTest DISABLED_NativeDisplayTest
+#define MAYBE_EmulatorTest DISABLED_EmulatorTest
+#define MAYBE_OverscanInsetsTest DISABLED_OverscanInsetsTest
+#define MAYBE_ZeroOverscanInsets DISABLED_ZeroOverscanInsets
+#endif
+
+TEST_F(DisplayManagerTest, MAYBE_NativeDisplayTest) {
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
 
   // Update primary and add seconary.
@@ -119,24 +133,24 @@ TEST_F(DisplayManagerTest, NativeDisplayTest) {
   reset();
 
   // Change primary.
-  UpdateDisplay("1+1-1000x600");
+  UpdateDisplay("0+0-1000x600");
   EXPECT_EQ("1 0 0", GetCountSummary());
   EXPECT_EQ(display_manager()->GetDisplayAt(0)->id(), changed()[0].id());
   EXPECT_EQ("0,0 1000x600", changed()[0].bounds().ToString());
   reset();
 
   // Add secondary.
-  UpdateDisplay("1+1-1000x600,1002+0-600x400");
+  UpdateDisplay("0+0-1000x600,1001+0-600x400");
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0 1 0", GetCountSummary());
   EXPECT_EQ(display_manager()->GetDisplayAt(1)->id(), added()[0].id());
   // Secondary display is on right.
   EXPECT_EQ("1000,0 600x400", added()[0].bounds().ToString());
-  EXPECT_EQ("1002,0 600x400", added()[0].bounds_in_pixel().ToString());
+  EXPECT_EQ("1001,0 600x400", added()[0].bounds_in_pixel().ToString());
   reset();
 
   // Secondary removed, primary changed.
-  UpdateDisplay("1+1-800x300");
+  UpdateDisplay("0+0-800x300");
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ("1 0 1", GetCountSummary());
   EXPECT_EQ(display_manager()->GetDisplayAt(0)->id(), changed()[0].id());
@@ -183,7 +197,7 @@ TEST_F(DisplayManagerTest, NativeDisplayTest) {
 }
 
 // Test in emulation mode (use_fullscreen_host_window=false)
-TEST_F(DisplayManagerTest, EmulatorTest) {
+TEST_F(DisplayManagerTest, MAYBE_EmulatorTest) {
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
 
   DisplayManager::CycleDisplay();
@@ -203,7 +217,7 @@ TEST_F(DisplayManagerTest, EmulatorTest) {
   reset();
 }
 
-TEST_F(DisplayManagerTest, OverscanInsetsTest) {
+TEST_F(DisplayManagerTest, MAYBE_OverscanInsetsTest) {
   UpdateDisplay("0+0-500x500,0+501-400x400");
   reset();
   ASSERT_EQ(2u, display_manager()->GetNumDisplays());
@@ -277,7 +291,7 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
             GetPrimaryDisplay().bounds_in_pixel().ToString());
 }
 
-TEST_F(DisplayManagerTest, ZeroOverscanInsets) {
+TEST_F(DisplayManagerTest, MAYBE_ZeroOverscanInsets) {
   // Make sure the display change events is emitted for overscan inset changes.
   UpdateDisplay("0+0-500x500,0+501-400x400");
   ASSERT_EQ(2u, display_manager()->GetNumDisplays());
@@ -298,7 +312,20 @@ TEST_F(DisplayManagerTest, ZeroOverscanInsets) {
   EXPECT_EQ(display2_id, changed()[0].id());
 }
 
-TEST_F(DisplayManagerTest, TestDeviceScaleOnlyChange) {
+// TODO(oshima): Device scale factor is supported on chromeos only for now.
+#if defined(OS_CHROMEOS)
+#define MAYBE_TestDeviceScaleOnlyChange TestDeviceScaleOnlyChange
+#define MAYBE_TestNativeDisplaysChanged TestNativeDisplaysChanged
+#define MAYBE_NativeDisplaysChangedAfterPrimaryChange \
+  NativeDisplaysChangedAfterPrimaryChange
+#else
+#define MAYBE_TestDeviceScaleOnlyChange DISABLED_TestDeviceScaleOnlyChange
+#define MAYBE_TestNativeDisplaysChanged DISABLED_TestNativeDisplaysChanged
+#define MAYBE_NativeDisplaysChangedAfterPrimaryChange \
+  DISABLED_NativeDisplaysChangedAfterPrimaryChange
+#endif
+
+TEST_F(DisplayManagerTest, MAYBE_TestDeviceScaleOnlyChange) {
   UpdateDisplay("1000x600");
   EXPECT_EQ(1,
             Shell::GetPrimaryRootWindow()->compositor()->device_scale_factor());
@@ -311,7 +338,7 @@ TEST_F(DisplayManagerTest, TestDeviceScaleOnlyChange) {
             Shell::GetPrimaryRootWindow()->bounds().size().ToString());
 }
 
-TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
+TEST_F(DisplayManagerTest, MAYBE_TestNativeDisplaysChanged) {
   const int64 internal_display_id =
       display_manager()->SetFirstDisplayAsInternalDisplayForTest();
   const gfx::Display native_display(internal_display_id,
@@ -375,7 +402,18 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
             FindDisplayForId(internal_display_id).bounds().ToString());
 }
 
-TEST_F(DisplayManagerTest, EnsurePointerInDisplays) {
+#if defined(OS_CHROMEOS)
+#define MAYBE_EnsurePointerInDisplays EnsurePointerInDisplays
+#define MAYBE_EnsurePointerInDisplays_2ndOnLeft \
+  EnsurePointerInDisplays_2ndOnLeft
+#else
+// TODO(oshima): Re-enable these tests on WinAura (http://crbug.com/158163).
+#define MAYBE_EnsurePointerInDisplays DISABLED_EnsurePointerInDisplays
+#define MAYBE_EnsurePointerInDisplays_2ndOnLeft \
+  DISABLED_EnsurePointerInDisplays_2ndOnLeft
+#endif
+
+TEST_F(DisplayManagerTest, MAYBE_EnsurePointerInDisplays) {
   UpdateDisplay("200x200,300x300");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
@@ -413,7 +451,7 @@ TEST_F(DisplayManagerTest, EnsurePointerInDisplays) {
   EXPECT_EQ("150,140", env->last_mouse_location().ToString());
 }
 
-TEST_F(DisplayManagerTest, EnsurePointerInDisplays_2ndOnLeft) {
+TEST_F(DisplayManagerTest, MAYBE_EnsurePointerInDisplays_2ndOnLeft) {
   UpdateDisplay("200x200,300x300");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
@@ -448,7 +486,7 @@ TEST_F(DisplayManagerTest, EnsurePointerInDisplays_2ndOnLeft) {
   EXPECT_EQ("150,150", env->last_mouse_location().ToString());
 }
 
-TEST_F(DisplayManagerTest, NativeDisplaysChangedAfterPrimaryChange) {
+TEST_F(DisplayManagerTest, MAYBE_NativeDisplaysChangedAfterPrimaryChange) {
   const int64 internal_display_id =
       display_manager()->SetFirstDisplayAsInternalDisplayForTest();
   const gfx::Display native_display(internal_display_id,

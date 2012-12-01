@@ -146,6 +146,11 @@ void RootWindow::Init() {
   compositor()->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(this),
                                 host_->GetBounds().size());
   Window::Init(ui::LAYER_NOT_DRAWN);
+
+  gfx::Point point;
+  if (host_->QueryMouseLocation(&point))
+    SetLastMouseLocation(this, ui::ConvertPointToDIP(layer(), point));
+
   compositor()->SetRootLayer(layer());
   SetBounds(
       ui::ConvertRectToDIP(layer(), gfx::Rect(host_->GetBounds().size())));

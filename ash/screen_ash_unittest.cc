@@ -20,6 +20,7 @@ namespace test {
 
 typedef test::AshTestBase ScreenAshTest;
 
+#if !defined(OS_WIN)
 TEST_F(ScreenAshTest, Bounds) {
   UpdateDisplay("600x600,500x500");
   Shell::GetPrimaryRootWindowController()->SetShelfAutoHideBehavior(
@@ -56,6 +57,7 @@ TEST_F(ScreenAshTest, Bounds) {
             ScreenAsh::GetDisplayWorkAreaBoundsInParent(
                 secondary->GetNativeView()).ToString());
 }
+#endif
 
 TEST_F(ScreenAshTest, ConvertRect) {
   UpdateDisplay("600x600,500x500");
