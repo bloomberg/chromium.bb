@@ -14,6 +14,7 @@ publican_sources = \
 	$(srcdir)/en_US/images/x-architecture.png
 
 if HAVE_PUBLICAN
+if HAVE_XSLTPROC
 noinst_DATA = Wayland $(publican_targets)
 pubdir = $(docdir)/Wayland/en-US
 
@@ -95,6 +96,7 @@ uninstall-local:
 	  fi; \
 	fi;
 
+endif
 endif
 
 EXTRA_DIST = $(publican_sources) publican.cfg protocol-to-docbook.xsl protocol-interfaces-to-docbook.xsl doxygen-to-publican.xsl
