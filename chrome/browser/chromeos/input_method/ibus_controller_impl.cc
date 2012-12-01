@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_property.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/ibus/ibus_client.h"
 #include "chromeos/dbus/ibus/ibus_config_client.h"
 #include "chromeos/dbus/ibus/ibus_constants.h"
 #include "chromeos/dbus/ibus/ibus_input_context_client.h"
@@ -502,12 +503,10 @@ bool IBusControllerImpl::Stop() {
   // TODO(nona): Shutdown ibus-bus connection.
   if (IBusConnectionsAreAlive()) {
     // Ask IBus to exit *asynchronously*.
-    ibus_bus_exit_async(ibus_,
-                        FALSE  /* do not restart */,
-                        -1  /* timeout */,
-                        NULL  /* cancellable */,
-                        NULL  /* callback */,
-                        NULL  /* user_data */);
+    IBusClient* client = DBusThreadManager::Get()->GetIBusClient();
+    if (client)
+      client->Exit(IBusClient::SHUT_DOWN_IBUS_DAEMON,
+                   base::Bind(&base::DoNothing));
   } else {
     base::KillProcess(process_handle_, -1, false /* wait */);
     DVLOG(1) << "Killing ibus-daemon. PID="
@@ -621,9 +620,6 @@ void IBusControllerImpl::MaybeInitializeIBusBus() {
   // Register callback functions for IBusBus signals.
   ConnectBusSignals();
 
-  // Ask libibus to watch the NameOwnerChanged signal *asynchronously*.
-  ibus_bus_set_watch_dbus_signal(ibus_, TRUE);
-
   if (ibus_bus_is_connected(ibus_)) {
     DVLOG(1) << "IBus connection is ready: ibus-daemon is already running?";
     BusConnected(ibus_);
@@ -632,12 +628,9 @@ void IBusControllerImpl::MaybeInitializeIBusBus() {
 
 void IBusControllerImpl::SendChangeInputMethodRequest(const std::string& id) {
   // Change the global engine *asynchronously*.
-  ibus_bus_set_global_engine_async(ibus_,
-                                   id.c_str(),
-                                   -1,  // use the default ibus timeout
-                                   NULL,  // cancellable
-                                   NULL,  // callback
-                                   NULL);  // user_data
+  IBusClient* client = DBusThreadManager::Get()->GetIBusClient();
+  if (client)
+    client->SetGlobalEngine(id.c_str(), base::Bind(&base::DoNothing));
 }
 
 bool IBusControllerImpl::SetInputMethodConfigInternal(
@@ -867,6 +860,12 @@ void IBusControllerImpl::IBusDaemonInitializationDone(
   ui::InputMethodIBus* input_method_ibus = controller->GetInputMethod();
   DCHECK(input_method_ibus);
   input_method_ibus->OnConnected();
+
+  // Restores previous input method at the beggining of connection.
+  if (!controller->current_input_method_id_.empty()) {
+    controller->SendChangeInputMethodRequest(
+        controller->current_input_method_id_);
+  }
 
   DBusThreadManager::Get()->GetIBusConfigClient()->InitializeAsync(
       base::Bind(&IBusControllerImpl::OnIBusConfigClientInitialized,
