@@ -24,31 +24,6 @@ EventResult EventDispatcher::DispatchEventToSingleHandler(EventHandler* handler,
   return handler->OnEvent(event);
 }
 
-EventResult EventDispatcher::DispatchEventToSingleHandler(EventHandler* handler,
-                                                          KeyEvent* event) {
-  return handler->OnKeyEvent(event);
-}
-
-EventResult EventDispatcher::DispatchEventToSingleHandler(EventHandler* handler,
-                                                          MouseEvent* event) {
-  return handler->OnMouseEvent(event);
-}
-
-EventResult EventDispatcher::DispatchEventToSingleHandler(EventHandler* handler,
-                                                          ScrollEvent* event) {
-  return handler->OnScrollEvent(event);
-}
-
-EventResult EventDispatcher::DispatchEventToSingleHandler(EventHandler* handler,
-                                                          TouchEvent* event) {
-  return handler->OnTouchEvent(event);
-}
-
-EventResult EventDispatcher::DispatchEventToSingleHandler(EventHandler* handler,
-                                                          GestureEvent* event) {
-  return handler->OnGestureEvent(event);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // EventDispatcher::ScopedDispatchHelper
 

@@ -97,7 +97,8 @@ class UI_EXPORT Event {
            type_ == ET_MOUSE_MOVED ||
            type_ == ET_MOUSE_ENTERED ||
            type_ == ET_MOUSE_EXITED ||
-           type_ == ET_MOUSEWHEEL;
+           type_ == ET_MOUSEWHEEL ||
+           type_ == ET_MOUSE_CAPTURE_CHANGED;
   }
 
   bool IsTouchEvent() const {
@@ -114,6 +115,7 @@ class UI_EXPORT Event {
       case ET_GESTURE_SCROLL_END:
       case ET_GESTURE_SCROLL_UPDATE:
       case ET_GESTURE_TAP:
+      case ET_GESTURE_TAP_CANCEL:
       case ET_GESTURE_TAP_DOWN:
       case ET_GESTURE_BEGIN:
       case ET_GESTURE_END:
