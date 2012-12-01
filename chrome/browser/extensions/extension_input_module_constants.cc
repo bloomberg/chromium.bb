@@ -34,6 +34,9 @@ const char kStyleDoubleUnderline[] = "doubleUnderline";
 const char kStyleKey[] = "style";
 const char kStyleUnderline[] = "underline";
 const char kTextKey[] = "text";
+const char kUsageBodyKey[] = "body";
+const char kUsageKey[] = "usage";
+const char kUsageTitleKey[] = "title";
 const char kVerticalKey[] = "vertical";
 const char kVisibleKey[] = "visible";
 

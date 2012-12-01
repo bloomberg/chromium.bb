@@ -78,6 +78,11 @@ class InputMethodEngine {
     std::string type;
   };
 
+  struct UsageEntry {
+    std::string title;
+    std::string body;
+  };
+
   struct Candidate {
     Candidate();
     virtual ~Candidate();
@@ -86,6 +91,7 @@ class InputMethodEngine {
     int id;
     std::string label;
     std::string annotation;
+    UsageEntry usage;
     std::vector<Candidate> candidates;
   };
 

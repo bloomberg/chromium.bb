@@ -276,6 +276,8 @@ bool InputMethodEngineIBus::SetCandidates(
     entry.value = ix->value;
     entry.label = ix->label;
     entry.annotation = ix->annotation;
+    entry.description_title = ix->usage.title;
+    entry.description_body = ix->usage.body;
 
     // Store a mapping from the user defined ID to the candidate index.
     candidate_indexes_[ix->id] = candidate_ids_.size();

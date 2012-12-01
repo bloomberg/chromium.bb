@@ -661,6 +661,7 @@ bool SetCandidatesFunction::ReadCandidates(
     int id;
     std::string label;
     std::string annotation;
+    chromeos::InputMethodEngine::UsageEntry usage_entry;
 
     EXTENSION_FUNCTION_VALIDATE(candidate_dict->GetString(keys::kCandidateKey,
                                                           &candidate));
@@ -676,11 +677,22 @@ bool SetCandidatesFunction::ReadCandidates(
           &annotation));
     }
 
+    if (candidate_dict->HasKey(keys::kUsageKey)) {
+      DictionaryValue* usage_dict;
+      EXTENSION_FUNCTION_VALIDATE(candidate_dict->GetDictionary(keys::kUsageKey,
+                                                                &usage_dict));
+      EXTENSION_FUNCTION_VALIDATE(usage_dict->GetString(keys::kUsageTitleKey,
+                                                        &usage_entry.title));
+      EXTENSION_FUNCTION_VALIDATE(usage_dict->GetString(keys::kUsageBodyKey,
+                                                        &usage_entry.body));
+    }
+
     output->push_back(chromeos::InputMethodEngine::Candidate());
     output->back().value = candidate;
     output->back().id = id;
     output->back().label = label;
     output->back().annotation = annotation;
+    output->back().usage = usage_entry;
 
     if (candidate_dict->HasKey(keys::kCandidatesKey)) {
       ListValue* sub_list;

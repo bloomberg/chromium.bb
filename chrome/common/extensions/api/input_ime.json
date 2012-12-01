@@ -250,7 +250,16 @@
                     "id": {"type": "integer", "description": "The candidate's id"},
                     "parentId": {"type": "integer", "optional": true, "description": "The id to add these candidates under"},
                     "label": {"type": "string", "optional": true, "description": "Short string displayed to next to the candidate, often the shortcut key or index"},
-                    "annotation": {"type": "string", "optional": true, "description": "Additional text describing the candidate"}
+                    "annotation": {"type": "string", "optional": true, "description": "Additional text describing the candidate"},
+                    "usage": {
+                      "type": "object",
+                      "optional": true,
+                      "description": "The usage or detail description of word.",
+                      "properties": {
+                        "title": { "type": "string", "description": "The title string of details description."},
+                        "body": { "type": "string", "description": "The body string of detail description."}
+                      }
+                    }
                   }
                 }
               }

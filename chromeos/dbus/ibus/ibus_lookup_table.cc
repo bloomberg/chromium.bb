@@ -46,6 +46,8 @@ void AppendIBusLookupTable(const IBusLookupTable& table,
     ibus::IBusText text;
     text.set_text(candidates[i].value);
     text.set_annotation(candidates[i].annotation);
+    text.set_description_title(candidates[i].description_title);
+    text.set_description_body(candidates[i].description_body);
     AppendIBusText(text, &text_writer);
     if (!candidates[i].label.empty())
       have_labels = true;
