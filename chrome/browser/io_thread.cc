@@ -67,9 +67,9 @@
 #include "policy/policy_constants.h"
 #endif
 
-#if defined(USE_NSS)
+#if defined(USE_NSS) || defined(OS_IOS)
 #include "net/ocsp/nss_ocsp.h"
-#endif  // defined(USE_NSS)
+#endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
@@ -95,16 +95,16 @@ void ObserveKeychainEvents() {
 class SystemURLRequestContext : public net::URLRequestContext {
  public:
   SystemURLRequestContext() {
-#if defined(USE_NSS)
+#if defined(USE_NSS) || defined(OS_IOS)
     net::SetURLRequestContextForNSSHttpIO(this);
-#endif  // defined(USE_NSS)
+#endif
   }
 
  private:
   virtual ~SystemURLRequestContext() {
-#if defined(USE_NSS)
+#if defined(USE_NSS) || defined(OS_IOS)
     net::SetURLRequestContextForNSSHttpIO(NULL);
-#endif  // defined(USE_NSS)
+#endif
   }
 };
 
@@ -436,9 +436,9 @@ net::URLRequestContextGetter* IOThread::system_url_request_context_getter() {
 void IOThread::Init() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-#if defined(USE_NSS)
+#if defined(USE_NSS) || defined(OS_IOS)
   net::SetMessageLoopForNSSHttpIO();
-#endif  // defined(USE_NSS)
+#endif
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
@@ -574,9 +574,9 @@ void IOThread::CleanUp() {
   delete sdch_manager_;
   sdch_manager_ = NULL;
 
-#if defined(USE_NSS)
+#if defined(USE_NSS) || defined(OS_IOS)
   net::ShutdownNSSHttpIO();
-#endif  // defined(USE_NSS)
+#endif
 
   system_url_request_context_getter_ = NULL;
 
