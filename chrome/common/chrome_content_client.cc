@@ -34,6 +34,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/plugin_constants.h"
+#include "webkit/plugins/plugin_switches.h"
 #include "webkit/user_agent/user_agent_util.h"
 
 #include "flapper_version.h"  // In SHARED_INTERMEDIATE_DIR.
@@ -313,14 +314,22 @@ void AddPepperFlashFromCommandLine(
 
 bool GetBundledPepperFlash(content::PepperPluginInfo* plugin,
                            bool* override_npapi_flash) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kDisablePepperThreading) &&
+      !command_line->HasSwitch(switches::kEnablePepperThreading)) {
+    chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+    if (channel == chrome::VersionInfo::CHANNEL_CANARY)
+      command_line->AppendSwitch(switches::kEnablePepperThreading);
+  }
+
 #if defined(FLAPPER_AVAILABLE)
   // Ignore bundled Pepper Flash if there is Pepper Flash specified from the
   // command-line.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kPpapiFlashPath))
+  if (command_line->HasSwitch(switches::kPpapiFlashPath))
     return false;
 
-  bool force_disable = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableBundledPpapiFlash);
+  bool force_disable =
+      command_line->HasSwitch(switches::kDisableBundledPpapiFlash);
   if (force_disable)
     return false;
 
@@ -334,8 +343,8 @@ bool GetBundledPepperFlash(content::PepperPluginInfo* plugin,
   if (!PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &flash_path))
     return false;
 
-  bool force_enable = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBundledPpapiFlash);
+  bool force_enable =
+      command_line->HasSwitch(switches::kEnableBundledPpapiFlash);
 
   *plugin = CreatePepperFlashInfo(flash_path, FLAPPER_VERSION_STRING);
   *override_npapi_flash = force_enable || IsPepperFlashEnabledByDefault();
