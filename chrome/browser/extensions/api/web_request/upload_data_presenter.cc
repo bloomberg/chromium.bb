@@ -88,11 +88,6 @@ scoped_ptr<Value> RawDataPresenter::Result() {
   return list_.PassAs<Value>();
 }
 
-void RawDataPresenter::Abort() {
-  success_ = false;
-  list_.reset();
-}
-
 void RawDataPresenter::FeedNextBytes(const char* bytes, size_t size) {
   subtle::AppendKeyValuePair(keys::kRequestBodyRawBytesKey,
                              BinaryValue::CreateWithCopiedBuffer(bytes, size),

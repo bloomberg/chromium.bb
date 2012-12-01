@@ -77,9 +77,6 @@ class RawDataPresenter : public UploadDataPresenter {
   virtual scoped_ptr<base::Value> Result() OVERRIDE;
 
  private:
-  // Clears resources and the success flag.
-  void Abort();
-
   void FeedNextBytes(const char* bytes, size_t size);
   void FeedNextFile(const std::string& filename);
   FRIEND_TEST_ALL_PREFIXES(WebRequestUploadDataPresenterTest, RawData);

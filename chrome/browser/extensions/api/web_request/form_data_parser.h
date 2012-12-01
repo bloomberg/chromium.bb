@@ -31,9 +31,6 @@ class FormDataParser {
     const std::string& value() const {
       return value_;
     }
-    void set_name(const base::StringPiece& str) {
-      str.CopyToString(&name_);
-    }
     void set_value(const base::StringPiece& str) {
       str.CopyToString(&value_);
     }
@@ -43,7 +40,6 @@ class FormDataParser {
     void set_value(const std::string& str) {
       value_ = str;
     }
-    void Reset();
 
    private:
     std::string name_;

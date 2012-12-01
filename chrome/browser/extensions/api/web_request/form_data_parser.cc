@@ -286,11 +286,6 @@ class FormDataParserMultipart : public FormDataParser {
 FormDataParser::Result::Result() {}
 FormDataParser::Result::~Result() {}
 
-void FormDataParser::Result::Reset() {
-  name_.erase();
-  value_.erase();
-}
-
 FormDataParser::~FormDataParser() {}
 
 // static
