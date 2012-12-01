@@ -4,6 +4,7 @@
 
 #include "cc/scrollbar_animation_controller.h"
 
+#include "base/debug/trace_event.h"
 #include "base/time.h"
 #include "build/build_config.h"
 #include "cc/scrollbar_layer_impl.h"
@@ -79,6 +80,12 @@ void ScrollbarAnimationController::updateScrollOffsetAtTime(LayerImpl* scrollLay
     m_currentOffset = scrollLayer->scrollOffset() + scrollLayer->scrollDelta();
     m_totalSize = getScrollLayerBounds(scrollLayer);
     m_maximum = scrollLayer->maxScrollOffset();
+
+    // Get the m_currentOffset.y() value for a sanity-check on scrolling
+    // benchmark metrics. Specifically, we want to make sure
+    // BasicMouseWheelSmoothScrollGesture has proper scroll curves.
+    TRACE_COUNTER_ID1("gpu", "scroll_offset_y", this, m_currentOffset.y());
+
 
     if (m_horizontalScrollbarLayer) {
         m_horizontalScrollbarLayer->setCurrentPos(m_currentOffset.x());

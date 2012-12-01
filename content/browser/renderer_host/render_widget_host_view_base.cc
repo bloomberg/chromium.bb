@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -459,6 +460,9 @@ class BasicMouseWheelSmoothScrollGesture
     host->ForwardWheelEvent(event);
 
     pixels_scrolled_ += abs(event.deltaY);
+
+    TRACE_COUNTER_ID1("gpu", "smooth_scroll_by_pixels_scrolled", this,
+                      pixels_scrolled_);
 
     return true;
   }
