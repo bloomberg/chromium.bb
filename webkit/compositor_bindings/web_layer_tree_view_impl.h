@@ -10,6 +10,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
 
 namespace cc {
+class FontAtlas;
 class LayerTreeHost;
 class Thread;
 }
@@ -51,8 +52,6 @@ public:
     virtual void setDeferCommits(bool deferCommits) OVERRIDE;
     virtual void renderingStats(WebRenderingStats&) const OVERRIDE;
     virtual void setShowFPSCounter(bool show);
-    virtual void setFontAtlas(SkBitmap, WebRect asciiToRectTable[128], int fontHeight);
-    virtual void setFontAtlas(WebRect asciiToRectTable[128], const SkBitmap&, int fontHeight);
     virtual void loseCompositorContext(int numTimes) OVERRIDE;
 
     // cc::LayerTreeHostClient implementation.
@@ -69,6 +68,7 @@ public:
     virtual void didCommitAndDrawFrame() OVERRIDE;
     virtual void didCompleteSwapBuffers() OVERRIDE;
     virtual void scheduleComposite() OVERRIDE;
+    virtual scoped_ptr<cc::FontAtlas> createFontAtlas();
 
 private:
     WebLayerTreeViewClient* m_client;

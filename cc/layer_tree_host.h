@@ -40,7 +40,6 @@ struct hash<WebKit::WebGraphicsContext3D*> {
 
 namespace cc {
 
-class FontAtlas;
 class Layer;
 class LayerTreeHostImpl;
 class LayerTreeHostImplClient;
@@ -68,6 +67,7 @@ struct CC_EXPORT LayerTreeDebugState {
 
     bool showHudInfo() const;
     bool showHudRects() const;
+    bool hudNeedsFont() const;
 
     static bool equal(const LayerTreeDebugState& a, const LayerTreeDebugState& b);
     static LayerTreeDebugState unite(const LayerTreeDebugState& a, const LayerTreeDebugState& b);
@@ -237,8 +237,6 @@ public:
     void setDeviceScaleFactor(float);
     float deviceScaleFactor() const { return m_deviceScaleFactor; }
 
-    void setFontAtlas(scoped_ptr<FontAtlas>);
-
     HeadsUpDisplayLayer* hudLayer() const { return m_hudLayer.get(); }
 
     Proxy* proxy() const { return m_proxy.get(); }
@@ -267,8 +265,6 @@ private:
     void animateLayers(base::TimeTicks monotonicTime);
     bool animateLayersRecursive(Layer* current, base::TimeTicks time);
     void setAnimationEventsRecursive(const AnimationEventsVector&, Layer*, base::Time wallClockTime);
-
-    void createHUDLayerIfNeeded();
 
     bool m_animating;
     bool m_needsAnimateLayers;

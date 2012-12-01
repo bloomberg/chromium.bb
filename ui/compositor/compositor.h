@@ -19,6 +19,7 @@
 class SkBitmap;
 
 namespace cc {
+class FontAtlas;
 class Layer;
 class LayerTreeHost;
 }
@@ -258,6 +259,7 @@ class COMPOSITOR_EXPORT Compositor
   virtual void didCommitAndDrawFrame() OVERRIDE;
   virtual void didCompleteSwapBuffers() OVERRIDE;
   virtual void scheduleComposite() OVERRIDE;
+  virtual scoped_ptr<cc::FontAtlas> createFontAtlas() OVERRIDE;
 
 
   int last_started_frame() { return last_started_frame_; }

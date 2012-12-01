@@ -185,17 +185,19 @@ void WebLayerTreeViewImpl::setShowFPSCounter(bool show)
     m_layerTreeHost->setDebugState(debugState);
 }
 
-void WebLayerTreeViewImpl::setFontAtlas(SkBitmap bitmap, WebRect asciiToWebRectTable[128], int fontHeight) {
-    setFontAtlas(asciiToWebRectTable, bitmap, fontHeight);
-}
-
-void WebLayerTreeViewImpl::setFontAtlas(WebRect asciiToWebRectTable[128], const SkBitmap& bitmap, int fontHeight)
+scoped_ptr<FontAtlas> WebLayerTreeViewImpl::createFontAtlas()
 {
+    int fontHeight;
+    WebRect asciiToWebRectTable[128];
     gfx::Rect asciiToRectTable[128];
+    SkBitmap bitmap;
+
+    m_client->createFontAtlas(bitmap, asciiToWebRectTable, fontHeight);
+
     for (int i = 0; i < 128; ++i)
         asciiToRectTable[i] = asciiToWebRectTable[i];
-    scoped_ptr<FontAtlas> fontAtlas = FontAtlas::create(bitmap, asciiToRectTable, fontHeight);
-    m_layerTreeHost->setFontAtlas(fontAtlas.Pass());
+
+    return FontAtlas::create(bitmap, asciiToRectTable, fontHeight).Pass();
 }
 
 void WebLayerTreeViewImpl::loseCompositorContext(int numTimes)

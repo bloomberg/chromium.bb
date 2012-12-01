@@ -17,6 +17,7 @@ scoped_refptr<HeadsUpDisplayLayer> HeadsUpDisplayLayer::create()
 
 HeadsUpDisplayLayer::HeadsUpDisplayLayer()
     : Layer()
+    , m_hasFontAtlas(false)
 {
     setBounds(gfx::Size(256, 128));
 }
@@ -55,7 +56,7 @@ bool HeadsUpDisplayLayer::drawsContent() const
 void HeadsUpDisplayLayer::setFontAtlas(scoped_ptr<FontAtlas> fontAtlas)
 {
     m_fontAtlas = fontAtlas.Pass();
-    setNeedsCommit();
+    m_hasFontAtlas = true;
 }
 
 scoped_ptr<LayerImpl> HeadsUpDisplayLayer::createLayerImpl()

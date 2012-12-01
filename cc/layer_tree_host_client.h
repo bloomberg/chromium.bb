@@ -16,6 +16,7 @@ class WebCompositorOutputSurface;
 }
 
 namespace cc {
+class FontAtlas;
 class InputHandler;
 
 class LayerTreeHostClient {
@@ -36,6 +37,9 @@ public:
 
     // Used only in the single-threaded path.
     virtual void scheduleComposite() = 0;
+
+    // Creates a font atlas to use for debug visualizations.
+    virtual scoped_ptr<FontAtlas> createFontAtlas() = 0;
 
 protected:
     virtual ~LayerTreeHostClient() { }

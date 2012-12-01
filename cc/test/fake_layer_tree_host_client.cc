@@ -17,4 +17,9 @@ scoped_ptr<InputHandler> FakeLayerImplTreeHostClient::createInputHandler()
     return scoped_ptr<InputHandler>();
 }
 
+scoped_ptr<FontAtlas> FakeLayerImplTreeHostClient::createFontAtlas()
+{
+	return scoped_ptr<FontAtlas>();
+}
+
 }

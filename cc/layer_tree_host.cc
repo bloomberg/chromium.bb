@@ -64,6 +64,11 @@ bool LayerTreeDebugState::showHudRects() const
     return showPaintRects || showPropertyChangedRects || showSurfaceDamageRects || showScreenSpaceRects || showReplicaScreenSpaceRects || showOccludingRects || showNonOccludingRects;
 }
 
+bool LayerTreeDebugState::hudNeedsFont() const
+{
+    return showFPSCounter || showPlatformLayerTree;
+}
+
 bool LayerTreeDebugState::equal(const LayerTreeDebugState& a, const LayerTreeDebugState& b)
 {
     return memcmp(&a, &b, sizeof(LayerTreeDebugState)) == 0;
@@ -339,27 +344,23 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
     m_commitNumber++;
 }
 
-void LayerTreeHost::createHUDLayerIfNeeded()
-{
-    if (!m_hudLayer)
-        m_hudLayer = HeadsUpDisplayLayer::create();
-}
-
-void LayerTreeHost::setFontAtlas(scoped_ptr<FontAtlas> fontAtlas)
-{
-    createHUDLayerIfNeeded();
-    m_hudLayer->setFontAtlas(fontAtlas.Pass());
-}
-
 void LayerTreeHost::willCommit()
 {
     m_client->willCommit();
 
-    if (m_debugState.showHudInfo())
-        createHUDLayerIfNeeded();
+    if (m_debugState.showHudInfo()) {
+        if (!m_hudLayer)
+            m_hudLayer = HeadsUpDisplayLayer::create();
 
-    if (m_rootLayer && m_hudLayer && !m_hudLayer->parent())
-        m_rootLayer->addChild(m_hudLayer);
+        if (m_debugState.hudNeedsFont() && !m_hudLayer->hasFontAtlas())
+            m_hudLayer->setFontAtlas(m_client->createFontAtlas());
+
+        if (m_rootLayer && !m_hudLayer->parent())
+            m_rootLayer->addChild(m_hudLayer);
+    } else if (m_hudLayer) {
+        m_hudLayer->removeFromParent();
+        m_hudLayer = 0;
+    }
 }
 
 void LayerTreeHost::commitComplete()

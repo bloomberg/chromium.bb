@@ -7,6 +7,7 @@
 #include "base/stl_util.h"
 #include "cc/active_animation.h"
 #include "cc/content_layer.h"
+#include "cc/font_atlas.h"
 #include "cc/input_handler.h"
 #include "cc/layer.h"
 #include "cc/layer_animation_controller.h"
@@ -25,6 +26,7 @@
 #include <public/WebFilterOperation.h>
 #include <public/WebFilterOperations.h>
 
+using cc::FontAtlas;
 using cc::InputHandler;
 using cc::Layer;
 using cc::LayerTreeHostImplClient;
@@ -261,6 +263,11 @@ public:
     virtual void scheduleComposite() OVERRIDE
     {
         m_testHooks->scheduleComposite();
+    }
+
+    virtual scoped_ptr<FontAtlas> createFontAtlas() OVERRIDE
+    {
+        return scoped_ptr<FontAtlas>();
     }
 
 private:

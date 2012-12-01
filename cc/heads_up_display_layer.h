@@ -23,6 +23,8 @@ public:
     virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE;
     virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
 
+    bool hasFontAtlas() const { return m_hasFontAtlas; }
+
 protected:
     HeadsUpDisplayLayer();
 
@@ -30,6 +32,7 @@ private:
     virtual ~HeadsUpDisplayLayer();
 
     scoped_ptr<FontAtlas> m_fontAtlas;
+    bool m_hasFontAtlas;
 };
 
 }  // namespace cc
