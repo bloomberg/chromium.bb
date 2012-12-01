@@ -53,6 +53,7 @@
 #include "content/public/browser/notification_source.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
+#include "sync/protocol/history_delete_directive_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -965,6 +966,75 @@ TEST_F(HistoryTest, HistoryDBTaskCanceled) {
   // WARNING: history has now been deleted.
   history_service_.reset();
   ASSERT_FALSE(task->done_invoked);
+}
+
+TEST_F(HistoryTest, ProcessGlobalIdDeleteDirective) {
+  ASSERT_TRUE(history_service_.get());
+  // Add the page once from a child frame.
+  const GURL test_url("http://www.google.com/");
+  for (int64 i = 1; i <= 10; ++i) {
+    base::Time t =
+        base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(i);
+    history_service_->AddPage(test_url, t, NULL, 0, GURL(),
+                              history::RedirectList(),
+                              content::PAGE_TRANSITION_LINK,
+                              history::SOURCE_BROWSED, false);
+  }
+
+  EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
+  EXPECT_EQ(10, query_url_row_.visit_count());
+
+  sync_pb::HistoryDeleteDirectiveSpecifics delete_directive;
+  sync_pb::GlobalIdDirective* global_id_directive =
+      delete_directive.mutable_global_id_directive();
+  global_id_directive->add_global_id(
+      (base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(0))
+      .ToInternalValue());
+  global_id_directive->add_global_id(
+      (base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(2))
+      .ToInternalValue());
+  global_id_directive->add_global_id(
+      (base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(5))
+      .ToInternalValue());
+  global_id_directive->add_global_id(
+      (base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(10))
+      .ToInternalValue());
+  global_id_directive->add_global_id(
+      (base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(20))
+      .ToInternalValue());
+
+  history_service_->ProcessDeleteDirectiveForTest(delete_directive);
+
+  EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
+  EXPECT_EQ(7, query_url_row_.visit_count());
+}
+
+TEST_F(HistoryTest, ProcessTimeRangeDeleteDirective) {
+  ASSERT_TRUE(history_service_.get());
+  // Add the page once from a child frame.
+  const GURL test_url("http://www.google.com/");
+  for (int64 i = 1; i <= 10; ++i) {
+    base::Time t =
+        base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(i);
+    history_service_->AddPage(test_url, t, NULL, 0, GURL(),
+                              history::RedirectList(),
+                              content::PAGE_TRANSITION_LINK,
+                              history::SOURCE_BROWSED, false);
+  }
+
+  EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
+  EXPECT_EQ(10, query_url_row_.visit_count());
+
+  sync_pb::HistoryDeleteDirectiveSpecifics delete_directive;
+  sync_pb::TimeRangeDirective* time_range_directive =
+      delete_directive.mutable_time_range_directive();
+  time_range_directive->set_start_time_usec(2);
+  time_range_directive->set_end_time_usec(9);
+
+  history_service_->ProcessDeleteDirectiveForTest(delete_directive);
+
+  EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
+  EXPECT_EQ(2, query_url_row_.visit_count());
 }
 
 }  // namespace

@@ -24,9 +24,11 @@
 
 #include "chrome/browser/history/history.h"
 
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
@@ -67,6 +69,8 @@
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_data.h"
 #include "sync/api/sync_error_factory.h"
+#include "sync/protocol/history_delete_directive_specifics.pb.h"
+#include "sync/protocol/proto_value_conversions.h"
 #include "sync/protocol/sync.pb.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -76,6 +80,15 @@ using history::HistoryBackend;
 namespace {
 
 static const char* kHistoryThreadName = "Chrome_HistoryThread";
+
+std::string DeleteDirectiveToString(
+    const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive) {
+  scoped_ptr<base::DictionaryValue> value(
+      syncer::HistoryDeleteDirectiveSpecificsToValue(delete_directive));
+  std::string str;
+  base::JSONWriter::Write(value.get(), &str);
+  return str;
+}
 
 }  // namespace
 
@@ -900,6 +913,12 @@ base::WeakPtr<HistoryService> HistoryService::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
+void HistoryService::ProcessDeleteDirectiveForTest(
+    const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ProcessDeleteDirective(delete_directive);
+}
+
 syncer::SyncMergeResult HistoryService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
@@ -954,7 +973,7 @@ void HistoryService::SetInMemoryBackend(int backend_id,
     history::InMemoryHistoryBackend* mem_backend) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!history_backend_ || current_backend_id_ != backend_id) {
-    VLOG(1) << "Message from obsolete backend";
+    DVLOG(1) << "Message from obsolete backend";
     // Cleaning up the memory backend.
     delete mem_backend;
     return;
@@ -970,7 +989,7 @@ void HistoryService::NotifyProfileError(int backend_id,
                                         sql::InitStatus init_status) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!history_backend_ || current_backend_id_ != backend_id) {
-    VLOG(1) << "Message from obsolete backend";
+    DVLOG(1) << "Message from obsolete backend";
     return;
   }
   ShowProfileErrorDialog(
@@ -1061,7 +1080,7 @@ void HistoryService::LoadBackendIfNecessary() {
 void HistoryService::OnDBLoaded(int backend_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!history_backend_ || current_backend_id_ != backend_id) {
-    VLOG(1) << "Message from obsolete backend";
+    DVLOG(1) << "Message from obsolete backend";
     return;
   }
   backend_loaded_ = true;
@@ -1086,7 +1105,7 @@ bool HistoryService::GetRowForURL(const GURL& url, history::URLRow* url_row) {
 void HistoryService::StartTopSitesMigration(int backend_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!history_backend_ || current_backend_id_ != backend_id) {
-    VLOG(1) << "Message from obsolete backend";
+    DVLOG(1) << "Message from obsolete backend";
     return;
   }
   needs_top_sites_migration_ = true;
@@ -1126,8 +1145,87 @@ void HistoryService::NotifyVisitDBObserversOnAddVisit(
 void HistoryService::ProcessDeleteDirective(
     const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // TODO(akalin): Actually process the delete directive.
+
+  DVLOG(1) << "Processing delete directive: "
+           << DeleteDirectiveToString(delete_directive);
+
+  base::Closure done_callback =
+      base::Bind(&HistoryService::OnDeleteDirectiveProcessed,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 delete_directive);
+
+  // Execute |done_callback| on return unless we pass it to something
+  // else.
+  base::ScopedClosureRunner scoped_done_callback(done_callback);
+
+  // Exactly one directive must be filled in.  If not, ignore.
+  if (delete_directive.has_global_id_directive() ==
+      delete_directive.has_time_range_directive()) {
+    return;
+  }
+
+  base::Closure backend_task;
+
+  if (delete_directive.has_global_id_directive()) {
+    const sync_pb::GlobalIdDirective& global_id_directive =
+        delete_directive.global_id_directive();
+    std::vector<base::Time> times;
+    for (int i = 0; i < global_id_directive.global_id_size(); ++i) {
+      int64 global_id = global_id_directive.global_id(i);
+      // The global id is just an internal time value.
+      base::Time time = base::Time::FromInternalValue(global_id);
+      times.push_back(time);
+    }
+
+    if (!times.empty()) {
+      backend_task =
+          base::Bind(&HistoryBackend::ExpireHistoryForTimes,
+                     history_backend_, times);
+    }
+  } else if (delete_directive.has_time_range_directive()) {
+    const sync_pb::TimeRangeDirective& time_range_directive =
+        delete_directive.time_range_directive();
+    // {start,end}_time_usec must both be filled in.  If not, ignore.
+    if (!time_range_directive.has_start_time_usec() ||
+        !time_range_directive.has_end_time_usec()) {
+      return;
+    }
+
+    // The directive is for the closed interval [start_time_usec,
+    // end_time_usec], but ExpireHistoryBetween() expects the
+    // half-open interval [begin_time, end_time), so add 1 to
+    // end_time_usec before converting.
+    base::Time begin_time =
+        base::Time::UnixEpoch() +
+        base::TimeDelta::FromMicroseconds(
+            time_range_directive.start_time_usec());
+    base::Time end_time =
+        base::Time::UnixEpoch() +
+        base::TimeDelta::FromMicroseconds(
+            time_range_directive.end_time_usec() + 1);
+
+    backend_task =
+        base::Bind(&HistoryBackend::ExpireHistoryBetween,
+                   history_backend_, std::set<GURL>(),
+                   begin_time, end_time);
+  }
+
+  if (!backend_task.is_null()) {
+    LoadBackendIfNecessary();
+    DCHECK(thread_);
+    if (thread_->message_loop_proxy()->PostTaskAndReply(
+            FROM_HERE,
+            backend_task,
+            done_callback)) {
+      ignore_result(scoped_done_callback.Release());
+    }
+  }
+}
+
+void HistoryService::OnDeleteDirectiveProcessed(
+    const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive) {
+  DVLOG(1) << "Processed delete directive: "
+           << DeleteDirectiveToString(delete_directive);
   // TODO(akalin): Keep track of which delete directives we've already
   // processed.
-  NOTREACHED();
 }

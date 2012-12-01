@@ -9,8 +9,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_path.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -623,6 +625,9 @@ class HistoryService : public CancelableRequestProvider,
 
   base::WeakPtr<HistoryService> AsWeakPtr();
 
+  void ProcessDeleteDirectiveForTest(
+      const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive);
+
   // syncer::SyncableService implementation.
   virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
@@ -853,6 +858,10 @@ class HistoryService : public CancelableRequestProvider,
   // Delete local history according to the given directive (from
   // sync).
   void ProcessDeleteDirective(
+      const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive);
+
+  // Called when a delete directive has been processed.
+  void OnDeleteDirectiveProcessed(
       const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive);
 
   // Schedule ------------------------------------------------------------------
