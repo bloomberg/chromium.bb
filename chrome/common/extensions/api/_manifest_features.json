@@ -72,7 +72,7 @@
     "extension_types": ["extension", "packaged_app"]
   },
   "commands": {
-    "channel": "beta",
+    "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"],
     "min_manifest_version": 2
   },
