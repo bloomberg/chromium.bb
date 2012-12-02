@@ -296,7 +296,7 @@ void WebIntentPickerGtk::OnInlineDisposition(const string16&,
   inline_disposition_web_contents_.reset(
       delegate_->CreateWebContentsForInlineDisposition(
           tab_contents_->profile(), url));
-  Browser* browser = browser::FindBrowserWithWebContents(
+  Browser* browser = chrome::FindBrowserWithWebContents(
       tab_contents_->web_contents());
   inline_disposition_delegate_.reset(
       new WebIntentInlineDispositionDelegate(

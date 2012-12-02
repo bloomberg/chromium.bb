@@ -57,7 +57,7 @@ void GoBackToSafety(content::WebContents* web_contents) {
   // If this is the last tab, open a new window.
   if (BrowserList::size() == 1) {
     Browser* browser = *(BrowserList::begin());
-    DCHECK(browser == browser::FindBrowserWithWebContents(web_contents));
+    DCHECK(browser == chrome::FindBrowserWithWebContents(web_contents));
     if (browser->tab_count() == 1)
       chrome::NewEmptyWindow(browser->profile());
   }

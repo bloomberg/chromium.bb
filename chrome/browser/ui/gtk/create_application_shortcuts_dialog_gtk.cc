@@ -304,7 +304,7 @@ CreateWebApplicationShortcutsDialogGtk::CreateWebApplicationShortcutsDialogGtk(
 }
 
 void CreateWebApplicationShortcutsDialogGtk::OnCreatedShortcut() {
-  Browser* browser = browser::FindBrowserWithWebContents(web_contents_);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   if (browser)
     chrome::ConvertTabToAppWindow(browser, web_contents_);
 }

@@ -568,7 +568,7 @@ void SyncSetupHandler::DisplayGaiaLogin(bool fatal_error) {
   if (UseWebBasedSigninFlow()) {
     GURL url(SyncPromoUI::GetSyncPromoURL(GURL(),
         SyncPromoUI::SOURCE_SETTINGS, false));
-    Browser* browser = browser::FindBrowserWithWebContents(
+    Browser* browser = chrome::FindBrowserWithWebContents(
         web_ui()->GetWebContents());
     browser->OpenURL(
         content::OpenURLParams(url, content::Referrer(), SINGLETON_TAB,

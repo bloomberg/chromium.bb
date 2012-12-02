@@ -169,7 +169,7 @@ void AppNotifyChannelUIImpl::OnInfoBarResult(bool accepted) {
     }
   }
   // Any existing UI is now closed - display new login UI.
-  Browser* browser = browser::FindBrowserWithWebContents(
+  Browser* browser = chrome::FindBrowserWithWebContents(
       tab_contents_->web_contents());
   chrome::ShowSettingsSubPage(browser, chrome::kSyncSetupForceLoginSubPage);
 }

@@ -106,7 +106,7 @@ TabRestoreServiceDelegate* TabRestoreServiceDelegate::Create(
 TabRestoreServiceDelegate*
     TabRestoreServiceDelegate::FindDelegateForWebContents(
         const WebContents* contents) {
-  Browser* browser = browser::FindBrowserWithWebContents(contents);
+  Browser* browser = chrome::FindBrowserWithWebContents(contents);
   return browser ? browser->tab_restore_service_delegate() : NULL;
 }
 

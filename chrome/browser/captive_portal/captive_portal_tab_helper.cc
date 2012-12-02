@@ -240,7 +240,7 @@ CaptivePortalTabReloader* CaptivePortalTabHelper::GetTabReloaderForTest() {
 }
 
 void CaptivePortalTabHelper::OpenLoginTab() {
-  Browser* browser = browser::FindBrowserWithWebContents(web_contents_);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
 
   // If the Profile doesn't have a tabbed browser window open, do nothing.
   if (!browser)

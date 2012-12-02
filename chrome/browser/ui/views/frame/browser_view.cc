@@ -2783,7 +2783,7 @@ void BrowserView::ActivateAppModalDialog() const {
     return;
 
   Browser* modal_browser =
-      browser::FindBrowserWithWebContents(active_dialog->web_contents());
+      chrome::FindBrowserWithWebContents(active_dialog->web_contents());
   if (modal_browser && (browser_ != modal_browser)) {
     modal_browser->window()->FlashFrame(true);
     modal_browser->window()->Activate();

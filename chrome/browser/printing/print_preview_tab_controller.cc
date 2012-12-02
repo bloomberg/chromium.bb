@@ -211,7 +211,7 @@ void PrintPreviewWebContentDelegate::HandleKeyboardEvent(
   // Disabled on Mac due to http://crbug.com/112173
 #if !defined(OS_MACOSX)
   Browser* current_browser =
-      browser::FindBrowserWithWebContents(tab_->web_contents());
+      chrome::FindBrowserWithWebContents(tab_->web_contents());
   if (!current_browser)
     return;
   current_browser->window()->HandleKeyboardEvent(event);

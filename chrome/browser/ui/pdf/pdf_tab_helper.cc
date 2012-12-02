@@ -49,7 +49,7 @@ void PDFTabHelper::DidNavigateMainFrame(
 }
 
 void PDFTabHelper::UpdateLocationBar() {
-  Browser* browser = browser::FindBrowserWithWebContents(web_contents());
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (!browser)
     return;
 

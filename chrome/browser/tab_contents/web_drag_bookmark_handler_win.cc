@@ -75,7 +75,7 @@ void WebDragBookmarkHandlerWin::OnDrop(IDataObject* data_object) {
     }
 
     // Focus the target browser.
-    Browser* browser = browser::FindBrowserWithWebContents(web_contents_);
+    Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
     if (browser)
       browser->window()->Show();
   }

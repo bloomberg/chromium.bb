@@ -102,7 +102,7 @@ namespace {
 
 Browser* GetBrowserFromDelegate(LocationBarView::Delegate* delegate) {
   WebContents* contents = delegate->GetWebContents();
-  return browser::FindBrowserWithWebContents(contents);
+  return chrome::FindBrowserWithWebContents(contents);
 }
 
 // Height of the location bar's round corner region.
@@ -1226,7 +1226,7 @@ void LocationBarView::RefreshPageActionViews() {
   }
 
   if (!page_action_views_.empty() && contents) {
-    Browser* browser = browser::FindBrowserWithWebContents(contents);
+    Browser* browser = chrome::FindBrowserWithWebContents(contents);
     GURL url = chrome::GetActiveWebContents(browser)->GetURL();
 
     for (PageActionViews::const_iterator i(page_action_views_.begin());

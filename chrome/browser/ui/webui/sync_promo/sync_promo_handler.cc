@@ -193,7 +193,7 @@ void SyncPromoHandler::HandleCloseSyncPromo(const base::ListValue* args) {
   // another URL. This prevents the browser window from flashing during
   // close.
   Browser* browser =
-      browser::FindBrowserWithWebContents(web_ui()->GetWebContents());
+      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
   if (!browser || !browser->IsAttemptingToCloseBrowser()) {
     // Close the window if it was opened in auto-close mode.
     const GURL& sync_url = web_ui()->GetWebContents()->GetURL();

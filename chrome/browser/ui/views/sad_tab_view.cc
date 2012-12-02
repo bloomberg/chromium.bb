@@ -117,7 +117,7 @@ void SadTabView::LinkClicked(views::Link* source, int event_flags) {
     web_contents_->OpenURL(params);
   } else if (source == feedback_link_) {
     chrome::ShowFeedbackPage(
-        browser::FindBrowserWithWebContents(web_contents_),
+        chrome::FindBrowserWithWebContents(web_contents_),
         l10n_util::GetStringUTF8(IDS_KILLED_TAB_FEEDBACK_MESSAGE),
         std::string(kCategoryTagCrash));
   }

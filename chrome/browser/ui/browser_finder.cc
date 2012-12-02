@@ -185,6 +185,10 @@ Browser* FindBrowserWithWindow(gfx::NativeWindow window) {
   return NULL;
 }
 
+}  // namespace browser
+
+namespace chrome {
+
 Browser* FindBrowserWithWebContents(const WebContents* web_contents) {
   DCHECK(web_contents);
   for (TabContentsIterator it; !it.done(); ++it) {
@@ -193,10 +197,6 @@ Browser* FindBrowserWithWebContents(const WebContents* web_contents) {
   }
   return NULL;
 }
-
-}  // namespace browser
-
-namespace chrome {
 
 Browser* FindLastActiveWithProfile(Profile* profile, HostDesktopType type) {
   BrowserListImpl* list = BrowserListImpl::GetInstance(type);

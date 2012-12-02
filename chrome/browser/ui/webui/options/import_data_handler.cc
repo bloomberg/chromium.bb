@@ -119,7 +119,7 @@ void ImportDataHandler::ImportData(const ListValue* args) {
 #endif
     importer_host_->SetObserver(this);
     importer_host_->set_browser(
-        browser::FindBrowserWithWebContents(web_ui()->GetWebContents()));
+        chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()));
     Profile* profile = Profile::FromWebUI(web_ui());
     importer_host_->StartImportSettings(source_profile, profile,
                                         import_services,

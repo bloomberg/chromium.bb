@@ -136,7 +136,7 @@ void HistoryTabHelper::DidNavigateAnyFrame(
 
 #if !defined(OS_ANDROID)
   // Don't update history if this web contents isn't associatd with a tab.
-  Browser* browser = browser::FindBrowserWithWebContents(web_contents());
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (!browser || browser->is_app())
     return;
 #endif

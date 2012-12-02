@@ -65,7 +65,7 @@ void TabAutofillManagerDelegate::ShowAutofillSettings() {
 #if defined(OS_ANDROID)
   NOTIMPLEMENTED();
 #else
-  Browser* browser = browser::FindBrowserWithWebContents(web_contents_);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   if (browser)
     chrome::ShowSettingsSubPage(browser, chrome::kAutofillSubPage);
 #endif  // #if defined(OS_ANDROID)
@@ -78,7 +78,7 @@ void TabAutofillManagerDelegate::ShowPasswordGenerationBubble(
 #if defined(OS_ANDROID)
   NOTIMPLEMENTED();
 #else
-  Browser* browser = browser::FindBrowserWithWebContents(web_contents_);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   browser->window()->ShowPasswordGenerationBubble(bounds, form, generator);
 #endif  // #if defined(OS_ANDROID)
 }

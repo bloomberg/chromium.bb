@@ -145,7 +145,7 @@ void ConstrainedWindowMac::CloseConstrainedWindow() {
 }
 
 bool ConstrainedWindowMac::CanShowConstrainedWindow() {
-  Browser* browser = browser::FindBrowserWithWebContents(web_contents_);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   if (!browser)
     return true;
   return !browser->window()->IsInstantTabShowing();

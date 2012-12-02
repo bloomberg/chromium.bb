@@ -101,7 +101,7 @@ OtherDeviceMenuController::~OtherDeviceMenuController() {
 
 void OtherDeviceMenuController::ShowMenu() {
   content::WebContents* web_contents = web_ui_->GetWebContents();
-  Browser* browser = browser::FindBrowserWithWebContents(web_contents);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser)
     return;
 

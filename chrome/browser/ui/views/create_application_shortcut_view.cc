@@ -432,7 +432,7 @@ bool CreateUrlApplicationShortcutView::Accept() {
       SetAppIcon(shortcut_info_.favicon.IsEmpty()
           ? SkBitmap()
           : *shortcut_info_.favicon.ToSkBitmap());
-  Browser* browser = browser::FindBrowserWithWebContents(web_contents_);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   if (browser)
     chrome::ConvertTabToAppWindow(browser, web_contents_);
   return true;

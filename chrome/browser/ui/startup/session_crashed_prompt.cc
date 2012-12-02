@@ -60,7 +60,7 @@ SessionCrashedInfoBarDelegate::SessionCrashedInfoBarDelegate(
     : ConfirmInfoBarDelegate(infobar_helper),
       accepted_(false),
       removed_notification_received_(false),
-      browser_(browser::FindBrowserWithWebContents(owner()->GetWebContents())) {
+      browser_(chrome::FindBrowserWithWebContents(owner()->GetWebContents())) {
   // TODO(pkasting,marja): Once InfoBars own they delegates, this is not needed
   // any more. Then we can rely on delegates getting destroyed, and we can
   // initiate the session storage scavenging only in the destructor. (Currently,

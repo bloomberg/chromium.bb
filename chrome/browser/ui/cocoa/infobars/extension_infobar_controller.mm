@@ -150,7 +150,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
     extensions::ExtensionHost* extensionHost =
         delegate_->AsExtensionInfoBarDelegate()->extension_host();
     Browser* browser =
-        browser::FindBrowserWithWebContents(owner->GetWebContents());
+        chrome::FindBrowserWithWebContents(owner->GetWebContents());
     contextMenu_.reset([[ExtensionActionContextMenu alloc]
         initWithExtension:extensionHost->extension()
                   browser:browser

@@ -280,7 +280,7 @@ void BrowsingHistoryHandler::HandleClearBrowsingData(const ListValue* args) {
 #else
   // TODO(beng): This is an improper direct dependency on Browser. Route this
   // through some sort of delegate.
-  Browser* browser = browser::FindBrowserWithWebContents(
+  Browser* browser = chrome::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
   chrome::ShowClearBrowsingDataDialog(browser);
 #endif

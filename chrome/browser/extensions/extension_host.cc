@@ -438,7 +438,7 @@ void ExtensionHost::WebIntentDispatch(
   scoped_ptr<content::WebIntentsDispatcher> dispatcher(intents_dispatcher);
 
   Browser* browser = view() ? view()->browser()
-      : browser::FindBrowserWithWebContents(web_contents);
+      : chrome::FindBrowserWithWebContents(web_contents);
 
   // For background scripts/pages, there will be no view(). In this case, we
   // want to treat the intent as a browser-initiated one and deliver it into the

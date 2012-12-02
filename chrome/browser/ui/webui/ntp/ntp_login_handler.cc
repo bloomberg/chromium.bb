@@ -129,7 +129,7 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
   std::string username = profile->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername);
   content::WebContents* web_contents = web_ui()->GetWebContents();
-  Browser* browser = browser::FindBrowserWithWebContents(web_contents);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser)
     return;
 
@@ -186,7 +186,7 @@ void NTPLoginHandler::HandleLoginMessageSeen(const ListValue* args) {
 
 void NTPLoginHandler::HandleShowAdvancedLoginUI(const ListValue* args) {
   Browser* browser =
-      browser::FindBrowserWithWebContents(web_ui()->GetWebContents());
+      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
   if (browser)
     chrome::ShowSyncSetup(browser, SyncPromoUI::SOURCE_NTP_LINK);
 }

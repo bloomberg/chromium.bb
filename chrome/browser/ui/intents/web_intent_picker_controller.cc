@@ -556,7 +556,7 @@ void WebIntentPickerController::OnSendReturnMessage(
 
   if (service_tab_ &&
       reply_type != webkit_glue::WEB_INTENT_SERVICE_CONTENTS_CLOSED) {
-    Browser* browser = browser::FindBrowserWithWebContents(service_tab_);
+    Browser* browser = chrome::FindBrowserWithWebContents(service_tab_);
     if (browser) {
       int index = browser->tab_strip_model()->GetIndexOfWebContents(
           service_tab_);
@@ -565,7 +565,7 @@ void WebIntentPickerController::OnSendReturnMessage(
 
       // Activate source tab.
       Browser* source_browser =
-          browser::FindBrowserWithWebContents(web_contents_);
+          chrome::FindBrowserWithWebContents(web_contents_);
       if (source_browser) {
         int source_index = source_browser->tab_strip_model()->
             GetIndexOfWebContents(web_contents_);
@@ -807,13 +807,13 @@ void WebIntentPickerController::LocationBarPickerButtonClicked() {
   DCHECK(web_contents_);
   if (window_disposition_source_ && source_intents_dispatcher_) {
     Browser* service_browser =
-        browser::FindBrowserWithWebContents(web_contents_);
+        chrome::FindBrowserWithWebContents(web_contents_);
     if (!service_browser) return;
 
     TabContents* client_tab =
         TabContents::FromWebContents(window_disposition_source_);
     Browser* client_browser =
-        browser::FindBrowserWithWebContents(window_disposition_source_);
+        chrome::FindBrowserWithWebContents(window_disposition_source_);
     if (!client_browser || !client_tab) return;
     int client_index =
         client_browser->tab_strip_model()->GetIndexOfTabContents(client_tab);

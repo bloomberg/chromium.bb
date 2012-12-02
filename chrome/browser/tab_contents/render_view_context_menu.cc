@@ -1028,7 +1028,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       if (source_web_contents_->GetController().GetActiveEntry() == NULL)
         return false;
       // Disabled if no browser is associated (e.g. desktop notifications).
-      if (browser::FindBrowserWithWebContents(source_web_contents_) == NULL)
+      if (chrome::FindBrowserWithWebContents(source_web_contents_) == NULL)
         return false;
       return true;
 
@@ -1218,7 +1218,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return true;
     case IDC_CONTENT_CONTEXT_VIEWFRAMEINFO:
       // Disabled if no browser is associated (e.g. desktop notifications).
-      if (browser::FindBrowserWithWebContents(source_web_contents_) == NULL)
+      if (chrome::FindBrowserWithWebContents(source_web_contents_) == NULL)
         return false;
       return true;
 
@@ -1353,7 +1353,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
   switch (id) {
     case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB: {
       Browser* browser =
-          browser::FindBrowserWithWebContents(source_web_contents_);
+          chrome::FindBrowserWithWebContents(source_web_contents_);
       OpenURL(
           params_.link_url,
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
@@ -1585,7 +1585,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       NavigationController* controller = &source_web_contents_->GetController();
       NavigationEntry* nav_entry = controller->GetActiveEntry();
       Browser* browser =
-          browser::FindBrowserWithWebContents(source_web_contents_);
+          chrome::FindBrowserWithWebContents(source_web_contents_);
       chrome::ShowPageInfo(browser, source_web_contents_, nav_entry->GetURL(),
                            nav_entry->GetSSL(), true);
       break;
@@ -1625,7 +1625,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_VIEWFRAMEINFO: {
-      Browser* browser = browser::FindBrowserWithWebContents(
+      Browser* browser = chrome::FindBrowserWithWebContents(
           source_web_contents_);
       chrome::ShowPageInfo(browser, source_web_contents_, params_.frame_url,
                            params_.security_info, false);

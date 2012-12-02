@@ -670,7 +670,7 @@ void TranslateManager::RevertTranslation(WebContents* web_contents) {
 void TranslateManager::ReportLanguageDetectionError(WebContents* web_contents) {
   UMA_HISTOGRAM_COUNTS("Translate.ReportLanguageDetectionError", 1);
   // We'll open the URL in a new tab so that the user can tell us more.
-  Browser* browser = browser::FindBrowserWithWebContents(web_contents);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser) {
     NOTREACHED();
     return;

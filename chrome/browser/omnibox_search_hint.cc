@@ -221,7 +221,7 @@ void OmniboxSearchHint::ShowInfoBar() {
 }
 
 void OmniboxSearchHint::ShowEnteringQuery() {
-  LocationBar* location_bar = browser::FindBrowserWithWebContents(
+  LocationBar* location_bar = chrome::FindBrowserWithWebContents(
       web_contents_)->window()->GetLocationBar();
   OmniboxView* omnibox_view = location_bar->GetLocationEntry();
   location_bar->FocusLocation(true);

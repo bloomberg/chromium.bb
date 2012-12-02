@@ -101,7 +101,7 @@
     return;
   }
 
-  Browser* browser = browser::FindBrowserWithWebContents(
+  Browser* browser = chrome::FindBrowserWithWebContents(
       picker_->web_contents());
   webContents_.reset(picker_->delegate()->CreateWebContentsForInlineDisposition(
           browser->profile(), url));

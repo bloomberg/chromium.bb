@@ -966,7 +966,7 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
   bool create_box_checked;
 
   Browser* browser =
-      browser::FindBrowserWithWebContents(web_ui()->GetWebContents());
+      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
   chrome::HostDesktopType desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
   if (browser)
     desktop_type = browser->host_desktop_type();

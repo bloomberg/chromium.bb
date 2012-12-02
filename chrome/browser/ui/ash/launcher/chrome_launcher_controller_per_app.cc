@@ -429,7 +429,7 @@ void ChromeLauncherControllerPerApp::ActivateApp(const std::string& app_id,
       TabContents* tab = *tab_i;
       const GURL tab_url = tab->web_contents()->GetURL();
       if (refocus_pattern.MatchesURL(tab_url)) {
-        Browser* browser = browser::FindBrowserWithWebContents(
+        Browser* browser = chrome::FindBrowserWithWebContents(
             tab->web_contents());
         TabStripModel* tab_strip = browser->tab_strip_model();
         int index = tab_strip->GetIndexOfTabContents(tab);
@@ -1056,7 +1056,7 @@ ash::LauncherID ChromeLauncherControllerPerApp::InsertAppLauncherItem(
 
   TabContents* active_tab = GetLastActiveTabContents(app_id);
   if (active_tab) {
-    Browser* browser = browser::FindBrowserWithWebContents(
+    Browser* browser = chrome::FindBrowserWithWebContents(
         active_tab->web_contents());
     DCHECK(browser);
     if (browser->window()->IsActive())

@@ -290,9 +290,9 @@ bool OneClickInfoBarDelegateImpl::Accept() {
   // this profile.
   DisableOneClickSignIn();
   content::WebContents* web_contents = owner()->GetWebContents();
-  Browser* browser = browser::FindBrowserWithWebContents(web_contents);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   RecordHistogramAction(one_click_signin::HISTOGRAM_ACCEPTED);
-  browser::FindBrowserWithWebContents(web_contents)->window()->
+  chrome::FindBrowserWithWebContents(web_contents)->window()->
       ShowOneClickSigninBubble(base::Bind(&StartSync, browser,
                                           OneClickSigninHelper::NO_AUTO_ACCEPT,
                                           session_index_, email_, password_));
@@ -705,7 +705,7 @@ void OneClickSigninHelper::DidStopLoading(
     return;
 
   content::WebContents* contents = web_contents();
-  Browser* browser = browser::FindBrowserWithWebContents(contents);
+  Browser* browser = chrome::FindBrowserWithWebContents(contents);
   InfoBarTabHelper* infobar_tab_helper =
       InfoBarTabHelper::FromWebContents(contents);
 

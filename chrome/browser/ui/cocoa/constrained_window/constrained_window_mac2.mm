@@ -64,7 +64,7 @@ gfx::NativeWindow ConstrainedWindowMac2::GetNativeWindow() {
 }
 
 bool ConstrainedWindowMac2::CanShowConstrainedWindow() {
-  Browser* browser = browser::FindBrowserWithWebContents(web_contents_);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   if (!browser)
     return true;
   return !browser->window()->IsInstantTabShowing();
@@ -73,7 +73,7 @@ bool ConstrainedWindowMac2::CanShowConstrainedWindow() {
 NSWindow* ConstrainedWindowMac2::GetParentWindow() const {
   // Tab contents in a tabbed browser may not be inside a window. For this
   // reason use a browser window if possible.
-  Browser* browser = browser::FindBrowserWithWebContents(web_contents_);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   if (browser)
     return browser->window()->GetNativeWindow();
 

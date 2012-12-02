@@ -301,14 +301,14 @@ void HelpHandler::RelaunchNow(const ListValue* args) {
 
 void HelpHandler::OpenFeedbackDialog(const ListValue* args) {
   DCHECK(args->empty());
-  Browser* browser = browser::FindBrowserWithWebContents(
+  Browser* browser = chrome::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
   chrome::OpenFeedbackDialog(browser);
 }
 
 void HelpHandler::OpenHelpPage(const base::ListValue* args) {
   DCHECK(args->empty());
-  Browser* browser = browser::FindBrowserWithWebContents(
+  Browser* browser = chrome::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
   chrome::ShowHelp(browser, chrome::HELP_SOURCE_WEBUI);
 }

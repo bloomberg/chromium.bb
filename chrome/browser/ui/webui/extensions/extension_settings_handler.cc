@@ -753,7 +753,7 @@ void ExtensionSettingsHandler::HandleOptionsMessage(const ListValue* args) {
     return;
   extensions::ExtensionSystem::Get(Profile::FromWebUI(web_ui()))->
       process_manager()->OpenOptionsPage(extension,
-          browser::FindBrowserWithWebContents(web_ui()->GetWebContents()));
+          chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()));
 }
 
 void ExtensionSettingsHandler::HandleShowButtonMessage(const ListValue* args) {
@@ -952,7 +952,7 @@ ExtensionUninstallDialog*
 ExtensionSettingsHandler::GetExtensionUninstallDialog() {
 #if !defined(OS_ANDROID)
   if (!extension_uninstall_dialog_.get()) {
-    Browser* browser = browser::FindBrowserWithWebContents(
+    Browser* browser = chrome::FindBrowserWithWebContents(
         web_ui()->GetWebContents());
     extension_uninstall_dialog_.reset(
         ExtensionUninstallDialog::Create(browser, this));

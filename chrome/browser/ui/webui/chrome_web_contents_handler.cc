@@ -40,7 +40,7 @@ WebContents* ChromeWebContentsHandler::OpenURLFromTab(
 
   chrome::HostDesktopType desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
   if (source) {
-    Browser* source_browser = browser::FindBrowserWithWebContents(source);
+    Browser* source_browser = chrome::FindBrowserWithWebContents(source);
     if (source_browser)
       desktop_type = source_browser->host_desktop_type();
   }
@@ -91,7 +91,7 @@ void ChromeWebContentsHandler::AddNewContents(
 
   chrome::HostDesktopType desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
   if (source) {
-    Browser* source_browser = browser::FindBrowserWithWebContents(source);
+    Browser* source_browser = chrome::FindBrowserWithWebContents(source);
     if (source_browser)
       desktop_type = source_browser->host_desktop_type();
   }

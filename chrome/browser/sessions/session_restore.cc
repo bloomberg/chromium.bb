@@ -277,7 +277,7 @@ void TabLoader::LoadNextTab() {
     tab->LoadIfNecessary();
     content::WebContents* contents = tab->GetWebContents();
     if (contents) {
-      Browser* browser = browser::FindBrowserWithWebContents(contents);
+      Browser* browser = chrome::FindBrowserWithWebContents(contents);
       if (browser && chrome::GetActiveWebContents(browser) != contents) {
         // By default tabs are marked as visible. As only the active tab is
         // visible we need to explicitly tell non-active tabs they are hidden.
@@ -1173,7 +1173,7 @@ void SessionRestore::RestoreForeignSessionTab(
     content::WebContents* source_web_contents,
     const SessionTab& tab,
     WindowOpenDisposition disposition) {
-  Browser* browser = browser::FindBrowserWithWebContents(source_web_contents);
+  Browser* browser = chrome::FindBrowserWithWebContents(source_web_contents);
   Profile* profile = browser->profile();
   std::vector<GURL> gurls;
   SessionRestoreImpl restorer(profile, browser, true, false, false, gurls);

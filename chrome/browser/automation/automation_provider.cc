@@ -471,7 +471,7 @@ Browser* AutomationProvider::FindAndActivateTab(
   content::WebContentsDelegate* d = controller->GetWebContents()->GetDelegate();
   if (d)
     d->ActivateContents(controller->GetWebContents());
-  return browser::FindBrowserWithWebContents(controller->GetWebContents());
+  return chrome::FindBrowserWithWebContents(controller->GetWebContents());
 }
 
 void AutomationProvider::HandleFindRequest(
