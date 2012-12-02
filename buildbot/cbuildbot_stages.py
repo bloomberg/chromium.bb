@@ -1451,6 +1451,7 @@ class SDKTestStage(bs.BuilderStage):
     cros_build_lib.RunCommand(cmd, cwd=self._build_root)
 
     for board in self._boards:
+      cros_build_lib.PrintBuildbotStepText(board)
       cmd = new_chroot_cmd + ['--', './setup_board',
           '--board', board, '--skip_chroot_upgrade']
       cros_build_lib.RunCommand(cmd, cwd=self._build_root)
