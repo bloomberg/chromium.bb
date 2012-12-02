@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/navigation_details.h"
 
 namespace extensions {
 
@@ -40,7 +41,7 @@ void ScriptBubbleController::OnScriptsExecuted(
     // those are effectively not installed from the user's point of view.
     const Extension* extension =
         extension_service->extensions()->GetByID(i->first);
-    if (extension->ShouldDisplayInExtensionSettings())
+    if (extension && extension->ShouldDisplayInExtensionSettings())
       changed |= extensions_running_scripts_.insert(i->first).second;
   }
 
@@ -51,8 +52,16 @@ void ScriptBubbleController::OnScriptsExecuted(
 void ScriptBubbleController::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
+  if (!details.is_navigation_to_different_page())
+    return;
   extensions_running_scripts_.clear();
   UpdateScriptBubble();
+}
+
+void ScriptBubbleController::OnExtensionUnloaded(
+    const std::string& extension_id) {
+  if (extensions_running_scripts_.erase(extension_id) == 1)
+    UpdateScriptBubble();
 }
 
 Profile* ScriptBubbleController::profile() const {

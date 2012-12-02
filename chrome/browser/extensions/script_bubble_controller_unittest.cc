@@ -46,7 +46,6 @@ class ScriptBubbleControllerTest : public ChromeRenderViewHostTestHarness {
     extension_service_ = static_cast<TestExtensionSystem*>(
         ExtensionSystem::Get(profile))->CreateExtensionService(
             &command_line, FilePath(), false);
-    extension_service_->component_loader()->AddScriptBubble();
     extension_service_->Init();
 
     TabHelper::CreateForWebContents(web_contents());
@@ -106,17 +105,9 @@ TEST_F(ScriptBubbleControllerTest, Basics) {
   extension_service_->AddExtension(extension2);
   extension_service_->AddExtension(extension3);
 
-  const Extension* script_bubble =
-      extension_service_->component_loader()->GetScriptBubble();
-  ExtensionAction* script_bubble_action =
-      ExtensionActionManager::Get(profile())->GetPageAction(*script_bubble);
-  ASSERT_TRUE(script_bubble_action);
-
-  // By default, the bubble should be invisible.
-  NavigateAndCommit(GURL("http://www.google.com"));
-  EXPECT_FALSE(script_bubble_action->GetIsVisible(tab_id()));
-  EXPECT_EQ("", script_bubble_action->GetBadgeText(tab_id()));
   EXPECT_EQ(0u, script_bubble_controller_->extensions_running_scripts().size());
+
+  NavigateAndCommit(GURL("http://www.google.com"));
 
   // Running a script on the tab causes the bubble to be visible.
   TabHelper::ScriptExecutionObserver::ExecutingScriptsMap executing_scripts;
@@ -126,8 +117,6 @@ TEST_F(ScriptBubbleControllerTest, Basics) {
       executing_scripts,
       web_contents()->GetController().GetActiveEntry()->GetPageID(),
       web_contents()->GetController().GetActiveEntry()->GetURL());
-  // TODO(finnur): Figure out visibility test.
-  // EXPECT_TRUE(script_bubble_action->GetIsVisible(tab_id()));
   EXPECT_EQ(1u, script_bubble_controller_->extensions_running_scripts().size());
   std::set<std::string> extension_ids;
   extension_ids.insert(extension1->id());
@@ -143,7 +132,6 @@ TEST_F(ScriptBubbleControllerTest, Basics) {
       executing_scripts,
       web_contents()->GetController().GetActiveEntry()->GetPageID(),
       web_contents()->GetController().GetActiveEntry()->GetURL());
-  // EXPECT_TRUE(script_bubble_action->GetIsVisible(tab_id()));
   EXPECT_EQ(2u, script_bubble_controller_->extensions_running_scripts().size());
   extension_ids.insert(extension2->id());
   EXPECT_TRUE(extension_ids ==
@@ -158,7 +146,6 @@ TEST_F(ScriptBubbleControllerTest, Basics) {
       executing_scripts,
       web_contents()->GetController().GetActiveEntry()->GetPageID(),
       web_contents()->GetController().GetActiveEntry()->GetURL());
-  // EXPECT_TRUE(script_bubble_action->GetIsVisible(tab_id()));
   EXPECT_EQ(2u, script_bubble_controller_->extensions_running_scripts().size());
 
   // Running tabs.executeScript from an already-seen extension does not affect
@@ -167,7 +154,6 @@ TEST_F(ScriptBubbleControllerTest, Basics) {
   executing_scripts[extension1->id()] = std::set<std::string>();
   script_bubble_controller_->OnScriptsExecuted(
       web_contents(), executing_scripts, 0, GURL());
-  // EXPECT_TRUE(script_bubble_action->GetIsVisible(tab_id()));
   EXPECT_EQ(2u, script_bubble_controller_->extensions_running_scripts().size());
 
   // Running tabs.executeScript from a new extension increments the count.
@@ -175,14 +161,11 @@ TEST_F(ScriptBubbleControllerTest, Basics) {
   executing_scripts[extension3->id()] = std::set<std::string>();
   script_bubble_controller_->OnScriptsExecuted(
       web_contents(), executing_scripts, 0, GURL());
-  // EXPECT_TRUE(script_bubble_action->GetIsVisible(tab_id()));
-  extension_ids.insert(extension3->id());
   EXPECT_EQ(3u, script_bubble_controller_->extensions_running_scripts().size());
 
   // Navigating away resets the badge.
   NavigateAndCommit(GURL("http://www.google.com"));
-  EXPECT_FALSE(script_bubble_action->GetIsVisible(tab_id()));
-  EXPECT_EQ("", script_bubble_action->GetBadgeText(tab_id()));
+  EXPECT_EQ(0u, script_bubble_controller_->extensions_running_scripts().size());
 };
 
 }  // namespace

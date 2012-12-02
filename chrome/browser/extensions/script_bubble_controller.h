@@ -43,6 +43,8 @@ class ScriptBubbleController
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
 
+  void OnExtensionUnloaded(const std::string& extension_id);
+
  private:
   // Helper to get the profile of the web contents we're associated with.
   Profile* profile() const;

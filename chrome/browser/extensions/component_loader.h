@@ -84,13 +84,6 @@ class ComponentLoader {
   // Reloads a registered component extension.
   void Reload(const std::string& extension_id);
 
-  // Adds the "Script Bubble" component extension, which puts an icon in the
-  // omnibox indiciating the number of extensions running script in a tab.
-  void AddScriptBubble();
-
-  // Returns the extension previously added by AddScriptBubble(), if any.
-  const Extension* GetScriptBubble() const;
-
  private:
   // Information about a registered component extension.
   struct ComponentExtensionInfo {
@@ -135,8 +128,6 @@ class ComponentLoader {
   RegisteredComponentExtensions component_extensions_;
 
   PrefChangeRegistrar pref_change_registrar_;
-
-  std::string script_bubble_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentLoader);
 };

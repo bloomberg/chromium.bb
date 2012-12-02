@@ -38,19 +38,8 @@ std::vector<ExtensionAction*> PageActionController::GetCurrentActions() const {
   ExtensionActionManager* extension_action_manager =
       ExtensionActionManager::Get(profile());
 
-  // The script bubble, if present, is always first. This will make it show up
-  // last in the omnibox.
-  const Extension* script_bubble =
-      service->component_loader()->GetScriptBubble();
-  if (script_bubble)
-    current_actions.push_back(
-        extension_action_manager->GetPageAction(*script_bubble));
-
   for (ExtensionSet::const_iterator i = service->extensions()->begin();
        i != service->extensions()->end(); ++i) {
-    if (script_bubble && *i == script_bubble)
-      continue;
-
     ExtensionAction* action = extension_action_manager->GetPageAction(**i);
     if (action)
       current_actions.push_back(action);

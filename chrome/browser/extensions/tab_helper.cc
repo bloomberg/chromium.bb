@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -111,6 +112,10 @@ TabHelper::TabHelper(content::WebContents* web_contents)
                  content::NOTIFICATION_LOAD_STOP,
                  content::Source<NavigationController>(
                      &web_contents->GetController()));
+
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::NotificationService::AllSources());
 }
 
 TabHelper::~TabHelper() {
@@ -484,21 +489,34 @@ void TabHelper::GetApplicationInfo(int32 page_id) {
 void TabHelper::Observe(int type,
                         const content::NotificationSource& source,
                         const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_LOAD_STOP);
-  const NavigationController& controller =
-      *content::Source<NavigationController>(source).ptr();
-  DCHECK_EQ(controller.GetWebContents(), web_contents());
+  switch (type) {
+    case content::NOTIFICATION_LOAD_STOP: {
+      const NavigationController& controller =
+          *content::Source<NavigationController>(source).ptr();
+      DCHECK_EQ(controller.GetWebContents(), web_contents());
 
-  if (pending_web_app_action_ == UPDATE_SHORTCUT) {
-    // Schedule a shortcut update when web application info is available if
-    // last committed entry is not NULL. Last committed entry could be NULL
-    // when an interstitial page is injected (e.g. bad https certificate,
-    // malware site etc). When this happens, we abort the shortcut update.
-    NavigationEntry* entry = controller.GetLastCommittedEntry();
-    if (entry)
-      GetApplicationInfo(entry->GetPageID());
-    else
-      pending_web_app_action_ = NONE;
+      if (pending_web_app_action_ == UPDATE_SHORTCUT) {
+        // Schedule a shortcut update when web application info is available if
+        // last committed entry is not NULL. Last committed entry could be NULL
+        // when an interstitial page is injected (e.g. bad https certificate,
+        // malware site etc). When this happens, we abort the shortcut update.
+        NavigationEntry* entry = controller.GetLastCommittedEntry();
+        if (entry)
+          GetApplicationInfo(entry->GetPageID());
+        else
+          pending_web_app_action_ = NONE;
+      }
+      break;
+    }
+
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+      if (script_bubble_controller_.get()) {
+        script_bubble_controller_->OnExtensionUnloaded(
+            content::Details<extensions::UnloadedExtensionInfo>(
+                details)->extension->id());
+        break;
+      }
+    }
   }
 }
 

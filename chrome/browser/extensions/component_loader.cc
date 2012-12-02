@@ -20,7 +20,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -87,13 +86,6 @@ ComponentLoader::ComponentLoader(ExtensionServiceInterface* extension_service,
 
 ComponentLoader::~ComponentLoader() {
   ClearAllRegistered();
-}
-
-const Extension* ComponentLoader::GetScriptBubble() const {
-  if (script_bubble_id_.empty())
-    return NULL;
-
-  return extension_service_->extensions()->GetByID(script_bubble_id_);
 }
 
 void ComponentLoader::LoadAll() {
@@ -313,14 +305,6 @@ void ComponentLoader::AddChromeApp() {
 #endif
 }
 
-void ComponentLoader::AddScriptBubble() {
-  if (FeatureSwitch::script_bubble()->IsEnabled()) {
-    script_bubble_id_ =
-        Add(IDR_SCRIPT_BUBBLE_MANIFEST,
-            FilePath(FILE_PATH_LITERAL("script_bubble")));
-  }
-}
-
 // static
 void ComponentLoader::EnableBackgroundExtensionsForTesting() {
   enable_background_extensions_during_testing = true;
@@ -382,7 +366,6 @@ void ComponentLoader::AddDefaultComponentExtensions() {
   AddChromeApp();
 #endif
 
-  AddScriptBubble();
   AddDefaultComponentExtensionsWithBackgroundPages();
 }
 

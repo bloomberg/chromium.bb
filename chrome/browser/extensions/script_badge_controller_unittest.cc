@@ -203,7 +203,15 @@ TEST_F(ScriptBadgeControllerTest, FragmentNavigation) {
 
     EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
                 testing::ElementsAre());
+
+    // Should be zero, but ScriptBubbleController notifies updates via
+    // LocationBarController and causes an update here.
+#if defined(OS_MACOSX)
+    // Not enabled on mac yet
     EXPECT_EQ(0, location_bar_updated.events);
+#else
+    EXPECT_EQ(1, location_bar_updated.events);
+#endif
   }
 }
 
