@@ -46,6 +46,9 @@ const char kAshDisablePanelFitting[] = "ash-disable-panel-fitting";
 // Enable advanced gestures (e.g. for window management).
 const char kAshEnableAdvancedGestures[] = "ash-enable-advanced-gestures";
 
+// Enable workspace switching via a three finger vertical scroll.
+const char kAshEnableWorkspaceScrubbing[] = "ash-enable-workspace-scrubbing";
+
 #if defined(OS_LINUX)
 // Enable memory monitoring.
 const char kAshEnableMemoryMonitor[] = "ash-enable-memory-monitor";

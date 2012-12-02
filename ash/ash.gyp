@@ -403,6 +403,8 @@
         'wm/workspace/workspace.h',
         'wm/workspace/workspace_animations.cc',
         'wm/workspace/workspace_animations.h',
+        'wm/workspace/workspace_cycler.cc',
+        'wm/workspace/workspace_cycler.h',
         'wm/workspace/workspace_event_handler.cc',
         'wm/workspace/workspace_event_handler.h',
         'wm/workspace/workspace_layout_manager.cc',

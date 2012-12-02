@@ -53,6 +53,11 @@ class Workspace;
 // are maximized and restored they are reparented to the right Window.
 class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
  public:
+  enum CycleDirection {
+    CYCLE_NEXT,
+    CYCLE_PREVIOUS
+  };
+
   explicit WorkspaceManager(aura::Window* viewport);
   virtual ~WorkspaceManager();
 
@@ -77,6 +82,11 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
   // Returns the parent for |window|. This is invoked from StackingController
   // when a new Window is being added.
   aura::Window* GetParentForNewWindow(aura::Window* window);
+
+  // Called by the workspace cycler to activate the next workspace in
+  // |direction|. Returns false if there are no more workspaces to cycle
+  // to in |direction|.
+  bool CycleToWorkspace(CycleDirection direction);
 
   // Starts the animation that occurs on first login.
   void DoInitialAnimation();

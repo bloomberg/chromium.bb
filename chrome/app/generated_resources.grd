@@ -6726,11 +6726,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_ADVANCED_GESTURES_DESCRIPTION" desc="Title for the flag to enable advanced gestures.">
         Enables advanced gestures (e.g. 4-finger pinch to minimize window etc.).
       </message>
-      <message name="IDS_FLAGS_ENABLE_TAB_SCRUBBING_NAME" desc="Title for the flag to enable advanced gestures.">
+      <message name="IDS_FLAGS_ENABLE_TAB_SCRUBBING_NAME" desc="Title for the flag to enable tab scrubbing.">
         Enable tab scrubbing
       </message>
-      <message name="IDS_FLAGS_ENABLE_TAB_SCRUBBING_DESCRIPTION" desc="Title for the flag to enable advanced gestures.">
-        Enables tab switching via 3 finger scroll.
+      <message name="IDS_FLAGS_ENABLE_TAB_SCRUBBING_DESCRIPTION" desc="Description for the flag to enable tab scrubbing.">
+        Enables tab switching via 3 finger horizontal scroll.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_WORKSPACE_SCRUBBING_NAME" desc="Title for the flag to enable workspace scrubbing.">
+        Enable workspace scrubbing
+      </message>
+      <message name="IDS_FLAGS_ENABLE_WORKSPACE_SCRUBBING_DESCRIPTION" desc="Description for the flag to enable workspace scrubbing.">
+        Enables workspace switching via 3 finger vertical scroll.
       </message>
       <message name="IDS_FLAGS_ENABLE_IMMERSIVE_MODE_NAME" desc="Title for the flag to enable immersive mode.">
         Enable immersive windows

@@ -6,6 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/workspace_cycler.h"
 #include "ash/wm/workspace/workspace_manager.h"
 #include "base/command_line.h"
 #include "ui/aura/client/activation_client.h"
@@ -17,9 +18,14 @@ namespace ash {
 namespace internal {
 
 WorkspaceController::WorkspaceController(aura::Window* viewport)
-    : viewport_(viewport) {
+    : viewport_(viewport),
+      workspace_cycler_(NULL) {
   aura::RootWindow* root_window = viewport->GetRootWindow();
   workspace_manager_.reset(new WorkspaceManager(viewport));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAshEnableWorkspaceScrubbing)) {
+    workspace_cycler_.reset(new WorkspaceCycler(workspace_manager_.get()));
+  }
   aura::client::GetActivationClient(root_window)->AddObserver(this);
 }
 

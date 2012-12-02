@@ -262,6 +262,33 @@ Window* WorkspaceManager::GetParentForNewWindow(Window* window) {
   return desktop_workspace()->window();
 }
 
+bool WorkspaceManager::CycleToWorkspace(CycleDirection direction) {
+  aura::Window* active_window = wm::GetActiveWindow();
+  if (!active_workspace_->window()->Contains(active_window))
+    active_window = NULL;
+
+  Workspaces::const_iterator workspace_i(FindWorkspace(active_workspace_));
+  int workspace_offset = 0;
+  if (direction == CYCLE_PREVIOUS) {
+    workspace_offset = 1;
+    if (workspace_i == workspaces_.end() - 1)
+      return false;
+  } else {
+    workspace_offset = -1;
+    if (workspace_i == workspaces_.begin())
+      return false;
+  }
+
+  Workspaces::const_iterator next_workspace_i(workspace_i + workspace_offset);
+  SetActiveWorkspace(*next_workspace_i, SWITCH_OTHER, base::TimeDelta());
+
+  // The activation controller will pick a window from the just activated
+  // workspace to activate as a result of DeactivateWindow().
+  if (active_window)
+    wm::DeactivateWindow(active_window);
+  return true;
+}
+
 void WorkspaceManager::DoInitialAnimation() {
   if (active_workspace_->is_maximized()) {
     RootWindowController* root_controller = GetRootWindowController(
