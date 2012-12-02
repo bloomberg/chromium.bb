@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/window_modality_controller.h"
+#include "ui/views/corewm/window_modality_controller.h"
 
 #include <algorithm>
 
@@ -17,7 +17,8 @@
 #include "ui/views/corewm/window_animations.h"
 #include "ui/views/corewm/window_util.h"
 
-namespace ash {
+namespace views {
+namespace corewm {
 
 // Transient child's modal parent.
 extern const aura::WindowProperty<aura::Window*>* const kModalParentKey;
@@ -80,14 +81,12 @@ aura::Window* GetModalTransient(aura::Window* window) {
 
   // We always want to check the for the transient child of the activatable
   // window.
-  aura::Window* activatable = views::corewm::GetActivatableWindow(window);
+  aura::Window* activatable = GetActivatableWindow(window);
   if (!activatable)
     return NULL;
 
   return GetModalTransientChild(activatable, window);
 }
-
-namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowModalityController, public:
@@ -150,11 +149,10 @@ bool WindowModalityController::ProcessLocatedEvent(aura::Window* target,
   aura::Window* modal_transient_child = GetModalTransient(target);
   if (modal_transient_child && (event->type() == ui::ET_MOUSE_PRESSED ||
                                 event->type() == ui::ET_TOUCH_PRESSED)) {
-    views::corewm::AnimateWindow(modal_transient_child,
-                                 views::corewm::WINDOW_ANIMATION_TYPE_BOUNCE);
+    AnimateWindow(modal_transient_child, WINDOW_ANIMATION_TYPE_BOUNCE);
   }
   return !!modal_transient_child;
 }
 
-}  // namespace internal
-}  // namespace ash
+}  // namespace corewm
+}  // namespace views

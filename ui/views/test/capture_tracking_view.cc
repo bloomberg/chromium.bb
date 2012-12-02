@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/test/capture_tracking_view.h"
+#include "ui/views/test/capture_tracking_view.h"
 
-namespace ash {
+namespace views {
 namespace test {
 
 CaptureTrackingView::CaptureTrackingView()
@@ -25,4 +25,4 @@ void CaptureTrackingView::OnMouseCaptureLost() {
 }
 
 }  // namespace test
-}  // namespace ash
+}  // namespace views

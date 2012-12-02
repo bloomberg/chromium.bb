@@ -8,9 +8,9 @@
 #include "ash/shell.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/property_util.h"
-#include "ash/wm/window_modality_controller.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
+#include "ui/views/corewm/window_modality_controller.h"
 
 namespace ash {
 namespace internal {
@@ -29,7 +29,8 @@ AshActivationController::~AshActivationController() {
 
 aura::Window* AshActivationController::WillActivateWindow(
     aura::Window* window) {
-  aura::Window* window_modal_transient = GetModalTransient(window);
+  aura::Window* window_modal_transient =
+      views::corewm::GetModalTransient(window);
   if (window_modal_transient)
     return window_modal_transient;
 
@@ -69,7 +70,8 @@ aura::Window* AshActivationController::WillActivateWindow(
 
 aura::Window* AshActivationController::WillFocusWindow(
     aura::Window* window) {
-  aura::Window* window_modal_transient = GetModalTransient(window);
+  aura::Window* window_modal_transient =
+      views::corewm::GetModalTransient(window);
   if (window_modal_transient)
     return window_modal_transient;
   return window;

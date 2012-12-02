@@ -57,8 +57,10 @@
 #endif
 
 #if defined(USE_AURA)
+#include "ui/aura/window.h"
 #include "ui/views/corewm/visibility_controller.h"
 #include "ui/views/corewm/window_animations.h"
+#include "ui/views/corewm/window_modality_controller.h"
 #endif
 
 #if defined(USE_ASH)
@@ -66,8 +68,6 @@
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/custom_frame_view_ash.h"
-#include "ash/wm/window_modality_controller.h"
-#include "ui/aura/window.h"
 #endif
 
 using base::TimeDelta;
@@ -632,8 +632,8 @@ ConstrainedWindowViews::ConstrainedWindowViews(
   constrained_window_tab_helper->AddConstrainedDialog(this);
 #if defined(USE_ASH)
   GetNativeWindow()->SetProperty(ash::kConstrainedWindowKey, true);
-  ash::SetModalParent(GetNativeWindow(),
-                      web_contents_->GetView()->GetNativeView());
+  views::corewm::SetModalParent(GetNativeWindow(),
+                                web_contents_->GetView()->GetNativeView());
 #endif
 }
 

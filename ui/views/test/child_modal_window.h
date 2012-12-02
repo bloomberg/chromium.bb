@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_TEST_CHILD_WMODAL_WINDOW_H_
-#define ASH_TEST_CHILD_WMODAL_WINDOW_H_
+#ifndef UI_VIEWS_TEST_CHILD_WMODAL_WINDOW_H_
+#define UI_VIEWS_TEST_CHILD_WMODAL_WINDOW_H_
 
 #include "ui/views/controls/button/button.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -15,16 +15,13 @@ class NativeViewHost;
 class Textfield;
 class View;
 class Widget;
-}
-
-namespace ash {
 namespace test {
 
 void CreateChildModalParent();
 
-class ChildModalParent : public views::WidgetDelegateView,
-                         public views::ButtonListener,
-                         public views::WidgetObserver {
+class ChildModalParent : public WidgetDelegateView,
+                         public ButtonListener,
+                         public WidgetObserver {
  public:
   ChildModalParent();
   virtual ~ChildModalParent();
@@ -34,46 +31,46 @@ class ChildModalParent : public views::WidgetDelegateView,
   gfx::NativeWindow GetChild() const;
 
  private:
-  views::Widget* CreateChild();
+  Widget* CreateChild();
 
-  // Overridden from views::WidgetDelegate:
-  virtual views::View* GetContentsView() OVERRIDE;
+  // Overridden from WidgetDelegate:
+  virtual View* GetContentsView() OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual bool CanResize() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child) OVERRIDE;
+                                    View* parent,
+                                    View* child) OVERRIDE;
 
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
+  // Overridden from ButtonListener:
+  virtual void ButtonPressed(Button* sender,
                              const ui::Event& event) OVERRIDE;
 
-  // Overridden from views::WidgetObserver:
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  // Overridden from WidgetObserver:
+  virtual void OnWidgetClosing(Widget* widget) OVERRIDE;
 
   // The button to toggle showing and hiding the child window. The child window
   // does not block input to this button.
-  views::NativeTextButton* button_;
+  NativeTextButton* button_;
 
   // The text field to indicate the keyboard focus.
-  views::Textfield* textfield_;
+  Textfield* textfield_;
 
   // The host for the modal parent.
-  views::NativeViewHost* host_;
+  NativeViewHost* host_;
 
   // The modal parent of the child window. The child window blocks input to this
   // view.
   gfx::NativeWindow modal_parent_;
 
   // The child window.
-  views::Widget* child_;
+  Widget* child_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildModalParent);
 };
 
 }  // namespace test
-}  // namespace ash
+}  // namespace views
 
-#endif  // ASH_TEST_CHILD_WMODAL_WINDOW_H_
+#endif  // UI_VIEWS_TEST_CHILD_WMODAL_WINDOW_H_

@@ -9,7 +9,6 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/capture_tracking_view.h"
 #include "ash/wm/window_util.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/root_window.h"
@@ -17,6 +16,7 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/test/capture_tracking_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -333,7 +333,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ChangeCapture) {
   views::Widget* widget =
       views::Widget::CreateWindowWithParent(new TestWindow(false), NULL);
   scoped_ptr<aura::Window> widget_window(widget->GetNativeView());
-  CaptureTrackingView* view = new CaptureTrackingView;
+  views::test::CaptureTrackingView* view = new views::test::CaptureTrackingView;
   widget->GetContentsView()->AddChildView(view);
   view->SetBoundsRect(widget->GetContentsView()->bounds());
   widget->Show();

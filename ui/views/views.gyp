@@ -265,6 +265,8 @@
         'corewm/visibility_controller.h',
         'corewm/window_animations.cc',
         'corewm/window_animations.h',
+        'corewm/window_modality_controller.cc',
+        'corewm/window_modality_controller.h',
         'corewm/window_util.cc',
         'corewm/window_util.h',
         'debug_utils.cc',
@@ -571,12 +573,29 @@
         '..',
       ],
       'sources': [
+        'test/capture_tracking_view.cc',
+        'test/capture_tracking_view.h',
+        'test/child_modal_window.cc',
+        'test/child_modal_window.h',
         'test/desktop_test_views_delegate.cc',
         'test/desktop_test_views_delegate.h',
         'test/test_views_delegate.cc',
         'test/test_views_delegate.h',
         'test/views_test_base.cc',
         'test/views_test_base.h',
+      ],
+      'conditions': [
+        ['use_aura==1', {
+          'dependencies': [
+            '../aura/aura.gyp:test_support_aura',
+            '../compositor/compositor.gyp:compositor',
+          ],
+        }, {  # use_aura==0
+          'sources!': [
+            'test/child_modal_window.cc',
+            'test/child_modal_window.h',
+          ],
+        }],
       ],
     },  # target_name: views_test_support
     {

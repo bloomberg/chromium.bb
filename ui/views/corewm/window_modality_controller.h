@@ -2,38 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WINDOW_MODALITY_CONTROLLER_H_
-#define ASH_WM_WINDOW_MODALITY_CONTROLLER_H_
+#ifndef UI_VIEWS_COREWM_WINDOW_MODALITY_CONTROLLER_H_
+#define UI_VIEWS_COREWM_WINDOW_MODALITY_CONTROLLER_H_
 
 #include <vector>
 
-#include "ash/ash_export.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/events/event_handler.h"
+#include "ui/views/views_export.h"
 
 namespace ui {
 class LocatedEvent;
 }
 
-namespace ash {
+namespace views {
+namespace corewm {
 
 // Sets the modal parent for the child.
-ASH_EXPORT void SetModalParent(aura::Window* child, aura::Window* parent);
+VIEWS_EXPORT void SetModalParent(aura::Window* child, aura::Window* parent);
 
 // Returns the modal transient child of |window|, or NULL if |window| does not
 // have any modal transient children.
-ASH_EXPORT aura::Window* GetModalTransient(aura::Window* window);
-
-namespace internal {
+VIEWS_EXPORT aura::Window* GetModalTransient(aura::Window* window);
 
 // WindowModalityController is an event filter that consumes events sent to
 // windows that are the transient parents of window-modal windows. This filter
 // must be added to the CompoundEventFilter so that activation works properly.
-class WindowModalityController : public ui::EventHandler,
-                                 public aura::EnvObserver,
-                                 public aura::WindowObserver {
+class VIEWS_EXPORT WindowModalityController : public ui::EventHandler,
+                                              public aura::EnvObserver,
+                                              public aura::WindowObserver {
  public:
   WindowModalityController();
   virtual ~WindowModalityController();
@@ -62,7 +61,7 @@ class WindowModalityController : public ui::EventHandler,
   DISALLOW_COPY_AND_ASSIGN(WindowModalityController);
 };
 
-}  // namespace internal
-}  // namespace ash
+}  // namespace corewm
+}  // namespace views
 
-#endif  // ASH_WM_WINDOW_MODALITY_CONTROLLER_H_
+#endif  // UI_VIEWS_COREWM_WINDOW_MODALITY_CONTROLLER_H_

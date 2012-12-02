@@ -60,7 +60,6 @@
 #include "ash/wm/video_detector.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_cycle_controller.h"
-#include "ash/wm/window_modality_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
@@ -87,6 +86,7 @@
 #include "ui/views/corewm/input_method_event_filter.h"
 #include "ui/views/corewm/shadow_controller.h"
 #include "ui/views/corewm/visibility_controller.h"
+#include "ui/views/corewm/window_modality_controller.h"
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
@@ -508,7 +508,8 @@ void Shell::Init() {
   visibility_controller_.reset(new AshVisibilityController);
   drag_drop_controller_.reset(new internal::DragDropController);
   user_action_client_.reset(delegate_->CreateUserActionClient());
-  window_modality_controller_.reset(new internal::WindowModalityController);
+  window_modality_controller_.reset(
+      new views::corewm::WindowModalityController);
   AddPreTargetHandler(window_modality_controller_.get());
 
   magnification_controller_.reset(

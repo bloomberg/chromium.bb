@@ -9,7 +9,6 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/activation_controller_delegate.h"
 #include "ash/wm/property_util.h"
-#include "ash/wm/window_modality_controller.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
@@ -23,6 +22,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
+#include "ui/views/corewm/window_modality_controller.h"
 
 namespace ash {
 namespace internal {

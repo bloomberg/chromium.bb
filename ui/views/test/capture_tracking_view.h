@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_TEST_CAPTURE_TRACKING_VIEW_
-#define ASH_TEST_CAPTURE_TRACKING_VIEW_
+#ifndef UI_VIEWS_TEST_CAPTURE_TRACKING_VIEW_
+#define UI_VIEWS_TEST_CAPTURE_TRACKING_VIEW_
 
 #include "base/compiler_specific.h"
 #include "ui/views/view.h"
 
-namespace ash {
+namespace views {
 namespace test {
 
 // Used to track OnMousePressed() and OnMouseCaptureLost().
@@ -38,6 +38,6 @@ class CaptureTrackingView : public views::View {
 };
 
 }  // namespace test
-}  // namespace ash
+}  // namespace views
 
-#endif  // ASH_TEST_CAPTURE_TRACKING_VIEW_
+#endif  // UI_VIEWS_TEST_CAPTURE_TRACKING_VIEW_

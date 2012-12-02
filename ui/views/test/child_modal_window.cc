@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/test/child_modal_window.h"
+#include "ui/views/test/child_modal_window.h"
 
-#include "ash/wm/window_modality_controller.h"
 #include "base/utf_string_conversions.h"  // ASCIIToUTF16
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
@@ -12,10 +11,11 @@
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/corewm/window_modality_controller.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-namespace ash {
+namespace views {
 namespace test {
 
 namespace {
@@ -46,24 +46,24 @@ const SkColor kChildColor = SK_ColorWHITE;
 }  // namespace
 
 void CreateChildModalParent() {
-  views::Widget::CreateWindowWithBounds(
+  Widget::CreateWindowWithBounds(
       new ChildModalParent,
       gfx::Rect(kWindowLeft, kWindowTop, kWindowWidth, kWindowHeight))->Show();
 }
 
 
-class ChildModalWindow : public views::WidgetDelegateView {
+class ChildModalWindow : public WidgetDelegateView {
  public:
   ChildModalWindow();
   virtual ~ChildModalWindow();
 
  private:
-  // Overridden from views::View:
+  // Overridden from View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
-  // Overridden from views::WidgetDelegate:
-  virtual views::View* GetContentsView() OVERRIDE;
+  // Overridden from WidgetDelegate:
+  virtual View* GetContentsView() OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual bool CanResize() const OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
@@ -72,7 +72,7 @@ class ChildModalWindow : public views::WidgetDelegateView {
 };
 
 ChildModalWindow::ChildModalWindow() {
-  views::Textfield* textfield = new views::Textfield;
+  Textfield* textfield = new Textfield;
   AddChildView(textfield);
   textfield->SetBounds(
       kChildTextfieldLeft, kChildTextfieldTop,
@@ -90,7 +90,7 @@ gfx::Size ChildModalWindow::GetPreferredSize() {
   return gfx::Size(kChildWindowWidth, kChildWindowHeight);
 }
 
-views::View* ChildModalWindow::GetContentsView() {
+View* ChildModalWindow::GetContentsView() {
   return this;
 }
 
@@ -107,17 +107,16 @@ ui::ModalType ChildModalWindow::GetModalType() const {
 }
 
 ChildModalParent::ChildModalParent()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(button_(new views::NativeTextButton(
+    : ALLOW_THIS_IN_INITIALIZER_LIST(button_(new NativeTextButton(
           this, ASCIIToUTF16("Show/Hide Child Modal Window")))),
-      textfield_(new views::Textfield),
-      host_(new views::NativeViewHost),
+      textfield_(new Textfield),
+      host_(new NativeViewHost),
       modal_parent_(NULL),
       child_(NULL) {
-  views::Widget* widget = new views::Widget;
-  widget->Init(
-      views::Widget::InitParams(views::Widget::InitParams::TYPE_CONTROL));
+  Widget* widget = new Widget;
+  widget->Init(Widget::InitParams(Widget::InitParams::TYPE_CONTROL));
   widget->GetRootView()->set_background(
-      views::Background::CreateSolidBackground(kModalParentColor));
+      Background::CreateSolidBackground(kModalParentColor));
   modal_parent_ = widget->GetNativeView();
   widget->GetNativeView()->SetName("ModalParent");
   AddChildView(button_);
@@ -144,16 +143,16 @@ gfx::NativeWindow ChildModalParent::GetChild() const {
   return NULL;
 }
 
-views::Widget* ChildModalParent::CreateChild() {
-  views::Widget* child = views::Widget::CreateWindowWithParent(
+Widget* ChildModalParent::CreateChild() {
+  Widget* child = Widget::CreateWindowWithParent(
       new ChildModalWindow, GetWidget()->GetNativeView());
-  ash::SetModalParent(child->GetNativeView(), GetModalParent());
+  corewm::SetModalParent(child->GetNativeView(), GetModalParent());
   child->AddObserver(this);
   child->GetNativeView()->SetName("ChildModalWindow");
   return child;
 }
 
-views::View* ChildModalParent::GetContentsView() {
+View* ChildModalParent::GetContentsView() {
   return this;
 }
 
@@ -183,15 +182,15 @@ void ChildModalParent::Layout() {
 }
 
 void ChildModalParent::ViewHierarchyChanged(bool is_add,
-                                            views::View* parent,
-                                            views::View* child) {
+                                            View* parent,
+                                            View* child) {
   if (is_add && child == this) {
     host_->Attach(modal_parent_);
     GetWidget()->GetNativeView()->SetName("Parent");
   }
 }
 
-void ChildModalParent::ButtonPressed(views::Button* sender,
+void ChildModalParent::ButtonPressed(Button* sender,
                                      const ui::Event& event) {
   if (sender == button_) {
     if (!child_)
@@ -203,7 +202,7 @@ void ChildModalParent::ButtonPressed(views::Button* sender,
   }
 }
 
-void ChildModalParent::OnWidgetClosing(views::Widget* widget) {
+void ChildModalParent::OnWidgetClosing(Widget* widget) {
   if (child_) {
     DCHECK_EQ(child_, widget);
     child_ = NULL;
@@ -211,4 +210,4 @@ void ChildModalParent::OnWidgetClosing(views::Widget* widget) {
 }
 
 }  // namespace test
-}  // namespace ash
+}  // namespace views

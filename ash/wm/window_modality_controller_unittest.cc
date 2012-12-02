@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/window_modality_controller.h"
+#include "ui/views/corewm/window_modality_controller.h"
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/capture_tracking_view.h"
-#include "ash/test/child_modal_window.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/event_generator.h"
@@ -15,6 +13,8 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/views/test/capture_tracking_view.h"
+#include "ui/views/test/child_modal_window.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -219,7 +219,7 @@ TEST_F(WindowModalityControllerTest, GetModalTransient) {
   w2->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
 
   aura::Window* wt;
-  wt = GetModalTransient(w1.get());
+  wt = views::corewm::GetModalTransient(w1.get());
   ASSERT_EQ(static_cast<aura::Window*>(NULL), wt);
 
   // Parent w2 to w1. It should get parented to the parent of w1.
@@ -228,12 +228,12 @@ TEST_F(WindowModalityControllerTest, GetModalTransient) {
   EXPECT_EQ(-2, w1->parent()->children().at(1)->id());
 
   // Request the modal transient window for w1, it should be w2.
-  wt = GetModalTransient(w1.get());
+  wt = views::corewm::GetModalTransient(w1.get());
   ASSERT_NE(static_cast<aura::Window*>(NULL), wt);
   EXPECT_EQ(-2, wt->id());
 
   // Request the modal transient window for w11, it should also be w2.
-  wt = GetModalTransient(w11.get());
+  wt = views::corewm::GetModalTransient(w11.get());
   ASSERT_NE(static_cast<aura::Window*>(NULL), wt);
   EXPECT_EQ(-2, wt->id());
 }
@@ -242,7 +242,7 @@ TEST_F(WindowModalityControllerTest, GetModalTransient) {
 TEST_F(WindowModalityControllerTest, ChangeCapture) {
   views::Widget* widget = views::Widget::CreateWindow(NULL);
   scoped_ptr<aura::Window> widget_window(widget->GetNativeView());
-  test::CaptureTrackingView* view = new test::CaptureTrackingView;
+  views::test::CaptureTrackingView* view = new views::test::CaptureTrackingView;
   widget->client_view()->AddChildView(view);
   widget->SetBounds(gfx::Rect(0, 0, 200, 200));
   view->SetBoundsRect(widget->client_view()->GetLocalBounds());
@@ -258,7 +258,8 @@ TEST_F(WindowModalityControllerTest, ChangeCapture) {
       views::Widget::CreateWindowWithParent(NULL, widget->GetNativeView());
   scoped_ptr<aura::Window> modal_window(modal_widget->GetNativeView());
   modal_window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
-  test::CaptureTrackingView* modal_view = new test::CaptureTrackingView;
+  views::test::CaptureTrackingView* modal_view =
+      new views::test::CaptureTrackingView;
   modal_widget->client_view()->AddChildView(modal_view);
   modal_widget->SetBounds(gfx::Rect(50, 50, 200, 200));
   modal_view->SetBoundsRect(modal_widget->client_view()->GetLocalBounds());
@@ -359,7 +360,7 @@ TEST_F(WindowModalityControllerTest, TouchEvent) {
 //   |child| window.
 // - Focus should follow the active window.
 TEST_F(WindowModalityControllerTest, ChildModal) {
-  test::ChildModalParent* delegate = new test::ChildModalParent;
+  views::test::ChildModalParent* delegate = new views::test::ChildModalParent;
   views::Widget* widget = views::Widget::CreateWindowWithBounds(
       delegate, gfx::Rect(0, 0, 400, 400));
   widget->Show();
@@ -418,7 +419,7 @@ TEST_F(WindowModalityControllerTest, ChildModal) {
 // Same as |ChildModal| test, but using |EventGenerator| rather than bypassing
 // it by calling |ActivateWindow|.
 TEST_F(WindowModalityControllerTest, ChildModalEventGenerator) {
-  test::ChildModalParent* delegate = new test::ChildModalParent;
+  views::test::ChildModalParent* delegate = new views::test::ChildModalParent;
   views::Widget* widget = views::Widget::CreateWindowWithBounds(
       delegate, gfx::Rect(0, 0, 400, 400));
   widget->Show();
@@ -532,7 +533,7 @@ TEST_F(WindowModalityControllerTest, ChildModalAncestor) {
   scoped_ptr<aura::Window> w4(
       CreateTestWindowInShellWithDelegate(&d, -2, gfx::Rect()));
   w4->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_CHILD);
-  SetModalParent(w4.get(), w2.get());
+  views::corewm::SetModalParent(w4.get(), w2.get());
   w1->AddTransientChild(w4.get());
 
   wm::ActivateWindow(w1.get());

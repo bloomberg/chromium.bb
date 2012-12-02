@@ -45,6 +45,7 @@ void TestActivationClient::ActivateWindow(Window* window) {
 
   RemoveActiveWindow(window);
   active_windows_.push_back(window);
+  window->parent()->StackChildAtTop(window);
   window->AddObserver(this);
 
   FOR_EACH_OBSERVER(client::ActivationChangeObserver,
