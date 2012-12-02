@@ -818,6 +818,13 @@
       ],
     },  # target_name: views_examples_lib
     {
+      'target_name': 'views_examples_exe',
+      'type': 'executable',
+      'sources': [
+        'examples/examples_main.cc',
+      ],
+    },  # target_name: views_examples_exe
+    {
       'target_name': 'views_examples_with_content_lib',
       'type': '<(component)',
       'dependencies': [
