@@ -447,6 +447,7 @@ TEST(connection_marshal_demarshal)
 
 	data.value.h = mkstemp(f);
 	assert(data.value.h >= 0);
+	unlink(f);
 	marshal_demarshal(&data, (void *) validate_demarshal_h,
 			  8, "h", data.value.h);
 
@@ -480,6 +481,7 @@ TEST(connection_marshal_alot)
 		strcpy(f, "/tmp/weston-tests-XXXXXX");
 		data.value.h = mkstemp(f);
 		assert(data.value.h >= 0);
+		unlink(f);
 		marshal_demarshal(&data, (void *) validate_demarshal_h,
 				  8, "h", data.value.h);
 	}
