@@ -1313,7 +1313,9 @@ DialogType.isModal = function(type) {
       if (!this.isGDataEnabled()) {
         if (pageLoading)
           this.show_();
-        this.directoryModel_.setupDefaultPath();
+        var leafName = path.substr(path.indexOf('/') + 1);
+        path = this.directoryModel_.getDefaultDirectory() + '/' + leafName;
+        this.finishSetupCurrentDirectory_(path, invokeHandlers);
         return;
       }
       var gdataPath = RootDirectory.GDATA;
