@@ -28,7 +28,7 @@
 #include <xkbcommon/xkbcommon.h>
 #include <wayland-server.h>
 
-#include "matrix.h"
+#include "../shared/matrix.h"
 #include "../shared/config-parser.h"
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])

@@ -7,7 +7,9 @@ libshared_la_SOURCES =				\
 	option-parser.c				\
 	config-parser.h				\
 	os-compatibility.c			\
-	os-compatibility.h
+	os-compatibility.h			\
+	matrix.c				\
+	matrix.h
 
 libshared_cairo_la_CFLAGS =			\
 	$(GCC_CFLAGS)				\

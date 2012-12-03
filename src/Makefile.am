@@ -32,8 +32,6 @@ weston_SOURCES =				\
 	workspaces-protocol.c			\
 	workspaces-server-protocol.h		\
 	util.c					\
-	matrix.c				\
-	matrix.h				\
 	gl-renderer.h				\
 	gl-renderer.c				\
 	noop-renderer.c				\

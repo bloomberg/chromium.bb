@@ -36,8 +36,8 @@ noinst_PROGRAMS = $(setbacklight) matrix-test
 
 matrix_test_SOURCES =				\
 	matrix-test.c				\
-	$(top_srcdir)/src/matrix.c		\
-	$(top_srcdir)/src/matrix.h
+	$(top_srcdir)/shared/matrix.c		\
+	$(top_srcdir)/shared/matrix.h
 matrix_test_LDADD = -lm -lrt
 
 setbacklight_SOURCES =				\

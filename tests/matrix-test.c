@@ -27,7 +27,7 @@
 #include <signal.h>
 #include <time.h>
 
-#include "matrix.h"
+#include "../shared/matrix.h"
 
 struct inverse_matrix {
 	double LU[16];		/* column-major */
