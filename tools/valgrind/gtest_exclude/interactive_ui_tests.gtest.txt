@@ -19,3 +19,14 @@ BrowserFocusTest.FocusTraversalOnInterstitial
 
 # Fails under Valgrind, see http://crbug.com/68068
 DevToolsSanityTest.TestPauseWhenScriptIsRunning
+
+# These tests time out under Valgrind, see http://crbug.com/163880
+BrowserFocusTest.FocusOnReload
+CommandsApiTest.Basic
+ExtensionApiTest.NotificationsHasPermissionManifest
+ExtensionCrashRecoveryTest.ReloadTabsWithBackgroundPage
+ExtensionCrashRecoveryTest.TwoExtensionsCrashBothAtOnce
+ExtensionCrashRecoveryTest.TwoExtensionsCrashFirst
+ExtensionCrashRecoveryTest.TwoExtensionsOneByOne
+FullscreenControllerInteractiveTest.TestTabExitsMouseLockOnNavigation
+OmniboxViewTest.Escape

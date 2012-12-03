@@ -354,6 +354,23 @@
 }
 
 {
+   benign race on Histogram::Add
+   ThreadSanitizer:Race
+   ...
+   fun:base::SampleVector::Accumulate
+   fun:base::Histogram::Add
+}
+
+{
+   benign race on Histogram::SnapshotSamples
+   ThreadSanitizer:Race
+   ...
+   fun:base::HistogramSamples::Add
+   fun:base::Histogram::SnapshotSampleVector
+   fun:base::Histogram::SnapshotSamples
+}
+
+{
   bug_62694 [benign races in Histogram in CookieMonster]
   ThreadSanitizer:Race
   ...
@@ -744,7 +761,7 @@
   bug_106196
   ThreadSanitizer:Race
   fun:tracked_objects::ThreadData::InitializeAndSetTrackingStatus
-  fun:ChildThread::OnSetProfilerStatus
+  fun:*ChildThread::OnSetProfilerStatus
   fun:DispatchToMethod
 }
 {
