@@ -195,8 +195,8 @@
           'type': 'none',
           'dependencies': [
             '../../third_party/android_tools/android_tools.gyp:android_gcm',
+            '../../third_party/guava/guava.gyp:guava_javalib',
             'cacheinvalidation_aidl_javalib',
-            'cacheinvalidation_guava_javalib',
             'cacheinvalidation_proto_java',
           ],
           'variables': {
@@ -220,18 +220,6 @@
             'src/java/com/google/ipc/invalidation/testing/android/InvalidationTest.aidl',
           ],
           'includes': [ '../../build/java_aidl.gypi' ],
-        },
-        # TODO(nyquist): Depend on guava from third_party/guava. See http://crbug.com/159873.
-        {
-          'target_name': 'cacheinvalidation_guava_javalib',
-          'type' : 'none',
-          'all_dependent_settings': {
-            'variables': {
-              'input_jars_paths' : [
-                'src/example-app-build/libs/guava-13.0.1.jar',
-              ],
-            }
-          }
         },
       ],
     }],
