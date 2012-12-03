@@ -425,7 +425,7 @@ marshal_demarshal(struct marshal_data *data,
 TEST(connection_marshal_demarshal)
 {
 	struct marshal_data data;
-	char f[] = "/tmp/weston-tests-XXXXXX";
+	char f[] = "/tmp/wayland-tests-XXXXXX";
 
 	setup_marshal_data(&data);
 
@@ -478,7 +478,7 @@ TEST(connection_marshal_alot)
 	 * for both regular data an fds. */
 
 	for (i = 0; i < 2000; i++) {
-		strcpy(f, "/tmp/weston-tests-XXXXXX");
+		strcpy(f, "/tmp/wayland-tests-XXXXXX");
 		data.value.h = mkstemp(f);
 		assert(data.value.h >= 0);
 		unlink(f);
