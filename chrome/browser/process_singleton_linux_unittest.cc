@@ -39,6 +39,17 @@ bool NotificationCallback(const CommandLine& command_line,
 
 class ProcessSingletonLinuxTest : public testing::Test {
  public:
+  // A ProcessSingleton exposing some protected methods for testing.
+  class TestableProcessSingleton : public ProcessSingleton {
+   public:
+    explicit TestableProcessSingleton(const FilePath& user_data_dir)
+        : ProcessSingleton(user_data_dir) {}
+    using ProcessSingleton::NotifyOtherProcessWithTimeout;
+    using ProcessSingleton::NotifyOtherProcessWithTimeoutOrCreate;
+    using ProcessSingleton::OverrideCurrentPidForTesting;
+    using ProcessSingleton::OverrideKillCallbackForTesting;
+  };
+
   ProcessSingletonLinuxTest()
       : kill_callbacks_(0),
         io_thread_(BrowserThread::IO),
@@ -99,14 +110,15 @@ class ProcessSingletonLinuxTest : public testing::Test {
     ASSERT_TRUE(helper->Run());
   }
 
-  ProcessSingleton* CreateProcessSingleton() {
-    return new ProcessSingleton(temp_dir_.path());
+  TestableProcessSingleton* CreateProcessSingleton() {
+    return new TestableProcessSingleton(temp_dir_.path());
   }
 
   ProcessSingleton::NotifyResult NotifyOtherProcess(
       bool override_kill,
       base::TimeDelta timeout) {
-    scoped_ptr<ProcessSingleton> process_singleton(CreateProcessSingleton());
+    scoped_ptr<TestableProcessSingleton> process_singleton(
+        CreateProcessSingleton());
     CommandLine command_line(CommandLine::ForCurrentProcess()->GetProgram());
     command_line.AppendArg("about:blank");
     if (override_kill) {
@@ -124,7 +136,8 @@ class ProcessSingletonLinuxTest : public testing::Test {
   ProcessSingleton::NotifyResult NotifyOtherProcessOrCreate(
       const std::string& url,
       base::TimeDelta timeout) {
-    scoped_ptr<ProcessSingleton> process_singleton(CreateProcessSingleton());
+    scoped_ptr<TestableProcessSingleton> process_singleton(
+        CreateProcessSingleton());
     CommandLine command_line(CommandLine::ForCurrentProcess()->GetProgram());
     command_line.AppendArg(url);
     return process_singleton->NotifyOtherProcessWithTimeoutOrCreate(
@@ -197,7 +210,7 @@ class ProcessSingletonLinuxTest : public testing::Test {
   base::WaitableEvent signal_event_;
 
   scoped_ptr<base::Thread> worker_thread_;
-  ProcessSingleton* process_singleton_on_thread_;
+  TestableProcessSingleton* process_singleton_on_thread_;
 
   std::vector<CommandLine::StringVector> callback_command_lines_;
 };
@@ -332,7 +345,8 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessOrCreate_DifferingHost) {
 TEST_F(ProcessSingletonLinuxTest, CreateFailsWithExistingBrowser) {
   CreateProcessSingletonOnThread();
 
-  scoped_ptr<ProcessSingleton> process_singleton(CreateProcessSingleton());
+  scoped_ptr<TestableProcessSingleton> process_singleton(
+      CreateProcessSingleton());
   process_singleton->OverrideCurrentPidForTesting(base::GetCurrentProcId() + 1);
   EXPECT_FALSE(process_singleton->Create(
                base::Bind(&NotificationCallback)));
@@ -342,7 +356,8 @@ TEST_F(ProcessSingletonLinuxTest, CreateFailsWithExistingBrowser) {
 // but with the old socket location.
 TEST_F(ProcessSingletonLinuxTest, CreateChecksCompatibilitySocket) {
   CreateProcessSingletonOnThread();
-  scoped_ptr<ProcessSingleton> process_singleton(CreateProcessSingleton());
+  scoped_ptr<TestableProcessSingleton> process_singleton(
+      CreateProcessSingleton());
   process_singleton->OverrideCurrentPidForTesting(base::GetCurrentProcId() + 1);
 
   // Do some surgery so as to look like the old configuration.

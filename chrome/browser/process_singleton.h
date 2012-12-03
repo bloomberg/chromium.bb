@@ -67,16 +67,6 @@ class ProcessSingleton : public base::NonThreadSafe {
   explicit ProcessSingleton(const FilePath& user_data_dir);
   ~ProcessSingleton();
 
-  // Notify another process, if available.
-  // Returns true if another process was found and notified, false if we
-  // should continue with this process.
-  // Windows code roughly based on Mozilla.
-  //
-  // TODO(brettw): this will not handle all cases. If two process start up too
-  // close to each other, the Create() might not yet have happened for the
-  // first one, so this function won't find it.
-  NotifyResult NotifyOtherProcess();
-
   // Notify another process, if available. Otherwise sets ourselves as the
   // singleton instance and stores the provided callback for notification from
   // future processes. Returns PROCESS_NONE if we became the singleton
@@ -84,20 +74,14 @@ class ProcessSingleton : public base::NonThreadSafe {
   NotifyResult NotifyOtherProcessOrCreate(
       const NotificationCallback& notification_callback);
 
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
-  // Exposed for testing.  We use a timeout on Linux, and in tests we want
-  // this timeout to be short.
-  NotifyResult NotifyOtherProcessWithTimeout(const CommandLine& command_line,
-                                             int timeout_seconds,
-                                             bool kill_unresponsive);
-  NotifyResult NotifyOtherProcessWithTimeoutOrCreate(
-      const CommandLine& command_line,
-      const NotificationCallback& notification_callback,
-      int timeout_seconds);
-  void OverrideCurrentPidForTesting(base::ProcessId pid);
-  void OverrideKillCallbackForTesting(const base::Callback<void(int)>& callback);
-  static void DisablePromptForTesting();
-#endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
+  // Sets ourself up as the singleton instance.  Returns true on success.  If
+  // false is returned, we are not the singleton instance and the caller must
+  // exit. Otherwise, stores the provided callback for notification from
+  // future processes.
+  // NOTE: Most callers should generally prefer NotifyOtherProcessOrCreate() to
+  // this method, only callers for whom failure is prefered to notifying another
+  // process should call this directly.
+  bool Create(const NotificationCallback& notification_callback);
 
 #if defined(OS_WIN)
   // Used in specific cases to let us know that there is an existing instance
@@ -109,13 +93,6 @@ class ProcessSingleton : public base::NonThreadSafe {
       return (NULL != remote_window_);
   }
 #endif  // defined(OS_WIN)
-
-  // Sets ourself up as the singleton instance.  Returns true on success.  If
-  // false is returned, we are not the singleton instance and the caller must
-  // exit. Otherwise, stores the provided callback for notification from
-  // future processes.
-  bool Create(
-      const NotificationCallback& notification_callback);
 
   // Clear any lock state during shutdown.
   void Cleanup();
@@ -147,6 +124,36 @@ class ProcessSingleton : public base::NonThreadSafe {
 #if defined(OS_WIN)
   LRESULT WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
 #endif
+
+#if defined(OS_LINUX) || defined(OS_OPENBSD)
+  static void DisablePromptForTesting();
+#endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
+
+ protected:
+  // Notify another process, if available.
+  // Returns true if another process was found and notified, false if we
+  // should continue with this process.
+  // Windows code roughly based on Mozilla.
+  //
+  // TODO(brettw): this will not handle all cases. If two processes start up too
+  // close to each other, the Create() might not yet have happened for the
+  // first one, so this function won't find it.
+  NotifyResult NotifyOtherProcess();
+
+#if defined(OS_LINUX) || defined(OS_OPENBSD)
+  // Exposed for testing.  We use a timeout on Linux, and in tests we want
+  // this timeout to be short.
+  NotifyResult NotifyOtherProcessWithTimeout(const CommandLine& command_line,
+                                             int timeout_seconds,
+                                            bool kill_unresponsive);
+  NotifyResult NotifyOtherProcessWithTimeoutOrCreate(
+      const CommandLine& command_line,
+      const NotificationCallback& notification_callback,
+      int timeout_seconds);
+  void OverrideCurrentPidForTesting(base::ProcessId pid);
+  void OverrideKillCallbackForTesting(
+      const base::Callback<void(int)>& callback);
+#endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
 
  private:
   typedef std::pair<CommandLine::StringVector, FilePath> DelayedStartupMessage;

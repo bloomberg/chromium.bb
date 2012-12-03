@@ -794,6 +794,8 @@ void CFUrlRequestUnittestRunner::PreMainMessageLoopRun() {
       base::Bind(
           &CFUrlRequestUnittestRunner::ProcessSingletonNotificationCallback,
           base::Unretained(this)));
+  // Call Create directly instead of NotifyOtherProcessOrCreate as failure is
+  // prefered to notifying another process here.
   if (!process_singleton_->Create(callback)) {
     LOG(FATAL) << "Failed to start up ProcessSingleton. Is another test "
                << "executable or Chrome Frame running?";
