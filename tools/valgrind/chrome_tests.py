@@ -317,6 +317,9 @@ class ChromeTests:
   def TestSync(self):
     return self.SimpleTest("chrome", "sync_unit_tests")
 
+  def TestLinuxSandbox(self):
+    return self.SimpleTest("sandbox", "sandbox_linux_unittests")
+
   def TestTestShell(self):
     return self.SimpleTest("webkit", "test_shell_tests")
 
@@ -526,6 +529,7 @@ class ChromeTests:
     "reliability": TestReliability, "reliability_tests": TestReliability,
     "remoting": TestRemoting,    "remoting_unittests": TestRemoting,
     "safe_browsing": TestSafeBrowsing, "safe_browsing_tests": TestSafeBrowsing,
+    "sandbox": TestLinuxSandbox, "sandbox_linux_unittests": TestLinuxSandbox,
     "sql": TestSql,              "sql_unittests": TestSql,
     "sync": TestSync,            "sync_unit_tests": TestSync,
     "sync_integration_tests": TestSyncIntegration,
