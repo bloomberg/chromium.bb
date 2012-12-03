@@ -117,19 +117,21 @@ def ConfigureTargetPrep(arch):
   config_target = arch + '-nacl'
   script_contents = """\
 #!/bin/sh
+mode=--strip-all
 for arg; do
   case "$arg" in
   -*) ;;
   *)
     type=`file --brief --mime-type "$arg"`
     case "$type" in
-      application/x-archive|application/x-object|application/x-executable) ;;
+      application/x-executable|application/x-sharedlib) ;;
+      application/x-archive|application/x-object) mode=--strip-debug ;;
       *) exit 0 ;;
     esac
     ;;
   esac
 done
-exec %s-strip --remove-section=.comment "$@"
+exec %s-strip $mode --remove-section=.comment "$@"
 """ % config_target
 
   return [
