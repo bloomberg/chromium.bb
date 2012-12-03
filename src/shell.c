@@ -2806,7 +2806,8 @@ hide_input_panels(struct wl_listener *listener, void *data)
 
 	shell->showing_input_panels = false;
 
-	wl_list_remove(&shell->input_panel_layer.link);
+	if (!shell->locked)
+		wl_list_remove(&shell->input_panel_layer.link);
 
 	wl_list_for_each_safe(surface, next,
 			      &shell->input_panel_layer.surface_list, layer_link)
