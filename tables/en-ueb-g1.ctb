@@ -1,0 +1,246 @@
+# liblouis: Unified English Braille Code (Grade 1)
+#
+#Based on English U.S. Grade 1
+#Modified by Joseph Lee <joseph.lee22590@gmail.com>
+#Used to display symbols, Unicode chars and other symbols used throughout uEB code.
+#
+#  This file is free software; you can redistribute it and/or modify it
+#   under the terms of the Lesser or Library GNU General Public License 
+#  as published by the
+#  Free Software Foundation; either version 3, or (at your option) any
+#  later version.
+# 
+#  This file is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#  Library GNU General Public License for more details.
+#
+#  You should have received a copy of the Library GNU General Public 
+#  License along with this program; see the file COPYING.  If not, write 
+#  to
+#  the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+#  Boston, MA 02110-1301, USA.
+#
+#  Maintained by John J. Boyer john.boyer@jjb-software.com
+
+include chardefs.cti All character definition opcodes
+
+# Braille indicators
+numsign 3456  number sign, just a dots operand
+capsign 6
+begcaps 6-6
+endcaps 6-3
+firstwordital 46-46
+lastworditalbefore 46
+lenitalphrase 4
+firstletterital 46-3
+lastletterital 46-36
+singleletterital 46-25
+firstwordbold 456-456
+lastwordboldbefore 456
+lenboldphrase 4
+begcomp 456-346
+endcomp 456-156
+
+# literary forms of the decimal digits
+litdigit 1 1
+litdigit 2 12
+litdigit 3 14
+litdigit 4 145
+litdigit 5 15
+litdigit 6 124
+litdigit 7 1245
+litdigit 8 125
+litdigit 9 24
+litdigit 0 245
+
+# Letters are defined in chardefs.cti
+
+# punctuation
+prepunc ( 5-126
+word ( 5-126
+always ( 5-126
+postpunc ) 5-345
+word ) 5-345
+always ) 5-345
+prepunc " 236
+postpunc " 356
+word " 5-236
+prepunc ` 56-6-356
+prepunc ' 3
+postpunc ' 3
+word ' 3
+word 'em = 
+word 'tis =
+word 'twas =
+begnum # 456-1456 print number sign before number
+midnum , 2
+postpunc , 2
+word , 2
+decpoint . 256
+midnum - 36
+hyphen - 36
+always \s--\s 36-36
+always \s-\s 36
+midnum \x00ad 36
+postpunc . 256
+word . 256
+postpunc ; 23
+word ; 23
+midnum : 25
+postpunc : 25
+always : 25
+postpunc ! 235
+always ! 235
+midnum / 456-34
+always / 456-34
+always // 456-34-456-34
+always < 4-126
+always = 5-2356
+always > 4-345
+always + 5-235
+postpunc ? 236
+word ? 56-236
+endnum st 34
+endnum nd 1345-145
+endnum rd 1235-145
+endnum 's 3-234
+endnum th 1456
+endnum 's 3-234
+always % 46-356
+midnum ^ 4-26
+always ^ 4-26
+always ~ 4-35
+always & 4-12346
+midnum * 5-35
+always * 5-35
+prepunc [ 46-126
+word [ 46-126
+always [ 46-126
+postpunc ] 46-345
+word ] 46-345
+always ] 46-345
+prepunc { 456-126
+word { 456-126
+always { 456-126
+postpunc } 456-345
+word } 456-345
+always } 456-345
+always @ 4
+always \\ 456-16
+always | 456-1256
+repeated \s 0
+repeated \t 0
+always \s-\s 36
+always ..." 256-256-256-356
+always ... 256-256-256
+always ...' 256-256-256-3
+repeated .... 0
+repeated ____ 46-36
+repeated ---- 36
+always .\s.\s." 256-256-256--356
+always .\s.\s. 256-256-256 . . .
+begnum $ 4-234
+always $ 4-234
+
+#Todo after grade 2 beta:
+#Unicode series 1: Greek and Latin alphabets.
+#Unicode series 2: symbols used in geometry, set theory and calculus.
+#Unicode series 3: superscripts and subscripts, electron shells and bonding and other chemistry symbols, engineering and advanced mathematical operators
+#Unicode series 4: Symbols used by transcribers.
+#Unicode series 5: Misc items, such as shapes, typeforms and fractional parts.
+
+#Unicode series 1: Greek and Latin scripts
+always α 46-1
+always β 46-12
+always δ 46-13
+always ε 46-15
+always φ 46-124
+always γ 46-1245
+always ι 46-24
+always κ 46-14
+always λ 46-123
+always μ 46-145
+always ν 46-1345
+always ο 46-135
+always π 46-1234
+always ρ 46-1235
+always σ 46-234
+always τ 46-2345
+always υ 46-136
+always ξ 46-1346
+always ψ 46-13456
+always ζ 46-1356
+always χ 46-12346
+always θ 46-1456
+always η 46-156
+always ω 46-2456
+Α
+Β
+Δ
+Ε
+Φ
+Γ
+Ι
+Κ
+Λ
+Μ
+Ν
+Ο
+Π
+Ρ
+Σ
+Τ
+Υ
+Ξ
+Ψ
+Ζ
+Χ
+Θ
+Η
+Ω
+Ȝ
+Þ
+Ð
+Ƿ
+Ŋ
+#Unicode series 2: mathematical operators
+
+#Unicode series 3: chemistry, engineering and advanced mathematics
+
+#Unicode series 4: Transcriber's notes and symbols
+
+#Unicode series 5: miscellaneous symbols
+
+
+# special character sequences
+compbrl :// URLs
+compbrl ()
+compbrl www.
+compbrl ::
+compbrl .com
+compbrl .edu
+compbrl .gov
+compbrl .ini
+compbrl .mil
+compbrl .net
+compbrl .org
+compbrl .doc
+compbrl .xml
+compbrl .xsl
+compbrl .htm
+compbrl .html
+compbrl .tex
+compbrl .txt
+compbrl .gif
+compbrl .jpg
+compbrl .png
+compbrl .wav
+compbrl .tar
+compbrl .zip
+
+context "\e"$a *
+always \\_ 56 letter sign before Roman page numbers
+pass2 @56-56 @56
+pass2 @3-56 @3
+

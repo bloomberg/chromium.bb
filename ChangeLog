@@ -1,3 +1,9 @@
+2012-12-03  Joseph Lee <joseph.lee22590@gmail.com>
+
+	* tables/Makefile.am (table_files):
+	* tables/en-ueb-g1.ctb:
+	* tables/en-ueb-g2.ctb: Added ueb tables
+
 2012-10-02  Christian Egli  <christian.egli@sbs.ch>
 
 	* gnulib: Update gnulib

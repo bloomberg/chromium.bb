@@ -53,14 +53,16 @@ table_files = \
 	de-g1-core.ctb \
 	de-g2-core.ctb \
 	devanagari.cti \
-	digits6Dots.uti \
 	digits6DotsPlusDot6.uti \
+	digits6Dots.uti \
 	digits8Dots.uti \
 	dra.ctb \
 	en_CA.ctb \
 	en-chess.ctb \
 	en-gb-g1.utb \
 	en-GB-g2.ctb \
+	en-ueb-g1.ctb \
+	en-ueb-g2.ctb \
 	en-us-brf.dis \
 	en-us-comp6.ctb \
 	en-us-comp8.ctb \
@@ -109,8 +111,8 @@ table_files = \
 	hu-backtranslate-correction.dis \
 	hu-chardefs.cti \
 	hu-exceptionwords.cti \
-	hu-hu-g1.ctb \
 	hu-hu-comp8.ctb \
+	hu-hu-g1.ctb \
 	hy.ctb \
 	hyph_cs_CZ.dic \
 	hyph_de_DE.dic \
@@ -129,7 +131,7 @@ table_files = \
 	is.ctb \
 	it-it-comp6.utb \
 	it-it-comp8.utb \
-	iu-ca-g1.ctb	\
+	iu-ca-g1.ctb \
 	kannada.cti \
 	kha.ctb \
 	kn.ctb \
