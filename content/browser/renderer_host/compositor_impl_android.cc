@@ -11,6 +11,11 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "cc/font_atlas.h"
+#include "cc/input_handler.h"
+#include "cc/layer.h"
+#include "cc/layer_tree_host.h"
+#include "cc/thread_impl.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
@@ -23,13 +28,9 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorOutputSurface.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebSolidColorLayer.h"
 #include "ui/gfx/android/java_bitmap.h"
-#include "webkit/compositor_bindings/web_compositor_support_impl.h"
 #include "webkit/glue/webthread_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
-
-using webkit::WebCompositorSupportImpl;
 
 namespace gfx {
 class JavaBitmap;
@@ -38,9 +39,7 @@ class JavaBitmap;
 namespace {
 
 static bool g_initialized = false;
-static base::LazyInstance<WebCompositorSupportImpl> g_compositor_support =
-    LAZY_INSTANCE_INITIALIZER;
-static WebKit::WebThread* g_impl_thread = NULL;
+static webkit_glue::WebThreadImpl* g_impl_thread = NULL;
 static bool g_use_direct_gl = false;
 
 // Adapts a pure WebGraphicsContext3D into a WebCompositorOutputSurface.
@@ -97,22 +96,17 @@ Compositor* Compositor::Create(Client* client) {
 // static
 void Compositor::Initialize() {
   DCHECK(!CompositorImpl::IsInitialized());
-  g_compositor_support.Get().initialize(g_impl_thread);
   g_initialized = true;
 }
 
 // static
 void Compositor::InitializeWithFlags(uint32 flags) {
   g_use_direct_gl = flags & DIRECT_CONTEXT_ON_DRAW_THREAD;
-  if (flags & ENABLE_COMPOSITOR_THREAD)
+  if (flags & ENABLE_COMPOSITOR_THREAD) {
+    TRACE_EVENT_INSTANT0("test_gpu", "ThreadedCompositingInitialization");
     g_impl_thread = new webkit_glue::WebThreadImpl("Browser Compositor");
+  }
   Compositor::Initialize();
-}
-
-// static
-WebCompositorSupportImpl* CompositorImpl::CompositorSupport() {
-  DCHECK(g_initialized);
-  return g_compositor_support.Pointer();
 }
 
 // static
@@ -121,17 +115,22 @@ bool CompositorImpl::IsInitialized() {
 }
 
 // static
+bool CompositorImpl::IsThreadingEnabled() {
+  return g_impl_thread;
+}
+
+// static
 bool CompositorImpl::UsesDirectGL() {
   return g_use_direct_gl;
 }
 
 CompositorImpl::CompositorImpl(Compositor::Client* client)
-    : window_(NULL),
+    : root_layer_(cc::Layer::create()),
+      window_(NULL),
       surface_id_(0),
       client_(client),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(client);
-  root_layer_.reset(g_compositor_support.Get().createLayer());
 }
 
 CompositorImpl::~CompositorImpl() {
@@ -142,7 +141,7 @@ void CompositorImpl::Composite() {
     host_->composite();
 }
 
-void CompositorImpl::SetRootLayer(WebKit::WebLayer* root_layer) {
+void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
   root_layer_->removeAllChildren();
   root_layer_->addChild(root_layer);
 }
@@ -173,13 +172,20 @@ void CompositorImpl::SetVisible(bool visible) {
   if (!visible) {
     host_.reset();
   } else if (!host_.get()) {
-    WebKit::WebLayerTreeView::Settings settings;
+    cc::LayerTreeSettings settings;
     settings.refreshRate = 60.0;
-    host_.reset(g_compositor_support.Get().createLayerTreeView(
-        this, *root_layer_, settings));
+
+    scoped_ptr<cc::Thread> impl_thread;
+    if (g_impl_thread)
+      impl_thread = cc::ThreadImpl::createForDifferentThread(
+          g_impl_thread->message_loop()->message_loop_proxy());
+
+    host_ = cc::LayerTreeHost::create(this, settings, impl_thread.Pass());
+    host_->setRootLayer(root_layer_);
+
     host_->setVisible(true);
     host_->setSurfaceReady();
-    host_->setViewportSize(size_);
+    host_->setViewportSize(size_, size_);
   }
 }
 
@@ -189,7 +195,7 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
 
   size_ = size;
   if (host_)
-    host_->setViewportSize(size);
+    host_->setViewportSize(size, size);
   root_layer_->setBounds(size);
 }
 
@@ -262,17 +268,18 @@ void CompositorImpl::CopyTextureToBitmap(WebKit::WebGLId texture_id,
                               static_cast<unsigned char*> (bitmap.pixels()));
 }
 
-void CompositorImpl::updateAnimations(double frameBeginTime) {
+void CompositorImpl::animate(double monotonicFrameBeginTime) {
 }
 
 void CompositorImpl::layout() {
 }
 
-void CompositorImpl::applyScrollAndScale(const WebKit::WebSize& scrollDelta,
-                                     float scaleFactor) {
+void CompositorImpl::applyScrollAndScale(gfx::Vector2d scrollDelta,
+                                         float pageScale) {
 }
 
-WebKit::WebCompositorOutputSurface* CompositorImpl::createOutputSurface() {
+scoped_ptr<WebKit::WebCompositorOutputSurface>
+    CompositorImpl::createOutputSurface() {
   if (g_use_direct_gl) {
     WebKit::WebGraphicsContext3D::Attributes attrs;
     attrs.shareResources = false;
@@ -282,7 +289,8 @@ WebKit::WebCompositorOutputSurface* CompositorImpl::createOutputSurface() {
             attrs,
             window_,
             NULL));
-    return new WebGraphicsContextToOutputSurfaceAdapter(context.release());
+    return scoped_ptr<WebKit::WebCompositorOutputSurface>(
+        new WebGraphicsContextToOutputSurfaceAdapter(context.release()));
   } else {
     DCHECK(window_ && surface_id_);
     WebKit::WebGraphicsContext3D::Attributes attrs;
@@ -300,10 +308,15 @@ WebKit::WebCompositorOutputSurface* CompositorImpl::createOutputSurface() {
         false,
         CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE)) {
       LOG(ERROR) << "Failed to create 3D context for compositor.";
-      return NULL;
+      return scoped_ptr<WebKit::WebCompositorOutputSurface>();
     }
-    return new WebGraphicsContextToOutputSurfaceAdapter(context.release());
+    return scoped_ptr<WebKit::WebCompositorOutputSurface>(
+        new WebGraphicsContextToOutputSurfaceAdapter(context.release()));
   }
+}
+
+scoped_ptr<cc::InputHandler> CompositorImpl::createInputHandler() {
+  return scoped_ptr<cc::InputHandler>();
 }
 
 void CompositorImpl::didRecreateOutputSurface(bool success) {
@@ -321,6 +334,10 @@ void CompositorImpl::didCompleteSwapBuffers() {
 
 void CompositorImpl::scheduleComposite() {
   client_->ScheduleComposite();
+}
+
+scoped_ptr<cc::FontAtlas> CompositorImpl::createFontAtlas() {
+  return scoped_ptr<cc::FontAtlas>();
 }
 
 void CompositorImpl::OnViewContextSwapBuffersPosted() {

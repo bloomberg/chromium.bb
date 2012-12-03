@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "cc/layer.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/load_url_params.h"
 #include "content/browser/android/touch_point.h"
@@ -60,7 +61,6 @@ using base::android::ScopedJavaLocalRef;
 using WebKit::WebGestureEvent;
 using WebKit::WebInputEvent;
 using WebKit::WebInputEventFactory;
-using WebKit::WebLayer;
 
 // Describes the type and enabled state of a select popup item.
 // Keep in sync with the value defined in SelectPopupDialog.java
@@ -147,7 +147,7 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
                                          ui::WindowAndroid* window_android)
     : java_ref_(env, obj),
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
-      root_layer_(WebLayer::create()),
+      root_layer_(cc::Layer::create()),
       tab_crashed_(false),
       window_android_(window_android) {
   CHECK(web_contents) <<
@@ -601,11 +601,11 @@ gfx::Rect ContentViewCoreImpl::GetBounds() const {
                    Java_ContentViewCore_getHeight(env, j_obj.obj()));
 }
 
-void ContentViewCoreImpl::AttachWebLayer(WebLayer* layer) {
+void ContentViewCoreImpl::AttachLayer(scoped_refptr<cc::Layer> layer) {
   root_layer_->addChild(layer);
 }
 
-void ContentViewCoreImpl::RemoveWebLayer(WebLayer* layer) {
+void ContentViewCoreImpl::RemoveLayer(scoped_refptr<cc::Layer> layer) {
   layer->removeFromParent();
 }
 
@@ -619,7 +619,7 @@ ui::WindowAndroid* ContentViewCoreImpl::GetWindowAndroid() const {
   return window_android_;
 }
 
-WebLayer* ContentViewCoreImpl::GetWebLayer() const {
+scoped_refptr<cc::Layer> ContentViewCoreImpl::GetLayer() const {
   return root_layer_.get();
 }
 

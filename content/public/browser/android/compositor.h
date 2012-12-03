@@ -13,12 +13,12 @@
 
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 
-namespace gfx {
-class JavaBitmap;
+namespace cc {
+class Layer;
 }
 
-namespace WebKit {
-class WebLayer;
+namespace gfx {
+class JavaBitmap;
 }
 
 namespace content {
@@ -58,7 +58,7 @@ class CONTENT_EXPORT Compositor {
   static Compositor* Create(Client* client);
 
   // Attaches the layer tree.
-  virtual void SetRootLayer(WebKit::WebLayer* root) = 0;
+  virtual void SetRootLayer(scoped_refptr<cc::Layer> root) = 0;
 
   // Set the output surface bounds.
   virtual void SetWindowBounds(const gfx::Size& size) = 0;

@@ -21,6 +21,7 @@
 #include "base/message_loop.h"
 #include "base/pickle.h"
 #include "base/supports_user_data.h"
+#include "cc/layer.h"
 #include "content/components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/browser_thread.h"
@@ -31,6 +32,7 @@
 #include "content/public/common/ssl_status.h"
 #include "jni/AwContents_jni.h"
 #include "net/base/x509_certificate.h"
+#include "ui/gfx/transform.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
@@ -87,7 +89,7 @@ class NullCompositor : public content::Compositor {
   virtual ~NullCompositor() {}
 
   // Compositor
-  virtual void SetRootLayer(WebKit::WebLayer* root) OVERRIDE {}
+  virtual void SetRootLayer(scoped_refptr<cc::Layer> root) OVERRIDE {}
   virtual void SetWindowBounds(const gfx::Size& size) OVERRIDE {}
   virtual void SetVisible(bool visible) OVERRIDE {}
   virtual void SetWindowSurface(ANativeWindow* window) OVERRIDE {}
@@ -190,7 +192,7 @@ void AwContents::DidInitializeContentViewCore(JNIEnv* env, jobject obj,
                                               jint content_view_core) {
   ContentViewCore* core = reinterpret_cast<ContentViewCore*>(content_view_core);
   DCHECK(core == ContentViewCore::FromWebContents(web_contents_.get()));
-  compositor_->SetRootLayer(core->GetWebLayer());
+  compositor_->SetRootLayer(core->GetLayer());
   Invalidate();
 }
 

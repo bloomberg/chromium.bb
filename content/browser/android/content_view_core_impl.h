@@ -48,7 +48,7 @@ class ContentViewCoreImpl : public ContentViewCore,
       OVERRIDE;
   virtual WebContents* GetWebContents() const OVERRIDE;
   virtual ui::WindowAndroid* GetWindowAndroid() const OVERRIDE;
-  virtual WebKit::WebLayer* GetWebLayer() const OVERRIDE;
+  virtual scoped_refptr<cc::Layer> GetLayer() const OVERRIDE;
   virtual void LoadUrl(NavigationController::LoadURLParams& params) OVERRIDE;
   virtual void OnWebPreferencesUpdated() OVERRIDE;
   virtual jint GetCurrentRenderProcessId(JNIEnv* env, jobject obj) OVERRIDE;
@@ -236,8 +236,8 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   gfx::Rect GetBounds() const;
 
-  void AttachWebLayer(WebKit::WebLayer* layer);
-  void RemoveWebLayer(WebKit::WebLayer* layer);
+  void AttachLayer(scoped_refptr<cc::Layer> layer);
+  void RemoveLayer(scoped_refptr<cc::Layer> layer);
 
  private:
   class ContentViewUserData;
@@ -280,8 +280,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   // display in the ContentViewCore.
   WebContentsImpl* web_contents_;
 
-  // A WebLayer containing any WebLayer that should be shown.
-  scoped_ptr<WebKit::WebLayer> root_layer_;
+  // A compositor layer containing any layer that should be shown.
+  scoped_refptr<cc::Layer> root_layer_;
 
   // Whether the renderer backing this ContentViewCore has crashed.
   bool tab_crashed_;

@@ -10,6 +10,8 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "cc/layer.h"
+#include "cc/texture_layer.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
@@ -59,13 +61,12 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     surface_texture_transport_.reset(new SurfaceTextureTransportClient());
     layer_ = surface_texture_transport_->Initialize();
   } else {
-    // TODO: Cannot use CompositorImpl::CompositorSupport() in unit tests.
-    texture_layer_.reset(WebKit::WebExternalTextureLayer::create());
-    layer_ = texture_layer_->layer();
+    texture_layer_ = cc::TextureLayer::create(0);
+    layer_ = texture_layer_;
   }
 
-  layer_->setOpaque(true);
-  layer_->setDrawsContent(true);
+  layer_->setContentsOpaque(true);
+  layer_->setIsDrawable(true);
 
   host_->SetView(this);
   SetContentViewCore(content_view_core);
@@ -233,7 +234,7 @@ void RenderWidgetHostViewAndroid::Show() {
 
   is_layer_attached_ = true;
   if (content_view_core_)
-    content_view_core_->AttachWebLayer(layer_);
+    content_view_core_->AttachLayer(layer_);
 }
 
 void RenderWidgetHostViewAndroid::Hide() {
@@ -242,7 +243,7 @@ void RenderWidgetHostViewAndroid::Hide() {
 
   is_layer_attached_ = false;
   if (content_view_core_)
-    content_view_core_->RemoveWebLayer(layer_);
+    content_view_core_->RemoveLayer(layer_);
 }
 
 bool RenderWidgetHostViewAndroid::IsShowing() {
@@ -303,7 +304,7 @@ void RenderWidgetHostViewAndroid::RenderViewGone(
 
 void RenderWidgetHostViewAndroid::Destroy() {
   if (content_view_core_) {
-    content_view_core_->RemoveWebLayer(layer_);
+    content_view_core_->RemoveLayer(layer_);
     content_view_core_ = NULL;
   }
 
@@ -388,14 +389,14 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
   texture_layer_->setTextureId(params.surface_handle);
-  DCHECK(texture_layer_->layer() == layer_);
+  DCHECK(texture_layer_ == layer_);
   layer_->setBounds(params.size);
   texture_id_in_layer_ = params.surface_handle;
   texture_size_in_layer_ = params.size;
 
   // TODO(sievers): When running the impl thread in the browser we
   // need to delay the ACK until after commit.
-  DCHECK(!CompositorImpl::CompositorSupport()->isThreadingEnabled());
+  DCHECK(!CompositorImpl::IsThreadingEnabled());
   uint32 sync_point =
       ImageTransportFactoryAndroid::GetInstance()->InsertSyncPoint();
   RenderWidgetHostImpl::AcknowledgeBufferPresent(
@@ -562,11 +563,11 @@ void RenderWidgetHostViewAndroid::UpdateFrameInfo(
 void RenderWidgetHostViewAndroid::SetContentViewCore(
     ContentViewCoreImpl* content_view_core) {
   if (content_view_core_ && is_layer_attached_)
-    content_view_core_->RemoveWebLayer(layer_);
+    content_view_core_->RemoveLayer(layer_);
 
   content_view_core_ = content_view_core;
   if (content_view_core_ && is_layer_attached_)
-    content_view_core_->AttachWebLayer(layer_);
+    content_view_core_->AttachLayer(layer_);
 }
 
 void RenderWidgetHostViewAndroid::HasTouchEventHandlers(

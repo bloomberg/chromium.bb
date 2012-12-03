@@ -7,6 +7,7 @@
 #include <android/native_window_jni.h>
 
 #include "base/bind.h"
+#include "cc/video_layer.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
@@ -34,17 +35,18 @@ SurfaceTextureTransportClient::~SurfaceTextureTransportClient() {
     ANativeWindow_release(window_);
 }
 
-WebKit::WebLayer* SurfaceTextureTransportClient::Initialize() {
+scoped_refptr<cc::Layer> SurfaceTextureTransportClient::Initialize() {
   // Use a SurfaceTexture to stream frames to the UI thread.
-  video_layer_.reset(
-      CompositorImpl::CompositorSupport()->createVideoLayer(this));
+  video_layer_ = cc::VideoLayer::create(this,
+          base::Bind(webkit_media::WebVideoFrameImpl::toVideoFrame));
+
   surface_texture_ = new SurfaceTextureBridge(0);
   surface_texture_->SetFrameAvailableCallback(
       base::Bind(
           &SurfaceTextureTransportClient::OnSurfaceTextureFrameAvailable,
           base::Unretained(this)));
   surface_texture_->DetachFromGLContext();
-  return video_layer_->layer();
+  return video_layer_.get();
 }
 
 gfx::GLSurfaceHandle
@@ -59,7 +61,7 @@ SurfaceTextureTransportClient::GetCompositingSurface(int surface_id) {
 
 void SurfaceTextureTransportClient::SetSize(const gfx::Size& size) {
   surface_texture_->SetDefaultBufferSize(size.width(), size.height());
-  video_layer_->layer()->setBounds(size);
+  video_layer_->setBounds(size);
   video_frame_.reset();
 }
 
@@ -72,7 +74,7 @@ WebKit::WebVideoFrame* SurfaceTextureTransportClient::getCurrentFrame() {
   }
   if (!video_frame_.get()) {
     surface_texture_->AttachToGLContext(texture_id_);
-    const gfx::Size size = video_layer_->layer()->bounds();
+    const gfx::Size size = video_layer_->bounds();
     video_frame_.reset(
         new webkit_media::WebVideoFrameImpl(
             media::VideoFrame::WrapNativeTexture(
@@ -94,7 +96,7 @@ void SurfaceTextureTransportClient::putCurrentFrame(
 }
 
 void SurfaceTextureTransportClient::OnSurfaceTextureFrameAvailable() {
-  video_layer_->layer()->invalidate();
+  video_layer_->setNeedsDisplay();
 }
 
 } // namespace content

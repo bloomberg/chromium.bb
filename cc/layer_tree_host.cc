@@ -110,6 +110,7 @@ LayerTreeSettings::LayerTreeSettings()
     , minimumOcclusionTrackingSize(gfx::Size(160, 160))
 {
     // TODO(danakj): Move this to chromium when we don't go through the WebKit API anymore.
+    implSidePainting = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnableImplSidePainting);
     partialSwapEnabled = CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePartialSwap);
     backgroundColorInsteadOfCheckerboard = CommandLine::ForCurrentProcess()->HasSwitch(switches::kBackgroundColorInsteadOfCheckerboard);
     showOverdrawInTracing = CommandLine::ForCurrentProcess()->HasSwitch(switches::kTraceOverdraw);

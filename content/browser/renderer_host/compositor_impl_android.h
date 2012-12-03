@@ -9,17 +9,18 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/layer_tree_host_client.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/public/browser/android/compositor.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeViewClient.h"
 
 struct ANativeWindow;
 
-namespace webkit {
-class WebCompositorSupportImpl;
+namespace cc {
+class FontAtlas;
+class InputHandler;
+class Layer;
+class LayerTreeHost;
 }
 
 namespace content {
@@ -30,20 +31,20 @@ class GraphicsContext;
 // -----------------------------------------------------------------------------
 class CONTENT_EXPORT CompositorImpl
     : public Compositor,
-      public WebKit::WebLayerTreeViewClient,
+      public cc::LayerTreeHostClient,
       public WebGraphicsContext3DSwapBuffersClient {
  public:
   explicit CompositorImpl(Compositor::Client* client);
   virtual ~CompositorImpl();
 
-  static webkit::WebCompositorSupportImpl* CompositorSupport();
   static bool IsInitialized();
+  static bool IsThreadingEnabled();
 
   // Returns true if initialized with DIRECT_CONTEXT_ON_DRAW_THREAD.
   static bool UsesDirectGL();
 
   // Compositor implementation.
-  virtual void SetRootLayer(WebKit::WebLayer* root) OVERRIDE;
+  virtual void SetRootLayer(scoped_refptr<cc::Layer> root) OVERRIDE;
   virtual void SetWindowSurface(ANativeWindow* window) OVERRIDE;
   virtual void SetVisible(bool visible) OVERRIDE;
   virtual void SetWindowBounds(const gfx::Size& size) OVERRIDE;
@@ -57,17 +58,23 @@ class CONTENT_EXPORT CompositorImpl
   virtual void CopyTextureToBitmap(WebKit::WebGLId texture_id,
                                    gfx::JavaBitmap& bitmap) OVERRIDE;
 
-  // WebLayerTreeViewClient implementation.
-  virtual void updateAnimations(double frameBeginTime) OVERRIDE;
+  // LayerTreeHostClient implementation.
+  virtual void willBeginFrame() OVERRIDE {}
+  virtual void didBeginFrame() OVERRIDE {}
+  virtual void animate(double monotonicFrameBeginTime) OVERRIDE;
   virtual void layout() OVERRIDE;
-  virtual void applyScrollAndScale(const WebKit::WebSize& scrollDelta,
-                                   float scaleFactor) OVERRIDE;
-  virtual WebKit::WebCompositorOutputSurface* createOutputSurface() OVERRIDE;
+  virtual void applyScrollAndScale(gfx::Vector2d scrollDelta,
+                                   float pageScale) OVERRIDE;
+  virtual scoped_ptr<WebKit::WebCompositorOutputSurface> createOutputSurface()
+      OVERRIDE;
+  virtual scoped_ptr<cc::InputHandler> createInputHandler() OVERRIDE;
   virtual void didRecreateOutputSurface(bool success) OVERRIDE;
+  virtual void willCommit() OVERRIDE {}
   virtual void didCommit() OVERRIDE;
   virtual void didCommitAndDrawFrame() OVERRIDE;
   virtual void didCompleteSwapBuffers() OVERRIDE;
   virtual void scheduleComposite() OVERRIDE;
+  virtual scoped_ptr<cc::FontAtlas> createFontAtlas() OVERRIDE;
 
   // WebGraphicsContext3DSwapBuffersClient implementation.
   virtual void OnViewContextSwapBuffersPosted() OVERRIDE;
@@ -79,8 +86,8 @@ class CONTENT_EXPORT CompositorImpl
   WebKit::WGC3Denum GetGLFormatForBitmap(gfx::JavaBitmap& bitmap);
   WebKit::WGC3Denum GetGLTypeForBitmap(gfx::JavaBitmap& bitmap);
 
-  scoped_ptr<WebKit::WebLayer> root_layer_;
-  scoped_ptr<WebKit::WebLayerTreeView> host_;
+  scoped_refptr<cc::Layer> root_layer_;
+  scoped_ptr<cc::LayerTreeHost> host_;
 
   gfx::Size size_;
 

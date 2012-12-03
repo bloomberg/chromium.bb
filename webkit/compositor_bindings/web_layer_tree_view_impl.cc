@@ -39,7 +39,6 @@ bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSetti
 {
     LayerTreeSettings settings;
     settings.acceleratePainting = webSettings.acceleratePainting;
-    settings.implSidePainting = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnableImplSidePainting);
     settings.renderVSyncEnabled = webSettings.renderVSyncEnabled;
     settings.perTilePaintingEnabled = webSettings.perTilePaintingEnabled;
     settings.acceleratedAnimationEnabled = webSettings.acceleratedAnimationEnabled;

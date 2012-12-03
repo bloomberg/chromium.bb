@@ -12,9 +12,9 @@
 
 struct ANativeWindow;
 
-namespace WebKit {
-class WebLayer;
-class WebVideoLayer;
+namespace cc {
+class Layer;
+class VideoLayer;
 }
 
 namespace content {
@@ -25,7 +25,7 @@ class SurfaceTextureTransportClient : public WebKit::WebVideoFrameProvider {
   SurfaceTextureTransportClient();
   virtual ~SurfaceTextureTransportClient();
 
-  WebKit::WebLayer* Initialize();
+  scoped_refptr<cc::Layer> Initialize();
   gfx::GLSurfaceHandle GetCompositingSurface(int surface_id);
   void SetSize(const gfx::Size& size);
 
@@ -37,7 +37,7 @@ class SurfaceTextureTransportClient : public WebKit::WebVideoFrameProvider {
  private:
   void OnSurfaceTextureFrameAvailable();
 
-  scoped_ptr<WebKit::WebVideoLayer> video_layer_;
+  scoped_refptr<cc::VideoLayer> video_layer_;
   scoped_refptr<SurfaceTextureBridge> surface_texture_;
   ANativeWindow* window_;
   scoped_ptr<WebKit::WebVideoFrame> video_frame_;

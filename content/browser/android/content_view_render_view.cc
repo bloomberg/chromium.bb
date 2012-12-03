@@ -11,11 +11,11 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "cc/layer.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/content_view_layer_renderer.h"
 #include "jni/ContentViewRenderView_jni.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
 #include "ui/gfx/size.h"
 
 #include <android/native_window_jni.h>
@@ -54,7 +54,7 @@ void ContentViewRenderView::SetCurrentContentView(
   ContentViewCoreImpl* content_view =
       reinterpret_cast<ContentViewCoreImpl*>(native_content_view);
   if (content_view)
-    compositor_->SetRootLayer(content_view->GetWebLayer());
+    compositor_->SetRootLayer(content_view->GetLayer());
 }
 
 void ContentViewRenderView::SurfaceCreated(

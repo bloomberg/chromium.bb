@@ -18,6 +18,10 @@
 
 class TabContents;
 
+namespace cc {
+class Layer;
+}
+
 namespace content {
 class Compositor;
 class WebContents;

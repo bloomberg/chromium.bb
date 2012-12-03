@@ -20,9 +20,13 @@ struct ViewHostMsg_TextInputState_Params;
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
 
+namespace cc {
+class Layer;
+class TextureLayer;
+}
+
 namespace WebKit {
 class WebExternalTextureLayer;
-class WebLayer;
 class WebTouchEvent;
 class WebMouseEvent;
 }
@@ -169,12 +173,12 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   SkColor cached_background_color_;
 
   // The texture layer for this view when using browser-side compositing.
-  scoped_ptr<WebKit::WebExternalTextureLayer> texture_layer_;
+  scoped_refptr<cc::TextureLayer> texture_layer_;
 
   // The layer used for rendering the contents of this view.
   // It is either owned by texture_layer_ or surface_texture_transport_
   // depending on the mode.
-  WebKit::WebLayer* layer_;
+  scoped_refptr<cc::Layer> layer_;
 
   // The most recent texture id that was pushed to the texture layer.
   unsigned int texture_id_in_layer_;
