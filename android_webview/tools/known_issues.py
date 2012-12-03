@@ -20,7 +20,10 @@ process will stop and this list must be updated.
 
 # If there is a temporary license-related issue with a particular third_party
 # directory, please put it here, with a comment linking to the bug entry.
-KNOWN_ISSUES = []
+KNOWN_ISSUES = [
+    'third_party/guava',   # crbug.com/163896
+    'third_party/jsr-305',
+]
 
 KNOWN_INCOMPATIBLE = {
     # Incompatible code in the main chromium repository.
