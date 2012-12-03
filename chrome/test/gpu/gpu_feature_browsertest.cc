@@ -44,7 +44,6 @@ namespace {
 const char kSwapBuffersEvent[] = "SwapBuffers";
 const char kAcceleratedCanvasCreationEvent[] = "Canvas2DLayerBridgeCreation";
 const char kWebGLCreationEvent[] = "DrawingBufferCreation";
-const char kThreadedCompositingEvent[] = "ThreadedCompositingInitialization";
 
 class GpuFeatureTest : public InProcessBrowserTest {
  public:
@@ -233,34 +232,6 @@ IN_PROC_BROWSER_TEST_F(AcceleratedCompositingBlockedTest,
   const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
   RunEventTest(url, kSwapBuffersEvent, false);
 }
-
-#if !(defined(OS_WIN) && defined(USE_AURA))  // http://crbug.com/163046
-
-IN_PROC_BROWSER_TEST_F(GpuFeatureTest, ThreadedCompositingTextureSharing) {
-  const std::string json_blacklist =
-      "{\n"
-      "  \"name\": \"gpu blacklist\",\n"
-      "  \"version\": \"1.0\",\n"
-      "  \"entries\": [\n"
-      "    {\n"
-      "      \"id\": 1,\n"
-      "      \"blacklist\": [\n"
-      "        \"texture_sharing\"\n"
-      "      ]\n"
-      "    }\n"
-      "  ]\n"
-      "}";
-  SetupBlacklist(json_blacklist);
-  GpuFeatureType type =
-      GpuDataManager::GetInstance()->GetBlacklistedFeatures();
-  type = IgnoreGpuFeatures(type);
-  EXPECT_EQ(type, content::GPU_FEATURE_TYPE_TEXTURE_SHARING);
-
-  const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
-  RunEventTest(url, kThreadedCompositingEvent, false);
-}
-
-#endif
 
 class AcceleratedCompositingTest : public GpuFeatureTest {
  public:

@@ -47,15 +47,6 @@ bool IsThreadedCompositingEnabled() {
   if (!CanDoAcceleratedCompositing())
     return false;
 
-  const GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
-  GpuFeatureType blacklisted_features =
-      gpu_data_manager->GetBlacklistedFeatures();
-  // Disallow threaded compositing when texture sharing is blacklisted since
-  // this triggers renderer-side readbacks for the thumbnailer / extensions.
-  // http://crbug.com/158747
-  if (blacklisted_features & GPU_FEATURE_TYPE_TEXTURE_SHARING)
-    return false;
-
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   // Command line switches take precedence over field trials.

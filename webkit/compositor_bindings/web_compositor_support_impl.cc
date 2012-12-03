@@ -4,7 +4,6 @@
 
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
 
-#include "base/debug/trace_event.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "cc/thread_impl.h"
@@ -59,7 +58,6 @@ void WebCompositorSupportImpl::initialize(WebKit::WebThread* impl_thread) {
   DCHECK(!initialized_);
   initialized_ = true;
   if (impl_thread) {
-    TRACE_EVENT_INSTANT0("test_gpu", "ThreadedCompositingInitialization");
     impl_thread_message_loop_proxy_ =
         static_cast<webkit_glue::WebThreadImpl*>(impl_thread)->
             message_loop()->message_loop_proxy();
