@@ -338,6 +338,9 @@ namespace content {
 
 typedef std::map<WebKit::WebView*, RenderViewImpl*> ViewMap;
 static base::LazyInstance<ViewMap> g_view_map = LAZY_INSTANCE_INITIALIZER;
+typedef std::map<int32, RenderViewImpl*> RoutingIDViewMap;
+static base::LazyInstance<RoutingIDViewMap> g_routing_id_view_map =
+    LAZY_INSTANCE_INITIALIZER;
 
 // Time, in seconds, we delay before sending content state changes (such as form
 // state and scroll position) to the browser. We delay sending changes to avoid
@@ -369,8 +372,9 @@ static RenderViewImpl* (*g_create_render_view_impl)(RenderViewImplParams*) =
     NULL;
 
 static RenderViewImpl* FromRoutingID(int32 routing_id) {
-  return static_cast<RenderViewImpl*>(
-      ChildThread::current()->ResolveRoute(routing_id));
+  RoutingIDViewMap* views = g_routing_id_view_map.Pointer();
+  RoutingIDViewMap::iterator it = views->find(routing_id);
+  return it == views->end() ? NULL : it->second;
 }
 
 static WebKit::WebFrame* FindFrameByID(WebKit::WebFrame* root, int frame_id) {
@@ -665,6 +669,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
   }
 
   g_view_map.Get().insert(std::make_pair(webview(), this));
+  g_routing_id_view_map.Get().insert(std::make_pair(routing_id_, this));
   webview()->setDeviceScaleFactor(device_scale_factor_);
   webkit_preferences_.Apply(webview());
   webview()->initializeMainFrame(this);
@@ -753,9 +758,13 @@ RenderViewImpl::~RenderViewImpl() {
 #endif
 
 #ifndef NDEBUG
-  // Make sure we are no longer referenced by the ViewMap.
+  // Make sure we are no longer referenced by the ViewMap or RoutingIDViewMap.
   ViewMap* views = g_view_map.Pointer();
   for (ViewMap::iterator it = views->begin(); it != views->end(); ++it)
+    DCHECK_NE(this, it->second) << "Failed to call Close?";
+  RoutingIDViewMap* routing_id_views = g_routing_id_view_map.Pointer();
+  for (RoutingIDViewMap::iterator it = routing_id_views->begin();
+       it != routing_id_views->end(); ++it)
     DCHECK_NE(this, it->second) << "Failed to call Close?";
 #endif
 
@@ -5697,6 +5706,7 @@ void RenderViewImpl::Close() {
   WebView* doomed = webview();
   RenderWidget::Close();
   g_view_map.Get().erase(doomed);
+  g_routing_id_view_map.Get().erase(routing_id_);
 }
 
 void RenderViewImpl::DidHandleKeyEvent() {
