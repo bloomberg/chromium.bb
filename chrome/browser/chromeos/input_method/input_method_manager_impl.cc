@@ -668,7 +668,8 @@ void InputMethodManagerImpl::MaybeInitializeCandidateWindowController() {
     return;
 
   candidate_window_controller_.reset(
-      CandidateWindowController::CreateCandidateWindowController());
+      CandidateWindowController::CreateCandidateWindowController(
+          ibus_controller_.get()));
   if (candidate_window_controller_->Init())
     candidate_window_controller_->AddObserver(this);
   else

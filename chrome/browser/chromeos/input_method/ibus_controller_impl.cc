@@ -29,16 +29,12 @@
 #include "chromeos/dbus/ibus/ibus_config_client.h"
 #include "chromeos/dbus/ibus/ibus_constants.h"
 #include "chromeos/dbus/ibus/ibus_input_context_client.h"
+#include "chromeos/dbus/ibus/ibus_panel_service.h"
+#include "chromeos/dbus/ibus/ibus_property.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/ime/input_method_ibus.h"
-
-// TODO(nona): Remove libibus dependency from this file. Then, write unit tests
-// for all functions in this file. crbug.com/26334
-#if defined(HAVE_IBUS)
-#include <ibus.h>
-#endif
 
 namespace {
 
@@ -66,123 +62,78 @@ void ConfigSetValueErrorCallback() {
 namespace chromeos {
 namespace input_method {
 
-#if defined(HAVE_IBUS)
-const char kPanelObjectKey[] = "panel-object";
-
 namespace {
 
-const char* Or(const char* str1, const char* str2) {
-  return str1 ? str1 : str2;
-}
-
 // Returns true if |key| is blacklisted.
-bool PropertyKeyIsBlacklisted(const char* key) {
+bool PropertyKeyIsBlacklisted(const std::string& key) {
   // The list of input method property keys that we don't handle.
   static const char* kInputMethodPropertyKeysBlacklist[] = {
     "setup",  // used in ibus-m17n.
     "status",  // used in ibus-m17n.
   };
   for (size_t i = 0; i < arraysize(kInputMethodPropertyKeysBlacklist); ++i) {
-    if (!std::strcmp(key, kInputMethodPropertyKeysBlacklist[i]))
+    if (key == kInputMethodPropertyKeysBlacklist[i])
       return true;
   }
   return false;
-}
-
-// Returns true if |prop| has children.
-bool PropertyHasChildren(IBusProperty* prop) {
-  return prop && ibus_property_get_sub_props(prop) &&
-      ibus_prop_list_get(ibus_property_get_sub_props(prop), 0);
 }
 
 // This function is called by and FlattenProperty() and converts IBus
 // representation of a property, |ibus_prop|, to our own and push_back the
 // result to |out_prop_list|. This function returns true on success, and
 // returns false if sanity checks for |ibus_prop| fail.
-bool ConvertProperty(IBusProperty* ibus_prop,
+bool ConvertProperty(const ibus::IBusProperty& ibus_prop,
                      InputMethodPropertyList* out_prop_list) {
-  DCHECK(ibus_prop);
   DCHECK(out_prop_list);
-
-  const IBusPropType type = ibus_property_get_prop_type(ibus_prop);
-  const IBusPropState state = ibus_property_get_state(ibus_prop);
-  const IBusText* tooltip = ibus_property_get_tooltip(ibus_prop);
-  const IBusText* label = ibus_property_get_label(ibus_prop);
-  const gchar* key = ibus_property_get_key(ibus_prop);
-  DCHECK(key);
+  DCHECK(ibus_prop.key().empty());
+  ibus::IBusProperty::IBusPropertyType type = ibus_prop.type();
 
   // Sanity checks.
-  const bool has_sub_props = PropertyHasChildren(ibus_prop);
-  if (has_sub_props && (type != PROP_TYPE_MENU)) {
+  const bool has_sub_props = !ibus_prop.sub_properties().empty();
+  if (has_sub_props && (type != ibus::IBusProperty::IBUS_PROPERTY_TYPE_MENU)) {
     DVLOG(1) << "The property has sub properties, "
              << "but the type of the property is not PROP_TYPE_MENU";
     return false;
   }
-  if ((!has_sub_props) && (type == PROP_TYPE_MENU)) {
+  if ((!has_sub_props) &&
+      (type == ibus::IBusProperty::IBUS_PROPERTY_TYPE_MENU)) {
     // This is usually not an error. ibus-daemon sometimes sends empty props.
     DVLOG(1) << "Property list is empty";
     return false;
   }
-  if (type == PROP_TYPE_SEPARATOR || type == PROP_TYPE_MENU) {
+  if (type == ibus::IBusProperty::IBUS_PROPERTY_TYPE_SEPARATOR ||
+      type == ibus::IBusProperty::IBUS_PROPERTY_TYPE_MENU) {
     // This is not an error, but we don't push an item for these types.
     return true;
   }
 
-  const bool is_selection_item = (type == PROP_TYPE_RADIO);
-
-  bool is_selection_item_checked = false;
-  if (state == PROP_STATE_INCONSISTENT) {
-    DVLOG(1) << "The property is in PROP_STATE_INCONSISTENT, "
-             << "which is not supported.";
-  } else if ((!is_selection_item) && (state == PROP_STATE_CHECKED)) {
-    DVLOG(1) << "PROP_STATE_CHECKED is meaningful only if the type is "
-             << "PROP_TYPE_RADIO.";
-  } else {
-    is_selection_item_checked = (state == PROP_STATE_CHECKED);
-  }
-
-  if (!key)
-    DVLOG(1) << "key is NULL";
-  if (tooltip && !tooltip->text) {
-    DVLOG(1) << "tooltip is NOT NULL, but tooltip->text IS NULL: key="
-             << Or(key, "");
-  }
-  if (label && !label->text) {
-    DVLOG(1) << "label is NOT NULL, but label->text IS NULL: key="
-             << Or(key, "");
-  }
-
   // This label will be localized later.
   // See chrome/browser/chromeos/input_method/input_method_util.cc.
-  std::string label_to_use = (tooltip && tooltip->text) ? tooltip->text : "";
-  if (label_to_use.empty()) {
-    // Usually tooltips are more descriptive than labels.
-    label_to_use = (label && label->text) ? label->text : "";
-  }
-  if (label_to_use.empty()) {
-    DVLOG(1) << "The tooltip and label are both empty. Use " << key;
-    label_to_use = Or(key, "");
-  }
+  std::string label_to_use;
+  if (!ibus_prop.tooltip().empty())
+    label_to_use = ibus_prop.tooltip();
+  else if (!ibus_prop.label().empty())
+    label_to_use = ibus_prop.label();
+  else
+    label_to_use = ibus_prop.key();
 
-  out_prop_list->push_back(InputMethodProperty(key,
-                                               label_to_use,
-                                               is_selection_item,
-                                               is_selection_item_checked));
+  out_prop_list->push_back(InputMethodProperty(
+      ibus_prop.key(),
+      label_to_use,
+      (type == ibus::IBusProperty::IBUS_PROPERTY_TYPE_RADIO),
+      ibus_prop.checked()));
   return true;
 }
 
 // Converts |ibus_prop| to |out_prop_list|. Please note that |ibus_prop|
 // may or may not have children. See the comment for FlattenPropertyList
 // for details. Returns true if no error is found.
-bool FlattenProperty(IBusProperty* ibus_prop,
+bool FlattenProperty(const ibus::IBusProperty& ibus_prop,
                      InputMethodPropertyList* out_prop_list) {
-  DCHECK(ibus_prop);
   DCHECK(out_prop_list);
 
-  const gchar* key = ibus_property_get_key(ibus_prop);
-
   // Filter out unnecessary properties.
-  if (PropertyKeyIsBlacklisted(key))
+  if (PropertyKeyIsBlacklisted(ibus_prop.key()))
     return true;
 
   // Convert |prop| to InputMethodProperty and push it to |out_prop_list|.
@@ -191,13 +142,10 @@ bool FlattenProperty(IBusProperty* ibus_prop,
 
   // Process childrens iteratively (if any). Push all sub properties to the
   // stack.
-  if (PropertyHasChildren(ibus_prop)) {
-    for (int i = 0;; ++i) {
-      IBusProperty* sub_prop =
-          ibus_prop_list_get(ibus_property_get_sub_props(ibus_prop), i);
-      if (!sub_prop)
-        break;
-      if (!FlattenProperty(sub_prop, out_prop_list))
+  if (!ibus_prop.sub_properties().empty()) {
+    const ibus::IBusPropertyList& sub_props = ibus_prop.sub_properties();
+    for (size_t i = 0; i < sub_props.size(); ++i) {
+      if (!FlattenProperty(*sub_props[i], out_prop_list))
         return false;
     }
   }
@@ -227,117 +175,15 @@ bool FlattenProperty(IBusProperty* ibus_prop,
 // Item-1, Item-2, Item-3-1, Item-3-2, Item-3-3, Item-4
 // (Note: SubMenuRoot does not appear in the output.)
 // ======================================================================
-bool FlattenPropertyList(IBusPropList* ibus_prop_list,
+bool FlattenPropertyList(const ibus::IBusPropertyList& ibus_prop_list,
                          InputMethodPropertyList* out_prop_list) {
-  DCHECK(ibus_prop_list);
   DCHECK(out_prop_list);
 
-  IBusProperty* fake_root_prop = ibus_property_new("Dummy.Key",
-                                                   PROP_TYPE_MENU,
-                                                   NULL, /* label */
-                                                   "", /* icon */
-                                                   NULL, /* tooltip */
-                                                   FALSE, /* sensitive */
-                                                   FALSE, /* visible */
-                                                   PROP_STATE_UNCHECKED,
-                                                   ibus_prop_list);
-  g_return_val_if_fail(fake_root_prop, false);
-  // Increase the ref count so it won't get deleted when |fake_root_prop|
-  // is deleted.
-  g_object_ref(ibus_prop_list);
-  const bool result = FlattenProperty(fake_root_prop, out_prop_list);
-  g_object_unref(fake_root_prop);
-
+  bool result = true;
+  for (size_t i = 0; i < ibus_prop_list.size(); ++i) {
+    result &= FlattenProperty(*ibus_prop_list[i], out_prop_list);
+  }
   return result;
-}
-
-// Debug print function.
-const char* PropTypeToString(int prop_type) {
-  switch (static_cast<IBusPropType>(prop_type)) {
-    case PROP_TYPE_NORMAL:
-      return "NORMAL";
-    case PROP_TYPE_TOGGLE:
-      return "TOGGLE";
-    case PROP_TYPE_RADIO:
-      return "RADIO";
-    case PROP_TYPE_MENU:
-      return "MENU";
-    case PROP_TYPE_SEPARATOR:
-      return "SEPARATOR";
-  }
-  return "UNKNOWN";
-}
-
-// Debug print function.
-const char* PropStateToString(int prop_state) {
-  switch (static_cast<IBusPropState>(prop_state)) {
-    case PROP_STATE_UNCHECKED:
-      return "UNCHECKED";
-    case PROP_STATE_CHECKED:
-      return "CHECKED";
-    case PROP_STATE_INCONSISTENT:
-      return "INCONSISTENT";
-  }
-  return "UNKNOWN";
-}
-
-// Debug print function.
-std::string Spacer(int n) {
-  return std::string(n, ' ');
-}
-
-std::string PrintPropList(IBusPropList *prop_list, int tree_level);
-
-// Debug print function.
-std::string PrintProp(IBusProperty *prop, int tree_level) {
-  if (!prop)
-    return "";
-
-  const IBusPropType type = ibus_property_get_prop_type(prop);
-  const IBusPropState state = ibus_property_get_state(prop);
-  const IBusText* tooltip = ibus_property_get_tooltip(prop);
-  const IBusText* label = ibus_property_get_label(prop);
-  const gchar* key = ibus_property_get_key(prop);
-
-  std::stringstream stream;
-  stream << Spacer(tree_level) << "=========================" << std::endl;
-  stream << Spacer(tree_level) << "key: " << Or(key, "<none>")
-         << std::endl;
-  stream << Spacer(tree_level) << "label: "
-         << ((label && label->text) ? label->text : "<none>")
-         << std::endl;
-  stream << Spacer(tree_level) << "tooptip: "
-         << ((tooltip && tooltip->text)
-             ? tooltip->text : "<none>") << std::endl;
-  stream << Spacer(tree_level) << "sensitive: "
-         << (ibus_property_get_sensitive(prop) ? "YES" : "NO") << std::endl;
-  stream << Spacer(tree_level) << "visible: "
-         << (ibus_property_get_visible(prop) ? "YES" : "NO") << std::endl;
-  stream << Spacer(tree_level) << "type: " << PropTypeToString(type)
-         << std::endl;
-  stream << Spacer(tree_level) << "state: " << PropStateToString(state)
-         << std::endl;
-  stream << Spacer(tree_level) << "sub_props: "
-         << (PropertyHasChildren(prop) ? "" : "<none>") << std::endl;
-  stream << PrintPropList(ibus_property_get_sub_props(prop), tree_level + 1);
-  stream << Spacer(tree_level) << "=========================" << std::endl;
-
-  return stream.str();
-}
-
-// Debug print function.
-std::string PrintPropList(IBusPropList *prop_list, int tree_level) {
-  if (!prop_list)
-    return "";
-
-  std::stringstream stream;
-  for (int i = 0;; ++i) {
-    IBusProperty* prop = ibus_prop_list_get(prop_list, i);
-    if (!prop)
-      break;
-    stream << PrintProp(prop, tree_level);
-  }
-  return stream.str();
 }
 
 class IBusAddressWatcher {
@@ -356,8 +202,6 @@ class IBusAddressWatcher {
       DCHECK(!ibus_address.empty());
     }
 
-    virtual ~IBusAddressFileWatcherDelegate() {}
-
     virtual void OnFilePathChanged(const FilePath& file_path) OVERRIDE {
       if (!watcher_->IsWatching())
         return;
@@ -371,6 +215,9 @@ class IBusAddressWatcher {
       DCHECK(success);
       watcher_->StopSoon();
     }
+
+   protected:
+    virtual ~IBusAddressFileWatcherDelegate() {}
 
    private:
     // The ibus-daemon address.
@@ -436,45 +283,16 @@ class IBusAddressWatcher {
 }  // namespace
 
 IBusControllerImpl::IBusControllerImpl()
-    : ibus_(NULL),
-      process_handle_(base::kNullProcessHandle),
+    : process_handle_(base::kNullProcessHandle),
       ibus_daemon_status_(IBUS_DAEMON_STOP),
       input_method_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 IBusControllerImpl::~IBusControllerImpl() {
-  // Disconnect signals so the handler functions will not be called with
-  // |this| which is already freed.
-  if (ibus_) {
-    g_signal_handlers_disconnect_by_func(
-        ibus_,
-        reinterpret_cast<gpointer>(G_CALLBACK(BusConnectedThunk)),
-        this);
-    // Disconnect signals for the panel service as well.
-    // When Chrome is shutting down, g_object_get_data fails and returns NULL.
-    // TODO(nona): Investigate the reason of failure(crosbug.com/129142).
-    void* attached_data = g_object_get_data(G_OBJECT(ibus_), kPanelObjectKey);
-    if (!attached_data)
-      return;
-    if (!G_TYPE_CHECK_INSTANCE_TYPE(attached_data, IBUS_TYPE_PANEL_SERVICE))
-      return;
-    IBusPanelService* ibus_panel_service = IBUS_PANEL_SERVICE(attached_data);
-    if (ibus_panel_service) {
-      g_signal_handlers_disconnect_by_func(
-          ibus_panel_service,
-          reinterpret_cast<gpointer>(G_CALLBACK(RegisterPropertiesThunk)),
-          this);
-      g_signal_handlers_disconnect_by_func(
-          ibus_panel_service,
-          reinterpret_cast<gpointer>(G_CALLBACK(UpdatePropertyThunk)),
-          this);
-    }
-  }
 }
 
 bool IBusControllerImpl::Start() {
-  MaybeInitializeIBusBus();
   if (IBusConnectionsAreAlive())
     return true;
   if (ibus_daemon_status_ == IBUS_DAEMON_STOP ||
@@ -546,8 +364,10 @@ bool IBusControllerImpl::ChangeInputMethod(const std::string& id) {
   // 4. Switch back to "mozc". ChangeInputMethod("mozc") is called, but it's
   //    basically NOP since ibus-daemon's current IME is already "mozc".
   //    IME properties are not sent to Chrome for the same reason.
-  if (id != current_input_method_id_)
-    RegisterProperties(NULL, NULL);
+  if (id != current_input_method_id_) {
+    const ibus::IBusPropertyList empty_list;
+    RegisterProperties(empty_list);
+  }
 
   current_input_method_id_ = id;
 
@@ -592,38 +412,7 @@ bool IBusControllerImpl::ActivateInputMethodProperty(const std::string& key) {
 }
 
 bool IBusControllerImpl::IBusConnectionsAreAlive() {
-  return (ibus_daemon_status_ == IBUS_DAEMON_RUNNING) &&
-      ibus_ && ibus_bus_is_connected(ibus_);
-}
-
-void IBusControllerImpl::MaybeRestoreConnections() {
-  if (IBusConnectionsAreAlive())
-    return;
-  if (IBusConnectionsAreAlive()) {
-    DVLOG(1) << "ibus-daemon and ibus-memconf processes are ready.";
-    ConnectPanelServiceSignals();
-    if (!current_input_method_id_.empty())
-      SendChangeInputMethodRequest(current_input_method_id_);
-  }
-}
-
-void IBusControllerImpl::MaybeInitializeIBusBus() {
-  if (ibus_)
-    return;
-
-  ibus_init();
-  // Establish IBus connection between ibus-daemon to change the current input
-  // method engine, properties, and so on.
-  ibus_ = ibus_bus_new();
-  DCHECK(ibus_);
-
-  // Register callback functions for IBusBus signals.
-  ConnectBusSignals();
-
-  if (ibus_bus_is_connected(ibus_)) {
-    DVLOG(1) << "IBus connection is ready: ibus-daemon is already running?";
-    BusConnected(ibus_);
-  }
+  return ibus_daemon_status_ == IBUS_DAEMON_RUNNING;
 }
 
 void IBusControllerImpl::SendChangeInputMethodRequest(const std::string& id) {
@@ -671,74 +460,16 @@ bool IBusControllerImpl::SetInputMethodConfigInternal(
   }
 }
 
-void IBusControllerImpl::ConnectBusSignals() {
-  if (!ibus_)
-    return;
-
-  // We use g_signal_connect_after here since the callback should be called
-  // *after* the IBusBusDisconnectedCallback in chromeos_input_method_ui.cc
-  // is called. chromeos_input_method_ui.cc attaches the panel service object
-  // to |ibus_|, and the callback in this file use the attached object.
-  g_signal_connect_after(ibus_,
-                         "connected",
-                         G_CALLBACK(BusConnectedThunk),
-                         this);
-}
-
-void IBusControllerImpl::ConnectPanelServiceSignals() {
-  if (!ibus_)
-    return;
-
-  IBusPanelService* ibus_panel_service = IBUS_PANEL_SERVICE(
-      g_object_get_data(G_OBJECT(ibus_), kPanelObjectKey));
-  if (!ibus_panel_service) {
-    DVLOG(1) << "IBusPanelService is NOT available.";
-    return;
-  }
-  // We don't _ref() or _weak_ref() the panel service object, since we're not
-  // interested in the life time of the object.
-  g_signal_connect(ibus_panel_service,
-                   "register-properties",
-                   G_CALLBACK(RegisterPropertiesThunk),
-                   this);
-  g_signal_connect(ibus_panel_service,
-                   "update-property",
-                   G_CALLBACK(UpdatePropertyThunk),
-                   this);
-}
-
-void IBusControllerImpl::BusConnected(IBusBus* bus) {
-  DVLOG(1) << "IBus connection is established.";
-  MaybeRestoreConnections();
-}
-
-void IBusControllerImpl::RegisterProperties(IBusPanelService* panel,
-                                            IBusPropList* ibus_prop_list) {
+void IBusControllerImpl::RegisterProperties(
+    const ibus::IBusPropertyList& ibus_prop_list) {
   // Note: |panel| can be NULL. See ChangeInputMethod().
-  DVLOG(1) << "RegisterProperties" << (ibus_prop_list ? "" : " (clear)");
-
   current_property_list_.clear();
-  if (ibus_prop_list) {
-    // You can call
-    //   DVLOG(1) << "\n" << PrintPropList(ibus_prop_list, 0);
-    // here to dump |ibus_prop_list|.
-    if (!FlattenPropertyList(ibus_prop_list, &current_property_list_)) {
-      // Clear properties on errors.
-      current_property_list_.clear();
-    }
-  }
+  if (!FlattenPropertyList(ibus_prop_list, &current_property_list_))
+    current_property_list_.clear(); // Clear properties on errors.
   FOR_EACH_OBSERVER(Observer, observers_, PropertyChanged());
 }
 
-void IBusControllerImpl::UpdateProperty(IBusPanelService* panel,
-                                        IBusProperty* ibus_prop) {
-  DVLOG(1) << "UpdateProperty";
-  DCHECK(ibus_prop);
-
-  // You can call
-  //   DVLOG(1) << "\n" << PrintProp(ibus_prop, 0);
-  // here to dump |ibus_prop|.
-
+void IBusControllerImpl::UpdateProperty(const ibus::IBusProperty& ibus_prop) {
   InputMethodPropertyList prop_list;  // our representation.
   if (!FlattenProperty(ibus_prop, &prop_list)) {
     // Don't update the UI on errors.
@@ -861,7 +592,10 @@ void IBusControllerImpl::IBusDaemonInitializationDone(
   DCHECK(input_method_ibus);
   input_method_ibus->OnConnected();
 
-  // Restores previous input method at the beggining of connection.
+  DBusThreadManager::Get()->GetIBusPanelService()->SetUpPropertyHandler(
+      controller);
+
+  // Restore previous input method at the beggining of connection.
   if (!controller->current_input_method_id_.empty()) {
     controller->SendChangeInputMethodRequest(
         controller->current_input_method_id_);
@@ -912,7 +646,6 @@ void IBusControllerImpl::OnIBusDaemonExit(GPid pid,
   LOG(ERROR) << "The ibus-daemon crashed. Re-launching...";
   controller->StartIBusDaemon();
 }
-#endif  // defined(HAVE_IBUS)
 
 // static
 bool IBusControllerImpl::FindAndUpdatePropertyForTesting(

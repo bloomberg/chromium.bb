@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_CONTROLLER_IMPL_H_
 
 #include <gio/gio.h>  // GAsyncResult and related types.
-#include <glib-object.h>
 
 #include <string>
 #include <vector>
@@ -14,20 +13,7 @@
 #include "base/process_util.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller_base.h"
 #include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
-#include "ui/base/glib/glib_signal.h"
-
-// Do not #include ibus.h here. That makes it impossible to compile unit tests
-// for the class.
-struct _IBusBus;
-struct _IBusConfig;
-struct _IBusPanelService;
-struct _IBusPropList;
-struct _IBusProperty;
-typedef struct _IBusBus IBusBus;
-typedef struct _IBusConfig IBusConfig;
-typedef struct _IBusPanelService IBusPanelService;
-typedef struct _IBusPropList IBusPropList;
-typedef struct _IBusProperty IBusProperty;
+#include "chromeos/dbus/ibus/ibus_panel_service.h"
 
 namespace ui {
 class InputMethodIBus;
@@ -41,7 +27,8 @@ struct InputMethodProperty;
 typedef std::vector<InputMethodProperty> InputMethodPropertyList;
 
 // The IBusController implementation.
-class IBusControllerImpl : public IBusControllerBase {
+class IBusControllerImpl : public IBusControllerBase,
+                           public ibus::IBusPanelPropertyHandlerInterface {
  public:
   IBusControllerImpl();
   virtual ~IBusControllerImpl();
@@ -70,47 +57,21 @@ class IBusControllerImpl : public IBusControllerBase {
     IBUS_DAEMON_STOP,
   };
 
-  // Functions that end with Thunk are used to deal with glib callbacks.
-  CHROMEG_CALLBACK_0(IBusControllerImpl, void, BusConnected, IBusBus*);
-  CHROMEG_CALLBACK_1(IBusControllerImpl, void, RegisterProperties,
-                     IBusPanelService*, IBusPropList*);
-  CHROMEG_CALLBACK_1(IBusControllerImpl, void, UpdateProperty,
-                     IBusPanelService*, IBusProperty*);
-
   // IBusControllerBase overrides:
   virtual bool SetInputMethodConfigInternal(
       const ConfigKeyType& key,
       const InputMethodConfigValue& value) OVERRIDE;
 
+  // ibus::IBusPanelPropertyHandlerInterface overrides:
+  virtual void RegisterProperties(
+      const ibus::IBusPropertyList& properties) OVERRIDE;
+  virtual void UpdateProperty(const ibus::IBusProperty& property) OVERRIDE;
+
   // Checks if |ibus_| and |ibus_config_| connections are alive.
   bool IBusConnectionsAreAlive();
 
-  // Restores connections to ibus-daemon and ibus-memconf if they are not ready.
-  void MaybeRestoreConnections();
-
-  // Initializes IBusBus object if it's not yet done.
-  void MaybeInitializeIBusBus();
-
-  // Creates IBusConfig object if it's not created yet AND |ibus_| connection
-  // is ready.
-  void MaybeRestoreIBusConfig();
-
-  // Destroys IBusConfig object if |ibus_| connection is not ready. This
-  // function does nothing if |ibus_config_| is NULL or |ibus_| connection is
-  // still alive. Note that the IBusConfig object can't be used when |ibus_|
-  // connection is not ready.
-  void MaybeDestroyIBusConfig();
-
   // Just calls ibus_bus_set_global_engine_async() with the |id|.
   void SendChangeInputMethodRequest(const std::string& id);
-
-  // Starts listening to the "connected", "disconnected", and
-  // "name-owner-changed" D-Bus signals from ibus-daemon.
-  void ConnectBusSignals();
-
-  // Starts listening to the "focus-in", "register-properties", and
-  // "update-property" D-Bus signals from ibus-daemon.
-  void ConnectPanelServiceSignals();
 
   // Adds address file watcher in FILE thread and then calls LaunchIBusDaemon.
   bool StartIBusDaemon();
@@ -141,11 +102,6 @@ class IBusControllerImpl : public IBusControllerBase {
   static void OnIBusDaemonExit(GPid pid,
                                gint status,
                                IBusControllerImpl* controller);
-
-  // Connection to the ibus-daemon via IBus API. These objects are used to
-  // call ibus-daemon's API (e.g. activate input methods, set config, ...)
-  IBusBus* ibus_;
-  IBusConfig* ibus_config_;
 
   // The current ibus_daemon address. This value is assigned at the launching
   // ibus-daemon and used in bus connection initialization.

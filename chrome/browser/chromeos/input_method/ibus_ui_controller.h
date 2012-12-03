@@ -5,6 +5,7 @@
 // The header files provides APIs for monitoring and controlling input
 // method UI status. The APIs encapsulate the APIs of IBus, the underlying
 // input method framework.
+// TODO(nona): Remove InputMethodLookupTable and IBusUiController.
 
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_UI_CONTROLLER_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_UI_CONTROLLER_H_
@@ -14,6 +15,7 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
+#include "chromeos/dbus/ibus/ibus_panel_service.h"
 
 namespace gfx {
 class Rect;
@@ -82,7 +84,7 @@ struct InputMethodLookupTable {
 };
 
 // IBusUiController is used to interact with the IBus daemon.
-class IBusUiController {
+class IBusUiController : public ibus::IBusPanelCandidateWindowHandlerInterface {
  public:
   class Observer {
    public:
@@ -109,26 +111,20 @@ class IBusUiController {
     // Called when the preedit text is updated.
     virtual void OnUpdatePreeditText(const std::string& utf8_text,
                                      unsigned int cursor, bool visible) = 0;
-
-    // Called when the connection is changed. |connected| is true if the
-    // connection is established, and false if the connection is closed.
-    virtual void OnConnectionChange(bool connected) = 0;
   };
+
+  IBusUiController();
+  virtual ~IBusUiController();
 
   // Creates an instance of the class. The constructor is unused.
   static IBusUiController* Create();
-
-  virtual ~IBusUiController();
-
-  // Connects to the IBus daemon.
-  virtual void Connect() = 0;
 
   // Adds and removes observers for IBus UI notifications. Clients must be
   // sure to remove the observer before they go away. To capture the
   // initial connection change, you should add an observer before calling
   // Connect().
-  virtual void AddObserver(Observer* observer) = 0;
-  virtual void RemoveObserver(Observer* observer) = 0;
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Notifies that a candidate is clicked. |CandidateClicked| signal will be
   // sent to the ibus-daemon.
@@ -137,27 +133,46 @@ class IBusUiController {
   //   |cursor_absolute_index|.
   // - |button| GdkEventButton::button (1: left button, etc.)
   // - |state|  GdkEventButton::state (key modifier flags)
-  virtual void NotifyCandidateClicked(int index, int button, int flags) = 0;
+  void NotifyCandidateClicked(int index, int button, int flags);
 
   // Notifies that the cursor up button is clicked. |CursorUp| signal will be
   // sent to the ibus-daemon
-  virtual void NotifyCursorUp() = 0;
+  void NotifyCursorUp();
 
   // Notifies that the cursor down button is clicked. |CursorDown| signal
   // will be sent to the ibus-daemon
-  virtual void NotifyCursorDown() = 0;
+  void NotifyCursorDown();
 
   // Notifies that the page up button is clicked. |PageUp| signal will be
   // sent to the ibus-daemon
-  virtual void NotifyPageUp() = 0;
+  void NotifyPageUp();
 
   // Notifies that the page down button is clicked. |PageDown| signal will be
   // sent to the ibus-daemon
-  virtual void NotifyPageDown() = 0;
-};
+  void NotifyPageDown();
 
-bool IsActiveForTesting(const std::string& input_method_id,
-                        const InputMethodDescriptors* descriptors);
+  // Handles cursor location update event. This is originate from
+  // SetCursorLocation method call, but we can bypass it on Chrome OS because
+  // candidate window is integrated with Chrome.
+  void SetCursorLocation(const gfx::Rect& cursor_location,
+                         const gfx::Rect& composition_head);
+
+ private:
+  // IBusPanelHandlerInterface overrides.
+  virtual void UpdateLookupTable(const ibus::IBusLookupTable& table,
+                                 bool visible) OVERRIDE;
+  virtual void HideLookupTable() OVERRIDE;
+  virtual void UpdateAuxiliaryText(const std::string& text,
+                                   bool visible) OVERRIDE;
+  virtual void HideAuxiliaryText() OVERRIDE;
+  virtual void UpdatePreeditText(const std::string& text, uint32 cursor_pos,
+                                 bool visible) OVERRIDE;
+  virtual void HidePreeditText() OVERRIDE;
+
+  ObserverList<Observer> observers_;
+
+  DISALLOW_COPY_AND_ASSIGN(IBusUiController);
+};
 
 }  // namespace input_method
 }  // namespace chromeos

@@ -12,6 +12,8 @@
 namespace chromeos {
 namespace input_method {
 
+class IBusController;
+
 // CandidateWindowController is used for controlling the input method
 // candidate window. Once the initialization is done, the controller
 // starts monitoring signals sent from the the background input method
@@ -37,7 +39,8 @@ class CandidateWindowController {
 
   // Gets an instance of CandidateWindowController. Caller has to delete the
   // returned object.
-  static CandidateWindowController* CreateCandidateWindowController();
+  static CandidateWindowController* CreateCandidateWindowController(
+      IBusController* controller);
 };
 
 }  // namespace input_method

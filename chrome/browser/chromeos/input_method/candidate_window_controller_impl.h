@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_view.h"
+#include "chrome/browser/chromeos/input_method/ibus_controller.h"
 #include "chrome/browser/chromeos/input_method/infolist_window_view.h"
 
 namespace views {
@@ -25,7 +26,8 @@ class DelayableWidget;
 // CandidateWindowController controls the CandidateWindow.
 class CandidateWindowControllerImpl : public CandidateWindowController,
                                       public CandidateWindowView::Observer,
-                                      public IBusUiController::Observer {
+                                      public IBusUiController::Observer,
+                                      public IBusController::Observer {
  public:
   CandidateWindowControllerImpl();
   virtual ~CandidateWindowControllerImpl();
@@ -87,7 +89,11 @@ class CandidateWindowControllerImpl : public CandidateWindowController,
       const InputMethodLookupTable& lookup_table) OVERRIDE;
   virtual void OnUpdatePreeditText(const std::string& utf8_text,
                                    unsigned int cursor, bool visible) OVERRIDE;
-  virtual void OnConnectionChange(bool connected) OVERRIDE;
+
+  // IBusController::Observer override
+  virtual void PropertyChanged() OVERRIDE;
+  virtual void OnConnected() OVERRIDE;
+  virtual void OnDisconnected() OVERRIDE;
 
   // Updates infolist bounds, if current bounds is up-to-date, this function
   // does nothing.

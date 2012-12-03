@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/input_method/candidate_window_view.h"
 #include "chrome/browser/chromeos/input_method/delayable_widget.h"
 #include "chrome/browser/chromeos/input_method/infolist_window_view.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_ASH)
@@ -38,7 +39,6 @@ bool CandidateWindowControllerImpl::Init() {
   // The observer should be added before Connect() so we can capture the
   // initial connection change.
   ibus_ui_controller_->AddObserver(this);
-  ibus_ui_controller_->Connect();
   return true;
 }
 
@@ -88,7 +88,7 @@ void CandidateWindowControllerImpl::CreateView() {
 }
 
 CandidateWindowControllerImpl::CandidateWindowControllerImpl()
-    : ibus_ui_controller_(IBusUiController::Create()),
+    : ibus_ui_controller_(new IBusUiController),
       candidate_window_(NULL),
       infolist_window_(NULL),
       latest_infolist_focused_index_(InfolistWindowView::InvalidFocusIndex()) {
@@ -303,11 +303,19 @@ void CandidateWindowControllerImpl::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void CandidateWindowControllerImpl::OnConnectionChange(bool connected) {
-  if (!connected) {
-    candidate_window_->HideAll();
-    infolist_window_->Hide();
-  }
+void CandidateWindowControllerImpl::PropertyChanged() {
+}
+
+void CandidateWindowControllerImpl::OnConnected() {
+  DBusThreadManager::Get()->GetIBusPanelService()->SetUpCandidateWindowHandler(
+      ibus_ui_controller_.get());
+}
+
+void CandidateWindowControllerImpl::OnDisconnected() {
+  candidate_window_->HideAll();
+  infolist_window_->Hide();
+  DBusThreadManager::Get()->GetIBusPanelService()->SetUpCandidateWindowHandler(
+      NULL);
 }
 
 // static

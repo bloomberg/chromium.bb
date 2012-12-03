@@ -94,6 +94,12 @@ class IBusPanelServiceImpl : public IBusPanelService {
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&IBusPanelServiceImpl::OnMethodExported,
                    weak_ptr_factory_.GetWeakPtr()));
+
+    // Request well known name to ibus-daemon.
+    bus->RequestOwnership(
+        ibus::panel::kServiceName,
+        base::Bind(&IBusPanelServiceImpl::OnRequestOwnership,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   virtual ~IBusPanelServiceImpl() {
@@ -314,6 +320,12 @@ class IBusPanelServiceImpl : public IBusPanelService {
                         bool success) {
     LOG_IF(WARNING, !success) << "Failed to export "
                               << interface_name << "." << method_name;
+  }
+
+  // Called when the well knwon name is acquired.
+  void OnRequestOwnership(const std::string& name, bool obtained) {
+    LOG_IF(ERROR, !obtained) << "Failed to acquire well known name:"
+                             << name;
   }
 
   // D-Bus bus object used for unregistering exported methods in dtor.
