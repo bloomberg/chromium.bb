@@ -296,7 +296,10 @@ float CalibrateFlingVelocity(float velocity) {
     nu += x * a;
     x *= normalized_velocity;
   }
-  return nu * velocity;
+  if (velocity < 0.f)
+    return std::max(nu * velocity, -GestureConfiguration::fling_velocity_cap());
+  else
+    return std::min(nu * velocity, GestureConfiguration::fling_velocity_cap());
 }
 
 }  // namespace

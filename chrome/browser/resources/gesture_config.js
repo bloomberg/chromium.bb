@@ -244,6 +244,11 @@ function GestureConfig() {
       key: 'fling_acceleration_curve_coefficient_3',
       label: '+',
       units: 'x<sup>0</sup>'
+    },
+    {
+      key: 'fling_velocity_cap',
+      label: 'Touchscreen Fling Velocity Cap',
+      units: 'pixels / second'
     }
   ];
 

@@ -78,6 +78,7 @@ const char* kPrefsToObserve[] = {
   prefs::kFlingAccelerationCurveCoefficient1,
   prefs::kFlingAccelerationCurveCoefficient2,
   prefs::kFlingAccelerationCurveCoefficient3,
+  prefs::kFlingVelocityCap,
   prefs::kLongPressTimeInSeconds,
   prefs::kMaxDistanceForTwoFingerTapInPixels,
   prefs::kMaxSecondsBetweenDoubleClick,
@@ -136,6 +137,8 @@ void GesturePrefsObserver::Update() {
       prefs_->GetDouble(prefs::kFlingAccelerationCurveCoefficient2));
   GestureConfiguration::set_fling_acceleration_curve_coefficients(3,
       prefs_->GetDouble(prefs::kFlingAccelerationCurveCoefficient3));
+  GestureConfiguration::set_fling_velocity_cap(
+      prefs_->GetDouble(prefs::kFlingVelocityCap));
   GestureConfiguration::set_long_press_time_in_seconds(
       prefs_->GetDouble(
           prefs::kLongPressTimeInSeconds));
@@ -254,6 +257,10 @@ void GesturePrefsObserverFactoryAura::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDoublePref(
       prefs::kFlingAccelerationCurveCoefficient3,
       GestureConfiguration::fling_acceleration_curve_coefficients(3),
+      PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDoublePref(
+      prefs::kFlingVelocityCap,
+      GestureConfiguration::fling_velocity_cap(),
       PrefService::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kLongPressTimeInSeconds,

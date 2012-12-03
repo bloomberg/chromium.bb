@@ -54,6 +54,7 @@ void AuraTestBase::SetUp() {
       2, 0.0452381f);
   ui::GestureConfiguration::set_fling_acceleration_curve_coefficients(
       3, 0.8f);
+  ui::GestureConfiguration::set_fling_velocity_cap(15000.0f);
 
   helper_.reset(new AuraTestHelper(&message_loop_));
   helper_->SetUp();

@@ -149,6 +149,12 @@ class UI_EXPORT GestureConfiguration {
   static float fling_acceleration_curve_coefficients(int i) {
     return fling_acceleration_curve_coefficients_[i];
   }
+  static float fling_velocity_cap() {
+    return fling_velocity_cap_;
+  }
+  static void set_fling_velocity_cap(float val) {
+    fling_velocity_cap_ = val;
+  }
 
  private:
   // These are listed in alphabetical order ignoring underscores, to
@@ -187,6 +193,7 @@ class UI_EXPORT GestureConfiguration {
   static double rail_break_proportion_;
   static double rail_start_proportion_;
   static float fling_acceleration_curve_coefficients_[NumAccelParams];
+  static float fling_velocity_cap_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureConfiguration);
 };

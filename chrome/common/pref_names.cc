@@ -2087,6 +2087,7 @@ const char kPinnedLauncherApps[] =
 // Boolean value indicating whether to show a logout button in the ash tray.
 const char kShowLogoutButtonInTray[] = "show_logout_button_in_tray";
 
+const char kFlingVelocityCap[] = "gesture.fling_velocity_cap";
 const char kLongPressTimeInSeconds[] =
     "gesture.long_press_time_in_seconds";
 const char kMaxDistanceBetweenTapsForDoubleTap[] =
