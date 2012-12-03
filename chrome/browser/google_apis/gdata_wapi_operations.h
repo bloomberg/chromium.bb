@@ -447,7 +447,6 @@ struct ResumeUploadResponse {
   GDataErrorCode code;
   int64 start_range_received;
   int64 end_range_received;  // inclusive. See below.
-  FilePath drive_file_path;
 };
 
 // Struct for passing params needed for DriveServiceInterface::ResumeUpload()
