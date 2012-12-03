@@ -154,6 +154,23 @@ class OwnersDatabaseTest(unittest.TestCase):
                                     [tom],
                                     ['content/baz'])
 
+  def test_per_file_with_spaces(self):
+    # This is the same as test_per_file(), except that we include spaces
+    # on the per-file line. brett isn't allowed to approve ugly.cc;
+    # tom is allowed to approve ugly.cc, but not froboz.h
+    self.files['/content/baz/OWNERS'] = owners_file(brett,
+        lines=['per-file ugly.* = tom@example.com'])
+    self.assert_dirs_not_covered_by(['content/baz/ugly.cc'],
+                                    [brett],
+                                    [])
+
+    self.assert_dirs_not_covered_by(['content/baz/ugly.cc'],
+                                    [tom],
+                                    [])
+    self.assert_dirs_not_covered_by(['content/baz/froboz.h'],
+                                    [tom],
+                                    ['content/baz'])
+
   def test_per_file__set_noparent(self):
     self.files['/content/baz/OWNERS'] = owners_file(brett,
         lines=['per-file ugly.*=tom@example.com',

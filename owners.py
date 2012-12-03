@@ -14,7 +14,7 @@ The syntax of the OWNERS file is, roughly:
 lines     := (\s* line? \s* "\n")*
 
 line      := directive
-          | "per-file" \s+ glob "=" directive
+          | "per-file" \s+ glob \s* "=" \s* directive
           | comment
 
 directive := "set noparent"
@@ -221,8 +221,8 @@ class Database(object):
 
       m = re.match("per-file (.+)=(.+)", line)
       if m:
-        glob_string = m.group(1)
-        directive = m.group(2)
+        glob_string = m.group(1).strip()
+        directive = m.group(2).strip()
         full_glob_string = self.os_path.join(self.root, dirpath, glob_string)
         if '/' in glob_string or '\\' in glob_string:
           raise SyntaxErrorInOwnersFile(owners_path, lineno,
