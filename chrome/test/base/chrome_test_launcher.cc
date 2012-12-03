@@ -110,10 +110,14 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
 };
 
 int main(int argc, char** argv) {
+// http://crbug.com/163931 Disabled until browser_tests ready on Linux Aura.
+#if defined(OS_LINUX) && defined(USE_AURA) && !defined(OS_CHROMEOS)
+  return 0;
+#endif
 #if defined(OS_WIN) && defined(USE_AURA)
   wchar_t filename[MAX_PATH];
   GetModuleFileName(NULL, filename, MAX_PATH);
-  // TODO(jam): early exit until interactive_ui_tests are green.
+  // http://crbug.com/154081: early exit until interactive_ui_tests are green.
   if (EndsWith(filename, L"interactive_ui_tests.exe", false)) {
     LOG(INFO) << "interactive_ui_tests on win aura are not ready yet.";
     return 0;
