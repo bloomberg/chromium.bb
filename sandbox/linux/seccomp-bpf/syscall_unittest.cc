@@ -54,6 +54,14 @@ TEST(Syscall, TrivialSyscallNoArgs) {
   EXPECT_EQ(SandboxSyscall(__NR_getpid), syscall(__NR_getpid));
 }
 
+TEST(Syscall, TrivialSyscallOneArg) {
+  int new_fd;
+  // Duplicate standard error and close it.
+  ASSERT_GE(new_fd = SandboxSyscall(__NR_dup, 2), 0);
+  int close_return_value = HANDLE_EINTR(SandboxSyscall(__NR_close, new_fd));
+  ASSERT_EQ(close_return_value, 0);
+}
+
 TEST(Syscall, ComplexSyscallSixArgs) {
   int fd;
   ASSERT_LE(0, fd = SandboxSyscall(__NR_open, "/dev/null", O_RDWR, 0L));
