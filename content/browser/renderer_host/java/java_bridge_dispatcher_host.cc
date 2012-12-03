@@ -29,6 +29,15 @@ class JavaBridgeThread : public base::Thread {
     Stop();
   }
 };
+
+void CleanUpStubs(const std::vector<base::WeakPtr<NPObjectStub> > & stubs) {
+  for (size_t i = 0; i < stubs.size(); ++i) {
+    if (stubs[i]) {
+      stubs[i]->DeleteSoon();
+    }
+  }
+}
+
 base::LazyInstance<JavaBridgeThread> g_background_thread =
     LAZY_INSTANCE_INITIALIZER;
 }  // namespace
@@ -40,6 +49,9 @@ JavaBridgeDispatcherHost::JavaBridgeDispatcherHost(
 }
 
 JavaBridgeDispatcherHost::~JavaBridgeDispatcherHost() {
+  g_background_thread.Get().message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&CleanUpStubs, stubs_));
 }
 
 void JavaBridgeDispatcherHost::AddNamedObject(const string16& name,
@@ -133,13 +145,19 @@ void JavaBridgeDispatcherHost::CreateObjectStub(NPObject* object,
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   }
 
-  // NPObjectStub takes a ref to the NPObject. The lifetime of the NPObjectStub
-  // is governed by that of the NPObjectProxy in the renderer, via the channel.
+  // In a typical scenario, the lifetime of each NPObjectStub is governed by
+  // that of the NPObjectProxy in the renderer, via the channel. However,
+  // we cannot guaranteed that the renderer always terminates cleanly
+  // (crashes / sometimes just unavoidable). We keep a weak reference to
+  // it now and schedule a delete on it when this host is getting deleted.
+
   // Pass 0 for the containing window, as it's only used by plugins to pump the
   // window message queue when a method on a renderer-side object causes a
   // dialog to be displayed, and the Java Bridge does not need this
   // functionality. The page URL is also not required.
-  new NPObjectStub(object, channel_, route_id, 0, GURL());
+  stubs_.push_back(
+      (new NPObjectStub(object, channel_, route_id, 0, GURL()))->AsWeakPtr());
+
   // The NPObjectStub takes a reference to the NPObject. Release the ref added
   // in CreateNPVariantParam().
   WebKit::WebBindings::releaseObject(object);
