@@ -204,7 +204,6 @@ PP_Bool PPB_Instance_Proxy::BindGraphics(PP_Instance instance,
   // all devices.
   HostResource host_resource;
   PP_Resource pp_resource = 0;
-  PP_Bool result = PP_FALSE;
   if (device) {
     Resource* resource =
         PpapiGlobals::Get()->GetResourceTracker()->GetResource(device);
@@ -215,8 +214,8 @@ PP_Bool PPB_Instance_Proxy::BindGraphics(PP_Instance instance,
   } else {
     // Passing 0 means unbinding all devices.
     dispatcher()->Send(new PpapiHostMsg_PPBInstance_BindGraphics(
-        API_ID_PPB_INSTANCE, instance, 0, &result));
-    return result;
+        API_ID_PPB_INSTANCE, instance, 0));
+    return PP_TRUE;
   }
 
   // We need to pass different resource to Graphics 2D and 3D right now.  Once
@@ -225,14 +224,14 @@ PP_Bool PPB_Instance_Proxy::BindGraphics(PP_Instance instance,
   EnterResourceNoLock<PPB_Graphics3D_API> enter_3d(device, false);
   if (enter_2d.succeeded()) {
     dispatcher()->Send(new PpapiHostMsg_PPBInstance_BindGraphics(
-        API_ID_PPB_INSTANCE, instance, pp_resource,
-        &result));
+        API_ID_PPB_INSTANCE, instance, pp_resource));
+    return PP_TRUE;
   } else if (enter_3d.succeeded()) {
     dispatcher()->Send(new PpapiHostMsg_PPBInstance_BindGraphics(
-        API_ID_PPB_INSTANCE, instance, host_resource.host_resource(),
-        &result));
+        API_ID_PPB_INSTANCE, instance, host_resource.host_resource()));
+    return PP_TRUE;
   }
-  return result;
+  return PP_FALSE;
 }
 
 PP_Bool PPB_Instance_Proxy::IsFullFrame(PP_Instance instance) {
@@ -822,12 +821,14 @@ void PPB_Instance_Proxy::OnHostMsgGetOwnerElementObject(
 }
 
 void PPB_Instance_Proxy::OnHostMsgBindGraphics(PP_Instance instance,
-                                               PP_Resource device,
-                                               PP_Bool* result) {
+                                               PP_Resource device) {
+  // Note that we ignroe the return value here. Otherwise, this would need to
+  // be a slow sync call, and the plugin side of the proxy will have already
+  // validated the resources, so we shouldn't see errors here that weren't
+  // already caught.
   EnterInstanceNoLock enter(instance);
-  if (enter.succeeded()) {
-    *result = enter.functions()->BindGraphics(instance, device);
-  }
+  if (enter.succeeded())
+    enter.functions()->BindGraphics(instance, device);
 }
 
 void PPB_Instance_Proxy::OnHostMsgGetAudioHardwareOutputSampleRate(

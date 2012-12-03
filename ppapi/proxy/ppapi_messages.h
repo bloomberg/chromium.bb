@@ -943,10 +943,9 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_GetWindowObject,
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_GetOwnerElementObject,
                            PP_Instance /* instance */,
                            ppapi::proxy::SerializedVar /* result */)
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_BindGraphics,
-                           PP_Instance /* instance */,
-                           PP_Resource /* device */,
-                           PP_Bool /* result */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_BindGraphics,
+                    PP_Instance /* instance */,
+                    PP_Resource /* device */)
 IPC_SYNC_MESSAGE_ROUTED1_1(
     PpapiHostMsg_PPBInstance_GetAudioHardwareOutputSampleRate,
                            PP_Instance /* instance */,

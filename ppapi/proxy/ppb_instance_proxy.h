@@ -165,8 +165,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   void OnHostMsgGetOwnerElementObject(PP_Instance instance,
                                       SerializedVarReturnValue result);
   void OnHostMsgBindGraphics(PP_Instance instance,
-                             PP_Resource device,
-                             PP_Bool* result);
+                             PP_Resource device);
   void OnHostMsgIsFullFrame(PP_Instance instance, PP_Bool* result);
   void OnHostMsgExecuteScript(PP_Instance instance,
                               SerializedVarReceiveInput script,
