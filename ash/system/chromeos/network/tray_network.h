@@ -12,6 +12,8 @@
 namespace ash {
 namespace internal {
 
+class TrayNetworkStateObserver;
+
 namespace tray {
 class NetworkDefaultView;
 class NetworkDetailedView;
@@ -24,13 +26,11 @@ class NetworkTrayView;
 class TrayNetwork : public SystemTrayItem,
                     public NetworkObserver {
  public:
-  enum DetailedViewType {
-    LIST_VIEW,
-    WIFI_VIEW,
-  };
-
   explicit TrayNetwork(SystemTray* system_tray);
   virtual ~TrayNetwork();
+
+  tray::NetworkDetailedView* detailed() { return detailed_; }
+  void set_request_wifi_view(bool b) { request_wifi_view_ = b; }
 
   // Overridden from SystemTrayItem.
   virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;
@@ -71,6 +71,7 @@ class TrayNetwork : public SystemTrayItem,
   tray::NetworkNotificationView* notification_;
   scoped_ptr<tray::NetworkMessages> messages_;
   bool request_wifi_view_;
+  scoped_ptr<TrayNetworkStateObserver> network_state_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayNetwork);
 };

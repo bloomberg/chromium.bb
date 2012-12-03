@@ -98,11 +98,33 @@ NetworkListDetailedViewBase::~NetworkListDetailedViewBase() {
     info_bubble_->GetWidget()->CloseNow();
 }
 
+// Overridden from NetworkDetailedView:
 void NetworkListDetailedViewBase::Init() {
   CreateItems();
   Update();
   Shell::GetInstance()->tray_delegate()->RequestNetworkScan();
 }
+
+NetworkDetailedView::DetailedViewType
+    NetworkListDetailedViewBase::GetViewType() const {
+  return NetworkDetailedView::LIST_VIEW;
+}
+
+void NetworkListDetailedViewBase::ManagerChanged() {
+  Update();
+}
+
+void NetworkListDetailedViewBase::NetworkListChanged(
+    const NetworkStateList& networks) {
+  Update();
+}
+
+void NetworkListDetailedViewBase::NetworkServiceChanged(
+    const chromeos::NetworkState* network) {
+  Update();
+}
+
+// Private methods
 
 void NetworkListDetailedViewBase::Update() {
   UpdateAvailableNetworkList();
@@ -111,12 +133,6 @@ void NetworkListDetailedViewBase::Update() {
   UpdateNetworkExtra();
 
   Layout();
-}
-
-// Overridden from NetworkDetailedView:
-NetworkDetailedView::DetailedViewType
-    NetworkListDetailedViewBase::GetViewType() const {
-  return NetworkDetailedView::LIST_VIEW;
 }
 
 void NetworkListDetailedViewBase::CreateItems() {

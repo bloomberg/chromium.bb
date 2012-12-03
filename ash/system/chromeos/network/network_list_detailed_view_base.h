@@ -31,10 +31,13 @@ class NetworkListDetailedViewBase : public NetworkDetailedView,
                               int header_string_id);
   virtual ~NetworkListDetailedViewBase();
 
-  // Overridden from NetworkDetailedView:
+  // Overridden from NetworkDetailedView.
   virtual void Init() OVERRIDE;
   virtual NetworkDetailedView::DetailedViewType GetViewType() const OVERRIDE;
-  virtual void Update() OVERRIDE;
+  virtual void ManagerChanged() OVERRIDE;
+  virtual void NetworkListChanged(const NetworkStateList& networks) OVERRIDE;
+  virtual void NetworkServiceChanged(
+      const chromeos::NetworkState* network) OVERRIDE;
 
  protected:
   void AppendInfoButtonToHeader();
@@ -65,6 +68,7 @@ class NetworkListDetailedViewBase : public NetworkDetailedView,
   // Returns true if custom link is clicked on.
   virtual bool CustomLinkClickedOn(views::View* sender) = 0;
 
+  void Update();
   void CreateItems();
   void UpdateAvailableNetworkList();
   void AppendHeaderEntry(int header_string_id);

@@ -6,14 +6,20 @@
 
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/network_list_detailed_view_base.h"
+#include "ash/system/chromeos/network/network_state_list_detailed_view.h"
+#include "ash/system/chromeos/network/tray_network_state_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_notification_view.h"
+#include "base/command_line.h"
+#include "chromeos/chromeos_switches.h"
+#include "chromeos/network/network_state_handler.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/link.h"
@@ -83,8 +89,8 @@ class NetworkMessages {
 
 class NetworkTrayView : public TrayItemView {
  public:
-  NetworkTrayView(SystemTrayItem* owner, ColorTheme size, bool tray_icon)
-      : TrayItemView(owner), color_theme_(size), tray_icon_(tray_icon) {
+  NetworkTrayView(SystemTrayItem* owner, ColorTheme size)
+      : TrayItemView(owner), color_theme_(size) {
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
 
@@ -103,15 +109,13 @@ class NetworkTrayView : public TrayItemView {
 
   void Update(const NetworkIconInfo& info) {
     image_view_->SetImage(info.image);
-    if (tray_icon_)
-      SetVisible(info.tray_icon_visible);
+    SetVisible(info.tray_icon_visible);
     SchedulePaint();
   }
 
  private:
   views::ImageView* image_view_;
   ColorTheme color_theme_;
-  bool tray_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkTrayView);
 };
@@ -401,7 +405,15 @@ class NetworkWifiDetailedView : public NetworkDetailedView {
     return NetworkDetailedView::WIFI_VIEW;
   }
 
-  virtual void Update() OVERRIDE {}
+  virtual void ManagerChanged() OVERRIDE {
+  }
+
+  virtual void NetworkListChanged(const NetworkStateList& networks) OVERRIDE {
+  }
+
+  virtual void NetworkServiceChanged(
+      const chromeos::NetworkState* network) OVERRIDE {
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkWifiDetailedView);
@@ -525,6 +537,10 @@ TrayNetwork::TrayNetwork(SystemTray* system_tray)
       notification_(NULL),
       messages_(new tray::NetworkMessages()),
       request_wifi_view_(false) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableNewNetworkHandlers)) {
+    network_state_observer_.reset(new TrayNetworkStateObserver(this));
+  }
 }
 
 TrayNetwork::~TrayNetwork() {
@@ -532,7 +548,7 @@ TrayNetwork::~TrayNetwork() {
 
 views::View* TrayNetwork::CreateTrayView(user::LoginStatus status) {
   CHECK(tray_ == NULL);
-  tray_ = new tray::NetworkTrayView(this, tray::LIGHT, true /*tray_icon*/);
+  tray_ = new tray::NetworkTrayView(this, tray::LIGHT);
   return tray_;
 }
 
@@ -555,8 +571,13 @@ views::View* TrayNetwork::CreateDetailedView(user::LoginStatus status) {
                                                   !delegate->GetWifiEnabled());
     request_wifi_view_ = false;
   } else {
-    detailed_ = new tray::NetworkListDetailedView(
-        this, status, IDS_ASH_STATUS_TRAY_NETWORK);
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kEnableNewNetworkHandlers)) {
+      detailed_ = new tray::NetworkStateListDetailedView(this, status);
+    } else {
+      detailed_ = new tray::NetworkListDetailedView(
+          this, status, IDS_ASH_STATUS_TRAY_NETWORK);
+    }
     detailed_->Init();
   }
   return detailed_;
@@ -599,7 +620,7 @@ void TrayNetwork::OnNetworkRefresh(const NetworkIconInfo& info) {
   if (default_)
     default_->Update();
   if (detailed_)
-    detailed_->Update();
+    detailed_->ManagerChanged();
 }
 
 void TrayNetwork::SetNetworkMessage(NetworkTrayDelegate* delegate,
@@ -629,6 +650,10 @@ void TrayNetwork::ClearNetworkMessage(MessageType message_type) {
 }
 
 void TrayNetwork::OnWillToggleWifi() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableNewNetworkHandlers)) {
+    return;  // Handled in TrayNetworkStateObserver::NetworkManagerChanged()
+  }
   if (!detailed_ ||
       detailed_->GetViewType() == tray::NetworkDetailedView::WIFI_VIEW) {
     request_wifi_view_ = true;

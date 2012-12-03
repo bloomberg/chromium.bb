@@ -182,7 +182,7 @@ void TrayVPN::OnNetworkRefresh(const NetworkIconInfo& info) {
   if (default_)
     default_->Update();
   if (detailed_)
-    detailed_->Update();
+    detailed_->ManagerChanged();
 }
 
 void TrayVPN::SetNetworkMessage(NetworkTrayDelegate* delegate,
