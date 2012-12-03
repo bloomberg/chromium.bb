@@ -116,11 +116,7 @@ void ZombieDealloc(id self, SEL _cmd) {
   // class without C++ destructors or associative references, so it
   // won't hurt anything.
   objc_destructInstance(self);
-  // TODO(shess): Temporarily disable clearing the object to debug
-  // http://crbug.com/154483
-#if 0
   memset(self, '!', size);
-#endif
 
   // If the instance is big enough, make it into a fat zombie and have
   // it remember the old |isa|.  Otherwise make it a regular zombie.
