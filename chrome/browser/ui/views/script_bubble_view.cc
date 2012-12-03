@@ -186,8 +186,10 @@ void ScriptBubbleView::Init() {
 
 void ScriptBubbleView::OnImageLoaded(size_t index,
                                      const gfx::Image& image) {
-  const gfx::ImageSkia* image_skia = image.ToImageSkia();
-  entries_[index].extension_imageview->SetImage(image_skia);
+  if (!image.IsEmpty()) {
+    const gfx::ImageSkia* image_skia = image.ToImageSkia();
+    entries_[index].extension_imageview->SetImage(image_skia);
+  }
 }
 
 ScriptBubbleController* ScriptBubbleView::GetScriptBubbleController() {
