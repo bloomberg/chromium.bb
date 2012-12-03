@@ -180,6 +180,8 @@
         'browser/ui/aura/stacking_client_aura.cc',
         'browser/ui/aura/stacking_client_aura.h',
         'browser/ui/aura/tabs/dock_info_aurax11.cc',
+        'browser/ui/autofill/autofill_dialog_comboboxes.cc',
+        'browser/ui/autofill/autofill_dialog_comboboxes.h',
         'browser/ui/autofill/autofill_dialog_controller.cc',
         'browser/ui/autofill/autofill_dialog_controller.h',
         'browser/ui/autofill/autofill_dialog_view.cc',

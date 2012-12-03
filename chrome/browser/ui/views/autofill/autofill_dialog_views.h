@@ -52,7 +52,6 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual bool UseChromeStyle() const OVERRIDE;
-  virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
 
@@ -65,6 +64,7 @@ class AutofillDialogViews : public AutofillDialogView,
 
  private:
   typedef std::map<const DetailInput*, views::Textfield*> TextfieldMap;
+  typedef std::map<const DetailInput*, views::Combobox*> ComboboxMap;
 
   // A convenience struct for holding pointers to views within each detail
   // section. None of the member pointers are owned.
@@ -80,6 +80,8 @@ class AutofillDialogViews : public AutofillDialogView,
     views::View* manual_input;
     // The textfields in |manual_input|, tracked by their DetailInput.
     TextfieldMap textfields;
+    // The comboboxes in |manual_input|, tracked by their DetailInput.
+    ComboboxMap comboboxes;
   };
 
   void InitChildViews();

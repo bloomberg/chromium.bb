@@ -190,6 +190,9 @@ AutofillFieldType FieldTypeFromAutocompleteType(
       return CREDIT_CARD_EXP_4_DIGIT_YEAR;
   }
 
+  if (autocomplete_type == "cc-csc")
+    return CREDIT_CARD_VERIFICATION_CODE;
+
   if (autocomplete_type == "tel")
     return PHONE_HOME_WHOLE_NUMBER;
 

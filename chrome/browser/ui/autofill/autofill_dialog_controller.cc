@@ -18,6 +18,23 @@ namespace autofill {
 
 namespace {
 
+// Returns true if |input| should be shown when |field| has been requested.
+bool InputTypeMatchesFieldType(const DetailInput& input,
+                               const AutofillField& field) {
+  // If any credit card expiration info is asked for, show both month and year
+  // inputs.
+  if (field.type() == CREDIT_CARD_EXP_4_DIGIT_YEAR ||
+      field.type() == CREDIT_CARD_EXP_2_DIGIT_YEAR ||
+      field.type() == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR ||
+      field.type() == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR ||
+      field.type() == CREDIT_CARD_EXP_MONTH) {
+    return input.type == CREDIT_CARD_EXP_4_DIGIT_YEAR ||
+           input.type == CREDIT_CARD_EXP_MONTH;
+  }
+
+  return input.type == field.type();
+}
+
 // Returns true if |input| should be used for a site-requested |field|. If
 // non-empty, |section_suffix| overrides the section specified by |input|.
 bool DetailInputMatchesFieldWithSection(const std::string& section_suffix,
@@ -25,7 +42,7 @@ bool DetailInputMatchesFieldWithSection(const std::string& section_suffix,
                                         const AutofillField& field) {
   bool right_section = section_suffix.empty() ||
       EndsWith(field.section(), section_suffix, false);
-  return input.type == field.type() && right_section;
+  return InputTypeMatchesFieldType(input, field) && right_section;
 }
 
 // Returns true if |input| should be used for a site-requested |field|.
@@ -142,7 +159,8 @@ void AutofillDialogController::Show() {
 
   const DetailInput kCCInputs[] = {
     { ++row_id, CREDIT_CARD_NUMBER, "Card number" },
-    { ++row_id, CREDIT_CARD_EXP_2_DIGIT_YEAR, "Expiration MM/YY" },
+    { ++row_id, CREDIT_CARD_EXP_MONTH },
+    {   row_id, CREDIT_CARD_EXP_4_DIGIT_YEAR },
     {   row_id, CREDIT_CARD_VERIFICATION_CODE, "CVC" },
     { ++row_id, CREDIT_CARD_NAME, "Cardholder name" },
   };
@@ -271,6 +289,20 @@ const DetailInputs& AutofillDialogController::RequestedFieldsForSection(
   return requested_shipping_fields_;
 }
 
+ui::ComboboxModel* AutofillDialogController::ComboboxModelForAutofillType(
+    AutofillFieldType type) {
+  switch (type) {
+    case CREDIT_CARD_EXP_MONTH:
+      return &cc_exp_month_combobox_model_;
+
+    case CREDIT_CARD_EXP_4_DIGIT_YEAR:
+      return &cc_exp_year_combobox_model_;
+
+    default:
+      return NULL;
+  }
+}
+
 ui::ComboboxModel* AutofillDialogController::ComboboxModelForSection(
     DialogSection section) {
   return SuggestionsModelForSection(section);
@@ -299,21 +331,21 @@ void AutofillDialogController::GenerateComboboxModels() {
       PersonalDataManagerFactory::GetForProfile(profile_);
   const std::vector<CreditCard*>& cards = manager->credit_cards();
   for (size_t i = 0; i < cards.size(); ++i) {
-    suggested_cc_.AddItem(cards[i]->Label(), cards[i]->guid());
+    suggested_cc_.AddItem(cards[i]->guid(), cards[i]->Label());
   }
-  suggested_cc_.AddItem(ASCIIToUTF16("Enter new card"), "");
+  suggested_cc_.AddItem("", ASCIIToUTF16("Enter new card"));
 
   const std::vector<AutofillProfile*>& profiles = manager->GetProfiles();
   for (size_t i = 0; i < profiles.size(); ++i) {
     string16 email = profiles[i]->GetCanonicalizedInfo(EMAIL_ADDRESS);
     if (!email.empty())
-      suggested_email_.AddItem(email, profiles[i]->guid());
-    suggested_billing_.AddItem(profiles[i]->Label(), profiles[i]->guid());
-    suggested_shipping_.AddItem(profiles[i]->Label(), profiles[i]->guid());
+      suggested_email_.AddItem(profiles[i]->guid(), email);
+    suggested_billing_.AddItem(profiles[i]->guid(), profiles[i]->Label());
+    suggested_shipping_.AddItem(profiles[i]->guid(), profiles[i]->Label());
   }
-  suggested_billing_.AddItem(ASCIIToUTF16("Enter new billing"), "");
-  suggested_email_.AddItem(ASCIIToUTF16("Enter new email"), "");
-  suggested_shipping_.AddItem(ASCIIToUTF16("Enter new shipping"), "");
+  suggested_billing_.AddItem("", ASCIIToUTF16("Enter new billing"));
+  suggested_email_.AddItem("", ASCIIToUTF16("Enter new email"));
+  suggested_shipping_.AddItem("", ASCIIToUTF16("Enter new shipping"));
 }
 
 void AutofillDialogController::PopulateInputsWithGuesses() {
@@ -407,8 +439,8 @@ void AutofillDialogController::FillOutputForSection(DialogSection section) {
                                      base::Bind(DetailInputMatchesField));
 }
 
-AutofillDialogController::SuggestionsComboboxModel* AutofillDialogController::
-    SuggestionsModelForSection(DialogSection section) {
+SuggestionsComboboxModel* AutofillDialogController::SuggestionsModelForSection(
+    DialogSection section) {
   switch (section) {
     case SECTION_EMAIL:
       return &suggested_email_;
@@ -424,32 +456,4 @@ AutofillDialogController::SuggestionsComboboxModel* AutofillDialogController::
   return NULL;
 }
 
-// SuggestionsComboboxModel ----------------------------------------------------
-
-AutofillDialogController::SuggestionsComboboxModel::SuggestionsComboboxModel() {
-}
-
-AutofillDialogController::SuggestionsComboboxModel::
-    ~SuggestionsComboboxModel() {}
-
-void AutofillDialogController::SuggestionsComboboxModel::AddItem(
-    const string16& item, const std::string& key) {
-  items_.push_back(std::make_pair(key, item));
-}
-
-std::string AutofillDialogController::SuggestionsComboboxModel::GetItemKeyAt(
-    int index) {
-  return items_[index].first;
-}
-
-int AutofillDialogController::SuggestionsComboboxModel::GetItemCount() const {
-  return items_.size();
-}
-
-string16 AutofillDialogController::SuggestionsComboboxModel::GetItemAt(
-    int index) {
-  return items_[index].second;
-}
-
 }  // namespace autofill
-

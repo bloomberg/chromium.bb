@@ -14,6 +14,7 @@
 #include "base/string16.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_comboboxes.h"
 #include "ui/base/models/combobox_model.h"
 
 class Profile;
@@ -89,6 +90,7 @@ class AutofillDialogController {
   // Returns the set of inputs the page has requested which fall under
   // |section|.
   const DetailInputs& RequestedFieldsForSection(DialogSection section) const;
+  ui::ComboboxModel* ComboboxModelForAutofillType(AutofillFieldType type);
   // Returns the model for suggestions for fields that fall under |section|.
   ui::ComboboxModel* ComboboxModelForSection(DialogSection section);
 
@@ -99,28 +101,6 @@ class AutofillDialogController {
   content::WebContents* web_contents() { return contents_; }
 
  private:
-  // A model for the comboboxes that allow the user to select known data.
-  class SuggestionsComboboxModel : public ui::ComboboxModel {
-   public:
-    SuggestionsComboboxModel();
-    virtual ~SuggestionsComboboxModel();
-
-    void AddItem(const string16& display_label, const std::string& key);
-    std::string GetItemKeyAt(int index);
-
-    // ui::Combobox implementation:
-    virtual int GetItemCount() const OVERRIDE;
-    virtual string16 GetItemAt(int index) OVERRIDE;
-
-   private:
-    // The items this model represents, in presentation order. The first
-    // string is the "key" which identifies the item. The second is the
-    // display string for the item.
-    std::vector<std::pair<std::string, string16> > items_;
-
-    DISALLOW_COPY_AND_ASSIGN(SuggestionsComboboxModel);
-  };
-
   // Determines whether |input| and |field| match.
   typedef base::Callback<bool(const DetailInput& input,
                               const AutofillField& field)> InputFieldComparator;
@@ -159,6 +139,10 @@ class AutofillDialogController {
   DetailInputs requested_cc_fields_;
   DetailInputs requested_billing_fields_;
   DetailInputs requested_shipping_fields_;
+
+  // Models for the credit card expiration inputs.
+  MonthComboboxModel cc_exp_month_combobox_model_;
+  YearComboboxModel cc_exp_year_combobox_model_;
 
   // Models for the suggestion views.
   SuggestionsComboboxModel suggested_email_;

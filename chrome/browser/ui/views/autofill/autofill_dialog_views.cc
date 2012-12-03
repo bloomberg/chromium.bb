@@ -105,6 +105,13 @@ void AutofillDialogViews::GetUserInput(DialogSection section,
        it != group->textfields.end(); ++it) {
     output->insert(std::make_pair(it->first, it->second->text()));
   }
+  for (ComboboxMap::iterator it = group->comboboxes.begin();
+       it != group->comboboxes.end(); ++it) {
+    views::Combobox* combobox = it->second;
+    output->insert(std::make_pair(
+        it->first,
+        combobox->model()->GetItemAt(combobox->selected_index())));
+  }
 }
 
 bool AutofillDialogViews::UseBillingForShipping() {
@@ -146,14 +153,6 @@ bool AutofillDialogViews::IsDialogButtonEnabled(ui::DialogButton button) const {
 
 bool AutofillDialogViews::UseChromeStyle() const {
   return true;
-}
-
-ui::ModalType AutofillDialogViews::GetModalType() const {
-#if defined(USE_ASH)
-  return ui::MODAL_TYPE_CHILD;
-#else
-  return views::WidgetDelegate::GetModalType();
-#endif
 }
 
 bool AutofillDialogViews::Cancel() {
@@ -300,6 +299,7 @@ views::View* AutofillDialogViews::CreateInputsContainer(DialogSection section) {
 views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
   const DetailInputs& inputs = controller_->RequestedFieldsForSection(section);
   TextfieldMap* textfields = &GroupForSection(section)->textfields;
+  ComboboxMap* comboboxes = &GroupForSection(section)->comboboxes;
 
   views::View* view = new views::View();
   views::GridLayout* layout = new views::GridLayout(view);
@@ -335,11 +335,27 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
                           0,
                           0);
 
-    views::Textfield* field = new views::Textfield();
-    field->set_placeholder_text(ASCIIToUTF16(input.placeholder_text));
-    field->SetText(input.starting_value);
-    textfields->insert(std::make_pair(&input, field));
-    layout->AddView(field);
+    ui::ComboboxModel* input_model =
+        controller_->ComboboxModelForAutofillType(input.type);
+    // TODO(estade): TextFields and Comboboxes need to be the same height.
+    if (input_model) {
+      views::Combobox* combobox = new views::Combobox(input_model);
+      comboboxes->insert(std::make_pair(&input, combobox));
+      layout->AddView(combobox);
+
+      for (int i = 0; i < input_model->GetItemCount(); ++i) {
+        if (input.starting_value == input_model->GetItemAt(i)) {
+          combobox->SetSelectedIndex(i);
+          break;
+        }
+      }
+    } else {
+      views::Textfield* field = new views::Textfield();
+      field->set_placeholder_text(ASCIIToUTF16(input.placeholder_text));
+      field->SetText(input.starting_value);
+      textfields->insert(std::make_pair(&input, field));
+      layout->AddView(field);
+    }
   }
 
   return view;
