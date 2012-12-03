@@ -22,7 +22,7 @@ AshFocusRules::~AshFocusRules() {
 // AshFocusRules, views::corewm::FocusRules:
 
 bool AshFocusRules::CanActivateWindow(aura::Window* window) {
-  return !!window->parent();
+  return window && !!window->parent();
 }
 
 bool AshFocusRules::CanFocusWindow(aura::Window* window) {

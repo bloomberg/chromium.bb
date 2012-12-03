@@ -18,7 +18,8 @@ namespace ash {
 namespace internal {
 
 WorkspaceController::WorkspaceController(aura::Window* viewport)
-    : viewport_(viewport),
+    : ActivationChangeShim(viewport->GetRootWindow()),
+      viewport_(viewport),
       workspace_cycler_(NULL) {
   aura::RootWindow* root_window = viewport->GetRootWindow();
   workspace_manager_.reset(new WorkspaceManager(viewport));

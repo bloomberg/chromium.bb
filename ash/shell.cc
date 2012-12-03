@@ -36,6 +36,7 @@
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/app_list_controller.h"
 #include "ash/wm/ash_activation_controller.h"
+#include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/base_layout_manager.h"
 #include "ash/wm/capture_controller.h"
 #include "ash/wm/coordinate_conversion.h"
@@ -83,6 +84,8 @@
 #include "ui/gfx/size.h"
 #include "ui/ui_controls/ui_controls.h"
 #include "ui/views/corewm/compound_event_filter.h"
+#include "ui/views/corewm/corewm_switches.h"
+#include "ui/views/corewm/focus_controller.h"
 #include "ui/views/corewm/input_method_event_filter.h"
 #include "ui/views/corewm/shadow_controller.h"
 #include "ui/views/corewm/visibility_controller.h"
@@ -173,6 +176,11 @@ class AshVisibilityController : public views::corewm::VisibilityController {
   DISALLOW_COPY_AND_ASSIGN(AshVisibilityController);
 };
 
+bool UseFocusController() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      views::corewm::switches::kUseFocusController);
+}
+
 }  // namespace
 
 // static
@@ -215,6 +223,7 @@ Shell::Shell(ShellDelegate* delegate)
     : screen_(new ScreenAsh),
       active_root_window_(NULL),
       delegate_(delegate),
+      activation_client_(NULL),
 #if defined(OS_CHROMEOS)
       output_configurator_(new chromeos::OutputConfigurator()),
       output_configurator_animation_(
@@ -428,12 +437,20 @@ void Shell::Init() {
   env_filter_.reset(new views::corewm::CompoundEventFilter);
   AddPreTargetHandler(env_filter_.get());
 
-  focus_client_.reset(new aura::FocusManager);
-  activation_controller_.reset(
-      new internal::ActivationController(
-          focus_client_.get(),
-          new internal::AshActivationController));
-  AddPreTargetHandler(activation_controller_.get());
+  if (UseFocusController()) {
+    views::corewm::FocusController* focus_controller =
+        new views::corewm::FocusController(new wm::AshFocusRules);
+    focus_client_.reset(focus_controller);
+    activation_client_ = focus_controller;
+  } else {
+    focus_client_.reset(new aura::FocusManager);
+    activation_controller_.reset(
+        new internal::ActivationController(
+            focus_client_.get(),
+            new internal::AshActivationController));
+    activation_client_ = activation_controller_.get();
+    AddPreTargetHandler(activation_controller_.get());
+  }
 
   focus_cycler_.reset(new internal::FocusCycler());
 
@@ -520,8 +537,7 @@ void Shell::Init() {
 
   high_contrast_controller_.reset(new HighContrastController);
   video_detector_.reset(new VideoDetector);
-  window_cycle_controller_.reset(
-      new WindowCycleController(activation_controller_.get()));
+  window_cycle_controller_.reset(new WindowCycleController(activation_client_));
 
   tooltip_controller_.reset(new internal::TooltipController(
       drag_drop_controller_.get()));
@@ -822,7 +838,7 @@ aura::client::StackingClient* Shell::stacking_client() {
 void Shell::InitRootWindowController(
     internal::RootWindowController* controller) {
   aura::RootWindow* root_window = controller->root_window();
-  DCHECK(activation_controller_.get());
+  DCHECK(activation_client_);
   DCHECK(visibility_controller_.get());
   DCHECK(drag_drop_controller_.get());
   DCHECK(capture_controller_.get());
@@ -830,7 +846,12 @@ void Shell::InitRootWindowController(
 
   aura::client::SetFocusClient(root_window, focus_client_.get());
   input_method_filter_->SetInputMethodPropertyInRootWindow(root_window);
-  aura::client::SetActivationClient(root_window, activation_controller_.get());
+  aura::client::SetActivationClient(root_window, activation_client_);
+  if (UseFocusController()) {
+    views::corewm::FocusController* controller =
+        static_cast<views::corewm::FocusController*>(activation_client_);
+    root_window->AddPreTargetHandler(controller);
+  }
   aura::client::SetVisibilityClient(root_window, visibility_controller_.get());
   aura::client::SetDragDropClient(root_window, drag_drop_controller_.get());
   aura::client::SetCaptureClient(root_window, capture_controller_.get());

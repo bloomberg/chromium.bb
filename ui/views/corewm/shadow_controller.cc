@@ -67,7 +67,8 @@ Shadow::Style GetShadowStyleForWindowLosingActive(
 }  // namespace
 
 ShadowController::ShadowController(aura::RootWindow* root_window)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)),
+    : ActivationChangeShim(root_window),
+      ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)),
       root_window_(root_window) {
   aura::Env::GetInstance()->AddObserver(this);
   // Watch for window activation changes.

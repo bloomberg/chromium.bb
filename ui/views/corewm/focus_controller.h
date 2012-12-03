@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "ui/aura/client/activation_client.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/events/event_dispatcher.h"
@@ -32,6 +33,7 @@ class FocusRules;
 //   (The FocusController registers itself as an observer of the active and
 //    focused windows).
 class VIEWS_EXPORT FocusController : public aura::client::ActivationClient,
+                                     public aura::client::FocusClient,
                                      public ui::EventHandler,
                                      public aura::WindowObserver,
                                      public aura::EnvObserver,
@@ -41,14 +43,8 @@ class VIEWS_EXPORT FocusController : public aura::client::ActivationClient,
   explicit FocusController(FocusRules* rules);
   virtual ~FocusController();
 
-  // TODO(beng): FocusClient
-  // Sets the focused window, resulting in focus change events being sent.
-  // Must only be called with valid focusable windows per FocusRules.
-  void FocusWindow(aura::Window* window);
-  aura::Window* focused_window() { return focused_window_; }
-
  private:
-  // Overridden from aura::ActivationClient:
+  // Overridden from aura::client::ActivationClient:
   virtual void AddObserver(
       aura::client::ActivationChangeObserver* observer) OVERRIDE;
   virtual void RemoveObserver(
@@ -60,6 +56,15 @@ class VIEWS_EXPORT FocusController : public aura::client::ActivationClient,
   virtual bool OnWillFocusWindow(aura::Window* window,
                                  const ui::Event* event) OVERRIDE;
   virtual bool CanActivateWindow(aura::Window* window) const OVERRIDE;
+
+  // Overridden from aura::client::FocusClient:
+  virtual void AddObserver(
+      aura::client::FocusChangeObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(
+      aura::client::FocusChangeObserver* observer) OVERRIDE;
+  virtual void FocusWindow(aura::Window* window,
+                           const ui::Event* event) OVERRIDE;
+  virtual aura::Window* GetFocusedWindow() OVERRIDE;
 
   // Overridden from ui::EventHandler:
   virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;

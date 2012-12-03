@@ -13,7 +13,8 @@ namespace views {
 NativeWidgetAuraWindowObserver::NativeWidgetAuraWindowObserver(
     gfx::NativeView native_view,
     internal::NativeWidgetDelegate* delegate)
-    : native_view_(native_view),
+    : ActivationChangeShim(native_view->GetRootWindow()),
+      native_view_(native_view),
       delegate_(delegate) {
   native_view_->GetRootWindow()->AddObserver(this);
   native_view_->AddObserver(this);

@@ -145,7 +145,9 @@ class ShelfLayoutManager::UpdateShelfObserver
 // ShelfLayoutManager ----------------------------------------------------------
 
 ShelfLayoutManager::ShelfLayoutManager(StatusAreaWidget* status_area_widget)
-    : root_window_(status_area_widget->GetNativeView()->GetRootWindow()),
+    : ActivationChangeShim(
+          status_area_widget->GetNativeView()->GetRootWindow()),
+      root_window_(status_area_widget->GetNativeView()->GetRootWindow()),
       in_layout_(false),
       auto_hide_behavior_(SHELF_AUTO_HIDE_BEHAVIOR_NEVER),
       alignment_(SHELF_ALIGNMENT_BOTTOM),

@@ -11,9 +11,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "base/scoped_observer.h"
-#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
+#include "ui/views/corewm/activation_change_shim.h"
 #include "ui/views/views_export.h"
 
 namespace aura {
@@ -34,7 +34,7 @@ class Shadow;
 class VIEWS_EXPORT ShadowController :
     public aura::EnvObserver,
     public aura::WindowObserver,
-    public aura::client::ActivationChangeObserver {
+    public ActivationChangeShim {
  public:
   class TestApi {
    public:
@@ -66,7 +66,7 @@ class VIEWS_EXPORT ShadowController :
       const gfx::Rect& new_bounds) OVERRIDE;
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
-  // aura::client::ActivationChangeObserver overrides:
+  // ActivationChangeShim overrides:
   virtual void OnWindowActivated(aura::Window* active,
                                  aura::Window* old_active) OVERRIDE;
 

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/string_util.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"

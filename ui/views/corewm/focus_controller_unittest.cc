@@ -138,8 +138,9 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
     test_focus_rules_ = new TestFocusRules;
     focus_controller_.reset(new FocusController(test_focus_rules_));
     aura::test::AuraTestBase::SetUp();
-    root_window()->AddPreTargetHandler(focus_controller());
-    aura::client::SetActivationClient(root_window(), focus_controller());
+    root_window()->AddPreTargetHandler(focus_controller_.get());
+    aura::client::SetFocusClient(root_window(), focus_controller_.get());
+    aura::client::SetActivationClient(root_window(), focus_controller_.get());
 
     // Hierarchy used by all tests:
     // root_window
@@ -173,18 +174,21 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
         gfx::Rect(125, 125, 50, 50), root_window());
   }
   virtual void TearDown() OVERRIDE {
-    root_window()->RemovePreTargetHandler(focus_controller());
+    root_window()->RemovePreTargetHandler(focus_controller_.get());
     aura::test::AuraTestBase::TearDown();
     test_focus_rules_ = NULL;  // Owned by FocusController.
     focus_controller_.reset();
   }
 
-  FocusController* focus_controller() { return focus_controller_.get(); }
-  aura::Window* focused_window() { return focus_controller_->focused_window(); }
-  int focused_window_id() {
-      return focused_window() ? focused_window()->id() : -1;
+  void FocusWindow(aura::Window* window) {
+    aura::client::GetFocusClient(root_window())->FocusWindow(window, NULL);
   }
-
+  aura::Window* GetFocusedWindow() {
+    return aura::client::GetFocusClient(root_window())->GetFocusedWindow();
+  }
+  int GetFocusedWindowId() {
+    return GetFocusedWindow()->id();
+  }
   void ActivateWindow(aura::Window* window) {
     aura::client::GetActivationClient(root_window())->ActivateWindow(window);
   }
@@ -254,11 +258,11 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
 
   // Overridden from FocusControllerTestBase:
   virtual void BasicFocus() OVERRIDE {
-    EXPECT_EQ(NULL, focused_window());
+    EXPECT_EQ(NULL, GetFocusedWindow());
     FocusWindowById(1);
-    EXPECT_EQ(1, focused_window_id());
+    EXPECT_EQ(1, GetFocusedWindowId());
     FocusWindowById(2);
-    EXPECT_EQ(2, focused_window_id());
+    EXPECT_EQ(2, GetFocusedWindowId());
   }
   virtual void BasicActivation() OVERRIDE {
     EXPECT_EQ(NULL, GetActiveWindow());
@@ -328,37 +332,37 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
   virtual void ShiftFocusWithinActiveWindow() OVERRIDE {
     ActivateWindowById(1);
     EXPECT_EQ(1, GetActiveWindowId());
-    EXPECT_EQ(1, focused_window_id());
+    EXPECT_EQ(1, GetFocusedWindowId());
     FocusWindowById(11);
-    EXPECT_EQ(11, focused_window_id());
+    EXPECT_EQ(11, GetFocusedWindowId());
     FocusWindowById(12);
-    EXPECT_EQ(12, focused_window_id());
+    EXPECT_EQ(12, GetFocusedWindowId());
   }
   virtual void ShiftFocusToChildOfInactiveWindow() OVERRIDE {
     ActivateWindowById(2);
     EXPECT_EQ(2, GetActiveWindowId());
-    EXPECT_EQ(2, focused_window_id());
+    EXPECT_EQ(2, GetFocusedWindowId());
     FocusWindowById(11);
     EXPECT_EQ(1, GetActiveWindowId());
-    EXPECT_EQ(11, focused_window_id());
+    EXPECT_EQ(11, GetFocusedWindowId());
   }
   virtual void FocusRulesOverride() OVERRIDE {
-    EXPECT_EQ(NULL, focused_window());
+    EXPECT_EQ(NULL, GetFocusedWindow());
     FocusWindowById(11);
-    EXPECT_EQ(11, focused_window_id());
+    EXPECT_EQ(11, GetFocusedWindowId());
 
     test_focus_rules()->set_focus_restriction(root_window()->GetChildById(211));
     FocusWindowById(12);
-    EXPECT_EQ(211, focused_window_id());
+    EXPECT_EQ(211, GetFocusedWindowId());
 
     test_focus_rules()->set_focus_restriction(NULL);
     FocusWindowById(12);
-    EXPECT_EQ(12, focused_window_id());
+    EXPECT_EQ(12, GetFocusedWindowId());
   }
   virtual void ActivationRulesOverride() OVERRIDE {
     ActivateWindowById(1);
     EXPECT_EQ(1, GetActiveWindowId());
-    EXPECT_EQ(1, focused_window_id());
+    EXPECT_EQ(1, GetFocusedWindowId());
 
     aura::Window* w3 = root_window()->GetChildById(3);
     test_focus_rules()->set_focus_restriction(w3);
@@ -366,12 +370,12 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     ActivateWindowById(2);
     // FocusRules restricts focus and activation to 3.
     EXPECT_EQ(3, GetActiveWindowId());
-    EXPECT_EQ(3, focused_window_id());
+    EXPECT_EQ(3, GetFocusedWindowId());
 
     test_focus_rules()->set_focus_restriction(NULL);
     ActivateWindowById(2);
     EXPECT_EQ(2, GetActiveWindowId());
-    EXPECT_EQ(2, focused_window_id());
+    EXPECT_EQ(2, GetFocusedWindowId());
   }
 
  private:
@@ -386,7 +390,7 @@ class FocusControllerApiTest : public FocusControllerDirectTestBase {
  private:
   // Overridden from FocusControllerTestBase:
   virtual void FocusWindowDirect(aura::Window* window) OVERRIDE {
-    focus_controller()->FocusWindow(window);
+    FocusWindow(window);
   }
   virtual void ActivateWindowDirect(aura::Window* window) OVERRIDE {
     ActivateWindow(window);
@@ -463,15 +467,15 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
 
   // Overridden from FocusControllerTestBase:
   virtual void BasicFocus() OVERRIDE {
-    EXPECT_EQ(NULL, focused_window());
+    EXPECT_EQ(NULL, GetFocusedWindow());
 
     aura::Window* w211 = root_window()->GetChildById(211);
-    focus_controller()->FocusWindow(w211);
-    EXPECT_EQ(211, focused_window_id());
+    FocusWindow(w211);
+    EXPECT_EQ(211, GetFocusedWindowId());
 
     ChangeWindowDisposition(w211);
     // BasicFocusRules passes focus to the parent.
-    EXPECT_EQ(parent_ ? 2 : 21, focused_window_id());
+    EXPECT_EQ(parent_ ? 2 : 21, GetFocusedWindowId());
   }
   virtual void BasicActivation() OVERRIDE {
     DCHECK(!parent_) << "Activation tests don't support parent changes.";
@@ -487,7 +491,7 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
   }
   virtual void FocusEvents() OVERRIDE {
     aura::Window* w211 = root_window()->GetChildById(211);
-    focus_controller()->FocusWindow(w211);
+    FocusWindow(w211);
 
     FocusEventsTestHandler handler(root_window()->GetChildById(211));
     EXPECT_EQ(0, handler.GetCountForEventType(
@@ -520,16 +524,16 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
     ExpectActivationEvents(&handler_3, 0, 1);
   }
   virtual void FocusRulesOverride() OVERRIDE {
-    EXPECT_EQ(NULL, focused_window());
+    EXPECT_EQ(NULL, GetFocusedWindow());
     aura::Window* w211 = root_window()->GetChildById(211);
-    focus_controller()->FocusWindow(w211);
-    EXPECT_EQ(211, focused_window_id());
+    FocusWindow(w211);
+    EXPECT_EQ(211, GetFocusedWindowId());
 
     test_focus_rules()->set_focus_restriction(root_window()->GetChildById(11));
     ChangeWindowDisposition(w211);
     // Normally, focus would shift to the parent (w21) but the override shifts
     // it to 11.
-    EXPECT_EQ(11, focused_window_id());
+    EXPECT_EQ(11, GetFocusedWindowId());
 
     test_focus_rules()->set_focus_restriction(NULL);
   }
@@ -540,7 +544,7 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
     ActivateWindow(w1);
 
     EXPECT_EQ(1, GetActiveWindowId());
-    EXPECT_EQ(1, focused_window_id());
+    EXPECT_EQ(1, GetFocusedWindowId());
 
     aura::Window* w3 = root_window()->GetChildById(3);
     test_focus_rules()->set_focus_restriction(w3);
@@ -549,12 +553,12 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
     // restriction, it should move to w3 instead.
     ChangeWindowDisposition(w1);
     EXPECT_EQ(3, GetActiveWindowId());
-    EXPECT_EQ(3, focused_window_id());
+    EXPECT_EQ(3, GetFocusedWindowId());
 
     test_focus_rules()->set_focus_restriction(NULL);
     ActivateWindow(root_window()->GetChildById(2));
     EXPECT_EQ(2, GetActiveWindowId());
-    EXPECT_EQ(2, focused_window_id());
+    EXPECT_EQ(2, GetFocusedWindowId());
   }
 
  private:

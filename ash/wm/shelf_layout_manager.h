@@ -14,10 +14,10 @@
 #include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "base/timer.h"
-#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/corewm/activation_change_shim.h"
 
 namespace aura {
 class RootWindow;
@@ -44,7 +44,7 @@ class WorkspaceController;
 class ASH_EXPORT ShelfLayoutManager :
     public aura::LayoutManager,
     public ash::ShellObserver,
-    public aura::client::ActivationChangeObserver {
+    public views::corewm::ActivationChangeShim {
  public:
   enum VisibilityState {
     // Completely visible.

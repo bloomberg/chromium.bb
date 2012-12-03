@@ -13,9 +13,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_observer.h"
+#include "ui/views/corewm/activation_change_shim.h"
 
 namespace aura {
 class Window;
@@ -47,7 +47,7 @@ class ASH_EXPORT PanelLayoutManager
     : public aura::LayoutManager,
       public ash::LauncherIconObserver,
       public aura::WindowObserver,
-      public aura::client::ActivationChangeObserver {
+      public views::corewm::ActivationChangeShim {
  public:
   explicit PanelLayoutManager(aura::Window* panel_container);
   virtual ~PanelLayoutManager();

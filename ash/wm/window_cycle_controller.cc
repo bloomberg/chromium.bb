@@ -88,9 +88,10 @@ void AddCycleWindows(aura::RootWindow* root,
 // WindowCycleController, public:
 
 WindowCycleController::WindowCycleController(
-    internal::ActivationController* activation_controller)
-    : activation_controller_(activation_controller) {
-  activation_controller_->AddObserver(this);
+    aura::client::ActivationClient* activation_client)
+    : ActivationChangeShim(Shell::GetInstance()),
+      activation_client_(activation_client) {
+  activation_client_->AddObserver(this);
 }
 
 WindowCycleController::~WindowCycleController() {
@@ -114,7 +115,7 @@ WindowCycleController::~WindowCycleController() {
     }
   }
 
-  activation_controller_->RemoveObserver(this);
+  activation_client_->RemoveObserver(this);
   StopCycling();
 }
 

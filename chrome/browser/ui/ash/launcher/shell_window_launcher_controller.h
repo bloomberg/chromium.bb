@@ -10,8 +10,8 @@
 #include <string>
 
 #include "chrome/browser/extensions/shell_window_registry.h"
-#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/window_observer.h"
+#include "ui/views/corewm/activation_change_shim.h"
 
 namespace aura {
 
@@ -33,7 +33,7 @@ class ShellWindow;
 class ShellWindowLauncherController
     : public extensions::ShellWindowRegistry::Observer,
       public aura::WindowObserver,
-      public aura::client::ActivationChangeObserver {
+      public views::corewm::ActivationChangeShim {
  public:
   explicit ShellWindowLauncherController(ChromeLauncherController* owner);
   virtual ~ShellWindowLauncherController();

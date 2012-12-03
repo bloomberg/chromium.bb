@@ -8,6 +8,10 @@ namespace views {
 namespace corewm {
 namespace switches {
 
+// When set uses the CoreWM FocusController in place of the Ash
+// ActivationController and aura FocusManager.
+const char kUseFocusController[] = "views-corewm-use-focus-controller";
+
 // If present animations are disabled.
 const char kWindowAnimationsDisabled[] =
     "views-corewm-window-animations-disabled";

@@ -45,6 +45,7 @@ void DispatchEventsAndUpdateState(ui::EventDispatcher* dispatcher,
   DCHECK(!(result & ui::ER_CONSUMED))
       << "Focus and Activation events cannot be consumed";
 
+  aura::Window* lost_active = *state;
   *state = new_state;
 
   if (restack && new_state) {
@@ -55,6 +56,7 @@ void DispatchEventsAndUpdateState(ui::EventDispatcher* dispatcher,
   {
     base::AutoReset<ui::EventTarget*> reset(event_dispatch_target, *state);
     FocusChangeEvent changed_event(changed_event_type);
+    FocusChangeEvent::DispatcherApi(&changed_event).set_last_focus(lost_active);
     dispatcher->ProcessEvent(*state, &changed_event);
   }
 }
@@ -78,34 +80,25 @@ FocusController::~FocusController() {
   aura::Env::GetInstance()->RemoveObserver(this);
 }
 
-void FocusController::FocusWindow(aura::Window* window) {
-  // Focusing a window also activates its containing activatable window. Note
-  // that the rules could redirect activation activation and/or focus.
-  aura::Window* focusable = rules_->GetFocusableWindow(window);
-  SetActiveWindow(rules_->GetActivatableWindow(focusable));
-  DCHECK(GetActiveWindow()->Contains(focusable));
-  SetFocusedWindow(focusable);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // FocusController, aura::client::ActivationClient implementation:
 
 void FocusController::AddObserver(
     aura::client::ActivationChangeObserver* observer) {
-  NOTREACHED();
+  //NOTREACHED();
 }
 
 void FocusController::RemoveObserver(
     aura::client::ActivationChangeObserver* observer) {
-  NOTREACHED();
+  //NOTREACHED();
 }
 
 void FocusController::ActivateWindow(aura::Window* window) {
-  FocusWindow(window);
+  FocusWindow(window, NULL);
 }
 
 void FocusController::DeactivateWindow(aura::Window* window) {
-  FocusWindow(rules_->GetNextActivatableWindow(window));
+  FocusWindow(rules_->GetNextActivatableWindow(window), NULL);
 }
 
 aura::Window* FocusController::GetActiveWindow() {
@@ -124,6 +117,33 @@ bool FocusController::OnWillFocusWindow(aura::Window* window,
 
 bool FocusController::CanActivateWindow(aura::Window* window) const {
   return rules_->CanActivateWindow(window);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// FocusController, aura::client::FocusClient implementation:
+
+void FocusController::AddObserver(
+    aura::client::FocusChangeObserver* observer) {
+  //NOTREACHED();
+}
+
+void FocusController::RemoveObserver(
+    aura::client::FocusChangeObserver* observer) {
+  //NOTREACHED();
+}
+
+void FocusController::FocusWindow(aura::Window* window,
+                                  const ui::Event* event) {
+  // Focusing a window also activates its containing activatable window. Note
+  // that the rules could redirect activation activation and/or focus.
+  aura::Window* focusable = rules_->GetFocusableWindow(window);
+  SetActiveWindow(rules_->GetActivatableWindow(focusable));
+  DCHECK(GetActiveWindow()->Contains(focusable));
+  SetFocusedWindow(focusable);
+}
+
+aura::Window* FocusController::GetFocusedWindow() {
+  return focused_window_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -242,7 +262,7 @@ void FocusController::WindowLostFocusFromDispositionChange(
 }
 
 void FocusController::WindowFocusedFromInputEvent(aura::Window* window) {
-  FocusWindow(window);
+  FocusWindow(window, NULL);
 }
 
 }  // namespace corewm

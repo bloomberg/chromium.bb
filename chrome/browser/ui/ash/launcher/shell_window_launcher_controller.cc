@@ -184,7 +184,9 @@ class ShellWindowLauncherController::AppLauncherItemController
 
 ShellWindowLauncherController::ShellWindowLauncherController(
     ChromeLauncherController* owner)
-    : owner_(owner),
+    : ActivationChangeShim(ash::Shell::HasInstance() ?
+          ash::Shell::GetInstance() : NULL),
+      owner_(owner),
       registry_(extensions::ShellWindowRegistry::Get(owner->profile())),
       activation_client_(NULL) {
   registry_->AddObserver(this);

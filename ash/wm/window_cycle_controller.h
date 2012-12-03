@@ -11,12 +11,15 @@
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/window_observer.h"
+#include "ui/views/corewm/activation_change_shim.h"
 
 namespace aura {
 class RootWindow;
 class Window;
+namespace client {
+class ActivationClient;
+}
 }
 
 namespace ui {
@@ -24,10 +27,6 @@ class EventHandler;
 }
 
 namespace ash {
-
-namespace internal {
-class ActivationController;
-}
 
 class WindowCycleList;
 
@@ -39,7 +38,7 @@ class WindowCycleList;
 // at the beginning of the gesture so you can cycle through in a consistent
 // order.
 class ASH_EXPORT WindowCycleController
-    : public aura::client::ActivationChangeObserver,
+    : public views::corewm::ActivationChangeShim,
       public aura::WindowObserver {
  public:
   enum Direction {
@@ -47,7 +46,7 @@ class ASH_EXPORT WindowCycleController
     BACKWARD
   };
   explicit WindowCycleController(
-      internal::ActivationController* activation_controller);
+      aura::client::ActivationClient* activation_client);
   virtual ~WindowCycleController();
 
   // Returns true if cycling through windows is enabled. This is false at
@@ -98,7 +97,7 @@ class ASH_EXPORT WindowCycleController
   // Checks if the window represents a container whose children we track.
   static bool IsTrackedContainer(aura::Window* window);
 
-  // Overridden from ActivationChangeObserver:
+  // Overridden from views::corewm::ActivationChangeShim:
   virtual void OnWindowActivated(aura::Window* active,
                                  aura::Window* old_active) OVERRIDE;
 
@@ -116,7 +115,7 @@ class ASH_EXPORT WindowCycleController
   // through, sorted by most recently used.
   std::list<aura::Window*> mru_windows_;
 
-  internal::ActivationController* activation_controller_;
+  aura::client::ActivationClient* activation_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowCycleController);
 };

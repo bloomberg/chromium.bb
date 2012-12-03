@@ -30,6 +30,7 @@ class EventFilter;
 class RootWindow;
 class Window;
 namespace client {
+class ActivationClient;
 class FocusClient;
 class StackingClient;
 class UserActionClient;
@@ -508,6 +509,7 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   scoped_ptr<PartialMagnificationController> partial_magnification_controller_;
   scoped_ptr<aura::client::FocusClient> focus_client_;
   scoped_ptr<aura::client::UserActionClient> user_action_client_;
+  aura::client::ActivationClient* activation_client_;
   scoped_ptr<internal::MouseCursorEventFilter> mouse_cursor_filter_;
   scoped_ptr<internal::ScreenPositionController> screen_position_controller_;
   scoped_ptr<internal::SystemModalContainerEventFilter> modality_filter_;
