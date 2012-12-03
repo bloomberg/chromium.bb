@@ -1145,6 +1145,24 @@
   fun:_ZN3ash5ShellC1EPNS_13ShellDelegateE
   fun:_ZN3ash5Shell14CreateInstanceEPNS_13ShellDelegateE
 }
+{
+   bug_163902
+   Memcheck:Param
+   socketcall.sendto(msg)
+   ...
+   fun:_ZN3net8internal19AddressTrackerLinux4InitEv
+   fun:_ZN3net26NetworkChangeNotifierLinux6Thread4InitEv
+}
+{
+   bug_163904
+   Memcheck:Param
+   exit_group(status)
+   fun:SyscallAsm
+   fun:_ZN11playground214SandboxSyscallEiz
+   fun:_ZN11playground23Die9ExitGroupEv
+   fun:_ZN11playground23Die10SandboxDieEPKcS2_i
+   fun:_ZN11playground27Sandbox13installFilterEb
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
@@ -3142,7 +3160,7 @@
    ...
    fun:_ZN11ProfileImpl13OnPrefsLoadedEb
    ...
-   fun:_ZN11ProfileImplC*ERK8FilePathPN7Profile8DelegateE
+   fun:_ZN11ProfileImplC*ERK8FilePathPN7Profile8DelegateE*
 }
 {
    bug_88640_c
@@ -6249,4 +6267,27 @@
    fun:_Znw*
    fun:_ZN4dbus8Response14FromMethodCallEPNS_10MethodCallE
    fun:_ZN8chromeos4ibus20IBusPanelServiceImpl*Properties*
+}
+{
+   bug_163922
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN10extensions16SettingsFrontendC1ERK13scoped_refptrINS_22SettingsStorageFactoryEEP7Profile
+   fun:_ZN10extensions16SettingsFrontend6CreateEP7Profile
+   fun:_ZN16ExtensionServiceC1EP7ProfilePK11CommandLineRK8FilePathPN10extensions14ExtensionPrefsEPNS8_9BlacklistEbb
+   fun:_ZN10extensions19ExtensionSystemImpl6Shared4InitEb
+   fun:_ZN10extensions19ExtensionSystemImpl21InitForRegularProfileEb
+   fun:_ZN14ProfileManager22DoFinalInitForServicesEP7Profileb
+   fun:_ZN14ProfileManager11DoFinalInitEP7Profileb
+   fun:_ZN14ProfileManager10AddProfileEP7Profile
+   fun:_ZN14ProfileManager10GetProfileERK8FilePath
+}
+{
+   bug_163924
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN24JSONAsynchronousUnpacker6CreateEP32JSONAsynchronousUnpackerDelegate
+   fun:_ZN18WebResourceService18OnURLFetchCompleteEPKN3net10URLFetcherE
+   fun:_ZN3net14URLFetcherCore29InformDelegateFetchIsCompleteEv
+   fun:_ZN3net14URLFetcherCore21OnCompletedURLRequestEN4base9TimeDeltaE
 }
