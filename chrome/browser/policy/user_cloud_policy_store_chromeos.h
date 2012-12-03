@@ -43,9 +43,6 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
       const enterprise_management::PolicyFetchResponse& policy) OVERRIDE;
   virtual void Load() OVERRIDE;
 
- protected:
-  virtual void RemoveStoredPolicy() OVERRIDE;
-
  private:
   // Called back from SessionManagerClient for policy load operations.
   void OnPolicyRetrieved(const std::string& policy_blob);

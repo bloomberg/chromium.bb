@@ -12,8 +12,6 @@
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 
-class Profile;
-
 namespace policy {
 
 // Defines the low-level interface used by the cloud policy code to:
@@ -89,31 +87,16 @@ class CloudPolicyStore {
   // Otherwise, OnStoreError() reports the reason for failure.
   virtual void Load() = 0;
 
-  // Deletes any existing policy blob and notifies observers via OnStoreLoaded()
-  // that the blob has changed. Virtual for mocks.
-  virtual void Clear();
-
   // Registers an observer to be notified when policy changes.
   void AddObserver(Observer* observer);
 
   // Removes the specified observer.
   void RemoveObserver(Observer* observer);
 
-  // Factory method to create a CloudPolicyStore appropriate for the current
-  // platform, for storing user policy for the user associated with the passed
-  // |profile|. Implementation is defined in the individual platform store
-  // files.
-  static scoped_ptr<CloudPolicyStore> CreateUserPolicyStore(
-      Profile* profile,
-      bool force_immediate_policy_load);
-
  protected:
   // Invokes the corresponding callback on all registered observers.
   void NotifyStoreLoaded();
   void NotifyStoreError();
-
-  // Invoked by Clear() to remove stored policy.
-  virtual void RemoveStoredPolicy() = 0;
 
   // Decoded version of the currently effective policy.
   PolicyMap policy_map_;

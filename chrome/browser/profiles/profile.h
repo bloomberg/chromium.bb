@@ -68,7 +68,6 @@ class SSLConfigService;
 namespace policy {
 class ManagedModePolicyProvider;
 class PolicyService;
-class UserCloudPolicyManager;
 }
 
 class Profile : public content::BrowserContext {
@@ -208,10 +207,6 @@ class Profile : public content::BrowserContext {
 
   // Accessor. The instance is created upon first access.
   virtual GAIAInfoUpdateService* GetGAIAInfoUpdateService() = 0;
-
-  // Returns the UserCloudPolicyManager (if any) that handles this profile's
-  // connection to the cloud-based management service.
-  virtual policy::UserCloudPolicyManager* GetUserCloudPolicyManager() = 0;
 
   // Returns the ManagedModePolicyProvider for this profile, if it exists.
   virtual policy::ManagedModePolicyProvider* GetManagedModePolicyProvider() = 0;

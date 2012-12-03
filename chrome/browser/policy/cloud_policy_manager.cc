@@ -14,8 +14,8 @@
 
 namespace policy {
 
-CloudPolicyManager::CloudPolicyManager(scoped_ptr<CloudPolicyStore> store)
-    : store_(store.Pass()),
+CloudPolicyManager::CloudPolicyManager(CloudPolicyStore* store)
+    : store_(store),
       waiting_for_policy_refresh_(false) {
   store_->AddObserver(this);
 
@@ -27,12 +27,16 @@ CloudPolicyManager::CloudPolicyManager(scoped_ptr<CloudPolicyStore> store)
     store_->Load();
 }
 
-CloudPolicyManager::~CloudPolicyManager() {}
+CloudPolicyManager::~CloudPolicyManager() {
+  DCHECK(!store_) << "Shutdown() must be called before destruction!";
+}
 
 void CloudPolicyManager::Shutdown() {
   ShutdownService();
-  store_->RemoveObserver(this);
+  if (store_)
+    store_->RemoveObserver(this);
   ConfigurationPolicyProvider::Shutdown();
+  store_ = NULL;
 }
 
 bool CloudPolicyManager::IsInitializationComplete() const {
@@ -51,12 +55,12 @@ void CloudPolicyManager::RefreshPolicies() {
 }
 
 void CloudPolicyManager::OnStoreLoaded(CloudPolicyStore* store) {
-  DCHECK_EQ(store_.get(), store);
+  DCHECK_EQ(store_, store);
   CheckAndPublishPolicy();
 }
 
 void CloudPolicyManager::OnStoreError(CloudPolicyStore* store) {
-  DCHECK_EQ(store_.get(), store);
+  DCHECK_EQ(store_, store);
   // No action required, the old policy is still valid.
 }
 
@@ -65,7 +69,7 @@ void CloudPolicyManager::InitializeService(
   CHECK(!client_.get());
   CHECK(client.get());
   client_ = client.Pass();
-  service_.reset(new CloudPolicyService(client_.get(), store_.get()));
+  service_.reset(new CloudPolicyService(client_.get(), store_));
 }
 
 void CloudPolicyManager::ShutdownService() {
@@ -80,7 +84,7 @@ void CloudPolicyManager::StartRefreshScheduler(
   if (!refresh_scheduler_.get()) {
     refresh_scheduler_.reset(
         new CloudPolicyRefreshScheduler(
-            client_.get(), store_.get(), local_state, refresh_rate_pref,
+            client_.get(), store_, local_state, refresh_rate_pref,
             MessageLoop::current()->message_loop_proxy()));
   }
 }

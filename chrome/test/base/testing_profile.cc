@@ -37,7 +37,6 @@
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
-#include "chrome/browser/policy/user_cloud_policy_manager.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
@@ -208,15 +207,13 @@ TestingProfile::TestingProfile(
     const FilePath& path,
     Delegate* delegate,
     scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
-    scoped_ptr<PrefService> prefs,
-    scoped_ptr<policy::UserCloudPolicyManager> user_cloud_policy_manager)
+    scoped_ptr<PrefService> prefs)
     : start_time_(Time::Now()),
       prefs_(prefs.release()),
       testing_prefs_(NULL),
       incognito_(false),
       last_session_exited_cleanly_(true),
       extension_special_storage_policy_(extension_policy),
-      user_cloud_policy_manager_(user_cloud_policy_manager.release()),
       profile_path_(path),
       profile_dependency_manager_(ProfileDependencyManager::GetInstance()),
       delegate_(delegate) {
@@ -303,11 +300,6 @@ TestingProfile::~TestingProfile() {
     host_content_settings_map_->ShutdownOnUIThread();
 
   DestroyTopSites();
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  if (user_cloud_policy_manager_)
-    user_cloud_policy_manager_->Shutdown();
-#endif
 
   if (pref_proxy_config_tracker_.get())
     pref_proxy_config_tracker_->DetachFromPrefService();
@@ -543,10 +535,6 @@ net::CookieMonster* TestingProfile::GetCookieMonster() {
     return NULL;
   return GetRequestContext()->GetURLRequestContext()->cookie_store()->
       GetCookieMonster();
-}
-
-policy::UserCloudPolicyManager* TestingProfile::GetUserCloudPolicyManager() {
-  return user_cloud_policy_manager_.get();
 }
 
 policy::ManagedModePolicyProvider*
@@ -816,11 +804,6 @@ void TestingProfile::Builder::SetPrefService(scoped_ptr<PrefService> prefs) {
   pref_service_ = prefs.Pass();
 }
 
-void TestingProfile::Builder::SetUserCloudPolicyManager(
-    scoped_ptr<policy::UserCloudPolicyManager> manager) {
-  user_cloud_policy_manager_ = manager.Pass();
-}
-
 scoped_ptr<TestingProfile> TestingProfile::Builder::Build() {
   DCHECK(!build_called_);
   build_called_ = true;
@@ -828,6 +811,5 @@ scoped_ptr<TestingProfile> TestingProfile::Builder::Build() {
       path_,
       delegate_,
       extension_policy_,
-      pref_service_.Pass(),
-      user_cloud_policy_manager_.Pass()));
+      pref_service_.Pass()));
 }

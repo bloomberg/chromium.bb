@@ -35,7 +35,7 @@ class UserPolicySigninService
       public content::NotificationObserver {
  public:
   // Creates a UserPolicySigninService associated with the passed |profile|.
-  UserPolicySigninService(Profile* profile, UserCloudPolicyManager* manager);
+  explicit UserPolicySigninService(Profile* profile);
   virtual ~UserPolicySigninService();
 
   // content::NotificationObserver implementation.
@@ -51,6 +51,9 @@ class UserPolicySigninService
                                  const base::Time& expiration_time) OVERRIDE;
   virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
 
+  // ProfileKeyedService implementation:
+  virtual void Shutdown() OVERRIDE;
+
  private:
   // Initializes the UserCloudPolicyManager to reflect the currently-signed-in
   // user.
@@ -63,15 +66,14 @@ class UserPolicySigninService
   // Helper routine to unregister for CloudPolicyService notifications.
   void StopObserving();
 
+  // Convenience helper to get the UserCloudPolicyManager for |profile_|.
+  UserCloudPolicyManager* GetManager();
+
   // Weak pointer to the profile this service is associated with.
   Profile* profile_;
 
   content::NotificationRegistrar registrar_;
   scoped_ptr<OAuth2AccessTokenFetcher> oauth2_access_token_fetcher_;
-
-  // Weak pointer to the UserCloudPolicyManager (allows dependency injection
-  // for tests).
-  UserCloudPolicyManager* manager_;
 
   DISALLOW_COPY_AND_ASSIGN(UserPolicySigninService);
 };

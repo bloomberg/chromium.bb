@@ -97,7 +97,14 @@ UserCloudPolicyStore::UserCloudPolicyStore(Profile* profile,
       backing_file_path_(path) {
 }
 
-UserCloudPolicyStore::~UserCloudPolicyStore() {
+UserCloudPolicyStore::~UserCloudPolicyStore() {}
+
+// static
+scoped_ptr<UserCloudPolicyStore> UserCloudPolicyStore::Create(
+    Profile* profile) {
+  FilePath path =
+      profile->GetPath().Append(kPolicyDir).Append(kPolicyCacheFile);
+  return make_scoped_ptr(new UserCloudPolicyStore(profile, path));
 }
 
 void UserCloudPolicyStore::LoadImmediately() {
@@ -108,6 +115,17 @@ void UserCloudPolicyStore::LoadImmediately() {
   PolicyLoadResult result = LoadPolicyFromDisk(backing_file_path_);
   // ...and install it, reporting success/failure to any observers.
   PolicyLoaded(false, result);
+}
+
+void UserCloudPolicyStore::Clear() {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(base::IgnoreResult(&file_util::Delete),
+                 backing_file_path_,
+                 false));
+  policy_.reset();
+  policy_map_.Clear();
+  NotifyStoreLoaded();
 }
 
 void UserCloudPolicyStore::Load() {
@@ -173,14 +191,6 @@ void UserCloudPolicyStore::InstallLoadedPolicyAfterValidation(
   NotifyStoreLoaded();
 }
 
-void UserCloudPolicyStore::RemoveStoredPolicy() {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(base::IgnoreResult(&file_util::Delete),
-                 backing_file_path_,
-                 false));
-}
-
 void UserCloudPolicyStore::Store(const em::PolicyFetchResponse& policy) {
   // Stop any pending requests to store policy, then validate the new policy
   // before storing it.
@@ -237,18 +247,6 @@ void UserCloudPolicyStore::StorePolicyAfterValidation(
   InstallPolicy(validator->policy_data().Pass(), validator->payload().Pass());
   status_ = STATUS_OK;
   NotifyStoreLoaded();
-}
-
-// static
-scoped_ptr<CloudPolicyStore> CloudPolicyStore::CreateUserPolicyStore(
-    Profile* profile,
-    bool force_immediate_policy_load) {
-  FilePath path =
-      profile->GetPath().Append(kPolicyDir).Append(kPolicyCacheFile);
-  UserCloudPolicyStore* store = new UserCloudPolicyStore(profile, path);
-  if (force_immediate_policy_load)
-    store->LoadImmediately();
-  return scoped_ptr<CloudPolicyStore>(store);
 }
 
 }  // namespace policy

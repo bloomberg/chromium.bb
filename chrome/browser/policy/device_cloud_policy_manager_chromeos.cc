@@ -49,8 +49,8 @@ const char* kMachineInfoSerialNumberKeys[] = {
 DeviceCloudPolicyManagerChromeOS::DeviceCloudPolicyManagerChromeOS(
     scoped_ptr<DeviceCloudPolicyStoreChromeOS> store,
     EnterpriseInstallAttributes* install_attributes)
-    : CloudPolicyManager(make_scoped_ptr<CloudPolicyStore>(store.get())),
-      device_store_(store.release()),  // Hack: retain |store| till here.
+    : CloudPolicyManager(store.get()),
+      device_store_(store.Pass()),
       install_attributes_(install_attributes),
       device_management_service_(NULL),
       local_state_(NULL) {}
@@ -79,7 +79,7 @@ void DeviceCloudPolicyManagerChromeOS::StartEnrollment(
 
   enrollment_handler_.reset(
       new EnrollmentHandlerChromeOS(
-          device_store_, install_attributes_, CreateClient(), auth_token,
+          device_store_.get(), install_attributes_, CreateClient(), auth_token,
           allowed_device_modes,
           base::Bind(&DeviceCloudPolicyManagerChromeOS::EnrollmentCompleted,
                      base::Unretained(this), callback)));

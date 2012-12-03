@@ -36,7 +36,6 @@ class DeviceCloudPolicyStoreChromeOS
   virtual void Store(
       const enterprise_management::PolicyFetchResponse& policy) OVERRIDE;
   virtual void Load() OVERRIDE;
-  virtual void RemoveStoredPolicy() OVERRIDE;
 
   // Installs initial policy. This is different from Store() in that it skips
   // the signature validation step against already-installed policy. The checks

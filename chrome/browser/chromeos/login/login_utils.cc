@@ -53,7 +53,6 @@
 #include "chrome/browser/policy/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud_policy_service.h"
 #include "chrome/browser/policy/network_configuration_updater.h"
-#include "chrome/browser/policy/user_cloud_policy_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -499,18 +498,6 @@ void LoginUtilsImpl::PrepareProfile(
   // will process the notification that the UserManager sends out.
   ProfileManager::CreateDefaultProfileAsync(
       base::Bind(&LoginUtilsImpl::OnProfileCreated, AsWeakPtr()));
-
-  // The default profile is only partially initialized at this point.
-  // Setup the UserCloudPolicyManager so profile initialization can complete.
-  Profile* user_profile = ProfileManager::GetDefaultProfile();
-
-  // Initialize the new cloud policy framework, if enabled.
-  if (user_profile->GetUserCloudPolicyManager()) {
-    user_profile->GetUserCloudPolicyManager()->Initialize(
-        g_browser_process->local_state(),
-        connector->device_management_service(),
-        connector->GetUserAffiliation(username));
-  }
 
   if (wait_for_policy_fetch) {
     // Profile creation will block until user policy is fetched, which

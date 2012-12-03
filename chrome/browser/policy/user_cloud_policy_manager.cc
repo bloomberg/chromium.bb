@@ -8,75 +8,39 @@
 #include "base/bind_helpers.h"
 #include "chrome/browser/policy/cloud_policy_service.h"
 #include "chrome/browser/policy/policy_types.h"
+#include "chrome/browser/policy/user_cloud_policy_manager_factory.h"
+#include "chrome/browser/policy/user_cloud_policy_store.h"
 #include "chrome/common/pref_names.h"
 
 namespace policy {
 
 UserCloudPolicyManager::UserCloudPolicyManager(
-    scoped_ptr<CloudPolicyStore> store,
-    bool wait_for_policy_fetch)
-    : CloudPolicyManager(store.Pass()),
-      wait_for_policy_fetch_(wait_for_policy_fetch) {}
-
-UserCloudPolicyManager::~UserCloudPolicyManager() {}
-
-// static
-scoped_ptr<UserCloudPolicyManager> UserCloudPolicyManager::Create(
     Profile* profile,
-    PolicyInit policy_init) {
-  scoped_ptr<CloudPolicyStore> store =
-      CloudPolicyStore::CreateUserPolicyStore(
-          profile, policy_init == POLICY_INIT_IMMEDIATELY);
-  return make_scoped_ptr(new UserCloudPolicyManager(
-      store.Pass(), policy_init == POLICY_INIT_REFRESH_FROM_SERVER));
+    scoped_ptr<UserCloudPolicyStore> store)
+    : CloudPolicyManager(store.get()),
+      profile_(profile),
+      store_(store.Pass()) {
+  UserCloudPolicyManagerFactory::GetInstance()->Register(profile_, this);
+}
+
+UserCloudPolicyManager::~UserCloudPolicyManager() {
+  UserCloudPolicyManagerFactory::GetInstance()->Unregister(profile_, this);
 }
 
 void UserCloudPolicyManager::Initialize(
     PrefService* local_state,
-    DeviceManagementService* device_management_service,
-    UserAffiliation user_affiliation) {
-  DCHECK(device_management_service);
-  DCHECK(local_state);
-  local_state_ = local_state;
-  scoped_ptr<CloudPolicyClient> client(
-      new CloudPolicyClient(std::string(), std::string(), user_affiliation,
-                            POLICY_SCOPE_USER, NULL,
-                            device_management_service));
-  InitializeService(client.Pass());
-  cloud_policy_client()->AddObserver(this);
-
-  if (wait_for_policy_fetch_) {
-    // If we are supposed to wait for a policy fetch, we trigger an explicit
-    // policy refresh at startup that allows us to unblock initialization once
-    // done. The refresh scheduler only gets started once that refresh
-    // completes. Note that we might have to wait for registration to happen,
-    // see OnRegistrationStateChanged() below.
-    if (cloud_policy_client()->is_registered()) {
-      cloud_policy_service()->RefreshPolicy(
-          base::Bind(&UserCloudPolicyManager::OnInitialPolicyFetchComplete,
-                     base::Unretained(this)));
-    }
-  } else {
-    CancelWaitForPolicyFetch();
-  }
+    DeviceManagementService* device_management_service) {
+  InitializeService(
+      make_scoped_ptr(new CloudPolicyClient(std::string(), std::string(),
+                                            USER_AFFILIATION_NONE,
+                                            POLICY_SCOPE_USER, NULL,
+                                            device_management_service)));
+  StartRefreshScheduler(local_state, prefs::kUserPolicyRefreshRate);
 }
 
 void UserCloudPolicyManager::ShutdownAndRemovePolicy() {
-  if (cloud_policy_client())
-    cloud_policy_client()->RemoveObserver(this);
   ShutdownService();
-  local_state_ = NULL;
-  cloud_policy_store()->Clear();
-}
-
-void UserCloudPolicyManager::CancelWaitForPolicyFetch() {
-  wait_for_policy_fetch_ = false;
-  CheckAndPublishPolicy();
-
-  // Now that |wait_for_policy_fetch_| is guaranteed to be false, the scheduler
-  // can be started.
-  if (cloud_policy_service() && local_state_)
-    StartRefreshScheduler(local_state_, prefs::kUserPolicyRefreshRate);
+  store_->Clear();
 }
 
 bool UserCloudPolicyManager::IsClientRegistered() const {
@@ -89,48 +53,6 @@ void UserCloudPolicyManager::RegisterClient(const std::string& access_token) {
     DVLOG(1) << "Registering client with access token: " << access_token;
     cloud_policy_client()->Register(access_token);
   }
-}
-
-void UserCloudPolicyManager::Shutdown() {
-  if (cloud_policy_client())
-    cloud_policy_client()->RemoveObserver(this);
-  CloudPolicyManager::Shutdown();
-}
-
-bool UserCloudPolicyManager::IsInitializationComplete() const {
-  return CloudPolicyManager::IsInitializationComplete() &&
-      !wait_for_policy_fetch_;
-}
-
-void UserCloudPolicyManager::OnPolicyFetched(CloudPolicyClient* client) {
-  // No action required. If we're blocked on a policy fetch, we'll learn about
-  // completion of it through OnInitialPolicyFetchComplete().
-}
-
-void UserCloudPolicyManager::OnRegistrationStateChanged(
-    CloudPolicyClient* client) {
-  DCHECK_EQ(cloud_policy_client(), client);
-  if (wait_for_policy_fetch_) {
-    // If we're blocked on the policy fetch, now is a good time to issue it.
-    if (cloud_policy_client()->is_registered()) {
-      cloud_policy_service()->RefreshPolicy(
-          base::Bind(&UserCloudPolicyManager::OnInitialPolicyFetchComplete,
-                     base::Unretained(this)));
-    } else {
-      // If the client has switched to not registered, we bail out as this
-      // indicates the cloud policy setup flow has been aborted.
-      CancelWaitForPolicyFetch();
-    }
-  }
-}
-
-void UserCloudPolicyManager::OnClientError(CloudPolicyClient* client) {
-  DCHECK_EQ(cloud_policy_client(), client);
-  CancelWaitForPolicyFetch();
-}
-
-void UserCloudPolicyManager::OnInitialPolicyFetchComplete() {
-  CancelWaitForPolicyFetch();
 }
 
 }  // namespace policy

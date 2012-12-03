@@ -22,9 +22,9 @@ class CloudPolicyRefreshScheduler;
 class CloudPolicyService;
 
 // CloudPolicyManager is the main switching central between cloud policy and the
-// upper layers of the policy stack. It owns CloudPolicyStore,
-// CloudPolicyClient, and CloudPolicyService, is responsible for receiving and
-// keeping policy from the cloud and exposes the decoded policy via the
+// upper layers of the policy stack. It owns CloudPolicyClient and
+// CloudPolicyService, is responsible for receiving and keeping policy from the
+// cloud and exposes the decoded policy from a CloudPolicyStore via the
 // ConfigurationPolicyProvider interface.
 //
 // This class contains the base functionality, there are subclasses that add
@@ -33,14 +33,14 @@ class CloudPolicyService;
 class CloudPolicyManager : public ConfigurationPolicyProvider,
                            public CloudPolicyStore::Observer {
  public:
-  explicit CloudPolicyManager(scoped_ptr<CloudPolicyStore> store);
+  explicit CloudPolicyManager(CloudPolicyStore* store);
   virtual ~CloudPolicyManager();
 
   CloudPolicyClient* cloud_policy_client() { return client_.get(); }
   const CloudPolicyClient* cloud_policy_client() const { return client_.get(); }
 
-  CloudPolicyStore* cloud_policy_store() { return store_.get(); }
-  const CloudPolicyStore* cloud_policy_store() const { return store_.get(); }
+  CloudPolicyStore* cloud_policy_store() { return store_; }
+  const CloudPolicyStore* cloud_policy_store() const { return store_; }
 
   CloudPolicyService* cloud_policy_service() { return service_.get(); }
   const CloudPolicyService* cloud_policy_service() const {
@@ -76,7 +76,7 @@ class CloudPolicyManager : public ConfigurationPolicyProvider,
   // Completion handler for policy refresh operations.
   void OnRefreshComplete();
 
-  scoped_ptr<CloudPolicyStore> store_;
+  CloudPolicyStore* store_;
   scoped_ptr<CloudPolicyClient> client_;
   scoped_ptr<CloudPolicyService> service_;
   scoped_ptr<CloudPolicyRefreshScheduler> refresh_scheduler_;

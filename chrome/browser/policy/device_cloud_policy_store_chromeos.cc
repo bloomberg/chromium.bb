@@ -55,11 +55,6 @@ void DeviceCloudPolicyStoreChromeOS::Load() {
   device_settings_service_->Load();
 }
 
-void DeviceCloudPolicyStoreChromeOS::RemoveStoredPolicy() {
-  // Device policy cannot and should not be removed on Chrome OS.
-  NOTREACHED();
-}
-
 void DeviceCloudPolicyStoreChromeOS::InstallInitialPolicy(
     const em::PolicyFetchResponse& policy) {
   // Cancel all pending requests.

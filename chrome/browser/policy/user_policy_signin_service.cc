@@ -8,6 +8,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_service.h"
 #include "chrome/browser/policy/user_cloud_policy_manager.h"
+#include "chrome/browser/policy/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -35,10 +36,8 @@ const int64 kPolicyServiceInitializationDelayMilliseconds = 2000;
 namespace policy {
 
 UserPolicySigninService::UserPolicySigninService(
-    Profile* profile,
-    UserCloudPolicyManager* manager)
-    : profile_(profile),
-      manager_(manager) {
+    Profile* profile)
+    : profile_(profile) {
 
   // Initialize/shutdown the UserCloudPolicyManager when the user signs in or
   // out.
@@ -61,13 +60,12 @@ UserPolicySigninService::UserPolicySigninService(
                  content::Source<Profile>(profile));
 }
 
-UserPolicySigninService::~UserPolicySigninService() {
-  StopObserving();
-}
+UserPolicySigninService::~UserPolicySigninService() {}
 
 void UserPolicySigninService::StopObserving() {
-  if (manager_ && manager_->cloud_policy_service())
-    manager_->cloud_policy_service()->RemoveObserver(this);
+  UserCloudPolicyManager* manager = GetManager();
+  if (manager && manager->cloud_policy_service())
+    manager->cloud_policy_service()->RemoveObserver(this);
 }
 
 void UserPolicySigninService::Observe(
@@ -108,17 +106,18 @@ void UserPolicySigninService::ConfigureUserCloudPolicyManager() {
 
   // Either startup or shutdown the UserCloudPolicyManager depending on whether
   // the user is signed in or not.
-  if (!manager_)
+  UserCloudPolicyManager* manager = GetManager();
+  if (!manager)
     return;  // Can be null in unit tests.
 
   SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile_);
   if (signin_manager->GetAuthenticatedUsername().empty()) {
     // User has signed out - remove existing policy.
     StopObserving();
-    manager_->ShutdownAndRemovePolicy();
+    manager->ShutdownAndRemovePolicy();
   } else {
     // Initialize the UserCloudPolicyManager if it isn't already initialized.
-    if (!manager_->cloud_policy_service()) {
+    if (!manager->cloud_policy_service()) {
       // Make sure we've initialized the DeviceManagementService. It's OK to
       // call this multiple times so we do it every time we initialize the
       // UserCloudPolicyManager.
@@ -129,17 +128,15 @@ void UserPolicySigninService::ConfigureUserCloudPolicyManager() {
       // the OnInitializationCompleted() callback is invoked.
       policy::DeviceManagementService* service = g_browser_process->
           browser_policy_connector()->device_management_service();
-      manager_->Initialize(g_browser_process->local_state(),
-                           service,
-                           policy::USER_AFFILIATION_NONE);
-      DCHECK(manager_->cloud_policy_service());
-      manager_->cloud_policy_service()->AddObserver(this);
+      manager->Initialize(g_browser_process->local_state(), service);
+      DCHECK(manager->cloud_policy_service());
+      manager->cloud_policy_service()->AddObserver(this);
     }
 
     // If the CloudPolicyService is initialized, but the CloudPolicyClient still
     // needs to be registered, kick off registration.
-    if (manager_->cloud_policy_service()->IsInitializationComplete() &&
-        !manager_->IsClientRegistered()) {
+    if (manager->cloud_policy_service()->IsInitializationComplete() &&
+        !manager->IsClientRegistered()) {
       RegisterCloudPolicyService();
     }
   }
@@ -147,14 +144,15 @@ void UserPolicySigninService::ConfigureUserCloudPolicyManager() {
 
 void UserPolicySigninService::OnInitializationCompleted(
     CloudPolicyService* service) {
-  DCHECK_EQ(service, manager_->cloud_policy_service());
+  UserCloudPolicyManager* manager = GetManager();
+  DCHECK_EQ(service, manager->cloud_policy_service());
   DCHECK(service->IsInitializationComplete());
   // The service is now initialized - if the client is not yet registered, then
   // it means that there is no cached policy and so we need to initiate a new
   // client registration.
-  DVLOG_IF(1, manager_->IsClientRegistered())
+  DVLOG_IF(1, manager->IsClientRegistered())
       << "Client already registered - not fetching DMToken";
-  if (!manager_->IsClientRegistered())
+  if (!manager->IsClientRegistered())
     RegisterCloudPolicyService();
 }
 
@@ -191,16 +189,24 @@ void UserPolicySigninService::OnGetTokenFailure(
   DLOG(WARNING) << "Could not fetch access token for "
                 << kServiceScopeChromeOSDeviceManagement;
   oauth2_access_token_fetcher_.reset();
-  manager_->CancelWaitForPolicyFetch();
 }
 
 void UserPolicySigninService::OnGetTokenSuccess(
     const std::string& access_token,
     const base::Time& expiration_time) {
+  UserCloudPolicyManager* manager = GetManager();
   // Pass along the new access token to the CloudPolicyClient.
   DVLOG(1) << "Fetched new scoped OAuth token:" << access_token;
-  manager_->RegisterClient(access_token);
+  manager->RegisterClient(access_token);
   oauth2_access_token_fetcher_.reset();
+}
+
+void UserPolicySigninService::Shutdown() {
+  StopObserving();
+}
+
+UserCloudPolicyManager* UserPolicySigninService::GetManager() {
+  return UserCloudPolicyManagerFactory::GetForProfile(profile_);
 }
 
 }  // namespace policy

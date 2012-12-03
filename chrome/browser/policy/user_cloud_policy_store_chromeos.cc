@@ -9,18 +9,13 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/path_service.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "chrome/browser/policy/user_policy_disk_cache.h"
 #include "chrome/browser/policy/user_policy_token_cache.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -180,13 +175,6 @@ void UserCloudPolicyStoreChromeOS::Load() {
   session_manager_client_->RetrieveUserPolicy(
       base::Bind(&UserCloudPolicyStoreChromeOS::OnPolicyRetrieved,
                  weak_factory_.GetWeakPtr()));
-}
-
-void UserCloudPolicyStoreChromeOS::RemoveStoredPolicy() {
-  // This should never be called on ChromeOS since it is not possible to sign
-  // out of a Profile. The underlying policy store is only removed if the
-  // Profile itself is deleted.
-  NOTREACHED();
 }
 
 void UserCloudPolicyStoreChromeOS::OnPolicyRetrieved(
@@ -356,27 +344,6 @@ void UserCloudPolicyStoreChromeOS::InstallLegacyTokens(
 void UserCloudPolicyStoreChromeOS::RemoveLegacyCacheDir(const FilePath& dir) {
   if (file_util::PathExists(dir) && !file_util::Delete(dir, true))
     LOG(ERROR) << "Failed to remove cache dir " << dir.value();
-}
-
-// static
-scoped_ptr<CloudPolicyStore> CloudPolicyStore::CreateUserPolicyStore(
-    Profile* profile, bool force_immediate_policy_load) {
-  // On ChromeOS, callers should never try to load policy synchronously
-  // (profile initialization is always asynchronous).
-  DCHECK(!force_immediate_policy_load);
-  FilePath profile_dir;
-  CHECK(PathService::Get(chrome::DIR_USER_DATA, &profile_dir));
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  const FilePath policy_dir =
-      profile_dir
-          .Append(command_line->GetSwitchValuePath(switches::kLoginProfile))
-          .Append(kPolicyDir);
-  const FilePath policy_cache_file = policy_dir.Append(kPolicyCacheFile);
-  const FilePath token_cache_file = policy_dir.Append(kTokenCacheFile);
-
-  return scoped_ptr<CloudPolicyStore>(new UserCloudPolicyStoreChromeOS(
-      chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
-      token_cache_file, policy_cache_file));
 }
 
 }  // namespace policy

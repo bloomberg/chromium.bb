@@ -19,7 +19,6 @@
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/policy/proto/chrome_settings.pb.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
-#include "chrome/browser/policy/user_cloud_policy_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -37,7 +36,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/policy/user_cloud_policy_manager_chromeos.h"
 #else
+#include "chrome/browser/policy/user_cloud_policy_manager.h"
+#include "chrome/browser/policy/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #endif
@@ -125,25 +127,29 @@ void SetUpNewStackBeforeCreatingBrowser() {
 }
 
 void SetUpNewStackAfterCreatingBrowser(Browser* browser) {
-#if !defined(OS_CHROMEOS)
+  BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
+  connector->ScheduleServiceInitialization(0);
+
+#if defined(OS_CHROMEOS)
+  connector->InitializeUserPolicy(GetTestUser(), true);
+  UserCloudPolicyManagerChromeOS* policy_manager =
+      connector->GetUserCloudPolicyManager();
+  ASSERT_TRUE(policy_manager);
+#else
   // Mock a signed-in user. This is used by the UserCloudPolicyStore to pass the
   // username to the UserCloudPolicyValidator.
   SigninManager* signin_manager =
       SigninManagerFactory::GetForProfile(browser->profile());
   ASSERT_TRUE(signin_manager);
   signin_manager->SetAuthenticatedUsername(GetTestUser());
-#endif
-
-  BrowserPolicyConnector* connector =
-      g_browser_process->browser_policy_connector();
-  connector->ScheduleServiceInitialization(0);
 
   UserCloudPolicyManager* policy_manager =
-      browser->profile()->GetUserCloudPolicyManager();
+      UserCloudPolicyManagerFactory::GetForProfile(browser->profile());
   ASSERT_TRUE(policy_manager);
   policy_manager->Initialize(g_browser_process->local_state(),
-                             connector->device_management_service(),
-                             policy::USER_AFFILIATION_MANAGED);
+                             connector->device_management_service());
+#endif  // defined(OS_CHROMEOS)
 
   ASSERT_TRUE(policy_manager->cloud_policy_client());
   base::RunLoop run_loop;

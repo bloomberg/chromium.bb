@@ -33,7 +33,7 @@ class DeviceManagementService;
 class NetworkConfigurationUpdater;
 class PolicyService;
 class PolicyStatisticsCollector;
-class UserCloudPolicyManager;
+class UserCloudPolicyManagerChromeOS;
 class UserPolicyTokenCache;
 
 // Manages the lifecycle of browser-global policy infrastructure, such as the
@@ -62,16 +62,6 @@ class BrowserPolicyConnector : public content::NotificationObserver {
 
   // Returns true if Init() has been called but Shutdown() hasn't been yet.
   bool is_initialized() const { return is_initialized_; }
-
-  // Creates a UserCloudPolicyManager for the given profile, or returns NULL if
-  // it is not supported on this platform. If |force_immediate_policy_load| is
-  // true, then any underlying policy files will be loaded before this routine
-  // returns - this is used when the caller (such as
-  // CreateProfile(CREATE_MODE_SYNCHRONOUS)) needs to access the policy values
-  // immediately without waiting for tasks to complete.
-  scoped_ptr<UserCloudPolicyManager> CreateCloudPolicyManager(
-      Profile* profile,
-      bool force_immediate_policy_load);
 
   // Creates a new policy service for the given profile.
   scoped_ptr<PolicyService> CreatePolicyService(Profile* profile);
@@ -175,6 +165,9 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   DeviceCloudPolicyManagerChromeOS* GetDeviceCloudPolicyManager() {
     return device_cloud_policy_manager_.get();
   }
+  UserCloudPolicyManagerChromeOS* GetUserCloudPolicyManager() {
+    return user_cloud_policy_manager_.get();
+  }
 #endif
 
   // Sets a |provider| that will be included in PolicyServices returned by
@@ -235,8 +228,14 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   scoped_ptr<DeviceCloudPolicyManagerChromeOS> device_cloud_policy_manager_;
   scoped_ptr<DeviceLocalAccountPolicyService>
       device_local_account_policy_service_;
+  scoped_ptr<UserCloudPolicyManagerChromeOS> user_cloud_policy_manager_;
+
+  // This policy provider is used on Chrome OS to feed user policy into the
+  // global PolicyService instance. This works by installing
+  // |user_cloud_policy_manager_| as the delegate once the former is
+  // initialized.
+  ProxyPolicyProvider global_user_cloud_policy_provider_;
 #endif
-  ProxyPolicyProvider user_cloud_policy_provider_;
 
   // Must be deleted before all the policy providers.
   scoped_ptr<PolicyService> policy_service_;

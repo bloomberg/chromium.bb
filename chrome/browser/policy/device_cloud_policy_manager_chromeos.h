@@ -76,7 +76,7 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
 
   // Points to the same object as the base CloudPolicyManager::store(), but with
   // actual device policy specific type.
-  DeviceCloudPolicyStoreChromeOS* device_store_;
+  scoped_ptr<DeviceCloudPolicyStoreChromeOS> device_store_;
   EnterpriseInstallAttributes* install_attributes_;
 
   DeviceManagementService* device_management_service_;

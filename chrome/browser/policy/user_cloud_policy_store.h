@@ -13,6 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/user_cloud_policy_store_base.h"
 
+class Profile;
+
 namespace policy {
 
 // Implements a cloud policy store that is stored in a simple file in the user's
@@ -25,19 +27,22 @@ class UserCloudPolicyStore : public UserCloudPolicyStoreBase {
   UserCloudPolicyStore(Profile* profile, const FilePath& policy_file);
   virtual ~UserCloudPolicyStore();
 
-  // Loads policy immediately on the current thread.
+  // Factory method for creating a UserCloudPolicyStore for |profile|.
+  static scoped_ptr<UserCloudPolicyStore> Create(Profile* profile);
+
+  // Loads policy immediately on the current thread. Virtual for mocks.
   virtual void LoadImmediately();
+
+  // Deletes any existing policy blob and notifies observers via OnStoreLoaded()
+  // that the blob has changed. Virtual for mocks.
+  virtual void Clear();
 
   // CloudPolicyStore implementation.
   virtual void Load() OVERRIDE;
   virtual void Store(
       const enterprise_management::PolicyFetchResponse& policy) OVERRIDE;
 
- protected:
-  virtual void RemoveStoredPolicy() OVERRIDE;
-
  private:
-
   // Callback invoked when a new policy has been loaded from disk. If
   // |validate_in_background| is true, then policy is validated via a background
   // thread.

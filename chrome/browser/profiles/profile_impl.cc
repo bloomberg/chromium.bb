@@ -92,7 +92,10 @@
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/managed_mode_policy_provider.h"
+#if !defined(OS_CHROMEOS)
 #include "chrome/browser/policy/user_cloud_policy_manager.h"
+#include "chrome/browser/policy/user_cloud_policy_manager_factory.h"
+#endif
 #else
 #include "chrome/browser/policy/policy_service_stub.h"
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
@@ -340,25 +343,30 @@ ProfileImpl::ProfileImpl(
       g_browser_process->profile_manager() == NULL);
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  // TODO(atwilson): Change these to ProfileKeyedServices once PrefService is
-  // a ProfileKeyedService (policy must be initialized before PrefService
-  // because PrefService depends on policy loading to get overridden pref
-  // values).
-  policy::BrowserPolicyConnector* connector =
-      g_browser_process->browser_policy_connector();
   // If we are creating the profile synchronously, then we should load the
   // policy data immediately.
   bool force_immediate_policy_load = (create_mode == CREATE_MODE_SYNCHRONOUS);
-  cloud_policy_manager_ =
-      connector->CreateCloudPolicyManager(this, force_immediate_policy_load);
-  if (cloud_policy_manager_)
+
+  // TODO(atwilson): Change |cloud_policy_manager_| and
+  // |managed_mode_policy_provider_| to proper ProfileKeyedServices once
+  // PrefService is a ProfileKeyedService (policy must be initialized before
+  // PrefService because PrefService depends on policy loading to get overridden
+  // pref values).
+#if !defined(OS_CHROMEOS)
+  if (command_line->HasSwitch(switches::kLoadCloudPolicyOnSignin)) {
+    cloud_policy_manager_ =
+        policy::UserCloudPolicyManagerFactory::CreateForProfile(
+            this, force_immediate_policy_load);
     cloud_policy_manager_->Init();
+  }
+#endif
   managed_mode_policy_provider_ =
       policy::ManagedModePolicyProvider::Create(this,
                                                 sequenced_task_runner,
                                                 force_immediate_policy_load);
   managed_mode_policy_provider_->Init();
-  policy_service_ = connector->CreatePolicyService(this);
+  policy_service_ =
+      g_browser_process->browser_policy_connector()->CreatePolicyService(this);
 #else
   policy_service_.reset(new policy::PolicyServiceStub());
 #endif
@@ -606,8 +614,6 @@ ProfileImpl::~ProfileImpl() {
     host_content_settings_map_->ShutdownOnUIThread();
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  if (cloud_policy_manager_)
-    cloud_policy_manager_->Shutdown();
   if (managed_mode_policy_provider_)
     managed_mode_policy_provider_->Shutdown();
 #endif
@@ -750,14 +756,6 @@ Profile::ExitType ProfileImpl::GetLastSessionExitType() {
   // it to be set by asking for the prefs.
   GetPrefs();
   return last_session_exit_type_;
-}
-
-policy::UserCloudPolicyManager* ProfileImpl::GetUserCloudPolicyManager() {
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  return cloud_policy_manager_.get();
-#else
-  return NULL;
-#endif
 }
 
 policy::ManagedModePolicyProvider* ProfileImpl::GetManagedModePolicyProvider() {

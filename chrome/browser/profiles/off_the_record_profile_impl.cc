@@ -229,11 +229,6 @@ GAIAInfoUpdateService* OffTheRecordProfileImpl::GetGAIAInfoUpdateService() {
   return NULL;
 }
 
-policy::UserCloudPolicyManager*
-    OffTheRecordProfileImpl::GetUserCloudPolicyManager() {
-  return profile_->GetUserCloudPolicyManager();
-}
-
 policy::ManagedModePolicyProvider*
     OffTheRecordProfileImpl::GetManagedModePolicyProvider() {
   return profile_->GetManagedModePolicyProvider();

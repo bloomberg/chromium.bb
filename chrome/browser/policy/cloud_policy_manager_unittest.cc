@@ -53,7 +53,7 @@ class TestHarness : public PolicyProviderTestHarness {
   static PolicyProviderTestHarness* CreateRecommended();
 
  private:
-  MockCloudPolicyStore* store_;
+  MockCloudPolicyStore store_;
 
   DISALLOW_COPY_AND_ASSIGN(TestHarness);
 };
@@ -68,11 +68,9 @@ void TestHarness::SetUp() {}
 ConfigurationPolicyProvider* TestHarness::CreateProvider(
     const PolicyDefinitionList* policy_definition_list) {
   // Create and initialize the store.
-  store_ = new MockCloudPolicyStore();
-  store_->NotifyStoreLoaded();
-  ConfigurationPolicyProvider* provider =
-      new CloudPolicyManager(scoped_ptr<CloudPolicyStore>(store_));
-  Mock::VerifyAndClearExpectations(store_);
+  store_.NotifyStoreLoaded();
+  ConfigurationPolicyProvider* provider = new CloudPolicyManager(&store_);
+  Mock::VerifyAndClearExpectations(&store_);
   return provider;
 }
 
@@ -80,33 +78,33 @@ void TestHarness::InstallEmptyPolicy() {}
 
 void TestHarness::InstallStringPolicy(const std::string& policy_name,
                                       const std::string& policy_value) {
-  store_->policy_map_.Set(policy_name, policy_level(), policy_scope(),
-                          base::Value::CreateStringValue(policy_value));
+  store_.policy_map_.Set(policy_name, policy_level(), policy_scope(),
+                         base::Value::CreateStringValue(policy_value));
 }
 
 void TestHarness::InstallIntegerPolicy(const std::string& policy_name,
                                        int policy_value) {
-  store_->policy_map_.Set(policy_name, policy_level(), policy_scope(),
-                          base::Value::CreateIntegerValue(policy_value));
+  store_.policy_map_.Set(policy_name, policy_level(), policy_scope(),
+                         base::Value::CreateIntegerValue(policy_value));
 }
 
 void TestHarness::InstallBooleanPolicy(const std::string& policy_name,
                                        bool policy_value) {
-  store_->policy_map_.Set(policy_name, policy_level(), policy_scope(),
-                          base::Value::CreateBooleanValue(policy_value));
+  store_.policy_map_.Set(policy_name, policy_level(), policy_scope(),
+                         base::Value::CreateBooleanValue(policy_value));
 }
 
 void TestHarness::InstallStringListPolicy(const std::string& policy_name,
                                           const base::ListValue* policy_value) {
-  store_->policy_map_.Set(policy_name, policy_level(), policy_scope(),
-                          policy_value->DeepCopy());
+  store_.policy_map_.Set(policy_name, policy_level(), policy_scope(),
+                         policy_value->DeepCopy());
 }
 
 void TestHarness::InstallDictionaryPolicy(
     const std::string& policy_name,
     const base::DictionaryValue* policy_value) {
-  store_->policy_map_.Set(policy_name, policy_level(), policy_scope(),
-                          policy_value->DeepCopy());
+  store_.policy_map_.Set(policy_name, policy_level(), policy_scope(),
+                         policy_value->DeepCopy());
 }
 
 // static
@@ -128,8 +126,8 @@ INSTANTIATE_TEST_CASE_P(
 
 class TestCloudPolicyManager : public CloudPolicyManager {
  public:
-  explicit TestCloudPolicyManager(scoped_ptr<CloudPolicyStore> store)
-      : CloudPolicyManager(store.Pass()) {}
+  explicit TestCloudPolicyManager(CloudPolicyStore* store)
+      : CloudPolicyManager(store) {}
   virtual ~TestCloudPolicyManager() {}
 
   // Publish the protected members for testing.
@@ -161,12 +159,10 @@ class CloudPolicyManagerTest : public testing::Test {
         "http://www.example.com");
     policy_.Build();
 
-    store_ = new MockCloudPolicyStore();
-    EXPECT_CALL(*store_, Load());
-    manager_.reset(
-        new TestCloudPolicyManager(scoped_ptr<CloudPolicyStore>(store_)));
+    EXPECT_CALL(store_, Load());
+    manager_.reset(new TestCloudPolicyManager(&store_));
     manager_->Init();
-    Mock::VerifyAndClearExpectations(store_);
+    Mock::VerifyAndClearExpectations(&store_);
     manager_->AddObserver(&observer_);
   }
 
@@ -185,7 +181,7 @@ class CloudPolicyManagerTest : public testing::Test {
 
   // Policy infrastructure.
   MockConfigurationPolicyObserver observer_;
-  MockCloudPolicyStore* store_;
+  MockCloudPolicyStore store_;
   scoped_ptr<TestCloudPolicyManager> manager_;
 
  private:
@@ -201,10 +197,10 @@ TEST_F(CloudPolicyManagerTest, InitAndShutdown) {
   manager_->CheckAndPublishPolicy();
   Mock::VerifyAndClearExpectations(&observer_);
 
-  store_->policy_map_.CopyFrom(policy_map_);
-  store_->policy_.reset(new em::PolicyData(policy_.policy_data()));
+  store_.policy_map_.CopyFrom(policy_map_);
+  store_.policy_.reset(new em::PolicyData(policy_.policy_data()));
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get()));
-  store_->NotifyStoreLoaded();
+  store_.NotifyStoreLoaded();
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_TRUE(expected_bundle_.Equals(manager_->policies()));
   EXPECT_TRUE(manager_->IsInitializationComplete());
@@ -227,7 +223,7 @@ TEST_F(CloudPolicyManagerTest, InitAndShutdown) {
 
 TEST_F(CloudPolicyManagerTest, RegistrationAndFetch) {
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get()));
-  store_->NotifyStoreLoaded();
+  store_.NotifyStoreLoaded();
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_TRUE(manager_->IsInitializationComplete());
 
@@ -238,28 +234,28 @@ TEST_F(CloudPolicyManagerTest, RegistrationAndFetch) {
   client->NotifyRegistrationStateChanged();
 
   client->SetPolicy(policy_.policy());
-  EXPECT_CALL(*store_, Store(ProtoMatches(policy_.policy())));
+  EXPECT_CALL(store_, Store(ProtoMatches(policy_.policy())));
   client->NotifyPolicyFetched();
-  Mock::VerifyAndClearExpectations(store_);
+  Mock::VerifyAndClearExpectations(&store_);
 
-  store_->policy_map_.CopyFrom(policy_map_);
+  store_.policy_map_.CopyFrom(policy_map_);
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get()));
-  store_->NotifyStoreLoaded();
+  store_.NotifyStoreLoaded();
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_TRUE(expected_bundle_.Equals(manager_->policies()));
 }
 
 TEST_F(CloudPolicyManagerTest, Update) {
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get()));
-  store_->NotifyStoreLoaded();
+  store_.NotifyStoreLoaded();
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_TRUE(manager_->IsInitializationComplete());
   PolicyBundle empty_bundle;
   EXPECT_TRUE(empty_bundle.Equals(manager_->policies()));
 
-  store_->policy_map_.CopyFrom(policy_map_);
+  store_.policy_map_.CopyFrom(policy_map_);
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get()));
-  store_->NotifyStoreLoaded();
+  store_.NotifyStoreLoaded();
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_TRUE(expected_bundle_.Equals(manager_->policies()));
   EXPECT_TRUE(manager_->IsInitializationComplete());
@@ -270,7 +266,7 @@ TEST_F(CloudPolicyManagerTest, RefreshNotRegistered) {
   manager_->InitializeService(scoped_ptr<CloudPolicyClient>(client));
 
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get()));
-  store_->NotifyStoreLoaded();
+  store_.NotifyStoreLoaded();
   Mock::VerifyAndClearExpectations(&observer_);
 
   // A refresh on a non-registered store should not block.
@@ -284,10 +280,10 @@ TEST_F(CloudPolicyManagerTest, RefreshSuccessful) {
   manager_->InitializeService(scoped_ptr<CloudPolicyClient>(client));
 
   // Simulate a store load.
-  store_->policy_.reset(new em::PolicyData(policy_.policy_data()));
+  store_.policy_.reset(new em::PolicyData(policy_.policy_data()));
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get()));
   EXPECT_CALL(*client, SetupRegistration(_, _));
-  store_->NotifyStoreLoaded();
+  store_.NotifyStoreLoaded();
   Mock::VerifyAndClearExpectations(client);
   Mock::VerifyAndClearExpectations(&observer_);
 
@@ -300,24 +296,24 @@ TEST_F(CloudPolicyManagerTest, RefreshSuccessful) {
   manager_->RefreshPolicies();
   Mock::VerifyAndClearExpectations(client);
   Mock::VerifyAndClearExpectations(&observer_);
-  store_->policy_map_.CopyFrom(policy_map_);
+  store_.policy_map_.CopyFrom(policy_map_);
 
   // A stray reload should be suppressed until the refresh completes.
   EXPECT_CALL(observer_, OnUpdatePolicy(_)).Times(0);
-  store_->NotifyStoreLoaded();
+  store_.NotifyStoreLoaded();
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Respond to the policy fetch, which should trigger a write to |store_|.
   EXPECT_CALL(observer_, OnUpdatePolicy(_)).Times(0);
-  EXPECT_CALL(*store_, Store(_));
+  EXPECT_CALL(store_, Store(_));
   client->SetPolicy(policy_.policy());
   client->NotifyPolicyFetched();
   Mock::VerifyAndClearExpectations(&observer_);
-  Mock::VerifyAndClearExpectations(store_);
+  Mock::VerifyAndClearExpectations(&store_);
 
   // The load notification from |store_| should trigger the policy update.
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get()));
-  store_->NotifyStoreLoaded();
+  store_.NotifyStoreLoaded();
   EXPECT_TRUE(expected_bundle_.Equals(manager_->policies()));
   Mock::VerifyAndClearExpectations(&observer_);
 }
