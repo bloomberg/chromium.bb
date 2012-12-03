@@ -166,13 +166,12 @@ cr.define('cr.ui', function() {
       TableList.decorate(this.list_);
       this.list_.selectionModel = new ListSelectionModel(this);
       this.list_.table = this;
+      this.list_.addEventListener('scroll', this.handleScroll_.bind(this));
 
       TableHeader.decorate(this.header_);
       this.header_.table = this;
 
       this.classList.add('table');
-      this.ownerDocument.defaultView.addEventListener(
-          'resize', this.header_.updateWidth.bind(this.header_));
 
       this.boundResize_ = this.resize.bind(this);
       this.boundHandleSorted_ = this.handleSorted_.bind(this);
@@ -253,6 +252,14 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * This handles list 'scroll' events. Scrolls the header accordingly.
+     * @param {Event} e Scroll event.
+     */
+    handleScroll_: function(e) {
+      this.header_.style.marginLeft = -this.list_.scrollLeft + 'px';
+    },
+
+    /**
      * Sort data by the given column.
      * @param {number} index The index of the column to sort by.
      */
@@ -313,10 +320,7 @@ cr.define('cr.ui', function() {
      */
     fitColumn: function(index) {
       var list = this.list_;
-      var listWidth = list.clientWidth;
       var listHeight = list.clientHeight;
-      if (listWidth == 0)
-        return;  // Ensure won't be division by 0.
 
       var cm = this.columnModel_;
       var dm = this.dataModel;
@@ -352,8 +356,12 @@ cr.define('cr.ui', function() {
         list.appendChild(container);
         var width = parseFloat(getComputedStyle(container).width);
         list.removeChild(container);
-        cm.setWidth(index, width * 100 / listWidth);
+        cm.setWidth(index, width);
       });
+    },
+
+    normalizeColumns: function() {
+      this.columnModel.normalizeWidths(this.clientWidth);
     }
   };
 

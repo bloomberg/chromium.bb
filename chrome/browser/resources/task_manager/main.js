@@ -206,7 +206,9 @@ TaskManager.prototype = {
     }
 
     this.isFinishedInitDelayed_ = true;
-    this.table_.redraw();
+    var t = this.table_;
+    t.redraw();
+    addEventListener('resize', t.redraw.bind(t));
   },
 
   initColumnModel_: function() {

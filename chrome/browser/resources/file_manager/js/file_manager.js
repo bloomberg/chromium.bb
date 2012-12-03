@@ -1015,7 +1015,6 @@ DialogType.isModal = function(type) {
 
     this.listType_ = type;
     this.updateStartupPrefs_();
-    this.updateColumnModel_();
     this.onResize_();
 
     this.table_.list.endBatchUpdates();
@@ -1056,7 +1055,10 @@ DialogType.isModal = function(type) {
                                     fullPage ? 200 : 160),
         new cr.ui.table.TableColumn('modificationTime',
                                     str('DATE_COLUMN_LABEL'),
-                                    fullPage ? 150 : 210)
+                                    fullPage ? 150 : 210),
+        new cr.ui.table.TableColumn('offline',
+                                    str('OFFLINE_COLUMN_LABEL'),
+                                    150)
     ];
 
     // TODO(dgozman): refactor render/update/display stuff.
@@ -1066,23 +1068,35 @@ DialogType.isModal = function(type) {
     columns[2].renderFunction = this.renderType_.bind(this);
     columns[3].renderFunction = this.renderDate_.bind(this);
     columns[3].defaultOrder = 'desc';
+    columns[4].renderFunction = this.renderOffline_.bind(this);
 
     if (this.showCheckboxes_) {
       columns[0].headerRenderFunction =
           this.renderNameColumnHeader_.bind(this, columns[0].name);
     }
 
-    this.regularColumnModel_ = new cr.ui.table.TableColumnModel(columns);
-
+    var columnModel = new cr.ui.table.TableColumnModel(columns);
+    Object.defineProperty(columnModel, 'size', {
+      get: function() {
+        if (fullPage && this.isOnGData())
+          return columns.length;
+        else
+          return columns.length - 1;
+      }.bind(this)
+    });
     if (fullPage) {
-      columns.push(new cr.ui.table.TableColumn(
-          'offline', str('OFFLINE_COLUMN_LABEL'), 150));
-      columns[4].renderFunction = this.renderOffline_.bind(this);
-
-      this.gdataColumnModel_ = new cr.ui.table.TableColumnModel(columns);
-    } else {
-      this.gdataColumnModel_ = null;
+      var isOnDrive = function(entry) {
+        return PathUtil.getRootType(entry.fullPath) == RootType.GDATA;
+      };
+      var table = this.table_;
+      this.directoryModel_.addEventListener('directory-changed', function(e) {
+        if (isOnDrive(e.previousDirEntry) != isOnDrive(e.newDirEntry)) {
+          // Columns number changed.
+          table.redraw();
+        }
+      });
     }
+    this.table_.columnModel = columnModel;
 
     this.table_.list.addEventListener('click', this.onDetailClick_.bind(this));
   };
@@ -1133,15 +1147,6 @@ DialogType.isModal = function(type) {
       if (inCurrentDirectory(entry))
         this.directoryModel_.onEntryChanged(entry.name);
     }
-  };
-
-  FileManager.prototype.updateColumnModel_ = function() {
-    if (this.listType_ != FileManager.ListType.DETAIL)
-      return;
-    this.table_.columnModel =
-        (this.isOnGData() && this.gdataColumnModel_) ?
-            this.gdataColumnModel_ :
-            this.regularColumnModel_;
   };
 
   /**
@@ -2420,7 +2425,6 @@ DialogType.isModal = function(type) {
    */
   FileManager.prototype.onDirectoryChanged_ = function(event) {
     this.selectionHandler_.onSelectionChanged();
-    this.updateColumnModel_();
     this.updateSearchBoxOnDirChange_();
 
     util.updateAppState(event.initial, this.getCurrentDirectory());

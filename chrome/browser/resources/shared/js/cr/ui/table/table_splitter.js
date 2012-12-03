@@ -55,13 +55,8 @@ cr.define('cr.ui', function() {
      * @param {Event} e Splitter event.
      */
     handleSplitterDragMove: function(deltaX) {
-      var cm = this.table_.columnModel;
-
-      var clientWidth = this.table_.querySelector('list').clientWidth;
-      var percentChange = deltaX * 100 / clientWidth;
-      var newColumnWidth = this.columnWidth_ + percentChange;
-
-      cm.setWidth(this.columnIndex, newColumnWidth);
+      this.table_.columnModel.setWidth(this.columnIndex,
+                                       this.columnWidth_ + deltaX);
     },
 
     /**

@@ -21,8 +21,9 @@ cr.define('cr.ui.table', function() {
     for (var i = 0; i < tableColumns.length; i++) {
       this.columns_.push(tableColumns[i].clone());
     }
-    this.normalizeWidths_();
   }
+
+  var MIMIMAL_WIDTH = 10;
 
   TableColumnModel.prototype = {
     __proto__: EventTarget.prototype,
@@ -72,7 +73,7 @@ cr.define('cr.ui.table', function() {
     /**
      * Returns width (in percent) of column at the given index.
      * @param {number} index The index of the column.
-     * @return {string} Column width.
+     * @return {string} Column width in pixels.
      */
     getWidth: function(index) {
       return this.columns_[index].width;
@@ -96,23 +97,11 @@ cr.define('cr.ui.table', function() {
       if (index < 0 || index >= this.columns_.size - 1)
         return;
 
-      var minWidth = 3;
-      var currentPlusNextWidth = this.columns_[index + 1].width +
-          this.columns_[index].width;
-      var nextWidth = currentPlusNextWidth - width;
-      if (width < minWidth) {
-        width = minWidth;
-        nextWidth = currentPlusNextWidth - minWidth;
-      }
-      if (nextWidth < minWidth) {
-        width = currentPlusNextWidth - minWidth;
-        nextWidth = minWidth;
-      }
+      width = Math.max(width, MIMIMAL_WIDTH);
       if (width == this.columns_[index].width)
         return;
 
       this.columns_[index].width = width;
-      this.columns_[index + 1].width = nextWidth;
       cr.dispatchSimpleEvent(this, 'resize');
     },
 
@@ -155,20 +144,21 @@ cr.define('cr.ui.table', function() {
      * @type {number}
      */
     get totalWidth() {
-      return this.totalWidth_;
+      var total = 0;
+      for (var i = 0; i < this.size; i++) {
+        total += this.columns_[i].width;
+      }
+      return total;
     },
 
     /**
      * Normalizes widths to make their sum 100%.
      */
-    normalizeWidths_: function() {
-      var total = 0;
-      for (var i = 0; i < this.size; i++) {
-        total += this.columns_[i].width;
-      }
-      for (var i = 0; i < this.size; i++) {
-        this.columns_[i].width = this.columns_[i].width * 100 / total;
-      }
+    normalizeWidths: function(contentWidth) {
+      if (this.size == 0)
+        return;
+      var c = this.columns_[0];
+      c.width = Math.max(10, c.width - this.totalWidth + contentWidth);
     },
 
     /**

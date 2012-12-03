@@ -346,12 +346,6 @@ cr.define('cr.ui', function() {
      * @private
      */
     measureItemHeight_: function(item) {
-      var height = item.style.height;
-      // Use the fixed height if set it on CSS, to save a time of layout
-      // calculation.
-      if (height && height.substr(-2) == 'px')
-        return parseInt(height.substr(0, height.length - 2));
-
       return this.measureItem(item).height;
     },
 
@@ -376,9 +370,11 @@ cr.define('cr.ui', function() {
         return this.cachedItemHeights_[index];
 
       var item = this.getListItemByIndex(index);
-      if (item)
-        return this.measureItemHeight_(item);
-
+      if (item) {
+        var h = this.measureItemHeight_(item);
+        this.cachedItemHeights_[index] = h;
+        return h;
+      }
       return this.getDefaultItemHeight_();
     },
 
@@ -688,6 +684,7 @@ cr.define('cr.ui', function() {
         var itemHeight = this.getDefaultItemHeight_();
         return index * itemHeight;
       } else {
+        this.ensureAllItemSizesInCache();
         var top = 0;
         for (var i = 0; i < index; i++) {
           top += this.getItemHeightByIndex_(i);
@@ -1053,7 +1050,6 @@ cr.define('cr.ui', function() {
     /**
      * Returns the height of after filler in the list.
      * @param {number} lastIndex The index of item past the last in viewport.
-     * @param {number} itemHeight The height of the item.
      * @return {number} The height of after filler.
      */
     getAfterFillerHeight: function(lastIndex) {
@@ -1080,7 +1076,7 @@ cr.define('cr.ui', function() {
         this.cachedItems_ = {};
         this.firstIndex_ = 0;
         this.lastIndex_ = 0;
-        this.remainingSpace_ = true;
+        this.remainingSpace_ = this.clientHeight != 0;
         this.mergeItems(0, 0, {}, {});
         return;
       }
