@@ -36,6 +36,14 @@ class RulesRegistryWithCache : public RulesRegistry {
 
   explicit RulesRegistryWithCache(Delegate* delegate);
 
+  // Returns true if we are ready to process rules.
+  bool IsReady() {
+    return !delegate_.get() || delegate_->IsReady();
+  }
+
+  // Add a callback to call when we transition to Ready.
+  void AddReadyCallback(const base::Closure& callback);
+
   // Called by our delegate when we are ready. This is called exactly once,
   // if we have a delegate.
   void OnReady();
