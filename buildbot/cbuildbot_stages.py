@@ -3257,8 +3257,16 @@ class ArchiveStage(ArchivingStage):
     #          \- ArchiveZipFiles
     #          \- ArchiveHWQual
     #       \- PushImage (blocks on BuildAndArchiveAllImages)
+    #    \- ArchiveManifest
     #    \- ArchiveStrippedChrome
     #    \- ArchiveImageScripts
+
+    def ArchiveManifest():
+      """Create manifest.xml snapshot of the built code."""
+      output_manifest = os.path.join(archive_path, 'manifest.xml')
+      cmd = ['repo', 'manifest', '-r', '-o', output_manifest]
+      cros_build_lib.RunCommand(cmd, cwd=buildroot, capture_output=True)
+      self._upload_queue.put(['manifest.xml'])
 
     def BuildAndArchiveFactoryImages():
       """Build and archive the factory zip file.
@@ -3394,7 +3402,6 @@ class ArchiveStage(ArchivingStage):
           sign_types=sign_types)
       self._push_image_status_queue.put(urls)
 
-
     def ArchiveReleaseArtifacts():
       with self.ArtifactUploader(self._release_upload_queue, archive=False):
         steps = [BuildAndArchiveAllImages, ArchiveFirmwareImages]
@@ -3403,7 +3410,7 @@ class ArchiveStage(ArchivingStage):
 
     def BuildAndArchiveArtifacts():
       # Run archiving steps in parallel.
-      steps = [ArchiveReleaseArtifacts]
+      steps = [ArchiveReleaseArtifacts, ArchiveManifest]
       if config['images']:
         steps.extend([self.ArchiveStrippedChrome, ArchiveImageScripts])
       if config['create_delta_sysroot']:
