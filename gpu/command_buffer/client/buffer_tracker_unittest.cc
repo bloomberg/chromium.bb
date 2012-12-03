@@ -70,5 +70,19 @@ TEST_F(BufferTrackerTest, Basic) {
   EXPECT_TRUE(buffer_tracker_->GetBuffer(kId1) == NULL);
 }
 
+TEST_F(BufferTrackerTest, ZeroSize) {
+  const GLuint kId = 123;
+
+  // Check we can create a Buffer with zero size.
+  BufferTracker::Buffer* buffer = buffer_tracker_->CreateBuffer(kId, 0);
+  ASSERT_TRUE(buffer != NULL);
+  // Check mapped memory address.
+  EXPECT_TRUE(buffer->address() == NULL);
+  // Check no shared memory was allocated.
+  EXPECT_EQ(0lu, mapped_memory_->num_chunks());
+  // Check we can delete the buffer.
+  buffer_tracker_->RemoveBuffer(kId);
+}
+
 }  // namespace gles2
 }  // namespace gpu

@@ -24,12 +24,15 @@ BufferTracker::~BufferTracker() {
 BufferTracker::Buffer* BufferTracker::CreateBuffer(
     GLuint id, GLsizeiptr size) {
   GPU_DCHECK_NE(0u, id);
-  GPU_DCHECK_LT(0, size);
-  int32 shm_id;
-  uint32 shm_offset;
-  void* address = mapped_memory_->Alloc(size, &shm_id, &shm_offset);
-  if (!address) {
-    return NULL;
+  GPU_DCHECK_LE(0, size);
+  int32 shm_id = -1;
+  uint32 shm_offset = 0;
+  void* address = NULL;
+  if (size) {
+    address = mapped_memory_->Alloc(size, &shm_id, &shm_offset);
+    if (!address) {
+      return NULL;
+    }
   }
 
   Buffer* buffer = new Buffer(id, size, shm_id, shm_offset, address);
@@ -56,8 +59,8 @@ void BufferTracker::RemoveBuffer(GLuint client_id) {
 }
 
 void BufferTracker::FreePendingToken(Buffer* buffer, int32 token) {
-  GPU_DCHECK(buffer->address_);
-  mapped_memory_->FreePendingToken(buffer->address_, token);
+  if (buffer->address_)
+    mapped_memory_->FreePendingToken(buffer->address_, token);
   buffer->size_ = 0;
   buffer->shm_id_ = 0;
   buffer->shm_offset_ = 0;

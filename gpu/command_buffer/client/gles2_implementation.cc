@@ -1191,10 +1191,6 @@ void GLES2Implementation::ShaderSource(
 
 void GLES2Implementation::BufferDataHelper(
     GLenum target, GLsizeiptr size, const void* data, GLenum usage) {
-  if (size == 0) {
-    return;
-  }
-
   if (size < 0) {
     SetGLError(GL_INVALID_VALUE, "glBufferData", "size < 0");
     return;
@@ -1221,6 +1217,10 @@ void GLES2Implementation::BufferDataHelper(
     GPU_DCHECK(buffer);
     if (data)
       memcpy(buffer->address(), data, size);
+    return;
+  }
+
+  if (size == 0) {
     return;
   }
 
