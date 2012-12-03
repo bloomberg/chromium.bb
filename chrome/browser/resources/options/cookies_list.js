@@ -88,8 +88,8 @@ cr.define('options', function() {
   function addAppInfo(element, appInfo) {
     var img = element.ownerDocument.createElement('img');
     img.src = 'chrome://extension-icon/' + appInfo.id + '/16/1';
-    img.title = loadTimeData.getString('label_protected_by_apps') +
-                ' ' + appInfo.name;
+    element.title = loadTimeData.getString('label_protected_by_apps') +
+                    ' ' + appInfo.name;
     img.className = 'protecting-app';
     element.appendChild(img);
   }
