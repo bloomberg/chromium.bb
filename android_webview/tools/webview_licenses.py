@@ -58,8 +58,12 @@ def GetIncompatibleDirectories():
     if directory in known_issues.KNOWN_ISSUES:
       result.append(directory)
       continue
-    metadata = licenses.ParseDir(directory, REPOSITORY_ROOT,
-                                 require_license_file=False)
+    try:
+      metadata = licenses.ParseDir(directory, REPOSITORY_ROOT,
+                                   require_license_file=False)
+    except licenses.LicenseError as e:
+      print 'Got LicenseError while scanning ' + directory
+      raise
     if metadata.get('License Android Compatible', 'no') == 'yes':
       continue
     license = re.split(' [Ll]icenses?$', metadata['License'])[0]
@@ -189,7 +193,8 @@ def _FindThirdPartyDirs():
     # Binaries doesn't apply to android
     os.path.join('third_party', 'widevine'),
   ]
-  return licenses.FindThirdPartyDirs(prune_paths, REPOSITORY_ROOT)
+  third_party_dirs = licenses.FindThirdPartyDirs(prune_paths, REPOSITORY_ROOT)
+  return licenses.FilterDirsWithFiles(third_party_dirs, REPOSITORY_ROOT)
 
 
 def _Scan():
