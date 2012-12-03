@@ -56,6 +56,9 @@ struct evdev_device {
 	struct {
 		int min_x, max_x, min_y, max_y;
 		int32_t x, y;
+
+		int apply_calibration;
+		float calibration[6];
 	} abs;
 
 	struct {

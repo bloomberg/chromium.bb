@@ -230,6 +230,21 @@ is_motion_event(struct input_event *e)
 }
 
 static void
+transform_absolute(struct evdev_device *device)
+{
+	if (!device->abs.apply_calibration)
+		return;
+
+	device->abs.x = device->abs.x * device->abs.calibration[0] +
+			device->abs.y * device->abs.calibration[1] +
+			device->abs.calibration[2];
+
+	device->abs.y = device->abs.x * device->abs.calibration[3] +
+			device->abs.y * device->abs.calibration[4] +
+			device->abs.calibration[5];
+}
+
+static void
 evdev_flush_motion(struct evdev_device *device, uint32_t time)
 {
 	struct weston_seat *master = device->seat;
@@ -269,6 +284,7 @@ evdev_flush_motion(struct evdev_device *device, uint32_t time)
 		device->pending_events &= ~EVDEV_ABSOLUTE_MT_UP;
 	}
 	if (device->pending_events & EVDEV_ABSOLUTE_MOTION) {
+		transform_absolute(device);
 		notify_motion(master, time,
 			      wl_fixed_from_int(device->abs.x),
 			      wl_fixed_from_int(device->abs.y));
