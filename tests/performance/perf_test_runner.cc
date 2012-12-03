@@ -83,12 +83,12 @@ void RunPerfTest(const char *description_string, const char *test_name,
   double stddev;
   printf("\n%s:\n", test_name);
   TimePerfTest(test, &mean, &stddev);
-  printf("mean:   %.3f usec\n", mean * 1e6);
-  printf("stddev: %.3f usec\n", stddev * 1e6);
+  printf("mean:   %.6f usec\n", mean * 1e6);
+  printf("stddev: %.6f usec\n", stddev * 1e6);
   printf("relative stddev: %.2f%%\n", stddev / mean * 100);
   // Output the result in a format that Buildbot will recognise in the
   // logs and record, using the Chromium perf testing infrastructure.
-  printf("RESULT %s: %s= {%.3f, %.3f} microseconds\n",
+  printf("RESULT %s: %s= {%.6f, %.6f} microseconds\n",
          test_name, description_string, mean * 1e6, stddev * 1e6);
 
   delete test;
