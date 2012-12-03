@@ -3,7 +3,7 @@ URL: http://ffmpeg.org/
 License: LGPL 2.1
 License File: LICENSE
 Upstream Git: git://source.ffmpeg.org/ffmpeg.git
-Last Upstream Merge: c39916bc2f43eed86f9822b7d6802b8a4f2a86c8, Oct 1 2012
+Last Upstream Merge: d91388367fa64b98a09b45e2b7fb8435a62b7609, Dec 3 2012
 
 This file documents the layout of the Chromium copy of FFmpeg git, some common
 tasks, how to produce the FFmpeg include directory, and how to create the
