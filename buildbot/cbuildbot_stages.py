@@ -2007,10 +2007,11 @@ class ArchiveStage(BoardSpecificBuilderStage):
       # Update and upload LATEST file.
       version = self.GetVersion()
       if version:
-        commands.UpdateLatestFile(self.bot_archive_root, version)
-        commands.UploadArchivedFile(self.bot_archive_root,
-                                    self._GetGSUtilArchiveDir(), 'LATEST',
-                                    debug)
+        filename = 'LATEST-%s' % self._target_manifest_branch
+        latest_path = os.path.join(self.bot_archive_root, filename)
+        osutils.WriteFile(latest_path, version, mode='w')
+        commands.UploadArchivedFile(
+            self.bot_archive_root, self._GetGSUtilArchiveDir(), filename, debug)
 
     try:
       BuildAndArchiveArtifacts()

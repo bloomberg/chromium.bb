@@ -1153,7 +1153,8 @@ class ArchiveStageTest(AbstractStageTest):
     self.RunStage()
     # pylint: disable=E1101
     self.assertEquals(
-        commands.UploadArchivedFile.call_args[0][2:], ('LATEST', False))
+        commands.UploadArchivedFile.call_args[0][2:],
+        ('LATEST-%s' % self.TARGET_MANIFEST_BRANCH, False))
 
   def testNoPushImagesForRemoteTrybot(self):
     """Test that remote trybot overrides work to disable push images."""

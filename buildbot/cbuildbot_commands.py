@@ -1294,17 +1294,6 @@ def ArchiveHWQual(buildroot, hwqual_name, archive_dir, image_dir):
   return '%s.tar.bz2' % hwqual_name
 
 
-def UpdateLatestFile(bot_archive_root, set_version):
-  """Update the latest file in archive_root.
-
-  Args:
-    bot_archive_root: Parent directory of archive directory.
-    set_version: Version of output directory.
-  """
-  latest_path = os.path.join(bot_archive_root, 'LATEST')
-  osutils.WriteFile(latest_path, set_version, mode='w')
-
-
 def RemoveOldArchives(bot_archive_root, keep_max):
   """Remove old archive directories in bot_archive_root.
 
