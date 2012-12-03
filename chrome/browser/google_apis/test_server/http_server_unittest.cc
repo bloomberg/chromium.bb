@@ -79,16 +79,25 @@ class HttpServerTest : public testing::Test,
     message_loop_.Run();  // Will be terminated in OnURLFetchComplete().
   }
 
-  // Handles the request and returns a simple text content. Saves the
-  // request URL for verification.
-  scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
+  // Handles |request| sent to |path| and returns the response per |content|,
+  // |content type|, and |code|. Saves the request URL for verification.
+  scoped_ptr<HttpResponse> HandleRequest(const std::string& path,
+                                         const std::string& content,
+                                         const std::string& content_type,
+                                         ResponseCode code,
+                                         const HttpRequest& request) {
     request_relative_url_ = request.relative_url;
 
-    scoped_ptr<HttpResponse> http_response(new HttpResponse);
-    http_response->set_code(SUCCESS);
-    http_response->set_content("<b>Worked!</b>");
-    http_response->set_content_type("text/html");
-    return http_response.Pass();
+    GURL absolute_url = server_.GetURL(request.relative_url);
+    if (absolute_url.path() == path) {
+      scoped_ptr<HttpResponse> http_response(new HttpResponse);
+      http_response->set_code(code);
+      http_response->set_content(content);
+      http_response->set_content_type(content_type);
+      return http_response.Pass();
+    }
+
+    return scoped_ptr<HttpResponse>();
   }
 
  protected:
@@ -115,7 +124,11 @@ TEST_F(HttpServerTest, GetURL) {
 
 TEST_F(HttpServerTest, RegisterRequestHandler) {
   server_.RegisterRequestHandler(base::Bind(&HttpServerTest::HandleRequest,
-                                            base::Unretained(this)));
+                                            base::Unretained(this),
+                                            "/test",
+                                            "<b>Worked!</b>",
+                                            "text/html",
+                                            SUCCESS));
 
   scoped_ptr<net::URLFetcher> fetcher(
       net::URLFetcher::Create(server_.GetURL("/test?q=foo"),
@@ -133,82 +146,6 @@ TEST_F(HttpServerTest, RegisterRequestHandler) {
   EXPECT_EQ("/test?q=foo", request_relative_url_);
 }
 
-TEST_F(HttpServerTest, RegisterDefaultResponse) {
-  HttpResponse http_response;
-  // MOVED is chosen here, as it's rather an unusual code.
-  http_response.set_code(MOVED);
-  http_response.set_content("<b>Moved!</b>");
-  http_response.set_content_type("text/html");
-  http_response.AddCustomHeader("Server", "test server");
-  server_.RegisterDefaultResponse("/test", http_response);
-
-  scoped_ptr<net::URLFetcher> fetcher(
-      net::URLFetcher::Create(server_.GetURL("/test"),
-                              net::URLFetcher::GET,
-                              this));
-  fetcher->SetRequestContext(request_context_getter_.get());
-  fetcher->Start();
-  WaitForResponses(1);
-
-  EXPECT_EQ(net::URLRequestStatus::SUCCESS, fetcher->GetStatus().status());
-  EXPECT_EQ(MOVED, fetcher->GetResponseCode());
-  EXPECT_EQ("<b>Moved!</b>", GetContentFromFetcher(*fetcher));
-  EXPECT_EQ("text/html", GetContentTypeFromFetcher(*fetcher));
-  const net::HttpResponseHeaders* headers = fetcher->GetResponseHeaders();
-  ASSERT_TRUE(headers);
-  ASSERT_TRUE(headers->HasHeaderValue("Server", "test server"));
-}
-
-TEST_F(HttpServerTest, RegisterTextResponse) {
-  server_.RegisterTextResponse("/test",
-                               "Raspberry chocolate",
-                               "text/plain",
-                               SUCCESS);
-
-  scoped_ptr<net::URLFetcher> fetcher(
-      net::URLFetcher::Create(server_.GetURL("/test"),
-                              net::URLFetcher::GET,
-                              this));
-  fetcher->SetRequestContext(request_context_getter_.get());
-  fetcher->Start();
-  WaitForResponses(1);
-
-  EXPECT_EQ(net::URLRequestStatus::SUCCESS, fetcher->GetStatus().status());
-  EXPECT_EQ(SUCCESS, fetcher->GetResponseCode());
-  EXPECT_EQ("Raspberry chocolate", GetContentFromFetcher(*fetcher));
-  EXPECT_EQ("text/plain", GetContentTypeFromFetcher(*fetcher));
-}
-
-// Test files cannot be opened on Android.
-#if !defined(OS_ANDROID)
-
-TEST_F(HttpServerTest, RegisterFileResponse) {
-  server_.RegisterFileResponse(
-      "/test",
-      test_util::GetTestFilePath("gdata/testfile.txt"),
-      "text/plain",
-      SUCCESS);
-
-  scoped_ptr<net::URLFetcher> fetcher(
-      net::URLFetcher::Create(server_.GetURL("/test"),
-                              net::URLFetcher::GET,
-                              this));
-  fetcher->SetRequestContext(request_context_getter_.get());
-  fetcher->Start();
-  WaitForResponses(1);
-
-  EXPECT_EQ(net::URLRequestStatus::SUCCESS, fetcher->GetStatus().status());
-  EXPECT_EQ(SUCCESS, fetcher->GetResponseCode());
-  // Trim the trailing whitespace as it can be CRLF on Windows...
-  const std::string content = GetContentFromFetcher(*fetcher);
-  std::string trimmed;
-  TrimWhitespaceASCII(content, TRIM_TRAILING, &trimmed);
-  EXPECT_EQ("test file", trimmed);
-  EXPECT_EQ("text/plain", GetContentTypeFromFetcher(*fetcher));
-}
-
-#endif  // !defined(OS_ANDROID)
-
 TEST_F(HttpServerTest, DefaultNotFoundResponse) {
   scoped_ptr<net::URLFetcher> fetcher(
       net::URLFetcher::Create(server_.GetURL("/non-existent"),
@@ -223,18 +160,27 @@ TEST_F(HttpServerTest, DefaultNotFoundResponse) {
 }
 
 TEST_F(HttpServerTest, ConcurrentFetches) {
-  server_.RegisterTextResponse("/test1",
-                               "Raspberry chocolate",
-                               "text/html",
-                               SUCCESS);
-  server_.RegisterTextResponse("/test2",
-                               "Vanilla chocolate",
-                               "text/html",
-                               SUCCESS);
-  server_.RegisterTextResponse("/test3",
-                               "No chocolates",
-                               "text/plain",
-                               NOT_FOUND);
+  server_.RegisterRequestHandler(
+      base::Bind(&HttpServerTest::HandleRequest,
+                 base::Unretained(this),
+                 "/test1",
+                 "Raspberry chocolate",
+                 "text/html",
+                 SUCCESS));
+  server_.RegisterRequestHandler(
+      base::Bind(&HttpServerTest::HandleRequest,
+                 base::Unretained(this),
+                 "/test2",
+                 "Vanilla chocolate",
+                 "text/html",
+                 SUCCESS));
+  server_.RegisterRequestHandler(
+      base::Bind(&HttpServerTest::HandleRequest,
+                 base::Unretained(this),
+                 "/test3",
+                 "No chocolates",
+                 "text/plain",
+                 NOT_FOUND));
 
   scoped_ptr<net::URLFetcher> fetcher1 = scoped_ptr<net::URLFetcher>(
       net::URLFetcher::Create(server_.GetURL("/test1"),

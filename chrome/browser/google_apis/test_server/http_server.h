@@ -30,7 +30,7 @@ class HttpListenSocket: public net::TCPListenSocket {
   virtual ~HttpListenSocket();
 };
 
-// Class providing a HTTP server for testing purpose. This is a basic server
+// Class providing an HTTP server for testing purpose. This is a basic server
 // providing only an essential subset of HTTP/1.1 protocol. Especially,
 // it assumes that the request syntax is correct. It *does not* support
 // a Chunked Transfer Encoding.
@@ -38,22 +38,27 @@ class HttpListenSocket: public net::TCPListenSocket {
 // The common use case is below:
 //
 // scoped_ptr<HttpServer> test_server_;
-// GURL hello_world_url_;
-// GURL file_url_;
-// (...)
+//
 // void SetUp() {
 //   test_server_.reset(new HttpServer());
 //   DCHECK(test_server_.InitializeAndWaitUntilReady());
-//   hello_world_url = test_server->RegisterTextResponse(
-//       "/abc",
-//       "<b>Hello world!</b>",
-//       "text/html");
-//   metadata_url = test_server->RegisterFileResponse(
-//       "metadata/file.doc")
-//       "testing/data/metadata.xml",
-//       "text/xml",
-//       200);
+//   test_server->RegisterRequestHandler(
+//       base::Bind(&FooTest::HandleRequest, base::Unretained(this)));
 // }
+//
+// void HandleRequest(const HttpRequest& request) {
+//   GURL absolute_url = test_server_.GetURL(request.relative_url);
+//   if (absolute_url.path() != "/test")
+//     return scoped_ptr<test_server::HttpResponse>();
+//
+//   scoped_ptr<test_server::HttpResponse> http_response(
+//       new test_server::HttpResponse);
+//   http_response->set_code(test_server::SUCCESS);
+//   http_response->set_content("hello");
+//   http_response->set_content_type("text/plain");
+//   return http_response.Pass();
+// }
+//
 class HttpServer : private net::StreamListenSocket::Delegate {
  public:
   typedef base::Callback<scoped_ptr<HttpResponse>(const HttpRequest& request)>
@@ -92,27 +97,6 @@ class HttpServer : private net::StreamListenSocket::Delegate {
   // this method. Takes ownership of the object. The |callback| is called
   // on UI thread.
   void RegisterRequestHandler(const HandleRequestCallback& callback);
-
-  // Used to provide the same predefined response for the requests matching
-  // the |relative_path|, which should start with '/'. Should be used if any
-  // custom data, such as additional headers should be sent from the server.
-  void RegisterDefaultResponse(
-      const std::string& relative_path,
-      const HttpResponse& default_response);
-
-  // Registers a simple text response.
-  void RegisterTextResponse(
-      const std::string& relative_path,
-      const std::string& content,
-      const std::string& content_type,
-      const ResponseCode response_code);
-
-  // Registers a simple file response. The file is loaded into memory.
-  void RegisterFileResponse(
-      const std::string& relative_path,
-      const FilePath& file_path,
-      const std::string& content_type,
-      const ResponseCode response_code);
 
  private:
   // Initializes and starts the server. If initialization succeeds, Starts()

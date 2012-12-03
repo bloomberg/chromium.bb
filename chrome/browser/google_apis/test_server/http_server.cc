@@ -164,60 +164,6 @@ void HttpServer::RegisterRequestHandler(
   request_handlers_.push_back(callback);
 }
 
-void HttpServer::RegisterDefaultResponse(
-    const std::string& relative_path,
-    const HttpResponse& default_response) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(StartsWithASCII(relative_path, "/", true /* case_sensitive */))
-      << relative_path;
-
-  const HandleRequestCallback callback =
-      base::Bind(&HandleDefaultRequest,
-                 GetURL(relative_path),
-                 default_response);
-  request_handlers_.push_back(callback);
-}
-
-void HttpServer::RegisterTextResponse(
-     const std::string& relative_path,
-     const std::string& content,
-     const std::string& content_type,
-     const ResponseCode response_code) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(StartsWithASCII(relative_path, "/", true /* case_sensitive */))
-      << relative_path;
-
-  HttpResponse default_response;
-  default_response.set_content(content);
-  default_response.set_content_type(content_type);
-  default_response.set_code(response_code);
-
-  RegisterDefaultResponse(relative_path, default_response);
-}
-
-void HttpServer::RegisterFileResponse(
-     const std::string& relative_path,
-     const FilePath& file_path,
-     const std::string& content_type,
-     const ResponseCode response_code) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(StartsWithASCII(relative_path, "/", true /* case_sensitive */))
-      << relative_path;
-
-  HttpResponse default_response;
-
-  std::string content;
-  const bool success = file_util::ReadFileToString(
-      file_path, &content);
-  default_response.set_content(content);
-  DCHECK(success) << "Failed to open the file: " << file_path.value();
-
-  default_response.set_content_type(content_type);
-  default_response.set_code(response_code);
-
-  RegisterDefaultResponse(relative_path, default_response);
-}
-
 void HttpServer::DidAccept(net::StreamListenSocket* server,
                            net::StreamListenSocket* connection) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
