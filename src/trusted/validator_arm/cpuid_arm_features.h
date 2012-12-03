@@ -11,6 +11,5 @@
  * TODO(jfb) Add other ARM CPU features.
  */
 
-/* Bogus feature: needed so there's at least one.
- * Remove when others are added. */
-NACL_ARM_CPU_FEATURE(BOGUS)
+/* Some ARM CPUs leak memory when TST+LDR/TST+STR is used for sandboxing. */
+NACL_ARM_CPU_FEATURE(CanUseTstMem)

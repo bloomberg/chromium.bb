@@ -60,10 +60,10 @@ TEST_F(ValidatorTests, WholeA32InstructionSpaceTesting) {
   // TODO(jfb) We're currently only testing one possible code address
   //           mask, and we're not checking whether the validator
   //           restricts the values to the ones we should be testing.
-  const uint32_t code_address_mask = _validator.code_address_mask();
+  const uint32_t code_address_mask = _validator->code_address_mask();
   EXPECT_NE(code_address_mask, 0u);  // There should be some mask.
 
-  const uint32_t data_address_mask = _validator.data_address_mask();
+  const uint32_t data_address_mask = _validator->data_address_mask();
   EXPECT_NE(data_address_mask, 0u);  // There should be some mask.
   EXPECT_EQ(nacl::PopCount(~data_address_mask + 1) , 1);  // Power of 2.
   const uint32_t data_address_mask_msb = 31;  // Implied by the above.

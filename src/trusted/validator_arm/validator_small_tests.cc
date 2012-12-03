@@ -21,6 +21,7 @@ using nacl_val_arm_test::ProblemRecord;
 using nacl_val_arm_test::ProblemSpy;
 using nacl_val_arm_test::ValidatorTests;
 using nacl_val_arm_test::kDefaultBaseAddr;
+using nacl_val_arm_test::kBytesPerBundle;
 using nacl_val_arm_test::kCodeRegionSize;
 using nacl_val_arm_test::kDataRegionSize;
 using nacl_val_arm_test::kAbiReadOnlyRegisters;
@@ -104,7 +105,7 @@ void test_if_dynamic_code_replacement_sentinels_unchanged(
 
 // Test that the old code can be replaced by the new code.
 void TestDynamicCodeReplacement(
-    SfiValidator &validator,
+    SfiValidator *validator,
     bool expected_result,
     const vector<arm_inst>& old_code,
     const vector<arm_inst>& new_code,
@@ -117,12 +118,12 @@ void TestDynamicCodeReplacement(
   ProblemSpy spy;
 
   EXPECT_EQ(expected_result,
-            validator.ValidateSegmentPair(old_segment, new_segment, &spy)) <<
+            validator->ValidateSegmentPair(old_segment, new_segment, &spy)) <<
       "Code replacement expected different validation result for " << msg;
 }
 
 TEST_F(ValidatorTests, NopBundle) {
-  vector<arm_inst> code(_validator.InstructionsPerBundle(), kNop);
+  vector<arm_inst> code(_validator->InstructionsPerBundle(), kNop);
   validation_should_pass(&code[0], code.size(), kDefaultBaseAddr,
                          "NOP bundle");
 }
@@ -141,28 +142,31 @@ TEST_F(ValidatorTests, RecognizesDataAddressRegisters) {
   for (int i = 0; i < 16; i++) {
     Register r(i);
     if (r.Equals(nacl_arm_dec::Register::Sp())) {
-      EXPECT_TRUE(_validator.is_data_address_register(r))
+      EXPECT_TRUE(_validator->is_data_address_register(r))
           << "Stack pointer must be a data address register.";
     } else {
-      EXPECT_FALSE(_validator.is_data_address_register(r))
+      EXPECT_FALSE(_validator->is_data_address_register(r))
           << "Only the stack pointer must be a data address register.";
     }
   }
 }
 
 TEST_F(ValidatorTests, GeneratesCorrectMasksFromSizes) {
-  EXPECT_EQ(0xC0000000, _validator.data_address_mask());
-  EXPECT_EQ(0xE000000F, _validator.code_address_mask());
+  EXPECT_EQ(0xC0000000, _validator->data_address_mask());
+  EXPECT_EQ(0xE000000F, _validator->code_address_mask());
 
   // Reinitialize the validator to test a different bundle size.
-  _validator = SfiValidator(32,
-                            kCodeRegionSize,
-                            kDataRegionSize,
-                            kAbiReadOnlyRegisters,
-                            kAbiDataAddrRegisters);
-  EXPECT_EQ(0xC0000000, _validator.data_address_mask())
+  SfiValidator *old_validator = _validator;
+  _validator = new SfiValidator(32,
+                                kCodeRegionSize,
+                                kDataRegionSize,
+                                kAbiReadOnlyRegisters,
+                                kAbiDataAddrRegisters,
+                                _validator->CpuFeatures());
+  delete old_validator;
+  EXPECT_EQ(0xC0000000, _validator->data_address_mask())
       << "Changes in bundle size should not affect the data mask.";
-  EXPECT_EQ(0xE000001F, _validator.code_address_mask())
+  EXPECT_EQ(0xE000001F, _validator->code_address_mask())
       << "Changes in bundle size must affect the code mask.";
 }
 
@@ -345,24 +349,47 @@ TEST_F(ValidatorTests, SafeConditionalStores) {
     { 0x031101C3, "tst r1, #0xF0000000: overzealous (but correct) guard" },
   };
 
-  // Currently we only support *unconditional* conditional stores.
-  // Meaning the guard is unconditional and the store is if-equal.
-  arm_inst guard_predicate = 0xE0000000, store_predicate = 0x00000000;
-  for (unsigned m = 0; m < NACL_ARRAY_SIZE(guards); m++) {
-    for (unsigned s = 0; s < NACL_ARRAY_SIZE(examples_of_safe_stores); s++) {
-      ostringstream message;
-      message << guards[m].about
-              << ", "
-              << examples_of_safe_stores[s].about
-              << " (predicate #" << guard_predicate << ")";
-      arm_inst program[] = {
-        guards[m].inst | guard_predicate,
-        examples_of_safe_stores[s].inst | store_predicate,
-      };
-      validation_should_pass2(program,
-                              2,
-                              kDefaultBaseAddr,
-                              message.str());
+  // Reinitialize the validator to test both allowing and disallowing
+  // conditional memory accesses.
+  for (int allow_cond = 0; allow_cond <= 1; ++allow_cond) {
+    NaClCPUFeaturesArm cpu_features;
+    NaClCopyCPUFeaturesArm(&cpu_features, _validator->CpuFeatures());
+    NaClSetCPUFeatureArm(&cpu_features, NaClCPUFeatureArm_CanUseTstMem,
+                         allow_cond);
+    delete _validator;
+    _validator = new SfiValidator(kBytesPerBundle,
+                                  kCodeRegionSize,
+                                  kDataRegionSize,
+                                  kAbiReadOnlyRegisters,
+                                  kAbiDataAddrRegisters,
+                                  &cpu_features);
+
+    // Currently we only support *unconditional* conditional stores.
+    // Meaning the guard is unconditional and the store is if-equal.
+    arm_inst guard_predicate = 0xE0000000, store_predicate = 0x00000000;
+    for (unsigned m = 0; m < NACL_ARRAY_SIZE(guards); m++) {
+      for (unsigned s = 0; s < NACL_ARRAY_SIZE(examples_of_safe_stores); s++) {
+        ostringstream message;
+        message << guards[m].about
+                << ", "
+                << examples_of_safe_stores[s].about
+                << " (predicate #" << guard_predicate << ")";
+        arm_inst program[] = {
+          guards[m].inst | guard_predicate,
+          examples_of_safe_stores[s].inst | store_predicate,
+        };
+        if (allow_cond) {
+          validation_should_pass2(program,
+                                  2,
+                                  kDefaultBaseAddr,
+                                  message.str());
+        } else {
+          validation_should_fail(program,
+                                 2,
+                                 kDefaultBaseAddr,
+                                 message.str());
+        }
+      }
     }
   }
 }
@@ -853,7 +880,7 @@ TEST_F(ValidatorTests, DynamicCodeReplacementLiteralPool) {
   // Start with an evil-looking value, and replace with another evil-looking
   // value. It should work because these are all data in two consecutive
   // literal pools, not actual instructions.
-  vector<arm_inst>::size_type bundle_size(_validator.InstructionsPerBundle());
+  vector<arm_inst>::size_type bundle_size(_validator->InstructionsPerBundle());
   vector<arm_inst>::size_type size(bundle_size * 2);
   vector<arm_inst> old_code(size, kSvc0);
   vector<arm_inst> new_code(size, kFailValidation);
@@ -1002,7 +1029,7 @@ TEST_F(ValidatorTests, AlwaysDominatesTest) {
 // TODO(karl): Add pattern rules and test cases for using bfc to update SP.
 
 TEST_F(ValidatorTests, UnmaskedSpUpdate) {
-  vector<arm_inst> code(_validator.InstructionsPerBundle(), kNop);
+  vector<arm_inst> code(_validator->InstructionsPerBundle(), kNop);
   for (vector<arm_inst>::size_type i = 0; i < code.size(); ++i) {
     std::fill(code.begin(), code.end(), kNop);
     code[i] = 0xE1A0D000;  // MOV SP, R0
@@ -1012,12 +1039,12 @@ TEST_F(ValidatorTests, UnmaskedSpUpdate) {
 }
 
 TEST_F(ValidatorTests, MaskedSpUpdate) {
-  vector<arm_inst> code(_validator.InstructionsPerBundle() * 2, kNop);
+  vector<arm_inst> code(_validator->InstructionsPerBundle() * 2, kNop);
   for (vector<arm_inst>::size_type i = 0; i < code.size() - 1; ++i) {
     std::fill(code.begin(), code.end(), kNop);
     code[i] = 0xE1A0D000;      // MOV SP, R0
     code[i + 1] = 0xE3CDD2FF;  // BIC SP, SP, #-268435441 ; 0xf000000f
-    if (i == _validator.InstructionsPerBundle() - 1) {
+    if (i == _validator->InstructionsPerBundle() - 1) {
       validation_should_fail(&code[0], code.size(), kDefaultBaseAddr,
                              "masked SP update straddling a bundle boundary"
                              " (this is technically safe, but we simplify the "
@@ -1176,7 +1203,7 @@ TEST_F(ValidatorTests, LiteralPoolHeadInstruction) {
   // by a special breakpoint instruction at the start of the bundle, and can
   // then contain any bits that would otherwise look malicious.
   // Each literal pool bundle has to start with such a literal pool head.
-  vector<arm_inst> literal_pool(_validator.InstructionsPerBundle(), kSvc0);
+  vector<arm_inst> literal_pool(_validator->InstructionsPerBundle(), kSvc0);
   literal_pool[0] = 0xE1200070;  // BKPT #0
   // Try out all BKPT encodings, and make sure only one of them works.
   for (uint32_t imm16 = 0; imm16 <= 0xFFFF; ++imm16) {
@@ -1202,7 +1229,7 @@ TEST_F(ValidatorTests, LiteralPoolHeadInstruction) {
 TEST_F(ValidatorTests, LiteralPoolHeadPosition) {
   // Literal pools should only work when the head instruction is indeed at
   // the head.
-  vector<arm_inst> literal_pool(_validator.InstructionsPerBundle());
+  vector<arm_inst> literal_pool(_validator->InstructionsPerBundle());
   for (size_t pos = 0; pos <= literal_pool.size(); ++pos) {
     std::fill(literal_pool.begin(), literal_pool.end(), kSvc0);
     if (pos != literal_pool.size()) {
@@ -1228,7 +1255,7 @@ TEST_F(ValidatorTests, LiteralPoolHeadPosition) {
 TEST_F(ValidatorTests, LiteralPoolBig) {
   // Literal pools should be a single bundle wide, each must be preceded by
   // a pool head.
-  vector<arm_inst> literal_pools(2 * _validator.InstructionsPerBundle());
+  vector<arm_inst> literal_pools(2 * _validator->InstructionsPerBundle());
   for (size_t pos = 0; pos <= literal_pools.size(); ++pos) {
     std::fill(literal_pools.begin(), literal_pools.end(), kSvc0);
     literal_pools[pos] = kLiteralPoolHead;
@@ -1248,7 +1275,7 @@ TEST_F(ValidatorTests, LiteralPoolBranch) {
   // when pointing at the head.
   // Note that we don't actually put anything malicious in the literal pool,
   // and we still shouldn't be able to jump in the middle of it.
-  const size_t bundle_pos = _validator.InstructionsPerBundle();
+  const size_t bundle_pos = _validator->InstructionsPerBundle();
   vector<arm_inst> code(3 * bundle_pos);
   for (size_t b_pos = 0; b_pos < code.size(); ++b_pos) {
     if ((bundle_pos <= b_pos) && (b_pos < bundle_pos * 2)) {

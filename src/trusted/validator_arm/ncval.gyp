@@ -16,7 +16,8 @@
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/validator/ncfileutils.gyp:ncfileutils_x86_32',
             'validator_arm.gyp:arm_validator_core',
-            'validator_arm.gyp:arm_validator_reporters'
+            'validator_arm.gyp:arm_validator_reporters',
+            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
           ],
         }],
     }],
@@ -29,7 +30,8 @@
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/validator/ncfileutils.gyp:ncfileutils_x86_64',
             'validator_arm.gyp:arm_validator_core',
-            'validator_arm.gyp:arm_validator_reporters'
+            'validator_arm.gyp:arm_validator_reporters',
+            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
           ],
         }],
     }],

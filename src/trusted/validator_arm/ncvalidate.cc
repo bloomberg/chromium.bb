@@ -79,7 +79,9 @@ static NaClValidationStatus ValidatorCopyArm(
     size_t size,
     const NaClCPUFeatures *cpu_features,
     NaClCopyInstructionFunc copy_func) {
-  UNREFERENCED_PARAMETER(cpu_features);
+  /* TODO(jfb) Use a safe cast here. */
+  const NaClCPUFeaturesArm *features =
+      (const NaClCPUFeaturesArm *) cpu_features;
 
   CheckAddressAlignAndOverflow((uint8_t *) guest_addr, size);
   CheckAddressOverflow(data_old, size);
@@ -93,7 +95,8 @@ static NaClValidationStatus ValidatorCopyArm(
       kBytesOfCodeSpace,
       kBytesOfDataSpace,
       RegisterList(Register::Tp()),
-      RegisterList(Register::Sp()));
+      RegisterList(Register::Sp()),
+      features);
 
   bool success = validator.CopyCode(source_code, dest_code, copy_func,
                                     &sink);
@@ -106,7 +109,9 @@ static NaClValidationStatus ValidatorCodeReplacementArm(
     uint8_t *data_new,
     size_t size,
     const NaClCPUFeatures *cpu_features) {
-  UNREFERENCED_PARAMETER(cpu_features);
+  /* TODO(jfb) Use a safe cast here. */
+  const NaClCPUFeaturesArm *features =
+      (const NaClCPUFeaturesArm *) cpu_features;
 
   CheckAddressAlignAndOverflow((uint8_t *) guest_addr, size);
   CheckAddressOverflow(data_old, size);
@@ -120,7 +125,8 @@ static NaClValidationStatus ValidatorCodeReplacementArm(
       kBytesOfCodeSpace,
       kBytesOfDataSpace,
       RegisterList(Register::Tp()),
-      RegisterList(Register::Sp()));
+      RegisterList(Register::Sp()),
+      features);
 
   bool success = validator.ValidateSegmentPair(old_code, new_code,
                                                &sink);
@@ -134,14 +140,17 @@ static int NCValidateSegment(
     uint32_t vbase,
     size_t size,
     const NaClCPUFeatures *cpu_features) {
-  UNREFERENCED_PARAMETER(cpu_features);
+  /* TODO(jfb) Use a safe cast here. */
+  const NaClCPUFeaturesArm *features =
+      (const NaClCPUFeaturesArm *) cpu_features;
 
   SfiValidator validator(
       kBytesPerBundle,
       kBytesOfCodeSpace,
       kBytesOfDataSpace,
       RegisterList(Register::Tp()),
-      RegisterList(Register::Sp()));
+      RegisterList(Register::Sp()),
+      features);
 
   EarlyExitProblemSink sink;
 

@@ -169,6 +169,7 @@ ncval = env.ComponentProgram(
     ['ncval.cc'],
     EXTRA_LIBS=['arm_validator_reporters',
                 'arm_validator_core',
+                'platform',
                 env.NaClTargetArchSuffix('ncfileutils'),
                 '${OPTIONAL_COVERAGE_LIBS}'])
 
@@ -237,7 +238,8 @@ validator_tests_exe = gtest_env.ComponentProgram(
                                ['validator_small_tests.cc'],
                                EXTRA_LIBS=['arm_validator_tester',
                                            'arm_validator_core',
-                                           'arm_validator_reporters'])
+                                           'arm_validator_reporters',
+                                           'platform'])
 
 validator_small_test_node = gtest_env.CommandTest(
     'validator_small_tests.out',
@@ -252,7 +254,8 @@ validator_huge_tests_exe = gtest_env.ComponentProgram(
                                ['validator_huge_tests.cc'],
                                EXTRA_LIBS=['arm_validator_tester',
                                            'arm_validator_core',
-                                           'arm_validator_reporters'])
+                                           'arm_validator_reporters',
+                                           'platform'])
 
 validator_huge_test_node = gtest_env.CommandTest(
     'validator_huge_tests.out',

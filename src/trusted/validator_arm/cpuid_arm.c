@@ -25,12 +25,16 @@ void NaClSetAllCPUFeaturesArm(NaClCPUFeatures *f) {
 void NaClGetCurrentCPUFeaturesArm(NaClCPUFeatures *f) {
   /* TODO(jfb) Use a safe cast in this interface. */
   NaClCPUFeaturesArm *features = (NaClCPUFeaturesArm *) f;
-  features->data[NaClCPUFeatureArm_BOGUS] = 0;
+  /*
+   * TODO(jfb) Create a whitelist of CPUs that don't leak information when
+   *           TST+LDR and TST+STR are used. Disallow all for now.
+   */
+  NaClSetCPUFeatureArm(features, NaClCPUFeatureArm_CanUseTstMem, 0);
 }
 
 /* This array defines the CPU feature model for fixed-feature CPU mode. */
 static const int kFixedFeatureArmCPUModel[NaClCPUFeatureArm_Max] = {
-  0 /* NaClCPUFeatureArm_BOGUS */
+  0 /* NaClCPUFeatureArm_CanUseTstMem */
 };
 
 int NaClFixCPUFeaturesArm(NaClCPUFeatures *f) {
@@ -75,4 +79,9 @@ const char *NaClGetCPUFeatureArmName(NaClCPUFeatureArmID id) {
 
 void NaClClearCPUFeaturesArm(NaClCPUFeaturesArm *features) {
   memset(features, 0, sizeof(*features));
+}
+
+void NaClCopyCPUFeaturesArm(NaClCPUFeaturesArm *target,
+                            const NaClCPUFeaturesArm *source) {
+  memcpy(target, source, sizeof(*target));
 }

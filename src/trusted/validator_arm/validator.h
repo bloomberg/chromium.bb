@@ -15,12 +15,13 @@
 #include <vector>
 
 #include "native_client/src/include/nacl_string.h"
+#include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
 #include "native_client/src/trusted/validator_arm/address_set.h"
+#include "native_client/src/trusted/validator_arm/cpuid_arm.h"
 #include "native_client/src/trusted/validator_arm/gen/arm32_decode.h"
 #include "native_client/src/trusted/validator_arm/inst_classes.h"
 #include "native_client/src/trusted/validator_arm/model.h"
-#include "native_client/src/include/portability.h"
 
 namespace nacl_arm_val {
 
@@ -65,6 +66,10 @@ class Bundle {
 //   data_address_registers - registers that must contain a valid data-region
 //       address at all times.  This currently applies to the stack pointer, but
 //       could be extended to include a frame pointer for C-like languages.
+//   cpu_features - the ARM CPU whose features should be considered during
+//       validation. This matters because some CPUs don't support some
+//       instructions, leak information or have erratas when others do not,
+//       yet we still want to emit performant code for the given target.
 //
 // The values of these inputs will typically be taken from the headers of
 // untrusted code -- either by the ABI version they indicate, or (perhaps in
@@ -75,7 +80,8 @@ class SfiValidator {
                uint32_t code_region_bytes,
                uint32_t data_region_bytes,
                nacl_arm_dec::RegisterList read_only_registers,
-               nacl_arm_dec::RegisterList data_address_registers);
+               nacl_arm_dec::RegisterList data_address_registers,
+               const NaClCPUFeaturesArm *cpu_features);
 
   explicit SfiValidator(const SfiValidator& v);
 
@@ -149,6 +155,14 @@ class SfiValidator {
     return data_address_registers_;
   }
 
+  const NaClCPUFeaturesArm *CpuFeatures() const {
+    return &cpu_features_;
+  }
+
+  bool conditional_memory_access_allowed_for_sfi() const {
+    return NaClGetCPUFeatureArm(CpuFeatures(), NaClCPUFeatureArm_CanUseTstMem);
+  }
+
   // Utility function that applies the decoder of the validator.
   const nacl_arm_dec::ClassDecoder& decode(
       nacl_arm_dec::Instruction inst) const {
@@ -210,6 +224,7 @@ class SfiValidator {
       ProblemSink* out);
 
 
+  NaClCPUFeaturesArm cpu_features_;
   uint32_t bytes_per_bundle_;
   uint32_t code_region_bytes_;
   uint32_t data_region_bytes_;
@@ -487,6 +502,8 @@ typedef enum {
   kConditionsOnPairNotSafe,
   // Second is dependent on eq being set by first instruction.
   kEqConditionalOn,
+  // TST+LDR or TST+STR was used, but it's disallowed on this CPU.
+  kTstMemDisallowed,
   // Instruction pair crosses bundle boundary.
   kPairCrossesBundle
 } ValidatorInstructionPairProblem;

@@ -92,6 +92,9 @@ static const uint32_t kDataRegionSize = 0x40000000;
 static const RegisterList kAbiReadOnlyRegisters(Register::Tp());
 // The stack pointer can be used for "free" loads and stores.
 static const RegisterList kAbiDataAddrRegisters(nacl_arm_dec::Register::Sp());
+// By default don't support TST+LDR/TST+STR, only allow it in tests that
+// explicitly have them.
+static const bool kAllowCondMemSfi = false;
 
 // Defines a buffer for error messages.
 static const size_t kBufferSize = 256;
@@ -190,11 +193,33 @@ class ValidatorTests : public ::testing::Test {
 
  protected:
   ValidatorTests()
-      : _validator(kBytesPerBundle,
-                   kCodeRegionSize,
-                   kDataRegionSize,
-                   kAbiReadOnlyRegisters,
-                   kAbiDataAddrRegisters) {}
+      : _validator(NULL) { }
+
+  virtual ~ValidatorTests() {
+    EXPECT_EQ(_validator, (SfiValidator *) NULL);
+  }
+
+  virtual void SetUp() {
+    EXPECT_EQ(_validator, (SfiValidator *) NULL);
+
+    NaClCPUFeaturesArm cpu_features;
+    NaClClearCPUFeaturesArm(&cpu_features);
+    NaClSetCPUFeatureArm(&cpu_features, NaClCPUFeatureArm_CanUseTstMem,
+                         kAllowCondMemSfi);
+
+    _validator = new SfiValidator(kBytesPerBundle,
+                                  kCodeRegionSize,
+                                  kDataRegionSize,
+                                  kAbiReadOnlyRegisters,
+                                  kAbiDataAddrRegisters,
+                                  &cpu_features);
+  }
+
+  virtual void  TearDown() {
+    EXPECT_NE(_validator, (SfiValidator *) NULL);
+    delete _validator;
+    _validator = NULL;
+  }
 
   // Utility method for validating a sequence of bytes.
   bool validate(const arm_inst *pattern,
@@ -244,7 +269,7 @@ class ValidatorTests : public ::testing::Test {
     return (inst & 0xffefffff) | (static_cast<arm_inst>(s) << 20);
   }
 
-  SfiValidator _validator;
+  SfiValidator *_validator;
 };
 
 }  // namespace nacl_val_arm_test

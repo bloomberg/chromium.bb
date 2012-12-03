@@ -76,7 +76,7 @@ void ProblemSpy::ReportProblemInternal(uint32_t vaddr,
 
 const nacl_arm_dec::ClassDecoder& ValidatorTests::decode(
     nacl_arm_dec::Instruction inst) const {
-  return _validator.decode(inst);
+  return _validator->decode(inst);
 }
 
 bool ValidatorTests::validate(const arm_inst *pattern,
@@ -90,7 +90,7 @@ bool ValidatorTests::validate(const arm_inst *pattern,
   vector<CodeSegment> segments;
   segments.push_back(segment);
 
-  return _validator.validate(segments, sink);
+  return _validator->validate(segments, sink);
 }
 
 void ValidatorTests::validation_should_pass(const arm_inst *pattern,
@@ -125,7 +125,7 @@ void ValidatorTests::validation_should_pass2(const arm_inst *pattern,
   ASSERT_EQ(2U, inst_count)
       << "This routine only supports 2-instruction patterns.";
   ASSERT_TRUE(
-      _validator.bundle_for_address(base_addr).begin_addr() == base_addr)
+      _validator->bundle_for_address(base_addr).begin_addr() == base_addr)
       << "base_addr parameter must be bundle-aligned";
 
   uint32_t last_addr = base_addr + (kBytesPerBundle - 4);

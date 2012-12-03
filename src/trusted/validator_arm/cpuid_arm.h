@@ -52,9 +52,11 @@ const char *NaClGetCPUFeatureArmName(NaClCPUFeatureArmID id);
  * code.
  */
 void NaClClearCPUFeaturesArm(NaClCPUFeaturesArm *features);
+void NaClCopyCPUFeaturesArm(NaClCPUFeaturesArm *target,
+                            const NaClCPUFeaturesArm *source);
 /*
- * TODO(jfb) The x86 CPU features also offers these functions, which are
- * currently not used on ARM: NaClCopyCPUFeaturesArm, NaClArchSupportedArm.
+ * TODO(jfb) The x86 CPU features also offers this function, which is
+ * currently not used on ARM: NaClArchSupportedArm.
  */
 
 EXTERN_C_END

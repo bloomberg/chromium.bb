@@ -286,7 +286,8 @@ static void check_loadstore_mask(
     return;
   }
 
-  if (first.sets_Z_if_bits_clear(second.base_address_register(),
+  if (sfi.conditional_memory_access_allowed_for_sfi() &&
+      first.sets_Z_if_bits_clear(second.base_address_register(),
                                  sfi.data_address_mask())
       && second.is_eq_conditional_on(first)) {
     match_data->match_ = PATTERN_SAFE;
@@ -314,7 +315,8 @@ static void check_loadstore_mask(
     match_data->out_->ReportProblemRegisterInstructionPair(
         second.addr(),
         kProblemUnsafeLoadStore,
-        kEqConditionalOn,
+        sfi.conditional_memory_access_allowed_for_sfi() ?
+        kEqConditionalOn : kTstMemDisallowed,
         second.base_address_register(), first, second);
   } else if (second.base_address_register().Equals(Register::Pc())) {
     match_data->out_->ReportProblem(second.addr(), kProblemIllegalPcLoadStore);
@@ -520,14 +522,17 @@ SfiValidator::SfiValidator(uint32_t bytes_per_bundle,
                            uint32_t code_region_bytes,
                            uint32_t data_region_bytes,
                            RegisterList read_only_registers,
-                           RegisterList data_address_registers)
-    : bytes_per_bundle_(bytes_per_bundle),
+                           RegisterList data_address_registers,
+                           const NaClCPUFeaturesArm *cpu_features)
+    : cpu_features_(),
+      bytes_per_bundle_(bytes_per_bundle),
       code_region_bytes_(code_region_bytes),
       data_region_bytes_(data_region_bytes),
       read_only_registers_(read_only_registers),
       data_address_registers_(data_address_registers),
       decode_state_(),
       construction_failed_(false) {
+  NaClCopyCPUFeaturesArm(&cpu_features_, cpu_features);
   // Make sure we can construct sane masks with the values.
   if ((nacl::PopCount(bytes_per_bundle_) != 1) ||
       (nacl::PopCount(code_region_bytes_) != 1) ||
@@ -541,15 +546,19 @@ SfiValidator::SfiValidator(uint32_t bytes_per_bundle,
 }
 
 SfiValidator::SfiValidator(const SfiValidator& v)
-    : bytes_per_bundle_(v.bytes_per_bundle_),
+    : cpu_features_(),
+      bytes_per_bundle_(v.bytes_per_bundle_),
       code_region_bytes_(v.code_region_bytes_),
       data_region_bytes_(v.data_region_bytes_),
       read_only_registers_(v.read_only_registers_),
       data_address_registers_(v.data_address_registers_),
       decode_state_(),
-      construction_failed_(v.construction_failed_) {}
+      construction_failed_(v.construction_failed_) {
+  NaClCopyCPUFeaturesArm(&cpu_features_, v.CpuFeatures());
+}
 
 SfiValidator& SfiValidator::operator=(const SfiValidator& v) {
+  NaClCopyCPUFeaturesArm(&cpu_features_, v.CpuFeatures());
   bytes_per_bundle_ = v.bytes_per_bundle_;
   code_region_bytes_ = v.code_region_bytes_;
   data_region_bytes_ = v.data_region_bytes_;

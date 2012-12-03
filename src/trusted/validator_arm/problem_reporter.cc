@@ -41,6 +41,7 @@ static ValidatorInstructionPairProblem Int2InstPairProblem(uint32_t index) {
     kFirstSetsConditionFlags,
     kConditionsOnPairNotSafe,
     kEqConditionalOn,
+    kTstMemDisallowed,
     kPairCrossesBundle,
   };
   return (index < NACL_ARRAY_SIZE(Int2InstPairProblemMap))
@@ -223,6 +224,9 @@ static const char* kValidatorInstructionPairProblem[] = {
   // kEqConditionalOn - Second is dependent on eq being set by first
   // instruction.
   ", because $S is not conditional on EQ",
+  // kTstMemDisallowed - TST+LDR or TST+STR was used, but it's disallowed
+  // on this CPU.
+  ", because $p instruction pair is disallowed on this CPU",
   // kPairCrosssesBundle - Instruction pair crosses bundle boundary.
   ", because instruction pair$p crosses bundle boundary",
 };
