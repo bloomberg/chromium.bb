@@ -51,11 +51,6 @@ bool IsColorCloseToTransparent(SkAlpha alpha);
 // Determine if a color is near grey.
 bool IsColorCloseToGrey(int r, int g, int b);
 
-// Gets a color representing a bitmap. The definition of "representing" is the
-// average color in the bitmap. The color returned is modified to have the
-// specified alpha.
-SkColor GetAverageColorOfFavicon(SkBitmap* bitmap, SkAlpha alpha);
-
 // Builds a histogram based on the Y' of the Y'UV representation of
 // this image.
 UI_EXPORT void BuildLumaHistogram(const SkBitmap& bitmap, int histogram[256]);

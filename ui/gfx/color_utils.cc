@@ -190,58 +190,6 @@ SkColor HSLShift(SkColor color, const HSL& shift) {
                         static_cast<int>(b));
 }
 
-bool IsColorCloseToTransparent(SkAlpha alpha) {
-  const int kCloseToBoundary = 64;
-  return alpha < kCloseToBoundary;
-}
-
-bool IsColorCloseToGrey(int r, int g, int b) {
-  const int kAverageBoundary = 15;
-  int average = (r + g + b) / 3;
-  return (abs(r - average) < kAverageBoundary) &&
-         (abs(g - average) < kAverageBoundary) &&
-         (abs(b - average) < kAverageBoundary);
-}
-
-SkColor GetAverageColorOfFavicon(SkBitmap* favicon, SkAlpha alpha) {
-  int r = 0, g = 0, b = 0;
-
-  SkAutoLockPixels favicon_lock(*favicon);
-  SkColor* pixels = static_cast<SkColor*>(favicon->getPixels());
-  if (!pixels)
-    return SkColorSetARGB(alpha, 0, 0, 0);
-
-  // Assume ARGB_8888 format.
-  DCHECK(favicon->config() == SkBitmap::kARGB_8888_Config);
-  SkColor* current_color = pixels;
-
-  DCHECK(favicon->width() <= 16 && favicon->height() <= 16);
-
-  int pixel_count = favicon->width() * favicon->height();
-  int color_count = 0;
-  for (int i = 0; i < pixel_count; ++i, ++current_color) {
-    // Disregard this color if it is close to black, close to white, or close
-    // to transparent since any of those pixels do not contribute much to the
-    // color makeup of this icon.
-    int cr = SkColorGetR(*current_color);
-    int cg = SkColorGetG(*current_color);
-    int cb = SkColorGetB(*current_color);
-
-    if (IsColorCloseToTransparent(SkColorGetA(*current_color)) ||
-        IsColorCloseToGrey(cr, cg, cb))
-      continue;
-
-    r += cr;
-    g += cg;
-    b += cb;
-    ++color_count;
-  }
-
-  return color_count ?
-      SkColorSetARGB(alpha, r / color_count, g / color_count, b / color_count) :
-      SkColorSetARGB(alpha, 0, 0, 0);
-}
-
 void BuildLumaHistogram(const SkBitmap& bitmap, int histogram[256]) {
   SkAutoLockPixels bitmap_lock(bitmap);
   if (!bitmap.getPixels())
