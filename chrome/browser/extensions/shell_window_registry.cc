@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_types.h"

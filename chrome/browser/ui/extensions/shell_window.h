@@ -61,9 +61,9 @@ class ShellWindow : public content::NotificationObserver,
     WindowType window_type;
     Frame frame;
 
-    // Specify the initial bounds of the window. INT_MIN designates
-    // 'unspecified' for any coordinate, and should be replaced with a default
-    // value.
+    // Specify the initial content bounds of the window (excluding any window
+    // decorations). INT_MIN designates 'unspecified' for any coordinate, and
+    // should be replaced with a default value.
     gfx::Rect bounds;
 
     gfx::Size minimum_size;
@@ -96,10 +96,8 @@ class ShellWindow : public content::NotificationObserver,
   Profile* profile() const { return profile_; }
   const gfx::Image& app_icon() const { return app_icon_; }
 
-  BaseWindow* GetBaseWindow();
-  gfx::NativeWindow GetNativeWindow() {
-    return GetBaseWindow()->GetNativeWindow();
-  }
+  NativeAppWindow* GetBaseWindow();
+  gfx::NativeWindow GetNativeWindow();
 
   // NativeAppWindows should call this to determine what the window's title
   // is on startup and from within UpdateWindowTitle().

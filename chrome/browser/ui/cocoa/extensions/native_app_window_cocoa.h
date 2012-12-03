@@ -110,6 +110,7 @@ class NativeAppWindowCocoa : public NativeAppWindow {
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void RenderViewHostChanged() OVERRIDE {}
+  virtual gfx::Insets GetFrameInsets() const OVERRIDE;
 
  private:
   virtual ~NativeAppWindowCocoa();

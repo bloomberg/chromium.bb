@@ -227,6 +227,10 @@ bool NativeAppWindowGtk::IsAlwaysOnTop() const {
   return false;
 }
 
+gfx::Insets NativeAppWindowGtk::GetFrameInsets() const {
+  return gfx::Insets();
+}
+
 void NativeAppWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
   // Do nothing if we're in the process of closing the browser window.
   if (!window_)

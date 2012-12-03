@@ -10,6 +10,7 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/window_controller.h"
+#include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"

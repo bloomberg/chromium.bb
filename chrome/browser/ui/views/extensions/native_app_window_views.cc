@@ -78,9 +78,8 @@ void NativeAppWindowViews::InitializeDefaultWindow(
   init_params.remove_standard_frame = true;
   init_params.use_system_default_icon = true;
   window_->Init(init_params);
-  gfx::Rect window_bounds =
-      window_->non_client_view()->GetWindowBoundsForClientBounds(
-          create_params.bounds);
+  gfx::Rect window_bounds = create_params.bounds;
+  window_bounds.Inset(-GetFrameInsets());
   // Center window if no position was specified.
   if (create_params.bounds.x() == INT_MIN ||
       create_params.bounds.y() == INT_MIN) {
@@ -208,6 +207,22 @@ void NativeAppWindowViews::FlashFrame(bool flash) {
 
 bool NativeAppWindowViews::IsAlwaysOnTop() const {
   return shell_window_->window_type() == ShellWindow::WINDOW_TYPE_PANEL;
+}
+
+gfx::Insets NativeAppWindowViews::GetFrameInsets() const {
+  if (frameless())
+    return gfx::Insets();
+
+  // The pretend client_bounds passed in need to be large enough to ensure that
+  // GetWindowBoundsForClientBounds() doesn't decide that it needs more than
+  // the specified amount of space to fit the window controls in, and return a
+  // number larger than the real frame insets. Most window controls are smaller
+  // than 1000x1000px, so this should be big enough.
+  gfx::Rect client_bounds = gfx::Rect(1000, 1000);
+  gfx::Rect window_bounds =
+      window_->non_client_view()->GetWindowBoundsForClientBounds(
+          client_bounds);
+  return window_bounds.InsetsFrom(client_bounds);
 }
 
 // Private method. TODO(stevenjb): Move this below InitializePanelWindow()

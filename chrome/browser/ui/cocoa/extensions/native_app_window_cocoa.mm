@@ -655,6 +655,10 @@ bool NativeAppWindowCocoa::IsAlwaysOnTop() const {
   return false;
 }
 
+gfx::Insets NativeAppWindowCocoa::GetFrameInsets() const {
+  return gfx::Insets();
+}
+
 void NativeAppWindowCocoa::WindowWillClose() {
   [window_controller_ setAppWindow:NULL];
   shell_window_->OnNativeWindowChanged();

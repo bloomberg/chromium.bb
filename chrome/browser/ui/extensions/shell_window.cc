@@ -351,9 +351,12 @@ void ShellWindow::OnNativeWindowChanged() {
                                            false));
 }
 
-
-BaseWindow* ShellWindow::GetBaseWindow() {
+NativeAppWindow* ShellWindow::GetBaseWindow() {
   return native_app_window_.get();
+}
+
+gfx::NativeWindow ShellWindow::GetNativeWindow() {
+  return GetBaseWindow()->GetNativeWindow();
 }
 
 string16 ShellWindow::GetTitle() const {

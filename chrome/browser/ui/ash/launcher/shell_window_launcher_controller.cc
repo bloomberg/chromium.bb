@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
+#include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/extensions/extension.h"
 #include "ui/aura/client/activation_client.h"

@@ -113,6 +113,7 @@ class NativeAppWindowViews : public NativeAppWindow,
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void RenderViewHostChanged() OVERRIDE;
+  virtual gfx::Insets GetFrameInsets() const OVERRIDE;
 
   Profile* profile() { return shell_window_->profile(); }
   content::WebContents* web_contents() {

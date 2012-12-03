@@ -65,6 +65,7 @@ class NativeAppWindowGtk : public NativeAppWindow,
   virtual void UpdateDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
   virtual void RenderViewHostChanged() OVERRIDE {}
+  virtual gfx::Insets GetFrameInsets() const OVERRIDE;
 
   content::WebContents* web_contents() const {
     return shell_window_->web_contents();

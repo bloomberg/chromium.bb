@@ -5,7 +5,7 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
-#include "chrome/browser/ui/base_window.h"
+#include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "ui/gfx/rect.h"
 

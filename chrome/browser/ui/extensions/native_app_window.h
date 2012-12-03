@@ -7,6 +7,7 @@
 
 #include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
+#include "ui/gfx/insets.h"
 
 // This is an interface to a native implementation of a shell window, used for
 // new-style packaged apps. Shell windows contain a web contents, but no tabs
@@ -38,6 +39,10 @@ class NativeAppWindow : public BaseWindow {
   // TODO(jianli): once http://crbug.com/123007 is fixed, we'll no longer need
   // this.
   virtual void RenderViewHostChanged() = 0;
+
+  // Returns the difference between the window bounds (including titlebar and
+  // borders) and the content bounds, if any.
+  virtual gfx::Insets GetFrameInsets() const = 0;
 
   virtual ~NativeAppWindow() {}
 };
