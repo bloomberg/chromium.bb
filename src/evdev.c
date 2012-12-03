@@ -473,8 +473,11 @@ evdev_configure_device(struct evdev_device *device)
 	if ((device->caps &
 	     (EVDEV_MOTION_ABS | EVDEV_MOTION_REL | EVDEV_BUTTON))) {
 		weston_seat_init_pointer(device->seat);
-		weston_log("input device %s, %s is a pointer\n",
-			   device->devname, device->devnode);
+		weston_log("input device %s, %s is a pointer caps =%s%s%s\n",
+			   device->devname, device->devnode,
+			   device->caps & EVDEV_MOTION_ABS ? " absolute-motion" : "",
+			   device->caps & EVDEV_MOTION_REL ? " relative-motion": "",
+			   device->caps & EVDEV_BUTTON ? " button" : "");
 	}
 	if ((device->caps & EVDEV_KEYBOARD)) {
 		weston_seat_init_keyboard(device->seat, NULL);
