@@ -79,9 +79,9 @@ IPC_MESSAGE_CONTROL2(InputTagSpeechHostMsg_StopRecording,
 // Browser -> Renderer messages.
 
 // Relays a speech recognition result, either partial or final.
-IPC_MESSAGE_ROUTED2(InputTagSpeechMsg_SetRecognitionResults,
+IPC_MESSAGE_ROUTED2(InputTagSpeechMsg_SetRecognitionResult,
                     int /* request_id */,
-                    content::SpeechRecognitionResults /* results */)
+                    content::SpeechRecognitionResult /* result */)
 
 // Indicates that speech recognizer has stopped recording and started
 // recognition.
@@ -149,7 +149,7 @@ IPC_MESSAGE_CONTROL2(SpeechRecognitionHostMsg_StopCaptureRequest,
 // events defined in content/public/browser/speech_recognition_event_listener.h.
 IPC_MESSAGE_ROUTED2(SpeechRecognitionMsg_ResultRetrieved,
                     int /* request_id */,
-                    content::SpeechRecognitionResults /* results */)
+                    content::SpeechRecognitionResult /* result */)
 
 IPC_MESSAGE_ROUTED2(SpeechRecognitionMsg_ErrorOccurred,
                     int /* request_id */,

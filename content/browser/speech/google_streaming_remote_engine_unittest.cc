@@ -38,9 +38,9 @@ class GoogleStreamingRemoteEngineTest : public SpeechRecognitionEngineDelegate,
   void CreateAndTestRequest(bool success, const std::string& http_response);
 
   // SpeechRecognitionRequestDelegate methods.
-  virtual void OnSpeechRecognitionEngineResults(
-      const SpeechRecognitionResults& results) OVERRIDE {
-    results_.push(results);
+  virtual void OnSpeechRecognitionEngineResult(
+      const SpeechRecognitionResult& result) OVERRIDE {
+    results_.push(result);
   }
   virtual void OnSpeechRecognitionEngineError(
       const SpeechRecognitionError& error) OVERRIDE {
@@ -58,8 +58,8 @@ class GoogleStreamingRemoteEngineTest : public SpeechRecognitionEngineDelegate,
     DOWNSTREAM_ERROR_NETWORK,
     DOWNSTREAM_ERROR_WEBSERVICE_NO_MATCH
   };
-  static bool ResultsAreEqual(const SpeechRecognitionResults& a,
-                              const SpeechRecognitionResults& b);
+  static bool ResultsAreEqual(const SpeechRecognitionResult& a,
+                              const SpeechRecognitionResult& b);
   static std::string SerializeProtobufResponse(
       const proto::SpeechRecognitionEvent& msg);
   static std::string ToBigEndian32(uint32 value);
@@ -73,7 +73,7 @@ class GoogleStreamingRemoteEngineTest : public SpeechRecognitionEngineDelegate,
   void ProvideMockProtoResultDownstream(
       const proto::SpeechRecognitionEvent& result);
   void ProvideMockResultDownstream(const SpeechRecognitionResult& result);
-  void ExpectResultsReceived(const SpeechRecognitionResults& result);
+  void ExpectResultReceived(const SpeechRecognitionResult& result);
   void CloseMockDownstream(DownstreamError error);
 
   scoped_ptr<GoogleStreamingRemoteEngine> engine_under_test_;
@@ -82,7 +82,7 @@ class GoogleStreamingRemoteEngineTest : public SpeechRecognitionEngineDelegate,
   MessageLoop message_loop_;
   std::string response_buffer_;
   SpeechRecognitionErrorCode error_;
-  std::queue<SpeechRecognitionResults> results_;
+  std::queue<SpeechRecognitionResult> results_;
 };
 
 TEST_F(GoogleStreamingRemoteEngineTest, SingleDefinitiveResult) {
@@ -104,9 +104,7 @@ TEST_F(GoogleStreamingRemoteEngineTest, SingleDefinitiveResult) {
 
   // Simulate a protobuf message streamed from the server containing a single
   // result with two hypotheses.
-  SpeechRecognitionResults results;
-  results.push_back(SpeechRecognitionResult());
-  SpeechRecognitionResult& result = results.back();
+  SpeechRecognitionResult result;
   result.is_provisional = false;
   result.hypotheses.push_back(
       SpeechRecognitionHypothesis(UTF8ToUTF16("hypothesis 1"), 0.1F));
@@ -114,7 +112,7 @@ TEST_F(GoogleStreamingRemoteEngineTest, SingleDefinitiveResult) {
       SpeechRecognitionHypothesis(UTF8ToUTF16("hypothesis 2"), 0.2F));
 
   ProvideMockResultDownstream(result);
-  ExpectResultsReceived(results);
+  ExpectResultReceived(result);
   ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
 
   // Ensure everything is closed cleanly after the downstream is closed.
@@ -134,16 +132,14 @@ TEST_F(GoogleStreamingRemoteEngineTest, SeveralStreamingResults) {
     InjectDummyAudioChunk();
     ASSERT_EQ(1U, UpstreamChunksUploadedFromLastCall());
 
-    SpeechRecognitionResults results;
-    results.push_back(SpeechRecognitionResult());
-    SpeechRecognitionResult& result = results.back();
+    SpeechRecognitionResult result;
     result.is_provisional = (i % 2 == 0);  // Alternate result types.
     float confidence = result.is_provisional ? 0.0F : (i * 0.1F);
     result.hypotheses.push_back(
         SpeechRecognitionHypothesis(UTF8ToUTF16("hypothesis"), confidence));
 
     ProvideMockResultDownstream(result);
-    ExpectResultsReceived(results);
+    ExpectResultReceived(result);
     ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
   }
 
@@ -153,14 +149,12 @@ TEST_F(GoogleStreamingRemoteEngineTest, SeveralStreamingResults) {
   ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
 
   // Simulate a final definitive result.
-  SpeechRecognitionResults results;
-  results.push_back(SpeechRecognitionResult());
-  SpeechRecognitionResult& result = results.back();
+  SpeechRecognitionResult result;
   result.is_provisional = false;
   result.hypotheses.push_back(
       SpeechRecognitionHypothesis(UTF8ToUTF16("The final result"), 1.0F));
   ProvideMockResultDownstream(result);
-  ExpectResultsReceived(results);
+  ExpectResultReceived(result);
   ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
 
   // Ensure everything is closed cleanly after the downstream is closed.
@@ -181,13 +175,11 @@ TEST_F(GoogleStreamingRemoteEngineTest, NoFinalResultAfterAudioChunksEnded) {
   ASSERT_EQ(1U, UpstreamChunksUploadedFromLastCall());
 
   // Simulate the corresponding definitive result.
-  SpeechRecognitionResults results;
-  results.push_back(SpeechRecognitionResult());
-  SpeechRecognitionResult& result = results.back();
+  SpeechRecognitionResult result;
   result.hypotheses.push_back(
       SpeechRecognitionHypothesis(UTF8ToUTF16("hypothesis"), 1.0F));
   ProvideMockResultDownstream(result);
-  ExpectResultsReceived(results);
+  ExpectResultReceived(result);
   ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
 
   // Simulate a silent downstream closure after |AudioChunksEnded|.
@@ -198,8 +190,8 @@ TEST_F(GoogleStreamingRemoteEngineTest, NoFinalResultAfterAudioChunksEnded) {
 
   // Expect an empty result, aimed at notifying recognition ended with no
   // actual results nor errors.
-  SpeechRecognitionResults empty_results;
-  ExpectResultsReceived(empty_results);
+  SpeechRecognitionResult empty_result;
+  ExpectResultReceived(empty_result);
 
   // Ensure everything is closed cleanly after the downstream is closed.
   ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
@@ -220,14 +212,12 @@ TEST_F(GoogleStreamingRemoteEngineTest, NoMatchError) {
   ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
 
   // Simulate only a provisional result.
-  SpeechRecognitionResults results;
-  results.push_back(SpeechRecognitionResult());
-  SpeechRecognitionResult& result = results.back();
+  SpeechRecognitionResult result;
   result.is_provisional = true;
   result.hypotheses.push_back(
       SpeechRecognitionHypothesis(UTF8ToUTF16("The final result"), 0.0F));
   ProvideMockResultDownstream(result);
-  ExpectResultsReceived(results);
+  ExpectResultReceived(result);
   ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
 
   CloseMockDownstream(DOWNSTREAM_ERROR_WEBSERVICE_NO_MATCH);
@@ -235,8 +225,8 @@ TEST_F(GoogleStreamingRemoteEngineTest, NoMatchError) {
   // Expect an empty result.
   ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
   EndMockRecognition();
-  SpeechRecognitionResults empty_result;
-  ExpectResultsReceived(empty_result);
+  SpeechRecognitionResult empty_result;
+  ExpectResultReceived(empty_result);
 }
 
 TEST_F(GoogleStreamingRemoteEngineTest, HTTPError) {
@@ -297,15 +287,13 @@ TEST_F(GoogleStreamingRemoteEngineTest, Stability) {
   ProvideMockProtoResultDownstream(proto_event);
 
   // Set up expectations.
-  SpeechRecognitionResults results;
-  results.push_back(SpeechRecognitionResult());
-  SpeechRecognitionResult& result = results.back();
-  result.is_provisional = true;
-  result.hypotheses.push_back(
+  SpeechRecognitionResult expected;
+  expected.is_provisional = true;
+  expected.hypotheses.push_back(
       SpeechRecognitionHypothesis(UTF8ToUTF16("foo"), 0.5));
 
   // Check that the protobuf generated the expected result.
-  ExpectResultsReceived(results);
+  ExpectResultReceived(expected);
 
   // Since it was a provisional result, recognition is still pending.
   ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
@@ -316,8 +304,8 @@ TEST_F(GoogleStreamingRemoteEngineTest, Stability) {
   EndMockRecognition();
 
   // Since there was no final result, we get an empty "no match" result.
-  SpeechRecognitionResults empty_result;
-  ExpectResultsReceived(empty_result);
+  SpeechRecognitionResult empty_result;
+  ExpectResultReceived(empty_result);
   ASSERT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
   ASSERT_EQ(0U, results_.size());
 }
@@ -448,35 +436,27 @@ void GoogleStreamingRemoteEngineTest::CloseMockDownstream(
   downstream_fetcher->delegate()->OnURLFetchComplete(downstream_fetcher);
 }
 
-void GoogleStreamingRemoteEngineTest::ExpectResultsReceived(
-    const SpeechRecognitionResults& results) {
+void GoogleStreamingRemoteEngineTest::ExpectResultReceived(
+    const SpeechRecognitionResult& result) {
   ASSERT_GE(1U, results_.size());
-  ASSERT_TRUE(ResultsAreEqual(results, results_.front()));
+  ASSERT_TRUE(ResultsAreEqual(result, results_.front()));
   results_.pop();
 }
 
 bool GoogleStreamingRemoteEngineTest::ResultsAreEqual(
-    const SpeechRecognitionResults& a, const SpeechRecognitionResults& b) {
-  if (a.size() != b.size())
+    const SpeechRecognitionResult& a, const SpeechRecognitionResult& b) {
+  if (a.is_provisional != b.is_provisional ||
+      a.hypotheses.size() != b.hypotheses.size()) {
     return false;
-
-  SpeechRecognitionResults::const_iterator it_a = a.begin();
-  SpeechRecognitionResults::const_iterator it_b = b.begin();
-  for (; it_a != a.end() && it_b != b.end(); ++it_a, ++it_b) {
-    if (it_a->is_provisional != it_b->is_provisional ||
-        it_a->hypotheses.size() != it_b->hypotheses.size()) {
+  }
+  for (size_t i = 0; i < a.hypotheses.size(); ++i) {
+    const SpeechRecognitionHypothesis& hyp_a = a.hypotheses[i];
+    const SpeechRecognitionHypothesis& hyp_b = b.hypotheses[i];
+    if (hyp_a.utterance != hyp_b.utterance ||
+        hyp_a.confidence != hyp_b.confidence) {
       return false;
     }
-    for (size_t i = 0; i < it_a->hypotheses.size(); ++i) {
-      const SpeechRecognitionHypothesis& hyp_a = it_a->hypotheses[i];
-      const SpeechRecognitionHypothesis& hyp_b = it_b->hypotheses[i];
-      if (hyp_a.utterance != hyp_b.utterance ||
-          hyp_a.confidence != hyp_b.confidence) {
-        return false;
-      }
-    }
   }
-
   return true;
 }
 

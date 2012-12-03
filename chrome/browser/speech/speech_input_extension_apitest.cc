@@ -185,9 +185,7 @@ void SpeechInputExtensionApiTest::ProvideResults() {
 
   GetManager()->OnSoundEnd(kSessionIDForTests);
   GetManager()->OnAudioEnd(kSessionIDForTests);
-  content::SpeechRecognitionResults results;
-  results.push_back(next_result_);
-  GetManager()->OnRecognitionResults(kSessionIDForTests, results);
+  GetManager()->OnRecognitionResult(kSessionIDForTests, next_result_);
   GetManager()->OnRecognitionEnd(kSessionIDForTests);
 }
 

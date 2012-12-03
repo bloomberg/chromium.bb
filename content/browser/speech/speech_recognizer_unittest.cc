@@ -96,8 +96,8 @@ class SpeechRecognizerTest : public SpeechRecognitionEventListener,
     CheckEventsConsistency();
   }
 
-  virtual void OnRecognitionResults(
-      int session_id, const SpeechRecognitionResults& results) OVERRIDE {
+  virtual void OnRecognitionResult(
+      int session_id, const SpeechRecognitionResult& result) OVERRIDE {
     result_received_ = true;
   }
 

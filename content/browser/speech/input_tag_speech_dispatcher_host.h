@@ -10,7 +10,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
-#include "content/public/common/speech_recognition_result.h"
 #include "net/url_request/url_request_context_getter.h"
 
 struct InputTagSpeechHostMsg_StartRecognition_Params;
@@ -19,6 +18,7 @@ namespace content {
 
 class SpeechRecognitionManager;
 class SpeechRecognitionPreferences;
+struct SpeechRecognitionResult;
 
 // InputTagSpeechDispatcherHost is a delegate for Speech API messages used by
 // RenderMessageFilter. Basically it acts as a proxy, relaying the events coming
@@ -42,9 +42,9 @@ class CONTENT_EXPORT InputTagSpeechDispatcherHost
   virtual void OnSoundEnd(int session_id) OVERRIDE;
   virtual void OnAudioEnd(int session_id) OVERRIDE;
   virtual void OnRecognitionEnd(int session_id) OVERRIDE;
-  virtual void OnRecognitionResults(
+  virtual void OnRecognitionResult(
       int session_id,
-      const SpeechRecognitionResults& results) OVERRIDE;
+      const SpeechRecognitionResult& result) OVERRIDE;
   virtual void OnRecognitionError(
       int session_id,
       const SpeechRecognitionError& error) OVERRIDE;

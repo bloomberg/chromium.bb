@@ -83,7 +83,7 @@ class CONTENT_EXPORT SpeechRecognizer
     FSMEvent event;
     int audio_error_code;
     scoped_refptr<AudioChunk> audio_data;
-    SpeechRecognitionResults engine_results;
+    SpeechRecognitionResult engine_result;
     SpeechRecognitionError engine_error;
   };
 
@@ -135,8 +135,8 @@ class CONTENT_EXPORT SpeechRecognizer
                       const uint8* data, uint32 size) OVERRIDE;
 
   // SpeechRecognitionEngineDelegate methods.
-  virtual void OnSpeechRecognitionEngineResults(
-      const SpeechRecognitionResults& results) OVERRIDE;
+  virtual void OnSpeechRecognitionEngineResult(
+      const SpeechRecognitionResult& result) OVERRIDE;
   virtual void OnSpeechRecognitionEngineError(
       const SpeechRecognitionError& error) OVERRIDE;
 

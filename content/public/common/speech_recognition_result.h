@@ -37,8 +37,6 @@ struct CONTENT_EXPORT SpeechRecognitionResult {
   ~SpeechRecognitionResult();
 };
 
-typedef std::vector<SpeechRecognitionResult> SpeechRecognitionResults;
-
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_SPEECH_RECOGNITION_RESULT_H_

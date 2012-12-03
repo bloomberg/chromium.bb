@@ -186,10 +186,10 @@ void SpeechRecognizer::OnData(AudioInputController* controller,
 
 void SpeechRecognizer::OnAudioClosed(AudioInputController*) {}
 
-void SpeechRecognizer::OnSpeechRecognitionEngineResults(
-    const SpeechRecognitionResults& results) {
+void SpeechRecognizer::OnSpeechRecognitionEngineResult(
+    const SpeechRecognitionResult& result) {
   FSMEventArgs event_args(EVENT_ENGINE_RESULT);
-  event_args.engine_results = results;
+  event_args.engine_result = result;
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&SpeechRecognizer::DispatchEvent,
                                      this, event_args));
@@ -554,37 +554,23 @@ SpeechRecognizer::FSMState SpeechRecognizer::ProcessIntermediateResult(
     DCHECK_EQ(STATE_RECOGNIZING, state_);
   }
 
-  listener_->OnRecognitionResults(session_id_, event_args.engine_results);
+  const SpeechRecognitionResult& result = event_args.engine_result;
+  listener_->OnRecognitionResult(session_id_, result);
   return STATE_RECOGNIZING;
 }
 
 SpeechRecognizer::FSMState
 SpeechRecognizer::ProcessFinalResult(const FSMEventArgs& event_args) {
-  const SpeechRecognitionResults& results = event_args.engine_results;
-  SpeechRecognitionResults::const_iterator i = results.begin();
-  bool provisional_results_pending = false;
-  bool results_are_empty = true;
-  for (; i != results.end(); ++i) {
-    const SpeechRecognitionResult& result = *i;
-    if (result.is_provisional) {
-      provisional_results_pending = true;
-      DCHECK(!is_single_shot_);
-    } else if (results_are_empty) {
-      results_are_empty = result.hypotheses.empty();
-    }
-  }
-
-  if (provisional_results_pending) {
-    listener_->OnRecognitionResults(session_id_, results);
+  const SpeechRecognitionResult& result = event_args.engine_result;
+  if (result.is_provisional) {
+    DCHECK(!is_single_shot_);
+    listener_->OnRecognitionResult(session_id_, result);
     // We don't end the recognition if a provisional result is received in
     // STATE_WAITING_FINAL_RESULT. A definitive result will come next and will
     // end the recognition.
     return state_;
-  }
-
-  recognition_engine_->EndRecognition();
-
-  if (!results_are_empty) {
+  } else {
+    recognition_engine_->EndRecognition();
     // We could receive an empty result (which we won't propagate further)
     // in the following (continuous) scenario:
     //  1. The caller start pushing audio and receives some results;
@@ -594,11 +580,11 @@ SpeechRecognizer::ProcessFinalResult(const FSMEventArgs& event_args) {
     //  4. The speech recognition engine, therefore, emits an empty result to
     //     notify that the recognition is ended with no error, yet neither any
     //     further result.
-    listener_->OnRecognitionResults(session_id_, results);
+    if (result.hypotheses.size() > 0)
+      listener_->OnRecognitionResult(session_id_, result);
+    listener_->OnRecognitionEnd(session_id_);
+    return STATE_IDLE;
   }
-
-  listener_->OnRecognitionEnd(session_id_);
-  return STATE_IDLE;
 }
 
 SpeechRecognizer::FSMState

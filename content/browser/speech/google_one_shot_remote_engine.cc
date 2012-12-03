@@ -262,9 +262,7 @@ void GoogleOneShotRemoteEngine::AudioChunksEnded() {
 void GoogleOneShotRemoteEngine::OnURLFetchComplete(
     const net::URLFetcher* source) {
   DCHECK_EQ(url_fetcher_.get(), source);
-  SpeechRecognitionResults results;
-  results.push_back(SpeechRecognitionResult());
-  SpeechRecognitionResult& result = results.back();
+  SpeechRecognitionResult result;
   SpeechRecognitionError error(SPEECH_RECOGNITION_ERROR_NETWORK);
   std::string data;
 
@@ -280,7 +278,7 @@ void GoogleOneShotRemoteEngine::OnURLFetchComplete(
     delegate()->OnSpeechRecognitionEngineError(error);
   } else {
     DVLOG(1) << "GoogleOneShotRemoteEngine: Invoking delegate with result.";
-    delegate()->OnSpeechRecognitionEngineResults(results);
+    delegate()->OnSpeechRecognitionEngineResult(result);
   }
 }
 

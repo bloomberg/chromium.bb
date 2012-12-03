@@ -168,39 +168,39 @@ void InputTagSpeechDispatcherHost::OnStopRecording(int render_view_id,
 }
 
 // -------- SpeechRecognitionEventListener interface implementation -----------
-void InputTagSpeechDispatcherHost::OnRecognitionResults(
+void InputTagSpeechDispatcherHost::OnRecognitionResult(
     int session_id,
-    const SpeechRecognitionResults& results) {
-  DVLOG(1) << "InputTagSpeechDispatcherHost::OnRecognitionResults enter";
+    const SpeechRecognitionResult& result) {
+  VLOG(1) << "InputTagSpeechDispatcherHost::OnRecognitionResult enter";
 
   const SpeechRecognitionSessionContext& context =
       manager()->GetSessionContext(session_id);
 
-  Send(new InputTagSpeechMsg_SetRecognitionResults(
+  Send(new InputTagSpeechMsg_SetRecognitionResult(
       context.render_view_id,
       context.request_id,
-      results));
-  DVLOG(1) << "InputTagSpeechDispatcherHost::OnRecognitionResults exit";
+      result));
+  VLOG(1) << "InputTagSpeechDispatcherHost::OnRecognitionResult exit";
 }
 
 void InputTagSpeechDispatcherHost::OnAudioEnd(int session_id) {
-  DVLOG(1) << "InputTagSpeechDispatcherHost::OnAudioEnd enter";
+  VLOG(1) << "InputTagSpeechDispatcherHost::OnAudioEnd enter";
 
   const SpeechRecognitionSessionContext& context =
       manager()->GetSessionContext(session_id);
 
   Send(new InputTagSpeechMsg_RecordingComplete(context.render_view_id,
                                                context.request_id));
-  DVLOG(1) << "InputTagSpeechDispatcherHost::OnAudioEnd exit";
+  VLOG(1) << "InputTagSpeechDispatcherHost::OnAudioEnd exit";
 }
 
 void InputTagSpeechDispatcherHost::OnRecognitionEnd(int session_id) {
-  DVLOG(1) << "InputTagSpeechDispatcherHost::OnRecognitionEnd enter";
+  VLOG(1) << "InputTagSpeechDispatcherHost::OnRecognitionEnd enter";
   const SpeechRecognitionSessionContext& context =
       manager()->GetSessionContext(session_id);
   Send(new InputTagSpeechMsg_RecognitionComplete(context.render_view_id,
                                                  context.request_id));
-  DVLOG(1) << "InputTagSpeechDispatcherHost::OnRecognitionEnd exit";
+  VLOG(1) << "InputTagSpeechDispatcherHost::OnRecognitionEnd exit";
 }
 
 // The events below are currently not used by x-webkit-speech implementation.

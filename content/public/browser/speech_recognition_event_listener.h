@@ -7,11 +7,11 @@
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
-#include "content/public/common/speech_recognition_result.h"
 
 namespace content {
 
 struct SpeechRecognitionError;
+struct SpeechRecognitionResult;
 
 // The interface to be implemented by consumers interested in receiving
 // speech recognition events.
@@ -36,13 +36,13 @@ class CONTENT_EXPORT SpeechRecognitionEventListener {
   // Informs that the endpointer has stopped detecting sound (a long silence).
   virtual void OnSoundEnd(int session_id) = 0;
 
-  // Invoked when audio capture stops, either due to the endpoint detecting
+  // Invoked when audio capture stops, either due to the endpointer detecting
   // silence, an internal error, or an explicit stop was issued.
   virtual void OnAudioEnd(int session_id) = 0;
 
   // Invoked when a result is retrieved.
-  virtual void OnRecognitionResults(int session_id,
-      const SpeechRecognitionResults& results) = 0;
+  virtual void OnRecognitionResult(int session_id,
+                                   const SpeechRecognitionResult& result) = 0;
 
   // Invoked if there was an error while capturing or recognizing audio.
   // The recognition has already been cancelled when this call is made and

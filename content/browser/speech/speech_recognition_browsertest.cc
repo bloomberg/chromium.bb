@@ -153,12 +153,10 @@ class FakeSpeechRecognitionManager : public SpeechRecognitionManager {
     if (session_id_) {  // Do a check in case we were cancelled..
       VLOG(1) << "Setting fake recognition result.";
       listener_->OnAudioEnd(session_id_);
-      SpeechRecognitionResult result;
-      result.hypotheses.push_back(SpeechRecognitionHypothesis(
+      SpeechRecognitionResult results;
+      results.hypotheses.push_back(SpeechRecognitionHypothesis(
           ASCIIToUTF16(kTestResult), 1.0));
-      SpeechRecognitionResults results;
-      results.push_back(result);
-      listener_->OnRecognitionResults(session_id_, results);
+      listener_->OnRecognitionResult(session_id_, results);
       listener_->OnRecognitionEnd(session_id_);
       session_id_ = 0;
       listener_ = NULL;

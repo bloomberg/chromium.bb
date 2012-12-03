@@ -26,9 +26,9 @@ class GoogleOneShotRemoteEngineTest : public SpeechRecognitionEngineDelegate,
   void CreateAndTestRequest(bool success, const std::string& http_response);
 
   // SpeechRecognitionRequestDelegate methods.
-  virtual void OnSpeechRecognitionEngineResults(
-      const SpeechRecognitionResults& results) OVERRIDE {
-    results_ = results;
+  virtual void OnSpeechRecognitionEngineResult(
+      const SpeechRecognitionResult& result) OVERRIDE {
+    result_ = result;
   }
 
   virtual void OnSpeechRecognitionEngineError(
@@ -36,17 +36,11 @@ class GoogleOneShotRemoteEngineTest : public SpeechRecognitionEngineDelegate,
     error_ = error.code;
   }
 
-  // Accessor for the only result item.
-  const SpeechRecognitionResult& result() const {
-    DCHECK_EQ(results_.size(), 1U);
-    return results_[0];
-  }
-
  protected:
   MessageLoop message_loop_;
   net::TestURLFetcherFactory url_fetcher_factory_;
   SpeechRecognitionErrorCode error_;
-  SpeechRecognitionResults results_;
+  SpeechRecognitionResult result_;
 };
 
 void GoogleOneShotRemoteEngineTest::CreateAndTestRequest(
@@ -73,7 +67,7 @@ void GoogleOneShotRemoteEngineTest::CreateAndTestRequest(
   fetcher->SetResponseString(http_response);
 
   fetcher->delegate()->OnURLFetchComplete(fetcher);
-  // Parsed response will be available in result().
+  // Parsed response will be available in result_.
 }
 
 TEST_F(GoogleOneShotRemoteEngineTest, BasicTest) {
@@ -82,9 +76,9 @@ TEST_F(GoogleOneShotRemoteEngineTest, BasicTest) {
       "{\"status\":0,\"hypotheses\":"
       "[{\"utterance\":\"123456\",\"confidence\":0.9}]}");
   EXPECT_EQ(error_, SPEECH_RECOGNITION_ERROR_NONE);
-  EXPECT_EQ(1U, result().hypotheses.size());
-  EXPECT_EQ(ASCIIToUTF16("123456"), result().hypotheses[0].utterance);
-  EXPECT_EQ(0.9, result().hypotheses[0].confidence);
+  EXPECT_EQ(1U, result_.hypotheses.size());
+  EXPECT_EQ(ASCIIToUTF16("123456"), result_.hypotheses[0].utterance);
+  EXPECT_EQ(0.9, result_.hypotheses[0].confidence);
 
   // Normal success case with multiple results.
   CreateAndTestRequest(true,
@@ -92,37 +86,37 @@ TEST_F(GoogleOneShotRemoteEngineTest, BasicTest) {
       "{\"utterance\":\"hello\",\"confidence\":0.9},"
       "{\"utterance\":\"123456\",\"confidence\":0.5}]}");
   EXPECT_EQ(error_, SPEECH_RECOGNITION_ERROR_NONE);
-  EXPECT_EQ(2u, result().hypotheses.size());
-  EXPECT_EQ(ASCIIToUTF16("hello"), result().hypotheses[0].utterance);
-  EXPECT_EQ(0.9, result().hypotheses[0].confidence);
-  EXPECT_EQ(ASCIIToUTF16("123456"), result().hypotheses[1].utterance);
-  EXPECT_EQ(0.5, result().hypotheses[1].confidence);
+  EXPECT_EQ(2u, result_.hypotheses.size());
+  EXPECT_EQ(ASCIIToUTF16("hello"), result_.hypotheses[0].utterance);
+  EXPECT_EQ(0.9, result_.hypotheses[0].confidence);
+  EXPECT_EQ(ASCIIToUTF16("123456"), result_.hypotheses[1].utterance);
+  EXPECT_EQ(0.5, result_.hypotheses[1].confidence);
 
   // Zero results.
   CreateAndTestRequest(true, "{\"status\":0,\"hypotheses\":[]}");
   EXPECT_EQ(error_, SPEECH_RECOGNITION_ERROR_NONE);
-  EXPECT_EQ(0U, result().hypotheses.size());
+  EXPECT_EQ(0U, result_.hypotheses.size());
 
   // Http failure case.
   CreateAndTestRequest(false, "");
   EXPECT_EQ(error_, SPEECH_RECOGNITION_ERROR_NETWORK);
-  EXPECT_EQ(0U, result().hypotheses.size());
+  EXPECT_EQ(0U, result_.hypotheses.size());
 
   // Invalid status case.
   CreateAndTestRequest(true, "{\"status\":\"invalid\",\"hypotheses\":[]}");
   EXPECT_EQ(error_, SPEECH_RECOGNITION_ERROR_NETWORK);
-  EXPECT_EQ(0U, result().hypotheses.size());
+  EXPECT_EQ(0U, result_.hypotheses.size());
 
   // Server-side error case.
   CreateAndTestRequest(true, "{\"status\":1,\"hypotheses\":[]}");
   EXPECT_EQ(error_, SPEECH_RECOGNITION_ERROR_NETWORK);
-  EXPECT_EQ(0U, result().hypotheses.size());
+  EXPECT_EQ(0U, result_.hypotheses.size());
 
   // Malformed JSON case.
   CreateAndTestRequest(true, "{\"status\":0,\"hypotheses\":"
       "[{\"unknownkey\":\"hello\"}]}");
   EXPECT_EQ(error_, SPEECH_RECOGNITION_ERROR_NETWORK);
-  EXPECT_EQ(0U, result().hypotheses.size());
+  EXPECT_EQ(0U, result_.hypotheses.size());
 }
 
 }  // namespace content
