@@ -337,6 +337,7 @@ namespace extension_manifest_errors {
   extern const char kMultipleOverrides[];
   extern const char kNoWildCardsInPaths[];
   extern const char kPermissionNotAllowed[];
+  extern const char kPermissionNotAllowedInManifest[];
   extern const char kPlatformAppNeedsManifestVersion2[];
   extern const char kOneUISurfaceOnly[];
   extern const char kReservedMessageFound[];

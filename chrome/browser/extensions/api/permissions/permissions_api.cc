@@ -169,9 +169,16 @@ bool RequestPermissionsFunction::RunImpl() {
     }
   }
 
+  // Filter out permissions that do not need to be listed in the optional
+  // section of the manifest.
+  scoped_refptr<extensions::PermissionSet>
+      manifest_required_requested_permissions =
+          PermissionSet::ExcludeNotInManifestPermissions(
+              requested_permissions_.get());
+
   // The requested permissions must be defined as optional in the manifest.
   if (!GetExtension()->optional_permission_set()->Contains(
-          *requested_permissions_)) {
+          *manifest_required_requested_permissions)) {
     error_ = kNotInOptionalPermissionsError;
     results_ = Request::Results::Create(false);
     return false;
