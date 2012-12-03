@@ -30,14 +30,9 @@ from chromite.lib import gs
 from chromite.lib import osutils
 
 
-def AbsolutePath(_option, opt, value):
+def AbsolutePath(_option, _opt, value):
   """Expand paths and make them absolute."""
-  expanded = osutils.ExpandPath(value)
-  if expanded == "/":
-    raise optparse.OptionValueError("Invalid path %s specified for %s"
-                                    % (expanded, opt))
-
-  return expanded
+  return osutils.ExpandPath(value)
 
 
 def NormalizeGSPath(_option, opt, value):

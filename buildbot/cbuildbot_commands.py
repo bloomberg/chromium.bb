@@ -114,12 +114,17 @@ def GetInput(prompt):
 def ValidateClobber(buildroot):
   """Do due diligence if user wants to clobber buildroot.
 
+  Args:
     buildroot: buildroot that's potentially clobbered.
-  Returns: True if the clobber is ok.
+  Returns:
+    True if the clobber is ok.
   """
   cwd = os.path.dirname(os.path.realpath(__file__))
   if cwd.startswith(buildroot):
     cros_build_lib.Die('You are trying to clobber this chromite checkout!')
+
+  if buildroot == '/':
+    cros_build_lib.Die('Refusing to clobber your system!')
 
   if os.path.exists(buildroot):
     return cros_build_lib.BooleanPrompt(default=False)

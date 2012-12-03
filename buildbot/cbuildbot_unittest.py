@@ -311,6 +311,10 @@ class InterfaceTest(cros_test_lib.MoxTestCase):
     buildroot = os.path.dirname(cwd)
     self.assertDieSysExit(commands.ValidateClobber, buildroot)
 
+  def testValidateClobberProtectRoot(self):
+    """User should not be clobbering /"""
+    self.assertDieSysExit(commands.ValidateClobber, '/')
+
   def testBuildBotWithBadChromeRevOption(self):
     """chrome_rev can't be passed an invalid option after chrome_root."""
     args = ['--local',
