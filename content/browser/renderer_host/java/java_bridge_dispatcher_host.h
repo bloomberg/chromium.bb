@@ -5,11 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_JAVA_JAVA_BRIDGE_DISPATCHER_HOST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_JAVA_JAVA_BRIDGE_DISPATCHER_HOST_H_
 
-#include <vector>
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "content/common/npobject_stub.h"
 #include "content/public/browser/render_view_host_observer.h"
 
 class RouteIDGenerator;
@@ -65,7 +62,6 @@ class JavaBridgeDispatcherHost
 
   scoped_refptr<NPChannelBase> channel_;
   bool is_renderer_initialized_;
-  std::vector<base::WeakPtr<NPObjectStub> > stubs_;
 
   DISALLOW_COPY_AND_ASSIGN(JavaBridgeDispatcherHost);
 };
