@@ -124,6 +124,10 @@ static char *aligned_addr(void *start, size_t alignment) {
   return (void *) aligned_size((size_t) start, alignment);
 }
 
+static inline void simple_abort(void) {
+  *(volatile int *) 0 = 0;  /* Crash. */
+}
+
 static char *tp_from_combined_area(const struct tls_info *info,
                                    void *combined_area, size_t tdb_size) {
   size_t tls_size = info->tdata_size + info->tbss_size;
@@ -175,6 +179,8 @@ void *__nacl_tls_data_bss_initialize_from_template(void *combined_area,
                                                    size_t tdb_size) {
   const struct tls_info *info = get_tls_info();
   size_t tls_size = info->tdata_size + info->tbss_size;
+  char *combined_area_end =
+      (char *) combined_area + __nacl_tls_combined_size(tdb_size);
   void *tp = tp_from_combined_area(info, combined_area, tdb_size);
   char *start = tp;
 
@@ -217,6 +223,9 @@ void *__nacl_tls_data_bss_initialize_from_template(void *combined_area,
     start += __nacl_tp_tls_offset(aligned_size(tls_size, info->tls_alignment));
   }
 
+  /* Sanity check.  (But avoid pulling in assert() here.) */
+  if (start + info->tdata_size + info->tbss_size > combined_area_end)
+    simple_abort();
   memcpy(start, info->tdata_start, info->tdata_size);
   memset(start + info->tdata_size, 0, info->tbss_size);
   return tp;
@@ -226,38 +235,22 @@ size_t __nacl_tls_combined_size(size_t tdb_size) {
   const struct tls_info *info = get_tls_info();
   size_t tls_size = info->tdata_size + info->tbss_size;
   ptrdiff_t tlsoff = __nacl_tp_tls_offset(tls_size);
+  size_t combined_size = tls_size + tdb_size;
+  /*
+   * __nacl_tls_initialize_memory() accepts a non-aligned pointer; it
+   * aligns the thread pointer itself.  We have to reserve some extra
+   * space to allow this alignment padding to occur.
+   */
+  combined_size += info->tls_alignment - 1;
   if (tlsoff > 0) {
     /*
-     * ARM case:
-     *
-     *  +-----------+--------+----------------+
-     *  |   TDB     | header | TLS data, bss  |
-     *  +-----------+--------+----------------+
-     *              ^        ^
-     *              |        |
-     *              |        +--- $tp+8 points here
-     *              |
-     *              +--- $tp points here
-     *
-     * The TDB alignment doesn't matter too much.
+     * ARM case: We have to add ARM's 8 byte header, because that is
+     * not incorporated into tls_size.  Furthermore, the header is
+     * padded out to tls_alignment.
      */
-    return tdb_size + tlsoff + tls_size + info->tls_alignment - 1;
-  } else {
-    /*
-     * x86 case:
-     *  +-----------------+------+
-     *  |  TLS data, bss  | TDB  |
-     *  +-----------------+------+
-     *                    ^
-     *                    |
-     *                    +--- $tp points here
-     *                    |
-     *                    +--- first word's value is $tp address
-     *
-     * The TDB alignment doesn't matter too much.
-     */
-    return info->tls_alignment - 1 + tls_size + tdb_size;
+    combined_size += aligned_size(tlsoff, info->tls_alignment);
   }
+  return combined_size;
 }
 
 /*
