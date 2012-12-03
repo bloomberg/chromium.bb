@@ -10,16 +10,6 @@
 
 namespace gfx {
 
-Vector2dF::Vector2dF()
-    : x_(0),
-      y_(0) {
-}
-
-Vector2dF::Vector2dF(float x, float y)
-    : x_(x),
-      y_(y) {
-}
-
 std::string Vector2dF::ToString() const {
   return base::StringPrintf("[%f %f]", x_, y_);
 }

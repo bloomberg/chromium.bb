@@ -5,15 +5,49 @@
 #ifndef UI_GFX_SAFE_INTEGER_CONVERSIONS_H_
 #define UI_GFX_SAFE_INTEGER_CONVERSIONS_H_
 
+#include <cmath>
+#include <limits>
+
 #include "ui/base/ui_export.h"
 
 namespace gfx {
 
-UI_EXPORT int ClampToInt(float value);
-UI_EXPORT int ToFlooredInt(float value);
-UI_EXPORT int ToCeiledInt(float value);
-UI_EXPORT int ToRoundedInt(float value);
-UI_EXPORT bool IsExpressibleAsInt(float value);
+inline int ClampToInt(float value) {
+  if (value != value)
+    return 0; // no int NaN.
+  if (value >= std::numeric_limits<int>::max())
+    return std::numeric_limits<int>::max();
+  if (value <= std::numeric_limits<int>::min())
+    return std::numeric_limits<int>::min();
+  return static_cast<int>(value);
+}
+
+inline int ToFlooredInt(float value) {
+  return ClampToInt(std::floor(value));
+}
+
+inline int ToCeiledInt(float value) {
+  return ClampToInt(std::ceil(value));
+}
+
+inline int ToRoundedInt(float value) {
+  float rounded;
+  if (value >= 0.0f)
+    rounded = std::floor(value + 0.5f);
+  else
+    rounded = std::ceil(value - 0.5f);
+  return ClampToInt(rounded);
+}
+
+inline bool IsExpressibleAsInt(float value) {
+  if (value != value)
+    return false; // no int NaN.
+  if (value > std::numeric_limits<int>::max())
+    return false;
+  if (value < std::numeric_limits<int>::min())
+    return false;
+  return true;
+}
 
 }  // namespace gfx
 
