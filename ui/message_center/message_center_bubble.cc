@@ -314,8 +314,9 @@ views::TrayBubbleView::InitParams MessageCenterBubble::GetInitParams(
     views::TrayBubbleView::AnchorAlignment anchor_alignment) {
   views::TrayBubbleView::InitParams init_params =
       GetDefaultInitParams(anchor_alignment);
+  init_params.min_width += kMarginBetweenItems * 2;
+  init_params.max_width += kMarginBetweenItems * 2;
   init_params.max_height = kMessageBubbleBaseMaxHeight;
-  init_params.bubble_width += kMarginBetweenItems * 2;
   init_params.can_activate = true;
   return init_params;
 }

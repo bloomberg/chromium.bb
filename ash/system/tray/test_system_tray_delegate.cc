@@ -4,6 +4,8 @@
 
 #include "ash/system/tray/test_system_tray_delegate.h"
 
+#include <string>
+
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/volume_control_delegate.h"
@@ -92,6 +94,10 @@ user::LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
   return user::LOGGED_IN_USER;
 }
 
+const std::string TestSystemTrayDelegate::GetEnterpriseDomain() const {
+  return std::string();
+}
+
 bool TestSystemTrayDelegate::SystemShouldUpgrade() const {
   return true;
 }
@@ -132,6 +138,9 @@ void TestSystemTrayDelegate::ShowHelp() {
 }
 
 void TestSystemTrayDelegate::ShowAccessibilityHelp() {
+}
+
+void TestSystemTrayDelegate::ShowPublicAccountInfo() {
 }
 
 void TestSystemTrayDelegate::ShutDown() {

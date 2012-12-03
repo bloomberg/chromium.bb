@@ -398,7 +398,8 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
   } else {
     TrayBubbleView::InitParams init_params(TrayBubbleView::ANCHOR_TYPE_TRAY,
                                            GetAnchorAlignment(),
-                                           kTrayPopupWidth);
+                                           kTrayPopupMinWidth,
+                                           kTrayPopupMaxWidth);
     init_params.can_activate = can_activate;
     if (detailed) {
       // This is the case where a volume control or brightness control bubble
@@ -469,7 +470,8 @@ void SystemTray::UpdateNotificationBubble() {
   }
   TrayBubbleView::InitParams init_params(anchor_type,
                                          GetAnchorAlignment(),
-                                         kTrayPopupWidth);
+                                         kTrayPopupMinWidth,
+                                         kTrayPopupMaxWidth);
   init_params.arrow_color = kBackgroundColor;
   init_params.arrow_offset = GetTrayXOffset(notification_items_[0]);
   notification_bubble_.reset(

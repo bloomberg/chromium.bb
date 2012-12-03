@@ -119,6 +119,10 @@ void ShowHelp(Browser* browser, HelpSource source) {
   ShowSingletonTab(browser, url);
 }
 
+void ShowPolicy(Browser* browser) {
+  ShowSingletonTab(browser, GURL(kChromeUIPolicyURL));
+}
+
 void ShowSettings(Browser* browser) {
   content::RecordAction(UserMetricsAction("ShowOptions"));
   ShowSettingsSubPage(browser, std::string());

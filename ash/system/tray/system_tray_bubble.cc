@@ -16,7 +16,7 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
-#include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -43,10 +43,7 @@ class TrayPopupItemContainer : public views::View {
       : hover_(false),
         change_background_(change_background) {
     set_notify_enter_exit_on_child(true);
-    views::BoxLayout* layout = new views::BoxLayout(
-        views::BoxLayout::kVertical, 0, 0, 0);
-    layout->set_spread_blank_space(true);
-    SetLayoutManager(layout);
+    SetLayoutManager(new views::FillLayout);
     SetPaintToLayer(view->layer() != NULL);
     if (view->layer())
       SetFillsBoundsOpaquely(view->layer()->fills_bounds_opaquely());

@@ -13,7 +13,6 @@ namespace {
 // Delay laying out the MessageBubbleBase until all notifications have been
 // added and icons have had a chance to load.
 const int kUpdateDelayMs = 50;
-const int kNotificationBubbleWidth = 300;
 }
 
 namespace message_center {
@@ -59,9 +58,9 @@ views::TrayBubbleView::InitParams MessageBubbleBase::GetDefaultInitParams(
   views::TrayBubbleView::InitParams init_params(
       views::TrayBubbleView::ANCHOR_TYPE_TRAY,
       anchor_alignment,
-      kNotificationBubbleWidth);
+      kWebNotificationWidth,
+      kWebNotificationWidth);
   init_params.arrow_color = kHeaderBackgroundColorDark;
-  init_params.bubble_width = kWebNotificationWidth;
   return init_params;
 }
 

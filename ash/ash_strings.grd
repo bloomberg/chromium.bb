@@ -200,6 +200,10 @@ This file contains the strings for ash.
         Keyboard Overlay
       </message>
 
+      <message name="IDS_ASH_LEARN_MORE" desc="Text of Learn more links.">
+        Learn more
+      </message>
+
       <!-- Status tray items -->
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBLE_NAME" desc="The accessible name of the status tray.">
         Status tray
@@ -231,6 +235,9 @@ Press Ctrl+Alt+Z to cancel.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_EXIT_PUBLIC" desc="The label used for the button in the status tray to terminate a public account session. If the label is long, indicate where it may be broken into two lines by inserting \n instead of a whitespace.">
         End public\nsession
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_PUBLIC_LABEL" desc="Text of the the ash system bubble's user card when the current session is a public account session.">
+        <ph name="DISPLAY_NAME">$1<ex>Internet kiosk</ex></ph> is a shared account managed by <ph name="DOMAIN">$2<ex>yourdomain.com</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_LOCK" desc="The label used for the button in the status tray to lock the screen.">
         Lock

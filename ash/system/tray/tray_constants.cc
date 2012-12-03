@@ -38,6 +38,8 @@ const int kTrayBarButtonWidth = 39;
 const SkColor kBackgroundColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
 const SkColor kHoverBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
 const SkColor kPublicAccountBackgroundColor = SkColorSetRGB(0xf8, 0xe5, 0xb6);
+const SkColor kPublicAccountUserCardTextColor = SkColorSetRGB(0x66, 0x66, 0x66);
+const SkColor kPublicAccountUserCardNameColor = SK_ColorBLACK;
 
 const SkColor kHeaderBackgroundColorLight = SkColorSetRGB(0xf1, 0xf1, 0xf1);
 const SkColor kHeaderBackgroundColorDark = SkColorSetRGB(0xe7, 0xe7, 0xe7);
@@ -49,9 +51,11 @@ const SkColor kButtonStrokeColor = SkColorSetRGB(0xdd, 0xdd, 0xdd);
 const SkColor kHeaderTextColorNormal = SkColorSetARGB(0x7f, 0, 0, 0);
 const SkColor kHeaderTextColorHover = SkColorSetARGB(0xd3, 0, 0, 0);
 
-const int kTrayPopupWidth = 300;
+const int kTrayPopupMinWidth = 300;
+const int kTrayPopupMaxWidth = 500;
 const int kNotificationIconWidth = 40;
-const int kTrayNotificationContentsWidth =
-    kTrayPopupWidth - kNotificationIconWidth*2 - kTrayPopupPaddingHorizontal*2;
+// TODO(stevenjb): This calculation is wrong (http://crbug.com/163402).
+const int kTrayNotificationContentsWidth = kTrayPopupMinWidth -
+    (kNotificationIconWidth + kTrayPopupPaddingHorizontal) * 2;
 
 }  // namespace ash

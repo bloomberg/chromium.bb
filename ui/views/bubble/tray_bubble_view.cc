@@ -4,6 +4,8 @@
 
 #include "ui/views/bubble/tray_bubble_view.h"
 
+#include <algorithm>
+
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -219,10 +221,12 @@ const int TrayBubbleView::InitParams::kArrowDefaultOffset = -1;
 
 TrayBubbleView::InitParams::InitParams(AnchorType anchor_type,
                                        AnchorAlignment anchor_alignment,
-                                       int bubble_width)
+                                       int min_width,
+                                       int max_width)
     : anchor_type(anchor_type),
       anchor_alignment(anchor_alignment),
-      bubble_width(bubble_width),
+      min_width(min_width),
+      max_width(max_width),
       max_height(0),
       can_activate(false),
       close_on_deactivate(true),
@@ -262,6 +266,7 @@ TrayBubbleView::TrayBubbleView(gfx::NativeView parent_window,
     : views::BubbleDelegateView(anchor, init_params.arrow_location),
       params_(init_params),
       delegate_(delegate),
+      preferred_width_(init_params.min_width),
       bubble_border_(NULL),
       is_gesture_dragging_(false) {
   set_parent_window(parent_window);
@@ -302,6 +307,15 @@ void TrayBubbleView::UpdateBubble() {
 
 void TrayBubbleView::SetMaxHeight(int height) {
   params_.max_height = height;
+  if (GetWidget())
+    SizeToContents();
+}
+
+void TrayBubbleView::SetWidth(int width) {
+  width = std::max(std::min(width, params_.max_width), params_.min_width);
+  if (preferred_width_ == width)
+    return;
+  preferred_width_ = width;
   if (GetWidget())
     SizeToContents();
 }
@@ -354,7 +368,13 @@ gfx::Size TrayBubbleView::GetPreferredSize() {
   int height = size.height();
   if (params_.max_height != 0 && height > params_.max_height)
     height = params_.max_height;
-  return gfx::Size(params_.bubble_width, height);
+  return gfx::Size(preferred_width_, height);
+}
+
+gfx::Size TrayBubbleView::GetMaximumSize() {
+  gfx::Size size = GetPreferredSize();
+  size.set_width(params_.max_width);
+  return size;
 }
 
 void TrayBubbleView::OnMouseEntered(const ui::MouseEvent& event) {

@@ -53,6 +53,7 @@
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
@@ -297,6 +298,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     return ash::user::LOGGED_IN_USER;
   }
 
+  virtual const std::string GetEnterpriseDomain() const OVERRIDE {
+    return g_browser_process->browser_policy_connector()->GetEnterpriseDomain();
+  }
+
   virtual bool SystemShouldUpgrade() const OVERRIDE {
     return UpgradeDetector::GetInstance()->notify_upgrade();
   }
@@ -362,6 +367,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ShowAccessibilityHelp() OVERRIDE {
     accessibility::ShowAccessibilityHelp(GetAppropriateBrowser());
+  }
+
+  virtual void ShowPublicAccountInfo() OVERRIDE {
+    chrome::ShowPolicy(GetAppropriateBrowser());
   }
 
   virtual void ShutDown() OVERRIDE {

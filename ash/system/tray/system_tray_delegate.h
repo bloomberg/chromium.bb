@@ -116,6 +116,9 @@ class SystemTrayDelegate {
   virtual const gfx::ImageSkia& GetUserImage() const = 0;
   virtual user::LoginStatus GetUserLoginStatus() const = 0;
 
+  // Returns the domain that manages the device, if it is enterprise-enrolled.
+  virtual const std::string GetEnterpriseDomain() const = 0;
+
   // Returns whether a system upgrade is available.
   virtual bool SystemShouldUpgrade() const = 0;
 
@@ -149,11 +152,14 @@ class SystemTrayDelegate {
   // Shows settings related to input methods.
   virtual void ShowIMESettings() = 0;
 
+  // Shows help.
+  virtual void ShowHelp() = 0;
+
   // Show accessilibity help.
   virtual void ShowAccessibilityHelp() = 0;
 
-  // Shows help.
-  virtual void ShowHelp() = 0;
+  // Shows more information about public account mode.
+  virtual void ShowPublicAccountInfo() = 0;
 
   // Attempts to shut down the system.
   virtual void ShutDown() = 0;

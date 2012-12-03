@@ -6,6 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_bubble.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/tray_item_more.h"
@@ -19,6 +20,7 @@
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -120,9 +122,9 @@ class TraySms::SmsMessageView : public views::View,
     close_button->SetImage(views::CustomButton::STATE_NORMAL,
         ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_AURA_WINDOW_CLOSE));
-
-    int msg_width = kTrayPopupWidth - kNotificationIconWidth -
-        kTrayPopupPaddingHorizontal * 2;
+    const int msg_width = owner_->system_tray()->GetSystemBubble()->
+        bubble_view()->GetPreferredSize().width() -
+            (kNotificationIconWidth + kTrayPopupPaddingHorizontal * 2);
     message_label_->SizeToFit(msg_width);
 
     views::GridLayout* layout = new views::GridLayout(this);

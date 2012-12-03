@@ -43,6 +43,7 @@ void ShowFeedbackPage(Browser* browser,
                       const std::string& category_tag);
 
 void ShowHelp(Browser* browser, HelpSource source);
+void ShowPolicy(Browser* browser);
 
 // Various things that open in a settings UI.
 void ShowSettings(Browser* browser);

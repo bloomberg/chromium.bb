@@ -39,6 +39,8 @@ extern const int kTrayBarButtonWidth;
 extern const SkColor kBackgroundColor;
 extern const SkColor kHoverBackgroundColor;
 extern const SkColor kPublicAccountBackgroundColor;
+extern const SkColor kPublicAccountUserCardTextColor;
+extern const SkColor kPublicAccountUserCardNameColor;
 
 extern const SkColor kHeaderBackgroundColorLight;
 extern const SkColor kHeaderBackgroundColorDark;
@@ -50,7 +52,8 @@ extern const SkColor kButtonStrokeColor;
 extern const SkColor kHeaderTextColorNormal;
 extern const SkColor kHeaderTextColorHover;
 
-extern const int kTrayPopupWidth;
+extern const int kTrayPopupMinWidth;
+extern const int kTrayPopupMaxWidth;
 extern const int kNotificationIconWidth;
 extern const int kTrayNotificationContentsWidth;
 

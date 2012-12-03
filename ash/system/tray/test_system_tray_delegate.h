@@ -29,6 +29,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual const std::string GetUserEmail() const OVERRIDE;
   virtual const gfx::ImageSkia& GetUserImage() const OVERRIDE;
   virtual user::LoginStatus GetUserLoginStatus() const OVERRIDE;
+  virtual const std::string GetEnterpriseDomain() const OVERRIDE;
   virtual bool SystemShouldUpgrade() const OVERRIDE;
   virtual base::HourClockType GetHourClockType() const OVERRIDE;
   virtual PowerSupplyStatus GetPowerSupplyStatus() const OVERRIDE;
@@ -42,6 +43,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual void ShowIMESettings() OVERRIDE;
   virtual void ShowHelp() OVERRIDE;
   virtual void ShowAccessibilityHelp() OVERRIDE;
+  virtual void ShowPublicAccountInfo() OVERRIDE;
   virtual void ShutDown() OVERRIDE;
   virtual void SignOut() OVERRIDE;
   virtual void RequestLockScreen() OVERRIDE;
