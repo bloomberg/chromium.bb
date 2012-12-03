@@ -21,6 +21,17 @@ cr.define('options', function() {
     __proto__: options.SettingsDialog.prototype,
 
     /**
+     * Initializes the page. This method is called in initialize.
+     */
+    initializePage: function() {
+      options.SettingsDialog.prototype.initializePage.call(this);
+
+      $('languages-and-input-settings').onclick = function(e) {
+        OptionsPage.navigateToPage('languages');
+      };
+    },
+
+    /**
      * Show/hide the caps lock remapping section.
      * @private
      */
