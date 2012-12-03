@@ -117,8 +117,8 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   if (prefs->FindPreference(prefs::kShouldAlwaysShowAccessibilityMenu) ==
       NULL) {
     prefs->RegisterBooleanPref(prefs::kShouldAlwaysShowAccessibilityMenu,
-                              "",
-                              PrefService::UNSYNCABLE_PREF);
+                               false,
+                               PrefService::UNSYNCABLE_PREF);
   }
   if (prefs->FindPreference(prefs::kVirtualKeyboardEnabled) == NULL) {
     prefs->RegisterBooleanPref(prefs::kVirtualKeyboardEnabled,
