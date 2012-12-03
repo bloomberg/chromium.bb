@@ -1808,6 +1808,10 @@ fragment_debug_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 
 	compile_shaders(ec);
 
+	/* Force use_shader() to call glUseProgram(), since we need to use
+	 * the recompiled version of the shader. */
+	gr->current_shader = NULL;
+
 	wl_list_for_each(output, &ec->output_list, link)
 		weston_output_damage(output);
 }
