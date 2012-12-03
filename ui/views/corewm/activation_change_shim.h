@@ -34,7 +34,7 @@ class VIEWS_EXPORT ActivationChangeShim
                                  aura::Window* old_active) OVERRIDE;
 
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnEvent(ui::Event* event) OVERRIDE;
+  virtual void OnEvent(ui::Event* event) OVERRIDE;
 
  private:
   ui::EventTarget* target_;

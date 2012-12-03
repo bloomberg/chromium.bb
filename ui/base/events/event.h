@@ -161,6 +161,15 @@ class UI_EXPORT Event {
   // Returns true if the event has a valid |native_event_|.
   bool HasNativeEvent() const;
 
+  // Immediately stops the propagation of the event. This must be called only
+  // from an EventHandler during an event-dispatch. Any event handler that may
+  // be in the list will not receive the event after this is called.
+  void StopPropagation();
+  bool stopped_propagation() const { return !!(result_ & ui::ER_CONSUMED); }
+
+  void SetHandled();
+  bool handled() const { return result_ != ui::ER_UNHANDLED; }
+
  protected:
   Event(EventType type, base::TimeDelta time_stamp, int flags);
   Event(const base::NativeEvent& native_event, EventType type, int flags);

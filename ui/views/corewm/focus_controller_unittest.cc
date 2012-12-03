@@ -42,9 +42,12 @@ class FocusEventsTestHandler : public ui::EventHandler,
 
  private:
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnEvent(ui::Event* event) OVERRIDE {
+  virtual void OnEvent(ui::Event* event) OVERRIDE {
     event_counts_[event->type()] += 1;
-    return result_;
+    if (result_ & ui::ER_CONSUMED)
+      event->StopPropagation();
+    else if (result_ & ui::ER_HANDLED)
+      event->SetHandled();
   }
 
   // Overridden from aura::WindowObserver:

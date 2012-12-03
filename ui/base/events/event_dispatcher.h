@@ -24,9 +24,9 @@ class UI_EXPORT EventDispatcher {
   virtual bool CanDispatchToTarget(EventTarget* target) = 0;
 
   template<class T>
-  int ProcessEvent(EventTarget* target, T* event) {
+  void ProcessEvent(EventTarget* target, T* event) {
     if (!target || !target->CanAcceptEvents())
-      return ER_UNHANDLED;
+      return;
 
     ScopedDispatchHelper dispatch_helper(event);
     dispatch_helper.set_target(target);
@@ -34,9 +34,9 @@ class UI_EXPORT EventDispatcher {
     EventHandlerList list;
     target->GetPreTargetHandlers(&list);
     dispatch_helper.set_phase(EP_PRETARGET);
-    int result = DispatchEventToEventHandlers(list, event);
-    if (result & ER_CONSUMED)
-      return result;
+    DispatchEventToEventHandlers(list, event);
+    if (event->stopped_propagation())
+      return;
 
     // If the event hasn't been consumed, trigger the default handler. Note that
     // even if the event has already been handled (i.e. return result has
@@ -45,20 +45,18 @@ class UI_EXPORT EventDispatcher {
     // abstraction.
     if (CanDispatchToTarget(target)) {
       dispatch_helper.set_phase(EP_TARGET);
-      result |= DispatchEvent(target, event);
-      dispatch_helper.set_result(event->result() | result);
-      if (result & ER_CONSUMED)
-        return result;
+      DispatchEvent(target, event);
+      if (event->stopped_propagation())
+        return;
     }
 
     if (!CanDispatchToTarget(target))
-      return result;
+      return;
 
     list.clear();
     target->GetPostTargetHandlers(&list);
     dispatch_helper.set_phase(EP_POSTTARGET);
-    result |= DispatchEventToEventHandlers(list, event);
-    return result;
+    DispatchEventToEventHandlers(list, event);
   }
 
   const Event* current_event() const { return current_event_; }
@@ -75,27 +73,25 @@ class UI_EXPORT EventDispatcher {
   };
 
   template<class T>
-  int DispatchEventToEventHandlers(EventHandlerList& list, T* event) {
-    int result = ER_UNHANDLED;
-    Event::DispatcherApi dispatch_helper(event);
+  void DispatchEventToEventHandlers(EventHandlerList& list, T* event) {
     for (EventHandlerList::const_iterator it = list.begin(),
             end = list.end(); it != end; ++it) {
-      result |= DispatchEvent((*it), event);
-      dispatch_helper.set_result(event->result() | result);
-      if (result & ER_CONSUMED)
-        return result;
+      DispatchEvent((*it), event);
+      if (event->stopped_propagation())
+        return;
     }
-    return result;
   }
 
   // Dispatches an event, and makes sure it sets ER_CONSUMED on the
   // event-handling result if the dispatcher itself has been destroyed during
   // dispatching the event to the event handler.
   template<class T>
-  int DispatchEvent(EventHandler* handler, T* event) {
+  void DispatchEvent(EventHandler* handler, T* event) {
     // If the target has been invalidated or deleted, don't dispatch the event.
-    if (!CanDispatchToTarget(event->target()))
-      return ui::ER_CONSUMED;
+    if (!CanDispatchToTarget(event->target())) {
+      event->StopPropagation();
+      return;
+    }
     bool destroyed = false;
     set_on_destroy_ = &destroyed;
 
@@ -104,17 +100,16 @@ class UI_EXPORT EventDispatcher {
     // cause invalid memory-write when AutoReset tries to restore the value.
     Event* old_event = current_event_;
     current_event_ = event;
-    int result = DispatchEventToSingleHandler(handler, event);
+    DispatchEventToSingleHandler(handler, event);
     if (destroyed) {
-      result |= ui::ER_CONSUMED;
+      event->StopPropagation();
     } else {
       current_event_ = old_event;
       set_on_destroy_ = NULL;
     }
-    return result;
   }
 
-  EventResult DispatchEventToSingleHandler(EventHandler* handler, Event* event);
+  void DispatchEventToSingleHandler(EventHandler* handler, Event* event);
 
   // This is used to track whether the dispatcher has been destroyed in the
   // middle of dispatching an event.

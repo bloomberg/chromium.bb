@@ -261,8 +261,8 @@ bool RootWindow::DispatchGestureEvent(ui::GestureEvent* event) {
 
   if (target) {
     event->ConvertLocationToTarget(static_cast<Window*>(this), target);
-    ui::EventResult status = ProcessGestureEvent(target, event);
-    return status != ui::ER_UNHANDLED;
+    ProcessGestureEvent(target, event);
+    return event->handled();
   }
 
   return false;
@@ -615,37 +615,35 @@ void RootWindow::HandleMouseMoved(const ui::MouseEvent& event, Window* target) {
   }
 }
 
-bool RootWindow::ProcessMouseEvent(Window* target, ui::MouseEvent* event) {
+void RootWindow::ProcessMouseEvent(Window* target, ui::MouseEvent* event) {
   base::AutoReset<Window*> reset(&event_dispatch_target_, target);
-  return ProcessEvent(target, event) != ui::ER_UNHANDLED;
+  ProcessEvent(target, event);
 }
 
-bool RootWindow::ProcessKeyEvent(Window* target, ui::KeyEvent* event) {
+void RootWindow::ProcessKeyEvent(Window* target, ui::KeyEvent* event) {
   if (!target)
     target = this;
   base::AutoReset<Window*> reset(&event_dispatch_target_, target);
-  return ProcessEvent(target, event) != ui::ER_UNHANDLED;
+  ProcessEvent(target, event);
 }
 
-bool RootWindow::ProcessScrollEvent(Window* target, ui::ScrollEvent* event) {
+void RootWindow::ProcessScrollEvent(Window* target, ui::ScrollEvent* event) {
   base::AutoReset<Window*> reset(&event_dispatch_target_, target);
-  return ProcessEvent(target, event) != ui::ER_UNHANDLED;
+  ProcessEvent(target, event);
 }
 
-ui::EventResult RootWindow::ProcessTouchEvent(Window* target,
-                                              ui::TouchEvent* event) {
+void RootWindow::ProcessTouchEvent(Window* target, ui::TouchEvent* event) {
   if (!target)
     target = this;
   base::AutoReset<Window*> reset(&event_dispatch_target_, target);
-  return static_cast<ui::EventResult>(ProcessEvent(target, event));
+  ProcessEvent(target, event);
 }
 
-ui::EventResult RootWindow::ProcessGestureEvent(Window* target,
-                                                ui::GestureEvent* event) {
+void RootWindow::ProcessGestureEvent(Window* target, ui::GestureEvent* event) {
   if (!target)
     target = this;
   base::AutoReset<Window*> reset(&event_dispatch_target_, target);
-  return static_cast<ui::EventResult>(ProcessEvent(target, event));
+  ProcessEvent(target, event);
 }
 
 bool RootWindow::ProcessGestures(ui::GestureRecognizer::Gestures* gestures) {
@@ -788,7 +786,8 @@ bool RootWindow::OnHostKeyEvent(ui::KeyEvent* event) {
     client::GetFocusClient(this)->FocusWindow(NULL, NULL);
     return false;
   }
-  return ProcessKeyEvent(focused_window, event);
+  ProcessKeyEvent(focused_window, event);
+  return event->handled();
 }
 
 bool RootWindow::OnHostMouseEvent(ui::MouseEvent* event) {
@@ -831,7 +830,8 @@ bool RootWindow::OnHostScrollEvent(ui::ScrollEvent* event) {
       flags |= ui::EF_IS_NON_CLIENT;
     event->set_flags(flags);
     event->ConvertLocationToTarget(static_cast<Window*>(this), target);
-    return ProcessScrollEvent(target, event);
+    ProcessScrollEvent(target, event);
+    return event->handled();
   }
   return false;
 }
@@ -856,7 +856,6 @@ bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
   }
   TransformEventForDeviceScaleFactor(event);
   bool handled = false;
-  ui::EventResult result = ui::ER_UNHANDLED;
   Window* target = client::GetCaptureWindow(this);
   if (!target) {
     target = ConsumerToWindow(
@@ -867,11 +866,13 @@ bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
     }
   }
 
+  ui::EventResult result = ui::ER_UNHANDLED;
   if (!target && !bounds().Contains(event->location())) {
     // If the initial touch is outside the root window, target the root.
     target = this;
-    result = ProcessTouchEvent(target, event);
-    CHECK_EQ(ui::ER_UNHANDLED, result);
+    ProcessTouchEvent(target, event);
+    CHECK_EQ(ui::ER_UNHANDLED, event->result());
+    result = event->result();
   } else {
     // We only come here when the first contact was within the root window.
     if (!target) {
@@ -882,8 +883,9 @@ bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
 
     ui::TouchEvent translated_event(
         *event, static_cast<Window*>(this), target);
-    result = ProcessTouchEvent(target, &translated_event);
-    handled = result != ui::ER_UNHANDLED;
+    ProcessTouchEvent(target, &translated_event);
+    handled = translated_event.handled();
+    result = translated_event.result();
   }
 
   // Get the list of GestureEvents from GestureRecognizer.
@@ -991,7 +993,8 @@ bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
     event->ConvertLocationToTarget(static_cast<Window*>(this), target);
     if (IsNonClientLocation(target, event->location()))
       event->set_flags(event->flags() | ui::EF_IS_NON_CLIENT);
-    return ProcessMouseEvent(target, event);
+    ProcessMouseEvent(target, event);
+    return event->handled();
   }
   return false;
 }

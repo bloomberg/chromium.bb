@@ -280,12 +280,11 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // sending exited and entered events as its value changes.
   void HandleMouseMoved(const ui::MouseEvent& event, Window* target);
 
-  bool ProcessMouseEvent(Window* target, ui::MouseEvent* event);
-  bool ProcessKeyEvent(Window* target, ui::KeyEvent* event);
-  bool ProcessScrollEvent(Window* target, ui::ScrollEvent* event);
-  ui::EventResult ProcessTouchEvent(Window* target, ui::TouchEvent* event);
-  ui::EventResult ProcessGestureEvent(Window* target,
-                                      ui::GestureEvent* event);
+  void ProcessMouseEvent(Window* target, ui::MouseEvent* event);
+  void ProcessKeyEvent(Window* target, ui::KeyEvent* event);
+  void ProcessScrollEvent(Window* target, ui::ScrollEvent* event);
+  void ProcessTouchEvent(Window* target, ui::TouchEvent* event);
+  void ProcessGestureEvent(Window* target, ui::GestureEvent* event);
   bool ProcessGestures(ui::GestureRecognizer::Gestures* gestures);
 
   // Called when a Window is attached or detached from the RootWindow.

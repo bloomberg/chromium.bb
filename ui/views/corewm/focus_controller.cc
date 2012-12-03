@@ -40,7 +40,8 @@ void DispatchEventsAndUpdateState(ui::EventDispatcher* dispatcher,
   {
     base::AutoReset<ui::EventTarget*> reset(event_dispatch_target, *state);
     FocusChangeEvent changing_event(changing_event_type);
-    result = dispatcher->ProcessEvent(*state, &changing_event);
+    dispatcher->ProcessEvent(*state, &changing_event);
+    result = changing_event.result();
   }
   DCHECK(!(result & ui::ER_CONSUMED))
       << "Focus and Activation events cannot be consumed";

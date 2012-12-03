@@ -34,14 +34,14 @@ void ActivationChangeShim::OnWindowActivated(aura::Window* active,
                                              aura::Window* old_active) {
 }
 
-ui::EventResult ActivationChangeShim::OnEvent(ui::Event* event) {
+void ActivationChangeShim::OnEvent(ui::Event* event) {
   if (event->type() == FocusChangeEvent::activation_changed_event_type()) {
     DCHECK(UseFocusController());
     FocusChangeEvent* fce = static_cast<FocusChangeEvent*>(event);
     OnWindowActivated(static_cast<aura::Window*>(event->target()),
                       static_cast<aura::Window*>(fce->last_focus()));
   }
-  return EventHandler::OnEvent(event);
+  EventHandler::OnEvent(event);
 }
 
 }  // namespace corewm

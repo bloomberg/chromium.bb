@@ -71,6 +71,17 @@ bool Event::HasNativeEvent() const {
   return !!std::memcmp(&native_event_, &null_event, sizeof(null_event));
 }
 
+void Event::StopPropagation() {
+  CHECK(phase_ != EP_PREDISPATCH && phase_ != EP_POSTDISPATCH);
+  result_ = static_cast<ui::EventResult>(result_ | ER_CONSUMED);
+  CHECK(stopped_propagation());
+}
+
+void Event::SetHandled() {
+  CHECK(phase_ != EP_PREDISPATCH && phase_ != EP_POSTDISPATCH);
+  result_ = static_cast<ui::EventResult>(result_ | ER_HANDLED);
+}
+
 Event::Event(EventType type, base::TimeDelta time_stamp, int flags)
     : type_(type),
       time_stamp_(time_stamp),

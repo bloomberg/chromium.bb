@@ -19,9 +19,9 @@ EventDispatcher::~EventDispatcher() {
 ////////////////////////////////////////////////////////////////////////////////
 // EventDispatcher, private:
 
-EventResult EventDispatcher::DispatchEventToSingleHandler(EventHandler* handler,
+void EventDispatcher::DispatchEventToSingleHandler(EventHandler* handler,
                                                           Event* event) {
-  return handler->OnEvent(event);
+  handler->OnEvent(event);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -29,6 +29,7 @@ EventResult EventDispatcher::DispatchEventToSingleHandler(EventHandler* handler,
 
 EventDispatcher::ScopedDispatchHelper::ScopedDispatchHelper(Event* event)
     : Event::DispatcherApi(event) {
+  set_result(ui::ER_UNHANDLED);
 }
 
 EventDispatcher::ScopedDispatchHelper::~ScopedDispatchHelper() {

@@ -33,12 +33,12 @@ FocusChangeShim::~FocusChangeShim() {
 void FocusChangeShim::OnWindowFocused(aura::Window* window) {
 }
 
-ui::EventResult FocusChangeShim::OnEvent(ui::Event* event) {
+void FocusChangeShim::OnEvent(ui::Event* event) {
   if (event->type() == FocusChangeEvent::focus_changed_event_type()) {
     DCHECK(UseFocusController());
     OnWindowFocused(static_cast<aura::Window*>(event->target()));
   }
-  return EventHandler::OnEvent(event);
+  EventHandler::OnEvent(event);
 }
 
 }  // namespace corewm

@@ -32,7 +32,7 @@ class UI_EXPORT EventHandler {
   // to one of the event-specific callbacks (OnKeyEvent, OnMouseEvent etc.). If
   // this is overridden, then normally, the override should chain into the
   // default implementation for un-handled events.
-  virtual EventResult OnEvent(Event* event);
+  virtual void OnEvent(Event* event);
 
   virtual EventResult OnKeyEvent(KeyEvent* event);
 
