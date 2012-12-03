@@ -13,8 +13,7 @@ namespace chrome {
 namespace search {
 
 bool IsInstantExtendedAPIEnabled(const Profile* profile) {
-  return VersionInfo::GetChannel() <= VersionInfo::CHANNEL_DEV &&
-      !profile->IsOffTheRecord() &&
+  return !profile->IsOffTheRecord() &&
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableInstantExtendedAPI);
 }
