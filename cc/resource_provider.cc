@@ -686,11 +686,10 @@ void ResourceProvider::acquirePixelBuffer(ResourceId id)
     DCHECK(!resource->exported);
 
     if (resource->glId) {
-        if (resource->glPixelBufferId)
-            return;
         WebGraphicsContext3D* context3d = m_context->context3D();
         DCHECK(context3d);
-        resource->glPixelBufferId = context3d->createBuffer();
+        if (!resource->glPixelBufferId)
+            resource->glPixelBufferId = context3d->createBuffer();
         context3d->bindBuffer(
             GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM,
             resource->glPixelBufferId);
@@ -721,12 +720,18 @@ void ResourceProvider::releasePixelBuffer(ResourceId id)
     DCHECK(!resource->exported);
 
     if (resource->glId) {
-        if (!resource->glPixelBufferId)
-            return;
+        DCHECK(resource->glPixelBufferId);
         WebGraphicsContext3D* context3d = m_context->context3D();
         DCHECK(context3d);
-        context3d->deleteBuffer(resource->glPixelBufferId);
-        resource->glPixelBufferId = 0;
+        context3d->bindBuffer(
+            GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM,
+            resource->glPixelBufferId);
+        context3d->bufferData(
+            GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM,
+            0,
+            NULL,
+            GL_DYNAMIC_DRAW);
+        context3d->bindBuffer(GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM, 0);
     }
 
     if (resource->pixels) {
