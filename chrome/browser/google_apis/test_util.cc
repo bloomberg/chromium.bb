@@ -69,5 +69,13 @@ scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path) {
   return value.Pass();
 }
 
+void CopyResultsFromGetDataCallback(GDataErrorCode* error_out,
+                                    scoped_ptr<base::Value>* value_out,
+                                    GDataErrorCode error_in,
+                                    scoped_ptr<base::Value> value_in) {
+  value_out->swap(value_in);
+  *error_out = error_in;
+}
+
 }  // namespace test_util
 }  // namespace google_apis

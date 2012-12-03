@@ -31,6 +31,7 @@ namespace drive {
 class DriveCache;
 class DriveFeedLoaderObserver;
 class DriveFeedProcessor;
+class DriveScheduler;
 class DriveWebAppsRegistryInterface;
 
 // Callback run as a response to SearchFromServer and LoadDirectoryFromServer.
@@ -45,6 +46,7 @@ class DriveFeedLoader {
   DriveFeedLoader(
       DriveResourceMetadata* resource_metadata,
       google_apis::DriveServiceInterface* drive_service,
+      DriveScheduler* scheduler,
       DriveWebAppsRegistryInterface* webapps_registry,
       DriveCache* cache,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
@@ -174,6 +176,7 @@ class DriveFeedLoader {
 
   DriveResourceMetadata* resource_metadata_;  // Not owned.
   google_apis::DriveServiceInterface* drive_service_;  // Not owned.
+  DriveScheduler* scheduler_;  // Not owned.
   DriveWebAppsRegistryInterface* webapps_registry_;  // Not owned.
   DriveCache* cache_;  // Not owned.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

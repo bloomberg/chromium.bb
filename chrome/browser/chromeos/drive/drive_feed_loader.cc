@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/drive/drive_feed_loader_observer.h"
 #include "chrome/browser/chromeos/drive/drive_feed_processor.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_api_util.h"
@@ -254,11 +255,13 @@ struct DriveFeedLoader::GetDocumentsUiState {
 DriveFeedLoader::DriveFeedLoader(
     DriveResourceMetadata* resource_metadata,
     google_apis::DriveServiceInterface* drive_service,
+    DriveScheduler* scheduler,
     DriveWebAppsRegistryInterface* webapps_registry,
     DriveCache* cache,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : resource_metadata_(resource_metadata),
       drive_service_(drive_service),
+      scheduler_(scheduler),
       webapps_registry_(webapps_registry),
       cache_(cache),
       blocking_task_runner_(blocking_task_runner),
@@ -405,7 +408,7 @@ void DriveFeedLoader::LoadFromServer(scoped_ptr<LoadFeedParams> params) {
   // base::Passed() may get evaluated first, so get a pointer to params.
   LoadFeedParams* params_ptr = params.get();
   if (google_apis::util::IsDriveV2ApiEnabled()) {
-    drive_service_->GetDocuments(
+    scheduler_->GetDocuments(
         params_ptr->feed_to_load,
         params_ptr->start_changestamp,
         std::string(),  // No search query.
@@ -416,7 +419,7 @@ void DriveFeedLoader::LoadFromServer(scoped_ptr<LoadFeedParams> params) {
                    base::Passed(&params),
                    start_time));
   } else {
-    drive_service_->GetDocuments(
+    scheduler_->GetDocuments(
         params_ptr->feed_to_load,
         params_ptr->start_changestamp,
         params_ptr->search_query,
@@ -559,7 +562,7 @@ void DriveFeedLoader::OnParseFeed(
     // pointer so we can use it bellow.
     LoadFeedParams* params_ptr = params.get();
     // Kick off the remaining part of the feeds.
-    drive_service_->GetDocuments(
+    scheduler_->GetDocuments(
         next_feed_url,
         params_ptr->start_changestamp,
         params_ptr->search_query,
@@ -662,7 +665,7 @@ void DriveFeedLoader::OnGetChangelist(scoped_ptr<LoadFeedParams> params,
     // Kick off the remaining part of the feeds.
     // Extract the pointer so we can use it bellow.
     LoadFeedParams* params_ptr = params.get();
-    drive_service_->GetDocuments(
+    scheduler_->GetDocuments(
         current_feed->next_link(),
         params_ptr->start_changestamp,
         std::string(),  // No search query.

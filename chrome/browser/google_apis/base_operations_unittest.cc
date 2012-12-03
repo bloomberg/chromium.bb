@@ -43,15 +43,6 @@ class JsonParseTestGetDataOperation : public GetDataOperation {
   }
 };
 
-// Copies the results from GetDataCallback.
-void CopyResultsFromGetDataCallback(GDataErrorCode* error_out,
-                                    scoped_ptr<base::Value>* value_out,
-                                    GDataErrorCode error_in,
-                                    scoped_ptr<base::Value> value_in) {
-  value_out->swap(value_in);
-  *error_out = error_in;
-}
-
 }  // namespace
 
 class BaseOperationsTest : public testing::Test {
@@ -81,7 +72,9 @@ TEST_F(BaseOperationsTest, GetDataOperation_ParseValidJson) {
   JsonParseTestGetDataOperation* get_data =
       new JsonParseTestGetDataOperation(
           runner_->operation_registry(),
-          base::Bind(&CopyResultsFromGetDataCallback, &error, &value));
+          base::Bind(&test_util::CopyResultsFromGetDataCallback,
+                     &error,
+                     &value));
   get_data->NotifyStart();
 
   const std::string valid_json_str = "{ \"test\": 123 }";
@@ -108,7 +101,9 @@ TEST_F(BaseOperationsTest, GetDataOperation_ParseInvalidJson) {
   JsonParseTestGetDataOperation* get_data =
       new JsonParseTestGetDataOperation(
           runner_->operation_registry(),
-          base::Bind(&CopyResultsFromGetDataCallback, &error, &value));
+          base::Bind(&test_util::CopyResultsFromGetDataCallback,
+                     &error,
+                     &value));
   get_data->NotifyStart();
 
   const std::string invalid_json_str = "$$$";

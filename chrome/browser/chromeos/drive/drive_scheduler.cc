@@ -8,6 +8,7 @@
 
 #include "base/message_loop.h"
 #include "base/rand_util.h"
+#include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/file_system/drive_operations.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -33,23 +34,24 @@ DriveScheduler::JobInfo::JobInfo(JobType in_job_type, FilePath in_file_path)
 }
 
 DriveScheduler::QueueEntry::QueueEntry(JobType in_job_type,
-                                       FilePath in_file_path,
-                                       FileOperationCallback in_callback)
+                                       FilePath in_file_path)
     : job_info(in_job_type, in_file_path),
-      callback(in_callback),
       is_recursive(false) {
 }
 
 DriveScheduler::QueueEntry::~QueueEntry() {
 }
 
-DriveScheduler::DriveScheduler(Profile* profile,
-                               file_system::DriveOperations* drive_operations)
+DriveScheduler::DriveScheduler(
+    Profile* profile,
+    google_apis::DriveServiceInterface* drive_service,
+    file_system::DriveOperations* drive_operations)
     : job_loop_is_running_(false),
       next_job_id_(0),
       throttle_count_(0),
       disable_throttling_(false),
       drive_operations_(drive_operations),
+      drive_service_(drive_service),
       profile_(profile),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       initialized_(false) {
@@ -79,9 +81,32 @@ void DriveScheduler::Copy(const FilePath& src_file_path,
                           const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  scoped_ptr<QueueEntry> new_job(
-      new QueueEntry(TYPE_COPY, src_file_path, callback));
+  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_COPY, src_file_path));
   new_job->dest_file_path = dest_file_path;
+  new_job->file_operation_callback = callback;
+
+  QueueJob(new_job.Pass());
+
+  StartJobLoop();
+}
+
+void DriveScheduler::GetDocuments(
+    const GURL& feed_url,
+    int64 start_changestamp,
+    const std::string& search_query,
+    bool shared_with_me,
+    const std::string& directory_resource_id,
+    const google_apis::GetDataCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scoped_ptr<QueueEntry> new_job(
+      new QueueEntry(TYPE_GET_DOCUMENTS, FilePath()));
+  new_job->feed_url = feed_url;
+  new_job->start_changestamp = start_changestamp;
+  new_job->search_query = search_query;
+  new_job->shared_with_me = shared_with_me;
+  new_job->directory_resource_id = directory_resource_id;
+  new_job->get_data_callback = callback;
 
   QueueJob(new_job.Pass());
 
@@ -95,9 +120,9 @@ void DriveScheduler::TransferFileFromRemoteToLocal(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_TRANSFER_REMOTE_TO_LOCAL,
-                                                remote_src_file_path,
-                                                callback));
+                                                remote_src_file_path));
   new_job->dest_file_path = local_dest_file_path;
+  new_job->file_operation_callback = callback;
 
   QueueJob(new_job.Pass());
 
@@ -111,9 +136,9 @@ void DriveScheduler::TransferFileFromLocalToRemote(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_TRANSFER_LOCAL_TO_REMOTE,
-                                                local_src_file_path,
-                                                callback));
+                                                local_src_file_path));
   new_job->dest_file_path = remote_dest_file_path;
+  new_job->file_operation_callback = callback;
 
   QueueJob(new_job.Pass());
 
@@ -127,9 +152,9 @@ void DriveScheduler::TransferRegularFile(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_TRANSFER_REGULAR_FILE,
-                                                local_src_file_path,
-                                                callback));
+                                                local_src_file_path));
   new_job->dest_file_path = remote_dest_file_path;
+  new_job->file_operation_callback = callback;
 
   QueueJob(new_job.Pass());
 
@@ -141,9 +166,9 @@ void DriveScheduler::Move(const FilePath& src_file_path,
                           const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  scoped_ptr<QueueEntry> new_job(
-      new QueueEntry(TYPE_MOVE, src_file_path, callback));
+  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_MOVE, src_file_path));
   new_job->dest_file_path = dest_file_path;
+  new_job->file_operation_callback = callback;
 
   QueueJob(new_job.Pass());
 
@@ -155,9 +180,9 @@ void DriveScheduler::Remove(const FilePath& file_path,
                             const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  scoped_ptr<QueueEntry> new_job(
-      new QueueEntry(TYPE_REMOVE, file_path, callback));
+  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_REMOVE, file_path));
   new_job->is_recursive = is_recursive;
+  new_job->file_operation_callback = callback;
 
   QueueJob(new_job.Pass());
 
@@ -205,13 +230,27 @@ void DriveScheduler::DoJobLoop() {
 
   JobInfo& job_info = job_iter->second->job_info;
   job_info.state = STATE_RUNNING;
+  const QueueEntry* queue_entry = job_iter->second.get();
 
   switch (job_info.job_type) {
     case TYPE_COPY: {
       drive_operations_->Copy(
           job_info.file_path,
-          job_iter->second->dest_file_path,
-          base::Bind(&DriveScheduler::OnJobDone,
+          queue_entry->dest_file_path,
+          base::Bind(&DriveScheduler::OnFileOperationJobDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     job_id));
+    }
+    break;
+
+    case TYPE_GET_DOCUMENTS: {
+      drive_service_->GetDocuments(
+          queue_entry->feed_url,
+          queue_entry->start_changestamp,
+          queue_entry->search_query,
+          queue_entry->shared_with_me,
+          queue_entry->directory_resource_id,
+          base::Bind(&DriveScheduler::OnGetDataJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      job_id));
     }
@@ -220,8 +259,8 @@ void DriveScheduler::DoJobLoop() {
     case TYPE_MOVE: {
       drive_operations_->Move(
           job_info.file_path,
-          job_iter->second->dest_file_path,
-          base::Bind(&DriveScheduler::OnJobDone,
+          queue_entry->dest_file_path,
+          base::Bind(&DriveScheduler::OnFileOperationJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      job_id));
     }
@@ -230,8 +269,8 @@ void DriveScheduler::DoJobLoop() {
     case TYPE_REMOVE: {
       drive_operations_->Remove(
           job_info.file_path,
-          job_iter->second->is_recursive,
-          base::Bind(&DriveScheduler::OnJobDone,
+          queue_entry->is_recursive,
+          base::Bind(&DriveScheduler::OnFileOperationJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      job_id));
     }
@@ -240,8 +279,8 @@ void DriveScheduler::DoJobLoop() {
     case TYPE_TRANSFER_LOCAL_TO_REMOTE: {
       drive_operations_->TransferFileFromLocalToRemote(
           job_info.file_path,
-          job_iter->second->dest_file_path,
-          base::Bind(&DriveScheduler::OnJobDone,
+          queue_entry->dest_file_path,
+          base::Bind(&DriveScheduler::OnFileOperationJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      job_id));
     }
@@ -250,8 +289,8 @@ void DriveScheduler::DoJobLoop() {
     case TYPE_TRANSFER_REGULAR_FILE: {
       drive_operations_->TransferRegularFile(
           job_info.file_path,
-          job_iter->second->dest_file_path,
-          base::Bind(&DriveScheduler::OnJobDone,
+          queue_entry->dest_file_path,
+          base::Bind(&DriveScheduler::OnFileOperationJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      job_id));
     }
@@ -260,8 +299,8 @@ void DriveScheduler::DoJobLoop() {
     case TYPE_TRANSFER_REMOTE_TO_LOCAL: {
       drive_operations_->TransferFileFromRemoteToLocal(
           job_info.file_path,
-          job_iter->second->dest_file_path,
-          base::Bind(&DriveScheduler::OnJobDone,
+          queue_entry->dest_file_path,
+          base::Bind(&DriveScheduler::OnFileOperationJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      job_id));
     }
@@ -319,32 +358,69 @@ void DriveScheduler::ThrottleAndContinueJobLoop() {
 void DriveScheduler::ResetThrottleAndContinueJobLoop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // Post a task to continue the job loop.  This allows us to finish handling
+  // the current job before starting the next one.
   throttle_count_ = 0;
-  DoJobLoop();
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+      base::Bind(&DriveScheduler::DoJobLoop,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void DriveScheduler::OnJobDone(int job_id, DriveFileError error) {
+scoped_ptr<DriveScheduler::QueueEntry> DriveScheduler::OnJobDone(
+    int job_id,
+    DriveFileError error) {
   JobMap::iterator job_iter = job_info_map_.find(job_id);
   DCHECK(job_iter != job_info_map_.end());
 
   // Retry, depending on the error.
-  if (error == DRIVE_FILE_ERROR_THROTTLED ||
-      error == DRIVE_FILE_ERROR_NO_CONNECTION) {
+  if (error == DRIVE_FILE_ERROR_THROTTLED) {
     job_iter->second->job_info.state = STATE_RETRY;
 
     // Requeue the job.
     queue_.push_back(job_id);
     ThrottleAndContinueJobLoop();
+
+    return scoped_ptr<DriveScheduler::QueueEntry>();
   } else {
-    // Handle the callback.
-    if (!job_iter->second->callback.is_null()) {
-      MessageLoop::current()->PostTask(FROM_HERE,
-          base::Bind(job_iter->second->callback, error));
-    }
+    scoped_ptr<DriveScheduler::QueueEntry> job_info(job_iter->second.release());
 
     // Delete the job.
     job_info_map_.erase(job_id);
     ResetThrottleAndContinueJobLoop();
+
+    return job_info.Pass();
+  }
+}
+
+void DriveScheduler::OnFileOperationJobDone(int job_id, DriveFileError error) {
+  scoped_ptr<DriveScheduler::QueueEntry> job_info = OnJobDone(job_id, error);
+
+  if (!job_info)
+    return;
+
+  // Handle the callback.
+  if (!job_info->file_operation_callback.is_null()) {
+    MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(job_info->file_operation_callback, error));
+  }
+}
+
+void DriveScheduler::OnGetDataJobDone(int job_id,
+                                      google_apis::GDataErrorCode error,
+                                      scoped_ptr<base::Value> feed_data) {
+  DriveFileError drive_error(util::GDataToDriveFileError(error));
+
+  scoped_ptr<QueueEntry> job_info = OnJobDone(job_id, drive_error);
+
+  if (!job_info)
+    return;
+
+    // Handle the callback.
+  if (!job_info->get_data_callback.is_null()) {
+    MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(job_info->get_data_callback,
+                   error,
+                   base::Passed(&feed_data)));
   }
 }
 

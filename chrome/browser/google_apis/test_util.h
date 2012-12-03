@@ -5,11 +5,10 @@
 #ifndef CHROME_BROWSER_GOOGLE_APIS_TEST_UTIL_H_
 #define CHROME_BROWSER_GOOGLE_APIS_TEST_UTIL_H_
 
-#include "chrome/browser/google_apis/test_util.h"
-
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class FilePath;
 
@@ -36,6 +35,12 @@ FilePath GetTestFilePath(const std::string& relative_path);
 // Loads a test JSON file as a base::Value, from a test file stored under
 // chrome/test/data/chromeos.
 scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path);
+
+// Copies the results from GetDataCallback.
+void CopyResultsFromGetDataCallback(GDataErrorCode* error_out,
+                                    scoped_ptr<base::Value>* value_out,
+                                    GDataErrorCode error_in,
+                                    scoped_ptr<base::Value> value_in);
 
 }  // namespace test_util
 }  // namespace google_apis

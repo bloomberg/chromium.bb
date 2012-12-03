@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/drive/drive_scheduler.h"
 
 #include "base/bind.h"
+#include "base/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
 #include "chrome/browser/chromeos/drive/file_system/drive_operations.h"
@@ -20,9 +22,146 @@
 
 using ::testing::AnyNumber;
 using ::testing::DoAll;
+using ::testing::Eq;
 using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
+
+namespace google_apis {
+
+class FakeDriveService : public DriveServiceInterface {
+  virtual void Initialize(Profile* profile) {
+  }
+
+  virtual void AddObserver(DriveServiceObserver* observer) {
+  }
+
+  virtual void RemoveObserver(DriveServiceObserver* observer) {
+  }
+
+  virtual bool CanStartOperation() const {
+    return true;
+  }
+
+  virtual void CancelAll() {
+  }
+
+  virtual bool CancelForFilePath(const FilePath& file_path) {
+    return true;
+  }
+
+  virtual OperationProgressStatusList GetProgressStatusList() const {
+    return OperationProgressStatusList();
+  }
+
+  virtual bool HasAccessToken() const {
+    return true;
+  }
+
+  virtual bool HasRefreshToken() const {
+    return true;
+  }
+
+  virtual void GetDocuments(const GURL& feed_url,
+                            int64 start_changestamp,
+                            const std::string& search_query,
+                            bool shared_with_me,
+                            const std::string& directory_resource_id,
+                            const GetDataCallback& callback) {
+    // TODO: Make this more flexible.
+    if (feed_url == GURL("http://example.com/gdata/root_feed.json")) {
+      // Make some sample data.
+      const FilePath feed_path =
+          test_util::GetTestFilePath("gdata/root_feed.json");
+      std::string feed_contents;
+      file_util::ReadFileToString(feed_path, &feed_contents);
+      scoped_ptr<base::Value> feed_data(
+          base::JSONReader::Read(feed_contents));
+
+      base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+          base::Bind(callback,
+                     HTTP_SUCCESS,
+                     base::Passed(&feed_data)));
+    } else {
+      scoped_ptr<base::Value> feed_data;
+      base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+          base::Bind(callback,
+                     GDATA_PARSE_ERROR,
+                     base::Passed(&feed_data)));
+    }
+  }
+
+  virtual void GetDocumentEntry(const std::string& resource_id,
+                                const GetDataCallback& callback) {
+  }
+
+  virtual void GetAccountMetadata(const GetDataCallback& callback) {
+  }
+
+  virtual void GetApplicationInfo(const GetDataCallback& callback) {
+  }
+
+  virtual void DeleteDocument(const GURL& document_url,
+                              const EntryActionCallback& callback) {
+  }
+
+  virtual void DownloadDocument(const FilePath& virtual_path,
+                                const FilePath& local_cache_path,
+                                const GURL& content_url,
+                                DocumentExportFormat format,
+                                const DownloadActionCallback& callback) {
+  }
+
+  virtual void CopyDocument(const std::string& resource_id,
+                            const FilePath::StringType& new_name,
+                            const GetDataCallback& callback) {
+  }
+
+  virtual void RenameResource(const GURL& resource_url,
+                              const FilePath::StringType& new_name,
+                              const EntryActionCallback& callback) {
+  }
+
+  virtual void AddResourceToDirectory(const GURL& parent_content_url,
+                                      const GURL& resource_url,
+                                      const EntryActionCallback& callback) {
+  }
+
+  virtual void RemoveResourceFromDirectory(
+      const GURL& parent_content_url,
+      const std::string& resource_id,
+      const EntryActionCallback& callback) {
+  }
+
+  virtual void AddNewDirectory(const GURL& parent_content_url,
+                               const FilePath::StringType& directory_name,
+                               const GetDataCallback& callback) {
+  }
+
+  virtual void DownloadFile(
+      const FilePath& virtual_path,
+      const FilePath& local_cache_path,
+      const GURL& content_url,
+      const DownloadActionCallback& download_action_callback,
+      const GetContentCallback& get_content_callback) {
+  }
+
+  virtual void InitiateUpload(const InitiateUploadParams& params,
+                              const InitiateUploadCallback& callback) {
+  }
+
+  virtual void ResumeUpload(const ResumeUploadParams& params,
+                            const ResumeUploadCallback& callback) {
+  }
+
+  virtual void AuthorizeApp(const GURL& resource_url,
+                            const std::string& app_id,
+                            const GetDataCallback& callback) {
+  }
+
+};
+
+} // namespace google_apis
 
 namespace drive {
 
@@ -100,6 +239,7 @@ class DriveSchedulerTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     mock_network_change_notifier_.reset(new MockNetworkChangeNotifier);
 
+    fake_drive_service_.reset(new google_apis::FakeDriveService());
     mock_copy_operation_ = new StrictMock<MockCopyOperation>();
     mock_move_operation_ = new StrictMock<MockMoveOperation>();
     mock_remove_operation_ = new StrictMock<MockRemoveOperation>();
@@ -108,6 +248,7 @@ class DriveSchedulerTest : public testing::Test {
                                      mock_remove_operation_,
                                      NULL);
     scheduler_.reset(new DriveScheduler(profile_.get(),
+                                        fake_drive_service_.get(),
                                         &drive_operations_));
 
     scheduler_->Initialize();
@@ -119,6 +260,7 @@ class DriveSchedulerTest : public testing::Test {
     // registers itself as observer of NetworkLibrary.
     scheduler_.reset();
     google_apis::test_util::RunBlockingPoolTask();
+    fake_drive_service_.reset();
     mock_network_change_notifier_.reset();
   }
 
@@ -159,6 +301,7 @@ class DriveSchedulerTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<DriveScheduler> scheduler_;
   scoped_ptr<MockNetworkChangeNotifier> mock_network_change_notifier_;
+  scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
 
   file_system::DriveOperations drive_operations_;
   StrictMock<MockCopyOperation>* mock_copy_operation_;
@@ -235,6 +378,27 @@ TEST_F(DriveSchedulerTest, TransferRegularFileFile) {
   google_apis::test_util::RunBlockingPoolTask();
 
   ASSERT_EQ(DRIVE_FILE_OK, error);
+}
+
+TEST_F(DriveSchedulerTest, GetDocuments) {
+  ConnectToWifi();
+
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<base::Value> value;
+
+  scheduler_->GetDocuments(
+      GURL("http://example.com/gdata/root_feed.json"),
+      0,
+      std::string(),
+      true,
+      std::string(),
+      base::Bind(&google_apis::test_util::CopyResultsFromGetDataCallback,
+                 &error,
+                 &value));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(value);
 }
 
 TEST_F(DriveSchedulerTest, MoveFile) {
