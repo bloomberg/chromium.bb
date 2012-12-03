@@ -1305,6 +1305,16 @@ RenderProcessHost* RenderProcessHost::FromID(int render_process_id) {
 // static
 bool RenderProcessHost::ShouldTryToUseExistingProcessHost(
     BrowserContext* browser_context, const GURL& url) {
+  // Experimental:
+  // If --enable-strict-site-isolation or --site-per-process is enabled, do not
+  // try to reuse renderer processes when over the limit.  (We could allow pages
+  // from the same site to share, if we knew what the given process was
+  // dedicated to.  Allowing no sharing is simpler for now.)  This may cause
+  // resource exhaustion issues if too many sites are open at once.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kEnableStrictSiteIsolation) ||
+      command_line.HasSwitch(switches::kSitePerProcess))
+    return false;
 
   if (run_renderer_in_process())
     return true;

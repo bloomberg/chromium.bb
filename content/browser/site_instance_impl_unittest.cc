@@ -687,4 +687,37 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURL) {
   DrainMessageLoops();
 }
 
+// Test to ensure that HasWrongProcessForURL behaves properly even when
+// --site-per-process is used (http://crbug.com/160671).
+TEST_F(SiteInstanceTest, HasWrongProcessForURLInSitePerProcess) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kSitePerProcess);
+
+  scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
+  scoped_ptr<RenderProcessHost> host;
+  scoped_refptr<SiteInstanceImpl> instance(static_cast<SiteInstanceImpl*>(
+      SiteInstance::Create(browser_context.get())));
+
+  instance->SetSite(GURL("http://evernote.com/"));
+  EXPECT_TRUE(instance->HasSite());
+
+  // Check prior to "assigning" a process to the instance, which is expected
+  // to return false due to not being attached to any process yet.
+  EXPECT_FALSE(instance->HasWrongProcessForURL(GURL("http://google.com")));
+
+  // The call to GetProcess actually creates a new real process, which works
+  // fine, but might be a cause for problems in different contexts.
+  host.reset(instance->GetProcess());
+  EXPECT_TRUE(host.get() != NULL);
+  EXPECT_TRUE(instance->HasProcess());
+
+  EXPECT_FALSE(instance->HasWrongProcessForURL(GURL("http://evernote.com")));
+  EXPECT_FALSE(instance->HasWrongProcessForURL(
+      GURL("javascript:alert(document.location.href);")));
+
+  EXPECT_TRUE(instance->HasWrongProcessForURL(GURL("chrome://settings")));
+
+  DrainMessageLoops();
+}
+
 }  // namespace content

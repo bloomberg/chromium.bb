@@ -181,7 +181,7 @@ extern const char kEnableAcceleratedCompositingForOverflowScroll[];
 extern const char kShowPaintRects[];
 CONTENT_EXPORT extern const char kSimulateTouchScreenWithMouse[];
 CONTENT_EXPORT extern const char kSingleProcess[];
-extern const char kSitePerProcess[];
+CONTENT_EXPORT extern const char kSitePerProcess[];
 CONTENT_EXPORT extern const char kSkipGpuDataLoading[];
 extern const char kSkipGpuFullInfoCollection[];
 extern const char kTapDownDeferralTimeMs[];
