@@ -1737,6 +1737,7 @@ device_added(struct udev_device *udev_device, struct drm_seat *master)
 	struct evdev_device *device;
 	const char *devnode;
 	const char *device_seat;
+	const char *calibration_values;
 	int fd;
 
 	device_seat = udev_device_get_property_value(udev_device, "ID_SEAT");
@@ -1763,6 +1764,28 @@ device_added(struct udev_device *udev_device, struct drm_seat *master)
 		close(fd);
 		weston_log("not using input device '%s'.\n", devnode);
 		return;
+	}
+
+	calibration_values =
+		udev_device_get_property_value(udev_device,
+					       "WL_CALIBRATION");
+
+	if (calibration_values && sscanf(calibration_values,
+					 "%f %f %f %f %f %f",
+					 &device->abs.calibration[0],
+					 &device->abs.calibration[1],
+					 &device->abs.calibration[2],
+					 &device->abs.calibration[3],
+					 &device->abs.calibration[4],
+					 &device->abs.calibration[5]) == 6) {
+		device->abs.apply_calibration = 1;
+		weston_log ("Applying calibration: %f %f %f %f %f %f\n",
+			    device->abs.calibration[0],
+			    device->abs.calibration[1],
+			    device->abs.calibration[2],
+			    device->abs.calibration[3],
+			    device->abs.calibration[4],
+			    device->abs.calibration[5]);
 	}
 
 	wl_list_insert(master->devices_list.prev, &device->link);
