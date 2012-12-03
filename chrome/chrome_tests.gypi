@@ -1806,7 +1806,6 @@
         'test/perf/page_cycler_test.cc',
         'test/perf/shutdown_test.cc',
         'test/perf/startup_test.cc',
-        'test/perf/sunspider_uitest.cc',
         'test/perf/tab_switching_test.cc',
         'test/perf/url_fetch_test.cc',
         'test/perf/v8_benchmark_uitest.cc',
