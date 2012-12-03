@@ -4,10 +4,11 @@
 
 #include "android_webview/native/aw_web_contents_delegate.h"
 
-#include "base/lazy_instance.h"
 #include "android_webview/browser/find_helper.h"
 #include "android_webview/native/aw_contents.h"
 #include "android_webview/native/aw_javascript_dialog_creator.h"
+#include "base/lazy_instance.h"
+#include "base/message_loop.h"
 #include "content/public/browser/android/download_controller_android.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/AwWebContentsDelegate_jni.h"
@@ -79,13 +80,22 @@ void AwWebContentsDelegate::AddNewContents(content::WebContents* source,
       GetJavaDelegate(env).obj(), is_dialog, user_gesture);
 
   if (create_popup) {
-    // TODO(benm): Implement, taking ownership of new_contents.
-    NOTIMPLEMENTED() << "Popup windows are currently not supported for "
-                     << "the chromium powered Android WebView.";
+    // The embedder would like to display the popup and we will receive
+    // a callback from them later with an AwContents to use to display
+    // it. The source AwContents takes ownership of the new WebContents
+    // until then, and when the callback is made we will swap the WebContents
+    // out into the new AwContents.
+    AwContents::FromWebContents(source)->SetPendingWebContentsForPopup(
+        make_scoped_ptr(new_contents));
+    // Hide the WebContents for the pop up now, we will show it again
+    // when the user calls us back with an AwContents to use to show it.
+    new_contents->WasHidden();
   } else {
     // The embedder has forgone their chance to display this popup
-    // window, so we're done with the WebContents now.
-    delete new_contents;
+    // window, so we're done with the WebContents now. We use
+    // DeleteSoon as WebContentsImpl may call methods on |new_contents|
+    // after this method returns.
+    MessageLoop::current()->DeleteSoon(FROM_HERE, new_contents);
   }
 
   if (was_blocked) {

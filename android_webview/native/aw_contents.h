@@ -67,6 +67,8 @@ class AwContents : public FindHelper::Listener,
 
   // Methods called from Java.
   jint GetWebContents(JNIEnv* env, jobject obj);
+  void SetWebContents(JNIEnv* env, jobject obj, jint web_contents);
+
   void DidInitializeContentViewCore(JNIEnv* env, jobject obj,
                                     jint content_view_core);
   void Destroy(JNIEnv* env, jobject obj);
@@ -107,8 +109,12 @@ class AwContents : public FindHelper::Listener,
   virtual void ScheduleComposite() OVERRIDE;
   virtual void OnSwapBuffersCompleted() OVERRIDE;
 
+  void SetPendingWebContentsForPopup(scoped_ptr<content::WebContents> pending);
+  jint ReleasePopupWebContents(JNIEnv* env, jobject obj);
+
  private:
   void Invalidate();
+  void SetWebContents(content::WebContents* web_contents);
 
   JavaObjectWeakGlobalRef java_ref_;
   scoped_ptr<content::WebContents> web_contents_;
@@ -120,6 +126,7 @@ class AwContents : public FindHelper::Listener,
   bool view_visible_;
   bool compositor_visible_;
   bool is_composite_pending_;
+  scoped_ptr<content::WebContents> pending_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(AwContents);
 };

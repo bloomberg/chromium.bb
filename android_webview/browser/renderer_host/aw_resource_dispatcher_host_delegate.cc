@@ -4,12 +4,13 @@
 
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 
-#include "android_webview/browser/aw_login_delegate.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
+#include "android_webview/browser/aw_login_delegate.h"
 #include "android_webview/common/url_constants.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "content/components/navigation_interception/intercept_navigation_delegate.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
@@ -18,11 +19,11 @@
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 
+using android_webview::AwContentsIoThreadClient;
+using content::BrowserThread;
 using content::InterceptNavigationDelegate;
 
 namespace {
-
-using android_webview::AwContentsIoThreadClient;
 
 base::LazyInstance<android_webview::AwResourceDispatcherHostDelegate>
     g_webview_resource_dispatcher_host_delegate = LAZY_INSTANCE_INITIALIZER;
@@ -40,65 +41,119 @@ void SetCacheControlFlag(
   request->set_load_flags(load_flags);
 }
 
+}  // namespace
+
+namespace android_webview {
+
 // Calls through the IoThreadClient to check the embedders settings to determine
-// if the request should be cancelled.
+// if the request should be cancelled. There may not always be an IoThreadClient
+// available for the |child_id|, |route_id| pair (in the case of newly created
+// pop up windows, for example) and in that case the request and the client
+// callbacks will be deferred the request until a client is ready.
 class IoThreadClientThrottle : public content::ResourceThrottle {
  public:
   IoThreadClientThrottle(int child_id,
                          int route_id,
-                         net::URLRequest* request)
-      : child_id_(child_id),
-        route_id_(route_id),
-        request_(request) { }
+                         net::URLRequest* request);
+  virtual ~IoThreadClientThrottle();
+
+  // From content::ResourceThrottle
   virtual void WillStartRequest(bool* defer) OVERRIDE;
+  virtual void WillRedirectRequest(const GURL& new_url, bool* defer) OVERRIDE;
 
-  scoped_ptr<AwContentsIoThreadClient> GetIoThreadClient() {
-    return AwContentsIoThreadClient::FromID(child_id_, route_id_);
-  }
+  bool MaybeDeferRequest(bool* defer);
+  void OnIoThreadClientReady(int new_child_id, int new_route_id);
+  bool MaybeBlockRequest();
+  bool ShouldBlockRequest();
+  scoped_ptr<AwContentsIoThreadClient> GetIoThreadClient();
+  int get_child_id() const { return child_id_; }
+  int get_route_id() const { return route_id_; }
 
- private:
+private:
   int child_id_;
   int route_id_;
   net::URLRequest* request_;
 };
 
+IoThreadClientThrottle::IoThreadClientThrottle(int child_id,
+                                               int route_id,
+                                               net::URLRequest* request)
+    : child_id_(child_id),
+      route_id_(route_id),
+      request_(request) { }
+
+IoThreadClientThrottle::~IoThreadClientThrottle() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  g_webview_resource_dispatcher_host_delegate.Get().
+      RemovePendingThrottleOnIoThread(this);
+}
+
 void IoThreadClientThrottle::WillStartRequest(bool* defer) {
-  // If there is no IO thread client set at this point, use a
-  // restrictive policy. This can happen for blocked popup
-  // windows for example.
-  // TODO(benm): Revert this to a DCHECK when the we support
-  // pop up windows being created in the WebView, as at that
-  // time we should always have an IoThreadClient at this
-  // point (i.e., the one associated with the new popup).
-  if (!GetIoThreadClient()) {
-    controller()->CancelWithError(net::ERR_ACCESS_DENIED);
-    return;
+  if (!MaybeDeferRequest(defer)) {
+    MaybeBlockRequest();
   }
+}
+
+void IoThreadClientThrottle::WillRedirectRequest(const GURL& new_url,
+                                                 bool* defer) {
+  WillStartRequest(defer);
+}
+
+bool IoThreadClientThrottle::MaybeDeferRequest(bool* defer) {
+  scoped_ptr<AwContentsIoThreadClient> io_client =
+      AwContentsIoThreadClient::FromID(child_id_, route_id_);
+  *defer = false;
+  if (!io_client.get()) {
+    *defer = true;
+    AwResourceDispatcherHostDelegate::AddPendingThrottle(
+        child_id_, route_id_, this);
+  }
+  return *defer;
+}
+
+void IoThreadClientThrottle::OnIoThreadClientReady(int new_child_id,
+                                                   int new_route_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (!MaybeBlockRequest()) {
+    controller()->Resume();
+  }
+}
+
+bool IoThreadClientThrottle::MaybeBlockRequest() {
+  if (ShouldBlockRequest()) {
+    controller()->CancelWithError(net::ERR_ACCESS_DENIED);
+    return true;
+  }
+  return false;
+}
+
+bool IoThreadClientThrottle::ShouldBlockRequest() {
+  scoped_ptr<AwContentsIoThreadClient> io_client =
+      AwContentsIoThreadClient::FromID(child_id_, route_id_);
+  DCHECK(io_client.get());
 
   // Part of implementation of WebSettings.allowContentAccess.
   if (request_->url().SchemeIs(android_webview::kContentScheme) &&
-      GetIoThreadClient()->ShouldBlockContentUrls()) {
-    controller()->CancelWithError(net::ERR_ACCESS_DENIED);
-    return;
+      io_client->ShouldBlockContentUrls()) {
+    return true;
   }
 
   // Part of implementation of WebSettings.allowFileAccess.
   if (request_->url().SchemeIsFile() &&
-      GetIoThreadClient()->ShouldBlockFileUrls()) {
+      io_client->ShouldBlockFileUrls()) {
     const GURL& url = request_->url();
     if (!url.has_path() ||
         // Application's assets and resources are always available.
         (url.path().find(android_webview::kAndroidResourcePath) != 0 &&
          url.path().find(android_webview::kAndroidAssetPath) != 0)) {
-      controller()->CancelWithError(net::ERR_ACCESS_DENIED);
-      return;
+      return true;
     }
   }
 
-  if (GetIoThreadClient()->ShouldBlockNetworkLoads()) {
+  if (io_client->ShouldBlockNetworkLoads()) {
     if (request_->url().SchemeIs(chrome::kFtpScheme)) {
-      controller()->CancelWithError(net::ERR_ACCESS_DENIED);
-      return;
+      return true;
     }
     SetCacheControlFlag(request_, net::LOAD_ONLY_FROM_CACHE);
   } else {
@@ -118,11 +173,13 @@ void IoThreadClientThrottle::WillStartRequest(bool* defer) {
         break;
     }
   }
+  return false;
 }
 
-}  // namespace
-
-namespace android_webview {
+scoped_ptr<AwContentsIoThreadClient>
+    IoThreadClientThrottle::GetIoThreadClient() {
+  return AwContentsIoThreadClient::FromID(child_id_, route_id_);
+}
 
 // static
 void AwResourceDispatcherHostDelegate::ResourceDispatcherHostCreated() {
@@ -193,4 +250,63 @@ bool AwResourceDispatcherHostDelegate::HandleExternalProtocol(const GURL& url,
   return false;
 }
 
+void AwResourceDispatcherHostDelegate::RemovePendingThrottleOnIoThread(
+    IoThreadClientThrottle* throttle) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  PendingThrottleMap::iterator it = pending_throttles_.find(
+      ChildRouteIDPair(throttle->get_child_id(), throttle->get_route_id()));
+  if (it != pending_throttles_.end()) {
+    pending_throttles_.erase(it);
+  }
 }
+
+// static
+void AwResourceDispatcherHostDelegate::OnIoThreadClientReady(
+    int new_child_id,
+    int new_route_id) {
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &AwResourceDispatcherHostDelegate::OnIoThreadClientReadyInternal,
+          base::Unretained(
+              g_webview_resource_dispatcher_host_delegate.Pointer()),
+          new_child_id, new_route_id));
+}
+
+// static
+void AwResourceDispatcherHostDelegate::AddPendingThrottle(
+    int child_id,
+    int route_id,
+    IoThreadClientThrottle* pending_throttle) {
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &AwResourceDispatcherHostDelegate::AddPendingThrottleOnIoThread,
+          base::Unretained(
+              g_webview_resource_dispatcher_host_delegate.Pointer()),
+          child_id, route_id, pending_throttle));
+}
+
+void AwResourceDispatcherHostDelegate::AddPendingThrottleOnIoThread(
+    int child_id,
+    int route_id,
+    IoThreadClientThrottle* pending_throttle) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  pending_throttles_.insert(
+      std::pair<ChildRouteIDPair, IoThreadClientThrottle*>(
+          ChildRouteIDPair(child_id, route_id), pending_throttle));
+}
+
+void AwResourceDispatcherHostDelegate::OnIoThreadClientReadyInternal(
+    int new_child_id,
+    int new_route_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  PendingThrottleMap::iterator it = pending_throttles_.find(
+      ChildRouteIDPair(new_child_id, new_route_id));
+
+  if (it != pending_throttles_.end()) {
+    IoThreadClientThrottle* throttle = it->second;
+    throttle->OnIoThreadClientReady(new_child_id, new_route_id);
+    pending_throttles_.erase(it);
+  }
+}
+
+}  // namespace android_webview

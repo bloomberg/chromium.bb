@@ -7,6 +7,7 @@
 #include "android_webview/browser/aw_browser_main_parts.h"
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
+#include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/common/aw_hit_test_data.h"
 #include "android_webview/native/aw_browser_dependency_factory.h"
 #include "android_webview/native/aw_contents_io_thread_client_impl.h"
@@ -17,6 +18,7 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/message_loop.h"
 #include "base/pickle.h"
 #include "base/supports_user_data.h"
 #include "content/components/navigation_interception/intercept_navigation_delegate.h"
@@ -24,6 +26,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/ssl_status.h"
 #include "jni/AwContents_jni.h"
@@ -126,9 +129,14 @@ AwContents::AwContents(JNIEnv* env,
   android_webview::AwBrowserDependencyFactory* dependency_factory =
       android_webview::AwBrowserDependencyFactory::GetInstance();
 
-  web_contents_.reset(dependency_factory->CreateWebContents(private_browsing));
+  // TODO(joth): rather than create and set the WebContents here, expose the
+  // factory method to java side and have that orchestrate the construction
+  // order.
+  SetWebContents(dependency_factory->CreateWebContents(private_browsing));
+}
 
-  DCHECK(!AwContents::FromWebContents(web_contents_.get()));
+void AwContents::SetWebContents(content::WebContents* web_contents) {
+  web_contents_.reset(web_contents);
   web_contents_->SetUserData(kAwContentsUserDataKey,
                              new AwContentsUserData(this));
 
@@ -140,6 +148,10 @@ AwContents::AwContents(JNIEnv* env,
     LOG(WARNING) << "Running on unsupported device: using null Compositor";
     compositor_.reset(new NullCompositor);
   }
+}
+
+void AwContents::SetWebContents(JNIEnv* env, jobject obj, jint new_wc) {
+  SetWebContents(reinterpret_cast<content::WebContents*>(new_wc));
 }
 
 AwContents::~AwContents() {
@@ -302,6 +314,9 @@ void AwContents::SetIoThreadClient(JNIEnv* env, jobject obj, jobject client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   AwContentsIoThreadClientImpl::Associate(
       web_contents_.get(), ScopedJavaLocalRef<jobject>(env, client));
+  int child_id = web_contents_->GetRenderProcessHost()->GetID();
+  int route_id = web_contents_->GetRoutingID();
+  AwResourceDispatcherHostDelegate::OnIoThreadClientReady(child_id, route_id);
 }
 
 void AwContents::SetInterceptNavigationDelegate(JNIEnv* env,
@@ -510,6 +525,22 @@ jboolean AwContents::RestoreFromOpaqueState(
   PickleIterator iterator(pickle);
 
   return RestoreFromPickle(&iterator, web_contents_.get());
+}
+
+void AwContents::SetPendingWebContentsForPopup(
+    scoped_ptr<content::WebContents> pending) {
+  if (pending_contents_.get()) {
+    // TODO(benm): Support holding multiple pop up window requests.
+    LOG(WARNING) << "Blocking popup window creation as an outstanding "
+                 << "popup window is still pending.";
+    MessageLoop::current()->DeleteSoon(FROM_HERE, pending.release());
+    return;
+  }
+  pending_contents_ = pending.Pass();
+}
+
+jint AwContents::ReleasePopupWebContents(JNIEnv* env, jobject obj) {
+  return reinterpret_cast<jint>(pending_contents_.release());
 }
 
 }  // namespace android_webview

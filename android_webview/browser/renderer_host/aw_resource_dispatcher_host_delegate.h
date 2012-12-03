@@ -5,15 +5,18 @@
 #ifndef ANDROID_WEBVIEW_LIB_RENDERER_HOST_AW_RESOURCE_DISPATCHER_HOST_DELEGATE_H_
 #define ANDROID_WEBVIEW_LIB_RENDERER_HOST_AW_RESOURCE_DISPATCHER_HOST_DELEGATE_H_
 
-#include "content/public/browser/resource_dispatcher_host_delegate.h"
+#include <map>
 
 #include "base/lazy_instance.h"
+#include "content/public/browser/resource_dispatcher_host_delegate.h"
 
 namespace content {
 class ResourceDispatcherHostLoginDelegate;
 }
 
 namespace android_webview {
+
+class IoThreadClientThrottle;
 
 class AwResourceDispatcherHostDelegate
     : public content::ResourceDispatcherHostDelegate {
@@ -42,11 +45,31 @@ class AwResourceDispatcherHostDelegate
                                       int child_id,
                                       int route_id) OVERRIDE;
 
+  void RemovePendingThrottleOnIoThread(IoThreadClientThrottle* throttle);
+
+  static void OnIoThreadClientReady(int new_child_id, int new_route_id);
+  static void AddPendingThrottle(int child_id,
+                                 int route_id,
+                                 IoThreadClientThrottle* pending_throttle);
+
  private:
   friend struct base::DefaultLazyInstanceTraits<
       AwResourceDispatcherHostDelegate>;
   AwResourceDispatcherHostDelegate();
   virtual ~AwResourceDispatcherHostDelegate();
+
+  // These methods must be called on IO thread.
+  void OnIoThreadClientReadyInternal(int child_id, int route_id);
+  void AddPendingThrottleOnIoThread(int child_id,
+                                    int route_id,
+                                    IoThreadClientThrottle* pending_throttle);
+
+  typedef std::pair<int, int> ChildRouteIDPair;
+  typedef std::map<ChildRouteIDPair, IoThreadClientThrottle*>
+      PendingThrottleMap;
+
+  // Only accessed on the IO thread.
+  PendingThrottleMap pending_throttles_;
 
   DISALLOW_COPY_AND_ASSIGN(AwResourceDispatcherHostDelegate);
 };

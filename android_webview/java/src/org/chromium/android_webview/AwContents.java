@@ -25,6 +25,7 @@ import android.webkit.ValueCallback;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.NavigationHistory;
@@ -78,6 +79,7 @@ public class AwContents {
     private AwContentsClient mContentsClient;
     private AwContentsIoThreadClient mIoThreadClient;
     private InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
+    private ContentViewCore.InternalAccessDelegate mInternalAccessAdapter;
     // This can be accessed on any thread after construction. See AwContentsIoThreadClient.
     private final AwSettings mSettings;
     private final ClientCallbackHandler mClientCallbackHandler;
@@ -216,6 +218,7 @@ public class AwContents {
      * @param contentsClient will receive API callbacks from this WebView Contents
      * @param privateBrowsing whether this is a private browsing instance of WebView.
      * @param isAccessFromFileURLsGrantedByDefault passed to ContentViewCore.initialize.
+     * TODO(benm): Remove the nativeWindow parameter.
      */
     public AwContents(ViewGroup containerView,
             ContentViewCore.InternalAccessDelegate internalAccessAdapter,
@@ -223,6 +226,7 @@ public class AwContents {
             NativeWindow nativeWindow, boolean privateBrowsing,
             boolean isAccessFromFileURLsGrantedByDefault) {
         mContainerView = containerView;
+        mInternalAccessAdapter = internalAccessAdapter;
         // Note that ContentViewCore must be set up before AwContents, as ContentViewCore
         // setup performs process initialisation work needed by AwContents.
         mContentViewCore = new ContentViewCore(containerView.getContext(),
@@ -233,9 +237,10 @@ public class AwContents {
         mClientCallbackHandler = new ClientCallbackHandler();
 
         mContentViewCore.initialize(containerView, internalAccessAdapter,
-                nativeGetWebContents(mNativeAwContents), nativeWindow,
+                nativeGetWebContents(mNativeAwContents),
+                new AwNativeWindow(mContainerView.getContext()),
                 isAccessFromFileURLsGrantedByDefault);
-        mContentViewCore.setContentViewClient(contentsClient);
+        mContentViewCore.setContentViewClient(mContentsClient);
         mContentsClient.installWebContentsObserver(mContentViewCore);
 
         mSettings = new AwSettings(mContentViewCore.getContext());
@@ -353,6 +358,56 @@ public class AwContents {
             // getUrl returns a sanitized address in the same format that will be used for
             // callbacks, so it's safe to use string comparison as an equality check later on.
             mInterceptNavigationDelegate.onUrlLoadRequested(mContentViewCore.getUrl());
+        }
+    }
+
+    /**
+     * Called on the "source" AwContents that is opening the popup window to
+     * provide the AwContents to host the pop up content.
+     */
+    public void supplyContentsForPopup(AwContents newContents) {
+        int popupWebContents = nativeReleasePopupWebContents(mNativeAwContents);
+        assert popupWebContents != 0;
+        newContents.setNewWebContents(popupWebContents);
+    }
+
+    private void setNewWebContents(int newWebContentsPtr) {
+        // When setting a new WebContents, we new up a ContentViewCore that will
+        // wrap it and then swap it.
+        ContentViewCore newCore = new ContentViewCore(mContainerView.getContext(),
+                ContentViewCore.PERSONALITY_VIEW);
+        // Note we pass false for isAccessFromFileURLsGrantedByDefault as we'll
+        // set it correctly when when we copy the settings from the old ContentViewCore
+        // into the new one.
+        newCore.initialize(mContainerView, mInternalAccessAdapter,
+                newWebContentsPtr, new AwNativeWindow(mContainerView.getContext()),
+                false);
+        newCore.setContentViewClient(mContentsClient);
+        mContentsClient.installWebContentsObserver(newCore);
+
+        ContentSettings oldSettings = mContentViewCore.getContentSettings();
+        newCore.getContentSettings().initFrom(oldSettings);
+
+        // Now swap the Java side reference.
+        mContentViewCore.destroy();
+        mContentViewCore = newCore;
+
+        // Now rewire native side to use the new WebContents.
+        nativeSetWebContents(mNativeAwContents, newWebContentsPtr);
+        nativeSetIoThreadClient(mNativeAwContents, mIoThreadClient);
+        nativeSetInterceptNavigationDelegate(mNativeAwContents, mInterceptNavigationDelegate);
+
+        // Finally poke the new ContentViewCore with the size of the container view and show it.
+        if (mContainerView.getWidth() != 0 || mContainerView.getHeight() != 0) {
+            mContentViewCore.onSizeChanged(
+                    mContainerView.getWidth(), mContainerView.getHeight(), 0, 0);
+        }
+        nativeDidInitializeContentViewCore(mNativeAwContents,
+                mContentViewCore.getNativeContentViewCore());
+        if (mContainerView.getVisibility() == View.VISIBLE) {
+            // The popup window was hidden when we prompted the embedder to display
+            // it, so show it again now we have a container.
+            mContentViewCore.onShow();
         }
     }
 
@@ -629,9 +684,15 @@ public class AwContents {
 
     private void updateVisiblityState() {
         if (mNativeAwContents == 0 || mIsPaused) return;
-        nativeSetWindowViewVisibility(mNativeAwContents,
-                mContainerView.getWindowVisibility() == View.VISIBLE,
-                mContainerView.getVisibility() == View.VISIBLE);
+        boolean windowVisible = mContainerView.getWindowVisibility() == View.VISIBLE;
+        boolean viewVisible = mContainerView.getVisibility() == View.VISIBLE;
+        nativeSetWindowViewVisibility(mNativeAwContents, windowVisible, viewVisible);
+
+        if (viewVisible) {
+          mContentViewCore.onShow();
+        } else {
+          mContentViewCore.onHide();
+        }
     }
 
 
@@ -834,4 +895,7 @@ public class AwContents {
 
     // Returns false if restore state fails.
     private native boolean nativeRestoreFromOpaqueState(int nativeAwContents, byte[] state);
+
+    private native int nativeReleasePopupWebContents(int nativeAwContents);
+    private native void  nativeSetWebContents(int nativeAwContents, int nativeNewWebContents);
 }

@@ -172,7 +172,9 @@ public abstract class AwContentsClient extends ContentViewClient {
     }
 
     void installWebContentsObserver(ContentViewCore contentViewCore) {
-        assert mWebContentsObserver == null;
+        if (mWebContentsObserver != null) {
+            mWebContentsObserver.detachFromWebContents();
+        }
         mWebContentsObserver = new AwWebContentsObserver(contentViewCore);
     }
 
