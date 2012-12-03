@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
 #include "chrome/browser/accessibility/accessibility_extension_api.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
@@ -32,7 +31,6 @@
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -113,23 +111,6 @@ class ContentScriptLoader {
   int render_view_id_;
   std::queue<ExtensionResource> resources_;
 };
-
-void UpdateChromeOSAccessibilityHistograms() {
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosSpokenFeedback",
-                        IsSpokenFeedbackEnabled());
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosHighContrast",
-                        IsHighContrastEnabled());
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosVirtualKeyboard",
-                        IsVirtualKeyboardEnabled());
-  UMA_HISTOGRAM_ENUMERATION("Accessibility.CrosScreenMagnifier",
-                            GetMagnifierType(),
-                            3);
-}
-
-void Initialize() {
-  content::BrowserAccessibilityState::GetInstance()->AddHistogramCallback(
-      base::Bind(&UpdateChromeOSAccessibilityHistograms));
-}
 
 void EnableSpokenFeedback(bool enabled, content::WebUI* login_web_ui) {
   bool spoken_feedback_enabled = g_browser_process &&
@@ -265,16 +246,6 @@ bool IsHighContrastEnabled() {
   bool high_contrast_enabled = prefs &&
       prefs->GetBoolean(prefs::kHighContrastEnabled);
   return high_contrast_enabled;
-}
-
-bool IsVirtualKeyboardEnabled() {
-  if (!g_browser_process) {
-    return false;
-  }
-  PrefService* prefs = g_browser_process->local_state();
-  bool virtual_keyboard_enabled = prefs &&
-      prefs->GetBoolean(prefs::kVirtualKeyboardEnabled);
-  return virtual_keyboard_enabled;
 }
 
 ash::MagnifierType GetMagnifierType() {

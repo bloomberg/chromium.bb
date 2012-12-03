@@ -17,7 +17,6 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
@@ -529,7 +528,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   }
   magnification_manager_.reset(
       chromeos::MagnificationManager::CreateInstance());
-  chromeos::accessibility::Initialize();
 
   primary_display_switch_observer_.reset(
       new PrimaryDisplaySwitchObserver());

@@ -80,16 +80,8 @@ bool BrowserAccessibilityStateImpl::IsAccessibleBrowser() {
   return (accessibility_mode_ == AccessibilityModeComplete);
 }
 
-void BrowserAccessibilityStateImpl::AddHistogramCallback(
-    base::Closure callback) {
-  histogram_callbacks_.push_back(callback);
-}
-
 void BrowserAccessibilityStateImpl::UpdateHistogram() {
   UpdatePlatformSpecificHistograms();
-
-  for (size_t i = 0; i < histogram_callbacks_.size(); ++i)
-    histogram_callbacks_[i].Run();
 
   UMA_HISTOGRAM_BOOLEAN("Accessibility.State", IsAccessibleBrowser());
   UMA_HISTOGRAM_BOOLEAN("Accessibility.InvertedColors",
