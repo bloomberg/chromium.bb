@@ -225,12 +225,14 @@ bool InstantController::Update(const AutocompleteMatch& match,
   //  In non-extended mode, #1 to #7 call Hide(). #8 calls loader_->Update().
   //
   //  In extended mode, #2 and #4 call Hide(). #1 doesn't Hide() as the preview
-  //  may be showing custom NTP content, but doesn't Update() either. #3 and #7
+  //  may be showing custom NTP content, but doesn't Update() either. #3 calls
+  //  Hide() unless on the NTP _and_ sends a blank query; otherwise #3 and #7
   //  don't Hide(), but send a blank query to Update(). #8 calls Update().
 
   if (extended_enabled_) {
     if (!omnibox_popup_is_open) {
-      if (!full_text.empty()) {
+      if (!full_text.empty() ||
+          (user_input_in_progress && !search_mode_.is_origin_ntp())) {
         Hide(true);
         return false;
       }
