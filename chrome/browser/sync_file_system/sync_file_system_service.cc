@@ -158,17 +158,10 @@ void SyncFileSystemService::InitializeForApp(
     return;
   }
 
-  scoped_refptr<SharedCallbackRunner> callback_runner(
-      new SharedCallbackRunner(callback));
-
   local_file_service_->MaybeInitializeFileSystemContext(
       app_origin, service_name, file_system_context,
-      callback_runner->CreateCallback());
-  remote_file_service_->RegisterOriginForTrackingChanges(
-      app_origin,
-      base::Bind(&SyncFileSystemService::DidRegisterOrigin,
-                 AsWeakPtr(), app_origin,
-                 callback_runner->CreateCallback()));
+      base::Bind(&SyncFileSystemService::DidInitializeFileSystem,
+                 AsWeakPtr(), app_origin, callback));
 }
 
 void SyncFileSystemService::GetConflictFiles(
@@ -268,6 +261,25 @@ void SyncFileSystemService::DidGetConflictFileInfo(
   info.local_metadata = *local_metadata;
   info.remote_metadata = *remote_metadata;
   callback.Run(status, info);
+}
+
+void SyncFileSystemService::DidInitializeFileSystem(
+    const GURL& app_origin,
+    const fileapi::SyncStatusCallback& callback,
+    fileapi::SyncStatusCode status) {
+  DVLOG(1) << "DidInitializeFileSystem: " << app_origin.spec() << " " << status;
+
+  if (status != fileapi::SYNC_STATUS_OK) {
+    callback.Run(status);
+    return;
+  }
+
+  // Local side of initialization for the app is done.
+  // Continue on initializing the remote side.
+  remote_file_service_->RegisterOriginForTrackingChanges(
+      app_origin,
+      base::Bind(&SyncFileSystemService::DidRegisterOrigin,
+                 AsWeakPtr(), app_origin, callback));
 }
 
 void SyncFileSystemService::DidRegisterOrigin(

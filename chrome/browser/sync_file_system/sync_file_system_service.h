@@ -86,6 +86,10 @@ class SyncFileSystemService
                               const fileapi::SyncFileMetadata* remote_metadata,
                               fileapi::SyncStatusCode status);
 
+  // Callbacks for InitializeForApp.
+  void DidInitializeFileSystem(const GURL& app_origin,
+                               const fileapi::SyncStatusCallback& callback,
+                               fileapi::SyncStatusCode status);
   void DidRegisterOrigin(const GURL& app_origin,
                          const fileapi::SyncStatusCallback& callback,
                          fileapi::SyncStatusCode status);
