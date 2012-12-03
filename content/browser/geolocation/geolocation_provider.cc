@@ -103,6 +103,9 @@ void GeolocationProvider::OnClientsChanged() {
   base::Closure task;
   if (observers_.empty() && callbacks_.empty()) {
     DCHECK(IsRunning());
+    // We have no more observers, so we clear the cached geoposition so that
+    // when the next observer is added we will not provide a stale position.
+    position_ = Geoposition();
     task = base::Bind(&GeolocationProvider::StopProviders,
                       base::Unretained(this));
   } else {

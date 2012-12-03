@@ -62,6 +62,15 @@ class MockGeolocationObserver : public GeolocationObserver {
   MOCK_METHOD1(OnLocationUpdate, void(const Geoposition& position));
 };
 
+class AsyncMockGeolocationObserver : public MockGeolocationObserver {
+ public:
+  // GeolocationObserver
+  virtual void OnLocationUpdate(const Geoposition& position) {
+    MockGeolocationObserver::OnLocationUpdate(position);
+    MessageLoop::current()->Quit();
+  }
+};
+
 class MockGeolocationCallbackWrapper {
  public:
   MOCK_METHOD1(Callback, void(const Geoposition& position));
@@ -119,6 +128,7 @@ class GeolocationProviderTest : public testing::Test {
 
   // Called on test thread.
   bool ProvidersStarted();
+  void SendMockLocation(const Geoposition& position);
 
  private:
   // Called on provider thread.
@@ -149,6 +159,15 @@ void GeolocationProviderTest::GetProvidersStarted(bool* started) {
   *started = provider_->mock_arbitrator()->providers_started();
 }
 
+void GeolocationProviderTest::SendMockLocation(const Geoposition& position) {
+  DCHECK(provider_->IsRunning());
+  DCHECK(MessageLoop::current() == &message_loop_);
+  provider_->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&GeolocationProvider::OnLocationUpdate,
+                 base::Unretained(provider_.get()),
+                 position));
+}
 
 // Regression test for http://crbug.com/59377
 TEST_F(GeolocationProviderTest, OnPermissionGrantedWithoutObservers) {
@@ -168,6 +187,46 @@ TEST_F(GeolocationProviderTest, StartStop) {
   provider()->RemoveObserver(&null_observer);
   EXPECT_FALSE(ProvidersStarted());
   EXPECT_TRUE(provider()->IsRunning());
+}
+
+TEST_F(GeolocationProviderTest, StalePositionNotSent) {
+  Geoposition first_position;
+  first_position.latitude = 12;
+  first_position.longitude = 34;
+  first_position.accuracy = 56;
+  first_position.timestamp = base::Time::Now();
+
+  AsyncMockGeolocationObserver first_observer;
+  GeolocationObserverOptions options;
+  EXPECT_CALL(first_observer, OnLocationUpdate(GeopositionEq(first_position)));
+  provider()->AddObserver(&first_observer, options);
+  SendMockLocation(first_position);
+  MessageLoop::current()->Run();
+
+  provider()->RemoveObserver(&first_observer);
+
+  Geoposition second_position;
+  second_position.latitude = 13;
+  second_position.longitude = 34;
+  second_position.accuracy = 56;
+  second_position.timestamp = base::Time::Now();
+
+  AsyncMockGeolocationObserver second_observer;
+
+  // After adding a second observer, check that no unexpected position update
+  // is sent.
+  EXPECT_CALL(second_observer, OnLocationUpdate(testing::_)).Times(0);
+  provider()->AddObserver(&second_observer, options);
+  MessageLoop::current()->RunUntilIdle();
+
+  // The second observer should receive the new position now.
+  EXPECT_CALL(second_observer,
+              OnLocationUpdate(GeopositionEq(second_position)));
+  SendMockLocation(second_position);
+  MessageLoop::current()->Run();
+
+  provider()->RemoveObserver(&second_observer);
+  EXPECT_FALSE(ProvidersStarted());
 }
 
 TEST_F(GeolocationProviderTest, OverrideLocationForTesting) {
