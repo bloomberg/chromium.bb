@@ -232,10 +232,6 @@
         # the few failures are a bug or not.
         'SK_SUPPORT_INT_SRCRECT_DRAWBITMAPRECT',
         
-        # Moved from SkUserConfig.h, so we can rebaseline when we remove this.
-        'SK_DISABLE_DITHER_32BIT_GRADIENT',
-
-        'SK_DISABLE_DASHING_OPTIMIZATION',
         'SK_DISABLE_SEPARABLE_MASK_BLUR',
       ],
       'sources!': [
