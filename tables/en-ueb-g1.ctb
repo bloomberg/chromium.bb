@@ -138,7 +138,7 @@ always ...' 256-256-256-3
 repeated .... 0
 repeated ____ 46-36
 repeated ---- 36
-always .\s.\s." 256-256-256--356
+always .\s.\s." 256-256-256-356
 always .\s.\s. 256-256-256 . . .
 begnum $ 4-234
 always $ 4-234
@@ -151,60 +151,60 @@ always $ 4-234
 #Unicode series 5: Misc items, such as shapes, typeforms and fractional parts.
 
 #Unicode series 1: Greek and Latin scripts
-always α 46-1
-always β 46-12
-always δ 46-13
-always ε 46-15
-always φ 46-124
-always γ 46-1245
-always ι 46-24
-always κ 46-14
-always λ 46-123
-always μ 46-145
-always ν 46-1345
-always ο 46-135
-always π 46-1234
-always ρ 46-1235
-always σ 46-234
-always τ 46-2345
-always υ 46-136
-always ξ 46-1346
-always ψ 46-13456
-always ζ 46-1356
-always χ 46-12346
-always θ 46-1456
-always η 46-156
-always ω 46-2456
-Α
-Β
-Δ
-Ε
-Φ
-Γ
-Ι
-Κ
-Λ
-Μ
-Ν
-Ο
-Π
-Ρ
-Σ
-Τ
-Υ
-Ξ
-Ψ
-Ζ
-Χ
-Θ
-Η
-Ω
-Ȝ
-Þ
-Ð
-Ƿ
-Ŋ
-#Unicode series 2: mathematical operators
+# always α 46-1
+# always β 46-12
+# always δ 46-13
+# always ε 46-15
+# always φ 46-124
+# always γ 46-1245
+# always ι 46-24
+# always κ 46-14
+# always λ 46-123
+# always μ 46-145
+# always ν 46-1345
+# always ο 46-135
+# always π 46-1234
+# always ρ 46-1235
+# always σ 46-234
+# always τ 46-2345
+# always υ 46-136
+# always ξ 46-1346
+# always ψ 46-13456
+# always ζ 46-1356
+# always χ 46-12346
+# always θ 46-1456
+# always η 46-156
+# always ω 46-2456
+# Α
+# Β
+# Δ
+# Ε
+# Φ
+# Γ
+# Ι
+# Κ
+# Λ
+# Μ
+# Ν
+# Ο
+# Π
+# Ρ
+# Σ
+# Τ
+# Υ
+# Ξ
+# Ψ
+# Ζ
+# Χ
+# Θ
+# Η
+# Ω
+# Ȝ
+# Þ
+# Ð
+# Ƿ
+# Ŋ
+# #Unicode series 2: mathematical operators
 
 #Unicode series 3: chemistry, engineering and advanced mathematics
 
