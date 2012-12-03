@@ -4,7 +4,6 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/string_util.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
@@ -20,7 +19,7 @@
 // A BrowserWindowCocoa that goes PONG when
 // BOOKMARK_BAR_VISIBILITY_PREF_CHANGED is sent.  This is so we can be
 // sure we are observing it.
-class BrowserWindowCocoaPong : public BrowserWindowCocoa, public PrefObserver {
+class BrowserWindowCocoaPong : public BrowserWindowCocoa {
  public:
   BrowserWindowCocoaPong(Browser* browser,
                          BrowserWindowController* controller)
@@ -29,10 +28,8 @@ class BrowserWindowCocoaPong : public BrowserWindowCocoa, public PrefObserver {
   }
   virtual ~BrowserWindowCocoaPong() { }
 
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE {
-    if (pref_name == prefs::kShowBookmarkBar)
-      pong_ = true;
+  virtual void OnShowBookmarkBarChanged() OVERRIDE {
+    pong_ = true;
   }
 
   bool pong_;

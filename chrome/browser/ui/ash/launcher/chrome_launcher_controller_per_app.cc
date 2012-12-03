@@ -173,7 +173,10 @@ ChromeLauncherControllerPerApp::ChromeLauncherControllerPerApp(
                               chrome::NOTIFICATION_EXTENSION_UNLOADED,
                               content::Source<Profile>(profile_));
   pref_change_registrar_.Init(profile_->GetPrefs());
-  pref_change_registrar_.Add(prefs::kPinnedLauncherApps, this);
+  pref_change_registrar_.Add(
+      prefs::kPinnedLauncherApps,
+      base::Bind(&ChromeLauncherControllerPerApp::UpdateAppLaunchersFromPref,
+                 base::Unretained(this)));
 }
 
 ChromeLauncherControllerPerApp::~ChromeLauncherControllerPerApp() {
@@ -229,6 +232,8 @@ void ChromeLauncherControllerPerApp::Init() {
     PrefService* prefs = profile_->GetPrefs();
     if (prefs->GetString(prefs::kShelfAlignmentLocal).empty() ||
         prefs->GetString(prefs::kShelfAutoHideBehaviorLocal).empty()) {
+      // This causes OnIsSyncingChanged to be called when the value of
+      // PrefService::IsSyncing() changes.
       prefs->AddObserver(this);
     }
     ash::Shell::GetInstance()->AddShellObserver(this);
@@ -783,20 +788,6 @@ void ChromeLauncherControllerPerApp::Observe(
   }
 }
 
-void ChromeLauncherControllerPerApp::OnPreferenceChanged(
-    PrefServiceBase* service,
-    const std::string& pref_name) {
-  if (pref_name == prefs::kPinnedLauncherApps) {
-    UpdateAppLaunchersFromPref();
-  } else if (pref_name == prefs::kShelfAlignmentLocal) {
-    SetShelfAlignmentFromPrefs();
-  } else if (pref_name == prefs::kShelfAutoHideBehaviorLocal) {
-    SetShelfAutoHideBehaviorFromPrefs();
-  } else {
-    NOTREACHED() << "Unexpected pref change for " << pref_name;
-  }
-}
-
 void ChromeLauncherControllerPerApp::OnShelfAlignmentChanged() {
   const char* pref_value = NULL;
   // TODO(oshima): Support multiple displays.
@@ -865,7 +856,10 @@ void ChromeLauncherControllerPerApp::PersistPinnedState() {
       }
     }
   }
-  pref_change_registrar_.Add(prefs::kPinnedLauncherApps, this);
+  pref_change_registrar_.Add(
+      prefs::kPinnedLauncherApps,
+      base::Bind(&ChromeLauncherControllerPerApp::UpdateAppLaunchersFromPref,
+                 base::Unretained(this)));
 }
 
 ash::LauncherModel* ChromeLauncherControllerPerApp::model() {
