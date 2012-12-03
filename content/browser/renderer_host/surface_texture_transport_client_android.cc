@@ -71,9 +71,9 @@ WebKit::WebVideoFrame* SurfaceTextureTransportClient::getCurrentFrame() {
         ImageTransportFactoryAndroid::GetInstance()->GetContext3D();
     context->makeContextCurrent();
     texture_id_ = context->createTexture();
+    surface_texture_->AttachToGLContext(texture_id_);
   }
   if (!video_frame_.get()) {
-    surface_texture_->AttachToGLContext(texture_id_);
     const gfx::Size size = video_layer_->bounds();
     video_frame_.reset(
         new webkit_media::WebVideoFrameImpl(
