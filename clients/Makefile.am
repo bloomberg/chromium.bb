@@ -63,6 +63,7 @@ clients_programs =				\
 	clickdot				\
 	editor					\
 	transformed				\
+	calibrator				\
 	$(full_gl_client_programs)
 
 desktop_shell = weston-desktop-shell
@@ -121,6 +122,9 @@ clickdot_LDADD = $(toolkit_libs)
 
 transformed_SOURCES = transformed.c
 transformed_LDADD = $(toolkit_libs)
+
+calibrator_SOURCES = calibrator.c
+calibrator_LDADD = $(toolkit_libs)
 
 editor_SOURCES = 				\
 	editor.c				\
