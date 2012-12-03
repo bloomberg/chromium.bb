@@ -100,7 +100,10 @@ ExtensionInstallUIDefault::ExtensionInstallUIDefault(Profile* profile)
   // |profile_| can be NULL during tests.
   if (profile_) {
     // Remember the current theme in case the user presses undo.
-    previous_theme_id_ = ThemeService::GetThemeIDForProfile(profile);
+    const Extension* previous_theme =
+        ThemeServiceFactory::GetThemeForProfile(profile);
+    if (previous_theme)
+      previous_theme_id_ = previous_theme->id();
     previous_using_native_theme_ =
         ThemeServiceFactory::GetForProfile(profile)->UsingNativeTheme();
   }

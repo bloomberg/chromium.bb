@@ -80,6 +80,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
@@ -115,11 +117,6 @@
 #include "sync/api/sync_error_factory.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/database_util.h"
-
-#if defined(ENABLE_THEMES)
-#include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/themes/theme_service_factory.h"
-#endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -1034,9 +1031,9 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
   // extension.
   system_->RegisterExtensionWithRequestContexts(extension);
 
+  // Tell renderers about the new extension, unless it's a theme (renderers
+  // don't need to know about themes).
   if (!extension->is_theme()) {
-    // Tell renderers about non-theme extensions (renderers don't need
-    // to know about themes).
     for (content::RenderProcessHost::iterator i(
             content::RenderProcessHost::AllHostsIterator());
          !i.IsAtEnd(); i.Advance()) {
@@ -2029,7 +2026,7 @@ void ExtensionService::GarbageCollectExtensions() {
   // defensive; in the future, we may call GarbageCollectExtensions()
   // from somewhere other than Init() (e.g., in a timer).
   if (profile_) {
-    ThemeService::RemoveUnusedThemesForProfile(profile_);
+    ThemeServiceFactory::GetForProfile(profile_)->RemoveUnusedThemes();
   }
 #endif
 }
@@ -2110,13 +2107,6 @@ void ExtensionService::AddExtension(const Extension* extension) {
   SyncExtensionChangeIfNeeded(*extension);
   NotifyExtensionLoaded(extension);
   DoPostLoadTasks(extension);
-
-#if defined(ENABLE_THEMES)
-  if (extension->is_theme()) {
-    // Notify the ThemeService about the newly-installed theme.
-    ThemeServiceFactory::SetThemeForProfile(profile_, extension);
-  }
-#endif
 }
 
 void ExtensionService::AddComponentExtension(const Extension* extension) {

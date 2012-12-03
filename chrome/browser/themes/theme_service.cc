@@ -224,6 +224,14 @@ void ThemeService::Init(Profile* profile) {
   DCHECK(CalledOnValidThread());
   profile_ = profile;
 
+  // Listen to EXTENSION_LOADED instead of EXTENSION_INSTALLED because
+  // the extension cannot yet be found via GetExtensionById() if it is
+  // installed but not loaded (which may confuse listeners to
+  // BROWSER_THEME_CHANGED).
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED,
+                 content::Source<Profile>(profile_));
+
   LoadThemePrefs();
 
   theme_syncable_service_.reset(new ThemeSyncableService(profile_, this));
@@ -342,10 +350,29 @@ void ThemeService::SetTheme(const Extension* extension) {
   DCHECK(extension->is_theme());
 
   BuildFromExtension(extension);
-  SaveThemeIDForProfile(profile_, extension->id());
+  SaveThemeID(extension->id());
 
   NotifyThemeChanged();
   content::RecordAction(UserMetricsAction("Themes_Installed"));
+}
+
+void ThemeService::RemoveUnusedThemes() {
+  if (!profile_)
+    return;
+  ExtensionService* service = profile_->GetExtensionService();
+  if (!service)
+    return;
+  std::string current_theme = GetThemeID();
+  std::vector<std::string> remove_list;
+  const ExtensionSet* extensions = service->extensions();
+  for (ExtensionSet::const_iterator it = extensions->begin();
+       it != extensions->end(); ++it) {
+    if ((*it)->is_theme() && (*it)->id() != current_theme) {
+      remove_list.push_back((*it)->id());
+    }
+  }
+  for (size_t i = 0; i < remove_list.size(); ++i)
+    service->UninstallExtension(remove_list[i], false, NULL);
 }
 
 void ThemeService::UseDefaultTheme() {
@@ -368,50 +395,8 @@ bool ThemeService::UsingNativeTheme() const {
   return UsingDefaultTheme();
 }
 
-void ThemeService::OnInfobarDisplayed() {
-  number_of_infobars_++;
-}
-
-void ThemeService::OnInfobarDestroyed() {
-  number_of_infobars_--;
-
-  if (number_of_infobars_ == 0)
-    RemoveUnusedThemesForProfile(profile_);
-}
-
-// static
-std::string ThemeService::GetThemeIDForProfile(Profile* profile) {
-  return profile->GetPrefs()->GetString(prefs::kCurrentThemeID);
-}
-
-// static
-void ThemeService::SaveThemeIDForProfile(
-    Profile* profile,
-    const std::string& id) {
-  profile->GetPrefs()->SetString(prefs::kCurrentThemeID, id);
-}
-
-// static
-void ThemeService::RemoveUnusedThemesForProfile(Profile* profile) {
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (!extension_service)
-    return;
-  std::string current_theme = GetThemeIDForProfile(profile);
-  std::vector<std::string> remove_list;
-  const ExtensionSet* extensions = extension_service->extensions();
-  for (ExtensionSet::const_iterator it = extensions->begin();
-       it != extensions->end(); ++it) {
-    if ((*it)->is_theme() && (*it)->id() != current_theme) {
-      remove_list.push_back((*it)->id());
-    }
-  }
-  for (size_t i = 0; i < remove_list.size(); ++i)
-    extension_service->UninstallExtension(remove_list[i], false, NULL);
-}
-
 std::string ThemeService::GetThemeID() const {
-  return GetThemeIDForProfile(profile_);
+  return profile_->GetPrefs()->GetString(prefs::kCurrentThemeID);
 }
 
 // static
@@ -606,7 +591,7 @@ void ThemeService::ClearAllThemeData() {
   theme_pack_ = NULL;
 
   profile_->GetPrefs()->ClearPref(prefs::kCurrentThemePackFilename);
-  SaveThemeIDForProfile(profile_, kDefaultThemeID);
+  SaveThemeID(kDefaultThemeID);
 }
 
 void ThemeService::LoadThemePrefs() {
@@ -671,9 +656,24 @@ void ThemeService::FreePlatformCaches() {
 }
 #endif
 
+void ThemeService::Observe(int type,
+                           const content::NotificationSource& source,
+                           const content::NotificationDetails& details) {
+  DCHECK(type == chrome::NOTIFICATION_EXTENSION_LOADED);
+  const Extension* extension = content::Details<const Extension>(details).ptr();
+  if (!extension->is_theme()) {
+    return;
+  }
+  SetTheme(extension);
+}
+
 void ThemeService::SavePackName(const FilePath& pack_path) {
   profile_->GetPrefs()->SetFilePath(
       prefs::kCurrentThemePackFilename, pack_path);
+}
+
+void ThemeService::SaveThemeID(const std::string& id) {
+  profile_->GetPrefs()->SetString(prefs::kCurrentThemeID, id);
 }
 
 void ThemeService::BuildFromExtension(const Extension* extension) {
@@ -699,6 +699,17 @@ void ThemeService::BuildFromExtension(const Extension* extension) {
 
   SavePackName(pack_path);
   theme_pack_ = pack;
+}
+
+void ThemeService::OnInfobarDisplayed() {
+  number_of_infobars_++;
+}
+
+void ThemeService::OnInfobarDestroyed() {
+  number_of_infobars_--;
+
+  if (number_of_infobars_ == 0)
+    RemoveUnusedThemes();
 }
 
 ThemeSyncableService* ThemeService::GetThemeSyncableService() const {

@@ -20,10 +20,6 @@
 
 class Profile;
 
-namespace content {
-class NotificationObserver;
-}
-
 namespace extensions {
 class Extension;
 }

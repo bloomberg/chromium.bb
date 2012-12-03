@@ -15,6 +15,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/theme_provider.h"
 
 class BrowserThemePack;
@@ -47,6 +49,7 @@ extern "C" NSString* const kBrowserThemeDidChangeNotification;
 #endif  // __OBJC__
 
 class ThemeService : public base::NonThreadSafe,
+                     public content::NotificationObserver,
                      public ProfileKeyedService,
                      public ui::ThemeProvider {
  public:
@@ -197,6 +200,10 @@ class ThemeService : public base::NonThreadSafe,
   // same as the default theme).
   virtual bool UsingNativeTheme() const;
 
+  // Gets the id of the last installed theme. (The theme may have been further
+  // locally customized.)
+  virtual std::string GetThemeID() const;
+
   // This class needs to keep track of the number of theme infobars so that we
   // clean up unused themes.
   void OnInfobarDisplayed();
@@ -204,23 +211,6 @@ class ThemeService : public base::NonThreadSafe,
   // Decrements the number of theme infobars. If the last infobar has been
   // destroyed, uninstalls all themes that aren't the currently selected.
   void OnInfobarDestroyed();
-
-  // Gets the id of the last installed theme for |profile|. (The theme
-  // may have been further locally customized.)
-  static std::string GetThemeIDForProfile(Profile* profile);
-
-  // Save the id of the last theme installed.  If the theme service
-  // already exists, SetTheme() must be used instead.
-  static void SaveThemeIDForProfile(Profile* profile, const std::string& id);
-
-  // Uninstall extensions for themes that are no longer in use.
-  static void RemoveUnusedThemesForProfile(Profile* profile);
-
-  // Gets the id of the last installed theme. (The theme may have been
-  // further locally customized.)
-  //
-  // TODO(akalin): Make everything use GetThemeIDForProfile().
-  virtual std::string GetThemeID() const;
 
   // Convert a bitfield alignment into a string like "top left". Public so that
   // it can be used to generate CSS values. Takes a bitmask of Alignment.
@@ -249,6 +239,9 @@ class ThemeService : public base::NonThreadSafe,
 
   // Returns the set of IDR_* resources that should be tinted.
   static const std::set<int>& GetTintableToolbarButtons();
+
+  // Remove preference values for themes that are no longer in use.
+  void RemoveUnusedThemes();
 
   // Returns the syncable service for syncing theme. The returned service is
   // owned by |this| object.
@@ -281,11 +274,19 @@ class ThemeService : public base::NonThreadSafe,
 
   Profile* profile() { return profile_; }
 
+  // content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
  private:
   friend class ThemeServiceTest;
 
   // Saves the filename of the cached theme pack.
   void SavePackName(const FilePath& pack_path);
+
+  // Save the id of the last theme installed.
+  void SaveThemeID(const std::string& id);
 
   // Implementation of SetTheme() (and the fallback from LoadThemePrefs() in
   // case we don't have a theme pack).
@@ -318,6 +319,8 @@ class ThemeService : public base::NonThreadSafe,
 
   // The number of infobars currently displayed.
   int number_of_infobars_;
+
+  content::NotificationRegistrar registrar_;
 
   scoped_ptr<ThemeSyncableService> theme_syncable_service_;
 

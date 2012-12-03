@@ -294,6 +294,7 @@ void GtkThemeService::Init(Profile* profile) {
   registrar_.Add(prefs::kUsesSystemTheme,
                  base::Bind(&GtkThemeService::OnUsesSystemThemeChanged,
                             base::Unretained(this)));
+  use_gtk_ = profile->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
   ThemeService::Init(profile);
 }
 
@@ -335,7 +336,7 @@ bool GtkThemeService::HasCustomImage(int id) const {
   return ThemeService::HasCustomImage(id);
 }
 
-void GtkThemeService::InitThemesFor(content::NotificationObserver* observer) {
+void GtkThemeService::InitThemesFor(NotificationObserver* observer) {
   observer->Observe(chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                     content::Source<ThemeService>(this),
                     content::NotificationService::NoDetails());
@@ -619,14 +620,6 @@ void GtkThemeService::ClearAllThemeData() {
 }
 
 void GtkThemeService::LoadThemePrefs() {
-  if (ThemeService::UsingDefaultTheme()) {
-    use_gtk_ = profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
-  } else {
-    // Do this here since ThemeServiceFactory::SetThemeForProfile()
-    // doesn't know to set kUsesSystemTheme to false.
-    profile()->GetPrefs()->SetBoolean(prefs::kUsesSystemTheme, false);
-    use_gtk_ = false;
-  }
   if (use_gtk_) {
     LoadGtkValues();
   } else {
