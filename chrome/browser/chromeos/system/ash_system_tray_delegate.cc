@@ -782,6 +782,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         prefs::kMagnifierType,
         base::Bind(&SystemTrayDelegate::OnAccessibilityModeChanged,
                    base::Unretained(this)));
+    pref_registrar_->Add(
+        prefs::kShouldAlwaysShowAccessibilityMenu,
+        base::Bind(&SystemTrayDelegate::OnAccessibilityModeChanged,
+                   base::Unretained(this)));
 
     UpdateClockType();
     UpdateShowLogoutButtonInTray();

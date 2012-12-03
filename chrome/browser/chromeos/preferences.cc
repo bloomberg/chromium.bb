@@ -112,6 +112,12 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   if (prefs->FindPreference(prefs::kMagnifierType) == NULL) {
     prefs->RegisterStringPref(prefs::kMagnifierType,
                               "",
+                              PrefService::SYNCABLE_PREF);
+  }
+  if (prefs->FindPreference(prefs::kShouldAlwaysShowAccessibilityMenu) ==
+      NULL) {
+    prefs->RegisterBooleanPref(prefs::kShouldAlwaysShowAccessibilityMenu,
+                              "",
                               PrefService::UNSYNCABLE_PREF);
   }
   if (prefs->FindPreference(prefs::kVirtualKeyboardEnabled) == NULL) {

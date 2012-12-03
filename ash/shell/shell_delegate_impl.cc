@@ -36,19 +36,19 @@ void ShellDelegateImpl::SetWatcher(WindowWatcher* watcher) {
     launcher_delegate_->set_watcher(watcher);
 }
 
-bool ShellDelegateImpl::IsUserLoggedIn() {
+bool ShellDelegateImpl::IsUserLoggedIn() const {
   return true;
 }
 
-bool ShellDelegateImpl::IsSessionStarted() {
+bool ShellDelegateImpl::IsSessionStarted() const {
   return true;
 }
 
-bool ShellDelegateImpl::IsFirstRunAfterBoot() {
+bool ShellDelegateImpl::IsFirstRunAfterBoot() const {
   return false;
 }
 
-bool ShellDelegateImpl::CanLockScreen() {
+bool ShellDelegateImpl::CanLockScreen() const {
   return true;
 }
 

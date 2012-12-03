@@ -100,7 +100,7 @@ ChromeShellDelegate::~ChromeShellDelegate() {
     instance_ = NULL;
 }
 
-bool ChromeShellDelegate::IsUserLoggedIn() {
+bool ChromeShellDelegate::IsUserLoggedIn() const {
 #if defined(OS_CHROMEOS)
   // When running a Chrome OS build outside of a device (i.e. on a developer's
   // workstation) and not running as login-manager, pretend like we're always
@@ -117,7 +117,7 @@ bool ChromeShellDelegate::IsUserLoggedIn() {
 }
 
   // Returns true if we're logged in and browser has been started
-bool ChromeShellDelegate::IsSessionStarted() {
+bool ChromeShellDelegate::IsSessionStarted() const {
 #if defined(OS_CHROMEOS)
   return chromeos::UserManager::Get()->IsSessionStarted();
 #else
@@ -125,7 +125,7 @@ bool ChromeShellDelegate::IsSessionStarted() {
 #endif
 }
 
-bool ChromeShellDelegate::IsFirstRunAfterBoot() {
+bool ChromeShellDelegate::IsFirstRunAfterBoot() const {
 #if defined(OS_CHROMEOS)
   return CommandLine::ForCurrentProcess()->HasSwitch(switches::kFirstBoot);
 #else
@@ -133,7 +133,7 @@ bool ChromeShellDelegate::IsFirstRunAfterBoot() {
 #endif
 }
 
-bool ChromeShellDelegate::CanLockScreen() {
+bool ChromeShellDelegate::CanLockScreen() const {
 #if defined(OS_CHROMEOS)
   return chromeos::UserManager::Get()->CanCurrentUserLock();
 #else
@@ -372,8 +372,16 @@ void ChromeShellDelegate::SetMagnifier(ash::MagnifierType type) {
 
 bool ChromeShellDelegate::ShouldAlwaysShowAccessibilityMenu() const {
 #if defined(OS_CHROMEOS)
-  // TODO(yoshiki): Add the checkbox on chrome://settings. crbug.com/158287
-  return false;
+  if (!IsUserLoggedIn())
+    return true;
+
+  Profile* profile = ProfileManager::GetDefaultProfile();
+  if (!profile)
+    return false;
+
+  PrefService* user_pref_service = profile->GetPrefs();
+  return user_pref_service &&
+      user_pref_service->GetBoolean(prefs::kShouldAlwaysShowAccessibilityMenu);
 #else
   return false;
 #endif

@@ -67,19 +67,19 @@ class ASH_EXPORT ShellDelegate {
   virtual ~ShellDelegate() {}
 
   // Returns true if user has logged in.
-  virtual bool IsUserLoggedIn() = 0;
+  virtual bool IsUserLoggedIn() const = 0;
 
   // Returns true if we're logged in and browser has been started
-  virtual bool IsSessionStarted() = 0;
+  virtual bool IsSessionStarted() const = 0;
 
   // Returns true if this is the first time that the shell has been run after
   // the system has booted.  false is returned after the shell has been
   // restarted, typically due to logging in as a guest or logging out.
-  virtual bool IsFirstRunAfterBoot() = 0;
+  virtual bool IsFirstRunAfterBoot() const = 0;
 
   // Returns true if a user is logged in whose session can be locked (i.e. the
   // user has a password with which to unlock the session).
-  virtual bool CanLockScreen() = 0;
+  virtual bool CanLockScreen() const = 0;
 
   // Invoked when a user locks the screen.
   virtual void LockScreen() = 0;

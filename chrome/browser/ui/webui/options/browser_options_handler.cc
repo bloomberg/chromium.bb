@@ -300,6 +300,8 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
       IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY },
     { "accessibilityVirtualKeyboard",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_VIRTUAL_KEYBOARD_DESCRIPTION },
+    { "accessibilityAlwaysShowMenu",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SHOULD_ALWAYS_SHOW_MENU },
     { "factoryResetHeading", IDS_OPTIONS_FACTORY_RESET_HEADING },
     { "factoryResetTitle", IDS_OPTIONS_FACTORY_RESET },
     { "factoryResetRestart", IDS_OPTIONS_FACTORY_RESET_BUTTON },

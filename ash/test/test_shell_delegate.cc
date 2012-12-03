@@ -33,19 +33,19 @@ TestShellDelegate::TestShellDelegate()
 TestShellDelegate::~TestShellDelegate() {
 }
 
-bool TestShellDelegate::IsUserLoggedIn() {
+bool TestShellDelegate::IsUserLoggedIn() const {
   return user_logged_in_;
 }
 
-bool TestShellDelegate::IsSessionStarted() {
+bool TestShellDelegate::IsSessionStarted() const {
   return session_started_;
 }
 
-bool TestShellDelegate::IsFirstRunAfterBoot() {
+bool TestShellDelegate::IsFirstRunAfterBoot() const {
   return false;
 }
 
-bool TestShellDelegate::CanLockScreen() {
+bool TestShellDelegate::CanLockScreen() const {
   return user_logged_in_ && can_lock_screen_;
 }
 

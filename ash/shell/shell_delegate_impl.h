@@ -21,10 +21,10 @@ class ShellDelegateImpl : public ash::ShellDelegate {
 
   void SetWatcher(WindowWatcher* watcher);
 
-  virtual bool IsUserLoggedIn() OVERRIDE;
-  virtual bool IsSessionStarted() OVERRIDE;
-  virtual bool IsFirstRunAfterBoot() OVERRIDE;
-  virtual bool CanLockScreen() OVERRIDE;
+  virtual bool IsUserLoggedIn() const OVERRIDE;
+  virtual bool IsSessionStarted() const OVERRIDE;
+  virtual bool IsFirstRunAfterBoot() const OVERRIDE;
+  virtual bool CanLockScreen() const OVERRIDE;
   virtual void LockScreen() OVERRIDE;
   virtual void UnlockScreen() OVERRIDE;
   virtual bool IsScreenLocked() const OVERRIDE;

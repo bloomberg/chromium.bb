@@ -227,12 +227,9 @@ TrayAccessibility::TrayAccessibility(SystemTray* system_tray)
       login_(GetCurrentLoginStatus()) {
   DCHECK(Shell::GetInstance()->delegate());
   DCHECK(system_tray);
-
-  Shell::GetInstance()->AddShellObserver(this);
 }
 
 TrayAccessibility::~TrayAccessibility() {
-  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 bool TrayAccessibility::GetInitialVisibility() {
@@ -286,7 +283,7 @@ void TrayAccessibility::DestroyDetailedView() {
   detailed_ = NULL;
 }
 
-void TrayAccessibility::OnLoginStateChanged(user::LoginStatus status) {
+void TrayAccessibility::UpdateAfterLoginStatusChange(user::LoginStatus status) {
   login_ = status;
 
   if (tray_view())

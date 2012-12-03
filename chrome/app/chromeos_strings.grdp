@@ -733,6 +733,9 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_VIRTUAL_KEYBOARD_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for virtual keyboard.">
     Enable virtual keyboard
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SHOULD_ALWAYS_SHOW_MENU" desc="In the settings tab, the text next to the checkbox to show the accessibility tray menu regardless of the state of a11y features.">
+    Enable accessibility menu
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_BUTTON_LABEL" desc="Label for the button opening display settings tab.">
     Display settings
   </message>

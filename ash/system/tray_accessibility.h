@@ -26,8 +26,7 @@ class ASH_EXPORT AccessibilityObserver {
 namespace internal {
 
 class TrayAccessibility : public TrayImageItem,
-                          public AccessibilityObserver,
-                          public ShellObserver {
+                          public AccessibilityObserver {
  public:
   explicit TrayAccessibility(SystemTray* system_tray);
   virtual ~TrayAccessibility();
@@ -39,12 +38,10 @@ class TrayAccessibility : public TrayImageItem,
   virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE;
   virtual void DestroyDefaultView() OVERRIDE;
   virtual void DestroyDetailedView() OVERRIDE;
+  virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) OVERRIDE;
 
   // Overridden from AccessibilityObserver.
   virtual void OnAccessibilityModeChanged() OVERRIDE;
-
-  // Overriden from ShellObserver.
-  virtual void OnLoginStateChanged(user::LoginStatus status) OVERRIDE;
 
   views::View* default_;
   views::View* detailed_;

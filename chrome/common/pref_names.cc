@@ -741,6 +741,9 @@ const char kMagnifierType[] = "settings.a11y.screen_magnifier_type";
 // A boolean pref which determines whether virtual keyboard is enabled.
 // TODO(hashimoto): Remove this pref.
 const char kVirtualKeyboardEnabled[] = "settings.a11y.virtual_keyboard";
+// A boolean pref which determines whether the accessibility menu shows
+// regardless of the state of a11y features.
+const char kShouldAlwaysShowAccessibilityMenu[] = "settings.a11y.enable_menu";
 
 // A boolean pref which turns on Advanced Filesystem
 // (USB support, SD card, etc).

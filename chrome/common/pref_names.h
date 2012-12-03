@@ -270,6 +270,7 @@ extern const char kHighContrastEnabled[];
 extern const char kScreenMagnifierScale[];
 extern const char kMagnifierType[];
 extern const char kVirtualKeyboardEnabled[];
+extern const char kShouldAlwaysShowAccessibilityMenu[];
 extern const char kLabsAdvancedFilesystemEnabled[];
 extern const char kLabsMediaplayerEnabled[];
 extern const char kEnableScreenLock[];
