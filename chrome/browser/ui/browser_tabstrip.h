@@ -29,8 +29,6 @@ content::WebContents* GetActiveWebContents(const Browser* browser);
 
 content::WebContents* GetWebContentsAt(const Browser* browser, int index);
 
-void ActivateTabAt(Browser* browser, int index, bool user_gesture);
-
 // Adds a blank tab to the tab strip of the specified browser; an |index| of -1
 // means to append it to the end of the tab strip.
 void AddBlankTabAt(Browser* browser, int index, bool foreground);

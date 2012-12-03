@@ -560,8 +560,10 @@ void Navigate(NavigateParams* params) {
     }
 
     // If the singleton tab isn't already selected, select it.
-    if (params->source_contents != params->target_contents)
-      chrome::ActivateTabAt(params->browser, singleton_index, user_initiated);
+    if (params->source_contents != params->target_contents) {
+      params->browser->tab_strip_model()->ActivateTabAt(singleton_index,
+                                                        user_initiated);
+    }
   }
 
   if (params->disposition != CURRENT_TAB) {

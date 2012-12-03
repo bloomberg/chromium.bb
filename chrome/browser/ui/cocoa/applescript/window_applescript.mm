@@ -117,8 +117,8 @@
 - (void)setActiveTabIndex:(NSNumber*)anActiveTabIndex {
   // Note: applescript is 1-based, that is lists begin with index 1.
   int atIndex = [anActiveTabIndex intValue] - 1;
-  if (atIndex >= 0 && atIndex < browser_->tab_count())
-    chrome::ActivateTabAt(browser_, atIndex, true);
+  if (atIndex >= 0 && atIndex < browser_->tab_strip_model()->count())
+    browser_->tab_strip_model()->ActivateTabAt(atIndex, true);
   else
     AppleScript::SetError(AppleScript::errInvalidTabIndex);
 }
@@ -139,9 +139,8 @@
 
 - (TabAppleScript*)activeTab {
   TabAppleScript* currentTab =
-      [[[TabAppleScript alloc]
-          initWithWebContents:chrome::GetActiveWebContents(browser_)]
-              autorelease];
+      [[[TabAppleScript alloc] initWithWebContents:
+          browser_->tab_strip_model()->GetActiveWebContents()] autorelease];
   [currentTab setContainer:self
                   property:AppleScript::kTabsProperty];
   return currentTab;
@@ -153,7 +152,8 @@
 
   for (int i = 0; i < browser_->tab_count(); ++i) {
     // Check to see if tab is closing.
-    content::WebContents* webContents = chrome::GetWebContentsAt(browser_, i);
+    content::WebContents* webContents =
+        browser_->tab_strip_model()->GetWebContentsAt(i);
     if (webContents->IsBeingDestroyed()) {
       continue;
     }
@@ -203,7 +203,8 @@
 }
 
 - (void)removeFromTabsAtIndex:(int)index {
-  chrome::CloseWebContents(browser_, chrome::GetWebContentsAt(browser_, index));
+  chrome::CloseWebContents(
+      browser_, browser_->tab_strip_model()->GetWebContentsAt(index));
 }
 
 - (NSNumber*)orderedIndex {

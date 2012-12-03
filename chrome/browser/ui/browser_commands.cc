@@ -536,7 +536,7 @@ void MoveTabPrevious(Browser* browser) {
 void SelectNumberedTab(Browser* browser, int index) {
   if (index < browser->tab_count()) {
     content::RecordAction(UserMetricsAction("SelectNumberedTab"));
-    ActivateTabAt(browser, index, true);
+    browser->tab_strip_model()->ActivateTabAt(index, true);
   }
 }
 

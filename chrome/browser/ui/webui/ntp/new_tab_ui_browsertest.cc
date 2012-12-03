@@ -5,7 +5,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -34,7 +34,8 @@ IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, ChromeInternalLoadsNTP) {
   ui_test_utils::NavigateToURL(browser(), GURL("chrome-internal:"));
   bool empty_inner_html = false;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      chrome::GetWebContentsAt(browser(), 0)->GetRenderViewHost(), L"",
+      browser()->tab_strip_model()->GetWebContentsAt(0)->GetRenderViewHost(),
+      L"",
       L"window.domAutomationController.send(document.body.innerHTML == '')",
       &empty_inner_html));
   ASSERT_FALSE(empty_inner_html);
@@ -53,7 +54,8 @@ IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, LoadNTPInExistingProcess) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabURL), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  EXPECT_EQ(1, chrome::GetWebContentsAt(browser(), 1)->GetMaxPageID());
+  EXPECT_EQ(1,
+            browser()->tab_strip_model()->GetWebContentsAt(1)->GetMaxPageID());
 
   // Navigate that tab to another site.  This allows the NTP process to exit,
   // but it keeps the NTP SiteInstance (and its max_page_id) alive in history.
@@ -74,27 +76,31 @@ IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, LoadNTPInExistingProcess) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabURL), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  EXPECT_EQ(1, chrome::GetWebContentsAt(browser(), 2)->GetMaxPageID());
+  EXPECT_EQ(1,
+            browser()->tab_strip_model()->GetWebContentsAt(2)->GetMaxPageID());
   chrome::CloseTab(browser());
 
   // Open another Web UI page in a new tab.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUISettingsURL), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  EXPECT_EQ(1, chrome::GetWebContentsAt(browser(), 2)->GetMaxPageID());
+  EXPECT_EQ(1,
+            browser()->tab_strip_model()->GetWebContentsAt(2)->GetMaxPageID());
 
   // At this point, opening another NTP will use the existing WebUI process
   // but its own SiteInstance, so the page IDs shouldn't affect each other.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabURL), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  EXPECT_EQ(1, chrome::GetWebContentsAt(browser(), 3)->GetMaxPageID());
+  EXPECT_EQ(1,
+            browser()->tab_strip_model()->GetWebContentsAt(3)->GetMaxPageID());
 
   // Navigating to the NTP in the original tab causes a BrowsingInstance
   // swap, so it gets a new SiteInstance starting with page ID 1 again.
-  chrome::ActivateTabAt(browser(), 1, true);
+  browser()->tab_strip_model()->ActivateTabAt(1, true);
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
-  EXPECT_EQ(1, chrome::GetWebContentsAt(browser(), 1)->GetMaxPageID());
+  EXPECT_EQ(1,
+            browser()->tab_strip_model()->GetWebContentsAt(1)->GetMaxPageID());
 }
 
 // Loads chrome://hang/ into two NTP tabs, ensuring we don't crash.

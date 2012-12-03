@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -1254,7 +1255,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     chrome::NewTab(browser());
 
     // Switch back to the first tab.
-    chrome::ActivateTabAt(browser(), 0, true);
+    browser()->tab_strip_model()->ActivateTabAt(0, true);
 
     // Make sure we're still in keyword mode.
     ASSERT_EQ(kSearchKeyword, UTF16ToUTF8(omnibox_view->model()->keyword()));

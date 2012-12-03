@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
@@ -219,7 +220,7 @@ void NotificationsTest::CloseBrowserWindow(Browser* browser) {
 }
 
 void NotificationsTest::CrashTab(Browser* browser, int index) {
-  content::CrashTab(chrome::GetWebContentsAt(browser, index));
+  content::CrashTab(browser->tab_strip_model()->GetWebContentsAt(index));
 }
 
 void NotificationsTest::CrashNotification(Balloon* balloon) {
@@ -249,7 +250,7 @@ void NotificationsTest::AllowAllOrigins() {
 
 void NotificationsTest::VerifyInfobar(const Browser* browser, int index) {
   InfoBarTabHelper* infobar_helper = InfoBarTabHelper::FromWebContents(
-      chrome::GetWebContentsAt(browser, index));
+      browser->tab_strip_model()->GetWebContentsAt(index));
 
   ASSERT_EQ(1U, infobar_helper->GetInfoBarCount());
   InfoBarDelegate* infobar = infobar_helper->GetInfoBarDelegateAt(0);
@@ -274,7 +275,7 @@ std::string NotificationsTest::CreateNotification(
   NotificationBalloonChangeObserver observer;
   std::string result;
   bool success = content::ExecuteJavaScriptAndExtractString(
-      chrome::GetActiveWebContents(browser)->GetRenderViewHost(),
+      browser->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
       L"",
       UTF8ToWide(script),
       &result);
@@ -295,13 +296,13 @@ std::string NotificationsTest::CreateSimpleNotification(
 
 bool NotificationsTest::RequestPermissionAndWait(Browser* browser) {
   InfoBarTabHelper* infobar_helper = InfoBarTabHelper::FromWebContents(
-      chrome::GetActiveWebContents(browser));
+      browser->tab_strip_model()->GetActiveWebContents());
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
       content::Source<InfoBarTabHelper>(infobar_helper));
   std::string result;
   bool success = content::ExecuteJavaScriptAndExtractString(
-      chrome::GetActiveWebContents(browser)->GetRenderViewHost(),
+      browser->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
       L"",
       L"requestPermission();",
       &result);
@@ -321,7 +322,7 @@ bool NotificationsTest::CancelNotification(
   NotificationBalloonChangeObserver observer;
   std::string result;
   bool success = content::ExecuteJavaScriptAndExtractString(
-      chrome::GetActiveWebContents(browser)->GetRenderViewHost(),
+      browser->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
       L"",
       UTF8ToWide(script),
       &result);
@@ -336,7 +337,7 @@ bool NotificationsTest::PerformActionOnInfobar(
     int infobar_index,
     int tab_index) {
   InfoBarTabHelper* infobar_helper = InfoBarTabHelper::FromWebContents(
-      chrome::GetWebContentsAt(browser, tab_index));
+      browser->tab_strip_model()->GetWebContentsAt(tab_index));
 
   InfoBarDelegate* infobar = infobar_helper->GetInfoBarDelegateAt(
       infobar_index);
@@ -413,14 +414,14 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestUserGestureInfobar) {
   // That's considered a user gesture to webkit, and should produce an infobar.
   bool result;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
+      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
       L"",
       L"window.domAutomationController.send(request());",
       &result));
   EXPECT_TRUE(result);
 
   EXPECT_EQ(1U, InfoBarTabHelper::FromWebContents(
-      chrome::GetWebContentsAt(browser(), 0))->GetInfoBarCount());
+      browser()->tab_strip_model()->GetWebContentsAt(0))->GetInfoBarCount());
 }
 
 // If this flakes, use http://crbug.com/62311.
@@ -433,7 +434,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNoUserGestureInfobar) {
           "files/notifications/notifications_request_inline.html"));
 
   EXPECT_EQ(0U, InfoBarTabHelper::FromWebContents(
-      chrome::GetWebContentsAt(browser(), 0))->GetInfoBarCount());
+      browser()->tab_strip_model()->GetWebContentsAt(0))->GetInfoBarCount());
 }
 
 // Disable new testcases on Chrome OS due to failure on creating notification.
@@ -559,7 +560,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestAllowNotificationsFromAllSites) {
 
   ASSERT_EQ(1, GetNotificationCount());
   EXPECT_EQ(0U, InfoBarTabHelper::FromWebContents(
-      chrome::GetWebContentsAt(browser(), 0))->GetInfoBarCount());
+      browser()->tab_strip_model()->GetWebContentsAt(0))->GetInfoBarCount());
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestDenyNotificationsFromAllSites) {
@@ -618,7 +619,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestDenyAndThenAllowDomain) {
 
   ASSERT_EQ(1, GetNotificationCount());
   EXPECT_EQ(0U, InfoBarTabHelper::FromWebContents(
-      chrome::GetWebContentsAt(browser(), 0))->GetInfoBarCount());
+      browser()->tab_strip_model()->GetWebContentsAt(0))->GetInfoBarCount());
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateDenyCloseNotifications) {
@@ -682,7 +683,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCrashTabWithPermissionInfobar) {
       empty_page_url_,
       NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
-  chrome::ActivateTabAt(browser(), 0, true);
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
   ui_test_utils::NavigateToURL(browser(), test_page_url_);
   ASSERT_TRUE(RequestPermissionAndWait(browser()));
   CrashTab(browser(), 0);
@@ -705,7 +706,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestIncognitoNotification) {
   // Test notifications in incognito window.
   Browser* browser = CreateIncognitoBrowser();
   ui_test_utils::NavigateToURL(browser, test_page_url_);
-  chrome::ActivateTabAt(browser, 0, true);
+  browser->tab_strip_model()->ActivateTabAt(0, true);
   ASSERT_TRUE(RequestPermissionAndWait(browser));
   PerformActionOnInfobar(browser, ALLOW, 0, 0);
   CreateSimpleNotification(browser, true);
@@ -719,13 +720,14 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCloseTabWithPermissionInfobar) {
       GURL("about:blank"),
       NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
-  chrome::ActivateTabAt(browser(), 0, true);
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
   ui_test_utils::NavigateToURL(browser(), test_page_url_);
   ASSERT_TRUE(RequestPermissionAndWait(browser()));
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::NotificationService::AllSources());
-  chrome::CloseWebContents(browser(), chrome::GetWebContentsAt(browser(), 0));
+  chrome::CloseWebContents(browser(),
+                           browser()->tab_strip_model()->GetWebContentsAt(0));
   observer.Wait();
 }
 
@@ -739,7 +741,7 @@ IN_PROC_BROWSER_TEST_F(
       GURL("about:blank"),
       NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
-  chrome::ActivateTabAt(browser(), 0, true);
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
   ui_test_utils::NavigateToURL(browser(), test_page_url_);
   ASSERT_TRUE(RequestPermissionAndWait(browser()));
   ui_test_utils::NavigateToURL(browser(), test_page_url_);
@@ -757,7 +759,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCrashRendererNotificationRemain) {
       GURL("about:blank"),
       NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
-  chrome::ActivateTabAt(browser(), 0, true);
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
   ui_test_utils::NavigateToURL(browser(), test_page_url_);
   CreateSimpleNotification(browser(), true);
   ASSERT_EQ(1, GetNotificationCount());

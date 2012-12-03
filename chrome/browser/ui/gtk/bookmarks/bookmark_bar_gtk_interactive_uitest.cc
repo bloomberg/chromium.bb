@@ -42,7 +42,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBarGtkInteractiveUITest, FindBarTest) {
   chrome::AddSelectedTabWithURL(browser(), url, content::PAGE_TRANSITION_TYPED);
 
   // Switch back to the NTP with the active findbar.
-  chrome::ActivateTabAt(browser(), 1, false);
+  browser()->tab_strip_model()->ActivateTabAt(1, false);
 
   // Wait for the findbar to show.
   MessageLoop::current()->RunUntilIdle();

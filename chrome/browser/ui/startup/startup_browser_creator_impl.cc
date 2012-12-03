@@ -877,7 +877,7 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
     if (!browser->tab_count())
       chrome::AddBlankTabAt(browser, -1, true);
     else
-      chrome::ActivateTabAt(browser, 0, false);
+      browser->tab_strip_model()->ActivateTabAt(0, false);
   }
 
   // The default behaviour is to show the window, as expressed by the default

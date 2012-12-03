@@ -45,6 +45,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/feature_switch.h"
@@ -284,7 +285,7 @@ class DownloadTest : public InProcessBrowserTest {
     // Sanity check default values for window / tab count and shelf visibility.
     int window_count = BrowserList::size();
     EXPECT_EQ(1, window_count);
-    EXPECT_EQ(1, browser()->tab_count());
+    EXPECT_EQ(1, browser()->tab_strip_model()->count());
     EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 
     // Set up the temporary download folder.
@@ -849,7 +850,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadMimeType) {
   DownloadAndWait(browser(), url);
 
   // Check state.
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
   CheckDownload(browser(), file, file);
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 }
@@ -866,7 +867,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CheckInternetZone) {
 
   // Check state.  Special file state must be checked before CheckDownload,
   // as CheckDownload will delete the output file.
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
   FilePath downloaded_file(DestinationFile(browser(), file));
   if (file_util::VolumeSupportsADS(downloaded_file))
     EXPECT_TRUE(file_util::HasInternetZoneIdentifier(downloaded_file));
@@ -902,7 +903,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadMimeTypeSelect) {
   EXPECT_TRUE(DidShowFileChooser());
 
   // Check state.
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
   CheckDownload(browser(), file, file);
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 }
@@ -921,7 +922,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NoDownload) {
   EXPECT_FALSE(file_util::PathExists(file_path));
 
   // Check state.
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 }
 
@@ -957,7 +958,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MimeTypesToShowNotDownload) {
     ui_test_utils::NavigateToURL(browser(), url);
 
     // Check state.
-    EXPECT_EQ(1, browser()->tab_count());
+    EXPECT_EQ(1, browser()->tab_strip_model()->count());
     EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
   }
 }
@@ -1011,7 +1012,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
   EXPECT_FALSE(file_util::PathExists(file_path));
 
   // Check state.
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 
   // Verify that there's no pending download.  The resource throttle
@@ -1036,7 +1037,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, ContentDisposition) {
   CheckDownload(browser(), download_file, file);
 
   // Check state.
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 }
 
@@ -1054,14 +1055,14 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, PerWindowShelf) {
   CheckDownload(browser(), download_file, file);
 
   // Check state.
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 
   // Open a second tab and wait.
   EXPECT_NE(static_cast<WebContents*>(NULL),
             chrome::AddSelectedTabWithURL(browser(), GURL(),
                                           content::PAGE_TRANSITION_TYPED));
-  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 
   // Hide the download shelf.
@@ -1069,8 +1070,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, PerWindowShelf) {
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 
   // Go to the first tab.
-  chrome::ActivateTabAt(browser(), 0, true);
-  EXPECT_EQ(2, browser()->tab_count());
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
 
   // The download shelf should not be visible.
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
@@ -1086,7 +1087,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseShelfOnDownloadsTab) {
   DownloadAndWait(browser(), url);
 
   // Check state.
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 
   // Open the downloads tab.
@@ -1180,7 +1181,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DontCloseNewTab1) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // We should have two tabs now.
-  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 }
 
@@ -1199,7 +1200,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab1) {
 
   // When the download finishes, we should still have one tab.
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
   CheckDownload(browser(), file, file);
 }
@@ -1229,7 +1230,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DontCloseNewTab2) {
 
   // When the download finishes, we should have two tabs.
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
 
   CheckDownload(browser(), file, file);
 }
@@ -1257,7 +1258,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DontCloseNewTab3) {
       CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
-  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
 
   // Download a file and wait.
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
@@ -1269,7 +1270,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DontCloseNewTab3) {
 
   // When the download finishes, we should have two tabs.
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
 
   CheckDownload(browser(), file, file);
 }
@@ -1300,7 +1301,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab2) {
 
   // When the download finishes, we should still have one tab.
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
   CheckDownload(browser(), file, file);
 }
@@ -1333,7 +1334,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab3) {
 
   // When the download finishes, we should still have one tab.
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
   CheckDownload(browser(), file, file);
 }
@@ -1362,7 +1363,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
   // When the download finishes, the download shelf SHOULD NOT be visible in
   // the first window.
   ExpectWindowCountAfterDownload(2);
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
   // Download shelf should close. Download panel stays open on ChromeOS.
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 
@@ -1394,7 +1395,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
   ExpectWindowCountAfterDownload(1);
 #endif
 
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
   // Download shelf should close. Download panel stays open on ChromeOS.
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 
@@ -1506,7 +1507,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
   EXPECT_TRUE(downloads[0]->GetOpened());  // Confirm it anyway.
 
   // As long as we're here, confirmed everything else is good.
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
   CheckDownload(browser(), file, file);
   // Download shelf should close. Download panel stays open on ChromeOS.
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
@@ -1701,7 +1702,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrl) {
   EXPECT_TRUE(DidShowFileChooser());
 
   // Check state.
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
   ASSERT_TRUE(CheckDownload(browser(), file, file));
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 }
@@ -1726,7 +1727,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
 
   // Check state.
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
   ASSERT_TRUE(CheckDownloadFullPaths(browser(),
                                      target_file_full_path,
                                      OriginFile(file)));

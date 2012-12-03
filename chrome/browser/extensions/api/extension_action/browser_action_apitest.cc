@@ -19,8 +19,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -331,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest,
   EXPECT_EQ("hi!", GetBrowserActionsBar().GetTooltip(0));
 
   // Go back to first tab, changed title should reappear.
-  chrome::ActivateTabAt(browser(), 0, true);
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
   EXPECT_EQ("Showing icon 2", GetBrowserActionsBar().GetTooltip(0));
 
   // Reload that tab, default title should come back.
@@ -382,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionAddPopup) {
   ASSERT_TRUE(extension) << message_;
 
   int tab_id = ExtensionTabUtil::GetTabId(
-      chrome::GetActiveWebContents(browser()));
+      browser()->tab_strip_model()->GetActiveWebContents());
 
   ExtensionAction* browser_action = GetBrowserAction(*extension);
   ASSERT_TRUE(browser_action)
@@ -438,7 +438,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionRemovePopup) {
   ASSERT_TRUE(extension) << message_;
 
   int tab_id = ExtensionTabUtil::GetTabId(
-      chrome::GetActiveWebContents(browser()));
+      browser()->tab_strip_model()->GetActiveWebContents());
 
   ExtensionAction* browser_action = GetBrowserAction(*extension);
   ASSERT_TRUE(browser_action)

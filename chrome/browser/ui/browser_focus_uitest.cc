@@ -340,11 +340,11 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabsRememberFocus) {
   for (int i = 1; i < 3; i++) {
     for (int j = 0; j < 5; j++) {
       // Activate the tab.
-      chrome::ActivateTabAt(browser(), j, true);
+      browser()->tab_strip_model()->ActivateTabAt(j, true);
 
       // Activate the location bar or the page.
       if (kFocusPage[i][j]) {
-        chrome::GetWebContentsAt(browser(), j)->GetView()->Focus();
+        browser()->tab_strip_model()->GetWebContentsAt(j)->GetView()->Focus();
       } else {
         chrome::FocusLocationBar(browser());
       }
@@ -353,14 +353,14 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabsRememberFocus) {
     // Now come back to the tab and check the right view is focused.
     for (int j = 0; j < 5; j++) {
       // Activate the tab.
-      chrome::ActivateTabAt(browser(), j, true);
+      browser()->tab_strip_model()->ActivateTabAt(j, true);
 
       ViewID vid = kFocusPage[i][j] ? VIEW_ID_TAB_CONTAINER :
                                       location_bar_focus_view_id_;
       ASSERT_TRUE(IsViewFocused(vid));
     }
 
-    chrome::ActivateTabAt(browser(), 0, true);
+    browser()->tab_strip_model()->ActivateTabAt(0, true);
     // Try the above, but with ctrl+tab. Since tab normally changes focus,
     // this has regressed in the past. Loop through several times to be sure.
     for (int j = 0; j < 15; j++) {
@@ -373,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabsRememberFocus) {
     }
 
     // As above, but with ctrl+shift+tab.
-    chrome::ActivateTabAt(browser(), 4, true);
+    browser()->tab_strip_model()->ActivateTabAt(4, true);
     for (int j = 14; j >= 0; --j) {
       ViewID vid = kFocusPage[i][j % 5] ? VIEW_ID_TAB_CONTAINER :
                                           location_bar_focus_view_id_;
@@ -410,16 +410,16 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_TabsRememberFocusFindInPage) {
 
   // Select 1st tab, focus should still be on the location-bar.
   // (bug http://crbug.com/23296)
-  chrome::ActivateTabAt(browser(), 0, true);
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
   ASSERT_TRUE(IsViewFocused(location_bar_focus_view_id_));
 
   // Now open the find box again, switch to another tab and come back, the focus
   // should return to the find box.
   chrome::Find(browser());
   ASSERT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
-  chrome::ActivateTabAt(browser(), 1, true);
+  browser()->tab_strip_model()->ActivateTabAt(1, true);
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
-  chrome::ActivateTabAt(browser(), 0, true);
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
   ASSERT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 }
 

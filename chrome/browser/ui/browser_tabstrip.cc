@@ -35,10 +35,6 @@ content::WebContents* GetWebContentsAt(const Browser* browser, int index) {
   return browser->tab_strip_model()->GetWebContentsAt(index);
 }
 
-void ActivateTabAt(Browser* browser, int index, bool user_gesture) {
-  browser->tab_strip_model()->ActivateTabAt(index, user_gesture);
-}
-
 void AddBlankTabAt(Browser* browser, int index, bool foreground) {
   // TODO(scottmg): http://crbug.com/128578
   // This is necessary because WebContentsViewAura doesn't have enough context

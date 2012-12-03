@@ -569,7 +569,7 @@ void WebIntentPickerController::OnSendReturnMessage(
       if (source_browser) {
         int source_index = source_browser->tab_strip_model()->
             GetIndexOfWebContents(web_contents_);
-        chrome::ActivateTabAt(source_browser, source_index, false);
+        source_browser->tab_strip_model()->ActivateTabAt(source_index, false);
       }
     }
     service_tab_ = NULL;

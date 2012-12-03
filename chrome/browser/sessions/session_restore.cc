@@ -622,7 +622,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
     }
 
     if (use_new_window) {
-      chrome::ActivateTabAt(browser, 0, true);
+      browser->tab_strip_model()->ActivateTabAt(0, true);
       browser->window()->Show();
     }
     NotifySessionServiceOfRestoredTabs(browser, browser->tab_count());
@@ -1021,7 +1021,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
   void ShowBrowser(Browser* browser, int selected_tab_index) {
     DCHECK(browser);
     DCHECK(browser->tab_count());
-    chrome::ActivateTabAt(browser, selected_tab_index, true);
+    browser->tab_strip_model()->ActivateTabAt(selected_tab_index, true);
 
     if (browser_ == browser)
       return;

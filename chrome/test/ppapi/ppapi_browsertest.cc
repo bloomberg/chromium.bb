@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/javascript_test_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -807,7 +807,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View_PageHideShow) {
   // The plugin will be loaded in the foreground tab and will send us a message.
   PPAPITestMessageHandler handler;
   JavascriptTestObserver observer(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
+      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
       &handler);
 
   GURL url = GetTestFileUrl("View_PageHideShow");
@@ -830,7 +830,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View_PageHideShow) {
   observer.Reset();
 
   // Switch back to the test tab.
-  chrome::ActivateTabAt(browser(), 0, true);
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
 
   ASSERT_TRUE(observer.Run()) << handler.error_message();
   EXPECT_STREQ("PASS", handler.message().c_str());
@@ -846,8 +846,8 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, InputEvent_AcceptTouchEvent) {
                                  };
 
   for (size_t i = 0; i < arraysize(positive_tests); ++i) {
-    RenderViewHost* host = chrome::GetActiveWebContents(browser())->
-        GetRenderViewHost();
+    RenderViewHost* host = browser()->tab_strip_model()->
+        GetActiveWebContents()->GetRenderViewHost();
     RunTest(positive_tests[i]);
     EXPECT_TRUE(content::RenderViewHostTester::HasTouchEventHandler(host));
   }

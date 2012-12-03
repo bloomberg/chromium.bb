@@ -28,11 +28,11 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/screenshot_source.h"
@@ -169,7 +169,7 @@ std::string GetUserEmail() {
 int GetIndexOfFeedbackTab(Browser* browser) {
   GURL feedback_url(chrome::kChromeUIFeedbackURL);
   for (int i = 0; i < browser->tab_count(); ++i) {
-    WebContents* tab = chrome::GetWebContentsAt(browser, i);
+    WebContents* tab = browser->tab_strip_model()->GetWebContentsAt(i);
     if (tab && tab->GetURL().GetWithEmptyPath() == feedback_url)
       return i;
   }
@@ -194,11 +194,11 @@ void ShowFeedbackPage(Browser* browser,
   // First check if we're already open (we cannot depend on ShowSingletonTab
   // for this functionality since we need to make *sure* we never get
   // instantiated again while we are open - with singleton tabs, that can
-  // happen)
+  // happen).
   int feedback_tab_index = GetIndexOfFeedbackTab(browser);
   if (feedback_tab_index >= 0) {
-    // Do not refresh screenshot, do not create a new tab
-    chrome::ActivateTabAt(browser, feedback_tab_index, true);
+    // Do not refresh screenshot, do not create a new tab.
+    browser->tab_strip_model()->ActivateTabAt(feedback_tab_index, true);
     return;
   }
 
@@ -451,7 +451,8 @@ bool FeedbackHandler::Init() {
       return false;
 
     if (index >= 0) {
-      WebContents* target_tab = chrome::GetWebContentsAt(browser, index);
+      WebContents* target_tab =
+          browser->tab_strip_model()->GetWebContentsAt(index);
       if (target_tab)
         target_tab_url_ = target_tab->GetURL().spec();
     }
