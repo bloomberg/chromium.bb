@@ -243,6 +243,8 @@ static int nc_tdb_init(nc_thread_descriptor_t *tdb,
   tdb->start_func = NULL;
   tdb->state = NULL;
 
+  tdb->irt_thread_data = NULL;
+
   /* Imitate PTHREAD_COND_INITIALIZER - we cannot use it directly here,
    * since this is not variable initialization.
    */
@@ -292,6 +294,7 @@ void __nc_initialize_unjoinable_thread(struct nc_combined_tdb *tdb) {
   tdb->tdb.tls_node = NULL;
   tdb->tdb.start_func = NULL;
   tdb->tdb.state = NULL;
+  tdb->tdb.irt_thread_data = NULL;
   tdb->basic_data.retval = NULL;
   tdb->basic_data.status = THREAD_RUNNING;
   pthread_cond_t condvar_init = PTHREAD_COND_INITIALIZER;

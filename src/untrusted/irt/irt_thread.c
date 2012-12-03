@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,11 +22,6 @@ static struct nc_combined_tdb *get_irt_tdb(void *thread_ptr) {
   struct nc_combined_tdb *tdb = (void *) ((uintptr_t) thread_ptr +
                                           __nacl_tp_tdb_offset(sizeof(*tdb)));
   return tdb;
-}
-
-/* This is the inverse of get_irt_tdb(). */
-static void *get_malloc_block_from_tdb(struct nc_combined_tdb *tdb) {
-  return (void *) ((uintptr_t) tdb - __nacl_tp_tdb_offset(sizeof(*tdb)));
 }
 
 /*
@@ -47,6 +43,7 @@ void __pthread_initialize(void) {
   void *tp = __nacl_tls_initialize_memory(combined_area, sizeof(*tdb));
   tdb = get_irt_tdb(tp);
   __nc_initialize_unjoinable_thread(tdb);
+  tdb->tdb.irt_thread_data = combined_area;
 
   /*
    * Now install it for later fetching.
@@ -67,7 +64,14 @@ static void nacl_irt_thread_exit(int32_t *stack_flag) {
 
   __nc_tsd_exit();
 
-  free(get_malloc_block_from_tdb(tdb));
+  /*
+   * Sanity check: Check that this function was not called on a thread
+   * created by the IRT's internal pthread_create().  For such
+   * threads, irt_thread_data == NULL.
+   */
+  assert(tdb->tdb.irt_thread_data != NULL);
+
+  free(tdb->tdb.irt_thread_data);
 
   NACL_SYSCALL(thread_exit)(stack_flag);
   while (1) *(volatile int *) 0 = 0;  /* Crash.  */
@@ -134,9 +138,17 @@ static int nacl_irt_thread_create(void *start_user_address, void *stack,
   if (combined_area == NULL)
     return EAGAIN;
 
+  /*
+   * Note that __nacl_tls_initialize_memory() is not reversible,
+   * because it takes a pointer that need not be aligned and can
+   * return a pointer that is aligned.  In order to
+   * free(combined_area) later, we must save the value of
+   * combined_area.
+   */
   void *irt_tp = __nacl_tls_initialize_memory(combined_area, sizeof(*tdb));
   tdb = get_irt_tdb(irt_tp);
   __nc_initialize_unjoinable_thread(tdb);
+  tdb->tdb.irt_thread_data = combined_area;
   /*
    * We overload the libpthread start_func field to store a function
    * of a different type.

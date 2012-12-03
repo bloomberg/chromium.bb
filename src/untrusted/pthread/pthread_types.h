@@ -62,6 +62,13 @@ typedef struct {
   nc_thread_memory_block_t *tls_node;
   nc_thread_function  start_func;
   void* state;
+  /*
+   * irt_thread_data is used when libpthread is linked into the IRT.
+   * It is used for free()ing the thread block.
+   * TODO(mseaborn): This plays a similar role to tls_node; the two
+   * could be unified in future.
+   */
+  void *irt_thread_data;
   struct __nc_basic_thread_data *basic_data;
 } nc_thread_descriptor_t;
 
