@@ -56,6 +56,7 @@ const int kBaseScoreForUntypedResultsInHUPLikeScoring = 900;
 
 bool ScoredHistoryMatch::initialized_ = false;
 bool ScoredHistoryMatch::use_new_scoring = false;
+bool ScoredHistoryMatch::only_count_matches_at_word_boundaries = false;
 bool ScoredHistoryMatch::also_do_hup_like_scoring = false;
 
 ScoredHistoryMatch::ScoredHistoryMatch()
@@ -63,6 +64,7 @@ ScoredHistoryMatch::ScoredHistoryMatch()
       can_inline(false) {
   if (!initialized_) {
     InitializeNewScoringField();
+    InitializeOnlyCountMatchesAtWordBoundariesField();
     InitializeAlsoDoHUPLikeScoringField();
     initialized_ = true;
   }
@@ -79,6 +81,7 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
       can_inline(false) {
   if (!initialized_) {
     InitializeNewScoringField();
+    InitializeOnlyCountMatchesAtWordBoundariesField();
     InitializeAlsoDoHUPLikeScoringField();
     initialized_ = true;
   }
@@ -161,10 +164,13 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
     // Get partial scores based on term matching. Note that the score for
     // each of the URL and title are adjusted by the fraction of the
     // terms appearing in each.
-    int url_score = ScoreComponentForMatches(url_matches, url.length()) *
+    int url_score =
+        ScoreComponentForMatches(url_matches, word_starts.url_word_starts_,
+                                 url.length()) *
         std::min(url_matches.size(), terms.size()) / terms.size();
     int title_score =
-        ScoreComponentForMatches(title_matches, title.length()) *
+        ScoreComponentForMatches(title_matches, word_starts.title_word_starts_,
+                                 title.length()) *
         std::min(title_matches.size(), terms.size()) / terms.size();
     // Arbitrarily pick the best.
     // TODO(mrossetti): It might make sense that a term which appears in both
@@ -287,8 +293,23 @@ int AccumulateMatchLength(int total, const TermMatch& match) {
 }
 
 // static
-int ScoredHistoryMatch::ScoreComponentForMatches(const TermMatches& matches,
-                                                 size_t max_length) {
+int ScoredHistoryMatch::ScoreComponentForMatches(
+    const TermMatches& provided_matches,
+    const WordStarts& word_starts,
+    size_t max_length) {
+  if (provided_matches.empty())
+    return 0;
+
+  TermMatches matches_at_word_boundaries;
+  if (only_count_matches_at_word_boundaries) {
+    MakeTermMatchesOnlyAtWordBoundaries(provided_matches, word_starts,
+                                        &matches_at_word_boundaries);
+  }
+  // The actual matches we'll use for matching.  This is |provided_matches|
+  // with all the matches not at a word boundary removed (if told to do so).
+  const TermMatches& matches = only_count_matches_at_word_boundaries ?
+      matches_at_word_boundaries : provided_matches;
+
   if (matches.empty())
     return 0;
 
@@ -343,6 +364,31 @@ int ScoredHistoryMatch::ScoreComponentForMatches(const TermMatches& matches,
   // used in ScoredMatchForURL().
   const int kTermScoreLevel[] = { 1000, 750, 500, 200 };
   return ScoreForValue(raw_score, kTermScoreLevel);
+}
+
+// static
+void ScoredHistoryMatch::MakeTermMatchesOnlyAtWordBoundaries(
+    const TermMatches& provided_matches,
+    const WordStarts& word_starts,
+    TermMatches* matches_at_word_boundaries) {
+  matches_at_word_boundaries->clear();
+  // Resize it to an upper-bound estimate of the correct size.
+  matches_at_word_boundaries->reserve(provided_matches.size());
+  WordStarts::const_iterator next_word_starts = word_starts.begin();
+  for (TermMatches::const_iterator iter = provided_matches.begin();
+       iter != provided_matches.end(); ++iter) {
+    // Advance next_word_starts until it's >= the position of the term
+    // we're considering.
+    while ((next_word_starts != word_starts.end()) &&
+           (*next_word_starts < iter->offset)) {
+      ++next_word_starts;
+    }
+    if ((next_word_starts != word_starts.end()) &&
+        (*next_word_starts == iter->offset)) {
+      // At word boundary: copy this element into |matches_at_word_boundaries|.
+      matches_at_word_boundaries->push_back(*iter);
+    }
+  }
 }
 
 // static
@@ -655,6 +701,14 @@ void ScoredHistoryMatch::InitializeNewScoringField() {
   UMA_HISTOGRAM_ENUMERATION(
       "Omnibox.HistoryQuickProviderNewScoringFieldTrialBeacon",
       new_scoring_option, NUM_OPTIONS);
+}
+
+void ScoredHistoryMatch::InitializeOnlyCountMatchesAtWordBoundariesField() {
+  only_count_matches_at_word_boundaries =
+      AutocompleteFieldTrial::
+          InHQPOnlyCountMatchesAtWordBoundariesFieldTrial() &&
+      AutocompleteFieldTrial::
+          InHQPOnlyCountMatchesAtWordBoundariesFieldTrialExperimentGroup();
 }
 
 void ScoredHistoryMatch::InitializeAlsoDoHUPLikeScoringField() {

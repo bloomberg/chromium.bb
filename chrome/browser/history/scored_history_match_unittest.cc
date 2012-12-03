@@ -77,6 +77,85 @@ float ScoredHistoryMatchTest::GetTopicalityScoreOfTermAgainstURLAndTitle(
       1, url, url_matches, title_matches, word_starts);
 }
 
+TEST_F(ScoredHistoryMatchTest, MakeTermMatchesOnlyAtWordBoundaries) {
+  TermMatches matches, matches_at_word_boundaries;
+  WordStarts word_starts;
+
+  // no matches but some word starts -> no matches at word boundary
+  matches.clear();
+  word_starts.clear();
+  word_starts.push_back(2);
+  word_starts.push_back(5);
+  word_starts.push_back(10);
+  ScoredHistoryMatch::MakeTermMatchesOnlyAtWordBoundaries(
+      matches, word_starts, &matches_at_word_boundaries);
+  EXPECT_EQ(0u, matches_at_word_boundaries.size());
+
+  // matches but no word starts -> no matches at word boundary
+  matches.clear();
+  matches.push_back(TermMatch(0, 1, 2));  // 2-character match at pos 1
+  matches.push_back(TermMatch(0, 7, 2));  // 2-character match at pos 7
+  word_starts.clear();
+  ScoredHistoryMatch::MakeTermMatchesOnlyAtWordBoundaries(
+      matches, word_starts, &matches_at_word_boundaries);
+  EXPECT_EQ(0u, matches_at_word_boundaries.size());
+
+  // matches and word starts don't overlap -> no matches at word boundary
+  matches.clear();
+  matches.push_back(TermMatch(0, 1, 2));  // 2-character match at pos 1
+  matches.push_back(TermMatch(0, 7, 2));  // 2-character match at pos 7
+  word_starts.clear();
+  word_starts.push_back(2);
+  word_starts.push_back(5);
+  word_starts.push_back(10);
+  ScoredHistoryMatch::MakeTermMatchesOnlyAtWordBoundaries(
+      matches, word_starts, &matches_at_word_boundaries);
+  EXPECT_EQ(0u, matches_at_word_boundaries.size());
+
+  // some matches are at word boundary and some aren't
+  matches.clear();
+  matches.push_back(TermMatch(0, 1, 2));  // 2-character match at pos 1
+  matches.push_back(TermMatch(1, 6, 3));  // 3-character match at pos 6
+  matches.push_back(TermMatch(0, 8, 2));  // 2-character match at pos 8
+  matches.push_back(TermMatch(2, 15, 7));  // 7-character match at pos 15
+  matches.push_back(TermMatch(1, 26, 3));  // 3-character match at pos 26
+  word_starts.clear();
+  word_starts.push_back(0);
+  word_starts.push_back(6);
+  word_starts.push_back(9);
+  word_starts.push_back(15);
+  word_starts.push_back(24);
+  ScoredHistoryMatch::MakeTermMatchesOnlyAtWordBoundaries(
+      matches, word_starts, &matches_at_word_boundaries);
+  EXPECT_EQ(2u, matches_at_word_boundaries.size());
+  EXPECT_EQ(1, matches_at_word_boundaries[0].term_num);
+  EXPECT_EQ(6u, matches_at_word_boundaries[0].offset);
+  EXPECT_EQ(3u, matches_at_word_boundaries[0].length);
+  EXPECT_EQ(2, matches_at_word_boundaries[1].term_num);
+  EXPECT_EQ(15u, matches_at_word_boundaries[1].offset);
+  EXPECT_EQ(7u, matches_at_word_boundaries[1].length);
+
+  // all matches are at word boundary
+  matches.clear();
+  matches.push_back(TermMatch(0, 2, 2));  // 2-character match at pos 2
+  matches.push_back(TermMatch(1, 9, 3));  // 3-character match at pos 9
+  word_starts.clear();
+  word_starts.push_back(0);
+  word_starts.push_back(2);
+  word_starts.push_back(6);
+  word_starts.push_back(9);
+  word_starts.push_back(15);
+  ScoredHistoryMatch::MakeTermMatchesOnlyAtWordBoundaries(
+      matches, word_starts, &matches_at_word_boundaries);
+  EXPECT_EQ(2u, matches_at_word_boundaries.size());
+  EXPECT_EQ(0, matches_at_word_boundaries[0].term_num);
+  EXPECT_EQ(2u, matches_at_word_boundaries[0].offset);
+  EXPECT_EQ(2u, matches_at_word_boundaries[0].length);
+  EXPECT_EQ(1, matches_at_word_boundaries[1].term_num);
+  EXPECT_EQ(9u, matches_at_word_boundaries[1].offset);
+  EXPECT_EQ(3u, matches_at_word_boundaries[1].length);
+}
+
 TEST_F(ScoredHistoryMatchTest, Scoring) {
   URLRow row_a(MakeURLRow("http://abcdef", "fedcba", 3, 30, 1));
   // We use NowFromSystemTime() because MakeURLRow uses the same function
