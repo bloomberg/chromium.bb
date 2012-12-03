@@ -18,6 +18,9 @@ class WebUI;
 namespace chromeos {
 namespace accessibility {
 
+// Do any accessibility initialization that should happen once on startup.
+void Initialize();
+
 // Enables or disables spoken feedback. Enabling spoken feedback installs the
 // ChromeVox component extension.  If this is being called in a login/oobe
 // login screen, pass the WebUI object in login_web_ui so that ChromeVox
@@ -45,6 +48,9 @@ bool IsSpokenFeedbackEnabled();
 
 // Returns true if High Contrast is enabled, or false if not.
 bool IsHighContrastEnabled();
+
+// Returns true if the Virtual Keyboard is enabled, or false if not.
+bool IsVirtualKeyboardEnabled();
 
 // Returns the current state of the screen magnifier.
 ash::MagnifierType GetMagnifierType();

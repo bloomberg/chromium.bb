@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_STATE_IMPL_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_STATE_IMPL_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
@@ -41,6 +43,7 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   virtual void OnAccessibilityEnabledManually() OVERRIDE;
   virtual void OnScreenReaderDetected() OVERRIDE;
   virtual bool IsAccessibleBrowser() OVERRIDE;
+  virtual void AddHistogramCallback(base::Closure callback) OVERRIDE;
 
   // Called a short while after startup to allow time for the accessibility
   // state to be determined. Updates a histogram with the current state.
@@ -59,6 +62,8 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   void UpdatePlatformSpecificHistograms();
 
   AccessibilityMode accessibility_mode_;
+
+  std::vector<base::Closure> histogram_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityStateImpl);
 };
