@@ -120,9 +120,15 @@ ACCEPTABLE_ARGUMENTS = set([
     # force irt image used by tests
     'force_irt',
     # Replacement memcheck command for overriding the DEPS-in memcheck
-    # script.  May have commas to separate separate shell args.  Don't
-    # ask what if an actual comma is desired.
+    # script.  May have commas to separate separate shell args.  There
+    # is no quoting, so this implies that this mechanism will fail if
+    # the args actually need to have commas.  See
+    # http://code.google.com/p/nativeclient/issues/detail?id=3158 for
+    # the discussion of why this argument is needed.
     'memcheck_command',
+    # If the replacement memcheck command only works for trusted code,
+    # set memcheck_trusted_only to non-zero.
+    'memcheck_trusted_only',
     # colon-separated list of linker flags, e.g. "-lfoo:-Wl,-u,bar".
     'nacl_linkflags',
     # colon-separated list of pnacl bcld flags, e.g. "-lfoo:-Wl,-u,bar".
@@ -146,6 +152,13 @@ ACCEPTABLE_ARGUMENTS = set([
     #   ./scons run_hello_world_test platform=arm force_emulator= \
     #     test_wrapper="./tools/run_test_via_ssh.py --host=armbox --subdir=tmp"
     'test_wrapper',
+    # Replacement tsan command for overriding the DEPS-in tsan
+    # script.  May have commas to separate separate shell args.  There
+    # is no quoting, so this implies that this mechanism will fail if
+    # the args actually need to have commas.  See
+    # http://code.google.com/p/nativeclient/issues/detail?id=3158 for
+    # the discussion of why this argument is needed.
+    'tsan_command',
     # Run browser tests under this tool. See
     # tools/browser_tester/browsertester/browserlauncher.py for tool names.
     'browser_test_tool',
@@ -380,16 +393,18 @@ def ExpandArguments():
   elif ARGUMENTS.get('buildbot') == 'tsan':
     print 'buildbot=tsan expands to the following arguments:'
     SetArgument('run_under',
-                'src/third_party/valgrind/tsan.sh,' +
-                '--nacl-untrusted,--error-exitcode=1,' +
+                ARGUMENTS.get('tsan_command',
+                              'src/third_party/valgrind/tsan.sh') +
+                ',--nacl-untrusted,--error-exitcode=1,' +
                 '--suppressions=src/third_party/valgrind/tests.supp')
     SetArgument('scale_timeout', 20)
     SetArgument('running_on_valgrind', True)
   elif ARGUMENTS.get('buildbot') == 'tsan-trusted':
     print 'buildbot=tsan-trusted expands to the following arguments:'
     SetArgument('run_under',
-                'src/third_party/valgrind/tsan.sh,' +
-                '--error-exitcode=1,' +
+                ARGUMENTS.get('tsan_command',
+                              'src/third_party/valgrind/tsan.sh') +
+                ',--error-exitcode=1,' +
                 '--suppressions=src/third_party/valgrind/tests.supp')
     SetArgument('scale_timeout', 20)
     SetArgument('running_on_valgrind', True)

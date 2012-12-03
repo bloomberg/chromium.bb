@@ -47,16 +47,34 @@ env.AddNodeToTestSuite(node, ['memcheck_bot_tests'], 'run_memcheck_test',
 
 # Leak checker sanity test.
 if env.Bit('with_leakcheck'):
-  leak_test_nexe = env.ComponentProgram('leak_test', 'leak_test.c',
-                                        EXTRA_LIBS=['${NONIRT_LIBS}',
-                                                    '${PTHREAD_LIBS}'])
-  node = env.CommandSelLdrTestNacl(
-      'leak_test.out',
-      leak_test_nexe,
-      stderr_golden=env.File('leak_test.stderr.golden'),
-      filter_group_only='true',
-      filter_regex=(
-          "'(7,931,147 bytes in 1 blocks are definitely lost).*'"),
-      exit_status='1',
-      )
+  if ARGUMENTS.get('memcheck_trusted_only', ''):
+    # Bogus leak_test, since the buildbot_valgrind.sh script runs with
+    # run_leak_test as an explicit target, so declaring it broken with
+    # the is_broken mechanism does not work.  This is needed when
+    # memcheck_command is used to have testing done using a version of
+    # Valgrind that does not have the NaCl patches needed to trace
+    # into leaks in untrusted code.  See
+    # http://code.google.com/p/nativeclient/issues/detail?id=3158 for
+    # more information.
+    #
+    # TODO(evgeniy): decide whether this is useful in the long term,
+    # e.g., whether Valgrind/DWARF changes will again require its use,
+    # and if not, remove.
+    node = env.Command('leak_test.out',
+                       '/bin/true',
+                       '/bin/true')  # posix only but valgrind only runs there
+  else:
+    leak_test_nexe = env.ComponentProgram('leak_test', 'leak_test.c',
+                                          EXTRA_LIBS=['${NONIRT_LIBS}',
+                                                      '${PTHREAD_LIBS}'])
+    node = env.CommandSelLdrTestNacl(
+        'leak_test.out',
+        leak_test_nexe,
+        stderr_golden=env.File('leak_test.stderr.golden'),
+        filter_group_only='true',
+        filter_regex=(
+            "'(7,931,147 bytes in 1 blocks are definitely lost).*'"),
+        exit_status='1',
+        )
+
   env.AddNodeToTestSuite(node, ['memcheck_bot_tests'], 'run_leak_test')
