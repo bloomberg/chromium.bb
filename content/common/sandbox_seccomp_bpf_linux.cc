@@ -1253,6 +1253,10 @@ ErrorCode GpuProcessPolicy_x86_64(int sysno, void *) {
         // The hook needs dup(), lseek(), and close() to be allowed.
         return Sandbox::Trap(GpuOpenSIGSYS_Handler, NULL);
       }
+#if defined(ADDRESS_SANITIZER)
+    // Allow to call sched_getaffinity under AddressSanitizer.
+    case __NR_sched_getaffinity:
+#endif
     default:
       if (IsEventFd(sysno))
         return ErrorCode(ErrorCode::ERR_ALLOWED);
@@ -1274,6 +1278,10 @@ ErrorCode RendererOrWorkerProcessPolicy(int sysno, void *) {
     case __NR_mremap:   // See crbug.com/149834.
     case __NR_pread64:
     case __NR_pwrite64:
+#if defined(ADDRESS_SANITIZER)
+    // Allow to call sched_getaffinity() under AddressSanitizer.
+    case __NR_sched_getaffinity:
+#endif
     case __NR_sched_get_priority_max:
     case __NR_sched_get_priority_min:
     case __NR_sched_getparam:
