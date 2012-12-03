@@ -66,6 +66,13 @@ class ConstrainedWindowSheetControllerTest : public CocoaTest {
     return rect;
   }
 
+  void VerifySheetXPosition(NSRect sheet_frame, NSView* parent_view) {
+    NSRect parent_frame = GetViewFrameInScreenCoordinates(parent_view);
+    CGFloat expected_x = NSMinX(parent_frame) +
+        (NSWidth(parent_frame) - NSWidth(sheet_frame)) / 2.0;
+    EXPECT_EQ(expected_x, NSMinX(sheet_frame));
+  }
+
   scoped_nsobject<NSWindow> sheet_;
   scoped_nsobject<ConstrainedWindowSheetController> controller_;
   scoped_nsobject<NSMutableArray> tab_views_;
@@ -108,6 +115,7 @@ TEST_F(ConstrainedWindowSheetControllerTest, AddToInactiveTab) {
 
   ActivateTabView(tab1_);
   EXPECT_EQ(1.0, [sheet_ alphaValue]);
+  VerifySheetXPosition([sheet_ frame], tab1_);
 }
 
 // Test that two parent windows with two sheet controllers don't conflict.
@@ -141,12 +149,7 @@ TEST_F(ConstrainedWindowSheetControllerTest, TopLevelView) {
   [controller_ showSheet:sheet_ forParentView:parentView];
   EXPECT_TRUE([ConstrainedWindowSheetController controllerForSheet:sheet_]);
   EXPECT_TRUE([sheet_ isVisible]);
-
-  NSRect parent_frame = GetViewFrameInScreenCoordinates(parentView);
-  NSRect sheet_frame = [sheet_ frame];
-  CGFloat expected_x = NSMinX(parent_frame) +
-      (NSWidth(parent_frame) - NSWidth(sheet_frame)) / 2.0;
-  EXPECT_EQ(expected_x, NSMinX(sheet_frame));
+  VerifySheetXPosition([sheet_ frame], parentView);
 }
 
 // Test that resizing sheet works.
@@ -165,10 +168,7 @@ TEST_F(ConstrainedWindowSheetControllerTest, Resize) {
   EXPECT_EQ(NSMaxY(sheet_frame), NSMaxY(old_frame));
 
   // X pos should be centered on parent view.
-  NSRect parent_frame = GetViewFrameInScreenCoordinates(active_tab_view_);
-  CGFloat expected_x = NSMinX(parent_frame) +
-      (NSWidth(parent_frame) - NSWidth(sheet_frame)) / 2.0;
-  EXPECT_EQ(expected_x, NSMinX(sheet_frame));
+  VerifySheetXPosition(sheet_frame, active_tab_view_);
 }
 
 // Test that resizing a hidden sheet works.
@@ -186,5 +186,6 @@ TEST_F(ConstrainedWindowSheetControllerTest, ResizeHiddenSheet) {
   EXPECT_EQ(1.0, [sheet_ alphaValue]);
 
   NSRect new_active_frame = [sheet_ frame];
-  EXPECT_TRUE(NSEqualRects(new_inactive_frame, new_active_frame));
+  EXPECT_EQ(NSWidth(new_inactive_frame), NSWidth(new_active_frame));
+  EXPECT_EQ(NSHeight(new_inactive_frame), NSHeight(new_active_frame));
 }
