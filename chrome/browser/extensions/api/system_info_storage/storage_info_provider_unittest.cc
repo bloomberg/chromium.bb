@@ -173,7 +173,8 @@ TEST_F(StorageInfoProviderTest, WatchingOneStorage) {
   RunMessageLoopUntilTimeout(200);
 }
 
-TEST_F(StorageInfoProviderTest, WatchingMultipleStorages) {
+// Flaky: http://crbug.com/163964
+TEST_F(StorageInfoProviderTest, DISABLED_WatchingMultipleStorages) {
   // Case 2: watching multiple storages.
   for (size_t k = 1; k < arraysize(testing_data); ++k) {
     EXPECT_CALL(observer(),
