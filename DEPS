@@ -11,8 +11,6 @@ vars = {
   "webkit_revision": "136275",
   "chromium_git": "https://chromium.googlesource.com",
   "chromiumos_git": "https://chromium.googlesource.com/chromiumos",
-  "chromium_git_old": "https://git.chromium.org",
-  "chromiumos_git_old": "https://git.chromium.org/chromiumos",
   "swig_revision": "69281",
   "nacl_revision": "10345",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
@@ -524,36 +522,36 @@ deps_os = {
 
     # Used on Linux only. CrOS already has a copy.
     "src/third_party/mtpd/source":
-      Var("chromiumos_git_old") + "/platform/mtpd.git" +
+      Var("chromiumos_git") + "/platform/mtpd.git" +
       "@85d2ce42e73ca9afeffba3552a35a8d4b01b9c22",
 
     # Used on Linux only. CrOS already has a copy.
     "src/third_party/cros_dbus_cplusplus/source":
-      Var("chromiumos_git_old") + "/third_party/dbus-cplusplus.git" +
+      Var("chromiumos_git") + "/third_party/dbus-cplusplus.git" +
       "@5e8f6d9db5c2abfb91d91f751184f25bb5cd0900",
 
     # For Linux and Chromium OS.
     "src/third_party/cros_system_api":
-      Var("chromiumos_git_old") + "/platform/system_api.git" +
+      Var("chromiumos_git") + "/platform/system_api.git" +
       "@59dafd34a6eb3b6eee63b59f7cc6cd01e4fda770",
   },
   "android": {
     "src/third_party/freetype":
-      Var("chromium_git_old") + "/chromium/src/third_party/freetype.git" +
+      Var("chromium_git") + "/chromium/src/third_party/freetype.git" +
       "@96551feab72aac26836e9aaf4fae0962d39d5ab0",
 
     "src/third_party/aosp":
       "/trunk/deps/third_party/aosp@148330",
 
     "src/third_party/android_tools":
-      Var("chromium_git_old") + "/android_tools.git" +
+      Var("chromium_git") + "/android_tools.git" +
       "@1cef853f682461dbb27a4992d3d8b5bc1f69232b",
 
     "src/third_party/findbugs":
       "/trunk/deps/third_party/findbugs@163586",
 
     "src/third_party/guava/src":
-      Var("chromium_git_old") + '/external/guava-libraries.git@c523556ab7d0f05afadebd20e7768d4c16af8771',
+      Var("chromium_git") + '/external/guava-libraries.git@c523556ab7d0f05afadebd20e7768d4c16af8771',
 
     "src/third_party/jsr-305/src":
       (Var("googlecode_url") % "jsr-305") + "/trunk@51",
