@@ -12,6 +12,7 @@ vars = {
   "chromium_git": "https://chromium.googlesource.com",
   "chromiumos_git": "https://chromium.googlesource.com/chromiumos",
   "chromium_git_old": "https://git.chromium.org",
+  "chromiumos_git_old": "https://git.chromium.org/chromiumos",
   "swig_revision": "69281",
   "nacl_revision": "10345",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
@@ -523,17 +524,17 @@ deps_os = {
 
     # Used on Linux only. CrOS already has a copy.
     "src/third_party/mtpd/source":
-      Var("chromiumos_git") + "/platform/mtpd.git" +
+      Var("chromiumos_git_old") + "/platform/mtpd.git" +
       "@85d2ce42e73ca9afeffba3552a35a8d4b01b9c22",
 
     # Used on Linux only. CrOS already has a copy.
     "src/third_party/cros_dbus_cplusplus/source":
-      Var("chromiumos_git") + "/third_party/dbus-cplusplus.git" +
+      Var("chromiumos_git_old") + "/third_party/dbus-cplusplus.git" +
       "@5e8f6d9db5c2abfb91d91f751184f25bb5cd0900",
 
     # For Linux and Chromium OS.
     "src/third_party/cros_system_api":
-      Var("chromiumos_git") + "/platform/system_api.git" +
+      Var("chromiumos_git_old") + "/platform/system_api.git" +
       "@59dafd34a6eb3b6eee63b59f7cc6cd01e4fda770",
   },
   "android": {
