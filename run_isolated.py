@@ -559,7 +559,8 @@ class Remote(object):
           uncompressed_data = decompressor.flush()
           assert not uncompressed_data
         except zlib.error as e:
-          logging.debug(e)
+          # Log the first bytes to see if it's uncompressed data.
+          logging.warning('%r', e[:512])
           raise IOError(
               'Problem unzipping data for item %s. Got %d bytes.\n%s' %
               (item, size, e))
@@ -1122,10 +1123,13 @@ def main():
   logging.getLogger().setLevel(logging.DEBUG)
 
   if bool(options.isolated) == bool(options.hash):
+    logging.debug('One and only one of --isolated or --hash is required.')
     parser.error('One and only one of --isolated or --hash is required.')
   if not options.remote:
+    logging.debug('--remote is required.')
     parser.error('--remote is required.')
   if args:
+    logging.debug('Unsupported args %s' % ' '.join(args))
     parser.error('Unsupported args %s' % ' '.join(args))
 
   policies = CachePolicies(
@@ -1136,8 +1140,9 @@ def main():
         os.path.abspath(options.cache),
         options.remote,
         policies)
-  except (ConfigError, MappingError), e:
-    print >> sys.stderr, str(e)
+  except Exception, e:
+    # Make sure any exception is logged.
+    logging.exception(e)
     return 1
 
 
