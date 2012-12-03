@@ -445,6 +445,9 @@ struct ResumeUploadResponse {
   ~ResumeUploadResponse();
 
   GDataErrorCode code;
+  // The values of "Range" header returned from the server. The values are
+  // used to continue uploading more data. These are set to -1 if an upload
+  // is complete.
   int64 start_range_received;
   int64 end_range_received;  // inclusive. See below.
 };
