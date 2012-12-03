@@ -11,6 +11,7 @@ vars = {
   "webkit_revision": "136275",
   "chromium_git": "https://chromium.googlesource.com",
   "chromiumos_git": "https://chromium.googlesource.com/chromiumos",
+  "chromium_git_old": "https://git.chromium.org",
   "swig_revision": "69281",
   "nacl_revision": "10345",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
@@ -537,21 +538,21 @@ deps_os = {
   },
   "android": {
     "src/third_party/freetype":
-      Var("chromium_git") + "/chromium/src/third_party/freetype.git" +
+      Var("chromium_git_old") + "/chromium/src/third_party/freetype.git" +
       "@96551feab72aac26836e9aaf4fae0962d39d5ab0",
 
     "src/third_party/aosp":
       "/trunk/deps/third_party/aosp@148330",
 
     "src/third_party/android_tools":
-      Var("chromium_git") + "/android_tools.git" +
+      Var("chromium_git_old") + "/android_tools.git" +
       "@1cef853f682461dbb27a4992d3d8b5bc1f69232b",
 
     "src/third_party/findbugs":
       "/trunk/deps/third_party/findbugs@163586",
 
     "src/third_party/guava/src":
-      Var('chromium_git') + '/external/guava-libraries.git@c523556ab7d0f05afadebd20e7768d4c16af8771',
+      Var("chromium_git_old") + '/external/guava-libraries.git@c523556ab7d0f05afadebd20e7768d4c16af8771',
 
     "src/third_party/jsr-305/src":
       (Var("googlecode_url") % "jsr-305") + "/trunk@51",
