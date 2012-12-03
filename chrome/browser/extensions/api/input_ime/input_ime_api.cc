@@ -416,7 +416,7 @@ chromeos::InputMethodEngine* InputImeEventRouter::GetActiveEngine(
   return NULL;
 }
 
-void InputImeEventRouter::OnEventHandled(
+void InputImeEventRouter::OnKeyEventHandled(
     const std::string& extension_id,
     const std::string& request_id,
     bool handled) {
@@ -820,14 +820,14 @@ bool UpdateMenuItemsFunction::RunImpl() {
   return true;
 }
 
-bool InputEventHandled::RunImpl() {
+bool KeyEventHandled::RunImpl() {
   std::string request_id_str;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &request_id_str));
 
   bool handled = false;
   EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(1, &handled));
 
-  InputImeEventRouter::GetInstance()->OnEventHandled(
+  InputImeEventRouter::GetInstance()->OnKeyEventHandled(
       extension_id(), request_id_str, handled);
 
   return true;

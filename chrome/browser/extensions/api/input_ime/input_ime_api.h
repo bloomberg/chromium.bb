@@ -40,9 +40,9 @@ class InputImeEventRouter {
 
 
   // Called when a key event was handled.
-  void OnEventHandled(const std::string& extension_id,
-                      const std::string& request_id,
-                      bool handled);
+  void OnKeyEventHandled(const std::string& extension_id,
+                         const std::string& request_id,
+                         bool handled);
 
   std::string AddRequest(const std::string& engine_id,
                          chromeos::input_method::KeyEventHandle* key_data);
@@ -159,12 +159,12 @@ class UpdateMenuItemsFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class InputEventHandled : public AsyncExtensionFunction {
+class KeyEventHandled : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("input.ime.eventHandled");
+  DECLARE_EXTENSION_FUNCTION_NAME("input.ime.keyEventHandled");
 
  protected:
-  virtual ~InputEventHandled() {}
+  virtual ~KeyEventHandled() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;

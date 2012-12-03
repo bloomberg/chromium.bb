@@ -298,8 +298,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<extensions::SetCursorPositionFunction>();
   RegisterFunction<extensions::SetMenuItemsFunction>();
   RegisterFunction<extensions::UpdateMenuItemsFunction>();
-
-  RegisterFunction<extensions::InputEventHandled>();
+  RegisterFunction<extensions::KeyEventHandled>();
 
   // Power
   RegisterFunction<extensions::power::RequestKeepAwakeFunction>();

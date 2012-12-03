@@ -18,6 +18,19 @@ chromeHidden.registerCustomHook('input.ime', function() {
     } catch (e) {
       console.error('Error in event handler for onKeyEvent: ' + e.stack);
     }
-    chrome.input.ime.eventHandled(keyData.requestId, result);
+    if (!chrome.input.ime.onKeyEvent.async)
+      chrome.input.ime.keyEventHandled(keyData.requestId, result);
+  };
+
+  chrome.input.ime.onKeyEvent.addListener = function(cb, opt_extraInfo) {
+    chrome.input.ime.onKeyEvent.async = false;
+    if (opt_extraInfo instanceof Array) {
+      for (var i = 0; i < opt_extraInfo.length; ++i) {
+        if (opt_extraInfo[i] == "async") {
+          chrome.input.ime.onKeyEvent.async = true;
+        }
+      }
+    }
+    chrome.Event.prototype.addListener.call(this, cb, null);
   };
 });

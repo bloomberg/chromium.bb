@@ -403,13 +403,12 @@
         ]
       },
       {
-        "name": "eventHandled",
-        "nodoc": true,
+        "name": "keyEventHandled",
         "type": "function",
-        "description": "Used internally to send a response for onKeyEvent.",
+        "description": "Indicates that the key event received by onKeyEvent is handled.  This should only be called if the onKeyEvent listener is asynchronous.",
         "parameters": [
-          {"type": "string", "name": "requestId"},
-          {"type": "boolean", "name": "response"}
+          {"type": "string", "name": "requestId", "description": "Request id of the event that was handled.  This should come from keyEvent.requestId"},
+          {"type": "boolean", "name": "response", "description": "True if the keystroke was handled, false if not"}
         ]
       }
     ],
@@ -496,9 +495,22 @@
             "description": "Data on the key event"
           }
         ],
+        "extraParameters": [
+          {
+            "type": "array",
+            "optional": true,
+            "name": "extraInfoSpec",
+            "description": "Array of extra information that should be passed to the listener function.",
+            "items": {
+              "type": "string",
+              "enum": ["async"]
+            }
+          }
+        ],
         "returns": {
           "type": "boolean",
-          "description": "True if the keystroke was handled, false if not"
+          "description": "True if the keystroke was handled, false if not",
+          "optional": true
         }
       },
       {
