@@ -13,8 +13,10 @@ BrowserFocusTest.InterstitialFocus
 BrowserFocusTest.FindFocusTest
 BrowserFocusTest.FocusTraversalOnInterstitial
 
-# Don't run FAILS_ tests under Valgrind/TSan, see http://crbug.com/67959
-# NB: Don't use FAILS_ or it will be turned into *.* by chrome_tests.py :)
+# Don't run FLAKY or FAILS tests under Valgrind and TSan
+# as they tend to generate too many reports, see http://crbug.com/67959
+# NB: Can't use FAILS_/FLAKY_ as it will be turned into *.* by chrome_tests.py!
+*.FLAKY*
 *.FAILS*
 
 # Fails under Valgrind, see http://crbug.com/68068
