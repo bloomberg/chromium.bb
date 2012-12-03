@@ -714,7 +714,13 @@ def GenerateEnvironmentFiles(toplevel_build_dir, generator_flags, open_out):
   of compiler tools (cl, link, lib, rc, midl, etc.) via win_tool.py which
   sets up the environment, and then we do not prefix the compiler with
   an absolute path, instead preferring something like "cl.exe" in the rule
-  which will then run whichever the environment setup has put in the path."""
+  which will then run whichever the environment setup has put in the path.
+  When the following procedure to generate environment files does not
+  meet your requirement (e.g. for custom toolchains), you can pass
+  "-G ninja_use_custom_environment_files" to the gyp to suppress file
+  generation and use custom environment files prepared by yourself."""
+  if generator_flags.get('ninja_use_custom_environment_files', 0):
+    return
   vs = GetVSVersion(generator_flags)
   for arch in ('x86', 'x64'):
     args = vs.SetupScript(arch)
