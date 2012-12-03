@@ -115,11 +115,12 @@ _PREDEFINED_CONSTS = {
     'NZCV': dgen_core.Literal(16),  # defines conditions registers.
     'None': dgen_core.Literal(32),
     'Pc': dgen_core.Literal(15),
-    'Ln': dgen_core.Literal(14),
+    'Lr': dgen_core.Literal(14),
     'Sp': dgen_core.Literal(13),
     # Boolean values.
     'true': dgen_core.BoolValue(True),
-    'false': dgen_core.BoolValue(False)
+    'false': dgen_core.BoolValue(False),
+    'inst': dgen_core.Instruction(),
     }
 
 # When true, catch all bugs when parsing and report line.

@@ -524,6 +524,17 @@ class Instruction {
   Instruction& operator=(const Instruction& insn);  // Disallow assignment.
 };
 
+// Checks if instruction is a valid constant pool head.
+inline bool IsBreakPointAndConstantPoolHead(Instruction i) {
+  return ((i.Bits(31, 0) == kLiteralPoolHead) ||
+          (i.Bits(31, 0) == kBreakpoint));
+}
+
+// Same as above, but with integer contents of instruction as argument.
+inline bool IsBreakPointAndConstantPoolHead(uint32_t i) {
+  return IsBreakPointAndConstantPoolHead(Instruction(i));
+}
+
 }  // namespace nacl_arm_dec
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_V2_MODEL_H

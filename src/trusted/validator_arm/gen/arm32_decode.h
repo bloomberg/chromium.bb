@@ -165,14 +165,13 @@ class Arm32DecoderState : DecoderState {
   const Binary4RegisterShiftedOp Binary4RegisterShiftedOp_instance_;
   const BinaryRegisterImmediateTest BinaryRegisterImmediateTest_instance_;
   const Branch Branch_instance_;
-  const Breakpoint Breakpoint_instance_;
-  const BxBlx BxBlx_instance_;
+  const BranchToRegister BranchToRegister_instance_;
+  const BreakPointAndConstantPoolHead BreakPointAndConstantPoolHead_instance_;
   const DataBarrier DataBarrier_instance_;
   const Defs12To15CondsDontCareMsbGeLsb Defs12To15CondsDontCareMsbGeLsb_instance_;
   const Defs12To15CondsDontCareRdRnNotPc Defs12To15CondsDontCareRdRnNotPc_instance_;
   const Defs12To15CondsDontCareRdRnNotPcBitfieldExtract Defs12To15CondsDontCareRdRnNotPcBitfieldExtract_instance_;
   const Defs12To15CondsDontCareRnRdRmNotPc Defs12To15CondsDontCareRnRdRmNotPc_instance_;
-  const Defs12To15RdRnNotPc Defs12To15RdRnNotPc_instance_;
   const Defs12To19CondsDontCareRdRmRnNotPc Defs12To19CondsDontCareRdRmRnNotPc_instance_;
   const Defs16To19CondsDontCareRdRaRmRnNotPc Defs16To19CondsDontCareRdRaRmRnNotPc_instance_;
   const Defs16To19CondsDontCareRdRmRnNotPc Defs16To19CondsDontCareRdRmRnNotPc_instance_;
@@ -217,6 +216,7 @@ class Arm32DecoderState : DecoderState {
   const Unary1RegisterSet Unary1RegisterSet_instance_;
   const Unary1RegisterUse Unary1RegisterUse_instance_;
   const Unary2RegisterOp Unary2RegisterOp_instance_;
+  const Unary2RegisterOpNotRmIsPc Unary2RegisterOpNotRmIsPc_instance_;
   const Unary2RegisterShiftedOp Unary2RegisterShiftedOp_instance_;
   const Unary2RegisterShiftedOpImmNotZero Unary2RegisterShiftedOpImmNotZero_instance_;
   const Unary3RegisterShiftedOp Unary3RegisterShiftedOp_instance_;

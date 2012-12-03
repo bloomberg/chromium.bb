@@ -30,14 +30,13 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Binary4RegisterShiftedOp_instance_()
   , BinaryRegisterImmediateTest_instance_()
   , Branch_instance_()
-  , Breakpoint_instance_()
-  , BxBlx_instance_()
+  , BranchToRegister_instance_()
+  , BreakPointAndConstantPoolHead_instance_()
   , DataBarrier_instance_()
   , Defs12To15CondsDontCareMsbGeLsb_instance_()
   , Defs12To15CondsDontCareRdRnNotPc_instance_()
   , Defs12To15CondsDontCareRdRnNotPcBitfieldExtract_instance_()
   , Defs12To15CondsDontCareRnRdRmNotPc_instance_()
-  , Defs12To15RdRnNotPc_instance_()
   , Defs12To19CondsDontCareRdRmRnNotPc_instance_()
   , Defs16To19CondsDontCareRdRaRmRnNotPc_instance_()
   , Defs16To19CondsDontCareRdRmRnNotPc_instance_()
@@ -82,6 +81,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Unary1RegisterSet_instance_()
   , Unary1RegisterUse_instance_()
   , Unary2RegisterOp_instance_()
+  , Unary2RegisterOpNotRmIsPc_instance_()
   , Unary2RegisterShiftedOp_instance_()
   , Unary2RegisterShiftedOpImmNotZero_instance_()
   , Unary3RegisterShiftedOp_instance_()
@@ -1304,7 +1304,7 @@ const ClassDecoder& Arm32DecoderState::decode_miscellaneous_instructions(
   if ((inst.Bits() & 0x00000070) == 0x00000010 /* op2(6:4)=001 */ &&
       (inst.Bits() & 0x00600000) == 0x00600000 /* op(22:21)=11 */ &&
       (inst.Bits() & 0x000F0F00) == 0x000F0F00 /* $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx */) {
-    return Defs12To15RdRnNotPc_instance_;
+    return Unary2RegisterOpNotRmIsPc_instance_;
   }
 
   if ((inst.Bits() & 0x00000070) == 0x00000020 /* op2(6:4)=010 */ &&
@@ -1325,7 +1325,7 @@ const ClassDecoder& Arm32DecoderState::decode_miscellaneous_instructions(
 
   if ((inst.Bits() & 0x00000070) == 0x00000070 /* op2(6:4)=111 */ &&
       (inst.Bits() & 0x00600000) == 0x00200000 /* op(22:21)=01 */) {
-    return Breakpoint_instance_;
+    return BreakPointAndConstantPoolHead_instance_;
   }
 
   if ((inst.Bits() & 0x00000070) == 0x00000070 /* op2(6:4)=111 */ &&
@@ -1342,7 +1342,7 @@ const ClassDecoder& Arm32DecoderState::decode_miscellaneous_instructions(
   if ((inst.Bits() & 0x00000050) == 0x00000010 /* op2(6:4)=0x1 */ &&
       (inst.Bits() & 0x00600000) == 0x00200000 /* op(22:21)=01 */ &&
       (inst.Bits() & 0x000FFF00) == 0x000FFF00 /* $pattern(31:0)=xxxxxxxxxxxx111111111111xxxxxxxx */) {
-    return BxBlx_instance_;
+    return BranchToRegister_instance_;
   }
 
   if (true) {

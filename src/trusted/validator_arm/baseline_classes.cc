@@ -93,8 +93,7 @@ SafetyLevel BreakPointAndConstantPoolHead::safety(Instruction i) const {
   if (i.GetCondition() != Instruction::AL)
     return UNPREDICTABLE;
   // Restrict BKPT's encoding to values we've chosen as safe.
-  if ((i.Bits(31, 0) == kLiteralPoolHead) ||
-      (i.Bits(31, 0) == kBreakpoint))
+  if (IsBreakPointAndConstantPoolHead(i))
     return MAY_BE_SAFE;
   return FORBIDDEN_OPERANDS;
 }
@@ -123,6 +122,10 @@ SafetyLevel BranchToRegister::safety(Instruction i) const {
 RegisterList BranchToRegister::defs(Instruction i) const {
   return RegisterList(Register::Pc()).
       Add(link_register.IsUpdated(i) ? Register::Lr() : Register::None());
+}
+
+RegisterList BranchToRegister::uses(Instruction i) const {
+  return RegisterList(m.reg(i));
 }
 
 Register BranchToRegister::branch_target_register(Instruction i) const {

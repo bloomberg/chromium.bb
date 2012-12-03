@@ -273,6 +273,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | 1111        -          -     ->unconditional_instructions
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- data_processing_and_miscellaneous_instructions (See Section A5.2)
 | op(25) op1(24:20) op2(7:4)
 | 0      ~10xx0     xxx0     ->data_processing_register
@@ -695,9 +696,6 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
               rule := SMLAL_A1;
 +--
 
-# TODO(karl): Fix uses in tables below here, so that the corresponding
-#             baseline classes implement virtual uses.
-
 # None of the instructions in the following table set NZCV flags,
 # they only set the APSR's sticky Q bit (for saturation), but we
 # don't model it.
@@ -775,6 +773,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
                      rule := SMULBB_SMULBT_SMULTB_SMULTT;
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- extra_load_store_instructions (See Section A5.2.8)
 | op2(6:5) op1(24:20) Rn(19:16)
 # Note the following encodings which lead to a different table and aren't
@@ -846,10 +845,10 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
                                   cccc0001u1011111ttttiiii1111iiii
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 # extra_load_store_instructions_unpriviledged (See section A5.2.9)
 # Table omitted: modeled as Forbidden.
 # They are not expected in user code.
-
 +-- synchronization_primitives (See Section A5.2.10)
 | op(23:20)
             # SWP/SWPB are OPTIONAL+deprecated in v7 with the Virtualization
@@ -885,6 +884,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:     = Undefined # Note on page A5-16
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- msr_immediate_and_hints (See Section A5.2.11)
 | op(22) op1(19:16) op2(7:0)
 | 0      0000       0000_0000  = CondDecoder => DontCareInst
@@ -942,59 +942,101 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 +--
 
 +-- miscellaneous_instructions (See Section A5.2.12)
+*RnSet
+   { cond(31:28), R(22), Rd(15:12) }
+   baseline := Unary1RegisterSet;
+   read_spsr := R=1;
+   safety := R=1 => FORBIDDEN_OPERANDS &
+             Rd=1111 => UNPREDICTABLE;
+   defs := { Rd };
+   uses := {};
+*RnUse
+   { cond(31:28), mask(19:18), Rn(3:0) }
+   baseline := Unary1RegisterUse;
+   write_nzcvq := mask(1)=1; write_g := mask(0)=1;
+   defs := { NZCV if write_nzcvq else None };
+   uses := { Rn };
+   safety := mask=00 => UNPREDICTABLE &
+             Rn == Pc => UNPREDICTABLE;
+*Bx
+   { cond(31:28), Rm(3:0) }
+   baseline := BranchToRegister;
+   safety := Rm=1111 => FORBIDDEN_OPERANDS;
+   target := Rm;
+   defs := { Pc };
+   uses := { Rm };
+   arch := v4T;
+*Blx *Bx
+   baseline := BranchToRegister;   
+   defs := { Pc , Lr };
+   arch := v5T;
+*Clz
+   { cond(31:28), Rd(15:12), Rm(3:0) }
+   baseline := Unary2RegisterOpNotRmIsPc;
+   safety := Pc in {Rd, Rm} => UNPREDICTABLE;
+   defs := { Rd };
+   uses := { Rm };
+   arch := v5T;
+*Bkpt
+   { cond(31:28), imm12(19:8), imm4(3:0) }
+   baseline := BreakPointAndConstantPoolHead;
+   imm32 := ZeroExtend(imm12:imm4, 32);
+   pool_head := true;
+   defs := {};
+   uses := {};
+   safety := cond=~1110 => UNPREDICTABLE &
+             not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS;
+   arch := v5T;
++--
 | op2(6:4) B(9) op(22:21) op1(19:16)
 | 000      1    x0        xxxx       = ForbiddenCondDecoder => Forbidden
-                                       Msr_Rule_Banked_register_A1_B9_1990
+                                       MRS_Banked_register
                                        cccc00010r00mmmmdddd001m00000000 (v7VE)
 | "        "    x1        "          = ForbiddenCondDecoder => Forbidden
-                                       Msr_Rule_Banked_register_A1_B9_1992
+                                       MSR_Banked_register
                                        cccc00010r10mmmm1111001m0000nnnn (v7VE)
-| "        0    x0        xxxx       = Unary1RegisterSet
-                                       Mrs_Rule_102_A1_P206_Or_B6_10
-                                       cccc00010r001111dddd000000000000
-| "        "    01        xx00       = Unary1RegisterUse
-                                       Msr_Rule_104_A1_P210
-                                       cccc00010010mm00111100000000nnnn
+| "        0    x0        xxxx       = *RnSet
+                                       pattern := cccc00010r001111dddd000000000000;
+                                       rule := MRS;
+| "        "    01        xx00       = *RnUse
+                                       pattern := cccc00010010mm00111100000000nnnn;
+                                       rule := MSR_register;
 | "        "    01        xx01       = ForbiddenCondDecoder => Forbidden
-                                       Msr_Rule_B6_1_7_P14
-                                       cccc00010010mm01111100000000nnnn
-| "        "    "         xx1x       = ForbiddenCondDecoder => Forbidden
-                                       Msr_Rule_B6_1_7_P14
-                                       cccc00010010mm1m111100000000nnnn
+                                       MSR_register
+                                       cccc00010r10mmmm111100000000nnnn
+| "        "    "         xx1x       "
 | "        "    11        -          = ForbiddenCondDecoder => Forbidden
-                                       Msr_Rule_B6_1_7_P14
-                                       cccc00010110mmmm111100000000nnnn
-| 001      -    01        -          = BranchToRegister => BxBlx
-                                       Bx_Rule_25_A1_P62
-                                       cccc000100101111111111110001mmmm (v4T)
-| "        -    11        -          = Unary2RegisterOpNotRmIsPc
-                                       => Defs12To15RdRnNotPc
-                                       Clz_Rule_31_A1_P72
-                                       cccc000101101111dddd11110001mmmm (v5T)
+                                       MSR_register
+                                       cccc00010r10mmmm111100000000nnnn
+| 001      -    01        -          = *Bx
+                                       pattern := cccc000100101111111111110001mmmm;
+                                       rule := Bx;
+| "        -    11        -          = *Clz
+                                       pattern := cccc000101101111dddd11110001mmmm;
+                                       rule := CLZ;
 | 010      -    01        -          = ForbiddenCondDecoder => Forbidden
-                                       Bxj_Rule_26_A1_P64
+                                       BXJ
                                        cccc000100101111111111110010mmmm (v5TEJ)
-| 011      -    01        -          = BranchToRegister => BxBlx
-                                       Blx_Rule_24_A1_P60
-                                       cccc000100101111111111110011mmmm
-                                       RegsNotPc (v5T)
+| 011      -    01        -          = *Blx
+                                       pattern := cccc000100101111111111110011mmmm;
+                                       rule := BLX_register;
 | 101      -    -         -          ->saturating_addition_and_subtraction
 | 110      -    11        -          = ForbiddenCondDecoder => Forbidden
-                                       Eret_Rule_A1
+                                       ERET
                                        cccc0001011000000000000001101110 (v7VE)
-| 111      -    01        -          = BreakPointAndConstantPoolHead
-                                       => Breakpoint
-                                       Bkpt_Rule_22_A1_P56
-                                       cccc00010010iiiiiiiiiiii0111iiii (v5T)
+| 111      -    01        -          = *Bkpt
+                                       pattern := cccc00010010iiiiiiiiiiii0111iiii;
+                                       rule := BKPT;
 | "        -    10        -          = ForbiddenCondDecoder => Forbidden
-                                       Hvc_Rule_A1
+                                       HVC
                                        cccc00010100iiiiiiiiiiii0111iiii (v7VE)
 | "        -    11        -          = ForbiddenCondDecoder => Forbidden
-                                       Smc_Rule_B6_1_9_P18
+                                       SMC
                                        cccc000101100000000000000111iiii (SE)
 | else:                              = Undefined     # Note on page A5-18
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- load_store_word_and_unsigned_byte (See Section A5.3)
 # Note: Column op1 is repeated so that several rows can define
 # (anded) multiple test conditions for this row.
@@ -1069,6 +1111,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 # TODO(jfb) Should we mark them as unreachable?
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- load_store_word_and_unsigned_byte_str_or_push (See Section A5.3)
 # This table is written to handle special variant of Str that also
 # corresponds to a push, in table load_store_word_and_unsigned_byte.
@@ -1085,7 +1128,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
                                       & ~cccc010100101101tttt000000000100
 +--
 
-
+# TODO(karl): Add uses to corresponding classes.
 +-- media_instructions (See Section A5.4)
 | op1(24:20) op2(7:5) Rd(15:12) Rn(3:0)
 | 000xx      -        -         -     ->parallel_addition_and_subtraction_signed
@@ -1136,6 +1179,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:                               = Undefined  # Note on page A5-21
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 # None of the instructions in the following table set NZCV flags.
 # Some do set the APSR's sticky Q bit (for saturation) or the GE bits,
 # but we don't model them.
@@ -1216,6 +1260,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:               = Undefined  # Note on page A5-23
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 # None of the instructions in the following table set NZCV flags.
 # Some do set the APSR's sticky Q bit (for saturation) or the GE bits,
 # but we don't model them.
@@ -1296,6 +1341,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:               = Undefined  # Note on page A5-23
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 # None of the instructions in the following table set NZCV flags.
 # Some do set the APSR's sticky Q bit (for saturation) or the GE bits,
 # but we don't model them.
@@ -1392,6 +1438,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:                        = Undefined  # Note on page A5-24
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- signed_multiply_signed_and_unsigned_divide (See Section A5.4.4)
 | op1(22:20) op2(7:5) A(15:12)
                                  # Implements Smlad and Smladx, where
@@ -1480,6 +1527,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:                        = Undefined  # Note on page A5-26
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- branch_branch_with_link_and_block_data_transfer (See Section A5.5)
 # TODO(karl): Clean up the actual classes once baseline has been committed.
 | op(25:20) R(15) Rn(19:16)
@@ -1536,6 +1584,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
                               cccc1011iiiiiiiiiiiiiiiiiiiiiiii
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- coprocessor_instructions_and_supervisor_call (See Section A5.6)
 # Note: We currently only allow floating point (and advanced SIMD)
 # coprocessor operations (coproc=101x).
@@ -1578,6 +1627,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 |  "            10xxxx     1     -          -      -> transfer_between_arm_core_and_extension_register_8_16_and_32_bit
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- floating_point_data_processing_instructions (A7.5 Table A7-16)
 | opc1(23:20) opc3(7:6)
 | 0x00        -         = CondVfpOp => VfpOp
@@ -1610,6 +1660,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | 1x11        -         -> other_floating_point_data_processing_instructions
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- other_floating_point_data_processing_instructions (A7.5 Table A7-17)
 | opc2(19:16) opc3(7:6)
 | -           x0        = CondVfpOp => VfpOp
@@ -1655,6 +1706,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
                           cccc11101d11111udddd101fx1i0iiii (VFPv3)
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- extension_register_load_store_instructions (A7.6)
 #
 # TODO(karl): Decide if baseline classes should also be actual classes, once
@@ -1699,6 +1751,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
                             cccc11010d11nnnndddd101xiiiiiiii (VFPv2, AdvSIMD)
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- transfer_between_arm_core_and_extension_register_8_16_and_32_bit (A7.8)
 | L(20) C(8) A(23:21) B(6:5)
 | 0     0    000      -      = MoveVfpRegisterOp
@@ -1731,6 +1784,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:                      = Undefined  # Note on page A7-31
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- transfer_between_arm_core_and_extension_registers_64_bit (A7.9)
 | C(8) op(7:4)
 | 0    00x1    = MoveDoubleVfpRegisterOp
@@ -1742,6 +1796,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:        = Undefined
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- unconditional_instructions (See Section A5.7)
 | op1(27:20) op(4) Rn(19:16) op1_repeated(27:20)
 | 0xxx_xxxx  -     -         - -> memory_hints_advanced_simd_instructions_and_miscellaneous_instructions
@@ -1785,6 +1840,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:                        = Undefined
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- memory_hints_advanced_simd_instructions_and_miscellaneous_instructions (See Section A5.7.1)
 | op1(26:20) op2(7:4) Rn(19:16)
 | 001_0000   xx0x     xxx0  = ForbiddenUncondDecoder => Forbidden
@@ -1877,6 +1933,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:                     = Undefined   # Note on page A5-31
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- advanced_simd_data_processing_instructions (See Section A7.4)
 | U(24) A(23:19) B(11:8) C(7:4)
 | -     0xxxx    -       -      -> simd_dp_3same
@@ -1902,6 +1959,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:                         = Undefined  # Note on page A7-10
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- simd_dp_3same (See Section A7.4.1)
 *V3RSL VectorBinary3RegisterSameLength
    { U(24), D(22), size(21:20), Vn(19:16), Vd(15:12), op(9),
@@ -2126,6 +2184,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:                       = Undefined
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- simd_dp_3diff (See Section A7.4.2)
 *V3RDL VectorBinary3RegisterDifferentLength
    { U(24), D(22), size(21:20), Vn(19:16), Vd(15:12), op(8),
@@ -2213,6 +2272,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:         = Undefined
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- simd_dp_2scalar (See Section A7.4.3)
 *V2RS VectorBinary2RegisterScalar
    { Q(24), D(22), size(21:20), Vn(19:16), Vd(15:12), op(10),
@@ -2299,6 +2359,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:         = Undefined
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- simd_dp_2shift (See Section A7.4.4)
 *V2RSA 
    { U(24), D(22), imm6(21:16), Vd(15:12), op(8), L(7), Q(6), M(5), Vm(3:0) }
@@ -2453,6 +2514,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:                   = Undefined
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- simd_dp_2misc (See Section A7.4.5)
 *V2RM
    { D(22), size(19:18), Vd(15:12), F(10), op(8:7), Q(6), M(5), Vm(3:0) }
@@ -2669,6 +2731,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:            = Undefined
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- simd_dp_1imm (See Section A7.4.6)
 *V1RI
    { i(24), D(22), imm3(18:16), Vd(15:12), cmode(11:8), Q(6), op(5), imm4(3:0) }
@@ -2728,6 +2791,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | "     1111        = Undefined
 +--
 
+# TODO(karl): Add uses to corresponding classes.
 +-- advanced_simd_element_or_structure_load_store_instructions (See Section A7.7)
 *VLSM
    { D(22), Rn(19:16), Vd(15:12), type(11:8), size(7:6), align(5:4), Rm(3:0) }

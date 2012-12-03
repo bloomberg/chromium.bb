@@ -1106,6 +1106,10 @@ class Unary1RegisterSet : public ClassDecoder {
 // If mask<0>=1, then update GE(bits(19:16)) in APSR.
 // If mask=0, then UNPREDICTABLE.
 // If Rn=15, then UNPREDICTABLE.
+//
+// write_nzcvq := mask(1)=1; write_g := mask(0)=1;
+// defs := {NZCV if write_nzcvq else None}
+// uses := {Rn};
 class Unary1RegisterUse : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
@@ -1117,6 +1121,7 @@ class Unary1RegisterUse : public ClassDecoder {
   Unary1RegisterUse() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterUse);

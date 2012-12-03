@@ -318,6 +318,7 @@ class BranchToRegister : public ClassDecoder {
   BranchToRegister() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
   virtual Register branch_target_register(Instruction i) const;
 
  private:

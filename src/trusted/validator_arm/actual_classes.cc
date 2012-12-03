@@ -797,7 +797,7 @@ int32_t Branch::branch_target_offset(const Instruction i) const {
 // Unary1RegisterSet
 SafetyLevel Unary1RegisterSet::safety(const Instruction i) const {
   if (read_spsr.IsDefined(i)) {
-    return UNPREDICTABLE;
+    return FORBIDDEN_OPERANDS;
   }
 
   if (d.reg(i).Equals(Register::Pc())) {
@@ -829,6 +829,10 @@ SafetyLevel Unary1RegisterUse::safety(const Instruction i) const {
 RegisterList Unary1RegisterUse::defs(const Instruction i) const {
   return RegisterList((mask.value(i) < 2) ?
                       Register::None() : Register::Conditions());
+}
+
+RegisterList Unary1RegisterUse::uses(const Instruction i) const {
+  return RegisterList(n.reg(i));
 }
 
 // Unary1RegisterBitRangeMsbGeLsb
