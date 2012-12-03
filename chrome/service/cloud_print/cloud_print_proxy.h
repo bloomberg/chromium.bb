@@ -18,8 +18,8 @@
 class ServiceProcessPrefs;
 
 namespace cloud_print {
+
 struct CloudPrintProxyInfo;
-}  // namespace cloud_print
 
 // CloudPrintProxy is the layer between the service process UI thread
 // and the cloud print proxy backend.
@@ -51,7 +51,7 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
   void UnregisterPrintersAndDisableForUser();
   void DisableForUser();
   // Returns the proxy info.
-  void GetProxyInfo(cloud_print::CloudPrintProxyInfo* info);
+  void GetProxyInfo(CloudPrintProxyInfo* info);
 
   // Launches a browser to see if the proxy policy has been set.
   void CheckCloudPrintProxyPolicy();
@@ -99,5 +99,7 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintProxy);
 };
+
+}  // namespace cloud_print
 
 #endif  // CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_PROXY_H_

@@ -6,8 +6,8 @@
 
 #include "base/stringprintf.h"
 #include "base/values.h"
+#include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/common/cloud_print/cloud_print_helpers.h"
-#include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/cloud_print_token_store.h"
 #include "chrome/service/net/service_url_request_context.h"
@@ -18,6 +18,7 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
+namespace cloud_print {
 
 CloudPrintURLFetcher::ResponseAction
 CloudPrintURLFetcher::Delegate::HandleRawResponse(
@@ -122,7 +123,7 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
       // to a non-cloudprint-server URL eg. for authentication).
       bool succeeded = false;
       DictionaryValue* response_dict = NULL;
-      cloud_print::ParseResponseJSON(data, &succeeded, &response_dict);
+      ParseResponseJSON(data, &succeeded, &response_dict);
       if (response_dict)
         action = delegate_->HandleJSONData(source,
                                            source->GetURL(),
@@ -193,7 +194,7 @@ void CloudPrintURLFetcher::SetupRequestHeaders() {
   std::string headers = delegate_->GetAuthHeader();
   if (!headers.empty())
     headers += "\r\n";
-  headers += cloud_print::kChromeCloudPrintProxyHeader;
+  headers += kChromeCloudPrintProxyHeader;
   if (!additional_headers_.empty()) {
     headers += "\r\n";
     headers += additional_headers_;
@@ -212,3 +213,5 @@ net::URLRequestContextGetter* CloudPrintURLFetcher::GetRequestContextGetter() {
   getter->set_user_agent(user_agent);
   return getter;
 }
+
+}  // namespace cloud_print

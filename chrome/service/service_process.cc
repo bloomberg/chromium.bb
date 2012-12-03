@@ -270,9 +270,9 @@ bool ServiceProcess::HandleClientDisconnect() {
   return true;
 }
 
-CloudPrintProxy* ServiceProcess::GetCloudPrintProxy() {
+cloud_print::CloudPrintProxy* ServiceProcess::GetCloudPrintProxy() {
   if (!cloud_print_proxy_.get()) {
-    cloud_print_proxy_.reset(new CloudPrintProxy());
+    cloud_print_proxy_.reset(new cloud_print::CloudPrintProxy());
     cloud_print_proxy_->Initialize(service_prefs_.get(), this);
   }
   return cloud_print_proxy_.get();

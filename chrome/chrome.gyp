@@ -317,8 +317,6 @@
             'service/cloud_print/cloud_print_auth.h',
             'service/cloud_print/cloud_print_connector.cc',
             'service/cloud_print/cloud_print_connector.h',
-            'service/cloud_print/cloud_print_consts.cc',
-            'service/cloud_print/cloud_print_consts.h',
             'service/cloud_print/cloud_print_helpers.cc',
             'service/cloud_print/cloud_print_helpers.h',
             'service/cloud_print/cloud_print_proxy.cc',

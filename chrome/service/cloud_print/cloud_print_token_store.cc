@@ -7,6 +7,8 @@
 #include "base/lazy_instance.h"
 #include "base/threading/thread_local.h"
 
+namespace cloud_print {
+
 // Keep the global CloudPrintTokenStore in a TLS slot so it is impossible to
 // incorrectly from the wrong thread.
 static base::LazyInstance<base::ThreadLocalPointer<CloudPrintTokenStore> >
@@ -28,3 +30,5 @@ void CloudPrintTokenStore::SetToken(const std::string& token) {
   DCHECK(CalledOnValidThread());
   token_ = token;
 }
+
+}  // namespace cloud_print

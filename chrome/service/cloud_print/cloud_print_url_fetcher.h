@@ -23,6 +23,8 @@ class URLRequestContextGetter;
 class URLRequestStatus;
 }  // namespace net
 
+namespace cloud_print {
+
 // A wrapper around URLFetcher for CloudPrint. URLFetcher applies retry logic
 // only on HTTP response codes >= 500. In the cloud print case, we want to
 // retry on all network errors. In addition, we want to treat non-JSON responses
@@ -135,5 +137,7 @@ class CloudPrintURLFetcher
 };
 
 typedef CloudPrintURLFetcher::Delegate CloudPrintURLFetcherDelegate;
+
+}  // namespace cloud_print
 
 #endif  // CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_URL_FETCHER_H_

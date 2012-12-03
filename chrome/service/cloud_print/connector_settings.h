@@ -17,6 +17,8 @@ namespace base {
   class DictionaryValue;
 }
 
+namespace cloud_print {
+
 class ConnectorSettings {
  public:
   ConnectorSettings();
@@ -91,6 +93,8 @@ class ConnectorSettings {
 
   DISALLOW_COPY_AND_ASSIGN(ConnectorSettings);
 };
+
+}  // namespace cloud_print
 
 #endif  // CHROME_SERVICE_CLOUD_PRINT_CONNECTOR_SETTINGS_H_
 

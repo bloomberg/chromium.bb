@@ -4,10 +4,12 @@
 
 #include "chrome/service/cloud_print/cloud_print_wipeout.h"
 
-#include "chrome/service/cloud_print/cloud_print_consts.h"
-#include "chrome/service/cloud_print/cloud_print_helpers.h"
+#include "chrome/common/cloud_print/cloud_print_constants.h"
+#include "chrome/common/cloud_print/cloud_print_helpers.h"
 
 const int kMaxWipeoutAttempts = 3;
+
+namespace cloud_print {
 
 CloudPrintWipeout::CloudPrintWipeout(Client* client,
                                      const GURL& cloud_print_server_url)
@@ -33,9 +35,9 @@ void CloudPrintWipeout::UnregisterNextPrinter() {
   std::string printer_id = printer_ids_.front();
   printer_ids_.pop_front();
 
-  GURL url = CloudPrintHelpers::GetUrlForPrinterDelete(cloud_print_server_url_,
-                                                       printer_id,
-                                                       "connector_disabled");
+  GURL url = GetUrlForPrinterDelete(cloud_print_server_url_,
+                                    printer_id,
+                                    "connector_disabled");
   request_ = new CloudPrintURLFetcher;
   request_->StartGetRequest(url, this, kMaxWipeoutAttempts, std::string());
 }
@@ -61,6 +63,7 @@ CloudPrintURLFetcher::ResponseAction CloudPrintWipeout::OnRequestAuthError() {
 }
 
 std::string CloudPrintWipeout::GetAuthHeader() {
-  return CloudPrintHelpers::GetCloudPrintAuthHeader(auth_token_);
+  return GetCloudPrintAuthHeader(auth_token_);
 }
 
+}  // namespace cloud_print

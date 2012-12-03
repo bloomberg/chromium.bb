@@ -12,6 +12,8 @@
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 #include "googleurl/src/gurl.h"
 
+namespace cloud_print {
+
 // CloudPrintWipeout unregisters list of printers from the cloudprint service.
 class CloudPrintWipeout : public CloudPrintURLFetcherDelegate {
  public:
@@ -54,6 +56,8 @@ class CloudPrintWipeout : public CloudPrintURLFetcherDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintWipeout);
 };
+
+}  // namespace cloud_print
 
 #endif  // CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_WIPEOUT_H_
 

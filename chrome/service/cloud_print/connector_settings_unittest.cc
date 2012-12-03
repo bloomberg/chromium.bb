@@ -11,11 +11,13 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/values.h"
-#include "chrome/service/cloud_print/cloud_print_consts.h"
+#include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/service/service_process_prefs.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace cloud_print {
 
 const char kServiceStateContent[] =
     "{"
@@ -143,3 +145,5 @@ TEST_F(ConnectorSettingsTest, SettersTest) {
   settings.SetXmppPingTimeoutSec(1);
   EXPECT_EQ(settings.xmpp_ping_timeout_sec(), kMinimumXmppPingTimeoutSecs);
 }
+
+}  // namespace cloud_print

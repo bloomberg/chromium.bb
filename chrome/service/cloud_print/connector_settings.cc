@@ -5,8 +5,8 @@
 #include "chrome/service/cloud_print/connector_settings.h"
 
 #include "base/values.h"
+#include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/print_system.h"
 #include "chrome/service/service_process_prefs.h"
 
@@ -16,6 +16,8 @@ const char kDefaultCloudPrintServerUrl[] = "https://www.google.com/cloudprint";
 const char kDeleteOnEnumFail[] = "delete_on_enum_fail";
 
 }  // namespace
+
+namespace cloud_print {
 
 ConnectorSettings::ConnectorSettings()
     : delete_on_enum_fail_(false),
@@ -32,7 +34,7 @@ void ConnectorSettings::InitFrom(ServiceProcessPrefs* prefs) {
 
   proxy_id_ = prefs->GetString(prefs::kCloudPrintProxyId, "");
   if (proxy_id_.empty()) {
-    proxy_id_ = cloud_print::PrintSystem::GenerateProxyId();
+    proxy_id_ = PrintSystem::GenerateProxyId();
     prefs->SetString(prefs::kCloudPrintProxyId, proxy_id_);
     prefs->WritePrefs();
   }
@@ -100,3 +102,5 @@ void ConnectorSettings::SetXmppPingTimeoutSec(int timeout) {
     xmpp_ping_timeout_sec_ = kMinimumXmppPingTimeoutSecs;
   }
 }
+
+}  // namespace cloud_print

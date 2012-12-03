@@ -4,101 +4,101 @@
 
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 
+#include "base/md5.h"
 #include "base/stringprintf.h"
+#include "base/sys_info.h"
+#include "chrome/common/chrome_version_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace cloud_print {
 
 namespace {
 
-void CheckURLs(const GURL& server_base_url) {
-  GURL url = CloudPrintHelpers::GetUrlForPrinterRegistration(server_base_url);
+void CheckJobStatusURLs(const GURL& server_base_url) {
   std::string expected_url_base = server_base_url.spec();
-  if (expected_url_base[expected_url_base.length() - 1] != '/') {
+  if (expected_url_base[expected_url_base.length() - 1] != '/')
     expected_url_base += "/";
-  }
-  std::string expected_url = base::StringPrintf("%sregister",
-                                                expected_url_base.c_str());
-  EXPECT_EQ(expected_url, url.spec());
 
-  url = CloudPrintHelpers::GetUrlForPrinterUpdate(server_base_url,
-                                                  "printeridfoo");
-  expected_url = base::StringPrintf("%supdate?printerid=printeridfoo",
-                                    expected_url_base.c_str());
-  EXPECT_EQ(expected_url, url.spec());
+  EXPECT_EQ(base::StringPrintf("%scontrol?jobid=87654321&status=ERROR",
+                expected_url_base.c_str()),
+            GetUrlForJobStatusUpdate(server_base_url, "87654321",
+                PRINT_JOB_STATUS_ERROR).spec());
 
-  url = CloudPrintHelpers::GetUrlForPrinterDelete(server_base_url,
-                                                  "printeridbar", "deleted");
-  expected_url = base::StringPrintf(
-      "%sdelete?printerid=printeridbar&reason=deleted",
-      expected_url_base.c_str());
-  EXPECT_EQ(expected_url, url.spec());
-
-  url = CloudPrintHelpers::GetUrlForPrinterList(server_base_url, "demoproxy");
-  expected_url = base::StringPrintf("%slist?proxy=demoproxy",
-                                    expected_url_base.c_str());
-  EXPECT_EQ(expected_url, url.spec());
-
-  url = CloudPrintHelpers::GetUrlForJobFetch(server_base_url,
-                                             "myprinter",
-                                             "nogoodreason");
-  expected_url = base::StringPrintf(
-      "%sfetch?printerid=myprinter&deb=nogoodreason",
-      expected_url_base.c_str());
-  EXPECT_EQ(expected_url, url.spec());
-
-  url = CloudPrintHelpers::GetUrlForJobStatusUpdate(
-      server_base_url, "12345678", cloud_print::PRINT_JOB_STATUS_IN_PROGRESS);
-  expected_url = base::StringPrintf(
-      "%scontrol?jobid=12345678&status=IN_PROGRESS", expected_url_base.c_str());
-  EXPECT_EQ(expected_url, url.spec());
-
-  url = CloudPrintHelpers::GetUrlForJobStatusUpdate(
-      server_base_url, "12345678", cloud_print::PRINT_JOB_STATUS_ERROR);
-  expected_url = base::StringPrintf("%scontrol?jobid=12345678&status=ERROR",
-                                    expected_url_base.c_str());
-  EXPECT_EQ(expected_url, url.spec());
-
-  url = CloudPrintHelpers::GetUrlForJobStatusUpdate(
-      server_base_url, "12345678", cloud_print::PRINT_JOB_STATUS_COMPLETED);
-  expected_url = base::StringPrintf("%scontrol?jobid=12345678&status=DONE",
-                                    expected_url_base.c_str());
-  EXPECT_EQ(expected_url, url.spec());
-
-  cloud_print::PrintJobDetails details;
-  details.status = cloud_print::PRINT_JOB_STATUS_IN_PROGRESS;
+  PrintJobDetails details;
+  details.status = PRINT_JOB_STATUS_IN_PROGRESS;
   details.platform_status_flags = 2;
   details.status_message = "Out of Paper";
   details.total_pages = 345;
   details.pages_printed = 47;
-  url = CloudPrintHelpers::GetUrlForJobStatusUpdate(server_base_url,
-                                                    "87654321", details);
-  expected_url = base::StringPrintf(
-      "%scontrol?jobid=87654321&status=IN_PROGRESS&code=2"
-      "&message=Out%%20of%%20Paper&numpages=345&pagesprinted=47",
-      expected_url_base.c_str());
-  EXPECT_EQ(expected_url, url.spec());
-
-  url = CloudPrintHelpers::GetUrlForUserMessage(server_base_url,
-                                                "blahmessageid");
-  expected_url = base::StringPrintf("%smessage?code=blahmessageid",
-                                    expected_url_base.c_str());
-  EXPECT_EQ(expected_url, url.spec());
-
-  url = CloudPrintHelpers::GetUrlForGetAuthCode(
-      server_base_url,
-      "fooclientid.apps.googleusercontent.com",
-      "test_proxy");
-  expected_url = base::StringPrintf(
-      "%screaterobot?oauth_client_id=fooclientid.apps.googleusercontent.com&"
-      "proxy=test_proxy", expected_url_base.c_str());
-  EXPECT_EQ(expected_url, url.spec());
+  EXPECT_EQ(base::StringPrintf(
+                "%scontrol?jobid=87654321&status=IN_PROGRESS&code=2"
+                "&message=Out%%20of%%20Paper&numpages=345&pagesprinted=47",
+                expected_url_base.c_str()),
+            GetUrlForJobStatusUpdate(
+                server_base_url, "87654321", details).spec());
 }
 
 }  // namespace
 
-TEST(CloudPrintHelpersTest, URLGetters) {
-  CheckURLs(GURL("https://www.google.com/cloudprint"));
-  CheckURLs(GURL("https://www.google.com/cloudprint/"));
-  CheckURLs(GURL("http://www.myprinterserver.com"));
-  CheckURLs(GURL("http://www.myprinterserver.com/"));
+TEST(CloudPrintServiceHelpersTest, GetURLs) {
+  CheckJobStatusURLs(GURL("https://www.google.com/cloudprint"));
+  CheckJobStatusURLs(GURL("https://www.google.com/cloudprint/"));
+  CheckJobStatusURLs(GURL("http://www.myprinterserver.com"));
+  CheckJobStatusURLs(GURL("http://www.myprinterserver.com/"));
 }
+
+TEST(CloudPrintServiceHelpersTest, GetHashOfPrinterInfo) {
+  printing::PrinterBasicInfo printer_info;
+  printer_info.options["tag1"] = std::string("value1");
+  printer_info.options["tag2"] = std::string("value2");
+
+  chrome::VersionInfo version_info;
+  std::string expected_list_string = StringPrintf(
+      "chrome_version%ssystem_name%ssystem_version%stag1value1tag2value2",
+      version_info.CreateVersionString().c_str(),
+      base::SysInfo::OperatingSystemName().c_str(),
+      base::SysInfo::OperatingSystemVersion().c_str());
+  EXPECT_EQ(base::MD5String(expected_list_string),
+            GetHashOfPrinterInfo(printer_info));
+}
+
+TEST(CloudPrintServiceHelpersTest, GetPostDataForPrinterInfo) {
+  printing::PrinterBasicInfo printer_info;
+  printer_info.options["tag1"] = std::string("value1");
+  printer_info.options["tag2"] = std::string("value2");
+
+  chrome::VersionInfo version_info;
+  std::string expected = base::StringPrintf(
+      "--test_mime_boundary\r\nContent-Disposition: form-data; name=\"tag\""
+      "\r\n\r\n__cp__chrome_version=%s\r\n"
+      "--test_mime_boundary\r\nContent-Disposition: form-data; name=\"tag\""
+      "\r\n\r\n__cp__system_name=%s\r\n"
+      "--test_mime_boundary\r\nContent-Disposition: form-data; name=\"tag\""
+      "\r\n\r\n__cp__system_version=%s\r\n"
+      "--test_mime_boundary\r\nContent-Disposition: form-data; name=\"tag\""
+      "\r\n\r\n__cp__tag1=value1\r\n"
+      "--test_mime_boundary\r\nContent-Disposition: form-data; name=\"tag\""
+      "\r\n\r\n__cp__tag2=value2\r\n"
+      "--test_mime_boundary\r\nContent-Disposition: form-data; name=\"tag\""
+      "\r\n\r\n__cp__tagshash=%s\r\n",
+      version_info.CreateVersionString().c_str(),
+      base::SysInfo::OperatingSystemName().c_str(),
+      base::SysInfo::OperatingSystemVersion().c_str(),
+      GetHashOfPrinterInfo(printer_info).c_str());
+
+  EXPECT_EQ(expected, GetPostDataForPrinterInfo(
+      printer_info, std::string("test_mime_boundary")));
+}
+
+TEST(CloudPrintServiceHelpersTest, IsDryRunJob) {
+  std::vector<std::string> tags_not_dry_run;
+  tags_not_dry_run.push_back("tag_1");
+  EXPECT_FALSE(IsDryRunJob(tags_not_dry_run));
+
+  std::vector<std::string> tags_dry_run;
+  tags_dry_run.push_back("__cp__dry_run");
+  EXPECT_TRUE(IsDryRunJob(tags_dry_run));
+}
+
+}  // namespace cloud_print
 

@@ -5,7 +5,9 @@
 #ifndef CHROME_COMMON_CLOUD_PRINT_CLOUD_PRINT_HELPERS_H_
 #define CHROME_COMMON_CLOUD_PRINT_CLOUD_PRINT_HELPERS_H_
 
+#include <map>
 #include <string>
+#include <vector>
 
 class GURL;
 
@@ -16,11 +18,8 @@ class DictionaryValue;
 // Helper consts and methods for both cloud print and chrome browser.
 namespace cloud_print {
 
-// Values in the respone JSON from the cloud print server
-extern const char kPrinterListValue[];
-extern const char kSuccessValue[];
-
-extern const char kChromeCloudPrintProxyHeader[];
+// A map representing printer tags.
+typedef std::map<std::string, std::string> PrinterTags;
 
 // Appends a relative path to the url making sure to append a '/' if the
 // URL's path does not end with a slash. It is assumed that |path| does not
@@ -32,6 +31,27 @@ std::string AppendPathToUrl(const GURL& url, const std::string& path);
 
 GURL GetUrlForSearch(const GURL& cloud_print_server_url);
 GURL GetUrlForSubmit(const GURL& cloud_print_server_url);
+GURL GetUrlForPrinterList(const GURL& cloud_print_server_url,
+                          const std::string& proxy_id);
+GURL GetUrlForPrinterRegistration(const GURL& cloud_print_server_url);
+GURL GetUrlForPrinterUpdate(const GURL& cloud_print_server_url,
+                            const std::string& printer_id);
+GURL GetUrlForPrinterDelete(const GURL& cloud_print_server_url,
+                            const std::string& printer_id,
+                            const std::string& reason);
+GURL GetUrlForJobFetch(const GURL& cloud_print_server_url,
+                       const std::string& printer_id,
+                       const std::string& reason);
+GURL GetUrlForJobDelete(const GURL& cloud_print_server_url,
+                        const std::string& job_id);
+GURL GetUrlForJobStatusUpdate(const GURL& cloud_print_server_url,
+                              const std::string& job_id,
+                              const std::string& status_string);
+GURL GetUrlForUserMessage(const GURL& cloud_print_server_url,
+                          const std::string& message_id);
+GURL GetUrlForGetAuthCode(const GURL& cloud_print_server_url,
+                          const std::string& oauth_client_id,
+                          const std::string& proxy_id);
 
 // Parses the response data for any cloud print server request. The method
 // returns false if there was an error in parsing the JSON. The succeeded
@@ -48,8 +68,24 @@ void AddMultipartValueForUpload(const std::string& value_name,
                                 const std::string& content_type,
                                 std::string* post_data);
 
+// Returns the MIME type of multipart with |mime_boundary|.
+std::string GetMultipartMimeType(const std::string& mime_boundary);
+
 // Create a MIME boundary marker (27 '-' characters followed by 16 hex digits).
 void CreateMimeBoundaryForUpload(std::string *out);
+
+// Returns an MD5 hash for |printer_tags| and the default required tags.
+std::string GetHashOfPrinterTags(const PrinterTags& printer_tags);
+
+// Returns the post data for |printer_tags| and the default required tags.
+std::string GetPostDataForPrinterTags(
+    const PrinterTags& printer_tags,
+    const std::string& mime_boundary,
+    const std::string& proxy_tag_prefix,
+    const std::string& tags_hash_tag_name);
+
+// Get the cloud print auth header from |auth_token|.
+std::string GetCloudPrintAuthHeader(const std::string& auth_token);
 
 }  // namespace cloud_print
 

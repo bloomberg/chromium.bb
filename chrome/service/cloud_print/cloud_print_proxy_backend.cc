@@ -14,9 +14,9 @@
 #include "base/rand_util.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/service/cloud_print/cloud_print_auth.h"
 #include "chrome/service/cloud_print/cloud_print_connector.h"
-#include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/cloud_print_token_store.h"
 #include "chrome/service/cloud_print/connector_settings.h"
@@ -31,6 +31,8 @@
 #include "jingle/notifier/listener/push_client.h"
 #include "jingle/notifier/listener/push_client_observer.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace cloud_print {
 
 // The real guts of CloudPrintProxyBackend, to keep the public client API clean.
 class CloudPrintProxyBackend::Core
@@ -576,3 +578,4 @@ void CloudPrintProxyBackend::Core::OnPingResponse() {
   VLOG(1) << "CP_CONNECTOR: Ping response received.";
 }
 
+}  // namespace cloud_print

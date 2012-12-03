@@ -15,6 +15,8 @@
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
 
+namespace cloud_print {
+
 // Periodically monitors the status of a local print job and updates the
 // cloud print server accordingly. When the job has been completed this
 // object releases the reference to itself which should cause it to
@@ -33,9 +35,9 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
 
   JobStatusUpdater(const std::string& printer_name,
                    const std::string& job_id,
-                   cloud_print::PlatformJobId& local_job_id,
+                   PlatformJobId& local_job_id,
                    const GURL& cloud_print_server_url,
-                   cloud_print::PrintSystem* print_system,
+                   PrintSystem* print_system,
                    Delegate* delegate);
 
   // Checks the status of the local print job and sends an update.
@@ -57,11 +59,11 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
 
   std::string printer_name_;
   std::string job_id_;
-  cloud_print::PlatformJobId local_job_id_;
-  cloud_print::PrintJobDetails last_job_details_;
+  PlatformJobId local_job_id_;
+  PrintJobDetails last_job_details_;
   scoped_refptr<CloudPrintURLFetcher> request_;
   GURL cloud_print_server_url_;
-  scoped_refptr<cloud_print::PrintSystem> print_system_;
+  scoped_refptr<PrintSystem> print_system_;
   Delegate* delegate_;
   // A flag that is set to true in Stop() and will ensure the next scheduled
   // task will do nothing.
@@ -74,5 +76,7 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
 // classes and gives a C2500 error. (I saw this error on the try bots -
 // the workaround was not needed for my machine).
 typedef JobStatusUpdater::Delegate JobStatusUpdaterDelegate;
+
+}  // namespace cloud_print
 
 #endif  // CHROME_SERVICE_CLOUD_PRINT_JOB_STATUS_UPDATER_H_

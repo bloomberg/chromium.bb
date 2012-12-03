@@ -31,7 +31,7 @@ class CommandLine;
 // process can live independently of the browser process.
 // ServiceProcess Design Notes
 // https://sites.google.com/a/chromium.org/dev/developers/design-documents/service-processes
-class ServiceProcess : public CloudPrintProxy::Client {
+class ServiceProcess : public cloud_print::CloudPrintProxy::Client {
  public:
   ServiceProcess();
   virtual ~ServiceProcess();
@@ -86,7 +86,7 @@ class ServiceProcess : public CloudPrintProxy::Client {
   // connections.
   bool HandleClientDisconnect();
 
-  CloudPrintProxy* GetCloudPrintProxy();
+  cloud_print::CloudPrintProxy* GetCloudPrintProxy();
 
   // CloudPrintProxy::Client implementation.
   virtual void OnCloudPrintProxyEnabled(bool persist_state) OVERRIDE;
@@ -125,7 +125,7 @@ class ServiceProcess : public CloudPrintProxy::Client {
   scoped_ptr<base::Thread> io_thread_;
   scoped_ptr<base::Thread> file_thread_;
   scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
-  scoped_ptr<CloudPrintProxy> cloud_print_proxy_;
+  scoped_ptr<cloud_print::CloudPrintProxy> cloud_print_proxy_;
   scoped_ptr<ServiceProcessPrefs> service_prefs_;
   scoped_ptr<ServiceIPCServer> ipc_server_;
   scoped_ptr<ServiceProcessState> service_process_state_;

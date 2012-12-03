@@ -20,6 +20,8 @@ namespace gaia {
 struct OAuthClientInfo;
 }
 
+namespace cloud_print {
+
 // CloudPrintProxyFrontend is the interface used by CloudPrintProxyBackend to
 // communicate with the entity that created it and, presumably, is interested in
 // cloud print proxy related activity.
@@ -101,5 +103,7 @@ class CloudPrintProxyBackend {
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintProxyBackend);
 };
+
+}  // namespace cloud_print
 
 #endif  // CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_PROXY_BACKEND_H_

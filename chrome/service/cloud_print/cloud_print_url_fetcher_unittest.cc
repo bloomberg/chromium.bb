@@ -21,7 +21,7 @@
 using base::Time;
 using base::TimeDelta;
 
-namespace {
+namespace cloud_print {
 
 const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 
@@ -375,4 +375,4 @@ TEST_F(CloudPrintURLFetcherRetryBackoffTest, DISABLED_GiveUp) {
   MessageLoop::current()->Run();
 }
 
-}  // namespace.
+}  // namespace cloud_print

@@ -5,62 +5,38 @@
 #ifndef CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_HELPERS_H_
 #define CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_HELPERS_H_
 
-#include <map>
 #include <string>
 #include <vector>
 
 #include "chrome/service/cloud_print/print_system.h"
 #include "googleurl/src/gurl.h"
 
-namespace base {
-class DictionaryValue;
-}
+namespace cloud_print {
 
 // Helper methods for the cloud print proxy code.
-class CloudPrintHelpers {
- public:
-  static GURL GetUrlForPrinterRegistration(const GURL& cloud_print_server_url);
-  static GURL GetUrlForPrinterUpdate(const GURL& cloud_print_server_url,
-                                     const std::string& printer_id);
-  static GURL GetUrlForPrinterDelete(const GURL& cloud_print_server_url,
-                                     const std::string& printer_id,
-                                     const std::string& reason);
-  static GURL GetUrlForPrinterList(const GURL& cloud_print_server_url,
-                                   const std::string& proxy_id);
-  static GURL GetUrlForJobFetch(const GURL& cloud_print_server_url,
-                                const std::string& printer_id,
-                                const std::string& reason);
-  static GURL GetUrlForJobStatusUpdate(const GURL& cloud_print_server_url,
-                                       const std::string& job_id,
-                                       cloud_print::PrintJobStatus status);
-  static GURL GetUrlForJobStatusUpdate(
-      const GURL& cloud_print_server_url,
-      const std::string& job_id,
-      const cloud_print::PrintJobDetails& details);
-  static GURL GetUrlForUserMessage(const GURL& cloud_print_server_url,
-                                   const std::string& message_id);
-  static GURL GetUrlForGetAuthCode(const GURL& cloud_print_server_url,
-                                   const std::string& oauth_client_id,
-                                   const std::string& proxy_id);
+GURL GetUrlForJobStatusUpdate(const GURL& cloud_print_server_url,
+                              const std::string& job_id,
+                              PrintJobStatus status);
 
-  // Returns an MD5 hash for printer tags.
-  static std::string GetHashOfPrinterTags(
-      const printing::PrinterBasicInfo& printer);
-  // Returns an post data for printer tags.
-  static std::string GetPostDataForPrinterTags(
-      const printing::PrinterBasicInfo& printer_info,
-      const std::string& mime_boundary);
+GURL GetUrlForJobStatusUpdate(const GURL& cloud_print_server_url,
+                              const std::string& job_id,
+                              const PrintJobDetails& details);
 
-  // Returns true is tags indicate a dry run (test) job.
-  static bool IsDryRunJob(const std::vector<std::string>& tags);
+// Returns an MD5 hash for printer tags in the given |printer_info|.
+std::string GetHashOfPrinterInfo(
+    const printing::PrinterBasicInfo& printer_info);
 
-  // Created CloudPrint auth header from the auth token stored in the store.
-  static std::string GetCloudPrintAuthHeaderFromStore();
-  // Created CloudPrint auth header from the auth token.
-  static std::string GetCloudPrintAuthHeader(const std::string& auth_token);
+// Returns any post data for printer tags in the given |printer_info|.
+std::string GetPostDataForPrinterInfo(
+    const printing::PrinterBasicInfo& printer_info,
+    const std::string& mime_boundary);
 
- private:
-  CloudPrintHelpers() {}
-};
+// Returns true if tags indicate a dry run (test) job.
+bool IsDryRunJob(const std::vector<std::string>& tags);
+
+// Created cloud print auth header from the auth token stored in the store.
+std::string GetCloudPrintAuthHeaderFromStore();
+
+}  // namespace cloud_print
 
 #endif  // CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_HELPERS_H_

@@ -12,6 +12,8 @@
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "googleurl/src/gurl.h"
 
+namespace cloud_print {
+
 // CloudPrintAuth is a class to handle login, token refresh, and other
 // authentication tasks for Cloud Print.
 // CloudPrintAuth will create new robot account for this proxy if needed.
@@ -108,6 +110,8 @@ class CloudPrintAuth
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintAuth);
 };
+
+}  // namespace cloud_print
 
 #endif  // CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_AUTH_H_
 

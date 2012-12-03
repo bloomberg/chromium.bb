@@ -15,6 +15,8 @@
 #include "chrome/service/cloud_print/print_system.h"
 #include "chrome/service/cloud_print/printer_job_handler.h"
 
+namespace cloud_print {
+
 // CloudPrintConnector handles top printer management tasks.
 //  - Matching local and cloud printers
 //  - Registration of local printers
@@ -24,7 +26,7 @@
 // CloudPrintConnector will notify client over Client interface.
 class CloudPrintConnector
     : public base::RefCountedThreadSafe<CloudPrintConnector>,
-      private cloud_print::PrintServerWatcherDelegate,
+      private PrintServerWatcherDelegate,
       private PrinterJobHandlerDelegate,
       private CloudPrintURLFetcherDelegate {
  public:
@@ -78,7 +80,7 @@ class CloudPrintConnector
   };
 
   virtual ~CloudPrintConnector();
-  // cloud_print::PrintServerWatcherDelegate implementation
+  // PrintServerWatcherDelegate implementation
   virtual void OnPrinterAdded() OVERRIDE;
   // PrinterJobHandler::Delegate implementation
   virtual void OnPrinterDeleted(const std::string& printer_name) OVERRIDE;
@@ -162,9 +164,9 @@ class CloudPrintConnector
   // Connector settings.
   ConnectorSettings settings_;
   // Pointer to current print system.
-  scoped_refptr<cloud_print::PrintSystem> print_system_;
+  scoped_refptr<PrintSystem> print_system_;
   // Watcher for print system updates.
-  scoped_refptr<cloud_print::PrintSystem::PrintServerWatcher>
+  scoped_refptr<PrintSystem::PrintServerWatcher>
       print_server_watcher_;
   // A map of printer id to job handler.
   typedef std::map<std::string, scoped_refptr<PrinterJobHandler> >
@@ -181,6 +183,8 @@ class CloudPrintConnector
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintConnector);
 };
+
+}  // namespace cloud_print
 
 #endif  // CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_CONNECTOR_H_
 

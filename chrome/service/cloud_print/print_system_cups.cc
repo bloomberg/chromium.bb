@@ -26,7 +26,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome/service/cloud_print/cloud_print_consts.h"
+#include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -786,7 +786,7 @@ PlatformJobId PrintSystemCUPS::SpoolPrintJob(
   DCHECK(res);  // If print ticket is invalid we still print using defaults.
 
   // Check if this is a dry run (test) job.
-  *dry_run = CloudPrintHelpers::IsDryRunJob(tags);
+  *dry_run = IsDryRunJob(tags);
   if (*dry_run) {
     VLOG(1) << "CP_CUPS: Dry run job spooled";
     return kDryRunJobId;

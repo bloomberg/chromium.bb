@@ -9,16 +9,18 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/service/cloud_print/cloud_print_consts.h"
+#include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "googleurl/src/gurl.h"
 
+namespace cloud_print {
+
 JobStatusUpdater::JobStatusUpdater(const std::string& printer_name,
-                           const std::string& job_id,
-                           cloud_print::PlatformJobId& local_job_id,
-                           const GURL& cloud_print_server_url,
-                           cloud_print::PrintSystem* print_system,
-                           Delegate* delegate)
+                                   const std::string& job_id,
+                                   PlatformJobId& local_job_id,
+                                   const GURL& cloud_print_server_url,
+                                   PrintSystem* print_system,
+                                   Delegate* delegate)
     : printer_name_(printer_name), job_id_(job_id),
       local_job_id_(local_job_id),
       cloud_print_server_url_(cloud_print_server_url),
@@ -36,10 +38,10 @@ void JobStatusUpdater::UpdateStatus() {
     // If the job has already been completed, we just need to update the server
     // with that status. The *only* reason we would come back here in that case
     // is if our last server update attempt failed.
-    if (last_job_details_.status == cloud_print::PRINT_JOB_STATUS_COMPLETED) {
+    if (last_job_details_.status == PRINT_JOB_STATUS_COMPLETED) {
       need_update = true;
     } else {
-      cloud_print::PrintJobDetails details;
+      PrintJobDetails details;
       if (print_system_->GetJobDetails(printer_name_, local_job_id_,
               &details)) {
         if (details != last_job_details_) {
@@ -51,14 +53,14 @@ void JobStatusUpdater::UpdateStatus() {
         // longer exists in the OS queue. We are going to assume it is done in
         // this case.
         last_job_details_.Clear();
-        last_job_details_.status = cloud_print::PRINT_JOB_STATUS_COMPLETED;
+        last_job_details_.status = PRINT_JOB_STATUS_COMPLETED;
         need_update = true;
       }
     }
     if (need_update) {
       request_ = new CloudPrintURLFetcher;
       request_->StartGetRequest(
-          CloudPrintHelpers::GetUrlForJobStatusUpdate(
+          GetUrlForJobStatusUpdate(
               cloud_print_server_url_, job_id_, last_job_details_),
           this,
           kCloudPrintAPIMaxRetryCount,
@@ -80,7 +82,7 @@ CloudPrintURLFetcher::ResponseAction JobStatusUpdater::HandleJSONData(
       const GURL& url,
       DictionaryValue* json_data,
       bool succeeded) {
-  if (last_job_details_.status == cloud_print::PRINT_JOB_STATUS_COMPLETED) {
+  if (last_job_details_.status == PRINT_JOB_STATUS_COMPLETED) {
     MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&JobStatusUpdater::Stop, this));
   }
@@ -98,7 +100,9 @@ CloudPrintURLFetcher::ResponseAction JobStatusUpdater::OnRequestAuthError() {
 }
 
 std::string JobStatusUpdater::GetAuthHeader() {
-  return CloudPrintHelpers::GetCloudPrintAuthHeaderFromStore();
+  return GetCloudPrintAuthHeaderFromStore();
 }
 
 JobStatusUpdater::~JobStatusUpdater() {}
+
+}  // namespace cloud_print

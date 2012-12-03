@@ -10,9 +10,9 @@
 #include "base/process_util.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/common/cloud_print/cloud_print_proxy_info.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/print_system.h"
 #include "chrome/service/service_process.h"
 #include "chrome/service/service_process_prefs.h"
@@ -64,6 +64,8 @@ void CheckCloudPrintProxyPolicyInBrowser() {
 }
 
 }  // namespace
+
+namespace cloud_print {
 
 CloudPrintProxy::CloudPrintProxy()
     : service_prefs_(NULL),
@@ -200,7 +202,7 @@ void CloudPrintProxy::DisableForUser() {
   ShutdownBackend();
 }
 
-void CloudPrintProxy::GetProxyInfo(cloud_print::CloudPrintProxyInfo* info) {
+void CloudPrintProxy::GetProxyInfo(CloudPrintProxyInfo* info) {
   info->enabled = enabled_;
   info->email.clear();
   if (enabled_)
@@ -283,3 +285,5 @@ void CloudPrintProxy::ShutdownBackend() {
     backend_->Shutdown();
   backend_.reset();
 }
+
+}  // namespace cloud_print

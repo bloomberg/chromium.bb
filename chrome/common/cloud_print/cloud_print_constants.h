@@ -1,13 +1,26 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_CONSTS_H_
-#define CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_CONSTS_H_
+#ifndef CHROME_COMMON_CLOUD_PRINT_CLOUD_PRINT_CONSTANTS_H_
+#define CHROME_COMMON_CLOUD_PRINT_CLOUD_PRINT_CONSTANTS_H_
 
 #include "base/basictypes.h"
 
-// Constant defines used in the cloud print proxy code
+namespace cloud_print {
+
+// The string to be appended to the user-agent for cloud print requests.
+extern const char kCloudPrintUserAgent[];
+// The proxy header required by cloud print server.
+extern const char kChromeCloudPrintProxyHeader[];
+// The service id of cloud print used in gaia authentication.
+extern const char kCloudPrintGaiaServiceId[];
+// The user agent string used in gaia authentication.
+extern const char kProxyAuthUserAgent[];
+// The source of cloud print notifications.
+extern const char kCloudPrintPushNotificationsSource[];
+
+// Values used to register or update a printer with the cloud print service.
 extern const char kProxyIdValue[];
 extern const char kPrinterNameValue[];
 extern const char kPrinterDescValue[];
@@ -18,37 +31,47 @@ extern const char kPrinterTagValue[];
 extern const char kPrinterRemoveTagValue[];
 extern const char kMessageTextValue[];
 
-// Values in the respone JSON from the cloud print server
+// Value of "code" parameter in cloud print "/message" requests.
+extern const char kPrintSystemFailedMessageId[];
+extern const char kGetPrinterCapsFailedMessageId[];
+extern const char kEnumPrintersFailedMessageId[];
+extern const char kZombiePrinterMessageId[];
+
+// Values in the respone JSON from the cloud print server.
+extern const char kSuccessValue[];
 extern const char kNameValue[];
 extern const char kIdValue[];
 extern const char kTicketUrlValue[];
 extern const char kFileUrlValue[];
+extern const char kPrinterListValue[];
 extern const char kJobListValue[];
 extern const char kTitleValue[];
 extern const char kPrinterCapsHashValue[];
 extern const char kTagsValue[];
 extern const char kXMPPJidValue[];
 extern const char kOAuthCodeValue[];
+extern const char kCreateTimeValue[];
+extern const char kPrinterTypeValue[];
 
-extern const char kProxyTagPrefix[];
-extern const char kTagsHashTagName[];
-extern const char kTagDryRunFlag[];
+// Printer tag names. Don't need prefixes. They will be added on submit.
 extern const char kChromeVersionTagName[];
 extern const char kSystemNameTagName[];
 extern const char kSystemVersionTagName[];
 
-extern const char kCloudPrintGaiaServiceId[];
-extern const char kProxyAuthUserAgent[];
-extern const char kCloudPrintPushNotificationsSource[];
-extern const char kCloudPrintUserAgent[];
+// Tags for cloud print service.
+extern const char kCloudPrintServiceProxyTagPrefix[];
+extern const char kCloudPrintServiceTagsHashTagName[];
+extern const char kCloudPrintServiceTagDryRunFlag[];
+
+// Reasons for fetching print jobs.
+// Job fetch on proxy startup.
 extern const char kJobFetchReasonStartup[];
+// Job fetch because we are polling.
 extern const char kJobFetchReasonPoll[];
+// Job fetch on being notified by the server.
 extern const char kJobFetchReasonNotified[];
+// Job fetch after a successful print to query for more jobs.
 extern const char kJobFetchReasonQueryMore[];
-extern const char kPrintSystemFailedMessageId[];
-extern const char kGetPrinterCapsFailedMessageId[];
-extern const char kEnumPrintersFailedMessageId[];
-extern const char kZombiePrinterMessageId[];
 
 // Max retry count for job data fetch requests.
 const int kJobDataMaxRetryCount = 5;
@@ -77,5 +100,7 @@ const int kMaxFailedXmppPings = 2;
 // we try and refresh it.
 const int kTokenRefreshGracePeriodSecs = 5*60;  // 5 minutes in seconds
 
-#endif  // CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_CONSTS_H_
+}  // namespace cloud_print
+
+#endif  // CHROME_COMMON_CLOUD_PRINT_CLOUD_PRINT_CONSTANTS_H_
 
