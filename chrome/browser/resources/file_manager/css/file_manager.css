@@ -14,6 +14,7 @@ html.col-resize * {
 body {
   -webkit-box-flex: 1;
   -webkit-box-orient: vertical;
+  -webkit-tap-highlight-color: transparent;
   -webkit-transition: opacity 70ms linear;
   -webkit-user-select: none;
   cursor: default;
