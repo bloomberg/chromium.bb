@@ -56,10 +56,10 @@ deps = {
     (Var("googlecode_url") % "open-vcdiff") + "/trunk@42",
 
   "src/testing/gtest":
-    (Var("googlecode_url") % "googletest") + "/trunk@621",
+    (Var("googlecode_url") % "googletest") + "/trunk@629",
 
   "src/testing/gmock":
-    (Var("googlecode_url") % "googlemock") + "/trunk@405",
+    (Var("googlecode_url") % "googlemock") + "/trunk@410",
 
   "src/third_party/angle":
     (Var("googlecode_url") % "angleproject") + "/trunk@1394",
