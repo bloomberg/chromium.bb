@@ -71,7 +71,7 @@ run(){
 }
 
 probefmt(){
-    run ffprobe -show_format_entry format_name -print_format default=nw=1:nk=1 -v 0 "$@"
+    run ffprobe -show_entries format=format_name -print_format default=nw=1:nk=1 -v 0 "$@"
 }
 
 ffmpeg(){
@@ -162,21 +162,6 @@ lavftest(){
 lavfitest(){
     cleanfiles="tests/data/lavfi/${test#lavfi-}.nut"
     regtest lavfi lavfi tests/vsynth1
-}
-
-seektest(){
-    t="${test#seek-}"
-    ref=${base}/ref/seek/$t
-    case $t in
-        image_*) file="tests/data/images/${t#image_}/%02d.${t#image_}" ;;
-        *)       file=$(echo $t | tr _ '?')
-                 for d in fate/acodec- fate/vsynth2- lavf/; do
-                     test -f tests/data/$d$file && break
-                 done
-                 file=$(echo tests/data/$d$file)
-                 ;;
-    esac
-    run libavformat/seek-test $target_path/$file
 }
 
 mkdir -p "$outdir"

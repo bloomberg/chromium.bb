@@ -28,6 +28,7 @@
 #include "aiff.h"
 #include "isom.h"
 #include "id3v2.h"
+#include "mov_chan.h"
 
 #define AIFF                    0
 #define AIFF_C_VERSION1         0xA2805140
@@ -190,7 +191,7 @@ static int aiff_probe(AVProbeData *p)
 /* aiff input */
 static int aiff_read_header(AVFormatContext *s)
 {
-    int size, filesize;
+    int ret, size, filesize;
     int64_t offset = 0;
     uint32_t tag;
     unsigned version = AIFF_C_VERSION1;
@@ -236,6 +237,11 @@ static int aiff_read_header(AVFormatContext *s)
             break;
         case MKTAG('I', 'D', '3', ' '):
             ff_id3v2_read(s, ID3v2_DEFAULT_MAGIC, &id3v2_extra_meta);
+            if (id3v2_extra_meta)
+                if ((ret = ff_id3v2_parse_apic(s, &id3v2_extra_meta)) < 0) {
+                    ff_id3v2_free_extra_meta(&id3v2_extra_meta);
+                    return ret;
+                }
             ff_id3v2_free_extra_meta(&id3v2_extra_meta);
             break;
         case MKTAG('F', 'V', 'E', 'R'):     /* Version chunk */
@@ -258,7 +264,7 @@ static int aiff_read_header(AVFormatContext *s)
             offset = avio_rb32(pb);      /* Offset of sound data */
             avio_rb32(pb);               /* BlockSize... don't care */
             offset += avio_tell(pb);    /* Compute absolute data offset */
-            if (st->codec->block_align)    /* Assume COMM already parsed */
+            if (st->codec->block_align && !pb->seekable)    /* Assume COMM already parsed */
                 goto got_sound;
             if (!pb->seekable) {
                 av_log(s, AV_LOG_ERROR, "file is not seekable\n");

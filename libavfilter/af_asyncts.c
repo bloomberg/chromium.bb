@@ -39,7 +39,7 @@ typedef struct ASyncContext {
     float min_delta_sec;
     int max_comp;
 
-    /* set by filter_samples() to signal an output frame to request_frame() */
+    /* set by filter_frame() to signal an output frame to request_frame() */
     int got_output;
 } ASyncContext;
 
@@ -127,7 +127,7 @@ static int request_frame(AVFilterLink *link)
                                                      nb_samples);
         if (!buf)
             return AVERROR(ENOMEM);
-        ret = avresample_convert(s->avr, (void**)buf->extended_data,
+        ret = avresample_convert(s->avr, buf->extended_data,
                                  buf->linesize[0], nb_samples, NULL, 0, 0);
         if (ret <= 0) {
             avfilter_unref_bufferp(&buf);
@@ -135,7 +135,7 @@ static int request_frame(AVFilterLink *link)
         }
 
         buf->pts = s->pts;
-        return ff_filter_samples(link, buf);
+        return ff_filter_frame(link, buf);
     }
 
     return ret;
@@ -143,7 +143,7 @@ static int request_frame(AVFilterLink *link)
 
 static int write_to_fifo(ASyncContext *s, AVFilterBufferRef *buf)
 {
-    int ret = avresample_convert(s->avr, NULL, 0, 0, (void**)buf->extended_data,
+    int ret = avresample_convert(s->avr, NULL, 0, 0, buf->extended_data,
                                  buf->linesize[0], buf->audio->nb_samples);
     avfilter_unref_buffer(buf);
     return ret;
@@ -155,7 +155,7 @@ static int64_t get_delay(ASyncContext *s)
     return avresample_available(s->avr) + avresample_get_delay(s->avr);
 }
 
-static int filter_samples(AVFilterLink *inlink, AVFilterBufferRef *buf)
+static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *buf)
 {
     AVFilterContext  *ctx = inlink->dst;
     ASyncContext       *s = ctx->priv;
@@ -204,14 +204,14 @@ static int filter_samples(AVFilterLink *inlink, AVFilterBufferRef *buf)
             goto fail;
         }
 
-        avresample_read(s->avr, (void**)buf_out->extended_data, out_size);
+        avresample_read(s->avr, buf_out->extended_data, out_size);
         buf_out->pts = s->pts;
 
         if (delta > 0) {
             av_samples_set_silence(buf_out->extended_data, out_size - delta,
                                    delta, nb_channels, buf->format);
         }
-        ret = ff_filter_samples(outlink, buf_out);
+        ret = ff_filter_frame(outlink, buf_out);
         if (ret < 0)
             goto fail;
         s->got_output = 1;
@@ -224,7 +224,7 @@ static int filter_samples(AVFilterLink *inlink, AVFilterBufferRef *buf)
     avresample_read(s->avr, NULL, avresample_available(s->avr));
 
     s->pts = pts - avresample_get_delay(s->avr);
-    ret = avresample_convert(s->avr, NULL, 0, 0, (void**)buf->extended_data,
+    ret = avresample_convert(s->avr, NULL, 0, 0, buf->extended_data,
                              buf->linesize[0], buf->audio->nb_samples);
 
 fail:
@@ -232,6 +232,25 @@ fail:
 
     return ret;
 }
+
+static const AVFilterPad avfilter_af_asyncts_inputs[] = {
+    {
+        .name           = "default",
+        .type           = AVMEDIA_TYPE_AUDIO,
+        .filter_frame   = filter_frame
+    },
+    { NULL }
+};
+
+static const AVFilterPad avfilter_af_asyncts_outputs[] = {
+    {
+        .name          = "default",
+        .type          = AVMEDIA_TYPE_AUDIO,
+        .config_props  = config_props,
+        .request_frame = request_frame
+    },
+    { NULL }
+};
 
 AVFilter avfilter_af_asyncts = {
     .name        = "asyncts",
@@ -242,14 +261,7 @@ AVFilter avfilter_af_asyncts = {
 
     .priv_size   = sizeof(ASyncContext),
 
-    .inputs      = (const AVFilterPad[]) {{ .name           = "default",
-                                            .type           = AVMEDIA_TYPE_AUDIO,
-                                            .filter_samples = filter_samples },
-                                          { NULL }},
-    .outputs     = (const AVFilterPad[]) {{ .name           = "default",
-                                            .type           = AVMEDIA_TYPE_AUDIO,
-                                            .config_props   = config_props,
-                                            .request_frame  = request_frame },
-                                          { NULL }},
+    .inputs      = avfilter_af_asyncts_inputs,
+    .outputs     = avfilter_af_asyncts_outputs,
     .priv_class = &asyncts_class,
 };

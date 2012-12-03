@@ -36,7 +36,7 @@
 #include "riff.h"
 #include "isom.h"
 #if CONFIG_SIPR_DECODER
-#include "rm.h"
+#include "rmsipr.h"
 #endif
 #include "matroska.h"
 #include "libavcodec/bytestream.h"
@@ -44,7 +44,7 @@
 #include "libavutil/intfloat.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/avstring.h"
-#if HAVE_LZO1X_999_COMPRESS
+#if CONFIG_LZO
 #include "libavutil/lzo.h"
 #endif
 #include "libavutil/dict.h"
@@ -766,8 +766,8 @@ static int ebml_read_ascii(AVIOContext *pb, int size, char **str)
  */
 static int ebml_read_binary(AVIOContext *pb, int length, EbmlBin *bin)
 {
-    av_free(bin->data);
-    if (!(bin->data = av_malloc(length)))
+    av_fast_padded_malloc(&bin->data, &bin->size, length);
+    if (!bin->data)
         return AVERROR(ENOMEM);
 
     bin->size = length;
@@ -1066,7 +1066,7 @@ static int matroska_decode_buffer(uint8_t** buf, int* buf_size,
         uint8_t *header = encodings[0].compression.settings.data;
 
         if (header_size && !header) {
-            av_log(0, AV_LOG_ERROR, "Compression size but no data in headerstrip\n");
+            av_log(NULL, AV_LOG_ERROR, "Compression size but no data in headerstrip\n");
             return -1;
         }
 
@@ -1082,7 +1082,7 @@ static int matroska_decode_buffer(uint8_t** buf, int* buf_size,
         memcpy(pkt_data + header_size, data, isize);
         break;
     }
-#if HAVE_LZO1X_999_COMPRESS
+#if CONFIG_LZO
     case MATROSKA_TRACK_ENCODING_COMP_LZO:
         do {
             olen = pkt_size *= 3;
@@ -1218,8 +1218,10 @@ static int matroska_merge_packets(AVPacket *out, AVPacket *in)
     int ret = av_grow_packet(out, in->size);
     if (ret < 0)
         return ret;
+
     memcpy(out->data + out->size - in->size, in->data, in->size);
-    av_destruct_packet(in);
+
+    av_free_packet(in);
     av_free(in);
     return 0;
 }
@@ -1554,17 +1556,17 @@ static int matroska_read_header(AVFormatContext *s)
                    "Multiple combined encodings not supported");
         } else if (encodings_list->nb_elem == 1) {
             if (encodings[0].type ||
-                (encodings[0].compression.algo != MATROSKA_TRACK_ENCODING_COMP_HEADERSTRIP
+                (
 #if CONFIG_ZLIB
-                 && encodings[0].compression.algo != MATROSKA_TRACK_ENCODING_COMP_ZLIB
+                 encodings[0].compression.algo != MATROSKA_TRACK_ENCODING_COMP_ZLIB &&
 #endif
 #if CONFIG_BZLIB
-                 && encodings[0].compression.algo != MATROSKA_TRACK_ENCODING_COMP_BZLIB
+                 encodings[0].compression.algo != MATROSKA_TRACK_ENCODING_COMP_BZLIB &&
 #endif
-#if HAVE_LZO1X_999_COMPRESS
-                 && encodings[0].compression.algo != MATROSKA_TRACK_ENCODING_COMP_LZO
+#if CONFIG_LZO
+                 encodings[0].compression.algo != MATROSKA_TRACK_ENCODING_COMP_LZO &&
 #endif
-               )) {
+                 encodings[0].compression.algo != MATROSKA_TRACK_ENCODING_COMP_HEADERSTRIP)) {
                 encodings[0].scope = 0;
                 av_log(matroska->ctx, AV_LOG_ERROR,
                        "Unsupported encoding type");
@@ -1681,11 +1683,10 @@ static int matroska_read_header(AVFormatContext *s)
         } else if (codec_id == AV_CODEC_ID_RA_144) {
             track->audio.out_samplerate = 8000;
             track->audio.channels = 1;
-        }
-#if CONFIG_RA_288_DECODER || CONFIG_COOK_DECODER || CONFIG_ATRAC3_DECODER || CONFIG_SIPR_DECODER
-          else if ((codec_id == AV_CODEC_ID_RA_288 || codec_id == AV_CODEC_ID_COOK ||
+        } else if ((codec_id == AV_CODEC_ID_RA_288 || codec_id == AV_CODEC_ID_COOK ||
                     codec_id == AV_CODEC_ID_ATRAC3 || codec_id == AV_CODEC_ID_SIPR)
                     && track->codec_priv.data) {
+#if CONFIG_RA_288_DECODER || CONFIG_COOK_DECODER || CONFIG_ATRAC3_DECODER || CONFIG_SIPR_DECODER
             int flavor;
 
             ffio_init_context(&b, track->codec_priv.data,track->codec_priv.size,
@@ -1702,18 +1703,18 @@ static int matroska_read_header(AVFormatContext *s)
                 st->codec->block_align = track->audio.coded_framesize;
                 track->codec_priv.size = 0;
             } else {
-#if CONFIG_SIPR_DECODER
                 if (codec_id == AV_CODEC_ID_SIPR && flavor < 4) {
                     const int sipr_bit_rate[4] = { 6504, 8496, 5000, 16000 };
                     track->audio.sub_packet_size = ff_sipr_subpk_size[flavor];
                     st->codec->bit_rate = sipr_bit_rate[flavor];
                 }
-#endif
                 st->codec->block_align = track->audio.sub_packet_size;
                 extradata_offset = 78;
             }
-        }
+#else
+            return AVERROR_INVALIDDATA;
 #endif
+        }
         track->codec_priv.size -= extradata_offset;
 
         if (codec_id == AV_CODEC_ID_NONE)
@@ -2039,7 +2040,7 @@ static int matroska_parse_rm_audio(MatroskaDemuxContext *matroska,
             }
             memcpy(track->audio.buf + y*w, data, w);
         } else {
-            if (size < sps * w / sps) {
+            if (size < sps * w / sps || h<=0) {
                 av_log(matroska->ctx, AV_LOG_ERROR,
                        "Corrupt generic RM-style audio packet size\n");
                 return AVERROR_INVALIDDATA;
@@ -2049,18 +2050,24 @@ static int matroska_parse_rm_audio(MatroskaDemuxContext *matroska,
         }
 
         if (++track->audio.sub_packet_cnt >= h) {
+            if (st->codec->codec_id == AV_CODEC_ID_SIPR) {
 #if CONFIG_SIPR_DECODER
-            if (st->codec->codec_id == AV_CODEC_ID_SIPR)
                 ff_rm_reorder_sipr_data(track->audio.buf, h, w);
+#else
+                return AVERROR_INVALIDDATA;
 #endif
+            }
             track->audio.sub_packet_cnt = 0;
             track->audio.pkt_cnt = h*w / a;
         }
     }
 
     while (track->audio.pkt_cnt) {
-        AVPacket *pkt = av_mallocz(sizeof(AVPacket));
-        av_new_packet(pkt, a);
+        AVPacket *pkt = NULL;
+        if (!(pkt = av_mallocz(sizeof(AVPacket))) || av_new_packet(pkt, a) < 0){
+            av_free(pkt);
+            return AVERROR(ENOMEM);
+        }
         memcpy(pkt->data, track->audio.buf
                + a * (h*w / a - track->audio.pkt_cnt--), a);
         pkt->pts = track->audio.buf_timecode;
@@ -2241,6 +2248,7 @@ static int matroska_parse_block(MatroskaDemuxContext *matroska, uint8_t *data,
             av_log(matroska->ctx, AV_LOG_ERROR, "Invalid packet size\n");
             break;
         }
+
         if ((st->codec->codec_id == AV_CODEC_ID_RA_288 ||
              st->codec->codec_id == AV_CODEC_ID_COOK ||
              st->codec->codec_id == AV_CODEC_ID_SIPR ||
@@ -2414,7 +2422,7 @@ static int matroska_read_seek(AVFormatContext *s, int stream_index,
         tracks[i].audio.buf_timecode = AV_NOPTS_VALUE;
         tracks[i].end_timecode = 0;
         if (tracks[i].type == MATROSKA_TRACK_TYPE_SUBTITLE
-            && !tracks[i].stream->discard != AVDISCARD_ALL) {
+            && tracks[i].stream->discard != AVDISCARD_ALL) {
             index_sub = av_index_search_timestamp(tracks[i].stream, st->index_entries[index].timestamp, AVSEEK_FLAG_BACKWARD);
             if (index_sub >= 0
                 && st->index_entries[index_sub].pos < st->index_entries[index_min].pos

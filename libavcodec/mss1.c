@@ -129,7 +129,7 @@ static int decode_pal(MSS12Context *ctx, ArithCoder *acoder)
         r = arith_get_bits(acoder, 8);
         g = arith_get_bits(acoder, 8);
         b = arith_get_bits(acoder, 8);
-        *pal++ = (0xFF << 24) | (r << 16) | (g << 8) | b;
+        *pal++ = (0xFFU << 24) | (r << 16) | (g << 8) | b;
     }
 
     return !!ncol;
@@ -197,7 +197,7 @@ static av_cold int mss1_decode_init(AVCodecContext *avctx)
 
     ret = ff_mss12_decode_init(&c->ctx, 0, &c->sc, NULL);
 
-    avctx->pix_fmt = PIX_FMT_PAL8;
+    avctx->pix_fmt = AV_PIX_FMT_PAL8;
 
     return ret;
 }

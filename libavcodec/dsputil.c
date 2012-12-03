@@ -1812,7 +1812,7 @@ static int try_8x8basis_c(int16_t rem[64], int16_t weight[64], int16_t basis[64]
         int b= rem[i] + ((basis[i]*scale + (1<<(BASIS_SHIFT - RECON_SHIFT-1)))>>(BASIS_SHIFT - RECON_SHIFT));
         int w= weight[i];
         b>>= RECON_SHIFT;
-        assert(-512<b && b<512);
+        av_assert2(-512<b && b<512);
 
         sum += (w*b)*(w*b)>>4;
     }
@@ -2315,7 +2315,7 @@ static int rd8x8_c(/*MpegEncContext*/ void *c, uint8_t *src1, uint8_t *src2, int
 
         level= temp[i] + 64;
 
-        assert(level - 64);
+        av_assert2(level - 64);
 
         if((level&(~127)) == 0){
             bits+= last_length[UNI_AC_ENC_INDEX(run, level)];
@@ -2386,7 +2386,7 @@ static int bit8x8_c(/*MpegEncContext*/ void *c, uint8_t *src1, uint8_t *src2, in
 
         level= temp[i] + 64;
 
-        assert(level - 64);
+        av_assert2(level - 64);
 
         if((level&(~127)) == 0){
             bits+= last_length[UNI_AC_ENC_INDEX(run, level)];
@@ -2512,14 +2512,6 @@ static void vector_fmul_window_c(float *dst, const float *src0,
         dst[i] = s0*wj - s1*wi;
         dst[j] = s0*wi + s1*wj;
     }
-}
-
-static void vector_fmul_scalar_c(float *dst, const float *src, float mul,
-                                 int len)
-{
-    int i;
-    for (i = 0; i < len; i++)
-        dst[i] = src[i] * mul;
 }
 
 static void butterflies_float_c(float *av_restrict v1, float *av_restrict v2,
@@ -2963,10 +2955,6 @@ av_cold void ff_dsputil_init(DSPContext* c, AVCodecContext *avctx)
 
 #undef dspfunc
 
-#if CONFIG_MLP_DECODER || CONFIG_TRUEHD_DECODER
-    ff_mlp_init(c, avctx);
-#endif
-
     c->put_mspel_pixels_tab[0]= ff_put_pixels8x8_c;
     c->put_mspel_pixels_tab[1]= put_mspel8_mc10_c;
     c->put_mspel_pixels_tab[2]= put_mspel8_mc20_c;
@@ -3043,7 +3031,6 @@ av_cold void ff_dsputil_init(DSPContext* c, AVCodecContext *avctx)
     c->scalarproduct_float = ff_scalarproduct_float_c;
     c->butterflies_float = butterflies_float_c;
     c->butterflies_float_interleave = butterflies_float_interleave_c;
-    c->vector_fmul_scalar = vector_fmul_scalar_c;
 
     c->shrink[0]= av_image_copy_plane;
     c->shrink[1]= ff_shrink22;
@@ -3166,7 +3153,6 @@ av_cold void ff_dsputil_init(DSPContext* c, AVCodecContext *avctx)
     if (HAVE_VIS)        ff_dsputil_init_vis   (c, avctx);
     if (ARCH_ALPHA)      ff_dsputil_init_alpha (c, avctx);
     if (ARCH_PPC)        ff_dsputil_init_ppc   (c, avctx);
-    if (HAVE_MMI)        ff_dsputil_init_mmi   (c, avctx);
     if (ARCH_SH4)        ff_dsputil_init_sh4   (c, avctx);
     if (ARCH_BFIN)       ff_dsputil_init_bfin  (c, avctx);
     if (HAVE_MIPSFPU)    ff_dsputil_init_mips  (c, avctx);

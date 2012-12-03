@@ -26,6 +26,7 @@
 
 #include "libavutil/common.h"
 #include "libavutil/lfg.h"
+#include "libavutil/xga_font_data.h"
 #include "avcodec.h"
 #include "cga_data.h"
 
@@ -75,10 +76,10 @@ typedef struct {
 static av_cold int decode_init(AVCodecContext *avctx)
 {
     AnsiContext *s = avctx->priv_data;
-    avctx->pix_fmt = PIX_FMT_PAL8;
+    avctx->pix_fmt = AV_PIX_FMT_PAL8;
 
     /* defaults */
-    s->font        = ff_vga16_font;
+    s->font        = avpriv_vga16_font;
     s->font_height = 16;
     s->fg          = DEFAULT_FG_COLOR;
     s->bg          = DEFAULT_BG_COLOR;
@@ -203,19 +204,19 @@ static int execute_code(AVCodecContext * avctx, int c)
         height = avctx->height;
         switch(s->args[0]) {
         case 0: case 1: case 4: case 5: case 13: case 19: //320x200 (25 rows)
-            s->font = ff_cga_font;
+            s->font = avpriv_cga_font;
             s->font_height = 8;
             width  = 40<<3;
             height = 25<<3;
             break;
         case 2: case 3: //640x400 (25 rows)
-            s->font = ff_vga16_font;
+            s->font = avpriv_vga16_font;
             s->font_height = 16;
             width  = 80<<3;
             height = 25<<4;
             break;
         case 6: case 14: //640x200 (25 rows)
-            s->font = ff_cga_font;
+            s->font = avpriv_cga_font;
             s->font_height = 8;
             width  = 80<<3;
             height = 25<<3;
@@ -223,13 +224,13 @@ static int execute_code(AVCodecContext * avctx, int c)
         case 7: //set line wrapping
             break;
         case 15: case 16: //640x350 (43 rows)
-            s->font = ff_cga_font;
+            s->font = avpriv_cga_font;
             s->font_height = 8;
             width  = 80<<3;
             height = 43<<3;
             break;
         case 17: case 18: //640x480 (60 rows)
-            s->font = ff_cga_font;
+            s->font = avpriv_cga_font;
             s->font_height = 8;
             width  = 80<<3;
             height = 60<<4;
@@ -298,7 +299,7 @@ static int execute_code(AVCodecContext * avctx, int c)
                 s->attributes |= 1 << (m - 1);
             } else if (m >= 30 && m <= 37) {
                 s->fg = ansi_to_cga[m - 30];
-            } else if (m == 38 && i + 2 < s->nb_args && s->args[i + 1] == 5 && s->args[i + 2] < 256) {
+            } else if (m == 38 && i + 2 < FFMIN(s->nb_args, MAX_NB_ARGS) && s->args[i + 1] == 5 && s->args[i + 2] < 256) {
                 int index = s->args[i + 2];
                 s->fg = index < 16 ? ansi_to_cga[index] : index;
                 i += 2;
@@ -306,7 +307,7 @@ static int execute_code(AVCodecContext * avctx, int c)
                 s->fg = ansi_to_cga[DEFAULT_FG_COLOR];
             } else if (m >= 40 && m <= 47) {
                 s->bg = ansi_to_cga[m - 40];
-            } else if (m == 48 && i + 2 < s->nb_args && s->args[i + 1] == 5 && s->args[i + 2] < 256) {
+            } else if (m == 48 && i + 2 < FFMIN(s->nb_args, MAX_NB_ARGS) && s->args[i + 1] == 5 && s->args[i + 2] < 256) {
                 int index = s->args[i + 2];
                 s->bg = index < 16 ? ansi_to_cga[index] : index;
                 i += 2;

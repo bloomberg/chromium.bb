@@ -332,6 +332,10 @@ static int rv20_decode_picture_header(RVDecContext *rv)
         return -1;
     }
 
+    if(s->low_delay && s->pict_type==AV_PICTURE_TYPE_B){
+        av_log(s->avctx, AV_LOG_ERROR, "low delay B\n");
+        return -1;
+    }
     if(s->last_picture_ptr==NULL && s->pict_type==AV_PICTURE_TYPE_B){
         av_log(s->avctx, AV_LOG_ERROR, "early B pix\n");
         return -1;
@@ -394,7 +398,8 @@ static int rv20_decode_picture_header(RVDecContext *rv)
         if(s->avctx->debug & FF_DEBUG_PICT_INFO){
             av_log(s->avctx, AV_LOG_DEBUG, "F %d/%d\n", f, rpr_bits);
         }
-    } else if (av_image_check_size(s->width, s->height, 0, s->avctx) < 0)
+    }
+    if (av_image_check_size(s->width, s->height, 0, s->avctx) < 0)
         return AVERROR_INVALIDDATA;
 
     mb_pos = ff_h263_decode_mba(s);
@@ -493,7 +498,7 @@ static av_cold int rv10_decode_init(AVCodecContext *avctx)
         av_log(avctx, AV_LOG_DEBUG, "ver:%X ver0:%X\n", rv->sub_id, avctx->extradata_size >= 4 ? ((uint32_t*)avctx->extradata)[0] : -1);
     }
 
-    avctx->pix_fmt = PIX_FMT_YUV420P;
+    avctx->pix_fmt = AV_PIX_FMT_YUV420P;
 
     if (ff_MPV_common_init(s) < 0)
         return -1;

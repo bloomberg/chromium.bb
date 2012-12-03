@@ -24,6 +24,7 @@
  * RV30/40 decoder common data
  */
 
+#include "libavutil/imgutils.h"
 #include "libavutil/internal.h"
 
 #include "avcodec.h"
@@ -1483,7 +1484,7 @@ av_cold int ff_rv34_decode_init(AVCodecContext *avctx)
     r->s.avctx = avctx;
     avctx->flags |= CODEC_FLAG_EMU_EDGE;
     r->s.flags |= CODEC_FLAG_EMU_EDGE;
-    avctx->pix_fmt = PIX_FMT_YUV420P;
+    avctx->pix_fmt = AV_PIX_FMT_YUV420P;
     avctx->has_b_frames = 1;
     s->low_delay = 0;
 
@@ -1660,6 +1661,9 @@ int ff_rv34_decode_frame(AVCodecContext *avctx,
 
             av_log(s->avctx, AV_LOG_WARNING, "Changing dimensions to %dx%d\n",
                    si.width, si.height);
+
+            if (av_image_check_size(si.width, si.height, 0, s->avctx))
+                return AVERROR_INVALIDDATA;
 
             s->width  = si.width;
             s->height = si.height;

@@ -57,6 +57,7 @@ static const struct ogg_codec * const ogg_codecs[] = {
 };
 
 static int64_t ogg_calc_pts(AVFormatContext *s, int idx, int64_t *dts);
+static int ogg_read_close(AVFormatContext *s);
 
 //FIXME We could avoid some structure duplication
 static int ogg_save(AVFormatContext *s)
@@ -175,7 +176,7 @@ static int ogg_replace_stream(AVFormatContext *s, uint32_t serial)
     uint8_t *buf;
 
     if (ogg->nstreams != 1) {
-        av_log_missing_feature(s, "Changing stream parameters in multistream ogg is", 0);
+        av_log_missing_feature(s, "Changing stream parameters in multistream ogg", 0);
         return AVERROR_PATCHWELCOME;
     }
 
@@ -596,8 +597,10 @@ static int ogg_read_header(AVFormatContext *s)
     //linear headers seek from start
     do {
         ret = ogg_packet(s, NULL, NULL, NULL, NULL);
-        if (ret < 0)
+        if (ret < 0) {
+            ogg_read_close(s);
             return ret;
+        }
     } while (!ogg->headers);
     av_dlog(s, "found headers\n");
 

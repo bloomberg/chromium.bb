@@ -29,11 +29,13 @@
 
 #include "libavutil/intmath.h"
 #include "libavutil/mathematics.h"
+#include "libavutil/pixdesc.h"
 #include "libavutil/opt.h"
 #include "avcodec.h"
 #include "dsputil.h"
 #include "mpegvideo.h"
 #include "h263.h"
+#include "mathops.h"
 #include "mjpegenc.h"
 #include "msmpeg4.h"
 #include "faandct.h"
@@ -102,7 +104,7 @@ void ff_convert_matrix(DSPContext *dsp, int (*qmat)[64],
                  *           3444240 >= (1 << 36) / (x) >= 275 */
 
                 qmat[qscale][i] = (int)((UINT64_C(1) << (QMAT_SHIFT + 14)) /
-                                        (ff_aanscales[i] * qscale * quant_matrix[j]));
+                                        (ff_aanscales[i] * (int64_t)qscale * quant_matrix[j]));
             }
         } else {
             for (i = 0; i < 64; i++) {
@@ -293,23 +295,23 @@ av_cold int ff_MPV_encode_init(AVCodecContext *avctx)
 
     switch (avctx->codec_id) {
     case AV_CODEC_ID_MPEG2VIDEO:
-        if (avctx->pix_fmt != PIX_FMT_YUV420P &&
-            avctx->pix_fmt != PIX_FMT_YUV422P) {
+        if (avctx->pix_fmt != AV_PIX_FMT_YUV420P &&
+            avctx->pix_fmt != AV_PIX_FMT_YUV422P) {
             av_log(avctx, AV_LOG_ERROR,
                    "only YUV420 and YUV422 are supported\n");
             return -1;
         }
         break;
     case AV_CODEC_ID_LJPEG:
-        if (avctx->pix_fmt != PIX_FMT_YUVJ420P &&
-            avctx->pix_fmt != PIX_FMT_YUVJ422P &&
-            avctx->pix_fmt != PIX_FMT_YUVJ444P &&
-            avctx->pix_fmt != PIX_FMT_BGR0     &&
-            avctx->pix_fmt != PIX_FMT_BGRA     &&
-            avctx->pix_fmt != PIX_FMT_BGR24    &&
-            ((avctx->pix_fmt != PIX_FMT_YUV420P &&
-              avctx->pix_fmt != PIX_FMT_YUV422P &&
-              avctx->pix_fmt != PIX_FMT_YUV444P) ||
+        if (avctx->pix_fmt != AV_PIX_FMT_YUVJ420P &&
+            avctx->pix_fmt != AV_PIX_FMT_YUVJ422P &&
+            avctx->pix_fmt != AV_PIX_FMT_YUVJ444P &&
+            avctx->pix_fmt != AV_PIX_FMT_BGR0     &&
+            avctx->pix_fmt != AV_PIX_FMT_BGRA     &&
+            avctx->pix_fmt != AV_PIX_FMT_BGR24    &&
+            ((avctx->pix_fmt != AV_PIX_FMT_YUV420P &&
+              avctx->pix_fmt != AV_PIX_FMT_YUV422P &&
+              avctx->pix_fmt != AV_PIX_FMT_YUV444P) ||
              avctx->strict_std_compliance > FF_COMPLIANCE_UNOFFICIAL)) {
             av_log(avctx, AV_LOG_ERROR, "colorspace not supported in LJPEG\n");
             return -1;
@@ -317,29 +319,35 @@ av_cold int ff_MPV_encode_init(AVCodecContext *avctx)
         break;
     case AV_CODEC_ID_MJPEG:
     case AV_CODEC_ID_AMV:
-        if (avctx->pix_fmt != PIX_FMT_YUVJ420P &&
-            avctx->pix_fmt != PIX_FMT_YUVJ422P &&
-            ((avctx->pix_fmt != PIX_FMT_YUV420P &&
-              avctx->pix_fmt != PIX_FMT_YUV422P) ||
+        if (avctx->pix_fmt != AV_PIX_FMT_YUVJ420P &&
+            avctx->pix_fmt != AV_PIX_FMT_YUVJ422P &&
+            avctx->pix_fmt != AV_PIX_FMT_YUVJ444P &&
+            ((avctx->pix_fmt != AV_PIX_FMT_YUV420P &&
+              avctx->pix_fmt != AV_PIX_FMT_YUV422P &&
+              avctx->pix_fmt != AV_PIX_FMT_YUV444P) ||
              avctx->strict_std_compliance > FF_COMPLIANCE_UNOFFICIAL)) {
             av_log(avctx, AV_LOG_ERROR, "colorspace not supported in jpeg\n");
             return -1;
         }
         break;
     default:
-        if (avctx->pix_fmt != PIX_FMT_YUV420P) {
+        if (avctx->pix_fmt != AV_PIX_FMT_YUV420P) {
             av_log(avctx, AV_LOG_ERROR, "only YUV420 is supported\n");
             return -1;
         }
     }
 
     switch (avctx->pix_fmt) {
-    case PIX_FMT_YUVJ422P:
-    case PIX_FMT_YUV422P:
+    case AV_PIX_FMT_YUVJ444P:
+    case AV_PIX_FMT_YUV444P:
+        s->chroma_format = CHROMA_444;
+        break;
+    case AV_PIX_FMT_YUVJ422P:
+    case AV_PIX_FMT_YUV422P:
         s->chroma_format = CHROMA_422;
         break;
-    case PIX_FMT_YUVJ420P:
-    case PIX_FMT_YUV420P:
+    case AV_PIX_FMT_YUVJ420P:
+    case AV_PIX_FMT_YUV420P:
     default:
         s->chroma_format = CHROMA_420;
         break;
@@ -401,6 +409,32 @@ av_cold int ff_MPV_encode_init(AVCodecContext *avctx)
                         !s->fixed_qscale;
 
     s->loop_filter      = !!(s->flags & CODEC_FLAG_LOOP_FILTER);
+
+    if (avctx->rc_max_rate && !avctx->rc_buffer_size) {
+        switch(avctx->codec_id) {
+        case AV_CODEC_ID_MPEG1VIDEO:
+        case AV_CODEC_ID_MPEG2VIDEO:
+            avctx->rc_buffer_size = FFMAX(avctx->rc_max_rate, 15000000) * 112L / 15000000 * 16384;
+            break;
+        case AV_CODEC_ID_MPEG4:
+        case AV_CODEC_ID_MSMPEG4V1:
+        case AV_CODEC_ID_MSMPEG4V2:
+        case AV_CODEC_ID_MSMPEG4V3:
+            if       (avctx->rc_max_rate >= 15000000) {
+                avctx->rc_buffer_size = 320 + (avctx->rc_max_rate - 15000000L) * (760-320) / (38400000 - 15000000);
+            } else if(avctx->rc_max_rate >=  2000000) {
+                avctx->rc_buffer_size =  80 + (avctx->rc_max_rate -  2000000L) * (320- 80) / (15000000 -  2000000);
+            } else if(avctx->rc_max_rate >=   384000) {
+                avctx->rc_buffer_size =  40 + (avctx->rc_max_rate -   384000L) * ( 80- 40) / ( 2000000 -   384000);
+            } else
+                avctx->rc_buffer_size = 40;
+            avctx->rc_buffer_size *= 16384;
+            break;
+        }
+        if (avctx->rc_buffer_size) {
+            av_log(avctx, AV_LOG_INFO, "Automatically choosing VBV buffer size of %d kbyte\n", avctx->rc_buffer_size/8192);
+        }
+    }
 
     if ((!avctx->rc_max_rate) != (!avctx->rc_buffer_size)) {
         av_log(avctx, AV_LOG_ERROR, "Either both buffer size and max rate or neither must be specified\n");
@@ -660,8 +694,7 @@ av_cold int ff_MPV_encode_init(AVCodecContext *avctx)
 
     av_log(avctx, AV_LOG_DEBUG, "intra_quant_bias = %d inter_quant_bias = %d\n",s->intra_quant_bias,s->inter_quant_bias);
 
-    avcodec_get_chroma_sub_sample(avctx->pix_fmt, &chroma_h_shift,
-                                  &chroma_v_shift);
+    avcodec_get_chroma_sub_sample(avctx->pix_fmt, &chroma_h_shift, &chroma_v_shift);
 
     if (avctx->codec_id == AV_CODEC_ID_MPEG4 &&
         s->avctx->time_base.den > (1 << 16) - 1) {
@@ -701,9 +734,9 @@ av_cold int ff_MPV_encode_init(AVCodecContext *avctx)
         s->out_format = FMT_MJPEG;
         s->intra_only = 1; /* force intra only for jpeg */
         if (avctx->codec->id == AV_CODEC_ID_LJPEG &&
-            (avctx->pix_fmt == PIX_FMT_BGR0
-             || s->avctx->pix_fmt == PIX_FMT_BGRA
-             || s->avctx->pix_fmt == PIX_FMT_BGR24)) {
+            (avctx->pix_fmt == AV_PIX_FMT_BGR0
+             || s->avctx->pix_fmt == AV_PIX_FMT_BGRA
+             || s->avctx->pix_fmt == AV_PIX_FMT_BGR24)) {
             s->mjpeg_vsample[0] = s->mjpeg_hsample[0] =
             s->mjpeg_vsample[1] = s->mjpeg_hsample[1] =
             s->mjpeg_vsample[2] = s->mjpeg_hsample[2] = 1;
@@ -1047,8 +1080,7 @@ static int load_input_picture(MpegEncContext *s, AVFrame *pic_arg)
             // empty
         } else {
             int h_chroma_shift, v_chroma_shift;
-            avcodec_get_chroma_sub_sample(s->avctx->pix_fmt, &h_chroma_shift,
-                                          &v_chroma_shift);
+            avcodec_get_chroma_sub_sample(s->avctx->pix_fmt, &h_chroma_shift, &v_chroma_shift);
 
             for (i = 0; i < 3; i++) {
                 int src_stride = pic_arg->linesize[i];
@@ -1175,7 +1207,7 @@ static int estimate_best_b_count(MpegEncContext *s)
     c->me_cmp       = s->avctx->me_cmp;
     c->mb_cmp       = s->avctx->mb_cmp;
     c->me_sub_cmp   = s->avctx->me_sub_cmp;
-    c->pix_fmt      = PIX_FMT_YUV420P;
+    c->pix_fmt      = AV_PIX_FMT_YUV420P;
     c->time_base    = s->avctx->time_base;
     c->max_b_frames = s->max_b_frames;
 
@@ -1500,7 +1532,8 @@ int ff_MPV_encode_picture(AVCodecContext *avctx, AVPacket *pkt,
 
         s->pict_type = s->new_picture.f.pict_type;
         //emms_c();
-        ff_MPV_frame_start(s, avctx);
+        if (ff_MPV_frame_start(s, avctx) < 0)
+            return -1;
 vbv_retry:
         if (encode_picture(s, s->picture_number) < 0)
             return -1;
@@ -1781,15 +1814,17 @@ static void get_visual_weight(int16_t *weight, uint8_t *ptr, int stride)
 static av_always_inline void encode_mb_internal(MpegEncContext *s,
                                                 int motion_x, int motion_y,
                                                 int mb_block_height,
+                                                int mb_block_width,
                                                 int mb_block_count)
 {
-    int16_t weight[8][64];
-    DCTELEM orig[8][64];
+    int16_t weight[12][64];
+    DCTELEM orig[12][64];
     const int mb_x = s->mb_x;
     const int mb_y = s->mb_y;
     int i;
-    int skip_dct[8];
+    int skip_dct[12];
     int dct_offset = s->linesize * 8; // default for progressive frames
+    int uv_dct_offset = s->uvlinesize * 8;
     uint8_t *ptr_y, *ptr_cb, *ptr_cr;
     int wrap_y, wrap_c;
 
@@ -1831,20 +1866,20 @@ static av_always_inline void encode_mb_internal(MpegEncContext *s,
     ptr_y  = s->new_picture.f.data[0] +
              (mb_y * 16 * wrap_y)              + mb_x * 16;
     ptr_cb = s->new_picture.f.data[1] +
-             (mb_y * mb_block_height * wrap_c) + mb_x * 8;
+             (mb_y * mb_block_height * wrap_c) + mb_x * mb_block_width;
     ptr_cr = s->new_picture.f.data[2] +
-             (mb_y * mb_block_height * wrap_c) + mb_x * 8;
+             (mb_y * mb_block_height * wrap_c) + mb_x * mb_block_width;
 
     if((mb_x*16+16 > s->width || mb_y*16+16 > s->height) && s->codec_id != AV_CODEC_ID_AMV){
         uint8_t *ebuf = s->edge_emu_buffer + 32;
         s->dsp.emulated_edge_mc(ebuf, ptr_y, wrap_y, 16, 16, mb_x * 16,
                                 mb_y * 16, s->width, s->height);
         ptr_y = ebuf;
-        s->dsp.emulated_edge_mc(ebuf + 18 * wrap_y, ptr_cb, wrap_c, 8,
+        s->dsp.emulated_edge_mc(ebuf + 18 * wrap_y, ptr_cb, wrap_c, mb_block_width,
                                 mb_block_height, mb_x * 8, mb_y * 8,
                                 (s->width+1) >> 1, (s->height+1) >> 1);
         ptr_cb = ebuf + 18 * wrap_y;
-        s->dsp.emulated_edge_mc(ebuf + 18 * wrap_y + 8, ptr_cr, wrap_c, 8,
+        s->dsp.emulated_edge_mc(ebuf + 18 * wrap_y + 8, ptr_cr, wrap_c, mb_block_width,
                                 mb_block_height, mb_x * 8, mb_y * 8,
                                 (s->width+1) >> 1, (s->height+1) >> 1);
         ptr_cr = ebuf + 18 * wrap_y + 8;
@@ -1869,8 +1904,10 @@ static av_always_inline void encode_mb_internal(MpegEncContext *s,
                     s->interlaced_dct = 1;
 
                     dct_offset = wrap_y;
+                    uv_dct_offset = wrap_c;
                     wrap_y <<= 1;
-                    if (s->chroma_format == CHROMA_422)
+                    if (s->chroma_format == CHROMA_422 ||
+                        s->chroma_format == CHROMA_444)
                         wrap_c <<= 1;
                 }
             }
@@ -1887,11 +1924,16 @@ static av_always_inline void encode_mb_internal(MpegEncContext *s,
         } else {
             s->dsp.get_pixels(s->block[4], ptr_cb, wrap_c);
             s->dsp.get_pixels(s->block[5], ptr_cr, wrap_c);
-            if (!s->chroma_y_shift) { /* 422 */
-                s->dsp.get_pixels(s->block[6],
-                                  ptr_cb + (dct_offset >> 1), wrap_c);
-                s->dsp.get_pixels(s->block[7],
-                                  ptr_cr + (dct_offset >> 1), wrap_c);
+            if (!s->chroma_y_shift && s->chroma_x_shift) { /* 422 */
+                s->dsp.get_pixels(s->block[6], ptr_cb + uv_dct_offset, wrap_c);
+                s->dsp.get_pixels(s->block[7], ptr_cr + uv_dct_offset, wrap_c);
+            } else if (!s->chroma_y_shift && !s->chroma_x_shift) { /* 444 */
+                s->dsp.get_pixels(s->block[6], ptr_cb + 8, wrap_c);
+                s->dsp.get_pixels(s->block[7], ptr_cr + 8, wrap_c);
+                s->dsp.get_pixels(s->block[8], ptr_cb + uv_dct_offset, wrap_c);
+                s->dsp.get_pixels(s->block[9], ptr_cr + uv_dct_offset, wrap_c);
+                s->dsp.get_pixels(s->block[10], ptr_cb + uv_dct_offset + 8, wrap_c);
+                s->dsp.get_pixels(s->block[11], ptr_cr + uv_dct_offset + 8, wrap_c);
             }
         }
     } else {
@@ -1950,6 +1992,7 @@ static av_always_inline void encode_mb_internal(MpegEncContext *s,
                     s->interlaced_dct = 1;
 
                     dct_offset = wrap_y;
+                    uv_dct_offset = wrap_c;
                     wrap_y <<= 1;
                     if (s->chroma_format == CHROMA_422)
                         wrap_c <<= 1;
@@ -1971,10 +2014,10 @@ static av_always_inline void encode_mb_internal(MpegEncContext *s,
             s->dsp.diff_pixels(s->block[4], ptr_cb, dest_cb, wrap_c);
             s->dsp.diff_pixels(s->block[5], ptr_cr, dest_cr, wrap_c);
             if (!s->chroma_y_shift) { /* 422 */
-                s->dsp.diff_pixels(s->block[6], ptr_cb + (dct_offset >> 1),
-                                   dest_cb + (dct_offset >> 1), wrap_c);
-                s->dsp.diff_pixels(s->block[7], ptr_cr + (dct_offset >> 1),
-                                   dest_cr + (dct_offset >> 1), wrap_c);
+                s->dsp.diff_pixels(s->block[6], ptr_cb + uv_dct_offset,
+                                   dest_cb + uv_dct_offset, wrap_c);
+                s->dsp.diff_pixels(s->block[7], ptr_cr + uv_dct_offset,
+                                   dest_cr + uv_dct_offset, wrap_c);
             }
         }
         /* pre quantization */
@@ -2001,12 +2044,12 @@ static av_always_inline void encode_mb_internal(MpegEncContext *s,
                               wrap_c, 8) < 20 * s->qscale)
                 skip_dct[5] = 1;
             if (!s->chroma_y_shift) { /* 422 */
-                if (s->dsp.sad[1](NULL, ptr_cb + (dct_offset >> 1),
-                                  dest_cb + (dct_offset >> 1),
+                if (s->dsp.sad[1](NULL, ptr_cb + uv_dct_offset,
+                                  dest_cb + uv_dct_offset,
                                   wrap_c, 8) < 20 * s->qscale)
                     skip_dct[6] = 1;
-                if (s->dsp.sad[1](NULL, ptr_cr + (dct_offset >> 1),
-                                  dest_cr + (dct_offset >> 1),
+                if (s->dsp.sad[1](NULL, ptr_cr + uv_dct_offset,
+                                  dest_cr + uv_dct_offset,
                                   wrap_c, 8) < 20 * s->qscale)
                     skip_dct[7] = 1;
             }
@@ -2028,10 +2071,10 @@ static av_always_inline void encode_mb_internal(MpegEncContext *s,
             get_visual_weight(weight[5], ptr_cr                , wrap_c);
         if (!s->chroma_y_shift) { /* 422 */
             if (!skip_dct[6])
-                get_visual_weight(weight[6], ptr_cb + (dct_offset >> 1),
+                get_visual_weight(weight[6], ptr_cb + uv_dct_offset,
                                   wrap_c);
             if (!skip_dct[7])
-                get_visual_weight(weight[7], ptr_cr + (dct_offset >> 1),
+                get_visual_weight(weight[7], ptr_cr + uv_dct_offset,
                                   wrap_c);
         }
         memcpy(orig[0], s->block[0], sizeof(DCTELEM) * 64 * mb_block_count);
@@ -2145,8 +2188,9 @@ static av_always_inline void encode_mb_internal(MpegEncContext *s,
 
 static av_always_inline void encode_mb(MpegEncContext *s, int motion_x, int motion_y)
 {
-    if (s->chroma_format == CHROMA_420) encode_mb_internal(s, motion_x, motion_y,  8, 6);
-    else                                encode_mb_internal(s, motion_x, motion_y, 16, 8);
+    if (s->chroma_format == CHROMA_420) encode_mb_internal(s, motion_x, motion_y,  8, 8, 6);
+    else if (s->chroma_format == CHROMA_422) encode_mb_internal(s, motion_x, motion_y, 16, 8, 8);
+    else encode_mb_internal(s, motion_x, motion_y, 16, 16, 12);
 }
 
 static inline void copy_context_before_encode(MpegEncContext *d, MpegEncContext *s, int type){
@@ -4233,7 +4277,7 @@ AVCodec ff_h263_encoder = {
     .init           = ff_MPV_encode_init,
     .encode2        = ff_MPV_encode_picture,
     .close          = ff_MPV_encode_end,
-    .pix_fmts= (const enum PixelFormat[]){PIX_FMT_YUV420P, PIX_FMT_NONE},
+    .pix_fmts= (const enum AVPixelFormat[]){AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE},
     .long_name= NULL_IF_CONFIG_SMALL("H.263 / H.263-1996"),
     .priv_class     = &h263_class,
 };
@@ -4262,7 +4306,7 @@ AVCodec ff_h263p_encoder = {
     .encode2        = ff_MPV_encode_picture,
     .close          = ff_MPV_encode_end,
     .capabilities   = CODEC_CAP_SLICE_THREADS,
-    .pix_fmts       = (const enum PixelFormat[]){ PIX_FMT_YUV420P, PIX_FMT_NONE },
+    .pix_fmts       = (const enum AVPixelFormat[]){ AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE },
     .long_name      = NULL_IF_CONFIG_SMALL("H.263+ / H.263-1998 / H.263 version 2"),
     .priv_class     = &h263p_class,
 };
@@ -4277,7 +4321,7 @@ AVCodec ff_msmpeg4v2_encoder = {
     .init           = ff_MPV_encode_init,
     .encode2        = ff_MPV_encode_picture,
     .close          = ff_MPV_encode_end,
-    .pix_fmts       = (const enum PixelFormat[]){ PIX_FMT_YUV420P, PIX_FMT_NONE },
+    .pix_fmts       = (const enum AVPixelFormat[]){ AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE },
     .long_name      = NULL_IF_CONFIG_SMALL("MPEG-4 part 2 Microsoft variant version 2"),
     .priv_class     = &msmpeg4v2_class,
 };
@@ -4292,7 +4336,7 @@ AVCodec ff_msmpeg4v3_encoder = {
     .init           = ff_MPV_encode_init,
     .encode2        = ff_MPV_encode_picture,
     .close          = ff_MPV_encode_end,
-    .pix_fmts       = (const enum PixelFormat[]){ PIX_FMT_YUV420P, PIX_FMT_NONE },
+    .pix_fmts       = (const enum AVPixelFormat[]){ AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE },
     .long_name      = NULL_IF_CONFIG_SMALL("MPEG-4 part 2 Microsoft variant version 3"),
     .priv_class     = &msmpeg4v3_class,
 };
@@ -4307,7 +4351,7 @@ AVCodec ff_wmv1_encoder = {
     .init           = ff_MPV_encode_init,
     .encode2        = ff_MPV_encode_picture,
     .close          = ff_MPV_encode_end,
-    .pix_fmts       = (const enum PixelFormat[]){ PIX_FMT_YUV420P, PIX_FMT_NONE },
+    .pix_fmts       = (const enum AVPixelFormat[]){ AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE },
     .long_name      = NULL_IF_CONFIG_SMALL("Windows Media Video 7"),
     .priv_class     = &wmv1_class,
 };

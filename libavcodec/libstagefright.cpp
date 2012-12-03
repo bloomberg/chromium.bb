@@ -153,7 +153,7 @@ void* decode_thread(void *arg)
 {
     AVCodecContext *avctx = (AVCodecContext*)arg;
     StagefrightContext *s = (StagefrightContext*)avctx->priv_data;
-    const AVPixFmtDescriptor *pix_desc = &av_pix_fmt_descriptors[avctx->pix_fmt];
+    const AVPixFmtDescriptor *pix_desc = av_pix_fmt_desc_get(avctx->pix_fmt);
     Frame* frame;
     MediaBuffer *buffer;
     int32_t w, h;
@@ -325,13 +325,13 @@ static av_cold int Stagefright_init(AVCodecContext *avctx)
     outFormat->findInt32(kKeyColorFormat, &colorFormat);
     if (colorFormat == OMX_QCOM_COLOR_FormatYVU420SemiPlanar ||
         colorFormat == OMX_COLOR_FormatYUV420SemiPlanar)
-        avctx->pix_fmt = PIX_FMT_NV21;
+        avctx->pix_fmt = AV_PIX_FMT_NV21;
     else if (colorFormat == OMX_COLOR_FormatYCbYCr)
-        avctx->pix_fmt = PIX_FMT_YUYV422;
+        avctx->pix_fmt = AV_PIX_FMT_YUYV422;
     else if (colorFormat == OMX_COLOR_FormatCbYCrY)
-        avctx->pix_fmt = PIX_FMT_UYVY422;
+        avctx->pix_fmt = AV_PIX_FMT_UYVY422;
     else
-        avctx->pix_fmt = PIX_FMT_YUV420P;
+        avctx->pix_fmt = AV_PIX_FMT_YUV420P;
 
     outFormat->findCString(kKeyDecoderComponent, &s->decoder_component);
     if (s->decoder_component)

@@ -49,8 +49,8 @@ static int webvtt_probe(AVProbeData *p)
 static int64_t read_ts(const char *s)
 {
     int hh, mm, ss, ms;
-    if (sscanf(s, "%u:%u:%u.%u", &hh, &mm, &ss, &ms) == 4) return (hh*3600 + mm*60 + ss) * 1000 + ms;
-    if (sscanf(s,    "%u:%u.%u",      &mm, &ss, &ms) == 3) return (          mm*60 + ss) * 1000 + ms;
+    if (sscanf(s, "%u:%u:%u.%u", &hh, &mm, &ss, &ms) == 4) return (hh*3600LL + mm*60LL + ss) * 1000LL + ms;
+    if (sscanf(s,    "%u:%u.%u",      &mm, &ss, &ms) == 3) return (            mm*60LL + ss) * 1000LL + ms;
     return AV_NOPTS_VALUE;
 }
 
@@ -168,6 +168,14 @@ static int webvtt_read_packet(AVFormatContext *s, AVPacket *pkt)
     return ff_subtitles_queue_read_packet(&webvtt->q, pkt);
 }
 
+static int webvtt_read_seek(AVFormatContext *s, int stream_index,
+                            int64_t min_ts, int64_t ts, int64_t max_ts, int flags)
+{
+    WebVTTContext *webvtt = s->priv_data;
+    return ff_subtitles_queue_seek(&webvtt->q, s, stream_index,
+                                   min_ts, ts, max_ts, flags);
+}
+
 static int webvtt_read_close(AVFormatContext *s)
 {
     WebVTTContext *webvtt = s->priv_data;
@@ -182,6 +190,7 @@ AVInputFormat ff_webvtt_demuxer = {
     .read_probe     = webvtt_probe,
     .read_header    = webvtt_read_header,
     .read_packet    = webvtt_read_packet,
+    .read_seek2     = webvtt_read_seek,
     .read_close     = webvtt_read_close,
     .flags          = AVFMT_GENERIC_INDEX,
     .extensions     = "vtt",

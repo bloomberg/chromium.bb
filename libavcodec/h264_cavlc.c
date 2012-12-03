@@ -699,6 +699,7 @@ int ff_h264_decode_mb_cavlc(H264Context *h){
     int dct8x8_allowed= h->pps.transform_8x8_mode;
     int decode_chroma = h->sps.chroma_format_idc == 1 || h->sps.chroma_format_idc == 2;
     const int pixel_shift = h->pixel_shift;
+    unsigned local_ref_count[2];
 
     mb_xy = h->mb_xy = s->mb_x + s->mb_y*s->mb_stride;
 
@@ -784,10 +785,8 @@ decode_intra_mb:
         return 0;
     }
 
-    if(MB_MBAFF){
-        h->ref_count[0] <<= 1;
-        h->ref_count[1] <<= 1;
-    }
+    local_ref_count[0] = h->ref_count[0] << MB_MBAFF;
+    local_ref_count[1] = h->ref_count[1] << MB_MBAFF;
 
     fill_decode_neighbors(h, mb_type);
     fill_decode_caches(h, mb_type);
@@ -868,7 +867,7 @@ decode_intra_mb:
         }
 
         for(list=0; list<h->list_count; list++){
-            int ref_count= IS_REF0(mb_type) ? 1 : h->ref_count[list];
+            int ref_count= IS_REF0(mb_type) ? 1 : local_ref_count[list];
             for(i=0; i<4; i++){
                 if(IS_DIRECT(h->sub_mb_type[i])) continue;
                 if(IS_DIR(h->sub_mb_type[i], 0, list)){
@@ -948,13 +947,13 @@ decode_intra_mb:
             for(list=0; list<h->list_count; list++){
                     unsigned int val;
                     if(IS_DIR(mb_type, 0, list)){
-                        if(h->ref_count[list]==1){
+                        if(local_ref_count[list]==1){
                             val= 0;
-                        }else if(h->ref_count[list]==2){
+                        }else if(local_ref_count[list]==2){
                             val= get_bits1(&s->gb)^1;
                         }else{
                             val= get_ue_golomb_31(&s->gb);
-                            if(val >= h->ref_count[list]){
+                            if(val >= local_ref_count[list]){
                                 av_log(h->s.avctx, AV_LOG_ERROR, "ref %u overflow\n", val);
                                 return -1;
                             }
@@ -978,13 +977,13 @@ decode_intra_mb:
                     for(i=0; i<2; i++){
                         unsigned int val;
                         if(IS_DIR(mb_type, i, list)){
-                            if(h->ref_count[list] == 1){
+                            if(local_ref_count[list] == 1){
                                 val= 0;
-                            }else if(h->ref_count[list] == 2){
+                            }else if(local_ref_count[list] == 2){
                                 val= get_bits1(&s->gb)^1;
                             }else{
                                 val= get_ue_golomb_31(&s->gb);
-                                if(val >= h->ref_count[list]){
+                                if(val >= local_ref_count[list]){
                                     av_log(h->s.avctx, AV_LOG_ERROR, "ref %u overflow\n", val);
                                     return -1;
                                 }
@@ -1015,13 +1014,13 @@ decode_intra_mb:
                     for(i=0; i<2; i++){
                         unsigned int val;
                         if(IS_DIR(mb_type, i, list)){ //FIXME optimize
-                            if(h->ref_count[list]==1){
+                            if(local_ref_count[list]==1){
                                 val= 0;
-                            }else if(h->ref_count[list]==2){
+                            }else if(local_ref_count[list]==2){
                                 val= get_bits1(&s->gb)^1;
                             }else{
                                 val= get_ue_golomb_31(&s->gb);
-                                if(val >= h->ref_count[list]){
+                                if(val >= local_ref_count[list]){
                                     av_log(h->s.avctx, AV_LOG_ERROR, "ref %u overflow\n", val);
                                     return -1;
                                 }
@@ -1069,6 +1068,11 @@ decode_intra_mb:
             }
             if(IS_INTRA4x4(mb_type)) cbp= golomb_to_intra4x4_cbp_gray[cbp];
             else                     cbp= golomb_to_inter_cbp_gray[cbp];
+        }
+    } else {
+        if (!decode_chroma && cbp>15) {
+            av_log(s->avctx, AV_LOG_ERROR, "gray chroma\n");
+            return AVERROR_INVALIDDATA;
         }
     }
 
@@ -1160,11 +1164,6 @@ decode_intra_mb:
     }
     s->current_picture.f.qscale_table[mb_xy] = s->qscale;
     write_back_non_zero_count(h);
-
-    if(MB_MBAFF){
-        h->ref_count[0] >>= 1;
-        h->ref_count[1] >>= 1;
-    }
 
     return 0;
 }

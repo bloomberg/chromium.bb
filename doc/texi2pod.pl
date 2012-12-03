@@ -211,7 +211,6 @@ INF: while(<$inf>) {
     s/\@TeX\{\}/TeX/g;
     s/\@pounds\{\}/\#/g;
     s/\@minus(?:\{\})?/-/g;
-    s/\\,/,/g;
 
     # Now the ones that have to be replaced by special escapes
     # (which will be turned back into text by unmunge())
@@ -269,7 +268,7 @@ INF: while(<$inf>) {
         push @icstack, $ic;
         $endw = $1;
         $ic = $2;
-        $ic =~ s/\@(?:samp|strong|key|gcctabopt|option|env)/B/;
+        $ic =~ s/\@(?:samp|strong|key|gcctabopt|option|env|command)/B/;
         $ic =~ s/\@(?:code|kbd)/C/;
         $ic =~ s/\@(?:dfn|var|emph|cite|i)/I/;
         $ic =~ s/\@(?:file)/F/;

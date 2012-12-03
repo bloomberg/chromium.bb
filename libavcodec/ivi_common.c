@@ -27,10 +27,11 @@
  */
 
 #define BITSTREAM_READER_LE
+#include "libavutil/attributes.h"
 #include "avcodec.h"
 #include "get_bits.h"
+#include "mathops.h"
 #include "ivi_common.h"
-#include "libavutil/common.h"
 #include "ivi_dsp.h"
 
 extern const IVIHuffDesc ff_ivi_mb_huff_desc[8];  ///< static macroblock huffman tables
@@ -48,9 +49,9 @@ static uint16_t inv_bits(uint16_t val, int nbits)
     uint16_t res;
 
     if (nbits <= 8) {
-        res = av_reverse[val] >> (8-nbits);
+        res = ff_reverse[val] >> (8-nbits);
     } else
-        res = ((av_reverse[val & 0xFF] << 8) + (av_reverse[val >> 8])) >> (16-nbits);
+        res = ((ff_reverse[val & 0xFF] << 8) + (ff_reverse[val >> 8])) >> (16-nbits);
 
     return res;
 }
@@ -238,6 +239,7 @@ av_cold void ff_ivi_free_buffers(IVIPlaneDesc *planes)
     int p, b, t;
 
     for (p = 0; p < 3; p++) {
+        if (planes[p].bands)
         for (b = 0; b < planes[p].num_bands; b++) {
             av_freep(&planes[p].bands[b].bufs[0]);
             av_freep(&planes[p].bands[b].bufs[1]);
@@ -306,7 +308,10 @@ av_cold int ff_ivi_init_tiles(IVIPlaneDesc *planes, int tile_width, int tile_hei
 
                     tile->ref_mbs = 0;
                     if (p || b) {
-                        tile->ref_mbs = ref_tile->mbs;
+                        if (tile->num_MBs <= ref_tile->num_MBs) {
+                            tile->ref_mbs = ref_tile->mbs;
+                        }else
+                            av_log(NULL, AV_LOG_DEBUG, "Cannot use ref_tile, too few mbs\n");
                         ref_tile++;
                     }
 
@@ -461,7 +466,7 @@ int ff_ivi_decode_blocks(GetBitContext *gb, IVIBandDesc *band, IVITile *tile)
                     col_flags[0] |= !!prev_dc;
                 }
                 if(band->transform_size > band->blk_size){
-                    av_log(0, AV_LOG_ERROR, "Too large transform\n");
+                    av_log(NULL, AV_LOG_ERROR, "Too large transform\n");
                     return AVERROR_INVALIDDATA;
                 }
                 /* apply inverse transform */
@@ -477,7 +482,7 @@ int ff_ivi_decode_blocks(GetBitContext *gb, IVIBandDesc *band, IVITile *tile)
                 /* block not coded */
                 /* for intra blocks apply the dc slant transform */
                 /* for inter - perform the motion compensation without delta */
-                if (is_intra && band->dc_transform) {
+                if (is_intra) {
                     band->dc_transform(&prev_dc, band->buf + buf_offs,
                                        band->pitch, blk_size);
                 } else
@@ -558,6 +563,22 @@ static int ivi_process_empty_tile(AVCodecContext *avctx, IVIBandDesc *band,
                     mb->mv_y = ref_mb->mv_y;
                 }
                 need_mc |= mb->mv_x || mb->mv_y; /* tracking non-zero motion vectors */
+                {
+                    int dmv_x, dmv_y, cx, cy;
+
+                    dmv_x = mb->mv_x >> band->is_halfpel;
+                    dmv_y = mb->mv_y >> band->is_halfpel;
+                    cx    = mb->mv_x &  band->is_halfpel;
+                    cy    = mb->mv_y &  band->is_halfpel;
+
+                    if (   mb->xpos + dmv_x < 0
+                        || mb->xpos + dmv_x + band->mb_size + cx > band->pitch
+                        || mb->ypos + dmv_y < 0
+                        || mb->ypos + dmv_y + band->mb_size + cy > band->aheight) {
+                        av_log(avctx, AV_LOG_ERROR, "MV out of bounds\n");
+                        return AVERROR_INVALIDDATA;
+                    }
+                }
             }
 
             mb++;
@@ -649,7 +670,7 @@ void ff_ivi_output_plane(IVIPlaneDesc *plane, uint8_t *dst, int dst_pitch)
  *  @param[in]      avctx  ptr to the AVCodecContext
  *  @return         result code: 0 = OK, -1 = error
  */
-static int decode_band(IVI45DecContext *ctx, int plane_num,
+static int decode_band(IVI45DecContext *ctx,
                        IVIBandDesc *band, AVCodecContext *avctx)
 {
     int         result, i, t, idx1, idx2, pos;
@@ -790,7 +811,7 @@ int ff_ivi_decode_frame(AVCodecContext *avctx, void *data, int *data_size,
         ctx->buf_invalid[ctx->dst_buf] = 1;
         for (p = 0; p < 3; p++) {
             for (b = 0; b < ctx->planes[p].num_bands; b++) {
-                result = decode_band(ctx, p, &ctx->planes[p].bands[b], avctx);
+                result = decode_band(ctx, &ctx->planes[p].bands[b], avctx);
                 if (result) {
                     av_log(avctx, AV_LOG_ERROR,
                            "Error while decoding band: %d, plane: %d\n", b, p);
@@ -830,9 +851,9 @@ int ff_ivi_decode_frame(AVCodecContext *avctx, void *data, int *data_size,
 
     if (ctx->is_scalable) {
         if (avctx->codec_id == AV_CODEC_ID_INDEO4)
-            ff_ivi_recompose_haar(&ctx->planes[0], ctx->frame.data[0], ctx->frame.linesize[0], 4);
+            ff_ivi_recompose_haar(&ctx->planes[0], ctx->frame.data[0], ctx->frame.linesize[0]);
         else
-            ff_ivi_recompose53   (&ctx->planes[0], ctx->frame.data[0], ctx->frame.linesize[0], 4);
+            ff_ivi_recompose53   (&ctx->planes[0], ctx->frame.data[0], ctx->frame.linesize[0]);
     } else {
         ff_ivi_output_plane(&ctx->planes[0], ctx->frame.data[0], ctx->frame.linesize[0]);
     }

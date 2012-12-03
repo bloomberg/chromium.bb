@@ -493,6 +493,8 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPac
         c->by = (c->height+ c->bh - 1) / c->bh;
         if (!c->cur || !c->prev)
             return -1;
+        memset(c->cur, 0, avctx->width * avctx->height * (c->bpp / 8));
+        memset(c->prev, 0, avctx->width * avctx->height * (c->bpp / 8));
         c->decode_intra= decode_intra;
     }
 
@@ -502,8 +504,11 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPac
     }
 
     if (c->comp == 0) { //Uncompressed data
+        if (c->decomp_size < len) {
+            av_log(avctx, AV_LOG_ERROR, "decomp buffer too small\n");
+            return AVERROR_INVALIDDATA;
+        }
         memcpy(c->decomp_buf, buf, len);
-        c->decomp_size = 1;
     } else { // ZLIB-compressed data
         c->zstream.total_in = c->zstream.total_out = 0;
         c->zstream.next_in = (uint8_t*)buf;
@@ -625,12 +630,12 @@ static av_cold int decode_init(AVCodecContext *avctx)
     // Needed if zlib unused or init aborted before inflateInit
     memset(&c->zstream, 0, sizeof(z_stream));
 
-    avctx->pix_fmt = PIX_FMT_RGB24;
+    avctx->pix_fmt = AV_PIX_FMT_RGB24;
     c->decomp_size = (avctx->width + 255) * 4 * (avctx->height + 64);
 
     /* Allocate decompression buffer */
     if (c->decomp_size) {
-        if ((c->decomp_buf = av_malloc(c->decomp_size)) == NULL) {
+        if ((c->decomp_buf = av_mallocz(c->decomp_size)) == NULL) {
             av_log(avctx, AV_LOG_ERROR,
                    "Can't allocate decompression buffer.\n");
             return AVERROR(ENOMEM);

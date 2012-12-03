@@ -256,9 +256,6 @@ static int rtmp_write_amf_data(URLContext *s, char *param, uint8_t **p)
         *value = '\0';
         value++;
 
-        if (!field || !value)
-            goto fail;
-
         ff_amf_write_field_name(p, field);
     } else {
         goto fail;
@@ -859,7 +856,7 @@ int ff_rtmp_calc_digest(const uint8_t *src, int len, int gap,
     uint8_t hmac_buf[64+32] = {0};
     int i;
 
-    sha = av_mallocz(av_sha_size);
+    sha = av_sha_alloc();
     if (!sha)
         return AVERROR(ENOMEM);
 
@@ -1371,9 +1368,9 @@ static int rtmp_server_handshake(URLContext *s, RTMPContext *rt)
     /* By now same epoch will be sent */
     hs_my_epoch = hs_epoch;
     /* Generate random */
-    for (randomidx = 0; randomidx < (RTMP_HANDSHAKE_PACKET_SIZE);
+    for (randomidx = 8; randomidx < (RTMP_HANDSHAKE_PACKET_SIZE);
          randomidx += 4)
-        AV_WB32(hs_s1 + 8 + randomidx, av_get_random_seed());
+        AV_WB32(hs_s1 + randomidx, av_get_random_seed());
 
     ret = rtmp_send_hs_packet(rt, hs_my_epoch, 0, hs_s1,
                               RTMP_HANDSHAKE_PACKET_SIZE);
@@ -2188,7 +2185,7 @@ static int rtmp_open(URLContext *s, const char *uri, int flags)
         } else {
             rt->playpath[0] = 0;
         }
-        strncat(rt->playpath, fname, PLAYPATH_MAX_LENGTH - 5);
+        av_strlcat(rt->playpath, fname, PLAYPATH_MAX_LENGTH);
     }
 
     if (!rt->tcurl) {

@@ -626,7 +626,7 @@ static int avi_read_header(AVFormatContext *s)
                         pal_size = FFMIN(pal_size, st->codec->extradata_size);
                         pal_src = st->codec->extradata + st->codec->extradata_size - pal_size;
                         for (i = 0; i < pal_size/4; i++)
-                            ast->pal[i] = 0xFF<<24 | AV_RL32(pal_src+4*i);
+                            ast->pal[i] = 0xFFU<<24 | AV_RL32(pal_src+4*i);
                         ast->has_pal = 1;
                     }
 
@@ -681,10 +681,17 @@ static int avi_read_header(AVFormatContext *s)
                         av_log(s, AV_LOG_DEBUG, "overriding invalid dshow_block_align of %d\n", ast->dshow_block_align);
                         ast->dshow_block_align = 0;
                     }
+                    if(st->codec->codec_id == AV_CODEC_ID_AAC && ast->dshow_block_align == 1024 && ast->sample_size == 1024 ||
+                       st->codec->codec_id == AV_CODEC_ID_AAC && ast->dshow_block_align == 4096 && ast->sample_size == 4096 ||
+                       st->codec->codec_id == AV_CODEC_ID_MP3 && ast->dshow_block_align == 1152 && ast->sample_size == 1152) {
+                        av_log(s, AV_LOG_DEBUG, "overriding sample_size\n");
+                        ast->sample_size = 0;
+                    }
                     break;
                 case AVMEDIA_TYPE_SUBTITLE:
                     st->codec->codec_type = AVMEDIA_TYPE_SUBTITLE;
                     st->request_probe= 1;
+                    avio_skip(pb, size);
                     break;
                 default:
                     st->codec->codec_type = AVMEDIA_TYPE_DATA;
@@ -1003,7 +1010,7 @@ start_sync:
                 avio_rl16(pb); //flags
 
                 for (; k <= last; k++)
-                    ast->pal[k] = 0xFF<<24 | avio_rb32(pb)>>8;// b + (g << 8) + (r << 16);
+                    ast->pal[k] = 0xFFU<<24 | avio_rb32(pb)>>8;// b + (g << 8) + (r << 16);
                 ast->has_pal= 1;
                 goto start_sync;
             } else if(   ((ast->prefix_count<5 || sync+9 > i) && d[2]<128 && d[3]<128) ||
@@ -1138,7 +1145,7 @@ resync:
             return err;
         size = err;
 
-        if(ast->has_pal && pkt->data && pkt->size<(unsigned)INT_MAX/2){
+        if(ast->has_pal && pkt->size<(unsigned)INT_MAX/2){
             uint8_t *pal;
             pal = av_packet_new_side_data(pkt, AV_PKT_DATA_PALETTE, AVPALETTE_SIZE);
             if(!pal){
@@ -1264,6 +1271,11 @@ static int avi_read_idx1(AVFormatContext *s, int size)
     }
     avi->stream_index = -1;
     avio_seek(pb, idx1_pos, SEEK_SET);
+
+    if (s->nb_streams == 1 && s->streams[0]->codec->codec_tag == AV_RL32("MMES")){
+        first_packet_pos = 0;
+        data_offset = avi->movi_list;
+    }
 
     /* Read the entries and sort them in each stream component. */
     for(i = 0; i < nb_index_entries; i++) {

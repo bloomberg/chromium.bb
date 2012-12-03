@@ -23,11 +23,13 @@
  * @file
  * Intel Indeo 2 decoder.
  */
+
 #define BITSTREAM_READER_LE
+#include "libavutil/attributes.h"
 #include "avcodec.h"
 #include "get_bits.h"
 #include "indeo2data.h"
-#include "libavutil/common.h"
+#include "mathops.h"
 
 typedef struct Ir2Context{
     AVCodecContext *avctx;
@@ -165,7 +167,7 @@ static int ir2_decode_frame(AVCodecContext *avctx,
     /* decide whether frame uses deltas or not */
 #ifndef BITSTREAM_READER_LE
     for (i = 0; i < buf_size; i++)
-        buf[i] = av_reverse[buf[i]];
+        buf[i] = ff_reverse[buf[i]];
 #endif
 
     init_get_bits(&s->gb, buf + start, (buf_size - start) * 8);
@@ -201,7 +203,7 @@ static av_cold int ir2_decode_init(AVCodecContext *avctx){
     avcodec_get_frame_defaults(&ic->picture);
     ic->avctx = avctx;
 
-    avctx->pix_fmt= PIX_FMT_YUV410P;
+    avctx->pix_fmt= AV_PIX_FMT_YUV410P;
 
     ir2_vlc.table = vlc_tables;
     ir2_vlc.table_allocated = 1 << CODE_VLC_BITS;

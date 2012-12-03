@@ -24,7 +24,7 @@
  * based on ffmpeg.c code
  */
 
-#include "libavutil/audioconvert.h"
+#include "libavutil/channel_layout.h"
 #include "libavutil/eval.h"
 #include "audio.h"
 #include "avfilter.h"
@@ -110,7 +110,7 @@ static int query_formats(AVFilterContext *ctx)
     return 0;
 }
 
-static int filter_samples(AVFilterLink *inlink, AVFilterBufferRef *insamples)
+static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *insamples)
 {
     VolumeContext *vol = inlink->dst->priv;
     AVFilterLink *outlink = inlink->dst->outputs[0];
@@ -169,8 +169,26 @@ static int filter_samples(AVFilterLink *inlink, AVFilterBufferRef *insamples)
         }
         }
     }
-    return ff_filter_samples(outlink, insamples);
+    return ff_filter_frame(outlink, insamples);
 }
+
+static const AVFilterPad volume_inputs[] = {
+    {
+        .name         = "default",
+        .type         = AVMEDIA_TYPE_AUDIO,
+        .filter_frame = filter_frame,
+        .min_perms    = AV_PERM_READ | AV_PERM_WRITE,
+    },
+    { NULL },
+};
+
+static const AVFilterPad volume_outputs[] = {
+    {
+        .name = "default",
+        .type = AVMEDIA_TYPE_AUDIO,
+    },
+    { NULL },
+};
 
 AVFilter avfilter_af_volume = {
     .name           = "volume",
@@ -178,14 +196,6 @@ AVFilter avfilter_af_volume = {
     .query_formats  = query_formats,
     .priv_size      = sizeof(VolumeContext),
     .init           = init,
-
-    .inputs  = (const AVFilterPad[])  {{ .name     = "default",
-                                   .type           = AVMEDIA_TYPE_AUDIO,
-                                   .filter_samples = filter_samples,
-                                   .min_perms      = AV_PERM_READ|AV_PERM_WRITE},
-                                 { .name = NULL}},
-
-    .outputs = (const AVFilterPad[])  {{ .name     = "default",
-                                   .type           = AVMEDIA_TYPE_AUDIO, },
-                                 { .name = NULL}},
+    .inputs         = volume_inputs,
+    .outputs        = volume_outputs,
 };

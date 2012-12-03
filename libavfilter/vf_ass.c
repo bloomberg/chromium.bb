@@ -54,6 +54,8 @@ typedef struct {
 #define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM
 
 static const AVOption ass_options[] = {
+    {"filename",       "set the filename of the ASS file to read",                 OFFSET(filename),   AV_OPT_TYPE_STRING,     {.str = NULL},  CHAR_MIN, CHAR_MAX, FLAGS },
+    {"f",              "set the filename of the ASS file to read",                 OFFSET(filename),   AV_OPT_TYPE_STRING,     {.str = NULL},  CHAR_MIN, CHAR_MAX, FLAGS },
     {"original_size",  "set the size of the original video (used to scale fonts)", OFFSET(original_w), AV_OPT_TYPE_IMAGE_SIZE, {.str = NULL},  CHAR_MIN, CHAR_MAX, FLAGS },
     {NULL},
 };
@@ -83,20 +85,19 @@ static void ass_log(int ass_level, const char *fmt, va_list args, void *ctx)
 static av_cold int init(AVFilterContext *ctx, const char *args)
 {
     AssContext *ass = ctx->priv;
+    static const char *shorthand[] = { "filename", NULL };
     int ret;
 
     ass->class = &ass_class;
     av_opt_set_defaults(ass);
 
-    if (args)
-        ass->filename = av_get_token(&args, ":");
-    if (!ass->filename || !*ass->filename) {
+    if ((ret = av_opt_set_from_string(ass, args, shorthand, "=", ":")) < 0)
+        return ret;
+
+    if (!ass->filename) {
         av_log(ctx, AV_LOG_ERROR, "No filename provided!\n");
         return AVERROR(EINVAL);
     }
-
-    if (*args++ == ':' && (ret = av_set_options_string(ass, args, "=", ":")) < 0)
-        return ret;
 
     ass->library = ass_library_init();
     if (!ass->library) {
@@ -127,7 +128,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 {
     AssContext *ass = ctx->priv;
 
-    av_freep(&ass->filename);
+    av_opt_free(ass);
     if (ass->track)
         ass_free_track(ass->track);
     if (ass->renderer)
@@ -156,8 +157,6 @@ static int config_input(AVFilterLink *inlink)
     return 0;
 }
 
-static int null_draw_slice(AVFilterLink *link, int y, int h, int slice_dir) { return 0; }
-
 /* libass stores an RGBA color in the format RRGGBBTT, where TT is the transparency level */
 #define AR(c)  ( (c)>>24)
 #define AG(c)  (((c)>>16)&0xFF)
@@ -179,12 +178,11 @@ static void overlay_ass_image(AssContext *ass, AVFilterBufferRef *picref,
     }
 }
 
-static int end_frame(AVFilterLink *inlink)
+static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *picref)
 {
     AVFilterContext *ctx = inlink->dst;
     AVFilterLink *outlink = ctx->outputs[0];
     AssContext *ass = ctx->priv;
-    AVFilterBufferRef *picref = inlink->cur_buf;
     int detect_change = 0;
     double time_ms = picref->pts * av_q2d(inlink->time_base) * 1000;
     ASS_Image *image = ass_render_frame(ass->renderer, ass->track,
@@ -195,9 +193,27 @@ static int end_frame(AVFilterLink *inlink)
 
     overlay_ass_image(ass, picref, image);
 
-    ff_draw_slice(outlink, 0, picref->video->h, 1);
-    return ff_end_frame(outlink);
+    return ff_filter_frame(outlink, picref);
 }
+
+static const AVFilterPad ass_inputs[] = {
+    {
+        .name             = "default",
+        .type             = AVMEDIA_TYPE_VIDEO,
+        .filter_frame     = filter_frame,
+        .config_props     = config_input,
+        .min_perms        = AV_PERM_READ | AV_PERM_WRITE,
+    },
+    { NULL }
+};
+
+static const AVFilterPad ass_outputs[] = {
+    {
+        .name = "default",
+        .type = AVMEDIA_TYPE_VIDEO,
+    },
+    { NULL }
+};
 
 AVFilter avfilter_vf_ass = {
     .name          = "ass",
@@ -206,22 +222,7 @@ AVFilter avfilter_vf_ass = {
     .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
-
-    .inputs = (const AVFilterPad[]) {
-        { .name             = "default",
-          .type             = AVMEDIA_TYPE_VIDEO,
-          .get_video_buffer = ff_null_get_video_buffer,
-          .start_frame      = ff_null_start_frame,
-          .draw_slice       = null_draw_slice,
-          .end_frame        = end_frame,
-          .config_props     = config_input,
-          .min_perms        = AV_PERM_WRITE | AV_PERM_READ },
-        { .name = NULL}
-    },
-    .outputs = (const AVFilterPad[]) {
-        { .name             = "default",
-          .type             = AVMEDIA_TYPE_VIDEO, },
-        { .name = NULL}
-    },
-    .priv_class = &ass_class,
+    .inputs        = ass_inputs,
+    .outputs       = ass_outputs,
+    .priv_class    = &ass_class,
 };

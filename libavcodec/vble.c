@@ -29,6 +29,7 @@
 #include "avcodec.h"
 #include "dsputil.h"
 #include "get_bits.h"
+#include "mathops.h"
 
 typedef struct {
     AVCodecContext *avctx;
@@ -126,6 +127,11 @@ static int vble_decode_frame(AVCodecContext *avctx, void *data, int *data_size,
     if (pic->data[0])
         avctx->release_buffer(avctx, pic);
 
+    if (avpkt->size < 4 || avpkt->size - 4 > INT_MAX/8) {
+        av_log(avctx, AV_LOG_ERROR, "Invalid packet size\n");
+        return AVERROR_INVALIDDATA;
+    }
+
     /* Allocate buffer */
     if (avctx->get_buffer(avctx, pic) < 0) {
         av_log(avctx, AV_LOG_ERROR, "Could not allocate buffer.\n");
@@ -139,10 +145,8 @@ static int vble_decode_frame(AVCodecContext *avctx, void *data, int *data_size,
     /* Version should always be 1 */
     version = AV_RL32(src);
 
-    if (version != 1) {
-        av_log(avctx, AV_LOG_ERROR, "Unsupported VBLE Version: %d\n", version);
-        return AVERROR_INVALIDDATA;
-    }
+    if (version != 1)
+        av_log(avctx, AV_LOG_WARNING, "Unsupported VBLE Version: %d\n", version);
 
     init_get_bits(&gb, src + 4, (avpkt->size - 4) * 8);
 
@@ -192,7 +196,7 @@ static av_cold int vble_decode_init(AVCodecContext *avctx)
     ctx->avctx = avctx;
     ff_dsputil_init(&ctx->dsp, avctx);
 
-    avctx->pix_fmt = PIX_FMT_YUV420P;
+    avctx->pix_fmt = AV_PIX_FMT_YUV420P;
     avctx->bits_per_raw_sample = 8;
     avctx->coded_frame = avcodec_alloc_frame();
 

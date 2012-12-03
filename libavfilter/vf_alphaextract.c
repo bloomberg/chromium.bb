@@ -40,12 +40,12 @@ typedef struct {
 
 static int query_formats(AVFilterContext *ctx)
 {
-    enum PixelFormat in_fmts[] = {
-        PIX_FMT_YUVA444P, PIX_FMT_YUVA422P, PIX_FMT_YUVA420P,
-        PIX_FMT_RGBA, PIX_FMT_BGRA, PIX_FMT_ARGB, PIX_FMT_ABGR,
-        PIX_FMT_NONE
+    enum AVPixelFormat in_fmts[] = {
+        AV_PIX_FMT_YUVA444P, AV_PIX_FMT_YUVA422P, AV_PIX_FMT_YUVA420P,
+        AV_PIX_FMT_RGBA, AV_PIX_FMT_BGRA, AV_PIX_FMT_ARGB, AV_PIX_FMT_ABGR,
+        AV_PIX_FMT_NONE
     };
-    enum PixelFormat out_fmts[] = { PIX_FMT_GRAY8, PIX_FMT_NONE };
+    enum AVPixelFormat out_fmts[] = { AV_PIX_FMT_GRAY8, AV_PIX_FMT_NONE };
     ff_formats_ref(ff_make_format_list(in_fmts), &ctx->inputs[0]->out_formats);
     ff_formats_ref(ff_make_format_list(out_fmts), &ctx->outputs[0]->in_formats);
     return 0;
@@ -94,24 +94,31 @@ static int draw_slice(AVFilterLink *inlink, int y0, int h, int slice_dir)
     return ff_draw_slice(inlink->dst->outputs[0], y0, h, slice_dir);
 }
 
+static const AVFilterPad alphaextract_inputs[] = {
+    {
+        .name         = "default",
+        .type         = AVMEDIA_TYPE_VIDEO,
+        .config_props = config_input,
+        .draw_slice   = draw_slice,
+        .min_perms    = AV_PERM_READ,
+    },
+    { NULL }
+};
+
+static const AVFilterPad alphaextract_outputs[] = {
+    {
+        .name = "default",
+        .type = AVMEDIA_TYPE_VIDEO,
+    },
+    { NULL }
+};
+
 AVFilter avfilter_vf_alphaextract = {
     .name           = "alphaextract",
     .description    = NULL_IF_CONFIG_SMALL("Extract an alpha channel as a "
                       "grayscale image component."),
     .priv_size      = sizeof(AlphaExtractContext),
     .query_formats  = query_formats,
-
-    .inputs    = (const AVFilterPad[]) {
-        { .name             = "default",
-          .type             = AVMEDIA_TYPE_VIDEO,
-          .config_props     = config_input,
-          .draw_slice       = draw_slice,
-          .min_perms        = AV_PERM_READ },
-        { .name = NULL }
-    },
-    .outputs   = (const AVFilterPad[]) {
-      { .name               = "default",
-        .type               = AVMEDIA_TYPE_VIDEO, },
-      { .name = NULL }
-    },
+    .inputs         = alphaextract_inputs,
+    .outputs        = alphaextract_outputs,
 };

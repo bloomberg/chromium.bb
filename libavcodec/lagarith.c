@@ -158,8 +158,8 @@ static int lag_read_prob_header(lag_rac *rac, GetBitContext *gb)
                 av_log(rac->avctx, AV_LOG_ERROR, "Invalid probability run encountered.\n");
                 return -1;
             }
-            if (prob > 257 - i)
-                prob = 257 - i;
+            if (prob > 256 - i)
+                prob = 256 - i;
             for (j = 0; j < prob; j++)
                 rac->prob[++i] = 0;
         }
@@ -259,7 +259,7 @@ static void lag_pred_line(LagarithContext *l, uint8_t *buf,
         if (line == 1) {
             /* Second line, left predict first pixel, the rest of the line is median predicted
              * NOTE: In the case of RGB this pixel is top predicted */
-            TL = l->avctx->pix_fmt == PIX_FMT_YUV420P ? buf[-stride] : L;
+            TL = l->avctx->pix_fmt == AV_PIX_FMT_YUV420P ? buf[-stride] : L;
         } else {
             /* Top left is 2 rows back, last pixel */
             TL = buf[width - (2 * stride) - 1];
@@ -482,7 +482,7 @@ static int lag_decode_arith_plane(LagarithContext *l, uint8_t *dst,
         return -1;
     }
 
-    if (l->avctx->pix_fmt != PIX_FMT_YUV422P) {
+    if (l->avctx->pix_fmt != AV_PIX_FMT_YUV422P) {
         for (i = 0; i < height; i++) {
             lag_pred_line(l, dst, width, stride, i);
             dst += stride;
@@ -534,7 +534,7 @@ static int lag_decode_frame(AVCodecContext *avctx,
 
     switch (frametype) {
     case FRAME_SOLID_RGBA:
-        avctx->pix_fmt = PIX_FMT_RGB32;
+        avctx->pix_fmt = AV_PIX_FMT_RGB32;
 
         if (ff_thread_get_buffer(avctx, p) < 0) {
             av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
@@ -549,14 +549,14 @@ static int lag_decode_frame(AVCodecContext *avctx,
         }
         break;
     case FRAME_ARITH_RGBA:
-        avctx->pix_fmt = PIX_FMT_RGB32;
+        avctx->pix_fmt = AV_PIX_FMT_RGB32;
         planes = 4;
         offset_ry += 4;
         offs[3] = AV_RL32(buf + 9);
     case FRAME_ARITH_RGB24:
     case FRAME_U_RGB24:
         if (frametype == FRAME_ARITH_RGB24 || frametype == FRAME_U_RGB24)
-            avctx->pix_fmt = PIX_FMT_RGB24;
+            avctx->pix_fmt = AV_PIX_FMT_RGB24;
 
         if (ff_thread_get_buffer(avctx, p) < 0) {
             av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
@@ -569,7 +569,7 @@ static int lag_decode_frame(AVCodecContext *avctx,
 
         if (!l->rgb_planes) {
             l->rgb_stride = FFALIGN(avctx->width, 16);
-            l->rgb_planes = av_malloc(l->rgb_stride * avctx->height * planes + 16);
+            l->rgb_planes = av_malloc(l->rgb_stride * avctx->height * 4 + 16);
             if (!l->rgb_planes) {
                 av_log(avctx, AV_LOG_ERROR, "cannot allocate temporary buffer\n");
                 return AVERROR(ENOMEM);
@@ -615,7 +615,7 @@ static int lag_decode_frame(AVCodecContext *avctx,
         }
         break;
     case FRAME_ARITH_YUY2:
-        avctx->pix_fmt = PIX_FMT_YUV422P;
+        avctx->pix_fmt = AV_PIX_FMT_YUV422P;
 
         if (ff_thread_get_buffer(avctx, p) < 0) {
             av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
@@ -641,7 +641,7 @@ static int lag_decode_frame(AVCodecContext *avctx,
                                buf + offset_bv, buf_size - offset_bv);
         break;
     case FRAME_ARITH_YV12:
-        avctx->pix_fmt = PIX_FMT_YUV420P;
+        avctx->pix_fmt = AV_PIX_FMT_YUV420P;
 
         if (ff_thread_get_buffer(avctx, p) < 0) {
             av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");

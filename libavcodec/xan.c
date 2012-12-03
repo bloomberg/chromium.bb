@@ -33,12 +33,11 @@
 #include <string.h>
 
 #include "libavutil/intreadwrite.h"
+#include "libavutil/mem.h"
 #include "avcodec.h"
 #include "bytestream.h"
 #define BITSTREAM_READER_LE
 #include "get_bits.h"
-// for av_memcpy_backptr
-#include "libavutil/lzo.h"
 
 #define RUNTIME_GAMMA 0
 
@@ -79,7 +78,7 @@ static av_cold int xan_decode_init(AVCodecContext *avctx)
     s->avctx = avctx;
     s->frame_size = 0;
 
-    avctx->pix_fmt = PIX_FMT_PAL8;
+    avctx->pix_fmt = AV_PIX_FMT_PAL8;
 
     s->buffer1_size = avctx->width * avctx->height;
     s->buffer1 = av_malloc(s->buffer1_size);
@@ -360,17 +359,29 @@ static int xan_wc3_decode_frame(XanContext *s) {
 
         case 9:
         case 19:
+            if (buf_end - size_segment < 1) {
+                av_log(s->avctx, AV_LOG_ERROR, "size_segment overread\n");
+                return AVERROR_INVALIDDATA;
+            }
             size = *size_segment++;
             break;
 
         case 10:
         case 20:
+            if (buf_end - size_segment < 2) {
+                av_log(s->avctx, AV_LOG_ERROR, "size_segment overread\n");
+                return AVERROR_INVALIDDATA;
+            }
             size = AV_RB16(&size_segment[0]);
             size_segment += 2;
             break;
 
         case 11:
         case 21:
+            if (buf_end - size_segment < 3) {
+                av_log(s->avctx, AV_LOG_ERROR, "size_segment overread\n");
+                return AVERROR_INVALIDDATA;
+            }
             size = AV_RB24(size_segment);
             size_segment += 3;
             break;

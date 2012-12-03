@@ -20,7 +20,7 @@
  */
 
 #include "libavutil/avassert.h"
-#include "libavutil/audioconvert.h"
+#include "libavutil/channel_layout.h"
 #include "libavutil/common.h"
 
 #include "audio.h"
@@ -157,30 +157,29 @@ fail:
     return NULL;
 }
 
-static int default_filter_samples(AVFilterLink *link,
-                                  AVFilterBufferRef *samplesref)
+static int default_filter_frame(AVFilterLink *link, AVFilterBufferRef *frame)
 {
-    return ff_filter_samples(link->dst->outputs[0], samplesref);
+    return ff_filter_frame(link->dst->outputs[0], frame);
 }
 
 int ff_filter_samples_framed(AVFilterLink *link, AVFilterBufferRef *samplesref)
 {
-    int (*filter_samples)(AVFilterLink *, AVFilterBufferRef *);
+    int (*filter_frame)(AVFilterLink *, AVFilterBufferRef *);
     AVFilterPad *src = link->srcpad;
     AVFilterPad *dst = link->dstpad;
     int64_t pts;
     AVFilterBufferRef *buf_out;
     int ret;
 
-    FF_TPRINTF_START(NULL, filter_samples); ff_tlog_link(NULL, link, 1);
+    FF_TPRINTF_START(NULL, filter_frame); ff_tlog_link(NULL, link, 1);
 
     if (link->closed) {
         avfilter_unref_buffer(samplesref);
         return AVERROR_EOF;
     }
 
-    if (!(filter_samples = dst->filter_samples))
-        filter_samples = default_filter_samples;
+    if (!(filter_frame = dst->filter_frame))
+        filter_frame = default_filter_frame;
 
     av_assert1((samplesref->perms & src->min_perms) == src->min_perms);
     samplesref->perms &= ~ src->rej_perms;
@@ -213,7 +212,7 @@ int ff_filter_samples_framed(AVFilterLink *link, AVFilterBufferRef *samplesref)
 
     link->cur_buf = buf_out;
     pts = buf_out->pts;
-    ret = filter_samples(link, buf_out);
+    ret = filter_frame(link, buf_out);
     ff_update_link_current_pts(link, pts);
     return ret;
 }

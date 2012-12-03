@@ -31,8 +31,8 @@
 #include "avcodec.h"
 #define BITSTREAM_READER_LE
 #include "get_bits.h"
-#include "libavutil/lzo.h"
 #include "libavutil/imgutils.h"
+#include "libavutil/mem.h"
 
 #define EA_PREAMBLE_SIZE    8
 #define kVGT_TAG MKTAG('k', 'V', 'G', 'T')
@@ -54,7 +54,7 @@ static av_cold int tgv_decode_init(AVCodecContext *avctx){
     TgvContext *s = avctx->priv_data;
     s->avctx = avctx;
     avctx->time_base = (AVRational){1, 15};
-    avctx->pix_fmt = PIX_FMT_PAL8;
+    avctx->pix_fmt = AV_PIX_FMT_PAL8;
     avcodec_get_frame_defaults(&s->frame);
     avcodec_get_frame_defaults(&s->last_frame);
     return 0;
@@ -286,7 +286,7 @@ static int tgv_decode_frame(AVCodecContext *avctx,
         pal_count = AV_RL16(&buf[6]);
         buf += 12;
         for(i=0; i<pal_count && i<AVPALETTE_COUNT && buf_end - buf >= 3; i++) {
-            s->palette[i] = 0xFF << 24 | AV_RB24(buf);
+            s->palette[i] = 0xFFU << 24 | AV_RB24(buf);
             buf += 3;
         }
     }
@@ -301,8 +301,7 @@ static int tgv_decode_frame(AVCodecContext *avctx,
         s->frame.buffer_hints = FF_BUFFER_HINTS_VALID;
         s->frame.linesize[0] = s->width;
 
-        /* allocate additional 12 bytes to accommodate av_memcpy_backptr() OUTBUF_PADDED optimisation */
-        s->frame.data[0] = av_malloc(s->width*s->height + 12);
+        s->frame.data[0] = av_malloc(s->width * s->height);
         if (!s->frame.data[0])
             return AVERROR(ENOMEM);
         s->frame.data[1] = av_malloc(AVPALETTE_SIZE);

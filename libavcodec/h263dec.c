@@ -60,7 +60,7 @@ av_cold int ff_h263_decode_init(AVCodecContext *avctx)
     s->decode_mb= ff_h263_decode_mb;
     s->low_delay= 1;
     if (avctx->codec->id == AV_CODEC_ID_MSS2)
-        avctx->pix_fmt = PIX_FMT_YUV420P;
+        avctx->pix_fmt = AV_PIX_FMT_YUV420P;
     else
         avctx->pix_fmt = avctx->get_format(avctx, avctx->codec->pix_fmts);
     s->unrestricted_mv= 1;
@@ -168,7 +168,7 @@ static int decode_slice(MpegEncContext *s){
 
     if (s->avctx->hwaccel) {
         const uint8_t *start= s->gb.buffer + get_bits_count(&s->gb)/8;
-        const uint8_t *end  = ff_h263_find_resync_marker(start + 1, s->gb.buffer_end);
+        const uint8_t *end  = ff_h263_find_resync_marker(s, start + 1, s->gb.buffer_end);
         skip_bits_long(&s->gb, 8*(end - start));
         return s->avctx->hwaccel->decode_slice(s->avctx, start, end - start);
     }
@@ -266,7 +266,7 @@ static int decode_slice(MpegEncContext *s){
         s->mb_x= 0;
     }
 
-    assert(s->mb_x==0 && s->mb_y==s->mb_height);
+    av_assert1(s->mb_x==0 && s->mb_y==s->mb_height);
 
     if(s->codec_id==AV_CODEC_ID_MPEG4
        && (s->workaround_bugs&FF_BUG_AUTODETECT)
@@ -703,7 +703,7 @@ retry:
             s->error_status_table[s->mb_num-1]= ER_MB_ERROR;
         }
 
-    assert(s->bitstream_buffer_size==0);
+    av_assert1(s->bitstream_buffer_size==0);
 frame_end:
     /* divx 5.01+ bistream reorder stuff */
     if(s->codec_id==AV_CODEC_ID_MPEG4 && s->divx_packed){

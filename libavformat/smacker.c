@@ -24,6 +24,7 @@
  */
 
 #include "libavutil/bswap.h"
+#include "libavutil/channel_layout.h"
 #include "libavutil/intreadwrite.h"
 #include "avformat.h"
 #include "internal.h"
@@ -161,7 +162,7 @@ static int smacker_read_header(AVFormatContext *s)
     smk->videoindex = st->index;
     st->codec->width = smk->width;
     st->codec->height = smk->height;
-    st->codec->pix_fmt = PIX_FMT_PAL8;
+    st->codec->pix_fmt = AV_PIX_FMT_PAL8;
     st->codec->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codec->codec_id = AV_CODEC_ID_SMACKVIDEO;
     st->codec->codec_tag = smk->magic;
@@ -191,7 +192,13 @@ static int smacker_read_header(AVFormatContext *s)
             } else {
                 ast[i]->codec->codec_id = AV_CODEC_ID_PCM_U8;
             }
-            ast[i]->codec->channels = (smk->aflags[i] & SMK_AUD_STEREO) ? 2 : 1;
+            if (smk->aflags[i] & SMK_AUD_STEREO) {
+                ast[i]->codec->channels       = 2;
+                ast[i]->codec->channel_layout = AV_CH_LAYOUT_STEREO;
+            } else {
+                ast[i]->codec->channels       = 1;
+                ast[i]->codec->channel_layout = AV_CH_LAYOUT_MONO;
+            }
             ast[i]->codec->sample_rate = smk->rates[i];
             ast[i]->codec->bits_per_coded_sample = (smk->aflags[i] & SMK_AUD_16BITS) ? 16 : 8;
             if(ast[i]->codec->bits_per_coded_sample == 16 && ast[i]->codec->codec_id == AV_CODEC_ID_PCM_U8)

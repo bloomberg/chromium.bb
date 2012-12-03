@@ -58,7 +58,7 @@ static av_cold int mm_decode_init(AVCodecContext *avctx)
 
     s->avctx = avctx;
 
-    avctx->pix_fmt = PIX_FMT_PAL8;
+    avctx->pix_fmt = AV_PIX_FMT_PAL8;
 
     avcodec_get_frame_defaults(&s->frame);
     s->frame.reference = 3;
@@ -72,7 +72,7 @@ static int mm_decode_pal(MmContext *s)
 
     bytestream2_skip(&s->gb, 4);
     for (i = 0; i < 128; i++) {
-        s->palette[i] = 0xFF << 24 | bytestream2_get_be24(&s->gb);
+        s->palette[i] = 0xFFU << 24 | bytestream2_get_be24(&s->gb);
         s->palette[i+128] = s->palette[i]<<2;
     }
 
@@ -120,7 +120,7 @@ static int mm_decode_intra(MmContext * s, int half_horiz, int half_vert)
     return 0;
 }
 
-/*
+/**
  * @param half_horiz Half horizontal resolution (0 or 1)
  * @param half_vert Half vertical resolution (0 or 1)
  */

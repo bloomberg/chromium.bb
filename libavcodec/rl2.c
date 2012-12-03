@@ -134,13 +134,13 @@ static av_cold int rl2_decode_init(AVCodecContext *avctx)
     int back_size;
     int i;
     s->avctx = avctx;
-    avctx->pix_fmt = PIX_FMT_PAL8;
+    avctx->pix_fmt = AV_PIX_FMT_PAL8;
     avcodec_get_frame_defaults(&s->frame);
 
     /** parse extra data */
     if(!avctx->extradata || avctx->extradata_size < EXTRADATA1_SIZE){
         av_log(avctx, AV_LOG_ERROR, "invalid extradata size\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
 
     /** get frame_offset */
@@ -149,12 +149,12 @@ static av_cold int rl2_decode_init(AVCodecContext *avctx)
 
     if(s->video_base >= avctx->width * avctx->height){
         av_log(avctx, AV_LOG_ERROR, "invalid video_base\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
 
     /** initialize palette */
     for(i=0;i<AVPALETTE_COUNT;i++)
-        s->palette[i] = 0xFF << 24 | AV_RB24(&avctx->extradata[6 + i * 3]);
+        s->palette[i] = 0xFFU << 24 | AV_RB24(&avctx->extradata[6 + i * 3]);
 
     /** decode background frame if present */
     back_size = avctx->extradata_size - EXTRADATA1_SIZE;
@@ -162,7 +162,7 @@ static av_cold int rl2_decode_init(AVCodecContext *avctx)
     if(back_size > 0){
         unsigned char* back_frame = av_mallocz(avctx->width*avctx->height);
         if(!back_frame)
-            return -1;
+            return AVERROR(ENOMEM);
         rl2_rle_decode(s,avctx->extradata + EXTRADATA1_SIZE,back_size,
                            back_frame,avctx->width,0);
         s->back_frame = back_frame;
@@ -178,15 +178,16 @@ static int rl2_decode_frame(AVCodecContext *avctx,
     const uint8_t *buf = avpkt->data;
     int buf_size = avpkt->size;
     Rl2Context *s = avctx->priv_data;
+    int ret;
 
     if(s->frame.data[0])
         avctx->release_buffer(avctx, &s->frame);
 
     /** get buffer */
     s->frame.reference= 0;
-    if(avctx->get_buffer(avctx, &s->frame)) {
+    if ((ret = avctx->get_buffer(avctx, &s->frame)) < 0) {
         av_log(s->avctx, AV_LOG_ERROR, "get_buffer() failed\n");
-        return -1;
+        return ret;
     }
 
     /** run length decode */

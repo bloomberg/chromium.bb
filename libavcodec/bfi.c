@@ -40,7 +40,7 @@ typedef struct BFIContext {
 static av_cold int bfi_decode_init(AVCodecContext *avctx)
 {
     BFIContext *bfi = avctx->priv_data;
-    avctx->pix_fmt  = PIX_FMT_PAL8;
+    avctx->pix_fmt  = AV_PIX_FMT_PAL8;
     avcodec_get_frame_defaults(&bfi->frame);
     bfi->dst        = av_mallocz(avctx->width * avctx->height);
     return 0;
@@ -82,7 +82,7 @@ static int bfi_decode_frame(AVCodecContext *avctx, void *data,
         pal = (uint32_t *)bfi->frame.data[1];
         for (i = 0; i < avctx->extradata_size / 3; i++) {
             int shift = 16;
-            *pal = 0xFF << 24;
+            *pal = 0xFFU << 24;
             for (j = 0; j < 3; j++, shift -= 8)
                 *pal += ((avctx->extradata[i * 3 + j] << 2) |
                          (avctx->extradata[i * 3 + j] >> 4)) << shift;

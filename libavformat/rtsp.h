@@ -385,12 +385,17 @@ typedef struct RTSPState {
      * Timeout to wait for incoming connections.
      */
     int initial_timeout;
+
+    /**
+     * Size of RTP packet reordering queue.
+     */
+    int reordering_queue_size;
 } RTSPState;
 
 #define RTSP_FLAG_FILTER_SRC  0x1    /**< Filter incoming UDP packets -
                                           receive packets only from the right
                                           source address and port. */
-#define RTSP_FLAG_LISTEN 0x2         /**< Wait for incoming connections. */
+#define RTSP_FLAG_LISTEN      0x2    /**< Wait for incoming connections. */
 
 /**
  * Describe a single stream, as identified by a single m= line block in the
@@ -419,7 +424,7 @@ typedef struct RTSPStream {
     int sdp_payload_type;     /**< payload type */
     //@}
 
-    /** The following are used for dynamic protocols (rtp_*.c/rdt.c) */
+    /** The following are used for dynamic protocols (rtpdec_*.c/rdt.c) */
     //@{
     /** handler structure */
     RTPDynamicProtocolHandler *dynamic_handler;

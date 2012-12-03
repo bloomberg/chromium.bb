@@ -130,6 +130,7 @@ enum {
 typedef enum {
     SEI_BUFFERING_PERIOD            = 0,   ///< buffering period (H.264, D.1.1)
     SEI_TYPE_PIC_TIMING             = 1,   ///< picture timing
+    SEI_TYPE_USER_DATA_ITU_T_T35    = 4,   ///< user data registered by ITU-T Recommendation T.35
     SEI_TYPE_USER_DATA_UNREGISTERED = 5,   ///< unregistered user data
     SEI_TYPE_RECOVERY_POINT         = 6    ///< recovery point (frame # to decoder sync)
 } SEI_Type;
@@ -446,6 +447,7 @@ typedef struct H264Context {
     int nal_unit_type;
     uint8_t *rbsp_buffer[2];
     unsigned int rbsp_buffer_size[2];
+    int decoding_extradata;
 
     /**
      * Used to parse AVC variant of h264

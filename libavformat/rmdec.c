@@ -19,12 +19,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
+#include "libavutil/channel_layout.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/dict.h"
 #include "avformat.h"
 #include "internal.h"
-#include "riff.h"
+#include "rmsipr.h"
 #include "rm.h"
 
 #define DEINT_ID_GENR MKTAG('g', 'e', 'n', 'r') ///< interleaving for Cooker/Atrac
@@ -58,21 +60,6 @@ typedef struct {
     int audio_stream_num; ///< Stream number for audio packets
     int audio_pkt_cnt; ///< Output packet counter
 } RMDemuxContext;
-
-static const unsigned char sipr_swaps[38][2] = {
-    {  0, 63 }, {  1, 22 }, {  2, 44 }, {  3, 90 },
-    {  5, 81 }, {  7, 31 }, {  8, 86 }, {  9, 58 },
-    { 10, 36 }, { 12, 68 }, { 13, 39 }, { 14, 73 },
-    { 15, 53 }, { 16, 69 }, { 17, 57 }, { 19, 88 },
-    { 20, 34 }, { 21, 71 }, { 24, 46 }, { 25, 94 },
-    { 26, 54 }, { 28, 75 }, { 29, 50 }, { 32, 70 },
-    { 33, 92 }, { 35, 74 }, { 38, 85 }, { 40, 56 },
-    { 42, 87 }, { 43, 65 }, { 45, 59 }, { 48, 79 },
-    { 49, 93 }, { 51, 89 }, { 55, 95 }, { 61, 76 },
-    { 67, 83 }, { 77, 80 }
-};
-
-const unsigned char ff_sipr_subpk_size[4] = { 29, 19, 37, 20 };
 
 static inline void get_strl(AVIOContext *pb, char *buf, int buf_size, int len)
 {
@@ -154,6 +141,7 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
             avio_skip(pb, header_size + startpos - avio_tell(pb));
         st->codec->sample_rate = 8000;
         st->codec->channels = 1;
+        st->codec->channel_layout = AV_CH_LAYOUT_MONO;
         st->codec->codec_type = AVMEDIA_TYPE_AUDIO;
         st->codec->codec_id = AV_CODEC_ID_RA_144;
         ast->deint_id = DEINT_ID_INT0;
@@ -282,7 +270,7 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
         case DEINT_ID_VBRF:
             break;
         default:
-            av_log(NULL,0,"Unknown interleaver %X\n", ast->deint_id);
+            av_log(s, AV_LOG_ERROR, "Unknown interleaver %X\n", ast->deint_id);
             return AVERROR_INVALIDDATA;
         }
 
@@ -750,32 +738,6 @@ rm_ac3_swap_bytes (AVStream *st, AVPacket *pkt)
     }
 }
 
-/**
- * Perform 4-bit block reordering for SIPR data.
- * @todo This can be optimized, e.g. use memcpy() if data blocks are aligned
- */
-void ff_rm_reorder_sipr_data(uint8_t *buf, int sub_packet_h, int framesize)
-{
-    int n, bs = sub_packet_h * framesize * 2 / 96; // nibbles per subpacket
-
-    for (n = 0; n < 38; n++) {
-        int j;
-        int i = bs * sipr_swaps[n][0];
-        int o = bs * sipr_swaps[n][1];
-
-        /* swap 4bit-nibbles of block 'i' with 'o' */
-        for (j = 0; j < bs; j++, i++, o++) {
-            int x = (buf[i >> 1] >> (4 * (i & 1))) & 0xF,
-                y = (buf[o >> 1] >> (4 * (o & 1))) & 0xF;
-
-            buf[o >> 1] = (x << (4 * (o & 1))) |
-                (buf[o >> 1] & (0xF << (4 * !(o & 1))));
-            buf[i >> 1] = (y << (4 * (i & 1))) |
-                (buf[i >> 1] & (0xF << (4 * !(i & 1))));
-        }
-    }
-}
-
 int
 ff_rm_parse_packet (AVFormatContext *s, AVIOContext *pb,
                     AVStream *st, RMStream *ast, int len, AVPacket *pkt,
@@ -872,13 +834,14 @@ ff_rm_retrieve_cache (AVFormatContext *s, AVIOContext *pb,
 {
     RMDemuxContext *rm = s->priv_data;
 
-    assert (rm->audio_pkt_cnt > 0);
+    av_assert0 (rm->audio_pkt_cnt > 0);
 
     if (ast->deint_id == DEINT_ID_VBRF ||
         ast->deint_id == DEINT_ID_VBRS)
         av_get_packet(pb, pkt, ast->sub_packet_lengths[ast->sub_packet_cnt - rm->audio_pkt_cnt]);
     else {
-        av_new_packet(pkt, st->codec->block_align);
+        if(av_new_packet(pkt, st->codec->block_align) < 0)
+            return AVERROR(ENOMEM);
         memcpy(pkt->data, ast->pkt.data + st->codec->block_align * //FIXME avoid this
                (ast->sub_packet_h * ast->audio_framesize / st->codec->block_align - rm->audio_pkt_cnt),
                st->codec->block_align);
@@ -906,7 +869,9 @@ static int rm_read_packet(AVFormatContext *s, AVPacket *pkt)
         if (rm->audio_pkt_cnt) {
             // If there are queued audio packet return them first
             st = s->streams[rm->audio_stream_num];
-            ff_rm_retrieve_cache(s, s->pb, st, st->priv_data, pkt);
+            res = ff_rm_retrieve_cache(s, s->pb, st, st->priv_data, pkt);
+            if(res < 0)
+                return res;
             flags = 0;
         } else {
             if (rm->old_format) {

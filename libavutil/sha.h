@@ -23,7 +23,8 @@
 
 #include <stdint.h>
 
-#include "symbols.h"
+#include "attributes.h"
+#include "version.h"
 
 /**
  * @defgroup lavu_sha SHA
@@ -31,9 +32,14 @@
  * @{
  */
 
-extern AVUTIL_SYMBOL const int av_sha_size;
+extern const int av_sha_size;
 
 struct AVSHA;
+
+/**
+ * Allocate an AVSHA context.
+ */
+struct AVSHA *av_sha_alloc(void);
 
 /**
  * Initialize SHA-1 or SHA-2 hashing.

@@ -258,7 +258,7 @@ static double eval_expr(Parser *p, AVExpr *e)
                 case e_gte: return e->value * (d >= d2 ? 1.0 : 0.0);
                 case e_pow: return e->value * pow(d, d2);
                 case e_mul: return e->value * (d * d2);
-                case e_div: return e->value * (d / d2);
+                case e_div: return e->value * ((!CONFIG_FTRAPV || d2 ) ? (d / d2) : d * INFINITY);
                 case e_add: return e->value * (d + d2);
                 case e_last:return e->value * d2;
                 case e_st : return e->value * (p->var[av_clip(d, 0, VARS-1)]= d2);
@@ -659,40 +659,6 @@ int av_expr_parse_and_eval(double *d, const char *s,
     return isnan(*d) ? AVERROR(EINVAL) : 0;
 }
 
-#if FF_API_OLD_EVAL_NAMES
-// LCOV_EXCL_START
-int av_parse_expr(AVExpr **expr, const char *s,
-                  const char * const *const_names,
-                  const char * const *func1_names, double (* const *funcs1)(void *, double),
-                  const char * const *func2_names, double (* const *funcs2)(void *, double, double),
-                  int log_offset, void *log_ctx)
-{
-    return av_expr_parse(expr, s, const_names, func1_names, funcs1, func2_names, funcs2,
-                      log_offset, log_ctx);
-}
-
-double av_eval_expr(AVExpr *e, const double *const_values, void *opaque)
-{
-    return av_expr_eval(e, const_values, opaque);
-}
-
-int av_parse_and_eval_expr(double *res, const char *s,
-                           const char * const *const_names, const double *const_values,
-                           const char * const *func1_names, double (* const *funcs1)(void *, double),
-                           const char * const *func2_names, double (* const *funcs2)(void *, double, double),
-                           void *opaque, int log_offset, void *log_ctx)
-{
-    return av_expr_parse_and_eval(res, s, const_names, const_values, func1_names, funcs1, func2_names, funcs2,
-                                  opaque, log_offset, log_ctx);
-}
-
-void av_free_expr(AVExpr *e)
-{
-    av_expr_free(e);
-}
-// LCOV_EXCL_STOP
-#endif /* FF_API_OLD_EVAL_NAMES */
-
 #ifdef TEST
 // LCOV_EXCL_START
 #undef printf
@@ -714,7 +680,8 @@ int main(int argc, char **argv)
 {
     int i;
     double d;
-    const char **expr, *exprs[] = {
+    const char *const *expr;
+    static const char *const exprs[] = {
         "",
         "1;2",
         "-20",
@@ -790,6 +757,11 @@ int main(int argc, char **argv)
         "taylor(eq(mod(ld(1),4),1)-eq(mod(ld(1),4),3), PI/2, 1)",
         "root(sin(ld(0))-1, 2)",
         "root(sin(ld(0))+6+sin(ld(0)/12)-log(ld(0)), 100)",
+        "7000000B*random(0)",
+        "squish(2)",
+        "gauss(0.1)",
+        "hypot(4,3)",
+        "gcd(30,55)*min(9,1)",
         NULL
     };
 

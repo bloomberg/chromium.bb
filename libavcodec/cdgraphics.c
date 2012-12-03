@@ -86,7 +86,7 @@ static av_cold int cdg_decode_init(AVCodecContext *avctx)
 
     avctx->width   = CDG_FULL_WIDTH;
     avctx->height  = CDG_FULL_HEIGHT;
-    avctx->pix_fmt = PIX_FMT_PAL8;
+    avctx->pix_fmt = AV_PIX_FMT_PAL8;
 
     return 0;
 }
@@ -126,7 +126,7 @@ static void cdg_load_palette(CDGraphicsContext *cc, uint8_t *data, int low)
         r = ((color >> 8) & 0x000F) * 17;
         g = ((color >> 4) & 0x000F) * 17;
         b = ((color     ) & 0x000F) * 17;
-        palette[i + array_offset] = 0xFF << 24 | r << 16 | g << 8 | b;
+        palette[i + array_offset] = 0xFFU << 24 | r << 16 | g << 8 | b;
     }
     cc->frame.palette_has_changed = 1;
 }
@@ -218,7 +218,7 @@ static void cdg_scroll(CDGraphicsContext *cc, uint8_t *data,
     vscmd = (data[2] & 0x30) >> 4;
 
     h_off =  FFMIN(data[1] & 0x07, CDG_BORDER_WIDTH  - 1);
-    v_off =  FFMIN(data[2] & 0x07, CDG_BORDER_HEIGHT - 1);
+    v_off =  FFMIN(data[2] & 0x0F, CDG_BORDER_HEIGHT - 1);
 
     /// find the difference and save the offset for cdg_tile_block usage
     hinc = h_off - cc->hscroll;

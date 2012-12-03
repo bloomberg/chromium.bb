@@ -20,7 +20,6 @@
 ;* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 ;******************************************************************************
 
-%include "libavutil/x86/x86inc.asm"
 %include "libavutil/x86/x86util.asm"
 
 SECTION_RODATA
@@ -339,7 +338,7 @@ INIT_XMM ssse3
 FILTER_SSSE3 8
 
 ; 4x4 block, H-only 4-tap filter
-INIT_MMX mmx2
+INIT_MMX mmxext
 cglobal put_vp8_epel4_h4, 6, 6 + npicregs, 0, dst, dststride, src, srcstride, height, mx, picreg
     shl       mxd, 4
 %ifdef PIC
@@ -387,7 +386,7 @@ cglobal put_vp8_epel4_h4, 6, 6 + npicregs, 0, dst, dststride, src, srcstride, he
     REP_RET
 
 ; 4x4 block, H-only 6-tap filter
-INIT_MMX mmx2
+INIT_MMX mmxext
 cglobal put_vp8_epel4_h6, 6, 6 + npicregs, 0, dst, dststride, src, srcstride, height, mx, picreg
     lea       mxd, [mxq*3]
 %ifdef PIC
@@ -674,7 +673,7 @@ cglobal put_vp8_epel%1_v6, 7, 7, 8, dst, dststride, src, srcstride, height, picr
     REP_RET
 %endmacro
 
-INIT_MMX mmx2
+INIT_MMX mmxext
 FILTER_V 4
 INIT_XMM sse2
 FILTER_V 8
@@ -770,7 +769,7 @@ cglobal put_vp8_bilinear%1_h, 6, 6 + npicregs, 7, dst, dststride, src, srcstride
     REP_RET
 %endmacro
 
-INIT_MMX mmx2
+INIT_MMX mmxext
 FILTER_BILINEAR 4
 INIT_XMM sse2
 FILTER_BILINEAR 8
@@ -1612,7 +1611,7 @@ cglobal vp8_%1_loop_filter_simple, 3, %2, 8, dst, stride, flim, cntr
 INIT_MMX mmx
 SIMPLE_LOOPFILTER v, 4
 SIMPLE_LOOPFILTER h, 5
-INIT_MMX mmx2
+INIT_MMX mmxext
 SIMPLE_LOOPFILTER v, 4
 SIMPLE_LOOPFILTER h, 5
 %endif
@@ -1839,7 +1838,7 @@ cglobal vp8_%1_loop_filter16y_inner, 5, 5, 13, stack_size, dst, stride, flimE, f
     psubusb          m6, m5          ; q2-q1
     por              m6, m4          ; abs(q2-q1)
 
-%if notcpuflag(mmx2)
+%if notcpuflag(mmxext)
     mova             m4, m_flimI
     pxor             m3, m3
     psubusb          m0, m4
@@ -1879,7 +1878,7 @@ cglobal vp8_%1_loop_filter16y_inner, 5, 5, 13, stack_size, dst, stride, flimE, f
     psubusb          m1, m3          ; p1-p0
     psubusb          m6, m2          ; p0-p1
     por              m1, m6          ; abs(p1-p0)
-%if notcpuflag(mmx2)
+%if notcpuflag(mmxext)
     mova             m6, m1
     psubusb          m1, m4
     psubusb          m6, m_hevthr
@@ -1910,7 +1909,7 @@ cglobal vp8_%1_loop_filter16y_inner, 5, 5, 13, stack_size, dst, stride, flimE, f
     psubusb          m1, m5          ; q0-q1
     psubusb          m7, m4          ; q1-q0
     por              m1, m7          ; abs(q1-q0)
-%if notcpuflag(mmx2)
+%if notcpuflag(mmxext)
     mova             m7, m1
     psubusb          m1, m6
     psubusb          m7, m_hevthr
@@ -2018,14 +2017,14 @@ cglobal vp8_%1_loop_filter16y_inner, 5, 5, 13, stack_size, dst, stride, flimE, f
 %else
     mova             m6, m_maskres
 %endif
-%if notcpuflag(mmx2)
+%if notcpuflag(mmxext)
     mova             m7, [pb_1]
 %else ; mmxext/sse2
     pxor             m7, m7
 %endif
     pand             m0, m6
     pand             m1, m6
-%if notcpuflag(mmx2)
+%if notcpuflag(mmxext)
     paddusb          m0, m7
     pand             m1, [pb_FE]
     pandn            m7, m0
@@ -2099,7 +2098,7 @@ INNER_LOOPFILTER h, 16
 INNER_LOOPFILTER v,  8
 INNER_LOOPFILTER h,  8
 
-INIT_MMX mmx2
+INIT_MMX mmxext
 INNER_LOOPFILTER v, 16
 INNER_LOOPFILTER h, 16
 INNER_LOOPFILTER v,  8
@@ -2348,7 +2347,7 @@ cglobal vp8_%1_loop_filter16y_mbedge, 5, 5, 15, stack_size, dst1, stride, flimE,
     psubusb          m6, m5          ; q2-q1
     por              m6, m4          ; abs(q2-q1)
 
-%if notcpuflag(mmx2)
+%if notcpuflag(mmxext)
     mova             m4, m_flimI
     pxor             m3, m3
     psubusb          m0, m4
@@ -2388,7 +2387,7 @@ cglobal vp8_%1_loop_filter16y_mbedge, 5, 5, 15, stack_size, dst1, stride, flimE,
     psubusb          m1, m3          ; p1-p0
     psubusb          m6, m2          ; p0-p1
     por              m1, m6          ; abs(p1-p0)
-%if notcpuflag(mmx2)
+%if notcpuflag(mmxext)
     mova             m6, m1
     psubusb          m1, m4
     psubusb          m6, m_hevthr
@@ -2419,7 +2418,7 @@ cglobal vp8_%1_loop_filter16y_mbedge, 5, 5, 15, stack_size, dst1, stride, flimE,
     psubusb          m1, m5          ; q0-q1
     psubusb          m7, m4          ; q1-q0
     por              m1, m7          ; abs(q1-q0)
-%if notcpuflag(mmx2)
+%if notcpuflag(mmxext)
     mova             m7, m1
     psubusb          m1, m6
     psubusb          m7, m_hevthr
@@ -2758,7 +2757,7 @@ MBEDGE_LOOPFILTER h, 16
 MBEDGE_LOOPFILTER v,  8
 MBEDGE_LOOPFILTER h,  8
 
-INIT_MMX mmx2
+INIT_MMX mmxext
 MBEDGE_LOOPFILTER v, 16
 MBEDGE_LOOPFILTER h, 16
 MBEDGE_LOOPFILTER v,  8

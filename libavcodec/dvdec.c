@@ -254,8 +254,8 @@ static int dv_decode_video_segment(AVCodecContext *avctx, void *arg)
         dv_calculate_mb_xy(s, work_chunk, mb_index, &mb_x, &mb_y);
 
         /* idct_put'ting luminance */
-        if ((s->sys->pix_fmt == PIX_FMT_YUV420P) ||
-            (s->sys->pix_fmt == PIX_FMT_YUV411P && mb_x >= (704 / 8)) ||
+        if ((s->sys->pix_fmt == AV_PIX_FMT_YUV420P) ||
+            (s->sys->pix_fmt == AV_PIX_FMT_YUV411P && mb_x >= (704 / 8)) ||
             (s->sys->height >= 720 && mb_y != 134)) {
             y_stride = (s->picture.linesize[0] << ((!is_field_mode[mb_index]) * log2_blocksize));
         } else {
@@ -275,11 +275,11 @@ static int dv_decode_video_segment(AVCodecContext *avctx, void *arg)
         block += 4*64;
 
         /* idct_put'ting chrominance */
-        c_offset = (((mb_y >>  (s->sys->pix_fmt == PIX_FMT_YUV420P)) * s->picture.linesize[1] +
-                     (mb_x >> ((s->sys->pix_fmt == PIX_FMT_YUV411P) ? 2 : 1))) << log2_blocksize);
+        c_offset = (((mb_y >>  (s->sys->pix_fmt == AV_PIX_FMT_YUV420P)) * s->picture.linesize[1] +
+                     (mb_x >> ((s->sys->pix_fmt == AV_PIX_FMT_YUV411P) ? 2 : 1))) << log2_blocksize);
         for (j = 2; j; j--) {
             uint8_t *c_ptr = s->picture.data[j] + c_offset;
-            if (s->sys->pix_fmt == PIX_FMT_YUV411P && mb_x >= (704 / 8)) {
+            if (s->sys->pix_fmt == AV_PIX_FMT_YUV411P && mb_x >= (704 / 8)) {
                   uint64_t aligned_pixels[64/8];
                   uint8_t *pixels = (uint8_t*)aligned_pixels;
                   uint8_t *c_ptr1, *ptr1;
@@ -343,6 +343,15 @@ static int dvvideo_decode_frame(AVCodecContext *avctx,
     s->picture.interlaced_frame = 1;
     s->picture.top_field_first  = 0;
 
+    /* Determine the codec's sample_aspect ratio and field order from the packet */
+    vsc_pack = buf + 80*5 + 48 + 5;
+    if ( *vsc_pack == dv_video_control ) {
+        apt = buf[4] & 0x07;
+        is16_9 = (vsc_pack[2] & 0x07) == 0x02 || (!apt && (vsc_pack[2] & 0x07) == 0x07);
+        avctx->sample_aspect_ratio = s->sys->sar[is16_9];
+        s->picture.top_field_first = !(vsc_pack[3] & 0x40);
+    }
+
     s->buf = buf;
     avctx->execute(avctx, dv_decode_video_segment, s->sys->work_chunks, NULL,
                    dv_work_pool_size(s->sys), sizeof(DVwork_chunk));
@@ -352,14 +361,6 @@ static int dvvideo_decode_frame(AVCodecContext *avctx,
     /* return image */
     *data_size = sizeof(AVFrame);
     *(AVFrame*)data = s->picture;
-
-    /* Determine the codec's sample_aspect ratio from the packet */
-    vsc_pack = buf + 80*5 + 48 + 5;
-    if ( *vsc_pack == dv_video_control ) {
-        apt = buf[4] & 0x07;
-        is16_9 = (vsc_pack[2] & 0x07) == 0x02 || (!apt && (vsc_pack[2] & 0x07) == 0x07);
-        avctx->sample_aspect_ratio = s->sys->sar[is16_9];
-    }
 
     return s->sys->frame_size;
 }

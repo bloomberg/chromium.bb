@@ -66,13 +66,14 @@ static void hScale16To19_c(SwsContext *c, int16_t *_dst, int dstW,
                            const uint8_t *_src, const int16_t *filter,
                            const int32_t *filterPos, int filterSize)
 {
+    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(c->srcFormat);
     int i;
     int32_t *dst        = (int32_t *) _dst;
     const uint16_t *src = (const uint16_t *) _src;
-    int bits            = av_pix_fmt_descriptors[c->srcFormat].comp[0].depth_minus1;
+    int bits            = desc->comp[0].depth_minus1;
     int sh              = bits - 4;
 
-    if((isAnyRGB(c->srcFormat) || c->srcFormat==PIX_FMT_PAL8) && av_pix_fmt_descriptors[c->srcFormat].comp[0].depth_minus1<15)
+    if((isAnyRGB(c->srcFormat) || c->srcFormat==AV_PIX_FMT_PAL8) && desc->comp[0].depth_minus1<15)
         sh= 9;
 
     for (i = 0; i < dstW; i++) {
@@ -92,12 +93,13 @@ static void hScale16To15_c(SwsContext *c, int16_t *dst, int dstW,
                            const uint8_t *_src, const int16_t *filter,
                            const int32_t *filterPos, int filterSize)
 {
+    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(c->srcFormat);
     int i;
     const uint16_t *src = (const uint16_t *) _src;
-    int sh              = av_pix_fmt_descriptors[c->srcFormat].comp[0].depth_minus1;
+    int sh              = desc->comp[0].depth_minus1;
 
     if(sh<15)
-        sh= isAnyRGB(c->srcFormat) || c->srcFormat==PIX_FMT_PAL8 ? 13 : av_pix_fmt_descriptors[c->srcFormat].comp[0].depth_minus1;
+        sh= isAnyRGB(c->srcFormat) || c->srcFormat==AV_PIX_FMT_PAL8 ? 13 : desc->comp[0].depth_minus1;
 
     for (i = 0; i < dstW; i++) {
         int j;
@@ -339,7 +341,7 @@ static int swScale(SwsContext *c, const uint8_t *src[],
     const int chrSrcW                = c->chrSrcW;
     const int lumXInc                = c->lumXInc;
     const int chrXInc                = c->chrXInc;
-    const enum PixelFormat dstFormat = c->dstFormat;
+    const enum AVPixelFormat dstFormat = c->dstFormat;
     const int flags                  = c->flags;
     int32_t *vLumFilterPos           = c->vLumFilterPos;
     int32_t *vChrFilterPos           = c->vChrFilterPos;
@@ -657,9 +659,18 @@ static int swScale(SwsContext *c, const uint8_t *src[],
             }
         }
     }
+    if (isPlanar(dstFormat) && isALPHA(dstFormat) && !alpPixBuf) {
+        int length = dstW;
+        int height = dstY - lastDstY;
 
-    if (isPlanar(dstFormat) && isALPHA(dstFormat) && !alpPixBuf)
-        fillPlane(dst[3], dstStride[3], dstW, dstY - lastDstY, lastDstY, 255);
+        if (is16BPS(dstFormat) || isNBPS(dstFormat)) {
+            const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(dstFormat);
+            fillPlane16(dst[3], dstStride[3], length, height, lastDstY,
+                    1, desc->comp[3].depth_minus1,
+                    isBE(dstFormat));
+        } else
+            fillPlane(dst[3], dstStride[3], length, height, lastDstY, 255);
+    }
 
 #if HAVE_MMXEXT_INLINE
     if (av_get_cpu_flags() & AV_CPU_FLAG_MMXEXT)
@@ -679,7 +690,7 @@ static int swScale(SwsContext *c, const uint8_t *src[],
 
 static av_cold void sws_init_swScale_c(SwsContext *c)
 {
-    enum PixelFormat srcFormat = c->srcFormat;
+    enum AVPixelFormat srcFormat = c->srcFormat;
 
     ff_sws_init_output_funcs(c, &c->yuv2plane1, &c->yuv2planeX,
                              &c->yuv2nv12cX, &c->yuv2packed1,
@@ -724,7 +735,7 @@ static av_cold void sws_init_swScale_c(SwsContext *c)
     }
 
     if (!(isGray(srcFormat) || isGray(c->dstFormat) ||
-          srcFormat == PIX_FMT_MONOBLACK || srcFormat == PIX_FMT_MONOWHITE))
+          srcFormat == AV_PIX_FMT_MONOBLACK || srcFormat == AV_PIX_FMT_MONOWHITE))
         c->needs_hcscale = 1;
 }
 
@@ -752,10 +763,10 @@ static void reset_ptr(const uint8_t *src[], int format)
     }
 }
 
-static int check_image_pointers(const uint8_t * const data[4], enum PixelFormat pix_fmt,
+static int check_image_pointers(const uint8_t * const data[4], enum AVPixelFormat pix_fmt,
                                 const int linesizes[4])
 {
-    const AVPixFmtDescriptor *desc = &av_pix_fmt_descriptors[pix_fmt];
+    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(pix_fmt);
     int i;
 
     for (i = 0; i < 4; i++) {
@@ -806,28 +817,28 @@ int attribute_align_arg sws_scale(struct SwsContext *c,
     if (usePal(c->srcFormat)) {
         for (i = 0; i < 256; i++) {
             int p, r, g, b, y, u, v, a = 0xff;
-            if (c->srcFormat == PIX_FMT_PAL8) {
+            if (c->srcFormat == AV_PIX_FMT_PAL8) {
                 p = ((const uint32_t *)(srcSlice[1]))[i];
                 a = (p >> 24) & 0xFF;
                 r = (p >> 16) & 0xFF;
                 g = (p >>  8) & 0xFF;
                 b =  p        & 0xFF;
-            } else if (c->srcFormat == PIX_FMT_RGB8) {
+            } else if (c->srcFormat == AV_PIX_FMT_RGB8) {
                 r = ( i >> 5     ) * 36;
                 g = ((i >> 2) & 7) * 36;
                 b = ( i       & 3) * 85;
-            } else if (c->srcFormat == PIX_FMT_BGR8) {
+            } else if (c->srcFormat == AV_PIX_FMT_BGR8) {
                 b = ( i >> 6     ) * 85;
                 g = ((i >> 3) & 7) * 36;
                 r = ( i       & 7) * 36;
-            } else if (c->srcFormat == PIX_FMT_RGB4_BYTE) {
+            } else if (c->srcFormat == AV_PIX_FMT_RGB4_BYTE) {
                 r = ( i >> 3     ) * 255;
                 g = ((i >> 1) & 3) * 85;
                 b = ( i       & 1) * 255;
-            } else if (c->srcFormat == PIX_FMT_GRAY8 || c->srcFormat == PIX_FMT_GRAY8A) {
+            } else if (c->srcFormat == AV_PIX_FMT_GRAY8 || c->srcFormat == AV_PIX_FMT_GRAY8A) {
                 r = g = b = i;
             } else {
-                av_assert1(c->srcFormat == PIX_FMT_BGR4_BYTE);
+                av_assert1(c->srcFormat == AV_PIX_FMT_BGR4_BYTE);
                 b = ( i >> 3     ) * 255;
                 g = ((i >> 1) & 3) * 85;
                 r = ( i       & 1) * 255;
@@ -846,33 +857,33 @@ int attribute_align_arg sws_scale(struct SwsContext *c,
             y = av_clip_uint8((RY * r + GY * g + BY * b + ( 33 << (RGB2YUV_SHIFT - 1))) >> RGB2YUV_SHIFT);
             u = av_clip_uint8((RU * r + GU * g + BU * b + (257 << (RGB2YUV_SHIFT - 1))) >> RGB2YUV_SHIFT);
             v = av_clip_uint8((RV * r + GV * g + BV * b + (257 << (RGB2YUV_SHIFT - 1))) >> RGB2YUV_SHIFT);
-            c->pal_yuv[i]= y + (u<<8) + (v<<16) + (a<<24);
+            c->pal_yuv[i]= y + (u<<8) + (v<<16) + ((unsigned)a<<24);
 
             switch (c->dstFormat) {
-            case PIX_FMT_BGR32:
+            case AV_PIX_FMT_BGR32:
 #if !HAVE_BIGENDIAN
-            case PIX_FMT_RGB24:
+            case AV_PIX_FMT_RGB24:
 #endif
-                c->pal_rgb[i]=  r + (g<<8) + (b<<16) + (a<<24);
+                c->pal_rgb[i]=  r + (g<<8) + (b<<16) + ((unsigned)a<<24);
                 break;
-            case PIX_FMT_BGR32_1:
+            case AV_PIX_FMT_BGR32_1:
 #if HAVE_BIGENDIAN
-            case PIX_FMT_BGR24:
+            case AV_PIX_FMT_BGR24:
 #endif
-                c->pal_rgb[i]= a + (r<<8) + (g<<16) + (b<<24);
+                c->pal_rgb[i]= a + (r<<8) + (g<<16) + ((unsigned)b<<24);
                 break;
-            case PIX_FMT_RGB32_1:
+            case AV_PIX_FMT_RGB32_1:
 #if HAVE_BIGENDIAN
-            case PIX_FMT_RGB24:
+            case AV_PIX_FMT_RGB24:
 #endif
-                c->pal_rgb[i]= a + (b<<8) + (g<<16) + (r<<24);
+                c->pal_rgb[i]= a + (b<<8) + (g<<16) + ((unsigned)r<<24);
                 break;
-            case PIX_FMT_RGB32:
+            case AV_PIX_FMT_RGB32:
 #if !HAVE_BIGENDIAN
-            case PIX_FMT_BGR24:
+            case AV_PIX_FMT_BGR24:
 #endif
             default:
-                c->pal_rgb[i]=  b + (g<<8) + (r<<16) + (a<<24);
+                c->pal_rgb[i]=  b + (g<<8) + (r<<16) + ((unsigned)a<<24);
             }
         }
     }

@@ -19,6 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/channel_layout.h"
 #include "libavutil/float_dsp.h"
 #include "avcodec.h"
 #define BITSTREAM_READER_LE
@@ -61,7 +62,16 @@ typedef struct {
 static av_cold int ra288_decode_init(AVCodecContext *avctx)
 {
     RA288Context *ractx = avctx->priv_data;
-    avctx->sample_fmt = AV_SAMPLE_FMT_FLT;
+
+    avctx->channels       = 1;
+    avctx->channel_layout = AV_CH_LAYOUT_MONO;
+    avctx->sample_fmt     = AV_SAMPLE_FMT_FLT;
+
+    if (avctx->block_align <= 0) {
+        av_log_ask_for_sample(avctx, "unsupported block align\n");
+        return AVERROR_PATCHWELCOME;
+    }
+
     avpriv_float_dsp_init(&ractx->fdsp, avctx->flags & CODEC_FLAG_BITEXACT);
 
     avcodec_get_frame_defaults(&ractx->frame);
@@ -136,6 +146,8 @@ static void do_hybrid_window(RA288Context *ractx,
     LOCAL_ALIGNED(32, float, work, [FFALIGN(MAX_BACKWARD_FILTER_ORDER +
                                             MAX_BACKWARD_FILTER_LEN   +
                                             MAX_BACKWARD_FILTER_NONREC, 16)]);
+
+    av_assert2(order>=0);
 
     ractx->fdsp.vector_fmul(work, window, hist, FFALIGN(order + n + non_rec, 16));
 

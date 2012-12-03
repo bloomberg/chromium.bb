@@ -94,7 +94,7 @@ AVFilterBufferRef *ff_default_get_video_buffer(AVFilterLink *link, int perms, in
 
 AVFilterBufferRef *
 avfilter_get_video_buffer_ref_from_arrays(uint8_t * const data[4], const int linesize[4], int perms,
-                                          int w, int h, enum PixelFormat format)
+                                          int w, int h, enum AVPixelFormat format)
 {
     AVFilterBuffer *pic = av_mallocz(sizeof(AVFilterBuffer));
     AVFilterBufferRef *picref = av_mallocz(sizeof(AVFilterBufferRef));
@@ -210,7 +210,7 @@ static int default_start_frame(AVFilterLink *inlink, AVFilterBufferRef *picref)
     if (inlink->dst->nb_outputs)
         outlink = inlink->dst->outputs[0];
 
-    if (outlink) {
+    if (outlink && (inlink->dstpad->start_frame || inlink->dstpad->end_frame || inlink->dstpad->draw_slice)) {
         AVFilterBufferRef *buf_out;
         outlink->out_buf = ff_get_video_buffer(outlink, AV_PERM_WRITE, outlink->w, outlink->h);
         if (!outlink->out_buf)
@@ -249,9 +249,11 @@ int ff_start_frame(AVFilterLink *link, AVFilterBufferRef *picref)
 
     FF_TPRINTF_START(NULL, start_frame); ff_tlog_link(NULL, link, 0); ff_tlog(NULL, " "); ff_tlog_ref(NULL, picref, 1);
 
-    av_assert1(picref->format                     == link->format);
-    av_assert1(picref->video->w                   == link->w);
-    av_assert1(picref->video->h                   == link->h);
+    if (strcmp(link->dst->filter->name, "scale")) {
+        av_assert1(picref->format                     == link->format);
+        av_assert1(picref->video->w                   == link->w);
+        av_assert1(picref->video->h                   == link->h);
+    }
 
     if (link->closed) {
         avfilter_unref_buffer(picref);
@@ -284,7 +286,7 @@ int ff_start_frame(AVFilterLink *link, AVFilterBufferRef *picref)
         avfilter_copy_buffer_ref_props(link->cur_buf, link->src_buf);
 
         /* copy palette if required */
-        if (av_pix_fmt_descriptors[link->format].flags & PIX_FMT_PAL)
+        if (av_pix_fmt_desc_get(link->format)->flags & PIX_FMT_PAL)
             memcpy(link->cur_buf->data[1], link->src_buf-> data[1], AVPALETTE_SIZE);
     }
     else
@@ -326,7 +328,17 @@ static int default_end_frame(AVFilterLink *inlink)
         outlink = inlink->dst->outputs[0];
 
     if (outlink) {
-        return ff_end_frame(outlink);
+        if (inlink->dstpad->filter_frame) {
+            int ret = inlink->dstpad->filter_frame(inlink, inlink->cur_buf);
+            inlink->cur_buf = NULL;
+            return ret;
+        } else if (inlink->dstpad->start_frame || inlink->dstpad->end_frame || inlink->dstpad->draw_slice){
+            return ff_end_frame(outlink);
+        } else {
+            int ret = ff_filter_frame(outlink, inlink->cur_buf);
+            inlink->cur_buf = NULL;
+            return ret;
+        }
     }
     return 0;
 }
@@ -358,7 +370,7 @@ static int default_draw_slice(AVFilterLink *inlink, int y, int h, int slice_dir)
     if (inlink->dst->nb_outputs)
         outlink = inlink->dst->outputs[0];
 
-    if (outlink)
+    if (outlink && (inlink->dstpad->start_frame || inlink->dstpad->end_frame || inlink->dstpad->draw_slice))
         return ff_draw_slice(outlink, y, h, slice_dir);
     return 0;
 }
@@ -373,7 +385,8 @@ int ff_draw_slice(AVFilterLink *link, int y, int h, int slice_dir)
 
     /* copy the slice if needed for permission reasons */
     if (link->src_buf) {
-        vsub = av_pix_fmt_descriptors[link->format].log2_chroma_h;
+        const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(link->format);
+        vsub = desc->log2_chroma_h;
 
         for (i = 0; i < 4; i++) {
             if (link->src_buf->data[i]) {

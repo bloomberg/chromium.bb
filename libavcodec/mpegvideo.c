@@ -27,11 +27,11 @@
  * The simplest mpeg encoder (well, it was the simplest!).
  */
 
-#include "libavutil/intmath.h"
 #include "libavutil/imgutils.h"
 #include "avcodec.h"
 #include "dsputil.h"
 #include "internal.h"
+#include "mathops.h"
 #include "mpegvideo.h"
 #include "mjpegenc.h"
 #include "msmpeg4.h"
@@ -125,17 +125,17 @@ const uint8_t *const ff_mpeg2_dc_scale_table[4] = {
     mpeg2_dc_scale_table3,
 };
 
-const enum PixelFormat ff_pixfmt_list_420[] = {
-    PIX_FMT_YUV420P,
-    PIX_FMT_NONE
+const enum AVPixelFormat ff_pixfmt_list_420[] = {
+    AV_PIX_FMT_YUV420P,
+    AV_PIX_FMT_NONE
 };
 
-const enum PixelFormat ff_hwaccel_pixfmt_list_420[] = {
-    PIX_FMT_DXVA2_VLD,
-    PIX_FMT_VAAPI_VLD,
-    PIX_FMT_VDA_VLD,
-    PIX_FMT_YUV420P,
-    PIX_FMT_NONE
+const enum AVPixelFormat ff_hwaccel_pixfmt_list_420[] = {
+    AV_PIX_FMT_DXVA2_VLD,
+    AV_PIX_FMT_VAAPI_VLD,
+    AV_PIX_FMT_VDA_VLD,
+    AV_PIX_FMT_YUV420P,
+    AV_PIX_FMT_NONE
 };
 
 const uint8_t *avpriv_mpv_find_start_code(const uint8_t *av_restrict p,
@@ -189,8 +189,6 @@ av_cold int ff_dct_common_init(MpegEncContext *s)
     ff_MPV_common_init_x86(s);
 #elif ARCH_ALPHA
     ff_MPV_common_init_axp(s);
-#elif HAVE_MMI
-    ff_MPV_common_init_mmi(s);
 #elif ARCH_ARM
     ff_MPV_common_init_arm(s);
 #elif HAVE_ALTIVEC
@@ -531,10 +529,14 @@ void ff_update_duplicate_context(MpegEncContext *dst, MpegEncContext *src)
 int ff_mpeg_update_thread_context(AVCodecContext *dst,
                                   const AVCodecContext *src)
 {
+    int i;
+    int err;
     MpegEncContext *s = dst->priv_data, *s1 = src->priv_data;
 
     if (dst == src)
         return 0;
+
+    av_assert0(s != s1);
 
     // FIXME can parameters change on I-frames?
     // in that case dst may need a reinit
@@ -548,12 +550,12 @@ int ff_mpeg_update_thread_context(AVCodecContext *dst,
         if (s1->context_initialized){
             s->picture_range_start  += MAX_PICTURE_COUNT;
             s->picture_range_end    += MAX_PICTURE_COUNT;
-            ff_MPV_common_init(s);
+            if((err = ff_MPV_common_init(s)) < 0)
+                return err;
         }
     }
 
     if (s->height != s1->height || s->width != s1->width || s->context_reinit) {
-        int err;
         s->context_reinit = 0;
         s->height = s1->height;
         s->width  = s1->width;
@@ -570,9 +572,14 @@ int ff_mpeg_update_thread_context(AVCodecContext *dst,
     s->picture_number       = s1->picture_number;
     s->input_picture_number = s1->input_picture_number;
 
+    av_assert0(!s->picture || s->picture != s1->picture);
     memcpy(s->picture, s1->picture, s1->picture_count * sizeof(Picture));
     memcpy(&s->last_picture, &s1->last_picture,
            (char *) &s1->last_picture_ptr - (char *) &s1->last_picture);
+
+    // reset s->picture[].f.extended_data to s->picture[].f.data
+    for (i = 0; i < s->picture_count; i++)
+        s->picture[i].f.extended_data = s->picture[i].f.data;
 
     s->last_picture_ptr    = REBASE_PICTURE(s1->last_picture_ptr,    s, s1);
     s->current_picture_ptr = REBASE_PICTURE(s1->current_picture_ptr, s, s1);
@@ -796,7 +803,7 @@ fail:
  */
 av_cold int ff_MPV_common_init(MpegEncContext *s)
 {
-    int i, err;
+    int i;
     int nb_slices = (HAVE_THREADS &&
                      s->avctx->active_thread_type & FF_THREAD_SLICE) ?
                     s->avctx->thread_count : 1;
@@ -809,9 +816,9 @@ av_cold int ff_MPV_common_init(MpegEncContext *s)
     else if (s->codec_id != AV_CODEC_ID_H264)
         s->mb_height = (s->height + 15) / 16;
 
-    if (s->avctx->pix_fmt == PIX_FMT_NONE) {
+    if (s->avctx->pix_fmt == AV_PIX_FMT_NONE) {
         av_log(s->avctx, AV_LOG_ERROR,
-               "decoding to PIX_FMT_NONE is not supported.\n");
+               "decoding to AV_PIX_FMT_NONE is not supported.\n");
         return -1;
     }
 
@@ -835,9 +842,8 @@ av_cold int ff_MPV_common_init(MpegEncContext *s)
     s->flags  = s->avctx->flags;
     s->flags2 = s->avctx->flags2;
 
-        /* set chroma shifts */
-        avcodec_get_chroma_sub_sample(s->avctx->pix_fmt, &s->chroma_x_shift,
-                                      &s->chroma_y_shift);
+    /* set chroma shifts */
+    avcodec_get_chroma_sub_sample(s->avctx->pix_fmt, &s->chroma_x_shift, &s->chroma_y_shift);
 
     /* convert fourcc to upper case */
     s->codec_tag        = avpriv_toupper4(s->avctx->codec_tag);
@@ -874,7 +880,7 @@ av_cold int ff_MPV_common_init(MpegEncContext *s)
         avcodec_get_frame_defaults(&s->picture[i].f);
     }
 
-        if ((err = init_context_frame(s)))
+        if (init_context_frame(s))
             goto fail;
 
         s->parse_context.state = -1;
@@ -1450,8 +1456,7 @@ int ff_MPV_frame_start(MpegEncContext *s, AVCodecContext *avctx)
     if (s->next_picture_ptr)
         ff_copy_picture(&s->next_picture, s->next_picture_ptr);
 
-    if (HAVE_THREADS && (avctx->active_thread_type & FF_THREAD_FRAME) &&
-        (s->out_format != FMT_H264 || s->codec_id == AV_CODEC_ID_SVQ3)) {
+    if (HAVE_THREADS && (avctx->active_thread_type & FF_THREAD_FRAME)) {
         if (s->next_picture_ptr)
             s->next_picture_ptr->owner2 = s;
         if (s->last_picture_ptr)
@@ -1519,8 +1524,9 @@ void ff_MPV_frame_end(MpegEncContext *s)
               !(s->flags & CODEC_FLAG_EMU_EDGE) &&
               !s->avctx->lowres
             ) {
-        int hshift = av_pix_fmt_descriptors[s->avctx->pix_fmt].log2_chroma_w;
-        int vshift = av_pix_fmt_descriptors[s->avctx->pix_fmt].log2_chroma_h;
+        const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(s->avctx->pix_fmt);
+        int hshift = desc->log2_chroma_w;
+        int vshift = desc->log2_chroma_h;
         s->dsp.draw_edges(s->current_picture.f.data[0], s->current_picture.f.linesize[0],
                           s->h_edge_pos, s->v_edge_pos,
                           EDGE_WIDTH, EDGE_WIDTH,
@@ -1757,8 +1763,8 @@ void ff_print_debug_info(MpegEncContext *s, AVFrame *pict)
                                    (s->codec_id == AV_CODEC_ID_H264 ? 0 : 1);
         s->low_delay = 0; // needed to see the vectors without trashing the buffers
 
-        avcodec_get_chroma_sub_sample(s->avctx->pix_fmt,
-                                      &h_chroma_shift, &v_chroma_shift);
+        avcodec_get_chroma_sub_sample(s->avctx->pix_fmt, &h_chroma_shift, &v_chroma_shift);
+
         for (i = 0; i < 3; i++) {
             size_t size= (i == 0) ? pict->linesize[i] * FFALIGN(height, 16):
                          pict->linesize[i] * FFALIGN(height, 16) >> v_chroma_shift;
@@ -1775,7 +1781,7 @@ void ff_print_debug_info(MpegEncContext *s, AVFrame *pict)
             int mb_x;
             for (mb_x = 0; mb_x < s->mb_width; mb_x++) {
                 const int mb_index = mb_x + mb_y * s->mb_stride;
-                if ((s->avctx->debug_mv) && pict->motion_val) {
+                if ((s->avctx->debug_mv) && pict->motion_val[0]) {
                     int type;
                     for (type = 0; type < 3; type++) {
                         int direction = 0;
@@ -1854,7 +1860,7 @@ void ff_print_debug_info(MpegEncContext *s, AVFrame *pict)
                         }
                     }
                 }
-                if ((s->avctx->debug & FF_DEBUG_VIS_QP) && pict->motion_val) {
+                if ((s->avctx->debug & FF_DEBUG_VIS_QP)) {
                     uint64_t c = (pict->qscale_table[mb_index] * 128 / 31) *
                                  0x0101010101010101ULL;
                     int y;
@@ -1868,7 +1874,7 @@ void ff_print_debug_info(MpegEncContext *s, AVFrame *pict)
                     }
                 }
                 if ((s->avctx->debug & FF_DEBUG_VIS_MB_TYPE) &&
-                    pict->motion_val) {
+                    pict->motion_val[0]) {
                     int mb_type = pict->mb_type[mb_index];
                     uint64_t u,v;
                     int y;
@@ -2087,17 +2093,17 @@ static av_always_inline void mpeg_motion_lowres(MpegEncContext *s,
     if ((unsigned) src_x > FFMAX( h_edge_pos - (!!sx) - 2 * block_s,       0) ||
         (unsigned) src_y > FFMAX((v_edge_pos >> field_based) - (!!sy) - h, 0)) {
         s->dsp.emulated_edge_mc(s->edge_emu_buffer, ptr_y,
-                                s->linesize, 17, 17 + field_based,
+                                linesize >> field_based, 17, 17 + field_based,
                                 src_x, src_y << field_based, h_edge_pos,
                                 v_edge_pos);
         ptr_y = s->edge_emu_buffer;
         if (!CONFIG_GRAY || !(s->flags & CODEC_FLAG_GRAY)) {
             uint8_t *uvbuf = s->edge_emu_buffer + 18 * s->linesize;
-            s->dsp.emulated_edge_mc(uvbuf , ptr_cb, s->uvlinesize, 9,
+            s->dsp.emulated_edge_mc(uvbuf , ptr_cb, uvlinesize >> field_based, 9,
                                     9 + field_based,
                                     uvsrc_x, uvsrc_y << field_based,
                                     h_edge_pos >> 1, v_edge_pos >> 1);
-            s->dsp.emulated_edge_mc(uvbuf + 16, ptr_cr, s->uvlinesize, 9,
+            s->dsp.emulated_edge_mc(uvbuf + 16, ptr_cr, uvlinesize >> field_based, 9,
                                     9 + field_based,
                                     uvsrc_x, uvsrc_y << field_based,
                                     h_edge_pos >> 1, v_edge_pos >> 1);
@@ -2338,7 +2344,8 @@ int ff_MPV_lowest_referenced_row(MpegEncContext *s, int dir)
     int my_max = INT_MIN, my_min = INT_MAX, qpel_shift = !s->quarter_sample;
     int my, off, i, mvs;
 
-    if (s->picture_structure != PICT_FRAME) goto unhandled;
+    if (s->picture_structure != PICT_FRAME || s->mcsel)
+        goto unhandled;
 
     switch (s->mv_type) {
         case MV_TYPE_16X16:
@@ -2708,9 +2715,10 @@ void ff_draw_horiz_band(MpegEncContext *s, int y, int h){
        && s->current_picture.f.reference
        && !s->intra_only
        && !(s->flags&CODEC_FLAG_EMU_EDGE)) {
+        const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(s->avctx->pix_fmt);
         int sides = 0, edge_h;
-        int hshift = av_pix_fmt_descriptors[s->avctx->pix_fmt].log2_chroma_w;
-        int vshift = av_pix_fmt_descriptors[s->avctx->pix_fmt].log2_chroma_h;
+        int hshift = desc->log2_chroma_w;
+        int vshift = desc->log2_chroma_h;
         if (y==0) sides |= EDGE_TOP;
         if (y + h >= s->v_edge_pos) sides |= EDGE_BOTTOM;
 

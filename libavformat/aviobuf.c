@@ -144,6 +144,7 @@ static void flush_buffer(AVIOContext *s)
 
 void avio_w8(AVIOContext *s, int b)
 {
+    av_assert2(b>=-128 && b<=255);
     *s->buf_ptr++ = b;
     if (s->buf_ptr >= s->buf_end)
         flush_buffer(s);
@@ -228,12 +229,10 @@ int64_t avio_seek(AVIOContext *s, int64_t offset, int whence)
     } else {
         int64_t res;
 
-#if CONFIG_MUXERS || CONFIG_NETWORK
         if (s->write_flag) {
             flush_buffer(s);
             s->must_flush = 1;
         }
-#endif /* CONFIG_MUXERS || CONFIG_NETWORK */
         if (!s->seek)
             return AVERROR(EPIPE);
         if ((res = s->seek(s->opaque, offset, SEEK_SET)) < 0)
@@ -285,18 +284,18 @@ int url_feof(AVIOContext *s)
 
 void avio_wl32(AVIOContext *s, unsigned int val)
 {
-    avio_w8(s, val);
-    avio_w8(s, val >> 8);
-    avio_w8(s, val >> 16);
-    avio_w8(s, val >> 24);
+    avio_w8(s, (uint8_t) val       );
+    avio_w8(s, (uint8_t)(val >> 8 ));
+    avio_w8(s, (uint8_t)(val >> 16));
+    avio_w8(s,           val >> 24 );
 }
 
 void avio_wb32(AVIOContext *s, unsigned int val)
 {
-    avio_w8(s, val >> 24);
-    avio_w8(s, val >> 16);
-    avio_w8(s, val >> 8);
-    avio_w8(s, val);
+    avio_w8(s,           val >> 24 );
+    avio_w8(s, (uint8_t)(val >> 16));
+    avio_w8(s, (uint8_t)(val >> 8 ));
+    avio_w8(s, (uint8_t) val       );
 }
 
 int avio_put_str(AVIOContext *s, const char *str)
@@ -340,7 +339,7 @@ void ff_put_v(AVIOContext *bc, uint64_t val){
     int i= ff_get_v_length(val);
 
     while(--i>0)
-        avio_w8(bc, 128 | (val>>(7*i)));
+        avio_w8(bc, 128 | (uint8_t)(val>>(7*i)));
 
     avio_w8(bc, val&127);
 }
@@ -359,26 +358,26 @@ void avio_wb64(AVIOContext *s, uint64_t val)
 
 void avio_wl16(AVIOContext *s, unsigned int val)
 {
-    avio_w8(s, val);
-    avio_w8(s, val >> 8);
+    avio_w8(s, (uint8_t)val);
+    avio_w8(s, (int)val >> 8);
 }
 
 void avio_wb16(AVIOContext *s, unsigned int val)
 {
-    avio_w8(s, val >> 8);
-    avio_w8(s, val);
+    avio_w8(s, (int)val >> 8);
+    avio_w8(s, (uint8_t)val);
 }
 
 void avio_wl24(AVIOContext *s, unsigned int val)
 {
     avio_wl16(s, val & 0xffff);
-    avio_w8(s, val >> 16);
+    avio_w8(s, (int)val >> 16);
 }
 
 void avio_wb24(AVIOContext *s, unsigned int val)
 {
-    avio_wb16(s, val >> 8);
-    avio_w8(s, val);
+    avio_wb16(s, (int)val >> 8);
+    avio_w8(s, (uint8_t)val);
 }
 
 /* Input stream */
@@ -726,27 +725,32 @@ static int url_resetbuf(AVIOContext *s, int flags)
     return 0;
 }
 
-int ffio_rewind_with_probe_data(AVIOContext *s, unsigned char *buf, int buf_size)
+int ffio_rewind_with_probe_data(AVIOContext *s, unsigned char **bufp, int buf_size)
 {
     int64_t buffer_start;
     int buffer_size;
     int overlap, new_size, alloc_size;
+    uint8_t *buf = *bufp;
 
-    if (s->write_flag)
+    if (s->write_flag) {
+        av_freep(bufp);
         return AVERROR(EINVAL);
+    }
 
     buffer_size = s->buf_end - s->buffer;
 
     /* the buffers must touch or overlap */
-    if ((buffer_start = s->pos - buffer_size) > buf_size)
+    if ((buffer_start = s->pos - buffer_size) > buf_size) {
+        av_freep(bufp);
         return AVERROR(EINVAL);
+    }
 
     overlap = buf_size - buffer_start;
     new_size = buf_size + buffer_size - overlap;
 
     alloc_size = FFMAX(s->buffer_size, new_size);
     if (alloc_size > buf_size)
-        if (!(buf = av_realloc_f(buf, 1, alloc_size)))
+        if (!(buf = (*bufp) = av_realloc_f(buf, 1, alloc_size)))
             return AVERROR(ENOMEM);
 
     if (new_size > buf_size) {
@@ -801,6 +805,13 @@ int avio_close(AVIOContext *s)
         av_log(s, AV_LOG_DEBUG, "Statistics: %"PRId64" bytes read, %d seeks\n", s->bytes_read, s->seek_count);
     av_free(s);
     return ffurl_close(h);
+}
+
+int avio_closep(AVIOContext **s)
+{
+    int ret = avio_close(*s);
+    *s = NULL;
+    return ret;
 }
 
 int avio_printf(AVIOContext *s, const char *fmt, ...)

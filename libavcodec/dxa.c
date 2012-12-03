@@ -209,7 +209,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPac
             r = *buf++;
             g = *buf++;
             b = *buf++;
-            c->pal[i] = 0xFF << 24 | r << 16 | g << 8 | b;
+            c->pal[i] = 0xFFU << 24 | r << 16 | g << 8 | b;
         }
         pc = 1;
         buf_size -= 768+4;
@@ -256,7 +256,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPac
         c->pic.key_frame = !(compr & 1);
         c->pic.pict_type = (compr & 1) ? AV_PICTURE_TYPE_P : AV_PICTURE_TYPE_I;
         for(j = 0; j < avctx->height; j++){
-            if(compr & 1){
+            if((compr & 1) && tmpptr){
                 for(i = 0; i < avctx->width; i++)
                     outptr[i] = srcptr[i] ^ tmpptr[i];
                 tmpptr += stride;
@@ -270,6 +270,10 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPac
     case 13:
         c->pic.key_frame = 0;
         c->pic.pict_type = AV_PICTURE_TYPE_P;
+        if (!c->prev.data[0]) {
+            av_log(avctx, AV_LOG_ERROR, "Missing reference frame\n");
+            return AVERROR_INVALIDDATA;
+        }
         decode_13(avctx, c, c->pic.data[0], srcptr, c->prev.data[0]);
         break;
     default:
@@ -292,7 +296,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
 {
     DxaDecContext * const c = avctx->priv_data;
 
-    avctx->pix_fmt = PIX_FMT_PAL8;
+    avctx->pix_fmt = AV_PIX_FMT_PAL8;
 
     avcodec_get_frame_defaults(&c->pic);
     avcodec_get_frame_defaults(&c->prev);

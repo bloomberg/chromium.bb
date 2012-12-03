@@ -123,7 +123,8 @@ int ff_url_join(char *str, int size, const char *proto,
  *
  * @param buff the buffer to append the SDP fragment to
  * @param size the size of the buff buffer
- * @param c the AVCodecContext of the media to describe
+ * @param st the AVStream of the media to describe
+ * @param idx the global stream index
  * @param dest_addr the destination address of the media stream, may be NULL
  * @param dest_type the destination address type, may be NULL
  * @param port the destination port of the media stream, 0 if unknown
@@ -131,7 +132,7 @@ int ff_url_join(char *str, int size, const char *proto,
  * @param fmt the AVFormatContext, which might contain options modifying
  *            the generated SDP
  */
-void ff_sdp_write_media(char *buff, int size, AVCodecContext *c,
+void ff_sdp_write_media(char *buff, int size, AVStream *st, int idx,
                         const char *dest_addr, const char *dest_type,
                         int port, int ttl, AVFormatContext *fmt);
 
@@ -239,7 +240,7 @@ AVChapter *avpriv_new_chapter(AVFormatContext *s, int id, AVRational time_base,
  */
 void ff_reduce_index(AVFormatContext *s, int stream_index);
 
-/*
+/**
  * Convert a relative url into an absolute url, given a base url.
  *
  * @param buf the buffer where output absolute url is written
@@ -345,5 +346,41 @@ int ff_interleave_packet_per_dts(AVFormatContext *s, AVPacket *out,
                                  AVPacket *pkt, int flush);
 
 void ff_free_stream(AVFormatContext *s, AVStream *st);
+
+/**
+ * Return the frame duration in seconds. Return 0 if not available.
+ */
+void ff_compute_frame_duration(int *pnum, int *pden, AVStream *st,
+                               AVCodecParserContext *pc, AVPacket *pkt);
+
+int ff_get_audio_frame_size(AVCodecContext *enc, int size, int mux);
+
+unsigned int ff_codec_get_tag(const AVCodecTag *tags, enum AVCodecID id);
+
+enum AVCodecID ff_codec_get_id(const AVCodecTag *tags, unsigned int tag);
+
+/**
+ * Select a PCM codec based on the given parameters.
+ *
+ * @param bps     bits-per-sample
+ * @param flt     floating-point
+ * @param be      big-endian
+ * @param sflags  signed flags. each bit corresponds to one byte of bit depth.
+ *                e.g. the 1st bit indicates if 8-bit should be signed or
+ *                unsigned, the 2nd bit indicates if 16-bit should be signed or
+ *                unsigned, etc... This is useful for formats such as WAVE where
+ *                only 8-bit is unsigned and all other bit depths are signed.
+ * @return        a PCM codec id or AV_CODEC_ID_NONE
+ */
+enum AVCodecID ff_get_pcm_codec_id(int bps, int flt, int be, int sflags);
+
+/**
+ * Chooses a timebase for muxing the specified stream.
+ *
+ * The choosen timebase allows sample accurate timestamps based
+ * on the framerate or sample rate for audio streams. It also is
+ * at least as precisse as 1/min_precission would be.
+ */
+AVRational ff_choose_timebase(AVFormatContext *s, AVStream *st, int min_precission);
 
 #endif /* AVFORMAT_INTERNAL_H */

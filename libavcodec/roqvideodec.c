@@ -25,6 +25,7 @@
  *   http://www.csse.monash.edu.au/~timf/
  */
 
+#include "libavutil/avassert.h"
 #include "avcodec.h"
 #include "bytestream.h"
 #include "roqvideo.h"
@@ -149,7 +150,7 @@ static void roqvideo_decode_frame(RoqContext *ri)
                     }
                     break;
                 default:
-                    av_log(ri->avctx, AV_LOG_ERROR, "Unknown vq code: %d\n", vqid);
+                    av_assert2(0);
             }
         }
 
@@ -169,13 +170,19 @@ static av_cold int roq_decode_init(AVCodecContext *avctx)
     RoqContext *s = avctx->priv_data;
 
     s->avctx = avctx;
+
+    if (avctx->width%16 || avctx->height%16) {
+         av_log_ask_for_sample(avctx, "dimensions not being a multiple of 16 are unsupported\n");
+         return AVERROR_PATCHWELCOME;
+    }
+
     s->width = avctx->width;
     s->height = avctx->height;
     avcodec_get_frame_defaults(&s->frames[0]);
     avcodec_get_frame_defaults(&s->frames[1]);
     s->last_frame    = &s->frames[0];
     s->current_frame = &s->frames[1];
-    avctx->pix_fmt = PIX_FMT_YUV444P;
+    avctx->pix_fmt = AV_PIX_FMT_YUV444P;
 
     return 0;
 }

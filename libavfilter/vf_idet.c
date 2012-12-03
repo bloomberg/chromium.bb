@@ -49,7 +49,6 @@ typedef struct {
     AVFilterBufferRef *cur;
     AVFilterBufferRef *next;
     AVFilterBufferRef *prev;
-    AVFilterBufferRef *out;
     int (*filter_line)(const uint8_t *prev, const uint8_t *cur, const uint8_t *next, int w);
 
     const AVPixFmtDescriptor *csp;
@@ -119,11 +118,11 @@ static void filter(AVFilterContext *ctx)
         }
     }
 
-    if      (alpha[0] / (float)alpha[1] > idet->interlace_threshold){
+    if      (alpha[0] > idet->interlace_threshold * alpha[1]){
         type = TFF;
-    }else if(alpha[1] / (float)alpha[0] > idet->interlace_threshold){
+    }else if(alpha[1] > idet->interlace_threshold * alpha[0]){
         type = BFF;
-    }else if(alpha[1] / (float)delta    > idet->progressive_threshold){
+    }else if(alpha[1] > idet->progressive_threshold * delta){
         type = PROGRSSIVE;
     }else{
         type = UNDETERMINED;
@@ -176,6 +175,7 @@ static int start_frame(AVFilterLink *link, AVFilterBufferRef *picref)
     idet->prev = idet->cur;
     idet->cur  = idet->next;
     idet->next = picref;
+    link->cur_buf = NULL;
 
     if (!idet->cur)
         return 0;
@@ -195,7 +195,7 @@ static int end_frame(AVFilterLink *link)
         return 0;
 
     if (!idet->csp)
-        idet->csp = &av_pix_fmt_descriptors[link->format];
+        idet->csp = av_pix_fmt_desc_get(link->format);
     if (idet->csp->comp[0].depth_minus1 / 8 == 1)
         idet->filter_line = (void*)filter_line_c_16bit;
 
@@ -254,34 +254,34 @@ static av_cold void uninit(AVFilterContext *ctx)
            idet->poststat[UNDETERMINED]
     );
 
-    if (idet->prev) avfilter_unref_buffer(idet->prev);
-    if (idet->cur ) avfilter_unref_buffer(idet->cur );
-    if (idet->next) avfilter_unref_buffer(idet->next);
+    avfilter_unref_bufferp(&idet->prev);
+    avfilter_unref_bufferp(&idet->cur );
+    avfilter_unref_bufferp(&idet->next);
 }
 
 static int query_formats(AVFilterContext *ctx)
 {
-    static const enum PixelFormat pix_fmts[] = {
-        PIX_FMT_YUV420P,
-        PIX_FMT_YUV422P,
-        PIX_FMT_YUV444P,
-        PIX_FMT_YUV410P,
-        PIX_FMT_YUV411P,
-        PIX_FMT_GRAY8,
-        PIX_FMT_YUVJ420P,
-        PIX_FMT_YUVJ422P,
-        PIX_FMT_YUVJ444P,
-        AV_NE( PIX_FMT_GRAY16BE, PIX_FMT_GRAY16LE ),
-        PIX_FMT_YUV440P,
-        PIX_FMT_YUVJ440P,
-        AV_NE( PIX_FMT_YUV420P10BE, PIX_FMT_YUV420P10LE ),
-        AV_NE( PIX_FMT_YUV422P10BE, PIX_FMT_YUV422P10LE ),
-        AV_NE( PIX_FMT_YUV444P10BE, PIX_FMT_YUV444P10LE ),
-        AV_NE( PIX_FMT_YUV420P16BE, PIX_FMT_YUV420P16LE ),
-        AV_NE( PIX_FMT_YUV422P16BE, PIX_FMT_YUV422P16LE ),
-        AV_NE( PIX_FMT_YUV444P16BE, PIX_FMT_YUV444P16LE ),
-        PIX_FMT_YUVA420P,
-        PIX_FMT_NONE
+    static const enum AVPixelFormat pix_fmts[] = {
+        AV_PIX_FMT_YUV420P,
+        AV_PIX_FMT_YUV422P,
+        AV_PIX_FMT_YUV444P,
+        AV_PIX_FMT_YUV410P,
+        AV_PIX_FMT_YUV411P,
+        AV_PIX_FMT_GRAY8,
+        AV_PIX_FMT_YUVJ420P,
+        AV_PIX_FMT_YUVJ422P,
+        AV_PIX_FMT_YUVJ444P,
+        AV_NE( AV_PIX_FMT_GRAY16BE, AV_PIX_FMT_GRAY16LE ),
+        AV_PIX_FMT_YUV440P,
+        AV_PIX_FMT_YUVJ440P,
+        AV_NE( AV_PIX_FMT_YUV420P10BE, AV_PIX_FMT_YUV420P10LE ),
+        AV_NE( AV_PIX_FMT_YUV422P10BE, AV_PIX_FMT_YUV422P10LE ),
+        AV_NE( AV_PIX_FMT_YUV444P10BE, AV_PIX_FMT_YUV444P10LE ),
+        AV_NE( AV_PIX_FMT_YUV420P16BE, AV_PIX_FMT_YUV420P16LE ),
+        AV_NE( AV_PIX_FMT_YUV422P16BE, AV_PIX_FMT_YUV422P16LE ),
+        AV_NE( AV_PIX_FMT_YUV444P16BE, AV_PIX_FMT_YUV444P16LE ),
+        AV_PIX_FMT_YUVA420P,
+        AV_PIX_FMT_NONE
     };
 
     ff_set_common_formats(ctx, ff_make_format_list(pix_fmts));
@@ -310,6 +310,29 @@ static av_cold int init(AVFilterContext *ctx, const char *args)
 
 static int null_draw_slice(AVFilterLink *link, int y, int h, int slice_dir) { return 0; }
 
+static const AVFilterPad idet_inputs[] = {
+    {
+        .name         = "default",
+        .type         = AVMEDIA_TYPE_VIDEO,
+        .start_frame  = start_frame,
+        .draw_slice   = null_draw_slice,
+        .end_frame    = end_frame,
+        .min_perms    = AV_PERM_PRESERVE,
+    },
+    { NULL }
+};
+
+static const AVFilterPad idet_outputs[] = {
+    {
+        .name          = "default",
+        .type          = AVMEDIA_TYPE_VIDEO,
+        .rej_perms     = AV_PERM_WRITE,
+        .poll_frame    = poll_frame,
+        .request_frame = request_frame,
+    },
+    { NULL }
+};
+
 AVFilter avfilter_vf_idet = {
     .name          = "idet",
     .description   = NULL_IF_CONFIG_SMALL("Interlace detect Filter."),
@@ -318,19 +341,6 @@ AVFilter avfilter_vf_idet = {
     .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
-
-    .inputs    = (const AVFilterPad[]) {{ .name       = "default",
-                                          .type             = AVMEDIA_TYPE_VIDEO,
-                                          .start_frame      = start_frame,
-                                          .draw_slice       = null_draw_slice,
-                                          .end_frame        = end_frame,
-                                          .min_perms        = AV_PERM_PRESERVE },
-                                        { .name = NULL}},
-
-    .outputs   = (const AVFilterPad[]) {{ .name       = "default",
-                                          .type             = AVMEDIA_TYPE_VIDEO,
-                                          .rej_perms        = AV_PERM_WRITE,
-                                          .poll_frame       = poll_frame,
-                                          .request_frame    = request_frame, },
-                                        { .name = NULL}},
+    .inputs        = idet_inputs,
+    .outputs       = idet_outputs,
 };

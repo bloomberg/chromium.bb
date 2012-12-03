@@ -428,7 +428,7 @@ static int decode_p_frame(FourXContext *f, const uint8_t *buf, int length)
         bytestream_size = FFMAX(length - bitstream_size - wordstream_size, 0);
     }
 
-    if (bitstream_size > length ||
+    if (bitstream_size > length || bitstream_size >= INT_MAX/8 ||
         bytestream_size > length - bitstream_size ||
         wordstream_size > length - bytestream_size - bitstream_size ||
         extra > length - bytestream_size - bitstream_size - wordstream_size) {
@@ -811,6 +811,11 @@ static int decode_frame(AVCodecContext *avctx, void *data,
             return AVERROR_INVALIDDATA;
         }
 
+        if (f->version <= 1) {
+            av_log(f->avctx, AV_LOG_ERROR, "cfrm in version %d\n", f->version);
+            return AVERROR_INVALIDDATA;
+        }
+
         for (i = 0; i < CFRAME_BUFFER_COUNT; i++)
             if (f->cfrm[i].id && f->cfrm[i].id < avctx->frame_number)
                 av_log(f->avctx, AV_LOG_ERROR, "lost c frame %d\n",
@@ -936,7 +941,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
 
     if (avctx->extradata_size != 4 || !avctx->extradata) {
         av_log(avctx, AV_LOG_ERROR, "extradata wrong or missing\n");
-        return 1;
+        return AVERROR_INVALIDDATA;
     }
     if((avctx->width % 16) || (avctx->height % 16)) {
         av_log(avctx, AV_LOG_ERROR, "unsupported width/height\n");
@@ -950,9 +955,9 @@ static av_cold int decode_init(AVCodecContext *avctx)
     init_vlcs(f);
 
     if (f->version > 2)
-        avctx->pix_fmt = PIX_FMT_RGB565;
+        avctx->pix_fmt = AV_PIX_FMT_RGB565;
     else
-        avctx->pix_fmt = PIX_FMT_BGR555;
+        avctx->pix_fmt = AV_PIX_FMT_BGR555;
 
     return 0;
 }

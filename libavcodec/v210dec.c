@@ -56,7 +56,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
         av_log(avctx, AV_LOG_ERROR, "v210 needs even width\n");
         return -1;
     }
-    avctx->pix_fmt             = PIX_FMT_YUV422P10;
+    avctx->pix_fmt             = AV_PIX_FMT_YUV422P10;
     avctx->bits_per_raw_sample = 10;
 
     avctx->coded_frame         = avcodec_alloc_frame();
@@ -172,7 +172,7 @@ static av_cold int decode_close(AVCodecContext *avctx)
 #define V210DEC_FLAGS AV_OPT_FLAG_DECODING_PARAM | AV_OPT_FLAG_VIDEO_PARAM
 static const AVOption v210dec_options[] = {
     {"custom_stride", "Custom V210 stride", offsetof(V210DecContext, custom_stride), FF_OPT_TYPE_INT,
-     {.dbl = 0}, INT_MIN, INT_MAX, V210DEC_FLAGS},
+     {.i64 = 0}, INT_MIN, INT_MAX, V210DEC_FLAGS},
     {NULL}
 };
 

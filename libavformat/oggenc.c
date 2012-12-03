@@ -387,13 +387,13 @@ static int ogg_write_header(AVFormatContext *s)
         AVStream *st = s->streams[i];
         unsigned serial_num = i;
 
-        if (st->codec->codec_type == AVMEDIA_TYPE_AUDIO)
+        if (st->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
             if (st->codec->codec_id == AV_CODEC_ID_OPUS)
                 /* Opus requires a fixed 48kHz clock */
                 avpriv_set_pts_info(st, 64, 1, 48000);
             else
                 avpriv_set_pts_info(st, 64, 1, st->codec->sample_rate);
-        else if (st->codec->codec_type == AVMEDIA_TYPE_VIDEO)
+        } else if (st->codec->codec_type == AVMEDIA_TYPE_VIDEO)
             avpriv_set_pts_info(st, 64, st->codec->time_base.num, st->codec->time_base.den);
         if (st->codec->codec_id != AV_CODEC_ID_VORBIS &&
             st->codec->codec_id != AV_CODEC_ID_THEORA &&
@@ -496,7 +496,7 @@ static int ogg_write_header(AVFormatContext *s)
         AVStream *st = s->streams[j];
         OGGStreamContext *oggstream = st->priv_data;
         for (i = 1; i < 3; i++) {
-            if (oggstream && oggstream->header_len[i])
+            if (oggstream->header_len[i])
                 ogg_buffer_data(s, st, oggstream->header[i],
                                 oggstream->header_len[i], 0, 1);
         }

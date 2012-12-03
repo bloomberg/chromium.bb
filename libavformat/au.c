@@ -31,10 +31,11 @@
 #include "internal.h"
 #include "avio_internal.h"
 #include "pcm.h"
-#include "riff.h"
 
 /* if we don't know the size in advance */
 #define AU_UNKNOWN_SIZE ((uint32_t)(~0))
+/* the specification requires an annotation field of at least eight bytes */
+#define AU_HEADER_SIZE (24+8)
 
 /* The libavcodec codecs we support, and the IDs they have in the file */
 static const AVCodecTag codec_au_tags[] = {
@@ -45,6 +46,7 @@ static const AVCodecTag codec_au_tags[] = {
     { AV_CODEC_ID_PCM_S32BE, 5 },
     { AV_CODEC_ID_PCM_F32BE, 6 },
     { AV_CODEC_ID_PCM_F64BE, 7 },
+    { AV_CODEC_ID_ADPCM_G722, 24 },
     { AV_CODEC_ID_PCM_ALAW, 27 },
     { AV_CODEC_ID_NONE, 0 },
 };
@@ -56,11 +58,12 @@ static int put_au_header(AVIOContext *pb, AVCodecContext *enc)
     if(!enc->codec_tag)
         return -1;
     ffio_wfourcc(pb, ".snd");    /* magic number */
-    avio_wb32(pb, 24);           /* header size */
+    avio_wb32(pb, AU_HEADER_SIZE);  /* header size */
     avio_wb32(pb, AU_UNKNOWN_SIZE); /* data size */
     avio_wb32(pb, (uint32_t)enc->codec_tag);     /* codec ID */
     avio_wb32(pb, enc->sample_rate);
     avio_wb32(pb, (uint32_t)enc->channels);
+    avio_wb64(pb, 0); /* annotation field */
     return 0;
 }
 
@@ -97,7 +100,7 @@ static int au_write_trailer(AVFormatContext *s)
         /* update file size */
         file_size = avio_tell(pb);
         avio_seek(pb, 8, SEEK_SET);
-        avio_wb32(pb, (uint32_t)(file_size - 24));
+        avio_wb32(pb, (uint32_t)(file_size - AU_HEADER_SIZE));
         avio_seek(pb, file_size, SEEK_SET);
 
         avio_flush(pb);

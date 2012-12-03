@@ -24,12 +24,12 @@ do_lavfi_plain() {
     vfilters="$2"
 
     if [ $test = $1 ] ; then
-        do_video_filter $test "$vfilters"
+        do_video_filter $test "$2"
     fi
 }
 
 do_lavfi() {
-    do_lavfi_plain $1 "slicify=random,$2"
+    do_lavfi_plain $1 "$2"
 }
 
 do_lavfi_colormatrix() {
@@ -44,6 +44,8 @@ do_lavfi "crop_vflip"         "crop=iw-100:ih-100:100:100,vflip"
 do_lavfi "drawbox"            "drawbox=224:24:88:72:#FF8010@0.5"
 do_lavfi "edgedetect"         "edgedetect"
 do_lavfi "fade"               "fade=in:5:15,fade=out:30:15"
+do_lavfi "hue"                "hue=s=sin(2*PI*t)+1"
+do_lavfi "idet"               "idet"
 do_lavfi "null"               "null"
 do_lavfi "overlay"            "split[m],scale=88:72,pad=96:80:4:4[o2];[m]fifo[o1],[o1][o2]overlay=240:16"
 do_lavfi "pad"                "pad=iw*1.5:ih*1.5:iw*0.3:ih*0.2"
@@ -59,17 +61,17 @@ do_lavfi "select"             "select=not(eq(mod(n\,2)\,0)+eq(mod(n\,3)\,0))"
 do_lavfi "setdar"             "setdar=16/9"
 do_lavfi "setsar"             "setsar=16/11"
 do_lavfi "thumbnail"          "thumbnail=10"
-do_lavfi "tile"               "tile=3x3"
+do_lavfi "tile"               "tile=3x3:nb_frames=5:padding=7:margin=2"
 do_lavfi "transpose"          "transpose"
 do_lavfi "unsharp"            "unsharp=10:10:-1.5:10:10:-1.5"
 do_lavfi "vflip"              "vflip"
 do_lavfi "vflip_crop"         "vflip,crop=iw-100:ih-100:100:100"
 do_lavfi "vflip_vflip"        "vflip,vflip"
 
-do_lavfi_plain "alphamerge_rgb"     "[in]slicify=random,format=bgra,split,alphamerge[out]"
-do_lavfi_plain "alphamerge_yuv"     "[in]slicify=random,format=yuv420p,split,alphamerge[out]"
-do_lavfi_plain "alphaextract_rgb"   "[in]slicify=random,format=bgra,split,alphamerge,slicify=random,split[o3][o4];[o4]alphaextract[alpha];[o3][alpha]alphamerge[out]"
-do_lavfi_plain "alphaextract_yuv"   "[in]slicify=random,format=yuv420p,split,alphamerge,slicify=random,split[o3][o4];[o4]alphaextract[alpha];[o3][alpha]alphamerge[out]"
+do_lavfi_plain "alphamerge_rgb"     "[in]format=bgra,split,alphamerge[out]"
+do_lavfi_plain "alphamerge_yuv"     "[in]format=yuv420p,split,alphamerge[out]"
+do_lavfi_plain "alphaextract_rgb"   "[in]format=bgra,split,alphamerge,split[o3][o4];[o4]alphaextract[alpha];[o3][alpha]alphamerge[out]"
+do_lavfi_plain "alphaextract_yuv"   "[in]format=yuv420p,split,alphamerge,split[o3][o4];[o4]alphaextract[alpha];[o3][alpha]alphamerge[out]"
 
 do_lavfi_colormatrix "colormatrix" bt709 fcc bt601 smpte240m
 
@@ -100,7 +102,7 @@ do_lavfi_pixfmts(){
     pix_fmts=$(comm -12 $scale_exclude_fmts $in_fmts)
 
     for pix_fmt in $pix_fmts; do
-        do_video_filter $pix_fmt "slicify=random,format=$pix_fmt,$filter=$filter_args" -pix_fmt $pix_fmt
+        do_video_filter $pix_fmt "format=$pix_fmt,$filter=$filter_args" -pix_fmt $pix_fmt
     done
 
     rm $in_fmts $scale_in_fmts $scale_out_fmts $scale_exclude_fmts
@@ -110,6 +112,7 @@ do_lavfi_pixfmts(){
 do_lavfi_pixfmts "copy"    ""
 do_lavfi_pixfmts "crop"    "100:100:100:100"
 do_lavfi_pixfmts "hflip"   ""
+do_lavfi_pixfmts "field"   "field" "bottom"
 do_lavfi_pixfmts "null"    ""
 do_lavfi_pixfmts "pad"     "500:400:20:20"
 do_lavfi_pixfmts "pixdesctest" ""
@@ -131,6 +134,7 @@ do_lavfi_lavd() {
 
 do_lavfi_lavd "life"                 "life=s=40x40:r=5:seed=42:mold=64" -t 2
 do_lavfi_lavd "testsrc"              "testsrc=r=7:n=2:d=10"
+do_lavfi_lavd "scalenorm"            "sws_flags=+accurate_rnd+bitexact;testsrc=s=128x96:d=1:r=5,format=yuv420p[a];testsrc=s=160x120:d=1:r=5[b];[a][b]concat=unsafe=1,scale=flags=+accurate_rnd+bitexact"
 
 # TODO: add tests for
 # direct rendering,

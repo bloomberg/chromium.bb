@@ -173,7 +173,7 @@ static int tscc2_decode_mb(TSCC2Context *c, int *q, int vlc_set,
                 if (ac == 0x1000)
                     ac = get_bits(gb, 12);
                 bpos += ac & 0xF;
-                if (bpos >= 64)
+                if (bpos >= 16)
                     return AVERROR_INVALIDDATA;
                 val = sign_extend(ac >> 4, 8);
                 c->block[tscc2_zigzag[bpos++]] = val;
@@ -336,7 +336,7 @@ static av_cold int tscc2_decode_init(AVCodecContext *avctx)
 
     c->avctx = avctx;
 
-    avctx->pix_fmt = PIX_FMT_YUV444P;
+    avctx->pix_fmt = AV_PIX_FMT_YUV444P;
 
     if ((ret = init_vlcs(c)) < 0) {
         av_log(avctx, AV_LOG_ERROR, "Cannot initialise VLCs\n");

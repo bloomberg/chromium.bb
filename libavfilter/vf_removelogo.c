@@ -191,7 +191,7 @@ static void convert_mask_to_strength_mask(uint8_t *data, int linesize,
 
 static int query_formats(AVFilterContext *ctx)
 {
-    enum PixelFormat pix_fmts[] = { PIX_FMT_YUV420P, PIX_FMT_NONE };
+    enum AVPixelFormat pix_fmts[] = { AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE };
     ff_set_common_formats(ctx, ff_make_format_list(pix_fmts));
     return 0;
 }
@@ -200,7 +200,7 @@ static int load_mask(uint8_t **mask, int *w, int *h,
                      const char *filename, void *log_ctx)
 {
     int ret;
-    enum PixelFormat pix_fmt;
+    enum AVPixelFormat pix_fmt;
     uint8_t *src_data[4], *gray_data[4];
     int src_linesize[4], gray_linesize[4];
 
@@ -209,7 +209,7 @@ static int load_mask(uint8_t **mask, int *w, int *h,
         return ret;
 
     /* convert the image to GRAY8 */
-    if ((ret = ff_scale_image(gray_data, gray_linesize, *w, *h, PIX_FMT_GRAY8,
+    if ((ret = ff_scale_image(gray_data, gray_linesize, *w, *h, AV_PIX_FMT_GRAY8,
                               src_data, src_linesize, *w, *h, pix_fmt,
                               log_ctx)) < 0)
         goto end;
@@ -535,6 +535,28 @@ static void uninit(AVFilterContext *ctx)
 
 static int null_draw_slice(AVFilterLink *link, int y, int h, int slice_dir) { return 0; }
 
+static const AVFilterPad removelogo_inputs[] = {
+    {
+        .name             = "default",
+        .type             = AVMEDIA_TYPE_VIDEO,
+        .get_video_buffer = ff_null_get_video_buffer,
+        .config_props     = config_props_input,
+        .draw_slice       = null_draw_slice,
+        .start_frame      = start_frame,
+        .end_frame        = end_frame,
+        .min_perms        = AV_PERM_WRITE | AV_PERM_READ,
+    },
+    { NULL }
+};
+
+static const AVFilterPad removelogo_outputs[] = {
+    {
+        .name = "default",
+        .type = AVMEDIA_TYPE_VIDEO,
+    },
+    { NULL }
+};
+
 AVFilter avfilter_vf_removelogo = {
     .name          = "removelogo",
     .description   = NULL_IF_CONFIG_SMALL("Remove a TV logo based on a mask image."),
@@ -542,21 +564,6 @@ AVFilter avfilter_vf_removelogo = {
     .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
-
-    .inputs = (const AVFilterPad[]) {
-        { .name             = "default",
-          .type             = AVMEDIA_TYPE_VIDEO,
-          .get_video_buffer = ff_null_get_video_buffer,
-          .config_props     = config_props_input,
-          .draw_slice       = null_draw_slice,
-          .start_frame      = start_frame,
-          .end_frame        = end_frame,
-          .min_perms        = AV_PERM_WRITE | AV_PERM_READ },
-        { .name = NULL }
-    },
-    .outputs = (const AVFilterPad[]) {
-        { .name             = "default",
-          .type             = AVMEDIA_TYPE_VIDEO, },
-        { .name = NULL }
-    },
+    .inputs        = removelogo_inputs,
+    .outputs       = removelogo_outputs,
 };

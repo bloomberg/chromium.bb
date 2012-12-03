@@ -19,13 +19,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "libavutil/common.h"
-#include "libavutil/pixdesc.h"
-#include "libavutil/rational.h"
-#include "libavutil/audioconvert.h"
 #include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
+#include "libavutil/channel_layout.h"
+#include "libavutil/common.h"
+#include "libavutil/imgutils.h"
+#include "libavutil/pixdesc.h"
+#include "libavutil/rational.h"
+#include "libavutil/samplefmt.h"
 
+#include "audio.h"
 #include "avfilter.h"
 #include "formats.h"
 #include "internal.h"
@@ -142,7 +145,7 @@ int avfilter_link(AVFilterContext *src, unsigned srcpad,
     link->srcpad  = &src->output_pads[srcpad];
     link->dstpad  = &dst->input_pads[dstpad];
     link->type    = src->output_pads[srcpad].type;
-    av_assert0(PIX_FMT_NONE == -1 && AV_SAMPLE_FMT_NONE == -1);
+    av_assert0(AV_PIX_FMT_NONE == -1 && AV_SAMPLE_FMT_NONE == -1);
     link->format  = -1;
 
     return 0;
@@ -311,7 +314,7 @@ void ff_tlog_link(void *ctx, AVFilterLink *link, int end)
         ff_tlog(ctx,
                 "link[%p s:%dx%d fmt:%s %s->%s]%s",
                 link, link->w, link->h,
-                av_pix_fmt_descriptors[link->format].name,
+                av_get_pix_fmt_name(link->format),
                 link->src ? link->src->filter->name : "",
                 link->dst ? link->dst->filter->name : "",
                 end ? "\n" : "");
@@ -409,12 +412,20 @@ AVFilter *avfilter_get_by_name(const char *name)
 
 int avfilter_register(AVFilter *filter)
 {
+    int i;
+
     if (next_registered_avfilter_idx == MAX_REGISTERED_AVFILTERS_NB) {
         av_log(NULL, AV_LOG_ERROR,
                "Maximum number of registered filters %d reached, "
                "impossible to register filter with name '%s'\n",
                MAX_REGISTERED_AVFILTERS_NB, filter->name);
         return AVERROR(ENOMEM);
+    }
+
+    for(i=0; filter->inputs && filter->inputs[i].name; i++) {
+        const AVFilterPad *input = &filter->inputs[i];
+        av_assert0(     !input->filter_frame
+                    || (!input->start_frame && !input->end_frame && !input->draw_slice));
     }
 
     registered_avfilters[next_registered_avfilter_idx++] = filter;
@@ -622,4 +633,24 @@ const char *avfilter_pad_get_name(AVFilterPad *pads, int pad_idx)
 enum AVMediaType avfilter_pad_get_type(AVFilterPad *pads, int pad_idx)
 {
     return pads[pad_idx].type;
+}
+
+int ff_filter_frame(AVFilterLink *link, AVFilterBufferRef *frame)
+{
+    int ret;
+    FF_TPRINTF_START(NULL, filter_frame); ff_tlog_link(NULL, link, 1); ff_tlog(NULL, " "); ff_tlog_ref(NULL, frame, 1);
+
+    switch (link->type) {
+    case AVMEDIA_TYPE_VIDEO:
+        if((ret = ff_start_frame(link, frame)) < 0)
+            return ret;
+        if((ret = ff_draw_slice(link, 0, frame->video->h, 1)) < 0)
+            return ret;
+        if((ret = ff_end_frame(link)) < 0)
+            return ret;
+        return ret;
+    case AVMEDIA_TYPE_AUDIO:
+        return ff_filter_samples(link, frame);
+    default: return AVERROR(EINVAL);
+    }
 }

@@ -346,7 +346,7 @@ static int alloc_sequence_buffers(DiracContext *s)
 
     /* fixme: allocate using real stride here */
     s->sbsplit  = av_malloc(sbwidth * sbheight);
-    s->blmotion = av_malloc(sbwidth * sbheight * 4 * sizeof(*s->blmotion));
+    s->blmotion = av_malloc(sbwidth * sbheight * 16 * sizeof(*s->blmotion));
     s->edge_emu_buffer_base = av_malloc((w+64)*MAX_BLOCKSIZE);
 
     s->mctmp     = av_malloc((w+64+MAX_BLOCKSIZE) * (h*MAX_BLOCKSIZE) * sizeof(*s->mctmp));
@@ -996,6 +996,10 @@ static int dirac_unpack_idwt_params(DiracContext *s)
                 s->lowdelay.quant[level][3] = svq3_get_ue_golomb(gb);
             }
         } else {
+            if (s->wavelet_depth > 4) {
+                av_log(s->avctx,AV_LOG_ERROR,"Mandatory custom low delay matrix missing for depth %d\n", s->wavelet_depth);
+                return AVERROR_INVALIDDATA;
+            }
             /* default quantization matrix */
             for (level = 0; level < s->wavelet_depth; level++)
                 for (i = 0; i < 4; i++) {
@@ -1404,8 +1408,8 @@ static int mc_subpel(DiracContext *s, DiracBlock *block, const uint8_t *src[5],
     }
 
     /* fixme: v/h _edge_pos */
-    if ((unsigned)x > p->width +EDGE_WIDTH/2 - p->xblen ||
-        (unsigned)y > p->height+EDGE_WIDTH/2 - p->yblen) {
+    if ((unsigned)x > FFMAX(p->width +EDGE_WIDTH/2 - p->xblen, 0) ||
+        (unsigned)y > FFMAX(p->height+EDGE_WIDTH/2 - p->yblen, 0)) {
         for (i = 0; i < nplanes; i++) {
             ff_emulated_edge_mc(s->edge_emu_buffer[i], src[i], p->stride,
                                 p->xblen, p->yblen, x, y,
@@ -1665,6 +1669,7 @@ static int dirac_decode_picture_header(DiracContext *s)
                 if (!s->all_frames[j].avframe.data[0]) {
                     s->ref_pics[i] = &s->all_frames[j];
                     s->avctx->get_buffer(s->avctx, &s->ref_pics[i]->avframe);
+                    break;
                 }
     }
 

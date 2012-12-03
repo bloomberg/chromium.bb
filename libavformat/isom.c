@@ -26,7 +26,6 @@
 #include "avformat.h"
 #include "internal.h"
 #include "isom.h"
-#include "riff.h"
 #include "libavcodec/mpeg4audio.h"
 #include "libavcodec/mpegaudiodata.h"
 
@@ -104,6 +103,7 @@ const AVCodecTag ff_codec_movvideo_tags[] = {
     { AV_CODEC_ID_V410,   MKTAG('v', '4', '1', '0') }, /* UNCOMPRESSED 10BIT 4:4:4 */
     { AV_CODEC_ID_Y41P,   MKTAG('Y', '4', '1', 'P') }, /* UNCOMPRESSED 12BIT 4:1:1 */
     { AV_CODEC_ID_YUV4,   MKTAG('y', 'u', 'v', '4') }, /* libquicktime packed yuv420p */
+    { AV_CODEC_ID_TARGA_Y216, MKTAG('Y', '2', '1', '6') },
 
     { AV_CODEC_ID_MJPEG,  MKTAG('j', 'p', 'e', 'g') }, /* PhotoJPEG */
     { AV_CODEC_ID_MJPEG,  MKTAG('m', 'j', 'p', 'a') }, /* Motion-JPEG (format A) */
@@ -227,7 +227,7 @@ const AVCodecTag ff_codec_movvideo_tags[] = {
 
     { AV_CODEC_ID_DIRAC,     MKTAG('d', 'r', 'a', 'c') },
     { AV_CODEC_ID_DNXHD,     MKTAG('A', 'V', 'd', 'n') }, /* AVID DNxHD */
-//  { AV_CODEC_ID_FLV1,      MKTAG('H', '2', '6', '3') }, /* Flash Media Server */
+//  { AV_CODEC_ID_FLV1,      MKTAG('H', '2', '6', '3') }, /* Flash Media Server, forced in demuxer */
     { AV_CODEC_ID_MSMPEG4V3, MKTAG('3', 'I', 'V', 'D') }, /* 3ivx DivX Doctor */
     { AV_CODEC_ID_RAWVIDEO,  MKTAG('A', 'V', '1', 'x') }, /* AVID 1:1x */
     { AV_CODEC_ID_RAWVIDEO,  MKTAG('A', 'V', 'u', 'p') },
@@ -432,6 +432,11 @@ int ff_mp4_read_dec_config_descr(AVFormatContext *fc, AVStream *st, AVIOContext 
     avio_rb24(pb); /* buffer size db */
     avio_rb32(pb); /* max bitrate */
     avio_rb32(pb); /* avg bitrate */
+
+    if(avcodec_is_open(st->codec)) {
+        av_log(fc, AV_LOG_DEBUG, "codec open in read_dec_config_descr\n");
+        return -1;
+    }
 
     st->codec->codec_id= ff_codec_get_id(ff_mp4_obj_type, object_type_id);
     av_dlog(fc, "esds object type id 0x%02x\n", object_type_id);

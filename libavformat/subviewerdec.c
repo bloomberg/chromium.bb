@@ -57,8 +57,8 @@ static int read_ts(const char *s, int64_t *start, int *duration)
 
     if (sscanf(s, "%u:%u:%u.%u,%u:%u:%u.%u",
                &hh1, &mm1, &ss1, &ms1, &hh2, &mm2, &ss2, &ms2) == 8) {
-        end    = (hh2*3600 + mm2*60 + ss2) * 100 + ms2;
-        *start = (hh1*3600 + mm1*60 + ss1) * 100 + ms1;
+        end    = (hh2*3600LL + mm2*60LL + ss2) * 100LL + ms2;
+        *start = (hh1*3600LL + mm1*60LL + ss1) * 100LL + ms1;
         *duration = end - *start;
         return 0;
     }
@@ -157,6 +157,14 @@ static int subviewer_read_packet(AVFormatContext *s, AVPacket *pkt)
     return ff_subtitles_queue_read_packet(&subviewer->q, pkt);
 }
 
+static int subviewer_read_seek(AVFormatContext *s, int stream_index,
+                               int64_t min_ts, int64_t ts, int64_t max_ts, int flags)
+{
+    SubViewerContext *subviewer = s->priv_data;
+    return ff_subtitles_queue_seek(&subviewer->q, s, stream_index,
+                                   min_ts, ts, max_ts, flags);
+}
+
 static int subviewer_read_close(AVFormatContext *s)
 {
     SubViewerContext *subviewer = s->priv_data;
@@ -171,6 +179,7 @@ AVInputFormat ff_subviewer_demuxer = {
     .read_probe     = subviewer_probe,
     .read_header    = subviewer_read_header,
     .read_packet    = subviewer_read_packet,
+    .read_seek2     = subviewer_read_seek,
     .read_close     = subviewer_read_close,
     .flags          = AVFMT_GENERIC_INDEX,
     .extensions     = "sub",

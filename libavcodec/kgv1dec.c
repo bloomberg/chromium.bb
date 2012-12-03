@@ -83,7 +83,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPac
     for (i = 0; i < 8; i++)
         offsets[i] = -1;
 
-    while (outcnt < maxcnt && buf_end - 2 > buf) {
+    while (outcnt < maxcnt && buf_end - 2 >= buf) {
         int code = AV_RL16(buf);
         buf += 2;
 
@@ -169,7 +169,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
     KgvContext * const c = avctx->priv_data;
 
     c->avctx = avctx;
-    avctx->pix_fmt = PIX_FMT_RGB555;
+    avctx->pix_fmt = AV_PIX_FMT_RGB555;
     avctx->flags  |= CODEC_FLAG_EMU_EDGE;
 
     return 0;
@@ -191,4 +191,5 @@ AVCodec ff_kgv1_decoder = {
     .decode         = decode_frame,
     .flush          = decode_flush,
     .long_name      = NULL_IF_CONFIG_SMALL("Kega Game Video"),
+    .capabilities   = CODEC_CAP_DR1,
 };

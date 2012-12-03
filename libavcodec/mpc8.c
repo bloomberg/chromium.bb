@@ -25,12 +25,12 @@
  * divided into 32 subbands.
  */
 
+#include "libavutil/channel_layout.h"
 #include "libavutil/lfg.h"
 #include "avcodec.h"
 #include "get_bits.h"
 #include "dsputil.h"
 #include "mpegaudiodsp.h"
-#include "libavutil/audioconvert.h"
 
 #include "mpc.h"
 #include "mpc8data.h"
@@ -134,12 +134,12 @@ static av_cold int mpc8_decode_init(AVCodecContext * avctx)
     channels = get_bits(&gb, 4) + 1;
     if (channels > 2) {
         av_log_missing_feature(avctx, "Multichannel MPC SV8", 1);
-        return -1;
+        return AVERROR_PATCHWELCOME;
     }
     c->MSS = get_bits1(&gb);
     c->frames = 1 << (get_bits(&gb, 3) * 2);
 
-    avctx->sample_fmt = AV_SAMPLE_FMT_S16;
+    avctx->sample_fmt = AV_SAMPLE_FMT_S16P;
     avctx->channel_layout = (channels==2) ? AV_CH_LAYOUT_STEREO : AV_CH_LAYOUT_MONO;
     avctx->channels = channels;
 
@@ -413,7 +413,8 @@ static int mpc8_decode_frame(AVCodecContext * avctx, void *data,
         }
     }
 
-    ff_mpc_dequantize_and_synth(c, maxband - 1, c->frame.data[0],
+    ff_mpc_dequantize_and_synth(c, maxband - 1,
+                                (int16_t **)c->frame.extended_data,
                                 avctx->channels);
 
     c->cur_frame++;
@@ -446,4 +447,6 @@ AVCodec ff_mpc8_decoder = {
     .flush          = mpc8_decode_flush,
     .capabilities   = CODEC_CAP_DR1,
     .long_name      = NULL_IF_CONFIG_SMALL("Musepack SV8"),
+    .sample_fmts    = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_S16P,
+                                                      AV_SAMPLE_FMT_NONE },
 };

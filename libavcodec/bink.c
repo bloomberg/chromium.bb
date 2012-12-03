@@ -674,6 +674,10 @@ static int read_dct_coeffs(GetBitContext *gb, int32_t block[64], const uint8_t *
         quant_idx = get_bits(gb, 4);
     } else {
         quant_idx = q;
+        if (quant_idx > 15U) {
+            av_log(NULL, AV_LOG_ERROR, "quant_index %d out of range\n", quant_idx);
+            return AVERROR_INVALIDDATA;
+        }
     }
 
     quant = quant_matrices[quant_idx];
@@ -1288,7 +1292,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
         return 1;
     }
 
-    avctx->pix_fmt = c->has_alpha ? PIX_FMT_YUVA420P : PIX_FMT_YUV420P;
+    avctx->pix_fmt = c->has_alpha ? AV_PIX_FMT_YUVA420P : AV_PIX_FMT_YUV420P;
 
     avctx->idct_algo = FF_IDCT_BINK;
     ff_dsputil_init(&c->dsp, avctx);
@@ -1328,4 +1332,5 @@ AVCodec ff_bink_decoder = {
     .close          = decode_end,
     .decode         = decode_frame,
     .long_name      = NULL_IF_CONFIG_SMALL("Bink video"),
+    .capabilities   = CODEC_CAP_DR1,
 };

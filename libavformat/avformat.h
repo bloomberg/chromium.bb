@@ -158,9 +158,15 @@
  * information will be in AVStream.time_base units, i.e. it has to be
  * multiplied by the timebase to convert them to seconds.
  *
- * The packet data belongs to the demuxer and is invalid after the next call to
- * av_read_frame(). The user must free the packet with av_free_packet() before
- * calling av_read_frame() again or closing the file.
+ * If AVPacket.destruct is set on the returned packet, then the packet is
+ * allocated dynamically and the user may keep it indefinitely.
+ * Otherwise, if AVPacket.destruct is NULL, the packet data is backed by a
+ * static storage somewhere inside the demuxer and the packet is only valid
+ * until the next av_read_frame() call or closing the file. If the caller
+ * requires a longer lifetime, av_dup_packet() will make an av_malloc()ed copy
+ * of it.
+ * In both cases, the packet must be freed with av_free_packet() when it is no
+ * longer needed.
  *
  * @section lavf_decoding_seek Seeking
  * @}
@@ -336,6 +342,7 @@ typedef struct AVProbeData {
 } AVProbeData;
 
 #define AVPROBE_SCORE_MAX 100               ///< maximum score, half of that is used for file-extension-based detection
+#define AVPROBE_SCORE_RETRY (AVPROBE_SCORE_MAX/4)
 #define AVPROBE_PADDING_SIZE 32             ///< extra allocated bytes at the end of the probe buffer
 
 /// Demuxer will use avio_open, no opened file should be provided by the caller.
@@ -581,7 +588,7 @@ enum AVStreamParseType {
     AVSTREAM_PARSE_FULL_ONCE,  /**< full parsing and repack of the first frame only, only implemented for H.264 currently */
     AVSTREAM_PARSE_FULL_RAW=MKTAG(0,'R','A','W'),       /**< full parsing and repack with timestamp and position generation by parser for raw
                                                              this assumes that each packet in the file contains no demuxer level headers and
-                                                             just codec level data, otherwise position generaion would fail */
+                                                             just codec level data, otherwise position generation would fail */
 };
 
 typedef struct AVIndexEntry {
@@ -634,7 +641,7 @@ typedef struct AVStream {
     /**
      * Format-specific stream ID.
      * decoding: set by libavformat
-     * encoding: set by the user
+     * encoding: set by the user, replaced by libavformat if left unset
      */
     int id;
     /**
@@ -672,7 +679,7 @@ typedef struct AVStream {
      * of which frame timestamps are represented.
      *
      * decoding: set by libavformat
-     * encoding: set by libavformat in av_write_header. The muxer may use the
+     * encoding: set by libavformat in avformat_write_header. The muxer may use the
      * user-provided value of @ref AVCodecContext.time_base "codec->time_base"
      * as a hint.
      */
@@ -742,6 +749,7 @@ typedef struct AVStream {
         int duration_count;
         double duration_error[2][2][MAX_STD_TIMEBASES];
         int64_t codec_info_duration;
+        int64_t codec_info_duration_fields;
         int found_decoder;
 
         /**
@@ -860,6 +868,16 @@ typedef struct AVProgram {
     int program_num;
     int pmt_pid;
     int pcr_pid;
+
+    /*****************************************************************
+     * All fields below this line are not part of the public API. They
+     * may not be used outside of libavformat and can be changed and
+     * removed at will.
+     * New public fields should be added right above.
+     *****************************************************************
+     */
+    int64_t start_time;
+    int64_t end_time;
 } AVProgram;
 
 #define AVFMTCTX_NOHEADER      0x0001 /**< signal that no header is present
@@ -1144,6 +1162,13 @@ typedef struct AVFormatContext {
      */
     enum AVDurationEstimationMethod duration_estimation_method;
 
+    /**
+     * Skip initial bytes when opening stream
+     * - encoding: unused
+     * - decoding: Set by user via AVOptions (NO direct access)
+     */
+    unsigned int skip_initial_bytes;
+
     /*****************************************************************
      * All fields below this line are not part of the public API. They
      * may not be used outside of libavformat and can be changed and
@@ -1299,7 +1324,7 @@ const AVClass *avformat_get_class(void);
  *
  * @return newly created stream or NULL on error.
  */
-AVStream *avformat_new_stream(AVFormatContext *s, AVCodec *c);
+AVStream *avformat_new_stream(AVFormatContext *s, const AVCodec *c);
 
 AVProgram *av_new_program(AVFormatContext *s, int id);
 
@@ -1538,13 +1563,13 @@ int av_read_packet(AVFormatContext *s, AVPacket *pkt);
  * omit invalid data between valid frames so as to give the decoder the maximum
  * information possible for decoding.
  *
- * The returned packet is valid
- * until the next av_read_frame() or until av_close_input_file() and
- * must be freed with av_free_packet. For video, the packet contains
- * exactly one frame. For audio, it contains an integer number of
- * frames if each frame has a known fixed size (e.g. PCM or ADPCM
- * data). If the audio frames have a variable size (e.g. MPEG audio),
- * then it contains one frame.
+ * If pkt->destruct is NULL, then the packet is valid until the next
+ * av_read_frame() or until av_close_input_file(). Otherwise the packet is valid
+ * indefinitely. In both cases the packet must be freed with
+ * av_free_packet when it is no longer needed. For video, the packet contains
+ * exactly one frame. For audio, it contains an integer number of frames if each
+ * frame has a known fixed size (e.g. PCM or ADPCM data). If the audio frames
+ * have a variable size (e.g. MPEG audio), then it contains one frame.
  *
  * pkt->pts, pkt->dts and pkt->duration are always set to correct
  * values in AVStream.time_base units (and guessed if the format cannot
@@ -1712,10 +1737,10 @@ int av_write_frame(AVFormatContext *s, AVPacket *pkt);
  * @param s media file handle
  * @param pkt The packet containing the data to be written. Libavformat takes
  * ownership of the data and will free it when it sees fit using the packet's
- * This can be NULL (at any time, not just at the end), to flush the
- * interleaving queues.
  * @ref AVPacket.destruct "destruct" field. The caller must not access the data
  * after this function returns, as it may already be freed.
+ * This can be NULL (at any time, not just at the end), to flush the
+ * interleaving queues.
  * Packet's @ref AVPacket.stream_index "stream_index" field must be set to the
  * index of the corresponding stream in @ref AVFormatContext.streams
  * "s.streams".
@@ -1741,7 +1766,7 @@ int av_interleave_packet_per_dts(AVFormatContext *s, AVPacket *out,
  * Write the stream trailer to an output media file and free the
  * file private data.
  *
- * May only be called after a successful call to av_write_header.
+ * May only be called after a successful call to avformat_write_header.
  *
  * @param s media file handle
  * @return 0 if OK, AVERROR_xxx on error
@@ -1778,9 +1803,9 @@ enum AVCodecID av_guess_codec(AVOutputFormat *fmt, const char *short_name,
  * work in real time.
  * @param s          media file handle
  * @param stream     stream in the media file
- * @param dts[out]   DTS of the last packet output for the stream, in stream
+ * @param[out] dts   DTS of the last packet output for the stream, in stream
  *                   time_base units
- * @param wall[out]  absolute time when that packet whas output,
+ * @param[out] wall  absolute time when that packet whas output,
  *                   in microsecond
  * @return  0 if OK, AVERROR(ENOSYS) if the format does not support it
  * Note: some formats or devices may not allow to measure dts and wall
@@ -1813,7 +1838,7 @@ int av_get_output_timestamp(struct AVFormatContext *s, int stream,
  *
  * @see av_hex_dump_log, av_pkt_dump2, av_pkt_dump_log2
  */
-void av_hex_dump(FILE *f, uint8_t *buf, int size);
+void av_hex_dump(FILE *f, const uint8_t *buf, int size);
 
 /**
  * Send a nice hexadecimal dump of a buffer to the log.
@@ -1827,7 +1852,7 @@ void av_hex_dump(FILE *f, uint8_t *buf, int size);
  *
  * @see av_hex_dump, av_pkt_dump2, av_pkt_dump_log2
  */
-void av_hex_dump_log(void *avcl, int level, uint8_t *buf, int size);
+void av_hex_dump_log(void *avcl, int level, const uint8_t *buf, int size);
 
 /**
  * Send a nice dump of a packet to the specified file stream.
@@ -1951,6 +1976,9 @@ int av_filename_number_test(const char *filename);
 
 /**
  * Generate an SDP for an RTP session.
+ *
+ * Note, this overwrites the id values of AVStreams in the muxer contexts
+ * for getting unique dynamic payload types.
  *
  * @param ac array of AVFormatContexts describing the RTP streams. If the
  *           array is composed by only one context, such context can contain

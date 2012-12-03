@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
     uint64_t i, j;
     uint32_t offset_count;
     uint64_t current_offset;
-    uint64_t start_offset = 0;
+    int64_t start_offset = 0;
     unsigned char *copy_buffer = NULL;
     int bytes_to_copy;
 
@@ -136,22 +136,27 @@ int main(int argc, char *argv[])
                        atom_size);
                 goto error_out;
             }
-            fseeko(infile, -ATOM_PREAMBLE_SIZE, SEEK_CUR);
-            if (fread(ftyp_atom, atom_size, 1, infile) != 1) {
+            if (   fseeko(infile, -ATOM_PREAMBLE_SIZE, SEEK_CUR)
+                || fread(ftyp_atom, atom_size, 1, infile) != 1
+                || (start_offset = ftello(infile))<0) {
                 perror(argv[1]);
                 goto error_out;
             }
-            start_offset = ftello(infile);
         } else {
+            int ret;
             /* 64-bit special case */
             if (atom_size == 1) {
                 if (fread(atom_bytes, ATOM_PREAMBLE_SIZE, 1, infile) != 1) {
                     break;
                 }
                 atom_size = BE_64(&atom_bytes[0]);
-                fseeko(infile, atom_size - ATOM_PREAMBLE_SIZE * 2, SEEK_CUR);
+                ret = fseeko(infile, atom_size - ATOM_PREAMBLE_SIZE * 2, SEEK_CUR);
             } else {
-                fseeko(infile, atom_size - ATOM_PREAMBLE_SIZE, SEEK_CUR);
+                ret = fseeko(infile, atom_size - ATOM_PREAMBLE_SIZE, SEEK_CUR);
+            }
+            if(ret) {
+                perror(argv[1]);
+                goto error_out;
             }
         }
         printf("%c%c%c%c %10"PRIu64" %"PRIu64"\n",
@@ -192,7 +197,10 @@ int main(int argc, char *argv[])
 
     /* moov atom was, in fact, the last atom in the chunk; load the whole
      * moov atom */
-    fseeko(infile, -atom_size, SEEK_END);
+    if (fseeko(infile, -atom_size, SEEK_END)) {
+        perror(argv[1]);
+        goto error_out;
+    }
     last_offset    = ftello(infile);
     moov_atom_size = atom_size;
     moov_atom      = malloc(moov_atom_size);
@@ -268,7 +276,11 @@ int main(int argc, char *argv[])
     }
 
     if (start_offset > 0) { /* seek after ftyp atom */
-        fseeko(infile, start_offset, SEEK_SET);
+        if (fseeko(infile, start_offset, SEEK_SET)) {
+            perror(argv[1]);
+            goto error_out;
+        }
+
         last_offset -= start_offset;
     }
 
@@ -298,7 +310,7 @@ int main(int argc, char *argv[])
     bytes_to_copy = FFMIN(COPY_BUFFER_SIZE, last_offset);
     copy_buffer = malloc(bytes_to_copy);
     if (!copy_buffer) {
-        printf("could not allocate %"PRIu64" bytes for copy_buffer\n", bytes_to_copy);
+        printf("could not allocate %d bytes for copy_buffer\n", bytes_to_copy);
         goto error_out;
     }
     printf(" copying rest of file...\n");

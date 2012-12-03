@@ -62,19 +62,19 @@ typedef struct {
 } TInterlaceContext;
 
 #define FULL_SCALE_YUVJ_FORMATS \
-    PIX_FMT_YUVJ420P, PIX_FMT_YUVJ422P, PIX_FMT_YUVJ444P, PIX_FMT_YUVJ440P
+    AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ440P
 
-static enum PixelFormat full_scale_yuvj_pix_fmts[] = {
-    FULL_SCALE_YUVJ_FORMATS, PIX_FMT_NONE
+static enum AVPixelFormat full_scale_yuvj_pix_fmts[] = {
+    FULL_SCALE_YUVJ_FORMATS, AV_PIX_FMT_NONE
 };
 
 static int query_formats(AVFilterContext *ctx)
 {
-    static const enum PixelFormat pix_fmts[] = {
-        PIX_FMT_YUV420P,  PIX_FMT_YUV422P,  PIX_FMT_YUV444P,
-        PIX_FMT_YUV444P,  PIX_FMT_YUV410P,  PIX_FMT_YUVA420P,
-        PIX_FMT_GRAY8, FULL_SCALE_YUVJ_FORMATS,
-        PIX_FMT_NONE
+    static const enum AVPixelFormat pix_fmts[] = {
+        AV_PIX_FMT_YUV420P,  AV_PIX_FMT_YUV422P,  AV_PIX_FMT_YUV444P,
+        AV_PIX_FMT_YUV444P,  AV_PIX_FMT_YUV410P,  AV_PIX_FMT_YUVA420P,
+        AV_PIX_FMT_GRAY8, FULL_SCALE_YUVJ_FORMATS,
+        AV_PIX_FMT_NONE
     };
 
     ff_set_common_formats(ctx, ff_make_format_list(pix_fmts));
@@ -130,7 +130,7 @@ static int config_out_props(AVFilterLink *outlink)
 {
     AVFilterContext *ctx = outlink->src;
     AVFilterLink *inlink = outlink->src->inputs[0];
-    const AVPixFmtDescriptor *desc = &av_pix_fmt_descriptors[outlink->format];
+    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(outlink->format);
     TInterlaceContext *tinterlace = ctx->priv;
 
     tinterlace->vsub = desc->log2_chroma_h;
@@ -176,10 +176,10 @@ static int config_out_props(AVFilterLink *outlink)
 static inline
 void copy_picture_field(uint8_t *dst[4], int dst_linesize[4],
                         const uint8_t *src[4], int src_linesize[4],
-                        enum PixelFormat format, int w, int src_h,
+                        enum AVPixelFormat format, int w, int src_h,
                         int src_field, int interleave, int dst_field)
 {
-    const AVPixFmtDescriptor *desc = &av_pix_fmt_descriptors[format];
+    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(format);
     int plane, vsub = desc->log2_chroma_h;
     int k = src_field == FIELD_UPPER_AND_LOWER ? 1 : 2;
 
@@ -188,6 +188,10 @@ void copy_picture_field(uint8_t *dst[4], int dst_linesize[4],
         int linesize = av_image_get_linesize(format, w, plane);
         uint8_t *dstp = dst[plane];
         const uint8_t *srcp = src[plane];
+
+        if (linesize < 0)
+            return;
+
         lines /= k;
         if (src_field == FIELD_LOWER)
             srcp += src_linesize[plane];
@@ -330,24 +334,6 @@ static int end_frame(AVFilterLink *inlink)
     return 0;
 }
 
-static int poll_frame(AVFilterLink *outlink)
-{
-    TInterlaceContext *tinterlace = outlink->src->priv;
-    AVFilterLink *inlink = outlink->src->inputs[0];
-    int ret, val;
-
-    val = ff_poll_frame(inlink);
-
-    if (val == 1 && !tinterlace->next) {
-        if ((ret = ff_request_frame(inlink)) < 0)
-            return ret;
-        val = ff_poll_frame(inlink);
-    }
-    av_assert0(tinterlace->next);
-
-    return val;
-}
-
 static int request_frame(AVFilterLink *outlink)
 {
     TInterlaceContext *tinterlace = outlink->src->priv;
@@ -365,6 +351,27 @@ static int request_frame(AVFilterLink *outlink)
 
 static int null_draw_slice(AVFilterLink *link, int y, int h, int slice_dir) { return 0; }
 
+static const AVFilterPad tinterlace_inputs[] = {
+    {
+        .name         = "default",
+        .type         = AVMEDIA_TYPE_VIDEO,
+        .start_frame  = start_frame,
+        .draw_slice   = null_draw_slice,
+        .end_frame    = end_frame,
+    },
+    { NULL }
+};
+
+static const AVFilterPad tinterlace_outputs[] = {
+    {
+        .name          = "default",
+        .type          = AVMEDIA_TYPE_VIDEO,
+        .config_props  = config_out_props,
+        .request_frame = request_frame,
+    },
+    { NULL }
+};
+
 AVFilter avfilter_vf_tinterlace = {
     .name          = "tinterlace",
     .description   = NULL_IF_CONFIG_SMALL("Perform temporal field interlacing."),
@@ -372,21 +379,6 @@ AVFilter avfilter_vf_tinterlace = {
     .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
-
-    .inputs = (const AVFilterPad[]) {
-        { .name          = "default",
-          .type          = AVMEDIA_TYPE_VIDEO,
-          .start_frame   = start_frame,
-          .draw_slice    = null_draw_slice,
-          .end_frame     = end_frame, },
-        { .name = NULL}
-    },
-    .outputs = (const AVFilterPad[]) {
-        { .name          = "default",
-          .type          = AVMEDIA_TYPE_VIDEO,
-          .config_props  = config_out_props,
-          .poll_frame    = poll_frame,
-          .request_frame = request_frame },
-        { .name = NULL}
-    },
+    .inputs        = tinterlace_inputs,
+    .outputs       = tinterlace_outputs,
 };

@@ -190,7 +190,7 @@ static int return_frame(AVFilterContext *ctx, int is_second)
     }
 
     if (!yadif->csp)
-        yadif->csp = &av_pix_fmt_descriptors[link->format];
+        yadif->csp = av_pix_fmt_desc_get(link->format);
     if (yadif->csp->comp[0].depth_minus1 / 8 == 1)
         yadif->filter_line = (void*)filter_line_c_16bit;
 
@@ -205,19 +205,14 @@ static int return_frame(AVFilterContext *ctx, int is_second)
         } else {
             yadif->out->pts = AV_NOPTS_VALUE;
         }
-        ret = ff_start_frame(ctx->outputs[0], yadif->out);
-        if (ret < 0)
-            return ret;
     }
-    if ((ret = ff_draw_slice(ctx->outputs[0], 0, link->h, 1)) < 0 ||
-        (ret = ff_end_frame(ctx->outputs[0])) < 0)
-        return ret;
+    ret = ff_filter_frame(ctx->outputs[0], yadif->out);
 
     yadif->frame_pending = (yadif->mode&1) && !is_second;
-    return 0;
+    return ret;
 }
 
-static int start_frame(AVFilterLink *link, AVFilterBufferRef *picref)
+static int filter_frame(AVFilterLink *link, AVFilterBufferRef *picref)
 {
     AVFilterContext *ctx = link->dst;
     YADIFContext *yadif = ctx->priv;
@@ -237,7 +232,6 @@ static int start_frame(AVFilterLink *link, AVFilterBufferRef *picref)
     yadif->prev = yadif->cur;
     yadif->cur  = yadif->next;
     yadif->next = picref;
-    link->cur_buf = NULL;
 
     if (!yadif->cur)
         return 0;
@@ -250,7 +244,7 @@ static int start_frame(AVFilterLink *link, AVFilterBufferRef *picref)
         avfilter_unref_bufferp(&yadif->prev);
         if (yadif->out->pts != AV_NOPTS_VALUE)
             yadif->out->pts *= 2;
-        return ff_start_frame(ctx->outputs[0], yadif->out);
+        return ff_filter_frame(ctx->outputs[0], yadif->out);
     }
 
     if (!yadif->prev &&
@@ -268,26 +262,7 @@ static int start_frame(AVFilterLink *link, AVFilterBufferRef *picref)
     if (yadif->out->pts != AV_NOPTS_VALUE)
         yadif->out->pts *= 2;
 
-    return ff_start_frame(ctx->outputs[0], yadif->out);
-}
-
-static int end_frame(AVFilterLink *link)
-{
-    AVFilterContext *ctx = link->dst;
-    YADIFContext *yadif = ctx->priv;
-
-    if (!yadif->out)
-        return 0;
-
-    if (yadif->auto_enable && !yadif->cur->video->interlaced) {
-        int ret = ff_draw_slice(ctx->outputs[0], 0, link->h, 1);
-        if (ret >= 0)
-            ret = ff_end_frame(ctx->outputs[0]);
-        return ret;
-    }
-
-    return_frame(ctx, 0);
-    return 0;
+    return return_frame(ctx, 0);
 }
 
 static int request_frame(AVFilterLink *link)
@@ -316,8 +291,7 @@ static int request_frame(AVFilterLink *link)
 
             next->pts = yadif->next->pts * 2 - yadif->cur->pts;
 
-            start_frame(link->src->inputs[0], next);
-            end_frame(link->src->inputs[0]);
+            filter_frame(link->src->inputs[0], next);
             yadif->eof = 1;
         } else if (ret < 0) {
             return ret;
@@ -367,29 +341,29 @@ static av_cold void uninit(AVFilterContext *ctx)
 
 static int query_formats(AVFilterContext *ctx)
 {
-    static const enum PixelFormat pix_fmts[] = {
-        PIX_FMT_YUV420P,
-        PIX_FMT_YUV422P,
-        PIX_FMT_YUV444P,
-        PIX_FMT_YUV410P,
-        PIX_FMT_YUV411P,
-        PIX_FMT_GRAY8,
-        PIX_FMT_YUVJ420P,
-        PIX_FMT_YUVJ422P,
-        PIX_FMT_YUVJ444P,
-        AV_NE( PIX_FMT_GRAY16BE, PIX_FMT_GRAY16LE ),
-        PIX_FMT_YUV440P,
-        PIX_FMT_YUVJ440P,
-        AV_NE( PIX_FMT_YUV420P10BE, PIX_FMT_YUV420P10LE ),
-        AV_NE( PIX_FMT_YUV422P10BE, PIX_FMT_YUV422P10LE ),
-        AV_NE( PIX_FMT_YUV444P10BE, PIX_FMT_YUV444P10LE ),
-        AV_NE( PIX_FMT_YUV420P16BE, PIX_FMT_YUV420P16LE ),
-        AV_NE( PIX_FMT_YUV422P16BE, PIX_FMT_YUV422P16LE ),
-        AV_NE( PIX_FMT_YUV444P16BE, PIX_FMT_YUV444P16LE ),
-        PIX_FMT_YUVA420P,
-        PIX_FMT_YUVA422P,
-        PIX_FMT_YUVA444P,
-        PIX_FMT_NONE
+    static const enum AVPixelFormat pix_fmts[] = {
+        AV_PIX_FMT_YUV420P,
+        AV_PIX_FMT_YUV422P,
+        AV_PIX_FMT_YUV444P,
+        AV_PIX_FMT_YUV410P,
+        AV_PIX_FMT_YUV411P,
+        AV_PIX_FMT_GRAY8,
+        AV_PIX_FMT_YUVJ420P,
+        AV_PIX_FMT_YUVJ422P,
+        AV_PIX_FMT_YUVJ444P,
+        AV_NE( AV_PIX_FMT_GRAY16BE, AV_PIX_FMT_GRAY16LE ),
+        AV_PIX_FMT_YUV440P,
+        AV_PIX_FMT_YUVJ440P,
+        AV_NE( AV_PIX_FMT_YUV420P10BE, AV_PIX_FMT_YUV420P10LE ),
+        AV_NE( AV_PIX_FMT_YUV422P10BE, AV_PIX_FMT_YUV422P10LE ),
+        AV_NE( AV_PIX_FMT_YUV444P10BE, AV_PIX_FMT_YUV444P10LE ),
+        AV_NE( AV_PIX_FMT_YUV420P16BE, AV_PIX_FMT_YUV420P16LE ),
+        AV_NE( AV_PIX_FMT_YUV422P16BE, AV_PIX_FMT_YUV422P16LE ),
+        AV_NE( AV_PIX_FMT_YUV444P16BE, AV_PIX_FMT_YUV444P16LE ),
+        AV_PIX_FMT_YUVA420P,
+        AV_PIX_FMT_YUVA422P,
+        AV_PIX_FMT_YUVA444P,
+        AV_PIX_FMT_NONE
     };
 
     ff_set_common_formats(ctx, ff_make_format_list(pix_fmts));
@@ -412,17 +386,12 @@ static av_cold int init(AVFilterContext *ctx, const char *args)
 
     yadif->filter_line = filter_line_c;
 
-    if (HAVE_MMX)
+    if (ARCH_X86)
         ff_yadif_init_x86(yadif);
 
     av_log(ctx, AV_LOG_VERBOSE, "mode:%d parity:%d auto_enable:%d\n",
            yadif->mode, yadif->parity, yadif->auto_enable);
 
-    return 0;
-}
-
-static int null_draw_slice(AVFilterLink *link, int y, int h, int slice_dir)
-{
     return 0;
 }
 
@@ -441,6 +410,27 @@ static int config_props(AVFilterLink *link)
     return 0;
 }
 
+static const AVFilterPad avfilter_vf_yadif_inputs[] = {
+    {
+        .name             = "default",
+        .type             = AVMEDIA_TYPE_VIDEO,
+        .filter_frame     = filter_frame,
+        .min_perms        = AV_PERM_PRESERVE,
+    },
+    { NULL }
+};
+
+static const AVFilterPad avfilter_vf_yadif_outputs[] = {
+    {
+        .name          = "default",
+        .type          = AVMEDIA_TYPE_VIDEO,
+        .poll_frame    = poll_frame,
+        .request_frame = request_frame,
+        .config_props  = config_props,
+    },
+    { NULL }
+};
+
 AVFilter avfilter_vf_yadif = {
     .name          = "yadif",
     .description   = NULL_IF_CONFIG_SMALL("Deinterlace the input image."),
@@ -450,18 +440,7 @@ AVFilter avfilter_vf_yadif = {
     .uninit        = uninit,
     .query_formats = query_formats,
 
-    .inputs    = (const AVFilterPad[]) {{ .name             = "default",
-                                          .type             = AVMEDIA_TYPE_VIDEO,
-                                          .start_frame      = start_frame,
-                                          .draw_slice       = null_draw_slice,
-                                          .end_frame        = end_frame,
-                                          .min_perms        = AV_PERM_PRESERVE, },
-                                        { .name = NULL}},
+    .inputs    = avfilter_vf_yadif_inputs,
 
-    .outputs   = (const AVFilterPad[]) {{ .name             = "default",
-                                          .type             = AVMEDIA_TYPE_VIDEO,
-                                          .poll_frame       = poll_frame,
-                                          .request_frame    = request_frame,
-                                          .config_props     = config_props, },
-                                        { .name = NULL}},
+    .outputs   = avfilter_vf_yadif_outputs,
 };

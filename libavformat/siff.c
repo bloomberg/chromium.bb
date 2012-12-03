@@ -19,6 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/channel_layout.h"
 #include "libavutil/intreadwrite.h"
 #include "avformat.h"
 #include "internal.h"
@@ -79,6 +80,7 @@ static int create_audio_stream(AVFormatContext *s, SIFFContext *c)
     ast->codec->codec_type      = AVMEDIA_TYPE_AUDIO;
     ast->codec->codec_id        = AV_CODEC_ID_PCM_U8;
     ast->codec->channels        = 1;
+    ast->codec->channel_layout  = AV_CH_LAYOUT_MONO;
     ast->codec->bits_per_coded_sample = 8;
     ast->codec->sample_rate     = c->rate;
     avpriv_set_pts_info(ast, 16, 1, c->rate);
@@ -125,7 +127,7 @@ static int siff_parse_vbv1(AVFormatContext *s, SIFFContext *c, AVIOContext *pb)
     st->codec->codec_tag  = MKTAG('V', 'B', 'V', '1');
     st->codec->width      = width;
     st->codec->height     = height;
-    st->codec->pix_fmt    = PIX_FMT_PAL8;
+    st->codec->pix_fmt    = AV_PIX_FMT_PAL8;
     avpriv_set_pts_info(st, 16, 1, 12);
 
     c->cur_frame = 0;
@@ -190,7 +192,7 @@ static int siff_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     if (c->has_video){
         if (c->cur_frame >= c->frames)
-            return AVERROR(EIO);
+            return AVERROR_EOF;
         if (c->curstrm == -1){
             c->pktsize = avio_rl32(s->pb) - 4;
             c->flags = avio_rl16(s->pb);
@@ -227,7 +229,9 @@ static int siff_read_packet(AVFormatContext *s, AVPacket *pkt)
             c->cur_frame++;
     }else{
         size = av_get_packet(s->pb, pkt, c->block_align);
-        if(size <= 0)
+        if(!size)
+            return AVERROR_EOF;
+        if(size < 0)
             return AVERROR(EIO);
         pkt->duration = size;
     }

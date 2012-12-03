@@ -129,6 +129,27 @@ ffmpeg -i INPUT -f framemd5 -
 
 See also the @ref{md5} muxer.
 
+@anchor{hls}
+@section hls
+
+Apple HTTP Live Streaming muxer that segments MPEG-TS according to
+the HTTP Live Streaming specification.
+
+It creates a playlist file and numbered segment files. The output
+filename specifies the playlist filename; the segment filenames
+receive the same basename as the playlist, a sequential number and
+a .ts extension.
+
+@example
+ffmpeg -i in.nut out.m3u8
+@end example
+
+@table @option
+@item -hls_time segment length in seconds
+@item -hls_list_size maximum number of playlist entries
+@item -hls_wrap number after which index wraps
+@end table
+
 @anchor{ico}
 @section ico
 
@@ -252,7 +273,8 @@ See also the @ref{framemd5} muxer.
 The mov/mp4/ismv muxer supports fragmentation. Normally, a MOV/MP4
 file has all the metadata about all packets stored in one location
 (written at the end of the file, it can be moved to the start for
-better playback using the @command{qt-faststart} tool). A fragmented
+better playback by adding @var{faststart} to the @var{movflags}, or
+using the @command{qt-faststart} tool). A fragmented
 file consists of a number of fragments, where packets and metadata
 about these packets are stored together. Writing a fragmented
 file has the advantage that the file is decodable even if the
@@ -310,6 +332,10 @@ more efficient), but with this option set, the muxer writes one moof/mdat
 pair for each track, making it easier to separate tracks.
 
 This option is implicitly set when writing ismv (Smooth Streaming) files.
+@item -movflags faststart
+Run a second pass moving the moov atom on top of the file. This
+operation can take a while, and will not work in various situations such
+as fragmented output, thus it is not enabled by default.
 @end table
 
 Smooth Streaming content can be pushed in real time to a publishing

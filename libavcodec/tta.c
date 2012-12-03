@@ -180,7 +180,7 @@ static av_cold int tta_decode_init(AVCodecContext * avctx)
 
     // 30bytes includes a seektable with one frame
     if (avctx->extradata_size < 30)
-        return -1;
+        return AVERROR_INVALIDDATA;
 
     init_get_bits(&s->gb, avctx->extradata, avctx->extradata_size * 8);
     if (show_bits_long(&s->gb, 32) == AV_RL32("TTA1"))
@@ -196,17 +196,17 @@ static av_cold int tta_decode_init(AVCodecContext * avctx)
         s->format = get_bits(&s->gb, 16);
         if (s->format > 2) {
             av_log(s->avctx, AV_LOG_ERROR, "Invalid format\n");
-            return -1;
+            return AVERROR_INVALIDDATA;
         }
         if (s->format == FORMAT_ENCRYPTED) {
             av_log_missing_feature(s->avctx, "Encrypted TTA", 0);
-            return AVERROR(EINVAL);
+            return AVERROR_PATCHWELCOME;
         }
         avctx->channels = s->channels = get_bits(&s->gb, 16);
         if (s->channels > 1 && s->channels < 9)
             avctx->channel_layout = tta_channel_layouts[s->channels-2];
-        avctx->bits_per_coded_sample = get_bits(&s->gb, 16);
-        s->bps = (avctx->bits_per_coded_sample + 7) / 8;
+        avctx->bits_per_raw_sample = get_bits(&s->gb, 16);
+        s->bps = (avctx->bits_per_raw_sample + 7) / 8;
         avctx->sample_rate = get_bits_long(&s->gb, 32);
         s->data_length = get_bits_long(&s->gb, 32);
         skip_bits_long(&s->gb, 32); // CRC32 of header
@@ -223,11 +223,9 @@ static av_cold int tta_decode_init(AVCodecContext * avctx)
         case 1: avctx->sample_fmt = AV_SAMPLE_FMT_U8; break;
         case 2:
             avctx->sample_fmt = AV_SAMPLE_FMT_S16;
-            avctx->bits_per_raw_sample = 16;
             break;
         case 3:
             avctx->sample_fmt = AV_SAMPLE_FMT_S32;
-            avctx->bits_per_raw_sample = 24;
             break;
         //case 4: avctx->sample_fmt = AV_SAMPLE_FMT_S32; break;
         default:
@@ -268,7 +266,7 @@ static av_cold int tta_decode_init(AVCodecContext * avctx)
 
         if(s->frame_length >= UINT_MAX / (s->channels * sizeof(int32_t))){
             av_log(avctx, AV_LOG_ERROR, "frame_length too large\n");
-            return -1;
+            return AVERROR_INVALIDDATA;
         }
 
         if (s->bps < 3) {
@@ -284,7 +282,7 @@ static av_cold int tta_decode_init(AVCodecContext * avctx)
         }
     } else {
         av_log(avctx, AV_LOG_ERROR, "Wrong extradata present\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
 
     avcodec_get_frame_defaults(&s->frame);

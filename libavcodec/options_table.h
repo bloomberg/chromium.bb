@@ -27,6 +27,7 @@
 
 #include "libavutil/opt.h"
 #include "avcodec.h"
+#include "version.h"
 #include "config.h"
 
 #define OFFSET(x) offsetof(AVCodecContext,x)
@@ -41,8 +42,8 @@
 #define AV_CODEC_DEFAULT_BITRATE 200*1000
 
 static const AVOption options[]={
-{"b", "set bitrate (in bits/s)", OFFSET(bit_rate), AV_OPT_TYPE_INT, {.i64 = AV_CODEC_DEFAULT_BITRATE }, INT_MIN, INT_MAX, A|V|E},
-{"ab", "set bitrate (in bits/s)", OFFSET(bit_rate), AV_OPT_TYPE_INT, {.i64 = 128*1000 }, INT_MIN, INT_MAX, A|E},
+{"b", "set bitrate (in bits/s)", OFFSET(bit_rate), AV_OPT_TYPE_INT, {.i64 = AV_CODEC_DEFAULT_BITRATE }, 0, INT_MAX, A|V|E},
+{"ab", "set bitrate (in bits/s)", OFFSET(bit_rate), AV_OPT_TYPE_INT, {.i64 = 128*1000 }, 0, INT_MAX, A|E},
 {"bt", "Set video bitrate tolerance (in bits/s). In 1-pass mode, bitrate tolerance specifies how far "
        "ratecontrol is willing to deviate from the target average bitrate value. This is not related "
        "to min/max bitrate. Lowering tolerance too much has an adverse effect on quality.",
@@ -167,7 +168,6 @@ static const AVOption options[]={
 {"has_b_frames", NULL, OFFSET(has_b_frames), AV_OPT_TYPE_INT, {.i64 = DEFAULT }, INT_MIN, INT_MAX},
 {"block_align", NULL, OFFSET(block_align), AV_OPT_TYPE_INT, {.i64 = DEFAULT }, INT_MIN, INT_MAX},
 {"mpeg_quant", "use MPEG quantizers instead of H.263", OFFSET(mpeg_quant), AV_OPT_TYPE_INT, {.i64 = DEFAULT }, INT_MIN, INT_MAX, V|E},
-{"stats_out", NULL, OFFSET(stats_out), AV_OPT_TYPE_STRING, {.str = NULL}, CHAR_MIN, CHAR_MAX},
 {"qsquish", "how to keep quantizer between qmin and qmax (0 = clip, 1 = use differentiable function)", OFFSET(rc_qsquish), AV_OPT_TYPE_FLOAT, {.dbl = DEFAULT }, 0, 99, V|E},
 {"rc_qmod_amp", "experimental quantizer modulation", OFFSET(rc_qmod_amp), AV_OPT_TYPE_FLOAT, {.dbl = DEFAULT }, -FLT_MAX, FLT_MAX, V|E},
 {"rc_qmod_freq", "experimental quantizer modulation", OFFSET(rc_qmod_freq), AV_OPT_TYPE_INT, {.i64 = DEFAULT }, INT_MIN, INT_MAX, V|E},
@@ -203,7 +203,9 @@ static const AVOption options[]={
 {"simple", NULL, 0, AV_OPT_TYPE_CONST, {.i64 = FF_IDCT_SIMPLE }, INT_MIN, INT_MAX, V|E|D, "idct"},
 {"simplemmx", NULL, 0, AV_OPT_TYPE_CONST, {.i64 = FF_IDCT_SIMPLEMMX }, INT_MIN, INT_MAX, V|E|D, "idct"},
 {"libmpeg2mmx", NULL, 0, AV_OPT_TYPE_CONST, {.i64 = FF_IDCT_LIBMPEG2MMX }, INT_MIN, INT_MAX, V|E|D, "idct"},
+#if FF_API_MMI
 {"mmi", NULL, 0, AV_OPT_TYPE_CONST, {.i64 = FF_IDCT_MMI }, INT_MIN, INT_MAX, V|E|D, "idct"},
+#endif
 {"arm", NULL, 0, AV_OPT_TYPE_CONST, {.i64 = FF_IDCT_ARM }, INT_MIN, INT_MAX, V|E|D, "idct"},
 {"altivec", NULL, 0, AV_OPT_TYPE_CONST, {.i64 = FF_IDCT_ALTIVEC }, INT_MIN, INT_MAX, V|E|D, "idct"},
 {"sh4", NULL, 0, AV_OPT_TYPE_CONST, {.i64 = FF_IDCT_SH4 }, INT_MIN, INT_MAX, V|E|D, "idct"},
@@ -399,17 +401,7 @@ static const AVOption options[]={
 {"em", "Emergency",          0, AV_OPT_TYPE_CONST, {.i64 = AV_AUDIO_SERVICE_TYPE_EMERGENCY },         INT_MIN, INT_MAX, A|E, "audio_service_type"},
 {"vo", "Voice Over",         0, AV_OPT_TYPE_CONST, {.i64 = AV_AUDIO_SERVICE_TYPE_VOICE_OVER },        INT_MIN, INT_MAX, A|E, "audio_service_type"},
 {"ka", "Karaoke",            0, AV_OPT_TYPE_CONST, {.i64 = AV_AUDIO_SERVICE_TYPE_KARAOKE },           INT_MIN, INT_MAX, A|E, "audio_service_type"},
-{"request_sample_fmt", "sample format audio decoders should prefer", OFFSET(request_sample_fmt), AV_OPT_TYPE_INT, {.i64 = AV_SAMPLE_FMT_NONE }, AV_SAMPLE_FMT_NONE, AV_SAMPLE_FMT_NB-1, A|D, "request_sample_fmt"},
-{"u8" , "8-bit unsigned integer", 0, AV_OPT_TYPE_CONST, {.i64 = AV_SAMPLE_FMT_U8  }, INT_MIN, INT_MAX, A|D, "request_sample_fmt"},
-{"s16", "16-bit signed integer",  0, AV_OPT_TYPE_CONST, {.i64 = AV_SAMPLE_FMT_S16 }, INT_MIN, INT_MAX, A|D, "request_sample_fmt"},
-{"s32", "32-bit signed integer",  0, AV_OPT_TYPE_CONST, {.i64 = AV_SAMPLE_FMT_S32 }, INT_MIN, INT_MAX, A|D, "request_sample_fmt"},
-{"flt", "32-bit float",           0, AV_OPT_TYPE_CONST, {.i64 = AV_SAMPLE_FMT_FLT }, INT_MIN, INT_MAX, A|D, "request_sample_fmt"},
-{"dbl", "64-bit double",          0, AV_OPT_TYPE_CONST, {.i64 = AV_SAMPLE_FMT_DBL }, INT_MIN, INT_MAX, A|D, "request_sample_fmt"},
-{"u8p" , "8-bit unsigned integer planar", 0, AV_OPT_TYPE_CONST, {.i64 = AV_SAMPLE_FMT_U8P  }, INT_MIN, INT_MAX, A|D, "request_sample_fmt"},
-{"s16p", "16-bit signed integer planar",  0, AV_OPT_TYPE_CONST, {.i64 = AV_SAMPLE_FMT_S16P }, INT_MIN, INT_MAX, A|D, "request_sample_fmt"},
-{"s32p", "32-bit signed integer planar",  0, AV_OPT_TYPE_CONST, {.i64 = AV_SAMPLE_FMT_S32P }, INT_MIN, INT_MAX, A|D, "request_sample_fmt"},
-{"fltp", "32-bit float planar",           0, AV_OPT_TYPE_CONST, {.i64 = AV_SAMPLE_FMT_FLTP }, INT_MIN, INT_MAX, A|D, "request_sample_fmt"},
-{"dblp", "64-bit double planar",          0, AV_OPT_TYPE_CONST, {.i64 = AV_SAMPLE_FMT_DBLP }, INT_MIN, INT_MAX, A|D, "request_sample_fmt"},
+{"request_sample_fmt", "sample format audio decoders should prefer", OFFSET(request_sample_fmt), AV_OPT_TYPE_SAMPLE_FMT, {.i64=AV_SAMPLE_FMT_NONE}, -1, AV_SAMPLE_FMT_NB-1, A|D, "request_sample_fmt"},
 {"pkt_timebase", NULL, OFFSET(pkt_timebase), AV_OPT_TYPE_RATIONAL, {.dbl = 0 }, 0, INT_MAX, 0},
 {NULL},
 };

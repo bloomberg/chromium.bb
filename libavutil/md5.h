@@ -23,7 +23,8 @@
 
 #include <stdint.h>
 
-#include "symbols.h"
+#include "attributes.h"
+#include "version.h"
 
 /**
  * @defgroup lavu_md5 MD5
@@ -31,10 +32,11 @@
  * @{
  */
 
-extern AVUTIL_SYMBOL const int av_md5_size;
+extern const int av_md5_size;
 
 struct AVMD5;
 
+struct AVMD5 *av_md5_alloc(void);
 void av_md5_init(struct AVMD5 *ctx);
 void av_md5_update(struct AVMD5 *ctx, const uint8_t *src, const int len);
 void av_md5_final(struct AVMD5 *ctx, uint8_t *dst);

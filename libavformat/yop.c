@@ -22,6 +22,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/channel_layout.h"
 #include "libavutil/intreadwrite.h"
 #include "avformat.h"
 #include "internal.h"
@@ -64,6 +65,8 @@ static int yop_read_header(AVFormatContext *s)
 
     audio_stream = avformat_new_stream(s, NULL);
     video_stream = avformat_new_stream(s, NULL);
+    if (!audio_stream || !video_stream)
+        return AVERROR(ENOMEM);
 
     // Extra data that will be passed to the decoder
     video_stream->codec->extradata_size = 8;
@@ -79,6 +82,7 @@ static int yop_read_header(AVFormatContext *s)
     audio_dec->codec_type   = AVMEDIA_TYPE_AUDIO;
     audio_dec->codec_id     = AV_CODEC_ID_ADPCM_IMA_APC;
     audio_dec->channels     = 1;
+    audio_dec->channel_layout = AV_CH_LAYOUT_MONO;
     audio_dec->sample_rate  = 22050;
 
     // Video

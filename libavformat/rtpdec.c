@@ -55,6 +55,12 @@ static RTPDynamicProtocolHandler speex_dynamic_handler = {
     .codec_id         = AV_CODEC_ID_SPEEX,
 };
 
+static RTPDynamicProtocolHandler opus_dynamic_handler = {
+    .enc_name         = "opus",
+    .codec_type       = AVMEDIA_TYPE_AUDIO,
+    .codec_id         = AV_CODEC_ID_OPUS,
+};
+
 /* statistics functions */
 static RTPDynamicProtocolHandler *RTPFirstDynamicPayloadHandler= NULL;
 
@@ -85,6 +91,7 @@ void av_register_rtp_dynamic_payload_handlers(void)
     ff_register_dynamic_payload_handler(&ff_qcelp_dynamic_handler);
     ff_register_dynamic_payload_handler(&realmedia_mp3_dynamic_handler);
     ff_register_dynamic_payload_handler(&speex_dynamic_handler);
+    ff_register_dynamic_payload_handler(&opus_dynamic_handler);
 
     ff_register_dynamic_payload_handler(&ff_ms_rtp_asf_pfv_handler);
     ff_register_dynamic_payload_handler(&ff_ms_rtp_asf_pfa_handler);
@@ -159,71 +166,67 @@ static int rtcp_parse_packet(RTPDemuxContext *s, const unsigned char *buf, int l
 
 #define RTP_SEQ_MOD (1<<16)
 
-/**
-* called on parse open packet
-*/
-static void rtp_init_statistics(RTPStatistics *s, uint16_t base_sequence) // called on parse open packet.
+static void rtp_init_statistics(RTPStatistics *s, uint16_t base_sequence)
 {
     memset(s, 0, sizeof(RTPStatistics));
-    s->max_seq= base_sequence;
-    s->probation= 1;
+    s->max_seq   = base_sequence;
+    s->probation = 1;
 }
 
-/**
+/*
 * called whenever there is a large jump in sequence numbers, or when they get out of probation...
 */
 static void rtp_init_sequence(RTPStatistics *s, uint16_t seq)
 {
-    s->max_seq= seq;
-    s->cycles= 0;
-    s->base_seq= seq -1;
-    s->bad_seq= RTP_SEQ_MOD + 1;
-    s->received= 0;
-    s->expected_prior= 0;
-    s->received_prior= 0;
-    s->jitter= 0;
-    s->transit= 0;
+    s->max_seq        = seq;
+    s->cycles         = 0;
+    s->base_seq       = seq - 1;
+    s->bad_seq        = RTP_SEQ_MOD + 1;
+    s->received       = 0;
+    s->expected_prior = 0;
+    s->received_prior = 0;
+    s->jitter         = 0;
+    s->transit        = 0;
 }
 
-/**
+/*
 * returns 1 if we should handle this packet.
 */
 static int rtp_valid_packet_in_sequence(RTPStatistics *s, uint16_t seq)
 {
-    uint16_t udelta= seq - s->max_seq;
-    const int MAX_DROPOUT= 3000;
-    const int MAX_MISORDER = 100;
+    uint16_t udelta = seq - s->max_seq;
+    const int MAX_DROPOUT    = 3000;
+    const int MAX_MISORDER   = 100;
     const int MIN_SEQUENTIAL = 2;
 
     /* source not valid until MIN_SEQUENTIAL packets with sequence seq. numbers have been received */
-    if(s->probation)
-    {
-        if(seq==s->max_seq + 1) {
+    if (s->probation) {
+        if (seq == s->max_seq + 1) {
             s->probation--;
-            s->max_seq= seq;
-            if(s->probation==0) {
+            s->max_seq = seq;
+            if (s->probation == 0) {
                 rtp_init_sequence(s, seq);
                 s->received++;
                 return 1;
             }
         } else {
-            s->probation= MIN_SEQUENTIAL - 1;
+            s->probation = MIN_SEQUENTIAL - 1;
             s->max_seq = seq;
         }
     } else if (udelta < MAX_DROPOUT) {
         // in order, with permissible gap
-        if(seq < s->max_seq) {
-            //sequence number wrapped; count antother 64k cycles
+        if (seq < s->max_seq) {
+            // sequence number wrapped; count another 64k cycles
             s->cycles += RTP_SEQ_MOD;
         }
-        s->max_seq= seq;
+        s->max_seq = seq;
     } else if (udelta <= RTP_SEQ_MOD - MAX_MISORDER) {
         // sequence made a large jump...
-        if(seq==s->bad_seq) {
+        if (seq == s->bad_seq) {
             // two sequential packets-- assume that the other side restarted without telling us; just resync.
             rtp_init_sequence(s, seq);
         } else {
-            s->bad_seq= (seq + 1) & (RTP_SEQ_MOD-1);
+            s->bad_seq = (seq + 1) & (RTP_SEQ_MOD - 1);
             return 0;
         }
     } else {
@@ -239,7 +242,7 @@ int ff_rtp_check_and_send_back_rr(RTPDemuxContext *s, int count)
     uint8_t *buf;
     int len;
     int rtcp_bytes;
-    RTPStatistics *stats= &s->statistics;
+    RTPStatistics *stats = &s->statistics;
     uint32_t lost;
     uint32_t extended_max;
     uint32_t expected_interval;
@@ -247,7 +250,7 @@ int ff_rtp_check_and_send_back_rr(RTPDemuxContext *s, int count)
     uint32_t lost_interval;
     uint32_t expected;
     uint32_t fraction;
-    uint64_t ntp_time= s->last_rtcp_ntp_time; // TODO: Get local ntp time?
+    uint64_t ntp_time = s->last_rtcp_ntp_time; // TODO: Get local ntp time?
 
     if (!s->rtp_ctx || (count < 1))
         return -1;
@@ -274,31 +277,32 @@ int ff_rtp_check_and_send_back_rr(RTPDemuxContext *s, int count)
     avio_wb32(pb, s->ssrc); // server SSRC
     // some placeholders we should really fill...
     // RFC 1889/p64
-    extended_max= stats->cycles + stats->max_seq;
-    expected= extended_max - stats->base_seq + 1;
-    lost= expected - stats->received;
-    lost= FFMIN(lost, 0xffffff); // clamp it since it's only 24 bits...
-    expected_interval= expected - stats->expected_prior;
-    stats->expected_prior= expected;
-    received_interval= stats->received - stats->received_prior;
-    stats->received_prior= stats->received;
-    lost_interval= expected_interval - received_interval;
-    if (expected_interval==0 || lost_interval<=0) fraction= 0;
-    else fraction = (lost_interval<<8)/expected_interval;
+    extended_max = stats->cycles + stats->max_seq;
+    expected = extended_max - stats->base_seq + 1;
+    lost = expected - stats->received;
+    lost = FFMIN(lost, 0xffffff); // clamp it since it's only 24 bits...
+    expected_interval = expected - stats->expected_prior;
+    stats->expected_prior = expected;
+    received_interval = stats->received - stats->received_prior;
+    stats->received_prior = stats->received;
+    lost_interval = expected_interval - received_interval;
+    if (expected_interval == 0 || lost_interval <= 0)
+        fraction = 0;
+    else
+        fraction = (lost_interval << 8) / expected_interval;
 
-    fraction= (fraction<<24) | lost;
+    fraction = (fraction << 24) | lost;
 
     avio_wb32(pb, fraction); /* 8 bits of fraction, 24 bits of total packets lost */
     avio_wb32(pb, extended_max); /* max sequence received */
-    avio_wb32(pb, stats->jitter>>4); /* jitter */
+    avio_wb32(pb, stats->jitter >> 4); /* jitter */
 
-    if(s->last_rtcp_ntp_time==AV_NOPTS_VALUE)
-    {
+    if (s->last_rtcp_ntp_time == AV_NOPTS_VALUE) {
         avio_wb32(pb, 0); /* last SR timestamp */
         avio_wb32(pb, 0); /* delay since last SR */
     } else {
-        uint32_t middle_32_bits= s->last_rtcp_ntp_time>>16; // this is valid, right? do we need to handle 64 bit values special?
-        uint32_t delay_since_last= ntp_time - s->last_rtcp_ntp_time;
+        uint32_t middle_32_bits = s->last_rtcp_ntp_time >> 16; // this is valid, right? do we need to handle 64 bit values special?
+        uint32_t delay_since_last = ntp_time - s->last_rtcp_ntp_time;
 
         avio_wb32(pb, middle_32_bits); /* last SR timestamp */
         avio_wb32(pb, delay_since_last); /* delay since last SR */
@@ -424,9 +428,8 @@ RTPDemuxContext *ff_rtp_parse_open(AVFormatContext *s1, AVStream *st, URLContext
     return s;
 }
 
-void
-ff_rtp_parse_set_dynamic_protocol(RTPDemuxContext *s, PayloadContext *ctx,
-                                  RTPDynamicProtocolHandler *handler)
+void ff_rtp_parse_set_dynamic_protocol(RTPDemuxContext *s, PayloadContext *ctx,
+                                       RTPDynamicProtocolHandler *handler)
 {
     s->dynamic_protocol_context = ctx;
     s->parse_packet = handler->parse_packet;
@@ -553,7 +556,8 @@ static int rtp_parse_packet_internal(RTPDemuxContext *s, AVPacket *pkt,
             h = AV_RB32(buf);
             len -= 4;
             buf += 4;
-            av_new_packet(pkt, len);
+            if (av_new_packet(pkt, len) < 0)
+                return AVERROR(ENOMEM);
             memcpy(pkt->data, buf, len);
             break;
         case AV_CODEC_ID_MPEG1VIDEO:
@@ -571,11 +575,13 @@ static int rtp_parse_packet_internal(RTPDemuxContext *s, AVPacket *pkt,
                 buf += 4;
                 len -= 4;
             }
-            av_new_packet(pkt, len);
+            if (av_new_packet(pkt, len) < 0)
+                return AVERROR(ENOMEM);
             memcpy(pkt->data, buf, len);
             break;
         default:
-            av_new_packet(pkt, len);
+            if (av_new_packet(pkt, len) < 0)
+                return AVERROR(ENOMEM);
             memcpy(pkt->data, buf, len);
             break;
         }
@@ -664,7 +670,7 @@ static int rtp_parse_queued_packet(RTPDemuxContext *s, AVPacket *pkt)
 }
 
 static int rtp_parse_one_packet(RTPDemuxContext *s, AVPacket *pkt,
-                     uint8_t **bufptr, int len)
+                                uint8_t **bufptr, int len)
 {
     uint8_t* buf = bufptr ? *bufptr : NULL;
     int ret, flags = 0;
@@ -778,7 +784,7 @@ int ff_parse_fmtp(AVStream *stream, PayloadContext *data, const char *p,
     int value_size = strlen(p) + 1;
 
     if (!(value = av_malloc(value_size))) {
-        av_log(stream, AV_LOG_ERROR, "Failed to allocate data for FMTP.\n");
+        av_log(NULL, AV_LOG_ERROR, "Failed to allocate data for FMTP.\n");
         return AVERROR(ENOMEM);
     }
 
@@ -799,4 +805,15 @@ int ff_parse_fmtp(AVStream *stream, PayloadContext *data, const char *p,
     }
     av_free(value);
     return 0;
+}
+
+int ff_rtp_finalize_packet(AVPacket *pkt, AVIOContext **dyn_buf, int stream_idx)
+{
+    av_init_packet(pkt);
+
+    pkt->size = avio_close_dyn_buf(*dyn_buf, &pkt->data);
+    pkt->stream_index = stream_idx;
+    pkt->destruct     = av_destruct_packet;
+    *dyn_buf = NULL;
+    return pkt->size;
 }
