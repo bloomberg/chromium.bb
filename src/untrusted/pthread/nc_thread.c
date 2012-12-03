@@ -352,8 +352,7 @@ int pthread_create(pthread_t *thread_id,
     if (NULL == tls_node)
       break;
 
-    new_tp = __nacl_tls_data_bss_initialize_from_template(
-      NODE_TO_PAYLOAD(tls_node), TDB_SIZE);
+    new_tp = __nacl_tls_initialize_memory(NODE_TO_PAYLOAD(tls_node), TDB_SIZE);
 
     new_tdb = (nc_thread_descriptor_t *)
               ((char *) new_tp + __nacl_tp_tdb_offset(TDB_SIZE));

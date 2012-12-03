@@ -175,8 +175,7 @@ static char *tp_from_combined_area(const struct tls_info *info,
   }
 }
 
-void *__nacl_tls_data_bss_initialize_from_template(void *combined_area,
-                                                   size_t tdb_size) {
+void *__nacl_tls_initialize_memory(void *combined_area, size_t tdb_size) {
   const struct tls_info *info = get_tls_info();
   size_t tls_size = info->tdata_size + info->tbss_size;
   char *combined_area_end =
@@ -228,6 +227,16 @@ void *__nacl_tls_data_bss_initialize_from_template(void *combined_area,
     simple_abort();
   memcpy(start, info->tdata_start, info->tdata_size);
   memset(start + info->tdata_size, 0, info->tbss_size);
+
+  if (__nacl_tp_tdb_offset(tdb_size) == 0) {
+    /*
+     * On x86 (but not on ARM), the TDB sits directly at $tp and the
+     * first word there must hold the $tp pointer itself.
+     */
+    void *tdb = (char *) tp + __nacl_tp_tdb_offset(tdb_size);
+    *(void **) tdb = tdb;
+  }
+
   return tp;
 }
 
@@ -251,23 +260,4 @@ size_t __nacl_tls_combined_size(size_t tdb_size) {
     combined_size += aligned_size(tlsoff, info->tls_alignment);
   }
   return combined_size;
-}
-
-/*
- * Final setup of the memory allocated for TLS space.
- */
-void *__nacl_tls_initialize_memory(void *combined_area, size_t tdb_size) {
-  void *tp = __nacl_tls_data_bss_initialize_from_template(combined_area,
-                                                          tdb_size);
-
-  if (__nacl_tp_tdb_offset(tdb_size) == 0) {
-    /*
-     * The TDB sits directly at $tp and the first word there must
-     * hold the $tp pointer itself.
-     */
-    void *tdb = (char *) tp + __nacl_tp_tdb_offset(tdb_size);
-    *(void **) tdb = tdb;
-  }
-
-  return tp;
 }

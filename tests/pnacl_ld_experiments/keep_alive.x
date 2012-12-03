@@ -64,6 +64,6 @@ __libnacl_mandatory_irt_query
 __nacl_read_tp
 __pthread_initialize_minimal
 __nacl_tls_combined_size
-__nacl_tls_data_bss_initialize_from_template
+__nacl_tls_initialize_memory
 )
 

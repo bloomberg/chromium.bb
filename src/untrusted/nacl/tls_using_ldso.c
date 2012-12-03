@@ -57,7 +57,7 @@ static char *aligned_addr(void *start, size_t alignment) {
 /*
  * this is ugly, but we need a way to communicate these from
  *  _dl_get_tls_static_info() to
- * __nacl_tls_data_bss_initialize_from_template()
+ * __nacl_tls_initialize_memory()
  */
 static int tls_size;
 static int tls_align;
@@ -73,8 +73,7 @@ size_t __nacl_tls_combined_size(size_t tdb_size) {
   return tls_size + tdb_size + (tls_size - 1) + 2 * SAFETY_PADDING;
 }
 
-void *__nacl_tls_data_bss_initialize_from_template(void *combined_area,
-                                                   size_t tdb_size) {
+void *__nacl_tls_initialize_memory(void *combined_area, size_t tdb_size) {
   if (__nacl_tp_tdb_offset(tdb_size) != 0) {
     /*
      * This needs more work for ARM.
