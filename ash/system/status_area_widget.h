@@ -7,8 +7,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/launcher/background_animator.h"
+#include "ash/shelf_types.h"
 #include "ash/system/user/login_status.h"
-#include "ash/wm/shelf_types.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {

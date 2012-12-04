@@ -6,7 +6,7 @@
 #define ASH_WM_SHELL_CONTEXT_MENU_H_
 
 #include "ash/launcher/launcher_alignment_menu.h"
-#include "ash/wm/shelf_types.h"
+#include "ash/shelf_types.h"
 #include "base/basictypes.h"
 #include "ui/base/models/simple_menu_model.h"
 

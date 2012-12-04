@@ -9,7 +9,7 @@
 
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_types.h"
-#include "ash/wm/shelf_types.h"
+#include "ash/shelf_types.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 
 class BrowserLauncherItemControllerTest;

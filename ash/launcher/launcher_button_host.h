@@ -6,7 +6,7 @@
 #define ASH_LAUNCHER_LAUNCHER_BUTTON_HOST_H_
 
 #include "ash/ash_export.h"
-#include "ash/wm/shelf_types.h"
+#include "ash/shelf_types.h"
 #include "base/string16.h"
 
 namespace ui {

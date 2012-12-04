@@ -7,8 +7,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/launcher/launcher.h"
+#include "ash/shelf_types.h"
 #include "ash/shell_observer.h"
-#include "ash/wm/shelf_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
@@ -45,32 +45,16 @@ class ASH_EXPORT ShelfLayoutManager :
     public ash::ShellObserver,
     public views::corewm::ActivationChangeShim {
  public:
-  enum VisibilityState {
-    // Completely visible.
-    VISIBLE,
-
-    // A couple of pixels are reserved at the bottom for the shelf.
-    AUTO_HIDE,
-
-    // Nothing is shown. Used for fullscreen windows.
-    HIDDEN,
-  };
-
-  enum AutoHideState {
-    AUTO_HIDE_SHOWN,
-    AUTO_HIDE_HIDDEN,
-  };
-
   class ASH_EXPORT Observer {
    public:
     // Called when the target ShelfLayoutManager will be deleted.
     virtual void WillDeleteShelf() {}
 
     // Called when the visibility change is scheduled.
-    virtual void WillChangeVisibilityState(VisibilityState new_state) {}
+    virtual void WillChangeVisibilityState(ShelfVisibilityState new_state) {}
 
     // Called when the auto hide state is changed.
-    virtual void OnAutoHideStateChanged(AutoHideState new_state) {}
+    virtual void OnAutoHideStateChanged(ShelfAutoHideState new_state) {}
   };
 
   // We reserve a small area at the bottom of the workspace area to ensure that
@@ -129,8 +113,10 @@ class ASH_EXPORT ShelfLayoutManager :
   // Invoked by the shelf/launcher when the auto-hide state may have changed.
   void UpdateAutoHideState();
 
-  VisibilityState visibility_state() const { return state_.visibility_state; }
-  AutoHideState auto_hide_state() const { return state_.auto_hide_state; }
+  ShelfVisibilityState visibility_state() const {
+    return state_.visibility_state;
+  }
+  ShelfAutoHideState auto_hide_state() const { return state_.auto_hide_state; }
 
   // Sets whether any windows overlap the shelf. If a window overlaps the shelf
   // the shelf renders slightly differently.
@@ -186,27 +172,28 @@ class ASH_EXPORT ShelfLayoutManager :
   };
 
   struct State {
-    State() : visibility_state(VISIBLE),
-              auto_hide_state(AUTO_HIDE_HIDDEN),
+    State() : visibility_state(SHELF_VISIBLE),
+              auto_hide_state(SHELF_AUTO_HIDE_HIDDEN),
               is_screen_locked(false) {}
 
     // Returns true if the two states are considered equal. As
-    // |auto_hide_state| only matters if |visibility_state| is |AUTO_HIDE|,
-    // Equals() ignores the |auto_hide_state| as appropriate.
+    // |auto_hide_state| only matters if |visibility_state| is
+    // |SHELF_AUTO_HIDE|, Equals() ignores the |auto_hide_state| as
+    // appropriate.
     bool Equals(const State& other) const {
       return other.visibility_state == visibility_state &&
-          (visibility_state != AUTO_HIDE ||
+          (visibility_state != SHELF_AUTO_HIDE ||
            other.auto_hide_state == auto_hide_state) &&
           other.is_screen_locked == is_screen_locked;
     }
 
-    VisibilityState visibility_state;
-    AutoHideState auto_hide_state;
+    ShelfVisibilityState visibility_state;
+    ShelfAutoHideState auto_hide_state;
     bool is_screen_locked;
   };
 
   // Sets the visibility of the shelf to |state|.
-  void SetState(VisibilityState visibility_state);
+  void SetState(ShelfVisibilityState visibility_state);
 
   // Stops any animations.
   void StopAnimating();
@@ -236,7 +223,8 @@ class ASH_EXPORT ShelfLayoutManager :
 
   // Returns the AutoHideState. This value is determined from the launcher and
   // tray.
-  AutoHideState CalculateAutoHideState(VisibilityState visibility_state) const;
+  ShelfAutoHideState CalculateAutoHideState(
+      ShelfVisibilityState visibility_state) const;
 
   // Updates the hit test bounds override for launcher and status area.
   void UpdateHitTestBounds();
@@ -299,7 +287,7 @@ class ASH_EXPORT ShelfLayoutManager :
   float gesture_drag_amount_;
 
   // Manage the auto-hide state during the gesture.
-  AutoHideState gesture_drag_auto_hide_state_;
+  ShelfAutoHideState gesture_drag_auto_hide_state_;
 
   // Used to delay updating shelf background.
   UpdateShelfObserver* update_shelf_observer_;

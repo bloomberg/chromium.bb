@@ -5,12 +5,12 @@
 #include "ash/wm/gestures/shelf_gesture_handler.h"
 
 #include "ash/root_window_controller.h"
+#include "ash/shelf_types.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/gestures/tray_gesture_handler.h"
 #include "ash/wm/shelf_layout_manager.h"
-#include "ash/wm/shelf_types.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"

@@ -7,8 +7,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/launcher/background_animator.h"
+#include "ash/shelf_types.h"
 #include "ash/system/tray/tray_views.h"
-#include "ash/wm/shelf_types.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 
 namespace ash {

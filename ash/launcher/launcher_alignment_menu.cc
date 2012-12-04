@@ -4,8 +4,8 @@
 
 #include "ash/launcher/launcher_alignment_menu.h"
 
+#include "ash/shelf_types.h"
 #include "ash/shell.h"
-#include "ash/wm/shelf_types.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 

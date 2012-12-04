@@ -486,25 +486,25 @@ TEST_F(WorkspaceManagerTest, ShelfStateUpdated) {
   w1->Show();
   wm::ActivateWindow(w1.get());
 
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
 
   // Maximize the window.
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 
   // Restore.
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
 
   // Fullscreen.
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
 
   // Normal.
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
   EXPECT_FALSE(GetWindowOverlapsShelf());
 
@@ -518,12 +518,12 @@ TEST_F(WorkspaceManagerTest, ShelfStateUpdated) {
 
   // Maximize again.
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 
   // Minimize.
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
 
   // Since the restore from minimize will restore to the pre-minimize
   // state (tested elsewhere), we abandon the current size and restore
@@ -536,7 +536,7 @@ TEST_F(WorkspaceManagerTest, ShelfStateUpdated) {
 
   // Restore.
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
 
   // Create another window, maximized.
@@ -546,14 +546,14 @@ TEST_F(WorkspaceManagerTest, ShelfStateUpdated) {
   w2->Show();
   wm::ActivateWindow(w2.get());
   EXPECT_EQ(1, active_index());
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
 
   // Switch to w1.
   wm::ActivateWindow(w1.get());
   EXPECT_EQ(0, active_index());
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
   EXPECT_EQ(ScreenAsh::GetMaximizedWindowBoundsInParent(
                 w2->parent()).ToString(),
@@ -562,8 +562,8 @@ TEST_F(WorkspaceManagerTest, ShelfStateUpdated) {
   // Switch to w2.
   wm::ActivateWindow(w2.get());
   EXPECT_EQ(1, active_index());
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
   EXPECT_EQ(ScreenAsh::GetMaximizedWindowBoundsInParent(w2.get()).ToString(),
             w2->bounds().ToString());
@@ -721,26 +721,26 @@ TEST_F(WorkspaceManagerTest, GetWindowStateWithUnmanagedFullscreenWindow) {
 
   ASSERT_EQ("1 M1 active=1", StateString());
 
-  EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
   EXPECT_EQ(WORKSPACE_WINDOW_STATE_FULL_SCREEN, manager_->GetWindowState());
 
   w2->Hide();
   ASSERT_EQ("1 P=M1 active=0", StateString());
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 
   w2->Show();
   ASSERT_EQ("1 P=M1 active=0", StateString());
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
   EXPECT_EQ(WORKSPACE_WINDOW_STATE_DEFAULT, manager_->GetWindowState());
 
   wm::ActivateWindow(w2.get());
   ASSERT_EQ("1 M1 active=1", StateString());
-  EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
   EXPECT_EQ(WORKSPACE_WINDOW_STATE_FULL_SCREEN, manager_->GetWindowState());
 
   w2.reset();
   ASSERT_EQ("1 active=0", StateString());
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
   EXPECT_EQ(WORKSPACE_WINDOW_STATE_DEFAULT, manager_->GetWindowState());
 }
 
@@ -766,21 +766,21 @@ TEST_F(WorkspaceManagerTest,
 
   // Even though auto-hide behavior is NEVER full-screen windows cause the shelf
   // to hide.
-  EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
   EXPECT_EQ(WORKSPACE_WINDOW_STATE_FULL_SCREEN,
             manager_->GetWindowState());
 
   w2->Hide();
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 
   w2->Show();
   wm::ActivateWindow(w2.get());
-  EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
   EXPECT_EQ(WORKSPACE_WINDOW_STATE_FULL_SCREEN,
             manager_->GetWindowState());
 
   w2.reset();
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 }
 
 // Verifies a window marked as persisting across all workspaces ends up in its
@@ -812,7 +812,7 @@ TEST_F(WorkspaceManagerTest, MinimizeResetsVisibility) {
   wm::ActivateWindow(w1.get());
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE,
+  EXPECT_EQ(SHELF_VISIBLE,
             shelf_layout_manager()->visibility_state());
   EXPECT_FALSE(Launcher::ForPrimaryDisplay()->paints_background());
 }

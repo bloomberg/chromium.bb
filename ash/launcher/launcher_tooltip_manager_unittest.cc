@@ -110,7 +110,7 @@ TEST_F(LauncherTooltipManagerTest, HideWhenShelfIsHidden) {
 
   // Once the shelf is hidden, the tooltip should be invisible.
   ASSERT_EQ(
-      internal::ShelfLayoutManager::HIDDEN,
+      SHELF_HIDDEN,
       Shell::GetPrimaryRootWindowController()->shelf()->visibility_state());
   EXPECT_FALSE(TooltipIsVisible());
 
@@ -131,8 +131,7 @@ TEST_F(LauncherTooltipManagerTest, HideWhenShelfIsAutoHide) {
       Shell::GetPrimaryRootWindowController()->shelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   shelf->UpdateAutoHideState();
-  ASSERT_EQ(internal::ShelfLayoutManager::AUTO_HIDE_HIDDEN,
-            shelf->auto_hide_state());
+  ASSERT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 
   // Tooltip visibility change for auto hide may take time.
   EXPECT_TRUE(TooltipIsVisible());

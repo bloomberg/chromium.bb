@@ -6,8 +6,8 @@
 #define ASH_ROOT_WINDOW_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/shelf_types.h"
 #include "ash/system/user/login_status.h"
-#include "ash/wm/shelf_types.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 

@@ -6,9 +6,9 @@
 #define ASH_LAUNCHER_LAUNCHER_TOOLTIP_MANAGER_H_
 
 #include "ash/ash_export.h"
+#include "ash/shelf_types.h"
 #include "ash/wm/session_state_observer.h"
 #include "ash/wm/shelf_layout_manager.h"
-#include "ash/wm/shelf_types.h"
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "ui/base/events/event_handler.h"
@@ -84,9 +84,8 @@ protected:
   // ShelfLayoutManager::Observer overrides:
   virtual void WillDeleteShelf() OVERRIDE;
   virtual void WillChangeVisibilityState(
-      ShelfLayoutManager::VisibilityState new_state) OVERRIDE;
-  virtual void OnAutoHideStateChanged(
-      ShelfLayoutManager::AutoHideState new_state) OVERRIDE;
+      ShelfVisibilityState new_state) OVERRIDE;
+  virtual void OnAutoHideStateChanged(ShelfAutoHideState new_state) OVERRIDE;
 
  private:
   class LauncherTooltipBubble;

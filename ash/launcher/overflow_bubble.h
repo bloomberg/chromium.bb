@@ -5,7 +5,7 @@
 #ifndef ASH_LAUNCHER_OVERFLOW_BUBBLE_H_
 #define ASH_LAUNCHER_OVERFLOW_BUBBLE_H_
 
-#include "ash/wm/shelf_types.h"
+#include "ash/shelf_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/views/widget/widget_observer.h"

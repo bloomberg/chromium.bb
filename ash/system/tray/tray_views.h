@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_TRAY_TRAY_VIEWS_H_
 
 #include "ash/ash_export.h"
-#include "ash/wm/shelf_types.h"
+#include "ash/shelf_types.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/button/custom_button.h"

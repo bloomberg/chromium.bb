@@ -11,8 +11,8 @@
 
 #include "ash/launcher/launcher_model_observer.h"
 #include "ash/launcher/launcher_types.h"
+#include "ash/shelf_types.h"
 #include "ash/shell_observer.h"
-#include "ash/wm/shelf_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"

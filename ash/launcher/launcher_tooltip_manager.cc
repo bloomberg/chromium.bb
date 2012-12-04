@@ -322,16 +322,16 @@ void LauncherTooltipManager::WillDeleteShelf() {
 }
 
 void LauncherTooltipManager::WillChangeVisibilityState(
-    ShelfLayoutManager::VisibilityState new_state) {
-  if (new_state == ShelfLayoutManager::HIDDEN) {
+    ShelfVisibilityState new_state) {
+  if (new_state == SHELF_HIDDEN) {
     StopTimer();
     Close();
   }
 }
 
 void LauncherTooltipManager::OnAutoHideStateChanged(
-    ShelfLayoutManager::AutoHideState new_state) {
-  if (new_state == ShelfLayoutManager::AUTO_HIDE_HIDDEN) {
+    ShelfAutoHideState new_state) {
+  if (new_state == SHELF_AUTO_HIDE_HIDDEN) {
     StopTimer();
     // AutoHide state change happens during an event filter, so immediate close
     // may cause a crash in the HandleMouseEvent() after the filter.  So we just

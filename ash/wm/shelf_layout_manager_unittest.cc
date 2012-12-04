@@ -67,7 +67,7 @@ class ShelfLayoutObserverTest : public ShelfLayoutManager::Observer {
 
  private:
   virtual void OnAutoHideStateChanged(
-      ShelfLayoutManager::AutoHideState new_state) OVERRIDE {
+      ShelfAutoHideState new_state) OVERRIDE {
     changed_auto_hide_state_ = true;
   }
 
@@ -158,7 +158,7 @@ class ShelfLayoutManagerTest : public ash::test::AshTestBase {
   }
 
   void SetState(ShelfLayoutManager* shelf,
-                ShelfLayoutManager::VisibilityState state) {
+                ShelfVisibilityState state) {
     shelf->SetState(state);
   }
 
@@ -196,7 +196,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
   // Force an initial layout.
   shelf->LayoutShelf();
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 
   gfx::Rect status_bounds(
       shelf->status_area_widget()->GetWindowBoundsInScreen());
@@ -212,11 +212,11 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
             display.bounds().bottom() - display.work_area().bottom());
 
   // Hide the shelf.
-  SetState(shelf, ShelfLayoutManager::HIDDEN);
+  SetState(shelf, SHELF_HIDDEN);
   // Run the animation to completion.
   StepWidgetLayerAnimatorToEnd(shelf->launcher_widget());
   StepWidgetLayerAnimatorToEnd(shelf->status_area_widget());
-  EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
   EXPECT_EQ(0,
             display.bounds().bottom() - display.work_area().bottom());
 
@@ -227,11 +227,11 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
             Shell::GetScreen()->GetPrimaryDisplay().bounds().bottom());
 
   // And show it again.
-  SetState(shelf, ShelfLayoutManager::VISIBLE);
+  SetState(shelf, SHELF_VISIBLE);
   // Run the animation to completion.
   StepWidgetLayerAnimatorToEnd(shelf->launcher_widget());
   StepWidgetLayerAnimatorToEnd(shelf->status_area_widget());
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
   EXPECT_EQ(shelf_height,
             display.bounds().bottom() - display.work_area().bottom());
 
@@ -252,15 +252,15 @@ TEST_F(ShelfLayoutManagerTest, LayoutShelfWhileAnimating) {
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
   // Force an initial layout.
   shelf->LayoutShelf();
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 
   const gfx::Display& display = Shell::GetInstance()->display_manager()->
       GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
 
   // Hide the shelf.
-  SetState(shelf, ShelfLayoutManager::HIDDEN);
+  SetState(shelf, SHELF_HIDDEN);
   shelf->LayoutShelf();
-  EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
   EXPECT_EQ(0, display.bounds().bottom() - display.work_area().bottom());
 
   // Make sure the bounds of the two widgets changed.
@@ -322,8 +322,8 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
   widget->Init(params);
   widget->Maximize();
   widget->Show();
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 
   // LayoutShelf() forces the animation to completion, at which point the
   // launcher should go off the screen.
@@ -338,8 +338,8 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
   generator.MoveMouseTo(0, root->bounds().bottom() - 1);
 
   // Shelf should be shown again (but it shouldn't have changed the work area).
-  SetState(shelf, ShelfLayoutManager::AUTO_HIDE);
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  SetState(shelf, SHELF_AUTO_HIDE);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
   shelf->LayoutShelf();
   EXPECT_EQ(root->bounds().bottom() - shelf->GetIdealBounds().height(),
             shelf->launcher_widget()->GetWindowBoundsInScreen().y());
@@ -349,8 +349,8 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
 
   // Move mouse back up.
   generator.MoveMouseTo(0, 0);
-  SetState(shelf, ShelfLayoutManager::AUTO_HIDE);
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  SetState(shelf, SHELF_AUTO_HIDE);
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
   shelf->LayoutShelf();
   EXPECT_EQ(root->bounds().bottom() - ShelfLayoutManager::kAutoHideSize,
             shelf->launcher_widget()->GetWindowBoundsInScreen().y());
@@ -359,16 +359,16 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
   generator.PressLeftButton();
   generator.MoveMouseTo(0, root->bounds().bottom() - 1);
   UpdateAutoHideStateNow();
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 
   generator.ReleaseLeftButton();
   generator.MoveMouseTo(1, root->bounds().bottom() - 1);
   UpdateAutoHideStateNow();
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
   generator.PressLeftButton();
   generator.MoveMouseTo(1, root->bounds().bottom() - 1);
   UpdateAutoHideStateNow();
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
 }
 
 // Assertions around the lock screen showing.
@@ -388,8 +388,8 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
   widget->Init(params);
   widget->Maximize();
   widget->Show();
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
   // LayoutShelf() forces the animation to completion, at which point the
@@ -416,11 +416,11 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
   Shell::GetInstance()->delegate()->LockScreen();
   shelf->UpdateVisibilityState();
   // Showing a widget in the lock screen should force the shelf to be visibile.
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 
   Shell::GetInstance()->delegate()->UnlockScreen();
   shelf->UpdateVisibilityState();
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
 }
 
 // Assertions around SetAutoHideBehavior.
@@ -443,25 +443,25 @@ TEST_F(ShelfLayoutManagerTest, SetAutoHideBehavior) {
       Shell::GetScreen()->GetDisplayNearestWindow(window).bounds());
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 
   widget->Maximize();
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
   EXPECT_EQ(Shell::GetScreen()->GetDisplayNearestWindow(
                 window).work_area().bottom(),
             widget->GetWorkAreaBoundsInScreen().bottom());
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ(Shell::GetScreen()->GetDisplayNearestWindow(
                 window).work_area().bottom(),
             widget->GetWorkAreaBoundsInScreen().bottom());
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
   EXPECT_EQ(Shell::GetScreen()->GetDisplayNearestWindow(
                 window).work_area().bottom(),
             widget->GetWorkAreaBoundsInScreen().bottom());
@@ -483,28 +483,29 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenStatusOrLauncherFocused) {
   widget->Init(params);
   widget->Show();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 
   // Focus the launcher. Have to go through the focus cycler as normal focus
   // requests to it do nothing.
   shelf->launcher()->GetFocusCycler()->RotateFocus(FocusCycler::FORWARD);
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
 
   widget->Activate();
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 
   // Trying to activate the status should fail, since we only allow activating
   // it when the user is using the keyboard (i.e. through FocusCycler).
   shelf->status_area_widget()->Activate();
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 
   shelf->launcher()->GetFocusCycler()->RotateFocus(FocusCycler::FORWARD);
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
 }
 
-// Makes sure shelf will be visible when app list opens as shelf is in VISIBLE
-// state,and toggling app list won't change shelf visibility state.
+// Makes sure shelf will be visible when app list opens as shelf is in
+// SHELF_VISIBLE state,and toggling app list won't change shelf
+// visibility state.
 TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
   Shell* shell = Shell::GetInstance();
   internal::RootWindowController* controller =
@@ -518,22 +519,22 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
   window->SetBounds(gfx::Rect(0, 0, 100, 100));
   window->Show();
   EXPECT_FALSE(shell->GetAppListTargetVisibility());
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 
   // Toggle app list to show, and the shelf stays visible.
   shell->ToggleAppList();
   EXPECT_TRUE(shell->GetAppListTargetVisibility());
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 
   // Toggle app list to hide, and the shelf stays visible.
   shell->ToggleAppList();
   EXPECT_FALSE(shell->GetAppListTargetVisibility());
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 }
 
-// Makes sure shelf will be shown with AUTO_HIDE_SHOWN state when app list opens
-// as shelf is in AUTO_HIDE state, and toggling app list won't change shelf
-// visibility state.
+// Makes sure shelf will be shown with SHELF_AUTO_HIDE_SHOWN state
+// when app list opens as shelf is in SHELF_AUTO_HIDE state, and
+// toggling app list won't change shelf visibility state.
 TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
   Shell* shell = Shell::GetInstance();
   ShelfLayoutManager* shelf = shelf_layout_manager();
@@ -550,7 +551,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
   wm::ActivateWindow(window);
 
   EXPECT_FALSE(shell->GetAppListTargetVisibility());
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
 
   // Toggle app list to show.
   shell->ToggleAppList();
@@ -559,13 +560,13 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
   // update the state.
   shell->UpdateShelfVisibility();
   EXPECT_TRUE(shell->GetAppListTargetVisibility());
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
 
   // Toggle app list to hide.
   shell->ToggleAppList();
   EXPECT_FALSE(shell->GetAppListTargetVisibility());
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
 }
 
 // Makes sure shelf will be hidden when app list opens as shelf is in HIDDEN
@@ -585,17 +586,17 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
 
   // App list and shelf is not shown.
   EXPECT_FALSE(shell->GetAppListTargetVisibility());
-  EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
 
   // Toggle app list to show.
   shell->ToggleAppList();
   EXPECT_TRUE(shell->GetAppListTargetVisibility());
-  EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
 
   // Toggle app list to hide.
   shell->ToggleAppList();
   EXPECT_FALSE(shell->GetAppListTargetVisibility());
-  EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
 }
 
 // Tests SHELF_ALIGNMENT_LEFT and SHELF_ALIGNMENT_RIGHT.
@@ -604,7 +605,7 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
   // Force an initial layout.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   shelf->LayoutShelf();
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 
   shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
   gfx::Rect launcher_bounds(
@@ -688,7 +689,7 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
 
   gfx::Rect shelf_shown = shelf->launcher_widget()->GetWindowBoundsInScreen();
   gfx::Rect bounds_shelf = window->bounds();
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
 
@@ -701,8 +702,8 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
   end.set_y(start.y() + 100);
   generator.GestureScrollSequence(start, end,
       base::TimeDelta::FromMilliseconds(10), 1);
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
   EXPECT_NE(bounds_shelf.ToString(), window->bounds().ToString());
   EXPECT_NE(shelf_shown.ToString(),
@@ -714,7 +715,7 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
   // Swipe up to show the shelf.
   generator.GestureScrollSequence(end, start,
       base::TimeDelta::FromMilliseconds(10), 1);
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
   EXPECT_EQ(bounds_shelf.ToString(), window->bounds().ToString());
   EXPECT_EQ(shelf_shown.ToString(),
@@ -724,8 +725,8 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
   end.set_y(start.y() - 100);
   generator.GestureScrollSequence(start, end,
       base::TimeDelta::FromMilliseconds(10), 1);
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
   EXPECT_EQ(shelf_hidden.ToString(),
             shelf->launcher_widget()->GetWindowBoundsInScreen().ToString());
@@ -739,7 +740,7 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
   end.set_y(start.y() + shelf_shown.height() * 3 / 10);
   generator.GestureScrollSequence(start, end,
       base::TimeDelta::FromMilliseconds(100), 1);
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
   EXPECT_EQ(bounds_shelf.ToString(), window->bounds().ToString());
   EXPECT_EQ(shelf_shown.ToString(),
@@ -749,8 +750,8 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
   end.set_y(start.y() + 100);
   generator.GestureScrollSequence(start, end,
       base::TimeDelta::FromMilliseconds(10), 1);
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
   EXPECT_EQ(bounds_noshelf.ToString(), window->bounds().ToString());
   EXPECT_EQ(shelf_hidden.ToString(),
@@ -761,12 +762,12 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
   gfx::Rect bounds_fullscreen = window->bounds();
   EXPECT_TRUE(widget->IsFullscreen());
   EXPECT_NE(bounds_noshelf.ToString(), bounds_fullscreen.ToString());
-  EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
 
   // Swipe-up. This should not change anything.
   generator.GestureScrollSequence(end, start,
       base::TimeDelta::FromMilliseconds(10), 1);
-  EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
   EXPECT_EQ(bounds_fullscreen.ToString(), window->bounds().ToString());
 }
@@ -809,7 +810,7 @@ TEST_F(ShelfLayoutManagerTest, GestureRevealsTrayBubble) {
   end.set_y(start.y() - 400);
   generator.GestureScrollSequence(start, end,
       base::TimeDelta::FromMilliseconds(10), 1);
-  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
   EXPECT_TRUE(tray->HasSystemBubble());
 }
 
@@ -818,14 +819,14 @@ TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {
 
   // Turn on auto-hide for the shelf.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 
   // Focus the system tray. That should make the shelf visible again.
   Shell::GetInstance()->accelerator_controller()->PerformAction(
       FOCUS_SYSTEM_TRAY, ui::Accelerator());
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
   EXPECT_FALSE(Shell::GetInstance()->system_tray()->HasSystemBubble());
 
   // Now activate the tray (using the keyboard, instead of using the mouse to
@@ -838,8 +839,8 @@ TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {
   generator.PressKey(ui::VKEY_SPACE, 0);
   generator.ReleaseKey(ui::VKEY_SPACE, 0);
   EXPECT_TRUE(Shell::GetInstance()->system_tray()->HasSystemBubble());
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
   EXPECT_FALSE(observer.changed_auto_hide_state());
 
   shelf->RemoveObserver(&observer);

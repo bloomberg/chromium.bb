@@ -10,8 +10,8 @@
 
 #include "ash/launcher/launcher_button_host.h"
 #include "ash/launcher/launcher_model_observer.h"
+#include "ash/shelf_types.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"
-#include "ash/wm/shelf_types.h"
 #include "base/observer_list.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/context_menu_controller.h"

@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/shelf_types.h"
 #include "ash/system/user/login_status.h"
 #include "ash/wm/cursor_manager.h"
-#include "ash/wm/shelf_types.h"
 #include "ash/wm/system_modal_container_event_filter_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
