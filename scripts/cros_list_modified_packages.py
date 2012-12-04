@@ -34,7 +34,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
-import portage.const
 
 
 class WorkonProjectsMonitor(object):
@@ -139,6 +138,9 @@ def ListWorkonPackagesInfo(board, host):
 
   Returns a list of unique packages being worked on.
   """
+  # Import portage late so that this script can be imported outside the chroot.
+  # pylint: disable=W0404
+  import portage.const
   packages = ListWorkonPackages(board, host)
   if not packages:
     return []

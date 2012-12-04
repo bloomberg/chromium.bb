@@ -14,7 +14,10 @@ def GetOptions(my_commands):
 
   subparsers = parser.add_subparsers(title='cros commands')
   for cmd_name, class_def in sorted(my_commands.iteritems(), key=lambda x:x[0]):
-    sub_parser = subparsers.add_parser(cmd_name, help=class_def.__doc__)
+    epilog = getattr(class_def, 'EPILOG', None)
+    sub_parser = subparsers.add_parser(
+        cmd_name, help=class_def.__doc__, epilog=epilog,
+        formatter_class=commandline.argparse.RawDescriptionHelpFormatter)
     class_def.AddParser(sub_parser)
 
   return parser

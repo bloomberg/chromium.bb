@@ -14,8 +14,34 @@ import sys
 
 sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 
+from chromite.lib import commandline
+from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
+from chromite.lib import partial_mock
 from chromite.cros import commands
+
+
+class MockCommand(partial_mock.PartialMock):
+  """Mock class for a generic cros command."""
+  ATTRS = ('Run',)
+  COMMAND = None
+  TARGET_CLASS = None
+
+  def __init__(self, args):
+    partial_mock.PartialMock.__init__(self)
+    self.args = args
+    self.rc_mock = cros_build_lib_unittest.RunCommandMock()
+    self.rc_mock.SetDefaultCmdResult()
+    parser = commandline.ArgumentParser()
+    subparsers = parser.add_subparsers()
+    subparser = subparsers.add_parser(self.COMMAND)
+    self.TARGET_CLASS.AddParser(subparser)
+    options =  parser.parse_args([self.COMMAND] + self.args)
+    self.inst = options.cros_class(options)
+
+  def Run(self, inst):
+    with self.rc_mock:
+      self.backup['Run'](inst)
 
 
 # pylint: disable=W0212
