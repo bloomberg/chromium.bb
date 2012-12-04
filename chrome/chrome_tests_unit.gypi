@@ -1729,6 +1729,7 @@
           'sources/': [
             ['exclude', '^browser/extensions/api/'],
             ['exclude', '^browser/sync/glue/chrome_extensions_activity_monitor_unittest.cc'],
+            ['exclude', '^common/extensions/api/'],
           ],
         }],
         ['use_ash==1', {

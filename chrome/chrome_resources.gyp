@@ -123,7 +123,7 @@
         },
       ],
       'conditions': [
-        ['OS != "ios"', {
+        ['enable_extensions==1', {
           'actions': [
             {
               'action_name': 'extensions_api_resources',

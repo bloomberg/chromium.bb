@@ -214,6 +214,7 @@
         'common/extensions/value_counter.h',
         'common/extensions/api/extension_api.cc',
         'common/extensions/api/extension_api.h',
+        'common/extensions/api/extension_api_stub.cc',
         'common/external_ipc_fuzzer.h',
         'common/external_ipc_fuzzer.cc',
         'common/favicon_url.cc',
@@ -423,6 +424,16 @@
           'sources!': [
             'common/child_process_logging_posix.cc',
             'common/chrome_version_info_posix.cc',
+          ],
+        }],
+        ['enable_extensions==1', {
+          'sources!': [
+            'common/extensions/api/extension_api_stub.cc',
+          ],
+        }, {  # enable_extensions == 0
+          'sources/': [
+            ['exclude', '^common/extensions/api/'],
+            ['include', 'common/extensions/api/extension_api_stub.cc'],
           ],
         }],
         ['remoting==1', {
