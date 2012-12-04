@@ -3241,6 +3241,7 @@ if nacl_irt_test_env.Bit('enable_chrome_side'):
   nacl_irt_test_env.Replace(TESTRUNNER_LIBS=['testrunner_browser'])
 
 nacl_irt_test_env.Append(BUILD_SCONSCRIPTS=irt_variant_tests)
+nacl_irt_test_env.AddChromeFilesFromGroup('irt_variant_test_scons_files')
 nacl_irt_test_env.Append(BUILD_SCONSCRIPTS=irt_only_tests)
 TestsUsePublicLibs(nacl_irt_test_env)
 
