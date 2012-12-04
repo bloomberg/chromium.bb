@@ -16,7 +16,80 @@
 
 namespace {
 
-void DeleteTileFromStartScreen(const string16& tile_id) {
+using base::win::MetroPinUmaResultCallback;
+
+// Callback for asynchronous pin requests.
+class TileRequestCompleter {
+ public:
+  enum PinType {
+    PIN,
+    UNPIN
+  };
+  TileRequestCompleter(PinType type, const MetroPinUmaResultCallback& callback)
+      : type_(type), callback_(callback) {}
+
+  void Complete(mswr::ComPtr<winfoundtn::IAsyncOperation<bool>>& completion);
+
+ private:
+  // Callback that responds to user input on the pin request pop-up. This will
+  // run |callback_|, then delete |this| before returning.
+  HRESULT Respond(winfoundtn::IAsyncOperation<bool>* async,
+                  AsyncStatus status);
+
+  PinType type_;
+  MetroPinUmaResultCallback callback_;
+};
+
+void TileRequestCompleter::Complete(
+    mswr::ComPtr<winfoundtn::IAsyncOperation<bool>>& completion) {
+  typedef winfoundtn::IAsyncOperationCompletedHandler<bool> RequestDoneType;
+  mswr::ComPtr<RequestDoneType> handler(mswr::Callback<RequestDoneType>(
+      this, &TileRequestCompleter::Respond));
+  DCHECK(handler.Get() != NULL);
+  HRESULT hr = completion->put_Completed(handler.Get());
+  CheckHR(hr, "Failed to put_Completed");
+}
+
+HRESULT TileRequestCompleter::Respond(winfoundtn::IAsyncOperation<bool>* async,
+                                 AsyncStatus status) {
+  base::win::MetroSecondaryTilePinUmaResult pin_state =
+      base::win::METRO_PIN_STATE_NONE;
+
+  if (status == Completed) {
+    unsigned char result;
+    CheckHR(async->GetResults(&result));
+    LOG(INFO) << __FUNCTION__ << " result " << static_cast<int>(result);
+    switch (result) {
+      case 0:
+        pin_state = type_ == PIN ?
+            base::win::METRO_PIN_RESULT_CANCEL :
+            base::win::METRO_UNPIN_RESULT_CANCEL;
+        break;
+      case 1:
+        pin_state = type_ == PIN ?
+            base::win::METRO_PIN_RESULT_OK :
+            base::win::METRO_UNPIN_RESULT_OK;
+        break;
+      default:
+        pin_state = type_ == PIN ?
+            base::win::METRO_PIN_RESULT_OTHER :
+            base::win::METRO_UNPIN_RESULT_OTHER;
+        break;
+    }
+  } else {
+    LOG(ERROR) << __FUNCTION__ << " Unexpected async status " << status;
+    pin_state = type_ == PIN ?
+        base::win::METRO_PIN_RESULT_ERROR :
+        base::win::METRO_UNPIN_RESULT_ERROR;
+  }
+  callback_.Run(pin_state);
+
+  delete this;
+  return S_OK;
+}
+
+void DeleteTileFromStartScreen(const string16& tile_id,
+                               const MetroPinUmaResultCallback& callback) {
   DVLOG(1) << __FUNCTION__;
   mswr::ComPtr<winui::StartScreen::ISecondaryTileFactory> tile_factory;
   HRESULT hr = winrt_utils::CreateActivationFactory(
@@ -35,18 +108,23 @@ void DeleteTileFromStartScreen(const string16& tile_id) {
   hr = tile->RequestDeleteAsync(completion.GetAddressOf());
   CheckHR(hr, "RequestDeleteAsync failed");
 
-  typedef winfoundtn::IAsyncOperationCompletedHandler<bool> RequestDoneType;
-  mswr::ComPtr<RequestDoneType> handler(mswr::Callback<RequestDoneType>(
-      globals.view, &ChromeAppView::TileRequestCreateDone));
-  DCHECK(handler.Get() != NULL);
-  hr = completion->put_Completed(handler.Get());
-  CheckHR(hr, "Failed to put_Completed");
+  if (FAILED(hr)) {
+    callback.Run(base::win::METRO_UNPIN_REQUEST_SHOW_ERROR);
+    return;
+  }
+
+  // Deleted in TileRequestCompleter::Respond when the async operation
+  // completes.
+  TileRequestCompleter* completer =
+      new TileRequestCompleter(TileRequestCompleter::UNPIN, callback);
+  completer->Complete(completion);
 }
 
 void CreateTileOnStartScreen(const string16& tile_id,
                              const string16& title_str,
                              const string16& url_str,
-                             const FilePath& logo_path) {
+                             const FilePath& logo_path,
+                             const MetroPinUmaResultCallback& callback) {
   VLOG(1) << __FUNCTION__;
 
   mswr::ComPtr<winui::StartScreen::ISecondaryTileFactory> tile_factory;
@@ -99,12 +177,16 @@ void CreateTileOnStartScreen(const string16& tile_id,
   hr = tile->RequestCreateAsync(completion.GetAddressOf());
   CheckHR(hr, "RequestCreateAsync failed");
 
-  typedef winfoundtn::IAsyncOperationCompletedHandler<bool> RequestDoneType;
-  mswr::ComPtr<RequestDoneType> handler(mswr::Callback<RequestDoneType>(
-      globals.view, &ChromeAppView::TileRequestCreateDone));
-  DCHECK(handler.Get() != NULL);
-  hr = completion->put_Completed(handler.Get());
-  CheckHR(hr, "Failed to put_Completed");
+  if (FAILED(hr)) {
+    callback.Run(base::win::METRO_PIN_REQUEST_SHOW_ERROR);
+    return;
+  }
+
+  // Deleted in TileRequestCompleter::Respond when the async operation
+  // completes.
+  TileRequestCompleter* completer =
+      new TileRequestCompleter(TileRequestCompleter::PIN, callback);
+  completer->Complete(completion);
 }
 
 }  // namespace
@@ -122,19 +204,24 @@ BOOL MetroIsPinnedToStartScreen(const string16& tile_id) {
   return exists;
 }
 
-void MetroUnPinFromStartScreen(const string16& tile_id) {
+void MetroUnPinFromStartScreen(const string16& tile_id,
+                               const MetroPinUmaResultCallback& callback) {
   globals.appview_msg_loop->PostTask(
-      FROM_HERE, base::Bind(&DeleteTileFromStartScreen, tile_id));
+      FROM_HERE, base::Bind(&DeleteTileFromStartScreen,
+                            tile_id,
+                            callback));
 }
 
 void MetroPinToStartScreen(const string16& tile_id,
                            const string16& title,
                            const string16& url,
-                           const FilePath& logo_path) {
+                           const FilePath& logo_path,
+                           const MetroPinUmaResultCallback& callback) {
   globals.appview_msg_loop->PostTask(
     FROM_HERE, base::Bind(&CreateTileOnStartScreen,
                           tile_id,
                           title,
                           url,
-                          logo_path));
+                          logo_path,
+                          callback));
 }

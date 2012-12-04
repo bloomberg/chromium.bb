@@ -45,9 +45,6 @@ class ChromeAppView
   static LRESULT CALLBACK CoreWindowProc(HWND window, UINT message, WPARAM wp,
                                          LPARAM lp);
 
-  HRESULT TileRequestCreateDone(winfoundtn::IAsyncOperation<bool>* async,
-                                AsyncStatus status);
-
   bool osk_visible_notification_received() const {
     return osk_visible_notification_received_;
   }

@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -39,6 +40,9 @@
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(MetroPinTabHelper)
 
 namespace {
+
+// Histogram name for site-specific tile pinning metrics.
+const char kMetroPinMetric[] = "Metro.SecondaryTilePin";
 
 // Generate an ID for the tile based on |url_str|. The ID is simply a hash of
 // the URL.
@@ -158,6 +162,14 @@ bool GetPathToBackupLogo(const FilePath& logo_dir,
   return file_util::CopyFile(default_logo_path, *logo_path);
 }
 
+// UMA reporting callback for site-specific secondary tile creation.
+void PinPageReportUmaCallback(
+    base::win::MetroSecondaryTilePinUmaResult result) {
+  UMA_HISTOGRAM_ENUMERATION(kMetroPinMetric,
+                            result,
+                            base::win::METRO_PIN_STATE_LIMIT);
+}
+
 // The PinPageTaskRunner class performs the necessary FILE thread actions to
 // pin a page, such as generating or copying the tile image file. When it
 // has performed these actions it will send the tile creation request to the
@@ -219,21 +231,27 @@ void PinPageTaskRunner::RunOnFileThread() {
     return;
   }
 
+  UMA_HISTOGRAM_ENUMERATION(kMetroPinMetric,
+                            base::win::METRO_PIN_LOGO_READY,
+                            base::win::METRO_PIN_STATE_LIMIT);
+
   HMODULE metro_module = base::win::GetMetroModule();
   if (!metro_module)
     return;
 
-  typedef void (*MetroPinToStartScreen)(const string16&, const string16&,
-      const string16&, const FilePath&);
-  MetroPinToStartScreen metro_pin_to_start_screen =
-      reinterpret_cast<MetroPinToStartScreen>(
+  base::win::MetroPinToStartScreen metro_pin_to_start_screen =
+      reinterpret_cast<base::win::MetroPinToStartScreen>(
           ::GetProcAddress(metro_module, "MetroPinToStartScreen"));
   if (!metro_pin_to_start_screen) {
     NOTREACHED();
     return;
   }
 
-  metro_pin_to_start_screen(tile_id, title_, url_, logo_path);
+  metro_pin_to_start_screen(tile_id,
+                            title_,
+                            url_,
+                            logo_path,
+                            base::Bind(&PinPageReportUmaCallback));
 }
 
 }  // namespace
@@ -378,10 +396,16 @@ bool MetroPinTabHelper::IsPinned() const {
 
 void MetroPinTabHelper::TogglePinnedToStartScreen() {
   if (IsPinned()) {
+    UMA_HISTOGRAM_ENUMERATION(kMetroPinMetric,
+                              base::win::METRO_UNPIN_INITIATED,
+                              base::win::METRO_PIN_STATE_LIMIT);
     UnPinPageFromStartScreen();
     return;
   }
 
+  UMA_HISTOGRAM_ENUMERATION(kMetroPinMetric,
+                            base::win::METRO_PIN_INITIATED,
+                            base::win::METRO_PIN_STATE_LIMIT);
   GURL url = web_contents()->GetURL();
   string16 url_str = UTF8ToUTF16(url.spec());
   string16 title = web_contents()->GetTitle();
@@ -445,9 +469,8 @@ void MetroPinTabHelper::UnPinPageFromStartScreen() {
   if (!metro_module)
     return;
 
-  typedef void (*MetroUnPinFromStartScreen)(const string16&);
-  MetroUnPinFromStartScreen metro_un_pin_from_start_screen =
-      reinterpret_cast<MetroUnPinFromStartScreen>(
+  base::win::MetroUnPinFromStartScreen metro_un_pin_from_start_screen =
+      reinterpret_cast<base::win::MetroUnPinFromStartScreen>(
           ::GetProcAddress(metro_module, "MetroUnPinFromStartScreen"));
   if (!metro_un_pin_from_start_screen) {
     NOTREACHED();
@@ -456,7 +479,8 @@ void MetroPinTabHelper::UnPinPageFromStartScreen() {
 
   GURL url = web_contents()->GetURL();
   string16 tile_id = GenerateTileId(UTF8ToUTF16(url.spec()));
-  metro_un_pin_from_start_screen(tile_id);
+  metro_un_pin_from_start_screen(tile_id,
+                                 base::Bind(&PinPageReportUmaCallback));
 }
 
 void MetroPinTabHelper::FaviconDownloaderFinished() {

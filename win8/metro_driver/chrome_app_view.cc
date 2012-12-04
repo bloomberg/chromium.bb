@@ -305,20 +305,6 @@ void FlipFrameWindowsInternal() {
 
 }  // namespace
 
-HRESULT ChromeAppView::TileRequestCreateDone(
-    winfoundtn::IAsyncOperation<bool>* async,
-    AsyncStatus status) {
-  if (status == Completed) {
-    unsigned char result;
-    CheckHR(async->GetResults(&result));
-    DVLOG(1) << __FUNCTION__ << " result " << static_cast<int>(result);
-  } else {
-    LOG(ERROR) << __FUNCTION__ << " Unexpected async status " << status;
-  }
-
-  return S_OK;
-}
-
 void ChromeAppView::DisplayNotification(
     const ToastNotificationHandler::DesktopNotification& notification) {
   DVLOG(1) << __FUNCTION__;
