@@ -5,7 +5,6 @@
 #include <asm/unistd.h>
 #include <bits/wordsize.h>
 #include <errno.h>
-#include <stdarg.h>
 
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
@@ -173,70 +172,20 @@ namespace playground2 {
 #endif
   );  // asm
 
-#if defined(ADDRESS_SANITIZER)
-// ASAN will complain because we look at 6 arguments on the stack no matter
-// what. This is probably ok for a debugging feature, see crbug.com/162925.
-__attribute__((no_address_safety_analysis))
-#endif
-intptr_t SandboxSyscall(int nr, ...) {
-  // It is most convenient for the caller to pass a variadic list of arguments.
-  // But this is difficult to handle in assembly code without making
-  // assumptions about internal implementation details of "va_list". So, we
-  // first use C code to copy all the arguments into an array, where they are
-  // easily accessible to asm().
-  // This is preferable over copying them into individual variables, which
-  // can result in too much register pressure.
-  if (sizeof(void *)*8 != __WORDSIZE) {
-    SANDBOX_DIE("This can't happen! "
-                "__WORDSIZE doesn't agree with actual size");
-  }
-  void *args[6];
-  va_list ap;
+intptr_t SandboxSyscall(int nr,
+                        intptr_t p0, intptr_t p1, intptr_t p2,
+                        intptr_t p3, intptr_t p4, intptr_t p5) {
+  // We rely on "intptr_t" to be the exact size as a "void *". This is
+  // typically true, but just in case, we add a check. The language
+  // specification allows platforms some leeway in cases, where
+  // "sizeof(void *)" is not the same as "sizeof(void (*)())". We expect
+  // that this would only be an issue for IA64, which we are currently not
+  // planning on supporting. And it is even possible that this would work
+  // on IA64, but for lack of actual hardware, I cannot test.
+  COMPILE_ASSERT(sizeof(void *) == sizeof(intptr_t),
+                 pointer_types_and_intptr_must_be_exactly_the_same_size);
 
-  // System calls take a system call number (typically passed in %eax or
-  // %rax) and up to six arguments (passed in general-purpose CPU registers).
-  //
-  // On 32bit systems, all variadic arguments are passed on the stack as 32bit
-  // quantities. We can use an arbitrary 32bit type to retrieve them with
-  // va_arg() and then forward them to the kernel in the appropriate CPU
-  // register. We do not need to know whether this is an integer or a pointer
-  // value.
-  //
-  // On 64bit systems, variadic arguments can be either 32bit or 64bit wide,
-  // which would seem to make it more important that we pass the correct type
-  // to va_arg(). And we really can't know what this type is unless we have a
-  // table with function signatures for all system calls.
-  //
-  // Fortunately, on x86-64 this is less critical. The first six function
-  // arguments will be passed in CPU registers, no matter whether they were
-  // named or variadic. This only leaves us with a single argument (if present)
-  // that could be passed on the stack. And since x86-64 is little endian,
-  // it will have the correct value both for 32bit and 64bit quantities.
-  //
-  // N.B. Because of how the x86-64 ABI works, it is possible that 32bit
-  //   quantities will have undefined garbage bits in the upper 32 bits of a
-  //   64bit register. This is relatively unlikely for the first five system
-  //   call arguments, as the processor does automatic sign extensions and zero
-  //   filling so frequently, there rarely is garbage in CPU registers. But it
-  //   is quite likely for the last argument, which is passed on the stack.
-  //   That's generally OK, because the kernel has the correct function
-  //   signatures and knows to only inspect the LSB of a 32bit value.
-  //   But callers must be careful in cases, where the compiler cannot tell
-  //   the difference (e.g. when passing NULL to any system call, it must
-  //   always be cast to a pointer type).
-  //   The glibc implementation of syscall() has the exact same issues.
-  //   In the unlikely event that this ever becomes a problem, we could add
-  //   code that handles six-argument system calls specially. The number of
-  //   system calls that take six arguments and expect a 32bit value in the
-  //   sixth argument is very limited.
-  va_start(ap, nr);
-  args[0] = va_arg(ap, void *);
-  args[1] = va_arg(ap, void *);
-  args[2] = va_arg(ap, void *);
-  args[3] = va_arg(ap, void *);
-  args[4] = va_arg(ap, void *);
-  args[5] = va_arg(ap, void *);
-  va_end(ap);
+  const intptr_t args[6] = { p0, p1, p2, p3, p4, p5 };
 
   // Invoke our file-scope assembly code. The constraints have been picked
   // carefully to match what the rest of the assembly code expects in input,
@@ -252,9 +201,11 @@ intptr_t SandboxSyscall(int nr, ...) {
 #elif defined(__x86_64__)
   intptr_t ret = nr;
   {
-    register void **data __asm__("r12") = args;
+    register const intptr_t *data __asm__("r12") = args;
     asm volatile(
+      "lea  -128(%%rsp), %%rsp\n"  // Avoid red zone.
       "call SyscallAsm\n"
+      "lea  128(%%rsp), %%rsp\n"
       // N.B. These are not the calling conventions normally used by the ABI.
       : "=a"(ret)
       : "0"(ret), "r"(data)
@@ -265,7 +216,7 @@ intptr_t SandboxSyscall(int nr, ...) {
   intptr_t ret;
   {
     register intptr_t inout __asm__("r0") = nr;
-    register void **data __asm__("r6") = args;
+    register const intptr_t *data __asm__("r6") = args;
     asm volatile(
       "bl SyscallAsm\n"
       // N.B. These are not the calling conventions normally used by the ABI.

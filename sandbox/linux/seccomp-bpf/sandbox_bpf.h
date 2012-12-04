@@ -165,6 +165,12 @@
   TypeName();                                    \
   TypeName(const TypeName&);                     \
   void operator=(const TypeName&)
+
+template <bool>
+struct CompileAssert {
+};
+#define COMPILE_ASSERT(expr, msg) \
+  typedef CompileAssert<(bool(expr))> msg[bool(expr) ? 1 : -1]
 #endif
 
 #include "sandbox/linux/seccomp-bpf/die.h"
