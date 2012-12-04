@@ -1047,13 +1047,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   if (!try_chrome.empty()) {
 #if defined(OS_WIN)
     // Setup.exe has determined that we need to run a retention experiment
-    // and has lauched chrome to show the experiment UI.
-    if (process_singleton_->FoundOtherProcessWindow()) {
-      // It seems that we don't need to run the experiment since chrome
-      // in the same profile is already running.
-      VLOG(1) << "Retention experiment not required";
-      return TryChromeDialogView::NOT_NOW;
-    }
+    // and has lauched chrome to show the experiment UI. It is guaranteed that
+    // no other Chrome is currently running as the process singleton was
+    // sucessfully grabbed above.
     int try_chrome_int;
     base::StringToInt(try_chrome, &try_chrome_int);
     TryChromeDialogView::Result answer =

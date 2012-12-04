@@ -83,17 +83,6 @@ class ProcessSingleton : public base::NonThreadSafe {
   // process should call this directly.
   bool Create(const NotificationCallback& notification_callback);
 
-#if defined(OS_WIN)
-  // Used in specific cases to let us know that there is an existing instance
-  // of Chrome running with this profile. In general, you should not use this
-  // function. Instead consider using NotifyOtherProcessOrCreate().
-  // For non profile-specific method, use
-  // browser_util::IsBrowserAlreadyRunning().
-  bool FoundOtherProcessWindow() const {
-      return (NULL != remote_window_);
-  }
-#endif  // defined(OS_WIN)
-
   // Clear any lock state during shutdown.
   void Cleanup();
 
