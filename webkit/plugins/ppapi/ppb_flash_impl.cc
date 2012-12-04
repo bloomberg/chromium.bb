@@ -94,12 +94,11 @@ PP_Bool PPB_Flash_Impl::DrawGlyphs(PP_Instance instance,
     style |= SkTypeface::kBold;
   if (font_desc->italic)
     style |= SkTypeface::kItalic;
-  SkTypeface* typeface =
+  skia::RefPtr<SkTypeface> typeface = skia::AdoptRef(
       SkTypeface::CreateFromName(face_name->value().c_str(),
-                                 static_cast<SkTypeface::Style>(style));
+                                 static_cast<SkTypeface::Style>(style)));
   if (!typeface)
     return PP_FALSE;
-  SkAutoUnref aur(typeface);
 
   // Set up the canvas.
   SkCanvas* canvas = image_resource->GetPlatformCanvas();
@@ -131,7 +130,7 @@ PP_Bool PPB_Flash_Impl::DrawGlyphs(PP_Instance instance,
   paint.setAntiAlias(true);
   paint.setHinting(SkPaint::kFull_Hinting);
   paint.setTextSize(SkIntToScalar(font_desc->size));
-  paint.setTypeface(typeface);  // Takes a ref and manages lifetime.
+  paint.setTypeface(typeface.get());  // Takes a ref and manages lifetime.
   if (allow_subpixel_aa) {
     paint.setSubpixelText(true);
     paint.setLCDRenderText(true);

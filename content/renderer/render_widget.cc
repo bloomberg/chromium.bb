@@ -684,10 +684,11 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
   // If there is a custom background, tile it.
   if (!background_.empty()) {
     SkPaint paint;
-    SkShader* shader = SkShader::CreateBitmapShader(background_,
-                                                    SkShader::kRepeat_TileMode,
-                                                    SkShader::kRepeat_TileMode);
-    paint.setShader(shader)->unref();
+    skia::RefPtr<SkShader> shader = skia::AdoptRef(
+        SkShader::CreateBitmapShader(background_,
+                                     SkShader::kRepeat_TileMode,
+                                     SkShader::kRepeat_TileMode));
+    paint.setShader(shader.get());
 
     // Use kSrc_Mode to handle background_ transparency properly.
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);

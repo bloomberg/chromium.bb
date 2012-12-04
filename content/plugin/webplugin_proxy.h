@@ -19,15 +19,14 @@
 #include "base/timer.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
+#include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #if defined(USE_X11)
 #include "ui/base/x/x11_util.h"
 #endif
 #include "ui/gl/gpu_preference.h"
 #include "ui/surface/transport_dib.h"
 #include "webkit/plugins/npapi/webplugin.h"
-
-class SkCanvas;
 
 namespace webkit {
 namespace npapi {
@@ -213,7 +212,7 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
 #if defined(OS_WIN)
   void CreateCanvasFromHandle(const TransportDIB::Handle& dib_handle,
                               const gfx::Rect& window_rect,
-                              SkAutoTUnref<SkCanvas>* canvas);
+                              skia::RefPtr<SkCanvas>* canvas);
 #elif defined(OS_MACOSX)
   static void CreateDIBAndCGContextFromHandle(
       const TransportDIB::Handle& dib_handle,
@@ -225,7 +224,7 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
       const TransportDIB::Handle& dib_handle,
       const gfx::Rect& window_rect,
       scoped_refptr<SharedTransportDIB>* dib_out,
-      SkAutoTUnref<SkCanvas>* canvas);
+      skia::RefPtr<SkCanvas>* canvas);
 
   static void CreateShmPixmapFromDIB(
       TransportDIB* dib,
@@ -243,8 +242,8 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
     return windowless_contexts_[windowless_buffer_index_].get();
   }
 #else
-  SkCanvas* windowless_canvas() const {
-    return windowless_canvases_[windowless_buffer_index_].get();
+  skia::RefPtr<SkCanvas> windowless_canvas() const {
+    return windowless_canvases_[windowless_buffer_index_];
   }
 
 #if defined(USE_X11)
@@ -280,8 +279,8 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
   base::mac::ScopedCFTypeRef<CGContextRef> windowless_contexts_[2];
   scoped_ptr<WebPluginAcceleratedSurfaceProxy> accelerated_surface_;
 #else
-  SkAutoTUnref<SkCanvas> windowless_canvases_[2];
-  SkAutoTUnref<SkCanvas> background_canvas_;
+  skia::RefPtr<SkCanvas> windowless_canvases_[2];
+  skia::RefPtr<SkCanvas> background_canvas_;
 
 #if defined(USE_X11)
   scoped_refptr<SharedTransportDIB> windowless_dibs_[2];

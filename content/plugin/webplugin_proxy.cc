@@ -371,8 +371,7 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
 #else
   // See above comment about windowless_context_ changing.
   // http::/crbug.com/139462
-  skia::PlatformCanvas* saved_canvas = windowless_canvas();
-  SkAutoRef local_ref(saved_canvas);
+  skia::RefPtr<skia::PlatformCanvas> saved_canvas = windowless_canvas();
 #if defined(USE_X11)
   scoped_refptr<SharedTransportDIB> local_dib_ref(
       windowless_dibs_[windowless_buffer_index_]);
@@ -399,7 +398,7 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
 
   // Before we send the invalidate, paint so that renderer uses the updated
   // bitmap.
-  delegate_->Paint(saved_canvas, offset_rect);
+  delegate_->Paint(saved_canvas.get(), offset_rect);
 
   saved_canvas->restore();
 #endif
@@ -450,12 +449,13 @@ void WebPluginProxy::UpdateGeometry(
 void WebPluginProxy::CreateCanvasFromHandle(
     const TransportDIB::Handle& dib_handle,
     const gfx::Rect& window_rect,
-    SkAutoTUnref<skia::PlatformCanvas>* canvas) {
-  canvas->reset(skia::CreatePlatformCanvas(window_rect.width(),
-                                           window_rect.height(),
-                                           true,
-                                           dib_handle,
-                                           skia::RETURN_NULL_ON_FAILURE));
+    skia::RefPtr<skia::PlatformCanvas>* canvas) {
+  *canvas = skia::AdoptRef(
+      skia::CreatePlatformCanvas(window_rect.width(),
+                                 window_rect.height(),
+                                 true,
+                                 dib_handle,
+                                 skia::RETURN_NULL_ON_FAILURE));
   // The canvas does not own the section so we need to close it now.
   CloseHandle(dib_handle);
 }
@@ -467,15 +467,15 @@ void WebPluginProxy::SetWindowlessBuffers(
   CreateCanvasFromHandle(windowless_buffer0,
                          window_rect,
                          &windowless_canvases_[0]);
-  if (!windowless_canvases_[0].get()) {
-    windowless_canvases_[1].reset(NULL);
+  if (!windowless_canvases_[0]) {
+    windowless_canvases_[1].clear();
     return;
   }
   CreateCanvasFromHandle(windowless_buffer1,
                          window_rect,
                          &windowless_canvases_[1]);
-  if (!windowless_canvases_[1].get()) {
-    windowless_canvases_[0].reset(NULL);
+  if (!windowless_canvases_[1]) {
+    windowless_canvases_[0].clear();
     return;
   }
 }
@@ -527,15 +527,15 @@ void WebPluginProxy::CreateDIBAndCanvasFromHandle(
     const TransportDIB::Handle& dib_handle,
     const gfx::Rect& window_rect,
     scoped_refptr<SharedTransportDIB>* dib_out,
-    SkAutoTUnref<skia::PlatformCanvas>* canvas) {
+    skia::RefPtr<skia::PlatformCanvas>* canvas) {
   TransportDIB* dib = TransportDIB::Map(dib_handle);
   // dib may be NULL if the renderer has already destroyed the TransportDIB by
   // the time we receive the handle, e.g. in case of multiple resizes.
   if (dib) {
-    canvas->reset(
+    *canvas = skia::AdoptRef(
         dib->GetPlatformCanvas(window_rect.width(), window_rect.height()));
   } else {
-    canvas->reset(NULL);
+    canvas->clear();
   }
   *dib_out = new SharedTransportDIB(dib);
 }
