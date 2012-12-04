@@ -6248,7 +6248,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4dbus8Response14FromMethodCallEPNS_10MethodCallE
-   fun:_ZN8chromeos4ibus20IBusPanelServiceImpl*Properties*
+   fun:_ZN8chromeos4ibus20IBusPanelServiceImpl*
 }
 {
    bug_163922
@@ -6304,4 +6304,23 @@
    fun:_Znw*
    fun:_ZN3net10URLFetcher6CreateERK4GURLNS0_11RequestTypeEPNS_18URLFetcherDelegateE
    fun:_ZN18WebResourceService10StartFetchEv
+}
+{
+   bug_164198
+   Memcheck:Uninitialized
+   fun:_ZN7WebCore9RenderBox15paintFillLayersERKNS_9PaintInfoERKNS_5ColorEPKNS_9FillLayerERKNS_10LayoutRectENS_24BackgroundBleedAvoidanceENS_17CompositeOperatorEPNS_12RenderObjectE
+   fun:_ZN7WebCore9RenderBox15paintBackgroundERKNS_9PaintInfoERKNS_10LayoutRectENS_24BackgroundBleedAvoidanceE
+   fun:_ZN7WebCore9RenderBox19paintBoxDecorationsERNS_9PaintInfoERKNS_11LayoutPointE
+   fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoERKNS_11LayoutPointE
+   fun:_ZN7WebCore11RenderBlock5paintERNS_9PaintInfoERKNS_11LayoutPointE
+   ...
+   fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoERKNS_11LayoutPointE
+   fun:_ZN7WebCore11RenderBlock5paintERNS_9PaintInfoERKNS_11LayoutPointE
+   fun:_ZN7WebCore11RenderLayer18paintLayerContentsEPNS_15GraphicsContextERKNS0_17LayerPaintingInfoEj
+   fun:_ZN7WebCore11RenderLayer31paintLayerContentsAndReflectionEPNS_15GraphicsContextERKNS0_17LayerPaintingInfoEj
+   fun:_ZN7WebCore11RenderLayer10paintLayerEPNS_15GraphicsContextERKNS0_17LayerPaintingInfoEj
+   fun:_ZN7WebCore11RenderLayer9paintListEPN3WTF6VectorIPS0_Lm0EEEPNS_15GraphicsContextERKNS0_17LayerPaintingInfoEj
+   fun:_ZN7WebCore11RenderLayer18paintLayerContentsEPNS_15GraphicsContextERKNS0_17LayerPaintingInfoEj
+   fun:_ZN7WebCore11RenderLayer31paintLayerContentsAndReflectionEPNS_15GraphicsContextERKNS0_17LayerPaintingInfoEj
+   fun:_ZN7WebCore11RenderLayer10paintLayerEPNS_15GraphicsContextERKNS0_17LayerPaintingInfoEj
 }

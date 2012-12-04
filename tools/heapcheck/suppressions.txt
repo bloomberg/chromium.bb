@@ -1645,3 +1645,16 @@
    fun:dbus::Response::FromMethodCall
    fun:chromeos::ibus::IBusPanelServiceImpl::UpdateProperty
 }
+{
+   bug_164185
+   Heapcheck:Leak
+   ...
+   fun:BookmarkBarGtk::GetFirstHiddenBookmark
+   fun:BookmarkBarGtk::SetChevronState
+   fun:BookmarkBarGtk::BookmarkNodeAdded
+   fun:BookmarkModel::AddNode
+   fun:BookmarkModel::AddURLWithCreationTime
+   fun:BookmarkModel::AddURL
+   fun:BookmarkBarGtkUnittest_HidesHelpMessageWithBookmark_Test::TestBody
+}
+
