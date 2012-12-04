@@ -4314,6 +4314,7 @@ display_destroy(struct display *display)
 		wl_data_device_manager_destroy(display->data_device_manager);
 
 	wl_compositor_destroy(display->compositor);
+	wl_registry_destroy(display->registry);
 
 	close(display->epoll_fd);
 
