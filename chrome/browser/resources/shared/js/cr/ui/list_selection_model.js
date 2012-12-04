@@ -227,7 +227,7 @@ cr.define('cr.ui', function() {
           var e = new Event('change');
           e.changes = indexes.map(function(index) {
             return {
-              index: index,
+              index: Number(index),
               selected: this.changedIndexes_[index]
             };
           }, this);
