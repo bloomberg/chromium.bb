@@ -153,6 +153,7 @@ void LabelButton::StateChanged() {
   const SkColor color = button_state_colors_[state()];
   if (state() != STATE_DISABLED && label_->enabled_color() != color)
     label_->SetEnabledColor(color);
+  label_->SetEnabled(state() != STATE_DISABLED);
   if (image_->GetPreferredSize() != previous_image_size)
     Layout();
 }
