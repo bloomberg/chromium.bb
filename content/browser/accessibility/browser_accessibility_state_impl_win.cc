@@ -14,6 +14,10 @@
 namespace content {
 
 void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
+  // NOTE: this method is run from the file thread to reduce jank, since
+  // there's no guarantee these system calls will return quickly. Be careful
+  // not to add any code that isn't safe to run from a non-main thread!
+
   AUDIODESCRIPTION audio_description = {0};
   audio_description.cbSize = sizeof(AUDIODESCRIPTION);
   SystemParametersInfo(SPI_GETAUDIODESCRIPTION, 0, &audio_description, 0);

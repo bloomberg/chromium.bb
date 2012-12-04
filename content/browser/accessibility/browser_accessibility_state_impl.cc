@@ -49,13 +49,22 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
     accessibility_mode_ = AccessibilityModeComplete;
   }
 
-  // UpdateHistogram only takes a couple of milliseconds, but run it on
-  // the FILE thread to guarantee there's no jank.
-  // And we need to AddRef() the leaky singleton so that Bind doesn't
+#if defined(OS_WIN)
+  // On Windows, UpdateHistogram calls some system functions with unknown
+  // runtime, so call it on the file thread to ensure there's no jank.
+  // Everything in that method must be safe to call on another thread.
+  BrowserThread::ID update_histogram_thread = BrowserThread::FILE;
+#else
+  // On all other platforms, UpdateHistogram should be called on the main
+  // thread.
+  BrowserThread::ID update_histogram_thread = BrowserThread::UI;
+#endif
+
+  // We need to AddRef() the leaky singleton so that Bind doesn't
   // delete it prematurely.
   AddRef();
   BrowserThread::PostDelayedTask(
-      BrowserThread::FILE, FROM_HERE,
+      update_histogram_thread, FROM_HERE,
       base::Bind(&BrowserAccessibilityStateImpl::UpdateHistogram, this),
       base::TimeDelta::FromSeconds(kAccessibilityHistogramDelaySecs));
 }

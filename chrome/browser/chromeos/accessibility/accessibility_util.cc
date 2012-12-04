@@ -121,6 +121,9 @@ void UpdateChromeOSAccessibilityHistograms() {
                         IsHighContrastEnabled());
   UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosVirtualKeyboard",
                         IsVirtualKeyboardEnabled());
+  UMA_HISTOGRAM_ENUMERATION("Accessibility.CrosScreenMagnifier",
+                            GetMagnifierType(),
+                            3);
 }
 
 void Initialize() {
