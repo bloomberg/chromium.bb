@@ -912,16 +912,18 @@ weston_surface_destroy(struct weston_surface *surface)
 static void
 weston_surface_attach(struct weston_surface *surface, struct wl_buffer *buffer)
 {
-	if (surface->buffer) {
+	if (surface->buffer && buffer != surface->buffer) {
 		weston_buffer_post_release(surface->buffer);
 		wl_list_remove(&surface->buffer_destroy_listener.link);
 	}
 
-	if (buffer) {
+	if (buffer && buffer != surface->buffer) {
 		buffer->busy_count++;
 		wl_signal_add(&buffer->resource.destroy_signal,
 			      &surface->buffer_destroy_listener);
-	} else {
+	}
+
+	if (!buffer) {
 		if (weston_surface_is_mapped(surface))
 			weston_surface_unmap(surface);
 	}
