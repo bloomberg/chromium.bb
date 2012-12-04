@@ -763,7 +763,6 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kEnableChromebookFunctionKey,
       ::switches::kEnableCompositingForFixedPosition,
       ::switches::kEnableEncryptedMedia,
-      ::switches::kEnableGView,
       ::switches::kEnableLogging,
       ::switches::kEnableUIReleaseFrontSurface,
       ::switches::kEnablePinch,

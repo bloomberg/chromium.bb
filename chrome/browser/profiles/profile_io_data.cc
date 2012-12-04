@@ -73,7 +73,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/drive_protocol_handler.h"
-#include "chrome/browser/chromeos/gview_request_interceptor.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
@@ -653,13 +652,6 @@ void ProfileIOData::SetUpJobFactoryDefaults(
         chrome::kDriveScheme, new drive::DriveProtocolHandler());
     DCHECK(set_protocol);
   }
-#if !defined(GOOGLE_CHROME_BUILD)
-  // Install the GView request interceptor that will redirect requests
-  // of compatible documents (PDF, etc) to the GView document viewer.
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  if (parsed_command_line.HasSwitch(switches::kEnableGView))
-    job_factory->AddInterceptor(new chromeos::GViewRequestInterceptor);
-#endif  // !defined(GOOGLE_CHROME_BUILD)
 #endif  // defined(OS_CHROMEOS)
 
   job_factory->SetProtocolHandler(

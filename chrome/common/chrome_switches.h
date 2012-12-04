@@ -395,7 +395,6 @@ extern const char kEnableChromebookFunctionKey[];
 extern const char kEnableTouchpadThreeFingerClick[];
 extern const char kEnableTouchpadThreeFingerSwipe[];
 extern const char kSkipOAuthLogin[];
-extern const char kEnableGView[];
 extern const char kEnableKioskMode[];
 extern const char kEnableRequestTabletSite[];
 extern const char kEnableStaticIPConfig[];

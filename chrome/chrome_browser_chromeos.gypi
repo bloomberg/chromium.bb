@@ -292,8 +292,6 @@
         'browser/chromeos/external_metrics.h',
         'browser/chromeos/external_protocol_dialog.cc',
         'browser/chromeos/external_protocol_dialog.h',
-        'browser/chromeos/gview_request_interceptor.cc',
-        'browser/chromeos/gview_request_interceptor.h',
         'browser/chromeos/imageburner/burn_controller.cc',
         'browser/chromeos/imageburner/burn_controller.h',
         'browser/chromeos/imageburner/burn_manager.cc',

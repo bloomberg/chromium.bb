@@ -1103,25 +1103,6 @@
    fun:PluginPrefsFactory::BuildServiceInstanceFor
 }
 {
-   bug_103192_a
-   Heapcheck:Leak
-   fun:MessageLoop
-   fun:MessageLoopForIO
-   fun:GViewRequestInterceptorTest
-}
-{
-   bug_103192_b
-   Heapcheck:Leak
-   fun:PluginService::GetPlugins
-   fun:chromeos::::GViewRequestInterceptorTest::SetUp
-}
-{
-   bug_103192_c
-   Heapcheck:Leak
-   fun:base::Bind
-   fun:chromeos::::GViewRequestInterceptorTest::SetUp
-}
-{
    bug_103704
    Heapcheck:Leak
    fun:std::string::_Rep::_S_create
@@ -1130,16 +1111,6 @@
    fun:TestingBrowserProcess
    fun:::ChromeTestSuiteInitializer::OnTestStart
    fun:testing::internal::TestEventRepeater::OnTestStart
-}
-{
-   bug_103945
-   Heapcheck:Leak
-   ...
-   fun:std::*string::_Rep::_S_create
-   ...
-   fun:PluginService::RegisterPepperPlugins
-   fun:PluginService::Init
-   fun:chromeos::::GViewRequestInterceptorTest::SetUp
 }
 {
    bug_111588a

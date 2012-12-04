@@ -1445,10 +1445,6 @@ const char kSkipOAuthLogin[]                = "skip-oauth-login";
 const char kEnableChromebookFunctionKey[] =
     "enable-chromebook-function-key";
 
-// Enables the redirection of viewable document requests to the Google Document
-// Viewer.
-const char kEnableGView[]                   = "enable-gview";
-
 // Enable Kiosk mode for ChromeOS
 const char kEnableKioskMode[]               = "enable-kiosk-mode";
 
