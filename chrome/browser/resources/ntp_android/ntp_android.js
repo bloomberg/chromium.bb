@@ -1743,19 +1743,19 @@ cr.define('ntp', function() {
         clientName = client.name;
 
       var iconStyle;
-      if (windows[0].deviceType == 'win' ||
-          windows[0].deviceType == 'macosx' ||
-          windows[0].deviceType == 'linux' ||
-          windows[0].deviceType == 'chromeos' ||
-          windows[0].deviceType == 'other') {
+      var deviceType = client.deviceType;
+      if (deviceType == 'win' ||
+          deviceType == 'macosx' ||
+          deviceType == 'linux' ||
+          deviceType == 'chromeos' ||
+          deviceType == 'other') {
         iconStyle = 'laptop';
-      } else if (windows[0].deviceType == 'phone') {
+      } else if (deviceType == 'phone') {
         iconStyle = 'phone';
-      } else if (windows[0].deviceType == 'tablet') {
+      } else if (deviceType == 'tablet') {
         iconStyle = 'tablet';
       } else {
-        console.error(
-            'Unknown sync device type found: ', windows[0].deviceType);
+        console.error('Unknown sync device type found: ', deviceType);
         iconStyle = 'laptop';
       }
       var headerList = [{
