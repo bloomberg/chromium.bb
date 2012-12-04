@@ -18,6 +18,11 @@
 using namespace WebKit;
 using namespace WebKitTests;
 
+using testing::_;
+using testing::AnyNumber;
+using testing::InSequence;
+using testing::Mock;
+
 namespace cc {
 namespace {
 
@@ -481,12 +486,10 @@ TEST(GLRendererTest2, visibilityChangeIsLastCall)
     EXPECT_TRUE(lastCallWasSetVisiblity);
 }
 
-
 class TextureStateTrackingContext : public FakeWebGraphicsContext3D {
 public:
     TextureStateTrackingContext()
         : m_activeTexture(GL_INVALID_ENUM)
-        , m_inDraw(false)
     {
     }
 
@@ -497,15 +500,8 @@ public:
         return WebString();
     }
 
-    // We shouldn't set any texture parameters during the draw sequence, although
-    // we might when creating the quads.
-    void setInDraw() { m_inDraw = true; }
-
-    virtual void texParameteri(WGC3Denum target, WGC3Denum pname, WGC3Dint param)
-    {
-        if (m_inDraw)
-            ADD_FAILURE();
-    }
+    MOCK_METHOD3(texParameteri, void(WGC3Denum target, WGC3Denum pname, WGC3Dint param));
+    MOCK_METHOD4(drawElements, void(WGC3Denum mode, WGC3Dsizei count, WGC3Denum type, WGC3Dintptr offset));
 
     virtual void activeTexture(WGC3Denum texture)
     {
@@ -516,7 +512,6 @@ public:
     WGC3Denum activeTexture() const { return m_activeTexture; }
 
 private:
-    bool m_inDraw;
     WGC3Denum m_activeTexture;
 };
 
@@ -528,6 +523,8 @@ TEST(GLRendererTest2, activeTextureState)
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
     FakeRendererGL renderer(&fakeClient, resourceProvider.get());
 
+    // During initialization we are allowed to set any texture parameters.
+    EXPECT_CALL(*context, texParameteri(_, _, _)).Times(AnyNumber());
     EXPECT_TRUE(renderer.initialize());
 
     cc::RenderPass::Id id(1, 1);
@@ -535,7 +532,33 @@ TEST(GLRendererTest2, activeTextureState)
     pass->SetNew(id, gfx::Rect(0, 0, 100, 100), gfx::Rect(0, 0, 100, 100), gfx::Transform());
     pass->AppendOneOfEveryQuadType(resourceProvider.get());
 
-    context->setInDraw();
+    // Set up expected texture filter state transitions that match the quads
+    // created in AppendOneOfEveryQuadType().
+    Mock::VerifyAndClearExpectations(context);
+    {
+        InSequence sequence;
+
+        // yuv_quad is drawn with the default filter.
+        EXPECT_CALL(*context, drawElements(_, _, _, _));
+
+        // tile_quad is drawn with GL_NEAREST because it is not transformed or
+        // scaled.
+        EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+        EXPECT_CALL(*context, drawElements(_, _, _, _));
+
+        // transformed_tile_quad uses GL_LINEAR.
+        EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        EXPECT_CALL(*context, drawElements(_, _, _, _));
+
+        // scaled_tile_quad also uses GL_LINEAR.
+        EXPECT_CALL(*context, drawElements(_, _, _, _));
+
+        // The remaining quads also use GL_LINEAR because nearest neighbor
+        // filtering is currently only used with tile quads.
+        EXPECT_CALL(*context, drawElements(_, _, _, _)).Times(6);
+    }
 
     cc::DirectRenderer::DrawingFrame drawingFrame;
     renderer.beginDrawingFrame(drawingFrame);
@@ -547,6 +570,7 @@ TEST(GLRendererTest2, activeTextureState)
     }
     renderer.finishDrawingQuadList();
     EXPECT_EQ(context->activeTexture(), GL_TEXTURE0);
+    Mock::VerifyAndClearExpectations(context);
 }
 
 }  // namespace

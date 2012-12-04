@@ -73,6 +73,10 @@ class UI_EXPORT Transform {
   // Returns true if the matrix is either identity or pure translation.
   bool IsIdentityOrTranslation() const;
 
+  // Returns true if the matrix is either identity or pure, non-fractional
+  // translation.
+  bool IsIdentityOrIntegerTranslation() const;
+
   // Returns true if the matrix is has only scaling and translation components.
   bool IsScaleOrTranslation() const;
 

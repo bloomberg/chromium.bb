@@ -10,6 +10,7 @@
 #include "cc/scoped_ptr_hash_map.h"
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -17,6 +18,8 @@
 #include <public/WebGraphicsContext3D.h>
 
 using namespace WebKit;
+
+using testing::Mock;
 
 namespace cc {
 namespace {
@@ -578,6 +581,61 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources)
         childResourceProvider->receiveFromParent(list);
     }
     EXPECT_EQ(0u, childResourceProvider->numResources());
+}
+
+class TextureStateTrackingContext : public FakeWebGraphicsContext3D {
+public:
+    MOCK_METHOD2(bindTexture, void(WGC3Denum target, WebGLId texture));
+    MOCK_METHOD3(texParameteri, void(WGC3Denum target, WGC3Denum pname, WGC3Dint param));
+};
+
+TEST_P(ResourceProviderTest, ScopedSampler)
+{
+    // Sampling is only supported for GL textures.
+    if (GetParam() != ResourceProvider::GLTexture)
+        return;
+
+    scoped_ptr<GraphicsContext> outputSurface(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new TextureStateTrackingContext)));
+    TextureStateTrackingContext* context = static_cast<TextureStateTrackingContext*>(outputSurface->context3D());
+    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
+
+    gfx::Size size(1, 1);
+    WGC3Denum format = GL_RGBA;
+    int pool = 1;
+    int textureId = 1;
+
+    // Check that the texture gets created with the right sampler settings.
+    EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, textureId));
+    EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+    EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+    EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+    EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+    ResourceProvider::ResourceId id = resourceProvider->createResource(pool, size, format, ResourceProvider::TextureUsageAny);
+
+    // Creating a sampler with the default filter should not change any texture
+    // parameters.
+    {
+        EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, textureId));
+        ResourceProvider::ScopedSamplerGL sampler(resourceProvider.get(), id, GL_TEXTURE_2D, GL_LINEAR);
+    }
+
+    // Using a different filter should be reflected in the texture parameters.
+    {
+        EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, textureId));
+        EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+        ResourceProvider::ScopedSamplerGL sampler(resourceProvider.get(), id, GL_TEXTURE_2D, GL_NEAREST);
+    }
+
+    // Test resetting to the default filter.
+    {
+        EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, textureId));
+        EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        ResourceProvider::ScopedSamplerGL sampler(resourceProvider.get(), id, GL_TEXTURE_2D, GL_LINEAR);
+    }
+
+    Mock::VerifyAndClearExpectations(context);
 }
 
 INSTANTIATE_TEST_CASE_P(ResourceProviderTests,

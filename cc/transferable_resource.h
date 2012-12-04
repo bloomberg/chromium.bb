@@ -26,6 +26,7 @@ struct CC_EXPORT TransferableResource {
 
   unsigned id;
   GLenum format;
+  GLenum filter;
   gfx::Size size;
   Mailbox mailbox;
 };

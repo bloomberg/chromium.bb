@@ -60,11 +60,12 @@ ResourceProvider::Resource::Resource()
     , markedForDeletion(false)
     , size()
     , format(0)
+    , filter(0)
     , type(static_cast<ResourceType>(0))
 {
 }
 
-ResourceProvider::Resource::Resource(unsigned textureId, int pool, const gfx::Size& size, GLenum format)
+ResourceProvider::Resource::Resource(unsigned textureId, int pool, const gfx::Size& size, GLenum format, GLenum filter)
     : glId(textureId)
     , glPixelBufferId(0)
     , pixels(0)
@@ -77,11 +78,12 @@ ResourceProvider::Resource::Resource(unsigned textureId, int pool, const gfx::Si
     , markedForDeletion(false)
     , size(size)
     , format(format)
+    , filter(filter)
     , type(GLTexture)
 {
 }
 
-ResourceProvider::Resource::Resource(uint8_t* pixels, int pool, const gfx::Size& size, GLenum format)
+ResourceProvider::Resource::Resource(uint8_t* pixels, int pool, const gfx::Size& size, GLenum format, GLenum filter)
     : glId(0)
     , glPixelBufferId(0)
     , pixels(pixels)
@@ -94,6 +96,7 @@ ResourceProvider::Resource::Resource(uint8_t* pixels, int pool, const gfx::Size&
     , markedForDeletion(false)
     , size(size)
     , format(format)
+    , filter(filter)
     , type(Bitmap)
 {
 }
@@ -177,7 +180,7 @@ ResourceProvider::ResourceId ResourceProvider::createGLTexture(int pool, const g
         GLC(context3d, context3d->texImage2D(GL_TEXTURE_2D, 0, format, size.width(), size.height(), 0, format, GL_UNSIGNED_BYTE, 0));
 
     ResourceId id = m_nextId++;
-    Resource resource(textureId, pool, size, format);
+    Resource resource(textureId, pool, size, format, GL_LINEAR);
     m_resources[id] = resource;
     return id;
 }
@@ -189,7 +192,7 @@ ResourceProvider::ResourceId ResourceProvider::createBitmap(int pool, const gfx:
     uint8_t* pixels = new uint8_t[size.width() * size.height() * 4];
 
     ResourceId id = m_nextId++;
-    Resource resource(pixels, pool, size, GL_RGBA);
+    Resource resource(pixels, pool, size, GL_RGBA, GL_LINEAR);
     m_resources[id] = resource;
     return id;
 }
@@ -207,7 +210,7 @@ ResourceProvider::ResourceId ResourceProvider::createResourceFromExternalTexture
     GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
     ResourceId id = m_nextId++;
-    Resource resource(textureId, 0, gfx::Size(), 0);
+    Resource resource(textureId, 0, gfx::Size(), 0, GL_LINEAR);
     resource.external = true;
     m_resources[id] = resource;
     return id;
@@ -424,6 +427,12 @@ ResourceProvider::ScopedReadLockGL::~ScopedReadLockGL()
     m_resourceProvider->unlockForRead(m_resourceId);
 }
 
+ResourceProvider::ScopedSamplerGL::ScopedSamplerGL(ResourceProvider* resourceProvider, ResourceProvider::ResourceId resourceId, GLenum target, GLenum filter)
+    : ScopedReadLockGL(resourceProvider, resourceId)
+{
+    resourceProvider->bindForSampling(resourceId, target, filter);
+}
+
 ResourceProvider::ScopedWriteLockGL::ScopedWriteLockGL(ResourceProvider* resourceProvider, ResourceProvider::ResourceId resourceId)
     : m_resourceProvider(resourceProvider)
     , m_resourceId(resourceId)
@@ -616,7 +625,7 @@ void ResourceProvider::receiveFromChild(int child, const TransferableResourceLis
         GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, textureId));
         GLC(context3d, context3d->consumeTextureCHROMIUM(GL_TEXTURE_2D, it->mailbox.name));
         ResourceId id = m_nextId++;
-        Resource resource(textureId, childInfo.pool, it->size, it->format);
+        Resource resource(textureId, childInfo.pool, it->size, it->format, it->filter);
         resource.mailbox.setName(it->mailbox.name);
         m_resources[id] = resource;
         childInfo.parentToChildMap[id] = it->id;
@@ -662,6 +671,7 @@ bool ResourceProvider::transferResource(WebGraphicsContext3D* context, ResourceI
         return false;
     resource->id = id;
     resource->format = source->format;
+    resource->filter = source->filter;
     resource->size = source->size;
 
     if (source->mailbox.isZero()) {
@@ -837,6 +847,24 @@ void ResourceProvider::setPixelsFromBuffer(ResourceId id)
         ScopedWriteLockSoftware lock(this, id);
         SkCanvas* dest = lock.skCanvas();
         dest->writePixels(src, 0, 0);
+    }
+}
+
+void ResourceProvider::bindForSampling(ResourceProvider::ResourceId resourceId, GLenum target, GLenum filter)
+{
+    DCHECK(m_threadChecker.CalledOnValidThread());
+    WebGraphicsContext3D* context3d = m_context->context3D();
+    ResourceMap::iterator it = m_resources.find(resourceId);
+    DCHECK(it != m_resources.end());
+    Resource* resource = &it->second;
+    DCHECK(resource->lockForReadCount);
+    DCHECK(!resource->lockedForWrite);
+
+    GLC(context3d, context3d->bindTexture(target, resource->glId));
+    if (filter != resource->filter) {
+        GLC(context3d, context3d->texParameteri(target, GL_TEXTURE_MIN_FILTER, filter));
+        GLC(context3d, context3d->texParameteri(target, GL_TEXTURE_MAG_FILTER, filter));
+        resource->filter = filter;
     }
 }
 

@@ -25,8 +25,9 @@ void Mailbox::setName(const GLbyte* n) {
 }
 
 TransferableResource::TransferableResource()
-    : id(0),
-      format(0) {
+    : id(0)
+    , format(0)
+    , filter(0) {
 }
 
 TransferableResource::~TransferableResource() {

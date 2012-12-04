@@ -1158,6 +1158,31 @@ TEST(XFormTest, FactorTRS) {
   }
 }
 
+TEST(XFormTest, IntegerTranslation) {
+  gfx::Transform transform;
+  EXPECT_TRUE(transform.IsIdentityOrIntegerTranslation());
+
+  transform.Translate3d(1, 2, 3);
+  EXPECT_TRUE(transform.IsIdentityOrIntegerTranslation());
+
+  transform.MakeIdentity();
+  transform.Translate3d(-1, -2, -3);
+  EXPECT_TRUE(transform.IsIdentityOrIntegerTranslation());
+
+  transform.MakeIdentity();
+  transform.Translate3d(4.5, 0, 0);
+  EXPECT_FALSE(transform.IsIdentityOrIntegerTranslation());
+
+  transform.MakeIdentity();
+  transform.Translate3d(0, -6.7, 0);
+  EXPECT_FALSE(transform.IsIdentityOrIntegerTranslation());
+
+  transform.MakeIdentity();
+  transform.Translate3d(0, 0, 8.9);
+  EXPECT_FALSE(transform.IsIdentityOrIntegerTranslation());
+}
+
+
 }  // namespace
 
 }  // namespace gfx

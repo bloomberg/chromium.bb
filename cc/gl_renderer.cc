@@ -539,15 +539,6 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
     } else {
         filterBitmap = applyFilters(this, renderPass->filters, contentsTexture, m_client->hasImplThread());
     }
-    scoped_ptr<ResourceProvider::ScopedReadLockGL> contentsResourceLock;
-    unsigned contentsTextureId = 0;
-    if (filterBitmap.getTexture()) {
-        GrTexture* texture = reinterpret_cast<GrTexture*>(filterBitmap.getTexture());
-        contentsTextureId = texture->getTextureHandle();
-    } else {
-        contentsResourceLock = make_scoped_ptr(new ResourceProvider::ScopedReadLockGL(m_resourceProvider, contentsTexture->id()));
-        contentsTextureId = contentsResourceLock->textureId();
-    }
 
     // Draw the background texture if there is one.
     if (backgroundTexture) {
@@ -578,7 +569,13 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
 
     // FIXME: use the backgroundTexture and blend the background in with this draw instead of having a separate copy of the background texture.
 
-    context()->bindTexture(GL_TEXTURE_2D, contentsTextureId);
+    scoped_ptr<ResourceProvider::ScopedReadLockGL> contentsResourceLock;
+    if (filterBitmap.getTexture()) {
+        GrTexture* texture = reinterpret_cast<GrTexture*>(filterBitmap.getTexture());
+        context()->bindTexture(GL_TEXTURE_2D, texture->getTextureHandle());
+    } else
+        contentsResourceLock = make_scoped_ptr(new ResourceProvider::ScopedSamplerGL(m_resourceProvider, contentsTexture->id(),
+                                                                                     GL_TEXTURE_2D, GL_LINEAR));
 
     int shaderQuadLocation = -1;
     int shaderEdgeLocation = -1;
@@ -634,7 +631,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
         GLC(context(), context()->uniform1i(shaderMaskSamplerLocation, 1));
         GLC(context(), context()->uniform2f(shaderMaskTexCoordScaleLocation, quad->mask_tex_coord_scale_x, quad->mask_tex_coord_scale_y));
         GLC(context(), context()->uniform2f(shaderMaskTexCoordOffsetLocation, quad->mask_tex_coord_offset_x, quad->mask_tex_coord_offset_y));
-        context()->bindTexture(GL_TEXTURE_2D, maskTextureId);
+        m_resourceProvider->bindForSampling(quad->mask_resource_id, GL_TEXTURE_2D, GL_LINEAR);
         GLC(context(), context()->activeTexture(GL_TEXTURE0));
     }
 
@@ -782,8 +779,9 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
 
     setUseProgram(uniforms.program);
     GLC(context(), context()->uniform1i(uniforms.samplerLocation, 0));
-    ResourceProvider::ScopedReadLockGL quadResourceLock(m_resourceProvider, quad->resource_id);
-    GLC(context(), context()->bindTexture(GL_TEXTURE_2D, quadResourceLock.textureId()));
+    bool scaled = (texToGeomScaleX != 1 || texToGeomScaleY != 1);
+    GLenum filter = (quad->IsAntialiased() || scaled || !quad->quadTransform().IsIdentityOrIntegerTranslation()) ? GL_LINEAR : GL_NEAREST;
+    ResourceProvider::ScopedSamplerGL quadResourceLock(m_resourceProvider, quad->resource_id, GL_TEXTURE_2D, filter);
 
     bool useAA = !clipped && quad->IsAntialiased();
     if (useAA) {
@@ -887,15 +885,12 @@ void GLRenderer::drawYUVVideoQuad(const DrawingFrame& frame, const YUVVideoDrawQ
     const VideoLayerImpl::FramePlane& uPlane = quad->u_plane;
     const VideoLayerImpl::FramePlane& vPlane = quad->v_plane;
 
-    ResourceProvider::ScopedReadLockGL yPlaneLock(m_resourceProvider, yPlane.resourceId);
-    ResourceProvider::ScopedReadLockGL uPlaneLock(m_resourceProvider, uPlane.resourceId);
-    ResourceProvider::ScopedReadLockGL vPlaneLock(m_resourceProvider, vPlane.resourceId);
     GLC(context(), context()->activeTexture(GL_TEXTURE1));
-    GLC(context(), context()->bindTexture(GL_TEXTURE_2D, yPlaneLock.textureId()));
+    ResourceProvider::ScopedSamplerGL yPlaneLock(m_resourceProvider, yPlane.resourceId, GL_TEXTURE_2D, GL_LINEAR);
     GLC(context(), context()->activeTexture(GL_TEXTURE2));
-    GLC(context(), context()->bindTexture(GL_TEXTURE_2D, uPlaneLock.textureId()));
+    ResourceProvider::ScopedSamplerGL uPlaneLock(m_resourceProvider, uPlane.resourceId, GL_TEXTURE_2D, GL_LINEAR);
     GLC(context(), context()->activeTexture(GL_TEXTURE3));
-    GLC(context(), context()->bindTexture(GL_TEXTURE_2D, vPlaneLock.textureId()));
+    ResourceProvider::ScopedSamplerGL vPlaneLock(m_resourceProvider, vPlane.resourceId, GL_TEXTURE_2D, GL_LINEAR);
 
     setUseProgram(program->program());
 
@@ -1087,8 +1082,7 @@ void GLRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureDrawQua
     const gfx::RectF& uvRect = quad->uv_rect;
     GLC(context(), context()->uniform4f(binding.texTransformLocation, uvRect.x(), uvRect.y(), uvRect.width(), uvRect.height()));
 
-    ResourceProvider::ScopedReadLockGL quadResourceLock(m_resourceProvider, quad->resource_id);
-    GLC(context(), context()->bindTexture(GL_TEXTURE_2D, quadResourceLock.textureId()));
+    ResourceProvider::ScopedSamplerGL quadResourceLock(m_resourceProvider, quad->resource_id, GL_TEXTURE_2D, GL_LINEAR);
 
     if (!quad->premultiplied_alpha) {
         // As it turns out, the premultiplied alpha blending function (ONE, ONE_MINUS_SRC_ALPHA)

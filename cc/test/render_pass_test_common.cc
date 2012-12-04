@@ -100,6 +100,40 @@ void TestRenderPass::AppendOneOfEveryQuadType(cc::ResourceProvider* resourceProv
                        false);
   AppendQuad(texture_quad.PassAs<DrawQuad>());
 
+  scoped_ptr<cc::TileDrawQuad> scaled_tile_quad =
+      cc::TileDrawQuad::Create();
+  scaled_tile_quad->SetNew(shared_state.get(),
+                    rect,
+                    opaque_rect,
+                    texture_resource,
+                    gfx::RectF(0, 0, 50, 50),
+                    gfx::Size(50, 50),
+                    false,
+                    false,
+                    false,
+                    false,
+                    false);
+  AppendQuad(scaled_tile_quad.PassAs<DrawQuad>());
+
+  scoped_ptr<cc::SharedQuadState> transformed_state = shared_state->Copy();
+  gfx::Transform rotation;
+  rotation.Rotate(45);
+  transformed_state->content_to_target_transform = transformed_state->content_to_target_transform * rotation;
+  scoped_ptr<cc::TileDrawQuad> transformed_tile_quad =
+      cc::TileDrawQuad::Create();
+  transformed_tile_quad->SetNew(transformed_state.get(),
+                    rect,
+                    opaque_rect,
+                    texture_resource,
+                    gfx::RectF(0, 0, 100, 100),
+                    gfx::Size(100, 100),
+                    false,
+                    false,
+                    false,
+                    false,
+                    false);
+  AppendQuad(transformed_tile_quad.PassAs<DrawQuad>());
+
   scoped_ptr<cc::TileDrawQuad> tile_quad =
       cc::TileDrawQuad::Create();
   tile_quad->SetNew(shared_state.get(),
@@ -133,6 +167,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(cc::ResourceProvider* resourceProv
                    planes[2]);
   AppendQuad(yuv_quad.PassAs<DrawQuad>());
 
+  AppendSharedQuadState(transformed_state.Pass());
   AppendSharedQuadState(shared_state.Pass());
 }
 

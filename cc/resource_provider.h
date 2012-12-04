@@ -132,6 +132,11 @@ public:
     // will wait on it.
     void receiveFromParent(const TransferableResourceList&);
 
+    // Bind the given GL resource to a texture target for sampling using the
+    // specified filter for both minification and magnification. The resource
+    // must be locked for reading.
+    void bindForSampling(ResourceProvider::ResourceId, GLenum target, GLenum filter);
+
     // The following lock classes are part of the ResourceProvider API and are
     // needed to read and write the resource contents. The user must ensure
     // that they only use GL locks on GL resources, etc, and this is enforced
@@ -149,6 +154,14 @@ public:
         unsigned m_textureId;
 
         DISALLOW_COPY_AND_ASSIGN(ScopedReadLockGL);
+    };
+
+    class CC_EXPORT ScopedSamplerGL : public ScopedReadLockGL {
+    public:
+        ScopedSamplerGL(ResourceProvider*, ResourceProvider::ResourceId, GLenum target, GLenum filter);
+
+    private:
+        DISALLOW_COPY_AND_ASSIGN(ScopedSamplerGL);
     };
 
     class CC_EXPORT ScopedWriteLockGL {
@@ -212,8 +225,8 @@ public:
 private:
     struct Resource {
         Resource();
-        Resource(unsigned textureId, int pool, const gfx::Size& size, GLenum format);
-        Resource(uint8_t* pixels, int pool, const gfx::Size& size, GLenum format);
+        Resource(unsigned textureId, int pool, const gfx::Size& size, GLenum format, GLenum filter);
+        Resource(uint8_t* pixels, int pool, const gfx::Size& size, GLenum format, GLenum filter);
 
         unsigned glId;
         // Pixel buffer used for set pixels without unnecessary copying.
@@ -229,6 +242,8 @@ private:
         bool markedForDeletion;
         gfx::Size size;
         GLenum format;
+        // TODO(skyostil): Use a separate sampler object for filter state.
+        GLenum filter;
         ResourceType type;
     };
     typedef base::hash_map<ResourceId, Resource> ResourceMap;

@@ -248,6 +248,18 @@ bool Transform::IsIdentityOrTranslation() const {
   return has_no_perspective && has_no_rotation_or_skew && has_no_scale;
 }
 
+bool Transform::IsIdentityOrIntegerTranslation() const {
+  if (!IsIdentityOrTranslation())
+    return false;
+
+  bool no_fractional_translation =
+      static_cast<int>(matrix_.getDouble(0, 3)) == matrix_.getDouble(0, 3) &&
+      static_cast<int>(matrix_.getDouble(1, 3)) == matrix_.getDouble(1, 3) &&
+      static_cast<int>(matrix_.getDouble(2, 3)) == matrix_.getDouble(2, 3);
+
+  return no_fractional_translation;
+}
+
 bool Transform::IsScaleOrTranslation() const {
   if (matrix_.isIdentity())
     return true;
