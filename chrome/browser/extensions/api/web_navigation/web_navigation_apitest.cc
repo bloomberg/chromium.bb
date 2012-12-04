@@ -402,14 +402,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirect) {
           << message_;
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/161897
-#define MAYBE_ServerRedirectSingleProcess FLAKY_ServerRedirectSingleProcess
-#else
-#define MAYBE_ServerRedirectSingleProcess ServerRedirectSingleProcess
-#endif
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest,
-                       MAYBE_ServerRedirectSingleProcess) {
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirectSingleProcess) {
   // Set max renderers to 1 to force running out of processes.
   content::RenderProcessHost::SetMaxRendererProcessCount(1);
 
