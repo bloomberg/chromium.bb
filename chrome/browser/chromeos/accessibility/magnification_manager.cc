@@ -102,15 +102,8 @@ class MagnificationManagerImpl : public MagnificationManager,
   }
 
   void UpdateMagnifierStatus() {
-    UserManager* manager = UserManager::Get();
-    if (!profile_) {
-      SetMagnifier(ash::MAGNIFIER_OFF);
-    } else if (manager && !manager->IsSessionStarted()) {
-      SetMagnifier(ash::MAGNIFIER_FULL);
-    } else {
-      ash::MagnifierType type = GetMagnifierType();
-      SetMagnifier(type);
-    }
+    ash::MagnifierType type = GetMagnifierType();
+    SetMagnifier(type);
   }
 
   virtual void Observe(int type,

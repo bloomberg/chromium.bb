@@ -58,14 +58,14 @@ class MagnificationManagerTest : public CrosInProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, Login) {
-  // Confirms that magnifier is enabled on the login screen.
-  CheckCurrentMagnifierType(ash::MAGNIFIER_FULL);
+  // Confirms that magnifier is disabled on the login screen.
+  CheckCurrentMagnifierType(ash::MAGNIFIER_OFF);
 
   // Logs in.
   UserManager::Get()->UserLoggedIn("owner@invalid.domain", true);
   UserManager::Get()->SessionStarted();
 
-  // Confirms that magnifier is disabled just after login.
+  // Confirms that magnifier is still disabled just after login.
   CheckCurrentMagnifierType(ash::MAGNIFIER_OFF);
 
   // Enables magnifier.
