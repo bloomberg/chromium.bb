@@ -123,7 +123,7 @@ public abstract class AwContentsClient extends ContentViewClient {
 
         @Override
         public void closeContents() {
-            // TODO: implement
+            AwContentsClient.this.onCloseWindow();
         }
 
         @Override
@@ -137,7 +137,6 @@ public abstract class AwContentsClient extends ContentViewClient {
         public boolean addNewContents(boolean isDialog, boolean isUserGesture) {
             return AwContentsClient.this.onCreateWindow(isDialog, isUserGesture);
         }
-
     }
 
     class AwWebContentsObserver extends WebContentsObserverAndroid {
@@ -215,6 +214,8 @@ public abstract class AwContentsClient extends ContentViewClient {
             JsPromptResultReceiver receiver);
 
     protected abstract boolean onCreateWindow(boolean isDialog, boolean isUserGesture);
+
+    protected abstract void onCloseWindow();
 
     //--------------------------------------------------------------------------------------------
     //                              Other WebView-specific methods

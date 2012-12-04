@@ -95,4 +95,8 @@ class NullContentsClient extends AwContentsClient {
     public boolean onCreateWindow(boolean isDialog, boolean isUserGesture) {
         return false;
     }
+
+    @Override
+    public void onCloseWindow() {
+    }
 }

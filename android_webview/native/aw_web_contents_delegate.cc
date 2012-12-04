@@ -7,6 +7,7 @@
 #include "android_webview/browser/find_helper.h"
 #include "android_webview/native/aw_contents.h"
 #include "android_webview/native/aw_javascript_dialog_creator.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "content/public/browser/android/download_controller_android.h"
@@ -15,6 +16,7 @@
 #include "net/http/http_request_headers.h"
 
 using base::android::AttachCurrentThread;
+using base::android::ScopedJavaLocalRef;
 using content::WebContents;
 
 namespace android_webview {
@@ -76,8 +78,13 @@ void AwWebContentsDelegate::AddNewContents(content::WebContents* source,
   JNIEnv* env = AttachCurrentThread();
 
   bool is_dialog = disposition == NEW_POPUP;
-  bool create_popup = Java_AwWebContentsDelegate_addNewContents(env,
-      GetJavaDelegate(env).obj(), is_dialog, user_gesture);
+  ScopedJavaLocalRef<jobject> java_delegate = GetJavaDelegate(env);
+  bool create_popup = false;
+
+  if (java_delegate.obj()) {
+    create_popup = Java_AwWebContentsDelegate_addNewContents(env,
+        java_delegate.obj(), is_dialog, user_gesture);
+  }
 
   if (create_popup) {
     // The embedder would like to display the popup and we will receive
@@ -100,6 +107,15 @@ void AwWebContentsDelegate::AddNewContents(content::WebContents* source,
 
   if (was_blocked) {
     *was_blocked = !create_popup;
+  }
+}
+
+void AwWebContentsDelegate::CloseContents(content::WebContents* source) {
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> java_delegate = GetJavaDelegate(env);
+  if (java_delegate.obj()) {
+    Java_AwWebContentsDelegate_closeContents(env, java_delegate.obj());
   }
 }
 

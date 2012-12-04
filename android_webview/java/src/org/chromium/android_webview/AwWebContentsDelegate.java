@@ -20,4 +20,7 @@ public class AwWebContentsDelegate extends WebContentsDelegateAndroid {
     public boolean addNewContents(boolean isDialog, boolean isUserGesture) {
         return false;
     }
+
+    @CalledByNative
+    public void closeContents() { }
 }

@@ -38,6 +38,7 @@ class AwWebContentsDelegate
                               const gfx::Rect& initial_pos,
                               bool user_gesture,
                               bool* was_blocked) OVERRIDE;
+  virtual void CloseContents(content::WebContents* source) OVERRIDE;
 };
 
 bool RegisterAwWebContentsDelegate(JNIEnv* env);
