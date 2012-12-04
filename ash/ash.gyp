@@ -299,6 +299,8 @@
         'wm/default_window_resizer.h',
         'wm/dialog_frame_view.cc',
         'wm/dialog_frame_view.h',
+        'wm/drag_window_controller.cc',
+        'wm/drag_window_controller.h',
         'wm/event_client_impl.cc',
         'wm/event_client_impl.h',
         'wm/event_rewriter_event_filter.cc',

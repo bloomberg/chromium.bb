@@ -93,7 +93,7 @@ const int kShellWindowId_SettingBubbleContainer = 19;
 // region selector for partial screenshots.
 const int kShellWindowId_OverlayContainer = 20;
 
-// ID of the window created by PhantomWindowController.
+// ID of the window created by PhantomWindowController or DragWindowController.
 const int kShellWindowId_PhantomWindow = 21;
 
 // The topmost container, used for power off animation.

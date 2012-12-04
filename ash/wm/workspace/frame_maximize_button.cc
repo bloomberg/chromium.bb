@@ -389,7 +389,7 @@ void FrameMaximizeButton::UpdateSnap(const gfx::Point& location,
       snap_sizer_->Update(LocationForSnapSizer(location));
       phantom_window_->Show(ScreenAsh::ConvertRectToScreen(
           frame_->GetWidget()->GetNativeView()->parent(),
-          snap_sizer_->target_bounds()), NULL);
+          snap_sizer_->target_bounds()));
     }
     return;
   }
@@ -425,7 +425,7 @@ void FrameMaximizeButton::UpdateSnap(const gfx::Point& location,
     maximizer_->SetSnapType(snap_type_);
   }
   phantom_window_->Show(
-      ScreenBoundsForType(snap_type_, *snap_sizer_.get()), NULL);
+      ScreenBoundsForType(snap_type_, *snap_sizer_.get()));
 }
 
 SnapType FrameMaximizeButton::SnapTypeForLocation(

@@ -13,12 +13,13 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/wm/cursor_manager.h"
+#include "ash/wm/drag_window_controller.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace_controller.h"
-#include "ash/wm/workspace/snap_sizer.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
+#include "ash/wm/workspace/snap_sizer.h"
+#include "ash/wm/workspace_controller.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "ui/aura/client/aura_constants.h"
@@ -607,8 +608,8 @@ TEST_F(WorkspaceWindowResizerTest,
   }
 }
 
-// Verifies the style of the drag phantom window is correct.
-TEST_F(WorkspaceWindowResizerTest, PhantomStyle) {
+// Verifies the drag window controller is instanciated appropriately.
+TEST_F(WorkspaceWindowResizerTest, DragWindowController) {
   UpdateDisplay("800x600,800x600");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2U, root_windows.size());
@@ -622,41 +623,42 @@ TEST_F(WorkspaceWindowResizerTest, PhantomStyle) {
         window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
     ASSERT_TRUE(resizer.get());
     EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
-    EXPECT_FALSE(resizer->drag_phantom_window_controller_.get());
+    EXPECT_FALSE(resizer->drag_window_controller_.get());
 
     // The pointer is inside the primary root. Both phantoms should be NULL.
     resizer->Drag(CalculateDragPoint(*resizer, 10, 10), 0);
     EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
-    EXPECT_FALSE(resizer->drag_phantom_window_controller_.get());
+    EXPECT_FALSE(resizer->drag_window_controller_.get());
 
     // The window spans both root windows.
     resizer->Drag(CalculateDragPoint(*resizer, 798, 10), 0);
     EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
-    PhantomWindowController* controller =
-        resizer->drag_phantom_window_controller_.get();
+    DragWindowController* controller =
+        resizer->drag_window_controller_.get();
     ASSERT_TRUE(controller);
-    EXPECT_EQ(PhantomWindowController::STYLE_DRAGGING, controller->style());
+    ASSERT_TRUE(controller->drag_widget_);
+    ui::Layer* drag_layer =
+        controller->drag_widget_->GetNativeWindow()->layer();
+    ASSERT_TRUE(drag_layer);
 
     // Check if |resizer->layer_| is properly set to the phantom widget.
-    const std::vector<ui::Layer*>& layers =
-        controller->phantom_widget_->GetNativeWindow()->layer()->children();
+    const std::vector<ui::Layer*>& layers = drag_layer->children();
     EXPECT_FALSE(layers.empty());
-    EXPECT_EQ(resizer->layer_, layers.back());
+    EXPECT_EQ(controller->layer_, layers.back());
 
     // |window_| should be opaque since the pointer is still on the primary
     // root window. The phantom should be semi-transparent.
     EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
-    EXPECT_GT(1.0f, controller->GetOpacity());
+    EXPECT_GT(1.0f, drag_layer->opacity());
 
     // Enter the pointer to the secondary display.
     resizer->Drag(CalculateDragPoint(*resizer, 800, 10), 0);
     EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
-    controller = resizer->drag_phantom_window_controller_.get();
+    controller = resizer->drag_window_controller_.get();
     ASSERT_TRUE(controller);
-    EXPECT_EQ(PhantomWindowController::STYLE_DRAGGING, controller->style());
     // |window_| should be transparent, and the phantom should be opaque.
     EXPECT_GT(1.0f, window_->layer()->opacity());
-    EXPECT_FLOAT_EQ(1.0f, controller->GetOpacity());
+    EXPECT_FLOAT_EQ(1.0f, drag_layer->opacity());
 
     resizer->CompleteDrag(0);
     EXPECT_EQ(root_windows[1], window_->GetRootWindow());
@@ -673,7 +675,7 @@ TEST_F(WorkspaceWindowResizerTest, PhantomStyle) {
         window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
     ASSERT_TRUE(resizer.get());
     EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
-    EXPECT_FALSE(resizer->drag_phantom_window_controller_.get());
+    EXPECT_FALSE(resizer->drag_window_controller_.get());
 
     resizer->Drag(CalculateDragPoint(*resizer, 0, 610), 0);
     resizer->RevertDrag();
@@ -697,7 +699,7 @@ TEST_F(WorkspaceWindowResizerTest, CancelSnapPhantom) {
         window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
     ASSERT_TRUE(resizer.get());
     EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
-    EXPECT_FALSE(resizer->drag_phantom_window_controller_.get());
+    EXPECT_FALSE(resizer->drag_window_controller_.get());
     EXPECT_EQ(WorkspaceWindowResizer::SNAP_NONE, resizer->snap_type_);
 
     // The pointer is on the edge but not shared.  Both controllers should be
@@ -705,10 +707,9 @@ TEST_F(WorkspaceWindowResizerTest, CancelSnapPhantom) {
     resizer->Drag(CalculateDragPoint(*resizer, 799, 0), 0);
     EXPECT_TRUE(resizer->snap_phantom_window_controller_.get());
     EXPECT_EQ(WorkspaceWindowResizer::SNAP_RIGHT_EDGE, resizer->snap_type_);
-    PhantomWindowController* controller =
-        resizer->drag_phantom_window_controller_.get();
+    DragWindowController* controller =
+        resizer->drag_window_controller_.get();
     ASSERT_TRUE(controller);
-    EXPECT_EQ(PhantomWindowController::STYLE_DRAGGING, controller->style());
 
     // Move the cursor across the edge.  Now the snap phantom controller
     // should be canceled.
@@ -716,9 +717,8 @@ TEST_F(WorkspaceWindowResizerTest, CancelSnapPhantom) {
     EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
     EXPECT_EQ(WorkspaceWindowResizer::SNAP_NONE, resizer->snap_type_);
     controller =
-        resizer->drag_phantom_window_controller_.get();
+        resizer->drag_window_controller_.get();
     ASSERT_TRUE(controller);
-    EXPECT_EQ(PhantomWindowController::STYLE_DRAGGING, controller->style());
   }
 }
 

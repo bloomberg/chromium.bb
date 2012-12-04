@@ -25,6 +25,7 @@ class Layer;
 namespace ash {
 namespace internal {
 
+class DragWindowController;
 class PhantomWindowController;
 class SnapSizer;
 class WindowSize;
@@ -76,7 +77,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
                          const std::vector<aura::Window*>& attached_windows);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, PhantomStyle);
+  FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, DragWindowController);
   FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, CancelSnapPhantom);
   FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, PhantomSnapMaxSize);
 
@@ -168,7 +169,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
   // Updates the bounds of the phantom window for window dragging. Set true on
   // |in_original_root| if the pointer is still in |window()->GetRootWindow()|.
-  void UpdateDragPhantomWindow(const gfx::Rect& bounds, bool in_original_root);
+  void UpdateDragWindow(const gfx::Rect& bounds, bool in_original_root);
 
   // Restacks the windows z-order position so that one of the windows is at the
   // top of the z-order, and the rest directly underneath it.
@@ -180,9 +181,6 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
   // Returns true if we should allow the mouse pointer to warp.
   bool ShouldAllowMouseWarp() const;
-
-  // Recreates a fresh layer for window() and all its child windows.
-  void RecreateWindowLayers();
 
   aura::Window* window() const { return details_.window; }
 
@@ -208,7 +206,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   scoped_ptr<PhantomWindowController> snap_phantom_window_controller_;
 
   // Shows a semi-transparent image of the window being dragged.
-  scoped_ptr<PhantomWindowController> drag_phantom_window_controller_;
+  scoped_ptr<DragWindowController> drag_window_controller_;
 
   // Used to determine the target position of a snap.
   scoped_ptr<SnapSizer> snap_sizer_;
@@ -223,10 +221,6 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
   // The mouse location passed to Drag().
   gfx::Point last_mouse_location_;
-
-  // The copy of window()->layer() and its children. This object is the owner of
-  // the layer.
-  ui::Layer* layer_;
 
   // If non-NULL the destructor sets this to true. Used to determine if this has
   // been deleted.

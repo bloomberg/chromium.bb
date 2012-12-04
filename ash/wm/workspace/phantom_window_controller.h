@@ -10,16 +10,13 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/animation/animation_delegate.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
 
 namespace aura {
-class RootWindow;
 class Window;
 }
 
 namespace ui {
-class Layer;
 class SlideAnimation;
 }
 
@@ -34,16 +31,8 @@ namespace internal {
 // of a window. It's used used during dragging a window to show a snap location.
 class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
  public:
-  enum Style {
-    STYLE_SHADOW,  // for window snapping.
-    STYLE_DRAGGING,  // for window dragging.
-  };
-
   explicit PhantomWindowController(aura::Window* window);
   virtual ~PhantomWindowController();
-
-  // Sets the display where the phantom is placed.
-  void SetDestinationDisplay(const gfx::Display& dst_display);
 
   // Bounds last passed to Show().
   const gfx::Rect& bounds() const { return bounds_; }
@@ -52,11 +41,7 @@ class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
   // parent). If |layer| is non-NULL, it is shown on top of the phantom window.
   // |layer| is owned by the caller.
   // This does not immediately show the window.
-  void Show(const gfx::Rect& bounds, ui::Layer* layer);
-
-  // This is used to set bounds for the phantom window immediately. This should
-  // be called only when the phantom window is already visible.
-  void SetBounds(const gfx::Rect& bounds);
+  void Show(const gfx::Rect& bounds);
 
   // Hides the phantom.
   void Hide();
@@ -70,14 +55,6 @@ class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
     phantom_below_window_ = phantom_below_window;
   }
 
-  // Sets/gets the style of the phantom window.
-  void set_style(Style style);
-  Style style() const { return style_; }
-
-  // Sets/gets the opacity of the phantom window.
-  void SetOpacity(float opacity);
-  float GetOpacity() const;
-
   // ui::AnimationDelegate overrides:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
@@ -87,19 +64,10 @@ class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
   // Creates and shows the |phantom_widget_| at |bounds|.
   // |layer| is shown on top of the phantom window if it is non-NULL.
   // |layer| is not owned by this object.
-  void CreatePhantomWidget(const gfx::Rect& bounds, ui::Layer* layer);
-
-  // Sets bounds of the phantom window. The window is shown on |dst_display_|
-  // if its id() is valid. Otherwise, a display nearest to |bounds| is chosen.
-  void SetBoundsInternal(const gfx::Rect& bounds);
+  void CreatePhantomWidget(const gfx::Rect& bounds);
 
   // Window the phantom is placed beneath.
   aura::Window* window_;
-
-  // The display where the phantom is placed. When dst_display_.id() is
-  // kInvalidDisplayID (i.e. the default), a display nearest to the current
-  // |bounds_| is automatically used.
-  gfx::Display dst_display_;
 
   // If set, the phantom window should get stacked below this window.
   aura::Window* phantom_below_window_;
@@ -115,9 +83,6 @@ class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
 
   // Used to transition the bounds.
   scoped_ptr<ui::SlideAnimation> animation_;
-
-  // The style of the phantom window.
-  Style style_;
 
   DISALLOW_COPY_AND_ASSIGN(PhantomWindowController);
 };

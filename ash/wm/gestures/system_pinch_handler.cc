@@ -73,7 +73,7 @@ SystemGestureStatus SystemPinchHandler::ProcessGestureEvent(
       gfx::Rect bounds =
           GetPhantomWindowScreenBounds(target_, event.location());
       if (phantom_state_ != PHANTOM_WINDOW_NORMAL || phantom_.IsShowing())
-        phantom_.Show(bounds, NULL);
+        phantom_.Show(bounds);
       break;
     }
 
