@@ -47,6 +47,7 @@ EXTRA_ENV = {
   'NO_ASM'      : '0',    # Disallow use of inline assembler
   'NEED_DASH_E' : '0',    # Used for stdin inputs, which must have an explicit
                           # type set (using -x) unless -E is specified.
+  'VERBOSE'     : '0',    # Verbose (-v)
 
   'PTHREAD'     : '0',   # use pthreads?
   'INPUTS'      : '',    # Input files
@@ -292,7 +293,8 @@ GCCPatterns = [
   ( '(-pedantic)',            AddCCFlag),
   ( '(-pedantic-errors)',     AddCCFlag),
   ( '(-g.*)',                 AddCCFlag),
-
+  ( '(-v|--v)',               "env.append('CC_FLAGS', $0)\n"
+                              "env.set('VERBOSE', '1')"),
   ( '(-pthreads?)',           "env.set('PTHREAD', '1')"),
 
   ( '-shared',                "env.set('SHARED', '1')"),
@@ -349,7 +351,7 @@ GCCPatterns = [
   ( '(-print-.*)',            "env.set('DIAGNOSTIC', '1')"),
   ( '(--print.*)',            "env.set('DIAGNOSTIC', '1')"),
   ( '(-dumpspecs)',           "env.set('DIAGNOSTIC', '1')"),
-  ( '(-v|--v|--version)',     "env.set('DIAGNOSTIC', '1')"),
+  ( '(--version)',            "env.set('DIAGNOSTIC', '1')"),
   ( '(-V)',                   "env.set('DIAGNOSTIC', '1')\n"
                               "env.clear('CC_FLAGS')"),
   # These are preprocessor flags which should be passed to the frontend, but
@@ -415,7 +417,13 @@ def main(argv):
   output = env.getone('OUTPUT')
 
   if len(inputs) == 0:
-    Log.Fatal('No input files')
+    if env.getbool('VERBOSE'):
+      # -v can be invoked without any inputs. Runs the original
+      # command without modifying the commandline for this case.
+      Run(env.get('CC') + env.get('CC_FLAGS') + argv)
+      return 0
+    else:
+      Log.Fatal('No input files')
 
   gcc_mode = env.getone('GCC_MODE')
 
