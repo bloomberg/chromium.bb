@@ -833,6 +833,14 @@ shm_surface_buffer_release(void *data, struct wl_buffer *buffer)
 	struct shm_surface_leaf *leaf = data;
 
 	leaf->busy = 0;
+
+	/* If both leaves are now free, we should call
+	 * shm_surface_leaf_release(shm_surface::leaf[1]).
+	 * However, none of Weston's backends switch dynamically
+	 * between early buffer release and requiring double-buffering,
+	 * so if both leaves are free, we never used the second
+	 * leaf to begin with.
+	 */
 }
 
 static const struct wl_buffer_listener shm_surface_buffer_listener = {
@@ -850,6 +858,13 @@ shm_surface_prepare(struct toysurface *base, int dx, int dy,
 
 	surface->dx = dx;
 	surface->dy = dy;
+
+	/* See shm_surface_buffer_release() */
+	if (!surface->leaf[0].busy && !surface->leaf[1].busy &&
+	    surface->leaf[1].cairo_surface) {
+		fprintf(stderr, "window.c:%s: TODO: release leaf[1]\n",
+			__func__);
+	}
 
 	/* pick a free buffer from the two */
 	if (!surface->leaf[0].busy)
