@@ -2107,6 +2107,15 @@ void ExtensionService::AddExtension(const Extension* extension) {
   SyncExtensionChangeIfNeeded(*extension);
   NotifyExtensionLoaded(extension);
   DoPostLoadTasks(extension);
+
+#if defined(ENABLE_THEMES)
+  if (extension->is_theme()) {
+    // Now that the theme extension is visible from outside the
+    // ExtensionService, notify the ThemeService about the
+    // newly-installed theme.
+    ThemeServiceFactory::GetForProfile(profile_)->SetTheme(extension);
+  }
+#endif
 }
 
 void ExtensionService::AddComponentExtension(const Extension* extension) {
