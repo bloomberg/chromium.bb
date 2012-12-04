@@ -153,7 +153,7 @@ public:
     virtual void beginCommit() OVERRIDE;
     virtual void commitComplete() OVERRIDE;
     virtual bool prepareToDraw(FrameData&) OVERRIDE;
-    virtual void drawLayers(const FrameData&) OVERRIDE;
+    virtual void drawLayers(FrameData&) OVERRIDE;
 
     // Make these public.
     typedef std::vector<cc::LayerImpl*> LayerList;

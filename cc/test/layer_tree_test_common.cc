@@ -117,7 +117,7 @@ bool MockLayerTreeHostImpl::prepareToDraw(FrameData& frame)
     return result;
 }
 
-void MockLayerTreeHostImpl::drawLayers(const FrameData& frame)
+void MockLayerTreeHostImpl::drawLayers(FrameData& frame)
 {
     LayerTreeHostImpl::drawLayers(frame);
     m_testHooks->drawLayersOnThread(this);

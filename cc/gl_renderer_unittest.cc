@@ -80,8 +80,8 @@ public:
     void setLastCallWasSetVisibilityPointer(bool* lastCallWasSetVisibility) { m_lastCallWasSetVisibility = lastCallWasSetVisibility; }
 
     RenderPass* rootRenderPass() { return m_renderPassesInDrawOrder.back(); }
-    const RenderPassList& renderPassesInDrawOrder() const { return m_renderPassesInDrawOrder; }
-    const RenderPassIdHashMap& renderPasses() const { return m_renderPasses; }
+    RenderPassList& renderPassesInDrawOrder() { return m_renderPassesInDrawOrder; }
+    RenderPassIdHashMap& renderPasses() { return m_renderPasses; }
 
     size_t memoryAllocationLimitBytes() const { return m_memoryAllocationLimitBytes; }
 

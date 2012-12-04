@@ -53,7 +53,9 @@ public:
     virtual void decideRenderPassAllocationsForFrame(const RenderPassList&) { }
     virtual bool haveCachedResourcesForRenderPassId(RenderPass::Id) const;
 
-    virtual void drawFrame(const RenderPassList&, const RenderPassIdHashMap&) = 0;
+    // This passes ownership of the render passes to the renderer. It should
+    // consume them, and empty the list and hash map.
+    virtual void drawFrame(RenderPassList&, RenderPassIdHashMap&) = 0;
 
     // waits for rendering to finish
     virtual void finish() = 0;

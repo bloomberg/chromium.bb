@@ -158,7 +158,7 @@ public:
     // didDrawAllLayers must also be called, regardless of whether drawLayers is
     // called between the two.
     virtual bool prepareToDraw(FrameData&);
-    virtual void drawLayers(const FrameData&);
+    virtual void drawLayers(FrameData&);
     // Must be called if and only if prepareToDraw was called.
     void didDrawAllLayers(const FrameData&);
 

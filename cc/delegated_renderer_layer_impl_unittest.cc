@@ -172,8 +172,6 @@ TEST_F(DelegatedRendererLayerImplTestSimple, AddsContributingRenderPasses)
 {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
-    m_hostImpl->drawLayers(frame);
-    m_hostImpl->didDrawAllLayers(frame);
 
     // Each non-DelegatedRendererLayer added one RenderPass. The DelegatedRendererLayer added two contributing passes.
     ASSERT_EQ(5u, frame.renderPasses.size());
@@ -194,14 +192,15 @@ TEST_F(DelegatedRendererLayerImplTestSimple, AddsContributingRenderPasses)
     // The DelegatedRendererLayer should have added its RenderPasses to the frame in order.
     EXPECT_RECT_EQ(gfx::Rect(6, 6, 6, 6), frame.renderPasses[1]->output_rect);
     EXPECT_RECT_EQ(gfx::Rect(7, 7, 7, 7), frame.renderPasses[2]->output_rect);
+
+    m_hostImpl->drawLayers(frame);
+    m_hostImpl->didDrawAllLayers(frame);
 }
 
 TEST_F(DelegatedRendererLayerImplTestSimple, AddsQuadsToContributingRenderPasses)
 {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
-    m_hostImpl->drawLayers(frame);
-    m_hostImpl->didDrawAllLayers(frame);
 
     // Each non-DelegatedRendererLayer added one RenderPass. The DelegatedRendererLayer added two contributing passes.
     ASSERT_EQ(5u, frame.renderPasses.size());
@@ -222,14 +221,15 @@ TEST_F(DelegatedRendererLayerImplTestSimple, AddsQuadsToContributingRenderPasses
     EXPECT_RECT_EQ(gfx::Rect(6, 6, 6, 6), frame.renderPasses[2]->quad_list[1]->rect);
     ASSERT_EQ(1u, frame.renderPasses[1]->quad_list.size());
     EXPECT_RECT_EQ(gfx::Rect(0, 0, 6, 6), frame.renderPasses[1]->quad_list[0]->rect);
+
+    m_hostImpl->drawLayers(frame);
+    m_hostImpl->didDrawAllLayers(frame);
 }
 
 TEST_F(DelegatedRendererLayerImplTestSimple, AddsQuadsToTargetRenderPass)
 {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
-    m_hostImpl->drawLayers(frame);
-    m_hostImpl->didDrawAllLayers(frame);
 
     // Each non-DelegatedRendererLayer added one RenderPass. The DelegatedRendererLayer added two contributing passes.
     ASSERT_EQ(5u, frame.renderPasses.size());
@@ -246,14 +246,15 @@ TEST_F(DelegatedRendererLayerImplTestSimple, AddsQuadsToTargetRenderPass)
 
     // Its target layer should have a quad as well.
     EXPECT_RECT_EQ(gfx::Rect(0, 0, 15, 15), frame.renderPasses[3]->quad_list[1]->rect);
+
+    m_hostImpl->drawLayers(frame);
+    m_hostImpl->didDrawAllLayers(frame);
 }
 
 TEST_F(DelegatedRendererLayerImplTestSimple, QuadsFromRootRenderPassAreModifiedForTheTarget)
 {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
-    m_hostImpl->drawLayers(frame);
-    m_hostImpl->didDrawAllLayers(frame);
 
     // Each non-DelegatedRendererLayer added one RenderPass. The DelegatedRendererLayer added two contributing passes.
     ASSERT_EQ(5u, frame.renderPasses.size());
@@ -270,18 +271,22 @@ TEST_F(DelegatedRendererLayerImplTestSimple, QuadsFromRootRenderPassAreModifiedF
     EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(), frame.renderPasses[2]->quad_list[1]->quadTransform());
     ASSERT_EQ(1u, frame.renderPasses[1]->quad_list.size());
     EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(), frame.renderPasses[1]->quad_list[0]->quadTransform());
+
+    m_hostImpl->drawLayers(frame);
+    m_hostImpl->didDrawAllLayers(frame);
 }
 
 TEST_F(DelegatedRendererLayerImplTestSimple, DoesNotOwnARenderSurface)
 {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
-    m_hostImpl->drawLayers(frame);
-    m_hostImpl->didDrawAllLayers(frame);
 
     // If the DelegatedRendererLayer is axis aligned and has opacity 1, then
     // it has no need to be a renderSurface for the quads it carries.
     EXPECT_FALSE(m_delegatedRendererLayerPtr->renderSurface());
+
+    m_hostImpl->drawLayers(frame);
+    m_hostImpl->didDrawAllLayers(frame);
 }
 
 TEST_F(DelegatedRendererLayerImplTestSimple, DoesOwnARenderSurface)
@@ -290,14 +295,14 @@ TEST_F(DelegatedRendererLayerImplTestSimple, DoesOwnARenderSurface)
 
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
-    m_hostImpl->drawLayers(frame);
-    m_hostImpl->didDrawAllLayers(frame);
 
     // This test case has quads from multiple layers in the delegated renderer,
     // so if the DelegatedRendererLayer has opacity < 1, it should end up with
     // a render surface.
     EXPECT_TRUE(m_delegatedRendererLayerPtr->renderSurface());
 
+    m_hostImpl->drawLayers(frame);
+    m_hostImpl->didDrawAllLayers(frame);
 }
 
 class DelegatedRendererLayerImplTestOwnSurface : public DelegatedRendererLayerImplTestSimple {
@@ -313,8 +318,6 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface, AddsRenderPasses)
 {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
-    m_hostImpl->drawLayers(frame);
-    m_hostImpl->didDrawAllLayers(frame);
 
     // Each non-DelegatedRendererLayer added one RenderPass. The DelegatedRendererLayer added two contributing passes and its owned surface added one pass.
     ASSERT_EQ(6u, frame.renderPasses.size());
@@ -338,14 +341,15 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface, AddsRenderPasses)
     // The DelegatedRendererLayer should have added its RenderPasses to the frame in order.
     EXPECT_RECT_EQ(gfx::Rect(6, 6, 6, 6), frame.renderPasses[1]->output_rect);
     EXPECT_RECT_EQ(gfx::Rect(7, 7, 7, 7), frame.renderPasses[2]->output_rect);
+
+    m_hostImpl->drawLayers(frame);
+    m_hostImpl->didDrawAllLayers(frame);
 }
 
 TEST_F(DelegatedRendererLayerImplTestOwnSurface, AddsQuadsToContributingRenderPasses)
 {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
-    m_hostImpl->drawLayers(frame);
-    m_hostImpl->didDrawAllLayers(frame);
 
     // Each non-DelegatedRendererLayer added one RenderPass. The DelegatedRendererLayer added two contributing passes and its owned surface added one pass.
     ASSERT_EQ(6u, frame.renderPasses.size());
@@ -366,14 +370,15 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface, AddsQuadsToContributingRenderPa
     EXPECT_RECT_EQ(gfx::Rect(6, 6, 6, 6), frame.renderPasses[2]->quad_list[1]->rect);
     ASSERT_EQ(1u, frame.renderPasses[1]->quad_list.size());
     EXPECT_RECT_EQ(gfx::Rect(0, 0, 6, 6), frame.renderPasses[1]->quad_list[0]->rect);
+
+    m_hostImpl->drawLayers(frame);
+    m_hostImpl->didDrawAllLayers(frame);
 }
 
 TEST_F(DelegatedRendererLayerImplTestOwnSurface, AddsQuadsToTargetRenderPass)
 {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
-    m_hostImpl->drawLayers(frame);
-    m_hostImpl->didDrawAllLayers(frame);
 
     // Each non-DelegatedRendererLayer added one RenderPass. The DelegatedRendererLayer added two contributing passes and its owned surface added one pass.
     ASSERT_EQ(6u, frame.renderPasses.size());
@@ -387,14 +392,15 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface, AddsQuadsToTargetRenderPass)
 
     // Verify it added the right quads.
     EXPECT_RECT_EQ(gfx::Rect(7, 7, 7, 7), frame.renderPasses[3]->quad_list[0]->rect);
+
+    m_hostImpl->drawLayers(frame);
+    m_hostImpl->didDrawAllLayers(frame);
 }
 
 TEST_F(DelegatedRendererLayerImplTestOwnSurface, QuadsFromRootRenderPassAreNotModifiedForTheTarget)
 {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
-    m_hostImpl->drawLayers(frame);
-    m_hostImpl->didDrawAllLayers(frame);
 
     // Each non-DelegatedRendererLayer added one RenderPass. The DelegatedRendererLayer added two contributing passes and its owned surface added one pass.
     ASSERT_EQ(6u, frame.renderPasses.size());
@@ -409,6 +415,9 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface, QuadsFromRootRenderPassAreNotMo
     EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(), frame.renderPasses[2]->quad_list[1]->quadTransform());
     ASSERT_EQ(1u, frame.renderPasses[1]->quad_list.size());
     EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(), frame.renderPasses[1]->quad_list[0]->quadTransform());
+
+    m_hostImpl->drawLayers(frame);
+    m_hostImpl->didDrawAllLayers(frame);
 }
 
 class DelegatedRendererLayerImplTestSharedData : public DelegatedRendererLayerImplTest {
@@ -477,8 +486,6 @@ TEST_F(DelegatedRendererLayerImplTestSharedData, SharedData)
 {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
-    m_hostImpl->drawLayers(frame);
-    m_hostImpl->didDrawAllLayers(frame);
 
     ASSERT_EQ(1u, frame.renderPasses.size());
     EXPECT_EQ(1, frame.renderPasses[0]->id.layer_id);
@@ -498,6 +505,9 @@ TEST_F(DelegatedRendererLayerImplTestSharedData, SharedData)
     gfx::Transform expected;
     expected.Translate(30, 30);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected, sharedState->content_to_target_transform);
+
+    m_hostImpl->drawLayers(frame);
+    m_hostImpl->didDrawAllLayers(frame);
 }
 
 }  // namespace

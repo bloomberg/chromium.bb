@@ -26,7 +26,7 @@ public:
 
     virtual void decideRenderPassAllocationsForFrame(const RenderPassList& renderPassesInDrawOrder) OVERRIDE;
     virtual bool haveCachedResourcesForRenderPassId(RenderPass::Id) const OVERRIDE;
-    virtual void drawFrame(const RenderPassList& renderPassesInDrawOrder, const RenderPassIdHashMap& renderPassesById) OVERRIDE;
+    virtual void drawFrame(RenderPassList& renderPassesInDrawOrder, RenderPassIdHashMap& renderPassesById) OVERRIDE;
 
     struct CC_EXPORT DrawingFrame {
         DrawingFrame();

@@ -2413,16 +2413,15 @@ TEST_P(LayerTreeHostImplTest, contributingLayerEmptyScissorPartialSwap)
         LayerTreeHostImpl::FrameData frame;
         EXPECT_TRUE(myHostImpl->prepareToDraw(frame));
 
-        // Just for consistency, the most interesting stuff already happened
-        myHostImpl->drawLayers(frame);
-        myHostImpl->didDrawAllLayers(frame);
-
         // Verify all quads have been computed
         ASSERT_EQ(2U, frame.renderPasses.size());
         ASSERT_EQ(1U, frame.renderPasses[0]->quad_list.size());
         ASSERT_EQ(1U, frame.renderPasses[1]->quad_list.size());
         EXPECT_EQ(DrawQuad::SOLID_COLOR, frame.renderPasses[0]->quad_list[0]->material);
         EXPECT_EQ(DrawQuad::RENDER_PASS, frame.renderPasses[1]->quad_list[0]->material);
+
+        myHostImpl->drawLayers(frame);
+        myHostImpl->didDrawAllLayers(frame);
     }
 }
 
@@ -2434,16 +2433,15 @@ TEST_P(LayerTreeHostImplTest, contributingLayerEmptyScissorNoPartialSwap)
         LayerTreeHostImpl::FrameData frame;
         EXPECT_TRUE(myHostImpl->prepareToDraw(frame));
 
-        // Just for consistency, the most interesting stuff already happened
-        myHostImpl->drawLayers(frame);
-        myHostImpl->didDrawAllLayers(frame);
-
         // Verify all quads have been computed
         ASSERT_EQ(2U, frame.renderPasses.size());
         ASSERT_EQ(1U, frame.renderPasses[0]->quad_list.size());
         ASSERT_EQ(1U, frame.renderPasses[1]->quad_list.size());
         EXPECT_EQ(DrawQuad::SOLID_COLOR, frame.renderPasses[0]->quad_list[0]->material);
         EXPECT_EQ(DrawQuad::RENDER_PASS, frame.renderPasses[1]->quad_list[0]->material);
+
+        myHostImpl->drawLayers(frame);
+        myHostImpl->didDrawAllLayers(frame);
     }
 }
 

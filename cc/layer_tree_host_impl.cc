@@ -816,7 +816,7 @@ void LayerTreeHostImpl::onVSyncParametersChanged(double monotonicTimebase, doubl
     m_client->onVSyncParametersChanged(timebase, interval);
 }
 
-void LayerTreeHostImpl::drawLayers(const FrameData& frame)
+void LayerTreeHostImpl::drawLayers(FrameData& frame)
 {
     TRACE_EVENT0("cc", "LayerTreeHostImpl::drawLayers");
     DCHECK(canDraw());
@@ -837,10 +837,9 @@ void LayerTreeHostImpl::drawLayers(const FrameData& frame)
 
     m_renderer->drawFrame(frame.renderPasses, frame.renderPassesById);
 
-    // Once a RenderPass has been drawn, its damage should be cleared in
-    // case the RenderPass will be reused next frame.
-    for (unsigned int i = 0; i < frame.renderPasses.size(); i++)
-        frame.renderPasses[i]->damage_rect = gfx::RectF();
+    // The render passes should be consumed by the renderer.
+    DCHECK(frame.renderPasses.empty());
+    DCHECK(frame.renderPassesById.empty());
 
     // The next frame should start by assuming nothing has changed, and changes are noted as they occur.
     for (unsigned int i = 0; i < frame.renderSurfaceLayerList->size(); i++)
