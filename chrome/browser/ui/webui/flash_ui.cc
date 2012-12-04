@@ -271,20 +271,26 @@ void FlashDOMHandler::MaybeRespondToPage() {
   std::vector<webkit::WebPluginInfo> info_array;
   PluginService::GetInstance()->GetPluginInfoArray(
       GURL(), kFlashPluginSwfMimeType, false, &info_array, NULL);
-  string16 flash_version;
   if (info_array.empty()) {
-    AddPair(list, ASCIIToUTF16(kFlashPlugin), "Disabled");
+    AddPair(list, ASCIIToUTF16(kFlashPlugin), "Not installed");
   } else {
     PluginPrefs* plugin_prefs =
         PluginPrefs::GetForProfile(Profile::FromWebUI(web_ui()));
+    bool found_enabled = false;
     for (size_t i = 0; i < info_array.size(); ++i) {
+      string16 flash_version = info_array[i].version + ASCIIToUTF16(" ") +
+                               info_array[i].path.LossyDisplayName();
       if (plugin_prefs->IsPluginEnabled(info_array[i])) {
-        flash_version = info_array[i].version + ASCIIToUTF16(" ") +
-                        info_array[i].path.LossyDisplayName();
-        if (i != 0)
+        // If we have already found an enabled Flash version, this one
+        // is not used.
+        if (found_enabled)
           flash_version += ASCIIToUTF16(" (not used)");
-        AddPair(list, ASCIIToUTF16(kFlashPlugin), flash_version);
+
+        found_enabled = true;
+      } else {
+        flash_version += ASCIIToUTF16(" (disabled)");
       }
+      AddPair(list, ASCIIToUTF16(kFlashPlugin), flash_version);
     }
   }
 
