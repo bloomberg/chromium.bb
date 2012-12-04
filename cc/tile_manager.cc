@@ -48,14 +48,13 @@ namespace cc {
 ManagedTileState::ManagedTileState()
     : can_use_gpu_memory(false),
       can_be_freed(true),
-      resource_id(0),
-      resource_id_is_being_initialized(false),
+      resource_is_being_initialized(false),
       contents_swizzled(false) {
 }
 
 ManagedTileState::~ManagedTileState() {
-  DCHECK(!resource_id);
-  DCHECK(!resource_id_is_being_initialized);
+  DCHECK(!resource);
+  DCHECK(!resource_is_being_initialized);
 }
 
 TileManager::TileManager(
@@ -86,6 +85,7 @@ TileManager::~TileManager() {
 
 void TileManager::SetGlobalState(const GlobalStateThatImpactsTilePriority& global_state) {
   global_state_ = global_state;
+  resource_pool_->SetMaxMemoryUsageBytes(global_state_.memory_limit_in_bytes);
   ScheduleManageTiles();
 }
 
@@ -263,8 +263,8 @@ void TileManager::AssignGpuMemoryToTiles() {
     }
     bytes_left -= tile_bytes;
     managed_tile_state.can_use_gpu_memory = true;
-    if (!managed_tile_state.resource_id &&
-        !managed_tile_state.resource_id_is_being_initialized)
+    if (!managed_tile_state.resource &&
+        !managed_tile_state.resource_is_being_initialized)
       tiles_that_need_to_be_rasterized_.push_back(tile);
   }
 
@@ -278,10 +278,8 @@ void TileManager::AssignGpuMemoryToTiles() {
 void TileManager::FreeResourcesForTile(Tile* tile) {
   ManagedTileState& managed_tile_state = tile->managed_state();
   DCHECK(managed_tile_state.can_be_freed);
-  if (managed_tile_state.resource_id) {
-    resource_pool_->ReleaseResource(managed_tile_state.resource_id);
-    managed_tile_state.resource_id = 0;
-  }
+  if (managed_tile_state.resource)
+    resource_pool_->ReleaseResource(managed_tile_state.resource.Pass());
 }
 
 void TileManager::DispatchMoreRasterTasks() {
@@ -305,13 +303,14 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
 
   ManagedTileState& managed_tile_state = tile->managed_state();
   DCHECK(managed_tile_state.can_use_gpu_memory);
-  ResourceProvider::ResourceId resource_id =
+  scoped_ptr<ResourcePool::Resource> resource =
       resource_pool_->AcquireResource(tile->tile_size_.size(), tile->format_);
-  resource_pool_->resource_provider()->acquirePixelBuffer(resource_id);
+  resource_pool_->resource_provider()->acquirePixelBuffer(resource->id());
 
-  managed_tile_state.resource_id_is_being_initialized = true;
+  managed_tile_state.resource_is_being_initialized = true;
   managed_tile_state.can_be_freed = false;
 
+  ResourceProvider::ResourceId resource_id = resource->id();
   RenderingStats* stats = new RenderingStats();
 
   ++pending_raster_tasks_;
@@ -327,14 +326,14 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
           base::Bind(&TileManager::OnRasterTaskCompleted,
                      base::Unretained(this),
                      tile,
-                     resource_id,
+                     base::Passed(&resource),
                      cloned_picture_pile,
                      stats));
 }
 
 void TileManager::OnRasterTaskCompleted(
     scoped_refptr<Tile> tile,
-    ResourceProvider::ResourceId resource_id,
+    scoped_ptr<ResourcePool::Resource> resource,
     scoped_refptr<PicturePileImpl> cloned_picture_pile,
     RenderingStats* stats) {
   TRACE_EVENT0("cc", "TileManager::OnRasterTaskCompleted");
@@ -346,7 +345,7 @@ void TileManager::OnRasterTaskCompleted(
   delete stats;
 
   // Release raster resources.
-  resource_pool_->resource_provider()->unmapPixelBuffer(resource_id);
+  resource_pool_->resource_provider()->unmapPixelBuffer(resource->id());
 
   ManagedTileState& managed_tile_state = tile->managed_state();
   managed_tile_state.can_be_freed = true;
@@ -361,8 +360,8 @@ void TileManager::OnRasterTaskCompleted(
 
   // Finish resource initialization if |can_use_gpu_memory| is true.
   if (managed_tile_state.can_use_gpu_memory) {
-    resource_pool_->resource_provider()->setPixelsFromBuffer(resource_id);
-    resource_pool_->resource_provider()->releasePixelBuffer(resource_id);
+    resource_pool_->resource_provider()->setPixelsFromBuffer(resource->id());
+    resource_pool_->resource_provider()->releasePixelBuffer(resource->id());
 
     // The component order may be bgra if we uploaded bgra pixels to rgba
     // texture. Mark contents as swizzled if image component order is
@@ -370,22 +369,22 @@ void TileManager::OnRasterTaskCompleted(
     managed_tile_state.contents_swizzled =
         !PlatformColor::sameComponentOrder(tile->format_);
 
-    DidFinishTileInitialization(tile, resource_id);
+    DidFinishTileInitialization(tile, resource.Pass());
   } else {
-    resource_pool_->resource_provider()->releasePixelBuffer(resource_id);
-    resource_pool_->ReleaseResource(resource_id);
-    managed_tile_state.resource_id_is_being_initialized = false;
+    resource_pool_->resource_provider()->releasePixelBuffer(resource->id());
+    resource_pool_->ReleaseResource(resource.Pass());
+    managed_tile_state.resource_is_being_initialized = false;
   }
 
   DispatchMoreRasterTasks();
 }
 
 void TileManager::DidFinishTileInitialization(
-    Tile* tile, ResourceProvider::ResourceId resource_id) {
+    Tile* tile, scoped_ptr<ResourcePool::Resource> resource) {
   ManagedTileState& managed_tile_state = tile->managed_state();
-  DCHECK(!managed_tile_state.resource_id);
-  managed_tile_state.resource_id = resource_id;
-  managed_tile_state.resource_id_is_being_initialized = false;
+  DCHECK(!managed_tile_state.resource);
+  managed_tile_state.resource = resource.Pass();
+  managed_tile_state.resource_is_being_initialized = false;
   // TODO(qinmin): Make this conditional on managed_tile_state.bin == NOW_BIN.
   client_->ScheduleRedraw();
 }

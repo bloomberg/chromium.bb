@@ -52,8 +52,8 @@ class CC_EXPORT ManagedTileState {
   // Persisted state: valid all the time.
   bool can_use_gpu_memory;
   bool can_be_freed;
-  ResourceProvider::ResourceId resource_id;
-  bool resource_id_is_being_initialized;
+  scoped_ptr<ResourcePool::Resource> resource;
+  bool resource_is_being_initialized;
   bool contents_swizzled;
 
   // Ephemeral state, valid only during Manage.
@@ -95,10 +95,10 @@ class CC_EXPORT TileManager {
   void DispatchOneRasterTask(scoped_refptr<Tile>);
   void OnRasterTaskCompleted(
       scoped_refptr<Tile>,
-      ResourceProvider::ResourceId,
+      scoped_ptr<ResourcePool::Resource>,
       scoped_refptr<PicturePileImpl>,
       RenderingStats*);
-  void DidFinishTileInitialization(Tile*, ResourceProvider::ResourceId);
+  void DidFinishTileInitialization(Tile*, scoped_ptr<ResourcePool::Resource>);
 
   TileManagerClient* client_;
   scoped_ptr<ResourcePool> resource_pool_;
