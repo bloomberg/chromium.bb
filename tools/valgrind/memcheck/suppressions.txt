@@ -6273,3 +6273,35 @@
    fun:_ZN3net14URLFetcherCore29InformDelegateFetchIsCompleteEv
    fun:_ZN3net14URLFetcherCore21OnCompletedURLRequestEN4base9TimeDeltaE
 }
+{
+   bug_164176
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN18BrowserProcessImpl21PreMainMessageLoopRunEv
+   fun:_ZN22ChromeBrowserMainParts25PreMainMessageLoopRunImplEv
+   fun:_ZN22ChromeBrowserMainParts21PreMainMessageLoopRunEv
+   fun:_ZN7content15BrowserMainLoop13CreateThreadsEv
+   fun:_ZN7content21BrowserMainRunnerImpl10InitializeERKNS_18MainFunctionParamsE
+   fun:_ZN7content11BrowserMainERKNS_18MainFunctionParamsE
+   fun:_ZN7content23RunNamedProcessTypeMainERKSsRKNS_18MainFunctionParamsEPNS_19ContentMainDelegateE
+   fun:_ZN7content21ContentMainRunnerImpl3RunEv
+   fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
+   fun:ChromeMain
+}
+{
+   bug_164178
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net25MultiThreadedCertVerifier6VerifyEPNS_15X509CertificateERKSsiPNS_6CRLSetEPNS_16CertVerifyResultERKN4base8CallbackIFviEEEPPvRKNS_11BoundNetLogE
+   fun:_ZN3net25SingleRequestCertVerifier6VerifyEPNS_15X509CertificateERKSsiPNS_6CRLSetEPNS_16CertVerifyResultERKN4base8CallbackIFviEEERKNS_11BoundNetLogE
+   fun:_ZN3net18SSLClientSocketNSS12DoVerifyCertEi
+   fun:_ZN3net18SSLClientSocketNSS15DoHandshakeLoopEi
+   fun:_ZN3net18SSLClientSocketNSS21OnHandshakeIOCompleteEi
+}
+{
+   bug_164179
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net10URLFetcher6CreateERK4GURLNS0_11RequestTypeEPNS_18URLFetcherDelegateE
+   fun:_ZN18WebResourceService10StartFetchEv
+}
