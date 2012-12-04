@@ -798,10 +798,10 @@
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../third_party/safe_browsing/safe_browsing.gyp:safe_browsing',
         '../v8/tools/gyp/v8.gyp:v8',
+        '../webkit/webkit.gyp:test_shell_test_support',
         # Runtime dependencies
         '../ppapi/ppapi_internal.gyp:ppapi_tests',
         '../third_party/mesa/mesa.gyp:osmesa',
-        '../webkit/webkit.gyp:test_shell_test_support',
       ],
       'include_dirs': [
         '..',
