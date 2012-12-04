@@ -507,30 +507,30 @@ static void calculateDrawTransformsInternal(LayerType* layer, const gfx::Transfo
     gfx::PointF anchorPoint = layer->anchorPoint();
     gfx::PointF position = layer->position() - layer->scrollDelta();
 
-    gfx::Transform layerLocalTransform;
-    // LT = Tr[origin] * Tr[origin2anchor]
-    layerLocalTransform.Translate3d(position.x() + anchorPoint.x() * bounds.width(), position.y() + anchorPoint.y() * bounds.height(), layer->anchorPointZ());
-    // LT = Tr[origin] * Tr[origin2anchor] * M[layer]
-    layerLocalTransform.PreconcatTransform(layer->transform());
-    // LT = Tr[origin] * Tr[origin2anchor] * M[layer] * Tr[anchor2origin]
-    layerLocalTransform.Translate3d(-anchorPoint.x() * bounds.width(), -anchorPoint.y() * bounds.height(), -layer->anchorPointZ());
-
     gfx::Transform combinedTransform = parentMatrix;
-    combinedTransform.PreconcatTransform(layerLocalTransform);
+    // LT = Tr[origin] * Tr[origin2anchor]
+    combinedTransform.Translate3d(position.x() + anchorPoint.x() * bounds.width(), position.y() + anchorPoint.y() * bounds.height(), layer->anchorPointZ());
+    // LT = Tr[origin] * Tr[origin2anchor] * M[layer]
+    combinedTransform.PreconcatTransform(layer->transform());
+    // LT = Tr[origin] * Tr[origin2anchor] * M[layer] * Tr[anchor2origin]
+    combinedTransform.Translate3d(-anchorPoint.x() * bounds.width(), -anchorPoint.y() * bounds.height(), -layer->anchorPointZ());
 
     // The layer's contentsSize is determined from the combinedTransform, which then informs the
     // layer's drawTransform.
     updateLayerContentsScale(layer, combinedTransform, deviceScaleFactor, pageScaleFactor, animatingTransformToScreen);
 
-    // If there is a tranformation from the impl thread then it should be at the
-    // start of the combinedTransform, but we don't want it to affect the contentsScale.
-    combinedTransform = layer->implTransform() * combinedTransform;
+    // If there is a transformation from the impl thread then it should be at
+    // the start of the combinedTransform, but we don't want it to affect the
+    // computation of contentsScale above.
+    // Note carefully: this is Concat, not Preconcat (implTransform * combinedTransform).
+    combinedTransform.ConcatTransform(layer->implTransform());
 
     if (layer->fixedToContainerLayer()) {
         // Special case: this layer is a composited fixed-position layer; we need to
         // explicitly compensate for all ancestors' nonzero scrollDeltas to keep this layer
         // fixed correctly.
-        combinedTransform = currentScrollCompensationMatrix * combinedTransform;
+        // Note carefully: this is Concat, not Preconcat (currentScrollCompensation * combinedTransform).
+        combinedTransform.ConcatTransform(currentScrollCompensationMatrix);
     }
 
     // The drawTransform that gets computed below is effectively the layer's drawTransform, unless
@@ -566,22 +566,23 @@ static void calculateDrawTransformsInternal(LayerType* layer, const gfx::Transfo
         RenderSurfaceType* renderSurface = layer->renderSurface();
         renderSurface->clearLayerLists();
 
-        // The owning layer's draw transform has a scale from content to layer space which we need to undo and
-        // replace with a scale from the surface's subtree into layer space.
-        drawTransform.Scale(layer->contentsScaleX(), layer->contentsScaleY());
-        drawTransform.Scale(1 / renderSurfaceSublayerScale.x(), 1 / renderSurfaceSublayerScale.y());
-        renderSurface->setDrawTransform(drawTransform);
+        // The owning layer's draw transform has a scale from content to layer
+        // space which we do not want; so here we use the combinedTransform
+        // instead of the drawTransform. However, we do need to add a different
+        // scale factor that accounts for the surface's pixel dimensions.
+        combinedTransform.Scale(1 / renderSurfaceSublayerScale.x(), 1 / renderSurfaceSublayerScale.y());
+        renderSurface->setDrawTransform(combinedTransform);
 
-        // The origin of the new surface is the upper left corner of the layer.
+        // The owning layer's transform was re-parented by the surface, so the layer's new drawTransform
+        // only needs to scale the layer to surface space.
         gfx::Transform layerDrawTransform;
-        layerDrawTransform.Scale(renderSurfaceSublayerScale.x(), renderSurfaceSublayerScale.y());
-        layerDrawTransform.Scale(1.0 / layer->contentsScaleX(), 1.0 / layer->contentsScaleY());
+        layerDrawTransform.Scale(renderSurfaceSublayerScale.x() / layer->contentsScaleX(), renderSurfaceSublayerScale.y() / layer->contentsScaleY());
         layer->setDrawTransform(layerDrawTransform);
 
         // Inside the surface's subtree, we scale everything to the owning layer's scale.
         // The sublayer matrix transforms centered layer rects into target
         // surface content space.
-        sublayerMatrix.MakeIdentity();
+        DCHECK(sublayerMatrix.IsIdentity());
         sublayerMatrix.Scale(renderSurfaceSublayerScale.x(), renderSurfaceSublayerScale.y());
 
         // The opacity value is moved from the layer to its surface, so that the entire subtree properly inherits opacity.
@@ -669,9 +670,11 @@ static void calculateDrawTransformsInternal(LayerType* layer, const gfx::Transfo
         MathUtil::flattenTransformTo2d(sublayerMatrix);
 
     // Apply the sublayer transform at the center of the layer.
-    sublayerMatrix.Translate(0.5 * bounds.width(), 0.5 * bounds.height());
-    sublayerMatrix.PreconcatTransform(layer->sublayerTransform());
-    sublayerMatrix.Translate(-0.5 * bounds.width(), -0.5 * bounds.height());
+    if (!layer->sublayerTransform().IsIdentity()) {
+        sublayerMatrix.Translate(0.5 * bounds.width(), 0.5 * bounds.height());
+        sublayerMatrix.PreconcatTransform(layer->sublayerTransform());
+        sublayerMatrix.Translate(-0.5 * bounds.width(), -0.5 * bounds.height());
+    }
 
     LayerList& descendants = (layer->renderSurface() ? layer->renderSurface()->layerList() : layerList);
 
@@ -761,8 +764,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, const gfx::Transfo
         // The owning layer's screenSpaceTransform has a scale from content to layer space which we need to undo and
         // replace with a scale from the surface's subtree into layer space.
         gfx::Transform screenSpaceTransform = layer->screenSpaceTransform();
-        screenSpaceTransform.Scale(layer->contentsScaleX(), layer->contentsScaleY());
-        screenSpaceTransform.Scale(1 / renderSurfaceSublayerScale.x(), 1 / renderSurfaceSublayerScale.y());
+        screenSpaceTransform.Scale(layer->contentsScaleX() / renderSurfaceSublayerScale.x(), layer->contentsScaleY() / renderSurfaceSublayerScale.y());
         renderSurface->setScreenSpaceTransform(screenSpaceTransform);
 
         if (layer->replicaLayer()) {
