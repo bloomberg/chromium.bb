@@ -35,21 +35,28 @@ bool InputTypeMatchesFieldType(const DetailInput& input,
   return input.type == field.type();
 }
 
-// Returns true if |input| should be used for a site-requested |field|. If
-// non-empty, |section_suffix| overrides the section specified by |input|.
-bool DetailInputMatchesFieldWithSection(const std::string& section_suffix,
-                                        const DetailInput& input,
-                                        const AutofillField& field) {
-  bool right_section = section_suffix.empty() ||
-      EndsWith(field.section(), section_suffix, false);
-  return InputTypeMatchesFieldType(input, field) && right_section;
-}
-
 // Returns true if |input| should be used for a site-requested |field|.
 bool DetailInputMatchesField(const DetailInput& input,
                              const AutofillField& field) {
-  std::string section_suffix = input.section_suffix ? input.section_suffix : "";
-  return DetailInputMatchesFieldWithSection(section_suffix, input, field);
+  bool right_section = !input.section_suffix ||
+      EndsWith(field.section(), input.section_suffix, false);
+  return InputTypeMatchesFieldType(input, field) && right_section;
+}
+
+// Returns true if |input| should be used to fill a site-requested |field| which
+// is notated with a "shipping" tag, for use when the user has decided to use
+// the billing address as the shipping address.
+bool DetailInputMatchesShippingField(const DetailInput& input,
+                                     const AutofillField& field) {
+  if (input.section_suffix &&
+      std::string(input.section_suffix) == "billing") {
+    return InputTypeMatchesFieldType(input, field);
+  }
+
+  if (field.type() == NAME_FULL)
+    return input.type == CREDIT_CARD_NAME;
+
+  return DetailInputMatchesField(input, field);
 }
 
 // Looks through |input_template| for the types in |requested_data|. Appends
@@ -316,7 +323,10 @@ void AutofillDialogController::ViewClosed(DialogAction action) {
     if (view_->UseBillingForShipping()) {
       FillOutputForSectionWithComparator(
           SECTION_BILLING,
-          base::Bind(DetailInputMatchesFieldWithSection, "shipping"));
+          base::Bind(DetailInputMatchesShippingField));
+      FillOutputForSectionWithComparator(
+          SECTION_CC,
+          base::Bind(DetailInputMatchesShippingField));
     } else {
       FillOutputForSection(SECTION_SHIPPING);
     }
