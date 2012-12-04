@@ -280,14 +280,8 @@ public class ContentViewZoomTest extends AndroidWebViewTestBase {
         assertEquals(View.VISIBLE, zoomControls.getVisibility());
     }
 
-    /*
-     * @SmallTest
-     * @Feature({"AndroidWebView"})
-     * crbug.com/160861
-     * This test relies on <meta name="viewport"> working properly, which is
-     * broken at the moment.
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testZoomControlsOnNonZoomableContent() throws Throwable {
         ContentSettings webSettings = getContentSettingsOnUiThread(mAwContents);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
