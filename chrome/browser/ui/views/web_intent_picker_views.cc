@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
@@ -900,7 +899,7 @@ class WebIntentPickerViews : public views::ButtonListener,
                              public WebIntentPickerModelObserver,
                              public IntentRowView::Delegate {
  public:
-  WebIntentPickerViews(TabContents* tab_contents,
+  WebIntentPickerViews(WebContents* web_contents,
                        WebIntentPickerDelegate* delegate,
                        WebIntentPickerModel* model);
   virtual ~WebIntentPickerViews();
@@ -1013,8 +1012,8 @@ class WebIntentPickerViews : public views::ButtonListener,
   // Delegate for inline disposition tab contents.
   scoped_ptr<WebIntentInlineDispositionDelegate> inline_disposition_delegate_;
 
-  // A weak pointer to the TabContents this picker is in.
-  TabContents* tab_contents_;
+  // A weak pointer to the WebContents this picker is in.
+  WebContents* web_contents_;
 
   // A weak pointer to the WebView that hosts the WebContents being displayed.
   // Created locally, owned by Views.
@@ -1063,11 +1062,10 @@ class WebIntentPickerViews : public views::ButtonListener,
 WebIntentPicker* WebIntentPicker::Create(content::WebContents* web_contents,
                                          WebIntentPickerDelegate* delegate,
                                          WebIntentPickerModel* model) {
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  return new WebIntentPickerViews(tab_contents, delegate, model);
+  return new WebIntentPickerViews(web_contents, delegate, model);
 }
 
-WebIntentPickerViews::WebIntentPickerViews(TabContents* tab_contents,
+WebIntentPickerViews::WebIntentPickerViews(WebContents* web_contents,
                                            WebIntentPickerDelegate* delegate,
                                            WebIntentPickerModel* model)
     : state_(INITIAL),
@@ -1075,8 +1073,9 @@ WebIntentPickerViews::WebIntentPickerViews(TabContents* tab_contents,
       model_(model),
       action_label_(NULL),
       extensions_(NULL),
-      tab_contents_(tab_contents),
-      webview_(new views::WebView(tab_contents->profile())),
+      web_contents_(web_contents),
+      webview_(new views::WebView(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()))),
       window_(NULL),
       more_suggestions_link_(NULL),
       inline_service_icon_(NULL),
@@ -1092,7 +1091,7 @@ WebIntentPickerViews::WebIntentPickerViews(TabContents* tab_contents,
       ConstrainedWindow::GetBackgroundColor()));
 
   // Show the dialog.
-  window_ = new ConstrainedWindowViews(tab_contents->web_contents(), this,
+  window_ = new ConstrainedWindowViews(web_contents, this,
                                        enable_chrome_style,
                                        ConstrainedWindowViews::NO_INSETS);
   if (model_->IsInlineDisposition())
@@ -1374,17 +1373,18 @@ void WebIntentPickerViews::OnExtensionIconChanged(
 void WebIntentPickerViews::OnInlineDisposition(
     const string16&, const GURL& url) {
   DCHECK(delegate_);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   if (!webview_)
-    webview_ = new views::WebView(tab_contents_->profile());
+    webview_ = new views::WebView(profile);
 
-  inline_web_contents_.reset(delegate_->CreateWebContentsForInlineDisposition(
-      tab_contents_->profile(), url));
+  inline_web_contents_.reset(
+      delegate_->CreateWebContentsForInlineDisposition(profile, url));
 
   // Does not take ownership, so we keep a scoped_ptr
   // for the WebContents locally.
   webview_->SetWebContents(inline_web_contents_.get());
-  Browser* browser = chrome::FindBrowserWithWebContents(
-      tab_contents_->web_contents());
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   inline_disposition_delegate_.reset(
       new WebIntentInlineDispositionDelegate(this, inline_web_contents_.get(),
                                              browser));

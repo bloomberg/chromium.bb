@@ -16,7 +16,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/ubertoken_fetcher.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -223,8 +222,9 @@ bool AutoLoginInfoBarDelegate::Accept() {
 }
 
 bool AutoLoginInfoBarDelegate::Cancel() {
-  PrefService* pref_service = TabContents::FromWebContents(
-      owner()->GetWebContents())->profile()->GetPrefs();
+  Profile* profile = Profile::FromBrowserContext(
+      owner()->GetWebContents()->GetBrowserContext());
+  PrefService* pref_service = profile->GetPrefs();
   pref_service->SetBoolean(prefs::kAutologinEnabled, false);
   RecordHistogramAction(HISTOGRAM_REJECTED);
   button_pressed_ = true;

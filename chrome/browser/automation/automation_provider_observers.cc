@@ -59,7 +59,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/login/login_prompt.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
@@ -1203,14 +1202,14 @@ void MetricEventDurationObserver::Observe(
 
 InfoBarCountObserver::InfoBarCountObserver(AutomationProvider* automation,
                                            IPC::Message* reply_message,
-                                           TabContents* tab_contents,
+                                           WebContents* web_contents,
                                            size_t target_count)
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
-      tab_contents_(tab_contents),
+      web_contents_(web_contents),
       target_count_(target_count) {
   content::Source<InfoBarTabHelper> source(
-      InfoBarTabHelper::FromWebContents(tab_contents->web_contents()));
+      InfoBarTabHelper::FromWebContents(web_contents));
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
                  source);
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
@@ -1231,7 +1230,7 @@ void InfoBarCountObserver::Observe(
 
 void InfoBarCountObserver::CheckCount() {
   InfoBarTabHelper* infobar_tab_helper =
-      InfoBarTabHelper::FromWebContents(tab_contents_->web_contents());
+      InfoBarTabHelper::FromWebContents(web_contents_);
   if (infobar_tab_helper->GetInfoBarCount() != target_count_)
     return;
 
@@ -1730,11 +1729,11 @@ void SavePackageNotificationObserver::Observe(
 
 PageSnapshotTaker::PageSnapshotTaker(AutomationProvider* automation,
                                      IPC::Message* reply_message,
-                                     TabContents* tab_contents,
+                                     WebContents* web_contents,
                                      const FilePath& path)
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
-      tab_contents_(tab_contents),
+      web_contents_(web_contents),
       image_path_(path) {
   registrar_.Add(this, chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
                  content::NotificationService::AllSources());
@@ -1744,7 +1743,7 @@ PageSnapshotTaker::~PageSnapshotTaker() {}
 
 void PageSnapshotTaker::Start() {
   AutomationTabHelper* automation_tab_helper =
-      AutomationTabHelper::FromWebContents(tab_contents_->web_contents());
+      AutomationTabHelper::FromWebContents(web_contents_);
   StartObserving(automation_tab_helper);
   automation_tab_helper->SnapshotEntirePage();
 }

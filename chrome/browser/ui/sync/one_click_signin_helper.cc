@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/url_util.h"
@@ -337,17 +336,17 @@ void OneClickInfoBarDelegateImpl::GetAlternateColors(
 }
 
 void OneClickInfoBarDelegateImpl::DisableOneClickSignIn() {
-  PrefService* pref_service =
-      TabContents::FromWebContents(owner()->GetWebContents())->
-          profile()->GetPrefs();
+  Profile* profile = Profile::FromBrowserContext(
+      owner()->GetWebContents()->GetBrowserContext());
+  PrefService* pref_service = profile->GetPrefs();
   pref_service->SetBoolean(prefs::kReverseAutologinEnabled, false);
 }
 
 void OneClickInfoBarDelegateImpl::AddEmailToOneClickRejectedList(
     const std::string& email) {
-  PrefService* pref_service =
-      TabContents::FromWebContents(owner()->GetWebContents())->
-          profile()->GetPrefs();
+  Profile* profile = Profile::FromBrowserContext(
+      owner()->GetWebContents()->GetBrowserContext());
+  PrefService* pref_service = profile->GetPrefs();
   ListPrefUpdate updater(pref_service,
                          prefs::kReverseAutologinRejectedEmailList);
   updater->AppendIfNotPresent(new base::StringValue(email));

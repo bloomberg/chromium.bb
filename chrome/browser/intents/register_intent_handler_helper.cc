@@ -12,7 +12,6 @@
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents.h"
 #include "webkit/glue/web_intent_service_data.h"
 
@@ -23,19 +22,20 @@ void Browser::RegisterIntentHandlerHelper(
     WebContents* web_contents,
     const webkit_glue::WebIntentServiceData& data,
     bool user_gesture) {
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  if (!tab_contents || tab_contents->profile()->IsOffTheRecord())
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (profile->IsOffTheRecord())
     return;
 
-  if (!web_intents::IsWebIntentsEnabledForProfile(tab_contents->profile()))
+  if (!web_intents::IsWebIntentsEnabledForProfile(profile))
     return;
 
   FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-      tab_contents->profile(), Profile::EXPLICIT_ACCESS);
+      profile, Profile::EXPLICIT_ACCESS);
 
   RegisterIntentHandlerInfoBarDelegate::MaybeShowIntentInfoBar(
       InfoBarTabHelper::FromWebContents(web_contents),
-      WebIntentsRegistryFactory::GetForProfile(tab_contents->profile()),
+      WebIntentsRegistryFactory::GetForProfile(profile),
       data,
       favicon_service,
       web_contents->GetURL());

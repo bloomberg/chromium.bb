@@ -395,13 +395,12 @@ void TabRestoreServiceHelper::PopulateTab(
     tab->current_navigation_index = 0;
   tab->tabstrip_index = index;
 
-  TabContents* tab_contents =
-      TabContents::FromWebContents(controller->GetWebContents());
-  // tab_contents is NULL in some browser tests.
-  if (tab_contents) {
+  extensions::TabHelper* extensions_tab_helper =
+      extensions::TabHelper::FromWebContents(controller->GetWebContents());
+  // extensions_tab_helper is NULL in some browser tests.
+  if (extensions_tab_helper) {
     const extensions::Extension* extension =
-        extensions::TabHelper::FromWebContents(controller->GetWebContents())->
-            extension_app();
+        extensions_tab_helper->extension_app();
     if (extension)
       tab->extension_app_id = extension->id();
   }

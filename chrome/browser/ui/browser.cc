@@ -885,15 +885,15 @@ void Browser::RegisterProtocolHandlerHelper(WebContents* web_contents,
                                             const string16& title,
                                             bool user_gesture,
                                             BrowserWindow* window) {
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  if (!tab_contents || tab_contents->profile()->IsOffTheRecord())
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (profile->IsOffTheRecord())
     return;
 
   ProtocolHandler handler =
       ProtocolHandler::CreateProtocolHandler(protocol, url, title);
 
-  ProtocolHandlerRegistry* registry =
-      tab_contents->profile()->GetProtocolHandlerRegistry();
+  ProtocolHandlerRegistry* registry = profile->GetProtocolHandlerRegistry();
   TabSpecificContentSettings* tab_content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
 
@@ -963,10 +963,11 @@ void Browser::RequestMediaAccessPermissionHelper(
     content::WebContents* web_contents,
     const content::MediaStreamRequest* request,
     const content::MediaResponseCallback& callback) {
-  TabContents* tab = TabContents::FromWebContents(web_contents);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
   scoped_ptr<MediaStreamDevicesController>
-      controller(new MediaStreamDevicesController(tab->profile(),
+      controller(new MediaStreamDevicesController(profile,
                                                   request,
                                                   callback));
   if (!controller->DismissInfoBarAndTakeActionOnSettings()) {

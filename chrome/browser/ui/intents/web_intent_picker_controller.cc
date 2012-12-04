@@ -810,13 +810,12 @@ void WebIntentPickerController::LocationBarPickerButtonClicked() {
         chrome::FindBrowserWithWebContents(web_contents_);
     if (!service_browser) return;
 
-    TabContents* client_tab =
-        TabContents::FromWebContents(window_disposition_source_);
     Browser* client_browser =
         chrome::FindBrowserWithWebContents(window_disposition_source_);
-    if (!client_browser || !client_tab) return;
-    int client_index =
-        client_browser->tab_strip_model()->GetIndexOfTabContents(client_tab);
+    if (!client_browser)
+      return;
+    int client_index = client_browser->tab_strip_model()->GetIndexOfWebContents(
+        window_disposition_source_);
     DCHECK(client_index != TabStripModel::kNoTab);
 
     source_intents_dispatcher_->ResetDispatch();

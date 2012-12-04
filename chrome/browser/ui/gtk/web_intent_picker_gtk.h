@@ -27,7 +27,6 @@ class GtkSignalRegistrar;
 
 class CustomDrawButton;
 class GURL;
-class TabContents;
 class ThrobberGtk;
 class WebIntentPickerDelegate;
 class WaitingDialog;
@@ -38,7 +37,7 @@ class WebIntentPickerGtk : public WebIntentPicker,
                            public ConstrainedWindowGtkDelegate,
                            public content::NotificationObserver {
  public:
-  WebIntentPickerGtk(TabContents* tab_contents,
+  WebIntentPickerGtk(content::WebContents* tab_contents,
                      WebIntentPickerDelegate* delegate,
                      WebIntentPickerModel* model);
   virtual ~WebIntentPickerGtk();
@@ -136,7 +135,7 @@ class WebIntentPickerGtk : public WebIntentPicker,
   void RemoveThrobber();
 
   // A weak pointer to the tab contents on which to display the picker UI.
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
 
   // A weak pointer to the WebIntentPickerDelegate to notify when the user
   // chooses a service or cancels.

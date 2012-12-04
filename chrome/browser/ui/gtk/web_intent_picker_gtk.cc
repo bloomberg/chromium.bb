@@ -25,7 +25,6 @@
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -64,8 +63,10 @@ enum {
   kInstallButtonIndex,
 };
 
-GtkThemeService *GetThemeService(TabContents* tab_contents) {
-  return GtkThemeService::GetFrom(tab_contents->profile());
+GtkThemeService *GetThemeService(WebContents* web_contents) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  return GtkThemeService::GetFrom(profile);
 }
 
 // Set the image of |button| to |pixbuf|.
@@ -195,17 +196,16 @@ void WaitingDialog::Init() {
 }
 
 // static
-WebIntentPicker* WebIntentPicker::Create(content::WebContents* web_contents,
+WebIntentPicker* WebIntentPicker::Create(WebContents* web_contents,
                                          WebIntentPickerDelegate* delegate,
                                          WebIntentPickerModel* model) {
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  return new WebIntentPickerGtk(tab_contents, delegate, model);
+  return new WebIntentPickerGtk(web_contents, delegate, model);
 }
 
-WebIntentPickerGtk::WebIntentPickerGtk(TabContents* tab_contents,
+WebIntentPickerGtk::WebIntentPickerGtk(WebContents* web_contents,
                                        WebIntentPickerDelegate* delegate,
                                        WebIntentPickerModel* model)
-    : tab_contents_(tab_contents),
+    : web_contents_(web_contents),
       delegate_(delegate),
       model_(model),
       contents_(NULL),
@@ -223,12 +223,12 @@ WebIntentPickerGtk::WebIntentPickerGtk(TabContents* tab_contents,
   UpdateCWSLabel();
   UpdateSuggestedExtensions();
 
-  GtkThemeService* theme_service = GetThemeService(tab_contents);
+  GtkThemeService* theme_service = GetThemeService(web_contents);
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                        content::Source<ThemeService>(theme_service));
   theme_service->InitThemesFor(this);
 
-  window_ = new ConstrainedWindowGtk(tab_contents->web_contents(), this);
+  window_ = new ConstrainedWindowGtk(web_contents, this);
 
   if (model_->IsInlineDisposition())
     OnInlineDisposition(string16(), model_->inline_disposition_url());
@@ -293,11 +293,11 @@ void WebIntentPickerGtk::OnExtensionIconChanged(
 void WebIntentPickerGtk::OnInlineDisposition(const string16&,
                                              const GURL& url) {
   DCHECK(delegate_);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   inline_disposition_web_contents_.reset(
-      delegate_->CreateWebContentsForInlineDisposition(
-          tab_contents_->profile(), url));
-  Browser* browser = chrome::FindBrowserWithWebContents(
-      tab_contents_->web_contents());
+      delegate_->CreateWebContentsForInlineDisposition(profile, url));
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   inline_disposition_delegate_.reset(
       new WebIntentInlineDispositionDelegate(
           this, inline_disposition_web_contents_.get(), browser));
@@ -312,7 +312,7 @@ void WebIntentPickerGtk::OnInlineDisposition(const string16&,
   window_->BackgroundColorChanged();
 
   GtkWidget* vbox = gtk_vbox_new(FALSE, 0);
-  GtkThemeService* theme_service = GetThemeService(tab_contents_);
+  GtkThemeService* theme_service = GetThemeService(web_contents_);
 
   service_hbox_ = gtk_hbox_new(FALSE, ui::kControlSpacing);
   // TODO(gbillock): Eventually get the service icon button here.
@@ -378,8 +378,7 @@ void WebIntentPickerGtk::OnInlineDisposition(const string16&,
   inline_disposition_web_contents_->GetView()->SetInitialFocus();
   host_signals_.reset(new ui::GtkSignalRegistrar());
   host_signals_->Connect(
-      tab_contents_->web_contents()->GetRenderViewHost()->GetView()->
-          GetNativeView(),
+      web_contents_->GetRenderViewHost()->GetView()->GetNativeView(),
       "size-allocate",
       G_CALLBACK(OnHostContentsSizeAllocateThunk), this);
 }
@@ -391,7 +390,7 @@ void WebIntentPickerGtk::OnInlineDispositionAutoResize(const gfx::Size& size) {
 }
 
 gfx::Size WebIntentPickerGtk::GetMaxInlineDispositionSize() {
-  gfx::Rect tab_bounds(tab_contents_->web_contents()->GetRenderViewHost()->
+  gfx::Rect tab_bounds(web_contents_->GetRenderViewHost()->
       GetView()->GetNativeView()->allocation);
   GtkRequisition req = {};
   if (service_hbox_)
@@ -429,7 +428,7 @@ void WebIntentPickerGtk::OnPendingAsyncCompleted() {
   // Add the message text.
   GtkWidget* hbox = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(sub_contents), hbox, TRUE, TRUE, 0);
-  GtkThemeService* theme_service = GetThemeService(tab_contents_);
+  GtkThemeService* theme_service = GetThemeService(web_contents_);
   GtkWidget* no_service_label = theme_service->BuildLabel(
       l10n_util::GetStringUTF8(IDS_INTENT_PICKER_NO_SERVICES).c_str(),
       ui::kGdkBlack);
@@ -481,7 +480,7 @@ void WebIntentPickerGtk::Observe(int type,
                                  const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
   if (header_label_) {
-    GtkThemeService* theme_service = GetThemeService(tab_contents_);
+    GtkThemeService* theme_service = GetThemeService(web_contents_);
     if (theme_service->UsingNativeTheme())
       gtk_util::UndoForceFontSize(header_label_);
     else
@@ -579,7 +578,7 @@ void WebIntentPickerGtk::OnServiceButtonClick(GtkWidget* button) {
 }
 
 void WebIntentPickerGtk::InitContents() {
-  GtkThemeService* theme_service = GetThemeService(tab_contents_);
+  GtkThemeService* theme_service = GetThemeService(web_contents_);
 
   // Main contents vbox.
   if (!contents_) {
@@ -601,7 +600,7 @@ void WebIntentPickerGtk::InitContents() {
 }
 
 void WebIntentPickerGtk::InitMainContents() {
-  GtkThemeService* theme_service = GetThemeService(tab_contents_);
+  GtkThemeService* theme_service = GetThemeService(web_contents_);
 
   ClearContents();
 
@@ -720,7 +719,7 @@ void WebIntentPickerGtk::AddCloseButton(GtkWidget* containingBox) {
   gtk_box_pack_start(GTK_BOX(containingBox), close_hbox, TRUE, TRUE, 0);
 
   close_button_.reset(
-      CustomDrawButton::CloseButton(GetThemeService(tab_contents_)));
+      CustomDrawButton::CloseButton(GetThemeService(web_contents_)));
   g_signal_connect(close_button_->widget(), "clicked",
                    G_CALLBACK(OnCloseButtonClickThunk), this);
   gtk_widget_set_can_focus(close_button_->widget(), FALSE);
@@ -734,7 +733,7 @@ void WebIntentPickerGtk::AddTitle(GtkWidget* containingBox) {
   gtk_box_pack_start(GTK_BOX(containingBox), header_hbox, TRUE, TRUE, 0);
 
   // Label text will be set in the call to SetActionString().
-  header_label_ = GetThemeService(tab_contents_)->BuildLabel(
+  header_label_ = GetThemeService(web_contents_)->BuildLabel(
       std::string(), ui::kGdkBlack);
   gtk_util::ForceFontSizePixels(header_label_, kHeaderLabelPixelSize);
   gtk_box_pack_start(GTK_BOX(header_hbox), header_label_, TRUE, TRUE, 0);
@@ -793,7 +792,7 @@ void WebIntentPickerGtk::UpdateSuggestedExtensions() {
   if (!extensions_vbox_)
     return;
 
-  GtkThemeService* theme_service = GetThemeService(tab_contents_);
+  GtkThemeService* theme_service = GetThemeService(web_contents_);
 
   gtk_util::RemoveAllChildren(extensions_vbox_);
 

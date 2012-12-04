@@ -62,7 +62,6 @@ class InfoBarTabHelper;
 class Notification;
 class Profile;
 class SavePackage;
-class TabContents;
 
 namespace automation {
 class Error;
@@ -74,10 +73,6 @@ class ExistingUserController;
 class WizardScreen;
 }
 #endif  // defined(OS_CHROMEOS)
-
-namespace IPC {
-class Message;
-}
 
 namespace content {
 class NavigationController;
@@ -91,6 +86,10 @@ class Extension;
 
 namespace history {
 class TopSites;
+}
+
+namespace IPC {
+class Message;
 }
 
 namespace policy {
@@ -658,7 +657,7 @@ class InfoBarCountObserver : public content::NotificationObserver {
  public:
   InfoBarCountObserver(AutomationProvider* automation,
                        IPC::Message* reply_message,
-                       TabContents* tab_contents,
+                       content::WebContents* web_contents,
                        size_t target_count);
   virtual ~InfoBarCountObserver();
 
@@ -675,7 +674,7 @@ class InfoBarCountObserver : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
 
   const size_t target_count_;
 
@@ -1270,7 +1269,7 @@ class PageSnapshotTaker : public TabEventObserver,
  public:
   PageSnapshotTaker(AutomationProvider* automation,
                     IPC::Message* reply_message,
-                    TabContents* tab_contents,
+                    content::WebContents* web_contents,
                     const FilePath& path);
   virtual ~PageSnapshotTaker();
 
@@ -1294,7 +1293,7 @@ class PageSnapshotTaker : public TabEventObserver,
 
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
   FilePath image_path_;
   content::NotificationRegistrar registrar_;
 

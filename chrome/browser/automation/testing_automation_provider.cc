@@ -5883,7 +5883,7 @@ void TestingAutomationProvider::CaptureEntirePageJSON(
     FilePath path(path_str);
     // This will delete itself when finished.
     PageSnapshotTaker* snapshot_taker = new PageSnapshotTaker(
-        this, reply_message, TabContents::FromWebContents(web_contents), path);
+        this, reply_message, web_contents, path);
     snapshot_taker->Start();
   } else {
     AutomationJSONReply(this, reply_message)
@@ -6346,7 +6346,7 @@ void TestingAutomationProvider::WaitForInfoBarCount(
 
   // The delegate will delete itself.
   new InfoBarCountObserver(this, reply_message,
-      TabContents::FromWebContents(controller->GetWebContents()), target_count);
+                           controller->GetWebContents(), target_count);
 }
 
 void TestingAutomationProvider::WaitForProcessLauncherThreadToGoIdle(
