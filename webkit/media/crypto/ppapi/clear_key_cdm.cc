@@ -235,12 +235,16 @@ cdm::Status ClearKeyCdm::GenerateKeyRequest(const char* type, int type_size,
                               client_.session_id().size());
   latest_session_id_ = client_.session_id();
 
-  // TODO(tomfinegan): Get rid of this copy.
-  key_request->set_message(allocator_->Allocate(client_.key_message_length()));
-  DCHECK(key_request->message());
-  DCHECK_EQ(key_request->message()->size(), client_.key_message_length());
-  memcpy(key_request->message()->data(),
-         client_.key_message(), client_.key_message_length());
+  DCHECK(!key_request->message());
+  if (client_.key_message_length()) {
+    // TODO(tomfinegan): Get rid of this copy.
+    key_request->set_message(
+        allocator_->Allocate(client_.key_message_length()));
+    DCHECK(key_request->message());
+    DCHECK_EQ(key_request->message()->size(), client_.key_message_length());
+    memcpy(key_request->message()->data(),
+           client_.key_message(), client_.key_message_length());
+  }
 
   key_request->set_default_url(client_.default_url().data(),
                                client_.default_url().size());

@@ -544,17 +544,22 @@ void PPB_Instance_Proxy::KeyMessage(PP_Instance instance,
                                     PP_Var session_id,
                                     PP_Resource message,
                                     PP_Var default_url) {
-  Resource* object =
-      PpapiGlobals::Get()->GetResourceTracker()->GetResource(message);
-  if (!object || object->pp_instance() != instance)
-    return;
+  PP_Resource host_resource = 0;
+  if (message) {
+    Resource* object =
+        PpapiGlobals::Get()->GetResourceTracker()->GetResource(message);
+    if (!object || object->pp_instance() != instance)
+      return;
+    host_resource = object->host_resource().host_resource();
+  }
+
   dispatcher()->Send(
       new PpapiHostMsg_PPBInstance_KeyMessage(
           API_ID_PPB_INSTANCE,
           instance,
           SerializedVarSendInput(dispatcher(), key_system),
           SerializedVarSendInput(dispatcher(), session_id),
-          object->host_resource().host_resource(),
+          host_resource,
           SerializedVarSendInput(dispatcher(), default_url)));
 }
 

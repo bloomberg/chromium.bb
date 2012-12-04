@@ -554,9 +554,7 @@ void CdmWrapper::GenerateKeyRequest(const std::string& key_system,
       init_data.ByteLength(),
       key_request.get());
   PP_DCHECK(status == cdm::kSuccess || status == cdm::kSessionError);
-  if (status != cdm::kSuccess ||
-      !key_request->message() ||
-      key_request->message()->size() == 0) {
+  if (status != cdm::kSuccess) {
     FireKeyError("");
     return;
   }
@@ -816,8 +814,13 @@ void CdmWrapper::KeyAdded(int32_t result, const std::string& session_id) {
 void CdmWrapper::KeyMessage(int32_t result,
                             const LinkedKeyMessage& key_message) {
   PP_DCHECK(result == PP_OK);
-  pp::Buffer_Dev message_buffer =
-      static_cast<const PpbBuffer*>(key_message->message())->buffer_dev();
+
+  pp::Buffer_Dev message_buffer;
+  if (key_message->message()) {
+    message_buffer = static_cast<const PpbBuffer*>(
+        key_message->message())->buffer_dev();
+  }
+
   pp::ContentDecryptor_Private::KeyMessage(
       key_system_,
       key_message->session_id_string(),

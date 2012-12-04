@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_content_decryptor_private.idl,
- *   modified Fri Oct 26 14:47:38 2012.
+ *   modified Tue Dec  4 10:30:29 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -113,7 +113,8 @@ struct PPB_ContentDecryptor_Private_0_6 {
    * <code>PP_VARTYPE_STRING</code> containing the session ID.
    *
    * @param[in] resource A <code>PP_Resource</code> corresponding to a
-   * <code>PPB_Buffer_Dev</code> resource that contains the message.
+   * <code>PPB_Buffer_Dev</code> resource that contains the message. A 0
+   * resource is allowed which indicates an empty message.
    *
    * @param[in] default_url A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_STRING</code> containing the default URL for the message.

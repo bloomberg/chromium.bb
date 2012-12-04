@@ -94,7 +94,8 @@ interface PPB_ContentDecryptor_Private {
    * <code>PP_VARTYPE_STRING</code> containing the session ID.
    *
    * @param[in] resource A <code>PP_Resource</code> corresponding to a
-   * <code>PPB_Buffer_Dev</code> resource that contains the message.
+   * <code>PPB_Buffer_Dev</code> resource that contains the message. A 0
+   * resource is allowed which indicates an empty message.
    *
    * @param[in] default_url A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_STRING</code> containing the default URL for the message.

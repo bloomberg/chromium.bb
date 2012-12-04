@@ -645,24 +645,37 @@ void ContentDecryptorDelegate::KeyMessage(PP_Var key_system_var,
     return;
   }
 
-  EnterResourceNoLock<PPB_Buffer_API> enter(message_resource, true);
-  if (!enter.succeeded()) {
-    decryptor_client_->KeyError(key_system_string->value(),
-                                session_id_string->value(),
-                                media::Decryptor::kUnknownError,
-                                0);
-    return;
-  }
+  scoped_array<uint8> message_array;
+  int message_size = 0;
 
-  BufferAutoMapper mapper(enter.object());
-  scoped_array<uint8> message_array(new uint8[mapper.size()]);
-  if (mapper.data() && mapper.size())
+  if (message_resource) {
+    EnterResourceNoLock<PPB_Buffer_API> enter(message_resource, true);
+    if (!enter.succeeded()) {
+      decryptor_client_->KeyError(key_system_string->value(),
+                                  session_id_string->value(),
+                                  media::Decryptor::kUnknownError,
+                                  0);
+      return;
+    }
+
+    BufferAutoMapper mapper(enter.object());
+    if (!mapper.data() || !mapper.size()) {
+      decryptor_client_->KeyError(key_system_string->value(),
+                                  session_id_string->value(),
+                                  media::Decryptor::kUnknownError,
+                                  0);
+      return;
+    }
+
+    message_size = mapper.size();
+    message_array.reset(new uint8[message_size]);
     memcpy(message_array.get(), mapper.data(), mapper.size());
+  }
 
   decryptor_client_->KeyMessage(key_system_string->value(),
                                 session_id_string->value(),
                                 message_array.Pass(),
-                                mapper.size(),
+                                message_size,
                                 default_url_string->value());
 }
 
