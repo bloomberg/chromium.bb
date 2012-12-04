@@ -354,18 +354,18 @@ void LauncherButton::UpdateState() {
     int bar_id;
     if (IsShelfHorizontal()) {
       if (state_ & STATE_ACTIVE)
-        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE;
+        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_BOTTOM_ACTIVE;
       else if (state_ & (STATE_HOVERED | STATE_FOCUSED | STATE_ATTENTION))
-        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_HOVER;
+        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_BOTTOM_HOVER;
       else
-        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_RUNNING;
+        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_BOTTOM_RUNNING;
     } else {
       if (state_ & STATE_ACTIVE)
-        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_VERTICAL_ACTIVE;
+        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_LEFT_ACTIVE;
       else if (state_ & (STATE_HOVERED | STATE_FOCUSED | STATE_ATTENTION))
-        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_VERTICAL_HOVER;
+        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_LEFT_HOVER;
       else
-        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_VERTICAL_RUNNING;
+        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_LEFT_RUNNING;
     }
 
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();

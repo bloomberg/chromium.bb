@@ -108,7 +108,7 @@ class DimmerView : public views::WidgetDelegateView,
     if (!launcher_background) {
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       launcher_background =
-          rb.GetImageNamed(IDR_AURA_LAUNCHER_DIMMING).ToImageSkia();
+          rb.GetImageNamed(IDR_AURA_LAUNCHER_DIMMING_BOTTOM).ToImageSkia();
     }
     paint.setAlpha(kDimAlpha);
     canvas->DrawImageInt(
@@ -171,7 +171,7 @@ void Launcher::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
     if (!launcher_background) {
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       launcher_background =
-          rb.GetImageNamed(IDR_AURA_LAUNCHER_BACKGROUND).ToImageSkia();
+          rb.GetImageNamed(IDR_AURA_LAUNCHER_BACKGROUND_BOTTOM).ToImageSkia();
     }
     paint.setAlpha(alpha_);
     canvas->DrawImageInt(
