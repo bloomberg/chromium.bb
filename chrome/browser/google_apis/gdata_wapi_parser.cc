@@ -68,6 +68,7 @@ const char kWritersCanInviteNode[] = "writersCanInvite";
 // Field names.
 const char kAuthorField[] = "author";
 const char kCategoryField[] = "category";
+const char kChangestampField[] = "docs$changestamp.value";
 const char kContentField[] = "content";
 const char kDeletedField[] = "gd$deleted";
 const char kETagField[] = "gd$etag";
@@ -593,7 +594,8 @@ DocumentEntry::DocumentEntry()
     : kind_(ENTRY_KIND_UNKNOWN),
       file_size_(0),
       deleted_(false),
-      removed_(false) {
+      removed_(false),
+      changestamp_(0) {
 }
 
 DocumentEntry::~DocumentEntry() {
@@ -603,6 +605,22 @@ bool DocumentEntry::HasFieldPresent(const base::Value* value,
                                     bool* result) {
   *result = (value != NULL);
   return true;
+}
+
+bool DocumentEntry::ParseChangestamp(const base::Value* value,
+                                     int64* result) {
+  DCHECK(result);
+  if (!value) {
+    *result = 0;
+    return true;
+  }
+
+  std::string string_value;
+  if (value->GetAsString(&string_value) &&
+      base::StringToInt64(string_value, result))
+    return true;
+
+  return false;
 }
 
 // static
@@ -640,6 +658,9 @@ void DocumentEntry::RegisterJSONConverter(
       kDeletedField, &DocumentEntry::deleted_, &DocumentEntry::HasFieldPresent);
   converter->RegisterCustomValueField<bool>(
       kRemovedField, &DocumentEntry::removed_, &DocumentEntry::HasFieldPresent);
+  converter->RegisterCustomValueField<int64>(
+      kChangestampField, &DocumentEntry::changestamp_,
+      &DocumentEntry::ParseChangestamp);
 }
 
 std::string DocumentEntry::GetHostedDocumentExtension() const {

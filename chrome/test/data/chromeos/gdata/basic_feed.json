@@ -116,6 +116,9 @@
             "src": "https://file_content_url/",
             "type": "audio/mpeg"
          },
+         "docs$changestamp": {
+            "value": "654321"
+         },
          "docs$filename": {
             "$t": "filename.m4a"
          },

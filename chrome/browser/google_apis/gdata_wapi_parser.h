@@ -382,9 +382,14 @@ class DocumentEntry : public FeedEntry {
   static void RegisterJSONConverter(
       base::JSONValueConverter<DocumentEntry>* converter);
 
-  // Helper function for parsing bool fields based on presence of
-  // their value nodes.
+  // Sets true to |result| if the field exists.
+  // Always returns true even when the field does not exist.
   static bool HasFieldPresent(const base::Value* value, bool* result);
+
+  // Parses |value| as int64 and sets it to |result|. If the field does not
+  // exist, sets 0 to |result| as default value.
+  // Returns true if |value| is NULL or it is parsed as int64 successfully.
+  static bool ParseChangestamp(const base::Value* value, int64* result);
 
   // Returns true if |file| has one of the hosted document extensions.
   static bool HasHostedDocumentExtension(const FilePath& file);
@@ -433,6 +438,10 @@ class DocumentEntry : public FeedEntry {
 
   // True if the file or directory is deleted (applicable to change feeds only).
   bool deleted() const { return deleted_ || removed_; }
+
+  // Changestamp (exists only for change query results).
+  // If not exists, defaults to 0.
+  int64 changestamp() const { return changestamp_; }
 
   // Text version of document entry kind. Returns an empty string for
   // unknown entry kind.
@@ -517,6 +526,7 @@ class DocumentEntry : public FeedEntry {
   int64 file_size_;
   bool deleted_;
   bool removed_;
+  int64 changestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(DocumentEntry);
 };

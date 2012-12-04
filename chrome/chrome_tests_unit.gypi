@@ -2116,6 +2116,7 @@
 
             # Test files cannot be opened on Android.
             'browser/google_apis/gdata_wapi_operations_unittest.cc',
+            'browser/google_apis/gdata_wapi_parser_unittest.cc',
           ],
           'sources/': [
             ['exclude', '^browser/captive_portal/'],
