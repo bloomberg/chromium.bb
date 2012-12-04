@@ -105,13 +105,16 @@ class TestThreadWakeup : public PerfTest {
     bool do_exit = false;
     while (!do_exit) {
       ASSERT_EQ(pthread_mutex_lock(&obj->mutex_), 0);
-      while (obj->state_ == WAIT)
+      for (;;) {
+        if (obj->state_ == EXIT) {
+          do_exit = true;
+          break;
+        } else if (obj->state_ == WAKE_CHILD) {
+          obj->state_ = REPLY_TO_PARENT;
+          ASSERT_EQ(pthread_cond_signal(&obj->condvar2_), 0);
+          break;
+        }
         ASSERT_EQ(pthread_cond_wait(&obj->condvar1_, &obj->mutex_), 0);
-      if (obj->state_ == EXIT) {
-        do_exit = true;
-      } else {
-        obj->state_ = REPLY_TO_PARENT;
-        ASSERT_EQ(pthread_cond_signal(&obj->condvar2_), 0);
       }
       ASSERT_EQ(pthread_mutex_unlock(&obj->mutex_), 0);
     }
