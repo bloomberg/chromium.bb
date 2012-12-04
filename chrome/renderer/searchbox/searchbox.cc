@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -122,6 +122,7 @@ void SearchBox::OnChange(const string16& query,
   selection_start_ = selection_start;
   selection_end_ = selection_end;
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    DVLOG(1) << render_view() << " OnChange";
     extensions_v8::SearchBoxExtension::DispatchChange(
         render_view()->GetWebView()->mainFrame());
   }
@@ -132,6 +133,7 @@ void SearchBox::OnSubmit(const string16& query) {
   verbatim_ = true;
   selection_start_ = selection_end_ = query_.size();
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    DVLOG(1) << render_view() << " OnSubmit";
     extensions_v8::SearchBoxExtension::DispatchSubmit(
         render_view()->GetWebView()->mainFrame());
   }
@@ -143,6 +145,7 @@ void SearchBox::OnCancel(const string16& query) {
   verbatim_ = true;
   selection_start_ = selection_end_ = query_.size();
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    DVLOG(1) << render_view() << " OnCancel";
     extensions_v8::SearchBoxExtension::DispatchCancel(
         render_view()->GetWebView()->mainFrame());
   }
@@ -152,6 +155,7 @@ void SearchBox::OnCancel(const string16& query) {
 void SearchBox::OnResize(const gfx::Rect& bounds) {
   rect_ = bounds;
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    DVLOG(1) << render_view() << " OnResize";
     extensions_v8::SearchBoxExtension::DispatchResize(
         render_view()->GetWebView()->mainFrame());
   }
@@ -161,6 +165,7 @@ void SearchBox::OnDetermineIfPageSupportsInstant() {
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     bool result = extensions_v8::SearchBoxExtension::PageSupportsInstant(
         render_view()->GetWebView()->mainFrame());
+    DVLOG(1) << render_view() << " PageSupportsInstant: " << result;
     render_view()->Send(new ChromeViewHostMsg_InstantSupportDetermined(
         render_view()->GetRoutingID(), render_view()->GetPageId(), result));
   }
@@ -171,6 +176,7 @@ void SearchBox::OnAutocompleteResults(
   results_base_ += autocomplete_results_.size();
   autocomplete_results_ = results;
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    DVLOG(1) << render_view() << " OnAutocompleteResults";
     extensions_v8::SearchBoxExtension::DispatchAutocompleteResults(
         render_view()->GetWebView()->mainFrame());
   }
@@ -178,6 +184,7 @@ void SearchBox::OnAutocompleteResults(
 
 void SearchBox::OnUpOrDownKeyPressed(int count) {
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    DVLOG(1) << render_view() << " OnKeyPress: " << count;
     extensions_v8::SearchBoxExtension::DispatchUpOrDownKeyPress(
         render_view()->GetWebView()->mainFrame(), count);
   }
@@ -186,6 +193,7 @@ void SearchBox::OnUpOrDownKeyPressed(int count) {
 void SearchBox::OnModeChanged(const chrome::search::Mode& mode) {
   mode_ = mode;
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    DVLOG(1) << render_view() << " OnModeChanged";
     extensions_v8::SearchBoxExtension::DispatchContextChange(
         render_view()->GetWebView()->mainFrame());
   }

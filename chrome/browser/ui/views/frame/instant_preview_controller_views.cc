@@ -7,7 +7,6 @@
 #include "chrome/browser/instant/instant_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"
 #include "ui/views/controls/webview/webview.h"
@@ -30,8 +29,7 @@ void InstantPreviewControllerViews::PreviewStateChanged(
       preview_.reset(new views::WebView(browser_->profile()));
       preview_->set_id(VIEW_ID_TAB_CONTAINER);
     }
-    content::WebContents* web_contents =
-        model.GetPreviewContents()->web_contents();
+    content::WebContents* web_contents = model.GetPreviewContents();
     contents_->SetPreview(preview_.get(), web_contents,
                           model.height(), model.height_units());
     preview_->SetWebContents(web_contents);

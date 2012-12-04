@@ -12,7 +12,10 @@
 
 class InstantController;
 class InstantModelObserver;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 // Holds state that is important to any views concerned with visibility and
 // layout of the Instant preview.
@@ -31,8 +34,8 @@ class InstantModel {
                        int height,
                        InstantSizeUnits height_units);
 
-  void SetPreviewContents(TabContents* preview_contents);
-  TabContents* GetPreviewContents() const;
+  void SetPreviewContents(content::WebContents* preview_contents);
+  content::WebContents* GetPreviewContents() const;
 
   // Add and remove observers.
   void AddObserver(InstantModelObserver* observer) const;
@@ -46,7 +49,7 @@ class InstantModel {
   // Weak. Remembers the last set preview contents to detect changes. Actual
   // preview contents is fetched from the |controller_| as this may not always
   // reflect the actual preview in effect.
-  TabContents* preview_contents_;
+  content::WebContents* preview_contents_;
 
   // Weak. The controller currently holds some model state.
   // TODO(dhollowa): Remove this, transfer all model state to InstantModel.

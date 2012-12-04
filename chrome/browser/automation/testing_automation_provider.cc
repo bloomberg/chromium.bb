@@ -3193,9 +3193,8 @@ void TestingAutomationProvider::GetInstantInfo(Browser* browser,
     info->SetBoolean("enabled", true);
     info->SetBoolean("active", (instant->GetPreviewContents() != NULL));
     info->SetBoolean("current", instant->IsCurrent());
-    if (instant->GetPreviewContents() &&
-        instant->GetPreviewContents()->web_contents()) {
-      WebContents* contents = instant->GetPreviewContents()->web_contents();
+    if (instant->GetPreviewContents()) {
+      WebContents* contents = instant->GetPreviewContents();
       info->SetBoolean("loading", contents->IsLoading());
       info->SetString("location", contents->GetURL().spec());
       info->SetString("title", contents->GetTitle());

@@ -38,7 +38,7 @@ void InstantModel::SetPreviewState(const chrome::search::Mode& mode,
                     PreviewStateChanged(*this));
 }
 
-void InstantModel::SetPreviewContents(TabContents* preview_contents) {
+void InstantModel::SetPreviewContents(content::WebContents* preview_contents) {
   if (preview_contents_ == preview_contents)
     return;
 
@@ -48,7 +48,7 @@ void InstantModel::SetPreviewContents(TabContents* preview_contents) {
                     PreviewStateChanged(*this));
 }
 
-TabContents* InstantModel::GetPreviewContents() const {
+content::WebContents* InstantModel::GetPreviewContents() const {
   return controller_->GetPreviewContents();
 }
 

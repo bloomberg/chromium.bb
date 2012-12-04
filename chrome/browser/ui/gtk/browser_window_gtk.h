@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -248,7 +248,7 @@ class BrowserWindowGtk
   gfx::Rect bounds() const { return bounds_; }
 
   // Returns the tab we're currently displaying in the tab contents container.
-  TabContents* GetDisplayedTab();
+  content::WebContents* GetDisplayedTab();
 
   static void RegisterUserPrefs(PrefService* prefs);
 

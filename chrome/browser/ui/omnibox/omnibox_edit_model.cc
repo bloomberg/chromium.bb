@@ -313,20 +313,16 @@ bool OmniboxEditModel::UseVerbatimInstant() {
     return true;
 #endif
 
-  // The value of input.prevent_inline_autocomplete() is determined by
+  // The value of input.prevent_inline_autocomplete() is determined by the
   // following conditions:
-  // 1. If the caret is at the end of the text (checked below).
+  // 1. If the caret is at the end of the text.
   // 2. If it's in IME composition mode.
-  // As we use a separated widget for displaying the Instant suggest, it won't
-  // interfere with IME composition, so we don't need to care about the value of
+  // We send the caret position to Instant (so it can determine #1 itself), and
+  // we use a separated widget for displaying the Instant suggest (so it doesn't
+  // interfere with #2). So, we don't need to care about the value of
   // input.prevent_inline_autocomplete() here.
-  if (view_->DeleteAtEndPressed() || (popup_->selected_line() != 0) ||
-      just_deleted_text_ || !inline_autocomplete_text_.empty())
-    return true;
-
-  size_t start, end;
-  view_->GetSelectionBounds(&start, &end);
-  return (start != end) || (start != view_->GetText().length());
+  return view_->DeleteAtEndPressed() || popup_->selected_line() != 0 ||
+         just_deleted_text_;
 }
 
 string16 OmniboxEditModel::GetDesiredTLD() const {
@@ -1189,17 +1185,9 @@ bool OmniboxEditModel::DoInstant(const AutocompleteMatch& match) {
 
   // The two pieces of text we want to send Instant, viz., what the user has
   // typed, and the full omnibox text including any inline autocompletion.
-  string16 user_text = user_text_;
-  string16 full_text = user_text_ + inline_autocomplete_text_;
-
-  // If there's temporary text, that overrides the user_text. In this case, we
-  // should ignore any inline_autocomplete_text_, because it won't be visible.
-  if (has_temporary_text_)
-    user_text = full_text = CurrentMatch().fill_into_edit;
-
-  // Remove keyword if we're in keyword mode.
-  user_text = DisplayTextFromUserText(user_text);
-  full_text = DisplayTextFromUserText(full_text);
+  string16 user_text = has_temporary_text_ ?
+      match.fill_into_edit : DisplayTextFromUserText(user_text_);
+  string16 full_text = view_->GetText();
 
   // Remove "?" if we're in forced query mode.
   AutocompleteInput::RemoveForcedQueryStringIfNecessary(
@@ -1207,8 +1195,11 @@ bool OmniboxEditModel::DoInstant(const AutocompleteMatch& match) {
   AutocompleteInput::RemoveForcedQueryStringIfNecessary(
       autocomplete_controller_->input().type(), &full_text);
 
-  return instant->Update(match, user_text, full_text, UseVerbatimInstant(),
-                         user_input_in_progress_, popup_->IsOpen());
+  size_t start, end;
+  view_->GetSelectionBounds(&start, &end);
+
+  return instant->Update(match, user_text, full_text, start, end,
+      UseVerbatimInstant(), user_input_in_progress_, popup_->IsOpen());
 }
 
 void OmniboxEditModel::DoPrerender(const AutocompleteMatch& match) {

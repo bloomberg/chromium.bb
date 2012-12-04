@@ -1,5 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
-#
+# Copyright 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -917,6 +916,8 @@
         'browser/infobars/infobar_tab_helper.h',
         'browser/infobars/insecure_content_infobar_delegate.cc',
         'browser/infobars/insecure_content_infobar_delegate.h',
+        'browser/instant/instant_client.cc',
+        'browser/instant/instant_client.h',
         'browser/instant/instant_commit_type.h',
         'browser/instant/instant_controller.cc',
         'browser/instant/instant_controller.h',
@@ -927,6 +928,8 @@
         'browser/instant/instant_model_observer.h',
         'browser/instant/instant_preview_controller.cc',
         'browser/instant/instant_preview_controller.h',
+        'browser/instant/instant_tab.cc',
+        'browser/instant/instant_tab.h',
         'browser/instant/instant_unload_handler.cc',
         'browser/instant/instant_unload_handler.h',
         'browser/intents/cws_intents_registry.cc',

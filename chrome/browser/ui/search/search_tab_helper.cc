@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,6 +39,7 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
       is_search_enabled_(IsSearchEnabled(web_contents)),
       is_initial_navigation_commit_(true),
+      user_input_in_progress_(false),
       model_(web_contents) {
   if (!is_search_enabled_)
     return;
@@ -58,13 +59,11 @@ void SearchTabHelper::OmniboxEditModelChanged(bool user_input_in_progress,
   if (!is_search_enabled_)
     return;
 
-  if (user_input_in_progress) {
-    const Mode new_mode = Mode(Mode::MODE_SEARCH_SUGGESTIONS,
-                               model_.mode().origin, true);
-    model_.SetMode(new_mode);
-  } else if (cancelling) {
-    UpdateModelBasedOnURL(web_contents()->GetURL(), true);
-  }
+  user_input_in_progress_ = user_input_in_progress;
+  if (!user_input_in_progress && !cancelling)
+    return;
+
+  UpdateModelBasedOnURL(web_contents()->GetURL(), true);
 }
 
 void SearchTabHelper::NavigationEntryUpdated() {
@@ -112,6 +111,8 @@ void SearchTabHelper::UpdateModelBasedOnURL(const GURL& url, bool animate) {
     type = Mode::MODE_SEARCH_RESULTS;
     origin = Mode::ORIGIN_SEARCH;
   }
+  if (user_input_in_progress_)
+    type = Mode::MODE_SEARCH_SUGGESTIONS;
   model_.SetMode(Mode(type, origin, animate));
 }
 

@@ -7,7 +7,6 @@
 #include "chrome/browser/instant/instant_model.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/previewable_contents_controller.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 
 InstantPreviewControllerMac::InstantPreviewControllerMac(
     Browser* browser,
@@ -25,7 +24,7 @@ void InstantPreviewControllerMac::PreviewStateChanged(
     const InstantModel& model) {
   if (model.mode().is_search_suggestions()) {
     // TODO(dhollowa): Needs height and units implementation on Mac.
-    [preview_ showPreview:model.GetPreviewContents()->web_contents()];
+    [preview_ showPreview:model.GetPreviewContents()];
   } else {
     [preview_ hidePreview];
   }

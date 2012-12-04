@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include "ui/base/gtk/owned_widget_gtk.h"
 
 class StatusBubbleGtk;
-class TabContents;
 
 namespace content {
 class WebContents;
@@ -33,14 +32,16 @@ class TabContentsContainerGtk : public content::NotificationObserver,
   void Init();
 
   // Make the specified tab visible.
-  void SetTab(TabContents* tab);
-  TabContents* tab() const { return tab_; }
+  void SetTab(content::WebContents* tab);
+  content::WebContents* tab() const { return tab_; }
 
-  void SetPreview(TabContents* preview);
+  void SetPreview(content::WebContents* preview);
   bool HasPreview() const { return preview_ != NULL; }
 
-  // Returns the TabContents currently displayed.
-  TabContents* GetVisibleTab() const { return preview_ ? preview_ : tab_; }
+  // Returns the WebContents currently displayed.
+  content::WebContents* GetVisibleTab() const {
+    return preview_ ? preview_ : tab_;
+  }
 
   // Remove the tab from the hierarchy.
   void DetachTab(content::WebContents* tab);
@@ -68,10 +69,10 @@ class TabContentsContainerGtk : public content::NotificationObserver,
       TabContentsContainerGtk* tab_contents_container);
 
   // Adds |tab| to the container and starts showing it.
-  void PackTab(TabContents* tab);
+  void PackTab(content::WebContents* tab);
 
   // Stops showing |tab|.
-  void HideTab(TabContents* tab);
+  void HideTab(content::WebContents* tab);
 
   // Handle focus traversal on the tab contents container. Focus should not
   // traverse to the preview contents.
@@ -80,13 +81,13 @@ class TabContentsContainerGtk : public content::NotificationObserver,
 
   content::NotificationRegistrar registrar_;
 
-  // The TabContents for the currently selected tab. This will be showing
+  // The WebContents for the currently selected tab. This will be showing
   // unless there is a preview contents.
-  TabContents* tab_;
+  content::WebContents* tab_;
 
   // The current preview contents (for instant). If non-NULL, it will be
   // visible.
-  TabContents* preview_;
+  content::WebContents* preview_;
 
   // The status bubble manager.  Always non-NULL.
   StatusBubbleGtk* status_bubble_;

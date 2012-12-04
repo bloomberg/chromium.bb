@@ -285,7 +285,7 @@ TaskManagerTabContentsResource::TaskManagerTabContentsResource(
        i != BrowserList::end(); ++i) {
     if ((*i)->instant_controller() &&
         (*i)->instant_controller()->instant()->GetPreviewContents() ==
-            tab_contents_) {
+            tab_contents_->web_contents()) {
       is_instant_preview_ = true;
       break;
     }

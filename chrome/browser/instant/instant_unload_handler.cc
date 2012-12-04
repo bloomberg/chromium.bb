@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,25 +13,25 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 
-// WebContentsDelegate implementation. This owns the TabContents supplied to the
+// WebContentsDelegate implementation. This owns the WebContents supplied to the
 // constructor.
 class InstantUnloadHandler::WebContentsDelegateImpl
     : public content::WebContentsDelegate {
  public:
   WebContentsDelegateImpl(InstantUnloadHandler* handler,
-                          TabContents* tab_contents,
+                          content::WebContents* contents,
                           int index)
       : handler_(handler),
-        tab_contents_(tab_contents),
+        contents_(contents),
         index_(index) {
-    tab_contents->web_contents()->SetDelegate(this);
+    contents->SetDelegate(this);
   }
 
   // content::WebContentsDelegate overrides:
   virtual void WillRunBeforeUnloadConfirm() OVERRIDE {
-    TabContents* tab = tab_contents_.release();
-    tab->web_contents()->SetDelegate(NULL);
-    handler_->Activate(this, tab, index_);
+    content::WebContents* contents = contents_.release();
+    contents->SetDelegate(NULL);
+    handler_->Activate(this, contents, index_);
   }
 
   virtual bool ShouldSuppressDialogs() OVERRIDE {
@@ -39,16 +39,16 @@ class InstantUnloadHandler::WebContentsDelegateImpl
   }
 
   virtual void CloseContents(content::WebContents* source) OVERRIDE {
-    tab_contents_->web_contents()->SetDelegate(NULL);
+    contents_->SetDelegate(NULL);
     handler_->Destroy(this);
   }
 
  private:
   InstantUnloadHandler* const handler_;
-  scoped_ptr<TabContents> tab_contents_;
+  scoped_ptr<content::WebContents> contents_;
 
-  // The index |tab_contents_| was originally at. If we add the tab back we add
-  // it at this index.
+  // The index |contents_| was originally at. If we add the tab back we add it
+  // at this index.
   const int index_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsDelegateImpl);
@@ -61,24 +61,26 @@ InstantUnloadHandler::InstantUnloadHandler(Browser* browser)
 InstantUnloadHandler::~InstantUnloadHandler() {
 }
 
-void InstantUnloadHandler::RunUnloadListenersOrDestroy(TabContents* tab,
-                                                       int index) {
-  if (!tab->web_contents()->NeedToFireBeforeUnload()) {
+void InstantUnloadHandler::RunUnloadListenersOrDestroy(
+    content::WebContents* contents,
+    int index) {
+  if (!contents->NeedToFireBeforeUnload()) {
     // Tab doesn't have any beforeunload listeners and can be safely deleted.
-    delete tab;
+    delete contents;
     return;
   }
 
   // Tab has before unload listener. Install a delegate and fire the before
   // unload listener.
-  delegates_.push_back(new WebContentsDelegateImpl(this, tab, index));
-  tab->web_contents()->GetRenderViewHost()->FirePageBeforeUnload(false);
+  delegates_.push_back(new WebContentsDelegateImpl(this, contents, index));
+  contents->GetRenderViewHost()->FirePageBeforeUnload(false);
 }
 
 void InstantUnloadHandler::Activate(WebContentsDelegateImpl* delegate,
-                                    TabContents* tab,
+                                    content::WebContents* contents,
                                     int index) {
-  chrome::NavigateParams params(browser_, tab);
+  chrome::NavigateParams params(browser_,
+                                TabContents::FromWebContents(contents));
   params.disposition = NEW_FOREGROUND_TAB;
   params.tabstrip_index = index;
 

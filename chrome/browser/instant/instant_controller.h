@@ -27,12 +27,15 @@
 struct AutocompleteMatch;
 class AutocompleteProvider;
 class InstantLoader;
-class TabContents;
+class InstantTab;
 class TemplateURL;
-struct ThemeBackgroundInfo;
 
 namespace chrome {
 class BrowserInstantController;
+}
+
+namespace content {
+class WebContents;
 }
 
 // InstantController maintains a WebContents that is intended to give a preview
@@ -53,6 +56,8 @@ class InstantController {
   bool Update(const AutocompleteMatch& match,
               const string16& user_text,
               const string16& full_text,
+              size_t selection_start,
+              size_t selection_end,
               bool verbatim,
               bool user_input_in_progress,
               bool omnibox_popup_is_open);
@@ -69,10 +74,8 @@ class InstantController {
   // handled the key press.
   bool OnUpOrDownKeyPressed(int count);
 
-  // The preview TabContents. May be NULL if ReleasePreviewContents() has been
-  // called, with no subsequent successful call to Update(). InstantController
-  // retains ownership of the object.
-  TabContents* GetPreviewContents() const;
+  // The preview WebContents. May be NULL. InstantController retains ownership.
+  content::WebContents* GetPreviewContents() const;
 
   // Returns true if the Instant preview can be committed now.
   bool IsCurrent() const;
@@ -89,22 +92,22 @@ class InstantController {
   void OmniboxGotFocus();
 
   // The search mode in the active tab has changed. Pass the message down to
-  // the loader which will notify the renderer.
+  // the loader which will notify the renderer. Create |instant_tab_| if the
+  // |new_mode| reflects an Instant search results page.
   void SearchModeChanged(const chrome::search::Mode& old_mode,
                          const chrome::search::Mode& new_mode);
 
-  // The user switched tabs. Hide the preview if needed.
+  // The user switched tabs. Hide the preview. Create |instant_tab_| if the
+  // newly active tab is an Instant search results page.
   void ActiveTabChanged();
 
   // Sets whether Instant should show result previews.
   void SetInstantEnabled(bool instant_enabled);
 
-  // The theme has changed.  Pass the message down to the loader which will
-  // notify the renderer.
+  // The theme has changed. Pass the message to the preview page.
   void ThemeChanged(const ThemeBackgroundInfo& theme_info);
 
-  // The theme area height has changed.  Pass the message down to the loader
-  // which will notify the renderer.
+  // The theme area height has changed. Pass the message to the preview page.
   void ThemeAreaHeightChanged(int height);
 
   // Returns the transition type of the last AutocompleteMatch passed to Update.
@@ -114,37 +117,30 @@ class InstantController {
 
   const InstantModel* model() const { return &model_; }
 
-  // Invoked by InstantLoader when it has suggested text.
-  void SetSuggestions(InstantLoader* loader,
+  // Invoked by the page when it has suggested text.
+  void SetSuggestions(const content::WebContents* contents,
                       const std::vector<InstantSuggestion>& suggestions);
 
-  // Invoked by InstantLoader to commit the preview.
-  void CommitInstantLoader(InstantLoader* loader);
+  // Invoked by the page when its support for the Instant API is determined.
+  void InstantSupportDetermined(const content::WebContents* contents,
+                                bool supports_instant);
 
   // Invoked by InstantLoader to request that the preview be shown.
-  void ShowInstantPreview(InstantLoader* loader,
-                          InstantShownReason reason,
+  void ShowInstantPreview(InstantShownReason reason,
                           int height,
                           InstantSizeUnits units);
 
-  // Invoked by InstantLoader when it has determined whether or not the page
-  // supports the Instant API.
-  void InstantSupportDetermined(InstantLoader* loader, bool supports_instant);
-
-  // Invoked by InstantLoader when it has swapped a different TabContents into
+  // Invoked by InstantLoader when it has swapped a different WebContents into
   // the preview, usually because a prerendered page was navigated to.
-  void SwappedTabContents(InstantLoader* loader);
+  void SwappedWebContents();
 
   // Invoked by InstantLoader when the preview gains focus, usually due to the
   // user clicking on it.
-  void InstantLoaderContentsFocused(InstantLoader* loader);
-
-#if defined(UNIT_TEST)
-  // Accessors used only in tests.
-  InstantLoader* loader() const { return loader_.get(); }
-#endif
+  void InstantLoaderContentsFocused();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(InstantTest, OmniboxFocusLoadsInstant);
+  FRIEND_TEST_ALL_PREFIXES(InstantTest, NonInstantSearchProvider);
   FRIEND_TEST_ALL_PREFIXES(InstantTest, InstantLoaderRefresh);
 
   // Creates a new loader if necessary, using the instant_url property of the
@@ -152,7 +148,7 @@ class InstantController {
   // time the loader was created). Returns false if the |template_url| doesn't
   // have a valid Instant URL; true otherwise.
   bool ResetLoader(const TemplateURL* template_url,
-                   const TabContents* active_tab);
+                   const content::WebContents* active_tab);
 
   // Ensures that the |loader_| uses the default Instant URL, recreating it if
   // necessary, and returns true. Returns false if the Instant URL could not be
@@ -164,17 +160,27 @@ class InstantController {
   // deleted and recreated. Else the refresh is skipped.
   void OnStaleLoader();
 
-  // Destroys the |loader_| and its preview contents.
-  void DeleteLoader();
+  // If the active tab is an Instant search results page, sets |instant_tab_| to
+  // point to it. Else, deletes any existing |instant_tab_|.
+  void ResetInstantTab();
 
-  // Hide the preview. If |clear_query| is true, clears query text and sends a
-  // an onchange event (with blank query) to the preview, telling it to clear
-  // out results for any old queries.
-  void Hide(bool clear_query);
+  // Called by Update() to ensure we have an Instant page that can process
+  // |match|. Returns true if we should continue with the Update().
+  bool ResetLoaderForMatch(const AutocompleteMatch& match);
 
-  // Counterpart to Hide(). Asks the |browser_| to display the preview with
-  // the given |height|.
-  void Show(InstantShownReason reason, int height, InstantSizeUnits units);
+  // Hide the preview. Also sends an onchange event (with blank query) to the
+  // preview, telling it to clear out results for any old queries.
+  void HideLoader();
+
+  // Like HideLoader(), but doesn't call OnStaleLoader(). Use HideLoader()
+  // unless you are going to call loader_.reset() yourself subsequently.
+  void HideInternal();
+
+  // Counterpart to HideLoader(). Asks the |browser_| to display the preview
+  // with the given |height|.
+  void ShowLoader(InstantShownReason reason,
+                  int height,
+                  InstantSizeUnits units);
 
   // Send the omnibox dropdown bounds to the page.
   void SendBoundsToPage();
@@ -193,17 +199,27 @@ class InstantController {
   const bool extended_enabled_;
   bool instant_enabled_;
 
+  // The state of the preview page, i.e., the page owned by |loader_|. Ignored
+  // if |instant_tab_| is in use.
   InstantModel model_;
 
+  // The preview WebContents.
   scoped_ptr<InstantLoader> loader_;
 
-  // The most recent user_text passed to Update().
-  string16 last_user_text_;
+  // A committed WebContents that supports Instant. If non-NULL, the |loader_|
+  // is guaranteed to be hidden and messages will be sent to this instead.
+  scoped_ptr<InstantTab> instant_tab_;
 
-  // The most recent full_text passed to Update().
-  string16 last_full_text_;
+  // The most recent full_text passed to Update(). If empty, we'll not accept
+  // search suggestions from |loader_| or |instant_tab_|.
+  string16 last_omnibox_text_;
 
-  // The most recent verbatim passed to Update().
+  // True if the last Update() had an inline autocompletion. Used only to make
+  // sure that we don't accidentally suggest gray text suggestion in that case.
+  bool last_omnibox_text_has_inline_autocompletion_;
+
+  // The most recent verbatim passed to Update(). Used only to ensure that we
+  // don't accidentally suggest an inline autocompletion.
   bool last_verbatim_;
 
   // The most recent suggestion received from the page, minus any prefix that
@@ -214,6 +230,7 @@ class InstantController {
   content::PageTransition last_transition_type_;
 
   // True if the last match passed to Update() was a search (versus a URL).
+  // Used to ensure that the preview page is committable.
   bool last_match_was_search_;
 
   // True if the omnibox is focused, false otherwise.
@@ -245,12 +262,17 @@ class InstantController {
   // on Instant URLs. So, whenever the user commits an Instant search, we add
   // an equivalent non-Instant search URL to history, so that the search shows
   // up in autocomplete history matches.
+  // TODO(sreeram): Remove when http://crbug.com/155373 is fixed.
   GURL url_for_history_;
 
   // The timestamp at which query editing began. This value is used when the
-  // first set of suggestions is processed and cleared when the overlay is
-  // hidden.
+  // preview is showed and cleared when the preview is hidden.
   base::Time first_interaction_time_;
+
+  // Whether to allow the preview to show search suggestions. In general, the
+  // preview is allowed to show search suggestions whenever |search_mode_| is
+  // MODE_SEARCH_SUGGESTIONS, except in those cases where this is false.
+  bool allow_preview_to_show_search_suggestions_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantController);
 };

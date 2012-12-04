@@ -19,8 +19,11 @@ class Browser;
 struct InstantSuggestion;
 class PrefService;
 class Profile;
-class TabContents;
 class ThemeService;
+
+namespace content {
+class WebContents;
+}
 
 namespace gfx {
 class Rect;
@@ -50,7 +53,7 @@ class BrowserInstantController : public content::NotificationObserver,
 
   // Invoked by |instant_| to commit the |preview| by merging it into the active
   // tab or adding it as a new tab. We take ownership of |preview|.
-  void CommitInstant(TabContents* preview, bool in_new_tab);
+  void CommitInstant(content::WebContents* preview, bool in_new_tab);
 
   // Invoked by |instant_| to autocomplete the |suggestion| into the omnibox.
   void SetInstantSuggestion(const InstantSuggestion& suggestion);
@@ -65,7 +68,7 @@ class BrowserInstantController : public content::NotificationObserver,
 
   // Invoked by |instant_| to get the currently active tab, over which the
   // preview would be shown.
-  TabContents* GetActiveTabContents() const;
+  content::WebContents* GetActiveWebContents() const;
 
   // Invoked by |browser_| when the active tab changes.
   void ActiveTabChanged();

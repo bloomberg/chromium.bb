@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,11 +9,14 @@
 #include "base/memory/scoped_vector.h"
 
 class Browser;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 // InstantUnloadHandler ensures that the beforeunload and unload handlers are
 // run when using Instant. When the user commits the Instant preview the
-// existing TabContents is passed to RunUnloadListenersOrDestroy(). If the tab
+// existing WebContents is passed to RunUnloadListenersOrDestroy(). If the tab
 // has no beforeunload or unload listeners, the tab is deleted; otherwise the
 // beforeunload and unload listeners are executed. If the beforeunload listener
 // shows a dialog the tab is added back to the tabstrip at its original location
@@ -24,15 +27,17 @@ class InstantUnloadHandler {
   ~InstantUnloadHandler();
 
   // See class description for details on what this does.
-  void RunUnloadListenersOrDestroy(TabContents* tab_contents, int index);
+  void RunUnloadListenersOrDestroy(content::WebContents* contents, int index);
 
  private:
   class WebContentsDelegateImpl;
 
   // Invoked if the tab is to be shown, at |index| on the tab strip. This
   // happens if the before unload listener returns a string. Takes ownership of
-  // |delegate| and |tab|.
-  void Activate(WebContentsDelegateImpl* delegate, TabContents* tab, int index);
+  // |delegate| and |contents|.
+  void Activate(WebContentsDelegateImpl* delegate,
+                content::WebContents* contents,
+                int index);
 
   // Destroys the old tab. This is invoked if script tries to close the page.
   void Destroy(WebContentsDelegateImpl* delegate);

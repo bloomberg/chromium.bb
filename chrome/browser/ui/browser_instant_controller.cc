@@ -4,18 +4,15 @@
 
 #include "chrome/browser/ui/browser_instant_controller.h"
 
-#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/search/search.h"
-#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -23,7 +20,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/sys_color_change_listener.h"
@@ -88,23 +84,24 @@ bool BrowserInstantController::OpenInstant(WindowOpenDisposition disposition) {
       INSTANT_COMMIT_PRESSED_ENTER : INSTANT_COMMIT_PRESSED_ALT_ENTER);
 }
 
-void BrowserInstantController::CommitInstant(TabContents* preview,
+void BrowserInstantController::CommitInstant(content::WebContents* preview,
                                              bool in_new_tab) {
   if (in_new_tab) {
     // TabStripModel takes ownership of |preview|.
-    browser_->tab_strip_model()->AddWebContents(preview->web_contents(), -1,
+    browser_->tab_strip_model()->AddWebContents(preview, -1,
         instant_.last_transition_type(), TabStripModel::ADD_ACTIVE);
   } else {
-    TabContents* active_tab =
-        browser_->tab_strip_model()->GetActiveTabContents();
-    int index = browser_->tab_strip_model()->GetIndexOfTabContents(active_tab);
+    content::WebContents* active_tab =
+        browser_->tab_strip_model()->GetActiveWebContents();
+    int index = browser_->tab_strip_model()->GetIndexOfWebContents(active_tab);
     DCHECK_NE(TabStripModel::kNoTab, index);
     // TabStripModel takes ownership of |preview|.
-    browser_->tab_strip_model()->ReplaceTabContentsAt(index, preview);
+    browser_->tab_strip_model()->ReplaceTabContentsAt(index,
+        TabContents::FromWebContents(preview));
     // InstantUnloadHandler takes ownership of |active_tab|.
     instant_unload_handler_.RunUnloadListenersOrDestroy(active_tab, index);
 
-    GURL url = preview->web_contents()->GetURL();
+    GURL url = preview->GetURL();
     DCHECK(browser_->profile()->GetExtensionService());
     if (browser_->profile()->GetExtensionService()->IsInstalledApp(url)) {
       AppLauncherHandler::RecordAppLaunchType(
@@ -125,12 +122,11 @@ gfx::Rect BrowserInstantController::GetInstantBounds() {
 
 void BrowserInstantController::InstantPreviewFocused() {
   // NOTE: This is only invoked on aura.
-  browser_->window()->WebContentsFocused(
-      instant_.GetPreviewContents()->web_contents());
+  browser_->window()->WebContentsFocused(instant_.GetPreviewContents());
 }
 
-TabContents* BrowserInstantController::GetActiveTabContents() const {
-  return browser_->tab_strip_model()->GetActiveTabContents();
+content::WebContents* BrowserInstantController::GetActiveWebContents() const {
+  return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
 void BrowserInstantController::ActiveTabChanged() {

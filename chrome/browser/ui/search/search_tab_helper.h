@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,6 +67,9 @@ class SearchTabHelper : public content::WebContentsObserver,
   const bool is_search_enabled_;
 
   bool is_initial_navigation_commit_;
+
+  // Tracks the last value passed to OmniboxEditModelChanged().
+  bool user_input_in_progress_;
 
   // Model object for UI that cares about search state.
   SearchModel model_;

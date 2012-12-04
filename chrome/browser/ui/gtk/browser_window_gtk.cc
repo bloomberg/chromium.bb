@@ -1216,7 +1216,7 @@ void BrowserWindowGtk::ActiveTabChanged(WebContents* old_contents,
   InfoBarTabHelper* new_infobar_tab_helper =
       InfoBarTabHelper::FromWebContents(new_contents);
   infobar_container_->ChangeTabContents(new_infobar_tab_helper);
-  contents_container_->SetTab(TabContents::FromWebContents(new_contents));
+  contents_container_->SetTab(new_contents);
 
   // TODO(estade): after we manage browser activation, add a check to make sure
   // we are the active browser before calling RestoreFocus().
@@ -1282,10 +1282,10 @@ bool BrowserWindowGtk::DrawInfoBarArrows(int* x) const {
 
 extensions::ActiveTabPermissionGranter*
     BrowserWindowGtk::GetActiveTabPermissionGranter() {
-  TabContents* tab = GetDisplayedTab();
+  WebContents* tab = GetDisplayedTab();
   if (!tab)
     return NULL;
-  return extensions::TabHelper::FromWebContents(tab->web_contents())->
+  return extensions::TabHelper::FromWebContents(tab)->
       active_tab_permission_granter();
 }
 
@@ -1305,10 +1305,9 @@ gboolean BrowserWindowGtk::OnConfigure(GtkWidget* widget,
 
   GetLocationBar()->GetLocationEntry()->CloseOmniboxPopup();
 
-  TabContents* tab = GetDisplayedTab();
-  if (tab) {
-    tab->web_contents()->GetRenderViewHost()->NotifyMoveOrResizeStarted();
-  }
+  WebContents* tab = GetDisplayedTab();
+  if (tab)
+    tab->GetRenderViewHost()->NotifyMoveOrResizeStarted();
 
   if (bounds_.size() != bounds.size())
     UpdateWindowShape(bounds.width(), bounds.height());
@@ -1510,7 +1509,7 @@ void BrowserWindowGtk::RegisterUserPrefs(PrefService* prefs) {
                              PrefService::SYNCABLE_PREF);
 }
 
-TabContents* BrowserWindowGtk::GetDisplayedTab() {
+WebContents* BrowserWindowGtk::GetDisplayedTab() {
   return contents_container_->GetVisibleTab();
 }
 
@@ -1918,9 +1917,7 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(bool animate) {
   if (!IsBookmarkBarSupported())
     return;
 
-  TabContents* tab = GetDisplayedTab();
-
-  if (tab)
+  if (GetDisplayedTab())
     bookmark_bar_->SetPageNavigator(browser_.get());
 
   BookmarkBar::State state = browser_->bookmark_bar_state();
@@ -2309,8 +2306,8 @@ void BrowserWindowGtk::UpdateDevToolsForContents(WebContents* contents) {
       devtools_container_->DetachTab(
           devtools_window_->tab_contents()->web_contents());
     }
-    devtools_container_->SetTab(
-        new_devtools_window ? new_devtools_window->tab_contents() : NULL);
+    devtools_container_->SetTab(new_devtools_window ?
+        new_devtools_window->tab_contents()->web_contents() : NULL);
     if (new_devtools_window) {
       // WebContentsViewGtk::WasShown is not called when tab contents is shown
       // by anything other than user selecting a Tab.
