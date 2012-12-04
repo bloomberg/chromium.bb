@@ -163,10 +163,12 @@ def main():
   if not args:
     parser.error('No function names specified')
 
-  # Make sure we are always dealing with an absolute path
+  # Make sure we are always dealing with paths relative to source tree root
   # to avoid issues caused by different relative path roots.
-  options.output_cc = os.path.abspath(options.output_cc)
-  options.output_h = os.path.abspath(options.output_h)
+  source_tree_root = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', '..'))
+  options.output_cc = os.path.relpath(options.output_cc, source_tree_root)
+  options.output_h = os.path.relpath(options.output_h, source_tree_root)
 
   # Create a unique prefix, e.g. for header guards.
   # Stick a known string at the beginning to ensure this doesn't begin
@@ -215,7 +217,7 @@ def main():
   # Make it easier for people to find the code generator just in case.
   # Doing it this way is more maintainable, because it's going to work
   # even if file gets moved without updating the contents.
-  generator_path = os.path.abspath(__file__)
+  generator_path = os.path.relpath(__file__, source_tree_root)
 
   header_contents = HEADER_TEMPLATE % {
     'generator_path': generator_path,
@@ -234,13 +236,13 @@ def main():
     'member_cleanup': ''.join(member_cleanup),
   }
 
-  header_file = open(options.output_h, 'w')
+  header_file = open(os.path.join(source_tree_root, options.output_h), 'w')
   try:
     header_file.write(header_contents)
   finally:
     header_file.close()
 
-  impl_file = open(options.output_cc, 'w')
+  impl_file = open(os.path.join(source_tree_root, options.output_cc), 'w')
   try:
     impl_file.write(impl_contents)
   finally:
