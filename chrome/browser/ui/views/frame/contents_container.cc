@@ -54,6 +54,14 @@ void ContentsContainer::SetPreview(views::WebView* preview,
   Layout();
 }
 
+void ContentsContainer::MaybeStackPreviewAtTop() {
+  if (preview_) {
+    RemoveChildView(preview_);
+    AddChildView(preview_);
+    Layout();
+  }
+}
+
 void ContentsContainer::SetActiveTopMargin(int margin) {
   if (active_top_margin_ == margin)
     return;

@@ -45,6 +45,10 @@ class ContentsContainer : public views::View {
                   int height,
                   InstantSizeUnits units);
 
+  // When the active content is reset and we have a visible preview,
+  // the preview must be stacked back at top.
+  void MaybeStackPreviewAtTop();
+
   content::WebContents* preview_web_contents() const {
     return preview_web_contents_;
   }
