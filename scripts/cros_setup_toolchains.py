@@ -12,11 +12,11 @@ import json
 import os
 
 from chromite.buildbot import constants
-from chromite.buildbot import portage_utilities
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.lib import toolchain
 
 # Needs to be after chromite imports.
 import lddtree
@@ -97,7 +97,7 @@ class Crossdev(object):
       # Find out the crossdev tuple.
       target_tuple = target
       if target == 'host':
-        target_tuple = GetHostTuple()
+        target_tuple = toolchain.GetHostTuple()
       # Catch output of crossdev.
       out = cros_build_lib.RunCommand(['crossdev', '--show-target-cfg',
                                        '--ex-gdb', target_tuple],
@@ -186,12 +186,6 @@ def GetPackageMap(target):
   return result
 
 
-def GetHostTuple():
-  """Returns compiler tuple for the host system."""
-  # pylint: disable=E1101
-  return portage.settings['CHOST']
-
-
 def GetTargetPackages(target):
   """Returns a list of packages for a given target."""
   conf = Crossdev.GetConfig(target)
@@ -219,86 +213,6 @@ def GetPortagePackage(target, package):
 def IsPackageDisabled(target, package):
   """Returns if the given package is not used for the target."""
   return GetDesiredPackageVersions(target, package) == [PACKAGE_NONE]
-
-
-def GetTuplesForOverlays(overlays):
-  """Returns a set of tuples for a given set of overlays."""
-  targets = {}
-  default_settings = {
-      'sdk'      : True,
-      'crossdev' : '',
-      'default'  : False,
-  }
-
-  for overlay in overlays:
-    config = os.path.join(overlay, 'toolchain.conf')
-    if os.path.exists(config):
-      first_target = None
-      seen_default = False
-
-      for line in osutils.ReadFile(config).splitlines():
-        # Split by hash sign so that comments are ignored.
-        # Then split the line to get the tuple and its options.
-        line = line.split('#', 1)[0].split()
-
-        if len(line) > 0:
-          target = line[0]
-          if not first_target:
-            first_target = target
-          if target not in targets:
-            targets[target] = copy.copy(default_settings)
-          if len(line) > 1:
-            targets[target].update(json.loads(' '.join(line[1:])))
-            if targets[target]['default']:
-              seen_default = True
-
-      # If the user has not explicitly marked a toolchain as default,
-      # automatically select the first tuple that we saw in the conf.
-      if not seen_default and first_target:
-        targets[first_target]['default'] = True
-
-  return targets
-
-
-# Tree interface functions. They help with retrieving data about the current
-# state of the tree:
-def GetAllTargets():
-  """Get the complete list of targets.
-
-  returns the list of cross targets for the current tree
-  """
-  targets = GetToolchainsForBoard('all')
-
-  # Remove the host target as that is not a cross-target. Replace with 'host'.
-  del targets[GetHostTuple()]
-  return targets
-
-
-def GetToolchainsForBoard(board):
-  """Get a list of toolchain tuples for a given board name
-
-  returns the list of toolchain tuples for the given board
-  """
-  overlays = portage_utilities.FindOverlays(
-      constants.BOTH_OVERLAYS, None if board in ('all', 'sdk') else board)
-  toolchains = GetTuplesForOverlays(overlays)
-  if board == 'sdk':
-    toolchains = FilterToolchains(toolchains, 'sdk', True)
-  return toolchains
-
-
-def FilterToolchains(targets, key, value):
-  """Filter out targets based on their attributes.
-
-  args:
-    targets - dict of toolchains
-    key - metadata to examine
-    value - expected value for metadata
-
-  returns a dict where all targets whose metadata key does not match value
-  have been deleted.
-  """
-  return dict((k, v) for k, v in targets.iteritems() if v[key] == value)
 
 
 def GetInstalledPackageVersions(atom):
@@ -517,7 +431,7 @@ def SelectActiveToolchains(targets, suffixes):
 
       if target == 'host':
         # *-config is the only tool treating host identically (by tuple).
-        target = GetHostTuple()
+        target = toolchain.GetHostTuple()
 
       # And finally, attach target to it.
       desired = '%s-%s' % (target, desired)
@@ -547,14 +461,14 @@ def ExpandTargets(targets_wanted):
   Returns:
     Full list of tuples with pseudo targets removed.
   """
-  alltargets = GetAllTargets()
+  alltargets = toolchain.GetAllTargets()
   targets_wanted = set(targets_wanted)
   if targets_wanted == set(['all']):
     targets = alltargets
   elif targets_wanted == set(['sdk']):
     # Filter out all the non-sdk toolchains as we don't want to mess
     # with those in all of our builds.
-    targets = FilterToolchains(alltargets, 'sdk', True)
+    targets = toolchain.FilterToolchains(alltargets, 'sdk', True)
   else:
     # Verify user input.
     nonexistent = targets_wanted.difference(alltargets)
@@ -580,7 +494,7 @@ def UpdateToolchains(usepkg, deleteold, hostonly, reconfig,
     # Now re-add any targets that might be from this board.  This is
     # to allow unofficial boards to declare their own toolchains.
     for board in boards_wanted:
-      targets.update(GetToolchainsForBoard(board))
+      targets.update(toolchain.GetToolchainsForBoard(board))
 
     # First check and initialize all cross targets that need to be.
     for target in targets:
@@ -612,10 +526,11 @@ def ShowBoardConfig(board):
   Args:
     board: The board to query.
   """
-  toolchains = GetToolchainsForBoard(board)
+  toolchains = toolchain.GetToolchainsForBoard(board)
   # Make sure we display the default toolchain first.
-  print ','.join(FilterToolchains(toolchains, 'default', True).keys() +
-                 FilterToolchains(toolchains, 'default', False).keys())
+  print ','.join(
+      toolchain.FilterToolchains(toolchains, 'default', True).keys() +
+      toolchain.FilterToolchains(toolchains, 'default', False).keys())
 
 
 def GenerateLdsoWrapper(root, path, interp, libpaths=()):
@@ -883,7 +798,7 @@ def _EnvdGetVar(envd, var):
 def _ProcessBinutilsConfig(target, output_dir):
   """Do what binutils-config would have done"""
   binpath = os.path.join('/bin', target + '-')
-  globpath = os.path.join(output_dir, 'usr', GetHostTuple(), target,
+  globpath = os.path.join(output_dir, 'usr', toolchain.GetHostTuple(), target,
                           'binutils-bin', '*-gold')
   srcpath = glob.glob(globpath)
   assert len(srcpath) == 1, '%s: did not match 1 path' % globpath
@@ -897,7 +812,7 @@ def _ProcessBinutilsConfig(target, output_dir):
       GeneratePathWrapper(output_dir, os.path.join(gccpath, prog),
                           os.path.join(srcpath, prog))
 
-  libpath = os.path.join('/usr', GetHostTuple(), target, 'lib')
+  libpath = os.path.join('/usr', toolchain.GetHostTuple(), target, 'lib')
   envd = os.path.join(output_dir, 'etc', 'env.d', 'binutils', '*-gold')
   srcpath = _EnvdGetVar(envd, 'LIBPATH')
   os.symlink(os.path.relpath(srcpath, os.path.dirname(libpath)),
