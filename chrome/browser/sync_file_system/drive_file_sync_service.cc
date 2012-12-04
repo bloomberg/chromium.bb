@@ -1320,7 +1320,7 @@ void DriveFileSyncService::FinalizeRemoteSync(
   }
 }
 
-void DriveFileSyncService::AppendNewRemoteChange(
+bool DriveFileSyncService::AppendNewRemoteChange(
     const GURL& origin,
     const google_apis::DocumentEntry& entry,
     int64 changestamp,
@@ -1332,7 +1332,7 @@ void DriveFileSyncService::AppendNewRemoteChange(
   PathToChange::iterator found = path_to_change->find(path);
   if (found != path_to_change->end()) {
     if (found->second.changestamp >= changestamp)
-      return;
+      return false;
     pending_changes_.erase(found->second.position_in_queue);
   }
 
@@ -1361,6 +1361,7 @@ void DriveFileSyncService::AppendNewRemoteChange(
   (*path_to_change)[path] = RemoteChange(
       changestamp, entry.resource_id(), url, file_change,
       inserted_to_queue.first);
+  return true;
 }
 
 void DriveFileSyncService::RemoveRemoteChange(
@@ -1420,11 +1421,12 @@ void DriveFileSyncService::FetchChangesForIncrementalSync() {
   sync_client_->ListChanges(
       largest_fetched_changestamp_ + 1,
       base::Bind(&DriveFileSyncService::DidFetchChangesForIncrementalSync,
-                 AsWeakPtr(), base::Passed(&token)));
+                 AsWeakPtr(), base::Passed(&token), false));
 }
 
 void DriveFileSyncService::DidFetchChangesForIncrementalSync(
     scoped_ptr<TaskToken> token,
+    bool has_new_changes,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::DocumentFeed> changes) {
   if (error != google_apis::HTTP_SUCCESS) {
@@ -1440,8 +1442,9 @@ void DriveFileSyncService::DidFetchChangesForIncrementalSync(
     if (!GetOriginForEntry(entry, &origin))
       continue;
 
-    AppendNewRemoteChange(origin, entry, entry.changestamp(),
-                          REMOTE_SYNC_TYPE_INCREMENTAL);
+    has_new_changes = has_new_changes ||
+        AppendNewRemoteChange(origin, entry, entry.changestamp(),
+                              REMOTE_SYNC_TYPE_INCREMENTAL);
   }
 
   GURL next_feed;
@@ -1449,20 +1452,20 @@ void DriveFileSyncService::DidFetchChangesForIncrementalSync(
     sync_client_->ContinueListing(
         next_feed,
         base::Bind(&DriveFileSyncService::DidFetchChangesForIncrementalSync,
-                   AsWeakPtr(), base::Passed(&token)));
+                   AsWeakPtr(), base::Passed(&token), has_new_changes));
     return;
   }
 
   largest_fetched_changestamp_ = changes->largest_changestamp();
 
-  if (changes->start_index() == 0 && changes->entries().empty()) {
-    // If this set of changes is the first feed and it's empty, update
-    // the polling delay to wait longer.
+  if (has_new_changes) {
+    polling_delay_seconds_ = kMinimumPollingDelaySeconds;
+  } else {
+    // If the change_queue_ was not updated, update the polling delay to wait
+    // longer.
     polling_delay_seconds_ = std::min(
         static_cast<int64>(kDelayMultiplier * polling_delay_seconds_),
         kMaximumPollingDelaySeconds);
-  } else {
-    polling_delay_seconds_ = kMinimumPollingDelaySeconds;
   }
 
   NotifyTaskDone(fileapi::SYNC_STATUS_OK, token.Pass());

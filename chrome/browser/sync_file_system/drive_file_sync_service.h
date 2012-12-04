@@ -280,7 +280,8 @@ class DriveFileSyncService
       scoped_ptr<ProcessRemoteChangeParam> param,
       fileapi::SyncStatusCode status);
 
-  void AppendNewRemoteChange(const GURL& origin,
+  // Returns true if |pending_changes_| was updated.
+  bool AppendNewRemoteChange(const GURL& origin,
                              const google_apis::DocumentEntry& entry,
                              int64 changestamp,
                              RemoteSyncType sync_type);
@@ -301,6 +302,7 @@ class DriveFileSyncService
   void FetchChangesForIncrementalSync();
   void DidFetchChangesForIncrementalSync(
       scoped_ptr<TaskToken> token,
+      bool has_new_changes,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::DocumentFeed> changes);
   bool GetOriginForEntry(const google_apis::DocumentEntry& entry, GURL* origin);
