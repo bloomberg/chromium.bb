@@ -88,6 +88,7 @@ struct CC_EXPORT LayerTreeSettings {
     bool showOverdrawInTracing;
     double refreshRate;
     size_t maxPartialTextureUpdates;
+    size_t numRasterThreads;
     gfx::Size defaultTileSize;
     gfx::Size maxUntiledLayerSize;
     gfx::Size minimumOcclusionTrackingSize;

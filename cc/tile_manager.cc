@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "cc/platform_color.h"
 #include "cc/rendering_stats.h"
@@ -36,9 +35,6 @@ void RasterizeTile(cc::PicturePileImpl* picture_pile,
   picture_pile->Raster(&canvas, rect, stats);
 }
 
-const int kMaxRasterThreads = 64;
-const int kDefaultNumberOfRasterThreads = 1;
-
 const char* kRasterThreadNamePrefix = "CompositorRaster";
 
 // Allow two pending raster tasks per thread. This keeps resource usage
@@ -63,28 +59,17 @@ ManagedTileState::~ManagedTileState() {
 }
 
 TileManager::TileManager(
-    TileManagerClient* client, ResourceProvider* resource_provider)
+    TileManagerClient* client,
+    ResourceProvider* resource_provider,
+    size_t num_raster_threads)
     : client_(client),
       resource_pool_(ResourcePool::Create(resource_provider,
                                           Renderer::ImplPool)),
       manage_tiles_pending_(false),
-      pending_raster_tasks_(0) {
-  size_t worker_threads = kDefaultNumberOfRasterThreads;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          cc::switches::kNumRasterThreads)) {
-    std::string num_raster_threads =
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            cc::switches::kNumRasterThreads);
-    int num_threads;
-    if (base::StringToInt(num_raster_threads, &num_threads) &&
-        num_threads > 0 && num_threads <= kMaxRasterThreads) {
-      worker_threads = num_threads;
-    } else {
-      LOG(WARNING) << "Bad number of raster threads: " << num_raster_threads;
-    }
-  }
-  worker_pool_ = new base::SequencedWorkerPool(worker_threads,
-                                               kRasterThreadNamePrefix);
+      pending_raster_tasks_(0),
+      num_raster_threads_(num_raster_threads),
+      worker_pool_(new base::SequencedWorkerPool(num_raster_threads,
+                                                 kRasterThreadNamePrefix)) {
 }
 
 TileManager::~TileManager() {
@@ -302,7 +287,7 @@ void TileManager::FreeResourcesForTile(Tile* tile) {
 void TileManager::DispatchMoreRasterTasks() {
   while (!tiles_that_need_to_be_rasterized_.empty()) {
     int max_pending_tasks = kNumPendingRasterTasksPerThread *
-        kMaxRasterThreads;
+        num_raster_threads_;
 
     // Stop dispatching raster tasks when too many are pending.
     if (pending_raster_tasks_ >= max_pending_tasks)

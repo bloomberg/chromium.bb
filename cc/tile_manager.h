@@ -68,7 +68,9 @@ class CC_EXPORT ManagedTileState {
 // created, and unregister from the manager when they are deleted.
 class CC_EXPORT TileManager {
  public:
-  TileManager(TileManagerClient* client, ResourceProvider *resource_provider);
+  TileManager(TileManagerClient* client,
+              ResourceProvider *resource_provider,
+              size_t num_raster_threads);
   virtual ~TileManager();
 
   const GlobalStateThatImpactsTilePriority& GlobalState() const { return global_state_; }
@@ -102,6 +104,7 @@ class CC_EXPORT TileManager {
   scoped_ptr<ResourcePool> resource_pool_;
   bool manage_tiles_pending_;
   int pending_raster_tasks_;
+  size_t num_raster_threads_;
   scoped_refptr<base::SequencedWorkerPool> worker_pool_;
 
   GlobalStateThatImpactsTilePriority global_state_;

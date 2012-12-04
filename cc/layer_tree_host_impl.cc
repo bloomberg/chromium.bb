@@ -1006,7 +1006,7 @@ bool LayerTreeHostImpl::initializeRenderer(scoped_ptr<GraphicsContext> context)
         return false;
 
     if (m_settings.implSidePainting)
-      m_tileManager.reset(new TileManager(this, resourceProvider.get()));
+      m_tileManager.reset(new TileManager(this, resourceProvider.get(), m_settings.numRasterThreads));
 
     if (context->context3D())
         m_renderer = GLRenderer::create(this, resourceProvider.get());

@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
+#include "base/string_number_conversions.h"
 #include "cc/font_atlas.h"
 #include "cc/graphics_context.h"
 #include "cc/heads_up_display_layer.h"
@@ -105,6 +106,7 @@ LayerTreeSettings::LayerTreeSettings()
     , showOverdrawInTracing(false)
     , refreshRate(0)
     , maxPartialTextureUpdates(std::numeric_limits<size_t>::max())
+    , numRasterThreads(1)
     , defaultTileSize(gfx::Size(256, 256))
     , maxUntiledLayerSize(gfx::Size(512, 512))
     , minimumOcclusionTrackingSize(gfx::Size(160, 160))
@@ -121,6 +123,22 @@ LayerTreeSettings::LayerTreeSettings()
     initialDebugState.showReplicaScreenSpaceRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowReplicaScreenSpaceRects);
     initialDebugState.showOccludingRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowOccludingRects);
     initialDebugState.showNonOccludingRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowNonOccludingRects);
+
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kNumRasterThreads)) {
+        const size_t kMaxRasterThreads = 64;
+        std::string num_raster_threads =
+            CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                switches::kNumRasterThreads);
+        int num_threads;
+        if (base::StringToInt(num_raster_threads, &num_threads) &&
+            num_threads > 0 && num_threads <= kMaxRasterThreads) {
+            numRasterThreads = num_threads;
+        } else {
+            LOG(WARNING) << "Bad number of raster threads: " <<
+                num_raster_threads;
+        }
+    }
 }
 
 LayerTreeSettings::~LayerTreeSettings()
