@@ -127,12 +127,6 @@ size_t GetBrowserCountImpl(Profile* profile,
 
 namespace browser {
 
-Browser* FindTabbedBrowserDeprecated(Profile* profile,
-                                     bool match_original_profiles) {
-  return FindTabbedBrowser(profile, match_original_profiles,
-                           chrome::HOST_DESKTOP_TYPE_NATIVE);
-}
-
 Browser* FindTabbedBrowser(Profile* profile,
                            bool match_original_profiles,
                            chrome::HostDesktopType type) {

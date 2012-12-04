@@ -187,7 +187,9 @@ void ExtensionInstallUIDefault::ShowThemeInfoBar(
     return;
 
   // Get last active tabbed browser of profile.
-  Browser* browser = browser::FindTabbedBrowserDeprecated(profile, true);
+  Browser* browser = browser::FindTabbedBrowser(profile,
+                                                true,
+                                                chrome::GetActiveDesktop());
   if (!browser)
     return;
 

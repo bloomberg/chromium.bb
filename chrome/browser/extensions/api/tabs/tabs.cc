@@ -238,7 +238,7 @@ Browser* CreateBrowserWindow(const Browser::CreateParams& params,
     // The false parameter passed below is to ensure that we find a browser
     // object matching the profile passed in, instead of the original profile
     new_window = browser::FindTabbedBrowser(
-        profile, false, chrome::GetActiveDesktop());
+        profile, false, params.host_desktop_type);
 
   if (!new_window)
     new_window = new Browser(params);
@@ -615,6 +615,7 @@ bool CreateWindowFunction::RunImpl() {
         window_profile);
   }
   create_params.initial_show_state = ui::SHOW_STATE_NORMAL;
+  create_params.host_desktop_type = chrome::GetActiveDesktop();
 
   Browser* new_window = CreateBrowserWindow(create_params, window_profile,
                                             extension_id);
@@ -997,8 +998,8 @@ bool CreateTabFunction::RunImpl() {
 
   // Ensure the selected browser is tabbed.
   if (!browser->is_type_tabbed() && browser->IsAttemptingToCloseBrowser())
-    browser = browser::FindTabbedBrowserDeprecated(profile(),
-                                                   include_incognito());
+    browser = browser::FindTabbedBrowser(profile(), include_incognito(),
+                                         browser->host_desktop_type());
 
   if (!browser || !browser->window())
     return false;
@@ -1064,9 +1065,12 @@ bool CreateTabFunction::RunImpl() {
       !GetExtension()->incognito_split_mode() &&
       browser->profile()->IsOffTheRecord()) {
     Profile* profile = browser->profile()->GetOriginalProfile();
-    browser = browser::FindTabbedBrowserDeprecated(profile, false);
+    chrome::HostDesktopType desktop_type = browser->host_desktop_type();
+
+    browser = browser::FindTabbedBrowser(profile, false, desktop_type);
     if (!browser) {
-      browser = new Browser(Browser::CreateParams(profile));
+      browser = new Browser(Browser::CreateParams(Browser::TYPE_TABBED,
+                                                  profile, desktop_type));
       browser->window()->Show();
     }
   }

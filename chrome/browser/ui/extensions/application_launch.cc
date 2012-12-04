@@ -94,6 +94,7 @@ WebContents* OpenApplicationWindow(
   Browser::CreateParams params(type, profile);
   params.app_name = app_name;
   params.initial_bounds = window_bounds;
+  params.host_desktop_type = chrome::GetActiveDesktop();
 
 #if defined(USE_ASH)
   if (extension &&
@@ -143,11 +144,15 @@ WebContents* OpenApplicationTab(Profile* profile,
                                 const Extension* extension,
                                 const GURL& override_url,
                                 WindowOpenDisposition disposition) {
-  Browser* browser = browser::FindTabbedBrowserDeprecated(profile, false);
+  Browser* browser = browser::FindTabbedBrowser(profile,
+                                                false,
+                                                chrome::GetActiveDesktop());
   WebContents* contents = NULL;
   if (!browser) {
     // No browser for this profile, need to open a new one.
-    browser = new Browser(Browser::CreateParams(profile));
+    browser = new Browser(Browser::CreateParams(Browser::TYPE_TABBED,
+                                                profile,
+                                                chrome::GetActiveDesktop()));
     browser->window()->Show();
     // There's no current tab in this browser window, so add a new one.
     disposition = NEW_FOREGROUND_TAB;
