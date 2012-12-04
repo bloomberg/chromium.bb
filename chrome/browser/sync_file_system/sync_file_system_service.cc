@@ -387,10 +387,8 @@ void SyncFileSystemService::DidProcessRemoteChange(
     // Notify observers of the changes made for a remote sync.
     FOR_EACH_OBSERVER(SyncEventObserver, observers_, OnFileSynced(url, type));
   } else if (status == fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC) {
-    // We seem to have no changes to work on. Reset the pending_remote_changes_
-    // and return here.
+    // We seem to have no changes to work on for now.
     // TODO(kinuko): Might be better setting a timer to call MaybeStartSync.
-    pending_remote_changes_ = 0;
     return;
   } else if (status == fileapi::SYNC_STATUS_FILE_BUSY) {
     is_waiting_remote_sync_enabled_ = true;
@@ -414,10 +412,8 @@ void SyncFileSystemService::DidProcessLocalChange(
   DCHECK(local_sync_running_);
   local_sync_running_ = false;
   if (status == fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC) {
-    // We seem to have no changes to work on. Reset the pending_local_changes_
-    // and return here.
+    // We seem to have no changes to work on for now.
     // TODO(kinuko): Might be better setting a timer to call MaybeStartSync.
-    pending_local_changes_ = 0;
     return;
   } else if (status == fileapi::SYNC_STATUS_HAS_CONFLICT) {
     // TODO(kinuko,tzik): Handle conflict!
