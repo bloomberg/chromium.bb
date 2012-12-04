@@ -314,13 +314,10 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateFile) {
 
   base::RunLoop run_loop;
 
-  // We should get called OnSyncEnabled and OnWriteEnabled on kFile.
-  // (We quit the run loop when OnWriteEnabled is called on kFile)
+  // We should get called OnSyncEnabled on kFile.
   StrictMock<MockSyncStatusObserver> status_observer;
   EXPECT_CALL(status_observer, OnSyncEnabled(kFile))
       .Times(AtLeast(1));
-  EXPECT_CALL(status_observer, OnWriteEnabled(kFile))
-      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   file_system_->AddSyncStatusObserver(&status_observer);
 
   // Creates and writes into a file.
@@ -353,7 +350,7 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateFile) {
 
   local_service_->ProcessLocalChange(
       &local_change_processor,
-      base::Bind(&OnSyncCompleted, FROM_HERE, base::Bind(&base::DoNothing),
+      base::Bind(&OnSyncCompleted, FROM_HERE, run_loop.QuitClosure(),
                  fileapi::SYNC_STATUS_OK, kFile));
 
   run_loop.Run();
@@ -369,12 +366,9 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateAndRemoveFile) {
   base::RunLoop run_loop;
 
   // We should get called OnSyncEnabled and OnWriteEnabled on kFile.
-  // (We quit the run loop when OnWriteEnabled is called on kFile)
   StrictMock<MockSyncStatusObserver> status_observer;
   EXPECT_CALL(status_observer, OnSyncEnabled(kFile))
       .Times(AtLeast(1));
-  EXPECT_CALL(status_observer, OnWriteEnabled(kFile))
-      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   file_system_->AddSyncStatusObserver(&status_observer);
 
   // Creates and then deletes a file.
@@ -394,7 +388,7 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateAndRemoveFile) {
   // The sync should succeed anyway.
   local_service_->ProcessLocalChange(
       &local_change_processor,
-      base::Bind(&OnSyncCompleted, FROM_HERE, base::Bind(&base::DoNothing),
+      base::Bind(&OnSyncCompleted, FROM_HERE, run_loop.QuitClosure(),
                  fileapi::SYNC_STATUS_OK, kFile));
 
   run_loop.Run();
@@ -409,8 +403,7 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateAndRemoveDirectory) {
 
   base::RunLoop run_loop;
 
-  // OnSyncEnabled is expected to be called at least or more than once
-  // but OnWriteEnabled will never be called.
+  // OnSyncEnabled is expected to be called at least or more than once.
   StrictMock<MockSyncStatusObserver> status_observer;
   EXPECT_CALL(status_observer, OnSyncEnabled(kDir)).Times(AtLeast(1));
   file_system_->AddSyncStatusObserver(&status_observer);
@@ -442,12 +435,9 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_MultipleChanges) {
 
   // We should get called OnSyncEnabled and OnWriteEnabled on kPath and
   // OnSyncEnabled on kOther.
-  // (We quit the run loop when OnWriteEnabled is called on kPath)
   StrictMock<MockSyncStatusObserver> status_observer;
   EXPECT_CALL(status_observer, OnSyncEnabled(kPath)).Times(AtLeast(1));
   EXPECT_CALL(status_observer, OnSyncEnabled(kOther)).Times(AtLeast(1));
-  EXPECT_CALL(status_observer, OnWriteEnabled(kPath))
-      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   file_system_->AddSyncStatusObserver(&status_observer);
 
   // Creates a file, delete the file and creates a directory with the same
@@ -472,7 +462,7 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_MultipleChanges) {
 
   local_service_->ProcessLocalChange(
       &local_change_processor,
-      base::Bind(&OnSyncCompleted, FROM_HERE, base::Bind(&base::DoNothing),
+      base::Bind(&OnSyncCompleted, FROM_HERE, run_loop.QuitClosure(),
                  fileapi::SYNC_STATUS_OK, kPath));
 
   run_loop.Run();

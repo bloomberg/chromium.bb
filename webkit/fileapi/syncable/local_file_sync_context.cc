@@ -92,9 +92,10 @@ void LocalFileSyncContext::GetFileForLocalSync(
                  base::Owned(urls), callback));
 }
 
-void LocalFileSyncContext::FinalizeSyncForURL(
+void LocalFileSyncContext::ClearChangesForURL(
     FileSystemContext* file_system_context,
-    const FileSystemURL& url) {
+    const FileSystemURL& url,
+    const base::Closure& done_callback) {
   // This is initially called on UI thread and to be relayed to FILE thread.
   DCHECK(file_system_context);
   if (!file_system_context->task_runners()->file_task_runner()->
@@ -102,14 +103,20 @@ void LocalFileSyncContext::FinalizeSyncForURL(
     DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
     file_system_context->task_runners()->file_task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&LocalFileSyncContext::FinalizeSyncForURL,
-                   this, make_scoped_refptr(file_system_context), url));
+        base::Bind(&LocalFileSyncContext::ClearChangesForURL,
+                   this, make_scoped_refptr(file_system_context),
+                   url, done_callback));
     return;
   }
   DCHECK(file_system_context->change_tracker());
   file_system_context->change_tracker()->ClearChangesForURL(url);
 
-  // Call out to the IO thread to re-enable writing.
+  // Call the completion callback on UI thread.
+  ui_task_runner_->PostTask(FROM_HERE, done_callback);
+}
+
+void LocalFileSyncContext::ClearSyncFlagForURL(const FileSystemURL& url) {
+  // This is initially called on UI thread and to be relayed to IO thread.
   io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&LocalFileSyncContext::EnableWritingOnIOThread,

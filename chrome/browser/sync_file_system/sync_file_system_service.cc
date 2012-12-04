@@ -382,6 +382,13 @@ void SyncFileSystemService::DidProcessRemoteChange(
            << " operation_type=" << type;
   DCHECK(remote_sync_running_);
   remote_sync_running_ = false;
+
+  if (status != fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC &&
+      remote_file_service_->GetCurrentState() != REMOTE_SERVICE_DISABLED) {
+    DCHECK(url.is_valid());
+    local_file_service_->ClearSyncFlagForURL(url);
+  }
+
   if (status == fileapi::SYNC_STATUS_OK &&
       type != fileapi::SYNC_OPERATION_NONE) {
     // Notify observers of the changes made for a remote sync.
@@ -411,6 +418,12 @@ void SyncFileSystemService::DidProcessLocalChange(
            << " url=" << url.DebugString();
   DCHECK(local_sync_running_);
   local_sync_running_ = false;
+
+  if (status != fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC) {
+    DCHECK(url.is_valid());
+    local_file_service_->ClearSyncFlagForURL(url);
+  }
+
   if (status == fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC) {
     // We seem to have no changes to work on for now.
     // TODO(kinuko): Might be better setting a timer to call MaybeStartSync.

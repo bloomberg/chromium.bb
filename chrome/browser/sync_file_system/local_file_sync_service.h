@@ -89,6 +89,10 @@ class LocalFileSyncService
       const fileapi::FileSystemURL& url,
       const HasPendingLocalChangeCallback& callback);
 
+  // A local or remote sync has been finished (either successfully or
+  // with an error). Clears the internal sync flag and enable writing for |url|.
+  void ClearSyncFlagForURL(const fileapi::FileSystemURL& url);
+
   // Returns the metadata of a remote file pointed by |url|.
   virtual void GetLocalFileMetadata(
       const fileapi::FileSystemURL& url,

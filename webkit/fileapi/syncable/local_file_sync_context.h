@@ -76,11 +76,17 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   void GetFileForLocalSync(FileSystemContext* file_system_context,
                            const LocalFileSyncInfoCallback& callback);
 
-  // Notifies the sync context that the local sync has finished (either
-  // successfully or with an error) for |url|.
+  // Clears all pending local changes for |url|. |done_callback| is called
+  // when the changes are cleared.
   // This method must be called on UI thread.
-  void FinalizeSyncForURL(FileSystemContext* file_system_context,
-                          const FileSystemURL& url);
+  void ClearChangesForURL(FileSystemContext* file_system_context,
+                          const FileSystemURL& url,
+                          const base::Closure& done_callback);
+
+  // A local or remote sync has been finished (either successfully or
+  // with an error). Clears the internal sync flag and enable writing for |url|.
+  // This method must be called on UI thread.
+  void ClearSyncFlagForURL(const FileSystemURL& url);
 
   // Prepares for sync |url| by disabling writes on |url|.
   // If the target |url| is being written and cannot start sync it
@@ -208,7 +214,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
       const FileSystemURL& url,
       const LocalFileSyncInfoCallback& callback);
 
-  // Helper routine for FinalizeSyncForURL.
+  // Helper routine for ClearSyncFlagForURL.
   void EnableWritingOnIOThread(const FileSystemURL& url);
 
   // Callback routine for ApplyRemoteChange.
