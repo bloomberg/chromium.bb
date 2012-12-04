@@ -41,7 +41,6 @@ Layer::Layer()
     , m_anchorPoint(0.5, 0.5)
     , m_backgroundColor(0)
     , m_opacity(1.0)
-    , m_filter(0)
     , m_anchorPointZ(0)
     , m_isContainerForFixedPositionLayers(false)
     , m_fixedToContainerLayer(false)
@@ -81,8 +80,6 @@ Layer::~Layer()
 
     // Remove the parent reference from all children.
     removeAllChildren();
-
-    SkSafeUnref(m_filter);
 }
 
 void Layer::setUseLCDText(bool useLCDText)
@@ -334,12 +331,12 @@ void Layer::setFilters(const WebKit::WebFilterOperations& filters)
         LayerTreeHost::setNeedsFilterContext(true);
 }
 
-void Layer::setFilter(SkImageFilter* filter)
+void Layer::setFilter(const skia::RefPtr<SkImageFilter>& filter)
 {
-    if (m_filter == filter)
+    if (m_filter.get() == filter.get())
         return;
     DCHECK(m_filters.isEmpty());
-    SkRefCnt_SafeAssign(m_filter, filter);
+    m_filter = filter;
     setNeedsCommit();
     if (filter)
         LayerTreeHost::setNeedsFilterContext(true);

@@ -19,7 +19,9 @@
 #include "cc/resource_provider.h"
 #include "cc/scoped_ptr_vector.h"
 #include "cc/shared_quad_state.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/transform.h"
@@ -119,8 +121,8 @@ public:
     void setBackgroundFilters(const WebKit::WebFilterOperations&);
     const WebKit::WebFilterOperations& backgroundFilters() const { return m_backgroundFilters; }
 
-    void setFilter(SkImageFilter*);
-    SkImageFilter* filter() const { return m_filter; }
+    void setFilter(const skia::RefPtr<SkImageFilter>&);
+    skia::RefPtr<SkImageFilter> filter() const { return m_filter; }
 
     void setMasksToBounds(bool);
     bool masksToBounds() const { return m_masksToBounds; }
@@ -396,7 +398,7 @@ private:
 
     WebKit::WebFilterOperations m_filters;
     WebKit::WebFilterOperations m_backgroundFilters;
-    SkImageFilter* m_filter;
+    skia::RefPtr<SkImageFilter> m_filter;
 
     gfx::Transform m_drawTransform;
     gfx::Transform m_screenSpaceTransform;

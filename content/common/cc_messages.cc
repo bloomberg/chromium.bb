@@ -415,6 +415,7 @@ bool ParamTraits<cc::RenderPass>::Read(
   bool has_transparent_background;
   bool has_occlusion_from_outside_target_surface;
   WebKit::WebFilterOperations filters;
+  skia::RefPtr<SkImageFilter> filter;
   WebKit::WebFilterOperations background_filters;
   size_t shared_quad_state_list_size;
   size_t quad_list_size;
@@ -438,7 +439,7 @@ bool ParamTraits<cc::RenderPass>::Read(
             has_transparent_background,
             has_occlusion_from_outside_target_surface,
             filters,
-            NULL, // TODO(danakj): filter isn't being serialized.
+            filter, // TODO(danakj): filter isn't being serialized.
             background_filters);
 
   for (size_t i = 0; i < shared_quad_state_list_size; ++i) {

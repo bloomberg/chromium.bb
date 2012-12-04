@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "cc/cc_export.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/rect.h"
 
@@ -39,12 +40,14 @@ private:
   Picture();
   // This constructor assumes SkPicture is already ref'd and transfers
   // ownership to this picture.
-  Picture(SkPicture*, gfx::Rect layer_rect, gfx::Rect opaque_rect);
+  Picture(const skia::RefPtr<SkPicture>&,
+          gfx::Rect layer_rect,
+          gfx::Rect opaque_rect);
   ~Picture();
 
   gfx::Rect layer_rect_;
   gfx::Rect opaque_rect_;
-  SkAutoTUnref<SkPicture> picture_;
+  skia::RefPtr<SkPicture> picture_;
 
   friend class base::RefCountedThreadSafe<Picture>;
   DISALLOW_COPY_AND_ASSIGN(Picture);

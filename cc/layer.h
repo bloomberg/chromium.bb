@@ -15,7 +15,9 @@
 #include "cc/occlusion_tracker.h"
 #include "cc/region.h"
 #include "cc/render_surface.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/transform.h"
@@ -24,8 +26,6 @@ namespace WebKit {
 class WebAnimationDelegate;
 class WebLayerScrollClient;
 }
-
-class SkImageFilter;
 
 namespace cc {
 
@@ -102,8 +102,8 @@ public:
     void setFilters(const WebKit::WebFilterOperations&);
     const WebKit::WebFilterOperations& filters() const { return m_filters; }
 
-    void setFilter(SkImageFilter* filter);
-    SkImageFilter* filter() const { return m_filter; }
+    void setFilter(const skia::RefPtr<SkImageFilter>& filter);
+    skia::RefPtr<SkImageFilter> filter() const { return m_filter; }
 
     // Background filters are filters applied to what is behind this layer, when they are viewed through non-opaque
     // regions in this layer. They are used through the WebLayer interface, and are not exposed to HTML.
@@ -374,7 +374,7 @@ private:
     SkColor m_backgroundColor;
     std::string m_debugName;
     float m_opacity;
-    SkImageFilter* m_filter;
+    skia::RefPtr<SkImageFilter> m_filter;
     WebKit::WebFilterOperations m_filters;
     WebKit::WebFilterOperations m_backgroundFilters;
     float m_anchorPointZ;

@@ -9,6 +9,7 @@
 #include "cc/resource_provider.h"
 #include "cc/texture_copier.h"
 #include "cc/thread.h"
+#include "skia/ext/refptr.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/gpu/SkGpuDevice.h"
 #include <limits>
@@ -36,7 +37,7 @@ const double uploaderBusyTickRate = 0.001;
 // Number of blocking update intervals to allow.
 const size_t maxBlockingUpdateIntervals = 4;
 
-scoped_ptr<SkCanvas> createAcceleratedCanvas(
+skia::RefPtr<SkCanvas> createAcceleratedCanvas(
     GrContext* grContext, gfx::Size canvasSize, unsigned textureId)
 {
     GrPlatformTextureDesc textureDesc;
@@ -45,10 +46,11 @@ scoped_ptr<SkCanvas> createAcceleratedCanvas(
     textureDesc.fHeight = canvasSize.height();
     textureDesc.fConfig = kSkia8888_GrPixelConfig;
     textureDesc.fTextureHandle = textureId;
-    SkAutoTUnref<GrTexture> target(
-        grContext->createPlatformTexture(textureDesc));
-    SkAutoTUnref<SkDevice> device(new SkGpuDevice(grContext, target.get()));
-    return make_scoped_ptr(new SkCanvas(device.get()));
+    skia::RefPtr<GrTexture> target =
+        skia::AdoptRef(grContext->createPlatformTexture(textureDesc));
+    skia::RefPtr<SkDevice> device =
+        skia::AdoptRef(new SkGpuDevice(grContext, target.get()));
+    return skia::AdoptRef(new SkCanvas(device.get()));
 }
 
 }  // namespace
@@ -150,7 +152,7 @@ void ResourceUpdateController::updateTexture(ResourceUpdate update)
         paintContext->makeContextCurrent();
 
         // Create an accelerated canvas to draw on.
-        scoped_ptr<SkCanvas> canvas = createAcceleratedCanvas(
+        skia::RefPtr<SkCanvas> canvas = createAcceleratedCanvas(
             paintGrContext, texture->size(), lock.textureId());
 
         // The compositor expects the textures to be upside-down so it can flip

@@ -235,6 +235,9 @@ TEST_F(CCMessagesTest, AllQuads) {
   arbitrary_filters2.append(WebFilterOperation::createBrightnessFilter(
       arbitrary_float2));
 
+  // TODO(danakj): filter is not serialized.
+  skia::RefPtr<SkImageFilter> arbitrary_filter;
+
   scoped_ptr<SharedQuadState> shared_state1_in = SharedQuadState::Create();
   shared_state1_in->SetAll(arbitrary_matrix,
                            arbitrary_rect1,
@@ -361,7 +364,7 @@ TEST_F(CCMessagesTest, AllQuads) {
                   arbitrary_bool1,
                   arbitrary_bool2,
                   arbitrary_filters1,
-                  NULL, // TODO(danakj): filter is not serialized.
+                  arbitrary_filter, // TODO(danakj): filter is not serialized.
                   arbitrary_filters2);
 
   pass_in->shared_quad_state_list.append(shared_state1_in.Pass());
@@ -383,7 +386,7 @@ TEST_F(CCMessagesTest, AllQuads) {
                    arbitrary_bool1,
                    arbitrary_bool2,
                    arbitrary_filters1,
-                   NULL, // TODO(danakj): filter is not serialized.
+                   arbitrary_filter, // TODO(danakj): filter is not serialized.
                    arbitrary_filters2);
 
   pass_cmp->shared_quad_state_list.append(shared_state1_cmp.Pass());

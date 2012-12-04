@@ -4,8 +4,6 @@
 
 #include "cc/render_pass.h"
 
-#include "third_party/skia/include/core/SkImageFilter.h"
-
 namespace cc {
 
 scoped_ptr<RenderPass> RenderPass::Create() {
@@ -15,12 +13,10 @@ scoped_ptr<RenderPass> RenderPass::Create() {
 RenderPass::RenderPass()
     : id(Id(-1, -1)),
       has_transparent_background(true),
-      has_occlusion_from_outside_target_surface(false),
-      filter(NULL) {
+      has_occlusion_from_outside_target_surface(false) {
 }
 
 RenderPass::~RenderPass() {
-  SkSafeUnref(filter);
 }
 
 scoped_ptr<RenderPass> RenderPass::Copy(Id new_id) const {
@@ -62,7 +58,7 @@ void RenderPass::SetAll(Id id,
                         bool has_transparent_background,
                         bool has_occlusion_from_outside_target_surface,
                         const WebKit::WebFilterOperations& filters,
-                        SkImageFilter* filter,
+                        const skia::RefPtr<SkImageFilter>& filter,
                         const WebKit::WebFilterOperations& background_filters) {
   DCHECK_GT(id.layer_id, 0);
   DCHECK_GE(id.index, 0);
@@ -75,7 +71,7 @@ void RenderPass::SetAll(Id id,
   this->has_occlusion_from_outside_target_surface =
       has_occlusion_from_outside_target_surface;
   this->filters = filters;
-  SkRefCnt_SafeAssign(this->filter, filter);
+  this->filter = filter;
   this->background_filters = background_filters;
 
   DCHECK(quad_list.isEmpty());

@@ -401,12 +401,13 @@ static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, Sc
     platformTextureDescription.fHeight = sourceTexture->size().height();
     platformTextureDescription.fConfig = kSkia8888_GrPixelConfig;
     platformTextureDescription.fTextureHandle = lock.textureId();
-    SkAutoTUnref<GrTexture> texture(grContext->createPlatformTexture(platformTextureDescription));
+    skia::RefPtr<GrTexture> texture = skia::AdoptRef(grContext->createPlatformTexture(platformTextureDescription));
 
     // Place the platform texture inside an SkBitmap.
     SkBitmap source;
     source.setConfig(SkBitmap::kARGB_8888_Config, sourceTexture->size().width(), sourceTexture->size().height());
-    source.setPixelRef(new SkGrPixelRef(texture.get()))->unref();
+    skia::RefPtr<SkGrPixelRef> pixelRef = skia::AdoptRef(new SkGrPixelRef(texture.get()));
+    source.setPixelRef(pixelRef.get());
 
     // Create a scratch texture for backing store.
     GrTextureDesc desc;
@@ -416,7 +417,7 @@ static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, Sc
     desc.fHeight = source.height();
     desc.fConfig = kSkia8888_GrPixelConfig;
     GrAutoScratchTexture scratchTexture(grContext, desc, GrContext::kExact_ScratchTexMatch);
-    SkAutoTUnref<GrTexture> backingStore(scratchTexture.detach());
+    skia::RefPtr<GrTexture> backingStore = skia::AdoptRef(scratchTexture.detach());
 
     // Create a device and canvas using that backing store.
     SkGpuDevice device(grContext, backingStore.get());
@@ -534,7 +535,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
     // Apply filters to the contents texture.
     SkBitmap filterBitmap;
     if (renderPass->filter) {
-        filterBitmap = applyImageFilter(this, renderPass->filter, contentsTexture, m_client->hasImplThread());
+        filterBitmap = applyImageFilter(this, renderPass->filter.get(), contentsTexture, m_client->hasImplThread());
     } else {
         filterBitmap = applyFilters(this, renderPass->filters, contentsTexture, m_client->hasImplThread());
     }

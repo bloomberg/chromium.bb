@@ -80,7 +80,7 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     arbitraryTransform.Scale3d(0.1, 0.2, 0.3);
     WebFilterOperations arbitraryFilters;
     arbitraryFilters.append(WebFilterOperation::createOpacityFilter(0.5));
-    SkAutoTUnref<SkImageFilter> arbitraryFilter(new SkBlurImageFilter(SK_Scalar1, SK_Scalar1));
+    skia::RefPtr<SkImageFilter> arbitraryFilter = skia::AdoptRef(new SkBlurImageFilter(SK_Scalar1, SK_Scalar1));
 
     // These properties are internal, and should not be considered "change" when they are used.
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setUseLCDText(true));

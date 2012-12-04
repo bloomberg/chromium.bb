@@ -14,7 +14,6 @@
 #include "cc/proxy.h"
 #include "cc/quad_sink.h"
 #include "cc/scrollbar_animation_controller.h"
-#include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect_conversions.h"
 
@@ -52,7 +51,6 @@ LayerImpl::LayerImpl(int id)
     , m_drawDepth(0)
     , m_drawOpacity(0)
     , m_drawOpacityIsAnimating(false)
-    , m_filter(0)
     , m_drawTransformIsAnimating(false)
     , m_screenSpaceTransformIsAnimating(false)
     , m_isClipped(false)
@@ -69,7 +67,6 @@ LayerImpl::~LayerImpl()
 #ifndef NDEBUG
     DCHECK(!m_betweenWillDrawAndDidDraw);
 #endif
-    SkSafeUnref(m_filter);
 }
 
 void LayerImpl::addChild(scoped_ptr<LayerImpl> child)
@@ -537,13 +534,13 @@ void LayerImpl::setBackgroundFilters(const WebKit::WebFilterOperations& backgrou
     m_layerPropertyChanged = true;
 }
 
-void LayerImpl::setFilter(SkImageFilter* filter)
+void LayerImpl::setFilter(const skia::RefPtr<SkImageFilter>& filter)
 {
-    if (m_filter == filter)
+    if (m_filter.get() == filter.get())
         return;
 
     DCHECK(m_filters.isEmpty());
-    SkRefCnt_SafeAssign(m_filter, filter);
+    m_filter = filter;
     noteLayerPropertyChangedForSubtree();
 }
 

@@ -307,13 +307,14 @@ void SoftwareRenderer::drawRenderPassQuad(const DrawingFrame& frame, const Rende
     SkMatrix contentMat;
     contentMat.setRectToRect(contentRect, destRect, SkMatrix::kFill_ScaleToFit);
 
-    SkAutoTUnref<SkShader> shader(SkShader::CreateBitmapShader(*content,
-                                                               SkShader::kClamp_TileMode,
-                                                               SkShader::kClamp_TileMode));
+    skia::RefPtr<SkShader> shader = skia::AdoptRef(
+        SkShader::CreateBitmapShader(*content,
+                                     SkShader::kClamp_TileMode,
+                                     SkShader::kClamp_TileMode));
     shader->setLocalMatrix(contentMat);
-    m_skCurrentPaint.setShader(shader);
+    m_skCurrentPaint.setShader(shader.get());
 
-    SkImageFilter* filter = renderPass->filter;
+    SkImageFilter* filter = renderPass->filter.get();
     if (filter)
         m_skCurrentPaint.setImageFilter(filter);
 
@@ -331,18 +332,19 @@ void SoftwareRenderer::drawRenderPassQuad(const DrawingFrame& frame, const Rende
         SkMatrix maskMat;
         maskMat.setRectToRect(maskRect, destRect, SkMatrix::kFill_ScaleToFit);
 
-        SkAutoTUnref<SkShader> maskShader(SkShader::CreateBitmapShader(*mask,
-                                                                       SkShader::kClamp_TileMode,
-                                                                       SkShader::kClamp_TileMode));
+        skia::RefPtr<SkShader> maskShader = skia::AdoptRef(
+            SkShader::CreateBitmapShader(*mask,
+                                         SkShader::kClamp_TileMode,
+                                         SkShader::kClamp_TileMode));
         maskShader->setLocalMatrix(maskMat);
 
         SkPaint maskPaint;
-        maskPaint.setShader(maskShader);
+        maskPaint.setShader(maskShader.get());
 
-        SkAutoTUnref<SkLayerRasterizer> maskRasterizer(new SkLayerRasterizer);
+        skia::RefPtr<SkLayerRasterizer> maskRasterizer = skia::AdoptRef(new SkLayerRasterizer);
         maskRasterizer->addLayer(maskPaint);
 
-        m_skCurrentPaint.setRasterizer(maskRasterizer);
+        m_skCurrentPaint.setRasterizer(maskRasterizer.get());
         m_skCurrentCanvas->drawRect(destRect, m_skCurrentPaint);
     } else {
         // FIXME: Apply background filters and blend with content

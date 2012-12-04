@@ -15,11 +15,11 @@
 #include "cc/scoped_ptr_hash_map.h"
 #include "cc/scoped_ptr_vector.h"
 #include "cc/shared_quad_state.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/transform.h"
-
-class SkImageFilter;
 
 namespace cc {
 
@@ -76,7 +76,7 @@ class CC_EXPORT RenderPass {
               bool has_transparent_background,
               bool has_occlusion_from_outside_target_surface,
               const WebKit::WebFilterOperations& filters,
-              SkImageFilter* filter,
+              const skia::RefPtr<SkImageFilter>& filter,
               const WebKit::WebFilterOperations& background_filters);
 
   // Uniquely identifies the render pass in the compositor's current frame.
@@ -101,7 +101,7 @@ class CC_EXPORT RenderPass {
   // pass' texture.
   WebKit::WebFilterOperations filters;
   // Post-processing filter applied to the pixels in the render pass' texture.
-  SkImageFilter* filter;
+  skia::RefPtr<SkImageFilter> filter;
 
   // Post-processing filters, applied to the pixels showing through the
   // background of the render pass, from behind it.

@@ -58,7 +58,7 @@ void emulateDrawingOneFrame(LayerImpl* root)
     // Iterate back-to-front, so that damage correctly propagates from descendant surfaces to ancestors.
     for (int i = renderSurfaceLayerList.size() - 1; i >= 0; --i) {
         RenderSurfaceImpl* targetSurface = renderSurfaceLayerList[i]->renderSurface();
-        targetSurface->damageTracker()->updateDamageTrackingState(targetSurface->layerList(), targetSurface->owningLayerId(), targetSurface->surfacePropertyChangedOnlyFromDescendant(), targetSurface->contentRect(), renderSurfaceLayerList[i]->maskLayer(), renderSurfaceLayerList[i]->filters(), renderSurfaceLayerList[i]->filter());
+        targetSurface->damageTracker()->updateDamageTrackingState(targetSurface->layerList(), targetSurface->owningLayerId(), targetSurface->surfacePropertyChangedOnlyFromDescendant(), targetSurface->contentRect(), renderSurfaceLayerList[i]->maskLayer(), renderSurfaceLayerList[i]->filters(), renderSurfaceLayerList[i]->filter().get());
     }
 
     root->resetAllChangeTrackingForSubtree();
@@ -397,8 +397,7 @@ TEST_F(DamageTrackerTest, verifyDamageForImageFilter)
     // Allow us to set damage on child too.
     child->setDrawsContent(true);
 
-    SkAutoTUnref<SkImageFilter> filter(new SkBlurImageFilter(SkIntToScalar(2),
-                                                             SkIntToScalar(2)));
+    skia::RefPtr<SkImageFilter> filter = skia::AdoptRef(new SkBlurImageFilter(SkIntToScalar(2), SkIntToScalar(2)));
     // Setting the filter will damage the whole surface.
     clearDamageForAllSurfaces(root.get());
     child->setFilter(filter);

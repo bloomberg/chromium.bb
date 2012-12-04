@@ -49,7 +49,7 @@ TEST(RenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
 
     filters.append(WebFilterOperation::createGrayscaleFilter(0.2f));
     backgroundFilters.append(WebFilterOperation::createInvertFilter(0.2f));
-    SkAutoTUnref<SkBlurImageFilter> filter(new SkBlurImageFilter(SK_Scalar1, SK_Scalar1));
+    skia::RefPtr<SkImageFilter> filter = skia::AdoptRef(new SkBlurImageFilter(SK_Scalar1, SK_Scalar1));
 
     scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
     pass->SetAll(id,
