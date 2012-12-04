@@ -1,3 +1,10 @@
+2012-12-04  Christian Egli  <christian.egli@sbs.ch>
+
+	* liblouis/Makefile.am (AM_ETAGSFLAGS): The langmap option only
+	works if you use ctags. Newer versions of etags (i.e. emacs 24 and
+	up) seem to generate proper TAGS files even for *.ci files, so
+	this option can be removed.
+
 2012-12-03  Christian Egli  <christian.egli@sbs.ch>
 
 	* liblouis/lou_translateString.c (lou_dotsToChar): Fix some
