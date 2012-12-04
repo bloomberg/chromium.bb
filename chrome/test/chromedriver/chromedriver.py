@@ -30,9 +30,19 @@ def _ExceptionForResponse(response):
 class ChromeDriver(object):
   """Starts and controls a single Chrome instance on this machine."""
 
-  def __init__(self, lib_path):
+  def __init__(self, lib_path, chrome_binary=None):
     self._lib = ctypes.CDLL(lib_path)
-    self._session_id = self._ExecuteCommand('newSession')
+    if chrome_binary is None:
+      params = {}
+    else:
+      params = {
+        'desiredCapabilities': {
+          'chrome': {
+            'binary': chrome_binary
+          }
+        }
+      }
+    self._session_id = self._ExecuteCommand('newSession', params)
 
   def _ExecuteCommand(self, name, params={}, session_id=''):
     cmd = {

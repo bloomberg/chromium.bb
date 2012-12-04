@@ -16,15 +16,21 @@ class ChromeDriverTest(unittest.TestCase):
   """End to end tests for ChromeDriver."""
 
   def testStartStop(self):
-    driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB)
+    driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB, _CHROME_BINARY)
     driver.Quit()
 
 if __name__ == '__main__':
-  if len(sys.argv) != 2:
-    print 'Usage: %s <path_to_chromedriver_so>' % __file__
+  if len(sys.argv) != 2 and len(sys.argv) != 3:
+    print ('Usage: %s <path_to_chromedriver_so> [path_to_chrome_binary]' %
+           __file__)
     sys.exit(1)
   global _CHROMEDRIVER_LIB
   _CHROMEDRIVER_LIB = os.path.abspath(sys.argv[1])
+  global _CHROME_BINARY
+  if len(sys.argv) == 3:
+    _CHROME_BINARY = os.path.abspath(sys.argv[2])
+  else:
+    _CHROME_BINARY = None
   all_tests_suite = unittest.defaultTestLoader.loadTestsFromModule(
       sys.modules[__name__])
   result = unittest.TextTestRunner().run(all_tests_suite)
