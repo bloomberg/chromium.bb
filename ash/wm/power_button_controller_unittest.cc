@@ -25,7 +25,7 @@ namespace ash {
 namespace test {
 namespace {
 bool cursor_visible() {
-  return ash::Shell::GetInstance()->cursor_manager()->cursor_visible();
+  return ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible();
 }
 }
 

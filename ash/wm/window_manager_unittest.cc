@@ -651,36 +651,36 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
       ui::ET_TOUCH_RELEASED, gfx::Point(0, 0), 1, getTime());
 
   root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
-  EXPECT_TRUE(cursor_manager->cursor_visible());
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
   root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch_pressed1);
-  EXPECT_FALSE(cursor_manager->cursor_visible());
+  EXPECT_FALSE(cursor_manager->IsCursorVisible());
   root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
-  EXPECT_TRUE(cursor_manager->cursor_visible());
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
   root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch_released1);
-  EXPECT_TRUE(cursor_manager->cursor_visible());
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
 
   // If someone else made cursor invisible keep it invisible even after it
   // received mouse events.
   cursor_manager->ShowCursor(false);
   root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
-  EXPECT_FALSE(cursor_manager->cursor_visible());
+  EXPECT_FALSE(cursor_manager->IsCursorVisible());
   root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch_pressed2);
-  EXPECT_FALSE(cursor_manager->cursor_visible());
+  EXPECT_FALSE(cursor_manager->IsCursorVisible());
   root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
-  EXPECT_FALSE(cursor_manager->cursor_visible());
+  EXPECT_FALSE(cursor_manager->IsCursorVisible());
   root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch_released2);
-  EXPECT_FALSE(cursor_manager->cursor_visible());
+  EXPECT_FALSE(cursor_manager->IsCursorVisible());
 
   // Back to normal.
   cursor_manager->ShowCursor(true);
   root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
-  EXPECT_TRUE(cursor_manager->cursor_visible());
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
   root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch_pressed2);
-  EXPECT_FALSE(cursor_manager->cursor_visible());
+  EXPECT_FALSE(cursor_manager->IsCursorVisible());
   root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
-  EXPECT_TRUE(cursor_manager->cursor_visible());
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
   root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch_released2);
-  EXPECT_TRUE(cursor_manager->cursor_visible());
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
 }
 
 }  // namespace ash

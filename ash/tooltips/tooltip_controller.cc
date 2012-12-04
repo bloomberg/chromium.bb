@@ -433,7 +433,7 @@ void TooltipController::TooltipShownTimerFired() {
 
 void TooltipController::UpdateIfRequired() {
   if (!tooltips_enabled_ || mouse_pressed_ || IsDragDropInProgress() ||
-      !ash::Shell::GetInstance()->cursor_manager()->cursor_visible()) {
+      !ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible()) {
     GetTooltip()->Hide();
     return;
   }

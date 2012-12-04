@@ -30,9 +30,6 @@ class ASH_EXPORT CursorManager : public aura::client::CursorClient {
 
   bool is_cursor_locked() const { return cursor_lock_count_ > 0; }
 
-  // Shows or hides the cursor.
-  bool cursor_visible() const { return cursor_visible_; }
-
   // Overridden from aura::client::CursorClient:
   virtual void SetCursor(gfx::NativeCursor) OVERRIDE;
   virtual void ShowCursor(bool show) OVERRIDE;

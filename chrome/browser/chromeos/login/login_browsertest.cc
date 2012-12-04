@@ -99,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(LoginUserTest, UserPassed) {
 
 // Verifies the cursor is not hidden at startup when user is logged in.
 IN_PROC_BROWSER_TEST_F(LoginUserTest, CursorShown) {
-  EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->cursor_visible());
+  EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
 }
 
 // After a guest login, we should get the OTR default profile.
@@ -113,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(LoginGuestTest, GuestIsOTR) {
 
 // Verifies the cursor is not hidden at startup when running guest session.
 IN_PROC_BROWSER_TEST_F(LoginGuestTest, CursorShown) {
-  EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->cursor_visible());
+  EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
 }
 
 // Verifies the cursor is hidden at startup on login screen.
@@ -122,11 +122,11 @@ IN_PROC_BROWSER_TEST_F(LoginCursorTest, CursorHidden) {
   ShowLoginWizard(WizardController::kLoginScreenName, gfx::Size());
 
   // Cursor should be hidden at startup
-  EXPECT_FALSE(ash::Shell::GetInstance()->cursor_manager()->cursor_visible());
+  EXPECT_FALSE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
 
   // Cursor should be shown after cursor is moved.
   EXPECT_TRUE(ui_test_utils::SendMouseMoveSync(gfx::Point()));
-  EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->cursor_visible());
+  EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
 
   MessageLoop::current()->DeleteSoon(FROM_HERE,
                                      BaseLoginDisplayHost::default_host());
