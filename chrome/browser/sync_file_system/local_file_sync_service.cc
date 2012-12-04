@@ -140,6 +140,14 @@ void LocalFileSyncService::ProcessLocalChange(
                  AsWeakPtr(), processor));
 }
 
+void LocalFileSyncService::HasPendingLocalChanges(
+    const fileapi::FileSystemURL& url,
+    const HasPendingLocalChangeCallback& callback) {
+  DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
+  sync_context_->HasPendingLocalChanges(
+      origin_to_contexts_[url.origin()], url, callback);
+}
+
 void LocalFileSyncService::GetLocalFileMetadata(
     const fileapi::FileSystemURL& url,
     const SyncFileMetadataCallback& callback) {

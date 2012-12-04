@@ -32,6 +32,8 @@ MockRemoteFileSyncService::MockRemoteFileSyncService() {
       .WillByDefault(Invoke(this, &self::ProcessRemoteChangeStub));
   ON_CALL(*this, GetLocalChangeProcessor())
       .WillByDefault(Return(&mock_local_change_processor_));
+  ON_CALL(*this, IsConflicting(_))
+      .WillByDefault(Return(false));
   ON_CALL(*this, GetConflictFiles(_, _))
       .WillByDefault(Invoke(this, &self::GetConflictFilesStub));
   ON_CALL(*this, GetRemoteFileMetadata(_, _))

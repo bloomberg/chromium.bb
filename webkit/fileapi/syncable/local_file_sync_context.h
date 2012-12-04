@@ -51,6 +51,9 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
                               const LocalFileSyncInfo& sync_file_info)>
       LocalFileSyncInfoCallback;
 
+  typedef base::Callback<void(bool has_pending_changes)>
+      HasPendingLocalChangeCallback;
+
   LocalFileSyncContext(base::SingleThreadTaskRunner* ui_task_runner,
                        base::SingleThreadTaskRunner* io_task_runner);
 
@@ -115,6 +118,13 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
       FileSystemContext* file_system_context,
       const FileSystemURL& url,
       const SyncFileMetadataCallback& callback);
+
+  // Returns true via |callback| if the given file |url| has local pending
+  // changes.
+  void HasPendingLocalChanges(
+      FileSystemContext* file_system_context,
+      const FileSystemURL& url,
+      const HasPendingLocalChangeCallback& callback);
 
   // They must be called on UI thread.
   void AddOriginChangeObserver(LocalOriginChangeObserver* observer);

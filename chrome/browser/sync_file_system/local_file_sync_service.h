@@ -52,6 +52,9 @@ class LocalFileSyncService
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
+  typedef base::Callback<void(bool has_pending_changes)>
+      HasPendingLocalChangeCallback;
+
   LocalFileSyncService();
   virtual ~LocalFileSyncService();
 
@@ -79,6 +82,12 @@ class LocalFileSyncService
   // |processor| must have same or longer lifetime than this service.
   void ProcessLocalChange(LocalChangeProcessor* processor,
                           const fileapi::SyncFileCallback& callback);
+
+  // Returns true via |callback| if the given file |url| has local pending
+  // changes.
+  void HasPendingLocalChanges(
+      const fileapi::FileSystemURL& url,
+      const HasPendingLocalChangeCallback& callback);
 
   // Returns the metadata of a remote file pointed by |url|.
   virtual void GetLocalFileMetadata(

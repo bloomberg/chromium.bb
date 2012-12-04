@@ -44,10 +44,19 @@ namespace {
 const char kOrigin[] = "http://example.com";
 const char kServiceName[] = "test";
 
+template <typename R> struct AssignTrait {
+  typedef const R& ArgumentType;
+};
+
+template <> struct AssignTrait<fileapi::SyncFileStatus> {
+  typedef fileapi::SyncFileStatus ArgumentType;
+};
+
 template <typename R>
 void AssignValueAndQuit(base::RunLoop* run_loop,
                         SyncStatusCode* status_out, R* value_out,
-                        SyncStatusCode status, const R& value) {
+                        SyncStatusCode status,
+                        typename AssignTrait<R>::ArgumentType value) {
   DCHECK(status_out);
   DCHECK(value_out);
   DCHECK(run_loop);
@@ -507,8 +516,7 @@ TEST_F(SyncFileSystemServiceTest, SimpleSyncFlowWithFileBusy) {
     EXPECT_CALL(*mock_remote_service(), ProcessRemoteChange(_, _))
         .WillOnce(MockSyncOperationCallback(fileapi::SYNC_STATUS_FILE_BUSY,
                                             kFile,
-                                            fileapi::SYNC_OPERATION_NONE))
-        .RetiresOnSaturation();
+                                            fileapi::SYNC_OPERATION_NONE));
 
     // ProcessRemoteChange should be called again when the becomes
     // not busy.
@@ -536,6 +544,92 @@ TEST_F(SyncFileSystemServiceTest, SimpleSyncFlowWithFileBusy) {
   mock_remote_service()->NotifyRemoteChangeAvailable(0);
 
   event.Wait();
+}
+
+TEST_F(SyncFileSystemServiceTest, GetFileSyncStatus) {
+  InitializeApp();
+
+  const FileSystemURL kFile(file_system_->URL("foo"));
+
+  fileapi::SyncStatusCode status;
+  fileapi::SyncFileStatus sync_file_status;
+
+  // 1. The file is not in conflicting nor in pending change state.
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(*mock_remote_service(), IsConflicting(kFile))
+        .WillOnce(Return(false));
+
+    status = fileapi::SYNC_STATUS_UNKNOWN;
+    sync_file_status = fileapi::SYNC_FILE_STATUS_UNKNOWN;
+    sync_service_->GetFileSyncStatus(
+        kFile,
+        base::Bind(&AssignValueAndQuit<fileapi::SyncFileStatus>,
+                   &run_loop, &status, &sync_file_status));
+    run_loop.Run();
+
+    EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
+    EXPECT_EQ(fileapi::SYNC_FILE_STATUS_SYNCED, sync_file_status);
+  }
+
+  // 2. Conflicting case.
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(*mock_remote_service(), IsConflicting(kFile))
+        .WillOnce(Return(true));
+
+    status = fileapi::SYNC_STATUS_UNKNOWN;
+    sync_file_status = fileapi::SYNC_FILE_STATUS_UNKNOWN;
+    sync_service_->GetFileSyncStatus(
+        kFile,
+        base::Bind(&AssignValueAndQuit<fileapi::SyncFileStatus>,
+                   &run_loop, &status, &sync_file_status));
+    run_loop.Run();
+
+    EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
+    EXPECT_EQ(fileapi::SYNC_FILE_STATUS_CONFLICTING, sync_file_status);
+  }
+
+  // 3. The file has pending local changes.
+  {
+    EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_->CreateFile(kFile));
+
+    base::RunLoop run_loop;
+    EXPECT_CALL(*mock_remote_service(), IsConflicting(kFile))
+        .WillOnce(Return(false));
+
+    status = fileapi::SYNC_STATUS_UNKNOWN;
+    sync_file_status = fileapi::SYNC_FILE_STATUS_UNKNOWN;
+    sync_service_->GetFileSyncStatus(
+        kFile,
+        base::Bind(&AssignValueAndQuit<fileapi::SyncFileStatus>,
+                   &run_loop, &status, &sync_file_status));
+    run_loop.Run();
+
+    EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
+    EXPECT_EQ(fileapi::SYNC_FILE_STATUS_HAS_PENDING_CHANGES, sync_file_status);
+  }
+
+  // 4. The file has a conflict and pending local changes. In this case
+  // we return SYNC_FILE_STATUS_CONFLICTING.
+  {
+    EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_->TruncateFile(kFile, 1U));
+
+    base::RunLoop run_loop;
+    EXPECT_CALL(*mock_remote_service(), IsConflicting(kFile))
+        .WillOnce(Return(true));
+
+    status = fileapi::SYNC_STATUS_UNKNOWN;
+    sync_file_status = fileapi::SYNC_FILE_STATUS_UNKNOWN;
+    sync_service_->GetFileSyncStatus(
+        kFile,
+        base::Bind(&AssignValueAndQuit<fileapi::SyncFileStatus>,
+                   &run_loop, &status, &sync_file_status));
+    run_loop.Run();
+
+    EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
+    EXPECT_EQ(fileapi::SYNC_FILE_STATUS_CONFLICTING, sync_file_status);
+  }
 }
 
 }  // namespace sync_file_system

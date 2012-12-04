@@ -232,6 +232,31 @@ void LocalFileSyncContext::GetFileMetadata(
                       this, callback));
 }
 
+void LocalFileSyncContext::HasPendingLocalChanges(
+    FileSystemContext* file_system_context,
+    const FileSystemURL& url,
+    const HasPendingLocalChangeCallback& callback) {
+  // This gets called on UI thread and relays the task on FILE thread.
+  DCHECK(file_system_context);
+  if (!file_system_context->task_runners()->file_task_runner()->
+          RunsTasksOnCurrentThread()) {
+    DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+    file_system_context->task_runners()->file_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LocalFileSyncContext::HasPendingLocalChanges,
+                   this, make_scoped_refptr(file_system_context),
+                   url, callback));
+    return;
+  }
+
+  DCHECK(file_system_context->change_tracker());
+  FileChangeList changes;
+  file_system_context->change_tracker()->GetChangesForURL(url, &changes);
+
+  // Fire the callback on UI thread.
+  ui_task_runner_->PostTask(FROM_HERE, base::Bind(callback, !changes.empty()));
+}
+
 void LocalFileSyncContext::AddOriginChangeObserver(
     LocalOriginChangeObserver* observer) {
   origin_change_observers_.AddObserver(observer);

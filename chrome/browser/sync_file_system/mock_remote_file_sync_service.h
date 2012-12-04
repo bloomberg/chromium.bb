@@ -37,6 +37,7 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
                void(RemoteChangeProcessor* processor,
                     const fileapi::SyncOperationCallback& callback));
   MOCK_METHOD0(GetLocalChangeProcessor, LocalChangeProcessor*());
+  MOCK_METHOD1(IsConflicting, bool(const fileapi::FileSystemURL& url));
   MOCK_METHOD2(GetConflictFiles,
                void(const GURL& origin,
                     const fileapi::SyncFileSetCallback& callback));

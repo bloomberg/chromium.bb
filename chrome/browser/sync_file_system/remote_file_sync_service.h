@@ -108,6 +108,11 @@ class RemoteFileSyncService {
   // storage backed by this service.
   virtual LocalChangeProcessor* GetLocalChangeProcessor() = 0;
 
+  // Returns true if the file |url| is marked conflicted in the remote service.
+  virtual bool IsConflicting(const fileapi::FileSystemURL& url) = 0;
+
+  // TODO(kinuko,tzik): Clean up unused interface methods when we fix
+  // the manual conflict resolution API.
   // Returns a list of conflicting files for the given origin.
   virtual void GetConflictFiles(
       const GURL& origin,

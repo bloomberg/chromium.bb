@@ -214,6 +214,36 @@ void SyncFileSystemService::GetConflictFileInfo(
       url, callback_runner->CreateAssignAndRunCallback(remote_metadata));
 }
 
+void SyncFileSystemService::GetFileSyncStatus(
+    const fileapi::FileSystemURL& url,
+    const fileapi::SyncFileStatusCallback& callback) {
+  DCHECK(local_file_service_);
+  DCHECK(remote_file_service_);
+
+  if (!ContainsKey(initialized_app_origins_, url.origin())) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   fileapi::SYNC_STATUS_NOT_INITIALIZED,
+                   fileapi::SYNC_FILE_STATUS_UNKNOWN));
+    return;
+  }
+
+  if (remote_file_service_->IsConflicting(url)) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   fileapi::SYNC_STATUS_OK,
+                   fileapi::SYNC_FILE_STATUS_CONFLICTING));
+    return;
+  }
+
+  local_file_service_->HasPendingLocalChanges(
+      url,
+      base::Bind(&SyncFileSystemService::DidGetLocalChangeStatus,
+                 AsWeakPtr(), callback));
+}
+
 void SyncFileSystemService::AddSyncEventObserver(SyncEventObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -395,6 +425,15 @@ void SyncFileSystemService::DidProcessLocalChange(
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(&SyncFileSystemService::MaybeStartSync,
                             AsWeakPtr()));
+}
+
+void SyncFileSystemService::DidGetLocalChangeStatus(
+    const fileapi::SyncFileStatusCallback& callback,
+    bool has_pending_local_changes) {
+  callback.Run(
+      fileapi::SYNC_STATUS_OK,
+      has_pending_local_changes ? fileapi::SYNC_FILE_STATUS_HAS_PENDING_CHANGES
+                                : fileapi::SYNC_FILE_STATUS_SYNCED);
 }
 
 void SyncFileSystemService::OnSyncEnabledForRemoteSync() {

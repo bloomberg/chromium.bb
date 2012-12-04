@@ -57,6 +57,11 @@ class SyncFileSystemService
       const fileapi::FileSystemURL& url,
       const fileapi::ConflictFileInfoCallback& callback);
 
+  // Returns the file |url|'s sync status.
+  void GetFileSyncStatus(
+      const fileapi::FileSystemURL& url,
+      const fileapi::SyncFileStatusCallback& callback);
+
   void AddSyncEventObserver(SyncEventObserver* observer);
   void RemoveSyncEventObserver(SyncEventObserver* observer);
 
@@ -110,6 +115,9 @@ class SyncFileSystemService
                               fileapi::SyncOperationType type);
   void DidProcessLocalChange(fileapi::SyncStatusCode status,
                              const fileapi::FileSystemURL& url);
+
+  void DidGetLocalChangeStatus(const fileapi::SyncFileStatusCallback& callback,
+                               bool has_pending_local_changes);
 
   void OnSyncEnabledForRemoteSync();
 

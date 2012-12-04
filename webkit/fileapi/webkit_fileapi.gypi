@@ -90,6 +90,7 @@
       '../fileapi/syncable/sync_callbacks.h',
       '../fileapi/syncable/sync_file_metadata.cc',
       '../fileapi/syncable/sync_file_metadata.h',
+      '../fileapi/syncable/sync_file_status.h',
       '../fileapi/syncable/sync_file_type.h',
       '../fileapi/syncable/sync_operation_type.h',
       '../fileapi/syncable/sync_status_code.cc',

@@ -359,6 +359,17 @@ LocalChangeProcessor* DriveFileSyncService::GetLocalChangeProcessor() {
   return this;
 }
 
+bool DriveFileSyncService::IsConflicting(const fileapi::FileSystemURL& url) {
+  DriveMetadata metadata;
+  const fileapi::SyncStatusCode status =
+      metadata_store_->ReadEntry(url, &metadata);
+  if (status != fileapi::SYNC_STATUS_OK) {
+    DCHECK_EQ(fileapi::SYNC_DATABASE_ERROR_NOT_FOUND, status);
+    return false;
+  }
+  return metadata.conflicted();
+}
+
 void DriveFileSyncService::GetConflictFiles(
     const GURL& origin,
     const fileapi::SyncFileSetCallback& callback) {
