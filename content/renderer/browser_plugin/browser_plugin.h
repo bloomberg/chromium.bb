@@ -36,6 +36,11 @@ class CONTENT_EXPORT BrowserPlugin :
   // Called only by tests to clean up before we blow away the MockRenderProcess.
   void Cleanup();
 
+  // Update Browser Plugin's DOM Node attribute |attribute_name| with the value
+  // |attribute_value|.
+  void UpdateDOMAttribute(const std::string& attribute_name,
+                          const std::string& attribute_value);
+
   // Get the src attribute value of the BrowserPlugin instance.
   std::string src_attribute() const { return src_; }
   // Set the src attribute value of the BrowserPlugin instance.
