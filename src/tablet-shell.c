@@ -132,8 +132,8 @@ tablet_shell_surface_configure(struct weston_surface *surface,
 	if (weston_surface_is_mapped(surface))
 		return;
 
-	width = surface->buffer->width;
-	height = surface->buffer->height;
+	width = surface->buffer_ref.buffer->width;
+	height = surface->buffer_ref.buffer->height;
 
 	weston_surface_configure(surface, 0, 0, width, height);
 

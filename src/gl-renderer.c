@@ -1038,6 +1038,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 {
 	struct gl_renderer *gr = get_renderer(surface->compositor);
 	struct gl_surface_state *gs = get_surface_state(surface);
+	struct wl_buffer *buffer = surface->buffer_ref.buffer;
 
 #ifdef GL_UNPACK_ROW_LENGTH
 	pixman_box32_t *rectangles;
@@ -1061,9 +1062,9 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 
 	if (!gr->has_unpack_subimage) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
-			     surface->pitch, surface->buffer->height, 0,
+			     surface->pitch, buffer->height, 0,
 			     GL_BGRA_EXT, GL_UNSIGNED_BYTE,
-			     wl_shm_buffer_get_data(surface->buffer));
+			     wl_shm_buffer_get_data(buffer));
 
 		goto done;
 	}
@@ -1071,7 +1072,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 #ifdef GL_UNPACK_ROW_LENGTH
 	/* Mesa does not define GL_EXT_unpack_subimage */
 	glPixelStorei(GL_UNPACK_ROW_LENGTH, surface->pitch);
-	data = wl_shm_buffer_get_data(surface->buffer);
+	data = wl_shm_buffer_get_data(buffer);
 	rectangles = pixman_region32_rectangles(&surface->texture_damage, &n);
 	for (i = 0; i < n; i++) {
 		pixman_box32_t r;

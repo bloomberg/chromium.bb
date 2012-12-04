@@ -345,6 +345,11 @@ struct weston_compositor {
 	struct weston_xkb_info xkb_info;
 };
 
+struct weston_buffer_reference {
+	struct wl_buffer *buffer;
+	struct wl_listener destroy_listener;
+};
+
 struct weston_region {
 	struct wl_resource resource;
 	pixman_region32_t region;
@@ -437,8 +442,7 @@ struct weston_surface {
 
 	struct wl_list frame_callback_list;
 
-	struct wl_buffer *buffer;
-	struct wl_listener buffer_destroy_listener;
+	struct weston_buffer_reference buffer_ref;
 	uint32_t buffer_transform;
 
 	/* All the pending state, that wl_surface.commit will apply. */
@@ -685,6 +689,10 @@ weston_surface_unmap(struct weston_surface *surface);
 
 void
 weston_buffer_post_release(struct wl_buffer *buffer);
+
+void
+weston_buffer_reference(struct weston_buffer_reference *ref,
+			struct wl_buffer *buffer);
 
 uint32_t
 weston_compositor_get_time(void);

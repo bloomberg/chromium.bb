@@ -118,8 +118,7 @@ struct drm_fb {
 	struct drm_output *output;
 	uint32_t fb_id;
 	int is_client_buffer;
-	struct wl_buffer *buffer;
-	struct wl_listener buffer_destroy_listener;
+	struct weston_buffer_reference buffer_ref;
 };
 
 struct drm_output {
@@ -208,10 +207,7 @@ drm_fb_destroy_callback(struct gbm_bo *bo, void *data)
 	if (fb->fb_id)
 		drmModeRmFB(gbm_device_get_fd(gbm), fb->fb_id);
 
-	if (fb->buffer) {
-		weston_buffer_post_release(fb->buffer);
-		wl_list_remove(&fb->buffer_destroy_listener.link);
-	}
+	weston_buffer_reference(&fb->buffer_ref, NULL);
 
 	free(data);
 }
@@ -231,7 +227,7 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_compositor *compositor)
 
 	fb->bo = bo;
 	fb->is_client_buffer = 0;
-	fb->buffer = NULL;
+	fb->buffer_ref.buffer = NULL;
 
 	width = gbm_bo_get_width(bo);
 	height = gbm_bo_get_height(bo);
@@ -283,26 +279,13 @@ err_free:
 }
 
 static void
-fb_handle_buffer_destroy(struct wl_listener *listener, void *data)
-{
-	struct drm_fb *fb = container_of(listener, struct drm_fb,
-					 buffer_destroy_listener);
-
-	fb->buffer = NULL;
-}
-
-static void
 drm_fb_set_buffer(struct drm_fb *fb, struct wl_buffer *buffer)
 {
-	assert(fb->buffer == NULL);
+	assert(fb->buffer_ref.buffer == NULL);
 
 	fb->is_client_buffer = 1;
-	fb->buffer = buffer;
-	fb->buffer->busy_count++;
-	fb->buffer_destroy_listener.notify = fb_handle_buffer_destroy;
 
-	wl_signal_add(&fb->buffer->resource.destroy_signal,
-		      &fb->buffer_destroy_listener);
+	weston_buffer_reference(&fb->buffer_ref, buffer);
 }
 
 static int
@@ -340,19 +323,20 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 	struct drm_output *output = (struct drm_output *) _output;
 	struct drm_compositor *c =
 		(struct drm_compositor *) output->base.compositor;
+	struct wl_buffer *buffer = es->buffer_ref.buffer;
 	struct gbm_bo *bo;
 
 	if (es->geometry.x != output->base.x ||
 	    es->geometry.y != output->base.y ||
-	    es->buffer == NULL ||
-	    es->buffer->width != output->base.current->width ||
-	    es->buffer->height != output->base.current->height ||
+	    buffer == NULL ||
+	    buffer->width != output->base.current->width ||
+	    buffer->height != output->base.current->height ||
 	    output->base.transform != es->buffer_transform ||
 	    es->transform.enabled)
 		return NULL;
 
 	bo = gbm_bo_import(c->gbm, GBM_BO_IMPORT_WL_BUFFER,
-			   es->buffer, GBM_BO_USE_SCANOUT);
+			   buffer, GBM_BO_USE_SCANOUT);
 
 	/* Unable to use the buffer for scanout */
 	if (!bo)
@@ -369,7 +353,7 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 		return NULL;
 	}
 
-	drm_fb_set_buffer(output->next, es->buffer);
+	drm_fb_set_buffer(output->next, buffer);
 
 	return &output->fb_plane;
 }
@@ -601,13 +585,13 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	if (es->output_mask != (1u << output_base->id))
 		return NULL;
 
-	if (es->buffer == NULL)
+	if (es->buffer_ref.buffer == NULL)
 		return NULL;
 
 	if (es->alpha != 1.0f)
 		return NULL;
 
-	if (wl_buffer_is_shm(es->buffer))
+	if (wl_buffer_is_shm(es->buffer_ref.buffer))
 		return NULL;
 
 	if (!drm_surface_transform_supported(es))
@@ -628,7 +612,7 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 		return NULL;
 
 	bo = gbm_bo_import(c->gbm, GBM_BO_IMPORT_WL_BUFFER,
-			   es->buffer, GBM_BO_USE_SCANOUT);
+			   es->buffer_ref.buffer, GBM_BO_USE_SCANOUT);
 	if (!bo)
 		return NULL;
 
@@ -645,7 +629,7 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 		return NULL;
 	}
 
-	drm_fb_set_buffer(s->next, es->buffer);
+	drm_fb_set_buffer(s->next, es->buffer_ref.buffer);
 
 	box = pixman_region32_extents(&es->transform.boundingbox);
 	s->plane.x = box->x1;
@@ -715,7 +699,8 @@ drm_output_prepare_cursor_surface(struct weston_output *output_base,
 		return NULL;
 	if (c->cursors_are_broken)
 		return NULL;
-	if (es->buffer == NULL || !wl_buffer_is_shm(es->buffer) ||
+	if (es->buffer_ref.buffer == NULL ||
+	    !wl_buffer_is_shm(es->buffer_ref.buffer) ||
 	    es->geometry.width > 64 || es->geometry.height > 64)
 		return NULL;
 
@@ -742,14 +727,15 @@ drm_output_set_cursor(struct drm_output *output)
 		return;
 	}
 
-	if (es->buffer && pixman_region32_not_empty(&output->cursor_plane.damage)) {
+	if (es->buffer_ref.buffer &&
+	    pixman_region32_not_empty(&output->cursor_plane.damage)) {
 		pixman_region32_fini(&output->cursor_plane.damage);
 		pixman_region32_init(&output->cursor_plane.damage);
 		output->current_cursor ^= 1;
 		bo = output->cursor_bo[output->current_cursor];
 		memset(buf, 0, sizeof buf);
-		stride = wl_shm_buffer_get_stride(es->buffer);
-		s = wl_shm_buffer_get_data(es->buffer);
+		stride = wl_shm_buffer_get_stride(es->buffer_ref.buffer);
+		s = wl_shm_buffer_get_data(es->buffer_ref.buffer);
 		for (i = 0; i < es->geometry.height; i++)
 			memcpy(buf + i * 64, s + i * stride,
 			       es->geometry.width * 4);

@@ -1667,7 +1667,7 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 
 	switch (shsurf->fullscreen.type) {
 	case WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT:
-		if (surface->buffer)
+		if (surface->buffer_ref.buffer)
 			center_on_output(surface, shsurf->fullscreen_output);
 		break;
 	case WL_SHELL_SURFACE_FULLSCREEN_METHOD_SCALE:

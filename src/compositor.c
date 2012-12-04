@@ -181,16 +181,6 @@ weston_client_launch(struct weston_compositor *compositor,
 }
 
 static void
-surface_handle_buffer_destroy(struct wl_listener *listener, void *data)
-{
-	struct weston_surface *es =
-		container_of(listener, struct weston_surface, 
-			     buffer_destroy_listener);
-
-	es->buffer = NULL;
-}
-
-static void
 surface_handle_pending_buffer_destroy(struct wl_listener *listener, void *data)
 {
 	struct weston_surface *surface =
@@ -241,7 +231,6 @@ weston_surface_create(struct weston_compositor *compositor)
 
 	pixman_region32_init(&surface->texture_damage);
 
-	surface->buffer = NULL;
 	surface->buffer_transform = WL_OUTPUT_TRANSFORM_NORMAL;
 	surface->pending.buffer_transform = surface->buffer_transform;
 	surface->output = NULL;
@@ -253,9 +242,6 @@ weston_surface_create(struct weston_compositor *compositor)
 	region_init_infinite(&surface->input);
 	pixman_region32_init(&surface->transform.opaque);
 	wl_list_init(&surface->frame_callback_list);
-
-	surface->buffer_destroy_listener.notify =
-		surface_handle_buffer_destroy;
 
 	wl_list_init(&surface->geometry.transformation_list);
 	wl_list_insert(&surface->geometry.transformation_list,
@@ -731,9 +717,9 @@ weston_surface_buffer_width(struct weston_surface *surface)
 	case WL_OUTPUT_TRANSFORM_270:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		return surface->buffer->height;
+		return surface->buffer_ref.buffer->height;
 	default:
-		return surface->buffer->width;
+		return surface->buffer_ref.buffer->width;
 	}
 }
 
@@ -745,9 +731,9 @@ weston_surface_buffer_height(struct weston_surface *surface)
 	case WL_OUTPUT_TRANSFORM_270:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		return surface->buffer->width;
+		return surface->buffer_ref.buffer->width;
 	default:
-		return surface->buffer->height;
+		return surface->buffer_ref.buffer->height;
 	}
 }
 
@@ -877,8 +863,7 @@ destroy_surface(struct wl_resource *resource)
 	if (surface->pending.buffer)
 		wl_list_remove(&surface->pending.buffer_destroy_listener.link);
 
-	if (surface->buffer)
-		wl_list_remove(&surface->buffer_destroy_listener.link);
+	weston_buffer_reference(&surface->buffer_ref, NULL);
 
 	pixman_region32_fini(&surface->texture_damage);
 	compositor->renderer->destroy_surface(surface);
@@ -907,18 +892,40 @@ weston_surface_destroy(struct weston_surface *surface)
 }
 
 static void
-weston_surface_attach(struct weston_surface *surface, struct wl_buffer *buffer)
+weston_buffer_reference_handle_destroy(struct wl_listener *listener,
+				       void *data)
 {
-	if (surface->buffer && buffer != surface->buffer) {
-		weston_buffer_post_release(surface->buffer);
-		wl_list_remove(&surface->buffer_destroy_listener.link);
+	struct weston_buffer_reference *ref =
+		container_of(listener, struct weston_buffer_reference,
+			     destroy_listener);
+
+	assert((struct wl_buffer *)data == ref->buffer);
+	ref->buffer = NULL;
+}
+
+WL_EXPORT void
+weston_buffer_reference(struct weston_buffer_reference *ref,
+			struct wl_buffer *buffer)
+{
+	if (ref->buffer && buffer != ref->buffer) {
+		weston_buffer_post_release(ref->buffer);
+		wl_list_remove(&ref->destroy_listener.link);
 	}
 
-	if (buffer && buffer != surface->buffer) {
+	if (buffer && buffer != ref->buffer) {
 		buffer->busy_count++;
 		wl_signal_add(&buffer->resource.destroy_signal,
-			      &surface->buffer_destroy_listener);
+			      &ref->destroy_listener);
 	}
+
+	ref->buffer = buffer;
+	ref->destroy_listener.notify = weston_buffer_reference_handle_destroy;
+}
+
+static void
+weston_surface_attach(struct weston_surface *surface, struct wl_buffer *buffer)
+{
+	weston_buffer_reference(&surface->buffer_ref, buffer);
 
 	if (!buffer) {
 		if (weston_surface_is_mapped(surface))
@@ -926,7 +933,6 @@ weston_surface_attach(struct weston_surface *surface, struct wl_buffer *buffer)
 	}
 
 	surface->compositor->renderer->attach(surface, buffer);
-	surface->buffer = buffer;
 }
 
 WL_EXPORT void
@@ -1006,7 +1012,8 @@ static void
 surface_accumulate_damage(struct weston_surface *surface,
 			  pixman_region32_t *opaque)
 {
-	if (surface->buffer && wl_buffer_is_shm(surface->buffer))
+	if (surface->buffer_ref.buffer &&
+	    wl_buffer_is_shm(surface->buffer_ref.buffer))
 		surface->compositor->renderer->flush_damage(surface);
 
 	if (surface->transform.enabled) {
@@ -1243,6 +1250,8 @@ surface_attach(struct wl_client *client,
 	if (buffer_resource)
 		buffer = buffer_resource->data;
 
+	/* Attach, attach, without commit in between does not send
+	 * wl_buffer.release. */
 	if (surface->pending.buffer)
 		wl_list_remove(&surface->pending.buffer_destroy_listener.link);
 
@@ -1380,7 +1389,7 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 	if (surface->pending.buffer || surface->pending.remove_contents)
 		weston_surface_attach(surface, surface->pending.buffer);
 
-	if (surface->buffer && surface->configure)
+	if (surface->buffer_ref.buffer && surface->configure)
 		surface->configure(surface, surface->pending.sx,
 				   surface->pending.sy);
 	surface->pending.sx = 0;
@@ -2126,7 +2135,8 @@ pointer_cursor_surface_configure(struct weston_surface *es,
 	y = wl_fixed_to_int(seat->seat.pointer->y) - seat->hotspot_y;
 
 	weston_surface_configure(seat->sprite, x, y,
-				 es->buffer->width, es->buffer->height);
+				 es->buffer_ref.buffer->width,
+				 es->buffer_ref.buffer->height);
 
 	empty_region(&es->pending.input);
 
@@ -2192,7 +2202,7 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 	seat->hotspot_x = x;
 	seat->hotspot_y = y;
 
-	if (surface->buffer)
+	if (surface->buffer_ref.buffer)
 		pointer_cursor_surface_configure(surface, 0, 0);
 }
 
@@ -2567,7 +2577,8 @@ drag_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 
 	weston_surface_configure(es,
 				 es->geometry.x + sx, es->geometry.y + sy,
-				 es->buffer->width, es->buffer->height);
+				 es->buffer_ref.buffer->width,
+				 es->buffer_ref.buffer->height);
 }
 
 static int
@@ -2615,7 +2626,7 @@ device_map_drag_surface(struct weston_seat *seat)
 	struct wl_list *list;
 
 	if (weston_surface_is_mapped(seat->drag_surface) ||
-	    !seat->drag_surface->buffer)
+	    !seat->drag_surface->buffer_ref.buffer)
 		return;
 
 	if (seat->sprite && weston_surface_is_mapped(seat->sprite))

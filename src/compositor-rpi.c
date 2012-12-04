@@ -746,7 +746,8 @@ rpi_assign_plane(struct weston_surface *surface, struct rpi_output *output)
 	}
 
 	/* only shm surfaces supported */
-	if (surface->buffer && !wl_buffer_is_shm(surface->buffer)) {
+	if (surface->buffer_ref.buffer &&
+	    !wl_buffer_is_shm(surface->buffer_ref.buffer)) {
 		DBG("surface %p rejected: not shm\n", surface);
 		return NULL;
 	}
@@ -760,7 +761,7 @@ rpi_assign_plane(struct weston_surface *surface, struct rpi_output *output)
 		element->plane.y = floor(surface->geometry.y);
 		DBG("surface %p reuse element %p\n", surface, element);
 	} else {
-		if (!surface->buffer) {
+		if (!surface->buffer_ref.buffer) {
 			DBG("surface %p rejected: no buffer\n", surface);
 			return NULL;
 		}
@@ -817,7 +818,8 @@ rpi_output_assign_planes(struct weston_output *base)
 			 * damage, if the plane is new, so no need to force
 			 * initial resource update.
 			 */
-			if (rpi_element_damage(element, surface->buffer,
+			if (rpi_element_damage(element,
+					       surface->buffer_ref.buffer,
 					       &surface->damage) < 0) {
 				rpi_element_schedule_destroy(element);
 				DBG("surface %p rejected: resource update failed\n",
