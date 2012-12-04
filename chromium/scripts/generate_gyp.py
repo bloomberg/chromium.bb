@@ -130,6 +130,8 @@ def CleanObjectFiles(object_files):
   """
   blacklist = [
       'libavcodec/inverse.o',  # Includes libavutil/inverse.c
+      'libavcodec/log2_tab.o',  # Includes libavutil/log2_tab.c
+      'libavformat/log2_tab.o',  # Includes libavutil/log2_tab.c
 
       # The following files are removed to trim down on binary size.
       # TODO(ihf): Warning, it is *easy* right now to remove more files
@@ -142,7 +144,6 @@ def CleanObjectFiles(object_files):
       'libavutil/adler32.o',
       'libavutil/aes.o',
       'libavutil/des.o',
-      'libavutil/error.o',
       'libavutil/file.o',
       'libavutil/lls.o',
       'libavutil/rc4.o',

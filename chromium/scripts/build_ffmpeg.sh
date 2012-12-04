@@ -65,7 +65,7 @@ fi
 # these.
 LIBAVCODEC_VERSION_MAJOR=54
 LIBAVFORMAT_VERSION_MAJOR=54
-LIBAVUTIL_VERSION_MAJOR=51
+LIBAVUTIL_VERSION_MAJOR=52
 
 case $(uname -sm) in
   Linux\ i386)
@@ -240,6 +240,7 @@ add_flag_common --disable-avdevice
 add_flag_common --disable-avfilter
 add_flag_common --disable-bzlib
 add_flag_common --disable-doc
+add_flag_common --disable-lzo
 add_flag_common --disable-network
 add_flag_common --disable-postproc
 add_flag_common --disable-swresample
