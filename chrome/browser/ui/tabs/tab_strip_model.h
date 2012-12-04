@@ -520,7 +520,7 @@ class TabStripModel : public content::NotificationObserver {
   // Note: This function might end up sending 0 to 2 notifications in the
   // following order: ActiveTabChanged, TabSelectionChanged.
   void NotifyIfActiveOrSelectionChanged(
-      TabContents* old_contents,
+      content::WebContents* old_contents,
       NotifyTypes notify_types,
       const TabStripSelectionModel& old_model);
 
