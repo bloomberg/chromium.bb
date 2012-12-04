@@ -169,15 +169,6 @@ void ChromeBrowserFieldTrials::SpdyFieldTrial() {
   trial->AppendGroup("cwnd16", kSpdyCwnd16);
   trial->AppendGroup("cwndMin16", kSpdyCwndMin16);
   trial->AppendGroup("cwndMin10", kSpdyCwndMin10);
-
-  if (parsed_command_line_.HasSwitch(switches::kMaxSpdyConcurrentStreams)) {
-    int value = 0;
-    base::StringToInt(parsed_command_line_.GetSwitchValueASCII(
-            switches::kMaxSpdyConcurrentStreams),
-        &value);
-    if (value > 0)
-      net::SpdySession::set_max_concurrent_streams(value);
-  }
 }
 
 // If --socket-reuse-policy is not specified, run an A/B test for choosing the

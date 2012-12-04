@@ -53,7 +53,6 @@
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
-#include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
@@ -222,23 +221,14 @@ ConstructSystemRequestContext(IOThread::Globals* globals,
   return context;
 }
 
-void InitializeNetworkSessionParams(
-    const IOThread::Globals& globals,
-    net::HttpNetworkSession::Params* params) {
-  params->host_resolver = globals.host_resolver.get();
-  params->cert_verifier = globals.cert_verifier.get();
-  params->server_bound_cert_service =
-      globals.system_server_bound_cert_service.get();
-  params->transport_security_state = globals.transport_security_state.get();
-  params->ssl_config_service = globals.ssl_config_service.get();
-  params->http_auth_handler_factory = globals.http_auth_handler_factory.get();
-  params->http_server_properties = globals.http_server_properties.get();
-  params->network_delegate = globals.system_network_delegate.get();
-  params->host_mapping_rules = globals.host_mapping_rules.get();
-  params->ignore_certificate_errors = globals.ignore_certificate_errors;
-  params->http_pipelining_enabled = globals.http_pipelining_enabled;
-  params->testing_fixed_http_port = globals.testing_fixed_http_port;
-  params->testing_fixed_https_port = globals.testing_fixed_https_port;
+int GetSwitchValueAsInt(const CommandLine& command_line,
+                        const std::string& switch_name) {
+  int value;
+  if (!base::StringToInt(command_line.GetSwitchValueASCII(switch_name),
+                         &value)) {
+    return 0;
+  }
+  return value;
 }
 
 }  // namespace
@@ -498,29 +488,21 @@ void IOThread::Init() {
   if (command_line.HasSwitch(switches::kEnableHttpPipelining))
     globals_->http_pipelining_enabled = true;
   if (command_line.HasSwitch(switches::kTestingFixedHttpPort)) {
-    int value;
-    base::StringToInt(
-        command_line.GetSwitchValueASCII(
-            switches::kTestingFixedHttpPort),
-        &value);
-    globals_->testing_fixed_http_port = value;
+    globals_->testing_fixed_http_port =
+        GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpPort);
   }
   if (command_line.HasSwitch(switches::kTestingFixedHttpsPort)) {
-    int value;
-    base::StringToInt(
-        command_line.GetSwitchValueASCII(
-            switches::kTestingFixedHttpsPort),
-        &value);
-    globals_->testing_fixed_https_port = value;
+    globals_->testing_fixed_https_port =
+        GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpsPort);
   }
 
+  InitializeNetworkOptions(command_line);
+
   net::HttpNetworkSession::Params session_params;
-  InitializeNetworkSessionParams(*globals_, &session_params);
+  InitializeNetworkSessionParams(&session_params);
   session_params.net_log = net_log_;
   session_params.proxy_service =
       globals_->proxy_script_fetcher_proxy_service.get();
-
-  InitializeNetworkOptions(command_line);
 
   scoped_refptr<net::HttpNetworkSession> network_session(
       new net::HttpNetworkSession(session_params));
@@ -594,9 +576,8 @@ void IOThread::CleanUp() {
   base::debug::LeakTracker<SystemURLRequestContextGetter>::CheckForLeaks();
 }
 
-void IOThread::InitializeNetworkOptions(
-    const CommandLine& parsed_command_line) {
-  if (parsed_command_line.HasSwitch(switches::kEnableFileCookies)) {
+void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
+  if (command_line.HasSwitch(switches::kEnableFileCookies)) {
     // Enable cookie storage for file:// URLs.  Must do this before the first
     // Profile (and therefore the first CookieMonster) is created.
     net::CookieMonster::EnableFileScheme();
@@ -607,42 +588,42 @@ void IOThread::InitializeNetworkOptions(
   if (is_spdy_disabled_by_policy_)
     return;
 
-  if (parsed_command_line.HasSwitch(switches::kEnableIPPooling))
-    net::SpdySessionPool::enable_ip_pooling(true);
+  if (command_line.HasSwitch(switches::kEnableIPPooling))
+    globals_->enable_spdy_ip_pooling.set(true);
 
-  if (parsed_command_line.HasSwitch(switches::kDisableIPPooling))
-    net::SpdySessionPool::enable_ip_pooling(false);
+  if (command_line.HasSwitch(switches::kDisableIPPooling))
+    globals_->enable_spdy_ip_pooling.set(false);
 
-  if (parsed_command_line.HasSwitch(switches::kEnableSpdyCredentialFrames))
-    net::SpdySession::set_enable_credential_frames(true);
-  if (parsed_command_line.HasSwitch(switches::kMaxSpdySessionsPerDomain)) {
-    int value;
-    base::StringToInt(
-        parsed_command_line.GetSwitchValueASCII(
-            switches::kMaxSpdySessionsPerDomain),
-        &value);
-    net::SpdySessionPool::set_max_sessions_per_domain(value);
-  }
+  if (command_line.HasSwitch(switches::kEnableSpdyCredentialFrames))
+    globals_->enable_spdy_credential_frames.set(true);
 
-  if (parsed_command_line.HasSwitch(switches::kEnableWebSocketOverSpdy)) {
+  if (command_line.HasSwitch(switches::kEnableWebSocketOverSpdy)) {
     // Enable WebSocket over SPDY.
     net::WebSocketJob::set_websocket_over_spdy_enabled(true);
   }
+  if (command_line.HasSwitch(switches::kMaxSpdySessionsPerDomain)) {
+    globals_->max_spdy_sessions_per_domain.set(
+        GetSwitchValueAsInt(command_line, switches::kMaxSpdySessionsPerDomain));
+  }
+  if (command_line.HasSwitch(switches::kMaxSpdyConcurrentStreams)) {
+    globals_->max_spdy_concurrent_streams_limit.set(
+        GetSwitchValueAsInt(command_line, switches::kMaxSpdyConcurrentStreams));
+  }
 
   bool used_spdy_switch = false;
-  if (parsed_command_line.HasSwitch(switches::kUseSpdy)) {
+  if (command_line.HasSwitch(switches::kUseSpdy)) {
     std::string spdy_mode =
-      parsed_command_line.GetSwitchValueASCII(switches::kUseSpdy);
+        command_line.GetSwitchValueASCII(switches::kUseSpdy);
     EnableSpdy(spdy_mode);
     used_spdy_switch = true;
   }
-  if (parsed_command_line.HasSwitch(switches::kEnableSpdy3)) {
+  if (command_line.HasSwitch(switches::kEnableSpdy3)) {
     net::HttpStreamFactory::EnableNpnSpdy3();
     used_spdy_switch = true;
-  } else if (parsed_command_line.HasSwitch(switches::kEnableNpn)) {
+  } else if (command_line.HasSwitch(switches::kEnableNpn)) {
     net::HttpStreamFactory::EnableNpnSpdy();
     used_spdy_switch = true;
-  } else if (parsed_command_line.HasSwitch(switches::kEnableNpnHttpOnly)) {
+  } else if (command_line.HasSwitch(switches::kEnableNpnHttpOnly)) {
     net::HttpStreamFactory::EnableNpnHttpOnly();
     used_spdy_switch = true;
   }
@@ -678,19 +659,19 @@ void IOThread::EnableSpdy(const std::string& mode) {
     if (option == kOff) {
       net::HttpStreamFactory::set_spdy_enabled(false);
     } else if (option == kDisableSSL) {
-      net::SpdySession::set_default_protocol(net::kProtoSPDY2);
+      globals_->spdy_default_protocol.set(net::kProtoSPDY2);
       net::HttpStreamFactory::set_force_spdy_over_ssl(false);
       net::HttpStreamFactory::set_force_spdy_always(true);
     } else if (option == kSSL) {
-      net::SpdySession::set_default_protocol(net::kProtoSPDY2);
+      globals_->spdy_default_protocol.set(net::kProtoSPDY2);
       net::HttpStreamFactory::set_force_spdy_over_ssl(true);
       net::HttpStreamFactory::set_force_spdy_always(true);
     } else if (option == kDisablePing) {
-      net::SpdySession::set_enable_ping_based_connection_checking(false);
+      globals_->enable_spdy_ping_based_connection_checking.set(false);
     } else if (option == kExclude) {
       net::HttpStreamFactory::add_forced_spdy_exclusion(value);
     } else if (option == kDisableCompression) {
-      net::BufferedSpdyFramer::set_enable_compression_default(false);
+      globals_->enable_spdy_compression.set(false);
     } else if (option == kDisableAltProtocols) {
       net::HttpStreamFactory::set_use_alternate_protocols(false);
     } else if (option == kForceAltProtocols) {
@@ -700,11 +681,11 @@ void IOThread::EnableSpdy(const std::string& mode) {
       net::HttpServerPropertiesImpl::ForceAlternateProtocol(pair);
     } else if (option == kSingleDomain) {
       DLOG(INFO) << "FORCING SINGLE DOMAIN";
-      net::SpdySessionPool::ForceSingleDomain();
+      globals_->force_spdy_single_domain.set(true);
     } else if (option == kInitialMaxConcurrentStreams) {
       int streams;
-      if (base::StringToInt(value, &streams) && streams > 0)
-        net::SpdySession::set_init_max_concurrent_streams(streams);
+      if (base::StringToInt(value, &streams))
+        globals_->initial_max_spdy_concurrent_streams.set(streams);
     } else if (option.empty() && it == spdy_options.begin()) {
       continue;
     } else {
@@ -781,6 +762,43 @@ void IOThread::ClearHostCache() {
     host_cache->clear();
 }
 
+void IOThread::InitializeNetworkSessionParams(
+    net::HttpNetworkSession::Params* params) {
+  params->host_resolver = globals_->host_resolver.get();
+  params->cert_verifier = globals_->cert_verifier.get();
+  params->server_bound_cert_service =
+      globals_->system_server_bound_cert_service.get();
+  params->transport_security_state = globals_->transport_security_state.get();
+  params->ssl_config_service = globals_->ssl_config_service.get();
+  params->http_auth_handler_factory = globals_->http_auth_handler_factory.get();
+  params->http_server_properties = globals_->http_server_properties.get();
+  params->network_delegate = globals_->system_network_delegate.get();
+  params->host_mapping_rules = globals_->host_mapping_rules.get();
+  params->ignore_certificate_errors = globals_->ignore_certificate_errors;
+  params->http_pipelining_enabled = globals_->http_pipelining_enabled;
+  params->testing_fixed_http_port = globals_->testing_fixed_http_port;
+  params->testing_fixed_https_port = globals_->testing_fixed_https_port;
+
+  globals_->max_spdy_sessions_per_domain.CopyToIfSet(
+      &params->max_spdy_sessions_per_domain);
+  globals_->initial_max_spdy_concurrent_streams.CopyToIfSet(
+      &params->spdy_initial_max_concurrent_streams);
+  globals_->max_spdy_concurrent_streams_limit.CopyToIfSet(
+      &params->spdy_max_concurrent_streams_limit);
+  globals_->force_spdy_single_domain.CopyToIfSet(
+      &params->force_spdy_single_domain);
+  globals_->enable_spdy_ip_pooling.CopyToIfSet(
+      &params->enable_spdy_ip_pooling);
+  globals_->enable_spdy_credential_frames.CopyToIfSet(
+      &params->enable_spdy_credential_frames);
+  globals_->enable_spdy_compression.CopyToIfSet(
+      &params->enable_spdy_compression);
+  globals_->enable_spdy_ping_based_connection_checking.CopyToIfSet(
+      &params->enable_spdy_ping_based_connection_checking);
+  globals_->spdy_default_protocol.CopyToIfSet(
+      &params->spdy_default_protocol);
+}
+
 net::SSLConfigService* IOThread::GetSSLConfigService() {
   return ssl_config_service_manager_->Get();
 }
@@ -832,7 +850,7 @@ void IOThread::InitSystemRequestContextOnIOThread() {
           command_line));
 
   net::HttpNetworkSession::Params system_params;
-  InitializeNetworkSessionParams(*globals_, &system_params);
+  InitializeNetworkSessionParams(&system_params);
   system_params.net_log = net_log_;
   system_params.proxy_service = globals_->system_proxy_service.get();
 

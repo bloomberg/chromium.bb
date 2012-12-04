@@ -17,6 +17,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_thread_delegate.h"
 #include "net/base/network_change_notifier.h"
+#include "net/http/http_network_session.h"
+#include "net/socket/next_proto.h"
 
 class ChromeNetLog;
 class CommandLine;
@@ -70,6 +72,26 @@ class PolicyService;
 class IOThread : public content::BrowserThreadDelegate {
  public:
   struct Globals {
+    template <typename T>
+    class Optional {
+     public:
+      Optional() : set_(false) {}
+
+      void set(T value) {
+        set_ = true;
+        value_ = value;
+      }
+      void CopyToIfSet(T* value) {
+        if (set_) {
+          *value = value_;
+        }
+      }
+
+     private:
+      bool set_;
+      T value_;
+    };
+
     class SystemRequestContextLeakChecker {
      public:
       explicit SystemRequestContextLeakChecker(Globals* globals);
@@ -127,6 +149,15 @@ class IOThread : public content::BrowserThreadDelegate {
     bool http_pipelining_enabled;
     uint16 testing_fixed_http_port;
     uint16 testing_fixed_https_port;
+    Optional<size_t> max_spdy_sessions_per_domain;
+    Optional<size_t> initial_max_spdy_concurrent_streams;
+    Optional<size_t> max_spdy_concurrent_streams_limit;
+    Optional<bool> force_spdy_single_domain;
+    Optional<bool> enable_spdy_ip_pooling;
+    Optional<bool> enable_spdy_credential_frames;
+    Optional<bool> enable_spdy_compression;
+    Optional<bool> enable_spdy_ping_based_connection_checking;
+    Optional<net::NextProto> spdy_default_protocol;
     // NetErrorTabHelper uses |dns_probe_service| to send DNS probes when a
     // main frame load fails with a DNS error in order to provide more useful
     // information to the renderer so it can show a more specific error page.
@@ -156,6 +187,8 @@ class IOThread : public content::BrowserThreadDelegate {
   // visited sites on about:net-internals/#dns and about:dns pages.  Must be
   // called on the IO thread.
   void ClearHostCache();
+
+  void InitializeNetworkSessionParams(net::HttpNetworkSession::Params* params);
 
  private:
   // Provide SystemURLRequestContextGetter with access to

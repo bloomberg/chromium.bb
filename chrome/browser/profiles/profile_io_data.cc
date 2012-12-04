@@ -712,7 +712,8 @@ void ProfileIOData::PopulateNetworkSessionParams(
   ChromeURLRequestContext* context = main_request_context();
 
   IOThread* const io_thread = profile_params->io_thread;
-  IOThread::Globals* const globals = io_thread->globals();
+
+  io_thread->InitializeNetworkSessionParams(params);
 
   params->host_resolver = context->host_resolver();
   params->cert_verifier = context->cert_verifier();
@@ -725,17 +726,6 @@ void ProfileIOData::PopulateNetworkSessionParams(
   params->network_delegate = context->network_delegate();
   params->http_server_properties = context->http_server_properties();
   params->net_log = context->net_log();
-  params->host_mapping_rules = globals->host_mapping_rules.get();
-  params->ignore_certificate_errors = globals->ignore_certificate_errors;
-  params->http_pipelining_enabled = globals->http_pipelining_enabled;
-  params->testing_fixed_http_port = globals->testing_fixed_http_port;
-  params->testing_fixed_https_port = globals->testing_fixed_https_port;
-
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kTrustedSpdyProxy)) {
-    params->trusted_spdy_proxy = command_line.GetSwitchValueASCII(
-        switches::kTrustedSpdyProxy);
-  }
 }
 
 void ProfileIOData::SetCookieSettingsForTesting(
