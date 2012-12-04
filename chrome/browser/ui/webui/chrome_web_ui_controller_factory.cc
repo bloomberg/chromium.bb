@@ -147,16 +147,10 @@ WebUIController* NewWebUI<AboutUI>(WebUI* web_ui, const GURL& url) {
 }
 
 // Only create ExtensionWebUI for URLs that are allowed extension bindings,
-// hosted by actual tabs. If there is no TabContents, it likely refers
-// to another container type, like an extension background page. If there is
-// no WebUI (it's not accessible when calling GetWebUIType and related
-// functions) then we conservatively assume that we need a WebUI.
-bool NeedsExtensionWebUI(WebUI* web_ui,
-                         Profile* profile,
-                         const GURL& url) {
+// hosted by actual tabs.
+bool NeedsExtensionWebUI(Profile* profile, const GURL& url) {
   ExtensionService* service = profile ? profile->GetExtensionService() : NULL;
-  return service && service->ExtensionBindingsAllowed(url) &&
-      (!web_ui || TabContents::FromWebContents(web_ui->GetWebContents()));
+  return service && service->ExtensionBindingsAllowed(url);
 }
 
 // Returns a function that can be used to create the right type of WebUI for a
@@ -166,7 +160,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
                                              Profile* profile,
                                              const GURL& url) {
 #if defined(ENABLE_EXTENSIONS)
-  if (NeedsExtensionWebUI(web_ui, profile, url))
+  if (NeedsExtensionWebUI(profile, url))
     return &NewWebUI<ExtensionWebUI>;
 #endif
 
@@ -446,8 +440,7 @@ bool ChromeWebUIControllerFactory::UseWebUIBindingsForURL(
     content::BrowserContext* browser_context, const GURL& url) const {
   // Extensions are rendered via WebUI in tabs, but don't actually need WebUI
   // bindings (see the ExtensionWebUI constructor).
-  return !NeedsExtensionWebUI(NULL,
-                              Profile::FromBrowserContext(browser_context),
+  return !NeedsExtensionWebUI(Profile::FromBrowserContext(browser_context),
                               url) &&
       UseWebUIForURL(browser_context, url);
 }
