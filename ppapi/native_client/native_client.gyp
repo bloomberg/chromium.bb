@@ -271,6 +271,13 @@
                    '-Wl,-Ttext-segment=<(NACL_IRT_TEXT_START)',
                  ]
                }, { # target_arch == "arm"
+                 # TODO(mcgrathr): This knowledge really belongs in
+                 # native_client/src/untrusted/irt/irt.gyp instead of here.
+                 # But that builds libirt_browser.a as bitcode, so a native
+                 # object does not fit happily there.
+                 'sources': [
+                   '../../native_client/src/untrusted/irt/aeabi_read_tp.S',
+                 ],
                  'link_flags': [
                    '-Wl,--section-start,.rodata=<(NACL_IRT_DATA_START)',
                    '-Wl,-Ttext=<(NACL_IRT_TEXT_START)',
