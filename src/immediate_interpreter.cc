@@ -450,6 +450,12 @@ Gesture* ImmediateInterpreter::SyncInterpretImpl(HardwareState* hwstate,
   if (result_.type == kGestureTypeNull)
     FillResultGesture(*hwstate, gs_fingers);
 
+  // Prevent moves while in a tap
+  if ((tap_to_click_state_ == kTtcFirstTapBegan ||
+       tap_to_click_state_ == kTtcSubsequentTapBegan) &&
+      result_.type == kGestureTypeMove)
+    result_.type = kGestureTypeNull;
+
   SetPrevState(*hwstate);
   prev_gs_fingers_ = gs_fingers;
   prev_result_ = result_;
