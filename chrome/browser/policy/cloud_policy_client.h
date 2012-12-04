@@ -12,7 +12,6 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
-#include "chrome/browser/policy/policy_types.h"
 
 namespace enterprise_management {
 class DeviceManagementResponse;
@@ -38,6 +37,13 @@ class DeviceManagementService;
 // installed in the cloud policy cache.
 class CloudPolicyClient {
  public:
+  // Indicates the type of policy the client should register for and fetch.
+  enum PolicyType {
+    POLICY_TYPE_DEVICE,
+    POLICY_TYPE_USER,
+    POLICY_TYPE_PUBLIC_ACCOUNT,
+  };
+
   // Observer interface for state and policy changes.
   class Observer {
    public:
@@ -78,7 +84,7 @@ class CloudPolicyClient {
   CloudPolicyClient(const std::string& machine_id,
                     const std::string& machine_model,
                     UserAffiliation user_affiliation,
-                    PolicyScope scope,
+                    PolicyType policy_type,
                     StatusProvider* provider,
                     DeviceManagementService* service);
   virtual ~CloudPolicyClient();
@@ -126,6 +132,10 @@ class CloudPolicyClient {
 
   void clear_public_key_version() {
     public_key_version_valid_ = false;
+  }
+
+  void set_entity_id(const std::string& entity_id) {
+    entity_id_ = entity_id;
   }
 
   // Whether the client is registered with the device management service.
@@ -180,7 +190,7 @@ class CloudPolicyClient {
   const std::string machine_id_;
   const std::string machine_model_;
   const UserAffiliation user_affiliation_;
-  const PolicyScope scope_;
+  const PolicyType type_;
 
   std::string dm_token_;
   DeviceMode device_mode_;
@@ -189,6 +199,7 @@ class CloudPolicyClient {
   base::Time last_policy_timestamp_;
   int public_key_version_;
   bool public_key_version_valid_;
+  std::string entity_id_;
 
   // Used for issuing requests to the cloud.
   DeviceManagementService* service_;

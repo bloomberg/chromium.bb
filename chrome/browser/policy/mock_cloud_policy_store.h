@@ -30,6 +30,18 @@ class MockCloudPolicyStore : public CloudPolicyStore {
   DISALLOW_COPY_AND_ASSIGN(MockCloudPolicyStore);
 };
 
+class MockCloudPolicyStoreObserver : public CloudPolicyStore::Observer {
+ public:
+  MockCloudPolicyStoreObserver();
+  virtual ~MockCloudPolicyStoreObserver();
+
+  MOCK_METHOD1(OnStoreLoaded, void(CloudPolicyStore* store));
+  MOCK_METHOD1(OnStoreError, void(CloudPolicyStore* store));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockCloudPolicyStoreObserver);
+};
+
 }  // namespace policy
 
 #endif  // CHROME_BROWSER_POLICY_MOCK_CLOUD_POLICY_STORE_H_

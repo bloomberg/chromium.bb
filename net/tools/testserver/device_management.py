@@ -25,15 +25,22 @@ Example:
 
 {
   "google/chromeos/device" : {
-      "guest_mode_enabled" : false
+    "guest_mode_enabled" : false
   },
   "google/chromeos/user" : {
-     "mandatory" : {
+    "mandatory" : {
       "HomepageLocation" : "http://www.chromium.org",
       "IncognitoEnabled" : false
     },
      "recommended" : {
       "JavascriptEnabled": false
+    }
+  },
+  "google/chromeos/publicaccount/user@example.com" : {
+    "mandatory" : {
+      "HomepageLocation" : "http://www.chromium.org"
+    },
+     "recommended" : {
     }
   },
   "managed_users" : [
@@ -261,7 +268,9 @@ class RequestHandler(object):
     """
     for request in msg.request:
       if (request.policy_type in
-             ('google/chromeos/user', 'google/chromeos/device')):
+             ('google/chromeos/user',
+              'google/chromeos/device',
+              'google/chromeos/publicaccount')):
         if request_type != 'policy':
           return (400, 'Invalid request type')
         else:
@@ -391,10 +400,10 @@ class RequestHandler(object):
       # CloudPolicySettings proto.
 
       # Look for this policy's value in the mandatory or recommended dicts.
-      if field.name in policies['mandatory']:
+      if field.name in policies.get('mandatory', {}):
         mode = cp.PolicyOptions.MANDATORY
         value = policies['mandatory'][field.name]
-      elif field.name in policies['recommended']:
+      elif field.name in policies.get('recommended', {}):
         mode = cp.PolicyOptions.RECOMMENDED
         value = policies['recommended'][field.name]
       else:
@@ -428,22 +437,23 @@ class RequestHandler(object):
       self._server.UpdateMachineId(token_info['device_token'], msg.machine_id)
 
     # Response is only given if the scope is specified in the config file.
-    # Normally 'google/chromeos/device' and 'google/chromeos/user' should be
-    # accepted.
+    # Normally 'google/chromeos/device', 'google/chromeos/user' and
+    # 'google/chromeos/publicaccount' should be accepted.
     policy = self._server.GetPolicies()
     policy_value = ''
-    if (msg.policy_type in token_info['allowed_policy_types'] and
-        msg.policy_type in policy):
+    policy_key = msg.policy_type
+    if msg.settings_entity_id:
+      policy_key += '/' + msg.settings_entity_id
+    if msg.policy_type in token_info['allowed_policy_types']:
       if msg.policy_type == 'google/chromeos/user':
         settings = cp.CloudPolicySettings()
-        self.GatherUserPolicySettings(settings,
-                                      policy[msg.policy_type])
-        policy_value = settings.SerializeToString()
+        self.GatherUserPolicySettings(settings, policy.get(policy_key, {}))
       elif msg.policy_type == 'google/chromeos/device':
         settings = dp.ChromeDeviceSettingsProto()
-        self.GatherDevicePolicySettings(settings,
-                                        policy[msg.policy_type])
-        policy_value = settings.SerializeToString()
+        self.GatherDevicePolicySettings(settings, policy.get(policy_key, {}))
+      elif msg.policy_type == 'google/chromeos/publicaccount':
+        settings = cp.CloudPolicySettings()
+        self.GatherUserPolicySettings(settings, policy.get(policy_key, {}))
 
     # Figure out the key we want to use. If multiple keys are configured, the
     # server will rotate through them in a round-robin fashion.
@@ -463,18 +473,21 @@ class RequestHandler(object):
     policy_data.policy_type = msg.policy_type
     policy_data.timestamp = int(time.time() * 1000)
     policy_data.request_token = token_info['device_token']
-    policy_data.policy_value = policy_value
+    policy_data.policy_value = settings.SerializeToString()
     policy_data.machine_name = token_info['machine_name']
     policy_data.valid_serial_number_missing = (
         token_info['machine_id'] in BAD_MACHINE_IDS)
 
     if signing_key:
       policy_data.public_key_version = key_version
-    # There is no way for the testserver to know the user name belonging to
-    # the GAIA auth token we received (short of actually talking to GAIA). To
-    # address this, we read the username from the policy configuration
-    # dictionary, or use a default.
-    policy_data.username = policy.get('policy_user', 'user@example.com')
+    if msg.policy_type == 'google/chromeos/publicaccount':
+      policy_data.username = msg.settings_entity_id
+    else:
+      # For regular user/device policy, there is no way for the testserver to
+      # know the user name belonging to the GAIA auth token we received (short
+      # of actually talking to GAIA). To address this, we read the username from
+      # the policy configuration dictionary, or use a default.
+      policy_data.username = policy.get('policy_user', 'user@example.com')
     policy_data.device_id = token_info['device_id']
     signed_data = policy_data.SerializeToString()
 
@@ -617,7 +630,10 @@ class TestServer(object):
     dmtoken = ''.join(dmtoken_chars)
     allowed_policy_types = {
       dm.DeviceRegisterRequest.USER: ['google/chromeos/user'],
-      dm.DeviceRegisterRequest.DEVICE: ['google/chromeos/device'],
+      dm.DeviceRegisterRequest.DEVICE: [
+          'google/chromeos/device',
+          'google/chromeos/publicaccount'
+      ],
       dm.DeviceRegisterRequest.TT: ['google/chromeos/user'],
     }
     if machine_id in KIOSK_MACHINE_IDS:

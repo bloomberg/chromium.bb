@@ -362,9 +362,9 @@ void BrowserPolicyConnector::InitializeUserPolicy(
         new UserCloudPolicyManagerChromeOS(store.Pass(),
                                            wait_for_policy_fetch));
     user_cloud_policy_manager_->Init();
-    user_cloud_policy_manager_->Initialize(g_browser_process->local_state(),
-                                           device_management_service_.get(),
-                                           GetUserAffiliation(user_name));
+    user_cloud_policy_manager_->Connect(g_browser_process->local_state(),
+                                        device_management_service_.get(),
+                                        GetUserAffiliation(user_name));
     global_user_cloud_policy_provider_.SetDelegate(
         user_cloud_policy_manager_.get());
 #endif

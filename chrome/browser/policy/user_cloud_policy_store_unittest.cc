@@ -8,6 +8,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
+#include "chrome/browser/policy/mock_cloud_policy_store.h"
 #include "chrome/browser/policy/policy_builder.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -30,18 +31,6 @@ void RunUntilIdle() {
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
 }
-
-class MockCloudPolicyStoreObserver : public CloudPolicyStore::Observer {
- public:
-  MockCloudPolicyStoreObserver() {}
-  virtual ~MockCloudPolicyStoreObserver() {}
-
-  MOCK_METHOD1(OnStoreLoaded, void(CloudPolicyStore* store));
-  MOCK_METHOD1(OnStoreError, void(CloudPolicyStore* store));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockCloudPolicyStoreObserver);
-};
 
 class UserCloudPolicyStoreTest : public testing::Test {
  public:

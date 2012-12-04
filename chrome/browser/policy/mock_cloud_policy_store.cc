@@ -10,4 +10,8 @@ MockCloudPolicyStore::MockCloudPolicyStore() {}
 
 MockCloudPolicyStore::~MockCloudPolicyStore() {}
 
+MockCloudPolicyStoreObserver::MockCloudPolicyStoreObserver() {}
+
+MockCloudPolicyStoreObserver::~MockCloudPolicyStoreObserver() {}
+
 }  // namespace policy

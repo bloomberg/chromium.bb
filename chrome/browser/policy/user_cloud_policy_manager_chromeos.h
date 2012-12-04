@@ -33,9 +33,9 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
 
   // Initializes the cloud connection. |local_state| and
   // |device_management_service| must stay valid until this object is deleted.
-  void Initialize(PrefService* local_state,
-                  DeviceManagementService* device_management_service,
-                  UserAffiliation user_affiliation);
+  void Connect(PrefService* local_state,
+               DeviceManagementService* device_management_service,
+               UserAffiliation user_affiliation);
 
   // Cancels waiting for the policy fetch and flags the
   // ConfigurationPolicyProvider ready (assuming all other initialization tasks

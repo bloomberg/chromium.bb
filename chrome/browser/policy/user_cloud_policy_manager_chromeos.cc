@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chrome/browser/policy/cloud_policy_service.h"
-#include "chrome/browser/policy/policy_types.h"
 #include "chrome/common/pref_names.h"
 
 namespace policy {
@@ -21,7 +20,7 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
 
 UserCloudPolicyManagerChromeOS::~UserCloudPolicyManagerChromeOS() {}
 
-void UserCloudPolicyManagerChromeOS::Initialize(
+void UserCloudPolicyManagerChromeOS::Connect(
     PrefService* local_state,
     DeviceManagementService* device_management_service,
     UserAffiliation user_affiliation) {
@@ -30,7 +29,7 @@ void UserCloudPolicyManagerChromeOS::Initialize(
   local_state_ = local_state;
   scoped_ptr<CloudPolicyClient> client(
       new CloudPolicyClient(std::string(), std::string(), user_affiliation,
-                            POLICY_SCOPE_USER, NULL,
+                            CloudPolicyClient::POLICY_TYPE_USER, NULL,
                             device_management_service));
   InitializeService(client.Pass());
   cloud_policy_client()->AddObserver(this);

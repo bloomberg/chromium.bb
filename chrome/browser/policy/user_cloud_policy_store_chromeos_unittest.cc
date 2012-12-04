@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
+#include "chrome/browser/policy/mock_cloud_policy_store.h"
 #include "chrome/browser/policy/policy_builder.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
@@ -34,18 +35,6 @@ namespace {
 
 const char kLegacyDeviceId[] = "legacy-device-id";
 const char kLegacyToken[] = "legacy-token";
-
-class MockCloudPolicyStoreObserver : public CloudPolicyStore::Observer {
- public:
-  MockCloudPolicyStoreObserver() {}
-  virtual ~MockCloudPolicyStoreObserver() {}
-
-  MOCK_METHOD1(OnStoreLoaded, void(CloudPolicyStore* store));
-  MOCK_METHOD1(OnStoreError, void(CloudPolicyStore* store));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockCloudPolicyStoreObserver);
-};
 
 class UserCloudPolicyStoreChromeOSTest : public testing::Test {
  protected:

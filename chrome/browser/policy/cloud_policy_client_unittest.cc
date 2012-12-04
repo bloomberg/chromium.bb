@@ -87,7 +87,7 @@ class CloudPolicyClientTest : public testing::Test {
         .WillRepeatedly(Return(false));
     EXPECT_CALL(status_provider_, GetSessionStatus(_))
         .WillRepeatedly(Return(false));
-    CreateClient(USER_AFFILIATION_NONE, POLICY_SCOPE_USER);
+    CreateClient(USER_AFFILIATION_NONE, CloudPolicyClient::POLICY_TYPE_USER);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -99,12 +99,13 @@ class CloudPolicyClientTest : public testing::Test {
     client_->SetupRegistration(kDMToken, client_id_);
   }
 
-  void CreateClient(UserAffiliation user_affiliation, PolicyScope scope) {
+  void CreateClient(UserAffiliation user_affiliation,
+                    CloudPolicyClient::PolicyType type) {
     if (client_.get())
       client_->RemoveObserver(&observer_);
 
     client_.reset(new CloudPolicyClient(kMachineID, kMachineModel,
-                                        user_affiliation, scope,
+                                        user_affiliation, type,
                                         &status_provider_, &service_));
     client_->AddObserver(&observer_);
   }

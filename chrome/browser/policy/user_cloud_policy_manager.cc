@@ -33,8 +33,8 @@ void UserCloudPolicyManager::Initialize(
   InitializeService(
       make_scoped_ptr(new CloudPolicyClient(std::string(), std::string(),
                                             USER_AFFILIATION_NONE,
-                                            POLICY_SCOPE_USER, NULL,
-                                            device_management_service)));
+                                            CloudPolicyClient::POLICY_TYPE_USER,
+                                            NULL, device_management_service)));
   StartRefreshScheduler(local_state, prefs::kUserPolicyRefreshRate);
 }
 

@@ -66,8 +66,8 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
                                            true));
     manager_->Init();
     manager_->AddObserver(&observer_);
-    manager_->Initialize(&prefs_, &device_management_service_,
-                         USER_AFFILIATION_NONE);
+    manager_->Connect(&prefs_, &device_management_service_,
+                      USER_AFFILIATION_NONE);
     EXPECT_FALSE(manager_->IsInitializationComplete());
 
     // Finishing the Load() operation shouldn't set the initialized flag.

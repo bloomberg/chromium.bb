@@ -133,7 +133,8 @@ std::string DeviceCloudPolicyManagerChromeOS::GetMachineModel() {
 scoped_ptr<CloudPolicyClient> DeviceCloudPolicyManagerChromeOS::CreateClient() {
   return make_scoped_ptr(
       new CloudPolicyClient(GetMachineID(), GetMachineModel(),
-                            USER_AFFILIATION_NONE, POLICY_SCOPE_MACHINE, NULL,
+                            USER_AFFILIATION_NONE,
+                            CloudPolicyClient::POLICY_TYPE_DEVICE, NULL,
                             device_management_service_));
 }
 

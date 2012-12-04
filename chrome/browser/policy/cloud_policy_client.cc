@@ -39,13 +39,13 @@ CloudPolicyClient::StatusProvider::~StatusProvider() {}
 CloudPolicyClient::CloudPolicyClient(const std::string& machine_id,
                                      const std::string& machine_model,
                                      UserAffiliation user_affiliation,
-                                     PolicyScope scope,
+                                     PolicyType type,
                                      StatusProvider* status_provider,
                                      DeviceManagementService* service)
     : machine_id_(machine_id),
       machine_model_(machine_model),
       user_affiliation_(user_affiliation),
-      scope_(scope),
+      type_(type),
       device_mode_(DEVICE_MODE_NOT_SET),
       submit_machine_id_(false),
       public_key_version_(-1),
@@ -122,6 +122,8 @@ void CloudPolicyClient::FetchPolicy() {
     policy_request->set_machine_id(machine_id_);
   if (public_key_version_valid_)
     policy_request->set_public_key_version(public_key_version_);
+  if (!entity_id_.empty())
+    policy_request->set_settings_entity_id(entity_id_);
 
   // Add status data.
   if (status_provider_) {
@@ -161,27 +163,33 @@ void CloudPolicyClient::RemoveObserver(Observer* observer) {
 
 void CloudPolicyClient::SetRegistrationType(
     em::DeviceRegisterRequest* request) const {
-  switch (scope_) {
-    case POLICY_SCOPE_USER:
+  switch (type_) {
+    case POLICY_TYPE_USER:
       request->set_type(em::DeviceRegisterRequest::USER);
       return;
-    case POLICY_SCOPE_MACHINE:
+    case POLICY_TYPE_DEVICE:
       request->set_type(em::DeviceRegisterRequest::DEVICE);
       return;
+    case POLICY_TYPE_PUBLIC_ACCOUNT:
+      LOG(FATAL) << "Cannot register for public account policy.";
+      return;
   }
-  NOTREACHED() << "Invalid policy scope " << scope_;
+  NOTREACHED() << "Invalid policy type " << type_;
 }
 
 void CloudPolicyClient::SetPolicyType(em::PolicyFetchRequest* request) const {
-  switch (scope_) {
-    case POLICY_SCOPE_USER:
+  switch (type_) {
+    case POLICY_TYPE_USER:
       request->set_policy_type(dm_protocol::kChromeUserPolicyType);
       return;
-    case POLICY_SCOPE_MACHINE:
+    case POLICY_TYPE_DEVICE:
       request->set_policy_type(dm_protocol::kChromeDevicePolicyType);
       return;
+    case POLICY_TYPE_PUBLIC_ACCOUNT:
+      request->set_policy_type(dm_protocol::kChromePublicAccountPolicyType);
+      return;
   }
-  NOTREACHED() << "Invalid policy scope " << scope_;
+  NOTREACHED() << "Invalid policy type " << type_;
 }
 
 void CloudPolicyClient::OnRegisterCompleted(

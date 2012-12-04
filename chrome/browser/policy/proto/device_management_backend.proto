@@ -98,7 +98,7 @@ message PolicyFetchRequest {
   // Possible values for Chrome OS are:
   //   google/chromeos/device => ChromeDeviceSettingsProto
   //   google/chromeos/user => ChromeSettingsProto
-  //   google/chromeos/unregistered_user => ChromeInitialSettingsProto (unused)
+  //   google/chromeos/publicaccount => ChromeSettingsProto
   optional string policy_type = 1;
 
   // This is the last policy timestamp that client received from server.
@@ -259,6 +259,9 @@ message TimePeriod {
 
 message ActiveTimePeriod {
   optional TimePeriod time_period = 1;
+
+  // The active duration during the above time period.
+  // The unit is milli-second.
   optional int32 active_duration = 2;
 }
 
@@ -318,17 +321,21 @@ message DeviceLocation {
 
 // Report device level status.
 message DeviceStatusReportRequest {
+  // The OS version reported by the device is a platform version
+  // e.g. 1435.0.2011_12_16_1635.
   optional string os_version = 1;
   optional string firmware_version = 2;
 
-  // "Validated", "Dev". Same as verified mode.
+  // "Verified", "Dev". Same as verified mode.
   // If the mode is unknown, this field should not be set.
   optional string boot_mode = 3;
 
+  // Device active times collection since last report rpc call.
   // No longer used -- use active_period instead.
-  repeated TimePeriod active_time = 4 [deprecated=true];
+  repeated TimePeriod active_time = 4 [deprecated = true];
 
   // The browser version string as shown in the About dialog.
+  // e.g. 17.0.963.18.
   optional string browser_version = 5;
 
   // A list of periods when the device was active, aggregated by day.
@@ -418,19 +425,19 @@ message DeviceAutoEnrollmentResponse {
 // * Data mime type is application/x-protobuffer
 // * HTTP parameters are (all required, all case sensitive):
 //   * request: MUST BE one of
-//     * register
-//     * unregister
-//     * policy
-//     * ping
-//     * status
 //     * enterprise_check
+//     * ping
+//     * policy
+//     * register
+//     * status
+//     * unregister
 //
 //   * devicetype: MUST BE "1" for Android or "2" for Chrome OS.
 //   * apptype: MUST BE Android or Chrome.
 //   * deviceid: MUST BE no more than 64-char in [\x21-\x7E].
 //   * agent: MUST BE no more than 64-char long.
 // * HTTP Authorization header MUST be in the following formats:
-//   * For register and ping requests, using Gaia authentication:
+//   * For register and ping requests
 //     Authorization: GoogleLogin auth=<auth cookie for Mobile Sync>
 //
 //   * For unregister, policy and status requests:
@@ -478,7 +485,7 @@ message DeviceManagementRequest {
 // 401 Unauthorized: invalid auth cookie or DM token.
 // 403 Forbidden: device management is not allowed.
 // 404 Not Found: the request URL is invalid.
-// 410 Gone: device is unknown to the server.
+// 410 Device Not Found: the device id is not found.
 // 491 Request Pending: the request is pending approval.
 // 500 Internal Server Error: most likely a bug in DM server.
 // 503 Service Unavailable: most likely a backend error.
