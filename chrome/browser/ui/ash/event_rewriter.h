@@ -173,9 +173,10 @@ class EventRewriter : public ash::EventRewriterDelegate,
   //  * Search+Up -> Prior (aka PageUp)
   //  * Search+Down -> Next (aka PageDown)
   //  * Search+Left -> Home
-  //  * Search+right -> End
+  //  * Search+Right -> End
+  //  * Search+. -> Insert
   // Returns true when the |event| is rewritten.
-  bool RewriteBackspaceAndArrowKeys(ui::KeyEvent* event);
+  bool RewriteExtendedKeys(ui::KeyEvent* event);
 
   // When the Search key acts as a function key, it remaps Search+1
   // through Search+= to F1 through F12. Returns true when the |event| is

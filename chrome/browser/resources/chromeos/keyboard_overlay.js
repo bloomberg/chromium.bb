@@ -159,7 +159,8 @@ function getShortcutData() {
       'down<>SEARCH': 'keyboardOverlayPageDown',
       'right<>SEARCH': 'keyboardOverlayEnd',
       'up<>SEARCH': 'keyboardOverlayPageUp',
-      'left<>SEARCH': 'keyboardOverlayHome'
+      'left<>SEARCH': 'keyboardOverlayHome',
+      '.<>SEARCH': 'keyboardOverlayInsert'
     };
 
     for (var key in searchModifierRemoveShortcuts)

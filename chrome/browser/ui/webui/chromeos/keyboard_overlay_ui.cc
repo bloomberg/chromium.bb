@@ -75,6 +75,7 @@ struct I18nContentToMessage {
   { "keyboardOverlayF10", IDS_KEYBOARD_OVERLAY_F10 },
   { "keyboardOverlayF11", IDS_KEYBOARD_OVERLAY_F11 },
   { "keyboardOverlayF12", IDS_KEYBOARD_OVERLAY_F12 },
+  { "keyboardOverlayInsert", IDS_KEYBOARD_OVERLAY_INSERT },
   { "keyboardOverlayInstructions", IDS_KEYBOARD_OVERLAY_INSTRUCTIONS },
   { "keyboardOverlayInstructionsWithSearch",
     IDS_KEYBOARD_OVERLAY_INSTRUCTIONS_WITH_SEARCH },

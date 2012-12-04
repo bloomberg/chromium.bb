@@ -382,7 +382,7 @@ void EventRewriter::Rewrite(ui::KeyEvent* event) {
 #endif
   RewriteModifiers(event);
   RewriteNumPadKeys(event);
-  RewriteBackspaceAndArrowKeys(event);
+  RewriteExtendedKeys(event);
   RewriteFunctionKeys(event);
 }
 
@@ -663,7 +663,7 @@ bool EventRewriter::RewriteNumPadKeys(ui::KeyEvent* event) {
   return rewritten;
 }
 
-bool EventRewriter::RewriteBackspaceAndArrowKeys(ui::KeyEvent* event) {
+bool EventRewriter::RewriteExtendedKeys(ui::KeyEvent* event) {
 #if defined(OS_CHROMEOS)
   // On a ChromeOS keyboard, modifier keys can be used to access extended
   // keyboard shortcuts. On other keyboards, keys such as delete and page up are
@@ -754,6 +754,11 @@ bool EventRewriter::RewriteBackspaceAndArrowKeys(ui::KeyEvent* event) {
         XK_Down,
         0, Mod4Mask,
         XK_Next, ui::VKEY_NEXT,
+      },
+      { // Search+Period -> Insert
+        XK_period,
+        0, Mod4Mask,
+        XK_Insert, ui::VKEY_INSERT,
       }
     };
 

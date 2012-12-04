@@ -2678,6 +2678,9 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_F12" desc="The text in the keyboard overlay to explain the shortcut.">
     F12
   </message>
+  <message name="IDS_KEYBOARD_OVERLAY_INSERT" desc="The text in the keyboard overlay to explain the shortcut.">
+    Insert
+  </message>
   <!-- BEGIN GENERATED KEYBOARD OVERLAY STRINGS -->
   <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAST_LAUNCHER_ITEM" desc="The text in the keyboard overlay to explain the shortcut (Open the last launcher item).">
     Activate last launcher item

@@ -156,6 +156,8 @@ class EventRewriterTest : public testing::Test {
         keycode_0_(XKeysymToKeycode(display_, XK_0)),
         keycode_minus_(XKeysymToKeycode(display_, XK_minus)),
         keycode_equal_(XKeysymToKeycode(display_, XK_equal)),
+        keycode_period_(XKeysymToKeycode(display_, XK_period)),
+        keycode_insert_(XKeysymToKeycode(display_, XK_Insert)),
         input_method_manager_mock_(NULL) {
   }
   virtual ~EventRewriterTest() {}
@@ -257,6 +259,8 @@ class EventRewriterTest : public testing::Test {
   const KeyCode keycode_0_;
   const KeyCode keycode_minus_;
   const KeyCode keycode_equal_;
+  const KeyCode keycode_period_;
+  const KeyCode keycode_insert_;
   chromeos::ScopedMockUserManagerEnabler user_manager_mock_;
   chromeos::input_method::MockInputMethodManager* input_method_manager_mock_;
 };
@@ -1754,7 +1758,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockMod3InUse) {
   input_method_manager_mock_->SetCurrentInputMethodId("xkb:us::eng");
 }
 
-TEST_F(EventRewriterTest, TestRewriteBackspaceAndArrowKeys) {
+TEST_F(EventRewriterTest, TestRewriteExtendedKeys) {
   TestingPrefService prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   EventRewriter rewriter;
@@ -1791,7 +1795,9 @@ TEST_F(EventRewriterTest, TestRewriteBackspaceAndArrowKeys) {
     { ui::VKEY_LEFT, keycode_left_, 0, 0,
       ui::VKEY_LEFT, keycode_left_, 0, 0 },
     { ui::VKEY_RIGHT, keycode_right_, 0, 0,
-      ui::VKEY_RIGHT, keycode_right_, 0, 0 }
+      ui::VKEY_RIGHT, keycode_right_, 0, 0 },
+    { ui::VKEY_OEM_PERIOD, keycode_period_, 0, 0,
+      ui::VKEY_OEM_PERIOD, keycode_period_, 0, 0 }
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(default_tests); ++i) {
@@ -1903,7 +1909,10 @@ TEST_F(EventRewriterTest, TestRewriteBackspaceAndArrowKeys) {
     { ui::VKEY_DOWN, keycode_down_,
       ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask,
       ui::VKEY_END, keycode_end_,
-      0, 0, }
+      0, 0, },
+    // Period -> Period
+    { ui::VKEY_OEM_PERIOD, keycode_period_, 0, 0,
+      ui::VKEY_OEM_PERIOD, keycode_period_, 0, 0 }
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(chromeos_tests); ++i) {
@@ -2054,6 +2063,14 @@ TEST_F(EventRewriterTest, TestRewriteBackspaceAndArrowKeys) {
     { ui::VKEY_RIGHT, keycode_right_,
       ui::EF_CONTROL_DOWN, Mod4Mask | ControlMask,
       ui::VKEY_END, keycode_end_,
+      ui::EF_CONTROL_DOWN, ControlMask },
+    // Search+Period -> Insert
+    { ui::VKEY_OEM_PERIOD, keycode_period_, 0, Mod4Mask,
+      ui::VKEY_INSERT, keycode_insert_, 0, 0 },
+    // Control+Search+Period -> Control+Insert
+    { ui::VKEY_OEM_PERIOD, keycode_period_,
+      ui::EF_CONTROL_DOWN, Mod4Mask | ControlMask,
+      ui::VKEY_INSERT, keycode_insert_,
       ui::EF_CONTROL_DOWN, ControlMask }
   };
 
@@ -2373,7 +2390,7 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeys) {
   *CommandLine::ForCurrentProcess() = original_cl;
 }
 
-TEST_F(EventRewriterTest, TestRewriteBackspaceAndArrowKeysWithSearchRemapped) {
+TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithSearchRemapped) {
   const CommandLine original_cl(*CommandLine::ForCurrentProcess());
 
   // Remap Search to Control.
