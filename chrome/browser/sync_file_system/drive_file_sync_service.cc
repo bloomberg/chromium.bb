@@ -139,7 +139,6 @@ struct DriveFileSyncService::ProcessRemoteChangeParam {
   fileapi::SyncOperationCallback callback;
 
   DriveMetadata drive_metadata;
-  bool missing_db_entry;
   bool metadata_updated;
   FilePath temporary_file_path;
   std::string md5_checksum;
@@ -153,7 +152,6 @@ struct DriveFileSyncService::ProcessRemoteChangeParam {
         processor(processor),
         remote_change(remote_change),
         callback(callback),
-        missing_db_entry(false),
         metadata_updated(false),
         operation_type(fileapi::SYNC_OPERATION_NONE) {
   }
@@ -1153,7 +1151,10 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
   if (local_changes.empty()) {
     if (missing_local_file) {
       param->operation_type = fileapi::SYNC_OPERATION_NONE;
-      DeleteMetadataForRemoteSync(param.Pass());
+      if (missing_db_entry)
+        CompleteRemoteSync(param.Pass(), fileapi::SYNC_STATUS_OK);
+      else
+        DeleteMetadataForRemoteSync(param.Pass());
       return;
     }
     DCHECK(!missing_local_file);
@@ -1176,7 +1177,10 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
 
   DCHECK(local_changes.list().back().IsDelete());
   param->operation_type = fileapi::SYNC_OPERATION_NONE;
-  DeleteMetadataForRemoteSync(param.Pass());
+  if (missing_db_entry)
+    CompleteRemoteSync(param.Pass(), fileapi::SYNC_STATUS_OK);
+  else
+    DeleteMetadataForRemoteSync(param.Pass());
 }
 
 void DriveFileSyncService::DownloadForRemoteSync(
@@ -1414,7 +1418,7 @@ void DriveFileSyncService::FetchChangesForIncrementalSync() {
   }
 
   sync_client_->ListChanges(
-      largest_fetched_changestamp_,
+      largest_fetched_changestamp_ + 1,
       base::Bind(&DriveFileSyncService::DidFetchChangesForIncrementalSync,
                  AsWeakPtr(), base::Passed(&token)));
 }
