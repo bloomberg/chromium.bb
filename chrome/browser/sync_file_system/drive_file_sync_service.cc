@@ -21,8 +21,9 @@
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/remote_change_processor.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
+#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/escape.h"
+#include "extensions/common/constants.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/sync_file_metadata.h"
 #include "webkit/fileapi/syncable/sync_file_type.h"
@@ -248,6 +249,7 @@ void DriveFileSyncService::RemoveObserver(Observer* observer) {
 void DriveFileSyncService::RegisterOriginForTrackingChanges(
     const GURL& origin,
     const fileapi::SyncStatusCallback& callback) {
+  DCHECK(origin.SchemeIs(extensions::kExtensionScheme));
   scoped_ptr<TaskToken> token(GetToken(
           FROM_HERE, TASK_TYPE_DRIVE, "Retrieving origin metadata"));
   if (!token) {
@@ -434,7 +436,7 @@ void DriveFileSyncService::ApplyLocalChange(
       sync_client_->UploadNewFile(
           metadata_store_->GetResourceIdForOrigin(url.origin()),
           local_file_path,
-          net::EscapePath(url.path().AsUTF8Unsafe()),
+          url.path().AsUTF8Unsafe(),
           local_file_metadata.size,
           base::Bind(&DriveFileSyncService::DidUploadNewFile,
                      AsWeakPtr(), base::Passed(&token), url, callback));

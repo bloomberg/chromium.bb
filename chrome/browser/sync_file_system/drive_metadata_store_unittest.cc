@@ -26,7 +26,7 @@ namespace sync_file_system {
 
 namespace {
 
-const char kOrigin[] = "http://www.example.com";
+const char kOrigin[] = "chrome-extension://example";
 const char* const kServiceName = DriveFileSyncService::kServiceName;
 
 typedef DriveMetadataStore::ResourceIDMap ResourceIDMap;
@@ -312,8 +312,8 @@ TEST_F(DriveMetadataStoreTest, StoreSyncRootDirectory) {
 }
 
 TEST_F(DriveMetadataStoreTest, StoreSyncOrigin) {
-  const GURL kOrigin1("http://www1.example.com");
-  const GURL kOrigin2("http://www2.example.com");
+  const GURL kOrigin1("chrome-extension://example1");
+  const GURL kOrigin2("chrome-extension://example2");
   const std::string kResourceID1("hoge");
   const std::string kResourceID2("fuga");
 
@@ -371,10 +371,10 @@ TEST_F(DriveMetadataStoreTest, StoreSyncOrigin) {
 }
 
 TEST_F(DriveMetadataStoreTest, RemoveOrigin) {
-  const GURL kOrigin1("http://hoge.example.com");
-  const GURL kOrigin2("http://fuga.example.net");
-  const GURL kOrigin3("http://piyo.example.net");
-  const GURL kOrigin4("http://mogo.example.net");
+  const GURL kOrigin1("chrome-extension://example1");
+  const GURL kOrigin2("chrome-extension://example2");
+  const GURL kOrigin3("chrome-extension://example3");
+  const GURL kOrigin4("chrome-extension://example4");
   const std::string kResourceId1("hogera");
   const std::string kResourceId2("fugaga");
   const std::string kResourceId3("piyopiyo");
@@ -432,8 +432,8 @@ TEST_F(DriveMetadataStoreTest, RemoveOrigin) {
 }
 
 TEST_F(DriveMetadataStoreTest, GetResourceIdForOrigin) {
-  const GURL kOrigin1("http://hoge.example.com");
-  const GURL kOrigin2("http://fuga.example.net");
+  const GURL kOrigin1("chrome-extension://example1");
+  const GURL kOrigin2("chrome-extension://example2");
   const std::string kResourceId1("hogera");
   const std::string kResourceId2("fugaga");
 

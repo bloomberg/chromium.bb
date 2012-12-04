@@ -386,8 +386,8 @@ TEST_F(DriveFileSyncServiceTest, GetSyncRoot) {
 }
 
 TEST_F(DriveFileSyncServiceTest, BatchSyncOnInitialization) {
-  const GURL kOrigin1("http://example.com");
-  const GURL kOrigin2("http://hoge.example.com");
+  const GURL kOrigin1("chrome-extension://example");
+  const GURL kOrigin2("chrome-extension://example2");
   const std::string kDirectoryResourceId1(
       "folder:origin_directory_resource_id");
   const std::string kDirectoryResourceId2(
@@ -439,7 +439,7 @@ TEST_F(DriveFileSyncServiceTest, BatchSyncOnInitialization) {
 }
 
 TEST_F(DriveFileSyncServiceTest, RegisterNewOrigin) {
-  const GURL kOrigin("http://example.com");
+  const GURL kOrigin("chrome-extension://example");
   const std::string kDirectoryResourceId("folder:origin_directory_resource_id");
   const std::string kSyncRootResourceId("folder:sync_root_resource_id");
   const GURL kSyncRootContentURL("https://sync_root_content_url/");
@@ -456,7 +456,8 @@ TEST_F(DriveFileSyncServiceTest, RegisterNewOrigin) {
 
   scoped_ptr<Value> origin_directory_not_found(LoadJSONFile(
       "sync_file_system/origin_directory_not_found.json"));
-  std::string query = FormatTitleQuery(kOrigin.spec());
+  std::string query = FormatTitleQuery(
+      DriveFileSyncClient::OriginToDirectoryTitle(kOrigin));
 
   EXPECT_CALL(*mock_drive_service(),
               GetDocuments(GURL(), 0, query, false, kSyncRootResourceId, _))
@@ -481,8 +482,8 @@ TEST_F(DriveFileSyncServiceTest, RegisterNewOrigin) {
 
   scoped_ptr<Value> origin_directory_created(LoadJSONFile(
       "sync_file_system/origin_directory_created.json"));
-  FilePath::StringType dirname =
-      FilePath().AppendASCII(kOrigin.spec()).value();
+  FilePath::StringType dirname = FilePath().AppendASCII(
+      DriveFileSyncClient::OriginToDirectoryTitle(kOrigin)).value();
   EXPECT_CALL(*mock_drive_service(),
               AddNewDirectory(kSyncRootContentURL, dirname, _))
       .WillOnce(InvokeGetDataCallback2(
@@ -520,7 +521,7 @@ TEST_F(DriveFileSyncServiceTest, RegisterNewOrigin) {
 }
 
 TEST_F(DriveFileSyncServiceTest, RegisterExistingOrigin) {
-  const GURL kOrigin("http://example.com");
+  const GURL kOrigin("chrome-extension://example");
   const std::string kDirectoryResourceId("folder:origin_directory_resource_id");
   const std::string kSyncRootResourceId("folder:sync_root_resource_id");
 
@@ -536,7 +537,8 @@ TEST_F(DriveFileSyncServiceTest, RegisterExistingOrigin) {
 
   scoped_ptr<Value> origin_directory_found(LoadJSONFile(
       "sync_file_system/origin_directory_found.json"));
-  std::string query = FormatTitleQuery("http://example.com/");
+  std::string query = FormatTitleQuery(
+      DriveFileSyncClient::OriginToDirectoryTitle(kOrigin));
   EXPECT_CALL(*mock_drive_service(),
               GetDocuments(GURL(), 0, query, false, kSyncRootResourceId, _))
       .WillOnce(InvokeGetDataCallback5(
@@ -636,7 +638,7 @@ TEST_F(DriveFileSyncServiceTest, UnregisterOrigin) {
 
 TEST_F(DriveFileSyncServiceTest, ResolveSyncOperationType) {
   const fileapi::FileSystemURL url = fileapi::CreateSyncableFileSystemURL(
-      GURL("http://example.com/"),
+      GURL("chrome-extension://example/"),
       DriveFileSyncService::kServiceName,
       FilePath().AppendASCII("path/to/file"));
   const std::string kResourceId("123456");
@@ -734,7 +736,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_NoChange) {
 }
 
 TEST_F(DriveFileSyncServiceTest, RemoteChange_Busy) {
-  const GURL kOrigin("chrome-extension://example.com");
+  const GURL kOrigin("chrome-extension://example");
   const std::string kDirectoryResourceId("folder:origin_directory_resource_id");
   const std::string kSyncRootResourceId("folder:sync_root_resource_id");
   const FilePath::StringType kFileName(FPL("File 1.mp3"));
@@ -765,7 +767,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_Busy) {
 }
 
 TEST_F(DriveFileSyncServiceTest, RemoteChange_NewFile) {
-  const GURL kOrigin("chrome-extension://example.com");
+  const GURL kOrigin("chrome-extension://example");
   const std::string kDirectoryResourceId("folder:origin_directory_resource_id");
   const std::string kSyncRootResourceId("folder:sync_root_resource_id");
   const FilePath::StringType kFileName(FPL("File 1.mp3"));
@@ -811,7 +813,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_NewFile) {
 }
 
 TEST_F(DriveFileSyncServiceTest, RemoteChange_UpdateFile) {
-  const GURL kOrigin("chrome-extension://example.com");
+  const GURL kOrigin("chrome-extension://example");
   const std::string kDirectoryResourceId("folder:origin_directory_resource_id");
   const std::string kSyncRootResourceId("folder:sync_root_resource_id");
   const FilePath::StringType kFileName(FPL("File 1.mp3"));

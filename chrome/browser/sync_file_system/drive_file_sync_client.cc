@@ -12,6 +12,8 @@
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_wapi_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
+#include "chrome/common/extensions/extension.h"
+#include "extensions/common/constants.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
 
@@ -113,7 +115,7 @@ void DriveFileSyncClient::GetDriveDirectoryForOrigin(
     const ResourceIdCallback& callback) {
   DCHECK(CalledOnValidThread());
 
-  std::string directory_name(origin.spec());
+  std::string directory_name(OriginToDirectoryTitle(origin));
   SearchFilesInDirectory(
       sync_root_resource_id,
       FormatTitleQuery(directory_name),
@@ -354,6 +356,17 @@ void DriveFileSyncClient::DeleteFile(
                  AsWeakPtr(),
                  base::Bind(&DriveFileSyncClient::DeleteFileInternal,
                             AsWeakPtr(), remote_file_md5, callback)));
+}
+
+// static
+std::string DriveFileSyncClient::OriginToDirectoryTitle(const GURL& origin) {
+  DCHECK(origin.SchemeIs(extensions::kExtensionScheme));
+  return origin.host();
+}
+
+// static
+GURL DriveFileSyncClient::DirectoryTitleToOrigin(const std::string& title) {
+  return extensions::Extension::GetBaseURLFromExtensionId(title);
 }
 
 void DriveFileSyncClient::DidGetDocumentFeedData(

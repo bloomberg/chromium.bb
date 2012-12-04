@@ -150,6 +150,9 @@ class DriveFileSyncClient : public base::NonThreadSafe,
                   const std::string& remote_file_md5,
                   const GDataErrorCallback& callback);
 
+  static std::string OriginToDirectoryTitle(const GURL& origin);
+  static GURL DirectoryTitleToOrigin(const std::string& title);
+
  private:
   friend class DriveFileSyncClientTest;
   friend class DriveFileSyncServiceTest;

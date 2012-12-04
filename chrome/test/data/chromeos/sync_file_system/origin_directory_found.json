@@ -81,7 +81,7 @@
         "type": "application/atom+xml"
       } ],
       "published": { "$t": "2012-11-01T05:21:40.382Z" },
-      "title": { "$t": "http://example.com/" },
+      "title": { "$t": "example" },
       "updated": { "$t": "2012-11-01T05:21:40.382Z" }
     } ],
     "gd$etag": "W/\"AkEFR3Y7eSt7ImA9WhNSF0k.\"",

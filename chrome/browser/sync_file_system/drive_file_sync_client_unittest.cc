@@ -151,6 +151,11 @@ class DriveFileSyncClientTest : public testing::Test {
  protected:
   DriveFileSyncClient* sync_client() { return sync_client_.get(); }
 
+  std::string FormatOriginQuery(const GURL& origin) {
+    return FormatTitleQuery(
+        DriveFileSyncClient::OriginToDirectoryTitle(origin));
+  }
+
   std::string FormatTitleQuery(const std::string& title) {
     return DriveFileSyncClient::FormatTitleQuery(title);
   }
@@ -352,7 +357,7 @@ TEST_F(DriveFileSyncClientTest, GetOriginDirectory) {
   const std::string kParentResourceId("folder:sync_root_resource_id");
   const std::string kOriginDirectoryResourceId(
       "folder:origin_directory_resource_id");
-  const GURL kOrigin("http://example.com");
+  const GURL kOrigin("chrome-extension://example");
 
   scoped_ptr<base::Value> found_result(google_apis::test_util::LoadJSONFile(
       "sync_file_system/origin_directory_found.json").Pass());
@@ -361,7 +366,7 @@ TEST_F(DriveFileSyncClientTest, GetOriginDirectory) {
   EXPECT_CALL(*mock_drive_service(),
               GetDocuments(GURL(),  // feed_url
                            0,       // start_changestamp
-                           FormatTitleQuery(kOrigin.spec()),
+                           FormatOriginQuery(kOrigin),
                            false,   // shared_with_me
                            kParentResourceId,
                            _))
@@ -383,7 +388,7 @@ TEST_F(DriveFileSyncClientTest, GetOriginDirectory) {
 
 TEST_F(DriveFileSyncClientTest, CreateOriginDirectory) {
   const std::string kParentResourceId("folder:sync_root_resource_id");
-  const GURL kOrigin("http://example.com");
+  const GURL kOrigin("chrome-extension://example");
 
   scoped_ptr<base::Value> not_found_result(google_apis::test_util::LoadJSONFile(
       "sync_file_system/origin_directory_not_found.json").Pass());
@@ -399,7 +404,7 @@ TEST_F(DriveFileSyncClientTest, CreateOriginDirectory) {
   EXPECT_CALL(*mock_drive_service(),
               GetDocuments(GURL(),             // feed_url
                            0,                  // start_changestamp
-                           FormatTitleQuery(kOrigin.spec()),
+                           FormatOriginQuery(kOrigin),
                            false,              // shared_with_me
                            kParentResourceId,  // directory_resource_id
                            _))
@@ -412,10 +417,11 @@ TEST_F(DriveFileSyncClientTest, CreateOriginDirectory) {
       .WillOnce(InvokeGetDataCallback1(google_apis::HTTP_SUCCESS,
                                        base::Passed(&got_parent_result)));
 
+  std::string dir_title(DriveFileSyncClient::OriginToDirectoryTitle(kOrigin));
   // Expected to call AddNewDirectory from GetDriveDirectoryForOrigin.
   EXPECT_CALL(*mock_drive_service(),
               AddNewDirectory(GURL("https://sync_root_content_url"),
-                              FilePath().AppendASCII(kOrigin.spec()).value(),
+                              FilePath().AppendASCII(dir_title).value(),
                               _))
       .WillOnce(InvokeGetDataCallback2(google_apis::HTTP_CREATED,
                                        base::Passed(&created_result)));
