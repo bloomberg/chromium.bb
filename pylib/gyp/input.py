@@ -840,7 +840,7 @@ def ExpandVariables(input, phase, variables, build_file):
       if cached_value is None:
         gyp.DebugOutput(gyp.DEBUG_VARIABLES,
                         "Executing command '%s' in directory '%s'" %
-                        (contents,build_file_dir))
+                        (contents, build_file_dir))
 
         replacement = ''
 
@@ -852,12 +852,17 @@ def ExpandVariables(input, phase, variables, build_file):
           # <!(python modulename param eters). Do this in |build_file_dir|.
           oldwd = os.getcwd()  # Python doesn't like os.open('.'): no fchdir.
           os.chdir(build_file_dir)
+          try:
 
-          parsed_contents = shlex.split(contents)
-          py_module = __import__(parsed_contents[0])
-          replacement = str(py_module.DoMain(parsed_contents[1:])).rstrip()
-
-          os.chdir(oldwd)
+            parsed_contents = shlex.split(contents)
+            try:
+              py_module = __import__(parsed_contents[0])
+            except ImportError as e:
+              raise GypError("Error importing pymod_do_main"
+                             "module (%s): %s" % (parsed_contents[0], e))
+            replacement = str(py_module.DoMain(parsed_contents[1:])).rstrip()
+          finally:
+            os.chdir(oldwd)
           assert replacement != None
         elif command_string:
           raise GypError("Unknown command string '%s' in '%s'." %
@@ -1062,7 +1067,7 @@ def ProcessConditionsInDict(the_dict, phase, variables, build_file):
     except NameError, e:
       gyp.common.ExceptionAppend(e, 'while evaluating condition \'%s\' in %s' %
                                  (cond_expr_expanded, build_file))
-      raise
+      raise GypError(e)
 
     if merge_dict != None:
       # Expand variables and nested conditinals in the merge_dict before

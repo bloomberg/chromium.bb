@@ -1001,12 +1001,12 @@ def _GetMSVSConfigurationType(spec, build_file):
         }[spec['type']]
   except KeyError:
     if spec.get('type'):
-      raise Exception('Target type %s is not a valid target type for '
-                      'target %s in %s.' %
-                      (spec['type'], spec['target_name'], build_file))
+      raise GypError('Target type %s is not a valid target type for '
+                     'target %s in %s.' %
+                     (spec['type'], spec['target_name'], build_file))
     else:
-      raise Exception('Missing type field for target %s in %s.' %
-                      (spec['target_name'], build_file))
+      raise GypError('Missing type field for target %s in %s.' %
+                     (spec['target_name'], build_file))
   return config_type
 
 
@@ -1663,7 +1663,7 @@ def _CreateProjectObjects(target_list, target_dicts, options, msvs_version):
   for qualified_target in target_list:
     spec = target_dicts[qualified_target]
     if spec['toolset'] != 'target':
-      raise Exception(
+      raise GypError(
           'Multiple toolsets not supported in msvs build (target %s)' %
           qualified_target)
     proj_path, fixpath_prefix = _GetPathOfProject(qualified_target, spec,
@@ -1872,7 +1872,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     error_message = "Missing input files:\n" + \
                     '\n'.join(set(missing_sources))
     if generator_flags.get('msvs_error_on_missing_sources', False):
-      raise Exception(error_message)
+      raise GypError(error_message)
     else:
       print >>sys.stdout, "Warning: " + error_message
 
