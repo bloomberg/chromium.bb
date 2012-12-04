@@ -1506,7 +1506,7 @@
    fun:WTF::StringImpl::createUninitialized
    fun:WTF::StringImpl::create
    fun:WebKit::WebString::assign
-   fun:WebKit::WebString::WebString
+   fun:*WebString*
    fun:webkit_glue::CppBoundClass::BindToJavascript
    fun:::TestWebFrameClient::didClearWindowObject
    fun:WebKit::FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld
