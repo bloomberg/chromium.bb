@@ -517,7 +517,7 @@ private:
 }
 
 + (CGFloat)defaultTabHeight {
-  return 25.0;
+  return 26.0;
 }
 
 + (CGFloat)defaultLeftIndentForControls {
@@ -970,7 +970,7 @@ private:
 
     BOOL isPlaceholder = [[tab view] isEqual:placeholderTab_];
     NSRect tabFrame = [[tab view] frame];
-    tabFrame.size.height = [[self class] defaultTabHeight] + 1;
+    tabFrame.size.height = [[self class] defaultTabHeight];
     tabFrame.origin.y = 0;
     tabFrame.origin.x = offset;
 
