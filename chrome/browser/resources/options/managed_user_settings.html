@@ -1,0 +1,86 @@
+<div id="managed-user-settings-page" class="page" hidden>
+  <div class="close-button"></div>
+  <h1 i18n-content="managedUserSettingsPage"></h1>
+  <div class="content-area">
+    <!-- Content pack area -->
+    <section>
+      <h3 i18n-content="installedContentPacks"></h3>
+      <list id="content-packs-list"></list>
+      <div class="settings-row">
+        <button id="get-content-packs-button" i18n-content="getContentPacks">
+      </div>
+    </section>
+    <!-- Content pack settings -->
+    <section>
+      <h3 i18n-content="contentPackSettings"></h3>
+      <div class="radio">
+        <label>
+          <input type="radio" name="contentpacks" value="0"
+              id="contentpacks-allow"
+              pref="profile.managed.default_filtering_behavior">
+          <span for="contentpacks-allow"
+              i18n-content="outsideContentPacksAllow"></span>
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="contentpacks" value="1"
+              id="contentpacks-warn"
+              pref="profile.managed.default_filtering_behavior">
+          <span for="contentpacks-warn"
+              i18n-content="outsideContentPacksWarn"></span>
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="contentpacks" value="2"
+              id="contentpacks-block"
+              pref="profile.managed.default_filtering_behavior">
+          <span for="contentpacks-block"
+              i18n-content="outsideContentPacksBlock"></span>
+        </label>
+      </div>
+    </section>
+    <!-- Advanced Settings -->
+    <section>
+      <h3 i18n-content="advancedManagedUserSettings"></h3>
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" id="safe-search-checkbox"
+              pref="settings.force_safesearch">
+          <span for="safe-search-checkbox"
+              i18n-content="enableSafeSearch"></span>
+        </label>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input id="disable-signin-checkbox" type="checkbox">
+          <span for="disable-signin-checkbox"
+              i18n-content="disableProfileSignIn"></span>
+        </label>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input id="disable-history-deletion-checkbox" type="checkbox">
+          <span for="disable-history-deletion-checkbox"
+              i18n-content="disableHistoryDeletion"></span>
+        </label>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input id="use-passphrase-checkbox" type="checkbox">
+          <span for="use-passphrase-checkbox"
+              i18n-content="usePassphrase"></span>
+        </label>
+        <button id="set-passphrase" class="link-button"
+            i18n-content="setPassphrase">
+      </div>
+    </section>
+  </div>
+  <div class="action-area">
+    <div class="button-strip">
+      <button id="managed-user-settings-confirm" type="submit"
+          i18n-content="ok">
+    </div>
+  </div>
+</div>

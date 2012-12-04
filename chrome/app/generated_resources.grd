@@ -8055,6 +8055,47 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Clearing...
       </message>
 
+      <!-- Managed User Settings dialog data -->
+      <message name="IDS_MANAGED_USER_SETTINGS_TITLE" desc="Title for the Managed User Settings dialog">
+        Managed User Settings
+      </message>
+      <message name="IDS_INSTALLED_CONTENT_PACKS_LABEL" desc="Label for installed whitelists on the Managed User Settings dialog">
+        Installed and enabled content packs:
+      </message>
+      <message name="IDS_GET_CONTENT_PACKS_BUTTON" desc="The text for the button that opens the webstore, Content pack section.">
+        Get Content Packs
+      </message>
+      <message name="IDS_CONTENT_PACK_SETTINGS_LABEL" desc="Label that explains the three options associated with installed whitelists on the Managed User Settings dialog">
+        When a managed user tries to access a site that is not in any content pack:
+      </message>
+      <message name="IDS_OUTSIDE_CONTENT_PACKS_ALLOW_RADIO" desc="A radio button in the Managed User Settings dialog for allowing a managed user to view sites that do not belong to the installed whitelists.">
+        Allow
+      </message>
+      <message name="IDS_OUTSIDE_CONTENT_PACKS_WARN_RADIO" desc="A radio button in the Managed User Settings dialog for warning a managed user whenever they try to view sites that do not belong to the installed whitelist.">
+        Warn
+      </message>
+      <message name="IDS_OUTSIDE_CONTENT_PACKS_BLOCK_RADIO" desc="A radio button in the Managed User Settings dialog for blocking a managed user to view sites that do not belong to the installed whitelist.">
+        Block
+      </message>
+       <message name="IDS_ADVANCED_MANAGED_USER_LABEL" desc="A label in the Managed User Settings dialog for other managed user settings.">
+        Advanced settings
+      </message>
+       <message name="IDS_SAFE_SEARCH_ENABLED" desc="A checkbox in the Managed User Settings dialog for enabling SafeSearch">
+        Enable Google's SafeSearch
+      </message>
+       <message name="IDS_SIGNIN_SYNC_DISABLED" desc="A checkbox in the Managed User Settings dialog for disabling sign in or sync.">
+        Disable signing into Chrome
+      </message>
+      <message name="IDS_HISTORY_DELETION_DISABLED" desc="A checkbox in the Managed User Settings dialog for tracking history of managed user.">
+        Disable incognito windows and deleting history
+      </message>
+      <message name="IDS_USE_PASSPHRASE_LABEL" desc="A checkbox in the Managed User Settings dialog to set whether to ask for a passphrase to access other profiles.">
+        Use a passphrase to leave managed mode
+      </message>
+      <message name="IDS_SET_PASSPHRASE_BUTTON" desc="A button in the Managed User Settings dialog to set the passphrase to access other profiles">
+        Set passphrase
+      </message>
+
       <!-- Managed Mode Block Interstitial data -->
       <message name="IDS_BLOCK_INTERSTITIAL_TITLE" desc="A title for the managed mode block interstitial page.">
         Sad Robot

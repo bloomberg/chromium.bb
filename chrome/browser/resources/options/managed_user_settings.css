@@ -1,0 +1,13 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+#managed-user-settings-page {
+  min-width: 600px;
+}
+
+/* Content Packs list */
+#content-packs-list {
+  margin-bottom: 10px;
+  min-height: 0;
+}

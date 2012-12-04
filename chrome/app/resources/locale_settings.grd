@@ -352,6 +352,11 @@
         https://chrome.google.com/webstore?hl=[GRITLANGCODE]&amp;category=theme
       </message>
 
+      <!-- The URL for the content packs gallery. -->
+      <message name="IDS_GET_CONTENT_PACKS_URL" translateable="false">
+        https://chrome.google.com/webstore?hl=[GRITLANGCODE]
+      </message>
+
       <!-- The URL for the webstore. -->
       <message name="IDS_WEBSTORE_URL" translateable="false">
         https://chrome.google.com/webstore?hl=[GRITLANGCODE]
