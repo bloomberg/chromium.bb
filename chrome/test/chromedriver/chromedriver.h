@@ -12,6 +12,7 @@
 class CommandExecutor;
 
 // Inits the command executor. Must be called before |ExecuteCommand|.
+// This may be called during DLL load on Windows.
 void Init(scoped_ptr<CommandExecutor> executor);
 
 // Synchronously executes the given command. Thread safe.

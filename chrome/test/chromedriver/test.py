@@ -19,6 +19,12 @@ class ChromeDriverTest(unittest.TestCase):
     driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB, _CHROME_BINARY)
     driver.Quit()
 
+  def testLoadUrl(self):
+    driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB)
+    driver.Load('http://www.google.com')
+    driver.Quit()
+
+
 if __name__ == '__main__':
   if len(sys.argv) != 2 and len(sys.argv) != 3:
     print ('Usage: %s <path_to_chromedriver_so> [path_to_chrome_binary]' %

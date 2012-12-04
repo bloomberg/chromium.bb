@@ -46,4 +46,10 @@ Status ExecuteQuit(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+// Loads a URL.
+Status ExecuteGet(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
 #endif  // CHROME_TEST_CHROMEDRIVER_COMMANDS_H_

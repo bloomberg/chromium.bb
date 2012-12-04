@@ -22,6 +22,8 @@ class CommandExecutor {
  public:
   virtual ~CommandExecutor() {}
 
+  virtual void Init() = 0;
+
   // Executes a command synchronously. This function must be thread safe.
   virtual void ExecuteCommand(const std::string& name,
                               const base::DictionaryValue& params,

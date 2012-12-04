@@ -14,17 +14,33 @@ TEST(StatusTest, Ok) {
 }
 
 TEST(StatusTest, Error) {
-  Status ok(kUnknownCommand);
-  ASSERT_FALSE(ok.IsOk());
-  ASSERT_TRUE(ok.IsError());
-  ASSERT_EQ(kUnknownCommand, ok.code());
-  ASSERT_STREQ("unknown command", ok.message().c_str());
+  Status error(kUnknownCommand);
+  ASSERT_FALSE(error.IsOk());
+  ASSERT_TRUE(error.IsError());
+  ASSERT_EQ(kUnknownCommand, error.code());
+  ASSERT_STREQ("unknown command", error.message().c_str());
 }
 
 TEST(StatusTest, ErrorWithDetails) {
-  Status ok(kUnknownError, "something happened");
-  ASSERT_FALSE(ok.IsOk());
-  ASSERT_TRUE(ok.IsError());
-  ASSERT_EQ(kUnknownError, ok.code());
-  ASSERT_STREQ("unknown error: something happened", ok.message().c_str());
+  Status error(kUnknownError, "something happened");
+  ASSERT_FALSE(error.IsOk());
+  ASSERT_TRUE(error.IsError());
+  ASSERT_EQ(kUnknownError, error.code());
+  ASSERT_STREQ("unknown error: something happened", error.message().c_str());
+}
+
+TEST(StatusTest, ErrorWithCause) {
+  Status error(
+      kUnknownCommand, "quit",
+      Status(
+          kUnknownError, "something happened",
+          Status(kSessionNotCreatedException)));
+  ASSERT_FALSE(error.IsOk());
+  ASSERT_TRUE(error.IsError());
+  ASSERT_EQ(kUnknownCommand, error.code());
+  ASSERT_STREQ(
+      "unknown command: quit\n"
+      "from unknown error: something happened\n"
+      "from session not created exception",
+      error.message().c_str());
 }

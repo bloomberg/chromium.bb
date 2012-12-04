@@ -13,7 +13,9 @@ enum StatusCode {
   kUnknownCommand = 9,
   kUnknownError = 13,
   kSessionNotCreatedException = 33,
-  kNoSuchSession = 100
+  // Chrome-specific status codes.
+  kNoSuchSession = 100,
+  kChromeNotReachable,
 };
 
 // Represents a WebDriver status, which may be an error or ok.
@@ -21,6 +23,9 @@ class Status {
  public:
   explicit Status(StatusCode code);
   Status(StatusCode code, const std::string& details);
+  Status(StatusCode code, const Status& cause);
+  Status(StatusCode code, const std::string& details, const Status& cause);
+  ~Status();
 
   bool IsOk() const;
   bool IsError() const;

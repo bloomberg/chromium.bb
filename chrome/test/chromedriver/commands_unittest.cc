@@ -27,6 +27,9 @@ class StubChrome : public Chrome {
   virtual ~StubChrome() {}
 
   // Overridden from Chrome:
+  virtual Status Load(const std::string& url) OVERRIDE {
+    return Status(kOk);
+  }
   virtual Status Quit() OVERRIDE {
     return Status(kOk);
   }
@@ -152,7 +155,7 @@ TEST(CommandsTest, Quit) {
 
 namespace {
 
-class FailsToQuitChrome : public Chrome {
+class FailsToQuitChrome : public StubChrome {
  public:
   FailsToQuitChrome() {}
   virtual ~FailsToQuitChrome() {}

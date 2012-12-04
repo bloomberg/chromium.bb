@@ -78,3 +78,13 @@ Status ExecuteQuit(
   CHECK(session_map->Remove(session->id));
   return session->chrome->Quit();
 }
+
+Status ExecuteGet(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  std::string url;
+  if (!params.GetString("url", &url))
+    return Status(kUnknownError, "'url' must be a string");
+  return session->chrome->Load(url);
+}

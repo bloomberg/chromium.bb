@@ -685,6 +685,10 @@
         'test/chromedriver/command_executor_impl.h',
         'test/chromedriver/commands.cc',
         'test/chromedriver/commands.h',
+        'test/chromedriver/devtools_client.cc',
+        'test/chromedriver/devtools_client.h',
+        'test/chromedriver/net/net_util.cc',
+        'test/chromedriver/net/net_util.h',
         'test/chromedriver/net/sync_websocket.cc',
         'test/chromedriver/net/sync_websocket.h',
         'test/chromedriver/net/url_request_context_getter.cc',
@@ -715,6 +719,7 @@
       ],
       'sources': [
         'test/chromedriver/chrome_finder_unittest.cc',
+        'test/chromedriver/chrome_impl_unittest.cc',
         'test/chromedriver/chromedriver_unittest.cc',
         'test/chromedriver/command_executor_impl_unittest.cc',
         'test/chromedriver/commands_unittest.cc',
@@ -745,6 +750,7 @@
         '..,'
       ],
       'sources': [
+        'test/chromedriver/net/net_util_unittest.cc',
         'test/chromedriver/net/sync_websocket_unittest.cc',
         'test/chromedriver/net/websocket_unittest.cc',
       ],

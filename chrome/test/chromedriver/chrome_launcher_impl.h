@@ -7,16 +7,18 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/chrome_launcher.h"
 
 class Chrome;
 class FilePath;
 class Status;
+class URLRequestContextGetter;
 
 class ChromeLauncherImpl : public ChromeLauncher {
  public:
-  ChromeLauncherImpl();
+  explicit ChromeLauncherImpl(URLRequestContextGetter* context_getter);
   virtual ~ChromeLauncherImpl();
 
   // Overridden from ChromeLauncher:
@@ -24,6 +26,8 @@ class ChromeLauncherImpl : public ChromeLauncher {
                         scoped_ptr<Chrome>* chrome) OVERRIDE;
 
  private:
+  scoped_refptr<URLRequestContextGetter> context_getter_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherImpl);
 };
 

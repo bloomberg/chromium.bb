@@ -19,6 +19,8 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
       return "session not created exception";
     case kNoSuchSession:
       return "no such session";
+    case kChromeNotReachable:
+      return "chrome not reachable";
     default:
       return "<unknown>";
   }
@@ -33,6 +35,21 @@ Status::Status(StatusCode code, const std::string& details)
     : code_(code),
       msg_(DefaultMessageForStatusCode(code) + std::string(": ") + details) {
 }
+
+Status::Status(StatusCode code, const Status& cause)
+    : code_(code),
+      msg_(DefaultMessageForStatusCode(code) + std::string("\nfrom ") +
+           cause.message()) {}
+
+Status::Status(StatusCode code,
+               const std::string& details,
+               const Status& cause)
+    : code_(code),
+      msg_(DefaultMessageForStatusCode(code) + std::string(": ") + details +
+           "\nfrom " + cause.message()) {
+}
+
+Status::~Status() {}
 
 bool Status::IsOk() const {
   return code_ == kOk;

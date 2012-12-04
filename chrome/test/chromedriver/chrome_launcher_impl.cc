@@ -10,12 +10,15 @@
 #include "base/file_path.h"
 #include "base/process.h"
 #include "base/process_util.h"
+#include "base/string_number_conversions.h"
 #include "chrome/test/chromedriver/chrome.h"
 #include "chrome/test/chromedriver/chrome_finder.h"
 #include "chrome/test/chromedriver/chrome_impl.h"
+#include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/status.h"
 
-ChromeLauncherImpl::ChromeLauncherImpl() {}
+ChromeLauncherImpl::ChromeLauncherImpl(URLRequestContextGetter* context_getter)
+    : context_getter_(context_getter) {}
 
 ChromeLauncherImpl::~ChromeLauncherImpl() {}
 
@@ -28,7 +31,10 @@ Status ChromeLauncherImpl::Launch(
       return Status(kUnknownError, "cannot find Chrome binary");
   }
 
+  int port = 33081;
   CommandLine command(program);
+  command.AppendSwitchASCII("remote-debugging-port", base::IntToString(port));
+  command.AppendSwitch("no-first-run");
   command.AppendSwitch("enable-logging");
   command.AppendSwitchASCII("logging-level", "1");
   base::ScopedTempDir user_data_dir;
@@ -41,7 +47,11 @@ Status ChromeLauncherImpl::Launch(
   base::ProcessHandle process;
   if (!base::LaunchProcess(command, options, &process))
     return Status(kUnknownError, "chrome failed to start");
-  chrome->reset(new ChromeImpl(process, &user_data_dir));
-
+  scoped_ptr<ChromeImpl> chrome_impl(new ChromeImpl(
+      process, context_getter_, &user_data_dir, port));
+  Status status = chrome_impl->Init();
+  if (status.IsError())
+    return status;
+  chrome->reset(chrome_impl.release());
   return Status(kOk);
 }

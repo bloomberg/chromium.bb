@@ -6,14 +6,19 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/command_executor.h"
 #include "chrome/test/chromedriver/status.h"
 
 namespace {
 
+// Guards |g_executor_initialized|.
+base::LazyInstance<base::Lock> g_lazy_lock = LAZY_INSTANCE_INITIALIZER;
+bool g_executor_initialized = false;
 CommandExecutor* g_command_executor = NULL;
 
 void SetResponse(StatusCode status,
@@ -39,10 +44,19 @@ void SetError(const std::string& error_msg,
 
 void Init(scoped_ptr<CommandExecutor> executor) {
   g_command_executor = executor.release();
+  // We do not call CommandExecutor::Init here because you can't do some things
+  // (e.g., creating threads) during DLL loading on Windows.
 }
 
 void ExecuteCommand(const std::string& command, std::string* response) {
   CHECK(g_command_executor);
+  {
+    base::AutoLock(g_lazy_lock.Get());
+    if (!g_executor_initialized) {
+      g_command_executor->Init();
+      g_executor_initialized = true;
+    }
+  }
   std::string error_msg;
   scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
       command, 0, NULL, &error_msg));
