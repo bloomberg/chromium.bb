@@ -316,10 +316,6 @@ def ParseArgs(args):
       action='append_const', const=toolchainbinaries.IsNotNaClNewlibFlavor,
       help='download only the non-pnacl newlib toolchain')
   parser.add_option(
-      '--save-downloads-dir', dest='save_downloads_dir',
-      default=None,
-      help='(optional) preserve the toolchain archives to this dir')
-  parser.add_option(
       '--no-pnacl', dest='filter_out_predicates', action='append_const',
       const=toolchainbinaries.IsPnaclFlavor,
       help='Filter out PNaCl toolchains.')
