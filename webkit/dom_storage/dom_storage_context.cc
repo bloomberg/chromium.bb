@@ -170,24 +170,30 @@ void DomStorageContext::PurgeMemory() {
 }
 
 void DomStorageContext::Shutdown() {
+  LOG(ERROR) << "DomStorageContext::Shutdown";
   is_shutdown_ = true;
   StorageNamespaceMap::const_iterator it = namespaces_.begin();
   for (; it != namespaces_.end(); ++it)
     it->second->Shutdown();
 
-  if (localstorage_directory_.empty() && !session_storage_database_.get())
+  if (localstorage_directory_.empty() && !session_storage_database_.get()) {
+    LOG(ERROR) << "No databases";
     return;
+  }
 
   // Respect the content policy settings about what to
   // keep and what to discard.
-  if (force_keep_session_state_)
+  if (force_keep_session_state_) {
+    LOG(ERROR) << "Saving the session state";
     return;  // Keep everything.
+  }
 
   bool has_session_only_origins =
       special_storage_policy_.get() &&
       special_storage_policy_->HasSessionOnlyOrigins();
 
   if (has_session_only_origins) {
+    LOG(ERROR) << "There is session only data to clear";
     // We may have to delete something. We continue on the
     // commit sequence after area shutdown tasks have cycled
     // thru that sequence (and closed their database files).
@@ -306,11 +312,17 @@ void DomStorageContext::ClearSessionOnlyOrigins() {
     GetLocalStorageUsage(&infos, kDontIncludeFileInfo);
     for (size_t i = 0; i < infos.size(); ++i) {
       const GURL& origin = infos[i].origin;
-      if (special_storage_policy_->IsStorageProtected(origin))
+      LOG(ERROR) << "Data for origin " << origin;
+      if (special_storage_policy_->IsStorageProtected(origin)) {
+        LOG(ERROR) << "Was protected";
         continue;
-      if (!special_storage_policy_->IsStorageSessionOnly(origin))
+      }
+      if (!special_storage_policy_->IsStorageSessionOnly(origin)) {
+        LOG(ERROR) << "Not session only";
         continue;
+      }
 
+      LOG(ERROR) << "Clearing it";
       const bool kNotRecursive = false;
       FilePath database_file_path = localstorage_directory_.Append(
           DomStorageArea::DatabaseFileNameFromOrigin(origin));

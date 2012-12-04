@@ -437,6 +437,7 @@ void SessionService::UpdateTabNavigation(
     const SessionID& window_id,
     const SessionID& tab_id,
     const TabNavigation& navigation) {
+  LOG(ERROR) << "UpdateTabNavigation, title: " << navigation.title();
   if (!ShouldTrackEntry(navigation.virtual_url()) ||
       !ShouldTrackChangesToWindow(window_id)) {
     return;
