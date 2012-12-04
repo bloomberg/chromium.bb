@@ -52,6 +52,7 @@
       'texture_copier_unittest.cc',
       'texture_layer_unittest.cc',
       'texture_uploader_unittest.cc',
+      'tile_priority_unittest.cc',
       'tiled_layer_impl_unittest.cc',
       'tiled_layer_unittest.cc',
       'tree_synchronizer_unittest.cc',

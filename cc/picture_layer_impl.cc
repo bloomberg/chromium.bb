@@ -4,6 +4,7 @@
 
 #include "cc/picture_layer_impl.h"
 
+#include "base/time.h"
 #include "cc/append_quads_data.h"
 #include "cc/checkerboard_draw_quad.h"
 #include "cc/debug_border_draw_quad.h"
@@ -19,7 +20,8 @@ namespace cc {
 PictureLayerImpl::PictureLayerImpl(int id) :
     LayerImpl(id),
     tilings_(this),
-    pile_(PicturePileImpl::Create()) {
+    pile_(PicturePileImpl::Create()),
+    last_update_time_(0) {
 }
 
 PictureLayerImpl::~PictureLayerImpl() {
@@ -132,6 +134,30 @@ void PictureLayerImpl::didUpdateTransforms() {
     tilings_.AddTiling(contentsScaleX(), tile_size);
     // TODO(enne): handle invalidations, create new tiles
   }
+
+  gfx::Transform  current_screen_space_transform = screenSpaceTransform();
+  double current_time =
+      (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
+  double time_delta = 0;
+  if (last_update_time_ != 0 && last_bounds_ == bounds() &&
+      last_content_bounds_ == contentBounds() &&
+      last_content_scale_x_ == contentsScaleX() &&
+      last_content_scale_y_ == contentsScaleY()) {
+    time_delta = current_time - last_update_time_;
+  }
+  tilings_.UpdateTilePriorities(layerTreeHostImpl()->deviceViewportSize(),
+                                contentsScaleX(),
+                                contentsScaleY(),
+                                last_screen_space_transform_,
+                                current_screen_space_transform,
+                                time_delta);
+
+  last_screen_space_transform_ = current_screen_space_transform;
+  last_update_time_ = current_time;
+  last_bounds_ = bounds();
+  last_content_bounds_ = contentBounds();
+  last_content_scale_x_ = contentsScaleX();
+  last_content_scale_y_ = contentsScaleY();
 }
 
 scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling*,

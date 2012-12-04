@@ -44,6 +44,13 @@ protected:
   PictureLayerTilingSet tilings_;
   scoped_refptr<PicturePileImpl> pile_;
 
+  gfx::Transform last_screen_space_transform_;
+  double last_update_time_;
+  gfx::Size last_bounds_;
+  gfx::Size last_content_bounds_;
+  float last_content_scale_x_;
+  float last_content_scale_y_;
+
   friend class PictureLayer;
   DISALLOW_COPY_AND_ASSIGN(PictureLayerImpl);
 };

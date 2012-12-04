@@ -242,6 +242,7 @@
       'tile_draw_quad.h',
       'tile_manager.cc',
       'tile_manager.h',
+      'tile_priority.cc',
       'tile_priority.h',
       'tiled_layer.cc',
       'tiled_layer.h',

@@ -28,6 +28,13 @@ class CC_EXPORT PictureLayerTilingSet {
   void AddTiling(float contents_scale, gfx::Size tile_size);
   size_t num_tilings() const { return tilings_.size(); }
 
+  void UpdateTilePriorities(const gfx::Size& device_viewport,
+                            float layer_content_scale_x,
+                            float layer_content_scale_y,
+                            const gfx::Transform& last_screen_transform,
+                            const gfx::Transform& current_screen_transform,
+                            double time_delta);
+
   // For a given rect, iterates through tiles that can fill it.  If no
   // set of tiles with resources can fill the rect, then it will iterate
   // through null tiles with valid geometry_rect() until the rect is full.

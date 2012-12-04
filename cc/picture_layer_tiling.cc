@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "cc/picture_layer_tiling.h"
+
+#include "cc/math_util.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
 
@@ -264,6 +266,54 @@ gfx::RectF PictureLayerTiling::Iterator::texture_rect() const {
 
 gfx::Size PictureLayerTiling::Iterator::texture_size() const {
   return tiling_->tiling_data_.max_texture_size();
+}
+
+void PictureLayerTiling::UpdateTilePriorities(
+    const gfx::Size& device_viewport,
+    float layer_content_scale_x,
+    float layer_content_scale_y,
+    const gfx::Transform& last_screen_transform,
+    const gfx::Transform& current_screen_transform,
+    double time_delta) {
+  gfx::Rect content_rect = ContentRect();
+  if (content_rect.IsEmpty())
+    return;
+
+  gfx::Rect view_rect(gfx::Point(), device_viewport);
+  int right = tiling_data_.TileXIndexFromSrcCoord(content_rect.width() - 1);
+  int bottom = tiling_data_.TileYIndexFromSrcCoord(content_rect.height() - 1);
+  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
+    TileMapKey key = it->first;
+    TilePriority priority;
+    if (key.first > right || key.second > bottom) {
+      priority.distance_to_visible_in_pixels = std::numeric_limits<int>::max();
+      priority.time_to_visible_in_seconds =
+          TilePriority::kMaxTimeToVisibleInSeconds;
+      // TODO(qinmin): pass the correct tree to this function.
+      it->second->set_priority(ACTIVE_TREE, priority);
+      continue;
+    }
+
+    gfx::Rect tile_bound = tiling_data_.TileBounds(key.first, key.second);
+    gfx::RectF layer_content_rect = gfx::ScaleRect(
+        tile_bound,
+        layer_content_scale_x / contents_scale_,
+        layer_content_scale_y / contents_scale_);
+    gfx::RectF screen_rect = MathUtil::mapClippedRect(
+        current_screen_transform, layer_content_rect);
+    gfx::RectF previous_rect = MathUtil::mapClippedRect(
+        last_screen_transform, layer_content_rect);
+
+    priority.resolution = HIGH_RESOLUTION;
+    priority.time_to_visible_in_seconds =
+        TilePriority::TimeForBoundsToIntersect(
+            previous_rect, screen_rect, time_delta, view_rect);
+
+    priority.distance_to_visible_in_pixels =
+        TilePriority::manhattanDistance(screen_rect, view_rect);
+    // TODO(qinmin): pass the correct tree to this function.
+    it->second->set_priority(ACTIVE_TREE, priority);
+  }
 }
 
 }  // namespace cc

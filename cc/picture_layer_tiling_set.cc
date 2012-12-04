@@ -157,4 +157,18 @@ PictureLayerTilingSet::Iterator::operator bool() const {
       region_iter_.has_rect();
 }
 
+void PictureLayerTilingSet::UpdateTilePriorities(
+    const gfx::Size& device_viewport,
+    float layer_content_scale_x,
+    float layer_content_scale_y,
+    const gfx::Transform& last_screen_transform,
+    const gfx::Transform& current_screen_transform,
+    double time_delta) {
+  for (size_t i = 0; i < tilings_.size(); ++i) {
+    tilings_[i]->UpdateTilePriorities(
+        device_viewport, layer_content_scale_x, layer_content_scale_y,
+        last_screen_transform, current_screen_transform, time_delta);
+  }
+}
+
 }  // namespace cc

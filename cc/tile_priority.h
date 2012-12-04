@@ -5,6 +5,8 @@
 #ifndef CC_TILE_PRIORITY_H_
 #define CC_TILE_PRIORITY_H_
 
+#include <limits>
+
 #include "base/memory/ref_counted.h"
 #include "cc/picture_pile.h"
 #include "ui/gfx/rect.h"
@@ -25,7 +27,7 @@ enum TileResolution {
   NON_IDEAL_RESOLUTION = 2
 };
 
-struct TilePriority {
+struct CC_EXPORT TilePriority {
   TilePriority()
      : resolution(NON_IDEAL_RESOLUTION),
        time_to_visible_in_seconds(std::numeric_limits<float>::max()),
@@ -57,6 +59,18 @@ struct TilePriority {
     return std::min(time_to_visible_in_seconds,
                     time_to_ideal_resolution_in_seconds);
   }
+
+  static const double kMaxTimeToVisibleInSeconds;
+
+  static int manhattanDistance(const gfx::RectF& a, const gfx::RectF& b);
+
+  // Calculate the time for the |current_bounds| to intersect with the
+  // |target_bounds| given its previous location and time delta.
+  // This function should work for both scaling and scrolling case.
+  static double TimeForBoundsToIntersect(gfx::RectF previous_bounds,
+                                         gfx::RectF current_bounds,
+                                         double time_delta,
+                                         gfx::RectF target_bounds);
 
   TileResolution resolution;
   float time_to_visible_in_seconds;

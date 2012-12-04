@@ -86,6 +86,13 @@ class CC_EXPORT PictureLayerTiling {
 
   void Reset() { return tiles_.clear(); }
 
+  void UpdateTilePriorities(const gfx::Size& device_viewport,
+                            float layer_content_scale_x,
+                            float layer_content_scale_y,
+                            const gfx::Transform& last_screen_transform,
+                            const gfx::Transform& current_screen_transform,
+                            double time_delta);
+
  protected:
   typedef std::pair<int, int> TileMapKey;
   typedef base::hash_map<TileMapKey, scoped_refptr<Tile> > TileMap;
