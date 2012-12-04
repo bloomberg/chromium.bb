@@ -297,6 +297,7 @@
               '-Wswitch-enum',
               '-Wsign-compare',
               '-Wundef',
+              '-fdiagnostics-show-option',
             ],
             'cflags_c': [
               # Require defining functions as "foo(void)" rather than
@@ -597,6 +598,7 @@
                 '-Wswitch-enum',
                 '-Wsign-compare',
                 '-Wundef',
+                '-fdiagnostics-show-option',
               ],
             },
           }],

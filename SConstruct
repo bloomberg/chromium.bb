@@ -2204,6 +2204,7 @@ def MakeUnixLikeEnv():
         '-Wswitch-enum',
         '-Wsign-compare',
         '-Wundef',
+        '-fdiagnostics-show-option',
         '-fvisibility=hidden',
         '-fstack-protector',
         ] + werror_flags,
