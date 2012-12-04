@@ -17,6 +17,7 @@ var recordMockData = false;
 
   // Only messages registered in the callback map will be intercepted.
   var callbackMap = {
+    'appRemoved': 'ntp.appRemoved',
     'blacklistURLFromMostVisited': NO_CALLBACK,
     'clearMostVisitedURLsBlacklist': NO_CALLBACK,
     'getApps': 'ntp.getAppsCallback',
@@ -242,14 +243,18 @@ var recordMockData = false;
     },
 
     uninstallApp: function(id) {
+      var appData;
       var data = dataMap['getApps'][0].apps;
       for (var i = 0, length = data.length; i < length; i++) {
         if (data[i].id == id) {
+          appData = data[i];
           data.splice(i, 1);
           break;
         }
       }
-      dispatchCallbackForMessage('getApps');
+      assert(appData);
+      dataMap['appRemoved'] = [appData, true, true];
+      dispatchCallbackForMessage('appRemoved');
     },
   };
 

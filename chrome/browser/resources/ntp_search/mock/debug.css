@@ -44,10 +44,6 @@
   background: rgb(255, 255, 119);
 }
 
-.debug .hide-row {
-  opacity: 0.35;
-}
-
 .debug .hide-col-0 .tile-col-0,
 .debug .hide-col-1 .tile-col-1,
 .debug .hide-col-2 .tile-col-2,

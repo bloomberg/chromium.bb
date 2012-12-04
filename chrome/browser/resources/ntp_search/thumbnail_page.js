@@ -162,6 +162,8 @@ cr.define('ntp', function() {
      * Initializes a ThumbnailPage.
      */
     initialize: function() {
+      TilePage.prototype.initialize.apply(this, arguments);
+
       this.classList.add('thumbnail-page');
     },
 

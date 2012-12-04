@@ -417,19 +417,19 @@ cr.define('ntp', function() {
       if (page)
         page.removeAllTiles();
 
-      // Get the array of apps and add any special synthesized entries
+      // Get the array of apps and add any special synthesized entries.
       var apps = data.apps;
 
-      // Sort by launch ordinal
+      // Sort alphabetically.
       apps.sort(function(a, b) {
-        return a.app_launch_ordinal > b.app_launch_ordinal ? 1 :
-          a.app_launch_ordinal < b.app_launch_ordinal ? -1 : 0;
+        return a.title.toLocaleLowerCase() > b.title.toLocaleLowerCase() ? 1 :
+          a.title.toLocaleLowerCase() < b.title.toLocaleLowerCase() ? -1 : 0;
       });
 
       // An app to animate (in case it was just installed).
       var highlightApp;
 
-      // Add the apps, creating pages as necessary
+      // Add the apps, creating pages as necessary.
       this.appendTilePage(new ntp.AppsPage(),
           loadTimeData.getString('appDefaultPageName'));
       for (var i = 0; i < apps.length; i++) {

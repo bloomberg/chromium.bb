@@ -13,15 +13,16 @@
 
 .apps-page .app {
   display: block;
-  height: 77px;
+  height: 70px;
   outline: none;
   text-align: center;
-  width: 77px;
+  width: 70px;
 }
 
 .apps-page .app .title {
   color: #777;
   font-size: 0.9166em;
+  margin-top: 2px;
 }
 
 .app-contents {

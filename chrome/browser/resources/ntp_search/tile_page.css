@@ -11,10 +11,15 @@
   position: relative;
 }
 
-.tile-page-content {
+.tile-page-frame {
   margin: 0 auto;
   overflow: hidden;
+  position: relative;
   width: 748px;
+}
+
+.tile-page-content {
+  overflow: hidden;
 }
 
 .tile-grid {
@@ -84,18 +89,6 @@
 }
 
 /* -----------------------------------------------------------------------------
-   Tile Row Animation
------------------------------------------------------------------------------ */
-
-.hide-row {
-  opacity: 0;
-}
-
-.tile-grid .hide-row .tile-cell {
-  opacity: 1;
-}
-
-/* -----------------------------------------------------------------------------
    Tile Position Animation
 ----------------------------------------------------------------------------- */
 
@@ -119,4 +112,151 @@
 
 .animate-tile-repositioning .animate-hide-tile.target-tile {
   -webkit-transform: scale(0.5);
+}
+
+/* -----------------------------------------------------------------------------
+  Scroll Bars
+----------------------------------------------------------------------------- */
+
+.tile-page-content {
+  /* TODO(pedrosimonetti): Remove this when fixing the Apps page height. */
+  height: 92px;
+}
+
+.scrollable {
+  overflow-y: auto;
+}
+
+.scrollable .shadow-top {
+  -webkit-margin-end: 0;
+  -webkit-mask-box-image: -webkit-linear-gradient(left,
+                                                  rgba(0, 0, 0, 0.1),
+                                                  rgba(0, 0, 0, 0.8),
+                                                  rgba(0, 0, 0, 0.1));
+  background: -webkit-linear-gradient(top,
+                                      rgba(0, 0, 0, 0.2),
+                                      transparent);
+  height: 6px;
+  left: 0;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+.scrollable .shadow-top::after {
+  border-top: 1px solid rgba(0, 0, 0, 0.3);
+  content: '';
+  display: block;
+  height: 0;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.scrollable .shadow-bottom {
+  -webkit-margin-end: 0;
+  -webkit-mask-box-image: -webkit-linear-gradient(left,
+                                                  rgba(0, 0, 0, 0.1),
+                                                  rgba(0, 0, 0, 0.8),
+                                                  rgba(0, 0, 0, 0.1));
+  background: -webkit-linear-gradient(bottom,
+                                      rgba(0, 0, 0, 0.2),
+                                      transparent);
+  bottom: 0;
+  height: 4px;
+  left: 0;
+  opacity: 1;
+  position: absolute;
+  width: 100%;
+  z-index: 1000;
+}
+
+.scrollable .shadow-bottom::after {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+  bottom: 0;
+  content: '';
+  display: block;
+  height: 0;
+  left: 0;
+  position: absolute;
+  width: 100%;
+}
+
+::-webkit-scrollbar {
+  height: 12px;
+  width: 12px;
+}
+
+::-webkit-scrollbar-button {
+  height: 0;
+  width: 0;
+}
+
+::-webkit-scrollbar-button:start:decrement,
+::-webkit-scrollbar-button:end:increment {
+  display: block;
+}
+
+::-webkit-scrollbar-button:vertical:start:increment,
+::-webkit-scrollbar-button:vertical:end:decrement {
+  display: none;
+}
+
+::-webkit-scrollbar-track:vertical {
+  -webkit-border-end: none;
+  -webkit-border-start: 5px solid transparent;
+  background-clip: padding-box;
+  background-color: white;
+}
+
+::-webkit-scrollbar-track:horizontal {
+  background-clip: padding-box;
+  background-color: white;
+  border-bottom: none;
+  border-top: 5px solid transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  -webkit-box-shadow: inset 1px 1px 0 rgba(0, 0, 0, 0.10),
+                      inset 0 -1px 0 rgba(0, 0, 0, 0.07);
+  background-clip: padding-box;
+  background-color: rgba(0, 0, 0, 0.2);
+  min-height: 28px;
+  padding-top: 100px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  -webkit-box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.25);
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+::-webkit-scrollbar-thumb:active {
+  -webkit-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.35);
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+::-webkit-scrollbar-thumb:vertical {
+  -webkit-border-end: none;
+  -webkit-border-start: 5px solid transparent;
+  border-bottom: none;
+  border-top: none;
+}
+
+::-webkit-scrollbar-thumb:horizontal {
+  border: none;
+  border-top: 5px solid transparent;
+}
+
+::-webkit-scrollbar-track:hover {
+  -webkit-box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.10);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+::-webkit-scrollbar-track:active {
+  -webkit-box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.14),
+                      inset -1px -1px 0 rgba(0, 0, 0, 0.07);
+  background-color: rgba(0, 0, 0, 0.05);
 }

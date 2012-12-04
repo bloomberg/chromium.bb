@@ -5,6 +5,28 @@
 cr.define('ntp', function() {
   'use strict';
 
+
+  /**
+   * The maximum gap from the edge of the scrolling area which will display
+   * the shadow with transparency. After this point the shadow will become
+   * 100% opaque.
+   * @type {number}
+   * @const
+   */
+  var MAX_SCROLL_SHADOW_GAP = 16;
+
+  /**
+   * @type {number}
+   * @const
+   */
+  var TILE_ROW_HEIGHT = 92;
+
+  /**
+   * @type {number}
+   * @const
+   */
+  var SCROLL_BAR_WIDTH = 12;
+
   //----------------------------------------------------------------------------
   // Tile
   //----------------------------------------------------------------------------
@@ -197,7 +219,6 @@ cr.define('ntp', function() {
   function TilePage() {
     var el = cr.doc.createElement('div');
     el.__proto__ = TilePage.prototype;
-    el.initialize();
 
     return el;
   }
@@ -220,7 +241,9 @@ cr.define('ntp', function() {
       // The start margin of a cell (left or right according to text direction).
       cellMarginStart: 12,
       // The maximum number of Tiles to be displayed.
-      maxTileCount: 6
+      maxTileCount: 6,
+      // Whether the TilePage content will be scrollable.
+      scrollable: false,
     },
 
     /**
@@ -229,10 +252,29 @@ cr.define('ntp', function() {
     initialize: function() {
       this.className = 'tile-page';
 
-      // The content defines the actual space a page has to display tiles.
+      // The div that wraps the scrollable element.
+      this.frame_ = this.ownerDocument.createElement('div');
+      this.frame_.className = 'tile-page-frame';
+      this.appendChild(this.frame_);
+
+      // The content/scrollable element.
       this.content_ = this.ownerDocument.createElement('div');
       this.content_.className = 'tile-page-content';
-      this.appendChild(this.content_);
+      this.frame_.appendChild(this.content_);
+
+      if (this.config.scrollable) {
+        this.content_.classList.add('scrollable');
+
+        // The scrollable shadow top.
+        this.shadowTop_ = this.ownerDocument.createElement('div');
+        this.shadowTop_.className = 'shadow-top';
+        this.content_.appendChild(this.shadowTop_);
+
+        // The scrollable shadow bottom.
+        this.shadowBottom_ = this.ownerDocument.createElement('div');
+        this.shadowBottom_.className = 'shadow-bottom';
+        this.content_.appendChild(this.shadowBottom_);
+      }
 
       // The div that defines the tile grid viewport.
       this.tileGrid_ = this.ownerDocument.createElement('div');
@@ -253,6 +295,8 @@ cr.define('ntp', function() {
 
       this.tileGrid_.addEventListener('webkitTransitionEnd',
           this.onTileGridTransitionEnd_.bind(this));
+
+      this.content_.addEventListener('scroll', this.onScroll.bind(this));
     },
 
     /**
@@ -498,7 +542,11 @@ cr.define('ntp', function() {
      * @private
      */
     getColCountForWidth_: function(width) {
-      var availableWidth = width + this.config.cellMarginStart;
+      var scrollBarIsVisible = this.config.scrollable &&
+          this.content_.scrollHeight > this.content_.clientHeight;
+      var scrollBarWidth = scrollBarIsVisible ? SCROLL_BAR_WIDTH : 0;
+      var availableWidth = width + this.config.cellMarginStart - scrollBarWidth;
+
       var requiredWidth = this.getTileRequiredWidth_();
       var colCount = Math.floor(availableWidth / requiredWidth);
       return colCount;
@@ -523,12 +571,14 @@ cr.define('ntp', function() {
      */
     getTilePosition_: function(index) {
       var colCount = this.colCount_;
+      var row = Math.floor(index / colCount);
       var col = index % colCount;
       if (isRTL())
         col = colCount - col - 1;
       var config = this.config;
+      var top = TILE_ROW_HEIGHT * row;
       var left = col * (config.cellWidth + config.cellMarginStart);
-      return {top: 0, left: left};
+      return {top: top, left: left};
     },
 
     // rendering
@@ -569,11 +619,6 @@ cr.define('ntp', function() {
           tileRow.className = 'tile-row';
           tileGridContent.appendChild(tileRow);
         }
-
-        // Adjust row visibility.
-        var rowVisible = row >= pageOffset &&
-            row <= (pageOffset + numOfVisibleRows - 1);
-        this.showTileRow_(tileRow, rowVisible);
 
         // The tiles inside the current row.
         var tileRowTiles = tileRow.childNodes;
@@ -626,6 +671,8 @@ cr.define('ntp', function() {
 
       this.colCount_ = colCount;
       this.rowCount_ = rowCount;
+
+      this.onScroll();
     },
 
     // layout
@@ -681,9 +728,11 @@ cr.define('ntp', function() {
         };
       }
 
-      this.content_.style.width = contentWidth + 'px';
-
       this.animatingColCount_ = colCount;
+
+      this.frame_.style.width = contentWidth + 'px';
+
+      this.onScroll();
     },
 
     // tile repositioning animation
@@ -952,16 +1001,7 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Animates the display of a row. TODO(pedrosimonetti): Make it local?
-     * @param {HTMLElement} row The row element.
-     * @param {boolean} show Whether or not to show the row.
-     */
-    showTileRow_: function(row, show) {
-      row.classList[show ? 'remove' : 'add']('hide-row');
-    },
-
-    /**
-     * Animates the display of columns. TODO(pedrosimonetti): Make it local?
+     * Animates the display of columns.
      * @param {number} col The column number.
      * @param {boolean} show Whether or not to show the row.
      */
@@ -976,6 +1016,24 @@ cr.define('ntp', function() {
 
     // event handlers
     // -------------------------------------------------------------------------
+
+    /**
+     * Handles the scroll event.
+     * @protected
+     */
+    onScroll: function() {
+      // If the TilePage is scrollable, then the opacity of shadow top and
+      // bottom must adjusted, indicating when there's an overflow content.
+      if (this.config.scrollable) {
+        var content = this.content_;
+        var topGap = Math.min(MAX_SCROLL_SHADOW_GAP, content.scrollTop);
+        var bottomGap = Math.min(MAX_SCROLL_SHADOW_GAP, content.scrollHeight -
+            content.scrollTop - content.clientHeight);
+
+        this.shadowTop_.style.opacity = topGap / MAX_SCROLL_SHADOW_GAP;
+        this.shadowBottom_.style.opacity = bottomGap / MAX_SCROLL_SHADOW_GAP;
+      }
+    },
 
     /**
      * Handles the end of the horizontal tile grid transition.

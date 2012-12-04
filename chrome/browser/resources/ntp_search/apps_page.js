@@ -576,14 +576,18 @@ cr.define('ntp', function() {
     // wants the non-default behavior.
     config: {
       // The width of a cell.
-      cellWidth: 77,
+      cellWidth: 70,
       // The start margin of a cell (left or right according to text direction).
       cellMarginStart: 12,
       // The maximum number of Tiles to be displayed.
-      maxTileCount: 20
+      maxTileCount: 20,
+      // Whether the TilePage content will be scrollable.
+      scrollable: true,
     },
 
     initialize: function() {
+      TilePage.prototype.initialize.apply(this, arguments);
+
       this.classList.add('apps-page');
 
       this.addEventListener('cardselected', this.onCardSelected_);
@@ -595,8 +599,6 @@ cr.define('ntp', function() {
                             this.onCardChangeEnded_);
 
       this.addEventListener('tilePage:tile_added', this.onTileAdded_);
-
-      this.content_.addEventListener('scroll', this.onScroll_.bind(this));
     },
 
     /**
@@ -605,27 +607,26 @@ cr.define('ntp', function() {
      */
     insertAndHighlightApp: function(appData) {
       ntp.getCardSlider().selectCardByValue(this);
-      this.content_.scrollTop = this.content_.scrollHeight;
       this.insertApp(appData, true);
     },
 
     /**
-     * Similar to appendApp, but it respects the app_launch_ordinal field of
-     * |appData|.
+     * Inserts an App into the TilePage, preserving the alphabetical order.
      * @param {Object} appData The data that describes the app.
      * @param {boolean} animate Whether to animate the insertion.
      */
     insertApp: function(appData, animate) {
       var index = this.tiles_.length;
       for (var i = 0; i < this.tiles_.length; i++) {
-        if (appData.app_launch_ordinal <
-            this.tiles_[i].appData.app_launch_ordinal) {
+        if (appData.title.toLocaleLowerCase() <
+            this.tiles_[i].appData.title.toLocaleLowerCase()) {
           index = i;
           break;
         }
       }
 
-      this.addTileAt(new App(appData), index);
+      var app = new App(appData);
+      this.addTileAt(app, index);
       this.renderGrid_();
     },
 
@@ -684,14 +685,10 @@ cr.define('ntp', function() {
       }
     },
 
-    /**
-     * A handler for when the apps page is scrolled (then we need to reposition
-     * the bubbles.
-     * @private
-     */
-    onScroll_: function(e) {
-      if (!this.selected)
-        return;
+    /** @override */
+    onScroll: function() {
+      TilePage.prototype.onScroll.apply(this, arguments);
+
       for (var i = 0; i < this.tiles_.length; i++) {
         var app = this.tiles_[i];
         assert(app instanceof App);
