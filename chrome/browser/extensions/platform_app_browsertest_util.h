@@ -19,23 +19,11 @@ class ShellWindow;
 namespace extensions {
 class Extension;
 
-// TODO(benwells): Clean up this test hierarchy.
-// - rename this to PlatformAppApiTest
-// - remove the existing PlatformAppApiTest
-// - Move the CloseWindow* functions from ExtensionBrowserTest to here
-// - Move the RunPlatformAppTest functions from ExtensionApiTest to here
-// - Make all platform app tests use this class.
 class PlatformAppBrowserTest : public ExtensionApiTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
 
  protected:
-  // Loads the app named |name| out of the platform_apps subdirectory.
-  const Extension* LoadPlatformApp(const char* name);
-
-  // Installs the app named |name| out of the platform_apps subdirectory.
-  const Extension* InstallPlatformApp(const char* name);
-
   // Runs the app named |name| out of the platform_apps subdirectory. Waits
   // until it is launched.
   const Extension* LoadAndLaunchPlatformApp(const char* name);
@@ -75,6 +63,9 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
 
   // Creates an empty shell window for |extension|.
   ShellWindow* CreateShellWindow(const Extension* extension);
+
+  // Closes |window| and waits until it's gone.
+  void CloseShellWindow(ShellWindow* window);
 };
 
 }

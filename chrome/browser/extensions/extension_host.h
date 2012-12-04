@@ -129,12 +129,6 @@ class ExtensionHost : public content::WebContentsDelegate,
   void WillRunJavaScriptDialog();
   void DidCloseJavaScriptDialog();
 
-  // This is called on hosts which need to keep the browser process alive. This
-  // function will add a browser process keep-alive, if it hasn't already been
-  // added. Hosts which have had this called will remove the keep-alive when
-  // they are destroyed.
-  void SetKeepsBrowserProcessAlive();
-
   // content::WebContentsObserver
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void RenderViewCreated(
@@ -250,9 +244,6 @@ class ExtensionHost : public content::WebContentsDelegate,
 
   // True if the main frame has finished parsing.
   bool document_element_available_;
-
-  // If true, the browser process has had a keep-alive added for this host.
-  bool keeping_browser_process_alive_;
 
   // The original URL of the page being hosted.
   GURL initial_url_;

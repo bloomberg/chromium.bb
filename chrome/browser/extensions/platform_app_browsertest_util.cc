@@ -8,13 +8,11 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/api/tabs/tabs.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -28,49 +26,46 @@ namespace extensions {
 void PlatformAppBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   // Skips ExtensionApiTest::SetUpCommandLine.
   ExtensionBrowserTest::SetUpCommandLine(command_line);
-}
 
-const Extension* PlatformAppBrowserTest::LoadPlatformApp(const char* name) {
-  const Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("platform_apps").AppendASCII(name));
-  EXPECT_TRUE(extension);
-
-  return extension;
-}
-
-const Extension* PlatformAppBrowserTest::InstallPlatformApp(
-    const char* name) {
-  const Extension* extension = InstallExtension(
-      test_data_dir_.AppendASCII("platform_apps").AppendASCII(name), 1);
-  EXPECT_TRUE(extension);
-
-  return extension;
+  // Make event pages get suspended quicker.
+  command_line->AppendSwitchASCII(switches::kEventPageIdleTime, "1");
+  command_line->AppendSwitchASCII(switches::kEventPageUnloadingTime, "1");
 }
 
 const Extension* PlatformAppBrowserTest::LoadAndLaunchPlatformApp(
     const char* name) {
-  ExtensionTestMessageListener launched_listener("Launched", false);
+  content::WindowedNotificationObserver app_loaded_observer(
+      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+      content::NotificationService::AllSources());
 
-  const Extension* extension = LoadPlatformApp(name);
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("platform_apps").AppendASCII(name));
+  EXPECT_TRUE(extension);
+
   application_launch::OpenApplication(application_launch::LaunchParams(
           browser()->profile(), extension, extension_misc::LAUNCH_NONE,
           NEW_WINDOW));
 
-  launched_listener.WaitUntilSatisfied();
+  app_loaded_observer.Wait();
 
   return extension;
 }
 
 const Extension* PlatformAppBrowserTest::InstallAndLaunchPlatformApp(
     const char* name) {
-  ExtensionTestMessageListener launched_listener("Launched", false);
+  content::WindowedNotificationObserver app_loaded_observer(
+      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+      content::NotificationService::AllSources());
 
-  const Extension* extension = InstallPlatformApp(name);
+  const Extension* extension = InstallExtension(
+      test_data_dir_.AppendASCII("platform_apps").AppendASCII(name), 1);
+  EXPECT_TRUE(extension);
+
   application_launch::OpenApplication(application_launch::LaunchParams(
           browser()->profile(), extension, extension_misc::LAUNCH_NONE,
           NEW_WINDOW));
 
-  launched_listener.WaitUntilSatisfied();
+  app_loaded_observer.Wait();
 
   return extension;
 }
@@ -89,8 +84,9 @@ ShellWindow* PlatformAppBrowserTest::GetFirstShellWindow() {
   ShellWindowRegistry::const_iterator iter;
   ShellWindowRegistry::ShellWindowSet shell_windows =
       app_registry->shell_windows();
-  for (iter = shell_windows.begin(); iter != shell_windows.end(); ++iter)
+  for (iter = shell_windows.begin(); iter != shell_windows.end(); ++iter) {
     return *iter;
+  }
 
   return NULL;
 }
@@ -146,6 +142,14 @@ ShellWindow* PlatformAppBrowserTest::CreateShellWindow(
   ShellWindow::CreateParams params;
   return ShellWindow::Create(
       browser()->profile(), extension, GURL(""), params);
+}
+
+void PlatformAppBrowserTest::CloseShellWindow(ShellWindow* window) {
+  content::WindowedNotificationObserver destroyed_observer(
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::NotificationService::AllSources());
+  window->GetBaseWindow()->Close();
+  destroyed_observer.Wait();
 }
 
 }  // namespace extensions

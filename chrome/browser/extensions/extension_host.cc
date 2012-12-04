@@ -22,7 +22,6 @@
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/intents/web_intents_util.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_creator.h"
 #include "chrome/browser/ui/browser.h"
@@ -138,7 +137,6 @@ ExtensionHost::ExtensionHost(const Extension* extension,
       render_view_host_(NULL),
       did_stop_loading_(false),
       document_element_available_(false),
-      keeping_browser_process_alive_(false),
       initial_url_(url),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           extension_function_dispatcher_(profile_, this)),
@@ -171,11 +169,6 @@ ExtensionHost::~ExtensionHost() {
       content::Source<Profile>(profile_),
       content::Details<ExtensionHost>(this));
   ProcessCreationQueue::GetInstance()->Remove(this);
-
-#if !defined(OS_ANDROID)
-  if (keeping_browser_process_alive_)
-    browser::EndKeepAlive();
-#endif
 }
 
 void ExtensionHost::CreateView(Browser* browser) {
@@ -465,16 +458,6 @@ void ExtensionHost::DidCloseJavaScriptDialog() {
       ExtensionSystem::Get(profile_)->process_manager();
   if (pm)
     pm->DecrementLazyKeepaliveCount(extension());
-}
-
-void ExtensionHost::SetKeepsBrowserProcessAlive() {
-  if (keeping_browser_process_alive_)
-    return;
-
-#if !defined(OS_ANDROID)
-  keeping_browser_process_alive_ = true;
-  browser::StartKeepAlive();
-#endif
 }
 
 WebContents* ExtensionHost::OpenURLFromTab(WebContents* source,

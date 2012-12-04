@@ -58,18 +58,20 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
 }  // namespace
 
 // TODO(calvinlo): Add Chrome OS support for syncable file system
+#if !defined(OS_CHROMEOS)
+
+// TODO(calvinlo): Add Chrome OS support for syncable file system
 // (http://crbug.com/160693)
 #if !defined(OS_CHROMEOS)
 
-// TODO(calvinlo): Re-enable this test.
-// (http://crbug.com/162811)
+// TODO(benwells): Re-enable this test.
 IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, DISABLED_DeleteFileSystem) {
   ASSERT_TRUE(RunPlatformAppTest("sync_file_system/delete_file_system"))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetUsageAndQuota) {
-  ASSERT_TRUE(RunPlatformAppTest("sync_file_system/get_usage_and_quota"))
+  ASSERT_TRUE(RunExtensionTest("sync_file_system/get_usage_and_quota"))
       << message_;
 }
 
@@ -84,6 +86,8 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, WriteFileThenGetUsage) {
   ASSERT_TRUE(RunPlatformAppTest("sync_file_system/write_file_then_get_usage"))
       << message_;
 }
+
+#endif  // !defined(OS_CHROMEOS)
 
 #endif  // !defined(OS_CHROMEOS)
 

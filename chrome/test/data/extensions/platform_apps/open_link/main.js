@@ -17,5 +17,3 @@ chrome.test.getConfig(function(config) {
 onmessage = function() {
   chrome.test.sendMessage('Link opened');
 };
-
-chrome.test.sendMessage('Launched');

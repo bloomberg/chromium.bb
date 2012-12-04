@@ -57,19 +57,17 @@ IN_PROC_BROWSER_TEST_F(PlatformAppMediaGalleriesBrowserTest, NoGalleries) {
 IN_PROC_BROWSER_TEST_F(PlatformAppMediaGalleriesBrowserTest,
                        MediaGalleriesRead) {
   chrome::EnsureMediaDirectoriesExists media_directories;
-  ASSERT_TRUE(RunPlatformAppTestReturnImmediately(
-      "api_test/media_galleries/read_access")) << message_;
+  ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/read_access"))
+      << message_;
   RunSecondTestPhase(media_directories.num_galleries());
-  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppMediaGalleriesBrowserTest,
                        MediaGalleriesNoAccess) {
   chrome::EnsureMediaDirectoriesExists media_directories;
-  ASSERT_TRUE(RunPlatformAppTestReturnImmediately(
-      "api_test/media_galleries/no_access")) << message_;
+  ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/no_access"))
+      << message_;
   RunSecondTestPhase(media_directories.num_galleries());
-  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(ExperimentalMediaGalleriesApiTest,

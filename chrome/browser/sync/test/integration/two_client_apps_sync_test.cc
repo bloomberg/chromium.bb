@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "base/command_line.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/profiles/profile.h"
@@ -11,7 +10,6 @@
 #include "chrome/browser/sync/test/integration/apps_helper.h"
 #include "chrome/browser/sync/test/integration/sync_app_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "sync/api/string_ordinal.h"
 
@@ -30,21 +28,12 @@ using apps_helper::InstallPlatformApp;
 using apps_helper::SetAppLaunchOrdinalForApp;
 using apps_helper::SetPageOrdinalForApp;
 using apps_helper::UninstallApp;
-using apps_helper::WaitForPlatformAppsToUnload;
 
 class TwoClientAppsSyncTest : public SyncTest {
  public:
   TwoClientAppsSyncTest() : SyncTest(TWO_CLIENT) {}
 
   virtual ~TwoClientAppsSyncTest() {}
-
- protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    SyncTest::SetUpCommandLine(command_line);
-    // Make event pages get suspended quicker.
-    command_line->AppendSwitchASCII(switches::kEventPageIdleTime, "1");
-    command_line->AppendSwitchASCII(switches::kEventPageUnloadingTime, "1");
-  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientAppsSyncTest);
@@ -119,8 +108,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, StartWithDifferentApps) {
   InstallAppsPendingForSync(GetProfile(1));
 
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
-
-  WaitForPlatformAppsToUnload();
 }
 
 // Install some apps on both clients, then sync.  Then install some apps on only

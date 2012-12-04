@@ -84,10 +84,6 @@ void CopyNTPOrdinals(Profile* source, Profile* destination, int index);
 // Fix any NTP icon collisions that are currently in |profile|.
 void FixNTPOrdinalCollisions(Profile* profile);
 
-// Wait until there are no lazy background pages loaded.
-// This needs to be done before exiting tests which installed platform apps.
-void WaitForPlatformAppsToUnload();
-
 }  // namespace apps_helper
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_APPS_HELPER_H_

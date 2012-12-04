@@ -5,5 +5,5 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, SystemIndicator) {
-  ASSERT_TRUE(RunPlatformAppTest("system_indicator/basics")) << message_;
+  ASSERT_TRUE(RunExtensionTest("system_indicator/basics")) << message_;
 }

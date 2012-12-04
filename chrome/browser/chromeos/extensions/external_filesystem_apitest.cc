@@ -344,7 +344,6 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserWebIntentTest) {
   // The webintent_handler sends chrome.test.succeed() on successful receipt
   // of the incoming Web Intent.
   ASSERT_TRUE(catcher.GetNextResult()) << message_;
-  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserTestWrite) {

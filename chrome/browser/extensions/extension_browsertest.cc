@@ -23,7 +23,6 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -48,7 +47,6 @@
 using extensions::Extension;
 using extensions::ExtensionCreator;
 using extensions::FeatureSwitch;
-using extensions::ShellWindowRegistry;
 
 ExtensionBrowserTest::ExtensionBrowserTest()
     : loaded_(false),
@@ -79,10 +77,6 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
                                   "TestUser@gmail.com");
   command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
 #endif
-
-  // Make event pages get suspended quicker.
-  command_line->AppendSwitchASCII(switches::kEventPageIdleTime, "1");
-  command_line->AppendSwitchASCII(switches::kEventPageUnloadingTime, "1");
 }
 
 const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
@@ -549,39 +543,6 @@ bool ExtensionBrowserTest::WaitForCrxInstallerDone() {
                                  chrome::NOTIFICATION_CRX_INSTALLER_DONE,
                                  content::NotificationService::AllSources());
   return crx_installers_done_observed_ == (before + 1);
-}
-
-void ExtensionBrowserTest::CloseShellWindow(ShellWindow* window) {
-  content::WindowedNotificationObserver destroyed_observer(
-      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-      content::NotificationService::AllSources());
-  window->GetBaseWindow()->Close();
-  destroyed_observer.Wait();
-}
-
-void ExtensionBrowserTest::CloseShellWindowsAndWaitForAppToExit() {
-  ExtensionProcessManager* manager =
-      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
-  // If there are no background hosts active, the app must have already exited.
-  // This can happen if no windows were opened.
-  if (manager->background_hosts().empty())
-    return;
-
-  content::WindowedNotificationObserver destroyed_observer(
-      chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-      content::NotificationService::AllSources());
-
-  // Close all the windows.
-  ShellWindowRegistry* app_registry =
-      ShellWindowRegistry::Get(browser()->profile());
-  ShellWindowRegistry::const_iterator iter;
-  ShellWindowRegistry::ShellWindowSet shell_windows =
-      app_registry->shell_windows();
-  for (iter = shell_windows.begin(); iter != shell_windows.end(); ++iter)
-    CloseShellWindow(*iter);
-
-  // Now wait for the lazy background page of the platform app to be unloaded.
-  destroyed_observer.Wait();
 }
 
 void ExtensionBrowserTest::OpenWindow(content::WebContents* contents,

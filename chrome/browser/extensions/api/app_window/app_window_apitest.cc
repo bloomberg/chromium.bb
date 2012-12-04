@@ -35,8 +35,6 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiBounds) {
 
   ready_listener.Reply(base::IntToString(slop));
   ASSERT_TRUE(success_listener.WaitUntilSatisfied());
-
-  CloseShellWindowsAndWaitForAppToExit();
 }
 
 // TODO(asargent) - Fix onMinimzed event on OSX (crbug.com/162793) and figure
@@ -46,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiBounds) {
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiProperties) {
   EXPECT_TRUE(
-      RunPlatformAppTest("platform_apps/windows_api_properties")) << message_;
+      RunExtensionTest("platform_apps/windows_api_properties")) << message_;
 }
 
 #endif  // defined(TOOLKIT_VIEWS)

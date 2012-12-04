@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 chrome.app.runtime.onLaunched.addListener(function() {
-  chrome.test.sendMessage("Launched");
   chrome.app.window.create("main.html", function(win){
     // Make sure we get back a bounds and that it isn't all 0's.
     var bounds = win.getBounds();
