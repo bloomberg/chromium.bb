@@ -93,13 +93,16 @@ cr.define('cr.ui', function() {
     decorate: function() {
       this.appendChild(this.createOverlay_());
       this.appendChild(this.title_ = this.createTitle_());
-      this.appendChild(new DropDownContainer());
+      var container = new DropDownContainer();
+      container.id = this.id + '-dropdown-container';
+      this.appendChild(container);
 
       this.addEventListener('keydown', this.keyDownHandler_);
 
       this.title_.id = this.id + '-dropdown';
       this.title_.setAttribute('role', 'button');
       this.title_.setAttribute('aria-haspopup', 'true');
+      this.title_.setAttribute('aria-owns', container.id);
     },
 
     /**
@@ -119,9 +122,7 @@ cr.define('cr.ui', function() {
       this.container.hidden = !show;
       if (show) {
         this.container.selectItem(this.container.firstItem, false);
-        this.title_.setAttribute('aria-pressed', 'true');
       } else {
-        this.title_.setAttribute('aria-pressed', 'false');
         this.title_.removeAttribute('aria-activedescendant');
       }
     },
