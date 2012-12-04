@@ -70,16 +70,6 @@ const char kNewWallpaperTypeNodeName[] = "type";
 // File path suffix of the original custom wallpaper.
 const char kOriginalCustomWallpaperSuffix[] = "_wallpaper";
 
-gfx::ImageSkia GetWallpaperThumbnail(const gfx::ImageSkia& wallpaper) {
-  gfx::ImageSkia thumbnail = gfx::ImageSkiaOperations::CreateResizedImage(
-      wallpaper,
-      skia::ImageOperations::RESIZE_LANCZOS3,
-      gfx::Size(kThumbnailWidth, kThumbnailHeight));
-
-  thumbnail.MakeThreadSafe();
-  return thumbnail;
-}
-
 // For our scaling ratios we need to round positive numbers.
 int RoundPositive(double x) {
   return static_cast<int>(floor(x + 0.5));
@@ -192,16 +182,6 @@ FilePath WallpaperManager::GetWallpaperPathForUser(const std::string& username,
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   return user_data_dir.AppendASCII(filename);
-}
-
-gfx::ImageSkia WallpaperManager::GetCustomWallpaperThumbnail(
-    const std::string& email) {
-  CustomWallpaperMap::const_iterator it =
-      custom_wallpaper_thumbnail_cache_.find(email);
-  if (it != custom_wallpaper_thumbnail_cache_.end())
-    return (*it).second;
-  else
-    return gfx::ImageSkia();
 }
 
 bool WallpaperManager::GetLoggedInUserWallpaperInfo(WallpaperInfo* info) {
@@ -634,14 +614,6 @@ void WallpaperManager::CacheUserWallpaper(const std::string& email) {
   }
 }
 
-void WallpaperManager::CacheThumbnail(const std::string& email,
-                                      scoped_ptr<gfx::ImageSkia> wallpaper) {
-  DCHECK(BrowserThread::GetBlockingPool()->
-      IsRunningSequenceOnCurrentThread(sequence_token_));
-  custom_wallpaper_thumbnail_cache_[email] =
-      GetWallpaperThumbnail(*wallpaper.get());
-}
-
 void WallpaperManager::ClearObsoleteWallpaperPrefs() {
   PrefService* prefs = g_browser_process->local_state();
   DictionaryPrefUpdate wallpaper_properties_pref(prefs,
@@ -771,15 +743,6 @@ bool WallpaperManager::GetUserWallpaperInfo(const std::string& email,
   return false;
 }
 
-void WallpaperManager::GenerateUserWallpaperThumbnail(
-    const std::string& email,
-    User::WallpaperType type,
-    const gfx::ImageSkia& wallpaper) {
-  DCHECK(BrowserThread::GetBlockingPool()->
-      IsRunningSequenceOnCurrentThread(sequence_token_));
-  custom_wallpaper_thumbnail_cache_[email] = GetWallpaperThumbnail(wallpaper);
-}
-
 void WallpaperManager::GetCustomWallpaperInternal(
     const std::string& email,
     const WallpaperInfo& info,
@@ -836,14 +799,6 @@ void WallpaperManager::OnWallpaperDecoded(const std::string& email,
       SetDefaultWallpaper();
     return;
   }
-  // Generate all reps before passing to another thread.
-  wallpaper.image().EnsureRepsForSupportedScaleFactors();
-  scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper.image().DeepCopy());
-
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&WallpaperManager::CacheThumbnail,
-                                    base::Unretained(this), email,
-                                    base::Passed(&deep_copy)));
 
   // Only cache user wallpaper at login screen.
   if (!UserManager::Get()->IsUserLoggedIn()) {
@@ -864,7 +819,6 @@ void WallpaperManager::ProcessCustomWallpaper(
   DCHECK(BrowserThread::GetBlockingPool()->
       IsRunningSequenceOnCurrentThread(sequence_token_));
   UserImage wallpaper(*image.get(), raw_image);
-  GenerateUserWallpaperThumbnail(email, info.type, wallpaper.image());
   if (persistent)
     SaveCustomWallpaper(email, FilePath(info.file), info.layout, wallpaper);
 }

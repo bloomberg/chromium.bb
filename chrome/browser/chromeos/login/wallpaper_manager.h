@@ -91,9 +91,6 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   FilePath GetWallpaperPathForUser(const std::string& username,
                                    bool is_small);
 
-  // Gets the thumbnail of custom wallpaper from cache.
-  gfx::ImageSkia GetCustomWallpaperThumbnail(const std::string& email);
-
   // Gets wallpaper information of logged in user.
   bool GetLoggedInUserWallpaperInfo(WallpaperInfo* info);
 
@@ -186,10 +183,6 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // Caches |email|'s wallpaper to memory.
   void CacheUserWallpaper(const std::string& email);
 
-  // Generates a 128x80 thumbnail and caches it.
-  void CacheThumbnail(const std::string& email,
-                      scoped_ptr<gfx::ImageSkia> wallpaper);
-
   // Clears all obsolete wallpaper prefs from old version wallpaper pickers.
   void ClearObsoleteWallpaperPrefs();
 
@@ -204,11 +197,6 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   void LoadWallpaper(const std::string& email,
                      const WallpaperInfo& info,
                      bool update_wallpaper);
-
-  // Generates a 128x80 thumbnail.
-  void GenerateUserWallpaperThumbnail(const std::string& email,
-                                      User::WallpaperType type,
-                                      const gfx::ImageSkia& wallpaper);
 
   // Gets |email|'s custom wallpaper at |wallpaper_path|. Falls back on original
   // custom wallpaper. When |update_wallpaper| is true, sets wallpaper to the
@@ -300,8 +288,6 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
 
   // Caches wallpapers of users. Accessed only on UI thread.
   CustomWallpaperMap wallpaper_cache_;
-
-  CustomWallpaperMap custom_wallpaper_thumbnail_cache_;
 
   // The last selected user on user pod row.
   std::string last_selected_user_;
