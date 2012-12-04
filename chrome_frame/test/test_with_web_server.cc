@@ -691,7 +691,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ReferrerTest) {
 
 // Times out: http://crbug.com/163728
 const wchar_t kSubFrameTestPage[] = L"full_tab_sub_frame_main.html";
-TEST_F(ChromeFrameTestWithWebServer, DISALBED_FullTabModeIE_SubFrame) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_SubFrame) {
   SimpleBrowserTest(IE, kSubFrameTestPage);
 }
 
