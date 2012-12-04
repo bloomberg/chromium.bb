@@ -19,14 +19,11 @@
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/private/ppb_flash_print.h"
 #include "ppapi/proxy/host_dispatcher.h"
-#include "ppapi/proxy/pepper_file_messages.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/proxy_module.h"
 #include "ppapi/proxy/serialized_var.h"
-#include "ppapi/shared_impl/dir_contents.h"
-#include "ppapi/shared_impl/file_type_conversion.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource.h"
@@ -51,19 +48,6 @@ namespace {
 // Returns true if |t1| and |t2| are times in the same minute.
 bool InSameMinute(PP_Time t1, PP_Time t2) {
   return floor(t1 / 60.0) == floor(t2 / 60.0);
-}
-
-IPC::PlatformFileForTransit PlatformFileToPlatformFileForTransit(
-    Dispatcher* dispatcher,
-    int32_t* error,
-    base::PlatformFile file) {
-  if (*error != PP_OK)
-    return IPC::InvalidPlatformFileForTransit();
-  IPC::PlatformFileForTransit out_handle =
-      dispatcher->ShareHandleWithRemote(file, true);
-  if (out_handle == IPC::InvalidPlatformFileForTransit())
-    *error = PP_ERROR_NOACCESS;
-  return out_handle;
 }
 
 void InvokePrinting(PP_Instance instance) {
@@ -111,10 +95,6 @@ bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgGetLocalTimeZoneOffset)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_IsRectTopmost,
                         OnHostMsgIsRectTopmost)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_OpenFileRef,
-                        OnHostMsgOpenFileRef)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_QueryFileRef,
-                        OnHostMsgQueryFileRef)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_InvokePrinting,
                         OnHostMsgInvokePrinting)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetSetting,
@@ -280,187 +260,6 @@ PP_Var PPB_Flash_Proxy::GetSetting(PP_Instance instance,
   return PP_MakeUndefined();
 }
 
-bool PPB_Flash_Proxy::CreateThreadAdapterForInstance(PP_Instance instance) {
-  return true;
-}
-
-void PPB_Flash_Proxy::ClearThreadAdapterForInstance(PP_Instance instance) {
-}
-
-int32_t PPB_Flash_Proxy::OpenFile(PP_Instance,
-                                  const char* path,
-                                  int32_t mode,
-                                  PP_FileHandle* file) {
-  int flags = 0;
-  if (!path ||
-      !ppapi::PepperFileOpenFlagsToPlatformFileFlags(mode, &flags) ||
-      !file)
-    return PP_ERROR_BADARGUMENT;
-
-  base::PlatformFileError error;
-  IPC::PlatformFileForTransit transit_file;
-  ppapi::PepperFilePath pepper_path(ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL,
-                                    FilePath::FromUTF8Unsafe(path));
-
-  if (PluginGlobals::Get()->GetBrowserSender()->Send(
-          new PepperFileMsg_OpenFile(pepper_path, flags,
-                                     &error, &transit_file))) {
-    *file = IPC::PlatformFileForTransitToPlatformFile(transit_file);
-  } else {
-    *file = base::kInvalidPlatformFileValue;
-    error = base::PLATFORM_FILE_ERROR_FAILED;
-  }
-
-  return ppapi::PlatformFileErrorToPepperError(error);
-}
-
-int32_t PPB_Flash_Proxy::RenameFile(PP_Instance,
-                                    const char* from_path,
-                                    const char* to_path) {
-  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
-  ppapi::PepperFilePath pepper_from(ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL,
-                                    FilePath::FromUTF8Unsafe(from_path));
-  ppapi::PepperFilePath pepper_to(ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL,
-                                  FilePath::FromUTF8Unsafe(to_path));
-
-  PluginGlobals::Get()->GetBrowserSender()->Send(
-      new PepperFileMsg_RenameFile(pepper_from, pepper_to, &error));
-
-  return ppapi::PlatformFileErrorToPepperError(error);
-}
-
-int32_t PPB_Flash_Proxy::DeleteFileOrDir(PP_Instance,
-                                         const char* path,
-                                         PP_Bool recursive) {
-  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
-  ppapi::PepperFilePath pepper_path(ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL,
-                                    FilePath::FromUTF8Unsafe(path));
-
-  PluginGlobals::Get()->GetBrowserSender()->Send(
-      new PepperFileMsg_DeleteFileOrDir(pepper_path,
-                                        PP_ToBool(recursive),
-                                        &error));
-
-  return ppapi::PlatformFileErrorToPepperError(error);
-}
-
-int32_t PPB_Flash_Proxy::CreateDir(PP_Instance, const char* path) {
-  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
-  ppapi::PepperFilePath pepper_path(ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL,
-                                    FilePath::FromUTF8Unsafe(path));
-
-  PluginGlobals::Get()->GetBrowserSender()->Send(
-      new PepperFileMsg_CreateDir(pepper_path, &error));
-
-  return ppapi::PlatformFileErrorToPepperError(error);
-}
-
-int32_t PPB_Flash_Proxy::QueryFile(PP_Instance,
-                                   const char* path,
-                                   PP_FileInfo* info) {
-  base::PlatformFileInfo file_info;
-  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
-  ppapi::PepperFilePath pepper_path(ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL,
-                                    FilePath::FromUTF8Unsafe(path));
-
-  PluginGlobals::Get()->GetBrowserSender()->Send(
-      new PepperFileMsg_QueryFile(pepper_path, &file_info, &error));
-
-  if (error == base::PLATFORM_FILE_OK) {
-    info->size = file_info.size;
-    info->creation_time = TimeToPPTime(file_info.creation_time);
-    info->last_access_time = TimeToPPTime(file_info.last_accessed);
-    info->last_modified_time = TimeToPPTime(file_info.last_modified);
-    info->system_type = PP_FILESYSTEMTYPE_EXTERNAL;
-    if (file_info.is_directory)
-        info->type = PP_FILETYPE_DIRECTORY;
-    else
-      info->type = PP_FILETYPE_REGULAR;
-  }
-
-  return ppapi::PlatformFileErrorToPepperError(error);
-}
-
-int32_t PPB_Flash_Proxy::GetDirContents(PP_Instance,
-                                        const char* path,
-                                        PP_DirContents_Dev** contents) {
-  ppapi::DirContents entries;
-  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
-  ppapi::PepperFilePath pepper_path(ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL,
-                                    FilePath::FromUTF8Unsafe(path));
-
-  PluginGlobals::Get()->GetBrowserSender()->Send(
-      new PepperFileMsg_GetDirContents(pepper_path, &entries, &error));
-
-  if (error == base::PLATFORM_FILE_OK) {
-    // Copy the serialized dir entries to the output struct.
-    *contents = new PP_DirContents_Dev;
-    (*contents)->count = static_cast<int32_t>(entries.size());
-    (*contents)->entries = new PP_DirEntry_Dev[entries.size()];
-    for (size_t i = 0; i < entries.size(); i++) {
-      const ppapi::DirEntry& source = entries[i];
-      PP_DirEntry_Dev* dest = &(*contents)->entries[i];
-      std::string name = source.name.AsUTF8Unsafe();
-      char* name_copy = new char[name.size() + 1];
-      memcpy(name_copy, name.c_str(), name.size() + 1);
-      dest->name = name_copy;
-      dest->is_dir = PP_FromBool(source.is_dir);
-    }
-  }
-
-  return ppapi::PlatformFileErrorToPepperError(error);
-}
-
-int32_t PPB_Flash_Proxy::CreateTemporaryFile(PP_Instance instance,
-                                             PP_FileHandle* file) {
-  if (!file)
-    return PP_ERROR_BADARGUMENT;
-
-  base::PlatformFileError error;
-  IPC::PlatformFileForTransit transit_file;
-
-  if (PluginGlobals::Get()->GetBrowserSender()->Send(
-          new PepperFileMsg_CreateTemporaryFile(&error, &transit_file))) {
-    *file = IPC::PlatformFileForTransitToPlatformFile(transit_file);
-  } else {
-    error = base::PLATFORM_FILE_ERROR_FAILED;
-    *file = base::kInvalidPlatformFileValue;
-  }
-
-  return ppapi::PlatformFileErrorToPepperError(error);
-}
-
-int32_t PPB_Flash_Proxy::OpenFileRef(PP_Instance instance,
-                                     PP_Resource file_ref_id,
-                                     int32_t mode,
-                                     PP_FileHandle* file) {
-  EnterResourceNoLock<thunk::PPB_FileRef_API> enter(file_ref_id, true);
-  if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-
-  int32_t result = PP_ERROR_FAILED;
-  IPC::PlatformFileForTransit transit;
-  dispatcher()->Send(new PpapiHostMsg_PPBFlash_OpenFileRef(
-      API_ID_PPB_FLASH, instance, enter.resource()->host_resource(), mode,
-      &transit, &result));
-  *file = IPC::PlatformFileForTransitToPlatformFile(transit);
-  return result;
-}
-
-int32_t PPB_Flash_Proxy::QueryFileRef(PP_Instance instance,
-                                      PP_Resource file_ref_id,
-                                      PP_FileInfo* info) {
-  EnterResourceNoLock<thunk::PPB_FileRef_API> enter(file_ref_id, true);
-  if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-
-  int32_t result = PP_ERROR_FAILED;
-  dispatcher()->Send(new PpapiHostMsg_PPBFlash_QueryFileRef(
-      API_ID_PPB_FLASH, instance, enter.resource()->host_resource(), info,
-      &result));
-  return result;
-}
-
 void PPB_Flash_Proxy::OnHostMsgSetInstanceAlwaysOnTop(PP_Instance instance,
                                                       PP_Bool on_top) {
   EnterInstanceNoLock enter(instance);
@@ -549,39 +348,6 @@ void PPB_Flash_Proxy::OnHostMsgIsRectTopmost(PP_Instance instance,
     *result = enter.functions()->GetFlashAPI()->IsRectTopmost(instance, &rect);
   else
     *result = PP_FALSE;
-}
-
-void PPB_Flash_Proxy::OnHostMsgOpenFileRef(
-    PP_Instance instance,
-    const HostResource& host_resource,
-    int32_t mode,
-    IPC::PlatformFileForTransit* file_handle,
-    int32_t* result) {
-  EnterInstanceNoLock enter(instance);
-  if (enter.failed()) {
-    *result = PP_ERROR_BADARGUMENT;
-    return;
-  }
-
-  base::PlatformFile file;
-  *result = enter.functions()->GetFlashAPI()->OpenFileRef(
-      instance, host_resource.host_resource(), mode, &file);
-  *file_handle = PlatformFileToPlatformFileForTransit(dispatcher(),
-                                                      result, file);
-}
-
-void PPB_Flash_Proxy::OnHostMsgQueryFileRef(
-    PP_Instance instance,
-    const HostResource& host_resource,
-    PP_FileInfo* info,
-    int32_t* result) {
-  EnterInstanceNoLock enter(instance);
-  if (enter.failed()) {
-    *result = PP_ERROR_BADARGUMENT;
-    return;
-  }
-  *result = enter.functions()->GetFlashAPI()->QueryFileRef(
-      instance, host_resource.host_resource(), info);
 }
 
 void PPB_Flash_Proxy::OnHostMsgGetSetting(PP_Instance instance,

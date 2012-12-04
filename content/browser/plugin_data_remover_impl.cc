@@ -14,7 +14,7 @@
 #include "base/version.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service_impl.h"
-#include "content/browser/renderer_host/pepper/pepper_file_message_filter.h"
+#include "content/browser/renderer_host/pepper/pepper_flash_file_host.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/plugin_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -223,7 +223,7 @@ class PluginDataRemoverImpl::Context
     IPC::Message* msg;
     if (is_ppapi) {
       FilePath profile_path =
-          PepperFileMessageFilter::GetDataDirName(browser_context_path_);
+          PepperFlashFileHost::GetDataDirName(browser_context_path_);
       // TODO(vtl): This "duplicates" logic in webkit/plugins/ppapi/file_path.cc
       // (which prepends the plugin name to the relative part of the path
       // instead, with the absolute, profile-dependent part being enforced by

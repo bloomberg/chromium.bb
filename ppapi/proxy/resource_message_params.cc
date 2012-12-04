@@ -91,6 +91,17 @@ bool ResourceMessageParams::TakeSocketHandleAtIndex(
   return true;
 }
 
+bool ResourceMessageParams::TakeFileHandleAtIndex(
+    size_t index,
+    IPC::PlatformFileForTransit* handle) const {
+  SerializedHandle serialized = TakeHandleOfTypeAtIndex(
+      index, SerializedHandle::FILE);
+  if (!serialized.is_file())
+    return false;
+  *handle = serialized.descriptor();
+  return true;
+}
+
 void ResourceMessageParams::TakeAllSharedMemoryHandles(
     std::vector<base::SharedMemoryHandle>* handles) const {
   for (size_t i = 0; i < handles_->data().size(); ++i) {

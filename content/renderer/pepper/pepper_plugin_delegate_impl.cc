@@ -63,7 +63,6 @@
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/host_dispatcher.h"
-#include "ppapi/proxy/pepper_file_messages.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/file_path.h"
 #include "ppapi/shared_impl/platform_file.h"
@@ -1070,86 +1069,6 @@ bool PepperPluginDelegateImpl::AsyncOpenFileSystemURL(
       new AsyncOpenFileSystemURLCallbackTranslator(
           callback,
           base::Bind(&DoNotifyCloseFile, path)));
-}
-
-base::PlatformFileError PepperPluginDelegateImpl::OpenFile(
-    const ppapi::PepperFilePath& path,
-    int flags,
-    base::PlatformFile* file) {
-  IPC::PlatformFileForTransit transit_file;
-  base::PlatformFileError error;
-  IPC::Message* msg = new PepperFileMsg_OpenFile(
-      path, flags, &error, &transit_file);
-  if (!render_view_->Send(msg)) {
-    *file = base::kInvalidPlatformFileValue;
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  }
-  *file = IPC::PlatformFileForTransitToPlatformFile(transit_file);
-  return error;
-}
-
-base::PlatformFileError PepperPluginDelegateImpl::RenameFile(
-    const ppapi::PepperFilePath& from_path,
-    const ppapi::PepperFilePath& to_path) {
-  base::PlatformFileError error;
-  IPC::Message* msg = new PepperFileMsg_RenameFile(from_path, to_path, &error);
-  if (!render_view_->Send(msg))
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  return error;
-}
-
-base::PlatformFileError PepperPluginDelegateImpl::DeleteFileOrDir(
-    const ppapi::PepperFilePath& path,
-    bool recursive) {
-  base::PlatformFileError error;
-  IPC::Message* msg = new PepperFileMsg_DeleteFileOrDir(
-      path, recursive, &error);
-  if (!render_view_->Send(msg))
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  return error;
-}
-
-base::PlatformFileError PepperPluginDelegateImpl::CreateDir(
-    const ppapi::PepperFilePath& path) {
-  base::PlatformFileError error;
-  IPC::Message* msg = new PepperFileMsg_CreateDir(path, &error);
-  if (!render_view_->Send(msg))
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  return error;
-}
-
-base::PlatformFileError PepperPluginDelegateImpl::QueryFile(
-    const ppapi::PepperFilePath& path,
-    base::PlatformFileInfo* info) {
-  base::PlatformFileError error;
-  IPC::Message* msg = new PepperFileMsg_QueryFile(path, info, &error);
-  if (!render_view_->Send(msg))
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  return error;
-}
-
-base::PlatformFileError PepperPluginDelegateImpl::GetDirContents(
-    const ppapi::PepperFilePath& path,
-    ppapi::DirContents* contents) {
-  base::PlatformFileError error;
-  IPC::Message* msg = new PepperFileMsg_GetDirContents(path, contents, &error);
-  if (!render_view_->Send(msg))
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  return error;
-}
-
-base::PlatformFileError PepperPluginDelegateImpl::CreateTemporaryFile(
-    base::PlatformFile* file) {
-  IPC::PlatformFileForTransit transit_file;
-  base::PlatformFileError error;
-  IPC::Message* msg = new PepperFileMsg_CreateTemporaryFile(&error,
-                                                            &transit_file);
-  if (!render_view_->Send(msg)) {
-    *file = base::kInvalidPlatformFileValue;
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  }
-  *file = IPC::PlatformFileForTransitToPlatformFile(transit_file);
-  return error;
 }
 
 void PepperPluginDelegateImpl::SyncGetFileSystemPlatformPath(

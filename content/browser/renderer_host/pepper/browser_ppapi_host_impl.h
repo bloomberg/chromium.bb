@@ -6,9 +6,11 @@
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_BROWSER_PPAPI_HOST_IMPL_H_
 
 #include <map>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/file_path.h"
 #include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_ppapi_host.h"
@@ -23,7 +25,10 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   // as it is known (we start the process asynchronously so it won't be known
   // when this object is created).
   BrowserPpapiHostImpl(IPC::Sender* sender,
-                       const ppapi::PpapiPermissions& permissions);
+                       const ppapi::PpapiPermissions& permissions,
+                       const std::string& plugin_name,
+                       const FilePath& profile_data_directory,
+                       int plugin_process_id);
   virtual ~BrowserPpapiHostImpl();
 
   // BrowserPpapiHost.
@@ -33,6 +38,9 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   virtual bool GetRenderViewIDsForInstance(PP_Instance instance,
                                            int* render_process_id,
                                            int* render_view_id) const OVERRIDE;
+  virtual const std::string& GetPluginName() OVERRIDE;
+  virtual const FilePath& GetProfileDataDirectory() OVERRIDE;
+  virtual int GetPluginProcessID() OVERRIDE;
 
   void set_plugin_process_handle(base::ProcessHandle handle) {
     plugin_process_handle_ = handle;
@@ -79,6 +87,9 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
 
   ppapi::host::PpapiHost ppapi_host_;
   base::ProcessHandle plugin_process_handle_;
+  std::string plugin_name_;
+  FilePath profile_data_directory_;
+  int plugin_process_id_;
 
   // Tracks all PP_Instances in this plugin and maps them to
   // RenderProcess/RenderView IDs.

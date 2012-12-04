@@ -172,13 +172,10 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
                                     permissions_,
                                     host_resolver);
 
-  host_impl_.reset(new BrowserPpapiHostImpl(this, permissions_));
-
-  file_filter_ = new PepperTrustedFileMessageFilter(
-      process_->GetData().id, info.name, profile_data_directory);
+  host_impl_.reset(new BrowserPpapiHostImpl(this, permissions_, info.name,
+      profile_data_directory, process_->GetData().id));
 
   process_->GetHost()->AddFilter(filter_.get());
-  process_->GetHost()->AddFilter(file_filter_.get());
   process_->GetHost()->AddFilter(host_impl_->message_filter());
 
   GetContentClient()->browser()->DidCreatePpapiPlugin(host_impl_.get());
@@ -190,7 +187,12 @@ PpapiPluginProcessHost::PpapiPluginProcessHost()
       PROCESS_TYPE_PPAPI_BROKER, this));
 
   ppapi::PpapiPermissions permissions;  // No permissions.
-  host_impl_.reset(new BrowserPpapiHostImpl(this, permissions));
+  // The plugin name and profile data directory shouldn't be needed for the
+  // broker.
+  std::string plugin_name;
+  FilePath profile_data_directory;
+  host_impl_.reset(new BrowserPpapiHostImpl(this, permissions, plugin_name,
+      profile_data_directory, process_->GetData().id));
 }
 
 bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {

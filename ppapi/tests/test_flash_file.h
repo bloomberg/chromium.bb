@@ -19,9 +19,20 @@ class TestFlashFile: public TestCase {
   virtual void RunTests(const std::string& filter);
 
  private:
-  // TODO(yzshen): Add more test cases for PPB_Flash_File_ModuleLocal and
-  // PPB_Flash_File_FileRef.
+  // TODO(raymes): We should have SetUp/TearDown methods for ppapi tests.
+  void SetUp();
+
+  std::string TestOpenFile();
+  std::string TestRenameFile();
+  std::string TestDeleteFileOrDir();
+  std::string TestCreateDir();
+  std::string TestQueryFile();
+  std::string TestGetDirContents();
   std::string TestCreateTemporaryFile();
+
+  // TODO(raymes): Add these when we can test file chooser properly.
+  // std::string TestOpenFileRef();
+  // std::string TestQueryFileRef();
 
   // Gets the number of files and directories under the module-local root
   // directory.

@@ -47,6 +47,8 @@
 #include "ppapi/proxy/serialized_flash_menu.h"
 #include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/proxy/serialized_var.h"
+#include "ppapi/shared_impl/dir_contents.h"
+#include "ppapi/shared_impl/file_path.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
@@ -160,6 +162,11 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::DeviceRefData)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(id)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ppapi::DirEntry)
+  IPC_STRUCT_TRAITS_MEMBER(name)
+  IPC_STRUCT_TRAITS_MEMBER(is_dir)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ppapi::FlashSiteSetting)
@@ -1274,17 +1281,6 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_IsRectTopmost,
                            PP_Instance /* instance */,
                            PP_Rect /* rect */,
                            PP_Bool /* result */)
-IPC_SYNC_MESSAGE_ROUTED3_2(PpapiHostMsg_PPBFlash_OpenFileRef,
-                           PP_Instance /* instance */,
-                           ppapi::HostResource /* file_ref */,
-                           int32_t /* mode */,
-                           IPC::PlatformFileForTransit /* file_handle */,
-                           int32_t /* result */)
-IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBFlash_QueryFileRef,
-                           PP_Instance /* instance */,
-                           ppapi::HostResource /* file_ref */,
-                           PP_FileInfo /* info */,
-                           int32_t /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_GetSetting,
                            PP_Instance /* instance */,
                            PP_FlashSetting /* setting */,
@@ -1616,6 +1612,29 @@ IPC_MESSAGE_CONTROL3(PpapiHostMsg_FlashClipboard_WriteData,
                      uint32_t /* clipboard_type */,
                      std::vector<uint32_t> /* formats */,
                      std::vector<std::string> /* data */)
+
+// Flash file.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_FlashFile_Create)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_FlashFile_OpenFile,
+                     ppapi::PepperFilePath /* path */,
+                     int /* flags */)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_FlashFile_RenameFile,
+                     ppapi::PepperFilePath /* from_path */,
+                     ppapi::PepperFilePath /* to_path */)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_FlashFile_DeleteFileOrDir,
+                     ppapi::PepperFilePath /* path */,
+                     bool /* recursive */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_FlashFile_CreateDir,
+                     ppapi::PepperFilePath /* path */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_FlashFile_QueryFile,
+                     ppapi::PepperFilePath /* path */)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FlashFile_QueryFileReply,
+                     base::PlatformFileInfo /* file_info */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_FlashFile_GetDirContents,
+                     ppapi::PepperFilePath /* path */)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FlashFile_GetDirContentsReply,
+                     ppapi::DirContents /* entries */)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_FlashFile_CreateTemporaryFile)
 
 // Flash font file.
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_FlashFontFile_Create,
