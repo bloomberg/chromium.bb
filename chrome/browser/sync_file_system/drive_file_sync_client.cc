@@ -71,6 +71,7 @@ DriveFileSyncClient::DriveFileSyncClient(Profile* profile)
       "" /* custom_user_agent */));
   drive_service_->Initialize(profile);
   drive_service_->AddObserver(this);
+  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
 
   drive_uploader_.reset(new google_apis::DriveUploader(drive_service_.get()));
 }
@@ -93,12 +94,14 @@ DriveFileSyncClient::DriveFileSyncClient(
   drive_service_ = drive_service.Pass();
   drive_service_->Initialize(profile);
   drive_service_->AddObserver(this);
+  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
 
   drive_uploader_ = drive_uploader.Pass();
 }
 
 DriveFileSyncClient::~DriveFileSyncClient() {
   DCHECK(CalledOnValidThread());
+  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
   drive_service_->RemoveObserver(this);
   drive_service_->CancelAll();
 }
@@ -397,6 +400,14 @@ GURL DriveFileSyncClient::ResourceIdToResourceLink(
 void DriveFileSyncClient::OnReadyToPerformOperations() {
   DCHECK(CalledOnValidThread());
   FOR_EACH_OBSERVER(DriveFileSyncClientObserver, observers_, OnAuthenticated());
+}
+
+void DriveFileSyncClient::OnConnectionTypeChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  DCHECK(CalledOnValidThread());
+  if (type != net::NetworkChangeNotifier::CONNECTION_NONE)
+    FOR_EACH_OBSERVER(DriveFileSyncClientObserver,
+                      observers_, OnNetworkConnected());
 }
 
 void DriveFileSyncClient::DidGetDocumentFeedData(

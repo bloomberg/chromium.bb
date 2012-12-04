@@ -540,6 +540,17 @@ void DriveFileSyncService::OnAuthenticated() {
   }
 }
 
+void DriveFileSyncService::OnNetworkConnected() {
+  DVLOG(1) << "OnNetworkConnected";
+  if (state_ == REMOTE_SERVICE_AUTHENTICATION_REQUIRED ||
+      state_ == REMOTE_SERVICE_TEMPORARY_UNAVAILABLE) {
+    state_ = REMOTE_SERVICE_OK;
+    FOR_EACH_OBSERVER(
+        Observer, observers_,
+        OnRemoteServiceStateUpdated(state_, "Network connected"));
+  }
+}
+
 // Called by CreateForTesting.
 DriveFileSyncService::DriveFileSyncService(
     const FilePath& base_dir,

@@ -88,6 +88,7 @@ class DriveFileSyncService
 
   // DriveFileSyncClientObserver overrides.
   virtual void OnAuthenticated() OVERRIDE;
+  virtual void OnNetworkConnected() OVERRIDE;
 
  private:
   friend class DriveFileSyncServiceTest;
@@ -177,7 +178,6 @@ class DriveFileSyncService
                       scoped_ptr<TaskToken> token);
   void UpdateServiceState();
   base::WeakPtr<DriveFileSyncService> AsWeakPtr();
-
 
   void DidGetRemoteFileMetadata(
       const fileapi::SyncFileMetadataCallback& callback,

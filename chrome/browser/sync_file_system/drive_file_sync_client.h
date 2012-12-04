@@ -17,6 +17,7 @@
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
+#include "net/base/network_change_notifier.h"
 
 class GURL;
 class Profile;
@@ -32,6 +33,7 @@ class DriveFileSyncClientObserver {
   DriveFileSyncClientObserver() {}
   virtual ~DriveFileSyncClientObserver() {}
   virtual void OnAuthenticated() = 0;
+  virtual void OnNetworkConnected() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DriveFileSyncClientObserver);
@@ -40,9 +42,11 @@ class DriveFileSyncClientObserver {
 // This class is responsible for talking to the Drive service to get and put
 // Drive directories, files and metadata.
 // This class is owned by DriveFileSyncService.
-class DriveFileSyncClient : public google_apis::DriveServiceObserver,
-                            public base::NonThreadSafe,
-                            public base::SupportsWeakPtr<DriveFileSyncClient> {
+class DriveFileSyncClient
+    : public google_apis::DriveServiceObserver,
+      public net::NetworkChangeNotifier::ConnectionTypeObserver,
+      public base::NonThreadSafe,
+      public base::SupportsWeakPtr<DriveFileSyncClient> {
  public:
   typedef base::Callback<void(google_apis::GDataErrorCode error)>
       GDataErrorCallback;
@@ -175,6 +179,10 @@ class DriveFileSyncClient : public google_apis::DriveServiceObserver,
 
   // DriveServiceObserver overrides.
   virtual void OnReadyToPerformOperations() OVERRIDE;
+
+  // ConnectionTypeObserver overrides.
+  virtual void OnConnectionTypeChanged(
+      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
  private:
   friend class DriveFileSyncClientTest;
