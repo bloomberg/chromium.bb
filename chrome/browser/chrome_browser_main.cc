@@ -104,6 +104,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "grit/app_locale_settings.h"
 #include "grit/browser_resources.h"
@@ -417,6 +418,29 @@ bool ProcessSingletonNotificationCallback(const CommandLine& command_line,
 bool HasImportSwitch(const CommandLine& command_line) {
   return (command_line.HasSwitch(switches::kImport) ||
           command_line.HasSwitch(switches::kImportFromFile));
+}
+
+void LaunchDevToolsHandlerIfNeeded(Profile* profile,
+                                   const CommandLine& command_line) {
+  if (command_line.HasSwitch(::switches::kRemoteDebuggingPort)) {
+    std::string port_str =
+        command_line.GetSwitchValueASCII(::switches::kRemoteDebuggingPort);
+    int port;
+    if (base::StringToInt(port_str, &port) && port > 0 && port < 65535) {
+      std::string frontend_str;
+      if (command_line.HasSwitch(::switches::kRemoteDebuggingFrontend)) {
+        frontend_str = command_line.GetSwitchValueASCII(
+            ::switches::kRemoteDebuggingFrontend);
+      }
+      g_browser_process->CreateDevToolsHttpProtocolHandler(
+          profile,
+          "127.0.0.1",
+          port,
+          frontend_str);
+    } else {
+      DLOG(WARNING) << "Invalid http debugger port number " << port;
+    }
+  }
 }
 
 #if defined(ENABLE_RLZ)
@@ -861,6 +885,7 @@ void ChromeBrowserMainParts::PreProfileInit() {
 }
 
 void ChromeBrowserMainParts::PostProfileInit() {
+  LaunchDevToolsHandlerIfNeeded(profile(), parsed_command_line());
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostProfileInit();
 }

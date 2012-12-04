@@ -345,26 +345,6 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
   if (command_line_.HasSwitch(switches::kDumpHistogramsOnExit))
     base::StatisticsRecorder::set_dump_on_exit(true);
 
-  if (command_line_.HasSwitch(switches::kRemoteDebuggingPort)) {
-    std::string port_str =
-        command_line_.GetSwitchValueASCII(switches::kRemoteDebuggingPort);
-    int64 port;
-    if (base::StringToInt64(port_str, &port) && port > 0 && port < 65535) {
-      std::string frontend_str;
-      if (command_line_.HasSwitch(switches::kRemoteDebuggingFrontend)) {
-        frontend_str = command_line_.GetSwitchValueASCII(
-            switches::kRemoteDebuggingFrontend);
-      }
-      g_browser_process->CreateDevToolsHttpProtocolHandler(
-          profile,
-          "127.0.0.1",
-          static_cast<int>(port),
-          frontend_str);
-    } else {
-      DLOG(WARNING) << "Invalid http debugger port number " << port;
-    }
-  }
-
 #if defined(ENABLE_APP_LIST)
   app_list_controller::CheckAppListTaskbarShortcut();
   if (command_line_.HasSwitch(switches::kShowAppList)) {
