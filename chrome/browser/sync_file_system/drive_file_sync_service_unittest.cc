@@ -95,6 +95,7 @@ class DriveFileSyncServiceTest : public testing::Test {
     mock_drive_service_ = new StrictMock<google_apis::MockDriveService>;
 
     EXPECT_CALL(*mock_drive_service(), Initialize(&profile_));
+    EXPECT_CALL(*mock_drive_service(), AddObserver(_));
 
     sync_client_ = DriveFileSyncClient::CreateForTesting(
         &profile_,
@@ -117,6 +118,7 @@ class DriveFileSyncServiceTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
+    EXPECT_CALL(*mock_drive_service(), RemoveObserver(_));
     EXPECT_CALL(*mock_drive_service(), CancelAll());
 
     if (sync_service_) {

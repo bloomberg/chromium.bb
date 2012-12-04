@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/drive_upload_error.h"
@@ -25,10 +26,21 @@ class DriveUploaderInterface;
 
 namespace sync_file_system {
 
+class DriveFileSyncClientObserver {
+ public:
+  DriveFileSyncClientObserver() {}
+  virtual ~DriveFileSyncClientObserver() {}
+  virtual void OnAuthenticated() = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DriveFileSyncClientObserver);
+};
+
 // This class is responsible for talking to the Drive service to get and put
 // Drive directories, files and metadata.
 // This class is owned by DriveFileSyncService.
-class DriveFileSyncClient : public base::NonThreadSafe,
+class DriveFileSyncClient : public google_apis::DriveServiceObserver,
+                            public base::NonThreadSafe,
                             public base::SupportsWeakPtr<DriveFileSyncClient> {
  public:
   typedef base::Callback<void(google_apis::GDataErrorCode error)>
@@ -54,6 +66,9 @@ class DriveFileSyncClient : public base::NonThreadSafe,
 
   explicit DriveFileSyncClient(Profile* profile);
   virtual ~DriveFileSyncClient();
+
+  void AddObserver(DriveFileSyncClientObserver* observer);
+  void RemoveObserver(DriveFileSyncClientObserver* observer);
 
   static scoped_ptr<DriveFileSyncClient> CreateForTesting(
       Profile* profile,
@@ -153,6 +168,9 @@ class DriveFileSyncClient : public base::NonThreadSafe,
   static std::string OriginToDirectoryTitle(const GURL& origin);
   static GURL DirectoryTitleToOrigin(const std::string& title);
 
+  // DriveServiceObserver overrides.
+  virtual void OnReadyToPerformOperations() OVERRIDE;
+
  private:
   friend class DriveFileSyncClientTest;
   friend class DriveFileSyncServiceTest;
@@ -240,6 +258,8 @@ class DriveFileSyncClient : public base::NonThreadSafe,
 
   scoped_ptr<google_apis::DriveServiceInterface> drive_service_;
   scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader_;
+
+  ObserverList<DriveFileSyncClientObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveFileSyncClient);
 };

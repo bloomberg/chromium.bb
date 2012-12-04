@@ -70,6 +70,7 @@ DriveFileSyncClient::DriveFileSyncClient(Profile* profile) {
       GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
       "" /* custom_user_agent */));
   drive_service_->Initialize(profile);
+  drive_service_->AddObserver(this);
 
   drive_uploader_.reset(new google_apis::DriveUploader(drive_service_.get()));
 }
@@ -88,13 +89,26 @@ DriveFileSyncClient::DriveFileSyncClient(
     scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader) {
   drive_service_ = drive_service.Pass();
   drive_service_->Initialize(profile);
+  drive_service_->AddObserver(this);
 
   drive_uploader_ = drive_uploader.Pass();
 }
 
 DriveFileSyncClient::~DriveFileSyncClient() {
   DCHECK(CalledOnValidThread());
+  drive_service_->RemoveObserver(this);
   drive_service_->CancelAll();
+}
+
+void DriveFileSyncClient::AddObserver(DriveFileSyncClientObserver* observer) {
+  DCHECK(CalledOnValidThread());
+  observers_.AddObserver(observer);
+}
+
+void DriveFileSyncClient::RemoveObserver(
+    DriveFileSyncClientObserver* observer) {
+  DCHECK(CalledOnValidThread());
+  observers_.RemoveObserver(observer);
 }
 
 void DriveFileSyncClient::GetDriveDirectoryForSyncRoot(
@@ -367,6 +381,11 @@ std::string DriveFileSyncClient::OriginToDirectoryTitle(const GURL& origin) {
 // static
 GURL DriveFileSyncClient::DirectoryTitleToOrigin(const std::string& title) {
   return extensions::Extension::GetBaseURLFromExtensionId(title);
+}
+
+void DriveFileSyncClient::OnReadyToPerformOperations() {
+  DCHECK(CalledOnValidThread());
+  FOR_EACH_OBSERVER(DriveFileSyncClientObserver, observers_, OnAuthenticated());
 }
 
 void DriveFileSyncClient::DidGetDocumentFeedData(

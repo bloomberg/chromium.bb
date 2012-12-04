@@ -136,6 +136,7 @@ class DriveFileSyncClientTest : public testing::Test {
     fake_drive_uploader_ = new FakeDriveUploader;
 
     EXPECT_CALL(*mock_drive_service_, Initialize(&profile_)).Times(1);
+    EXPECT_CALL(*mock_drive_service_, AddObserver(_));
 
     sync_client_ = DriveFileSyncClient::CreateForTesting(
         &profile_,
@@ -144,6 +145,7 @@ class DriveFileSyncClientTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
+    EXPECT_CALL(*mock_drive_service_, RemoveObserver(_));
     EXPECT_CALL(*mock_drive_service(), CancelAll());
     sync_client_.reset();
   }

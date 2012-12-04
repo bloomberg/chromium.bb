@@ -14,7 +14,6 @@
 #include "base/message_loop_proxy.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/google_apis/gdata_wapi_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_client.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
@@ -210,6 +209,7 @@ DriveFileSyncService::DriveFileSyncService(Profile* profile)
   token_.reset(new TaskToken(AsWeakPtr()));
 
   sync_client_.reset(new DriveFileSyncClient(profile));
+  sync_client_->AddObserver(this);
 
   metadata_store_.reset(new DriveMetadataStore(
       profile->GetPath().Append(kSyncFileSystemDir),
@@ -226,6 +226,7 @@ DriveFileSyncService::~DriveFileSyncService() {
   // Invalidate WeakPtr instances here explicitly to notify TaskToken that we
   // can safely discard the token.
   weak_factory_.InvalidateWeakPtrs();
+  sync_client_->RemoveObserver(this);
   token_.reset();
 }
 
@@ -507,6 +508,17 @@ void DriveFileSyncService::ApplyLocalChange(
   NOTREACHED();
   DidApplyLocalChange(token.Pass(), url, google_apis::GDATA_OTHER_ERROR,
                       callback, fileapi::SYNC_STATUS_FAILED);
+}
+
+void DriveFileSyncService::OnAuthenticated() {
+  DVLOG(1) << "OnAuthenticated";
+  if (state_ == REMOTE_SERVICE_AUTHENTICATION_REQUIRED ||
+      state_ == REMOTE_SERVICE_TEMPORARY_UNAVAILABLE) {
+    state_ = REMOTE_SERVICE_OK;
+    FOR_EACH_OBSERVER(
+        Observer, observers_,
+        OnRemoteServiceStateUpdated(state_, "Authenticated"));
+  }
 }
 
 // Called by CreateForTesting.

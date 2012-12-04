@@ -16,8 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/google_apis/drive_service_interface.h"
-#include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "chrome/browser/sync_file_system/drive_file_sync_client.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "webkit/fileapi/syncable/file_change.h"
@@ -34,7 +33,6 @@ class Location;
 
 namespace sync_file_system {
 
-class DriveFileSyncClient;
 class DriveMetadataStore;
 
 // Maintains remote file changes.
@@ -42,6 +40,7 @@ class DriveMetadataStore;
 class DriveFileSyncService
     : public RemoteFileSyncService,
       public LocalChangeProcessor,
+      public DriveFileSyncClientObserver,
       public base::NonThreadSafe {
  public:
   static const char kServiceName[];
@@ -85,6 +84,9 @@ class DriveFileSyncService
       const fileapi::SyncFileMetadata& local_file_metadata,
       const fileapi::FileSystemURL& url,
       const fileapi::SyncStatusCallback& callback) OVERRIDE;
+
+  // DriveFileSyncClientObserver overrides.
+  virtual void OnAuthenticated() OVERRIDE;
 
  private:
   friend class DriveFileSyncServiceTest;
