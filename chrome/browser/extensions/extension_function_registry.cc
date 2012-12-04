@@ -407,8 +407,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<WallpaperSetCustomWallpaperFunction>();
   RegisterFunction<WallpaperMinimizeInactiveWindowsFunction>();
   RegisterFunction<WallpaperRestoreMinimizedWindowsFunction>();
-  RegisterFunction<WallpaperGetThumbnailFunction>();
-  RegisterFunction<WallpaperSaveThumbnailFunction>();
 
   // InputMethod
   RegisterFunction<extensions::GetInputMethodFunction>();

@@ -87,57 +87,6 @@
         "description": "Restores all previously minimized windows.",
         "nodoc": "true",
         "parameters": []
-      },
-      {
-        "name": "getThumbnail",
-        "type": "function",
-        "description": "Gets thumbnail of wallpaper from thumbnail directory.",
-        "nodoc": "true",
-        "parameters": [
-          {
-            "type": "string",
-            "name": "url",
-            "description": "Wallpaper url."
-          },
-          {
-            "type": "function",
-            "name": "callback",
-            "description": "Function called upon completion.",
-            "parameters": [
-              {
-                "type": "binary",
-                "name": "data",
-                "optional": true,
-                "description": "The binary data of loaded thumbnail."
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "saveThumbnail",
-        "type": "function",
-        "description": "Saves thumbnail to thumbnail directory.",
-        "nodoc": "true",
-        "parameters": [
-          {
-            "type": "string",
-            "name": "url",
-            "description": "Wallpaper url."
-          },
-          {
-            "type": "binary",
-            "name": "data",
-            "description": "The binary data of downloaded thumbnail."
-          },
-          {
-            "type": "function",
-            "name": "callback",
-            "description": "Function called upon completion.",
-            "parameters": [],
-            "optional": true
-          }
-        ]
       }
     ]
   }

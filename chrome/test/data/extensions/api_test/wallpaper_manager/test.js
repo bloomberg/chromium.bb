@@ -11,20 +11,6 @@ var fail = chrome.test.callbackFail;
 chrome.test.getConfig(function(config) {
   var wallpaper;
   var wallpaperStrings;
-  var requestImage = function(url, onLoadCallback) {
-    var wallpaperRequest = new XMLHttpRequest();
-    wallpaperRequest.open('GET', url, true);
-    wallpaperRequest.responseType = 'arraybuffer';
-    try {
-      wallpaperRequest.send(null);
-      wallpaperRequest.onloadend = function(e) {
-        onLoadCallback(wallpaperRequest.status, wallpaperRequest.response);
-      };
-    } catch (e) {
-      console.error(e);
-      chrome.test.fail('An error thrown when requesting wallpaper.');
-    };
-  };
   chrome.test.runTests([
     function getWallpaperStrings() {
       chrome.wallpaperPrivate.getStrings(pass(function(strings) {
@@ -32,20 +18,29 @@ chrome.test.getConfig(function(config) {
       }));
     },
     function setOnlineJpegWallpaper() {
+      var wallpaperRequest = new XMLHttpRequest();
       var url = "http://a.com:PORT/files/extensions/api_test" +
           "/wallpaper_manager/test.jpg";
       url = url.replace(/PORT/, config.testServer.port);
-      requestImage(url, function(requestStatus, response) {
-        if (requestStatus === 200) {
-          wallpaper = response;
-          chrome.wallpaperPrivate.setWallpaper(wallpaper,
-                                               'CENTER_CROPPED',
-                                               url,
-                                               pass());
-        } else {
-          chrome.test.fail('Failed to load test.jpg from local server.');
-        }
-      });
+      wallpaperRequest.open('GET', url, true);
+      wallpaperRequest.responseType = 'arraybuffer';
+      try {
+        wallpaperRequest.send(null);
+        wallpaperRequest.onload = function (e) {
+          if (wallpaperRequest.status === 200) {
+              wallpaper = wallpaperRequest.response;
+              chrome.wallpaperPrivate.setWallpaper(wallpaper,
+                                                   'CENTER_CROPPED',
+                                                   url,
+                                                   pass());
+          } else {
+            chrome.test.fail('Failed to load test.jpg from local server.');
+          }
+        };
+      } catch (e) {
+        console.error(e);
+        chrome.test.fail('An error thrown when requesting wallpaper.');
+      };
     },
     function setCustomJpegWallpaper() {
       chrome.wallpaperPrivate.setCustomWallpaper(wallpaper,
@@ -53,37 +48,27 @@ chrome.test.getConfig(function(config) {
                                                  pass());
     },
     function setCustomJepgBadWallpaper() {
+      var wallpaperRequest = new XMLHttpRequest();
       var url = "http://a.com:PORT/files/extensions/api_test" +
           "/wallpaper_manager/test_bad.jpg";
       url = url.replace(/PORT/, config.testServer.port);
-      requestImage(url, function(requestStatus, response) {
-        if (requestStatus === 200) {
-          var badWallpaper = response;
-          chrome.wallpaperPrivate.setCustomWallpaper(badWallpaper,
-              'CENTER_CROPPED', fail(wallpaperStrings.invalidWallpaper));
-        } else {
-          chrome.test.fail('Failed to load test_bad.jpg from local server.');
-        }
-      });
-    },
-    function getAndSetThumbnail() {
-      var url = "http://a.com:PORT/files/extensions/api_test" +
-          "/wallpaper_manager/test.jpg";
-      url = url.replace(/PORT/, config.testServer.port);
-      chrome.wallpaperPrivate.getThumbnail(url, pass(function(data) {
-        chrome.test.assertNoLastError();
-        if (data)
-          chrome.test.fail('Thumbnail is not found. getThumbnail should not ' +
-                           'return any data.');
-        chrome.wallpaperPrivate.saveThumbnail(url, wallpaper, pass(function() {
-          chrome.test.assertNoLastError();
-          chrome.wallpaperPrivate.getThumbnail(url, pass(function(data) {
-            chrome.test.assertNoLastError();
-            // Thumbnail should already be saved to thumbnail directory.
-            chrome.test.assertEq(wallpaper, data);
-          }));
-        }));
-      }));
+      wallpaperRequest.open('GET', url, true);
+      wallpaperRequest.responseType = 'arraybuffer';
+      try {
+        wallpaperRequest.send(null);
+        wallpaperRequest.onload = function (e) {
+          if (wallpaperRequest.status === 200) {
+              var badWallpaper = wallpaperRequest.response;
+              chrome.wallpaperPrivate.setCustomWallpaper(badWallpaper,
+                  'CENTER_CROPPED', fail(wallpaperStrings.invalidWallpaper));
+          } else {
+            chrome.test.fail('Failed to load test_bad.jpg from local server.');
+          }
+        };
+      } catch (e) {
+        console.error(e);
+        chrome.test.fail('An error thrown when requesting wallpaper.');
+      };
     }
   ]);
 });

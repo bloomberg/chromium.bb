@@ -367,11 +367,6 @@ bool PathProvider(int key, FilePath* result) {
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("wallpapers"));
       break;
-    case chrome::DIR_CHROMEOS_WALLPAPER_THUMBNAILS:
-      if (!PathService::Get(chrome::DIR_USER_DATA, &cur))
-        return false;
-      cur = cur.Append(FILE_PATH_LITERAL("wallpaper_thumbnails"));
-      break;
     case chrome::FILE_DEFAULT_APP_ORDER:
       cur = FilePath(FILE_PATH_LITERAL(kDefaultAppOrderFileName));
       break;

@@ -101,8 +101,6 @@ enum {
 #if defined(OS_CHROMEOS)
   DIR_CHROMEOS_WALLPAPERS,      // Directory where downloaded chromeos
                                 // wallpapers reside.
-  DIR_CHROMEOS_WALLPAPER_THUMBNAILS,  // Directory where downloaded chromeos
-                                      // wallpaper thumbnails reside.
   FILE_DEFAULT_APP_ORDER,       // Full path to the json file that defines the
                                 // default app order.
 #endif

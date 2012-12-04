@@ -32,36 +32,19 @@ cr.define('wallpapers', function() {
     decorate: function() {
       GridItem.prototype.decorate.call(this);
       var imageEl = cr.doc.createElement('img');
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', this.dataItem.baseURL + ThumbnailSuffix, true);
+      xhr.responseType = 'blob';
+      xhr.send(null);
       var self = this;
-      chrome.wallpaperPrivate.getThumbnail(this.dataItem.baseURL,
-                                           function(data) {
-        if (data) {
-          var blob = new Blob([new Int8Array(data)]);
-          imageEl.src = window.URL.createObjectURL(blob);
+      xhr.addEventListener('load', function(e) {
+        if (xhr.status === 200) {
+          self.textContent = '';
+          imageEl.src = window.URL.createObjectURL(xhr.response);
           imageEl.addEventListener('load', function(e) {
             window.URL.revokeObjectURL(this.src);
           });
           self.appendChild(imageEl);
-        } else {
-          var xhr = new XMLHttpRequest();
-          xhr.open('GET', self.dataItem.baseURL + ThumbnailSuffix, true);
-          xhr.responseType = 'arraybuffer';
-          xhr.send(null);
-          xhr.addEventListener('load', function(e) {
-            if (xhr.status === 200) {
-              self.textContent = '';
-              chrome.wallpaperPrivate.saveThumbnail(self.dataItem.baseURL,
-                                                    xhr.response);
-              var blob = new Blob([new Int8Array(xhr.response)]);
-              imageEl.src = window.URL.createObjectURL(blob);
-              // TODO(bshe): We currently use empty div to reserve space for
-              // thumbnail. Use a placeholder like "loading" image may better.
-              imageEl.addEventListener('load', function(e) {
-                window.URL.revokeObjectURL(this.src);
-              });
-              self.appendChild(imageEl);
-            }
-          });
         }
       });
     },
