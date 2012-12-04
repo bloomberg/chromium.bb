@@ -177,6 +177,10 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
 
   enable_ipc_proxy_ = !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableNaClSRPCProxy);
+  // If render_view_id == 0 we do not need PPAPI, so we can skip
+  // PPAPI IPC proxy channel creation, etc.
+  if (!render_view_id_)
+    enable_ipc_proxy_ = false;
 }
 
 NaClProcessHost::~NaClProcessHost() {

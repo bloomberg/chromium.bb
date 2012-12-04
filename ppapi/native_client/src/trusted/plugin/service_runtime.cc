@@ -700,6 +700,7 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
 bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
                            ErrorInfo* error_info,
                            const nacl::string& url,
+                           bool uses_ppapi,
                            bool enable_ppapi_dev,
                            pp::CompletionCallback crash_cb) {
   PLUGIN_PRINTF(("ServiceRuntime::Start (nacl_desc=%p)\n",
@@ -715,6 +716,7 @@ bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
   }
   bool started = tmp_subprocess->Start(plugin_->pp_instance(),
                                        url.c_str(),
+                                       uses_ppapi,
                                        enable_ppapi_dev);
   if (!started) {
     PLUGIN_PRINTF(("ServiceRuntime::Start (start failed)\n"));

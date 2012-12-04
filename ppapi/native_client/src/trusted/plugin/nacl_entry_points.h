@@ -18,6 +18,7 @@
 
 typedef PP_NaClResult (*LaunchNaClProcessFunc)(PP_Instance instance,
                                                const char* alleged_url,
+                                               PP_Bool uses_ppapi,
                                                PP_Bool enable_ppapi_dev,
                                                int socket_count,
                                                nacl::Handle* result_sockets);

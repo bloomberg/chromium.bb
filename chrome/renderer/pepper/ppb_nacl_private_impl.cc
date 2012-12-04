@@ -57,6 +57,7 @@ base::LazyInstance<InstanceInfoMap> g_instance_info =
 // Launch NaCl's sel_ldr process.
 PP_NaClResult LaunchSelLdr(PP_Instance instance,
                            const char* alleged_url,
+                           PP_Bool uses_ppapi,
                            PP_Bool enable_ppapi_dev,
                            int socket_count,
                            void* imc_handles) {
@@ -65,17 +66,27 @@ PP_NaClResult LaunchSelLdr(PP_Instance instance,
   if (sender == NULL)
     sender = g_background_thread_sender.Pointer()->get();
 
-  webkit::ppapi::PluginInstance* plugin_instance =
-      content::GetHostGlobals()->GetInstance(instance);
-  if (!plugin_instance)
-    return PP_NACL_FAILED;
+  int routing_id = 0;
+  // If the nexe uses ppapi APIs, we need a routing ID.
+  // To get the routing ID, we must be on the main thread.
+  // Some nexes do not use ppapi and launch from the background thread,
+  // so those nexes can skip finding a routing_id.
+  if (uses_ppapi) {
+    // Check that we are on the main renderer thread.
+    CHECK(content::RenderThread::Get());
+    webkit::ppapi::PluginInstance* plugin_instance =
+        content::GetHostGlobals()->GetInstance(instance);
+    if (!plugin_instance)
+      return PP_NACL_FAILED;
 
-  WebKit::WebView* web_view =
-      plugin_instance->container()->element().document().frame()->view();
-  content::RenderView* render_view =
-      content::RenderView::FromWebView(web_view);
-  if (!render_view)
-    return PP_NACL_FAILED;
+    WebKit::WebView* web_view =
+        plugin_instance->container()->element().document().frame()->view();
+    content::RenderView* render_view =
+        content::RenderView::FromWebView(web_view);
+    if (!render_view)
+      return PP_NACL_FAILED;
+    routing_id = render_view->GetRoutingID();
+  }
 
   InstanceInfo instance_info;
   instance_info.url = GURL(alleged_url);
@@ -91,7 +102,7 @@ PP_NaClResult LaunchSelLdr(PP_Instance instance,
 
   if (!sender->Send(new ChromeViewHostMsg_LaunchNaCl(
           instance_info.url,
-          render_view->GetRoutingID(),
+          routing_id,
           perm_bits,
           socket_count, &sockets,
           &instance_info.channel_handle,

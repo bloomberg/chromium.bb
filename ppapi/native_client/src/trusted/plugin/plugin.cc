@@ -544,6 +544,7 @@ bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
                                   NaClSubprocess* subprocess,
                                   const Manifest* manifest,
                                   bool should_report_uma,
+                                  bool uses_ppapi,
                                   ErrorInfo* error_info,
                                   pp::CompletionCallback init_done_cb,
                                   pp::CompletionCallback crash_cb) {
@@ -563,6 +564,7 @@ bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
       new_service_runtime->Start(wrapper,
                                  error_info,
                                  manifest_base_url(),
+                                 uses_ppapi,
                                  enable_dev_interfaces_,
                                  crash_cb);
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon (service_runtime_started=%d)\n",
@@ -583,7 +585,9 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
   // outlive the Plugin object, they will not be memory safe.
   ShutDownSubprocesses();
   if (!LoadNaClModuleCommon(wrapper, &main_subprocess_, manifest_.get(),
-                            true, error_info, init_done_cb, crash_cb)) {
+                            true /* should_report_uma */,
+                            true /* uses_ppapi */,
+                            error_info, init_done_cb, crash_cb)) {
     return false;
   }
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (%s)\n",
@@ -641,7 +645,9 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
   // Do not report UMA stats for translator-related nexes.
   // TODO(sehr): define new UMA stats for translator related nexe events.
   if (!LoadNaClModuleCommon(wrapper, nacl_subprocess.get(), manifest,
-                            false, error_info,
+                            false /* should_report_uma */,
+                            false /* uses_ppapi */,
+                            error_info,
                             pp::BlockUntilComplete(),
                             pp::BlockUntilComplete())) {
     return NULL;
