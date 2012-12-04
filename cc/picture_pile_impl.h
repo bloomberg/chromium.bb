@@ -9,11 +9,11 @@
 #include "base/memory/ref_counted.h"
 #include "cc/cc_export.h"
 #include "cc/picture.h"
+#include "cc/picture_pile.h"
 #include "cc/scoped_ptr_vector.h"
 #include "ui/gfx/rect.h"
 
 namespace cc {
-class PicturePile;
 struct RenderingStats;
 
 class CC_EXPORT PicturePileImpl : public base::RefCounted<PicturePileImpl> {
@@ -34,7 +34,7 @@ private:
   PicturePileImpl();
   ~PicturePileImpl();
 
-  std::vector<scoped_refptr<Picture> > pile_;
+  PicturePile::Pile pile_;
 
   friend class base::RefCounted<PicturePileImpl>;
   DISALLOW_COPY_AND_ASSIGN(PicturePileImpl);

@@ -11,11 +11,12 @@
 
 namespace cc {
 
-scoped_refptr<Picture> Picture::Create() {
-  return make_scoped_refptr(new Picture());
+scoped_refptr<Picture> Picture::Create(gfx::Rect layer_rect) {
+  return make_scoped_refptr(new Picture(layer_rect));
 }
 
-Picture::Picture() {
+Picture::Picture(gfx::Rect layer_rect)
+    : layer_rect_(layer_rect) {
 }
 
 Picture::Picture(const skia::RefPtr<SkPicture>& picture,
@@ -29,7 +30,7 @@ Picture::Picture(const skia::RefPtr<SkPicture>& picture,
 Picture::~Picture() {
 }
 
-scoped_refptr<Picture> Picture::Clone() {
+scoped_refptr<Picture> Picture::Clone() const {
   // SkPicture is not thread-safe to rasterize with, so return a thread-safe
   // clone of it.
   DCHECK(picture_);
@@ -37,7 +38,7 @@ scoped_refptr<Picture> Picture::Clone() {
   return make_scoped_refptr(new Picture(clone, layer_rect_, opaque_rect_));
 }
 
-void Picture::Record(ContentLayerClient* painter, gfx::Rect layer_rect,
+void Picture::Record(ContentLayerClient* painter,
                      RenderingStats& stats) {
   TRACE_EVENT0("cc", "Picture::Record");
 
@@ -46,37 +47,36 @@ void Picture::Record(ContentLayerClient* painter, gfx::Rect layer_rect,
   picture_ = skia::AdoptRef(new SkPicture);
 
   SkCanvas* canvas = picture_->beginRecording(
-      layer_rect.width(),
-      layer_rect.height(),
+      layer_rect_.width(),
+      layer_rect_.height(),
       SkPicture::kOptimizeForClippedPlayback_RecordingFlag);
 
   canvas->save();
-  canvas->translate(SkFloatToScalar(-layer_rect.x()),
-                    SkFloatToScalar(-layer_rect.y()));
+  canvas->translate(SkFloatToScalar(-layer_rect_.x()),
+                    SkFloatToScalar(-layer_rect_.y()));
 
   SkPaint paint;
   paint.setAntiAlias(false);
   paint.setXfermodeMode(SkXfermode::kClear_Mode);
-  SkRect layer_skrect = SkRect::MakeXYWH(layer_rect.x(),
-                                         layer_rect.y(),
-                                         layer_rect.width(),
-                                         layer_rect.height());
+  SkRect layer_skrect = SkRect::MakeXYWH(layer_rect_.x(),
+                                         layer_rect_.y(),
+                                         layer_rect_.width(),
+                                         layer_rect_.height());
   canvas->drawRect(layer_skrect, paint);
   canvas->clipRect(layer_skrect);
 
   gfx::RectF opaque_layer_rect;
   base::TimeTicks beginPaintTime = base::TimeTicks::Now();
-  painter->paintContents(canvas, layer_rect, opaque_layer_rect);
+  painter->paintContents(canvas, layer_rect_, opaque_layer_rect);
   double delta = (base::TimeTicks::Now() - beginPaintTime).InSecondsF();
   stats.totalPaintTimeInSeconds += delta;
-  stats.totalPixelsPainted += layer_rect.width() *
-                              layer_rect.height();
+  stats.totalPixelsPainted += layer_rect_.width() *
+                              layer_rect_.height();
 
   canvas->restore();
   picture_->endRecording();
 
   opaque_rect_ = gfx::ToEnclosedRect(opaque_layer_rect);
-  layer_rect_ = layer_rect;
 }
 
 void Picture::Raster(SkCanvas* canvas) {

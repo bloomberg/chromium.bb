@@ -23,9 +23,9 @@ PicturePileImpl::~PicturePileImpl() {
 scoped_refptr<PicturePileImpl> PicturePileImpl::CloneForDrawing() const {
   TRACE_EVENT0("cc", "PicturePileImpl::CloneForDrawing");
   scoped_refptr<PicturePileImpl> clone = Create();
-  clone->pile_.resize(pile_.size());
-  for (size_t i = 0; i < pile_.size(); ++i)
-    clone->pile_[i] = pile_[i]->Clone();
+  for (PicturePile::Pile::const_iterator i = pile_.begin();
+       i != pile_.end(); ++i)
+    clone->pile_.push_back((*i)->Clone());
 
   return clone;
 }
@@ -40,10 +40,11 @@ void PicturePileImpl::Raster(SkCanvas* canvas, gfx::Rect rect,
   SkRect layer_skrect = SkRect::MakeXYWH(rect.x(), rect.y(),
                                          rect.width(), rect.height());
   canvas->clipRect(layer_skrect);
-  for (size_t i = 0; i < pile_.size(); ++i) {
-    if (!pile_[i]->LayerRect().Intersects(rect))
+  for (PicturePile::Pile::const_iterator i = pile_.begin();
+       i != pile_.end(); ++i) {
+    if (!(*i)->LayerRect().Intersects(rect))
       continue;
-    pile_[i]->Raster(canvas);
+    (*i)->Raster(canvas);
 
     SkISize deviceSize = canvas->getDeviceSize();
     stats->totalPixelsRasterized += deviceSize.width() * deviceSize.height();

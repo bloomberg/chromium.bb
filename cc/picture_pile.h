@@ -5,6 +5,8 @@
 #ifndef CC_PICTURE_PILE_H_
 #define CC_PICTURE_PILE_H_
 
+#include <list>
+
 #include "base/basictypes.h"
 #include "cc/cc_export.h"
 #include "cc/picture.h"
@@ -38,7 +40,13 @@ public:
   void PushPropertiesTo(PicturePileImpl* other);
 
 private:
-  std::vector<scoped_refptr<Picture> > pile_;
+  friend class PicturePileImpl;
+
+  void InvalidateRect(gfx::Rect invalidation);
+  void ResetPile(ContentLayerClient* painter, RenderingStats& stats);
+
+  typedef std::list<scoped_refptr<Picture> > Pile;
+  Pile pile_;
   gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(PicturePile);
