@@ -116,6 +116,12 @@ void Layer::setNeedsCommit()
         m_layerTreeHost->setNeedsCommit();
 }
 
+void Layer::setNeedsFullTreeSync()
+{
+    if (m_layerTreeHost)
+        m_layerTreeHost->setNeedsFullTreeSync();
+}
+
 gfx::Rect Layer::layerRectToContentRect(const gfx::RectF& layerRect) const
 {
     gfx::RectF contentRect = gfx::ScaleRect(layerRect, contentsScaleX(), contentsScaleY());
@@ -157,7 +163,7 @@ void Layer::insertChild(scoped_refptr<Layer> child, size_t index)
     index = min(index, m_children.size());
     LayerList::iterator iter = m_children.begin();
     m_children.insert(iter + index, child);
-    setNeedsCommit();
+    setNeedsFullTreeSync();
 }
 
 void Layer::removeFromParent()
@@ -175,7 +181,7 @@ void Layer::removeChild(Layer* child)
 
         child->setParent(0);
         m_children.erase(iter);
-        setNeedsCommit();
+        setNeedsFullTreeSync();
         return;
     }
 }
@@ -302,7 +308,7 @@ void Layer::setMaskLayer(Layer* maskLayer)
         m_maskLayer->setLayerTreeHost(m_layerTreeHost);
         m_maskLayer->setIsMask(true);
     }
-    setNeedsCommit();
+    setNeedsFullTreeSync();
 }
 
 void Layer::setReplicaLayer(Layer* layer)
@@ -314,7 +320,7 @@ void Layer::setReplicaLayer(Layer* layer)
     m_replicaLayer = layer;
     if (m_replicaLayer)
         m_replicaLayer->setLayerTreeHost(m_layerTreeHost);
-    setNeedsCommit();
+    setNeedsFullTreeSync();
 }
 
 void Layer::setFilters(const WebKit::WebFilterOperations& filters)
@@ -411,7 +417,7 @@ void Layer::setScrollOffset(gfx::Vector2d scrollOffset)
     m_scrollOffset = scrollOffset;
     if (m_layerScrollClient)
         m_layerScrollClient->didScroll();
-    setNeedsCommit();
+    setNeedsFullTreeSync();
 }
 
 void Layer::setMaxScrollOffset(gfx::Vector2d maxScrollOffset)

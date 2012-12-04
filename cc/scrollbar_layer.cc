@@ -40,6 +40,15 @@ ScrollbarLayer::~ScrollbarLayer()
 {
 }
 
+void ScrollbarLayer::setScrollLayerId(int id)
+{
+    if (id == m_scrollLayerId)
+        return;
+
+    m_scrollLayerId = id;
+    setNeedsFullTreeSync();
+}
+
 int ScrollbarLayer::maxTextureSize() {
     DCHECK(layerTreeHost());
     return layerTreeHost()->rendererCapabilities().maxTextureSize;

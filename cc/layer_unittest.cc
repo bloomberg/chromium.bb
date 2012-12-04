@@ -17,17 +17,24 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform.h"
 
-using namespace WebKitTests;
-using ::testing::Mock;
-using ::testing::_;
-using ::testing::AtLeast;
 using ::testing::AnyNumber;
+using ::testing::AtLeast;
+using ::testing::Mock;
+using ::testing::StrictMock;
+using ::testing::_;
 
-#define EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(numTimesExpectedSetNeedsCommit, codeToTest) do { \
-        EXPECT_CALL(*m_layerTreeHost, setNeedsCommit()).Times((numTimesExpectedSetNeedsCommit));      \
-        codeToTest;                                                                                   \
-        Mock::VerifyAndClearExpectations(m_layerTreeHost.get());                                      \
+#define EXPECT_SET_NEEDS_COMMIT(expect, codeToTest) do {                 \
+        EXPECT_CALL(*m_layerTreeHost, setNeedsCommit()).Times((expect)); \
+        codeToTest;                                                      \
+        Mock::VerifyAndClearExpectations(m_layerTreeHost.get());         \
     } while (0)
+
+#define EXPECT_SET_NEEDS_FULL_TREE_SYNC(expect, codeToTest) do {               \
+        EXPECT_CALL(*m_layerTreeHost, setNeedsFullTreeSync()).Times((expect)); \
+        codeToTest;                                                            \
+        Mock::VerifyAndClearExpectations(m_layerTreeHost.get());               \
+    } while (0)
+
 
 namespace cc {
 namespace {
@@ -41,6 +48,7 @@ public:
     }
 
     MOCK_METHOD0(setNeedsCommit, void());
+    MOCK_METHOD0(setNeedsFullTreeSync, void());
 
 private:
     FakeLayerImplTreeHostClient m_fakeClient;
@@ -61,13 +69,13 @@ public:
 protected:
     virtual void SetUp()
     {
-        m_layerTreeHost = scoped_ptr<MockLayerImplTreeHost>(new MockLayerImplTreeHost);
+        m_layerTreeHost.reset(new StrictMock<MockLayerImplTreeHost>);
     }
 
     virtual void TearDown()
     {
         Mock::VerifyAndClearExpectations(m_layerTreeHost.get());
-        EXPECT_CALL(*m_layerTreeHost, setNeedsCommit()).Times(AnyNumber());
+        EXPECT_CALL(*m_layerTreeHost, setNeedsFullTreeSync()).Times(AnyNumber());
         m_parent = NULL;
         m_child1 = NULL;
         m_child2 = NULL;
@@ -113,7 +121,7 @@ protected:
         m_grandChild2 = Layer::create();
         m_grandChild3 = Layer::create();
 
-        EXPECT_CALL(*m_layerTreeHost, setNeedsCommit()).Times(AnyNumber());
+        EXPECT_CALL(*m_layerTreeHost, setNeedsFullTreeSync()).Times(AnyNumber());
         m_layerTreeHost->setRootLayer(m_parent);
 
         m_parent->addChild(m_child1);
@@ -128,7 +136,7 @@ protected:
         verifyTestTreeInitialState();
     }
 
-    scoped_ptr<MockLayerImplTreeHost> m_layerTreeHost;
+    scoped_ptr<StrictMock<MockLayerImplTreeHost> > m_layerTreeHost;
     scoped_refptr<Layer> m_parent, m_child1, m_child2, m_child3, m_grandChild1, m_grandChild2, m_grandChild3;
 };
 
@@ -150,19 +158,21 @@ TEST_F(LayerTest, addAndRemoveChild)
     ASSERT_EQ(static_cast<size_t>(0), parent->children().size());
     EXPECT_FALSE(child->parent());
 
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, m_layerTreeHost->setRootLayer(parent));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, parent->addChild(child));
+    EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, m_layerTreeHost->setRootLayer(parent));
+    EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->addChild(child));
 
     ASSERT_EQ(static_cast<size_t>(1), parent->children().size());
     EXPECT_EQ(child.get(), parent->children()[0]);
     EXPECT_EQ(parent.get(), child->parent());
     EXPECT_EQ(parent.get(), child->rootLayer());
 
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(AtLeast(1), child->removeFromParent());
+    EXPECT_SET_NEEDS_FULL_TREE_SYNC(AtLeast(1), child->removeFromParent());
 }
 
 TEST_F(LayerTest, addSameChildTwice)
 {
+    EXPECT_CALL(*m_layerTreeHost, setNeedsFullTreeSync()).Times(AtLeast(1));
+
     scoped_refptr<Layer> parent = Layer::create();
     scoped_refptr<Layer> child = Layer::create();
 
@@ -192,20 +202,20 @@ TEST_F(LayerTest, insertChild)
     ASSERT_EQ(static_cast<size_t>(0), parent->children().size());
 
     // Case 1: inserting to empty list.
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, parent->insertChild(child3, 0));
+    EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->insertChild(child3, 0));
     ASSERT_EQ(static_cast<size_t>(1), parent->children().size());
     EXPECT_EQ(child3, parent->children()[0]);
     EXPECT_EQ(parent.get(), child3->parent());
 
     // Case 2: inserting to beginning of list
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, parent->insertChild(child1, 0));
+    EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->insertChild(child1, 0));
     ASSERT_EQ(static_cast<size_t>(2), parent->children().size());
     EXPECT_EQ(child1, parent->children()[0]);
     EXPECT_EQ(child3, parent->children()[1]);
     EXPECT_EQ(parent.get(), child1->parent());
 
     // Case 3: inserting to middle of list
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, parent->insertChild(child2, 1));
+    EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->insertChild(child2, 1));
     ASSERT_EQ(static_cast<size_t>(3), parent->children().size());
     EXPECT_EQ(child1, parent->children()[0]);
     EXPECT_EQ(child2, parent->children()[1]);
@@ -213,7 +223,7 @@ TEST_F(LayerTest, insertChild)
     EXPECT_EQ(parent.get(), child2->parent());
 
     // Case 4: inserting to end of list
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, parent->insertChild(child4, 3));
+    EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->insertChild(child4, 3));
 
     ASSERT_EQ(static_cast<size_t>(4), parent->children().size());
     EXPECT_EQ(child1, parent->children()[0]);
@@ -222,7 +232,7 @@ TEST_F(LayerTest, insertChild)
     EXPECT_EQ(child4, parent->children()[3]);
     EXPECT_EQ(parent.get(), child4->parent());
 
-    EXPECT_CALL(*m_layerTreeHost, setNeedsCommit()).Times(AtLeast(1));
+    EXPECT_CALL(*m_layerTreeHost, setNeedsFullTreeSync()).Times(AtLeast(1));
 }
 
 TEST_F(LayerTest, insertChildPastEndOfList)
@@ -257,22 +267,22 @@ TEST_F(LayerTest, insertSameChildTwice)
 
     ASSERT_EQ(static_cast<size_t>(0), parent->children().size());
 
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, parent->insertChild(child1, 0));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, parent->insertChild(child2, 1));
+    EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->insertChild(child1, 0));
+    EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->insertChild(child2, 1));
 
     ASSERT_EQ(static_cast<size_t>(2), parent->children().size());
     EXPECT_EQ(child1, parent->children()[0]);
     EXPECT_EQ(child2, parent->children()[1]);
 
     // Inserting the same child again should cause the child to be removed and re-inserted at the new location.
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(AtLeast(1), parent->insertChild(child1, 1));
+    EXPECT_SET_NEEDS_FULL_TREE_SYNC(AtLeast(1), parent->insertChild(child1, 1));
 
     // child1 should now be at the end of the list.
     ASSERT_EQ(static_cast<size_t>(2), parent->children().size());
     EXPECT_EQ(child2, parent->children()[0]);
     EXPECT_EQ(child1, parent->children()[1]);
 
-    EXPECT_CALL(*m_layerTreeHost, setNeedsCommit()).Times(AtLeast(1));
+    EXPECT_CALL(*m_layerTreeHost, setNeedsFullTreeSync()).Times(AtLeast(1));
 }
 
 TEST_F(LayerTest, replaceChildWithNewChild)
@@ -282,7 +292,7 @@ TEST_F(LayerTest, replaceChildWithNewChild)
 
     EXPECT_FALSE(child4->parent());
 
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(AtLeast(1), m_parent->replaceChild(m_child2.get(), child4));
+    EXPECT_SET_NEEDS_FULL_TREE_SYNC(AtLeast(1), m_parent->replaceChild(m_child2.get(), child4));
 
     ASSERT_EQ(static_cast<size_t>(3), m_parent->children().size());
     EXPECT_EQ(m_child1, m_parent->children()[0]);
@@ -305,7 +315,7 @@ TEST_F(LayerTest, replaceChildWithNewChildThatHasOtherParent)
     EXPECT_EQ(child4, testLayer->children()[0]);
     EXPECT_EQ(testLayer.get(), child4->parent());
 
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(AtLeast(1), m_parent->replaceChild(m_child2.get(), child4));
+    EXPECT_SET_NEEDS_FULL_TREE_SYNC(AtLeast(1), m_parent->replaceChild(m_child2.get(), child4));
 
     ASSERT_EQ(static_cast<size_t>(3), m_parent->children().size());
     EXPECT_EQ(m_child1, m_parent->children()[0]);
@@ -323,8 +333,10 @@ TEST_F(LayerTest, replaceChildWithSameChild)
 {
     createSimpleTestTree();
 
-    // setNeedsCommit should not be called because its the same child
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(0, m_parent->replaceChild(m_child2.get(), m_child2));
+    // setNeedsFullTreeSync / setNeedsCommit should not be called because its the same child
+    EXPECT_CALL(*m_layerTreeHost, setNeedsCommit()).Times(0);
+    EXPECT_CALL(*m_layerTreeHost, setNeedsFullTreeSync()).Times(0);
+    m_parent->replaceChild(m_child2.get(), m_child2);
 
     verifyTestTreeInitialState();
 }
@@ -333,7 +345,7 @@ TEST_F(LayerTest, removeAllChildren)
 {
     createSimpleTestTree();
 
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(AtLeast(3), m_parent->removeAllChildren());
+    EXPECT_SET_NEEDS_FULL_TREE_SYNC(AtLeast(3), m_parent->removeAllChildren());
 
     ASSERT_EQ(static_cast<size_t>(0), m_parent->children().size());
     EXPECT_FALSE(m_child1->parent());
@@ -361,21 +373,21 @@ TEST_F(LayerTest, setChildren)
 
     newParent->setLayerTreeHost(m_layerTreeHost.get());
 
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(AtLeast(1), newParent->setChildren(newChildren));
+    EXPECT_SET_NEEDS_FULL_TREE_SYNC(AtLeast(1), newParent->setChildren(newChildren));
 
     ASSERT_EQ(static_cast<size_t>(2), newParent->children().size());
     EXPECT_EQ(newParent.get(), child1->parent());
     EXPECT_EQ(newParent.get(), child2->parent());
 
-    EXPECT_CALL(*m_layerTreeHost, setNeedsCommit()).Times(AtLeast(1));
+    EXPECT_CALL(*m_layerTreeHost, setNeedsFullTreeSync()).Times(AtLeast(1));
 }
 
 TEST_F(LayerTest, getRootLayerAfterTreeManipulations)
 {
     createSimpleTestTree();
 
-    // For this test we don't care about setNeedsCommit calls.
-    EXPECT_CALL(*m_layerTreeHost, setNeedsCommit()).Times(AtLeast(1));
+    // For this test we don't care about setNeedsFullTreeSync calls.
+    EXPECT_CALL(*m_layerTreeHost, setNeedsFullTreeSync()).Times(AnyNumber());
 
     scoped_refptr<Layer> child4 = Layer::create();
 
@@ -432,7 +444,7 @@ TEST_F(LayerTest, checkSetNeedsDisplayCausesCorrectBehavior)
 
     scoped_refptr<Layer> testLayer = Layer::create();
     testLayer->setLayerTreeHost(m_layerTreeHost.get());
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setIsDrawable(true));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setIsDrawable(true));
 
     gfx::Size testBounds = gfx::Size(501, 508);
 
@@ -445,47 +457,47 @@ TEST_F(LayerTest, checkSetNeedsDisplayCausesCorrectBehavior)
     EXPECT_FALSE(testLayer->needsDisplay());
 
     // This is just initialization, but setNeedsCommit behavior is verified anyway to avoid warnings.
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setBounds(testBounds));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setBounds(testBounds));
     testLayer = Layer::create();
     testLayer->setLayerTreeHost(m_layerTreeHost.get());
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setIsDrawable(true));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setIsDrawable(true));
     EXPECT_FALSE(testLayer->needsDisplay());
 
     // The real test begins here.
 
     // Case 1: needsDisplay flag should not change because of an empty dirty rect.
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setNeedsDisplayRect(emptyDirtyRect));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setNeedsDisplayRect(emptyDirtyRect));
     EXPECT_FALSE(testLayer->needsDisplay());
 
     // Case 2: basic.
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setNeedsDisplayRect(dirty1));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setNeedsDisplayRect(dirty1));
     EXPECT_TRUE(testLayer->needsDisplay());
 
     // Case 3: a second dirty rect.
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setNeedsDisplayRect(dirty2));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setNeedsDisplayRect(dirty2));
     EXPECT_TRUE(testLayer->needsDisplay());
 
     // Case 4: Layer should accept dirty rects that go beyond its bounds.
     testLayer = Layer::create();
     testLayer->setLayerTreeHost(m_layerTreeHost.get());
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setIsDrawable(true));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setBounds(testBounds));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setNeedsDisplayRect(outOfBoundsDirtyRect));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setIsDrawable(true));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setBounds(testBounds));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setNeedsDisplayRect(outOfBoundsDirtyRect));
     EXPECT_TRUE(testLayer->needsDisplay());
 
     // Case 5: setNeedsDisplay() without the dirty rect arg.
     testLayer = Layer::create();
     testLayer->setLayerTreeHost(m_layerTreeHost.get());
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setIsDrawable(true));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setBounds(testBounds));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setNeedsDisplay());
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setIsDrawable(true));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setBounds(testBounds));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setNeedsDisplay());
     EXPECT_TRUE(testLayer->needsDisplay());
 
     // Case 6: setNeedsDisplay() with a non-drawable layer
     testLayer = Layer::create();
     testLayer->setLayerTreeHost(m_layerTreeHost.get());
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(0, testLayer->setBounds(testBounds));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(0, testLayer->setNeedsDisplayRect(dirty1));
+    EXPECT_SET_NEEDS_COMMIT(0, testLayer->setBounds(testBounds));
+    EXPECT_SET_NEEDS_COMMIT(0, testLayer->setNeedsDisplayRect(dirty1));
     EXPECT_TRUE(testLayer->needsDisplay());
 }
 
@@ -493,7 +505,7 @@ TEST_F(LayerTest, checkPropertyChangeCausesCorrectBehavior)
 {
     scoped_refptr<Layer> testLayer = Layer::create();
     testLayer->setLayerTreeHost(m_layerTreeHost.get());
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setIsDrawable(true));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setIsDrawable(true));
 
     scoped_refptr<Layer> dummyLayer = Layer::create(); // just a dummy layer for this test case.
 
@@ -501,43 +513,44 @@ TEST_F(LayerTest, checkPropertyChangeCausesCorrectBehavior)
     EXPECT_FALSE(testLayer->needsDisplay());
 
     // Test properties that should not call needsDisplay and needsCommit when changed.
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(0, testLayer->setVisibleContentRect(gfx::Rect(0, 0, 40, 50)));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(0, testLayer->setUseLCDText(true));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(0, testLayer->setDrawOpacity(0.5));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(0, testLayer->setRenderTarget(0));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(0, testLayer->setDrawTransform(gfx::Transform()));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(0, testLayer->setScreenSpaceTransform(gfx::Transform()));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(0, testLayer->setDrawableContentRect(gfx::Rect(4, 5, 6, 7)));
+    EXPECT_SET_NEEDS_COMMIT(0, testLayer->setVisibleContentRect(gfx::Rect(0, 0, 40, 50)));
+    EXPECT_SET_NEEDS_COMMIT(0, testLayer->setUseLCDText(true));
+    EXPECT_SET_NEEDS_COMMIT(0, testLayer->setDrawOpacity(0.5));
+    EXPECT_SET_NEEDS_COMMIT(0, testLayer->setRenderTarget(0));
+    EXPECT_SET_NEEDS_COMMIT(0, testLayer->setDrawTransform(gfx::Transform()));
+    EXPECT_SET_NEEDS_COMMIT(0, testLayer->setScreenSpaceTransform(gfx::Transform()));
+    EXPECT_SET_NEEDS_COMMIT(0, testLayer->setDrawableContentRect(gfx::Rect(4, 5, 6, 7)));
     EXPECT_FALSE(testLayer->needsDisplay());
 
     // Next, test properties that should call setNeedsCommit (but not setNeedsDisplay)
     // All properties need to be set to new values in order for setNeedsCommit to be called.
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setAnchorPoint(gfx::PointF(1.23f, 4.56f)));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setAnchorPointZ(0.7f));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setBackgroundColor(SK_ColorLTGRAY));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setMasksToBounds(true));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setMaskLayer(dummyLayer.get()));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setOpacity(0.5));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setContentsOpaque(true));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setPosition(gfx::PointF(4, 9)));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setReplicaLayer(dummyLayer.get()));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setSublayerTransform(MathUtil::createGfxTransform(0, 0, 0, 0, 0, 0)));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setScrollable(true));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setShouldScrollOnMainThread(true));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setNonFastScrollableRegion(gfx::Rect(1, 1, 2, 2)));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setHaveWheelEventHandlers(true));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setScrollOffset(gfx::Vector2d(10, 10)));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setTransform(MathUtil::createGfxTransform(0, 0, 0, 0, 0, 0)));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setDoubleSided(false));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setDebugName("Test Layer"));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setDrawCheckerboardForMissingTiles(!testLayer->drawCheckerboardForMissingTiles()));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setForceRenderSurface(true));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setAnchorPoint(gfx::PointF(1.23f, 4.56f)));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setAnchorPointZ(0.7f));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setBackgroundColor(SK_ColorLTGRAY));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setMasksToBounds(true));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setOpacity(0.5));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setContentsOpaque(true));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setPosition(gfx::PointF(4, 9)));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setSublayerTransform(MathUtil::createGfxTransform(0, 0, 0, 0, 0, 0)));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setScrollable(true));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setShouldScrollOnMainThread(true));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setNonFastScrollableRegion(gfx::Rect(1, 1, 2, 2)));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setHaveWheelEventHandlers(true));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setTransform(MathUtil::createGfxTransform(0, 0, 0, 0, 0, 0)));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setDoubleSided(false));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setDebugName("Test Layer"));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setDrawCheckerboardForMissingTiles(!testLayer->drawCheckerboardForMissingTiles()));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setForceRenderSurface(true));
+
+    EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, testLayer->setMaskLayer(dummyLayer.get()));
+    EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, testLayer->setReplicaLayer(dummyLayer.get()));
+    EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, testLayer->setScrollOffset(gfx::Vector2d(10, 10)));
 
     // The above tests should not have caused a change to the needsDisplay flag.
     EXPECT_FALSE(testLayer->needsDisplay());
 
     // Test properties that should call setNeedsDisplay and setNeedsCommit
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setBounds(gfx::Size(5, 10)));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setBounds(gfx::Size(5, 10)));
     EXPECT_TRUE(testLayer->needsDisplay());
 }
 

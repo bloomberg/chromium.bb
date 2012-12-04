@@ -4,6 +4,7 @@
 
 #include "cc/tree_synchronizer.h"
 
+#include "base/debug/trace_event.h"
 #include "cc/layer.h"
 #include "cc/layer_impl.h"
 #include "cc/scrollbar_animation_controller.h"
@@ -14,6 +15,7 @@ namespace cc {
 
 scoped_ptr<LayerImpl> TreeSynchronizer::synchronizeTrees(Layer* layerRoot, scoped_ptr<LayerImpl> oldLayerImplRoot, LayerTreeHostImpl* hostImpl)
 {
+    TRACE_EVENT0("cc", "TreeSynchronizer::synchronizeTrees");
     ScopedPtrLayerImplMap oldLayers;
     RawPtrLayerImplMap newLayers;
 

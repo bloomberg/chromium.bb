@@ -309,6 +309,7 @@ protected:
     Layer();
 
     void setNeedsCommit();
+    void setNeedsFullTreeSync();
 
     // This flag is set when layer need repainting/updating.
     bool m_needsDisplay;

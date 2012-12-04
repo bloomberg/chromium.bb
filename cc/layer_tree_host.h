@@ -184,6 +184,7 @@ public:
     void setNeedsAnimate();
     // virtual for testing
     virtual void setNeedsCommit();
+    virtual void setNeedsFullTreeSync();
     void setNeedsRedraw();
     bool commitRequested() const;
 
@@ -268,6 +269,7 @@ private:
 
     bool m_animating;
     bool m_needsAnimateLayers;
+    bool m_needsFullTreeSync;
 
     base::CancelableClosure m_prepaintCallback;
 

@@ -161,6 +161,7 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::create(LayerTreeHostClient* client, con
 LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client, const LayerTreeSettings& settings)
     : m_animating(false)
     , m_needsAnimateLayers(false)
+    , m_needsFullTreeSync(true)
     , m_client(client)
     , m_commitNumber(0)
     , m_renderingStats()
@@ -310,6 +311,28 @@ void LayerTreeHost::beginCommitOnImplThread(LayerTreeHostImpl* hostImpl)
     TRACE_EVENT0("cc", "LayerTreeHost::commitTo");
 }
 
+static void pushPropertiesRecursive(Layer* layer, LayerImpl* layerImpl)
+{
+    if (!layer) {
+        DCHECK(!layerImpl);
+        return;
+    }
+
+    DCHECK_EQ(layer->id(), layerImpl->id());
+    layer->pushPropertiesTo(layerImpl);
+
+    pushPropertiesRecursive(layer->maskLayer(), layerImpl->maskLayer());
+    pushPropertiesRecursive(layer->replicaLayer(), layerImpl->replicaLayer());
+
+    const std::vector<scoped_refptr<Layer> >& children = layer->children();
+    const ScopedPtrVector<LayerImpl>& implChildren = layerImpl->children();
+    DCHECK_EQ(children.size(), implChildren.size());
+
+    for (size_t i = 0; i < children.size(); ++i) {
+        pushPropertiesRecursive(children[i].get(), implChildren[i]);
+    }
+}
+
 // This function commits the LayerTreeHost to an impl tree. When modifying
 // this function, keep in mind that the function *runs* on the impl thread! Any
 // code that is logically a main thread operation, e.g. deletion of a Layer,
@@ -322,7 +345,13 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
     m_contentsTextureManager->updateBackingsInDrawingImplTree();
     m_contentsTextureManager->reduceMemory(hostImpl->resourceProvider());
 
-    hostImpl->setRootLayer(TreeSynchronizer::synchronizeTrees(rootLayer(), hostImpl->detachLayerTree(), hostImpl));
+    if (m_needsFullTreeSync) {
+        hostImpl->setRootLayer(TreeSynchronizer::synchronizeTrees(rootLayer(), hostImpl->detachLayerTree(), hostImpl));
+    } else {
+        TRACE_EVENT0("cc", "LayerTreeHost::pushPropertiesRecursive");
+        pushPropertiesRecursive(rootLayer(), hostImpl->rootLayer());
+    }
+    m_needsFullTreeSync = false;
 
     if (m_rootLayer && m_hudLayer)
         hostImpl->setHudLayer(static_cast<HeadsUpDisplayLayerImpl*>(LayerTreeHostCommon::findLayerInSubtree(hostImpl->rootLayer(), m_hudLayer->id())));
@@ -443,6 +472,12 @@ void LayerTreeHost::setNeedsCommit()
     m_proxy->setNeedsCommit();
 }
 
+void LayerTreeHost::setNeedsFullTreeSync()
+{
+    m_needsFullTreeSync = true;
+    setNeedsCommit();
+}
+
 void LayerTreeHost::setNeedsRedraw()
 {
     m_proxy->setNeedsRedraw();
@@ -481,7 +516,7 @@ void LayerTreeHost::setRootLayer(scoped_refptr<Layer> rootLayer)
     if (m_hudLayer)
         m_hudLayer->removeFromParent();
 
-    setNeedsCommit();
+    setNeedsFullTreeSync();
 }
 
 void LayerTreeHost::setDebugState(const LayerTreeDebugState& debugState)

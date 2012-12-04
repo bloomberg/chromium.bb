@@ -25,15 +25,15 @@ public:
 
     static scoped_refptr<ScrollbarLayer> create(scoped_ptr<WebKit::WebScrollbar>, WebKit::WebScrollbarThemePainter, scoped_ptr<WebKit::WebScrollbarThemeGeometry>, int scrollLayerId);
 
+    int scrollLayerId() const { return m_scrollLayerId; }
+    void setScrollLayerId(int id);
+
     // Layer interface
     virtual void setTexturePriorities(const PriorityCalculator&) OVERRIDE;
     virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
     virtual void setLayerTreeHost(LayerTreeHost*) OVERRIDE;
     virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
     virtual void setContentsScale(float contentsScale) OVERRIDE;
-
-    int scrollLayerId() const { return m_scrollLayerId; }
-    void setScrollLayerId(int id) { m_scrollLayerId = id; }
 
     virtual ScrollbarLayer* toScrollbarLayer() OVERRIDE;
 
