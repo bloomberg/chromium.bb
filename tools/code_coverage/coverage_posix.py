@@ -246,21 +246,74 @@ gTestExclusions = {
 
 """Since random tests are failing/hanging on coverage bot, we are enabling
    tests feature by feature. crbug.com/159748
-   Below are the downloads related tests enabled.
-   SavePageBrowserTest.*
-   SavePageAsMHTMLBrowserTest.*
-   DownloadQueryTest.*
-   DownloadDangerPromptTest.*
-   DownloadTest.*
 """
 gTestInclusions = {
   'linux2': {
     'browser_tests':
-        ('SavePageBrowserTest.*',
+        (# 'src/chrome/browser/downloads' related tests.
+         'SavePageBrowserTest.*',
          'SavePageAsMHTMLBrowserTest.*',
          'DownloadQueryTest.*',
          'DownloadDangerPromptTest.*',
-         'DownloadTest.*',),
+         'DownloadTest.*',
+         # 'src/chrome/browser/net' related tests.
+         'CookiePolicyBrowserTest.*',
+         'FtpBrowserTest.*',
+         'LoadTimingObserverTest.*',
+         'PredictorBrowserTest.*',
+         'ProxyBrowserTest.*',
+         # 'src/chrome/browser/extensions' related tests.
+         'Extension*.*',
+         'WindowOpenPanelDisabledTest.*',
+         'WindowOpenPanelTest.*',
+         'WebstoreStandalone*.*',
+         'CommandLineWebstoreInstall.*',
+         'WebViewTest.*',
+         'RequirementsCheckerBrowserTest.*',
+         'ProcessManagementTest.*',
+         'PlatformAppBrowserTest.*',
+         'PlatformAppDevToolsBrowserTest.*',
+         'LazyBackgroundPageApiTest.*',
+         'IsolatedAppTest.*',
+         'PanelMessagingTest.*',
+         'GeolocationApiTest.*',
+         'ClipboardApiTest.*',
+         'ExecuteScriptApiTest.*',
+         'CalculatorBrowserTest.*',
+         'ChromeAppAPITest.*',
+         'AppApiTest.*',
+         'BlockedAppApiTest.*',
+         'AppNotificationTest.*',
+         'AppBackgroundPageApiTest.*',
+         'WebNavigationApiTest.*',
+         'UsbApiTest.*',
+         'TabCaptureApiTest.*',
+         'SystemInfo*.*',
+         'SyncFileSystemApiTest.*',
+         'SocketApiTest.*',
+         'SerialApiTest.*',
+         'RecordApiTest.*',
+         'PushMessagingApiTest.*',
+         'ProxySettingsApiTest.*',
+         'ExperimentalApiTest.*',
+         'OmniboxApiTest.*',
+         'OffscreenTabsApiTest.*',
+         'NotificationApiTest.*',
+         'MediaGalleriesPrivateApiTest.*',
+         'PlatformAppMediaGalleriesBrowserTest.*',
+         'ExperimentalMediaGalleriesApiTest.*',
+         'GetAuthTokenFunctionTest.*',
+         'LaunchWebAuthFlowFunctionTest.*',
+         'FileSystemApiTest.*',
+         'ScriptBadgeApiTest.*',
+         'PageAsBrowserActionApiTest.*',
+         'PageActionApiTest.*',
+         'BrowserActionApiTest.*',
+         'DownloadExtensionTest.*',
+         'DnsApiTest.*',
+         'DeclarativeApiTest.*',
+         'BluetoothApiTest.*',
+         'AllUrlsApiTest.*',),
   },
 }
 
