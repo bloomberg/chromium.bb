@@ -432,9 +432,8 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
       const ListValue* rejected_emails = profile->GetPrefs()->GetList(
           prefs::kReverseAutologinRejectedEmailList);
       if (!rejected_emails->empty()) {
-        const scoped_ptr<Value> email_value(new base::StringValue(email));
         base::ListValue::const_iterator iter = rejected_emails->Find(
-            *email_value);
+            base::StringValue(email));
         if (iter != rejected_emails->end())
           return false;
       }

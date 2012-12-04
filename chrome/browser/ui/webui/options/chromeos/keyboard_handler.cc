@@ -83,8 +83,8 @@ void KeyboardHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
         continue;
       }
       ListValue* option = new ListValue();
-      option->Append(Value::CreateIntegerValue(value));
-      option->Append(Value::CreateStringValue(l10n_util::GetStringUTF16(
+      option->Append(new base::FundamentalValue(value));
+      option->Append(new base::StringValue(l10n_util::GetStringUTF16(
           message_id)));
       list_value->Append(option);
     }

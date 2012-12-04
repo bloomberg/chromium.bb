@@ -51,10 +51,10 @@ void LanguagePinyinHandler::GetLocalizedValues(
         item_message_id == 0)
       break;
     ListValue* option = new ListValue();
-    option->Append(Value::CreateIntegerValue(
+    option->Append(new base::FundamentalValue(
         language_prefs::kPinyinDoublePinyinSchema.values_and_ids[i].
         ibus_config_value));
-    option->Append(Value::CreateStringValue(l10n_util::GetStringUTF16(
+    option->Append(new base::StringValue(l10n_util::GetStringUTF16(
         language_prefs::kPinyinDoublePinyinSchema.values_and_ids[i].
         item_message_id)));
     list_value->Append(option);

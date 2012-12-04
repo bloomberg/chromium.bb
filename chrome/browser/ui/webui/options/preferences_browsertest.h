@@ -61,9 +61,9 @@ class PreferencesBrowserTest : public InProcessBrowserTest {
 
   // Verifies that a dictionary contains a (key, value) pair. Takes ownership of
   // |expected|.
-  void VerifyKeyValue(const base::DictionaryValue* dict,
+  void VerifyKeyValue(const base::DictionaryValue& dict,
                       const std::string& key,
-                      base::Value* expected);
+                      const base::Value& expected);
   // Verifies that a dictionary contains a given pref and that its value has
   // been decorated correctly.
   void VerifyPref(const base::DictionaryValue* prefs,

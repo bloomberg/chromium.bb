@@ -124,14 +124,14 @@ void ManageProfileHandler::SendProfileIcons(
     if (icon) {
       gfx::Image icon2 = profiles::GetAvatarIconForWebUI(*icon, true);
       gaia_picture_url_ = web_ui_util::GetBitmapDataUrl(icon2.AsBitmap());
-      image_url_list.Append(Value::CreateStringValue(gaia_picture_url_));
+      image_url_list.Append(new base::StringValue(gaia_picture_url_));
     }
   }
 
   // Next add the default avatar icons.
   for (size_t i = 0; i < ProfileInfoCache::GetDefaultAvatarIconCount(); i++) {
     std::string url = ProfileInfoCache::GetDefaultAvatarIconUrl(i);
-    image_url_list.Append(Value::CreateStringValue(url));
+    image_url_list.Append(new base::StringValue(url));
   }
 
   web_ui()->CallJavascriptFunction(

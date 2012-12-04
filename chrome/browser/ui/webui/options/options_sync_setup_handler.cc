@@ -20,8 +20,8 @@ OptionsSyncSetupHandler::~OptionsSyncSetupHandler() {
 
 void OptionsSyncSetupHandler::ShowSetupUI() {
   // Show the Sync Setup page.
-  scoped_ptr<Value> page(Value::CreateStringValue("syncSetup"));
-  web_ui()->CallJavascriptFunction("OptionsPage.navigateToPage", *page);
+  web_ui()->CallJavascriptFunction("OptionsPage.navigateToPage",
+                                   base::StringValue("syncSetup"));
 }
 
 }  // namespace options

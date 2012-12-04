@@ -111,7 +111,7 @@ void GetValueList(const AutofillProfile& profile,
     return;
 
   for (size_t i = 0; i < values.size(); ++i) {
-    (*list)->Set(i, Value::CreateStringValue(values[i]));
+    (*list)->Set(i, new base::StringValue(values[i]));
   }
 }
 
@@ -150,9 +150,9 @@ void GetNameList(const AutofillProfile& profile,
 
   for (size_t i = 0; i < first_names.size(); ++i) {
     ListValue* name = new ListValue;  // owned by |list|
-    name->Set(0, Value::CreateStringValue(first_names[i]));
-    name->Set(1, Value::CreateStringValue(middle_names[i]));
-    name->Set(2, Value::CreateStringValue(last_names[i]));
+    name->Set(0, new base::StringValue(first_names[i]));
+    name->Set(1, new base::StringValue(middle_names[i]));
+    name->Set(2, new base::StringValue(last_names[i]));
     (*names)->Set(i, name);
   }
 }

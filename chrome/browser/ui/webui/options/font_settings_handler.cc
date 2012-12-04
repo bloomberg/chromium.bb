@@ -161,7 +161,7 @@ void FontSettingsHandler::FontsListHasLoaded(
     bool has_value = font->GetString(1, &value);
     DCHECK(has_value);
     bool has_rtl_chars = base::i18n::StringContainsStrongRTLChars(value);
-    font->Append(Value::CreateStringValue(has_rtl_chars ? "rtl" : "ltr"));
+    font->Append(new base::StringValue(has_rtl_chars ? "rtl" : "ltr"));
   }
 
   ListValue encoding_list;
@@ -183,27 +183,27 @@ void FontSettingsHandler::FontsListHasLoaded(
       CharacterEncoding::GetCanonicalEncodingNameByCommandId(cmd_id);
       string16 name = it->encoding_display_name;
       bool has_rtl_chars = base::i18n::StringContainsStrongRTLChars(name);
-      option->Append(Value::CreateStringValue(encoding));
-      option->Append(Value::CreateStringValue(name));
-      option->Append(Value::CreateStringValue(has_rtl_chars ? "rtl" : "ltr"));
+      option->Append(new base::StringValue(encoding));
+      option->Append(new base::StringValue(name));
+      option->Append(new base::StringValue(has_rtl_chars ? "rtl" : "ltr"));
     } else {
       // Add empty name/value to indicate a separator item.
-      option->Append(Value::CreateStringValue(""));
-      option->Append(Value::CreateStringValue(""));
+      option->Append(new base::StringValue(""));
+      option->Append(new base::StringValue(""));
     }
     encoding_list.Append(option);
   }
 
   ListValue selected_values;
-  selected_values.Append(Value::CreateStringValue(MaybeGetLocalizedFontName(
+  selected_values.Append(new base::StringValue(MaybeGetLocalizedFontName(
       standard_font_.GetValue())));
-  selected_values.Append(Value::CreateStringValue(MaybeGetLocalizedFontName(
+  selected_values.Append(new base::StringValue(MaybeGetLocalizedFontName(
       serif_font_.GetValue())));
-  selected_values.Append(Value::CreateStringValue(MaybeGetLocalizedFontName(
+  selected_values.Append(new base::StringValue(MaybeGetLocalizedFontName(
       sans_serif_font_.GetValue())));
-  selected_values.Append(Value::CreateStringValue(MaybeGetLocalizedFontName(
+  selected_values.Append(new base::StringValue(MaybeGetLocalizedFontName(
       fixed_font_.GetValue())));
-  selected_values.Append(Value::CreateStringValue(font_encoding_.GetValue()));
+  selected_values.Append(new base::StringValue(font_encoding_.GetValue()));
 
   web_ui()->CallJavascriptFunction("FontSettings.setFontsData",
                                    *list.get(), encoding_list,

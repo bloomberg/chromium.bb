@@ -783,21 +783,21 @@ bool BrowserOptionsHandler::IsInteractiveSetDefaultPermitted() {
 }
 
 void BrowserOptionsHandler::SetDefaultBrowserUIString(int status_string_id) {
-  scoped_ptr<Value> status_string(Value::CreateStringValue(
+  base::StringValue status_string(
       l10n_util::GetStringFUTF16(status_string_id,
-                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME))));
+                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 
-  scoped_ptr<Value> is_default(Value::CreateBooleanValue(
-      status_string_id == IDS_OPTIONS_DEFAULTBROWSER_DEFAULT));
+  base::FundamentalValue is_default(
+      status_string_id == IDS_OPTIONS_DEFAULTBROWSER_DEFAULT);
 
-  scoped_ptr<Value> can_be_default(Value::CreateBooleanValue(
+  base::FundamentalValue can_be_default(
       !default_browser_policy_.IsManaged() &&
       (status_string_id == IDS_OPTIONS_DEFAULTBROWSER_DEFAULT ||
-       status_string_id == IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT)));
+       status_string_id == IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT));
 
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.updateDefaultBrowserState",
-      *status_string, *is_default, *can_be_default);
+      status_string, is_default, can_be_default);
 }
 
 void BrowserOptionsHandler::OnTemplateURLServiceChanged() {
@@ -823,13 +823,12 @@ void BrowserOptionsHandler::OnTemplateURLServiceChanged() {
       default_index = i;
   }
 
-  scoped_ptr<Value> default_value(Value::CreateIntegerValue(default_index));
-  scoped_ptr<Value> default_managed(Value::CreateBooleanValue(
-      template_url_service_->is_default_search_managed()));
-
-  web_ui()->CallJavascriptFunction("BrowserOptions.updateSearchEngines",
-                                   search_engines, *default_value,
-                                   *default_managed);
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.updateSearchEngines",
+      search_engines,
+      base::FundamentalValue(default_index),
+      base::FundamentalValue(
+          template_url_service_->is_default_search_managed()));
 }
 
 // static
@@ -1376,11 +1375,11 @@ void BrowserOptionsHandler::SetupPageZoomSelector() {
     ListValue* option = new ListValue();
     double factor = *i;
     int percent = static_cast<int>(factor * 100 + 0.5);
-    option->Append(Value::CreateStringValue(
+    option->Append(new base::StringValue(
         l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, percent)));
-    option->Append(Value::CreateDoubleValue(factor));
+    option->Append(new base::FundamentalValue(factor));
     bool selected = content::ZoomValuesEqual(factor, default_zoom_factor);
-    option->Append(Value::CreateBooleanValue(selected));
+    option->Append(new base::FundamentalValue(selected));
     zoom_factors_value.Append(option);
   }
 

@@ -36,9 +36,9 @@ ListValue* LanguageHangulHandler::GetKeyboardLayoutList() {
   ListValue* keyboard_layout_list = new ListValue();
   for (size_t i = 0; i < language_prefs::kNumHangulKeyboardNameIDPairs; ++i) {
     ListValue* option = new ListValue();
-    option->Append(Value::CreateStringValue(
+    option->Append(new base::StringValue(
         language_prefs::kHangulKeyboardNameIDPairs[i].keyboard_id));
-    option->Append(Value::CreateStringValue(l10n_util::GetStringUTF16(
+    option->Append(new base::StringValue(l10n_util::GetStringUTF16(
         language_prefs::kHangulKeyboardNameIDPairs[i].message_id)));
     keyboard_layout_list->Append(option);
   }

@@ -520,7 +520,7 @@ void PopulateVPNDetails(
                          chromeos::onc::kVPN,
                          chromeos::onc::vpn::kHost));
   SetValueDictionary(dictionary, kTagServerHostname,
-                     Value::CreateStringValue(vpn->server_hostname()),
+                     new base::StringValue(vpn->server_hostname()),
                      hostname_ui_data);
 }
 
@@ -1311,7 +1311,7 @@ void InternetOptionsHandler::PopulateIPConfigsCallback(
   dictionary.SetBoolean(kTagShowPreferred,
                         network_profile == chromeos::PROFILE_USER);
   SetValueDictionary(&dictionary, kTagPreferred,
-                     Value::CreateBooleanValue(network->preferred()),
+                     new base::FundamentalValue(network->preferred()),
                      property_ui_data);
 
   chromeos::NetworkPropertyUIData auto_connect_ui_data(ui_data);
@@ -1323,7 +1323,7 @@ void InternetOptionsHandler::PopulateIPConfigsCallback(
                            chromeos::onc::wifi::kAutoConnect));
   }
   SetValueDictionary(&dictionary, kTagAutoConnect,
-                     Value::CreateBooleanValue(network->auto_connect()),
+                     new base::FundamentalValue(network->auto_connect()),
                      auto_connect_ui_data);
 
   if (type == chromeos::TYPE_WIFI) {
@@ -1444,7 +1444,7 @@ void InternetOptionsHandler::PopulateCellularDetails(
         device->technology_family() == chromeos::TECHNOLOGY_FAMILY_GSM);
     SetValueDictionary(
         dictionary, kTagSimCardLockEnabled,
-        Value::CreateBooleanValue(
+        new base::FundamentalValue(
             device->sim_pin_required() == chromeos::SIM_PIN_REQUIRED),
         cellular_property_ui_data);
 

@@ -8,12 +8,12 @@ namespace chromeos {
 namespace options {
 
 // See comments in .h.
-Value* CreateValue(const char* in_value) {
-  return Value::CreateStringValue(in_value);
+base::Value* CreateValue(const char* in_value) {
+  return new base::StringValue(in_value);
 }
 
-Value* CreateValue(int in_value) {
-  return Value::CreateIntegerValue(in_value);
+base::Value* CreateValue(int in_value) {
+  return new base::FundamentalValue(in_value);
 }
 
 }  // namespace options

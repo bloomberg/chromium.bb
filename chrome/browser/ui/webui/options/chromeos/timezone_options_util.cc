@@ -132,9 +132,9 @@ scoped_ptr<base::ListValue> GetTimezoneList() {
        iter != timezones.end(); ++iter) {
     const icu::TimeZone* timezone = *iter;
     base::ListValue* option = new base::ListValue();
-    option->Append(Value::CreateStringValue(
+    option->Append(new base::StringValue(
         chromeos::system::TimezoneSettings::GetTimezoneID(*timezone)));
-    option->Append(Value::CreateStringValue(GetTimezoneName(*timezone)));
+    option->Append(new base::StringValue(GetTimezoneName(*timezone)));
     timezoneList->Append(option);
   }
   return timezoneList.Pass();

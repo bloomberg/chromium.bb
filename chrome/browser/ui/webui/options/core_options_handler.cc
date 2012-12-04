@@ -285,7 +285,7 @@ void CoreOptionsHandler::DispatchPrefChangeNotification(
             PreferenceCallbackMap::const_iterator> range =
       pref_callback_map_.equal_range(name);
   ListValue result_value;
-  result_value.Append(base::Value::CreateStringValue(name.c_str()));
+  result_value.Append(new base::StringValue(name.c_str()));
   result_value.Append(value.release());
   for (PreferenceCallbackMap::const_iterator iter = range.first;
        iter != range.second; ++iter) {
@@ -463,7 +463,7 @@ void CoreOptionsHandler::HandleSetPref(const ListValue* args, PrefType type) {
       double double_value;
       CHECK(value->GetAsDouble(&double_value));
       int int_value = static_cast<int>(double_value);
-      temp_value.reset(base::Value::CreateIntegerValue(int_value));
+      temp_value.reset(new base::FundamentalValue(int_value));
       value = temp_value.get();
       break;
     }
@@ -477,7 +477,7 @@ void CoreOptionsHandler::HandleSetPref(const ListValue* args, PrefType type) {
       std::string original;
       CHECK(value->GetAsString(&original));
       GURL fixed = URLFixerUpper::FixupURL(original, std::string());
-      temp_value.reset(base::Value::CreateStringValue(fixed.spec()));
+      temp_value.reset(new base::StringValue(fixed.spec()));
       value = temp_value.get();
       break;
     }
@@ -524,19 +524,17 @@ void CoreOptionsHandler::HandleUserMetricsAction(const ListValue* args) {
 }
 
 void CoreOptionsHandler::UpdateClearPluginLSOData() {
-  scoped_ptr<base::Value> enabled(
-      base::Value::CreateBooleanValue(
-          plugin_status_pref_setter_.IsClearPluginLSODataEnabled()));
+  base::FundamentalValue enabled(
+          plugin_status_pref_setter_.IsClearPluginLSODataEnabled());
   web_ui()->CallJavascriptFunction(
-      "OptionsPage.setClearPluginLSODataEnabled", *enabled);
+      "OptionsPage.setClearPluginLSODataEnabled", enabled);
 }
 
 void CoreOptionsHandler::UpdatePepperFlashSettingsEnabled() {
-  scoped_ptr<base::Value> enabled(
-      base::Value::CreateBooleanValue(
-          plugin_status_pref_setter_.IsPepperFlashSettingsEnabled()));
+  base::FundamentalValue enabled(
+          plugin_status_pref_setter_.IsPepperFlashSettingsEnabled());
   web_ui()->CallJavascriptFunction(
-      "OptionsPage.setPepperFlashSettingsEnabled", *enabled);
+      "OptionsPage.setPepperFlashSettingsEnabled", enabled);
 }
 
 }  // namespace options

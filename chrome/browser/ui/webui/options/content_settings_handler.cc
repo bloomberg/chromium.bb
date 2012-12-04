@@ -1065,7 +1065,7 @@ void ContentSettingsHandler::ApplyWhitelist(ContentSettingsType content_type,
         ContentSettingsPattern::Wildcard(),
         CONTENT_SETTINGS_TYPE_PLUGINS,
         "google-talk",
-        Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
+        new base::FundamentalValue(CONTENT_SETTING_ALLOW));
   }
   prefs->SetInteger(prefs::kContentSettingsDefaultWhitelistVersion,
                     kDefaultWhitelistVersion);
@@ -1246,17 +1246,12 @@ void ContentSettingsHandler::CheckExceptionPatternValidity(
     is_valid = pattern.IsValid();
   }
 
-  scoped_ptr<Value> type_value(Value::CreateStringValue(type_string));
-  scoped_ptr<Value> mode_value(Value::CreateStringValue(mode_string));
-  scoped_ptr<Value> pattern_value(Value::CreateStringValue(pattern_string));
-  scoped_ptr<Value> valid_value(Value::CreateBooleanValue(is_valid));
-
   web_ui()->CallJavascriptFunction(
       "ContentSettings.patternValidityCheckComplete",
-      *type_value.get(),
-      *mode_value.get(),
-      *pattern_value.get(),
-      *valid_value.get());
+      base::StringValue(type_string),
+      base::StringValue(mode_string),
+      base::StringValue(pattern_string),
+      base::FundamentalValue(is_valid));
 }
 
 // static

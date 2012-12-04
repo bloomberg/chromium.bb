@@ -97,8 +97,8 @@ void ClearBrowserDataHandler::GetLocalizedValues(
         break;
     }
     ListValue* option = new ListValue();
-    option->Append(Value::CreateIntegerValue(i));
-    option->Append(Value::CreateStringValue(label_string));
+    option->Append(new base::FundamentalValue(i));
+    option->Append(new base::StringValue(label_string));
     time_list->Append(option);
   }
   localized_strings->Set("clearBrowserDataTimeList", time_list);

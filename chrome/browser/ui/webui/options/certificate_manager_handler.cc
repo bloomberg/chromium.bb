@@ -1014,7 +1014,7 @@ void CertificateManagerHandler::PopulateTree(const std::string& tab_name,
     std::sort(nodes->begin(), nodes->end(), comparator);
 
     ListValue args;
-    args.Append(Value::CreateStringValue(tree_name));
+    args.Append(new base::StringValue(tree_name));
     args.Append(nodes);
     web_ui()->CallJavascriptFunction("CertificateManager.onPopulateTree", args);
   }
@@ -1023,9 +1023,9 @@ void CertificateManagerHandler::PopulateTree(const std::string& tab_name,
 void CertificateManagerHandler::ShowError(const std::string& title,
                                           const std::string& error) const {
   ScopedVector<const Value> args;
-  args.push_back(Value::CreateStringValue(title));
-  args.push_back(Value::CreateStringValue(error));
-  args.push_back(Value::CreateStringValue(l10n_util::GetStringUTF8(IDS_OK)));
+  args.push_back(new base::StringValue(title));
+  args.push_back(new base::StringValue(error));
+  args.push_back(new base::StringValue(l10n_util::GetStringUTF8(IDS_OK)));
   args.push_back(Value::CreateNullValue());  // cancelTitle
   args.push_back(Value::CreateNullValue());  // okCallback
   args.push_back(Value::CreateNullValue());  // cancelCallback

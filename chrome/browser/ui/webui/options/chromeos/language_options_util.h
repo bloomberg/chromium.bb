@@ -49,8 +49,8 @@ std::string GetTemplateDataMaxName(const T& preference, const char* prefix) {
 // Creates a Value object from the given value. Here we use function
 // overloading to handle string and integer preferences in
 // CreateMultipleChoiceList.
-Value* CreateValue(const char* in_value);
-Value* CreateValue(int in_value);
+base::Value* CreateValue(const char* in_value);
+base::Value* CreateValue(int in_value);
 
 // Creates a multiple choice list from the given preference.
 template <typename T>
@@ -71,7 +71,7 @@ base::ListValue* CreateMultipleChoiceList(
     base::ListValue* option = new base::ListValue();
     option->Append(CreateValue(
         preference.values_and_ids[i].ibus_config_value));
-    option->Append(base::Value::CreateStringValue(l10n_util::GetStringUTF16(
+    option->Append(new base::StringValue(l10n_util::GetStringUTF16(
         preference.values_and_ids[i].item_message_id)));
     list_value->Append(option);
   }
