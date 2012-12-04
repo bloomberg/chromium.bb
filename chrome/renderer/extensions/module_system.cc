@@ -63,6 +63,12 @@ bool ModuleSystem::IsPresentInCurrentContext() {
   return !module_system.IsEmpty() && !module_system->IsUndefined();
 }
 
+void ModuleSystem::HandleException(const v8::TryCatch& try_catch) {
+  DumpException(try_catch);
+  if (exception_handler_.get())
+    exception_handler_->HandleUncaughtException();
+}
+
 // static
 void ModuleSystem::DumpException(const v8::TryCatch& try_catch) {
   v8::HandleScope handle_scope;
@@ -143,7 +149,7 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
     try_catch.SetCaptureMessage(true);
     func->Call(global, 3, args);
     if (try_catch.HasCaught()) {
-      DumpException(try_catch);
+      HandleException(try_catch);
       return v8::Undefined();
     }
   }
@@ -174,7 +180,7 @@ void ModuleSystem::CallModuleMethod(const std::string& module_name,
     try_catch.SetCaptureMessage(true);
     func->Call(global, 0, NULL);
     if (try_catch.HasCaught())
-      DumpException(try_catch);
+      HandleException(try_catch);
   }
 }
 
@@ -251,13 +257,13 @@ v8::Handle<v8::Value> ModuleSystem::RunString(v8::Handle<v8::String> code,
   try_catch.SetCaptureMessage(true);
   v8::Handle<v8::Script> script(v8::Script::New(code, name));
   if (try_catch.HasCaught()) {
-    DumpException(try_catch);
+    HandleException(try_catch);
     return handle_scope.Close(result);
   }
 
   result = script->Run();
   if (try_catch.HasCaught())
-    DumpException(try_catch);
+    HandleException(try_catch);
 
   return handle_scope.Close(result);
 }

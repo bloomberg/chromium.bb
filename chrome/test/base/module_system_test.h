@@ -52,7 +52,6 @@ class ModuleSystemTest : public testing::Test {
 
   v8::Persistent<v8::Context> context_;
   v8::HandleScope handle_scope_;
-  v8::TryCatch try_catch_;
   AssertNatives* assert_natives_;
   scoped_ptr<StringSourceMap> source_map_;
   scoped_ptr<extensions::ModuleSystem> module_system_;

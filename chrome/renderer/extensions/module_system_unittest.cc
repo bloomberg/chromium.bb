@@ -31,6 +31,36 @@ class CounterNatives : public NativeHandler {
   int counter_;
 };
 
+class TestExceptionHandler : public ModuleSystem::ExceptionHandler {
+ public:
+  TestExceptionHandler()
+      : handled_exception_(false) {
+  }
+
+  virtual void HandleUncaughtException() {
+    handled_exception_ = true;
+  }
+
+  bool handled_exception() const { return handled_exception_; }
+
+ private:
+  bool handled_exception_;
+};
+
+TEST_F(ModuleSystemTest, TestExceptionHandling) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
+  TestExceptionHandler* handler = new TestExceptionHandler;
+  scoped_ptr<ModuleSystem::ExceptionHandler> scoped_handler(handler);
+  ASSERT_FALSE(handler->handled_exception());
+  module_system_->set_exception_handler(scoped_handler.Pass());
+
+  RegisterModule("test", "throw 'hi';");
+  module_system_->Require("test");
+  ASSERT_TRUE(handler->handled_exception());
+
+  ExpectNoAssertionsMade();
+}
+
 TEST_F(ModuleSystemTest, TestRequire) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   RegisterModule("add", "exports.Add = function(x, y) { return x + y; };");

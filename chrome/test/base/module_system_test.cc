@@ -75,6 +75,13 @@ class StringSourceMap : public ModuleSystem::SourceMap {
   std::map<std::string, std::string> source_map_;
 };
 
+class FailsOnException : public ModuleSystem::ExceptionHandler {
+ public:
+  virtual void HandleUncaughtException() {
+    FAIL();
+  }
+};
+
 ModuleSystemTest::ModuleSystemTest()
     : context_(v8::Context::New()),
       source_map_(new StringSourceMap()),
@@ -84,7 +91,8 @@ ModuleSystemTest::ModuleSystemTest()
   module_system_.reset(new ModuleSystem(context_, source_map_.get()));
   module_system_->RegisterNativeHandler("assert", scoped_ptr<NativeHandler>(
       assert_natives_));
-  try_catch_.SetCaptureMessage(true);
+  module_system_->set_exception_handler(
+      scoped_ptr<ModuleSystem::ExceptionHandler>(new FailsOnException));
 }
 
 ModuleSystemTest::~ModuleSystemTest() {
@@ -112,9 +120,6 @@ void ModuleSystemTest::OverrideNativeHandler(const std::string& name,
 }
 
 void ModuleSystemTest::TearDown() {
-  if (try_catch_.HasCaught())
-    ModuleSystem::DumpException(try_catch_);
-  EXPECT_FALSE(try_catch_.HasCaught());
   // All tests must assert at least once unless otherwise specified.
   EXPECT_EQ(should_assertions_be_made_,
             assert_natives_->assertion_made());

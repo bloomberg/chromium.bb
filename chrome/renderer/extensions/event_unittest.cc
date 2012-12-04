@@ -151,7 +151,7 @@ TEST_F(EventUnittest, NamedEventDispatch) {
       "var e = new event.Event('myevent');"
       "var called = false;"
       "e.addListener(function() { called = true; });"
-      "chromeHidden.Event.dispatchJSON('myevent', []);"
+      "chromeHidden.Event.dispatchEvent('myevent', []);"
       "assert.AssertTrue(called);");
   module_system_->Require("test");
 }

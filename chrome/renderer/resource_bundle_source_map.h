@@ -22,7 +22,7 @@ namespace ui {
 class ResourceBundleSourceMap : public extensions::ModuleSystem::SourceMap {
  public:
   explicit ResourceBundleSourceMap(const ui::ResourceBundle* resource_bundle);
-  ~ResourceBundleSourceMap();
+  virtual ~ResourceBundleSourceMap();
 
   virtual v8::Handle<v8::Value> GetSource(const std::string& name) OVERRIDE;
   virtual bool Contains(const std::string& name) OVERRIDE;
