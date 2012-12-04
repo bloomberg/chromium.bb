@@ -155,6 +155,7 @@ class MockedCallResults(object):
     """
     self.name = name
     self.mocked_calls = []
+    self.default_result, self.default_side_effect = None, None
 
   @staticmethod
   def AssertArgs(args, kwargs):
@@ -205,6 +206,14 @@ class MockedCallResults(object):
       logging.debug('%s: replacing mock for arguments %r:\n%r -> %r',
                     self.name, params, dup, new)
 
+  def SetDefaultResult(self, result, side_effect=None):
+    """Set the default result for an unmatched partial mock call.
+
+    Arguments:
+      result, side_effect: See AddResultsForParams.
+    """
+    self.default_result, self.default_side_effect = result, side_effect
+
   def LookupResult(self, args, kwargs=None, hook_args=None, hook_kwargs=None):
     """For a given mocked function call lookup the recorded internal results.
 
@@ -239,17 +248,20 @@ class MockedCallResults(object):
       raise AssertionError(
           "%s: args %r matches more than one mock:\n%s"
           % (self.name, params, '\n'.join([repr(c) for c in matched])))
-    elif not matched:
+    elif matched:
+      side_effect, result = matched[0].side_effect, matched[0].result
+    elif (self.default_result, self.default_side_effect) != (None, None):
+      side_effect, result = self.default_side_effect, self.default_result
+    else:
       raise AssertionError("%s: %r not mocked!" % (self.name, params))
 
-    side_effect = matched[0].side_effect
     if side_effect:
       assert(hook_args is not None)
       assert(hook_kwargs is not None)
       hook_result = side_effect(*hook_args, **hook_kwargs)
       if hook_result is not None:
         return hook_result
-    return matched[0].result
+    return result
 
 
 class PartialMock(object):
@@ -271,6 +283,7 @@ class PartialMock(object):
 
   def __enter__(self):
     self.Start()
+    return self
 
   def __exit__(self, exc_type, exc_value, traceback):
     self.Stop()
@@ -314,6 +327,17 @@ class PartialCmdMock(PartialMock):
   def __init__(self):
     PartialMock.__init__(self)
     self._results = MockedCallResults(self.ATTRS[0])
+
+  def SetDefaultCmdResult(self, returncode=0, output='', error='',
+                          side_effect=None):
+    """Specify the default command result if no command is matched.
+
+    Arguments:
+      returncode, output, error: See AddCmdResult.
+      side_effect: See MockedCallResults.AddResultForParams
+    """
+    result = self.CmdResult(returncode, output, error)
+    self._results.SetDefaultResult(result, side_effect)
 
   def AddCmdResult(self, cmd, returncode=0, output='', error='',
                    kwargs=None, strict=False, side_effect=None):

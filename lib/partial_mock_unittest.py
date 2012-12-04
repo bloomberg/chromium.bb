@@ -148,19 +148,35 @@ class MockedCallResultsTest(cros_test_lib.MoxTestCase):
     self.mr.AddResultForParams((partial_mock.In('test'),), 2)
     self.assertRaises(AssertionError, self.mr.LookupResult, ('test',))
 
+  def testDefaultResult(self):
+    """Test default result matching."""
+    self.mr.SetDefaultResult(1)
+    self.mr.AddResultForParams((partial_mock.In('test'),), 2)
+    self.assertEquals(1, self.mr.LookupResult(self.ARGS))
+    self.assertEquals(2, self.mr.LookupResult(('test',)))
+
+  def _ExampleHook(self, *args, **kwargs):
+    """Example hook for testing."""
+    self.assertEquals(args, self.LIST_ARGS)
+    self.assertEquals(kwargs, self.KWARGS)
+    return 2
+
   def testHook(self):
     """Return value of hook is used as the final result."""
-    def hook(*args, **kwargs):
-      self.assertEquals(args, hook_args)
-      self.assertEquals(kwargs, hook_kwargs)
-      return 2
-
-    hook_args = self.LIST_ARGS
-    hook_kwargs = self.KWARGS
-    self.mr.AddResultForParams(self.ARGS, 1, side_effect=hook)
+    self.mr.AddResultForParams(self.ARGS, 1, side_effect=self._ExampleHook)
     self.assertEqual(
-        2, self.mr.LookupResult(self.ARGS, hook_args=hook_args,
-                                hook_kwargs=hook_kwargs))
+        2, self.mr.LookupResult(self.ARGS, hook_args=self.LIST_ARGS,
+                                hook_kwargs=self.KWARGS))
+
+  def testDefaultHook(self):
+    """Verify default hooks are used."""
+    self.mr.SetDefaultResult(1, self._ExampleHook)
+    self.mr.AddResultForParams((partial_mock.In('test'),), 3)
+    self.assertEqual(
+        2, self.mr.LookupResult(self.ARGS, hook_args=self.LIST_ARGS,
+                                hook_kwargs=self.KWARGS))
+    self.assertEquals(3, self.mr.LookupResult(('test',)))
+
 
 if __name__ == '__main__':
   cros_test_lib.main()
