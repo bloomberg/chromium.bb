@@ -255,6 +255,17 @@
             'SK_SUPPORT_GPU=0',
           ],
         }],
+        ['clang == 1', {
+          # TODO(hans): Remove once Skia rolls past r6641.
+          'cflags': [
+            '-Wno-tautological-constant-out-of-range-compare',
+          ],
+          'xcode_settings': {
+            'WARNING_CFLAGS': [
+              '-Wno-tautological-constant-out-of-range-compare',
+            ],
+          }
+        }],
         ['release_valgrind_build == 1', {
           'defines': [
             'SK_DEBUG_PATH_REF=1',
