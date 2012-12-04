@@ -795,7 +795,7 @@
             }],
             ['enable_webrtc==1', {
               'sources': [
-                'browser/webrtc_getusermedia_browsertest.cc',
+                'browser/webrtc_browsertest.cc',
               ],
             }],
           ],

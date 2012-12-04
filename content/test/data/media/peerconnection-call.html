@@ -1,0 +1,137 @@
+<html>
+<head>
+  <script type="text/javascript">
+  $ = function(id) {
+    return document.getElementById(id);
+  };
+
+  var gFirstConnection = null;
+  var gSecondConnection = null;
+
+  function call(constraints) {
+    navigator.webkitGetUserMedia(constraints, okCallback, failedCallback);
+  }
+
+  function failedCallback(error) {
+    document.title = 'getUserMedia request failed with code ' + error.code;
+  }
+
+  function okCallback(localStream) {
+    var localStreamUrl = webkitURL.createObjectURL(localStream);
+    $('local-view').src = localStreamUrl;
+
+    callUsingStream(localStream);
+  }
+
+  function callUsingStream(localStream) {
+    gFirstConnection = new webkitRTCPeerConnection(null, null);
+    gFirstConnection.onicecandidate = onIceCandidateToFirst;
+    gFirstConnection.addStream(localStream);
+    gFirstConnection.createOffer(onOfferCreated);
+  }
+
+  function onOfferCreated(offer) {
+    gFirstConnection.setLocalDescription(offer);
+
+    receiveCall(offer.sdp);
+  }
+
+  function receiveCall(offerSdp) {
+    gSecondConnection = new webkitRTCPeerConnection(null, null);
+    gSecondConnection.onicecandidate = onIceCandidateToSecond;
+    gSecondConnection.onaddstream = onRemoteStream;
+
+    var parsedOffer = new RTCSessionDescription({ type: 'offer',
+                                                  sdp: offerSdp });
+    gSecondConnection.setRemoteDescription(parsedOffer);
+
+    gSecondConnection.createAnswer(onAnswerCreated);
+  }
+
+  function onAnswerCreated(answer) {
+    gSecondConnection.setLocalDescription(answer);
+    handleAnswer(answer.sdp);
+  }
+
+  function handleAnswer(answerSdp) {
+    var parsedAnswer = new RTCSessionDescription({ type: 'answer',
+                                                   sdp: answerSdp });
+    gFirstConnection.setRemoteDescription(parsedAnswer);
+  }
+
+  function onIceCandidateToFirst(event) {
+    if (event.candidate) {
+      var candidate = new RTCIceCandidate(event.candidate);
+      gSecondConnection.addIceCandidate(candidate);
+    }
+  }
+
+  function onIceCandidateToSecond(event) {
+    if (event.candidate) {
+      var candidate = new RTCIceCandidate(event.candidate);
+      gFirstConnection.addIceCandidate(candidate);
+    }
+  }
+
+  function onRemoteStream(e) {
+    var remoteStreamUrl = webkitURL.createObjectURL(e.stream);
+    var remoteVideo = $('remote-view');
+    remoteVideo.src = remoteStreamUrl;
+
+    waitForVideo(remoteVideo, 320, 240);
+  }
+
+  // TODO(phoglund): perhaps use the video detector in chrome/test/data/webrtc/?
+  function waitForVideo(videoElement, width, height) {
+    document.title = 'Waiting for video...';
+    var canvas = $('canvas');
+    setInterval(function() {
+      var context = canvas.getContext('2d');
+      context.drawImage(videoElement, 0, 0, width, height);
+      var pixels = context.getImageData(0, 0, width, height).data;
+
+      if (isVideoPlaying(pixels, width, height))
+        testSuccessful();
+    }, 100);
+  }
+
+  // This very basic video verification algorithm will be satisfied if any
+  // pixels are nonzero in a small sample area in the middle. It relies on the
+  // assumption that a video element with null source just presents zeroes.
+  function isVideoPlaying(pixels, width, height) {
+    // Sample somewhere near the middle of the image.
+    var middle = width * height / 2;
+    for (var i = 0; i < 20; i++) {
+      if (pixels[middle + i] > 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function testSuccessful() {
+    document.title = 'OK';
+  }
+  </script>
+</head>
+<body>
+  <table border="0">
+    <tr>
+      <td>Local Preview</td>
+      <td>Remote Stream</td>
+      <td>Capturing Canvas</td>
+    </tr>
+    <tr>
+      <td><video width="320" height="240" id="local-view"
+          autoplay="autoplay"></video></td>
+      <td><video width="320" height="240" id="remote-view"
+          autoplay="autoplay"></video></td>
+      <td><canvas width="320" height="240" id="canvas"></canvas></td>
+    </tr>
+    <tr>
+      <td colspan="3">You should see the same animated feed in all three
+          displays (the canvas will lag a bit).
+      </td>
+  </table>
+</body>
+</html>
