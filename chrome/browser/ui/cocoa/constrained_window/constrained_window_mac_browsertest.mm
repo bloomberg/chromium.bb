@@ -5,10 +5,8 @@
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac2.h"
 
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -16,7 +14,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
-#include "ipc/ipc_message.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::NiceMock;
@@ -81,34 +78,6 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, ShowInInactiveTab) {
 
   // Switch to inactive tab.
   browser()->tab_strip_model()->ActivateTabAt(0, true);
-  EXPECT_EQ(1.0, [sheet_ alphaValue]);
-
-  dialog.CloseConstrainedWindow();
-}
-
-// If a tab has never been shown then the associated tab view for the web
-// content will not be created. Verify that adding a constrained window to such
-// a tab works correctly.
-IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, ShowInUninitializedTab) {
-  scoped_ptr<content::WebContents> web_contents(content::WebContents::Create(
-      browser()->profile(), NULL, MSG_ROUTING_NONE, NULL));
-  bool was_blocked = false;
-  chrome::AddWebContents(browser(), NULL, web_contents.release(),
-                         NEW_BACKGROUND_TAB, gfx::Rect(), false, &was_blocked);
-  content::WebContents* tab2 =
-      browser()->tab_strip_model()->GetWebContentsAt(2);
-  ASSERT_TRUE(tab2);
-  EXPECT_FALSE([tab2->GetNativeView() superview]);
-
-  // Show dialog and verify that it's not visible yet.
-  NiceMock<ConstrainedWindowDelegateMock> delegate;
-  ConstrainedWindowMac2 dialog(&delegate, tab2, sheet_);
-  EXPECT_FALSE([sheet_ isVisible]);
-
-  // Activate the tab and verify that the constrained window is shown.
-  browser()->tab_strip_model()->ActivateTabAt(2, true);
-  EXPECT_TRUE([tab2->GetNativeView() superview]);
-  EXPECT_TRUE([sheet_ isVisible]);
   EXPECT_EQ(1.0, [sheet_ alphaValue]);
 
   dialog.CloseConstrainedWindow();
