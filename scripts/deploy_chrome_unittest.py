@@ -60,12 +60,12 @@ class DeployChromeMock(partial_mock.PartialMock):
   ATTRS = ('_CheckRootfsWriteable', '_DisableRootfsVerification',
            '_KillProcsIfNeeded')
 
-  def __init__(self, tempdir, disable_ok=True):
+  def __init__(self, disable_ok=True):
     partial_mock.PartialMock.__init__(self)
     self.disable_ok = disable_ok
     self.rootfs_writeable = False
     # Target starts off as having rootfs verification enabled.
-    self.rsh_mock = remote_access_unittest.RemoteShMock(tempdir)
+    self.rsh_mock = remote_access_unittest.RemoteShMock()
     self.MockMountCmd(1)
 
   def MockMountCmd(self, returnvalue):
@@ -103,7 +103,7 @@ class DeployChromeTest(cros_test_lib.TempDirTestCase):
         options, self.tempdir, os.path.join(self.tempdir, 'staging'))
 
   def setUp(self):
-    self.deploy_mock = DeployChromeMock(self.tempdir)
+    self.deploy_mock = DeployChromeMock()
     self.deploy_mock.Start()
     self.deploy = self._GetDeployChrome()
 

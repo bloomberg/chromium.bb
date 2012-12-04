@@ -24,17 +24,13 @@ class RemoteShMock(partial_mock.PartialCmdMock):
   TARGET = 'chromite.lib.remote_access.RemoteAccess'
   ATTRS = ('RemoteSh',)
 
-  def __init__(self, tempdir):
-    partial_mock.PartialCmdMock.__init__(self)
-    self.tempdir = tempdir
-
   def RemoteSh(self, inst, cmd, *args, **kwargs):
     """Simulates a RemoteSh invocation."""
     result = self._results.LookupResult(
         (cmd,), hook_args=(inst, cmd,) + args, hook_kwargs=kwargs)
 
     # Run the real RemoteSh with RunCommand mocked out.
-    rc_mock = cros_build_lib_unittest.RunCommandMock(self.tempdir)
+    rc_mock = cros_build_lib_unittest.RunCommandMock()
     rc_mock.AddCmdResult(
         partial_mock.Ignore(), result.returncode, result.output,
         result.error)
@@ -46,7 +42,7 @@ class RemoteShMock(partial_mock.PartialCmdMock):
 class RemoteAccessTest(cros_test_lib.TempDirTestCase):
 
   def setUp(self):
-    self.rsh_mock = RemoteShMock(self.tempdir)
+    self.rsh_mock = RemoteShMock()
     self.rsh_mock.Start()
     self.host = remote_access.RemoteAccess('foon', self.tempdir)
 

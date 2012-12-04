@@ -25,7 +25,7 @@ class VerifyTarballTest(cros_test_lib.TempDirTestCase):
   TARBALL = 'fake_tarball'
 
   def setUp(self):
-    self.rc_mock = cros_build_lib_unittest.RunCommandMock(self.tempdir)
+    self.rc_mock = cros_build_lib_unittest.RunCommandMock()
     self.rc_mock.Start()
 
   def tearDown(self):
