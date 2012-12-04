@@ -111,10 +111,14 @@ public class ContentSettings {
                                     }
                                     break;
                                 case UPDATE_UA:
-                                    mContentViewCore.setAllUserAgentOverridesInHistory();
+                                    if (mContentViewCore.isAlive()) {
+                                        mContentViewCore.setAllUserAgentOverridesInHistory();
+                                    }
                                     break;
                                 case UPDATE_MULTI_TOUCH:
-                                    mContentViewCore.updateMultiTouchZoomSupport();
+                                    if (mContentViewCore.isAlive()) {
+                                        mContentViewCore.updateMultiTouchZoomSupport();
+                                    }
                                     break;
                             }
                         }
