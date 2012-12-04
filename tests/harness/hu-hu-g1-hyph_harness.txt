@@ -204,6 +204,10 @@
           "output": "be-teg-gyó-gyász"
         }, 
         {
+          "input": "bekezdésszintű", 
+          "output": "be-kez-dés-szin-tű"
+        }, 
+        {
           "input": "bilincszörgés", 
           "output": "bi-linc-ször-gés"
         }, 
@@ -816,6 +820,10 @@
           "output": "ha-jós-sze-mély-zet"
         }, 
         {
+          "input": "hangyamászásszerű", 
+          "output": "han-gya-má-szás-sze-rű"
+        }, 
+        {
           "input": "hamisszínes", 
           "output": "ha-mis-szí-nes"
         }, 
@@ -910,6 +918,10 @@
         {
           "input": "házsárkodását", 
           "output": "há-zsár-ko-dá-sát"
+        }, 
+        {
+          "input": "hazugsággyár", 
+          "output": "ha-zug-ság-gyár"
         }, 
         {
           "input": "hegyesszög", 

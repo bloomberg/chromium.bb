@@ -210,6 +210,11 @@ becslésszerűen
 testmode: backtranslate
 becslésszerűen
 
+bekezdésszintű
+
+testmode: backtranslate
+bekezdésszintű
+
 Békésszentandrás
 
 testmode: backtranslate
@@ -990,6 +995,11 @@ hajósszemélyzet
 testmode: backtranslate
 hajósszemélyzet
 
+hangyamászásszerű
+
+testmode: backtranslate
+hangyamászásszerű
+
 hamisszínes
 
 testmode: backtranslate
@@ -1104,6 +1114,11 @@ házsárkodását
 
 testmode: backtranslate
 házsárkodását
+
+hazugsággyár
+
+testmode: backtranslate
+hazugsággyár
 
 hegyesszög
 

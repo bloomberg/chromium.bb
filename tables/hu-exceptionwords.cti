@@ -192,6 +192,7 @@ partword vendég =	For example vendéggyermek, vendéggyülekezet word
 partword világosság =	For example világossággyújtásra word
 partword virág =	For example virággyapjaikat word
 partword csillaggy 146-24-123-123-1-1245-1456	For example csillaggyárnak word
+partword hazugság 125-1-126-136-1245-234-4-1245	For example hazugsággyár word need this exception
 
 #ny, nny related exceptions
 #Following exception parts need marking nny letter pairs with single n and nny braille dot combinations
@@ -738,6 +739,8 @@ begword hússzöv 125-346-234-156-12345-1236	For example Hússzövetség company
 partword edzéssz 15-145-126-16-234-156	For example edzésszám word
 begword hamissz 125-1-134-24-234-156	For example hamisszínes word
 begword rákossz 1235-4-13-135-234-156	For example Rákosszentmihály town part name
+partword kezdéssz 13-15-126-145-16-234-156	For example bekezdésszintű word need this exception
+partword mászás 134-4-156-4-234	For example hangyamászásszerű word need this exception
 
 #ty, lly tty related exceptions
 #This exception part containing english words with need presenting original english braille rules

@@ -175,6 +175,10 @@
           "output": "becslésszerűen"
         }, 
         {
+          "input": "⠃⠑⠅⠑⠣⠙⠡⠎⠱⠊⠝⠞⠾", 
+          "output": "bekezdésszintű"
+        }, 
+        {
           "input": "⠨⠃⠡⠅⠡⠎⠱⠑⠝⠞⠁⠝⠙⠗⠈⠎", 
           "output": "Békésszentandrás"
         }, 
@@ -799,6 +803,10 @@
           "output": "hajósszemélyzet"
         }, 
         {
+          "input": "⠓⠁⠝⠹⠁⠍⠈⠱⠈⠎⠱⠑⠗⠾", 
+          "output": "hangyamászásszerű"
+        }, 
+        {
           "input": "⠓⠁⠍⠊⠎⠱⠌⠝⠑⠎", 
           "output": "hamisszínes"
         }, 
@@ -889,6 +897,10 @@
         {
           "input": "⠓⠈⠜⠈⠗⠅⠕⠙⠈⠎⠈⠞", 
           "output": "házsárkodását"
+        }, 
+        {
+          "input": "⠓⠁⠣⠥⠛⠎⠈⠛⠹⠈⠗", 
+          "output": "hazugsággyár"
         }, 
         {
           "input": "⠓⠑⠹⠑⠎⠱⠟⠛", 
@@ -3391,6 +3403,10 @@
           "output": "⠃⠑⠩⠇⠡⠎⠱⠑⠗⠾⠑⠝"
         }, 
         {
+          "input": "bekezdésszintű", 
+          "output": "⠃⠑⠅⠑⠣⠙⠡⠎⠱⠊⠝⠞⠾"
+        }, 
+        {
           "input": "Békésszentandrás", 
           "output": "⠨⠃⠡⠅⠡⠎⠱⠑⠝⠞⠁⠝⠙⠗⠈⠎"
         }, 
@@ -4015,6 +4031,10 @@
           "output": "⠓⠁⠚⠪⠎⠱⠑⠍⠡⠸⠣⠑⠞"
         }, 
         {
+          "input": "hangyamászásszerű", 
+          "output": "⠓⠁⠝⠹⠁⠍⠈⠱⠈⠎⠱⠑⠗⠾"
+        }, 
+        {
           "input": "hamisszínes", 
           "output": "⠓⠁⠍⠊⠎⠱⠌⠝⠑⠎"
         }, 
@@ -4105,6 +4125,10 @@
         {
           "input": "házsárkodását", 
           "output": "⠓⠈⠜⠈⠗⠅⠕⠙⠈⠎⠈⠞"
+        }, 
+        {
+          "input": "hazugsággyár", 
+          "output": "⠓⠁⠣⠥⠛⠎⠈⠛⠹⠈⠗"
         }, 
         {
           "input": "hegyesszög", 

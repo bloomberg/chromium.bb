@@ -148,6 +148,9 @@ testmode: hyphenate
 beteggyógyász
 
 testmode: hyphenate
+bekezdésszintű
+
+testmode: hyphenate
 bilincszörgés
 
 testmode: hyphenate
@@ -607,6 +610,9 @@ testmode: hyphenate
 hajósszemélyzet
 
 testmode: hyphenate
+hangyamászásszerű
+
+testmode: hyphenate
 hamisszínes
 
 testmode: hyphenate
@@ -677,6 +683,9 @@ hatásszünet
 
 testmode: hyphenate
 házsárkodását
+
+testmode: hyphenate
+hazugsággyár
 
 testmode: hyphenate
 hegyesszög
