@@ -20,7 +20,7 @@ CHROME_PATH?=Undefined
 #
 # Defaults
 #
-NACL_WARNINGS:=-Wno-long-long -Wall -Wswitch-enum -Werror -pedantic
+NACL_WARNINGS:=-Wno-long-long
 
 
 #

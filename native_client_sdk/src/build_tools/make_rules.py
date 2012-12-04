@@ -43,7 +43,7 @@ TRANSLATE:=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-translate
 """
 
 LINUX_DEFAULTS = """
-LINUX_WARNINGS?=-Wno-long-long -Wall -Wswitch-enum -Werror
+LINUX_WARNINGS?=-Wno-long-long
 LINUX_CC?=gcc -c
 LINUX_CXX?=g++ -c
 LINUX_LINK?=g++

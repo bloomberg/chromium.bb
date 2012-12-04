@@ -573,11 +573,13 @@ EXAMPLE_LIST = [
 ]
 
 LIBRARY_LIST = [
+  'libjpeg',
   'nacl_mounts',
   'ppapi',
   'ppapi_cpp',
   'ppapi_gles2',
   'pthread',
+  'zlib',
 ]
 
 LIB_DICT = {
