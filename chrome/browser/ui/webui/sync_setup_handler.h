@@ -11,15 +11,21 @@
 #include "chrome/browser/signin/signin_tracker.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class LoginUIService;
 class ProfileManager;
 class ProfileSyncService;
 class SigninManager;
 
+namespace content {
+class WebContents;
+}
+
 class SyncSetupHandler : public options::OptionsPageUIHandler,
                          public SigninTracker::Observer,
-                         public LoginUIService::LoginUI {
+                         public LoginUIService::LoginUI,
+                         public content::WebContentsObserver {
  public:
   // Constructs a new SyncSetupHandler. |profile_manager| may be NULL.
   explicit SyncSetupHandler(ProfileManager* profile_manager);
@@ -38,6 +44,10 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   // LoginUIService::LoginUI implementation.
   virtual void FocusUI() OVERRIDE;
   virtual void CloseUI() OVERRIDE;
+
+  // content::WebContentsObserver implementation.
+  virtual void WebContentsDestroyed(
+      content::WebContents* web_contents) OVERRIDE;
 
   static void GetStaticLocalizedValues(
       base::DictionaryValue* localized_strings,
@@ -164,6 +174,10 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   // Invokes the javascript call to close the setup overlay.
   void CloseOverlay();
 
+  // When using web-flow, closes the Gaia page used to collection user
+  // credentials.
+  void CloseGaiaSigninPage();
+
   // Returns true if the given login data is valid, false otherwise. If the
   // login data is not valid then on return |error_message| will be set to  a
   // localized error message. Note, |error_message| must not be NULL.
@@ -200,6 +214,10 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   // The OneShotTimer object used to timeout of starting the sync backend
   // service.
   scoped_ptr<base::OneShotTimer<SyncSetupHandler> > backend_start_timer_;
+
+  // When using web-flow, weak pointer to the tab that holds the Gaia sign in
+  // page.
+  content::WebContents* active_gaia_signin_tab_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSetupHandler);
 };

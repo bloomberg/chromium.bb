@@ -16,7 +16,16 @@ class Browser;
 // the job is done.
 class OneClickSigninSyncStarter : public SigninTracker::Observer {
  public:
-  enum StartSyncMode {SYNC_WITH_DEFAULT_SETTINGS, CONFIGURE_SYNC_FIRST };
+  enum StartSyncMode {
+    // Starts the process of signing the user in with the SigninManager, and
+    // once completed automatically starts sync with all data types enabled.
+    SYNC_WITH_DEFAULT_SETTINGS,
+
+    // Starts the process of signing the user in with the SigninManager, and
+    // once completed redirects the user to the settings page to allow them
+    // to configure which data types to sync before sync is enabled.
+    CONFIGURE_SYNC_FIRST
+  };
 
   OneClickSigninSyncStarter(Browser* browser,
                             const std::string& session_index,

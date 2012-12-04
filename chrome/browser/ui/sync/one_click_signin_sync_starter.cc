@@ -59,18 +59,23 @@ void OneClickSigninSyncStarter::SigninSuccess() {
   ProfileSyncService* profile_sync_service =
       ProfileSyncServiceFactory::GetForProfile(browser_->profile());
 
-  if (start_mode_ == SYNC_WITH_DEFAULT_SETTINGS) {
-    // Just kick off the sync machine, no need to configure it first.
-    profile_sync_service->OnUserChoseDatatypes(true, syncer::ModelTypeSet());
-    profile_sync_service->SetSyncSetupCompleted();
-    profile_sync_service->SetSetupInProgress(false);
-  } else {
-    // Give the user a chance to configure things. We don't clear the
-    // ProfileSyncService::setup_in_progress flag because we don't want sync
-    // to start up until after the configure UI is displayed (the configure UI
-    // will clear the flag when the user is done setting up sync).
-    LoginUIServiceFactory::GetForProfile(browser_->profile())->ShowLoginUI(
-        browser_);
+  switch (start_mode_) {
+    case SYNC_WITH_DEFAULT_SETTINGS:
+      // Just kick off the sync machine, no need to configure it first.
+      profile_sync_service->OnUserChoseDatatypes(true, syncer::ModelTypeSet());
+      profile_sync_service->SetSyncSetupCompleted();
+      profile_sync_service->SetSetupInProgress(false);
+      break;
+    case CONFIGURE_SYNC_FIRST:
+      // Give the user a chance to configure things. We don't clear the
+      // ProfileSyncService::setup_in_progress flag because we don't want sync
+      // to start up until after the configure UI is displayed (the configure UI
+      // will clear the flag when the user is done setting up sync).
+      LoginUIServiceFactory::GetForProfile(browser_->profile())->ShowLoginUI(
+          browser_);
+      break;
+    default:
+      NOTREACHED() << "Invalid start_mode=" << start_mode_;
   }
 
   delete this;

@@ -108,10 +108,8 @@ void StartSync(Browser* browser,
 }
 
 bool UseWebBasedSigninFlow() {
-  static const bool use_web_based_singin_flow =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseWebBasedSigninFlow);
-  return use_web_based_singin_flow;
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseWebBasedSigninFlow);
 }
 
 // Determines the source of the sign in.  Its either one of the known sign in
@@ -439,20 +437,22 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
       }
     }
 
-    // If we're about to show a one-click infobar but the user has started
-    // a concurrent signin flow (perhaps via the promo), we may not have yet
-    // established an authenticated username but we still shouldn't move
-    // forward with two simultaneous signin processes.  This is a bit
-    // contentious as the one-click flow is a much smoother flow from the user
-    // perspective, but it's much more difficult to hijack the other flow from
-    // here as it is to bail.
-    ProfileSyncService* service =
-        ProfileSyncServiceFactory::GetForProfile(profile);
-    if (!service)
-      return false;
+    if (!UseWebBasedSigninFlow()) {
+      // If we're about to show a one-click infobar but the user has started
+      // a concurrent signin flow (perhaps via the promo), we may not have yet
+      // established an authenticated username but we still shouldn't move
+      // forward with two simultaneous signin processes.  This is a bit
+      // contentious as the one-click flow is a much smoother flow from the user
+      // perspective, but it's much more difficult to hijack the other flow from
+      // here as it is to bail.
+      ProfileSyncService* service =
+          ProfileSyncServiceFactory::GetForProfile(profile);
+      if (!service)
+        return false;
 
-    if (service->FirstSetupInProgress())
-      return false;
+      if (service->FirstSetupInProgress())
+        return false;
+    }
   }
 
   return true;
@@ -724,7 +724,9 @@ void OneClickSigninHelper::DidStopLoading(
       break;
     case AUTO_ACCEPT_EXPLICIT:
       StartSync(browser, auto_accept_, session_index_, email_, password_,
-                OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
+                source_ == SyncPromoUI::SOURCE_SETTINGS ?
+                    OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST :
+                    OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
       break;
     case REJECTED_FOR_PROFILE:
       UMA_HISTOGRAM_ENUMERATION("AutoLogin.Reverse",
@@ -736,30 +738,20 @@ void OneClickSigninHelper::DidStopLoading(
       break;
   }
 
-  AutoAccept local_auto_accept = auto_accept_;
-  SyncPromoUI::Source local_source = source_;
+  // If this explicit sign in is not from settings page, show the NTP after
+  // sign in completes.  In the case of the settings page, it will get closed
+  // by SyncSetupHandler.
+  if (auto_accept_ == AUTO_ACCEPT_EXPLICIT &&
+      source_ != SyncPromoUI::SOURCE_SETTINGS) {
+    Profile* profile =
+        Profile::FromBrowserContext(contents->GetBrowserContext());
+    signin_tracker_.reset(new SigninTracker(profile, this));
+  }
 
   email_.clear();
   password_.clear();
   auto_accept_ = NO_AUTO_ACCEPT;
   source_ = SyncPromoUI::SOURCE_UNKNOWN;
-
-  // If this is an explicit sign in by the user, then redirect them to the
-  // NTP.
-  if (local_auto_accept == AUTO_ACCEPT_EXPLICIT) {
-    // If this is an explicit sign in from settings page, then close the
-    // tab.  Otherwise show the NTP after sign in completes.
-    if (local_source == SyncPromoUI::SOURCE_SETTINGS) {
-      contents->Close();
-    } else {
-      Profile* profile =
-          Profile::FromBrowserContext(contents->GetBrowserContext());
-      signin_tracker_.reset(new SigninTracker(profile, this));
-    }
-  }
-
-  // |this| may have been deleted due to the contents->Close() call above.
-  // No members should be accessed at this point.
 }
 
 void OneClickSigninHelper::GaiaCredentialsValid() {

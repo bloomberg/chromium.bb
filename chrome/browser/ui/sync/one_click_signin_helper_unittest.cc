@@ -48,6 +48,11 @@ const char kImplicitURLString[] =
     "https://accounts.google.com/ServiceLogin"
     "?service=foo&continue=http://foo.google.com";
 
+bool UseWebBasedSigninFlow() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseWebBasedSigninFlow);
+}
+
 class SigninManagerMock : public FakeSigninManager {
  public:
   explicit SigninManagerMock(Profile* profile)
@@ -352,21 +357,22 @@ TEST_F(OneClickSigninHelperTest, CanOfferFirstSetup) {
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
         WillRepeatedly(Return(true));
 
-   // Invoke OneClickTestProfileSyncService factory function and grab result.
-   OneClickTestProfileSyncService* sync =
-       static_cast<OneClickTestProfileSyncService*>(
-           ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-               static_cast<Profile*>(browser_context()),
-               OneClickTestProfileSyncService::Build));
+  // Invoke OneClickTestProfileSyncService factory function and grab result.
+  OneClickTestProfileSyncService* sync =
+      static_cast<OneClickTestProfileSyncService*>(
+          ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+              static_cast<Profile*>(browser_context()),
+              OneClickTestProfileSyncService::Build));
 
-   sync->set_first_setup_in_progress(true);
+  sync->set_first_setup_in_progress(true);
 
-   EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents(),
-                                               "foo@gmail.com",
-                                               true));
-   EXPECT_TRUE(OneClickSigninHelper::CanOffer(web_contents(),
-                                              "foo@gmail.com",
-                                              false));
+  EXPECT_EQ(UseWebBasedSigninFlow(),
+            OneClickSigninHelper::CanOffer(web_contents(),
+                                           "foo@gmail.com",
+                                           true));
+  EXPECT_TRUE(OneClickSigninHelper::CanOffer(web_contents(),
+                                             "foo@gmail.com",
+                                             false));
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferProfileConnected) {
