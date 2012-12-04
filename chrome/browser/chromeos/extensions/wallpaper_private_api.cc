@@ -90,7 +90,7 @@ bool GetData(int key, const std::string& file_name, std::string* data) {
   FilePath file_path = data_dir.Append(file_name);
 
   return !file_util::PathExists(file_path) ||
-         !file_util::ReadFileToString(file_path, data);
+         (file_util::ReadFileToString(file_path, data) != -1);
 }
 
 class WindowStateManager;
