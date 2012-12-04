@@ -8,12 +8,13 @@
 
 #include "base/task_runner.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 
 namespace policy {
 
+const int64 CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs =
+    3 * 60 * 60 * 1000;  // 3 hours.
 const int64 CloudPolicyRefreshScheduler::kUnmanagedRefreshDelayMs =
     24 * 60 * 60 * 1000;  // 1 day.
 const int64 CloudPolicyRefreshScheduler::kInitialErrorRetryDelayMs =
@@ -26,21 +27,15 @@ const int64 CloudPolicyRefreshScheduler::kRefreshDelayMaxMs =
 CloudPolicyRefreshScheduler::CloudPolicyRefreshScheduler(
     CloudPolicyClient* client,
     CloudPolicyStore* store,
-    PrefService* prefs,
-    const std::string& refresh_pref,
     const scoped_refptr<base::TaskRunner>& task_runner)
     : client_(client),
       store_(store),
       task_runner_(task_runner),
-      error_retry_delay_ms_(kInitialErrorRetryDelayMs) {
+      error_retry_delay_ms_(kInitialErrorRetryDelayMs),
+      refresh_delay_ms_(kDefaultRefreshDelayMs) {
   client_->AddObserver(this);
   store_->AddObserver(this);
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
-
-  refresh_delay_.Init(
-      refresh_pref.c_str(), prefs,
-      base::Bind(&CloudPolicyRefreshScheduler::ScheduleRefresh,
-                 base::Unretained(this)));
 
   UpdateLastRefreshFromPolicy();
   ScheduleRefresh();
@@ -50,6 +45,12 @@ CloudPolicyRefreshScheduler::~CloudPolicyRefreshScheduler() {
   store_->RemoveObserver(this);
   client_->RemoveObserver(this);
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+}
+
+void CloudPolicyRefreshScheduler::SetRefreshDelay(int64 refresh_delay) {
+  refresh_delay_ms_ = std::min(std::max(refresh_delay, kRefreshDelayMinMs),
+                               kRefreshDelayMaxMs);
+  ScheduleRefresh();
 }
 
 void CloudPolicyRefreshScheduler::OnPolicyFetched(CloudPolicyClient* client) {
@@ -82,7 +83,7 @@ void CloudPolicyRefreshScheduler::OnClientError(CloudPolicyClient* client) {
       (status == DM_STATUS_REQUEST_FAILED ||
        status == DM_STATUS_TEMPORARY_UNAVAILABLE)) {
     error_retry_delay_ms_ = std::min(error_retry_delay_ms_ * 2,
-                                     GetRefreshDelay());
+                                     refresh_delay_ms_);
   } else {
     error_retry_delay_ms_ = kInitialErrorRetryDelayMs;
   }
@@ -141,13 +142,13 @@ void CloudPolicyRefreshScheduler::ScheduleRefresh() {
   switch (client_->status()) {
     case DM_STATUS_SUCCESS:
       if (store_->is_managed())
-        RefreshAfter(GetRefreshDelay());
+        RefreshAfter(refresh_delay_ms_);
       else
         RefreshAfter(kUnmanagedRefreshDelayMs);
       return;
     case DM_STATUS_SERVICE_ACTIVATION_PENDING:
     case DM_STATUS_SERVICE_POLICY_NOT_FOUND:
-      RefreshAfter(GetRefreshDelay());
+      RefreshAfter(refresh_delay_ms_);
       return;
     case DM_STATUS_REQUEST_FAILED:
     case DM_STATUS_TEMPORARY_UNAVAILABLE:
@@ -200,12 +201,6 @@ void CloudPolicyRefreshScheduler::RefreshAfter(int delta_ms) {
       base::Bind(&CloudPolicyRefreshScheduler::PerformRefresh,
                  base::Unretained(this)));
   task_runner_->PostDelayedTask(FROM_HERE, refresh_callback_.callback(), delay);
-}
-
-int64 CloudPolicyRefreshScheduler::GetRefreshDelay() {
-  return std::min(std::max<int64>(refresh_delay_.GetValue(),
-                                  kRefreshDelayMinMs),
-                  kRefreshDelayMaxMs);
 }
 
 }  // namespace policy

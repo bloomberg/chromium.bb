@@ -11,6 +11,7 @@
 #include "chrome/browser/policy/cloud_policy_service.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "chrome/browser/prefs/pref_service.h"
 
 namespace policy {
 
@@ -73,6 +74,7 @@ void CloudPolicyManager::InitializeService(
 }
 
 void CloudPolicyManager::ShutdownService() {
+  refresh_delay_.reset();
   refresh_scheduler_.reset();
   service_.reset();
   client_.reset();
@@ -82,10 +84,15 @@ void CloudPolicyManager::StartRefreshScheduler(
     PrefService* local_state,
     const std::string& refresh_rate_pref) {
   if (!refresh_scheduler_.get()) {
+    refresh_delay_.reset(new IntegerPrefMember());
+    refresh_delay_->Init(refresh_rate_pref.c_str(), local_state,
+                         base::Bind(&CloudPolicyManager::UpdateRefreshDelay,
+                                    base::Unretained(this)));
     refresh_scheduler_.reset(
         new CloudPolicyRefreshScheduler(
-            client_.get(), store_, local_state, refresh_rate_pref,
+            client_.get(), store_,
             MessageLoop::current()->message_loop_proxy()));
+    UpdateRefreshDelay();
   }
 }
 
@@ -101,6 +108,10 @@ void CloudPolicyManager::CheckAndPublishPolicy() {
 void CloudPolicyManager::OnRefreshComplete() {
   waiting_for_policy_refresh_ = false;
   CheckAndPublishPolicy();
+}
+
+void CloudPolicyManager::UpdateRefreshDelay() {
+  refresh_scheduler_->SetRefreshDelay(refresh_delay_->GetValue());
 }
 
 }  // namespace policy

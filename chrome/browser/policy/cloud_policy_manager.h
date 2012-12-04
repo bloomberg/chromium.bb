@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/policy/cloud_policy_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
@@ -76,6 +77,9 @@ class CloudPolicyManager : public ConfigurationPolicyProvider,
   // Completion handler for policy refresh operations.
   void OnRefreshComplete();
 
+  // Updates the refresh scheduler on refresh delay changes.
+  void UpdateRefreshDelay();
+
   CloudPolicyStore* store_;
   scoped_ptr<CloudPolicyClient> client_;
   scoped_ptr<CloudPolicyService> service_;
@@ -84,6 +88,9 @@ class CloudPolicyManager : public ConfigurationPolicyProvider,
   // Whether there's a policy refresh operation pending, in which case all
   // policy update notifications are deferred until after it completes.
   bool waiting_for_policy_refresh_;
+
+  // Keeps track of the refresh delay pref.
+  scoped_ptr<IntegerPrefMember> refresh_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyManager);
 };
