@@ -20,6 +20,7 @@
 #include "ppapi/shared_impl/var_tracker.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
+#include "ui/gfx/rect.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
 
 using ppapi::PpapiGlobals;
@@ -475,6 +476,8 @@ bool ContentDecryptorDelegate::InitializeVideoDecoder(
   pending_video_decoder_init_request_id_ = pp_decoder_config.request_id;
   pending_video_decoder_init_cb_ = init_cb;
 
+  natural_size_ = decoder_config.natural_size();
+
   plugin_decryption_interface_->InitializeVideoDecoder(pp_instance_,
                                                        &pp_decoder_config,
                                                        extra_data_resource);
@@ -485,6 +488,8 @@ bool ContentDecryptorDelegate::InitializeVideoDecoder(
 bool ContentDecryptorDelegate::DeinitializeDecoder(
     media::Decryptor::StreamType stream_type) {
   CancelDecode(stream_type);
+
+  natural_size_ = gfx::Size();
 
   // TODO(tomfinegan): Add decoder deinitialize request tracking, and get
   // stream type from media stack.
@@ -702,6 +707,9 @@ void ContentDecryptorDelegate::DecoderInitializeDone(
         request_id != pending_video_decoder_init_request_id_)
       return;
 
+      if (!success)
+        natural_size_ = gfx::Size();
+
       DCHECK(!pending_video_decoder_init_cb_.is_null());
       pending_video_decoder_init_request_id_ = 0;
       base::ResetAndReturn(
@@ -828,12 +836,10 @@ void ContentDecryptorDelegate::DeliverFrame(
   gfx::Size frame_size(frame_info->width, frame_info->height);
   DCHECK_EQ(frame_info->format, PP_DECRYPTEDFRAMEFORMAT_YV12);
 
-  // TODO(xhwang): Support visible_rect and natural_size in EME video decoding
-  // implementations.
   scoped_refptr<media::VideoFrame> decoded_frame =
       media::VideoFrame::WrapExternalYuvData(
           media::VideoFrame::YV12,
-          frame_size, gfx::Rect(frame_size), frame_size,
+          frame_size, gfx::Rect(frame_size), natural_size_,
           frame_info->strides[PP_DECRYPTEDFRAMEPLANES_Y],
           frame_info->strides[PP_DECRYPTEDFRAMEPLANES_U],
           frame_info->strides[PP_DECRYPTEDFRAMEPLANES_V],

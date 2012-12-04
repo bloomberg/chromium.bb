@@ -14,6 +14,7 @@
 #include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/c/private/ppp_content_decryptor_private.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
+#include "ui/gfx/size.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
 namespace media {
@@ -114,6 +115,8 @@ class WEBKIT_PLUGINS_EXPORT ContentDecryptorDelegate {
   const PPP_ContentDecryptor_Private* const plugin_decryption_interface_;
 
   media::DecryptorClient* decryptor_client_;
+
+  gfx::Size natural_size_;
 
   // Request ID for tracking pending content decryption callbacks.
   // Note that zero indicates an invalid request ID.
