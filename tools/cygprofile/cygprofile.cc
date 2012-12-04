@@ -32,9 +32,9 @@
 #include <sys/syscall.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <unordered_set>
 #include <vector>
 
+#include "base/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -131,7 +131,7 @@ class CygTlsLog {
 
   // Keeps track of all functions that have been logged on this thread
   // so we do not record dublicates.
-  std::unordered_set<void*> functions_called_;
+  std::hash_set<void*> functions_called_;
 
   // Thread identifier as Linux kernel shows it. For debugging purposes.
   // LWP (light-weight process) is a unique ID of the thread in the system,
@@ -152,7 +152,7 @@ struct AllLogs {
 base::LazyInstance<AllLogs>::Leaky all_logs_ = LAZY_INSTANCE_INITIALIZER;
 
 // Per-thread pointer to the current log object.
-__thread CygTlsLog* tls_current_log = NULL;
+static __thread CygTlsLog* tls_current_log = NULL;
 
 // Magic value of above to prevent the instrumentation. Used when CygTlsLog is
 // being constructed (to prevent reentering by malloc, for example) and by
@@ -163,8 +163,16 @@ CygTlsLog* const kMagicBeingConstructed = reinterpret_cast<CygTlsLog*>(1);
 // Note, that we also flush by timer so not all thread logs may grow up to this.
 const int CygTlsLog::kBufMaxSize = 3000;
 
+
+#if defined(OS_ANDROID)
+const char CytTlsLog::kLogFileNamePrefix =
+"/data/local/tmp/chrome/cyglog/";
+#else
+const char CytTlsLog::kLogFileNamePrefix = "/var/log/chrome/";
+#endif
+
 // "cyglog.PID.LWP.pthread_self.PPID"
-const char CygTlsLog::kLogFilenameFmt[] = "/var/log/chrome/cyglog.%d.%d.%ld-%d";
+const char CygTlsLog::kLogFilenameFmt[] = "%scyglog.%d.%d.%ld-%d";
 
 CygCommon* CygCommon::GetInstance() {
   return Singleton<CygCommon>::get();
@@ -281,9 +289,17 @@ void CygTlsLog::AddNewLog(CygTlsLog* newlog) {
   AllLogs& all_logs = all_logs_.Get();
   base::AutoLock lock(all_logs.mutex);
   if (all_logs.logs.empty()) {
+
+    // An Android app never fork, it always starts with a pre-defined number of
+    // process descibed by the android manifest file. In fact, there is not
+    // support for pthread_atfork at the android system libraries.  All chrome
+    // for android processes will start as independent processs and each one
+    // will generate its own logs that will later have to be merged as usual.
+#if !defined(OS_ANDROID)
     CHECK(!pthread_atfork(CygTlsLog::AtForkPrepare,
                           CygTlsLog::AtForkParent,
                           CygTlsLog::AtForkChild));
+#endif
 
     // The very first process starts its flush thread here. Forked processes
     // will do it in AtForkChild().
@@ -304,12 +320,11 @@ static void WriteLogLine(int fd, const char* fmt, ...) {
 
 void CygTlsLog::FlushLog() {
   bool first_log_write = false;
-
   if (log_filename_.empty()) {
     first_log_write = true;
     char buf[80];
     snprintf(buf, sizeof(buf), kLogFilenameFmt,
-             getpid(), lwp_, pthread_self_, getppid());
+             kLogFileNamePrefix, getpid(), lwp_, pthread_self_, getppid());
     log_filename_ = buf;
     unlink(log_filename_.c_str());
   }

@@ -14,7 +14,6 @@
         'cygprofile.cc',
       ],
       'cflags!': [ '-finstrument-functions' ],
-      'cflags': [ '-std=c++0x' ],  # for unordered_set
     },
   ],
 }
