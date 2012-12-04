@@ -58,6 +58,7 @@ struct gl_surface_state {
 
 	GLuint textures[3];
 	int num_textures;
+	pixman_region32_t texture_damage;
 
 	EGLImageKHR images[3];
 	GLenum target;
@@ -1050,8 +1051,8 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 	int i, n;
 #endif
 
-	pixman_region32_union(&surface->texture_damage,
-			      &surface->texture_damage, &surface->damage);
+	pixman_region32_union(&gs->texture_damage,
+			      &gs->texture_damage, &surface->damage);
 
 	if (!buffer)
 		return;
@@ -1064,7 +1065,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 	if (surface->plane != &surface->compositor->primary_plane)
 		return;
 
-	if (!pixman_region32_not_empty(&surface->texture_damage))
+	if (!pixman_region32_not_empty(&gs->texture_damage))
 		goto done;
 
 	glBindTexture(GL_TEXTURE_2D, gs->textures[0]);
@@ -1082,7 +1083,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 	/* Mesa does not define GL_EXT_unpack_subimage */
 	glPixelStorei(GL_UNPACK_ROW_LENGTH, gs->pitch);
 	data = wl_shm_buffer_get_data(buffer);
-	rectangles = pixman_region32_rectangles(&surface->texture_damage, &n);
+	rectangles = pixman_region32_rectangles(&gs->texture_damage, &n);
 	for (i = 0; i < n; i++) {
 		pixman_box32_t r;
 
@@ -1097,8 +1098,8 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 #endif
 
 done:
-	pixman_region32_fini(&surface->texture_damage);
-	pixman_region32_init(&surface->texture_damage);
+	pixman_region32_fini(&gs->texture_damage);
+	pixman_region32_init(&gs->texture_damage);
 
 	weston_buffer_reference(&gs->buffer_ref, NULL);
 }
@@ -1248,6 +1249,7 @@ gl_renderer_create_surface(struct weston_surface *surface)
 	 */
 	gs->pitch = 1;
 
+	pixman_region32_init(&gs->texture_damage);
 	surface->renderer_state = gs;
 
 	return 0;
@@ -1266,6 +1268,7 @@ gl_renderer_destroy_surface(struct weston_surface *surface)
 		gr->destroy_image(gr->egl_display, gs->images[i]);
 
 	weston_buffer_reference(&gs->buffer_ref, NULL);
+	pixman_region32_fini(&gs->texture_damage);
 	free(gs);
 }
 

@@ -228,8 +228,6 @@ weston_surface_create(struct weston_compositor *compositor)
 		return NULL;
 	}
 
-	pixman_region32_init(&surface->texture_damage);
-
 	surface->buffer_transform = WL_OUTPUT_TRANSFORM_NORMAL;
 	surface->pending.buffer_transform = surface->buffer_transform;
 	surface->output = NULL;
@@ -864,7 +862,6 @@ destroy_surface(struct wl_resource *resource)
 
 	weston_buffer_reference(&surface->buffer_ref, NULL);
 
-	pixman_region32_fini(&surface->texture_damage);
 	compositor->renderer->destroy_surface(surface);
 
 	pixman_region32_fini(&surface->transform.boundingbox);

@@ -383,7 +383,6 @@ struct weston_region {
 struct weston_surface {
 	struct wl_surface surface;
 	struct weston_compositor *compositor;
-	pixman_region32_t texture_damage;
 	pixman_region32_t clip;
 	pixman_region32_t damage;
 	pixman_region32_t opaque;
