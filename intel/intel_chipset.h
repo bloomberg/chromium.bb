@@ -148,6 +148,12 @@
 #define PCI_CHIP_HASWELL_CRW_E_GT1	0x0D0E /* Reserved */
 #define PCI_CHIP_HASWELL_CRW_E_GT2	0x0D1E
 #define PCI_CHIP_HASWELL_CRW_E_GT3	0x0D2E
+#define BDW_SPARE			0x2
+#define BDW_ULT				0x6
+#define BDW_SERVER			0xa
+#define BDW_IRIS			0xb
+#define BDW_WORKSTATION			0xd
+#define BDW_ULX				0xe
 
 #define PCI_CHIP_VALLEYVIEW_PO		0x0f30 /* VLV PO board */
 #define PCI_CHIP_VALLEYVIEW_1		0x0f31
@@ -296,10 +302,24 @@
 				 IS_HSW_GT2(devid) || \
 				 IS_HSW_GT3(devid))
 
+#define IS_BROADWELL(devid)     (((devid & 0xff00) != 0x1600) ? 0 : \
+				(((devid & 0x00f0) >> 4) > 3) ? 0 : \
+				((devid & 0x000f) == BDW_SPARE) ? 1 : \
+				((devid & 0x000f) == BDW_ULT) ? 1 : \
+				((devid & 0x000f) == BDW_IRIS) ? 1 : \
+				((devid & 0x000f) == BDW_SERVER) ? 1 : \
+				((devid & 0x000f) == BDW_WORKSTATION) ? 1 : \
+				((devid & 0x000f) == BDW_ULX) ? 1 : 0)
+
+
+#define IS_GEN8(devid)		IS_BROADWELL(devid)
+
 #define IS_9XX(dev)		(IS_GEN3(dev) || \
 				 IS_GEN4(dev) || \
 				 IS_GEN5(dev) || \
 				 IS_GEN6(dev) || \
-				 IS_GEN7(dev))
+				 IS_GEN7(dev) || \
+				 IS_GEN8(dev))
+
 
 #endif /* _INTEL_CHIPSET_H */
