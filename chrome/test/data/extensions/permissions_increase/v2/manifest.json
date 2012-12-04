@@ -2,6 +2,7 @@
   "version": "2",
   "name": "Permission Test",
   "background_page": "background.html",
+  "update_url": "http://localhost/autoupdate/updates.xml",
   "permissions": [
     "tabs"
   ]
