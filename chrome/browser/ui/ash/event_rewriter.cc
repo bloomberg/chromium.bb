@@ -200,6 +200,9 @@ EventRewriter::DeviceType EventRewriter::GetDeviceType(
     // The chromebook internal keyboard's name.
     if (LowerCaseEqualsASCII(device_name, "at translated set 2 keyboard"))
       return kDeviceChromeOSKeyboard;
+    // The daisy chromebook internal keyboard's name.
+    if (LowerCaseEqualsASCII(device_name, "chromeos-ec-i2c"))
+      return kDeviceChromeOSKeyboard;
     // The chromebox chrome-specific keyboard's name.
     if (LowerCaseEqualsASCII(device_name, "samsung usb keyboard"))
       return kDeviceChromeOSKeyboard;
