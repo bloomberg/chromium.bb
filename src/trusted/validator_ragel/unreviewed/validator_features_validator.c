@@ -9,43 +9,43 @@
 /* Emulate features of old validator to simplify testing */
 NaClCPUFeaturesX86 kValidatorCPUIDFeatures = {
   {
-    1, /* NaClCPUFeature_CPUIDSupported */
-    1, /* NaClCPUFeature_CPUSupported */
-    1, /* NaClCPUFeature_3DNOW */  /* AMD-specific */
-    0, /* NaClCPUFeature_AES */
-    0, /* NaClCPUFeature_AVX */
-    0, /* NaClCPUFeature_BMI1 */
-    1, /* NaClCPUFeature_CLFLUSH */
-    0, /* NaClCPUFeature_CLMUL */
-    1, /* NaClCPUFeature_CMOV */
-    1, /* NaClCPUFeature_CX16 */
-    1, /* NaClCPUFeature_CX8 */
-    1, /* NaClCPUFeature_E3DNOW */ /* AMD-specific */
-    1, /* NaClCPUFeature_EMMX */   /* AMD-specific */
-    0, /* NaClCPUFeature_F16C */
-    0, /* NaClCPUFeature_FMA */
-    0, /* NaClCPUFeature_FMA4 */ /* AMD-specific */
-    0, /* NaClCPUFeature_FXSR */
-    0, /* NaClCPUFeature_LAHF */
-    0, /* NaClCPUFeature_LM */
-    0, /* NaClCPUFeature_LWP */ /* AMD-specific */
-    1, /* NaClCPUFeature_LZCNT */  /* AMD-specific */
-    1, /* NaClCPUFeature_MMX */
-    0, /* NaClCPUFeature_MON */
-    1, /* NaClCPUFeature_MOVBE */
-    1, /* NaClCPUFeature_OSXSAVE */
-    1, /* NaClCPUFeature_POPCNT */
-    0, /* NaClCPUFeature_PRE */ /* AMD-specific */
-    1, /* NaClCPUFeature_SSE */
-    1, /* NaClCPUFeature_SSE2 */
-    1, /* NaClCPUFeature_SSE3 */
-    1, /* NaClCPUFeature_SSE41 */
-    1, /* NaClCPUFeature_SSE42 */
-    1, /* NaClCPUFeature_SSE4A */  /* AMD-specific */
-    1, /* NaClCPUFeature_SSSE3 */
-    0, /* NaClCPUFeature_TBM */ /* AMD-specific */
-    1, /* NaClCPUFeature_TSC */
-    1, /* NaClCPUFeature_x87 */
-    0  /* NaClCPUFeature_XOP */ /* AMD-specific */
+    1, /* NaClCPUFeatureX86_CPUIDSupported */
+    1, /* NaClCPUFeatureX86_CPUSupported */
+    1, /* NaClCPUFeatureX86_3DNOW */  /* AMD-specific */
+    0, /* NaClCPUFeatureX86_AES */
+    0, /* NaClCPUFeatureX86_AVX */
+    0, /* NaClCPUFeatureX86_BMI1 */
+    1, /* NaClCPUFeatureX86_CLFLUSH */
+    0, /* NaClCPUFeatureX86_CLMUL */
+    1, /* NaClCPUFeatureX86_CMOV */
+    1, /* NaClCPUFeatureX86_CX16 */
+    1, /* NaClCPUFeatureX86_CX8 */
+    1, /* NaClCPUFeatureX86_E3DNOW */ /* AMD-specific */
+    1, /* NaClCPUFeatureX86_EMMX */   /* AMD-specific */
+    0, /* NaClCPUFeatureX86_F16C */
+    0, /* NaClCPUFeatureX86_FMA */
+    0, /* NaClCPUFeatureX86_FMA4 */ /* AMD-specific */
+    0, /* NaClCPUFeatureX86_FXSR */
+    0, /* NaClCPUFeatureX86_LAHF */
+    0, /* NaClCPUFeatureX86_LM */
+    0, /* NaClCPUFeatureX86_LWP */ /* AMD-specific */
+    1, /* NaClCPUFeatureX86_LZCNT */  /* AMD-specific */
+    1, /* NaClCPUFeatureX86_MMX */
+    0, /* NaClCPUFeatureX86_MON */
+    1, /* NaClCPUFeatureX86_MOVBE */
+    1, /* NaClCPUFeatureX86_OSXSAVE */
+    1, /* NaClCPUFeatureX86_POPCNT */
+    0, /* NaClCPUFeatureX86_PRE */ /* AMD-specific */
+    1, /* NaClCPUFeatureX86_SSE */
+    1, /* NaClCPUFeatureX86_SSE2 */
+    1, /* NaClCPUFeatureX86_SSE3 */
+    1, /* NaClCPUFeatureX86_SSE41 */
+    1, /* NaClCPUFeatureX86_SSE42 */
+    1, /* NaClCPUFeatureX86_SSE4A */  /* AMD-specific */
+    1, /* NaClCPUFeatureX86_SSSE3 */
+    0, /* NaClCPUFeatureX86_TBM */ /* AMD-specific */
+    1, /* NaClCPUFeatureX86_TSC */
+    1, /* NaClCPUFeatureX86_x87 */
+    0  /* NaClCPUFeatureX86_XOP */ /* AMD-specific */
   }
 };

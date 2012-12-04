@@ -28,64 +28,64 @@ extern const NaClCPUFeaturesX86 kValidatorCPUIDFeatures;
   if (!(F)) { \
     instruction_info_collected |= CPUID_UNSUPPORTED_INSTRUCTION; \
   }
-#define CPUFeature_3DNOW    cpu_features->data[NaClCPUFeature_3DNOW]
+#define CPUFeature_3DNOW    cpu_features->data[NaClCPUFeatureX86_3DNOW]
 /*
  * AMD documentation claims it's always available if CPUFeature_LM is present,
  * But Intel documentation does not even mention it!
  * Keep it as 3DNow! instruction.
  */
 #define CPUFeature_3DPRFTCH CPUFeature_3DNOW || CPUFeature_PRE
-#define CPUFeature_AES      cpu_features->data[NaClCPUFeature_AES]
+#define CPUFeature_AES      cpu_features->data[NaClCPUFeatureX86_AES]
 #define CPUFeature_AESAVX   CPUFeature_AES && CPUFeature_AVX
-#define CPUFeature_AVX      cpu_features->data[NaClCPUFeature_AVX]
-#define CPUFeature_BMI1     cpu_features->data[NaClCPUFeature_BMI1]
-#define CPUFeature_CLFLUSH  cpu_features->data[NaClCPUFeature_CLFLUSH]
-#define CPUFeature_CLMUL    cpu_features->data[NaClCPUFeature_CLMUL]
+#define CPUFeature_AVX      cpu_features->data[NaClCPUFeatureX86_AVX]
+#define CPUFeature_BMI1     cpu_features->data[NaClCPUFeatureX86_BMI1]
+#define CPUFeature_CLFLUSH  cpu_features->data[NaClCPUFeatureX86_CLFLUSH]
+#define CPUFeature_CLMUL    cpu_features->data[NaClCPUFeatureX86_CLMUL]
 #define CPUFeature_CLMULAVX CPUFeature_CLMUL && CPUFeature_AVX
-#define CPUFeature_CMOV     cpu_features->data[NaClCPUFeature_CMOV]
+#define CPUFeature_CMOV     cpu_features->data[NaClCPUFeatureX86_CMOV]
 #define CPUFeature_CMOVx87  CPUFeature_CMOV && CPUFeature_x87
-#define CPUFeature_CX16     cpu_features->data[NaClCPUFeature_CX16]
-#define CPUFeature_CX8      cpu_features->data[NaClCPUFeature_CX8]
-#define CPUFeature_E3DNOW   cpu_features->data[NaClCPUFeature_E3DNOW]
-#define CPUFeature_EMMX     cpu_features->data[NaClCPUFeature_EMMX]
+#define CPUFeature_CX16     cpu_features->data[NaClCPUFeatureX86_CX16]
+#define CPUFeature_CX8      cpu_features->data[NaClCPUFeatureX86_CX8]
+#define CPUFeature_E3DNOW   cpu_features->data[NaClCPUFeatureX86_E3DNOW]
+#define CPUFeature_EMMX     cpu_features->data[NaClCPUFeatureX86_EMMX]
 #define CPUFeature_EMMXSSE  CPUFeature_EMMX || CPUFeature_SSE
-#define CPUFeature_F16C     cpu_features->data[NaClCPUFeature_F16C]
-#define CPUFeature_FMA      cpu_features->data[NaClCPUFeature_FMA]
-#define CPUFeature_FMA4     cpu_features->data[NaClCPUFeature_FMA4]
-#define CPUFeature_FXSR     cpu_features->data[NaClCPUFeature_FXSR]
-#define CPUFeature_LAHF     cpu_features->data[NaClCPUFeature_LAHF]
-#define CPUFeature_LM       cpu_features->data[NaClCPUFeature_LM]
-#define CPUFeature_LWP      cpu_features->data[NaClCPUFeature_LWP]
+#define CPUFeature_F16C     cpu_features->data[NaClCPUFeatureX86_F16C]
+#define CPUFeature_FMA      cpu_features->data[NaClCPUFeatureX86_FMA]
+#define CPUFeature_FMA4     cpu_features->data[NaClCPUFeatureX86_FMA4]
+#define CPUFeature_FXSR     cpu_features->data[NaClCPUFeatureX86_FXSR]
+#define CPUFeature_LAHF     cpu_features->data[NaClCPUFeatureX86_LAHF]
+#define CPUFeature_LM       cpu_features->data[NaClCPUFeatureX86_LM]
+#define CPUFeature_LWP      cpu_features->data[NaClCPUFeatureX86_LWP]
 /*
  * We allow lzcnt unconditionally
  * See http://code.google.com/p/nativeclient/issues/detail?id=2869
  */
 #define CPUFeature_LZCNT    TRUE
-#define CPUFeature_MMX      cpu_features->data[NaClCPUFeature_MMX]
-#define CPUFeature_MON      cpu_features->data[NaClCPUFeature_MON]
-#define CPUFeature_MOVBE    cpu_features->data[NaClCPUFeature_MOVBE]
-#define CPUFeature_OSXSAVE  cpu_features->data[NaClCPUFeature_OSXSAVE]
-#define CPUFeature_POPCNT   cpu_features->data[NaClCPUFeature_POPCNT]
-#define CPUFeature_PRE      cpu_features->data[NaClCPUFeature_PRE]
-#define CPUFeature_SSE      cpu_features->data[NaClCPUFeature_SSE]
-#define CPUFeature_SSE2     cpu_features->data[NaClCPUFeature_SSE2]
-#define CPUFeature_SSE3     cpu_features->data[NaClCPUFeature_SSE3]
-#define CPUFeature_SSE41    cpu_features->data[NaClCPUFeature_SSE41]
-#define CPUFeature_SSE42    cpu_features->data[NaClCPUFeature_SSE42]
-#define CPUFeature_SSE4A    cpu_features->data[NaClCPUFeature_SSE4A]
-#define CPUFeature_SSSE3    cpu_features->data[NaClCPUFeature_SSSE3]
-#define CPUFeature_TBM      cpu_features->data[NaClCPUFeature_TBM]
-#define CPUFeature_TSC      cpu_features->data[NaClCPUFeature_TSC]
+#define CPUFeature_MMX      cpu_features->data[NaClCPUFeatureX86_MMX]
+#define CPUFeature_MON      cpu_features->data[NaClCPUFeatureX86_MON]
+#define CPUFeature_MOVBE    cpu_features->data[NaClCPUFeatureX86_MOVBE]
+#define CPUFeature_OSXSAVE  cpu_features->data[NaClCPUFeatureX86_OSXSAVE]
+#define CPUFeature_POPCNT   cpu_features->data[NaClCPUFeatureX86_POPCNT]
+#define CPUFeature_PRE      cpu_features->data[NaClCPUFeatureX86_PRE]
+#define CPUFeature_SSE      cpu_features->data[NaClCPUFeatureX86_SSE]
+#define CPUFeature_SSE2     cpu_features->data[NaClCPUFeatureX86_SSE2]
+#define CPUFeature_SSE3     cpu_features->data[NaClCPUFeatureX86_SSE3]
+#define CPUFeature_SSE41    cpu_features->data[NaClCPUFeatureX86_SSE41]
+#define CPUFeature_SSE42    cpu_features->data[NaClCPUFeatureX86_SSE42]
+#define CPUFeature_SSE4A    cpu_features->data[NaClCPUFeatureX86_SSE4A]
+#define CPUFeature_SSSE3    cpu_features->data[NaClCPUFeatureX86_SSSE3]
+#define CPUFeature_TBM      cpu_features->data[NaClCPUFeatureX86_TBM]
+#define CPUFeature_TSC      cpu_features->data[NaClCPUFeatureX86_TSC]
 /*
  * We allow tzcnt unconditionally
  * See http://code.google.com/p/nativeclient/issues/detail?id=2869
  */
 #define CPUFeature_TZCNT    TRUE
-#define CPUFeature_x87      cpu_features->data[NaClCPUFeature_x87]
-#define CPUFeature_XOP      cpu_features->data[NaClCPUFeature_XOP]
+#define CPUFeature_x87      cpu_features->data[NaClCPUFeatureX86_x87]
+#define CPUFeature_XOP      cpu_features->data[NaClCPUFeatureX86_XOP]
 
 #define CPUFeature_3DNOW_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_3DNOW]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_3DNOW]
 /*
  * AMD documentation claims it's always available if CPUFeature_LM is present,
  * But Intel documentation does not even mention it!
@@ -94,91 +94,91 @@ extern const NaClCPUFeaturesX86 kValidatorCPUIDFeatures;
 #define CPUFeature_3DPRFTCH_Allowed \
   CPUFeature_3DNOW_Allowed || CPUFeature_PRE_Allowed
 #define CPUFeature_AES_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_AES]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_AES]
 #define CPUFeature_AESAVX_Allowed \
   CPUFeature_AES_Allowed && CPUFeature_AVX_Allowed
 #define CPUFeature_AVX_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_AVX]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_AVX]
 #define CPUFeature_BMI1_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_BMI1]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_BMI1]
 #define CPUFeature_CLFLUSH_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_CLFLUSH]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_CLFLUSH]
 #define CPUFeature_CLMUL_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_CLMUL]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_CLMUL]
 #define CPUFeature_CLMULAVX_Allowed \
   CPUFeature_CLMUL_Allowed && CPUFeature_AVX_Allowed
 #define CPUFeature_CMOV_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_CMOV]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_CMOV]
 #define CPUFeature_CMOVx87_Allowed \
   CPUFeature_CMOV_Allowed && CPUFeature_x87_Allowed
 #define CPUFeature_CX16_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_CX16]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_CX16]
 #define CPUFeature_CX8_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_CX8]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_CX8]
 #define CPUFeature_E3DNOW_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_E3DNOW]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_E3DNOW]
 #define CPUFeature_EMMX_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_EMMX]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_EMMX]
 #define CPUFeature_EMMXSSE_Allowed \
   CPUFeature_EMMX_Allowed || CPUFeature_SSE_Allowed
 #define CPUFeature_F16C_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_F16C]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_F16C]
 #define CPUFeature_FMA_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_FMA]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_FMA]
 #define CPUFeature_FMA4_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_FMA4]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_FMA4]
 #define CPUFeature_FXSR_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_FXSR]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_FXSR]
 #define CPUFeature_LAHF_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_LAHF]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_LAHF]
 #define CPUFeature_LM_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_LM]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_LM]
 #define CPUFeature_LWP_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_LWP]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_LWP]
 /*
  * We allow lzcnt unconditionally
  * See http://code.google.com/p/nativeclient/issues/detail?id=2869
  */
 #define CPUFeature_LZCNT_Allowed TRUE
 #define CPUFeature_MMX_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_MMX]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_MMX]
 #define CPUFeature_MON_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_MON]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_MON]
 #define CPUFeature_MOVBE_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_MOVBE]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_MOVBE]
 #define CPUFeature_OSXSAVE_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_OSXSAVE]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_OSXSAVE]
 #define CPUFeature_POPCNT_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_POPCNT]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_POPCNT]
 #define CPUFeature_PRE_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_PRE]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_PRE]
 #define CPUFeature_SSE_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_SSE]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_SSE]
 #define CPUFeature_SSE2_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_SSE2]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_SSE2]
 #define CPUFeature_SSE3_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_SSE3]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_SSE3]
 #define CPUFeature_SSE41_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_SSE41]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_SSE41]
 #define CPUFeature_SSE42_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_SSE42]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_SSE42]
 #define CPUFeature_SSE4A_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_SSE4A]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_SSE4A]
 #define CPUFeature_SSSE3_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_SSSE3]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_SSSE3]
 #define CPUFeature_TBM_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_TBM]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_TBM]
 #define CPUFeature_TSC_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_TSC]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_TSC]
 /*
  * We allow tzcnt unconditionally
  * See http://code.google.com/p/nativeclient/issues/detail?id=2869
  */
 #define CPUFeature_TZCNT_Allowed TRUE
 #define CPUFeature_x87_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_x87]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_x87]
 #define CPUFeature_XOP_Allowed \
-  kValidatorCPUIDFeatures.data[NaClCPUFeature_XOP]
+  kValidatorCPUIDFeatures.data[NaClCPUFeatureX86_XOP]
 
 /* Remember some information about instruction for further processing.  */
 #define GET_REX_PREFIX() rex_prefix

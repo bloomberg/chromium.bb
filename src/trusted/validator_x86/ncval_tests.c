@@ -1014,9 +1014,9 @@ void test_stubout(void) {
   printf("Running test_stubout...\n");
 
   /* If MMX instructions are not allowed, stubout will occur. */
-  NaClSetCPUFeatureX86(&g_ncval_cpu_features, NaClCPUFeature_MMX, FALSE);
+  NaClSetCPUFeatureX86(&g_ncval_cpu_features, NaClCPUFeatureX86_MMX, FALSE);
   TestValidator(&test, TRUE);
-  NaClSetCPUFeatureX86(&g_ncval_cpu_features, NaClCPUFeature_MMX, TRUE);
+  NaClSetCPUFeatureX86(&g_ncval_cpu_features, NaClCPUFeatureX86_MMX, TRUE);
 }
 
 void ncvalidate_unittests(void) {

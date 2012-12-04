@@ -27,10 +27,10 @@ int main(int argc, char *argv[]) {
     printf("This is a native client %d-bit %s compatible computer\n",
            NACL_TARGET_SUBARCH, GetCPUIDString(&cpu_data));
   } else {
-    if (!NaClGetCPUFeatureX86(&fv, NaClCPUFeature_CPUIDSupported)) {
+    if (!NaClGetCPUFeatureX86(&fv, NaClCPUFeatureX86_CPUIDSupported)) {
       printf("Computer doesn't support CPUID\n");
     }
-    if (!NaClGetCPUFeatureX86(&fv, NaClCPUFeature_CPUSupported)) {
+    if (!NaClGetCPUFeatureX86(&fv, NaClCPUFeatureX86_CPUSupported)) {
       printf("Computer id %s is not supported\n", GetCPUIDString(&cpu_data));
     }
   }

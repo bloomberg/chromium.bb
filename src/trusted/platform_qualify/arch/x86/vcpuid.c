@@ -509,11 +509,11 @@ int CPUIDImplIsValid(void) {
   NaClCPUFeaturesX86 cpuf;
   NaClGetCurrentCPUFeaturesX86((NaClCPUFeatures *) &cpuf);
 
-  if (!NaClGetCPUFeatureX86(&cpuf, NaClCPUFeature_CPUIDSupported)) {
+  if (!NaClGetCPUFeatureX86(&cpuf, NaClCPUFeatureX86_CPUIDSupported)) {
     PrintFail("CPUID not implemented");
     return 0;
   }
-  if (!NaClGetCPUFeatureX86(&cpuf, NaClCPUFeature_CPUSupported)) {
+  if (!NaClGetCPUFeatureX86(&cpuf, NaClCPUFeatureX86_CPUSupported)) {
     PrintFail("CPU not supported");
     return 0;
   }
@@ -522,18 +522,18 @@ int CPUIDImplIsValid(void) {
   /* Unfortunately the asm_ tests will not work on 64-bit Windows */
   return 1;
 #else
-  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_x87, asm_HasX87);
-  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_MMX, asm_HasMMX);
-  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_SSE, asm_HasSSE);
-  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_SSE2, asm_HasSSE2);
-  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_3DNOW, asm_Has3DNow);
-  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_SSE3, asm_HasSSE3);
-  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_SSSE3, asm_HasSSSE3);
-  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_SSE41, asm_HasSSE41);
-  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_SSE42, asm_HasSSE42);
-  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_POPCNT, asm_HasPOPCNT);
-  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_CMOV, asm_HasCMOV);
-  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_TSC, asm_HasTSC);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeatureX86_x87, asm_HasX87);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeatureX86_MMX, asm_HasMMX);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeatureX86_SSE, asm_HasSSE);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeatureX86_SSE2, asm_HasSSE2);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeatureX86_3DNOW, asm_Has3DNow);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeatureX86_SSE3, asm_HasSSE3);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeatureX86_SSSE3, asm_HasSSSE3);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeatureX86_SSE41, asm_HasSSE41);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeatureX86_SSE42, asm_HasSSE42);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeatureX86_POPCNT, asm_HasPOPCNT);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeatureX86_CMOV, asm_HasCMOV);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeatureX86_TSC, asm_HasTSC);
 
 #if TEST_NEGATIVE_CASE
   printf("TESTING: simulating invalid CPUID implementation\n");
@@ -546,8 +546,8 @@ int CPUIDImplIsValid(void) {
 #endif  /* 64-bit Windows */
   /*
    * TODO(brad): implement the rest of these tests
-   * rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_CX8, asm_HasCX8);
-   * rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_CX16, asm_HasCX16);
+   * rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeatureX86_CX8, asm_HasCX8);
+   * rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeatureX86_CX16, asm_HasCX16);
    * DoTest(asm_HasSSE4a, "SSE4a");
    * DoTest(asm_HasEMMX, "EMMX");
    * DoTest(asm_HasE3DNow, "E3DNow");

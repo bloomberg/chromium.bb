@@ -50,25 +50,27 @@ void NaClCpuCheck(struct NaClValidatorState* state,
   switch (state->cur_inst->insttype) {
     case NACLi_X87:
     case NACLi_X87_FSINCOS:
-      NaClCheckFeature(NaClCPUFeature_x87, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeatureX86_x87, state, &squash_me);
       break;
     case NACLi_SFENCE_CLFLUSH:
       /* TODO(bradchen): distinguish between SFENCE and CLFLUSH */
-      NaClCheckFeature(NaClCPUFeature_CLFLUSH, state, &squash_me);
-      NaClCheckFeature(NaClCPUFeature_FXSR, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeatureX86_CLFLUSH, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeatureX86_FXSR, state, &squash_me);
       break;
     case NACLi_CMPXCHG8B:
-      NaClCheckFeature(NaClCPUFeature_CX8, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeatureX86_CX8, state, &squash_me);
       break;
     case NACLi_CMPXCHG16B:
-      NaClCheckFeature(NaClCPUFeature_CX16, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeatureX86_CX16, state, &squash_me);
       break;
     case NACLi_CMOV:
-      NaClCheckFeature(NaClCPUFeature_CMOV, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeatureX86_CMOV, state, &squash_me);
       break;
     case NACLi_FCMOV:
-      if (!(NaClGetCPUFeatureX86(&state->cpu_features, NaClCPUFeature_CMOV) &&
-            NaClGetCPUFeatureX86(&state->cpu_features, NaClCPUFeature_x87))) {
+      if (!(NaClGetCPUFeatureX86(&state->cpu_features,
+                                 NaClCPUFeatureX86_CMOV) &&
+            NaClGetCPUFeatureX86(&state->cpu_features,
+                                 NaClCPUFeatureX86_x87))) {
         if (!state->cpu_checks.f_CMOV_and_x87) {
           NaClValidatorInstMessage(
               LOG_WARNING, state, state->cur_inst_state,
@@ -79,16 +81,18 @@ void NaClCpuCheck(struct NaClValidatorState* state,
       }
       break;
     case NACLi_RDTSC:
-      NaClCheckFeature(NaClCPUFeature_TSC, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeatureX86_TSC, state, &squash_me);
       break;
     case NACLi_MMX:
-      NaClCheckFeature(NaClCPUFeature_MMX, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeatureX86_MMX, state, &squash_me);
       break;
     case NACLi_MMXSSE2:
       /* Note: We accept these instructions if either MMX or SSE2 bits */
       /* are set, in case MMX instructions go away someday...          */
-      if (!(NaClGetCPUFeatureX86(&state->cpu_features, NaClCPUFeature_MMX) ||
-            NaClGetCPUFeatureX86(&state->cpu_features, NaClCPUFeature_SSE2))) {
+      if (!(NaClGetCPUFeatureX86(&state->cpu_features,
+                                 NaClCPUFeatureX86_MMX) ||
+            NaClGetCPUFeatureX86(&state->cpu_features,
+                                 NaClCPUFeatureX86_SSE2))) {
         if (!state->cpu_checks.f_MMX_or_SSE2) {
           NaClValidatorInstMessage(
               LOG_WARNING, state, state->cur_inst_state,
@@ -99,44 +103,44 @@ void NaClCpuCheck(struct NaClValidatorState* state,
       squash_me = TRUE;
       break;
     case NACLi_SSE:
-      NaClCheckFeature(NaClCPUFeature_SSE, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeatureX86_SSE, state, &squash_me);
       break;
     case NACLi_SSE2:
-      NaClCheckFeature(NaClCPUFeature_SSE2, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeatureX86_SSE2, state, &squash_me);
       break;
     case NACLi_SSE3:
-      NaClCheckFeature(NaClCPUFeature_SSE3, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeatureX86_SSE3, state, &squash_me);
       break;
     case NACLi_SSE4A:
-      NaClCheckFeature(NaClCPUFeature_SSE4A, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeatureX86_SSE4A, state, &squash_me);
       break;
     case NACLi_SSE41:
-      NaClCheckFeature(NaClCPUFeature_SSE41, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeatureX86_SSE41, state, &squash_me);
       break;
     case NACLi_SSE42:
-      NaClCheckFeature(NaClCPUFeature_SSE42, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeatureX86_SSE42, state, &squash_me);
       break;
     case NACLi_MOVBE:
-      NaClCheckFeature(NaClCPUFeature_MOVBE, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeatureX86_MOVBE, state, &squash_me);
       break;
     case NACLi_POPCNT:
-      NaClCheckFeature(NaClCPUFeature_POPCNT, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeatureX86_POPCNT, state, &squash_me);
       break;
     case NACLi_LZCNT:
-      NaClCheckFeature(NaClCPUFeature_LZCNT, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeatureX86_LZCNT, state, &squash_me);
       break;
     case NACLi_SSSE3:
-      NaClCheckFeature(NaClCPUFeature_SSSE3, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeatureX86_SSSE3, state, &squash_me);
       break;
     case NACLi_3DNOW:
-      NaClCheckFeature(NaClCPUFeature_3DNOW, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeatureX86_3DNOW, state, &squash_me);
       break;
     case NACLi_E3DNOW:
-      NaClCheckFeature(NaClCPUFeature_E3DNOW, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeatureX86_E3DNOW, state, &squash_me);
       break;
     case NACLi_LONGMODE:
       /* TODO(karl): Remove this when NACLi_LONGMODE is no longer needed */
-      NaClCheckFeature(NaClCPUFeature_LM, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeatureX86_LM, state, &squash_me);
       break;
     case NACLi_SSE2x:
       /* This case requires CPUID checking code */
@@ -146,7 +150,7 @@ void NaClCpuCheck(struct NaClValidatorState* state,
             LOG_ERROR, state, state->cur_inst_state,
             "SSEx instruction must use prefix 0x66.\n");
       }
-      NaClCheckFeature(NaClCPUFeature_SSE2, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeatureX86_SSE2, state, &squash_me);
       break;
     default:
       /* This instruction could be either legal or illegal, but if we
@@ -155,7 +159,7 @@ void NaClCpuCheck(struct NaClValidatorState* state,
       break;
   }
   if (state->cur_inst->flags & NACL_IFLAG(LongMode)) {
-    NaClCheckFeature(NaClCPUFeature_LM, state, &squash_me);
+    NaClCheckFeature(NaClCPUFeatureX86_LM, state, &squash_me);
   }
   if (squash_me) {
     if (state->readonly_text) {

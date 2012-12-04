@@ -193,7 +193,7 @@ TEST_F(ValidationCachingInterfaceTests, SSE4Stubout) {
   context.query_result = 0;
   /* TODO(jfb) Use a safe cast here, this test should only run for x86. */
   NaClSetCPUFeatureX86((NaClCPUFeaturesX86 *) cpu_features,
-                       NaClCPUFeature_SSE41, 0);
+                       NaClCPUFeatureX86_SSE41, 0);
   NaClValidationStatus status = Validate();
   EXPECT_EQ(NaClValidationSucceeded, status);
   EXPECT_EQ(true, context.query_destroyed);

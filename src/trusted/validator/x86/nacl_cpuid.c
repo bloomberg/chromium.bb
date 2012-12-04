@@ -428,8 +428,8 @@ char *GetCPUIDString(NaClCPUData* data) {
 static int CheckCPUFeature(NaClCPUData* data, NaClCPUFeatureX86ID fid) {
   const CPUFeature *f = &CPUFeatureDescriptions[fid];
   uint32_t *fv = data->_featurev;
-  if ((fid == NaClCPUFeature_CPUIDSupported) ||
-      (fid == NaClCPUFeature_CPUSupported)) {
+  if ((fid == NaClCPUFeatureX86_CPUIDSupported) ||
+      (fid == NaClCPUFeatureX86_CPUSupported)) {
     /* CPUIDSupported and CPUSupported aren't actually in CPUID,
        CPUFeatureDescriptions therefore doesn't contain actual reg/mask for
        them. */
@@ -446,7 +446,7 @@ uint64_t NaClXGETBV(uint32_t);
 
 /* Cache XCR vector */
 static void CacheCPUXCRVector(NaClCPUData* data) {
-  if (CheckCPUFeature(data, NaClCPUFeature_OSXSAVE)) {
+  if (CheckCPUFeature(data, NaClCPUFeatureX86_OSXSAVE)) {
     int i;
     for (i = 0; i < kMaxCPUXCRReg; ++i) {
       data->_xcrv[i] = NaClXGETBV(i);
@@ -468,13 +468,13 @@ static void CheckNaClArchFeatures(NaClCPUData *data,
   const size_t kCPUID0Length = 12;
   char *cpuversionid;
   if (data->_has_CPUID) {
-    NaClSetCPUFeatureX86(features, NaClCPUFeature_CPUIDSupported, 1);
+    NaClSetCPUFeatureX86(features, NaClCPUFeatureX86_CPUIDSupported, 1);
   }
   cpuversionid = CPUVersionID(data);
   if (strncmp(cpuversionid, Intel_CPUID0, kCPUID0Length) == 0) {
-    NaClSetCPUFeatureX86(features, NaClCPUFeature_CPUSupported, 1);
+    NaClSetCPUFeatureX86(features, NaClCPUFeatureX86_CPUSupported, 1);
   } else if (strncmp(cpuversionid, AMD_CPUID0, kCPUID0Length) == 0) {
-    NaClSetCPUFeatureX86(features, NaClCPUFeature_CPUSupported, 1);
+    NaClSetCPUFeatureX86(features, NaClCPUFeatureX86_CPUSupported, 1);
   }
 }
 
@@ -504,7 +504,7 @@ static void GetCPUFeatures(NaClCPUData* data, NaClCPUFeaturesX86 *cpuf) {
   int id;
   NaClClearCPUFeaturesX86(cpuf);
   CheckNaClArchFeatures(data, cpuf);
-  if (!NaClGetCPUFeatureX86(cpuf, NaClCPUFeature_CPUIDSupported)) {
+  if (!NaClGetCPUFeatureX86(cpuf, NaClCPUFeatureX86_CPUIDSupported)) {
     return;
   }
 
@@ -516,12 +516,12 @@ static void GetCPUFeatures(NaClCPUData* data, NaClCPUFeaturesX86 *cpuf) {
    * If the operating system doesn't maintain the YMM state,
    * pretend we don't have the instructions available at all.
    */
-  if (!(NaClGetCPUFeatureX86(cpuf, NaClCPUFeature_OSXSAVE)
+  if (!(NaClGetCPUFeatureX86(cpuf, NaClCPUFeatureX86_OSXSAVE)
         && (data->_xcrv[0] & 6) == 6)) {
-    NaClSetCPUFeatureX86(cpuf, NaClCPUFeature_AVX, 0);
-    NaClSetCPUFeatureX86(cpuf, NaClCPUFeature_F16C, 0);
-    NaClSetCPUFeatureX86(cpuf, NaClCPUFeature_FMA, 0);
-    NaClSetCPUFeatureX86(cpuf, NaClCPUFeature_FMA4, 0);
+    NaClSetCPUFeatureX86(cpuf, NaClCPUFeatureX86_AVX, 0);
+    NaClSetCPUFeatureX86(cpuf, NaClCPUFeatureX86_F16C, 0);
+    NaClSetCPUFeatureX86(cpuf, NaClCPUFeatureX86_FMA, 0);
+    NaClSetCPUFeatureX86(cpuf, NaClCPUFeatureX86_FMA4, 0);
   }
 }
 
@@ -548,44 +548,44 @@ void NaClGetCurrentCPUFeaturesX86(NaClCPUFeatures *f) {
  * revisit in the future.
  */
 const int kFixedFeatureCPUModel[NaClCPUFeatureX86_Max] = {
-  1, /* NaClCPUFeature_CPUIDSupported */
-  1, /* NaClCPUFeature_CPUSupported */
-  0, /* NaClCPUFeature_3DNOW */  /* AMD-specific */
-  0, /* NaClCPUFeature_AES */
-  0, /* NaClCPUFeature_AVX */
-  0, /* NaClCPUFeature_BMI1 */
-  1, /* NaClCPUFeature_CLFLUSH */
-  0, /* NaClCPUFeature_CLMUL */
-  1, /* NaClCPUFeature_CMOV */
-  1, /* NaClCPUFeature_CX16 */
-  1, /* NaClCPUFeature_CX8 */
-  0, /* NaClCPUFeature_E3DNOW */ /* AMD-specific */
-  0, /* NaClCPUFeature_EMMX */   /* AMD-specific */
-  0, /* NaClCPUFeature_F16C */
-  0, /* NaClCPUFeature_FMA */
-  0, /* NaClCPUFeature_FMA4 */ /* AMD-specific */
-  1, /* NaClCPUFeature_FXSR */
-  0, /* NaClCPUFeature_LAHF */
-  0, /* NaClCPUFeature_LM */
-  0, /* NaClCPUFeature_LWP */ /* AMD-specific */
-  0, /* NaClCPUFeature_LZCNT */  /* AMD-specific */
-  0, /* NaClCPUFeature_MMX */
-  0, /* NaClCPUFeature_MON */
-  0, /* NaClCPUFeature_MOVBE */
-  0, /* NaClCPUFeature_OSXSAVE */
-  0, /* NaClCPUFeature_POPCNT */
-  0, /* NaClCPUFeature_PRE */ /* AMD-specific */
-  1, /* NaClCPUFeature_SSE */
-  1, /* NaClCPUFeature_SSE2 */
-  1, /* NaClCPUFeature_SSE3 */
-  0, /* NaClCPUFeature_SSE41 */
-  0, /* NaClCPUFeature_SSE42 */
-  0, /* NaClCPUFeature_SSE4A */  /* AMD-specific */
-  0, /* NaClCPUFeature_SSSE3 */
-  0, /* NaClCPUFeature_TBM */ /* AMD-specific */
-  1, /* NaClCPUFeature_TSC */
-  0, /* NaClCPUFeature_x87 */
-  0  /* NaClCPUFeature_XOP */ /* AMD-specific */
+  1, /* NaClCPUFeatureX86_CPUIDSupported */
+  1, /* NaClCPUFeatureX86_CPUSupported */
+  0, /* NaClCPUFeatureX86_3DNOW */  /* AMD-specific */
+  0, /* NaClCPUFeatureX86_AES */
+  0, /* NaClCPUFeatureX86_AVX */
+  0, /* NaClCPUFeatureX86_BMI1 */
+  1, /* NaClCPUFeatureX86_CLFLUSH */
+  0, /* NaClCPUFeatureX86_CLMUL */
+  1, /* NaClCPUFeatureX86_CMOV */
+  1, /* NaClCPUFeatureX86_CX16 */
+  1, /* NaClCPUFeatureX86_CX8 */
+  0, /* NaClCPUFeatureX86_E3DNOW */ /* AMD-specific */
+  0, /* NaClCPUFeatureX86_EMMX */   /* AMD-specific */
+  0, /* NaClCPUFeatureX86_F16C */
+  0, /* NaClCPUFeatureX86_FMA */
+  0, /* NaClCPUFeatureX86_FMA4 */ /* AMD-specific */
+  1, /* NaClCPUFeatureX86_FXSR */
+  0, /* NaClCPUFeatureX86_LAHF */
+  0, /* NaClCPUFeatureX86_LM */
+  0, /* NaClCPUFeatureX86_LWP */ /* AMD-specific */
+  0, /* NaClCPUFeatureX86_LZCNT */  /* AMD-specific */
+  0, /* NaClCPUFeatureX86_MMX */
+  0, /* NaClCPUFeatureX86_MON */
+  0, /* NaClCPUFeatureX86_MOVBE */
+  0, /* NaClCPUFeatureX86_OSXSAVE */
+  0, /* NaClCPUFeatureX86_POPCNT */
+  0, /* NaClCPUFeatureX86_PRE */ /* AMD-specific */
+  1, /* NaClCPUFeatureX86_SSE */
+  1, /* NaClCPUFeatureX86_SSE2 */
+  1, /* NaClCPUFeatureX86_SSE3 */
+  0, /* NaClCPUFeatureX86_SSE41 */
+  0, /* NaClCPUFeatureX86_SSE42 */
+  0, /* NaClCPUFeatureX86_SSE4A */  /* AMD-specific */
+  0, /* NaClCPUFeatureX86_SSSE3 */
+  0, /* NaClCPUFeatureX86_TBM */ /* AMD-specific */
+  1, /* NaClCPUFeatureX86_TSC */
+  0, /* NaClCPUFeatureX86_x87 */
+  0  /* NaClCPUFeatureX86_XOP */ /* AMD-specific */
 };
 
 int NaClFixCPUFeaturesX86(NaClCPUFeatures *f) {
@@ -632,6 +632,6 @@ void NaClCopyCPUFeaturesX86(NaClCPUFeaturesX86 *target,
 }
 
 int NaClArchSupportedX86(const NaClCPUFeaturesX86 *f) {
-  return (NaClGetCPUFeatureX86(f, NaClCPUFeature_CPUIDSupported) &&
-          NaClGetCPUFeatureX86(f, NaClCPUFeature_CPUSupported));
+  return (NaClGetCPUFeatureX86(f, NaClCPUFeatureX86_CPUIDSupported) &&
+          NaClGetCPUFeatureX86(f, NaClCPUFeatureX86_CPUSupported));
 }

@@ -23,44 +23,44 @@ EXTERN_C_BEGIN
  * CPUFeatureDescriptions in nacl_cpuid.c.
  */
 typedef enum {
-  NaClCPUFeature_CPUIDSupported,
-  NaClCPUFeature_CPUSupported,  /* CPU is one we support. */
-  NaClCPUFeature_3DNOW, /* AMD-specific */
-  NaClCPUFeature_AES,
-  NaClCPUFeature_AVX,
-  NaClCPUFeature_BMI1,
-  NaClCPUFeature_CLFLUSH,
-  NaClCPUFeature_CLMUL,
-  NaClCPUFeature_CMOV,
-  NaClCPUFeature_CX16,
-  NaClCPUFeature_CX8,
-  NaClCPUFeature_E3DNOW, /* AMD-specific */
-  NaClCPUFeature_EMMX, /* AMD-specific */
-  NaClCPUFeature_F16C,
-  NaClCPUFeature_FMA,
-  NaClCPUFeature_FMA4, /* AMD-specific */
-  NaClCPUFeature_FXSR,
-  NaClCPUFeature_LAHF,
-  NaClCPUFeature_LM,
-  NaClCPUFeature_LWP, /* AMD-specific */
-  NaClCPUFeature_LZCNT, /* AMD-specific */
-  NaClCPUFeature_MMX,
-  NaClCPUFeature_MON,
-  NaClCPUFeature_MOVBE,
-  NaClCPUFeature_OSXSAVE,
-  NaClCPUFeature_POPCNT,
-  NaClCPUFeature_PRE, /* AMD-specific */
-  NaClCPUFeature_SSE,
-  NaClCPUFeature_SSE2,
-  NaClCPUFeature_SSE3,
-  NaClCPUFeature_SSE41,
-  NaClCPUFeature_SSE42,
-  NaClCPUFeature_SSE4A, /* AMD-specific */
-  NaClCPUFeature_SSSE3,
-  NaClCPUFeature_TBM, /* AMD-specific */
-  NaClCPUFeature_TSC,
-  NaClCPUFeature_x87,
-  NaClCPUFeature_XOP, /* AMD-specific */
+  NaClCPUFeatureX86_CPUIDSupported,
+  NaClCPUFeatureX86_CPUSupported,  /* CPU is one we support. */
+  NaClCPUFeatureX86_3DNOW, /* AMD-specific */
+  NaClCPUFeatureX86_AES,
+  NaClCPUFeatureX86_AVX,
+  NaClCPUFeatureX86_BMI1,
+  NaClCPUFeatureX86_CLFLUSH,
+  NaClCPUFeatureX86_CLMUL,
+  NaClCPUFeatureX86_CMOV,
+  NaClCPUFeatureX86_CX16,
+  NaClCPUFeatureX86_CX8,
+  NaClCPUFeatureX86_E3DNOW, /* AMD-specific */
+  NaClCPUFeatureX86_EMMX, /* AMD-specific */
+  NaClCPUFeatureX86_F16C,
+  NaClCPUFeatureX86_FMA,
+  NaClCPUFeatureX86_FMA4, /* AMD-specific */
+  NaClCPUFeatureX86_FXSR,
+  NaClCPUFeatureX86_LAHF,
+  NaClCPUFeatureX86_LM,
+  NaClCPUFeatureX86_LWP, /* AMD-specific */
+  NaClCPUFeatureX86_LZCNT, /* AMD-specific */
+  NaClCPUFeatureX86_MMX,
+  NaClCPUFeatureX86_MON,
+  NaClCPUFeatureX86_MOVBE,
+  NaClCPUFeatureX86_OSXSAVE,
+  NaClCPUFeatureX86_POPCNT,
+  NaClCPUFeatureX86_PRE, /* AMD-specific */
+  NaClCPUFeatureX86_SSE,
+  NaClCPUFeatureX86_SSE2,
+  NaClCPUFeatureX86_SSE3,
+  NaClCPUFeatureX86_SSE41,
+  NaClCPUFeatureX86_SSE42,
+  NaClCPUFeatureX86_SSE4A, /* AMD-specific */
+  NaClCPUFeatureX86_SSSE3,
+  NaClCPUFeatureX86_TBM, /* AMD-specific */
+  NaClCPUFeatureX86_TSC,
+  NaClCPUFeatureX86_x87,
+  NaClCPUFeatureX86_XOP, /* AMD-specific */
   NaClCPUFeatureX86_Max
 } NaClCPUFeatureX86ID;
 
