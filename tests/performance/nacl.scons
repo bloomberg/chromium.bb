@@ -5,6 +5,12 @@
 
 Import('env')
 
+
+# This test does not work on pnacl glibc
+# http://code.google.com/p/nativeclient/issues/detail?id=3188
+is_broken = (env.Bit('bitcode') and env.Bit('nacl_glibc') and
+             env.Bit('build_x86_64')) or env.Bit('running_on_valgrind')
+
 libs = []
 if env.Bit('nacl_glibc'):
   # Needed for clock_gettime().
@@ -42,4 +48,4 @@ node = env.CommandSelLdrTestNacl(
 # Valgrind, and because we don't particularly need to measure
 # performance under Valgrind.
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_performance_test',
-                       is_broken=env.Bit('running_on_valgrind'))
+                       is_broken=is_broken)
