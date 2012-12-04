@@ -1145,24 +1145,6 @@
   fun:_ZN3ash5ShellC1EPNS_13ShellDelegateE
   fun:_ZN3ash5Shell14CreateInstanceEPNS_13ShellDelegateE
 }
-{
-   bug_163902
-   Memcheck:Param
-   socketcall.sendto(msg)
-   ...
-   fun:_ZN3net8internal19AddressTrackerLinux4InitEv
-   fun:_ZN3net26NetworkChangeNotifierLinux6Thread4InitEv
-}
-{
-   bug_163904
-   Memcheck:Param
-   exit_group(status)
-   fun:SyscallAsm
-   fun:_ZN11playground214SandboxSyscallEiz
-   fun:_ZN11playground23Die9ExitGroupEv
-   fun:_ZN11playground23Die10SandboxDieEPKcS2_i
-   fun:_ZN11playground27Sandbox13installFilterEb
-}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
