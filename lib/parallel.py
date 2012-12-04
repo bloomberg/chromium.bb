@@ -24,7 +24,7 @@ class BackgroundFailure(results_lib.StepFailure):
   pass
 
 
-class BackgroundSteps(multiprocessing.Process):
+class _BackgroundSteps(multiprocessing.Process):
   """Run a list of functions in sequence in the background.
 
   These functions may be the 'Run' functions from buildbot stages or just plain
@@ -157,7 +157,7 @@ def _ParallelSteps(steps):
   # First, start all the steps.
   bg_steps = []
   for step in steps:
-    bg = BackgroundSteps()
+    bg = _BackgroundSteps()
     bg.AddStep(step)
     bg.start()
     bg_steps.append(bg)
@@ -297,7 +297,7 @@ def BackgroundTaskRunner(queue, task, processes=None, onexit=None):
       queue.put(_AllTasksComplete())
 
 
-def RunTasksInProcessPool(task, inputs, processes=None):
+def RunTasksInProcessPool(task, inputs, processes=None, onexit=None):
   """Run the specified function with each supplied input in a pool of processes.
 
   This function runs task(*x) for x in inputs in a pool of processes. This
@@ -330,12 +330,14 @@ def RunTasksInProcessPool(task, inputs, processes=None):
     task: Function to run on each input.
     inputs: List of inputs.
     processes: Number of processes, at most, to launch.
+    onexit: Function to run in each background process after all inputs are
+      processed.
   """
 
   if not processes:
     processes = min(multiprocessing.cpu_count(), len(inputs))
 
   queue = multiprocessing.Queue()
-  with BackgroundTaskRunner(queue, task, processes):
+  with BackgroundTaskRunner(queue, task, processes, onexit):
     for x in inputs:
       queue.put(x)

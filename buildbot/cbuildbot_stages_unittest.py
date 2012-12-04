@@ -26,11 +26,12 @@ from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
 from chromite.buildbot import repository
 from chromite.buildbot import portage_utilities
-from chromite.lib import parallel
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import osutils
+from chromite.lib import parallel
+from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
 from chromite.scripts import cbuildbot
 
@@ -902,13 +903,16 @@ class BuildTargetStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(tempfile, 'mkdtemp')
     self.mox.StubOutWithMock(os.path, 'isdir')
 
-    self.mox.StubOutWithMock(parallel, 'RunParallelSteps')
-    parallel.RunParallelSteps(mox.IgnoreArg()).WithSideEffects(_DoSteps)
-
     self.mox.StubOutWithMock(commands, 'BuildAutotestTarballs')
     self.mox.StubOutWithMock(commands, 'BuildFullAutotestTarball')
     self.mox.StubOutWithMock(os, 'rename')
     self.archive_stage_mock = self.mox.CreateMock(stages.ArchiveStage)
+
+    self.parallel_mock = parallel_unittest.ParallelMock()
+    self.parallel_mock.Start()
+
+  def tearDown(self):
+    self.parallel_mock.Stop()
 
   def ConstructStage(self):
     return stages.BuildTargetStage(

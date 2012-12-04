@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import contextlib
 import multiprocessing
 import os
 import sys
@@ -12,6 +13,7 @@ import time
 sys.path.insert(0, os.path.abspath('%s/../../..' % __file__))
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel
+from chromite.lib import partial_mock
 
 # pylint: disable=W0212
 _BUFSIZE = 10**4
@@ -19,6 +21,26 @@ _NUM_WRITES = 100
 _NUM_THREADS = 50
 _TOTAL_BYTES = _NUM_THREADS * _NUM_WRITES * _BUFSIZE
 _GREETING = 'hello world'
+
+
+class ParallelMock(partial_mock.PartialCmdMock):
+  """Run parallel steps in sequence for testing purposes.
+
+  This class updates chromite.lib.parallel to just run processes in
+  sequence instead of running them in parallel. This is useful for
+  testing.
+  """
+
+  TARGET = 'chromite.lib.parallel'
+  ATTRS = ('_ParallelSteps',)
+
+  @contextlib.contextmanager
+  def _ParallelSteps(self, steps):
+    try:
+      yield
+    finally:
+      for step in steps:
+        step()
 
 
 class TestBackgroundWrapper(cros_test_lib.TestCase):
@@ -96,6 +118,33 @@ class TestFastPrinting(TestBackgroundWrapper):
     """Verify that no output is lost when lots of output is written."""
     out = self.wrapOutputTest(self._NestedParallelPrinter)
     self.assertEquals(len(out), _TOTAL_BYTES)
+
+
+class TestParallelMock(cros_test_lib.TestCase):
+  """Test the ParallelMock class."""
+
+  def setUp(self):
+    self._calls = 0
+
+  def _Callback(self):
+    self._calls += 1
+
+  def testRunParallelSteps(self):
+    """Make sure RunParallelSteps is mocked out."""
+    with ParallelMock():
+      parallel.RunParallelSteps([self._Callback])
+      self.assertEqual(1, self._calls)
+
+  def testBackgroundTaskRunner(self):
+    """Make sure BackgroundTaskRunner is mocked out."""
+    with ParallelMock():
+      parallel.RunTasksInProcessPool(self._Callback, [])
+      self.assertEqual(0, self._calls)
+      parallel.RunTasksInProcessPool(self._Callback, [[]])
+      self.assertEqual(1, self._calls)
+      parallel.RunTasksInProcessPool(self._Callback, [], processes=9,
+                                     onexit=self._Callback)
+      self.assertEqual(10, self._calls)
 
 
 if __name__ == '__main__':
