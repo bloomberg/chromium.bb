@@ -105,22 +105,22 @@ void PaintAffordanceGlow(gfx::Canvas* canvas,
   int radius = (end_radius + start_radius) / 2;
   int glow_width = end_radius - start_radius;
   sk_center.iset(center.x(), center.y());
-  SkShader* shader = SkGradientShader::CreateTwoPointRadial(
-      sk_center,
-      SkIntToScalar(start_radius),
-      sk_center,
-      SkIntToScalar(end_radius),
-      colors,
-      pos,
-      num_colors,
-      SkShader::kClamp_TileMode);
+  skia::RefPtr<SkShader> shader = skia::AdoptRef(
+      SkGradientShader::CreateTwoPointRadial(
+          sk_center,
+          SkIntToScalar(start_radius),
+          sk_center,
+          SkIntToScalar(end_radius),
+          colors,
+          pos,
+          num_colors,
+          SkShader::kClamp_TileMode));
   DCHECK(shader);
   SkPaint paint;
   paint.setStyle(SkPaint::kStroke_Style);
   paint.setStrokeWidth(glow_width);
-  paint.setShader(shader);
+  paint.setShader(shader.get());
   paint.setAntiAlias(true);
-  shader->unref();
   SkPath arc_path;
   arc_path.addArc(SkRect::MakeXYWH(center.x() - radius,
                                    center.y() - radius,
