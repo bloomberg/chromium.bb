@@ -444,6 +444,7 @@ struct weston_surface {
 
 	struct weston_buffer_reference buffer_ref;
 	uint32_t buffer_transform;
+	int keep_buffer; /* bool for backends to prevent early release */
 
 	/* All the pending state, that wl_surface.commit will apply. */
 	struct {

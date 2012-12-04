@@ -1084,8 +1084,20 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 	pixman_region32_fini(&ec->primary_plane.opaque);
 	pixman_region32_init(&ec->primary_plane.opaque);
 
-	wl_list_for_each(es, &ec->surface_list, link)
+	wl_list_for_each(es, &ec->surface_list, link) {
 		surface_accumulate_damage(es, &opaque);
+
+		/* Both the renderer and the backend have seen the buffer
+		 * by now. If renderer needs the buffer, it has its own
+		 * reference set. If the backend wants to keep the buffer
+		 * around for migrating the surface into a non-primary plane
+		 * later, keep_buffer is true. Otherwise, drop the core
+		 * reference now, and allow early buffer release. This enables
+		 * clients to use single-buffering.
+		 */
+		if (!es->keep_buffer)
+			weston_buffer_reference(&es->buffer_ref, NULL);
+	}
 
 	pixman_region32_fini(&opaque);
 

@@ -805,6 +805,16 @@ drm_assign_planes(struct weston_output *output)
 	pixman_region32_init(&overlap);
 	primary = &c->base.primary_plane;
 	wl_list_for_each_safe(es, next, &c->base.surface_list, link) {
+		/* test whether this buffer can ever go into a plane:
+		 * non-shm, or small enough to be a cursor
+		 */
+		if ((es->buffer_ref.buffer &&
+		     !wl_buffer_is_shm(es->buffer_ref.buffer)) ||
+		    (es->geometry.width <= 64 && es->geometry.height <= 64))
+			es->keep_buffer = 1;
+		else
+			es->keep_buffer = 0;
+
 		pixman_region32_init(&surface_overlap);
 		pixman_region32_intersect(&surface_overlap, &overlap,
 					  &es->transform.boundingbox);

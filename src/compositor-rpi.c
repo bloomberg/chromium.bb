@@ -798,6 +798,9 @@ rpi_output_assign_planes(struct weston_output *base)
 
 	pixman_region32_init(&overlap);
 	wl_list_for_each(surface, &compositor->base.surface_list, link) {
+		/* always, since all buffers are shm on rpi */
+		surface->keep_buffer = 1;
+
 		pixman_region32_init(&surface_overlap);
 		pixman_region32_intersect(&surface_overlap, &overlap,
 					  &surface->transform.boundingbox);
