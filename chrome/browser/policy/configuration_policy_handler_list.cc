@@ -335,6 +335,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kShowLogoutButtonInTray,
     prefs::kShowLogoutButtonInTray,
     Value::TYPE_BOOLEAN },
+  { key::kShelfAutoHideBehavior,
+    prefs::kShelfAutoHideBehaviorLocal,
+    Value::TYPE_STRING },
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)

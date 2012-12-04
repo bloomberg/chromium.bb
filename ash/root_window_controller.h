@@ -152,10 +152,6 @@ class ASH_EXPORT RootWindowController {
   bool SetShelfAlignment(ShelfAlignment alignment);
   ShelfAlignment GetShelfAlignment();
 
-  // Get the shelf's auto hide status.
-  bool IsShelfAutoHideMenuHideChecked();
-  ShelfAutoHideBehavior GetToggledShelfAutoHideBehavior();
-
  private:
   // Creates each of the special window containers that holds windows of various
   // types in the shell UI.

@@ -352,8 +352,8 @@ std::vector<aura::Window*> BuildPathToRoot(aura::Window* window) {
 
 }  // namespace
 
-// Various assertions around IsAutoHideMenuHideChecked() and
-// ToggleAutoHideMenu().
+// Various assertions around SetShelfAutoHideBehavior() and
+// GetShelfAutoHideBehavior().
 TEST_F(ShellTest, ToggleAutoHide) {
   scoped_ptr<aura::Window> window(new aura::Window(NULL));
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
@@ -363,28 +363,27 @@ TEST_F(ShellTest, ToggleAutoHide) {
   window->Show();
   wm::ActivateWindow(window.get());
 
-  internal::RootWindowController* controller =
-      Shell::GetPrimaryRootWindowController();
-  controller->SetShelfAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  Shell* shell = Shell::GetInstance();
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  shell->SetShelfAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
+                                  root_window);
   EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
-            controller->GetShelfAutoHideBehavior());
-  EXPECT_TRUE(controller->IsShelfAutoHideMenuHideChecked());
-  controller->SetShelfAutoHideBehavior(
-      controller->GetToggledShelfAutoHideBehavior());
+            shell->GetShelfAutoHideBehavior(root_window));
+  shell->SetShelfAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
+                                  root_window);
   EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
-            controller->GetShelfAutoHideBehavior());
-
+            shell->GetShelfAutoHideBehavior(root_window));
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  EXPECT_FALSE(controller->IsShelfAutoHideMenuHideChecked());
-  controller->SetShelfAutoHideBehavior(
-      controller->GetToggledShelfAutoHideBehavior());
-  EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
-            controller->GetShelfAutoHideBehavior());
-  EXPECT_TRUE(controller->IsShelfAutoHideMenuHideChecked());
-  controller->SetShelfAutoHideBehavior(
-      controller->GetToggledShelfAutoHideBehavior());
   EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
-            controller->GetShelfAutoHideBehavior());
+            shell->GetShelfAutoHideBehavior(root_window));
+  shell->SetShelfAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
+                                  root_window);
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
+            shell->GetShelfAutoHideBehavior(root_window));
+  shell->SetShelfAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
+                                  root_window);
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
+            shell->GetShelfAutoHideBehavior(root_window));
 }
 
 // This verifies WindowObservers are removed when a window is destroyed after

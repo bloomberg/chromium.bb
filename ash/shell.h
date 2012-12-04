@@ -351,10 +351,6 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   ShelfAutoHideBehavior GetShelfAutoHideBehavior(
       aura::RootWindow* root_window) const;
 
-  bool IsShelfAutoHideMenuHideChecked(aura::RootWindow* root);
-  ShelfAutoHideBehavior GetToggledShelfAutoHideBehavior(
-      aura::RootWindow* root_window);
-
   // Sets/gets shelf's alignment on |root_window|.
   void SetShelfAlignment(ShelfAlignment alignment,
                          aura::RootWindow* root_window);

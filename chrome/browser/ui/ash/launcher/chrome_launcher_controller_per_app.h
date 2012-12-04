@@ -189,8 +189,19 @@ class ChromeLauncherControllerPerApp
 
   virtual Profile* profile() OVERRIDE;
 
-  virtual void SetAutoHideBehavior(ash::ShelfAutoHideBehavior behavior,
-                                   aura::RootWindow* root_window) OVERRIDE;
+  // Gets the shelf auto-hide behavior on |root_window|.
+  virtual ash::ShelfAutoHideBehavior GetShelfAutoHideBehavior(
+      aura::RootWindow* root_window) const OVERRIDE;
+
+  // Returns |true| if the user is allowed to modify the shelf auto-hide
+  // behavior on |root_window|.
+  virtual bool CanUserModifyShelfAutoHideBehavior(
+      aura::RootWindow* root_window) const OVERRIDE;
+
+  // Toggles the shelf auto-hide behavior on |root_window|. Does nothing if the
+  // user is not allowed to modify the auto-hide behavior.
+  virtual void ToggleShelfAutoHideBehavior(
+      aura::RootWindow* root_window) OVERRIDE;
 
   // The tab no longer represents its previously identified application.
   virtual void RemoveTabFromRunningApp(TabContents* tab,
@@ -280,6 +291,10 @@ class ChromeLauncherControllerPerApp
 
   // Re-syncs launcher model with prefs::kPinnedLauncherApps.
   void UpdateAppLaunchersFromPref();
+
+  // Persists the shelf auto-hide behavior to prefs.
+  void SetShelfAutoHideBehaviorPrefs(ash::ShelfAutoHideBehavior behavior,
+                                     aura::RootWindow* root_window);
 
   // Sets the shelf auto-hide behavior from prefs.
   void SetShelfAutoHideBehaviorFromPrefs();

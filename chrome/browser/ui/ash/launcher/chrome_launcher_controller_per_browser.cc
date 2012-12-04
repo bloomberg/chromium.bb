@@ -128,12 +128,12 @@ std::string GetLocalOrRemotePref(PrefService* pref_service,
   return value.empty() ? pref_service->GetString(synced_path) : value;
 }
 
-// If prefs have synced and the pref value at |local_path| is empty the value
+// If prefs have synced and no user-set value exists at |local_path|, the value
 // from |synced_path| is copied to |local_path|.
 void MaybePropagatePrefToLocal(PrefService* pref_service,
                                const char* local_path,
                                const char* synced_path) {
-  if (pref_service->GetString(local_path).empty() &&
+  if (!pref_service->FindPreference(local_path)->HasUserSetting() &&
       pref_service->IsSyncing()) {
     // First time the user is using this machine, propagate from remote to
     // local.
@@ -178,6 +178,16 @@ ChromeLauncherControllerPerBrowser::ChromeLauncherControllerPerBrowser(
       prefs::kPinnedLauncherApps,
       base::Bind(&ChromeLauncherControllerPerBrowser::
                      UpdateAppLaunchersFromPref,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kShelfAlignmentLocal,
+      base::Bind(&ChromeLauncherControllerPerBrowser::
+                     SetShelfAlignmentFromPrefs,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kShelfAutoHideBehaviorLocal,
+      base::Bind(&ChromeLauncherControllerPerBrowser::
+                     SetShelfAutoHideBehaviorFromPrefs,
                  base::Unretained(this)));
 }
 
@@ -233,8 +243,9 @@ void ChromeLauncherControllerPerBrowser::Init() {
     SetShelfAutoHideBehaviorFromPrefs();
     SetShelfAlignmentFromPrefs();
     PrefService* prefs = profile_->GetPrefs();
-    if (prefs->GetString(prefs::kShelfAlignmentLocal).empty() ||
-        prefs->GetString(prefs::kShelfAutoHideBehaviorLocal).empty()) {
+    if (!prefs->FindPreference(prefs::kShelfAlignmentLocal)->HasUserSetting() ||
+        !prefs->FindPreference(prefs::kShelfAutoHideBehaviorLocal)->
+            HasUserSetting()) {
       // This causes OnIsSyncingChanged to be called when the value of
       // PrefService::IsSyncing() changes.
       prefs->AddObserver(this);
@@ -568,28 +579,41 @@ bool ChromeLauncherControllerPerBrowser::CanPin() const {
   return pref && pref->IsUserModifiable();
 }
 
-void ChromeLauncherControllerPerBrowser::SetAutoHideBehavior(
-    ash::ShelfAutoHideBehavior behavior,
-    aura::RootWindow* root_window) {
-  ash::Shell::GetInstance()->SetShelfAutoHideBehavior(
-      behavior,
-      root_window);
-  // TODO(oshima): Support multiple launcher.
-  if (root_window != ash::Shell::GetPrimaryRootWindow())
-    return;
+ash::ShelfAutoHideBehavior
+    ChromeLauncherControllerPerBrowser::GetShelfAutoHideBehavior(
+        aura::RootWindow* root_window) const {
+  // TODO(oshima): Support multiple launchers.
 
-  const char* value = NULL;
-  switch (behavior) {
-    case ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
-      value = ash::kShelfAutoHideBehaviorAlways;
-      break;
-    case ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER:
-      value = ash::kShelfAutoHideBehaviorNever;
-      break;
-  }
-  // See comment in |kShelfAlignment| about why we have two prefs here.
-  profile_->GetPrefs()->SetString(prefs::kShelfAutoHideBehaviorLocal, value);
-  profile_->GetPrefs()->SetString(prefs::kShelfAutoHideBehavior, value);
+  // See comment in |kShelfAlignment| as to why we consider two prefs.
+  const std::string behavior_value(
+      GetLocalOrRemotePref(profile_->GetPrefs(),
+                           prefs::kShelfAutoHideBehaviorLocal,
+                           prefs::kShelfAutoHideBehavior));
+
+  // Note: To maintain sync compatibility with old images of chrome/chromeos
+  // the set of values that may be encountered includes the now-extinct
+  // "Default" as well as "Never" and "Always", "Default" should now
+  // be treated as "Never" (http://crbug.com/146773).
+  if (behavior_value == ash::kShelfAutoHideBehaviorAlways)
+    return ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+  return ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
+}
+
+bool ChromeLauncherControllerPerBrowser::CanUserModifyShelfAutoHideBehavior(
+    aura::RootWindow* root_window) const {
+  // TODO(oshima): Support multiple launchers.
+  return profile_->GetPrefs()->
+      FindPreference(prefs::kShelfAutoHideBehaviorLocal)->IsUserModifiable();
+}
+
+void ChromeLauncherControllerPerBrowser::ToggleShelfAutoHideBehavior(
+    aura::RootWindow* root_window) {
+  ash::ShelfAutoHideBehavior behavior = GetShelfAutoHideBehavior(root_window) ==
+      ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS ?
+          ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER :
+          ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+  SetShelfAutoHideBehaviorPrefs(behavior, root_window);
+  return;
 }
 
 void ChromeLauncherControllerPerBrowser::RemoveTabFromRunningApp(
@@ -989,25 +1013,32 @@ void ChromeLauncherControllerPerBrowser::UpdateAppLaunchersFromPref() {
     DoPinAppWithID(*pref_app_id);
 }
 
-void ChromeLauncherControllerPerBrowser::SetShelfAutoHideBehaviorFromPrefs() {
-  // See comment in |kShelfAlignment| as to why we consider two prefs.
-  const std::string behavior_value(
-      GetLocalOrRemotePref(profile_->GetPrefs(),
-                           prefs::kShelfAutoHideBehaviorLocal,
-                           prefs::kShelfAutoHideBehavior));
+void ChromeLauncherControllerPerBrowser::SetShelfAutoHideBehaviorPrefs(
+    ash::ShelfAutoHideBehavior behavior,
+    aura::RootWindow* root_window) {
+  // TODO(oshima): Support multiple launchers.
+  if (root_window != ash::Shell::GetPrimaryRootWindow())
+    return;
 
-  // Note: To maintain sync compatibility with old images of chrome/chromeos
-  // the set of values that may be encountered includes the now-extinct
-  // "Default" as well as "Never" and "Always", "Default" should now
-  // be treated as "Never".
-  // (http://code.google.com/p/chromium/issues/detail?id=146773)
-  ash::ShelfAutoHideBehavior behavior =
-      ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
-  if (behavior_value == ash::kShelfAutoHideBehaviorAlways)
-    behavior = ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+  const char* value = NULL;
+  switch (behavior) {
+    case ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
+      value = ash::kShelfAutoHideBehaviorAlways;
+      break;
+    case ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER:
+      value = ash::kShelfAutoHideBehaviorNever;
+      break;
+  }
+  // See comment in |kShelfAlignment| about why we have two prefs here.
+  profile_->GetPrefs()->SetString(prefs::kShelfAutoHideBehaviorLocal, value);
+  profile_->GetPrefs()->SetString(prefs::kShelfAutoHideBehavior, value);
+}
+
+void ChromeLauncherControllerPerBrowser::SetShelfAutoHideBehaviorFromPrefs() {
   // TODO(oshima): Support multiple displays.
+  aura::RootWindow* root_window = ash::Shell::GetPrimaryRootWindow();
   ash::Shell::GetInstance()->SetShelfAutoHideBehavior(
-      behavior, ash::Shell::GetPrimaryRootWindow());
+      GetShelfAutoHideBehavior(root_window), root_window);
 }
 
 void ChromeLauncherControllerPerBrowser::SetShelfAlignmentFromPrefs() {

@@ -1495,6 +1495,14 @@
     ]
   },
 
+  "ShelfAutoHideBehavior": {
+    "os": ["chromeos"],
+    "test_policy": { "ShelfAutoHideBehavior": "Always" },
+    "pref_mappings": [
+      { "pref": "auto_hide_behavior_local" }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

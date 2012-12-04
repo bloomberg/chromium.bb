@@ -486,17 +486,6 @@ ShelfAlignment RootWindowController::GetShelfAlignment() {
   return shelf_->alignment();
 }
 
-bool RootWindowController::IsShelfAutoHideMenuHideChecked() {
-  return GetShelfAutoHideBehavior() == ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
-}
-
-ShelfAutoHideBehavior
-RootWindowController::GetToggledShelfAutoHideBehavior() {
-  return IsShelfAutoHideMenuHideChecked() ?
-      ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER :
-      ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowController, private:
 

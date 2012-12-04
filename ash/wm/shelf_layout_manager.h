@@ -11,7 +11,6 @@
 #include "ash/wm/shelf_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "base/timer.h"
 #include "ui/aura/layout_manager.h"
@@ -176,7 +175,6 @@ class ASH_EXPORT ShelfLayoutManager :
   class UpdateShelfObserver;
   friend class ash::ScreenAsh;
   friend class ShelfLayoutManagerTest;
-  FRIEND_TEST_ALL_PREFIXES(ShelfLayoutManagerTest, SetAutoHideBehavior);
 
   struct TargetBounds {
     TargetBounds();

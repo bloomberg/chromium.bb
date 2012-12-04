@@ -175,8 +175,8 @@ bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
       return controller_->GetLaunchType(item_.id) ==
           extensions::ExtensionPrefs::LAUNCH_FULLSCREEN;
     case MENU_AUTO_HIDE:
-      return ash::Shell::GetInstance()->IsShelfAutoHideMenuHideChecked(
-          root_window_);
+      return controller_->GetShelfAutoHideBehavior(root_window_) ==
+          ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
     default:
       return extension_items_->IsCommandIdChecked(command_id);
   }
@@ -194,6 +194,8 @@ bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
       // "Normal" windows are not allowed when incognito is enforced.
       return IncognitoModePrefs::GetAvailability(
           controller_->profile()->GetPrefs()) != IncognitoModePrefs::FORCED;
+    case MENU_AUTO_HIDE:
+      return controller_->CanUserModifyShelfAutoHideBehavior(root_window_);
     case MENU_NEW_INCOGNITO_WINDOW:
       // Incognito windows are not allowed when incognito is disabled.
       return IncognitoModePrefs::GetAvailability(
@@ -237,10 +239,7 @@ void LauncherContextMenu::ExecuteCommand(int command_id) {
                                  extensions::ExtensionPrefs::LAUNCH_FULLSCREEN);
       break;
     case MENU_AUTO_HIDE:
-      controller_->SetAutoHideBehavior(
-          ash::Shell::GetInstance()->GetToggledShelfAutoHideBehavior(
-              root_window_),
-          root_window_);
+      controller_->ToggleShelfAutoHideBehavior(root_window_);
       break;
     case MENU_NEW_WINDOW:
       controller_->CreateNewWindow();

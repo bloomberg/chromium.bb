@@ -733,17 +733,6 @@ ShelfAutoHideBehavior Shell::GetShelfAutoHideBehavior(
   return GetRootWindowController(root_window)->GetShelfAutoHideBehavior();
 }
 
-bool Shell::IsShelfAutoHideMenuHideChecked(aura::RootWindow* root_window) {
-  return GetRootWindowController(root_window)->GetShelfAutoHideBehavior() ==
-      ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
-}
-
-ShelfAutoHideBehavior Shell::GetToggledShelfAutoHideBehavior(
-    aura::RootWindow* root_window) {
-  return GetRootWindowController(root_window)->
-      GetToggledShelfAutoHideBehavior();
-}
-
 void Shell::SetShelfAlignment(ShelfAlignment alignment,
                               aura::RootWindow* root_window) {
   if (GetRootWindowController(root_window)->SetShelfAlignment(alignment))

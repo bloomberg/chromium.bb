@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 165
+#   For your editing convenience: highest ID currently used: 166
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -3319,6 +3319,46 @@
       If this policy is set to false, the built-in DNS client will never be used.
 
       If this policy is left not set, the users will be able to change whether the built-in DNS client is used by editing chrome://flags or specifying a command-line flag.''',
+    },
+    {
+      'name': 'ShelfAutoHideBehavior',
+      'type': 'string-enum',
+      'schema': {
+        'type': 'string',
+        'enum': [
+          'Always',
+          'Never'
+        ],
+      },
+      'items': [
+        {
+          'name': 'AlwaysAutoHideShelf',
+          'value': 'Always',
+          'caption': '''Always auto-hide the shelf''',
+        },
+        {
+          'name': 'NeverAutoHideShelf',
+          'value': 'Never',
+          'caption': '''Never auto-hide the shelf''',
+        },
+      ],
+      'supported_on': ['chrome_os:25-'],
+      'features': {
+        'dynamic_refresh': True,
+        'can_be_recommended': True,
+      },
+      'example_value': 'Always',
+      'id': 166,
+      'caption': '''Control shelf auto-hiding''',
+      'desc': '''Control auto-hiding of the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shelf.
+
+      If this policy is set to 'AlwaysAutoHideShelf', the shelf will always auto-hide.
+
+      If this policy is set to 'NeverAutoHideShelf', the shelf never auto-hide.
+
+      If you set this policy, users cannot change or override it.
+
+      If the policy is left not set, users can choose whether the shelf should auto-hide.''',
     },
   ],
   'messages': {
