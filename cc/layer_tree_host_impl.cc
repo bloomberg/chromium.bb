@@ -1292,6 +1292,7 @@ bool LayerTreeHostImpl::scrollBy(const gfx::Point& viewportPoint,
         return false;
 
     gfx::Vector2dF pendingDelta = scrollDelta;
+    bool didScroll = false;
 
     for (LayerImpl* layerImpl = m_currentlyScrollingLayerImpl; layerImpl; layerImpl = layerImpl->parent()) {
         if (!layerImpl->scrollable())
@@ -1309,6 +1310,7 @@ bool LayerTreeHostImpl::scrollBy(const gfx::Point& viewportPoint,
         float moveThresholdSquared = 0.1f * 0.1f;
         if (appliedDelta.LengthSquared() < moveThresholdSquared)
             continue;
+        didScroll = true;
 
         // If the applied delta is within 45 degrees of the input delta, bail out to make it easier
         // to scroll just one layer in one direction without affecting any of its parents.
@@ -1327,12 +1329,11 @@ bool LayerTreeHostImpl::scrollBy(const gfx::Point& viewportPoint,
             break;
     }
 
-    if (!scrollDelta.IsZero() && gfx::ToFlooredVector2d(pendingDelta).IsZero()) {
+    if (didScroll) {
         m_client->setNeedsCommitOnImplThread();
         m_client->setNeedsRedrawOnImplThread();
-        return true;
     }
-    return false;
+    return didScroll;
 }
 
 void LayerTreeHostImpl::clearCurrentlyScrollingLayer()
