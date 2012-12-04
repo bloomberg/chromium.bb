@@ -10,6 +10,7 @@
 #include "base/platform_file.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/renderer/spellchecker/hunspell_engine.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/spellcheck_common.h"
@@ -54,6 +55,11 @@ class SpellCheckTest : public testing::Test {
         chrome::spellcheck_common::GetVersionedFileName(language,
             hunspell_directory),
         base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ, NULL, NULL);
+#if defined(OS_MACOSX)
+    // TODO(groby): Forcing spellcheck to use hunspell, even on OSX.
+    // Instead, tests should exercise individual spelling engines.
+    spell_check_->platform_spelling_engine_.reset(new HunspellEngine);
+#endif
     spell_check_->Init(
         file, std::vector<std::string>(), language);
   }
@@ -1064,8 +1070,11 @@ TEST_F(SpellCheckTest, CreateTextCheckingResults) {
     spellcheck_results.push_back(SpellCheckResult(
         SpellCheckResult::SPELLING, 0, 2, string16()));
     WebKit::WebVector<WebKit::WebTextCheckingResult> textcheck_results;
-    spell_check()->CreateTextCheckingResults(
-        0, text, spellcheck_results, &textcheck_results);
+    spell_check()->CreateTextCheckingResults(SpellCheck::USE_NATIVE_CHECKER,
+                                             0,
+                                             text,
+                                             spellcheck_results,
+                                             &textcheck_results);
     EXPECT_EQ(spellcheck_results.size(), textcheck_results.size());
     EXPECT_EQ(WebKit::WebTextCheckingTypeSpelling, textcheck_results[0].type);
     EXPECT_EQ(spellcheck_results[0].location, textcheck_results[0].location);
@@ -1080,8 +1089,11 @@ TEST_F(SpellCheckTest, CreateTextCheckingResults) {
     spellcheck_results.push_back(SpellCheckResult(
         SpellCheckResult::SPELLING, 7, 4, string16()));
     WebKit::WebVector<WebKit::WebTextCheckingResult> textcheck_results;
-    spell_check()->CreateTextCheckingResults(
-        0, text, spellcheck_results, &textcheck_results);
+    spell_check()->CreateTextCheckingResults(SpellCheck::USE_NATIVE_CHECKER,
+                                             0,
+                                             text,
+                                             spellcheck_results,
+                                             &textcheck_results);
     EXPECT_EQ(spellcheck_results.size(), textcheck_results.size());
     EXPECT_EQ(WebKit::WebTextCheckingTypeGrammar, textcheck_results[0].type);
     EXPECT_EQ(spellcheck_results[0].location, textcheck_results[0].location);

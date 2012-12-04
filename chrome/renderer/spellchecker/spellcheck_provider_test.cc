@@ -6,7 +6,11 @@
 
 #include "base/stl_util.h"
 #include "chrome/common/spellcheck_messages.h"
+#include "chrome/renderer/spellchecker/spellcheck.h"
 #include "ipc/ipc_message_macros.h"
+
+class MockSpellcheck: public SpellCheck {
+};
 
 FakeTextCheckingCompletion::FakeTextCheckingCompletion()
 : completion_count_(0),
@@ -27,12 +31,13 @@ void FakeTextCheckingCompletion::didCancelCheckingText() {
 }
 
 TestingSpellCheckProvider::TestingSpellCheckProvider()
-      : SpellCheckProvider(NULL, NULL),
+      : SpellCheckProvider(NULL, new MockSpellcheck),
         offset_(-1) {
 }
 
 TestingSpellCheckProvider::~TestingSpellCheckProvider() {
-    STLDeleteContainerPointers(messages_.begin(), messages_.end());
+  STLDeleteContainerPointers(messages_.begin(), messages_.end());
+  delete spellcheck_;
 }
 
 bool TestingSpellCheckProvider::Send(IPC::Message* message)  {

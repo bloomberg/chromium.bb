@@ -13,6 +13,11 @@ SpellingEngine* CreateNativeSpellingEngine() {
   return new CocoaSpellingEngine();
 }
 
+void CocoaSpellingEngine::Init(base::PlatformFile bdict_file,
+                               const std::vector<std::string>&) {
+  DCHECK(bdict_file == base::kInvalidPlatformFileValue);
+}
+
 bool CocoaSpellingEngine::InitializeIfNeeded() {
   return false;  // We never need to initialize.
 }

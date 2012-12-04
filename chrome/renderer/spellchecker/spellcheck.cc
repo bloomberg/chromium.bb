@@ -46,6 +46,7 @@ class SpellCheck::SpellcheckRequest {
 };
 
 SpellCheck::SpellCheck() : auto_spell_correct_turned_on_(false) {
+  platform_spelling_engine_.reset(CreateNativeSpellingEngine());
 }
 
 SpellCheck::~SpellCheck() {
@@ -96,19 +97,8 @@ void SpellCheck::OnEnableAutoSpellCorrect(bool enable) {
 void SpellCheck::Init(base::PlatformFile file,
                       const std::vector<std::string>& custom_words,
                       const std::string& language) {
-  bool use_platform_spelling_engine =
-      file == base::kInvalidPlatformFileValue && !language.empty();
+  platform_spelling_engine_->Init(file, custom_words);
 
-  // Some tests under OSX still exercise hunspell. Only init native engine
-  // when no dictionary was specified.
-  // TODO(groby): Figure out if we can kill the hunspell dependency for OSX.
-  if (use_platform_spelling_engine) {
-    platform_spelling_engine_.reset(CreateNativeSpellingEngine());
-  } else {
-    HunspellEngine* engine = new HunspellEngine;
-    engine->Init(file, custom_words);
-    platform_spelling_engine_.reset(engine);
-  }
   character_attributes_.SetDefaultLanguage(language);
   text_iterator_.Reset();
   contraction_iterator_.Reset();
@@ -287,13 +277,8 @@ void SpellCheck::RequestTextChecking(
 }
 #endif
 
-
 bool SpellCheck::InitializeIfNeeded() {
-  // TODO(groby): OSX creates a hunspell engine here, too. That seems
-  // wrong, but is (AFAICT) the existing flow. Fix that.
-  if (!platform_spelling_engine_.get())
-    platform_spelling_engine_.reset(new HunspellEngine);
-
+  DCHECK(platform_spelling_engine_.get());
   return platform_spelling_engine_->InitializeIfNeeded();
 }
 
@@ -365,8 +350,8 @@ bool SpellCheck::IsValidContraction(const string16& contraction, int tag) {
   return true;
 }
 
-#if !defined(OS_MACOSX)
 void SpellCheck::CreateTextCheckingResults(
+    ResultFilter filter,
     int line_offset,
     const string16& line_text,
     const std::vector<SpellCheckResult>& spellcheck_results,
@@ -381,7 +366,8 @@ void SpellCheck::CreateTextCheckingResults(
         static_cast<WebTextCheckingType>(spellcheck_results[i].type);
     int word_location = spellcheck_results[i].location;
     int word_length = spellcheck_results[i].length;
-    if (type == WebKit::WebTextCheckingTypeSpelling) {
+    if (type == WebKit::WebTextCheckingTypeSpelling &&
+        filter == USE_NATIVE_CHECKER) {
       int misspelling_start = 0;
       int misspelling_length = 0;
       if (SpellCheckWord(text + word_location, word_length, 0,
@@ -396,4 +382,3 @@ void SpellCheck::CreateTextCheckingResults(
   }
   textcheck_results->swap(list);
 }
-#endif

@@ -132,6 +132,10 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   // For testing.
   void SetExtensionDispatcher(extensions::Dispatcher* extension_dispatcher);
 
+  // Sets a new |spellcheck|. Used for low-mem restart and testing only.
+  // Takes ownership of |spellcheck|.
+  void SetSpellcheck(SpellCheck* spellcheck);
+
   // Called in low-memory conditions to dump the memory used by the spellchecker
   // and start over.
   void OnPurgeMemory();
