@@ -4,6 +4,7 @@
 
 #include "content/common/cc_messages.h"
 
+#include "cc/compositor_frame.h"
 #include "content/public/common/common_param_traits.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
@@ -570,6 +571,69 @@ void ParamTraits<cc::RenderPass>::Log(
       case cc::DrawQuad::INVALID:
         break;
     }
+  }
+  l->append("])");
+}
+
+void ParamTraits<cc::Mailbox>::Write(Message* m, const param_type& p) {
+  m->WriteBytes(p.name, sizeof(p.name));
+}
+
+bool ParamTraits<cc::Mailbox>::Read(const Message* m,
+                                    PickleIterator* iter,
+                                    param_type* p) {
+  const char* bytes = NULL;
+  if (!m->ReadBytes(iter, &bytes, sizeof(p->name)))
+    return false;
+  DCHECK(bytes);
+  memcpy(p->name, bytes, sizeof(p->name));
+  return true;
+}
+
+void ParamTraits<cc::Mailbox>::Log(const param_type& p, std::string* l) {
+  for (size_t i = 0; i < sizeof(p.name); ++i)
+    *l += base::StringPrintf("%02x", p.name[i]);
+}
+
+void ParamTraits<cc::CompositorFrame>::Write(Message* m, const param_type& p) {
+  WriteParam(m, p.size);
+  WriteParam(m, p.resource_list);
+  WriteParam(m, p.render_pass_list.size());
+  for (size_t i = 0; i < p.render_pass_list.size(); ++i)
+    WriteParam(m, *p.render_pass_list[i]);
+}
+
+bool ParamTraits<cc::CompositorFrame>::Read(const Message* m,
+                                            PickleIterator* iter,
+                                            param_type* p) {
+  const static size_t kMaxRenderPasses = 10000;
+
+  size_t num_render_passes;
+  if (!ReadParam(m, iter, &p->size) ||
+      !ReadParam(m, iter, &p->resource_list) ||
+      !ReadParam(m, iter, &num_render_passes) ||
+      num_render_passes > kMaxRenderPasses)
+    return false;
+  for (size_t i = 0; i < num_render_passes; ++i) {
+    scoped_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
+    if (!ReadParam(m, iter, render_pass.get()))
+      return false;
+    p->render_pass_list.append(render_pass.Pass());
+  }
+  return true;
+}
+
+void ParamTraits<cc::CompositorFrame>::Log(const param_type& p,
+                                           std::string* l) {
+  l->append("CompositorFrame(");
+  LogParam(p.size, l);
+  l->append(", ");
+  LogParam(p.resource_list, l);
+  l->append(", [");
+  for (size_t i = 0; i < p.render_pass_list.size(); ++i) {
+    if (i)
+      l->append(", ");
+    LogParam(*p.render_pass_list[i], l);
   }
   l->append("])");
 }

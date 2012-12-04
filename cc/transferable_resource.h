@@ -10,11 +10,10 @@
 #include "cc/cc_export.h"
 #include "ui/gfx/size.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorTransferableResourceList.h"
 
 namespace cc {
 
-struct Mailbox {
+struct CC_EXPORT Mailbox {
   Mailbox();
   bool isZero() const;
   void setName(const GLbyte* name);
@@ -33,8 +32,7 @@ struct CC_EXPORT TransferableResource {
 
 typedef std::vector<TransferableResource> TransferableResourceArray;
 
-struct CC_EXPORT TransferableResourceList :
-    public NON_EXPORTED_BASE(WebKit::WebCompositorTransferableResourceList) {
+struct CC_EXPORT TransferableResourceList {
   TransferableResourceList();
   ~TransferableResourceList();
 

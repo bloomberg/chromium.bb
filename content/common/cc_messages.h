@@ -5,6 +5,7 @@
 // IPC Messages sent between compositor instances.
 
 #include "cc/checkerboard_draw_quad.h"
+#include "cc/compositor_frame_ack.h"
 #include "cc/debug_border_draw_quad.h"
 #include "cc/draw_quad.h"
 #include "cc/io_surface_draw_quad.h"
@@ -15,6 +16,7 @@
 #include "cc/stream_video_draw_quad.h"
 #include "cc/texture_draw_quad.h"
 #include "cc/tile_draw_quad.h"
+#include "cc/transferable_resource.h"
 #include "cc/video_layer_impl.h"
 #include "cc/yuv_video_draw_quad.h"
 #include "content/common/content_export.h"
@@ -23,6 +25,10 @@
 
 #ifndef CONTENT_COMMON_CC_MESSAGES_H_
 #define CONTENT_COMMON_CC_MESSAGES_H_
+
+namespace cc {
+class CompositorFrame;
+}
 
 namespace gfx {
 class Transform;
@@ -72,6 +78,22 @@ struct CONTENT_EXPORT ParamTraits<cc::RenderPass> {
   typedef cc::RenderPass param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template<>
+struct CONTENT_EXPORT ParamTraits<cc::Mailbox> {
+  typedef cc::Mailbox param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template<>
+struct CONTENT_EXPORT ParamTraits<cc::CompositorFrame> {
+  typedef cc::CompositorFrame param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -183,4 +205,20 @@ IPC_STRUCT_TRAITS_BEGIN(cc::SharedQuadState)
   IPC_STRUCT_TRAITS_MEMBER(clip_rect)
   IPC_STRUCT_TRAITS_MEMBER(is_clipped)
   IPC_STRUCT_TRAITS_MEMBER(opacity)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(cc::TransferableResource)
+  IPC_STRUCT_TRAITS_MEMBER(id)
+  IPC_STRUCT_TRAITS_MEMBER(format)
+  IPC_STRUCT_TRAITS_MEMBER(size)
+  IPC_STRUCT_TRAITS_MEMBER(mailbox)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(cc::TransferableResourceList)
+  IPC_STRUCT_TRAITS_MEMBER(sync_point)
+  IPC_STRUCT_TRAITS_MEMBER(resources)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(cc::CompositorFrameAck)
+  IPC_STRUCT_TRAITS_MEMBER(resources)
 IPC_STRUCT_TRAITS_END()

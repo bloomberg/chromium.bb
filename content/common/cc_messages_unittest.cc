@@ -6,10 +6,12 @@
 
 #include <string.h>
 
+#include "cc/compositor_frame.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using cc::CheckerboardDrawQuad;
+using cc::CompositorFrame;
 using cc::DebugBorderDrawQuad;
 using cc::DrawQuad;
 using cc::IOSurfaceDrawQuad;
@@ -20,12 +22,16 @@ using cc::SharedQuadState;
 using cc::SolidColorDrawQuad;
 using cc::TextureDrawQuad;
 using cc::TileDrawQuad;
+using cc::TransferableResource;
 using cc::StreamVideoDrawQuad;
 using cc::VideoLayerImpl;
 using cc::YUVVideoDrawQuad;
 using gfx::Transform;
 using WebKit::WebFilterOperation;
 using WebKit::WebFilterOperations;
+
+namespace content {
+namespace {
 
 class CCMessagesTest : public testing::Test {
  protected:
@@ -167,6 +173,14 @@ class CCMessagesTest : public testing::Test {
     EXPECT_EQ(a->v_plane.resourceId, b->v_plane.resourceId);
     EXPECT_EQ(a->v_plane.size.ToString(), b->v_plane.size.ToString());
     EXPECT_EQ(a->v_plane.format, b->v_plane.format);
+  }
+
+  void Compare(const TransferableResource& a, const TransferableResource& b) {
+    EXPECT_EQ(a.id, b.id);
+    EXPECT_EQ(a.format, b.format);
+    EXPECT_EQ(a.size.ToString(), b.size.ToString());
+    for (size_t i = 0; i < arraysize(a.mailbox.name); ++i)
+      EXPECT_EQ(a.mailbox.name[i], b.mailbox.name[i]);
   }
 };
 
@@ -403,13 +417,20 @@ TEST_F(CCMessagesTest, AllQuads) {
     EXPECT_EQ(same_shared_quad_state_cmp, same_shared_quad_state_in);
   }
 
-  IPC::ParamTraits<RenderPass>::Write(&msg, *pass_in);
+  CompositorFrame frame_in;
+  frame_in.size = arbitrary_size1;
+  frame_in.render_pass_list.append(pass_in.Pass());
 
-  scoped_ptr<RenderPass> pass_out = RenderPass::Create();
+  IPC::ParamTraits<CompositorFrame>::Write(&msg, frame_in);
+
+  CompositorFrame frame_out;
   PickleIterator iter(msg);
-  EXPECT_TRUE(IPC::ParamTraits<RenderPass>::Read(&msg, &iter, pass_out.get()));
+  EXPECT_TRUE(IPC::ParamTraits<CompositorFrame>::Read(&msg, &iter, &frame_out));
+
+  EXPECT_EQ(arbitrary_size1, frame_out.size);
 
   // Make sure the out and cmp RenderPasses match.
+  scoped_ptr<RenderPass> pass_out = frame_out.render_pass_list.take(0);
   Compare(pass_cmp.get(), pass_out.get());
   ASSERT_EQ(3u, pass_out->shared_quad_state_list.size());
   ASSERT_EQ(7u, pass_out->quad_list.size());
@@ -429,3 +450,58 @@ TEST_F(CCMessagesTest, AllQuads) {
     EXPECT_EQ(same_shared_quad_state_cmp, same_shared_quad_state_out);
   }
 }
+
+TEST_F(CCMessagesTest, Resources) {
+  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
+  gfx::Size arbitrary_size(757, 1281);
+  unsigned int arbitrary_uint = 71234838;
+
+  GLbyte arbitrary_mailbox1[64] = {
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
+    1, 2, 3, 4
+  };
+
+  GLbyte arbitrary_mailbox2[64] = {
+    0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 2, 4, 6, 8, 0,
+    0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 2, 4, 6, 8, 0,
+    0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 2, 4, 6, 8, 0,
+    0, 9, 8, 7
+  };
+
+  TransferableResource arbitrary_resource1;
+  arbitrary_resource1.id = 2178312;
+  arbitrary_resource1.format = 7;
+  arbitrary_resource1.size = gfx::Size(37189, 123123);
+  arbitrary_resource1.mailbox.setName(arbitrary_mailbox1);
+
+  TransferableResource arbitrary_resource2;
+  arbitrary_resource2.id = 789132;
+  arbitrary_resource2.format = 30;
+  arbitrary_resource2.size = gfx::Size(89123, 23789);
+  arbitrary_resource2.mailbox.setName(arbitrary_mailbox2);
+
+  CompositorFrame frame_in;
+  frame_in.size = arbitrary_size;
+
+  frame_in.resource_list.sync_point = arbitrary_uint;
+  frame_in.resource_list.resources.push_back(arbitrary_resource1);
+  frame_in.resource_list.resources.push_back(arbitrary_resource2);
+
+  IPC::ParamTraits<CompositorFrame>::Write(&msg, frame_in);
+
+  CompositorFrame frame_out;
+  PickleIterator iter(msg);
+  EXPECT_TRUE(IPC::ParamTraits<CompositorFrame>::Read(&msg, &iter, &frame_out));
+
+  EXPECT_EQ(arbitrary_size.ToString(), frame_out.size.ToString());
+  EXPECT_EQ(arbitrary_uint, frame_out.resource_list.sync_point);
+
+  EXPECT_EQ(2u, frame_out.resource_list.resources.size());
+  Compare(arbitrary_resource1, frame_out.resource_list.resources[0]);
+  Compare(arbitrary_resource2, frame_out.resource_list.resources[1]);
+}
+
+}  // namespace
+}  // namespace content

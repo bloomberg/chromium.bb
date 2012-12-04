@@ -5,7 +5,4 @@ include_rules = [
   "+third_party/khronos/GLES2/gl2ext.h",
   "+ui/gfx",
   "+media",
-# TODO(piman): Remove as soon as ui/compositor uses cc directly.
-# http://crbug.com/159278
-  "+third_party/WebKit/Source/Platform/chromium/public/WebCompositorTransferableResourceList.h"
 ]
