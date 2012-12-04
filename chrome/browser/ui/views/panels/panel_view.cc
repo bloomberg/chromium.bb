@@ -394,7 +394,7 @@ void PanelView::DeactivatePanel() {
   if (!focused_)
     return;
 
-#if defined(OS_WIN) && !defined(AURA) && !defined(USE_ASH)
+#if defined(OS_WIN)
   // Need custom behavior for always-on-top panels to avoid
   // the OS activating a minimized panel when this one is
   // deactivated.
