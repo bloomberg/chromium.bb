@@ -241,7 +241,7 @@ void WebLayerImpl::setBackgroundFilters(const WebFilterOperations& filters)
 
 void WebLayerImpl::setFilter(SkImageFilter* filter)
 {
-    filter->ref(); // Claim a reference for the compositor.
+    SkSafeRef(filter); // Claim a reference for the compositor.
     m_layer->setFilter(skia::AdoptRef(filter));
 }
 
