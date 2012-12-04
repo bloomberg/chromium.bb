@@ -306,6 +306,63 @@ TEST_F(GetCallerFrame, ScanWithFunctionSymbols) {
   EXPECT_EQ(0x50000100U, frame1->function_base);
 }
 
+TEST_F(GetCallerFrame, ScanFirstFrame) {
+  // If the stackwalker resorts to stack scanning, it will scan much
+  // farther to find the caller of the context frame.
+  stack_section.start() = 0x80000000;
+  u_int32_t return_address1 = 0x50000100;
+  u_int32_t return_address2 = 0x50000900;
+  Label frame1_sp, frame2_sp;
+  stack_section
+    // frame 0
+    .Append(32, 0)                      // space
+
+    .D32(0x40090000)                    // junk that's not
+    .D32(0x60000000)                    // a return address
+
+    .Append(96, 0)                      // more space
+
+    .D32(return_address1)               // actual return address
+    // frame 1
+    .Mark(&frame1_sp)
+    .Append(32, 0)                      // space
+
+    .D32(0xF0000000)                    // more junk
+    .D32(0x0000000D)
+
+    .Append(96, 0)                      // more space
+
+    .D32(return_address2)               // actual return address
+                                        // (won't be found)
+    // frame 2
+    .Mark(&frame2_sp)
+    .Append(32, 0);                     // end of stack
+  RegionFromSection();
+
+  raw_context.iregs[MD_CONTEXT_ARM_REG_PC] = 0x40005510;
+  raw_context.iregs[MD_CONTEXT_ARM_REG_SP] = stack_section.start().Value();
+
+  StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
+  StackwalkerARM walker(&system_info, &raw_context, -1, &stack_region, &modules,
+                        &frame_symbolizer);
+  ASSERT_TRUE(walker.Walk(&call_stack));
+  frames = call_stack.frames();
+  ASSERT_EQ(2U, frames->size());
+
+  StackFrameARM *frame0 = static_cast<StackFrameARM *>(frames->at(0));
+  EXPECT_EQ(StackFrame::FRAME_TRUST_CONTEXT, frame0->trust);
+  ASSERT_EQ(StackFrameARM::CONTEXT_VALID_ALL, frame0->context_validity);
+  EXPECT_EQ(0, memcmp(&raw_context, &frame0->context, sizeof(raw_context)));
+
+  StackFrameARM *frame1 = static_cast<StackFrameARM *>(frames->at(1));
+  EXPECT_EQ(StackFrame::FRAME_TRUST_SCAN, frame1->trust);
+  ASSERT_EQ((StackFrameARM::CONTEXT_VALID_PC |
+             StackFrameARM::CONTEXT_VALID_SP),
+            frame1->context_validity);
+  EXPECT_EQ(return_address1, frame1->context.iregs[MD_CONTEXT_ARM_REG_PC]);
+  EXPECT_EQ(frame1_sp.Value(), frame1->context.iregs[MD_CONTEXT_ARM_REG_SP]);
+}
+
 struct CFIFixture: public StackwalkerARMFixture {
   CFIFixture() {
     // Provide a bunch of STACK CFI records; we'll walk to the caller

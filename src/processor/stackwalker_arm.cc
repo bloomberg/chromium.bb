@@ -166,7 +166,14 @@ StackFrameARM* StackwalkerARM::GetCallerByStackScan(
   u_int32_t last_sp = last_frame->context.iregs[MD_CONTEXT_ARM_REG_SP];
   u_int32_t caller_sp, caller_pc;
 
-  if (!ScanForReturnAddress(last_sp, &caller_sp, &caller_pc)) {
+  // When searching for the caller of the context frame,
+  // allow the scanner to look farther down the stack.
+  const int kRASearchWords = frames.size() == 1 ?
+    Stackwalker::kRASearchWords * 4 :
+    Stackwalker::kRASearchWords;
+
+  if (!ScanForReturnAddress(last_sp, &caller_sp, &caller_pc,
+                            kRASearchWords)) {
     // No plausible return address was found.
     return NULL;
   }

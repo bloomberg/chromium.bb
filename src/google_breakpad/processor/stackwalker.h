@@ -106,11 +106,14 @@ class Stackwalker {
   // Returns false otherwise.
   bool InstructionAddressSeemsValid(u_int64_t address);
 
+  // The default number of words to search through on the stack
+  // for a return address.
+  static const int kRASearchWords;
+
   template<typename InstructionType>
   bool ScanForReturnAddress(InstructionType location_start,
                             InstructionType* location_found,
                             InstructionType* ip_found) {
-    const int kRASearchWords = 30;
     return ScanForReturnAddress(location_start, location_found, ip_found,
                                 kRASearchWords);
   }
@@ -184,7 +187,6 @@ class Stackwalker {
   // This defaults to 1024 to prevent infinite loops.
   static u_int32_t max_frames_;
 };
-
 
 }  // namespace google_breakpad
 

@@ -55,6 +55,7 @@
 
 namespace google_breakpad {
 
+const int Stackwalker::kRASearchWords = 30;
 u_int32_t Stackwalker::max_frames_ = 1024;
 
 Stackwalker::Stackwalker(const SystemInfo* system_info,
