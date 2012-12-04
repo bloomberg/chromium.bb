@@ -1227,10 +1227,10 @@ ErrorCode BaselinePolicy(int sysno) {
   if (IsBaselinePolicyWatched(sysno)) {
     // Previously unseen syscalls. TODO(jln): some of these should
     // be denied gracefully right away.
-    return Sandbox::UnsafeTrap(CrashSIGSYS_Handler, NULL);
+    return Sandbox::Trap(CrashSIGSYS_Handler, NULL);
   }
   // In any other case crash the program with our SIGSYS handler
-  return Sandbox::UnsafeTrap(CrashSIGSYS_Handler, NULL);
+  return Sandbox::Trap(CrashSIGSYS_Handler, NULL);
 }
 
 // x86_64 only for now. Needs to be adapted and tested for i386/ARM.
@@ -1255,7 +1255,7 @@ ErrorCode GpuProcessPolicy_x86_64(int sysno, void *) {
         // Hook open() in the GPU process to allow opening /etc/drirc,
         // needed by Mesa.
         // The hook needs dup(), lseek(), and close() to be allowed.
-        return Sandbox::UnsafeTrap(GpuOpenSIGSYS_Handler, NULL);
+        return Sandbox::Trap(GpuOpenSIGSYS_Handler, NULL);
       }
     default:
       if (IsEventFd(sysno))
