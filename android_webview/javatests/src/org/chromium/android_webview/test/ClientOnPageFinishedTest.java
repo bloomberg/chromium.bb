@@ -12,6 +12,8 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.util.TestWebServer;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Tests for the ContentViewClient.onPageFinished() method.
  */
@@ -53,13 +55,19 @@ public class ClientOnPageFinishedTest extends AndroidWebViewTestBase {
 
         assertEquals(0, onReceivedErrorHelper.getCallCount());
 
-        String url = "http://man.id.be.really.surprised.if.this.address.existed.blah/";
+        String url = "http://localhost:7/non_existent";
         int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
         int onPageFinishedCallCount = onPageFinishedHelper.getCallCount();
         loadUrlAsync(mAwContents, url);
 
-        onReceivedErrorHelper.waitForCallback(onReceivedErrorCallCount);
-        onPageFinishedHelper.waitForCallback(onPageFinishedCallCount);
+        onReceivedErrorHelper.waitForCallback(onReceivedErrorCallCount,
+                                              1 /* numberOfCallsToWaitFor */,
+                                              WAIT_TIMEOUT_SECONDS,
+                                              TimeUnit.SECONDS);
+        onPageFinishedHelper.waitForCallback(onPageFinishedCallCount,
+                                              1 /* numberOfCallsToWaitFor */,
+                                              WAIT_TIMEOUT_SECONDS,
+                                              TimeUnit.SECONDS);
         assertEquals(1, onReceivedErrorHelper.getCallCount());
     }
 

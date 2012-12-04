@@ -42,12 +42,9 @@ public class ClientOnReceivedErrorTest extends AndroidWebViewTestBase {
         int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
         loadUrlAsync(mAwContents, url);
 
-        // TODO(boliu): This is spuriously timing out on build bots but cannot
-        // be reproduced locally. Trying a longer timeout value to see if it is
-        // due to value too slow or some other issue. See crbug.com/152033.
         onReceivedErrorHelper.waitForCallback(onReceivedErrorCallCount,
                                               1 /* numberOfCallsToWaitFor */,
-                                              30 /* timeout */,
+                                              WAIT_TIMEOUT_SECONDS,
                                               TimeUnit.SECONDS);
         assertEquals(ErrorCodeConversionHelper.ERROR_HOST_LOOKUP,
                 onReceivedErrorHelper.getErrorCode());
