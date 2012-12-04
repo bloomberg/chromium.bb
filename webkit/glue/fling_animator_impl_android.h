@@ -6,13 +6,11 @@
 #define WEBKIT_GLUE_FLING_ANIMATOR_IMPL_ANDROID_H_
 
 #include "base/android/scoped_java_ref.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebFlingAnimator.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGestureCurve.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebPoint.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/point_f.h"
 
 namespace WebKit {
 class WebGestureCurveTarget;
@@ -20,10 +18,7 @@ class WebGestureCurveTarget;
 
 namespace webkit_glue {
 
-// TODO(rjkroege): Remove WebFlingAnimator once all of the gesture curve
-// implementation has moved to Chromium.
-class FlingAnimatorImpl : public WebKit::WebFlingAnimator,
-                          public WebKit::WebGestureCurve {
+class FlingAnimatorImpl : public WebKit::WebGestureCurve {
  public:
   FlingAnimatorImpl();
   virtual ~FlingAnimatorImpl();
@@ -32,18 +27,15 @@ class FlingAnimatorImpl : public WebKit::WebFlingAnimator,
       const WebKit::WebFloatPoint& velocity,
       const WebKit::WebSize&);
 
-  // WebKit::WebFlingAnimator methods.
-  virtual void startFling(const WebKit::WebFloatPoint& velocity,
-                          const WebKit::WebRect& range);
-  // Returns true if the animation is not yet finished.
-  virtual bool updatePosition();
-  virtual WebKit::WebPoint getCurrentPosition();
-  virtual void cancelFling();
-
-  // WebKit::WebGestureCurve methods.
   virtual bool apply(double time,
                      WebKit::WebGestureCurveTarget* target);
  private:
+  void StartFling(const gfx::PointF& velocity);
+  // Returns true if the animation is not yet finished.
+  bool UpdatePosition();
+  gfx::Point GetCurrentPosition();
+  virtual void CancelFling();
+
   bool is_active_;
 
   // Java OverScroller instance and methods.

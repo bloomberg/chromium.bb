@@ -862,12 +862,6 @@ void WebKitPlatformSupportImpl::didStopWorkerRunLoop(
   worker_task_runner->OnWorkerRunLoopStopped(runLoop);
 }
 
-#if defined(OS_ANDROID)
-WebKit::WebFlingAnimator* WebKitPlatformSupportImpl::createFlingAnimator() {
-  return new FlingAnimatorImpl();
-}
-#endif
-
 WebKit::WebGestureCurve* WebKitPlatformSupportImpl::createFlingAnimationCurve(
     int device_source,
     const WebKit::WebFloatPoint& velocity,
