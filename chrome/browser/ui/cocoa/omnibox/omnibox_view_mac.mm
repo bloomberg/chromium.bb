@@ -269,7 +269,7 @@ void OmniboxViewMac::SetWindowTextAndCaretPos(const string16& text,
                                               bool update_popup,
                                               bool notify_text_changed) {
   DCHECK_LE(caret_pos, text.size());
-  SetTextAndSelectedRange(text, NSMakeRange(caret_pos, caret_pos));
+  SetTextAndSelectedRange(text, NSMakeRange(caret_pos, 0));
 
   if (update_popup)
     UpdatePopup();
