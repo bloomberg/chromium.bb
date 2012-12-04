@@ -6,7 +6,6 @@
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/message_loop.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/common/browser_plugin_messages.h"
@@ -67,8 +66,8 @@ const char kOldWidth[] = "oldWidth";
 const char kPartition[] = "partition";
 const char kPersistPrefix[] = "persist:";
 const char kProcessId[] = "processId";
-const char kReason[] = "reason";
 const char kSrc[] = "src";
+const char kReason[] = "reason";
 const char kURL[] = "url";
 
 // Error messages.
@@ -259,27 +258,6 @@ bool BrowserPlugin::DamageBufferMatches(
   return damage_buffer->handle() == other_damage_buffer_handle;
 }
 #endif
-
-void BrowserPlugin::UpdateDOMAttribute(
-    const std::string& attribute_name,
-    const std::string& attribute_value) {
-  if (!container())
-    return;
-
-  WebKit::WebElement element = container()->element();
-  WebKit::WebString web_attribute_name =
-      WebKit::WebString::fromUTF8(attribute_name);
-  std::string current_value(element.getAttribute(web_attribute_name).utf8());
-  if (current_value == attribute_value)
-    return;
-
-  if (attribute_value.empty()) {
-    element.removeAttribute(web_attribute_name);
-  } else {
-    element.setAttribute(web_attribute_name,
-        WebKit::WebString::fromUTF8(attribute_value));
-  }
-}
 
 void BrowserPlugin::SetMaxHeightAttribute(int max_height) {
   if (max_height_ == max_height)
@@ -635,10 +613,8 @@ void BrowserPlugin::LoadCommit(
   // If the guest has just committed a new navigation then it is no longer
   // crashed.
   guest_crashed_ = false;
-  if (params.is_top_level) {
+  if (params.is_top_level)
     src_ = params.url.spec();
-    UpdateDOMAttribute(kSrc, src_.c_str());
-  }
   process_id_ = params.process_id;
   current_nav_entry_index_ = params.current_entry_index;
   nav_entry_count_ = params.entry_count;

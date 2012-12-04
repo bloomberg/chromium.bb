@@ -90,14 +90,6 @@ function WebView(node) {
       this.node_,
       {attributes: true, attributeFilter: WEB_VIEW_ATTRIBUTES});
 
-  var handleObjectMutation = this.handleObjectMutation_.bind(this);
-  var objectObserver = new WebKitMutationObserver(function(mutations) {
-    mutations.forEach(handleObjectMutation);
-  });
-  objectObserver.observe(
-      this.objectNode_,
-      {attributes: true, attributeFilter: WEB_VIEW_ATTRIBUTES});
-
   var objectNode = this.objectNode_;
   // Expose getters and setters for the attributes.
   WEB_VIEW_ATTRIBUTES.forEach(function(attributeName) {
@@ -134,16 +126,8 @@ function WebView(node) {
  * @private
  */
 WebView.prototype.handleMutation_ = function(mutation) {
-  this.objectNode_[mutation.attributeName] =
+  this.node_[mutation.attributeName] =
       this.node_.getAttribute(mutation.attributeName);
-};
-
-/**
- * @private
- */
-WebView.prototype.handleObjectMutation_ = function(mutation) {
-  this.node_.setAttribute(mutation.attributeName,
-      this.objectNode_.getAttribute(mutation.attributeName));
 };
 
 /**
