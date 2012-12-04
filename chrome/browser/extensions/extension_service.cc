@@ -1162,6 +1162,16 @@ void ExtensionService::NotifyExtensionUnloaded(
       content::Source<Profile>(profile_),
       content::Details<UnloadedExtensionInfo>(&details));
 
+#if defined(ENABLE_THEMES)
+  // If the current theme is being unloaded, tell ThemeService to revert back
+  // to the default theme.
+  if (reason != extension_misc::UNLOAD_REASON_UPDATE && extension->is_theme()) {
+    ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile_);
+    if (extension->id() == theme_service->GetThemeID())
+      theme_service->UseDefaultTheme();
+  }
+#endif
+
   for (content::RenderProcessHost::iterator i(
           content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
