@@ -280,17 +280,9 @@ TEST_PPAPI_OUT_OF_PROCESS(BrowserFont)
 TEST_PPAPI_IN_PROCESS(Buffer)
 TEST_PPAPI_OUT_OF_PROCESS(Buffer)
 
-// Python server crashes on Windows trybots and Linux Testers, which causes log
-// parsing errors. http://crbug.com/145734
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_TCPSocketPrivate DISABLED_TCPSocketPrivate
-#else
-#define MAYBE_TCPSocketPrivate TCPSocketPrivate
-#endif
-
-TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(MAYBE_TCPSocketPrivate)
-TEST_PPAPI_IN_PROCESS_WITH_SSL_SERVER(MAYBE_TCPSocketPrivate)
-TEST_PPAPI_NACL_WITH_SSL_SERVER(MAYBE_TCPSocketPrivate)
+TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(TCPSocketPrivate)
+TEST_PPAPI_IN_PROCESS_WITH_SSL_SERVER(TCPSocketPrivate)
+TEST_PPAPI_NACL_WITH_SSL_SERVER(TCPSocketPrivate)
 
 TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(TCPSocketPrivateTrusted)
 TEST_PPAPI_IN_PROCESS_WITH_SSL_SERVER(TCPSocketPrivateTrusted)
