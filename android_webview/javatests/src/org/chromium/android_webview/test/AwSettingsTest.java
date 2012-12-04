@@ -16,6 +16,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.ImagePageGenerator;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
@@ -31,7 +32,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.util.List;
-
 
 /**
  * A test suite for ContentSettings class. The key objective is to verify that each
@@ -1807,7 +1807,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                         return false;
                     }
                 }
-            }, WAIT_TIMEOUT_SECONDS * 1000, CHECK_INTERVAL));
+            }, TEST_TIMEOUT, CHECK_INTERVAL));
         } finally {
             if (webServer != null) webServer.shutdown();
         }
@@ -2156,6 +2156,163 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                             views.getContents0(), views.getClient0(), 0, webServer),
                     new AwSettingsCacheModeTestHelper(
                             views.getContents1(), views.getClient1(), 1, webServer));
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
+    }
+
+    static class ManifestTestHelper {
+        private final TestWebServer mWebServer;
+        private final String mHtmlPath;
+        private final String mHtmlUrl;
+        private final String mManifestPath;
+
+        ManifestTestHelper(
+                TestWebServer webServer, String htmlPageName, String manifestName) {
+            mWebServer = webServer;
+            mHtmlPath = "/" + htmlPageName;
+            mHtmlUrl = webServer.setResponse(
+                    mHtmlPath, "<html manifest=\"" + manifestName + "\"></html>", null);
+            mManifestPath = "/" + manifestName;
+            webServer.setResponse(
+                    mManifestPath,
+                    "CACHE MANIFEST",
+                    CommonResources.getContentTypeAndCacheHeaders("text/cache-manifest", false));
+        }
+
+        String getHtmlPath() {
+            return mHtmlPath;
+        }
+
+        String getHtmlUrl() {
+            return mHtmlUrl;
+        }
+
+        String getManifestPath() {
+            return mManifestPath;
+        }
+
+        int waitUntilHtmlIsRequested(final int initialRequestCount) throws InterruptedException {
+            return waitUntilResourceIsRequested(mHtmlPath, initialRequestCount);
+        }
+
+        int waitUntilManifestIsRequested(final int initialRequestCount)
+                throws InterruptedException {
+            return waitUntilResourceIsRequested(mManifestPath, initialRequestCount);
+        }
+
+        private int waitUntilResourceIsRequested(
+                final String path, final int initialRequestCount) throws InterruptedException {
+            assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    return mWebServer.getRequestCount(path) > initialRequestCount;
+                }
+            }, TEST_TIMEOUT, CHECK_INTERVAL));
+            return mWebServer.getRequestCount(path);
+        }
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences", "AppCache"})
+    public void testAppCache() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final AwTestContainerView testContainer =
+                createAwTestContainerViewOnMainSync(false, contentClient);
+        final AwContents awContents = testContainer.getAwContents();
+        final ContentSettings settings = getContentSettingsOnUiThread(awContents);
+        // Not sure why, but I'm experiencing DCHECK failures at net/disk_cache/in_flight_io.cc:98
+        // w/o this line. crbug.com/163383
+        clearCacheOnUiThread(awContents, true);
+        settings.setJavaScriptEnabled(true);
+        // Note that the cache isn't actually enabled until the call to setAppCachePath.
+        settings.setAppCacheEnabled(true);
+
+        TestWebServer webServer = null;
+        try {
+            webServer = new TestWebServer(false);
+            ManifestTestHelper helper = new ManifestTestHelper(
+                    webServer, "testAppCache.html", "appcache.manifest");
+            loadUrlSync(
+                    awContents,
+                    contentClient.getOnPageFinishedHelper(),
+                    helper.getHtmlUrl());
+            helper.waitUntilHtmlIsRequested(0);
+            // Unfortunately, there is no other good way of verifying that AppCache is
+            // disabled, other than checking that it didn't try to fetch the manifest.
+            Thread.sleep(1000);
+            assertEquals(0, webServer.getRequestCount(helper.getManifestPath()));
+            settings.setAppCachePath("whatever");  // Enables AppCache.
+            loadUrlSync(
+                    awContents,
+                    contentClient.getOnPageFinishedHelper(),
+                    helper.getHtmlUrl());
+            helper.waitUntilManifestIsRequested(0);
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
+    }
+
+    /*
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences", "AppCache"})
+     * BUG=crbug.com/163383
+     * If you run this test with a non-empty profile, it will crash,
+     * unless you delete the test's data directory.
+     */
+    @DisabledTest
+    public void testAppCacheNormal() throws Throwable {
+        // We don't use the test helper here, because making sure that AppCache
+        // is disabled takes a lot of time, so running through the usual drill
+        // will take about 20 seconds.
+        ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
+        ContentSettings settings0 = getContentSettingsOnUiThread(views.getContents0());
+        settings0.setJavaScriptEnabled(true);
+        settings0.setAppCachePath("whatever");
+        settings0.setAppCacheEnabled(true);
+        ContentSettings settings1 = getContentSettingsOnUiThread(views.getContents1());
+        settings1.setJavaScriptEnabled(true);
+        // AppCachePath setting is global, no need to set it for the second view.
+        settings1.setAppCacheEnabled(true);
+
+        clearCacheOnUiThread(views.getContents0(), true);
+
+        TestWebServer webServer = null;
+        try {
+            webServer = new TestWebServer(false);
+            ManifestTestHelper helper0 = new ManifestTestHelper(
+                    webServer, "testAppCache_0.html", "appcache.manifest_0");
+            loadUrlSync(
+                    views.getContents0(),
+                    views.getClient0().getOnPageFinishedHelper(),
+                    helper0.getHtmlUrl());
+            int manifestRequests0 = helper0.waitUntilManifestIsRequested(0);
+            ManifestTestHelper helper1 = new ManifestTestHelper(
+                    webServer, "testAppCache_1.html", "appcache.manifest_1");
+            loadUrlSync(
+                    views.getContents1(),
+                    views.getClient1().getOnPageFinishedHelper(),
+                    helper1.getHtmlUrl());
+            helper1.waitUntilManifestIsRequested(0);
+            settings1.setAppCacheEnabled(false);
+            loadUrlSync(
+                    views.getContents0(),
+                    views.getClient0().getOnPageFinishedHelper(),
+                    helper0.getHtmlUrl());
+            helper0.waitUntilManifestIsRequested(manifestRequests0);
+            final int prevManifestRequestCount =
+                    webServer.getRequestCount(helper1.getManifestPath());
+            int htmlRequests1 = webServer.getRequestCount(helper1.getHtmlPath());
+            loadUrlSync(
+                    views.getContents1(),
+                    views.getClient1().getOnPageFinishedHelper(),
+                    helper1.getHtmlUrl());
+            helper1.waitUntilHtmlIsRequested(htmlRequests1);
+            // Unfortunately, there is no other good way of verifying that AppCache is
+            // disabled, other than checking that it didn't try to fetch the manifest.
+            Thread.sleep(1000);
+            assertEquals(
+                    prevManifestRequestCount, webServer.getRequestCount(helper1.getManifestPath()));
         } finally {
             if (webServer != null) webServer.shutdown();
         }

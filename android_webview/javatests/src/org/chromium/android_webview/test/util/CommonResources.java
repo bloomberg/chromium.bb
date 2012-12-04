@@ -13,24 +13,23 @@ public class CommonResources {
 
     // Content-type headers used for HTML code.
     public static List<Pair<String, String>> getTextHtmlHeaders(boolean disableCache) {
-        List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
-        headers.add(Pair.create("Content-Type", "text/html"));
-        if (disableCache) headers.add(Pair.create("Cache-Control", "no-store"));
-        return headers;
+        return getContentTypeAndCacheHeaders("text/html", disableCache);
     }
 
     // Content-type headers used for javascript code.
     public static List<Pair<String, String>> getTextJavascriptHeaders(boolean disableCache) {
-        List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
-        headers.add(Pair.create("Content-Type", "text/javascript"));
-        if (disableCache) headers.add(Pair.create("Cache-Control", "no-store"));
-        return headers;
+        return getContentTypeAndCacheHeaders("text/javascript", disableCache);
     }
 
     // Content-type headers used for png images.
     public static List<Pair<String, String>> getImagePngHeaders(boolean disableCache) {
+        return getContentTypeAndCacheHeaders("image/png", disableCache);
+    }
+
+    public static List<Pair<String, String>> getContentTypeAndCacheHeaders(
+            String contentType, boolean disableCache) {
         List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
-        headers.add(Pair.create("Content-Type", "image/png"));
+        headers.add(Pair.create("Content-Type", contentType));
         if (disableCache) headers.add(Pair.create("Cache-Control", "no-store"));
         return headers;
     }

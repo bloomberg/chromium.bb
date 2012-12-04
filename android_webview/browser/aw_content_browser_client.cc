@@ -114,9 +114,9 @@ gfx::ImageSkia* AwContentBrowserClient::GetDefaultFavicon() {
 bool AwContentBrowserClient::AllowAppCache(const GURL& manifest_url,
                            const GURL& first_party,
                            content::ResourceContext* context) {
-  // TODO(boliu): Implement this to power WebSettings.SetAppCacheEnabled.
-  NOTIMPLEMENTED();
-  return false;
+  // WebView doesn't have a per-site policy for locally stored data,
+  // instead AppCache can be disabled for individual WebViews.
+  return true;
 }
 
 

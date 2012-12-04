@@ -248,6 +248,9 @@ void ContentSettings::SyncFromNativeImpl() {
   Java_ContentSettings_setPluginsDisabled(env, obj, !prefs.plugins_enabled);
   CheckException(env);
 
+  // We don't need to sync AppCache settings to Java, because there are
+  // no getters for them in the API.
+
   env->SetBooleanField(
       obj,
       field_ids_->dom_storage_enabled,
@@ -350,6 +353,9 @@ void ContentSettings::SyncToNativeImpl() {
       obj, field_ids_->support_multiple_windows);
 
   prefs.plugins_enabled = !Java_ContentSettings_getPluginsDisabled(env, obj);
+
+  prefs.application_cache_enabled =
+      Java_ContentSettings_getAppCacheEnabled(env, obj);
 
   prefs.local_storage_enabled = env->GetBooleanField(
       obj, field_ids_->dom_storage_enabled);

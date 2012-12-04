@@ -78,6 +78,7 @@ public class ContentSettings {
     private boolean mJavaScriptCanOpenWindowsAutomatically = false;
     private boolean mSupportMultipleWindows = false;
     private PluginState mPluginState = PluginState.OFF;
+    private boolean mAppCacheEnabled = false;
     private boolean mDomStorageEnabled = false;
 
     // Not accessed by the native side.
@@ -85,6 +86,13 @@ public class ContentSettings {
     private boolean mSupportZoom = true;
     private boolean mBuiltInZoomControls = false;
     private boolean mDisplayZoomControls = true;
+
+    // Protects access to settings global fields.
+    private static final Object sGlobalContentSettingsLock = new Object();
+    // For compatibility with the legacy WebView, we can only enable AppCache when the path is
+    // provided. However, we don't use the path, so we just check if we have received it from the
+    // client.
+    private static boolean sAppCachePathIsSet = false;
 
     // Class to handle messages to be processed on the UI thread.
     private class EventHandler {
@@ -839,9 +847,9 @@ public class ContentSettings {
      */
     @CalledByNative
     private boolean getPluginsDisabled() {
-        synchronized (mContentSettingsLock) {
-            return mPluginState == PluginState.OFF;
-        }
+        // This should only be called from SyncToNative, which is called
+        // either from the constructor, or with mContentSettingsLock being held.
+        return mPluginState == PluginState.OFF;
     }
 
     /**
@@ -851,9 +859,9 @@ public class ContentSettings {
      */
     @CalledByNative
     private void setPluginsDisabled(boolean disabled) {
-        synchronized (mContentSettingsLock) {
-            mPluginState = disabled ? PluginState.OFF : PluginState.ON;
-        }
+        // This should only be called from SyncFromToNative, which is called
+        // either from the constructor, or with mContentSettingsLock being held.
+        mPluginState = disabled ? PluginState.OFF : PluginState.ON;
     }
 
     /**
@@ -919,6 +927,71 @@ public class ContentSettings {
     public boolean supportMultipleWindows() {
         synchronized (mContentSettingsLock) {
             return mSupportMultipleWindows;
+        }
+    }
+
+    /**
+     * Sets whether the Application Caches API should be enabled. The default
+     * is false. Note that in order for the Application Caches API to be
+     * enabled, a non-empty database path must also be supplied to
+     * {@link #setAppCachePath} (this is done for compatibility with the
+     * legacy implementation).
+     *
+     * @param flag true if the WebView should enable Application Caches
+     */
+    public void setAppCacheEnabled(boolean flag) {
+        assert mCanModifySettings;
+        synchronized (mContentSettingsLock) {
+            if (mAppCacheEnabled != flag) {
+                mAppCacheEnabled = flag;
+                mEventHandler.syncSettingsLocked();
+            }
+        }
+    }
+
+    /**
+     * Sets the path to the Application Caches files. In order for the
+     * Application Caches API to be enabled, this method must be called with a
+     * non-empty path. This method should only be called once: repeated calls
+     * are ignored.
+     *
+     * @param path a non empty-string
+     */
+    public void setAppCachePath(String path) {
+        assert mCanModifySettings;
+        boolean needToSync = false;
+        synchronized (sGlobalContentSettingsLock) {
+            // AppCachePath can only be set once.
+            if (!sAppCachePathIsSet && path != null && !path.isEmpty()) {
+                sAppCachePathIsSet = true;
+                needToSync = true;
+            }
+        }
+        // The obvious problem here is that other WebViews will not be updated,
+        // until they execute synchronization from Java to the native side.
+        // But this is the same behaviour as it was in the legacy WebView.
+        if (needToSync) {
+            synchronized (mContentSettingsLock) {
+                mEventHandler.syncSettingsLocked();
+            }
+        }
+    }
+
+    /**
+     * Gets whether Application Cache is enabled.
+     *
+     * @return true if Application Cache is enabled
+     * @hide
+     */
+    @CalledByNative
+    private boolean getAppCacheEnabled() {
+        // This should only be called from SyncToNative, which is called
+        // either from the constructor, or with mContentSettingsLock being held.
+        if (!mAppCacheEnabled) {
+            return false;
+        }
+        synchronized (sGlobalContentSettingsLock) {
+            return sAppCachePathIsSet;
         }
     }
 
@@ -1012,6 +1085,7 @@ public class ContentSettings {
                 settings.getJavaScriptCanOpenWindowsAutomatically());
         setSupportMultipleWindows(settings.supportMultipleWindows());
         setPluginState(settings.getPluginState());
+        setAppCacheEnabled(settings.mAppCacheEnabled);
         setDomStorageEnabled(settings.getDomStorageEnabled());
         setSupportZoom(settings.supportZoom());
         setBuiltInZoomControls(settings.getBuiltInZoomControls());

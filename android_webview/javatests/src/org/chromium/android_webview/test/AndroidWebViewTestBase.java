@@ -290,6 +290,10 @@ public class AndroidWebViewTestBase
         });
     }
 
+    /**
+     * Clears the resource cache. Note that the cache is per-application, so this will clear the
+     * cache for all WebViews used.
+     */
     protected void clearCacheOnUiThread(
             final AwContents awContents,
             final boolean includeDiskFiles) throws Throwable {
