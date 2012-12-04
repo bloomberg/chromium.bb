@@ -552,7 +552,7 @@ scoped_refptr<WebRtcAudioRenderer> MediaStreamImpl::CreateRemoteAudioRenderer(
   DVLOG(1) << "MediaStreamImpl::CreateRemoteAudioRenderer label:"
            << stream->label();
 
-  return new WebRtcAudioRenderer();
+  return new WebRtcAudioRenderer(RenderViewObserver::routing_id());
 }
 
 MediaStreamSourceExtraData::MediaStreamSourceExtraData(

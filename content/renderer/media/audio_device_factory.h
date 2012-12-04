@@ -6,29 +6,26 @@
 #define CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_FACTORY_H_
 
 #include "base/basictypes.h"
-#include "content/common/content_export.h"
+#include "base/memory/ref_counted.h"
 
 namespace media {
 class AudioInputDevice;
-class AudioRendererSink;
 }
 
 namespace content {
 
-// A factory for creating AudioRendererSinks. There is a global factory
+class RendererAudioOutputDevice;
+
+// A factory for creating RendererAudioOutputDevices.  There is a global factory
 // function that can be installed for the purposes of testing to provide
 // a specialized AudioRendererSink class.
-class CONTENT_EXPORT AudioDeviceFactory {
+class AudioDeviceFactory {
  public:
-  // Creates an AudioRendererSink using the currently registered factory,
-  // or the default one if no factory is registered. Ownership of the returned
-  // pointer will be passed to the caller.
-  static media::AudioRendererSink* NewOutputDevice();
+  // Creates a RendererAudioOutputDevice using the currently registered factory.
+  static scoped_refptr<RendererAudioOutputDevice> NewOutputDevice();
 
-  // TODO(henrika): Update AudioInputDevice to inherit from an interface
-  // similar to AudioRendererSink, but for input.  Same for the callback
-  // interfaces.
-  static media::AudioInputDevice* NewInputDevice();
+  // Creates an AudioInputDevice using the currently registered factory,
+  static scoped_refptr<media::AudioInputDevice> NewInputDevice();
 
  protected:
   AudioDeviceFactory();
@@ -38,7 +35,7 @@ class CONTENT_EXPORT AudioDeviceFactory {
   // functions to provide alternate audio device implementations.
   // If the return value of either of these function is NULL, we fall back
   // on the default implementation.
-  virtual media::AudioRendererSink* CreateOutputDevice() = 0;
+  virtual RendererAudioOutputDevice* CreateOutputDevice() = 0;
   virtual media::AudioInputDevice* CreateInputDevice() = 0;
 
  private:

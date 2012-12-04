@@ -203,6 +203,8 @@ bool AudioRendererHost::OnMessageReceived(const IPC::Message& message,
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(AudioRendererHost, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(AudioHostMsg_CreateStream, OnCreateStream)
+    IPC_MESSAGE_HANDLER(AudioHostMsg_AssociateStreamWithProducer,
+                        OnAssociateStreamWithProducer)
     IPC_MESSAGE_HANDLER(AudioHostMsg_PlayStream, OnPlayStream)
     IPC_MESSAGE_HANDLER(AudioHostMsg_PauseStream, OnPauseStream)
     IPC_MESSAGE_HANDLER(AudioHostMsg_FlushStream, OnFlushStream)
@@ -279,6 +281,14 @@ void AudioRendererHost::OnCreateStream(
   audio_entries_.insert(std::make_pair(stream_id, entry.release()));
   if (media_observer_)
     media_observer_->OnSetAudioStreamStatus(this, stream_id, "created");
+}
+
+void AudioRendererHost::OnAssociateStreamWithProducer(int stream_id,
+                                                      int render_view_id) {
+  // TODO(miu): Will use render_view_id in upcoming change.
+  DVLOG(1) << "AudioRendererHost@" << this
+           << "::OnAssociateStreamWithProducer(stream_id=" << stream_id
+           << ", render_view_id=" << render_view_id << ")";
 }
 
 void AudioRendererHost::OnPlayStream(int stream_id) {

@@ -29,6 +29,9 @@ class CONTENT_EXPORT AudioInputMessageFilter
   // Getter for the one AudioInputMessageFilter object.
   static AudioInputMessageFilter* Get();
 
+  // Associates |render_view_id| as the destination of audio for a stream.
+  void AssociateStreamWithConsumer(int stream_id, int render_view_id);
+
   // Implementation of AudioInputIPC.
   virtual int AddDelegate(
       media::AudioInputIPCDelegate* delegate) OVERRIDE;

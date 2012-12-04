@@ -7,19 +7,38 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "content/renderer/media/audio_device_factory.h"
+#include "content/renderer/media/renderer_audio_output_device.h"
+#include "content/renderer/render_view_impl.h"
 #include "media/base/media_switches.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 using WebKit::WebAudioDevice;
+using WebKit::WebFrame;
 using WebKit::WebVector;
+using WebKit::WebView;
 
 namespace content {
 
 RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
     const media::AudioParameters& params,
     WebAudioDevice::RenderCallback* callback)
-    : is_running_(false),
+    : params_(params),
       client_callback_(callback) {
-  audio_device_ = AudioDeviceFactory::NewOutputDevice();
+  DCHECK(client_callback_);
+}
+
+RendererWebAudioDeviceImpl::~RendererWebAudioDeviceImpl() {
+  DCHECK(!output_device_);
+}
+
+void RendererWebAudioDeviceImpl::start() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (output_device_)
+    return;  // Already started.
+
+  output_device_ = AudioDeviceFactory::NewOutputDevice();
 
   // TODO(crogers): remove once we properly handle input device selection.
   // https://code.google.com/p/chromium/issues/detail?id=147327
@@ -27,32 +46,41 @@ RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
       switches::kEnableWebAudioInput)) {
     // TODO(crogers): support more than hard-coded stereo:
     // https://code.google.com/p/chromium/issues/detail?id=147326
-    audio_device_->InitializeIO(params, 2, this);
+    output_device_->InitializeIO(params_, 2, this);
   } else {
-    audio_device_->Initialize(params, this);
+    output_device_->Initialize(params_, this);
   }
-}
 
-RendererWebAudioDeviceImpl::~RendererWebAudioDeviceImpl() {
-  stop();
-}
-
-void RendererWebAudioDeviceImpl::start() {
-  if (!is_running_) {
-    audio_device_->Start();
-    is_running_ = true;
+  // Assumption: This method is being invoked within a V8 call stack.  CHECKs
+  // will fail in the call to frameForCurrentContext() otherwise.
+  //
+  // Therefore, we can perform look-ups to determine which RenderView is
+  // starting the audio device.  The reason for all this is because the creator
+  // of the WebAudio objects might not be the actual source of the audio (e.g.,
+  // an extension creates a object that is passed and used within a page).
+  WebFrame* const web_frame = WebFrame::frameForCurrentContext();
+  WebView* const web_view = web_frame ? web_frame->view() : NULL;
+  RenderViewImpl* const render_view =
+      web_view ? RenderViewImpl::FromWebView(web_view) : NULL;
+  if (render_view) {
+    output_device_->SetSourceRenderView(render_view->routing_id());
   }
+
+  output_device_->Start();
+  // Note: Default behavior is to auto-play on start.
 }
 
 void RendererWebAudioDeviceImpl::stop() {
-  if (is_running_) {
-    audio_device_->Stop();
-    is_running_ = false;
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (output_device_) {
+    output_device_->Stop();
+    output_device_ = NULL;
   }
 }
 
 double RendererWebAudioDeviceImpl::sampleRate() {
-  return 44100.0;
+  return params_.sample_rate();
 }
 
 int RendererWebAudioDeviceImpl::Render(media::AudioBus* dest,
@@ -65,7 +93,6 @@ void RendererWebAudioDeviceImpl::RenderIO(media::AudioBus* source,
                                           media::AudioBus* dest,
                                           int audio_delay_milliseconds) {
   // Make the client callback for an I/O cycle.
-  DCHECK(client_callback_);
   if (client_callback_) {
     // Wrap the input pointers using WebVector.
     size_t input_channels =

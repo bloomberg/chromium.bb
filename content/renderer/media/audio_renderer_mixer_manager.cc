@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "content/renderer/media/audio_device_factory.h"
+#include "content/renderer/media/renderer_audio_output_device.h"
 #include "media/base/audio_renderer_mixer.h"
 #include "media/base/audio_renderer_mixer_input.h"
 
@@ -15,7 +16,8 @@ namespace content {
 AudioRendererMixerManager::AudioRendererMixerManager(int hardware_sample_rate,
                                                      int hardware_buffer_size)
     : hardware_sample_rate_(hardware_sample_rate),
-      hardware_buffer_size_(hardware_buffer_size) {
+      hardware_buffer_size_(hardware_buffer_size),
+      sink_for_testing_(NULL) {
 }
 
 AudioRendererMixerManager::~AudioRendererMixerManager() {
@@ -28,6 +30,11 @@ media::AudioRendererMixerInput* AudioRendererMixerManager::CreateInput() {
           &AudioRendererMixerManager::GetMixer, base::Unretained(this)),
       base::Bind(
           &AudioRendererMixerManager::RemoveMixer, base::Unretained(this)));
+}
+
+void AudioRendererMixerManager::SetAudioRendererSinkForTesting(
+    media::AudioRendererSink* sink) {
+  sink_for_testing_ = sink;
 }
 
 media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
@@ -53,7 +60,10 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
     output_params = params;
 
   media::AudioRendererMixer* mixer = new media::AudioRendererMixer(
-      params, output_params, AudioDeviceFactory::NewOutputDevice());
+      params, output_params,
+      sink_for_testing_ ?
+          sink_for_testing_ :
+          AudioDeviceFactory::NewOutputDevice());
 
   AudioRendererMixerReference mixer_reference = { mixer, 1 };
   mixers_[params] = mixer_reference;

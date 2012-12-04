@@ -20,6 +20,8 @@ class MessageLoopProxy;
 
 namespace content {
 
+class AudioMessageFilter;
+
 class PepperPlatformAudioOutputImpl
     : public webkit::ppapi::PluginDelegate::PlatformAudioOutput,
       public media::AudioOutputIPCDelegate,
@@ -30,6 +32,7 @@ class PepperPlatformAudioOutputImpl
   static PepperPlatformAudioOutputImpl* Create(
       int sample_rate,
       int frames_per_buffer,
+      int source_render_view_id,
       webkit::ppapi::PluginDelegate::PlatformAudioOutputClient* client);
 
   // PlatformAudioOutput implementation (called on main thread).
@@ -56,10 +59,12 @@ class PepperPlatformAudioOutputImpl
   bool Initialize(
       int sample_rate,
       int frames_per_buffer,
+      int source_render_view_id,
       webkit::ppapi::PluginDelegate::PlatformAudioOutputClient* client);
 
   // I/O thread backends to above functions.
-  void InitializeOnIOThread(const media::AudioParameters& params);
+  void InitializeOnIOThread(const media::AudioParameters& params,
+                            int source_render_view_id);
   void StartPlaybackOnIOThread();
   void StopPlaybackOnIOThread();
   void ShutDownOnIOThread();
@@ -70,7 +75,7 @@ class PepperPlatformAudioOutputImpl
 
   // Used to send/receive IPC. THIS MUST ONLY BE ACCESSED ON THE
   // I/O thread except to send messages and get the message loop.
-  media::AudioOutputIPC* ipc_;
+  scoped_refptr<AudioMessageFilter> ipc_;
 
   // Our ID on the MessageFilter. THIS MUST ONLY BE ACCESSED ON THE I/O THREAD
   // or else you could race with the initialize function which sets it.

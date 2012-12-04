@@ -14,6 +14,7 @@
 
 namespace content {
 
+class RendererAudioOutputDevice;
 class WebRtcAudioRendererSource;
 
 // This renderer handles calls from the pipeline and WebRtc ADM. It is used
@@ -22,7 +23,7 @@ class CONTENT_EXPORT WebRtcAudioRenderer
     : NON_EXPORTED_BASE(public media::AudioRendererSink::RenderCallback),
       NON_EXPORTED_BASE(public webkit_media::MediaStreamAudioRenderer) {
  public:
-  WebRtcAudioRenderer();
+  explicit WebRtcAudioRenderer(int source_render_view_id);
 
   // Initialize function called by clients like WebRtcAudioDeviceImpl. Note,
   // Stop() has to be called before |source| is deleted.
@@ -53,8 +54,11 @@ class CONTENT_EXPORT WebRtcAudioRenderer
                      int audio_delay_milliseconds) OVERRIDE;
   virtual void OnRenderError() OVERRIDE;
 
+  // The render view in which the audio is rendered into |sink_|.
+  const int source_render_view_id_;
+
   // The sink (destination) for rendered audio.
-  scoped_refptr<media::AudioRendererSink> sink_;
+  scoped_refptr<RendererAudioOutputDevice> sink_;
 
   // Audio data source from the browser process.
   WebRtcAudioRendererSource* source_;
@@ -69,7 +73,7 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   // Protect access to |state_|.
   base::Lock lock_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebRtcAudioRenderer);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(WebRtcAudioRenderer);
 };
 
 }  // namespace content

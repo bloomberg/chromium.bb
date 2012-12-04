@@ -840,7 +840,8 @@ PepperPluginDelegateImpl::CreateAudioOutput(
     uint32_t sample_count,
     webkit::ppapi::PluginDelegate::PlatformAudioOutputClient* client) {
   return PepperPlatformAudioOutputImpl::Create(
-      static_cast<int>(sample_rate), static_cast<int>(sample_count), client);
+      static_cast<int>(sample_rate), static_cast<int>(sample_count),
+      GetRoutingID(), client);
 }
 
 webkit::ppapi::PluginDelegate::PlatformAudioInput*

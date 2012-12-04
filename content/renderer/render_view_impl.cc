@@ -2575,7 +2575,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   if (!cmd_line->HasSwitch(switches::kDisableAudio)) {
     // audio_source_provider is a "provider" to WebKit, and a sink
     // from the perspective of the audio renderer.
-    audio_source_provider = new RenderAudioSourceProvider();
+    audio_source_provider = new RenderAudioSourceProvider(routing_id_);
 
     // Add the chrome specific audio renderer, using audio_source_provider
     // as the sink.

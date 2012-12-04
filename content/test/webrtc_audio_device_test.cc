@@ -20,7 +20,6 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"

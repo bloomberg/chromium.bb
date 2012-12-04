@@ -127,6 +127,10 @@ class CONTENT_EXPORT AudioInputRendererHost
                       const std::string& device_id,
                       bool automatic_gain_control);
 
+  // Track that the data for the audio stream referenced by |stream_id| is
+  // consumed by an entity in the render view referenced by |render_view_id|.
+  void OnAssociateStreamWithConsumer(int stream_id, int render_view_id);
+
   // Record the audio input stream referenced by |stream_id|.
   void OnRecordStream(int stream_id);
 

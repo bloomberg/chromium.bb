@@ -37,7 +37,7 @@ class RenderAudioSourceProvider
     : public WebKit::WebAudioSourceProvider,
       public media::AudioRendererSink {
  public:
-  RenderAudioSourceProvider();
+  explicit RenderAudioSourceProvider(int source_render_view_id);
 
   // WebKit::WebAudioSourceProvider implementation.
 
@@ -79,7 +79,7 @@ class RenderAudioSourceProvider
   // default_sink_ is the default sink.
   scoped_refptr<media::AudioRendererSink> default_sink_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderAudioSourceProvider);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(RenderAudioSourceProvider);
 };
 
 }  // namespace content

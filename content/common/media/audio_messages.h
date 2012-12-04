@@ -97,6 +97,16 @@ IPC_MESSAGE_CONTROL4(AudioInputHostMsg_CreateStream,
                      std::string /* device_id */,
                      bool /* automatic_gain_control */)
 
+// Indicate that audio for a stream is produced by the specified render view.
+IPC_MESSAGE_CONTROL2(AudioHostMsg_AssociateStreamWithProducer,
+                     int /* stream_id */,
+                     int /* render_view_id */)
+
+// Indicate that audio for a stream is consumed by the specified render view.
+IPC_MESSAGE_CONTROL2(AudioInputHostMsg_AssociateStreamWithConsumer,
+                     int /* stream_id */,
+                     int /* render_view_id */)
+
 // Start buffering and play the audio stream specified by stream_id.
 IPC_MESSAGE_CONTROL1(AudioHostMsg_PlayStream,
                      int /* stream_id */)

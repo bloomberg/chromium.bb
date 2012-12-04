@@ -8,7 +8,6 @@
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/win/windows_version.h"
-#include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_audio_renderer.h"

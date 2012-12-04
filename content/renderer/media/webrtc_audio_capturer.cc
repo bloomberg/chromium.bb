@@ -95,7 +95,7 @@ void WebRtcAudioCapturer::RemoveCapturerSink(WebRtcAudioCapturerSink* sink) {
 }
 
 void WebRtcAudioCapturer::SetCapturerSource(
-    media::AudioCapturerSource* source) {
+    const scoped_refptr<media::AudioCapturerSource>& source) {
   DVLOG(1) <<  "SetCapturerSource()";
   scoped_refptr<media::AudioCapturerSource> old_source;
   {

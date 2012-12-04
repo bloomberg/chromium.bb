@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
+#include "content/renderer/media/renderer_audio_output_device.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/media_switches.h"
@@ -21,7 +22,7 @@ using WebKit::WebVector;
 
 namespace content {
 
-RenderAudioSourceProvider::RenderAudioSourceProvider()
+RenderAudioSourceProvider::RenderAudioSourceProvider(int source_render_view_id)
     : is_initialized_(false),
       channels_(0),
       sample_rate_(0),
@@ -44,8 +45,15 @@ RenderAudioSourceProvider::RenderAudioSourceProvider()
   if (use_mixing) {
     default_sink_ = RenderThreadImpl::current()->
         GetAudioRendererMixerManager()->CreateInput();
+    // TODO(miu): Partition mixer instances per RenderView.
   } else {
-    default_sink_ = AudioDeviceFactory::NewOutputDevice();
+    scoped_refptr<RendererAudioOutputDevice> device =
+        AudioDeviceFactory::NewOutputDevice();
+    // The RenderView creating RenderAudioSourceProvider will be the source of
+    // the audio (WebMediaPlayer is always associated with a document in a frame
+    // at the time RenderAudioSourceProvider is instantiated).
+    device->SetSourceRenderView(source_render_view_id);
+    default_sink_ = device;
   }
 }
 

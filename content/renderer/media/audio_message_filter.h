@@ -11,9 +11,10 @@
 #define CONTENT_RENDERER_MEDIA_AUDIO_MESSAGE_FILTER_H_
 
 #include "base/gtest_prod_util.h"
-#include "base/id_map.h"
+#include "base/hash_tables.h"
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
+#include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "media/audio/audio_buffers_state.h"
@@ -30,7 +31,10 @@ class CONTENT_EXPORT AudioMessageFilter
   // Getter for the one AudioMessageFilter object.
   static AudioMessageFilter* Get();
 
-  // media::AudioOutputIPCDelegate implementation.
+  // Associates |render_view_id| as the source of audio rendered for a stream.
+  void AssociateStreamWithProducer(int stream_id, int render_view_id);
+
+  // media::AudioOutputIPC implementation.
   virtual int AddDelegate(media::AudioOutputIPCDelegate* delegate) OVERRIDE;
   virtual void RemoveDelegate(int id) OVERRIDE;
   virtual void CreateStream(int stream_id,
@@ -74,8 +78,16 @@ class CONTENT_EXPORT AudioMessageFilter
   // The singleton instance for this filter.
   static AudioMessageFilter* filter_;
 
+  // Guards delegates_ since AddDelegate() and RemoveDelegate() are called from
+  // threads other than the IO thread.
+  base::Lock delegates_lock_;
+
   // A map of stream ids to delegates.
-  IDMap<media::AudioOutputIPCDelegate> delegates_;
+  typedef base::hash_map<int, media::AudioOutputIPCDelegate*> DelegateMap;
+  DelegateMap delegates_;
+
+  // Unique ID to use for next added delegate.
+  int next_stream_id_;
 
   IPC::Channel* channel_;
 

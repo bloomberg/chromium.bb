@@ -14,6 +14,7 @@
 namespace media {
 class AudioRendererMixer;
 class AudioRendererMixerInput;
+class AudioRendererSink;
 }
 
 namespace content {
@@ -45,6 +46,9 @@ class CONTENT_EXPORT AudioRendererMixerManager {
  private:
   friend class AudioRendererMixerManagerTest;
 
+  // Overrides the AudioRendererSink implementation for unit testing.
+  void SetAudioRendererSinkForTesting(media::AudioRendererSink* sink);
+
   // Returns a mixer instance based on AudioParameters; an existing one if one
   // with the provided AudioParameters exists or a new one if not.
   media::AudioRendererMixer* GetMixer(const media::AudioParameters& params);
@@ -70,6 +74,8 @@ class CONTENT_EXPORT AudioRendererMixerManager {
   // each AudioRendererMixer instance.
   int hardware_sample_rate_;
   int hardware_buffer_size_;
+
+  media::AudioRendererSink* sink_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererMixerManager);
 };

@@ -40,7 +40,8 @@ class WebRtcAudioCapturer
   // SetCapturerSource() is called if client on the source side desires to
   // provide their own captured audio data. Client is responsible for calling
   // Start() on its own source to have the ball rolling.
-  void SetCapturerSource(media::AudioCapturerSource* source);
+  void SetCapturerSource(
+      const scoped_refptr<media::AudioCapturerSource>& source);
 
   // Starts recording audio.
   void Start();

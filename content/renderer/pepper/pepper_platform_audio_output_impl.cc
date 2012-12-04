@@ -22,10 +22,12 @@ namespace content {
 PepperPlatformAudioOutputImpl* PepperPlatformAudioOutputImpl::Create(
     int sample_rate,
     int frames_per_buffer,
+    int source_render_view_id,
     webkit::ppapi::PluginDelegate::PlatformAudioOutputClient* client) {
   scoped_refptr<PepperPlatformAudioOutputImpl> audio_output(
       new PepperPlatformAudioOutputImpl());
-  if (audio_output->Initialize(sample_rate, frames_per_buffer, client)) {
+  if (audio_output->Initialize(sample_rate, frames_per_buffer,
+                               source_render_view_id, client)) {
     // Balanced by Release invoked in
     // PepperPlatformAudioOutputImpl::ShutDownOnIOThread().
     return audio_output.release();
@@ -114,11 +116,9 @@ PepperPlatformAudioOutputImpl::PepperPlatformAudioOutputImpl()
 bool PepperPlatformAudioOutputImpl::Initialize(
     int sample_rate,
     int frames_per_buffer,
+    int source_render_view_id,
     webkit::ppapi::PluginDelegate::PlatformAudioOutputClient* client) {
   DCHECK(client);
-  // Make sure we don't call init more than once.
-  DCHECK_EQ(0, stream_id_);
-
   client_ = client;
 
   media::AudioParameters::Format format;
@@ -145,14 +145,19 @@ bool PepperPlatformAudioOutputImpl::Initialize(
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&PepperPlatformAudioOutputImpl::InitializeOnIOThread,
-                 this, params));
+                 this, params, source_render_view_id));
   return true;
 }
 
 void PepperPlatformAudioOutputImpl::InitializeOnIOThread(
-    const media::AudioParameters& params) {
+    const media::AudioParameters& params, int source_render_view_id) {
+  // Make sure we don't call init more than once.
+  DCHECK_EQ(0, stream_id_);
   stream_id_ = ipc_->AddDelegate(this);
+  DCHECK_NE(0, stream_id_);
+
   ipc_->CreateStream(stream_id_, params, 0);
+  ipc_->AssociateStreamWithProducer(stream_id_, source_render_view_id);
 }
 
 void PepperPlatformAudioOutputImpl::StartPlaybackOnIOThread() {

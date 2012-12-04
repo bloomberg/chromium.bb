@@ -184,6 +184,8 @@ bool AudioInputRendererHost::OnMessageReceived(const IPC::Message& message,
   IPC_BEGIN_MESSAGE_MAP_EX(AudioInputRendererHost, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(AudioInputHostMsg_StartDevice, OnStartDevice)
     IPC_MESSAGE_HANDLER(AudioInputHostMsg_CreateStream, OnCreateStream)
+    IPC_MESSAGE_HANDLER(AudioInputHostMsg_AssociateStreamWithConsumer,
+                        OnAssociateStreamWithConsumer)
     IPC_MESSAGE_HANDLER(AudioInputHostMsg_RecordStream, OnRecordStream)
     IPC_MESSAGE_HANDLER(AudioInputHostMsg_CloseStream, OnCloseStream)
     IPC_MESSAGE_HANDLER(AudioInputHostMsg_SetVolume, OnSetVolume)
@@ -277,6 +279,14 @@ void AudioInputRendererHost::OnCreateStream(
   entry->stream_id = stream_id;
 
   audio_entries_.insert(std::make_pair(stream_id, entry.release()));
+}
+
+void AudioInputRendererHost::OnAssociateStreamWithConsumer(int stream_id,
+                                                           int render_view_id) {
+  // TODO(miu): Will use render_view_id in upcoming change.
+  DVLOG(1) << "AudioInputRendererHost@" << this
+           << "::OnAssociateStreamWithConsumer(stream_id=" << stream_id
+           << ", render_view_id=" << render_view_id << ")";
 }
 
 void AudioInputRendererHost::OnRecordStream(int stream_id) {

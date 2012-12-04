@@ -106,6 +106,10 @@ class CONTENT_EXPORT AudioRendererHost
                       const media::AudioParameters& params,
                       int input_channels);
 
+  // Track that the data for the audio stream referenced by |stream_id| is
+  // produced by an entity in the render view referenced by |render_view_id|.
+  void OnAssociateStreamWithProducer(int stream_id, int render_view_id);
+
   // Play the audio stream referenced by |stream_id|.
   void OnPlayStream(int stream_id);
 

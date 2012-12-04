@@ -21,6 +21,7 @@ class AudioParameters;
 
 namespace content {
 
+class AudioInputMessageFilter;
 class PepperPluginDelegateImpl;
 
 // PepperPlatformAudioInputImpl is operated on two threads: the main thread (the
@@ -93,11 +94,14 @@ class PepperPlatformAudioInputImpl
 
   // Used to send/receive IPC. THIS MUST ONLY BE ACCESSED ON THE
   // I/O thread except to send messages and get the message loop.
-  media::AudioInputIPC* ipc_;
+  scoped_refptr<AudioInputMessageFilter> ipc_;
 
   // Our ID on the MessageFilter. THIS MUST ONLY BE ACCESSED ON THE I/O THREAD
   // or else you could race with the initialize function which sets it.
   int32 stream_id_;
+
+  // The render view into which the audio is sent.
+  int render_view_id_;
 
   base::MessageLoopProxy* main_message_loop_proxy_;
 

@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/audio_hardware.h"
+#include "content/renderer/media/renderer_audio_output_device.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "media/audio/audio_util.h"
 #include "media/audio/sample_rates.h"
@@ -80,8 +81,9 @@ void AddHistogramFramesPerBuffer(int param) {
 
 }  // namespace
 
-WebRtcAudioRenderer::WebRtcAudioRenderer()
+WebRtcAudioRenderer::WebRtcAudioRenderer(int source_render_view_id)
     : state_(UNINITIALIZED),
+      source_render_view_id_(source_render_view_id),
       source_(NULL) {
 }
 
@@ -191,7 +193,7 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
 
   // Configure the audio rendering client and start the rendering.
   sink_->Initialize(params_, this);
-
+  sink_->SetSourceRenderView(source_render_view_id_);
   sink_->Start();
 
   state_ = PAUSED;
