@@ -41,7 +41,7 @@ class ZoomView : public views::ImageView,
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
 
   // ui::EventHandler:
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // TouchableLocationBarView.
   virtual int GetBuiltInHorizontalPadding() const OVERRIDE;

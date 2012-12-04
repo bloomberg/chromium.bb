@@ -72,13 +72,13 @@ bool Event::HasNativeEvent() const {
 }
 
 void Event::StopPropagation() {
-  CHECK(phase_ != EP_PREDISPATCH && phase_ != EP_POSTDISPATCH);
+//  CHECK(phase_ != EP_PREDISPATCH && phase_ != EP_POSTDISPATCH);
   result_ = static_cast<ui::EventResult>(result_ | ER_CONSUMED);
   CHECK(stopped_propagation());
 }
 
 void Event::SetHandled() {
-  CHECK(phase_ != EP_PREDISPATCH && phase_ != EP_POSTDISPATCH);
+//  CHECK(phase_ != EP_PREDISPATCH && phase_ != EP_POSTDISPATCH);
   result_ = static_cast<ui::EventResult>(result_ | ER_HANDLED);
 }
 

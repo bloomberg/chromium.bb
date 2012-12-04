@@ -655,7 +655,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
   virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Accelerators --------------------------------------------------------------
 
@@ -1300,9 +1300,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // of OnTouchEvent.
   ui::EventResult ProcessTouchEvent(ui::TouchEvent* event);
 
-  // RootView will invoke this with incoming GestureEvents. This will invoke
-  // OnGestureEvent and return the result.
-  ui::EventResult ProcessGestureEvent(ui::GestureEvent* event);
+  // RootView will invoke this with incoming GestureEvents. This invokes
+  // OnGestureEvent.
+  void ProcessGestureEvent(ui::GestureEvent* event);
 
   // Accelerators --------------------------------------------------------------
 

@@ -101,23 +101,6 @@ scoped_refptr<ui::Texture> TestWindowDelegate::CopyTexture() {
   return scoped_refptr<ui::Texture>();
 }
 
-ui::EventResult TestWindowDelegate::OnKeyEvent(ui::KeyEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult TestWindowDelegate::OnMouseEvent(ui::MouseEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult TestWindowDelegate::OnTouchEvent(ui::TouchEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult TestWindowDelegate::OnGestureEvent(
-    ui::GestureEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // ColorTestWindowDelegate
 

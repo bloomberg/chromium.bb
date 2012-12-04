@@ -106,15 +106,16 @@ ui::EventResult WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   return ToplevelWindowEventHandler::OnMouseEvent(event);
 }
 
-ui::EventResult WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event) {
+void WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   if (event->type() == ui::ET_GESTURE_DOUBLE_TAP &&
       target->delegate()->GetNonClientComponent(event->location()) ==
       HTCAPTION) {
     ToggleMaximizedState(target);  // |this| may be destroyed from here.
-    return ui::ER_CONSUMED;
+    event->StopPropagation();
+    return;
   }
-  return ToplevelWindowEventHandler::OnGestureEvent(event);
+  ToplevelWindowEventHandler::OnGestureEvent(event);
 }
 
 void WorkspaceEventHandler::HandleVerticalResizeDoubleClick(

@@ -304,7 +304,7 @@ void LauncherButton::OnBlur() {
   CustomButton::OnBlur();
 }
 
-ui::EventResult LauncherButton::OnGestureEvent(ui::GestureEvent* event) {
+void LauncherButton::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
       AddState(STATE_HOVERED);
@@ -314,14 +314,17 @@ ui::EventResult LauncherButton::OnGestureEvent(ui::GestureEvent* event) {
       return CustomButton::OnGestureEvent(event);
     case ui::ET_GESTURE_SCROLL_BEGIN:
       host_->PointerPressedOnButton(this, LauncherButtonHost::TOUCH, *event);
-      return ui::ER_CONSUMED;
+      event->SetHandled();
+      return;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       host_->PointerDraggedOnButton(this, LauncherButtonHost::TOUCH, *event);
-      return ui::ER_CONSUMED;
+      event->SetHandled();
+      return;
     case ui::ET_GESTURE_SCROLL_END:
     case ui::ET_SCROLL_FLING_START:
       host_->PointerReleasedOnButton(this, LauncherButtonHost::TOUCH, false);
-      return ui::ER_CONSUMED;
+      event->SetHandled();
+      return;
     default:
       return CustomButton::OnGestureEvent(event);
   }

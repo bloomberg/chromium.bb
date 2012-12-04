@@ -1682,14 +1682,14 @@ ui::EventResult RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
   return result;
 }
 
-ui::EventResult RenderWidgetHostViewAura::OnGestureEvent(
-    ui::GestureEvent* event) {
+void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnGestureEvent");
   // Pinch gestures are currently disabled by default. See crbug.com/128477.
   if ((event->type() == ui::ET_GESTURE_PINCH_BEGIN ||
       event->type() == ui::ET_GESTURE_PINCH_UPDATE ||
       event->type() == ui::ET_GESTURE_PINCH_END) && !ShouldSendPinchGesture()) {
-    return ui::ER_CONSUMED;
+    event->SetHandled();
+    return;
   }
 
   RenderViewHostDelegate* delegate = NULL;
@@ -1728,10 +1728,8 @@ ui::EventResult RenderWidgetHostViewAura::OnGestureEvent(
   }
 
   // If a gesture is not processed by the webpage, then WebKit processes it
-  // (e.g. generates synthetic mouse events). So CONSUMED should be returned
-  // from here to avoid any duplicate synthetic mouse-events being generated
-  // from aura.
-  return ui::ER_CONSUMED;
+  // (e.g. generates synthetic mouse events).
+  event->SetHandled();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

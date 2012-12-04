@@ -180,7 +180,7 @@ class Tab : public ui::AnimationDelegate,
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Returns the bounds of the title and icon.
   const gfx::Rect& GetTitleBounds() const;

@@ -185,24 +185,27 @@ bool ContentsView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   return false;
 }
 
-ui::EventResult ContentsView::OnGestureEvent(ui::GestureEvent* event) {
+void ContentsView::OnGestureEvent(ui::GestureEvent* event) {
   if (show_state_ != SHOW_APPS)
-    return ui::ER_UNHANDLED;
+    return;
 
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
       pagination_model_->StartScroll();
-      return ui::ER_CONSUMED;
+      event->SetHandled();
+      return;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       // event->details.scroll_x() > 0 means moving contents to right. That is,
       // transitioning to previous page.
       pagination_model_->UpdateScroll(
           event->details().scroll_x() / GetContentsBounds().width());
-      return ui::ER_CONSUMED;
+      event->SetHandled();
+      return;
     case ui::ET_GESTURE_SCROLL_END:
       pagination_model_->EndScroll(pagination_model_->
           transition().progress < kFinishTransitionThreshold);
-      return ui::ER_CONSUMED;
+      event->SetHandled();
+      return;
     case ui::ET_SCROLL_FLING_START: {
       pagination_model_->EndScroll(true);
       if (fabs(event->details().velocity_x()) > kMinHorizVelocityToSwitchPage) {
@@ -210,13 +213,12 @@ ui::EventResult ContentsView::OnGestureEvent(ui::GestureEvent* event) {
             event->details().velocity_x() < 0 ? 1 : -1,
             true);
       }
-      return ui::ER_CONSUMED;
+      event->SetHandled();
+      return;
     }
     default:
       break;
   }
-
-  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult ContentsView::OnScrollEvent(ui::ScrollEvent* event) {

@@ -45,9 +45,8 @@ ui::EventResult TestEventHandler::OnTouchEvent(ui::TouchEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult TestEventHandler::OnGestureEvent(ui::GestureEvent* event) {
+void TestEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   num_gesture_events_++;
-  return ui::ER_UNHANDLED;
 }
 
 }  // namespace test

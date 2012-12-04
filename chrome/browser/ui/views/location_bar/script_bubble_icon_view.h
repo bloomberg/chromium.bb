@@ -42,7 +42,7 @@ class ScriptBubbleIconView : public views::ImageView,
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
 
   // ui::EventHandler overrides:
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Shows the script bubble, anchored to anchor_view.
   void ShowScriptBubble(views::View* anchor_view,

@@ -302,13 +302,12 @@ bool TreeView::OnMousePressed(const ui::MouseEvent& event) {
   return OnClickOrTap(event);
 }
 
-ui::EventResult TreeView::OnGestureEvent(ui::GestureEvent* event) {
+void TreeView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP ||
       event->type() == ui::ET_GESTURE_DOUBLE_TAP) {
     if (OnClickOrTap(*event))
-      return ui::ER_CONSUMED;
+      event->SetHandled();
   }
-  return ui::ER_UNHANDLED;
 }
 
 void TreeView::ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture) {

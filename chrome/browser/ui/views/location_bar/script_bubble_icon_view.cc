@@ -84,12 +84,11 @@ bool ScriptBubbleIconView::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-ui::EventResult ScriptBubbleIconView::OnGestureEvent(ui::GestureEvent* event) {
+void ScriptBubbleIconView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP) {
     ShowScriptBubble(this, location_bar_delegate_->GetWebContents());
-    return ui::ER_CONSUMED;
+    event->SetHandled();
   }
-  return ui::ER_UNHANDLED;
 }
 
 void ScriptBubbleIconView::ShowScriptBubble(views::View* anchor_view,

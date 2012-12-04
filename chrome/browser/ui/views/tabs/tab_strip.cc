@@ -307,7 +307,7 @@ class NewTabButton : public views::ImageButton {
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
   bool ShouldUseNativeFrame() const;
@@ -380,11 +380,11 @@ void NewTabButton::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawImageInt(image, 0, height() - image.height());
 }
 
-ui::EventResult NewTabButton::OnGestureEvent(ui::GestureEvent* event) {
+void NewTabButton::OnGestureEvent(ui::GestureEvent* event) {
   // Consume all gesture events here so that the parent (Tab) does not
   // start consuming gestures.
   views::ImageButton::OnGestureEvent(event);
-  return ui::ER_CONSUMED;
+  event->SetHandled();
 }
 
 bool NewTabButton::ShouldUseNativeFrame() const {
@@ -1463,7 +1463,7 @@ void TabStrip::OnMouseEntered(const ui::MouseEvent& event) {
   SetResetToShrinkOnExit(true);
 }
 
-ui::EventResult TabStrip::OnGestureEvent(ui::GestureEvent* event) {
+void TabStrip::OnGestureEvent(ui::GestureEvent* event) {
   SetResetToShrinkOnExit(false);
   switch (event->type()) {
     case ui::ET_GESTURE_END:
@@ -1490,7 +1490,7 @@ ui::EventResult TabStrip::OnGestureEvent(ui::GestureEvent* event) {
     default:
       break;
   }
-  return ui::ER_CONSUMED;
+  event->SetHandled();
 }
 
 void TabStrip::GetCurrentTabWidths(double* unselected_width,

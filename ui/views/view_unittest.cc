@@ -234,7 +234,7 @@ class TestView : public View {
 
   virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
   // Ignores GestureEvent by default.
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   virtual void Paint(gfx::Canvas* canvas) OVERRIDE;
   virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
@@ -287,10 +287,10 @@ class TestViewConsumeGesture : public TestView {
   virtual ~TestViewConsumeGesture() {}
 
  protected:
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
     last_gesture_event_type_ = event->type();
     location_.SetPoint(event->x(), event->y());
-    return ui::ER_CONSUMED;
+    event->StopPropagation();
   }
 
  private:
@@ -304,8 +304,7 @@ class TestViewIgnoreGesture: public TestView {
   virtual ~TestViewIgnoreGesture() {}
 
  private:
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
-    return ui::ER_UNHANDLED;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
   }
 
   DISALLOW_COPY_AND_ASSIGN(TestViewIgnoreGesture);
@@ -319,10 +318,10 @@ class TestViewIgnoreScrollGestures : public TestViewConsumeGesture {
   virtual ~TestViewIgnoreScrollGestures() {}
 
  private:
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
     if (event->IsScrollGestureEvent())
-      return ui::ER_UNHANDLED;
-    return TestViewConsumeGesture::OnGestureEvent(event);
+      return;
+    TestViewConsumeGesture::OnGestureEvent(event);
   }
 
   DISALLOW_COPY_AND_ASSIGN(TestViewIgnoreScrollGestures);
@@ -594,8 +593,7 @@ TEST_F(ViewTest, TouchEvent) {
   widget->CloseNow();
 }
 
-ui::EventResult TestView::OnGestureEvent(ui::GestureEvent* event) {
-  return ui::ER_UNHANDLED;
+void TestView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 TEST_F(ViewTest, GestureEvent) {

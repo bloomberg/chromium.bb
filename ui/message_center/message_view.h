@@ -43,7 +43,7 @@ class MessageView : public views::SlideOutView,
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
 
   // ui::EventHandler overrides.
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,

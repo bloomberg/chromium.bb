@@ -245,11 +245,12 @@ void FrameMaximizeButton::OnMouseCaptureLost() {
   ImageButton::OnMouseCaptureLost();
 }
 
-ui::EventResult FrameMaximizeButton::OnGestureEvent(ui::GestureEvent* event) {
+void FrameMaximizeButton::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
     is_snap_enabled_ = true;
     ProcessStartEvent(*event);
-    return ui::ER_CONSUMED;
+    event->SetHandled();
+    return;
   }
 
   if (event->type() == ui::ET_GESTURE_TAP ||
@@ -261,7 +262,8 @@ ui::EventResult FrameMaximizeButton::OnGestureEvent(ui::GestureEvent* event) {
     if (event->type() == ui::ET_GESTURE_TAP)
       snap_type_ = SnapTypeForLocation(event->location());
     ProcessEndEvent(*event);
-    return ui::ER_CONSUMED;
+    event->SetHandled();
+    return;
   }
 
   if (is_snap_enabled_) {
@@ -272,17 +274,19 @@ ui::EventResult FrameMaximizeButton::OnGestureEvent(ui::GestureEvent* event) {
       ProcessUpdateEvent(*event);
       snap_type_ = SnapTypeForLocation(event->location());
       ProcessEndEvent(*event);
-      return ui::ER_CONSUMED;
+      event->SetHandled();
+      return;
     }
 
     if (event->type() == ui::ET_GESTURE_SCROLL_UPDATE ||
         event->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
       ProcessUpdateEvent(*event);
-      return ui::ER_CONSUMED;
+      event->SetHandled();
+      return;
     }
   }
 
-  return ImageButton::OnGestureEvent(event);
+  ImageButton::OnGestureEvent(event);
 }
 
 void FrameMaximizeButton::ProcessStartEvent(const ui::LocatedEvent& event) {

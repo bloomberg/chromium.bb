@@ -85,10 +85,10 @@ class DragTestView : public views::View {
     return true;
   }
 
-  ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
     if (event->type() == ui::ET_GESTURE_LONG_TAP)
       long_tap_received_ = true;
-    return ui::ER_UNHANDLED;
+    return;
   }
 
   bool GetDropFormats(int* formats,

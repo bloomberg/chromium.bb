@@ -42,7 +42,7 @@ class UI_EXPORT EventHandler {
 
   virtual EventResult OnTouchEvent(TouchEvent* event);
 
-  virtual EventResult OnGestureEvent(GestureEvent* event);
+  virtual void OnGestureEvent(GestureEvent* event);
 };
 
 typedef std::vector<EventHandler*> EventHandlerList;

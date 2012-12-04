@@ -260,8 +260,8 @@ bool SubmenuView::OnMouseWheel(const ui::MouseWheelEvent& e) {
   return true;
 }
 
-ui::EventResult SubmenuView::OnGestureEvent(ui::GestureEvent* event) {
-  ui::EventResult to_return = ui::ER_CONSUMED;
+void SubmenuView::OnGestureEvent(ui::GestureEvent* event) {
+  bool handled = true;
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
       scroll_animator_->Stop();
@@ -280,10 +280,11 @@ ui::EventResult SubmenuView::OnGestureEvent(ui::GestureEvent* event) {
       scroll_animator_->Stop();
       break;
     default:
-      to_return = ui::ER_UNHANDLED;
+      handled = false;
       break;
   }
-  return to_return;
+  if (handled)
+    event->SetHandled();
 }
 
 bool SubmenuView::IsShowing() {

@@ -134,28 +134,29 @@ bool MessageView::OnMousePressed(const ui::MouseEvent& event) {
   return true;
 }
 
-ui::EventResult MessageView::OnGestureEvent(ui::GestureEvent* event) {
+void MessageView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP) {
     list_delegate_->OnNotificationClicked(notification_.id);
-    return ui::ER_CONSUMED;
+    event->SetHandled();
+    return;
   }
 
   if (event->type() == ui::ET_GESTURE_LONG_PRESS) {
     ShowMenu(event->location());
-    return ui::ER_CONSUMED;
+    event->SetHandled();
+    return;
   }
 
-  ui::EventResult result = SlideOutView::OnGestureEvent(event);
-  if (result & ui::ER_CONSUMED)
-    return result;
+  SlideOutView::OnGestureEvent(event);
+  if (event->handled())
+    return;
 
   if (!event->IsScrollGestureEvent())
-    return result;
+    return;
 
   if (scroller_)
     scroller_->OnGestureEvent(event);
-
-  return ui::ER_CONSUMED;
+  event->SetHandled();
 }
 
 void MessageView::ButtonPressed(views::Button* sender,

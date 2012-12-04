@@ -180,10 +180,8 @@ class CaptureWindowDelegateImpl : public TestWindowDelegate {
     touch_event_count_++;
     return ui::ER_UNHANDLED;
   }
-  virtual ui::EventResult OnGestureEvent(
-      ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
     gesture_event_count_++;
-    return ui::ER_UNHANDLED;
   }
   virtual void OnCaptureLost() OVERRIDE {
     capture_lost_count_++;
@@ -223,10 +221,9 @@ class GestureTrackPositionDelegate : public TestWindowDelegate {
  public:
   GestureTrackPositionDelegate() {}
 
-  virtual ui::EventResult OnGestureEvent(
-      ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
     position_ = event->location();
-    return ui::ER_CONSUMED;
+    event->StopPropagation();
   }
 
   const gfx::Point& position() const { return position_; }

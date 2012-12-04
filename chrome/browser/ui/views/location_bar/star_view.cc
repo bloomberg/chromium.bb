@@ -80,13 +80,12 @@ bool StarView::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-ui::EventResult StarView::OnGestureEvent(ui::GestureEvent* event) {
+void StarView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP) {
     UMA_HISTOGRAM_ENUMERATION("Bookmarks.EntryPoint",
                               bookmark_utils::ENTRY_POINT_STAR_GESTURE,
                               bookmark_utils::ENTRY_POINT_LIMIT);
     command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE_FROM_STAR);
-    return ui::ER_CONSUMED;
+    event->SetHandled();
   }
-  return ui::ER_UNHANDLED;
 }

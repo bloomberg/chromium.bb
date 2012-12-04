@@ -433,9 +433,7 @@ bool ScrollView::OnKeyPressed(const ui::KeyEvent& event) {
   return processed;
 }
 
-ui::EventResult ScrollView::OnGestureEvent(ui::GestureEvent* event) {
-  ui::EventResult status = ui::ER_UNHANDLED;
-
+void ScrollView::OnGestureEvent(ui::GestureEvent* event) {
   // If the event happened on one of the scrollbars, then those events are
   // sent directly to the scrollbars. Otherwise, only scroll events are sent to
   // the scrollbars.
@@ -446,13 +444,12 @@ ui::EventResult ScrollView::OnGestureEvent(ui::GestureEvent* event) {
 
   if (vert_sb_->visible()) {
     if (vert_sb_->bounds().Contains(event->location()) || scroll_event)
-      status = vert_sb_->OnGestureEvent(event);
+      vert_sb_->OnGestureEvent(event);
   }
-  if (status == ui::ER_UNHANDLED && horiz_sb_->visible()) {
+  if (!event->handled() && horiz_sb_->visible()) {
     if (horiz_sb_->bounds().Contains(event->location()) || scroll_event)
-      status = horiz_sb_->OnGestureEvent(event);
+      horiz_sb_->OnGestureEvent(event);
   }
-  return status;
 }
 
 bool ScrollView::OnMouseWheel(const ui::MouseWheelEvent& e) {

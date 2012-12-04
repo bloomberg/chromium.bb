@@ -332,14 +332,17 @@ ui::EventResult DragDropController::OnTouchEvent(ui::TouchEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult DragDropController::OnGestureEvent(ui::GestureEvent* event) {
+void DragDropController::OnGestureEvent(ui::GestureEvent* event) {
   if (!IsDragDropInProgress())
-    return ui::ER_UNHANDLED;
+    return;
 
   // If current drag session was not started by touch, dont process this touch
   // event, but consume it so it does not interfere with current drag session.
-  if (current_drag_event_source_ != ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH)
-    return ui::ER_CONSUMED;
+  if (current_drag_event_source_ !=
+      ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH) {
+    event->StopPropagation();
+    return;
+  }
 
   // Apply kTouchDragImageVerticalOffset to the location.
   ui::GestureEvent touch_offset_event(*event,
@@ -356,7 +359,8 @@ ui::EventResult DragDropController::OnGestureEvent(ui::GestureEvent* event) {
       drag_drop_tracker_->GetTarget(touch_offset_event);
   if (!translated_target) {
     DragCancel();
-    return ui::ER_HANDLED;
+    event->SetHandled();
+    return;
   }
   scoped_ptr<ui::LocatedEvent> translated_event(
       drag_drop_tracker_->ConvertEvent(translated_target, touch_offset_event));
@@ -384,7 +388,7 @@ ui::EventResult DragDropController::OnGestureEvent(ui::GestureEvent* event) {
     default:
       break;
   }
-  return ui::ER_HANDLED;
+  event->SetHandled();
 }
 
 void DragDropController::OnWindowDestroyed(aura::Window* window) {

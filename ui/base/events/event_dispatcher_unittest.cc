@@ -100,9 +100,12 @@ class TestEventHandler : public EventHandler {
     return event_result_;
   }
 
-  virtual EventResult OnGestureEvent(GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(GestureEvent* event) OVERRIDE {
     ReceivedEvent(event);
-    return event_result_;
+    if (event_result_ & ui::ER_CONSUMED)
+      event->StopPropagation();
+    if (event_result_ & ui::ER_HANDLED)
+      event->SetHandled();
   }
 
   int id_;

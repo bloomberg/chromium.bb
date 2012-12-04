@@ -291,19 +291,17 @@ bool Slider::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-ui::EventResult Slider::OnGestureEvent(ui::GestureEvent* event) {
+void Slider::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
       event->type() == ui::ET_GESTURE_TAP_DOWN) {
     PrepareForMove(event->location());
     MoveButtonTo(event->location());
-    return ui::ER_CONSUMED;
-  } else
-  if (event->type() == ui::ET_GESTURE_SCROLL_UPDATE ||
-      event->type() == ui::ET_GESTURE_SCROLL_END) {
+    event->SetHandled();
+  } else if (event->type() == ui::ET_GESTURE_SCROLL_UPDATE ||
+             event->type() == ui::ET_GESTURE_SCROLL_END) {
     MoveButtonTo(event->location());
-    return ui::ER_CONSUMED;
+    event->SetHandled();
   }
-  return ui::ER_UNHANDLED;
 }
 
 void Slider::AnimationProgressed(const ui::Animation* animation) {

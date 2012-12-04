@@ -76,7 +76,7 @@ class UI_EXPORT EventTarget : public EventHandler {
   virtual EventResult OnMouseEvent(MouseEvent* event) OVERRIDE;
   virtual EventResult OnScrollEvent(ScrollEvent* event) OVERRIDE;
   virtual EventResult OnTouchEvent(TouchEvent* event) OVERRIDE;
-  virtual EventResult OnGestureEvent(GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(GestureEvent* event) OVERRIDE;
 
  private:
   friend class EventDispatcher;

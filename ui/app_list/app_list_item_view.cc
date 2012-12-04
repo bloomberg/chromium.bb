@@ -313,18 +313,18 @@ bool AppListItemView::OnMouseDragged(const ui::MouseEvent& event) {
   return true;
 }
 
-ui::EventResult AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
+void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
       if (touch_dragging_) {
         apps_grid_view_->InitiateDrag(this, AppsGridView::TOUCH, *event);
-        return ui::ER_CONSUMED;
+        event->SetHandled();
       }
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       if (touch_dragging_) {
         apps_grid_view_->UpdateDrag(this, AppsGridView::TOUCH, *event);
-        return ui::ER_CONSUMED;
+        event->SetHandled();
       }
       break;
     case ui::ET_GESTURE_SCROLL_END:
@@ -332,13 +332,14 @@ ui::EventResult AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
       if (touch_dragging_) {
         SetTouchDragging(false);
         apps_grid_view_->EndDrag(false);
-        return ui::ER_CONSUMED;
+        event->SetHandled();
       }
       break;
     case ui::ET_GESTURE_LONG_PRESS:
       if (!apps_grid_view_->has_dragged_view())
         SetTouchDragging(true);
-      return ui::ER_CONSUMED;
+      event->SetHandled();
+      break;
     case ui::ET_GESTURE_END:
       if (touch_dragging_) {
         SetTouchDragging(false);
@@ -351,7 +352,8 @@ ui::EventResult AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
     default:
       break;
   }
-  return CustomButton::OnGestureEvent(event);
+  if (!event->handled())
+    CustomButton::OnGestureEvent(event);
 }
 
 }  // namespace app_list

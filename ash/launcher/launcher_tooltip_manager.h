@@ -75,7 +75,7 @@ protected:
   // ui::EventHandler overrides:
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // SessionStateObserver override:
   virtual void OnSessionStateEvent(SessionStateObserver::EventType event)

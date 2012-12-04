@@ -167,12 +167,11 @@ ui::EventResult FocusController::OnTouchEvent(ui::TouchEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult FocusController::OnGestureEvent(ui::GestureEvent* event) {
+void FocusController::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_BEGIN &&
       event->details().touch_points() == 1) {
     WindowFocusedFromInputEvent(static_cast<aura::Window*>(event->target()));
   }
-  return ui::ER_UNHANDLED;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -883,8 +883,7 @@ ui::EventResult View::OnTouchEvent(ui::TouchEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult View::OnGestureEvent(ui::GestureEvent* event) {
-  return ui::ER_UNHANDLED;
+void View::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 ui::TextInputClient* View::GetTextInputClient() {
@@ -1999,10 +1998,10 @@ ui::EventResult View::ProcessTouchEvent(ui::TouchEvent* event) {
   return OnTouchEvent(event);
 }
 
-ui::EventResult View::ProcessGestureEvent(ui::GestureEvent* event) {
-  ui::EventResult status = OnGestureEvent(event);
-  if (status != ui::ER_UNHANDLED)
-    return status;
+void View::ProcessGestureEvent(ui::GestureEvent* event) {
+  OnGestureEvent(event);
+  if (event->handled())
+    return;
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableTouchDragDrop)) {
@@ -2010,8 +2009,10 @@ ui::EventResult View::ProcessGestureEvent(ui::GestureEvent* event) {
         (!drag_controller_ || drag_controller_->CanStartDragForView(
             this, event->location(), event->location()))) {
       if (DoDrag(*event, event->location(),
-          ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH))
-        return ui::ER_CONSUMED;
+          ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH)) {
+        event->StopPropagation();
+        return;
+      }
     }
   }
 
@@ -2022,9 +2023,8 @@ ui::EventResult View::ProcessGestureEvent(ui::GestureEvent* event) {
     gfx::Point location(event->location());
     ConvertPointToScreen(this, &location);
     ShowContextMenu(location, true);
-    return ui::ER_CONSUMED;
+    event->StopPropagation();
   }
-  return status;
 }
 
 // Accelerators ----------------------------------------------------------------

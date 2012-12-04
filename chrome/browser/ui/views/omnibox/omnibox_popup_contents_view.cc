@@ -358,8 +358,7 @@ void OmniboxPopupContentsView::OnMouseExited(
   model_->SetHoveredLine(OmniboxPopupModel::kNoMatch);
 }
 
-ui::EventResult OmniboxPopupContentsView::OnGestureEvent(
-    ui::GestureEvent* event) {
+void OmniboxPopupContentsView::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
     case ui::ET_GESTURE_SCROLL_BEGIN:
@@ -371,9 +370,9 @@ ui::EventResult OmniboxPopupContentsView::OnGestureEvent(
       OpenSelectedLine(*event, CURRENT_TAB);
       break;
     default:
-      return ui::ER_UNHANDLED;
+      return;
   }
-  return ui::ER_CONSUMED;
+  event->SetHandled();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

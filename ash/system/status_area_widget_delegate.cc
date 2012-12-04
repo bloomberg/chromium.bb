@@ -61,12 +61,11 @@ const views::Widget* StatusAreaWidgetDelegate::GetWidget() const {
   return View::GetWidget();
 }
 
-ui::EventResult StatusAreaWidgetDelegate::OnGestureEvent(
-    ui::GestureEvent* event) {
+void StatusAreaWidgetDelegate::OnGestureEvent(ui::GestureEvent* event) {
   if (gesture_handler_.ProcessGestureEvent(*event))
-    return ui::ER_CONSUMED;
-
-  return views::AccessiblePaneView::OnGestureEvent(event);
+    event->StopPropagation();
+  else
+    views::AccessiblePaneView::OnGestureEvent(event);
 }
 
 bool StatusAreaWidgetDelegate::CanActivate() const {

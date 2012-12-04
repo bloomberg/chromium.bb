@@ -161,13 +161,14 @@ void NativeComboboxViews::OnBlur() {
 /////////////////////////////////////////////////////////////////
 // NativeComboboxViews, ui::EventHandler overrides:
 
-ui::EventResult NativeComboboxViews::OnGestureEvent(ui::GestureEvent* gesture) {
+void NativeComboboxViews::OnGestureEvent(ui::GestureEvent* gesture) {
   if (gesture->type() == ui::ET_GESTURE_TAP) {
     UpdateFromModel();
     ShowDropDownMenu();
-    return ui::ER_CONSUMED;
+    gesture->StopPropagation();
+    return;
   }
-  return View::OnGestureEvent(gesture);
+  View::OnGestureEvent(gesture);
 }
 
 /////////////////////////////////////////////////////////////////

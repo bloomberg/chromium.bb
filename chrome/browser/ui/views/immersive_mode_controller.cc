@@ -164,10 +164,6 @@ void ImmersiveModeController::SetEnabled(bool enabled) {
 }
 
 // ui::EventHandler overrides:
-ui::EventResult ImmersiveModeController::OnKeyEvent(ui::KeyEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
 ui::EventResult ImmersiveModeController::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() != ui::ET_MOUSE_MOVED)
     return ui::ER_UNHANDLED;
@@ -183,19 +179,6 @@ ui::EventResult ImmersiveModeController::OnMouseEvent(ui::MouseEvent* event) {
     top_timer_.Stop();
   }
   // Pass along event for further handling.
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult ImmersiveModeController::OnScrollEvent(ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult ImmersiveModeController::OnTouchEvent(ui::TouchEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult ImmersiveModeController::OnGestureEvent(
-    ui::GestureEvent* event) {
   return ui::ER_UNHANDLED;
 }
 

@@ -32,7 +32,7 @@ class MenuHostRootView : public internal::RootView {
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
 
   // Overridden from internal::RootView:
-  virtual ui::EventResult DispatchGestureEvent(ui::GestureEvent* e) OVERRIDE;
+  virtual void DispatchGestureEvent(ui::GestureEvent* e) OVERRIDE;
 
  private:
   // Returns the MenuController for this MenuHostRootView.

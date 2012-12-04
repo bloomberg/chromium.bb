@@ -302,15 +302,12 @@ ui::EventResult LauncherTooltipManager::OnTouchEvent(ui::TouchEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult LauncherTooltipManager::OnGestureEvent(
-    ui::GestureEvent* event) {
+void LauncherTooltipManager::OnGestureEvent(ui::GestureEvent* event) {
   if (widget_ && widget_->IsVisible()) {
     // Because this mouse event may arrive to |view_|, here we just schedule
     // the closing event rather than directly calling Close().
     CloseSoon();
   }
-
-  return ui::ER_UNHANDLED;
 }
 
 void LauncherTooltipManager::OnSessionStateEvent(

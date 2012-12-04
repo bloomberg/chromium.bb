@@ -72,7 +72,7 @@ class OmniboxPopupContentsView : public views::View,
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
 
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  protected:
   OmniboxPopupContentsView(const gfx::Font& font,

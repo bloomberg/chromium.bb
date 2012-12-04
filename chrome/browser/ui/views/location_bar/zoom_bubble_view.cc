@@ -114,16 +114,16 @@ void ZoomBubbleView::OnMouseExited(const ui::MouseEvent& event) {
   StartTimerIfNecessary();
 }
 
-ui::EventResult ZoomBubbleView::OnGestureEvent(ui::GestureEvent* event) {
+void ZoomBubbleView::OnGestureEvent(ui::GestureEvent* event) {
   if (!zoom_bubble_ || !zoom_bubble_->auto_close_ ||
       event->type() != ui::ET_GESTURE_TAP) {
-    return ui::ER_UNHANDLED;
+    return;
   }
 
   // If an auto-closing bubble was tapped, show a non-auto-closing bubble in
   // its place.
   ShowBubble(zoom_bubble_->anchor_view(), zoom_bubble_->web_contents_, false);
-  return ui::ER_CONSUMED;
+  event->SetHandled();
 }
 
 void ZoomBubbleView::ButtonPressed(views::Button* sender,

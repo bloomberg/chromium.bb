@@ -345,9 +345,11 @@ bool BrowserActionButton::OnKeyReleased(const ui::KeyEvent& event) {
                      TextButton::OnKeyReleased(event);
 }
 
-ui::EventResult BrowserActionButton::OnGestureEvent(ui::GestureEvent* event) {
-  return IsPopup() ? MenuButton::OnGestureEvent(event) :
-                     TextButton::OnGestureEvent(event);
+void BrowserActionButton::OnGestureEvent(ui::GestureEvent* event) {
+  if (IsPopup())
+    MenuButton::OnGestureEvent(event);
+  else
+    TextButton::OnGestureEvent(event);
 }
 
 bool BrowserActionButton::AcceleratorPressed(

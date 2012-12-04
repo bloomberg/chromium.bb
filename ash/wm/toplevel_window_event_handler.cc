@@ -156,11 +156,10 @@ ui::EventResult ToplevelWindowEventHandler::OnMouseEvent(
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult ToplevelWindowEventHandler::OnGestureEvent(
-    ui::GestureEvent* event) {
+void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   if (!target->delegate())
-    return ui::ER_UNHANDLED;
+    return;
 
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN: {
@@ -168,7 +167,7 @@ ui::EventResult ToplevelWindowEventHandler::OnGestureEvent(
           target->delegate()->GetNonClientComponent(event->location());
       if (WindowResizer::GetBoundsChangeForWindowComponent(component) == 0) {
         window_resizer_.reset();
-        return ui::ER_UNHANDLED;
+        return;
       }
       in_gesture_drag_ = true;
       gfx::Point location_in_parent(
@@ -178,14 +177,14 @@ ui::EventResult ToplevelWindowEventHandler::OnGestureEvent(
     }
     case ui::ET_GESTURE_SCROLL_UPDATE: {
       if (!in_gesture_drag_)
-        return ui::ER_UNHANDLED;
+        return;
       HandleDrag(target, event);
       break;
     }
     case ui::ET_GESTURE_SCROLL_END:
     case ui::ET_SCROLL_FLING_START: {
       if (!in_gesture_drag_)
-        return ui::ER_UNHANDLED;
+        return;
 
       CompleteDrag(DRAG_COMPLETE, event->flags());
       if (in_move_loop_) {
@@ -194,15 +193,17 @@ ui::EventResult ToplevelWindowEventHandler::OnGestureEvent(
       }
       in_gesture_drag_ = false;
 
-      if (event->type() == ui::ET_GESTURE_SCROLL_END)
-        return ui::ER_CONSUMED;
+      if (event->type() == ui::ET_GESTURE_SCROLL_END) {
+        event->StopPropagation();
+        return;
+      }
 
       int component =
           target->delegate()->GetNonClientComponent(event->location());
       if (WindowResizer::GetBoundsChangeForWindowComponent(component) == 0)
-        return ui::ER_UNHANDLED;
+        return;
       if (!wm::IsWindowNormal(target))
-        return ui::ER_UNHANDLED;
+        return;
 
       if (fabs(event->details().velocity_y()) >
           kMinVertVelocityForWindowMinimize) {
@@ -225,10 +226,10 @@ ui::EventResult ToplevelWindowEventHandler::OnGestureEvent(
       break;
     }
     default:
-      return ui::ER_UNHANDLED;
+      return;
   }
 
-  return ui::ER_CONSUMED;
+  event->StopPropagation();
 }
 
 aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(

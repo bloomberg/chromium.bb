@@ -82,7 +82,7 @@ class ASH_EXPORT ActionableView : public views::View {
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
   // Overridden from ui::EventHandler.
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
   string16 accessible_name_;

@@ -19,7 +19,7 @@ SlideOutView::SlideOutView()
 SlideOutView::~SlideOutView() {
 }
 
-ui::EventResult SlideOutView::OnGestureEvent(ui::GestureEvent* event) {
+void SlideOutView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_SCROLL_FLING_START) {
     // The threshold for the fling velocity is computed empirically.
     // The unit is in pixels/second.
@@ -27,14 +27,15 @@ ui::EventResult SlideOutView::OnGestureEvent(ui::GestureEvent* event) {
     if (fabsf(event->details().velocity_x()) > kFlingThresholdForClose) {
       SlideOutAndClose(event->details().velocity_x() < 0 ? SLIDE_LEFT :
                        SLIDE_RIGHT);
-      return ui::ER_CONSUMED;
+      event->StopPropagation();
+      return;
     }
     RestoreVisualState();
-    return ui::ER_UNHANDLED;
+    return;
   }
 
   if (!event->IsScrollGestureEvent())
-    return ui::ER_UNHANDLED;
+    return;
 
   if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
     gesture_scroll_amount_ = 0.f;
@@ -52,12 +53,13 @@ ui::EventResult SlideOutView::OnGestureEvent(ui::GestureEvent* event) {
     float scrolled_ratio = fabsf(gesture_scroll_amount_) / width();
     if (scrolled_ratio >= kScrollRatioForClosingNotification) {
       SlideOutAndClose(gesture_scroll_amount_ < 0 ? SLIDE_LEFT : SLIDE_RIGHT);
-      return ui::ER_CONSUMED;
+      event->StopPropagation();
+      return;
     }
     RestoreVisualState();
   }
 
-  return ui::ER_HANDLED;
+  event->SetHandled();
 }
 
 void SlideOutView::RestoreVisualState() {

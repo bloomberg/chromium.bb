@@ -73,20 +73,6 @@ class DemoWindowDelegate : public aura::WindowDelegate {
     return scoped_refptr<ui::Texture>();
   }
 
-  // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
-    return ui::ER_UNHANDLED;
-  }
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
-    return ui::ER_HANDLED;
-  }
-  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
-    return ui::ER_UNHANDLED;
-  }
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
-    return ui::ER_UNHANDLED;
-  }
-
  private:
   SkColor color_;
 

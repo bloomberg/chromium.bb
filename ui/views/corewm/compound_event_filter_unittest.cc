@@ -64,8 +64,8 @@ class ConsumeGestureEventFilter : public ui::EventHandler {
 
  private:
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* e) OVERRIDE {
-    return ui::ER_CONSUMED;
+  virtual void OnGestureEvent(ui::GestureEvent* e) OVERRIDE {
+    e->StopPropagation();
   }
 
   DISALLOW_COPY_AND_ASSIGN(ConsumeGestureEventFilter);

@@ -572,9 +572,8 @@ ui::EventResult DesktopNativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {
   return native_widget_delegate_->OnTouchEvent(event);
 }
 
-ui::EventResult DesktopNativeWidgetAura::OnGestureEvent(
-    ui::GestureEvent* event) {
-  return native_widget_delegate_->OnGestureEvent(event);
+void DesktopNativeWidgetAura::OnGestureEvent(ui::GestureEvent* event) {
+  native_widget_delegate_->OnGestureEvent(event);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -505,19 +505,21 @@ void DownloadItemView::OnThemeChanged() {
   UpdateColorsFromTheme();
 }
 
-ui::EventResult DownloadItemView::OnGestureEvent(ui::GestureEvent* event) {
+void DownloadItemView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
     HandlePressEvent(*event, true);
-    return ui::ER_CONSUMED;
+    event->SetHandled();
+    return;
   }
 
   if (event->type() == ui::ET_GESTURE_TAP) {
     HandleClickEvent(*event, true);
-    return ui::ER_CONSUMED;
+    event->SetHandled();
+    return;
   }
 
   SetState(NORMAL, NORMAL);
-  return views::View::OnGestureEvent(event);
+  views::View::OnGestureEvent(event);
 }
 
 void DownloadItemView::ShowContextMenuForView(View* source,

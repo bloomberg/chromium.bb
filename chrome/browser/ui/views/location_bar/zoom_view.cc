@@ -73,12 +73,11 @@ bool ZoomView::OnKeyPressed(const ui::KeyEvent& event) {
   return true;
 }
 
-ui::EventResult ZoomView::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() != ui::ET_GESTURE_TAP)
-    return ui::ER_UNHANDLED;
-
-  ActivateBubble();
-  return ui::ER_CONSUMED;
+void ZoomView::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP) {
+    ActivateBubble();
+    event->SetHandled();
+  }
 }
 
 int ZoomView::GetBuiltInHorizontalPadding() const {

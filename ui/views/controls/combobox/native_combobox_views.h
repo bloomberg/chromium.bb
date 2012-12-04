@@ -40,7 +40,7 @@ class NativeComboboxViews : public views::View,
   virtual void OnBlur() OVERRIDE;
 
   // ui::EventHandler overrides:
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* gesture) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* gesture) OVERRIDE;
 
   // NativeComboboxWrapper overrides:
   virtual void UpdateFromModel() OVERRIDE;

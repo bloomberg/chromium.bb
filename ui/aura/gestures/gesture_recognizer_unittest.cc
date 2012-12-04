@@ -176,8 +176,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
     run_loop_->Run();
   }
 
-  virtual ui::EventResult OnGestureEvent(
-      ui::GestureEvent* gesture) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* gesture) OVERRIDE {
     events_.push_back(gesture->type());
     bounding_box_ = gesture->details().bounding_box();
     switch (gesture->type()) {
@@ -256,7 +255,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
       run_loop_->Quit();
       wait_until_event_ = ui::ET_UNKNOWN;
     }
-    return ui::ER_CONSUMED;
+    gesture->StopPropagation();
   }
 
  private:

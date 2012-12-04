@@ -164,13 +164,11 @@ ui::EventResult DesktopActivationClient::OnTouchEvent(ui::TouchEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult DesktopActivationClient::OnGestureEvent(
-    ui::GestureEvent* event) {
+void DesktopActivationClient::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_BEGIN &&
       event->details().touch_points() == 1) {
     FocusWindowWithEvent(event);
   }
-  return ui::ER_UNHANDLED;
 }
 
 void DesktopActivationClient::FocusWindowWithEvent(const ui::Event* event) {

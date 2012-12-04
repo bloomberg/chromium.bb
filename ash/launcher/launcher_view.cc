@@ -788,9 +788,9 @@ views::FocusTraversable* LauncherView::GetPaneFocusTraversable() {
   return this;
 }
 
-ui::EventResult LauncherView::OnGestureEvent(ui::GestureEvent* event) {
-  return gesture_handler_.ProcessGestureEvent(*event) ?
-      ui::ER_CONSUMED : ui::ER_UNHANDLED;
+void LauncherView::OnGestureEvent(ui::GestureEvent* event) {
+  if (gesture_handler_.ProcessGestureEvent(*event))
+    event->StopPropagation();
 }
 
 void LauncherView::LauncherItemAdded(int model_index) {

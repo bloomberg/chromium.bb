@@ -72,17 +72,14 @@ gfx::Size LocationBarDecorationView::GetPreferredSize() {
   return preferred_size;
 }
 
-ui::EventResult LocationBarDecorationView::OnGestureEvent(
-    ui::GestureEvent* event) {
+void LocationBarDecorationView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP) {
     AnimationOnClick();
     OnClick(parent_);
-    return ui::ER_CONSUMED;
+    event->SetHandled();
   } else if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
-    return ui::ER_CONSUMED;
+    event->SetHandled();
   }
-
-  return ui::ER_UNHANDLED;
 }
 
 void LocationBarDecorationView::AnimationEnded(const ui::Animation* animation) {

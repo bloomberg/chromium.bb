@@ -242,15 +242,13 @@ ui::EventResult CompoundEventFilter::OnTouchEvent(ui::TouchEvent* event) {
   return result;
 }
 
-ui::EventResult CompoundEventFilter::OnGestureEvent(ui::GestureEvent* event) {
-  int result = ui::ER_UNHANDLED;
+void CompoundEventFilter::OnGestureEvent(ui::GestureEvent* event) {
   if (handlers_.might_have_observers()) {
     ObserverListBase<ui::EventHandler>::Iterator it(handlers_);
     ui::EventHandler* handler;
-    while (!(result & ui::ER_CONSUMED) && (handler = it.GetNext()) != NULL)
-      result |= handler->OnGestureEvent(event);
+    while (!event->stopped_propagation() && (handler = it.GetNext()) != NULL)
+      handler->OnGestureEvent(event);
   }
-  return static_cast<ui::EventResult>(result);
 }
 
 }  // namespace corewm

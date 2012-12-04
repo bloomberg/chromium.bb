@@ -25,7 +25,7 @@ void EventHandler::OnEvent(Event* event) {
   else if (event->IsTouchEvent())
     result = OnTouchEvent(static_cast<TouchEvent*>(event));
   else if (event->IsGestureEvent())
-    result = OnGestureEvent(static_cast<GestureEvent*>(event));
+    OnGestureEvent(static_cast<GestureEvent*>(event));
 
   if (result & ui::ER_CONSUMED)
     event->StopPropagation();
@@ -49,8 +49,7 @@ EventResult EventHandler::OnTouchEvent(TouchEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-EventResult EventHandler::OnGestureEvent(GestureEvent* event) {
-  return ui::ER_UNHANDLED;
+void EventHandler::OnGestureEvent(GestureEvent* event) {
 }
 
 }  // namespace ui

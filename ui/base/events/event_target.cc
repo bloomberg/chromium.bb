@@ -65,10 +65,10 @@ EventResult EventTarget::OnTouchEvent(TouchEvent* event) {
                            ER_UNHANDLED;
 }
 
-EventResult EventTarget::OnGestureEvent(GestureEvent* event) {
+void EventTarget::OnGestureEvent(GestureEvent* event) {
   CHECK_EQ(this, event->target());
-  return target_handler_ ? target_handler_->OnGestureEvent(event) :
-                           ER_UNHANDLED;
+  if (target_handler_)
+    target_handler_->OnGestureEvent(event);
 }
 
 void EventTarget::GetPreTargetHandlers(EventHandlerList* list) {

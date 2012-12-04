@@ -253,10 +253,9 @@ ui::EventResult AppListController::OnMouseEvent(ui::MouseEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult AppListController::OnGestureEvent(ui::GestureEvent* event) {
+void AppListController::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP)
     ProcessLocatedEvent(event);
-  return ui::ER_UNHANDLED;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

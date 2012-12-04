@@ -45,7 +45,7 @@ class VIEWS_EXPORT Link : public Label {
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Overridden from Label:
   virtual void SetFont(const gfx::Font& font) OVERRIDE;

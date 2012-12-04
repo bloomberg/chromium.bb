@@ -59,7 +59,7 @@ class TrayNotificationView : public views::SlideOutView,
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
 
   // Overridden from ui::EventHandler.
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  protected:
   // Called when the close button is pressed. Does nothing by default.

@@ -184,8 +184,8 @@ TEST_F(LauncherTooltipManagerTest, ShouldHideForEvents) {
       base::TimeDelta::FromMilliseconds(base::Time::Now().ToDoubleT() * 1000),
       ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0.0f, 0.0f), 0);
   SetEventTarget(tooltip_widget->GetNativeWindow(), &gesture_event);
-  EXPECT_EQ(ui::ER_UNHANDLED,
-            event_handler->OnGestureEvent(&gesture_event));
+  event_handler->OnGestureEvent(&gesture_event);
+  EXPECT_FALSE(gesture_event.handled());
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(TooltipIsVisible());
 }

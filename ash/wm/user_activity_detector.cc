@@ -58,9 +58,8 @@ ui::EventResult UserActivityDetector::OnTouchEvent(ui::TouchEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult UserActivityDetector::OnGestureEvent(ui::GestureEvent* event) {
+void UserActivityDetector::OnGestureEvent(ui::GestureEvent* event) {
   MaybeNotify();
-  return ui::ER_UNHANDLED;
 }
 
 void UserActivityDetector::MaybeNotify() {

@@ -77,7 +77,7 @@ class VIEWS_EXPORT SubmenuView : public View,
 
   // Overridden from ui::EventHandler.
   // Scrolls on menu item boundaries.
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Returns true if the menu is showing.
   bool IsShowing();

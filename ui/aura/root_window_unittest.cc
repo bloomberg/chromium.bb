@@ -459,9 +459,8 @@ class EventFilterRecorder : public ui::EventHandler {
     return ui::ER_UNHANDLED;
   }
 
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
     events_.push_back(event->type());
-    return ui::ER_UNHANDLED;
   }
 
  private:
@@ -746,16 +745,17 @@ class DetachesParentOnTapDelegate : public test::TestWindowDelegate {
   virtual ~DetachesParentOnTapDelegate() {}
 
  private:
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
-    if (event->type() == ui::ET_GESTURE_TAP_DOWN)
-      return ui::ER_HANDLED;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
+      event->SetHandled();
+      return;
+    }
 
     if (event->type() == ui::ET_GESTURE_TAP) {
       Window* parent = static_cast<Window*>(event->target())->parent();
       parent->parent()->RemoveChild(parent);
-      return ui::ER_HANDLED;
+      event->SetHandled();
     }
-    return ui::ER_UNHANDLED;
   }
 
   DISALLOW_COPY_AND_ASSIGN(DetachesParentOnTapDelegate);

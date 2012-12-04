@@ -207,9 +207,11 @@ bool CustomButton::OnKeyReleased(const ui::KeyEvent& event) {
   return true;
 }
 
-ui::EventResult CustomButton::OnGestureEvent(ui::GestureEvent* event) {
-  if (state_ == STATE_DISABLED)
-    return Button::OnGestureEvent(event);
+void CustomButton::OnGestureEvent(ui::GestureEvent* event) {
+  if (state_ == STATE_DISABLED) {
+    Button::OnGestureEvent(event);
+    return;
+  }
 
   if (event->type() == ui::ET_GESTURE_TAP && IsTriggerableEvent(*event)) {
     // Set the button state to hot and start the animation fully faded in. The
@@ -218,17 +220,18 @@ ui::EventResult CustomButton::OnGestureEvent(ui::GestureEvent* event) {
     SetState(STATE_HOVERED);
     hover_animation_->Reset(1.0);
     NotifyClick(*event);
-    return ui::ER_CONSUMED;
+    event->StopPropagation();
   } else if (event->type() == ui::ET_GESTURE_TAP_DOWN &&
              ShouldEnterPushedState(*event)) {
     SetState(STATE_PRESSED);
     if (request_focus_on_press_)
       RequestFocus();
-    return ui::ER_CONSUMED;
+    event->StopPropagation();
   } else {
     SetState(STATE_NORMAL);
   }
-  return Button::OnGestureEvent(event);
+  if (!event->handled())
+    Button::OnGestureEvent(event);
 }
 
 bool CustomButton::AcceleratorPressed(const ui::Accelerator& accelerator) {

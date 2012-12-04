@@ -1170,7 +1170,7 @@ ui::EventResult Widget::OnScrollEvent(ui::ScrollEvent* event) {
       DispatchScrollEvent(event);
 }
 
-ui::EventResult Widget::OnGestureEvent(ui::GestureEvent* event) {
+void Widget::OnGestureEvent(ui::GestureEvent* event) {
   ScopedEvent scoped(this, *event);
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
@@ -1191,8 +1191,7 @@ ui::EventResult Widget::OnGestureEvent(ui::GestureEvent* event) {
     default:
       break;
   }
-  return static_cast<internal::RootView*>(GetRootView())->
-      DispatchGestureEvent(event);
+  static_cast<internal::RootView*>(GetRootView())->DispatchGestureEvent(event);
 }
 
 bool Widget::ExecuteCommand(int command_id) {

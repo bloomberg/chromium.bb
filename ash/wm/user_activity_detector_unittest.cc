@@ -127,7 +127,8 @@ TEST_F(UserActivityDetectorTest, Basic) {
       base::TimeDelta::FromMilliseconds(base::Time::Now().ToDoubleT() * 1000),
       ui::GestureEventDetails(ui::ET_GESTURE_TAP, 0, 0), 0U);
   SetEventTarget(window.get(), &gesture_event);
-  EXPECT_FALSE(detector_->OnGestureEvent(&gesture_event));
+  detector_->OnGestureEvent(&gesture_event);
+  EXPECT_FALSE(gesture_event.handled());
   EXPECT_EQ(1, observer_->num_invocations());
   observer_->reset_stats();
 }

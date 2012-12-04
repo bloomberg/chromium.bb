@@ -357,11 +357,11 @@ class Tab::TabCloseButton : public views::ImageButton {
     CustomButton::OnMouseReleased(event);
   }
 
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
     // Consume all gesture events here so that the parent (Tab) does not
     // start consuming gestures.
     ImageButton::OnGestureEvent(event);
-    return ui::ER_CONSUMED;
+    event->SetHandled();
   }
 
  private:
@@ -936,14 +936,16 @@ void Tab::OnMouseExited(const ui::MouseEvent& event) {
   hover_controller_.Hide();
 }
 
-ui::EventResult Tab::OnGestureEvent(ui::GestureEvent* event) {
-  if (!controller())
-    return ui::ER_CONSUMED;
+void Tab::OnGestureEvent(ui::GestureEvent* event) {
+  if (!controller()) {
+    event->SetHandled();
+    return;
+  }
 
   switch (event->type()) {
     case ui::ET_GESTURE_BEGIN: {
       if (event->details().touch_points() != 1)
-        return ui::ER_UNHANDLED;
+        return;
 
       TabStripSelectionModel original_selection;
       original_selection.Copy(controller()->GetSelectionModel());
@@ -966,7 +968,7 @@ ui::EventResult Tab::OnGestureEvent(ui::GestureEvent* event) {
     default:
       break;
   }
-  return ui::ER_CONSUMED;
+  event->SetHandled();
 }
 
 void Tab::GetAccessibleState(ui::AccessibleViewState* state) {

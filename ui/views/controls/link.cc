@@ -122,9 +122,9 @@ void Link::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_LINK;
 }
 
-ui::EventResult Link::OnGestureEvent(ui::GestureEvent* event) {
+void Link::OnGestureEvent(ui::GestureEvent* event) {
   if (!enabled())
-    return ui::ER_UNHANDLED;
+    return;
 
   if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
     SetPressed(true);
@@ -134,9 +134,9 @@ ui::EventResult Link::OnGestureEvent(ui::GestureEvent* event) {
       listener_->LinkClicked(this, event->flags());
   } else {
     SetPressed(false);
-    return ui::ER_UNHANDLED;
+    return;
   }
-  return ui::ER_CONSUMED;
+  event->SetHandled();
 }
 
 void Link::SetFont(const gfx::Font& font) {

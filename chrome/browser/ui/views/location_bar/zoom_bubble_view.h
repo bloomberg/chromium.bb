@@ -55,7 +55,7 @@ class ZoomBubbleView : public views::BubbleDelegateView,
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
 
   // ui::EventHandler method.
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // views::ButtonListener method.
   virtual void ButtonPressed(views::Button* sender,

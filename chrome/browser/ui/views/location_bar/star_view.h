@@ -36,7 +36,7 @@ class StarView : public views::ImageView,
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
 
   // ui::EventHandler overrides:
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // The CommandUpdater for the Browser object that owns the location bar.
   CommandUpdater* command_updater_;

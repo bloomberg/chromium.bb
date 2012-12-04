@@ -127,12 +127,11 @@ class GestureCaptureView : public View {
 
  private:
   // Overridden from View:
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
     if (event->type() == ui::ET_GESTURE_BEGIN) {
       GetWidget()->SetCapture(this);
-      return ui::ER_CONSUMED;
+      event->StopPropagation();
     }
-    return ui::ER_UNHANDLED;
   }
 
   DISALLOW_COPY_AND_ASSIGN(GestureCaptureView);

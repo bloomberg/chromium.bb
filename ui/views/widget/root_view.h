@@ -64,7 +64,7 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
   ui::EventResult DispatchKeyEvent(const ui::KeyEvent& event);
   ui::EventResult DispatchScrollEvent(ui::ScrollEvent* event);
   ui::EventResult DispatchTouchEvent(ui::TouchEvent* event);
-  virtual ui::EventResult DispatchGestureEvent(ui::GestureEvent* event);
+  virtual void DispatchGestureEvent(ui::GestureEvent* event);
 
   // Focus ---------------------------------------------------------------------
 
