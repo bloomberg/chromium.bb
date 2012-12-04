@@ -306,10 +306,14 @@ class DockToWindowFinder : public BaseWindowFinder {
 
 std::set<HWND> RemapIgnoreSet(const std::set<gfx::NativeView>& ignore) {
 #if defined(USE_AURA)
-  // TODO(scottmg): Figure out how to reimplement |ignore| on Aura. The ignore
-  // in BaseWindowFinder is via EnumThreadWindows, but the NativeViews won't
-  // be enumerated on Aura.
-  return std::set<HWND>();
+  std::set<HWND> hwnd_set;
+  std::set<gfx::NativeView>::const_iterator it = ignore.begin();
+  for (; it != ignore.end(); ++it) {
+    HWND w = (*it)->GetRootWindow()->GetAcceleratedWidget();
+    if (w)
+      hwnd_set.insert(w);
+  }
+  return hwnd_set;
 #else
   // NativeViews are already HWNDs on non-Aura Windows.
   return ignore;
