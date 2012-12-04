@@ -958,8 +958,6 @@ class SessionRestoreImpl : public content::NotificationObserver {
         std::min(selected_index,
                  static_cast<int>(tab.navigations.size() - 1)));
 
-    LOG(ERROR) << "Restoring a tab, title: "
-               << tab.navigations.at(selected_index).title();
     RecordAppLaunchForTab(browser, tab, selected_index);
 
     // Associate sessionStorage (if any) to the restored tab.

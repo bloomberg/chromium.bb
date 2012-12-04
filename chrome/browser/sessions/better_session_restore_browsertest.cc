@@ -258,12 +258,16 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
   // ... but not if it's set to clear on exit.
   CookieSettings::Factory::GetForProfile(browser()->profile())->
       SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
-  LOG(ERROR) << "we've now set the session only preference";
 }
 
 // Flaky on Linux: http://crbug.com/163096
+#if defined(OS_LINUX)
+#define MAYBE_LocalStorageClearedOnExit DISABLED_LocalStorageClearedOnExit
+#else
+#define MAYBE_LocalStorageClearedOnExit LocalStorageClearedOnExit
+#endif
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
-                       LocalStorageClearedOnExit) {
+                       MAYBE_LocalStorageClearedOnExit) {
   CheckReloadedPageNotRestored();
 }
 
