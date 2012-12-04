@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/debug/trace_event.h"
+#include "base/metrics/histogram.h"
 #include "cc/math_util.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/transform.h"
@@ -152,6 +153,8 @@ void DirectRenderer::decideRenderPassAllocationsForFrame(const RenderPassList& r
 void DirectRenderer::drawFrame(const RenderPassList& renderPassesInDrawOrder, const RenderPassIdHashMap& renderPassesById)
 {
     TRACE_EVENT0("cc", "DirectRenderer::drawFrame");
+    HISTOGRAM_COUNTS("Renderer4.renderPassCount", renderPassesInDrawOrder.size());
+
     const RenderPass* rootRenderPass = renderPassesInDrawOrder.back();
     DCHECK(rootRenderPass);
 
