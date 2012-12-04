@@ -177,6 +177,7 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(tray_logout_button);
   AddTrayItem(tray_user);
   AddTrayItem(tray_ime);
+  AddTrayItem(tray_accessibility);
   AddTrayItem(tray_power);
 #if defined(OS_CHROMEOS)
   AddTrayItem(tray_network);
@@ -186,7 +187,6 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(tray_bluetooth);
   AddTrayItem(tray_drive);
   AddTrayItem(tray_locale);
-  AddTrayItem(tray_accessibility);
 #if defined(OS_CHROMEOS)
   AddTrayItem(tray_display);
 #endif
