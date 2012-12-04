@@ -187,9 +187,6 @@ surface_handle_buffer_destroy(struct wl_listener *listener, void *data)
 		container_of(listener, struct weston_surface, 
 			     buffer_destroy_listener);
 
-	if (es->buffer && wl_buffer_is_shm(es->buffer))
-		es->compositor->renderer->flush_damage(es);
-
 	es->buffer = NULL;
 }
 
