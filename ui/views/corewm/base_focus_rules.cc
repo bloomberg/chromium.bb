@@ -4,14 +4,26 @@
 
 #include "ui/views/corewm/base_focus_rules.h"
 
+#include "ui/aura/client/activation_delegate.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/views/corewm/window_modality_controller.h"
 
 namespace views {
 namespace corewm {
+namespace {
+
+aura::Window* GetFocusedWindow(aura::Window* context) {
+  aura::client::FocusClient* focus_client =
+      aura::client::GetFocusClient(context);
+  return focus_client ? focus_client->GetFocusedWindow() : NULL;
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// BaseFocusRules, public:
+// BaseFocusRules, protected:
 
 BaseFocusRules::BaseFocusRules() {
 }
@@ -19,33 +31,87 @@ BaseFocusRules::BaseFocusRules() {
 BaseFocusRules::~BaseFocusRules() {
 }
 
+bool BaseFocusRules::IsWindowConsideredVisibleForActivation(
+    aura::Window* window) {
+  return window->IsVisible();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BaseFocusRules, FocusRules implementation:
 
 bool BaseFocusRules::CanActivateWindow(aura::Window* window) {
-  return !window ||
-      (window->IsVisible() && window->parent() == window->GetRootWindow());
+  // It is possible to activate a NULL window, it is equivalent to clearing
+  // activation.
+  if (!window)
+    return true;
+
+  // The window must in a valid hierarchy.
+  if (!window->GetRootWindow())
+    return false;
+
+  // The window must be visible.
+  if (!IsWindowConsideredVisibleForActivation(window))
+    return false;
+
+  // The window's activation delegate must allow this window to be activated.
+  if (aura::client::GetActivationDelegate(window) &&
+      !aura::client::GetActivationDelegate(window)->ShouldActivate()) {
+    return false;
+  }
+
+  // The window must exist within a container that supports activation.
+  // The window cannot be blocked by a modal transient.
+  return SupportsChildActivation(window->parent()) &&
+      !GetModalTransientForActivatableWindow(window);
 }
 
 bool BaseFocusRules::CanFocusWindow(aura::Window* window) {
-  // See FocusRules: NULL is a valid focusable window (when clearing focus).
-  return !window || window->CanFocus();
+  // It is possible to focus a NULL window, it is equivalent to clearing focus.
+  if (!window)
+    return true;
+
+  // The focused window is always inside the active window, so windows that
+  // aren't activatable can't contain the focused window.
+  aura::Window* activatable = GetActivatableWindow(window);
+  if (!activatable->Contains(window))
+    return false;
+  return window->CanFocus();
 }
 
 aura::Window* BaseFocusRules::GetActivatableWindow(aura::Window* window) {
-  // BasicFocusRules considers only direct children of the RootWindow as
-  // activatable.
   aura::Window* parent = window->parent();
-  aura::Window* activatable = window;
-  aura::RootWindow* root_window = window->GetRootWindow();
-  while (parent != root_window) {
-    activatable = parent;
+  aura::Window* child = window;
+  while (parent) {
+    if (CanActivateWindow(child))
+      return child;
+
+    if (child->transient_parent())
+      return GetActivatableWindow(child->transient_parent());
+
     parent = parent->parent();
+    child = child->parent();
   }
-  return activatable;
+  return NULL;
 }
 
 aura::Window* BaseFocusRules::GetFocusableWindow(aura::Window* window) {
+  if (CanFocusWindow(window))
+    return window;
+
+  // |window| may be in a hierarchy that is non-activatable, in which case we
+  // need to cut over to the activatable hierarchy.
+  aura::Window* activatable = GetActivatableWindow(window);
+  if (!activatable)
+    return GetFocusedWindow(window);
+
+  if (!activatable->Contains(window)) {
+    // If there's already a child window focused in the activatable hierarchy,
+    // just use that (i.e. don't shift focus), otherwise we need to at least cut
+    // over to the activatable hierarchy.
+    aura::Window* focused = GetFocusedWindow(activatable);
+    return activatable->Contains(focused) ? focused : activatable;
+  }
+
   while (window && !CanFocusWindow(window))
     window = window->parent();
   return window;

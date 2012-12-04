@@ -15,11 +15,16 @@ namespace corewm {
 // A set of basic focus and activation rules. Specializations should most likely
 // subclass this and call up to these methods rather than reimplementing them.
 class VIEWS_EXPORT BaseFocusRules : public FocusRules {
- public:
+ protected:
   BaseFocusRules();
   virtual ~BaseFocusRules();
 
- protected:
+  // Returns true if the children of |window| can be activated.
+  virtual bool SupportsChildActivation(aura::Window* window) = 0;
+
+  // Returns true if |window| is considered visible for activation purposes.
+  virtual bool IsWindowConsideredVisibleForActivation(aura::Window* window);
+
   // Overridden from FocusRules:
   virtual bool CanActivateWindow(aura::Window* window) OVERRIDE;
   virtual bool CanFocusWindow(aura::Window* window) OVERRIDE;

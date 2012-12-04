@@ -85,11 +85,15 @@ class TestFocusRules : public BaseFocusRules {
   }
 
   // Overridden from BaseFocusRules:
+  virtual bool SupportsChildActivation(aura::Window* window) OVERRIDE {
+    // In FocusControllerTests, only the RootWindow has activatable children.
+    return window->GetRootWindow() == window;
+  }
   virtual bool CanActivateWindow(aura::Window* window) OVERRIDE {
     // Restricting focus to a non-activatable child window means the activatable
     // parent outside the focus restriction is activatable.
-    bool can_activate = CanFocusOrActivate(window) ||
-       window->Contains(GetActivatableWindow(focus_restriction_));
+    bool can_activate =
+        CanFocusOrActivate(window) || window->Contains(focus_restriction_);
     return can_activate ? BaseFocusRules::CanActivateWindow(window) : false;
   }
   virtual bool CanFocusWindow(aura::Window* window) OVERRIDE {

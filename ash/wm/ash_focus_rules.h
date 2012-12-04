@@ -8,24 +8,22 @@
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/views/corewm/focus_rules.h"
+#include "ui/views/corewm/base_focus_rules.h"
 
 namespace ash {
 namespace wm {
 
-class ASH_EXPORT AshFocusRules : public views::corewm::FocusRules {
+class ASH_EXPORT AshFocusRules : public views::corewm::BaseFocusRules {
  public:
   AshFocusRules();
   virtual ~AshFocusRules();
 
  private:
-  // Overridden from views::corewm::FocusRules:
+  // Overridden from views::corewm::BaseFocusRules:
+  virtual bool SupportsChildActivation(aura::Window* window) OVERRIDE;
+  virtual bool IsWindowConsideredVisibleForActivation(
+      aura::Window* window) OVERRIDE;
   virtual bool CanActivateWindow(aura::Window* window) OVERRIDE;
-  virtual bool CanFocusWindow(aura::Window* window) OVERRIDE;
-  virtual aura::Window* GetActivatableWindow(aura::Window* window) OVERRIDE;
-  virtual aura::Window* GetFocusableWindow(aura::Window* window) OVERRIDE;
-  virtual aura::Window* GetNextActivatableWindow(aura::Window* ignore) OVERRIDE;
-  virtual aura::Window* GetNextFocusableWindow(aura::Window* ignore) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AshFocusRules);
 };
