@@ -1097,9 +1097,7 @@ def main(argv):
 
   _PostParseCheck(parser, options, args)
 
-  if cros_build_lib.IsInsideChroot():
-    cros_build_lib.Die('Please run cbuildbot from outside the chroot.')
-
+  cros_build_lib.AssertOutsideChroot()
 
   if options.remote:
     cros_build_lib.logger.setLevel(logging.WARNING)

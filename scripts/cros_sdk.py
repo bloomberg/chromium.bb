@@ -289,8 +289,7 @@ If given args those are passed to the chroot environment, and executed."""
   options, chroot_command = parser.parse_args(argv)
 
   # Some sanity checks first, before we ask for sudo credentials.
-  if cros_build_lib.IsInsideChroot():
-    parser.error("This needs to be ran outside the chroot")
+  cros_build_lib.AssertOutsideChroot()
 
   _ReExecuteIfNeeded([sys.argv[0]] + argv)
 

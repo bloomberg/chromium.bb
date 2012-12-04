@@ -103,8 +103,7 @@ def main(argv):
   options = ParseCommandLine(argv)
   FinishParsing(options)
 
-  if not cros_build_lib.IsInsideChroot():
-    cros_build_lib.Die("This needs to be run inside the chroot")
+  cros_build_lib.AssertInsideChroot()
 
   with sudo.SudoKeepAlive(ttyless_sudo=False):
     with osutils.TempDirContextManager(sudo_rm=True) as tempdir:

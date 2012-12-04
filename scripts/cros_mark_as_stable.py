@@ -92,8 +92,8 @@ def _CheckSaneArguments(package_list, command, options):
     _PrintUsageAndDie('%s is not a valid command' % command)
   if not options.packages and command == 'commit' and not options.all:
     _PrintUsageAndDie('Please specify at least one package')
-  if options.boards and not cros_build_lib.IsInsideChroot():
-    cros_build_lib.Die('Must be run inside chroot in order to process boards')
+  if options.boards:
+    cros_build_lib.AssertInsideChroot()
   if not os.path.isdir(options.srcroot):
     _PrintUsageAndDie('srcroot is not a valid path')
   options.srcroot = os.path.abspath(options.srcroot)

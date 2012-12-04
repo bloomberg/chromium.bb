@@ -562,6 +562,16 @@ def IsInsideChroot():
   """Returns True if we are inside chroot."""
   return os.path.exists('/etc/debian_chroot')
 
+def AssertInsideChroot():
+  """Die if we are outside the chroot"""
+  if not IsInsideChroot():
+    Die('%s: please run inside the chroot', os.path.basename(sys.argv[0]))
+
+def AssertOutsideChroot():
+  """Die if we are inside the chroot"""
+  if IsInsideChroot():
+    Die('%s: please run outside the chroot', os.path.basename(sys.argv[0]))
+
 
 def GetChromeosVersion(str_obj):
   """Helper method to parse output for CHROMEOS_VERSION_STRING.
