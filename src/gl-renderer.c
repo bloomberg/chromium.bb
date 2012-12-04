@@ -62,6 +62,8 @@ struct gl_surface_state {
 	EGLImageKHR images[3];
 	GLenum target;
 	int num_images;
+
+	struct weston_buffer_reference buffer_ref;
 };
 
 struct gl_renderer {
@@ -1038,7 +1040,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 {
 	struct gl_renderer *gr = get_renderer(surface->compositor);
 	struct gl_surface_state *gs = get_surface_state(surface);
-	struct wl_buffer *buffer = surface->buffer_ref.buffer;
+	struct wl_buffer *buffer = gs->buffer_ref.buffer;
 
 #ifdef GL_UNPACK_ROW_LENGTH
 	pixman_box32_t *rectangles;
@@ -1049,14 +1051,19 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 	pixman_region32_union(&surface->texture_damage,
 			      &surface->texture_damage, &surface->damage);
 
+	if (!buffer)
+		return;
+
 	/* Avoid upload, if the texture won't be used this time.
-	 * We still accumulate the damage in texture_damage.
+	 * We still accumulate the damage in texture_damage, and
+	 * hold the reference to the buffer, in case the surface
+	 * migrates back to the primary plane.
 	 */
 	if (surface->plane != &surface->compositor->primary_plane)
 		return;
 
 	if (!pixman_region32_not_empty(&surface->texture_damage))
-		return;
+		goto done;
 
 	glBindTexture(GL_TEXTURE_2D, gs->textures[0]);
 
@@ -1090,6 +1097,8 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 done:
 	pixman_region32_fini(&surface->texture_damage);
 	pixman_region32_init(&surface->texture_damage);
+
+	weston_buffer_reference(&gs->buffer_ref, NULL);
 }
 
 static void
@@ -1120,6 +1129,8 @@ gl_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 	struct gl_surface_state *gs = get_surface_state(es);
 	EGLint attribs[3], format;
 	int i, num_planes;
+
+	weston_buffer_reference(&gs->buffer_ref, buffer);
 
 	if (!buffer) {
 		for (i = 0; i < gs->num_images; i++) {
@@ -1201,6 +1212,7 @@ gl_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 		es->pitch = buffer->width;
 	} else {
 		weston_log("unhandled buffer type!\n");
+		weston_buffer_reference(&gs->buffer_ref, NULL);
 	}
 }
 
@@ -1246,6 +1258,7 @@ gl_renderer_destroy_surface(struct weston_surface *surface)
 	for (i = 0; i < gs->num_images; i++)
 		gr->destroy_image(gr->egl_display, gs->images[i]);
 
+	weston_buffer_reference(&gs->buffer_ref, NULL);
 	free(gs);
 }
 
