@@ -56,14 +56,13 @@ public class JavaScriptUtils {
             final String code,
             final long timeout, final TimeUnit timeoutUnits)
                     throws InterruptedException, TimeoutException {
-        int currentCallCount = helper.getCallCount();
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 helper.evaluateJavaScript(viewCore, code);
             }
         });
-        helper.waitForCallback(currentCallCount, 1, timeout, timeoutUnits);
+        helper.waitUntilHasValue(timeout, timeoutUnits);
         Assert.assertTrue("Failed to retrieve JavaScript evaluation results.", helper.hasValue());
         return helper.getJsonResultAndClear();
     }

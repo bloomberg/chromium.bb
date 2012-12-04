@@ -84,6 +84,31 @@ public class CallbackHelper {
     }
 
     /**
+     * Blocks until the criteria is satisfied or throws an exception
+     * if the specified time frame is exceeded.
+     * @param timeout timeout value.
+     * @param unit timeout unit.
+     */
+    public void waitUntilCriteria(Criteria criteria, long timeout, TimeUnit unit)
+            throws InterruptedException, TimeoutException {
+        synchronized(mLock) {
+            final long startTime = System.currentTimeMillis();
+            boolean isSatisfied = criteria.isSatisfied();
+            while (!isSatisfied &&
+                    System.currentTimeMillis() - startTime < unit.toMillis(timeout)) {
+                mLock.wait(unit.toMillis(timeout));
+                isSatisfied = criteria.isSatisfied();
+            }
+            if (!isSatisfied) throw new TimeoutException("waitUntilCriteria timed out!");
+        }
+    }
+
+    public void waitUntilCriteria(Criteria criteria)
+            throws InterruptedException, TimeoutException {
+        waitUntilCriteria(criteria, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+    }
+
+    /**
      * Should be called when the callback associated with this helper object is called.
      */
     public void notifyCalled() {

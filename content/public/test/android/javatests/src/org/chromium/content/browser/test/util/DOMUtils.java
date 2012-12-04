@@ -121,8 +121,8 @@ public class DOMUtils {
         sb.append("  return [ node.textContent ];");
         sb.append("})();");
 
-        String jsonText = JavaScriptUtils.executeJavaScriptAndWaitForResult(view, viewClient,
-                sb.toString());
+        String jsonText = JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                view, viewClient, sb.toString());
         Assert.assertFalse("Failed to retrieve contents for " + nodeId,
                 jsonText.trim().equalsIgnoreCase("null"));
 

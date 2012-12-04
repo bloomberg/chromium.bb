@@ -10,6 +10,9 @@ import android.util.Log;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 /**
  * This class is used to provide callback hooks for tests and related classes.
  */
@@ -110,11 +113,37 @@ public class TestCallbackHelperContainer {
             return result;
         }
 
+
+        /**
+         * Returns a criteria that checks that the evaluation has finished.
+         */
+        public Criteria getHasValueCriteria() {
+            return new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    return hasValue();
+                }
+            };
+        }
+
+        /**
+         * Waits till the JavaScript evaluation finishes.
+         */
+        public void waitUntilHasValue(long timeout, TimeUnit timeoutUnits)
+                throws InterruptedException, TimeoutException {
+            waitUntilCriteria(getHasValueCriteria(), timeout, timeoutUnits);
+        }
+
+        public void waitUntilHasValue() throws InterruptedException, TimeoutException {
+            waitUntilCriteria(getHasValueCriteria());
+        }
+
         private void setRequestId(Integer requestId) {
             mRequestId = requestId;
             mId = null;
             mJsonResult = null;
         }
+
         public void notifyCalled(int id, String jsonResult) {
             if (mRequestId == null) {
                 Log.w("TestCallbackHelperContainer",

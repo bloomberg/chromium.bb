@@ -61,7 +61,6 @@ public class JSUtils {
             final AwContents awContents,
             final OnEvaluateJavaScriptResultHelper onEvaluateJavaScriptResultHelper,
             final String code) throws Throwable {
-        int currentCallCount = onEvaluateJavaScriptResultHelper.getCallCount();
         testCase.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -69,7 +68,7 @@ public class JSUtils {
                         awContents.getContentViewCore(), code);
             }
         });
-        onEvaluateJavaScriptResultHelper.waitForCallback(currentCallCount);
+        onEvaluateJavaScriptResultHelper.waitUntilHasValue();
         Assert.assertTrue("Failed to retrieve JavaScript evaluation results.",
                 onEvaluateJavaScriptResultHelper.hasValue());
         return onEvaluateJavaScriptResultHelper.getJsonResultAndClear();
