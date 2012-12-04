@@ -2258,8 +2258,15 @@ void TestingAutomationProvider::PerformActionOnInfobar(
           media_stream_infobar->GetVideoDevices();
       content::MediaStreamDevices audio_devices =
           media_stream_infobar->GetAudioDevices();
-      if (video_devices.empty() || audio_devices.empty()) {
-        reply.SendError("No available audio/video devices to autoselect.");
+
+      if (media_stream_infobar->HasVideo() && video_devices.empty()) {
+        reply.SendError("Requested video, but there are no video "
+                        "devices on the system.");
+        return;
+      }
+      if (media_stream_infobar->HasAudio() && audio_devices.empty()) {
+        reply.SendError("Requested audio, but there are no audio "
+            "devices on the system.");
         return;
       }
 

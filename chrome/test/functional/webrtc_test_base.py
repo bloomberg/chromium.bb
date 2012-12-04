@@ -21,19 +21,24 @@ class WebrtcTestBase(pyauto.PyUITest):
     extra_flags = ['--enable-media-stream', '--enable-peer-connection']
     return pyauto.PyUITest.ExtraChromeFlags(self) + extra_flags
 
-  def GetUserMedia(self, tab_index, action='allow'):
+  def GetUserMedia(self, tab_index, action='allow',
+                   request_video=True, request_audio=True):
     """Acquires webcam or mic for one tab and returns the result.
 
     Args:
       tab_index: The tab to request user media on.
       action: The action to take on the info bar. Can be 'allow', 'deny' or
           'dismiss'.
+      request_video: Whether to request video.
+      request_audio: Whether to request audio.
 
     Returns:
       A string as specified by the getUserMedia javascript function.
     """
+    constraints = '{ video: %s, audio: %s }' % (str(request_video).lower(),
+                                                str(request_audio).lower())
     self.assertEquals('ok-requested', self.ExecuteJavascript(
-        'getUserMedia("{ audio: true, video: true, }")', tab_index=tab_index))
+        'getUserMedia("%s")' % constraints, tab_index=tab_index))
 
     self.WaitForInfobarCount(1, tab_index=tab_index)
     self.PerformActionOnInfobar(action, infobar_index=0, tab_index=tab_index)

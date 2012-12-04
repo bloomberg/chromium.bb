@@ -50,7 +50,7 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
     pyauto.PyUITest.tearDown(self)
     self.assertEquals('', self.CheckErrorsAndCrashes())
 
-  def _SimpleWebrtcCall(self, duration_seconds=0):
+  def _SimpleWebrtcCall(self, request_video, request_audio, duration_seconds=0):
     """Tests we can call and hang up with WebRTC.
 
     This test exercises pretty much the whole happy-case for the WebRTC
@@ -73,10 +73,12 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
     playing by using the video detector.
 
     Args:
+      request_video: Whether to request video.
+      request_audio: Whether to request audio.
       duration_seconds: The number of seconds to keep the call up before
         shutting it down.
     """
-    self._SetupCall()
+    self._SetupCall(request_video=request_video, request_audio=request_audio)
 
     if duration_seconds:
       print 'Call up: sleeping %d seconds...' % duration_seconds
@@ -93,10 +95,18 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
     self.AssertNoFailures(tab_index=0)
     self.AssertNoFailures(tab_index=1)
 
-  def testSimpleWebrtcJsep01Call(self):
+  def testWebrtcJsep01Call(self):
     """Uses a draft of the PeerConnection API, using JSEP01."""
     self._LoadPageInTwoTabs('webrtc_jsep01_test.html')
-    self._SimpleWebrtcCall()
+    self._SimpleWebrtcCall(request_video=True, request_audio=True)
+
+  def testWebrtcVideoOnlyJsep01Call(self):
+    self._LoadPageInTwoTabs('webrtc_jsep01_test.html')
+    self._SimpleWebrtcCall(request_video=True, request_audio=False)
+
+  def testWebrtcAudioOnlyJsep01Call(self):
+    self._LoadPageInTwoTabs('webrtc_jsep01_test.html')
+    self._SimpleWebrtcCall(request_video=False, request_audio=True)
 
   def testJsep01AndMeasureCpu20Seconds(self):
     if not _HAS_CORRECT_PSUTIL_VERSION:
@@ -111,7 +121,9 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
     renderer_process = self._GetChromeRendererProcess(tab_index=0)
     renderer_process.get_cpu_percent()
 
-    self._SimpleWebrtcCall(duration_seconds=20)
+    self._SimpleWebrtcCall(request_video=True,
+                           request_audio=True,
+                           duration_seconds=20)
 
     cpu_usage = renderer_process.get_cpu_percent(interval=0)
     mem_usage_bytes = renderer_process.get_memory_info()[0]
@@ -165,7 +177,7 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
     # TODO(perkj): Verify that audio is muted.
 
     self._LoadPageInTwoTabs('webrtc_jsep01_test.html')
-    self._SetupCall()
+    self._SetupCall(request_video=True, request_audio=True)
     select_video_function = 'function(local) { return local.videoTracks[0]; }'
     self.assertEquals('ok-video-toggled-to-false', self.ExecuteJavascript(
         'toggleLocalStream(' + select_video_function + ', "video")',
@@ -193,23 +205,30 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
     self.NavigateToURL(url)
     self.AppendTab(pyauto.GURL(url))
 
-  def _SetupCall(self):
+  def _SetupCall(self, request_video, request_audio):
     """Gets user media and establishes a call.
 
     Assumes that two tabs are already opened with a suitable test page.
+
+    Args:
+      request_video: Whether to request video.
+      request_audio: Whether to request audio.
     """
-    self.assertEquals('ok-got-stream', self.GetUserMedia(tab_index=0))
-    self.assertEquals('ok-got-stream', self.GetUserMedia(tab_index=1))
+    self.assertEquals('ok-got-stream', self.GetUserMedia(
+        tab_index=0, request_video=request_video, request_audio=request_audio))
+    self.assertEquals('ok-got-stream', self.GetUserMedia(
+        tab_index=1, request_video=request_video, request_audio=request_audio))
     self.Connect('user_1', tab_index=0)
     self.Connect('user_2', tab_index=1)
 
     self.EstablishCall(from_tab_with_index=0, to_tab_with_index=1)
 
-    self._StartDetectingVideo(tab_index=0, video_element='remote-view')
-    self._StartDetectingVideo(tab_index=1, video_element='remote-view')
+    if request_video:
+      self._StartDetectingVideo(tab_index=0, video_element='remote-view')
+      self._StartDetectingVideo(tab_index=1, video_element='remote-view')
 
-    self._WaitForVideo(tab_index=0, expect_playing=True)
-    self._WaitForVideo(tab_index=1, expect_playing=True)
+      self._WaitForVideo(tab_index=0, expect_playing=True)
+      self._WaitForVideo(tab_index=1, expect_playing=True)
 
   def _StartDetectingVideo(self, tab_index, video_element):
     self.assertEquals('ok-started', self.ExecuteJavascript(
