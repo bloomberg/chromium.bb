@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
 
 namespace chromeos {
@@ -38,11 +37,10 @@ class CoreChromeOSOptionsHandler : public ::options::CoreOptionsHandler {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // PrefObserver implementation.
+ private:
   virtual void OnPreferenceChanged(PrefServiceBase* service,
                                    const std::string& pref_name) OVERRIDE;
 
- private:
   // Notifies registered JS callbacks on ChromeOS setting change.
   void NotifySettingsChanged(const std::string* setting_name);
   void NotifyProxyPrefsChanged();

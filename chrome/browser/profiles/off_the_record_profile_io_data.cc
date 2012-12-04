@@ -140,7 +140,7 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
   initialized_ = true;
 #if defined(FULL_SAFE_BROWSING) || defined(MOBILE_SAFE_BROWSING)
   io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
-      profile_->GetPrefs(), NULL);
+      profile_->GetPrefs());
   io_data_->safe_browsing_enabled()->MoveToThread(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 #endif

@@ -9,7 +9,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -35,7 +34,8 @@ class PluginStatusPrefSetter : public content::NotificationObserver {
   // any value changes.
   // This asynchronously calls the PluginService to get the list of installed
   // plug-ins.
-  void Init(Profile* profile, PrefObserver* observer);
+  void Init(Profile* profile,
+            const BooleanPrefMember::NamedChangeCallback& observer);
 
   bool IsClearPluginLSODataEnabled() const {
     return clear_plugin_lso_data_enabled_.GetValue();

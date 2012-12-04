@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/gesture_prefs_observer_factory_aura.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
@@ -26,8 +27,7 @@ struct OverscrollPref {
 };
 
 // This class manages gesture configuration preferences.
-class GesturePrefsObserver : public PrefObserver,
-                             public ProfileKeyedService {
+class GesturePrefsObserver : public ProfileKeyedService {
  public:
   explicit GesturePrefsObserver(PrefService* prefs);
   virtual ~GesturePrefsObserver();
@@ -54,10 +54,6 @@ class GesturePrefsObserver : public PrefObserver,
 
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
-
-  // PrefObserver implementation.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
  private:
   void Update();
@@ -111,21 +107,18 @@ GesturePrefsObserver::GesturePrefsObserver(PrefService* prefs)
     : prefs_(prefs) {
   registrar_.Init(prefs);
   registrar_.RemoveAll();
+  base::Closure callback = base::Bind(&GesturePrefsObserver::Update,
+                                      base::Unretained(this));
   for (size_t i = 0; i < arraysize(kPrefsToObserve); ++i)
-    registrar_.Add(kPrefsToObserve[i], this);
+    registrar_.Add(kPrefsToObserve[i], callback);
   for (size_t i = 0; i < arraysize(kOverscrollPrefs); ++i)
-    registrar_.Add(kOverscrollPrefs[i], this);
+    registrar_.Add(kOverscrollPrefs[i], callback);
 }
 
 GesturePrefsObserver::~GesturePrefsObserver() {}
 
 void GesturePrefsObserver::Shutdown() {
   registrar_.RemoveAll();
-}
-
-void GesturePrefsObserver::OnPreferenceChanged(PrefServiceBase* service,
-                                               const std::string& pref_name) {
-  Update();
 }
 
 void GesturePrefsObserver::Update() {

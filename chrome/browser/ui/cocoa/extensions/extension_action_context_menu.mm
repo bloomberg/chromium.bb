@@ -89,18 +89,20 @@ class AsyncUninstaller : public ExtensionUninstallDialog::Delegate {
 
 namespace extension_action_context_menu {
 
-class DevmodeObserver : public PrefObserver {
+class DevmodeObserver {
  public:
   DevmodeObserver(ExtensionActionContextMenu* menu,
                   PrefService* service)
       : menu_(menu), pref_service_(service) {
     registrar_.Init(pref_service_);
-    registrar_.Add(prefs::kExtensionsUIDeveloperMode, this);
+    registrar_.Add(
+        prefs::kExtensionsUIDeveloperMode,
+        base::Bind(&DevmodeObserver::OnExtensionsUIDeveloperModeChanged,
+                   base::Unretained(this)));
   }
   virtual ~DevmodeObserver() {}
 
-  void OnPreferenceChanged(PrefServiceBase* service,
-                           const std::string& pref_name) {
+  void OnExtensionsUIDeveloperModeChanged() {
     [menu_ updateInspectorItem];
   }
 

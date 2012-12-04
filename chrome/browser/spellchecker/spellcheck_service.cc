@@ -79,10 +79,9 @@ int SpellcheckService::GetSpellCheckLanguages(
     std::vector<std::string>* languages) {
   StringPrefMember accept_languages_pref;
   StringPrefMember dictionary_language_pref;
-  accept_languages_pref.Init(prefs::kAcceptLanguages, profile->GetPrefs(),
-                             NULL);
+  accept_languages_pref.Init(prefs::kAcceptLanguages, profile->GetPrefs());
   dictionary_language_pref.Init(prefs::kSpellCheckDictionary,
-                                profile->GetPrefs(), NULL);
+                                profile->GetPrefs());
   std::string dictionary_language = dictionary_language_pref.GetValue();
 
   // Now scan through the list of accept languages, and find possible mappings

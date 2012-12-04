@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/values.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/chromeos/cros/network_library.h"

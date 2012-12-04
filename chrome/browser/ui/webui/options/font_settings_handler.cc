@@ -106,7 +106,7 @@ void FontSettingsHandler::RegisterMessages() {
   FontSettingsUtilities::ValidateSavedFonts(pref_service);
 
   // Register for preferences that we need to observe manually.
-  font_encoding_.Init(prefs::kDefaultCharset, pref_service, NULL);
+  font_encoding_.Init(prefs::kDefaultCharset, pref_service);
 
   standard_font_.Init(prefs::kWebKitStandardFontFamily,
                       pref_service,

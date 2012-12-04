@@ -414,7 +414,7 @@ Browser::Browser(const CreateParams& params)
   // NOTE: These prefs all need to be explicitly destroyed in the destructor
   // or you'll get a nasty surprise when you run the incognito tests.
   encoding_auto_detect_.Init(prefs::kWebKitUsesUniversalDetector,
-                             profile_->GetPrefs(), NULL);
+                             profile_->GetPrefs());
 
   if (is_type_tabbed())
     instant_controller_.reset(new chrome::BrowserInstantController(this));

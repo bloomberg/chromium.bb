@@ -86,7 +86,7 @@ PasswordManager::PasswordManager(WebContents* web_contents,
       observer_(NULL) {
   DCHECK(delegate_);
   password_manager_enabled_.Init(prefs::kPasswordManagerEnabled,
-                                 delegate_->GetProfile()->GetPrefs(), NULL);
+                                 delegate_->GetProfile()->GetPrefs());
 
   ReportMetrics(*password_manager_enabled_);
 }

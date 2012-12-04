@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/values.h"
 #include "chrome/browser/plugins/plugin_status_pref_setter.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -20,8 +19,7 @@ namespace options {
 
 // Core options UI handler.
 // Handles resource and JS calls common to all options sub-pages.
-class CoreOptionsHandler : public OptionsPageUIHandler,
-                           public PrefObserver {
+class CoreOptionsHandler : public OptionsPageUIHandler {
  public:
   CoreOptionsHandler();
   virtual ~CoreOptionsHandler();
@@ -31,10 +29,6 @@ class CoreOptionsHandler : public OptionsPageUIHandler,
   virtual void InitializeHandler() OVERRIDE;
   virtual void InitializePage() OVERRIDE;
   virtual void Uninitialize() OVERRIDE;
-
-  // PrefObserver implementation.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
@@ -69,6 +63,13 @@ class CoreOptionsHandler : public OptionsPageUIHandler,
   // Records a user metric action for the given value.
   void ProcessUserMetric(const base::Value* value,
                          const std::string& metric);
+
+  // Virtual dispatch is needed as handling of some prefs may be
+  // finessed in subclasses.  The PrefServiceBase pointer is included
+  // so that subclasses can know whether the observed pref is from the
+  // local state or not.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name);
 
   // Notifies registered JS callbacks on change in |pref_name| preference.
   // |controlling_pref_name| controls if |pref_name| is managed by

@@ -537,7 +537,7 @@ void LoginUtilsImpl::OnProfileCreated(
       // profiles that might not have it set yet).
       StringPrefMember google_services_username;
       google_services_username.Init(prefs::kGoogleServicesUsername,
-                                    user_profile->GetPrefs(), NULL);
+                                    user_profile->GetPrefs());
       google_services_username.SetValue(
           UserManager::Get()->GetLoggedInUser()->display_email());
       // Make sure we flip every profile to not share proxies if the user hasn't
@@ -860,7 +860,7 @@ void LoginUtilsImpl::SetFirstLoginPrefs(PrefService* prefs) {
   // Save the input methods in the user's preferences.
   StringPrefMember language_preload_engines;
   language_preload_engines.Init(prefs::kLanguagePreloadEngines,
-                                prefs, NULL);
+                                prefs);
   language_preload_engines.SetValue(JoinString(input_method_ids, ','));
   btl->AddLoginTimeMarker("IMEStarted", false);
 
@@ -888,7 +888,7 @@ void LoginUtilsImpl::SetFirstLoginPrefs(PrefService* prefs) {
   // Save the preferred languages in the user's preferences.
   StringPrefMember language_preferred_languages;
   language_preferred_languages.Init(prefs::kLanguagePreferredLanguages,
-                                    prefs, NULL);
+                                    prefs);
   language_preferred_languages.SetValue(JoinString(language_codes, ','));
 }
 

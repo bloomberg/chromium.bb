@@ -80,7 +80,7 @@ void DisabledExtensionsView::MaybeShow(Browser* browser,
 
   sideload_wipeout_bubble_shown.Init(
       prefs::kExtensionsSideloadWipeoutBubbleShown,
-          browser->profile()->GetPrefs(), NULL);
+          browser->profile()->GetPrefs());
   int bubble_shown_count = sideload_wipeout_bubble_shown.GetValue();
   if (bubble_shown_count >= kShowSideloadWipeoutBubbleMax)
     return;
@@ -130,7 +130,7 @@ void DisabledExtensionsView::DismissBubble() {
   IntegerPrefMember sideload_wipeout_bubble_shown;
   sideload_wipeout_bubble_shown.Init(
       prefs::kExtensionsSideloadWipeoutBubbleShown,
-      browser_->profile()->GetPrefs(), NULL);
+      browser_->profile()->GetPrefs());
   sideload_wipeout_bubble_shown.SetValue(kShowSideloadWipeoutBubbleMax);
 
   GetWidget()->Close();

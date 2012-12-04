@@ -8,7 +8,7 @@
 // class MyClass {
 //  public:
 //   MyClass(PrefService* prefs) {
-//     my_string_.Init(prefs::kHomePage, prefs, NULL /* no observer */);
+//     my_string_.Init(prefs::kHomePage, prefs);
 //   }
 //  private:
 //   StringPrefMember my_string_;
@@ -103,6 +103,7 @@ class PrefMemberBase : public PrefObserver {
   // See PrefMember<> for description.
   void Init(const char* pref_name, PrefServiceBase* prefs,
             const NamedChangeCallback& observer);
+  void Init(const char* pref_name, PrefServiceBase* prefs);
 
   virtual void CreateInternal() const = 0;
 
@@ -176,17 +177,6 @@ class PrefMember : public subtle::PrefMemberBase {
   }
   void Init(const char* pref_name, PrefServiceBase* prefs) {
     subtle::PrefMemberBase::Init(pref_name, prefs);
-  }
-
-  // Deprecated version of Init.
-  void Init(const char* pref_name, PrefServiceBase* prefs,
-            PrefObserver* observer) {
-    if (observer) {
-      Init(pref_name, prefs, base::Bind(&PrefObserver::OnPreferenceChanged,
-                                        base::Unretained(observer), prefs));
-    } else {
-      Init(pref_name, prefs, NamedChangeCallback());
-    }
   }
 
   // Unsubscribes the PrefMember from the PrefService. After calling this

@@ -68,14 +68,14 @@ class TestProfileIOData : public ProfileIOData {
     // Initialize the IO members required for these tests, but keep them on
     // this thread since we don't use a background thread here.
     google_services_username()->Init(prefs::kGoogleServicesUsername,
-                                     pref_service, NULL);
+                                     pref_service);
     reverse_autologin_enabled()->Init(prefs::kReverseAutologinEnabled,
-                                      pref_service, NULL);
+                                      pref_service);
     one_click_signin_rejected_email_list()->Init(
-        prefs::kReverseAutologinRejectedEmailList, pref_service, NULL);
+        prefs::kReverseAutologinRejectedEmailList, pref_service);
 
     google_services_username_pattern()->Init(
-        prefs::kGoogleServicesUsernamePattern, local_state, NULL);
+        prefs::kGoogleServicesUsernamePattern, local_state);
 
     set_signin_names_for_testing(new SigninNamesOnIOThread());
     SetCookieSettingsForTesting(cookie_settings);

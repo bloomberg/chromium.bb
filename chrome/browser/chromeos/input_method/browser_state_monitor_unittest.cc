@@ -315,10 +315,10 @@ TEST(BrowserStateMonitorTest, TestUpdatePrefOnBrowserScreenDetails) {
   monitor.SetPrefServiceForTesting(&prefs);
 
   StringPrefMember previous;
-  previous.Init(prefs::kLanguagePreviousInputMethod, &prefs, NULL);
+  previous.Init(prefs::kLanguagePreviousInputMethod, &prefs);
   EXPECT_EQ("", previous.GetValue());
   StringPrefMember current;
-  current.Init(prefs::kLanguageCurrentInputMethod, &prefs, NULL);
+  current.Init(prefs::kLanguageCurrentInputMethod, &prefs);
   EXPECT_EQ("", current.GetValue());
 
   monitor.Observe(chrome::NOTIFICATION_LOGIN_USER_CHANGED,

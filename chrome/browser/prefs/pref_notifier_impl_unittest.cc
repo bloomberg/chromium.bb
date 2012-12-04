@@ -5,8 +5,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/prefs/public/pref_observer.h"
+#include "chrome/browser/prefs/mock_pref_change_callback.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
-#include "chrome/browser/prefs/pref_observer_mock.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -34,7 +34,9 @@ class MockPrefInitObserver {
 // OnPreferenceChanged public for tests.
 class TestingPrefNotifierImpl : public PrefNotifierImpl {
  public:
-  TestingPrefNotifierImpl(PrefService* service) : PrefNotifierImpl(service) {}
+  explicit TestingPrefNotifierImpl(PrefService* service)
+      : PrefNotifierImpl(service) {
+  }
 
   // Make public for tests.
   using PrefNotifierImpl::OnPreferenceChanged;
@@ -70,6 +72,21 @@ class MockPrefNotifier : public PrefNotifierImpl {
   // Make public for tests below.
   using PrefNotifierImpl::OnPreferenceChanged;
   using PrefNotifierImpl::OnInitializationCompleted;
+};
+
+class PrefObserverMock : public PrefObserver {
+ public:
+  PrefObserverMock() {}
+  virtual ~PrefObserverMock() {}
+
+  MOCK_METHOD2(OnPreferenceChanged, void(PrefServiceBase*, const std::string&));
+
+  void Expect(PrefServiceBase* prefs,
+              const std::string& pref_name,
+              const Value* value) {
+    EXPECT_CALL(*this, OnPreferenceChanged(prefs, pref_name))
+        .With(PrefValueMatches(prefs, pref_name, value));
+  }
 };
 
 // Test fixture class.

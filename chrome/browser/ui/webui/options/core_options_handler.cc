@@ -57,7 +57,13 @@ CoreOptionsHandler::CoreOptionsHandler()
 CoreOptionsHandler::~CoreOptionsHandler() {}
 
 void CoreOptionsHandler::InitializeHandler() {
-  plugin_status_pref_setter_.Init(Profile::FromWebUI(web_ui()), this);
+  Profile* profile = Profile::FromWebUI(web_ui());
+
+  plugin_status_pref_setter_.Init(
+      profile,
+      base::Bind(&CoreOptionsHandler::OnPreferenceChanged,
+                 base::Unretained(this),
+                 profile->GetPrefs()));
 
   pref_change_filters_[prefs::kMetricsReportingEnabled] =
       base::Bind(&AllowMetricsReportingChange);
@@ -200,10 +206,19 @@ base::Value* CoreOptionsHandler::FetchPref(const std::string& pref_name) {
 }
 
 void CoreOptionsHandler::ObservePref(const std::string& pref_name) {
-  if (g_browser_process->local_state()->FindPreference(pref_name.c_str()))
-    local_state_registrar_.Add(pref_name.c_str(), this);
-  else
-    registrar_.Add(pref_name.c_str(), this);
+  if (g_browser_process->local_state()->FindPreference(pref_name.c_str())) {
+    local_state_registrar_.Add(
+        pref_name.c_str(),
+        base::Bind(&CoreOptionsHandler::OnPreferenceChanged,
+                   base::Unretained(this),
+                   local_state_registrar_.prefs()));
+  } else {
+    registrar_.Add(
+        pref_name.c_str(),
+        base::Bind(&CoreOptionsHandler::OnPreferenceChanged,
+                   base::Unretained(this),
+                   registrar_.prefs()));
+  }
 }
 
 void CoreOptionsHandler::StopObservingPref(const std::string& pref_name) {

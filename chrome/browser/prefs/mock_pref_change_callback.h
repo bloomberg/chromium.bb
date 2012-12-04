@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREFS_PREF_OBSERVER_MOCK_H_
-#define CHROME_BROWSER_PREFS_PREF_OBSERVER_MOCK_H_
+#ifndef CHROME_BROWSER_PREFS_MOCK_PREF_CHANGE_CALLBACK_H_
+#define CHROME_BROWSER_PREFS_MOCK_PREF_CHANGE_CALLBACK_H_
 
 #include <string>
 
-#include "base/prefs/public/pref_observer.h"
+#include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -33,16 +33,20 @@ MATCHER_P3(PrefValueMatches, prefs, pref_name, value, "") {
 }
 
 // A mock for testing preference notifications and easy setup of expectations.
-class PrefObserverMock : public PrefObserver {
+class MockPrefChangeCallback {
  public:
-  PrefObserverMock();
-  virtual ~PrefObserverMock();
+  explicit MockPrefChangeCallback(PrefServiceBase* prefs);
+  virtual ~MockPrefChangeCallback();
 
-  MOCK_METHOD2(OnPreferenceChanged, void(PrefServiceBase*, const std::string&));
+  PrefChangeRegistrar::NamedChangeCallback GetCallback();
 
-  void Expect(PrefServiceBase* prefs,
-              const std::string& pref_name,
+  MOCK_METHOD1(OnPreferenceChanged, void(const std::string&));
+
+  void Expect(const std::string& pref_name,
               const Value* value);
+
+ private:
+  PrefServiceBase* prefs_;
 };
 
-#endif  // CHROME_BROWSER_PREFS_PREF_OBSERVER_MOCK_H_
+#endif  // CHROME_BROWSER_PREFS_MOCK_PREF_CHANGE_CALLBACK_H_

@@ -39,9 +39,9 @@ using content::DownloadManager;
 
 DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
   PrefService* prefs = profile->GetPrefs();
-  prompt_for_download_.Init(prefs::kPromptForDownload, prefs, NULL);
-  download_path_.Init(prefs::kDownloadDefaultDirectory, prefs, NULL);
-  save_file_type_.Init(prefs::kSaveFileType, prefs, NULL);
+  prompt_for_download_.Init(prefs::kPromptForDownload, prefs);
+  download_path_.Init(prefs::kDownloadDefaultDirectory, prefs);
+  save_file_type_.Init(prefs::kSaveFileType, prefs);
 
   // We store any file extension that should be opened automatically at
   // download completion in this pref.

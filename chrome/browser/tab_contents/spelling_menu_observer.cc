@@ -36,7 +36,7 @@ SpellingMenuObserver::SpellingMenuObserver(RenderViewContextMenuProxy* proxy)
       succeeded_(false) {
   if (proxy && proxy->GetProfile())
     integrate_spelling_service_.Init(prefs::kSpellCheckUseSpellingService,
-                                     proxy->GetProfile()->GetPrefs(), NULL);
+                                     proxy->GetProfile()->GetPrefs());
 }
 
 SpellingMenuObserver::~SpellingMenuObserver() {

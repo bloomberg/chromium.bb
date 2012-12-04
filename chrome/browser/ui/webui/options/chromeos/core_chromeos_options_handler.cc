@@ -102,8 +102,12 @@ CoreChromeOSOptionsHandler::~CoreChromeOSOptionsHandler() {
 void CoreChromeOSOptionsHandler::InitializeHandler() {
   CoreOptionsHandler::InitializeHandler();
 
-  proxy_prefs_.Init(Profile::FromWebUI(web_ui())->GetPrefs());
-  proxy_prefs_.Add(prefs::kProxy, this);
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  proxy_prefs_.Init(prefs);
+  proxy_prefs_.Add(prefs::kProxy,
+                   base::Bind(&CoreChromeOSOptionsHandler::OnPreferenceChanged,
+                              base::Unretained(this),
+                              prefs));
   // Observe the chromeos::ProxyConfigServiceImpl for changes from the UI.
   PrefProxyConfigTracker* proxy_tracker =
       Profile::FromWebUI(web_ui())->GetProxyConfigTracker();

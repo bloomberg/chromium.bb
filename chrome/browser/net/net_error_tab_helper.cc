@@ -81,8 +81,7 @@ void NetErrorTabHelper::InitializePref(WebContents* contents) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   resolve_errors_with_web_service_.Init(
       prefs::kAlternateErrorPagesEnabled,
-      profile->GetPrefs(),
-      NULL /* no observer */);
+      profile->GetPrefs());
   pref_initialized_ = true;
 }
 

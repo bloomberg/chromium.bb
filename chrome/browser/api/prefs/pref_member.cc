@@ -26,12 +26,17 @@ PrefMemberBase::~PrefMemberBase() {
 void PrefMemberBase::Init(const char* pref_name,
                           PrefServiceBase* prefs,
                           const NamedChangeCallback& observer) {
+  observer_ = observer;
+  Init(pref_name, prefs);
+}
+
+void PrefMemberBase::Init(const char* pref_name,
+                          PrefServiceBase* prefs) {
   DCHECK(pref_name);
   DCHECK(prefs);
   DCHECK(pref_name_.empty());  // Check that Init is only called once.
   prefs_ = prefs;
   pref_name_ = pref_name;
-  observer_ = observer;
   // Check that the preference is registered.
   DCHECK(prefs_->FindPreference(pref_name_.c_str()))
       << pref_name << " not registered.";

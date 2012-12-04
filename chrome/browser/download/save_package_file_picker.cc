@@ -207,7 +207,7 @@ void SavePackageFilePicker::FileSelected(const FilePath& path,
                               content::SAVE_PAGE_TYPE_MAX);
 
     StringPrefMember save_file_path;
-    save_file_path.Init(prefs::kSaveFileDefaultDirectory, prefs, NULL);
+    save_file_path.Init(prefs::kSaveFileDefaultDirectory, prefs);
 #if defined(OS_POSIX)
     std::string path_string = path.DirName().value();
 #elif defined(OS_WIN)

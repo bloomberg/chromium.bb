@@ -18,7 +18,7 @@
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
-#include "chrome/browser/prefs/pref_observer_mock.h"
+#include "chrome/browser/prefs/mock_pref_change_callback.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -47,31 +47,31 @@ TEST(PrefServiceTest, NoObserverFire) {
   prefs.RegisterStringPref(pref_name, std::string());
 
   const char new_pref_value[] = "http://www.google.com/";
-  PrefObserverMock obs;
+  MockPrefChangeCallback obs(&prefs);
   PrefChangeRegistrar registrar;
   registrar.Init(&prefs);
-  registrar.Add(pref_name, &obs);
+  registrar.Add(pref_name, obs.GetCallback());
 
-  // This should fire the checks in PrefObserverMock::Observe.
+  // This should fire the checks in MockPrefChangeCallback::OnPreferenceChanged.
   const StringValue expected_value(new_pref_value);
-  obs.Expect(&prefs, pref_name, &expected_value);
+  obs.Expect(pref_name, &expected_value);
   prefs.SetString(pref_name, new_pref_value);
   Mock::VerifyAndClearExpectations(&obs);
 
   // Setting the pref to the same value should not set the pref value a second
   // time.
-  EXPECT_CALL(obs, OnPreferenceChanged(_, _)).Times(0);
+  EXPECT_CALL(obs, OnPreferenceChanged(_)).Times(0);
   prefs.SetString(pref_name, new_pref_value);
   Mock::VerifyAndClearExpectations(&obs);
 
   // Clearing the pref should cause the pref to fire.
   const StringValue expected_default_value("");
-  obs.Expect(&prefs, pref_name, &expected_default_value);
+  obs.Expect(pref_name, &expected_default_value);
   prefs.ClearPref(pref_name);
   Mock::VerifyAndClearExpectations(&obs);
 
   // Clearing the pref again should not cause the pref to fire.
-  EXPECT_CALL(obs, OnPreferenceChanged(_, _)).Times(0);
+  EXPECT_CALL(obs, OnPreferenceChanged(_)).Times(0);
   prefs.ClearPref(pref_name);
   Mock::VerifyAndClearExpectations(&obs);
 }
@@ -103,26 +103,26 @@ TEST(PrefServiceTest, Observers) {
 
   const char new_pref_value[] = "http://www.google.com/";
   const StringValue expected_new_pref_value(new_pref_value);
-  PrefObserverMock obs;
+  MockPrefChangeCallback obs(&prefs);
   PrefChangeRegistrar registrar;
   registrar.Init(&prefs);
-  registrar.Add(pref_name, &obs);
+  registrar.Add(pref_name, obs.GetCallback());
 
   PrefChangeRegistrar registrar_two;
   registrar_two.Init(&prefs);
 
-  // This should fire the checks in PrefObserverMock::Observe.
-  obs.Expect(&prefs, pref_name, &expected_new_pref_value);
+  // This should fire the checks in MockPrefChangeCallback::OnPreferenceChanged.
+  obs.Expect(pref_name, &expected_new_pref_value);
   prefs.SetString(pref_name, new_pref_value);
   Mock::VerifyAndClearExpectations(&obs);
 
   // Now try adding a second pref observer.
   const char new_pref_value2[] = "http://www.youtube.com/";
   const StringValue expected_new_pref_value2(new_pref_value2);
-  PrefObserverMock obs2;
-  obs.Expect(&prefs, pref_name, &expected_new_pref_value2);
-  obs2.Expect(&prefs, pref_name, &expected_new_pref_value2);
-  registrar_two.Add(pref_name, &obs2);
+  MockPrefChangeCallback obs2(&prefs);
+  obs.Expect(pref_name, &expected_new_pref_value2);
+  obs2.Expect(pref_name, &expected_new_pref_value2);
+  registrar_two.Add(pref_name, obs2.GetCallback());
   // This should fire the checks in obs and obs2.
   prefs.SetString(pref_name, new_pref_value2);
   Mock::VerifyAndClearExpectations(&obs);
@@ -130,8 +130,8 @@ TEST(PrefServiceTest, Observers) {
 
   // Set a recommended value.
   const StringValue recommended_pref_value("http://www.gmail.com/");
-  obs.Expect(&prefs, pref_name, &expected_new_pref_value2);
-  obs2.Expect(&prefs, pref_name, &expected_new_pref_value2);
+  obs.Expect(pref_name, &expected_new_pref_value2);
+  obs2.Expect(pref_name, &expected_new_pref_value2);
   // This should fire the checks in obs and obs2 but with an unchanged value
   // as the recommended value is being overridden by the user-set value.
   prefs.SetRecommendedPref(pref_name, recommended_pref_value.DeepCopy());
@@ -140,8 +140,8 @@ TEST(PrefServiceTest, Observers) {
 
   // Make sure obs2 still works after removing obs.
   registrar.Remove(pref_name);
-  EXPECT_CALL(obs, OnPreferenceChanged(_, _)).Times(0);
-  obs2.Expect(&prefs, pref_name, &expected_new_pref_value);
+  EXPECT_CALL(obs, OnPreferenceChanged(_)).Times(0);
+  obs2.Expect(pref_name, &expected_new_pref_value);
   // This should only fire the observer in obs2.
   prefs.SetString(pref_name, new_pref_value);
   Mock::VerifyAndClearExpectations(&obs);
@@ -361,8 +361,10 @@ class PrefServiceSetValueTest : public testing::Test {
   static const char kName[];
   static const char kValue[];
 
+  PrefServiceSetValueTest() : observer_(&prefs_) {}
+
   TestingPrefService prefs_;
-  PrefObserverMock observer_;
+  MockPrefChangeCallback observer_;
 };
 
 const char PrefServiceSetValueTest::kName[] = "name";
@@ -375,19 +377,19 @@ TEST_F(PrefServiceSetValueTest, SetStringValue) {
 
   PrefChangeRegistrar registrar;
   registrar.Init(&prefs_);
-  registrar.Add(kName, &observer_);
+  registrar.Add(kName, observer_.GetCallback());
 
   // Changing the controlling store from default to user triggers notification.
-  observer_.Expect(&prefs_, kName, &default_value);
+  observer_.Expect(kName, &default_value);
   prefs_.Set(kName, default_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
-  EXPECT_CALL(observer_, OnPreferenceChanged(_, _)).Times(0);
+  EXPECT_CALL(observer_, OnPreferenceChanged(_)).Times(0);
   prefs_.Set(kName, default_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
   StringValue new_value(kValue);
-  observer_.Expect(&prefs_, kName, &new_value);
+  observer_.Expect(kName, &new_value);
   prefs_.Set(kName, new_value);
   Mock::VerifyAndClearExpectations(&observer_);
 }
@@ -396,24 +398,24 @@ TEST_F(PrefServiceSetValueTest, SetDictionaryValue) {
   prefs_.RegisterDictionaryPref(kName);
   PrefChangeRegistrar registrar;
   registrar.Init(&prefs_);
-  registrar.Add(kName, &observer_);
+  registrar.Add(kName, observer_.GetCallback());
 
-  EXPECT_CALL(observer_, OnPreferenceChanged(_, _)).Times(0);
+  EXPECT_CALL(observer_, OnPreferenceChanged(_)).Times(0);
   prefs_.RemoveUserPref(kName);
   Mock::VerifyAndClearExpectations(&observer_);
 
   DictionaryValue new_value;
   new_value.SetString(kName, kValue);
-  observer_.Expect(&prefs_, kName, &new_value);
+  observer_.Expect(kName, &new_value);
   prefs_.Set(kName, new_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
-  EXPECT_CALL(observer_, OnPreferenceChanged(_, _)).Times(0);
+  EXPECT_CALL(observer_, OnPreferenceChanged(_)).Times(0);
   prefs_.Set(kName, new_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
   DictionaryValue empty;
-  observer_.Expect(&prefs_, kName, &empty);
+  observer_.Expect(kName, &empty);
   prefs_.Set(kName, empty);
   Mock::VerifyAndClearExpectations(&observer_);
 }
@@ -422,24 +424,24 @@ TEST_F(PrefServiceSetValueTest, SetListValue) {
   prefs_.RegisterListPref(kName);
   PrefChangeRegistrar registrar;
   registrar.Init(&prefs_);
-  registrar.Add(kName, &observer_);
+  registrar.Add(kName, observer_.GetCallback());
 
-  EXPECT_CALL(observer_, OnPreferenceChanged(_, _)).Times(0);
+  EXPECT_CALL(observer_, OnPreferenceChanged(_)).Times(0);
   prefs_.RemoveUserPref(kName);
   Mock::VerifyAndClearExpectations(&observer_);
 
   ListValue new_value;
   new_value.Append(Value::CreateStringValue(kValue));
-  observer_.Expect(&prefs_, kName, &new_value);
+  observer_.Expect(kName, &new_value);
   prefs_.Set(kName, new_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
-  EXPECT_CALL(observer_, OnPreferenceChanged(_, _)).Times(0);
+  EXPECT_CALL(observer_, OnPreferenceChanged(_)).Times(0);
   prefs_.Set(kName, new_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
   ListValue empty;
-  observer_.Expect(&prefs_, kName, &empty);
+  observer_.Expect(kName, &empty);
   prefs_.Set(kName, empty);
   Mock::VerifyAndClearExpectations(&observer_);
 }

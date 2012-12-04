@@ -153,8 +153,7 @@ void SpellCheckerSubMenuObserver::ExecuteCommand(int command_id) {
     if (profile && language < languages_.size()) {
       StringPrefMember dictionary_language;
       dictionary_language.Init(prefs::kSpellCheckDictionary,
-                               profile->GetPrefs(),
-                               NULL);
+                               profile->GetPrefs());
       dictionary_language.SetValue(languages_[language]);
     }
     return;

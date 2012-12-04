@@ -41,11 +41,9 @@ ClearBrowserDataHandler::~ClearBrowserDataHandler() {
 
 void ClearBrowserDataHandler::InitializeHandler() {
   clear_plugin_lso_data_enabled_.Init(prefs::kClearPluginLSODataEnabled,
-                                      Profile::FromWebUI(web_ui())->GetPrefs(),
-                                      NULL);
+                                      Profile::FromWebUI(web_ui())->GetPrefs());
   pepper_flash_settings_enabled_.Init(prefs::kPepperFlashSettingsEnabled,
-                                      Profile::FromWebUI(web_ui())->GetPrefs(),
-                                      NULL);
+                                      Profile::FromWebUI(web_ui())->GetPrefs());
 }
 
 void ClearBrowserDataHandler::GetLocalizedValues(

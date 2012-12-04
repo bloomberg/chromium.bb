@@ -42,7 +42,7 @@ class GetPrefValueCallback
   GetPrefValueCallback() : value_(false) {}
 
   void Init(const char* pref_name, PrefService* prefs) {
-    pref_.Init(pref_name, prefs, NULL);
+    pref_.Init(pref_name, prefs);
     pref_.MoveToThread(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   }
@@ -77,16 +77,16 @@ class GetPrefValueCallback
   bool value_;
 };
 
-class PrefMemberTestClass : public PrefObserver {
+class PrefMemberTestClass {
  public:
   explicit PrefMemberTestClass(PrefService* prefs)
       : observe_cnt_(0), prefs_(prefs) {
-    str_.Init(kStringPref, prefs, this);
+    str_.Init(kStringPref, prefs,
+              base::Bind(&PrefMemberTestClass::OnPreferenceChanged,
+                         base::Unretained(this)));
   }
 
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE {
-    EXPECT_EQ(service, prefs_);
+  void OnPreferenceChanged(const std::string& pref_name) {
     EXPECT_EQ(pref_name, kStringPref);
     EXPECT_EQ(str_.GetValue(), prefs_->GetString(kStringPref));
     ++observe_cnt_;
@@ -107,7 +107,7 @@ TEST(PrefMemberTest, BasicGetAndSet) {
 
   // Test bool
   BooleanPrefMember boolean;
-  boolean.Init(kBoolPref, &prefs, NULL);
+  boolean.Init(kBoolPref, &prefs);
 
   // Check the defaults
   EXPECT_FALSE(prefs.GetBoolean(kBoolPref));
@@ -128,7 +128,7 @@ TEST(PrefMemberTest, BasicGetAndSet) {
 
   // Test int
   IntegerPrefMember integer;
-  integer.Init(kIntPref, &prefs, NULL);
+  integer.Init(kIntPref, &prefs);
 
   // Check the defaults
   EXPECT_EQ(0, prefs.GetInteger(kIntPref));
@@ -149,7 +149,7 @@ TEST(PrefMemberTest, BasicGetAndSet) {
 
   // Test double
   DoublePrefMember double_member;
-  double_member.Init(kDoublePref, &prefs, NULL);
+  double_member.Init(kDoublePref, &prefs);
 
   // Check the defaults
   EXPECT_EQ(0.0, prefs.GetDouble(kDoublePref));
@@ -170,7 +170,7 @@ TEST(PrefMemberTest, BasicGetAndSet) {
 
   // Test string
   StringPrefMember string;
-  string.Init(kStringPref, &prefs, NULL);
+  string.Init(kStringPref, &prefs);
 
   // Check the defaults
   EXPECT_EQ("default", prefs.GetString(kStringPref));
@@ -193,7 +193,7 @@ TEST(PrefMemberTest, BasicGetAndSet) {
   ListValue expected_list;
   std::vector<std::string> expected_vector;
   StringListPrefMember string_list;
-  string_list.Init(kStringListPref, &prefs, NULL);
+  string_list.Init(kStringListPref, &prefs);
 
   // Check the defaults
   EXPECT_TRUE(expected_list.Equals(prefs.GetList(kStringListPref)));
@@ -252,9 +252,9 @@ TEST(PrefMemberTest, TwoPrefs) {
   RegisterTestPrefs(&prefs);
 
   DoublePrefMember pref1;
-  pref1.Init(kDoublePref, &prefs, NULL);
+  pref1.Init(kDoublePref, &prefs);
   DoublePrefMember pref2;
-  pref2.Init(kDoublePref, &prefs, NULL);
+  pref2.Init(kDoublePref, &prefs);
 
   pref1.SetValue(2.3);
   EXPECT_EQ(2.3, *pref2);

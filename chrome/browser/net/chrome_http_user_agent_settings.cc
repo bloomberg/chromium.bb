@@ -12,8 +12,8 @@
 
 ChromeHttpUserAgentSettings::ChromeHttpUserAgentSettings(PrefService* prefs) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  pref_accept_language_.Init(prefs::kAcceptLanguages, prefs, NULL);
-  pref_accept_charset_.Init(prefs::kDefaultCharset, prefs, NULL);
+  pref_accept_language_.Init(prefs::kAcceptLanguages, prefs);
+  pref_accept_charset_.Init(prefs::kDefaultCharset, prefs);
   last_pref_accept_language_ = *pref_accept_language_;
   last_http_accept_language_ =
       net::HttpUtil::GenerateAcceptLanguageHeader(last_pref_accept_language_);

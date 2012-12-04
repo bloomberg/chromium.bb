@@ -59,10 +59,10 @@ TEST(PreferencesTest, TestUpdatePrefOnBrowserScreenDetails) {
   DownloadPrefs::RegisterUserPrefs(&prefs);
 
   StringPrefMember previous;
-  previous.Init(prefs::kLanguagePreviousInputMethod, &prefs, NULL);
+  previous.Init(prefs::kLanguagePreviousInputMethod, &prefs);
   previous.SetValue("KeyboardA");
   StringPrefMember current;
-  current.Init(prefs::kLanguageCurrentInputMethod, &prefs, NULL);
+  current.Init(prefs::kLanguageCurrentInputMethod, &prefs);
   current.SetValue("KeyboardB");
 
   MyMockInputMethodManager mock_manager(&previous, &current);

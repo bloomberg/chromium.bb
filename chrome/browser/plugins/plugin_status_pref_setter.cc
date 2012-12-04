@@ -27,8 +27,9 @@ PluginStatusPrefSetter::PluginStatusPrefSetter()
 PluginStatusPrefSetter::~PluginStatusPrefSetter() {
 }
 
-void PluginStatusPrefSetter::Init(Profile* profile,
-                                  PrefObserver* observer) {
+void PluginStatusPrefSetter::Init(
+    Profile* profile,
+    const BooleanPrefMember::NamedChangeCallback& observer) {
   clear_plugin_lso_data_enabled_.Init(prefs::kClearPluginLSODataEnabled,
                                       profile->GetPrefs(), observer);
   pepper_flash_settings_enabled_.Init(prefs::kPepperFlashSettingsEnabled,

@@ -193,7 +193,7 @@ void PluginsDOMHandler::RegisterMessages() {
   Profile* profile = Profile::FromWebUI(web_ui());
 
   PrefService* prefs = profile->GetPrefs();
-  show_details_.Init(prefs::kPluginsShowDetails, prefs, NULL);
+  show_details_.Init(prefs::kPluginsShowDetails, prefs);
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,

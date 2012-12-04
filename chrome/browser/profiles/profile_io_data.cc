@@ -193,7 +193,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       pref_service);
 
 #if defined(ENABLE_PRINTING)
-  printing_enabled_.Init(prefs::kPrintingEnabled, pref_service, NULL);
+  printing_enabled_.Init(prefs::kPrintingEnabled, pref_service);
   printing_enabled_.MoveToThread(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 #endif
@@ -205,23 +205,23 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   if (!is_incognito()) {
     signin_names_.reset(new SigninNamesOnIOThread());
 
-    google_services_username_.Init(prefs::kGoogleServicesUsername, pref_service,
-                                   NULL);
+    google_services_username_.Init(prefs::kGoogleServicesUsername,
+                                   pref_service);
     google_services_username_.MoveToThread(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 
     google_services_username_pattern_.Init(
-        prefs::kGoogleServicesUsernamePattern, local_state_pref_service, NULL);
+        prefs::kGoogleServicesUsernamePattern, local_state_pref_service);
     google_services_username_pattern_.MoveToThread(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 
     reverse_autologin_enabled_.Init(
-        prefs::kReverseAutologinEnabled, pref_service, NULL);
+        prefs::kReverseAutologinEnabled, pref_service);
     reverse_autologin_enabled_.MoveToThread(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 
     one_click_signin_rejected_email_list_.Init(
-        prefs::kReverseAutologinRejectedEmailList, pref_service, NULL);
+        prefs::kReverseAutologinRejectedEmailList, pref_service);
     one_click_signin_rejected_email_list_.MoveToThread(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   }
@@ -456,8 +456,7 @@ void ProfileIOData::InitializeMetricsEnabledStateOnUIThread() {
   // Prep the PrefMember and send it to the IO thread, since this value will be
   // read from there.
   enable_metrics_.Init(prefs::kMetricsReportingEnabled,
-                       g_browser_process->local_state(),
-                       NULL);
+                       g_browser_process->local_state());
   enable_metrics_.MoveToThread(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 #endif  // defined(OS_CHROMEOS)

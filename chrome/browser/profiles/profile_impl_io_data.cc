@@ -270,12 +270,12 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
   io_data_->set_http_server_properties_manager(
       new chrome_browser_net::HttpServerPropertiesManager(pref_service));
   io_data_->session_startup_pref()->Init(
-      prefs::kRestoreOnStartup, pref_service, NULL);
+      prefs::kRestoreOnStartup, pref_service);
   io_data_->session_startup_pref()->MoveToThread(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 #if defined(FULL_SAFE_BROWSING) || defined(MOBILE_SAFE_BROWSING)
   io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
-      pref_service, NULL);
+      pref_service);
   io_data_->safe_browsing_enabled()->MoveToThread(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 #endif
