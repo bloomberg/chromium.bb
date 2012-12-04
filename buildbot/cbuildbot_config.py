@@ -913,6 +913,12 @@ internal_arm_paladin.add_config('daisy-paladin',
   paladin_builder_name='daisy paladin',
 )
 
+internal_arm_paladin.add_config('spring-paladin',
+  boards=['daisy_spring'],
+  paladin_builder_name='daisy spring paladin',
+  important=False,
+)
+
 internal_arm_paladin.add_config('kaen-paladin',
   boards=['tegra2_kaen'],
   paladin_builder_name='tegra2 kaen paladin',
@@ -1097,6 +1103,11 @@ _arm_release.add_config('daisy-release',
   hw_tests=['bvt'],
   hw_tests_num=4,
   critical_for_chrome=True,
+)
+
+_arm_release.add_config('spring-release',
+  boards=['daisy_spring'],
+  useflags=official['useflags'] + ['widevine_cdm'],
 )
 
 # Factory and Firmware releases much inherit from these classes.  Modifications
