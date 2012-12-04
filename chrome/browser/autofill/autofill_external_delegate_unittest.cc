@@ -40,6 +40,10 @@ class MockAutofillExternalDelegate :
       : TestAutofillExternalDelegate(web_contents, autofill_manger) {}
   ~MockAutofillExternalDelegate() {}
 
+  bool popup_visible() {
+    return autofill::TestAutofillExternalDelegate::popup_visible();
+  }
+
   MOCK_METHOD4(ApplyAutofillSuggestions, void(
       const std::vector<string16>& autofill_values,
       const std::vector<string16>& autofill_labels,
@@ -47,8 +51,6 @@ class MockAutofillExternalDelegate :
       const std::vector<int>& autofill_unique_ids));
 
   MOCK_METHOD0(ClearPreviewedForm, void());
-
-  MOCK_METHOD0(HideAutofillPopup, void());
 
   MOCK_METHOD1(SetBounds, void(const gfx::Rect& bounds));
 
@@ -149,9 +151,10 @@ TEST_F(AutofillExternalDelegateUnitTest, TestExternalDelegateVirtualCalls) {
                                             autofill_item,
                                             autofill_item,
                                             autofill_ids);
+  EXPECT_TRUE(external_delegate_->popup_visible());
 
-
-  EXPECT_CALL(*external_delegate_, HideAutofillPopup());
+  // Called when hiding the popup.
+  EXPECT_CALL(*external_delegate_, ClearPreviewedForm());
 
   // Called by DidAutofillSuggestions, add expectation to remove warning.
   EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _));
@@ -160,6 +163,7 @@ TEST_F(AutofillExternalDelegateUnitTest, TestExternalDelegateVirtualCalls) {
   // we've selected an option.
   external_delegate_->DidAcceptAutofillSuggestions(autofill_item[0],
                                                    autofill_ids[0], 0);
+  EXPECT_FALSE(external_delegate_->popup_visible());
 }
 
 // Test that data list elements for a node will appear in the Autofill popup.
@@ -250,7 +254,55 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearPreviewedForm) {
 // Test that the popup is hidden once we are done editing the autofill field.
 TEST_F(AutofillExternalDelegateUnitTest,
        ExternalDelegateHidePopupAfterEditing) {
-  EXPECT_CALL(*external_delegate_, HideAutofillPopup());
+  EXPECT_CALL(*external_delegate_, SetBounds(_));
+  EXPECT_CALL(*external_delegate_, ApplyAutofillSuggestions(_, _, _, _));
+
+  autofill::GenerateTestAutofillPopup(external_delegate_.get());
+  EXPECT_TRUE(external_delegate_->popup_visible());
+
+  // Called when hiding the popup.
+  EXPECT_CALL(*external_delegate_, ClearPreviewedForm());
 
   external_delegate_->DidEndTextFieldEditing();
+
+  EXPECT_FALSE(external_delegate_->popup_visible());
+}
+
+// Test that the popup is marked as visible after recieving password
+// suggestions.
+TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegatePasswordSuggestions) {
+  std::vector<string16> suggestions;
+  suggestions.push_back(string16());
+
+  FormFieldData field;
+  field.is_focusable = true;
+  field.should_autocomplete = true;
+  const gfx::Rect bounds;
+
+  EXPECT_CALL(*external_delegate_, SetBounds(bounds));
+
+  // The enums must be cast to ints to prevent compile errors on linux_rel.
+  EXPECT_CALL(*external_delegate_,
+              ApplyAutofillSuggestions(_, _, _, testing::ElementsAre(
+                  static_cast<int>(
+                      WebAutofillClient::MenuItemIDPasswordEntry))));
+
+  external_delegate_->OnShowPasswordSuggestions(suggestions,
+                                                field,
+                                                bounds);
+  EXPECT_TRUE(external_delegate_->popup_visible());
+
+  // Called by DidAutofillSuggestions, add expectation to remove warning.
+  EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _));
+
+  // Called when hiding the popup.
+  EXPECT_CALL(*external_delegate_, ClearPreviewedForm());
+
+  // This should trigger a call to hide the popup since
+  // we've selected an option.
+  external_delegate_->DidAcceptAutofillSuggestions(
+      suggestions[0],
+      WebAutofillClient::MenuItemIDPasswordEntry,
+      0);
+  EXPECT_FALSE(external_delegate_->popup_visible());
 }

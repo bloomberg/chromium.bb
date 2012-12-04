@@ -149,6 +149,7 @@ void AutofillExternalDelegate::OnShowPasswordSuggestions(
   std::vector<string16> empty(suggestions.size());
   std::vector<int> password_ids(suggestions.size(),
                                 WebAutofillClient::MenuItemIDPasswordEntry);
+  popup_visible_ = true;
   ApplyAutofillSuggestions(suggestions, empty, empty, password_ids);
 }
 
