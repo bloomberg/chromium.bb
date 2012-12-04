@@ -18,7 +18,6 @@ import tempfile
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import builderstage as bs
-from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import cbuildbot_config as config
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_results as results_lib
@@ -27,6 +26,7 @@ from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
 from chromite.buildbot import repository
 from chromite.buildbot import portage_utilities
+from chromite.lib import parallel
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
@@ -902,8 +902,8 @@ class BuildTargetStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(tempfile, 'mkdtemp')
     self.mox.StubOutWithMock(os.path, 'isdir')
 
-    self.mox.StubOutWithMock(background, 'RunParallelSteps')
-    background.RunParallelSteps(mox.IgnoreArg()).WithSideEffects(_DoSteps)
+    self.mox.StubOutWithMock(parallel, 'RunParallelSteps')
+    parallel.RunParallelSteps(mox.IgnoreArg()).WithSideEffects(_DoSteps)
 
     self.mox.StubOutWithMock(commands, 'BuildAutotestTarballs')
     self.mox.StubOutWithMock(commands, 'BuildFullAutotestTarball')
@@ -1126,7 +1126,7 @@ class ArchiveStageTest(AbstractStageTest):
   def _PatchDependencies(self):
     """Patch dependencies of ArchiveStage.PerformStage()."""
     to_patch = [
-        (background, 'RunParallelSteps'), (commands, 'PushImages'),
+        (parallel, 'RunParallelSteps'), (commands, 'PushImages'),
         (commands, 'RemoveOldArchives'), (commands, 'UploadArchivedFile')]
     self._AutoPatch(to_patch)
 

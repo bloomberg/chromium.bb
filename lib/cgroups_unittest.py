@@ -9,10 +9,10 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
 
-from chromite.buildbot import cbuildbot_background as bg
 from chromite.lib import cgroups
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import parallel
 from chromite.lib import sudo
 
 
@@ -26,7 +26,7 @@ class TestCreateGroups(cros_test_lib.TestCase):
     """Run many cros_sdk processes in parallel to test for race conditions."""
     with sudo.SudoKeepAlive():
       with cgroups.SimpleContainChildren('example', sigterm_timeout=5):
-        bg.RunTasksInProcessPool(self._CrosSdk, [[]] * 50, 10)
+        parallel.RunTasksInProcessPool(self._CrosSdk, [[]] * 50, 10)
 
 
 if __name__ == '__main__':

@@ -12,11 +12,11 @@ import os
 import sys
 
 from chromite.buildbot import constants
-from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
+from chromite.lib import parallel
 
 
 # TODO(sosa): Remove during OO refactor.
@@ -71,7 +71,7 @@ def CleanStalePackages(boards, package_atoms):
     tasks.append([board])
   tasks.append([None])
 
-  background.RunTasksInProcessPool(_CleanStalePackages, tasks)
+  parallel.RunTasksInProcessPool(_CleanStalePackages, tasks)
 
 
 # TODO(build): This code needs to be gutted and rebased to cros_build_lib.
@@ -272,8 +272,7 @@ def main(argv):
         break
 
   cache_queue = multiprocessing.Queue()
-  with background.BackgroundTaskRunner(cache_queue,
-                                       portage_utilities.RegenCache):
+  with parallel.BackgroundTaskRunner(cache_queue, portage_utilities.RegenCache):
     for overlay in keys:
       ebuilds = overlays[overlay]
       if not os.path.isdir(overlay):

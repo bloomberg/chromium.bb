@@ -18,10 +18,10 @@ import re
 import sys
 
 from chromite.buildbot import cbuildbot_config
-from chromite.buildbot import cbuildbot_background as bg
 from chromite.buildbot import constants
 from chromite.buildbot import manifest_version
 from chromite.lib import cros_build_lib
+from chromite.lib import parallel
 
 
 def ConvertGoogleStorageURLToHttpURL(url):
@@ -108,8 +108,8 @@ class CrashTriager(object):
   @contextlib.contextmanager
   def _ProcessCrashListInBackground(self):
     """Create a worker process for processing crash lists."""
-    with bg.BackgroundTaskRunner(self.config_queue,
-                                 self._ProcessCrashListForBot, self.jobs):
+    with parallel.BackgroundTaskRunner(self.config_queue,
+                                       self._ProcessCrashListForBot, self.jobs):
       for bot_id, build_config in cbuildbot_config.config.iteritems():
         if build_config['vm_tests']:
           self.config_queue.put((bot_id, build_config))
@@ -143,8 +143,8 @@ class CrashTriager(object):
   @contextlib.contextmanager
   def _DownloadCrashesInBackground(self):
     """Create a worker process for downloading stack traces."""
-    queue = self.crash_triage_queue
-    with bg.BackgroundTaskRunner(queue, self._DownloadStackTrace, self.jobs):
+    queue, task = self.crash_triage_queue, self._DownloadStackTrace
+    with parallel.BackgroundTaskRunner(queue, task, self.jobs):
       yield
 
   def _ProcessStackTrace(self, program, date, url, output):
@@ -204,9 +204,9 @@ class CrashTriager(object):
 
   @contextlib.contextmanager
   def _PrintStackTracesInBackground(self):
-    queue = self.stack_trace_queue
-    with bg.BackgroundTaskRunner(queue, self._ProcessStackTrace, processes=1,
-                                 onexit=self._PrintStackTraces):
+    queue, task = self.stack_trace_queue, self._ProcessStackTrace
+    with parallel.BackgroundTaskRunner(queue, task, processes=1,
+                                       onexit=self._PrintStackTraces):
       yield
 
 

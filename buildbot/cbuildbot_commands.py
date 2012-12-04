@@ -14,7 +14,6 @@ import re
 import shutil
 import tempfile
 
-from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
@@ -23,6 +22,7 @@ from chromite.lib import gclient
 from chromite.lib import git
 from chromite.lib import locking
 from chromite.lib import osutils
+from chromite.lib import parallel
 
 _DEFAULT_RETRIES = 3
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
@@ -176,7 +176,7 @@ def BuildRootGitCleanup(buildroot, debug_run):
   # Cleanup all of the directories.
   dirs = [[os.path.join(buildroot, attrs['path'])] for attrs in
           git.ManifestCheckout.Cached(buildroot).projects.values()]
-  background.RunTasksInProcessPool(RunCleanupCommands, dirs)
+  parallel.RunTasksInProcessPool(RunCleanupCommands, dirs)
 
 
 def CleanUpMountPoints(buildroot):

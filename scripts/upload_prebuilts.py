@@ -25,14 +25,14 @@ import optparse
 import os
 import sys
 
-from chromite.buildbot import cbuildbot_background as bg
 from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
+from chromite.lib import binpkg
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
-from chromite.lib import binpkg
+from chromite.lib import parallel
 
 # How many times to retry uploads.
 _RETRIES = 10
@@ -207,7 +207,7 @@ def RemoteUpload(acl, files, pool=10):
     Return a set of tuple arguments of the failed uploads
   """
   tasks = [[key, value, acl] for key, value in files.iteritems()]
-  bg.RunTasksInProcessPool(_GsUpload, tasks, pool)
+  parallel.RunTasksInProcessPool(_GsUpload, tasks, pool)
 
 
 def GenerateUploadDict(base_local_path, base_remote_path, pkgs):

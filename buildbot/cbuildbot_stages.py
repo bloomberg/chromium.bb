@@ -17,7 +17,6 @@ import sys
 import tempfile
 
 from chromite.buildbot import builderstage as bs
-from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import configure_repo
@@ -34,6 +33,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
+from chromite.lib import parallel
 from chromite.lib import patch as cros_patch
 
 _FULL_BINHOST = 'FULL_BINHOST'
@@ -157,7 +157,7 @@ class CleanUpStage(bs.BuilderStage):
         tasks.append(self._DeleteChroot)
       else:
         tasks.append(self._CleanChroot)
-      background.RunParallelSteps(tasks)
+      parallel.RunParallelSteps(tasks)
 
 
 class PatchChangesStage(bs.BuilderStage):
@@ -1142,7 +1142,7 @@ class BuildTargetStage(BoardSpecificBuilderStage):
       steps.append(self._BuildImages)
     else:
       self._CommunicateVersion()
-    background.RunParallelSteps(steps)
+    parallel.RunParallelSteps(steps)
 
     # TODO(yjhong): Remove this and instruct archive_hwqual to copy the tarball
     # directly.
@@ -1719,7 +1719,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     upload_queue = multiprocessing.Queue()
     upload_symbols_queue = multiprocessing.Queue()
     hw_test_upload_queue = multiprocessing.Queue()
-    bg_task_runner = background.BackgroundTaskRunner
+    bg_task_runner = parallel.BackgroundTaskRunner
 
     extra_env = {}
     if config['useflags']:
@@ -1901,9 +1901,9 @@ class ArchiveStage(BoardSpecificBuilderStage):
         self._recovery_image_status_queue.put(True)
 
       if config['images']:
-        background.RunParallelSteps([BuildAndArchiveFactoryImages,
-                                     ArchiveHWQual,
-                                     ArchiveZipFiles])
+        parallel.RunParallelSteps([BuildAndArchiveFactoryImages,
+                                   ArchiveHWQual,
+                                   ArchiveZipFiles])
 
     def UploadArtifact(filename):
       """Upload generated artifact to Google Storage."""
@@ -1917,7 +1917,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
       try:
         with bg_task_runner(queue, UploadArtifact, num_upload_processes):
           steps = [ArchiveAutotestTarballs, ArchivePayloads]
-          background.RunParallelSteps(steps)
+          parallel.RunParallelSteps(steps)
         success = True
       finally:
         self._hw_test_uploads_status_queue.put(success)
@@ -1988,7 +1988,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
                           num_upload_processes):
         steps = [ArchiveDebugSymbols, BuildAndArchiveAllImages,
                  ArchiveFirmwareImages]
-        background.RunParallelSteps(steps)
+        parallel.RunParallelSteps(steps)
       PushImage()
 
     def BuildAndArchiveArtifacts(num_upload_processes=10):
@@ -2001,7 +2001,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
       with bg_task_runner(upload_symbols_queue, UploadSymbols, 1):
         with bg_task_runner(upload_queue, UploadArtifact, num_upload_processes):
-          background.RunParallelSteps(steps)
+          parallel.RunParallelSteps(steps)
 
     def MarkAsLatest():
       # Update and upload LATEST file.

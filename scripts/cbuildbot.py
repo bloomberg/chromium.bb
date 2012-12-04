@@ -21,7 +21,6 @@ import sys
 import time
 
 from chromite.buildbot import builderstage as bs
-from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_stages as stages
 from chromite.buildbot import cbuildbot_results as results_lib
@@ -39,6 +38,7 @@ from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
+from chromite.lib import parallel
 from chromite.lib import sudo
 
 
@@ -374,7 +374,7 @@ class SimpleBuilder(Builder):
                            suite])
 
     steps = [self._GetStageInstance(*x, config=config).Run for x in stage_list]
-    background.RunParallelSteps(steps + [archive_stage.Run])
+    parallel.RunParallelSteps(steps + [archive_stage.Run])
 
   def RunStages(self):
     """Runs through build process."""
@@ -404,7 +404,7 @@ class SimpleBuilder(Builder):
       # This process runs task(board) for each board added to the queue.
       queue = multiprocessing.Queue()
       task = self._RunBackgroundStagesForBoard
-      with background.BackgroundTaskRunner(queue, task):
+      with parallel.BackgroundTaskRunner(queue, task):
         for board in self.build_config['boards']:
           # Run BuildTarget in the foreground.
           archive_stage = self.archive_stages[board]

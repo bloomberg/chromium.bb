@@ -29,11 +29,11 @@ import os
 import Queue
 
 from chromite.buildbot import constants
-from chromite.buildbot import cbuildbot_background as bg
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
+from chromite.lib import parallel
 import portage.const
 
 
@@ -84,7 +84,8 @@ class WorkonProjectsMonitor(object):
     Returns:
       A dictionary mapping project names to last modification times.
     """
-    bg.RunTasksInProcessPool(self._EnqueueProjectModificationTime, self._tasks)
+    task = self._EnqueueProjectModificationTime
+    parallel.RunTasksInProcessPool(task, self._tasks)
 
     # Create a dictionary mapping project names to last modification times.
     # All of the workon projects are already stored in the queue, so we can

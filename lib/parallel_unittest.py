@@ -4,14 +4,14 @@
 # found in the LICENSE file.
 
 import multiprocessing
+import os
 import sys
 import tempfile
 import time
 
-import constants
-sys.path.insert(0, constants.SOURCE_ROOT)
-from chromite.buildbot import cbuildbot_background as background
+sys.path.insert(0, os.path.abspath('%s/../../..' % __file__))
 from chromite.lib import cros_test_lib
+from chromite.lib import parallel
 
 # pylint: disable=W0212
 _BUFSIZE = 10**4
@@ -29,8 +29,8 @@ class TestBackgroundWrapper(cros_test_lib.TestCase):
   def wrapOutputTest(self, func):
     # Set _PRINT_INTERVAL to a smaller number to make it easier to
     # reproduce bugs.
-    old_print_interval = background._PRINT_INTERVAL
-    background._PRINT_INTERVAL = 0.01
+    old_print_interval = parallel._PRINT_INTERVAL
+    parallel._PRINT_INTERVAL = 0.01
     with tempfile.NamedTemporaryFile(bufsize=0) as output:
       old_stdout = sys.stdout
       with open(output.name, 'r', 0) as tmp:
@@ -39,7 +39,7 @@ class TestBackgroundWrapper(cros_test_lib.TestCase):
           sys.stdout = output
           func()
         finally:
-          background._PRINT_INTERVAL = old_print_interval
+          parallel._PRINT_INTERVAL = old_print_interval
           sys.stdout = old_stdout
         tmp.seek(0)
         return tmp.read()
@@ -60,14 +60,14 @@ class TestHelloWorld(TestBackgroundWrapper):
     # Wait for the parent process to read the output. Once the output
     # has been read, try writing 'hello world' again, to be sure that
     # rewritten output is not read twice.
-    time.sleep(background._PRINT_INTERVAL * 10)
+    time.sleep(parallel._PRINT_INTERVAL * 10)
     sys.stdout.write(_GREETING)
     sys.stdout.flush()
 
   def _ParallelHelloWorld(self):
     """Write 'hello world' to stdout using multiple processes."""
     queue = multiprocessing.Queue()
-    with background.BackgroundTaskRunner(queue, self._HelloWorld):
+    with parallel.BackgroundTaskRunner(queue, self._HelloWorld):
       queue.put([])
       self.printed_hello.wait()
 
@@ -80,17 +80,17 @@ class TestHelloWorld(TestBackgroundWrapper):
 class TestFastPrinting(TestBackgroundWrapper):
 
   def _FastPrinter(self):
-    # Writing lots of output quickly often reproduces bugs in
-    # cbuildbot_background because it can trigger race conditions.
+    # Writing lots of output quickly often reproduces bugs in this module
+    # because it can trigger race conditions.
     for _ in range(_NUM_WRITES - 1):
       sys.stdout.write('x' * _BUFSIZE)
     sys.stdout.write('x' * (_BUFSIZE - 1) + '\n')
 
   def _ParallelPrinter(self):
-    background.RunParallelSteps([self._FastPrinter] * _NUM_THREADS)
+    parallel.RunParallelSteps([self._FastPrinter] * _NUM_THREADS)
 
   def _NestedParallelPrinter(self):
-    background.RunParallelSteps([self._ParallelPrinter])
+    parallel.RunParallelSteps([self._ParallelPrinter])
 
   def testNestedParallelPrinter(self):
     """Verify that no output is lost when lots of output is written."""
