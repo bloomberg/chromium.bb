@@ -250,19 +250,19 @@ gTestExclusions = {
 gTestInclusions = {
   'linux2': {
     'browser_tests':
-        (# 'src/chrome/browser/downloads' related tests.
+        (# 'src/chrome/browser/downloads'
          'SavePageBrowserTest.*',
          'SavePageAsMHTMLBrowserTest.*',
          'DownloadQueryTest.*',
          'DownloadDangerPromptTest.*',
          'DownloadTest.*',
-         # 'src/chrome/browser/net' related tests.
+         # 'src/chrome/browser/net'
          'CookiePolicyBrowserTest.*',
          'FtpBrowserTest.*',
          'LoadTimingObserverTest.*',
          'PredictorBrowserTest.*',
          'ProxyBrowserTest.*',
-         # 'src/chrome/browser/extensions' related tests.
+         # 'src/chrome/browser/extensions'
          'Extension*.*',
          'WindowOpenPanelDisabledTest.*',
          'WindowOpenPanelTest.*',
@@ -313,7 +313,23 @@ gTestInclusions = {
          'DnsApiTest.*',
          'DeclarativeApiTest.*',
          'BluetoothApiTest.*',
-         'AllUrlsApiTest.*',),
+         'AllUrlsApiTest.*',
+         # 'src/chrome/browser/nacl_host'
+         'nacl_host.*',
+         # 'src/chrome/browser/automation'
+         'AutomationMiscBrowserTest.*',
+         'AutomationTabHelperBrowserTest.*',
+         # 'src/chrome/browser/autofill'
+         'FormStructureBrowserTest.*',
+         'AutofillPopupViewBrowserTest.*',
+         'AutofillTest.*',
+         # 'src/chrome/browser/autocomplete'
+         'AutocompleteBrowserTest.*',
+         # 'src/chrome/browser/captive_portal'
+         'CaptivePortalBrowserTest.*',
+         # 'src/chrome/browser/geolocation'
+         'GeolocationAccessTokenStoreTest.*',
+         'GeolocationBrowserTest.*', ),
   },
 }
 
