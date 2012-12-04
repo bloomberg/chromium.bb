@@ -8,10 +8,17 @@
 namespace chrome {
 namespace search {
 
-// The mininum height of content view to layout detached bookmark bar at bottom
-// for |NTP| search mode, calculated from chrome/browser/resources/ntp_search/
-// tile_page.js HEIGHT_FOR_BOTTOM_PANEL constant.
-extern const int kMinContentHeightForBottomBookmarkBar;
+// The minimum height of the content view for which the detached bookmark bar
+// should be visible. This value is calculated from the
+// chrome/browser/resources/ntp_search/ tile_page.js
+// HEIGHT_FOR_BOTTOM_PANEL constant.
+static const int kMinContentHeightForBottomBookmarkBar = 558;
+
+// The maximum width of the detached bookmark bar.
+static const int kMaxWidthForBottomBookmarkBar = 720;
+
+// The left and right padding of the detached bookmark bar.
+static const int kHorizontalPaddingForBottomBookmarkBar = 130;
 
 }  // namespace search
 }  // namespace chrome

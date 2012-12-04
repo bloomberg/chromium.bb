@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 
 namespace chrome {
@@ -19,12 +17,7 @@ typedef BrowserWithTestWindowTest SearchDelegateTest;
 // Test the propagation of search "mode" changes from the tab's search model to
 // the browser's search model.
 TEST_F(SearchDelegateTest, SearchModel) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(switches::kEnableInstantExtendedAPI);
-
-  // Avoid these tests on branded Chrome where channel is set to CHANNEL_STABLE.
-  if (!chrome::search::IsInstantExtendedAPIEnabled(profile()))
-    return;
+  chrome::search::EnableInstantExtendedAPIForTesting();
 
   // Initial state.
   EXPECT_TRUE(browser()->search_model()->mode().is_default());

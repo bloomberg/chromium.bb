@@ -32,6 +32,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#include "chrome/browser/ui/search/search_ui.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -212,7 +213,7 @@ willPositionSheet:(NSWindow*)sheet
   // immediately below the toolbar.
   BOOL placeBookmarkBarBelowInfoBar = [self placeBookmarkBarBelowInfoBar];
   if (!placeBookmarkBarBelowInfoBar)
-    maxY = [self layoutBookmarkBarAtMinX:minX maxY:maxY width:width];
+    maxY = [self layoutTopBookmarkBarAtMinX:minX maxY:maxY width:width];
 
   // The floating bar backing view doesn't actually add any height.
   NSRect floatingBarBackingRect =
@@ -235,12 +236,18 @@ willPositionSheet:(NSWindow*)sheet
   // presentation mode in which case it's at the top of the visual content area.
   maxY = [self layoutInfoBarAtMinX:minX maxY:maxY width:width];
 
-  // If the bookmark bar is detached, place it next in the visual content area.
-  if (placeBookmarkBarBelowInfoBar)
-    maxY = [self layoutBookmarkBarAtMinX:minX maxY:maxY width:width];
-
   // Place the download shelf, if any, at the bottom of the view.
   minY = [self layoutDownloadShelfAtMinX:minX minY:minY width:width];
+
+  // Place the bookmark bar.
+  if (placeBookmarkBarBelowInfoBar) {
+    if ([bookmarkBarController_ shouldShowAtBottomWhenDetached]) {
+      [self layoutBottomBookmarkBarInContentFrame:
+          NSMakeRect(minX, minY, width, maxY - minY)];
+    } else {
+      maxY = [self layoutTopBookmarkBarAtMinX:minX maxY:maxY width:width];
+    }
+  }
 
   // Finally, the content area takes up all of the remaining space.
   NSRect contentAreaRect = NSMakeRect(minX, minY, width, maxY - minY);
@@ -370,26 +377,50 @@ willPositionSheet:(NSWindow*)sheet
       [bookmarkBarController_ isAnimatingFromState:bookmarks::kDetachedState];
 }
 
-- (CGFloat)layoutBookmarkBarAtMinX:(CGFloat)minX
-                              maxY:(CGFloat)maxY
-                             width:(CGFloat)width {
+- (CGFloat)layoutTopBookmarkBarAtMinX:(CGFloat)minX
+                                 maxY:(CGFloat)maxY
+                               width:(CGFloat)width {
+  [bookmarkBarController_ updateHiddenState];
+
   NSView* bookmarkBarView = [bookmarkBarController_ view];
-  NSRect bookmarkBarFrame = [bookmarkBarView frame];
-  BOOL oldHidden = [bookmarkBarView isHidden];
-  BOOL newHidden = ![self isBookmarkBarVisible];
-  if (oldHidden != newHidden)
-    [bookmarkBarView setHidden:newHidden];
-  bookmarkBarFrame.origin.x = minX;
-  bookmarkBarFrame.origin.y = maxY - NSHeight(bookmarkBarFrame);
-  bookmarkBarFrame.size.width = width;
-  [bookmarkBarView setFrame:bookmarkBarFrame];
-  maxY -= NSHeight(bookmarkBarFrame);
+  NSRect frame = [bookmarkBarView frame];
+  frame.origin.x = minX;
+  frame.origin.y = maxY - NSHeight(frame);
+  frame.size.width = width;
+  [bookmarkBarView setFrame:frame];
+  maxY -= NSHeight(frame);
+
+  // Pin the bookmark bar to the top of the window and make the width flexible.
+  [bookmarkBarView setAutoresizingMask:NSViewWidthSizable | NSViewMinYMargin];
 
   // TODO(viettrungluu): Does this really belong here? Calling it shouldn't be
   // necessary in the non-NTP case.
   [bookmarkBarController_ layoutSubviews];
 
   return maxY;
+}
+
+- (void)layoutBottomBookmarkBarInContentFrame:(NSRect)contentFrame {
+  [bookmarkBarController_ updateHiddenState];
+
+  NSView* bookmarkBarView = [bookmarkBarController_ view];
+  NSRect frame;
+  frame.size.width = NSWidth(contentFrame) -
+      chrome::search::kHorizontalPaddingForBottomBookmarkBar * 2;
+  frame.size.width = std::min(frame.size.width,
+      static_cast<CGFloat>(chrome::search::kMaxWidthForBottomBookmarkBar));
+  frame.size.height = NSHeight([bookmarkBarView frame]);
+  frame.origin.x = NSMinX(contentFrame) +
+      roundf((NSWidth(contentFrame)- frame.size.width) / 2.0);
+  frame.origin.y = NSMinY(contentFrame);
+  [bookmarkBarView setFrame:frame];
+
+  // Disable auto-resizing.
+  [bookmarkBarView setAutoresizingMask:0];
+
+  // TODO(viettrungluu): Does this really belong here? Calling it shouldn't be
+  // necessary in the non-NTP case.
+  [bookmarkBarController_ layoutSubviews];
 }
 
 - (void)layoutFloatingBarBackingView:(NSRect)frame

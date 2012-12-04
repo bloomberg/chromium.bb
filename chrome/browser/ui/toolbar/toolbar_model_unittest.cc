@@ -176,8 +176,7 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
 
 // Test that we don't replace any URLs when the InstantExtended API is disabled.
 TEST_F(ToolbarModelTest, ShouldDisplayURLInstantExtendedAPIDisabled) {
-  ASSERT_FALSE(CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableInstantExtendedAPI))
+  ASSERT_FALSE(chrome::search::IsInstantExtendedAPIEnabled(profile()))
       << "This test expects Extended Instant to be disabled.";
 
   ResetDefaultTemplateURL();
@@ -194,12 +193,7 @@ TEST_F(ToolbarModelTest, ShouldDisplayURLInstantExtendedAPIDisabled) {
 
 // Test that we replace URLs when the InstantExtended API is enabled.
 TEST_F(ToolbarModelTest, ShouldDisplayURLInstantExtendedAPIEnabled) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableInstantExtendedAPI);
-
-  // Avoid tests on branded Chrome where channel is set to CHANNEL_STABLE.
-  if (!chrome::search::IsInstantExtendedAPIEnabled(profile()))
-    return;
+  chrome::search::EnableInstantExtendedAPIForTesting();
 
   ResetDefaultTemplateURL();
   AddTab(browser(), GURL(chrome::kAboutBlankURL));

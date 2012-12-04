@@ -44,6 +44,8 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
+#include "chrome/browser/ui/search/search.h"
+#include "chrome/browser/ui/search/search_ui.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -255,6 +257,11 @@ void RecordAppLaunch(Profile* profile, GURL url) {
         rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER).CopyNSImage());
     defaultImage_.reset(
         rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
+
+    // Disable animations if the detached bookmark bar will be shown at the
+    // bottom of the new tab page.
+    if ([self shouldShowAtBottomWhenDetached])
+      ignoreAnimations_ = YES;
 
     // Register for theme changes, bookmark button pulsing, ...
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
@@ -473,6 +480,17 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // simply update based on what we're told.
 - (void)updateVisibility {
   [self showBookmarkBarWithAnimation:NO];
+}
+
+- (void)updateHiddenState {
+  BOOL oldHidden = [[self view] isHidden];
+  BOOL newHidden = ![self isVisible];
+  if (oldHidden != newHidden)
+    [[self view] setHidden:newHidden];
+}
+
+- (BOOL)shouldShowAtBottomWhenDetached {
+  return chrome::search::IsInstantExtendedAPIEnabled(browser_->profile());
 }
 
 - (void)setBookmarkBarEnabled:(BOOL)enabled {
@@ -2278,6 +2296,13 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 // (BookmarkBarState protocol)
 - (BOOL)isVisible {
+  if ([self shouldShowAtBottomWhenDetached] &&
+      visualState_ == bookmarks::kDetachedState &&
+      [self currentTabContentsHeight] <
+          chrome::search::kMinContentHeightForBottomBookmarkBar) {
+    return NO;
+  }
+
   return barIsEnabled_ && (visualState_ == bookmarks::kShowingState ||
                            visualState_ == bookmarks::kDetachedState ||
                            lastVisualState_ == bookmarks::kShowingState ||
@@ -2338,8 +2363,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 #pragma mark BookmarkBarToolbarViewController Protocol
 
 - (int)currentTabContentsHeight {
-  WebContents* wc = chrome::GetActiveWebContents(browser_);
-  return wc ? wc->GetView()->GetContainerSize().height() : 0;
+  BrowserWindowController* browserController =
+      [BrowserWindowController browserWindowControllerForView:[self view]];
+  return NSHeight([[browserController tabContentArea] frame]);
 }
 
 - (ui::ThemeProvider*)themeProvider {

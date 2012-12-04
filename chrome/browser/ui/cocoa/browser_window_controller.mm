@@ -1442,6 +1442,10 @@ enum {
                withAnimation:animate];
 }
 
+- (BookmarkBarController*)bookmarkBarController {
+  return bookmarkBarController_;
+}
+
 - (BOOL)isDownloadShelfVisible {
   return downloadShelfController_ != nil &&
       [downloadShelfController_ isVisible];
@@ -1769,6 +1773,11 @@ enum {
   // do this.
   if ([findBarCocoaController_ isFindBarVisible])
     [self layoutSubviews];
+
+  if ([self placeBookmarkBarBelowInfoBar] &&
+      [bookmarkBarController_ shouldShowAtBottomWhenDetached]) {
+    [self layoutBottomBookmarkBarInContentFrame:[[self tabContentArea] frame]];
+  }
 }
 
 // Handle the openLearnMoreAboutCrashLink: action from SadTabController when

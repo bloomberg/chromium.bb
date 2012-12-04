@@ -14,6 +14,9 @@ namespace search {
 // |profile| may not be NULL.
 bool IsInstantExtendedAPIEnabled(const Profile* profile);
 
+// Force the instant extended API to be enabled for tests.
+void EnableInstantExtendedAPIForTesting();
+
 }  // namespace search
 }  // namespace chrome
 

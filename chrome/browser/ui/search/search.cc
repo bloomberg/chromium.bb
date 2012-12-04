@@ -18,5 +18,10 @@ bool IsInstantExtendedAPIEnabled(const Profile* profile) {
           switches::kEnableInstantExtendedAPI);
 }
 
+void EnableInstantExtendedAPIForTesting() {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableInstantExtendedAPI);
+}
+
 }  // namespace search
 }  // namespace chrome

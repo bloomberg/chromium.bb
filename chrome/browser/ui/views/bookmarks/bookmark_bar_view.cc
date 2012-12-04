@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/search/search_model.h"
+#include "chrome/browser/ui/search/search_ui.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_instructions_view.h"
@@ -323,11 +324,10 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 int GetSearchNtpMargin(int full_width) {
   // Horizontally center bookmark bar.
-  const int kMaxNtpBookmarkBarWidth = 720;
-  const int kNtpBookmarkBarWidthPadding = 130;
-  int width = full_width - 2 * kNtpBookmarkBarWidthPadding;
-  if (width > kMaxNtpBookmarkBarWidth)
-    width = kMaxNtpBookmarkBarWidth;
+  int width =
+      full_width - 2 * chrome::search::kHorizontalPaddingForBottomBookmarkBar;
+  if (width > chrome::search::kMaxWidthForBottomBookmarkBar)
+    width = chrome::search::kMaxWidthForBottomBookmarkBar;
   return (full_width - width) / 2;
 }
 

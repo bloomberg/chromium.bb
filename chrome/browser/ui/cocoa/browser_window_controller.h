@@ -264,6 +264,8 @@ class WebContents;
 // tab/tab contents).
 - (void)updateBookmarkBarVisibilityWithAnimation:(BOOL)animate;
 
+- (BookmarkBarController*)bookmarkBarController;
+
 - (BOOL)isDownloadShelfVisible;
 
 // Lazily creates the download shelf in visible state if it doesn't exist yet.

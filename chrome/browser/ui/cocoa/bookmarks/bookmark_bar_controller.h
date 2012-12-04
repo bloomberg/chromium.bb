@@ -286,6 +286,13 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 // Update the visible state of the bookmark bar.
 - (void)updateVisibility;
 
+// Hides or shows the bookmark bar depending on the current state.
+- (void)updateHiddenState;
+
+// Returns YES if the bookmark bar should be shown at the bottom of the content
+// view when detached.
+- (BOOL)shouldShowAtBottomWhenDetached;
+
 // Turn on or off the bookmark bar and prevent or reallow its appearance. On
 // disable, toggle off if shown. On enable, show only if needed. App and popup
 // windows do not show a bookmark bar.

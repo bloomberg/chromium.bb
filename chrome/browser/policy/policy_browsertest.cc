@@ -738,13 +738,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceSafeSearch) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   MakeRequestFail("search.example");
 
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableInstantExtendedAPI);
-
-  // Adding the kEnableInstantExtendedAPI is not enough since
-  // IsInstantExtendedAPIEnabled does not return true on CHANNEL_DEV.
-  if (!chrome::search::IsInstantExtendedAPIEnabled(browser()->profile()))
-    return;
+  chrome::search::EnableInstantExtendedAPIForTesting();
 
   // Verifies that a default search is made using the provider configured via
   // policy. Also checks that default search can be completely disabled.
