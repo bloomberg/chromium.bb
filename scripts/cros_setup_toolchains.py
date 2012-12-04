@@ -17,13 +17,11 @@ from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
-# Some sanity checks first.
-if not cros_build_lib.IsInsideChroot():
-  print '%s: This needs to be run inside the chroot' % sys.argv[0]
-  sys.exit(1)
-# Only import portage after we've checked that we're inside the chroot.
-# Outside may not have portage, in which case the above may not happen.
-import portage
+if cros_build_lib.IsInsideChroot():
+  # Only import portage after we've checked that we're inside the chroot.
+  # Outside may not have portage, in which case the above may not happen.
+  # We'll check in main() if the operation needs portage.
+  import portage
 
 
 EMERGE_CMD = os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge')
@@ -637,6 +635,8 @@ def main(argv):
         break
     print ','.join(tuples)
     return 0
+
+  cros_build_lib.AssertInsideChroot()
 
   # This has to be always run as root.
   if not os.getuid() == 0:
