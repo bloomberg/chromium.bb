@@ -767,14 +767,15 @@ void NaClProcessHost::OnPpapiChannelCreated(
                               base::MessageLoopProxy::current()));
     // Create the browser ppapi host and enable PPAPI message dispatching to the
     // browser process.
-    content::BrowserPpapiHost::CreateExternalPluginProcess(
-        process_.get(),  // sender
+    ppapi_host_.reset(content::BrowserPpapiHost::CreateExternalPluginProcess(
+        ipc_proxy_channel_.get(), //process_.get(),  // sender
         permissions_,
         process_->GetData().handle,
         ipc_proxy_channel_.get(),
         chrome_render_message_filter_->GetHostResolver(),
         chrome_render_message_filter_->render_process_id(),
-        render_view_id_);
+        render_view_id_));
+
     // Send a message to create the NaCl-Renderer channel. The handle is just
     // a place holder.
     ipc_proxy_channel_->Send(

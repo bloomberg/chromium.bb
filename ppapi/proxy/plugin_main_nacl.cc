@@ -85,6 +85,9 @@ class PpapiDispatcher : public ProxyChannel,
                               const ppapi::PpapiPermissions& permissions,
                               bool incognito,
                               SerializedHandle handle);
+  void OnMsgResourceReply(
+      const ppapi::proxy::ResourceMessageReplyParams& reply_params,
+      const IPC::Message& nested_msg);
   void OnPluginDispatcherMessageReceived(const IPC::Message& msg);
 
   std::set<PP_Instance> instances_;
@@ -163,6 +166,7 @@ void PpapiDispatcher::SetActiveURL(const std::string& url) {
 bool PpapiDispatcher::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PpapiDispatcher, msg)
     IPC_MESSAGE_HANDLER(PpapiMsg_CreateNaClChannel, OnMsgCreateNaClChannel)
+    IPC_MESSAGE_HANDLER(PpapiPluginMsg_ResourceReply, OnMsgResourceReply)
     // All other messages are simply forwarded to a PluginDispatcher.
     IPC_MESSAGE_UNHANDLED(OnPluginDispatcherMessageReceived(msg))
   IPC_END_MESSAGE_MAP()
@@ -189,6 +193,13 @@ void PpapiDispatcher::OnMsgCreateNaClChannel(
   }
   // From here, the dispatcher will manage its own lifetime according to the
   // lifetime of the attached channel.
+}
+
+void PpapiDispatcher::OnMsgResourceReply(
+    const ppapi::proxy::ResourceMessageReplyParams& reply_params,
+    const IPC::Message& nested_msg) {
+  ppapi::proxy::PluginDispatcher::DispatchResourceReply(reply_params,
+                                                        nested_msg);
 }
 
 void PpapiDispatcher::OnPluginDispatcherMessageReceived(
