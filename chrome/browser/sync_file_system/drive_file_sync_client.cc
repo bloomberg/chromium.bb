@@ -23,8 +23,6 @@ namespace {
 
 const char kRootResourceId[] = "";
 const char kSyncRootDirectoryName[] = "Chrome Syncable FileSystem";
-const char kResourceLinkPrefix[] =
-    "https://docs.google.com/feeds/default/private/full/";
 const char kMimeTypeOctetStream[] = "application/octet-stream";
 
 // This path is not actually used but is required by DriveUploaderInterface.
@@ -32,16 +30,16 @@ const FilePath::CharType kDummyDrivePath[] =
     FILE_PATH_LITERAL("/dummy/drive/path");
 
 bool HasParentLinkTo(const ScopedVector<google_apis::Link>& links,
-                     const std::string& parent_resource_id) {
-  bool should_not_have_parent = parent_resource_id.empty();
-  GURL parent_link(kResourceLinkPrefix + net::EscapePath(parent_resource_id));
+                     const GURL& parent_link) {
+  bool should_not_have_parent = parent_link.is_empty();
 
   for (ScopedVector<google_apis::Link>::const_iterator itr = links.begin();
        itr != links.end(); ++itr) {
     if ((*itr)->type() == google_apis::Link::LINK_PARENT) {
       if (should_not_have_parent)
         return false;
-      if ((*itr)->href() == parent_link)
+      if ((*itr)->href().GetOrigin() == parent_link.GetOrigin() &&
+          (*itr)->href().path() == parent_link.path())
         return true;
     }
   }
@@ -51,12 +49,12 @@ bool HasParentLinkTo(const ScopedVector<google_apis::Link>& links,
 
 google_apis::DocumentEntry* GetDocumentByTitleAndParent(
     const ScopedVector<google_apis::DocumentEntry>& entries,
-    const std::string& parent_resource_id,
+    const GURL& parent_link,
     const string16& title) {
   typedef ScopedVector<google_apis::DocumentEntry>::const_iterator iterator;
   for (iterator itr = entries.begin(); itr != entries.end(); ++itr) {
     if ((*itr)->title() == title &&
-        HasParentLinkTo((*itr)->links(), parent_resource_id)) {
+        HasParentLinkTo((*itr)->links(), parent_link)) {
       return *itr;
     }
   }
@@ -65,7 +63,9 @@ google_apis::DocumentEntry* GetDocumentByTitleAndParent(
 
 }  // namespace
 
-DriveFileSyncClient::DriveFileSyncClient(Profile* profile) {
+DriveFileSyncClient::DriveFileSyncClient(Profile* profile)
+    : url_generator_(GURL(
+          google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction)) {
   drive_service_.reset(new google_apis::GDataWapiService(
       GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
       "" /* custom_user_agent */));
@@ -77,16 +77,19 @@ DriveFileSyncClient::DriveFileSyncClient(Profile* profile) {
 
 scoped_ptr<DriveFileSyncClient> DriveFileSyncClient::CreateForTesting(
     Profile* profile,
+    const GURL& base_url,
     scoped_ptr<google_apis::DriveServiceInterface> drive_service,
     scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader) {
   return make_scoped_ptr(new DriveFileSyncClient(
-      profile, drive_service.Pass(), drive_uploader.Pass()));
+      profile, base_url, drive_service.Pass(), drive_uploader.Pass()));
 }
 
 DriveFileSyncClient::DriveFileSyncClient(
     Profile* profile,
+    const GURL& base_url,
     scoped_ptr<google_apis::DriveServiceInterface> drive_service,
-    scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader) {
+    scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader)
+    : url_generator_(base_url) {
   drive_service_ = drive_service.Pass();
   drive_service_->Initialize(profile);
   drive_service_->AddObserver(this);
@@ -151,8 +154,11 @@ void DriveFileSyncClient::DidGetDirectory(
     return;
   }
 
+  GURL parent_link;
+  if (!parent_resource_id.empty())
+    parent_link = ResourceIdToResourceLink(parent_resource_id);
   google_apis::DocumentEntry* entry = GetDocumentByTitleAndParent(
-      feed->entries(), parent_resource_id, ASCIIToUTF16(directory_name));
+      feed->entries(), parent_link, ASCIIToUTF16(directory_name));
   if (!entry) {
     if (parent_resource_id.empty()) {
       // Use empty content URL for root directory.
@@ -381,6 +387,11 @@ std::string DriveFileSyncClient::OriginToDirectoryTitle(const GURL& origin) {
 // static
 GURL DriveFileSyncClient::DirectoryTitleToOrigin(const std::string& title) {
   return extensions::Extension::GetBaseURLFromExtensionId(title);
+}
+
+GURL DriveFileSyncClient::ResourceIdToResourceLink(
+    const std::string& resource_id) const {
+  return url_generator_.GenerateDocumentEntryUrl(resource_id);
 }
 
 void DriveFileSyncClient::OnReadyToPerformOperations() {

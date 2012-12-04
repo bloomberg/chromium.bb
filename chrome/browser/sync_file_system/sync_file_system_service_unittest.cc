@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
@@ -484,7 +486,7 @@ TEST_F(SyncFileSystemServiceTest, SimpleRemoteSyncFlow) {
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
   // This should trigger a remote sync.
-  mock_remote_service()->NotifyRemoteChangeAvailable(1);
+  mock_remote_service()->NotifyRemoteChangeQueueUpdated(1);
 
   run_loop.Run();
 }
@@ -530,7 +532,7 @@ TEST_F(SyncFileSystemServiceTest, SimpleSyncFlowWithFileBusy) {
       .Times(AnyNumber());
 
   // This should trigger a remote sync.
-  mock_remote_service()->NotifyRemoteChangeAvailable(1);
+  mock_remote_service()->NotifyRemoteChangeQueueUpdated(1);
 
   // Start a local operation on the same file (to make it BUSY).
   base::WaitableEvent event(false, false);
@@ -541,7 +543,7 @@ TEST_F(SyncFileSystemServiceTest, SimpleSyncFlowWithFileBusy) {
 
   run_loop.Run();
 
-  mock_remote_service()->NotifyRemoteChangeAvailable(0);
+  mock_remote_service()->NotifyRemoteChangeQueueUpdated(0);
 
   event.Wait();
 }

@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/timer.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_client.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
@@ -280,10 +281,10 @@ class DriveFileSyncService
       fileapi::SyncStatusCode status);
 
   void AppendNewRemoteChange(const GURL& origin,
-                             google_apis::DocumentEntry* entry,
+                             const google_apis::DocumentEntry& entry,
                              int64 changestamp,
                              RemoteSyncType sync_type);
-  void CancelRemoteChange(const fileapi::FileSystemURL& url);
+  void RemoveRemoteChange(const fileapi::FileSystemURL& url);
   void MaybeMarkAsIncrementalSyncOrigin(const GURL& origin);
 
   // This returns false if no change is found for the |url|.
@@ -297,6 +298,14 @@ class DriveFileSyncService
 
   FilePath temporary_file_dir_;
 
+  void FetchChangesForIncrementalSync();
+  void DidFetchChangesForIncrementalSync(
+      scoped_ptr<TaskToken> token,
+      google_apis::GDataErrorCode error,
+      scoped_ptr<google_apis::DocumentFeed> changes);
+  bool GetOriginForEntry(const google_apis::DocumentEntry& entry, GURL* origin);
+  void SchedulePolling();
+
   scoped_ptr<DriveMetadataStore> metadata_store_;
   scoped_ptr<DriveFileSyncClient> sync_client_;
 
@@ -304,7 +313,8 @@ class DriveFileSyncService
   RemoteServiceState state_;
   std::deque<base::Closure> pending_tasks_;
 
-  int64 largest_changestamp_;
+  int64 largest_fetched_changestamp_;
+
   PendingChangeQueue pending_changes_;
   URLToChange url_to_change_;
 
@@ -316,6 +326,10 @@ class DriveFileSyncService
   // until it finished. And the task must return the instance through
   // NotifyTaskDone when the task finished.
   scoped_ptr<TaskToken> token_;
+
+  base::OneShotTimer<DriveFileSyncService> polling_timer_;
+  int64 polling_delay_seconds_;
+  bool polling_enabled_;
 
   ObserverList<Observer> observers_;
 

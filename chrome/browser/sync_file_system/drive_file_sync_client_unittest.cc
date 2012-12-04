@@ -140,6 +140,7 @@ class DriveFileSyncClientTest : public testing::Test {
 
     sync_client_ = DriveFileSyncClient::CreateForTesting(
         &profile_,
+        GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
         scoped_ptr<DriveServiceInterface>(mock_drive_service_),
         scoped_ptr<DriveUploaderInterface>(fake_drive_uploader_)).Pass();
   }

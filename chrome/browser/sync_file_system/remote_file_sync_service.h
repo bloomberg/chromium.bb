@@ -58,11 +58,12 @@ class RemoteFileSyncService {
     Observer() {}
     virtual ~Observer() {}
 
-    // This is called when there're one or more remote changes available.
+    // This is called when RemoteFileSyncService updates its internal queue
+    // of pending remote changes.
     // |pending_changes_hint| indicates the pending queue length to help sync
     // scheduling but the value may not be accurately reflect the real-time
     // value.
-    virtual void OnRemoteChangeAvailable(int64 pending_changes_hint) = 0;
+    virtual void OnRemoteChangeQueueUpdated(int64 pending_changes_hint) = 0;
 
     // This is called when RemoteFileSyncService updates its state.
     virtual void OnRemoteServiceStateUpdated(

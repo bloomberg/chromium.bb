@@ -125,7 +125,7 @@ class SyncFileSystemService
   virtual void OnLocalChangeAvailable(int64 pending_changes) OVERRIDE;
 
   // LocalFileSyncService::Observer overrides.
-  virtual void OnRemoteChangeAvailable(int64 pending_changes) OVERRIDE;
+  virtual void OnRemoteChangeQueueUpdated(int64 pending_changes) OVERRIDE;
   virtual void OnRemoteServiceStateUpdated(
       RemoteServiceState state,
       const std::string& description) OVERRIDE;

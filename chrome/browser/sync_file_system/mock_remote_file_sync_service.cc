@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/mock_remote_file_sync_service.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop_proxy.h"
@@ -45,10 +47,10 @@ MockRemoteFileSyncService::MockRemoteFileSyncService() {
 MockRemoteFileSyncService::~MockRemoteFileSyncService() {
 }
 
-void MockRemoteFileSyncService::NotifyRemoteChangeAvailable(
+void MockRemoteFileSyncService::NotifyRemoteChangeQueueUpdated(
     int64 pending_changes) {
   FOR_EACH_OBSERVER(Observer, observers_,
-                    OnRemoteChangeAvailable(pending_changes));
+                    OnRemoteChangeQueueUpdated(pending_changes));
 }
 
 void MockRemoteFileSyncService::NotifyRemoteServiceStateUpdated(

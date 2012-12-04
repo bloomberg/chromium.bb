@@ -49,7 +49,7 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
 
   // Send notifications to the observers.
   // Can be used in the mock implementation.
-  void NotifyRemoteChangeAvailable(int64 pending_changes);
+  void NotifyRemoteChangeQueueUpdated(int64 pending_changes);
   void NotifyRemoteServiceStateUpdated(
       RemoteServiceState state,
       const std::string& description);

@@ -74,7 +74,7 @@ class MockRemoteServiceObserver : public RemoteFileSyncService::Observer {
   virtual ~MockRemoteServiceObserver() {}
 
   // LocalChangeProcessor override.
-  MOCK_METHOD1(OnRemoteChangeAvailable,
+  MOCK_METHOD1(OnRemoteChangeQueueUpdated,
                void(int64 pending_changes));
   MOCK_METHOD2(OnRemoteServiceStateUpdated,
                void(RemoteServiceState state,
@@ -99,6 +99,7 @@ class DriveFileSyncServiceTest : public testing::Test {
 
     sync_client_ = DriveFileSyncClient::CreateForTesting(
         &profile_,
+        GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
         scoped_ptr<DriveServiceInterface>(mock_drive_service_),
         scoped_ptr<DriveUploaderInterface>()).Pass();
     ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
@@ -260,7 +261,7 @@ class DriveFileSyncServiceTest : public testing::Test {
   }
 
   void AppendIncrementalRemoteChange(const GURL& origin,
-                                     google_apis::DocumentEntry* entry,
+                                     const google_apis::DocumentEntry& entry,
                                      int64 changestamp) {
     sync_service_->AppendNewRemoteChange(
         origin, entry, changestamp,
@@ -373,7 +374,7 @@ TEST_F(DriveFileSyncServiceTest, GetSyncRoot) {
   EXPECT_CALL(*mock_remote_observer(),
               OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
       .Times(1);
-  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeAvailable(0))
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(0))
       .Times(AnyNumber());
 
   SetUpDriveSyncService();
@@ -401,8 +402,7 @@ TEST_F(DriveFileSyncServiceTest, BatchSyncOnInitialization) {
   metadata_store()->AddBatchSyncOrigin(kOrigin2, kDirectoryResourceId2);
   metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin2);
 
-  EXPECT_CALL(*mock_remote_observer(),
-              OnRemoteChangeAvailable(4))
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(4))
       .Times(AnyNumber());
 
   InSequence sequence;
@@ -451,7 +451,7 @@ TEST_F(DriveFileSyncServiceTest, RegisterNewOrigin) {
   EXPECT_CALL(*mock_remote_observer(),
               OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
       .Times(AtLeast(1));
-  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeAvailable(0))
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(0))
       .Times(AnyNumber());
 
   InSequence sequence;
@@ -532,7 +532,7 @@ TEST_F(DriveFileSyncServiceTest, RegisterExistingOrigin) {
   EXPECT_CALL(*mock_remote_observer(),
               OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
       .Times(AtLeast(1));
-  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeAvailable(4))
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());
 
   InSequence sequence;
@@ -598,7 +598,7 @@ TEST_F(DriveFileSyncServiceTest, UnregisterOrigin) {
   EXPECT_CALL(*mock_remote_observer(),
               OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
       .Times(AtLeast(1));
-  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeAvailable(_))
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());
 
   InSequence sequence;
@@ -658,6 +658,8 @@ TEST_F(DriveFileSyncServiceTest, ResolveSyncOperationType) {
   EXPECT_CALL(*mock_remote_observer(),
               OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
       .Times(1);
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
+      .Times(AnyNumber());
 
   SetUpDriveSyncService();
   message_loop()->RunUntilIdle();
@@ -724,7 +726,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_NoChange) {
   EXPECT_CALL(*mock_remote_observer(),
               OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
       .Times(AnyNumber());
-  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeAvailable(_))
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());
 
   SetUpDriveSyncService();
@@ -750,7 +752,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_Busy) {
   EXPECT_CALL(*mock_remote_observer(),
               OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
       .Times(AnyNumber());
-  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeAvailable(_))
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());
 
   EXPECT_CALL(*mock_remote_processor(),
@@ -761,7 +763,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_Busy) {
 
   scoped_ptr<DocumentEntry> entry(DocumentEntry::ExtractAndParse(
       *LoadJSONFile("gdata/file_entry.json")));
-  AppendIncrementalRemoteChange(kOrigin, entry.get(), 12345);
+  AppendIncrementalRemoteChange(kOrigin, *entry, 12345);
 
   ProcessRemoteChange(fileapi::SYNC_STATUS_FILE_BUSY,
                       CreateURL(kOrigin, kFileName),
@@ -782,7 +784,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_NewFile) {
   EXPECT_CALL(*mock_remote_observer(),
               OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
       .Times(AnyNumber());
-  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeAvailable(_))
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());
 
   EXPECT_CALL(*mock_remote_processor(),
@@ -807,7 +809,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_NewFile) {
 
   scoped_ptr<DocumentEntry> entry(DocumentEntry::ExtractAndParse(
       *LoadJSONFile("gdata/file_entry.json")));
-  AppendIncrementalRemoteChange(kOrigin, entry.get(), 12345);
+  AppendIncrementalRemoteChange(kOrigin, *entry, 12345);
 
   ProcessRemoteChange(fileapi::SYNC_STATUS_OK,
                       CreateURL(kOrigin, kFileName),
@@ -828,7 +830,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_UpdateFile) {
   EXPECT_CALL(*mock_remote_observer(),
               OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
       .Times(AnyNumber());
-  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeAvailable(_))
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());
 
   EXPECT_CALL(*mock_remote_processor(),
@@ -853,7 +855,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_UpdateFile) {
 
   scoped_ptr<DocumentEntry> entry(DocumentEntry::ExtractAndParse(
       *LoadJSONFile("gdata/file_entry.json")));
-  AppendIncrementalRemoteChange(kOrigin, entry.get(), 12345);
+  AppendIncrementalRemoteChange(kOrigin, *entry, 12345);
   ProcessRemoteChange(fileapi::SYNC_STATUS_OK,
                       CreateURL(kOrigin, kFileName),
                       fileapi::SYNC_OPERATION_UPDATE);

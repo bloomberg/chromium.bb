@@ -447,10 +447,10 @@ void SyncFileSystemService::OnLocalChangeAvailable(int64 pending_changes) {
                             AsWeakPtr()));
 }
 
-void SyncFileSystemService::OnRemoteChangeAvailable(int64 pending_changes) {
+void SyncFileSystemService::OnRemoteChangeQueueUpdated(int64 pending_changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_GE(pending_changes, 0);
-  DVLOG(1) << "OnRemoteChangeAvailable: " << pending_changes;
+  DVLOG(1) << "OnRemoteChangeQueueUpdated: " << pending_changes;
   pending_remote_changes_ = pending_changes;
   if (pending_changes > 0) {
     // The smallest change available might have changed from the previous one.

@@ -16,6 +16,7 @@
 #include "chrome/browser/google_apis/drive_upload_error.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 
 class GURL;
 class Profile;
@@ -72,6 +73,7 @@ class DriveFileSyncClient : public google_apis::DriveServiceObserver,
 
   static scoped_ptr<DriveFileSyncClient> CreateForTesting(
       Profile* profile,
+      const GURL& base_url,
       scoped_ptr<google_apis::DriveServiceInterface> drive_service,
       scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader);
 
@@ -168,6 +170,9 @@ class DriveFileSyncClient : public google_apis::DriveServiceObserver,
   static std::string OriginToDirectoryTitle(const GURL& origin);
   static GURL DirectoryTitleToOrigin(const std::string& title);
 
+  // Converts |resource_id| to corresponing resource link.
+  GURL ResourceIdToResourceLink(const std::string& resource_id) const;
+
   // DriveServiceObserver overrides.
   virtual void OnReadyToPerformOperations() OVERRIDE;
 
@@ -178,6 +183,7 @@ class DriveFileSyncClient : public google_apis::DriveServiceObserver,
   // Constructor for test use.
   DriveFileSyncClient(
       Profile* profile,
+      const GURL& base_url,
       scoped_ptr<google_apis::DriveServiceInterface> drive_service,
       scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader);
 
@@ -258,6 +264,7 @@ class DriveFileSyncClient : public google_apis::DriveServiceObserver,
 
   scoped_ptr<google_apis::DriveServiceInterface> drive_service_;
   scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader_;
+  google_apis::GDataWapiUrlGenerator url_generator_;
 
   ObserverList<DriveFileSyncClientObserver> observers_;
 
