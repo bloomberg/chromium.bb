@@ -17,9 +17,9 @@
 #include "printing/metafile_skia_wrapper.h"
 #include "printing/page_size_margins.h"
 #include "printing/units.h"
-#include "skia/ext/vector_canvas.h"
 #include "skia/ext/platform_device.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
+#include "skia/ext/refptr.h"
+#include "skia/ext/vector_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/point.h"
@@ -179,8 +179,8 @@ void PrintWebViewHelper::RenderPage(
   DCHECK(device);
   // The printPage method may take a reference to the canvas we pass down, so it
   // can't be a stack object.
-  SkRefPtr<skia::VectorCanvas> canvas = new skia::VectorCanvas(device);
-  canvas->unref();  // SkRefPtr and new both took a reference.
+  skia::RefPtr<skia::VectorCanvas> canvas =
+      skia::AdoptRef(new skia::VectorCanvas(device));
 
   if (is_preview) {
     printing::MetafileSkiaWrapper::SetMetafileOnCanvas(*canvas, metafile);

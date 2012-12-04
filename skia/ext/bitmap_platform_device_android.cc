@@ -76,7 +76,8 @@ void BitmapPlatformDevice::DrawToNativeContext(
 
 SkCanvas* CreatePlatformCanvas(int width, int height, bool is_opaque,
                                uint8_t* data, OnFailureType failureType) {
-  SkDevice* dev = BitmapPlatformDevice::Create(width, height, is_opaque, data);
+  skia::RefPtr<SkDevice> dev = skia::AdoptRef(
+      BitmapPlatformDevice::Create(width, height, is_opaque, data));
   return CreateCanvas(dev, failureType);
 }
 

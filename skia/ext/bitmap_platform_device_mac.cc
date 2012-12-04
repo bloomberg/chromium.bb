@@ -156,7 +156,7 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(CGContextRef context,
     CGContextRetain(context);
 
   BitmapPlatformDevice* rv = new BitmapPlatformDevice(
-      new BitmapPlatformDeviceData(context), bitmap);
+      skia::AdoptRef(new BitmapPlatformDeviceData(context)), bitmap);
 
   // The device object took ownership of the graphics context with its own
   // CGContextRetain call.
@@ -195,14 +195,13 @@ BitmapPlatformDevice* BitmapPlatformDevice::CreateWithData(uint8_t* data,
 // The device will own the bitmap, which corresponds to also owning the pixel
 // data. Therefore, we do not transfer ownership to the SkDevice's bitmap.
 BitmapPlatformDevice::BitmapPlatformDevice(
-    BitmapPlatformDeviceData* data, const SkBitmap& bitmap)
+    const skia::RefPtr<BitmapPlatformDeviceData>& data, const SkBitmap& bitmap)
     : SkDevice(bitmap),
       data_(data) {
   SetPlatformDevice(this, this);
 }
 
 BitmapPlatformDevice::~BitmapPlatformDevice() {
-  data_->unref();
 }
 
 CGContextRef BitmapPlatformDevice::GetBitmapContext() {
@@ -265,14 +264,15 @@ SkDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
 
 SkCanvas* CreatePlatformCanvas(CGContextRef ctx, int width, int height,
                                bool is_opaque, OnFailureType failureType) {
-  SkDevice* dev = BitmapPlatformDevice::Create(ctx, width, height, is_opaque);
+  skia::RefPtr<SkDevice> dev = skia::AdoptRef(
+      BitmapPlatformDevice::Create(ctx, width, height, is_opaque));
   return CreateCanvas(dev, failureType);
 }
 
 SkCanvas* CreatePlatformCanvas(int width, int height, bool is_opaque,
                                uint8_t* data, OnFailureType failureType) {
-  SkDevice* dev = BitmapPlatformDevice::CreateWithData(data, width, height,
-                                                       is_opaque);
+  skia::RefPtr<SkDevice> dev = skia::AdoptRef(
+      BitmapPlatformDevice::CreateWithData(data, width, height, is_opaque));
   return CreateCanvas(dev, failureType);
 }
 

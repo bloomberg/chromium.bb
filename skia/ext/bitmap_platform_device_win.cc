@@ -142,8 +142,8 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(
 
   // The device object will take ownership of the HBITMAP. The initial refcount
   // of the data object will be 1, which is what the constructor expects.
-  return new BitmapPlatformDevice(new BitmapPlatformDeviceData(hbitmap),
-                                  bitmap);
+  return new BitmapPlatformDevice(
+      skia::AdoptRef(new BitmapPlatformDeviceData(hbitmap)), bitmap);
 }
 
 // static
@@ -166,7 +166,7 @@ BitmapPlatformDevice* BitmapPlatformDevice::CreateAndClear(int width,
 // The device will own the HBITMAP, which corresponds to also owning the pixel
 // data. Therefore, we do not transfer ownership to the SkDevice's bitmap.
 BitmapPlatformDevice::BitmapPlatformDevice(
-    BitmapPlatformDeviceData* data,
+    const skia::RefPtr<BitmapPlatformDeviceData>& data,
     const SkBitmap& bitmap)
     : SkDevice(bitmap),
       data_(data) {
@@ -177,7 +177,6 @@ BitmapPlatformDevice::BitmapPlatformDevice(
 
 BitmapPlatformDevice::~BitmapPlatformDevice() {
   SkASSERT(begin_paint_count_ == 0);
-  data_->unref();
 }
 
 HDC BitmapPlatformDevice::BeginPlatformPaint() {
@@ -272,10 +271,8 @@ SkCanvas* CreatePlatformCanvas(int width,
                                bool is_opaque,
                                HANDLE shared_section,
                                OnFailureType failureType) {
-  SkDevice* dev = BitmapPlatformDevice::Create(width,
-                                               height,
-                                               is_opaque,
-                                               shared_section);
+  skia::RefPtr<SkDevice> dev = skia::AdoptRef(
+      BitmapPlatformDevice::Create(width, height, is_opaque, shared_section));
   return CreateCanvas(dev, failureType);
 }
 

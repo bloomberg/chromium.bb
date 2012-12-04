@@ -190,7 +190,7 @@ void VectorPlatformDeviceEmf::drawRect(const SkDraw& draw,
 
     // Removes the path effect from the temporary SkPaint object.
     SkPaint paint_no_effet(paint);
-    SkSafeUnref(paint_no_effet.setPathEffect(NULL));
+    paint_no_effet.setPathEffect(NULL);
 
     // Draw the calculated path.
     drawPath(draw, path_modified, paint_no_effet);
@@ -224,7 +224,7 @@ void VectorPlatformDeviceEmf::drawPath(const SkDraw& draw,
 
     // Removes the path effect from the temporary SkPaint object.
     SkPaint paint_no_effet(paint);
-    SkSafeUnref(paint_no_effet.setPathEffect(NULL));
+    paint_no_effet.setPathEffect(NULL);
 
     // Draw the calculated path.
     drawPath(draw, path_modified, paint_no_effet);

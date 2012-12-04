@@ -9,6 +9,7 @@
 // to get the surface type.
 #include "base/basictypes.h"
 #include "skia/ext/platform_device.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
 namespace skia {
@@ -71,8 +72,8 @@ static inline SkCanvas* CreatePlatformCanvas(int width,
   return CreatePlatformCanvas(width, height, is_opaque, 0, CRASH_ON_FAILURE);
 }
 
-// Takes ownership of the device, so the caller need not call unref().
-SK_API SkCanvas* CreateCanvas(SkDevice* device, OnFailureType failure_type);
+SK_API SkCanvas* CreateCanvas(const skia::RefPtr<SkDevice>& device,
+                              OnFailureType failure_type);
 
 static inline SkCanvas* CreateBitmapCanvas(int width,
                                            int height,
@@ -87,10 +88,12 @@ static inline SkCanvas* TryCreateBitmapCanvas(int width,
                               RETURN_NULL_ON_FAILURE);
 }
 
-class SK_API ScopedPlatformCanvas : public SkAutoTUnref<SkCanvas> {
+class SK_API ScopedPlatformCanvas : public RefPtr<SkCanvas> {
  public:
   ScopedPlatformCanvas(int width, int height, bool is_opaque)
-      : SkAutoTUnref<SkCanvas>(CreatePlatformCanvas(width, height, is_opaque)){}
+      : RefPtr<SkCanvas>(AdoptRef(
+          CreatePlatformCanvas(width, height, is_opaque)))
+  {}
 };
 
 // Return the stride (length of a line in bytes) for the given width. Because

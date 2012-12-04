@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "skia/ext/platform_device.h"
+#include "skia/ext/refptr.h"
 
 namespace skia {
 
@@ -64,7 +65,7 @@ class SK_API BitmapPlatformDevice : public SkDevice, public PlatformDevice {
   // bitmaps used by the base device class are already refcounted and copyable.
   class BitmapPlatformDeviceData;
 
-  BitmapPlatformDevice(BitmapPlatformDeviceData* data,
+  BitmapPlatformDevice(const skia::RefPtr<BitmapPlatformDeviceData>& data,
                        const SkBitmap& bitmap);
 
   // Flushes the CoreGraphics context so that the pixel data can be accessed
@@ -76,9 +77,8 @@ class SK_API BitmapPlatformDevice : public SkDevice, public PlatformDevice {
                                              int height, bool isOpaque,
                                              Usage usage) OVERRIDE;
 
-  // Data associated with this device, guaranteed non-null. We hold a reference
-  // to this object.
-  BitmapPlatformDeviceData* data_;
+  // Data associated with this device, guaranteed non-null.
+  skia::RefPtr<BitmapPlatformDeviceData> data_;
 
   DISALLOW_COPY_AND_ASSIGN(BitmapPlatformDevice);
 };

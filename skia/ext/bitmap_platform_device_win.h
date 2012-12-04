@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "skia/ext/platform_device.h"
+#include "skia/ext/refptr.h"
 
 namespace skia {
 
@@ -79,13 +80,12 @@ class SK_API BitmapPlatformDevice : public SkDevice, public PlatformDevice {
   // bitmaps used by the base device class are already refcounted and copyable.
   class BitmapPlatformDeviceData;
 
-  // Private constructor. The data should already be ref'ed for us.
-  BitmapPlatformDevice(BitmapPlatformDeviceData* data,
+  // Private constructor.
+  BitmapPlatformDevice(const skia::RefPtr<BitmapPlatformDeviceData>& data,
                        const SkBitmap& bitmap);
 
-  // Data associated with this device, guaranteed non-null. We hold a reference
-  // to this object.
-  BitmapPlatformDeviceData* data_;
+  // Data associated with this device, guaranteed non-null.
+  skia::RefPtr<BitmapPlatformDeviceData> data_;
 
 #ifdef SK_DEBUG
   int begin_paint_count_;

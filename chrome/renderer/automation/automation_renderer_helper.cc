@@ -69,7 +69,7 @@ bool AutomationRendererHelper::SnapshotEntirePage(
 
   skia::ScopedPlatformCanvas canvas(new_size.width, new_size.height, true);
 
-  view->paint(webkit_glue::ToWebCanvas(canvas),
+  view->paint(webkit_glue::ToWebCanvas(canvas.get()),
               gfx::Rect(0, 0, new_size.width, new_size.height));
 
   frame->setCanHaveScrollbars(true);

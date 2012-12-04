@@ -390,8 +390,9 @@ class VectorCanvasTest : public ImageTest {
     size_ = size;
     context_ = new Context();
     bitmap_ = new Bitmap(*context_, size_, size_);
-    vcanvas_ = new VectorCanvas(VectorPlatformDeviceEmf::CreateDevice(
-        size_, size_, true, context_->context()));
+    vcanvas_ = new VectorCanvas(
+        VectorPlatformDeviceEmf::CreateDevice(
+            size_, size_, true, context_->context()));
     pcanvas_ = CreatePlatformCanvas(size_, size_, false);
 
     // Clear white.
@@ -729,9 +730,9 @@ TEST_F(VectorCanvasTest, MAYBE_PathEffects) {
   {
     SkPaint paint;
     SkScalar intervals[] = { 1, 1 };
-    SkPathEffect* effect = new SkDashPathEffect(intervals, arraysize(intervals),
-                                                0);
-    paint.setPathEffect(effect)->unref();
+    skia::RefPtr<SkPathEffect> effect = skia::AdoptRef(
+        new SkDashPathEffect(intervals, arraysize(intervals), 0));
+    paint.setPathEffect(effect.get());
     paint.setColor(SK_ColorMAGENTA);
     paint.setStyle(SkPaint::kStroke_Style);
 
@@ -749,9 +750,9 @@ TEST_F(VectorCanvasTest, MAYBE_PathEffects) {
   {
     SkPaint paint;
     SkScalar intervals[] = { 3, 5 };
-    SkPathEffect* effect = new SkDashPathEffect(intervals, arraysize(intervals),
-                                                0);
-    paint.setPathEffect(effect)->unref();
+    skia::RefPtr<SkPathEffect> effect = skia::AdoptRef(
+        new SkDashPathEffect(intervals, arraysize(intervals), 0));
+    paint.setPathEffect(effect.get());
     paint.setColor(SK_ColorMAGENTA);
     paint.setStyle(SkPaint::kStroke_Style);
 
@@ -767,9 +768,9 @@ TEST_F(VectorCanvasTest, MAYBE_PathEffects) {
   {
     SkPaint paint;
     SkScalar intervals[] = { 2, 1 };
-    SkPathEffect* effect = new SkDashPathEffect(intervals, arraysize(intervals),
-                                                0);
-    paint.setPathEffect(effect)->unref();
+    skia::RefPtr<SkPathEffect> effect = skia::AdoptRef(
+        new SkDashPathEffect(intervals, arraysize(intervals), 0));
+    paint.setPathEffect(effect.get());
     paint.setColor(SK_ColorMAGENTA);
     paint.setStyle(SkPaint::kStroke_Style);
 
@@ -783,9 +784,9 @@ TEST_F(VectorCanvasTest, MAYBE_PathEffects) {
   {
     SkPaint paint;
     SkScalar intervals[] = { 1, 1 };
-    SkPathEffect* effect = new SkDashPathEffect(intervals, arraysize(intervals),
-                                                0);
-    paint.setPathEffect(effect)->unref();
+    skia::RefPtr<SkPathEffect> effect = skia::AdoptRef(
+        new SkDashPathEffect(intervals, arraysize(intervals), 0));
+    paint.setPathEffect(effect.get());
     paint.setColor(SK_ColorMAGENTA);
     paint.setStyle(SkPaint::kStroke_Style);
 

@@ -176,6 +176,7 @@
         'ext/platform_device_linux.cc',
         'ext/platform_device_mac.cc',
         'ext/platform_device_win.cc',
+        'ext/refptr.h',
         'ext/SkMemory_new_handler.cpp',
         'ext/skia_sandbox_support_win.h',
         'ext/skia_sandbox_support_win.cc',

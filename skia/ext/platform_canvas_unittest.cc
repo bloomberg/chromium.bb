@@ -247,7 +247,7 @@ TEST(PlatformCanvas, FillLayer) {
     LayerSaver layer(*canvas, kLayerX, kLayerY, kLayerW, kLayerH);
     DrawNativeRect(*canvas, 0, 0, 100, 100);
 #if defined(OS_WIN)
-    MakeOpaque(canvas, 0, 0, 100, 100);
+    MakeOpaque(canvas.get(), 0, 0, 100, 100);
 #endif
   }
   EXPECT_TRUE(VerifyBlackRect(*canvas, kLayerX, kLayerY, kLayerW, kLayerH));
@@ -258,7 +258,7 @@ TEST(PlatformCanvas, FillLayer) {
     LayerSaver layer(*canvas, kLayerX, kLayerY, kLayerW, kLayerH);
     DrawNativeRect(*canvas, kInnerX, kInnerY, kInnerW, kInnerH);
 #if defined(OS_WIN)
-    MakeOpaque(canvas, kInnerX, kInnerY, kInnerW, kInnerH);
+    MakeOpaque(canvas.get(), kInnerX, kInnerY, kInnerW, kInnerH);
 #endif
   }
   EXPECT_TRUE(VerifyBlackRect(*canvas, kInnerX, kInnerY, kInnerW, kInnerH));
@@ -271,7 +271,7 @@ TEST(PlatformCanvas, FillLayer) {
     AddClip(*canvas, kInnerX, kInnerY, kInnerW, kInnerH);
     DrawNativeRect(*canvas, 0, 0, 100, 100);
 #if defined(OS_WIN)
-    MakeOpaque(canvas, kInnerX, kInnerY, kInnerW, kInnerH);
+    MakeOpaque(canvas.get(), kInnerX, kInnerY, kInnerW, kInnerH);
 #endif
     canvas->restore();
   }
@@ -285,7 +285,7 @@ TEST(PlatformCanvas, FillLayer) {
     LayerSaver layer(*canvas, kLayerX, kLayerY, kLayerW, kLayerH);
     DrawNativeRect(*canvas, 0, 0, 100, 100);
 #if defined(OS_WIN)
-    MakeOpaque(canvas, 0, 0, 100, 100);
+    MakeOpaque(canvas.get(), 0, 0, 100, 100);
 #endif
   }
   canvas->restore();
@@ -308,7 +308,7 @@ TEST(PlatformCanvas, TranslateLayer) {
     LayerSaver layer(*canvas, kLayerX, kLayerY, kLayerW, kLayerH);
     DrawNativeRect(*canvas, 0, 0, 100, 100);
 #if defined(OS_WIN)
-    MakeOpaque(canvas, 0, 0, 100, 100);
+    MakeOpaque(canvas.get(), 0, 0, 100, 100);
 #endif
   }
   canvas->restore();
@@ -323,7 +323,7 @@ TEST(PlatformCanvas, TranslateLayer) {
     LayerSaver layer(*canvas, kLayerX, kLayerY, kLayerW, kLayerH);
     DrawNativeRect(*canvas, kInnerX, kInnerY, kInnerW, kInnerH);
 #if defined(OS_WIN)
-    MakeOpaque(canvas, kInnerX, kInnerY, kInnerW, kInnerH);
+    MakeOpaque(canvas.get(), kInnerX, kInnerY, kInnerW, kInnerH);
 #endif
   }
   canvas->restore();
@@ -338,7 +338,7 @@ TEST(PlatformCanvas, TranslateLayer) {
     canvas->translate(1, 1);
     DrawNativeRect(*canvas, kInnerX, kInnerY, kInnerW, kInnerH);
 #if defined(OS_WIN)
-    MakeOpaque(canvas, kInnerX, kInnerY, kInnerW, kInnerH);
+    MakeOpaque(canvas.get(), kInnerX, kInnerY, kInnerW, kInnerH);
 #endif
   }
   canvas->restore();
@@ -356,7 +356,7 @@ TEST(PlatformCanvas, TranslateLayer) {
     AddClip(*canvas, kInnerX + 1, kInnerY + 1, kInnerW - 1, kInnerH - 1);
     DrawNativeRect(*canvas, 0, 0, 100, 100);
 #if defined(OS_WIN)
-    MakeOpaque(canvas, kLayerX, kLayerY, kLayerW, kLayerH);
+    MakeOpaque(canvas.get(), kLayerX, kLayerY, kLayerW, kLayerH);
 #endif
   }
   canvas->restore();
@@ -384,7 +384,7 @@ TEST(PlatformCanvas, TranslateLayer) {
 
     DrawNativeRect(*canvas, 0, 0, 100, 100);
 #if defined(OS_WIN)
-    MakeOpaque(canvas, kLayerX, kLayerY, kLayerW, kLayerH);
+    MakeOpaque(canvas.get(), kLayerX, kLayerY, kLayerW, kLayerH);
 #endif
   }
   canvas->restore();

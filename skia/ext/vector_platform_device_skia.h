@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "skia/ext/platform_device.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkTScopedPtr.h"
 #include "third_party/skia/include/pdf/SkPDFDevice.h"
 
@@ -50,7 +50,7 @@ class VectorPlatformDeviceSkia : public SkPDFDevice, public PlatformDevice {
 #endif
 
  private:
-  SkRefPtr<BitmapPlatformDevice> raster_surface_;
+  skia::RefPtr<BitmapPlatformDevice> raster_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(VectorPlatformDeviceSkia);
 };

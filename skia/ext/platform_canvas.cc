@@ -54,7 +54,9 @@ void MakeOpaque(SkCanvas* canvas, int x, int y, int width, int height) {
   // so we don't draw anything on a device that ignores xfermodes
   paint.setColor(0);
   // install our custom mode
-  paint.setXfermode(new SkProcXfermode(MakeOpaqueXfermodeProc))->unref();
+  skia::RefPtr<SkProcXfermode> xfermode =
+      skia::AdoptRef(new SkProcXfermode(MakeOpaqueXfermodeProc));
+  paint.setXfermode(xfermode.get());
   canvas->drawRect(rect, paint);
 }
 
@@ -62,14 +64,13 @@ size_t PlatformCanvasStrideForWidth(unsigned width) {
   return 4 * width;
 }
 
-SkCanvas* CreateCanvas(SkDevice* device, OnFailureType failureType) {
+SkCanvas* CreateCanvas(const skia::RefPtr<SkDevice>& device, OnFailureType failureType) {
   if (!device) {
     if (CRASH_ON_FAILURE == failureType)
       SK_CRASH();
     return NULL;
   }
-  SkAutoUnref aur(device);
-  return new SkCanvas(device);
+  return new SkCanvas(device.get());
 }
 
 PlatformBitmap::PlatformBitmap() : surface_(0), platform_extra_(0) {}
