@@ -196,10 +196,6 @@ class CompositingIOSurfaceMac {
                           bool is_vsync_disabled,
                           CVDisplayLinkRef display_link);
 
-  // Issue a draw call to try to flush references to an IOSurface out of
-  // the GL driver.
-  void DoWorkaroundForIOSurfaceLeak();
-
   // Returns true if IOSurface is ready to render. False otherwise.
   bool MapIOSurfaceToTexture(uint64 io_surface_handle);
 
