@@ -64,6 +64,7 @@ struct gl_surface_state {
 	int num_images;
 
 	struct weston_buffer_reference buffer_ref;
+	int pitch; /* in pixels */
 };
 
 struct gl_renderer {
@@ -523,6 +524,7 @@ static int
 texture_region(struct weston_surface *es, pixman_region32_t *region,
 		pixman_region32_t *surf_region)
 {
+	struct gl_surface_state *gs = get_surface_state(es);
 	struct weston_compositor *ec = es->compositor;
 	GLfloat *v, inv_width, inv_height;
 	unsigned int *vtxcnt, nvtx = 0;
@@ -538,7 +540,7 @@ texture_region(struct weston_surface *es, pixman_region32_t *region,
 	v = wl_array_add(&ec->vertices, nrects * nsurf * 8 * 4 * sizeof *v);
 	vtxcnt = wl_array_add(&ec->vtxcnt, nrects * nsurf * sizeof *vtxcnt);
 
-	inv_width = 1.0 / es->pitch;
+	inv_width = 1.0 / gs->pitch;
 
 	switch (es->buffer_transform) {
 	case WL_OUTPUT_TRANSFORM_90:
@@ -1069,7 +1071,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 
 	if (!gr->has_unpack_subimage) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
-			     surface->pitch, buffer->height, 0,
+			     gs->pitch, buffer->height, 0,
 			     GL_BGRA_EXT, GL_UNSIGNED_BYTE,
 			     wl_shm_buffer_get_data(buffer));
 
@@ -1078,7 +1080,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 
 #ifdef GL_UNPACK_ROW_LENGTH
 	/* Mesa does not define GL_EXT_unpack_subimage */
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, surface->pitch);
+	glPixelStorei(GL_UNPACK_ROW_LENGTH, gs->pitch);
 	data = wl_shm_buffer_get_data(buffer);
 	rectangles = pixman_region32_rectangles(&surface->texture_damage, &n);
 	for (i = 0; i < n; i++) {
@@ -1144,13 +1146,13 @@ gl_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 	}
 
 	if (wl_buffer_is_shm(buffer)) {
-		es->pitch = wl_shm_buffer_get_stride(buffer) / 4;
+		gs->pitch = wl_shm_buffer_get_stride(buffer) / 4;
 		gs->target = GL_TEXTURE_2D;
 
 		ensure_textures(gs, 1);
 		glBindTexture(GL_TEXTURE_2D, gs->textures[0]);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
-			     es->pitch, buffer->height, 0,
+			     gs->pitch, buffer->height, 0,
 			     GL_BGRA_EXT, GL_UNSIGNED_BYTE, NULL);
 		if (wl_shm_buffer_get_format(buffer) == WL_SHM_FORMAT_XRGB8888)
 			gs->shader = &gr->texture_shader_rgbx;
@@ -1209,7 +1211,7 @@ gl_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 						    gs->images[i]);
 		}
 
-		es->pitch = buffer->width;
+		gs->pitch = buffer->width;
 	} else {
 		weston_log("unhandled buffer type!\n");
 		weston_buffer_reference(&gs->buffer_ref, NULL);
@@ -1237,9 +1239,14 @@ gl_renderer_create_surface(struct weston_surface *surface)
 	struct gl_surface_state *gs;
 
 	gs = calloc(1, sizeof *gs);
-
 	if (!gs)
 		return -1;
+
+	/* A buffer is never attached to solid color surfaces, yet
+	 * they still go through texcoord computations. Do not divide
+	 * by zero there.
+	 */
+	gs->pitch = 1;
 
 	surface->renderer_state = gs;
 

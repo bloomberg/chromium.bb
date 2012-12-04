@@ -388,7 +388,6 @@ struct weston_surface {
 	pixman_region32_t damage;
 	pixman_region32_t opaque;
 	pixman_region32_t input;
-	int32_t pitch;
 	struct wl_list link;
 	struct wl_list layer_link;
 	float alpha;

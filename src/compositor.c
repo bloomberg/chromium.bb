@@ -222,7 +222,6 @@ weston_surface_create(struct weston_compositor *compositor)
 
 	surface->compositor = compositor;
 	surface->alpha = 1.0;
-	surface->pitch = 1;
 
 	if (compositor->renderer->create_surface(surface) < 0) {
 		free(surface);
