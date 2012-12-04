@@ -91,7 +91,6 @@
                   '<(DEPTH)/native_client_sdk/src/tools/create_nmf.py',
                   '>@(_inputs)',
                   '--output=>(nmf_newlib)',
-                  '--toolchain=newlib',
                 ],
                 'target_conditions': [
                   ['enable_x86_64==1', {
@@ -131,7 +130,6 @@
                   '--output=>(nmf_glibc)',
                   '--path-prefix=>(nexe_target)_libs',
                   '--stage-dependencies=<(nacl_glibc_out_dir)',
-                  '--toolchain=glibc',
                 ],
                 'target_conditions': [
                   ['enable_x86_64==1', {

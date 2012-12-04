@@ -111,7 +111,7 @@
           'variables': {
             'compile_flags': [
               '-mno-tls-use-call',
-	    ],
+            ],
           },
         }],
         ['target_arch!="arm" and disable_glibc==0', {
@@ -143,7 +143,6 @@
               '--library-path=<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64',
               '--output=>(nmf_glibc)',
               '--stage-dependencies=<(PRODUCT_DIR)',
-              '--toolchain=glibc',
             ],
           },
         ],
