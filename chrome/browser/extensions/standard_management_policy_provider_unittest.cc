@@ -21,10 +21,8 @@ class StandardManagementPolicyProviderTest : public testing::Test {
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE, &message_loop_),
         prefs_(message_loop_.message_loop_proxy()),
-        blacklist_(prefs()),
-        provider_(prefs(), &blacklist_) {
+        provider_(prefs()) {
   }
-
 
  protected:
   ExtensionPrefs* prefs() {
@@ -49,52 +47,8 @@ class StandardManagementPolicyProviderTest : public testing::Test {
 
   TestExtensionPrefs prefs_;
 
-  Blacklist blacklist_;
-
   StandardManagementPolicyProvider provider_;
 };
-
-// Tests various areas of blacklist functionality.
-TEST_F(StandardManagementPolicyProviderTest, Blacklist) {
-  std::string not_installed_id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-
-  // Install 5 extensions.
-  ExtensionList extensions;
-  for (int i = 0; i < 5; i++) {
-    std::string name = "test" + base::IntToString(i);
-    extensions.push_back(prefs_.AddExtension(name));
-  }
-  EXPECT_EQ(NULL,
-            prefs()->GetInstalledExtensionInfo(not_installed_id).get());
-
-  ExtensionList::const_iterator iter;
-  for (iter = extensions.begin(); iter != extensions.end(); ++iter) {
-    EXPECT_TRUE(provider_.UserMayLoad(*iter, NULL));
-  }
-  // Blacklist one installed and one not-installed extension id.
-  std::vector<std::string> blacklisted_ids;
-  blacklisted_ids.push_back(extensions[0]->id());
-  blacklisted_ids.push_back(not_installed_id);
-  blacklist_.SetFromUpdater(blacklisted_ids, "version0");
-
-  // Make sure the id we expect to be blacklisted is.
-  EXPECT_FALSE(provider_.UserMayLoad(extensions[0], NULL));
-
-  // Make sure the other id's are not blacklisted.
-  for (iter = extensions.begin() + 1; iter != extensions.end(); ++iter)
-    EXPECT_TRUE(provider_.UserMayLoad(*iter, NULL));
-
-  // Make sure GetInstalledExtensionsInfo returns only the non-blacklisted
-  // extensions data.
-  scoped_ptr<ExtensionPrefs::ExtensionsInfo> info(
-      prefs()->GetInstalledExtensionsInfo());
-  EXPECT_EQ(4u, info->size());
-  ExtensionPrefs::ExtensionsInfo::iterator info_iter;
-  for (info_iter = info->begin(); info_iter != info->end(); ++info_iter) {
-    ExtensionInfo* extension_info = info_iter->get();
-    EXPECT_NE(extensions[0]->id(), extension_info->extension_id);
-  }
-}
 
 // Tests the behavior of the ManagementPolicy provider methods for an
 // extension required by policy.

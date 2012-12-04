@@ -78,8 +78,8 @@ class TestExtensionSystem : public ExtensionSystem {
   scoped_ptr<Blacklist> blacklist_;
   scoped_ptr<StandardManagementPolicyProvider>
       standard_management_policy_provider_;
-  scoped_ptr<ExtensionService> extension_service_;
   scoped_ptr<ManagementPolicy> management_policy_;
+  scoped_ptr<ExtensionService> extension_service_;
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_ptr<AlarmManager> alarm_manager_;
   scoped_refptr<ExtensionInfoMap> info_map_;

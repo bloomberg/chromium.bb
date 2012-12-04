@@ -132,9 +132,7 @@ TEST_F(ProtectedPrefsWatcherTest, ExtensionPrefChange) {
   EXPECT_FALSE(IsSignatureValid());
 
   // Blacklisting the extension does update the backup and signature.
-  std::set<std::string> blacklist;
-  blacklist.insert(sample_id);
-  extension_prefs->UpdateBlacklist(blacklist);
+  extension_prefs->SetExtensionBlacklisted(sample_id, true);
 
   EXPECT_TRUE(IsSignatureValid());
 }

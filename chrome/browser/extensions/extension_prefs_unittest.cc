@@ -246,7 +246,6 @@ class ExtensionPrefsExtensionState : public ExtensionPrefsTest {
 };
 TEST_F(ExtensionPrefsExtensionState, ExtensionState) {}
 
-
 class ExtensionPrefsEscalatePermissions : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {
@@ -1188,5 +1187,84 @@ class ExtensionPrefsDisableExtensions : public ExtensionPrefsPrepopulatedTest {
   int iteration_;
 };
 TEST_F(ExtensionPrefsDisableExtensions, ExtensionPrefsDisableExtensions) {}
+
+// Tests that blacklist state can be queried.
+class ExtensionPrefsBlacklistedExtensions : public ExtensionPrefsTest {
+ public:
+  virtual ~ExtensionPrefsBlacklistedExtensions() {}
+
+  virtual void Initialize() OVERRIDE {
+    extension_a_ = prefs_.AddExtension("a");
+    extension_b_ = prefs_.AddExtension("b");
+    extension_c_ = prefs_.AddExtension("c");
+  }
+
+  virtual void Verify() OVERRIDE {
+    {
+      std::set<std::string> ids;
+      EXPECT_EQ(ids, prefs()->GetBlacklistedExtensions());
+    }
+    prefs()->SetExtensionBlacklisted(extension_a_->id(), true);
+    {
+      std::set<std::string> ids;
+      ids.insert(extension_a_->id());
+      EXPECT_EQ(ids, prefs()->GetBlacklistedExtensions());
+    }
+    prefs()->SetExtensionBlacklisted(extension_b_->id(), true);
+    prefs()->SetExtensionBlacklisted(extension_c_->id(), true);
+    {
+      std::set<std::string> ids;
+      ids.insert(extension_a_->id());
+      ids.insert(extension_b_->id());
+      ids.insert(extension_c_->id());
+      EXPECT_EQ(ids, prefs()->GetBlacklistedExtensions());
+    }
+    prefs()->SetExtensionBlacklisted(extension_a_->id(), false);
+    {
+      std::set<std::string> ids;
+      ids.insert(extension_b_->id());
+      ids.insert(extension_c_->id());
+      EXPECT_EQ(ids, prefs()->GetBlacklistedExtensions());
+    }
+    prefs()->SetExtensionBlacklisted(extension_b_->id(), false);
+    prefs()->SetExtensionBlacklisted(extension_c_->id(), false);
+    {
+      std::set<std::string> ids;
+      EXPECT_EQ(ids, prefs()->GetBlacklistedExtensions());
+    }
+
+    // The interesting part: make sure that we're cleaning up after ourselves
+    // when we're storing *just* the fact that the extension is blacklisted.
+    std::string arbitrary_id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+
+    prefs()->SetExtensionBlacklisted(arbitrary_id, true);
+    prefs()->SetExtensionBlacklisted(extension_a_->id(), true);
+
+    // (And make sure that the acknowledged bit is also cleared).
+    prefs()->AcknowledgeBlacklistedExtension(arbitrary_id);
+
+    EXPECT_TRUE(prefs()->GetExtensionPref(arbitrary_id));
+    {
+      std::set<std::string> ids;
+      ids.insert(arbitrary_id);
+      ids.insert(extension_a_->id());
+      EXPECT_EQ(ids, prefs()->GetBlacklistedExtensions());
+    }
+    prefs()->SetExtensionBlacklisted(arbitrary_id, false);
+    prefs()->SetExtensionBlacklisted(extension_a_->id(), false);
+    EXPECT_FALSE(prefs()->GetExtensionPref(arbitrary_id));
+    {
+      std::set<std::string> ids;
+      EXPECT_EQ(ids, prefs()->GetBlacklistedExtensions());
+    }
+  }
+
+ private:
+  scoped_refptr<const Extension> extension_a_;
+  scoped_refptr<const Extension> extension_b_;
+  scoped_refptr<const Extension> extension_c_;
+};
+TEST_F(ExtensionPrefsBlacklistedExtensions,
+       ExtensionPrefsBlacklistedExtensions) {}
 
 }  // namespace extensions

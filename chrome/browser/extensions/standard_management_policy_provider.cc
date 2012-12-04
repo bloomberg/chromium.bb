@@ -14,8 +14,8 @@
 namespace extensions {
 
 StandardManagementPolicyProvider::StandardManagementPolicyProvider(
-    ExtensionPrefs* prefs, Blacklist* blacklist)
-    : prefs_(prefs), blacklist_(blacklist) {
+    ExtensionPrefs* prefs)
+    : prefs_(prefs) {
 }
 
 StandardManagementPolicyProvider::~StandardManagementPolicyProvider() {
@@ -34,15 +34,14 @@ std::string
 bool StandardManagementPolicyProvider::UserMayLoad(
     const Extension* extension,
     string16* error) const {
-  bool is_google_blacklisted = blacklist_->IsBlacklisted(extension);
   const base::ListValue* blacklist =
       prefs_->pref_service()->GetList(prefs::kExtensionInstallDenyList);
   const base::ListValue* whitelist =
       prefs_->pref_service()->GetList(prefs::kExtensionInstallAllowList);
   const base::ListValue* forcelist =
       prefs_->pref_service()->GetList(prefs::kExtensionInstallForceList);
-  return admin_policy::UserMayLoad(is_google_blacklisted, blacklist, whitelist,
-                                   forcelist, extension, error);
+  return admin_policy::UserMayLoad(
+      blacklist, whitelist, forcelist, extension, error);
 }
 
 bool StandardManagementPolicyProvider::UserMayModifySettings(
