@@ -13,7 +13,7 @@
 #endif
 
 #if defined(OS_LINUX)  // Implies OS_CHROMEOS
-#include "chrome/browser/media_gallery/mtp_device_delegate_impl_linux.h"
+#include "chrome/browser/media_gallery/linux/mtp_device_delegate_impl_linux.h"
 #endif
 
 namespace chrome {

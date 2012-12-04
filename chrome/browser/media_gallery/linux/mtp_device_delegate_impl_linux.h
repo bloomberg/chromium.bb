@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_GALLERY_MTP_DEVICE_DELEGATE_IMPL_LINUX_H_
-#define CHROME_BROWSER_MEDIA_GALLERY_MTP_DEVICE_DELEGATE_IMPL_LINUX_H_
+#ifndef CHROME_BROWSER_MEDIA_GALLERY_LINUX_MTP_DEVICE_DELEGATE_IMPL_LINUX_H_
+#define CHROME_BROWSER_MEDIA_GALLERY_LINUX_MTP_DEVICE_DELEGATE_IMPL_LINUX_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -92,4 +92,4 @@ class MTPDeviceDelegateImplLinux : public fileapi::MTPDeviceDelegate {
 
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_MEDIA_GALLERY_MTP_DEVICE_DELEGATE_IMPL_LINUX_H_
+#endif  // CHROME_BROWSER_MEDIA_GALLERY_LINUX_MTP_DEVICE_DELEGATE_IMPL_LINUX_H_
