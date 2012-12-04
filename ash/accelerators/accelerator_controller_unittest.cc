@@ -666,6 +666,30 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
         ReleaseAccelerator(ui::VKEY_A, ui::EF_SHIFT_DOWN)));
     EXPECT_TRUE(delegate->IsCapsLockEnabled());
 
+    // Do not handle when a shift pressed with other keys, and shift is
+    // released first.
+    delegate->SetCapsLockEnabled(true);
+    EXPECT_FALSE(ProcessWithContext(
+        ui::Accelerator(ui::VKEY_A, ui::EF_SHIFT_DOWN)));
+    EXPECT_TRUE(delegate->IsCapsLockEnabled());
+    EXPECT_FALSE(ProcessWithContext(
+        ReleaseAccelerator(ui::VKEY_LSHIFT, ui::EF_NONE)));
+    EXPECT_TRUE(delegate->IsCapsLockEnabled());
+
+    EXPECT_FALSE(ProcessWithContext(
+        ui::Accelerator(ui::VKEY_A, ui::EF_SHIFT_DOWN)));
+    EXPECT_TRUE(delegate->IsCapsLockEnabled());
+    EXPECT_FALSE(ProcessWithContext(
+        ReleaseAccelerator(ui::VKEY_SHIFT, ui::EF_NONE)));
+    EXPECT_TRUE(delegate->IsCapsLockEnabled());
+
+    EXPECT_FALSE(ProcessWithContext(
+        ui::Accelerator(ui::VKEY_A, ui::EF_SHIFT_DOWN)));
+    EXPECT_TRUE(delegate->IsCapsLockEnabled());
+    EXPECT_FALSE(ProcessWithContext(
+        ReleaseAccelerator(ui::VKEY_RSHIFT, ui::EF_NONE)));
+    EXPECT_TRUE(delegate->IsCapsLockEnabled());
+
     // Do not consume shift keyup when caps lock is off.
     delegate->SetCapsLockEnabled(false);
     EXPECT_FALSE(ProcessWithContext(

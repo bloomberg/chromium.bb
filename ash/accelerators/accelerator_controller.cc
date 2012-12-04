@@ -450,6 +450,8 @@ bool AcceleratorController::PerformAction(int action,
   // Type of the previous accelerator. Used by NEXT_IME and DISABLE_CAPS_LOCK.
   const ui::EventType previous_event_type =
     context_.previous_accelerator().type();
+  const ui::KeyboardCode previous_key_code =
+    context_.previous_accelerator().key_code();
 
   // You *MUST* return true when some action is performed. Otherwise, this
   // function might be called *twice*, via BrowserView::PreHandleKeyboardEvent
@@ -539,10 +541,6 @@ bool AcceleratorController::PerformAction(int action,
         // For bindings on the Search key, activate the binding on press if the
         // Search key is not acting as a modifier. Otherwise, activate it on
         // release.
-
-        const ui::KeyboardCode previous_key_code =
-            context_.previous_accelerator().key_code();
-
         const bool search_as_function_key =
             Shell::GetInstance()->delegate()->IsSearchKeyActingAsFunctionKey();
         const bool type_pressed = accelerator.type() == ui::ET_KEY_PRESSED;
@@ -571,9 +569,12 @@ bool AcceleratorController::PerformAction(int action,
       ash::Shell::GetInstance()->ToggleAppList();
       return true;
     case DISABLE_CAPS_LOCK:
-      // See: case NEXT_IME.
-      if (previous_event_type == ui::ET_KEY_RELEASED) {
-        // We totally ignore this accelerator.
+      if (previous_event_type == ui::ET_KEY_RELEASED ||
+          (previous_key_code != ui::VKEY_LSHIFT &&
+           previous_key_code != ui::VKEY_SHIFT &&
+           previous_key_code != ui::VKEY_RSHIFT)) {
+        // If something else was pressed between the Shift key being pressed
+        // and released, then ignore the release of the Shift key.
         return false;
       }
       if (shell->caps_lock_delegate()->IsCapsLockEnabled()) {
@@ -656,8 +657,8 @@ bool AcceleratorController::PerformAction(int action,
           // This workaround allows the user to trigger NEXT_IME even if the
           // user presses Shift+Alt before releasing Enter.
           // TODO(nona|mazda): Fix crbug.com/139556 in a cleaner way.
-          context_.previous_accelerator().key_code() != ui::VKEY_RETURN &&
-          context_.previous_accelerator().key_code() != ui::VKEY_SPACE) {
+          previous_key_code != ui::VKEY_RETURN &&
+          previous_key_code != ui::VKEY_SPACE) {
         // We totally ignore this accelerator.
         // TODO(mazda): Fix crbug.com/158217
         return false;
