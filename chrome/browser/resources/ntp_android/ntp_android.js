@@ -2462,7 +2462,7 @@ cr.define('ntp', function() {
         ],
         [
           ContextMenuItemIds.RECENTLY_CLOSED_REMOVE,
-          templateData.elementremove
+          templateData.removeall
         ]
       ];
     } else if (section == SectionType.FOREIGN_SESSION_HEADER) {

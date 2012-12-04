@@ -81,6 +81,8 @@ void NTPResourceCache::CreateNewTabHTML() {
           IDS_NEW_TAB_CONTEXT_MENU_OPEN_IN_INCOGNITO_TAB));
   localized_strings.SetString("elementremove",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_CONTEXT_MENU_REMOVE));
+  localized_strings.SetString("removeall",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_CONTEXT_MENU_REMOVE_ALL));
   localized_strings.SetString("bookmarkedit",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_CONTEXT_MENU_EDIT_BOOKMARK));
   localized_strings.SetString("bookmarkdelete",
