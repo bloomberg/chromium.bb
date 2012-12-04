@@ -161,14 +161,14 @@ void SpeechRecognitionDispatcherHost::OnRecognitionEnd(int session_id) {
                                       context.request_id));
 }
 
-void SpeechRecognitionDispatcherHost::OnRecognitionResult(
+void SpeechRecognitionDispatcherHost::OnRecognitionResults(
     int session_id,
-    const SpeechRecognitionResult& result) {
+    const SpeechRecognitionResults& results) {
   const SpeechRecognitionSessionContext& context =
       manager()->GetSessionContext(session_id);
   Send(new SpeechRecognitionMsg_ResultRetrieved(context.render_view_id,
                                                 context.request_id,
-                                                result));
+                                                results));
 }
 
 void SpeechRecognitionDispatcherHost::OnRecognitionError(

@@ -10,11 +10,11 @@
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "content/public/common/speech_recognition_grammar.h"
+#include "content/public/common/speech_recognition_result.h"
 
 namespace content {
 
 class AudioChunk;
-struct SpeechRecognitionResult;
 struct SpeechRecognitionError;
 
 // This interface models the basic contract that a speech recognition engine,
@@ -35,8 +35,8 @@ class SpeechRecognitionEngine {
     // Called whenever a result is retrieved. It might be issued several times,
     // (e.g., in the case of continuous speech recognition engine
     // implementations).
-    virtual void OnSpeechRecognitionEngineResult(
-        const SpeechRecognitionResult& result) = 0;
+    virtual void OnSpeechRecognitionEngineResults(
+        const SpeechRecognitionResults& results) = 0;
     virtual void OnSpeechRecognitionEngineError(
         const SpeechRecognitionError& error) = 0;
 

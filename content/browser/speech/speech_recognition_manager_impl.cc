@@ -329,16 +329,16 @@ void SpeechRecognitionManagerImpl::OnAudioEnd(int session_id) {
                  weak_factory_.GetWeakPtr(), session_id, EVENT_AUDIO_ENDED));
 }
 
-void SpeechRecognitionManagerImpl::OnRecognitionResult(
-    int session_id, const SpeechRecognitionResult& result) {
+void SpeechRecognitionManagerImpl::OnRecognitionResults(
+    int session_id, const SpeechRecognitionResults& results) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!SessionExists(session_id))
     return;
 
   if (SpeechRecognitionEventListener* delegate_listener = GetDelegateListener())
-    delegate_listener->OnRecognitionResult(session_id, result);
+    delegate_listener->OnRecognitionResults(session_id, results);
   if (SpeechRecognitionEventListener* listener = GetListener(session_id))
-    listener->OnRecognitionResult(session_id, result);
+    listener->OnRecognitionResults(session_id, results);
 }
 
 void SpeechRecognitionManagerImpl::OnRecognitionError(

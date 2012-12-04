@@ -263,9 +263,9 @@ int SpeechInputExtensionManager::GetRenderProcessIDForExtension(
   return rph->GetID();
 }
 
-void SpeechInputExtensionManager::OnRecognitionResult(
+void SpeechInputExtensionManager::OnRecognitionResults(
     int session_id,
-    const content::SpeechRecognitionResult& result) {
+    const content::SpeechRecognitionResults& results) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(session_id, speech_recognition_session_id_);
 
@@ -275,35 +275,40 @@ void SpeechInputExtensionManager::OnRecognitionResult(
   ForceStopOnIOThread();
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&SpeechInputExtensionManager::SetRecognitionResultOnUIThread,
-      this, result, extension_id));
+      base::Bind(&SpeechInputExtensionManager::SetRecognitionResultsOnUIThread,
+      this, results, extension_id));
 }
 
-void SpeechInputExtensionManager::SetRecognitionResultOnUIThread(
-    const content::SpeechRecognitionResult& result,
+void SpeechInputExtensionManager::SetRecognitionResultsOnUIThread(
+    const content::SpeechRecognitionResults& results,
     const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  scoped_ptr<ListValue> args(new ListValue());
-  DictionaryValue* js_event = new DictionaryValue();
-  args->Append(js_event);
+  content::SpeechRecognitionResults::const_iterator it = results.begin();
+  for (; it != results.end(); ++it) {
+    const content::SpeechRecognitionResult& result = (*it);
 
-  ListValue* js_hypothesis_array = new ListValue();
-  js_event->Set(kHypothesesKey, js_hypothesis_array);
+    scoped_ptr<ListValue> args(new ListValue());
+    DictionaryValue* js_event = new DictionaryValue();
+    args->Append(js_event);
 
-  for (size_t i = 0; i < result.hypotheses.size(); ++i) {
-    const SpeechRecognitionHypothesis& hypothesis = result.hypotheses[i];
+    ListValue* js_hypothesis_array = new ListValue();
+    js_event->Set(kHypothesesKey, js_hypothesis_array);
 
-    DictionaryValue* js_hypothesis_object = new DictionaryValue();
-    js_hypothesis_array->Append(js_hypothesis_object);
+    for (size_t i = 0; i < result.hypotheses.size(); ++i) {
+      const SpeechRecognitionHypothesis& hypothesis = result.hypotheses[i];
 
-    js_hypothesis_object->SetString(kUtteranceKey,
-        UTF16ToUTF8(hypothesis.utterance));
-    js_hypothesis_object->SetDouble(kConfidenceKey,
-        hypothesis.confidence);
+      DictionaryValue* js_hypothesis_object = new DictionaryValue();
+      js_hypothesis_array->Append(js_hypothesis_object);
+
+      js_hypothesis_object->SetString(kUtteranceKey,
+          UTF16ToUTF8(hypothesis.utterance));
+      js_hypothesis_object->SetDouble(kConfidenceKey,
+          hypothesis.confidence);
+    }
+
+    DispatchEventToExtension(extension_id, kOnResultEvent, args.Pass());
   }
-
-  DispatchEventToExtension(extension_id, kOnResultEvent, args.Pass());
 }
 
 void SpeechInputExtensionManager::OnRecognitionStart(int session_id) {

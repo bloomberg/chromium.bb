@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "content/public/common/speech_recognition_result.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSpeechRecognitionHandle.h"
@@ -47,7 +48,8 @@ class SpeechRecognitionDispatcher : public RenderViewObserver,
   void OnAudioEnded(int request_id);
   void OnErrorOccurred(int request_id, const SpeechRecognitionError& error);
   void OnRecognitionEnded(int request_id);
-  void OnResultRetrieved(int request_id, const SpeechRecognitionResult& result);
+  void OnResultsRetrieved(int request_id,
+                          const SpeechRecognitionResults& result);
 
   int GetOrCreateIDForHandle(const WebKit::WebSpeechRecognitionHandle& handle);
   bool HandleExists(const WebKit::WebSpeechRecognitionHandle& handle);

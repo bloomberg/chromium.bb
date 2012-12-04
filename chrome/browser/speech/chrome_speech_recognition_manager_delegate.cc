@@ -375,8 +375,8 @@ void ChromeSpeechRecognitionManagerDelegate::OnAudioEnd(int session_id) {
   }
 }
 
-void ChromeSpeechRecognitionManagerDelegate::OnRecognitionResult(
-    int session_id, const content::SpeechRecognitionResult& result) {
+void ChromeSpeechRecognitionManagerDelegate::OnRecognitionResults(
+    int session_id, const content::SpeechRecognitionResults& result) {
   // The bubble will be closed upon the OnEnd event, which will follow soon.
 }
 
