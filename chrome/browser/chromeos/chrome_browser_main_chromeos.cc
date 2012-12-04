@@ -655,6 +655,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // Delete ContactManager while |g_browser_process| is still alive.
   contact_manager_.reset();
 
+  // Let the UserManager unregister itself as an observer of the CrosSettings
+  // singleton before it is destroyed.
+  UserManager::Get()->Shutdown();
+
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 }
 

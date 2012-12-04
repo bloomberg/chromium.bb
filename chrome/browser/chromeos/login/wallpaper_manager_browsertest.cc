@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "ui/aura/env.h"
@@ -26,8 +27,6 @@ using namespace ash;
 namespace chromeos {
 
 namespace {
-
-const char kTestUser1[] = "test-user@example.com";
 
 #if defined(GOOGLE_CHROME_BUILD)
 int kExpectedSmallWallpaperWidth = ash::kSmallWallpaperMaxWidth;
@@ -83,13 +82,6 @@ class WallpaperManagerBrowserTest : public CrosInProcessBrowserTest,
     MessageLoop::current()->Quit();
   }
 
-  // Sets |username| wallpaper.
-  void SetUserWallpaper(const std::string& username) {
-    ListPrefUpdate users_pref(local_state_, "LoggedInUsers");
-    users_pref->AppendIfNotPresent(new base::StringValue(username));
-    WallpaperManager::Get()->SetUserWallpaper(username);
-  }
-
  protected:
   // Saves bitmap |resource_id| to disk.
   void SaveUserWallpaperData(const std::string& username,
@@ -129,9 +121,9 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
       User::DEFAULT,
       base::Time::Now().LocalMidnight()
   };
-  wallpaper_manager->SetUserWallpaperInfo(kTestUser1, info, true);
+  wallpaper_manager->SetUserWallpaperInfo(UserManager::kStubUser, info, true);
 
-  SetUserWallpaper(kTestUser1);
+  wallpaper_manager->SetUserWallpaper(UserManager::kStubUser);
   WaitAsyncWallpaperLoad();
   gfx::ImageSkia wallpaper = controller_->GetWallpaper();
 
@@ -165,31 +157,30 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                        LoadCustomLargeWallpaperForLargeExternalScreen) {
   WallpaperManager* wallpaper_manager = WallpaperManager::Get();
   FilePath small_wallpaper_path =
-      wallpaper_manager->GetWallpaperPathForUser(kTestUser1, true);
+      wallpaper_manager->GetWallpaperPathForUser(UserManager::kStubUser, true);
   FilePath large_wallpaper_path =
-      wallpaper_manager->GetWallpaperPathForUser(kTestUser1, false);
+      wallpaper_manager->GetWallpaperPathForUser(UserManager::kStubUser, false);
 
   // Saves the small/large resolution wallpapers to small/large custom
   // wallpaper paths.
-  SaveUserWallpaperData(kTestUser1,
+  SaveUserWallpaperData(UserManager::kStubUser,
                         small_wallpaper_path,
                         ash::kDefaultSmallWallpaper.idr);
-  SaveUserWallpaperData(kTestUser1,
+  SaveUserWallpaperData(UserManager::kStubUser,
                         large_wallpaper_path,
                         ash::kDefaultLargeWallpaper.idr);
 
-  // Saves wallpaper info to local state for user |kTestUser1|.
+  // Saves wallpaper info to local state for user |UserManager::kStubUser|.
   WallpaperInfo info = {
       "DUMMY",
       WALLPAPER_LAYOUT_CENTER_CROPPED,
       User::CUSTOMIZED,
       base::Time::Now().LocalMidnight()
   };
-  wallpaper_manager->SetUserWallpaperInfo(kTestUser1, info, true);
+  wallpaper_manager->SetUserWallpaperInfo(UserManager::kStubUser, info, true);
 
-  // Add user |kTestUser1|.
-
-  SetUserWallpaper(kTestUser1);
+  // Set the wallpaper for |UserManager::kStubUser|.
+  wallpaper_manager->SetUserWallpaper(UserManager::kStubUser);
   WaitAsyncWallpaperLoad();
   gfx::ImageSkia wallpaper = controller_->GetWallpaper();
 
@@ -224,46 +215,46 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                        PreventReloadingSameWallpaper) {
   WallpaperManager* wallpaper_manager = WallpaperManager::Get();
   FilePath small_wallpaper_path =
-      wallpaper_manager->GetWallpaperPathForUser(kTestUser1, true);
+      wallpaper_manager->GetWallpaperPathForUser(UserManager::kStubUser, true);
 
-  SaveUserWallpaperData(kTestUser1,
+  SaveUserWallpaperData(UserManager::kStubUser,
                         small_wallpaper_path,
                         ash::kDefaultSmallWallpaper.idr);
 
-  // Saves wallpaper info to local state for user |kTestUser1|.
+  // Saves wallpaper info to local state for user |UserManager::kStubUser|.
   WallpaperInfo info = {
       "DUMMY",
       WALLPAPER_LAYOUT_CENTER_CROPPED,
       User::CUSTOMIZED,
       base::Time::Now().LocalMidnight()
   };
-  wallpaper_manager->SetUserWallpaperInfo(kTestUser1, info, true);
+  wallpaper_manager->SetUserWallpaperInfo(UserManager::kStubUser, info, true);
 
-  SetUserWallpaper(kTestUser1);
+  wallpaper_manager->SetUserWallpaper(UserManager::kStubUser);
   EXPECT_EQ(1, LoadedWallpapers());
   // Loads the same wallpaper before the initial one finished. It should be
   // prevented.
-  SetUserWallpaper(kTestUser1);
+  wallpaper_manager->SetUserWallpaper(UserManager::kStubUser);
   EXPECT_EQ(1, LoadedWallpapers());
   WaitAsyncWallpaperLoad();
   // Loads the same wallpaper after the initial one finished. It should be
   // prevented.
-  SetUserWallpaper(kTestUser1);
+  wallpaper_manager->SetUserWallpaper(UserManager::kStubUser);
   EXPECT_EQ(1, LoadedWallpapers());
   wallpaper_manager->ClearWallpaperCache();
 
-  // Tests default wallpaper for user |kTestUser1|.
+  // Tests default wallpaper for user |UserManager::kStubUser|.
   info.file = "";
   info.type = User::DEFAULT;
-  wallpaper_manager->SetUserWallpaperInfo(kTestUser1, info, true);
-  SetUserWallpaper(kTestUser1);
+  wallpaper_manager->SetUserWallpaperInfo(UserManager::kStubUser, info, true);
+  wallpaper_manager->SetUserWallpaper(UserManager::kStubUser);
   EXPECT_EQ(2, LoadedWallpapers());
   // Loads the same wallpaper before the initial one finished. It should be
   // prevented.
-  SetUserWallpaper(kTestUser1);
+  wallpaper_manager->SetUserWallpaper(UserManager::kStubUser);
   EXPECT_EQ(2, LoadedWallpapers());
   WaitAsyncWallpaperLoad();
-  SetUserWallpaper(kTestUser1);
+  wallpaper_manager->SetUserWallpaper(UserManager::kStubUser);
   EXPECT_EQ(2, LoadedWallpapers());
 }
 

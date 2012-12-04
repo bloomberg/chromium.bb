@@ -21,6 +21,7 @@ class MockUserManager : public UserManager {
   MockUserManager();
   virtual ~MockUserManager();
 
+  MOCK_METHOD0(Shutdown, void(void));
   MOCK_CONST_METHOD0(GetUsers, const UserList&(void));
   MOCK_METHOD2(UserLoggedIn, void(const std::string&, bool));
   MOCK_METHOD0(RetailModeUserLoggedIn, void(void));
@@ -44,6 +45,7 @@ class MockUserManager : public UserManager {
   MOCK_CONST_METHOD0(IsCurrentUserEphemeral, bool(void));
   MOCK_CONST_METHOD0(CanCurrentUserLock, bool(void));
   MOCK_CONST_METHOD0(IsUserLoggedIn, bool(void));
+  MOCK_CONST_METHOD0(IsLoggedInAsRegularUser, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsDemoUser, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsPublicAccount, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsGuest, bool(void));
