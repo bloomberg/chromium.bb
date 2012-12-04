@@ -232,8 +232,6 @@
         # Temporarily keep old int-srcrect behavior, until we determine if
         # the few failures are a bug or not.
         'SK_SUPPORT_INT_SRCRECT_DRAWBITMAPRECT',
-
-        'SK_DISABLE_SEPARABLE_MASK_BLUR',
       ],
       'sources!': [
         '../third_party/skia/include/core/SkTypes.h',
