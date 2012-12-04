@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_input_sync_writer.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
+#include "content/browser/renderer_host/media/web_contents_capture_util.h"
 #include "content/common/media/audio_messages.h"
 
 namespace content {
@@ -216,6 +217,10 @@ void AudioInputRendererHost::OnCreateStream(
   if (media_stream_manager_->audio_input_device_manager()->
       ShouldUseFakeDevice()) {
     audio_params.Reset(media::AudioParameters::AUDIO_FAKE,
+                       params.channel_layout(), params.sample_rate(),
+                       params.bits_per_sample(), params.frames_per_buffer());
+  } else if (WebContentsCaptureUtil::IsWebContentsDeviceId(device_id)) {
+    audio_params.Reset(media::AudioParameters::AUDIO_VIRTUAL,
                        params.channel_layout(), params.sample_rate(),
                        params.bits_per_sample(), params.frames_per_buffer());
   }

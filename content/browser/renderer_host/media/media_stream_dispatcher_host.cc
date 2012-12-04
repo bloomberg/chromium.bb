@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/renderer_host/media/web_contents_capture_util.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_options.h"
 #include "googleurl/src/gurl.h"
@@ -141,8 +142,16 @@ void MediaStreamDispatcherHost::OnGenerateStream(
   std::string label;
   if (components.audio_type == MEDIA_TAB_AUDIO_CAPTURE ||
       components.video_type == MEDIA_TAB_VIDEO_CAPTURE) {
-    const std::string& device_id = components.video_device_id;
-    DCHECK(!device_id.empty());
+    DCHECK(!components.video_device_id.empty());
+
+    // Append our tab capture device id scheme.
+    // TODO(justinlin): This is kind of a hack, but the plumbing for audio
+    // streams is too complicated to plumb in by type. Will revisit once it's
+    // refactored. http://crbug.com/163100
+    const std::string& device_id =
+        WebContentsCaptureUtil::AppendWebContentsDeviceScheme(
+            components.video_device_id);
+
     // TODO(justinlin): Cleanup/get rid of GenerateStreamForDevice and merge
     // with the regular GenerateStream.
     label = GetManager()->GenerateStreamForDevice(

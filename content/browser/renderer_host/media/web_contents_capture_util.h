@@ -11,6 +11,16 @@ namespace content {
 
 class WebContentsCaptureUtil {
  public:
+  // Returns a new id after appending the device id scheme for virtual streams.
+  static std::string AppendWebContentsDeviceScheme(
+      const std::string& device_id_param);
+
+  static std::string StripWebContentsDeviceScheme(
+      const std::string& device_id_param);
+
+  // Check whether the device id indicates that this is a web contents stream.
+  static bool IsWebContentsDeviceId(const std::string& device_id);
+
   // Function to extract the target renderer id's from a tab media stream
   // request's device id.
   static bool ExtractTabCaptureTarget(const std::string& device_id,

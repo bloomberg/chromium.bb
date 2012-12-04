@@ -4,15 +4,44 @@
 
 #include "content/browser/renderer_host/media/web_contents_capture_util.h"
 
+#include "base/basictypes.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
+#include "base/string_util.h"
+
+namespace {
+
+const char kVirtualDeviceScheme[] = "virtual-media-stream://";
+
+}  // namespace
 
 namespace content {
 
+std::string WebContentsCaptureUtil::AppendWebContentsDeviceScheme(
+    const std::string& device_id) {
+  return kVirtualDeviceScheme + device_id;
+}
+
+std::string WebContentsCaptureUtil::StripWebContentsDeviceScheme(
+    const std::string& device_id) {
+  return (IsWebContentsDeviceId(device_id) ?
+              device_id.substr(arraysize(kVirtualDeviceScheme) - 1) :
+              device_id);
+}
+
+bool WebContentsCaptureUtil::IsWebContentsDeviceId(
+    const std::string& device_id) {
+  return StartsWithASCII(device_id, kVirtualDeviceScheme, true);
+}
+
 bool WebContentsCaptureUtil::ExtractTabCaptureTarget(
-    const std::string& device_id,
+    const std::string& device_id_param,
     int* render_process_id,
     int* render_view_id) {
+  DCHECK(IsWebContentsDeviceId(device_id_param));
+  const std::string device_id = device_id_param.substr(
+      arraysize(kVirtualDeviceScheme) - 1);
+
   const size_t sep_pos = device_id.find(':');
   if (sep_pos == std::string::npos)
     return false;

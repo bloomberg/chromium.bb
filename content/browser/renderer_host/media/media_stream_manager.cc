@@ -109,10 +109,17 @@ class MediaStreamManager::DeviceRequest {
     if (media_observer == NULL)
       return;
 
+    // If we appended a device_id scheme, we want to remove it when notifying
+    // observers which may be in different modules since this scheme is only
+    // used internally within the content module.
+    std::string device_id =
+        WebContentsCaptureUtil::StripWebContentsDeviceScheme(
+            requested_device_id);
+
     media_observer->OnMediaRequestStateChanged(
       render_process_id, render_view_id,
       MediaStreamDevice(
-          stream_type, requested_device_id, requested_device_id), new_state);
+          stream_type, device_id, device_id), new_state);
   }
 
   MediaRequestState getState(MediaStreamType stream_type) const {
