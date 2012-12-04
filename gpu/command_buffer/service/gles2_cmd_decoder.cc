@@ -8742,7 +8742,6 @@ error::Error GLES2DecoderImpl::HandleDestroyStreamTextureCHROMIUM(
 
     stream_texture_manager_->DestroyStreamTexture(info->service_id());
     info->SetStreamTexture(false);
-    texture_manager()->SetInfoTarget(info, 0);
   } else {
     SetGLError(GL_INVALID_VALUE,
                "glDestroyStreamTextureCHROMIUM", "bad texture id.");
