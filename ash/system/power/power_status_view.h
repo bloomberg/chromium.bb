@@ -31,6 +31,7 @@ class PowerStatusView : public views::View {
 
   // Overridden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
 
  private:
   void LayoutDefaultView();
@@ -56,6 +57,7 @@ class PowerStatusView : public views::View {
 
   // Labels used only for VIEW_DEFAULT.
   views::Label* time_status_label_;
+  views::Label* percentage_label_;
 
   // Battery status indicator icon.
   views::ImageView* icon_;

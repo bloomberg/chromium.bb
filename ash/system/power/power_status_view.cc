@@ -40,11 +40,14 @@ PowerStatusView::PowerStatusView(ViewType view_type,
       status_label_(NULL),
       time_label_(NULL),
       time_status_label_(NULL),
+      percentage_label_(NULL),
       icon_(NULL),
       icon_image_index_(-1),
       view_type_(view_type) {
   if (view_type == VIEW_DEFAULT) {
     time_status_label_ = new views::Label;
+    percentage_label_ = new views::Label;
+    percentage_label_->SetEnabledColor(kHeaderTextColorNormal);
     LayoutDefaultView();
   } else {
     status_label_ = new views::Label;
@@ -70,6 +73,7 @@ void PowerStatusView::LayoutDefaultView() {
                              kPaddingBetweenBatteryStatusAndIcon);
     SetLayoutManager(layout);
 
+    AddChildView(percentage_label_);
     AddChildView(time_status_label_);
 
     icon_ = new views::ImageView;
@@ -85,6 +89,7 @@ void PowerStatusView::LayoutDefaultView() {
         new ash::internal::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
     AddChildView(icon_);
 
+    AddChildView(percentage_label_);
     AddChildView(time_status_label_);
   }
 }
@@ -106,18 +111,20 @@ void PowerStatusView::UpdateText() {
 
 void PowerStatusView::UpdateTextForDefaultView() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  string16 battery_percentage = string16();
+  string16 battery_time_status = string16();
   if (supply_status_.line_power_on && supply_status_.battery_is_full) {
-    time_status_label_->SetText(
-        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_FULL));
+    battery_time_status =
+        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_FULL);
     accessible_name_ = rb.GetLocalizedString(
         IDS_ASH_STATUS_TRAY_BATTERY_FULL_CHARGE_ACCESSIBLE);
   } else if (supply_status_.battery_percentage < 0.0f) {
-    time_status_label_->SetText(
-        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING));
+    battery_time_status =
+        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING);
     accessible_name_ = rb.GetLocalizedString(
         IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_ACCESSIBLE);
   } else {
-    string16 battery_percentage = l10n_util::GetStringFUTF16(
+    battery_percentage = l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ONLY,
         base::IntToString16(GetRoundedBatteryPercentage()));
     string16 battery_percentage_accessbile = l10n_util::GetStringFUTF16(
@@ -125,12 +132,11 @@ void PowerStatusView::UpdateTextForDefaultView() {
             IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_CHARGING_ACCESSIBLE:
             IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ACCESSIBLE ,
         base::IntToString16(GetRoundedBatteryPercentage()));
-    string16 battery_time = string16();
     string16 battery_time_accessible = string16();
     int hour = 0;
     int min = 0;
     if (supply_status_.is_calculating_battery_time) {
-      battery_time =
+      battery_time_status =
           rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING);
       battery_time_accessible = rb.GetLocalizedString(
           IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_ACCESSIBLE);
@@ -145,7 +151,7 @@ void PowerStatusView::UpdateTextForDefaultView() {
         string16 minute = min < 10 ?
             ASCIIToUTF16("0") + base::IntToString16(min) :
             base::IntToString16(min);
-        battery_time =
+        battery_time_status =
             l10n_util::GetStringFUTF16(
                 supply_status_.line_power_on ?
                     IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_SHORT :
@@ -160,15 +166,17 @@ void PowerStatusView::UpdateTextForDefaultView() {
                 GetBatteryTimeAccessibilityString(hour, min));
       }
     }
-    string16 battery_status = battery_time.empty() ?
-        battery_percentage :
-        battery_percentage + ASCIIToUTF16(" - ") + battery_time;
-    time_status_label_->SetText(battery_status);
+    battery_percentage = battery_time_status.empty() ?
+        battery_percentage : battery_percentage + ASCIIToUTF16(" - ");
     accessible_name_ = battery_time_accessible.empty() ?
         battery_percentage_accessbile :
         battery_percentage_accessbile + ASCIIToUTF16(". ")
             + battery_time_accessible;
   }
+  percentage_label_->SetVisible(!battery_percentage.empty());
+  percentage_label_->SetText(battery_percentage);
+  time_status_label_->SetVisible(!battery_time_status.empty());
+  time_status_label_->SetText(battery_time_status);
 }
 
 void PowerStatusView::UpdateTextForNotificationView() {
@@ -279,6 +287,16 @@ void PowerStatusView::ChildPreferredSizeChanged(views::View* child) {
 gfx::Size PowerStatusView::GetPreferredSize() {
   gfx::Size size = views::View::GetPreferredSize();
   return gfx::Size(size.width(), kTrayPopupItemHeight);
+}
+
+void PowerStatusView::Layout() {
+  views::View::Layout();
+
+  // Move the time_status_label_ closer to percentage_label_.
+  if (percentage_label_ && time_status_label_ &&
+      percentage_label_->visible() && time_status_label_->visible()) {
+    time_status_label_->SetX(percentage_label_->bounds().right() + 1);
+  }
 }
 
 }  // namespace internal
