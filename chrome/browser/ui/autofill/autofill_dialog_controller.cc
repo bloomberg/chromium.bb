@@ -330,9 +330,11 @@ void AutofillDialogController::ViewClosed(DialogAction action) {
     } else {
       FillOutputForSection(SECTION_SHIPPING);
     }
+    callback_.Run(&form_structure_);
+  } else {
+    callback_.Run(NULL);
   }
 
-  callback_.Run(&form_structure_);
   delete this;
 }
 
@@ -399,47 +401,41 @@ void AutofillDialogController::FillOutputForSectionWithComparator(
     if (!form_group)
       return;
 
-    for (size_t i = 0; i < form_structure_.field_count(); ++i) {
-      AutofillField* field = form_structure_.field(i);
-      // Only fill in data that is associated with this section.
-      const DetailInputs& inputs = RequestedFieldsForSection(section);
-      for (size_t j = 0; j < inputs.size(); ++j) {
-        if (compare.Run(inputs[j], *field)) {
-          form_group->FillFormField(*field, 0, field);
-          break;
-        }
-      }
-    }
+    FillFormStructureForSection(*form_group, section, compare);
   } else {
     // The user manually input data.
     DetailOutputMap output;
     view_->GetUserInput(section, &output);
 
-    // First fill in |form_structure_| to return to the page.
-    for (size_t i = 0; i < form_structure_.field_count(); ++i) {
-      AutofillField* field = form_structure_.field(i);
-      for (DetailOutputMap::iterator iter = output.begin();
-           iter != output.end(); ++iter) {
-        if (!iter->second.empty() && compare.Run(*iter->first, *field)) {
-          // TODO(estade): handle select controls and such. Also, canonicalize
-          // the entered data.
-          field->value = iter->second;
-          break;
-        }
-      }
-    }
-
-    // Next, save the info as new or edited data.
+    // Save the info as new or edited data, then fill it into |form_structure_|.
     PersonalDataManager* manager =
         PersonalDataManagerFactory::GetForProfile(profile_);
     if (section == SECTION_CC) {
       CreditCard card;
       FillFormGroupFromOutputs(output, &card);
       manager->SaveImportedCreditCard(card);
+      FillFormStructureForSection(card, section, compare);
+
+      // CVC needs special-casing because the CreditCard class doesn't store
+      // or handle them. Fill it in directly from |output|.
+      for (size_t i = 0; i < form_structure_.field_count(); ++i) {
+        AutofillField* field = form_structure_.field(i);
+        if (field->type() != CREDIT_CARD_VERIFICATION_CODE)
+          continue;
+
+        for (DetailOutputMap::iterator iter = output.begin();
+             iter != output.end(); ++iter) {
+          if (!iter->second.empty() && compare.Run(*iter->first, *field)) {
+            field->value = iter->second;
+            break;
+          }
+        }
+      }
     } else {
       AutofillProfile profile;
       FillFormGroupFromOutputs(output, &profile);
       manager->SaveImportedProfile(profile);
+      FillFormStructureForSection(profile, section, compare);
     }
   }
 }
@@ -447,6 +443,23 @@ void AutofillDialogController::FillOutputForSectionWithComparator(
 void AutofillDialogController::FillOutputForSection(DialogSection section) {
   FillOutputForSectionWithComparator(section,
                                      base::Bind(DetailInputMatchesField));
+}
+
+void AutofillDialogController::FillFormStructureForSection(
+    const FormGroup& form_group,
+    DialogSection section,
+    const InputFieldComparator& compare) {
+  for (size_t i = 0; i < form_structure_.field_count(); ++i) {
+    AutofillField* field = form_structure_.field(i);
+    // Only fill in data that is associated with this section.
+    const DetailInputs& inputs = RequestedFieldsForSection(section);
+    for (size_t j = 0; j < inputs.size(); ++j) {
+      if (compare.Run(inputs[j], *field)) {
+        form_group.FillFormField(*field, 0, field);
+        break;
+      }
+    }
+  }
 }
 
 SuggestionsComboboxModel* AutofillDialogController::SuggestionsModelForSection(

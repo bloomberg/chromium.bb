@@ -220,7 +220,7 @@ void AutofillAgent::didRequestAutocomplete(WebKit::WebFrame* frame,
       !WebFormElementToFormData(form,
                                 WebFormControlElement(),
                                 REQUIRE_AUTOCOMPLETE,
-                                EXTRACT_NONE,
+                                EXTRACT_OPTIONS,
                                 &form_data,
                                 NULL)) {
     WebFormElement(form).finishRequestAutocomplete(

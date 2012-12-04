@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_comboboxes.h"
 #include "ui/base/models/combobox_model.h"
 
+class FormGroup;
 class Profile;
 
 namespace content {
@@ -120,6 +121,12 @@ class AutofillDialogController {
   // a field.
   void FillOutputForSectionWithComparator(DialogSection section,
                                           const InputFieldComparator& compare);
+
+  // Fills in |form_structure_| using |form_group|. Utility method for
+  // FillOutputForSection.
+  void FillFormStructureForSection(const FormGroup& form_group,
+                                   DialogSection section,
+                                   const InputFieldComparator& compare);
 
   // Gets the SuggestionsComboboxModel for |section|.
   SuggestionsComboboxModel* SuggestionsModelForSection(DialogSection section);
