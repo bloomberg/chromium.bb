@@ -485,6 +485,9 @@ const char kEnableContacts[]                = "enable-contacts";
 // Enables web developers to create apps for Chrome without using crx packages.
 const char kEnableCrxlessWebApps[]          = "enable-crxless-web-apps";
 
+// Enables desktop guest mode.
+const char kEnableDesktopGuestMode[]        = "enable-desktop-guest-mode";
+
 // If true devtools experimental settings are enabled.
 const char kEnableDevToolsExperiments[]     = "enable-devtools-experiments";
 

@@ -15262,6 +15262,13 @@ Some features may be unavailable.  Please check that the profile exists and you 
       The web-based flow permits using verification codes instead of ASPs during authentication.
     </message>
 
+    <message name="IDS_FLAGS_DESKTOP_GUEST_MODE_NAME" desc="Name of about:flags option to turn on desktop guest mode">
+      Enable desktop guest mode
+    </message>
+    <message name="IDS_FLAGS_DESKTOP_GUEST_MODE_DESCRIPTION" desc="Description of about:flags option to turn on desktop guest mode">
+      When enabled, a guest user will be available in desktop Chrome.
+    </message>
+
     <!-- Toast experiment. -->
     <message name="IDS_TRY_TOAST_SET_DEFAULT" desc="Text of the checkbox to make chrome the default browser">
       Make it my default browser
