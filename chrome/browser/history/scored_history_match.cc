@@ -150,14 +150,8 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
         (now - row.last_visit()).InDays());
     const float popularity_score = GetPopularityScore(
         row.typed_count() + bookmark_boost, row.visit_count());
-
-    // Combine recency, popularity, and topicality scores into one.
-    // Example of how this functions: Suppose the omnibox has one
-    // input term.  Suppose we have a URL that has 30 typed visits with
-    // the most recent being within a day and the omnibox input term
-    // has a single URL hostname hit at a word boundary.  Then this
-    // URL will score 1200 ( = 30 * 40.0).
-    raw_score = 40.0 * topicality_score * recency_score * popularity_score;
+    raw_score = GetFinalRelevancyScore(
+        topicality_score, recency_score, popularity_score);
     raw_score =
         (raw_score <= kint32max) ? static_cast<int>(raw_score) : kint32max;
   } else {  // "old" scoring
@@ -531,7 +525,7 @@ float ScoredHistoryMatch::GetTopicalityScore(
     if (word_num >= 10) break;  // only count the first ten words
     const bool at_word_boundary = (next_word_starts != end_word_starts) &&
         (*next_word_starts == iter->offset);
-    term_scores[iter->term_num] += at_word_boundary ? 8 : 2;
+    term_scores[iter->term_num] += at_word_boundary ? 8 : 0;
   }
   // TODO(mpearson): Restore logic for penalizing out-of-order matches.
   // (Perhaps discount them by 0.8?)
@@ -642,6 +636,31 @@ float ScoredHistoryMatch::GetPopularityScore(int typed_count,
   // The max()s are to guard against database corruption.
   return (std::max(typed_count, 0) * 5.0 + std::max(visit_count, 0) * 3.0) /
       (5.0 + 3.0);
+}
+
+// static
+float ScoredHistoryMatch::GetFinalRelevancyScore(
+    float topicality_score, float recency_score, float popularity_score) {
+  // Here's how to interpret intermediate_score: Suppose the omnibox
+  // has one input term.  Suppose we have a URL that has 5 typed
+  // visits with the most recent being within a day and the omnibox
+  // input term has a single URL hostname hit at a word boundary.
+  // This URL will have an intermediate_score of 5.0 (= 1 topicality *
+  // 1 recency * 5 popularity).
+  float intermediate_score =
+      topicality_score * recency_score * popularity_score;
+  // The below code takes intermediate_score from [0, infinity) to
+  // relevancy scores in the range [0, 1400).
+  float attenuating_factor = 1.0;
+  if (intermediate_score < 4) {
+    // The formula in the final return line in this function only works if
+    // intermediate_score > 4.  For lower scores, we linearly interpolate
+    // between 0 and the formula when intermediate_score = 4.0.
+    attenuating_factor = intermediate_score / 4.0;
+    intermediate_score = 4.0;
+  }
+  DCHECK_GE(intermediate_score, 4.0);
+  return attenuating_factor * 1400.0 * (2.0 - exp(2.0 / intermediate_score));
 }
 
 void ScoredHistoryMatch::InitializeNewScoringField() {

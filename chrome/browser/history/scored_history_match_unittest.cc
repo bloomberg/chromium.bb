@@ -398,19 +398,15 @@ TEST_F(ScoredHistoryMatchTest, GetTopicalityScore) {
   // various types of URL matches.
   EXPECT_GT(title_score, arg_score);
   EXPECT_GT(arg_score, title_mid_word_score);
-  EXPECT_GT(title_mid_word_score, arg_mid_word_score);
   // Finally, verify that protocol matches and top level domain name
   // matches (.com, .net, etc.) score worse than everything (except
-  // possibly mid-word matches in the ?arg section of the URL--I can
-  // imagine scoring those pretty harshly as well).
+  // possibly mid-word matches in the ?arg section of the URL and
+  // mid-word title matches--I can imagine scoring those pretty
+  // harshly as well).
   EXPECT_GT(path_mid_word_score, protocol_score);
   EXPECT_GT(path_mid_word_score, protocol_mid_word_score);
-  EXPECT_GT(title_mid_word_score, protocol_score);
-  EXPECT_GT(title_mid_word_score, protocol_mid_word_score);
   EXPECT_GT(path_mid_word_score, tld_score);
   EXPECT_GT(path_mid_word_score, tld_mid_word_score);
-  EXPECT_GT(title_mid_word_score, tld_score);
-  EXPECT_GT(title_mid_word_score, tld_mid_word_score);
 }
 
 }  // namespace history

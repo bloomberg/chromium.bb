@@ -114,6 +114,13 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   static float GetPopularityScore(int typed_count,
                                   int visit_count);
 
+  // Combines the three component scores into a final score that's
+  // an appropriate value to use as a relevancy score.
+  static float GetFinalRelevancyScore(
+      float topicality_score,
+      float recency_score,
+      float popularity_score);
+
   // Sets use_new_scoring based on command line flags and/or
   // field trial state.
   static void InitializeNewScoringField();

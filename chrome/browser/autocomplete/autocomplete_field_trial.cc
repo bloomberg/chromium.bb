@@ -21,7 +21,8 @@ static const char kDisallowInlineHQPFieldTrialName[] =
 // was created as part of the name.
 static const char kSuggestFieldTrialStarted2012Q4Name[] =
     "OmniboxSearchSuggestTrialStarted2012Q4";
-static const char kHQPNewScoringFieldTrialName[] = "OmniboxHQPNewScoring";
+static const char kHQPNewScoringFieldTrialName[] =
+    "OmniboxHQPNewScoringMax1400";
 static const char kHUPCullRedirectsFieldTrialName[] = "OmniboxHUPCullRedirects";
 static const char kHUPCreateShorterMatchFieldTrialName[] =
     "OmniboxHUPCreateShorterMatch";
@@ -43,11 +44,11 @@ const base::FieldTrial::Probability
 // will decide what behavior (if any) to change based on the group.
 const int kSuggestFieldTrialNumberOfGroups = 20;
 
-// For History Quick Provider new scoring field trial, put 0% ( = 0/100 )
+// For History Quick Provider new scoring field trial, put 25% ( = 25/100 )
 // of the users in the new scoring experiment group.
 const base::FieldTrial::Probability kHQPNewScoringFieldTrialDivisor = 100;
 const base::FieldTrial::Probability
-    kHQPNewScoringFieldTrialExperimentFraction = 0;
+    kHQPNewScoringFieldTrialExperimentFraction = 25;
 
 // For HistoryURL provider cull redirects field trial, put 0% ( = 0/100 )
 // of the users in the don't-cull-redirects experiment group.
@@ -166,10 +167,10 @@ void AutocompleteFieldTrial::Activate() {
   trial->group();
 
   // Create inline History Quick Provider new scoring field trial.
-  // Make it expire on January 14, 2013.
+  // Make it expire on April 14, 2013.
   trial = base::FieldTrialList::FactoryGetFieldTrial(
       kHQPNewScoringFieldTrialName, kHQPNewScoringFieldTrialDivisor,
-      "Standard", 2013, 1, 14, NULL);
+      "Standard", 2013, 4, 14, NULL);
   trial->UseOneTimeRandomization();
   hqp_new_scoring_experiment_group = trial->AppendGroup("NewScoring",
       kHQPNewScoringFieldTrialExperimentFraction);
