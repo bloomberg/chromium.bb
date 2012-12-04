@@ -33,6 +33,7 @@ class DriveScheduler
 
   // Enum representing the type of job.
   enum JobType {
+    TYPE_GET_APPLICATION_INFO,
     TYPE_COPY,
     TYPE_GET_DOCUMENTS,
     TYPE_MOVE,
@@ -86,6 +87,9 @@ class DriveScheduler
   // other functions.
   void Initialize();
 
+  // Adds a GetApplicationInfo operation to the queue.
+  void GetApplicationInfo(const google_apis::GetDataCallback& callback);
+
   // Adds a copy operation to the queue.
   void Copy(const FilePath& src_file_path,
             const FilePath& dest_file_path,
@@ -135,7 +139,7 @@ class DriveScheduler
 
     JobInfo job_info;
 
-    // Callback for when the operation completes.
+    // Callback for operations that take a FileOperationCallback.
     // Used by:
     //   TYPE_COPY,
     //   TYPE_MOVE,
@@ -154,17 +158,24 @@ class DriveScheduler
     //   TYPE_TRANSFER_REMOTE_TO_LOCAL
     FilePath dest_file_path;
 
-    // Whether the operation is recursive.  Used by:
+    // Whether the operation is recursive.
+    // Used by:
     //   TYPE_REMOVE
     bool is_recursive;
 
-    // Parameters for GetDocuments().  Used by:
+    // Parameters for GetDocuments().
+    // Used by:
     //   TYPE_GET_DOCUMENTS
     GURL feed_url;
     int64 start_changestamp;
     std::string search_query;
     bool shared_with_me;
     std::string directory_resource_id;
+
+    // Callback for operations that take a GetDataCallback.
+    // Used by:
+    //   TYPE_GET_APPLICATION_INFO
+    //   TYPE_GET_DOCUMENTS
     google_apis::GetDataCallback get_data_callback;
   };
 

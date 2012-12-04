@@ -300,7 +300,7 @@ void DriveFeedLoader::ReloadFromServerIfNeeded(
     // Drive v2 needs a separate application list fetch operation.
     // TODO(haruki): Application list rarely changes and is not necessarily
     // refreshed as often as files.
-    drive_service_->GetApplicationInfo(
+    scheduler_->GetApplicationInfo(
         base::Bind(&DriveFeedLoader::OnGetApplicationList,
                    weak_ptr_factory_.GetWeakPtr()));
   }

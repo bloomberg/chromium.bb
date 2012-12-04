@@ -99,6 +99,17 @@ class FakeDriveService : public DriveServiceInterface {
   }
 
   virtual void GetApplicationInfo(const GetDataCallback& callback) {
+    // Make some sample data.
+    const FilePath account_metadata =
+        test_util::GetTestFilePath("gdata/account_metadata.json");
+    std::string contents;
+    file_util::ReadFileToString(account_metadata, &contents);
+    scoped_ptr<base::Value> data(base::JSONReader::Read(contents));
+
+    base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+        base::Bind(callback,
+                   HTTP_SUCCESS,
+                   base::Passed(&data)));
   }
 
   virtual void DeleteDocument(const GURL& document_url,
@@ -378,6 +389,22 @@ TEST_F(DriveSchedulerTest, TransferRegularFileFile) {
   google_apis::test_util::RunBlockingPoolTask();
 
   ASSERT_EQ(DRIVE_FILE_OK, error);
+}
+
+TEST_F(DriveSchedulerTest, GetApplicationInfo) {
+  ConnectToWifi();
+
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<base::Value> value;
+
+  scheduler_->GetApplicationInfo(
+      base::Bind(&google_apis::test_util::CopyResultsFromGetDataCallback,
+                 &error,
+                 &value));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(value);
 }
 
 TEST_F(DriveSchedulerTest, GetDocuments) {
