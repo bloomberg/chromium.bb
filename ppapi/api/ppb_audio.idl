@@ -8,6 +8,8 @@
  * realtime stereo audio streaming capabilities.
  */
 
+[generate_thunk]
+
 label Chrome {
   M14 = 1.0
 };
