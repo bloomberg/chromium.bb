@@ -400,10 +400,6 @@ void MockPluginDelegate::ZoomLimitsChanged(double minimum_factor,
                                            double maximum_factor) {
 }
 
-std::string MockPluginDelegate::ResolveProxy(const GURL& url) {
-  return std::string();
-}
-
 void MockPluginDelegate::DidStartLoading() {
 }
 

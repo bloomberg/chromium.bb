@@ -660,12 +660,10 @@ TEST_PPAPI_NACL_VIA_HTTP(NetworkMonitorPrivate_DeleteInCallback)
 TEST_PPAPI_NACL_VIA_HTTP(NetworkMonitorPrivate_ListObserver)
 
 TEST_PPAPI_IN_PROCESS(Flash_SetInstanceAlwaysOnTop)
-TEST_PPAPI_IN_PROCESS(Flash_GetProxyForURL)
 TEST_PPAPI_IN_PROCESS(Flash_GetLocalTimeZoneOffset)
 TEST_PPAPI_IN_PROCESS(Flash_GetCommandLineArgs)
 TEST_PPAPI_IN_PROCESS(Flash_GetSetting)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_SetInstanceAlwaysOnTop)
-TEST_PPAPI_OUT_OF_PROCESS(Flash_GetProxyForURL)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetLocalTimeZoneOffset)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetCommandLineArgs)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetSetting)
@@ -895,6 +893,7 @@ TEST_PPAPI_OUT_OF_PROCESS(MessageLoop_Post)
 #endif
 
 // Going forward, Flash APIs will only work out-of-process.
+TEST_PPAPI_OUT_OF_PROCESS(Flash_GetProxyForURL)
 TEST_PPAPI_OUT_OF_PROCESS(FlashClipboard)
 TEST_PPAPI_OUT_OF_PROCESS(FlashFile_CreateTemporaryFile)
 // Mac/Aura reach NOTIMPLEMENTED/time out.

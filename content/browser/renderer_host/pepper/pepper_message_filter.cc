@@ -45,12 +45,6 @@
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
 #include "ppapi/shared_impl/private/ppb_host_resolver_shared.h"
 
-#ifdef OS_WIN
-#include <windows.h>
-#elif defined(OS_MACOSX)
-#include <CoreServices/CoreServices.h>
-#endif
-
 using ppapi::NetAddressPrivateImpl;
 
 namespace content {
@@ -190,7 +184,6 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
                         OnX509CertificateParseDER);
 
     // Flash messages.
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_UpdateActivity, OnUpdateActivity)
     IPC_MESSAGE_HANDLER(PepperMsg_GetLocalDataRestrictions,
                         OnGetLocalDataRestrictions)
 
@@ -708,22 +701,6 @@ void PepperMessageFilter::OnX509CertificateParseDER(
     *succeeded = false;
   *succeeded = PepperTCPSocket::GetCertificateFields(&der[0], der.size(),
                                                      result);
-}
-
-void PepperMessageFilter::OnUpdateActivity() {
-#if defined(OS_WIN)
-  // Reading then writing back the same value to the screensaver timeout system
-  // setting resets the countdown which prevents the screensaver from turning
-  // on "for a while". As long as the plugin pings us with this message faster
-  // than the screensaver timeout, it won't go on.
-  int value = 0;
-  if (SystemParametersInfo(SPI_GETSCREENSAVETIMEOUT, 0, &value, 0))
-    SystemParametersInfo(SPI_SETSCREENSAVETIMEOUT, value, NULL, 0);
-#elif defined(OS_MACOSX)
-  UpdateSystemActivity(OverallAct);
-#else
-  // TODO(brettw) implement this for other platforms.
-#endif
 }
 
 void PepperMessageFilter::OnGetLocalDataRestrictions(

@@ -106,8 +106,6 @@ bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgSetInstanceAlwaysOnTop)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_DrawGlyphs,
                         OnHostMsgDrawGlyphs)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetProxyForURL,
-                        OnHostMsgGetProxyForURL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_Navigate, OnHostMsgNavigate)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetLocalTimeZoneOffset,
                         OnHostMsgGetLocalTimeZoneOffset)
@@ -176,13 +174,6 @@ PP_Bool PPB_Flash_Proxy::DrawGlyphs(PP_Instance instance,
   dispatcher()->Send(new PpapiHostMsg_PPBFlash_DrawGlyphs(
       API_ID_PPB_FLASH, instance, params, &result));
   return result;
-}
-
-PP_Var PPB_Flash_Proxy::GetProxyForURL(PP_Instance instance, const char* url) {
-  ReceiveSerializedVarReturnValue result;
-  dispatcher()->Send(new PpapiHostMsg_PPBFlash_GetProxyForURL(
-      API_ID_PPB_FLASH, instance, url, &result));
-  return result.Return(dispatcher());
 }
 
 int32_t PPB_Flash_Proxy::Navigate(PP_Instance instance,
@@ -261,11 +252,6 @@ PP_Bool PPB_Flash_Proxy::IsRectTopmost(PP_Instance instance,
   return result;
 }
 
-void PPB_Flash_Proxy::UpdateActivity(PP_Instance instance) {
-  PluginGlobals::Get()->GetBrowserSender()->Send(
-      new PpapiHostMsg_PPBFlash_UpdateActivity(API_ID_PPB_FLASH));
-}
-
 PP_Var PPB_Flash_Proxy::GetSetting(PP_Instance instance,
                                    PP_FlashSetting setting) {
   PluginDispatcher* plugin_dispatcher =
@@ -292,21 +278,6 @@ PP_Var PPB_Flash_Proxy::GetSetting(PP_Instance instance,
     }
   }
   return PP_MakeUndefined();
-}
-
-PP_Bool PPB_Flash_Proxy::SetCrashData(PP_Instance instance,
-                                      PP_FlashCrashKey key,
-                                      PP_Var value) {
-  switch (key) {
-    case PP_FLASHCRASHKEY_URL:
-      StringVar *url_string_var(StringVar::FromPPVar(value));
-      if (!url_string_var)
-        return PP_FALSE;
-      std::string url_string(url_string_var->value());
-      PluginGlobals::Get()->SetActiveURL(url_string);
-      return PP_TRUE;
-  }
-  return PP_FALSE;
 }
 
 bool PPB_Flash_Proxy::CreateThreadAdapterForInstance(PP_Instance instance) {
@@ -525,19 +496,6 @@ void PPB_Flash_Proxy::OnHostMsgDrawGlyphs(
 
   // SetToPPFontDescription() creates a var which is owned by the caller.
   PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(font_desc.face);
-}
-
-void PPB_Flash_Proxy::OnHostMsgGetProxyForURL(PP_Instance instance,
-                                              const std::string& url,
-                                              SerializedVarReturnValue result) {
-  EnterInstanceNoLock enter(instance);
-  if (enter.succeeded()) {
-    result.Return(dispatcher(),
-                  enter.functions()->GetFlashAPI()->GetProxyForURL(
-                      instance, url.c_str()));
-  } else {
-    result.Return(dispatcher(), PP_MakeUndefined());
-  }
 }
 
 void PPB_Flash_Proxy::OnHostMsgNavigate(PP_Instance instance,

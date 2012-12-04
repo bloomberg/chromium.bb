@@ -1398,14 +1398,6 @@ void PepperPluginDelegateImpl::ZoomLimitsChanged(double minimum_factor,
   render_view_->webview()->zoomLimitsChanged(minimum_level, maximum_level);
 }
 
-std::string PepperPluginDelegateImpl::ResolveProxy(const GURL& url) {
-  bool result;
-  std::string proxy_result;
-  RenderThreadImpl::current()->Send(
-      new ViewHostMsg_ResolveProxy(url, &result, &proxy_result));
-  return proxy_result;
-}
-
 void PepperPluginDelegateImpl::DidStartLoading() {
   render_view_->DidStartLoadingForPlugin();
 }

@@ -620,10 +620,6 @@ class PluginDelegate {
   virtual void ZoomLimitsChanged(double minimum_factor,
                                  double maximum_factor) = 0;
 
-  // Retrieves the proxy information for the given URL in PAC format. On error,
-  // this will return an empty string.
-  virtual std::string ResolveProxy(const GURL& url) = 0;
-
   // Tell the browser when resource loading starts/ends.
   virtual void DidStartLoading() = 0;
   virtual void DidStopLoading() = 0;

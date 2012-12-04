@@ -64,7 +64,6 @@ class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
                              uint32_t glyph_count,
                              const uint16_t glyph_indices[],
                              const PP_Point glyph_advances[]) OVERRIDE;
-  virtual PP_Var GetProxyForURL(PP_Instance instance, const char* url) OVERRIDE;
   virtual int32_t Navigate(PP_Instance instance,
                            PP_Resource request_info,
                            const char* target,
@@ -77,12 +76,8 @@ class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
                                         PP_Time t) OVERRIDE;
   virtual PP_Bool IsRectTopmost(PP_Instance instance,
                                 const PP_Rect* rect) OVERRIDE;
-  virtual void UpdateActivity(PP_Instance instance) OVERRIDE;
   virtual PP_Var GetSetting(PP_Instance instance,
                             PP_FlashSetting setting) OVERRIDE;
-  virtual PP_Bool SetCrashData(PP_Instance instance,
-                               PP_FlashCrashKey key,
-                               PP_Var value) OVERRIDE;
   virtual bool CreateThreadAdapterForInstance(PP_Instance instance) OVERRIDE;
   virtual void ClearThreadAdapterForInstance(PP_Instance instance) OVERRIDE;
   virtual int32_t OpenFile(PP_Instance instance,
@@ -121,9 +116,6 @@ class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
   void OnHostMsgDrawGlyphs(PP_Instance instance,
                            const PPBFlash_DrawGlyphs_Params& params,
                            PP_Bool* result);
-  void OnHostMsgGetProxyForURL(PP_Instance instance,
-                               const std::string& url,
-                               SerializedVarReturnValue result);
   void OnHostMsgNavigate(PP_Instance instance,
                          const URLRequestInfoData& data,
                          const std::string& target,

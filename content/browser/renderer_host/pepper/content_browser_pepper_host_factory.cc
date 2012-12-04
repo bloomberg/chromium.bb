@@ -5,11 +5,13 @@
 #include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
 
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
+#include "content/browser/renderer_host/pepper/pepper_flash_browser_host.h"
 #include "content/browser/renderer_host/pepper/pepper_gamepad_host.h"
 #include "content/browser/renderer_host/pepper/pepper_print_settings_manager.h"
 #include "content/browser/renderer_host/pepper/pepper_printing_host.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
 
 using ppapi::host::ResourceHost;
 
@@ -42,8 +44,7 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
   }
 
   // Dev interfaces.
-  if (host_->GetPpapiHost()->permissions().HasPermission(
-          ppapi::PERMISSION_DEV)) {
+  if (GetPermissions().HasPermission(ppapi::PERMISSION_DEV)) {
     switch (message.type()) {
       case PpapiHostMsg_Printing_Create::ID: {
          scoped_ptr<PepperPrintSettingsManager> manager(
@@ -54,7 +55,22 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
       }
     }
   }
+
+  // Flash interfaces.
+  if (GetPermissions().HasPermission(ppapi::PERMISSION_FLASH)) {
+    switch (message.type()) {
+      case PpapiHostMsg_Flash_Create::ID:
+        return scoped_ptr<ResourceHost>(new PepperFlashBrowserHost(
+            host_, instance, params.pp_resource()));
+    }
+  }
+
   return scoped_ptr<ResourceHost>();
+}
+
+const ppapi::PpapiPermissions&
+ContentBrowserPepperHostFactory::GetPermissions() const {
+  return host_->GetPpapiHost()->permissions();
 }
 
 }  // namespace content

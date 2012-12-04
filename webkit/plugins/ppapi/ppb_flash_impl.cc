@@ -156,18 +156,6 @@ PP_Bool PPB_Flash_Impl::DrawGlyphs(PP_Instance instance,
   return PP_TRUE;
 }
 
-PP_Var PPB_Flash_Impl::GetProxyForURL(PP_Instance instance,
-                                      const char* url) {
-  GURL gurl(url);
-  if (!gurl.is_valid())
-    return PP_MakeUndefined();
-
-  std::string proxy_host = instance_->delegate()->ResolveProxy(gurl);
-  if (proxy_host.empty())
-    return PP_MakeUndefined();  // No proxy.
-  return StringVar::StringToPPVar(proxy_host);
-}
-
 int32_t PPB_Flash_Impl::Navigate(PP_Instance instance,
                                  PP_Resource request_info,
                                  const char* target,
@@ -210,10 +198,6 @@ PP_Bool PPB_Flash_Impl::IsRectTopmost(PP_Instance instance,
                 rect->size.width, rect->size.height)));
 }
 
-void PPB_Flash_Impl::UpdateActivity(PP_Instance pp_instance) {
-  // Not supported in-process.
-}
-
 PP_Var PPB_Flash_Impl::GetSetting(PP_Instance instance,
                                   PP_FlashSetting setting) {
   switch(setting) {
@@ -227,13 +211,6 @@ PP_Var PPB_Flash_Impl::GetSetting(PP_Instance instance,
       // No other settings are supported in-process.
       return PP_MakeUndefined();
   }
-}
-
-PP_Bool PPB_Flash_Impl::SetCrashData(PP_Instance instance,
-                                     PP_FlashCrashKey key,
-                                     PP_Var value) {
-  // Not implemented in process.
-  return PP_FALSE;
 }
 
 bool PPB_Flash_Impl::CreateThreadAdapterForInstance(PP_Instance instance) {

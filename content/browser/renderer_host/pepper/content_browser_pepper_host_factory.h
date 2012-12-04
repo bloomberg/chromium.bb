@@ -8,6 +8,10 @@
 #include "base/compiler_specific.h"
 #include "ppapi/host/host_factory.h"
 
+namespace ppapi {
+class PpapiPermissions;
+}
+
 namespace content {
 
 class BrowserPpapiHostImpl;
@@ -25,6 +29,8 @@ class ContentBrowserPepperHostFactory : public ppapi::host::HostFactory {
       const IPC::Message& message) OVERRIDE;
 
  private:
+  const ppapi::PpapiPermissions& GetPermissions() const;
+
   // Non-owning pointer.
   BrowserPpapiHostImpl* host_;
 

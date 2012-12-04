@@ -8,7 +8,7 @@
 #include "content/renderer/pepper/pepper_audio_input_host.h"
 #include "content/renderer/pepper/pepper_file_chooser_host.h"
 #include "content/renderer/pepper/pepper_flash_clipboard_host.h"
-#include "content/renderer/pepper/pepper_flash_host.h"
+#include "content/renderer/pepper/pepper_flash_renderer_host.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 #include "content/renderer/pepper/pepper_video_capture_host.h"
 #include "content/renderer/pepper/pepper_websocket_host.h"
@@ -82,7 +82,7 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
   if (GetPermissions().HasPermission(ppapi::PERMISSION_FLASH)) {
     switch (message.type()) {
       case PpapiHostMsg_Flash_Create::ID:
-        return scoped_ptr<ResourceHost>(new PepperFlashHost(
+        return scoped_ptr<ResourceHost>(new PepperFlashRendererHost(
             host_, instance, params.pp_resource()));
       case PpapiHostMsg_FlashClipboard_Create::ID:
         return scoped_ptr<ResourceHost>(new PepperFlashClipboardHost(

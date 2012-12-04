@@ -40,7 +40,6 @@ class PPAPI_THUNK_EXPORT PPB_Flash_API {
                              uint32_t glyph_count,
                              const uint16_t glyph_indices[],
                              const PP_Point glyph_advances[]) = 0;
-  virtual PP_Var GetProxyForURL(PP_Instance instance, const char* url) = 0;
 
   // External function that takes a PPB_URLRequestInfo resource.
   virtual int32_t Navigate(PP_Instance instance,
@@ -56,11 +55,7 @@ class PPAPI_THUNK_EXPORT PPB_Flash_API {
 
   virtual double GetLocalTimeZoneOffset(PP_Instance instance, PP_Time t) = 0;
   virtual PP_Bool IsRectTopmost(PP_Instance instance, const PP_Rect* rect) = 0;
-  virtual void UpdateActivity(PP_Instance instance) = 0;
   virtual PP_Var GetSetting(PP_Instance instance, PP_FlashSetting setting) = 0;
-  virtual PP_Bool SetCrashData(PP_Instance instance,
-                               PP_FlashCrashKey key,
-                               PP_Var value) = 0;
 
   // FlashFile_ModuleLocal.
   virtual bool CreateThreadAdapterForInstance(PP_Instance instance) = 0;

@@ -5,6 +5,9 @@
 #ifndef PPAPI_PROXY_FLASH_RESOURCE_H_
 #define PPAPI_PROXY_FLASH_RESOURCE_H_
 
+#include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_var.h"
+#include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
@@ -20,9 +23,16 @@ class PPAPI_PROXY_EXPORT FlashResource
   FlashResource(Connection connection, PP_Instance instance);
   virtual ~FlashResource();
 
-  // Resource overrides.
+  // Resource override.
   virtual thunk::PPB_Flash_Functions_API* AsPPB_Flash_Functions_API() OVERRIDE;
 
+  // PPB_Flash_Functions_API implementation.
+  virtual PP_Var GetProxyForURL(PP_Instance instance,
+                                const std::string& url) OVERRIDE;
+  virtual void UpdateActivity(PP_Instance instance) OVERRIDE;
+  virtual PP_Bool SetCrashData(PP_Instance instance,
+                               PP_FlashCrashKey key,
+                               PP_Var value) OVERRIDE;
  private:
   DISALLOW_COPY_AND_ASSIGN(FlashResource);
 };

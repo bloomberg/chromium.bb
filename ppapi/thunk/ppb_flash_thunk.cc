@@ -48,10 +48,10 @@ PP_Bool DrawGlyphs(PP_Instance instance,
 }
 
 PP_Var GetProxyForURL(PP_Instance instance, const char* url) {
-  EnterInstance enter(instance);
+  EnterInstanceAPI<PPB_Flash_Functions_API> enter(instance);
   if (enter.failed())
     return PP_MakeUndefined();
-  return enter.functions()->GetFlashAPI()->GetProxyForURL(instance, url);
+  return enter.functions()->GetProxyForURL(instance, url);
 }
 
 int32_t Navigate(PP_Resource request_id,
@@ -119,10 +119,10 @@ int32_t InvokePrinting(PP_Instance instance) {
 }
 
 void UpdateActivity(PP_Instance instance) {
-  EnterInstance enter(instance);
+  EnterInstanceAPI<PPB_Flash_Functions_API> enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->GetFlashAPI()->UpdateActivity(instance);
+  enter.functions()->UpdateActivity(instance);
 }
 
 PP_Var GetDeviceID(PP_Instance instance) {
@@ -147,10 +147,10 @@ PP_Var GetSetting(PP_Instance instance, PP_FlashSetting setting) {
 PP_Bool SetCrashData(PP_Instance instance,
                      PP_FlashCrashKey key,
                      PP_Var value) {
-  EnterInstance enter(instance);
+  EnterInstanceAPI<PPB_Flash_Functions_API> enter(instance);
   if (enter.failed())
     return PP_FALSE;
-  return enter.functions()->GetFlashAPI()->SetCrashData(instance, key, value);
+  return enter.functions()->SetCrashData(instance, key, value);
 }
 
 int32_t EnumerateVideoCaptureDevices(PP_Instance instance,
