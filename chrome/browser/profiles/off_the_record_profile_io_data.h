@@ -17,9 +17,6 @@
 class ChromeURLRequestContext;
 class ChromeURLRequestContextGetter;
 class Profile;
-namespace net {
-class HttpServerPropertiesImpl;
-}  // namespace net
 
 // OffTheRecordProfile owns a OffTheRecordProfileIOData::Handle, which holds a
 // reference to the OffTheRecordProfileIOData. OffTheRecordProfileIOData is
@@ -126,8 +123,6 @@ class OffTheRecordProfileIOData : public ProfileIOData {
 
   virtual chrome_browser_net::LoadTimeStats* GetLoadTimeStats(
       IOThread::Globals* io_thread_globals) const OVERRIDE;
-
-  mutable scoped_ptr<net::HttpServerPropertiesImpl> http_server_properties_;
 
   mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
   mutable scoped_ptr<net::FtpTransactionFactory> ftp_factory_;

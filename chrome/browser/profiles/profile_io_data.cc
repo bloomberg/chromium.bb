@@ -34,7 +34,6 @@
 #include "chrome/browser/net/chrome_http_user_agent_settings.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
-#include "chrome/browser/net/http_server_properties_manager.h"
 #include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/resource_prefetch_predictor_observer.h"
@@ -471,14 +470,13 @@ bool ProfileIOData::GetMetricsEnabledStateOnIOThread() const {
 #endif  // defined(OS_CHROMEOS)
 }
 
-chrome_browser_net::HttpServerPropertiesManager*
-    ProfileIOData::http_server_properties_manager() const {
-  return http_server_properties_manager_.get();
+net::HttpServerProperties* ProfileIOData::http_server_properties() const {
+  return http_server_properties_.get();
 }
 
-void ProfileIOData::set_http_server_properties_manager(
-    chrome_browser_net::HttpServerPropertiesManager* manager) const {
-  http_server_properties_manager_.reset(manager);
+void ProfileIOData::set_http_server_properties(
+    net::HttpServerProperties* http_server_properties) const {
+  http_server_properties_.reset(http_server_properties);
 }
 
 ProfileIOData::ResourceContext::ResourceContext(ProfileIOData* io_data)

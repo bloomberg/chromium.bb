@@ -182,8 +182,8 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
       io_thread_globals->throttler_manager.get());
 
   // For incognito, we use the default non-persistent HttpServerPropertiesImpl.
-  http_server_properties_.reset(new net::HttpServerPropertiesImpl);
-  main_context->set_http_server_properties(http_server_properties_.get());
+  set_http_server_properties(new net::HttpServerPropertiesImpl);
+  main_context->set_http_server_properties(http_server_properties());
 
   // For incognito, we use a non-persistent server bound cert store.
   net::ServerBoundCertService* server_bound_cert_service =

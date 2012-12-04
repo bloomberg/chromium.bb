@@ -60,8 +60,8 @@ ProfileImplIOData::Handle::~Handle() {
     io_data_->predictor_->ShutdownOnUIThread(user_prefs);
   }
 
-  if (io_data_->http_server_properties_manager())
-    io_data_->http_server_properties_manager()->ShutdownOnUIThread();
+  if (io_data_->http_server_properties_manager_)
+    io_data_->http_server_properties_manager_->ShutdownOnUIThread();
   io_data_->ShutdownOnUIThread();
 }
 
@@ -267,8 +267,10 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
   // below try to get the ResourceContext pointer.
   initialized_ = true;
   PrefService* pref_service = profile_->GetPrefs();
-  io_data_->set_http_server_properties_manager(
-      new chrome_browser_net::HttpServerPropertiesManager(pref_service));
+  io_data_->http_server_properties_manager_ =
+      new chrome_browser_net::HttpServerPropertiesManager(pref_service);
+  io_data_->set_http_server_properties(
+      io_data_->http_server_properties_manager_);
   io_data_->session_startup_pref()->Init(
       prefs::kRestoreOnStartup, pref_service);
   io_data_->session_startup_pref()->MoveToThread(
@@ -316,8 +318,8 @@ void ProfileImplIOData::LazyInitializeInternal(
 
   ApplyProfileParamsToContext(main_context);
 
-  if (http_server_properties_manager())
-    http_server_properties_manager()->InitializeOnIOThread();
+  if (http_server_properties_manager_)
+    http_server_properties_manager_->InitializeOnIOThread();
 
   main_context->set_transport_security_state(transport_security_state());
 
@@ -325,7 +327,7 @@ void ProfileImplIOData::LazyInitializeInternal(
 
   main_context->set_network_delegate(network_delegate());
 
-  main_context->set_http_server_properties(http_server_properties_manager());
+  main_context->set_http_server_properties(http_server_properties());
 
   main_context->set_host_resolver(
       io_thread_globals->host_resolver.get());
@@ -680,6 +682,6 @@ void ProfileImplIOData::ClearNetworkingHistorySinceOnIOThread(
 
   DCHECK(transport_security_state());
   transport_security_state()->DeleteSince(time);  // Completes synchronously.
-  DCHECK(http_server_properties_manager());
-  http_server_properties_manager()->Clear(completion);
+  DCHECK(http_server_properties_manager_);
+  http_server_properties_manager_->Clear(completion);
 }

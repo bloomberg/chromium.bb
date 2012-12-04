@@ -35,13 +35,13 @@ class TransportSecurityPersister;
 
 namespace chrome_browser_net {
 class LoadTimeStats;
-class HttpServerPropertiesManager;
 class ResourcePrefetchPredictorObserver;
 }
 
 namespace net {
 class CookieStore;
 class FraudulentCertificateReporter;
+class HttpServerProperties;
 class HttpTransactionFactory;
 class ServerBoundCertService;
 class ProxyConfigService;
@@ -142,9 +142,6 @@ class ProfileIOData {
   net::TransportSecurityState* transport_security_state() const {
     return transport_security_state_.get();
   }
-
-  chrome_browser_net::HttpServerPropertiesManager*
-      http_server_properties_manager() const;
 
   bool is_incognito() const {
     return is_incognito_;
@@ -284,8 +281,10 @@ class ProfileIOData {
     return proxy_service_.get();
   }
 
-  void set_http_server_properties_manager(
-      chrome_browser_net::HttpServerPropertiesManager* manager) const;
+  net::HttpServerProperties* http_server_properties() const;
+
+  void set_http_server_properties(
+      net::HttpServerProperties* http_server_properties) const;
 
   ChromeURLRequestContext* main_request_context() const {
     return main_request_context_.get();
@@ -439,8 +438,8 @@ class ProfileIOData {
       fraudulent_certificate_reporter_;
   mutable scoped_ptr<net::ProxyService> proxy_service_;
   mutable scoped_ptr<net::TransportSecurityState> transport_security_state_;
-  mutable scoped_ptr<chrome_browser_net::HttpServerPropertiesManager>
-      http_server_properties_manager_;
+  mutable scoped_ptr<net::HttpServerProperties>
+      http_server_properties_;
 
 #if defined(ENABLE_NOTIFICATIONS)
   mutable DesktopNotificationService* notification_service_;

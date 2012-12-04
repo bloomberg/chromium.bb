@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 
 namespace chrome_browser_net {
+class HttpServerPropertiesManager;
 class Predictor;
 }  // namespace chrome_browser_net
 
@@ -190,6 +191,11 @@ class ProfileImplIOData : public ProfileIOData {
 
   mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
   mutable scoped_ptr<net::FtpTransactionFactory> ftp_factory_;
+
+  // Same as |ProfileIOData::http_server_properties_|, owned there to maintain
+  // destruction ordering.
+  mutable chrome_browser_net::HttpServerPropertiesManager*
+    http_server_properties_manager_;
 
   mutable scoped_ptr<chrome_browser_net::Predictor> predictor_;
 
