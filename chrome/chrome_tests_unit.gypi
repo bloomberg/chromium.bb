@@ -147,8 +147,6 @@
         'browser/prefs/pref_observer_mock.h',
         'browser/prefs/pref_service_mock_builder.cc',
         'browser/prefs/pref_service_mock_builder.h',
-        'browser/printing/print_preview_test.cc',
-        'browser/printing/print_preview_test.h',
         'browser/protector/mock_protector_service.cc',
         'browser/protector/mock_protector_service.h',
         'browser/protector/mock_setting_change.cc',
@@ -974,6 +972,8 @@
         'browser/printing/print_dialog_cloud_unittest.cc',
         'browser/printing/print_job_unittest.cc',
         'browser/printing/print_preview_tab_controller_unittest.cc',
+        'browser/printing/print_preview_test.cc',
+        'browser/printing/print_preview_test.h',
         'browser/process_info_snapshot_mac_unittest.cc',
         'browser/process_singleton_linux_unittest.cc',
         'browser/process_singleton_mac_unittest.cc',
@@ -1654,6 +1654,7 @@
             '../tools/json_schema_compiler/test/json_schema_compiler_tests.gyp:json_schema_compiler_tests',
             '../ui/gl/gl.gyp:gl',
             '../v8/tools/gyp/v8.gyp:v8',
+            '../webkit/webkit.gyp:test_shell_test_support',
           ],
           # TODO(scr): Use this in browser_tests too.
           'includes': [

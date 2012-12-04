@@ -15,7 +15,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/plugins/npapi/mock_plugin_list.cc"
+#include "webkit/plugins/npapi/mock_plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
 
 using content::BrowserThread;
