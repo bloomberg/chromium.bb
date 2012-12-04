@@ -109,7 +109,12 @@ PluginPlaceholder* PluginPlaceholder::CreateMissingPlugin(
           IDR_BLOCKED_PLUGIN_HTML));
 
   DictionaryValue values;
+#if defined(ENABLE_PLUGIN_INSTALLATION)
   values.SetString("message", l10n_util::GetStringUTF8(IDS_PLUGIN_SEARCHING));
+#else
+  values.SetString("message",
+      l10n_util::GetStringUTF8(IDS_PLUGIN_NOT_SUPPORTED));
+#endif
 
   std::string html_data =
       jstemplate_builder::GetI18nTemplateHtml(template_html, &values);
@@ -122,8 +127,6 @@ PluginPlaceholder* PluginPlaceholder::CreateMissingPlugin(
   RenderThread::Get()->Send(new ChromeViewHostMsg_FindMissingPlugin(
       missing_plugin->routing_id(), missing_plugin->CreateRoutingId(),
       params.mimeType.utf8()));
-#else
-  missing_plugin->OnDidNotFindMissingPlugin();
 #endif
   return missing_plugin;
 }
@@ -407,11 +410,11 @@ void PluginPlaceholder::WillDestroyPlugin() {
   delete this;
 }
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
 void PluginPlaceholder::OnDidNotFindMissingPlugin() {
   SetMessage(l10n_util::GetStringUTF16(IDS_PLUGIN_NOT_FOUND));
 }
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
 void PluginPlaceholder::OnFoundMissingPlugin(const string16& plugin_name) {
   if (status_->value == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound)
     SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_FOUND, plugin_name));

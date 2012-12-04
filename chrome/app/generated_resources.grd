@@ -7188,7 +7188,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGIN_UPDATE" desc="The link for updating an outdated plug-in.">
         Update plug-in...
       </message>
-      <message name="IDS_PLUGIN_NOT_SUPPORTED" desc="The placeholder text for a plug-in that can't run in Windows Metro mode.">
+      <message name="IDS_PLUGIN_NOT_SUPPORTED_METRO" desc="The placeholder text for a plug-in that can't run in Windows Metro mode.">
         This plug-in only works on the desktop.
       </message>
       <message name="IDS_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plug-in.">
@@ -7202,6 +7202,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_PLUGIN_NOT_AUTHORIZED" desc="The placeholder text for a plug-in that requires user permission to run.">
         <ph name="PLUGIN_NAME">$1<ex>Java</ex></ph> needs your permission to run.
+      </message>
+      <message name="IDS_PLUGIN_NOT_SUPPORTED" desc="The placeholder text for an unsupported plug-in.">
+        This plug-in is not supported.
       </message>
       <message name="IDS_PLUGIN_NOT_FOUND" desc="The placeholder text for an unknown plug-in that is not installed.">
         No plug-in available to display this content.
