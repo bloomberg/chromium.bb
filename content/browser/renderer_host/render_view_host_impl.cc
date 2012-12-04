@@ -1711,9 +1711,9 @@ void RenderViewHostImpl::FilterURL(ChildProcessSecurityPolicyImpl* policy,
     return;
 
   // The browser process should never hear the swappedout:// URL from any
-  // of the renderer's messages.  Check for this in debug builds, but don't
-  // let it crash a release browser.
-  DCHECK(GURL(kSwappedOutURL) != *url);
+  // of the renderer's messages.  Temporarily CHECK on a canary build to see if
+  // it's still happening in the wild.
+  CHECK(GURL(kSwappedOutURL) != *url);
 
   if (!url->is_valid()) {
     // Have to use about:blank for the denied case, instead of an empty GURL.
