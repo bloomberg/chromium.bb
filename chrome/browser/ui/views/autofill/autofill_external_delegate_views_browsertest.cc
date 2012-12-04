@@ -71,18 +71,20 @@ IN_PROC_BROWSER_TEST_F(AutofillExternalDelegateViewsBrowserTest,
   EXPECT_TRUE(autofill_external_delegate_->popup_hidden_);
 }
 
+// See http://crbug.com/164019
+#if !defined(USE_AURA)
 IN_PROC_BROWSER_TEST_F(AutofillExternalDelegateViewsBrowserTest,
                        CloseWidgetAndNoLeaking) {
   autofill::GenerateTestAutofillPopup(autofill_external_delegate_.get());
-
   // Delete the widget to ensure that the external delegate can handle the
-  // popup getting deleted elsewhere and the .
+  // popup getting deleted elsewhere.
   views::Widget* popup_widget =
       autofill_external_delegate_->popup_view()->GetWidget();
   popup_widget->CloseNow();
 
   EXPECT_TRUE(autofill_external_delegate_->popup_hidden_);
 }
+#endif  // !defined(USE_AURA)
 
 IN_PROC_BROWSER_TEST_F(AutofillExternalDelegateViewsBrowserTest,
                        HandlePopupClosingAndChangingPages) {
