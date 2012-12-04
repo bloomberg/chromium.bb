@@ -302,7 +302,7 @@
         }],
         ['use_ash==1', {
           'dependencies': [
-            '../ash/ash.gyp:test_support_ash',
+            '../ash/ash.gyp:ash_test_support',
           ],
         }],
         ['chromeos==1', {
@@ -1348,7 +1348,7 @@
         }],
         ['use_ash==1', {
           'dependencies': [
-            '../ash/ash.gyp:test_support_ash',
+            '../ash/ash.gyp:ash_test_support',
           ],
         }],
         ['chromeos==0', {

@@ -211,7 +211,7 @@
         }],
         ['use_aura==1', {
           'dependencies': [
-            '../ui/aura/aura.gyp:test_support_aura',
+            '../ui/aura/aura.gyp:aura_test_support',
             '../ui/compositor/compositor.gyp:compositor',
           ],
         }],

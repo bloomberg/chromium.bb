@@ -591,7 +591,7 @@
       'conditions': [
         ['use_aura==1', {
           'dependencies': [
-            '../aura/aura.gyp:test_support_aura',
+            '../aura/aura.gyp:aura_test_support',
             '../compositor/compositor.gyp:compositor',
           ],
         }, {  # use_aura==0
@@ -725,7 +725,7 @@
         }],
         [ 'use_aura==1', {
           'dependencies': [
-            '../aura/aura.gyp:test_support_aura',
+            '../aura/aura.gyp:aura_test_support',
           ],
           'sources/': [
             ['exclude', 'controls/table/table_view_unittest.cc'],

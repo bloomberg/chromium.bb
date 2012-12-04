@@ -121,7 +121,7 @@
       ],
     },
     {
-      'target_name': 'test_support_aura',
+      'target_name': 'aura_test_support',
       'type': 'static_library',
       'dependencies': [
         '../../skia/skia.gyp:skia',
@@ -129,7 +129,7 @@
         '../ui.gyp:ui',
         '../ui.gyp:ui_test_support',
         'aura',
-        'test_support_aura_pak',
+        'aura_test_support_pak',
       ],
       'include_dirs': [
         '..',
@@ -158,8 +158,8 @@
       ],
     },
     {
-      # We build a minimal set of resources required for test_support_aura.
-      'target_name': 'test_support_aura_pak',
+      # We build a minimal set of resources required for aura_test_support.
+      'target_name': 'aura_test_support_pak',
       'type': 'none',
       'dependencies': [
         '<(DEPTH)/ui/ui.gyp:ui_resources',
@@ -169,7 +169,7 @@
       },
       'actions': [
         {
-          'action_name': 'repack_test_support_aura_pack',
+          'action_name': 'repack_aura_test_support_pack',
           'variables': {
             'pak_inputs': [
               '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.pak',
@@ -180,7 +180,7 @@
             '<@(pak_inputs)',
           ],
           'outputs': [
-            '<(PRODUCT_DIR)/test_support_aura_resources.pak',
+            '<(PRODUCT_DIR)/aura_test_support_resources.pak',
           ],
           'action': ['python', '<(repack_path)', '<@(_outputs)',
                      '<@(pak_inputs)'],
@@ -202,7 +202,7 @@
         '../ui.gyp:ui_resources',
         '../../ipc/ipc.gyp:ipc',
         'aura',
-        'test_support_aura',
+        'aura_test_support',
       ],
       'include_dirs': [
         '..',
@@ -225,7 +225,7 @@
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
         'aura',
-        'test_support_aura',
+        'aura_test_support',
       ],
       'include_dirs': [
         '..',
@@ -248,7 +248,7 @@
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
         '../ui.gyp:ui_test_support',
-        'test_support_aura',
+        'aura_test_support',
         'aura',
       ],
       'include_dirs': [

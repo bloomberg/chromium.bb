@@ -457,7 +457,7 @@
       ],
     },
     {
-      'target_name': 'test_support_ash',
+      'target_name': 'ash_test_support',
       'type': 'static_library',
       'dependencies': [
         '../skia/skia.gyp:skia',
@@ -502,7 +502,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../ui/aura/aura.gyp:aura',
-        '../ui/aura/aura.gyp:test_support_aura',
+        '../ui/aura/aura.gyp:aura_test_support',
         '../ui/app_list/app_list.gyp:app_list',
         '../ui/compositor/compositor.gyp:compositor',
         '../ui/compositor/compositor.gyp:compositor_test_support',
@@ -516,7 +516,7 @@
         '../ui/views/views.gyp:views_with_content_test_support',
         'ash',
         'ash_resources',
-        'test_support_ash',
+        'ash_test_support',
       ],
       'sources': [
         '../ui/views/test/test_views_delegate.cc',

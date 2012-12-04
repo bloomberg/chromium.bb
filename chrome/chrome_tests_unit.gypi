@@ -1741,7 +1741,7 @@
           ],
           'dependencies': [
             '../ash/ash.gyp:ash_resources',
-            '../ash/ash.gyp:test_support_ash',
+            '../ash/ash.gyp:ash_test_support',
           ],
           # We eventually want to compile both in Win Aura builds, see
           # http://crbug.com/155545.
@@ -1759,7 +1759,7 @@
         }],
         ['use_aura==1', {
           'dependencies': [
-            '../ui/aura/aura.gyp:test_support_aura',
+            '../ui/aura/aura.gyp:aura_test_support',
           ],
           'sources/': [
             ['exclude', '^browser/automation/automation_provider_unittest.cc'],
@@ -1935,7 +1935,7 @@
           'dependencies': [
             '../build/linux/system.gyp:dbus',
             '../dbus/dbus.gyp:dbus_test_support',
-            '../ui/aura/aura.gyp:test_support_aura',
+            '../ui/aura/aura.gyp:aura_test_support',
           ],
         }],
         ['OS=="linux" and branding=="Chrome" and target_arch=="ia32"', {
