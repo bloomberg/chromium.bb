@@ -147,8 +147,10 @@ bool RecentTabsSubMenuModel::IsCommandIdChecked(int command_id) const {
 bool RecentTabsSubMenuModel::IsCommandIdEnabled(int command_id) const {
   if (command_id == IDC_RESTORE_TAB)
     return chrome::IsCommandEnabled(browser_, command_id);
-  if (command_id == kDisabledCommandId)
+  if (command_id == kDisabledCommandId ||
+      command_id == IDC_RECENT_TABS_NO_DEVICE_TABS) {
     return false;
+  }
   int model_index = CommandIdToModelIndex(command_id);
   return model_index >= 0 && model_index < static_cast<int>(model_.size());
 }
@@ -193,7 +195,9 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
     return;
   }
 
-  DCHECK(command_id != kDisabledCommandId);
+  DCHECK_NE(kDisabledCommandId, command_id);
+  DCHECK_NE(IDC_RECENT_TABS_NO_DEVICE_TABS, command_id);
+
   int model_idx = CommandIdToModelIndex(command_id);
   DCHECK(model_idx >= 0 && model_idx < static_cast<int>(model_.size()));
   const NavigationItem& item = model_[model_idx];
@@ -233,6 +237,15 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
   }
 }
 
+int RecentTabsSubMenuModel::GetMaxWidthForItemAtIndex(int item_index) const {
+  int command_id = GetCommandIdAt(item_index);
+  if (command_id == IDC_RECENT_TABS_NO_DEVICE_TABS ||
+      command_id == IDC_RESTORE_TAB) {
+    return -1;
+  }
+  return 320;
+}
+
 void RecentTabsSubMenuModel::Build() {
   // The menu contains:
   // - Reopen closed tab, then separator
@@ -243,8 +256,10 @@ void RecentTabsSubMenuModel::Build() {
   // other devices.
   BuildLastClosed();
   BuildDevices();
-  if (model_.empty())
-    AddItemWithStringId(kDisabledCommandId, IDS_RECENT_TABS_NO_DEVICE_TABS);
+  if (model_.empty()) {
+    AddItemWithStringId(IDC_RECENT_TABS_NO_DEVICE_TABS,
+                        IDS_RECENT_TABS_NO_DEVICE_TABS);
+  }
 }
 
 void RecentTabsSubMenuModel::BuildLastClosed() {

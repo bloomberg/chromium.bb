@@ -52,6 +52,8 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   virtual void ExecuteCommand(int command_id) OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
+  int GetMaxWidthForItemAtIndex(int item_index) const;
+
  private:
   struct NavigationItem;
   typedef std::vector<NavigationItem> NavigationItems;

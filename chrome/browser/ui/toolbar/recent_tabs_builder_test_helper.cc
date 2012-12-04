@@ -56,6 +56,25 @@ std::string ToTabUrl(SessionID::id_type session_id,
 
 }  // namespace
 
+struct RecentTabsBuilderTestHelper::TabInfo {
+  TabInfo() : id(0) {}
+  SessionID::id_type id;
+  base::Time timestamp;
+  string16 title;
+};
+struct RecentTabsBuilderTestHelper::WindowInfo {
+  WindowInfo() : id(0) {}
+  ~WindowInfo() {}
+  SessionID::id_type id;
+  std::vector<TabInfo> tabs;
+};
+struct RecentTabsBuilderTestHelper::SessionInfo {
+  SessionInfo() : id(0) {}
+  ~SessionInfo() {}
+  SessionID::id_type id;
+  std::vector<WindowInfo> windows;
+};
+
 RecentTabsBuilderTestHelper::RecentTabsBuilderTestHelper() {
   start_time_ = base::Time::Now();
 }
@@ -110,15 +129,17 @@ SessionID::id_type RecentTabsBuilderTestHelper::GetWindowID(int session_index,
 void RecentTabsBuilderTestHelper::AddTab(int session_index, int window_index) {
   base::Time timestamp =
       start_time_ + base::TimeDelta::FromMinutes(base::RandUint64());
-  AddTabWithTimestamp(session_index, window_index, timestamp);
+  AddTabWithInfo(session_index, window_index, timestamp, string16());
 }
 
-void RecentTabsBuilderTestHelper::AddTabWithTimestamp(int session_index,
-                                                      int window_index,
-                                                      base::Time timestamp) {
+void RecentTabsBuilderTestHelper::AddTabWithInfo(int session_index,
+                                                 int window_index,
+                                                 base::Time timestamp,
+                                                 const string16& title) {
   TabInfo tab_info;
   tab_info.id = CreateUniqueID();
   tab_info.timestamp = timestamp;
+  tab_info.title = title;
   sessions_[session_index].windows[window_index].tabs.push_back(tab_info);
 }
 
@@ -138,6 +159,20 @@ base::Time RecentTabsBuilderTestHelper::GetTabTimestamp(int session_index,
                                                         int tab_index) {
   return sessions_[session_index].windows[window_index]
       .tabs[tab_index].timestamp;
+}
+
+string16 RecentTabsBuilderTestHelper::GetTabTitle(int session_index,
+                                                  int window_index,
+                                                  int tab_index) {
+  string16 title =
+      sessions_[session_index].windows[window_index].tabs[tab_index].title;
+  if (title.empty()) {
+    title = UTF8ToUTF16(ToTabTitle(
+        GetSessionID(session_index),
+        GetWindowID(session_index, window_index),
+        GetTabID(session_index, window_index, tab_index)));
+  }
+  return title;
 }
 
 void RecentTabsBuilderTestHelper::RegisterRecentTabs(
@@ -178,8 +213,7 @@ RecentTabsBuilderTestHelper::GetTabTitlesSortedByRecency() {
     for (int w = 0; w < GetWindowCount(s); ++w) {
       for (int t = 0; t < GetTabCount(s, w); ++t) {
         TitleTimestampPair pair;
-        pair.title = UTF8ToUTF16(ToTabTitle(
-            GetSessionID(s), GetWindowID(s, w), GetTabID(s, w, t)));
+        pair.title = GetTabTitle(s, w, t);
         pair.timestamp = GetTabTimestamp(s, w, t);
         tabs.push_back(pair);
       }
@@ -237,14 +271,7 @@ void RecentTabsBuilderTestHelper::BuildTabSpecifics(
   sync_pb::TabNavigation* navigation = tab->add_navigation();
   navigation->set_virtual_url(ToTabUrl(session_id, window_id, tab_id));
   navigation->set_referrer("referrer");
-  navigation->set_title(ToTabTitle(session_id, window_id, tab_id));
+  navigation->set_title(UTF16ToUTF8(GetTabTitle(
+      session_index, window_index, tab_index)));
   navigation->set_page_transition(sync_pb::SyncEnums_PageTransition_TYPED);
 }
-
-RecentTabsBuilderTestHelper::WindowInfo::WindowInfo() {}
-
-RecentTabsBuilderTestHelper::WindowInfo::~WindowInfo() {}
-
-RecentTabsBuilderTestHelper::SessionInfo::SessionInfo() {}
-
-RecentTabsBuilderTestHelper::SessionInfo::~SessionInfo() {}

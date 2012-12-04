@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
 
 #include "base/sys_string_conversions.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_BOOKMARK_MENU
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -14,8 +13,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
+#include "chrome/browser/ui/cocoa/menu_controller.h"
 #include "content/public/browser/user_metrics.h"
-#include "ui/base/text/text_elider.h"
 
 using content::OpenURLParams;
 using content::Referrer;
@@ -32,13 +31,8 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
 @implementation BookmarkMenuCocoaController
 
 + (NSString*)menuTitleForNode:(const BookmarkNode*)node {
-  NSFont* nsfont = [NSFont menuBarFontOfSize:0];  // 0 means "default"
-  gfx::Font font(base::SysNSStringToUTF8([nsfont fontName]),
-                 static_cast<int>([nsfont pointSize]));
-  string16 title = ui::ElideText(node->GetTitle(),
-                                 font,
-                                 kMaximumMenuPixelsWide,
-                                 ui::ELIDE_AT_END);
+  string16 title = [MenuController elideMenuTitle:node->GetTitle()
+                                          toWidth:kMaximumMenuPixelsWide];
   return base::SysUTF16ToNSString(title);
 }
 

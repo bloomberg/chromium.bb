@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_nsobject.h"
+#include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -75,7 +76,7 @@ TEST_F(WrenchMenuControllerTest, DispatchSimple) {
   chrome::testing::NSRunLoopRunAllPending();
 }
 
-TEST_F(WrenchMenuControllerTest, RecentTabs) {
+TEST_F(WrenchMenuControllerTest, RecentTabsFavIcon) {
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile());
   browser_sync::SessionModelAssociator associator_(sync_service, true);
@@ -110,6 +111,70 @@ TEST_F(WrenchMenuControllerTest, RecentTabs) {
   recent_tabs_sub_menu_model.GetMenuModelDelegate()->OnIconChanged(3);
   EXPECT_TRUE([[recent_tabs_menu itemAtIndex:3] image]);
   EXPECT_NSEQ(icon.ToNSImage(), [[recent_tabs_menu itemAtIndex:3] image]);
+
+  controller_.reset();
+  fake_model_.reset();
+}
+
+TEST_F(WrenchMenuControllerTest, RecentTabsElideTitle) {
+  ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile());
+  browser_sync::SessionModelAssociator associator_(sync_service, true);
+  associator_.SetCurrentMachineTagForTesting("WrenchMenuControllerTest");
+
+  // Add 1 session with 1 window and 2 tabs.
+  RecentTabsBuilderTestHelper recent_tabs_builder;
+  recent_tabs_builder.AddSession();
+  recent_tabs_builder.AddWindow(0);
+  string16 tab1_short_title = ASCIIToUTF16("Short");
+  recent_tabs_builder.AddTabWithInfo(0, 0, base::Time::Now(), tab1_short_title);
+  string16 tab2_long_title = ASCIIToUTF16("Very very very very very very "
+                                          "very very very very very very long");
+  recent_tabs_builder.AddTabWithInfo(0, 0,
+      base::Time::Now() - base::TimeDelta::FromMinutes(10), tab2_long_title);
+  recent_tabs_builder.RegisterRecentTabs(&associator_);
+
+  RecentTabsSubMenuModel recent_tabs_sub_menu_model(
+      NULL, browser(), &associator_);
+  fake_model_->AddSubMenuWithStringId(
+      IDC_RECENT_TABS_MENU, IDS_RECENT_TABS_MENU,
+      &recent_tabs_sub_menu_model);
+
+  [controller() setModel:fake_model_.get()];
+  NSMenu* menu = [controller() menu];
+  [controller() updateRecentTabsSubmenu];
+
+  NSString* title = l10n_util::GetNSStringWithFixup(IDS_RECENT_TABS_MENU);
+  NSMenu* recent_tabs_menu = [[menu itemWithTitle:title] submenu];
+  EXPECT_TRUE(recent_tabs_menu);
+  EXPECT_EQ(5, [recent_tabs_menu numberOfItems]);
+
+  // Index 0: restore tabs menu item.
+  NSString* restore_tab_label = l10n_util::FixUpWindowsStyleLabel(
+      recent_tabs_sub_menu_model.GetLabelAt(0));
+  EXPECT_NSEQ(restore_tab_label, [[recent_tabs_menu itemAtIndex:0] title]);
+
+  // Item 1: separator.
+  EXPECT_TRUE([[recent_tabs_menu itemAtIndex:1] isSeparatorItem]);
+
+  // Item 2: window title.
+  EXPECT_NSEQ(
+      base::SysUTF16ToNSString(recent_tabs_sub_menu_model.GetLabelAt(2)),
+      [[recent_tabs_menu itemAtIndex:2] title]);
+
+  // Item 3: short tab title.
+  EXPECT_NSEQ(base::SysUTF16ToNSString(tab1_short_title),
+              [[recent_tabs_menu itemAtIndex:3] title]);
+
+  // Item 4: long tab title.
+  NSString* tab2_actual_title = [[recent_tabs_menu itemAtIndex:4] title];
+  NSUInteger title_length = [tab2_actual_title length];
+  EXPECT_GT(tab2_long_title.size(), title_length);
+  NSString* actual_substring =
+      [tab2_actual_title substringToIndex:title_length - 1];
+  NSString* expected_substring = [base::SysUTF16ToNSString(tab2_long_title)
+      substringToIndex:title_length - 1];
+  EXPECT_NSEQ(expected_substring, actual_substring);
 
   controller_.reset();
   fake_model_.reset();

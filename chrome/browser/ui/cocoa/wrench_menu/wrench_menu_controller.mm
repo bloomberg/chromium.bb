@@ -43,6 +43,8 @@ using content::UserMetricsAction;
 - (NSButton*)zoomDisplay;
 - (void)removeAllItems:(NSMenu*)menu;
 - (NSMenu*)recentTabsSubmenu;
+- (int)maxWidthForMenuModel:(ui::MenuModel*)model
+                 modelIndex:(int)modelIndex;
 @end
 
 namespace WrenchMenuControllerInternal {
@@ -319,6 +321,22 @@ class ZoomLevelObserver : public content::NotificationObserver {
 - (NSMenu*)recentTabsSubmenu {
   NSString* title = l10n_util::GetNSStringWithFixup(IDS_RECENT_TABS_MENU);
   return [[[self menu] itemWithTitle:title] submenu];
+}
+
+// This overrdies the parent class to return a custom width for recent tabs
+// menu.
+- (int)maxWidthForMenuModel:(ui::MenuModel*)model
+                 modelIndex:(int)modelIndex {
+  int index = 0;
+  ui::MenuModel* recentTabsMenuModel = [self wrenchMenuModel];
+  if (ui::MenuModel::GetModelAndIndexForCommandId(
+          IDC_RESTORE_TAB, &recentTabsMenuModel, &index)) {
+    if (recentTabsMenuModel == model) {
+      return static_cast<RecentTabsSubMenuModel*>(
+          recentTabsMenuModel)->GetMaxWidthForItemAtIndex(modelIndex);
+    }
+  }
+  return -1;
 }
 
 @end  // @implementation WrenchMenuController

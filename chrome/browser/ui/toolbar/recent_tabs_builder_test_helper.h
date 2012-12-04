@@ -34,9 +34,10 @@ class RecentTabsBuilderTestHelper {
   SessionID::id_type GetWindowID(int session_index, int window_index);
 
   void AddTab(int session_index, int window_index);
-  void AddTabWithTimestamp(int session_index,
-                           int window_index,
-                           base::Time timestamp);
+  void AddTabWithInfo(int session_index,
+                      int window_index,
+                      base::Time timestamp,
+                      const string16& title);
   int GetTabCount(int session_index, int window_index);
   SessionID::id_type GetTabID(int session_index,
                               int window_index,
@@ -44,6 +45,9 @@ class RecentTabsBuilderTestHelper {
   base::Time GetTabTimestamp(int session_index,
                              int window_index,
                              int tab_index);
+  string16 GetTabTitle(int session_index,
+                       int window_index,
+                       int tab_index);
 
   void RegisterRecentTabs(browser_sync::SessionModelAssociator* associator);
 
@@ -60,22 +64,9 @@ class RecentTabsBuilderTestHelper {
                          int tab_index,
                          sync_pb::SessionSpecifics* tab_base);
 
-  struct TabInfo {
-    SessionID::id_type id;
-    base::Time timestamp;
-  };
-  struct WindowInfo {
-    WindowInfo();
-    ~WindowInfo();
-    SessionID::id_type id;
-    std::vector<TabInfo> tabs;
-  };
-  struct SessionInfo {
-    SessionInfo();
-    ~SessionInfo();
-    SessionID::id_type id;
-    std::vector<WindowInfo> windows;
-  };
+  struct TabInfo;
+  struct WindowInfo;
+  struct SessionInfo;
 
   std::vector<SessionInfo> sessions_;
   base::Time start_time_;

@@ -118,7 +118,7 @@ TEST_F(RecentTabsSubMenuModelTest, OtherDevices) {
   recent_tabs_builder.AddWindow(0);
   for (int i = 0; i < 3; ++i) {
     timestamp -= time_delta;
-    recent_tabs_builder.AddTabWithTimestamp(0, 0, timestamp);
+    recent_tabs_builder.AddTabWithInfo(0, 0, timestamp, string16());
   }
 
   // Create 2nd session : 2 windows, 1 tab in 1st window, 2 tabs in 2nd window
@@ -126,11 +126,11 @@ TEST_F(RecentTabsSubMenuModelTest, OtherDevices) {
   recent_tabs_builder.AddWindow(1);
   recent_tabs_builder.AddWindow(1);
   timestamp -= time_delta;
-  recent_tabs_builder.AddTabWithTimestamp(1, 0, timestamp);
+  recent_tabs_builder.AddTabWithInfo(1, 0, timestamp, string16());
   timestamp -= time_delta;
-  recent_tabs_builder.AddTabWithTimestamp(1, 1, timestamp);
+  recent_tabs_builder.AddTabWithInfo(1, 1, timestamp, string16());
   timestamp -= time_delta;
-  recent_tabs_builder.AddTabWithTimestamp(1, 1, timestamp);
+  recent_tabs_builder.AddTabWithInfo(1, 1, timestamp, string16());
 
   recent_tabs_builder.RegisterRecentTabs(&associator_);
 
@@ -236,4 +236,42 @@ TEST_F(RecentTabsSubMenuModelTest, MaxTabsPerSessionAndRecency) {
       recent_tabs_builder.GetTabTitlesSortedByRecency();
   for (int i = 0; i < 4; ++i)
     EXPECT_EQ(tab_titles[i], model.GetLabelAt(i + 3));
+}
+
+TEST_F(RecentTabsSubMenuModelTest, MaxWidth) {
+  // Create 1 session with 1 window and 1 tab.
+  RecentTabsBuilderTestHelper recent_tabs_builder;
+  recent_tabs_builder.AddSession();
+  recent_tabs_builder.AddWindow(0);
+  recent_tabs_builder.AddTab(0, 0);
+  recent_tabs_builder.RegisterRecentTabs(&associator_);
+
+  // Menu index  Menu items
+  // --------------------------------------
+  // 0           Reopen closed tab
+  // 1           <separator>
+  // 2           <section header for 1st session>
+  // 3           <the only tab of the only window of session 1>
+
+  TestRecentTabsSubMenuModel model(NULL, browser(), &associator_, true);
+  EXPECT_EQ(4, model.GetItemCount());
+  EXPECT_EQ(-1, model.GetMaxWidthForItemAtIndex(0));
+  EXPECT_NE(-1, model.GetMaxWidthForItemAtIndex(1));
+  EXPECT_NE(-1, model.GetMaxWidthForItemAtIndex(2));
+  EXPECT_NE(-1, model.GetMaxWidthForItemAtIndex(3));
+}
+
+TEST_F(RecentTabsSubMenuModelTest, MaxWidthNoDevices) {
+  // Expected menu:
+  // Menu index  Menu items
+  // --------------------------------------
+  // 0           Reopen closed tab
+  // 1           <separator>
+  // 2           No tabs from other Devices
+
+  TestRecentTabsSubMenuModel model(NULL, browser(), NULL, false);
+  EXPECT_EQ(3, model.GetItemCount());
+  EXPECT_EQ(-1, model.GetMaxWidthForItemAtIndex(0));
+  EXPECT_NE(-1, model.GetMaxWidthForItemAtIndex(1));
+  EXPECT_EQ(-1, model.GetMaxWidthForItemAtIndex(2));
 }

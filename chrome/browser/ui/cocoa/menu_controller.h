@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_nsobject.h"
+#include "base/string16.h"
 
 namespace ui {
 class MenuModel;
@@ -31,6 +32,9 @@ class MenuModel;
 // Note that changing this will have no effect if you use
 // |-initWithModel:useWithPopUpButtonCell:| or after the first call to |-menu|.
 @property(nonatomic) BOOL useWithPopUpButtonCell;
+
++ (string16)elideMenuTitle:(const string16&)title
+                   toWidth:(int)width;
 
 // NIB-based initializer. This does not create a menu. Clients can set the
 // properties of the object and the menu will be created upon the first call to
@@ -71,6 +75,10 @@ class MenuModel;
             fromModel:(ui::MenuModel*)model
            modelIndex:(int)modelIndex;
 - (NSMenu*)menuFromModel:(ui::MenuModel*)model;
+// Returns the maximum width for the menu item. Returns -1 to indicate
+// that there's no maximum width.
+- (int)maxWidthForMenuModel:(ui::MenuModel*)model
+                 modelIndex:(int)modelIndex;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_MENU_CONTROLLER_H_
