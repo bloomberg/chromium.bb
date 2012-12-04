@@ -50,12 +50,11 @@ NaClValidationQuery::NaClValidationQuery(NaClValidationDB* db,
 
 void NaClValidationQuery::AddData(const char* data, size_t length) {
   CHECK(state_ == READY);
-  CHECK(buffer_length_ >= 0);
-  CHECK(buffer_length_ <= (int) sizeof(buffer_));
+  CHECK(buffer_length_ <= sizeof(buffer_));
   // Chrome's HMAC class doesn't support incremental signing.  Work around
   // this by using a (small) temporary buffer to accumulate data.
   // Check if there is space in the buffer.
-  if (buffer_length_ + kDigestLength > (int) sizeof(buffer_)) {
+  if (buffer_length_ + kDigestLength > sizeof(buffer_)) {
     // Hash the buffer to make space.
     CompressBuffer();
   }
@@ -79,7 +78,7 @@ int NaClValidationQuery::QueryKnownToValidate() {
   CHECK(state_ == READY);
   // It is suspicious if we have less than a digest's worth of data.
   CHECK(buffer_length_ >= kDigestLength);
-  CHECK(buffer_length_ <= (int) sizeof(buffer_));
+  CHECK(buffer_length_ <= sizeof(buffer_));
   state_ = GET_CALLED;
   // Ensure the buffer contains only one digest worth of data.
   CompressBuffer();

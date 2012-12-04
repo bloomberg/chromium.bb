@@ -38,7 +38,7 @@ class NaClValidationQueryContext {
 class NaClValidationQuery {
  public:
   // SHA256 digest size.
-  static const int kDigestLength = 32;
+  static const size_t kDigestLength = 32;
 
   NaClValidationQuery(NaClValidationDB* db, const std::string& profile_key);
 
@@ -77,7 +77,7 @@ class NaClValidationQuery {
   // code), so 4 times digest length means the buffer will not need to be
   // compressed as an intermediate step in the expected use cases.
   char buffer_[kDigestLength * 4];
-  int buffer_length_;
+  size_t buffer_length_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClValidationQuery);
 };
