@@ -286,11 +286,6 @@ class ChromeLauncher(BrowserLauncher):
     if self.options.ppapi_plugin is None:
       cmd.append('--enable-nacl')
       disable_sandbox = False
-      # Sandboxing Chrome on Linux requires a SUIDed helper binary.  This
-      # binary may not be installed, so disable sandboxing to avoid the
-      # corner cases where it may fail.  This is a little scarry, because it
-      # means we are not testing NaCl inside the outer sandbox on Linux.
-      disable_sandbox |= PLATFORM == 'linux'
       # Chrome process can't access file within sandbox
       disable_sandbox |= self.options.nacl_exe_stdin is not None
       disable_sandbox |= self.options.nacl_exe_stdout is not None
