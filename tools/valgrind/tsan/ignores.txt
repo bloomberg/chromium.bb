@@ -162,6 +162,11 @@ fun:g_slice_alloc
 # A benign race in glibc on "random_time_bits".
 fun:__gen_tempname
 
+# A probably-benign race on '__have_o_cloexec' in opendir/__alloc_dir,
+# see http://crbug.com/125928.
+fun_r:__alloc_dir
+fun_r:opendir
+
 # The sqlite cache is racing against a few different stacktraces,
 # so let's ignore it recursively. See http://crbug.com/84094
 fun_r:pcache1Fetch
