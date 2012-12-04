@@ -11,17 +11,19 @@
       'target_name': 'nacl_core_sdk',
       'type': 'none',
       'dependencies': [
-        '../src/trusted/service_runtime/service_runtime.gyp:sel_ldr',
-        '../src/untrusted/irt/irt.gyp:irt_core_nexe',
         '../src/untrusted/nacl/nacl.gyp:nacl_dynacode_lib',
         '../src/untrusted/nacl/nacl.gyp:nacl_lib',
         '../src/untrusted/nosys/nosys.gyp:nosys_lib',
         '../src/untrusted/pthread/pthread.gyp:pthread_lib',
       ],
       'conditions': [
-        # these libraries don't currently exist on arm
         ['target_arch!="arm"', {
           'dependencies': [
+            # sel_ldr and irt are host-only and not needed when building the
+            # arm components of the SDK.
+            '../src/untrusted/irt/irt.gyp:irt_core_nexe',
+            '../src/trusted/service_runtime/service_runtime.gyp:sel_ldr',
+            # these libraries don't currently exist on arm
             '../src/untrusted/valgrind/valgrind.gyp:dynamic_annotations_lib',
             '../src/untrusted/valgrind/valgrind.gyp:valgrind_lib',
           ],

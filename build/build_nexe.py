@@ -99,44 +99,51 @@ class Builder(object):
     else:
       ErrOut('Toolchain OS %s not supported.' % sys.platform)
 
-    if arch in ['x86-32', 'x86-64']:
-      self.mainarch = 'x86'
-      self.subarch = arch.split('-')[1]
-      if self.outtype == 'translate':
-        self.is_pnacl_toolchain = True
-      else:
-        self.is_pnacl_toolchain = False
-        self.tool_prefix = 'x86_64-nacl-'
-    elif arch == 'arm':
-      # For now assume that arm implies pnacl toolchain. But don't assume that
-      # elsewhere in this script.
-      self.mainarch = 'arm'
-      self.subarch = ''
+    # pnacl toolchain can be selected in three different ways
+    # 1. by specifying --arch=pnacl directly to generate
+    #    pexe targets.
+    # 2. by specifying --build=newlib_translate to generated
+    #    nexe via translation
+    # 3. by specifying --build=newlib_nexe_pnacl use pnacl
+    #    toolchain in arm-native mode (e.g. the arm IRT)
+    self.is_pnacl_toolchain = False
+    if self.outtype == 'translate':
       self.is_pnacl_toolchain = True
+
+    if len(build_type) > 2 and build_type[2] == 'pnacl':
+      self.is_pnacl_toolchain = True
+
+    if arch in ['x86-32', 'x86-64']:
+      mainarch = 'x86'
+      self.subarch = arch.split('-')[1]
+      self.tool_prefix = 'x86_64-nacl-'
+    elif arch == 'arm':
+      self.subarch = ''
+      self.tool_prefix = 'arm-nacl-'
+      mainarch = 'arm'
     elif arch == 'pnacl':
-      self.mainarch = arch
       self.subarch = ''
       self.is_pnacl_toolchain = True
     else:
       ErrOut('Toolchain architecture %s not supported.' % arch)
 
+    if toolname not in ['newlib', 'glibc']:
+      ErrOut('Toolchain of type %s not supported.' % toolname)
+
     if arch == 'arm' and toolname == 'glibc':
-      ErrOut('arm/glibc not yet supported.')
+      ErrOut('arm glibc not yet supported.')
 
     if arch == 'pnacl' and toolname == 'glibc':
       ErrOut('pnacl glibc not yet supported.')
 
-    if toolname not in ['newlib', 'glibc']:
-      ErrOut('Toolchain of type %s not supported.' % toolname)
-
     if self.is_pnacl_toolchain:
-      tool_subdir = toolname
+      mainarch = 'x86'
       self.tool_prefix = 'pnacl-'
-      tooldir = '%s_x86_pnacl' % (self.osname)
+      tool_subdir = toolname
+      tooldir = '%s_%s_pnacl' % (self.osname, mainarch)
     else:
       tool_subdir = ''
-      tooldir = '%s_x86_%s' % (self.osname, toolname)
-
+      tooldir = '%s_%s_%s' % (self.osname, mainarch, toolname)
 
     self.root_path = options.root
     self.nacl_path = os.path.join(self.root_path, 'native_client')

@@ -31,22 +31,22 @@ def Main(args):
     parser.error('Expecting OS to be specified.')
   if not options.tool:
     parser.error('Expecting which tool to untar.')
-  if options.tool not in ['glibc', 'newlib', 'pnacl']:
-    parser.error('Unknown tool type: ' + options.tool)
-  if len(args) != 1:
-    parser.error('Expecting path to tarball.')
+  if len(args) < 1:
+    parser.error('Expecting path(s) to tarball(s).')
 
-  tool_name = '%s_x86_%s' % (options.os, options.tool)
-  final_path = os.path.join(options.sdk, 'toolchain', tool_name)
   untar_path = os.path.join(options.tmp, options.tool)
-  stamp_path = os.path.join(final_path, 'stamp.untar')
-
-  if options.tool == 'newlib':
+  if options.tool == 'x86_newlib':
     tool_path = os.path.join(untar_path, 'sdk', 'nacl-sdk')
-  if options.tool == 'glibc':
+  elif options.tool == 'x86_glibc':
     tool_path = os.path.join(untar_path, 'toolchain', options.os + '_x86')
-  if options.tool == 'pnacl':
-    tool_path = os.path.join(untar_path)
+  elif options.tool in ('x86_pnacl', 'arm_newlib'):
+    tool_path = untar_path
+  else:
+    parser.error('Unknown tool type: ' + options.tool)
+
+  tool_name = '%s_%s' % (options.os, options.tool)
+  final_path = os.path.join(options.sdk, 'toolchain', tool_name)
+  stamp_path = os.path.join(final_path, 'stamp.untar')
 
   final_path = os.path.abspath(final_path)
   untar_path = os.path.abspath(untar_path)
@@ -69,17 +69,21 @@ def Main(args):
     print 'Mkdir: ' + os.path.join(options.sdk, 'toolchain')
   oshelpers.Mkdir(['-p', os.path.join(options.sdk, 'toolchain')])
 
-  if options.verbose:
-    print 'Open: ' + args[0]
-  tar = cygtar.CygTar(args[0], 'r', verbose=options.verbose)
+  args = [os.path.abspath(a) for a in args]
+
   old_path = os.getcwd()
   os.chdir(untar_path)
 
-  if options.verbose:
-    print 'Extract'
-  tar.Extract()
-  os.chdir(old_path)
+  for arg in args:
+    if options.verbose:
+      print 'Open: ' + arg
+    tar = cygtar.CygTar(arg, 'r', verbose=options.verbose)
 
+    if options.verbose:
+      print 'Extract'
+    tar.Extract()
+
+  os.chdir(old_path)
   if options.verbose:
     print 'Move: %s to %s' % (tool_path, final_path)
   oshelpers.Move([tool_path, final_path])

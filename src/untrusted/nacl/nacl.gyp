@@ -100,6 +100,15 @@
         '<@(sources_for_nacl_extensions)',
         '<@(sources_for_standard_interfaces)',
       ],
+      'conditions': [
+        ['target_arch=="arm"', {
+          'variables': {
+            'native_sources': [
+              'aeabi_read_tp.S'
+            ]
+          }
+        }],
+      ],
       'dependencies': [
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
       ],

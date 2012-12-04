@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from optparse import OptionParser
+from optparse import OptionParser, OptionValueError
 import os
 import shutil
 import sys
@@ -18,7 +18,7 @@ NACL_DIR = os.path.dirname(SCRIPT_DIR)
 
 # Mapping from TC/include relative path to original source
 HEADER_MAP = {
-  'newlib': {
+  'x86_newlib': {
       'x86_64-nacl/include/pthread.h': 'src/untrusted/pthread/pthread.h',
       'x86_64-nacl/include/semaphore.h': 'src/untrusted/pthread/semaphore.h',
       'x86_64-nacl/include/nacl/dynamic_annotations.h':
@@ -35,7 +35,7 @@ HEADER_MAP = {
       'x86_64-nacl/lib32/crt1.o': 'src/untrusted/stubs/crt1.x',
       'x86_64-nacl/lib/crt1.o': 'src/untrusted/stubs/crt1.x',
   },
-  'glibc': {
+  'x86_glibc': {
       'x86_64-nacl/include/nacl/dynamic_annotations.h':
           'src/untrusted/valgrind/dynamic_annotations.h',
       'x86_64-nacl/include/nacl/nacl_dyncode.h':
@@ -47,7 +47,22 @@ HEADER_MAP = {
       'x86_64-nacl/include/irt.h': 'src/untrusted/irt/irt.h',
       'x86_64-nacl/include/irt_ppapi.h': 'src/untrusted/irt/irt_ppapi.h',
   },
-  'pnacl': {
+  'arm_newlib': {
+      'arm-nacl/include/pthread.h': 'src/untrusted/pthread/pthread.h',
+      'arm-nacl/include/semaphore.h': 'src/untrusted/pthread/semaphore.h',
+      'arm-nacl/include/nacl/dynamic_annotations.h':
+          'src/untrusted/valgrind/dynamic_annotations.h',
+      'arm-nacl/include/nacl/nacl_dyncode.h':
+          'src/untrusted/nacl/nacl_dyncode.h',
+      'arm-nacl/include/nacl/nacl_startup.h':
+          'src/untrusted/nacl/nacl_startup.h',
+      'arm-nacl/include/nacl/nacl_thread.h':
+          'src/untrusted/nacl/nacl_thread.h',
+      'arm-nacl/include/include/irt.h': 'src/untrusted/irt/irt.h',
+      'arm-nacl/include/include/irt_ppapi.h': 'src/untrusted/irt/irt_ppapi.h',
+      'arm-nacl/lib/crt1.o': 'src/untrusted/stubs/crt1.x',
+  },
+  'x86_pnacl': {
       'newlib/sdk/include/include/pthread.h': 'src/untrusted/pthread/pthread.h',
       'newlib/sdk/include/include/semaphore.h': 'src/untrusted/pthread/semaphore.h',
       'newlib/sdk/include/include/nacl/dynamic_annotations.h':
@@ -62,6 +77,7 @@ HEADER_MAP = {
       'newlib/sdk/include/include/irt_ppapi.h': 'src/untrusted/irt/irt_ppapi.h',
   }
 }
+
 
 def PosixPath(filepath):
   if sys.platform == 'win32':
@@ -120,7 +136,10 @@ def DoMain(argv):
   basepath = PosixPath(os.path.abspath(os.getcwd()))
 
   if len(files):
-    raise RuntimeError('Not expecting arguments: ' + ' '.join(files))
+    raise OptionValueError('Not expecting arguments: ' + ' '.join(files))
+
+  if options.tool not in HEADER_MAP:
+    raise OptionValueError('Unknown tool name: ' + options.tool)
 
   tc_map = HEADER_MAP[options.tool]
   tc_dest = os.path.abspath(options.path)
@@ -147,7 +166,7 @@ def DoMain(argv):
 def main(argv):
   result = DoMain(argv[1:])
   if type(result) == int:
-    sys.exit(result)
+    return result
 
   sys.stdout.write(result)
   return 0
@@ -155,4 +174,3 @@ def main(argv):
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
-

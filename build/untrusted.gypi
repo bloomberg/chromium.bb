@@ -9,6 +9,7 @@
     'NACL_IRT_DATA_START': '0x3ef00000',
     # Expected address for beginning of code in for the IRT.
     'NACL_IRT_TEXT_START': '0x0fc00000',
+    'nacl_enable_arm_gcc%': 0,
     # Default C compiler defines.
     'nacl_default_defines': [
       '__linux__',
@@ -112,6 +113,7 @@
           'nlib_target': '',
           'nso_target': '',
           'build_newlib': 0,
+          'nacl_enable_arm_gcc%': 0,
           'build_glibc': 0,
           'disable_glibc%': 1,
           'extra_args': [],
@@ -119,6 +121,7 @@
           'enable_x86_64': 0,
           'enable_arm': 1,
           'extra_deps_newlib_arm': [],
+          'native_sources': [],
           'lib_dirs_newlib_arm': [],
           'include_dirs': ['<(DEPTH)', '<(DEPTH)/ppapi'],
           'defines': [
@@ -312,24 +315,26 @@
     ['target_arch=="arm"', {
       'target_defaults': {
         'target_conditions': [
-          ['nexe_target!="" and build_newlib!=0', {
+          # GCC ARM build
+          ['nacl_enable_arm_gcc!=0 and nexe_target!="" and build_newlib!=0', {
             'variables': {
-              'tool_name': 'newlib',
-              'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
-              'out_newlib_arm%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_arm.nexe',
-              'objdir_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
-              'source_list_newlib_arm%': '<(tool_name)-arm.>(_target_name).source_list.gypcmd',
-             },
+               'tool_name': 'newlib',
+               'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
+               'out_newlib_arm%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_arm.nexe',
+               'objdir_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
+               'source_list_newlib_arm%': '<(tool_name)-arm.>(_target_name).source_list.gypcmd',
+            },
             'actions': [
               {
                 'action_name': 'build newlib arm nexe',
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_arm)',
                 'inputs': [
-                  '<(DEPTH)/native_client/build/build_nexe.py',
-                  '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
-                  '>@(extra_deps_newlib_arm)',
-                  '>(source_list_newlib_arm)',
+                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources) >(native_sources))',
+                   '>@(extra_deps_newlib_arm)',
+                   '>(source_list_newlib_arm)',
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_arm_newlib/stamp.prep',
                 ],
                 'outputs': ['>(out_newlib_arm)'],
                 'action': [
@@ -344,15 +349,16 @@
                   '--objdir', '>(objdir_newlib_arm)',
                   '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
                   '--lib-dirs=>(lib_dirs_newlib_arm) ',
-                  '--compile_flags=--pnacl-frontend-triple=armv7-unknown-nacl-gnueabi -mfloat-abi=hard ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+                  '--compile_flags=^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                   '--defines=^(defines) >(_defines)',
-                  '--link_flags=-arch arm --pnacl-allow-translate --pnacl-allow-native -B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm -B<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_translate/lib-arm ^(link_flags) >(_link_flags)',
-                  '--source-list=^|(<(source_list_newlib_arm) ^(_sources) ^(sources))',
-                 ],
+                  '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm ^(link_flags) >(_link_flags)',
+                  '--source-list=^|(<(source_list_newlib_arm) ^(_sources) ^(sources) ^(native_sources))',
+                ],
               },
             ],
           }],
-          ['nlib_target!="" and build_newlib!=0', {
+          # GCC ARM library build
+          ['nacl_enable_arm_gcc!=0 and nlib_target!="" and build_newlib!=0', {
             'variables': {
               'tool_name': 'newlib',
               'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
@@ -363,6 +369,48 @@
             'actions': [
               {
                 'action_name': 'build newlib arm nlib',
+                'msvs_cygwin_shell': 0,
+                'description': 'building >(out_newlib_arm)',
+                'inputs': [
+                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources) >(native_sources))',
+                   '>@(extra_deps_newlib_arm)',
+                   '>(source_list_newlib_arm)',
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_arm_newlib/stamp.prep',
+                ],
+                'outputs': ['>(out_newlib_arm)'],
+                'action': [
+                  '>(python_exe)',
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                  '>@(extra_args)',
+                  '--arch', 'arm',
+                  '--build', 'newlib_nlib',
+                  '--root', '<(DEPTH)',
+                  '--name', '>(out_newlib_arm)',
+                  '--objdir', '>(objdir_newlib_arm)',
+                  '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
+                  '--lib-dirs=>(lib_dirs_newlib_arm)',
+                  '--compile_flags=^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                  '--defines=^(defines) >(_defines)',
+                  '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm ^(link_flags) >(_link_flags)',
+                  '--source-list=^|(<(source_list_newlib_arm) ^(_sources) ^(sources) ^(native_sources))',
+                ],
+              },
+            ],
+          }],
+          # pnacl ARM build is the default (unless nacl_enable_arm_gcc is set)
+          ['nacl_enable_arm_gcc==0 and nexe_target!="" and build_newlib!=0', {
+            'variables': {
+              'tool_name': 'newlib',
+              'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
+              'out_newlib_arm%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_arm.nexe',
+              'objdir_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
+              'source_list_newlib_arm%': '<(tool_name)-arm.>(_target_name).source_list.gypcmd',
+             },
+            'actions': [
+              {
+                'action_name': 'build newlib arm nexe (via pnacl)',
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_arm)',
                 'inputs': [
@@ -378,7 +426,48 @@
                   '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
                   '>@(extra_args)',
                   '--arch', 'arm',
-                  '--build', 'newlib_nlib',
+                  '--build', 'newlib_nexe_pnacl',
+                  '--root', '<(DEPTH)',
+                  '--name', '>(out_newlib_arm)',
+                  '--objdir', '>(objdir_newlib_arm)',
+                  '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
+                  '--lib-dirs=>(lib_dirs_newlib_arm) ',
+                  '--compile_flags=--pnacl-frontend-triple=armv7-unknown-nacl-gnueabi -mfloat-abi=hard ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+                  '--defines=^(defines) >(_defines)',
+                  '--link_flags=-arch arm --pnacl-allow-translate --pnacl-allow-native -B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm -B<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_translate/lib-arm ^(link_flags) >(_link_flags)',
+                  '--source-list=^|(<(source_list_newlib_arm) ^(_sources) ^(sources))',
+                 ],
+              },
+            ],
+          }],
+          # pnacl ARM library build
+          ['nacl_enable_arm_gcc==0 and nlib_target!="" and build_newlib!=0', {
+            'variables': {
+              'tool_name': 'newlib',
+              'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
+              'out_newlib_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
+              'objdir_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
+              'source_list_newlib_arm%': '<(tool_name)-arm.>(_target_name).source_list.gypcmd',
+            },
+            'actions': [
+              {
+                'action_name': 'build newlib arm nlib (via pnacl)',
+                'msvs_cygwin_shell': 0,
+                'description': 'building >(out_newlib_arm)',
+                'inputs': [
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                  '>@(extra_deps_newlib_arm)',
+                  '>(source_list_newlib_arm)',
+                ],
+                'outputs': ['>(out_newlib_arm)'],
+                'action': [
+                  '>(python_exe)',
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                  '>@(extra_args)',
+                  '--arch', 'arm',
+                  '--build', 'newlib_nlib_pnacl',
                   '--root', '<(DEPTH)',
                   '--name', '>(out_newlib_arm)',
                   '--objdir', '>(objdir_newlib_arm)',
@@ -671,6 +760,9 @@
         '-fasynchronous-unwind-tables',
       ],
       'newlib_tls_flags': [
+        # This option is currently only honored by x86/x64 builds.  The
+        # equivalent arm option is apparently -mtp=soft but we don't need use
+        # it at this point.
         '-mtls-use-call',
       ],
       'pnacl_compile_flags': [
