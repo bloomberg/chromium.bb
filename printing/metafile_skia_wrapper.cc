@@ -4,6 +4,7 @@
 
 #include "printing/metafile_skia_wrapper.h"
 #include "skia/ext/platform_device.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkMetaData.h"
@@ -20,13 +21,12 @@ const char* kCustomScaleKey = "CrCustomScale";
 // static
 void MetafileSkiaWrapper::SetMetafileOnCanvas(const SkCanvas& canvas,
                                               Metafile* metafile) {
-  MetafileSkiaWrapper* wrapper = NULL;
+  skia::RefPtr<MetafileSkiaWrapper> wrapper;
   if (metafile)
-    wrapper = new MetafileSkiaWrapper(metafile);
+    wrapper = skia::AdoptRef(new MetafileSkiaWrapper(metafile));
 
   SkMetaData& meta = skia::getMetaData(canvas);
-  meta.setRefCnt(kMetafileKey, wrapper);
-  SkSafeUnref(wrapper);
+  meta.setRefCnt(kMetafileKey, wrapper.get());
 }
 
 // static
