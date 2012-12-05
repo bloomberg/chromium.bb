@@ -100,7 +100,7 @@ bmm.treeLookup[recentTreeItem.bookmarkId] = recentTreeItem;
 BookmarkTree.decorate(tree);
 
 tree.addEventListener('change', function() {
-  navigateTo(tree.selectedItem.bookmarkId);
+  navigateTo(tree.selectedItem.bookmarkId, updateHash);
 });
 
 /**
@@ -127,21 +127,16 @@ function updateHash() {
 /**
  * Navigates to a bookmark ID.
  * @param {string} id The ID to navigate to.
- * @param {boolean=} opt_updateHashNow Whether to immediately update the
- *     location.hash. If false, then it is updated in a timeout.
+ * @param {function()} callback Function called when list view loaded or
+ *     displayed specified folder.
  */
-function navigateTo(id, opt_updateHashNow) {
-  // console.info('navigateTo', 'from', window.location.hash, 'to', id);
-  // Update the location hash using a timer to prevent reentrancy. This is how
-  // often we add history entries and the time here is a bit arbitrary but was
-  // picked as the smallest time a human perceives as instant.
+function navigateTo(id, callback) {
+  if (list.parentId == id) {
+    callback();
+    return;
+  }
 
-  clearTimeout(navigateTo.timer_);
-  if (opt_updateHashNow)
-    updateHash();
-  else
-    navigateTo.timer_ = setTimeout(updateHash, 250);
-
+  addOneShotEventListener(list, 'load', callback);
   updateParentId(id);
 }
 
@@ -150,9 +145,12 @@ function navigateTo(id, opt_updateHashNow) {
  * @param {string} id The id.
  */
 function updateParentId(id) {
+  // Setting list.parentId fires 'load' event.
   list.parentId = id;
-  if (id in bmm.treeLookup)
-    tree.selectedItem = bmm.treeLookup[id];
+
+  // When tree.selectedItem changed, tree view calls navigatTo() then it
+  // calls updateHash() when list view displayed specified folder.
+  tree.selectedItem = bmm.treeLookup[id] || tree.selectedItem;
 }
 
 // Process the location hash. This is called by onhashchange and when the page
@@ -185,17 +183,7 @@ function processHash() {
         }
       };
 
-      if (list.parentId == bookmarkNode.parentId) {
-        // Clear the e= from the hash so that future attemps to edit the same
-        // entry will show up as a hash change.
-        updateHash();
-        editBookmark();
-      } else {
-        // Navigate to the parent folder (which will update the hash). Once
-        // it's loaded, edit the bookmark.
-        addOneShotEventListener(list, 'load', editBookmark);
-        updateParentId(bookmarkNode.parentId);
-      }
+      navigateTo(bookmarkNode.parentId, editBookmark);
     });
 
     // We handle the two cases of navigating to the bookmark to be edited
@@ -271,7 +259,7 @@ function setSearch(searchText) {
   }
 
   // Navigate now and update hash immediately.
-  navigateTo(id, true);
+  navigateTo(id, updateHash);
 }
 
 // Handle the logo button UI.
@@ -1301,24 +1289,24 @@ list.addEventListener('canceledit', function(e) {
  */
 function showInFolder() {
   var bookmarkNode = list.selectedItem;
+  if (!bookmarkNode)
+    return;
   var parentId = bookmarkNode.parentId;
 
   // After the list is loaded we should select the revealed item.
-  function f(e) {
-    var index;
-    if (bookmarkNode &&
-        (index = list.dataModel.findIndexById(bookmarkNode.id)) != -1) {
-      var sm = list.selectionModel;
-      sm.anchorIndex = sm.leadIndex = sm.selectedIndex = index;
-      list.scrollIndexIntoView(index);
-    }
-    list.removeEventListener('load', f);
+  function selectItem() {
+    var index = list.dataModel.findIndexById(bookmarkNode.id);
+    if (index == -1)
+      return;
+    var sm = list.selectionModel;
+    sm.anchorIndex = sm.leadIndex = sm.selectedIndex = index;
+    list.scrollIndexIntoView(index);
   }
-  list.addEventListener('load', f);
+
   var treeItem = bmm.treeLookup[parentId];
   treeItem.reveal();
 
-  navigateTo(parentId);
+  navigateTo(parentId, selectItem);
 }
 
 var linkController;
@@ -1409,7 +1397,7 @@ function openItem() {
   var bookmarkNodes = getSelectedBookmarkNodes();
   // If we double clicked or pressed enter on a single folder, navigate to it.
   if (bookmarkNodes.length == 1 && bmm.isFolder(bookmarkNodes[0])) {
-    navigateTo(bookmarkNodes[0].id);
+    navigateTo(bookmarkNodes[0].id, updateHash);
   } else {
     openBookmarks(LinkKind.FOREGROUND_TAB);
   }
@@ -1517,9 +1505,9 @@ function newFolder() {
 
   if (document.activeElement == tree) {
     createFolder(function(newNode) {
-      newItem = bmm.treeLookup[newNode.id];
-      tree.selectedItem = newItem;
-      newItem.editing = true;
+      navigateTo(newNode.id, function() {
+        bmm.treeLookup[newNode.id].editing = true;
+      });
     });
     return;
   }
@@ -1533,13 +1521,7 @@ function newFolder() {
     });
   }
 
-  if (parentId == list.parentId) {
-    editNewFolderInList();
-    return;
-  }
-
-  addOneShotEventListener(list, 'load', editNewFolderInList);
-  navigateTo(parentId, true);
+  navigateTo(parentId, editNewFolderInList);
 }
 
 /**
@@ -1579,13 +1561,7 @@ function addPage() {
     scrollIntoViewAndMakeEditable(length);
   };
 
-  if (parentId == list.parentId) {
-    editNewBookmark();
-    return;
-  }
-
-  addOneShotEventListener(list, 'load', editNewBookmark);
-  navigateTo(parentId, true);
+  navigateTo(parentId, editNewBookmark);
 }
 
 /**
