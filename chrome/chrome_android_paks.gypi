@@ -3,7 +3,15 @@
 # found in the LICENSE file.
 {
   'variables': {
-    'chrome_android_pak_output_folder': '<@(PRODUCT_DIR)/../assets/chrome',
+    # This variable is left out to avoid breaking downstream Chrome for Android
+    # build. It will be removed once the corresponding downstream change will
+    # land.
+    # crbug.com/163955
+    'variables': {
+      'package_name%': 'chrome',
+    },
+
+    'chrome_android_pak_output_folder': '<@(PRODUCT_DIR)/../assets/<(package_name)',
     'chrome_android_pak_input_resources': [
       '<(PRODUCT_DIR)/chrome.pak',
       '<(PRODUCT_DIR)/resources.pak',

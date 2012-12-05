@@ -4,6 +4,7 @@
 {
   'variables': {
     'chromium_code': 1,
+    'package_name': 'chromium_testshell',
   },
   'includes': [
     'chrome_android_paks.gypi', # Included for the list of pak resources.
@@ -44,17 +45,15 @@
       'dependencies': [
         '../media/media.gyp:media_java',
         'chrome.gyp:chrome_java',
-        'chrome_android_paks',
-        'copy_devtools_resources',
+        'chromium_testshell_paks',
         'libchromiumtestshell',
       ],
       'variables': {
-        'package_name': 'chromium_testshell',
         'apk_name': 'ChromiumTestShell',
         'manifest_package_name': 'org.chromium.chrome.testshell',
         'java_in_dir': 'android/testshell/java',
         'resource_dir': '../res',
-        'asset_location': '<(ant_build_out)/../assets/chrome',
+        'asset_location': '<(ant_build_out)/../assets/<(package_name)',
         'native_libs_paths': [ '<(SHARED_LIB_DIR)/libchromiumtestshell.so', ],
         'additional_input_paths': [
           '<@(chrome_android_pak_output_resources)',
@@ -123,7 +122,7 @@
       },
     },
     {
-      'target_name': 'chrome_android_paks',
+      'target_name': 'chromium_testshell_paks',
       'type': 'none',
       'dependencies': [
         '<(DEPTH)/chrome/chrome_resources.gyp:packed_resources',
@@ -132,22 +131,34 @@
       'copies': [
         {
           'destination': '<(chrome_android_pak_output_folder)',
-          'files': [ '<@(chrome_android_pak_input_resources)' ],
+          'files': [
+            '<@(chrome_android_pak_input_resources)',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
+          ],
         }
       ],
     },
+    # This target is left out to avoid breaking downstream Chrome for Android
+    # build. It will be removed once the corresponding downstream change will
+    # land.
+    # crbug.com/163955
     {
-      'target_name': 'copy_devtools_resources',
+      'target_name': 'chrome_android_paks',
       'type': 'none',
       'dependencies': [
-        '<(DEPTH)/chrome/chrome_resources.gyp:chrome_extra_resources',
+        '<(DEPTH)/chrome/chrome_resources.gyp:packed_resources',
+        '<(DEPTH)/chrome/chrome_resources.gyp:packed_extra_resources',
+      ],
+      'variables': {
+        'package_name': 'chrome',
+      },
+      'includes': [
+        'chrome_android_paks.gypi',
       ],
       'copies': [
         {
           'destination': '<(chrome_android_pak_output_folder)',
-          'files': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
-          ],
+          'files': [ '<@(chrome_android_pak_input_resources)' ],
         }
       ],
     },
