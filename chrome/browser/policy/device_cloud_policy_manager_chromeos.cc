@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
-#include "chrome/browser/policy/cloud_policy_client.h"
 #include "chrome/browser/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/enrollment_handler_chromeos.h"
@@ -59,13 +58,15 @@ DeviceCloudPolicyManagerChromeOS::~DeviceCloudPolicyManagerChromeOS() {}
 
 void DeviceCloudPolicyManagerChromeOS::Connect(
     PrefService* local_state,
-    DeviceManagementService* device_management_service) {
+    DeviceManagementService* device_management_service,
+    scoped_ptr<CloudPolicyClient::StatusProvider> device_status_provider) {
   CHECK(!device_management_service_);
   CHECK(device_management_service);
   CHECK(local_state);
 
   local_state_ = local_state;
   device_management_service_ = device_management_service;
+  device_status_provider_ = device_status_provider.Pass();
 
   StartIfManaged();
 }
@@ -134,7 +135,8 @@ scoped_ptr<CloudPolicyClient> DeviceCloudPolicyManagerChromeOS::CreateClient() {
   return make_scoped_ptr(
       new CloudPolicyClient(GetMachineID(), GetMachineModel(),
                             USER_AFFILIATION_NONE,
-                            CloudPolicyClient::POLICY_TYPE_DEVICE, NULL,
+                            CloudPolicyClient::POLICY_TYPE_DEVICE,
+                            device_status_provider_.get(),
                             device_management_service_));
 }
 

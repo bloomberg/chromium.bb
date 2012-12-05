@@ -600,9 +600,14 @@ void BrowserPolicyConnector::CompleteInitialization() {
 
   if (device_cloud_policy_manager_.get()) {
     device_cloud_policy_manager_->Init();
+    scoped_ptr<CloudPolicyClient::StatusProvider> status_provider(
+        new DeviceStatusCollector(g_browser_process->local_state(),
+            chromeos::system::StatisticsProvider::GetInstance(),
+            NULL));
     device_cloud_policy_manager_->Connect(
         g_browser_process->local_state(),
-        device_management_service_.get());
+        device_management_service_.get(),
+        status_provider.Pass());
   }
 
   if (device_local_account_policy_service_.get()) {

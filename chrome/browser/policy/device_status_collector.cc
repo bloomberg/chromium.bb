@@ -4,6 +4,8 @@
 
 #include "chrome/browser/policy/device_status_collector.h"
 
+#include <limits>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -60,18 +62,12 @@ const char kSpeed[] = "speed";
 
 const char kTimestamp[] = "timestamp";
 
-// Record device activity for the specified day into the given dictionary.
-void AddDeviceActivity(base::DictionaryValue* activity_times,
-                       Time day_midnight,
-                       TimeDelta activity) {
-  DCHECK(activity.InMilliseconds() < kMillisecondsPerDay);
-  int64 day_start_timestamp =
-      (day_midnight - Time::UnixEpoch()).InMilliseconds();
-  std::string day_key = base::Int64ToString(day_start_timestamp);
-  int previous_activity = 0;
-  activity_times->GetInteger(day_key, &previous_activity);
-  activity_times->SetInteger(day_key,
-                             previous_activity + activity.InMilliseconds());
+// Determine the day key (milliseconds since epoch for corresponding day in UTC)
+// for a given |timestamp|.
+int64 TimestampToDayKey(Time timestamp) {
+  Time::Exploded exploded;
+  timestamp.LocalMidnight().LocalExplode(&exploded);
+  return (Time::FromUTCExploded(exploded) - Time::UnixEpoch()).InMilliseconds();
 }
 
 }  // namespace
@@ -86,6 +82,8 @@ DeviceStatusCollector::DeviceStatusCollector(
       max_stored_future_activity_days_(kMaxStoredFutureActivityDays),
       local_state_(local_state),
       last_idle_check_(Time()),
+      last_reported_day_(0),
+      duration_for_last_reported_day_(0),
       geolocation_update_in_progress_(false),
       statistics_provider_(provider),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
@@ -201,31 +199,40 @@ Time DeviceStatusCollector::GetCurrentTime() {
 
 // Remove all out-of-range activity times from the local store.
 void DeviceStatusCollector::PruneStoredActivityPeriods(Time base_time) {
-  const base::DictionaryValue* activity_times =
-      local_state_->GetDictionary(prefs::kDeviceActivityTimes);
-  if (activity_times->size() <=
-      max_stored_past_activity_days_ + max_stored_future_activity_days_)
-    return;
-
   Time min_time =
       base_time - TimeDelta::FromDays(max_stored_past_activity_days_);
   Time max_time =
       base_time + TimeDelta::FromDays(max_stored_future_activity_days_);
-  const Time epoch = Time::UnixEpoch();
+  TrimStoredActivityPeriods(TimestampToDayKey(min_time), 0,
+                            TimestampToDayKey(max_time));
+}
+
+void DeviceStatusCollector::TrimStoredActivityPeriods(int64 min_day_key,
+                                                      int min_day_trim_duration,
+                                                      int64 max_day_key) {
+  const base::DictionaryValue* activity_times =
+      local_state_->GetDictionary(prefs::kDeviceActivityTimes);
 
   scoped_ptr<base::DictionaryValue> copy(activity_times->DeepCopy());
-  for (base::DictionaryValue::key_iterator it = activity_times->begin_keys();
-       it != activity_times->end_keys(); ++it) {
+  for (base::DictionaryValue::Iterator it(*activity_times); it.HasNext();
+       it.Advance()) {
     int64 timestamp;
-
-    if (base::StringToInt64(*it, &timestamp)) {
+    if (base::StringToInt64(it.key(), &timestamp)) {
       // Remove data that is too old, or too far in the future.
-      Time day_midnight = epoch + TimeDelta::FromMilliseconds(timestamp);
-      if (day_midnight > min_time && day_midnight < max_time)
+      if (timestamp >= min_day_key && timestamp < max_day_key) {
+        if (timestamp == min_day_key) {
+          int new_activity_duration = 0;
+          if (it.value().GetAsInteger(&new_activity_duration)) {
+            new_activity_duration =
+                std::max(new_activity_duration - min_day_trim_duration, 0);
+          }
+          copy->SetInteger(it.key(), new_activity_duration);
+        }
         continue;
+      }
     }
     // The entry is out of range or couldn't be parsed. Remove it.
-    copy->Remove(*it, NULL);
+    copy->Remove(it.key(), NULL);
   }
   local_state_->Set(prefs::kDeviceActivityTimes, *copy);
 }
@@ -237,22 +244,16 @@ void DeviceStatusCollector::AddActivePeriod(Time start, Time end) {
   DictionaryPrefUpdate update(local_state_, prefs::kDeviceActivityTimes);
   base::DictionaryValue* activity_times = update.Get();
 
-  Time midnight = end.LocalMidnight();
-
-  // Figure out UTC midnight on the same day as the local day.
-  Time::Exploded exploded;
-  midnight.LocalExplode(&exploded);
-  Time utc_midnight = Time::FromUTCExploded(exploded);
-
-  // Record the device activity for today.
-  TimeDelta activity_today = end - MAX(midnight, start);
-  AddDeviceActivity(activity_times, utc_midnight, activity_today);
-
-  // If this interval spans two days, record activity for yesterday too.
-  if (start < midnight) {
-    AddDeviceActivity(activity_times,
-                      utc_midnight - TimeDelta::FromDays(1),
-                      midnight - start);
+  // Assign the period to day buckets in local time.
+  Time midnight = start.LocalMidnight();
+  while (midnight < end) {
+    midnight += TimeDelta::FromDays(1);
+    int64 activity = (std::min(end, midnight) - start).InMilliseconds();
+    std::string day_key = base::Int64ToString(TimestampToDayKey(start));
+    int previous_activity = 0;
+    activity_times->GetInteger(day_key, &previous_activity);
+    activity_times->SetInteger(day_key, previous_activity + activity);
+    start = midnight;
   }
 }
 
@@ -301,11 +302,14 @@ void DeviceStatusCollector::GetActivityTimes(
       period->set_start_timestamp(start_timestamp);
       period->set_end_timestamp(end_timestamp);
       active_period->set_active_duration(activity_milliseconds);
+      if (start_timestamp >= last_reported_day_) {
+        last_reported_day_ = start_timestamp;
+        duration_for_last_reported_day_ = activity_milliseconds;
+      }
     } else {
       NOTREACHED();
     }
   }
-  activity_times->Clear();
 }
 
 void DeviceStatusCollector::GetVersionInfo(
@@ -355,17 +359,38 @@ void DeviceStatusCollector::GetLocation(
 }
 
 void DeviceStatusCollector::GetStatus(em::DeviceStatusReportRequest* request) {
+  // TODO(mnissler): Remove once the old cloud policy stack is retired. The old
+  // stack doesn't support reporting successful submissions back to here, so
+  // just assume whatever ends up in |request| gets submitted successfully.
+  GetDeviceStatus(request);
+  OnSubmittedSuccessfully();
+}
+
+bool DeviceStatusCollector::GetDeviceStatus(
+    em::DeviceStatusReportRequest* status) {
   if (report_activity_times_)
-    GetActivityTimes(request);
+    GetActivityTimes(status);
 
   if (report_version_info_)
-    GetVersionInfo(request);
+    GetVersionInfo(status);
 
   if (report_boot_mode_)
-    GetBootMode(request);
+    GetBootMode(status);
 
   if (report_location_)
-    GetLocation(request);
+    GetLocation(status);
+
+  return true;
+}
+
+bool DeviceStatusCollector::GetSessionStatus(
+    em::SessionStatusReportRequest* status) {
+  return false;
+}
+
+void DeviceStatusCollector::OnSubmittedSuccessfully() {
+  TrimStoredActivityPeriods(last_reported_day_, duration_for_last_reported_day_,
+                            std::numeric_limits<int64>::max());
 }
 
 void DeviceStatusCollector::OnOSVersion(const std::string& version) {

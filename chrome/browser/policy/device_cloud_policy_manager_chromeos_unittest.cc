@@ -70,7 +70,8 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, FreshDevice) {
   FlushDeviceSettings();
   EXPECT_TRUE(manager_.IsInitializationComplete());
 
-  manager_.Connect(&local_state_, &device_management_service_);
+  manager_.Connect(&local_state_, &device_management_service_,
+                   scoped_ptr<CloudPolicyClient::StatusProvider>(NULL));
 
   PolicyBundle bundle;
   EXPECT_TRUE(manager_.policies().Equals(bundle));
@@ -91,7 +92,8 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, EnrolledDevice) {
       POLICY_SCOPE_MACHINE, Value::CreateBooleanValue(false));
   EXPECT_TRUE(manager_.policies().Equals(bundle));
 
-  manager_.Connect(&local_state_, &device_management_service_);
+  manager_.Connect(&local_state_, &device_management_service_,
+                   scoped_ptr<CloudPolicyClient::StatusProvider>(NULL));
   EXPECT_TRUE(manager_.policies().Equals(bundle));
 
   manager_.Shutdown();
@@ -106,7 +108,8 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, ConsumerDevice) {
   PolicyBundle bundle;
   EXPECT_TRUE(manager_.policies().Equals(bundle));
 
-  manager_.Connect(&local_state_, &device_management_service_);
+  manager_.Connect(&local_state_, &device_management_service_,
+                   scoped_ptr<CloudPolicyClient::StatusProvider>(NULL));
   EXPECT_TRUE(manager_.policies().Equals(bundle));
 
   manager_.Shutdown();
@@ -160,7 +163,8 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     PolicyBundle bundle;
     EXPECT_TRUE(manager_.policies().Equals(bundle));
 
-    manager_.Connect(&local_state_, &device_management_service_);
+    manager_.Connect(&local_state_, &device_management_service_,
+                     scoped_ptr<CloudPolicyClient::StatusProvider>(NULL));
   }
 
   virtual void TearDown() OVERRIDE {

@@ -24,13 +24,13 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::_;
 using ::testing::DoAll;
 using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SetArgPointee;
-using base::TimeDelta;
+using ::testing::_;
 using base::Time;
+using base::TimeDelta;
 
 namespace em = enterprise_management;
 
@@ -178,7 +178,7 @@ class DeviceStatusCollectorTest : public testing::Test {
 
   void GetStatus() {
     status_.Clear();
-    status_collector_->GetStatus(&status_);
+    status_collector_->GetDeviceStatus(&status_);
   }
 
   void CheckThatNoLocationIsReported() {
@@ -287,7 +287,7 @@ TEST_F(DeviceStatusCollectorTest, AllActive) {
                               sizeof(test_states) / sizeof(IdleState));
   GetStatus();
   EXPECT_EQ(1, status_.active_period_size());
-  EXPECT_EQ(3 * ActivePeriodMilliseconds(), GetActiveMilliseconds(status_));
+  EXPECT_EQ(4 * ActivePeriodMilliseconds(), GetActiveMilliseconds(status_));
 }
 
 TEST_F(DeviceStatusCollectorTest, MixedStates) {
@@ -352,15 +352,15 @@ TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
     IDLE_STATE_ACTIVE,
     IDLE_STATE_IDLE
   };
-  int max_days = 10;
+  const int kMaxDays = 10;
 
   cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
-  status_collector_->set_max_stored_past_activity_days(max_days - 1);
+  status_collector_->set_max_stored_past_activity_days(kMaxDays - 1);
   status_collector_->set_max_stored_future_activity_days(1);
   Time baseline = Time::Now().LocalMidnight();
 
   // Simulate 12 active periods.
-  for (int i = 0; i < max_days + 2; i++) {
+  for (int i = 0; i < kMaxDays + 2; i++) {
     status_collector_->Simulate(test_states,
                                 sizeof(test_states) / sizeof(IdleState));
     // Advance the simulated clock by a day.
@@ -370,10 +370,10 @@ TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
 
   // Check that we don't exceed the max number of periods.
   GetStatus();
-  EXPECT_EQ(max_days, status_.active_period_size());
+  EXPECT_EQ(kMaxDays - 1, status_.active_period_size());
 
   // Simulate some future times.
-  for (int i = 0; i < max_days + 2; i++) {
+  for (int i = 0; i < kMaxDays + 2; i++) {
     status_collector_->Simulate(test_states,
                                 sizeof(test_states) / sizeof(IdleState));
     // Advance the simulated clock by a day.
@@ -390,7 +390,7 @@ TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
   // Check that we don't exceed the max number of periods.
   status_.clear_active_period();
   GetStatus();
-  EXPECT_LT(status_.active_period_size(), max_days);
+  EXPECT_LT(status_.active_period_size(), kMaxDays);
 }
 
 TEST_F(DeviceStatusCollectorTest, ActivityTimesDisabledByDefault) {
@@ -438,6 +438,30 @@ TEST_F(DeviceStatusCollectorTest, ActivityCrossingMidnight) {
             kMillisecondsPerDay);
   EXPECT_EQ(time_period1.end_timestamp() - time_period1.start_timestamp(),
             kMillisecondsPerDay);
+}
+
+TEST_F(DeviceStatusCollectorTest, ActivityTimesKeptUntilSubmittedSuccessfully) {
+  IdleState test_states[] = {
+    IDLE_STATE_ACTIVE,
+    IDLE_STATE_ACTIVE,
+  };
+  cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
+
+  status_collector_->Simulate(test_states, 2);
+  GetStatus();
+  EXPECT_EQ(2 * ActivePeriodMilliseconds(), GetActiveMilliseconds(status_));
+  em::DeviceStatusReportRequest first_status(status_);
+
+  // The collector returns the same status again.
+  GetStatus();
+  EXPECT_EQ(first_status.SerializeAsString(), status_.SerializeAsString());
+
+  // After indicating a successful submit, the submitted status gets cleared,
+  // but what got collected meanwhile sticks around.
+  status_collector_->Simulate(test_states, 1);
+  status_collector_->OnSubmittedSuccessfully();
+  GetStatus();
+  EXPECT_EQ(ActivePeriodMilliseconds(), GetActiveMilliseconds(status_));
 }
 
 TEST_F(DeviceStatusCollectorTest, DevSwitchBootMode) {

@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/policy/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud_policy_store.h"
 #include "chrome/browser/policy/enrollment_status_chromeos.h"
@@ -20,7 +21,6 @@ class PrefService;
 
 namespace policy {
 
-class CloudPolicyClient;
 class DeviceCloudPolicyStoreChromeOS;
 class DeviceManagementService;
 class EnrollmentHandlerChromeOS;
@@ -39,8 +39,10 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   virtual ~DeviceCloudPolicyManagerChromeOS();
 
   // Establishes the connection to the cloud, updating policy as necessary.
-  void Connect(PrefService* local_state,
-               DeviceManagementService* device_management_service);
+  void Connect(
+      PrefService* local_state,
+      DeviceManagementService* device_management_service,
+      scoped_ptr<CloudPolicyClient::StatusProvider> device_status_provider);
 
   // Starts enrollment or re-enrollment. Once the enrollment process completes,
   // |callback| is invoked and gets passed the status of the operation.
@@ -80,6 +82,7 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   EnterpriseInstallAttributes* install_attributes_;
 
   DeviceManagementService* device_management_service_;
+  scoped_ptr<CloudPolicyClient::StatusProvider> device_status_provider_;
 
   // PrefService instance to read the policy refresh rate from.
   PrefService* local_state_;
