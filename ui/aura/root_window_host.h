@@ -83,6 +83,9 @@ class AURA_EXPORT RootWindowHost {
   virtual bool ConfineCursorToRootWindow() = 0;
   virtual void UnConfineCursor() = 0;
 
+  // Called when the cursor visibility has changed.
+  virtual void OnCursorVisibilityChanged(bool show) = 0;
+
   // Moves the cursor to the specified location relative to the root window.
   virtual void MoveCursorTo(const gfx::Point& location) = 0;
 
