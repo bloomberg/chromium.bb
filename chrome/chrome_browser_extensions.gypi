@@ -31,6 +31,7 @@
         '../content/content.gyp:content_browser',
         '../crypto/crypto.gyp:crypto',
         '../device/device.gyp:device_bluetooth',
+        '../device/device.gyp:device_usb',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../sync/sync.gyp:sync_notifier',

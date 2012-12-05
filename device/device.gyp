@@ -71,11 +71,46 @@
       ],
     },
     {
+      'target_name': 'device_usb',
+      'type': 'static_library',
+      'sources': [
+        'usb/usb_ids.cc',
+        'usb/usb_ids.h',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'actions': [
+        {
+          'action_name': 'generate_usb_ids',
+          'variables': {
+            'usb_ids_path%': '<(DEPTH)/third_party/usb_ids/usb.ids',
+            'usb_ids_py_path': '<(DEPTH)/tools/usb_ids/usb_ids.py',
+          },
+          'inputs': [
+            '<(usb_ids_path)',
+            '<(usb_ids_py_path)',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/device/usb/usb_ids_gen.cc',
+          ],
+          'action': [
+            'python',
+            '<(usb_ids_py_path)',
+            '-i', '<(usb_ids_path)',
+            '-o', '<@(_outputs)',
+          ],
+          'process_outputs_as_sources': 1,
+        },
+      ],
+    },
+    {
       'target_name': 'device_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
         'device_bluetooth',
         'device_bluetooth_mocks',
+        'device_usb',
         '../base/base.gyp:test_support_base',
         '../content/content.gyp:test_support_content',
         '../testing/gmock.gyp:gmock',
@@ -90,6 +125,7 @@
         'test/device_test_suite.cc',
         'test/device_test_suite.h',
         'test/run_all_unittests.cc',
+        'usb/usb_ids_unittest.cc',
       ],
       'conditions': [
         ['chromeos==1', {
