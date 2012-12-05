@@ -5868,6 +5868,55 @@ TEST_F(GLES2DecoderManualInitTest, StreamTextureCHROMIUMNullMgr) {
   GetGLError(); // ignore internal error
 }
 
+TEST_F(GLES2DecoderManualInitTest, ReCreateStreamTextureCHROMIUM) {
+  const GLuint kObjectId = 123;
+  InitDecoder(
+      "GL_CHROMIUM_stream_texture GL_OES_EGL_image_external",  // extensions
+      false,   // has alpha
+      false,   // has depth
+      false,   // has stencil
+      false,   // request alpha
+      false,   // request depth
+      false,   // request stencil
+      true);   // bind generates resource
+
+  StrictMock<MockStreamTextureManager> manager;
+  StrictMock<MockStreamTexture> texture;
+  decoder_->SetStreamTextureManager(&manager);
+
+  EXPECT_CALL(manager, LookupStreamTexture(kServiceTextureId))
+      .WillOnce(Return(&texture))
+      .RetiresOnSaturation();
+  EXPECT_CALL(texture, Update())
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(manager, DestroyStreamTexture(kServiceTextureId))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(manager, CreateStreamTexture(kServiceTextureId,
+                                           client_texture_id_))
+      .WillOnce(Return(kObjectId))
+      .RetiresOnSaturation();
+
+  TextureManager::TextureInfo* info = GetTextureInfo(client_texture_id_);
+  info->SetStreamTexture(true);
+
+  DoBindTexture(GL_TEXTURE_EXTERNAL_OES, client_texture_id_, kServiceTextureId);
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  DestroyStreamTextureCHROMIUM cmd;
+  cmd.Init(client_texture_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_FALSE(info->IsStreamTexture());
+
+  CreateStreamTextureCHROMIUM cmd2;
+  cmd2.Init(client_texture_id_, shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd2));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_TRUE(info->IsStreamTexture());
+}
+
 TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleBindTexture) {
   InitDecoder(
       "GL_ARB_texture_rectangle",  // extensions
