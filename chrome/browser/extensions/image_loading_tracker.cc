@@ -183,8 +183,9 @@ class ImageLoadingTracker::ImageLoader
     DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
     // TODO(xiyuan): Clean up to use SkBitmap here and in LoadOnBlockingPool.
     scoped_ptr<SkBitmap> bitmap(new SkBitmap);
+    gfx::Size original_size(image.width(), image.height());
     *bitmap = ResizeIfNeeded(*image.bitmap(), image_info);
-    ReportBack(bitmap.release(), image_info, image_info.desired_size, id);
+    ReportBack(bitmap.release(), image_info, original_size, id);
   }
 
   void ReportBack(const SkBitmap* bitmap, const ImageRepresentation& image_info,
