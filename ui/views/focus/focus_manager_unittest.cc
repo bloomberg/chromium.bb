@@ -136,7 +136,9 @@ TEST_F(FocusManagerTest, WidgetFocusChangeListener) {
   TestWidgetFocusChangeListener widget_listener;
   AddWidgetFocusChangeListener(&widget_listener);
 
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams params;
+  params.type = views::Widget::InitParams::TYPE_WINDOW;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(10, 10, 100, 100);
   params.parent_widget = GetWidget();
 

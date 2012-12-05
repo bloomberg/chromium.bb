@@ -78,8 +78,8 @@ HWND GetNativeParent(HWND window) {
 TEST_F(NativeViewHostTest, NativeViewHierarchyChanged) {
   // Create the top level widget.
   scoped_ptr<Widget> toplevel(new Widget);
-  Widget::InitParams toplevel_params =
-      CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams toplevel_params(Widget::InitParams::TYPE_WINDOW);
+  toplevel_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   toplevel->Init(toplevel_params);
   toplevel->SetContentsView(new View);
 

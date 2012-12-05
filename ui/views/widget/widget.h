@@ -145,10 +145,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // |parent| is returned.
     gfx::NativeView GetParent() const;
 
-    // Will return the first of the following that isn't NULL: the native view,
-    // |parent|, |context|.
-    gfx::NativeView GetContext() const;
-
     Type type;
     // If NULL, a default implementation will be constructed.
     WidgetDelegate* delegate;
@@ -195,13 +191,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // Only used by NativeWidgetAura. Specifies the type of layer for the
     // aura::Window. Default is LAYER_TEXTURED.
     ui::LayerType layer_type;
-    // Only used by Aura. Provides a context window whose RootWindow we be
-    // consulted during widget creation to determine where in the Window
-    // hierarchy this widget should be placed. (This is separate from |parent|;
-    // if you pass a RootWindow to |parent|, your window will be parented to
-    // |parent|. If you pass a RootWindow to |context|, we ask that RootWindow
-    // where it wants your window placed.) NULL is not allowed if you are using
-    // aura.
+    // Only used by Aura. Provides additional context (generally a RootWindow)
+    // during creation to allow the widget to determine which desktop type it
+    // will belong to. NULL is not allowed if you are using aura.
     gfx::NativeView context;
   };
 

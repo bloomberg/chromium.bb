@@ -9,7 +9,6 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_helper.h"
 #endif
 
@@ -58,16 +57,6 @@ void ViewsTestBase::RunPendingMessages() {
   run_loop.set_dispatcher(aura::Env::GetInstance()->GetDispatcher());
 #endif
   run_loop.RunUntilIdle();
-}
-
-Widget::InitParams ViewsTestBase::CreateParams(
-    Widget::InitParams::Type type) {
-  Widget::InitParams params(type);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-#if defined(USE_AURA)
-  params.context = aura_test_helper_->root_window();
-#endif
-  return params;
 }
 
 }  // namespace views

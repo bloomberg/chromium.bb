@@ -30,13 +30,8 @@ FocusManager* FocusManagerTest::GetFocusManager() {
 
 void FocusManagerTest::SetUp() {
   ViewsTestBase::SetUp();
-
-  Widget* widget = new Widget;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  params.delegate = this;
-  params.bounds = gfx::Rect(0, 0, 1024, 768);
-  widget->Init(params);
-
+  Widget* widget =
+      Widget::CreateWindowWithBounds(this, gfx::Rect(0, 0, 1024, 768));
   InitContentView();
   widget->Show();
 }

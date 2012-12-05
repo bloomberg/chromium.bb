@@ -7,6 +7,7 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget_private.h"
+#include "ui/views/widget/native_widget_test_utils.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -37,36 +38,17 @@ class NativeWidgetTest : public ViewsTestBase {
   NativeWidgetTest() {}
   virtual ~NativeWidgetTest() {}
 
-  internal::NativeWidgetPrivate* CreateNativeWidgetOfType(
-      Widget::InitParams::Type type) {
-    Widget* widget = new Widget;
-    Widget::InitParams params = CreateParams(type);
-    params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
-    params.child = false; // Implicitly set to true by ctor with TYPE_CONTROL.
-    params.bounds = gfx::Rect(10, 10, 200, 200);
-    widget->Init(params);
-    return widget->native_widget_private();
-  }
-
-  internal::NativeWidgetPrivate* CreateNativeWidget() {
-    return CreateNativeWidgetOfType(Widget::InitParams::TYPE_POPUP);
-  }
-
-  internal::NativeWidgetPrivate* CreateNativeSubWidget() {
-    return CreateNativeWidgetOfType(Widget::InitParams::TYPE_CONTROL);
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetTest);
 };
 
 TEST_F(NativeWidgetTest, CreateNativeWidget) {
-  ScopedTestWidget widget(CreateNativeWidget());
+  ScopedTestWidget widget(internal::CreateNativeWidget());
   EXPECT_TRUE(widget->GetWidget()->GetNativeView() != NULL);
 }
 
 TEST_F(NativeWidgetTest, GetNativeWidgetForNativeView) {
-  ScopedTestWidget widget(CreateNativeWidget());
+  ScopedTestWidget widget(internal::CreateNativeWidget());
   EXPECT_EQ(widget.get(),
             internal::NativeWidgetPrivate::GetNativeWidgetForNativeView(
                 widget->GetWidget()->GetNativeView()));
@@ -74,7 +56,7 @@ TEST_F(NativeWidgetTest, GetNativeWidgetForNativeView) {
 
 // |widget| has the toplevel NativeWidget.
 TEST_F(NativeWidgetTest, GetTopLevelNativeWidget1) {
-  ScopedTestWidget widget(CreateNativeWidget());
+  ScopedTestWidget widget(internal::CreateNativeWidget());
   EXPECT_EQ(widget.get(),
             internal::NativeWidgetPrivate::GetTopLevelNativeWidget(
                 widget->GetWidget()->GetNativeView()));
@@ -82,14 +64,15 @@ TEST_F(NativeWidgetTest, GetTopLevelNativeWidget1) {
 
 // |toplevel_widget| has the toplevel NativeWidget.
 TEST_F(NativeWidgetTest, GetTopLevelNativeWidget2) {
-  ScopedTestWidget toplevel_widget(CreateNativeWidget());
+  ScopedTestWidget toplevel_widget(internal::CreateNativeWidget());
 
   // |toplevel_widget| owns |child_host|.
   NativeViewHost* child_host = new NativeViewHost;
   toplevel_widget->GetWidget()->SetContentsView(child_host);
 
   // |child_host| owns |child_widget|.
-  internal::NativeWidgetPrivate* child_widget = CreateNativeSubWidget();
+  internal::NativeWidgetPrivate* child_widget =
+      internal::CreateNativeSubWidget();
   child_host->Attach(child_widget->GetWidget()->GetNativeView());
 
   EXPECT_EQ(toplevel_widget.get(),

@@ -44,11 +44,6 @@ class ViewsTestBase : public testing::Test {
 
   MessageLoop* message_loop() { return &message_loop_; }
 
-  // Creates a widget of |type| with any platform specific data for use in
-  // cross-platform tests. Will also set WIDGET_OWNS_NATIVE_WIDGET, which most
-  // unit tests want.
-  Widget::InitParams CreateParams(Widget::InitParams::Type type);
-
  private:
   MessageLoopForUI message_loop_;
   scoped_ptr<TestViewsDelegate> views_delegate_;
