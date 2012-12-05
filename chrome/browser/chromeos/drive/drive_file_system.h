@@ -248,9 +248,10 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Callback for DriveResourceMetadata::RefreshFile, from OnSearch.
   // Adds |drive_file_path| to |results|. When |entry_proto| is not present in
   // the local file system snapshot, it is not added to |results|. Instead,
-  // CheckForUpdates is called. Runs |callback| with |results|.
-  // |callback| may be null.
+  // CheckForUpdates is called. Runs |callback| with |results| if
+  // |should_run_callback| is true.
   void AddToSearchResults(std::vector<SearchResultInfo>* results,
+                          bool should_run_callback,
                           const base::Closure& callback,
                           DriveFileError error,
                           const FilePath& drive_file_path,
@@ -375,12 +376,9 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                        const FilePath& downloaded_file_path,
                                        bool has_enough_space);
 
-  // FileMoveCallback for directory changes. Notifies of directory changes,
-  // and runs |callback| with |error|. |callback| may be null.
-  void OnDirectoryChangeFileMoveCallback(
-      const FileOperationCallback& callback,
-      DriveFileError error,
-      const FilePath& directory_path);
+  // FileMoveCallback for directory changes. Notifies of directory changes.
+  void OnDirectoryChangeFileMoveCallback(DriveFileError error,
+                                         const FilePath& directory_path);
 
   // Adds the uploaded file to the cache.
   void AddUploadedFileToCache(const AddUploadedFileParams& params,

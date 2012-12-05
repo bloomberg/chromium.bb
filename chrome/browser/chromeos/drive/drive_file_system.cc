@@ -152,8 +152,8 @@ void RunGetEntryInfoWithFilePathCallback(
     const FilePath& path,
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
-  if (!callback.is_null())
-    callback.Run(error, path, entry_proto.Pass());
+  DCHECK(!callback.is_null());
+  callback.Run(error, path, entry_proto.Pass());
 }
 
 }  // namespace
@@ -1259,8 +1259,7 @@ void DriveFileSystem::OnRequestDirectoryRefresh(
       directory_resource_id,
       feed_processor.entry_proto_map(),
       base::Bind(&DriveFileSystem::OnDirectoryChangeFileMoveCallback,
-                 ui_weak_ptr_,
-                 FileOperationCallback()));
+                 ui_weak_ptr_));
 }
 
 void DriveFileSystem::UpdateFileByResourceId(
@@ -1460,12 +1459,14 @@ void DriveFileSystem::OnSearch(
         base::Bind(&DriveFileSystem::AddToSearchResults,
                    ui_weak_ptr_,
                    results,
-                   should_run_callback ? callback : base::Closure()));
+                   should_run_callback,
+                   callback));
   }
 }
 
 void DriveFileSystem::AddToSearchResults(
     std::vector<SearchResultInfo>* results,
+    bool should_run_callback,
     const base::Closure& callback,
     DriveFileError error,
     const FilePath& drive_file_path,
@@ -1487,7 +1488,7 @@ void DriveFileSystem::AddToSearchResults(
     NOTREACHED();
   }
 
-  if (!callback.is_null())
+  if (should_run_callback)
     callback.Run();
 }
 
@@ -1642,14 +1643,10 @@ void DriveFileSystem::OnFileDownloadedAndSpaceChecked(
 }
 
 void DriveFileSystem::OnDirectoryChangeFileMoveCallback(
-    const FileOperationCallback& callback,
     DriveFileError error,
     const FilePath& directory_path) {
   if (error == DRIVE_FILE_OK)
     OnDirectoryChanged(directory_path);
-
-  if (!callback.is_null())
-    callback.Run(error);
 }
 
 void DriveFileSystem::NotifyFileSystemMounted() {
