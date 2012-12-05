@@ -424,7 +424,7 @@ void SyncTest::SetupMockGaiaResponses() {
       true);
   fake_factory_->SetFakeResponse(
       GaiaUrls::GetInstance()->get_user_info_url(),
-      "email=user@gmail.com",
+      "email=user@gmail.com\ndisplayEmail=user@gmail.com",
       true);
   fake_factory_->SetFakeResponse(
       GaiaUrls::GetInstance()->issue_auth_token_url(),

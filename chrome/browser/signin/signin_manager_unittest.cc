@@ -175,8 +175,10 @@ class SigninManagerTest : public TokenServiceTestHarness {
   void SimulateValidResponseGetClientInfo(bool isGPlusUser) {
     // Simulate the correct ClientLogin response.
     std::string response_string = isGPlusUser ?
-        "email=user@gmail.com\nallServices=googleme" :
-        "email=user@gmail.com\nallServices=";
+        "email=user@gmail.com\ndisplayEmail=USER@gmail.com\n"
+        "allServices=googleme" :
+        "email=user@gmail.com\ndisplayEmail=USER@gmail.com\n"
+        "allServices=";
     SetupFetcherAndComplete(GaiaUrls::GetInstance()->get_user_info_url(), 200,
                             net::ResponseCookies(), response_string);
   }
