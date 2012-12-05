@@ -395,6 +395,8 @@ void FixedSizedScrollView::OnPaintFocusBorder(gfx::Canvas* canvas) {
 TrayPopupLabelButtonBorder::TrayPopupLabelButtonBorder() {
   SetImages(views::CustomButton::STATE_NORMAL,
             views::BorderImages(kTrayPopupLabelButtonBorderImagesNormal));
+  SetImages(views::CustomButton::STATE_DISABLED,
+            views::BorderImages(kTrayPopupLabelButtonBorderImagesNormal));
   SetImages(views::CustomButton::STATE_HOVERED,
             views::BorderImages(kTrayPopupLabelButtonBorderImagesHovered));
   SetImages(views::CustomButton::STATE_PRESSED,
@@ -410,10 +412,11 @@ void TrayPopupLabelButtonBorder::Paint(const views::View& view,
   ui::NativeTheme::ExtraParams extra;
   const ui::NativeTheme::State state =
       native_theme_delegate->GetThemeState(&extra);
-  if (state == ui::NativeTheme::kNormal) {
-    // In normal state, the border is a vertical bar separating the button from
-    // the preceding sibling. If this button is its parent's first visible
-    // child, the separator bar should be omitted.
+  if (state == ui::NativeTheme::kNormal ||
+      state == ui::NativeTheme::kDisabled) {
+    // In normal and disabled state, the border is a vertical bar separating the
+    // button from the preceding sibling. If this button is its parent's first
+    // visible child, the separator bar should be omitted.
     const views::View* first_visible_child = NULL;
     for (int i = 0; i < view.parent()->child_count(); ++i) {
       const views::View* child = view.parent()->child_at(i);
