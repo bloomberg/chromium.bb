@@ -759,7 +759,6 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // calls and handles PPB_ContentDecryptor_Private calls.
   scoped_ptr<ContentDecryptorDelegate> content_decryptor_delegate_;
 
-  friend class PpapiPluginInstanceTest;
   DISALLOW_COPY_AND_ASSIGN(PluginInstance);
 };
 

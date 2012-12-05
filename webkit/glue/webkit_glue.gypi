@@ -223,6 +223,8 @@
         '../plugins/ppapi/ppb_flash_message_loop_impl.h',
         '../plugins/ppapi/ppb_gpu_blacklist_private_impl.cc',
         '../plugins/ppapi/ppb_gpu_blacklist_private_impl.h',
+        '../plugins/ppapi/ppb_graphics_2d_impl.cc',
+        '../plugins/ppapi/ppb_graphics_2d_impl.h',
         '../plugins/ppapi/ppb_graphics_3d_impl.cc',
         '../plugins/ppapi/ppb_graphics_3d_impl.h',
         '../plugins/ppapi/ppb_host_resolver_private_impl.cc',
