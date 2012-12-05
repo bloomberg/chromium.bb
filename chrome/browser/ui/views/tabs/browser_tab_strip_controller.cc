@@ -451,7 +451,12 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
   data->mini = model_->IsMiniTab(model_index);
   data->blocked = model_->IsTabBlocked(model_index);
   data->app = extensions::TabHelper::FromWebContents(contents)->is_app();
-  data->recording = chrome::ShouldShowRecordingIndicator(contents);
+  if (chrome::ShouldShowProjectingIndicator(contents))
+    data->capture_state = TabRendererData::CAPTURE_STATE_PROJECTING;
+  else if (chrome::ShouldShowRecordingIndicator(contents))
+    data->capture_state = TabRendererData::CAPTURE_STATE_RECORDING;
+  else
+    data->capture_state = TabRendererData::CAPTURE_STATE_NONE;
 }
 
 void BrowserTabStripController::SetTabDataAt(content::WebContents* web_contents,

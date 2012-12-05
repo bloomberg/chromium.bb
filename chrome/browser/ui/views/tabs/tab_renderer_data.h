@@ -21,6 +21,14 @@ struct TabRendererData {
     NETWORK_STATE_LOADING,  // connected, transferring data.
   };
 
+  // Capture state of this tab. If a WebRTC media stream is active, then it is
+  // recording. If tab capturing is active then it is projecting.
+  enum CaptureState {
+    CAPTURE_STATE_NONE,
+    CAPTURE_STATE_RECORDING,
+    CAPTURE_STATE_PROJECTING
+  };
+
   TabRendererData();
   ~TabRendererData();
 
@@ -47,7 +55,7 @@ struct TabRendererData {
   bool mini;
   bool blocked;
   bool app;
-  bool recording;
+  CaptureState capture_state;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_RENDERER_DATA_H_

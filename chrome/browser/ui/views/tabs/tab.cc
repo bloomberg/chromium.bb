@@ -244,6 +244,12 @@ const int kImmersiveBarHeight = 2;
 // Distance between the favicon bar and the tab bar in immersive mode.
 const int kImmersiveBarSpacing = 2;
 
+// Scale to resize the current favicon by when projecting.
+const double kProjectingFaviconResizeScale = 0.75;
+
+// Scale to resize the projection sheet glow by.
+const double kProjectingGlowResizeScale = 2.0;
+
 // Draws the icon image at the center of |bounds|.
 void DrawIconCenter(gfx::Canvas* canvas,
                     const gfx::ImageSkia& image,
@@ -1307,33 +1313,86 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
                      crashed_favicon.height(), bounds, true, SkPaint());
     } else {
       if (!data().favicon.isNull()) {
-        // TODO(pkasting): Use code in tab_icon_view.cc:PaintIcon() (or switch
-        // to using that class to render the favicon).
-        DrawIconCenter(canvas, data().favicon, 0,
-                       data().favicon.width(),
-                       data().favicon.height(),
-                       bounds, true, SkPaint());
+        if (data().capture_state == TabRendererData::CAPTURE_STATE_PROJECTING) {
+          // If projecting, shrink favicon and add projection screen instead.
+          gfx::ImageSkia resized_icon =
+              gfx::ImageSkiaOperations::CreateResizedImage(
+                  data().favicon,
+                  skia::ImageOperations::RESIZE_BEST,
+                  gfx::Size(data().favicon.width() *
+                            kProjectingFaviconResizeScale,
+                            data().favicon.height() *
+                            kProjectingFaviconResizeScale));
+
+          gfx::Rect resized_bounds(bounds);
+          // Need to shift it up a bit vertically because the projection screen
+          // is thinner on the top and bottom.
+          resized_bounds.set_y(resized_bounds.y() - 1);
+
+          DrawIconCenter(canvas, resized_icon, 0,
+                         resized_icon.width(),
+                         resized_icon.height(),
+                         resized_bounds, true, SkPaint());
+
+          ui::ThemeProvider* tp = GetThemeProvider();
+          gfx::ImageSkia projection_screen(
+              *tp->GetImageSkiaNamed(IDR_TAB_CAPTURE));
+
+          DrawIconCenter(canvas, projection_screen, 0,
+                         data().favicon.width(),
+                         data().favicon.height(),
+                         bounds, true, SkPaint());
+        } else {
+          // TODO(pkasting): Use code in tab_icon_view.cc:PaintIcon() (or switch
+          // to using that class to render the favicon).
+          DrawIconCenter(canvas, data().favicon, 0,
+                         data().favicon.width(),
+                         data().favicon.height(),
+                         bounds, true, SkPaint());
+        }
       }
     }
     canvas->Restore();
 
-    // If recording, fade the recording icon on top of the favicon.
-    if (data().recording) {
+    if (data().capture_state != TabRendererData::CAPTURE_STATE_NONE) {
       if (!recording_animation_.get()) {
         recording_animation_.reset(new ui::ThrobAnimation(this));
         recording_animation_->SetTweenType(ui::Tween::EASE_IN_OUT);
         recording_animation_->SetThrobDuration(kRecordingDurationMs);
         recording_animation_->StartThrobbing(-1);
       }
+
       SkPaint paint;
       paint.setAntiAlias(true);
       U8CPU alpha = recording_animation_->GetCurrentValue() * 0xff;
       paint.setAlpha(alpha);
       ui::ThemeProvider* tp = GetThemeProvider();
-      gfx::ImageSkia recording_dot(*tp->GetImageSkiaNamed(IDR_TAB_RECORDING));
-      DrawIconCenter(canvas, recording_dot, 0,
-                     recording_dot.width(), recording_dot.height(),
-                     bounds, false, paint);
+
+      if (data().capture_state == TabRendererData::CAPTURE_STATE_PROJECTING) {
+        // If projecting, add projection glow animation.
+        gfx::Rect glow_bounds(bounds);
+        glow_bounds.set_x(glow_bounds.x() - (32 - 24));
+        glow_bounds.set_y(0);
+        glow_bounds.set_width(glow_bounds.width() *
+                              kProjectingGlowResizeScale);
+        glow_bounds.set_height(glow_bounds.height() *
+                               kProjectingGlowResizeScale);
+
+        gfx::ImageSkia projection_glow(
+            *tp->GetImageSkiaNamed(IDR_TAB_CAPTURE_GLOW));
+        DrawIconCenter(canvas, projection_glow, 0,
+                       projection_glow.width(), projection_glow.height(),
+                       glow_bounds, false, paint);
+      } else if (data().capture_state ==
+                 TabRendererData::CAPTURE_STATE_RECORDING) {
+        // If recording, fade the recording icon on top of the favicon.
+        gfx::ImageSkia recording_dot(*tp->GetImageSkiaNamed(IDR_TAB_RECORDING));
+        DrawIconCenter(canvas, recording_dot, 0,
+                       recording_dot.width(), recording_dot.height(),
+                       bounds, false, paint);
+      } else {
+        NOTREACHED();
+      }
     } else {
       recording_animation_.reset();
     }
