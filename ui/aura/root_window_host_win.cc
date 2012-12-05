@@ -212,10 +212,6 @@ void RootWindowHostWin::UnConfineCursor() {
   ClipCursor(NULL);
 }
 
-void RootWindowHostWin::OnCursorVisibilityChanged(bool show) {
-  NOTIMPLEMENTED();
-}
-
 void RootWindowHostWin::MoveCursorTo(const gfx::Point& location) {
   POINT pt;
   ClientToScreen(hwnd(), &pt);

@@ -431,9 +431,6 @@ bool DesktopRootWindowHostWin::ConfineCursorToRootWindow() {
 void DesktopRootWindowHostWin::UnConfineCursor() {
 }
 
-void DesktopRootWindowHostWin::OnCursorVisibilityChanged(bool show) {
-}
-
 void DesktopRootWindowHostWin::MoveCursorTo(const gfx::Point& location) {
 }
 

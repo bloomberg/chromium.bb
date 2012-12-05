@@ -210,7 +210,6 @@ void RootWindow::OnCursorVisibilityChanged(bool show) {
   // cursor state.
   Env::GetInstance()->SetCursorShown(show);
   PostMouseMoveEventAfterWindowChange();
-  host_->OnCursorVisibilityChanged(show);
 }
 
 void RootWindow::MoveCursorTo(const gfx::Point& location_in_dip) {
