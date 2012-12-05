@@ -279,7 +279,65 @@ int HostService::RunAsService() {
     return kInitializationFailed;
   }
 
+  // Wait until the service thread completely exited to avoid concurrent
+  // teardown of objects registered with base::AtExitManager and object
+  // destoyed by the service thread.
+  stopped_event_.Wait();
+
   return kSuccessExitCode;
+}
+
+void HostService::RunAsServiceImpl() {
+  MessageLoop message_loop(MessageLoop::TYPE_DEFAULT);
+
+  // Keep a reference to the main message loop while it is used. Once the last
+  // reference is dropped QuitClosure() will be posted to the loop.
+  main_task_runner_ =
+      new AutoThreadTaskRunner(message_loop.message_loop_proxy(),
+                               base::Bind(&QuitMessageLoop, &message_loop));
+
+  // Register the service control handler.
+  service_status_handle_ = RegisterServiceCtrlHandlerExW(
+      kWindowsServiceName, &HostService::ServiceControlHandler, this);
+  if (service_status_handle_ == 0) {
+    LOG_GETLASTERROR(ERROR)
+        << "Failed to register the service control handler";
+    return;
+  }
+
+  // Report running status of the service.
+  SERVICE_STATUS service_status;
+  ZeroMemory(&service_status, sizeof(service_status));
+  service_status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
+  service_status.dwCurrentState = SERVICE_RUNNING;
+  service_status.dwControlsAccepted = SERVICE_ACCEPT_SHUTDOWN |
+                                      SERVICE_ACCEPT_STOP |
+                                      SERVICE_ACCEPT_SESSIONCHANGE;
+  service_status.dwWin32ExitCode = kSuccessExitCode;
+
+  if (!SetServiceStatus(service_status_handle_, &service_status)) {
+    LOG_GETLASTERROR(ERROR)
+        << "Failed to report service status to the service control manager";
+    return;
+  }
+
+  // Post a dummy session change notification to peek up the current console
+  // session.
+  main_task_runner_->PostTask(FROM_HERE, base::Bind(
+      &HostService::OnSessionChange, base::Unretained(this)));
+
+  // Run the service.
+  RunMessageLoop(&message_loop);
+
+  // Tell SCM that the service is stopped.
+  service_status.dwCurrentState = SERVICE_STOPPED;
+  service_status.dwControlsAccepted = 0;
+
+  if (!SetServiceStatus(service_status_handle_, &service_status)) {
+    LOG_GETLASTERROR(ERROR)
+        << "Failed to report service status to the service control manager";
+    return;
+  }
 }
 
 int HostService::RunInConsole() {
@@ -387,62 +445,14 @@ DWORD WINAPI HostService::ServiceControlHandler(DWORD control,
 }
 
 VOID WINAPI HostService::ServiceMain(DWORD argc, WCHAR* argv[]) {
-  MessageLoop message_loop(MessageLoop::TYPE_DEFAULT);
-
-  // Keep a reference to the main message loop while it is used. Once the last
-  // reference is dropped QuitClosure() will be posted to the loop.
   HostService* self = HostService::GetInstance();
-  self->main_task_runner_ =
-      new AutoThreadTaskRunner(message_loop.message_loop_proxy(),
-                               base::Bind(&QuitMessageLoop, &message_loop));
-
-  // Register the service control handler.
-  self->service_status_handle_ =
-      RegisterServiceCtrlHandlerExW(kWindowsServiceName,
-                                    &HostService::ServiceControlHandler,
-                                    self);
-  if (self->service_status_handle_ == 0) {
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to register the service control handler";
-    return;
-  }
-
-  // Report running status of the service.
-  SERVICE_STATUS service_status;
-  ZeroMemory(&service_status, sizeof(service_status));
-  service_status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
-  service_status.dwCurrentState = SERVICE_RUNNING;
-  service_status.dwControlsAccepted = SERVICE_ACCEPT_SHUTDOWN |
-                                      SERVICE_ACCEPT_STOP |
-                                      SERVICE_ACCEPT_SESSIONCHANGE;
-  service_status.dwWin32ExitCode = kSuccessExitCode;
-
-  if (!SetServiceStatus(self->service_status_handle_, &service_status)) {
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to report service status to the service control manager";
-    return;
-  }
-
-  // Post a dummy session change notification to peek up the current console
-  // session.
-  self->main_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &HostService::OnSessionChange, base::Unretained(self)));
 
   // Run the service.
-  self->RunMessageLoop(&message_loop);
+  self->RunAsServiceImpl();
 
-  // Release the control handler.
+  // Release the control handler and notify the main thread that it can exit
+  // now.
   self->stopped_event_.Signal();
-
-  // Tell SCM that the service is stopped.
-  service_status.dwCurrentState = SERVICE_STOPPED;
-  service_status.dwControlsAccepted = 0;
-
-  if (!SetServiceStatus(self->service_status_handle_, &service_status)) {
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to report service status to the service control manager";
-    return;
-  }
 }
 
 LRESULT CALLBACK HostService::SessionChangeNotificationProc(HWND hwnd,
@@ -473,13 +483,13 @@ int CALLBACK WinMain(HINSTANCE instance,
   }
 #endif  // OFFICIAL_BUILD
 
+  // This object instance is required by Chrome code (for example,
+  // FilePath, LazyInstance, MessageLoop, Singleton, etc).
+  base::AtExitManager exit_manager;
+
   // CommandLine::Init() ignores the passed |argc| and |argv| on Windows getting
   // the command line from GetCommandLineW(), so we can safely pass NULL here.
   CommandLine::Init(0, NULL);
-
-  // This object instance is required by Chrome code (for example,
-  // FilePath, LazyInstance, MessageLoop).
-  base::AtExitManager exit_manager;
 
   remoting::InitHostLogging();
 

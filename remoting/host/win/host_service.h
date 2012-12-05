@@ -60,6 +60,11 @@ class HostService : public WtsConsoleMonitor {
   // the service.
   int RunAsService();
 
+  // Runs the service on the service thread. A separate routine is used to make
+  // sure all local objects are destoyed by the time |stopped_event_| is
+  // signalled.
+  void RunAsServiceImpl();
+
   // This function starts the service in interactive mode (i.e. as a plain
   // console application).
   int RunInConsole();
