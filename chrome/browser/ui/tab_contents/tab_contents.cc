@@ -188,8 +188,9 @@ TabContents::TabContents(WebContents* contents)
   // because the connected state may change while this tab is open.  Having a
   // one-click signin helper attached does not cause problems if the profile
   // happens to be already connected.
-  if (OneClickSigninHelper::CanOffer(contents, "", false))
-      OneClickSigninHelper::CreateForWebContents(contents);
+  if (OneClickSigninHelper::CanOffer(contents,
+          OneClickSigninHelper::CAN_OFFER_FOR_ALL, "", NULL))
+    OneClickSigninHelper::CreateForWebContents(contents);
 #endif
 
 #if defined(OS_WIN)

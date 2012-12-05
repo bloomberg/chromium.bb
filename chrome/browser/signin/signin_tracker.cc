@@ -141,15 +141,11 @@ void SigninTracker::HandleServiceStateChange() {
     // been cleared yet).
     return;
   }
-  // If we haven't loaded all our service tokens yet, just exit (we'll be called
-  // again when another token is loaded, or will transition to SigninFailed if
-  // the loading fails).
-  if (!AreServiceTokensLoaded(profile_))
-    return;
+
   if (!AreServicesSignedIn(profile_)) {
     state_ = WAITING_FOR_GAIA_VALIDATION;
     observer_->SigninFailed(service->GetAuthError());
-  } else if (service->sync_initialized()) {
+  } else if (service->sync_initialized() && AreServiceTokensLoaded(profile_)) {
     state_ = SIGNIN_COMPLETE;
     observer_->SigninSuccess();
   }

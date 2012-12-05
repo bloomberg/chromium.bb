@@ -399,9 +399,7 @@ void SyncSetupHandler::DisplayConfigureSync(bool show_advanced,
     service->UnsuppressAndStart();
     DisplaySpinner();
     // To listen to the token available notifications, start SigninTracker.
-    signin_tracker_.reset(
-        new SigninTracker(GetProfile(), this,
-                          SigninTracker::SERVICES_INITIALIZING));
+    signin_tracker_.reset(new SigninTracker(GetProfile(), this));
     return;
   }
 
@@ -507,7 +505,7 @@ void SyncSetupHandler::DisplayConfigureSync(bool show_advanced,
   if (UseWebBasedSigninFlow()) {
     // Make sure the tab used for the Gaia sign in does not cover the settings
     // tab.
-    BringTabToFront(web_ui()->GetWebContents());
+    FocusUI();
   }
 }
 
@@ -841,11 +839,18 @@ void SyncSetupHandler::SigninFailed(const GoogleServiceAuthError& error) {
   backend_start_timer_.reset();
 
   last_signin_error_ = error;
-  // Got a failed signin - this is either just a typical auth error, or a
-  // sync error (treat sync errors as "fatal errors" - i.e. non-auth errors).
-  // On ChromeOS, this condition can happen when auth token is invalid and
-  // cannot start sync backend.
-  if (retry_on_signin_failure_) {
+
+  // If using web-based sign in flow, don't show the gaia sign in page again
+  // since there is no way to show the user an error message.
+  if (UseWebBasedSigninFlow()) {
+    CloseSyncSetup();
+  } else if (retry_on_signin_failure_) {
+    // Got a failed signin - this is either just a typical auth error, or a
+    // sync error (treat sync errors as "fatal errors" - i.e. non-auth errors).
+    // On ChromeOS, this condition can happen when auth token is invalid and
+    // cannot start sync backend.
+    // If using web-based sign in flow, don't show the gaia sign in page again
+    // since there is no way to show the user an error message.
     DisplayGaiaLogin(GetSyncService()->HasUnrecoverableError());
   } else {
     // TODO(peria): Show error dialog for prompting sign in and out on

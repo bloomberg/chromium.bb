@@ -607,6 +607,7 @@ extern const char kSyncPromoViewCount[];
 extern const char kSyncPromoUserSkipped[];
 extern const char kSyncPromoShowOnFirstRunAllowed[];
 extern const char kSyncPromoShowNTPBubble[];
+extern const char kSyncPromoErrorMessage[];
 
 extern const char kProfileGAIAInfoUpdateTime[];
 extern const char kProfileGAIAInfoPictureURL[];

@@ -1727,6 +1727,10 @@ const char kSyncPromoShowOnFirstRunAllowed[] =
 // Boolean that specifies if we should show a bubble in the new tab page.
 // The bubble is used to confirm that the user is signed into sync.
 const char kSyncPromoShowNTPBubble[] = "sync_promo.show_ntp_bubble";
+
+// An error to show in the sync promo bubble, if needed.  If the sign in was
+// successful, this property holds an empty string.
+const char kSyncPromoErrorMessage[] = "sync_promo.error_message";
 #endif
 
 // Time when the user's GAIA info was last updated (represented as an int64).

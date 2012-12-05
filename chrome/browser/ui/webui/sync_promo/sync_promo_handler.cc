@@ -80,6 +80,8 @@ void SyncPromoHandler::RegisterUserPrefs(PrefService* prefs) {
       PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kSyncPromoShowNTPBubble, false,
       PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kSyncPromoErrorMessage, std::string(),
+      PrefService::UNSYNCABLE_PREF);
 }
 
 void SyncPromoHandler::RegisterMessages() {

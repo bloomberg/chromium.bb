@@ -24,11 +24,11 @@
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
+#include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
@@ -47,11 +47,6 @@ namespace {
 const char kImplicitURLString[] =
     "https://accounts.google.com/ServiceLogin"
     "?service=foo&continue=http://foo.google.com";
-
-bool UseWebBasedSigninFlow() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseWebBasedSigninFlow);
-}
 
 class SigninManagerMock : public FakeSigninManager {
  public:
@@ -330,8 +325,19 @@ TestProfileIOData* OneClickSigninHelperIOTest::CreateTestProfileIOData(
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferNoContents) {
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(NULL, "user@gmail.com", true));
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(NULL, "", false));
+  int error_message_id = 0;
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
+      NULL, OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "user@gmail.com", &error_message_id));
+  EXPECT_EQ(0, error_message_id);
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
+      NULL, OneClickSigninHelper::CAN_OFFER_FOR_ALL,
+      "user@gmail.com", &error_message_id));
+  EXPECT_EQ(0, error_message_id);
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
+      NULL, OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "", &error_message_id));
+  EXPECT_EQ(0, error_message_id);
 }
 
 TEST_F(OneClickSigninHelperTest, CanOffer) {
@@ -341,14 +347,33 @@ TEST_F(OneClickSigninHelperTest, CanOffer) {
         WillRepeatedly(Return(true));
 
   EnableOneClick(true);
-  EXPECT_TRUE(OneClickSigninHelper::CanOffer(web_contents(), "user@gmail.com",
-                                             true));
-  EXPECT_TRUE(OneClickSigninHelper::CanOffer(web_contents(), "", false));
+  EXPECT_TRUE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "user@gmail.com", NULL));
+  EXPECT_TRUE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_ALL,
+      "user@gmail.com", NULL));
+  EXPECT_TRUE(OneClickSigninHelper::CanOffer(
+                  web_contents(),
+                  OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+                  "", NULL));
 
   EnableOneClick(false);
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents(), "user@gmail.com",
-                                              true));
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents(), "", false));
+
+  int error_message_id = 0;
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "user@gmail.com", &error_message_id));
+  EXPECT_EQ(0, error_message_id);
+
+  EXPECT_TRUE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_ALL,
+      "user@gmail.com", &error_message_id));
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
+                  web_contents(),
+                  OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+                  "", &error_message_id));
+  EXPECT_EQ(0, error_message_id);
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferFirstSetup) {
@@ -366,13 +391,15 @@ TEST_F(OneClickSigninHelperTest, CanOfferFirstSetup) {
 
   sync->set_first_setup_in_progress(true);
 
-  EXPECT_EQ(UseWebBasedSigninFlow(),
-            OneClickSigninHelper::CanOffer(web_contents(),
-                                           "foo@gmail.com",
-                                           true));
-  EXPECT_TRUE(OneClickSigninHelper::CanOffer(web_contents(),
-                                             "foo@gmail.com",
-                                             false));
+  EXPECT_TRUE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "foo@gmail.com", NULL));
+  EXPECT_TRUE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_ALL,
+      "foo@gmail.com", NULL));
+  EXPECT_TRUE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "", NULL));
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferProfileConnected) {
@@ -381,29 +408,46 @@ TEST_F(OneClickSigninHelperTest, CanOfferProfileConnected) {
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
       WillRepeatedly(Return(true));
 
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents(),
-                                              "foo@gmail.com",
-                                              true));
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents(),
-                                              "user@gmail.com",
-                                              true));
-  EXPECT_TRUE(OneClickSigninHelper::CanOffer(web_contents(),
-                                             "",
-                                             false));
+  int error_message_id = 0;
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "foo@gmail.com", &error_message_id));
+  EXPECT_EQ(IDS_SYNC_SETUP_ERROR, error_message_id);
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "user@gmail.com", &error_message_id));
+  EXPECT_EQ(IDS_SYNC_SETUP_ERROR, error_message_id);
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_ALL,
+      "foo@gmail.com", &error_message_id));
+  EXPECT_EQ(IDS_SYNC_SETUP_ERROR, error_message_id);
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_ALL,
+      "user@gmail.com", &error_message_id));
+  EXPECT_EQ(IDS_SYNC_SETUP_ERROR, error_message_id);
+  EXPECT_TRUE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "", &error_message_id));
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferUsernameNotAllowed) {
-  CreateSigninManager(false, "foo@gmail.com");
+  CreateSigninManager(false, "");
 
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
       WillRepeatedly(Return(false));
 
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents(),
-                                              "foo@gmail.com",
-                                              true));
-  EXPECT_TRUE(OneClickSigninHelper::CanOffer(web_contents(),
-                                             "",
-                                             false));
+  int error_message_id = 0;
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "foo@gmail.com", &error_message_id));
+  EXPECT_EQ(IDS_SYNC_LOGIN_NAME_PROHIBITED, error_message_id);
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_ALL,
+      "foo@gmail.com", &error_message_id));
+  EXPECT_EQ(IDS_SYNC_LOGIN_NAME_PROHIBITED, error_message_id);
+  EXPECT_TRUE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "", &error_message_id));
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferWithRejectedEmail) {
@@ -414,20 +458,43 @@ TEST_F(OneClickSigninHelperTest, CanOfferWithRejectedEmail) {
 
   AddEmailToOneClickRejectedList("foo@gmail.com");
   AddEmailToOneClickRejectedList("user@gmail.com");
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents(), "foo@gmail.com",
-                                              true));
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents(), "user@gmail.com",
-                                              true));
-  EXPECT_TRUE(OneClickSigninHelper::CanOffer(web_contents(), "john@gmail.com",
-                                              true));
+
+  int error_message_id = 0;
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "foo@gmail.com", &error_message_id));
+  EXPECT_EQ(0, error_message_id);
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "user@gmail.com", &error_message_id));
+  EXPECT_EQ(0, error_message_id);
+  EXPECT_TRUE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_ALL,
+      "foo@gmail.com", &error_message_id));
+  EXPECT_TRUE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_ALL,
+      "user@gmail.com", &error_message_id));
+  EXPECT_TRUE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "john@gmail.com", &error_message_id));
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferIncognito) {
   CreateSigninManager(true, "");
 
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents(), "user@gmail.com",
-                                              true));
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents(), "", false));
+  int error_message_id = 0;
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "user@gmail.com", &error_message_id));
+  EXPECT_EQ(0, error_message_id);
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_ALL,
+      "user@gmail.com", &error_message_id));
+  EXPECT_EQ(0, error_message_id);
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "", &error_message_id));
+  EXPECT_EQ(0, error_message_id);
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferNoSigninCookies) {
@@ -437,9 +504,19 @@ TEST_F(OneClickSigninHelperTest, CanOfferNoSigninCookies) {
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
         WillRepeatedly(Return(true));
 
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents(), "user@gmail.com",
-                                              true));
-  EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents(), "", false));
+  int error_message_id = 0;
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "user@gmail.com", &error_message_id));
+  EXPECT_EQ(0, error_message_id);
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_ALL,
+      "user@gmail.com", &error_message_id));
+  EXPECT_EQ(0, error_message_id);
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "", &error_message_id));
+  EXPECT_EQ(0, error_message_id);
 }
 
 // I/O thread tests

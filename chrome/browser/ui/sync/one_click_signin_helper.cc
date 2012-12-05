@@ -32,6 +32,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/url_util.h"
@@ -373,9 +375,13 @@ void OneClickSigninHelper::AssociateWithRequestForTesting(
 
 // static
 bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
+                                    CanOfferFor can_offer_for,
                                     const std::string& email,
-                                    bool check_connected) {
+                                    int* error_message_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (error_message_id)
+    *error_message_id = 0;
 
   if (!web_contents)
     return false;
@@ -391,24 +397,31 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
   if (!profile)
     return false;
 
-  if (!profile->GetPrefs()->GetBoolean(prefs::kReverseAutologinEnabled))
+  if (can_offer_for == CAN_OFFER_FOR_INTERSTITAL_ONLY &&
+      !profile->GetPrefs()->GetBoolean(prefs::kReverseAutologinEnabled))
     return false;
 
   if (!SigninManager::AreSigninCookiesAllowed(profile))
     return false;
 
-  if (check_connected) {
+  if (!email.empty()) {
     SigninManager* manager =
         SigninManagerFactory::GetForProfile(profile);
     if (!manager)
       return false;
 
-    if (!manager->GetAuthenticatedUsername().empty())
+    if (!manager->GetAuthenticatedUsername().empty()) {
+      if (error_message_id)
+        *error_message_id = IDS_SYNC_SETUP_ERROR;
       return false;
+    }
 
     // Make sure this username is not prohibited by policy.
-    if (!manager->IsAllowedUsername(email))
+    if (!manager->IsAllowedUsername(email)) {
+      if (error_message_id)
+        *error_message_id = IDS_SYNC_LOGIN_NAME_PROHIBITED;
       return false;
+    }
 
     // If some profile, not just the current one, is already connected to this
     // account, don't show the infobar.
@@ -419,14 +432,17 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
         ProfileInfoCache& cache = manager->GetProfileInfoCache();
 
         for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
-          if (email16 == cache.GetUserNameOfProfileAtIndex(i))
+          if (email16 == cache.GetUserNameOfProfileAtIndex(i)) {
+            if (error_message_id)
+              *error_message_id = IDS_SYNC_USER_NAME_IN_USE_ERROR;
             return false;
+          }
         }
       }
     }
 
     // If email was already rejected by this profile for one-click sign-in.
-    if (!email.empty()) {
+    if (can_offer_for == CAN_OFFER_FOR_INTERSTITAL_ONLY) {
       const ListValue* rejected_emails = profile->GetPrefs()->GetList(
           prefs::kReverseAutologinRejectedEmailList);
       if (!rejected_emails->empty()) {
@@ -663,16 +679,27 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
 
   // TODO(mathp): The appearance of this infobar should be tested using a
   // browser_test.
-  if (!web_contents || !CanOffer(web_contents, email, !email.empty())) {
+  OneClickSigninHelper* helper =
+      OneClickSigninHelper::FromWebContents(web_contents);
+  int error_message_id = 0;
+
+  CanOfferFor can_offer_for =
+      (auto_accept != AUTO_ACCEPT_EXPLICIT &&
+          helper->auto_accept_ != AUTO_ACCEPT_EXPLICIT) ?
+          CAN_OFFER_FOR_INTERSTITAL_ONLY : CAN_OFFER_FOR_ALL;
+
+  if (!web_contents || !CanOffer(web_contents, can_offer_for, email,
+                                 &error_message_id)) {
     VLOG(1) << "OneClickSigninHelper::ShowInfoBarUIThread: not offering";
+    if (helper && helper->error_message_.empty() && error_message_id != 0)
+      helper->error_message_ = l10n_util::GetStringUTF8(error_message_id);
+
     return;
   }
 
   // Save the email in the one-click signin manager.  The manager may
   // not exist if the contents is incognito or if the profile is already
   // connected to a Google account.
-  OneClickSigninHelper* helper =
-      OneClickSigninHelper::FromWebContents(web_contents);
   if (helper) {
     if (!session_index.empty())
       helper->session_index_ = session_index;
@@ -680,9 +707,36 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
     if (!email.empty())
       helper->email_ = email;
 
-    helper->auto_accept_ = auto_accept;
-    helper->source_ = source;
+    if (auto_accept != NO_AUTO_ACCEPT) {
+      helper->auto_accept_ = auto_accept;
+      helper->source_ = source;
+    }
   }
+}
+
+void OneClickSigninHelper::RedirectToNTP() {
+  // Redirect to NTP with sign in bubble visible.
+  content::WebContents* contents = web_contents();
+  Profile* profile =
+      Profile::FromBrowserContext(contents->GetBrowserContext());
+  PrefService* pref_service = profile->GetPrefs();
+  pref_service->SetBoolean(prefs::kSyncPromoShowNTPBubble, true);
+  pref_service->SetString(prefs::kSyncPromoErrorMessage, error_message_);
+
+  contents->GetController().LoadURL(GURL(chrome::kChromeUINewTabURL),
+                                    content::Referrer(),
+                                    content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                    std::string());
+
+  error_message_.clear();
+  signin_tracker_.reset();
+}
+
+void OneClickSigninHelper::CleanTransientState() {
+  email_.clear();
+  password_.clear();
+  auto_accept_ = NO_AUTO_ACCEPT;
+  source_ = SyncPromoUI::SOURCE_UNKNOWN;
 }
 
 void OneClickSigninHelper::DidNavigateAnyFrame(
@@ -699,10 +753,22 @@ void OneClickSigninHelper::DidNavigateAnyFrame(
 
 void OneClickSigninHelper::DidStopLoading(
     content::RenderViewHost* render_view_host) {
+  // If the user left the sign in process, clear all members.
+  // TODO(rogerta): might need to allow some youtube URLs.
+  content::WebContents* contents = web_contents();
+  if (!gaia::IsGaiaSignonRealm(contents->GetURL().GetOrigin())) {
+    CleanTransientState();
+    return;
+  }
+
+  if (!error_message_.empty()) {
+    RedirectToNTP();
+    return;
+  }
+
   if (email_.empty() || password_.empty())
     return;
 
-  content::WebContents* contents = web_contents();
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
   InfoBarTabHelper* infobar_tab_helper =
       InfoBarTabHelper::FromWebContents(contents);
@@ -748,30 +814,33 @@ void OneClickSigninHelper::DidStopLoading(
     signin_tracker_.reset(new SigninTracker(profile, this));
   }
 
-  email_.clear();
-  password_.clear();
-  auto_accept_ = NO_AUTO_ACCEPT;
-  source_ = SyncPromoUI::SOURCE_UNKNOWN;
+  CleanTransientState();
 }
 
 void OneClickSigninHelper::GaiaCredentialsValid() {
-  // Redirect to NTP with sign in bubble visible.
-  content::WebContents* contents = web_contents();
-  Profile* profile =
-      Profile::FromBrowserContext(contents->GetBrowserContext());
-  PrefService* pref_service = profile->GetPrefs();
-  pref_service->SetBoolean(prefs::kSyncPromoShowNTPBubble, true);
-
-  contents->GetController().LoadURL(GURL(chrome::kChromeUINewTabURL),
-                                    content::Referrer(),
-                                    content::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                    std::string());
 }
 
 void OneClickSigninHelper::SigninFailed(const GoogleServiceAuthError& error) {
-  signin_tracker_.reset();
+  if (error_message_.empty() && !error.error_message().empty())
+      error_message_ = error.error_message();
+
+  if (error_message_.empty()) {
+    switch (error.state()) {
+      case GoogleServiceAuthError::NONE:
+        error_message_.clear();
+        break;
+      case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
+        error_message_ = l10n_util::GetStringUTF8(IDS_SYNC_UNRECOVERABLE_ERROR);
+        break;
+      default:
+        error_message_ = l10n_util::GetStringUTF8(IDS_SYNC_ERROR_SIGNING_IN);
+        break;
+    }
+  }
+
+  RedirectToNTP();
 }
 
 void OneClickSigninHelper::SigninSuccess() {
-  signin_tracker_.reset();
+  RedirectToNTP();
 }

@@ -158,7 +158,8 @@ void PasswordManagerDelegateImpl::AddSavePasswordInfoBarIfPermitted(
   if ((realm == GURL(GaiaUrls::GetInstance()->gaia_login_form_realm()) ||
       realm == GURL("https://www.google.com/")) &&
       OneClickSigninHelper::CanOffer(web_contents_,
-          UTF16ToUTF8(form_to_save->associated_username()), true)) {
+          OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+          UTF16ToUTF8(form_to_save->associated_username()), NULL)) {
     return;
   }
 #endif
