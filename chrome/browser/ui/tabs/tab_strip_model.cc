@@ -100,7 +100,7 @@ void TabStripModel::InsertWebContentsAt(int index,
 
   // In tab dragging situations, if the last tab in the window was detached
   // then the user aborted the drag, we will have the |closing_all_| member
-  // set (see DetachTabContentsAt) which will mess with our mojo here. We need
+  // set (see DetachWebContentsAt) which will mess with our mojo here. We need
   // to clear this bit.
   closing_all_ = false;
 
@@ -196,22 +196,22 @@ TabContents* TabStripModel::DiscardTabContentsAt(int index) {
   return null_contents;
 }
 
-TabContents* TabStripModel::DetachTabContentsAt(int index) {
+WebContents* TabStripModel::DetachWebContentsAt(int index) {
   if (contents_data_.empty())
     return NULL;
 
   DCHECK(ContainsIndex(index));
 
-  TabContents* removed_contents = GetTabContentsAtImpl(index);
+  WebContents* removed_contents = GetWebContentsAtImpl(index);
   bool was_selected = IsTabSelected(index);
   int next_selected_index = order_controller_->DetermineNewSelectedIndex(index);
   delete contents_data_[index];
   contents_data_.erase(contents_data_.begin() + index);
-  ForgetOpenersAndGroupsReferencing(removed_contents->web_contents());
+  ForgetOpenersAndGroupsReferencing(removed_contents);
   if (empty())
     closing_all_ = true;
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                    TabDetachedAt(removed_contents->web_contents(), index));
+                    TabDetachedAt(removed_contents, index));
   if (empty()) {
     selection_model_.Clear();
     // TabDetachedAt() might unregister observers, so send |TabStripEmpty()| in
@@ -223,7 +223,7 @@ TabContents* TabStripModel::DetachTabContentsAt(int index) {
     TabStripSelectionModel old_model;
     old_model.Copy(selection_model_);
     if (index == old_active) {
-      NotifyIfTabDeactivated(removed_contents->web_contents());
+      NotifyIfTabDeactivated(removed_contents);
       if (!selection_model_.empty()) {
         // The active tab was removed, but there is still something selected.
         // Move the active and anchor to the first selected index.
@@ -234,8 +234,7 @@ TabContents* TabStripModel::DetachTabContentsAt(int index) {
         // selection and send out notification.
         selection_model_.SetSelectedIndex(next_selected_index);
       }
-      NotifyIfActiveTabChanged(removed_contents->web_contents(),
-                               NOTIFY_DEFAULT);
+      NotifyIfActiveTabChanged(removed_contents, NOTIFY_DEFAULT);
     }
 
     // Sending notification in case the detached tab was selected. Using
@@ -933,7 +932,7 @@ void TabStripModel::Observe(int type,
       if (index != TabStripModel::kNoTab) {
         // Note that we only detach the contents here, not close it - it's
         // already been closed. We just want to undo our bookkeeping.
-        DetachTabContentsAt(index);
+        DetachWebContentsAt(index);
       }
       break;
     }

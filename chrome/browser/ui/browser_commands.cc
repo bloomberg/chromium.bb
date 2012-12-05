@@ -617,10 +617,10 @@ bool CanDuplicateTabAt(Browser* browser, int index) {
 
 void ConvertPopupToTabbedBrowser(Browser* browser) {
   content::RecordAction(UserMetricsAction("ShowAsTab"));
-  TabContents* contents =
-      browser->tab_strip_model()->DetachTabContentsAt(browser->active_index());
+  WebContents* contents =
+      browser->tab_strip_model()->DetachWebContentsAt(browser->active_index());
   Browser* b = new Browser(Browser::CreateParams(browser->profile()));
-  b->tab_strip_model()->AppendWebContents(contents->web_contents(), true);
+  b->tab_strip_model()->AppendWebContents(contents, true);
   b->window()->Show();
 }
 
@@ -1066,7 +1066,7 @@ void ConvertTabToAppWindow(Browser* browser,
 
   int index = browser->tab_strip_model()->GetIndexOfWebContents(contents);
   if (index >= 0)
-    browser->tab_strip_model()->DetachTabContentsAt(index);
+    browser->tab_strip_model()->DetachWebContentsAt(index);
 
   Browser* app_browser = new Browser(
       Browser::CreateParams::CreateForApp(

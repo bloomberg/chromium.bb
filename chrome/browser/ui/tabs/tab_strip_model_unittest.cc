@@ -448,11 +448,10 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
   }
   EXPECT_EQ("1 2 3", GetTabStripStateString(tabstrip));
 
-  // Test DetachTabContentsAt
+  // Test DetachWebContentsAt
   {
     // Detach ...
-    TabContents* detached_tab = tabstrip.DetachTabContentsAt(2);
-    WebContents* detached = detached_tab->web_contents();
+    WebContents* detached = tabstrip.DetachWebContentsAt(2);
     // ... and append again because we want this for later.
     tabstrip.AppendWebContents(detached, true);
     EXPECT_EQ(8, observer.GetStateCount());
@@ -814,11 +813,11 @@ TEST_F(TabStripModelTest, TestSelectOnClose) {
   InsertWebContentses(&tabstrip, contents1, contents2, contents3);
   EXPECT_EQ(0, tabstrip.active_index());
 
-  tabstrip.DetachTabContentsAt(1);
+  tabstrip.DetachWebContentsAt(1);
   EXPECT_EQ(0, tabstrip.active_index());
 
   for (int i = tabstrip.count() - 1; i >= 1; --i)
-    tabstrip.DetachTabContentsAt(i);
+    tabstrip.DetachWebContentsAt(i);
 
   // Now test that when a tab doesn't have an opener, selection shifts to the
   // right when the tab is closed.
@@ -828,15 +827,15 @@ TEST_F(TabStripModelTest, TestSelectOnClose) {
   tabstrip.ForgetAllOpeners();
   tabstrip.ActivateTabAt(1, true);
   EXPECT_EQ(1, tabstrip.active_index());
-  tabstrip.DetachTabContentsAt(1);
+  tabstrip.DetachWebContentsAt(1);
   EXPECT_EQ(1, tabstrip.active_index());
-  tabstrip.DetachTabContentsAt(1);
+  tabstrip.DetachWebContentsAt(1);
   EXPECT_EQ(1, tabstrip.active_index());
-  tabstrip.DetachTabContentsAt(1);
+  tabstrip.DetachWebContentsAt(1);
   EXPECT_EQ(0, tabstrip.active_index());
 
   for (int i = tabstrip.count() - 1; i >= 1; --i)
-    tabstrip.DetachTabContentsAt(i);
+    tabstrip.DetachWebContentsAt(i);
 
   // Now test that when a tab does have an opener, it selects the next tab
   // opened by the same opener scanning LTR when it is closed.
@@ -1821,7 +1820,7 @@ TEST_F(TabStripModelTest, Apps) {
 
   // Remove tab3 and insert at position 0. It should be forced to position 2.
   {
-    tabstrip.DetachTabContentsAt(2);
+    tabstrip.DetachWebContentsAt(2);
     observer.ClearStates();
 
     tabstrip.InsertWebContentsAt(0, contents3, TabStripModel::ADD_NONE);

@@ -394,7 +394,7 @@ bool CreateWindowFunction::ShouldOpenIncognitoWindow(
 bool CreateWindowFunction::RunImpl() {
   DictionaryValue* args = NULL;
   std::vector<GURL> urls;
-  TabContents* contents = NULL;
+  WebContents* contents = NULL;
 
   if (HasOptionalArgument(0))
     EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
@@ -453,7 +453,7 @@ bool CreateWindowFunction::RunImpl() {
                       NULL, &source_tab_strip,
                       NULL, &tab_index, &error_))
         return false;
-      contents = source_tab_strip->DetachTabContentsAt(tab_index);
+      contents = source_tab_strip->DetachWebContentsAt(tab_index);
       if (!contents) {
         error_ = ErrorUtils::FormatErrorMessage(
             keys::kTabNotFoundError, base::IntToString(tab_id));
@@ -630,7 +630,7 @@ bool CreateWindowFunction::RunImpl() {
   }
   if (contents) {
     TabStripModel* target_tab_strip = new_window->tab_strip_model();
-    target_tab_strip->InsertWebContentsAt(urls.size(), contents->web_contents(),
+    target_tab_strip->InsertWebContentsAt(urls.size(), contents,
                                           TabStripModel::ADD_NONE);
   } else if (urls.empty()) {
     chrome::NewTab(new_window);
@@ -1475,9 +1475,9 @@ bool MoveTabsFunction::RunImpl() {
       if (ExtensionTabUtil::GetWindowId(target_browser) !=
           ExtensionTabUtil::GetWindowId(source_browser)) {
         TabStripModel* target_tab_strip = target_browser->tab_strip_model();
-        TabContents* tab_contents =
-            source_tab_strip->DetachTabContentsAt(tab_index);
-        if (!tab_contents) {
+        WebContents* web_contents =
+            source_tab_strip->DetachWebContentsAt(tab_index);
+        if (!web_contents) {
           error_ = ErrorUtils::FormatErrorMessage(
               keys::kTabNotFoundError, base::IntToString(tab_ids[i]));
           return false;
@@ -1490,11 +1490,11 @@ bool MoveTabsFunction::RunImpl() {
           new_index = target_tab_strip->count();
 
         target_tab_strip->InsertWebContentsAt(
-            new_index, tab_contents->web_contents(), TabStripModel::ADD_NONE);
+            new_index, web_contents, TabStripModel::ADD_NONE);
 
         if (has_callback()) {
           tab_values.Append(ExtensionTabUtil::CreateTabValue(
-              tab_contents->web_contents(),
+              web_contents,
               target_tab_strip,
               new_index,
               GetExtension()));

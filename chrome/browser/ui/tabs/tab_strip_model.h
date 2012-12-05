@@ -200,11 +200,11 @@ class TabStripModel : public content::NotificationObserver {
   // Returns an empty TabContents, used only for testing.
   TabContents* DiscardTabContentsAt(int index);
 
-  // Detaches the TabContents at the specified index from this strip. The
-  // TabContents is not destroyed, just removed from display. The caller
+  // Detaches the WebContents at the specified index from this strip. The
+  // WebContents is not destroyed, just removed from display. The caller
   // is responsible for doing something with it (e.g. stuffing it into another
-  // strip).
-  TabContents* DetachTabContentsAt(int index);
+  // strip). Returns the detached WebContents.
+  content::WebContents* DetachWebContentsAt(int index);
 
   // Makes the tab at the specified index the active tab. |user_gesture| is true
   // if the user actually clicked on the tab or navigated to it using a keyboard

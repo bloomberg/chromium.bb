@@ -1252,7 +1252,7 @@ void TabDragController::Detach(ReleaseCapture release_capture) {
     // Hide the tab so that the user doesn't see it animate closed.
     drag_data_[i].attached_tab->SetVisible(false);
 
-    attached_model->DetachTabContentsAt(index);
+    attached_model->DetachWebContentsAt(index);
 
     // Detaching resets the delegate, but we still want to be the delegate.
     if (!detach_into_browser_)
@@ -1712,7 +1712,7 @@ void TabDragController::RevertDragAt(size_t drag_index) {
     if (attached_tabstrip_ != source_tabstrip_) {
       // The Tab was inserted into another TabStrip. We need to put it back
       // into the original one.
-      GetModel(attached_tabstrip_)->DetachTabContentsAt(index);
+      GetModel(attached_tabstrip_)->DetachWebContentsAt(index);
       // TODO(beng): (Cleanup) seems like we should use Attach() for this
       //             somehow.
       GetModel(source_tabstrip_)->InsertWebContentsAt(

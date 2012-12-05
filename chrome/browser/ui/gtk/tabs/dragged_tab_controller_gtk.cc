@@ -480,9 +480,9 @@ void DraggedTabControllerGtk::Detach() {
     int index =
         attached_model->GetIndexOfTabContents(drag_data_->get(i)->contents_);
     if (index >= 0 && index < attached_model->count()) {
-      // Sometimes, DetachTabContentsAt has consequences that result in
+      // Sometimes, DetachWebContentsAt has consequences that result in
       // attached_tabstrip_ being set to NULL, so we need to save it first.
-      attached_model->DetachTabContentsAt(index);
+      attached_model->DetachWebContentsAt(index);
     }
   }
 
@@ -694,7 +694,7 @@ void DraggedTabControllerGtk::RevertDrag() {
           continue;
         int index = attached_tabstrip_->model()->GetIndexOfTabContents(
             drag_data_->get(i)->contents_);
-        attached_tabstrip_->model()->DetachTabContentsAt(index);
+        attached_tabstrip_->model()->DetachWebContentsAt(index);
       }
       // TODO(beng): (Cleanup) seems like we should use Attach() for this
       //             somehow.

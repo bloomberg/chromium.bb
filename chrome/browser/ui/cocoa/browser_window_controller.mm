@@ -1279,7 +1279,7 @@ enum {
 // put into a different tab strip, such as during a drop on another window.
 - (void)detachTabView:(NSView*)view {
   int index = [tabStripController_ modelIndexForTabView:view];
-  browser_->tab_strip_model()->DetachTabContentsAt(index);
+  browser_->tab_strip_model()->DetachWebContentsAt(index);
 }
 
 - (NSView*)activeTabView {
@@ -1338,7 +1338,7 @@ enum {
   // deleting the tab contents. This needs to come before creating the new
   // Browser because it clears the WebContents' delegate, which gets hooked
   // up during creation of the new window.
-  browser_->tab_strip_model()->DetachTabContentsAt(index);
+  browser_->tab_strip_model()->DetachWebContentsAt(index);
 
   // Create the new window with a single tab in its model, the one being
   // dragged.

@@ -105,7 +105,7 @@ TEST_F(TabposeWindowTest, TestModelObserver) {
   model->MoveWebContentsAt(2, 0, /*select_after_move=*/false);
   DCHECK_EQ([window selectedIndex], 0);
 
-  delete model->DetachTabContentsAt(0);
+  delete model->DetachWebContentsAt(0);
   DCHECK_EQ([window thumbnailLayerCount], 2u);
   DCHECK_EQ([window selectedIndex], 0);
 

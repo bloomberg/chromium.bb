@@ -745,7 +745,7 @@ void DevToolsWindow::SetDockSide(const std::string& side) {
       // Detach window from the external devtools browser. It will lead to
       // the browser object's close and delete. Remove observer first.
       TabStripModel* tab_strip_model = browser_->tab_strip_model();
-      tab_strip_model->DetachTabContentsAt(
+      tab_strip_model->DetachWebContentsAt(
           tab_strip_model->GetIndexOfTabContents(tab_contents_));
       browser_ = NULL;
     }
