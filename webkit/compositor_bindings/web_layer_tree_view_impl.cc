@@ -184,6 +184,13 @@ void WebLayerTreeViewImpl::setShowFPSCounter(bool show)
     m_layerTreeHost->setDebugState(debugState);
 }
 
+void WebLayerTreeViewImpl::setShowPaintRects(bool show)
+{
+    LayerTreeDebugState debugState = m_layerTreeHost->debugState();
+    debugState.showPaintRects = show;
+    m_layerTreeHost->setDebugState(debugState);
+}
+
 scoped_ptr<FontAtlas> WebLayerTreeViewImpl::createFontAtlas()
 {
     int fontHeight;

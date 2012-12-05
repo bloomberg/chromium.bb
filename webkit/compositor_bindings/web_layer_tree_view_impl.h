@@ -52,6 +52,7 @@ public:
     virtual void setDeferCommits(bool deferCommits) OVERRIDE;
     virtual void renderingStats(WebRenderingStats&) const OVERRIDE;
     virtual void setShowFPSCounter(bool show);
+    virtual void setShowPaintRects(bool show);
     virtual void loseCompositorContext(int numTimes) OVERRIDE;
 
     // cc::LayerTreeHostClient implementation.
