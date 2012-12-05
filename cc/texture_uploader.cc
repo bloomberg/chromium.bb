@@ -353,6 +353,10 @@ void TextureUploader::processQueries()
         unsigned usElapsed = m_pendingQueries.first()->value();
         HISTOGRAM_CUSTOM_COUNTS("Renderer4.TextureGpuUploadTimeUS", usElapsed, 0, 100000, 50);
 
+        // Clamp the queries to saner values in case the queries fail.
+        usElapsed = std::max(1u, usElapsed);
+        usElapsed = std::min(15000u, usElapsed);
+
         if (!m_pendingQueries.first()->isNonBlocking())
             m_numBlockingTextureUploads--;
 
