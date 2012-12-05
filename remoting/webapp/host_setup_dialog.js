@@ -144,7 +144,7 @@ remoting.HostSetupDialog = function(hostController) {
   this.pinConfirm_.addEventListener('keypress', noDigitsInPin, false);
 
   this.usageStats_ = document.getElementById('usagestats-consent');
-  this.usageStatsCheckbox_ =
+  this.usageStatsCheckbox_ = /** @type {HTMLInputElement} */
       document.getElementById('usagestats-consent-checkbox');
 };
 
@@ -421,7 +421,7 @@ remoting.HostSetupDialog.prototype.onPinSubmit_ = function() {
   }
   this.flow_.pin = pin1;
   this.flow_.consent = !this.usageStats_.hidden &&
-      (this.usageStatsCheckbox_.value == "on");
+      this.usageStatsCheckbox_.checked;
   this.flow_.switchToNextStep(remoting.HostController.AsyncResult.OK);
   this.updateState_();
 };
