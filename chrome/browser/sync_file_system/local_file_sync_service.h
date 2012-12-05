@@ -21,6 +21,7 @@
 class GURL;
 
 namespace fileapi {
+class FileChange;
 class FileSystemContext;
 class LocalFileSyncContext;
 struct LocalFileSyncInfo;
@@ -106,6 +107,10 @@ class LocalFileSyncService
       const fileapi::FileChange& change,
       const FilePath& local_path,
       const fileapi::FileSystemURL& url,
+      const fileapi::SyncStatusCallback& callback) OVERRIDE;
+  virtual void RecordFakeLocalChange(
+      const fileapi::FileSystemURL& url,
+      const fileapi::FileChange& change,
       const fileapi::SyncStatusCallback& callback) OVERRIDE;
 
   // LocalOriginChangeObserver override.

@@ -119,6 +119,13 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
       const FileSystemURL& url,
       const SyncStatusCallback& callback);
 
+  // Records a fake local change in the local change tracker.
+  void RecordFakeLocalChange(
+      FileSystemContext* file_system_context,
+      const fileapi::FileSystemURL& url,
+      const fileapi::FileChange& change,
+      const fileapi::SyncStatusCallback& callback);
+
   // This must be called on UI thread.
   void GetFileMetadata(
       FileSystemContext* file_system_context,

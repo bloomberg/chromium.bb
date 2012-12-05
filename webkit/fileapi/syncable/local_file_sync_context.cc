@@ -217,6 +217,33 @@ void LocalFileSyncContext::ApplyRemoteChange(
   }
 }
 
+void LocalFileSyncContext::RecordFakeLocalChange(
+    FileSystemContext* file_system_context,
+    const fileapi::FileSystemURL& url,
+    const fileapi::FileChange& change,
+    const fileapi::SyncStatusCallback& callback) {
+  // This is called on UI thread and to be relayed to FILE thread.
+  DCHECK(file_system_context);
+  if (!file_system_context->task_runners()->file_task_runner()->
+          RunsTasksOnCurrentThread()) {
+    DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+    file_system_context->task_runners()->file_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LocalFileSyncContext::RecordFakeLocalChange,
+                   this, make_scoped_refptr(file_system_context),
+                   url, change, callback));
+    return;
+  }
+
+  DCHECK(file_system_context->change_tracker());
+  file_system_context->change_tracker()->MarkDirtyOnDatabase(url);
+  file_system_context->change_tracker()->RecordChange(url, change);
+
+  // Fire the callback on UI thread.
+  ui_task_runner_->PostTask(FROM_HERE,
+                            base::Bind(callback, fileapi::SYNC_STATUS_OK));
+}
+
 void LocalFileSyncContext::GetFileMetadata(
     FileSystemContext* file_system_context,
     const FileSystemURL& url,

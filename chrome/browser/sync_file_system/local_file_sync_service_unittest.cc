@@ -508,6 +508,56 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_GetLocalMetadata) {
   EXPECT_EQ(kSize, metadata.size);
 }
 
+TEST_F(LocalFileSyncServiceTest, RecordFakeChange) {
+  const FileSystemURL kURL(file_system_->URL("foo"));
+
+  // Create a file and reset the changes (as preparation).
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_->CreateFile(kURL));
+  file_system_->ClearChangeForURLInTracker(kURL);
+
+  EXPECT_EQ(0, GetNumChangesInTracker());
+
+  fileapi::FileSystemURLSet urlset;
+  file_system_->GetChangedURLsInTracker(&urlset);
+  EXPECT_TRUE(urlset.empty());
+
+  const FileChange change(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                          fileapi::SYNC_FILE_TYPE_FILE);
+
+  // Call RecordFakeLocalChange to add an ADD_OR_UPDATE change.
+  {
+    base::RunLoop run_loop;
+    SyncStatusCode status = fileapi::SYNC_STATUS_UNKNOWN;
+    local_service_->RecordFakeLocalChange(
+        kURL, change, AssignAndQuitCallback(&run_loop, &status));
+    run_loop.Run();
+    EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
+  }
+
+  EXPECT_EQ(1, GetNumChangesInTracker());
+  file_system_->GetChangedURLsInTracker(&urlset);
+  EXPECT_EQ(1U, urlset.size());
+  EXPECT_TRUE(urlset.find(kURL) != urlset.end());
+
+  // Next local sync should pick up the recorded change.
+  StrictMock<MockLocalChangeProcessor> local_change_processor;
+  std::vector<FileChange> changes;
+  EXPECT_CALL(local_change_processor, ApplyLocalChange(_, _, _, kURL, _))
+      .WillOnce(MockStatusCallbackAndRecordChange(fileapi::SYNC_STATUS_OK,
+                                                  &changes));
+  {
+    base::RunLoop run_loop;
+    local_service_->ProcessLocalChange(
+        &local_change_processor,
+        base::Bind(&OnSyncCompleted, FROM_HERE, run_loop.QuitClosure(),
+                   fileapi::SYNC_STATUS_OK, kURL));
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(1U, changes.size());
+  EXPECT_EQ(change, changes[0]);
+}
+
 // TODO(kinuko): Add tests for multiple file changes and multiple
 // FileSystemContexts.
 

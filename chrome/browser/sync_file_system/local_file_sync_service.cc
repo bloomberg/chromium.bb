@@ -182,6 +182,15 @@ void LocalFileSyncService::ApplyRemoteChange(
       change, local_path, url, callback);
 }
 
+void LocalFileSyncService::RecordFakeLocalChange(
+    const fileapi::FileSystemURL& url,
+    const fileapi::FileChange& change,
+    const fileapi::SyncStatusCallback& callback) {
+  DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
+  sync_context_->RecordFakeLocalChange(origin_to_contexts_[url.origin()],
+                                       url, change, callback);
+}
+
 void LocalFileSyncService::OnChangesAvailableInOrigins(
     const std::set<GURL>& origins) {
   for (std::set<GURL>::const_iterator iter = origins.begin();

@@ -61,6 +61,16 @@ class RemoteChangeProcessor {
       const fileapi::FileSystemURL& url,
       const fileapi::SyncStatusCallback& callback) = 0;
 
+  // Records a fake local change so that the change will be processed in the
+  // next local sync.
+  // This is called when the remote side wants to trigger a local sync
+  // to propagate the local change to the remote change (e.g. to
+  // resolve a conflict by uploading the local file).
+  virtual void RecordFakeLocalChange(
+      const fileapi::FileSystemURL& url,
+      const fileapi::FileChange& change,
+      const fileapi::SyncStatusCallback& callback) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(RemoteChangeProcessor);
 };

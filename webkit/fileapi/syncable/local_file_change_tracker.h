@@ -86,6 +86,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileChangeTracker
   class TrackerDB;
   friend class CannedSyncableFileSystem;
   friend class LocalFileChangeTrackerTest;
+  friend class LocalFileSyncContext;
   friend class SyncableFileSystemTest;
 
   struct ChangeInfo {
