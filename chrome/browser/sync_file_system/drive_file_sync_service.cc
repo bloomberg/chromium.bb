@@ -1362,6 +1362,10 @@ bool DriveFileSyncService::AppendNewRemoteChange(
       pending_changes_.insert(ChangeQueueItem(changestamp, sync_type, url));
   DCHECK(inserted_to_queue.second);
 
+  DVLOG(3) << "Append remote change: " << path.value()
+           << "@" << changestamp << " "
+           << file_change.DebugString();
+
   (*path_to_change)[path] = RemoteChange(
       changestamp, entry.resource_id(), url, file_change,
       inserted_to_queue.first);
@@ -1445,14 +1449,16 @@ void DriveFileSyncService::DidFetchChangesForIncrementalSync(
   for (iterator itr = changes->entries().begin();
        itr != changes->entries().end(); ++itr) {
     const google_apis::DocumentEntry& entry = **itr;
-    DVLOG(3) << " change:" << entry.title();
     GURL origin;
     if (!GetOriginForEntry(entry, &origin))
       continue;
 
-    has_new_changes = has_new_changes ||
+    DVLOG(3) << " * change:" << entry.title()
+             << (entry.deleted() ? " (deleted)" : " ")
+             << "[" << origin.spec() << "]";
+    has_new_changes =
         AppendNewRemoteChange(origin, entry, entry.changestamp(),
-                              REMOTE_SYNC_TYPE_INCREMENTAL);
+                              REMOTE_SYNC_TYPE_INCREMENTAL) || has_new_changes;
   }
 
   GURL next_feed;
