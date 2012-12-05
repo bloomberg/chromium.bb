@@ -40,6 +40,8 @@ if (!chrome.searchBox) {
     native function SetQuery();
     native function SetQueryFromAutocompleteResult();
     native function Show();
+    native function StartCapturingKeyStrokes();
+    native function StopCapturingKeyStrokes();
 
     // Returns the |restrictedText| wrapped in a ShadowDOM.
     function SafeWrap(restrictedText) {
@@ -204,6 +206,12 @@ if (!chrome.searchBox) {
     };
     this.navigateContentWindow = function(destination) {
       return NavigateContentWindow(destination);
+    };
+    this.startCapturingKeyStrokes = function() {
+      StartCapturingKeyStrokes();
+    };
+    this.stopCapturingKeyStrokes = function() {
+      StopCapturingKeyStrokes();
     };
     this.onchange = null;
     this.onsubmit = null;

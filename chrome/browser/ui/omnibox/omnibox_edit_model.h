@@ -37,13 +37,15 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
     State(bool user_input_in_progress,
           const string16& user_text,
           const string16& keyword,
-          bool is_keyword_hint);
+          bool is_keyword_hint,
+          bool is_caret_visible);
     ~State();
 
     bool user_input_in_progress;
     const string16 user_text;
     const string16 keyword;
     const bool is_keyword_hint;
+    const bool is_caret_visible;
   };
 
   OmniboxEditModel(OmniboxView* view,
@@ -190,6 +192,7 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
                  size_t index);
 
   bool has_focus() const { return has_focus_; }
+  bool is_caret_visible() const { return is_caret_visible_; }
 
   // Accessors for keyword-related state (see comments on keyword_ and
   // is_keyword_hint_).
@@ -212,6 +215,17 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   // Called when the view is gaining focus.  |control_down| is whether the
   // control key is down (at the time we're gaining focus).
   void OnSetFocus(bool control_down);
+
+  // Sets the visibility of the caret in the omnibox, if it has focus. The
+  // visibility of the caret is reset to visible if any of the following
+  // happens:
+  // - User starts typing in the omnibox
+  // - User clicks in the omnibox
+  // - Omnibox loses and then regains focus
+  // - SetFocus() is explicitly called again
+  // Caret visibility is tracked per-tab and updates automatically upon
+  // switching tabs.
+  void SetCaretVisibility(bool visible);
 
   // Sent before |OnKillFocus| and before the popup is closed.
   void OnWillKillFocus(gfx::NativeView view_gaining_focus);
@@ -403,6 +417,9 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
 
   // Whether the edit has focus.
   bool has_focus_;
+
+  // Is the caret visible? Only meaningful if has_focus_ is true.
+  bool is_caret_visible_;
 
   // The URL of the currently displayed page.
   string16 permanent_text_;

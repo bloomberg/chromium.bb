@@ -50,6 +50,14 @@ class InstantClient : public content::WebContentsObserver {
                                     int height,
                                     InstantSizeUnits units) = 0;
 
+    // Called when the page wants the browser to start capturing user key
+    // strokes.
+    virtual void StartCapturingKeyStrokes() = 0;
+
+    // Called when the page wants the browser to stop capturing user key
+    // strokes.
+    virtual void StopCapturingKeyStrokes() = 0;
+
    protected:
     virtual ~Delegate();
   };
@@ -123,6 +131,8 @@ class InstantClient : public content::WebContentsObserver {
                           InstantShownReason reason,
                           int height,
                           InstantSizeUnits units);
+  void StartCapturingKeyStrokes(int page_id);
+  void StopCapturingKeyStrokes(int page_id);
 
   Delegate* const delegate_;
 

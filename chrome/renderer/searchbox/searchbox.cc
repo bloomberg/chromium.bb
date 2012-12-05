@@ -45,6 +45,16 @@ void SearchBox::ShowInstantPreview(InstantShownReason reason,
       height, units));
 }
 
+void SearchBox::StartCapturingKeyStrokes() {
+  render_view()->Send(new ChromeViewHostMsg_StartCapturingKeyStrokes(
+      render_view()->GetRoutingID(), render_view()->GetPageId()));
+}
+
+void SearchBox::StopCapturingKeyStrokes() {
+  render_view()->Send(new ChromeViewHostMsg_StopCapturingKeyStrokes(
+      render_view()->GetRoutingID(), render_view()->GetPageId()));
+}
+
 gfx::Rect SearchBox::GetRect() {
   // Need to adjust for scale.
   if (rect_.IsEmpty())

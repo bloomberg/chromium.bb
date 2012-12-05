@@ -66,6 +66,9 @@ class BrowserInstantController : public content::NotificationObserver,
   // to the user clicking on it.
   void InstantPreviewFocused();
 
+  // Invoked by |instant_| to give the omnibox focus invisibly.
+  void FocusOmniboxInvisibly();
+
   // Invoked by |instant_| to get the currently active tab, over which the
   // preview would be shown.
   content::WebContents* GetActiveWebContents() const;

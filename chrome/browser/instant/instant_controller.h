@@ -130,6 +130,10 @@ class InstantController {
                           int height,
                           InstantSizeUnits units);
 
+  // Invoked by InstantLoader to request the browser to start capturing user key
+  // strokes.
+  void StartCapturingKeyStrokes();
+
   // Invoked by InstantLoader when it has swapped a different WebContents into
   // the preview, usually because a prerendered page was navigated to.
   void SwappedWebContents();

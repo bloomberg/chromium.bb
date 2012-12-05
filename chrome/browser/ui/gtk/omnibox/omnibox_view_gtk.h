@@ -84,6 +84,7 @@ class OmniboxViewGtk : public OmniboxView,
   virtual void SelectAll(bool reversed) OVERRIDE;
   virtual void UpdatePopup() OVERRIDE;
   virtual void SetFocus() OVERRIDE;
+  virtual void ApplyCaretVisibility() OVERRIDE;
   virtual void OnTemporaryTextMaybeChanged(
       const string16& display_text,
       bool save_original_selection) OVERRIDE;

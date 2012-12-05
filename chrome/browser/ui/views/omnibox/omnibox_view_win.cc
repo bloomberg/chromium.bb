@@ -762,6 +762,11 @@ void OmniboxViewWin::SetFocus() {
   ::SetFocus(m_hWnd);
 }
 
+void OmniboxViewWin::ApplyCaretVisibility() {
+  // TODO(mathp): implement for Windows.
+  NOTIMPLEMENTED();
+}
+
 void OmniboxViewWin::SetDropHighlightPosition(int position) {
   if (drop_highlight_position_ != position) {
     RepaintDropHighlight(drop_highlight_position_);

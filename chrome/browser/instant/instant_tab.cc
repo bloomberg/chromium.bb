@@ -67,3 +67,11 @@ void InstantTab::ShowInstantPreview(InstantShownReason /* reason */,
                                     InstantSizeUnits /* units */) {
   // The page is a committed tab (i.e., always showing), so nothing to do.
 }
+
+void InstantTab::StartCapturingKeyStrokes() {
+  // We don't honor this call from committed tabs.
+}
+
+void InstantTab::StopCapturingKeyStrokes() {
+  // We don't honor this call from committed tabs.
+}

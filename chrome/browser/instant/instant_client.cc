@@ -88,6 +88,10 @@ bool InstantClient::OnMessageReceived(const IPC::Message& message) {
                         InstantSupportDetermined)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ShowInstantPreview,
                         ShowInstantPreview)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_StartCapturingKeyStrokes,
+                        StartCapturingKeyStrokes);
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_StopCapturingKeyStrokes,
+                        StopCapturingKeyStrokes);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -111,4 +115,14 @@ void InstantClient::ShowInstantPreview(int page_id,
                                        InstantSizeUnits units) {
   if (web_contents()->IsActiveEntry(page_id))
     delegate_->ShowInstantPreview(reason, height, units);
+}
+
+void InstantClient::StartCapturingKeyStrokes(int page_id) {
+  if (web_contents()->IsActiveEntry(page_id))
+    delegate_->StartCapturingKeyStrokes();
+}
+
+void InstantClient::StopCapturingKeyStrokes(int page_id) {
+  if (web_contents()->IsActiveEntry(page_id))
+    delegate_->StopCapturingKeyStrokes();
 }

@@ -276,6 +276,17 @@ void InstantLoader::ShowInstantPreview(InstantShownReason reason,
   controller_->ShowInstantPreview(reason, height, units);
 }
 
+void InstantLoader::StartCapturingKeyStrokes() {
+  InstantSupportDetermined(true);
+  controller_->StartCapturingKeyStrokes();
+}
+
+void InstantLoader::StopCapturingKeyStrokes() {
+  InstantSupportDetermined(true);
+  // NOTE(samarth): the current implementation of the key capturing (invisible
+  // focus) doesn't require doing anything explicitly here.
+}
+
 void InstantLoader::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {

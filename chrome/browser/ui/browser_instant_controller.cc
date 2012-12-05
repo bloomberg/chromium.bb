@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -112,8 +113,7 @@ void BrowserInstantController::CommitInstant(content::WebContents* preview,
 
 void BrowserInstantController::SetInstantSuggestion(
     const InstantSuggestion& suggestion) {
-  if (browser_->window()->GetLocationBar())
-    browser_->window()->GetLocationBar()->SetInstantSuggestion(suggestion);
+  browser_->window()->GetLocationBar()->SetInstantSuggestion(suggestion);
 }
 
 gfx::Rect BrowserInstantController::GetInstantBounds() {
@@ -123,6 +123,13 @@ gfx::Rect BrowserInstantController::GetInstantBounds() {
 void BrowserInstantController::InstantPreviewFocused() {
   // NOTE: This is only invoked on aura.
   browser_->window()->WebContentsFocused(instant_.GetPreviewContents());
+}
+
+void BrowserInstantController::FocusOmniboxInvisibly() {
+  OmniboxView* omnibox_view = browser_->window()->GetLocationBar()->
+      GetLocationEntry();
+  omnibox_view->SetFocus();
+  omnibox_view->model()->SetCaretVisibility(false);
 }
 
 content::WebContents* BrowserInstantController::GetActiveWebContents() const {

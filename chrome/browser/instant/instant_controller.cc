@@ -742,6 +742,12 @@ void InstantController::ShowInstantPreview(InstantShownReason reason,
     ShowLoader(reason, height, units);
 }
 
+void InstantController::StartCapturingKeyStrokes() {
+  // Ignore unless the loader is active and on the NTP.
+  if (extended_enabled_ && !instant_tab_ && model_.mode().is_ntp())
+    browser_->FocusOmniboxInvisibly();
+}
+
 void InstantController::SwappedWebContents() {
   model_.SetPreviewContents(GetPreviewContents());
 }

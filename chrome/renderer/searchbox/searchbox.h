@@ -33,6 +33,12 @@ class SearchBox : public content::RenderViewObserver,
                           int height,
                           InstantSizeUnits units);
 
+  // Sends ViewHostMsg_StartCapturingKeyStrokes to the browser.
+  void StartCapturingKeyStrokes();
+
+  // Sends ViewHostMsg_StopCapturingKeyStrokes to the browser.
+  void StopCapturingKeyStrokes();
+
   const string16& query() const { return query_; }
   bool verbatim() const { return verbatim_; }
   size_t selection_start() const { return selection_start_; }

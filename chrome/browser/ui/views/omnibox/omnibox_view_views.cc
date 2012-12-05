@@ -224,7 +224,8 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       delete_at_end_pressed_(false),
       location_bar_view_(location_bar),
       ime_candidate_window_open_(false),
-      select_all_on_mouse_release_(false) {
+      select_all_on_mouse_release_(false),
+      visible_caret_color_(SK_ColorBLACK) {
 }
 
 OmniboxViewViews::~OmniboxViewViews() {
@@ -368,6 +369,10 @@ void OmniboxViewViews::HandleMousePressEvent(const ui::MouseEvent& event) {
   select_all_on_mouse_release_ =
       (event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
       !textfield_->HasFocus();
+  // Restore caret visibility whenever the user clicks in the the omnibox. This
+  // is not always covered by OnSetFocus() because when clicking while the
+  // omnibox has invisible focus does not trigger a new OnSetFocus() call.
+  model()->SetCaretVisibility(true);
 }
 
 void OmniboxViewViews::HandleMouseDragEvent(const ui::MouseEvent& event) {
@@ -445,7 +450,7 @@ void OmniboxViewViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// OmniboxViewViews, AutocopmleteEditView implementation:
+// OmniboxViewViews, OmniboxView implementation:
 
 void OmniboxViewViews::SaveStateToTab(WebContents* tab) {
   DCHECK(tab);
@@ -574,8 +579,23 @@ void OmniboxViewViews::UpdatePopup() {
 }
 
 void OmniboxViewViews::SetFocus() {
+  // Restore caret visibility if focused explicitly. We need to do this here
+  // because if we already have invisible focus, the RequestFocus() call below
+  // will short-circuit, preventing us from reaching
+  // OmniboxEditModel::OnSetFocus(), which handles restoring visibility when we
+  // didn't previously have focus.
+  model()->SetCaretVisibility(true);
   // In views-implementation, the focus is on textfield rather than OmniboxView.
   textfield_->RequestFocus();
+}
+
+void OmniboxViewViews::ApplyCaretVisibility() {
+  if (textfield_->cursor_color() != textfield_->background_color())
+    visible_caret_color_ = textfield_->cursor_color();
+  // Setting the color of the text cursor (caret) to the background color
+  // effectively hides it.
+  textfield_->SetCursorColor(model()->is_caret_visible() ?
+      visible_caret_color_ : textfield_->background_color());
 }
 
 void OmniboxViewViews::OnTemporaryTextMaybeChanged(

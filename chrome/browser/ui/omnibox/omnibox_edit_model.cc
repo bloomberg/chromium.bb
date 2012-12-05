@@ -70,11 +70,13 @@ using predictors::AutocompleteActionPredictorFactory;
 OmniboxEditModel::State::State(bool user_input_in_progress,
                                const string16& user_text,
                                const string16& keyword,
-                               bool is_keyword_hint)
+                               bool is_keyword_hint,
+                               bool is_caret_visible)
     : user_input_in_progress(user_input_in_progress),
       user_text(user_text),
       keyword(keyword),
-      is_keyword_hint(is_keyword_hint) {
+      is_keyword_hint(is_keyword_hint),
+      is_caret_visible(is_caret_visible) {
 }
 
 OmniboxEditModel::State::~State() {
@@ -90,6 +92,7 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
       popup_(NULL),
       controller_(controller),
       has_focus_(false),
+      is_caret_visible_(true),
       user_input_in_progress_(false),
       just_deleted_text_(false),
       has_temporary_text_(false),
@@ -128,10 +131,12 @@ const OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() {
     }
   }
 
-  return State(user_input_in_progress_, user_text_, keyword_, is_keyword_hint_);
+  return State(user_input_in_progress_, user_text_, keyword_, is_keyword_hint_,
+               is_caret_visible_);
 }
 
 void OmniboxEditModel::RestoreState(const State& state) {
+  SetCaretVisibility(state.is_caret_visible);
   // Restore any user editing.
   if (state.user_input_in_progress) {
     // NOTE: Be sure and set keyword-related state BEFORE invoking
@@ -710,6 +715,8 @@ const AutocompleteResult& OmniboxEditModel::result() const {
 void OmniboxEditModel::OnSetFocus(bool control_down) {
   has_focus_ = true;
   control_key_state_ = control_down ? DOWN_WITHOUT_CHANGE : UP;
+  // Restore caret visibility whenever the user focuses back into the omnibox.
+  SetCaretVisibility(true);
 
   if (InstantController* instant = controller_->GetInstant())
     instant->OmniboxGotFocus();
@@ -726,6 +733,13 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
   }
 
   NotifySearchTabHelper();
+}
+
+void OmniboxEditModel::SetCaretVisibility(bool visible) {
+  if (has_focus_ && visible != is_caret_visible_) {
+    is_caret_visible_ = visible;
+    view_->ApplyCaretVisibility();
+  }
 }
 
 void OmniboxEditModel::OnWillKillFocus(gfx::NativeView view_gaining_focus) {
@@ -934,6 +948,11 @@ bool OmniboxEditModel::OnAfterPossibleChange(const string16& old_text,
     paste_state_ = PASTED;
   else if (text_differs)
     paste_state_ = NONE;
+
+  // Restore caret visibility whenever the user changes text or selection in the
+  // omnibox.
+  if (text_differs || selection_differs)
+    SetCaretVisibility(true);
 
   // Modifying the selection counts as accepting the autocompleted text.
   const bool user_text_changed =

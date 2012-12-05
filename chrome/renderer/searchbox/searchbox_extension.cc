@@ -248,6 +248,14 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // Requests the preview be shown with the specified contents and height.
   static v8::Handle<v8::Value> Show(const v8::Arguments& args);
 
+  // Start capturing user key strokes.
+  static v8::Handle<v8::Value> StartCapturingKeyStrokes(
+      const v8::Arguments& args);
+
+  // Stop capturing user key strokes.
+  static v8::Handle<v8::Value> StopCapturingKeyStrokes(
+      const v8::Arguments& args);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SearchBoxExtensionWrapper);
 };
@@ -299,6 +307,10 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(SetQueryFromAutocompleteResult);
   if (name->Equals(v8::String::New("Show")))
     return v8::FunctionTemplate::New(Show);
+  if (name->Equals(v8::String::New("StartCapturingKeyStrokes")))
+    return v8::FunctionTemplate::New(StartCapturingKeyStrokes);
+  if (name->Equals(v8::String::New("StopCapturingKeyStrokes")))
+    return v8::FunctionTemplate::New(StopCapturingKeyStrokes);
   return v8::Handle<v8::FunctionTemplate>();
 }
 
@@ -734,6 +746,28 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::Show(
 
   SearchBox::Get(render_view)->ShowInstantPreview(reason, height, units);
 
+  return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::StartCapturingKeyStrokes(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return v8::Undefined();
+
+  DVLOG(1) << render_view << " StartCapturingKeyStrokes";
+  SearchBox::Get(render_view)->StartCapturingKeyStrokes();
+  return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::StopCapturingKeyStrokes(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return v8::Undefined();
+
+  DVLOG(1) << render_view << " StopCapturingKeyStrokes";
+  SearchBox::Get(render_view)->StopCapturingKeyStrokes();
   return v8::Undefined();
 }
 

@@ -362,6 +362,11 @@ void OmniboxViewMac::CloseOmniboxPopup() {
 void OmniboxViewMac::SetFocus() {
 }
 
+void OmniboxViewMac::ApplyCaretVisibility() {
+  // TODO(mathp): implement for Mac.
+  NOTIMPLEMENTED();
+}
+
 void OmniboxViewMac::SetText(const string16& display_text) {
   // If we are setting the text directly, there cannot be any suggest text.
   suggest_text_length_ = 0;

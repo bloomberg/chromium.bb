@@ -111,6 +111,7 @@ class OmniboxViewViews
   virtual void SelectAll(bool reversed) OVERRIDE;
   virtual void UpdatePopup() OVERRIDE;
   virtual void SetFocus() OVERRIDE;
+  virtual void ApplyCaretVisibility() OVERRIDE;
   virtual void OnTemporaryTextMaybeChanged(
       const string16& display_text,
       bool save_original_selection) OVERRIDE;
@@ -220,6 +221,10 @@ class OmniboxViewViews
   // until release, setting this variable back to false if we saw a drag, to
   // allow the user to select just a portion of the text.
   bool select_all_on_mouse_release_;
+
+  // Used to keep track of the visible caret color so that it can be restored
+  // after the caret has been hidden.
+  SkColor visible_caret_color_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewViews);
 };

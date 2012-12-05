@@ -152,6 +152,10 @@ class OmniboxView {
   // Sets the focus to the autocomplete view.
   virtual void SetFocus() = 0;
 
+  // Shows or hides the caret based on whether the model's is_caret_visible() is
+  // true.
+  virtual void ApplyCaretVisibility() = 0;
+
   // Called when the temporary text in the model may have changed.
   // |display_text| is the new text to show; |save_original_selection| is true
   // when there wasn't previously a temporary text and thus we need to save off

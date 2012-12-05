@@ -112,6 +112,8 @@ class InstantLoader : public InstantClient::Delegate,
   virtual void ShowInstantPreview(InstantShownReason reason,
                                   int height,
                                   InstantSizeUnits units) OVERRIDE;
+  virtual void StartCapturingKeyStrokes() OVERRIDE;
+  virtual void StopCapturingKeyStrokes() OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,

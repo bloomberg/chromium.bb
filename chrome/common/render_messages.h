@@ -659,6 +659,12 @@ IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_ShowInstantPreview,
                     int /* height */,
                     InstantSizeUnits /* units */)
 
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_StartCapturingKeyStrokes,
+                    int /* page_id */)
+
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_StopCapturingKeyStrokes,
+                    int /* page_id */)
+
 // The currently displayed PDF has an unsupported feature.
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_PDFHasUnsupportedFeature)
 
