@@ -46,9 +46,9 @@ def CheckChangeHasQaField(input_api, output_api):
 
 
 def CheckDoNotSubmitInDescription(input_api, output_api):
-  """Checks that the user didn't add 'DO NOT ' + 'SUBMIT' to the CL description.
+  """Checks that the user didn't add 'DO NOT ''SUBMIT' to the CL description.
   """
-  keyword = 'DO NOT ' + 'SUBMIT'
+  keyword = 'DO NOT ''SUBMIT'
   if keyword in input_api.change.DescriptionText():
     return [output_api.PresubmitError(
         keyword + ' is present in the changelist description.')]
@@ -67,6 +67,17 @@ def CheckChangeHasDescription(input_api, output_api):
   return []
 
 
+def CheckChangeDescriptionNotCommitted(input_api, output_api):
+  """Checks that the CL does not end with a Committed link."""
+  description = input_api.change.DescriptionText()
+  if input_api.re.search('\nCommitted: \S+\s*$', description):
+    return [output_api.PresubmitError(
+      'The CL description appears to end with a committed link. If this issue\n'
+      'has been previously used for a commit, please make a new issue number\n'
+      'by typing "git cl issue 0" and reuploading your CL.')]
+  return []
+
+
 def CheckChangeWasUploaded(input_api, output_api):
   """Checks that the issue was uploaded before committing."""
   if input_api.is_committing and not input_api.change.issue:
@@ -78,10 +89,10 @@ def CheckChangeWasUploaded(input_api, output_api):
 ### Content checks
 
 def CheckDoNotSubmitInFiles(input_api, output_api):
-  """Checks that the user didn't add 'DO NOT ' + 'SUBMIT' to any files."""
+  """Checks that the user didn't add 'DO NOT ''SUBMIT' to any files."""
   # We want to check every text file, not just source files.
   file_filter = lambda x : x
-  keyword = 'DO NOT ' + 'SUBMIT'
+  keyword = 'DO NOT ''SUBMIT'
   errors = _FindNewViolationsOfRule(lambda _, line : keyword not in line,
                                     input_api, file_filter)
   text = '\n'.join('Found %s in %s' % (keyword, loc) for loc in errors)
@@ -291,10 +302,10 @@ def CheckChangeHasNoTabs(input_api, output_api, source_file_filter=None):
 def CheckChangeTodoHasOwner(input_api, output_api, source_file_filter=None):
   """Checks that the user didn't add TODO(name) without an owner."""
 
-  unowned_todo = input_api.re.compile('TO' + 'DO[^(]')
+  unowned_todo = input_api.re.compile('TO''DO[^(]')
   errors = _FindNewViolationsOfRule(lambda _, x : not unowned_todo.search(x),
                                     input_api, source_file_filter)
-  errors = ['Found TO' + 'DO with no owner in ' + x for x in errors]
+  errors = ['Found TO''DO with no owner in ' + x for x in errors]
   if errors:
     return [output_api.PresubmitPromptWarning('\n'.join(errors))]
   return []
@@ -997,6 +1008,16 @@ def PanProjectChecks(input_api, output_api,
         input_api, output_api, license_header, source_file_filter=sources))
     snapshot("checking was uploaded")
     results.extend(input_api.canned_checks.CheckChangeWasUploaded(
+        input_api, output_api))
+    snapshot("checking description")
+    results.extend(input_api.canned_checks.CheckChangeHasDescription(
+        input_api, output_api))
+    results.extend(input_api.canned_checks.CheckDoNotSubmitInDescription(
+        input_api, output_api))
+    results.extend(input_api.canned_checks.CheckChangeDescriptionNotCommitted(
+        input_api, output_api))
+    snapshot("checking do not submit in files")
+    results.extend(input_api.canned_checks.CheckDoNotSubmitInFiles(
         input_api, output_api))
   snapshot("done")
   return results
