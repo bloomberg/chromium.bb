@@ -160,7 +160,7 @@ void PictureLayerImpl::didUpdateTransforms() {
   last_content_scale_y_ = contentsScaleY();
 }
 
-scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling*,
+scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
                                                  gfx::Rect rect) {
   TileManager* tile_manager = layerTreeHostImpl()->tileManager();
 
@@ -169,7 +169,8 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling*,
       pile_.get(),
       rect.size(),
       GL_RGBA,
-      rect));
+      rect,
+      tiling->contents_scale()));
 }
 
 void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {

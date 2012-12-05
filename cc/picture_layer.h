@@ -5,6 +5,7 @@
 #ifndef CC_PICTURE_LAYER_H_
 #define CC_PICTURE_LAYER_H_
 
+#include "cc/contents_scaling_layer.h"
 #include "cc/layer.h"
 #include "cc/picture_pile.h"
 #include "cc/occlusion_tracker.h"
@@ -15,7 +16,7 @@ class ContentLayerClient;
 class ResourceUpdateQueue;
 struct RenderingStats;
 
-class CC_EXPORT PictureLayer : public Layer {
+class CC_EXPORT PictureLayer : public ContentsScalingLayer {
 public:
   static scoped_refptr<PictureLayer> create(ContentLayerClient*);
 

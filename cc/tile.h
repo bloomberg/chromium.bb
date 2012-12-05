@@ -26,7 +26,8 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
        PicturePileImpl* picture_pile,
        gfx::Size tile_size,
        GLenum format,
-       gfx::Rect rect_inside_picture);
+       gfx::Rect rect_inside_picture,
+       float contents_scale);
 
   const PicturePileImpl* picture_pile() const {
     return picture_pile_.get();
@@ -59,6 +60,7 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
   ManagedTileState& managed_state() { return managed_state_; }
   const ManagedTileState& managed_state() const { return managed_state_; }
   size_t bytes_consumed_if_allocated() const;
+  float contents_scale() const { return contents_scale_; }
 
   // Normal private methods.
   friend class base::RefCounted<Tile>;
@@ -69,6 +71,7 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
   gfx::Rect tile_size_;
   GLenum format_;
   gfx::Rect rect_inside_picture_;
+  float contents_scale_;
   gfx::Rect opaque_rect_;
 
   TilePriority priority_[2];

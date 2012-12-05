@@ -30,8 +30,11 @@ scoped_refptr<PicturePileImpl> PicturePileImpl::CloneForDrawing() const {
   return clone;
 }
 
-void PicturePileImpl::Raster(SkCanvas* canvas, gfx::Rect rect,
-                             RenderingStats* stats) {
+void PicturePileImpl::Raster(
+    SkCanvas* canvas,
+    gfx::Rect rect,
+    float contents_scale,
+    RenderingStats* stats) {
   base::TimeTicks rasterizeBeginTime = base::TimeTicks::Now();
 
   // TODO(enne): do this more efficiently, i.e. top down with Skia clips
@@ -40,6 +43,7 @@ void PicturePileImpl::Raster(SkCanvas* canvas, gfx::Rect rect,
   SkRect layer_skrect = SkRect::MakeXYWH(rect.x(), rect.y(),
                                          rect.width(), rect.height());
   canvas->clipRect(layer_skrect);
+  canvas->scale(contents_scale, contents_scale);
   for (PicturePile::Pile::const_iterator i = pile_.begin();
        i != pile_.end(); ++i) {
     if (!(*i)->LayerRect().Intersects(rect))

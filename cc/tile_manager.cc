@@ -23,6 +23,7 @@ namespace {
 void RasterizeTile(cc::PicturePileImpl* picture_pile,
                    uint8_t* mapped_buffer,
                    const gfx::Rect& rect,
+                   float contents_scale,
                    cc::RenderingStats* stats) {
   TRACE_EVENT0("cc", "RasterizeTile");
   DCHECK(mapped_buffer);
@@ -32,7 +33,11 @@ void RasterizeTile(cc::PicturePileImpl* picture_pile,
   bitmap.setPixels(mapped_buffer);
   SkDevice device(bitmap);
   SkCanvas canvas(&device);
-  picture_pile->Raster(&canvas, rect, stats);
+  picture_pile->Raster(
+      &canvas,
+      rect,
+      contents_scale,
+      stats);
 }
 
 const char* kRasterThreadNamePrefix = "CompositorRaster";
@@ -322,6 +327,7 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
                      resource_pool_->resource_provider()->mapPixelBuffer(
                          resource_id),
                      tile->rect_inside_picture_,
+                     tile->contents_scale(),
                      stats),
           base::Bind(&TileManager::OnRasterTaskCompleted,
                      base::Unretained(this),

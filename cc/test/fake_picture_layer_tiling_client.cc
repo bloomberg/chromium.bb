@@ -21,7 +21,8 @@ scoped_refptr<Tile> FakePictureLayerTilingClient::CreateTile(
                                      pile_.get(),
                                      tile_size_,
                                      GL_RGBA,
-                                     rect));
+                                     rect,
+                                     1));
 }
 
 void FakePictureLayerTilingClient::SetTileSize(gfx::Size tile_size) {
