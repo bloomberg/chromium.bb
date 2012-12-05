@@ -84,11 +84,18 @@ read_groups(void)
 	gid_t *groups;
 	
 	n = getgroups(0, NULL);
+
+	if (n < 0) {
+		fprintf(stderr, "Unable to retrieve groups: %m\n");
+		return NULL;
+	}
+
 	groups = malloc(n * sizeof(gid_t));
 	if (!groups)
 		return NULL;
 
 	if (getgroups(n, groups) < 0) {
+		fprintf(stderr, "Unable to retrieve groups: %m\n");
 		free(groups);
 		return NULL;
 	}
