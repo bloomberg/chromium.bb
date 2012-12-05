@@ -26,7 +26,7 @@ deps = {
     'src/googleurl':
         Var('git_url') + '/external/google-url.git@ae822b39a0665aaca689c164305fd1690e36ae16',
     'src/native_client':
-        Var('git_url') + '/native_client/src/native_client.git@452a67567576b056d65d26209b232a8381626d1a',
+        Var('git_url') + '/native_client/src/native_client.git@d919d842b5adf67880cd65ebc8f556a7298d32db',
     'src/sandbox/linux/seccomp-legacy':
         Var('git_url') + '/external/seccompsandbox.git@9330761c07459eb6cbb75ab2d120a153307a8cb7',
     'src/sdch/open-vcdiff':
@@ -62,7 +62,7 @@ deps = {
     'src/third_party/libexif/sources':
         Var('git_url') + '/chromium/deps/libexif/sources.git@d815c325bab0d1871d4c7e70600ecdfdab07db9e',
     'src/third_party/libjingle/source':
-        Var('git_url') + '/external/libjingle.git@b639664ca2c5a18c9b2ad0bc8a2a03b9c38e31fd',
+        Var('git_url') + '/external/libjingle.git@3774063d3ed25d6018cb1d3f045508c257596aec',
     'src/third_party/libjpeg_turbo':
         Var('git_url') + '/chromium/deps/libjpeg_turbo.git@4c160802ea6f1aa25abdc55f3e9540868420d86e',
     'src/third_party/libphonenumber/src/phonenumbers':
@@ -132,7 +132,7 @@ deps = {
     'src/tools/page_cycler/acid3':
         Var('git_url') + '/chromium/deps/acid3.git@bed664c3c6f4200d2ab6b139bddb628dcef6f5ed',
     'src/tools/swarm_client':
-        Var('git_url') + '/chromium/tools/swarm_client.git@5dd75dd3aecc0749b618bbf5ecdcf01f83b7e0b7',
+        Var('git_url') + '/chromium/tools/swarm_client.git@32fae99f636d7f8d6da0f5b8e6f8dfd37a5819fc',
     'src/v8':
         Var('git_url') + '/external/v8.git@49a44674c6935d62c3e776dfbf896b7f6f34228a',
 }
