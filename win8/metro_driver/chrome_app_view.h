@@ -71,6 +71,9 @@ class ChromeAppView
   // Notification from chrome that a full screen operation is being performed.
   void SetFullscreen(bool fullscreen);
 
+  // Returns the current view state of the chrome window.
+  winui::ViewManagement::ApplicationViewState GetViewState();
+
  private:
   HRESULT OnActivate(winapp::Core::ICoreApplicationView* view,
                      winapp::Activation::IActivatedEventArgs* args);

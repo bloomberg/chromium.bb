@@ -259,8 +259,17 @@ void SetFrameWindowInternal(HWND hwnd) {
 
   globals.host_windows.push_front(std::make_pair(hwnd, window_scrolled_state));
 
-  if (new_window)
+  if (new_window) {
     AdjustFrameWindowStyleForMetro(hwnd);
+  } else {
+    DVLOG(1) << "Adjusting new top window to core window size";
+    AdjustToFitWindow(hwnd, 0);
+  }
+  if (globals.view->GetViewState() ==
+      winui::ViewManagement::ApplicationViewState_Snapped) {
+    DVLOG(1) << "Enabling Metro snap state on new window: " << hwnd;
+    ::PostMessageW(hwnd, WM_SYSCOMMAND, IDC_METRO_SNAP_ENABLE, 0);
+  }
 }
 
 void CloseFrameWindowInternal(HWND hwnd) {
@@ -404,6 +413,13 @@ void ChromeAppView::SetFullscreen(bool fullscreen) {
                      SW_INVALIDATE | SW_SCROLLCHILDREN);
     osk_offset_adjustment_ = 0;
   }
+}
+
+winui::ViewManagement::ApplicationViewState ChromeAppView::GetViewState() {
+  winui::ViewManagement::ApplicationViewState view_state =
+      winui::ViewManagement::ApplicationViewState_FullScreenLandscape;
+  app_view_->get_Value(&view_state);
+  return view_state;
 }
 
 void UnsnapHelper() {
