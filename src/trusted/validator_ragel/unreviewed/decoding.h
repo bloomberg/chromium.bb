@@ -7,6 +7,9 @@
 /*
  * This file contains common parts of x86-32 and x86-64 internals (inline
  * functions and defines).
+ *
+ * We only include simple schemetic diagrams here.  For full see AMD/Intel
+ * manuals.
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_RAGEL_DECODING_H_
@@ -20,17 +23,27 @@
 # define FORCEINLINE __inline __attribute__ ((always_inline))
 #endif
 
-enum {
-  REX_B = 1,
-  REX_X = 2,
-  REX_R = 4,
-  REX_W = 8
-};
 
+/*
+ * Opcode with register number embedded:
+ *
+ *     7       6       5       4       3       2       1       0
+ * ┌───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┒
+ * │                Opcode                 │    register number    ┃
+ * ┕━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┛
+ */
 static FORCEINLINE uint8_t RegFromOpcode(uint8_t modrm) {
   return modrm & 0x07;
 }
 
+/*
+ * ModRM byte format:
+ *
+ *     7       6       5       4       3       2       1       0
+ * ┌───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┒
+ * │      mod      │          reg          │          r/m          ┃
+ * ┕━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┛
+ */
 static FORCEINLINE uint8_t ModFromModRM(uint8_t modrm) {
   return modrm >> 6;
 }
@@ -43,6 +56,14 @@ static FORCEINLINE uint8_t RMFromModRM(uint8_t modrm) {
   return modrm & 0x07;
 }
 
+/*
+ * SIB byte format:
+ *
+ *     7       6       5       4       3       2       1       0
+ * ┌───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┒
+ * │     scale     │         index         │          base         ┃
+ * ┕━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┛
+ */
 static FORCEINLINE uint8_t ScaleFromSIB(uint8_t sib) {
   return sib >> 6;
 }
@@ -55,29 +76,76 @@ static FORCEINLINE uint8_t BaseFromSIB(uint8_t sib) {
   return sib & 0x07;
 }
 
+/*
+ * REX byte format:
+ *
+ *     7       6       5       4       3       2       1       0
+ * ┌───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┒
+ * │   0   │   1   │   0   │   0   │   W   │   R   │   X   │   B   ┃
+ * ┕━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┛
+ */
+
+enum {
+  REX_B = 1,
+  REX_X = 2,
+  REX_R = 4,
+  REX_W = 8
+};
+
 static FORCEINLINE uint8_t BaseExtentionFromREX(uint8_t rex) {
   return (rex & REX_B) << 3;
-}
-
-static FORCEINLINE uint8_t BaseExtentionFromVEX(uint8_t vex2) {
-  return ((~vex2) & 0x20) >> 2;
 }
 
 static FORCEINLINE uint8_t IndexExtentionFromREX(uint8_t rex) {
   return (rex & REX_X) << 2;
 }
 
-static FORCEINLINE uint8_t IndexExtentionFromVEX(uint8_t vex2) {
-  return ((~vex2) & REX_R) >> 3;
+static FORCEINLINE uint8_t RegisterExtentionFromREX(uint8_t rex) {
+  return (rex & REX_R) << 1;
 }
 
-static FORCEINLINE uint8_t RegisterExtentionFromREX(uint8_t rex) {
-  return (rex & 0x04) << 1;
+/*
+ * VEX 2nd byte format:
+ *
+ *     7       6       5       4       3       2       1       0
+ * ┌───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┒
+ * │  ¬R   │  ¬X   │  ¬B   │          opcode map selector          ┃
+ * ┕━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┛
+ */
+
+enum {
+  VEX_MAP1 = 0x01,
+  VEX_MAP2 = 0x02,
+  VEX_MAP3 = 0x03,
+  VEX_MAP8 = 0x08,
+  VEX_MAP9 = 0x09,
+  VEX_MAPA = 0x0a,
+  VEX_B    = 0x20,
+  VEX_X    = 0x40,
+  VEX_R    = 0x80,
+  VEX_W    = 0x80
+};
+
+static FORCEINLINE uint8_t BaseExtentionFromVEX(uint8_t vex2) {
+  return ((~vex2) & VEX_B) >> 2;
+}
+
+static FORCEINLINE uint8_t IndexExtentionFromVEX(uint8_t vex2) {
+  return ((~vex2) & VEX_X) >> 3;
 }
 
 static FORCEINLINE uint8_t RegisterExtentionFromVEX(uint8_t vex2) {
-  return ((~vex2) & REX_W) >> 4;
+  return ((~vex2) & VEX_R) >> 4;
 }
+
+/*
+ * VEX 3rd byte format:
+ *
+ *     7       6       5       4       3       2       1       0
+ * ┌───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┒
+ * │   W   │    ¬vvvv (register number)    │   L   │      pp       ┃
+ * ┕━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┛
+ */
 
 static FORCEINLINE uint8_t GetOperandFromVexIA32(uint8_t vex3) {
   return ((~vex3) & 0x38) >> 3;
@@ -87,6 +155,14 @@ static FORCEINLINE uint8_t GetOperandFromVexAMD64(uint8_t vex3) {
   return ((~vex3) & 0x78) >> 3;
 }
 
+/*
+ * is4 byte format:
+ *
+ *     7       6       5       4       3       2       1       0
+ * ┌───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┒
+ * │     vvvv (register number)    │   0   │   0   │  imm2 or zero ┃
+ * ┕━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┛
+ */
 static FORCEINLINE uint8_t RegisterFromIS4(uint8_t is4) {
   return is4 >> 4;
 }

@@ -75,8 +75,12 @@
   }
   # VEX/XOP short prefix
   action vex_prefix_short {
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
+    /*
+     * VEX.R is not used ia32 mode and VEX.W is always unset.
+     *
+     * Look for AMD64 version below for details of encoding.
+     */
+    SET_VEX_PREFIX3((*current_position) & (~VEX_W));
   }
 }%%
 
@@ -93,9 +97,24 @@
   }
   # VEX/XOP short prefix
   action vex_prefix_short {
-    /* This emulates two prefixes case. */
-    SET_VEX_PREFIX2(((*current_position) & 0x80) | 0x61);
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
+    /*
+     * VEX shortened prefix 2nd byte format (first byte is 0xc5):
+     *     7       6       5       4       3       2       1       0
+     * ┌───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┒
+     * │  ¬R   │    ¬vvvv (register number)    │   L   │       pp      ┃
+     * ┕━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┛
+     *
+     * It's converted to equivalent long (3 byte) form here (as in 0xc4):
+     *     7       6       5       4       3       2       1       0
+     * ┌───────┬═══════╤═══════╤═══════╤═══════╤═══════╤═══════╤═══════┒
+     * │  ¬R   │ ¬X==1 │ ¬B==1 │         opcode map 1 == 00001         ┃ 2nd
+     * ┕━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┛ byte
+     * ┌═══════┬───────┬───────┬───────┬───────┬───────┬───────┬───────┒
+     * │  W==0 │    ¬vvvv (register number)    │   L   │       pp      ┃ 3rd
+     * ┕━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┷━━━━━━━┛ byte
+     */
+    SET_VEX_PREFIX2(((*current_position) & VEX_R) | (VEX_X | VEX_B | VEX_MAP1));
+    SET_VEX_PREFIX3((*current_position) & (~VEX_W));
   }
 }%%
 
@@ -961,7 +980,7 @@
     SET_BRANCH_NOT_TAKEN(FALSE);
     SET_BRANCH_TAKEN(FALSE);
     /* Top three bis of VEX2 are inverted: see AMD/Intel manual.  */
-    SET_VEX_PREFIX2(0xe0);
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
     SET_VEX_PREFIX3(0x00);
     SET_ATT_INSTRUCTION_SUFFIX(NULL);
     CLEAR_SPURIOUS_DATA16();
