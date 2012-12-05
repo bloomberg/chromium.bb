@@ -22,8 +22,8 @@
 namespace {
 
 // Padding around the titlebar.
-const int kPanelTitlebarPaddingTop = 7;
-const int kPanelTitlebarPaddingBottom = 7;
+const int kPanelTitlebarPaddingTop = 11;
+const int kPanelTitlebarPaddingBottom = 11;
 const int kPanelTitlebarPaddingLeft = 4;
 const int kPanelTitlebarPaddingRight = 8;
 
@@ -37,7 +37,8 @@ const int kPanelIconTitleSpacing = 9;
 const SkColor kTitleTextDefaultColor = SkColorSetRGB(0xf9, 0xf9, 0xf9);
 
 // Markup used to paint the title with the desired font.
-const char* const kTitleMarkupPrefix = "<span face='Arial' size='11264'>";
+const char* const kTitleMarkupPrefix =
+    "<span face='Arial' weight='bold' size='11264'>";
 const char* const kTitleMarkupSuffix = "</span>";
 
 }  // namespace

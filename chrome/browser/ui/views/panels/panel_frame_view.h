@@ -97,7 +97,6 @@ class PanelFrameView : public views::NonClientFrameView,
   // Custom draw the frame.
   void PaintFrameBackground(gfx::Canvas* canvas);
   void PaintFrameEdge(gfx::Canvas* canvas);
-  void PaintDivider(gfx::Canvas* canvas);
 
   // Retrieves the drawing metrics based on the current painting state.
   SkColor GetTitleColor(PaintState paint_state) const;

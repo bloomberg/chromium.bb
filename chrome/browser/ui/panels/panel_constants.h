@@ -22,7 +22,7 @@ const int kPanelMinHeight = 20;
 static const int kMinimizedPanelHeight = 4;
 
 // The height in pixels of the titlebar.
-static const int kTitlebarHeight = 32;
+static const int kTitlebarHeight = 40;
 
 // The size (width or height) of the app icon (taskbar icon).
 static const int kPanelAppIconSize = 32;

@@ -46,7 +46,7 @@ const int kIconAndBorderSpacing = 4;
 const int kIconSize = 16;
 
 // The font to use to draw the title.
-const char* kTitleFontName = "Arial";
+const char* kTitleFontName = "Arial Bold";
 const int kTitleFontSize = 14;
 
 // The spacing in pixels between the title and the icon on the left, or the
@@ -469,7 +469,6 @@ void PanelFrameView::OnPaint(gfx::Canvas* canvas) {
   UpdateControlStyles(paint_state);
   PaintFrameBackground(canvas);
   PaintFrameEdge(canvas);
-  PaintDivider(canvas);
 }
 
 bool PanelFrameView::OnMousePressed(const ui::MouseEvent& event) {
@@ -707,14 +706,4 @@ void PanelFrameView::PaintFrameEdge(gfx::Canvas* canvas) {
       height() - frame_edges.top_left->height() -
           frame_edges.bottom_left->height());
 #endif
-}
-
-void PanelFrameView::PaintDivider(gfx::Canvas* canvas) {
-  // Draw the divider between the titlebar and the client area only if the panel
-  // is big enough to show more than the titlebar.
-  if (height() > TitlebarHeight()) {
-    canvas->DrawLine(gfx::Point(0, panel::kTitlebarHeight - 1),
-                     gfx::Point(width() - 1, panel::kTitlebarHeight - 1),
-                     kDividerColor);
-  }
 }

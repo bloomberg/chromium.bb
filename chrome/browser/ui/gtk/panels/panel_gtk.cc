@@ -71,9 +71,6 @@ const SkColor kAttentionBackgroundDefaultColor =
 const SkColor kMinimizeBackgroundDefaultColor = SkColorSetRGB(0xf5, 0xf4, 0xf0);
 const SkColor kMinimizeBorderDefaultColor = SkColorSetRGB(0xc9, 0xc9, 0xc9);
 
-// Color used to draw the divider line between the titlebar and the client area.
-const SkColor kDividerColor = SkColorSetRGB(0x2a, 0x2c, 0x2c);
-
 // Set minimium width for window really small.
 const int kMinWindowWidth = 26;
 
@@ -279,7 +276,7 @@ void PanelGtk::Init() {
   gtk_widget_set_app_paintable(window_container_, TRUE);
   gtk_widget_set_double_buffered(window_container_, FALSE);
   gtk_widget_set_redraw_on_allocate(window_container_, TRUE);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(window_container_), 1,
+  gtk_alignment_set_padding(GTK_ALIGNMENT(window_container_), 0,
       kFrameBorderThickness, kFrameBorderThickness, kFrameBorderThickness);
   g_signal_connect(window_container_, "expose-event",
                    G_CALLBACK(OnCustomFrameExposeThunk), this);
@@ -548,16 +545,6 @@ gboolean PanelGtk::OnCustomFrameExpose(GtkWidget* widget,
   cairo_rectangle(cr, event->area.x, event->area.y,
                   event->area.width, event->area.height);
   cairo_fill(cr);
-
-  // Draw the divider only if we're showing more than titlebar.
-  if (window_height > panel::kTitlebarHeight) {
-    cairo_set_source_rgb(cr,
-                         SkColorGetR(kDividerColor) / 255.0,
-                         SkColorGetG(kDividerColor) / 255.0,
-                         SkColorGetB(kDividerColor) / 255.0);
-    cairo_rectangle(cr, 0, panel::kTitlebarHeight - 1, bounds_.width(), 1);
-    cairo_fill(cr);
-  }
 
   // Draw the border for the minimized panel only.
   if (paint_state_ == PAINT_AS_MINIMIZED) {
@@ -967,7 +954,7 @@ gfx::Size PanelGtk::ContentSizeFromWindowSize(
 int PanelGtk::TitleOnlyHeight() const {
   gfx::Size& frame_size = GetFrameSize();
   if (!frame_size.IsEmpty())
-    return frame_size.height() - kFrameBorderThickness;
+    return panel::kTitlebarHeight;
 
   NOTREACHED() << "Checking title height before window allocated";
   return 0;

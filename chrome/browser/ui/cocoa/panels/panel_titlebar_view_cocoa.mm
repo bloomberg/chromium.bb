@@ -148,7 +148,6 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   ThemeService* theme =
       static_cast<ThemeService*>([[self window] themeProvider]);
 
-  NSColor* strokeColor = nil;
   NSColor* titleColor = nil;
 
   if (isDrawingAttention_) {
@@ -164,7 +163,6 @@ static NSEvent* MakeMouseEvent(NSEventType type,
                                     endingColor:endColor]);
     [gradient drawInRect:[self bounds] angle:270.0];
 
-    strokeColor = [NSColor colorWithCalibratedWhite:0.6 alpha:1.0];
     titleColor = [attentionColor gtm_legibleTextColor];
 
     if ([glintAnimation_ isAnimating]) {
@@ -218,10 +216,6 @@ static NSEvent* MakeMouseEvent(NSEventType type,
     [backgroundColor set];
     NSRectFillUsingOperation([self bounds], NSCompositeSourceOver);
 
-    strokeColor = [[self window] isMainWindow]
-        ? theme->GetNSColor(ThemeService::COLOR_TOOLBAR_STROKE, true)
-        : theme->GetNSColor(ThemeService::COLOR_TOOLBAR_STROKE_INACTIVE, true);
-
     titleColor = [[self window] isMainWindow]
         ? theme->GetNSColor(ThemeService::COLOR_TAB_TEXT, true)
         : theme->GetNSColor(ThemeService::COLOR_BACKGROUND_TAB_TEXT, true);
@@ -264,16 +258,6 @@ static NSEvent* MakeMouseEvent(NSEventType type,
       NSRectFill([self bounds]);
     }
 
-    strokeColor = isActive ?
-      [NSColor colorWithCalibratedRed:0x2a/255.0
-                                green:0x2c/255.0
-                                 blue:0x2c/255.0
-                                alpha:1.0] :
-      [NSColor colorWithCalibratedRed:0x5a/255.0
-                                green:0x5c/255.0
-                                 blue:0x5c/255.0
-                                alpha:1.0];
-
     titleColor = [NSColor colorWithCalibratedRed:0xf9/255.0
                                            green:0xf9/255.0
                                             blue:0xf9/255.0
@@ -282,14 +266,6 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 
   DCHECK(titleColor);
   [title_ setTextColor:titleColor];
-
-  // Draw the divider stroke.
-  DCHECK(strokeColor);
-  [strokeColor set];
-  NSRect borderRect, contentRect;
-  NSDivideRect([self bounds], &borderRect, &contentRect, [self cr_lineWidth],
-               NSMinYEdge);
-  NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
 }
 
 - (void)attach {
@@ -320,7 +296,11 @@ static NSEvent* MakeMouseEvent(NSEventType type,
                  titlebarSize.height);
   [self setFrame:titlebarFrame];
 
-  [title_ setFont:[NSFont fontWithName:@"Arial" size:14.0]];
+  [title_ setFont:[[NSFontManager sharedFontManager]
+                   fontWithFamily:@"Arial"
+                           traits:NSBoldFontMask
+                           weight:0
+                             size:14.0]];
   [title_ setDrawsBackground:NO];
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
