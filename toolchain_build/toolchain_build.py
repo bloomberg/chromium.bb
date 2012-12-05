@@ -306,7 +306,14 @@ def HostTools(target):
                   ]],
           'commands': ConfigureTargetPrep(target) + [
               ConfigureGccCommand(target),
-              GccCommand(target, MAKE_PARALLEL_CMD + ['all-gcc']),
+              # gcc/Makefile's install rules ordinarily look at the
+              # installed include directory for a limits.h to decide
+              # whether the lib/gcc/.../include-fixed/limits.h header
+              # should be made to expect a libc-supplied limits.h or not.
+              # Since we're doing this build in a clean environment without
+              # any libc installed, we need to force its hand here.
+              GccCommand(target, MAKE_PARALLEL_CMD + ['all-gcc',
+                                                      'LIMITS_H_TEST=true']),
               # gcc/Makefile's install targets populate this directory
               # only if it already exists.
               command.Mkdir(os.path.join('%(output)s', target + '-nacl', 'bin'),
