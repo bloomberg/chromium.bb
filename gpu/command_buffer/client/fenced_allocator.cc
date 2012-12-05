@@ -39,9 +39,11 @@ FencedAllocator::~FencedAllocator() {
 // optimizing what to wait for, just looks inside the block in order (first-fit
 // as well).
 FencedAllocator::Offset FencedAllocator::Alloc(unsigned int size) {
-  // Similarly to malloc, an allocation of 0 allocates at least 1 byte, to
-  // return different pointers every time.
-  if (size == 0) size = 1;
+  // size of 0 is not allowed because it would be inconsistent to only sometimes
+  // have it succeed. Example: Alloc(SizeOfBuffer), Alloc(0).
+  if (size == 0)  {
+    return kInvalidOffset;
+  }
 
   // Try first to allocate in a free block.
   for (unsigned int i = 0; i < blocks_.size(); ++i) {
