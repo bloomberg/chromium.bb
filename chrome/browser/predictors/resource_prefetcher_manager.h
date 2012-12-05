@@ -43,8 +43,10 @@ class ResourcePrefetcherManager
   void ShutdownOnIOThread();
 
   // Will create a new ResourcePrefetcher for the main frame url of the input
-  // navigation if there isn't one already for the same URL.
+  // navigation if there isn't one already for the same URL or host (for host
+  // based).
   void MaybeAddPrefetch(const NavigationID& navigation_id,
+                        PrefetchKeyType key_type,
                         scoped_ptr<ResourcePrefetcher::RequestVector> requests);
 
   // Stops the ResourcePrefetcher for the input navigation, if one was in
@@ -61,13 +63,14 @@ class ResourcePrefetcherManager
   friend class base::RefCountedThreadSafe<ResourcePrefetcherManager>;
   friend class MockResourcePrefetcherManager;
 
-  typedef std::map<GURL, ResourcePrefetcher*> PrefetcherMap;
+  typedef std::map<std::string, ResourcePrefetcher*> PrefetcherMap;
 
   virtual ~ResourcePrefetcherManager();
 
   // UI Thread. |predictor_| needs to be called on the UI thread.
   void ResourcePrefetcherFinishedOnUI(
       const NavigationID& navigation_id,
+      PrefetchKeyType key_type,
       scoped_ptr<ResourcePrefetcher::RequestVector> requests);
 
   ResourcePrefetchPredictor* predictor_;

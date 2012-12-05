@@ -14,6 +14,12 @@ class WebContents;
 
 namespace predictors {
 
+// Represents the type of key based on which prefetch data is stored.
+enum PrefetchKeyType {
+  PREFETCH_KEY_TYPE_HOST,
+  PREFETCH_KEY_TYPE_URL
+};
+
 // Represents a single navigation for a render view.
 struct NavigationID {
   // TODO(shishir): Maybe take process_id, view_id and url as input in
@@ -49,12 +55,16 @@ struct ResourcePrefetchPredictorConfig {
   // If a navigation hasn't seen a load complete event in this much time, it
   // is considered abandoned.
   int max_navigation_lifetime_seconds;
-  // Size of LRU caches for the URL data.
+
+  // Size of LRU caches for the URL and host data.
   int max_urls_to_track;
-  // The number of times, we should have seen a visit to this URL in history
-  // to start tracking it. This is to ensure we dont bother with oneoff
-  // entries.
+  int max_hosts_to_track;
+
+  // The number of times we should have seen a visit to this URL in history
+  // to start tracking it. This is to ensure we don't bother with oneoff
+  // entries. For hosts we track each one.
   int min_url_visit_count;
+
   // The maximum number of resources to store per entry.
   int max_resources_per_entry;
   // The number of consecutive misses after we stop tracking a resource URL.

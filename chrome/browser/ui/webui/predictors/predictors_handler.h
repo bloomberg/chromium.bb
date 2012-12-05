@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_PREDICTORS_PREDICTORS_HANDLER_H_
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
@@ -36,6 +37,11 @@ class PredictorsHandler : public content::WebUIMessageHandler {
   // Fetches stats for the ResourcePrefetchPredictor and returns it as a
   // DictionaryValue to the JS.
   void RequestResourcePrefetchPredictorDb(const base::ListValue* args);
+
+  // Helper for RequestResourcePrefetchPredictorDb.
+  void AddPrefetchDataMapToListValue(
+      const predictors::ResourcePrefetchPredictor::PrefetchDataMap& data_map,
+      base::ListValue* db) const;
 
   predictors::AutocompleteActionPredictor* autocomplete_action_predictor_;
   predictors::ResourcePrefetchPredictor* resource_prefetch_predictor_;

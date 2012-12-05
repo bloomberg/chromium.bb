@@ -26,8 +26,10 @@ class TestResourcePrefetcher : public ResourcePrefetcher {
   TestResourcePrefetcher(ResourcePrefetcher::Delegate* delegate,
                          const ResourcePrefetchPredictorConfig& config,
                          const NavigationID& navigation_id,
+                         PrefetchKeyType key_type,
                          scoped_ptr<RequestVector> requests)
-      : ResourcePrefetcher(delegate, config, navigation_id, requests.Pass()) { }
+      : ResourcePrefetcher(delegate, config, navigation_id,
+                           key_type, requests.Pass()) { }
 
   virtual ~TestResourcePrefetcher() { }
 
@@ -185,6 +187,7 @@ TEST_F(ResourcePrefetcherTest, TestPrefetcherFinishes) {
   prefetcher_.reset(new TestResourcePrefetcher(&prefetcher_delegate_,
                                                config_,
                                                navigation_id,
+                                               PREFETCH_KEY_TYPE_URL,
                                                requests.Pass()));
 
   // Starting the prefetcher maxes out the number of possible requests.
@@ -301,6 +304,7 @@ TEST_F(ResourcePrefetcherTest, TestPrefetcherStopped) {
   prefetcher_.reset(new TestResourcePrefetcher(&prefetcher_delegate_,
                                                config_,
                                                navigation_id,
+                                               PREFETCH_KEY_TYPE_HOST,
                                                requests.Pass()));
 
   // Starting the prefetcher maxes out the number of possible requests.

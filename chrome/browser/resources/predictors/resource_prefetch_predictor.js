@@ -37,59 +37,63 @@ function truncateString(str) {
  */
 function updateResourcePrefetchPredictorDbView(database) {
   if (!database.enabled) {
-    $('resource_prefetch_predictor_enabled').style.display = 'none';
-    $('resource_prefetch_predictor_disabled').style.display = 'block';
+    $('rpp_enabled').style.display = 'none';
+    $('rpp_disabled').style.display = 'block';
     return;
   } else {
-    $('resource_prefetch_predictor_enabled').style.display = 'block';
-    $('resource_prefetch_predictor_disabled').style.display = 'none';
+    $('rpp_enabled').style.display = 'block';
+    $('rpp_disabled').style.display = 'none';
   }
 
-  if (database.db) {
-    if (database.db.length > 0) {
-      $('resource_prefetch_predictor_db').style.display = 'block';
-      $('empty_resource_prefetch_predictor_db').style.display = 'none';
-    } else {
-      $('resource_prefetch_predictor_db').style.display = 'none';
-      $('empty_resource_prefetch_predictor_db').style.display = 'block';
-    }
+  var has_url_data = database.url_db && database.url_db.length > 0;
+  var has_host_data = database.host_db && database.host_db.length > 0;
 
-    var dbSection = $('resource_prefetch_predictor_db_body');
-    dbSection.textContent = '';
-    for (var i = 0; i < database.db.length; ++i) {
-      var main = database.db[i];
+  if (has_url_data)
+    renderCacheData($('rpp_url_body'), database.url_db);
+  if (has_host_data)
+    renderCacheData($('rpp_host_body'), database.host_db);
+}
 
-      for (var j = 0; j < main.resources.length; ++j) {
-        var resource = main.resources[j];
-        var row = document.createElement('tr');
+/**
+ * Renders cache data for URL or host based data.
+ * @param {HTMLElement} body element of table to render into.
+ * @param {Dictionary} database to render.
+ */
+function renderCacheData(body, database) {
+  body.textContent = '';
+  for (var i = 0; i < database.length; ++i) {
+    var main = database[i];
 
-        if (j == 0) {
-          var t = document.createElement('td');
-          t.rowSpan = main.resources.length;
-          t.textContent = truncateString(main.main_frame_url);
-          t.className = 'last';
-          row.appendChild(t);
-        }
+    for (var j = 0; j < main.resources.length; ++j) {
+      var resource = main.resources[j];
+      var row = document.createElement('tr');
 
-        if (j == main.resources.length - 1)
-          row.className = 'last';
-
-        row.appendChild(document.createElement('td')).textContent =
-            truncateString(resource.resource_url);
-        row.appendChild(document.createElement('td')).textContent =
-            resource.resource_type;
-        row.appendChild(document.createElement('td')).textContent =
-            resource.number_of_hits;
-        row.appendChild(document.createElement('td')).textContent =
-            resource.number_of_misses;
-        row.appendChild(document.createElement('td')).textContent =
-            resource.consecutive_misses;
-        row.appendChild(document.createElement('td')).textContent =
-            resource.position;
-        row.appendChild(document.createElement('td')).textContent =
-            resource.score;
-        dbSection.appendChild(row);
+      if (j == 0) {
+        var t = document.createElement('td');
+        t.rowSpan = main.resources.length;
+        t.textContent = truncateString(main.main_frame_url);
+        t.className = 'last';
+        row.appendChild(t);
       }
+
+      if (j == main.resources.length - 1)
+        row.className = 'last';
+
+      row.appendChild(document.createElement('td')).textContent =
+          truncateString(resource.resource_url);
+      row.appendChild(document.createElement('td')).textContent =
+          resource.resource_type;
+      row.appendChild(document.createElement('td')).textContent =
+          resource.number_of_hits;
+      row.appendChild(document.createElement('td')).textContent =
+          resource.number_of_misses;
+      row.appendChild(document.createElement('td')).textContent =
+          resource.consecutive_misses;
+      row.appendChild(document.createElement('td')).textContent =
+          resource.position;
+      row.appendChild(document.createElement('td')).textContent =
+          resource.score;
+      body.appendChild(row);
     }
   }
 }

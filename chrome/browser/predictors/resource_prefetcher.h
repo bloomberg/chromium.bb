@@ -87,15 +87,15 @@ class ResourcePrefetcher : public base::NonThreadSafe,
   ResourcePrefetcher(Delegate* delegate,
                      const ResourcePrefetchPredictorConfig& config,
                      const NavigationID& navigation_id,
+                     PrefetchKeyType key_type,
                      scoped_ptr<RequestVector> requests);
   virtual ~ResourcePrefetcher();
 
   void Start();  // Kicks off the prefetching. Can only be called once.
   void Stop();   // No additional prefetches will be queued after this.
 
-  const NavigationID& navigation_id() const {
-    return navigation_id_;
-  }
+  const NavigationID& navigation_id() const { return navigation_id_; }
+  PrefetchKeyType key_type() const { return key_type_; }
 
  private:
   friend class ResourcePrefetcherTest;
@@ -145,6 +145,7 @@ class ResourcePrefetcher : public base::NonThreadSafe,
   Delegate* const delegate_;
   ResourcePrefetchPredictorConfig const config_;
   NavigationID navigation_id_;
+  PrefetchKeyType key_type_;
   scoped_ptr<RequestVector> request_vector_;
 
   std::map<net::URLRequest*, Request*> inflight_requests_;

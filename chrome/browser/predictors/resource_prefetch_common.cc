@@ -55,6 +55,7 @@ bool NavigationID::IsSameRenderer(const NavigationID& other) const {
 ResourcePrefetchPredictorConfig::ResourcePrefetchPredictorConfig()
     : max_navigation_lifetime_seconds(60),
       max_urls_to_track(500),
+      max_hosts_to_track(200),
       min_url_visit_count(3),
       max_resources_per_entry(50),
       max_consecutive_misses(3),

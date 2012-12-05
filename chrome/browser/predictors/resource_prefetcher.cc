@@ -35,11 +35,13 @@ ResourcePrefetcher::ResourcePrefetcher(
     Delegate* delegate,
     const ResourcePrefetchPredictorConfig& config,
     const NavigationID& navigation_id,
+    PrefetchKeyType key_type,
     scoped_ptr<RequestVector> requests)
         : state_(INITIALIZED),
           delegate_(delegate),
           config_(config),
           navigation_id_(navigation_id),
+          key_type_(key_type),
           request_vector_(requests.Pass()) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   DCHECK(request_vector_.get());

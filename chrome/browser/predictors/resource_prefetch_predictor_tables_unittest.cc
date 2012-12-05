@@ -24,10 +24,11 @@ class ResourcePrefetchPredictorTablesTest : public testing::Test {
   virtual void SetUp() OVERRIDE;
 
  protected:
-  void TestGetAllUrlData();
-  void TestUpdateDataForUrl();
-  void TestDeleteDataForUrls();
-  void TestDeleteAllUrlData();
+  void TestGetAllData();
+  void TestUpdateData();
+  void TestDeleteData();
+  void TestDeleteSingleDataPoint();
+  void TestDeleteAllData();
 
   MessageLoop loop_;
   content::TestBrowserThread db_thread_;
@@ -36,22 +37,39 @@ class ResourcePrefetchPredictorTablesTest : public testing::Test {
   scoped_refptr<ResourcePrefetchPredictorTables> tables_;
 
  private:
-  typedef ResourcePrefetchPredictorTables::UrlResourceRow UrlResourceRow;
-  typedef std::vector<UrlResourceRow> UrlResourceRows;
-  typedef ResourcePrefetchPredictorTables::UrlData UrlData;
-  typedef std::vector<UrlData> UrlDataVector;
+  typedef ResourcePrefetchPredictorTables::ResourceRow ResourceRow;
+  typedef std::vector<ResourceRow> ResourceRows;
+  typedef ResourcePrefetchPredictorTables::PrefetchData PrefetchData;
+  typedef ResourcePrefetchPredictorTables::PrefetchDataMap PrefetchDataMap;
 
-  // Adds data to the tables as well as test_url_data_.
-  void InitializeSampleUrlData();
+  // Initializes the tables, |test_url_data_| and |test_host_data_|.
+  void InitializeSampleData();
 
-  // Checks that the input UrlData are the same, although the resources can be
-  // in different order.
-  void TestUrlDataAreEqual(const UrlDataVector& lhs,
-                           const UrlDataVector& rhs) const;
-  void TestUrlResourceRowsAreEqual(const UrlResourceRows& lhs,
-                                   const UrlResourceRows& rhs) const;
+  // Checks that the input PrefetchData are the same, although the resources
+  // can be in different order.
+  void TestPrefetchDataAreEqual(const PrefetchDataMap& lhs,
+                                const PrefetchDataMap& rhs) const;
+  void TestResourceRowsAreEqual(const ResourceRows& lhs,
+                                const ResourceRows& rhs) const;
 
-  UrlDataVector test_url_data_;
+  void AddKey(PrefetchDataMap* m, const std::string& key) const;
+
+  // Useful for debugging test.
+  void PrintPrefetchData(const PrefetchData& data) const {
+    LOG(ERROR) << "[" << data.key_type << "," << data.primary_key
+               << "," << data.last_visit.ToInternalValue() << "]";
+    for (ResourceRows::const_iterator it = data.resources.begin();
+         it != data.resources.end(); ++it) {
+      LOG(ERROR) << "\t\t" << it->resource_url << "\t" << it->resource_type
+                 << "\t" << it->number_of_hits << "\t" << it->number_of_misses
+                 << "\t" << it->consecutive_misses
+                 << "\t" << it->average_position
+                 << "\t" << it->score;
+    }
+  }
+
+  PrefetchDataMap test_url_data_;
+  PrefetchDataMap test_host_data_;
 };
 
 class ResourcePrefetchPredictorTablesReopenTest
@@ -79,216 +97,322 @@ ResourcePrefetchPredictorTablesTest::~ResourcePrefetchPredictorTablesTest() {
 }
 
 void ResourcePrefetchPredictorTablesTest::SetUp() {
-  tables_->DeleteAllUrlData();
-  InitializeSampleUrlData();
+  tables_->DeleteAllData();
+  InitializeSampleData();
 }
 
-void ResourcePrefetchPredictorTablesTest::TestGetAllUrlData() {
-  UrlDataVector actual_data;
-  tables_->GetAllUrlData(&actual_data);
+void ResourcePrefetchPredictorTablesTest::TestGetAllData() {
+  PrefetchDataMap actual_url_data, actual_host_data;
+  tables_->GetAllData(&actual_url_data, &actual_host_data);
 
-  TestUrlDataAreEqual(test_url_data_, actual_data);
+  TestPrefetchDataAreEqual(test_url_data_, actual_url_data);
+  TestPrefetchDataAreEqual(test_host_data_, actual_host_data);
 }
 
-void ResourcePrefetchPredictorTablesTest::TestDeleteDataForUrls() {
-  std::vector<GURL> urls_to_delete;
-  urls_to_delete.push_back(GURL("http://www.google.com"));
-  urls_to_delete.push_back(GURL("http://www.yahoo.com"));
+void ResourcePrefetchPredictorTablesTest::TestDeleteData() {
+  std::vector<std::string> urls_to_delete, hosts_to_delete;
+  urls_to_delete.push_back("http://www.google.com");
+  urls_to_delete.push_back("http://www.yahoo.com");
+  hosts_to_delete.push_back("www.yahoo.com");
 
-  tables_->DeleteDataForUrls(urls_to_delete);
+  tables_->DeleteData(urls_to_delete, hosts_to_delete);
 
-  UrlDataVector actual_data;
-  tables_->GetAllUrlData(&actual_data);
+  PrefetchDataMap actual_url_data, actual_host_data;
+  tables_->GetAllData(&actual_url_data, &actual_host_data);
 
-  UrlDataVector expected_data;
-  expected_data.push_back(test_url_data_[1]);
+  PrefetchDataMap expected_url_data, expected_host_data;
+  AddKey(&expected_url_data, "http://www.reddit.com");
+  AddKey(&expected_host_data, "www.facebook.com");
 
-  TestUrlDataAreEqual(expected_data, actual_data);
+  TestPrefetchDataAreEqual(expected_url_data, actual_url_data);
+  TestPrefetchDataAreEqual(expected_host_data, actual_host_data);
 }
 
-void ResourcePrefetchPredictorTablesTest::TestUpdateDataForUrl() {
-  UrlData new_data(GURL("http://www.google.com"));
-  new_data.last_visit = base::Time::FromInternalValue(10);
-  new_data.resources.push_back(UrlResourceRow(
-      "http://www.google.com",
+void ResourcePrefetchPredictorTablesTest::TestDeleteSingleDataPoint() {
+  // Delete a URL.
+  tables_->DeleteSingleDataPoint("http://www.reddit.com",
+                                 PREFETCH_KEY_TYPE_URL);
+
+  PrefetchDataMap actual_url_data, actual_host_data;
+  tables_->GetAllData(&actual_url_data, &actual_host_data);
+
+  PrefetchDataMap expected_url_data;
+  AddKey(&expected_url_data, "http://www.google.com");
+  AddKey(&expected_url_data, "http://www.yahoo.com");
+
+  TestPrefetchDataAreEqual(expected_url_data, actual_url_data);
+  TestPrefetchDataAreEqual(test_host_data_, actual_host_data);
+
+  // Delete a host.
+  tables_->DeleteSingleDataPoint("www.facebook.com", PREFETCH_KEY_TYPE_HOST);
+  actual_url_data.clear();
+  actual_host_data.clear();
+  tables_->GetAllData(&actual_url_data, &actual_host_data);
+
+  PrefetchDataMap expected_host_data;
+  AddKey(&expected_host_data, "www.yahoo.com");
+
+  TestPrefetchDataAreEqual(expected_url_data, actual_url_data);
+  TestPrefetchDataAreEqual(expected_host_data, actual_host_data);
+}
+
+void ResourcePrefetchPredictorTablesTest::TestUpdateData() {
+  PrefetchData google(PREFETCH_KEY_TYPE_URL, "http://www.google.com");
+  google.last_visit = base::Time::FromInternalValue(10);
+  google.resources.push_back(ResourceRow(
+      "",
       "http://www.google.com/style.css",
       ResourceType::STYLESHEET,
       6, 2, 0, 1.0));
-  new_data.resources.push_back(UrlResourceRow(
-      "http://www.google.com",
+  google.resources.push_back(ResourceRow(
+      "",
       "http://www.google.com/image.png",
       ResourceType::IMAGE,
       6, 4, 1, 4.2));
-  new_data.resources.push_back(UrlResourceRow(
-      "http://www.google.com",
+  google.resources.push_back(ResourceRow(
+      "",
       "http://www.google.com/a.xml",
       ResourceType::LAST_TYPE,
       1, 0, 0, 6.1));
-  new_data.resources.push_back(UrlResourceRow(
-      "http://www.google.com",
+  google.resources.push_back(ResourceRow(
+      "",
       "http://www.resources.google.com/script.js",
       ResourceType::SCRIPT,
       12, 0, 0, 8.5));
 
-  tables_->UpdateDataForUrl(new_data);
+  PrefetchData yahoo(PREFETCH_KEY_TYPE_HOST, "www.yahoo.com");
+  yahoo.last_visit = base::Time::FromInternalValue(7);
+  yahoo.resources.push_back(ResourceRow(
+      "",
+      "http://www.yahoo.com/image.png",
+      ResourceType::IMAGE,
+      120, 1, 1, 10.0));
 
-  UrlDataVector actual_data;
-  tables_->GetAllUrlData(&actual_data);
+  tables_->UpdateData(google, yahoo);
 
-  UrlDataVector expected_data;
-  expected_data.push_back(new_data);
-  expected_data.push_back(test_url_data_[1]);
-  expected_data.push_back(test_url_data_[2]);
+  PrefetchDataMap actual_url_data, actual_host_data;
+  tables_->GetAllData(&actual_url_data, &actual_host_data);
 
-  TestUrlDataAreEqual(expected_data, actual_data);
+  PrefetchDataMap expected_url_data, expected_host_data;
+  AddKey(&expected_url_data, "http://www.reddit.com");
+  AddKey(&expected_url_data, "http://www.yahoo.com");
+  expected_url_data.insert(std::make_pair("http://www.google.com", google));
+
+  AddKey(&expected_host_data, "www.facebook.com");
+  expected_host_data.insert(std::make_pair("www.yahoo.com", yahoo));
+
+  TestPrefetchDataAreEqual(expected_url_data, actual_url_data);
+  TestPrefetchDataAreEqual(expected_host_data, actual_host_data);
 }
 
-void ResourcePrefetchPredictorTablesTest::TestDeleteAllUrlData() {
-  tables_->DeleteAllUrlData();
+void ResourcePrefetchPredictorTablesTest::TestDeleteAllData() {
+  tables_->DeleteAllData();
 
-  UrlDataVector actual_data;
-  tables_->GetAllUrlData(&actual_data);
-  EXPECT_EQ(0, static_cast<int>(actual_data.size()));
+  PrefetchDataMap actual_url_data, actual_host_data;
+  tables_->GetAllData(&actual_url_data, &actual_host_data);
+  EXPECT_TRUE(actual_url_data.empty());
+  EXPECT_TRUE(actual_host_data.empty());
 }
 
-void ResourcePrefetchPredictorTablesTest::TestUrlDataAreEqual(
-    const UrlDataVector& lhs,
-    const UrlDataVector& rhs) const {
+void ResourcePrefetchPredictorTablesTest::TestPrefetchDataAreEqual(
+    const PrefetchDataMap& lhs,
+    const PrefetchDataMap& rhs) const {
   EXPECT_EQ(lhs.size(), rhs.size());
 
-  std::set<GURL> urls_seen;
-  for (UrlDataVector::const_iterator rhs_it = rhs.begin(); rhs_it != rhs.end();
-       ++rhs_it) {
-    for (UrlDataVector::const_iterator lhs_it = lhs.begin();
-         lhs_it != lhs.end(); ++lhs_it) {
-      if (lhs_it->main_frame_url == rhs_it->main_frame_url) {
-        EXPECT_TRUE(urls_seen.find(rhs_it->main_frame_url) == urls_seen.end());
-        urls_seen.insert(rhs_it->main_frame_url);
-        EXPECT_TRUE(lhs_it->last_visit == rhs_it->last_visit);
-        TestUrlResourceRowsAreEqual(lhs_it->resources, rhs_it->resources);
-        break;
-      }
-    }
-  }
-
-  EXPECT_EQ(lhs.size(), urls_seen.size());
-}
-
-void ResourcePrefetchPredictorTablesTest::TestUrlResourceRowsAreEqual(
-    const UrlResourceRows& lhs,
-    const UrlResourceRows& rhs) const {
-  EXPECT_EQ(lhs.size(), rhs.size());
-
-  std::set<std::pair<GURL, GURL> > resources_seen;
-  for (UrlResourceRows::const_iterator rhs_it = rhs.begin();
+  for (PrefetchDataMap::const_iterator rhs_it = rhs.begin();
        rhs_it != rhs.end(); ++rhs_it) {
-    std::pair<GURL, GURL> resource_id = std::make_pair(rhs_it->main_frame_url,
-                                                       rhs_it->resource_url);
-    EXPECT_TRUE(resources_seen.find(resource_id) == resources_seen.end());
+    PrefetchDataMap::const_iterator lhs_it = lhs.find(rhs_it->first);
+    EXPECT_TRUE(lhs_it != lhs.end()) << rhs_it->first;
 
-    for (UrlResourceRows::const_iterator lhs_it = lhs.begin();
+    TestResourceRowsAreEqual(lhs_it->second.resources,
+                             rhs_it->second.resources);
+  }
+}
+
+void ResourcePrefetchPredictorTablesTest::TestResourceRowsAreEqual(
+    const ResourceRows& lhs,
+    const ResourceRows& rhs) const {
+  EXPECT_EQ(lhs.size(), rhs.size());
+
+  std::set<GURL> resources_seen;
+  for (ResourceRows::const_iterator rhs_it = rhs.begin();
+       rhs_it != rhs.end(); ++rhs_it) {
+    const GURL& resource = rhs_it->resource_url;
+    EXPECT_TRUE(resources_seen.find(resource) == resources_seen.end());
+
+    for (ResourceRows::const_iterator lhs_it = lhs.begin();
          lhs_it != lhs.end(); ++lhs_it) {
       if (*rhs_it == *lhs_it) {
-        resources_seen.insert(resource_id);
+        resources_seen.insert(resource);
         break;
       }
     }
-    EXPECT_TRUE(resources_seen.find(resource_id) != resources_seen.end());
+    EXPECT_TRUE(resources_seen.find(resource) != resources_seen.end());
   }
   EXPECT_EQ(lhs.size(), resources_seen.size());
 }
 
-void ResourcePrefetchPredictorTablesTest::InitializeSampleUrlData() {
-  UrlData google(GURL("http://www.google.com"));
-  google.last_visit = base::Time::FromInternalValue(1);
-  google.resources.push_back(UrlResourceRow(
-      "http://www.google.com",
-      "http://www.google.com/style.css",
-      ResourceType::STYLESHEET,
-      5, 2, 1, 1.1));
-  google.resources.push_back(UrlResourceRow(
-      "http://www.google.com",
-      "http://www.google.com/script.js",
-      ResourceType::SCRIPT,
-      4, 0, 1, 2.1));
-  google.resources.push_back(UrlResourceRow(
-      "http://www.google.com",
-      "http://www.google.com/image.png",
-      ResourceType::IMAGE,
-      6, 3, 0, 2.2));
-  google.resources.push_back(UrlResourceRow(
-      "http://www.google.com",
-      "http://www.google.com/a.font",
-      ResourceType::LAST_TYPE,
-      2, 0, 0, 5.1));
-  google.resources.push_back(UrlResourceRow(
-      "http://www.google.com",
-      "http://www.resources.google.com/script.js",
-      ResourceType::SCRIPT,
-      11, 0, 0, 8.5));
-
-  UrlData reddit(GURL("http://www.reddit.com"));
-  reddit.last_visit = base::Time::FromInternalValue(2);
-  reddit.resources.push_back(UrlResourceRow(
-      "http://www.reddit.com",
-      "http://reddit-resource.com/script1.js",
-      ResourceType::SCRIPT,
-      4, 0, 1, 1.0));
-  reddit.resources.push_back(UrlResourceRow(
-      "http://www.reddit.com",
-      "http://reddit-resource.com/script2.js",
-      ResourceType::SCRIPT,
-      2, 0, 0, 2.1));
-
-  UrlData yahoo(GURL("http://www.yahoo.com"));
-  yahoo.last_visit = base::Time::FromInternalValue(3);
-  yahoo.resources.push_back(UrlResourceRow(
-      "http://www.yahoo.com",
-      "http://www.google.com/image.png",
-      ResourceType::IMAGE,
-      20, 1, 0, 10.0));
-
-  test_url_data_.clear();
-  test_url_data_.push_back(google);
-  test_url_data_.push_back(reddit);
-  test_url_data_.push_back(yahoo);
-
-  // Add all the rows to the table.
-  tables_->UpdateDataForUrl(google);
-  tables_->UpdateDataForUrl(reddit);
-  tables_->UpdateDataForUrl(yahoo);
+void ResourcePrefetchPredictorTablesTest::AddKey(PrefetchDataMap* m,
+                                                 const std::string& key) const {
+  PrefetchDataMap::const_iterator it = test_url_data_.find(key);
+  if (it != test_url_data_.end()) {
+    m->insert(std::make_pair(it->first, it->second));
+    return;
+  }
+  it = test_host_data_.find(key);
+  EXPECT_TRUE(it != test_host_data_.end());
+  m->insert(std::make_pair(it->first, it->second));
 }
 
-TEST_F(ResourcePrefetchPredictorTablesTest, GetAllUrlData) {
-  TestGetAllUrlData();
+void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
+  {  // Url data.
+    PrefetchData google(PREFETCH_KEY_TYPE_URL, "http://www.google.com");
+    google.last_visit = base::Time::FromInternalValue(1);
+    google.resources.push_back(ResourceRow(
+        "",
+        "http://www.google.com/style.css",
+        ResourceType::STYLESHEET,
+        5, 2, 1, 1.1));
+    google.resources.push_back(ResourceRow(
+        "",
+        "http://www.google.com/script.js",
+        ResourceType::SCRIPT,
+        4, 0, 1, 2.1));
+    google.resources.push_back(ResourceRow(
+        "",
+        "http://www.google.com/image.png",
+        ResourceType::IMAGE,
+        6, 3, 0, 2.2));
+    google.resources.push_back(ResourceRow(
+        "",
+        "http://www.google.com/a.font",
+        ResourceType::LAST_TYPE,
+        2, 0, 0, 5.1));
+    google.resources.push_back(ResourceRow(
+        "",
+        "http://www.resources.google.com/script.js",
+        ResourceType::SCRIPT,
+        11, 0, 0, 8.5));
+
+    PrefetchData reddit(PREFETCH_KEY_TYPE_URL, "http://www.reddit.com");
+    reddit.last_visit = base::Time::FromInternalValue(2);
+    reddit.resources.push_back(ResourceRow(
+        "",
+        "http://reddit-resource.com/script1.js",
+        ResourceType::SCRIPT,
+        4, 0, 1, 1.0));
+    reddit.resources.push_back(ResourceRow(
+        "",
+        "http://reddit-resource.com/script2.js",
+        ResourceType::SCRIPT,
+        2, 0, 0, 2.1));
+
+    PrefetchData yahoo(PREFETCH_KEY_TYPE_URL, "http://www.yahoo.com");
+    yahoo.last_visit = base::Time::FromInternalValue(3);
+    yahoo.resources.push_back(ResourceRow(
+        "",
+        "http://www.google.com/image.png",
+        ResourceType::IMAGE,
+        20, 1, 0, 10.0));
+
+    test_url_data_.clear();
+    test_url_data_.insert(std::make_pair("http://www.google.com", google));
+    test_url_data_.insert(std::make_pair("http://www.reddit.com", reddit));
+    test_url_data_.insert(std::make_pair("http://www.yahoo.com", yahoo));
+
+    PrefetchData empty_host_data(PREFETCH_KEY_TYPE_HOST, "");
+    tables_->UpdateData(google, empty_host_data);
+    tables_->UpdateData(reddit, empty_host_data);
+    tables_->UpdateData(yahoo, empty_host_data);
+  }
+
+  {  // Host data.
+    PrefetchData facebook(PREFETCH_KEY_TYPE_HOST, "www.facebook.com");
+    facebook.last_visit = base::Time::FromInternalValue(4);
+    facebook.resources.push_back(ResourceRow(
+        "",
+        "http://www.facebook.com/style.css",
+        ResourceType::STYLESHEET,
+        5, 2, 1, 1.1));
+    facebook.resources.push_back(ResourceRow(
+        "",
+        "http://www.facebook.com/script.js",
+        ResourceType::SCRIPT,
+        4, 0, 1, 2.1));
+    facebook.resources.push_back(ResourceRow(
+        "",
+        "http://www.facebook.com/image.png",
+        ResourceType::IMAGE,
+        6, 3, 0, 2.2));
+    facebook.resources.push_back(ResourceRow(
+        "",
+        "http://www.facebook.com/a.font",
+        ResourceType::LAST_TYPE,
+        2, 0, 0, 5.1));
+    facebook.resources.push_back(ResourceRow(
+        "",
+        "http://www.resources.facebook.com/script.js",
+        ResourceType::SCRIPT,
+        11, 0, 0, 8.5));
+
+    PrefetchData yahoo(PREFETCH_KEY_TYPE_HOST, "www.yahoo.com");
+    yahoo.last_visit = base::Time::FromInternalValue(5);
+    yahoo.resources.push_back(ResourceRow(
+        "",
+        "http://www.google.com/image.png",
+        ResourceType::IMAGE,
+        20, 1, 0, 10.0));
+
+    test_host_data_.clear();
+    test_host_data_.insert(std::make_pair("www.facebook.com", facebook));
+    test_host_data_.insert(std::make_pair("www.yahoo.com", yahoo));
+
+    PrefetchData empty_url_data(PREFETCH_KEY_TYPE_URL, "");
+    tables_->UpdateData(empty_url_data, facebook);
+    tables_->UpdateData(empty_url_data, yahoo);
+  }
 }
 
-TEST_F(ResourcePrefetchPredictorTablesTest, UpdateDataForUrl) {
-  TestUpdateDataForUrl();
+// Test cases.
+
+TEST_F(ResourcePrefetchPredictorTablesTest, GetAllData) {
+  TestGetAllData();
 }
 
-TEST_F(ResourcePrefetchPredictorTablesTest, DeleteDataForUrls) {
-  TestDeleteDataForUrls();
+TEST_F(ResourcePrefetchPredictorTablesTest, UpdateData) {
+  TestUpdateData();
 }
 
-TEST_F(ResourcePrefetchPredictorTablesTest, DeleteAllUrlData) {
-  TestDeleteAllUrlData();
+TEST_F(ResourcePrefetchPredictorTablesTest, DeleteData) {
+  TestDeleteData();
 }
 
-TEST_F(ResourcePrefetchPredictorTablesReopenTest, GetAllUrlData) {
-  TestGetAllUrlData();
+TEST_F(ResourcePrefetchPredictorTablesTest, DeleteSingleDataPoint) {
+  TestDeleteSingleDataPoint();
 }
 
-TEST_F(ResourcePrefetchPredictorTablesReopenTest, UpdateDataForUrl) {
-  TestUpdateDataForUrl();
+TEST_F(ResourcePrefetchPredictorTablesTest, DeleteAllData) {
+  TestDeleteAllData();
 }
 
-TEST_F(ResourcePrefetchPredictorTablesReopenTest, DeleteDataForUrls) {
-  TestDeleteDataForUrls();
+TEST_F(ResourcePrefetchPredictorTablesReopenTest, GetAllData) {
+  TestGetAllData();
 }
 
-TEST_F(ResourcePrefetchPredictorTablesReopenTest, DeleteAllUrlData) {
-  TestDeleteAllUrlData();
+TEST_F(ResourcePrefetchPredictorTablesReopenTest, UpdateData) {
+  TestUpdateData();
+}
+
+TEST_F(ResourcePrefetchPredictorTablesReopenTest, DeleteData) {
+  TestDeleteData();
+}
+
+TEST_F(ResourcePrefetchPredictorTablesReopenTest, DeleteSingleDataPoint) {
+  TestDeleteSingleDataPoint();
+}
+
+TEST_F(ResourcePrefetchPredictorTablesReopenTest, DeleteAllData) {
+  TestDeleteAllData();
 }
 
 }  // namespace predictors
