@@ -26,7 +26,7 @@ FileNetLog::~FileNetLog() {
 
 void FileNetLog::OnAddEntry(const net::NetLog::Entry& entry) {
   // Only BoundNetLogs without a NetLog should have an invalid source.
-  DCHECK(entry.source().is_valid());
+  DCHECK(entry.source().IsValid());
 
   const char* source = SourceTypeToString(entry.source().type);
   const char* type = EventTypeToString(entry.type());
