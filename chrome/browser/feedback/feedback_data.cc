@@ -72,18 +72,18 @@ FeedbackData::FeedbackData()
 FeedbackData::~FeedbackData() {}
 
 void FeedbackData::UpdateData(Profile* profile,
-                               const std::string& target_tab_url,
-                               const std::string& category_tag,
-                               const std::string& page_url,
-                               const std::string& description,
-                               const std::string& user_email,
-                               ScreenshotDataPtr image
+                              const std::string& target_tab_url,
+                              const std::string& category_tag,
+                              const std::string& page_url,
+                              const std::string& description,
+                              const std::string& user_email,
+                              ScreenshotDataPtr image
 #if defined(OS_CHROMEOS)
-                               , const bool send_sys_info
-                               , const bool sent_report
-                               , const std::string& timestamp
+                              , const bool send_sys_info
+                              , const bool sent_report
+                              , const std::string& timestamp
 #endif
-                               ) {
+                              ) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   profile_ = profile;
   target_tab_url_ = target_tab_url;
@@ -111,20 +111,20 @@ void FeedbackData::SendReport() {
 
   gfx::Rect& screen_size = FeedbackUtil::GetScreenshotSize();
   FeedbackUtil::SendReport(profile_
-                            , category_tag_
-                            , page_url_
-                            , description_
-                            , user_email_
-                            , image_
-                            , screen_size.width()
-                            , screen_size.height()
+                           , category_tag_
+                           , page_url_
+                           , description_
+                           , user_email_
+                           , image_
+                           , screen_size.width()
+                           , screen_size.height()
 #if defined(OS_CHROMEOS)
-                            , zip_content_ ? zip_content_->c_str() : NULL
-                            , zip_content_ ? zip_content_->length() : 0
-                            , send_sys_info_ ? sys_info_ : NULL
-                            , timestamp_
+                           , zip_content_ ? zip_content_->c_str() : NULL
+                           , zip_content_ ? zip_content_->length() : 0
+                           , send_sys_info_ ? sys_info_ : NULL
+                           , timestamp_
 #endif
-                          );
+                           );
 
 #if defined(OS_CHROMEOS)
   if (sys_info_) {
@@ -146,7 +146,7 @@ void FeedbackData::SendReport() {
 // want to delete the logs that were gathered, and we do not want to send the
 // report either. Instead simply populate |sys_info_| and |zip_content_|.
 void FeedbackData::SyslogsComplete(chromeos::system::LogDictionaryType* logs,
-                                    std::string* zip_content) {
+                                   std::string* zip_content) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (sent_report_) {
     // We already sent the report, just delete the data.
@@ -159,8 +159,10 @@ void FeedbackData::SyslogsComplete(chromeos::system::LogDictionaryType* logs,
     // TODO(rkc): Move to the correct place once crbug.com/138582 is done.
     AddSyncLogs(logs);
 
+    // Will get deleted when SendReport() is called.
     zip_content_ = zip_content;
-    sys_info_ = logs;  // Will get deleted when SendReport() is called.
+    sys_info_ = logs;
+
     if (send_sys_info_) {
       // We already prepared the report, send it now.
       this->SendReport();

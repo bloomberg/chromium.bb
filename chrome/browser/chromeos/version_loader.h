@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/common/cancelable_task_tracker.h"
 
 namespace chromeos {
@@ -21,15 +20,15 @@ namespace chromeos {
 // To use ChromeOSVersionLoader do the following:
 //
 // . In your class define a member field of type chromeos::VersionLoader and
-//   CancelableRequestConsumerBase.
+//   CancelableTaskTracker.
 // . Define the callback method, something like:
-//   void OnGetChromeOSVersion(chromeos::VersionLoader::Handle,
-//                             const std::string& version);
-// . When you want the version invoke:  loader.GetVersion(&consumer, callback);
+//   void OnGetChromeOSVersion(const std::string& version);
+// . When you want the version invoke:
+//   VersionLoader::GetVersion()
 //
 // This class also provides the ability to load the bios firmware using
-//   loader.GetFirmware(&consumer, callback);
-class VersionLoader : public CancelableRequestProvider {
+//   VersionLoader::GetFirmware()
+class VersionLoader {
  public:
   VersionLoader();
   virtual ~VersionLoader();

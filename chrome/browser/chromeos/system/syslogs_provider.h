@@ -5,12 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_SYSLOGS_PROVIDER_H_
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_SYSLOGS_PROVIDER_H_
 
+#include <map>
 #include <string>
 
 #include "base/callback.h"
-#include "chrome/browser/common/cancelable_request.h"
-
-class CancelableRequestConsumerBase;
+#include "chrome/common/cancelable_task_tracker.h"
 
 namespace chromeos {
 namespace system {
@@ -26,7 +25,7 @@ extern const size_t kFeedbackMaxLineCount;
 typedef std::map<std::string, std::string> LogDictionaryType;
 
 // This interface provides access to Chrome OS syslogs.
-class SyslogsProvider : public CancelableRequestProvider {
+class SyslogsProvider {
  public:
   static SyslogsProvider* GetInstance();
 
@@ -43,15 +42,15 @@ class SyslogsProvider : public CancelableRequestProvider {
   };
 
   // Request system logs. Read happens on the FILE thread and callback is
-  // called on the thread this is called from (via ForwardResult).
-  // Logs are owned by callback function (use delete when done with them).
-  // Returns the request handle. Call CancelRequest(Handle) to cancel
-  // the request before the callback gets called.
-  virtual Handle RequestSyslogs(
+  // called on the thread this is called from. Logs are owned by callback
+  // function (use delete when done with them).
+  // Call CancelableTaskTracker::TryCancel() with the returned task ID to cancel
+  // task and callback.
+  virtual CancelableTaskTracker::TaskId RequestSyslogs(
       bool compress_logs,
       SyslogsContext context,
-      CancelableRequestConsumerBase* consumer,
-      const ReadCompleteCallback& callback) = 0;
+      const ReadCompleteCallback& callback,
+      CancelableTaskTracker* tracker) = 0;
 
  protected:
   virtual ~SyslogsProvider() {}

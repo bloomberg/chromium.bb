@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/version_handler_chromeos.h"
 
+#include "base/bind.h"
 #include "content/public/browser/web_ui.h"
 
 VersionHandlerChromeOS::VersionHandlerChromeOS() {

@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/screenshot_source.h"
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -242,7 +243,7 @@ void ShowFeedbackPage(Browser* browser,
 
 // The handler for Javascript messages related to the "bug report" dialog
 class FeedbackHandler : public WebUIMessageHandler,
-                         public base::SupportsWeakPtr<FeedbackHandler> {
+                        public base::SupportsWeakPtr<FeedbackHandler> {
  public:
   explicit FeedbackHandler(content::WebContents* tab);
   virtual ~FeedbackHandler();
@@ -280,9 +281,9 @@ class FeedbackHandler : public WebUIMessageHandler,
   FeedbackData* feedback_data_;
   std::string target_tab_url_;
 #if defined(OS_CHROMEOS)
-  // Variables to track SyslogsProvider::RequestSyslogs callback.
-  chromeos::system::SyslogsProvider::Handle syslogs_handle_;
-  CancelableRequestConsumer syslogs_consumer_;
+  // Variables to track SyslogsProvider::RequestSyslogs.
+  CancelableTaskTracker::TaskId syslogs_task_id_;
+  CancelableTaskTracker syslogs_tracker_;
 
   // Timestamp of when the feedback request was initiated.
   std::string timestamp_;
@@ -350,10 +351,9 @@ FeedbackHandler::FeedbackHandler(WebContents* tab)
       screenshot_source_(NULL),
       feedback_data_(NULL)
 #if defined(OS_CHROMEOS)
-    , syslogs_handle_(0)
+      , syslogs_task_id_(CancelableTaskTracker::kBadTaskId)
 #endif
-{
-}
+{}
 
 FeedbackHandler::~FeedbackHandler() {
   // Just in case we didn't send off feedback_data_ to SendReport
@@ -527,12 +527,12 @@ void FeedbackHandler::HandleGetDialogDefaults(const ListValue*) {
   chromeos::system::SyslogsProvider* provider =
       chromeos::system::SyslogsProvider::GetInstance();
   if (provider) {
-    syslogs_handle_ = provider->RequestSyslogs(
+    syslogs_task_id_ = provider->RequestSyslogs(
         true,  // don't compress.
         chromeos::system::SyslogsProvider::SYSLOGS_FEEDBACK,
-        &syslogs_consumer_,
         base::Bind(&FeedbackData::SyslogsComplete,
-                   base::Unretained(feedback_data_)));
+                   base::Unretained(feedback_data_)),
+        &syslogs_tracker_);
   }
 
   // On ChromeOS if the user's email is blank, it means we don't
@@ -638,25 +638,25 @@ void FeedbackHandler::HandleSendReport(const ListValue* list_value) {
 
   // Update the data in feedback_data_ so it can be sent
   feedback_data_->UpdateData(Profile::FromWebUI(web_ui())
-                               , target_tab_url_
-                               , std::string()
-                               , page_url
-                               , description
-                               , user_email
-                               , image_ptr
+                             , target_tab_url_
+                             , std::string()
+                             , page_url
+                             , description
+                             , user_email
+                             , image_ptr
 #if defined(OS_CHROMEOS)
-                               , send_sys_info
-                               , false  // sent_report
-                               , timestamp_
+                             , send_sys_info
+                             , false  // sent_report
+                             , timestamp_
 #endif
-                               );
+                             );
 
 #if defined(OS_CHROMEOS)
   // If we don't require sys_info, or we have it, or we never requested it
   // (because libcros failed to load), then send the report now.
   // Otherwise, the report will get sent when we receive sys_info.
   if (!send_sys_info || feedback_data_->sys_info() != NULL ||
-      syslogs_handle_ == 0) {
+      syslogs_task_id_ == CancelableTaskTracker::kBadTaskId) {
     feedback_data_->SendReport();
   }
 #else
@@ -690,12 +690,8 @@ void FeedbackHandler::HandleOpenSystemTab(const ListValue* args) {
 
 void FeedbackHandler::CancelFeedbackCollection() {
 #if defined(OS_CHROMEOS)
-  if (syslogs_handle_ != 0) {
-    chromeos::system::SyslogsProvider* provider =
-        chromeos::system::SyslogsProvider::GetInstance();
-    if (provider && syslogs_consumer_.HasPendingRequests())
-      provider->CancelRequest(syslogs_handle_);
-  }
+  // Canceling a finished task ID or kBadTaskId is a noop.
+  syslogs_tracker_.TryCancel(syslogs_task_id_);
 #endif
 }
 
@@ -750,8 +746,8 @@ void FeedbackUI::GetMostRecentScreenshots(
                     ScreenshotTimestampComp);
   for (size_t i = 0; i < sort_size; ++i)
     saved_screenshots->push_back(
-                    std::string(ScreenshotSource::kScreenshotUrlRoot) +
-                    std::string(ScreenshotSource::kScreenshotSaved) +
-                    screenshot_filepaths[i]);
+        std::string(ScreenshotSource::kScreenshotUrlRoot) +
+        std::string(ScreenshotSource::kScreenshotSaved) +
+        screenshot_filepaths[i]);
 }
 #endif

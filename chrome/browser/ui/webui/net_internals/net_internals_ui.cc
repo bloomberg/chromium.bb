@@ -42,6 +42,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
@@ -425,9 +426,9 @@ class NetInternalsMessageHandler
     scoped_ptr<chromeos::system::LogDictionaryType> logs_;
     bool logs_received_;
     bool logs_requested_;
-    CancelableRequestConsumer consumer_;
-    // Libcros request handle.
-    CancelableRequestProvider::Handle syslogs_request_id_;
+    CancelableTaskTracker tracker_;
+    // Libcros request task ID.
+    CancelableTaskTracker::TaskId syslogs_task_id_;
   };
 #endif  // defined(OS_CHROMEOS)
 
@@ -847,7 +848,7 @@ NetInternalsMessageHandler::SystemLogsGetter::~SystemLogsGetter() {
 
 void NetInternalsMessageHandler::SystemLogsGetter::DeleteSystemLogs() {
   if (syslogs_provider_ && logs_requested_ && !logs_received_) {
-    syslogs_provider_->CancelRequest(syslogs_request_id_);
+    tracker_.TryCancel(syslogs_task_id_);
   }
   logs_requested_ = false;
   logs_received_ = false;
@@ -875,13 +876,13 @@ void NetInternalsMessageHandler::SystemLogsGetter::LoadSystemLogs() {
   if (logs_requested_ || !syslogs_provider_)
     return;
   logs_requested_ = true;
-  syslogs_request_id_ = syslogs_provider_->RequestSyslogs(
+  syslogs_task_id_ = syslogs_provider_->RequestSyslogs(
       false,  // compress logs.
       chromeos::system::SyslogsProvider::SYSLOGS_NETWORK,
-      &consumer_,
       base::Bind(
           &NetInternalsMessageHandler::SystemLogsGetter::OnSystemLogsLoaded,
-          base::Unretained(this)));
+          base::Unretained(this)),
+      &tracker_);
 }
 
 void NetInternalsMessageHandler::SystemLogsGetter::OnSystemLogsLoaded(

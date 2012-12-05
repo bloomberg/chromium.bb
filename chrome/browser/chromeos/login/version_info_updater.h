@@ -81,12 +81,9 @@ class VersionInfoUpdater : public policy::CloudPolicySubsystem::Observer,
 
   // Handles asynchronously loading the version.
   VersionLoader version_loader_;
-  // Used to request the version.
-  CancelableRequestConsumer version_consumer_;
-
   // Handles asynchronously loading the boot times.
   BootTimesLoader boot_times_loader_;
-  // Used to request boot times.
+  // Used to request version and boot times.
   CancelableTaskTracker tracker_;
 
   // Information pieces for version label.
