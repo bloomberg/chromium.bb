@@ -931,12 +931,13 @@ TEST_F(GestureRecognizerTest, GestureEventScrollBoundingBox) {
     // Release the touch. This should end the scroll.
     delegate->Reset();
     ui::TouchEvent release(ui::ET_TOUCH_RELEASED,
-                               gfx::Point(kPositionX, kPositionY),
+                               gfx::Point(kPositionX + kScrollAmount,
+                                          kPositionY + kScrollAmount),
                                kTouchId, press.time_stamp() +
                                base::TimeDelta::FromMilliseconds(50));
     root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
-    EXPECT_EQ(gfx::Rect(kPositionX - radius,
-                        kPositionY - radius,
+    EXPECT_EQ(gfx::Rect(kPositionX + kScrollAmount - radius,
+                        kPositionY + kScrollAmount - radius,
                         radius * 2,
                         radius * 2).ToString(),
               delegate->bounding_box().ToString());

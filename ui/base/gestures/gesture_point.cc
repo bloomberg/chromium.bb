@@ -17,6 +17,7 @@ namespace ui {
 
 GesturePoint::GesturePoint()
     : first_touch_time_(0.0),
+      second_last_touch_time_(0.0),
       last_touch_time_(0.0),
       last_tap_time_(0.0),
       velocity_calculator_(
@@ -28,7 +29,7 @@ GesturePoint::GesturePoint()
 GesturePoint::~GesturePoint() {}
 
 void GesturePoint::Reset() {
-  first_touch_time_ = last_touch_time_ = 0.0;
+  first_touch_time_ = second_last_touch_time_ = last_touch_time_ = 0.0;
   velocity_calculator_.ClearHistory();
   point_id_ = -1;
   clear_enclosing_rectangle();
@@ -36,6 +37,10 @@ void GesturePoint::Reset() {
 
 void GesturePoint::ResetVelocity() {
   velocity_calculator_.ClearHistory();
+}
+
+gfx::Vector2d GesturePoint::ScrollDelta() {
+  return last_touch_position_ - second_last_touch_position_;
 }
 
 void GesturePoint::UpdateValues(const TouchEvent& event) {
@@ -53,6 +58,9 @@ void GesturePoint::UpdateValues(const TouchEvent& event) {
   if (event.type() == ui::ET_TOUCH_PRESSED) {
     first_touch_time_ = last_touch_time_;
     first_touch_position_ = event.location();
+    second_last_touch_position_ = last_touch_position_;
+    second_last_touch_time_ = last_touch_time_;
+
     velocity_calculator_.ClearHistory();
     velocity_calculator_.PointSeen(event.location().x(),
                                    event.location().y(),
@@ -70,11 +78,8 @@ void GesturePoint::UpdateForTap() {
 }
 
 void GesturePoint::UpdateForScroll() {
-  // Update the first-touch position and time so that the scroll-delta and
-  // scroll-velocity can be computed correctly for the next scroll gesture
-  // event.
-  first_touch_position_ = last_touch_position_;
-  first_touch_time_ = last_touch_time_;
+  second_last_touch_position_ = last_touch_position_;
+  second_last_touch_time_ = last_touch_time_;
 }
 
 bool GesturePoint::IsInClickWindow(const TouchEvent& event) const {
@@ -97,28 +102,26 @@ bool GesturePoint::IsInFlickWindow(const TouchEvent& event) {
 }
 
 bool GesturePoint::DidScroll(const TouchEvent& event, int dist) const {
-  return abs(last_touch_position_.x() - first_touch_position_.x()) > dist ||
-         abs(last_touch_position_.y() - first_touch_position_.y()) > dist;
+  gfx::Vector2d d = last_touch_position_ - second_last_touch_position_;
+  return abs(d.x()) > dist || abs(d.y()) > dist;
 }
 
 bool GesturePoint::HasEnoughDataToEstablishRail() const {
-  int dx = x_delta();
-  int dy = y_delta();
-
-  int delta_squared = dx * dx + dy * dy;
+  gfx::Vector2d d = last_touch_position_ - first_touch_position_;
+  int64 delta_squared = d.LengthSquared();
   return delta_squared > GestureConfiguration::min_scroll_delta_squared();
 }
 
 bool GesturePoint::IsInHorizontalRailWindow() const {
-  int dx = x_delta();
-  int dy = y_delta();
-  return abs(dx) > GestureConfiguration::rail_start_proportion() * abs(dy);
+  gfx::Vector2d d = last_touch_position_ - second_last_touch_position_;
+  return abs(d.x()) >
+      GestureConfiguration::rail_start_proportion() * abs(d.y());
 }
 
 bool GesturePoint::IsInVerticalRailWindow() const {
-  int dx = x_delta();
-  int dy = y_delta();
-  return abs(dy) > GestureConfiguration::rail_start_proportion() * abs(dx);
+  gfx::Vector2d d = last_touch_position_ - second_last_touch_position_;
+  return abs(d.y()) >
+      GestureConfiguration::rail_start_proportion() * abs(d.x());
 }
 
 bool GesturePoint::BreaksHorizontalRail() {

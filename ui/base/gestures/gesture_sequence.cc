@@ -733,26 +733,24 @@ void GestureSequence::AppendScrollGestureEnd(const GesturePoint& point,
 
 void GestureSequence::AppendScrollGestureUpdate(GesturePoint& point,
                                                 Gestures* gestures) {
-  float dx, dy;
+  gfx::Vector2d d;
   gfx::Point location;
   if (point_count_ == 1) {
-    dx = point.x_delta();
-    dy = point.y_delta();
+    d = point.ScrollDelta();
     location = point.last_touch_position();
   } else {
     location = bounding_box_.CenterPoint();
-    dx = location.x() - latest_multi_scroll_update_location_.x();
-    dy = location.y() - latest_multi_scroll_update_location_.y();
+    d = location - latest_multi_scroll_update_location_;
     latest_multi_scroll_update_location_ = location;
   }
   if (scroll_type_ == ST_HORIZONTAL)
-    dy = 0;
+    d.set_y(0);
   else if (scroll_type_ == ST_VERTICAL)
-    dx = 0;
-  if (dx == 0 && dy == 0)
+    d.set_x(0);
+  if (d.IsZero())
     return;
 
-  GestureEventDetails details(ui::ET_GESTURE_SCROLL_UPDATE, dx, dy);
+  GestureEventDetails details(ui::ET_GESTURE_SCROLL_UPDATE, d.x(), d.y());
   details.SetScrollVelocity(
       scroll_type_ == ST_VERTICAL ? 0 : point.XVelocity(),
       scroll_type_ == ST_HORIZONTAL ? 0 : point.YVelocity());

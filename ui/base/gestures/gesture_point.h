@@ -72,13 +72,7 @@ class GesturePoint {
 
   bool in_use() const { return point_id_ >= 0; }
 
-  double x_delta() const {
-    return last_touch_position_.x() - first_touch_position_.x();
-  }
-
-  double y_delta() const {
-    return last_touch_position_.y() - first_touch_position_.y();
-  }
+  gfx::Vector2d ScrollDelta();
 
   float XVelocity() { return velocity_calculator_.XVelocity(); }
   float YVelocity() { return velocity_calculator_.YVelocity(); }
@@ -101,10 +95,12 @@ class GesturePoint {
   void UpdateEnclosingRectangle(const TouchEvent& event);
   void clear_enclosing_rectangle() { enclosing_rect_ = gfx::Rect(); }
 
-  // The position of touchdown event, or of the last scroll gesture event.
-  // We may want to consider tracking these two things in separate variables.
+  // The position of the first touchdown event.
   gfx::Point first_touch_position_;
   double first_touch_time_;
+
+  gfx::Point second_last_touch_position_;
+  double second_last_touch_time_;
 
   gfx::Point last_touch_position_;
   double last_touch_time_;
