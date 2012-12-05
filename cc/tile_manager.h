@@ -12,16 +12,13 @@
 #include "cc/resource_pool.h"
 #include "cc/tile_priority.h"
 
-namespace base {
-class SequencedWorkerPool;
-}
-
 namespace cc {
 
+class RasterThread;
+class ResourceProvider;
 class Tile;
 class TileVersion;
 struct RenderingStats;
-class ResourceProvider;
 
 class CC_EXPORT TileManagerClient {
  public:
@@ -92,7 +89,7 @@ class CC_EXPORT TileManager {
   void FreeResourcesForTile(Tile*);
   void ScheduleManageTiles();
   void DispatchMoreRasterTasks();
-  void DispatchOneRasterTask(scoped_refptr<Tile>);
+  void DispatchOneRasterTask(RasterThread*, scoped_refptr<Tile>);
   void OnRasterTaskCompleted(
       scoped_refptr<Tile>,
       scoped_ptr<ResourcePool::Resource>,
@@ -103,15 +100,15 @@ class CC_EXPORT TileManager {
   TileManagerClient* client_;
   scoped_ptr<ResourcePool> resource_pool_;
   bool manage_tiles_pending_;
-  int pending_raster_tasks_;
-  size_t num_raster_threads_;
-  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
 
   GlobalStateThatImpactsTilePriority global_state_;
 
   typedef std::vector<Tile*> TileVector;
   TileVector tiles_;
   TileVector tiles_that_need_to_be_rasterized_;
+
+  typedef ScopedPtrVector<RasterThread> RasterThreadVector;
+  RasterThreadVector raster_threads_;
 
   RenderingStats rendering_stats_;
 };
