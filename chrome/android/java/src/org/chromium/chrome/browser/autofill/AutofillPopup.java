@@ -30,6 +30,17 @@ import org.chromium.ui.gfx.NativeWindow;
  */
 public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItemClickListener {
 
+    /**
+     * Constants defining types of Autofill suggestion entries.
+     * Has to be kept in sync with enum in WebAutofillClient.h
+     *
+     * Not supported: MenuItemIDWarningMessage, MenuItemIDSeparator, MenuItemIDClearForm, and
+     * MenuItemIDAutofillOptions.
+     */
+    private static final int ITEM_ID_AUTOCOMPLETE_ENTRY = 0;
+    private static final int ITEM_ID_PASSWORD_ENTRY = -2;
+    private static final int ITEM_ID_DATA_LIST_ENTRY = -6;
+
     private static final int TEXT_PADDING_DP = 30;
 
     private final AutofillPopupDelegate mAutofillCallback;
@@ -126,10 +137,14 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
      * @param suggestions Autofill suggestion data.
      */
     public void show(AutofillSuggestion[] suggestions) {
-        // Remove the AutofillSuggestions with IDs that are unsupported by Android
+        // Remove the AutofillSuggestions with IDs that are not supported by Android
         ArrayList<AutofillSuggestion> cleanedData = new ArrayList<AutofillSuggestion>();
         for (int i = 0; i < suggestions.length; i++) {
-            if (suggestions[i].mUniqueId >= 0) cleanedData.add(suggestions[i]);
+            int itemId = suggestions[i].mUniqueId;
+            if (itemId > 0 || itemId == ITEM_ID_AUTOCOMPLETE_ENTRY ||
+                    itemId == ITEM_ID_PASSWORD_ENTRY || itemId == ITEM_ID_DATA_LIST_ENTRY) {
+                cleanedData.add(suggestions[i]);
+            }
         }
         mAnchorView.setSize(mAnchorRect, getDesiredWidth(suggestions));
         setAnchorView(mAnchorView);
