@@ -2043,6 +2043,13 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 		} else if (touch->focus) {
 			es = (struct weston_surface *) touch->focus;
 			weston_surface_from_global_fixed(es, x, y, &sx, &sy);
+		} else {
+			/* Unexpected condition: We have non-initial touch but
+			 * there is no focused surface.
+			 */
+			weston_log("touch event received with %d points down"
+				   "but no surface focused\n", seat->num_tp);
+			return;
 		}
 
 		grab->interface->down(grab, time, touch_id, sx, sy);
