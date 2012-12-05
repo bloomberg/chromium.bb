@@ -5,7 +5,6 @@
 cr.define('ntp', function() {
   'use strict';
 
-
   /**
    * The maximum gap from the edge of the scrolling area which will display
    * the shadow with transparency. After this point the shadow will become

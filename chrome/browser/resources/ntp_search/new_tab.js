@@ -261,6 +261,8 @@ cr.define('ntp', function() {
       this.shownPageIndex = loadTimeData.getInteger('shown_page_index');
 
       if (loadTimeData.getBoolean('showApps')) {
+        // When the Apps Page is available, then the dot list should be visible.
+        this.dotList.removeAttribute('hidden');
         // Request data on the apps so we can fill them in.
         // Note that this is kicked off asynchronously.  'getAppsCallback' will
         // be invoked at some point after this function returns.
