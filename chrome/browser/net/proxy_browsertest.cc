@@ -52,6 +52,8 @@ class LoginPromptObserver : public content::NotificationObserver {
 
  private:
   bool auth_handled_;
+
+  DISALLOW_COPY_AND_ASSIGN(LoginPromptObserver);
 };
 
 class ProxyBrowserTest : public InProcessBrowserTest {
@@ -74,6 +76,10 @@ class ProxyBrowserTest : public InProcessBrowserTest {
 
  protected:
   net::TestServer proxy_server_;
+
+ private:
+
+  DISALLOW_COPY_AND_ASSIGN(ProxyBrowserTest);
 };
 
 #if defined(OS_CHROMEOS)
