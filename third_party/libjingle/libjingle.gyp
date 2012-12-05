@@ -141,6 +141,7 @@
       ['use_openssl==1', {
         'defines': [
           'SSL_USE_OPENSSL',
+          'HAVE_OPENSSL_SSL_H',
         ],
         'dependencies': [
           '../../third_party/openssl/openssl.gyp:openssl',
@@ -455,6 +456,14 @@
           ],
           'dependencies!': [
             '<(DEPTH)/third_party/jsoncpp/jsoncpp.gyp:jsoncpp',
+          ],
+        }],
+        ['use_openssl==1', {
+          'sources': [
+            '<@(libjingle_source)/talk/base/openssladapter.cc',
+            '<@(libjingle_source)/talk/base/openssldigest.cc',
+            '<@(libjingle_source)/talk/base/opensslidentity.cc',
+            '<@(libjingle_source)/talk/base/opensslstreamadapter.cc',
           ],
         }],
       ],
