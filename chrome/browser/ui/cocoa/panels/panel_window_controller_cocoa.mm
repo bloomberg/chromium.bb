@@ -542,49 +542,32 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
 }
 
 // Called to validate menu and toolbar items when this window is key. All the
-// items we care about have been set with the |-commandDispatch:| or
-// |-commandDispatchUsingKeyModifiers:| actions and a target of FirstResponder
-// in IB. If it's not one of those, let it continue up the responder chain to be
-// handled elsewhere.
+// items we care about have been set with the |-commandDispatch:|
+// action and a target of FirstResponder in IB.
+// Delegate to the NSApp delegate if Panel does not care about the command or
+// shortcut, to make sure the global items in Chrome main app menu still work.
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
-  SEL action = [item action];
-  BOOL enable = NO;
-  if (action == @selector(commandDispatch:) ||
-      action == @selector(commandDispatchUsingKeyModifiers:)) {
+  if ([item action] == @selector(commandDispatch:)) {
     NSInteger tag = [item tag];
     CommandUpdater* command_updater = windowShim_->panel()->command_updater();
-    if (command_updater->SupportsCommand(tag)) {
-      enable = command_updater->IsCommandEnabled(tag);
-      // Special handling for the contents of the Text Encoding submenu. On
-      // Mac OS, instead of enabling/disabling the top-level menu item, we
-      // enable/disable the submenu's contents (per Apple's HIG).
-      EncodingMenuController encoding_controller;
-      if (encoding_controller.DoesCommandBelongToEncodingMenu(tag)) {
-        enable &= command_updater->IsCommandEnabled(IDC_ENCODING_MENU) ?
-            YES : NO;
-      }
-    }
+    if (command_updater->SupportsCommand(tag))
+      return command_updater->IsCommandEnabled(tag);
+    else
+      return [[NSApp delegate] validateUserInterfaceItem:item];
   }
-  return enable;
+  return NO;
 }
 
 // Called when the user picks a menu or toolbar item when this window is key.
-// Calls through to the panel object to execute the command.
+// Calls through to the panel object to execute the command or delegates up.
 - (void)commandDispatch:(id)sender {
   DCHECK(sender);
-  windowShim_->panel()->ExecuteCommandIfEnabled([sender tag]);
-}
-
-// Same as |-commandDispatch:|, but executes commands using a disposition
-// determined by the key flags.
-- (void)commandDispatchUsingKeyModifiers:(id)sender {
-  DCHECK(sender);
-  NSEvent* event = [NSApp currentEvent];
-  WindowOpenDisposition disposition =
-      event_utils::WindowOpenDispositionFromNSEventWithFlags(
-          event, [event modifierFlags]);
-  windowShim_->panel()->ExecuteCommandWithDisposition(
-      [sender tag], disposition);
+  NSInteger tag = [sender tag];
+  CommandUpdater* command_updater = windowShim_->panel()->command_updater();
+  if (command_updater->SupportsCommand(tag))
+    windowShim_->panel()->ExecuteCommandIfEnabled(tag);
+  else
+    [[NSApp delegate] commandDispatch:sender];
 }
 
 // Handler for the custom Close button.
