@@ -5,10 +5,10 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
 
 #include "base/sys_string_conversions.h"
-#import "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_drag_drop.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -67,8 +67,7 @@ NSImage* LocationIconDecoration::GetDragImage() {
   NSImage* favicon = owner_->GetFavicon().AsNSImage();
   NSImage* iconImage = favicon ? favicon : GetImage();
 
-  NSImage* image = bookmark_pasteboard_helper_mac::DragImageForBookmark(
-      iconImage, owner_->GetTitle());
+  NSImage* image = chrome::DragImageForBookmark(iconImage, owner_->GetTitle());
   NSSize imageSize = [image size];
   drag_frame_ = NSMakeRect(0, 0, imageSize.width, imageSize.height);
   return image;
