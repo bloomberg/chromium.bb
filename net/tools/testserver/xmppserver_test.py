@@ -96,7 +96,12 @@ class IdGeneratorTest(unittest.TestCase):
 class HandshakeTaskTest(unittest.TestCase):
 
   def setUp(self):
+    self.Reset()
+
+  def Reset(self):
     self.data_received = 0
+    self.handshake_done = False
+    self.jid = None
 
   def SendData(self, _):
     self.data_received += 1
@@ -105,13 +110,14 @@ class HandshakeTaskTest(unittest.TestCase):
     self.data_received += 1
 
   def HandshakeDone(self, jid):
+    self.handshake_done = True
     self.jid = jid
 
   def DoHandshake(self, resource_prefix, resource, username,
                   initial_stream_domain, auth_domain, auth_stream_domain):
-    self.data_received = 0
+    self.Reset()
     handshake_task = (
-      xmppserver.HandshakeTask(self, resource_prefix))
+      xmppserver.HandshakeTask(self, resource_prefix, True))
     stream_xml = xmppserver.ParseXml('<stream:stream xmlns:stream="foo"/>')
     stream_xml.setAttribute('to', initial_stream_domain)
     self.assertEqual(self.data_received, 0)
@@ -137,10 +143,14 @@ class HandshakeTaskTest(unittest.TestCase):
     handshake_task.FeedStanza(bind_xml)
     self.assertEqual(self.data_received, 6)
 
+    self.assertFalse(self.handshake_done)
+
     session_xml = xmppserver.ParseXml(
       '<iq type="set"><session></session></iq>')
     handshake_task.FeedStanza(session_xml)
     self.assertEqual(self.data_received, 7)
+
+    self.assertTrue(self.handshake_done)
 
     self.assertEqual(self.jid.username, username)
     self.assertEqual(self.jid.domain,
@@ -148,6 +158,34 @@ class HandshakeTaskTest(unittest.TestCase):
                      initial_stream_domain)
     self.assertEqual(self.jid.resource,
                      '%s.%s' % (resource_prefix, resource))
+
+    handshake_task.FeedStanza('<ignored/>')
+    self.assertEqual(self.data_received, 7)
+
+  def DoHandshakeUnauthenticated(self, resource_prefix, resource, username,
+                                 initial_stream_domain):
+    self.Reset()
+    handshake_task = (
+      xmppserver.HandshakeTask(self, resource_prefix, False))
+    stream_xml = xmppserver.ParseXml('<stream:stream xmlns:stream="foo"/>')
+    stream_xml.setAttribute('to', initial_stream_domain)
+    self.assertEqual(self.data_received, 0)
+    handshake_task.FeedStanza(stream_xml)
+    self.assertEqual(self.data_received, 2)
+
+    self.assertFalse(self.handshake_done)
+
+    auth_string = base64.b64encode('\0%s\0bar' % username)
+    auth_xml = xmppserver.ParseXml('<auth>%s</auth>'% auth_string)
+    handshake_task.FeedStanza(auth_xml)
+    self.assertEqual(self.data_received, 3)
+
+    self.assertTrue(self.handshake_done)
+
+    self.assertEqual(self.jid, None)
+
+    handshake_task.FeedStanza('<ignored/>')
+    self.assertEqual(self.data_received, 3)
 
   def testBasic(self):
     self.DoHandshake('resource_prefix', 'resource',
@@ -162,6 +200,10 @@ class HandshakeTaskTest(unittest.TestCase):
                      'foo', 'bar.com', '', '')
     self.DoHandshake('resource_prefix', 'resource',
                      'foo', '', '', '')
+
+  def testBasicUnauthenticated(self):
+    self.DoHandshakeUnauthenticated('resource_prefix', 'resource',
+                                    'foo', 'bar.com')
 
 
 class FakeSocket(object):
@@ -212,7 +254,7 @@ class XmppConnectionTest(unittest.TestCase):
   def testBasic(self):
     socket_map = {}
     xmpp_connection = xmppserver.XmppConnection(
-      self.fake_socket, socket_map, self, ('', 0))
+      self.fake_socket, socket_map, self, ('', 0), True)
     self.assertEqual(len(socket_map), 1)
     self.assertEqual(len(self.connections), 0)
     xmpp_connection.HandshakeDone(xmppserver.Jid('foo', 'bar'))
@@ -248,7 +290,27 @@ class XmppConnectionTest(unittest.TestCase):
     self.assertRaises(xmppserver.UnexpectedXml,
                       SendUnexpectedNotifierCommand)
 
-    # Test close
+    # Test close.
+    xmpp_connection.close()
+    self.assertEqual(len(socket_map), 0)
+    self.assertEqual(len(self.connections), 0)
+
+  def testBasicUnauthenticated(self):
+    socket_map = {}
+    xmpp_connection = xmppserver.XmppConnection(
+      self.fake_socket, socket_map, self, ('', 0), False)
+    self.assertEqual(len(socket_map), 1)
+    self.assertEqual(len(self.connections), 0)
+    xmpp_connection.HandshakeDone(None)
+    self.assertEqual(len(socket_map), 0)
+    self.assertEqual(len(self.connections), 0)
+
+    # Test unexpected stanza.
+    def SendUnexpectedStanza():
+      xmpp_connection.collect_incoming_data('<foo/>')
+    self.assertRaises(xmppserver.UnexpectedXml, SendUnexpectedStanza)
+
+    # Test redundant close.
     xmpp_connection.close()
     self.assertEqual(len(socket_map), 0)
     self.assertEqual(len(self.connections), 0)

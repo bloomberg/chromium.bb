@@ -70,6 +70,7 @@
 #include "sync/js/js_arg_list.h"
 #include "sync/js/js_event_details.h"
 #include "sync/notifier/invalidator_registrar.h"
+#include "sync/notifier/invalidator_state.h"
 #include "sync/util/cryptographer.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -938,7 +939,10 @@ AuthError ConnectionStatusToAuthError(
 
 void ProfileSyncService::OnConnectionStatusChange(
     syncer::ConnectionStatus status) {
-  UpdateAuthErrorState(ConnectionStatusToAuthError(status));
+  const GoogleServiceAuthError auth_error =
+      ConnectionStatusToAuthError(status);
+  DVLOG(1) << "Connection status change: " << auth_error.ToString();
+  UpdateAuthErrorState(auth_error);
 }
 
 void ProfileSyncService::OnStopSyncingPermanently() {
@@ -1876,6 +1880,10 @@ void ProfileSyncService::UpdateInvalidatorRegistrarState() {
   const syncer::InvalidatorState effective_state =
       backend_initialized_ ?
       invalidator_state_ : syncer::TRANSIENT_INVALIDATION_ERROR;
+  DVLOG(1) << "New invalidator state: "
+           << syncer::InvalidatorStateToString(invalidator_state_)
+           << ", effective state: "
+           << syncer::InvalidatorStateToString(effective_state);
   invalidator_registrar_->UpdateInvalidatorState(effective_state);
 }
 

@@ -59,6 +59,7 @@ void Login::StartConnection() {
 }
 
 void Login::UpdateXmppSettings(const buzz::XmppClientSettings& user_settings) {
+  DVLOG(1) << "XMPP settings updated";
   login_settings_.set_user_settings(user_settings);
 }
 
@@ -68,11 +69,13 @@ void Login::UpdateXmppSettings(const buzz::XmppClientSettings& user_settings) {
 // TODO(akalin): Add unit tests to enforce the behavior above.
 
 void Login::OnConnect(base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
+  DVLOG(1) << "Connected";
   ResetReconnectState();
   delegate_->OnConnect(base_task);
 }
 
 void Login::OnRedirect(const ServerInformation& redirect_server) {
+  DVLOG(1) << "Redirected";
   login_settings_.SetRedirectServer(redirect_server);
   // Drop the current connection, and start the login process again.
   StartConnection();
@@ -80,28 +83,30 @@ void Login::OnRedirect(const ServerInformation& redirect_server) {
 }
 
 void Login::OnCredentialsRejected() {
+  DVLOG(1) << "Credentials rejected";
   TryReconnect();
   delegate_->OnCredentialsRejected();
 }
 
 void Login::OnSettingsExhausted() {
+  DVLOG(1) << "Settings exhausted";
   TryReconnect();
   delegate_->OnTransientDisconnection();
 }
 
 void Login::OnIPAddressChanged() {
-  DVLOG(1) << "Detected IP address change";
+  DVLOG(1) << "IP address changed";
   OnNetworkEvent();
 }
 
 void Login::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
-  DVLOG(1) << "Detected connection type change";
+  DVLOG(1) << "Connection type changed";
   OnNetworkEvent();
 }
 
 void Login::OnDNSChanged() {
-  DVLOG(1) << "Detected DNS change";
+  DVLOG(1) << "DNS changed";
   OnNetworkEvent();
 }
 

@@ -140,6 +140,8 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest,
       protocol_error.error_description);
 }
 
+// Trigger an auth error and make sure the sync client detects it when
+// trying to commit.
 IN_PROC_BROWSER_TEST_F(SyncErrorTest, AuthErrorTest) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -152,6 +154,19 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, AuthErrorTest) {
   const BookmarkNode* node2 = AddFolder(0, 0, L"title2");
   SetTitle(0, node2, L"new_title2");
   ASSERT_TRUE(GetClient(0)->AwaitExponentialBackoffVerification());
+  ASSERT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
+            GetClient(0)->service()->GetAuthError().state());
+}
+
+// Trigger an XMPP auth error, and make sure sync treats it like any
+// other auth error.
+IN_PROC_BROWSER_TEST_F(SyncErrorTest, XmppAuthErrorTest) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  TriggerXmppAuthError();
+
+  ASSERT_FALSE(GetClient(0)->SetupSync());
+
   ASSERT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
             GetClient(0)->service()->GetAuthError().state());
 }

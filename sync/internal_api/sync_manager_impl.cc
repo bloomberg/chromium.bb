@@ -529,6 +529,10 @@ const SyncScheduler* SyncManagerImpl::scheduler() const {
   return scheduler_.get();
 }
 
+bool SyncManagerImpl::GetHasInvalidAuthTokenForTest() const {
+  return connection_manager_->HasInvalidAuthToken();
+}
+
 bool SyncManagerImpl::OpenDirectory() {
   DCHECK(!initialized_) << "Should only happen once";
 
@@ -1217,8 +1221,13 @@ void SyncManagerImpl::OnInvalidatorStateChange(InvalidatorState state) {
   allstatus_.SetNotificationsEnabled(notifications_enabled);
   scheduler_->SetNotificationsEnabled(notifications_enabled);
 
-  // TODO(akalin): Treat a CREDENTIALS_REJECTED state as an auth
-  // error.
+  if (invalidator_state_ == syncer::INVALIDATION_CREDENTIALS_REJECTED) {
+    // If the invalidator's credentials were rejected, that means that
+    // our sync credentials are also bad, so invalidate those.
+    connection_manager_->InvalidateAndClearAuthToken();
+    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                      OnConnectionStatusChange(CONNECTION_AUTH_ERROR));
+  }
 
   if (js_event_handler_.IsInitialized()) {
     DictionaryValue details;

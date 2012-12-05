@@ -1353,32 +1353,71 @@ TEST_F(SyncManagerTest, GetAllNodesTest) {
   EXPECT_TRUE(first_result->HasKey("NON_UNIQUE_NAME"));
 }
 
-TEST_F(SyncManagerTest, OnNotificationStateChange) {
-  InSequence dummy;
+// Simulate various invalidator state changes.  Those should propagate
+// JS events.
+TEST_F(SyncManagerTest, OnInvalidatorStateChangeJsEvents) {
   StrictMock<MockJsEventHandler> event_handler;
 
   DictionaryValue enabled_details;
   enabled_details.SetString("state", "INVALIDATIONS_ENABLED");
-  DictionaryValue disabled_details;
-  disabled_details.SetString("state", "TRANSIENT_INVALIDATION_ERROR");
+  DictionaryValue credentials_rejected_details;
+  credentials_rejected_details.SetString(
+      "state", "INVALIDATION_CREDENTIALS_REJECTED");
+  DictionaryValue transient_error_details;
+  transient_error_details.SetString("state", "TRANSIENT_INVALIDATION_ERROR");
+  DictionaryValue auth_error_details;
+  auth_error_details.SetString("status", "CONNECTION_AUTH_ERROR");
+
+  EXPECT_CALL(manager_observer_,
+              OnConnectionStatusChange(CONNECTION_AUTH_ERROR)).Times(3);
+
+  EXPECT_CALL(
+      event_handler,
+      HandleJsEvent("onConnectionStatusChange",
+                    HasDetailsAsDictionary(auth_error_details)));
 
   EXPECT_CALL(event_handler,
               HandleJsEvent("onNotificationStateChange",
                             HasDetailsAsDictionary(enabled_details)));
+
+  EXPECT_CALL(
+      event_handler,
+      HandleJsEvent("onNotificationStateChange",
+                    HasDetailsAsDictionary(credentials_rejected_details)));
+
   EXPECT_CALL(event_handler,
               HandleJsEvent("onNotificationStateChange",
-                            HasDetailsAsDictionary(disabled_details)));
+                            HasDetailsAsDictionary(transient_error_details)));
 
   SimulateInvalidatorStateChangeForTest(INVALIDATIONS_ENABLED);
+  SimulateInvalidatorStateChangeForTest(INVALIDATION_CREDENTIALS_REJECTED);
   SimulateInvalidatorStateChangeForTest(TRANSIENT_INVALIDATION_ERROR);
 
   SetJsEventHandler(event_handler.AsWeakHandle());
   SimulateInvalidatorStateChangeForTest(INVALIDATIONS_ENABLED);
+  SimulateInvalidatorStateChangeForTest(INVALIDATION_CREDENTIALS_REJECTED);
   SimulateInvalidatorStateChangeForTest(TRANSIENT_INVALIDATION_ERROR);
   SetJsEventHandler(WeakHandle<JsEventHandler>());
 
   SimulateInvalidatorStateChangeForTest(INVALIDATIONS_ENABLED);
+  SimulateInvalidatorStateChangeForTest(INVALIDATION_CREDENTIALS_REJECTED);
   SimulateInvalidatorStateChangeForTest(TRANSIENT_INVALIDATION_ERROR);
+
+  // Should trigger the replies.
+  PumpLoop();
+}
+
+// Simulate the invalidator's credentials being rejected.  That should
+// also clear the sync token.
+TEST_F(SyncManagerTest, OnInvalidatorStateChangeCredentialsRejected) {
+  EXPECT_CALL(manager_observer_,
+              OnConnectionStatusChange(CONNECTION_AUTH_ERROR));
+
+  EXPECT_FALSE(sync_manager_.GetHasInvalidAuthTokenForTest());
+
+  SimulateInvalidatorStateChangeForTest(INVALIDATION_CREDENTIALS_REJECTED);
+
+  EXPECT_TRUE(sync_manager_.GetHasInvalidAuthTokenForTest());
 
   // Should trigger the replies.
   PumpLoop();
@@ -2971,7 +3010,7 @@ TEST_F(SyncManagerTest, PurgePartiallySyncedTypes) {
   EXPECT_FALSE(partial_types.Has(PREFERENCES));
 }
 
-// Test CleanipDisabledTypes properly purges all disabled types as specified
+// Test CleanupDisabledTypes properly purges all disabled types as specified
 // by the previous and current enabled params. Enabled partial types should not
 // be purged.
 // Fails on Windows: crbug.com/139726

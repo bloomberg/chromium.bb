@@ -256,6 +256,9 @@ class ProfileSyncServiceHarness
     // The sync client needs a passphrase in order to decrypt data.
     SET_PASSPHRASE_FAILED,
 
+    // The sync client's credentials were rejected.
+    CREDENTIALS_REJECTED,
+
     // The sync client cannot reach the server.
     SERVER_UNREACHABLE,
 

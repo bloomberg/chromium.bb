@@ -734,6 +734,12 @@ void SyncTest::TriggerAuthError() {
   ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
 }
 
+void SyncTest::TriggerXmppAuthError() {
+  ASSERT_TRUE(ServerSupportsErrorTriggering());
+  std::string path = "chromiumsync/xmppcred";
+  ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
+}
+
 namespace {
 
 sync_pb::SyncEnums::ErrorType

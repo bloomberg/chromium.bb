@@ -120,6 +120,7 @@ void InvalidatorRegistrar::DispatchInvalidationsToHandlers(
 
 void InvalidatorRegistrar::UpdateInvalidatorState(InvalidatorState state) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOG(1) << "New invalidator state: " << InvalidatorStateToString(state_);
   state_ = state;
   FOR_EACH_OBSERVER(InvalidationHandler, handlers_,
                     OnInvalidatorStateChange(state));

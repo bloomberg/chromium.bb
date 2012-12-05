@@ -1585,6 +1585,8 @@ void SyncBackendHost::HandleConnectionStatusChangeOnFrontendLoop(
 
   DCHECK_EQ(MessageLoop::current(), frontend_loop_);
 
+  DVLOG(1) << "Connection status changed: "
+           << syncer::ConnectionStatusToString(status);
   frontend_->OnConnectionStatusChange(status);
 }
 

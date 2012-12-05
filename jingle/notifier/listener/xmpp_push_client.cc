@@ -61,6 +61,7 @@ void XmppPushClient::OnConnect(
 
 void XmppPushClient::OnTransientDisconnection() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOG(1) << "Push: Transient disconnection";
   base_task_.reset();
   FOR_EACH_OBSERVER(PushClientObserver, observers_,
                     OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
@@ -68,6 +69,7 @@ void XmppPushClient::OnTransientDisconnection() {
 
 void XmppPushClient::OnCredentialsRejected() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOG(1) << "Push: Credentials rejected";
   base_task_.reset();
   FOR_EACH_OBSERVER(
       PushClientObserver, observers_,

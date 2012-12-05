@@ -194,6 +194,10 @@ class SyncTest : public InProcessBrowserTest {
   // this state until shut down.
   void TriggerAuthError();
 
+  // Triggers an XMPP auth error on the server.  Note the server will
+  // stay in this state until shut down.
+  void TriggerXmppAuthError();
+
   // Triggers a sync error on the server.
   //   error: The error the server is expected to return.
   //   frequency: Frequency with which the error is returned.

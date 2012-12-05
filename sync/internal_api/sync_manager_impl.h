@@ -187,6 +187,8 @@ class SyncManagerImpl :
 
   const SyncScheduler* scheduler() const;
 
+  bool GetHasInvalidAuthTokenForTest() const;
+
  private:
   friend class SyncManagerTest;
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, NudgeDelayTest);
