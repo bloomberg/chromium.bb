@@ -135,6 +135,9 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
       int64 file_size,
       const google_apis::UploadCompletionCallback& completion_callback,
       const google_apis::UploaderReadyCallback& ready_callback) OVERRIDE {
+    DCHECK(!completion_callback.is_null());
+    // ready_callback may be null.
+
     scoped_ptr<base::Value> value =
         google_apis::test_util::LoadJSONFile("gdata/uploaded_file.json");
     scoped_ptr<google_apis::DocumentEntry> document_entry(
@@ -174,8 +177,9 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
       const FilePath& local_file_path,
       const std::string& content_type,
       int64 file_size,
-      const google_apis::UploadCompletionCallback& completion_callback,
-      const google_apis::UploaderReadyCallback& ready_callback) {
+      const google_apis::UploadCompletionCallback& completion_callback) {
+    DCHECK(!completion_callback.is_null());
+
     // This function can only handle "drive/File 1.txt" whose resource ID is
     // "file:2_file_resource_id".
     DCHECK_EQ("drive/File 1.txt", drive_file_path.value());

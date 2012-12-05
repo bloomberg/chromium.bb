@@ -586,8 +586,7 @@ void DriveFileSyncClient::UploadExistingFileInternal(
       mime_type,
       file_size,
       base::Bind(&DriveFileSyncClient::DidUploadFile,
-                 AsWeakPtr(), callback),
-      google_apis::UploaderReadyCallback());
+                 AsWeakPtr(), callback));
 }
 
 void DriveFileSyncClient::DidUploadFile(

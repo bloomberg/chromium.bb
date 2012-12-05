@@ -55,6 +55,9 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
       int64 file_size,
       const google_apis::UploadCompletionCallback& completion_callback,
       const google_apis::UploaderReadyCallback& ready_callback) OVERRIDE {
+    DCHECK(!completion_callback.is_null());
+    // ready_callback may be null.
+
     scoped_ptr<base::Value> file_entry_data(
         google_apis::test_util::LoadJSONFile(
             "gdata/file_entry.json").Pass());
@@ -93,8 +96,9 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
       const FilePath& local_file_path,
       const std::string& content_type,
       int64 file_size,
-      const google_apis::UploadCompletionCallback& completion_callback,
-      const google_apis::UploaderReadyCallback& ready_callback) {
+      const google_apis::UploadCompletionCallback& completion_callback) {
+    DCHECK(!completion_callback.is_null());
+
     scoped_ptr<base::Value> file_entry_data(
         google_apis::test_util::LoadJSONFile(
             "gdata/file_entry.json").Pass());

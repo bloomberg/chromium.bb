@@ -43,8 +43,40 @@ class DriveUploaderInterface {
  public:
   virtual ~DriveUploaderInterface() {}
 
-  // Uploads a new file.
+  // Uploads a new file to a directory specified by |upload_location|.
   // Returns the upload_id.
+  //
+  // upload_location:
+  //   the "resumable-create-media" URL of the destination directory.
+  //
+  // drive_file_path:
+  //   The destination path like "drive/foo/bar.txt".
+  //
+  // local_file_path:
+  //   The path to the local file to be uploaded.
+  //
+  // title:
+  //   The title (file name) of the file to be uploaded.
+  //
+  // content_type:
+  //   The content type of the file to be uploaded.
+  //
+  // content_length:
+  //   The content length of the file to be uploaded.
+  //   If the length is unknown beforehand, -1 should be passed.
+  //
+  // file_size:
+  //  The current size of the file to be uploaded. This can be smaller than
+  //  |content_length|, if the source file is still being written (i.e. being
+  //  downdloaded from some web site). The client should keep providing the
+  //  current status with the  UpdateUpload() function.
+  //
+  // completion_callback
+  //   Called when an upload is done regardless of it was successful or not.
+  //   Must not be null.
+  //
+  // |ready_callback| is called when the uploader is ready to upload data
+  // (i.e. when the file is opened). May be null.
   virtual int UploadNewFile(
       const GURL& upload_location,
       const FilePath& drive_file_path,
@@ -58,6 +90,8 @@ class DriveUploaderInterface {
 
   // Stream data to an existing file.
   // Returns the upload_id.
+  //
+  // See comments at UploadNewFile() about common parameters.
   virtual int StreamExistingFile(
       const GURL& upload_location,
       const FilePath& drive_file_path,
@@ -69,16 +103,19 @@ class DriveUploaderInterface {
       const UploaderReadyCallback& ready_callback) = 0;
 
   // Uploads an existing file (a file that already exists on Drive).
+  //
+  // See comments at UploadNewFile() about common parameters.
   virtual int UploadExistingFile(
       const GURL& upload_location,
       const FilePath& drive_file_path,
       const FilePath& local_file_path,
       const std::string& content_type,
       int64 file_size,
-      const UploadCompletionCallback& completion_callback,
-      const UploaderReadyCallback& ready_callback) = 0;
+      const UploadCompletionCallback& completion_callback) = 0;
 
-  // Updates attributes of streaming upload.
+  // Updates attributes of streaming upload from |download|. This function
+  // should be used when downloading from some web site and uploading to
+  // Drive are done in parallel.
   virtual void UpdateUpload(int upload_id,
                             content::DownloadItem* download) = 0;
 
@@ -117,8 +154,7 @@ class DriveUploader : public DriveUploaderInterface {
       const FilePath& local_file_path,
       const std::string& content_type,
       int64 file_size,
-      const UploadCompletionCallback& completion_callback,
-      const UploaderReadyCallback& ready_callback) OVERRIDE;
+      const UploadCompletionCallback& completion_callback) OVERRIDE;
   virtual void UpdateUpload(
       int upload_id, content::DownloadItem* download) OVERRIDE;
   virtual int64 GetUploadedBytes(int upload_id) const OVERRIDE;

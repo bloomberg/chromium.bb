@@ -58,6 +58,8 @@ int DriveUploader::UploadNewFile(
    DCHECK(!local_file_path.empty());
    DCHECK(!title.empty());
    DCHECK(!content_type.empty());
+   DCHECK(!completion_callback.is_null());
+   // ready_callback may be null.
 
   scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo);
   upload_file_info->upload_mode = UPLOAD_NEW_FILE;
@@ -94,6 +96,8 @@ int DriveUploader::StreamExistingFile(
   DCHECK(!drive_file_path.empty());
   DCHECK(!local_file_path.empty());
   DCHECK(!content_type.empty());
+  DCHECK(!completion_callback.is_null());
+  // ready_callback may be null.
 
   scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo);
   upload_file_info->upload_mode = UPLOAD_EXISTING_FILE;
@@ -148,13 +152,13 @@ int DriveUploader::UploadExistingFile(
     const FilePath& local_file_path,
     const std::string& content_type,
     int64 file_size,
-    const UploadCompletionCallback& completion_callback,
-    const UploaderReadyCallback& ready_callback) {
+    const UploadCompletionCallback& completion_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!upload_location.is_empty());
   DCHECK(!drive_file_path.empty());
   DCHECK(!local_file_path.empty());
   DCHECK(!content_type.empty());
+  DCHECK(!completion_callback.is_null());
 
   scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo);
   upload_file_info->upload_mode = UPLOAD_EXISTING_FILE;
@@ -166,7 +170,6 @@ int DriveUploader::UploadExistingFile(
   upload_file_info->file_size = file_size;
   upload_file_info->all_bytes_present = true;
   upload_file_info->completion_callback = completion_callback;
-  upload_file_info->ready_callback = ready_callback;
 
   // When uploading an updated file, we should not retry file open as the
   // file should already be present by definition.
@@ -476,13 +479,11 @@ void DriveUploader::OnResumeUploadResponseReceived(
 
     // Done uploading.
     upload_file_info->entry = entry.Pass();
-    if (!upload_file_info->completion_callback.is_null()) {
-      upload_file_info->completion_callback.Run(
-          DRIVE_UPLOAD_OK,
-          upload_file_info->drive_path,
-          upload_file_info->file_path,
-          upload_file_info->entry.Pass());
-    }
+    upload_file_info->completion_callback.Run(
+        DRIVE_UPLOAD_OK,
+        upload_file_info->drive_path,
+        upload_file_info->file_path,
+        upload_file_info->entry.Pass());
 
     // This will delete |upload_file_info|.
     RemoveUpload(scoped_ptr<UploadFileInfo>(upload_file_info));
@@ -523,12 +524,11 @@ void DriveUploader::UploadFailed(UploadFileInfo* upload_file_info,
 
   LOG(ERROR) << "Upload failed " << upload_file_info->DebugString();
 
-  if (!upload_file_info->completion_callback.is_null())
-    upload_file_info->completion_callback.Run(
-        error,
-        upload_file_info->drive_path,
-        upload_file_info->file_path,
-        upload_file_info->entry.Pass());
+  upload_file_info->completion_callback.Run(
+      error,
+      upload_file_info->drive_path,
+      upload_file_info->file_path,
+      upload_file_info->entry.Pass());
 
   // This will delete |upload_file_info|.
   RemoveUpload(scoped_ptr<UploadFileInfo>(upload_file_info));

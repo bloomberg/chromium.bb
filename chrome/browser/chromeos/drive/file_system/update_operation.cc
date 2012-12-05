@@ -137,8 +137,7 @@ void UpdateOperation::OnGetFileSizeCompleteForUpdateFile(
       *file_size,
       base::Bind(&UpdateOperation::OnUpdatedFileUploaded,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback),
-      google_apis::UploaderReadyCallback());
+                 callback));
 }
 
 void UpdateOperation::OnUpdatedFileUploaded(
