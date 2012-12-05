@@ -189,7 +189,6 @@ class PresentThread : public base::Thread,
   void ResetDevice();
 
  protected:
-  virtual void Init();
   virtual void CleanUp();
 
  private:
@@ -352,11 +351,6 @@ void PresentThread::ResetDevice() {
   }
 
   device_->SetVertexDeclaration(vertex_declaration);
-}
-
-void PresentThread::Init() {
-  TRACE_EVENT0("gpu", "Initialize thread");
-  InitDevice();
 }
 
 void PresentThread::CleanUp() {
@@ -1024,7 +1018,7 @@ gfx::Size AcceleratedPresenter::GetWindowSize() {
 
 bool AcceleratedPresenter::CheckDirect3DWillWork() {
   gfx::Size window_size = GetWindowSize();
-  if (window_size != last_window_size_ && last_window_size_.GetArea() != 0) {
+  if (window_size != last_window_size_) {
     last_window_size_ = window_size;
     last_window_resize_time_ = base::Time::Now();
     return false;
