@@ -29,7 +29,7 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
        gfx::Rect rect_inside_picture,
        float contents_scale);
 
-  const PicturePileImpl* picture_pile() const {
+  PicturePileImpl* picture_pile() {
     return picture_pile_.get();
   }
 
