@@ -2085,8 +2085,10 @@ FcParseInclude (FcConfigParse *parse)
         FcChar8 *filename;
 
         filename = FcConfigFilename(s);
-        if ((deprecated == FcTrue) && filename)
-        {
+	if (deprecated == FcTrue &&
+	    filename != NULL &&
+	    !FcFileIsLink (filename))
+	{
             FcConfigMessage (parse, FcSevereWarning, "reading configurations from %s is deprecated.", s);
         }
         if(filename)
