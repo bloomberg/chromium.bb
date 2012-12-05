@@ -59,8 +59,7 @@ class AppListController : public views::corewm::FocusChangeShim,
   aura::Window* GetWindow();
 
  private:
-  // Sets app list view. If we are in visible mode, start showing animation.
-  // Otherwise, we just close it.
+  // Sets the app list view and attempts to show it.
   void SetView(app_list::AppListView* view);
 
   // Forgets the view.

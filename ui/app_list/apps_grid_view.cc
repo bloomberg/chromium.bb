@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ui/app_list/app_list_item_model.h"
 #include "ui/app_list/app_list_item_view.h"
 #include "ui/app_list/apps_grid_view_delegate.h"
 #include "ui/app_list/page_switcher.h"
@@ -323,7 +322,8 @@ void AppsGridView::ViewHierarchyChanged(bool is_add,
 }
 
 void AppsGridView::Update() {
-  selected_view_ = NULL;
+  DCHECK(!selected_view_ && !drag_view_);
+
   view_model_.Clear();
   if (model_ && model_->apps()->item_count())
     ListItemsAdded(0, model_->apps()->item_count());

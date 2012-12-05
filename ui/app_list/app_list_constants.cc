@@ -14,4 +14,8 @@ const int kPageTransitionDurationInMs = 180;
 // Duration in milliseconds for over scroll page transition.
 const int kOverscrollPageTransitionDurationMs = 50;
 
+// Preferred number of columns and rows in apps grid.
+const int kPreferredCols = 4;
+const int kPreferredRows = 4;
+
 }  // namespace app_list

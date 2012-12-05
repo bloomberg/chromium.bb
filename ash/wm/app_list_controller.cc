@@ -145,22 +145,17 @@ aura::Window* AppListController::GetWindow() {
 
 void AppListController::SetView(app_list::AppListView* view) {
   DCHECK(view_ == NULL);
+  DCHECK(is_visible_);
 
-  if (is_visible_) {
-    view_ = view;
-    views::Widget* widget = view_->GetWidget();
-    widget->AddObserver(this);
-    Shell::GetInstance()->AddPreTargetHandler(this);
-    Launcher::ForWindow(GetWindow())->AddIconObserver(this);
-    widget->GetNativeView()->GetRootWindow()->AddRootWindowObserver(this);
-    aura::client::GetFocusClient(widget->GetNativeView())->AddObserver(this);
-    widget->SetOpacity(0);
-    ScheduleAnimation();
+  view_ = view;
+  views::Widget* widget = view_->GetWidget();
+  widget->AddObserver(this);
+  Shell::GetInstance()->AddPreTargetHandler(this);
+  Launcher::ForWindow(GetWindow())->AddIconObserver(this);
+  widget->GetNativeView()->GetRootWindow()->AddRootWindowObserver(this);
+  aura::client::GetFocusClient(widget->GetNativeView())->AddObserver(this);
 
-    view_->GetWidget()->Show();
-  } else {
-    view->GetWidget()->Close();
-  }
+  view_->ShowWhenReady();
 }
 
 void AppListController::ResetView() {

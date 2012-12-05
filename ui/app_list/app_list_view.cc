@@ -4,9 +4,12 @@
 
 #include "ui/app_list/app_list_view.h"
 
+#include <algorithm>
+
 #include "base/string_util.h"
 #include "ui/app_list/app_list_background.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_item_model.h"
 #include "ui/app_list/app_list_item_view.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
@@ -33,20 +36,62 @@ const int kInnerPadding = 1;
 // The distance between the arrow tip and edge of the anchor view.
 const int kArrowOffset = 10;
 
+// The maximum allowed time to wait for icon loading in milliseconds.
+const int kMaxIconLoadingWaitTimeInMs = 50;
+
 }  // namespace
+
+////////////////////////////////////////////////////////////////////////////////
+// AppListView::IconLoader
+
+class AppListView::IconLoader : public AppListItemModelObserver {
+ public:
+  IconLoader(AppListView* owner,
+             AppListItemModel* item,
+             ui::ScaleFactor scale_factor)
+      : owner_(owner),
+        item_(item) {
+    item_->AddObserver(this);
+
+    // Triggers icon loading for given |scale_factor|.
+    item_->icon().GetRepresentation(scale_factor);
+  }
+
+  virtual ~IconLoader() {
+    item_->RemoveObserver(this);
+  }
+
+ private:
+  // AppListItemModelObserver overrides:
+  virtual void ItemIconChanged() OVERRIDE {
+    owner_->OnItemIconLoaded(this);
+    // Note that IconLoader is released here.
+  }
+  virtual void ItemTitleChanged() OVERRIDE {}
+  virtual void ItemHighlightedChanged() OVERRIDE {}
+
+  AppListView* owner_;
+  AppListItemModel* item_;
+
+  DISALLOW_COPY_AND_ASSIGN(IconLoader);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // AppListView:
 
 AppListView::AppListView(AppListViewDelegate* delegate)
-    : delegate_(delegate),
+    : model_(new AppListModel),
+      delegate_(delegate),
       search_box_view_(NULL),
       contents_view_(NULL) {
+  if (delegate_)
+    delegate_->SetModel(model_.get());
 }
 
 AppListView::~AppListView() {
-  // Deletes all child views while the models are still valid.
+  // Models are going away, ensure their references are cleared.
   RemoveAllChildViews(true);
+  pending_icon_loaders_.clear();
 }
 
 void AppListView::InitAsBubble(
@@ -55,6 +100,9 @@ void AppListView::InitAsBubble(
     views::View* anchor,
     const gfx::Point& anchor_point,
     views::BubbleBorder::ArrowLocation arrow_location) {
+  // Starts icon loading early.
+  PreloadIcons(pagination_model, anchor);
+
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
                                         kInnerPadding,
                                         kInnerPadding,
@@ -96,7 +144,8 @@ void AppListView::InitAsBubble(
       search_box_view_));
 #endif
 
-  CreateModel();
+  search_box_view_->SetModel(model_->search_box());
+  contents_view_->SetModel(model_.get());
 }
 
 void AppListView::SetBubbleArrowLocation(
@@ -111,7 +160,25 @@ void AppListView::SetAnchorPoint(const gfx::Point& anchor_point) {
   SizeToContents();  // Repositions view relative to the anchor.
 }
 
+void AppListView::ShowWhenReady() {
+  if (pending_icon_loaders_.empty()) {
+    icon_loading_wait_timer_.Stop();
+    GetWidget()->Show();
+    return;
+  }
+
+  if (icon_loading_wait_timer_.IsRunning())
+    return;
+
+  icon_loading_wait_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kMaxIconLoadingWaitTimeInMs),
+      this, &AppListView::OnIconLoadingWaitTimer);
+}
+
 void AppListView::Close() {
+  icon_loading_wait_timer_.Stop();
+
   if (delegate_.get())
     delegate_->Close();
   else
@@ -122,16 +189,47 @@ void AppListView::UpdateBounds() {
   SizeToContents();
 }
 
-void AppListView::CreateModel() {
-  if (delegate_.get()) {
-    // Creates a new model and update all references before releasing old one.
-    scoped_ptr<AppListModel> new_model(new AppListModel);
+void AppListView::PreloadIcons(PaginationModel* pagination_model,
+                               views::View* anchor) {
+  ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_100P;
+  if (anchor && anchor->GetWidget()) {
+    scale_factor = ui::GetScaleFactorForNativeView(
+        anchor->GetWidget()->GetNativeView());
+  }
 
-    delegate_->SetModel(new_model.get());
-    search_box_view_->SetModel(new_model->search_box());
-    contents_view_->SetModel(new_model.get());
+  // |pagination_model| could have -1 as the initial selected page and
+  // assumes first page (i.e. index 0) will be used in this case.
+  const int selected_page = std::max(0, pagination_model->selected_page());
 
-    model_.reset(new_model.release());
+  const int tiles_per_page = kPreferredCols * kPreferredRows;
+  const int start_model_index = selected_page * tiles_per_page;
+  const int end_model_index = std::min(
+      static_cast<int>(model_->apps()->item_count()),
+      start_model_index + tiles_per_page);
+
+  pending_icon_loaders_.clear();
+  for (int i = start_model_index; i < end_model_index; ++i) {
+    AppListItemModel* item = model_->apps()->GetItemAt(i);
+    if (item->icon().HasRepresentation(scale_factor))
+      continue;
+
+    pending_icon_loaders_.push_back(new IconLoader(this, item, scale_factor));
+  }
+}
+
+void AppListView::OnIconLoadingWaitTimer() {
+  GetWidget()->Show();
+}
+
+void AppListView::OnItemIconLoaded(IconLoader* loader) {
+  ScopedVector<IconLoader>::iterator it = std::find(
+      pending_icon_loaders_.begin(), pending_icon_loaders_.end(), loader);
+  DCHECK(it != pending_icon_loaders_.end());
+  pending_icon_loaders_.erase(it);
+
+  if (pending_icon_loaders_.empty() && icon_loading_wait_timer_.IsRunning()) {
+    icon_loading_wait_timer_.Stop();
+    GetWidget()->Show();
   }
 }
 

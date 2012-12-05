@@ -21,8 +21,6 @@ namespace app_list {
 namespace {
 
 const int kPreferredIconDimension = 48;
-const int kPreferredCols = 4;
-const int kPreferredRows = 4;
 
 // Indexes of interesting views in ViewModel of ContentsView.
 const int kIndexAppsGrid = 0;
