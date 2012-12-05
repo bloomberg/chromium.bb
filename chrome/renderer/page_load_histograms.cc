@@ -244,14 +244,19 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     PLT_HISTOGRAM("PLT.RequestToFinish", finish_all_loads - request);
   }
   PLT_HISTOGRAM("PLT.CommitToFinish", finish_all_loads - commit);
+
+  scoped_ptr<TimeDelta> begin_to_first_paint;
+  scoped_ptr<TimeDelta> commit_to_first_paint;
   if (!first_paint.is_null()) {
     // 'first_paint' can be before 'begin' for an unknown reason.
     // See bug http://crbug.com/125273 for details.
     if (begin <= first_paint) {
-      PLT_HISTOGRAM("PLT.BeginToFirstPaint", first_paint - begin);
+      begin_to_first_paint.reset(new TimeDelta(first_paint - begin));
+      PLT_HISTOGRAM("PLT.BeginToFirstPaint", *begin_to_first_paint);
     }
     DCHECK(commit <= first_paint);
-    PLT_HISTOGRAM("PLT.CommitToFirstPaint", first_paint - commit);
+    commit_to_first_paint.reset(new TimeDelta(first_paint - commit));
+    PLT_HISTOGRAM("PLT.CommitToFirstPaint", *commit_to_first_paint);
   }
   if (!first_paint_after_load.is_null()) {
     // 'first_paint_after_load' can be before 'begin' for an unknown reason.
@@ -809,6 +814,16 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     PLT_HISTOGRAM(base::FieldTrial::MakeName(
         "PLT.BeginToFinish_CacheSensitivity", "CacheSensitivityAnalysis"),
                   begin_to_finish_all_loads);
+    if (begin_to_first_paint.get()) {
+    PLT_HISTOGRAM(base::FieldTrial::MakeName(
+        "PLT.BeginToFirstPaint_CacheSensitivity", "CacheSensitivityAnalysis"),
+                  *begin_to_first_paint);
+    }
+    if (commit_to_first_paint.get()) {
+      PLT_HISTOGRAM(base::FieldTrial::MakeName(
+        "PLT.CommitToFirstPaint_CacheSensitivity", "CacheSensitivityAnalysis"),
+                    *commit_to_first_paint);
+    }
   }
 
   // Since there are currently no guarantees that renderer histograms will be
