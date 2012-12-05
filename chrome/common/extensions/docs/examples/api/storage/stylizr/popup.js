@@ -14,7 +14,7 @@ storage.get('css', function(items) {
   console.log(items);
   // If there is CSS specified, inject it into the page.
   if (items.css) {
-    chrome.tabs.insertCSS(null, {code: items.css}, function() {
+    chrome.tabs.insertCSS({code: items.css}, function() {
       if (chrome.extension.lastError) {
         message.innerText = 'Not allowed to inject CSS into special page.';
       } else {
