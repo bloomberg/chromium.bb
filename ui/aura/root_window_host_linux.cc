@@ -93,25 +93,33 @@ void SelectEventsForRootWindow() {
                  StructureNotifyMask | attr.your_event_mask);
   }
 
-  XIEventMask evmask;
+  if (!base::MessagePumpForUI::HasXInput2())
+    return;
+
   unsigned char mask[XIMaskLen(XI_LASTEVENT)] = {};
   memset(mask, 0, sizeof(mask));
 
   XISetMask(mask, XI_HierarchyChanged);
-
   XISetMask(mask, XI_KeyPress);
   XISetMask(mask, XI_KeyRelease);
 
+  XIEventMask evmask;
+  evmask.deviceid = XIAllDevices;
+  evmask.mask_len = sizeof(mask);
+  evmask.mask = mask;
+  XISelectEvents(display, root_window, &evmask, 1);
+
+  // Selecting for touch events seems to fail on some cases (e.g. when logging
+  // in incognito). So select for non-touch events first, and then select for
+  // touch-events (but keep the other events in the mask, i.e. do not memset
+  // |mask| back to 0).
+  // TODO(sad): Figure out why this happens. http://crbug.com/153976
 #if defined(USE_XI2_MT)
   XISetMask(mask, XI_TouchBegin);
   XISetMask(mask, XI_TouchUpdate);
   XISetMask(mask, XI_TouchEnd);
-#endif
-  evmask.deviceid = XIAllDevices;
-  evmask.mask_len = sizeof(mask);
-  evmask.mask = mask;
-
   XISelectEvents(display, root_window, &evmask, 1);
+#endif
 }
 
 // We emulate Windows' WM_KEYDOWN and WM_CHAR messages.  WM_CHAR events are only

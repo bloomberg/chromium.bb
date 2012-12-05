@@ -53,19 +53,6 @@ TouchFactory::TouchFactory()
   SetCursorVisible(false, false);
   UpdateDeviceList(display);
 
-  // Make sure the list of devices is kept up-to-date by listening for
-  // XI_HierarchyChanged event on the root window.
-  unsigned char mask[XIMaskLen(XI_LASTEVENT)];
-  memset(mask, 0, sizeof(mask));
-
-  XISetMask(mask, XI_HierarchyChanged);
-
-  XIEventMask evmask;
-  evmask.deviceid = XIAllDevices;
-  evmask.mask_len = sizeof(mask);
-  evmask.mask = mask;
-  XISelectEvents(display, ui::GetX11RootWindow(), &evmask, 1);
-
   CommandLine* cmdline = CommandLine::ForCurrentProcess();
   touch_events_disabled_ = cmdline->HasSwitch(switches::kTouchEvents) &&
       cmdline->GetSwitchValueASCII(switches::kTouchEvents) ==
