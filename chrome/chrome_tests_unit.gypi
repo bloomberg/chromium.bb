@@ -1153,6 +1153,7 @@
         'browser/themes/theme_syncable_service_unittest.cc',
         'browser/thumbnails/thumbnail_service_unittest.cc',
         'browser/thumbnails/thumbnail_tab_helper_unittest.cc',
+        'browser/ui/android/tab_model/tab_model_unittest.cc',
         'browser/ui/ash/event_rewriter_unittest.cc',
         'browser/ui/ash/ime_controller_chromeos_unittest.cc',
         'browser/ui/ash/launcher/browser_launcher_item_controller_unittest.cc',
