@@ -32,6 +32,13 @@ class ThemeProvider;
 // Current theme provider, passed to the cross platform NtpBackgroundUtil class.
 - (ui::ThemeProvider*)themeProvider;
 
+// Returns YES if the bookmark bar should be shown at the bottom of the content
+// view when detached.
+- (BOOL)shouldShowAtBottomWhenDetached;
+
+// Returns YES if the bookmark bar has no bookmarks.
+- (BOOL)isEmpty;
+
 @end
 
 @interface BookmarkBarToolbarView : AnimatableView {

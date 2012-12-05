@@ -380,11 +380,12 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
       int width = host_view_->width() - host_view_->GetRightMargin() -
           left_margin;
       canvas->ClipRect(gfx::Rect(left_margin, 0, width, host_view_->height()));
-      // If a theme is being used, paint the theme background color at maximum
-      // 80% opacity to make the the bookmark bar more legible;
+      // If a theme is being used, paint the theme background color with an
+      // alpha blend to make the the bookmark bar more legible;
       // otherwise, use a transparent background.
       if (tp->HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
-        const U8CPU kBackgroundOpacity = 204;  // 80% opacity
+        const U8CPU kBackgroundOpacity =
+            255 * chrome::search::kBookmarkBarThemeBackgroundAlphaFactor;
         SkColor color = tp->GetColor(ThemeService::COLOR_NTP_BACKGROUND);
         if (gfx::IsInvertedColorScheme())
           color = color_utils::InvertColor(color);
@@ -393,7 +394,8 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
         canvas->DrawColor(color);
         DetachableToolbarView::PaintHorizontalBorder(canvas, host_view_);
       } else {
-        const SkColor kBorderColor = SkColorSetARGB(25, 0, 0, 0);  // 10% black
+        const SkColor kBorderColor =
+            chrome::search::GetBookmarkBarNoThemeSeparatorColor();
         DetachableToolbarView::PaintHorizontalBorderWithColor(
             canvas, host_view_, kBorderColor);
       }

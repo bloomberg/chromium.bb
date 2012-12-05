@@ -4,8 +4,12 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_view.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 #include "chrome/browser/ui/search/search.h"
@@ -117,4 +121,23 @@ IN_PROC_BROWSER_TEST_F(BottomBookmarkBarControllerTest, MinContentHeight) {
       chrome::search::kMinContentHeightForBottomBookmarkBar;
   [window setFrame:window_frame display:YES];
   EXPECT_TRUE([[GetBookmarkBarController() view] isHidden]);
+}
+
+IN_PROC_BROWSER_TEST_F(BottomBookmarkBarControllerTest, NoItemContainer) {
+  EXPECT_TRUE([GetBookmarkBarController() isEmpty]);
+  BookmarkBarView* button_view = [GetBookmarkBarController() buttonView];
+  EXPECT_TRUE([[button_view noItemContainer] isHidden]);
+
+  // Add a bookmark.
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForProfile(browser()->profile());
+  const BookmarkNode* node = model->bookmark_bar_node();
+  model->AddURL(node,
+                node->child_count(),
+                ASCIIToUTF16("title"),
+                GURL("http://www.google.com"));
+
+  // Item container should remain hidden.
+  EXPECT_FALSE([GetBookmarkBarController() isEmpty]);
+  EXPECT_TRUE([[button_view noItemContainer] isHidden]);
 }

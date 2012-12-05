@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_SEARCH_SEARCH_UI_H_
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_UI_H_
 
+#include "third_party/skia/include/core/SkColor.h"
+
 namespace chrome {
 namespace search {
 
@@ -19,6 +21,13 @@ static const int kMaxWidthForBottomBookmarkBar = 720;
 
 // The left and right padding of the detached bookmark bar.
 static const int kHorizontalPaddingForBottomBookmarkBar = 130;
+
+// The alpha used to draw the bookmark bar background when themed.
+// This value ranges from 0.0 (fully transparent) to 1.0 (fully opaque).
+static const float kBookmarkBarThemeBackgroundAlphaFactor = 0.8f;
+
+// Returns the color to use to draw the bookmark bar separator when not themed.
+SkColor GetBookmarkBarNoThemeSeparatorColor();
 
 }  // namespace search
 }  // namespace chrome

@@ -233,6 +233,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 @synthesize visualState = visualState_;
 @synthesize lastVisualState = lastVisualState_;
 @synthesize delegate = delegate_;
+@synthesize isEmpty = isEmpty_;
 
 - (id)initWithBrowser:(Browser*)browser
          initialWidth:(CGFloat)initialWidth
@@ -487,10 +488,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   BOOL newHidden = ![self isVisible];
   if (oldHidden != newHidden)
     [[self view] setHidden:newHidden];
-}
-
-- (BOOL)shouldShowAtBottomWhenDetached {
-  return chrome::search::IsInstantExtendedAPIEnabled(browser_->profile());
 }
 
 - (void)setBookmarkBarEnabled:(BOOL)enabled {
@@ -1015,6 +1012,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   // Update everything else.
   [self layoutSubviews];
   [self frameDidChange];
+  [self updateNoItemContainerVisibility];
 }
 
 // (Private)
@@ -1266,7 +1264,15 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // appropriate) the "no items" container (text which says "bookmarks
 // go here").
 - (void)showOrHideNoItemContainerForNode:(const BookmarkNode*)node {
-  BOOL hideNoItemWarning = !node->empty();
+  isEmpty_ = node->empty();
+  [[self view] setNeedsDisplay:YES];
+  [self updateNoItemContainerVisibility];
+}
+
+- (void)updateNoItemContainerVisibility {
+  BOOL hideNoItemWarning = !isEmpty_ ||
+      ([self shouldShowAtBottomWhenDetached] &&
+       visualState_ == bookmarks::kDetachedState);
   [[buttonView_ noItemContainer] setHidden:hideNoItemWarning];
 }
 
@@ -2370,6 +2376,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 - (ui::ThemeProvider*)themeProvider {
   return ThemeServiceFactory::GetForProfile(browser_->profile());
+}
+
+- (BOOL)shouldShowAtBottomWhenDetached {
+  return chrome::search::IsInstantExtendedAPIEnabled(browser_->profile());
 }
 
 #pragma mark BookmarkButtonDelegate Protocol

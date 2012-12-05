@@ -264,11 +264,15 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   // The x point on the bar where the left edge of the new item will end
   // up if it is dropped.
   CGFloat insertionPos_;
+
+  // YES if the bookmark bar is empty.
+  BOOL isEmpty_;
 }
 
 @property(readonly, nonatomic) bookmarks::VisualState visualState;
 @property(readonly, nonatomic) bookmarks::VisualState lastVisualState;
 @property(assign, nonatomic) id<BookmarkBarControllerDelegate> delegate;
+@property(readonly, nonatomic) BOOL isEmpty;
 
 // Initializes the bookmark bar controller with the given browser
 // profile and delegates.
@@ -288,10 +292,6 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
 // Hides or shows the bookmark bar depending on the current state.
 - (void)updateHiddenState;
-
-// Returns YES if the bookmark bar should be shown at the bottom of the content
-// view when detached.
-- (BOOL)shouldShowAtBottomWhenDetached;
 
 // Turn on or off the bookmark bar and prevent or reallow its appearance. On
 // disable, toggle off if shown. On enable, show only if needed. App and popup
