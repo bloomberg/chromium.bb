@@ -32,7 +32,8 @@ bool CheckIfShouldIgnoreNavigationOnUIThread(RenderViewHost* source,
                                              const GURL& url,
                                              const content::Referrer& referrer,
                                              bool is_post,
-                                             bool has_user_gesture) {
+                                             bool has_user_gesture,
+                                             PageTransition transition_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(source);
 
@@ -45,7 +46,7 @@ bool CheckIfShouldIgnoreNavigationOnUIThread(RenderViewHost* source,
     return false;
 
   return intercept_navigation_delegate->ShouldIgnoreNavigation(
-      url, is_post, has_user_gesture);
+      url, is_post, has_user_gesture, transition_type);
 }
 
 } // namespace
@@ -83,7 +84,8 @@ InterceptNavigationDelegate::~InterceptNavigationDelegate() {
 bool InterceptNavigationDelegate::ShouldIgnoreNavigation(
     const GURL& url,
     bool is_post,
-    bool has_user_gesture) {
+    bool has_user_gesture,
+    PageTransition transition_type) {
   if (!url.is_valid())
     return false;
 
@@ -100,7 +102,8 @@ bool InterceptNavigationDelegate::ShouldIgnoreNavigation(
       jdelegate.obj(),
       jstring_url.obj(),
       is_post,
-      has_user_gesture);
+      has_user_gesture,
+      transition_type);
 }
 
 // Register native methods.

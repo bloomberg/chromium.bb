@@ -10,6 +10,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/resource_controller.h"
+#include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "net/url_request/url_request.h"
 
@@ -24,12 +25,13 @@ namespace content {
 namespace {
 
 struct ShouldIgnoreCallbackParams {
-    int render_process_id;
-    int render_view_id;
-    GURL url;
-    Referrer referrer;
-    bool has_user_gesture;
-    bool is_post;
+  int render_process_id;
+  int render_view_id;
+  GURL url;
+  Referrer referrer;
+  bool has_user_gesture;
+  bool is_post;
+  PageTransition transition_type;
 };
 
 void CheckIfShouldIgnoreNavigationOnUIThread(
@@ -51,7 +53,8 @@ void CheckIfShouldIgnoreNavigationOnUIThread(
         validated_url,
         params.referrer,
         params.is_post,
-        params.has_user_gesture);
+        params.has_user_gesture,
+        params.transition_type);
   }
 
   BrowserThread::PostTask(
@@ -102,6 +105,7 @@ bool InterceptNavigationResourceThrottle::CheckIfShouldIgnoreNavigation(
                              info->GetReferrerPolicy());
   params.has_user_gesture = info->HasUserGesture();
   params.is_post = request_->method() == "POST";
+  params.transition_type = info->GetPageTransition();
 
   BrowserThread::PostTask(
       BrowserThread::UI,

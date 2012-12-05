@@ -17,6 +17,7 @@
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/page_transition_types.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
@@ -45,11 +46,12 @@ void ContinueTestCase() {
 
 class MockInterceptCallbackReceiver {
  public:
-  MOCK_METHOD5(ShouldIgnoreNavigation, bool(RenderViewHost* source,
+  MOCK_METHOD6(ShouldIgnoreNavigation, bool(RenderViewHost* source,
                                             const GURL& url,
                                             const content::Referrer& referrer,
                                             bool is_post,
-                                            bool has_user_gesture));
+                                            bool has_user_gesture,
+                                            PageTransition page_transition));
 };
 
 // MockResourceController -----------------------------------------------------
@@ -201,10 +203,10 @@ class InterceptNavigationResourceThrottleTest
       bool* defer) {
 
     ON_CALL(*mock_callback_receiver_,
-            ShouldIgnoreNavigation(_, _, _, _, _))
+            ShouldIgnoreNavigation(_, _, _, _, _, _))
       .WillByDefault(Return(callback_action == IgnoreNavigation));
     EXPECT_CALL(*mock_callback_receiver_,
-                ShouldIgnoreNavigation(rvh(), Eq(GURL(kTestUrl)), _, _, _))
+                ShouldIgnoreNavigation(rvh(), Eq(GURL(kTestUrl)), _, _, _, _))
       .Times(1);
 
     BrowserThread::PostTask(
@@ -276,7 +278,7 @@ TEST_F(InterceptNavigationResourceThrottleTest,
           base::Unretained(this)));
 
   EXPECT_CALL(*mock_callback_receiver_,
-              ShouldIgnoreNavigation(_, _, _, _, _))
+              ShouldIgnoreNavigation(_, _, _, _, _, _))
       .Times(0);
 
   BrowserThread::PostTask(
@@ -331,10 +333,10 @@ TEST_F(InterceptNavigationResourceThrottleTest,
   bool defer = false;
 
   ON_CALL(*mock_callback_receiver_,
-          ShouldIgnoreNavigation(_, Ne(GURL(kUnsafeTestUrl)), _, _, _))
+          ShouldIgnoreNavigation(_, Ne(GURL(kUnsafeTestUrl)), _, _, _, _))
       .WillByDefault(Return(false));
   EXPECT_CALL(*mock_callback_receiver_,
-              ShouldIgnoreNavigation(_, Ne(GURL(kUnsafeTestUrl)), _, _, _))
+              ShouldIgnoreNavigation(_, Ne(GURL(kUnsafeTestUrl)), _, _, _, _))
       .Times(1);
 
   BrowserThread::PostTask(
@@ -359,7 +361,8 @@ TEST_F(InterceptNavigationResourceThrottleTest,
   bool defer = false;
 
   EXPECT_CALL(*mock_callback_receiver_,
-              ShouldIgnoreNavigation(_, Ne(GURL(kUnsafeTestUrl)), _, false, _))
+              ShouldIgnoreNavigation(_, Ne(GURL(kUnsafeTestUrl)), _, false, _,
+                                     _))
       .WillOnce(Return(false));
 
   BrowserThread::PostTask(
@@ -384,7 +387,8 @@ TEST_F(InterceptNavigationResourceThrottleTest,
   bool defer = false;
 
   EXPECT_CALL(*mock_callback_receiver_,
-              ShouldIgnoreNavigation(_, Ne(GURL(kUnsafeTestUrl)), _, true, _))
+              ShouldIgnoreNavigation(_, Ne(GURL(kUnsafeTestUrl)), _, true, _,
+                                     _))
       .WillOnce(Return(false));
 
   BrowserThread::PostTask(

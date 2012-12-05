@@ -221,7 +221,8 @@ public class AwContents {
         }
 
         @Override
-        public boolean shouldIgnoreNavigation(String url, boolean isPost, boolean hasUserGestrue) {
+        public boolean shouldIgnoreNavigation(String url, boolean isPost, boolean hasUserGesture,
+                                              int pageTransition) {
             boolean ignoreNavigation = false;
             if (mLastLoadUrlAddress != null && mLastLoadUrlAddress.equals(url)) {
                 // Support the case where the user clicks on a link that takes them back to the

@@ -14,9 +14,11 @@ public interface InterceptNavigationDelegate {
      *
      * @param url the target url of the navigation.
      * @param isPost true if the the navigation method is "POST".
-     * @param isUserGestrue true if the navigation was initiated by the user.
+     * @param isUserGesture true if the navigation was initiated by the user.
+     * @param pageTransition is the page transition type (e.g. link / typed).
      * @return true if the navigation should be ignored.
      */
     @CalledByNative
-    boolean shouldIgnoreNavigation(String url, boolean isPost, boolean isUserGestrue);
+    boolean shouldIgnoreNavigation(String url, boolean isPost, boolean isUserGesture,
+                                   int pageTransition);
 }

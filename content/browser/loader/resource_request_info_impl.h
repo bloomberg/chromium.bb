@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/referrer.h"
 #include "net/base/load_states.h"
@@ -72,6 +71,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   virtual int64 GetParentFrameID() const OVERRIDE;
   virtual ResourceType::Type GetResourceType() const OVERRIDE;
   virtual WebKit::WebReferrerPolicy GetReferrerPolicy() const OVERRIDE;
+  virtual PageTransition GetPageTransition() const OVERRIDE;
   virtual bool HasUserGesture() const OVERRIDE;
   virtual bool WasIgnoredByHandler() const OVERRIDE;
   virtual bool GetAssociatedRenderView(int* render_process_id,
@@ -110,8 +110,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   // Whether this is a download.
   bool is_download() const { return is_download_; }
   void set_is_download(bool download) { is_download_ = download; }
-
-  PageTransition transition_type() const { return transition_type_; }
 
   void set_was_ignored_by_handler(bool value) {
     was_ignored_by_handler_ = value;

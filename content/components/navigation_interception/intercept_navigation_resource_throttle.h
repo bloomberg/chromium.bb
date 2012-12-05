@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/resource_throttle.h"
+#include "content/public/common/page_transition_types.h"
 
 class GURL;
 
@@ -29,10 +30,11 @@ namespace content {
 class InterceptNavigationResourceThrottle : public content::ResourceThrottle {
  public:
   typedef base::Callback<bool(content::RenderViewHost* /* source */,
-                              const GURL& /*url*/,
+                              const GURL& /* url */,
                               const content::Referrer& /*referrer*/,
-                              bool /*is_post*/,
-                              bool /*has_user_gesture*/)>
+                              bool /* is_post */,
+                              bool /* has_user_gesture */,
+                              PageTransition /* page transition type */)>
       CheckOnUIThreadCallback;
 
   InterceptNavigationResourceThrottle(

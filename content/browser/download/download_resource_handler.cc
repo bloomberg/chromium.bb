@@ -138,7 +138,7 @@ bool DownloadResourceHandler::OnResponseStarted(
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo(
       base::Time::Now(), content_length_,
       request_->net_log(), request_info->HasUserGesture(),
-      request_info->transition_type()));
+      request_info->GetPageTransition()));
 
   // Create the ByteStream for sending data to the download sink.
   scoped_ptr<ByteStreamReader> stream_reader;

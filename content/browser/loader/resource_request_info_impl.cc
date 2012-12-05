@@ -164,6 +164,10 @@ WebKit::WebReferrerPolicy ResourceRequestInfoImpl::GetReferrerPolicy() const {
   return referrer_policy_;
 }
 
+PageTransition ResourceRequestInfoImpl::GetPageTransition() const {
+  return transition_type_;
+}
+
 bool ResourceRequestInfoImpl::HasUserGesture() const {
   return has_user_gesture_;
 }

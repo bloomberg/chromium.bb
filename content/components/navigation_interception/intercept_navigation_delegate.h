@@ -8,6 +8,7 @@
 #include "base/android/jni_helper.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
+#include "content/public/common/page_transition_types.h"
 
 class GURL;
 
@@ -55,7 +56,8 @@ class InterceptNavigationDelegate : public base::SupportsUserData::Data {
 
   virtual bool ShouldIgnoreNavigation(const GURL& url,
                                       bool is_post,
-                                      bool has_user_gesture);
+                                      bool has_user_gesture,
+                                      PageTransition transition_type);
  private:
   JavaObjectWeakGlobalRef weak_jdelegate_;
 };

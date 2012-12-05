@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
+#include "content/public/common/page_transition_types.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
 #include "webkit/glue/resource_type.h"
 
@@ -79,6 +80,9 @@ class ResourceRequestInfo {
 
   // Returns the associated referrer policy.
   virtual WebKit::WebReferrerPolicy GetReferrerPolicy() const = 0;
+
+  // Returns the associated page transition type.
+  virtual PageTransition GetPageTransition() const = 0;
 
   // True if the request was initiated by a user action (like a tap to follow
   // a link).
