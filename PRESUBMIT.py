@@ -669,6 +669,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoAuraWindowPropertyHInHeaders(input_api, output_api))
   results.extend(_CheckIncludeOrder(input_api, output_api))
   results.extend(_CheckForVersionControlConflicts(input_api, output_api))
+  results.extend(_CheckPatchFiles(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
@@ -750,6 +751,16 @@ def _CheckAuthorizedAuthor(input_api, output_api):
         'If you are a chromite, verify the contributor signed the CLA.') %
         author)]
   return []
+
+
+def _CheckPatchFiles(input_api, output_api):
+  problems = [f.LocalPath() for f in input_api.AffectedFiles()
+      if f.LocalPath().endswith(('.orig', '.rej'))]
+  if problems:
+    return [output_api.PresubmitError(
+        "Don't commit .rej and .orig files.", problems)]
+  else:
+    return []
 
 
 def CheckChangeOnUpload(input_api, output_api):

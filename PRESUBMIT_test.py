@@ -14,6 +14,27 @@ class MockInputApi(object):
   def __init__(self):
     self.re = re
     self.os_path = os.path
+    self.files = []
+
+  def AffectedFiles(self):
+    return self.files
+
+
+class MockOutputApi(object):
+  class PresubmitResult(object):
+    def __init__(self, message, items=None, long_text=''):
+      self.message = message
+      self.items = items
+      self.long_text = long_text
+
+  class PresubmitError(PresubmitResult):
+    pass
+
+  class PresubmitPromptWarning(PresubmitResult):
+    pass
+
+  class PresubmitNotifyResult(PresubmitResult):
+    pass
 
 
 class MockFile(object):
@@ -199,6 +220,44 @@ class VersionControlerConflictsTest(unittest.TestCase):
     self.assertTrue('1' in errors[0])
     self.assertTrue('3' in errors[1])
     self.assertTrue('5' in errors[2])
+
+
+class BadExtensionsTest(unittest.TestCase):
+  def testBadRejFile(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('some/path/foo.cc', ''),
+      MockFile('some/path/foo.cc.rej', ''),
+      MockFile('some/path2/bar.h.rej', ''),
+    ]
+
+    results = PRESUBMIT._CheckPatchFiles(mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(results))
+    self.assertEqual(2, len(results[0].items))
+    self.assertTrue('foo.cc.rej' in results[0].items[0])
+    self.assertTrue('bar.h.rej' in results[0].items[1])
+
+  def testBadOrigFile(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('other/path/qux.h.orig', ''),
+      MockFile('other/path/qux.h', ''),
+      MockFile('other/path/qux.cc', ''),
+    ]
+
+    results = PRESUBMIT._CheckPatchFiles(mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(results))
+    self.assertEqual(1, len(results[0].items))
+    self.assertTrue('qux.h.orig' in results[0].items[0])
+
+  def testGoodFiles(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('other/path/qux.h', ''),
+      MockFile('other/path/qux.cc', ''),
+    ]
+    results = PRESUBMIT._CheckPatchFiles(mock_input_api, MockOutputApi())
+    self.assertEqual(0, len(results))
 
 
 if __name__ == '__main__':
