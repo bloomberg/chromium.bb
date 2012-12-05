@@ -282,7 +282,7 @@ public class AndroidWebViewTestBase
             @Override
             public boolean isSatisfied() {
                 try {
-                  return runTestOnUiThreadAndGetResult(callable);
+                    return runTestOnUiThreadAndGetResult(callable);
                 } catch (Throwable e) {
                     return false;
                 }

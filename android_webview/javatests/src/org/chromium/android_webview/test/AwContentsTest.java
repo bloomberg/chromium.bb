@@ -26,9 +26,10 @@ import org.chromium.net.test.util.TestWebServer;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.List;
 
 /**
@@ -208,6 +209,49 @@ public class AwContentsTest extends AndroidWebViewTestBase {
 
             assertTrue(awContents.getFavicon().sameAs(originalFavicon));
 
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
+    }
+
+    public void testDownload() throws Throwable {
+        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        AwContents awContents = testView.getAwContents();
+
+        // TODO(boliu): This is to work around disk cache corruption bug on
+        // unclean shutdown (crbug.com/154805).
+        clearCacheOnUiThread(awContents, true);
+
+        final String data = "download data";
+        final String contentDisposition = "attachment;filename=\"download.txt\"";
+        final String mimeType = "text/plain";
+
+        List<Pair<String, String>> downloadHeaders = new ArrayList<Pair<String, String>>();
+        downloadHeaders.add(Pair.create("Content-Disposition", contentDisposition));
+        downloadHeaders.add(Pair.create("Mime-Type", mimeType));
+        downloadHeaders.add(Pair.create("Content-Length", Integer.toString(data.length())));
+
+        TestWebServer webServer = null;
+        try {
+            webServer = new TestWebServer(false);
+            final String pageUrl = webServer.setResponse(
+                    "/download.txt", data, downloadHeaders);
+            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+
+            assertTrue(pollOnUiThread(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    // Assert failures are treated as return false.
+                    assertEquals(pageUrl, mContentsClient.mLastDownloadUrl);
+                    assertEquals(contentDisposition,
+                                 mContentsClient.mLastDownloadContentDisposition);
+                    assertEquals(mimeType,
+                                 mContentsClient.mLastDownloadMimeType);
+                    assertEquals(data.length(),
+                                 mContentsClient.mLastDownloadContentLength);
+                    return true;
+                }
+            }));
         } finally {
             if (webServer != null) webServer.shutdown();
         }

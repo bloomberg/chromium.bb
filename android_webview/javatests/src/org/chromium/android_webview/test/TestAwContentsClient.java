@@ -130,4 +130,23 @@ class TestAwContentsClient extends NullContentsClient {
             return mSourceId;
         }
     }
+
+    String mLastDownloadUrl;
+    String mLastDownloadUserAgent;
+    String mLastDownloadContentDisposition;
+    String mLastDownloadMimeType;
+    long mLastDownloadContentLength;
+
+    @Override
+    public void onDownloadStart(String url,
+                                String userAgent,
+                                String contentDisposition,
+                                String mimeType,
+                                long contentLength) {
+        mLastDownloadUrl = url;
+        mLastDownloadUserAgent = userAgent;
+        mLastDownloadContentDisposition = contentDisposition;
+        mLastDownloadMimeType = mimeType;
+        mLastDownloadContentLength = contentLength;
+    }
 }

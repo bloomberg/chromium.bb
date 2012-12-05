@@ -203,10 +203,15 @@ public abstract class AwContentsClient extends ContentViewClient {
 
     public abstract void onFormResubmission(Message dontResend, Message resend);
 
+    // TODO(boliu): Make this abstract.
+    public void onDownloadStart(String url, String userAgent, String contentDisposition,
+            String mimeType, long contentLength) {
+    }
+
     protected abstract void handleJsAlert(String url, String message, JsResultReceiver receiver);
 
     protected abstract void handleJsBeforeUnload(String url, String message,
-                                                 JsResultReceiver receiver);
+            JsResultReceiver receiver);
 
     protected abstract void handleJsConfirm(String url, String message, JsResultReceiver receiver);
 

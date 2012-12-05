@@ -92,6 +92,14 @@ class NullContentsClient extends AwContentsClient {
     }
 
     @Override
+    public void onDownloadStart(String url,
+                                String userAgent,
+                                String contentDisposition,
+                                String mimeType,
+                                long contentLength) {
+    }
+
+    @Override
     public boolean onCreateWindow(boolean isDialog, boolean isUserGesture) {
         return false;
     }

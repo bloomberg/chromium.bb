@@ -43,6 +43,11 @@ class AwContentsIoThreadClientImpl : public AwContentsIoThreadClient {
   virtual bool ShouldBlockContentUrls() const OVERRIDE;
   virtual bool ShouldBlockFileUrls() const OVERRIDE;
   virtual bool ShouldBlockNetworkLoads() const OVERRIDE;
+  virtual void NewDownload(const GURL& url,
+                           const std::string& user_agent,
+                           const std::string& content_disposition,
+                           const std::string& mime_type,
+                           int64 content_length) OVERRIDE;
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_object_;

@@ -29,4 +29,11 @@ public interface AwContentsIoThreadClient {
 
     @CalledByNative
     public boolean shouldBlockNetworkLoads();
+
+    @CalledByNative
+    public void onDownloadStart(String url,
+                                String userAgent,
+                                String contentDisposition,
+                                String mimeType,
+                                long contentLength);
 }

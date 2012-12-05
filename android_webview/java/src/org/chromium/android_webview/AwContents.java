@@ -101,6 +101,26 @@ public class AwContents {
 
     private CleanupReference mCleanupReference;
 
+    private static class DownloadInfo {
+        final String mUrl;
+        final String mUserAgent;
+        final String mContentDisposition;
+        final String mMimeType;
+        final long mContentLength;
+
+        DownloadInfo(String url,
+                     String userAgent,
+                     String contentDisposition,
+                     String mimeType,
+                     long contentLength) {
+            mUrl = url;
+            mUserAgent = userAgent;
+            mContentDisposition = contentDisposition;
+            mMimeType = mimeType;
+            mContentLength = contentLength;
+        }
+    }
+
     // This class is responsible for calling certain client callbacks on the UI thread. Most
     // callbacks do no go through here, but get forwarded to AwContentsClient directly.
     // The messages processed here may originate from the IO or UI thread.
@@ -108,6 +128,7 @@ public class AwContents {
     private class ClientCallbackHandler extends Handler {
         public static final int MSG_ON_LOAD_RESOURCE = 1;
         public static final int MSG_ON_PAGE_STARTED = 2;
+        public static final int MSG_ON_DOWNLOAD_START = 3;
 
         @Override
         public void handleMessage(Message msg) {
@@ -120,6 +141,15 @@ public class AwContents {
                 case MSG_ON_PAGE_STARTED: {
                     final String url = (String) msg.obj;
                     AwContents.this.mContentsClient.onPageStarted(url);
+                    break;
+                }
+                case MSG_ON_DOWNLOAD_START: {
+                    DownloadInfo info = (DownloadInfo)msg.obj;
+                    AwContents.this.mContentsClient.onDownloadStart(info.mUrl,
+                                                                    info.mUserAgent,
+                                                                    info.mContentDisposition,
+                                                                    info.mMimeType,
+                                                                    info.mContentLength);
                     break;
                 }
                 default:
@@ -163,6 +193,23 @@ public class AwContents {
         @Override
         public boolean shouldBlockNetworkLoads() {
             return AwContents.this.mSettings.getBlockNetworkLoads();
+        }
+
+        @Override
+        public void onDownloadStart(String url,
+                                    String userAgent,
+                                    String contentDisposition,
+                                    String mimeType,
+                                    long contentLength) {
+            DownloadInfo info = new DownloadInfo(url,
+                                                 userAgent,
+                                                 contentDisposition,
+                                                 mimeType,
+                                                 contentLength);
+            mClientCallbackHandler.sendMessage(
+                    mClientCallbackHandler.obtainMessage(
+                          ClientCallbackHandler.MSG_ON_DOWNLOAD_START,
+                          info));
         }
     }
 

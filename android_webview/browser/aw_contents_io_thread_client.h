@@ -5,6 +5,8 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_IO_THREAD_CLIENT_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_IO_THREAD_CLIENT_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 
 class GURL;
@@ -72,6 +74,15 @@ class AwContentsIoThreadClient {
   // Retrieve the BlockNetworkLoads setting value of this AwContents.
   // This method is called on the IO thread only.
   virtual bool ShouldBlockNetworkLoads() const = 0;
+
+  // Called when ResourceDispathcerHost detects a download request.
+  // The download is already cancelled when this is called, since
+  // relevant for DownloadListener is already extracted.
+  virtual void NewDownload(const GURL& url,
+                           const std::string& user_agent,
+                           const std::string& content_disposition,
+                           const std::string& mime_type,
+                           int64 content_length) = 0;
 };
 
 } // namespace android_webview

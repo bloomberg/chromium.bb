@@ -5,10 +5,10 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_BROWSER_CONTEXT_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_BROWSER_CONTEXT_H_
 
-#include "content/public/browser/browser_context.h"
-
+#include "android_webview/browser/aw_download_manager_delegate.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "content/public/browser/browser_context.h"
 
 namespace android_webview {
 
@@ -51,6 +51,8 @@ class AwBrowserContext : public content::BrowserContext {
   FilePath context_storage_path_;
 
   scoped_refptr<AwURLRequestContextGetter> url_request_context_getter_;
+
+  AwDownloadManagerDelegate download_manager_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserContext);
 };

@@ -302,7 +302,11 @@ void AwContentBrowserClient::ClearCookies(content::RenderViewHost* rvh) {
 }
 
 FilePath AwContentBrowserClient::GetDefaultDownloadDirectory() {
-  NOTREACHED() << "Android WebView does not use chromium downloads";
+  // Android WebView does not currently use the Chromium downloads system.
+  // Download requests are cancelled immedately when recognized; see
+  // AwResourceDispatcherHost::CreateResourceHandlerForDownload. However the
+  // download system still tries to start up and calls this before recognizing
+  // the request has been cancelled.
   return FilePath();
 }
 

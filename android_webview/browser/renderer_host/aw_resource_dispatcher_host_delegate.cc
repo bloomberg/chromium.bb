@@ -4,6 +4,8 @@
 
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 
+#include <string>
+
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_login_delegate.h"
 #include "android_webview/common/url_constants.h"
@@ -225,6 +227,41 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
   if (allow_intercepting) {
     throttles->push_back(InterceptNavigationDelegate::CreateThrottleFor(
         request));
+  }
+}
+
+void AwResourceDispatcherHostDelegate::DownloadStarting(
+    net::URLRequest* request,
+    content::ResourceContext* resource_context,
+    int child_id,
+    int route_id,
+    int request_id,
+    bool is_content_initiated,
+    ScopedVector<content::ResourceThrottle>* throttles) {
+  GURL url(request->url());
+  std::string user_agent;
+  std::string content_disposition;
+  std::string mime_type;
+  int64 content_length = request->GetExpectedContentSize();
+
+  request->GetResponseHeaderByName("content-disposition", &content_disposition);
+  request->extra_request_headers().GetHeader(
+      net::HttpRequestHeaders::kUserAgent, &user_agent);
+  request->GetResponseHeaderByName("mime-type", &mime_type);
+
+  request->Cancel();
+
+  scoped_ptr<AwContentsIoThreadClient> io_client =
+      AwContentsIoThreadClient::FromID(child_id, route_id);
+
+  // POST request cannot be repeated in general, so prevent client from
+  // retrying the same request, even if it is with a GET.
+  if ("GET" == request->method() && io_client) {
+    io_client->NewDownload(url,
+                           user_agent,
+                           content_disposition,
+                           mime_type,
+                           content_length);
   }
 }
 
