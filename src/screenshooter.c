@@ -418,7 +418,7 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 		break;
 	default:
 		weston_log("unknown recorder format\n");
-		break;
+		return;
 	}
 
 	header.width = output->current->width;
