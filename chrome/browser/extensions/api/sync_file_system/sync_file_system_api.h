@@ -7,6 +7,7 @@
 
 #include "base/platform_file.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "webkit/fileapi/syncable/sync_file_status.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 #include "webkit/quota/quota_types.h"
 
@@ -27,6 +28,21 @@ class SyncFileSystemDeleteFileSystemFunction
 
  private:
   void DidDeleteFileSystem(base::PlatformFileError error);
+};
+
+
+class SyncFileSystemGetFileSyncStatusFunction
+    : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("syncFileSystem.getFileSyncStatus");
+
+ protected:
+  virtual ~SyncFileSystemGetFileSyncStatusFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  void DidGetFileSyncStatus(const fileapi::SyncStatusCode sync_service_status,
+                            const fileapi::SyncFileStatus sync_file_status);
 };
 
 class SyncFileSystemGetUsageAndQuotaFunction

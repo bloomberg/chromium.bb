@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 namespace syncFileSystem {
+
   dictionary StorageInfo {
     long usage_bytes;
     long quota_bytes;
@@ -43,6 +44,17 @@ namespace syncFileSystem {
     // error.)
     disabled
   };
+  
+  enum FileSyncStatus {
+    // Not conflicting and has no pending local changes.
+    synced,
+    
+    // Has one or more pending local changes that haven't been synchronized. 
+    pending,
+    
+    // File conflicts with remote version and must be resolved manually.
+    conflicting
+  };
 
   // [nodoc] A callback type for requestFileSystem.
   callback GetFileSystemCallback =
@@ -53,6 +65,9 @@ namespace syncFileSystem {
 
   // Returns true if operation was successful.  
   callback DeleteFileSystemCallback = void (boolean result);
+
+  // [nodoc] A callback type for getFileSyncStatus.
+  callback GetFileSyncStatusCallback = void (FileSyncStatus status);
 
   interface Functions {
     // Get a sync file system backed by |serviceName|.
@@ -67,13 +82,17 @@ namespace syncFileSystem {
                                  
     // Deletes everything in the syncable filesystem.
     static void deleteFileSystem([instanceOf=DOMFileSystem] object fileSystem,
-                                  DeleteFileSystemCallback callback);
+                                 DeleteFileSystemCallback callback);
+
+    // Get the FileSyncStatus for the given |fileEntry|.
+    static void getFileSyncStatus([instanceOf=FileEntry] object fileEntry,
+                                  GetFileSyncStatusCallback callback);
   };
   
   interface Events {
     // Fired when an error or other state change has happened in the
-    // sync backend.  (E.g. the sync is temporarily disabled due to
-    // network or authentication error etc)
+    // sync backend. (e.g. the sync is temporarily disabled due to
+    // network or authentication error etc).
     static void onSyncStateChanged(SyncState detail);
     
     // Fired when a file has been updated by the background sync service.
@@ -81,4 +100,5 @@ namespace syncFileSystem {
     static void onFileSynced(DOMString file_entry_path,
                              SyncOperationType operation);
   };
+
 };
