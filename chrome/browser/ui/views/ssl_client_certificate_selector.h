@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "chrome/browser/ssl/ssl_client_auth_observer.h"
+#include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/view.h"
@@ -44,7 +45,7 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
       TabContents* tab_contents,
       const net::HttpNetworkSession* network_session,
       net::SSLCertRequestInfo* cert_request_info,
-      const base::Callback<void(net::X509Certificate*)>& callback);
+      const chrome::SelectCertificateCallback& callback);
   virtual ~SSLClientCertificateSelector();
 
   void Init();

@@ -92,7 +92,7 @@ SSLClientCertificateSelector::SSLClientCertificateSelector(
     TabContents* tab_contents,
     const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
-    const base::Callback<void(net::X509Certificate*)>& callback)
+    const chrome::SelectCertificateCallback& callback)
     : SSLClientAuthObserver(network_session, cert_request_info, callback),
       model_(new CertificateSelectorTableModel(cert_request_info)),
       tab_contents_(tab_contents),
@@ -296,7 +296,7 @@ void ShowSSLClientCertificateSelector(
     content::WebContents* contents,
     const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
-    const base::Callback<void(net::X509Certificate*)>& callback) {
+    const chrome::SelectCertificateCallback& callback) {
   DVLOG(1) << __FUNCTION__ << " " << contents;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TabContents* tab_contents = TabContents::FromWebContents(contents);
