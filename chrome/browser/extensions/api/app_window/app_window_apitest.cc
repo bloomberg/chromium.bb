@@ -91,10 +91,10 @@ IN_PROC_BROWSER_TEST_F(ExperimentalPlatformAppBrowserTest, WindowsApiSetIcon) {
   EXPECT_EQ(1, test_observer->icon_updates());
 }
 
-// TODO(asargent) - Fix onMinimzed event on OSX (crbug.com/162793) and figure
-// out what to do about the fact that minimize events don't work under ubuntu
-// unity (crbug.com/162794 and https://bugs.launchpad.net/unity/+bug/998073).
-#if defined(TOOLKIT_VIEWS)
+// TODO(asargent) - Figure out what to do about the fact that minimize events
+// don't work under ubuntu unity.
+// (crbug.com/162794 and https://bugs.launchpad.net/unity/+bug/998073).
+#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiProperties) {
   EXPECT_TRUE(

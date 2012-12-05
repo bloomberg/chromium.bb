@@ -87,6 +87,12 @@ class NativeAppWindowCocoa : public NativeAppWindow {
   // Called when the window is moved.
   void WindowDidMove();
 
+  // Called when the window is minimized.
+  void WindowDidMiniaturize();
+
+  // Called when the window is un-minimized.
+  void WindowDidDeminiaturize();
+
   // Called to handle a key event.
   bool HandledByExtensionCommand(NSEvent* event);
 

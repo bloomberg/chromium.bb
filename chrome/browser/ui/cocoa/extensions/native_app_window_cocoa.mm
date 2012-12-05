@@ -62,6 +62,16 @@
     appWindow_->WindowDidMove();
 }
 
+- (void)windowDidMiniaturize:(NSNotification*)notification {
+  if (appWindow_)
+    appWindow_->WindowDidMiniaturize();
+}
+
+- (void)windowDidDeminiaturize:(NSNotification*)notification {
+  if (appWindow_)
+    appWindow_->WindowDidDeminiaturize();
+}
+
 - (void)gtm_systemRequestsVisibilityForView:(NSView*)view {
   [[self window] makeKeyAndOrderFront:self];
 }
@@ -691,6 +701,14 @@ void NativeAppWindowCocoa::WindowDidResize() {
 }
 
 void NativeAppWindowCocoa::WindowDidMove() {
+  shell_window_->OnNativeWindowChanged();
+}
+
+void NativeAppWindowCocoa::WindowDidMiniaturize() {
+  shell_window_->OnNativeWindowChanged();
+}
+
+void NativeAppWindowCocoa::WindowDidDeminiaturize() {
   shell_window_->OnNativeWindowChanged();
 }
 
