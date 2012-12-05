@@ -1236,9 +1236,7 @@ TEST_F(ExtensionServiceTest, CleanupOnStartup) {
   }
 
   service_->Init();
-  service_->GarbageCollectExtensions();
-
-  // Wait for GarbageCollectExtensions tasks to complete.
+  // Wait for GarbageCollectExtensions task to complete.
   loop_.RunUntilIdle();
 
   file_util::FileEnumerator dirs(extensions_install_dir_, false,
@@ -1276,8 +1274,7 @@ TEST_F(ExtensionServiceTest, GarbageCollectWithPendingUpdates) {
       "hpiknbiabeeppbpihjehijgoemciehgk/3")));
 
   service_->GarbageCollectExtensions();
-
-  // Wait for GarbageCollectExtensions tasks to complete.
+  // Wait for GarbageCollectExtensions task to complete.
   loop_.RunUntilIdle();
 
   // Verify that the pending update for the first extension didn't get
@@ -1311,10 +1308,7 @@ TEST_F(ExtensionServiceTest, UpdateOnStartup) {
       "hpiknbiabeeppbpihjehijgoemciehgk/3")));
 
   service_->Init();
-
-  service_->GarbageCollectExtensions();
-
-  // Wait for GarbageCollectExtensions tasks to complete.
+  // Wait for GarbageCollectExtensions task to complete.
   loop_.RunUntilIdle();
 
   // Verify that the pending update for the first extension got installed.
@@ -3165,7 +3159,6 @@ TEST_F(ExtensionServiceTest, ComponentExtensionWhitelisted) {
   EXPECT_TRUE(service_->GetExtensionById(good0, false));
 
   // Poke external providers and make sure the extension is still present.
-  service_->ResetExternalUpdateCheckGuardForTests();
   service_->CheckForExternalUpdates();
   ASSERT_EQ(1u, service_->extensions()->size());
   EXPECT_TRUE(service_->GetExtensionById(good0, false));
@@ -3204,7 +3197,6 @@ TEST_F(ExtensionServiceTest, PolicyInstalledExtensionsWhitelisted) {
 
   // Reloading extensions should find our externally registered extension
   // and install it.
-  service_->ResetExternalUpdateCheckGuardForTests();
   service_->CheckForExternalUpdates();
   loop_.RunUntilIdle();
 
@@ -3383,7 +3375,6 @@ TEST_F(ExtensionServiceTest, ExternalExtensionAutoAcknowledgement) {
   }
 
   // Providers are set up. Let them run.
-  service_->ResetExternalUpdateCheckGuardForTests();
   service_->CheckForExternalUpdates();
   loop_.RunUntilIdle();
 
@@ -3993,7 +3984,6 @@ void ExtensionServiceTest::TestExternalProvider(
 
   // Reloading extensions should find our externally registered extension
   // and install it.
-  service_->ResetExternalUpdateCheckGuardForTests();
   service_->CheckForExternalUpdates();
   loop_.RunUntilIdle();
 
@@ -4021,7 +4011,6 @@ void ExtensionServiceTest::TestExternalProvider(
   provider->UpdateOrAddExtension(good_crx, "1.0.0.1", source_path);
 
   loaded_.clear();
-  service_->ResetExternalUpdateCheckGuardForTests();
   service_->CheckForExternalUpdates();
   loop_.RunUntilIdle();
   ASSERT_EQ(0u, GetErrors().size());
@@ -4045,7 +4034,6 @@ void ExtensionServiceTest::TestExternalProvider(
     // The extension should also be gone from the install directory.
     ASSERT_FALSE(file_util::PathExists(install_path));
     loaded_.clear();
-    service_->ResetExternalUpdateCheckGuardForTests();
     service_->CheckForExternalUpdates();
     loop_.RunUntilIdle();
     ASSERT_EQ(0u, loaded_.size());
@@ -4058,7 +4046,6 @@ void ExtensionServiceTest::TestExternalProvider(
     SetPrefInteg(good_crx, "state", Extension::ENABLED);
 
     loaded_.clear();
-    service_->ResetExternalUpdateCheckGuardForTests();
     service_->CheckForExternalUpdates();
     loop_.RunUntilIdle();
     ASSERT_EQ(1u, loaded_.size());
@@ -4086,7 +4073,6 @@ void ExtensionServiceTest::TestExternalProvider(
     // Now test the case where user uninstalls and then the extension is removed
     // from the external provider.
     provider->UpdateOrAddExtension(good_crx, "1.0.0.1", source_path);
-    service_->ResetExternalUpdateCheckGuardForTests();
     service_->CheckForExternalUpdates();
     loop_.RunUntilIdle();
 
@@ -4195,9 +4181,7 @@ TEST_F(ExtensionServiceTest, ExternalUninstall) {
   service_->Init();
 
   ASSERT_EQ(0u, GetErrors().size());
-
-  service_->CheckForExternalUpdates();
-  service_->GarbageCollectExtensions();
+  ASSERT_EQ(0u, loaded_.size());
 
   // Verify that it's not the disabled extensions flag causing it not to load.
   set_extensions_enabled(true);
@@ -4223,9 +4207,7 @@ TEST_F(ExtensionServiceTest, MultipleExternalUpdateCheck) {
 
   // Start two checks for updates.
   provider->set_visit_count(0);
-  service_->ResetExternalUpdateCheckGuardForTests();
   service_->CheckForExternalUpdates();
-  service_->ResetExternalUpdateCheckGuardForTests();
   service_->CheckForExternalUpdates();
   loop_.RunUntilIdle();
 
@@ -4241,9 +4223,7 @@ TEST_F(ExtensionServiceTest, MultipleExternalUpdateCheck) {
   // Two checks for external updates should find the extension, and install it
   // once.
   provider->set_visit_count(0);
-  service_->ResetExternalUpdateCheckGuardForTests();
   service_->CheckForExternalUpdates();
-  service_->ResetExternalUpdateCheckGuardForTests();
   service_->CheckForExternalUpdates();
   loop_.RunUntilIdle();
   EXPECT_EQ(2, provider->visit_count());
@@ -4257,9 +4237,7 @@ TEST_F(ExtensionServiceTest, MultipleExternalUpdateCheck) {
 
   provider->RemoveExtension(good_crx);
   provider->set_visit_count(0);
-  service_->ResetExternalUpdateCheckGuardForTests();
   service_->CheckForExternalUpdates();
-  service_->ResetExternalUpdateCheckGuardForTests();
   service_->CheckForExternalUpdates();
   loop_.RunUntilIdle();
 
@@ -5697,9 +5675,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallGlobalError) {
   provider->UpdateOrAddExtension(hosted_app, "1.0.0.0",
                                  data_dir_.AppendASCII("hosted_app.crx"));
 
-  service_->ResetExternalUpdateCheckGuardForTests();
   service_->CheckForExternalUpdates();
-  service_->GarbageCollectExtensions();
   loop_.RunUntilIdle();
   EXPECT_TRUE(extensions::HasExternalInstallError(service_));
   service_->EnableExtension(hosted_app);
@@ -5710,7 +5686,6 @@ TEST_F(ExtensionServiceTest, ExternalInstallGlobalError) {
   provider->UpdateOrAddExtension(page_action, "1.0.0.0",
                                  data_dir_.AppendASCII("page_action.crx"));
 
-  service_->ResetExternalUpdateCheckGuardForTests();
   service_->CheckForExternalUpdates();
   loop_.RunUntilIdle();
   EXPECT_TRUE(extensions::HasExternalInstallError(service_));
@@ -5795,7 +5770,6 @@ TEST_F(ExtensionServiceTest, WipeOutExtension) {
   provider_pref->UpdateOrAddExtension(good_crx, "1.0.0.0",
       data_dir_.AppendASCII("good.crx"));
 
-  service_->ResetExternalUpdateCheckGuardForTests();
   service_->CheckForExternalUpdates();
   loop_.RunUntilIdle();
   EXPECT_FALSE(extensions::HasExternalInstallError(service_));

@@ -371,7 +371,6 @@ ExtensionService::ExtensionService(Profile* profile,
       show_extensions_prompts_(true),
       install_updates_when_idle_(true),
       ready_(false),
-      external_update_check_has_run_(false),
       toolbar_model_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       menu_manager_(profile),
       app_notification_manager_(
@@ -650,22 +649,12 @@ void ExtensionService::Init() {
         g_browser_process->profile_manager()->will_import()) {
       RegisterForImportFinished();
     } else {
-      // For newly created profiles, check for external updates immediately.
-      // Otherwise delay the check until onload fires for the main frame, to
-      // speed up startup.
-      bool is_new_profile =
-          profile_->GetPrefs()->GetInitializationStatus() ==
-              PrefService::INITIALIZATION_STATUS_CREATED_NEW_PROFILE;
-      if (is_new_profile)
-        CheckForExternalUpdates();
+      // TODO(erikkay) this should probably be deferred to a future point
+      // rather than running immediately at startup.
+      CheckForExternalUpdates();
 
-      // Hook onload for the first frame to perform delayed startup actions.
-      // TODO(jeremy):If a generic mechanism is introduced to perform actions
-      // delayed until after startup finishes, use that rather than listening
-      // on the event ourselves.
-      registrar_.Add(this,
-                     content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-                     content::NotificationService::AllSources());
+      // TODO(erikkay) this should probably be deferred as well.
+      GarbageCollectExtensions();
     }
   }
 }
@@ -1794,12 +1783,6 @@ void ExtensionService::SetAllowFileAccess(const Extension* extension,
 void ExtensionService::CheckForExternalUpdates() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // In the case of a new profile, this function is called at init time and then
-  // again when the first frame loads.  Short-circuit subsequent calls.
-  if (external_update_check_has_run_)
-    return;
-  external_update_check_has_run_ = true;
-
   // Note that this installation is intentionally silent (since it didn't
   // go through the front-end).  Extensions that are registered in this
   // way are effectively considered 'pre-bundled', and so implicitly
@@ -2778,16 +2761,6 @@ void ExtensionService::Observe(int type,
               host->extension()));
       break;
     }
-    case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME:
-      registrar_.Remove(
-          this,
-          content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-          content::NotificationService::AllSources());
-
-      CheckForExternalUpdates();
-      GarbageCollectExtensions();
-      break;
-
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
       content::RenderProcessHost* process =
           content::Source<content::RenderProcessHost>(source).ptr();

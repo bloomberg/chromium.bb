@@ -399,13 +399,6 @@ class ExtensionService
   // Check for updates (or potentially new extensions from external providers)
   void CheckForExternalUpdates();
 
-  // For testing: CheckForExternalUpdates() is idempotent.  Reset the flag
-  // that causes the function to perform an early return after it's first
-  // invocation.
-  void ResetExternalUpdateCheckGuardForTests() {
-    external_update_check_has_run_ = false;
-  }
-
   // Unload the specified extension.
   virtual void UnloadExtension(
       const std::string& extension_id,
@@ -920,9 +913,6 @@ class ExtensionService
   // Record that Init() has been called, and chrome::EXTENSIONS_READY
   // has fired.
   bool ready_;
-
-  // Have we done an external update check yet?
-  bool external_update_check_has_run_;
 
   // Our extension updater, if updates are turned on.
   scoped_ptr<extensions::ExtensionUpdater> updater_;
