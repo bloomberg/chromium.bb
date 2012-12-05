@@ -19,7 +19,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/bookmarks/bookmark_service.h"
 #include "chrome/browser/autocomplete/autocomplete_field_trial.h"
-#include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -36,6 +35,22 @@ const int kMaxTotalScore = 1425;
 // than |kMaxTotalScore|. The score for each candidate will be capped in the
 // final calculation.
 const int kScoreRank[] = { 1450, 1200, 900, 400 };
+
+// When doing HistoryURL-provider-like scoring (when
+// also_do_hup_like_scoring is true), assign results with non-zero
+// typed counts this score, which then gets modified slightly.  This
+// number is derived from the score of 1410 used in
+// HistoryURL provider's CalculateRelevance() function for matches
+// that are worthy of being inline autocompleted.
+const int kBaseScoreForTypedResultsInHUPLikeScoring = 1410;
+
+// When doing HistoryURL-provider-like scoring (when
+// also_do_hup_like_scoring is true), assign results with zero typed
+// counts this score, which then gets modified slightly.  This number
+// is derived from the score of 900 + kMaxMatches used in HistoryURL
+// provider's CalculateRelevance() function for matches that are not
+// worthy of being inline autopleted.
+const int kBaseScoreForUntypedResultsInHUPLikeScoring = 900;
 
 // ScoredHistoryMatch ----------------------------------------------------------
 
@@ -196,8 +211,8 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
     // says that anything with a typed count is better than anything
     // without.
     int hup_like_score = (row.typed_count() > 0) ?
-        HistoryURLProvider::kScoreForBestInlineableResult :
-        HistoryURLProvider::kBaseScoreForNonInlineableResult;
+        kBaseScoreForTypedResultsInHUPLikeScoring :
+        kBaseScoreForUntypedResultsInHUPLikeScoring;
 
     // Tweak the hup_like_score based on "innermost matches".  This
     // corresponds to the second test in
