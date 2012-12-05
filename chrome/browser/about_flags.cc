@@ -894,7 +894,7 @@ const Experiment kExperiments[] = {
     "enable-pinch",
     IDS_FLAGS_ENABLE_PINCH_SCALE_NAME,
     IDS_FLAGS_ENABLE_PINCH_SCALE_DESCRIPTION,
-    kOsAll,
+    kOsLinux | kOsWin | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnablePinch),
   },
   {

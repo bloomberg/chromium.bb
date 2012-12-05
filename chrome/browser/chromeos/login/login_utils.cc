@@ -815,7 +815,6 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ash::switches::kAshDisablePanelFitting,
       cc::switches::kDisableThreadedAnimation,
       cc::switches::kEnablePartialSwap,
-      cc::switches::kEnablePinchInCompositor,
       chromeos::switches::kDbusStub,
       chromeos::switches::kEnableNewNetworkHandlers,
       gfx::switches::kEnableBrowserTextSubpixelPositioning,

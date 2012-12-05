@@ -3185,25 +3185,19 @@ void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
 
 void RenderViewImpl::ProcessAcceleratedPinchZoomFlags(
     const CommandLine& command_line) {
-  bool enable_viewport =
-      command_line.HasSwitch(switches::kEnableViewport);
-  bool enable_pinch = enable_viewport ||
-                      command_line.HasSwitch(switches::kEnablePinch);
-  bool enable_pinch_in_compositor =
-      command_line.HasSwitch(cc::switches::kEnablePinchInCompositor);
+  if (!webview()->isAcceleratedCompositingActive())
+    return;
 
-  if (!enable_pinch &&
-      webview()->isAcceleratedCompositingActive() &&
-      webkit_preferences_.apply_default_device_scale_factor_in_compositor &&
-      device_scale_factor_ != 1) {
-    // Page scaling is disabled by default when applying a scale factor in the
-    // compositor since they are currently incompatible.
-    webview()->setPageScaleFactorLimits(1, 1);
-  }
+  bool enable_viewport = command_line.HasSwitch(switches::kEnableViewport);
+  bool enable_pinch = command_line.HasSwitch(switches::kEnablePinch);
 
-  if (enable_pinch_in_compositor &&
-      webview()->isAcceleratedCompositingActive())
+  if (enable_viewport)
+    return;
+
+  if (enable_pinch)
     webview()->setPageScaleFactorLimits(1, 4);
+  else
+    webview()->setPageScaleFactorLimits(1, 1);
 }
 
 void RenderViewImpl::didStartProvisionalLoad(WebFrame* frame) {

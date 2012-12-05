@@ -21,10 +21,6 @@ const char kEnablePartialSwap[]             = "enable-partial-swap";
 
 const char kEnablePerTilePainting[]         = "enable-per-tile-painting";
 
-// Enables an alternative pinch-zoom gesture support, via the threaded
-// compositor.
-const char kEnablePinchInCompositor[]       = "enable-pinch-in-compositor";
-
 // Number of worker threads used to rasterize content.
 const char kNumRasterThreads[] = "num-raster-threads";
 
