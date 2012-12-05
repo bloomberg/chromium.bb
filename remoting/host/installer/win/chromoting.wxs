@@ -89,6 +89,12 @@
                       Maximum="$(var.Version)"
                       Minimum="0.0.0.0"
                       Property="OLDERVERSIONBEINGUPGRADED" />
+      <!-- Detect versions that didn't handle the usagestats value properly. -->
+      <UpgradeVersion IncludeMaximum="yes"
+                      IncludeMinimum="yes"
+                      Maximum="24.0.1312.29"
+                      Minimum="0.0.0.0"
+                      Property="BROKENUSAGESTATSVERSION" />
     </Upgrade>
 
     <Condition Message="A later version of [ProductName] is already installed. Setup will now exit.">
@@ -375,6 +381,19 @@
         </RegistryKey>
       </Component>
 
+      <!-- Delete the usagestats flag to reset the crash dump reporting settings
+           for existing users. -->
+      <Component Id="delete_usagestats"
+                 Guid="5c73f2b9-b865-426f-81cc-90a27ebb54aa"
+                 KeyPath="yes">
+        <Condition>BROKENUSAGESTATSVERSION</Condition>
+        <RemoveRegistryValue
+            Id="usagestats"
+            Key="SOFTWARE\Google\Update\ClientStateMedium\$(var.OmahaAppid)"
+            Name="usagestats"
+            Root="HKLM" />
+      </Component>
+
     </DirectoryRef>
 
     <DirectoryRef Id="config_files">
@@ -436,6 +455,7 @@
 
     <Feature Id="chromoting_host" Level="1" Title="$(var.ChromotingHost)">
       <ComponentRef Id="delete_debug_log"/>
+      <ComponentRef Id="delete_usagestats"/>
       <?if $(var.OfficialBuild) != 0 ?>
         <ComponentRef Id="omaha_registration"/>
       <?endif?>
