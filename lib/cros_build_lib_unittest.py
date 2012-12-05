@@ -27,7 +27,7 @@ from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import signals as cros_signals
 
-# pylint: disable=W0212
+# pylint: disable=W0212,R0904
 
 
 class RunCommandMock(partial_mock.PartialCmdMock):
@@ -46,6 +46,23 @@ class RunCommandMock(partial_mock.PartialCmdMock):
                               result.output, result.error)
       with popen_mock:
         return self.backup['RunCommand'](cmd, *args, **kwargs)
+
+
+class RunCommandTestCase(cros_test_lib.TestCase):
+
+  def setUp(self):
+    self.rc = RunCommandMock()
+    self.rc.SetDefaultCmdResult()
+    self.rc.Start()
+    self.assertCommandContains = self.rc.assertCommandContains
+
+  def tearDown(self):
+    self.rc.Stop()
+
+
+class RunCommandTempDirTestCase(RunCommandTestCase,
+                                cros_test_lib.TempDirTestCase):
+  """Convenience class mixing TempDirTestCase and RunCommandTestCase"""
 
 
 class PopenMock(partial_mock.PartialCmdMock):
@@ -77,6 +94,7 @@ class PopenMock(partial_mock.PartialCmdMock):
         ['#!/bin/bash\n', 'cat %s\n' % stdout, 'cat %s >&2\n' % stderr,
          'exit %s' % result.returncode])
     os.chmod(script, 0700)
+    kwargs['cwd'] = self.tempdir
     self.backup['__init__'](inst, [script, '--'] + cmd, *args, **kwargs)
 
 

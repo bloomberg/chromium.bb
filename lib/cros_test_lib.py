@@ -8,6 +8,7 @@
 
 from __future__ import print_function
 import collections
+import contextlib
 import cStringIO
 import exceptions
 import mox
@@ -692,7 +693,7 @@ class _RunCommandMock(mox.MockObject):
 
   def __call__(self, *args, **kwds):
     for arg in self.DEFAULT_IGNORED_ARGS:
-       kwds.setdefault(arg, mox.IgnoreArg())
+      kwds.setdefault(arg, mox.IgnoreArg())
     return mox.MockObject.__call__(self, *args, **kwds)
 
 
@@ -778,6 +779,17 @@ def FindTests(directory, module_namespace=''):
   if module_namespace:
     module_namespace += '.'
   return [module_namespace + x[:-3].replace('/', '.') for x in results]
+
+
+@contextlib.contextmanager
+def DisableLogging():
+  """Temporarily disable chromite logging."""
+  backup = cros_build_lib.logger.disabled
+  try:
+    cros_build_lib.logger.disabled = True
+    yield
+  finally:
+    cros_build_lib.logger.disabled = backup
 
 
 def main(**kwds):

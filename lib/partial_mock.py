@@ -316,6 +316,7 @@ class PartialMock(object):
   def __init__(self):
     self.backup = {}
     self.patchers = {}
+    self.patched = {}
 
   def __enter__(self):
     self.Start()
@@ -338,7 +339,7 @@ class PartialMock(object):
                                     side_effect=getattr(self, src_attr))
       else:
         patcher = mock.patch.object(cls, attr, getattr(self, src_attr))
-      patcher.start()
+      self.patched[attr] = patcher.start()
       self.patchers[attr] = patcher
 
   def Stop(self):
@@ -391,3 +392,36 @@ class PartialCmdMock(PartialMock):
     result = self.CmdResult(returncode, output, error)
     self._results.AddResultForParams(
         (cmd,), result, kwargs=kwargs, side_effect=side_effect, strict=strict)
+
+  def CommandContains(self, args, **kwargs):
+    """Verify that at least one command contains the specified args.
+
+    Arguments:
+      args: Set of expected command-line arguments.
+      kwargs: Set of expected keyword arguments.
+    """
+    for call_args, call_kwargs in self.patched[self.ATTRS[0]].call_args_list:
+      if ListContains(args, call_args[0]) and DictContains(kwargs, call_kwargs):
+        return True
+    return False
+
+  def assertCommandContains(self, args=(), expected=True, **kwargs):
+    """Assert that RunCommand was called with the specified args.
+
+    This verifies that at least one of the RunCommand calls contains the
+    specified arguments on the command line.
+
+    Arguments:
+      args: Set of expected command-line arguments.
+      expected: If False, instead verify that none of the RunCommand calls
+          contained the specified arguments.
+      **kwargs: Set of expected keyword arguments.
+    """
+    if expected != self.CommandContains(args, **kwargs):
+      if expected:
+        msg = 'Expected to find %r in any of:\n%s'
+      else:
+        msg = 'Expected to not find %r in any of:\n%s'
+      patched = self.patched[self.ATTRS[0]]
+      cmds = '\n'.join(repr(x) for x in patched.call_args_list)
+      raise AssertionError(msg % (mock.call(args, **kwargs), cmds))
